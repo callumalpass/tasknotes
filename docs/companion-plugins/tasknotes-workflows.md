@@ -11,7 +11,7 @@ The plugin is designed for workflows users often ask TaskNotes core to handle, s
 - Warn when a blocked task is moved to active.
 - Run a daily review query.
 
-TaskNotes Workflows keeps this behavior outside TaskNotes core while still using the [TaskNotes JavaScript Runtime API](../javascript-api.md) for safe task reads, writes, events, and relationship resolution.
+TaskNotes Workflows keeps this behavior outside TaskNotes core while still using the [TaskNotes JavaScript Runtime API](../javascript-api.md) for safe task reads, writes, canonical queries, events, and relationship resolution.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ TaskNotes Workflows keeps this behavior outside TaskNotes core while still using
 - Scheduled workflows run while Obsidian is running. They are not a background service when Obsidian is closed.
 - The plugin runtime uses Obsidian APIs only. Node is used for development and build scripts, not for workflow execution, so Markdown workflow definitions can work on Obsidian mobile while the plugin is loaded.
 
-If TaskNotes is disabled or unavailable, the workflow Base can still validate and display workflow files, but TaskNotes-mutating steps cannot run.
+If TaskNotes is disabled or unavailable, the workflow Base can still validate and display workflow files, but TaskNotes read/write steps cannot run.
 
 ## Files Created by the Plugin
 
@@ -310,14 +310,23 @@ steps:
     type: task.query
     input:
       query:
-        due:
-          operator: before
-          value: today
-        status:
-          operator: notIn
-          value:
-            - done
-            - cancelled
+        where:
+          all:
+            - field: task.due
+              op: lt
+              value:
+                fn: today
+            - field: task.status
+              op: notIn
+              value:
+                - done
+                - cancelled
+        sort:
+          - field: task.due
+            direction: asc
+        limit: 50
+        scope:
+          includeArchived: false
 
   - id: mark-high
     type: task.patch
@@ -330,6 +339,37 @@ steps:
 
 When a step uses `forEach`, `{{item}}` refers to the current item and the step output becomes an array of per-item outputs.
 
+`task.query` uses the canonical TaskNotes runtime query DTO. Its output includes `tasks`, `count`, `total`, `matched`, `returned`, `groups`, `groupPaths`, `query`, and `warnings`.
+
+Runtime query conditions use canonical field IDs and operators:
+
+```yaml
+query:
+  where:
+    all:
+      - field: task.status
+        op: ne
+        value: done
+      - any:
+          - field: task.due
+            op: lte
+            value:
+              fn: today
+          - field: task.priority
+            op: eq
+            value: high
+  sort:
+    - field: task.due
+      direction: asc
+  group:
+    - field: task.status
+  limit: 25
+  scope:
+    includeArchived: false
+```
+
+Common fields include `task.status`, `task.priority`, `task.due`, `task.scheduled`, `task.projects`, `task.contexts`, `task.tags`, `task.isBlocked`, and `file.path`. Operators include `eq`, `ne`, `contains`, `notContains`, `in`, `notIn`, `exists`, `missing`, `lt`, `lte`, `gt`, `gte`, `isTrue`, and `isFalse`. Use `api.catalog.filterProperties()` and `api.catalog.filterOperators()` for the complete runtime catalog.
+
 ## Steps
 
 Steps are typed actions. The editor reads a step catalog so it can show expected inputs, output fields, examples, and TaskNotes option pickers.
@@ -339,7 +379,7 @@ Task read steps:
 | Step | Output |
 | --- | --- |
 | `task.get` | One task. |
-| `task.query` | Tasks matching a compact workflow query. |
+| `task.query` | Tasks matching a canonical TaskNotes runtime query. |
 | `task.parents` | Parent tasks linked from the task's projects. |
 | `task.subtasks` | Tasks that reference the current task as a project. |
 | `task.dependencies` | Dependencies stored in `blockedBy`, with resolved task data when available. |
@@ -441,7 +481,13 @@ steps:
     type: task.query
     input:
       query:
-        status: active
+        where:
+          field: task.status
+          op: eq
+          value: active
+        limit: 25
+        scope:
+          includeArchived: false
   - id: notice
     type: notice.show
     input:

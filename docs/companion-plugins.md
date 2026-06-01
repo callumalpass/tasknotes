@@ -40,6 +40,7 @@ The extension registry is useful when companion plugins need to expose commands,
 Companion plugins should:
 
 - Check `api.apiVersion` and `api.hasCapability(...)` before using runtime features.
+- Use `api.catalog` and canonical runtime query DTOs from `api.query` instead of reaching into TaskNotes filter/view internals.
 - Include a `source` value when mutating tasks so TaskNotes events are debuggable.
 - Avoid reacting to their own mutations unless the behavior is explicit.
 - Keep user data in the vault where possible, using readable Markdown or JSON files.
