@@ -371,8 +371,10 @@ describe("TaskNotesApiV1", () => {
 		expect(api.capabilities).toContain("events.list");
 		expect(api.capabilities).toContain("extensions.register");
 		expect(api.capabilities).toContain("relationships.read");
+		expect(api.capabilities).toContain("model.validate");
 		expect(api.hasCapability("tasks.events")).toBe(true);
 		expect(api.hasCapability("missing.capability")).toBe(false);
+		expect(typeof api.model.config).toBe("function");
 		expect(typeof api.parseNaturalLanguage).toBe("function");
 		expect(typeof api.tasks.update).toBe("function");
 		expect(typeof api.relationships.subtasks).toBe("function");
@@ -381,6 +383,35 @@ describe("TaskNotesApiV1", () => {
 		expect(typeof api.events.on).toBe("function");
 		expect(typeof api.events.list).toBe("function");
 		expect(typeof api.extensions.register).toBe("function");
+	});
+
+	it("exposes model metadata, config, and validation backed by @tasknotes/model", () => {
+		const { plugin } = createPluginContext();
+		const api = new TaskNotesAPI(plugin);
+
+		expect(api.model.info()).toEqual({
+			packageName: "@tasknotes/model",
+			specVersion: expect.any(String),
+			runtimeApiVersion: 1,
+		});
+		expect(api.model.config()).toEqual(
+			expect.objectContaining({
+				defaults: expect.objectContaining({ status: "open", priority: "normal" }),
+				statuses: expect.arrayContaining([
+					expect.objectContaining({ value: "open", isCompleted: false }),
+				]),
+			})
+		);
+
+		expect(api.model.validateTask(createTask()).valid).toBe(true);
+		expect(api.model.validatePatch({ timeEntries: "invalid" as never })).toEqual(
+			expect.objectContaining({
+				valid: false,
+				issues: expect.arrayContaining([
+					expect.objectContaining({ code: "schema_invalid" }),
+				]),
+			})
+		);
 	});
 
 	it("lists runtime event definitions for companion plugin UIs", () => {

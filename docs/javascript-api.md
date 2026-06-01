@@ -30,6 +30,8 @@ if (!api || api.apiVersion !== 1 || !api.hasCapability("tasks.write")) {
 
 Current capabilities:
 
+- `model.read`
+- `model.validate`
 - `extensions.read`
 - `extensions.register`
 - `tasks.read`
@@ -143,6 +145,23 @@ if (api?.apiVersion === 1 && api.hasCapability("tasks.write")) {
 ```
 
 TaskNotes is still loaded by Obsidian at runtime. The TypeScript contract only gives companion plugins compile-time checking and autocomplete.
+
+## Model
+
+The runtime API exposes a small model namespace backed by `@tasknotes/model`:
+
+```javascript
+const info = api.model.info();
+const config = api.model.config();
+const validation = api.model.validateTask(task);
+```
+
+| Method | Description |
+| --- | --- |
+| `api.model.info()` | Returns the model package name, TaskNotes spec version, and runtime API version. |
+| `api.model.config()` | Returns a resolved, Obsidian-free model configuration snapshot derived from TaskNotes settings. |
+| `api.model.validateTask(task)` | Validates a partial or complete task against the shared model schema and TaskNotes status rules. |
+| `api.model.validatePatch(patch)` | Validates a task patch before passing it to a runtime task mutation. |
 
 ## Tasks
 

@@ -1,4 +1,12 @@
 import { normalizePath, TFile, type EventRef } from "obsidian";
+import {
+	TASKNOTES_SPEC_VERSION,
+	evaluateCoreValidation,
+	resolveModelConfig,
+	validateTask as validateModelTask,
+	type TaskNotesModelConfig,
+	type TaskValidationResult,
+} from "@tasknotes/model";
 import type TaskNotesPlugin from "../main";
 import {
 	NaturalLanguageParser,
@@ -90,6 +98,17 @@ const RESERVED_RUNTIME_EXTENSION_NAMESPACES = new Set([
 
 export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	readonly apiVersion = TASKNOTES_RUNTIME_API_VERSION;
+
+	readonly model = {
+		info: () => ({
+			packageName: "@tasknotes/model" as const,
+			specVersion: TASKNOTES_SPEC_VERSION,
+			runtimeApiVersion: this.apiVersion,
+		}),
+		config: () => this.getModelConfig(),
+		validateTask: (task: Partial<TaskInfo>) => this.validateTask(task),
+		validatePatch: (patch: TaskNotesTaskPatch) => this.validateTaskPatch(patch),
+	};
 
 	readonly tasks = {
 		get: (path: string) => this.getTask(path),
@@ -260,6 +279,46 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		}
 
 		return NaturalLanguageParser.fromPlugin(this.plugin).parseInput(text);
+	}
+
+	private getModelConfig(): Readonly<TaskNotesModelConfig> {
+		const settings = this.plugin.settings;
+		return resolveModelConfig({
+			fieldMapping: settings.fieldMapping,
+			statuses: settings.customStatuses,
+			priorities: settings.customPriorities,
+			defaults: {
+				status: settings.defaultTaskStatus ?? "open",
+				priority: settings.defaultTaskPriority ?? "normal",
+				taskTag: settings.taskTag ?? "task",
+			},
+			taskIdentification: {
+				method: settings.taskIdentificationMethod ?? "tag",
+				tag: settings.taskTag ?? "task",
+				propertyName: settings.taskPropertyName ?? "type",
+				propertyValue: settings.taskPropertyValue ?? "task",
+				excludedFolders: settings.excludedFolders ?? "",
+			},
+			storeTitleInFilename: settings.storeTitleInFilename ?? false,
+			userFields: settings.userFields ?? [],
+			recurrence: {
+				maintainDueDateOffset: settings.maintainDueDateOffsetInRecurring ?? true,
+				resetCheckboxesOnRecurrence: settings.resetCheckboxesOnRecurrence ?? true,
+			},
+			timeTracking: {
+				autoStopOnComplete: settings.autoStopTimeTrackingOnComplete ?? false,
+				autoStopNotification: settings.autoStopTimeTrackingNotification ?? true,
+				defaultSessionDescription: "",
+			},
+		});
+	}
+
+	private validateTask(task: Partial<TaskInfo>): TaskValidationResult {
+		return evaluateCoreValidation(task, this.plugin.settings.customStatuses ?? []);
+	}
+
+	private validateTaskPatch(patch: TaskNotesTaskPatch): TaskValidationResult {
+		return validateModelTask(patch);
 	}
 
 	async getTask(path: string): Promise<TaskInfo | null> {

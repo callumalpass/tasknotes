@@ -1,22 +1,39 @@
 import type { EventRef } from "obsidian";
+import type {
+	Reminder,
+	TaskCreationData,
+	TaskDependency,
+	TaskInfo,
+	TaskNotesModelConfig,
+	TaskValidationResult,
+	TimeEntry,
+} from "@tasknotes/model";
 import type { ParsedTaskData } from "../services/NaturalLanguageParser";
 import type {
 	FilterQuery,
 	PomodoroHistoryStats,
 	PomodoroSessionHistory,
 	PomodoroState,
-	Reminder,
-	TaskCreationData,
-	TaskDependency,
-	TaskInfo,
-	TimeEntry,
 	WebhookEvent,
 } from "../types";
 import type { TaskNotesSettings } from "../types/settings";
 
+export type {
+	Reminder,
+	TaskCreationData,
+	TaskDependency,
+	TaskInfo,
+	TaskNotesModelConfig,
+	TaskValidationIssue,
+	TaskValidationResult,
+	TimeEntry,
+} from "@tasknotes/model";
+
 export const TASKNOTES_RUNTIME_API_VERSION = 1 as const;
 
 export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
+	"model.read",
+	"model.validate",
 	"extensions.read",
 	"extensions.register",
 	"tasks.read",
@@ -286,6 +303,19 @@ export interface PomodoroSessionsOptions {
 	limit?: number;
 }
 
+export interface TaskNotesRuntimeModelInfo {
+	packageName: "@tasknotes/model";
+	specVersion: string;
+	runtimeApiVersion: TaskNotesRuntimeApiVersion;
+}
+
+export interface TaskNotesRuntimeModelApi {
+	info(): TaskNotesRuntimeModelInfo;
+	config(): Readonly<TaskNotesModelConfig>;
+	validateTask(task: Partial<TaskInfo>): TaskValidationResult;
+	validatePatch(patch: TaskNotesTaskPatch): TaskValidationResult;
+}
+
 export interface TaskNotesRuntimeExtension<TApi = unknown> {
 	id: string;
 	namespace: string;
@@ -509,6 +539,7 @@ export interface TaskNotesRuntimeApiV1 {
 	readonly capabilities: readonly TaskNotesRuntimeApiCapability[];
 	hasCapability(capability: string): boolean;
 
+	readonly model: TaskNotesRuntimeModelApi;
 	readonly tasks: TaskNotesRuntimeTasksApi;
 	readonly relationships: TaskNotesRuntimeRelationshipsApi;
 	readonly time: TaskNotesRuntimeTimeApi;
