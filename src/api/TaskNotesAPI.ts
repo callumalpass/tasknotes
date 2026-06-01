@@ -8,12 +8,10 @@ import {
 	type TaskValidationResult,
 } from "@tasknotes/model";
 import type TaskNotesPlugin from "../main";
-import {
-	NaturalLanguageParser,
-	type ParsedTaskData,
-} from "../services/NaturalLanguageParser";
+import { NaturalLanguageParser, type ParsedTaskData } from "../services/NaturalLanguageParser";
 import type {
 	FilterQuery,
+	FILTER_PROPERTIES,
 	PomodoroHistoryStats,
 	PomodoroSessionHistory,
 	PomodoroState,
@@ -43,6 +41,11 @@ import {
 	type PomodoroStartOptions,
 	type ResolvedTaskDependency,
 	type StartTimeEntryOptions,
+	type TaskNotesRuntimeDependencyRelTypeDefinition,
+	type TaskNotesRuntimeFieldDefinition,
+	type TaskNotesRuntimeFilterOperatorDefinition,
+	type TaskNotesRuntimeFilterPropertyDefinition,
+	type TaskNotesRuntimeRelationshipDefinition,
 	type TaskNotesApiChanges,
 	type TaskNotesApiEvent,
 	type TaskNotesApiEventHandler,
@@ -96,6 +99,323 @@ const RESERVED_RUNTIME_EXTENSION_NAMESPACES = new Set([
 	"time",
 ]);
 
+const CORE_FIELD_DEFINITIONS: ReadonlyArray<
+	Omit<TaskNotesRuntimeFieldDefinition, "frontmatterKey">
+> = [
+	{
+		id: "title",
+		label: "Title",
+		valueType: "string",
+		source: "model",
+		writable: true,
+		required: true,
+	},
+	{
+		id: "status",
+		label: "Status",
+		valueType: "string",
+		source: "model",
+		writable: true,
+		required: true,
+	},
+	{
+		id: "priority",
+		label: "Priority",
+		valueType: "string",
+		source: "model",
+		writable: true,
+		required: true,
+	},
+	{ id: "due", label: "Due", valueType: "date", source: "model", writable: true },
+	{ id: "scheduled", label: "Scheduled", valueType: "date", source: "model", writable: true },
+	{ id: "archived", label: "Archived", valueType: "boolean", source: "model", writable: true },
+	{ id: "tags", label: "Tags", valueType: "string[]", source: "model", writable: true },
+	{ id: "contexts", label: "Contexts", valueType: "string[]", source: "model", writable: true },
+	{ id: "projects", label: "Projects", valueType: "string[]", source: "model", writable: true },
+	{ id: "recurrence", label: "Recurrence", valueType: "string", source: "model", writable: true },
+	{
+		id: "recurrence_anchor",
+		label: "Recurrence anchor",
+		valueType: "string",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "complete_instances",
+		label: "Complete instances",
+		valueType: "string[]",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "skipped_instances",
+		label: "Skipped instances",
+		valueType: "string[]",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "recurrence_parent",
+		label: "Recurrence parent",
+		valueType: "string",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "occurrence_date",
+		label: "Occurrence date",
+		valueType: "date",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "occurrence_materialization",
+		label: "Occurrence materialization",
+		valueType: "string",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "occurrence_next_trigger",
+		label: "Occurrence next trigger",
+		valueType: "string",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "occurrence_template",
+		label: "Occurrence template",
+		valueType: "string",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "occurrence_past_horizon",
+		label: "Occurrence past horizon",
+		valueType: "string",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "occurrence_future_horizon",
+		label: "Occurrence future horizon",
+		valueType: "string",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "completedDate",
+		label: "Completed date",
+		valueType: "date",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "timeEstimate",
+		label: "Time estimate",
+		valueType: "number",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "timeEntries",
+		label: "Time entries",
+		valueType: "timeEntry[]",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "dateCreated",
+		label: "Date created",
+		valueType: "datetime",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "dateModified",
+		label: "Date modified",
+		valueType: "datetime",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "reminders",
+		label: "Reminders",
+		valueType: "reminder[]",
+		source: "model",
+		writable: true,
+	},
+	{
+		id: "blockedBy",
+		label: "Blocked by",
+		valueType: "dependency[]",
+		source: "model",
+		writable: true,
+	},
+	{ id: "details", label: "Details", valueType: "string", source: "model", writable: true },
+	{ id: "sortOrder", label: "Sort order", valueType: "string", source: "model", writable: true },
+	{ id: "path", label: "Path", valueType: "string", source: "model", writable: false },
+	{
+		id: "totalTrackedTime",
+		label: "Total tracked time",
+		valueType: "number",
+		source: "computed",
+		writable: false,
+	},
+	{
+		id: "blocking",
+		label: "Blocking",
+		valueType: "string[]",
+		source: "computed",
+		writable: false,
+	},
+	{
+		id: "isBlocked",
+		label: "Is blocked",
+		valueType: "boolean",
+		source: "computed",
+		writable: false,
+	},
+	{
+		id: "isBlocking",
+		label: "Is blocking",
+		valueType: "boolean",
+		source: "computed",
+		writable: false,
+	},
+	{
+		id: "hasSubtasks",
+		label: "Has subtasks",
+		valueType: "boolean",
+		source: "computed",
+		writable: false,
+	},
+];
+
+const FIELD_MAPPING_KEY_BY_FIELD_ID: Partial<
+	Record<string, keyof TaskNotesSettings["fieldMapping"]>
+> = {
+	title: "title",
+	status: "status",
+	priority: "priority",
+	due: "due",
+	scheduled: "scheduled",
+	contexts: "contexts",
+	projects: "projects",
+	recurrence: "recurrence",
+	recurrence_anchor: "recurrenceAnchor",
+	complete_instances: "completeInstances",
+	skipped_instances: "skippedInstances",
+	recurrence_parent: "recurrenceParent",
+	occurrence_date: "occurrenceDate",
+	occurrence_materialization: "occurrenceMaterialization",
+	occurrence_next_trigger: "occurrenceNextTrigger",
+	occurrence_template: "occurrenceTemplate",
+	occurrence_past_horizon: "occurrencePastHorizon",
+	occurrence_future_horizon: "occurrenceFutureHorizon",
+	completedDate: "completedDate",
+	timeEstimate: "timeEstimate",
+	timeEntries: "timeEntries",
+	dateCreated: "dateCreated",
+	dateModified: "dateModified",
+	reminders: "reminders",
+	blockedBy: "blockedBy",
+	sortOrder: "sortOrder",
+};
+
+const FILTER_OPERATOR_DEFINITIONS: readonly TaskNotesRuntimeFilterOperatorDefinition[] = [
+	{
+		id: "is",
+		label: "is",
+		valueRequired: true,
+		appliesTo: ["text", "select", "date", "numeric"],
+	},
+	{
+		id: "is-not",
+		label: "is not",
+		valueRequired: true,
+		appliesTo: ["text", "select", "date", "numeric"],
+	},
+	{ id: "contains", label: "contains", valueRequired: true, appliesTo: ["text", "select"] },
+	{
+		id: "does-not-contain",
+		label: "does not contain",
+		valueRequired: true,
+		appliesTo: ["text", "select"],
+	},
+	{ id: "is-before", label: "is before", valueRequired: true, appliesTo: ["date"] },
+	{ id: "is-after", label: "is after", valueRequired: true, appliesTo: ["date"] },
+	{ id: "is-on-or-before", label: "is on or before", valueRequired: true, appliesTo: ["date"] },
+	{ id: "is-on-or-after", label: "is on or after", valueRequired: true, appliesTo: ["date"] },
+	{
+		id: "is-empty",
+		label: "is empty",
+		valueRequired: false,
+		appliesTo: ["text", "select", "date", "numeric"],
+	},
+	{
+		id: "is-not-empty",
+		label: "is not empty",
+		valueRequired: false,
+		appliesTo: ["text", "select", "date", "numeric"],
+	},
+	{ id: "is-checked", label: "is checked", valueRequired: false, appliesTo: ["boolean"] },
+	{ id: "is-not-checked", label: "is not checked", valueRequired: false, appliesTo: ["boolean"] },
+	{
+		id: "is-greater-than",
+		label: "is greater than",
+		valueRequired: true,
+		appliesTo: ["numeric"],
+	},
+	{ id: "is-less-than", label: "is less than", valueRequired: true, appliesTo: ["numeric"] },
+	{
+		id: "is-greater-than-or-equal",
+		label: "is greater than or equal",
+		valueRequired: true,
+		appliesTo: ["numeric"],
+	},
+	{
+		id: "is-less-than-or-equal",
+		label: "is less than or equal",
+		valueRequired: true,
+		appliesTo: ["numeric"],
+	},
+];
+
+const RELATIONSHIP_DEFINITIONS: readonly TaskNotesRuntimeRelationshipDefinition[] = [
+	{ id: "parents", label: "Parents", description: "Tasks referenced from this task's projects." },
+	{
+		id: "subtasks",
+		label: "Subtasks",
+		description: "Tasks that reference this task as a project.",
+	},
+	{ id: "dependencies", label: "Dependencies", description: "Tasks this task is blocked by." },
+	{ id: "blocking", label: "Blocking", description: "Tasks blocked by this task." },
+];
+
+const DEPENDENCY_REL_TYPE_DEFINITIONS: readonly TaskNotesRuntimeDependencyRelTypeDefinition[] = [
+	{
+		value: "FINISHTOSTART",
+		label: "Finish to start",
+		description: "The blocking task should finish before this task starts.",
+	},
+	{
+		value: "FINISHTOFINISH",
+		label: "Finish to finish",
+		description: "The blocking task should finish before this task finishes.",
+	},
+	{
+		value: "STARTTOSTART",
+		label: "Start to start",
+		description: "The blocking task should start before this task starts.",
+	},
+	{
+		value: "STARTTOFINISH",
+		label: "Start to finish",
+		description: "The blocking task should start before this task finishes.",
+	},
+];
+
 export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	readonly apiVersion = TASKNOTES_RUNTIME_API_VERSION;
 
@@ -108,6 +428,20 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		config: () => this.getModelConfig(),
 		validateTask: (task: Partial<TaskInfo>) => this.validateTask(task),
 		validatePatch: (patch: TaskNotesTaskPatch) => this.validateTaskPatch(patch),
+	};
+
+	readonly catalog = {
+		statuses: () => this.getStatuses(),
+		priorities: () => this.getPriorities(),
+		userFields: () => this.getUserFields(),
+		fields: () => this.getFieldDefinitions(),
+		writableFields: () => this.getFieldDefinitions().filter((field) => field.writable),
+		filterProperties: () => this.getFilterPropertyDefinitions(),
+		filterOperators: () => FILTER_OPERATOR_DEFINITIONS.map((operator) => ({ ...operator })),
+		relationships: () => RELATIONSHIP_DEFINITIONS.map((relationship) => ({ ...relationship })),
+		dependencyRelTypes: () =>
+			DEPENDENCY_REL_TYPE_DEFINITIONS.map((relationshipType) => ({ ...relationshipType })),
+		events: () => this.events.list(),
 	};
 
 	readonly tasks = {
@@ -161,11 +495,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			this.updateStringList(path, "contexts", contextName, "add", context),
 		removeContext: (path: string, contextName: string, context?: TaskNotesMutationContext) =>
 			this.updateStringList(path, "contexts", contextName, "remove", context),
-		setReminders: (
-			path: string,
-			reminders: Reminder[],
-			context?: TaskNotesMutationContext
-		) =>
+		setReminders: (path: string, reminders: Reminder[], context?: TaskNotesMutationContext) =>
 			this.updateTask(
 				path,
 				{ reminders: reminders.map((reminder) => ({ ...reminder })) },
@@ -207,7 +537,8 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	};
 
 	readonly pomodoro = {
-		status: () => Promise.resolve(this.copyPomodoroState(this.plugin.pomodoroService.getState())),
+		status: () =>
+			Promise.resolve(this.copyPomodoroState(this.plugin.pomodoroService.getState())),
 		start: (options?: PomodoroStartOptions, context?: TaskNotesMutationContext) =>
 			this.startPomodoro(options, context),
 		stop: (context?: TaskNotesMutationContext) => this.stopPomodoro(context),
@@ -220,16 +551,10 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	};
 
 	readonly recurring = {
-		toggleCompleteInstance: (
-			path: string,
-			date?: string,
-			context?: TaskNotesMutationContext
-		) => this.toggleRecurringComplete(path, date, context),
-		toggleSkippedInstance: (
-			path: string,
-			date?: string,
-			context?: TaskNotesMutationContext
-		) => this.toggleRecurringSkipped(path, date, context),
+		toggleCompleteInstance: (path: string, date?: string, context?: TaskNotesMutationContext) =>
+			this.toggleRecurringComplete(path, date, context),
+		toggleSkippedInstance: (path: string, date?: string, context?: TaskNotesMutationContext) =>
+			this.toggleRecurringSkipped(path, date, context),
 	};
 
 	readonly events = {
@@ -319,6 +644,52 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 	private validateTaskPatch(patch: TaskNotesTaskPatch): TaskValidationResult {
 		return validateModelTask(patch);
+	}
+
+	private getStatuses() {
+		return (this.plugin.settings.customStatuses ?? []).map((status) => ({ ...status }));
+	}
+
+	private getPriorities() {
+		return (this.plugin.settings.customPriorities ?? []).map((priority) => ({ ...priority }));
+	}
+
+	private getUserFields() {
+		return (this.plugin.settings.userFields ?? []).map((field) => ({ ...field }));
+	}
+
+	private getFieldDefinitions(): TaskNotesRuntimeFieldDefinition[] {
+		const mapping = this.plugin.settings.fieldMapping ?? {};
+		const coreFields = CORE_FIELD_DEFINITIONS.map((field) => {
+			const mappingKey = FIELD_MAPPING_KEY_BY_FIELD_ID[field.id];
+			return {
+				...field,
+				frontmatterKey: mappingKey ? mapping[mappingKey] : undefined,
+			};
+		});
+		const userFields = this.getUserFields().map(
+			(field): TaskNotesRuntimeFieldDefinition => ({
+				id: `user:${field.id || field.key}`,
+				label: field.displayName || field.key,
+				valueType: userFieldTypeToRuntimeValueType(field.type),
+				source: "user",
+				writable: true,
+				frontmatterKey: field.key,
+				description: `User-defined field ${field.key}`,
+			})
+		);
+
+		return [...coreFields, ...userFields];
+	}
+
+	private getFilterPropertyDefinitions(): TaskNotesRuntimeFilterPropertyDefinition[] {
+		return FILTER_PROPERTIES.map((property) => ({
+			id: property.id,
+			label: property.label,
+			category: property.category,
+			supportedOperators: [...property.supportedOperators],
+			valueInputType: property.valueInputType,
+		}));
 	}
 
 	async getTask(path: string): Promise<TaskInfo | null> {
@@ -771,7 +1142,9 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			throw new Error(`Cannot register TaskNotes API extension namespace "${namespace}"`);
 		}
 		if (this.extensionRegistry.has(namespace)) {
-			throw new Error(`TaskNotes API extension namespace "${namespace}" is already registered`);
+			throw new Error(
+				`TaskNotes API extension namespace "${namespace}" is already registered`
+			);
 		}
 
 		const token = Symbol(namespace);
@@ -816,7 +1189,9 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		const normalizedNamespace = this.normalizeExtensionNamespace(namespace);
 		const extension = this.extensionRegistry.get(normalizedNamespace);
 		if (!extension) {
-			throw new Error(`TaskNotes API extension namespace "${normalizedNamespace}" is not registered`);
+			throw new Error(
+				`TaskNotes API extension namespace "${normalizedNamespace}" is not registered`
+			);
 		}
 		return extension.api as TApi;
 	}
@@ -881,7 +1256,9 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	}
 
 	private async stopPomodoro(context?: TaskNotesMutationContext): Promise<PomodoroState> {
-		await this.withMutationContext([], context, () => this.plugin.pomodoroService.stopPomodoro());
+		await this.withMutationContext([], context, () =>
+			this.plugin.pomodoroService.stopPomodoro()
+		);
 		return this.copyPomodoroState(this.plugin.pomodoroService.getState());
 	}
 
@@ -916,7 +1293,8 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		let sessions = await this.plugin.pomodoroService.getSessionHistory();
 		if (options?.date) {
 			sessions = sessions.filter(
-				(session) => new Date(session.startTime).toISOString().split("T")[0] === options.date
+				(session) =>
+					new Date(session.startTime).toISOString().split("T")[0] === options.date
 			);
 		}
 		if (options?.limit && options.limit > 0) {
@@ -982,7 +1360,10 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		this.plugin.emitter.offref(ref);
 	}
 
-	private async resolveTaskReference(reference: string, sourcePath: string): Promise<TaskInfo | null> {
+	private async resolveTaskReference(
+		reference: string,
+		sourcePath: string
+	): Promise<TaskInfo | null> {
 		const path = await this.resolveTaskReferencePath(reference, sourcePath);
 		return path ? await this.plugin.cacheManager.getTaskInfo(path) : null;
 	}
@@ -1155,11 +1536,19 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			events.push({ ...common, event: "task.recurrence.changed" });
 		}
 
-		if (before && after && hasNewArrayValue(before.complete_instances, after.complete_instances)) {
+		if (
+			before &&
+			after &&
+			hasNewArrayValue(before.complete_instances, after.complete_instances)
+		) {
 			events.push({ ...common, event: "recurring.instance.completed" });
 		}
 
-		if (before && after && hasNewArrayValue(before.skipped_instances, after.skipped_instances)) {
+		if (
+			before &&
+			after &&
+			hasNewArrayValue(before.skipped_instances, after.skipped_instances)
+		) {
 			events.push({ ...common, event: "recurring.instance.skipped" });
 		}
 
@@ -1309,6 +1698,24 @@ function uniqueTasks(tasks: TaskInfo[]): TaskInfo[] {
 
 function copyTaskDependency(dependency: TaskDependency): TaskDependency {
 	return { ...dependency };
+}
+
+function userFieldTypeToRuntimeValueType(
+	type: string
+): TaskNotesRuntimeFieldDefinition["valueType"] {
+	switch (type) {
+		case "number":
+			return "number";
+		case "date":
+			return "date";
+		case "boolean":
+			return "boolean";
+		case "list":
+			return "string[]";
+		case "text":
+		default:
+			return "string";
+	}
 }
 
 function buildTaskChanges(before?: TaskInfo, after?: TaskInfo): TaskNotesApiChanges {

@@ -24,7 +24,7 @@ const tasknotes = app.plugins.plugins.tasknotes;
 const api = tasknotes?.api;
 
 if (!api || api.apiVersion !== 1 || !api.hasCapability("tasks.write")) {
-  throw new Error("This workflow requires TaskNotes runtime API v1 task writes");
+	throw new Error("This workflow requires TaskNotes runtime API v1 task writes");
 }
 ```
 
@@ -32,6 +32,7 @@ Current capabilities:
 
 - `model.read`
 - `model.validate`
+- `catalog.read`
 - `extensions.read`
 - `extensions.register`
 - `tasks.read`
@@ -73,20 +74,20 @@ const tasknotes = this.app.plugins.getPlugin("tasknotes");
 const api = tasknotes?.api;
 
 if (!api?.hasCapability("extensions.register")) {
-  return;
+	return;
 }
 
 const handle = api.extensions.register({
-  id: this.manifest.id,
-  namespace: "tasknotes-workflows",
-  displayName: "TaskNotes Workflows",
-  version: this.manifest.version,
-  capabilities: ["tasknotes-workflows.run", "tasknotes-workflows.events"],
-  api: {
-    runWorkflow: async (workflowId, input) => {
-      // companion plugin implementation
-    }
-  }
+	id: this.manifest.id,
+	namespace: "tasknotes-workflows",
+	displayName: "TaskNotes Workflows",
+	version: this.manifest.version,
+	capabilities: ["tasknotes-workflows.run", "tasknotes-workflows.events"],
+	api: {
+		runWorkflow: async (workflowId, input) => {
+			// companion plugin implementation
+		},
+	},
 });
 
 this.register(() => handle.unregister());
@@ -98,7 +99,7 @@ Other plugins can discover and consume extension namespaces:
 const workflows = api.extensions.get("tasknotes-workflows");
 
 if (api.hasCapability("tasknotes-workflows.run")) {
-  await workflows.runWorkflow("start-timer-on-active", { taskPath: "Tasks/example.md" });
+	await workflows.runWorkflow("start-timer-on-active", { taskPath: "Tasks/example.md" });
 }
 ```
 
@@ -113,13 +114,13 @@ const tasknotes = this.app.plugins.getPlugin("tasknotes");
 const api = tasknotes?.api;
 
 if (!api?.hasCapability("tasks.events")) {
-  return;
+	return;
 }
 
 this.registerEvent(
-  api.events.on("task.status.changed", (event) => {
-    console.log(event.taskPath, event.changes.status);
-  })
+	api.events.on("task.status.changed", (event) => {
+		console.log(event.taskPath, event.changes.status);
+	})
 );
 ```
 
@@ -133,14 +134,14 @@ Use the exported runtime contract for type safety:
 import type { TaskNotesRuntimeApiV1 } from "tasknotes/src/api/runtime-api";
 
 type TaskNotesPluginInstance = {
-  api?: TaskNotesRuntimeApiV1;
+	api?: TaskNotesRuntimeApiV1;
 };
 
 const tasknotes = app.plugins.getPlugin("tasknotes") as TaskNotesPluginInstance | null;
 const api = tasknotes?.api;
 
 if (api?.apiVersion === 1 && api.hasCapability("tasks.write")) {
-  await api.tasks.setStatus("Tasks/example.md", "active");
+	await api.tasks.setStatus("Tasks/example.md", "active");
 }
 ```
 
@@ -156,54 +157,77 @@ const config = api.model.config();
 const validation = api.model.validateTask(task);
 ```
 
-| Method | Description |
-| --- | --- |
-| `api.model.info()` | Returns the model package name, TaskNotes spec version, and runtime API version. |
-| `api.model.config()` | Returns a resolved, Obsidian-free model configuration snapshot derived from TaskNotes settings. |
-| `api.model.validateTask(task)` | Validates a partial or complete task against the shared model schema and TaskNotes status rules. |
-| `api.model.validatePatch(patch)` | Validates a task patch before passing it to a runtime task mutation. |
+| Method                           | Description                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `api.model.info()`               | Returns the model package name, TaskNotes spec version, and runtime API version.                 |
+| `api.model.config()`             | Returns a resolved, Obsidian-free model configuration snapshot derived from TaskNotes settings.  |
+| `api.model.validateTask(task)`   | Validates a partial or complete task against the shared model schema and TaskNotes status rules. |
+| `api.model.validatePatch(patch)` | Validates a task patch before passing it to a runtime task mutation.                             |
+
+## Catalog
+
+Use `api.catalog` to build companion-plugin editors without hardcoding TaskNotes values:
+
+```javascript
+const statuses = api.catalog.statuses();
+const writableFields = api.catalog.writableFields();
+const operators = api.catalog.filterOperators();
+```
+
+| Method                             | Description                                                                                                       |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `api.catalog.statuses()`           | Returns configured TaskNotes status definitions.                                                                  |
+| `api.catalog.priorities()`         | Returns configured TaskNotes priority definitions.                                                                |
+| `api.catalog.userFields()`         | Returns configured user-defined field mappings.                                                                   |
+| `api.catalog.fields()`             | Returns core, computed, and user field metadata with value type, writability, and frontmatter key when available. |
+| `api.catalog.writableFields()`     | Returns only fields that runtime task mutations may write.                                                        |
+| `api.catalog.filterProperties()`   | Returns TaskNotes filter properties and their supported operators.                                                |
+| `api.catalog.filterOperators()`    | Returns filter operator metadata.                                                                                 |
+| `api.catalog.relationships()`      | Returns relationship categories supported by `api.relationships`.                                                 |
+| `api.catalog.dependencyRelTypes()` | Returns dependency relationship types accepted by `api.tasks.addDependency`.                                      |
+| `api.catalog.events()`             | Returns the same runtime event catalogue as `api.events.list()`.                                                  |
 
 ## Tasks
 
 All paths are vault-relative Markdown file paths.
 
-| Method | Description |
-| --- | --- |
-| `api.tasks.get(path)` | Returns a task by path, or `null` when no task is cached at that path. |
-| `api.tasks.list(query?)` | Returns all tasks, or tasks matching a TaskNotes `FilterQuery`. |
-| `api.tasks.create(taskData, context?)` | Creates a task using the normal TaskNotes creation service. |
-| `api.tasks.update(path, patch, context?)` | Updates one or more task fields using the normal TaskNotes update service. |
-| `api.tasks.delete(path, context?)` | Deletes the task file through TaskNotes' delete service. |
-| `api.tasks.complete(path, options?, context?)` | Marks a task complete. |
-| `api.tasks.uncomplete(path, options?, context?)` | Moves a completed task back to a non-completed status. |
-| `api.tasks.setStatus(path, status, context?)` | Sets task status. |
-| `api.tasks.setPriority(path, priority, context?)` | Sets task priority. |
-| `api.tasks.setDue(path, date, context?)` / `clearDue(path, context?)` | Sets or clears due date. |
-| `api.tasks.setScheduled(path, date, context?)` / `clearScheduled(path, context?)` | Sets or clears scheduled date. |
-| `api.tasks.archive(path, archived, context?)` | Archives or unarchives a task, including archive-folder movement when configured. |
-| `api.tasks.move(path, targetFolder, context?)` | Moves the task note and refuses to overwrite an existing file. |
-| `api.tasks.addTag/removeTag` | Mutates task tags. |
-| `api.tasks.addProject/removeProject` | Mutates project links. |
-| `api.tasks.addContext/removeContext` | Mutates contexts. |
-| `api.tasks.setReminders/addReminder/removeReminder` | Mutates reminders. |
-| `api.tasks.addDependency/removeDependency` | Mutates blocking dependencies stored in `blockedBy`. |
+| Method                                                                            | Description                                                                       |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `api.tasks.get(path)`                                                             | Returns a task by path, or `null` when no task is cached at that path.            |
+| `api.tasks.list(query?)`                                                          | Returns all tasks, or tasks matching a TaskNotes `FilterQuery`.                   |
+| `api.tasks.create(taskData, context?)`                                            | Creates a task using the normal TaskNotes creation service.                       |
+| `api.tasks.update(path, patch, context?)`                                         | Updates one or more task fields using the normal TaskNotes update service.        |
+| `api.tasks.delete(path, context?)`                                                | Deletes the task file through TaskNotes' delete service.                          |
+| `api.tasks.complete(path, options?, context?)`                                    | Marks a task complete.                                                            |
+| `api.tasks.uncomplete(path, options?, context?)`                                  | Moves a completed task back to a non-completed status.                            |
+| `api.tasks.setStatus(path, status, context?)`                                     | Sets task status.                                                                 |
+| `api.tasks.setPriority(path, priority, context?)`                                 | Sets task priority.                                                               |
+| `api.tasks.setDue(path, date, context?)` / `clearDue(path, context?)`             | Sets or clears due date.                                                          |
+| `api.tasks.setScheduled(path, date, context?)` / `clearScheduled(path, context?)` | Sets or clears scheduled date.                                                    |
+| `api.tasks.archive(path, archived, context?)`                                     | Archives or unarchives a task, including archive-folder movement when configured. |
+| `api.tasks.move(path, targetFolder, context?)`                                    | Moves the task note and refuses to overwrite an existing file.                    |
+| `api.tasks.addTag/removeTag`                                                      | Mutates task tags.                                                                |
+| `api.tasks.addProject/removeProject`                                              | Mutates project links.                                                            |
+| `api.tasks.addContext/removeContext`                                              | Mutates contexts.                                                                 |
+| `api.tasks.setReminders/addReminder/removeReminder`                               | Mutates reminders.                                                                |
+| `api.tasks.addDependency/removeDependency`                                        | Mutates blocking dependencies stored in `blockedBy`.                              |
 
 Example:
 
 ```javascript
 const task = await api.tasks.create(
-  {
-    title: "Review automation design",
-    status: "open",
-    priority: "normal",
-    scheduled: "2026-06-01",
-    tags: ["tasknotes"]
-  },
-  {
-    source: "my-companion-plugin",
-    correlationId: crypto.randomUUID(),
-    reason: "manual workflow command"
-  }
+	{
+		title: "Review automation design",
+		status: "open",
+		priority: "normal",
+		scheduled: "2026-06-01",
+		tags: ["tasknotes"],
+	},
+	{
+		source: "my-companion-plugin",
+		correlationId: crypto.randomUUID(),
+		reason: "manual workflow command",
+	}
 );
 
 await api.tasks.complete(task.path);
@@ -213,13 +237,13 @@ await api.tasks.complete(task.path);
 
 Relationship methods resolve TaskNotes' project-as-parent links and `blockedBy` dependencies into task records where possible.
 
-| Method | Description |
-| --- | --- |
-| `api.relationships.parents(path)` | Returns parent tasks referenced from the task's projects. |
-| `api.relationships.subtasks(path)` | Returns tasks that reference this task as a project. |
-| `api.relationships.dependencies(path)` | Returns `blockedBy` dependencies with resolved task data when available. |
-| `api.relationships.blocking(path)` | Returns tasks that are blocked by this task. |
-| `api.relationships.all(path)` | Returns the task plus parents, subtasks, dependencies, and blocking tasks. |
+| Method                                 | Description                                                                |
+| -------------------------------------- | -------------------------------------------------------------------------- |
+| `api.relationships.parents(path)`      | Returns parent tasks referenced from the task's projects.                  |
+| `api.relationships.subtasks(path)`     | Returns tasks that reference this task as a project.                       |
+| `api.relationships.dependencies(path)` | Returns `blockedBy` dependencies with resolved task data when available.   |
+| `api.relationships.blocking(path)`     | Returns tasks that are blocked by this task.                               |
+| `api.relationships.all(path)`          | Returns the task plus parents, subtasks, dependencies, and blocking tasks. |
 
 Example:
 
@@ -227,39 +251,39 @@ Example:
 const relationships = await api.relationships.all("Tasks/example.md");
 
 for (const subtask of relationships.subtasks) {
-  await api.tasks.setPriority(subtask.path, relationships.task.priority);
+	await api.tasks.setPriority(subtask.path, relationships.task.priority);
 }
 ```
 
 ## Time Tracking
 
-| Method | Description |
-| --- | --- |
-| `api.time.start(path, options?, context?)` | Starts time tracking and returns the updated task. |
-| `api.time.stop(path, context?)` | Stops the active time entry and returns the updated task. |
-| `api.time.active()` | Returns active time entries with task, path, entry, and entry index. |
-| `api.time.append(path, entry, context?)` | Appends a time entry. |
-| `api.time.deleteEntry(path, entryIndex, context?)` | Deletes a time entry through TaskNotes' service. |
+| Method                                             | Description                                                          |
+| -------------------------------------------------- | -------------------------------------------------------------------- |
+| `api.time.start(path, options?, context?)`         | Starts time tracking and returns the updated task.                   |
+| `api.time.stop(path, context?)`                    | Stops the active time entry and returns the updated task.            |
+| `api.time.active()`                                | Returns active time entries with task, path, entry, and entry index. |
+| `api.time.append(path, entry, context?)`           | Appends a time entry.                                                |
+| `api.time.deleteEntry(path, entryIndex, context?)` | Deletes a time entry through TaskNotes' service.                     |
 
 ## Pomodoro
 
-| Method | Description |
-| --- | --- |
-| `api.pomodoro.status()` | Returns current Pomodoro state. |
-| `api.pomodoro.start(options?, context?)` | Starts a Pomodoro session. |
-| `api.pomodoro.stop(context?)` | Stops and resets the active Pomodoro session. |
-| `api.pomodoro.pause(context?)` | Pauses the current session. |
-| `api.pomodoro.resume(context?)` | Resumes a paused session. |
-| `api.pomodoro.assignTask(pathOrNull, context?)` | Assigns or clears the current session task. |
-| `api.pomodoro.sessions(options?)` | Returns Pomodoro session history. |
-| `api.pomodoro.stats(date?)` | Returns Pomodoro stats for a date or today. |
+| Method                                          | Description                                   |
+| ----------------------------------------------- | --------------------------------------------- |
+| `api.pomodoro.status()`                         | Returns current Pomodoro state.               |
+| `api.pomodoro.start(options?, context?)`        | Starts a Pomodoro session.                    |
+| `api.pomodoro.stop(context?)`                   | Stops and resets the active Pomodoro session. |
+| `api.pomodoro.pause(context?)`                  | Pauses the current session.                   |
+| `api.pomodoro.resume(context?)`                 | Resumes a paused session.                     |
+| `api.pomodoro.assignTask(pathOrNull, context?)` | Assigns or clears the current session task.   |
+| `api.pomodoro.sessions(options?)`               | Returns Pomodoro session history.             |
+| `api.pomodoro.stats(date?)`                     | Returns Pomodoro stats for a date or today.   |
 
 ## Recurring Tasks
 
-| Method | Description |
-| --- | --- |
-| `api.recurring.toggleCompleteInstance(path, date?, context?)` | Toggles completion for a recurring task instance. |
-| `api.recurring.toggleSkippedInstance(path, date?, context?)` | Toggles skipped state for a recurring task instance. |
+| Method                                                        | Description                                          |
+| ------------------------------------------------------------- | ---------------------------------------------------- |
+| `api.recurring.toggleCompleteInstance(path, date?, context?)` | Toggles completion for a recurring task instance.    |
+| `api.recurring.toggleSkippedInstance(path, date?, context?)`  | Toggles skipped state for a recurring task instance. |
 
 ## Natural Language Parser
 
@@ -376,21 +400,21 @@ Example automation-style listener:
 const source = "my-workflow-plugin";
 
 this.registerEvent(
-  api.events.on("task.status.changed", async (event) => {
-    if (event.source === source) {
-      return;
-    }
+	api.events.on("task.status.changed", async (event) => {
+		if (event.source === source) {
+			return;
+		}
 
-    if (event.after?.status !== "active") {
-      return;
-    }
+		if (event.after?.status !== "active") {
+			return;
+		}
 
-    await api.time.start(event.after.path, undefined, {
-      source,
-      correlationId: event.correlationId ?? crypto.randomUUID(),
-      reason: "status changed to active"
-    });
-  })
+		await api.time.start(event.after.path, undefined, {
+			source,
+			correlationId: event.correlationId ?? crypto.randomUUID(),
+			reason: "status changed to active",
+		});
+	})
 );
 ```
 

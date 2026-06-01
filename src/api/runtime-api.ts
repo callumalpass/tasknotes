@@ -1,12 +1,15 @@
 import type { EventRef } from "obsidian";
 import type {
 	Reminder,
+	PriorityConfig,
+	StatusConfig,
 	TaskCreationData,
 	TaskDependency,
 	TaskInfo,
 	TaskNotesModelConfig,
 	TaskValidationResult,
 	TimeEntry,
+	UserMappedField,
 } from "@tasknotes/model";
 import type { ParsedTaskData } from "../services/NaturalLanguageParser";
 import type {
@@ -20,6 +23,8 @@ import type { TaskNotesSettings } from "../types/settings";
 
 export type {
 	Reminder,
+	PriorityConfig,
+	StatusConfig,
 	TaskCreationData,
 	TaskDependency,
 	TaskInfo,
@@ -27,6 +32,7 @@ export type {
 	TaskValidationIssue,
 	TaskValidationResult,
 	TimeEntry,
+	UserMappedField,
 } from "@tasknotes/model";
 
 export const TASKNOTES_RUNTIME_API_VERSION = 1 as const;
@@ -34,6 +40,7 @@ export const TASKNOTES_RUNTIME_API_VERSION = 1 as const;
 export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"model.read",
 	"model.validate",
+	"catalog.read",
 	"extensions.read",
 	"extensions.register",
 	"tasks.read",
@@ -56,9 +63,7 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 
 export type TaskNotesRuntimeApiVersion = typeof TASKNOTES_RUNTIME_API_VERSION;
 export type TaskNotesRuntimeCoreCapability = (typeof TASKNOTES_RUNTIME_API_CAPABILITIES)[number];
-export type TaskNotesRuntimeApiCapability =
-	| TaskNotesRuntimeCoreCapability
-	| (string & {});
+export type TaskNotesRuntimeApiCapability = TaskNotesRuntimeCoreCapability | (string & {});
 
 export type TaskNotesTaskEventName =
 	| "task.created"
@@ -80,15 +85,9 @@ export type TaskNotesTaskEventName =
 	| "task.dependencies.changed"
 	| "task.recurrence.changed";
 
-export type TaskNotesRuntimeEventName =
-	| TaskNotesTaskEventName
-	| WebhookEvent;
+export type TaskNotesRuntimeEventName = TaskNotesTaskEventName | WebhookEvent;
 
-export type TaskNotesRuntimeEventCategory =
-	| "task"
-	| "time"
-	| "pomodoro"
-	| "recurring";
+export type TaskNotesRuntimeEventCategory = "task" | "time" | "pomodoro" | "recurring";
 
 export interface TaskNotesRuntimeEventDefinition {
 	name: TaskNotesRuntimeEventName;
@@ -316,6 +315,70 @@ export interface TaskNotesRuntimeModelApi {
 	validatePatch(patch: TaskNotesTaskPatch): TaskValidationResult;
 }
 
+export type TaskNotesRuntimeFieldSource = "model" | "computed" | "user";
+export type TaskNotesRuntimeFieldValueType =
+	| "string"
+	| "number"
+	| "boolean"
+	| "date"
+	| "datetime"
+	| "string[]"
+	| "timeEntry[]"
+	| "dependency[]"
+	| "reminder[]"
+	| "unknown";
+
+export interface TaskNotesRuntimeFieldDefinition {
+	id: string;
+	label: string;
+	valueType: TaskNotesRuntimeFieldValueType;
+	source: TaskNotesRuntimeFieldSource;
+	writable: boolean;
+	required?: boolean;
+	frontmatterKey?: string;
+	description?: string;
+}
+
+export interface TaskNotesRuntimeFilterOperatorDefinition {
+	id: string;
+	label: string;
+	valueRequired: boolean;
+	appliesTo: readonly string[];
+}
+
+export interface TaskNotesRuntimeFilterPropertyDefinition {
+	id: string;
+	label: string;
+	category: string;
+	supportedOperators: readonly string[];
+	valueInputType: string;
+}
+
+export interface TaskNotesRuntimeRelationshipDefinition {
+	id: "parents" | "subtasks" | "dependencies" | "blocking";
+	label: string;
+	description: string;
+}
+
+export interface TaskNotesRuntimeDependencyRelTypeDefinition {
+	value: TaskDependency["reltype"];
+	label: string;
+	description: string;
+}
+
+export interface TaskNotesRuntimeCatalogApi {
+	statuses(): StatusConfig[];
+	priorities(): PriorityConfig[];
+	userFields(): UserMappedField[];
+	fields(): TaskNotesRuntimeFieldDefinition[];
+	writableFields(): TaskNotesRuntimeFieldDefinition[];
+	filterProperties(): TaskNotesRuntimeFilterPropertyDefinition[];
+	filterOperators(): TaskNotesRuntimeFilterOperatorDefinition[];
+	relationships(): TaskNotesRuntimeRelationshipDefinition[];
+	dependencyRelTypes(): TaskNotesRuntimeDependencyRelTypeDefinition[];
+	events(): readonly TaskNotesRuntimeEventDefinition[];
+}
+
 export interface TaskNotesRuntimeExtension<TApi = unknown> {
 	id: string;
 	namespace: string;
@@ -406,32 +469,32 @@ export interface TaskNotesRuntimeTasksApi {
 	): Promise<TaskInfo>;
 	setDue(path: string, date: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	clearDue(path: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
-	setScheduled(
-		path: string,
-		date: string,
-		context?: TaskNotesMutationContext
-	): Promise<TaskInfo>;
+	setScheduled(path: string, date: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	clearScheduled(path: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	reschedule(
 		path: string,
 		date: string | null,
 		context?: TaskNotesMutationContext
 	): Promise<TaskInfo>;
-	archive(
-		path: string,
-		archived: boolean,
-		context?: TaskNotesMutationContext
-	): Promise<TaskInfo>;
+	archive(path: string, archived: boolean, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	move(path: string, targetFolder: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	addTag(path: string, tag: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	removeTag(path: string, tag: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
-	addProject(path: string, project: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
+	addProject(
+		path: string,
+		project: string,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo>;
 	removeProject(
 		path: string,
 		project: string,
 		context?: TaskNotesMutationContext
 	): Promise<TaskInfo>;
-	addContext(path: string, contextName: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
+	addContext(
+		path: string,
+		contextName: string,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo>;
 	removeContext(
 		path: string,
 		contextName: string,
@@ -442,7 +505,11 @@ export interface TaskNotesRuntimeTasksApi {
 		reminders: Reminder[],
 		context?: TaskNotesMutationContext
 	): Promise<TaskInfo>;
-	addReminder(path: string, reminder: Reminder, context?: TaskNotesMutationContext): Promise<TaskInfo>;
+	addReminder(
+		path: string,
+		reminder: Reminder,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo>;
 	removeReminder(
 		path: string,
 		reminderId: string,
@@ -486,7 +553,10 @@ export interface TaskNotesRuntimeTimeApi {
 
 export interface TaskNotesRuntimePomodoroApi {
 	status(): Promise<PomodoroState>;
-	start(options?: PomodoroStartOptions, context?: TaskNotesMutationContext): Promise<PomodoroState>;
+	start(
+		options?: PomodoroStartOptions,
+		context?: TaskNotesMutationContext
+	): Promise<PomodoroState>;
 	stop(context?: TaskNotesMutationContext): Promise<PomodoroState>;
 	pause(context?: TaskNotesMutationContext): Promise<PomodoroState>;
 	resume(context?: TaskNotesMutationContext): Promise<PomodoroState>;
@@ -540,6 +610,7 @@ export interface TaskNotesRuntimeApiV1 {
 	hasCapability(capability: string): boolean;
 
 	readonly model: TaskNotesRuntimeModelApi;
+	readonly catalog: TaskNotesRuntimeCatalogApi;
 	readonly tasks: TaskNotesRuntimeTasksApi;
 	readonly relationships: TaskNotesRuntimeRelationshipsApi;
 	readonly time: TaskNotesRuntimeTimeApi;
@@ -595,8 +666,9 @@ export type TaskNotesPublicAPI = TaskNotesRuntimeApiV1;
 export type TaskNotesApiV1 = TaskNotesRuntimeApiV1;
 export type TaskNotesApiEvent = TaskNotesRuntimeEventName;
 export type TaskNotesApiEventPayload = TaskNotesRuntimeEventPayload;
-export type TaskNotesApiEventHandler<EventName extends TaskNotesRuntimeEventName = TaskNotesRuntimeEventName> =
-	TaskNotesRuntimeEventHandler<EventName>;
+export type TaskNotesApiEventHandler<
+	EventName extends TaskNotesRuntimeEventName = TaskNotesRuntimeEventName,
+> = TaskNotesRuntimeEventHandler<EventName>;
 export type TaskNotesApiCapability = TaskNotesRuntimeApiCapability;
 export type TaskNotesApiCoreCapability = TaskNotesRuntimeCoreCapability;
 export type TaskNotesApiVersion = TaskNotesRuntimeApiVersion;

@@ -333,10 +333,71 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 		settings: {
 			defaultTaskStatus: "open",
 			defaultTaskPriority: "normal",
+			taskTag: "task",
 			customStatuses: [
-				{ value: "open", isCompleted: false },
-				{ value: "done", isCompleted: true },
+				{
+					id: "open",
+					value: "open",
+					label: "Open",
+					color: "#888888",
+					isCompleted: false,
+					order: 0,
+					autoArchive: false,
+					autoArchiveDelay: 0,
+				},
+				{
+					id: "done",
+					value: "done",
+					label: "Done",
+					color: "#00aa00",
+					isCompleted: true,
+					order: 1,
+					autoArchive: false,
+					autoArchiveDelay: 0,
+				},
 			],
+			customPriorities: [
+				{ id: "normal", value: "normal", label: "Normal", color: "#888888", weight: 0 },
+				{ id: "high", value: "high", label: "High", color: "#ff0000", weight: 10 },
+			],
+			userFields: [{ id: "energy", displayName: "Energy", key: "energy", type: "number" }],
+			fieldMapping: {
+				title: "title",
+				status: "status",
+				priority: "priority",
+				due: "due",
+				scheduled: "scheduled",
+				contexts: "contexts",
+				projects: "projects",
+				timeEstimate: "timeEstimate",
+				completedDate: "completedDate",
+				dateCreated: "dateCreated",
+				dateModified: "dateModified",
+				recurrence: "recurrence",
+				recurrenceAnchor: "recurrence_anchor",
+				recurrenceParent: "recurrence_parent",
+				occurrenceDate: "occurrence_date",
+				occurrenceMaterialization: "occurrence_materialization",
+				occurrenceNextTrigger: "occurrence_next_trigger",
+				occurrenceTemplate: "occurrence_template",
+				occurrencePastHorizon: "occurrence_past_horizon",
+				occurrenceFutureHorizon: "occurrence_future_horizon",
+				archiveTag: "archived",
+				timeEntries: "timeEntries",
+				completeInstances: "complete_instances",
+				skippedInstances: "skipped_instances",
+				blockedBy: "blockedBy",
+				pomodoros: "pomodoros",
+				icsEventId: "icsEventId",
+				icsEventTag: "ics-event",
+				googleCalendarEventId: "googleCalendarEventId",
+				googleCalendarExceptionEventId: "googleCalendarExceptionEventId",
+				googleCalendarExceptionOriginalScheduled:
+					"googleCalendarExceptionOriginalScheduled",
+				googleCalendarMovedOriginalDates: "googleCalendarMovedOriginalDates",
+				reminders: "reminders",
+				sortOrder: "sortOrder",
+			},
 		},
 		statusManager: {
 			getCompletedStatuses: jest.fn(() => ["done"]),
@@ -411,6 +472,44 @@ describe("TaskNotesApiV1", () => {
 					expect.objectContaining({ code: "schema_invalid" }),
 				]),
 			})
+		);
+	});
+
+	it("exposes catalog metadata for companion plugin editors", () => {
+		const { plugin } = createPluginContext();
+		const api = new TaskNotesAPI(plugin);
+
+		expect(api.catalog.statuses()).toEqual([
+			expect.objectContaining({ value: "open", label: "Open" }),
+			expect.objectContaining({ value: "done", label: "Done" }),
+		]);
+		expect(api.catalog.priorities()).toEqual([
+			expect.objectContaining({ value: "normal", label: "Normal" }),
+			expect.objectContaining({ value: "high", label: "High" }),
+		]);
+		expect(api.catalog.fields()).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: "status",
+					frontmatterKey: "status",
+					writable: true,
+				}),
+				expect.objectContaining({
+					id: "user:energy",
+					frontmatterKey: "energy",
+					valueType: "number",
+				}),
+			])
+		);
+		expect(api.catalog.writableFields().some((field) => field.id === "path")).toBe(false);
+		expect(api.catalog.filterOperators()).toEqual(
+			expect.arrayContaining([expect.objectContaining({ id: "is", valueRequired: true })])
+		);
+		expect(api.catalog.relationships()).toEqual(
+			expect.arrayContaining([expect.objectContaining({ id: "dependencies" })])
+		);
+		expect(api.catalog.dependencyRelTypes()).toEqual(
+			expect.arrayContaining([expect.objectContaining({ value: "FINISHTOSTART" })])
 		);
 	});
 
