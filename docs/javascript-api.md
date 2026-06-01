@@ -53,6 +53,8 @@ Current capabilities:
 - `settings.snapshot`
 - `nlp.parse`
 - `query.tasks`
+- `query.validate`
+- `query.explain`
 - `query.filter-options`
 - `stats.tasks`
 - `system.health`
@@ -188,8 +190,8 @@ const operators = api.catalog.filterOperators();
 | `api.catalog.userFields()`         | Returns configured user-defined field mappings.                                                                   |
 | `api.catalog.fields()`             | Returns core, computed, and user field metadata with value type, writability, and frontmatter key when available. |
 | `api.catalog.writableFields()`     | Returns only fields that runtime task mutations may write.                                                        |
-| `api.catalog.filterProperties()`   | Returns TaskNotes filter properties and their supported operators.                                                |
-| `api.catalog.filterOperators()`    | Returns filter operator metadata.                                                                                 |
+| `api.catalog.filterProperties()`   | Returns canonical query fields, aliases, value types, and supported operators.                                    |
+| `api.catalog.filterOperators()`    | Returns canonical query operators, labels, value requirements, and accepted aliases.                              |
 | `api.catalog.relationships()`      | Returns relationship categories supported by `api.relationships`.                                                 |
 | `api.catalog.dependencyRelTypes()` | Returns dependency relationship types accepted by `api.tasks.addDependency`.                                      |
 | `api.catalog.events()`             | Returns the same runtime event catalogue as `api.events.list()`.                                                  |
@@ -198,26 +200,26 @@ const operators = api.catalog.filterOperators();
 
 All paths are vault-relative Markdown file paths.
 
-| Method                                                                            | Description                                                                       |
-| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `api.tasks.get(path)`                                                             | Returns a task by path, or `null` when no task is cached at that path.            |
-| `api.tasks.list(query?)`                                                          | Returns all tasks, or tasks matching a TaskNotes `FilterQuery`.                   |
-| `api.tasks.create(taskData, context?)`                                            | Creates a task using the normal TaskNotes creation service.                       |
-| `api.tasks.update(path, patch, context?)`                                         | Updates one or more task fields using the normal TaskNotes update service.        |
-| `api.tasks.delete(path, context?)`                                                | Deletes the task file through TaskNotes' delete service.                          |
-| `api.tasks.complete(path, options?, context?)`                                    | Marks a task complete.                                                            |
-| `api.tasks.uncomplete(path, options?, context?)`                                  | Moves a completed task back to a non-completed status.                            |
-| `api.tasks.setStatus(path, status, context?)`                                     | Sets task status.                                                                 |
-| `api.tasks.setPriority(path, priority, context?)`                                 | Sets task priority.                                                               |
-| `api.tasks.setDue(path, date, context?)` / `clearDue(path, context?)`             | Sets or clears due date.                                                          |
-| `api.tasks.setScheduled(path, date, context?)` / `clearScheduled(path, context?)` | Sets or clears scheduled date.                                                    |
-| `api.tasks.archive(path, archived, context?)`                                     | Archives or unarchives a task, including archive-folder movement when configured. |
-| `api.tasks.move(path, targetFolder, context?)`                                    | Moves the task note and refuses to overwrite an existing file.                    |
-| `api.tasks.addTag/removeTag`                                                      | Mutates task tags.                                                                |
-| `api.tasks.addProject/removeProject`                                              | Mutates project links.                                                            |
-| `api.tasks.addContext/removeContext`                                              | Mutates contexts.                                                                 |
-| `api.tasks.setReminders/addReminder/removeReminder`                               | Mutates reminders.                                                                |
-| `api.tasks.addDependency/removeDependency`                                        | Mutates blocking dependencies stored in `blockedBy`.                              |
+| Method                                                                            | Description                                                                                                                     |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `api.tasks.get(path)`                                                             | Returns a task by path, or `null` when no task is cached at that path.                                                          |
+| `api.tasks.list(query?)`                                                          | Returns all tasks, or tasks matching a runtime task query. Prefer `api.query.tasks()` when count and grouping metadata matters. |
+| `api.tasks.create(taskData, context?)`                                            | Creates a task using the normal TaskNotes creation service.                                                                     |
+| `api.tasks.update(path, patch, context?)`                                         | Updates one or more task fields using the normal TaskNotes update service.                                                      |
+| `api.tasks.delete(path, context?)`                                                | Deletes the task file through TaskNotes' delete service.                                                                        |
+| `api.tasks.complete(path, options?, context?)`                                    | Marks a task complete.                                                                                                          |
+| `api.tasks.uncomplete(path, options?, context?)`                                  | Moves a completed task back to a non-completed status.                                                                          |
+| `api.tasks.setStatus(path, status, context?)`                                     | Sets task status.                                                                                                               |
+| `api.tasks.setPriority(path, priority, context?)`                                 | Sets task priority.                                                                                                             |
+| `api.tasks.setDue(path, date, context?)` / `clearDue(path, context?)`             | Sets or clears due date.                                                                                                        |
+| `api.tasks.setScheduled(path, date, context?)` / `clearScheduled(path, context?)` | Sets or clears scheduled date.                                                                                                  |
+| `api.tasks.archive(path, archived, context?)`                                     | Archives or unarchives a task, including archive-folder movement when configured.                                               |
+| `api.tasks.move(path, targetFolder, context?)`                                    | Moves the task note and refuses to overwrite an existing file.                                                                  |
+| `api.tasks.addTag/removeTag`                                                      | Mutates task tags.                                                                                                              |
+| `api.tasks.addProject/removeProject`                                              | Mutates project links.                                                                                                          |
+| `api.tasks.addContext/removeContext`                                              | Mutates contexts.                                                                                                               |
+| `api.tasks.setReminders/addReminder/removeReminder`                               | Mutates reminders.                                                                                                              |
+| `api.tasks.addDependency/removeDependency`                                        | Mutates blocking dependencies stored in `blockedBy`.                                                                            |
 
 Example:
 
@@ -276,14 +278,51 @@ for (const subtask of relationships.subtasks) {
 
 ## Query, Stats, And System
 
-The query, stats, and system namespaces expose HTTP/MCP-style support data without requiring companion plugins to reach into TaskNotes internals.
+The query, stats, and system namespaces expose HTTP/MCP-style support data without requiring companion plugins to reach into TaskNotes internals. Runtime queries use a stable DTO rather than TaskNotes' internal view state.
 
-| Method                      | Description                                                                                       |
-| --------------------------- | ------------------------------------------------------------------------------------------------- |
-| `api.query.tasks(query?)`   | Returns tasks plus total, filtered count, and group membership for an optional `FilterQuery`.     |
-| `api.query.filterOptions()` | Returns available statuses, priorities, contexts, projects, tags, folders, and user properties.   |
-| `api.stats.tasks(query?)`   | Returns task counts, status/priority counts, archive/completion counts, and time-tracking totals. |
-| `api.system.health()`       | Returns runtime status, API version, capabilities, vault identity, and task count.                |
+```javascript
+const result = await api.query.tasks({
+	where: {
+		all: [
+			{ field: "task.status", op: "eq", value: "active" },
+			{ field: "task.due", op: "lte", value: { fn: "today" } },
+		],
+	},
+	sort: [{ field: "task.due", direction: "asc" }],
+	group: [{ field: "task.status" }],
+	limit: 25,
+	scope: {
+		includeArchived: false,
+		folders: ["Tasks"],
+	},
+});
+```
+
+Runtime query fields are canonical IDs such as `task.status`, `task.priority`, `task.due`, `task.projects`, `task.isBlocked`, `file.path`, and `user.<id-or-key>`. `api.catalog.filterProperties()` returns the complete queryable field catalog, including aliases such as `status` and `user:<id>`.
+
+Canonical operators are `eq`, `ne`, `contains`, `notContains`, `in`, `notIn`, `exists`, `missing`, `lt`, `lte`, `gt`, `gte`, `isTrue`, and `isFalse`. Legacy operator aliases such as `is`, `is-not`, `is-on-or-before`, and `is-not-empty` are accepted and normalized.
+
+`api.query.tasks()` returns explicit count semantics:
+
+- `total`: tasks in scope before filtering
+- `matched`: tasks matching `where` before `offset` and `limit`
+- `returned`: tasks returned after `offset` and `limit`
+- `tasks`: returned task records
+- `groups`: optional group details with task paths
+- `query`: the normalized canonical query
+- `warnings`: non-fatal normalization notes
+
+| Method                       | Description                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------- |
+| `api.query.tasks(query?)`    | Validates, normalizes, and executes a runtime task query.                                          |
+| `api.query.validate(query)`  | Validates a query without executing it.                                                            |
+| `api.query.normalize(query)` | Returns the canonical normalized query, or throws a typed `invalid_input` API error.               |
+| `api.query.explain(query)`   | Returns validation, normalized query, count, grouping, and applied sort/limit details for dry run. |
+| `api.query.filterOptions()`  | Returns available statuses, priorities, contexts, projects, tags, folders, and user properties.    |
+| `api.stats.tasks(query?)`    | Returns task counts, status/priority counts, archive/completion counts, and time-tracking totals.  |
+| `api.system.health()`        | Returns runtime status, API version, capabilities, vault identity, and task count.                 |
+
+TaskNotes compiles this DTO into its internal filter engine. Companion plugins should treat the runtime DTO and the catalog metadata as the public query contract.
 
 ## Pomodoro
 

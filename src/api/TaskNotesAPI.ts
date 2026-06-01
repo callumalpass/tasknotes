@@ -10,15 +10,20 @@ import {
 import type TaskNotesPlugin from "../main";
 import { NaturalLanguageParser, type ParsedTaskData } from "../services/NaturalLanguageParser";
 import type {
+	FilterCondition,
+	FilterNode,
+	FilterOperator,
+	FilterProperty,
 	FilterQuery,
-	FILTER_PROPERTIES,
 	PomodoroHistoryStats,
 	PomodoroSessionHistory,
 	PomodoroState,
 	Reminder,
+	TaskGroupKey,
 	TaskCreationData,
 	TaskDependency,
 	TaskInfo,
+	TaskSortKey,
 	TimeEntry,
 } from "../types";
 import {
@@ -27,6 +32,7 @@ import {
 	EVENT_POMODORO_START,
 	EVENT_TASK_DELETED,
 	EVENT_TASK_UPDATED,
+	FILTER_PROPERTIES,
 } from "../types";
 import type { TaskNotesSettings } from "../types/settings";
 import { ensureFolderExists } from "../utils/helpers";
@@ -38,6 +44,7 @@ import {
 	TASKNOTES_RUNTIME_LIFECYCLE_EVENT_DEFINITIONS,
 	TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS,
 	TASKNOTES_RUNTIME_API_VERSION,
+	TASKNOTES_RUNTIME_QUERY_OPERATORS,
 	TaskNotesApiError,
 	isTaskNotesApiError,
 	isTaskNotesApiErrorPayload,
@@ -55,9 +62,20 @@ import {
 	type TaskNotesRuntimeLifecycleEventName,
 	type TaskNotesRuntimeLifecycleHandler,
 	type TaskNotesRuntimeLifecyclePayload,
+	type TaskNotesRuntimeNormalizedCondition,
+	type TaskNotesRuntimeNormalizedPredicate,
+	type TaskNotesRuntimeNormalizedTaskQuery,
+	type TaskNotesRuntimeOperator,
+	type TaskNotesRuntimeQueryExplainResult,
+	type TaskNotesRuntimeQueryGroup,
+	type TaskNotesRuntimeQueryIssue,
+	type TaskNotesRuntimeQueryValidationResult,
+	type TaskNotesRuntimeQueryWarning,
 	type TaskNotesRuntimeRelationshipDefinition,
+	type TaskNotesRuntimeTaskQuery,
 	type TaskNotesRuntimeTaskQueryResult,
 	type TaskNotesRuntimeTaskStats,
+	type TaskNotesRuntimeValue,
 	type TaskNotesRuntimeTaskTimeData,
 	type TaskNotesRuntimeTimeSummary,
 	type TaskNotesRuntimeTimeSummaryOptions,
@@ -346,62 +364,308 @@ const FIELD_MAPPING_KEY_BY_FIELD_ID: Partial<
 
 const FILTER_OPERATOR_DEFINITIONS: readonly TaskNotesRuntimeFilterOperatorDefinition[] = [
 	{
-		id: "is",
-		label: "is",
+		id: "eq",
+		label: "equals",
 		valueRequired: true,
-		appliesTo: ["text", "select", "date", "numeric"],
+		appliesTo: ["string", "number", "boolean", "date", "datetime", "string[]"],
+		aliases: ["is"],
 	},
 	{
-		id: "is-not",
-		label: "is not",
+		id: "ne",
+		label: "does not equal",
 		valueRequired: true,
-		appliesTo: ["text", "select", "date", "numeric"],
+		appliesTo: ["string", "number", "boolean", "date", "datetime", "string[]"],
+		aliases: ["is-not"],
 	},
-	{ id: "contains", label: "contains", valueRequired: true, appliesTo: ["text", "select"] },
 	{
-		id: "does-not-contain",
+		id: "contains",
+		label: "contains",
+		valueRequired: true,
+		appliesTo: ["string", "string[]", "dependency[]"],
+	},
+	{
+		id: "notContains",
 		label: "does not contain",
 		valueRequired: true,
-		appliesTo: ["text", "select"],
-	},
-	{ id: "is-before", label: "is before", valueRequired: true, appliesTo: ["date"] },
-	{ id: "is-after", label: "is after", valueRequired: true, appliesTo: ["date"] },
-	{ id: "is-on-or-before", label: "is on or before", valueRequired: true, appliesTo: ["date"] },
-	{ id: "is-on-or-after", label: "is on or after", valueRequired: true, appliesTo: ["date"] },
-	{
-		id: "is-empty",
-		label: "is empty",
-		valueRequired: false,
-		appliesTo: ["text", "select", "date", "numeric"],
+		appliesTo: ["string", "string[]", "dependency[]"],
+		aliases: ["does-not-contain"],
 	},
 	{
-		id: "is-not-empty",
-		label: "is not empty",
-		valueRequired: false,
-		appliesTo: ["text", "select", "date", "numeric"],
-	},
-	{ id: "is-checked", label: "is checked", valueRequired: false, appliesTo: ["boolean"] },
-	{ id: "is-not-checked", label: "is not checked", valueRequired: false, appliesTo: ["boolean"] },
-	{
-		id: "is-greater-than",
-		label: "is greater than",
+		id: "in",
+		label: "is one of",
 		valueRequired: true,
-		appliesTo: ["numeric"],
+		appliesTo: ["string", "number", "boolean", "date", "datetime"],
 	},
-	{ id: "is-less-than", label: "is less than", valueRequired: true, appliesTo: ["numeric"] },
 	{
-		id: "is-greater-than-or-equal",
-		label: "is greater than or equal",
+		id: "notIn",
+		label: "is not one of",
 		valueRequired: true,
-		appliesTo: ["numeric"],
+		appliesTo: ["string", "number", "boolean", "date", "datetime"],
 	},
 	{
-		id: "is-less-than-or-equal",
+		id: "exists",
+		label: "exists",
+		valueRequired: false,
+		appliesTo: ["string", "number", "boolean", "date", "datetime", "string[]"],
+		aliases: ["is-not-empty"],
+	},
+	{
+		id: "missing",
+		label: "is missing",
+		valueRequired: false,
+		appliesTo: ["string", "number", "boolean", "date", "datetime", "string[]"],
+		aliases: ["is-empty"],
+	},
+	{
+		id: "lt",
+		label: "is less than",
+		valueRequired: true,
+		appliesTo: ["number", "date", "datetime"],
+		aliases: ["is-before", "is-less-than"],
+	},
+	{
+		id: "lte",
 		label: "is less than or equal",
 		valueRequired: true,
-		appliesTo: ["numeric"],
+		appliesTo: ["number", "date", "datetime"],
+		aliases: ["is-on-or-before", "is-less-than-or-equal"],
+	},
+	{
+		id: "gt",
+		label: "is greater than",
+		valueRequired: true,
+		appliesTo: ["number", "date", "datetime"],
+		aliases: ["is-after", "is-greater-than"],
+	},
+	{
+		id: "gte",
+		label: "is greater than or equal",
+		valueRequired: true,
+		appliesTo: ["number", "date", "datetime"],
+		aliases: ["is-on-or-after", "is-greater-than-or-equal"],
+	},
+	{
+		id: "isTrue",
+		label: "is true",
+		valueRequired: false,
+		appliesTo: ["boolean"],
+		aliases: ["is-checked"],
+	},
+	{
+		id: "isFalse",
+		label: "is false",
+		valueRequired: false,
+		appliesTo: ["boolean"],
+		aliases: ["is-not-checked"],
 	},
 ];
+
+const RUNTIME_OPERATOR_BY_ALIAS = new Map<string, TaskNotesRuntimeOperator>(
+	FILTER_OPERATOR_DEFINITIONS.flatMap((operator) => [
+		[operator.id, operator.id] as const,
+		...(operator.aliases ?? []).map((alias) => [alias, operator.id] as const),
+	])
+);
+
+type RuntimeFilterPropertyDefinition = TaskNotesRuntimeFilterPropertyDefinition & {
+	internalProperty: FilterProperty;
+};
+
+const RUNTIME_FILTER_PROPERTY_DEFINITIONS: readonly RuntimeFilterPropertyDefinition[] = [
+	runtimeFilterProperty("task.title", "title", "Title", "text", "string", "model", {
+		aliases: ["title", "note.title"],
+		sortable: true,
+	}),
+	runtimeFilterProperty("file.path", "path", "Path", "file", "string", "file", {
+		aliases: ["path", "task.path", "note.path"],
+	}),
+	runtimeFilterProperty("task.status", "status", "Status", "select", "string", "model", {
+		aliases: ["status", "note.status"],
+		sortable: true,
+		groupable: true,
+	}),
+	runtimeFilterProperty("task.priority", "priority", "Priority", "select", "string", "model", {
+		aliases: ["priority", "note.priority"],
+		sortable: true,
+		groupable: true,
+	}),
+	runtimeFilterProperty("task.tags", "tags", "Tags", "select", "string[]", "model", {
+		aliases: ["tags", "file.tags", "note.tags"],
+		sortable: true,
+		groupable: true,
+	}),
+	runtimeFilterProperty("task.contexts", "contexts", "Contexts", "select", "string[]", "model", {
+		aliases: ["contexts"],
+		groupable: true,
+	}),
+	runtimeFilterProperty("task.projects", "projects", "Projects", "select", "string[]", "model", {
+		aliases: ["projects"],
+		groupable: true,
+	}),
+	runtimeFilterProperty(
+		"task.blockedBy",
+		"blockedBy",
+		"Blocked by",
+		"select",
+		"dependency[]",
+		"model",
+		{
+			aliases: ["blockedBy"],
+		}
+	),
+	runtimeFilterProperty(
+		"task.blocking",
+		"blocking",
+		"Blocking",
+		"select",
+		"string[]",
+		"computed",
+		{
+			aliases: ["blocking"],
+		}
+	),
+	runtimeFilterProperty("task.due", "due", "Due date", "date", "date", "model", {
+		aliases: ["due", "note.due"],
+		sortable: true,
+		groupable: true,
+	}),
+	runtimeFilterProperty(
+		"task.scheduled",
+		"scheduled",
+		"Scheduled date",
+		"date",
+		"date",
+		"model",
+		{
+			aliases: ["scheduled", "note.scheduled"],
+			sortable: true,
+			groupable: true,
+		}
+	),
+	runtimeFilterProperty(
+		"task.completedDate",
+		"completedDate",
+		"Completed date",
+		"date",
+		"date",
+		"model",
+		{
+			aliases: ["completedDate"],
+			sortable: true,
+			groupable: true,
+		}
+	),
+	runtimeFilterProperty(
+		"task.dateCreated",
+		"dateCreated",
+		"Created date",
+		"date",
+		"datetime",
+		"model",
+		{
+			aliases: ["dateCreated", "file.ctime"],
+			sortable: true,
+		}
+	),
+	runtimeFilterProperty(
+		"task.dateModified",
+		"dateModified",
+		"Modified date",
+		"date",
+		"datetime",
+		"model",
+		{
+			aliases: ["dateModified", "file.mtime"],
+		}
+	),
+	runtimeFilterProperty("task.archived", "archived", "Archived", "boolean", "boolean", "model", {
+		aliases: ["archived"],
+	}),
+	runtimeFilterProperty(
+		"task.hasSubtasks",
+		"hasSubtasks",
+		"Has subtasks",
+		"boolean",
+		"boolean",
+		"computed",
+		{
+			aliases: ["hasSubtasks"],
+		}
+	),
+	runtimeFilterProperty(
+		"task.isBlocked",
+		"dependencies.isBlocked",
+		"Blocked",
+		"boolean",
+		"boolean",
+		"computed",
+		{
+			aliases: ["dependencies.isBlocked", "isBlocked"],
+		}
+	),
+	runtimeFilterProperty(
+		"task.isBlocking",
+		"dependencies.isBlocking",
+		"Blocking others",
+		"boolean",
+		"boolean",
+		"computed",
+		{
+			aliases: ["dependencies.isBlocking", "isBlocking"],
+		}
+	),
+	runtimeFilterProperty(
+		"task.timeEstimate",
+		"timeEstimate",
+		"Time estimate",
+		"numeric",
+		"number",
+		"model",
+		{
+			aliases: ["timeEstimate"],
+			sortable: true,
+		}
+	),
+	runtimeFilterProperty(
+		"task.recurrence",
+		"recurrence",
+		"Recurrence",
+		"special",
+		"string",
+		"model",
+		{
+			aliases: ["recurrence"],
+		}
+	),
+	runtimeFilterProperty(
+		"task.isCompleted",
+		"status.isCompleted",
+		"Completed",
+		"boolean",
+		"boolean",
+		"computed",
+		{
+			aliases: ["status.isCompleted", "completed"],
+		}
+	),
+];
+
+const RUNTIME_TO_LEGACY_OPERATOR: Record<TaskNotesRuntimeOperator, FilterOperator> = {
+	eq: "is",
+	ne: "is-not",
+	contains: "contains",
+	notContains: "does-not-contain",
+	in: "is",
+	notIn: "is-not",
+	exists: "is-not-empty",
+	missing: "is-empty",
+	lt: "is-before",
+	lte: "is-on-or-before",
+	gt: "is-after",
+	gte: "is-on-or-after",
+	isTrue: "is-checked",
+	isFalse: "is-not-checked",
+};
 
 const RELATIONSHIP_DEFINITIONS: readonly TaskNotesRuntimeRelationshipDefinition[] = [
 	{ id: "parents", label: "Parents", description: "Tasks referenced from this task's projects." },
@@ -467,7 +731,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 	readonly tasks = {
 		get: (path: string) => this.getTask(path),
-		list: (query?: FilterQuery) => this.listTasks(query),
+		list: (query?: TaskNotesRuntimeTaskQuery) => this.listTasks(query),
 		create: (taskData: TaskCreationData, context?: TaskNotesMutationContext) =>
 			this.createTask(taskData, context),
 		update: (path: string, patch: TaskNotesTaskPatch, context?: TaskNotesMutationContext) =>
@@ -598,12 +862,15 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	};
 
 	readonly query = {
-		tasks: (query?: FilterQuery) => this.queryTasks(query),
+		tasks: (query?: TaskNotesRuntimeTaskQuery) => this.queryTasks(query),
+		validate: (query: unknown) => this.validateRuntimeQuery(query),
+		normalize: (query: unknown) => this.normalizeRuntimeQueryOrThrow(query),
+		explain: (query: unknown) => this.explainRuntimeQuery(query),
 		filterOptions: () => this.getFilterOptions(),
 	};
 
 	readonly stats = {
-		tasks: (query?: FilterQuery) => this.getTaskStats(query),
+		tasks: (query?: TaskNotesRuntimeTaskQuery) => this.getTaskStats(query),
 	};
 
 	readonly system = {
@@ -740,9 +1007,15 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		const mapping = this.plugin.settings.fieldMapping ?? {};
 		const coreFields = CORE_FIELD_DEFINITIONS.map((field) => {
 			const mappingKey = FIELD_MAPPING_KEY_BY_FIELD_ID[field.id];
+			const queryField = runtimeFilterPropertyForInternal(field.id);
 			return {
 				...field,
 				frontmatterKey: mappingKey ? mapping[mappingKey] : undefined,
+				queryable: !!queryField,
+				sortable: queryField?.sortable ?? false,
+				groupable: queryField?.groupable ?? false,
+				supportedOperators: queryField?.supportedOperators,
+				aliases: queryField ? [queryField.id, ...(queryField.aliases ?? [])] : undefined,
 			};
 		});
 		const userFields = this.getUserFields().map(
@@ -752,6 +1025,13 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 				valueType: userFieldTypeToRuntimeValueType(field.type),
 				source: "user",
 				writable: true,
+				queryable: true,
+				sortable: true,
+				groupable: true,
+				supportedOperators: operatorsForRuntimeValueType(
+					userFieldTypeToRuntimeValueType(field.type)
+				),
+				aliases: [`user.${field.id || field.key}`, `user:${field.id || field.key}`],
 				frontmatterKey: field.key,
 				description: `User-defined field ${field.key}`,
 			})
@@ -761,39 +1041,136 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	}
 
 	private getFilterPropertyDefinitions(): TaskNotesRuntimeFilterPropertyDefinition[] {
-		return FILTER_PROPERTIES.map((property) => ({
-			id: property.id,
-			label: property.label,
-			category: property.category,
-			supportedOperators: [...property.supportedOperators],
-			valueInputType: property.valueInputType,
-		}));
+		const userFields = this.getUserFields().map(
+			(field): TaskNotesRuntimeFilterPropertyDefinition => ({
+				id: `user.${field.id || field.key}`,
+				label: field.displayName || field.key,
+				category: "user",
+				valueType: userFieldTypeToRuntimeValueType(field.type),
+				source: "user",
+				queryable: true,
+				sortable: true,
+				groupable: true,
+				supportedOperators: operatorsForRuntimeValueType(
+					userFieldTypeToRuntimeValueType(field.type)
+				),
+				aliases: [
+					`user:${field.id || field.key}`,
+					`user.${field.key}`,
+					`user:${field.key}`,
+				],
+				frontmatterKey: field.key,
+				valueInputType: userFieldTypeToFilterInputType(field.type),
+			})
+		);
+		return [
+			...RUNTIME_FILTER_PROPERTY_DEFINITIONS.map(
+				({ internalProperty: _internal, ...field }) => ({
+					...field,
+					aliases: field.aliases ? [...field.aliases] : undefined,
+					supportedOperators: [...field.supportedOperators],
+				})
+			),
+			...userFields,
+		];
 	}
 
-	private async queryTasks(query?: FilterQuery): Promise<TaskNotesRuntimeTaskQueryResult> {
+	private async queryTasks(
+		query?: TaskNotesRuntimeTaskQuery
+	): Promise<TaskNotesRuntimeTaskQueryResult> {
+		const execution = this.normalizeRuntimeQueryForExecution(query);
+		if (!execution.validation.valid) {
+			throw new TaskNotesApiError("invalid_input", "TaskNotes runtime query is invalid", {
+				status: 400,
+				details: { issues: execution.validation.issues },
+			});
+		}
+
 		const allTasks = await this.plugin.cacheManager.getAllTasks();
-		if (!query) {
+		const scopedTasks = applyRuntimeQueryScope(allTasks, execution.normalized.scope);
+		const scopedPaths = new Set(scopedTasks.map((task) => task.path));
+		const groupedTasks = await this.plugin.filterService.getGroupedTasks(execution.filterQuery);
+		const matchedTasksByPath = new Map<string, TaskInfo>();
+
+		for (const groupTasks of groupedTasks.values()) {
+			for (const task of groupTasks) {
+				if (scopedPaths.has(task.path) && !matchedTasksByPath.has(task.path)) {
+					matchedTasksByPath.set(task.path, task);
+				}
+			}
+		}
+
+		const matchedTasks = Array.from(matchedTasksByPath.values());
+		const offset = execution.normalized.offset;
+		const limit = execution.normalized.limit;
+		const returnedTasks =
+			typeof limit === "number"
+				? matchedTasks.slice(offset, offset + limit)
+				: matchedTasks.slice(offset);
+		const returnedPaths = new Set(returnedTasks.map((task) => task.path));
+
+		return {
+			tasks: returnedTasks.map(copyTaskInfo),
+			total: scopedTasks.length,
+			matched: matchedTasks.length,
+			returned: returnedTasks.length,
+			groups:
+				execution.normalized.group.length > 0
+					? runtimeQueryGroups(groupedTasks, returnedPaths)
+					: undefined,
+			query: execution.normalized,
+			warnings: execution.validation.warnings,
+		};
+	}
+
+	private validateRuntimeQuery(query: unknown): TaskNotesRuntimeQueryValidationResult {
+		return this.normalizeRuntimeQueryForExecution(query).validation;
+	}
+
+	private normalizeRuntimeQueryOrThrow(query: unknown): TaskNotesRuntimeNormalizedTaskQuery {
+		const execution = this.normalizeRuntimeQueryForExecution(query);
+		if (!execution.validation.valid) {
+			throw new TaskNotesApiError("invalid_input", "TaskNotes runtime query is invalid", {
+				status: 400,
+				details: { issues: execution.validation.issues },
+			});
+		}
+		return execution.normalized;
+	}
+
+	private async explainRuntimeQuery(query: unknown): Promise<TaskNotesRuntimeQueryExplainResult> {
+		const execution = this.normalizeRuntimeQueryForExecution(query);
+		if (!execution.validation.valid) {
 			return {
-				tasks: allTasks.map(copyTaskInfo),
-				total: allTasks.length,
-				filtered: allTasks.length,
-				groups: { all: allTasks.map((task) => task.path) },
+				valid: false,
+				issues: execution.validation.issues,
+				warnings: execution.validation.warnings,
+				notes: ["Query validation failed before execution."],
 			};
 		}
 
-		const groupedTasks = await this.plugin.filterService.getGroupedTasks(query);
-		const tasks: TaskInfo[] = [];
-		const groups: Record<string, string[]> = {};
-		for (const [group, groupTasks] of groupedTasks.entries()) {
-			tasks.push(...groupTasks);
-			groups[group] = groupTasks.map((task) => task.path);
+		const result = await this.queryTasks(query as TaskNotesRuntimeTaskQuery);
+		const notes: string[] = [];
+		if (execution.normalized.sort.length > 1) {
+			notes.push("Only the first sort is currently applied by the TaskNotes filter engine.");
+		}
+		if (execution.normalized.group.length > 1) {
+			notes.push("Only the first group is currently applied by the TaskNotes filter engine.");
 		}
 
 		return {
-			tasks: tasks.map(copyTaskInfo),
-			total: allTasks.length,
-			filtered: tasks.length,
-			groups,
+			valid: true,
+			query: result.query,
+			issues: [],
+			warnings: result.warnings ?? [],
+			total: result.total,
+			matched: result.matched,
+			returned: result.returned,
+			groups: result.groups,
+			appliedSort: result.query.sort.slice(0, 1),
+			appliedLimit: result.query.limit,
+			appliedOffset: result.query.offset,
+			notes,
 		};
 	}
 
@@ -801,7 +1178,473 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		return this.plugin.filterService.getFilterOptions();
 	}
 
-	private async getTaskStats(query?: FilterQuery): Promise<TaskNotesRuntimeTaskStats> {
+	private normalizeRuntimeQueryForExecution(query: unknown): RuntimeQueryExecution {
+		const issues: TaskNotesRuntimeQueryIssue[] = [];
+		const warnings: TaskNotesRuntimeQueryWarning[] = [];
+		const normalized = this.normalizeRuntimeTaskQuery(query, issues, warnings);
+		const filterQuery = this.runtimeQueryToFilterQuery(normalized, issues, warnings);
+		return {
+			filterQuery,
+			normalized,
+			validation: {
+				valid: issues.length === 0,
+				issues,
+				warnings,
+				normalized: issues.length === 0 ? normalized : undefined,
+			},
+		};
+	}
+
+	private normalizeRuntimeTaskQuery(
+		query: unknown,
+		issues: TaskNotesRuntimeQueryIssue[],
+		warnings: TaskNotesRuntimeQueryWarning[]
+	): TaskNotesRuntimeNormalizedTaskQuery {
+		if (query == null) return emptyRuntimeTaskQuery();
+		if (!isRecord(query)) {
+			issues.push({
+				path: "$",
+				code: "query_not_object",
+				message: "Runtime task query must be an object.",
+			});
+			return emptyRuntimeTaskQuery();
+		}
+
+		const where =
+			typeof query["where"] === "undefined"
+				? undefined
+				: this.normalizeRuntimePredicate(query["where"], "$.where", issues);
+		const sort = this.normalizeRuntimeSorts(query["sort"], issues, warnings);
+		const group = this.normalizeRuntimeGroups(query["group"], issues, warnings);
+		const limit = normalizeRuntimeLimit(query["limit"], "$.limit", issues);
+		const offset = normalizeRuntimeOffset(query["offset"], "$.offset", issues);
+		const scope = normalizeRuntimeScope(query["scope"], issues);
+
+		return { where, sort, limit, offset, group, scope };
+	}
+
+	private normalizeRuntimePredicate(
+		predicate: unknown,
+		path: string,
+		issues: TaskNotesRuntimeQueryIssue[]
+	): TaskNotesRuntimeNormalizedPredicate | undefined {
+		if (!isRecord(predicate)) {
+			issues.push({
+				path,
+				code: "predicate_not_object",
+				message: "Runtime query predicate must be an object.",
+			});
+			return undefined;
+		}
+
+		if (Array.isArray(predicate["all"])) {
+			return {
+				all: predicate["all"]
+					.map((child, index) =>
+						this.normalizeRuntimePredicate(child, `${path}.all.${index}`, issues)
+					)
+					.filter(isDefined),
+			};
+		}
+		if (Array.isArray(predicate["any"])) {
+			return {
+				any: predicate["any"]
+					.map((child, index) =>
+						this.normalizeRuntimePredicate(child, `${path}.any.${index}`, issues)
+					)
+					.filter(isDefined),
+			};
+		}
+		if (typeof predicate["not"] !== "undefined") {
+			const normalized = this.normalizeRuntimePredicate(
+				predicate["not"],
+				`${path}.not`,
+				issues
+			);
+			return normalized ? { not: normalized } : undefined;
+		}
+
+		return this.normalizeRuntimeCondition(predicate, path, issues);
+	}
+
+	private normalizeRuntimeCondition(
+		condition: Record<string, unknown>,
+		path: string,
+		issues: TaskNotesRuntimeQueryIssue[]
+	): TaskNotesRuntimeNormalizedCondition | undefined {
+		if (typeof condition["field"] !== "string" || condition["field"].trim().length === 0) {
+			issues.push({
+				path: `${path}.field`,
+				code: "field_required",
+				message: "Runtime query condition requires a field.",
+			});
+			return undefined;
+		}
+		const field = this.resolveRuntimeQueryField(condition["field"]);
+		if (!field) {
+			issues.push({
+				path: `${path}.field`,
+				code: "field_unknown",
+				message: `Unsupported runtime query field: ${condition["field"]}`,
+			});
+			return undefined;
+		}
+
+		const op = normalizeRuntimeOperator(condition["op"]);
+		if (!op) {
+			issues.push({
+				path: `${path}.op`,
+				code: "operator_unknown",
+				message: `Unsupported runtime query operator: ${String(condition["op"])}`,
+			});
+			return undefined;
+		}
+		if (!field.definition.supportedOperators.includes(op)) {
+			issues.push({
+				path: `${path}.op`,
+				code: "operator_unsupported",
+				message: `Operator ${op} is not supported for ${field.definition.id}.`,
+			});
+			return undefined;
+		}
+
+		const requiresValue = runtimeOperatorRequiresValue(op);
+		if (requiresValue && typeof condition["value"] === "undefined") {
+			issues.push({
+				path: `${path}.value`,
+				code: "value_required",
+				message: `Operator ${op} requires a value.`,
+			});
+			return undefined;
+		}
+		if ((op === "in" || op === "notIn") && !Array.isArray(condition["value"])) {
+			issues.push({
+				path: `${path}.value`,
+				code: "value_array_required",
+				message: `Operator ${op} requires an array value.`,
+			});
+			return undefined;
+		}
+
+		return {
+			field: field.definition.id,
+			op,
+			value: requiresValue ? normalizeRuntimeValue(condition["value"]) : undefined,
+		};
+	}
+
+	private normalizeRuntimeSorts(
+		value: unknown,
+		issues: TaskNotesRuntimeQueryIssue[],
+		warnings: TaskNotesRuntimeQueryWarning[]
+	): TaskNotesRuntimeNormalizedTaskQuery["sort"] {
+		if (typeof value === "undefined") return [];
+		if (!Array.isArray(value)) {
+			issues.push({
+				path: "$.sort",
+				code: "sort_not_array",
+				message: "Runtime query sort must be an array.",
+			});
+			return [];
+		}
+
+		const sorts = value
+			.map((entry, index): TaskNotesRuntimeNormalizedTaskQuery["sort"][number] | null => {
+				if (!isRecord(entry) || typeof entry["field"] !== "string") {
+					issues.push({
+						path: `$.sort.${index}`,
+						code: "sort_invalid",
+						message: "Runtime query sort entries require a field.",
+					});
+					return null;
+				}
+				const field = this.resolveRuntimeQueryField(entry["field"]);
+				if (!field || !field.definition.sortable) {
+					issues.push({
+						path: `$.sort.${index}.field`,
+						code: "sort_field_unsupported",
+						message: `Runtime query field is not sortable: ${entry["field"]}`,
+					});
+					return null;
+				}
+				const direction = entry["direction"] === "desc" ? "desc" : "asc";
+				return { field: field.definition.id, direction };
+			})
+			.filter(isDefined);
+
+		if (sorts.length > 1) {
+			warnings.push({
+				path: "$.sort",
+				code: "multiple_sorts",
+				message: "Only the first sort is currently applied by TaskNotes.",
+			});
+		}
+		return sorts;
+	}
+
+	private normalizeRuntimeGroups(
+		value: unknown,
+		issues: TaskNotesRuntimeQueryIssue[],
+		warnings: TaskNotesRuntimeQueryWarning[]
+	): TaskNotesRuntimeNormalizedTaskQuery["group"] {
+		if (typeof value === "undefined") return [];
+		if (!Array.isArray(value)) {
+			issues.push({
+				path: "$.group",
+				code: "group_not_array",
+				message: "Runtime query group must be an array.",
+			});
+			return [];
+		}
+
+		const groups = value
+			.map((entry, index): TaskNotesRuntimeNormalizedTaskQuery["group"][number] | null => {
+				if (!isRecord(entry) || typeof entry["field"] !== "string") {
+					issues.push({
+						path: `$.group.${index}`,
+						code: "group_invalid",
+						message: "Runtime query group entries require a field.",
+					});
+					return null;
+				}
+				const field = this.resolveRuntimeQueryField(entry["field"]);
+				if (!field || !field.definition.groupable) {
+					issues.push({
+						path: `$.group.${index}.field`,
+						code: "group_field_unsupported",
+						message: `Runtime query field is not groupable: ${entry["field"]}`,
+					});
+					return null;
+				}
+				return { field: field.definition.id };
+			})
+			.filter(isDefined);
+
+		if (groups.length > 1) {
+			warnings.push({
+				path: "$.group",
+				code: "multiple_groups",
+				message: "Only the first group is currently applied by TaskNotes.",
+			});
+		}
+		return groups;
+	}
+
+	private runtimeQueryToFilterQuery(
+		query: TaskNotesRuntimeNormalizedTaskQuery,
+		issues: TaskNotesRuntimeQueryIssue[],
+		warnings: TaskNotesRuntimeQueryWarning[]
+	): FilterQuery {
+		const root = this.runtimePredicateToFilterNode(query.where, "$.where", issues);
+		const children = root
+			? root.type === "group" && root.conjunction === "and"
+				? root.children
+				: [root]
+			: [];
+		const filterQuery: FilterQuery = {
+			type: "group",
+			id: "runtime-query-root",
+			conjunction: "and",
+			children,
+		};
+
+		const sort = query.sort[0];
+		if (sort) {
+			const sortKey = this.runtimeFieldToSortKey(sort.field);
+			if (sortKey) {
+				filterQuery.sortKey = sortKey;
+				filterQuery.sortDirection = sort.direction ?? "asc";
+			} else {
+				warnings.push({
+					path: "$.sort.0.field",
+					code: "sort_not_applied",
+					message: `Sort field ${sort.field} could not be mapped to TaskNotes sorting.`,
+				});
+			}
+		}
+
+		const group = query.group[0];
+		if (group) {
+			const groupKey = this.runtimeFieldToGroupKey(group.field);
+			if (groupKey) {
+				filterQuery.groupKey = groupKey;
+			} else {
+				warnings.push({
+					path: "$.group.0.field",
+					code: "group_not_applied",
+					message: `Group field ${group.field} could not be mapped to TaskNotes grouping.`,
+				});
+			}
+		}
+
+		return filterQuery;
+	}
+
+	private runtimePredicateToFilterNode(
+		predicate: TaskNotesRuntimeNormalizedPredicate | undefined,
+		path: string,
+		issues: TaskNotesRuntimeQueryIssue[]
+	): FilterNode | null {
+		if (!predicate) return null;
+		if ("all" in predicate) {
+			return {
+				type: "group",
+				id: runtimeNodeId(path),
+				conjunction: "and",
+				children: predicate.all
+					.map((child, index) =>
+						this.runtimePredicateToFilterNode(child, `${path}.all.${index}`, issues)
+					)
+					.filter(isDefined),
+			};
+		}
+		if ("any" in predicate) {
+			return {
+				type: "group",
+				id: runtimeNodeId(path),
+				conjunction: "or",
+				children: predicate.any
+					.map((child, index) =>
+						this.runtimePredicateToFilterNode(child, `${path}.any.${index}`, issues)
+					)
+					.filter(isDefined),
+			};
+		}
+		if ("not" in predicate) {
+			const inverted = invertRuntimePredicate(predicate.not);
+			if (!inverted) {
+				issues.push({
+					path: `${path}.not`,
+					code: "not_unsupported",
+					message: "Unable to invert runtime query predicate.",
+				});
+				return null;
+			}
+			return this.runtimePredicateToFilterNode(inverted, `${path}.not`, issues);
+		}
+
+		return this.runtimeConditionToFilterNode(predicate, path);
+	}
+
+	private runtimeConditionToFilterNode(
+		condition: TaskNotesRuntimeNormalizedCondition,
+		path: string
+	): FilterNode {
+		const field = this.resolveRuntimeQueryField(condition.field);
+		const values =
+			Array.isArray(condition.value) && (condition.op === "in" || condition.op === "notIn")
+				? condition.value
+				: null;
+		if (values) {
+			return {
+				type: "group",
+				id: runtimeNodeId(path),
+				conjunction: condition.op === "in" ? "or" : "and",
+				children: values.map(
+					(value, index): FilterCondition => ({
+						type: "condition",
+						id: runtimeNodeId(`${path}.value.${index}`),
+						property: field?.internalProperty ?? (condition.field as FilterProperty),
+						operator: RUNTIME_TO_LEGACY_OPERATOR[condition.op],
+						value: toFilterConditionValue(normalizeRuntimeValue(value)),
+					})
+				),
+			};
+		}
+
+		return {
+			type: "condition",
+			id: runtimeNodeId(path),
+			property: field?.internalProperty ?? (condition.field as FilterProperty),
+			operator: RUNTIME_TO_LEGACY_OPERATOR[condition.op],
+			value: toFilterConditionValue(condition.value),
+		};
+	}
+
+	private resolveRuntimeQueryField(field: string): ResolvedRuntimeQueryField | null {
+		const normalizedField = field.trim();
+		const userField = this.resolveRuntimeUserField(normalizedField);
+		if (userField) return userField;
+
+		const direct = RUNTIME_FILTER_PROPERTY_DEFINITIONS.find(
+			(definition) =>
+				definition.id === normalizedField ||
+				(definition.aliases ?? []).includes(normalizedField)
+		);
+		return direct ? { definition: direct, internalProperty: direct.internalProperty } : null;
+	}
+
+	private resolveRuntimeUserField(field: string): ResolvedRuntimeQueryField | null {
+		if (!field.startsWith("user.") && !field.startsWith("user:")) return null;
+		const key = field.slice(5);
+		const userField = this.getUserFields().find(
+			(candidate) => candidate.id === key || candidate.key === key
+		);
+		if (!userField) return null;
+		const id = userField.id || userField.key;
+		const valueType = userFieldTypeToRuntimeValueType(userField.type);
+		return {
+			internalProperty: `user:${id}`,
+			definition: {
+				id: `user.${id}`,
+				label: userField.displayName || userField.key,
+				category: "user",
+				valueType,
+				source: "user",
+				queryable: true,
+				sortable: true,
+				groupable: true,
+				supportedOperators: operatorsForRuntimeValueType(valueType),
+				aliases: [`user:${id}`, `user.${userField.key}`, `user:${userField.key}`],
+				frontmatterKey: userField.key,
+				valueInputType: userFieldTypeToFilterInputType(userField.type),
+			},
+		};
+	}
+
+	private runtimeFieldToSortKey(field: string): TaskSortKey | null {
+		const resolved = this.resolveRuntimeQueryField(field);
+		if (!resolved) return null;
+		const property = resolved.internalProperty;
+		if (property.startsWith("user:")) return property as `user:${string}`;
+		if (
+			property === "due" ||
+			property === "scheduled" ||
+			property === "priority" ||
+			property === "status" ||
+			property === "title" ||
+			property === "dateCreated" ||
+			property === "completedDate" ||
+			property === "tags"
+		) {
+			return property;
+		}
+		return null;
+	}
+
+	private runtimeFieldToGroupKey(field: string): TaskGroupKey | null {
+		const resolved = this.resolveRuntimeQueryField(field);
+		if (!resolved) return null;
+		const property = resolved.internalProperty;
+		if (property.startsWith("user:")) return property as `user:${string}`;
+		if (
+			property === "priority" ||
+			property === "due" ||
+			property === "scheduled" ||
+			property === "status" ||
+			property === "tags" ||
+			property === "completedDate"
+		) {
+			return property;
+		}
+		if (property === "contexts") return "context";
+		if (property === "projects") return "project";
+		return null;
+	}
+
+	private async getTaskStats(
+		query?: TaskNotesRuntimeTaskQuery
+	): Promise<TaskNotesRuntimeTaskStats> {
 		const tasks = query
 			? (await this.queryTasks(query)).tasks
 			: await this.plugin.cacheManager.getAllTasks();
@@ -920,18 +1763,12 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		return task ? copyTaskInfo(task) : null;
 	}
 
-	async listTasks(query?: FilterQuery): Promise<TaskInfo[]> {
+	async listTasks(query?: TaskNotesRuntimeTaskQuery): Promise<TaskInfo[]> {
 		if (!query) {
 			const tasks = await this.plugin.cacheManager.getAllTasks();
 			return tasks.map(copyTaskInfo);
 		}
-
-		const groupedTasks = await this.plugin.filterService.getGroupedTasks(query);
-		const tasks: TaskInfo[] = [];
-		for (const groupTasks of groupedTasks.values()) {
-			tasks.push(...groupTasks);
-		}
-		return tasks.map(copyTaskInfo);
+		return (await this.queryTasks(query)).tasks;
 	}
 
 	async getParentTasks(path: string): Promise<TaskInfo[]> {
@@ -1923,7 +2760,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	): TaskNotesRuntimeLifecyclePayload {
 		const record = isRecord(payload) ? payload : {};
 		const extension = isRecord(record.extension)
-			? (record.extension as TaskNotesRuntimeLifecyclePayload["extension"])
+			? (record.extension as unknown as TaskNotesRuntimeLifecyclePayload["extension"])
 			: undefined;
 		return {
 			event,
@@ -2031,6 +2868,379 @@ function firstReferencePathCandidate(reference: string): string | null {
 	return parsed ? normalizePath(parsed) : null;
 }
 
+type RuntimeQueryExecution = {
+	filterQuery: FilterQuery;
+	normalized: TaskNotesRuntimeNormalizedTaskQuery;
+	validation: TaskNotesRuntimeQueryValidationResult;
+};
+
+type ResolvedRuntimeQueryField = {
+	definition: TaskNotesRuntimeFilterPropertyDefinition;
+	internalProperty: FilterProperty;
+};
+
+function runtimeFilterProperty(
+	id: string,
+	internalProperty: FilterProperty,
+	label: string,
+	category: string,
+	valueType: TaskNotesRuntimeFieldDefinition["valueType"],
+	source: TaskNotesRuntimeFieldDefinition["source"],
+	options: {
+		aliases?: readonly string[];
+		sortable?: boolean;
+		groupable?: boolean;
+		valueInputType?: string;
+	} = {}
+): RuntimeFilterPropertyDefinition {
+	const internalPropertyDefinition = FILTER_PROPERTIES.find(
+		(property) => property.id === internalProperty
+	);
+	return {
+		id,
+		internalProperty,
+		label,
+		category,
+		valueType,
+		source,
+		queryable: true,
+		sortable: options.sortable ?? false,
+		groupable: options.groupable ?? false,
+		supportedOperators: runtimeOperatorsFromLegacy(
+			internalPropertyDefinition?.supportedOperators ??
+				operatorsForRuntimeValueType(valueType)
+		),
+		aliases: options.aliases,
+		valueInputType:
+			options.valueInputType ?? internalPropertyDefinition?.valueInputType ?? "text",
+	};
+}
+
+function runtimeFilterPropertyForInternal(
+	internalProperty: string
+): RuntimeFilterPropertyDefinition | undefined {
+	return RUNTIME_FILTER_PROPERTY_DEFINITIONS.find(
+		(definition) => definition.internalProperty === internalProperty
+	);
+}
+
+function runtimeOperatorsFromLegacy(
+	operators: readonly (FilterOperator | TaskNotesRuntimeOperator)[]
+): TaskNotesRuntimeOperator[] {
+	const normalizedOperators = operators
+		.map((operator) => normalizeRuntimeOperator(operator))
+		.filter(isDefined);
+	if (normalizedOperators.includes("eq")) normalizedOperators.push("in");
+	if (normalizedOperators.includes("ne")) normalizedOperators.push("notIn");
+	return Array.from(new Set(normalizedOperators));
+}
+
+function operatorsForRuntimeValueType(
+	valueType: TaskNotesRuntimeFieldDefinition["valueType"]
+): TaskNotesRuntimeOperator[] {
+	if (valueType === "boolean") return ["isTrue", "isFalse"];
+	if (valueType === "number") {
+		return ["eq", "ne", "in", "notIn", "lt", "lte", "gt", "gte", "exists", "missing"];
+	}
+	if (valueType === "date" || valueType === "datetime") {
+		return ["eq", "ne", "in", "notIn", "lt", "lte", "gt", "gte", "exists", "missing"];
+	}
+	if (valueType.endsWith("[]")) {
+		return ["contains", "notContains", "exists", "missing"];
+	}
+	return ["eq", "ne", "in", "notIn", "contains", "notContains", "exists", "missing"];
+}
+
+function userFieldTypeToFilterInputType(type: string): string {
+	if (type === "number") return "number";
+	if (type === "date") return "date";
+	if (type === "boolean") return "none";
+	if (type === "list") return "multi-select";
+	return "text";
+}
+
+function normalizeRuntimeOperator(value: unknown): TaskNotesRuntimeOperator | null {
+	if (typeof value !== "string") return null;
+	const normalized = value.trim();
+	const exact = RUNTIME_OPERATOR_BY_ALIAS.get(normalized);
+	if (exact) return exact;
+	if ((TASKNOTES_RUNTIME_QUERY_OPERATORS as readonly string[]).includes(normalized)) {
+		return normalized as TaskNotesRuntimeOperator;
+	}
+	return null;
+}
+
+function runtimeOperatorRequiresValue(operator: TaskNotesRuntimeOperator): boolean {
+	return !["exists", "missing", "isTrue", "isFalse"].includes(operator);
+}
+
+function emptyRuntimeTaskQuery(): TaskNotesRuntimeNormalizedTaskQuery {
+	return {
+		sort: [],
+		offset: 0,
+		group: [],
+		scope: { includeArchived: true },
+	};
+}
+
+function normalizeRuntimeLimit(
+	value: unknown,
+	path: string,
+	issues: TaskNotesRuntimeQueryIssue[]
+): number | undefined {
+	if (typeof value === "undefined" || value === null) return undefined;
+	if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+		issues.push({
+			path,
+			code: "limit_invalid",
+			message: "Runtime query limit must be a positive integer.",
+		});
+		return undefined;
+	}
+	return value;
+}
+
+function normalizeRuntimeOffset(
+	value: unknown,
+	path: string,
+	issues: TaskNotesRuntimeQueryIssue[]
+): number {
+	if (typeof value === "undefined" || value === null) return 0;
+	if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+		issues.push({
+			path,
+			code: "offset_invalid",
+			message: "Runtime query offset must be a non-negative integer.",
+		});
+		return 0;
+	}
+	return value;
+}
+
+function normalizeRuntimeScope(
+	value: unknown,
+	issues: TaskNotesRuntimeQueryIssue[]
+): TaskNotesRuntimeNormalizedTaskQuery["scope"] {
+	if (typeof value === "undefined" || value === null) return { includeArchived: true };
+	if (!isRecord(value)) {
+		issues.push({
+			path: "$.scope",
+			code: "scope_not_object",
+			message: "Runtime query scope must be an object.",
+		});
+		return { includeArchived: true };
+	}
+
+	return {
+		includeArchived: value["includeArchived"] !== false,
+		folders: normalizeFolderList(value["folders"], "$.scope.folders", issues),
+		excludeFolders: normalizeFolderList(
+			value["excludeFolders"],
+			"$.scope.excludeFolders",
+			issues
+		),
+	};
+}
+
+function normalizeFolderList(
+	value: unknown,
+	path: string,
+	issues: TaskNotesRuntimeQueryIssue[]
+): string[] | undefined {
+	if (typeof value === "undefined") return undefined;
+	if (!Array.isArray(value)) {
+		issues.push({
+			path,
+			code: "folder_list_invalid",
+			message: "Runtime query folder scope must be an array of folder paths.",
+		});
+		return undefined;
+	}
+
+	const folders = value
+		.map((folder, index) => {
+			if (typeof folder !== "string" || folder.trim().length === 0) {
+				issues.push({
+					path: `${path}.${index}`,
+					code: "folder_invalid",
+					message: "Runtime query folder path must be a non-empty string.",
+				});
+				return null;
+			}
+			return normalizePath(folder);
+		})
+		.filter(isDefined);
+	return folders.length > 0 ? folders : undefined;
+}
+
+function normalizeRuntimeValue(value: unknown): TaskNotesRuntimeValue {
+	if (Array.isArray(value)) return value.map(normalizeRuntimeValue);
+	if (isRecord(value)) {
+		const fn = value["fn"];
+		if (fn === "today") return { fn: "today" };
+		if (fn === "now") return { fn: "now" };
+		if (fn === "date" && typeof value["value"] === "string") {
+			return { fn: "date", value: value["value"] };
+		}
+		if (
+			fn === "dateAdd" &&
+			Number.isFinite(value["amount"]) &&
+			(value["unit"] === "day" || value["unit"] === "week" || value["unit"] === "month")
+		) {
+			return {
+				fn: "dateAdd",
+				value: normalizeRuntimeValue(value["value"]),
+				amount: Number(value["amount"]),
+				unit: value["unit"],
+			};
+		}
+	}
+	if (
+		typeof value === "string" ||
+		typeof value === "number" ||
+		typeof value === "boolean" ||
+		value === null
+	) {
+		return value;
+	}
+	return stringifyUnknownValue(value);
+}
+
+function toFilterConditionValue(
+	value: TaskNotesRuntimeValue | undefined
+): FilterCondition["value"] {
+	if (typeof value === "undefined") return null;
+	if (Array.isArray(value)) {
+		return value.map((entry) => String(toFilterConditionValue(entry)));
+	}
+	if (isRecord(value)) {
+		if (value["fn"] === "today") return "today";
+		if (value["fn"] === "now") return new Date().toISOString();
+		if (value["fn"] === "date" && typeof value["value"] === "string") return value["value"];
+		if (value["fn"] === "dateAdd") return dateAddRuntimeValue(value);
+	}
+	if (
+		typeof value === "string" ||
+		typeof value === "number" ||
+		typeof value === "boolean" ||
+		value === null
+	) {
+		return value;
+	}
+	return stringifyUnknownValue(value);
+}
+
+function stringifyUnknownValue(value: unknown): string {
+	if (
+		typeof value === "string" ||
+		typeof value === "number" ||
+		typeof value === "boolean" ||
+		typeof value === "bigint"
+	) {
+		return String(value);
+	}
+	try {
+		return JSON.stringify(value) ?? "";
+	} catch {
+		return "";
+	}
+}
+
+function dateAddRuntimeValue(value: {
+	fn: "dateAdd";
+	value: TaskNotesRuntimeValue;
+	amount: number;
+	unit: "day" | "week" | "month";
+}): string {
+	const baseValue = toFilterConditionValue(value.value);
+	const base =
+		baseValue === "today"
+			? new Date()
+			: typeof baseValue === "string"
+				? new Date(baseValue)
+				: new Date();
+	if (value.unit === "day") base.setDate(base.getDate() + value.amount);
+	if (value.unit === "week") base.setDate(base.getDate() + value.amount * 7);
+	if (value.unit === "month") base.setMonth(base.getMonth() + value.amount);
+	return base.toISOString().slice(0, 10);
+}
+
+function invertRuntimePredicate(
+	predicate: TaskNotesRuntimeNormalizedPredicate
+): TaskNotesRuntimeNormalizedPredicate | null {
+	if ("all" in predicate) {
+		return { any: predicate.all.map(invertRuntimePredicate).filter(isDefined) };
+	}
+	if ("any" in predicate) {
+		return { all: predicate.any.map(invertRuntimePredicate).filter(isDefined) };
+	}
+	if ("not" in predicate) return predicate.not;
+	const invertedOperator = invertRuntimeOperator(predicate.op);
+	return invertedOperator ? { ...predicate, op: invertedOperator } : null;
+}
+
+function invertRuntimeOperator(
+	operator: TaskNotesRuntimeOperator
+): TaskNotesRuntimeOperator | null {
+	const inverses: Partial<Record<TaskNotesRuntimeOperator, TaskNotesRuntimeOperator>> = {
+		eq: "ne",
+		ne: "eq",
+		contains: "notContains",
+		notContains: "contains",
+		in: "notIn",
+		notIn: "in",
+		exists: "missing",
+		missing: "exists",
+		lt: "gte",
+		lte: "gt",
+		gt: "lte",
+		gte: "lt",
+		isTrue: "isFalse",
+		isFalse: "isTrue",
+	};
+	return inverses[operator] ?? null;
+}
+
+function applyRuntimeQueryScope(
+	tasks: TaskInfo[],
+	scope: TaskNotesRuntimeNormalizedTaskQuery["scope"]
+): TaskInfo[] {
+	return tasks.filter((task) => {
+		if (!scope.includeArchived && task.archived) return false;
+		if (scope.folders && !scope.folders.some((folder) => taskIsInFolder(task, folder))) {
+			return false;
+		}
+		if (scope.excludeFolders?.some((folder) => taskIsInFolder(task, folder))) return false;
+		return true;
+	});
+}
+
+function taskIsInFolder(task: TaskInfo, folder: string): boolean {
+	const normalizedFolder = normalizePath(folder);
+	if (!normalizedFolder) return true;
+	return task.path === normalizedFolder || task.path.startsWith(`${normalizedFolder}/`);
+}
+
+function runtimeQueryGroups(
+	groupedTasks: Map<string, TaskInfo[]>,
+	returnedPaths: Set<string>
+): TaskNotesRuntimeQueryGroup[] {
+	const groups: TaskNotesRuntimeQueryGroup[] = [];
+	for (const [key, tasks] of groupedTasks.entries()) {
+		const taskPaths = tasks.map((task) => task.path).filter((path) => returnedPaths.has(path));
+		if (taskPaths.length > 0) groups.push({ key, label: key, taskPaths });
+	}
+	return groups;
+}
+
+function runtimeNodeId(path: string): string {
+	return `runtime:${path.replace(/[^a-z0-9._-]+/giu, "-")}`;
+}
+
+function isDefined<T>(value: T | null | undefined): value is T {
+	return value !== null && typeof value !== "undefined";
+}
+
 function taskReferencePathCandidates(path: string): string[] {
 	const normalizedPath = normalizePath(path);
 	const candidates = [normalizedPath];
@@ -2079,7 +3289,7 @@ function coerceDateOption(value: string | Date | null | undefined): Date | null 
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
+	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function buildTaskChanges(before?: TaskInfo, after?: TaskInfo): TaskNotesApiChanges {

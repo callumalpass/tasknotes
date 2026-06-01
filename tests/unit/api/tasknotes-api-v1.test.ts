@@ -475,6 +475,8 @@ describe("TaskNotesApiV1", () => {
 		expect(api.capabilities).toContain("relationships.read");
 		expect(api.capabilities).toContain("model.validate");
 		expect(api.capabilities).toContain("query.tasks");
+		expect(api.capabilities).toContain("query.validate");
+		expect(api.capabilities).toContain("query.explain");
 		expect(api.capabilities).toContain("system.health");
 		expect(api.capabilities).toContain("lifecycle.events");
 		expect(api.capabilities).toContain("errors.typed");
@@ -548,8 +550,29 @@ describe("TaskNotesApiV1", () => {
 			])
 		);
 		expect(api.catalog.writableFields().some((field) => field.id === "path")).toBe(false);
+		expect(api.catalog.filterProperties()).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: "task.status",
+					aliases: expect.arrayContaining(["status"]),
+					queryable: true,
+					supportedOperators: expect.arrayContaining(["eq", "ne"]),
+				}),
+				expect.objectContaining({
+					id: "user.energy",
+					frontmatterKey: "energy",
+					sortable: true,
+				}),
+			])
+		);
 		expect(api.catalog.filterOperators()).toEqual(
-			expect.arrayContaining([expect.objectContaining({ id: "is", valueRequired: true })])
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: "eq",
+					valueRequired: true,
+					aliases: expect.arrayContaining(["is"]),
+				}),
+			])
 		);
 		expect(api.catalog.relationships()).toEqual(
 			expect.arrayContaining([expect.objectContaining({ id: "dependencies" })])
@@ -753,7 +776,7 @@ describe("TaskNotesApiV1", () => {
 		expect(api.errors.normalize(structuralPayload)).toBe(structuralPayload);
 	});
 
-	it("reads individual tasks and filtered task lists without exposing mutable arrays", async () => {
+	it("reads individual tasks and queried task lists without exposing mutable arrays", async () => {
 		const task = createTask({ tags: ["work"] });
 		const { plugin, filterService } = createPluginContext([task]);
 		const api = new TaskNotesAPI(plugin);
@@ -765,16 +788,21 @@ describe("TaskNotesApiV1", () => {
 		const refetched = await api.getTask(task.path);
 		expect(refetched?.tags).toEqual(["work"]);
 
-		const query = {
-			type: "group",
-			id: "root",
-			conjunction: "and",
-			children: [],
-		} satisfies FilterQuery;
+		const query = { where: { field: "task.tags", op: "contains", value: "work" } };
 		filterService.getGroupedTasks.mockResolvedValueOnce(new Map([["work", [task]]]));
 
 		await expect(api.listTasks(query)).resolves.toEqual([task]);
-		expect(filterService.getGroupedTasks).toHaveBeenCalledWith(query);
+		expect(filterService.getGroupedTasks).toHaveBeenCalledWith(
+			expect.objectContaining({
+				children: [
+					expect.objectContaining({
+						property: "tags",
+						operator: "contains",
+						value: "work",
+					}),
+				],
+			})
+		);
 	});
 
 	it("exposes query, stats, time summary, task time data, and health helpers", async () => {
@@ -790,18 +818,64 @@ describe("TaskNotesApiV1", () => {
 		const { plugin, filterService, taskStatsService } = createPluginContext([task]);
 		const api = new TaskNotesAPI(plugin);
 		const query = {
-			type: "group",
-			id: "root",
-			conjunction: "and",
-			children: [],
-		} satisfies FilterQuery;
+			where: { field: "task.status", op: "eq", value: "open" },
+			sort: [{ field: "task.due", direction: "asc" }],
+			group: [{ field: "task.status" }],
+			limit: 10,
+			scope: { includeArchived: false, folders: ["Tasks"] },
+		};
 
 		await expect(api.query.tasks(query)).resolves.toEqual(
 			expect.objectContaining({
 				total: 1,
-				filtered: 1,
+				matched: 1,
+				returned: 1,
 				tasks: [expect.objectContaining({ path: task.path })],
-				groups: { default: [task.path] },
+				groups: [{ key: "default", label: "default", taskPaths: [task.path] }],
+				query: expect.objectContaining({
+					where: { field: "task.status", op: "eq", value: "open" },
+					sort: [{ field: "task.due", direction: "asc" }],
+					group: [{ field: "task.status" }],
+					limit: 10,
+					offset: 0,
+					scope: { includeArchived: false, folders: ["Tasks"] },
+				}),
+			})
+		);
+		expect(filterService.getGroupedTasks).toHaveBeenCalledWith(
+			expect.objectContaining({
+				sortKey: "due",
+				groupKey: "status",
+				children: [
+					expect.objectContaining({
+						property: "status",
+						operator: "is",
+						value: "open",
+					}),
+				],
+			})
+		);
+		expect(api.query.validate(query)).toEqual(
+			expect.objectContaining({
+				valid: true,
+				normalized: expect.objectContaining({
+					where: { field: "task.status", op: "eq", value: "open" },
+				}),
+			})
+		);
+		await expect(api.query.explain(query)).resolves.toEqual(
+			expect.objectContaining({
+				valid: true,
+				total: 1,
+				matched: 1,
+				returned: 1,
+				appliedSort: [{ field: "task.due", direction: "asc" }],
+			})
+		);
+		expect(api.query.validate({ where: { field: "missing", op: "eq", value: "x" } })).toEqual(
+			expect.objectContaining({
+				valid: false,
+				issues: [expect.objectContaining({ code: "field_unknown" })],
 			})
 		);
 		await expect(api.query.filterOptions()).resolves.toEqual(

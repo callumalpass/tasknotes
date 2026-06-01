@@ -13,7 +13,6 @@ import type {
 } from "@tasknotes/model";
 import type { ParsedTaskData } from "../services/NaturalLanguageParser";
 import type {
-	FilterQuery,
 	FilterOptions,
 	PomodoroHistoryStats,
 	PomodoroSessionHistory,
@@ -62,6 +61,8 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"settings.snapshot",
 	"nlp.parse",
 	"query.tasks",
+	"query.validate",
+	"query.explain",
 	"query.filter-options",
 	"stats.tasks",
 	"system.health",
@@ -463,7 +464,7 @@ export interface StartTimeEntryOptions {
 }
 
 export interface TaskNotesRuntimeTimeSummaryOptions {
-	period?: "today" | "week" | "month" | "all" | "custom" | string;
+	period?: "today" | "week" | "month" | "all" | "custom" | (string & {});
 	from?: string | Date | null;
 	to?: string | Date | null;
 	includeTags?: boolean;
@@ -536,7 +537,7 @@ export interface TaskNotesRuntimeModelApi {
 	validatePatch(patch: TaskNotesTaskPatch): TaskValidationResult;
 }
 
-export type TaskNotesRuntimeFieldSource = "model" | "computed" | "user";
+export type TaskNotesRuntimeFieldSource = "model" | "computed" | "file" | "user";
 export type TaskNotesRuntimeFieldValueType =
 	| "string"
 	| "number"
@@ -555,23 +556,55 @@ export interface TaskNotesRuntimeFieldDefinition {
 	valueType: TaskNotesRuntimeFieldValueType;
 	source: TaskNotesRuntimeFieldSource;
 	writable: boolean;
+	queryable?: boolean;
+	sortable?: boolean;
+	groupable?: boolean;
+	supportedOperators?: readonly TaskNotesRuntimeOperator[];
+	aliases?: readonly string[];
 	required?: boolean;
 	frontmatterKey?: string;
 	description?: string;
 }
 
+export const TASKNOTES_RUNTIME_QUERY_OPERATORS = [
+	"eq",
+	"ne",
+	"contains",
+	"notContains",
+	"in",
+	"notIn",
+	"exists",
+	"missing",
+	"lt",
+	"lte",
+	"gt",
+	"gte",
+	"isTrue",
+	"isFalse",
+] as const;
+
+export type TaskNotesRuntimeOperator = (typeof TASKNOTES_RUNTIME_QUERY_OPERATORS)[number];
+
 export interface TaskNotesRuntimeFilterOperatorDefinition {
-	id: string;
+	id: TaskNotesRuntimeOperator;
 	label: string;
 	valueRequired: boolean;
-	appliesTo: readonly string[];
+	appliesTo: readonly TaskNotesRuntimeFieldValueType[];
+	aliases?: readonly string[];
 }
 
 export interface TaskNotesRuntimeFilterPropertyDefinition {
 	id: string;
 	label: string;
 	category: string;
-	supportedOperators: readonly string[];
+	valueType: TaskNotesRuntimeFieldValueType;
+	source: TaskNotesRuntimeFieldSource;
+	queryable: boolean;
+	sortable: boolean;
+	groupable: boolean;
+	supportedOperators: readonly TaskNotesRuntimeOperator[];
+	aliases?: readonly string[];
+	frontmatterKey?: string;
 	valueInputType: string;
 }
 
@@ -659,7 +692,7 @@ export type TaskNotesRuntimeEventHandler<EventName extends TaskNotesRuntimeEvent
 
 export interface TaskNotesRuntimeTasksApi {
 	get(path: string): Promise<TaskInfo | null>;
-	list(query?: FilterQuery): Promise<TaskInfo[]>;
+	list(query?: TaskNotesRuntimeTaskQuery): Promise<TaskInfo[]>;
 	create(taskData: TaskCreationData, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	update(
 		path: string,
@@ -858,15 +891,134 @@ export interface TaskNotesRuntimeErrorsApi {
 	toResult<T>(operation: () => Promise<T> | T): Promise<TaskNotesApiResult<T>>;
 }
 
+export interface TaskNotesRuntimeTaskQuery {
+	where?: TaskNotesRuntimePredicate;
+	sort?: TaskNotesRuntimeSort[];
+	limit?: number;
+	offset?: number;
+	group?: TaskNotesRuntimeGroup[];
+	scope?: TaskNotesRuntimeQueryScope;
+}
+
+export type TaskNotesRuntimePredicate =
+	| { all: TaskNotesRuntimePredicate[] }
+	| { any: TaskNotesRuntimePredicate[] }
+	| { not: TaskNotesRuntimePredicate }
+	| TaskNotesRuntimeCondition;
+
+export interface TaskNotesRuntimeCondition {
+	field: string;
+	op: TaskNotesRuntimeOperator | (string & {});
+	value?: TaskNotesRuntimeValue;
+}
+
+export type TaskNotesRuntimeValue =
+	| string
+	| number
+	| boolean
+	| null
+	| TaskNotesRuntimeValue[]
+	| { fn: "today" | "now" }
+	| { fn: "date"; value: string }
+	| {
+			fn: "dateAdd";
+			value: TaskNotesRuntimeValue;
+			amount: number;
+			unit: "day" | "week" | "month";
+	  };
+
+export interface TaskNotesRuntimeSort {
+	field: string;
+	direction?: "asc" | "desc";
+}
+
+export interface TaskNotesRuntimeGroup {
+	field: string;
+}
+
+export interface TaskNotesRuntimeQueryScope {
+	includeArchived?: boolean;
+	folders?: string[];
+	excludeFolders?: string[];
+}
+
+export interface TaskNotesRuntimeNormalizedCondition {
+	field: string;
+	op: TaskNotesRuntimeOperator;
+	value?: TaskNotesRuntimeValue;
+}
+
+export type TaskNotesRuntimeNormalizedPredicate =
+	| { all: TaskNotesRuntimeNormalizedPredicate[] }
+	| { any: TaskNotesRuntimeNormalizedPredicate[] }
+	| { not: TaskNotesRuntimeNormalizedPredicate }
+	| TaskNotesRuntimeNormalizedCondition;
+
+export interface TaskNotesRuntimeNormalizedTaskQuery {
+	where?: TaskNotesRuntimeNormalizedPredicate;
+	sort: TaskNotesRuntimeSort[];
+	limit?: number;
+	offset: number;
+	group: TaskNotesRuntimeGroup[];
+	scope: Required<Pick<TaskNotesRuntimeQueryScope, "includeArchived">> &
+		Omit<TaskNotesRuntimeQueryScope, "includeArchived">;
+}
+
+export interface TaskNotesRuntimeQueryIssue {
+	path: string;
+	code: string;
+	message: string;
+}
+
+export interface TaskNotesRuntimeQueryWarning {
+	path: string;
+	code: string;
+	message: string;
+}
+
+export interface TaskNotesRuntimeQueryValidationResult {
+	valid: boolean;
+	issues: TaskNotesRuntimeQueryIssue[];
+	warnings: TaskNotesRuntimeQueryWarning[];
+	normalized?: TaskNotesRuntimeNormalizedTaskQuery;
+}
+
+export interface TaskNotesRuntimeQueryGroup {
+	key: string;
+	label: string;
+	taskPaths: string[];
+}
+
+export interface TaskNotesRuntimeQueryExplainResult {
+	valid: boolean;
+	query?: TaskNotesRuntimeNormalizedTaskQuery;
+	issues: TaskNotesRuntimeQueryIssue[];
+	warnings: TaskNotesRuntimeQueryWarning[];
+	total?: number;
+	matched?: number;
+	returned?: number;
+	groups?: TaskNotesRuntimeQueryGroup[];
+	appliedSort?: TaskNotesRuntimeSort[];
+	appliedLimit?: number;
+	appliedOffset?: number;
+	notes: string[];
+}
+
 export interface TaskNotesRuntimeTaskQueryResult {
 	tasks: TaskInfo[];
 	total: number;
-	filtered: number;
-	groups: Record<string, string[]>;
+	matched: number;
+	returned: number;
+	groups?: TaskNotesRuntimeQueryGroup[];
+	query: TaskNotesRuntimeNormalizedTaskQuery;
+	warnings?: TaskNotesRuntimeQueryWarning[];
 }
 
 export interface TaskNotesRuntimeQueryApi {
-	tasks(query?: FilterQuery): Promise<TaskNotesRuntimeTaskQueryResult>;
+	tasks(query?: TaskNotesRuntimeTaskQuery): Promise<TaskNotesRuntimeTaskQueryResult>;
+	validate(query: unknown): TaskNotesRuntimeQueryValidationResult;
+	normalize(query: unknown): TaskNotesRuntimeNormalizedTaskQuery;
+	explain(query: unknown): Promise<TaskNotesRuntimeQueryExplainResult>;
 	filterOptions(): Promise<FilterOptions>;
 }
 
@@ -884,7 +1036,7 @@ export interface TaskNotesRuntimeTaskStats {
 }
 
 export interface TaskNotesRuntimeStatsApi {
-	tasks(query?: FilterQuery): Promise<TaskNotesRuntimeTaskStats>;
+	tasks(query?: TaskNotesRuntimeTaskQuery): Promise<TaskNotesRuntimeTaskStats>;
 }
 
 export interface TaskNotesRuntimeVaultInfo {
@@ -932,7 +1084,7 @@ export interface TaskNotesRuntimeApiV1 {
 	parseNaturalLanguage(text: string): ParsedTaskData;
 
 	getTask(path: string): Promise<TaskInfo | null>;
-	listTasks(query?: FilterQuery): Promise<TaskInfo[]>;
+	listTasks(query?: TaskNotesRuntimeTaskQuery): Promise<TaskInfo[]>;
 	createTask(taskData: TaskCreationData, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	updateTask(
 		path: string,
