@@ -2,6 +2,12 @@
 
 TaskNotes Workflows is a companion plugin for Markdown-defined automation. It lets you create workflow notes that respond to TaskNotes events, schedules, manual commands, and selected Obsidian events, then run typed actions against TaskNotes tasks.
 
+!!! tip "Install TaskNotes Workflows"
+
+    TaskNotes Workflows is published as a separate Obsidian Community Plugin: [install TaskNotes Workflows from the Obsidian plugin directory](https://community.obsidian.md/plugins/tasknotes-workflows).
+
+    In Obsidian, you can also find it under Settings > Community plugins > Browse by searching for `TaskNotes Workflows`.
+
 The plugin is designed for workflows users often ask TaskNotes core to handle, such as:
 
 - Start time tracking when a task becomes active.
