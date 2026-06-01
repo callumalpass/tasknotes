@@ -422,6 +422,8 @@ export class KanbanView extends BasesViewBase {
 	 * This preserves scroll position when the view is re-rendered (e.g., after task updates).
 	 */
 	getEphemeralState(): unknown {
+		const baseState = super.getEphemeralState();
+		const baseStateObject = isRecord(baseState) ? baseState : {};
 		const columnScroll: Record<string, number> = {};
 
 		// Save scroll position for virtual scrolling columns (from VirtualScroller)
@@ -462,6 +464,7 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		return {
+			...baseStateObject,
 			scrollTop: this.rootElement?.scrollTop || 0,
 			columnScroll,
 		};
@@ -472,6 +475,7 @@ export class KanbanView extends BasesViewBase {
 	 */
 	setEphemeralState(state: unknown): void {
 		if (!isKanbanEphemeralState(state)) return;
+		super.setEphemeralState(state);
 		const columnScroll = getColumnScrollState(state);
 
 		// Restore board-level horizontal scroll

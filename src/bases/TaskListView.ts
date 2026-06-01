@@ -2142,7 +2142,11 @@ export class TaskListView extends BasesViewBase {
 	 * Saves scroll position, collapsed groups, and collapsed sub-groups.
 	 */
 	getEphemeralState(): unknown {
+		const baseState = super.getEphemeralState();
+		const baseStateObject = isRecord(baseState) ? baseState : {};
+
 		return {
+			...baseStateObject,
 			scrollTop: this.rootElement?.scrollTop || 0,
 			collapsedGroups: Array.from(this.collapsedGroups),
 			collapsedSubGroups: Array.from(this.collapsedSubGroups),
@@ -2155,6 +2159,7 @@ export class TaskListView extends BasesViewBase {
 	 */
 	setEphemeralState(state: unknown): void {
 		if (!isTaskListEphemeralState(state)) return;
+		super.setEphemeralState(state);
 
 		let restoredCollapsedState = false;
 

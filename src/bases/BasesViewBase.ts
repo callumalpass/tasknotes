@@ -71,6 +71,7 @@ import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesL
 
 type BasesEphemeralState = {
 	scrollTop?: unknown;
+	containerScrollTop?: unknown;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -191,7 +192,14 @@ export abstract class BasesViewBase extends Component {
 			scheduler: this.getTimeoutScheduler(),
 			isConnected: () => Boolean(this.rootElement?.isConnected),
 			beforeRender: () => this.updateRelevantPathsCache(),
-			render: () => this.render(),
+			render: async () => {
+				const savedState = this.getEphemeralState();
+				try {
+					await this.render();
+				} finally {
+					this.setEphemeralState(savedState);
+				}
+			},
 			onTimerCleared: () => {
 				this.dataUpdateDebounceTimer = null;
 			},
@@ -232,6 +240,7 @@ export abstract class BasesViewBase extends Component {
 	getEphemeralState(): unknown {
 		return {
 			scrollTop: this.rootElement?.scrollTop || 0,
+			containerScrollTop: this.containerEl.scrollTop || 0,
 		};
 	}
 
@@ -245,6 +254,9 @@ export abstract class BasesViewBase extends Component {
 			const ephemeralState: BasesEphemeralState = state;
 			if (typeof ephemeralState.scrollTop === "number") {
 				this.rootElement.scrollTop = ephemeralState.scrollTop;
+			}
+			if (typeof ephemeralState.containerScrollTop === "number") {
+				this.containerEl.scrollTop = ephemeralState.containerScrollTop;
 			}
 		} catch (e) {
 			this.logger.debug("Failed to restore ephemeral state", {
@@ -456,7 +468,14 @@ export abstract class BasesViewBase extends Component {
 		this.updateDebounceTimer = scheduleBasesDebouncedRefresh({
 			currentTimer: this.updateDebounceTimer,
 			scheduler: this.getTimeoutScheduler(),
-			render: () => this.render(),
+			render: async () => {
+				const savedState = this.getEphemeralState();
+				try {
+					await this.render();
+				} finally {
+					this.setEphemeralState(savedState);
+				}
+			},
 			onTimerCleared: () => {
 				this.updateDebounceTimer = null;
 			},
