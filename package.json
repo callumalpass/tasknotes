@@ -79,7 +79,6 @@
 		"typescript": "^5.9.2"
 	},
 	"dependencies": {
-		"@tasknotes/model": "file:../tasknotes-model",
 		"@codemirror/view": "^6.38.6",
 		"@fullcalendar/core": "^6.1.17",
 		"@fullcalendar/daygrid": "^6.1.17",
@@ -88,6 +87,7 @@
 		"@fullcalendar/multimonth": "^6.1.17",
 		"@fullcalendar/timegrid": "^6.1.17",
 		"@modelcontextprotocol/sdk": "^1.12.1",
+		"@tasknotes/model": "0.2.0",
 		"chrono-node": "^2.7.5",
 		"date-fns": "^4.1.0",
 		"ical.js": "^2.2.1",

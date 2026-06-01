@@ -588,6 +588,22 @@
       "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
       "translation": "972ad8d8a50397ba8c02433ed8f048eeb4074b85"
     },
+    "views.basesCalendar.settings.groups.view": {
+      "source": "69bd4ef9fbd0894a22759c3766b859defbdedbc8",
+      "translation": "5c388792c6076cf8168b353b991ef44cc83c118d"
+    },
+    "views.basesCalendar.settings.groups.display": {
+      "source": "574ff9b0c49cdeb5f5508548ae0cab44fecee038",
+      "translation": "6182122863c6835d1c5fdaa37f74be8a8b8b3a3d"
+    },
+    "views.basesCalendar.settings.groups.timeGrid": {
+      "source": "cc91dd396c39aae349b4cc36c33fbb020c7e6e40",
+      "translation": "75e128aeb8823c471f9238b200a170b42f60c953"
+    },
+    "views.basesCalendar.settings.groups.eventLayout": {
+      "source": "af5dda39004c612b944b7b7d50a027e72518d54d",
+      "translation": "fdfe20012a28ec2e2877eaa420e379b53ded8eb6"
+    },
     "views.basesCalendar.settings.groups.propertyBasedEvents": {
       "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
       "translation": "26386ed585c8f6b363c1c1463baffa74104d1b53"
@@ -9341,6 +9357,22 @@
     "views.basesCalendar.settings.groups.layout": {
       "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
       "translation": "dfe849d440286b98936aeb6cdd80891bdfb8b46a"
+    },
+    "views.basesCalendar.settings.groups.view": {
+      "source": "69bd4ef9fbd0894a22759c3766b859defbdedbc8",
+      "translation": "462d2dd3ccbcd3659fd302e83b4a568dc2c096b6"
+    },
+    "views.basesCalendar.settings.groups.display": {
+      "source": "574ff9b0c49cdeb5f5508548ae0cab44fecee038",
+      "translation": "585ce519d7d9bc84c3392ccf878081e3520688ad"
+    },
+    "views.basesCalendar.settings.groups.timeGrid": {
+      "source": "cc91dd396c39aae349b4cc36c33fbb020c7e6e40",
+      "translation": "6b62412d9d38c43f4a105390e62a74f1b8943c1b"
+    },
+    "views.basesCalendar.settings.groups.eventLayout": {
+      "source": "af5dda39004c612b944b7b7d50a027e72518d54d",
+      "translation": "b655d6c55c2d5215e365bc49ad81320515a3100d"
     },
     "views.basesCalendar.settings.groups.propertyBasedEvents": {
       "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
@@ -18096,6 +18128,22 @@
       "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
       "translation": "f09e7eee2eefe89bbe9b61541500398dd8fb1519"
     },
+    "views.basesCalendar.settings.groups.view": {
+      "source": "69bd4ef9fbd0894a22759c3766b859defbdedbc8",
+      "translation": "09237dbacbb33a0831b186279d9a2723fdcb6836"
+    },
+    "views.basesCalendar.settings.groups.display": {
+      "source": "574ff9b0c49cdeb5f5508548ae0cab44fecee038",
+      "translation": "bc8f3ed663adc3f670da96cfd59f14ca2d063439"
+    },
+    "views.basesCalendar.settings.groups.timeGrid": {
+      "source": "cc91dd396c39aae349b4cc36c33fbb020c7e6e40",
+      "translation": "a8bd01e8c9493ec7ca2f69b072dbe9bea38eb4fd"
+    },
+    "views.basesCalendar.settings.groups.eventLayout": {
+      "source": "af5dda39004c612b944b7b7d50a027e72518d54d",
+      "translation": "efc47931e2cda59d8cbc9a0f922ab44958de55ec"
+    },
     "views.basesCalendar.settings.groups.propertyBasedEvents": {
       "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
       "translation": "6fec35fd7ccf21e929d42d132d55c7a3d477e8d5"
@@ -26849,6 +26897,22 @@
     "views.basesCalendar.settings.groups.layout": {
       "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
       "translation": "11c1317b4c46e0ab1ab71a0a80d34219b5fc07a1"
+    },
+    "views.basesCalendar.settings.groups.view": {
+      "source": "69bd4ef9fbd0894a22759c3766b859defbdedbc8",
+      "translation": "410844c1311c25ce7111425f078c9f04570044a3"
+    },
+    "views.basesCalendar.settings.groups.display": {
+      "source": "574ff9b0c49cdeb5f5508548ae0cab44fecee038",
+      "translation": "a46924362170899f2cf4bc50ba4988e781c5a643"
+    },
+    "views.basesCalendar.settings.groups.timeGrid": {
+      "source": "cc91dd396c39aae349b4cc36c33fbb020c7e6e40",
+      "translation": "25e26569a7a36f01299950087c95efd4e932ab38"
+    },
+    "views.basesCalendar.settings.groups.eventLayout": {
+      "source": "af5dda39004c612b944b7b7d50a027e72518d54d",
+      "translation": "ed3c70561d726345d86f94309522a307e76eddff"
     },
     "views.basesCalendar.settings.groups.propertyBasedEvents": {
       "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
@@ -35604,6 +35668,22 @@
       "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
       "translation": "d4df7df97b71560030b3f4d21b5d2d2162ea40ff"
     },
+    "views.basesCalendar.settings.groups.view": {
+      "source": "69bd4ef9fbd0894a22759c3766b859defbdedbc8",
+      "translation": "58d6978a3e349e425282dbf456ed7a06242e07e6"
+    },
+    "views.basesCalendar.settings.groups.display": {
+      "source": "574ff9b0c49cdeb5f5508548ae0cab44fecee038",
+      "translation": "a61d568e9d1d14e398d38832e191e6ff1c09984b"
+    },
+    "views.basesCalendar.settings.groups.timeGrid": {
+      "source": "cc91dd396c39aae349b4cc36c33fbb020c7e6e40",
+      "translation": "1c5cd8bfe4b5b55f6efed48f6b2e7a236d7e2cb2"
+    },
+    "views.basesCalendar.settings.groups.eventLayout": {
+      "source": "af5dda39004c612b944b7b7d50a027e72518d54d",
+      "translation": "b5d3bfd6c7f8ba769d1e881be5fac0f3b5f0cf1b"
+    },
     "views.basesCalendar.settings.groups.propertyBasedEvents": {
       "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
       "translation": "525bc4caabb32535844ce8b39d0760fdcd24ca25"
@@ -44357,6 +44437,22 @@
     "views.basesCalendar.settings.groups.layout": {
       "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
       "translation": "972ad8d8a50397ba8c02433ed8f048eeb4074b85"
+    },
+    "views.basesCalendar.settings.groups.view": {
+      "source": "69bd4ef9fbd0894a22759c3766b859defbdedbc8",
+      "translation": "2668df9341b8d948a55f0a7ff910bcec238e73e9"
+    },
+    "views.basesCalendar.settings.groups.display": {
+      "source": "574ff9b0c49cdeb5f5508548ae0cab44fecee038",
+      "translation": "e6f5770d36f7aec3e92bd73c35834719e0453248"
+    },
+    "views.basesCalendar.settings.groups.timeGrid": {
+      "source": "cc91dd396c39aae349b4cc36c33fbb020c7e6e40",
+      "translation": "5c7f7eeb1bc5ce0e1d6ec3dd6ec0d4bb5440dea4"
+    },
+    "views.basesCalendar.settings.groups.eventLayout": {
+      "source": "af5dda39004c612b944b7b7d50a027e72518d54d",
+      "translation": "ff4eece336c42371f891b7767dbe4785a0605fff"
     },
     "views.basesCalendar.settings.groups.propertyBasedEvents": {
       "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
@@ -53112,6 +53208,22 @@
       "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
       "translation": "e88597e10d5cbedd09a3ef93788b860ec9966ed8"
     },
+    "views.basesCalendar.settings.groups.view": {
+      "source": "69bd4ef9fbd0894a22759c3766b859defbdedbc8",
+      "translation": "88f1a5a112f2bb50aa6d5e5fc8b8e877768c0317"
+    },
+    "views.basesCalendar.settings.groups.display": {
+      "source": "574ff9b0c49cdeb5f5508548ae0cab44fecee038",
+      "translation": "eb3efda860859c594d5c266a80f1f1a157cff96e"
+    },
+    "views.basesCalendar.settings.groups.timeGrid": {
+      "source": "cc91dd396c39aae349b4cc36c33fbb020c7e6e40",
+      "translation": "fdff83d2a5886c8b65a52b1bc6b269335e3c7171"
+    },
+    "views.basesCalendar.settings.groups.eventLayout": {
+      "source": "af5dda39004c612b944b7b7d50a027e72518d54d",
+      "translation": "efaaac18123f820b42f2a9450faa81c8092e679a"
+    },
     "views.basesCalendar.settings.groups.propertyBasedEvents": {
       "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
       "translation": "38909f0175ac6f3142ccda1f1aac16bf54a1b521"
@@ -61865,6 +61977,22 @@
     "views.basesCalendar.settings.groups.layout": {
       "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
       "translation": "b0961e172bcdbded747381024a85290431f6fde1"
+    },
+    "views.basesCalendar.settings.groups.view": {
+      "source": "69bd4ef9fbd0894a22759c3766b859defbdedbc8",
+      "translation": "cebbb470948f88d59de96e42b96f7cb0e0d481e8"
+    },
+    "views.basesCalendar.settings.groups.display": {
+      "source": "574ff9b0c49cdeb5f5508548ae0cab44fecee038",
+      "translation": "71b6771bc7893b632ef444e203571d71bb080c90"
+    },
+    "views.basesCalendar.settings.groups.timeGrid": {
+      "source": "cc91dd396c39aae349b4cc36c33fbb020c7e6e40",
+      "translation": "afda0a22a14f5d991cb42adb4f37626806954491"
+    },
+    "views.basesCalendar.settings.groups.eventLayout": {
+      "source": "af5dda39004c612b944b7b7d50a027e72518d54d",
+      "translation": "027c96f6e3642ddb52232633075d854103895bb1"
     },
     "views.basesCalendar.settings.groups.propertyBasedEvents": {
       "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
