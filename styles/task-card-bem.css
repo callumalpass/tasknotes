@@ -662,7 +662,7 @@ body.is-mobile .tasknotes-plugin .task-card__chevron svg {
 }
 
 body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__chevron {
-    left: var(--tn-spacing-xs);
+    left: calc(-1 * var(--tn-mobile-task-card-menu-size) - var(--tn-spacing-xs));
     width: 32px;
     height: 32px;
 }
