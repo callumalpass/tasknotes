@@ -60,6 +60,12 @@ Beyond calendar sync, TaskNotes includes an HTTP API and webhook support for aut
 
 See [Integrations](settings/integrations.md) for details.
 
+## Companion Plugins
+
+TaskNotes can be extended by optional companion plugins that use the JavaScript runtime API while keeping task data in Markdown files. [TaskNotes Workflows](companion-plugins/tasknotes-workflows.md) adds Markdown-defined automation for TaskNotes events, schedules, manual commands, and typed task actions.
+
+See [Companion Plugins](companion-plugins.md) for details.
+
 ## REST API
 
 External applications can interact with TaskNotes through its REST API for automation, reporting, and integration with other tools.

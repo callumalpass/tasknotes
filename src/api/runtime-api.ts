@@ -24,6 +24,8 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"tasks.delete",
 	"tasks.move",
 	"tasks.events",
+	"relationships.read",
+	"events.list",
 	"time.read",
 	"time.write",
 	"pomodoro.read",
@@ -65,6 +67,172 @@ export type TaskNotesRuntimeEventName =
 	| TaskNotesTaskEventName
 	| WebhookEvent;
 
+export type TaskNotesRuntimeEventCategory =
+	| "task"
+	| "time"
+	| "pomodoro"
+	| "recurring";
+
+export interface TaskNotesRuntimeEventDefinition {
+	name: TaskNotesRuntimeEventName;
+	label: string;
+	description: string;
+	category: TaskNotesRuntimeEventCategory;
+}
+
+export const TASKNOTES_RUNTIME_EVENT_DEFINITIONS: readonly TaskNotesRuntimeEventDefinition[] = [
+	{
+		name: "task.created",
+		label: "Task created",
+		description: "A TaskNotes task was created.",
+		category: "task",
+	},
+	{
+		name: "task.updated",
+		label: "Task updated",
+		description: "Any tracked TaskNotes task property changed.",
+		category: "task",
+	},
+	{
+		name: "task.deleted",
+		label: "Task deleted",
+		description: "A TaskNotes task was deleted.",
+		category: "task",
+	},
+	{
+		name: "task.moved",
+		label: "Task moved",
+		description: "A TaskNotes task note moved to a new path.",
+		category: "task",
+	},
+	{
+		name: "task.status.changed",
+		label: "Task status changed",
+		description: "A TaskNotes task status changed.",
+		category: "task",
+	},
+	{
+		name: "task.completed",
+		label: "Task completed",
+		description: "A TaskNotes task moved into a completed status.",
+		category: "task",
+	},
+	{
+		name: "task.uncompleted",
+		label: "Task uncompleted",
+		description: "A TaskNotes task moved out of a completed status.",
+		category: "task",
+	},
+	{
+		name: "task.archived",
+		label: "Task archived",
+		description: "A TaskNotes task was archived.",
+		category: "task",
+	},
+	{
+		name: "task.unarchived",
+		label: "Task unarchived",
+		description: "A TaskNotes task was unarchived.",
+		category: "task",
+	},
+	{
+		name: "task.scheduled.changed",
+		label: "Task scheduled date changed",
+		description: "A TaskNotes task scheduled date changed.",
+		category: "task",
+	},
+	{
+		name: "task.due.changed",
+		label: "Task due date changed",
+		description: "A TaskNotes task due date changed.",
+		category: "task",
+	},
+	{
+		name: "task.priority.changed",
+		label: "Task priority changed",
+		description: "A TaskNotes task priority changed.",
+		category: "task",
+	},
+	{
+		name: "task.tags.changed",
+		label: "Task tags changed",
+		description: "A TaskNotes task tag list changed.",
+		category: "task",
+	},
+	{
+		name: "task.contexts.changed",
+		label: "Task contexts changed",
+		description: "A TaskNotes task context list changed.",
+		category: "task",
+	},
+	{
+		name: "task.projects.changed",
+		label: "Task projects changed",
+		description: "A TaskNotes task project list changed.",
+		category: "task",
+	},
+	{
+		name: "task.reminders.changed",
+		label: "Task reminders changed",
+		description: "A TaskNotes task reminder list changed.",
+		category: "task",
+	},
+	{
+		name: "task.dependencies.changed",
+		label: "Task dependencies changed",
+		description: "A TaskNotes task dependency list changed.",
+		category: "task",
+	},
+	{
+		name: "task.recurrence.changed",
+		label: "Task recurrence changed",
+		description: "A TaskNotes task recurrence rule changed.",
+		category: "task",
+	},
+	{
+		name: "time.started",
+		label: "Time tracking started",
+		description: "A time entry started on a TaskNotes task.",
+		category: "time",
+	},
+	{
+		name: "time.stopped",
+		label: "Time tracking stopped",
+		description: "A time entry stopped on a TaskNotes task.",
+		category: "time",
+	},
+	{
+		name: "pomodoro.started",
+		label: "Pomodoro started",
+		description: "A Pomodoro session started.",
+		category: "pomodoro",
+	},
+	{
+		name: "pomodoro.completed",
+		label: "Pomodoro completed",
+		description: "A Pomodoro session completed.",
+		category: "pomodoro",
+	},
+	{
+		name: "pomodoro.interrupted",
+		label: "Pomodoro interrupted",
+		description: "A Pomodoro session was interrupted.",
+		category: "pomodoro",
+	},
+	{
+		name: "recurring.instance.completed",
+		label: "Recurring instance completed",
+		description: "A recurring task instance was completed.",
+		category: "recurring",
+	},
+	{
+		name: "recurring.instance.skipped",
+		label: "Recurring instance skipped",
+		description: "A recurring task instance was skipped.",
+		category: "recurring",
+	},
+] as const;
+
 export interface TaskNotesMutationContext {
 	source?: string;
 	correlationId?: string;
@@ -88,6 +256,20 @@ export interface ActiveTimeEntry {
 	task: TaskInfo;
 	entry: TimeEntry;
 	index: number;
+}
+
+export interface ResolvedTaskDependency {
+	dependency: TaskDependency;
+	task: TaskInfo | null;
+	path: string | null;
+}
+
+export interface TaskNotesTaskRelationships {
+	task: TaskInfo;
+	parents: TaskInfo[];
+	subtasks: TaskInfo[];
+	dependencies: ResolvedTaskDependency[];
+	blocking: TaskInfo[];
 }
 
 export interface StartTimeEntryOptions {
@@ -248,6 +430,14 @@ export interface TaskNotesRuntimeTasksApi {
 	): Promise<TaskInfo>;
 }
 
+export interface TaskNotesRuntimeRelationshipsApi {
+	parents(path: string): Promise<TaskInfo[]>;
+	subtasks(path: string): Promise<TaskInfo[]>;
+	dependencies(path: string): Promise<ResolvedTaskDependency[]>;
+	blocking(path: string): Promise<TaskInfo[]>;
+	all(path: string): Promise<TaskNotesTaskRelationships>;
+}
+
 export interface TaskNotesRuntimeTimeApi {
 	start(
 		path: string,
@@ -294,6 +484,7 @@ export interface TaskNotesRuntimeEventsApi {
 		handler: TaskNotesRuntimeEventHandler<EventName>
 	): EventRef;
 	off(ref: EventRef): void;
+	list(): readonly TaskNotesRuntimeEventDefinition[];
 }
 
 export interface TaskNotesRuntimeSettingsApi {
@@ -319,6 +510,7 @@ export interface TaskNotesRuntimeApiV1 {
 	hasCapability(capability: string): boolean;
 
 	readonly tasks: TaskNotesRuntimeTasksApi;
+	readonly relationships: TaskNotesRuntimeRelationshipsApi;
 	readonly time: TaskNotesRuntimeTimeApi;
 	readonly pomodoro: TaskNotesRuntimePomodoroApi;
 	readonly recurring: TaskNotesRuntimeRecurringApi;

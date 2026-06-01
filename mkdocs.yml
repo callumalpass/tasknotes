@@ -59,6 +59,7 @@ nav:
     - Third-party Integrations: features/integrations.md
     - User Fields: features/user-fields.md
     - Template Variables: features/template-variables.md
+    - Workflow Ideas: workflows.md
   - Views:
     - Overview: views.md
     - Task List View: views/task-list.md
@@ -90,8 +91,10 @@ nav:
     - NLP API: nlp-api.md
     - mdbase-tasknotes CLI: mdbase-tasknotes-cli.md
     - Webhooks: webhooks.md
-    - Workflows: workflows.md
     - Calendar Setup: calendar-setup.md
+  - Companion Plugins:
+    - Overview: companion-plugins.md
+    - TaskNotes Workflows: companion-plugins/tasknotes-workflows.md
   - Specification:
     - About the Spec: spec.md
     - Overview: spec/00-overview.md

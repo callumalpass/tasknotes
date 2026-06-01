@@ -368,15 +368,50 @@ describe("TaskNotesApiV1", () => {
 		expect(api.apiVersion).toBe(1);
 		expect(api.capabilities).toContain("tasks.write");
 		expect(api.capabilities).toContain("pomodoro.events");
+		expect(api.capabilities).toContain("events.list");
 		expect(api.capabilities).toContain("extensions.register");
+		expect(api.capabilities).toContain("relationships.read");
 		expect(api.hasCapability("tasks.events")).toBe(true);
 		expect(api.hasCapability("missing.capability")).toBe(false);
 		expect(typeof api.parseNaturalLanguage).toBe("function");
 		expect(typeof api.tasks.update).toBe("function");
+		expect(typeof api.relationships.subtasks).toBe("function");
 		expect(typeof api.time.start).toBe("function");
 		expect(typeof api.pomodoro.start).toBe("function");
 		expect(typeof api.events.on).toBe("function");
+		expect(typeof api.events.list).toBe("function");
 		expect(typeof api.extensions.register).toBe("function");
+	});
+
+	it("lists runtime event definitions for companion plugin UIs", () => {
+		const { plugin } = createPluginContext();
+		const api = new TaskNotesAPI(plugin);
+
+		const events = api.events.list();
+		expect(events).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					name: "task.status.changed",
+					label: "Task status changed",
+					category: "task",
+				}),
+				expect.objectContaining({
+					name: "time.started",
+					label: "Time tracking started",
+					category: "time",
+				}),
+				expect.objectContaining({
+					name: "pomodoro.started",
+					label: "Pomodoro started",
+					category: "pomodoro",
+				}),
+			])
+		);
+
+		const first = events[0] as { label: string };
+		first.label = "Mutated";
+
+		expect(api.events.list()[0]?.label).not.toBe("Mutated");
 	});
 
 	it("lets companion plugins register extension namespaces and capabilities", () => {
@@ -455,6 +490,47 @@ describe("TaskNotesApiV1", () => {
 
 		await expect(api.listTasks(query)).resolves.toEqual([task]);
 		expect(filterService.getGroupedTasks).toHaveBeenCalledWith(query);
+	});
+
+	it("resolves task relationships through projects and dependencies", async () => {
+		const parent = createTask({
+			title: "Parent",
+			path: "Projects/project.md",
+		});
+		const blocker = createTask({
+			title: "Blocker",
+			path: "Tasks/blocker.md",
+		});
+		const child = createTask({
+			title: "Child",
+			path: "Tasks/child.md",
+			projects: ["[[Projects/project]]"],
+			blockedBy: [{ uid: "[[Tasks/blocker]]", reltype: "FINISHTOSTART" }],
+		});
+		const { plugin } = createPluginContext([parent, blocker, child]);
+		const api = new TaskNotesAPI(plugin);
+
+		await expect(api.relationships.parents(child.path)).resolves.toEqual([
+			expect.objectContaining({ path: parent.path }),
+		]);
+		await expect(api.relationships.subtasks(parent.path)).resolves.toEqual([
+			expect.objectContaining({ path: child.path }),
+		]);
+		await expect(api.relationships.dependencies(child.path)).resolves.toEqual([
+			expect.objectContaining({
+				path: blocker.path,
+				task: expect.objectContaining({ path: blocker.path }),
+				dependency: { uid: "[[Tasks/blocker]]", reltype: "FINISHTOSTART" },
+			}),
+		]);
+		await expect(api.relationships.blocking(blocker.path)).resolves.toEqual([
+			expect.objectContaining({ path: child.path }),
+		]);
+
+		const relationships = await api.relationships.all(child.path);
+		expect(relationships.task.path).toBe(child.path);
+		expect(relationships.parents[0]?.path).toBe(parent.path);
+		expect(relationships.dependencies[0]?.task?.path).toBe(blocker.path);
 	});
 
 	it("delegates task creation and common task mutations through TaskService", async () => {

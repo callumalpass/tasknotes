@@ -24,13 +24,16 @@ import {
 } from "../types";
 import type { TaskNotesSettings } from "../types/settings";
 import { ensureFolderExists } from "../utils/helpers";
+import { parseLinkToPath } from "../utils/linkUtils";
 import {
 	TASKNOTES_RUNTIME_API_CAPABILITIES,
+	TASKNOTES_RUNTIME_EVENT_DEFINITIONS,
 	TASKNOTES_RUNTIME_API_VERSION,
 	type ActiveTimeEntry,
 	type CompleteTaskOptions,
 	type PomodoroSessionsOptions,
 	type PomodoroStartOptions,
+	type ResolvedTaskDependency,
 	type StartTimeEntryOptions,
 	type TaskNotesApiChanges,
 	type TaskNotesApiEvent,
@@ -42,6 +45,7 @@ import {
 	type TaskNotesRuntimeExtensionHandle,
 	type TaskNotesRuntimeExtensionInfo,
 	type TaskNotesRuntimeEventName,
+	type TaskNotesTaskRelationships,
 	type TaskNotesTaskPatch,
 	type UncompleteTaskOptions,
 } from "./runtime-api";
@@ -77,6 +81,7 @@ const RESERVED_RUNTIME_EXTENSION_NAMESPACES = new Set([
 	"hascapability",
 	"nlp",
 	"pomodoro",
+	"relationships",
 	"recurring",
 	"settings",
 	"tasks",
@@ -160,6 +165,14 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			this.removeDependency(path, uid, context),
 	};
 
+	readonly relationships = {
+		parents: (path: string) => this.getParentTasks(path),
+		subtasks: (path: string) => this.getSubtasks(path),
+		dependencies: (path: string) => this.getTaskDependencies(path),
+		blocking: (path: string) => this.getBlockingTasks(path),
+		all: (path: string) => this.getTaskRelationships(path),
+	};
+
 	readonly time = {
 		start: (
 			path: string,
@@ -206,6 +219,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			handler: TaskNotesApiEventHandler<EventName>
 		) => this.on(event, handler),
 		off: (ref: EventRef) => this.off(ref),
+		list: () => TASKNOTES_RUNTIME_EVENT_DEFINITIONS.map((event) => ({ ...event })),
 	};
 
 	readonly settings = {
@@ -265,6 +279,91 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			tasks.push(...groupTasks);
 		}
 		return tasks.map(copyTaskInfo);
+	}
+
+	async getParentTasks(path: string): Promise<TaskInfo[]> {
+		const task = await this.requireTask(path);
+		const parents: TaskInfo[] = [];
+
+		for (const project of task.projects ?? []) {
+			const parent = await this.resolveTaskReference(project, task.path);
+			if (parent) parents.push(parent);
+		}
+
+		return uniqueTasks(parents).map(copyTaskInfo);
+	}
+
+	async getSubtasks(path: string): Promise<TaskInfo[]> {
+		const task = await this.requireTask(path);
+		const allTasks = await this.plugin.cacheManager.getAllTasks();
+		const subtasks: TaskInfo[] = [];
+
+		for (const candidate of allTasks) {
+			if (candidate.path === task.path) continue;
+			for (const project of candidate.projects ?? []) {
+				if (await this.taskReferenceMatches(project, candidate.path, task.path)) {
+					subtasks.push(candidate);
+					break;
+				}
+			}
+		}
+
+		return uniqueTasks(subtasks).map(copyTaskInfo);
+	}
+
+	async getTaskDependencies(path: string): Promise<ResolvedTaskDependency[]> {
+		const task = await this.requireTask(path);
+		const dependencies: ResolvedTaskDependency[] = [];
+
+		for (const dependency of task.blockedBy ?? []) {
+			const dependencyPath = await this.resolveTaskReferencePath(dependency.uid, task.path);
+			const blockingTask = dependencyPath
+				? await this.plugin.cacheManager.getTaskInfo(dependencyPath)
+				: null;
+			dependencies.push({
+				dependency: copyTaskDependency(dependency),
+				task: blockingTask ? copyTaskInfo(blockingTask) : null,
+				path: blockingTask?.path ?? dependencyPath,
+			});
+		}
+
+		return dependencies;
+	}
+
+	async getBlockingTasks(path: string): Promise<TaskInfo[]> {
+		const task = await this.requireTask(path);
+		const allTasks = await this.plugin.cacheManager.getAllTasks();
+		const blocking: TaskInfo[] = [];
+
+		for (const candidate of allTasks) {
+			if (candidate.path === task.path) continue;
+			for (const dependency of candidate.blockedBy ?? []) {
+				if (await this.taskReferenceMatches(dependency.uid, candidate.path, task.path)) {
+					blocking.push(candidate);
+					break;
+				}
+			}
+		}
+
+		return uniqueTasks(blocking).map(copyTaskInfo);
+	}
+
+	async getTaskRelationships(path: string): Promise<TaskNotesTaskRelationships> {
+		const task = await this.requireTask(path);
+		const [parents, subtasks, dependencies, blocking] = await Promise.all([
+			this.getParentTasks(task.path),
+			this.getSubtasks(task.path),
+			this.getTaskDependencies(task.path),
+			this.getBlockingTasks(task.path),
+		]);
+
+		return {
+			task: copyTaskInfo(task),
+			parents,
+			subtasks,
+			dependencies,
+			blocking,
+		};
 	}
 
 	async createTask(
@@ -824,6 +923,41 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		this.plugin.emitter.offref(ref);
 	}
 
+	private async resolveTaskReference(reference: string, sourcePath: string): Promise<TaskInfo | null> {
+		const path = await this.resolveTaskReferencePath(reference, sourcePath);
+		return path ? await this.plugin.cacheManager.getTaskInfo(path) : null;
+	}
+
+	private async taskReferenceMatches(
+		reference: string,
+		sourcePath: string,
+		targetPath: string
+	): Promise<boolean> {
+		const path = await this.resolveTaskReferencePath(reference, sourcePath);
+		return path === normalizePath(targetPath);
+	}
+
+	private async resolveTaskReferencePath(
+		reference: string,
+		sourcePath: string
+	): Promise<string | null> {
+		const linkPath = firstReferencePathCandidate(reference);
+		if (!linkPath) return null;
+
+		const metadataCache = this.plugin.app.metadataCache as
+			| { getFirstLinkpathDest?: (linkpath: string, sourcePath: string) => TFile | null }
+			| undefined;
+		const resolvedFile = metadataCache?.getFirstLinkpathDest?.(linkPath, sourcePath);
+		if (resolvedFile instanceof TFile) return normalizePath(resolvedFile.path);
+
+		for (const candidate of taskReferencePathCandidates(linkPath)) {
+			const task = await this.plugin.cacheManager.getTaskInfo(candidate);
+			if (task) return task.path;
+		}
+
+		return normalizePath(linkPath);
+	}
+
 	private async requireTask(path: string): Promise<TaskInfo> {
 		const normalizedPath = this.normalizeTaskPath(path);
 		const task = await this.plugin.cacheManager.getTaskInfo(normalizedPath);
@@ -1087,6 +1221,35 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			}),
 		];
 	}
+}
+
+function firstReferencePathCandidate(reference: string): string | null {
+	const parsed = parseLinkToPath(reference).trim();
+	return parsed ? normalizePath(parsed) : null;
+}
+
+function taskReferencePathCandidates(path: string): string[] {
+	const normalizedPath = normalizePath(path);
+	const candidates = [normalizedPath];
+	if (!/\.md$/iu.test(normalizedPath)) {
+		candidates.push(`${normalizedPath}.md`);
+	}
+	return candidates;
+}
+
+function uniqueTasks(tasks: TaskInfo[]): TaskInfo[] {
+	const seen = new Set<string>();
+	const unique: TaskInfo[] = [];
+	for (const task of tasks) {
+		if (seen.has(task.path)) continue;
+		seen.add(task.path);
+		unique.push(task);
+	}
+	return unique;
+}
+
+function copyTaskDependency(dependency: TaskDependency): TaskDependency {
+	return { ...dependency };
 }
 
 function buildTaskChanges(before?: TaskInfo, after?: TaskInfo): TaskNotesApiChanges {

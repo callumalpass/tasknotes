@@ -11,6 +11,8 @@ This API is for Obsidian companion plugins and in-vault scripting tools such as 
 
 This is separate from the [HTTP API](HTTP_API.md). The runtime API does not start a server, does not use bearer-token authentication, and is only available inside the running Obsidian app.
 
+For user-facing extensions built on this API, see [Companion Plugins](companion-plugins.md). For a concrete automation companion plugin, see [TaskNotes Workflows](companion-plugins/tasknotes-workflows.md).
+
 The TypeScript contract lives in `src/api/runtime-api.ts`. It is intentionally small and type-focused so it can later become a standalone `@tasknotes/runtime-api` package for companion plugins.
 
 ## Version and Capabilities
@@ -35,6 +37,8 @@ Current capabilities:
 - `tasks.delete`
 - `tasks.move`
 - `tasks.events`
+- `relationships.read`
+- `events.list`
 - `time.read`
 - `time.write`
 - `pomodoro.read`
@@ -51,6 +55,7 @@ Prefer the namespaced API for new code:
 
 ```javascript
 await api.tasks.update("Tasks/example.md", { status: "active" });
+const subtasks = await api.relationships.subtasks("Tasks/example.md");
 await api.time.start("Tasks/example.md", { description: "Deep work" });
 await api.pomodoro.start({ taskPath: "Tasks/example.md", duration: 25 });
 ```
@@ -185,6 +190,28 @@ const task = await api.tasks.create(
 await api.tasks.complete(task.path);
 ```
 
+## Relationships
+
+Relationship methods resolve TaskNotes' project-as-parent links and `blockedBy` dependencies into task records where possible.
+
+| Method | Description |
+| --- | --- |
+| `api.relationships.parents(path)` | Returns parent tasks referenced from the task's projects. |
+| `api.relationships.subtasks(path)` | Returns tasks that reference this task as a project. |
+| `api.relationships.dependencies(path)` | Returns `blockedBy` dependencies with resolved task data when available. |
+| `api.relationships.blocking(path)` | Returns tasks that are blocked by this task. |
+| `api.relationships.all(path)` | Returns the task plus parents, subtasks, dependencies, and blocking tasks. |
+
+Example:
+
+```javascript
+const relationships = await api.relationships.all("Tasks/example.md");
+
+for (const subtask of relationships.subtasks) {
+  await api.tasks.setPriority(subtask.path, relationships.task.priority);
+}
+```
+
 ## Time Tracking
 
 | Method | Description |
@@ -251,6 +278,13 @@ TaskNotes attaches this context to normalized events emitted during the mutation
 ## Events
 
 Subscribe with `api.events.on(eventName, handler)` and unsubscribe with `api.events.off(ref)`. In an Obsidian plugin, pass the returned `EventRef` to `this.registerEvent(ref)`.
+
+Use `api.events.list()` to discover the event catalogue for companion-plugin UIs:
+
+```javascript
+const events = api.events.list();
+// [{ name: "task.status.changed", label: "Task status changed", category: "task", ... }]
+```
 
 Task events:
 
