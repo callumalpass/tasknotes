@@ -35,6 +35,8 @@ import { computeTaskTimeData, computeTimeSummary } from "../utils/timeTrackingUt
 import {
 	TASKNOTES_RUNTIME_API_CAPABILITIES,
 	TASKNOTES_RUNTIME_EVENT_DEFINITIONS,
+	TASKNOTES_RUNTIME_LIFECYCLE_EVENT_DEFINITIONS,
+	TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS,
 	TASKNOTES_RUNTIME_API_VERSION,
 	type ActiveTimeEntry,
 	type CompleteTaskOptions,
@@ -47,6 +49,9 @@ import {
 	type TaskNotesRuntimeFilterOperatorDefinition,
 	type TaskNotesRuntimeFilterPropertyDefinition,
 	type TaskNotesRuntimeHealth,
+	type TaskNotesRuntimeLifecycleEventName,
+	type TaskNotesRuntimeLifecycleHandler,
+	type TaskNotesRuntimeLifecyclePayload,
 	type TaskNotesRuntimeRelationshipDefinition,
 	type TaskNotesRuntimeTaskQueryResult,
 	type TaskNotesRuntimeTaskStats,
@@ -599,6 +604,17 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 	readonly system = {
 		health: () => this.getHealth(),
+	};
+
+	readonly lifecycle = {
+		ready: () => this.plugin.onReady(),
+		isReady: () => this.plugin.initializationComplete === true,
+		on: <EventName extends TaskNotesRuntimeLifecycleEventName>(
+			event: EventName,
+			handler: TaskNotesRuntimeLifecycleHandler<EventName>
+		) => this.onLifecycle(event, handler),
+		off: (ref: EventRef) => this.off(ref),
+		list: () => TASKNOTES_RUNTIME_LIFECYCLE_EVENT_DEFINITIONS.map((event) => ({ ...event })),
 	};
 
 	readonly extensions = {
@@ -1338,6 +1354,9 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		};
 
 		this.extensionRegistry.set(namespace, registered);
+		this.emitLifecycle("extension.registered", {
+			extension: this.extensionInfo(registered),
+		});
 
 		return {
 			id,
@@ -1346,6 +1365,9 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 				const current = this.extensionRegistry.get(namespace);
 				if (current?.token === token) {
 					this.extensionRegistry.delete(namespace);
+					this.emitLifecycle("extension.unregistered", {
+						extension: this.extensionInfo(current),
+					});
 				}
 			},
 		};
@@ -1373,13 +1395,19 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	}
 
 	private listExtensions(): TaskNotesRuntimeExtensionInfo[] {
-		return Array.from(this.extensionRegistry.values()).map((extension) => ({
+		return Array.from(this.extensionRegistry.values()).map((extension) =>
+			this.extensionInfo(extension)
+		);
+	}
+
+	private extensionInfo(extension: RegisteredRuntimeExtension): TaskNotesRuntimeExtensionInfo {
+		return {
 			id: extension.id,
 			namespace: extension.namespace,
 			displayName: extension.displayName,
 			version: extension.version,
 			capabilities: [...extension.capabilities],
-		}));
+		};
 	}
 
 	private getExtensionCapabilities(): readonly string[] {
@@ -1525,6 +1553,50 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 					handler(apiEvent as Parameters<TaskNotesApiEventHandler<EventName>>[0]);
 				}
 			}
+		});
+	}
+
+	onLifecycle<EventName extends TaskNotesRuntimeLifecycleEventName>(
+		event: EventName,
+		handler: TaskNotesRuntimeLifecycleHandler<EventName>
+	): EventRef {
+		const rawEvent = TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS[event];
+		const ref = this.plugin.emitter.on(rawEvent, (payload: unknown) => {
+			handler(
+				this.normalizeLifecycleEvent(
+					event,
+					rawEvent,
+					payload
+				) as TaskNotesRuntimeLifecyclePayload & {
+					event: EventName;
+				}
+			);
+		});
+
+		if (event === "ready") {
+			void this.plugin.onReady().then(() => {
+				handler(
+					this.normalizeLifecycleEvent(
+						event,
+						rawEvent,
+						undefined
+					) as TaskNotesRuntimeLifecyclePayload & {
+						event: EventName;
+					}
+				);
+			});
+		}
+
+		return ref;
+	}
+
+	emitLifecycle(
+		event: TaskNotesRuntimeLifecycleEventName,
+		payload: Record<string, unknown> = {}
+	): void {
+		this.plugin.emitter.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS[event], {
+			...payload,
+			timestamp: new Date().toISOString(),
 		});
 	}
 
@@ -1755,6 +1827,28 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		];
 	}
 
+	private normalizeLifecycleEvent(
+		event: TaskNotesRuntimeLifecycleEventName,
+		rawEvent: string,
+		payload: unknown
+	): TaskNotesRuntimeLifecyclePayload {
+		const record = isRecord(payload) ? payload : {};
+		const extension = isRecord(record.extension)
+			? (record.extension as TaskNotesRuntimeLifecyclePayload["extension"])
+			: undefined;
+		return {
+			event,
+			timestamp:
+				typeof record.timestamp === "string" ? record.timestamp : new Date().toISOString(),
+			data: record.data ?? payload,
+			settings: event === "settings.changed" ? this.getSettingsSnapshot() : undefined,
+			extension,
+			filePath: typeof record.filePath === "string" ? record.filePath : undefined,
+			force: typeof record.force === "boolean" ? record.force : undefined,
+			rawEvent,
+		};
+	}
+
 	private buildEventPayloadBase(
 		payload: Partial<Omit<TaskNotesApiEventPayload, "event" | "timestamp">> & {
 			event?: TaskNotesApiEvent;
@@ -1893,6 +1987,10 @@ function userFieldTypeToRuntimeValueType(
 function coerceDateOption(value: string | Date | null | undefined): Date | null {
 	if (!value) return null;
 	return value instanceof Date ? value : new Date(value);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
 }
 
 function buildTaskChanges(before?: TaskInfo, after?: TaskInfo): TaskNotesApiChanges {

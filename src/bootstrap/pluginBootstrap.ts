@@ -53,6 +53,7 @@ import { TaskFileLifecycleReconciliationService } from "../services/TaskFileLife
 import { TaskNotesAPI } from "../api/TaskNotesAPI";
 import { isCalendarIntegrationDisabledOnMobile } from "../utils/calendarIntegration";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS } from "../api/runtime-api";
 import { showNotice } from "../ui/notifications";
 import { EVENT_USER_NOTICE, type UserNoticePayload } from "../core/userNotices";
 
@@ -296,6 +297,9 @@ export async function initializeAfterLayoutReady(plugin: TaskNotesPlugin): Promi
 		plugin.setupDateChangeDetection();
 		initializeServicesLazily(plugin);
 		await registerBasesIntegration(plugin);
+		plugin.emitter.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS["layout.ready"], {
+			timestamp: new Date().toISOString(),
+		});
 	} catch (error) {
 		tasknotesLogger.error("Error during post-layout initialization:", {
 			category: "internal",
@@ -390,7 +394,8 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 
 							if (
 								(typeof eventId === "string" && eventId.length > 0) ||
-								(typeof exceptionEventId === "string" && exceptionEventId.length > 0)
+								(typeof exceptionEventId === "string" &&
+									exceptionEventId.length > 0)
 							) {
 								plugin.taskCalendarSyncService
 									.deleteTaskFromCalendarByPath(

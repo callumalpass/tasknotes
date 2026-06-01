@@ -83,6 +83,7 @@ import {
 } from "./settings/settingsPersistence";
 import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
 import { createTaskNotesLogger } from "./utils/tasknotesLogger";
+import { TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS } from "./api/runtime-api";
 import {
 	createTaskNotesPerformanceProfiler,
 	TaskNotesPerformanceProfiler,
@@ -300,6 +301,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// At the very end of onload, resolve the promise to signal readiness
 		this.resolveReady();
+		this.emitter.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS.ready, {
+			timestamp: new Date().toISOString(),
+		});
 	}
 
 	private registerTaskNotesFileMenuActions(): void {
@@ -575,6 +579,11 @@ export default class TaskNotesPlugin extends Plugin {
 			// Use requestAnimationFrame for better UI timing instead of setTimeout
 			window.requestAnimationFrame(() => {
 				this.emitter.trigger(EVENT_DATA_CHANGED);
+				this.emitter.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS["cache.changed"], {
+					filePath,
+					force,
+					timestamp: new Date().toISOString(),
+				});
 			});
 		}
 	}
@@ -590,6 +599,9 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	onunload() {
+		this.emitter?.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS.unloading, {
+			timestamp: new Date().toISOString(),
+		});
 		void cleanupPluginRuntime(this);
 	}
 
@@ -1280,6 +1292,10 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Notify all views to refresh
 			this.notifyDataChanged(undefined, true, true);
+			this.emitter.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS["cache.rebuilt"], {
+				force: true,
+				timestamp: new Date().toISOString(),
+			});
 
 			// Hide loading notice and show success
 			loadingNotice.hide();

@@ -56,6 +56,7 @@ Current capabilities:
 - `query.filter-options`
 - `stats.tasks`
 - `system.health`
+- `lifecycle.events`
 
 ## Namespaces
 
@@ -435,6 +436,33 @@ this.registerEvent(
 	})
 );
 ```
+
+## Lifecycle
+
+Use `api.lifecycle` to coordinate companion plugin startup, reload, and cache-sensitive UI state:
+
+```javascript
+await api.lifecycle.ready();
+
+this.registerEvent(
+	api.lifecycle.on("settings.changed", () => {
+		refreshCompanionCatalogs();
+	})
+);
+```
+
+Lifecycle events:
+
+- `ready`
+- `layout.ready`
+- `settings.changed`
+- `cache.changed`
+- `cache.rebuilt`
+- `extension.registered`
+- `extension.unregistered`
+- `unloading`
+
+`api.lifecycle.list()` returns labels, descriptions, and categories for these events.
 
 ## Error Handling
 

@@ -65,6 +65,7 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"query.filter-options",
 	"stats.tasks",
 	"system.health",
+	"lifecycle.events",
 ] as const;
 
 export type TaskNotesRuntimeApiVersion = typeof TASKNOTES_RUNTIME_API_VERSION;
@@ -254,6 +255,88 @@ export const TASKNOTES_RUNTIME_EVENT_DEFINITIONS: readonly TaskNotesRuntimeEvent
 		category: "recurring",
 	},
 ] as const;
+
+export type TaskNotesRuntimeLifecycleEventName =
+	| "ready"
+	| "layout.ready"
+	| "settings.changed"
+	| "cache.changed"
+	| "cache.rebuilt"
+	| "extension.registered"
+	| "extension.unregistered"
+	| "unloading";
+
+export const TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS = {
+	ready: "tasknotes:runtime.ready",
+	"layout.ready": "tasknotes:runtime.layout-ready",
+	"settings.changed": "settings-changed",
+	"cache.changed": "tasknotes:cache.changed",
+	"cache.rebuilt": "tasknotes:cache.rebuilt",
+	"extension.registered": "tasknotes:extension.registered",
+	"extension.unregistered": "tasknotes:extension.unregistered",
+	unloading: "tasknotes:runtime.unloading",
+} as const satisfies Record<TaskNotesRuntimeLifecycleEventName, string>;
+
+export type TaskNotesRuntimeLifecycleEventCategory = "runtime" | "settings" | "cache" | "extension";
+
+export interface TaskNotesRuntimeLifecycleEventDefinition {
+	name: TaskNotesRuntimeLifecycleEventName;
+	label: string;
+	description: string;
+	category: TaskNotesRuntimeLifecycleEventCategory;
+}
+
+export const TASKNOTES_RUNTIME_LIFECYCLE_EVENT_DEFINITIONS: readonly TaskNotesRuntimeLifecycleEventDefinition[] =
+	[
+		{
+			name: "ready",
+			label: "Runtime ready",
+			description: "TaskNotes loaded its runtime API.",
+			category: "runtime",
+		},
+		{
+			name: "layout.ready",
+			label: "Layout ready",
+			description: "TaskNotes completed post-layout initialization.",
+			category: "runtime",
+		},
+		{
+			name: "settings.changed",
+			label: "Settings changed",
+			description: "TaskNotes settings were saved or reloaded.",
+			category: "settings",
+		},
+		{
+			name: "cache.changed",
+			label: "Cache changed",
+			description: "TaskNotes task data changed or was invalidated.",
+			category: "cache",
+		},
+		{
+			name: "cache.rebuilt",
+			label: "Cache rebuilt",
+			description: "TaskNotes cache was explicitly rebuilt.",
+			category: "cache",
+		},
+		{
+			name: "extension.registered",
+			label: "Extension registered",
+			description: "A companion plugin registered a runtime API extension namespace.",
+			category: "extension",
+		},
+		{
+			name: "extension.unregistered",
+			label: "Extension unregistered",
+			description: "A companion plugin unregistered a runtime API extension namespace.",
+			category: "extension",
+		},
+		{
+			name: "unloading",
+			label: "Runtime unloading",
+			description: "TaskNotes started unloading.",
+			category: "runtime",
+		},
+	] as const;
 
 export interface TaskNotesMutationContext {
 	source?: string;
@@ -663,6 +746,31 @@ export interface TaskNotesRuntimeExtensionsApi {
 	capabilities(): readonly string[];
 }
 
+export interface TaskNotesRuntimeLifecyclePayload {
+	event: TaskNotesRuntimeLifecycleEventName;
+	timestamp: string;
+	data?: unknown;
+	settings?: Readonly<TaskNotesSettings>;
+	extension?: TaskNotesRuntimeExtensionInfo;
+	filePath?: string;
+	force?: boolean;
+	rawEvent: string;
+}
+
+export type TaskNotesRuntimeLifecycleHandler<EventName extends TaskNotesRuntimeLifecycleEventName> =
+	(payload: TaskNotesRuntimeLifecyclePayload & { event: EventName }) => void;
+
+export interface TaskNotesRuntimeLifecycleApi {
+	ready(): Promise<void>;
+	isReady(): boolean;
+	on<EventName extends TaskNotesRuntimeLifecycleEventName>(
+		event: EventName,
+		handler: TaskNotesRuntimeLifecycleHandler<EventName>
+	): EventRef;
+	off(ref: EventRef): void;
+	list(): readonly TaskNotesRuntimeLifecycleEventDefinition[];
+}
+
 export interface TaskNotesRuntimeTaskQueryResult {
 	tasks: TaskInfo[];
 	total: number;
@@ -730,6 +838,7 @@ export interface TaskNotesRuntimeApiV1 {
 	readonly query: TaskNotesRuntimeQueryApi;
 	readonly stats: TaskNotesRuntimeStatsApi;
 	readonly system: TaskNotesRuntimeSystemApi;
+	readonly lifecycle: TaskNotesRuntimeLifecycleApi;
 	readonly extensions: TaskNotesRuntimeExtensionsApi;
 
 	parseNaturalLanguage(text: string): ParsedTaskData;

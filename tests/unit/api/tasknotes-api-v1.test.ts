@@ -440,6 +440,8 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 		},
 		taskService,
 		pomodoroService,
+		onReady: jest.fn(async () => undefined),
+		initializationComplete: true,
 		getActiveTimeSession: jest.fn(
 			(task: TaskInfo) => (task.timeEntries ?? []).find((entry) => !entry.endTime) ?? null
 		),
@@ -474,6 +476,7 @@ describe("TaskNotesApiV1", () => {
 		expect(api.capabilities).toContain("model.validate");
 		expect(api.capabilities).toContain("query.tasks");
 		expect(api.capabilities).toContain("system.health");
+		expect(api.capabilities).toContain("lifecycle.events");
 		expect(api.hasCapability("tasks.events")).toBe(true);
 		expect(api.hasCapability("missing.capability")).toBe(false);
 		expect(typeof api.model.config).toBe("function");
@@ -637,6 +640,48 @@ describe("TaskNotesApiV1", () => {
 		expect(api.extensions.get("tasknotes-workflows")).toBeUndefined();
 		expect(api.hasCapability("tasknotes-workflows.run")).toBe(false);
 		handle.unregister();
+	});
+
+	it("exposes lifecycle events for companion plugin coordination", async () => {
+		const { plugin, emitter } = createPluginContext();
+		const api = new TaskNotesAPI(plugin);
+		const readyHandler = jest.fn();
+		const settingsHandler = jest.fn();
+		const extensionHandler = jest.fn();
+
+		api.lifecycle.on("ready", readyHandler);
+		api.lifecycle.on("settings.changed", settingsHandler);
+		api.lifecycle.on("extension.registered", extensionHandler);
+
+		await api.lifecycle.ready();
+		await Promise.resolve();
+		emitter.trigger("settings-changed", { defaultTaskStatus: "open" });
+		api.extensions.register({
+			id: "lifecycle-test",
+			namespace: "lifecycle-test",
+			api: {},
+		});
+
+		expect(api.lifecycle.isReady()).toBe(true);
+		expect(api.lifecycle.list()).toEqual(
+			expect.arrayContaining([expect.objectContaining({ name: "settings.changed" })])
+		);
+		expect(readyHandler).toHaveBeenCalledWith(
+			expect.objectContaining({ event: "ready", rawEvent: "tasknotes:runtime.ready" })
+		);
+		expect(settingsHandler).toHaveBeenCalledWith(
+			expect.objectContaining({
+				event: "settings.changed",
+				rawEvent: "settings-changed",
+				settings: expect.objectContaining({ defaultTaskStatus: "open" }),
+			})
+		);
+		expect(extensionHandler).toHaveBeenCalledWith(
+			expect.objectContaining({
+				event: "extension.registered",
+				extension: expect.objectContaining({ namespace: "lifecycle-test" }),
+			})
+		);
 	});
 
 	it("reads individual tasks and filtered task lists without exposing mutable arrays", async () => {
