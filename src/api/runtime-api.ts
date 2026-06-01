@@ -14,6 +14,7 @@ import type {
 import type { ParsedTaskData } from "../services/NaturalLanguageParser";
 import type {
 	FilterQuery,
+	FilterOptions,
 	PomodoroHistoryStats,
 	PomodoroSessionHistory,
 	PomodoroState,
@@ -52,6 +53,7 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"events.list",
 	"time.read",
 	"time.write",
+	"time.summary",
 	"pomodoro.read",
 	"pomodoro.write",
 	"pomodoro.events",
@@ -59,6 +61,10 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"recurring.events",
 	"settings.snapshot",
 	"nlp.parse",
+	"query.tasks",
+	"query.filter-options",
+	"stats.tasks",
+	"system.health",
 ] as const;
 
 export type TaskNotesRuntimeApiVersion = typeof TASKNOTES_RUNTIME_API_VERSION;
@@ -290,6 +296,57 @@ export interface TaskNotesTaskRelationships {
 
 export interface StartTimeEntryOptions {
 	description?: string;
+}
+
+export interface TaskNotesRuntimeTimeSummaryOptions {
+	period?: "today" | "week" | "month" | "all" | "custom" | string;
+	from?: string | Date | null;
+	to?: string | Date | null;
+	includeTags?: boolean;
+}
+
+export interface TaskNotesRuntimeTimeSummary {
+	period: string;
+	dateRange: { from: string; to: string };
+	summary: {
+		totalMinutes: number;
+		totalHours: number;
+		tasksWithTime: number;
+		activeTasks: number;
+		completedTasks: number;
+	};
+	topTasks: Array<{ task: string; title: string; minutes: number }>;
+	topProjects: Array<{ project: string; minutes: number }>;
+	topTags?: Array<{ tag: string; minutes: number }>;
+}
+
+export interface TaskNotesRuntimeTaskTimeData {
+	task: {
+		id: string;
+		title: string;
+		status: string;
+		priority: string;
+	};
+	summary: {
+		totalMinutes: number;
+		totalHours: number;
+		totalSessions: number;
+		completedSessions: number;
+		activeSessions: number;
+		averageSessionMinutes: number;
+	};
+	activeSession: {
+		startTime: string;
+		description?: string;
+		elapsedMinutes: number;
+	} | null;
+	timeEntries: Array<{
+		startTime: string;
+		endTime: string | null;
+		description: string | null;
+		duration: number;
+		isActive: boolean;
+	}>;
 }
 
 export interface PomodoroStartOptions {
@@ -543,6 +600,8 @@ export interface TaskNotesRuntimeTimeApi {
 	): Promise<TaskInfo>;
 	stop(path: string, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	active(): Promise<ActiveTimeEntry[]>;
+	summary(options?: TaskNotesRuntimeTimeSummaryOptions): Promise<TaskNotesRuntimeTimeSummary>;
+	task(path: string): Promise<TaskNotesRuntimeTaskTimeData>;
 	append(path: string, entry: TimeEntry, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	deleteEntry(
 		path: string,
@@ -604,6 +663,55 @@ export interface TaskNotesRuntimeExtensionsApi {
 	capabilities(): readonly string[];
 }
 
+export interface TaskNotesRuntimeTaskQueryResult {
+	tasks: TaskInfo[];
+	total: number;
+	filtered: number;
+	groups: Record<string, string[]>;
+}
+
+export interface TaskNotesRuntimeQueryApi {
+	tasks(query?: FilterQuery): Promise<TaskNotesRuntimeTaskQueryResult>;
+	filterOptions(): Promise<FilterOptions>;
+}
+
+export interface TaskNotesRuntimeTaskStats {
+	total: number;
+	statusCounts: Record<string, number>;
+	priorityCounts: Record<string, number>;
+	completed: number;
+	active: number;
+	overdue: number;
+	archived: number;
+	withTimeEntries: number;
+	totalTrackedMinutes: number;
+	totalTrackedHours: number;
+}
+
+export interface TaskNotesRuntimeStatsApi {
+	tasks(query?: FilterQuery): Promise<TaskNotesRuntimeTaskStats>;
+}
+
+export interface TaskNotesRuntimeVaultInfo {
+	name: string;
+	path: string | null;
+}
+
+export interface TaskNotesRuntimeHealth {
+	status: "ok";
+	timestamp: string;
+	apiVersion: TaskNotesRuntimeApiVersion;
+	capabilities: readonly TaskNotesRuntimeApiCapability[];
+	vault: TaskNotesRuntimeVaultInfo;
+	tasks: {
+		total: number;
+	};
+}
+
+export interface TaskNotesRuntimeSystemApi {
+	health(): Promise<TaskNotesRuntimeHealth>;
+}
+
 export interface TaskNotesRuntimeApiV1 {
 	readonly apiVersion: TaskNotesRuntimeApiVersion;
 	readonly capabilities: readonly TaskNotesRuntimeApiCapability[];
@@ -619,6 +727,9 @@ export interface TaskNotesRuntimeApiV1 {
 	readonly events: TaskNotesRuntimeEventsApi;
 	readonly settings: TaskNotesRuntimeSettingsApi;
 	readonly nlp: TaskNotesRuntimeNlpApi;
+	readonly query: TaskNotesRuntimeQueryApi;
+	readonly stats: TaskNotesRuntimeStatsApi;
+	readonly system: TaskNotesRuntimeSystemApi;
 	readonly extensions: TaskNotesRuntimeExtensionsApi;
 
 	parseNaturalLanguage(text: string): ParsedTaskData;

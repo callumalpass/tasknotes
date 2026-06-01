@@ -44,6 +44,7 @@ Current capabilities:
 - `events.list`
 - `time.read`
 - `time.write`
+- `time.summary`
 - `pomodoro.read`
 - `pomodoro.write`
 - `pomodoro.events`
@@ -51,6 +52,10 @@ Current capabilities:
 - `recurring.events`
 - `settings.snapshot`
 - `nlp.parse`
+- `query.tasks`
+- `query.filter-options`
+- `stats.tasks`
+- `system.health`
 
 ## Namespaces
 
@@ -262,8 +267,21 @@ for (const subtask of relationships.subtasks) {
 | `api.time.start(path, options?, context?)`         | Starts time tracking and returns the updated task.                   |
 | `api.time.stop(path, context?)`                    | Stops the active time entry and returns the updated task.            |
 | `api.time.active()`                                | Returns active time entries with task, path, entry, and entry index. |
+| `api.time.summary(options?)`                       | Returns aggregate time totals, top tasks, projects, and tags.        |
+| `api.time.task(path)`                              | Returns one task's time summary and normalized time entries.         |
 | `api.time.append(path, entry, context?)`           | Appends a time entry.                                                |
 | `api.time.deleteEntry(path, entryIndex, context?)` | Deletes a time entry through TaskNotes' service.                     |
+
+## Query, Stats, And System
+
+The query, stats, and system namespaces expose HTTP/MCP-style support data without requiring companion plugins to reach into TaskNotes internals.
+
+| Method                      | Description                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------- |
+| `api.query.tasks(query?)`   | Returns tasks plus total, filtered count, and group membership for an optional `FilterQuery`.     |
+| `api.query.filterOptions()` | Returns available statuses, priorities, contexts, projects, tags, folders, and user properties.   |
+| `api.stats.tasks(query?)`   | Returns task counts, status/priority counts, archive/completion counts, and time-tracking totals. |
+| `api.system.health()`       | Returns runtime status, API version, capabilities, vault identity, and task count.                |
 
 ## Pomodoro
 

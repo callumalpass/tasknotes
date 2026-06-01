@@ -55,6 +55,7 @@ interface TestPluginContext {
 	};
 	filterService: {
 		getGroupedTasks: jest.Mock<Promise<Map<string, TaskInfo[]>>, [FilterQuery]>;
+		getFilterOptions: jest.Mock<Promise<unknown>, []>;
 	};
 	cacheManager: {
 		getTaskInfo: jest.Mock<Promise<TaskInfo | null>, [string]>;
@@ -75,6 +76,9 @@ interface TestPluginContext {
 		getSessionHistory: jest.Mock<Promise<PomodoroSessionHistory[]>, []>;
 		getStatsForDate: jest.Mock<Promise<PomodoroHistoryStats>, [Date]>;
 		getTodayStats: jest.Mock<Promise<PomodoroHistoryStats>, []>;
+	};
+	taskStatsService: {
+		getStats: jest.Mock;
 	};
 }
 
@@ -237,6 +241,14 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 
 	const filterService: TestPluginContext["filterService"] = {
 		getGroupedTasks: jest.fn(async () => new Map([["default", Array.from(tasks.values())]])),
+		getFilterOptions: jest.fn(async () => ({
+			statuses: [],
+			priorities: [],
+			contexts: [],
+			projects: [],
+			tags: [],
+			folders: [],
+		})),
 	};
 
 	const fileManager: TestPluginContext["fileManager"] = {
@@ -311,8 +323,30 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 		})),
 	};
 
+	const taskStatsService: TestPluginContext["taskStatsService"] = {
+		getStats: jest.fn((statsTasks: TaskInfo[]) => ({
+			total: statsTasks.length,
+			statusCounts: { open: statsTasks.filter((task) => task.status === "open").length },
+			priorityCounts: {
+				normal: statsTasks.filter((task) => task.priority === "normal").length,
+			},
+			completed: statsTasks.filter((task) => task.status === "done").length,
+			active: statsTasks.filter((task) => task.status !== "done" && !task.archived).length,
+			overdue: 0,
+			archived: statsTasks.filter((task) => task.archived).length,
+			withTimeEntries: statsTasks.filter((task) => task.timeEntries?.length).length,
+			totalTrackedMinutes: statsTasks.reduce(
+				(total, task) => total + (task.totalTrackedTime ?? 0),
+				0
+			),
+			totalTrackedHours: 0,
+		})),
+	};
+
 	const vault = {
+		getName: jest.fn(() => "Test Vault"),
 		adapter: {
+			basePath: "/tmp/test-vault",
 			exists: jest.fn(async (path: string) => folders.has(path) || files.has(path)),
 		},
 		createFolder: jest.fn(async (path: string) => {
@@ -330,6 +364,7 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 		cacheManager,
 		emitter,
 		filterService,
+		taskStatsService,
 		settings: {
 			defaultTaskStatus: "open",
 			defaultTaskPriority: "normal",
@@ -405,6 +440,9 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 		},
 		taskService,
 		pomodoroService,
+		getActiveTimeSession: jest.fn(
+			(task: TaskInfo) => (task.timeEntries ?? []).find((entry) => !entry.endTime) ?? null
+		),
 	} as unknown as TaskNotesPlugin;
 
 	return {
@@ -418,6 +456,7 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 		cacheManager,
 		fileManager,
 		pomodoroService,
+		taskStatsService,
 	};
 }
 
@@ -433,6 +472,8 @@ describe("TaskNotesApiV1", () => {
 		expect(api.capabilities).toContain("extensions.register");
 		expect(api.capabilities).toContain("relationships.read");
 		expect(api.capabilities).toContain("model.validate");
+		expect(api.capabilities).toContain("query.tasks");
+		expect(api.capabilities).toContain("system.health");
 		expect(api.hasCapability("tasks.events")).toBe(true);
 		expect(api.hasCapability("missing.capability")).toBe(false);
 		expect(typeof api.model.config).toBe("function");
@@ -620,6 +661,63 @@ describe("TaskNotesApiV1", () => {
 
 		await expect(api.listTasks(query)).resolves.toEqual([task]);
 		expect(filterService.getGroupedTasks).toHaveBeenCalledWith(query);
+	});
+
+	it("exposes query, stats, time summary, task time data, and health helpers", async () => {
+		const task = createTask({
+			timeEntries: [
+				{
+					startTime: "2026-05-31T09:00:00.000Z",
+					endTime: "2026-05-31T09:30:00.000Z",
+				},
+			],
+			totalTrackedTime: 30,
+		});
+		const { plugin, filterService, taskStatsService } = createPluginContext([task]);
+		const api = new TaskNotesAPI(plugin);
+		const query = {
+			type: "group",
+			id: "root",
+			conjunction: "and",
+			children: [],
+		} satisfies FilterQuery;
+
+		await expect(api.query.tasks(query)).resolves.toEqual(
+			expect.objectContaining({
+				total: 1,
+				filtered: 1,
+				tasks: [expect.objectContaining({ path: task.path })],
+				groups: { default: [task.path] },
+			})
+		);
+		await expect(api.query.filterOptions()).resolves.toEqual(
+			expect.objectContaining({ statuses: [] })
+		);
+		await expect(api.stats.tasks()).resolves.toEqual(
+			expect.objectContaining({ total: 1, withTimeEntries: 1 })
+		);
+		await expect(api.time.summary({ period: "all" })).resolves.toEqual(
+			expect.objectContaining({
+				summary: expect.objectContaining({ totalMinutes: 30 }),
+			})
+		);
+		await expect(api.time.task(task.path)).resolves.toEqual(
+			expect.objectContaining({
+				task: expect.objectContaining({ id: task.path }),
+				summary: expect.objectContaining({ totalMinutes: 30 }),
+			})
+		);
+		await expect(api.system.health()).resolves.toEqual(
+			expect.objectContaining({
+				status: "ok",
+				apiVersion: 1,
+				vault: { name: "Test Vault", path: "/tmp/test-vault" },
+				tasks: { total: 1 },
+			})
+		);
+
+		expect(filterService.getFilterOptions).toHaveBeenCalled();
+		expect(taskStatsService.getStats).toHaveBeenCalled();
 	});
 
 	it("resolves task relationships through projects and dependencies", async () => {

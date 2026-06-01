@@ -31,6 +31,7 @@ import {
 import type { TaskNotesSettings } from "../types/settings";
 import { ensureFolderExists } from "../utils/helpers";
 import { parseLinkToPath } from "../utils/linkUtils";
+import { computeTaskTimeData, computeTimeSummary } from "../utils/timeTrackingUtils";
 import {
 	TASKNOTES_RUNTIME_API_CAPABILITIES,
 	TASKNOTES_RUNTIME_EVENT_DEFINITIONS,
@@ -45,7 +46,13 @@ import {
 	type TaskNotesRuntimeFieldDefinition,
 	type TaskNotesRuntimeFilterOperatorDefinition,
 	type TaskNotesRuntimeFilterPropertyDefinition,
+	type TaskNotesRuntimeHealth,
 	type TaskNotesRuntimeRelationshipDefinition,
+	type TaskNotesRuntimeTaskQueryResult,
+	type TaskNotesRuntimeTaskStats,
+	type TaskNotesRuntimeTaskTimeData,
+	type TaskNotesRuntimeTimeSummary,
+	type TaskNotesRuntimeTimeSummaryOptions,
 	type TaskNotesApiChanges,
 	type TaskNotesApiEvent,
 	type TaskNotesApiEventHandler,
@@ -83,6 +90,11 @@ interface RegisteredRuntimeExtension {
 	capabilities: readonly string[];
 	token: symbol;
 }
+
+type VaultAdapterWithPath = {
+	basePath?: string;
+	path?: string;
+};
 
 const RESERVED_RUNTIME_EXTENSION_NAMESPACES = new Set([
 	"apiversion",
@@ -530,6 +542,8 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		) => this.startTime(path, options, context),
 		stop: (path: string, context?: TaskNotesMutationContext) => this.stopTime(path, context),
 		active: () => this.getActiveTimeEntries(),
+		summary: (options?: TaskNotesRuntimeTimeSummaryOptions) => this.getTimeSummary(options),
+		task: (path: string) => this.getTaskTimeData(path),
 		append: (path: string, entry: TimeEntry, context?: TaskNotesMutationContext) =>
 			this.appendTimeEntry(path, entry, context),
 		deleteEntry: (path: string, entryIndex: number, context?: TaskNotesMutationContext) =>
@@ -572,6 +586,19 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 	readonly nlp = {
 		parse: (text: string) => this.parseNaturalLanguage(text),
+	};
+
+	readonly query = {
+		tasks: (query?: FilterQuery) => this.queryTasks(query),
+		filterOptions: () => this.getFilterOptions(),
+	};
+
+	readonly stats = {
+		tasks: (query?: FilterQuery) => this.getTaskStats(query),
+	};
+
+	readonly system = {
+		health: () => this.getHealth(),
 	};
 
 	readonly extensions = {
@@ -690,6 +717,151 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			supportedOperators: [...property.supportedOperators],
 			valueInputType: property.valueInputType,
 		}));
+	}
+
+	private async queryTasks(query?: FilterQuery): Promise<TaskNotesRuntimeTaskQueryResult> {
+		const allTasks = await this.plugin.cacheManager.getAllTasks();
+		if (!query) {
+			return {
+				tasks: allTasks.map(copyTaskInfo),
+				total: allTasks.length,
+				filtered: allTasks.length,
+				groups: { all: allTasks.map((task) => task.path) },
+			};
+		}
+
+		const groupedTasks = await this.plugin.filterService.getGroupedTasks(query);
+		const tasks: TaskInfo[] = [];
+		const groups: Record<string, string[]> = {};
+		for (const [group, groupTasks] of groupedTasks.entries()) {
+			tasks.push(...groupTasks);
+			groups[group] = groupTasks.map((task) => task.path);
+		}
+
+		return {
+			tasks: tasks.map(copyTaskInfo),
+			total: allTasks.length,
+			filtered: tasks.length,
+			groups,
+		};
+	}
+
+	private async getFilterOptions() {
+		return this.plugin.filterService.getFilterOptions();
+	}
+
+	private async getTaskStats(query?: FilterQuery): Promise<TaskNotesRuntimeTaskStats> {
+		const tasks = query
+			? (await this.queryTasks(query)).tasks
+			: await this.plugin.cacheManager.getAllTasks();
+		const stats = this.plugin.taskStatsService?.getStats(tasks) ?? this.computeTaskStats(tasks);
+		return {
+			total: stats.total,
+			statusCounts: { ...stats.statusCounts },
+			priorityCounts: { ...stats.priorityCounts },
+			completed: stats.completed,
+			active: stats.active,
+			overdue: stats.overdue,
+			archived: stats.archived,
+			withTimeEntries: stats.withTimeEntries,
+			totalTrackedMinutes: stats.totalTrackedMinutes,
+			totalTrackedHours: stats.totalTrackedHours,
+		};
+	}
+
+	private async getTimeSummary(
+		options: TaskNotesRuntimeTimeSummaryOptions = {}
+	): Promise<TaskNotesRuntimeTimeSummary> {
+		const allTasks = await this.plugin.cacheManager.getAllTasks();
+		return computeTimeSummary(
+			allTasks,
+			{
+				period: options.period ?? "today",
+				fromDate: coerceDateOption(options.from),
+				toDate: coerceDateOption(options.to),
+				includeTags: options.includeTags ?? true,
+			},
+			(status) => this.plugin.statusManager.isCompletedStatus(status)
+		);
+	}
+
+	private async getTaskTimeData(path: string): Promise<TaskNotesRuntimeTaskTimeData> {
+		const task = await this.requireTask(path);
+		return computeTaskTimeData(task, (candidate) =>
+			this.plugin.getActiveTimeSession(candidate)
+		);
+	}
+
+	private async getHealth(): Promise<TaskNotesRuntimeHealth> {
+		const tasks = await this.plugin.cacheManager.getAllTasks();
+		return {
+			status: "ok",
+			timestamp: new Date().toISOString(),
+			apiVersion: this.apiVersion,
+			capabilities: this.capabilities,
+			vault: this.getVaultInfo(),
+			tasks: {
+				total: tasks.length,
+			},
+		};
+	}
+
+	private getVaultInfo() {
+		const adapter = this.plugin.app.vault.adapter as VaultAdapterWithPath;
+		let vaultPath: string | null = null;
+		try {
+			if (typeof adapter.basePath === "string") {
+				vaultPath = adapter.basePath;
+			} else if (typeof adapter.path === "string") {
+				vaultPath = adapter.path;
+			}
+		} catch {
+			vaultPath = null;
+		}
+
+		return {
+			name: this.plugin.app.vault.getName(),
+			path: vaultPath,
+		};
+	}
+
+	private computeTaskStats(tasks: TaskInfo[]): TaskNotesRuntimeTaskStats {
+		const statusCounts: Record<string, number> = {};
+		const priorityCounts: Record<string, number> = {};
+		let completed = 0;
+		let active = 0;
+		let overdue = 0;
+		let archived = 0;
+		let withTimeEntries = 0;
+		let totalTrackedMinutes = 0;
+		const today = new Date().toISOString().split("T")[0] ?? "";
+
+		for (const task of tasks) {
+			statusCounts[task.status] = (statusCounts[task.status] ?? 0) + 1;
+			priorityCounts[task.priority] = (priorityCounts[task.priority] ?? 0) + 1;
+			const isCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
+			if (isCompleted) completed++;
+			if (task.archived) archived++;
+			if (!isCompleted && !task.archived) active++;
+			if (task.due && task.due < today && !isCompleted && !task.archived) overdue++;
+			if (task.timeEntries?.length) {
+				withTimeEntries++;
+				totalTrackedMinutes += task.totalTrackedTime ?? 0;
+			}
+		}
+
+		return {
+			total: tasks.length,
+			statusCounts,
+			priorityCounts,
+			completed,
+			active,
+			overdue,
+			archived,
+			withTimeEntries,
+			totalTrackedMinutes,
+			totalTrackedHours: Math.round((totalTrackedMinutes / 60) * 100) / 100,
+		};
 	}
 
 	async getTask(path: string): Promise<TaskInfo | null> {
@@ -1716,6 +1888,11 @@ function userFieldTypeToRuntimeValueType(
 		default:
 			return "string";
 	}
+}
+
+function coerceDateOption(value: string | Date | null | undefined): Date | null {
+	if (!value) return null;
+	return value instanceof Date ? value : new Date(value);
 }
 
 function buildTaskChanges(before?: TaskInfo, after?: TaskInfo): TaskNotesApiChanges {
