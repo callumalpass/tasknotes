@@ -63,6 +63,7 @@ type ActiveMarkdownEditorOwner = {
 	editMode: unknown;
 	editor: Editor;
 	file: TFile | null;
+	getMode(): "source";
 };
 
 type WorkspaceWithActiveEditor = {
@@ -261,6 +262,65 @@ class CodeMirrorEditorAdapter {
 		return !this.view.state.selection.main.empty;
 	}
 
+	setHeading(level: number): void {
+		const normalizedLevel = Math.max(0, Math.min(6, Number(level) || 0));
+		const marker = normalizedLevel > 0 ? `${"#".repeat(normalizedLevel)} ` : "";
+
+		this.updateSelectedLines((line) => {
+			const withoutHeading = line.replace(/^ {0,3}#{1,6}\s+/, "");
+			return `${marker}${withoutHeading}`;
+		});
+	}
+
+	toggleBulletList(): void {
+		const lines = this.getSelectedLines();
+		const shouldRemove = lines.some((line) => /^\s*[-*+]\s+/.test(line.text));
+
+		this.updateSelectedLines((line) => {
+			if (shouldRemove) {
+				return line.replace(/^(\s*)[-*+]\s+/, "$1");
+			}
+			const [, indent = "", content = ""] = line.match(/^(\s*)(.*)$/) ?? [];
+			return `${indent}- ${content}`;
+		});
+	}
+
+	toggleNumberedList(): void {
+		const lines = this.getSelectedLines();
+		const shouldRemove = lines.some((line) => /^\s*\d+[.)]\s+/.test(line.text));
+
+		this.updateSelectedLines((line, index) => {
+			if (shouldRemove) {
+				return line.replace(/^(\s*)\d+[.)]\s+/, "$1");
+			}
+			const [, indent = "", content = ""] = line.match(/^(\s*)(.*)$/) ?? [];
+			return `${indent}${index + 1}. ${content}`;
+		});
+	}
+
+	toggleNumberList(): void {
+		this.toggleNumberedList();
+	}
+
+	toggleCheckListStatus(): void {
+		this.updateSelectedLines((line) => {
+			if (/^(\s*[-*+]\s+\[[ xX]\]\s*)/.test(line)) {
+				return line.replace(/^(\s*[-*+]\s+\[)([ xX])(\]\s*)/, (_match, prefix, state, suffix) =>
+					`${prefix}${state.toLowerCase() === "x" ? " " : "x"}${suffix}`
+				);
+			}
+			if (/^\s*[-*+]\s+/.test(line)) {
+				return line.replace(/^(\s*[-*+]\s+)/, "$1[ ] ");
+			}
+			const [, indent = "", content = ""] = line.match(/^(\s*)(.*)$/) ?? [];
+			return `${indent}- [ ] ${content}`;
+		});
+	}
+
+	toggleCheckList(): void {
+		this.toggleCheckListStatus();
+	}
+
 	getRange(from: EditorPosition, to: EditorPosition): string {
 		return this.view.state.doc.sliceString(this.posToOffset(from), this.posToOffset(to));
 	}
@@ -400,6 +460,51 @@ class CodeMirrorEditorAdapter {
 			ch: clampedOffset - line.from,
 		};
 	}
+
+	private getSelectedLines(): Array<{ number: number; text: string }> {
+		const doc = this.view.state.doc;
+		const lineNumbers = new Set<number>();
+
+		for (const range of this.view.state.selection.ranges) {
+			const from = Math.min(range.from, range.to);
+			const to = Math.max(range.from, range.to);
+			const fromLine = doc.lineAt(from).number;
+			let toLine = doc.lineAt(to).number;
+
+			if (toLine > fromLine && to === doc.line(toLine).from) {
+				toLine -= 1;
+			}
+
+			for (let lineNumber = fromLine; lineNumber <= toLine; lineNumber += 1) {
+				lineNumbers.add(lineNumber);
+			}
+		}
+
+		return Array.from(lineNumbers)
+			.sort((a, b) => a - b)
+			.map((lineNumber) => {
+				const line = doc.line(lineNumber);
+				return { number: lineNumber, text: line.text };
+			});
+	}
+
+	private updateSelectedLines(
+		transformLine: (line: string, selectedLineIndex: number) => string
+	): void {
+		const doc = this.view.state.doc;
+		const changes = this.getSelectedLines().map((line, index) => {
+			const docLine = doc.line(line.number);
+			return {
+				from: docLine.from,
+				to: docLine.to,
+				insert: transformLine(line.text, index),
+			};
+		});
+
+		if (changes.length === 0) return;
+
+		this.view.dispatch({ changes });
+	}
 }
 
 /**
@@ -447,6 +552,7 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 			editMode: this,
 			editor: new CodeMirrorEditorAdapter(this.editor.cm as unknown as EditorView) as unknown as Editor,
 			file: this.getActiveEditorFile(),
+			getMode: () => "source",
 		};
 
 		// IMPORTANT: From Obsidian 1.5.8+, must explicitly set value

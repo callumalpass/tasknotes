@@ -38,3 +38,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#1984) Fixed mobile task link overlays hiding configured inline task card properties such as scheduled date, due date, contexts, and projects. Thanks to @stil-sudo for reporting.
 - (#1903) Reduced the Edit Task modal's mobile action-button footer so Open note, Archive, Delete, Save, and Cancel take two rows instead of three on iPhone-sized screens. Thanks to @3zra47 for the original report and @krzyfu for the follow-up about the button area crowding the editor.
 - (#1982) Preserved scroll position in TaskNotes Bases after task edits and data refreshes, avoiding jumps back to the top on mobile. Thanks to @3zra47 for reporting.
+- (#1978) Restored Obsidian editor shortcuts such as insert link, headings, and list toggles inside the Edit Task modal's Details editor. Thanks to @krzyfu for reporting this.
