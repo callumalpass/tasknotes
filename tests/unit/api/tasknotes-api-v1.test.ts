@@ -477,6 +477,7 @@ describe("TaskNotesApiV1", () => {
 		expect(api.capabilities).toContain("query.tasks");
 		expect(api.capabilities).toContain("system.health");
 		expect(api.capabilities).toContain("lifecycle.events");
+		expect(api.capabilities).toContain("errors.typed");
 		expect(api.hasCapability("tasks.events")).toBe(true);
 		expect(api.hasCapability("missing.capability")).toBe(false);
 		expect(typeof api.model.config).toBe("function");
@@ -487,6 +488,7 @@ describe("TaskNotesApiV1", () => {
 		expect(typeof api.pomodoro.start).toBe("function");
 		expect(typeof api.events.on).toBe("function");
 		expect(typeof api.events.list).toBe("function");
+		expect(typeof api.errors.toResult).toBe("function");
 		expect(typeof api.extensions.register).toBe("function");
 	});
 
@@ -682,6 +684,73 @@ describe("TaskNotesApiV1", () => {
 				extension: expect.objectContaining({ namespace: "lifecycle-test" }),
 			})
 		);
+	});
+
+	it("normalizes API failures into typed error payloads", async () => {
+		const task = createTask();
+		const { plugin } = createPluginContext([task]);
+		const api = new TaskNotesAPI(plugin);
+
+		const missingTask = await api.errors.toResult(() =>
+			api.tasks.update("Tasks/missing.md", { status: "done" })
+		);
+		const invalidStatus = await api.errors.toResult(() =>
+			api.tasks.complete(task.path, { status: "open" })
+		);
+		const missingExtension = await api.errors.toResult(() =>
+			api.extensions.require("missing-extension")
+		);
+		const genericError = api.errors.normalize(new Error("Unexpected failure"));
+		const structuralPayload = {
+			name: "TaskNotesApiError" as const,
+			code: "task_not_found" as const,
+			message: "Missing",
+			status: 404,
+		};
+
+		expect(missingTask.ok).toBe(false);
+		if (!missingTask.ok) {
+			expect(missingTask.error).toEqual(
+				expect.objectContaining({
+					name: "TaskNotesApiError",
+					code: "task_not_found",
+					status: 404,
+					details: { path: "Tasks/missing.md" },
+				})
+			);
+		}
+
+		expect(invalidStatus.ok).toBe(false);
+		if (!invalidStatus.ok) {
+			expect(invalidStatus.error).toEqual(
+				expect.objectContaining({
+					code: "invalid_status",
+					status: 400,
+					details: { status: "open" },
+				})
+			);
+		}
+
+		expect(missingExtension.ok).toBe(false);
+		if (!missingExtension.ok) {
+			expect(missingExtension.error).toEqual(
+				expect.objectContaining({
+					code: "extension_not_registered",
+					status: 404,
+					details: { namespace: "missing-extension" },
+				})
+			);
+		}
+
+		expect(genericError).toEqual(
+			expect.objectContaining({
+				code: "operation_failed",
+				status: 500,
+				message: "Unexpected failure",
+			})
+		);
+		expect(api.errors.isApiError(structuralPayload)).toBe(true);
+		expect(api.errors.normalize(structuralPayload)).toBe(structuralPayload);
 	});
 
 	it("reads individual tasks and filtered task lists without exposing mutable arrays", async () => {

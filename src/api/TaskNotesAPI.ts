@@ -38,6 +38,9 @@ import {
 	TASKNOTES_RUNTIME_LIFECYCLE_EVENT_DEFINITIONS,
 	TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS,
 	TASKNOTES_RUNTIME_API_VERSION,
+	TaskNotesApiError,
+	isTaskNotesApiError,
+	isTaskNotesApiErrorPayload,
 	type ActiveTimeEntry,
 	type CompleteTaskOptions,
 	type PomodoroSessionsOptions,
@@ -59,6 +62,7 @@ import {
 	type TaskNotesRuntimeTimeSummary,
 	type TaskNotesRuntimeTimeSummaryOptions,
 	type TaskNotesApiChanges,
+	type TaskNotesApiErrorPayload,
 	type TaskNotesApiEvent,
 	type TaskNotesApiEventHandler,
 	type TaskNotesApiEventPayload,
@@ -617,6 +621,18 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		list: () => TASKNOTES_RUNTIME_LIFECYCLE_EVENT_DEFINITIONS.map((event) => ({ ...event })),
 	};
 
+	readonly errors = {
+		isApiError: (error: unknown) => isTaskNotesApiError(error),
+		normalize: (error: unknown) => this.normalizeError(error),
+		toResult: async <T>(operation: () => Promise<T> | T) => {
+			try {
+				return { ok: true as const, value: await operation() };
+			} catch (error) {
+				return { ok: false as const, error: this.normalizeError(error) };
+			}
+		},
+	};
+
 	readonly extensions = {
 		register: <TApi>(extension: TaskNotesRuntimeExtension<TApi>) =>
 			this.registerExtension(extension),
@@ -643,7 +659,11 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 	parseNaturalLanguage(text: string): ParsedTaskData {
 		if (typeof text !== "string") {
-			throw new TypeError("TaskNotes API parseNaturalLanguage expects a string");
+			throw new TaskNotesApiError(
+				"invalid_input",
+				"TaskNotes API parseNaturalLanguage expects a string",
+				{ status: 400 }
+			);
 		}
 
 		return NaturalLanguageParser.fromPlugin(this.plugin).parseInput(text);
@@ -687,6 +707,21 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 	private validateTaskPatch(patch: TaskNotesTaskPatch): TaskValidationResult {
 		return validateModelTask(patch);
+	}
+
+	private normalizeError(error: unknown): TaskNotesApiErrorPayload {
+		if (error instanceof TaskNotesApiError) {
+			return error.toJSON();
+		}
+		if (isTaskNotesApiErrorPayload(error)) {
+			return error;
+		}
+
+		return new TaskNotesApiError(
+			"operation_failed",
+			error instanceof Error ? error.message : String(error),
+			{ status: 500, cause: error }
+		).toJSON();
 	}
 
 	private getStatuses() {
@@ -1022,7 +1057,11 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			options?.status ?? this.plugin.statusManager.getCompletedStatuses()[0] ?? "done";
 
 		if (!this.plugin.statusManager.isCompletedStatus(targetStatus)) {
-			throw new Error(`Status "${targetStatus}" is not configured as a completed status`);
+			throw new TaskNotesApiError(
+				"invalid_status",
+				`Status "${targetStatus}" is not configured as a completed status`,
+				{ status: 400, details: { status: targetStatus } }
+			);
 		}
 
 		if (!options?.status && this.plugin.statusManager.isCompletedStatus(task.status)) {
@@ -1084,7 +1123,11 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 			const existingFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
 			if (existingFile) {
-				throw new Error(`Cannot move task to "${newPath}" because a file already exists`);
+				throw new TaskNotesApiError(
+					"file_already_exists",
+					`Cannot move task to "${newPath}" because a file already exists`,
+					{ status: 409, details: { path: newPath } }
+				);
 			}
 
 			await this.plugin.app.fileManager.renameFile(file, newPath);
@@ -1164,7 +1207,11 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		const existingValues = task[property] ?? [];
 		const normalizedValue = value.trim();
 		if (!normalizedValue) {
-			throw new TypeError(`TaskNotes API ${operation} ${property} expects a non-empty value`);
+			throw new TaskNotesApiError(
+				"invalid_input",
+				`TaskNotes API ${operation} ${property} expects a non-empty value`,
+				{ status: 400, details: { operation, property } }
+			);
 		}
 
 		const nextValues =
@@ -1315,23 +1362,41 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		extension: TaskNotesRuntimeExtension<TApi>
 	): TaskNotesRuntimeExtensionHandle {
 		if (!extension || typeof extension !== "object") {
-			throw new TypeError("TaskNotes API extension registration expects an object");
+			throw new TaskNotesApiError(
+				"extension_invalid",
+				"TaskNotes API extension registration expects an object",
+				{ status: 400 }
+			);
 		}
 		if (typeof extension.id !== "string" || extension.id.trim().length === 0) {
-			throw new TypeError("TaskNotes API extension registration expects a non-empty id");
+			throw new TaskNotesApiError(
+				"extension_invalid",
+				"TaskNotes API extension registration expects a non-empty id",
+				{ status: 400 }
+			);
 		}
 		if (extension.api === null || typeof extension.api === "undefined") {
-			throw new TypeError("TaskNotes API extension registration expects an api object");
+			throw new TaskNotesApiError(
+				"extension_invalid",
+				"TaskNotes API extension registration expects an api object",
+				{ status: 400 }
+			);
 		}
 
 		const id = extension.id.trim();
 		const namespace = this.normalizeExtensionNamespace(extension.namespace);
 		if (RESERVED_RUNTIME_EXTENSION_NAMESPACES.has(namespace)) {
-			throw new Error(`Cannot register TaskNotes API extension namespace "${namespace}"`);
+			throw new TaskNotesApiError(
+				"extension_namespace_reserved",
+				`Cannot register TaskNotes API extension namespace "${namespace}"`,
+				{ status: 400, details: { namespace } }
+			);
 		}
 		if (this.extensionRegistry.has(namespace)) {
-			throw new Error(
-				`TaskNotes API extension namespace "${namespace}" is already registered`
+			throw new TaskNotesApiError(
+				"extension_namespace_conflict",
+				`TaskNotes API extension namespace "${namespace}" is already registered`,
+				{ status: 409, details: { namespace } }
 			);
 		}
 
@@ -1383,8 +1448,10 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		const normalizedNamespace = this.normalizeExtensionNamespace(namespace);
 		const extension = this.extensionRegistry.get(normalizedNamespace);
 		if (!extension) {
-			throw new Error(
-				`TaskNotes API extension namespace "${normalizedNamespace}" is not registered`
+			throw new TaskNotesApiError(
+				"extension_not_registered",
+				`TaskNotes API extension namespace "${normalizedNamespace}" is not registered`,
+				{ status: 404, details: { namespace: normalizedNamespace } }
 			);
 		}
 		return extension.api as TApi;
@@ -1418,13 +1485,19 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 	private normalizeExtensionNamespace(namespace: string): string {
 		if (typeof namespace !== "string" || namespace.trim().length === 0) {
-			throw new TypeError("TaskNotes API extension namespace must be a non-empty string");
+			throw new TaskNotesApiError(
+				"extension_invalid",
+				"TaskNotes API extension namespace must be a non-empty string",
+				{ status: 400 }
+			);
 		}
 
 		const normalizedNamespace = namespace.trim().toLowerCase();
 		if (!/^[a-z][a-z0-9._-]*$/.test(normalizedNamespace)) {
-			throw new TypeError(
-				`TaskNotes API extension namespace "${namespace}" must use letters, numbers, dots, underscores, or dashes`
+			throw new TaskNotesApiError(
+				"extension_invalid",
+				`TaskNotes API extension namespace "${namespace}" must use letters, numbers, dots, underscores, or dashes`,
+				{ status: 400, details: { namespace } }
 			);
 		}
 		return normalizedNamespace;
@@ -1432,13 +1505,19 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 	private normalizeExtensionCapability(capability: string): string {
 		if (typeof capability !== "string" || capability.trim().length === 0) {
-			throw new TypeError("TaskNotes API extension capabilities must be non-empty strings");
+			throw new TaskNotesApiError(
+				"extension_invalid",
+				"TaskNotes API extension capabilities must be non-empty strings",
+				{ status: 400 }
+			);
 		}
 
 		const normalizedCapability = capability.trim().toLowerCase();
 		if (!/^[a-z][a-z0-9._:-]*$/.test(normalizedCapability)) {
-			throw new TypeError(
-				`TaskNotes API extension capability "${capability}" must use letters, numbers, dots, underscores, dashes, or colons`
+			throw new TaskNotesApiError(
+				"extension_invalid",
+				`TaskNotes API extension capability "${capability}" must use letters, numbers, dots, underscores, dashes, or colons`,
+				{ status: 400, details: { capability } }
 			);
 		}
 		return normalizedCapability;
@@ -1646,7 +1725,10 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		const normalizedPath = this.normalizeTaskPath(path);
 		const task = await this.plugin.cacheManager.getTaskInfo(normalizedPath);
 		if (!task) {
-			throw new Error(`Task not found: ${normalizedPath}`);
+			throw new TaskNotesApiError("task_not_found", `Task not found: ${normalizedPath}`, {
+				status: 404,
+				details: { path: normalizedPath },
+			});
 		}
 		return task;
 	}
@@ -1654,14 +1736,21 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	private requireTaskFile(path: string): TFile {
 		const file = this.plugin.app.vault.getAbstractFileByPath(path);
 		if (!(file instanceof TFile)) {
-			throw new Error(`Cannot find task file: ${path}`);
+			throw new TaskNotesApiError("task_file_not_found", `Cannot find task file: ${path}`, {
+				status: 404,
+				details: { path },
+			});
 		}
 		return file;
 	}
 
 	private normalizeTaskPath(path: string): string {
 		if (typeof path !== "string" || path.trim().length === 0) {
-			throw new TypeError("TaskNotes API expects a non-empty task path");
+			throw new TaskNotesApiError(
+				"invalid_task_path",
+				"TaskNotes API expects a non-empty task path",
+				{ status: 400 }
+			);
 		}
 		return normalizePath(path);
 	}

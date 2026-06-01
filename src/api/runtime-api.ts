@@ -66,6 +66,7 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"stats.tasks",
 	"system.health",
 	"lifecycle.events",
+	"errors.typed",
 ] as const;
 
 export type TaskNotesRuntimeApiVersion = typeof TASKNOTES_RUNTIME_API_VERSION;
@@ -343,6 +344,86 @@ export interface TaskNotesMutationContext {
 	correlationId?: string;
 	reason?: string;
 }
+
+export const TASKNOTES_API_ERROR_CODES = [
+	"invalid_input",
+	"invalid_task_path",
+	"invalid_status",
+	"task_not_found",
+	"task_file_not_found",
+	"file_already_exists",
+	"extension_invalid",
+	"extension_namespace_reserved",
+	"extension_namespace_conflict",
+	"extension_not_registered",
+	"operation_failed",
+] as const;
+
+export type TaskNotesApiErrorCode = (typeof TASKNOTES_API_ERROR_CODES)[number];
+
+export interface TaskNotesApiErrorPayload {
+	name: "TaskNotesApiError";
+	code: TaskNotesApiErrorCode;
+	message: string;
+	status: number;
+	details?: unknown;
+}
+
+export class TaskNotesApiError extends Error {
+	readonly name = "TaskNotesApiError";
+	readonly code: TaskNotesApiErrorCode;
+	readonly status: number;
+	readonly details?: unknown;
+
+	constructor(
+		code: TaskNotesApiErrorCode,
+		message: string,
+		options: { status?: number; details?: unknown; cause?: unknown } = {}
+	) {
+		super(message);
+		this.code = code;
+		this.status = options.status ?? 500;
+		this.details = options.details;
+		if (options.cause !== undefined) {
+			(this as Error & { cause?: unknown }).cause = options.cause;
+		}
+	}
+
+	toJSON(): TaskNotesApiErrorPayload {
+		return {
+			name: this.name,
+			code: this.code,
+			message: this.message,
+			status: this.status,
+			details: this.details,
+		};
+	}
+}
+
+export function isTaskNotesApiErrorPayload(error: unknown): error is TaskNotesApiErrorPayload {
+	if (!error || typeof error !== "object") {
+		return false;
+	}
+
+	const candidate = error as Record<string, unknown>;
+	return (
+		candidate.name === "TaskNotesApiError" &&
+		typeof candidate.message === "string" &&
+		typeof candidate.status === "number" &&
+		typeof candidate.code === "string" &&
+		(TASKNOTES_API_ERROR_CODES as readonly string[]).includes(candidate.code)
+	);
+}
+
+export function isTaskNotesApiError(
+	error: unknown
+): error is TaskNotesApiError | TaskNotesApiErrorPayload {
+	return error instanceof TaskNotesApiError || isTaskNotesApiErrorPayload(error);
+}
+
+export type TaskNotesApiResult<T> =
+	| { ok: true; value: T }
+	| { ok: false; error: TaskNotesApiErrorPayload };
 
 export type TaskNotesTaskPatch = Partial<TaskInfo> & {
 	details?: string;
@@ -771,6 +852,12 @@ export interface TaskNotesRuntimeLifecycleApi {
 	list(): readonly TaskNotesRuntimeLifecycleEventDefinition[];
 }
 
+export interface TaskNotesRuntimeErrorsApi {
+	isApiError(error: unknown): error is TaskNotesApiError | TaskNotesApiErrorPayload;
+	normalize(error: unknown): TaskNotesApiErrorPayload;
+	toResult<T>(operation: () => Promise<T> | T): Promise<TaskNotesApiResult<T>>;
+}
+
 export interface TaskNotesRuntimeTaskQueryResult {
 	tasks: TaskInfo[];
 	total: number;
@@ -839,6 +926,7 @@ export interface TaskNotesRuntimeApiV1 {
 	readonly stats: TaskNotesRuntimeStatsApi;
 	readonly system: TaskNotesRuntimeSystemApi;
 	readonly lifecycle: TaskNotesRuntimeLifecycleApi;
+	readonly errors: TaskNotesRuntimeErrorsApi;
 	readonly extensions: TaskNotesRuntimeExtensionsApi;
 
 	parseNaturalLanguage(text: string): ParsedTaskData;

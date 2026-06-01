@@ -57,6 +57,7 @@ Current capabilities:
 - `stats.tasks`
 - `system.health`
 - `lifecycle.events`
+- `errors.typed`
 
 ## Namespaces
 
@@ -466,11 +467,48 @@ Lifecycle events:
 
 ## Error Handling
 
-API methods throw JavaScript errors for invalid input or failed operations. Common examples:
+API methods throw `TaskNotesApiError` for invalid input or failed operations that the runtime API can classify. The error object includes:
+
+- `name`: always `TaskNotesApiError`
+- `code`: a stable machine-readable code
+- `message`: a human-readable message for logs
+- `status`: an HTTP-style status code for tools that mirror runtime calls over HTTP or MCP
+- `details`: optional structured context such as the task path, extension namespace, or invalid status
+
+Common examples:
 
 - The task path is empty or invalid.
 - No task exists at the requested path.
 - A target move folder already contains a file with the same name.
 - `complete` is called with a status that is not configured as completed.
 
-Wrap API calls in `try`/`catch` when running workflows or background listeners.
+Current error codes:
+
+- `invalid_input`
+- `invalid_task_path`
+- `invalid_status`
+- `task_not_found`
+- `task_file_not_found`
+- `file_already_exists`
+- `extension_invalid`
+- `extension_namespace_reserved`
+- `extension_namespace_conflict`
+- `extension_not_registered`
+- `operation_failed`
+
+Use `api.errors` when workflow engines or background listeners need consistent result objects instead of thrown exceptions:
+
+```javascript
+const result = await api.errors.toResult(() =>
+	api.tasks.complete("Tasks/example.md", { status: "done" })
+);
+
+if (!result.ok) {
+	console.warn(result.error.code, result.error.details);
+	return;
+}
+
+console.log(result.value.path);
+```
+
+`api.errors.normalize(error)` converts unknown thrown values into a `TaskNotesApiError` payload. Unknown JavaScript errors use `operation_failed` with status `500`.
