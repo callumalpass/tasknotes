@@ -596,6 +596,38 @@ export class TaskService {
 		);
 	}
 
+	async toggleRecurringTaskCompleteWithOccurrenceNotes(
+		task: TaskInfo,
+		date?: Date
+	): Promise<TaskInfo> {
+		const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
+		if (!freshTask.recurrence) {
+			throw new Error("Task is not recurring");
+		}
+
+		const targetDate = this.getRecurringTaskActionDate(freshTask, date);
+		const dateStr = formatDateForStorage(targetDate);
+		const existingOccurrence = await this.findMaterializedOccurrence(freshTask, targetDate);
+		if (existingOccurrence) {
+			return this.toggleStatus(existingOccurrence);
+		}
+
+		const completeInstances = Array.isArray(freshTask.complete_instances)
+			? freshTask.complete_instances.filter(
+					(entry): entry is string => typeof entry === "string"
+				)
+			: [];
+		if (
+			freshTask.occurrence_materialization === "on_completion" &&
+			!completeInstances.includes(dateStr)
+		) {
+			const occurrence = await this.materializeOccurrence(freshTask, targetDate);
+			return this.toggleStatus(occurrence);
+		}
+
+		return this.toggleRecurringTaskComplete(freshTask, targetDate);
+	}
+
 	async getMaterializedOccurrenceParent(occurrenceTask: TaskInfo): Promise<TaskInfo | null> {
 		const freshOccurrence =
 			(await this.plugin.cacheManager.getTaskInfo(occurrenceTask.path)) || occurrenceTask;

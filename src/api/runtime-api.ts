@@ -57,6 +57,7 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"pomodoro.write",
 	"pomodoro.events",
 	"recurring.write",
+	"recurring.materialize",
 	"recurring.events",
 	"settings.snapshot",
 	"nlp.parse",
@@ -830,6 +831,11 @@ export interface TaskNotesRuntimeRecurringApi {
 	toggleSkippedInstance(
 		path: string,
 		date?: string,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo>;
+	materializeOccurrence(
+		path: string,
+		date: string,
 		context?: TaskNotesMutationContext
 	): Promise<TaskInfo>;
 }

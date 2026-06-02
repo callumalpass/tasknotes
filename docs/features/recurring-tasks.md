@@ -129,6 +129,8 @@ Each recurring parent has an **Occurrence notes** submenu under its recurrence m
 
 When **Create next after completion** is enabled, creating the first occurrence is still a deliberate action. After that, completing the occurrence note advances the parent recurrence state and materializes the next scheduled occurrence.
 
+HTTP API and MCP clients can create occurrence notes without using the desktop context menu. Use `POST /api/tasks/:id/materialize-occurrence` or the MCP `tasknotes_materialize_occurrence` tool with a parent task path and occurrence date. Completing a recurring instance through the API or MCP also respects existing occurrence notes and the **Create next after completion** policy.
+
 The same submenu also controls the next-note trigger:
 
 - **Completion only**: create the next occurrence note only when the current occurrence is completed.

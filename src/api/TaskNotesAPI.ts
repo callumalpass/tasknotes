@@ -842,6 +842,11 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			this.toggleRecurringComplete(path, date, context),
 		toggleSkippedInstance: (path: string, date?: string, context?: TaskNotesMutationContext) =>
 			this.toggleRecurringSkipped(path, date, context),
+		materializeOccurrence: (
+			path: string,
+			date: string,
+			context?: TaskNotesMutationContext
+		) => this.materializeOccurrence(path, date, context),
 	};
 
 	readonly events = {
@@ -2438,9 +2443,24 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		const task = await this.requireTask(path);
 		const targetDate = date ? new Date(date) : undefined;
 		const updatedTask = await this.withMutationContext([task.path], context, () =>
-			this.plugin.taskService.toggleRecurringTaskComplete(task, targetDate)
+			this.plugin.taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
+				task,
+				targetDate
+			)
 		);
 		return copyTaskInfo(updatedTask);
+	}
+
+	private async materializeOccurrence(
+		path: string,
+		date: string,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo> {
+		const task = await this.requireTask(path);
+		const occurrence = await this.withMutationContext([task.path], context, () =>
+			this.plugin.taskService.materializeOccurrence(task, date)
+		);
+		return copyTaskInfo(occurrence);
 	}
 
 	private async toggleRecurringSkipped(

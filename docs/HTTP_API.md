@@ -75,6 +75,7 @@ Error:
 - `POST /api/tasks/:id/toggle-status`
 - `POST /api/tasks/:id/archive`
 - `POST /api/tasks/:id/complete-instance`
+- `POST /api/tasks/:id/materialize-occurrence`
 - `POST /api/tasks/query`
 - `GET /api/filter-options`
 - `GET /api/stats`
@@ -231,6 +232,16 @@ Complete recurring instance.
 Request body:
 
 - Optional `date` (ISO string). If omitted, uses current date context.
+
+When the recurring parent uses materialized occurrence notes, this endpoint completes the matching occurrence note if one exists. If the parent is set to **Create next after completion** and no matching occurrence note exists yet, TaskNotes creates and completes that occurrence note instead of only recording a virtual `complete_instances` entry.
+
+### `POST /api/tasks/:id/materialize-occurrence`
+
+Create or return a materialized occurrence note for a recurring task date. This endpoint is idempotent for the same parent and date.
+
+Request body:
+
+- Required `date` (ISO date string, for example `2026-06-01`)
 
 ### `POST /api/tasks/query`
 

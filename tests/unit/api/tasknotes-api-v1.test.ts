@@ -51,7 +51,12 @@ interface TestPluginContext {
 		deleteTask: jest.Mock<Promise<void>, [TaskInfo]>;
 		deleteTimeEntry: jest.Mock<Promise<TaskInfo>, [TaskInfo, number]>;
 		toggleRecurringTaskComplete: jest.Mock<Promise<TaskInfo>, [TaskInfo, Date?]>;
+		toggleRecurringTaskCompleteWithOccurrenceNotes: jest.Mock<
+			Promise<TaskInfo>,
+			[TaskInfo, Date?]
+		>;
 		toggleRecurringTaskSkipped: jest.Mock<Promise<TaskInfo>, [TaskInfo, Date?]>;
+		materializeOccurrence: jest.Mock<Promise<TaskInfo>, [TaskInfo, string | Date]>;
 	};
 	filterService: {
 		getGroupedTasks: jest.Mock<Promise<Map<string, TaskInfo[]>>, [FilterQuery]>;
@@ -228,6 +233,15 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 			emitTaskUpdate(task, updatedTask);
 			return updatedTask;
 		}),
+		toggleRecurringTaskCompleteWithOccurrenceNotes: jest.fn(async (task: TaskInfo) => {
+			const updatedTask = {
+				...task,
+				complete_instances: [...(task.complete_instances ?? []), "2026-06-01"],
+			};
+			tasks.set(updatedTask.path, updatedTask);
+			emitTaskUpdate(task, updatedTask);
+			return updatedTask;
+		}),
 		toggleRecurringTaskSkipped: jest.fn(async (task: TaskInfo) => {
 			const updatedTask = {
 				...task,
@@ -236,6 +250,19 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 			tasks.set(updatedTask.path, updatedTask);
 			emitTaskUpdate(task, updatedTask);
 			return updatedTask;
+		}),
+		materializeOccurrence: jest.fn(async (task: TaskInfo, date: string | Date) => {
+			const occurrenceDate = typeof date === "string" ? date : date.toISOString().slice(0, 10);
+			const occurrence = createTask({
+				title: task.title,
+				path: `Tasks/${task.title}-${occurrenceDate}.md`,
+				recurrence_parent: `[[${task.path.replace(/\.md$/i, "")}]]`,
+				occurrence_date: occurrenceDate,
+			});
+			tasks.set(occurrence.path, occurrence);
+			files.set(occurrence.path, new TFile(occurrence.path));
+			emitTaskUpdate(undefined, occurrence);
+			return occurrence;
 		}),
 	};
 
@@ -473,6 +500,7 @@ describe("TaskNotesApiV1", () => {
 		expect(api.capabilities).toContain("events.list");
 		expect(api.capabilities).toContain("extensions.register");
 		expect(api.capabilities).toContain("relationships.read");
+		expect(api.capabilities).toContain("recurring.materialize");
 		expect(api.capabilities).toContain("model.validate");
 		expect(api.capabilities).toContain("query.tasks");
 		expect(api.capabilities).toContain("query.validate");
@@ -488,6 +516,7 @@ describe("TaskNotesApiV1", () => {
 		expect(typeof api.relationships.subtasks).toBe("function");
 		expect(typeof api.time.start).toBe("function");
 		expect(typeof api.pomodoro.start).toBe("function");
+		expect(typeof api.recurring.materializeOccurrence).toBe("function");
 		expect(typeof api.events.on).toBe("function");
 		expect(typeof api.events.list).toBe("function");
 		expect(typeof api.errors.toResult).toBe("function");
@@ -1120,7 +1149,7 @@ describe("TaskNotesApiV1", () => {
 
 	it("normalizes recurring instance and pomodoro events", async () => {
 		const task = createTask({ recurrence: "FREQ=DAILY" });
-		const { plugin, pomodoroService } = createPluginContext([task]);
+		const { plugin, pomodoroService, taskService } = createPluginContext([task]);
 		const api = new TaskNotesAPI(plugin);
 		const recurringHandler = jest.fn<void, [TaskNotesApiEventPayload]>();
 		const pomodoroHandler = jest.fn<void, [TaskNotesApiEventPayload]>();
@@ -1137,6 +1166,10 @@ describe("TaskNotesApiV1", () => {
 			{ source: "tasknotes-workflows", correlationId: "run-pomodoro" }
 		);
 
+		expect(taskService.toggleRecurringTaskCompleteWithOccurrenceNotes).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path }),
+			new Date("2026-06-01")
+		);
 		expect(recurringHandler).toHaveBeenCalledWith(
 			expect.objectContaining({
 				event: "recurring.instance.completed",
@@ -1156,6 +1189,35 @@ describe("TaskNotesApiV1", () => {
 				correlationId: "run-pomodoro",
 			})
 		);
+	});
+
+	it("materializes recurring occurrences from the runtime API", async () => {
+		const task = createTask({
+			title: "Weekly review",
+			path: "Tasks/weekly-review.md",
+			recurrence: "DTSTART:20260601;FREQ=WEEKLY",
+		});
+		const { plugin, taskService } = createPluginContext([task]);
+		const api = new TaskNotesAPI(plugin);
+
+		const occurrence = await api.recurring.materializeOccurrence(
+			task.path,
+			"2026-06-08",
+			{
+				source: "tasknotes-workflows",
+				correlationId: "run-materialize",
+			}
+		);
+
+		expect(taskService.materializeOccurrence).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path }),
+			"2026-06-08"
+		);
+		expect(occurrence).toMatchObject({
+			title: "Weekly review",
+			recurrence_parent: "[[Tasks/weekly-review]]",
+			occurrence_date: "2026-06-08",
+		});
 	});
 
 	it("returns active time entries and settings snapshots", async () => {

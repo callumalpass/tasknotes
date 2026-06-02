@@ -49,6 +49,7 @@ Current capabilities:
 - `pomodoro.write`
 - `pomodoro.events`
 - `recurring.write`
+- `recurring.materialize`
 - `recurring.events`
 - `settings.snapshot`
 - `nlp.parse`
@@ -343,6 +344,7 @@ TaskNotes compiles this DTO into its internal filter engine. Companion plugins s
 | ------------------------------------------------------------- | ---------------------------------------------------- |
 | `api.recurring.toggleCompleteInstance(path, date?, context?)` | Toggles completion for a recurring task instance.    |
 | `api.recurring.toggleSkippedInstance(path, date?, context?)`  | Toggles skipped state for a recurring task instance. |
+| `api.recurring.materializeOccurrence(path, date, context?)`   | Creates or returns an occurrence note for a recurring task date. |
 
 ## Natural Language Parser
 

@@ -137,6 +137,109 @@ describe("TaskService materialized occurrences", () => {
 		);
 	});
 
+	it("completes an existing materialized occurrence for API-style recurring completion", async () => {
+		const parent = TaskFactory.createTask({
+			title: "Daily task",
+			path: "Tasks/Daily task.md",
+			recurrence: "DTSTART:20260601;FREQ=DAILY",
+			scheduled: "2026-06-01",
+			occurrence_materialization: "on_completion",
+		});
+		const occurrence = TaskFactory.createTask({
+			title: "Daily task",
+			path: "Tasks/Daily task 2026-06-01.md",
+			status: "open",
+			recurrence_parent: "[[Tasks/Daily task]]",
+			occurrence_date: "2026-06-01",
+		});
+		const { taskService } = createService({
+			[parent.path]: parent,
+			[occurrence.path]: occurrence,
+		});
+		const toggleStatus = jest.spyOn(taskService, "toggleStatus").mockResolvedValue({
+			...occurrence,
+			status: "done",
+		});
+		const materializeOccurrence = jest.spyOn(taskService, "materializeOccurrence");
+
+		const updated = await taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
+			parent,
+			new Date("2026-06-01T12:00:00Z")
+		);
+
+		expect(updated.status).toBe("done");
+		expect(toggleStatus).toHaveBeenCalledWith(occurrence);
+		expect(materializeOccurrence).not.toHaveBeenCalled();
+	});
+
+	it("materializes and completes an occurrence for on-completion API-style recurring completion", async () => {
+		const parent = TaskFactory.createTask({
+			title: "Daily task",
+			path: "Tasks/Daily task.md",
+			recurrence: "DTSTART:20260601;FREQ=DAILY",
+			scheduled: "2026-06-01",
+			complete_instances: [],
+			occurrence_materialization: "on_completion",
+		});
+		const occurrence = TaskFactory.createTask({
+			title: "Daily task",
+			path: "Tasks/Daily task 2026-06-01.md",
+			status: "open",
+			recurrence_parent: "[[Tasks/Daily task]]",
+			occurrence_date: "2026-06-01",
+		});
+		const { taskService } = createService({ [parent.path]: parent });
+		const materializeOccurrence = jest
+			.spyOn(taskService, "materializeOccurrence")
+			.mockResolvedValue(occurrence);
+		const toggleStatus = jest.spyOn(taskService, "toggleStatus").mockResolvedValue({
+			...occurrence,
+			status: "done",
+		});
+
+		const updated = await taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
+			parent,
+			new Date("2026-06-01T12:00:00Z")
+		);
+
+		expect(updated.status).toBe("done");
+		expect(materializeOccurrence).toHaveBeenCalledWith(
+			expect.objectContaining({ path: parent.path }),
+			new Date("2026-06-01T12:00:00Z")
+		);
+		expect(toggleStatus).toHaveBeenCalledWith(occurrence);
+	});
+
+	it("keeps manual occurrence policy on the virtual recurring completion path", async () => {
+		const parent = TaskFactory.createTask({
+			title: "Daily task",
+			path: "Tasks/Daily task.md",
+			recurrence: "DTSTART:20260601;FREQ=DAILY",
+			scheduled: "2026-06-01",
+			complete_instances: [],
+			occurrence_materialization: "manual",
+		});
+		const { taskService } = createService({ [parent.path]: parent });
+		const virtualComplete = jest
+			.spyOn(taskService, "toggleRecurringTaskComplete")
+			.mockResolvedValue({
+				...parent,
+				complete_instances: ["2026-06-01"],
+			});
+		const materializeOccurrence = jest.spyOn(taskService, "materializeOccurrence");
+
+		await taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
+			parent,
+			new Date("2026-06-01T12:00:00Z")
+		);
+
+		expect(virtualComplete).toHaveBeenCalledWith(
+			expect.objectContaining({ path: parent.path }),
+			new Date("2026-06-01T12:00:00Z")
+		);
+		expect(materializeOccurrence).not.toHaveBeenCalled();
+	});
+
 	it("reconciles parent instances when completing a materialized occurrence", async () => {
 		const parent = TaskFactory.createTask({
 			title: "Daily task",

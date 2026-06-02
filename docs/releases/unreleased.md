@@ -32,6 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#1115) Added API and MCP support for creating materialized occurrence notes from recurring tasks, and made headless recurring-instance completion respect occurrence notes when the parent uses Create next after completion. Thanks to @martin-forge for identifying the API/MCP gap.
+
 ## Fixed
 
 - (#1980) Added mobile bottom spacing to Agenda Calendar views so the last visible tasks can scroll above Obsidian's bottom navigation bar. Thanks to @Jomo94 for reporting and sharing the screenshot.

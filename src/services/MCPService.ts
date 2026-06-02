@@ -109,6 +109,7 @@ type UpdateTaskArgs = TaskIdArgs &
 		scheduled?: string | null;
 	};
 type CompleteRecurringArgs = TaskIdArgs & { date?: string };
+type MaterializeOccurrenceArgs = TaskIdArgs & { date: string };
 type TextTaskArgs = { text: string };
 type QueryTasksArgs = {
 	conjunction: "and" | "or";
@@ -469,12 +470,37 @@ export class MCPService {
 						return this.errorResult("Task not found");
 					}
 					const targetDate = date ? new Date(date) : undefined;
-					const updatedTask = await this.taskService.toggleRecurringTaskComplete(
-						task,
-						targetDate
-					);
+					const updatedTask =
+						await this.taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
+							task,
+							targetDate
+						);
 
 					return this.jsonResult(updatedTask);
+				} catch (error: unknown) {
+					return this.errorResult(this.getErrorMessage(error));
+				}
+			}
+		);
+
+		tool(
+			"tasknotes_materialize_occurrence",
+			{
+				description: "Create or return a materialized occurrence note for a recurring task",
+				inputSchema: {
+					id: z.string().describe("Parent recurring task file path"),
+					date: z.string().describe("Occurrence date to materialize (YYYY-MM-DD)"),
+				},
+			},
+			async ({ id, date }: MaterializeOccurrenceArgs) => {
+				try {
+					const task = await this.cacheManager.getTaskInfo(id);
+					if (!task) {
+						return this.errorResult("Task not found");
+					}
+					const occurrence = await this.taskService.materializeOccurrence(task, date);
+
+					return this.jsonResult(occurrence);
 				} catch (error: unknown) {
 					return this.errorResult(this.getErrorMessage(error));
 				}
