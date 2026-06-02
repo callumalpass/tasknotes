@@ -1679,7 +1679,20 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__title-tex
 }
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__metadata {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: min(52vw, 24em);
+    margin-left: 0.25em;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    white-space: nowrap;
+    vertical-align: middle;
+    position: static;
+    top: auto;
 }
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__status-dot {
