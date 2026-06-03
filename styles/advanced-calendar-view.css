@@ -747,6 +747,14 @@ body.is-mobile .timeblock-attachment-remove {
     width: 100%;
 }
 
+.advanced-calendar-view .fc-timegrid-cols table {
+    margin: 0;
+}
+
+.advanced-calendar-view .fc-timegrid-cols .fc-timegrid-col {
+    padding: 0;
+}
+
 /* Remove outer borders only */
 .advanced-calendar-view .fc-theme-standard .fc-scrollgrid {
     border: none;

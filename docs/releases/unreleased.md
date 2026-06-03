@@ -38,6 +38,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#1985) Fixed embedded Calendar and Agenda time-grid views drifting out of alignment inside callouts and Reading mode. Thanks to @matesvecenik for reporting and sharing screenshots.
 - (#1980) Added mobile bottom spacing to Agenda Calendar views so the last visible tasks can scroll above Obsidian's bottom navigation bar. Thanks to @Jomo94 for reporting and sharing the screenshot.
 - (#1984) Fixed mobile task link overlays hiding configured inline task card properties such as scheduled date, due date, contexts, and projects. Thanks to @stil-sudo for reporting.
 - (#1979) Kept the left-positioned subtask chevron from overlapping the task status control on mobile task cards. Thanks to @Jomo94 for reporting and sharing the screenshot.
