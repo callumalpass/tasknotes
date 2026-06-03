@@ -3,6 +3,7 @@ import type { HTTPRequestLike, HTTPResponseLike } from "./httpTypes";
 const DEFAULT_ALLOW_METHODS = "GET, POST, PUT, DELETE, OPTIONS";
 const DEFAULT_ALLOW_HEADERS = "Content-Type, Authorization";
 const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+const BROWSER_EXTENSION_PROTOCOLS = new Set(["chrome-extension:"]);
 
 export interface CORSHeaderOptions {
 	allowMethods?: string;
@@ -20,6 +21,20 @@ export function resolveLocalCORSOrigin(
 
 	try {
 		const originUrl = new URL(requestOrigin);
+		if (BROWSER_EXTENSION_PROTOCOLS.has(originUrl.protocol)) {
+			const isOriginOnly =
+				!originUrl.username &&
+				!originUrl.password &&
+				!originUrl.port &&
+				!originUrl.search &&
+				!originUrl.hash &&
+				(originUrl.pathname === "" || originUrl.pathname === "/");
+
+			return isOriginOnly && originUrl.hostname
+				? `${originUrl.protocol}//${originUrl.hostname}`
+				: undefined;
+		}
+
 		if (originUrl.protocol !== "http:" && originUrl.protocol !== "https:") {
 			return undefined;
 		}

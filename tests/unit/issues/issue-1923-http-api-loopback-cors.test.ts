@@ -151,6 +151,18 @@ describe("Issue #1923: HTTP API loopback binding and CORS", () => {
 		expect(response.json()).toMatchObject({ success: true });
 	});
 
+	it("allows Chrome extension origins for the browser extension", async () => {
+		const service = createService();
+		const response = createResponse();
+		const extensionOrigin = "chrome-extension://abcdefghijklmnopabcdefghijklmnop";
+
+		await handleRequest(service, createRequest(extensionOrigin), response);
+
+		expect(response.statusCode).toBe(200);
+		expect(response.headers["Access-Control-Allow-Origin"]).toBe(extensionOrigin);
+		expect(response.json()).toMatchObject({ success: true });
+	});
+
 	it("rejects browser CORS requests from non-loopback origins", async () => {
 		const service = createService();
 		const response = createResponse();
@@ -163,6 +175,15 @@ describe("Issue #1923: HTTP API loopback binding and CORS", () => {
 			success: false,
 			error: "CORS origin is not allowed",
 		});
+	});
+
+	it("rejects malformed Chrome extension origins", async () => {
+		expect(
+			resolveLocalCORSOrigin(
+				"chrome-extension://abcdefghijklmnopabcdefghijklmnop/options.html",
+				"http://127.0.0.1:9191"
+			)
+		).toBeUndefined();
 	});
 
 	it("does not use a wildcard fallback for requests without an Origin header", async () => {
