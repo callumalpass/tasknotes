@@ -210,6 +210,10 @@ export const ko: TranslationTree = {
 					dateNavigation: "날짜 탐색",
 					events: "이벤트",
 					layout: "레이아웃",
+					view: "보기",
+					display: "표시",
+					timeGrid: "시간 그리드",
+					eventLayout: "이벤트 레이아웃",
 					propertyBasedEvents: "속성 기반 이벤트",
 					calendarSubscriptions: "캘린더 구독",
 					googleCalendars: "Google 캘린더",
@@ -1306,9 +1310,9 @@ export const ko: TranslationTree = {
 				},
 				customTemplate: {
 					name: "사용자 지정 파일명 템플릿",
-					description: "사용자 지정 파일 이름 템플릿입니다. 사용 가능한 변수: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {uuid}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
-					placeholder: "{date}-{title}-{dueDate}",
-					helpText: "참고: {dueDate}와 {scheduledDate}는 YYYY-MM-DD 형식이며 설정되지 않은 경우 비어 있습니다."
+					description: "사용자 지정 파일 이름 템플릿입니다. 사용 가능한 변수: {{title}}, {{titleLower}}, {{titleUpper}}, {{titleSnake}}, {{titleKebab}}, {{titleCamel}}, {{titlePascal}}, {{date}}, {{shortDate}}, {{time}}, {{time12}}, {{time24}}, {{timestamp}}, {{dateTime}}, {{year}}, {{month}}, {{monthName}}, {{monthNameShort}}, {{day}}, {{dayName}}, {{dayNameShort}}, {{hour}}, {{hour12}}, {{minute}}, {{second}}, {{milliseconds}}, {{ms}}, {{ampm}}, {{week}}, {{quarter}}, {{unix}}, {{unixMs}}, {{timezone}}, {{timezoneShort}}, {{utcOffset}}, {{utcOffsetShort}}, {{utcZ}}, {{zettel}}, {{uuid}}, {{nano}}, {{priority}}, {{priorityShort}}, {{status}}, {{statusShort}}, {{dueDate}}, {{scheduledDate}}",
+					placeholder: "{{date}}-{{title}}-{{dueDate}}",
+					helpText: "참고: {{dueDate}}와 {{scheduledDate}}는 YYYY-MM-DD 형식이며 설정되지 않은 경우 비어 있습니다."
 				}
 			},
 			displayFormatting: {
@@ -2585,7 +2589,8 @@ export const ko: TranslationTree = {
 			},
 			whatThisMeans: "이것이 의미하는 것:",
 			bullets: {
-				dailyNotesRequired: "데일리 노트 코어 플러그인이 활성화되어 있어야 합니다",
+				dailyNotesRequired:
+					"데일리 노트는 코어 데일리 노트 플러그인이나 Periodic Notes에서 활성화되어 있어야 합니다",
 				storedInNotes: "데이터가 데일리 노트 프론트매터에 저장됩니다",
 				migrateData: "기존 플러그인 데이터가 마이그레이션된 후 지워집니다",
 				futureSessions: "향후 세션은 데일리 노트에 저장됩니다",

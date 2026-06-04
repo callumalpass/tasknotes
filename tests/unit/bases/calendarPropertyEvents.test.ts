@@ -23,6 +23,11 @@ describe("calendarPropertyEvents", () => {
 			expect(normalizeDateValueForCalendar("   ")).toBeNull();
 			expect(normalizeDateValueForCalendar(new Date("not-a-date"))).toBeNull();
 		});
+
+		it("treats Bases stringified empty values as missing", () => {
+			expect(normalizeDateValueForCalendar("null")).toBeNull();
+			expect(normalizeDateValueForCalendar("undefined")).toBeNull();
+		});
 	});
 
 	describe("buildCalendarPropertyEvent", () => {

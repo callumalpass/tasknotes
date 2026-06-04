@@ -65,6 +65,7 @@ import {
 	cleanupBasesTaskUpdateListeners,
 	registerBasesTaskUpdateListeners,
 } from "./basesTaskUpdateListeners";
+import { filterTopLevelSubtasks } from "./topLevelSubtasks";
 import type { BasesTaskUpdateSource } from "./basesUpdateEvents";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -103,6 +104,7 @@ export abstract class BasesViewBase extends Component {
 	// Search functionality (opt-in via enableSearch flag)
 	protected enableSearch = false;
 	protected searchBox: SearchBox | null = null;
+	protected searchContainerEl: HTMLElement | null = null;
 	protected searchFilter: TaskSearchFilter | null = null;
 	protected currentSearchTerm = "";
 
@@ -544,12 +546,24 @@ export abstract class BasesViewBase extends Component {
 		};
 	}
 
+	protected filterTopLevelSubtasks(tasks: readonly TaskInfo[]): TaskInfo[] {
+		return filterTopLevelSubtasks(tasks, (linkPath, sourcePath) =>
+			this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, sourcePath)
+		);
+	}
+
 	/**
 	 * Initialize search functionality for this view.
 	 * Call this from render() in subclasses that want search.
 	 * Requires enableSearch to be true and will only create the UI once.
 	 */
 	protected setupSearch(container: HTMLElement): void {
+		// Tear down search UI if it exists but search has been disabled
+		if (this.searchBox && !this.enableSearch) {
+			this.teardownSearch();
+			return;
+		}
+
 		// Idempotency: if search UI is already created, restore value and return
 		if (this.searchBox) {
 			// Restore search term if it was cleared during re-render
@@ -584,16 +598,25 @@ export abstract class BasesViewBase extends Component {
 		});
 		this.searchFilter = searchControls.searchFilter;
 		this.searchBox = searchControls.searchBox;
+		this.searchContainerEl = searchControls.searchContainer;
 
 		// Register cleanup using Component lifecycle
-		this.register(() => {
-			if (this.searchBox) {
-				this.searchBox.destroy();
-				this.searchBox = null;
-			}
-			this.searchFilter = null;
-			this.currentSearchTerm = "";
-		});
+		this.register(() => this.teardownSearch());
+	}
+
+	/**
+	 * Remove the search UI and reset search state.
+	 * Called when enableSearch is toggled off.
+	 */
+	protected teardownSearch(): void {
+		if (this.searchBox) {
+			this.searchBox.destroy();
+			this.searchBox = null;
+		}
+		this.searchContainerEl?.remove();
+		this.searchContainerEl = null;
+		this.searchFilter = null;
+		this.currentSearchTerm = "";
 	}
 
 	/**

@@ -1,4 +1,5 @@
 import { TaskNotesAPI } from "../../../src/api/TaskNotesAPI";
+import { TaskNotesApiError } from "../../../src/api/runtime-api";
 import type TaskNotesPlugin from "../../../src/main";
 
 function createPluginMock(overrides: Record<string, unknown> = {}): TaskNotesPlugin {
@@ -82,6 +83,18 @@ describe("Issue #1052: public natural-language parser API", () => {
 	it("rejects non-string input at runtime for JavaScript callers", () => {
 		const api = new TaskNotesAPI(createPluginMock());
 
-		expect(() => api.parseNaturalLanguage(undefined as unknown as string)).toThrow(TypeError);
+		expect(() => api.parseNaturalLanguage(undefined as unknown as string)).toThrow(
+			TaskNotesApiError
+		);
+		expect(() => api.parseNaturalLanguage(undefined as unknown as string)).toThrow(
+			"TaskNotes API parseNaturalLanguage expects a string"
+		);
+
+		try {
+			api.parseNaturalLanguage(undefined as unknown as string);
+		} catch (error) {
+			expect(error).toBeInstanceOf(TaskNotesApiError);
+			expect((error as TaskNotesApiError).code).toBe("invalid_input");
+		}
 	});
 });

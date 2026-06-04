@@ -210,6 +210,10 @@ export const pt: TranslationTree = {
 					dateNavigation: "Navegação de Data",
 					events: "Eventos",
 					layout: "Layout",
+					view: "Visualização",
+					display: "Exibição",
+					timeGrid: "Grade de horário",
+					eventLayout: "Layout de eventos",
 					propertyBasedEvents: "Eventos baseados em propriedade",
 					calendarSubscriptions: "Inscrições de calendário",
 					googleCalendars: "Calendários do Google",
@@ -1312,9 +1316,9 @@ export const pt: TranslationTree = {
 				},
 				customTemplate: {
 					name: "Modelo de nome de arquivo personalizado",
-					description: "Modelo para nomes de arquivo personalizados. Variáveis disponíveis: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {uuid}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
-					placeholder: "{date}-{title}-{dueDate}",
-					helpText: "Nota: {dueDate} e {scheduledDate} estão no formato AAAA-MM-DD e estarão vazios se não forem definidos."
+					description: "Modelo para nomes de arquivo personalizados. Variáveis disponíveis: {{title}}, {{titleLower}}, {{titleUpper}}, {{titleSnake}}, {{titleKebab}}, {{titleCamel}}, {{titlePascal}}, {{date}}, {{shortDate}}, {{time}}, {{time12}}, {{time24}}, {{timestamp}}, {{dateTime}}, {{year}}, {{month}}, {{monthName}}, {{monthNameShort}}, {{day}}, {{dayName}}, {{dayNameShort}}, {{hour}}, {{hour12}}, {{minute}}, {{second}}, {{milliseconds}}, {{ms}}, {{ampm}}, {{week}}, {{quarter}}, {{unix}}, {{unixMs}}, {{timezone}}, {{timezoneShort}}, {{utcOffset}}, {{utcOffsetShort}}, {{utcZ}}, {{zettel}}, {{uuid}}, {{nano}}, {{priority}}, {{priorityShort}}, {{status}}, {{statusShort}}, {{dueDate}}, {{scheduledDate}}",
+					placeholder: "{{date}}-{{title}}-{{dueDate}}",
+					helpText: "Nota: {{dueDate}} e {{scheduledDate}} estão no formato AAAA-MM-DD e estarão vazios se não forem definidos."
 				}
 			},
 			displayFormatting: {
@@ -2603,7 +2607,8 @@ export const pt: TranslationTree = {
 			},
 			whatThisMeans: "O que isso significa:",
 			bullets: {
-				dailyNotesRequired: "O plugin principal de Notas Diárias deve permanecer ativado",
+				dailyNotesRequired:
+					"As notas diárias devem estar ativadas no plugin principal de notas diárias ou no Periodic Notes",
 				storedInNotes: "Os dados serão armazenados no frontmatter das suas notas diárias",
 				migrateData: "Os dados existentes do plugin serão migrados e depois limpos",
 				futureSessions: "Sessões futuras serão salvas nas notas diárias",

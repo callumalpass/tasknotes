@@ -26,3 +26,9 @@ For API documentation, see [HTTP API](../HTTP_API.md).
 Webhooks send task event payloads to external services when subscribed events occur. Optional payload transformations support service-specific formats.
 
 For configuration, see [Webhooks](../webhooks.md).
+
+## Companion Plugins
+
+Companion plugins run inside Obsidian alongside TaskNotes and use the JavaScript runtime API for live task operations. They are useful when an integration needs a real Obsidian UI, command-palette commands, or vault-local configuration files.
+
+For the companion-plugin model and the TaskNotes Workflows guide, see [Companion Plugins](../companion-plugins.md).

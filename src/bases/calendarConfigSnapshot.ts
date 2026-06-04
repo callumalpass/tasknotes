@@ -67,7 +67,7 @@ function normalizeProviderIds(ids: readonly unknown[] | undefined): string[] {
 		}
 	}
 
-	return normalized;
+	return normalized.sort();
 }
 
 export function readCalendarConfigValue(

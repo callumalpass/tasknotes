@@ -6,6 +6,16 @@ import {
 	TaskInfo,
 	IWebhookNotifier,
 } from "../types";
+import {
+	buildMaterializeOccurrencePlan,
+	buildMaterializedOccurrenceCompletePlan,
+	buildMaterializedOccurrenceSkipPlan,
+	buildMaterializedOccurrenceUncompletePlan,
+	buildMaterializedOccurrenceUnskipPlan,
+	findMaterializedOccurrence,
+	isMaterializedOccurrenceTask,
+	taskInfoUpdatesToFrontmatterPatch,
+} from "@tasknotes/model/operations";
 import { AutoArchiveService } from "./AutoArchiveService";
 import { TFile, normalizePath } from "obsidian";
 import { TemplateData, processTemplate } from "../utils/templateProcessor";
@@ -15,8 +25,12 @@ import {
 	resetMarkdownCheckboxes,
 } from "../utils/helpers";
 import { formatDependencyLink, resolveDependencyEntry } from "../utils/dependencyUtils";
-import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
-import { getCurrentDateString, getCurrentTimestamp } from "../utils/dateUtils";
+import { generateLink, getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
+import {
+	formatDateForStorage,
+	getCurrentDateString,
+	getCurrentTimestamp,
+} from "../utils/dateUtils";
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
@@ -105,8 +119,7 @@ export class TaskService {
 			...updatedTask,
 			googleCalendarEventId: task.googleCalendarEventId,
 			googleCalendarExceptionEventId: task.googleCalendarExceptionEventId,
-			googleCalendarExceptionOriginalScheduled:
-				task.googleCalendarExceptionOriginalScheduled,
+			googleCalendarExceptionOriginalScheduled: task.googleCalendarExceptionOriginalScheduled,
 			googleCalendarMovedOriginalDates: task.googleCalendarMovedOriginalDates
 				? [...task.googleCalendarMovedOriginalDates]
 				: undefined,
@@ -181,6 +194,10 @@ export class TaskService {
 		if (typeof value === "string") return value;
 		if (typeof value === "number") return String(value);
 		return "";
+	}
+
+	private getCompletionDateForTask(task: TaskInfo): string {
+		return task.occurrence_date || getCurrentDateString();
 	}
 
 	/**
@@ -311,7 +328,8 @@ export class TaskService {
 					category: "persistence",
 					operation: "task-body-template-not-found",
 				});
-				publishUserNotice(this.plugin.emitter,
+				publishUserNotice(
+					this.plugin.emitter,
 					this.translate("services.task.notices.templateNotFound", { path: templatePath })
 				);
 				return {
@@ -326,7 +344,8 @@ export class TaskService {
 				operation: "reading-task-body-template",
 				error: error,
 			});
-			publishUserNotice(this.plugin.emitter,
+			publishUserNotice(
+				this.plugin.emitter,
 				this.translate("services.task.notices.templateReadError", {
 					template: defaults.bodyTemplate,
 				})
@@ -391,7 +410,7 @@ export class TaskService {
 				property,
 				value,
 				currentTimestamp: getCurrentTimestamp(),
-				currentDateString: getCurrentDateString(),
+				currentDateString: this.getCompletionDateForTask(freshTask),
 				normalizeStatusValue: (candidate) => this.normalizeStatusValue(candidate),
 				isCompletedStatus: (status) => this.plugin.statusManager.isCompletedStatus(status),
 			});
@@ -429,14 +448,12 @@ export class TaskService {
 					normalizeStatusValue: (candidate) => this.normalizeStatusValue(candidate),
 					isCompletedStatus: (status) =>
 						this.plugin.statusManager.isCompletedStatus(status),
-					currentDateString: getCurrentDateString(),
+					currentDateString: this.getCompletionDateForTask(freshTask),
 				});
 
 				this.writeOptionalFrontmatterField(
 					frontmatter,
-					this.plugin.fieldMapper.toUserField(
-						"googleCalendarExceptionOriginalScheduled"
-					),
+					this.plugin.fieldMapper.toUserField("googleCalendarExceptionOriginalScheduled"),
 					updatePlan.updatedTask.googleCalendarExceptionOriginalScheduled
 				);
 				this.writeOptionalFrontmatterField(
@@ -449,10 +466,18 @@ export class TaskService {
 			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)
 			await this.applyPropertyChangeSideEffects(
 				file,
-				task,
+				freshTask,
 				updatePlan.updatedTask,
 				property,
-				task[property],
+				freshTask[property],
+				updatePlan.normalizedValue
+			);
+
+			await this.reconcileMaterializedOccurrenceStatusChange(
+				freshTask,
+				updatePlan.updatedTask,
+				property,
+				freshTask[property],
 				updatePlan.normalizedValue
 			);
 
@@ -511,6 +536,358 @@ export class TaskService {
 				newValue,
 			}
 		);
+	}
+
+	async materializeOccurrence(
+		parentTask: TaskInfo,
+		targetDate: string | Date,
+		overrides: Partial<TaskInfo> = {}
+	): Promise<TaskInfo> {
+		const freshParent =
+			(await this.plugin.cacheManager.getTaskInfo(parentTask.path)) || parentTask;
+		if (!freshParent.recurrence) {
+			throw new Error("Task is not recurring");
+		}
+
+		const existingOccurrences = await this.plugin.cacheManager.getAllTasks();
+		const plan = buildMaterializeOccurrencePlan({
+			parentTask: freshParent,
+			targetDate,
+			currentTimestamp: getCurrentTimestamp(),
+			existingOccurrences,
+			parentLink: this.buildOccurrenceParentReference(freshParent),
+			defaultStatus: this.plugin.settings.defaultTaskStatus,
+			defaultPriority: this.plugin.settings.defaultTaskPriority,
+			overrides,
+		});
+
+		if (!plan.created && plan.existingOccurrence) {
+			return plan.existingOccurrence;
+		}
+
+		const taskData: TaskCreationData = {
+			...(plan.occurrenceTask as Partial<TaskInfo>),
+			creationContext: "api",
+		};
+		const { taskInfo } = await this.createTask(taskData, { applyDefaults: false });
+		return taskInfo;
+	}
+
+	async findMaterializedOccurrence(
+		parentTask: TaskInfo,
+		targetDate: string | Date
+	): Promise<TaskInfo | undefined> {
+		const freshParent =
+			(await this.plugin.cacheManager.getTaskInfo(parentTask.path)) || parentTask;
+		if (!freshParent.recurrence) {
+			return undefined;
+		}
+
+		const dateStr =
+			typeof targetDate === "string"
+				? targetDate.slice(0, 10)
+				: formatDateForStorage(targetDate);
+		const existingOccurrences = await this.plugin.cacheManager.getAllTasks();
+		return findMaterializedOccurrence(
+			existingOccurrences,
+			freshParent,
+			dateStr,
+			this.buildOccurrenceParentReference(freshParent)
+		);
+	}
+
+	async getMaterializedOccurrenceParent(occurrenceTask: TaskInfo): Promise<TaskInfo | null> {
+		const freshOccurrence =
+			(await this.plugin.cacheManager.getTaskInfo(occurrenceTask.path)) || occurrenceTask;
+		return this.resolveOccurrenceParentTask(freshOccurrence);
+	}
+
+	async skipMaterializedOccurrence(
+		occurrenceTask: TaskInfo,
+		skippedStatus = this.getDefaultSkippedOccurrenceStatus()
+	): Promise<TaskInfo> {
+		const freshOccurrence =
+			(await this.plugin.cacheManager.getTaskInfo(occurrenceTask.path)) || occurrenceTask;
+		const parentTask = await this.resolveOccurrenceParentTask(freshOccurrence);
+		if (!parentTask) {
+			throw new Error("Cannot resolve occurrence parent");
+		}
+
+		const plan = buildMaterializedOccurrenceSkipPlan({
+			occurrenceTask: freshOccurrence,
+			parentTask,
+			skippedStatus,
+			currentTimestamp: getCurrentTimestamp(),
+			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
+		});
+
+		const updatedOccurrence = await this.persistTaskInfoUpdates(
+			freshOccurrence,
+			plan.occurrenceUpdates,
+			"skip-materialized-occurrence"
+		);
+		const updatedParent = await this.persistTaskInfoUpdates(
+			parentTask,
+			plan.parentUpdates,
+			"reconcile-skipped-materialized-occurrence-parent"
+		);
+
+		if (plan.materializeNextDate) {
+			try {
+				await this.materializeOccurrence(updatedParent, plan.materializeNextDate);
+			} catch (materializeError) {
+				tasknotesLogger.warn("Failed to materialize next occurrence after skip:", {
+					category: "persistence",
+					operation: "materialize-next-occurrence-after-skip",
+					details: {
+						parentPath: updatedParent.path,
+						nextDate: plan.materializeNextDate,
+					},
+					error: materializeError,
+				});
+			}
+		}
+
+		return updatedOccurrence;
+	}
+
+	async unskipMaterializedOccurrence(occurrenceTask: TaskInfo): Promise<TaskInfo> {
+		const freshOccurrence =
+			(await this.plugin.cacheManager.getTaskInfo(occurrenceTask.path)) || occurrenceTask;
+		const parentTask = await this.resolveOccurrenceParentTask(freshOccurrence);
+		if (!parentTask) {
+			throw new Error("Cannot resolve occurrence parent");
+		}
+
+		const plan = buildMaterializedOccurrenceUnskipPlan({
+			occurrenceTask: freshOccurrence,
+			parentTask,
+			activeStatus: this.plugin.settings.defaultTaskStatus,
+			currentTimestamp: getCurrentTimestamp(),
+		});
+
+		const updatedOccurrence = await this.persistTaskInfoUpdates(
+			freshOccurrence,
+			plan.occurrenceUpdates,
+			"unskip-materialized-occurrence"
+		);
+		await this.persistTaskInfoUpdates(
+			parentTask,
+			plan.parentUpdates,
+			"reconcile-unskipped-materialized-occurrence-parent"
+		);
+		return updatedOccurrence;
+	}
+
+	private getDefaultSkippedOccurrenceStatus(): string | undefined {
+		return this.plugin.settings.customStatuses.find((status) => status.isSkipped)?.value;
+	}
+
+	private async reconcileMaterializedOccurrenceStatusChange(
+		originalOccurrence: TaskInfo,
+		updatedOccurrence: TaskInfo,
+		property: keyof TaskInfo,
+		oldValue: unknown,
+		newValue: unknown
+	): Promise<void> {
+		if (property !== "status" || !isMaterializedOccurrenceTask(updatedOccurrence)) {
+			return;
+		}
+
+		const wasCompleted = this.plugin.statusManager.isCompletedStatus(
+			this.normalizeStatusValue(oldValue)
+		);
+		const isCompleted = this.plugin.statusManager.isCompletedStatus(
+			this.normalizeStatusValue(newValue)
+		);
+		if (wasCompleted === isCompleted) {
+			return;
+		}
+
+		const parentTask = await this.resolveOccurrenceParentTask(updatedOccurrence);
+		if (!parentTask) {
+			tasknotesLogger.warn("Could not resolve materialized occurrence parent:", {
+				category: "persistence",
+				operation: "resolve-materialized-occurrence-parent",
+				details: {
+					taskPath: updatedOccurrence.path,
+					parent: updatedOccurrence.recurrence_parent,
+				},
+			});
+			return;
+		}
+
+		const currentTimestamp = getCurrentTimestamp();
+		const plan = isCompleted
+			? buildMaterializedOccurrenceCompletePlan({
+					occurrenceTask: updatedOccurrence,
+					parentTask,
+					completedStatus: this.normalizeStatusValue(newValue),
+					currentTimestamp,
+					maintainDueDateOffsetInRecurring:
+						this.plugin.settings.maintainDueDateOffsetInRecurring,
+				})
+			: buildMaterializedOccurrenceUncompletePlan({
+					occurrenceTask: originalOccurrence,
+					parentTask,
+					activeStatus: this.normalizeStatusValue(newValue),
+					currentTimestamp,
+				});
+
+		const updatedParent = await this.persistTaskInfoUpdates(
+			parentTask,
+			plan.parentUpdates,
+			"reconcile-materialized-occurrence-parent"
+		);
+
+		if (isCompleted && this.webhookNotifier) {
+			try {
+				await this.webhookNotifier.triggerWebhook("recurring.instance.completed", {
+					task: updatedParent,
+					occurrence: updatedOccurrence,
+					date: plan.targetDate,
+				});
+			} catch (webhookError) {
+				tasknotesLogger.warn("Failed to trigger materialized occurrence webhook:", {
+					category: "provider",
+					operation: "trigger-materialized-occurrence-webhook",
+					error: webhookError,
+				});
+			}
+		}
+
+		if (isCompleted && plan.materializeNextDate) {
+			try {
+				await this.materializeOccurrence(updatedParent, plan.materializeNextDate);
+			} catch (materializeError) {
+				tasknotesLogger.warn("Failed to materialize next occurrence after completion:", {
+					category: "persistence",
+					operation: "materialize-next-occurrence-after-completion",
+					details: {
+						parentPath: updatedParent.path,
+						nextDate: plan.materializeNextDate,
+					},
+					error: materializeError,
+				});
+			}
+		}
+	}
+
+	private async resolveOccurrenceParentTask(occurrenceTask: TaskInfo): Promise<TaskInfo | null> {
+		if (!occurrenceTask.recurrence_parent) {
+			return null;
+		}
+
+		const linkPath = parseLinkToPath(occurrenceTask.recurrence_parent);
+		const candidates = new Set<string>([linkPath]);
+		if (linkPath && !linkPath.endsWith(".md")) {
+			candidates.add(`${linkPath}.md`);
+		}
+
+		for (const candidate of candidates) {
+			const task = await this.plugin.cacheManager.getTaskInfo(candidate);
+			if (task) {
+				return task;
+			}
+		}
+
+		const resolved = this.plugin.app.metadataCache.getFirstLinkpathDest?.(
+			linkPath,
+			occurrenceTask.path
+		);
+		if (resolved instanceof TFile) {
+			return await this.plugin.cacheManager.getTaskInfo(resolved.path);
+		}
+
+		return null;
+	}
+
+	private buildOccurrenceParentReference(parentTask: TaskInfo): string {
+		const parentFile = this.plugin.app.vault.getAbstractFileByPath(parentTask.path);
+		if (parentFile instanceof TFile) {
+			return generateLink(
+				this.plugin.app,
+				parentFile,
+				"",
+				undefined,
+				undefined,
+				this.plugin.settings.useFrontmatterMarkdownLinks
+			);
+		}
+
+		return `[[${parentTask.path.replace(/\.md$/i, "")}]]`;
+	}
+
+	private applyModelTaskUpdatesToFrontmatter(
+		frontmatter: Record<string, unknown>,
+		updates: Partial<TaskInfo>
+	): void {
+		const patch = taskInfoUpdatesToFrontmatterPatch(
+			updates,
+			this.plugin.fieldMapper.getMapping()
+		);
+		for (const operation of patch) {
+			if (operation.op === "delete") {
+				delete frontmatter[operation.field];
+			} else {
+				frontmatter[operation.field] = operation.value;
+			}
+		}
+	}
+
+	private async persistTaskInfoUpdates(
+		task: TaskInfo,
+		updates: Partial<TaskInfo>,
+		operation: string
+	): Promise<TaskInfo> {
+		if (Object.keys(updates).length === 0) {
+			return task;
+		}
+
+		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+		if (!(file instanceof TFile)) {
+			throw new Error(`Cannot find task file: ${task.path}`);
+		}
+
+		const updatedTask: TaskInfo = { ...task, ...updates };
+		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			this.applyModelTaskUpdatesToFrontmatter(frontmatter, updates);
+		});
+
+		try {
+			if (this.plugin.cacheManager.waitForFreshTaskData) {
+				await this.plugin.cacheManager.waitForFreshTaskData(file);
+			}
+			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+		} catch (cacheError) {
+			tasknotesLogger.error("Error updating cache for model task updates:", {
+				category: "stale-data",
+				operation: "persist-model-task-updates-cache",
+				details: { taskPath: task.path, sourceOperation: operation },
+				error: cacheError,
+			});
+		}
+
+		this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+			path: task.path,
+			originalTask: task,
+			updatedTask,
+		});
+
+		if (this.plugin.taskCalendarSyncService?.isEnabled()) {
+			this.plugin.taskCalendarSyncService
+				.updateTaskInCalendar(updatedTask, task)
+				.catch((error) => {
+					tasknotesLogger.warn("Failed to sync model task update to Google Calendar:", {
+						category: "provider",
+						operation: "sync-model-task-update-google-calendar",
+						details: { taskPath: task.path, sourceOperation: operation },
+						error,
+					});
+				});
+		}
+
+		return updatedTask;
 	}
 
 	/**
@@ -589,7 +966,8 @@ export class TaskService {
 					operation: "moving",
 					details: { value: errorMessage },
 				});
-				publishUserNotice(this.plugin.emitter,
+				publishUserNotice(
+					this.plugin.emitter,
 					this.translate("services.task.notices.moveTaskFailed", {
 						operation,
 						error: errorMessage,
@@ -672,7 +1050,10 @@ export class TaskService {
 							error: error,
 						});
 					});
-			} else if (!archiveCalendarCleanupComplete && this.hasGoogleCalendarLinks(updatedTask)) {
+			} else if (
+				!archiveCalendarCleanupComplete &&
+				this.hasGoogleCalendarLinks(updatedTask)
+			) {
 				tasknotesLogger.warn(
 					"Archived task still has Google Calendar links and will need retry cleanup:",
 					{

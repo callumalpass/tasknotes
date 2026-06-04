@@ -1,0 +1,5 @@
+.tasknotes-release-notes-view .release-notes-version-content {
+    font-family: var(--font-text);
+    font-size: var(--font-text-size);
+    line-height: var(--line-height-normal);
+}

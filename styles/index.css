@@ -24,10 +24,11 @@
    13. notes-view.css - BEM NotesView component
    14. pomodoro-view.css - BEM PomodoroView component
    15. pomodoro-stats-view.css - BEM PomodoroStatsView component
-   16. settings-view.css - BEM SettingsView component
+   16. release-notes-view.css - Release notes view typography
+   17. settings-view.css - BEM SettingsView component
 
    === LEGACY SUPPORT ===
-   17. components.css - Reusable UI components, utilities, and modals
+   18. components.css - Reusable UI components, utilities, and modals
    
    To build the final styles.css file, run:
    npm run build-css

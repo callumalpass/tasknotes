@@ -1,6 +1,8 @@
 import { setIcon, setTooltip } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
+import { formatDateTimeForDisplay } from "../utils/dateUtils";
+import { parseLinkToPath } from "../utils/linkUtils";
 import { convertInternalToUserProperties, isPropertyForField } from "../utils/propertyMapping";
 import {
 	getDefaultVisibleProperties,
@@ -119,11 +121,48 @@ function createGoogleCalendarSyncPill(config: RenderTaskCardMetadataConfig): HTM
 	return syncPill;
 }
 
+function createOccurrenceMetadataPill(config: RenderTaskCardMetadataConfig): HTMLElement | null {
+	const { metadataLine, task, plugin } = config;
+	if (!task.recurrence_parent || !task.occurrence_date) {
+		return null;
+	}
+
+	const dateLabel = formatDateTimeForDisplay(task.occurrence_date, {
+		dateFormat: "MMM d",
+		showTime: false,
+		userTimeFormat: plugin.settings.calendarViewSettings?.timeFormat,
+	});
+	const pill = metadataLine.createSpan({
+		cls: "task-card__metadata-pill task-card__metadata-pill--occurrence",
+	});
+	setIcon(pill, "refresh-ccw");
+	pill.createSpan({ text: `Occurrence: ${dateLabel}` });
+	prepareInteractiveControl(pill);
+	pill.setAttribute(
+		"aria-label",
+		`Open recurring parent for occurrence on ${task.occurrence_date}`
+	);
+	setTooltip(pill, `Occurrence of ${task.recurrence_parent} on ${task.occurrence_date}`, {
+		placement: "top",
+	});
+	pill.addEventListener("click", (event) => {
+		event.stopPropagation();
+		const parentPath = parseLinkToPath(task.recurrence_parent || "");
+		void plugin.app.workspace.openLinkText(parentPath, task.path, false);
+	});
+	return pill;
+}
+
 export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HTMLElement[] {
 	const { metadataLine, task, plugin, visibleProperties, propertyOptions = {} } = config;
 	metadataLine.empty();
 	const metadataElements: HTMLElement[] = [];
 	const propertiesToShow = getPropertiesToShow(visibleProperties, plugin);
+
+	const occurrencePill = createOccurrenceMetadataPill(config);
+	if (occurrencePill) {
+		metadataElements.push(occurrencePill);
+	}
 
 	for (const propertyId of propertiesToShow) {
 		if (

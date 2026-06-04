@@ -324,6 +324,54 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.textContent = getRecurrenceTooltip(plugin, value, options?.propertyLabels);
 		}
 	},
+	recurrenceParent: (element, value, task, plugin) => {
+		if (typeof value === "string" && value.trim() !== "") {
+			element.createEl("span", { text: "Parent: " });
+			const linkServices: LinkServices = {
+				metadataCache: plugin.app.metadataCache,
+				workspace: plugin.app.workspace,
+				sourcePath: task.path,
+			};
+			renderTextWithLinks(element, value, linkServices);
+		}
+	},
+	occurrenceDate: (element, value, _task, plugin) => {
+		if (typeof value === "string") {
+			element.textContent = `Occurrence: ${formatDateTimeForDisplay(value, {
+				dateFormat: "MMM d",
+				showTime: false,
+				userTimeFormat: plugin.settings.calendarViewSettings?.timeFormat,
+			})}`;
+			element.classList.add("task-card__metadata-pill--occurrence");
+		}
+	},
+	occurrenceMaterialization: (element, value) => {
+		if (value === "manual") {
+			element.textContent = "Occurrence notes: manual";
+		} else if (value === "on_completion") {
+			element.textContent = "Occurrence notes: after completion";
+		} else if (value === "rolling") {
+			element.textContent = "Occurrence notes: rolling";
+		}
+	},
+	occurrenceNextTrigger: (element, value) => {
+		if (value === "completion") {
+			element.textContent = "Next note: completion";
+		} else if (value === "completion_or_skip") {
+			element.textContent = "Next note: completion or skip";
+		}
+	},
+	occurrenceTemplate: (element, value, task, plugin) => {
+		if (typeof value === "string" && value.trim() !== "") {
+			element.createEl("span", { text: "Template: " });
+			const linkServices: LinkServices = {
+				metadataCache: plugin.app.metadataCache,
+				workspace: plugin.app.workspace,
+				sourcePath: task.path,
+			};
+			renderTextWithLinks(element, value, linkServices);
+		}
+	},
 	completeInstances: (element, value, task) => {
 		if (Array.isArray(value) && value.length > 0) {
 			const count = value.length;

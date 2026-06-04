@@ -468,6 +468,10 @@ export class GoogleCalendarService extends CalendarProvider {
 			color = "#4285F4";
 		}
 
+		const recurringEventId = googleEvent.recurringEventId
+			? `google-${calendarId}-${googleEvent.recurringEventId}`
+			: undefined;
+
 		return {
 			id: `google-${calendarId}-${googleEvent.id}`,
 			subscriptionId: `google-${calendarId}`,
@@ -478,6 +482,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			allDay: allDay,
 			location: googleEvent.location,
 			url: googleEvent.htmlLink,
+			recurringEventId,
 			color: color,
 		};
 	}

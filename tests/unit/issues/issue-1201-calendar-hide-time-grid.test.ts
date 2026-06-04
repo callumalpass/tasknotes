@@ -35,12 +35,12 @@ describe("Issue #1201: Calendar Bases hourly breakdown toggle", () => {
 	});
 
 	it("registers a per-view Bases option for the hourly breakdown", () => {
-		const registrationSource = readRepoFile("src/bases/registration.ts");
+		const calendarOptionsSource = readRepoFile("src/bases/calendarViewOptions.ts");
 		const englishSource = readRepoFile("src/i18n/resources/en.ts");
 
-		expect(registrationSource).toContain('key: "showTimeGrid"');
-		expect(registrationSource).toContain('displayName: t("layout.showTimeGrid")');
-		expect(registrationSource).toContain("default: true");
+		expect(calendarOptionsSource).toContain('key: "showTimeGrid"');
+		expect(calendarOptionsSource).toContain('displayName: t("layout.showTimeGrid")');
+		expect(calendarOptionsSource).toContain("default: true");
 		expect(englishSource).toContain('showTimeGrid: "Show hourly breakdown"');
 	});
 

@@ -90,9 +90,8 @@ export class ICSNoteService {
 		];
 	}
 
-	private getPotentialSeriesId(eventId: string): string | null {
-		const match = eventId.match(/^(.*)-\d+$/);
-		const seriesId = match?.[1]?.trim();
+	private getExplicitSeriesId(event: ICSEvent): string | null {
+		const seriesId = event.recurringEventId?.trim();
 		return seriesId || null;
 	}
 
@@ -100,7 +99,7 @@ export class ICSNoteService {
 		const candidates = new Map<string, Set<string>>();
 
 		for (const event of this.getLoadedCalendarEvents()) {
-			const seriesId = this.getPotentialSeriesId(event.id);
+			const seriesId = this.getExplicitSeriesId(event);
 			if (!seriesId) continue;
 
 			let eventIds = candidates.get(seriesId);
@@ -115,10 +114,6 @@ export class ICSNoteService {
 		const eventIdsBySeriesId = new Map<string, Set<string>>();
 
 		for (const [seriesId, eventIds] of candidates) {
-			if (eventIds.size < 2) {
-				continue;
-			}
-
 			eventIdsBySeriesId.set(seriesId, eventIds);
 			for (const eventId of eventIds) {
 				seriesIdByEventId.set(eventId, seriesId);

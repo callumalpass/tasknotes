@@ -147,11 +147,24 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		migratedData.enableBases = true;
 	}
 
+	// Migration: Update the unused legacy default custom filename template to the
+	// preferred double-brace syntax while preserving active custom templates.
+	if (
+		migratedData.taskFilenameFormat !== "custom" &&
+		migratedData.customFilenameTemplate === "{title}"
+	) {
+		migratedData.customFilenameTemplate = "{{title}}";
+	}
+
 	return migratedData;
 }
 
 export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): SettingsBuildResult {
 	const loadedData = migrateLoadedSettingsData(data);
+	const migratedLegacyCustomFilenameTemplate =
+		data?.taskFilenameFormat !== "custom" &&
+		data?.customFilenameTemplate === "{title}" &&
+		loadedData?.customFilenameTemplate === "{{title}}";
 
 	const settings: TaskNotesSettings = {
 		...DEFAULT_SETTINGS,
@@ -192,7 +205,8 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 
 	return {
 		settings,
-		shouldPersistMigratedSettings: hasMissingMigratedSettings(loadedData),
+		shouldPersistMigratedSettings:
+			hasMissingMigratedSettings(loadedData) || migratedLegacyCustomFilenameTemplate,
 	};
 }
 

@@ -31,6 +31,7 @@ Access these options through the Bases view settings panel:
 - **Hide Empty Swimlanes**: When enabled, ordered swimlanes with no tasks are hidden from the view
 - **Card Layout**: Chooses the task card density for this board. **Default** uses the standard TaskNotes card layout. **Compact** uses a tighter card layout for denser boards
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
+- **Hide top-level subtasks**: When enabled, tasks whose Projects field links to another task in the current filtered board are hidden as standalone cards and remain available through the parent task's expanded subtasks
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
 - **Swim Lane Order**: Advanced JSON configuration for pinning swimlane rows in a stable order
 A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.

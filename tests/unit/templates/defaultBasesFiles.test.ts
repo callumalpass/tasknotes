@@ -185,6 +185,58 @@ describe("defaultBasesFiles", () => {
 		expect(template).not.toContain("note.Task Type");
 	});
 
+	it("adds excluded folder filters to generated task Bases", () => {
+		const template = generateBasesFileTemplate(
+			"open-tasks-view",
+			createMockPlugin({
+				excludedFolders:
+					'Templates, 8 PKM organization/83 PKM templates/831 Full templates, Folder "Quoted", Templates',
+			}) as any
+		);
+
+		expect(template).toContain(
+			[
+				"filters:",
+				"  and:",
+				'    - file.hasTag("task")',
+				'    - file.inFolder("Templates") != true',
+				'    - file.inFolder("8 PKM organization/83 PKM templates/831 Full templates") != true',
+				'    - file.inFolder("Folder \\"Quoted\\"") != true',
+			].join("\n")
+		);
+		expect((template.match(/file\.inFolder\("Templates"\) != true/g) ?? []).length).toBe(1);
+	});
+
+	it("adds excluded folder filters to generated relationship views", () => {
+		const template = generateBasesFileTemplate(
+			"relationships",
+			createMockPlugin({
+				excludedFolders: "Templates",
+			}) as any
+		);
+
+		expect(template).toContain(
+			[
+				'name: "Subtasks"',
+				"    filters:",
+				"      and:",
+				'        - file.hasTag("task")',
+				'        - file.inFolder("Templates") != true',
+				"        - file.hasLink(this.file)",
+			].join("\n")
+		);
+		expect(template).toContain(
+			[
+				'name: "Projects"',
+				"    filters:",
+				"      and:",
+				'        - file.inFolder("Templates") != true',
+				"        - list(this.projects)",
+			].join("\n")
+		);
+		expect((template.match(/file\.inFolder\("Templates"\) != true/g) ?? []).length).toBe(4);
+	});
+
 	it("uses formatted day strings in view filters and formulas that compare against today()", () => {
 		// Bases date values may carry time, while today() is a day boundary.
 		// Comparing both sides as YYYY-MM-DD strings keeps filters day-granular

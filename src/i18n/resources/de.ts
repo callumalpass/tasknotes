@@ -210,6 +210,10 @@ export const de: TranslationTree = {
 					dateNavigation: "Datumsnavigation",
 					events: "Ereignisse",
 					layout: "Layout",
+					view: "Ansicht",
+					display: "Anzeige",
+					timeGrid: "Zeitgitter",
+					eventLayout: "Ereignislayout",
 					propertyBasedEvents: "Eigenschaftsbasierte Ereignisse",
 					calendarSubscriptions: "Kalenderabonnements",
 					googleCalendars: "Google-Kalender",
@@ -1310,9 +1314,9 @@ export const de: TranslationTree = {
 				},
 				customTemplate: {
 					name: "Benutzerdefinierte Dateinamenvorlage",
-					description: "Vorlage für benutzerdefinierte Dateinamen. Verfügbare Variablen: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {uuid}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
-					placeholder: "{date}-{title}-{dueDate}",
-					helpText: "Hinweis: {dueDate} und {scheduledDate} sind im Format YYYY-MM-DD und werden leer sein, wenn nicht gesetzt."
+					description: "Vorlage für benutzerdefinierte Dateinamen. Verfügbare Variablen: {{title}}, {{titleLower}}, {{titleUpper}}, {{titleSnake}}, {{titleKebab}}, {{titleCamel}}, {{titlePascal}}, {{date}}, {{shortDate}}, {{time}}, {{time12}}, {{time24}}, {{timestamp}}, {{dateTime}}, {{year}}, {{month}}, {{monthName}}, {{monthNameShort}}, {{day}}, {{dayName}}, {{dayNameShort}}, {{hour}}, {{hour12}}, {{minute}}, {{second}}, {{milliseconds}}, {{ms}}, {{ampm}}, {{week}}, {{quarter}}, {{unix}}, {{unixMs}}, {{timezone}}, {{timezoneShort}}, {{utcOffset}}, {{utcOffsetShort}}, {{utcZ}}, {{zettel}}, {{uuid}}, {{nano}}, {{priority}}, {{priorityShort}}, {{status}}, {{statusShort}}, {{dueDate}}, {{scheduledDate}}",
+					placeholder: "{{date}}-{{title}}-{{dueDate}}",
+					helpText: "Hinweis: {{dueDate}} und {{scheduledDate}} sind im Format YYYY-MM-DD und werden leer sein, wenn nicht gesetzt."
 				}
 			},
 			displayFormatting: {
@@ -2601,7 +2605,8 @@ export const de: TranslationTree = {
 			},
 			whatThisMeans: "Was das bedeutet:",
 			bullets: {
-				dailyNotesRequired: "Daily Notes Core Plugin muss aktiviert bleiben",
+				dailyNotesRequired:
+					"Tägliche Notizen müssen im Core-Plugin für tägliche Notizen oder in Periodic Notes aktiviert sein",
 				storedInNotes: "Daten werden im Frontmatter deiner täglichen Notizen gespeichert",
 				migrateData: "Bestehende Plugin-Daten werden migriert und dann gelöscht",
 				futureSessions: "Zukünftige Sitzungen werden in täglichen Notizen gespeichert",

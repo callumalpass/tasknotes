@@ -51,7 +51,10 @@ export type BuildCalendarPropertyEventInput<TEntry> = {
 export function normalizeDateValueForCalendar(value: unknown): CalendarDateValue | null {
 	if (typeof value === "string") {
 		const trimmed = value.trim();
-		if (!trimmed) return null;
+		const normalizedEmptyValue = trimmed.toLowerCase();
+		if (!trimmed || normalizedEmptyValue === "null" || normalizedEmptyValue === "undefined") {
+			return null;
+		}
 
 		if (hasTimeComponent(trimmed)) {
 			const parsed = parseDateToLocal(trimmed);

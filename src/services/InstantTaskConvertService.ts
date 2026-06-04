@@ -87,6 +87,13 @@ function splitBlockquotePrefix(line: string): {
 	return { leadingWhitespace, blockquotePrefix, content };
 }
 
+function getWikilinkDisplayText(linkText: string): string {
+	const display = linkText.includes("|")
+		? linkText.split("|").pop() || linkText
+		: linkText;
+	return display.split("/").pop()?.replace(/\.md$/i, "") || display;
+}
+
 export class InstantTaskConvertService {
 	private plugin: TaskNotesPlugin;
 	private statusManager: StatusManager;
@@ -534,7 +541,9 @@ export class InstantTaskConvertService {
 		const title = this.sanitizeTitle(titleSource) || "Untitled Task";
 
 		// If title was truncated, preserve the overflow in details
-		let enhancedDetails = this.appendPreservedTitleLinks(details, titleLinkPreservation.links);
+		const parsedDetails = parsedData.details?.trim();
+		const sourceDetails = [parsedDetails, details].filter(Boolean).join("\n\n");
+		let enhancedDetails = this.appendPreservedTitleLinks(sourceDetails, titleLinkPreservation.links);
 		if (titleSource.length > 200) {
 			const overflowText = this.extractOverflowText(titleSource, 200);
 			if (overflowText) {
@@ -758,7 +767,9 @@ export class InstantTaskConvertService {
 
 		// Prepare custom frontmatter from NLP-parsed user fields
 		// Default values for user fields are applied by TaskService.createTask()
-		const customFrontmatter: Record<string, unknown> = {};
+		const customFrontmatter: Record<string, unknown> = {
+			...(parsedData.customFrontmatter || {}),
+		};
 		if (parsedData.userFields) {
 			for (const [fieldId, value] of Object.entries(parsedData.userFields)) {
 				// Find the user field definition to get the frontmatter key
@@ -794,6 +805,7 @@ export class InstantTaskConvertService {
 			tags: tagsArray,
 			timeEstimate: timeEstimate,
 			recurrence: recurrence,
+			recurrence_anchor: parsedData.recurrenceAnchor,
 			reminders: reminders,
 			details: enhancedDetails, // Use enhanced details with any overflow from title truncation
 			parentNote: parentNote, // Include parent note for template variable
@@ -842,11 +854,7 @@ export class InstantTaskConvertService {
 
 		cleanTitle = cleanTitle.replace(/\[\[([^[\]]+)\]\]/g, (match, inner) => {
 			links.push(match);
-			const linkText = String(inner);
-			const display = linkText.includes("|")
-				? linkText.split("|").pop() || linkText
-				: linkText;
-			return display.split("/").pop()?.replace(/\.md$/i, "") || display;
+			return getWikilinkDisplayText(String(inner));
 		});
 
 		const uniqueLinks = [...new Set(links)];
@@ -854,6 +862,49 @@ export class InstantTaskConvertService {
 			cleanTitle: cleanTitle.replace(/\s+/g, " ").trim(),
 			links: uniqueLinks,
 		};
+	}
+
+	private sanitizeGeneratedLinkAlias(linkText: string): string {
+		if (linkText.startsWith("[[") && linkText.endsWith("]]")) {
+			const inner = linkText.slice(2, -2);
+			const aliasSeparator = inner.indexOf("|");
+			if (aliasSeparator === -1) {
+				return linkText;
+			}
+
+			const target = inner.slice(0, aliasSeparator);
+			const alias = inner.slice(aliasSeparator + 1);
+			const sanitizedAlias = this.sanitizeLinkAliasText(alias);
+
+			return sanitizedAlias ? `[[${target}|${sanitizedAlias}]]` : `[[${target}]]`;
+		}
+
+		if (linkText.startsWith("[") && linkText.endsWith(")")) {
+			const aliasSeparator = linkText.lastIndexOf("](");
+			if (aliasSeparator <= 0) {
+				return linkText;
+			}
+
+			const alias = linkText.slice(1, aliasSeparator);
+			const destination = linkText.slice(aliasSeparator + 2, -1);
+			const sanitizedAlias = this.sanitizeLinkAliasText(alias);
+
+			return sanitizedAlias ? `[${sanitizedAlias}](${destination})` : linkText;
+		}
+
+		return linkText;
+	}
+
+	private sanitizeLinkAliasText(alias: string): string {
+		let sanitized = alias.replace(/\[([^\]]+)\]\((<[^>]+>|[^)]+)\)/g, (_match, label) =>
+			String(label).trim()
+		);
+
+		sanitized = sanitized.replace(/\[\[([^[\]]+)\]\]/g, (_match, inner) =>
+			getWikilinkDisplayText(String(inner)).trim()
+		);
+
+		return sanitized.replace(/\s+/g, " ").trim();
 	}
 
 	private appendPreservedTitleLinks(details: string, links: string[]): string {
@@ -904,7 +955,17 @@ export class InstantTaskConvertService {
 			.getAllPriorities()
 			.map((p) => p.value)
 			.filter((value) => value != null);
-		return validPriorities.includes(priority) ? priority : "";
+		if (validPriorities.includes(priority)) {
+			return priority;
+		}
+
+		const taskPluginPriorityFallbacks: Record<string, string> = {
+			highest: "high",
+			medium: "normal",
+			lowest: "low",
+		};
+		const fallback = taskPluginPriorityFallbacks[priority];
+		return fallback && validPriorities.includes(fallback) ? fallback : "";
 	}
 
 	/**
@@ -991,7 +1052,9 @@ export class InstantTaskConvertService {
 			const sourcePath = currentFile?.path || "";
 
 			// Use Obsidian's generateMarkdownLink (respects user's link format settings)
-			const properLink = this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath);
+			const properLink = this.sanitizeGeneratedLinkAlias(
+				this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath)
+			);
 
 			// Create the final line with proper indentation and original list format
 			const replacementPrefix = this.getReplacementPrefix(originalContent[0], isCheckboxTask);
@@ -1200,6 +1263,11 @@ export class InstantTaskConvertService {
 			return Object.keys(merged).length > 0 ? merged : undefined;
 		};
 
+		const customFrontmatter = {
+			...(nlpData.customFrontmatter || {}),
+			...(tasksPluginData.customFrontmatter || {}),
+		};
+
 		return {
 			// Use NLP title (cleaner, with NL phrases removed) unless it's empty
 			title: nlpData.title?.trim() || tasksPluginData.title,
@@ -1215,6 +1283,7 @@ export class InstantTaskConvertService {
 			priority: tasksPluginData.priority || nlpData.priority,
 			status: tasksPluginData.status || nlpData.status,
 			recurrence: tasksPluginData.recurrence || nlpData.recurrence,
+			recurrenceAnchor: tasksPluginData.recurrenceAnchor,
 			recurrenceData: tasksPluginData.recurrenceData, // NLP doesn't have this structure
 			timeEstimate: tasksPluginData.timeEstimate || nlpData.timeEstimate,
 
@@ -1228,6 +1297,13 @@ export class InstantTaskConvertService {
 
 			// Merge user fields
 			userFields: mergeUserFields(tasksPluginData.userFields, nlpData.userFields),
+			customFrontmatter:
+				Object.keys(customFrontmatter).length > 0 ? customFrontmatter : undefined,
+			details: tasksPluginData.details || nlpData.details,
+			blockLink: tasksPluginData.blockLink,
+			taskPluginId: tasksPluginData.taskPluginId,
+			dependsOn: tasksPluginData.dependsOn,
+			onCompletion: tasksPluginData.onCompletion,
 
 			// Preserve completion status from TasksPlugin (it parses [x] checkboxes)
 			isCompleted: tasksPluginData.isCompleted,
@@ -1283,6 +1359,13 @@ export class InstantTaskConvertService {
 				createdDate: undefined,
 				doneDate: undefined,
 				recurrenceData: undefined,
+				recurrenceAnchor: undefined,
+				customFrontmatter: undefined,
+				details: undefined,
+				blockLink: undefined,
+				taskPluginId: undefined,
+				dependsOn: undefined,
+				onCompletion: undefined,
 			};
 
 			return parsedData;
@@ -1517,7 +1600,9 @@ export class InstantTaskConvertService {
 
 		const currentFile = this.plugin.app.workspace.getActiveFile();
 		const sourcePath = currentFile?.path || "";
-		const properLink = this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath);
+		const properLink = this.sanitizeGeneratedLinkAlias(
+			this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath)
+		);
 
 		return `${this.getReplacementPrefix(originalLine, isCheckboxTask)}${properLink}`;
 	}

@@ -210,6 +210,10 @@ export const ja: TranslationTree = {
 					dateNavigation: "日付ナビゲーション",
 					events: "イベント",
 					layout: "レイアウト",
+					view: "ビュー",
+					display: "表示",
+					timeGrid: "時間グリッド",
+					eventLayout: "イベント配置",
 					propertyBasedEvents: "プロパティベースのイベント",
 					calendarSubscriptions: "カレンダー購読",
 					googleCalendars: "Google カレンダー",
@@ -1310,9 +1314,9 @@ export const ja: TranslationTree = {
 				},
 				customTemplate: {
 					name: "カスタムファイル名テンプレート",
-					description: "カスタムファイル名のテンプレートです。利用可能な変数: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {uuid}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
-					placeholder: "{date}-{title}-{dueDate}",
-					helpText: "注意：{dueDate}と{scheduledDate}はYYYY-MM-DD形式で、設定されていない場合は空になります。"
+					description: "カスタムファイル名のテンプレートです。利用可能な変数: {{title}}, {{titleLower}}, {{titleUpper}}, {{titleSnake}}, {{titleKebab}}, {{titleCamel}}, {{titlePascal}}, {{date}}, {{shortDate}}, {{time}}, {{time12}}, {{time24}}, {{timestamp}}, {{dateTime}}, {{year}}, {{month}}, {{monthName}}, {{monthNameShort}}, {{day}}, {{dayName}}, {{dayNameShort}}, {{hour}}, {{hour12}}, {{minute}}, {{second}}, {{milliseconds}}, {{ms}}, {{ampm}}, {{week}}, {{quarter}}, {{unix}}, {{unixMs}}, {{timezone}}, {{timezoneShort}}, {{utcOffset}}, {{utcOffsetShort}}, {{utcZ}}, {{zettel}}, {{uuid}}, {{nano}}, {{priority}}, {{priorityShort}}, {{status}}, {{statusShort}}, {{dueDate}}, {{scheduledDate}}",
+					placeholder: "{{date}}-{{title}}-{{dueDate}}",
+					helpText: "注意：{{dueDate}}と{{scheduledDate}}はYYYY-MM-DD形式で、設定されていない場合は空になります。"
 				}
 			},
 			displayFormatting: {
@@ -2601,7 +2605,8 @@ export const ja: TranslationTree = {
 			},
 			whatThisMeans: "これが意味すること：",
 			bullets: {
-				dailyNotesRequired: "Daily Notesコアプラグインは有効のままである必要があります",
+				dailyNotesRequired:
+					"Daily NotesのコアプラグインまたはPeriodic Notesでデイリーノートを有効にしておく必要があります",
 				storedInNotes: "データはデイリーノートのフロントマターに保存されます",
 				migrateData: "既存のプラグインデータは移行され、その後クリアされます",
 				futureSessions: "今後のセッションはデイリーノートに保存されます",

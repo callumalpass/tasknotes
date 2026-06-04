@@ -9,6 +9,13 @@ const TASK_PROPERTY_FIELD_MAPPING_ALIASES: Partial<Record<keyof TaskInfo, FieldM
 	recurrence_anchor: "recurrenceAnchor",
 	complete_instances: "completeInstances",
 	skipped_instances: "skippedInstances",
+	recurrence_parent: "recurrenceParent",
+	occurrence_date: "occurrenceDate",
+	occurrence_materialization: "occurrenceMaterialization",
+	occurrence_next_trigger: "occurrenceNextTrigger",
+	occurrence_template: "occurrenceTemplate",
+	occurrence_past_horizon: "occurrencePastHorizon",
+	occurrence_future_horizon: "occurrenceFutureHorizon",
 };
 
 function isFieldMappingKey(property: PropertyKey, mapping: FieldMapping): property is FieldMappingKey {

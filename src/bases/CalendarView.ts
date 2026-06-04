@@ -654,7 +654,7 @@ export class CalendarView extends BasesViewBase {
 		// If config changed, mark for recreation and render immediately
 		if (configChanged) {
 			this._configChangedNeedsRecreate = true;
-			void this.render();
+			this.renderPreservingEphemeralState();
 			return;
 		}
 
@@ -1719,9 +1719,57 @@ export class CalendarView extends BasesViewBase {
 			entries: this.data?.data,
 			getEntryPropertyValue: (entry, propertyId) =>
 				this.dataAdapter.getPropertyValue(entry as BasesEntry, propertyId),
+			getContextPropertyValue: (propertyId) =>
+				this.getEmbeddedMarkdownDateNavigationPropertyValue(propertyId),
 			mapPropertyToTaskField: (propertyId) =>
 				this.propertyMapper.basesToTaskCardProperty(propertyId),
 		});
+	}
+
+	private getEmbeddedMarkdownDateNavigationPropertyValue(propertyId: string): unknown {
+		if (!this.containerEl.closest(".internal-embed, .markdown-embed")) {
+			return null;
+		}
+
+		const hostFile = this.getContainingMarkdownFile();
+		if (!hostFile) {
+			return null;
+		}
+
+		const frontmatter = this.plugin.app.metadataCache.getFileCache(hostFile)?.frontmatter;
+		if (!frontmatter) {
+			return null;
+		}
+
+		const propertyNames = [
+			propertyId,
+			this.propertyMapper.basesToTaskCardProperty(propertyId),
+			propertyId.replace(/^(note\.|task\.)/, ""),
+		];
+
+		for (const propertyName of new Set(propertyNames)) {
+			if (Object.prototype.hasOwnProperty.call(frontmatter, propertyName)) {
+				return frontmatter[propertyName];
+			}
+		}
+
+		return null;
+	}
+
+	private getContainingMarkdownFile(): TFile | null {
+		const leaves = this.plugin.app.workspace.getLeavesOfType("markdown");
+		for (const leaf of leaves) {
+			const view = leaf.view as { containerEl?: HTMLElement; file?: unknown };
+			if (!view.containerEl?.contains(this.containerEl)) {
+				continue;
+			}
+
+			if (view.file instanceof TFile && view.file.extension === "md") {
+				return view.file;
+			}
+		}
+
+		return null;
 	}
 
 	private getNavigationConfigState(): CalendarRecreateNavigationState {
@@ -2224,7 +2272,14 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		// Handle recurring task drops
-		if (taskInfo && (isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)) {
+		const isMaterializedOccurrenceTaskEvent = Boolean(
+			taskInfo?.recurrence_parent && taskInfo?.occurrence_date
+		);
+		if (
+			taskInfo &&
+			!isMaterializedOccurrenceTaskEvent &&
+			(isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)
+		) {
 			await handleRecurringTaskDrop(info, taskInfo, this.plugin);
 			return;
 		}
@@ -2554,8 +2609,16 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
-		const { taskInfo, timeblock, icsEvent, eventType, relatedNoteCount } =
-			extendedProps;
+		const {
+			taskInfo,
+			timeblock,
+			icsEvent,
+			eventType,
+			relatedNoteCount,
+			isRecurringInstance,
+			isNextScheduledOccurrence,
+			isPatternInstance,
+		} = extendedProps;
 		suppressCalendarContextMenuOnMobile(arg.el);
 
 		const relatedNoteTotal = normalizeCalendarRelatedNoteCount(relatedNoteCount);
@@ -2638,7 +2701,11 @@ export class CalendarView extends BasesViewBase {
 					case "timeEntry":
 					case "due":
 					case "scheduledToDueSpan":
-						arg.event.setProp("editable", true);
+						arg.event.setProp(
+							"editable",
+							eventType !== "scheduledToDueSpan" ||
+								!(isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)
+						);
 						break;
 					default:
 						// Non-task events (like ICS without provider) remain non-editable
@@ -2684,6 +2751,10 @@ export class CalendarView extends BasesViewBase {
 					task: taskInfo,
 					plugin: this.plugin,
 					targetDate: targetDate,
+					promoteOccurrenceControls: Boolean(
+						taskInfo.recurrence ||
+							(taskInfo.recurrence_parent && taskInfo.occurrence_date)
+					),
 					onUpdate: () => {
 						// Refresh calendar with fresh task data when task is updated
 						void this.refreshCalendarWithFreshData();

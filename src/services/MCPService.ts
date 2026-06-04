@@ -41,6 +41,50 @@ const MCP_FILTER_OPERATOR_DESCRIPTION = [
 	MCP_FILTER_OPERATOR_VALUES.join(", "),
 ].join(" ");
 
+function createMcpJsonReplacer(): (this: unknown, key: string, value: unknown) => unknown {
+	const ancestors: unknown[] = [];
+
+	return function mcpJsonReplacer(this: unknown, key: string, value: unknown): unknown {
+		if (key === "basesData") {
+			return undefined;
+		}
+
+		if (typeof value === "bigint") {
+			return value.toString();
+		}
+
+		if (typeof value === "function" || typeof value === "symbol") {
+			return undefined;
+		}
+
+		if (value === null || typeof value !== "object") {
+			return value;
+		}
+
+		if (!Array.isArray(value)) {
+			const prototype = Object.getPrototypeOf(value);
+			if (prototype !== Object.prototype && prototype !== null) {
+				return undefined;
+			}
+		}
+
+		while (ancestors.length > 0 && ancestors[ancestors.length - 1] !== this) {
+			ancestors.pop();
+		}
+
+		if (ancestors.includes(value)) {
+			return undefined;
+		}
+
+		ancestors.push(value);
+		return value;
+	};
+}
+
+function stringifyMcpJson(data: unknown): string {
+	return JSON.stringify(data, createMcpJsonReplacer());
+}
+
 type ListTasksArgs = { limit?: number; offset?: number };
 type TaskIdArgs = { id: string };
 type CreateTaskArgs = {
@@ -199,19 +243,12 @@ export class MCPService {
 					const end = limit ? start + limit : undefined;
 					const tasks = allTasks.slice(start, end);
 
-					return {
-						content: [
-							{
-								type: "text" as const,
-								text: JSON.stringify({
-									tasks,
-									total: allTasks.length,
-									offset: start,
-									returned: tasks.length,
-								}),
-							},
-						],
-					};
+					return this.jsonResult({
+						tasks,
+						total: allTasks.length,
+						offset: start,
+						returned: tasks.length,
+					});
 				} catch (error: unknown) {
 					return this.errorResult(this.getErrorMessage(error));
 				}
@@ -938,13 +975,13 @@ export class MCPService {
 
 	private jsonResult(data: unknown) {
 		return {
-			content: [{ type: "text" as const, text: JSON.stringify(data) }],
+			content: [{ type: "text" as const, text: stringifyMcpJson(data) }],
 		};
 	}
 
 	private errorResult(message: string) {
 		return {
-			content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+			content: [{ type: "text" as const, text: stringifyMcpJson({ error: message }) }],
 			isError: true,
 		};
 	}

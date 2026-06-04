@@ -210,6 +210,10 @@ export const zh: TranslationTree = {
 					dateNavigation: "日期导航",
 					events: "事件",
 					layout: "布局",
+					view: "视图",
+					display: "显示",
+					timeGrid: "时间网格",
+					eventLayout: "事件布局",
 					propertyBasedEvents: "基于属性的事件",
 					calendarSubscriptions: "日历订阅",
 					googleCalendars: "Google 日历",
@@ -1310,9 +1314,9 @@ export const zh: TranslationTree = {
 				},
 				customTemplate: {
 					name: "自定义文件名模板",
-					description: "自定义文件名模板。可用变量：{title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {uuid}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
-					placeholder: "{date}-{title}-{dueDate}",
-					helpText: "注意：{dueDate}和{scheduledDate}格式为YYYY-MM-DD，如果未设置则为空。"
+					description: "自定义文件名模板。可用变量：{{title}}, {{titleLower}}, {{titleUpper}}, {{titleSnake}}, {{titleKebab}}, {{titleCamel}}, {{titlePascal}}, {{date}}, {{shortDate}}, {{time}}, {{time12}}, {{time24}}, {{timestamp}}, {{dateTime}}, {{year}}, {{month}}, {{monthName}}, {{monthNameShort}}, {{day}}, {{dayName}}, {{dayNameShort}}, {{hour}}, {{hour12}}, {{minute}}, {{second}}, {{milliseconds}}, {{ms}}, {{ampm}}, {{week}}, {{quarter}}, {{unix}}, {{unixMs}}, {{timezone}}, {{timezoneShort}}, {{utcOffset}}, {{utcOffsetShort}}, {{utcZ}}, {{zettel}}, {{uuid}}, {{nano}}, {{priority}}, {{priorityShort}}, {{status}}, {{statusShort}}, {{dueDate}}, {{scheduledDate}}",
+					placeholder: "{{date}}-{{title}}-{{dueDate}}",
+					helpText: "注意：{{dueDate}}和{{scheduledDate}}格式为YYYY-MM-DD，如果未设置则为空。"
 				}
 			},
 			displayFormatting: {
@@ -2601,7 +2605,7 @@ export const zh: TranslationTree = {
 			},
 			whatThisMeans: "这意味着：",
 			bullets: {
-				dailyNotesRequired: "日记核心插件必须保持启用",
+				dailyNotesRequired: "必须在核心日记插件或 Periodic Notes 中启用日记",
 				storedInNotes: "数据将存储在您的日记前置数据中",
 				migrateData: "现有插件数据将迁移然后清除",
 				futureSessions: "未来的会话将保存到日记",

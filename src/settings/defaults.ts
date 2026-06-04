@@ -260,7 +260,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Task filename defaults
 	taskFilenameFormat: "zettel", // Keep existing behavior as default
 	storeTitleInFilename: true,
-	customFilenameTemplate: "{title}", // Simple title template
+	customFilenameTemplate: "{{title}}", // Simple title template
 	// Task creation defaults
 	taskCreationDefaults: DEFAULT_TASK_CREATION_DEFAULTS,
 	openTaskAfterCreation: "none",

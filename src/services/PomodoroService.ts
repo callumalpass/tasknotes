@@ -1459,9 +1459,11 @@ export class PomodoroService {
 	 */
 	private async saveHistoryToDailyNotes(history: PomodoroSessionHistory[]): Promise<void> {
 		try {
-			// Check if Daily Notes plugin is enabled
+			// Check if a daily notes provider is enabled.
 			if (!appHasDailyNotesPluginLoaded()) {
-				throw new Error("Daily Notes core plugin is not enabled");
+				throw new Error(
+					"Daily notes must be enabled in the core Daily Notes plugin or Periodic Notes"
+				);
 			}
 
 			// Group sessions by date
@@ -1790,9 +1792,11 @@ export class PomodoroService {
 	 */
 	async migrateTodailyNotes(): Promise<void> {
 		try {
-			// Check if Daily Notes plugin is enabled
+			// Check if a daily notes provider is enabled.
 			if (!appHasDailyNotesPluginLoaded()) {
-				throw new Error("Daily Notes core plugin must be enabled for migration");
+				throw new Error(
+					"Daily notes must be enabled in the core Daily Notes plugin or Periodic Notes for migration"
+				);
 			}
 
 			// Load existing plugin data

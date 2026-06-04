@@ -180,7 +180,7 @@ For template variables, see [Template Variables Reference](template-variables.md
 
 ## Recurring Tasks
 
-TaskNotes recurring tasks use RFC 5545 RRule syntax with `DTSTART`, separate pattern definition from next occurrence scheduling, and support independent instance completion.
+TaskNotes recurring tasks use RFC 5545 RRule syntax with `DTSTART`, separate pattern definition from next occurrence scheduling, and support independent instance completion. When an individual recurrence needs its own checklist, time entries, or notes, you can create a materialized occurrence note from the task or calendar context menu.
 
 For full behavior, examples, and edge cases, see [Recurring Tasks](recurring-tasks.md).
 

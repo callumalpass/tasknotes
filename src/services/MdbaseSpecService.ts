@@ -249,6 +249,38 @@ export class MdbaseSpecService {
 			values: ["scheduled", "completion"],
 			default: "scheduled",
 		});
+		this.addRoleField(lines, "occurrenceMaterialization", {
+			type: "enum",
+			values: ["manual", "on_completion", "rolling"],
+			default: "manual",
+			description: "How occurrence task notes are materialized for a recurring parent task.",
+		});
+		this.addRoleField(lines, "occurrenceNextTrigger", {
+			type: "enum",
+			values: ["completion", "completion_or_skip"],
+			default: "completion",
+			description: "Which occurrence state changes should materialize the next occurrence.",
+		});
+		this.addRoleField(lines, "occurrenceTemplate", {
+			type: "link",
+			description: "Optional template note used when materializing occurrences.",
+		});
+		this.addRoleField(lines, "occurrencePastHorizon", {
+			type: "string",
+			description: "ISO 8601 duration controlling rolling materialization before today.",
+		});
+		this.addRoleField(lines, "occurrenceFutureHorizon", {
+			type: "string",
+			description: "ISO 8601 duration controlling rolling materialization after today.",
+		});
+		this.addRoleField(lines, "recurrenceParent", {
+			type: "link",
+			description: "Parent recurring task for a materialized occurrence note.",
+		});
+		this.addRoleField(lines, "occurrenceDate", {
+			type: "date",
+			description: "Target recurrence date for a materialized occurrence note.",
+		});
 		this.addField(lines, "tags", { type: "list", items: { type: "string" }, tn_role: "tags" });
 
 		// Complex nested fields

@@ -530,6 +530,25 @@ describe('TaskService', () => {
       expect(taskInfo.tags).toEqual(['task', 'custom', 'tags']);
     });
 
+    it('should normalize spaced tags before writing frontmatter (#1962)', async () => {
+      mockPlugin.settings.taskIdentificationMethod = 'tag';
+
+      const obsidian = require('obsidian');
+      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
+
+      const { taskInfo } = await taskService.createTask({
+        title: 'Spaced Tag Task',
+        tags: ['abc xyz', '#multi   word']
+      });
+
+      expect(yamlSpy).toHaveBeenCalled();
+      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      expect(fmArg.tags).toEqual(['task', 'abc-xyz', 'multi-word']);
+      expect(taskInfo.tags).toEqual(['task', 'abc-xyz', 'multi-word']);
+
+      yamlSpy.mockRestore();
+    });
+
     it('should use property-based identification when configured', async () => {
       // Configure property-based identification
       mockPlugin.settings.taskIdentificationMethod = 'property';

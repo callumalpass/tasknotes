@@ -16,10 +16,10 @@ describe("Issue #190: mobile task widget touch targets", () => {
 			/body\.is-mobile \.tasknotes-plugin\s*\{[^}]*--tn-mobile-task-card-indicator-size:\s*24px;[^}]*--tn-mobile-task-card-menu-size:\s*32px;[^}]*--tn-mobile-inline-indicator-size:\s*20px;[^}]*--tn-mobile-inline-menu-size:\s*24px;/s
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__main-row\s*\{[^}]*align-items:\s*center;[^}]*flex-wrap:\s*wrap;/s
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__main-row\s*\{[^}]*align-items:\s*flex-start;[^}]*flex-wrap:\s*wrap;/s
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__content\s*\{[^}]*flex:\s*1 0 14rem;[^}]*padding-top:\s*0;/s
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__content\s*\{[^}]*flex-grow:\s*1;[^}]*flex-shrink:\s*0;[^}]*flex-basis:\s*min\(13rem,\s*calc\(100% - var\(--tn-mobile-task-card-indicator-size\) - var\(--tn-mobile-task-card-indicator-size\) - var\(--tn-spacing-xs\) - var\(--tn-spacing-xs\)\)\);[^}]*padding-top:\s*0;/s
 		);
 		expect(css).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__status-dot\s*\{[^}]*width:\s*var\(--tn-mobile-task-card-indicator-size\);[^}]*height:\s*var\(--tn-mobile-task-card-indicator-size\);/s

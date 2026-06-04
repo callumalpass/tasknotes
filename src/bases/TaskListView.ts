@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Notice, TFile, setIcon } from "obsidian";
+import { Menu, Notice, TFile, setIcon } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -117,9 +117,17 @@ function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "s
 	return "inherit";
 }
 
+type DefaultCollapsedState = "Expanded" | "Collapsed";
+
+type GroupHierarchySnapshot = {
+	primaryGroupKeys: string[];
+	subGroupKeysByParent: Map<string, string[]>;
+};
+
 export class TaskListView extends BasesViewBase {
 	type = "tasknotesTaskList";
 
+	private configLoaded = false; // Track if we've successfully loaded config
 	private itemsContainer: HTMLElement | null = null;
 	private currentTaskElements = new Map<string, HTMLElement>();
 	private lastRenderWasGrouped = false;
@@ -136,11 +144,19 @@ export class TaskListView extends BasesViewBase {
 	private collapsedGroups = new Set<string>(); // Track collapsed group keys
 	private collapsedSubGroups = new Set<string>(); // Track collapsed sub-group keys
 	private subGroupPropertyId: string | null = null; // Property ID for sub-grouping
+	private defaultCollapsedState: DefaultCollapsedState = "Expanded";
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
 	private currentVisibleTaskOrder = new Map<string, number>();
-	private configLoaded = false; // Track if we've successfully loaded config
+	private expandedRelationshipTaskPaths = new Set<string>();
+	private expandedRelationshipTaskOrder = new Map<string, number>();
+	private hideTopLevelSubtasks = false;
+	private currentPrimaryGroupKeys: string[] = [];
+	private currentSubGroupKeysByParent = new Map<string, string[]>();
+	private initializedPrimaryGroupKeys = new Set<string>();
+	private initializedSubGroupKeys = new Set<string>();
+	private deferCollapseDefaultForNextSnapshot = false;
 
 	// Drag-to-reorder state
 	private basesController: TaskListController;
@@ -191,6 +207,87 @@ export class TaskListView extends BasesViewBase {
 		this.readViewOptions();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		this.registerGroupContextMenuListeners();
+	}
+
+	/**
+	 * Register contextmenu listeners for group collapse actions.
+	 * - Right-click on a primary group header → expand/collapse branch
+	 * - Right-click on empty container area → expand/collapse all groups
+	 */
+	private registerGroupContextMenuListeners(): void {
+		if (!this.rootElement) return;
+
+		this.rootElement.addEventListener("contextmenu", (event: MouseEvent) => {
+			const target = event.target as HTMLElement;
+
+			// Check if right-clicking on a primary group header (not a subgroup)
+			const groupHeader = target.closest<HTMLElement>(".task-group-header");
+			if (groupHeader) {
+				const groupSection = groupHeader.closest<HTMLElement>(".task-group");
+				const groupKey = groupSection?.dataset.groupKey;
+				if (groupKey && !this.isSubGroupKey(groupKey)) {
+					event.preventDefault();
+					this.showGroupHeaderContextMenu(event, groupKey);
+					return;
+				}
+			}
+
+			// Check if right-clicking on empty area (not on a task card or group header)
+			const isOnTaskCard = target.closest(".task-card");
+			if (!isOnTaskCard && !groupHeader && this.currentPrimaryGroupKeys.length > 0) {
+				event.preventDefault();
+				this.showContainerContextMenu(event);
+			}
+		});
+	}
+
+	private showGroupHeaderContextMenu(event: MouseEvent, groupKey: string): void {
+		const subGroupKeys = this.currentSubGroupKeysByParent.get(groupKey);
+		if (!subGroupKeys || subGroupKeys.length === 0) return;
+
+		const allSubGroupsCollapsed = subGroupKeys.every((key) =>
+			this.collapsedSubGroups.has(key)
+		);
+		const menu = new Menu();
+
+		menu.addItem((item) => {
+			item.setTitle(allSubGroupsCollapsed ? "Expand subgroups" : "Collapse subgroups")
+				.setIcon(allSubGroupsCollapsed ? "list-tree" : "list-collapse")
+				.onClick(() => void this.setSubGroupsCollapsed(groupKey, !allSubGroupsCollapsed));
+		});
+
+		menu.showAtMouseEvent(event);
+	}
+
+	private showContainerContextMenu(event: MouseEvent): void {
+		const menu = new Menu();
+
+		menu.addItem((item) => {
+			item.setTitle("Expand all groups")
+				.setIcon("chevrons-down")
+				.onClick(() => void this.setAllPrimaryGroupsCollapsed(false));
+		});
+
+		menu.addItem((item) => {
+			item.setTitle("Collapse all groups")
+				.setIcon("chevrons-up")
+				.onClick(() => void this.setAllPrimaryGroupsCollapsed(true));
+		});
+
+		menu.addItem((item) => {
+			item.setTitle("Expand all groups and subgroups")
+				.setIcon("list-tree")
+				.onClick(() => void this.setAllGroupsAndSubGroupsCollapsed(false));
+		});
+
+		menu.addItem((item) => {
+			item.setTitle("Collapse all groups and subgroups")
+				.setIcon("list-collapse")
+				.onClick(() => void this.setAllGroupsAndSubGroupsCollapsed(true));
+		});
+
+		menu.showAtMouseEvent(event);
 	}
 
 	/**
@@ -211,12 +308,19 @@ export class TaskListView extends BasesViewBase {
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
+			const defaultCollapsedStateValue = this.config.get("defaultCollapsedState");
+
+			this.defaultCollapsedState =
+				defaultCollapsedStateValue === "Collapsed" || defaultCollapsedStateValue === "1"
+					? "Collapsed"
+					: "Expanded";
 			const expandedRelationshipFilterModeValue = this.config.get(
 				"expandedRelationshipFilterMode"
 			);
 			this.expandedRelationshipFilterMode = normalizeExpandedRelationshipFilterMode(
 				expandedRelationshipFilterModeValue
 			);
+			this.hideTopLevelSubtasks = this.config.get("hideTopLevelSubtasks") === true;
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 		} catch (e) {
@@ -227,6 +331,113 @@ export class TaskListView extends BasesViewBase {
 				error: e,
 			});
 		}
+	}
+
+	private clearGroupingSnapshot(): void {
+		this.currentPrimaryGroupKeys = [];
+		this.currentSubGroupKeysByParent.clear();
+	}
+
+	private initializeCollapseStateForSnapshot(
+		primaryGroupKeys: string[],
+		subGroupKeysByParent: Map<string, string[]>
+	): void {
+		const shouldSeedCollapsedState =
+			this.defaultCollapsedState === "Collapsed" && !this.deferCollapseDefaultForNextSnapshot;
+
+		for (const primaryGroupKey of primaryGroupKeys) {
+			if (this.initializedPrimaryGroupKeys.has(primaryGroupKey)) {
+				continue;
+			}
+
+			this.initializedPrimaryGroupKeys.add(primaryGroupKey);
+			if (shouldSeedCollapsedState) {
+				this.collapsedGroups.add(primaryGroupKey);
+			}
+		}
+
+		for (const subGroupKeys of subGroupKeysByParent.values()) {
+			for (const subGroupKey of subGroupKeys) {
+				if (this.initializedSubGroupKeys.has(subGroupKey)) {
+					continue;
+				}
+
+				this.initializedSubGroupKeys.add(subGroupKey);
+				if (shouldSeedCollapsedState) {
+					this.collapsedSubGroups.add(subGroupKey);
+				}
+			}
+		}
+
+		this.deferCollapseDefaultForNextSnapshot = false;
+	}
+
+	private applyGroupingSnapshot(snapshot: GroupHierarchySnapshot): void {
+		const subGroupKeysByParent = new Map<string, string[]>();
+		for (const [primaryKey, subGroupKeys] of snapshot.subGroupKeysByParent.entries()) {
+			subGroupKeysByParent.set(primaryKey, [...subGroupKeys]);
+		}
+
+		this.initializeCollapseStateForSnapshot(snapshot.primaryGroupKeys, subGroupKeysByParent);
+		this.currentPrimaryGroupKeys = [...snapshot.primaryGroupKeys];
+		this.currentSubGroupKeysByParent = subGroupKeysByParent;
+	}
+
+	private createGroupedHierarchySnapshot(
+		groups: readonly TaskListGroup[],
+		taskNotes: readonly TaskInfo[]
+	): GroupHierarchySnapshot {
+		const snapshot: GroupHierarchySnapshot = {
+			primaryGroupKeys: [],
+			subGroupKeysByParent: new Map<string, string[]>(),
+		};
+		const pathToProps = this.subGroupPropertyId
+			? buildTaskListPathProperties(this.dataAdapter.extractDataItems())
+			: new Map<string, Record<string, unknown>>();
+
+		for (const group of groups) {
+			const primaryKey = this.dataAdapter.convertGroupKeyToString(group.key);
+			const groupPaths = new Set(group.entries.map((entry) => entry.file?.path));
+			const groupTasks = taskNotes.filter((task) => groupPaths.has(task.path));
+
+			if (groupTasks.length === 0) {
+				continue;
+			}
+
+			snapshot.primaryGroupKeys.push(primaryKey);
+			if (!this.subGroupPropertyId) {
+				continue;
+			}
+
+			const subGroupKeys: string[] = [];
+			const subGroups = groupTasksByTaskListSubProperty(
+				groupTasks,
+				this.subGroupPropertyId,
+				pathToProps
+			);
+
+			for (const [subKey, subTasks] of subGroups) {
+				if (subTasks.length === 0) {
+					continue;
+				}
+				subGroupKeys.push(`${primaryKey}:${subKey}`);
+			}
+
+			if (subGroupKeys.length > 0) {
+				snapshot.subGroupKeysByParent.set(primaryKey, subGroupKeys);
+			}
+		}
+
+		return snapshot;
+	}
+
+	private createSubPropertyHierarchySnapshot(
+		groupedTasks: Map<string, TaskInfo[]>
+	): GroupHierarchySnapshot {
+		return {
+			primaryGroupKeys: Array.from(groupedTasks.keys()),
+			subGroupKeysByParent: new Map<string, string[]>(),
+		};
 	}
 
 	protected setupContainer(): void {
@@ -308,10 +519,10 @@ export class TaskListView extends BasesViewBase {
 		if (this.rootElement) {
 			this.setupSearch(this.rootElement);
 		}
-
 		try {
 			// Skip rendering if we have no data yet (prevents flickering during data updates)
 			if (!this.data?.data) {
+				this.clearGroupingSnapshot();
 				return;
 			}
 
@@ -327,6 +538,7 @@ export class TaskListView extends BasesViewBase {
 				this.clearAllTaskElements();
 				this.sortScopeTaskPaths.clear();
 				this.sortScopeCandidateTaskPaths.clear();
+				this.clearGroupingSnapshot();
 				this.renderEmptyState();
 				this.lastRenderWasGrouped = false;
 				return;
@@ -352,10 +564,10 @@ export class TaskListView extends BasesViewBase {
 				if (this.lastRenderWasGrouped) {
 					this.clearAllTaskElements();
 				}
+				this.clearGroupingSnapshot();
 				await this.renderFlat(taskNotes);
 				this.lastRenderWasGrouped = false;
 			}
-
 			// Check if we have grouped data
 		} catch (error: unknown) {
 			tasknotesLogger.error("[TaskNotes][TaskListView] Error rendering:", {
@@ -1256,7 +1468,9 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
-		this.setCurrentVisibleTaskPaths(filteredTasks);
+		this.setExpandedRelationshipTaskScope(filteredTasks);
+		const renderTasks = this.getTopLevelRenderTasks(filteredTasks);
+		this.setCurrentVisibleTaskPaths(renderTasks);
 
 		// Show "no results" if search returned empty but we had tasks
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
@@ -1278,7 +1492,7 @@ export class TaskListView extends BasesViewBase {
 		const cardOptions = this.getCardOptions(targetDate);
 
 		// Decide whether to use virtual scrolling based on filtered task count
-		const shouldUseVirtualScrolling = filteredTasks.length >= this.VIRTUAL_SCROLL_THRESHOLD;
+		const shouldUseVirtualScrolling = renderTasks.length >= this.VIRTUAL_SCROLL_THRESHOLD;
 
 		if (shouldUseVirtualScrolling && !this.useVirtualScrolling) {
 			// Switch to virtual scrolling
@@ -1291,9 +1505,9 @@ export class TaskListView extends BasesViewBase {
 		}
 
 		if (this.useVirtualScrolling) {
-			await this.renderFlatVirtual(filteredTasks, visibleProperties, cardOptions);
+			await this.renderFlatVirtual(renderTasks, visibleProperties, cardOptions);
 		} else {
-			await this.renderFlatNormal(filteredTasks, visibleProperties, cardOptions);
+			await this.renderFlatNormal(renderTasks, visibleProperties, cardOptions);
 		}
 	}
 
@@ -1441,10 +1655,6 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	/**
-	 * Build flattened list of render items (headers + tasks) for grouped view
-	 * Shared between renderGrouped() and refreshGroupedView()
-	 */
-	/**
 	 * Render tasks grouped by sub-property (when no primary grouping is configured).
 	 * This treats the sub-group property as primary grouping.
 	 */
@@ -1453,7 +1663,10 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
-		this.setCurrentVisibleTaskPaths(filteredTasks);
+		this.setExpandedRelationshipTaskScope(filteredTasks);
+		const renderTasks = this.getTopLevelRenderTasks(filteredTasks);
+		const candidateTasks = this.getTopLevelRenderTasks(taskNotes);
+		this.setCurrentVisibleTaskPaths(renderTasks);
 
 		// Show "no results" if search returned empty but we had tasks
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
@@ -1473,16 +1686,17 @@ export class TaskListView extends BasesViewBase {
 		// Group tasks by sub-property
 		const pathToProps = buildTaskListPathProperties(this.dataAdapter.extractDataItems());
 		const groupedTasks = groupTasksByTaskListSubProperty(
-			filteredTasks,
+			renderTasks,
 			this.subGroupPropertyId!,
 			pathToProps
 		);
 		const allGroupedTasks = groupTasksByTaskListSubProperty(
-			taskNotes,
+			candidateTasks,
 			this.subGroupPropertyId!,
 			pathToProps
 		);
 		this.setSortScopeCandidatePaths(buildTaskListSubPropertyScopePaths(allGroupedTasks));
+		this.applyGroupingSnapshot(this.createSubPropertyHierarchySnapshot(groupedTasks));
 
 		// Build flat items array (treat sub-groups as primary groups)
 		const items = buildTaskListSubPropertyRenderItems(groupedTasks, this.collapsedGroups);
@@ -1527,7 +1741,10 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
-		this.setCurrentVisibleTaskPaths(filteredTasks);
+		this.setExpandedRelationshipTaskScope(filteredTasks);
+		const renderTasks = this.getTopLevelRenderTasks(filteredTasks);
+		const candidateTasks = this.getTopLevelRenderTasks(taskNotes);
+		this.setCurrentVisibleTaskPaths(renderTasks);
 
 		// Show "no results" if search returned empty but we had tasks
 		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
@@ -1543,6 +1760,7 @@ export class TaskListView extends BasesViewBase {
 		const targetDate = createUTCDateFromLocalCalendarDate(new Date());
 		this.currentTargetDate = targetDate;
 		const cardOptions = this.getCardOptions(targetDate);
+		this.applyGroupingSnapshot(this.createGroupedHierarchySnapshot(groups, renderTasks));
 
 		// Build flattened list of items using shared method
 		const pathToProps = this.subGroupPropertyId
@@ -1550,7 +1768,7 @@ export class TaskListView extends BasesViewBase {
 			: new Map<string, Record<string, unknown>>();
 		const items = buildTaskListGroupedRenderItems({
 			groups,
-			taskNotes: filteredTasks,
+			taskNotes: renderTasks,
 			subGroupPropertyId: this.subGroupPropertyId,
 			pathToProps,
 			collapsedGroups: this.collapsedGroups,
@@ -1558,7 +1776,7 @@ export class TaskListView extends BasesViewBase {
 			convertGroupKeyToString: (key) => this.dataAdapter.convertGroupKeyToString(key),
 		});
 		this.setSortScopeCandidatePaths(
-			buildTaskListGroupedScopePaths(groups, taskNotes, (key) =>
+			buildTaskListGroupedScopePaths(groups, candidateTasks, (key) =>
 				this.dataAdapter.convertGroupKeyToString(key)
 			)
 		);
@@ -1712,12 +1930,15 @@ export class TaskListView extends BasesViewBase {
 		const isSubHeader = headerItem.type === "sub-header";
 		const level = isSubHeader ? "sub" : "primary";
 		groupHeader.dataset.level = level;
+		const groupKey = isSubHeader
+			? `${headerItem.groupKey}:${headerItem.subGroupKey}`
+			: headerItem.groupKey;
 
 		if (isSubHeader) {
-			groupHeader.dataset.groupKey = `${headerItem.groupKey}:${headerItem.subGroupKey}`;
+			groupHeader.dataset.groupKey = groupKey;
 			groupHeader.dataset.parentKey = headerItem.parentKey;
 		} else {
-			groupHeader.dataset.groupKey = headerItem.groupKey;
+			groupHeader.dataset.groupKey = groupKey;
 		}
 
 		// Apply collapsed state
@@ -1735,7 +1956,7 @@ export class TaskListView extends BasesViewBase {
 		toggleBtn.type = "button";
 		toggleBtn.setAttribute("aria-label", "Toggle group");
 		toggleBtn.setAttribute("aria-expanded", String(!headerItem.isCollapsed));
-		toggleBtn.dataset.groupKey = groupHeader.dataset.groupKey!;
+		toggleBtn.dataset.groupKey = groupKey;
 		headerElement.appendChild(toggleBtn);
 
 		// Add chevron icon
@@ -1909,6 +2130,9 @@ export class TaskListView extends BasesViewBase {
 		this.useVirtualScrolling = false;
 		this.collapsedGroups.clear();
 		this.collapsedSubGroups.clear();
+		this.clearGroupingSnapshot();
+		this.initializedPrimaryGroupKeys.clear();
+		this.initializedSubGroupKeys.clear();
 		this.taskGroupKeys.clear();
 		this.sortScopeTaskPaths.clear();
 	}
@@ -1932,19 +2156,26 @@ export class TaskListView extends BasesViewBase {
 	setEphemeralState(state: unknown): void {
 		if (!isTaskListEphemeralState(state)) return;
 
+		let restoredCollapsedState = false;
+
 		// Restore collapsed groups immediately
 		if (state.collapsedGroups && Array.isArray(state.collapsedGroups)) {
-			this.collapsedGroups = new Set(
-				state.collapsedGroups.filter((value) => typeof value === "string")
+			const filtered = state.collapsedGroups.filter(
+				(value): value is string => typeof value === "string"
 			);
+			this.collapsedGroups = new Set(filtered);
+			restoredCollapsedState = restoredCollapsedState || filtered.length > 0;
 		}
 
 		// Restore collapsed sub-groups immediately
 		if (state.collapsedSubGroups && Array.isArray(state.collapsedSubGroups)) {
-			this.collapsedSubGroups = new Set(
-				state.collapsedSubGroups.filter((value) => typeof value === "string")
+			const filtered = state.collapsedSubGroups.filter(
+				(value): value is string => typeof value === "string"
 			);
+			this.collapsedSubGroups = new Set(filtered);
+			restoredCollapsedState = restoredCollapsedState || filtered.length > 0;
 		}
+		this.deferCollapseDefaultForNextSnapshot = restoredCollapsedState;
 
 		// Restore scroll position after render completes
 		if (typeof state.scrollTop === "number" && this.rootElement) {
@@ -1972,6 +2203,8 @@ export class TaskListView extends BasesViewBase {
 		this.clearClickTimeouts();
 		this.taskGroupKeys.clear();
 		this.sortScopeTaskPaths.clear();
+		this.expandedRelationshipTaskPaths.clear();
+		this.expandedRelationshipTaskOrder.clear();
 	}
 
 	private getCardOptions(targetDate: Date): TaskCardOptions {
@@ -1982,8 +2215,21 @@ export class TaskListView extends BasesViewBase {
 				normalizeExpandedRelationshipFilterMode(
 					this.config?.get("expandedRelationshipFilterMode")
 				),
-			expandedRelationshipTaskPaths: this.currentVisibleTaskPaths,
-			expandedRelationshipTaskOrder: this.currentVisibleTaskOrder,
+			expandedRelationshipTaskPaths: this.expandedRelationshipTaskPaths,
+			expandedRelationshipTaskOrder: this.expandedRelationshipTaskOrder,
+		});
+	}
+
+	private getTopLevelRenderTasks(tasks: readonly TaskInfo[]): TaskInfo[] {
+		return this.hideTopLevelSubtasks ? this.filterTopLevelSubtasks(tasks) : [...tasks];
+	}
+
+	private setExpandedRelationshipTaskScope(tasks: readonly TaskInfo[]): void {
+		this.expandedRelationshipTaskPaths.clear();
+		this.expandedRelationshipTaskOrder.clear();
+		tasks.forEach((task, index) => {
+			this.expandedRelationshipTaskPaths.add(task.path);
+			this.expandedRelationshipTaskOrder.set(task.path, index);
 		});
 	}
 
@@ -2057,24 +2303,76 @@ export class TaskListView extends BasesViewBase {
 		// This prevents double-firing when clicking on tasks
 	};
 
-	private async handleGroupToggle(groupKey: string): Promise<void> {
-		// Detect if this is a sub-group toggle (compound key contains colon)
-		const isSubGroup = groupKey.includes(":");
+	private isSubGroupKey(groupKey: string): boolean {
+		return groupKey.includes(":");
+	}
 
-		if (isSubGroup) {
-			// Toggle sub-group collapsed state
-			if (this.collapsedSubGroups.has(groupKey)) {
-				this.collapsedSubGroups.delete(groupKey);
-			} else {
-				this.collapsedSubGroups.add(groupKey);
-			}
+	private setSetEntry(set: Set<string>, key: string, collapsed: boolean): void {
+		if (collapsed) {
+			set.add(key);
+			return;
+		}
+
+		set.delete(key);
+	}
+
+	private getCurrentSubGroupKeys(): string[] {
+		const keys: string[] = [];
+		for (const subGroupKeys of this.currentSubGroupKeysByParent.values()) {
+			keys.push(...subGroupKeys);
+		}
+		return keys;
+	}
+
+	/**
+	 * Set collapsed state for all subgroups within a specific primary group,
+	 * without affecting the primary group itself.
+	 */
+	private async setSubGroupsCollapsed(groupKey: string, collapsed: boolean): Promise<void> {
+		for (const subGroupKey of this.currentSubGroupKeysByParent.get(groupKey) || []) {
+			this.setSetEntry(this.collapsedSubGroups, subGroupKey, collapsed);
+		}
+
+		if (this.lastRenderWasGrouped) {
+			await this.refreshGroupedView();
+		}
+	}
+
+	/**
+	 * Set collapsed state for all primary groups,
+	 * without affecting subgroups.
+	 */
+	private async setAllPrimaryGroupsCollapsed(collapsed: boolean): Promise<void> {
+		for (const groupKey of this.currentPrimaryGroupKeys) {
+			this.setSetEntry(this.collapsedGroups, groupKey, collapsed);
+		}
+
+		if (this.lastRenderWasGrouped) {
+			await this.refreshGroupedView();
+		}
+	}
+
+	/**
+	 * Set collapsed state for all primary groups and all subgroups.
+	 */
+	private async setAllGroupsAndSubGroupsCollapsed(collapsed: boolean): Promise<void> {
+		for (const groupKey of this.currentPrimaryGroupKeys) {
+			this.setSetEntry(this.collapsedGroups, groupKey, collapsed);
+		}
+		for (const subGroupKey of this.getCurrentSubGroupKeys()) {
+			this.setSetEntry(this.collapsedSubGroups, subGroupKey, collapsed);
+		}
+
+		if (this.lastRenderWasGrouped) {
+			await this.refreshGroupedView();
+		}
+	}
+
+	private async handleGroupToggle(groupKey: string): Promise<void> {
+		if (this.isSubGroupKey(groupKey)) {
+			this.setSetEntry(this.collapsedSubGroups, groupKey, !this.collapsedSubGroups.has(groupKey));
 		} else {
-			// Toggle primary group collapsed state
-			if (this.collapsedGroups.has(groupKey)) {
-				this.collapsedGroups.delete(groupKey);
-			} else {
-				this.collapsedGroups.add(groupKey);
-			}
+			this.setSetEntry(this.collapsedGroups, groupKey, !this.collapsedGroups.has(groupKey));
 		}
 
 		// Rebuild items and update virtual scroller without full re-render
@@ -2089,33 +2387,42 @@ export class TaskListView extends BasesViewBase {
 		const dataItems = this.dataAdapter.extractDataItems();
 		computeBasesFormulas(this.data, dataItems);
 		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+		const filteredTasks = this.applySearchFilter(taskNotes);
+		this.setExpandedRelationshipTaskScope(filteredTasks);
+		const renderTasks = this.getTopLevelRenderTasks(filteredTasks);
+		this.setCurrentVisibleTaskPaths(renderTasks);
 
 		const pathToProps = this.subGroupPropertyId
 			? buildTaskListPathProperties(dataItems)
 			: new Map<string, Record<string, unknown>>();
-		const items =
-			!this.dataAdapter.isGrouped() && this.subGroupPropertyId
-				? buildTaskListSubPropertyRenderItems(
-						groupTasksByTaskListSubProperty(
-							taskNotes,
-							this.subGroupPropertyId,
-							pathToProps
-						),
-						this.collapsedGroups
-					)
-				: buildTaskListGroupedRenderItems({
-						groups: this.dataAdapter.getGroupedData() as TaskListGroup[],
-						taskNotes,
-						subGroupPropertyId: this.subGroupPropertyId,
-						pathToProps,
-						collapsedGroups: this.collapsedGroups,
-						collapsedSubGroups: this.collapsedSubGroups,
-						convertGroupKeyToString: (key) =>
-							this.dataAdapter.convertGroupKeyToString(key),
-					});
+		let items: TaskListRenderItem[];
+
+		if (!this.dataAdapter.isGrouped() && this.subGroupPropertyId) {
+			const groupedTasks = groupTasksByTaskListSubProperty(
+				renderTasks,
+				this.subGroupPropertyId,
+				pathToProps
+			);
+			this.applyGroupingSnapshot(this.createSubPropertyHierarchySnapshot(groupedTasks));
+			items = buildTaskListSubPropertyRenderItems(groupedTasks, this.collapsedGroups);
+		} else {
+			const groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
+			this.applyGroupingSnapshot(this.createGroupedHierarchySnapshot(groups, renderTasks));
+			items = buildTaskListGroupedRenderItems({
+				groups,
+				taskNotes: renderTasks,
+				subGroupPropertyId: this.subGroupPropertyId,
+				pathToProps,
+				collapsedGroups: this.collapsedGroups,
+				collapsedSubGroups: this.collapsedSubGroups,
+				convertGroupKeyToString: (key) =>
+					this.dataAdapter.convertGroupKeyToString(key),
+			});
+		}
 
 		// Update virtual scroller with new items
 		if (this.useVirtualScrolling && this.virtualScroller) {
+			this.syncGroupedDragMetadata(items);
 			this.virtualScroller.updateItems(items);
 		} else {
 			// If not using virtual scrolling, do full render

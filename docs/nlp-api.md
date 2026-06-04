@@ -9,6 +9,8 @@ const tasknotes = app.plugins.plugins.tasknotes;
 const parsed = tasknotes.api.parseNaturalLanguage("Review PR tomorrow #code @work");
 ```
 
+For the full in-process API exposed at `tasknotes.api`, including task updates, time tracking, settings snapshots, and events, see [TaskNotes JavaScript API](javascript-api.md).
+
 ## Endpoints
 
 - `POST /api/nlp/parse`
@@ -108,7 +110,7 @@ The parser can extract:
 
 Exact parsing behavior depends on your TaskNotes NLP settings and trigger configuration.
 
-## In-Vault JavaScript API
+## In-Vault Parser Method
 
 Templater, QuickAdd, MetaBind, and other in-vault scripts can use the loaded plugin instance directly:
 
@@ -120,6 +122,8 @@ const parsed = tasknotes.api.parseNaturalLanguage("Write draft friday 2pm #writi
 `parseNaturalLanguage(text)` returns the same parser output shape as `data.parsed` from `POST /api/nlp/parse`. It uses your current TaskNotes settings, including custom status values, priority values, NLP language, NLP trigger configuration, user fields, and calendar locale.
 
 This method only parses text. It does not create or modify task files.
+
+For task creation and updates from in-vault scripts or companion plugins, use the broader [TaskNotes JavaScript API](javascript-api.md).
 
 Example Templater use:
 

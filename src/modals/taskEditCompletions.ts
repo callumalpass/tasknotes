@@ -1,4 +1,4 @@
-import { setIcon } from "obsidian";
+import { Menu, setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import {
@@ -12,6 +12,7 @@ import {
 	parseDateAsLocal,
 } from "../utils/dateUtils";
 import { generateRecurringInstances } from "../utils/helpers";
+import { openOrCreateOccurrenceNote } from "../ui/occurrenceNoteActions";
 
 interface TaskEditCompletionsOptions {
 	task: TaskInfo;
@@ -108,15 +109,20 @@ function renderCalendarMonth(
 	allDays.forEach((day) => {
 		const dayStr = formatDateForStorage(day);
 		const isCurrentMonth = day.getUTCMonth() === displayDate.getUTCMonth();
+		const isOccurrenceDate = recurringDateStrings.has(dayStr);
+		const occurrenceDate = new Date(day);
 		const dayElement = grid.createDiv("recurring-calendar__day");
 		dayElement.textContent = String(day.getUTCDate());
 		dayElement.addClass("recurring-calendar__day--clickable");
+		dayElement.setAttribute("data-occurrence-date", dayStr);
 
 		if (!isCurrentMonth) {
 			dayElement.addClass("recurring-calendar__day--faded");
 		}
-		if (recurringDateStrings.has(dayStr)) {
+		if (isOccurrenceDate) {
 			dayElement.addClass("recurring-calendar__day--recurring");
+			dayElement.addClass("recurring-calendar__day--contextable");
+			dayElement.setAttribute("aria-label", `Occurrence ${dayStr}`);
 		}
 		if (completedInstances.has(dayStr)) {
 			dayElement.addClass("recurring-calendar__day--completed");
@@ -129,6 +135,12 @@ function renderCalendarMonth(
 			toggleCompletedInstance(dayStr, options.completedInstancesChanges);
 			renderCalendarMonth(container, displayDate, options);
 		});
+
+		if (isOccurrenceDate) {
+			dayElement.addEventListener("contextmenu", (event) => {
+				showOccurrenceContextMenu(event, container, displayDate, occurrenceDate, options);
+			});
+		}
 	});
 
 	prevButton.addEventListener("click", () => {
@@ -142,6 +154,48 @@ function renderCalendarMonth(
 		nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
 		renderCalendarMonth(container, nextMonth, options);
 	});
+}
+
+function showOccurrenceContextMenu(
+	event: MouseEvent,
+	container: HTMLElement,
+	displayDate: Date,
+	occurrenceDate: Date,
+	options: TaskEditCompletionsOptions
+): void {
+	event.preventDefault();
+	event.stopPropagation();
+
+	const dayStr = formatDateForStorage(occurrenceDate);
+	const completedInstances = getCurrentCompletedInstances(options);
+	const isCompleted = completedInstances.has(dayStr);
+	const menu = new Menu();
+
+	menu.addItem((item) => {
+		item.setTitle("Open or create occurrence note");
+		item.setIcon("file-plus");
+		item.onClick(async () => {
+			await openOrCreateOccurrenceNote({
+				plugin: options.plugin,
+				parentTask: options.task,
+				targetDate: occurrenceDate,
+				openInNewLeaf: true,
+			});
+		});
+	});
+
+	menu.addSeparator();
+
+	menu.addItem((item) => {
+		item.setTitle(isCompleted ? "Mark incomplete for this date" : "Mark complete for this date");
+		item.setIcon(isCompleted ? "x" : "check");
+		item.onClick(() => {
+			toggleCompletedInstance(dayStr, options.completedInstancesChanges);
+			renderCalendarMonth(container, displayDate, options);
+		});
+	});
+
+	menu.showAtMouseEvent(event);
 }
 
 function getCurrentCompletedInstances(options: TaskEditCompletionsOptions): Set<string> {

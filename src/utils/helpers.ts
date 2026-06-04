@@ -19,6 +19,7 @@ import {
 	updateToNextScheduledOccurrence as updateToNextScheduledOccurrenceCore,
 } from "../core/recurrence";
 import { combineDateAndTime, parseDateToLocal } from "./dateUtils";
+import { normalizeFrontmatterTag } from "./taskIdentificationFrontmatter";
 import { normalizeThemeColor } from "./themeColors";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 import { modifyVaultFile } from "../core/VaultMutationService";
@@ -1058,7 +1059,7 @@ export function addDTSTARTToRecurrenceRuleWithDraggedTime(
 }
 
 /**
- * Sanitizes tag input by removing # prefixes to prevent duplicate tags
+ * Sanitizes tag input by removing # prefixes and whitespace inside tag names
  * Handles both single tags and comma-separated lists
  */
 export function sanitizeTags(tags: string): string {
@@ -1068,11 +1069,7 @@ export function sanitizeTags(tags: string): string {
 
 	return tags
 		.split(",")
-		.map((tag) => {
-			const trimmed = tag.trim();
-			// Remove # prefix if it exists
-			return trimmed.startsWith("#") ? trimmed.slice(1) : trimmed;
-		})
+		.map((tag) => normalizeFrontmatterTag(tag))
 		.filter((tag) => tag.length > 0) // Remove empty tags
 		.join(", ");
 }

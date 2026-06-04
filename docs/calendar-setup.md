@@ -20,7 +20,17 @@ If your Google OAuth app is still in testing mode, add the Google account you wi
 
 ### Microsoft Calendar
 
-In [Azure Portal](https://portal.azure.com), create an App Registration and then configure loopback redirect support in the manifest by adding:
+In [Azure Portal](https://portal.azure.com), create an App Registration for your Microsoft account type. TaskNotes currently uses Microsoft's `common` OAuth authority, so the app registration must allow the account type you plan to connect through that authority. Tenant-specific single-tenant authorities are not configurable yet.
+
+Under **Authentication**, add the **Mobile and desktop applications** platform and add this redirect URI:
+
+```text
+http://localhost
+```
+
+Also turn on **Allow public client flows**. TaskNotes uses a local loopback callback with a dynamic port, which Microsoft matches against the registered loopback URI.
+
+If Azure does not accept the loopback redirect URI through the normal UI, configure loopback redirect support in the manifest by adding:
 
 ```json
 {
@@ -29,7 +39,7 @@ In [Azure Portal](https://portal.azure.com), create an App Registration and then
 }
 ```
 
-Azure may reject this URI in the normal UI, but accepts it via manifest editing; loopback ports are ignored during matching. Next, add API permissions (`Calendars.Read`, `Calendars.ReadWrite`, and `offline_access`), grant consent when required, and create a client secret. Copy the Application (client) ID and secret value into TaskNotes, then click **Connect Microsoft Calendar**.
+Next, add delegated Microsoft Graph API permissions (`Calendars.Read`, `Calendars.ReadWrite`, and `offline_access`) and grant consent when required by your organization. Copy the Application (client) ID into TaskNotes, then click **Connect Microsoft Calendar**. The client secret field can be left blank for public-client desktop setup.
 
 ## Security Notes
 

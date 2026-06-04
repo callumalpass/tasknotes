@@ -675,6 +675,7 @@ export class ICSSubscriptionService extends EventEmitter {
 										allDay: modifiedStart.isDate,
 										location: modifiedEvent.location || location,
 										url: modifiedEvent.url || icsEvent.url,
+										recurringEventId: eventId,
 									});
 									visibleInstanceCount++;
 								}
@@ -701,6 +702,7 @@ export class ICSSubscriptionService extends EventEmitter {
 									id: instanceId,
 									start: instanceStart,
 									end: instanceEnd,
+									recurringEventId: eventId,
 								});
 								visibleInstanceCount++;
 							}

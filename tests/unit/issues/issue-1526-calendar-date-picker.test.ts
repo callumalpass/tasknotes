@@ -25,7 +25,7 @@ describe("Issue #1526: native task date picker", () => {
 		expect(timeInput?.value).toBe("09:30");
 	});
 
-	it("saves immediately when the native date input changes", () => {
+	it("keeps native date edits pending until Select is clicked", () => {
 		const onSelect = jest.fn();
 		const modal = new DateTimePickerModal({} as any, {
 			currentDate: "2026-01-15",
@@ -42,6 +42,14 @@ describe("Issue #1526: native task date picker", () => {
 
 		dateInput!.value = "2026-01-20";
 		dateInput!.dispatchEvent(new Event("change", { bubbles: true }));
+
+		expect(onSelect).not.toHaveBeenCalled();
+
+		const selectButton = modal.contentEl.querySelector<HTMLButtonElement>(
+			".date-time-picker-modal__action-button.mod-cta"
+		);
+		expect(selectButton).toBeTruthy();
+		selectButton!.click();
 
 		expect(onSelect).toHaveBeenCalledWith("2026-01-20", "09:30");
 	});

@@ -4,6 +4,7 @@ import {
 	NaturalLanguageParser,
 	type ParsedTaskData,
 } from "../services/NaturalLanguageParser";
+import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 
 export interface DateTimePickerOptions {
 	currentDate?: string | null;
@@ -90,6 +91,7 @@ export class DateTimePickerModal extends Modal {
 	private dateInput: HTMLInputElement | null = null;
 	private timeInput: HTMLInputElement | null = null;
 	private selectButtonEl: HTMLButtonElement | null = null;
+	private detachDateInputBehavior: (() => void) | null = null;
 
 	constructor(app: App, options: DateTimePickerOptions) {
 		super(app);
@@ -122,6 +124,8 @@ export class DateTimePickerModal extends Modal {
 	}
 
 	onClose(): void {
+		this.detachDateInputBehavior?.();
+		this.detachDateInputBehavior = null;
 		this.contentEl.empty();
 	}
 
@@ -196,14 +200,19 @@ export class DateTimePickerModal extends Modal {
 				"aria-label": "Date",
 			},
 		});
-		this.dateInput.addEventListener("change", () => {
-			if (!this.dateInput?.value) return;
-			this.selectDate(this.dateInput.value);
+		const updateDateFromInput = () => {
+			this.updateSelectedDate(this.dateInput?.value || null);
+		};
+		this.dateInput.addEventListener("input", updateDateFromInput);
+		this.dateInput.addEventListener("change", updateDateFromInput);
+		this.detachDateInputBehavior = attachDateInputBehavior(this.dateInput, {
+			onCommit: (value) => this.updateSelectedDate(value),
 		});
 		this.dateInput.addEventListener("keydown", (event) => {
 			if (event.key === "Enter" && this.dateInput?.value) {
 				event.preventDefault();
-				this.selectDate(this.dateInput.value);
+				this.updateSelectedDate(this.dateInput.value);
+				this.confirmSelectedDate();
 			}
 		});
 
@@ -277,8 +286,16 @@ export class DateTimePickerModal extends Modal {
 	}
 
 	private selectDate(date: string): void {
-		this.selectedDate = date;
+		this.updateSelectedDate(date);
 		this.confirmSelectedDate();
+	}
+
+	private updateSelectedDate(date: string | null): void {
+		this.selectedDate = date;
+		if (this.dateInput && this.dateInput.value !== (date ?? "")) {
+			this.dateInput.value = date ?? "";
+		}
+		this.updateSelectButtonState();
 	}
 
 	private confirmSelectedDate(): void {

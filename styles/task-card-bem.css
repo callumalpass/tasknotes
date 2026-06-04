@@ -527,6 +527,17 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--drag-handle-only .task-ca
     opacity: 0.7;
 }
 
+.tasknotes-plugin .task-card__metadata-pill--occurrence {
+    background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+    color: var(--text-accent);
+    border-color: color-mix(in srgb, var(--interactive-accent) 35%, var(--background-modifier-border));
+}
+
+.tasknotes-plugin .task-card__metadata-pill--occurrence svg {
+    width: 12px;
+    height: 12px;
+}
+
 /* Reminder indicator */
 .tasknotes-plugin .task-card__reminder-indicator {
     width: 14px;
@@ -1050,6 +1061,10 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
     justify-content: center;
 }
 
+.tasknotes-plugin .task-card[data-priority] > .task-card__main-row .task-card__priority-dot--icon {
+    background-color: transparent;
+}
+
 .tasknotes-plugin .task-card--priority-high > .task-card__main-row .task-card__priority-dot--icon,
 .tasknotes-plugin .task-card--priority-medium > .task-card__main-row .task-card__priority-dot--icon,
 .tasknotes-plugin .task-card--priority-normal > .task-card__main-row .task-card__priority-dot--icon,
@@ -1138,13 +1153,15 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
 }
 
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__main-row {
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: wrap;
     gap: var(--tn-spacing-xs);
 }
 
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__content {
-    flex: 1 0 14rem;
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: min(13rem, calc(100% - var(--tn-mobile-task-card-indicator-size) - var(--tn-mobile-task-card-indicator-size) - var(--tn-spacing-xs) - var(--tn-spacing-xs)));
     padding-top: 0;
 }
 
@@ -1438,6 +1455,10 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
 .tasknotes-plugin .task-card--layout-inline {
     /* Use inline display to respect line boundaries */
     display: inline;
+
+    /* Inline overlays size from their content; card container queries are for block cards. */
+    container-type: normal;
+    container-name: none;
 
     /* Minimal padding - no indentation needed in inline mode */
     padding: 2px 0;

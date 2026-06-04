@@ -210,6 +210,10 @@ export const ru: TranslationTree = {
 					dateNavigation: "Навигация по датам",
 					events: "События",
 					layout: "Макет",
+					view: "Вид",
+					display: "Отображение",
+					timeGrid: "Временная сетка",
+					eventLayout: "Размещение событий",
 					propertyBasedEvents: "События на основе свойств",
 					calendarSubscriptions: "Подписки календаря",
 					googleCalendars: "Календари Google",
@@ -1310,9 +1314,9 @@ export const ru: TranslationTree = {
 				},
 				customTemplate: {
 					name: "Пользовательский шаблон имени файла",
-					description: "Шаблон для пользовательских имён файлов. Доступные переменные: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {uuid}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}",
-					placeholder: "{date}-{title}-{dueDate}",
-					helpText: "Примечание: {dueDate} и {scheduledDate} в формате ГГГГ-ММ-ДД и будут пустыми, если не установлены."
+					description: "Шаблон для пользовательских имён файлов. Доступные переменные: {{title}}, {{titleLower}}, {{titleUpper}}, {{titleSnake}}, {{titleKebab}}, {{titleCamel}}, {{titlePascal}}, {{date}}, {{shortDate}}, {{time}}, {{time12}}, {{time24}}, {{timestamp}}, {{dateTime}}, {{year}}, {{month}}, {{monthName}}, {{monthNameShort}}, {{day}}, {{dayName}}, {{dayNameShort}}, {{hour}}, {{hour12}}, {{minute}}, {{second}}, {{milliseconds}}, {{ms}}, {{ampm}}, {{week}}, {{quarter}}, {{unix}}, {{unixMs}}, {{timezone}}, {{timezoneShort}}, {{utcOffset}}, {{utcOffsetShort}}, {{utcZ}}, {{zettel}}, {{uuid}}, {{nano}}, {{priority}}, {{priorityShort}}, {{status}}, {{statusShort}}, {{dueDate}}, {{scheduledDate}}",
+					placeholder: "{{date}}-{{title}}-{{dueDate}}",
+					helpText: "Примечание: {{dueDate}} и {{scheduledDate}} в формате ГГГГ-ММ-ДД и будут пустыми, если не установлены."
 				}
 			},
 			displayFormatting: {
@@ -2601,7 +2605,8 @@ export const ru: TranslationTree = {
 			},
 			whatThisMeans: "Что это означает:",
 			bullets: {
-				dailyNotesRequired: "Основной плагин ежедневных заметок должен оставаться включенным",
+				dailyNotesRequired:
+					"Ежедневные заметки должны быть включены в основном плагине ежедневных заметок или в Periodic Notes",
 				storedInNotes: "Данные будут храниться в frontmatter ваших ежедневных заметок",
 				migrateData: "Существующие данные плагина будут перенесены и затем очищены",
 				futureSessions: "Будущие сессии будут сохраняться в ежедневные заметки",

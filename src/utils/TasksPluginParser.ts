@@ -1,7 +1,10 @@
+import { RRule } from "rrule";
 import { parseDateToUTC, isPastDate, isToday, formatDateForStorage } from "./dateUtils";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/TasksPluginParser" });
+
+type RecurrenceAnchor = "scheduled" | "completion";
 
 export interface ParsedTaskData {
 	title: string;
@@ -15,6 +18,7 @@ export interface ParsedTaskData {
 	createdDate?: string;
 	doneDate?: string;
 	recurrence?: string;
+	recurrenceAnchor?: RecurrenceAnchor;
 	recurrenceData?: {
 		frequency: string;
 		days_of_week?: string[];
@@ -28,6 +32,12 @@ export interface ParsedTaskData {
 	projects?: string[];
 	isCompleted: boolean;
 	userFields?: Record<string, string | string[]>; // Custom user-defined fields
+	customFrontmatter?: Record<string, string | string[]>;
+	details?: string;
+	blockLink?: string;
+	taskPluginId?: string;
+	dependsOn?: string[];
+	onCompletion?: "keep" | "delete";
 }
 
 export interface TaskLineInfo {
@@ -37,28 +47,56 @@ export interface TaskLineInfo {
 	error?: string;
 }
 
+interface ParsingState {
+	line: string;
+	parsed: Partial<ParsedTaskData>;
+}
+
+interface RecurrenceParseResult {
+	recurrence?: string;
+	recurrenceAnchor?: RecurrenceAnchor;
+	recurrenceData?: ParsedTaskData["recurrenceData"];
+}
+
+const DAY_CODES: Record<string, string> = {
+	monday: "MO",
+	tuesday: "TU",
+	wednesday: "WE",
+	thursday: "TH",
+	friday: "FR",
+	saturday: "SA",
+	sunday: "SU",
+};
+
+const PRIORITY_ALIASES: Record<string, string> = {
+	"🔺": "highest",
+	"⏫": "high",
+	"🔼": "medium",
+	"🔽": "low",
+	"⏬": "lowest",
+	highest: "highest",
+	high: "high",
+	medium: "medium",
+	normal: "normal",
+	none: "none",
+	low: "low",
+	lowest: "lowest",
+};
+
 export class TasksPluginParser {
-	// Emoji patterns for Tasks plugin
-	private static readonly EMOJI_PATTERNS = {
-		DUE_DATE: /📅\s*(\d{4}-\d{2}-\d{2})/g,
-		SCHEDULED_DATE: /⏳\s*(\d{4}-\d{2}-\d{2})/g,
-		START_DATE: /🛫\s*(\d{4}-\d{2}-\d{2})/g,
-		CREATED_DATE: /➕\s*(\d{4}-\d{2}-\d{2})/g,
-		DONE_DATE: /✅\s*(\d{4}-\d{2}-\d{2})/g,
-		HIGH_PRIORITY: /⏫/g,
-		MEDIUM_PRIORITY: /🔼/g,
-		LOW_PRIORITY: /⏬/g,
-		RECURRENCE: /🔁\s*([^📅⏳🛫➕✅⏫🔼⏬🔁#]+?)(?=\s*[📅⏳🛫➕✅⏫🔼⏬🔁#]|$)/gu,
-	};
-
-	// Tag pattern for hashtags, including Unicode letters/marks and hyphens.
-	private static readonly TAG_PATTERN = /#[\p{L}\p{N}\p{M}_/-]+/gu;
-
-	// Context pattern for @context markers used in inline task text.
-	private static readonly CONTEXT_PATTERN = /@[\p{L}\p{N}\p{M}_/-]+/gu;
-
 	// Checkbox pattern for markdown tasks (supports both bullet points and numbered lists)
-	private static readonly CHECKBOX_PATTERN = /^(\s*(?:[-*+]|\d+\.)\s+\[)([ xX])(\]\s+)(.*)/;
+	private static readonly CHECKBOX_PATTERN =
+		/^(\s*(?:[-*+]|\d+\.)\s+\[)([ xX])(\]\s+)(.*)/u;
+
+	private static readonly TAG_PATTERN = /#[\p{L}\p{N}\p{M}_/-]+/gu;
+	private static readonly CONTEXT_PATTERN = /@[\p{L}\p{N}\p{M}_/-]+/gu;
+	private static readonly BLOCK_LINK_PATTERN = /\s(\^[a-zA-Z0-9-]+)\s*$/u;
+	private static readonly TRAILING_TAG_OR_CONTEXT_PATTERN =
+		/(?:^|\s)(#[\p{L}\p{N}\p{M}_/-]+|@[\p{L}\p{N}\p{M}_/-]+)\s*$/u;
+	private static readonly DATAVIEW_FIELD_AT_END_PATTERN =
+		/(?:^|\s)(\[|\()\s*([A-Za-z][A-Za-z0-9_-]*)::\s*([^\])]*?)\s*(\]|\))\s*,?\s*$/u;
+	private static readonly DATAVIEW_FIELD_ANY_PATTERN =
+		/(\[|\()\s*[A-Za-z][A-Za-z0-9_-]*::\s*[^\])]*?\s*(\]|\))/u;
 
 	private static stripBlockquoteMarkers(line: string): string {
 		let content = line.trim();
@@ -69,10 +107,9 @@ export class TasksPluginParser {
 	}
 
 	/**
-	 * Parse a line of text to extract Tasks plugin format data
+	 * Parse a line of text to extract Tasks plugin format data.
 	 */
 	static parseTaskLine(line: string): TaskLineInfo {
-		// Validate input
 		if (typeof line !== "string") {
 			return {
 				isTaskLine: false,
@@ -81,7 +118,6 @@ export class TasksPluginParser {
 			};
 		}
 
-		// Performance safeguard: skip extremely long lines
 		if (line.length > 2000) {
 			return {
 				isTaskLine: false,
@@ -91,8 +127,6 @@ export class TasksPluginParser {
 		}
 
 		const trimmedLine = this.stripBlockquoteMarkers(line);
-
-		// Check if this is a checkbox task line
 		const checkboxMatch = trimmedLine.match(this.CHECKBOX_PATTERN);
 		if (!checkboxMatch) {
 			return {
@@ -103,8 +137,6 @@ export class TasksPluginParser {
 
 		try {
 			const [, , checkState, , taskContent] = checkboxMatch;
-
-			// Validate extracted parts
 			if (typeof checkState !== "string" || typeof taskContent !== "string") {
 				return {
 					isTaskLine: true,
@@ -114,11 +146,8 @@ export class TasksPluginParser {
 			}
 
 			const isCompleted = checkState.toLowerCase() === "x";
-
-			// Parse the task content for emojis and metadata
 			const parsedData = this.parseTaskContent(taskContent, isCompleted);
 
-			// Validate parsed data
 			if (!parsedData || !parsedData.title || parsedData.title.trim().length === 0) {
 				return {
 					isTaskLine: true,
@@ -141,87 +170,69 @@ export class TasksPluginParser {
 		}
 	}
 
-	/**
-	 * Parse task content to extract emoji-based metadata
-	 */
 	private static parseTaskContent(content: string, isCompleted: boolean): ParsedTaskData {
-		// Validate input
 		if (typeof content !== "string") {
 			throw new Error("Content must be a string");
 		}
 
-		// Performance safeguard
 		if (content.length > 1000) {
 			throw new Error("Content too long to process safely");
 		}
 
-		let workingContent = content;
-
 		try {
-			// Extract dates with validation
-			const dueDate = this.extractDate(workingContent, this.EMOJI_PATTERNS.DUE_DATE);
-			const scheduledDate = this.extractDate(
-				workingContent,
-				this.EMOJI_PATTERNS.SCHEDULED_DATE
-			);
-			const startDate = this.extractDate(workingContent, this.EMOJI_PATTERNS.START_DATE);
-			const createdDate = this.extractDate(workingContent, this.EMOJI_PATTERNS.CREATED_DATE);
-			const doneDate = this.extractDate(workingContent, this.EMOJI_PATTERNS.DONE_DATE);
+			const state: ParsingState = {
+				line: content.trim(),
+				parsed: {},
+			};
 
-			// Extract priority
-			const priority = this.extractPriority(workingContent);
-
-			// Extract recurrence
-			const { recurrence, recurrenceData } = this.extractRecurrence(workingContent);
-
-			// Extract tags
-			const tags = this.extractTags(workingContent);
-
-			// Extract contexts
-			const contexts = this.extractContexts(workingContent);
-
-			// Remove all emoji patterns and tags to get clean title
-			const title = this.extractCleanTitle(workingContent);
-
-			// Validate title
-			if (!title || title.trim().length === 0) {
-				throw new Error("Title cannot be empty after parsing");
+			const blockLink = this.consumeBlockLink(state);
+			if (blockLink) {
+				state.parsed.blockLink = blockLink;
 			}
 
-			// Determine status based on completion and done date
+			this.consumeTrailingFields(state);
+
+			const tags = this.extractTags(content);
+			const contexts = this.extractContexts(content);
+			const title = this.extractCleanTitle(state.line);
+
 			let status: string | undefined = undefined;
-			if (isCompleted || doneDate) {
+			if (isCompleted || state.parsed.doneDate) {
 				status = "done";
-			} else if (startDate) {
+			} else if (state.parsed.startDate) {
 				try {
-					// Use safe date comparison to check if start date is in the future
-					if (!isPastDate(startDate) && !isToday(startDate)) {
-						status = "scheduled";
-					} else {
-						// Start date exists but is today or past, so it's 'open'
-						status = "open";
-					}
+					status =
+						!isPastDate(state.parsed.startDate) && !isToday(state.parsed.startDate)
+							? "scheduled"
+							: "open";
 				} catch {
-					// Invalid start date, ignore for status determination
+					// Invalid start date, ignore for status determination.
 				}
 			}
-			// If no status-determining metadata found, leave status as undefined
 
 			return {
-				title: title.trim(),
+				title: title.trim() || "Untitled Task",
 				status,
-				priority,
-				dueDate,
-				scheduledDate,
-				startDate,
-				createdDate,
-				doneDate,
-				recurrence,
-				recurrenceData,
+				priority: state.parsed.priority,
+				dueDate: state.parsed.dueDate,
+				scheduledDate: state.parsed.scheduledDate,
+				startDate: state.parsed.startDate,
+				createdDate: state.parsed.createdDate,
+				doneDate: state.parsed.doneDate,
+				recurrence: state.parsed.recurrence,
+				recurrenceAnchor: state.parsed.recurrenceAnchor,
+				recurrenceData: state.parsed.recurrenceData,
 				tags: tags.length > 0 ? tags : undefined,
 				contexts: contexts.length > 0 ? contexts : undefined,
-				projects: undefined, // TasksPlugin format doesn't have projects, only NLP fallback does
+				projects: undefined,
 				isCompleted,
+				userFields: state.parsed.userFields,
+				customFrontmatter: state.parsed.customFrontmatter,
+				details: state.parsed.details,
+				blockLink: state.parsed.blockLink,
+				taskPluginId: state.parsed.taskPluginId,
+				dependsOn: state.parsed.dependsOn,
+				onCompletion: state.parsed.onCompletion,
 			};
 		} catch (error) {
 			throw new Error(
@@ -230,165 +241,414 @@ export class TasksPluginParser {
 		}
 	}
 
-	/**
-	 * Extract date from content using pattern
-	 */
-	private static extractDate(content: string, pattern: RegExp): string | undefined {
-		// Validate inputs
-		if (typeof content !== "string" || !pattern) {
+	private static consumeTrailingFields(state: ParsingState): void {
+		let runs = 0;
+		let matched = false;
+
+		do {
+			matched =
+				this.consumeDataviewField(state) ||
+				this.consumeEmojiField(state) ||
+				this.consumeTrailingTagOrContext(state);
+			runs++;
+		} while (matched && runs <= 50);
+	}
+
+	private static consumeBlockLink(state: ParsingState): string | undefined {
+		const match = state.line.match(this.BLOCK_LINK_PATTERN);
+		if (!match?.[1]) {
+			return undefined;
+		}
+
+		state.line = state.line.replace(this.BLOCK_LINK_PATTERN, "").trim();
+		return match[1];
+	}
+
+	private static consumeTrailingTagOrContext(state: ParsingState): boolean {
+		if (!this.TRAILING_TAG_OR_CONTEXT_PATTERN.test(state.line)) {
+			return false;
+		}
+
+		state.line = state.line.replace(this.TRAILING_TAG_OR_CONTEXT_PATTERN, "").trim();
+		return true;
+	}
+
+	private static consumeEmojiField(state: ParsingState): boolean {
+		const consumers: Array<() => boolean> = [
+			() => this.consumeEmojiDateField(state, /(?:📅|📆|🗓)\uFE0F?\s*(\d{4}-\d{2}-\d{2})\s*$/u, "dueDate"),
+			() => this.consumeEmojiDateField(state, /(?:⏳|⌛)\uFE0F?\s*(\d{4}-\d{2}-\d{2})\s*$/u, "scheduledDate"),
+			() => this.consumeEmojiDateField(state, /🛫\uFE0F?\s*(\d{4}-\d{2}-\d{2})\s*$/u, "startDate"),
+			() => this.consumeEmojiDateField(state, /➕\uFE0F?\s*(\d{4}-\d{2}-\d{2})\s*$/u, "createdDate"),
+			() => this.consumeEmojiDateField(state, /✅\uFE0F?\s*(\d{4}-\d{2}-\d{2})\s*$/u, "doneDate"),
+			() => this.consumePriorityField(state, /(🔺|⏫|🔼|🔽|⏬)\uFE0F?\s*$/u),
+			() => this.consumeRecurrenceField(state, /🔁\uFE0F?\s*([a-zA-Z0-9, !]+?)\s*$/u),
+			() => this.consumeOnCompletionField(state, /🏁\uFE0F?\s*([a-zA-Z]+)\s*$/u),
+			() => this.consumeTaskPluginIdField(state, /🆔\uFE0F?\s*([A-Za-z0-9_-]+)\s*$/u),
+			() => this.consumeDependsOnField(state, /⛔\uFE0F?\s*([A-Za-z0-9_ -]+(?:\s*,\s*[A-Za-z0-9_-]+)*)\s*$/u),
+		];
+
+		return consumers.some((consumer) => consumer());
+	}
+
+	private static consumeEmojiDateField(
+		state: ParsingState,
+		regex: RegExp,
+		field: "dueDate" | "scheduledDate" | "startDate" | "createdDate" | "doneDate"
+	): boolean {
+		return this.consumeField(state, regex, (match) => {
+			const date = this.normalizeDate(match[1]);
+			if (date) {
+				state.parsed[field] = date;
+			}
+		});
+	}
+
+	private static consumePriorityField(state: ParsingState, regex: RegExp): boolean {
+		return this.consumeField(state, regex, (match) => {
+			state.parsed.priority = this.normalizePriority(match[1]);
+		});
+	}
+
+	private static consumeRecurrenceField(state: ParsingState, regex: RegExp): boolean {
+		return this.consumeField(state, regex, (match) => {
+			Object.assign(state.parsed, this.parseRecurrence(match[1]));
+		});
+	}
+
+	private static consumeOnCompletionField(state: ParsingState, regex: RegExp): boolean {
+		return this.consumeField(state, regex, (match) => {
+			const value = match[1]?.trim().toLowerCase();
+			if (value === "keep" || value === "delete") {
+				state.parsed.onCompletion = value;
+			}
+		});
+	}
+
+	private static consumeTaskPluginIdField(state: ParsingState, regex: RegExp): boolean {
+		return this.consumeField(state, regex, (match) => {
+			state.parsed.taskPluginId = match[1]?.trim();
+		});
+	}
+
+	private static consumeDependsOnField(state: ParsingState, regex: RegExp): boolean {
+		return this.consumeField(state, regex, (match) => {
+			const dependsOn = this.parseTaskIdList(match[1]);
+			if (dependsOn.length > 0) {
+				state.parsed.dependsOn = dependsOn;
+			}
+		});
+	}
+
+	private static consumeDataviewField(state: ParsingState): boolean {
+		const match = state.line.match(this.DATAVIEW_FIELD_AT_END_PATTERN);
+		if (!match) {
+			return false;
+		}
+
+		const [, opening, rawKey, rawValue, closing] = match;
+		if ((opening === "[" && closing !== "]") || (opening === "(" && closing !== ")")) {
+			return false;
+		}
+
+		this.applyDataviewField(state, rawKey, rawValue.trim());
+		state.line = state.line.replace(this.DATAVIEW_FIELD_AT_END_PATTERN, "").trim();
+		return true;
+	}
+
+	private static applyDataviewField(state: ParsingState, key: string, value: string): void {
+		const normalizedKey = key.trim().toLowerCase();
+
+		switch (normalizedKey) {
+			case "priority":
+				state.parsed.priority = this.normalizePriority(value);
+				return;
+			case "start":
+				this.assignDateField(state, "startDate", value);
+				return;
+			case "created":
+				this.assignDateField(state, "createdDate", value);
+				return;
+			case "scheduled":
+				this.assignDateField(state, "scheduledDate", value);
+				return;
+			case "due":
+				this.assignDateField(state, "dueDate", value);
+				return;
+			case "completion":
+			case "done":
+				this.assignDateField(state, "doneDate", value);
+				return;
+			case "repeat":
+				Object.assign(state.parsed, this.parseRecurrence(value));
+				return;
+			case "oncompletion":
+				if (value.toLowerCase() === "keep" || value.toLowerCase() === "delete") {
+					state.parsed.onCompletion = value.toLowerCase() as "keep" | "delete";
+				}
+				return;
+			case "id":
+				state.parsed.taskPluginId = value;
+				return;
+			case "dependson": {
+				const dependsOn = this.parseTaskIdList(value);
+				if (dependsOn.length > 0) {
+					state.parsed.dependsOn = dependsOn;
+				}
+				return;
+			}
+			case "summary":
+			case "description":
+			case "details":
+				this.appendDetails(state, value);
+				return;
+			default:
+				this.assignCustomFrontmatter(state, key, value);
+		}
+	}
+
+	private static assignDateField(
+		state: ParsingState,
+		field: "dueDate" | "scheduledDate" | "startDate" | "createdDate" | "doneDate",
+		value: string
+	): void {
+		const date = this.normalizeDate(value);
+		if (date) {
+			state.parsed[field] = date;
+		}
+	}
+
+	private static consumeField(
+		state: ParsingState,
+		regex: RegExp,
+		onMatch: (match: RegExpMatchArray) => void
+	): boolean {
+		const match = state.line.match(regex);
+		if (!match) {
+			return false;
+		}
+
+		onMatch(match);
+		state.line = state.line.replace(regex, "").trim();
+		return true;
+	}
+
+	private static parseTaskIdList(value: string): string[] {
+		return value
+			.split(",")
+			.map((item) => item.trim())
+			.filter((item) => /^[A-Za-z0-9_-]+$/.test(item));
+	}
+
+	private static assignCustomFrontmatter(state: ParsingState, key: string, value: string): void {
+		if (!key.trim()) {
+			return;
+		}
+
+		const customFrontmatter = state.parsed.customFrontmatter || {};
+		const existing = customFrontmatter[key];
+		if (existing === undefined) {
+			customFrontmatter[key] = value;
+		} else if (Array.isArray(existing)) {
+			customFrontmatter[key] = [...existing, value];
+		} else {
+			customFrontmatter[key] = [existing, value];
+		}
+		state.parsed.customFrontmatter = customFrontmatter;
+	}
+
+	private static appendDetails(state: ParsingState, value: string): void {
+		if (!value.trim()) {
+			return;
+		}
+
+		state.parsed.details = state.parsed.details
+			? `${state.parsed.details}\n\n${value.trim()}`
+			: value.trim();
+	}
+
+	private static normalizeDate(dateString: string | undefined): string | undefined {
+		if (!dateString) {
+			return undefined;
+		}
+
+		const trimmed = dateString.trim();
+		if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
 			return undefined;
 		}
 
 		try {
-			// Create a fresh regex to avoid global state issues
-			const freshPattern = new RegExp(pattern.source, "g");
-			const match = freshPattern.exec(content);
-
-			if (match && match[1]) {
-				const dateString = match[1].trim();
-
-				// Basic format validation before parsing
-				if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-					return undefined;
-				}
-
-				// Validate date format and range
-				try {
-					// Use parseDateToUTC for consistent parsing
-					const date = parseDateToUTC(dateString);
-
-					// Check if date is valid and within reasonable range
-					if (isNaN(date.getTime())) {
-						return undefined;
-					}
-
-					const year = date.getUTCFullYear();
-					if (year < 1900 || year > 2100) {
-						return undefined;
-					}
-
-					return formatDateForStorage(date);
-				} catch {
-					return undefined;
-				}
+			const date = parseDateToUTC(trimmed);
+			if (isNaN(date.getTime())) {
+				return undefined;
 			}
-		} catch (error) {
-			tasknotesLogger.debug("Error extracting date:", {
-				category: "validation",
-				operation: "extracting-date",
-				error: error,
-			});
-		}
 
-		return undefined;
+			const year = date.getUTCFullYear();
+			if (year < 1900 || year > 2100) {
+				return undefined;
+			}
+
+			return formatDateForStorage(date);
+		} catch {
+			return undefined;
+		}
 	}
 
-	/**
-	 * Extract priority from content
-	 */
-	private static extractPriority(content: string): string | undefined {
-		// Create fresh regex patterns to avoid global state issues
-		if (new RegExp(this.EMOJI_PATTERNS.HIGH_PRIORITY.source).test(content)) {
-			return "high";
+	private static normalizePriority(value: string | undefined): string | undefined {
+		if (!value) {
+			return undefined;
 		}
-		if (new RegExp(this.EMOJI_PATTERNS.MEDIUM_PRIORITY.source).test(content)) {
-			return "medium";
-		}
-		if (new RegExp(this.EMOJI_PATTERNS.LOW_PRIORITY.source).test(content)) {
-			return "low";
-		}
-		// Return undefined instead of 'normal' when no priority emoji is found
-		return undefined;
+
+		const normalized = value.trim().toLowerCase();
+		return PRIORITY_ALIASES[normalized] || normalized || undefined;
 	}
 
-	/**
-	 * Extract recurrence information from content
-	 */
-	private static extractRecurrence(content: string): {
-		recurrence?: string;
-		recurrenceData?: ParsedTaskData["recurrenceData"];
-	} {
-		// Create a fresh regex to avoid global state issues
-		const freshPattern = new RegExp(this.EMOJI_PATTERNS.RECURRENCE.source, "g");
-		const match = freshPattern.exec(content);
-
-		if (!match || !match[1]) {
+	private static parseRecurrence(recurrenceText: string | undefined): RecurrenceParseResult {
+		const raw = recurrenceText?.trim();
+		if (!raw) {
 			return {};
 		}
 
-		const recurrenceText = match[1].trim();
+		const whenDoneMatch = raw.match(/\s+when\s+done$/iu);
+		const recurrenceAnchor: RecurrenceAnchor | undefined = whenDoneMatch
+			? "completion"
+			: undefined;
+		const text = raw.replace(/\s+when\s+done$/iu, "").trim();
+		const existingRule = this.normalizeExistingRRule(text);
+		const recurrence = existingRule || this.parseTextToRRule(text) || this.parseSimpleRecurrence(text);
 
-		// Parse common recurrence patterns
-		if (recurrenceText.includes("every day")) {
+		if (!recurrence) {
 			return {
-				recurrence: "daily",
-				recurrenceData: { frequency: "daily" },
-			};
-		}
-
-		if (recurrenceText.includes("every week")) {
-			return {
-				recurrence: "weekly",
-				recurrenceData: { frequency: "weekly" },
-			};
-		}
-
-		if (recurrenceText.includes("every month")) {
-			return {
-				recurrence: "monthly",
-				recurrenceData: { frequency: "monthly" },
-			};
-		}
-
-		if (recurrenceText.includes("every year")) {
-			return {
-				recurrence: "yearly",
-				recurrenceData: { frequency: "yearly" },
-			};
-		}
-
-		// Handle weekly with specific days
-		const weeklyDaysMatch = recurrenceText.match(
-			/every\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i
-		);
-		if (weeklyDaysMatch) {
-			return {
-				recurrence: "weekly",
 				recurrenceData: {
-					frequency: "weekly",
-					days_of_week: [weeklyDaysMatch[1].toLowerCase().substring(0, 3)],
+					frequency: "custom",
+					raw,
 				},
 			};
 		}
 
-		// Default to storing the raw recurrence text
 		return {
-			recurrence: "custom",
-			recurrenceData: {
-				frequency: "custom",
-				raw: recurrenceText,
-			},
+			recurrence,
+			recurrenceAnchor,
+			recurrenceData: this.buildRecurrenceData(recurrence, raw),
 		};
 	}
 
-	/**
-	 * Extract tags from content
-	 */
+	private static normalizeExistingRRule(text: string): string | undefined {
+		const normalized = text.trim().replace(/^RRULE:/iu, "");
+		if (/^(DTSTART:[^;]+;)?FREQ=/iu.test(normalized)) {
+			return normalized.toUpperCase();
+		}
+		return undefined;
+	}
+
+	private static parseTextToRRule(text: string): string | undefined {
+		try {
+			const options = RRule.parseText(text);
+			if (!options) {
+				return undefined;
+			}
+			return new RRule(options).toString().replace(/^RRULE:/u, "");
+		} catch {
+			return undefined;
+		}
+	}
+
+	private static parseSimpleRecurrence(text: string): string | undefined {
+		const normalized = text.trim().toLowerCase();
+		const intervalMatch = normalized.match(/^every\s+(\d+)\s+(day|week|month|year)s?$/u);
+		if (intervalMatch) {
+			return `FREQ=${this.frequencyFromText(intervalMatch[2])};INTERVAL=${intervalMatch[1]}`;
+		}
+
+		const weekdayMatch = normalized.match(
+			/^every\s+((?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s*(?:,|and)\s*(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday))*)$/u
+		);
+		if (weekdayMatch) {
+			const days = weekdayMatch[1]
+				.split(/\s*(?:,|and)\s*/u)
+				.map((day) => DAY_CODES[day])
+				.filter(Boolean);
+			if (days.length > 0) {
+				return `FREQ=WEEKLY;BYDAY=${days.join(",")}`;
+			}
+		}
+
+		const weeklyOnDayMatch = normalized.match(
+			/^every\s+week\s+on\s+((?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s*(?:,|and)\s*(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday))*)$/u
+		);
+		if (weeklyOnDayMatch) {
+			const days = weeklyOnDayMatch[1]
+				.split(/\s*(?:,|and)\s*/u)
+				.map((day) => DAY_CODES[day])
+				.filter(Boolean);
+			if (days.length > 0) {
+				return `FREQ=WEEKLY;BYDAY=${days.join(",")}`;
+			}
+		}
+
+		switch (normalized) {
+			case "daily":
+			case "every day":
+				return "FREQ=DAILY";
+			case "weekly":
+			case "every week":
+				return "FREQ=WEEKLY";
+			case "monthly":
+			case "every month":
+				return "FREQ=MONTHLY";
+			case "yearly":
+			case "annually":
+			case "every year":
+				return "FREQ=YEARLY";
+			default:
+				return undefined;
+		}
+	}
+
+	private static frequencyFromText(text: string): string {
+		switch (text) {
+			case "day":
+				return "DAILY";
+			case "week":
+				return "WEEKLY";
+			case "month":
+				return "MONTHLY";
+			case "year":
+				return "YEARLY";
+			default:
+				return "DAILY";
+		}
+	}
+
+	private static buildRecurrenceData(
+		recurrence: string,
+		raw: string
+	): ParsedTaskData["recurrenceData"] {
+		const freqMatch = recurrence.match(/(?:^|;)FREQ=([^;]+)/u);
+		const byDayMatch = recurrence.match(/(?:^|;)BYDAY=([^;]+)/u);
+		const byMonthDayMatch = recurrence.match(/(?:^|;)BYMONTHDAY=(\d+)/u);
+		const byMonthMatch = recurrence.match(/(?:^|;)BYMONTH=(\d+)/u);
+
+		return {
+			frequency: freqMatch?.[1]?.toLowerCase() || "custom",
+			days_of_week: byDayMatch?.[1]?.split(","),
+			day_of_month: byMonthDayMatch ? Number(byMonthDayMatch[1]) : undefined,
+			month_of_year: byMonthMatch ? Number(byMonthMatch[1]) : undefined,
+			raw,
+		};
+	}
+
 	private static extractTags(content: string): string[] {
-		// Validate input
 		if (typeof content !== "string") {
 			return [];
 		}
 
 		try {
-			// Create a fresh regex to avoid global state issues
 			const freshPattern = new RegExp(this.TAG_PATTERN.source, this.TAG_PATTERN.flags);
 			const tags: string[] = [];
 			let match;
 
 			while ((match = freshPattern.exec(content)) !== null) {
 				if (match[0]) {
-					// Remove the # prefix and add to tags array
 					const tag = match[0].substring(1);
 					if (tag && !tags.includes(tag)) {
 						tags.push(tag);
@@ -407,11 +667,7 @@ export class TasksPluginParser {
 		}
 	}
 
-	/**
-	 * Extract contexts from content
-	 */
 	private static extractContexts(content: string): string[] {
-		// Validate input
 		if (typeof content !== "string") {
 			return [];
 		}
@@ -444,69 +700,19 @@ export class TasksPluginParser {
 		}
 	}
 
-	/**
-	 * Extract clean title by removing all emoji patterns, tags, and contexts
-	 */
 	private static extractCleanTitle(content: string): string {
-		// Validate input
 		if (typeof content !== "string") {
 			return "";
 		}
 
 		try {
 			let cleanContent = content;
+			cleanContent = cleanContent.replace(this.TAG_PATTERN, "");
+			cleanContent = cleanContent.replace(this.CONTEXT_PATTERN, "");
+			cleanContent = cleanContent.replace(this.DATAVIEW_FIELD_ANY_PATTERN, "");
 
-			// Remove all emoji patterns using fresh regex instances
-			Object.values(this.EMOJI_PATTERNS).forEach((pattern) => {
-				try {
-					const freshPattern = new RegExp(pattern.source, "g");
-					cleanContent = cleanContent.replace(freshPattern, "");
-				} catch (error) {
-					// If regex fails, continue with other patterns
-					tasknotesLogger.debug("Error applying emoji pattern:", {
-						category: "validation",
-						operation: "applying-emoji-pattern",
-						error: error,
-					});
-				}
-			});
-
-			// Remove tags using fresh regex instance
-			try {
-				const tagPattern = new RegExp(this.TAG_PATTERN.source, this.TAG_PATTERN.flags);
-				cleanContent = cleanContent.replace(tagPattern, "");
-			} catch (error) {
-				tasknotesLogger.debug("Error removing tags from title:", {
-					category: "validation",
-					operation: "removing-tags-title",
-					error: error,
-				});
-			}
-
-			// Remove contexts using fresh regex instance
-			try {
-				const contextPattern = new RegExp(
-					this.CONTEXT_PATTERN.source,
-					this.CONTEXT_PATTERN.flags
-				);
-				cleanContent = cleanContent.replace(contextPattern, "");
-			} catch (error) {
-				tasknotesLogger.debug("Error removing contexts from title:", {
-					category: "validation",
-					operation: "removing-contexts-title",
-					error: error,
-				});
-			}
-
-			// Clean up extra whitespace and validate result
 			const cleaned = cleanContent.replace(/\s+/g, " ").trim();
-
-			// Ensure we don't return an empty string
-			if (cleaned.length === 0) {
-				return "Untitled Task";
-			}
-
-			return cleaned;
+			return cleaned.length === 0 ? "Untitled Task" : cleaned;
 		} catch (error) {
 			tasknotesLogger.debug("Error extracting clean title:", {
 				category: "validation",
@@ -518,35 +724,20 @@ export class TasksPluginParser {
 	}
 
 	/**
-	 * Validate if a line contains Tasks plugin format
+	 * Validate if a line contains Tasks plugin metadata.
 	 */
 	static isTasksPluginFormat(line: string): boolean {
-		// Validate input
-		if (typeof line !== "string") {
-			return false;
-		}
-
-		// Performance safeguard
-		if (line.length > 1000) {
+		if (typeof line !== "string" || line.length > 1000) {
 			return false;
 		}
 
 		try {
-			const trimmedLine = line.trim();
-			const hasCheckbox = this.CHECKBOX_PATTERN.test(trimmedLine);
+			const trimmedLine = this.stripBlockquoteMarkers(line);
+			const checkboxMatch = trimmedLine.match(this.CHECKBOX_PATTERN);
+			if (!checkboxMatch) return false;
 
-			if (!hasCheckbox) return false;
-
-			// Check for at least one Tasks plugin emoji using fresh regex instances
-			const emojiPatterns = Object.values(this.EMOJI_PATTERNS);
-			return emojiPatterns.some((pattern) => {
-				try {
-					const freshPattern = new RegExp(pattern.source);
-					return freshPattern.test(trimmedLine);
-				} catch {
-					return false;
-				}
-			});
+			const taskContent = checkboxMatch[4] || "";
+			return this.hasTasksPluginMetadata(taskContent);
 		} catch (error) {
 			tasknotesLogger.debug("Error validating Tasks plugin format:", {
 				category: "validation",
@@ -557,8 +748,15 @@ export class TasksPluginParser {
 		}
 	}
 
+	private static hasTasksPluginMetadata(content: string): boolean {
+		return (
+			/(?:📅|📆|🗓|⏳|⌛|🛫|➕|✅|🔺|⏫|🔼|🔽|⏬|🔁|🏁|🆔|⛔)/u.test(content) ||
+			this.DATAVIEW_FIELD_ANY_PATTERN.test(content)
+		);
+	}
+
 	/**
-	 * Get a human-readable summary of parsed data for debugging
+	 * Get a human-readable summary of parsed data for debugging.
 	 */
 	static getSummary(parsedData: ParsedTaskData): string {
 		const parts: string[] = [];
