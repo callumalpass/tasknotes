@@ -27,11 +27,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 ## Added
 
-- Fixed recurring all-day ICS subscription events keeping the original end date on later instances, which could cause calendar list views to show events under the wrong day.
-
-- (#982, #1947) Restored larger mobile task-card typography and let secondary card icons wrap below the task details when they no longer fit comfortably on mobile.
-  - Thanks to @3zra47 for reporting the font-size regression, @chrsdk and @scottaltham-payroc for confirming the mobile font-size issue, and @Jomo94 for reporting the mobile card layout problem.
 - Added materialized occurrence notes for recurring tasks. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#materialized-occurrence-notes) for setup and calendar behavior.
 ```
 
 -->
+
+## Fixed
+
+- Fixed recurring all-day ICS subscription events keeping the original end date on later instances, which could cause calendar list views to show events under the wrong day.

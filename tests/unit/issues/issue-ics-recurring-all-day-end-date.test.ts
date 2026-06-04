@@ -53,12 +53,12 @@ describe("ICS recurring all-day event end dates", () => {
 			"DTEND;VALUE=DATE:20260529",
 			"RRULE:FREQ=DAILY;COUNT=4",
 			"UID:recurring-all-day-single@test",
-			"SUMMARY:BOG Holds",
+			"SUMMARY:One-day hold",
 			"END:VEVENT",
 			"END:VCALENDAR",
 		].join("\r\n");
 
-		const events = makeService().parseICS(icsData, "time-block");
+		const events = makeService().parseICS(icsData, "test-subscription");
 
 		expect(events.map((event) => ({ start: event.start, end: event.end }))).toEqual([
 			{ start: "2026-05-28", end: "2026-05-29" },
@@ -84,7 +84,7 @@ describe("ICS recurring all-day event end dates", () => {
 			"END:VCALENDAR",
 		].join("\r\n");
 
-		const events = makeService().parseICS(icsData, "time-block");
+		const events = makeService().parseICS(icsData, "test-subscription");
 
 		expect(events.map((event) => ({ start: event.start, end: event.end }))).toEqual([
 			{ start: "2026-05-28", end: "2026-05-30" },
