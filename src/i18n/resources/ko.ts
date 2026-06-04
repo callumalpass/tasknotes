@@ -943,6 +943,10 @@ export const ko: TranslationTree = {
 					name: "업데이트 후 릴리스 노트 표시",
 					description: "TaskNotes가 새 버전으로 업데이트되면 자동으로 릴리스 노트 열기"
 				},
+				checkForUpdates: {
+					name: "시작 시 새 릴리스 확인",
+					description: "TaskNotes가 시작될 때 GitHub를 한 번 확인하고 더 최신 호환 릴리스가 있으면 알림을 표시합니다"
+				},
 				viewButton: {
 					name: "릴리스 노트 보기",
 					description: "최신 버전의 TaskNotes에서 새로운 기능 확인",
@@ -2158,6 +2162,10 @@ export const ko: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "언어가 {language}(으)로 변경되었습니다.",
+		releaseAvailable: {
+			message: "TaskNotes {version} 릴리스를 사용할 수 있습니다.",
+			action: "커뮤니티 플러그인에서 열기"
+		},
 		exportTasksFailed: "ICS 파일로 작업 내보내기 실패",
 		icsNoteCreatedSuccess: "노트가 성공적으로 생성되었습니다",
 		icsCreationModalOpenFailed: "생성 모달 열기 실패",
@@ -2187,6 +2195,7 @@ export const ko: TranslationTree = {
 		openAgendaView: "일정 뷰 열기",
 		openPomodoroView: "뽀모도로 타이머 열기",
 		openKanbanView: "칸반 보드 열기",
+		updateDefaultBaseFiles: "기본 Base 파일 업데이트",
 		openPomodoroStats: "뽀모도로 통계 열기",
 		openStatisticsView: "작업 및 프로젝트 통계 열기",
 		createNewTask: "새 작업 만들기",

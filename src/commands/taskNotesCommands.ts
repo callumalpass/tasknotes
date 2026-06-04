@@ -2,6 +2,7 @@ import { Notice, type Editor } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TranslatedCommandDefinition } from "./types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { showConfirmationModal } from "../modals/ConfirmationModal";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Commands/TaskNotesCommands" });
 
@@ -49,6 +50,30 @@ export function createTaskNotesCommandDefinitions(
 			nameKey: "commands.openKanbanView",
 			callback: async (ctx) => {
 				await ctx.openBasesFileForCommand("open-kanban-view");
+			},
+		},
+		{
+			id: "update-default-base-files",
+			nameKey: "commands.updateDefaultBaseFiles",
+			callback: async (ctx) => {
+				const confirmed = await showConfirmationModal(ctx.app, {
+					title: ctx.i18n.translate(
+						"settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle"
+					),
+					message: ctx.i18n.translate(
+						"settings.integrations.basesIntegration.updateDefaultFiles.confirmMessage"
+					),
+					confirmText: ctx.i18n.translate(
+						"settings.integrations.basesIntegration.updateDefaultFiles.confirmText"
+					),
+					isDestructive: false,
+				});
+
+				if (!confirmed) {
+					return;
+				}
+
+				await ctx.createDefaultBasesFiles({ overwriteExisting: true });
 			},
 		},
 		{

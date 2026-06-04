@@ -165,6 +165,8 @@ export interface TaskNotesSettings {
 	// Release notes tracking
 	lastSeenVersion?: string;
 	showReleaseNotesOnUpdate?: boolean;
+	checkForUpdatesOnStartup?: boolean;
+	lastNotifiedReleaseVersion?: string;
 	// Status bar settings
 	showTrackedTasksInStatusBar: boolean;
 	// Time tracking settings

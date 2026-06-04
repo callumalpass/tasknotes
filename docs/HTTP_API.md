@@ -80,6 +80,10 @@ Error:
 - `GET /api/filter-options`
 - `GET /api/stats`
 
+### Bases
+
+- `POST /api/bases/default-files/update`
+
 ### Time Tracking
 
 - `POST /api/tasks/:id/time/start`
@@ -356,6 +360,22 @@ Returns filter options for UI builders.
 Returns summary counts:
 
 - `total`, `completed`, `active`, `overdue`, `archived`, `withTimeTracking`
+
+## Bases
+
+### `POST /api/bases/default-files/update`
+
+Overwrite the configured default TaskNotes `.base` files with templates generated from the current TaskNotes settings. This is the same write operation as **Settings -> TaskNotes -> Views & base files -> Update files** and replaces manual edits in those configured default files.
+
+```bash
+curl -X POST http://localhost:8080/api/bases/default-files/update
+```
+
+Response fields:
+
+- `data.created`: default files created because they were missing
+- `data.updated`: existing default files overwritten with current templates
+- `data.skipped`: configured default files skipped
 
 ## Time Tracking
 

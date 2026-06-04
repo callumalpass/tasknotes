@@ -55,6 +55,7 @@ import {
 	type ResolvedTaskDependency,
 	type StartTimeEntryOptions,
 	type TaskNotesRuntimeDependencyRelTypeDefinition,
+	type TaskNotesRuntimeDefaultBasesResult,
 	type TaskNotesRuntimeFieldDefinition,
 	type TaskNotesRuntimeFilterOperatorDefinition,
 	type TaskNotesRuntimeFilterPropertyDefinition,
@@ -862,6 +863,10 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		snapshot: () => this.getSettingsSnapshot(),
 	};
 
+	readonly bases = {
+		updateDefaultFiles: () => this.updateDefaultBasesFiles(),
+	};
+
 	readonly nlp = {
 		parse: (text: string) => this.parseNaturalLanguage(text),
 	};
@@ -994,6 +999,10 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			error instanceof Error ? error.message : String(error),
 			{ status: 500, cause: error }
 		).toJSON();
+	}
+
+	private async updateDefaultBasesFiles(): Promise<TaskNotesRuntimeDefaultBasesResult> {
+		return this.plugin.updateDefaultBasesFiles();
 	}
 
 	private getStatuses() {

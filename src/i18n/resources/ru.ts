@@ -943,6 +943,10 @@ export const ru: TranslationTree = {
 					name: "Показывать примечания к выпуску после обновления",
 					description: "Автоматически открывать примечания к выпуску при обновлении TaskNotes до новой версии"
 				},
+				checkForUpdates: {
+					name: "Проверять новые выпуски при запуске",
+					description: "Проверяет GitHub один раз при запуске TaskNotes и показывает уведомление, если доступен более новый совместимый выпуск"
+				},
 				viewButton: {
 					name: "Просмотреть примечания к выпуску",
 					description: "Узнайте, что нового в последней версии TaskNotes",
@@ -2174,6 +2178,10 @@ export const ru: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Язык изменен на {language}.",
+		releaseAvailable: {
+			message: "Доступен TaskNotes {version}.",
+			action: "Открыть в плагинах сообщества"
+		},
 		exportTasksFailed: "Не удалось экспортировать задачи как файл ICS",
 		icsNoteCreatedSuccess: "Заметка успешно создана",
 		icsCreationModalOpenFailed: "Не удалось открыть модальное окно создания",
@@ -2203,6 +2211,7 @@ export const ru: TranslationTree = {
 		openAgendaView: "Открыть представление планов",
 		openPomodoroView: "Открыть таймер помодоро",
 		openKanbanView: "Открыть доску канбан",
+		updateDefaultBaseFiles: "Обновить файлы Base по умолчанию",
 		openPomodoroStats: "Открыть статистику помодоро",
 		openStatisticsView: "Открыть статистику задач и проектов",
 		createNewTask: "Создать новую задачу",

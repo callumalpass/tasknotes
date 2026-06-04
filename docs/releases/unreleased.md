@@ -34,6 +34,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- Added an enabled-by-default startup check for new compatible TaskNotes releases. When a new release is available, TaskNotes shows a notice that opens the TaskNotes entry in Obsidian's Community Plugins browser.
+- Added translations for the new startup release-check setting and update notice.
+- (#1989) Added a command-palette action plus runtime and HTTP API actions for updating configured default `.base` files from the current TaskNotes templates. Thanks to @businessBoris for the request.
 - (#1115) Added API and MCP support for creating materialized occurrence notes from recurring tasks, and made headless recurring-instance completion respect occurrence notes when the parent uses Create next after completion. Thanks to @martin-forge for identifying the API/MCP gap.
 
 ## Fixed

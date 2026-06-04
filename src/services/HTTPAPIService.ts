@@ -16,6 +16,7 @@ import { PomodoroController } from "../api/PomodoroController";
 import { SystemController } from "../api/SystemController";
 import { WebhookController } from "../api/WebhookController";
 import { CalendarsController } from "../api/CalendarsController";
+import { BasesController } from "../api/BasesController";
 import { MCPService } from "./MCPService";
 import {
 	parseJSONBody,
@@ -45,6 +46,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 	private systemController: SystemController;
 	private webhookController: WebhookController;
 	private calendarsController: CalendarsController;
+	private basesController: BasesController;
 	private mcpService?: MCPService;
 
 	constructor(
@@ -86,6 +88,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 			plugin.icsSubscriptionService,
 			plugin.calendarProviderRegistry
 		);
+		this.basesController = new BasesController(plugin);
 
 		// Initialize MCP service if enabled
 		if (plugin.settings.enableMCP) {
@@ -113,6 +116,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 		this.router.registerController(this.systemController);
 		this.router.registerController(this.webhookController);
 		this.router.registerController(this.calendarsController);
+		this.router.registerController(this.basesController);
 	}
 
 	/**
@@ -130,6 +134,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 			this.systemController,
 			this.webhookController,
 			this.calendarsController,
+			this.basesController,
 		];
 
 		// Merge paths from all controllers

@@ -2400,6 +2400,14 @@
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "ee796a1f366c9a65c175015db7cdabfef67bed7a"
     },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "1d76a1e162759bf7391dc6a5ce61bfbea8945fc3"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "f2e314061e856e95e4dd5199d55703d02cb2fb3d"
+    },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "d69d1c26f388903bba0094ba00f61217c47fa732"
@@ -5292,6 +5300,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "7f26686cfeedf2599568056031748d77186b4775"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "18b5a590fecf528dcee80b777cfa6f745e2df944"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "4297452c1a2d3753f94f77581d1cccff462dead0"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "be1d117c7288cb32621ccbdad460b7b6794e7b32"
@@ -5399,6 +5415,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "26860c71e17482b513134e2143b8b16e102bff7d"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "082037fb3cd65ed457f9e5ba73366c421cb60852"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -11170,6 +11190,14 @@
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "c77956cc4d10dd4e933943c49f252334743f1f0e"
     },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "5873389c953cd4e3d1e62605aee0116a8abb0fc3"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "c537578e345feb8ec1ba0c5ce14febedae186398"
+    },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "19ef9ab3a718f13f42fe08b4dcbcdcb7f7e57601"
@@ -14062,6 +14090,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "eadada3d545e2a7410275a34377cee9b196ff8ae"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "5f631ea2366de87312765eb72a8c2c1fabb3873a"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "072829bb16fc15f831c7e7afbff02d195be1aace"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "fa4a91e0206980bc84695604a6e06b8958eb8629"
@@ -14169,6 +14205,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "08bbbda56376d985dda5af37131f4a5d5984619a"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "7797e018131081323188aad307e17d6cfcfcab06"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -19940,6 +19980,14 @@
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "eab4be44d0b8ab419957b45e1cbead3854d95154"
     },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "7ca6356b24779a430aae1960a845599dba2f8eb2"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "d98518dfb0691ed9e8d5cd67f70bcf1d75aaea32"
+    },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "e8e1d32313d229666301e29a37df418032835142"
@@ -22832,6 +22880,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "c13447e51fba9156d2fa6a1720e72bf94aecbd75"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "6a2c9644ea16315eccac34ed79f2e151634bd2aa"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "db164b21a9bda0cc8814e6ba9a9e297af58e7584"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "ff30240ef05c53aeda0d7d10e7a2fa0f55c09a30"
@@ -22939,6 +22995,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "98a00a03d738ee19d276e060a7bc6edb5a086ab8"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "f07a81853bf4993876171049228a8a66fcfdca0e"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -28710,6 +28770,14 @@
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "8ed8c798ec55d009452177534c7f32a3010a7a14"
     },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "df52d003dc4b2ca5c4e0647125791b9dacbfc21b"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "bf2d53d8c8ae6dfefdf7ef329bda3669bb773c80"
+    },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "2add1152032ee15c68c3fc05a7923fc50d2d0c31"
@@ -31602,6 +31670,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "179c451a72075375c6a5e7df281cbb3cd06c0183"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "df03e7c12f3b3788d15125583286862fa74bcbca"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "8e0be8f26f3711205a45f2d1b196a673be8e594a"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "3e63ebd6fdf480923d7665253abe9ed6d5800f9d"
@@ -31709,6 +31785,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "95147f95cc43f63a46da2b73c855ea3d50a5d1da"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "ee584a0e330d7b897a50041bf5b0bad456747ce5"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -37480,6 +37560,14 @@
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "5e5cb02b64497b6d800da8954aba05df0dfbee07"
     },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "998a7e30b1f697c6a9d672672745a71135fc8990"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "f4d2d80d0faecace0df9a708496b84c7d318b526"
+    },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "60893879670a62c5051d4cfdd8d67cf1d8d93821"
@@ -40372,6 +40460,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "d901211ac95a39b48de80b3ab27533968bcf9578"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "576da6a608a12b528f12aece5809852baf3deca6"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "7b81a2e377fe106ca413c8041ab6ab4bc8a7c0b9"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "548a8e23cb9e337dfca9e191bf4a600eeff61e4a"
@@ -40479,6 +40575,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "c524c5fab21e6e06aa1c094f03e48f2f67684d23"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "070d70235a0000a4e27615eea8800e257657c4a4"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -46250,6 +46350,14 @@
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "83f00274b19347ff1c88f1a66397333b6b37eed6"
     },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "240398c0185a5b255d35f6dcde87824cff9e9a2e"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "14dec43aa3bc8f92b2a3fa1f6482c75deff395a7"
+    },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "5729e8da9990dd95e32ffab749a63e181263be8a"
@@ -49142,6 +49250,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "8e158d856f5f6df85372f2997d05ba5b0b31da83"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "b4de74c972fbae7751553503f26e6088f9dd6f7b"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "b79842d6e84ce90845fe2fafa8a6988bcd267b09"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "46f0764db400589f1fd2f1e6027f1f0a19c058cd"
@@ -49249,6 +49365,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "680b427d2559ed513fb34e49c4db616dd777070f"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "f4aa8af1e6a0c08df2d8f18e2a1307a3b293e760"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -55020,6 +55140,14 @@
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "87ecc0493d7d41ebd4d7bee452de66a45f3d8f83"
     },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "1fef5c88d1fdce1c45f524040f62ae781d8f44fe"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "7072e6516fd94efec1721501e042c722d25d8cc5"
+    },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "cec500d00ddc1cc0b3f638f1557a0db40a7487ee"
@@ -57912,6 +58040,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "0b6ef1a910125926ea606ed12afb148595f5c167"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "f4e7982d0aae98be6a7898cf6a25c0d278db6c5a"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "acc03611762474332017ac2712f9da118f8b8608"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "88288bd1c8c2c7d132cb4142f35f1f66864db850"
@@ -58019,6 +58155,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "173e4300785f5f3799b900222ca011cac9a29926"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "6003222198cc4b2e625933f27f8713e9bbae51ea"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -63790,6 +63930,14 @@
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "2b8907d024115a489cab0f1c0d8d1509ca074b5f"
     },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "bfb80b8c2316a2d757533f5a547fe059d0570254"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "3bc4b0cc976cbacf51e866e96129869e240a5b3f"
+    },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "524c479f706f46cb1f6e70be920671d9ed610e5c"
@@ -66682,6 +66830,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "98970fa5fc92738a2c3bd9e54e91b0ebc6801844"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "0838bd55a3d68fc40d40d68b1a799efb0f1657a5"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "56e74474ce6e35866bb553583018580f2d401668"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "c3a29dbddca78f347cb9ce8a8d9ecb61468d6865"
@@ -66789,6 +66945,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "74bb40806e04c9c2a73df14d248936d3299fec03"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "ce644b1e738c51f9901258ab711c31b63d3e3390"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",

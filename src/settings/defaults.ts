@@ -315,6 +315,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Release notes defaults
 	lastSeenVersion: undefined,
 	showReleaseNotesOnUpdate: true,
+	checkForUpdatesOnStartup: true,
+	lastNotifiedReleaseVersion: undefined,
 	// Status bar defaults
 	showTrackedTasksInStatusBar: false,
 	// Time tracking defaults

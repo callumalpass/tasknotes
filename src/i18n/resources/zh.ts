@@ -943,6 +943,10 @@ export const zh: TranslationTree = {
 					name: "更新后显示版本说明",
 					description: "当TaskNotes更新到新版本时自动打开版本说明"
 				},
+				checkForUpdates: {
+					name: "启动时检查新版本",
+					description: "TaskNotes 启动时检查一次 GitHub，并在有较新的兼容版本可用时显示通知"
+				},
 				viewButton: {
 					name: "查看版本说明",
 					description: "查看TaskNotes最新版本的新功能",
@@ -2174,6 +2178,10 @@ export const zh: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "语言已更改为{language}。",
+		releaseAvailable: {
+			message: "TaskNotes {version} 可用。",
+			action: "在社区插件中打开"
+		},
 		exportTasksFailed: "导出任务为ICS文件失败",
 		icsNoteCreatedSuccess: "笔记成功创建",
 		icsCreationModalOpenFailed: "打开创建模式失败",
@@ -2203,6 +2211,7 @@ export const zh: TranslationTree = {
 		openAgendaView: "打开议程视图",
 		openPomodoroView: "打开番茄钟计时器",
 		openKanbanView: "打开看板",
+		updateDefaultBaseFiles: "更新默认 Base 文件",
 		openPomodoroStats: "打开番茄钟统计",
 		openStatisticsView: "打开任务和项目统计",
 		createNewTask: "创建新任务",

@@ -69,7 +69,15 @@ import {
 	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
-import { ensureDefaultBasesViewFiles } from "./bootstrap/defaultBasesFiles";
+import {
+	ensureDefaultBasesViewFiles,
+	type DefaultBasesFileResult,
+} from "./bootstrap/defaultBasesFiles";
+import {
+	getAvailableTaskNotesReleaseVersion,
+	shouldNotifyForRelease,
+	TASKNOTES_COMMUNITY_PLUGIN_URL,
+} from "./api/releaseCheck";
 import { buildCurrentNoteConversionTaskInfo } from "./services/task-service/currentNoteConversion";
 import { applyParentNoteProjectDefault } from "./utils/taskCreationPrepopulation";
 import { applySearchQueryToView } from "./utils/obsidianSearchView";
@@ -533,6 +541,56 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
+	async checkForNewReleaseOnStartup(): Promise<void> {
+		if (this.settings.checkForUpdatesOnStartup === false) {
+			return;
+		}
+
+		try {
+			const availableVersion = await getAvailableTaskNotesReleaseVersion();
+			if (
+				!shouldNotifyForRelease(
+					this.manifest.version,
+					availableVersion,
+					this.settings.lastNotifiedReleaseVersion
+				)
+			) {
+				return;
+			}
+
+			this.settings.lastNotifiedReleaseVersion = availableVersion;
+			await this.saveSettingsDataOnly();
+			new Notice(this.createReleaseAvailableNotice(availableVersion), 15000);
+		} catch (error) {
+			tasknotesLogger.debug("Release check failed", {
+				category: "provider",
+				operation: "check-release",
+				error,
+			});
+		}
+	}
+
+	private createReleaseAvailableNotice(version: string): DocumentFragment {
+		const fragment = activeDocument.createDocumentFragment();
+		fragment.appendText(
+			this.i18n.translate("notices.releaseAvailable.message", {
+				version,
+			})
+		);
+		fragment.appendText(" ");
+
+		const link = activeDocument.createElement("a");
+		link.textContent = this.i18n.translate("notices.releaseAvailable.action");
+		link.href = TASKNOTES_COMMUNITY_PLUGIN_URL;
+		link.addEventListener("click", (event) => {
+			event.preventDefault();
+			window.open(TASKNOTES_COMMUNITY_PLUGIN_URL, "_blank");
+		});
+
+		fragment.appendChild(link);
+		return fragment;
+	}
+
 	/**
 	 * Public method for views to wait for migration completion
 	 */
@@ -779,6 +837,10 @@ export default class TaskNotesPlugin extends Plugin {
 		if (skipped.length > 0 && created.length === 0 && updated.length === 0) {
 			new Notice(`Default Bases files already exist:\n${skipped.join("\n")}`, 8000);
 		}
+	}
+
+	async updateDefaultBasesFiles(): Promise<DefaultBasesFileResult> {
+		return this.ensureBasesViewFiles({ overwriteExisting: true });
 	}
 
 	async ensureBasesViewFiles(

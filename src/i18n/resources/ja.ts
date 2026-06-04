@@ -943,6 +943,10 @@ export const ja: TranslationTree = {
 					name: "更新後にリリースノートを表示",
 					description: "TaskNotesが新しいバージョンに更新されたときに自動的にリリースノートを開く"
 				},
+				checkForUpdates: {
+					name: "起動時に新しいリリースを確認",
+					description: "TaskNotes の起動時に GitHub を一度だけ確認し、互換性のある新しいリリースが利用可能な場合に通知を表示します"
+				},
 				viewButton: {
 					name: "リリースノートを表示",
 					description: "TaskNotesの最新バージョンの新機能を確認する",
@@ -2174,6 +2178,10 @@ export const ja: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "言語を{language}に変更しました。",
+		releaseAvailable: {
+			message: "TaskNotes {version} が利用可能です。",
+			action: "コミュニティプラグインで開く"
+		},
 		exportTasksFailed: "タスクのICSファイルエクスポートに失敗しました",
 		icsNoteCreatedSuccess: "ノートが正常に作成されました",
 		icsCreationModalOpenFailed: "作成モーダルを開けませんでした",
@@ -2203,6 +2211,7 @@ export const ja: TranslationTree = {
 		openAgendaView: "アジェンダビューを開く",
 		openPomodoroView: "ポモドーロタイマーを開く",
 		openKanbanView: "カンバンボードを開く",
+		updateDefaultBaseFiles: "既定の Base ファイルを更新",
 		openPomodoroStats: "ポモドーロ統計を開く",
 		openStatisticsView: "タスクとプロジェクト統計を開く",
 		createNewTask: "新しいタスクを作成",

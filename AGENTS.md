@@ -64,7 +64,8 @@ When asked to prepare for a release:
 2. Make sure ALL `npm run test` tests are passing. 
 3. Make sure there are no linting errors.
 4. Make sure all items in @docs/releases/unreleased.md thank the correct issue/pr opener (double check), as well as those who have commented on the issue/pr. Make sure the copy is appropriate--it is user facing so it should not be overly technical. Make sure it is free from anything that resembles marketing copy. do not thank callumalpass 
-5. Move the body of unreleased.md to <VERSION NUMBER>.md, following the pattern of previous released. Leave the comments that explain unreleased.md inside unreleased.md.
-6. Update @manifest.json and @package.json. 
-7. Commit changes as \"release <VERSION NUMBER>\" (you can choose the version number unless it is specified). 
-8. Tag the commit. (Just version number, no 'v' prefix. 
+5. Update `.ops` draft comments and matching Pickle requests for issues addressed in release notes but not yet closed. Start from the release notes, inspect each issue/comment thread individually, make sure `draft_issue_comment` and `draft_close_reason` are appropriate, create/update/cancel closeout Pickle requests as needed, and validate both `.ops` and `.ops/_pickle`. Do not commit `.ops/` files.
+6. Move the body of unreleased.md to <VERSION NUMBER>.md, following the pattern of previous releases. Leave the comments that explain unreleased.md inside unreleased.md.
+7. Update @manifest.json and @package.json.
+8. Commit changes as "release <VERSION NUMBER>" (you can choose the version number unless it is specified).
+9. Tag the commit. (Just version number, no 'v' prefix.)

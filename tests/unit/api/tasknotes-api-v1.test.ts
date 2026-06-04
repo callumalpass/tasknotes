@@ -506,6 +506,7 @@ describe("TaskNotesApiV1", () => {
 		expect(api.capabilities).toContain("query.validate");
 		expect(api.capabilities).toContain("query.explain");
 		expect(api.capabilities).toContain("system.health");
+		expect(api.capabilities).toContain("bases.write");
 		expect(api.capabilities).toContain("lifecycle.events");
 		expect(api.capabilities).toContain("errors.typed");
 		expect(api.hasCapability("tasks.events")).toBe(true);
@@ -520,6 +521,7 @@ describe("TaskNotesApiV1", () => {
 		expect(typeof api.events.on).toBe("function");
 		expect(typeof api.events.list).toBe("function");
 		expect(typeof api.errors.toResult).toBe("function");
+		expect(typeof api.bases.updateDefaultFiles).toBe("function");
 		expect(typeof api.extensions.register).toBe("function");
 	});
 

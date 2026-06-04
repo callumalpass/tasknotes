@@ -943,6 +943,10 @@ export const es: TranslationTree = {
 					name: "Mostrar notas de la versión después de actualizar",
 					description: "Abrir automáticamente las notas de la versión cuando TaskNotes se actualiza a una nueva versión"
 				},
+				checkForUpdates: {
+					name: "Buscar nuevas versiones al iniciar",
+					description: "Consulta GitHub una vez al iniciar TaskNotes y muestra un aviso cuando hay una versión compatible más reciente disponible"
+				},
 				viewButton: {
 					name: "Ver notas de la versión",
 					description: "Vea las novedades en la última versión de TaskNotes",
@@ -2174,6 +2178,10 @@ export const es: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Idioma cambiado a {language}.",
+		releaseAvailable: {
+			message: "TaskNotes {version} está disponible.",
+			action: "Abrir en plugins de la comunidad"
+		},
 		exportTasksFailed: "Error al exportar tareas como archivo ICS",
 		icsNoteCreatedSuccess: "Nota creada exitosamente",
 		icsCreationModalOpenFailed: "Error al abrir modal de creación",
@@ -2203,6 +2211,7 @@ export const es: TranslationTree = {
 		openAgendaView: "Abrir vista de agenda",
 		openPomodoroView: "Abrir temporizador pomodoro",
 		openKanbanView: "Abrir tablero kanban",
+		updateDefaultBaseFiles: "Actualizar archivos Base predeterminados",
 		openPomodoroStats: "Abrir estadísticas de pomodoro",
 		openStatisticsView: "Abrir estadísticas de tareas y proyectos",
 		createNewTask: "Crear nueva tarea",

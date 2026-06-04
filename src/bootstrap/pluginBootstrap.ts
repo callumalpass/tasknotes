@@ -500,6 +500,7 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 				plugin.setupStatusBarEventListeners();
 				plugin.setupTimeTrackingEventListeners();
 				await plugin.checkForVersionUpdate();
+				void plugin.checkForNewReleaseOnStartup();
 			} catch (error) {
 				tasknotesLogger.error("Error during lazy service initialization:", {
 					category: "internal",

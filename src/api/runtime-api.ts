@@ -60,6 +60,7 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"recurring.materialize",
 	"recurring.events",
 	"settings.snapshot",
+	"bases.write",
 	"nlp.parse",
 	"query.tasks",
 	"query.validate",
@@ -853,6 +854,16 @@ export interface TaskNotesRuntimeSettingsApi {
 	snapshot(): Readonly<TaskNotesSettings>;
 }
 
+export interface TaskNotesRuntimeDefaultBasesResult {
+	created: string[];
+	updated: string[];
+	skipped: string[];
+}
+
+export interface TaskNotesRuntimeBasesApi {
+	updateDefaultFiles(): Promise<TaskNotesRuntimeDefaultBasesResult>;
+}
+
 export interface TaskNotesRuntimeNlpApi {
 	parse(text: string): ParsedTaskData;
 }
@@ -1079,6 +1090,7 @@ export interface TaskNotesRuntimeApiV1 {
 	readonly recurring: TaskNotesRuntimeRecurringApi;
 	readonly events: TaskNotesRuntimeEventsApi;
 	readonly settings: TaskNotesRuntimeSettingsApi;
+	readonly bases: TaskNotesRuntimeBasesApi;
 	readonly nlp: TaskNotesRuntimeNlpApi;
 	readonly query: TaskNotesRuntimeQueryApi;
 	readonly stats: TaskNotesRuntimeStatsApi;
