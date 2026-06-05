@@ -87,7 +87,7 @@
 		"@fullcalendar/multimonth": "^6.1.17",
 		"@fullcalendar/timegrid": "^6.1.17",
 		"@modelcontextprotocol/sdk": "^1.12.1",
-		"@tasknotes/model": "0.2.0",
+		"@tasknotes/model": "0.2.1",
 		"chrono-node": "^2.7.5",
 		"date-fns": "^4.1.0",
 		"ical.js": "^2.2.1",

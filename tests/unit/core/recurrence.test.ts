@@ -43,6 +43,23 @@ describe("core/recurrence", () => {
 		});
 	});
 
+	it("preserves due offset for timed recurring tasks", () => {
+		const result = updateToNextScheduledOccurrence({
+			title: "Timed recurring task with due offset",
+			recurrence: "DTSTART:20260328T103000;FREQ=DAILY",
+			recurrence_anchor: "scheduled",
+			scheduled: "2026-03-28T10:30",
+			due: "2026-03-29T10:30",
+			complete_instances: ["2026-03-28"],
+			skipped_instances: [],
+		});
+
+		expect(result).toEqual({
+			scheduled: "2026-03-29T10:30",
+			due: "2026-03-30T10:30",
+		});
+	});
+
 	it("adds DTSTART without depending on a full TaskInfo object", () => {
 		const recurrence = addDTSTARTToRecurrenceRule({
 			recurrence: "FREQ=DAILY;INTERVAL=2",
