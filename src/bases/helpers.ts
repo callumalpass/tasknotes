@@ -1,5 +1,6 @@
 import TaskNotesPlugin from "../main";
 import { Reminder, TaskDependency, TaskInfo, TimeEntry } from "../types";
+import type { OccurrenceMaterializationMode, OccurrenceNextTrigger } from "@tasknotes/model";
 import { setIcon } from "obsidian";
 import { calculateTotalTimeSpent } from "../utils/helpers";
 import { format } from "date-fns";
@@ -86,6 +87,20 @@ function toOptionalNumber(value: unknown): number | undefined {
 	return undefined;
 }
 
+function toOccurrenceMaterializationMode(
+	value: unknown
+): OccurrenceMaterializationMode | undefined {
+	const mode = toOptionalString(value);
+	return mode === "manual" || mode === "on_completion" || mode === "rolling"
+		? mode
+		: undefined;
+}
+
+function toOccurrenceNextTrigger(value: unknown): OccurrenceNextTrigger | undefined {
+	const trigger = toOptionalString(value);
+	return trigger === "completion" || trigger === "completion_or_skip" ? trigger : undefined;
+}
+
 function toTimeEntries(value: unknown): TimeEntry[] | undefined {
 	return Array.isArray(value) ? (value as TimeEntry[]) : undefined;
 }
@@ -166,6 +181,13 @@ function createTaskInfoFromProperties(
 		"timeEstimate",
 		"completedDate",
 		"recurrence",
+		"recurrence_parent",
+		"occurrence_date",
+		"occurrence_materialization",
+		"occurrence_next_trigger",
+		"occurrence_template",
+		"occurrence_past_horizon",
+		"occurrence_future_horizon",
 		"dateCreated",
 		"dateModified",
 		"timeEntries",
@@ -224,6 +246,15 @@ function createTaskInfoFromProperties(
 		timeEstimate: toOptionalNumber(props.timeEstimate),
 		completedDate: toOptionalString(props.completedDate),
 		recurrence: toOptionalString(props.recurrence),
+		recurrence_parent: toOptionalString(props.recurrence_parent),
+		occurrence_date: toOptionalString(props.occurrence_date),
+		occurrence_materialization: toOccurrenceMaterializationMode(
+			props.occurrence_materialization
+		),
+		occurrence_next_trigger: toOccurrenceNextTrigger(props.occurrence_next_trigger),
+		occurrence_template: toOptionalString(props.occurrence_template),
+		occurrence_past_horizon: toOptionalString(props.occurrence_past_horizon),
+		occurrence_future_horizon: toOptionalString(props.occurrence_future_horizon),
 		dateCreated: toOptionalString(props.dateCreated),
 		dateModified: toOptionalString(props.dateModified),
 		timeEntries,
@@ -239,6 +270,33 @@ function createTaskInfoFromProperties(
 		sortOrder: toOptionalString(props.sortOrder),
 		customProperties: Object.keys(customProperties).length > 0 ? customProperties : undefined,
 		basesData: basesItem.basesData,
+	};
+}
+
+function mergeCustomProperties(
+	first: Record<string, unknown> | undefined,
+	second: Record<string, unknown> | undefined
+): Record<string, unknown> | undefined {
+	const merged = {
+		...(first ?? {}),
+		...(second ?? {}),
+	};
+	return Object.keys(merged).length > 0 ? merged : undefined;
+}
+
+function enrichTaskInfoFromCache(taskInfo: TaskInfo, plugin?: TaskNotesPlugin): TaskInfo {
+	const cachedTask = plugin?.cacheManager?.getCachedTaskInfoSync?.(taskInfo.path);
+	if (!cachedTask) {
+		return taskInfo;
+	}
+
+	return {
+		...cachedTask,
+		basesData: taskInfo.basesData,
+		customProperties: mergeCustomProperties(
+			cachedTask.customProperties,
+			taskInfo.customProperties
+		),
 	};
 }
 
@@ -267,16 +325,16 @@ export function createTaskInfoFromBasesData(
 		});
 
 		// Merge file properties with existing custom properties
-		return {
+		return enrichTaskInfoFromCache({
 			...taskInfo,
 			customProperties: {
 				...mappedTaskInfo.customProperties,
 				...taskInfo.customProperties,
 				...fileProperties,
 			},
-		};
+		}, plugin);
 	} else {
-		return createTaskInfoFromProperties(props, basesItem, plugin);
+		return enrichTaskInfoFromCache(createTaskInfoFromProperties(props, basesItem, plugin), plugin);
 	}
 }
 

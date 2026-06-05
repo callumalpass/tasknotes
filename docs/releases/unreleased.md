@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#1995) Fixed Bases Calendar views showing both a materialized occurrence note and its matching virtual recurring task instance. Thanks to @rdefaccio for reporting this.
