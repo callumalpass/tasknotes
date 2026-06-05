@@ -1,5 +1,6 @@
 import {
 	applyKanbanTaskDropFrontmatterPlan,
+	clearKanbanDropMarkers,
 	getKanbanCardDropTargetFromClientY,
 	getKanbanDraggedPaths,
 	kanbanDropPlanNeedsWrite,
@@ -9,6 +10,7 @@ import {
 	planKanbanTaskDropUpdate,
 	reconstructKanbanDropTargetFromContainer,
 	resolveKanbanContainerDropTarget,
+	updateKanbanDropMarker,
 	type KanbanDropTarget,
 } from "../../../src/bases/kanbanDragUtils";
 import type { TaskInfo } from "../../../src/types";
@@ -164,6 +166,47 @@ describe("kanbanDragUtils", () => {
 				currentInsertionIndex: 2,
 			})
 		).toEqual({ taskPath: "Tasks/c.md", above: false });
+	});
+
+	it("marks the card where the active drop gap is shown", () => {
+		const cards = document.createElement("div");
+		const first = createCard("Tasks/a.md");
+		const second = createCard("Tasks/b.md");
+		const third = createCard("Tasks/c.md");
+		cards.append(first, second, third);
+
+		updateKanbanDropMarker(cards, [first, second, third], 1);
+
+		expect(first.classList.contains("kanban-view__card-wrapper--drop-marker")).toBe(false);
+		expect(second.classList.contains("kanban-view__card-wrapper--drop-marker")).toBe(true);
+		expect(third.classList.contains("kanban-view__card-wrapper--drop-marker")).toBe(false);
+		expect(cards.classList.contains("kanban-view__cards--drop-marker-end")).toBe(false);
+	});
+
+	it("marks the end of a card container for append drops", () => {
+		const cards = document.createElement("div");
+		const first = createCard("Tasks/a.md");
+		const second = createCard("Tasks/b.md");
+		cards.append(first, second);
+
+		updateKanbanDropMarker(cards, [first, second], 2);
+
+		expect(first.classList.contains("kanban-view__card-wrapper--drop-marker")).toBe(false);
+		expect(second.classList.contains("kanban-view__card-wrapper--drop-marker")).toBe(false);
+		expect(cards.classList.contains("kanban-view__cards--drop-marker-end")).toBe(true);
+	});
+
+	it("clears Kanban drop marker classes from a drag root", () => {
+		const cards = document.createElement("div");
+		const first = createCard("Tasks/a.md");
+		cards.classList.add("kanban-view__cards--drop-marker-end");
+		first.classList.add("kanban-view__card-wrapper--drop-marker");
+		cards.appendChild(first);
+
+		clearKanbanDropMarkers(cards);
+
+		expect(first.classList.contains("kanban-view__card-wrapper--drop-marker")).toBe(false);
+		expect(cards.classList.contains("kanban-view__cards--drop-marker-end")).toBe(false);
 	});
 
 	it("appends dragged cards into an empty target container for optimistic cross-column drops", () => {
