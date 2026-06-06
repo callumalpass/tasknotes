@@ -882,7 +882,7 @@ export function normalizeCalendarUrl(url: string): string {
 /**
  * Creates a URL input with validation styling.
  *
- * Accepts http://, https://, webcal://, and webcals:// protocols.
+ * Accepts http://, https://, webcal://, webcals://, and file:// protocols.
  * The webcal protocols are commonly used for calendar subscriptions
  * (especially Apple Calendar) and are automatically normalized to
  * http/https when the URL is saved.
@@ -895,8 +895,8 @@ export function createCardUrlInput(placeholder?: string, value?: string): HTMLIn
 	input.addClass("tasknotes-settings__card-input");
 
 	// Add pattern validation to accept calendar URL protocols
-	input.pattern = "^(https?|webcals?)://.*";
-	input.title = "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL";
+	input.pattern = "^(https?|webcals?|file)://.*";
+	input.title = "Enter an HTTP://, HTTPS://, webcal://, webcals://, or file:// URL";
 
 	if (placeholder) {
 		input.placeholder = placeholder;

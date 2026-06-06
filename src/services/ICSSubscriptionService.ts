@@ -332,18 +332,24 @@ export class ICSSubscriptionService extends EventEmitter {
 					throw new Error("Remote subscription missing URL");
 				}
 
-				const response = await requestUrl({
-					url: subscription.url,
-					method: "GET",
-					headers: {
-						Accept: "text/calendar,*/*;q=0.1",
-						"Accept-Language": "en-US,en;q=0.9",
-						"User-Agent":
-							"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-					},
-				});
+				if (this.isFileProtocolUrl(subscription.url)) {
+					const filePath = this.fileUrlToPath(subscription.url);
+					const normalizedFilePath = this.normalizeLocalICSFilePath(filePath);
+					icsData = await this.readLocalICSFile(normalizedFilePath);
+				} else {
+					const response = await requestUrl({
+						url: subscription.url,
+						method: "GET",
+						headers: {
+							Accept: "text/calendar,*/*;q=0.1",
+							"Accept-Language": "en-US,en;q=0.9",
+							"User-Agent":
+								"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+						},
+					});
 
-				icsData = response.text;
+					icsData = response.text;
+				}
 			} else if (subscription.type === "local") {
 				if (!subscription.filePath) {
 					throw new Error("Local subscription missing file path");
@@ -806,6 +812,36 @@ export class ICSSubscriptionService extends EventEmitter {
 			.trim()
 			.replace(/\\/g, "/")
 			.replace(/^\.\/+/u, "");
+	}
+
+	private isFileProtocolUrl(url: string): boolean {
+		try {
+			return new URL(url).protocol === "file:";
+		} catch {
+			return false;
+		}
+	}
+
+	private fileUrlToPath(fileUrl: string): string {
+		let parsedUrl: URL;
+		try {
+			parsedUrl = new URL(fileUrl);
+		} catch {
+			throw new Error(`Invalid file URL: ${fileUrl}`);
+		}
+
+		if (parsedUrl.protocol !== "file:") {
+			throw new Error(`URL is not a file URL: ${fileUrl}`);
+		}
+
+		const decodedPath = decodeURIComponent(parsedUrl.pathname);
+		const normalizedPath = this.normalizePathSeparators(decodedPath);
+
+		if (/^\/[A-Za-z]:\//u.test(normalizedPath)) {
+			return normalizedPath.slice(1);
+		}
+
+		return normalizedPath;
 	}
 
 	private isAbsoluteFilePath(filePath: string): boolean {

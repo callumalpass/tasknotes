@@ -16,6 +16,8 @@ Example:
 ```
 ## Fixed
 
+- Remote ICS subscriptions now support `file://` URLs and read directly from vault files when the path is inside the current vault.
+
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar

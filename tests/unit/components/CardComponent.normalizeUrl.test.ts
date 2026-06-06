@@ -44,6 +44,12 @@ describe('normalizeCalendarUrl', () => {
 		expect(output).toBe('https://example.com/calendar.ics');
 	});
 
+	it('should not modify file:// URLs', () => {
+		const input = 'file:///home/user/Calendar.ics';
+		const output = normalizeCalendarUrl(input);
+		expect(output).toBe('file:///home/user/Calendar.ics');
+	});
+
 	it('should handle Apple iCloud calendar URLs', () => {
 		const input = 'webcal://p01-caldav.icloud.com/published/2/MTY3NDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI';
 		const output = normalizeCalendarUrl(input);
