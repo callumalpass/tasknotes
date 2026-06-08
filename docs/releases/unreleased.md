@@ -38,6 +38,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Added a runtime API surface for companion plugins to show or populate the standard TaskNotes task context menu.
 - (#2000) Added separate settings for using the active note as a project during normal task creation and during inline task creation or instant conversion. Thanks to @BlueScreen32 for suggesting the split.
 - (#2001) Added separate templates for materialized occurrence notes, including parent-level `occurrence_template` support and a global fallback setting. Thanks to @BrucePlumb for suggesting a separate occurrence-note template and @ak-42 for the related per-recurrence template request.
+- (#2006) Added the projected local finish time beside the remaining duration while a Pomodoro is running. See [Pomodoro View](https://tasknotes.dev/views/pomodoro-view/) for the timer behavior. Thanks to @abbiefalls90 for suggesting this.
 
 ## Changed
 

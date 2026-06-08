@@ -360,7 +360,7 @@ export const zh: TranslationTree = {
 			statsLabel: "今日完成",
 			meta: {
 				ready: "已计划 {time} · 今天已完成 {count} 个",
-				running: "剩余 {time}",
+				running: "剩余 {time} · 结束于 {endTime}",
 				paused: "{type} 已暂停 · 剩余 {time}",
 				breakReady: "{type} 已就绪 · 已计划 {time}"
 			},

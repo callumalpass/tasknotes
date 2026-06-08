@@ -348,7 +348,7 @@ export const en: TranslationTree = {
 			},
 			meta: {
 				ready: "{time} planned · {count} completed today",
-				running: "{time} left",
+				running: "{time} left · Ends at {endTime}",
 				paused: "{type} paused · {time} left",
 				breakReady: "{type} ready · {time} planned",
 			},

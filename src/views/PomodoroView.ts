@@ -18,9 +18,11 @@ import { getTaskWithInstanceStatus, isTaskInstanceCompleted } from "../utils/tas
 import {
 	formatPomodoroTime,
 	getActiveElapsedSeconds,
+	getProjectedPomodoroEndTimeMs,
 	getSessionProgressRatio,
 	parsePomodoroDurationInput,
 } from "../utils/pomodoroTime";
+import { formatTime } from "../utils/dateUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Views/PomodoroView" });
@@ -1168,8 +1170,13 @@ export class PomodoroView extends ItemView {
 		if (state.currentSession) {
 			const sessionLabel = this.getSessionTypeLabel(state.currentSession.type);
 			if (state.isRunning) {
+				const projectedEndTime = formatTime(
+					new Date(getProjectedPomodoroEndTimeMs(state.timeRemaining)),
+					this.plugin.settings.calendarViewSettings.timeFormat
+				);
 				text = this.t("views.pomodoro.meta.running", {
 					time: formattedTime,
+					endTime: projectedEndTime,
 				});
 			} else {
 				text = this.t("views.pomodoro.meta.paused", {
@@ -1408,6 +1415,7 @@ export class PomodoroView extends ItemView {
 			const updatedState = this.plugin.pomodoroService.getState();
 			this.updateTimer(updatedState.timeRemaining);
 			this.updateProgress(updatedState);
+			this.updateSessionMeta(updatedState);
 		}
 	}
 
