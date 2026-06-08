@@ -33,3 +33,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 -->
 
 ## Fixed
+
+- (#2004) Fixed the Pomodoro start command forgetting the selected task after it was completed, so reopening the task lets it be picked up again. Thanks to @MPourjam for reporting this.
