@@ -1,4 +1,4 @@
-import { normalizePath, TFile, type EventRef } from "obsidian";
+import { normalizePath, TFile, type EventRef, type Menu } from "obsidian";
 import {
 	TASKNOTES_SPEC_VERSION,
 	evaluateCoreValidation,
@@ -38,6 +38,7 @@ import type { TaskNotesSettings } from "../types/settings";
 import { ensureFolderExists } from "../utils/helpers";
 import { parseLinkToPath } from "../utils/linkUtils";
 import { computeTaskTimeData, computeTimeSummary } from "../utils/timeTrackingUtils";
+import { TaskContextMenu } from "../components/TaskContextMenu";
 import {
 	TASKNOTES_RUNTIME_API_CAPABILITIES,
 	TASKNOTES_RUNTIME_EVENT_DEFINITIONS,
@@ -76,6 +77,9 @@ import {
 	type TaskNotesRuntimeTaskQuery,
 	type TaskNotesRuntimeTaskQueryResult,
 	type TaskNotesRuntimeTaskStats,
+	type TaskNotesRuntimeTaskMenuOptions,
+	type TaskNotesRuntimeTaskMenuShowAtElementOptions,
+	type TaskNotesRuntimeTaskMenuShowOptions,
 	type TaskNotesRuntimeValue,
 	type TaskNotesRuntimeTaskTimeData,
 	type TaskNotesRuntimeTimeSummary,
@@ -885,6 +889,16 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 	readonly system = {
 		health: () => this.getHealth(),
+	};
+
+	readonly ui = {
+		taskMenu: {
+			show: (options: TaskNotesRuntimeTaskMenuShowOptions) => this.showTaskMenu(options),
+			showAtElement: (options: TaskNotesRuntimeTaskMenuShowAtElementOptions) =>
+				this.showTaskMenuAtElement(options),
+			populate: (menu: Menu, options: TaskNotesRuntimeTaskMenuOptions) =>
+				this.populateTaskMenu(menu, options),
+		},
 	};
 
 	readonly lifecycle = {
@@ -1714,6 +1728,51 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		};
 	}
 
+	private async showTaskMenu(options: TaskNotesRuntimeTaskMenuShowOptions): Promise<void> {
+		const contextMenu = await this.buildTaskContextMenu(options);
+		contextMenu.show(options.event);
+	}
+
+	private async showTaskMenuAtElement(
+		options: TaskNotesRuntimeTaskMenuShowAtElementOptions
+	): Promise<void> {
+		const contextMenu = await this.buildTaskContextMenu(options);
+		contextMenu.showAtElement(options.element);
+	}
+
+	private async populateTaskMenu(
+		menu: Menu,
+		options: TaskNotesRuntimeTaskMenuOptions
+	): Promise<void> {
+		const task = await this.requireTask(options.taskPath);
+		TaskContextMenu.addToMenu(menu, {
+			task,
+			plugin: this.plugin,
+			targetDate: options.targetDate ?? new Date(),
+			promoteOccurrenceControls: options.promoteOccurrenceControls,
+			onUpdate: options.onUpdate ?? this.defaultTaskMenuUpdateHandler(),
+		});
+	}
+
+	private async buildTaskContextMenu(
+		options: TaskNotesRuntimeTaskMenuOptions
+	): Promise<TaskContextMenu> {
+		const task = await this.requireTask(options.taskPath);
+		return new TaskContextMenu({
+			task,
+			plugin: this.plugin,
+			targetDate: options.targetDate ?? new Date(),
+			promoteOccurrenceControls: options.promoteOccurrenceControls,
+			onUpdate: options.onUpdate ?? this.defaultTaskMenuUpdateHandler(),
+		});
+	}
+
+	private defaultTaskMenuUpdateHandler(): () => void {
+		return () => {
+			this.plugin.app.workspace.trigger("tasknotes:refresh-views");
+		};
+	}
+
 	private getVaultInfo() {
 		const adapter = this.plugin.app.vault.adapter as VaultAdapterWithPath;
 		let vaultPath: string | null = null;
@@ -2120,7 +2179,11 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	): Promise<TaskInfo> {
 		const task = await this.requireTask(path);
 		const dependencies = (task.blockedBy ?? []).filter((dependency) => dependency.uid !== uid);
-		return this.updateTask(task.path, { blockedBy: dependencies }, context);
+		return this.updateTask(
+			task.path,
+			{ blockedBy: dependencies.length > 0 ? dependencies : undefined },
+			context
+		);
 	}
 
 	private async startTime(
@@ -2573,9 +2636,11 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		const linkPath = firstReferencePathCandidate(reference);
 		if (!linkPath) return null;
 
-		const metadataCache = this.plugin.app.metadataCache as
-			| { getFirstLinkpathDest?: (linkpath: string, sourcePath: string) => TFile | null }
-			| undefined;
+		type Nullable<T> = T | null;
+		type MetadataCacheWithLinkResolver = {
+			getFirstLinkpathDest?: (linkpath: string, sourcePath: string) => Nullable<TFile>;
+		};
+		const metadataCache = this.plugin.app.metadataCache as MetadataCacheWithLinkResolver | undefined;
 		const resolvedFile = metadataCache?.getFirstLinkpathDest?.(linkPath, sourcePath);
 		if (resolvedFile instanceof TFile) return normalizePath(resolvedFile.path);
 

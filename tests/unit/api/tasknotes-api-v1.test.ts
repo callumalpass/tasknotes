@@ -1,4 +1,4 @@
-import { TFile } from "obsidian";
+import { Menu, TFile } from "obsidian";
 import {
 	TaskNotesAPI,
 	type CompleteTaskOptions,
@@ -387,6 +387,15 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 		app: {
 			vault,
 			fileManager,
+			workspace: {
+				trigger: jest.fn(),
+				getLeaf: jest.fn(() => ({ openFile: jest.fn() })),
+				openLinkText: jest.fn(),
+				getLeavesOfType: jest.fn(() => []),
+			},
+			metadataCache: {
+				fileToLinktext: jest.fn((file: TFile) => file.path.replace(/\.md$/u, "")),
+			},
 		},
 		cacheManager,
 		emitter,
@@ -396,6 +405,10 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 			defaultTaskStatus: "open",
 			defaultTaskPriority: "normal",
 			taskTag: "task",
+			calendarViewSettings: {
+				enableTimeblocking: false,
+			},
+			useFrontmatterMarkdownLinks: false,
 			customStatuses: [
 				{
 					id: "open",
@@ -467,6 +480,31 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 		},
 		taskService,
 		pomodoroService,
+		i18n: {
+			translate: jest.fn((key: string, params?: Record<string, string | number>) =>
+				params ? `${key}:${JSON.stringify(params)}` : key
+			),
+		},
+		priorityManager: {
+			getPrioritiesByWeight: jest.fn(() => [
+				{ value: "normal", label: "Normal", color: "#888888", weight: 0 },
+				{ value: "high", label: "High", color: "#ff0000", weight: 10 },
+			]),
+		},
+		taskCalendarSyncService: {
+			isEnabled: jest.fn(() => false),
+		},
+		updateTaskProperty: jest.fn(
+			async (task: TaskInfo, property: keyof TaskInfo, value: unknown) =>
+				taskService.updateProperty(task, property, value)
+		),
+		openDueDateModal: jest.fn(),
+		openScheduledDateModal: jest.fn(),
+		openTimeEntryEditor: jest.fn(),
+		openTaskCreationModal: jest.fn(),
+		toggleTaskArchive: jest.fn(async (task: TaskInfo) => taskService.toggleArchive(task)),
+		startTimeTracking: jest.fn(async (task: TaskInfo) => taskService.startTimeTracking(task)),
+		stopTimeTracking: jest.fn(async (task: TaskInfo) => taskService.stopTimeTracking(task)),
 		onReady: jest.fn(async () => undefined),
 		initializationComplete: true,
 		getActiveTimeSession: jest.fn(
@@ -509,6 +547,7 @@ describe("TaskNotesApiV1", () => {
 		expect(api.capabilities).toContain("bases.write");
 		expect(api.capabilities).toContain("lifecycle.events");
 		expect(api.capabilities).toContain("errors.typed");
+		expect(api.capabilities).toContain("ui.task-menu");
 		expect(api.hasCapability("tasks.events")).toBe(true);
 		expect(api.hasCapability("missing.capability")).toBe(false);
 		expect(typeof api.model.config).toBe("function");
@@ -522,7 +561,37 @@ describe("TaskNotesApiV1", () => {
 		expect(typeof api.events.list).toBe("function");
 		expect(typeof api.errors.toResult).toBe("function");
 		expect(typeof api.bases.updateDefaultFiles).toBe("function");
+		expect(typeof api.ui.taskMenu.show).toBe("function");
+		expect(typeof api.ui.taskMenu.showAtElement).toBe("function");
+		expect(typeof api.ui.taskMenu.populate).toBe("function");
 		expect(typeof api.extensions.register).toBe("function");
+	});
+
+	it("populates the TaskNotes task context menu through the UI API", async () => {
+		const { plugin } = createPluginContext();
+		const api = new TaskNotesAPI(plugin);
+		const menu = new Menu();
+		const onUpdate = jest.fn();
+
+		await api.ui.taskMenu.populate(menu, {
+			taskPath: "Tasks/write-plan.md",
+			targetDate: new Date("2026-06-07T00:00:00.000Z"),
+			onUpdate,
+		});
+
+		expect((menu as unknown as { addItem: jest.Mock }).addItem).toHaveBeenCalled();
+		expect((menu as unknown as { items: unknown[] }).items.length).toBeGreaterThan(0);
+	});
+
+	it("throws a typed error when the UI task menu target is not a task", async () => {
+		const { plugin } = createPluginContext();
+		const api = new TaskNotesAPI(plugin);
+
+		await expect(
+			api.ui.taskMenu.populate(new Menu(), { taskPath: "Tasks/missing.md" })
+		).rejects.toMatchObject({
+			code: "task_not_found",
+		});
 	});
 
 	it("exposes model metadata, config, and validation backed by @tasknotes/model", () => {
@@ -1057,6 +1126,20 @@ describe("TaskNotesApiV1", () => {
 		);
 		expect(taskService.deleteTask).toHaveBeenCalledWith(
 			expect.objectContaining({ path: task.path })
+		);
+	});
+
+	it("clears the mapped blockedBy field when removing the last runtime API dependency", async () => {
+		const dependency: TaskDependency = { uid: "[[Tasks/blocker]]", reltype: "FINISHTOSTART" };
+		const task = createTask({ blockedBy: [dependency] });
+		const { plugin, taskService } = createPluginContext([task]);
+		const api = new TaskNotesAPI(plugin);
+
+		await api.tasks.removeDependency(task.path, dependency.uid);
+
+		expect(taskService.updateTask).toHaveBeenCalledWith(
+			expect.objectContaining({ path: task.path }),
+			{ blockedBy: undefined }
 		);
 	});
 
