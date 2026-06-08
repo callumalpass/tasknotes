@@ -167,6 +167,8 @@ export interface TaskNotesSettings {
 	showReleaseNotesOnUpdate?: boolean;
 	checkForUpdatesOnStartup?: boolean;
 	lastNotifiedReleaseVersion?: string;
+	// Starter note onboarding
+	starterNoteCreated?: boolean;
 	// Status bar settings
 	showTrackedTasksInStatusBar: boolean;
 	// Time tracking settings

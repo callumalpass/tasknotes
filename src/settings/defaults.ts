@@ -320,6 +320,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	showReleaseNotesOnUpdate: true,
 	checkForUpdatesOnStartup: true,
 	lastNotifiedReleaseVersion: undefined,
+	starterNoteCreated: false,
 	// Status bar defaults
 	showTrackedTasksInStatusBar: false,
 	// Time tracking defaults
