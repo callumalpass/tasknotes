@@ -119,6 +119,8 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultScheduledTime: "none",
 	bodyTemplate: "",
 	useBodyTemplate: false,
+	occurrenceBodyTemplate: "",
+	useOccurrenceBodyTemplate: false,
 	defaultReminders: [],
 };
 

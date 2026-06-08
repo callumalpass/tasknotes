@@ -256,7 +256,7 @@ When an occurrence note is created, TaskNotes inherits parent planning metadata 
 #### occurrence_template
 
 - **Type:** text (link or path string)
-- **Description:** Optional template reference used when creating materialized occurrence notes
+- **Description:** Optional template reference used when creating materialized occurrence notes. This parent-level template takes priority over the global occurrence note template fallback in Features settings.
 - **Example:** `occurrence_template: "[[Templates/Weekly occurrence]]"`
 
 #### occurrence_past_horizon and occurrence_future_horizon

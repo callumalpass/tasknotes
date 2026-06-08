@@ -298,8 +298,53 @@ export function renderFeaturesTab(
 							},
 						})
 				);
+			}
 
-				// Template Variables Help (rendered as description text)
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name"
+						),
+						desc: translate(
+							"settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description"
+						),
+						getValue: () =>
+							plugin.settings.taskCreationDefaults.useOccurrenceBodyTemplate,
+						setValue: async (value: boolean) => {
+							plugin.settings.taskCreationDefaults.useOccurrenceBodyTemplate = value;
+							save();
+							renderFeaturesTab(container, plugin, save);
+						},
+					})
+			);
+
+			if (plugin.settings.taskCreationDefaults.useOccurrenceBodyTemplate) {
+				group.addSetting(
+					(setting) =>
+						void configureTextSetting(setting, {
+							name: translate(
+								"settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name"
+							),
+							desc: translate(
+								"settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description"
+							),
+							placeholder: translate(
+								"settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder"
+							),
+							getValue: () => plugin.settings.taskCreationDefaults.occurrenceBodyTemplate,
+							setValue: async (value: string) => {
+								plugin.settings.taskCreationDefaults.occurrenceBodyTemplate = value;
+								save();
+							},
+						})
+				);
+			}
+
+			if (
+				plugin.settings.taskCreationDefaults.useBodyTemplate ||
+				plugin.settings.taskCreationDefaults.useOccurrenceBodyTemplate
+			) {
 				group.addSetting((setting) => {
 					const variables = [
 						translate("settings.defaults.bodyTemplate.variables.title"),

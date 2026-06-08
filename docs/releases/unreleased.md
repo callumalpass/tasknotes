@@ -32,6 +32,14 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2001) Added separate templates for materialized occurrence notes, including parent-level `occurrence_template` support and a global fallback setting. Thanks to @BrucePlumb for suggesting a separate occurrence-note template and @ak-42 for the related per-recurrence template request.
+
+## Changed
+
+- (#2005) Excluded archived task notes and archived project-note references from Task & Project Statistics. Thanks to @Xiarno for suggesting this.
+
 ## Fixed
 
 - (#2004) Fixed the Pomodoro start command forgetting the selected task after it was completed, so reopening the task lets it be picked up again. Thanks to @MPourjam for reporting this.

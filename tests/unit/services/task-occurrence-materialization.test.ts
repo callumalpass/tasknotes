@@ -1,3 +1,53 @@
+jest.mock("yaml", () => {
+	const parseScalar = (value: string): unknown => {
+		const trimmed = value.trim();
+		if (!trimmed) return null;
+		if (
+			(trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+			(trimmed.startsWith("'") && trimmed.endsWith("'"))
+		) {
+			return trimmed.slice(1, -1).replace(/\\"/g, '"').replace(/''/g, "'");
+		}
+		return trimmed;
+	};
+
+	const parse = jest.fn((input: string) => {
+		const result: Record<string, unknown> = {};
+		let currentListKey: string | null = null;
+
+		for (const line of input.split(/\r?\n/)) {
+			const listMatch = line.match(/^\s*-\s+(.*)$/);
+			if (listMatch && currentListKey) {
+				(result[currentListKey] as unknown[]).push(parseScalar(listMatch[1]));
+				continue;
+			}
+
+			const keyMatch = line.match(/^([^:\n]+):\s*(.*)$/);
+			if (!keyMatch) continue;
+
+			const key = keyMatch[1].trim();
+			const value = keyMatch[2];
+			if (!value.trim()) {
+				result[key] = [];
+				currentListKey = key;
+				continue;
+			}
+
+			result[key] = parseScalar(value);
+			currentListKey = null;
+		}
+
+		return result;
+	});
+	const stringify = jest.fn();
+
+	return {
+		parse,
+		stringify,
+		default: { parse, stringify },
+	};
+});
+
 import { TFile } from "../../__mocks__/obsidian";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 import { TaskService } from "../../../src/services/TaskService";
@@ -112,6 +162,123 @@ describe("TaskService materialized occurrences", () => {
 		expect(occurrence.timeEntries).toBeUndefined();
 		expect(occurrence.recurrence).toBeUndefined();
 		expect(plugin.cacheManager.getAllTasks).toHaveBeenCalled();
+	});
+
+	it("uses a parent occurrence_template for occurrence note frontmatter and body", async () => {
+		const parent = TaskFactory.createTask({
+			title: "Weekly review",
+			path: "Tasks/Weekly review.md",
+			priority: "high",
+			status: "waiting",
+			recurrence: "DTSTART:20260601;FREQ=WEEKLY",
+			scheduled: "2026-06-01T09:30:00",
+			details: "Parent details",
+			occurrence_template: "[[Templates/Occurrence]]",
+		});
+		const { taskService, plugin } = createService({ [parent.path]: parent });
+		plugin.settings.taskCreationDefaults.useBodyTemplate = true;
+		plugin.settings.taskCreationDefaults.bodyTemplate = "Templates/Normal.md";
+
+		const occurrenceTemplate = new TFile("Templates/Occurrence.md");
+		const normalTemplate = new TFile("Templates/Normal.md");
+		plugin.app.metadataCache.getFirstLinkpathDest = jest.fn((linkpath: string) =>
+			linkpath === "Templates/Occurrence" ? occurrenceTemplate : null
+		);
+		plugin.app.vault.getAbstractFileByPath = jest.fn((path: string) => {
+			if (path === "Templates/Occurrence.md") return occurrenceTemplate;
+			if (path === "Templates/Normal.md") return normalTemplate;
+			return new TFile(path);
+		});
+		plugin.app.vault.read = jest.fn(async (file: TFile) => {
+			if (file.path === "Templates/Occurrence.md") {
+				return [
+					"---",
+					"status: in-progress",
+					"priority: low",
+					"review_type: weekly-occurrence",
+					"---",
+					"Occurrence {{title}} on {{scheduledDate}}",
+					"Parent: {{parentNote}}",
+				].join("\n");
+			}
+			return "Normal task template";
+		});
+
+		const occurrence = await taskService.materializeOccurrence(parent, "2026-06-08");
+
+		expect(occurrence).toMatchObject({
+			title: "Weekly review",
+			status: "in-progress",
+			priority: "low",
+			recurrence_parent: "[[Tasks/Weekly review]]",
+			occurrence_date: "2026-06-08",
+			details:
+				"Occurrence Weekly review on 2026-06-08T09:30:00\nParent: [[Tasks/Weekly review]]",
+			review_type: "weekly-occurrence",
+		});
+		expect(plugin.app.vault.read).toHaveBeenCalledWith(occurrenceTemplate);
+		expect(plugin.app.vault.read).not.toHaveBeenCalledWith(normalTemplate);
+	});
+
+	it("uses the global occurrence body template when the parent has no template", async () => {
+		const parent = TaskFactory.createTask({
+			title: "Monthly review",
+			path: "Tasks/Monthly review.md",
+			recurrence: "DTSTART:20260601;FREQ=MONTHLY",
+			scheduled: "2026-06-01",
+			details: "Parent monthly details",
+		});
+		const { taskService, plugin } = createService({ [parent.path]: parent });
+		plugin.settings.taskCreationDefaults.useBodyTemplate = true;
+		plugin.settings.taskCreationDefaults.bodyTemplate = "Templates/Normal.md";
+		plugin.settings.taskCreationDefaults.useOccurrenceBodyTemplate = true;
+		plugin.settings.taskCreationDefaults.occurrenceBodyTemplate = "Templates/Occurrence fallback";
+
+		const occurrenceTemplate = new TFile("Templates/Occurrence fallback.md");
+		const normalTemplate = new TFile("Templates/Normal.md");
+		plugin.app.vault.getAbstractFileByPath = jest.fn((path: string) => {
+			if (path === "Templates/Occurrence fallback.md") return occurrenceTemplate;
+			if (path === "Templates/Normal.md") return normalTemplate;
+			return new TFile(path);
+		});
+		plugin.app.vault.read = jest.fn(async (file: TFile) => {
+			if (file.path === "Templates/Occurrence fallback.md") {
+				return "Fallback occurrence body for {{title}} on {{scheduledDate}}";
+			}
+			return "Normal task template";
+		});
+
+		const occurrence = await taskService.materializeOccurrence(parent, "2026-07-01");
+
+		expect(occurrence.details).toBe(
+			"Fallback occurrence body for Monthly review on 2026-07-01"
+		);
+		expect(plugin.app.vault.read).toHaveBeenCalledWith(occurrenceTemplate);
+		expect(plugin.app.vault.read).not.toHaveBeenCalledWith(normalTemplate);
+	});
+
+	it("keeps using the normal body template when no occurrence template is configured", async () => {
+		const parent = TaskFactory.createTask({
+			title: "Daily planning",
+			path: "Tasks/Daily planning.md",
+			recurrence: "DTSTART:20260601;FREQ=DAILY",
+			scheduled: "2026-06-01",
+			details: "Parent planning details",
+		});
+		const { taskService, plugin } = createService({ [parent.path]: parent });
+		plugin.settings.taskCreationDefaults.useBodyTemplate = true;
+		plugin.settings.taskCreationDefaults.bodyTemplate = "Templates/Normal.md";
+
+		const normalTemplate = new TFile("Templates/Normal.md");
+		plugin.app.vault.getAbstractFileByPath = jest.fn((path: string) =>
+			path === "Templates/Normal.md" ? normalTemplate : new TFile(path)
+		);
+		plugin.app.vault.read = jest.fn(async () => "Normal body for {{title}}");
+
+		const occurrence = await taskService.materializeOccurrence(parent, "2026-06-02");
+
+		expect(occurrence.details).toBe("Normal body for Daily planning");
+		expect(plugin.app.vault.read).toHaveBeenCalledWith(normalTemplate);
 	});
 
 	it("finds existing occurrence notes for a parent and target date", async () => {

@@ -292,6 +292,8 @@ export interface TaskCreationDefaults {
 	// Body template settings
 	bodyTemplate: string; // Path to template file for task body, empty = no template
 	useBodyTemplate: boolean; // Whether to use body template by default
+	occurrenceBodyTemplate: string; // Fallback template file for materialized occurrence notes
+	useOccurrenceBodyTemplate: boolean; // Whether to use occurrenceBodyTemplate when the parent has no occurrence_template
 	// Reminder defaults
 	defaultReminders: DefaultReminder[];
 }

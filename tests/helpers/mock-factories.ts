@@ -448,7 +448,9 @@ export const PluginFactory = {
       taskCreationDefaults: {
         defaultFolder: '',
         useBodyTemplate: false,
-        bodyTemplate: ''
+        bodyTemplate: '',
+        useOccurrenceBodyTemplate: false,
+        occurrenceBodyTemplate: ''
       },
       fieldMapping: SettingsFactory.createFieldMapping(),
       customStatuses: [SettingsFactory.createStatusConfig()],

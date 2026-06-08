@@ -855,6 +855,18 @@ export const en: TranslationTree = {
 					placeholder: "Templates/Task Template.md",
 					ariaLabel: "Path to body template file",
 				},
+				useOccurrenceBodyTemplate: {
+					name: "Use occurrence note template",
+					description:
+						"Use a separate fallback template for materialized occurrence notes when the recurring task has no occurrence_template",
+				},
+				occurrenceBodyTemplateFile: {
+					name: "Occurrence note template file",
+					description:
+						"Path to template file for materialized occurrence notes. A recurring task's occurrence_template field takes priority over this fallback.",
+					placeholder: "Templates/Occurrence Template.md",
+					ariaLabel: "Path to occurrence note template file",
+				},
 				variablesHeader: "Template variables:",
 				variables: {
 					title: "{{title}} - Task title",
@@ -3193,6 +3205,9 @@ export const en: TranslationTree = {
 			notices: {
 				templateNotFound: "Task body template not found: {path}",
 				templateReadError: "Error reading task body template: {template}",
+				occurrenceTemplateNotFound: "Occurrence note template not found: {path}",
+				occurrenceTemplateReadError:
+					"Error reading occurrence note template: {template}",
 				moveTaskFailed: "Failed to move {operation} task: {error}",
 			},
 		},
