@@ -45,6 +45,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2005) Excluded archived task notes and archived project-note references from Task & Project Statistics. Thanks to @Xiarno for suggesting this.
 - Added a local review-type lint check that catches dependency-resolution warnings from Obsidian's online review before submission.
 - Improved dependency and project relationship cache updates so ordinary note edits avoid unnecessary relationship recalculation, while blocked and blocking state stays current when dependency status changes.
+- Improved filter and view query caching so filter options update immediately after relevant task-field changes while large Task List, Kanban, and Calendar queries avoid repeated vault scans.
 
 ## Fixed
 

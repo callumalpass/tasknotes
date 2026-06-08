@@ -474,7 +474,7 @@ export class FilterService extends EventEmitter {
 
 	/**
 	 * Get available filter options for building filter UI
-	 * Uses event-driven caching - cache is invalidated only when new options are detected
+	 * Uses event-driven caching; TaskManager's filter indexes make recomputation cheap.
 	 */
 	async getFilterOptions(): Promise<FilterOptions> {
 		const now = Date.now();
@@ -511,26 +511,11 @@ export class FilterService extends EventEmitter {
 	}
 
 	/**
-	 * Check if new filter options have been detected and invalidate cache if needed
-	 * Uses a time-based throttling approach to balance freshness with performance
+	 * Invalidate cached filter options after an indexed field changes.
 	 */
-	private checkAndInvalidateFilterOptionsCache(): void {
-		if (!this.filterOptionsCache) {
-			return; // No cache to invalidate
-		}
-
-		const now = Date.now();
-		const cacheAge = now - this.filterOptionsCacheTimestamp;
-
-		// Use a smart invalidation strategy:
-		// 1. If cache is very fresh (< 30 seconds), keep it (most changes don't affect options)
-		// 2. If cache is older, invalidate it to ensure new options are picked up
-		// This gives us good performance for rapid file changes while ensuring freshness
-		const minCacheAge = 30000; // 30 seconds
-
-		if (cacheAge > minCacheAge) {
-			this.invalidateFilterOptionsCache();
-		}
+	private handleFilterIndexChanged(): void {
+		this.queryPlanner.clearIndexQueryCache();
+		this.invalidateFilterOptionsCache();
 	}
 
 	/**
@@ -612,33 +597,30 @@ export class FilterService extends EventEmitter {
 	 * Subscribe to cache changes and emit refresh events
 	 */
 	initialize(): void {
-		this.cacheManager.on("file-updated", () => {
-			this.queryPlanner.clearIndexQueryCache();
-			this.checkAndInvalidateFilterOptionsCache();
+		this.cacheManager.on("file-updated", (event?: { filterIndexChanged?: boolean }) => {
+			if (event?.filterIndexChanged !== false) {
+				this.handleFilterIndexChanged();
+			}
 			this.emit("data-changed");
 		});
 
 		this.cacheManager.on("file-added", () => {
-			this.queryPlanner.clearIndexQueryCache();
-			this.checkAndInvalidateFilterOptionsCache();
+			this.handleFilterIndexChanged();
 			this.emit("data-changed");
 		});
 
 		this.cacheManager.on("file-deleted", () => {
-			this.queryPlanner.clearIndexQueryCache();
-			this.checkAndInvalidateFilterOptionsCache();
+			this.handleFilterIndexChanged();
 			this.emit("data-changed");
 		});
 
 		this.cacheManager.on("file-renamed", () => {
-			this.queryPlanner.clearIndexQueryCache();
-			this.checkAndInvalidateFilterOptionsCache();
+			this.handleFilterIndexChanged();
 			this.emit("data-changed");
 		});
 
 		this.cacheManager.on("indexes-built", () => {
-			this.queryPlanner.clearIndexQueryCache();
-			this.checkAndInvalidateFilterOptionsCache();
+			this.handleFilterIndexChanged();
 			this.emit("data-changed");
 		});
 	}

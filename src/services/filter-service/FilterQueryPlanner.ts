@@ -1,6 +1,7 @@
 import { TaskManager } from "../../utils/TaskManager";
 import { FilterCondition, FilterQuery } from "../../types";
 import { stringifyUnknown } from "../../utils/stringUtils";
+import { resolveNaturalLanguageDate } from "../../utils/dateUtils";
 
 export interface FilterQueryPlannerDependencies {
 	cacheManager: TaskManager;
@@ -175,6 +176,9 @@ export class FilterQueryPlanner {
 		if (property === "status" && operator === "is" && value) {
 			return true;
 		}
+		if (property === "priority" && operator === "is" && value) {
+			return true;
+		}
 		if (
 			property === "due" &&
 			(operator === "is" || operator === "is-before" || operator === "is-after") &&
@@ -226,12 +230,21 @@ export class FilterQueryPlanner {
 			}
 
 			if (
+				property === "priority" &&
+				operator === "is" &&
+				value &&
+				typeof value === "string"
+			) {
+				return new Set(this.deps.cacheManager.getTaskPathsByPriority(value));
+			}
+
+			if (
 				(property === "due" || property === "scheduled") &&
 				operator === "is" &&
 				value &&
 				typeof value === "string"
 			) {
-				return new Set(this.deps.cacheManager.getTasksForDate(value));
+				return new Set(this.deps.cacheManager.getTasksForDate(resolveNaturalLanguageDate(value)));
 			}
 
 			if (
@@ -240,7 +253,7 @@ export class FilterQueryPlanner {
 				value &&
 				typeof value === "string"
 			) {
-				return this.getTaskPathsForDateRange(property, operator, value);
+				return this.getTaskPathsForDateRange(property, operator, resolveNaturalLanguageDate(value));
 			}
 
 			return this.deps.cacheManager.getAllTaskPaths();
@@ -248,10 +261,17 @@ export class FilterQueryPlanner {
 	}
 
 	private getTaskPathsForDateRange(
-		_property: string,
-		_operator: string,
-		_value: string
+		property: string,
+		operator: string,
+		value: string
 	): Set<string> {
+		if (
+			(property === "due" || property === "scheduled") &&
+			(operator === "is-before" || operator === "is-after")
+		) {
+			return this.deps.cacheManager.getTaskPathsForDateRange(property, operator, value);
+		}
+
 		return this.deps.cacheManager.getAllTaskPaths();
 	}
 
