@@ -14,6 +14,8 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/Helpers" });
 
+type Optional<T> = T | undefined;
+
 export interface BasesDataItem {
 	key?: string;
 	data?: unknown;
@@ -89,14 +91,14 @@ function toOptionalNumber(value: unknown): number | undefined {
 
 function toOccurrenceMaterializationMode(
 	value: unknown
-): OccurrenceMaterializationMode | undefined {
+): Optional<OccurrenceMaterializationMode> {
 	const mode = toOptionalString(value);
 	return mode === "manual" || mode === "on_completion" || mode === "rolling"
 		? mode
 		: undefined;
 }
 
-function toOccurrenceNextTrigger(value: unknown): OccurrenceNextTrigger | undefined {
+function toOccurrenceNextTrigger(value: unknown): Optional<OccurrenceNextTrigger> {
 	const trigger = toOptionalString(value);
 	return trigger === "completion" || trigger === "completion_or_skip" ? trigger : undefined;
 }

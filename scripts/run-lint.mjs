@@ -4,6 +4,7 @@ const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
 const tasks = [
 	["run", "lint:ts"],
+	["run", "lint:review-types"],
 	["run", "lint:css"],
 	["run", "lint:architecture"],
 ];

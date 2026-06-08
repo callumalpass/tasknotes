@@ -154,9 +154,7 @@ function getResolvedFileTitle(file: TFile, app?: App): string | null {
 	const cache =
 		app?.metadataCache.getFileCache(file) ??
 		(
-			app?.metadataCache as App["metadataCache"] & {
-				getCache?: (path: string) => { frontmatter?: Record<string, unknown> } | null;
-			}
+			app?.metadataCache
 		)?.getCache?.(file.path);
 	const title = cache?.frontmatter?.title;
 	return typeof title === "string" && title.trim().length > 0 ? title.trim() : null;

@@ -30,6 +30,7 @@
 		"lint": "node scripts/run-lint.mjs",
 		"lint:architecture": "node scripts/run-architecture-conformance.mjs",
 		"lint:ts": "eslint src/ package.json --max-warnings=0",
+		"lint:review-types": "eslint src/ --config eslint.review-types.config.mjs --max-warnings=0",
 		"lint:ts:fix": "eslint src/ package.json --fix",
 		"lint:css": "stylelint \"styles/**/*.css\" \"docs-builder/src/styles/**/*.css\" --max-warnings=0",
 		"lint:css:dist": "stylelint styles.css --max-warnings=0",

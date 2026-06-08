@@ -1,4 +1,7 @@
 import { App, Modal, TAbstractFile, TFile } from "obsidian";
+
+type Nullable<T> = T | null;
+
 import TaskNotesPlugin from "../main";
 import { shouldShowFieldForModal } from "./taskModalFieldConfig";
 import type { ModalFieldConfigLike, ModalFieldsConfigLike } from "./taskModalFieldConfig";
@@ -150,7 +153,7 @@ export abstract class TaskModal extends Modal {
 		return undefined;
 	}
 
-	protected getModalEditorFile(): TFile | null {
+	protected getModalEditorFile(): Nullable<TFile> {
 		const currentTaskPath = this.getCurrentTaskPath();
 		if (!currentTaskPath) {
 			return this.app.workspace.getActiveFile();

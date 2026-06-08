@@ -5,6 +5,8 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskModalEditorAdapter" });
 
+type Nullable<T> = T | null;
+
 type EmbeddableMarkdownEditorConstructor =
 	typeof import("../editor/EmbeddableMarkdownEditor").EmbeddableMarkdownEditor;
 
@@ -26,7 +28,7 @@ export interface TaskModalEditorOptions {
 	onEscape: () => void;
 	onTab: (shift: boolean) => boolean;
 	extensions?: Extension[];
-	file?: TFile | null;
+	file?: Nullable<TFile>;
 }
 
 export function createTaskModalMarkdownEditor(
