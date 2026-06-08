@@ -224,6 +224,47 @@ export function reconstructKanbanDropTargetFromContainer({
 	return { taskPath: visibleCards[idx - 1].dataset.taskPath as string, above: false };
 }
 
+export function updateKanbanDropMarker(
+	cardsContainer: HTMLElement,
+	visibleCards: readonly HTMLElement[],
+	insertionIndex: number
+): void {
+	cardsContainer.classList.remove("kanban-view__cards--drop-marker-end");
+	for (const card of visibleCards) {
+		card.classList.remove("kanban-view__card-wrapper--drop-marker");
+	}
+
+	const markerCard = visibleCards[insertionIndex];
+	if (markerCard) {
+		markerCard.classList.add("kanban-view__card-wrapper--drop-marker");
+		return;
+	}
+
+	if (visibleCards.length > 0 && insertionIndex >= visibleCards.length) {
+		cardsContainer.classList.add("kanban-view__cards--drop-marker-end");
+	}
+}
+
+export function clearKanbanDropMarkers(root: ParentNode): void {
+	if ((root as Node).nodeType === Node.ELEMENT_NODE) {
+		(root as HTMLElement).classList.remove(
+			"kanban-view__card-wrapper--drop-marker",
+			"kanban-view__cards--drop-marker-end"
+		);
+	}
+
+	root
+		.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper--drop-marker")
+		.forEach((card) => {
+			card.classList.remove("kanban-view__card-wrapper--drop-marker");
+		});
+	root
+		.querySelectorAll<HTMLElement>(".kanban-view__cards--drop-marker-end")
+		.forEach((container) => {
+			container.classList.remove("kanban-view__cards--drop-marker-end");
+		});
+}
+
 export function performKanbanOptimisticReorder({
 	draggedPaths,
 	dropTarget,

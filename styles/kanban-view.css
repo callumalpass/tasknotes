@@ -697,6 +697,32 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     transform: translateY(var(--tn-drag-gap, 60px));
 }
 
+.tasknotes-plugin .kanban-view__card-wrapper--drop-marker::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: calc(-1 * var(--tn-drag-gap, 60px) + var(--tn-spacing-xs));
+    height: max(32px, calc(var(--tn-drag-gap, 60px) - (var(--tn-spacing-xs) * 2)));
+    box-sizing: border-box;
+    border: 2px dashed var(--tn-interactive-accent);
+    border-radius: var(--tn-radius-md);
+    background: color-mix(in srgb, var(--tn-interactive-accent) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);
+    pointer-events: none;
+}
+
+.tasknotes-plugin .kanban-view__cards--drop-marker-end::after,
+.tasknotes-plugin .kanban-view__tasks-container.kanban-view__cards--drop-marker-end::after {
+    content: "";
+    display: block;
+    height: max(32px, calc(var(--tn-drag-gap, 60px) - (var(--tn-spacing-xs) * 2)));
+    box-sizing: border-box;
+    border: 2px dashed var(--tn-interactive-accent);
+    border-radius: var(--tn-radius-md);
+    background: color-mix(in srgb, var(--tn-interactive-accent) 12%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .tasknotes-plugin .kanban-view__card-wrapper--drag-shift {
         transition: none;
