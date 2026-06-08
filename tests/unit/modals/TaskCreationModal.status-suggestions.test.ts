@@ -1,6 +1,10 @@
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import { MockObsidian } from "../../__mocks__/obsidian";
 import { createCompletionPlugin, getCompletionResult } from "../helpers/nlpCompletionTestUtils";
+import { CompletionContext } from "@codemirror/autocomplete";
+import { EditorState } from "@codemirror/state";
+import { createNLPCompletionSource } from "../../../src/editor/NLPCodeMirrorAutocomplete";
+import { NaturalLanguageParser } from "../../../src/services/NaturalLanguageParser";
 
 const customStatuses = [
 	{
@@ -133,5 +137,53 @@ describe("TaskCreationModal status autocomplete", () => {
 				}),
 			],
 		});
+	});
+
+	it("replaces the paired status trigger inserted by the editor", async () => {
+		const plugin = createCompletionPlugin({
+			settings: {
+				customStatuses: [
+					{
+						id: "open",
+						value: "00 Task - Open",
+						label: "Task - Open",
+						color: "#808080",
+						isCompleted: false,
+						order: 1,
+						autoArchive: false,
+						autoArchiveDelay: 5,
+					},
+					{
+						id: "person",
+						value: "31 Resource - Person",
+						label: "Resource-Person",
+						color: "#0066cc",
+						isCompleted: false,
+						order: 2,
+						autoArchive: false,
+						autoArchiveDelay: 5,
+					},
+				],
+			},
+		});
+
+		const doc = "Test **";
+		const cursor = "Test *".length;
+		const state = EditorState.create({ doc, selection: { anchor: cursor } });
+		const context = new CompletionContext(state, cursor, true);
+		const result = await createNLPCompletionSource(plugin as never)(context);
+		const completion = result?.options.find((option) => option.label === "Resource-Person");
+
+		expect(completion?.apply).toBe("31 Resource - Person ");
+		expect(result?.from).toBe(cursor);
+		expect(result?.to).toBe(cursor + 1);
+
+		const applyText = typeof completion?.apply === "string" ? completion.apply : "";
+		const accepted = doc.slice(0, result?.from) + applyText + doc.slice(result?.to);
+		expect(accepted).toBe("Test *31 Resource - Person ");
+
+		const parsed = NaturalLanguageParser.fromPlugin(plugin as never).parseInput(accepted);
+		expect(parsed.title).toBe("Test");
+		expect(parsed.status).toBe("31 Resource - Person");
 	});
 });

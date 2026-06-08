@@ -161,9 +161,15 @@ export function createNLPCompletionSource(
 			return null;
 		}
 
+		let to = context.pos;
+		const textAfterCursor = line.text.slice(context.pos - line.from);
+		if (active.propertyId === "status" && textAfterCursor.startsWith(active.trigger)) {
+			to = Math.min(line.to, context.pos + active.triggerLength);
+		}
+
 		return {
 			from: line.from + active.index + active.triggerLength,
-			to: context.pos,
+			to,
 			options,
 			validFor: /^[\w\s-]*$/,
 		};
