@@ -30,6 +30,26 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskCreationModal" 
 export type { StatusSuggestion } from "./taskCreationSuggest";
 
 const TASK_CREATION_FAILURE_PREFIX = "Failed to create task: ";
+const NLP_TAB_ORDER_SELECTOR = [
+	"button",
+	"a[href]",
+	"input",
+	"select",
+	"textarea",
+	"[tabindex]:not([tabindex='-1'])",
+	".tn-task-modal__markdown-editor--nlp",
+].join(", ");
+const NATIVE_FOCUSABLE_TAG_NAMES = new Set(["A", "BUTTON", "INPUT", "SELECT", "TEXTAREA"]);
+
+type PotentiallyDisabledElement = HTMLElement & { disabled?: boolean };
+
+function isFocusableModalElement(element: HTMLElement): boolean {
+	if ((element as PotentiallyDisabledElement).disabled) {
+		return false;
+	}
+
+	return element.tabIndex >= 0 || NATIVE_FOCUSABLE_TAG_NAMES.has(element.tagName);
+}
 
 export function getTaskCreationFailureNoticeMessage(error: unknown): string {
 	const rawMessage = error instanceof Error && error.message ? error.message : String(error);
@@ -207,9 +227,9 @@ export class TaskCreationModal extends TaskModal {
 					// Vim mode will handle its own ESC to exit insert mode
 					this.close();
 				},
-				onTab: (shift) => {
+				onTab: (_editor, shift) => {
 					if (shift) {
-						return false;
+						return this.focusPreviousNaturalLanguageField(editorContainer);
 					}
 					// Tab - jump to title input (expand form if needed)
 					if (!this.isExpanded) {
@@ -283,6 +303,33 @@ export class TaskCreationModal extends TaskModal {
 			// Initialize auto-suggestion for fallback
 			this.nlpSuggest = new NLPSuggest(this.app, this.nlInput, this.plugin);
 		}
+	}
+
+	private focusPreviousNaturalLanguageField(editorContainer: HTMLElement): boolean {
+		const root = this.modalEl.contains(editorContainer) ? this.modalEl : this.contentEl;
+		const orderedElements = Array.from(
+			root.querySelectorAll<HTMLElement>(NLP_TAB_ORDER_SELECTOR)
+		);
+		const currentIndex = orderedElements.findIndex(
+			(element) => element === editorContainer || editorContainer.contains(element)
+		);
+
+		if (currentIndex <= 0) {
+			return true;
+		}
+
+		const previousElement = orderedElements
+			.slice(0, currentIndex)
+			.reverse()
+			.find(isFocusableModalElement);
+
+		if (previousElement) {
+			window.setTimeout(() => {
+				previousElement.focus();
+			}, 50);
+		}
+
+		return true;
 	}
 
 	protected focusTitleInput(): void {

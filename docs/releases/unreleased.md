@@ -50,6 +50,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2009) Restored Tab and Shift+Tab focus movement in the Create new task modal's natural language input instead of letting the markdown editor indent the title. Thanks to @prepare4robots for reporting this.
 - (#2007) Fixed status autocomplete in the task creation modal leaving status value fragments in the task title when the editor auto-paired the status trigger. Thanks to @prepare4robots for reporting this.
 - (#2004) Fixed the Pomodoro start command forgetting the selected task after it was completed, so reopening the task lets it be picked up again. Thanks to @MPourjam for reporting this.
 - (#1996) Made Kanban card drag-and-drop show a clear drop slot marker while cards are being repositioned, so the landing position remains visible during sorting. Thanks to @phillipadsmith for reporting this.
