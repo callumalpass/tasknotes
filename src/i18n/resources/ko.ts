@@ -482,7 +482,7 @@ export const ko: TranslationTree = {
 			viewAllLink: "GitHub에서 모든 릴리스 노트 보기 →",
 			starMessage:
 				"모든 피드백을 정말 감사하게 생각합니다. 뭔가 맞지 않는 느낌이 들면 GitHub에서 알려 주세요. TaskNotes가 유용하다면 별표도 고려해 주세요.",
-			baseFilesNotice: "> [!info] 기본 `.base` 파일 안내\n> 기본으로 생성되는 `.base` 템플릿이 변경되어도 기존 `.base` 파일은 덮어쓰지 않으므로 사용자 설정이 유지됩니다.\n> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 일반 → 파일 생성**에서 베이스 파일을 다시 생성하세요."
+			baseFilesNotice: "> [!info] 기본 `.base` 파일 안내\n> 기본으로 생성되는 `.base` 템플릿이 변경되어도 기존 `.base` 파일은 덮어쓰지 않으므로 사용자 설정이 유지됩니다.\n> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 일반 → 보기 및 base 파일 → 파일 생성**에서 베이스 파일을 다시 생성하세요."
 		}
 	},
 	settings: {
@@ -742,9 +742,13 @@ export const ko: TranslationTree = {
 					selectTooltip: "기본으로 연결할 프로젝트 노트 선택",
 					removeTooltip: "기본 프로젝트에서 {name} 제거"
 				},
+				useParentNoteForTaskCreation: {
+					name: "새 작업에서 활성 노트를 프로젝트로 사용",
+					description: "명령 팔레트 또는 리본에서 작업 생성을 열 때 활성 노트를 프로젝트로 자동 연결합니다"
+				},
 				useParentNoteAsProject: {
-					name: "즉시 변환 시 상위 노트를 프로젝트로 사용",
-					description: "즉시 작업 변환 사용 시 상위 노트를 프로젝트로 자동 연결"
+					name: "인라인 생성 및 즉시 변환에서 상위 노트를 프로젝트로 사용",
+					description: "인라인 작업 생성 또는 즉시 작업 변환을 사용할 때 원본 노트를 프로젝트로 자동 연결합니다"
 				},
 				useParentHeaderAsProject: {
 					name: "즉시 변환 시 상위 제목을 프로젝트로 사용",
@@ -820,6 +824,16 @@ export const ko: TranslationTree = {
 					placeholder: "템플릿/작업 템플릿.md",
 					ariaLabel: "본문 템플릿 파일 경로"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "발생 노트 템플릿 사용",
+					description: "반복 작업에 occurrence_template이 없을 때 구체화된 발생 노트용 별도 대체 템플릿을 사용합니다"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "발생 노트 템플릿 파일",
+					description: "구체화된 발생 노트용 템플릿 파일 경로. 반복 작업의 occurrence_template 필드가 이 대체 템플릿보다 우선합니다.",
+					placeholder: "템플릿/발생 템플릿.md",
+					ariaLabel: "발생 노트 템플릿 파일 경로"
+				},
 				variablesHeader: "템플릿 변수:",
 				variables: {
 					title: "{{title}} - 작업 제목",
@@ -881,7 +895,7 @@ export const ko: TranslationTree = {
 				},
 				taskTag: {
 					name: "작업 태그",
-					description: "노트를 작업으로 식별하는 태그 (# 제외)"
+					description: "노트를 작업으로 식별하는 태그 (# 제외). 이 값을 변경해도 기존 .base 보기 필터는 이전 태그를 유지합니다. 기본 Base 파일을 업데이트하거나 해당 필터를 직접 편집하세요."
 				},
 				hideIdentifyingTags: {
 					name: "작업 카드에서 식별 태그 숨기기",
@@ -1083,7 +1097,8 @@ export const ko: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "기본 프로젝트:",
-				useParentNote: "상위 노트를 프로젝트로 사용:",
+				useParentNoteForTaskCreation: "새 작업에서 활성 노트 사용:",
+				useParentNoteForInlineTasks: "인라인/즉시 변환에서 상위 노트 사용:",
 				useParentHeader: "상위 제목을 프로젝트로 사용:",
 				inheritParentTaskProperties: "하위 작업에 상위 작업 속성 상속:",
 				noDefaultProjects: "선택된 기본 프로젝트 없음",
@@ -3013,6 +3028,8 @@ export const ko: TranslationTree = {
 			notices: {
 				templateNotFound: "작업 본문 템플릿을 찾을 수 없습니다: {path}",
 				templateReadError: "작업 본문 템플릿 읽기 오류: {template}",
+				occurrenceTemplateNotFound: "발생 노트 템플릿을 찾을 수 없습니다: {path}",
+				occurrenceTemplateReadError: "발생 노트 템플릿 읽기 오류: {template}",
 				moveTaskFailed: "{operation} 작업 이동 실패: {error}"
 			}
 		},

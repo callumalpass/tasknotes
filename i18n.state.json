@@ -1353,8 +1353,8 @@
       "translation": "ed6c14975535f23eef7a97bee0f3cc1a1b7b32d4"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "66768051603f604e916270ef46d5c8b31ced4887"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "883b3f6da96b7e306619566a91f81c146d2ab641"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -1956,13 +1956,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "0a40d412c9a5ac26d11ef8336b2141f4436a7f52"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "1ab9156797af2ee06fbb82ddd37f03171405b8e5"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "36041269fdb0577e43bdeb6cb9b94564425255a7"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "5895e0bd1b6588253b97cd53bac2a491d00f1ff9"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "afc96bc84a3c8bb73614807a52b6e61031c458bf"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "d4b99ce9da86b63b89439c9f4ea699f4e5459b36"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "969d68004f48535b966e2ac6b4df64d79014fe75"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -2132,6 +2140,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "d0bdacf79206741db55f9c6b36a09707d5937685"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "8a24c8652046c844a18dee89658156aefe64ac97"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "42192329fcf06d58a24c18abcf8662f6bdd1791d"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "dd30945f7b08bfad6568369dcce1b496cffd374e"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "1a6b06ab1610b7156057edbacafb9024d420a5f6"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "7254091dd4c5e98191bd7abcdeec43058c064d04"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "e8231f552f17d6553ee69a95be86a78667063ba1"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "3c4467c1a1f184f5fd3332587120fb978d8de2dc"
@@ -2277,8 +2309,8 @@
       "translation": "16a200b362ae780d4230344fa54b455b0c49b455"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "26badeb063972db6f4f0d34423fa04602e3a223a"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "13e4958bfb569d73f26642b33c5fd5b08b3a00e2"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -2696,9 +2728,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "7103df6d730658889a8b1284953f44f293881a1e"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "4f845782eeab05f5077dca768f0a436cc5c03c6d"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "22fc2de609d378e21b9ec798a00059860d38fcab"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "4a6eec7fbbf37cc90183c459e5d3d1353c941a52"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -7796,6 +7832,14 @@
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "b650a6899a7e057443713e4bd3dc4198a96cc4f2"
     },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "949c2395f58f72b755dcb6926521405d5b8c982e"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "3d636291058e81577d0f5761c13543d2d9466460"
+    },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
       "translation": "a34af5ea3aa17f73e6042d360c1ad641ef12768d"
@@ -10143,8 +10187,8 @@
       "translation": "e3216407e31713e194f9bd57a1561f8d73d3df4f"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "12b967d92428653dec5e5fca1e59d54cd9b4c9ff"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "85110cbe193a383ade918f15370f2b4052b00a96"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -10746,13 +10790,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "4be5533559f98c27aac4b17fac5bd7f91c44f385"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "54cbb3b7b8d30466cab7338cabcbd3086cfd18fc"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "a3e958e6d944db1efc7975c15270493f32771659"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "fb7ca9bc2f8393a5aa5855a16e6aa3853c084a19"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "5463f84e471584c3b60898d73a4b96a6f31e6849"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "8a84cab3286ed8ec862035f85d583fdb1202ece4"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "e0adb59c1646929e3c1a02428afe80672577b1de"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -10922,6 +10974,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "799408e14bd98a7c6a5cda2ca1932aad8cb72021"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "9d8d61a8fda7fbf317c7451438069155aaddedd7"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "d6840ff29df637dadf26081e9701d2aab28d65e4"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "d93f2c3172c8010ff176ee8e9f0ceeec95b491b5"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "3bef7b8183ba2ab9fcf0f8db44c90315c04155cf"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "ffe8704e7afa9ac3f29a921a4988c7f7c55431c7"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "7abe9eed192b7f82410867e64b3b57af223df4be"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "e2ec931daf6ed3bd22608c722df6b184ebdb92df"
@@ -11067,8 +11143,8 @@
       "translation": "3e76409cedbcce82145055aff8abab7427dcd82c"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "83aae4eddea6aa8212ef9b58e462a682e6a382f9"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "34b35e0f838befff39a0d71840624d938315f904"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -11486,9 +11562,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "8896650b68fe43498b05aeac7e78660b7772e373"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "04645b268aa038080a087097995822ba3d2dfffa"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "d199461c496a9a9df0dd65364b643ac4ae9b5059"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "4cf9440c7241db397a12b3c064ed4292e94a2e24"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -16586,6 +16666,14 @@
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "667907c25abb2f1764af1d0b5bec90fa42e77d28"
     },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "7bac2d67fca33157271de4354d0eda2550235534"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "d4e9dbb216de3d65992665faa0aff193ad8981d0"
+    },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
       "translation": "bc311a5b28574953301fcdb746ed55511d2fc29d"
@@ -18933,8 +19021,8 @@
       "translation": "44ad2a699ef1a6c783f29db1906db36a292b387f"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "4793167e1294b19e20a8215fda450a2b4b8f6777"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "51616dc0ba05f31d83307a61b05304648e23c356"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -19536,13 +19624,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "2fe21b5f78d63002ba89d7c43f3602544158c21d"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "8197cf793811c8e85fa4cf99b78e1fc722bd51aa"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "8a2b75570ca3e7b1b670fb5ea381dbc50d9f455e"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "a75564f8afe8419d9f73531ef62cd5e6155e3bb6"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "f3ed2576e81314938cc350790365703016edeb33"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "cec447eabd6b6e98298e639bc2fe6d3e3764d886"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "e1948d9c76fb4acc30001baa22fa9660f47baeb7"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -19712,6 +19808,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "fc948800ff8b37480e060da1d11ad7b7e2208b49"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "85c516f65e78471155f69c588d8f8bbd21fe69c7"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "07dd9b17ad5e5aaf70c7bf723ccbd0e8c86e8716"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "859e54336ae68f46cd20f9d17f75458050a4f315"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "f87b9e52ffab97e177351b496c8a70b41a764241"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "484ff609d097b701001c160afc1c4738b8c438d1"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "b93a5e7d585326bbb6d629f01c940e16dd0f8b93"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "94fb7bc926751579a0a94a66796c9e5019f3d762"
@@ -19857,8 +19977,8 @@
       "translation": "42bdf6f81ad38c009bd1298588d03ca41f844304"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "9fc6e104816cb592bbb6bac08c261c3cde696860"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "57f04ef796471a6e62f6afe3c415980733cf5421"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -20276,9 +20396,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "de05e441ad7cd5dabf6753ebe39d2ee5b5aab933"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "a0e2d7bde91b1e8ed88cffc994ee49bef89f5f50"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "eaeb7007c67684623740a3b0adf757f03236d6a9"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "9ec2284bceddd3d2352e05af23a21aac140d95a3"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -25376,6 +25500,14 @@
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "5a20c4be92aa4a59009cce1423f553ed32f9adf6"
     },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "89cc41cf86ee7705fe537efe08925f443259bc3c"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "89c3caf7e528b5747e26b95a0760d17d33b73100"
+    },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
       "translation": "48ceb5e392e2fd3401aa79ce0cddccdabb1df337"
@@ -27723,8 +27855,8 @@
       "translation": "69f2e4c3e9b1a2fdc6bf4caf7b53960bf0d0f3ae"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "b475d6d461d7dd4fa6176ed4286b1823a5990ca4"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "b8259d102d29acd09de0e62ec2059d424d53e8d7"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -28326,13 +28458,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "593a6e22a8ec429accea88d8ca536eddfc8440dd"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "0ba4e45cdfa96ab6a1fa122567328eb9d029eb27"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "7ec1167cbbef596190ed1b74df98fd8917cb80be"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "780f619421c554c467914653aabe024327b0420b"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "28e00bd093053d6e05f8bb748e2d093cf313e322"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "f6c920008d41d48ce7d9912693918e9b3abb1e56"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "869d7d4fa6d72bccfb87bb2426b9bd067c680372"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -28502,6 +28642,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "d77c06f9cbfc485aa0d1ea360e05dbb99969c4e2"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "ef6256c9a61106657580e7802bfbccbb068d20a2"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "9ba9ff7f37d4948c7a53664610d88b63a6955423"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "493fb33dfb4842d516f687aac99800e25db397cd"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "a44a915836bc9e02ae506407d7283f4c89af0f7f"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "19bfacecbd845e4b48855538313b6d8228939fb1"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "218caa6140dcb764c942b6d0cc7210768da4b97f"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "0631d52142d952bb0757c0da6c7dbf5b7d8fd7e6"
@@ -28647,8 +28811,8 @@
       "translation": "463ff71619c7f7e2c0ff7cbfd7f724d69a566de1"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "b64934c6cf4f77ed09796855de0b1298086c5542"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "411a2df0ef0f5c48e0e4d1700670ac107a40c3b0"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -29066,9 +29230,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "3bad60430718bec0fba86c648a659887a7c999f7"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "e993d7bded9f91a0f018c7c95488af573d6b6b0a"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "dbc508a56357879c395e734953fe4634eb538276"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "23a02c44caac61a9cee68bc79050a2a1c070dda7"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -34166,6 +34334,14 @@
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "9d958be24bab6aeb0851e92689d5b165b7a5dfd3"
     },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "9e828e4cf581151397e7c04ed85c9794a781a21d"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "ea7ddb4208397086a4391f5f6cd183263ab8bc47"
+    },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
       "translation": "d562c90dfe74f1a7980c1e8dc6e36486ebf3399c"
@@ -36513,8 +36689,8 @@
       "translation": "bde32bbce5741e2f69fb662728b487ffd765f2e6"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "1ee47ecde6ad55c2e054902690878604f39564b0"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "dae0679909a41d3ccfb1acd58b819378ff812492"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -37116,13 +37292,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "2b73332270c3c2825c02b61b499ca792ad0845d8"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "b18d250d5db0bc5dbd8aa976f3533a6165d022ff"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "3abc82e6ebaf79a4126e5506d4edf23b5a330641"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "489597f93b9da88e4c501f0ea6b0534bf1c84334"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "55bf72a32f332ad29e232d276e0d78aafb049926"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "40fd75d5b40894023f25d756a77fd67de7f94fb6"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "470044a88a9d75e0ca1ea6e4d025fd7770e13357"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -37292,6 +37476,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "b51d9e673d96d1836fd7c8814a16b1984f132910"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "fb9e0910e346216cb67a8427fbf8700a4e38f1b2"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "803779218c914d900a3bbf43562ea09befd3522a"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "f54bd95b581a2e7f1c56c42f480c075bb632b3b1"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "83db3aa05437c4a085c423d2a80ece2b1a7b9f8d"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "f6193555f05315acdd3d6f561959bf250d226b05"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "a40609a81a96b32b7e5bb80e6cfe8543cbfbef9d"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "f87c9565a32e3160a4ae3a6e5dafa0fe2f068c76"
@@ -37437,8 +37645,8 @@
       "translation": "7dbeab4e67e19eef379284084e734e3a5ebc288f"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "505655cd56b81eb3cbefcda330ee9d26a7decadf"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "24e35c90baa39b0af92cc24784eae768316ea9bf"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -37856,9 +38064,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "68c752476dd16ff4de69b0f19888634aa03d7bc3"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "422d107ce3f8eb4c77bbedf9a97b7cf57dd0085e"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "734ea700ff60f747fd9a91c6dd74bcdbaf411cd0"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "bf372b3a7b707a11f9a71a593a4177915f28fd10"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -42956,6 +43168,14 @@
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "66ae9490eb899689c1e6e01baed4948ea4628a29"
     },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "1c4661a66bae70cf01b89e48e6d59eb1c5667b35"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "cceae7854baa8e9800fdb2098b79e5a09d4c18a6"
+    },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
       "translation": "8f3529c9a292e267ceef345ed9b2d1b8ba4ce27c"
@@ -45303,8 +45523,8 @@
       "translation": "73b8cc8d067b37867ea0c97be0f325f0765b7583"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "694fba6f1ca8f4248be894ea519155bd4f5a6c87"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "6cd45bb1c78d96fb10c7e7b2c22e93db51a0b684"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -45906,13 +46126,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "a23aa7b2ae520070f1fc321aeb407c4fe3f4c9cd"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "717ae92df0309c11c7d153b7b257a536c7a7454b"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "ba823420a1545450f0a58842d5f362cec2dd2be1"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "33214a40aa89718baff8985d3d209b78c2ad82f4"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "6aba647d04a8088697c854146a556cc5a125238a"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "8d477e8c947c5a3e1e1c2fa5a9d3fa35140674a1"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "a263197391e4c2be262e20a26aec161fa81d8cd4"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -46082,6 +46310,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "23effb6061dd14b7210270a7e266b7b769658054"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "b9005451d835997cb19a9d224a049baa86efa394"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "c230b2efcb865f7acfd5c29d4752fe67c028e0b7"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "d523a0939f0b54213e40d1751acd2d1a043aa19a"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "289d0c621b75745840dc82e6f56fa812a60a4147"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "8373b94d8a2f10e937df2fc9b9635ed1f4f24906"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "8ddaef07ec43857db1a27234786cbb304835004e"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "09e2970a9de916027bf542c7ecb96866ca592393"
@@ -46227,8 +46479,8 @@
       "translation": "fda96b556cb2ba76a171da7279a1f037dfb7e877"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "895bc8c52c1c0e3643a844cc5c88caa87c136861"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "941b4e860c614921d04b77b84c4c422401fa7974"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -46646,9 +46898,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "d9105f4f59b302b2c90edf71cb7ee1360da7a380"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "cefcd91bbae4141629bbad1334b4680c431478b1"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "219a95f216dab390f6d0bb14073433a7f201f67d"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "d9ab6d9f2d0667257f9ccd7da7d028d2722804b9"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -51746,6 +52002,14 @@
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "f84fec28fecfbd2c67a53fd0703df40e576f19de"
     },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "a56469bbe634109051c783e80675a0448ee9ec2d"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "4af8d67d8edbf138163a7c79d406988019e7b403"
+    },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
       "translation": "76be88250cfd92a87605794c08f390152adb7345"
@@ -54093,8 +54357,8 @@
       "translation": "920cb09c787ffd63d1a5874156bf28dea5f567d9"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "729d1ad5b4b3ec389c056afcf544ff2036f24cbf"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "e2ea10ee59e513ac3d2a2dbc3cd65b6381828866"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -54696,13 +54960,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "6fdc69fd70d40ab2e44731f18378df46cf7c32ef"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "0558a06771bdaa890d93634e3dc7234381a9b862"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "42b71eda2a4836c664749a0844843a5d660663ba"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "155bc87f5866804339c0fd1265debe5ab86a67aa"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "f447896065f0f516868f90a6cacba0cb82d49c8e"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "2c83c7ea3e2a792b9a0b1941a000b51212cbe2a6"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "2630f55c9d8ca20ac34c3a30618c82096e17bf0c"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -54872,6 +55144,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "2e0057a3c93c6fef1b797f61e07c6ecdfb2cf35c"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "9a1497e58dbb2772c73ad30bab911f4952c50b2d"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "f1c0a7d07af08fb1bfba795b96b6e3ec5218a160"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "8c39995d31d64475c53cf01487677e5f4f3ce351"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "9c807a85df4f3753b2764d314f21768ef4c60d75"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "0fa52f76826e077d3c1bb419d10f3a58b97bda4d"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "34ef0d7e5edbaefc1afacc60d70ca82318cd4e9f"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "a9601052d514af5012a030fea6d72d908ae132e1"
@@ -55017,8 +55313,8 @@
       "translation": "2d71c8681594a6c134392e74d169514a92534d68"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "7b3f870af1eabaee59530f9a87ef108bbeb9922c"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "8738888d3f2e842c81a5277e5baafaadaf31c9ca"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -55436,9 +55732,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "fa60ff954261b016b338c55ae55015024a1d9afa"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "a7d3c07150d9363bc1f4046bcff757b339bf2d35"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "6eb8582aff2a271e45c55c550fe8b3f8af4e4e0d"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "b4a7dcf67f944cac94356cef3593b01b98aaf6c4"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -60536,6 +60836,14 @@
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "06d01a0fc87cedcb512944b85ccc1463b5e63513"
     },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "d5ae0d297bf128fa4178a3a5679377fd88ec6bb3"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "d66181bd0c0075d73d38e326e2fe8ee457f9b31f"
+    },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
       "translation": "e0883d2fce8edde6e9f7269fc6a9e8ed23c323e2"
@@ -62883,8 +63191,8 @@
       "translation": "266227ca3d4da9d9e7f98c19cb60f087428e1d19"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "d158cc620209ec0a3b05e5b7c0fdada7f8cc070c"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "c04129a717e2206fa438a84095fe9ffdfbd557f6"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -63486,13 +63794,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "d49ce38240716667d63247bdcacfac670f6d7202"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "9d845a26d6c608d630fe1ec1b0bb1829964132af"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "0a5720aa248ef2aa7f145df2c5b1ab7cc554eac5"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "fbbf4782121762e9d9c37c7838c274df2e567233"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "3fe0ffc963fffe4a86e60315009f1085ed022dd9"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "338aa36cbfb8f65e882844336d47fa5f470eb08f"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "df32c668cdf338d69bae12060ad5002c2cf0cec9"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -63662,6 +63978,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "e1681d3385b71e5059c36e223f882e52cf139695"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "1e42d12ee0f1c4a7f517c02e4740497cc3a1ec8e"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "0e2c5bdb1864b9dd66bb410c897562658f81f593"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "7bd533b45f3a1385c989dccbbcd5723a45a54647"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "98b7b2117ca04ac0581d7281df8c228e5e521444"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "c345d9836b41e328cfce2a2d70fed37fd3517b1e"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "344f38f44a495925f9f18094bdcb4ee2abd24db1"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "45cf0ae7ebba3e1d6e53ae9af77c279ac1bf8b37"
@@ -63807,8 +64147,8 @@
       "translation": "d46ffa370f8eb0fc485974457276d46d9512dc83"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "9ecff4cdf6387ad87f28136c34a5aeca816dcb9e"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "647196f474d8cbac2fb5678f285ffb269232aba9"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -64226,9 +64566,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "eb34b9f0834d3d58fb1e2bdd69ef26653208ba5e"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "a9d8310054f23f932486fc6abe96aee9832d3217"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "617362dae6452ab4a4e409db2baa849237717c2f"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "6aeaaa1c21defd98ac208b16c3b18a7179147919"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -69325,6 +69669,14 @@
     "services.task.notices.templateReadError": {
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "781c6a45ef571312d3066353f8d6d7fd79f8e1c9"
+    },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "1ed8d7e13fba8f7ad033a50a2e03e680aed1cac2"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "64ff24e0968c3cb05da0c1261a938e80bc49df25"
     },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",

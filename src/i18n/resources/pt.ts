@@ -482,7 +482,7 @@ export const pt: TranslationTree = {
 			viewAllLink: "Ver todas as notas de lançamento no GitHub →",
 			starMessage:
 				"Agradecemos muito todo feedback. Se algo não parecer certo, conte para nós no GitHub. Se você acha o TaskNotes útil, considere dar uma estrela.",
-			baseFilesNotice: "> [!info] Sobre os arquivos `.base` padrão\n> Alterações nos modelos `.base` gerados por padrão não substituem seus arquivos `.base` existentes, para manter suas personalizações.\n> Se quiser as melhorias mais recentes dos modelos, regenere os arquivos base em **Configurações → TaskNotes → Geral → Criar arquivos**."
+			baseFilesNotice: "> [!info] Sobre os arquivos `.base` padrão\n> Alterações nos modelos `.base` gerados por padrão não substituem seus arquivos `.base` existentes, para manter suas personalizações.\n> Se quiser as melhorias mais recentes dos modelos, regenere os arquivos base em **Configurações → TaskNotes → Geral → Visualizações e arquivos base → Criar arquivos**."
 		}
 	},
 	settings: {
@@ -744,9 +744,13 @@ export const pt: TranslationTree = {
 					selectTooltip: "Escolher notas de projeto para vincular por padrão",
 					removeTooltip: "Remover {name} dos projetos padrão"
 				},
+				useParentNoteForTaskCreation: {
+					name: "Usar nota ativa como projeto para novas tarefas",
+					description: "Vincula automaticamente a nota ativa como projeto ao abrir a criação de tarefas pela paleta de comandos ou pela faixa"
+				},
 				useParentNoteAsProject: {
-					name: "Usar nota pai como projeto durante a conversão instantânea",
-					description: "Vincular automaticamente a nota pai como um projeto ao usar a conversão instantânea de tarefa"
+					name: "Usar nota pai como projeto para criação em linha e conversão instantânea",
+					description: "Vincula automaticamente a nota de origem como projeto ao usar criação de tarefas em linha ou conversão instantânea de tarefa"
 				},
 				useParentHeaderAsProject: {
 					name: "Usar cabeçalho pai como projeto durante a conversão instantânea",
@@ -822,6 +826,16 @@ export const pt: TranslationTree = {
 					placeholder: "Modelos/Modelo de Tarefa.md",
 					ariaLabel: "Caminho para o arquivo de modelo de corpo"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "Usar modelo de nota de ocorrência",
+					description: "Usar um modelo alternativo separado para notas de ocorrência materializadas quando a tarefa recorrente não tiver occurrence_template"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "Arquivo de modelo de nota de ocorrência",
+					description: "Caminho para o arquivo de modelo para notas de ocorrência materializadas. O campo occurrence_template de uma tarefa recorrente tem prioridade sobre este fallback.",
+					placeholder: "Modelos/Modelo de Ocorrência.md",
+					ariaLabel: "Caminho para o arquivo de modelo de nota de ocorrência"
+				},
 				variablesHeader: "Variáveis de modelo:",
 				variables: {
 					title: "{{title}} - Título da tarefa",
@@ -883,7 +897,7 @@ export const pt: TranslationTree = {
 				},
 				taskTag: {
 					name: "Tag da tarefa",
-					description: "Tag que identifica notas como tarefas (sem #)"
+					description: "Tag que identifica notas como tarefas (sem #). Os filtros de visualização .base existentes mantêm a tag antiga quando isso muda; atualize os arquivos Base padrão ou edite esses filtros."
 				},
 				hideIdentifyingTags: {
 					name: "Ocultar tags de identificação nos cartões de tarefa",
@@ -1085,7 +1099,8 @@ export const pt: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "Projetos padrão:",
-				useParentNote: "Usar nota pai como projeto:",
+				useParentNoteForTaskCreation: "Usar nota ativa em novas tarefas:",
+				useParentNoteForInlineTasks: "Usar nota pai em linha/conversão instantânea:",
 				useParentHeader: "Usar cabeçalho pai como projeto:",
 				inheritParentTaskProperties: "Herdar propriedades da tarefa pai para subtarefas:",
 				noDefaultProjects: "Nenhum projeto padrão selecionado",
@@ -3031,6 +3046,8 @@ export const pt: TranslationTree = {
 			notices: {
 				templateNotFound: "Modelo de corpo da tarefa não encontrado: {path}",
 				templateReadError: "Erro ao ler modelo de corpo da tarefa: {template}",
+				occurrenceTemplateNotFound: "Modelo de nota de ocorrência não encontrado: {path}",
+				occurrenceTemplateReadError: "Erro ao ler modelo de nota de ocorrência: {template}",
 				moveTaskFailed: "Falha ao mover tarefa {operation}: {error}"
 			}
 		},

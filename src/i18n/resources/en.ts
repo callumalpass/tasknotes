@@ -495,7 +495,7 @@ export const en: TranslationTree = {
 			starMessage:
 				"We really appreciate all feedback. If something does not feel right, please let us know on GitHub. If you find TaskNotes useful, please consider giving it a star.",
 			baseFilesNotice:
-				"> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Create Default Files**.",
+				"> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Create files**.",
 		},
 	},
 	settings: {
@@ -937,7 +937,8 @@ export const en: TranslationTree = {
 				},
 				taskTag: {
 					name: "Task tag",
-					description: "Tag that identifies notes as tasks (without #)",
+					description:
+						"Tag that identifies notes as tasks (without #). Existing .base view filters keep their old tag when this changes; update default Base files or edit those filters.",
 				},
 				hideIdentifyingTags: {
 					name: "Hide identification tags in task cards",

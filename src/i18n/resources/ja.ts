@@ -482,7 +482,7 @@ export const ja: TranslationTree = {
 			viewAllLink: "GitHubですべてのリリースノートを表示 →",
 			starMessage:
 				"どんなフィードバックも本当にありがたいです。何か違和感があれば、GitHubでお知らせください。TaskNotesが役に立ったら、スターもご検討ください。",
-			baseFilesNotice: "> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ファイルを作成** からベースファイルを再生成してください。"
+			baseFilesNotice: "> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ビューとbaseファイル → ファイルを作成** からベースファイルを再生成してください。"
 		}
 	},
 	settings: {
@@ -742,9 +742,13 @@ export const ja: TranslationTree = {
 					selectTooltip: "デフォルトでリンクするプロジェクトノートを選択",
 					removeTooltip: "デフォルトプロジェクトから{name}を削除"
 				},
+				useParentNoteForTaskCreation: {
+					name: "新しいタスクでアクティブノートをプロジェクトとして使用",
+					description: "コマンドパレットまたはリボンからタスク作成を開くとき、アクティブノートをプロジェクトとして自動的にリンクします"
+				},
 				useParentNoteAsProject: {
-					name: "インスタント変換時に親ノートをプロジェクトとして使用",
-					description: "インスタントタスク変換使用時に親ノートを自動的にプロジェクトとしてリンク"
+					name: "インライン作成とインスタント変換で親ノートをプロジェクトとして使用",
+					description: "インラインタスク作成またはインスタントタスク変換を使うとき、元のノートをプロジェクトとして自動的にリンクします"
 				},
 				useParentHeaderAsProject: {
 					name: "インスタント変換時に親見出しをプロジェクトとして使用",
@@ -820,6 +824,16 @@ export const ja: TranslationTree = {
 					placeholder: "テンプレート/タスクテンプレート.md",
 					ariaLabel: "ボディテンプレートファイルへのパス"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "発生ノートテンプレートを使用",
+					description: "繰り返しタスクに occurrence_template がない場合、マテリアライズされた発生ノート用の別のフォールバックテンプレートを使用します"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "発生ノートテンプレートファイル",
+					description: "マテリアライズされた発生ノート用テンプレートファイルへのパス。繰り返しタスクの occurrence_template フィールドがこのフォールバックより優先されます。",
+					placeholder: "テンプレート/発生テンプレート.md",
+					ariaLabel: "発生ノートテンプレートファイルへのパス"
+				},
 				variablesHeader: "テンプレート変数：",
 				variables: {
 					title: "{{title}} - タスクタイトル",
@@ -881,7 +895,7 @@ export const ja: TranslationTree = {
 				},
 				taskTag: {
 					name: "タスクタグ",
-					description: "ノートをタスクとして識別するタグ（#なし）"
+					description: "ノートをタスクとして識別するタグ（#なし）。これを変更しても既存の .base ビューのフィルターは古いタグのままです。デフォルトの Base ファイルを更新するか、それらのフィルターを編集してください。"
 				},
 				hideIdentifyingTags: {
 					name: "タスクカードで識別タグを非表示",
@@ -1083,7 +1097,8 @@ export const ja: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "デフォルトプロジェクト:",
-				useParentNote: "親ノートをプロジェクトとして使用:",
+				useParentNoteForTaskCreation: "新しいタスクでアクティブノートを使用:",
+				useParentNoteForInlineTasks: "インライン/インスタント変換で親ノートを使用:",
 				useParentHeader: "親見出しをプロジェクトとして使用:",
 				inheritParentTaskProperties: "サブタスクに親タスクのプロパティを継承:",
 				noDefaultProjects: "デフォルトプロジェクトが選択されていません",
@@ -3029,6 +3044,8 @@ export const ja: TranslationTree = {
 			notices: {
 				templateNotFound: "タスクボディテンプレートが見つかりません：{path}",
 				templateReadError: "タスクボディテンプレートの読み込みエラー：{template}",
+				occurrenceTemplateNotFound: "発生ノートテンプレートが見つかりません：{path}",
+				occurrenceTemplateReadError: "発生ノートテンプレートの読み込みエラー：{template}",
 				moveTaskFailed: "{operation}タスクの移動に失敗しました：{error}"
 			}
 		},

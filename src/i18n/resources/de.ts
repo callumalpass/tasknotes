@@ -482,7 +482,7 @@ export const de: TranslationTree = {
 			viewAllLink: "Alle Versionshinweise auf GitHub anzeigen →",
 			starMessage:
 				"Wir freuen uns sehr über jedes Feedback. Wenn sich etwas nicht richtig anfühlt, lassen Sie es uns bitte auf GitHub wissen. Wenn Sie TaskNotes nützlich finden, geben Sie ihm bitte einen Stern.",
-			baseFilesNotice: "> [!info] Hinweis zu den standardmäßigen `.base`-Dateien\n> Änderungen an standardmäßig generierten `.base`-Vorlagen überschreiben Ihre vorhandenen `.base`-Dateien nicht, damit Ihre Anpassungen erhalten bleiben.\n> Wenn Sie die neuesten Vorlagenverbesserungen möchten, erstellen Sie die Base-Dateien neu unter **Einstellungen → TaskNotes → Allgemein → Dateien erstellen**."
+			baseFilesNotice: "> [!info] Hinweis zu den standardmäßigen `.base`-Dateien\n> Änderungen an standardmäßig generierten `.base`-Vorlagen überschreiben Ihre vorhandenen `.base`-Dateien nicht, damit Ihre Anpassungen erhalten bleiben.\n> Wenn Sie die neuesten Vorlagenverbesserungen möchten, erstellen Sie die Base-Dateien neu unter **Einstellungen → TaskNotes → Allgemein → Ansichten & Base-Dateien → Dateien erstellen**."
 		}
 	},
 	settings: {
@@ -742,9 +742,13 @@ export const de: TranslationTree = {
 					selectTooltip: "Wähle Projektnotizen zum standardmäßigen Verlinken",
 					removeTooltip: "{name} aus Standardprojekten entfernen"
 				},
+				useParentNoteForTaskCreation: {
+					name: "Aktive Notiz als Projekt für neue Aufgaben verwenden",
+					description: "Verlinkt die aktive Notiz automatisch als Projekt, wenn die Aufgabenerstellung über Befehlspalette oder Ribbon geöffnet wird"
+				},
 				useParentNoteAsProject: {
-					name: "Übergeordnete Notiz als Projekt bei sofortiger Konvertierung verwenden",
-					description: "Übergeordnete Notiz automatisch als Projekt verlinken bei sofortiger Aufgabenkonvertierung"
+					name: "Übergeordnete Notiz als Projekt für Inline- und Sofortkonvertierung verwenden",
+					description: "Verlinkt die Quellnotiz automatisch als Projekt, wenn Inline-Aufgabenerstellung oder sofortige Aufgabenkonvertierung verwendet wird"
 				},
 				useParentHeaderAsProject: {
 					name: "Übergeordnete Überschrift als Projekt bei sofortiger Konvertierung verwenden",
@@ -820,6 +824,16 @@ export const de: TranslationTree = {
 					placeholder: "Templates/Aufgaben Vorlage.md",
 					ariaLabel: "Pfad zur Körpervorlagendatei"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "Vorlage für Vorkommnisnotizen verwenden",
+					description: "Eine separate Fallback-Vorlage für materialisierte Vorkommnisnotizen verwenden, wenn die wiederkehrende Aufgabe kein occurrence_template festlegt"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "Vorlagendatei für Vorkommnisnotizen",
+					description: "Pfad zur Vorlagendatei für materialisierte Vorkommnisnotizen. Das occurrence_template einer wiederkehrenden Aufgabe hat Vorrang vor diesem Fallback.",
+					placeholder: "Templates/Vorkommnis Vorlage.md",
+					ariaLabel: "Pfad zur Vorlagendatei für Vorkommnisnotizen"
+				},
 				variablesHeader: "Vorlagenvariablen:",
 				variables: {
 					title: "{{title}} - Aufgabentitel",
@@ -881,7 +895,7 @@ export const de: TranslationTree = {
 				},
 				taskTag: {
 					name: "Aufgaben-Tag",
-					description: "Tag, das Notizen als Aufgaben identifiziert (ohne #)"
+					description: "Tag, das Notizen als Aufgaben identifiziert (ohne #). Bestehende .base-Ansichtsfilter behalten nach dieser Änderung den alten Tag; aktualisiere die Standard-Base-Dateien oder bearbeite diese Filter."
 				},
 				hideIdentifyingTags: {
 					name: "Identifikations-Tags in Aufgabenkarten ausblenden",
@@ -1083,7 +1097,8 @@ export const de: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "Standardprojekte:",
-				useParentNote: "Übergeordnete Notiz als Projekt verwenden:",
+				useParentNoteForTaskCreation: "Aktive Notiz für neue Aufgaben verwenden:",
+				useParentNoteForInlineTasks: "Übergeordnete Notiz für Inline-/Sofortkonvertierung verwenden:",
 				useParentHeader: "Übergeordnete Überschrift als Projekt verwenden:",
 				inheritParentTaskProperties: "Eigenschaften der übergeordneten Aufgabe für Unteraufgaben übernehmen:",
 				noDefaultProjects: "Keine Standardprojekte ausgewählt",
@@ -3029,6 +3044,8 @@ export const de: TranslationTree = {
 			notices: {
 				templateNotFound: "Aufgabenkörper-Vorlage nicht gefunden: {path}",
 				templateReadError: "Fehler beim Lesen der Aufgabenkörper-Vorlage: {template}",
+				occurrenceTemplateNotFound: "Vorkommnisnotiz-Vorlage nicht gefunden: {path}",
+				occurrenceTemplateReadError: "Fehler beim Lesen der Vorkommnisnotiz-Vorlage: {template}",
 				moveTaskFailed: "{operation} Aufgabe konnte nicht verschoben werden: {error}"
 			}
 		},
