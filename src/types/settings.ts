@@ -279,7 +279,8 @@ export interface TaskCreationDefaults {
 	defaultContexts: string; // Comma-separated list
 	defaultTags: string; // Comma-separated list
 	defaultProjects: string; // Comma-separated list of project links
-	useParentNoteAsProject: boolean; // Use the parent note as a project during instant conversion
+	useParentNoteForTaskCreation: boolean; // Use the active note as a project for normal task creation
+	useParentNoteAsProject: boolean; // Use the parent note as a project during inline creation and instant conversion
 	useParentHeaderAsProject: boolean; // Use the closest markdown heading as a project during instant conversion
 	inheritParentTaskProperties: boolean; // Copy parent task projects, contexts, priority, and tags when creating subtasks
 	defaultTimeEstimate: number; // minutes, 0 = no default

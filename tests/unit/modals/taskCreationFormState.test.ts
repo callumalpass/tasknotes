@@ -9,6 +9,7 @@ function defaults(overrides: Partial<TaskCreationDefaults> = {}): TaskCreationDe
 		defaultContexts: "",
 		defaultTags: "",
 		defaultProjects: "",
+		useParentNoteForTaskCreation: false,
 		useParentNoteAsProject: false,
 		useParentHeaderAsProject: false,
 		inheritParentTaskProperties: false,
@@ -20,6 +21,8 @@ function defaults(overrides: Partial<TaskCreationDefaults> = {}): TaskCreationDe
 		defaultScheduledTime: "none",
 		bodyTemplate: "",
 		useBodyTemplate: false,
+		occurrenceBodyTemplate: "",
+		useOccurrenceBodyTemplate: false,
 		defaultReminders: [],
 		...overrides,
 	};

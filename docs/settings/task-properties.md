@@ -130,7 +130,8 @@ Projects the task belongs to. Configuration options:
 
 - **Property key**: Frontmatter field name (default: `projects`)
 - **Default projects**: Select project notes to automatically link to new tasks
-- **Use parent note as project**: Automatically link the parent note as a project during instant task conversion
+- **Use active note for new tasks**: Automatically link the active note as a project when opening task creation from the command palette or ribbon
+- **Use parent note for inline/instant conversion**: Automatically link the source note as a project when using inline task creation or instant task conversion
 - **NLP trigger**: Character that triggers project parsing (default: `+`)
 - **Autosuggest Filters**: Expandable section to filter which notes appear in project suggestions
 - **Customize Display**: Expandable section to configure how project suggestions appear

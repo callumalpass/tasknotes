@@ -131,6 +131,42 @@ describe("settings persistence helpers", () => {
 		expect(shouldPersistMigratedSettings).toBe(true);
 	});
 
+	it("derives the normal task creation parent-note project setting from the legacy shared setting", () => {
+		const legacyTaskCreationDefaults: Partial<TaskNotesSettings["taskCreationDefaults"]> = {
+			...DEFAULT_SETTINGS.taskCreationDefaults,
+			useParentNoteAsProject: true,
+		};
+		delete legacyTaskCreationDefaults.useParentNoteForTaskCreation;
+		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData({
+			fieldMapping: DEFAULT_SETTINGS.fieldMapping,
+			calendarViewSettings: DEFAULT_SETTINGS.calendarViewSettings,
+			commandFileMapping: DEFAULT_SETTINGS.commandFileMapping,
+			taskCreationDefaults:
+				legacyTaskCreationDefaults as TaskNotesSettings["taskCreationDefaults"],
+		});
+
+		expect(settings.taskCreationDefaults.useParentNoteAsProject).toBe(true);
+		expect(settings.taskCreationDefaults.useParentNoteForTaskCreation).toBe(true);
+		expect(shouldPersistMigratedSettings).toBe(true);
+	});
+
+	it("preserves an explicit normal task creation parent-note project setting", () => {
+		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData({
+			fieldMapping: DEFAULT_SETTINGS.fieldMapping,
+			calendarViewSettings: DEFAULT_SETTINGS.calendarViewSettings,
+			commandFileMapping: DEFAULT_SETTINGS.commandFileMapping,
+			taskCreationDefaults: {
+				...DEFAULT_SETTINGS.taskCreationDefaults,
+				useParentNoteAsProject: true,
+				useParentNoteForTaskCreation: false,
+			},
+		});
+
+		expect(settings.taskCreationDefaults.useParentNoteAsProject).toBe(true);
+		expect(settings.taskCreationDefaults.useParentNoteForTaskCreation).toBe(false);
+		expect(shouldPersistMigratedSettings).toBe(false);
+	});
+
 	it("merges only known settings keys into saved data while preserving other persisted data", () => {
 		const settings = {
 			...DEFAULT_SETTINGS,

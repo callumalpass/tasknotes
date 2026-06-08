@@ -108,6 +108,7 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultContexts: "",
 	defaultTags: "",
 	defaultProjects: "",
+	useParentNoteForTaskCreation: false,
 	useParentNoteAsProject: false,
 	useParentHeaderAsProject: false,
 	inheritParentTaskProperties: false,

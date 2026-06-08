@@ -772,10 +772,15 @@ export const en: TranslationTree = {
 					selectTooltip: "Choose project notes to link by default",
 					removeTooltip: "Remove {name} from default projects",
 				},
-				useParentNoteAsProject: {
-					name: "Use parent note as project during instant conversion",
+				useParentNoteForTaskCreation: {
+					name: "Use active note as project for new tasks",
 					description:
-						"Automatically link the parent note as a project when using instant task conversion",
+						"Automatically link the active note as a project when opening task creation from the command palette or ribbon",
+				},
+				useParentNoteAsProject: {
+					name: "Use parent note as project for inline and instant conversion",
+					description:
+						"Automatically link the source note as a project when using inline task creation or instant task conversion",
 				},
 				useParentHeaderAsProject: {
 					name: "Use parent heading as project during instant conversion",
@@ -1171,7 +1176,8 @@ export const en: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "Default projects:",
-				useParentNote: "Use parent note as project:",
+				useParentNoteForTaskCreation: "Use active note for new tasks:",
+				useParentNoteForInlineTasks: "Use parent note for inline/instant conversion:",
 				useParentHeader: "Use parent heading as project:",
 				inheritParentTaskProperties: "Inherit parent task properties for subtasks:",
 				noDefaultProjects: "No default projects selected",

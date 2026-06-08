@@ -103,7 +103,14 @@ export function renderProjectsPropertyCard(
 			translate
 		);
 
-		// Use parent note as project toggle
+		const useParentNoteForTaskCreationToggle = createCardToggle(
+			plugin.settings.taskCreationDefaults.useParentNoteForTaskCreation,
+			(value) => {
+				plugin.settings.taskCreationDefaults.useParentNoteForTaskCreation = value;
+				save();
+			}
+		);
+
 		const useParentNoteToggle = createCardToggle(
 			plugin.settings.taskCreationDefaults.useParentNoteAsProject,
 			(value) => {
@@ -152,7 +159,13 @@ export function renderProjectsPropertyCard(
 				fullWidth: true,
 			},
 			{
-				label: translate("settings.taskProperties.projectsCard.useParentNote"),
+				label: translate(
+					"settings.taskProperties.projectsCard.useParentNoteForTaskCreation"
+				),
+				input: useParentNoteForTaskCreationToggle,
+			},
+			{
+				label: translate("settings.taskProperties.projectsCard.useParentNoteForInlineTasks"),
 				input: useParentNoteToggle,
 			},
 			{
