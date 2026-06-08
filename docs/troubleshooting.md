@@ -10,7 +10,7 @@ When debugging, start with the smallest reproducible scenario: one affected task
 
 **Symptoms**: TaskNotes views show errors or don't display tasks
 
-First confirm Bases is enabled (`Settings -> Core Plugins -> Bases`), then restart Obsidian once. If views are still missing, verify `.base` files exist in `TaskNotes/Views/`. If needed, regenerate defaults from `Settings -> TaskNotes -> Integrations` (`Create default files`).
+First confirm Bases is enabled (`Settings -> Core Plugins -> Bases`), then restart Obsidian once. If views are still missing, verify `.base` files exist in `TaskNotes/Views/`. If needed, regenerate defaults from `Settings -> TaskNotes -> General -> Views & base files` (`Create files`).
 
 ### Commands Open Wrong Files
 

@@ -198,7 +198,7 @@ These settings are replaced in v4 by:
 
 - `showRelationships` and `relationshipsPosition`
 
-If you had project subtasks enabled in v3, the relationships widget is enabled automatically after upgrading to v4. The underlying Bases file changed from `TaskNotes/Views/project-subtasks.base` to `TaskNotes/Views/relationships.base`. Run the **Create default files** action in `Settings -> TaskNotes -> Integrations` if `relationships.base` is missing.
+If you had project subtasks enabled in v3, the relationships widget is enabled automatically after upgrading to v4. The underlying Bases file changed from `TaskNotes/Views/project-subtasks.base` to `TaskNotes/Views/relationships.base`. Run the **Create files** action in `Settings -> TaskNotes -> General -> Views & base files` if `relationships.base` is missing.
 
 ## Natural Language Processing
 

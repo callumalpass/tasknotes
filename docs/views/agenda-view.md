@@ -11,7 +11,7 @@ The Agenda view is a dedicated `.base` file that opens the calendar in list mode
 - Command: **Open Agenda View** (ribbon icon and command palette)
 - Configure the file path in **Settings → TaskNotes → General → View Commands**
 
-The file is created automatically the first time you run the command, and you can replace it with your own `.base` file if you maintain multiple agendas.
+TaskNotes creates missing default `.base` files automatically on startup when **Auto-create default files** is enabled. You can replace the command path with your own `.base` file if you maintain multiple agendas.
 
 ## Default Configuration
 
