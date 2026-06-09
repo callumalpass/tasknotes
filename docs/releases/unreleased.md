@@ -32,4 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2006) Display the projected local finish time while a Pomodoro is running
+  - Updates with the remaining duration and respects the configured 12- or 24-hour time format
+  - Thanks to @abbiefalls90 for suggesting and implementing this
+
 ## Fixed

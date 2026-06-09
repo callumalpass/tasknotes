@@ -13,11 +13,13 @@ import {
 } from "../types";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { createTaskCard } from "../ui/TaskCard";
+import { formatTime } from "../utils/dateUtils";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { getTaskWithInstanceStatus, isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
 import {
 	formatPomodoroTime,
 	getActiveElapsedSeconds,
+	getProjectedPomodoroEndTimeMs,
 	getSessionProgressRatio,
 	parsePomodoroDurationInput,
 } from "../utils/pomodoroTime";
@@ -1170,6 +1172,10 @@ export class PomodoroView extends ItemView {
 			if (state.isRunning) {
 				text = this.t("views.pomodoro.meta.running", {
 					time: formattedTime,
+					endTime: formatTime(
+						new Date(getProjectedPomodoroEndTimeMs(state.timeRemaining)),
+						this.plugin.settings.calendarViewSettings.timeFormat
+					),
 				});
 			} else {
 				text = this.t("views.pomodoro.meta.paused", {

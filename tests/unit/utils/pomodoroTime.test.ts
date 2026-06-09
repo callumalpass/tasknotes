@@ -1,6 +1,7 @@
 import {
 	formatPomodoroTime,
 	getActiveElapsedSeconds,
+	getProjectedPomodoroEndTimeMs,
 	getSessionCompletionTimeMs,
 	getSessionProgressRatio,
 	getSessionRemainingSeconds,
@@ -77,5 +78,15 @@ describe("pomodoroTime", () => {
 		expect(getSessionCompletionTimeMs(current, lateWake)).toBe(
 			Date.parse("2026-05-16T09:25:00.000Z")
 		);
+	});
+
+	it("projects the visible Pomodoro end time from remaining seconds", () => {
+		const now = Date.parse("2026-06-08T14:10:30.000Z");
+
+		expect(getProjectedPomodoroEndTimeMs(15 * 60 + 30, now)).toBe(
+			Date.parse("2026-06-08T14:26:00.000Z")
+		);
+		expect(getProjectedPomodoroEndTimeMs(-1, now)).toBe(now);
+		expect(getProjectedPomodoroEndTimeMs(Number.NaN, now)).toBe(now);
 	});
 });
