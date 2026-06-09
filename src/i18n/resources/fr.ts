@@ -1706,6 +1706,14 @@ export const fr: TranslationTree = {
 				useICSEndAsDue: {
 					name: "Utiliser l'heure de fin de l'événement ICS comme date d'échéance",
 					description: "Lorsqu'activé, les tâches créées à partir d'événements de calendrier auront leur date d'échéance définie sur l'heure de fin de l'événement. Pour les événements sur toute la journée, la date d'échéance sera la date de l'événement. Pour les événements avec horaire, la date d'échéance inclura l'heure de fin."
+				},
+				recurringEventRelatedNotesMode: {
+					name: "Notes liées aux événements récurrents",
+					description: "Choisissez si les notes liées à une occurrence d'un événement de calendrier externe apparaissent sur toute la série chargée ou seulement sur l'instance sélectionnée.",
+					options: {
+						series: "Toute la série",
+						instance: "Instance sélectionnée uniquement"
+					}
 				}
 			},
 			subscriptionsList: {

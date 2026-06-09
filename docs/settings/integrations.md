@@ -79,6 +79,8 @@ When connected, displays:
 
 ICS settings define how subscribed calendar events are represented in your vault. You can set a default template, destination folder, filename strategy, and custom filename template for generated notes. Use **Add Calendar Subscription** to register URLs or local files, and **Refresh all subscriptions** for manual synchronization.
 
+**Recurring event related notes** controls how notes linked from recurring external calendar events are matched. **Series-wide** keeps the current behavior: a note linked to one loaded recurrence can appear on the other loaded recurrences from the same Google, Microsoft, or ICS event series. **Selected instance only** limits related notes and counts to the exact recurrence instance that was linked.
+
 ## Automatic ICS export
 
 Automatic export keeps an ICS feed of your tasks updated on a schedule. Configure whether it is enabled, where the file is written (vault-relative path), the refresh interval, and use **Export now** for immediate output.

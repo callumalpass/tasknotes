@@ -4184,6 +4184,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "17e1b7f3eeaf4948018b4da3d03fa0765b6792b9"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "26d0431c6b1d4fbde9f6062494d8ce1dfd1d145c"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "e3d399f008163245766b550cb20b3f750effd01b"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "b106811bbd969115bbab49072fb313a2fbb61de2"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "1e6ebb63a22631a37592f40fd6862698c8a8e9c4"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "7f31c6604958a07514b1355ca291b6b149350385"
@@ -13017,6 +13033,22 @@
     "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "ef66f13fd51af802465a65417c4fbc968d8065df"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "583034ffb185fc2d2ff757e5a97a006027c008da"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "42920a060f0a27411a5b28434dcb808844358e46"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "3b553b7365215f5b74c816df5b8662b7c672fda3"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "fd19bf2e806c96dcde7144fcae74b03876339b08"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -21852,6 +21884,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "ebb2fa5e523d1d98620788691a3e9c99ab7254ff"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "fc21c4b8924a5d32e8b0baafbafbcd4d049ba8f7"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "1f2bbca60b16d50a05e90288b11b08d41235b040"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "cfce7e8626cb61701eb2adf02e1dab7ebd8050ad"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "4b738676018e0df4dbd0736e97368a66f6a3fe22"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "ab0ed02b841e3fc482b6cc2572bb0aacba50d4f6"
@@ -30685,6 +30733,22 @@
     "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "30c209e261393b735ff1cfd2b4dc5e182faf0fe1"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "d1e5974a90ebd6f426c900985f00cbb60d8e0984"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "1f7e25d4c07b6db8c6a222deb07638c62f9f1199"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "d587fb4b6d20b259a8c85199d56f7498c8b3c95a"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "4bf0381e78f0942e9cf163426714c4d8ba06c725"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -39520,6 +39584,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "01db0cffbcf915132fa6c5a05956554cb1ccdc36"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "85a891d00b0ba323bfbf6efe1d5eb65e3a552c1d"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "bdac0b86d27cbe6310765af963e1e1ea04c9060d"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "0c7a2b75271be77e1590c8bb01606b5310fefe3c"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "5c4d5ce83dc4bfaf457ca13bc954f917253d9303"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "25d76c885285ef820cb2e3e9616129622f4425b6"
@@ -48353,6 +48433,22 @@
     "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "42f546280a9de71bf8f0846b854f3fe35444a076"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "28a808925d78ff1d90917e5acb65bed78305ac12"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "857a22fc68a17ead01f8f504291afe4488822514"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "6dfdcc5bbcb771ef3c54778abb8898e23beba79d"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "d1f4a52e2e017e018d988fc4b79057a5a7b58609"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
@@ -57188,6 +57284,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "8be26463cb3fa45cd1f2bcf953c22d5bd081e5de"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "fb686df12603cc5639d0f23d049c864a03168e4a"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "7bd05fe4c99552dcc5726f43fdb04d0c7b44e573"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "e190d46416683f9d74d56997f065665d0e6f59f3"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "3d5e4f21054ed48237dc9e74a349d9bbe81098bf"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "8345e1e1a85332b52e1e5e2aa6f7d1d2f2005047"
@@ -66021,6 +66133,22 @@
     "settings.integrations.calendarSubscriptions.useICSEndAsDue.description": {
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "53827ffca8bacbb13efc6ba42dd4e4dd981a6efa"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "8818b4618fea86d63bedd4bcae17a0180b68512d"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "514bba3a44e1186a6206ee42103a4fbcf551ba3e"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "bd50bd1607ce1226753e9ef878beecaed3057e9a"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "75989dacafa2e5b32f3dc2863d6280acf43d6acb"
     },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",

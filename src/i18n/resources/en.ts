@@ -1825,6 +1825,15 @@ export const en: TranslationTree = {
 					description:
 						"When enabled, tasks created from calendar events will have their due date set to the event's end time. For all-day events, the due date will be set to the event date. For timed events, the due date will include the end time.",
 				},
+				recurringEventRelatedNotesMode: {
+					name: "Recurring event related notes",
+					description:
+						"Choose whether notes linked to one recurrence of an external calendar event appear across the loaded series or only on the selected instance.",
+					options: {
+						series: "Series-wide",
+						instance: "Selected instance only",
+					},
+				},
 			},
 			subscriptionsList: {
 				header: "Calendar subscriptions list",

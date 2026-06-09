@@ -1690,6 +1690,14 @@ export const ko: TranslationTree = {
 				useICSEndAsDue: {
 					name: "ICS 이벤트 종료 시간을 작업 마감일로 사용",
 					description: "활성화하면 캘린더 이벤트에서 생성된 작업의 마감일이 이벤트 종료 시간으로 설정됩니다. 종일 이벤트의 경우 마감일이 이벤트 날짜로 설정됩니다. 시간이 지정된 이벤트의 경우 마감일에 종료 시간이 포함됩니다."
+				},
+				recurringEventRelatedNotesMode: {
+					name: "반복 이벤트 관련 노트",
+					description: "외부 캘린더 이벤트의 한 반복 항목에 연결된 노트를 불러온 전체 시리즈에 표시할지, 선택한 인스턴스에만 표시할지 선택합니다.",
+					options: {
+						series: "전체 시리즈",
+						instance: "선택한 인스턴스만"
+					}
 				}
 			},
 			subscriptionsList: {

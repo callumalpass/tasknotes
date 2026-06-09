@@ -95,6 +95,12 @@ export class ICSNoteService {
 		return seriesId || null;
 	}
 
+	private getRecurringRelatedNotesMode(): "series" | "instance" {
+		return this.plugin.settings?.icsIntegration?.recurringEventRelatedNotesMode === "instance"
+			? "instance"
+			: "series";
+	}
+
 	private buildEventSeriesIndex(): EventSeriesIndex {
 		const candidates = new Map<string, Set<string>>();
 
@@ -125,6 +131,10 @@ export class ICSNoteService {
 
 	private getRelatedEventIds(eventId: string, seriesIndex: EventSeriesIndex): Set<string> {
 		const relatedIds = new Set<string>([eventId]);
+		if (this.getRecurringRelatedNotesMode() === "instance") {
+			return relatedIds;
+		}
+
 		const seriesId = seriesIndex.seriesIdByEventId.get(eventId);
 		const storedSeriesId = seriesIndex.eventIdsBySeriesId.has(eventId) ? eventId : seriesId;
 

@@ -320,6 +320,7 @@ export interface ICSIntegrationSettings {
 	requireScheduledDateForExport: boolean; // Whether to export only tasks with scheduled dates
 	// Task creation from ICS events
 	useICSEndAsDue: boolean; // Whether to use ICS event end time as task due date
+	recurringEventRelatedNotesMode: "series" | "instance"; // How linked notes behave for recurring external calendar events
 }
 
 /**

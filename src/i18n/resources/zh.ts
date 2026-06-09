@@ -1706,6 +1706,14 @@ export const zh: TranslationTree = {
 				useICSEndAsDue: {
 					name: "使用ICS事件结束时间作为任务截止日期",
 					description: "启用后，从日历事件创建的任务将把截止日期设置为事件的结束时间。对于全天事件，截止日期将设置为事件日期。对于有时间的事件，截止日期将包含结束时间。"
+				},
+				recurringEventRelatedNotesMode: {
+					name: "重复事件的关联笔记",
+					description: "选择关联到外部日历事件某一次重复的笔记，是显示在已加载的整个系列中，还是仅显示在所选实例上。",
+					options: {
+						series: "整个系列",
+						instance: "仅所选实例"
+					}
 				}
 			},
 			subscriptionsList: {

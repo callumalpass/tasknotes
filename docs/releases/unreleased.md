@@ -39,6 +39,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2000) Added separate settings for using the active note as a project during normal task creation and during inline task creation or instant conversion. Thanks to @BlueScreen32 for suggesting the split.
 - (#2001) Added separate templates for materialized occurrence notes, including parent-level `occurrence_template` support and a global fallback setting. Thanks to @BrucePlumb for suggesting a separate occurrence-note template and @ak-42 for the related per-recurrence template request.
 - (#2006) Added the projected local finish time beside the remaining duration while a Pomodoro is running. See [Pomodoro View](https://tasknotes.dev/views/pomodoro-view/) for the timer behavior. Thanks to @abbiefalls90 for suggesting this.
+- (#2016) Added a setting for recurring external calendar event related notes, so Google, Microsoft, and ICS recurrences can either share notes across the series or keep notes limited to the selected instance. See [Integrations Settings](https://tasknotes.dev/settings/integrations/#calendar-subscriptions-ics) for the setting. Thanks to @akhtsang for reporting this, and to @cathywu and @mdbraber for the earlier series-linking discussion.
 
 ## Changed
 
@@ -50,6 +51,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2015) Fixed Google Calendar events from the previous six months disappearing from Calendar and Mini Calendar views after a fresh sync. Thanks to @akhtsang for reporting this.
 - (#2013) Fixed task-card status and priority dots becoming oversized on touch-capable desktop devices. Thanks to @RumiaKitinari for reporting this.
 - (#2009) Restored Tab and Shift+Tab focus movement in the Create new task modal's natural language input instead of letting the markdown editor indent the title. Thanks to @prepare4robots for reporting this.
 - (#2007) Fixed status autocomplete in the task creation modal leaving status value fragments in the task title when the editor auto-paired the status trigger. Thanks to @prepare4robots for reporting this.

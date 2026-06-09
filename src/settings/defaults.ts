@@ -186,6 +186,7 @@ export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 	requireScheduledDateForExport: false, // Preserve existing behavior: include tasks without scheduled dates
 	// Task creation defaults
 	useICSEndAsDue: false, // Preserve existing behavior: don't set due date from ICS events
+	recurringEventRelatedNotesMode: "series", // Preserve existing behavior: link recurring event notes across the series
 };
 
 export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {

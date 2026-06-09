@@ -1706,6 +1706,14 @@ export const de: TranslationTree = {
 				useICSEndAsDue: {
 					name: "ICS-Ereignis-Endzeit als Fälligkeitsdatum verwenden",
 					description: "Wenn aktiviert, wird das Fälligkeitsdatum von Aufgaben aus Kalenderereignissen auf die Endzeit des Ereignisses gesetzt. Bei ganztägigen Ereignissen wird das Fälligkeitsdatum auf das Ereignisdatum gesetzt. Bei zeitgesteuerten Ereignissen enthält das Fälligkeitsdatum die Endzeit."
+				},
+				recurringEventRelatedNotesMode: {
+					name: "Verknüpfte Notizen für wiederkehrende Ereignisse",
+					description: "Wähle, ob Notizen, die mit einer Wiederholung eines externen Kalenderereignisses verknüpft sind, in der geladenen Serie oder nur in der ausgewählten Instanz erscheinen.",
+					options: {
+						series: "Gesamte Serie",
+						instance: "Nur ausgewählte Instanz"
+					}
 				}
 			},
 			subscriptionsList: {

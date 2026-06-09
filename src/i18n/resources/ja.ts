@@ -1706,6 +1706,14 @@ export const ja: TranslationTree = {
 				useICSEndAsDue: {
 					name: "ICSイベント終了時刻をタスク期日として使用",
 					description: "有効にすると、カレンダーイベントから作成されたタスクの期日がイベントの終了時刻に設定されます。終日イベントの場合、期日はイベントの日付に設定されます。時間指定イベントの場合、期日に終了時刻が含まれます。"
+				},
+				recurringEventRelatedNotesMode: {
+					name: "繰り返しイベントの関連ノート",
+					description: "外部カレンダーイベントの1回の繰り返しにリンクしたノートを、読み込まれたシリーズ全体に表示するか、選択したインスタンスのみに表示するかを選択します。",
+					options: {
+						series: "シリーズ全体",
+						instance: "選択したインスタンスのみ"
+					}
 				}
 			},
 			subscriptionsList: {

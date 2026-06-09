@@ -1708,6 +1708,14 @@ export const pt: TranslationTree = {
 				useICSEndAsDue: {
 					name: "Usar hora de término do evento ICS como data de vencimento",
 					description: "Quando ativado, as tarefas criadas a partir de eventos de calendário terão sua data de vencimento definida para a hora de término do evento. Para eventos de dia inteiro, a data de vencimento será a data do evento. Para eventos com horário, a data de vencimento incluirá a hora de término."
+				},
+				recurringEventRelatedNotesMode: {
+					name: "Notas relacionadas de eventos recorrentes",
+					description: "Escolha se notas vinculadas a uma ocorrência de um evento de calendário externo aparecem em toda a série carregada ou apenas na instância selecionada.",
+					options: {
+						series: "Série inteira",
+						instance: "Somente instância selecionada"
+					}
 				}
 			},
 			subscriptionsList: {
