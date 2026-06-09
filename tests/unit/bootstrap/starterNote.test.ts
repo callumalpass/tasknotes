@@ -59,7 +59,8 @@ describe("starter note onboarding", () => {
 		await expect(app.vault.read(file as TFile)).resolves.toBe(STARTER_NOTE_CONTENT);
 		expect(settings.starterNoteCreated).toBe(true);
 		expect(saveSettings).toHaveBeenCalledTimes(1);
-		expect(openFile).toHaveBeenCalledWith(expect.objectContaining({ path: STARTER_NOTE_PATH }));
+		expect(openFile).toHaveBeenCalledTimes(1);
+		expect(openFile.mock.calls[0][0].path).toBe(STARTER_NOTE_PATH);
 	});
 
 	it("opens an existing starter note without overwriting it", async () => {
@@ -74,7 +75,8 @@ describe("starter note onboarding", () => {
 		await expect(app.vault.read(file)).resolves.toBe("custom starter note");
 		expect(settings.starterNoteCreated).toBe(true);
 		expect(saveSettings).toHaveBeenCalledTimes(1);
-		expect(openFile).toHaveBeenCalledWith(expect.objectContaining({ path: STARTER_NOTE_PATH }));
+		expect(openFile).toHaveBeenCalledTimes(1);
+		expect(openFile.mock.calls[0][0].path).toBe(STARTER_NOTE_PATH);
 	});
 
 	it("does not create the starter note for an existing install", async () => {

@@ -7,7 +7,7 @@ import { TaskService } from "../../../src/services/TaskService";
 import { DEFAULT_FIELD_MAPPING } from "../../../src/settings/defaults";
 import { EVENT_TASK_UPDATED, StatusConfig, TaskInfo } from "../../../src/types";
 import { TaskFactory } from "../../helpers/mock-factories";
-import { TFile } from "../../__mocks__/obsidian";
+import { TFile } from "../../helpers/obsidian-runtime";
 
 type EventHandler = (payload: unknown) => void | Promise<void>;
 

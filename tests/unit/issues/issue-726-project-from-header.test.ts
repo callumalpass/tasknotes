@@ -43,7 +43,7 @@ import {
 	InstantTaskConvertService,
 } from "../../../src/services/InstantTaskConvertService";
 import { PluginFactory } from "../../helpers/mock-factories";
-import { TFile } from "../../__mocks__/obsidian";
+import { TFile } from "../../helpers/obsidian-runtime";
 
 // Mock interface matching the heading cache structure from Obsidian
 interface MockHeading {

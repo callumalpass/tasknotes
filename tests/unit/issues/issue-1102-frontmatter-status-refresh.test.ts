@@ -3,9 +3,7 @@ import { FieldMapper } from "../../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING, DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import { EVENT_TASK_UPDATED } from "../../../src/types";
 import { TaskManager } from "../../../src/utils/TaskManager";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 function createTaskManager(app: App): TaskManager {
 	return new TaskManager(

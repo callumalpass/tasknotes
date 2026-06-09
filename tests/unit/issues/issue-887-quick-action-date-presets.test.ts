@@ -3,8 +3,6 @@ import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteMod
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 
-jest.mock("obsidian");
-
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
 		id: "Tasks/quick-date.md",

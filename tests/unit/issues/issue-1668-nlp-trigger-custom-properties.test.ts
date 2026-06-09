@@ -5,9 +5,7 @@ import type { NLPTriggersConfig, UserMappedField } from "../../../src/types/sett
 import type TaskNotesPlugin from "../../../src/main";
 import { buildTaskCreationDataFromParsed } from "../../../src/services/buildTaskCreationDataFromParsed";
 import { TaskModal } from "../../../src/modals/TaskModal";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 const USER_FIELDS: UserMappedField[] = [
 	{ id: "system", key: "system", displayName: "System", type: "text" },

@@ -1,6 +1,6 @@
 import { InstantTaskConvertService } from "../../../src/services/InstantTaskConvertService";
 import { PluginFactory } from "../../helpers/mock-factories";
-import { TFile } from "../../__mocks__/obsidian";
+import { TFile } from "../../helpers/obsidian-runtime";
 
 describe("Issue #1953: inline conversion link aliases", () => {
 	let service: InstantTaskConvertService;

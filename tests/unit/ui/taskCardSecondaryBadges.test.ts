@@ -8,8 +8,6 @@ import {
 	type TaskCardSecondaryBadgeHandlers,
 } from "../../../src/ui/taskCardSecondaryBadges";
 
-jest.mock("obsidian");
-
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
 		title: "Task",

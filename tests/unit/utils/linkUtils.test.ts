@@ -1,5 +1,5 @@
 import { generateLink, generateLinkWithBasename, generateLinkWithDisplay, getProjectDisplayName, parseLinkToPath } from '../../../src/utils/linkUtils';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 import type { App, TFile } from 'obsidian';
 
 const createMockApp = (mockApp: any): App => mockApp as unknown as App;
@@ -14,8 +14,7 @@ describe('linkUtils - frontmatter link format', () => {
 
     // Create a test file
     const vault = (mockApp as any).vault;
-    vault.create('projects/Test Project.md', '');
-    mockFile = vault.getAbstractFileByPath('projects/Test Project.md') as TFile;
+    mockFile = vault.createSync__('projects/Test Project.md', '') as TFile;
   });
 
   describe('generateLink', () => {
@@ -61,6 +60,13 @@ describe('linkUtils - frontmatter link format', () => {
   });
 
   describe('markdown link mode (when useMarkdownLinks=true)', () => {
+    beforeEach(() => {
+      (mockApp.fileManager.generateMarkdownLink as any) = jest.fn(
+        (file: TFile, _sourcePath: string, subpath = '', alias = '') =>
+          `[${alias || file.basename}](${file.path}${subpath})`
+      );
+    });
+
     it('should generate markdown links when explicitly requested', () => {
       const link = generateLink(mockApp, mockFile, 'tasks/My Task.md', '', '', true);
 

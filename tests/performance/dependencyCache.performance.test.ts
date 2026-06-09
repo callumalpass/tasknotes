@@ -3,8 +3,6 @@ import { FieldMapper } from "../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING, DEFAULT_SETTINGS } from "../../src/settings/defaults";
 import { DependencyCache, EVENT_DEPENDENCY_CACHE_CHANGED } from "../../src/utils/DependencyCache";
 
-jest.mock("obsidian");
-
 type MetadataChangedHandler = (file: TFile, data: unknown, cache: unknown) => void;
 
 type MockApp = App & {

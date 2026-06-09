@@ -1,9 +1,7 @@
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING } from "../../../src/settings/defaults";
 import { DependencyCache } from "../../../src/utils/DependencyCache";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 describe("Issue #1878: completed blockers should not appear as active blockers", () => {
 	beforeEach(() => {

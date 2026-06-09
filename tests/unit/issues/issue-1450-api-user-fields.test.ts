@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { App as MockApp, MockObsidian } from "../../__mocks__/obsidian";
+import { App as MockApp, MockObsidian } from "../../helpers/obsidian-runtime";
 import { mapTaskToFrontmatter } from "../../../src/core/fieldMapping";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING, DEFAULT_SETTINGS } from "../../../src/settings/defaults";

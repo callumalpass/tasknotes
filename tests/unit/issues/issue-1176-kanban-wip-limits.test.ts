@@ -9,8 +9,6 @@ import {
 	normalizeKanbanWipLimitsConfig,
 } from "../../../src/bases/KanbanView";
 
-jest.mock("obsidian");
-
 describe("Issue #1176: Kanban WIP limits", () => {
 	it("normalizes WIP limit config from JSON strings and objects", () => {
 		expect(

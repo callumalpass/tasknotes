@@ -339,8 +339,8 @@ export abstract class TaskModal extends Modal {
 	// Dependency fields
 	protected blockedByItems: DependencyItem[] = [];
 	protected blockingItems: DependencyItem[] = [];
-	protected blockedByList?: HTMLElement;
-	protected blockingList?: HTMLElement;
+	protected blockedByList: HTMLElement | undefined = undefined;
+	protected blockingList: HTMLElement | undefined = undefined;
 
 	// Project link storage
 	protected selectedProjectItems: TaskModalProjectItem[] = [];
@@ -350,17 +350,19 @@ export abstract class TaskModal extends Modal {
 	protected initialSubtaskFiles: TAbstractFile[] = [];
 
 	// UI elements
-	protected titleInput: TaskModalTitleInputElement;
-	protected detailsInput: HTMLTextAreaElement; // Legacy - kept for compatibility
+	protected titleInput: TaskModalTitleInputElement =
+		undefined as unknown as TaskModalTitleInputElement;
+	protected detailsInput: HTMLTextAreaElement =
+		undefined as unknown as HTMLTextAreaElement; // Legacy - kept for compatibility
 	protected detailsMarkdownEditor: EmbeddableMarkdownEditor | null = null;
-	protected contextsInput: HTMLInputElement;
-	protected projectsInput: HTMLInputElement;
-	protected tagsInput: HTMLInputElement;
-	protected timeEstimateInput: HTMLInputElement;
-	protected projectsList: HTMLElement;
-	protected subtasksList: HTMLElement;
-	protected actionBar: HTMLElement;
-	protected detailsContainer: HTMLElement;
+	protected contextsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
+	protected projectsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
+	protected tagsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
+	protected timeEstimateInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
+	protected projectsList: HTMLElement = undefined as unknown as HTMLElement;
+	protected subtasksList: HTMLElement = undefined as unknown as HTMLElement;
+	protected actionBar: HTMLElement = undefined as unknown as HTMLElement;
+	protected detailsContainer: HTMLElement = undefined as unknown as HTMLElement;
 	protected isExpanded = false;
 
 	constructor(app: App, plugin: TaskNotesPlugin) {
@@ -468,7 +470,7 @@ export abstract class TaskModal extends Modal {
 	// Store references to split layout containers for potential reuse
 	protected splitContentWrapper: HTMLElement;
 	protected splitLeftColumn: HTMLElement;
-	protected splitRightColumn: HTMLElement;
+	protected splitRightColumn: HTMLElement = undefined as unknown as HTMLElement;
 
 	protected createModalContent(): void {
 		const { contentEl } = this;

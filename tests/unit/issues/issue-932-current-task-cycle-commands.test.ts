@@ -2,9 +2,7 @@ import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
 import type { TaskInfo } from "../../../src/types";
-import { App, TFile } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { App, TFile } from "../../helpers/obsidian-runtime";
 
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {

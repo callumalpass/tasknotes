@@ -14,10 +14,9 @@ import {
 
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
-import { MockObsidian, App } from '../../__mocks__/obsidian';
+import { MockObsidian, App } from '../../helpers/obsidian-runtime';
 
 // Mock external dependencies
-jest.mock('obsidian');
 
 // We do NOT mock date-fns here - we want real formatting behavior
 // We do NOT mock dateUtils here - we want real date display logic

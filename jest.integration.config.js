@@ -7,14 +7,20 @@ module.exports = {
     '**/integration/**/*.test.ts'
   ],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', {
+      tsconfig: {
+        paths: {
+          obsidian: ['node_modules/obsidian-test-mocks/dist/lib/cjs/obsidian/index.cjs']
+        }
+      }
+    }],
   },
+  setupFiles: ['obsidian-test-mocks/jest-setup'],
   setupFilesAfterEnv: ['<rootDir>/tests/test-setup.ts'],
   moduleNameMapper: {
     // Only mock Obsidian and UI libraries - use real date/parsing libraries
-    '^obsidian$': '<rootDir>/tests/__mocks__/obsidian.ts',
-    '^@fullcalendar/(.*)$': '<rootDir>/tests/__mocks__/fullcalendar.ts',
-    '^yaml$': '<rootDir>/tests/__mocks__/yaml.ts'
+    '^obsidian$': '<rootDir>/tests/helpers/obsidian-bridge.ts',
+    '^@fullcalendar/(.*)$': '<rootDir>/tests/__mocks__/fullcalendar.ts'
     // chrono-node, rrule, ical.js, date-fns will use real implementations
   },
   // Integration tests may need more time for complex workflows

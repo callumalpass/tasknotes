@@ -1,11 +1,9 @@
 import { App, Menu } from "obsidian";
-import { MockObsidian } from "../../__mocks__/obsidian";
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
 import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
-
-jest.mock("obsidian");
 
 type MockMenuItem = {
 	setTitle?: jest.Mock;

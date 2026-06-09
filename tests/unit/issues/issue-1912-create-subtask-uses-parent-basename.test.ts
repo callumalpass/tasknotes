@@ -1,9 +1,7 @@
 import { App, TFile } from "obsidian";
 import { buildSubtaskCreationPrePopulatedValues } from "../../../src/services/taskRelationshipActions";
 import type { TaskInfo } from "../../../src/types";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 const createMockApp = (mockApp: unknown): App => mockApp as App;
 

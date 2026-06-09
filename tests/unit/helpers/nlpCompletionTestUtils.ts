@@ -2,7 +2,7 @@ import { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { EditorState } from "@codemirror/state";
 import { createNLPCompletionSource } from "../../../src/editor/NLPCodeMirrorAutocomplete";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
-import { MockObsidian } from "../../__mocks__/obsidian";
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 type CompletionPluginOptions = {
 	settings?: Partial<typeof DEFAULT_SETTINGS>;

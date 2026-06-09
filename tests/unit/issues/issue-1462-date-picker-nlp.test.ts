@@ -14,8 +14,6 @@ import {
 } from "../../../src/modals/DateTimePickerModal";
 import type { ParsedTaskData } from "../../../src/services/NaturalLanguageParser";
 
-jest.mock("obsidian");
-
 function parsedTaskData(overrides: Partial<ParsedTaskData>): ParsedTaskData {
 	return {
 		title: "",

@@ -2,8 +2,6 @@ import { DateContextMenu } from "../../../src/components/DateContextMenu";
 import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
 
-jest.mock("obsidian");
-
 function createPlugin(firstDay: number): TaskNotesPlugin {
 	return {
 		i18n: createI18nService(),

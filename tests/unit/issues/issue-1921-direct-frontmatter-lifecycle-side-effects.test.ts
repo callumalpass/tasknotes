@@ -1,4 +1,4 @@
-import { TFile } from "../../__mocks__/obsidian";
+import { TFile } from "../../helpers/obsidian-runtime";
 import {
 	selectReconciledTaskProperty,
 	TaskFileLifecycleReconciliationService,

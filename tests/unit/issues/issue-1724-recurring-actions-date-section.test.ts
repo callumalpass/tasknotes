@@ -5,8 +5,6 @@ import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 
-jest.mock("obsidian");
-
 type MockMenuItem = Record<string, jest.Mock> | { type: string };
 type MockMenu = {
 	items: MockMenuItem[];

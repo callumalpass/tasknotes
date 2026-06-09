@@ -5,8 +5,6 @@ import { createCompletionsCalendarSection } from "../../../src/modals/taskEditCo
 import type { TaskInfo } from "../../../src/types";
 import { formatDateForStorage } from "../../../src/utils/dateUtils";
 
-jest.mock("obsidian");
-
 type MockMenuItem = Record<string, jest.Mock> | { type: string };
 type MockMenu = {
 	items: MockMenuItem[];

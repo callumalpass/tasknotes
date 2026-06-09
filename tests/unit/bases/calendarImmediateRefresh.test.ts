@@ -1,8 +1,6 @@
 import { CalendarView } from "../../../src/bases/CalendarView";
 import { TaskFactory } from "../../helpers/mock-factories";
 
-jest.mock("obsidian");
-
 describe("Calendar immediate task refresh", () => {
 	it("refreshes FullCalendar immediately for expected task updates", async () => {
 		const originalTask = TaskFactory.createTask({

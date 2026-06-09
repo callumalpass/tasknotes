@@ -16,9 +16,7 @@ import {
 	DEFAULT_SETTINGS,
 } from '../../../src/settings/defaults';
 import { TaskManager } from '../../../src/utils/TaskManager';
-import { MockObsidian } from 'obsidian';
-
-jest.mock('obsidian');
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 
 function makeTaskManager(settingsOverrides: Record<string, unknown> = {}) {
 	const app = MockObsidian.createMockApp();

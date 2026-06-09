@@ -13,7 +13,7 @@
 import { TaskEditModal } from '../../../src/modals/TaskEditModal';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
-import { MockObsidian, TFile } from '../../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../../helpers/obsidian-runtime';
 import { 
   generateRecurringInstances, 
 } from '../../../src/utils/helpers';

@@ -1,7 +1,7 @@
 import { InstantTaskConvertService } from "../../../src/services/InstantTaskConvertService";
 import { DEFAULT_TASK_CREATION_DEFAULTS } from "../../../src/settings/defaults";
 import { PluginFactory } from "../../helpers/mock-factories";
-import { TFile } from "../../__mocks__/obsidian";
+import { TFile } from "../../helpers/obsidian-runtime";
 
 describe("Issue #1705: inline conversion parent note project", () => {
 	it("adds the current note as a project when instant-conversion defaults request it", async () => {

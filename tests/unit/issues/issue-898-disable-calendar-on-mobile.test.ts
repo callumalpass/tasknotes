@@ -7,7 +7,7 @@
  * @see https://github.com/callumalpass/tasknotes/issues/898
  */
 
-import { Platform } from '../../__mocks__/obsidian';
+import { Platform } from '../../helpers/obsidian-runtime';
 import { DEFAULT_SETTINGS } from '../../../src/settings/defaults';
 import { isCalendarIntegrationDisabledOnMobile } from '../../../src/utils/calendarIntegration';
 

@@ -21,7 +21,7 @@
 
 import { InstantTaskConvertService } from '../../../src/services/InstantTaskConvertService';
 import { PluginFactory } from '../../helpers/mock-factories';
-import { TFile } from '../../__mocks__/obsidian';
+import { TFile } from '../../helpers/obsidian-runtime';
 
 // Mock external dependencies
 jest.mock('../../../src/utils/dateUtils', () => ({

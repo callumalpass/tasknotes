@@ -2,8 +2,6 @@ import {
 	getTimeblockCreationErrorMessage,
 	readDailyNotesForTimeblockCreation,
 } from "../../../src/modals/TimeblockCreationModal";
-
-jest.mock("obsidian");
 jest.mock("obsidian-daily-notes-interface", () => ({
 	appHasDailyNotesPluginLoaded: jest.fn(() => true),
 	createDailyNote: jest.fn(),

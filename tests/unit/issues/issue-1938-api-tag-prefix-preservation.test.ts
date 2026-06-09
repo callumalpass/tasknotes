@@ -1,4 +1,4 @@
-import { TFile } from "../../__mocks__/obsidian";
+import { TFile } from "../../helpers/obsidian-runtime";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { TaskService } from "../../../src/services/TaskService";
 import { DEFAULT_FIELD_MAPPING } from "../../../src/settings/defaults";

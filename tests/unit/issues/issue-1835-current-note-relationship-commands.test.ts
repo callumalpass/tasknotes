@@ -7,8 +7,6 @@ import {
 import { EVENT_USER_NOTICE } from "../../../src/core/userNotices";
 import type { TaskInfo } from "../../../src/types";
 
-jest.mock("obsidian");
-
 function makePlugin() {
 	return {
 		app: {

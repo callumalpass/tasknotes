@@ -1,8 +1,6 @@
 import { taskMatchesSelectorQuery } from "../../../src/modals/TaskSelectorWithCreateModal";
 import { TaskInfo } from "../../../src/types";
 
-jest.mock("obsidian");
-
 function task(overrides: Partial<TaskInfo>): TaskInfo {
 	return {
 		title: "Example task",

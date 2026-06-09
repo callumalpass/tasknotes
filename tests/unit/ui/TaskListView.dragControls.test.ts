@@ -1,10 +1,8 @@
-import { App, MockObsidian } from "../../__mocks__/obsidian";
+import { App, MockObsidian } from "../../helpers/obsidian-runtime";
 import { TaskListView } from "../../../src/bases/TaskListView";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING } from "../../../src/settings/defaults";
 import { TaskFactory } from "../../helpers/mock-factories";
-
-jest.mock("obsidian");
 jest.mock("tasknotes-nlp-core", () => ({
 	NaturalLanguageParserCore: class {},
 }), { virtual: true });

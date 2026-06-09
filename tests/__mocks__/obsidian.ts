@@ -965,6 +965,12 @@ export const Notice = jest.fn().mockImplementation((message: string, timeout?: n
   return {};
 });
 
+export const MarkdownRenderer = {
+  render: jest.fn(async (_app: App, markdown: string, el: HTMLElement): Promise<void> => {
+    el.textContent = markdown;
+  }),
+};
+
 export const requestUrl = jest.fn();
 
 // Menu mock class

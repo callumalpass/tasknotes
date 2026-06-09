@@ -1,5 +1,5 @@
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
-import { MockObsidian } from "../../__mocks__/obsidian";
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 import { createCompletionPlugin, getCompletionResult } from "../helpers/nlpCompletionTestUtils";
 import { CompletionContext } from "@codemirror/autocomplete";
 import { EditorState } from "@codemirror/state";

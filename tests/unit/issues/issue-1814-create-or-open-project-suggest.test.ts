@@ -1,9 +1,7 @@
 import { TaskSelectorWithCreateModal } from "../../../src/modals/TaskSelectorWithCreateModal";
 import { NLPSuggest } from "../../../src/modals/taskCreationSuggest";
-import { MockObsidian } from "../../__mocks__/obsidian";
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 import type { App } from "obsidian";
-
-jest.mock("obsidian");
 
 const mockClose = jest.fn();
 

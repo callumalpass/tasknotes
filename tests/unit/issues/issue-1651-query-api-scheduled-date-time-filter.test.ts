@@ -20,7 +20,7 @@ import {
 	DEFAULT_STATUSES,
 } from '../../../src/settings/defaults';
 import { FilterQuery, TaskInfo } from '../../../src/types';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 
 function makeFilterService() {
 	const app = MockObsidian.createMockApp();

@@ -1,7 +1,5 @@
 import { EmbeddableMarkdownEditor } from "../../../src/editor/EmbeddableMarkdownEditor";
 
-jest.mock("obsidian");
-
 function createApp(file: unknown = null): any {
 	return {
 		scope: {},

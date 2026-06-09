@@ -8,8 +8,6 @@
 import { Menu } from "obsidian";
 import { CalendarView } from "../../../src/bases/CalendarView";
 
-jest.mock("obsidian");
-
 jest.mock("../../../src/modals/TaskCreationModal", () => ({
 	TaskCreationModal: jest.fn().mockImplementation(() => ({
 		open: jest.fn(),

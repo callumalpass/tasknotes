@@ -6,8 +6,6 @@ import {
 	EVENT_DEPENDENCY_CACHE_CHANGED,
 } from "../../../src/utils/DependencyCache";
 
-jest.mock("obsidian");
-
 type MetadataChangedHandler = (file: TFile, data: unknown, cache: unknown) => void;
 
 type MockApp = App & {

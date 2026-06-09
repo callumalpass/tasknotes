@@ -25,7 +25,7 @@ import { FilterService } from '../../../src/services/FilterService';
 import { TaskManager } from '../../../src/utils/TaskManager';
 import { StatusManager } from '../../../src/services/StatusManager';
 import { PriorityManager } from '../../../src/services/PriorityManager';
-import { MockObsidian, App } from '../../__mocks__/obsidian';
+import { MockObsidian, App } from '../../helpers/obsidian-runtime';
 import { DEFAULT_SETTINGS, DEFAULT_FIELD_MAPPING } from '../../../src/settings/defaults';
 import { FieldMapper } from '../../../src/services/FieldMapper';
 import { PriorityConfig } from '../../../src/types';

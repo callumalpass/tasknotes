@@ -5,8 +5,6 @@ import { DependencyCache } from "../../../src/utils/DependencyCache";
 import { TaskManager } from "../../../src/utils/TaskManager";
 import { isPathInExcludedFolder, parseExcludedFolders } from "../../../src/utils/pathExclusions";
 
-jest.mock("obsidian");
-
 type MockApp = App & {
 	__files: Map<string, TFile>;
 	__metadata: Map<string, { frontmatter: Record<string, unknown> }>;

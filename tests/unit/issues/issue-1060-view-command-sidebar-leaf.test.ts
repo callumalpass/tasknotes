@@ -2,8 +2,6 @@ import { TFile } from "obsidian";
 import { WorkspaceNavigationService } from "../../../src/ui/WorkspaceNavigationService";
 import type TaskNotesPlugin from "../../../src/main";
 
-jest.mock("obsidian");
-
 describe("Issue #1060: view commands reuse existing sidebar leaves", () => {
 	it("reveals an existing leaf for the configured Base file instead of opening a new main tab", async () => {
 		const file = new TFile("TaskNotes/Views/calendar-default.base");

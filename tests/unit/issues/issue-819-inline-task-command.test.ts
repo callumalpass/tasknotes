@@ -3,9 +3,7 @@ import TaskNotesPlugin from "../../../src/main";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import type { TaskInfo } from "../../../src/types";
-import { App } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { App } from "../../helpers/obsidian-runtime";
 
 jest.mock("../../../src/modals/TaskActionPaletteModal", () => ({
 	TaskActionPaletteModal: jest.fn().mockImplementation(() => ({
@@ -90,12 +88,14 @@ describe("Issue #819: quick actions for inline task links", () => {
 			sourceFile.path,
 			"wikilink"
 		);
-		expect(TaskActionPaletteModal).toHaveBeenCalledWith(
-			plugin.app,
-			task,
-			plugin,
-			expect.any(Date)
-		);
+		expect(TaskActionPaletteModal).toHaveBeenCalledTimes(1);
+		const [modalApp, modalTask, modalPlugin, modalDate] = (
+			TaskActionPaletteModal as jest.Mock
+		).mock.calls[0];
+		expect(modalApp).toBe(plugin.app);
+		expect(modalTask).toBe(task);
+		expect(modalPlugin).toBe(plugin);
+		expect(modalDate).toBeInstanceOf(Date);
 		const modal = (TaskActionPaletteModal as jest.Mock).mock.results[0].value;
 		expect(modal.open).toHaveBeenCalledTimes(1);
 	});

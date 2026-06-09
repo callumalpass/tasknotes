@@ -10,9 +10,7 @@ import * as path from "path";
 import type { App } from "obsidian";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import type { TaskInfo } from "../../../src/types";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 const cssFilePath = path.resolve(__dirname, "../../../styles/task-modal.css");
 

@@ -12,8 +12,6 @@ import {
 import type { FilterQuery } from "../../src/types";
 import { TaskManager } from "../../src/utils/TaskManager";
 
-jest.mock("obsidian");
-
 type MockApp = App & {
 	__files: Map<string, TFile>;
 	__metadata: Map<string, { frontmatter: Record<string, unknown> }>;

@@ -12,7 +12,7 @@
  */
 
 import { FileSystemFactory, PluginFactory, TaskFactory } from '../../helpers/mock-factories';
-import { MockObsidian, TFile } from '../../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../../helpers/obsidian-runtime';
 import { TaskCreationData, TaskService } from '../../../src/services/TaskService';
 import { TaskInfo, TimeEntry } from '../../../src/types';
 
@@ -92,6 +92,43 @@ describe('TaskService', () => {
 
     taskService = new TaskService(mockPlugin);
   });
+
+  function getLastCreatedFrontmatter(): any {
+    const createCalls = mockPlugin.app.vault.create.mock.calls;
+    const content = createCalls[createCalls.length - 1]?.[1] as string;
+    const match = content.match(/^---\n([\s\S]*?)\n?---/);
+    if (!match) {
+      throw new Error("Created task content did not include YAML frontmatter");
+    }
+    const result: Record<string, unknown> = {};
+    const lines = match[1].split("\n");
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (!line || line.startsWith(" ")) {
+        continue;
+      }
+
+      const [key, ...valueParts] = line.split(":");
+      const rawValue = valueParts.join(":").trim();
+      if (!key) {
+        continue;
+      }
+
+      if (!rawValue) {
+        const values: string[] = [];
+        while (lines[index + 1]?.startsWith("  - ")) {
+          index += 1;
+          values.push(lines[index].slice(4));
+        }
+        result[key] = values;
+      } else if (rawValue === "true" || rawValue === "false") {
+        result[key] = rawValue === "true";
+      } else {
+        result[key] = rawValue;
+      }
+    }
+    return result;
+  }
 
   describe('createTask', () => {
     it('should create a basic task with minimal data', async () => {
@@ -533,20 +570,14 @@ describe('TaskService', () => {
     it('should normalize spaced tags before writing frontmatter (#1962)', async () => {
       mockPlugin.settings.taskIdentificationMethod = 'tag';
 
-      const obsidian = require('obsidian');
-      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
-
       const { taskInfo } = await taskService.createTask({
         title: 'Spaced Tag Task',
         tags: ['abc xyz', '#multi   word']
       });
 
-      expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      const fmArg = getLastCreatedFrontmatter();
       expect(fmArg.tags).toEqual(['task', 'abc-xyz', 'multi-word']);
       expect(taskInfo.tags).toEqual(['task', 'abc-xyz', 'multi-word']);
-
-      yamlSpy.mockRestore();
     });
 
     it('should use property-based identification when configured', async () => {
@@ -588,20 +619,14 @@ describe('TaskService', () => {
       mockPlugin.settings.taskPropertyName = 'tags';
       mockPlugin.settings.taskPropertyValue = 'task';
 
-      const obsidian = require('obsidian');
-      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
-
       const { taskInfo } = await taskService.createTask({
         title: 'Tags Property Identifier Task',
         tags: ['work']
       });
 
-      expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      const fmArg = getLastCreatedFrontmatter();
       expect(fmArg.tags).toEqual(['work', 'task']);
       expect(taskInfo.tags).toEqual(['work', 'task']);
-
-      yamlSpy.mockRestore();
     });
 
     it('should write the identifier tag when tags property identification has no custom tags (#1156)', async () => {
@@ -609,19 +634,13 @@ describe('TaskService', () => {
       mockPlugin.settings.taskPropertyName = 'tags';
       mockPlugin.settings.taskPropertyValue = 'task';
 
-      const obsidian = require('obsidian');
-      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
-
       const { taskInfo } = await taskService.createTask({
         title: 'Tags Property Identifier Only Task'
       });
 
-      expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      const fmArg = getLastCreatedFrontmatter();
       expect(fmArg.tags).toEqual(['task']);
       expect(taskInfo.tags).toEqual(['task']);
-
-      yamlSpy.mockRestore();
     });
 
     it('should handle template processing errors gracefully', async () => {
@@ -671,18 +690,11 @@ describe('TaskService', () => {
       mockPlugin.settings.taskPropertyName = 'isTask';
       mockPlugin.settings.taskPropertyValue = 'true';
 
-      // Spy on stringifyYaml to capture the frontmatter object passed during file creation
-      const obsidian = require('obsidian');
-      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
-
       await taskService.createTask({ title: 'Boolean Property Task' });
 
-      expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      const fmArg = getLastCreatedFrontmatter();
       expect(typeof fmArg.isTask).toBe('boolean');
       expect(fmArg.isTask).toBe(true);
-
-      yamlSpy.mockRestore();
     });
 
     it('should coerce boolean-like property value to boolean false in frontmatter when using property identification', async () => {
@@ -691,23 +703,14 @@ describe('TaskService', () => {
       mockPlugin.settings.taskPropertyName = 'isTask';
       mockPlugin.settings.taskPropertyValue = 'false';
 
-      const obsidian = require('obsidian');
-      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
-
       await taskService.createTask({ title: 'Boolean Property False Task' });
 
-      expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      const fmArg = getLastCreatedFrontmatter();
       expect(typeof fmArg.isTask).toBe('boolean');
       expect(fmArg.isTask).toBe(false);
-
-      yamlSpy.mockRestore();
     });
 
     it('should write boolean status "true" as boolean true in frontmatter', async () => {
-      const obsidian = require('obsidian');
-      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
-
       const taskData: TaskCreationData = {
         title: 'Boolean Status Task',
         status: 'true'
@@ -715,18 +718,12 @@ describe('TaskService', () => {
 
       await taskService.createTask(taskData);
 
-      expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      const fmArg = getLastCreatedFrontmatter();
       expect(typeof fmArg.status).toBe('boolean');
       expect(fmArg.status).toBe(true);
-
-      yamlSpy.mockRestore();
     });
 
     it('should write boolean status "false" as boolean false in frontmatter', async () => {
-      const obsidian = require('obsidian');
-      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
-
       const taskData: TaskCreationData = {
         title: 'Boolean Status False Task',
         status: 'false'
@@ -734,18 +731,12 @@ describe('TaskService', () => {
 
       await taskService.createTask(taskData);
 
-      expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      const fmArg = getLastCreatedFrontmatter();
       expect(typeof fmArg.status).toBe('boolean');
       expect(fmArg.status).toBe(false);
-
-      yamlSpy.mockRestore();
     });
 
     it('should write regular status values as strings in frontmatter', async () => {
-      const obsidian = require('obsidian');
-      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
-
       const taskData: TaskCreationData = {
         title: 'Regular Status Task',
         status: 'in-progress'
@@ -753,12 +744,9 @@ describe('TaskService', () => {
 
       await taskService.createTask(taskData);
 
-      expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      const fmArg = getLastCreatedFrontmatter();
       expect(typeof fmArg.status).toBe('string');
       expect(fmArg.status).toBe('in-progress');
-
-      yamlSpy.mockRestore();
     });
 
 

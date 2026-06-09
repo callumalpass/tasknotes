@@ -104,10 +104,10 @@ function createEmbeddableMarkdownEditor(
 export class TaskCreationModal extends TaskModal {
 	private options: TaskCreationOptions;
 	private nlParser: NaturalLanguageParser;
-	private nlInput: HTMLTextAreaElement; // Legacy - keeping for compatibility
+	private nlInput: HTMLTextAreaElement = undefined as unknown as HTMLTextAreaElement; // Legacy - keeping for compatibility
 	private nlMarkdownEditor: EmbeddableMarkdownEditor | null = null;
-	private nlPreviewContainer: HTMLElement;
-	private nlButtonContainer: HTMLElement;
+	private nlPreviewContainer: HTMLElement = undefined as unknown as HTMLElement;
+	private nlButtonContainer: HTMLElement = undefined as unknown as HTMLElement;
 	private nlpSuggest: NLPSuggest | null = null; // Will be replaced with CodeMirror autocomplete
 
 	// Track event listeners for cleanup

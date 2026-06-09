@@ -1,8 +1,6 @@
 import { TaskCreationModal } from '../../../src/modals/TaskCreationModal';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 import type { App } from 'obsidian';
-
-jest.mock('obsidian');
 
 jest.mock('../../../src/services/NaturalLanguageParser', () => {
 	const mockParserInstance = {

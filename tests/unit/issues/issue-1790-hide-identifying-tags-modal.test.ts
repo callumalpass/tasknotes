@@ -4,9 +4,7 @@ import { NLPSuggest } from "../../../src/modals/taskCreationSuggest";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import { buildTaskEditChanges, type TaskEditChangeInput } from "../../../src/modals/taskEditChanges";
 import type { TaskInfo } from "../../../src/types";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 const createMockApp = (mockApp: unknown): App => mockApp as App;
 

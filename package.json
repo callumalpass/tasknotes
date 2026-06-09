@@ -72,6 +72,7 @@
 		"jest-environment-jsdom": "^30.1.1",
 		"monkey-around": "^3.0.0",
 		"obsidian": "^1.12.3",
+		"obsidian-test-mocks": "^3.1.0",
 		"obsidian-typings": "^4.49.0",
 		"prettier": "^3.6.2",
 		"stylelint": "^17.11.0",

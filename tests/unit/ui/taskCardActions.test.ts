@@ -12,8 +12,6 @@ import { PriorityContextMenu } from "../../../src/components/PriorityContextMenu
 import { RecurrenceContextMenu } from "../../../src/components/RecurrenceContextMenu";
 import { ReminderModal } from "../../../src/modals/ReminderModal";
 
-jest.mock("obsidian");
-
 jest.mock("../../../src/components/PriorityContextMenu", () => ({
 	PriorityContextMenu: jest.fn().mockImplementation((options) => ({
 		options,

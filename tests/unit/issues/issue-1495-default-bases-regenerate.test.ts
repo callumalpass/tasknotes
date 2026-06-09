@@ -1,8 +1,6 @@
 import TaskNotesPlugin from "../../../src/main";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
-import { App, TFile } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { App, TFile } from "../../helpers/obsidian-runtime";
 
 function createPlugin(taskTag: string): TaskNotesPlugin {
 	const plugin = new TaskNotesPlugin(new App() as never, {} as never);

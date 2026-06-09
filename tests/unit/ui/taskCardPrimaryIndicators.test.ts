@@ -9,8 +9,6 @@ import {
 	updateStatusIndicator,
 } from "../../../src/ui/taskCardPrimaryIndicators";
 
-jest.mock("obsidian");
-
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
 		title: "Task",

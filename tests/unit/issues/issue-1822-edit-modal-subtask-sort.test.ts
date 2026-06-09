@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { App as MockApp, MockObsidian, TFile } from "../../__mocks__/obsidian";
+import { App as MockApp, MockObsidian, TFile } from "../../helpers/obsidian-runtime";
 import type TaskNotesPlugin from "../../../src/main";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import { ProjectSubtasksService } from "../../../src/services/ProjectSubtasksService";

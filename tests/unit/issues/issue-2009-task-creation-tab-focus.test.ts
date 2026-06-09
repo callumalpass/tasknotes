@@ -1,9 +1,7 @@
 import type { App } from "obsidian";
 import type { MarkdownEditorProps } from "../../../src/editor/EmbeddableMarkdownEditor";
 import { TaskCreationModal } from "../../../src/modals/TaskCreationModal";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 const mockEditorInstances: Array<{ container: HTMLElement; options: MarkdownEditorProps }> = [];
 

@@ -1,7 +1,5 @@
 import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
 
-jest.mock("obsidian");
-
 describe("Issue #1949: date picker keeps existing-date edits open", () => {
 	it("does not commit or close when typing a digit into an existing date", () => {
 		const onSelect = jest.fn();

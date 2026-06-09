@@ -9,8 +9,6 @@ import { Menu } from "obsidian";
 import { PriorityContextMenu } from "../../../src/components/PriorityContextMenu";
 import { PriorityConfig } from "../../../src/types";
 
-jest.mock("obsidian");
-
 type MockMenuItem = {
 	setTitle: jest.Mock;
 };

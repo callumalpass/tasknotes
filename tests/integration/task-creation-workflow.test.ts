@@ -16,13 +16,12 @@ import { TaskService } from '../../src/services/TaskService';
 import { NaturalLanguageParser } from '../../src/services/NaturalLanguageParser';
 import { TestEnvironment, WorkflowTester } from '../helpers/integration-helpers';
 import { TaskFactory } from '../helpers/mock-factories';
-import { MockObsidian, TFile } from '../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../helpers/obsidian-runtime';
 
 // Import Notice from global scope
 declare const Notice: jest.MockedFunction<any>;
 
 // Mock external dependencies
-jest.mock('obsidian');
 jest.mock('date-fns', () => ({
   format: jest.fn((date: Date, formatStr: string) => {
     if (formatStr === 'yyyy-MM-dd') {

@@ -1,4 +1,4 @@
-import { TFile } from "../../__mocks__/obsidian";
+import { TFile } from "../../helpers/obsidian-runtime";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 import { TaskService } from "../../../src/services/TaskService";
 

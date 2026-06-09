@@ -1014,7 +1014,7 @@ export class TaskManager extends Events {
 	/**
 	 * Delegate dependency methods to DependencyCache (will be set by main.ts)
 	 */
-	private _dependencyCache?: DependencyCache;
+	private _dependencyCache: DependencyCache | undefined = undefined;
 
 	setDependencyCache(cache: DependencyCache): void {
 		this._dependencyCache = cache;

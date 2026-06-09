@@ -48,7 +48,7 @@ jest.mock("yaml", () => {
 	};
 });
 
-import { TFile } from "../../__mocks__/obsidian";
+import { TFile } from "../../helpers/obsidian-runtime";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 import { TaskService } from "../../../src/services/TaskService";
 import type { TaskInfo } from "../../../src/types";
@@ -109,6 +109,12 @@ describe("TaskService materialized occurrences", () => {
 			taskService: new TaskService(plugin),
 			frontmatterByPath,
 		};
+	}
+
+	function getVaultReadPaths(plugin: ReturnType<typeof createService>["plugin"]): string[] {
+		return (plugin.app.vault.read as jest.Mock).mock.calls.map(
+			([file]: [TFile]) => file.path
+		);
 	}
 
 	it("creates occurrence notes with recurrence identity fields", async () => {
@@ -216,8 +222,8 @@ describe("TaskService materialized occurrences", () => {
 				"Occurrence Weekly review on 2026-06-08T09:30:00\nParent: [[Tasks/Weekly review]]",
 			review_type: "weekly-occurrence",
 		});
-		expect(plugin.app.vault.read).toHaveBeenCalledWith(occurrenceTemplate);
-		expect(plugin.app.vault.read).not.toHaveBeenCalledWith(normalTemplate);
+		expect(getVaultReadPaths(plugin)).toContain(occurrenceTemplate.path);
+		expect(getVaultReadPaths(plugin)).not.toContain(normalTemplate.path);
 	});
 
 	it("uses the global occurrence body template when the parent has no template", async () => {
@@ -253,8 +259,8 @@ describe("TaskService materialized occurrences", () => {
 		expect(occurrence.details).toBe(
 			"Fallback occurrence body for Monthly review on 2026-07-01"
 		);
-		expect(plugin.app.vault.read).toHaveBeenCalledWith(occurrenceTemplate);
-		expect(plugin.app.vault.read).not.toHaveBeenCalledWith(normalTemplate);
+		expect(getVaultReadPaths(plugin)).toContain(occurrenceTemplate.path);
+		expect(getVaultReadPaths(plugin)).not.toContain(normalTemplate.path);
 	});
 
 	it("keeps using the normal body template when no occurrence template is configured", async () => {

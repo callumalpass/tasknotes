@@ -1,11 +1,9 @@
 import { TaskEditModal } from '../../../src/modals/TaskEditModal';
 import { showConfirmationModal } from '../../../src/modals/ConfirmationModal';
-import { MockObsidian, Notice } from '../../__mocks__/obsidian';
+import { MockObsidian, Notice } from '../../helpers/obsidian-runtime';
 import { makeContainer } from '../../helpers/dom-helpers';
 import type { App } from 'obsidian';
 import type { TaskInfo } from '../../../src/types';
-
-jest.mock('obsidian');
 
 jest.mock('../../../src/modals/ConfirmationModal', () => ({
 	ConfirmationModal: jest.fn().mockImplementation(() => ({
