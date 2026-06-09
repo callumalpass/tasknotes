@@ -28,7 +28,7 @@ function getVersionDate(version) {
 	}
 }
 
-// Get all release note files and bundle versions since last minor (includes pre-release versions)
+// Get all release note files and bundle versions from the current major series (includes pre-release versions)
 const releaseFiles = readdirSync("docs/releases")
 	.filter(f => f.match(/^\d+\.\d+\.\d+(?:-[\w.]+)?\.md$/))
 	.map(f => f.replace('.md', ''))
@@ -46,21 +46,10 @@ if (!current) {
 	process.exit(1);
 }
 
-// Find all versions in current minor series (e.g., 3.25.x)
-const currentMinorVersions = releaseFiles.filter(v =>
-	v.major === current.major && v.minor === current.minor
-);
-
-// Find all versions from previous minor series (e.g., 3.24.x)
-const previousMinorVersions = releaseFiles.filter(v =>
-	v.major === current.major && v.minor === current.minor - 1
-);
-
-// Bundle current minor + all patches from previous minor
-const versionsToBundle = [
-	...currentMinorVersions.map(v => v.full),
-	...previousMinorVersions.map(v => v.full)
-];
+// Bundle all patches from the current major series.
+const versionsToBundle = releaseFiles
+	.filter(v => v.major === current.major)
+	.map(v => v.full);
 
 // Fetch dates and sort by date (newest first)
 const versionsWithDates = versionsToBundle.map(version => ({
@@ -74,6 +63,7 @@ const versionsWithDates = versionsToBundle.map(version => ({
 	// Sort by date descending (newest first)
 	return new Date(b.date).getTime() - new Date(a.date).getTime();
 });
+const bundledVersionList = versionsWithDates.map(({ version }) => version);
 
 // Generate imports and metadata
 const imports = versionsWithDates.map(({ version }, index) =>
@@ -112,4 +102,4 @@ ${releaseNotesArray}
 writeFileSync("src/releaseNotes.ts", content);
 
 console.log(`✓ Generated release notes bundle for version ${currentVersion}`);
-console.log(`  Bundled versions: ${versionsToBundle.join(', ')}`);
+console.log(`  Bundled versions: ${bundledVersionList.join(', ')}`);

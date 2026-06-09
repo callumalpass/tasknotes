@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, MarkdownRenderer } from "obsidian";
 import { format, parseISO } from "date-fns";
 import TaskNotesPlugin from "../main";
-import { ReleaseNoteVersion } from "../releaseNotes";
+import type { ReleaseNoteVersion } from "../releaseNotes";
 
 export const RELEASE_NOTES_VIEW_TYPE = "tasknotes-release-notes";
 
@@ -78,6 +78,24 @@ export class ReleaseNotesView extends ItemView {
 		} catch {
 			return "";
 		}
+	}
+
+	private async renderVersionContent(
+		content: HTMLElement,
+		versionData: ReleaseNoteVersion
+	): Promise<void> {
+		// Transform issue references into clickable links and render the markdown
+		const transformedNotes = this.transformIssueLinks(versionData.content);
+		const releaseContent = versionData.isCurrent
+			? `${this.plugin.i18n.translate("views.releaseNotes.baseFilesNotice")}\n\n${transformedNotes}`
+			: transformedNotes;
+		await MarkdownRenderer.render(
+			this.plugin.app,
+			releaseContent,
+			content,
+			"",
+			this
+		);
 	}
 
 	/**
@@ -378,24 +396,26 @@ export class ReleaseNotesView extends ItemView {
 		content.classList.add("tn-static-padding-0-16px-16px-16px-f1aa998c");
 		content.style.display = isExpanded ? "block" : "none";
 
-		// Transform issue references into clickable links and render the markdown
-		const transformedNotes = this.transformIssueLinks(versionData.content);
-		const releaseContent = versionData.isCurrent
-			? `${this.plugin.i18n.translate("views.releaseNotes.baseFilesNotice")}\n\n${transformedNotes}`
-			: transformedNotes;
-		await MarkdownRenderer.render(
-			this.plugin.app,
-			releaseContent,
-			content,
-			"",
-			this
-		);
+		let renderPromise: Promise<void> | null = null;
+		const renderIfNeeded = () => {
+			if (!renderPromise) {
+				renderPromise = this.renderVersionContent(content, versionData);
+			}
+			return renderPromise;
+		};
+
+		if (isExpanded) {
+			await renderIfNeeded();
+		}
 
 		// Toggle functionality
 		header.addEventListener("click", () => {
 			const isCurrentlyExpanded = content.style.display !== "none";
 			content.style.display = isCurrentlyExpanded ? "none" : "block";
 			chevron.textContent = isCurrentlyExpanded ? "▶" : "▼";
+			if (!isCurrentlyExpanded) {
+				void renderIfNeeded();
+			}
 		});
 	}
 
@@ -516,11 +536,11 @@ export class ReleaseNotesView extends ItemView {
 			starMessage.appendText(messageText);
 		}
 
-		// Render all versions
+		// Create all version sections
 		const versionsContainer = container.createEl("div", { cls: "release-notes-versions" });
 		for (let i = 0; i < this.releaseNotesBundle.length; i++) {
 			const versionData = this.releaseNotesBundle[i];
-			// Current version and first patch in minor series expanded, others collapsed
+			// Current version and newest bundled version expanded, others collapsed
 			const isExpanded = versionData.isCurrent || i === 0;
 			await this.createVersionSection(versionsContainer, versionData, isExpanded);
 		}

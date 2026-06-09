@@ -34,6 +34,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- Added Canvas Bases to the companion plugin documentation and first-install starter note. See [Canvas Bases](https://tasknotes.dev/companion-plugins/canvas-bases/) for setup and TaskNotes integration details.
 - Added a TaskNotes starter note that is created and opened automatically on first install to introduce task creation, inline conversion, and embedded Bases views.
 - Added a runtime API surface for companion plugins to show or populate the standard TaskNotes task context menu.
 - (#2000) Added separate settings for using the active note as a project during normal task creation and during inline task creation or instant conversion. Thanks to @BlueScreen32 for suggesting the split.
@@ -48,6 +49,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Added a local review-type lint check that catches dependency-resolution warnings from Obsidian's online review before submission.
 - Improved dependency and project relationship cache updates so ordinary note edits avoid unnecessary relationship recalculation, while blocked and blocking state stays current when dependency status changes.
 - Improved filter and view query caching so filter options update immediately after relevant task-field changes while large Task List, Kanban, and Calendar queries avoid repeated vault scans.
+- Extended the in-app release notes bundle to include the current major release, with collapsed versions rendered only when opened.
 
 ## Fixed
 
