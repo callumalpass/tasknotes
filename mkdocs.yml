@@ -94,6 +94,7 @@ nav:
     - Calendar Setup: calendar-setup.md
   - Companion Plugins:
     - Overview: companion-plugins.md
+    - Canvas Bases: companion-plugins/canvas-bases.md
     - TaskNotes Workflows: companion-plugins/tasknotes-workflows.md
   - Specification:
     - About the Spec: spec.md
