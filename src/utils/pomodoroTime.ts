@@ -76,6 +76,17 @@ export function getSessionCompletionTimeMs(
 	return null;
 }
 
+export function getProjectedPomodoroEndTimeMs(
+	secondsRemaining: number,
+	nowMs = Date.now()
+): number {
+	const remainingSeconds = Number.isFinite(secondsRemaining)
+		? Math.max(0, Math.floor(secondsRemaining))
+		: 0;
+
+	return nowMs + remainingSeconds * 1000;
+}
+
 export function formatLocalTimestamp(timestampMs: number): string {
 	const date = new Date(timestampMs);
 	const timezoneOffset = -date.getTimezoneOffset();

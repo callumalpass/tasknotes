@@ -360,7 +360,7 @@ export const pt: TranslationTree = {
 			statsLabel: "concluídos hoje",
 			meta: {
 				ready: "{time} planejado · {count} concluídos hoje",
-				running: "{time} restante",
+				running: "{time} restante · Termina às {endTime}",
 				paused: "{type} pausado · {time} restante",
 				breakReady: "{type} pronto · {time} planejado"
 			},

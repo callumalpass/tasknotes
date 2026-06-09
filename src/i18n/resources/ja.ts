@@ -360,7 +360,7 @@ export const ja: TranslationTree = {
 			statsLabel: "今日完了",
 			meta: {
 				ready: "{time} 予定 · 今日 {count} 完了",
-				running: "残り {time}",
+				running: "残り {time} · {endTime} に終了",
 				paused: "{type} 一時停止中 · 残り {time}",
 				breakReady: "{type} 準備完了 · {time} 予定"
 			},

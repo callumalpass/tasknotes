@@ -360,7 +360,7 @@ export const ko: TranslationTree = {
 			statsLabel: "오늘 완료",
 			meta: {
 				ready: "{time} 예정 · 오늘 {count}개 완료",
-				running: "{time} 남음",
+				running: "{time} 남음 · {endTime}에 종료",
 				paused: "{type} 일시 중지 · {time} 남음",
 				breakReady: "{type} 준비됨 · {time} 예정"
 			},
