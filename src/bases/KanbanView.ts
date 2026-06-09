@@ -64,6 +64,7 @@ import {
 	findKanbanStatusConfigForGroupKey,
 	formatKanbanColumnCount,
 	getKanbanColumnTaskCounts,
+	getVisibleKanbanSwimLaneColumnKeys,
 	getKanbanListPropertyValue,
 	getKanbanStatusGroupKeyAliases,
 	getKanbanSwimLaneKeys,
@@ -1490,6 +1491,15 @@ export class KanbanView extends BasesViewBase {
 		// Apply column ordering
 		const columnKeys = Array.from(groups.keys());
 		const orderedKeys = this.applyColumnOrder(groupByPropertyId, columnKeys);
+		// Hide columns that are empty across every swimlane (matches flat mode's
+		// shouldRenderKanbanColumn behavior). Uses the filtered `swimLanes` map so
+		// counts reflect the active filter.
+		const visibleColumnKeys = getVisibleKanbanSwimLaneColumnKeys(
+			orderedKeys,
+			swimLanes,
+			this.hideEmptyColumns,
+			this.pinnedColumns
+		);
 		const orderedSwimLanes = this.applySwimLaneOrderToMap(
 			this.swimLanePropertyId,
 			swimLanes,
@@ -1499,7 +1509,7 @@ export class KanbanView extends BasesViewBase {
 		// Render swimlane table
 		await this.renderSwimLaneTable(
 			orderedSwimLanes,
-			orderedKeys,
+			visibleColumnKeys,
 			pathToProps,
 			groupByPropertyId
 		);
