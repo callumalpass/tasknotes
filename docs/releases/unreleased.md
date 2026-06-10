@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Fixed recurring all-day ICS subscription events keeping the original end date on later instances, which could cause calendar list views to show events under the wrong day.
