@@ -974,6 +974,20 @@ export function renderIntegrationsTab(
 					})
 			);
 
+			// Timeblock event title template
+			group.addSetting((setting) =>
+				configureTextSetting(setting, {
+					name: "Timeblock Event Title Template",
+					desc: "Template for synced timeblock event titles (used when Sync timeblocks is enabled). Supports {{title}}, {{date}}, {{startTime}}, {{endTime}}.",
+					placeholder: "{{title}}",
+					getValue: () => plugin.settings.googleCalendarExport.timeblockEventTitleTemplate,
+					setValue: async (value: string) => {
+						plugin.settings.googleCalendarExport.timeblockEventTitleTemplate = value || "{{title}}";
+						save();
+					},
+				})
+			);
+
 			// Include description
 			group.addSetting(
 				(setting) =>
@@ -1109,6 +1123,18 @@ export function renderIntegrationsTab(
 							save();
 						},
 					})
+			);
+
+			group.addSetting((setting) =>
+				configureToggleSetting(setting, {
+					name: "Sync timeblocks",
+					desc: "Enable syncing timeblocks to Google Calendar.",
+					getValue: () => plugin.settings.googleCalendarExport.syncTimeblocks,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.syncTimeblocks = value;
+						save();
+					},
+				})
 			);
 
 			// Manual sync actions - section header
