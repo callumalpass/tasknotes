@@ -184,24 +184,3 @@ export function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlug
 	};
 }
 
-/**
- * Creates a click handler for project indicators.
- */
-export function createProjectClickHandler(task: TaskInfo, plugin: TaskNotesPlugin): () => void {
-	return () => {
-		void (async () => {
-			const logger = getTaskCardActionLogger(plugin);
-			try {
-				await plugin.applyProjectSubtaskFilter(task);
-			} catch (error) {
-				logger.error("Error filtering project subtasks", {
-					category: "internal",
-					operation: "filter-project-subtasks",
-					details: { taskPath: task.path },
-					error,
-				});
-				new Notice("Failed to filter project subtasks");
-			}
-		})();
-	};
-}
