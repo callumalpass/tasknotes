@@ -129,6 +129,112 @@ describe("taskCardSecondaryBadges", () => {
 		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
 	});
 
+	it("toggles the inline subtask list when the project folder badge is clicked", async () => {
+		const plugin = createPlugin();
+		(plugin.projectSubtasksService.isTaskUsedAsProjectSync as jest.Mock).mockReturnValue(true);
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockReturnValue(false);
+		(plugin.expandedProjectsService?.toggle as jest.Mock).mockReturnValue(true);
+		const handlers = createHandlers();
+		const { card, badgesContainer } = createCard();
+		const task = createTask();
+
+		renderTaskCardSecondaryBadges({
+			card,
+			badgesContainer,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+
+		const folder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(folder).not.toBeNull();
+
+		folder?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		await Promise.resolve();
+		await Promise.resolve();
+
+		expect(plugin.expandedProjectsService?.toggle).toHaveBeenCalledWith(task.path, false);
+		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
+	});
+
+	it("renders subtasks for an expanded project even when the chevron is disabled", () => {
+		const plugin = createPlugin({
+			settings: {
+				showExpandableSubtasks: false,
+				expandSubtasksByDefault: false,
+				enableDebugLogging: false,
+			},
+		} as unknown as Partial<TaskNotesPlugin>);
+		(plugin.projectSubtasksService.isTaskUsedAsProjectSync as jest.Mock).mockReturnValue(true);
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockReturnValue(true);
+		const handlers = createHandlers();
+		const { card, badgesContainer } = createCard();
+		const task = createTask();
+
+		renderTaskCardSecondaryBadges({
+			card,
+			badgesContainer,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+
+		// Folder badge is present, chevron is not, but subtasks still render.
+		expect(card.querySelector(".task-card__project-indicator")).not.toBeNull();
+		expect(card.querySelector(".task-card__chevron")).toBeNull();
+		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
+	});
+
+	it("update path expands subtasks even when the chevron is disabled", async () => {
+		const plugin = createPlugin({
+			settings: {
+				showExpandableSubtasks: false,
+				expandSubtasksByDefault: false,
+				enableDebugLogging: false,
+			},
+		} as unknown as Partial<TaskNotesPlugin>);
+		(plugin.projectSubtasksService.isTaskUsedAsProjectSync as jest.Mock).mockReturnValue(true);
+		(plugin.projectSubtasksService.isTaskUsedAsProject as jest.Mock).mockResolvedValue(true);
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockReturnValue(false);
+		const handlers = createHandlers();
+		const { card, mainRow, badgesContainer } = createCard();
+		const task = createTask();
+
+		// Initial render: collapsed project with the chevron off → folder only.
+		renderTaskCardSecondaryBadges({
+			card,
+			badgesContainer,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
+
+		// Becomes expanded: the dynamic update path must render the subtask list
+		// once (no chevron involved, no duplicate render).
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockReturnValue(true);
+		updateTaskCardSecondaryBadges({
+			card,
+			mainRow,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(card.querySelector(".task-card__chevron")).toBeNull();
+		expect(handlers.toggleSubtasks).toHaveBeenCalledTimes(1);
+		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
+	});
+
 	it("keeps secondary badges omitted when the option is disabled", () => {
 		const plugin = createPlugin();
 		const handlers = createHandlers();
