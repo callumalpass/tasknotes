@@ -3096,7 +3096,7 @@ export const ru: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 напоминание установлено (нажмите, чтобы управлять)",
 			reminderTooltipMany: "{count} напоминаний установлено (нажмите, чтобы управлять)",
-			projectTooltip: "Эта задача используется как проект (нажмите, чтобы отфильтровать подзадачи)",
+			projectTooltip: "Эта задача используется как проект (нажмите, чтобы показать/скрыть подзадачи)",
 			expandSubtasks: "Развернуть подзадачи",
 			collapseSubtasks: "Свернуть подзадачи",
 			dueToday: "{label}: Сегодня",

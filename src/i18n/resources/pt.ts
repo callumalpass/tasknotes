@@ -3101,7 +3101,7 @@ export const pt: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 lembrete definido (clique para gerenciar)",
 			reminderTooltipMany: "{count} lembretes definidos (clique para gerenciar)",
-			projectTooltip: "Esta tarefa é usada como projeto (clique para filtrar subtarefas)",
+			projectTooltip: "Esta tarefa é usada como projeto (clique para mostrar/ocultar subtarefas)",
 			expandSubtasks: "Expandir subtarefas",
 			collapseSubtasks: "Recolher subtarefas",
 			dueToday: "{label}: Hoje",

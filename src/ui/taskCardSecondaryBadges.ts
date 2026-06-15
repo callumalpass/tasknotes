@@ -79,7 +79,14 @@ function tTaskCard(
 }
 
 function shouldExpandSubtasksByDefault(plugin: TaskNotesPlugin): boolean {
-	return plugin.settings?.expandSubtasksByDefault === true;
+	// Only auto-expand by default when expandable subtasks are enabled. Otherwise a
+	// user who disabled the feature would still see subtasks expand on render, and
+	// because this value also seeds the badge toggle, the folder badge's first click
+	// would collapse instead of expand. The folder badge still expands on demand.
+	return (
+		plugin.settings?.expandSubtasksByDefault === true &&
+		plugin.settings?.showExpandableSubtasks === true
+	);
 }
 
 export function isTaskCardSubtasksExpanded(task: TaskInfo, plugin: TaskNotesPlugin): boolean {

@@ -3096,7 +3096,7 @@ export const ja: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "リマインダーが1件設定されています (クリックして管理)",
 			reminderTooltipMany: "{count}件のリマインダーが設定されています (クリックして管理)",
-			projectTooltip: "このタスクはプロジェクトとして使用されています（サブタスクをフィルタするにはクリック）",
+			projectTooltip: "このタスクはプロジェクトとして使用されています（クリックでサブタスクを表示/非表示）",
 			expandSubtasks: "サブタスクを展開",
 			collapseSubtasks: "サブタスクを折りたたむ",
 			dueToday: "{label}: 今日",

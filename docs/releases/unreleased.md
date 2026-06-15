@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2033) Clicking the project (folder) badge on a task card no longer shows "Project subtask filtering not available" — a dead action left over from an earlier internal change, while its tooltip still advertised filtering. The badge now expands or collapses the task's inline subtask list, and its tooltip has been corrected to match.
+  - Thanks to @abbiefalls90 for the fix.

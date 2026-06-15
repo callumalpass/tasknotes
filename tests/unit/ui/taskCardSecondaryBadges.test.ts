@@ -189,6 +189,40 @@ describe("taskCardSecondaryBadges", () => {
 		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
 	});
 
+	it("does not auto-expand subtasks when expandable subtasks are disabled", () => {
+		const plugin = createPlugin({
+			settings: {
+				// The user disabled expandable subtasks but left expand-by-default on.
+				showExpandableSubtasks: false,
+				expandSubtasksByDefault: true,
+				enableDebugLogging: false,
+			},
+		} as unknown as Partial<TaskNotesPlugin>);
+		(plugin.projectSubtasksService.isTaskUsedAsProjectSync as jest.Mock).mockReturnValue(true);
+		// Reflect the real service: an untoggled project falls back to the passed default.
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockImplementation(
+			(_path: string, def: boolean) => def
+		);
+		const handlers = createHandlers();
+		const { card, badgesContainer } = createCard();
+		const task = createTask();
+
+		renderTaskCardSecondaryBadges({
+			card,
+			badgesContainer,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+
+		// expand-by-default must be gated by showExpandableSubtasks, so the default
+		// passed to the service is false and the subtask list does not auto-render.
+		expect(plugin.expandedProjectsService?.isExpanded).toHaveBeenCalledWith(task.path, false);
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
+	});
+
 	it("update path expands subtasks even when the chevron is disabled", async () => {
 		const plugin = createPlugin({
 			settings: {

@@ -3096,7 +3096,7 @@ export const de: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 Erinnerung gesetzt (zum Verwalten klicken)",
 			reminderTooltipMany: "{count} Erinnerungen gesetzt (zum Verwalten klicken)",
-			projectTooltip: "Diese Aufgabe wird als Projekt verwendet (zum Filtern von Unteraufgaben klicken)",
+			projectTooltip: "Diese Aufgabe wird als Projekt verwendet (zum Ein-/Ausblenden von Unteraufgaben klicken)",
 			expandSubtasks: "Unteraufgaben ausklappen",
 			collapseSubtasks: "Unteraufgaben einklappen",
 			dueToday: "{label}: Heute",
