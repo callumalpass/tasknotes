@@ -56,3 +56,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2033) Fixed the project folder badge on task cards so, when expandable
   subtasks are enabled, it expands or collapses inline subtasks instead of
   showing an unavailable-action notice. Thanks to @abbiefalls90.
+- (#2040, #2041) Stopped newly created tasks from filling the Google Calendar
+  retry queue when calendar export is disabled. Thanks to @chmac for reporting
+  and fixing this.
