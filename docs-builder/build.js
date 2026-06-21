@@ -449,6 +449,17 @@ async function main() {
     cpSync(assetsIn, path.join(DIST, 'assets'), { recursive: true });
   }
 
+  // Copy `media/docs/` so relative image references like
+  // `../media/docs/<name>.png` from top-level markdown files resolve at
+  // `/media/docs/<name>.png` once `resolveAssetPaths` rewrites them. Without
+  // this, images that live in `media/docs/` (used by docs/workflows.md and
+  // docs/calendar-setup.md) 404 on the published site even though the source
+  // files exist in the repo. Fixes #2039.
+  const mediaDocsIn = path.resolve(__dir, '..', 'media', 'docs');
+  if (existsSync(mediaDocsIn)) {
+    cpSync(mediaDocsIn, path.join(DIST, 'media', 'docs'), { recursive: true });
+  }
+
   // Copy CNAME for GitHub Pages custom domain
   const cname = path.join(DOCS, 'CNAME');
   if (existsSync(cname)) {
