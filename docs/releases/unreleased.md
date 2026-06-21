@@ -59,3 +59,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2040, #2041) Stopped newly created tasks from filling the Google Calendar
   retry queue when calendar export is disabled. Thanks to @chmac for reporting
   and fixing this.
+- (#2046, #2051) The date and time picker now focuses the natural-language input
+  when it is enabled, making keyboard-driven quick actions ready for immediate
+  typing. Thanks to @DevOps-Toast for reporting this and @ther12k for fixing it.
