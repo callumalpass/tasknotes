@@ -2425,6 +2425,16 @@ export class TaskCalendarSyncService {
 		}
 
 		const settings = this.plugin.settings.googleCalendarExport;
+		// If the user has not enabled Google Calendar export at all, do nothing
+		// and do not queue. The queue is for transient failures that might be
+		// recoverable (auth expired, rate limited, target calendar temporarily
+		// missing). When the user has opted out of the feature entirely, every
+		// eligible task creation would otherwise pollute the queue with an
+		// entry that will never be processed (issue #2040).
+		if (!settings.enabled) {
+			return true;
+		}
+
 		const existingEventId = this.getTaskEventId(task);
 		const targetCalendarId = settings.targetCalendarId;
 
