@@ -60,12 +60,9 @@ export function renderTaskModalFieldGroups(
 	};
 
 	for (const groupConfig of groupsToRender) {
-		if (groupConfig.id === "basic") {
-			continue;
-		}
-
 		const groupContainer = options.container.createDiv({ cls: "task-modal__field-group" });
 		result.groupsRendered += 1;
+		let fieldsRenderedInGroup = 0;
 
 		for (const field of groupConfig.fields) {
 			const rendered = renderTaskModalField({
@@ -77,9 +74,23 @@ export function renderTaskModalFieldGroups(
 
 			if (rendered) {
 				result.fieldsRendered += 1;
+				fieldsRenderedInGroup += 1;
 			} else {
 				result.ignoredFieldIds.push(field.id);
 			}
+		}
+
+		// Remove the group container if no fields actually rendered here. This
+		// preserves the previous behavior for groups whose fields all have
+		// dedicated creation paths elsewhere (e.g. the "basic" group's core
+		// "title" and "details" fields, rendered through createTitleInput /
+		// detailsMarkdownEditor) so we do not leave an empty
+		// <div class="task-modal__field-group"> behind. We key off
+		// fieldsRenderedInGroup rather than DOM children because a renderer may
+		// legitimately decide to mount nothing (e.g. a stubbed test renderer).
+		if (fieldsRenderedInGroup === 0) {
+			groupContainer.remove();
+			result.groupsRendered -= 1;
 		}
 	}
 

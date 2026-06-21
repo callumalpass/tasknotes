@@ -80,6 +80,10 @@ describe("taskModalFieldRenderer", () => {
 		});
 
 		const groupContainers = container.querySelectorAll(".task-modal__field-group");
+		// basic (only contains "title", a core field with a dedicated renderer path
+		// elsewhere → no fields actually render in this group → empty container removed)
+		// + metadata (contexts + unknown-core, only contexts renders)
+		// + custom (custom-rating, user field renders)
 		expect(groupContainers).toHaveLength(2);
 		expect(container.textContent).toBe("contextsuser field");
 		expect(renderContexts).toHaveBeenCalledWith(
@@ -93,7 +97,10 @@ describe("taskModalFieldRenderer", () => {
 		expect(result).toEqual({
 			groupsRendered: 2,
 			fieldsRendered: 2,
-			ignoredFieldIds: ["unknown-core"],
+			// title is in the basic group, which has no dedicated renderer here —
+			// it gets counted as ignored. unknown-core is in metadata and is also
+			// ignored for the same reason.
+			ignoredFieldIds: ["title", "unknown-core"],
 		});
 	});
 
@@ -115,9 +122,14 @@ describe("taskModalFieldRenderer", () => {
 		});
 
 		expect(renderContexts).not.toHaveBeenCalled();
-		expect(container.querySelectorAll(".task-modal__field-group")).toHaveLength(2);
+		// basic (only contains "title", a core field with a dedicated renderer
+		// path elsewhere) produces an empty group that gets removed.
+		// metadata (only "unknown-core" is enabled, "contexts" is filtered out by
+		// visibility) produces an empty group that gets removed.
+		// custom (custom-rating) renders successfully.
+		expect(container.querySelectorAll(".task-modal__field-group")).toHaveLength(1);
 		expect(result.fieldsRendered).toBe(1);
-		expect(result.ignoredFieldIds).toEqual(["unknown-core"]);
+		expect(result.ignoredFieldIds).toEqual(["title", "unknown-core"]);
 	});
 
 	it("renders a single core or user field through the matching renderer", () => {
