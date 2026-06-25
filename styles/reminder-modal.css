@@ -325,6 +325,22 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     display: none;
 }
 
+/* The relative/absolute tab toggle (ReminderModal.updateFormVisibility) switches
+   fields by adding the generic .tn-static-display-{none,block} utility classes.
+   Those are single-class (0-1-0) and lose to the scoped base rules above
+   (.tasknotes-plugin .{relative,absolute}-fields, 0-2-0), so without these
+   overrides the toggle has no effect and the Absolute tab appears to do nothing.
+   Scope the toggle to these containers so it wins, keeping flex layout when shown. */
+.tasknotes-plugin .relative-fields.tn-static-display-none-6b99de8b,
+.tasknotes-plugin .absolute-fields.tn-static-display-none-6b99de8b {
+    display: none;
+}
+
+.tasknotes-plugin .relative-fields.tn-static-display-block-2a1b75c9,
+.tasknotes-plugin .absolute-fields.tn-static-display-block-2a1b75c9 {
+    display: flex;
+}
+
 /* Form controls - Match Task Modal Details Section */
 .tasknotes-plugin .reminder-modal__form .setting-item {
     padding: var(--size-4-2) 0;
