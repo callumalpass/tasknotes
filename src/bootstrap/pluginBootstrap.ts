@@ -355,6 +355,11 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 					await plugin.taskCalendarSyncService.initializeExternalFileReconciliation();
 					plugin.taskCalendarSyncService.startRecoveryQueueProcessor();
 
+					// Initialize Timeblock Calendar Sync service for pushing timeblocks to Google Calendar
+					plugin.timeblockCalendarSyncService = new (
+						await import("../services/TimeblockCalendarSyncService")
+					).TimeblockCalendarSyncService(plugin, plugin.googleCalendarService);
+
 					plugin.registerEvent(
 						plugin.emitter.on("file-updated", (data: FileUpdatedEventData) => {
 							if (!plugin.taskCalendarSyncService || !data?.path) {

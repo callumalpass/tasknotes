@@ -65,6 +65,7 @@ import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
+import { TimeblockCalendarSyncService } from "./services/TimeblockCalendarSyncService";
 import { addTaskToProject, assignTaskAsSubtask } from "./services/taskRelationshipActions";
 import {
 	initializeAfterLayoutReady,
@@ -211,6 +212,8 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Task-to-Google Calendar sync service
 	taskCalendarSyncService: TaskCalendarSyncService;
+	// Timeblock-to-Google Calendar sync service
+	timeblockCalendarSyncService: TimeblockCalendarSyncService;
 	taskFileLifecycleReconciliationService?: import("./services/TaskFileLifecycleReconciliationService").TaskFileLifecycleReconciliationService;
 
 	// mdbase-spec generation service
