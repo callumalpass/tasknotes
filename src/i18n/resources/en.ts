@@ -3058,6 +3058,10 @@ export const en: TranslationTree = {
 				noCompletedStatus: "No completed status configured",
 				pickDateTitle: "Complete on date",
 				completeFailure: "Failed to update task completion: {message}",
+				clearInstancesConfirmTitle: "Clear recorded instances?",
+				clearInstancesConfirmMessage:
+					"Rescheduling will clear these recorded completed/skipped instances on or after the new date: {dates}. They will no longer be marked complete or skipped. Continue?",
+				clearInstancesConfirmButton: "Reschedule and clear",
 			},
 			quickReminders: {
 				atTime: "At time of event",

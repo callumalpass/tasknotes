@@ -573,7 +573,14 @@ export class TaskService {
 		task: TaskInfo,
 		property: keyof TaskInfo,
 		value: unknown,
-		options: { silent?: boolean; completionDate?: string } = {}
+		options: {
+			silent?: boolean;
+			completionDate?: string;
+			confirmClearInstances?: (cleared: {
+				complete: string[];
+				skipped: string[];
+			}) => Promise<boolean>;
+		} = {}
 	): Promise<TaskInfo> {
 		try {
 			const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
@@ -632,15 +639,27 @@ export class TaskService {
 				const scheduledDateStr = getDatePart(updatePlan.normalizedValue);
 				const completeInstances = freshTask.complete_instances ?? [];
 				const skippedInstances = freshTask.skipped_instances ?? [];
-				const cleanedComplete = completeInstances.filter((d) => d < scheduledDateStr);
-				const cleanedSkipped = skippedInstances.filter((d) => d < scheduledDateStr);
-				if (
-					cleanedComplete.length !== completeInstances.length ||
-					cleanedSkipped.length !== skippedInstances.length
-				) {
+				const removedComplete = completeInstances.filter((d) => d >= scheduledDateStr);
+				const removedSkipped = skippedInstances.filter((d) => d >= scheduledDateStr);
+				if (removedComplete.length > 0 || removedSkipped.length > 0) {
+					// Give the caller a chance to confirm the destructive clear before
+					// anything is written; a false result aborts the whole reschedule.
+					if (options.confirmClearInstances) {
+						const proceed = await options.confirmClearInstances({
+							complete: removedComplete,
+							skipped: removedSkipped,
+						});
+						if (!proceed) {
+							return freshTask;
+						}
+					}
 					rescheduleClearedOccurrence = true;
-					updatePlan.updatedTask.complete_instances = cleanedComplete;
-					updatePlan.updatedTask.skipped_instances = cleanedSkipped;
+					updatePlan.updatedTask.complete_instances = completeInstances.filter(
+						(d) => d < scheduledDateStr
+					);
+					updatePlan.updatedTask.skipped_instances = skippedInstances.filter(
+						(d) => d < scheduledDateStr
+					);
 				}
 			}
 

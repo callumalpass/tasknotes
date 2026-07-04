@@ -979,6 +979,61 @@ describe('TaskService', () => {
       ).resolves.toBeDefined();
     });
 
+    it('aborts the reschedule (no write, instances intact) when confirmClearInstances returns false', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        complete_instances: ['2026-06-08'],
+        skipped_instances: ['2026-06-19'],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+      const confirm = jest.fn(async () => false);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05', {
+        confirmClearInstances: confirm,
+      });
+
+      expect(confirm).toHaveBeenCalledWith({ complete: ['2026-06-08'], skipped: ['2026-06-19'] });
+      expect(result.complete_instances).toEqual(['2026-06-08']);
+      expect(result.scheduled).toBe('2026-06-12'); // unchanged
+      expect(mockPlugin.app.fileManager.processFrontMatter).not.toHaveBeenCalled();
+    });
+
+    it('proceeds and clears when confirmClearInstances returns true', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        complete_instances: ['2026-06-08'],
+        skipped_instances: [],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+      const confirm = jest.fn(async () => true);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05', {
+        confirmClearInstances: confirm,
+      });
+
+      expect(confirm).toHaveBeenCalled();
+      expect(result.complete_instances).toEqual([]);
+    });
+
+    it('does not call confirmClearInstances when nothing would be cleared', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        complete_instances: ['2026-05-01'],
+        skipped_instances: [],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+      const confirm = jest.fn(async () => true);
+
+      await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05', {
+        confirmClearInstances: confirm,
+      });
+
+      expect(confirm).not.toHaveBeenCalled();
+    });
+
     it('should remove empty due/scheduled dates', async () => {
       await taskService.updateProperty(task, 'due', undefined);
 
