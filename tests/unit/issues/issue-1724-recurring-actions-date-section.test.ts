@@ -145,20 +145,20 @@ describe("Issue #1724: recurring task actions belong with date menu items", () =
 				"Priority",
 				"Due date",
 				"Scheduled date",
-				"Complete or skip",
+				"Mark complete or skip",
 				"Open or create occurrence note",
 				"Reminders",
 			])
 		);
 
 		// The single "Mark complete for this date" item was replaced by the
-		// "Complete or skip" submenu; the completion actions live inside it.
+		// "Mark complete or skip" submenu; the completion actions live inside it.
 		expect(titles).not.toContain("Mark complete for this date");
 
 		expect(titles.indexOf("Status")).toBeLessThan(titles.indexOf("Priority"));
-		expect(titles.indexOf("Priority")).toBeLessThan(titles.indexOf("Complete or skip"));
-		expect(titles.indexOf("Scheduled date")).toBeLessThan(titles.indexOf("Complete or skip"));
-		expect(titles.indexOf("Complete or skip")).toBeLessThan(
+		expect(titles.indexOf("Priority")).toBeLessThan(titles.indexOf("Mark complete or skip"));
+		expect(titles.indexOf("Scheduled date")).toBeLessThan(titles.indexOf("Mark complete or skip"));
+		expect(titles.indexOf("Mark complete or skip")).toBeLessThan(
 			titles.indexOf("Open or create occurrence note")
 		);
 		expect(titles.indexOf("Open or create occurrence note")).toBeLessThan(

@@ -6,7 +6,7 @@ import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 
 /**
- * U5 — the completion actions live under a "Complete or skip" submenu (just
+ * U5 — the completion actions live under a "Mark complete or skip" submenu (just
  * "Complete" for non-recurring). Labels are uniform across task types (no
  * per-type qualifier). Covers AE1, AE2, AE5, AE7.
  */
@@ -107,11 +107,11 @@ function findItem(
 	return undefined;
 }
 
-/** The items directly inside the top-level "Complete or skip"/"Complete" submenu. */
+/** The items directly inside the top-level "Mark complete or skip"/"Complete" submenu. */
 function completionSubmenuTitles(): string[] {
 	const top = menuMock.mock.results[0].value as MockMenu;
 	const parent = top.items.find(
-		(it) => titleOf(it) === "Complete or skip" || titleOf(it) === "Complete"
+		(it) => titleOf(it) === "Mark complete or skip" || titleOf(it) === "Mark complete"
 	);
 	const sub = parent ? submenuOf(parent) : undefined;
 	return sub
@@ -152,7 +152,7 @@ describe("U5: completion menu items", () => {
 
 			// The submenu exists at the top level...
 			const top = menuMock.mock.results[0].value as MockMenu;
-			expect(top.items.some((it) => titleOf(it) === "Complete or skip")).toBe(true);
+			expect(top.items.some((it) => titleOf(it) === "Mark complete or skip")).toBe(true);
 			// ...and holds the four completion actions plus skip.
 			expect(completionSubmenuTitles()).toEqual(
 				expect.arrayContaining([
@@ -238,7 +238,7 @@ describe("U5: completion menu items", () => {
 			});
 
 			const top = menuMock.mock.results[0].value as MockMenu;
-			expect(top.items.some((it) => titleOf(it) === "Complete")).toBe(true);
+			expect(top.items.some((it) => titleOf(it) === "Mark complete")).toBe(true);
 			const titles = completionSubmenuTitles();
 			expect(titles).toEqual(
 				expect.arrayContaining([

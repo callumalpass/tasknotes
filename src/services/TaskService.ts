@@ -614,11 +614,14 @@ export class TaskService {
 				applyGoogleCalendarRecurringExceptionCleanup(updatePlan.updatedTask);
 			}
 
-			// Rescheduling a recurring task onto a specific date reactivates that
-			// occurrence: drop the date from complete_instances/skipped_instances so
-			// the user doesn't have to manually un-complete/un-skip after moving the
-			// scheduled date (e.g. undoing an accidental completion that advanced the
-			// schedule). No-op when there is no matching recorded entry.
+			// Rescheduling a recurring task onto a date restarts its timeline from
+			// that date: drop every complete_instances/skipped_instances entry on or
+			// after the new scheduled date so the user doesn't have to manually
+			// un-complete/un-skip after moving the schedule back (e.g. undoing an
+			// accidental completion — including an off-schedule one recorded on a
+			// later date than the reschedule target). Entries strictly before the new
+			// scheduled date are genuine history and are preserved. Instances are
+			// stored as YYYY-MM-DD, so a lexicographic compare is chronological.
 			let rescheduleClearedOccurrence = false;
 			if (
 				property === "scheduled" &&
@@ -629,8 +632,8 @@ export class TaskService {
 				const scheduledDateStr = getDatePart(updatePlan.normalizedValue);
 				const completeInstances = freshTask.complete_instances ?? [];
 				const skippedInstances = freshTask.skipped_instances ?? [];
-				const cleanedComplete = completeInstances.filter((d) => d !== scheduledDateStr);
-				const cleanedSkipped = skippedInstances.filter((d) => d !== scheduledDateStr);
+				const cleanedComplete = completeInstances.filter((d) => d < scheduledDateStr);
+				const cleanedSkipped = skippedInstances.filter((d) => d < scheduledDateStr);
 				if (
 					cleanedComplete.length !== completeInstances.length ||
 					cleanedSkipped.length !== skippedInstances.length

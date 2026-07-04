@@ -3045,8 +3045,8 @@ export const en: TranslationTree = {
 			skipInstance: "Skip instance",
 			unskipInstance: "Unskip instance",
 			completion: {
-				submenu: "Complete or skip",
-				submenuCompleteOnly: "Complete",
+				submenu: "Mark complete or skip",
+				submenuCompleteOnly: "Mark complete",
 				completeToday: "Completed today",
 				completeAsScheduled: "Completed on schedule",
 				completeOnDue: "Completed on due date",

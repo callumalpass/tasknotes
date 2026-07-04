@@ -934,7 +934,25 @@ describe('TaskService', () => {
       expect(result.complete_instances).toEqual([]);
     });
 
-    it('leaves complete/skipped instances untouched when the rescheduled date is not recorded', async () => {
+    it('clears an off-schedule completion/skip recorded on or after the rescheduled date, keeping older history', async () => {
+      // Completed off-schedule on 2026-06-08 and a later skip on 2026-06-19; the
+      // user reschedules back to 2026-06-05. Exact-match would miss both; the
+      // ">= new date" rule clears them while preserving the genuine older 2026-05-29.
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        complete_instances: ['2026-05-29', '2026-06-08'],
+        skipped_instances: ['2026-06-19'],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05');
+
+      expect(result.complete_instances).toEqual(['2026-05-29']);
+      expect(result.skipped_instances).toEqual([]);
+    });
+
+    it('leaves complete/skipped instances untouched when nothing is on or after the rescheduled date', async () => {
       const recurringTask = TaskFactory.createTask({
         recurrence: 'FREQ=WEEKLY',
         scheduled: '2026-06-09',
