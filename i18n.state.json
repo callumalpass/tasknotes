@@ -7384,6 +7384,17 @@
       "source": "f58b99fdb842bddf12fa964f933eb1d9bd54843e",
       "translation": "dc50f18bbaa3249131904a53adc71400e7ebcd31"
     },
+    "contextMenus.task.completion.completeToday": null,
+    "contextMenus.task.completion.completeAsScheduled": null,
+    "contextMenus.task.completion.completeOnDue": null,
+    "contextMenus.task.completion.completeOnPicked": null,
+    "contextMenus.task.completion.markIncomplete": null,
+    "contextMenus.task.completion.instancePrefix": null,
+    "contextMenus.task.completion.noScheduledDate": null,
+    "contextMenus.task.completion.noDueDate": null,
+    "contextMenus.task.completion.noPickedDate": null,
+    "contextMenus.task.completion.noCompletedStatus": null,
+    "contextMenus.task.completion.pickDateTitle": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "13edcc9c4ebe474df17518c264115a00ddf30433"
@@ -16270,6 +16281,17 @@
       "source": "f58b99fdb842bddf12fa964f933eb1d9bd54843e",
       "translation": "968673d261b5844d3efa0738be3c13af2077c0d9"
     },
+    "contextMenus.task.completion.completeToday": null,
+    "contextMenus.task.completion.completeAsScheduled": null,
+    "contextMenus.task.completion.completeOnDue": null,
+    "contextMenus.task.completion.completeOnPicked": null,
+    "contextMenus.task.completion.markIncomplete": null,
+    "contextMenus.task.completion.instancePrefix": null,
+    "contextMenus.task.completion.noScheduledDate": null,
+    "contextMenus.task.completion.noDueDate": null,
+    "contextMenus.task.completion.noPickedDate": null,
+    "contextMenus.task.completion.noCompletedStatus": null,
+    "contextMenus.task.completion.pickDateTitle": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "2838cecba7368421d90e0f07c0d0f1e28830ffa4"
@@ -25156,6 +25178,17 @@
       "source": "f58b99fdb842bddf12fa964f933eb1d9bd54843e",
       "translation": "dddefd2443584c9cf6331b468a73c21e6fe8556e"
     },
+    "contextMenus.task.completion.completeToday": null,
+    "contextMenus.task.completion.completeAsScheduled": null,
+    "contextMenus.task.completion.completeOnDue": null,
+    "contextMenus.task.completion.completeOnPicked": null,
+    "contextMenus.task.completion.markIncomplete": null,
+    "contextMenus.task.completion.instancePrefix": null,
+    "contextMenus.task.completion.noScheduledDate": null,
+    "contextMenus.task.completion.noDueDate": null,
+    "contextMenus.task.completion.noPickedDate": null,
+    "contextMenus.task.completion.noCompletedStatus": null,
+    "contextMenus.task.completion.pickDateTitle": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "c6fa1b8853d66e5ede8d309bb9f6d82dc4f10657"
@@ -34042,6 +34075,17 @@
       "source": "f58b99fdb842bddf12fa964f933eb1d9bd54843e",
       "translation": "7cd7d70058059bb1602bce7e2c25a6edaf8ef029"
     },
+    "contextMenus.task.completion.completeToday": null,
+    "contextMenus.task.completion.completeAsScheduled": null,
+    "contextMenus.task.completion.completeOnDue": null,
+    "contextMenus.task.completion.completeOnPicked": null,
+    "contextMenus.task.completion.markIncomplete": null,
+    "contextMenus.task.completion.instancePrefix": null,
+    "contextMenus.task.completion.noScheduledDate": null,
+    "contextMenus.task.completion.noDueDate": null,
+    "contextMenus.task.completion.noPickedDate": null,
+    "contextMenus.task.completion.noCompletedStatus": null,
+    "contextMenus.task.completion.pickDateTitle": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "7fdead3a6d8aaccda120699da7e45e369edc108c"
@@ -42928,6 +42972,17 @@
       "source": "f58b99fdb842bddf12fa964f933eb1d9bd54843e",
       "translation": "eff53181b011d57fdf7dfb4617f7807573a53d23"
     },
+    "contextMenus.task.completion.completeToday": null,
+    "contextMenus.task.completion.completeAsScheduled": null,
+    "contextMenus.task.completion.completeOnDue": null,
+    "contextMenus.task.completion.completeOnPicked": null,
+    "contextMenus.task.completion.markIncomplete": null,
+    "contextMenus.task.completion.instancePrefix": null,
+    "contextMenus.task.completion.noScheduledDate": null,
+    "contextMenus.task.completion.noDueDate": null,
+    "contextMenus.task.completion.noPickedDate": null,
+    "contextMenus.task.completion.noCompletedStatus": null,
+    "contextMenus.task.completion.pickDateTitle": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "ee19ba1d573cbe4fb6cbbab4cb59e86260dd132a"
@@ -51814,6 +51869,17 @@
       "source": "f58b99fdb842bddf12fa964f933eb1d9bd54843e",
       "translation": "5c886f6f62aeb8f203759a44e10a075079e1555e"
     },
+    "contextMenus.task.completion.completeToday": null,
+    "contextMenus.task.completion.completeAsScheduled": null,
+    "contextMenus.task.completion.completeOnDue": null,
+    "contextMenus.task.completion.completeOnPicked": null,
+    "contextMenus.task.completion.markIncomplete": null,
+    "contextMenus.task.completion.instancePrefix": null,
+    "contextMenus.task.completion.noScheduledDate": null,
+    "contextMenus.task.completion.noDueDate": null,
+    "contextMenus.task.completion.noPickedDate": null,
+    "contextMenus.task.completion.noCompletedStatus": null,
+    "contextMenus.task.completion.pickDateTitle": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "a2936a5b99f3ba9aef0ef806a85097d30db91392"
@@ -60700,6 +60766,17 @@
       "source": "f58b99fdb842bddf12fa964f933eb1d9bd54843e",
       "translation": "4b21cae430620be61f61dc2db0e6dc1ed867b28d"
     },
+    "contextMenus.task.completion.completeToday": null,
+    "contextMenus.task.completion.completeAsScheduled": null,
+    "contextMenus.task.completion.completeOnDue": null,
+    "contextMenus.task.completion.completeOnPicked": null,
+    "contextMenus.task.completion.markIncomplete": null,
+    "contextMenus.task.completion.instancePrefix": null,
+    "contextMenus.task.completion.noScheduledDate": null,
+    "contextMenus.task.completion.noDueDate": null,
+    "contextMenus.task.completion.noPickedDate": null,
+    "contextMenus.task.completion.noCompletedStatus": null,
+    "contextMenus.task.completion.pickDateTitle": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "0a461c2b22896eac59c259415fdbbe96b207b9bc"
@@ -69586,6 +69663,17 @@
       "source": "f58b99fdb842bddf12fa964f933eb1d9bd54843e",
       "translation": "5d08dfcf44803b1604301a2e36d0eb317fa81ca2"
     },
+    "contextMenus.task.completion.completeToday": null,
+    "contextMenus.task.completion.completeAsScheduled": null,
+    "contextMenus.task.completion.completeOnDue": null,
+    "contextMenus.task.completion.completeOnPicked": null,
+    "contextMenus.task.completion.markIncomplete": null,
+    "contextMenus.task.completion.instancePrefix": null,
+    "contextMenus.task.completion.noScheduledDate": null,
+    "contextMenus.task.completion.noDueDate": null,
+    "contextMenus.task.completion.noPickedDate": null,
+    "contextMenus.task.completion.noCompletedStatus": null,
+    "contextMenus.task.completion.pickDateTitle": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "7aaeb02feb12bd8334344d70a17e16b367174054"
