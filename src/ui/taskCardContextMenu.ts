@@ -68,7 +68,7 @@ export async function showTaskContextMenu(
 	taskPath: string,
 	plugin: TaskNotesPlugin,
 	targetDate: Date,
-	options: { promoteOccurrenceControls?: boolean } = {}
+	options: { promoteOccurrenceControls?: boolean; occurrenceDate?: Date } = {}
 ): Promise<void> {
 	const file = plugin.app.vault.getAbstractFileByPath(taskPath);
 	const showFileMenuFallback = () => {
@@ -88,6 +88,7 @@ export async function showTaskContextMenu(
 			task,
 			plugin,
 			targetDate,
+			occurrenceDate: options.occurrenceDate,
 			promoteOccurrenceControls: options.promoteOccurrenceControls,
 			onUpdate: () => {
 				plugin.app.workspace.trigger("tasknotes:refresh-views");
