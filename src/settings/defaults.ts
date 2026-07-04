@@ -335,6 +335,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Task card in note defaults
 	showTaskCardInNote: true,
 	showCompletedTaskStrikethrough: true,
+	// Nest the complete/skip context-menu actions under a submenu by default
+	completionMenuAsSubmenu: true,
 	// Task card expandable subtasks defaults
 	showExpandableSubtasks: true,
 	expandSubtasksByDefault: false,

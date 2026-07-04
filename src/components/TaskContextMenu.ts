@@ -278,7 +278,7 @@ export class TaskContextMenu {
 
 		this.addCustomDateFieldMenuItems(task, plugin);
 
-		this.addCompleteOrSkipSubmenu(task, plugin);
+		this.addCompleteOrSkipSection(task, plugin);
 
 		// Occurrence note stays at the top level (it is not a complete/skip action).
 		if (task.recurrence && !this.options.promoteOccurrenceControls) {
@@ -868,12 +868,23 @@ export class TaskContextMenu {
 	}
 
 	/**
-	 * Nest all completion (and, for recurring tasks, skip) actions under a single
-	 * "Complete or Skip" submenu to keep the top-level menu compact. Non-recurring
-	 * tasks have no skip action, so their submenu is labelled just "Complete".
+	 * Render the completion (and, for recurring tasks, skip) actions. By default
+	 * they are nested under a single "Mark complete or skip" submenu ("Mark
+	 * complete" for non-recurring tasks) to keep the top-level menu compact; when
+	 * `completionMenuAsSubmenu` is disabled they are added directly to the menu.
 	 */
-	private addCompleteOrSkipSubmenu(task: TaskInfo, plugin: TaskNotesPlugin): void {
+	private addCompleteOrSkipSection(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		const isRecurring = !!task.recurrence;
+
+		// Default to the submenu when the setting is unset (backward compatible).
+		if (plugin.settings.completionMenuAsSubmenu === false) {
+			this.addCompletionMenuItems(task, plugin, this.menu);
+			if (isRecurring) {
+				this.addSkipMenuItem(task, plugin, this.menu);
+			}
+			return;
+		}
+
 		this.menu.addItem((item) => {
 			item.setTitle(
 				this.t(

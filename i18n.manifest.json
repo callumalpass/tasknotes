@@ -815,6 +815,8 @@
   "settings.appearance.taskCards.description": "4554f6f0816fa0c30fb2d11d11b7a4e0e9a610de",
   "settings.appearance.taskCards.defaultVisibleProperties.name": "0aa5efd8c0508868b5a726a4f3890fc3efb71d26",
   "settings.appearance.taskCards.defaultVisibleProperties.description": "1673317e8fda5fc944e0458b5e51563c048e2dcd",
+  "settings.appearance.taskCards.completionSubmenu.name": "599d4040155ef8e0e7e6c70cdd3cb24583b2302f",
+  "settings.appearance.taskCards.completionSubmenu.description": "edc8f49c252f25483a01c4675be3e296ba2623c9",
   "settings.appearance.taskCards.propertyGroups.coreProperties": "acae0b9efe790c7be9c7a70dd1db4826a9eef7f7",
   "settings.appearance.taskCards.propertyGroups.organization": "9da72239ddeee345a6b025c468d9817c49cae014",
   "settings.appearance.taskCards.propertyGroups.customProperties": "07daf13a314add9a92c0f8e5564d81ce72e4937c",

@@ -1385,6 +1385,11 @@ export const en: TranslationTree = {
 					name: "Default visible properties",
 					description: "Choose which properties appear on task cards by default.",
 				},
+				completionSubmenu: {
+					name: "Group complete and skip actions in a submenu",
+					description:
+						"Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu.",
+				},
 				propertyGroups: {
 					coreProperties: "Core properties",
 					organization: "ORGANIZATION",

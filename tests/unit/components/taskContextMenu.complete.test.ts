@@ -315,4 +315,53 @@ describe("U5: completion menu items", () => {
 			expect(plugin.updateTaskProperty).toHaveBeenCalledWith(t, "status", "open");
 		});
 	});
+
+	describe("menu style setting", () => {
+		it("renders completion + skip as top-level items when completionMenuAsSubmenu is false", () => {
+			const plugin = createPlugin();
+			(plugin.settings as { completionMenuAsSubmenu?: boolean }).completionMenuAsSubmenu = false;
+			new TaskContextMenu({
+				task: task({
+					recurrence: "DTSTART:20260601;FREQ=WEEKLY;BYDAY=TU",
+					scheduled: "2026-06-02",
+				}),
+				plugin,
+				targetDate: new Date("2026-06-15T12:00:00"),
+			});
+
+			const top = menuMock.mock.results[0].value as MockMenu;
+			const topTitles = top.items
+				.map(titleOf)
+				.filter((t): t is string => typeof t === "string");
+			expect(topTitles).toEqual(
+				expect.arrayContaining([
+					"Completed today",
+					"Completed on schedule",
+					"Completed on due date",
+					"Completed on (pick date)",
+					"Skip instance",
+				])
+			);
+			// No submenu wrapper in flat mode.
+			expect(topTitles).not.toContain("Mark complete or skip");
+		});
+
+		it("nests under a submenu by default (setting unset)", () => {
+			new TaskContextMenu({
+				task: task({
+					recurrence: "DTSTART:20260601;FREQ=WEEKLY;BYDAY=TU",
+					scheduled: "2026-06-02",
+				}),
+				plugin: createPlugin(),
+				targetDate: new Date("2026-06-15T12:00:00"),
+			});
+
+			const top = menuMock.mock.results[0].value as MockMenu;
+			const topTitles = top.items
+				.map(titleOf)
+				.filter((t): t is string => typeof t === "string");
+			expect(topTitles).toContain("Mark complete or skip");
+			expect(topTitles).not.toContain("Completed today"); // it's inside the submenu
+		});
+	});
 });
