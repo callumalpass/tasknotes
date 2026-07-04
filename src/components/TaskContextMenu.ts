@@ -1031,7 +1031,7 @@ export class TaskContextMenu {
 				error: errorMessage,
 			});
 			new Notice(
-				this.t("contextMenus.task.notices.toggleCompletionFailure", {
+				this.t("contextMenus.task.completion.completeFailure", {
 					message: errorMessage,
 				})
 			);
@@ -1057,7 +1057,7 @@ export class TaskContextMenu {
 				error: errorMessage,
 			});
 			new Notice(
-				this.t("contextMenus.task.notices.toggleCompletionFailure", {
+				this.t("contextMenus.task.completion.completeFailure", {
 					message: errorMessage,
 				})
 			);

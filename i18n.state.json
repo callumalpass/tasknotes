@@ -7395,6 +7395,7 @@
     "contextMenus.task.completion.noPickedDate": null,
     "contextMenus.task.completion.noCompletedStatus": null,
     "contextMenus.task.completion.pickDateTitle": null,
+    "contextMenus.task.completion.completeFailure": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "13edcc9c4ebe474df17518c264115a00ddf30433"
@@ -16292,6 +16293,7 @@
     "contextMenus.task.completion.noPickedDate": null,
     "contextMenus.task.completion.noCompletedStatus": null,
     "contextMenus.task.completion.pickDateTitle": null,
+    "contextMenus.task.completion.completeFailure": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "2838cecba7368421d90e0f07c0d0f1e28830ffa4"
@@ -25189,6 +25191,7 @@
     "contextMenus.task.completion.noPickedDate": null,
     "contextMenus.task.completion.noCompletedStatus": null,
     "contextMenus.task.completion.pickDateTitle": null,
+    "contextMenus.task.completion.completeFailure": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "c6fa1b8853d66e5ede8d309bb9f6d82dc4f10657"
@@ -34086,6 +34089,7 @@
     "contextMenus.task.completion.noPickedDate": null,
     "contextMenus.task.completion.noCompletedStatus": null,
     "contextMenus.task.completion.pickDateTitle": null,
+    "contextMenus.task.completion.completeFailure": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "7fdead3a6d8aaccda120699da7e45e369edc108c"
@@ -42983,6 +42987,7 @@
     "contextMenus.task.completion.noPickedDate": null,
     "contextMenus.task.completion.noCompletedStatus": null,
     "contextMenus.task.completion.pickDateTitle": null,
+    "contextMenus.task.completion.completeFailure": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "ee19ba1d573cbe4fb6cbbab4cb59e86260dd132a"
@@ -51880,6 +51885,7 @@
     "contextMenus.task.completion.noPickedDate": null,
     "contextMenus.task.completion.noCompletedStatus": null,
     "contextMenus.task.completion.pickDateTitle": null,
+    "contextMenus.task.completion.completeFailure": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "a2936a5b99f3ba9aef0ef806a85097d30db91392"
@@ -60777,6 +60783,7 @@
     "contextMenus.task.completion.noPickedDate": null,
     "contextMenus.task.completion.noCompletedStatus": null,
     "contextMenus.task.completion.pickDateTitle": null,
+    "contextMenus.task.completion.completeFailure": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "0a461c2b22896eac59c259415fdbbe96b207b9bc"
@@ -69674,6 +69681,7 @@
     "contextMenus.task.completion.noPickedDate": null,
     "contextMenus.task.completion.noCompletedStatus": null,
     "contextMenus.task.completion.pickDateTitle": null,
+    "contextMenus.task.completion.completeFailure": null,
     "contextMenus.task.quickReminders.atTime": {
       "source": "87270e0d6c46f3d0c3510c6c2a2f1e31e8b0ab60",
       "translation": "7aaeb02feb12bd8334344d70a17e16b367174054"

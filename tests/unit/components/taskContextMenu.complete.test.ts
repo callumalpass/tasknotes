@@ -185,6 +185,18 @@ describe("U5: completion menu items", () => {
 			await incompleteItem?.onClick.mock.calls[0]?.[0]();
 			expect(plugin.toggleRecurringTaskComplete).toHaveBeenCalled();
 		});
+
+		it("records the due date for 'Complete on due date'", async () => {
+			const plugin = createPlugin();
+			const t = recurring({ due: "2026-06-30" });
+			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
+
+			await findItem("(Instance) Complete on due date")?.onClick.mock.calls[0]?.[0]();
+
+			const { formatDateForStorage } = require("../../../src/utils/dateUtils");
+			const [, date] = (plugin.toggleRecurringTaskComplete as jest.Mock).mock.calls[0];
+			expect(formatDateForStorage(date)).toBe("2026-06-30");
+		});
 	});
 
 	describe("non-recurring", () => {
@@ -212,6 +224,30 @@ describe("U5: completion menu items", () => {
 			expect(plugin.updateTaskProperty).toHaveBeenCalledWith(t, "status", "done", {
 				completionDate: "2026-06-02",
 			});
+		});
+
+		it("records today for 'Complete today'", async () => {
+			const plugin = createPlugin();
+			const t = task({ scheduled: "2026-06-02" });
+			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
+
+			await findItem("Complete today")?.onClick.mock.calls[0]?.[0]();
+
+			const { getTodayString } = require("../../../src/utils/dateUtils");
+			expect(plugin.updateTaskProperty).toHaveBeenCalledWith(t, "status", "done", {
+				completionDate: getTodayString(),
+			});
+		});
+
+		it("shows a notice and does not dispatch when no completed status is configured", async () => {
+			const plugin = createPlugin();
+			(plugin.statusManager.getCompletedStatuses as jest.Mock).mockReturnValue([]);
+			const t = task({ scheduled: "2026-06-02" });
+			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
+
+			await findItem("Complete today")?.onClick.mock.calls[0]?.[0]();
+
+			expect(plugin.updateTaskProperty).not.toHaveBeenCalled();
 		});
 
 		it("disables scheduled/due for an undated task but keeps today and pick enabled (AE5)", () => {
