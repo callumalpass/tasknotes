@@ -85,12 +85,27 @@ function task(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	} as TaskInfo;
 }
 
-function findItem(title: string): Record<string, jest.Mock> | undefined {
-	const menu = menuMock.mock.results[0].value as MockMenu;
-	return menu.items.find(
-		(item): item is Record<string, jest.Mock> =>
-			!("type" in item) && item.setTitle.mock.calls[0]?.[0] === title
-	);
+function submenuOf(item: MockMenuItem): MockMenu | undefined {
+	if ("type" in item) return undefined;
+	const results = item.setSubmenu?.mock.results;
+	return results && results.length ? (results[results.length - 1].value as MockMenu) : undefined;
+}
+
+// Completion actions live inside the "Complete or Skip" submenu, so search deep.
+function findItem(
+	title: string,
+	menu: MockMenu | undefined = menuMock.mock.results[0]?.value as MockMenu,
+	seen = new Set<MockMenu>()
+): Record<string, jest.Mock> | undefined {
+	if (!menu || seen.has(menu)) return undefined;
+	seen.add(menu);
+	for (const item of menu.items) {
+		if ("type" in item) continue;
+		if (item.setTitle?.mock.calls[0]?.[0] === title) return item as Record<string, jest.Mock>;
+		const found = findItem(title, submenuOf(item), seen);
+		if (found) return found;
+	}
+	return undefined;
 }
 
 function getPickerOnSelect(): (date: string | null) => void {
@@ -108,7 +123,7 @@ describe("U6: Complete on… date picker", () => {
 		const t = task({ recurrence: "DTSTART:20260601;FREQ=WEEKLY;BYDAY=TU", scheduled: "2026-06-02" });
 		new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
 
-		await findItem("(Instance) Complete on…")?.onClick.mock.calls[0]?.[0]();
+		await findItem("Completed on (pick date)")?.onClick.mock.calls[0]?.[0]();
 		expect(modalMock).toHaveBeenCalledTimes(1);
 
 		await getPickerOnSelect()("2026-05-20");
@@ -123,7 +138,7 @@ describe("U6: Complete on… date picker", () => {
 		const t = task(); // undated
 		new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
 
-		await findItem("Complete on…")?.onClick.mock.calls[0]?.[0]();
+		await findItem("Completed on (pick date)")?.onClick.mock.calls[0]?.[0]();
 		await getPickerOnSelect()("2026-05-20");
 
 		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(t, "status", "done", {
@@ -136,7 +151,7 @@ describe("U6: Complete on… date picker", () => {
 		const t = task({ scheduled: "2026-06-02" });
 		new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
 
-		await findItem("Complete on…")?.onClick.mock.calls[0]?.[0]();
+		await findItem("Completed on (pick date)")?.onClick.mock.calls[0]?.[0]();
 		await getPickerOnSelect()(null);
 
 		expect(plugin.updateTaskProperty).not.toHaveBeenCalled();

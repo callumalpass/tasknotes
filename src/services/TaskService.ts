@@ -614,6 +614,33 @@ export class TaskService {
 				applyGoogleCalendarRecurringExceptionCleanup(updatePlan.updatedTask);
 			}
 
+			// Rescheduling a recurring task onto a specific date reactivates that
+			// occurrence: drop the date from complete_instances/skipped_instances so
+			// the user doesn't have to manually un-complete/un-skip after moving the
+			// scheduled date (e.g. undoing an accidental completion that advanced the
+			// schedule). No-op when there is no matching recorded entry.
+			let rescheduleClearedOccurrence = false;
+			if (
+				property === "scheduled" &&
+				freshTask.recurrence &&
+				typeof updatePlan.normalizedValue === "string" &&
+				updatePlan.normalizedValue.length > 0
+			) {
+				const scheduledDateStr = getDatePart(updatePlan.normalizedValue);
+				const completeInstances = freshTask.complete_instances ?? [];
+				const skippedInstances = freshTask.skipped_instances ?? [];
+				const cleanedComplete = completeInstances.filter((d) => d !== scheduledDateStr);
+				const cleanedSkipped = skippedInstances.filter((d) => d !== scheduledDateStr);
+				if (
+					cleanedComplete.length !== completeInstances.length ||
+					cleanedSkipped.length !== skippedInstances.length
+				) {
+					rescheduleClearedOccurrence = true;
+					updatePlan.updatedTask.complete_instances = cleanedComplete;
+					updatePlan.updatedTask.skipped_instances = cleanedSkipped;
+				}
+			}
+
 			// Step 2: Persist to file
 			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 				// Use field mapper to get the correct frontmatter property name
@@ -649,6 +676,19 @@ export class TaskService {
 					this.plugin.fieldMapper.toUserField("googleCalendarMovedOriginalDates"),
 					updatePlan.updatedTask.googleCalendarMovedOriginalDates
 				);
+
+				if (rescheduleClearedOccurrence) {
+					this.writeOptionalFrontmatterField(
+						frontmatter,
+						this.plugin.fieldMapper.toUserField("completeInstances"),
+						updatePlan.updatedTask.complete_instances
+					);
+					this.writeOptionalFrontmatterField(
+						frontmatter,
+						this.plugin.fieldMapper.toUserField("skippedInstances"),
+						updatePlan.updatedTask.skipped_instances
+					);
+				}
 			});
 
 			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)

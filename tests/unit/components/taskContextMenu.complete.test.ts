@@ -1,13 +1,14 @@
 import { App, Menu } from "obsidian";
 import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
 import { createI18nService } from "../../../src/i18n";
+import { formatDateForStorage, getTodayString } from "../../../src/utils/dateUtils";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 
 /**
- * U5 — the four explicit completion actions (with un-complete) replace the single
- * recurring "Mark complete for this date" item and are net-new for non-recurring
- * tasks. Covers AE1, AE2, AE5, AE7.
+ * U5 — the completion actions live under a "Complete or skip" submenu (just
+ * "Complete" for non-recurring). Labels are uniform across task types (no
+ * per-type qualifier). Covers AE1, AE2, AE5, AE7.
  */
 
 type MockMenuItem = Record<string, jest.Mock> | { type: string };
@@ -79,20 +80,45 @@ function task(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	} as TaskInfo;
 }
 
-function findItem(title: string): Record<string, jest.Mock> | undefined {
-	const menu = menuMock.mock.results[0].value as MockMenu;
-	return menu.items.find(
-		(item): item is Record<string, jest.Mock> =>
-			!("type" in item) && item.setTitle.mock.calls[0]?.[0] === title
-	);
+function titleOf(item: MockMenuItem): string | undefined {
+	return "type" in item ? undefined : item.setTitle?.mock.calls[0]?.[0];
 }
 
-function allTitles(): string[] {
-	const menu = menuMock.mock.results[0].value as MockMenu;
-	return menu.items
-		.filter((item): item is Record<string, jest.Mock> => !("type" in item))
-		.map((item) => item.setTitle.mock.calls[0]?.[0])
-		.filter((t): t is string => typeof t === "string");
+function submenuOf(item: MockMenuItem): MockMenu | undefined {
+	if ("type" in item) return undefined;
+	const results = item.setSubmenu?.mock.results;
+	return results && results.length ? (results[results.length - 1].value as MockMenu) : undefined;
+}
+
+/** Find a menu item by title anywhere in the tree (top level or any submenu). */
+function findItem(
+	title: string,
+	menu: MockMenu | undefined = menuMock.mock.results[0]?.value as MockMenu,
+	seen = new Set<MockMenu>()
+): Record<string, jest.Mock> | undefined {
+	if (!menu || seen.has(menu)) return undefined;
+	seen.add(menu);
+	for (const item of menu.items) {
+		if ("type" in item) continue;
+		if (titleOf(item) === title) return item as Record<string, jest.Mock>;
+		const found = findItem(title, submenuOf(item), seen);
+		if (found) return found;
+	}
+	return undefined;
+}
+
+/** The items directly inside the top-level "Complete or skip"/"Complete" submenu. */
+function completionSubmenuTitles(): string[] {
+	const top = menuMock.mock.results[0].value as MockMenu;
+	const parent = top.items.find(
+		(it) => titleOf(it) === "Complete or skip" || titleOf(it) === "Complete"
+	);
+	const sub = parent ? submenuOf(parent) : undefined;
+	return sub
+		? sub.items
+				.map(titleOf)
+				.filter((t): t is string => typeof t === "string")
+		: [];
 }
 
 describe("U5: completion menu items", () => {
@@ -117,58 +143,74 @@ describe("U5: completion menu items", () => {
 				...o,
 			});
 
-		it("offers the four actions with an (Instance) prefix and removes the old single item", () => {
+		it("nests the four actions + skip under a 'Complete or Skip' submenu and drops the old single item", () => {
 			new TaskContextMenu({
 				task: recurring({ due: "2026-06-30" }),
 				plugin: createPlugin(),
 				targetDate: new Date("2026-06-15T12:00:00"),
 			});
 
-			expect(findItem("(Instance) Complete today")).toBeDefined();
-			expect(findItem("(Instance) Complete as scheduled")).toBeDefined();
-			expect(findItem("(Instance) Complete on due date")).toBeDefined();
-			expect(findItem("(Instance) Complete on…")).toBeDefined();
+			// The submenu exists at the top level...
+			const top = menuMock.mock.results[0].value as MockMenu;
+			expect(top.items.some((it) => titleOf(it) === "Complete or skip")).toBe(true);
+			// ...and holds the four completion actions plus skip.
+			expect(completionSubmenuTitles()).toEqual(
+				expect.arrayContaining([
+					"Completed today",
+					"Completed on schedule",
+					"Completed on due date",
+					"Completed on (pick date)",
+					"Skip instance",
+				])
+			);
 			// old single item gone
 			expect(findItem("Mark complete for this date")).toBeUndefined();
 		});
 
-		it("records the scheduled occurrence for 'Complete as scheduled' (AE1)", async () => {
+		it("records the scheduled occurrence for 'Completed on Schedule' (AE1)", async () => {
 			const plugin = createPlugin();
 			const t = recurring();
 			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
 
-			await findItem("(Instance) Complete as scheduled")?.onClick.mock.calls[0]?.[0]();
+			await findItem("Completed on schedule")?.onClick.mock.calls[0]?.[0]();
 
 			const [, date] = (plugin.toggleRecurringTaskComplete as jest.Mock).mock.calls[0];
-			const { formatDateForStorage } = require("../../../src/utils/dateUtils");
 			expect(formatDateForStorage(date)).toBe("2026-06-02");
 		});
 
-		it("resolves 'Complete as scheduled' to scheduled for a completion-anchored recurrence (AE2 re-anchor)", async () => {
+		it("resolves 'Completed on Schedule' to scheduled for a completion-anchored recurrence (AE2 re-anchor)", async () => {
 			const plugin = createPlugin();
 			const t = recurring({ recurrence_anchor: "completion", scheduled: "2026-06-02" });
 			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
 
-			await findItem("(Instance) Complete as scheduled")?.onClick.mock.calls[0]?.[0]();
-			const { formatDateForStorage } = require("../../../src/utils/dateUtils");
+			await findItem("Completed on schedule")?.onClick.mock.calls[0]?.[0]();
 			const [, date] = (plugin.toggleRecurringTaskComplete as jest.Mock).mock.calls[0];
 			expect(formatDateForStorage(date)).toBe("2026-06-02");
 		});
 
-		it("disables 'Complete on due date' with a reason when there is no due date (AE5)", () => {
+		it("records the due date for 'Completed on Due Date'", async () => {
+			const plugin = createPlugin();
+			const t = recurring({ due: "2026-06-30" });
+			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
+
+			await findItem("Completed on due date")?.onClick.mock.calls[0]?.[0]();
+
+			const [, date] = (plugin.toggleRecurringTaskComplete as jest.Mock).mock.calls[0];
+			expect(formatDateForStorage(date)).toBe("2026-06-30");
+		});
+
+		it("disables 'Completed on Due Date' with a reason when there is no due date (AE5)", () => {
 			new TaskContextMenu({
 				task: recurring({ due: undefined }),
 				plugin: createPlugin(),
 				targetDate: new Date("2026-06-15T12:00:00"),
 			});
 
-			const onDue = findItem("(Instance) Complete on due date");
-			expect(onDue?.setDisabled).toHaveBeenCalledWith(true);
-			// enabled actions remain
-			expect(findItem("(Instance) Complete today")?.setDisabled).not.toHaveBeenCalledWith(true);
+			expect(findItem("Completed on due date")?.setDisabled).toHaveBeenCalledWith(true);
+			expect(findItem("Completed today")?.setDisabled).not.toHaveBeenCalledWith(true);
 		});
 
-		it("shows '(Instance) Mark incomplete' for an already-recorded instance and toggles it out (AE7)", async () => {
+		it("shows 'Mark Incomplete' for an already-recorded instance and toggles it out (AE7)", async () => {
 			const plugin = createPlugin();
 			const t = recurring({ complete_instances: ["2026-06-02"] });
 			new TaskContextMenu({
@@ -178,40 +220,36 @@ describe("U5: completion menu items", () => {
 				occurrenceDate: new Date("2026-06-02T00:00:00Z"),
 			});
 
-			// The asScheduled action (resolving 2026-06-02) collapses to Mark incomplete.
-			const incompleteItem = findItem("(Instance) Mark incomplete");
+			// The asScheduled action (resolving 2026-06-02) collapses to Mark Incomplete.
+			const incompleteItem = findItem("Mark incomplete");
 			expect(incompleteItem).toBeDefined();
 
 			await incompleteItem?.onClick.mock.calls[0]?.[0]();
 			expect(plugin.toggleRecurringTaskComplete).toHaveBeenCalled();
 		});
-
-		it("records the due date for 'Complete on due date'", async () => {
-			const plugin = createPlugin();
-			const t = recurring({ due: "2026-06-30" });
-			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
-
-			await findItem("(Instance) Complete on due date")?.onClick.mock.calls[0]?.[0]();
-
-			const { formatDateForStorage } = require("../../../src/utils/dateUtils");
-			const [, date] = (plugin.toggleRecurringTaskComplete as jest.Mock).mock.calls[0];
-			expect(formatDateForStorage(date)).toBe("2026-06-30");
-		});
 	});
 
 	describe("non-recurring", () => {
-		it("offers the four actions net-new WITHOUT an (Instance) prefix", () => {
+		it("nests the four actions under a 'Complete' submenu (no skip, uniform labels)", () => {
 			new TaskContextMenu({
 				task: task({ scheduled: "2026-06-02", due: "2026-06-30" }),
 				plugin: createPlugin(),
 				targetDate: new Date("2026-06-15T12:00:00"),
 			});
 
-			expect(findItem("Complete today")).toBeDefined();
-			expect(findItem("Complete as scheduled")).toBeDefined();
-			expect(findItem("Complete on due date")).toBeDefined();
-			expect(findItem("Complete on…")).toBeDefined();
-			expect(allTitles().some((t) => t.startsWith("(Instance)"))).toBe(false);
+			const top = menuMock.mock.results[0].value as MockMenu;
+			expect(top.items.some((it) => titleOf(it) === "Complete")).toBe(true);
+			const titles = completionSubmenuTitles();
+			expect(titles).toEqual(
+				expect.arrayContaining([
+					"Completed today",
+					"Completed on schedule",
+					"Completed on due date",
+					"Completed on (pick date)",
+				])
+			);
+			// Non-recurring has no skip action.
+			expect(titles).not.toContain("Skip instance");
 		});
 
 		it("dispatches a status change carrying the resolved completion date", async () => {
@@ -219,21 +257,20 @@ describe("U5: completion menu items", () => {
 			const t = task({ scheduled: "2026-06-02" });
 			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
 
-			await findItem("Complete as scheduled")?.onClick.mock.calls[0]?.[0]();
+			await findItem("Completed on schedule")?.onClick.mock.calls[0]?.[0]();
 
 			expect(plugin.updateTaskProperty).toHaveBeenCalledWith(t, "status", "done", {
 				completionDate: "2026-06-02",
 			});
 		});
 
-		it("records today for 'Complete today'", async () => {
+		it("records today for 'Completed Today'", async () => {
 			const plugin = createPlugin();
 			const t = task({ scheduled: "2026-06-02" });
 			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
 
-			await findItem("Complete today")?.onClick.mock.calls[0]?.[0]();
+			await findItem("Completed today")?.onClick.mock.calls[0]?.[0]();
 
-			const { getTodayString } = require("../../../src/utils/dateUtils");
 			expect(plugin.updateTaskProperty).toHaveBeenCalledWith(t, "status", "done", {
 				completionDate: getTodayString(),
 			});
@@ -245,7 +282,7 @@ describe("U5: completion menu items", () => {
 			const t = task({ scheduled: "2026-06-02" });
 			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
 
-			await findItem("Complete today")?.onClick.mock.calls[0]?.[0]();
+			await findItem("Completed today")?.onClick.mock.calls[0]?.[0]();
 
 			expect(plugin.updateTaskProperty).not.toHaveBeenCalled();
 		});
@@ -257,20 +294,20 @@ describe("U5: completion menu items", () => {
 				targetDate: new Date("2026-06-15T12:00:00"),
 			});
 
-			expect(findItem("Complete as scheduled")?.setDisabled).toHaveBeenCalledWith(true);
-			expect(findItem("Complete on due date")?.setDisabled).toHaveBeenCalledWith(true);
-			expect(findItem("Complete today")?.setDisabled).not.toHaveBeenCalledWith(true);
-			expect(findItem("Complete on…")?.setDisabled).not.toHaveBeenCalledWith(true);
+			expect(findItem("Completed on schedule")?.setDisabled).toHaveBeenCalledWith(true);
+			expect(findItem("Completed on due date")?.setDisabled).toHaveBeenCalledWith(true);
+			expect(findItem("Completed today")?.setDisabled).not.toHaveBeenCalledWith(true);
+			expect(findItem("Completed on (pick date)")?.setDisabled).not.toHaveBeenCalledWith(true);
 		});
 
-		it("collapses to a single 'Mark incomplete' when already in a completed status and reverts to the default status (AE7)", async () => {
+		it("collapses to a single 'Mark Incomplete' when already completed and reverts to the default status (AE7)", async () => {
 			const plugin = createPlugin();
 			const t = task({ status: "done", completedDate: "2026-06-02", scheduled: "2026-06-02" });
 			new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
 
-			expect(findItem("Complete today")).toBeUndefined();
-			expect(findItem("Complete as scheduled")).toBeUndefined();
-			expect(findItem("Complete on…")).toBeUndefined();
+			expect(findItem("Completed today")).toBeUndefined();
+			expect(findItem("Completed on schedule")).toBeUndefined();
+			expect(findItem("Completed on (pick date)")).toBeUndefined();
 
 			const incomplete = findItem("Mark incomplete");
 			expect(incomplete).toBeDefined();

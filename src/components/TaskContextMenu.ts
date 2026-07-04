@@ -278,10 +278,11 @@ export class TaskContextMenu {
 
 		this.addCustomDateFieldMenuItems(task, plugin);
 
-		this.addCompletionMenuItems(task, plugin);
+		this.addCompleteOrSkipSubmenu(task, plugin);
 
-		if (task.recurrence) {
-			this.addRecurringInstanceMenuItems(task, plugin);
+		// Occurrence note stays at the top level (it is not a complete/skip action).
+		if (task.recurrence && !this.options.promoteOccurrenceControls) {
+			this.addOccurrenceNoteMenuItem(task, plugin);
 		}
 
 		if (!hasPromotedOccurrenceControls && task.recurrence_parent && task.occurrence_date) {
@@ -866,24 +867,42 @@ export class TaskContextMenu {
 		});
 	}
 
-	private instanceLabel(label: string, isRecurring: boolean): string {
-		return isRecurring
-			? this.t("contextMenus.task.completion.instancePrefix", { label })
-			: label;
+	/**
+	 * Nest all completion (and, for recurring tasks, skip) actions under a single
+	 * "Complete or Skip" submenu to keep the top-level menu compact. Non-recurring
+	 * tasks have no skip action, so their submenu is labelled just "Complete".
+	 */
+	private addCompleteOrSkipSubmenu(task: TaskInfo, plugin: TaskNotesPlugin): void {
+		const isRecurring = !!task.recurrence;
+		this.menu.addItem((item) => {
+			item.setTitle(
+				this.t(
+					isRecurring
+						? "contextMenus.task.completion.submenu"
+						: "contextMenus.task.completion.submenuCompleteOnly"
+				)
+			);
+			item.setIcon("check-check");
+			const submenu = getSubmenu(item);
+			this.addCompletionMenuItems(task, plugin, submenu);
+			if (isRecurring) {
+				this.addSkipMenuItem(task, plugin, submenu);
+			}
+		});
 	}
 
 	/**
 	 * Render the four explicit completion actions (Complete today / as scheduled /
-	 * on due date / on…) for every task, with the un-complete affordance indexed
-	 * per task type (R11): recurring completeness is per-date (each action toggles
-	 * its own resolved date); non-recurring completeness is a single status (all
-	 * four collapse to one "Mark incomplete").
+	 * on due date / on…) into the given menu, with the un-complete affordance
+	 * indexed per task type (R11): recurring completeness is per-date (each action
+	 * toggles its own resolved date); non-recurring completeness is a single
+	 * status (all four collapse to one "Mark incomplete").
 	 */
-	private addCompletionMenuItems(task: TaskInfo, plugin: TaskNotesPlugin): void {
+	private addCompletionMenuItems(task: TaskInfo, plugin: TaskNotesPlugin, menu: Menu): void {
 		const isRecurring = !!task.recurrence;
 
 		if (!isRecurring && plugin.statusManager.isCompletedStatus(task.status)) {
-			this.menu.addItem((item) => {
+			menu.addItem((item) => {
 				item.setTitle(this.t("contextMenus.task.completion.markIncomplete"));
 				item.setIcon("x");
 				item.onClick(async () => {
@@ -897,37 +916,41 @@ export class TaskContextMenu {
 			task,
 			plugin,
 			"today",
-			"contextMenus.task.completion.completeToday"
+			"contextMenus.task.completion.completeToday",
+			menu
 		);
 		this.addConcreteCompletionAction(
 			task,
 			plugin,
 			"asScheduled",
-			"contextMenus.task.completion.completeAsScheduled"
+			"contextMenus.task.completion.completeAsScheduled",
+			menu
 		);
 		this.addConcreteCompletionAction(
 			task,
 			plugin,
 			"onDue",
-			"contextMenus.task.completion.completeOnDue"
+			"contextMenus.task.completion.completeOnDue",
+			menu
 		);
-		this.addPickCompletionDateAction(task, plugin);
+		this.addPickCompletionDateAction(task, plugin, menu);
 	}
 
 	private addConcreteCompletionAction(
 		task: TaskInfo,
 		plugin: TaskNotesPlugin,
 		mode: CompletionMode,
-		baseLabelKey: string
+		baseLabelKey: string,
+		menu: Menu
 	): void {
 		const isRecurring = !!task.recurrence;
 		const ctx: CompletionDateContext = { occurrenceDate: this.options.occurrenceDate };
 		const resolution = resolveCompletionDate(task, mode, ctx);
 
-		this.menu.addItem((item) => {
+		menu.addItem((item) => {
 			if (!resolution.available) {
 				// Shown disabled (not hidden) with a reason tooltip (R4).
-				item.setTitle(this.instanceLabel(this.t(baseLabelKey), isRecurring));
+				item.setTitle(this.t(baseLabelKey));
 				item.setIcon("check");
 				item.setDisabled(true);
 				const el = getMenuItemElement(item);
@@ -945,8 +968,8 @@ export class TaskContextMenu {
 				(task.complete_instances?.includes(formatDateForStorage(resolvedDate)) ?? false);
 			item.setTitle(
 				alreadyComplete
-					? this.instanceLabel(this.t("contextMenus.task.completion.markIncomplete"), true)
-					: this.instanceLabel(this.t(baseLabelKey), isRecurring)
+					? this.t("contextMenus.task.completion.markIncomplete")
+					: this.t(baseLabelKey)
 			);
 			item.setIcon(alreadyComplete ? "x" : "check");
 			item.onClick(async () => {
@@ -955,15 +978,13 @@ export class TaskContextMenu {
 		});
 	}
 
-	private addPickCompletionDateAction(task: TaskInfo, plugin: TaskNotesPlugin): void {
-		const isRecurring = !!task.recurrence;
-		this.menu.addItem((item) => {
-			item.setTitle(
-				this.instanceLabel(
-					this.t("contextMenus.task.completion.completeOnPicked"),
-					isRecurring
-				)
-			);
+	private addPickCompletionDateAction(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		menu: Menu
+	): void {
+		menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.completion.completeOnPicked"));
 			item.setIcon("calendar-plus");
 			item.onClick(() => {
 				this.pickCompletionDate(task, plugin);
@@ -1064,18 +1085,14 @@ export class TaskContextMenu {
 		}
 	}
 
-	private addRecurringInstanceMenuItems(task: TaskInfo, plugin: TaskNotesPlugin): void {
-		// The four explicit completion actions (which replaced the single
-		// "Mark complete for this date" item) are added for every task by
-		// addCompletionMenuItems. This method now only owns skip + occurrence note.
-
+	private addSkipMenuItem(task: TaskInfo, plugin: TaskNotesPlugin, menu: Menu): void {
 		// Not routed through the four-mode resolver: that would drop the completion-anchor guard.
 		const skipOccurrenceDate = this.options.occurrenceDate;
 		const skipLabelDate = skipOccurrenceDate ?? getRecurringTaskActionDate(task);
 		const skipDateStr = formatDateForStorage(skipLabelDate);
 		const isSkippedForDate = task.skipped_instances?.includes(skipDateStr) || false;
 
-		this.menu.addItem((item) => {
+		menu.addItem((item) => {
 			item.setTitle(
 				isSkippedForDate
 					? this.t("contextMenus.task.unskipInstance")
@@ -1102,10 +1119,6 @@ export class TaskContextMenu {
 				}
 			});
 		});
-
-		if (!this.options.promoteOccurrenceControls) {
-			this.addOccurrenceNoteMenuItem(task, plugin);
-		}
 	}
 
 	private addPromotedOccurrenceControls(task: TaskInfo, plugin: TaskNotesPlugin): boolean {
