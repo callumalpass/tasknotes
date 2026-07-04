@@ -10,6 +10,7 @@ import {
 	buildSubtaskCreationPrePopulatedValues,
 } from "../services/taskRelationshipActions";
 import { renameVaultFile } from "../services/VaultMutationService";
+import { getRecurringTaskActionDate } from "../services/task-service/taskRecurringPlanning";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { DateContextMenu } from "./DateContextMenu";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
@@ -142,6 +143,15 @@ export interface TaskContextMenuOptions {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
 	targetDate: Date;
+	/**
+	 * The specific recurring occurrence this menu was opened against, when the
+	 * producing view addresses a concrete occurrence (Calendar). Distinct from
+	 * the overloaded `targetDate`: occurrence-aware logic (skip, completion
+	 * resolution) reads this field and never infers occurrence-ness from
+	 * `targetDate`. Omitted by list/board producers, which lets the service's
+	 * anchor-aware default resolve the date instead.
+	 */
+	occurrenceDate?: Date;
 	onUpdate?: () => void;
 	promoteOccurrenceControls?: boolean;
 }
@@ -888,7 +898,17 @@ export class TaskContextMenu {
 			});
 		});
 
-		const isSkippedForDate = task.skipped_instances?.includes(dateStr) || false;
+		// Skip records the occurrence, never the card's view-wide "today". When
+		// the producing view supplies a concrete occurrence (Calendar) use it;
+		// otherwise resolve the anchor-aware default (scheduled for
+		// scheduled-anchored recurrences, today for completion-anchored) for the
+		// label, and pass no explicit date to the service so it re-resolves on
+		// the fresh task. Deliberately NOT routed through the four-mode resolver,
+		// which would drop the completion-anchor guard (KTD3).
+		const skipOccurrenceDate = this.options.occurrenceDate;
+		const skipLabelDate = skipOccurrenceDate ?? getRecurringTaskActionDate(task);
+		const skipDateStr = formatDateForStorage(skipLabelDate);
+		const isSkippedForDate = task.skipped_instances?.includes(skipDateStr) || false;
 
 		this.menu.addItem((item) => {
 			item.setTitle(
@@ -899,10 +919,7 @@ export class TaskContextMenu {
 			item.setIcon(isSkippedForDate ? "undo" : "x-circle");
 			item.onClick(async () => {
 				try {
-					await plugin.taskService.toggleRecurringTaskSkipped(
-						task,
-						this.options.targetDate
-					);
+					await plugin.taskService.toggleRecurringTaskSkipped(task, skipOccurrenceDate);
 					this.options.onUpdate?.();
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
