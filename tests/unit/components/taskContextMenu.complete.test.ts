@@ -344,6 +344,14 @@ describe("U5: completion menu items", () => {
 			);
 			// No submenu wrapper in flat mode.
 			expect(topTitles).not.toContain("Mark complete or skip");
+
+			// A divider precedes the block and another follows it.
+			const items = top.items;
+			const firstIdx = items.findIndex((it) => titleOf(it) === "Completed today");
+			const skipIdx = items.findIndex((it) => titleOf(it) === "Skip instance");
+			expect(firstIdx).toBeGreaterThan(0);
+			expect("type" in items[firstIdx - 1]).toBe(true); // separator before "Completed today"
+			expect("type" in items[skipIdx + 1]).toBe(true); // separator after "Skip instance"
 		});
 
 		it("nests under a submenu by default (setting unset)", () => {

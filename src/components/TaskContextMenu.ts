@@ -878,10 +878,13 @@ export class TaskContextMenu {
 
 		// Default to the submenu when the setting is unset (backward compatible).
 		if (plugin.settings.completionMenuAsSubmenu === false) {
+			// Delimit the flat completion/skip block from the surrounding menu.
+			this.menu.addSeparator();
 			this.addCompletionMenuItems(task, plugin, this.menu);
 			if (isRecurring) {
 				this.addSkipMenuItem(task, plugin, this.menu);
 			}
+			this.menu.addSeparator();
 			return;
 		}
 
