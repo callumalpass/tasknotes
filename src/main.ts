@@ -1113,7 +1113,7 @@ export default class TaskNotesPlugin extends Plugin {
 		task: TaskInfo,
 		property: keyof TaskInfo,
 		value: TaskInfo[keyof TaskInfo],
-		options: { silent?: boolean } = {}
+		options: { silent?: boolean; completionDate?: string } = {}
 	): Promise<TaskInfo> {
 		try {
 			const updatedTask = await this.taskService.updateProperty(

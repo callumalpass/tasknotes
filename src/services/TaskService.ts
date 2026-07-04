@@ -573,7 +573,7 @@ export class TaskService {
 		task: TaskInfo,
 		property: keyof TaskInfo,
 		value: unknown,
-		options: { silent?: boolean } = {}
+		options: { silent?: boolean; completionDate?: string } = {}
 	): Promise<TaskInfo> {
 		try {
 			const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
@@ -584,13 +584,21 @@ export class TaskService {
 			// Get fresh task data to prevent overwrites
 			const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
 
+			// A status completion may carry an explicit completion date (context-menu
+			// "Complete on…/as scheduled/on due"); otherwise fall back to the default
+			// (task.occurrence_date || today). Only meaningful for non-recurring
+			// status completions — the frontmatter write is guarded by
+			// `property === "status" && !recurring`.
+			const completionDateString =
+				options.completionDate ?? this.getCompletionDateForTask(freshTask);
+
 			// Step 1: Construct new state in memory using fresh data
 			const updatePlan = buildTaskPropertyUpdatePlan({
 				freshTask,
 				property,
 				value,
 				currentTimestamp: getCurrentTimestamp(),
-				currentDateString: this.getCompletionDateForTask(freshTask),
+				currentDateString: completionDateString,
 				normalizeStatusValue: (candidate) => this.normalizeStatusValue(candidate),
 				isCompletedStatus: (status) => this.plugin.statusManager.isCompletedStatus(status),
 			});
@@ -628,7 +636,7 @@ export class TaskService {
 					normalizeStatusValue: (candidate) => this.normalizeStatusValue(candidate),
 					isCompletedStatus: (status) =>
 						this.plugin.statusManager.isCompletedStatus(status),
-					currentDateString: this.getCompletionDateForTask(freshTask),
+					currentDateString: completionDateString,
 				});
 
 				this.writeOptionalFrontmatterField(

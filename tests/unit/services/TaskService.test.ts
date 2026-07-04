@@ -838,6 +838,55 @@ describe('TaskService', () => {
       expect(result.completedDate).toBeUndefined();
     });
 
+    // U4: an explicit completion date threads through the status pipeline.
+    it('should record an explicit completion date on a non-recurring status completion', async () => {
+      const nonRecurringTask = TaskFactory.createTask({ recurrence: undefined });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(nonRecurringTask);
+
+      const result = await taskService.updateProperty(nonRecurringTask, 'status', 'done', {
+        completionDate: '2025-05-20',
+      });
+
+      expect(result.status).toBe('done');
+      expect(result.completedDate).toBe('2025-05-20');
+    });
+
+    it('should record a chosen completion date for an undated non-recurring task', async () => {
+      const undatedTask = TaskFactory.createTask({
+        recurrence: undefined,
+        scheduled: undefined,
+        due: undefined,
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(undatedTask);
+
+      const result = await taskService.updateProperty(undatedTask, 'status', 'done', {
+        completionDate: '2025-04-15',
+      });
+
+      expect(result.status).toBe('done');
+      expect(result.completedDate).toBe('2025-04-15');
+    });
+
+    it('should default the completion date to today when none is provided', async () => {
+      const nonRecurringTask = TaskFactory.createTask({ recurrence: undefined });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(nonRecurringTask);
+
+      const result = await taskService.updateProperty(nonRecurringTask, 'status', 'done');
+
+      expect(result.completedDate).toBe('2025-01-01'); // mocked today, unchanged
+    });
+
+    it('should ignore an explicit completion date for recurring tasks', async () => {
+      const recurringTask = TaskFactory.createTask({ recurrence: 'FREQ=DAILY' });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const result = await taskService.updateProperty(recurringTask, 'status', 'done', {
+        completionDate: '2025-05-20',
+      });
+
+      expect(result.completedDate).toBeUndefined();
+    });
+
     it('should remove empty due/scheduled dates', async () => {
       await taskService.updateProperty(task, 'due', undefined);
 
