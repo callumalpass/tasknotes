@@ -1,5 +1,6 @@
 import { App, Menu } from "obsidian";
 import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
+import { showTaskContextMenu } from "../../../src/ui/taskCardContextMenu";
 import { createI18nService } from "../../../src/i18n";
 import { formatDateForStorage } from "../../../src/utils/dateUtils";
 import type TaskNotesPlugin from "../../../src/main";
@@ -131,6 +132,30 @@ describe("U1: occurrenceDate context field", () => {
 			targetDate: new Date("2026-06-06T12:00:00"),
 			occurrenceDate: occurrence,
 		});
+
+		expect(findTopLevelMenuItem("Unskip instance")).toBeDefined();
+		expect(findTopLevelMenuItem("Skip instance")).toBeUndefined();
+	});
+
+	it("showTaskContextMenu forwards occurrenceDate into the built menu", async () => {
+		// Proves the U1 plumbing: any occurrence-addressed producer routing through
+		// showTaskContextMenu has its occurrenceDate honored. The already-skipped
+		// date matches the forwarded occurrenceDate but not the targetDate, so a
+		// forwarded field is the only way the menu shows "Unskip instance".
+		const occurrence = new Date("2026-06-09T00:00:00Z");
+		const task = createRecurringTask({
+			skipped_instances: [formatDateForStorage(occurrence)],
+		});
+		const plugin = createPlugin();
+		plugin.cacheManager.getTaskInfo = jest.fn(async () => task);
+
+		await showTaskContextMenu(
+			new MouseEvent("contextmenu"),
+			task.path,
+			plugin,
+			new Date("2026-06-06T12:00:00"), // unrelated targetDate
+			{ occurrenceDate: occurrence }
+		);
 
 		expect(findTopLevelMenuItem("Unskip instance")).toBeDefined();
 		expect(findTopLevelMenuItem("Skip instance")).toBeUndefined();

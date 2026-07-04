@@ -2,7 +2,7 @@ import { App, Menu } from "obsidian";
 import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
 import { getRecurringTaskActionDate } from "../../../src/services/task-service/taskRecurringPlanning";
 import { createI18nService } from "../../../src/i18n";
-import { formatDateForStorage } from "../../../src/utils/dateUtils";
+import { formatDateForStorage, getTodayString } from "../../../src/utils/dateUtils";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 
@@ -97,6 +97,9 @@ function findTopLevelMenuItem(title: string): Record<string, jest.Mock> | undefi
 describe("U2: Skip this instance records the occurrence date", () => {
 	beforeEach(() => {
 		jest.useFakeTimers();
+		// Freeze at midday UTC so "today" resolves deterministically regardless of
+		// the runner's timezone (getTodayLocal vs. new Date() agree within +/-12h).
+		jest.setSystemTime(new Date("2026-06-06T12:00:00Z"));
 		menuMock.mockClear();
 	});
 
@@ -174,7 +177,47 @@ describe("U2: Skip this instance records the occurrence date", () => {
 		// for completion-anchored recurrences.
 		expect(plugin.taskService.toggleRecurringTaskSkipped).toHaveBeenCalledWith(task, undefined);
 		const resolved = getRecurringTaskActionDate(task, undefined);
-		expect(formatDateForStorage(resolved)).toBe(formatDateForStorage(new Date()));
+		expect(formatDateForStorage(resolved)).toBe(getTodayString()); // today, not scheduled
+	});
+
+	it("List/Kanban shows Unskip once the resolved scheduled date is already skipped, and toggles it out", async () => {
+		// The label corollary of the fix: skip records the scheduled date, so the
+		// card must offer "Unskip" for that same date even with NO occurrenceDate.
+		const task = createRecurringTask({ skipped_instances: ["2026-06-02"] });
+		const plugin = createPlugin();
+
+		new TaskContextMenu({
+			task,
+			plugin,
+			targetDate: new Date("2026-06-06T12:00:00"), // view-wide today, not the occurrence
+		});
+
+		expect(findTopLevelMenuItem("Unskip instance")).toBeDefined();
+		expect(findTopLevelMenuItem("Skip instance")).toBeUndefined();
+
+		const unskipItem = findTopLevelMenuItem("Unskip instance");
+		await unskipItem?.onClick.mock.calls[0]?.[0]();
+		// Still no explicit date: the service re-resolves the same scheduled date on the fresh task.
+		expect(plugin.taskService.toggleRecurringTaskSkipped).toHaveBeenCalledWith(task, undefined);
+	});
+
+	it("due-only recurring skip resolves to today (no scheduled anchor)", async () => {
+		// recurrence + due, no scheduled: getRecurringTaskActionDate falls through to today.
+		const task = createRecurringTask({ due: "2026-06-02" });
+		delete (task as Partial<TaskInfo>).scheduled;
+		const plugin = createPlugin();
+
+		new TaskContextMenu({
+			task,
+			plugin,
+			targetDate: new Date("2026-06-06T12:00:00"),
+		});
+
+		const skipItem = findTopLevelMenuItem("Skip instance");
+		await skipItem?.onClick.mock.calls[0]?.[0]();
+
+		expect(plugin.taskService.toggleRecurringTaskSkipped).toHaveBeenCalledWith(task, undefined);
+		expect(formatDateForStorage(getRecurringTaskActionDate(task, undefined))).toBe(getTodayString());
 	});
 
 	it("shows Unskip for a Calendar occurrence that is already skipped and toggles the same date out", async () => {
