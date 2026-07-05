@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Fixed Obsidian links in Google Calendar event descriptions so the note path survives HTML entity handling.
+  - Thanks to @martin-forge for reporting and fixing.

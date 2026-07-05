@@ -1741,11 +1741,11 @@ export class TaskCalendarSyncService {
 			parts.push("---");
 		}
 
-		// Add Obsidian link (as HTML anchor for clickability in Google Calendar)
+		// Google Calendar descriptions are HTML-capable, so keep the plain URL HTML-safe.
 		if (settings.includeObsidianLink) {
 			const vaultName = this.plugin.app.vault.getName();
 			const encodedPath = encodeURIComponent(task.path);
-			const obsidianUri = `obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodedPath}`;
+			const obsidianUri = `obsidian://open?vault=${encodeURIComponent(vaultName)}&amp;file=${encodedPath}`;
 			const linkText = t("openInObsidian");
 			parts.push(`${linkText}: ${obsidianUri}`);
 		}

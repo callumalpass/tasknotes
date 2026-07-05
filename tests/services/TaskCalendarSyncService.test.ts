@@ -149,8 +149,9 @@ describe("TaskCalendarSyncService", () => {
             "Projects: Quarterly Planning, Nested Project, Markdown Project"
         );
         expect(description).toContain(
-            "Open in Obsidian: obsidian://open?vault=Example%20Vault&file=Tasks%2FPrepare%20quarterly%20planning%20notes.md"
+            "Open in Obsidian: obsidian://open?vault=Example%20Vault&amp;file=Tasks%2FPrepare%20quarterly%20planning%20notes.md"
         );
+        expect(description).not.toContain("&file=");
         expect(description).not.toContain("[[");
         expect(description).not.toContain("]]");
         expect(description).not.toContain("<a ");
