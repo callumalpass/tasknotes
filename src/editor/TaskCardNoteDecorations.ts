@@ -55,6 +55,7 @@ import {
 	ReadingModeInjectionContext,
 	ReadingModeInjectionScheduler,
 } from "./ReadingModeInjectionScheduler";
+import { observeReadingModeWidgetMutations } from "./ReadingModeWidgetObserver";
 import {
 	shouldSkipMarkdownWidgetEditor,
 	shouldSkipMarkdownWidgetLeaf,
@@ -585,11 +586,25 @@ async function injectReadingModeWidget(
 	// Get task info for this file
 	const task = plugin.cacheManager.getCachedTaskInfoSync(file.path);
 	if (!task) {
-		// Not a task note - remove any existing widgets
+		// A same-file cache miss can happen while Obsidian is rebuilding metadata.
+		// Keep the existing card until metadata confirms this is no longer a task note.
 		try {
 			const previewView = view.previewMode;
 			const containerEl = previewView.containerEl;
-			removeTaskCardWidgets(containerEl);
+			const existingWidgets = Array.from(
+				containerEl.querySelectorAll<HTMLElement>(`.${CSS_TASK_CARD_WIDGET}`)
+			);
+			const hasWidgetForDifferentFile = existingWidgets.some(
+				(widget) => widget.dataset.taskPath !== file.path
+			);
+			const metadata = plugin.app.metadataCache.getFileCache(file);
+			const isConfirmedNonTask = Boolean(
+				metadata?.frontmatter && !plugin.cacheManager.isTaskFile(metadata.frontmatter)
+			);
+
+			if (hasWidgetForDifferentFile || isConfirmedNonTask) {
+				removeTaskCardWidgets(containerEl);
+			}
 		} catch (error) {
 			tasknotesLogger.debug("[TaskNotes] Error cleaning up task card in reading mode:", {
 				category: "persistence",
@@ -700,9 +715,48 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	const canvasObservers: MutationObserver[] = [];
 	const canvasInteractionCleanups: Array<() => void> = [];
 	const observedCanvasContainers = new WeakSet<HTMLElement>();
+	const markdownWidgetObserverCleanups: Array<() => void> = [];
+	const observedMarkdownContainers = new WeakSet<HTMLElement>();
 	const scheduler = new ReadingModeInjectionScheduler();
 	const scheduleInjection = (leaf: WorkspaceLeaf) => {
 		scheduler.schedule(leaf, (context) => injectReadingModeWidget(leaf, plugin, context));
+	};
+	const shouldRefreshMarkdownLeaf = (leaf: WorkspaceLeaf) => {
+		const view = leaf.view;
+		return (
+			plugin.settings.showTaskCardInNote &&
+			view instanceof MarkdownView &&
+			view.getMode() === "preview" &&
+			Boolean(view.file)
+		);
+	};
+	const observeMarkdownLeaf = (leaf: WorkspaceLeaf) => {
+		observeReadingModeWidgetMutations(
+			leaf,
+			`.${CSS_TASK_CARD_WIDGET}`,
+			scheduleInjection,
+			observedMarkdownContainers,
+			markdownWidgetObserverCleanups,
+			shouldRefreshMarkdownLeaf
+		);
+	};
+	const observeMarkdownLeaves = () => {
+		plugin.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
+			observeMarkdownLeaf(leaf);
+		});
+	};
+	const leafMatchesFile = (leaf: WorkspaceLeaf, file: TFile | null) => {
+		const view = leaf.view;
+		return view instanceof MarkdownView && (!file || view.file?.path === file.path);
+	};
+	const refreshLeavesForFile = (file: TFile | null) => {
+		const leaves = plugin.app.workspace.getLeavesOfType("markdown");
+		leaves.forEach((leaf) => {
+			if (leafMatchesFile(leaf, file)) {
+				scheduleInjection(leaf);
+				observeMarkdownLeaf(leaf);
+			}
+		});
 	};
 
 	// Debounce to prevent excessive re-renders
@@ -753,6 +807,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 			leaves.forEach((leaf) => {
 				scheduleInjection(leaf);
 			});
+			observeMarkdownLeaves();
 			observeCanvasLeaves();
 			debouncedCanvasRefresh({ force: true });
 		}, 100);
@@ -766,11 +821,20 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	const activeLeafChangeRef = plugin.app.workspace.on("active-leaf-change", (leaf) => {
 		if (leaf) {
 			scheduleInjection(leaf);
+			observeMarkdownLeaf(leaf);
 			observeCanvasLeaves();
 			debouncedCanvasRefresh();
 		}
 	});
 	workspaceRefs.push(activeLeafChangeRef);
+
+	// Inject widget when a new file is opened in the same leaf
+	const fileOpenRef = plugin.app.workspace.on("file-open", (file) => {
+		refreshLeavesForFile(file instanceof TFile ? file : null);
+		observeCanvasLeaves();
+		debouncedCanvasRefresh({ force: true });
+	});
+	workspaceRefs.push(fileOpenRef);
 
 	// Inject widget when file is modified (metadata changes) - debounced per file
 	const metadataDebounceTimers = new Map<string, number>();
@@ -779,14 +843,34 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 		const existingTimer = metadataDebounceTimers.get(file.path);
 		if (existingTimer) window.clearTimeout(existingTimer);
 
+		const leaves = plugin.app.workspace.getLeavesOfType("markdown");
+		const visibleReadingLeaves = leaves.filter((leaf) => {
+			const view = leaf.view;
+			return (
+				view instanceof MarkdownView &&
+				view.file?.path === file.path &&
+				view.getMode() === "preview"
+			);
+		});
+
+		if (visibleReadingLeaves.length > 0) {
+			metadataDebounceTimers.delete(file.path);
+			visibleReadingLeaves.forEach((leaf) => {
+				scheduleInjection(leaf);
+				observeMarkdownLeaf(leaf);
+			});
+			debouncedCanvasRefresh({ force: true });
+			return;
+		}
+
 		// Debounce per file to avoid freezing during typing
 		const timer = window.setTimeout(() => {
 			metadataDebounceTimers.delete(file.path);
-			const leaves = plugin.app.workspace.getLeavesOfType("markdown");
 			leaves.forEach((leaf) => {
 				const view = leaf.view;
-				if (view instanceof MarkdownView && view.file === file) {
+				if (view instanceof MarkdownView && view.file?.path === file.path) {
 					scheduleInjection(leaf);
+					observeMarkdownLeaf(leaf);
 				}
 			});
 			debouncedCanvasRefresh({ force: true });
@@ -807,6 +891,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	leaves.forEach((leaf) => {
 		scheduleInjection(leaf);
 	});
+	observeMarkdownLeaves();
 	observeCanvasLeaves();
 	debouncedCanvasRefresh({ force: true });
 
@@ -814,6 +899,9 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	return () => {
 		if (debounceTimer) window.clearTimeout(debounceTimer);
 		if (canvasDebounceTimer) window.clearTimeout(canvasDebounceTimer);
+		metadataDebounceTimers.forEach((timer) => window.clearTimeout(timer));
+		metadataDebounceTimers.clear();
+		markdownWidgetObserverCleanups.forEach((cleanup) => cleanup());
 		canvasObservers.forEach((observer) => observer.disconnect());
 		canvasInteractionCleanups.forEach((cleanup) => cleanup());
 

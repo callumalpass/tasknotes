@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2081) Kept task card and relationships widgets visible in reading mode when Obsidian scroll or preview updates remove injected widget DOM, and refreshed visible widgets immediately after task metadata changes. Thanks to @mukhozhuk for reporting and debugging.
