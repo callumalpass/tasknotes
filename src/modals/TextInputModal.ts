@@ -1,12 +1,42 @@
 import { App, Modal, Setting } from "obsidian";
 
+export interface TextInputModalFitContentOptions {
+	minCh?: number;
+	maxCh?: number;
+}
+
 export interface TextInputModalOptions {
 	title: string;
 	placeholder?: string;
 	initialValue?: string;
 	confirmText?: string;
 	cancelText?: string;
+	/** When true, confirming with an empty value resolves to "" instead of null. */
+	allowEmpty?: boolean;
+	/** When false, places the cursor at the end instead of selecting all text on open. */
+	selectOnFocus?: boolean;
+	/** Shrink the modal and input width to match the current value. */
+	fitContent?: boolean | TextInputModalFitContentOptions;
 	onInputReady?: (inputEl: HTMLInputElement) => void;
+}
+
+export function bindTextInputModalWidthToContent(
+	input: HTMLInputElement,
+	options: TextInputModalFitContentOptions = {}
+): void {
+	const minCh = options.minCh ?? 14;
+	const maxCh = options.maxCh ?? 48;
+	const update = (): void => {
+		const contentLength = Math.max(
+			input.value.length,
+			input.placeholder.length,
+			minCh
+		);
+		input.style.width = `${Math.min(contentLength + 2, maxCh)}ch`;
+	};
+
+	input.addEventListener("input", update);
+	update();
 }
 
 /**
@@ -33,13 +63,31 @@ export class TextInputModal extends Modal {
 		});
 	}
 
+	private getFitContentOptions(): TextInputModalFitContentOptions | null {
+		const { fitContent } = this.options;
+		if (!fitContent) return null;
+		return fitContent === true ? {} : fitContent;
+	}
+
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
+		contentEl.addClass("tn-text-input-modal__content");
+
+		const fitContentOptions = this.getFitContentOptions();
+		this.modalEl.addClass("tn-text-input-modal");
+		if (fitContentOptions) {
+			this.modalEl.addClass("tn-text-input-modal--fit-content");
+		}
 
 		new Setting(contentEl).setName(this.options.title).setHeading();
 
-		new Setting(contentEl).addText((text) => {
+		const inputSetting = new Setting(contentEl);
+		if (fitContentOptions) {
+			inputSetting.settingEl.addClass("tn-text-input-modal__input-setting");
+		}
+
+		inputSetting.addText((text) => {
 			this.inputEl = text.inputEl;
 			text.setPlaceholder(this.options.placeholder || "")
 				.setValue(this.options.initialValue || "")
@@ -47,16 +95,26 @@ export class TextInputModal extends Modal {
 					// Optional: real-time validation could go here
 				});
 
-			// Focus the input
+			if (fitContentOptions) {
+				bindTextInputModalWidthToContent(this.inputEl, fitContentOptions);
+			}
+
+			// Focus the input after the modal is visible so suggest popovers can attach.
 			window.setTimeout(() => {
 				this.inputEl.focus();
-				this.inputEl.select();
+				if (this.options.selectOnFocus !== false) {
+					this.inputEl.select();
+				} else {
+					const length = this.inputEl.value.length;
+					this.inputEl.setSelectionRange(length, length);
+				}
+				this.options.onInputReady?.(this.inputEl);
 			}, 100);
-
-			this.options.onInputReady?.(this.inputEl);
 		});
 
-		const buttonContainer = contentEl.createEl("div", { cls: "modal-button-container" });
+		const buttonContainer = contentEl.createEl("div", {
+			cls: "modal-button-container tn-text-input-modal__buttons",
+		});
 		buttonContainer.classList.remove(
 			"tn-static-display-block-2a1b75c9",
 			"tn-static-display-flex-4d51fc62",
@@ -108,7 +166,7 @@ export class TextInputModal extends Modal {
 
 		confirmButton.addEventListener("click", () => {
 			const value = this.inputEl.value.trim();
-			this.resolve(value || null);
+			this.resolve(value || (this.options.allowEmpty ? value : null));
 			this.close();
 		});
 

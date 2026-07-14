@@ -60,6 +60,7 @@ type MarkdownEditorInternal = {
 type MarkdownEditorOwner = {
 	editMode: unknown;
 	editor: MarkdownEditorInternal | null;
+	syncScroll?: () => void;
 };
 
 type ActiveMarkdownEditorOwner = {
@@ -551,6 +552,9 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 
 		this.owner.editMode = this;
 		this.owner.editor = this.editor;
+		// Obsidian's markdown scroll handler calls owner.syncScroll during scroll
+		// events. Embed editors are source-only, so a no-op is sufficient.
+		this.owner.syncScroll = () => {};
 		this.activeEditorOwner = {
 			editMode: this,
 			editor: new CodeMirrorEditorAdapter(this.editor.cm as unknown as EditorView) as unknown as Editor,

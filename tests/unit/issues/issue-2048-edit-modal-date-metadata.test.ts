@@ -29,7 +29,7 @@ function createPlugin(app: App): never {
 	} as never;
 }
 
-function renderMetadata(task: TaskInfo): HTMLElement[] {
+function renderMetadataContainer(task: TaskInfo): HTMLElement {
 	MockObsidian.reset();
 	const app = createMockApp(MockObsidian.createMockApp());
 	const modal = new TaskEditModal(app, createPlugin(app), { task });
@@ -38,7 +38,11 @@ function renderMetadata(task: TaskInfo): HTMLElement[] {
 	(modal as never as { createMetadataSection: (container: HTMLElement) => void })
 		.createMetadataSection(container);
 
-	return Array.from(container.querySelectorAll<HTMLElement>(".metadata-item"));
+	return container;
+}
+
+function renderMetadata(task: TaskInfo): HTMLElement[] {
+	return Array.from(renderMetadataContainer(task).querySelectorAll<HTMLElement>(".metadata-item"));
 }
 
 function textRows(items: HTMLElement[]): string[] {
@@ -46,6 +50,21 @@ function textRows(items: HTMLElement[]): string[] {
 }
 
 describe("Issue #2048: edit modal date metadata", () => {
+	it("does not add generic metadata-content or metadata-key classes that Obsidian styles on mobile", () => {
+		const container = renderMetadataContainer({
+			title: "Date reference task",
+			status: "open",
+			priority: "normal",
+			path: "TaskNotes/Date reference task.md",
+			archived: false,
+		} as TaskInfo);
+
+		expect(container.querySelector(".tn-task-modal__task-info-card")).not.toBeNull();
+		expect(container.querySelector(".metadata-content")).toBeNull();
+		expect(container.querySelector(".metadata-key")).toBeNull();
+		expect(container.querySelector(".tn-task-modal__task-info-key")).not.toBeNull();
+	});
+
 	it("shows current due and scheduled dates in the task information block", () => {
 		const items = renderMetadata({
 			title: "Date reference task",

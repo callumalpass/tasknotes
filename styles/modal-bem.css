@@ -920,7 +920,7 @@
     font-family: var(--font-monospace);
 }
 
-.tasknotes-plugin .modal-button-container {
+.tasknotes-plugin .modal-button-container:not(.tn-task-modal__icon-button-bar) {
     display: flex;
     justify-content: flex-end;
     gap: var(--size-4-2);

@@ -107,7 +107,7 @@ describe("Issue #1023: mobile custom field keyboard visibility", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
 
 		expect(cssContent).toContain(
-			".is-mobile-keyboard-focused.expanded .modal-split-content"
+			".is-mobile-keyboard-focused.expanded:not(.tn-task-modal--sheet) .modal-split-content"
 		);
 		expect(cssContent).toContain("scroll-padding-bottom");
 		expect(cssContent).toContain("env(safe-area-inset-bottom)");

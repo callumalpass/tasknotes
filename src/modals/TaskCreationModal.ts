@@ -23,7 +23,9 @@ import { applyTaskCreationSubtaskAssignments } from "./taskCreationSubtasks";
 import { NLPSuggest } from "./taskCreationSuggest";
 import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
 import { setTaskModalDetailsEditorValue } from "./taskModalDetailsEditor";
+import { createTaskModalChipRow, createTaskModalChipBreak } from "./taskModalChipRow";
 import { collapseTaskModalDetailsLayout } from "./taskModalLayout";
+import type { TaskModalLeadingIconButton } from "./taskModalActionButtons";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskCreationModal" });
@@ -160,11 +162,7 @@ export class TaskCreationModal extends TaskModal {
 		if (this.plugin.settings.enableNaturalLanguageInput) {
 			this.createNaturalLanguageInput(container);
 		} else {
-			// Fall back to regular title input
-			this.createTitleInput(container);
-			// When NLP is disabled, start with the modal expanded
-			this.isExpanded = true;
-			this.containerEl.addClass("expanded");
+			super.createPrimaryInput(container);
 		}
 	}
 
@@ -231,20 +229,10 @@ export class TaskCreationModal extends TaskModal {
 					if (shift) {
 						return this.focusPreviousNaturalLanguageField(editorContainer);
 					}
-					// Tab - jump to title input (expand form if needed)
 					if (!this.isExpanded) {
 						this.expandModal();
 					}
-					// Focus title input
-					window.setTimeout(() => {
-						const titleInput = this.modalEl.querySelector(
-							".title-input-detailed"
-						) as HTMLInputElement;
-						if (titleInput) {
-							titleInput.focus();
-						}
-					}, 50);
-					return true; // Prevent default tab behavior
+					return this.focusNextNaturalLanguageField(editorContainer);
 				},
 				onEnter: (editor, mod, shift) => {
 					if (mod) {
@@ -305,6 +293,32 @@ export class TaskCreationModal extends TaskModal {
 		}
 	}
 
+	private focusNextNaturalLanguageField(editorContainer: HTMLElement): boolean {
+		const root = this.modalEl.contains(editorContainer) ? this.modalEl : this.contentEl;
+		const orderedElements = Array.from(
+			root.querySelectorAll<HTMLElement>(NLP_TAB_ORDER_SELECTOR)
+		);
+		const currentIndex = orderedElements.findIndex(
+			(element) => element === editorContainer || editorContainer.contains(element)
+		);
+
+		if (currentIndex < 0 || currentIndex >= orderedElements.length - 1) {
+			return true;
+		}
+
+		const nextElement = orderedElements
+			.slice(currentIndex + 1)
+			.find(isFocusableModalElement);
+
+		if (nextElement) {
+			window.setTimeout(() => {
+				nextElement.focus();
+			}, 50);
+		}
+
+		return true;
+	}
+
 	private focusPreviousNaturalLanguageField(editorContainer: HTMLElement): boolean {
 		const root = this.modalEl.contains(editorContainer) ? this.modalEl : this.contentEl;
 		const orderedElements = Array.from(
@@ -330,6 +344,26 @@ export class TaskCreationModal extends TaskModal {
 		}
 
 		return true;
+	}
+
+	protected focusPreviousField(): boolean {
+		if (this.plugin.settings.enableNaturalLanguageInput && !this.titleInput) {
+			window.setTimeout(() => {
+				const cm = this.nlMarkdownEditor?.editor?.cm;
+				if (cm) {
+					cm.focus();
+					cm.scrollDOM.scrollTop = 0;
+					return;
+				}
+
+				if (this.nlInput) {
+					this.nlInput.focus({ preventScroll: true });
+				}
+			}, 50);
+			return true;
+		}
+
+		return super.focusPreviousField();
 	}
 
 	protected focusTitleInput(): void {
@@ -412,90 +446,54 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	protected createActionBar(container: HTMLElement): void {
-		this.actionBar = container.createDiv("tn-task-modal__action-bar");
+		this.actionBar = createTaskModalChipRow(container);
 
 		// NLP-specific icons (only if NLP is enabled)
 		if (this.plugin.settings.enableNaturalLanguageInput) {
-			// Fill form icon
-			this.createActionIcon(
+			this.createActionChip(
 				this.actionBar,
 				"wand",
 				this.t("modals.taskCreation.actions.fillFromNaturalLanguage"),
-				(icon, event) => {
+				(icon, _event) => {
 					const input = this.getNLPInputValue().trim();
 					if (input) {
 						this.parseAndFillForm(input);
 					}
-				}
+				},
+				"nlp-fill"
 			);
 
-			// Expand/collapse icon
-			this.createActionIcon(
+			this.createActionChip(
 				this.actionBar,
 				this.isExpanded ? "chevron-up" : "chevron-down",
 				this.isExpanded
 					? this.t("modals.taskCreation.actions.hideDetailedOptions")
 					: this.t("modals.taskCreation.actions.showDetailedOptions"),
-				(icon, event) => {
+				(icon, _event) => {
 					this.toggleDetailedForm();
-					// Update icon and tooltip
-					const iconEl = icon.querySelector(".icon");
+					const iconEl = icon.querySelector(".tn-task-modal__chip-icon .icon, .icon");
 					if (iconEl) {
 						setIcon(
 							iconEl as HTMLElement,
 							this.isExpanded ? "chevron-up" : "chevron-down"
 						);
 					}
-					setTooltip(
-						icon,
-						this.isExpanded
-							? this.t("modals.taskCreation.actions.hideDetailedOptions")
-							: this.t("modals.taskCreation.actions.showDetailedOptions"),
-						{ placement: "top" }
-					);
-				}
+					const nextLabel = this.isExpanded
+						? this.t("modals.taskCreation.actions.hideDetailedOptions")
+						: this.t("modals.taskCreation.actions.showDetailedOptions");
+					setTooltip(icon, nextLabel, { placement: "top" });
+					const labelEl = icon.querySelector<HTMLElement>(".tn-task-modal__chip-label");
+					if (labelEl) {
+						labelEl.textContent = nextLabel;
+					}
+				},
+				"nlp-expand"
 			);
 
-			// Add separator
-			const separator = this.actionBar.createDiv("action-separator");
-			separator.classList.remove(
-				"tn-static-width-100-0466783d",
-				"tn-static-width-12px-fbf353fb",
-				"tn-static-width-16px-7375d50b",
-				"tn-static-width-200px-2acaf3b5",
-				"tn-static-width-60px-bd09c419",
-				"tn-static-width-80px-8573bae3"
-			);
-			separator.classList.add("tn-static-width-1px-aa77e27e");
-			separator.classList.remove(
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-height-0-7a31cef0",
-				"tn-static-height-100-62264068",
-				"tn-static-height-12px-06c0747e",
-				"tn-static-height-16px-30de4aee",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			separator.classList.add("tn-static-height-24px-29a11d37");
-			separator.classList.remove(
-				"tn-static-background-color-var-background-se-9087a23e",
-				"tn-static-background-color-var-color-base-40-ef5f175e",
-				"tn-static-background-color-var-color-red-134bc721",
-				"tn-static-background-color-var-text-accent-a954c70f"
-			);
-			separator.classList.add("tn-static-background-color-var-background-mo-94b219f0");
-			separator.classList.remove(
-				"tn-static-margin-0-11696618",
-				"tn-static-margin-0-auto-266e9b04",
-				"tn-static-margin-0-db0d5f36",
-				"tn-static-margin-2px-0-edce9b14",
-				"tn-static-margin-8px-0-0-0-a2eb8382",
-				"tn-static-padding-12px-43bef435",
-				"tn-static-padding-20px-ebe8e48c"
-			);
-			separator.classList.add("tn-static-margin-0-var-size-4-2-77f7dc08");
+			createTaskModalChipBreak(this.actionBar);
 		}
 
-		this.createCoreActionIcons(this.actionBar);
+		this.createCoreChips(this.actionBar);
 		this.updateIconStates();
 	}
 
@@ -572,17 +570,114 @@ export class TaskCreationModal extends TaskModal {
 
 	private toggleDetailedForm(): void {
 		if (this.isExpanded) {
-			// Collapse
 			this.isExpanded = false;
+			if (!this.isMobileLikeEnvironment()) {
+				this.syncFormStateFromInputs();
+				this.refreshCreationDesktopLayout();
+				return;
+			}
+
 			collapseTaskModalDetailsLayout({
 				detailsContainer: this.detailsContainer,
 				splitRightColumn: this.splitRightColumn,
 			});
 			this.containerEl.removeClass("expanded");
 		} else {
-			// Expand
 			this.expandModal();
 		}
+	}
+
+	protected expandModal(): void {
+		if (this.isExpanded) return;
+
+		this.isExpanded = true;
+		if (!this.isMobileLikeEnvironment()) {
+			this.applyNaturalLanguageInputIfNeeded();
+			this.refreshCreationDesktopLayout();
+			return;
+		}
+
+		super.expandModal();
+	}
+
+	private applyNaturalLanguageInputIfNeeded(): void {
+		if (!this.plugin.settings.enableNaturalLanguageInput) {
+			return;
+		}
+
+		const nlContent = this.getNLPInputValue().trim();
+		if (!nlContent) {
+			return;
+		}
+
+		const parsed = this.nlParser.parseInput(nlContent);
+		this.applyParsedData(parsed);
+	}
+
+	private syncFormStateFromInputs(): void {
+		if (this.titleInput) {
+			this.title = this.titleInput.value;
+		}
+
+		if (this.detailsMarkdownEditor) {
+			this.details = this.detailsMarkdownEditor.value;
+		}
+	}
+
+	private refreshCreationDesktopLayout(): void {
+		this.syncFormStateFromInputs();
+		this.teardownCreationModalContent();
+		this.applyModalLayoutClasses();
+		this.createModalContent();
+		this.renderProjectsList();
+		this.updateIconStates();
+
+		if (this.isExpanded) {
+			this.focusTitleInput();
+		} else {
+			this.focusNaturalLanguageInput();
+		}
+	}
+
+	private teardownCreationModalContent(): void {
+		if (this.nlMarkdownEditor) {
+			this.nlMarkdownEditor.destroy();
+			this.nlMarkdownEditor = null;
+		}
+
+		this.teardownModalContent();
+	}
+
+	private focusNaturalLanguageInput(): void {
+		const editorContainer = this.contentEl.querySelector<HTMLElement>(
+			".tn-task-modal__markdown-editor--nlp"
+		);
+		if (!editorContainer) {
+			return;
+		}
+
+		editorContainer.focus();
+	}
+
+	protected getLeadingActionButtons(): TaskModalLeadingIconButton[] {
+		if (
+			!this.plugin.settings.enableNaturalLanguageInput ||
+			!this.isExpanded ||
+			this.isMobileLikeEnvironment()
+		) {
+			return [];
+		}
+
+		return [
+			{
+				className: "tn-task-modal__collapse-details-button",
+				iconName: "chevron-up",
+				label: this.t("modals.taskCreation.actions.hideDetailedOptions"),
+				onClick: () => {
+					this.toggleDetailedForm();
+				},
+			},
+		];
 	}
 
 	async initializeFormData(): Promise<void> {
@@ -610,6 +705,10 @@ export class TaskCreationModal extends TaskModal {
 
 		if (formState.projectStrings.length > 0) {
 			this.initializeProjectsFromStrings(formState.projectStrings);
+		}
+
+		if (!this.plugin.settings.enableNaturalLanguageInput) {
+			this.isExpanded = true;
 		}
 
 		this.details = this.normalizeDetails(this.details);

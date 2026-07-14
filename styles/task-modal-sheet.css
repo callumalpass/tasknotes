@@ -1,0 +1,716 @@
+/* =====================================================================
+   TASK MODAL - CHIP ROW
+   ===================================================================== */
+
+.tasknotes-plugin .tn-task-modal__chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-3);
+    padding: var(--size-4-1) 0;
+}
+
+.tasknotes-plugin .tn-task-modal__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    flex: 0 0 auto;
+    max-width: 220px;
+    padding: var(--size-4-1) var(--size-4-2);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 999px;
+    background: var(--background-secondary);
+    color: var(--text-muted);
+    cursor: var(--cursor-link, pointer);
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    position: relative;
+}
+
+.tasknotes-plugin .tn-task-modal__chip:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .tn-task-modal__chip.has-value {
+    border-color: var(--color-accent);
+    color: var(--text-normal);
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .tn-task-modal__chip.has-value::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: var(--color-accent);
+    border: 2px solid var(--background-primary);
+    border-radius: 50%;
+}
+
+.tasknotes-plugin .tn-task-modal__chip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__chip-icon .icon {
+    width: 14px;
+    height: 14px;
+}
+
+.tasknotes-plugin .tn-task-modal__chip-label {
+    font-size: var(--font-ui-smaller);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tasknotes-plugin .tn-task-modal__chip-break {
+    flex-basis: 100%;
+    height: 0;
+}
+
+/* =====================================================================
+   MOBILE GROUPED PROPERTY SECTIONS
+   Vertically stacked, differentiated "card" groups used on the mobile
+   bottom sheet in place of the horizontal chip row.
+   ===================================================================== */
+
+.tasknotes-plugin .tn-task-modal__mobile-sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-3);
+    margin-bottom: var(--size-4-3);
+}
+
+.tasknotes-plugin .tn-task-modal__mobile-group {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-l);
+    background: var(--background-primary);
+    overflow: hidden;
+}
+
+.tasknotes-plugin .tn-task-modal__mobile-group .tn-task-modal__sidebar-row {
+    padding: var(--size-4-3);
+}
+
+.tasknotes-plugin .tn-task-modal__mobile-group .tn-task-modal__org-empty-row .tn-task-modal__sidebar-row {
+    padding: var(--size-4-3);
+}
+
+.tasknotes-plugin .tn-task-modal__mobile-group .tn-task-modal__org-field {
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__mobile-group .tn-task-modal__org-header {
+    margin-bottom: 0;
+    padding: var(--size-4-3) var(--size-4-3) 0;
+}
+
+/* Empty organization lists sit directly under their sidebar row with no extra
+   gap. The shared .task-projects-list rule adds margin-top even when empty,
+   which made org-field rows (projects/subtasks/dependencies) look farther
+   apart than standalone property rows in the mobile sheet card. */
+.tasknotes-plugin .tn-task-modal__mobile-group .tn-task-modal__org-list {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__mobile-group .tn-task-modal__org-list:not(:empty) {
+    margin: var(--size-4-1) 0 var(--size-4-3);
+    padding: 0 var(--size-4-3);
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-row-divider {
+    display: block;
+    height: 1px;
+    margin: 0 var(--size-4-3);
+    padding: 0;
+    border: none;
+    background: var(--background-modifier-border);
+    flex-shrink: 0;
+}
+
+/* =====================================================================
+   ORGANIZATION ROWS
+   ===================================================================== */
+
+.tasknotes-plugin .tn-task-modal__org-field {
+    margin-bottom: var(--size-4-3);
+}
+
+.tasknotes-plugin .tn-task-modal__org-empty-row[hidden] {
+    display: none;
+}
+
+.tasknotes-plugin .tn-task-modal__org-header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-2);
+}
+
+/* Two classes outweigh the UA `[hidden]` attribute selector, so an explicit
+   override is required to actually hide the header (and its child title/add
+   buttons) when the section has no items. Without this, both the empty
+   sidebar row and the populated header row rendered simultaneously. */
+.tasknotes-plugin .tn-task-modal__org-header[hidden] {
+    display: none;
+}
+
+.tasknotes-plugin .tn-task-modal__org-header-label {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--size-4-2);
+    padding: var(--size-4-2) var(--size-4-3);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    flex: 1;
+}
+
+.tasknotes-plugin .tn-task-modal__org-header-count {
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+}
+
+.tasknotes-plugin .tn-task-modal__org-add-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-m);
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary);
+    cursor: var(--cursor-link, pointer);
+}
+
+.tasknotes-plugin .tn-task-modal__org-add-button:hover {
+    background: var(--background-modifier-hover);
+}
+
+/* =====================================================================
+   ICON BUTTON BAR
+   ===================================================================== */
+
+.tasknotes-plugin .modal-button-container.tn-task-modal__icon-button-bar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+    gap: var(--size-4-2);
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button-leading,
+.tasknotes-plugin .tn-task-modal__icon-button-trailing {
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--size-4-2);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button-leading:empty {
+    display: none;
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button-trailing {
+    margin-left: auto;
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-m);
+    cursor: var(--cursor-link, pointer);
+    box-shadow: none;
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button:not(.mod-cta) {
+    border: 1px solid var(--background-modifier-border);
+    background: transparent;
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button:not(.mod-cta):hover,
+.tasknotes-plugin .tn-task-modal__icon-button:not(.mod-cta):active {
+    background: var(--background-modifier-hover);
+    box-shadow: none;
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button.mod-cta {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+    box-shadow: none;
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button.mod-cta:hover,
+.tasknotes-plugin .tn-task-modal__icon-button.mod-cta:active {
+    background: var(--interactive-accent-hover);
+    border-color: var(--interactive-accent-hover);
+    color: var(--text-on-accent);
+    box-shadow: none;
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button.mod-cta .tn-task-modal__icon-button-icon,
+.tasknotes-plugin .tn-task-modal__icon-button.mod-cta .icon {
+    color: var(--text-on-accent);
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button.mod-warning {
+    color: var(--text-error);
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button-icon .icon {
+    width: 18px;
+    height: 18px;
+}
+
+.tasknotes-plugin .tn-task-modal__icon-button-label {
+    display: none;
+    font-size: var(--font-ui-smaller);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+body:not(.is-mobile) .tasknotes-plugin .tn-task-modal__icon-button {
+    width: auto;
+    height: auto;
+    min-height: 40px;
+    padding: 0 var(--size-4-3);
+    gap: var(--size-4-1);
+}
+
+body:not(.is-mobile) .tasknotes-plugin .tn-task-modal__icon-button-label {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* =====================================================================
+   EDIT DESKTOP SIDEBAR
+   ===================================================================== */
+
+/* The base modal-content rule caps width at 600px, which fights the wider
+   .modal width set below and leaves a large empty gap next to the two-pane
+   layout. Let the content fill whatever width the modal itself is given. */
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--edit-desktop .modal-content {
+    min-width: 100%;
+    max-width: 100%;
+}
+
+/* Scrollable content area with the action buttons pinned outside it.
+   Without flex/overflow here, the panes take their natural height, get
+   clipped by the (overflow: hidden) modal-content, and the button row ends
+   up squeezed in with the content instead of staying fixed at the bottom.
+   A little right padding keeps the scrollbar inset from the sidebar,
+   matching the container's horizontal padding. */
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--edit-desktop.expanded .tn-task-modal__edit-panes {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: var(--size-4-4);
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--edit-desktop .tn-task-modal__edit-panes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: var(--size-4-4);
+    min-height: 0;
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--edit-desktop .tn-task-modal__edit-main {
+    min-width: 0;
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--edit-desktop .tn-task-modal__edit-sidebar-wrap {
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary);
+    border-radius: var(--radius-m);
+    padding: var(--size-4-3) var(--size-4-3) var(--size-4-3) var(--size-4-4);
+    box-sizing: border-box;
+    /* Height follows sidebar content so top/bottom borders frame the card instead
+       of stretching flush against the scroll container and getting clipped. */
+    align-self: start;
+    position: sticky;
+    top: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--size-4-2);
+    align-items: center;
+    width: 100%;
+    padding: var(--size-4-2) 0;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: var(--cursor-link, pointer);
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-row-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-row-icon .icon,
+.tasknotes-plugin .tn-task-modal__sidebar-row-icon .svg-icon,
+.tasknotes-plugin .tn-task-modal__sidebar-row-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-row-body {
+    min-width: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar > * + * {
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Empty organization lists sit directly under their sidebar row with no extra
+   gap. The shared .task-projects-list rule adds margin-top even when empty,
+   which made dividers after Projects/Subtasks/Dependencies look farther apart
+   than dividers between standalone property rows. */
+.tasknotes-plugin .tn-task-modal__sidebar-section .tn-task-modal__org-list {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-section .tn-task-modal__org-list:not(:empty) {
+    margin-top: var(--size-4-1);
+    margin-bottom: var(--size-4-1);
+    padding-left: calc(18px + var(--size-4-2));
+    max-height: none;
+    overflow: visible;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-section .tn-task-modal__org-list .task-project-item {
+    align-items: flex-start;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-section .tn-task-modal__org-list .task-project-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-section .tn-task-modal__org-list .task-project-item--task-card .task-project-remove {
+    margin-top: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-row-label {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-row-value {
+    font-size: var(--font-ui-small);
+    color: var(--text-normal);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Rows without a placeholder value (e.g. recurrence/reminders before either
+   is set) render an empty value element rather than repeating the row's own
+   label as a pointless "subtitle". Collapse it so only the label shows. */
+.tasknotes-plugin .tn-task-modal__sidebar-row-value:empty {
+    display: none;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-row-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.tasknotes-plugin .tn-task-modal__sidebar-row-chevron .icon,
+.tasknotes-plugin .tn-task-modal__sidebar-row-chevron .svg-icon,
+.tasknotes-plugin .tn-task-modal__sidebar-row-chevron svg {
+    width: 14px;
+    height: 14px;
+    color: var(--text-faint);
+}
+
+/* =====================================================================
+   DESCRIPTION CLAMP
+   ===================================================================== */
+
+.tasknotes-plugin .tn-task-modal__details--clampable:not(.tn-task-modal__details--expanded) {
+    max-height: 120px;
+    overflow: hidden;
+}
+
+.tasknotes-plugin .tn-task-modal__details-toggle {
+    display: block;
+    margin: var(--size-4-2) 0 var(--size-4-3);
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-accent);
+    font-size: var(--font-ui-small);
+    cursor: var(--cursor-link, pointer);
+}
+
+.tasknotes-plugin .tn-task-modal__details-toggle[hidden] {
+    display: none;
+}
+
+/* =====================================================================
+   MOBILE SHEET
+   ===================================================================== */
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet,
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet > .modal {
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+    margin-bottom: var(--tn-sheet-bottom-inset, 0px);
+    margin-inline: auto;
+    width: min(600px, 100%);
+    max-width: min(600px, calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right)));
+    max-height: min(
+        var(--tn-sheet-max-height, 60dvh),
+        calc(100dvh - 16px - env(safe-area-inset-top, 0px))
+    );
+    border-radius: var(--radius-l) var(--radius-l) 0 0;
+    overflow: hidden;
+    background: var(--background-secondary);
+    transform: translateY(var(--tn-sheet-offset, 0px));
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet > .modal.tn-task-modal__sheet--bottom-inset {
+    transition: margin-bottom 0.2s ease, transform 0.2s ease;
+    /* Keep the snap height fixed while displacing. The default min(..., 100dvh)
+       cap shrinks with the keyboard and would compress the sheet in place of a
+       pure upward shift. */
+    max-height: var(--tn-sheet-max-height, 60dvh);
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet > .modal > :not(.modal-content) {
+    flex-shrink: 0;
+}
+
+/* The base task modal caps .modal-content at 480–600px. On the bottom sheet
+   that leaves large side gutters while the rows inside are full-width, so let
+   the sheet follow its content width instead of the desktop dialog cap. */
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .modal-content {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Applied synchronously as soon as the sheet layout is chosen, before the
+   gesture controller has applied its resting partial max-height. Without this,
+   the modal would render at its default full height for however long content
+   loading takes, then abruptly jump down to the partial position once the
+   gesture controller measured the sheet - a visible "opens at the top, then
+   flickers down" glitch. Keeping the sheet off-screen until that measurement
+   is ready, then sliding it in with the same transform/transition mechanism
+   used for drag-snapping, removes the second, competing animation entirely. */
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet > .modal.tn-task-modal__sheet--pending {
+    transform: translateY(100%);
+}
+
+/* Recessed page background makes the grouped cards below visually pop,
+   mirroring a native grouped-list bottom sheet. */
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .tn-task-modal__org-header-label,
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .tn-task-modal__org-add-button {
+    background: var(--background-primary);
+    border-color: transparent;
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .tn-task-modal__org-add-button:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .tn-task-modal__icon-button:not(.mod-cta) {
+    background: var(--background-primary);
+    border-color: var(--background-modifier-border);
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet > .modal.tn-task-modal__sheet--snapping {
+    transition: max-height 0.25s ease, transform 0.25s ease;
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet > .modal.tn-task-modal__sheet--dismissing {
+    transition: transform 0.2s ease;
+}
+
+.tasknotes-plugin .tn-task-modal__sheet-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: var(--size-4-3) 0;
+    touch-action: none;
+    cursor: grab;
+}
+
+.tasknotes-plugin .tn-task-modal__sheet-handle-bar {
+    width: 28px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--background-modifier-border-hover);
+}
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .minimalist-modal-container,
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .minimalist-modal-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .modal-split-content,
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .modal-split-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Pull the scrollbar into the container's padding box so content keeps
+       its right inset while the track sits outside minimalist-modal-container. */
+    margin-inline-end: calc(-1 * var(--size-4-4));
+    padding-inline-end: var(--size-4-4);
+}
+
+/* The bottom sheet lifts as a whole unit above the keyboard/toolbar via
+   --tn-sheet-bottom-inset on the modal itself. Do not add extra keyboard
+   scroll padding inside the content area - that made only the inner content
+   reflow while the sheet footer stayed behind the toolbar. */
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet.is-mobile-keyboard-focused .modal-split-content,
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet.is-mobile-keyboard-focused .modal-split-content {
+    padding-bottom: 0;
+    scroll-padding-bottom: 0;
+}
+
+@media (max-width: 600px) {
+    body.is-mobile .tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .modal-split-content,
+    .tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .modal-split-content {
+        margin-inline-end: calc(-1 * var(--size-4-3));
+        padding-inline-end: var(--size-4-3);
+    }
+}
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .tn-task-modal__icon-button-bar,
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .tn-task-modal__icon-button-bar {
+    flex-shrink: 0;
+    background: var(--modal-background);
+    margin-top: var(--size-4-1);
+    padding-top: var(--size-4-2);
+    margin-bottom: max(var(--size-4-1), env(safe-area-inset-bottom));
+}
+
+/* Content order for stacked mobile layout */
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .title-input-container,
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .tn-task-modal__markdown-editor--nlp {
+    order: 1;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-right {
+    order: 2;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .tn-task-modal__chip-row {
+    order: 3;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .tn-task-modal__mobile-sections {
+    order: 4;
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .modal-content,
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .minimalist-modal-container {
+    background: var(--modal-background);
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .tn-task-modal__task-info {
+    border-top: none;
+    padding-top: 0;
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .completions-calendar-container {
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .completions-calendar-content,
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--sheet .recurring-calendar {
+    overflow: visible;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .metadata-container {
+    order: 7;
+}
+
+/* Desktop edit stacks description, completions, and task information in the
+   main column; rely on section margin-top instead of the editor's bottom margin. */
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--edit-desktop .modal-split-right .tn-task-modal__markdown-editor--details {
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .completions-calendar-container {
+    order: 6;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-left .details-container {
+    order: 5;
+}
+
+@media (min-width: 700px) {
+    .tasknotes-plugin.minimalist-task-modal.tn-task-modal--edit-desktop .modal,
+    .tasknotes-plugin.minimalist-task-modal.tn-task-modal--edit-desktop.modal {
+        width: min(960px, 92vw);
+        max-width: min(960px, 92vw);
+    }
+}

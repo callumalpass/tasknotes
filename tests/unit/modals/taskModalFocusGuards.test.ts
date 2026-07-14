@@ -76,6 +76,21 @@ describe("taskModalFocusGuards", () => {
 		expect(scrollContainer.scrollTop).toBe(44);
 	});
 
+	it("does not scroll sheet content when the bottom sheet layout is active", () => {
+		const elements = createElements();
+		elements.containerEl.classList.add("tn-task-modal--sheet");
+		const guards = new TaskModalFocusGuards(elements);
+		const scrollContainer = elements.contentEl.createDiv({ cls: "modal-split-content" });
+		const settingItem = scrollContainer.createDiv({ cls: "setting-item" });
+		const input = settingItem.createEl("input");
+
+		guards.attachMobileKeyboardScrollGuard(input);
+		input.dispatchEvent(new Event("focus"));
+		jest.runOnlyPendingTimers();
+
+		expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
+	});
+
 	it("scrolls mobile keyboard fields into view and cleans up on destroy", () => {
 		const elements = createElements();
 		const guards = new TaskModalFocusGuards(elements);

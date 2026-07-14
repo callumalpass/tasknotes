@@ -70,7 +70,7 @@ function normalizeContextValue(value: string): string {
 	return value.trim();
 }
 
-function normalizeContextList(contexts: string[] | undefined): string[] {
+export function normalizeContextList(contexts: string[] | undefined): string[] {
 	const seen = new Set<string>();
 	const normalized: string[] = [];
 
@@ -203,7 +203,7 @@ export class TaskContextMenu {
 		// Due Date submenu
 		this.menu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.task.dueDate"));
-			item.setIcon("calendar");
+			item.setIcon("target");
 
 			const submenu = getSubmenu(item);
 			this.addDateOptions(

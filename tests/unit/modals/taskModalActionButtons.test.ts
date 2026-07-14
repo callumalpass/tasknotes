@@ -4,6 +4,14 @@ import {
 	type TaskModalActionButtonContext,
 } from "../../../src/modals/taskModalActionButtons";
 
+const mockSetIcon = jest.fn();
+const mockSetTooltip = jest.fn();
+
+jest.mock("obsidian", () => ({
+	setIcon: (...args: unknown[]) => mockSetIcon(...args),
+	setTooltip: (...args: unknown[]) => mockSetTooltip(...args),
+}));
+
 function createContext(): TaskModalActionButtonContext {
 	return {
 		translate: (key) =>
@@ -17,9 +25,11 @@ function createContext(): TaskModalActionButtonContext {
 describe("taskModalActionButtons", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
+		mockSetIcon.mockClear();
+		mockSetTooltip.mockClear();
 	});
 
-	it("renders leading actions before save and cancel and wires click handlers", () => {
+	it("renders labeled leading actions and trailing save/cancel controls", () => {
 		const container = document.createElement("div");
 		const open = jest.fn();
 		const archive = jest.fn();
@@ -28,28 +38,55 @@ describe("taskModalActionButtons", () => {
 		const buttonContainer = createTaskModalActionButtons(createContext(), {
 			container,
 			leadingButtons: [
-				{ className: "open-button", text: "Open note", onClick: open },
-				{ className: "archive-button", text: "Archive", onClick: archive },
+				{
+					className: "open-button",
+					iconName: "external-link",
+					label: "Open note",
+					onClick: open,
+				},
+				{
+					className: "archive-button",
+					iconName: "archive",
+					label: "Archive",
+					onClick: archive,
+					isWarning: true,
+				},
 			],
 			onSave: jest.fn().mockResolvedValue(undefined),
 			onSaved: jest.fn(),
 			onCancel: cancel,
 		});
 
+		expect(
+			buttonContainer.querySelector(".tn-task-modal__icon-button-leading")
+		).not.toBeNull();
+		expect(
+			buttonContainer.querySelector(".tn-task-modal__icon-button-trailing")
+		).not.toBeNull();
+
 		const buttons = Array.from(buttonContainer.querySelectorAll("button"));
-		expect(buttons.map((button) => button.textContent)).toEqual([
-			"Open note",
-			"Archive",
-			"Save",
-			"Cancel",
-		]);
-		expect(buttons[0].classList.contains("open-button")).toBe(true);
-		expect(buttons[1].classList.contains("archive-button")).toBe(true);
-		expect(buttons[2].classList.contains("mod-cta")).toBe(true);
+		expect(buttons).toHaveLength(4);
+		expect(buttons[0].getAttribute("aria-label")).toBe("Open note");
+		expect(buttons[1].getAttribute("aria-label")).toBe("Archive");
+		expect(buttons[2].getAttribute("aria-label")).toBe("Cancel");
+		expect(buttons[3].getAttribute("aria-label")).toBe("Save");
+		expect(
+			buttons[0].querySelector(".tn-task-modal__icon-button-label")?.textContent
+		).toBe("Open note");
+		expect(
+			buttons[1].querySelector(".tn-task-modal__icon-button-label")?.textContent
+		).toBe("Archive");
+		expect(
+			buttons[2].querySelector(".tn-task-modal__icon-button-label")?.textContent
+		).toBe("Cancel");
+		expect(
+			buttons[3].querySelector(".tn-task-modal__icon-button-label")?.textContent
+		).toBe("Save");
+		expect(buttons[3].classList.contains("mod-cta")).toBe(true);
 
 		buttons[0].click();
 		buttons[1].click();
-		buttons[3].click();
+		buttons[2].click();
 
 		expect(open).toHaveBeenCalledTimes(1);
 		expect(archive).toHaveBeenCalledTimes(1);

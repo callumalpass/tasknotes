@@ -1,5 +1,8 @@
 import { setTooltip } from "obsidian";
 import type { PriorityConfig, StatusConfig } from "../types";
+import { formatDateTimeForDisplay } from "../utils/dateUtils";
+import { getTaskModalChip, setTaskModalChipLabel } from "./taskModalChipRow";
+import { parseTaskModalCommaList } from "./taskModalOrgCounts";
 
 const STATIC_COLOR_CLASSES = [
 	"tn-static-color-var-color-accent-d2cad743",
@@ -30,6 +33,9 @@ export interface TaskModalActionIconState {
 	recurrenceRule: string;
 	recurrenceDisplayText: string;
 	reminderCount: number;
+	contexts: string;
+	tags: string;
+	timeEstimate: number;
 	defaultStatus: string;
 	defaultPriority: string;
 	statusConfigs: readonly StatusConfig[];
@@ -43,111 +49,123 @@ export function updateTaskModalActionIconStates(
 ): void {
 	if (!actionBar) return;
 
-	updateDateIcon(actionBar, context, "due-date", state.dueDate, {
+	updateDateChip(actionBar, context, "due-date", state.dueDate, {
 		activeTooltipKey: "modals.task.tooltips.dueValue",
-		defaultTooltipKey: "modals.task.actions.due",
+		defaultLabelKey: "modals.task.actions.due",
 	});
-	updateDateIcon(actionBar, context, "scheduled-date", state.scheduledDate, {
+	updateDateChip(actionBar, context, "scheduled-date", state.scheduledDate, {
 		activeTooltipKey: "modals.task.tooltips.scheduledValue",
-		defaultTooltipKey: "modals.task.actions.scheduled",
+		defaultLabelKey: "modals.task.actions.scheduled",
 	});
-	updateStatusIcon(actionBar, context, state);
-	updatePriorityIcon(actionBar, context, state);
-	updateRecurrenceIcon(actionBar, context, state);
-	updateReminderIcon(actionBar, context, state.reminderCount);
+	updateStatusChip(actionBar, context, state);
+	updatePriorityChip(actionBar, context, state);
+	updateRecurrenceChip(actionBar, context, state);
+	updateReminderChip(actionBar, context, state.reminderCount);
+	updateContextsChip(actionBar, context, state.contexts);
+	updateTagsChip(actionBar, context, state.tags);
+	updateTimeEstimateChip(actionBar, context, state.timeEstimate);
 }
 
-function updateDateIcon(
+function updateDateChip(
 	actionBar: HTMLElement,
 	context: TaskModalActionIconStateContext,
 	dataType: string,
 	value: string,
-	tooltipKeys: {
+	options: {
 		activeTooltipKey: string;
-		defaultTooltipKey: string;
+		defaultLabelKey: string;
 	}
 ): void {
-	const icon = getActionIcon(actionBar, dataType);
-	if (!icon) return;
+	const chip = getActionChip(actionBar, dataType);
+	if (!chip) return;
 
 	if (value) {
-		icon.classList.add("has-value");
-		setTooltip(icon, context.translate(tooltipKeys.activeTooltipKey, { value }), {
+		const displayValue = formatDateTimeForDisplay(value, {
+			showTime: value.includes("T") || value.includes(":"),
+		});
+		chip.classList.add("has-value");
+		setTaskModalChipLabel(chip, displayValue);
+		setTooltip(chip, context.translate(options.activeTooltipKey, { value: displayValue }), {
 			placement: "top",
 		});
 		return;
 	}
 
-	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate(tooltipKeys.defaultTooltipKey), { placement: "top" });
+	chip.classList.remove("has-value");
+	const defaultLabel = context.translate(options.defaultLabelKey);
+	setTaskModalChipLabel(chip, defaultLabel);
+	setTooltip(chip, defaultLabel, { placement: "top" });
 }
 
-function updateStatusIcon(
+function updateStatusChip(
 	actionBar: HTMLElement,
 	context: TaskModalActionIconStateContext,
 	state: TaskModalActionIconState
 ): void {
-	const icon = getActionIcon(actionBar, "status");
-	if (!icon) return;
+	const chip = getActionChip(actionBar, "status");
+	if (!chip) return;
 
 	const statusConfig = state.statusConfigs.find((config) => config.value === state.status);
 	const statusLabel = statusConfig ? statusConfig.label : state.status;
-	updateConfiguredValueIcon(icon, context, {
+	updateConfiguredValueChip(chip, context, {
 		isActive: Boolean(
 			state.status && statusConfig && statusConfig.value !== state.defaultStatus
 		),
 		activeTooltipKey: "modals.task.tooltips.statusValue",
-		defaultTooltipKey: "modals.task.actions.status",
+		defaultLabelKey: "modals.task.actions.status",
 		label: statusLabel,
 		color: statusConfig?.color,
 	});
 }
 
-function updatePriorityIcon(
+function updatePriorityChip(
 	actionBar: HTMLElement,
 	context: TaskModalActionIconStateContext,
 	state: TaskModalActionIconState
 ): void {
-	const icon = getActionIcon(actionBar, "priority");
-	if (!icon) return;
+	const chip = getActionChip(actionBar, "priority");
+	if (!chip) return;
 
 	const priorityConfig = state.priorityConfigs.find(
 		(config) => config.value === state.priority
 	);
 	const priorityLabel = priorityConfig ? priorityConfig.label : state.priority;
-	updateConfiguredValueIcon(icon, context, {
+	updateConfiguredValueChip(chip, context, {
 		isActive: Boolean(
 			state.priority && priorityConfig && priorityConfig.value !== state.defaultPriority
 		),
 		activeTooltipKey: "modals.task.tooltips.priorityValue",
-		defaultTooltipKey: "modals.task.actions.priority",
+		defaultLabelKey: "modals.task.actions.priority",
 		label: priorityLabel,
 		color: priorityConfig?.color,
 	});
 }
 
-function updateConfiguredValueIcon(
-	icon: HTMLElement,
+function updateConfiguredValueChip(
+	chip: HTMLElement,
 	context: TaskModalActionIconStateContext,
 	options: {
 		isActive: boolean;
 		activeTooltipKey: string;
-		defaultTooltipKey: string;
+		defaultLabelKey: string;
 		label: string;
 		color?: string;
 	}
 ): void {
 	if (options.isActive) {
-		icon.classList.add("has-value");
-		setTooltip(icon, context.translate(options.activeTooltipKey, { value: options.label }), {
+		chip.classList.add("has-value");
+		setTaskModalChipLabel(chip, options.label);
+		setTooltip(chip, context.translate(options.activeTooltipKey, { value: options.label }), {
 			placement: "top",
 		});
 	} else {
-		icon.classList.remove("has-value");
-		setTooltip(icon, context.translate(options.defaultTooltipKey), { placement: "top" });
+		chip.classList.remove("has-value");
+		const defaultLabel = context.translate(options.defaultLabelKey);
+		setTaskModalChipLabel(chip, defaultLabel);
+		setTooltip(chip, defaultLabel, { placement: "top" });
 	}
 
-	const iconElement = icon.querySelector<HTMLElement>(".icon");
+	const iconElement = chip.querySelector<HTMLElement>(".tn-task-modal__chip-icon .icon, .icon");
 	if (!iconElement) return;
 
 	if (options.color) {
@@ -159,18 +177,19 @@ function updateConfiguredValueIcon(
 	iconElement.style.removeProperty("color");
 }
 
-function updateRecurrenceIcon(
+function updateRecurrenceChip(
 	actionBar: HTMLElement,
 	context: TaskModalActionIconStateContext,
 	state: TaskModalActionIconState
 ): void {
-	const icon = getActionIcon(actionBar, "recurrence");
-	if (!icon) return;
+	const chip = getActionChip(actionBar, "recurrence");
+	if (!chip) return;
 
 	if (state.recurrenceRule.trim()) {
-		icon.classList.add("has-value");
+		chip.classList.add("has-value");
+		setTaskModalChipLabel(chip, state.recurrenceDisplayText);
 		setTooltip(
-			icon,
+			chip,
 			context.translate("modals.task.tooltips.recurrenceValue", {
 				value: state.recurrenceDisplayText,
 			}),
@@ -179,38 +198,119 @@ function updateRecurrenceIcon(
 		return;
 	}
 
-	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate("modals.task.actions.recurrence"), {
-		placement: "top",
-	});
+	chip.classList.remove("has-value");
+	const defaultLabel = context.translate("modals.task.actions.recurrence");
+	setTaskModalChipLabel(chip, defaultLabel);
+	setTooltip(chip, defaultLabel, { placement: "top" });
 }
 
-function updateReminderIcon(
+function updateReminderChip(
 	actionBar: HTMLElement,
 	context: TaskModalActionIconStateContext,
 	reminderCount: number
 ): void {
-	const icon = getActionIcon(actionBar, "reminders");
-	if (!icon) return;
+	const chip = getActionChip(actionBar, "reminders");
+	if (!chip) return;
 
 	if (reminderCount > 0) {
-		icon.classList.add("has-value");
+		chip.classList.add("has-value");
+		const label =
+			reminderCount === 1
+				? context.translate("modals.task.chips.remindersSingle")
+				: context.translate("modals.task.chips.remindersPlural", { count: reminderCount });
+		setTaskModalChipLabel(chip, label);
 		const tooltip =
 			reminderCount === 1
 				? context.translate("modals.task.tooltips.remindersSingle")
 				: context.translate("modals.task.tooltips.remindersPlural", {
 						count: reminderCount,
 					});
-		setTooltip(icon, tooltip, { placement: "top" });
+		setTooltip(chip, tooltip, { placement: "top" });
 		return;
 	}
 
-	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate("modals.task.actions.reminders"), {
-		placement: "top",
-	});
+	chip.classList.remove("has-value");
+	const defaultLabel = context.translate("modals.task.actions.reminders");
+	setTaskModalChipLabel(chip, defaultLabel);
+	setTooltip(chip, defaultLabel, { placement: "top" });
 }
 
-function getActionIcon(actionBar: HTMLElement, dataType: string): HTMLElement | null {
-	return actionBar.querySelector(`[data-type="${dataType}"]`);
+function updateContextsChip(
+	actionBar: HTMLElement,
+	context: TaskModalActionIconStateContext,
+	contexts: string
+): void {
+	const chip = getActionChip(actionBar, "contexts");
+	if (!chip) return;
+
+	const values = parseTaskModalCommaList(contexts);
+	if (values.length > 0) {
+		chip.classList.add("has-value");
+		const label =
+			values.length === 1
+				? values[0]
+				: context.translate("modals.task.chips.contextsPlural", { count: values.length });
+		setTaskModalChipLabel(chip, label);
+		setTooltip(chip, contexts, { placement: "top" });
+		return;
+	}
+
+	chip.classList.remove("has-value");
+	const defaultLabel = context.translate("modals.task.contextsLabel");
+	setTaskModalChipLabel(chip, defaultLabel);
+	setTooltip(chip, defaultLabel, { placement: "top" });
+}
+
+function updateTagsChip(
+	actionBar: HTMLElement,
+	context: TaskModalActionIconStateContext,
+	tags: string
+): void {
+	const chip = getActionChip(actionBar, "tags");
+	if (!chip) return;
+
+	const values = parseTaskModalCommaList(tags);
+	if (values.length > 0) {
+		chip.classList.add("has-value");
+		const label =
+			values.length === 1
+				? `#${values[0]}`
+				: context.translate("modals.task.chips.tagsPlural", { count: values.length });
+		setTaskModalChipLabel(chip, label);
+		setTooltip(chip, tags, { placement: "top" });
+		return;
+	}
+
+	chip.classList.remove("has-value");
+	const defaultLabel = context.translate("modals.task.tagsLabel");
+	setTaskModalChipLabel(chip, defaultLabel);
+	setTooltip(chip, defaultLabel, { placement: "top" });
+}
+
+function updateTimeEstimateChip(
+	actionBar: HTMLElement,
+	context: TaskModalActionIconStateContext,
+	timeEstimate: number
+): void {
+	const chip = getActionChip(actionBar, "time-estimate");
+	if (!chip) return;
+
+	if (timeEstimate > 0) {
+		chip.classList.add("has-value");
+		const label = context.translate("modals.task.chips.timeEstimateValue", {
+			minutes: timeEstimate,
+		});
+		setTaskModalChipLabel(chip, label);
+		setTooltip(chip, label, { placement: "top" });
+		return;
+	}
+
+	chip.classList.remove("has-value");
+	const defaultLabel = context.translate("modals.task.chips.timeEstimate");
+	setTaskModalChipLabel(chip, defaultLabel);
+	setTooltip(chip, defaultLabel, { placement: "top" });
+}
+
+function getActionChip(actionBar: HTMLElement, dataType: string): HTMLElement | null {
+	return getTaskModalChip(actionBar, dataType);
 }

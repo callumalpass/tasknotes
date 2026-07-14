@@ -75,7 +75,7 @@ function renderCalendarMonth(
 			"aria-label": "Previous month",
 		},
 	});
-	setIcon(prevButton, "chevron-left");
+	setIcon(prevButton.createSpan("recurring-calendar__nav-icon"), "chevron-left");
 	const monthLabel = header.createSpan("recurring-calendar__month");
 	const locale = options.plugin.i18n.getCurrentLocale() || "en";
 	const monthFormatter = new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" });
@@ -87,7 +87,7 @@ function renderCalendarMonth(
 			"aria-label": "Next month",
 		},
 	});
-	setIcon(nextButton, "chevron-right");
+	setIcon(nextButton.createSpan("recurring-calendar__nav-icon"), "chevron-right");
 
 	const grid = container.createDiv("recurring-calendar__grid");
 	const monthStart = getUTCStartOfMonth(displayDate);

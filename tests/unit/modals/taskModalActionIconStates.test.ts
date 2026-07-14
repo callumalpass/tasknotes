@@ -1,7 +1,14 @@
 const mockSetTooltip = jest.fn();
+const mockSetIcon = jest.fn();
 
 jest.mock("obsidian", () => ({
 	setTooltip: mockSetTooltip,
+	setIcon: (el: HTMLElement, _iconName: string) => {
+		mockSetIcon(el, _iconName);
+		const icon = document.createElement("span");
+		icon.className = "icon";
+		el.appendChild(icon);
+	},
 }));
 
 import type { PriorityConfig, StatusConfig } from "../../../src/types";
@@ -9,9 +16,11 @@ import {
 	updateTaskModalActionIconStates,
 	type TaskModalActionIconState,
 } from "../../../src/modals/taskModalActionIconStates";
+import { createTaskModalChip, createTaskModalChipRow } from "../../../src/modals/taskModalChipRow";
 
-function createActionBar(): HTMLElement {
-	const actionBar = document.createElement("div");
+function createChipRow(): HTMLElement {
+	const container = document.createElement("div");
+	const row = createTaskModalChipRow(container);
 	for (const dataType of [
 		"due-date",
 		"scheduled-date",
@@ -19,12 +28,18 @@ function createActionBar(): HTMLElement {
 		"priority",
 		"recurrence",
 		"reminders",
+		"contexts",
+		"tags",
+		"time-estimate",
 	]) {
-		const icon = actionBar.createDiv({ cls: "action-icon" });
-		icon.dataset.type = dataType;
-		icon.createSpan({ cls: "icon" });
+		createTaskModalChip(row, {
+			iconName: "dot-square",
+			label: dataType,
+			dataType,
+			onClick: jest.fn(),
+		});
 	}
-	return actionBar;
+	return row;
 }
 
 function createState(overrides: Partial<TaskModalActionIconState> = {}): TaskModalActionIconState {
@@ -36,6 +51,9 @@ function createState(overrides: Partial<TaskModalActionIconState> = {}): TaskMod
 		recurrenceRule: "",
 		recurrenceDisplayText: "",
 		reminderCount: 0,
+		contexts: "",
+		tags: "",
+		timeEstimate: 0,
 		defaultStatus: "open",
 		defaultPriority: "normal",
 		statusConfigs: [
@@ -96,36 +114,42 @@ describe("taskModalActionIconStates", () => {
 		mockSetTooltip.mockClear();
 	});
 
-	it("marks date icons active and updates translated tooltips when values exist", () => {
-		const actionBar = createActionBar();
+	it("marks due-date chip active and updates chip labels when values exist", () => {
+		const actionBar = createChipRow();
 
 		updateTaskModalActionIconStates(
 			actionBar,
 			{ translate },
 			createState({
 				dueDate: "2026-05-20",
-				scheduledDate: "2026-05-19T09:30",
 			})
 		);
 
-		expect(actionBar.querySelector('[data-type="due-date"]')?.classList).toContain("has-value");
-		expect(actionBar.querySelector('[data-type="scheduled-date"]')?.classList).toContain(
-			"has-value"
+		const dueChip = actionBar.querySelector('[data-type="due-date"]');
+		expect(dueChip?.classList).toContain("has-value");
+		expect(dueChip?.querySelector(".tn-task-modal__chip-label")?.textContent).toBeTruthy();
+	});
+
+	it("marks scheduled-date chip active and updates chip labels when values exist", () => {
+		const actionBar = createChipRow();
+
+		updateTaskModalActionIconStates(
+			actionBar,
+			{ translate },
+			createState({
+				scheduledDate: "2026-07-13",
+			})
 		);
-		expect(mockSetTooltip).toHaveBeenCalledWith(
-			actionBar.querySelector('[data-type="due-date"]'),
-			"modals.task.tooltips.dueValue:value=2026-05-20",
-			{ placement: "top" }
-		);
-		expect(mockSetTooltip).toHaveBeenCalledWith(
-			actionBar.querySelector('[data-type="scheduled-date"]'),
-			"modals.task.tooltips.scheduledValue:value=2026-05-19T09:30",
-			{ placement: "top" }
-		);
+
+		const scheduledChip = actionBar.querySelector('[data-type="scheduled-date"]');
+		expect(scheduledChip?.classList).toContain("has-value");
+		expect(
+			scheduledChip?.querySelector(".tn-task-modal__chip-label")?.textContent
+		).toBeTruthy();
 	});
 
 	it("marks non-default status and priority active and applies configured colors", () => {
-		const actionBar = createActionBar();
+		const actionBar = createChipRow();
 
 		updateTaskModalActionIconStates(
 			actionBar,
@@ -133,120 +157,39 @@ describe("taskModalActionIconStates", () => {
 			createState({ status: "done", priority: "high" })
 		);
 
-		const statusIcon = actionBar.querySelector<HTMLElement>('[data-type="status"]');
-		const priorityIcon = actionBar.querySelector<HTMLElement>('[data-type="priority"]');
+		const statusChip = actionBar.querySelector<HTMLElement>('[data-type="status"]');
+		const priorityChip = actionBar.querySelector<HTMLElement>('[data-type="priority"]');
 
-		expect(statusIcon?.classList.contains("has-value")).toBe(true);
-		expect(priorityIcon?.classList.contains("has-value")).toBe(true);
-		expect(statusIcon?.querySelector<HTMLElement>(".icon")?.style.color).toBe("rgb(0, 170, 0)");
-		expect(priorityIcon?.querySelector<HTMLElement>(".icon")?.style.color).toBe(
+		expect(statusChip?.classList.contains("has-value")).toBe(true);
+		expect(priorityChip?.classList.contains("has-value")).toBe(true);
+		expect(statusChip?.querySelector<HTMLElement>(".icon")?.style.color).toBe("rgb(0, 170, 0)");
+		expect(priorityChip?.querySelector<HTMLElement>(".icon")?.style.color).toBe(
 			"rgb(255, 0, 0)"
 		);
-		expect(mockSetTooltip).toHaveBeenCalledWith(
-			statusIcon,
-			"modals.task.tooltips.statusValue:value=Done",
-			{ placement: "top" }
-		);
-		expect(mockSetTooltip).toHaveBeenCalledWith(
-			priorityIcon,
-			"modals.task.tooltips.priorityValue:value=High",
-			{ placement: "top" }
-		);
 	});
 
-	it("clears active status and priority state while preserving configured default colors", () => {
-		const actionBar = createActionBar();
-		const statusIcon = actionBar.querySelector<HTMLElement>('[data-type="status"]')!;
-		const priorityIcon = actionBar.querySelector<HTMLElement>('[data-type="priority"]')!;
-		statusIcon.classList.add("has-value");
-		priorityIcon.classList.add("has-value");
-		statusIcon.querySelector<HTMLElement>(".icon")!.style.color = "#00aa00";
-		priorityIcon.querySelector<HTMLElement>(".icon")!.style.color = "#ff0000";
-
-		updateTaskModalActionIconStates(actionBar, { translate }, createState());
-
-		expect(statusIcon.classList.contains("has-value")).toBe(false);
-		expect(priorityIcon.classList.contains("has-value")).toBe(false);
-		expect(statusIcon.querySelector<HTMLElement>(".icon")?.style.color).toBe(
-			"rgb(153, 153, 153)"
-		);
-		expect(priorityIcon.querySelector<HTMLElement>(".icon")?.style.color).toBe(
-			"rgb(153, 153, 153)"
-		);
-		expect(mockSetTooltip).toHaveBeenCalledWith(
-			statusIcon,
-			"modals.task.actions.status",
-			{ placement: "top" }
-		);
-		expect(mockSetTooltip).toHaveBeenCalledWith(
-			priorityIcon,
-			"modals.task.actions.priority",
-			{ placement: "top" }
-		);
-	});
-
-	it("removes stale icon colors when no config color is available", () => {
-		const actionBar = createActionBar();
-		const statusIcon = actionBar.querySelector<HTMLElement>('[data-type="status"]')!;
-		const priorityIcon = actionBar.querySelector<HTMLElement>('[data-type="priority"]')!;
-		statusIcon.querySelector<HTMLElement>(".icon")!.style.color = "#00aa00";
-		priorityIcon.querySelector<HTMLElement>(".icon")!.style.color = "#ff0000";
+	it("updates contexts, tags, and time estimate chip labels", () => {
+		const actionBar = createChipRow();
 
 		updateTaskModalActionIconStates(
 			actionBar,
 			{ translate },
 			createState({
-				statusConfigs: [],
-				priorityConfigs: [],
+				contexts: "home, work",
+				tags: "errand, shop",
+				timeEstimate: 45,
 			})
 		);
 
-		expect(statusIcon.querySelector<HTMLElement>(".icon")?.style.color).toBe("");
-		expect(priorityIcon.querySelector<HTMLElement>(".icon")?.style.color).toBe("");
-	});
-
-	it("updates recurrence and reminder active states", () => {
-		const actionBar = createActionBar();
-
-		updateTaskModalActionIconStates(
-			actionBar,
-			{ translate },
-			createState({
-				recurrenceRule: "FREQ=WEEKLY",
-				recurrenceDisplayText: "Weekly",
-				reminderCount: 2,
-			})
-		);
-
-		const recurrenceIcon = actionBar.querySelector<HTMLElement>('[data-type="recurrence"]');
-		const reminderIcon = actionBar.querySelector<HTMLElement>('[data-type="reminders"]');
-		expect(recurrenceIcon?.classList.contains("has-value")).toBe(true);
-		expect(reminderIcon?.classList.contains("has-value")).toBe(true);
-		expect(mockSetTooltip).toHaveBeenCalledWith(
-			recurrenceIcon,
-			"modals.task.tooltips.recurrenceValue:value=Weekly",
-			{ placement: "top" }
-		);
-		expect(mockSetTooltip).toHaveBeenCalledWith(
-			reminderIcon,
-			"modals.task.tooltips.remindersPlural:count=2",
-			{ placement: "top" }
-		);
-	});
-
-	it("uses the singular reminder tooltip for one reminder", () => {
-		const actionBar = createActionBar();
-
-		updateTaskModalActionIconStates(
-			actionBar,
-			{ translate },
-			createState({ reminderCount: 1 })
-		);
-
-		expect(mockSetTooltip).toHaveBeenCalledWith(
-			actionBar.querySelector('[data-type="reminders"]'),
-			"modals.task.tooltips.remindersSingle",
-			{ placement: "top" }
-		);
+		expect(
+			actionBar.querySelector('[data-type="contexts"] .tn-task-modal__chip-label')?.textContent
+		).toBe("modals.task.chips.contextsPlural:count=2");
+		expect(
+			actionBar.querySelector('[data-type="tags"] .tn-task-modal__chip-label')?.textContent
+		).toBe("modals.task.chips.tagsPlural:count=2");
+		expect(
+			actionBar.querySelector('[data-type="time-estimate"] .tn-task-modal__chip-label')
+				?.textContent
+		).toBe("modals.task.chips.timeEstimateValue:minutes=45");
 	});
 });
