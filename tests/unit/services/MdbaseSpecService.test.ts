@@ -1,10 +1,10 @@
 /**
  * Unit tests for MdbaseSpecService
  *
- * Validates that generated mdbase.yaml and _types/task.md conform to
- * mdbase-spec v0.2.0 structural requirements.
+ * Validates v0.3 generation and the retained v0.2 compatibility path.
  */
 
+import { validateCanonicalSchema } from "@callumalpass/mdbase-runtime";
 import YAML from "yaml";
 
 import { FieldMapper } from "../../../src/services/FieldMapper";
@@ -27,6 +27,17 @@ function extractFrontmatter(markdown: string): string {
 function extractBody(markdown: string): string {
 	const match = markdown.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
 	return match ? match[1] : "";
+}
+
+function parseFrontmatter(markdown: string): Record<string, unknown> {
+	return YAML.parse(extractFrontmatter(markdown)) as Record<string, unknown>;
+}
+
+function asObject(value: unknown): Record<string, unknown> {
+	if (value === null || typeof value !== "object" || Array.isArray(value)) {
+		throw new Error("Expected an object");
+	}
+	return value as Record<string, unknown>;
 }
 
 /** Parse a simple YAML key at root level (returns raw string value) */
@@ -93,7 +104,7 @@ function createMockPlugin(overrides: Record<string, any> = {}): any {
 			vault: {
 				adapter: {
 					exists: jest.fn().mockResolvedValue(false),
-					read: jest.fn().mockResolvedValue("{}"),
+					read: jest.fn().mockResolvedValue('spec_version: "0.3.0"'),
 					write: jest.fn().mockResolvedValue(undefined),
 				},
 				create: jest.fn().mockResolvedValue({}),
@@ -105,11 +116,15 @@ function createMockPlugin(overrides: Record<string, any> = {}): any {
 
 describe("MdbaseSpecService", () => {
 	describe("buildMdbaseYaml", () => {
-		it("should include spec_version 0.2.0", () => {
+		it("should create a v0.3 collection", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const yaml = service.buildMdbaseYaml();
 
-			expect(yaml).toContain('spec_version: "0.2.0"');
+			expect(yaml).toContain('spec_version: "0.3.0"');
+			expect(validateCanonicalSchema("config", YAML.parse(yaml))).toEqual({
+				valid: true,
+				errors: [],
+			});
 		});
 
 		it("should include name and description", () => {
@@ -129,11 +144,14 @@ describe("MdbaseSpecService", () => {
 			expect(yaml).toContain('types_folder: "_types"');
 		});
 
-		it("should set default_strict to false", () => {
+		it("should use warning validation and Markdown records", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const yaml = service.buildMdbaseYaml();
 
-			expect(yaml).toContain("default_strict: false");
+			expect(yaml).toContain("record_extensions: [md]");
+			expect(yaml).toContain("validation: warn");
+			expect(yaml).toContain("explicit_type_keys: [type, types]");
+			expect(yaml).toContain("id_field: id");
 		});
 
 		it("should exclude the _types folder", () => {
@@ -155,7 +173,7 @@ describe("MdbaseSpecService", () => {
 	describe("buildTaskTypeDef - frontmatter structure", () => {
 		it("should have valid frontmatter delimiters", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const output = service.buildTaskTypeDef();
+			const output = service.buildTaskTypeDef("0.2.0");
 
 			expect(output).toMatch(/^---\n/);
 			expect(output).toMatch(/\n---\n/);
@@ -163,35 +181,35 @@ describe("MdbaseSpecService", () => {
 
 		it("should set name to task", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(getYamlValue(fm, "name")).toBe("task");
 		});
 
 		it("should set strict to false", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(getYamlValue(fm, "strict")).toBe("false");
 		});
 
 		it("should include description", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(fm).toContain("description:");
 		});
 
 		it("should include path_pattern", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(getYamlValue(fm, "path_pattern")).toBe('"TaskNotes/Tasks/{title}.md"');
 		});
 
 		it("should set display_name_key to the mapped title field", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(getYamlValue(fm, "display_name_key")).toBe("title");
 		});
@@ -202,7 +220,7 @@ describe("MdbaseSpecService", () => {
 					fieldMapping: { ...DEFAULT_FIELD_MAPPING, title: "name" },
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(getYamlValue(fm, "display_name_key")).toBe("name");
 		});
@@ -217,7 +235,7 @@ describe("MdbaseSpecService", () => {
 					taskFilenameFormat: "zettel",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 			expect(getYamlValue(fm, "path_pattern")).toBe('"Tasks/{title}.md"');
 		});
 
@@ -229,7 +247,7 @@ describe("MdbaseSpecService", () => {
 					taskFilenameFormat: "zettel",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 			expect(getYamlValue(fm, "path_pattern")).toBe('"Tasks/{zettel}.md"');
 		});
 
@@ -241,7 +259,7 @@ describe("MdbaseSpecService", () => {
 					taskFilenameFormat: "timestamp",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 			expect(getYamlValue(fm, "path_pattern")).toBe('"Tasks/{timestamp}.md"');
 		});
 
@@ -253,7 +271,7 @@ describe("MdbaseSpecService", () => {
 					taskFilenameFormat: "uuid",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 			expect(getYamlValue(fm, "path_pattern")).toBe('"Tasks/{uuid}.md"');
 		});
 
@@ -271,7 +289,7 @@ describe("MdbaseSpecService", () => {
 					},
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 			expect(getYamlValue(fm, "path_pattern")).toBe(
 				'"Calendar/{year}/{month}/{importance}-{name}-{titleKebab}.md"'
 			);
@@ -281,7 +299,7 @@ describe("MdbaseSpecService", () => {
 	describe("buildTaskTypeDef - match section", () => {
 		it("should match by tag when task identification method is tag", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(fm).toContain("match:");
 			expect(fm).toContain("  where:");
@@ -291,7 +309,7 @@ describe("MdbaseSpecService", () => {
 
 		it("should match by custom tag when configured", () => {
 			const service = new MdbaseSpecService(createMockPlugin({ taskTag: "my-task-tag" }));
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(fm).toContain('contains: "my-task-tag"');
 		});
@@ -304,7 +322,7 @@ describe("MdbaseSpecService", () => {
 					taskPropertyValue: "task",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(fm).toContain("  where:");
 			expect(fm).toContain('    "kind":');
@@ -319,7 +337,7 @@ describe("MdbaseSpecService", () => {
 					taskPropertyValue: "true",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(fm).toContain('    "isTask":');
 			expect(fm).toContain("      eq: true");
@@ -333,7 +351,7 @@ describe("MdbaseSpecService", () => {
 					taskPropertyValue: "",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(fm).toContain('    "isTask":');
 			expect(fm).toContain("      exists: true");
@@ -347,7 +365,7 @@ describe("MdbaseSpecService", () => {
 					taskTag: "fallback-task",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(fm).toContain("    tags:");
 			expect(fm).toContain('      contains: "fallback-task"');
@@ -359,7 +377,7 @@ describe("MdbaseSpecService", () => {
 
 		beforeEach(() => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			fm = extractFrontmatter(service.buildTaskTypeDef());
+			fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 		});
 
 		it("should define title as required string with description", () => {
@@ -373,15 +391,15 @@ describe("MdbaseSpecService", () => {
 			const block = getFieldBlock(fm, "status");
 			expect(block).toContain("type: enum");
 			expect(block).toContain("required: true");
-			expect(block).toContain("values: [none, open, in-progress, done]");
-			expect(block).toContain("default: open");
+			expect(block).toContain('values: ["none", "open", "in-progress", "done"]');
+			expect(block).toContain('default: "open"');
 		});
 
 		it("should define priority as enum with values", () => {
 			const block = getFieldBlock(fm, "priority");
 			expect(block).toContain("type: enum");
-			expect(block).toContain("values: [none, low, normal, high]");
-			expect(block).toContain("default: normal");
+			expect(block).toContain('values: ["none", "low", "normal", "high"]');
+			expect(block).toContain('default: "normal"');
 		});
 
 		it("should define due as date", () => {
@@ -441,8 +459,8 @@ describe("MdbaseSpecService", () => {
 		it("should define recurrence_anchor as enum", () => {
 			const block = getFieldBlock(fm, "recurrence_anchor");
 			expect(block).toContain("type: enum");
-			expect(block).toContain("values: [scheduled, completion]");
-			expect(block).toContain("default: scheduled");
+			expect(block).toContain('values: ["scheduled", "completion"]');
+			expect(block).toContain('default: "scheduled"');
 		});
 
 		it("should define tags as list of strings", () => {
@@ -463,7 +481,7 @@ describe("MdbaseSpecService", () => {
 
 		beforeEach(() => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			fm = extractFrontmatter(service.buildTaskTypeDef());
+			fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 		});
 
 		it("should define timeEntries as list of objects with nested fields", () => {
@@ -483,9 +501,9 @@ describe("MdbaseSpecService", () => {
 			expect(block).toContain("type: object");
 			expect(block).toContain("fields:");
 			expect(block).toContain("id:");
-			expect(block).toContain("values: [absolute, relative]");
+			expect(block).toContain('values: ["absolute", "relative"]');
 			expect(block).toContain("relatedTo:");
-			expect(block).toContain("values: [due, scheduled]");
+			expect(block).toContain('values: ["due", "scheduled"]');
 			expect(block).toContain("offset:");
 			expect(block).toContain("absoluteTime:");
 			expect(block).toContain("type: datetime");
@@ -540,7 +558,7 @@ describe("MdbaseSpecService", () => {
 			const service = new MdbaseSpecService(
 				createMockPlugin({ fieldMapping: customMapping })
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(getFieldBlock(fm, "task_status")).toContain("type: enum");
 			expect(getFieldBlock(fm, "task_priority")).toContain("type: enum");
@@ -594,13 +612,13 @@ describe("MdbaseSpecService", () => {
 					defaultTaskStatus: "todo",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 			const block = getFieldBlock(fm, "status");
 
 			expect(block).toContain("todo");
 			expect(block).toContain("doing");
 			expect(block).toContain("finished");
-			expect(block).toContain("default: todo");
+			expect(block).toContain('default: "todo"');
 			// Default statuses should not appear
 			expect(block).not.toContain("in-progress");
 		});
@@ -634,13 +652,13 @@ describe("MdbaseSpecService", () => {
 					defaultTaskPriority: "important",
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 			const block = getFieldBlock(fm, "priority");
 
 			expect(block).toContain("critical");
 			expect(block).toContain("important");
 			expect(block).toContain("nice");
-			expect(block).toContain("default: important");
+			expect(block).toContain('default: "important"');
 		});
 	});
 
@@ -667,7 +685,7 @@ describe("MdbaseSpecService", () => {
 					],
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(getFieldBlock(fm, "effort")).toContain("type: number");
 			expect(getFieldBlock(fm, "extra_notes")).toContain("type: string");
@@ -681,7 +699,7 @@ describe("MdbaseSpecService", () => {
 
 		it("should not include user fields section when none are defined", () => {
 			const service = new MdbaseSpecService(createMockPlugin({ userFields: [] }));
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			// Should still have core fields but no extra fields beyond the known set
 			expect(getFieldBlock(fm, "title")).toBeDefined();
@@ -724,7 +742,7 @@ describe("MdbaseSpecService", () => {
 	describe("buildTaskTypeDef - body content", () => {
 		it("should include markdown body after frontmatter", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const body = extractBody(service.buildTaskTypeDef());
+			const body = extractBody(service.buildTaskTypeDef("0.2.0"));
 
 			expect(body).toContain("# Task");
 			expect(body).toContain("TaskNotes");
@@ -742,7 +760,7 @@ describe("MdbaseSpecService", () => {
 					taskPropertyValue: 'my "special" task',
 				})
 			);
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			expect(fm).toContain('    "task \\"kind\\"":');
 			expect(fm).toContain('      eq: "my \\"special\\" task"');
@@ -752,7 +770,7 @@ describe("MdbaseSpecService", () => {
 	describe("buildTaskTypeDef - multi-line YAML format", () => {
 		it("should output fields in multi-line format, not inline", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			// Should NOT contain inline object notation for field definitions
 			expect(fm).not.toMatch(/^  \w+: \{/m);
@@ -760,7 +778,7 @@ describe("MdbaseSpecService", () => {
 
 		it("should indent field properties under the field name", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			// title field should have properties on subsequent indented lines
 			expect(fm).toMatch(/^  title:\n    type: string\n    required: true/m);
@@ -768,11 +786,190 @@ describe("MdbaseSpecService", () => {
 
 		it("should nest object items with proper indentation", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const fm = extractFrontmatter(service.buildTaskTypeDef());
+			const fm = extractFrontmatter(service.buildTaskTypeDef("0.2.0"));
 
 			// reminders should have deeply nested structure
 			const block = getFieldBlock(fm, "reminders");
 			expect(block).toMatch(/items:\n\s+type: object\n\s+fields:/);
+		});
+	});
+
+	describe("buildTaskTypeDef - v0.3", () => {
+		it("emits a JSON Schema type wrapper by default", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
+			const schemaWrapper = asObject(frontmatter.schema);
+			const schema = asObject(schemaWrapper.value);
+			const properties = asObject(schema.properties);
+
+			expect(frontmatter.kind).toBe("mdbase.type");
+			expect(frontmatter.name).toBe("task");
+			expect(frontmatter.version).toBe(1);
+			expect(schemaWrapper.dialect).toBe("json-schema-2020-12");
+			expect(schema.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
+			expect(schema.additionalProperties).toBe(true);
+			expect(schema.required).toEqual(["title", "status", "dateCreated"]);
+			expect(asObject(properties.due)).toMatchObject({ type: "string", format: "date" });
+			expect(asObject(properties.dateModified)).toMatchObject({
+				type: "string",
+				format: "date-time",
+			});
+			expect(validateCanonicalSchema("typeFile", frontmatter)).toEqual({
+				valid: true,
+				errors: [],
+			});
+		});
+
+		it("moves defaults, links, lifecycle behavior, and roles to v0.3 metadata", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
+			const collection = asObject(frontmatter.collection);
+			const lifecycle = asObject(frontmatter.lifecycle);
+			const onCreate = asObject(lifecycle.on_create);
+			const onUpdate = asObject(lifecycle.on_update);
+			const extension = asObject(frontmatter["x-tasknotes"]);
+
+			expect(collection.read_defaults).toEqual({
+				status: "open",
+				priority: "normal",
+				recurrence_anchor: "scheduled",
+				occurrence_materialization: "manual",
+				occurrence_next_trigger: "completion",
+			});
+			expect(collection.links).toEqual({
+				"projects[]": { target_type: "any", validate_exists: false },
+				occurrence_template: { target_type: "any", validate_exists: false },
+				recurrence_parent: { target_type: "task", validate_exists: false },
+				"blockedBy[].uid": { target_type: "task", validate_exists: false },
+			});
+			expect(asObject(onCreate.set)).toEqual({
+				dateCreated: { now: true },
+				dateModified: { now: true },
+			});
+			expect(asObject(onUpdate.set)).toEqual({ dateModified: { now: true } });
+			expect(extension).toMatchObject({
+				contract: "tasknotes.task",
+				version: 1,
+				status: { default: "open" },
+				priority: { default: "normal" },
+				archive: { tags_field: "tags", archived_tag: "archived" },
+			});
+			expect(asObject(extension.field_roles)).toMatchObject({
+				title: "title",
+				status: "status",
+				blockedBy: "blockedBy",
+			});
+		});
+
+		it("uses a discriminated JSON Schema union for reminders", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
+			const schema = asObject(asObject(frontmatter.schema).value);
+			const reminders = asObject(asObject(schema.properties).reminders);
+			const items = asObject(reminders.items);
+
+			expect(reminders.type).toBe("array");
+			expect(items.oneOf).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ required: ["id", "type", "absoluteTime"] }),
+					expect.objectContaining({ required: ["id", "type", "relatedTo", "offset"] }),
+				])
+			);
+		});
+
+		it("preserves custom mappings in schema and TaskNotes role metadata", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					fieldMapping: {
+						...DEFAULT_FIELD_MAPPING,
+						title: "summary",
+						status: "task_status",
+						projects: "related_projects",
+					},
+				})
+			);
+			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
+			const schema = asObject(asObject(frontmatter.schema).value);
+			const collection = asObject(frontmatter.collection);
+			const extension = asObject(frontmatter["x-tasknotes"]);
+			const links = asObject(collection.links);
+
+			expect(asObject(schema.properties)).toHaveProperty("summary");
+			expect(collection.display).toEqual({ name_field: "summary" });
+			expect(links["related_projects[]"]).toEqual({
+				target_type: "any",
+				validate_exists: false,
+			});
+			expect(asObject(extension.field_roles)).toMatchObject({
+				title: "summary",
+				status: "task_status",
+				projects: "related_projects",
+			});
+		});
+
+		it("quotes configured enum strings before converting them", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					customStatuses: [
+						{
+							id: "boolean-like",
+							value: "true",
+							label: "True",
+							color: "#000",
+							isCompleted: false,
+							order: 0,
+							autoArchive: false,
+							autoArchiveDelay: 0,
+						},
+						{
+							id: "null-like",
+							value: "null",
+							label: "Null",
+							color: "#111",
+							isCompleted: true,
+							order: 1,
+							autoArchive: false,
+							autoArchiveDelay: 0,
+						},
+					],
+					defaultTaskStatus: "true",
+				})
+			);
+			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
+			const schema = asObject(asObject(frontmatter.schema).value);
+			const status = asObject(asObject(schema.properties).status);
+
+			expect(status.enum).toEqual(["true", "null"]);
+			expect(status.default).toBe("true");
+		});
+
+		it("records collection paths that cannot be represented by v0.3", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					fieldMapping: {
+						...DEFAULT_FIELD_MAPPING,
+						title: "task title",
+						projects: "related projects",
+					},
+				})
+			);
+			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
+			const collection = asObject(frontmatter.collection);
+			const extension = asObject(frontmatter["x-tasknotes"]);
+			const generator = asObject(extension.generator);
+
+			expect(collection.display).toBeUndefined();
+			expect(asObject(collection.links)).not.toHaveProperty("related projects[]");
+			expect(generator.omitted_collection_paths).toEqual(
+				expect.arrayContaining(["task title", "related projects[]"])
+			);
+		});
+
+		it("rejects unsupported versions", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			expect(() => service.buildTaskTypeDef("1.0.0")).toThrow(
+				"Unsupported mdbase spec version"
+			);
 		});
 	});
 
@@ -805,7 +1002,10 @@ describe("MdbaseSpecService", () => {
 				Promise.resolve(path === "mdbase.yaml")
 			);
 			plugin.app.vault.adapter.read.mockResolvedValue(
-				JSON.stringify({ settings: { types_folder: "System/_types" } })
+				JSON.stringify({
+					spec_version: "0.3.0",
+					settings: { types_folder: "System/_types" },
+				})
 			);
 			const service = new MdbaseSpecService(plugin);
 
@@ -829,7 +1029,10 @@ describe("MdbaseSpecService", () => {
 				Promise.resolve(path === "mdbase.yaml")
 			);
 			plugin.app.vault.adapter.read.mockResolvedValue(
-				JSON.stringify({ settings: { types_folder: "../outside" } })
+				JSON.stringify({
+					spec_version: "0.3.0",
+					settings: { types_folder: "../outside" },
+				})
 			);
 			const service = new MdbaseSpecService(plugin);
 
@@ -854,6 +1057,72 @@ describe("MdbaseSpecService", () => {
 				"_types/task.md",
 				expect.any(String)
 			);
+			const typeCall = plugin.app.vault.create.mock.calls.find(
+				([path]: [string]) => path === "_types/task.md"
+			);
+			const configCall = plugin.app.vault.create.mock.calls.find(
+				([path]: [string]) => path === "mdbase.yaml"
+			);
+			expect(parseFrontmatter(typeCall?.[1] as string).kind).toBe("mdbase.type");
+			expect(configCall?.[1]).toContain('spec_version: "0.3.0"');
+		});
+
+		it("should retain the v0.2 type grammar for an existing v0.2 collection", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockResolvedValue(true);
+			plugin.app.vault.adapter.read.mockResolvedValue(
+				'spec_version: "0.2.1"\nsettings:\n  types_folder: "_types"\n'
+			);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			const typeWrite = plugin.app.vault.adapter.write.mock.calls.find(
+				([path]: [string]) => path === "_types/task.md"
+			);
+			const frontmatter = parseFrontmatter(typeWrite?.[1] as string);
+			expect(frontmatter.name).toBe("task");
+			expect(frontmatter.fields).toBeDefined();
+			expect(frontmatter.kind).toBeUndefined();
+			expect(frontmatter.schema).toBeUndefined();
+		});
+
+		it("should regenerate v0.3 types for an existing v0.3 collection", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockResolvedValue(true);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			const typeWrite = plugin.app.vault.adapter.write.mock.calls.find(
+				([path]: [string]) => path === "_types/task.md"
+			);
+			expect(parseFrontmatter(typeWrite?.[1] as string).kind).toBe("mdbase.type");
+		});
+
+		it("should not touch generated files for an unsupported collection version", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockResolvedValue(true);
+			plugin.app.vault.adapter.read.mockResolvedValue('spec_version: "0.4.0"');
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalled();
+			expect(plugin.app.vault.create).not.toHaveBeenCalled();
+			expect(plugin.app.vault.createFolder).not.toHaveBeenCalled();
+		});
+
+		it("should not touch generated files when mdbase.yaml is unreadable", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockResolvedValue(true);
+			plugin.app.vault.adapter.read.mockRejectedValue(new Error("read failed"));
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalled();
+			expect(plugin.app.vault.create).not.toHaveBeenCalled();
 		});
 
 		it("should update _types/task.md via adapter.write when it exists", async () => {

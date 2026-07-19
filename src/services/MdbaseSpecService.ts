@@ -9,18 +9,29 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MdbaseSpecService" });
 
 const DEFAULT_TYPES_FOLDER = "_types";
+const MDBASE_V03_SPEC_VERSION = "0.3.0";
+
+type SupportedSpecFamily = "v0.2" | "v0.3";
 
 type MdbaseYamlConfig = {
+	spec_version?: unknown;
 	settings?: {
 		types_folder?: unknown;
 	};
 };
 
+type ExistingCollection = {
+	exists: boolean;
+	config: MdbaseYamlConfig | null;
+};
+
 /**
- * Service that generates mdbase-spec v0.2.0 type definition files
+ * Service that generates mdbase collection and TaskNotes type definition files
  * (mdbase.yaml at the vault root and task.md in the configured types folder).
  *
- * Files are regenerated when settings change while the feature is enabled.
+ * New collections use v0.3. Existing v0.2 collections retain the legacy type
+ * grammar until they are migrated explicitly. Files are regenerated when
+ * settings change while the feature is enabled.
  * Files are NOT deleted when the feature is disabled.
  */
 export class MdbaseSpecService {
@@ -45,26 +56,50 @@ export class MdbaseSpecService {
 	 */
 	async generate(): Promise<void> {
 		try {
-			const vault = this.plugin.app.vault;
-			const typesFolder = await this.getTypesFolder();
+			const existingCollection = await this.readExistingCollection();
+			const existingSpecFamily = getSpecFamily(existingCollection.config?.spec_version);
+
+			if (existingCollection.exists && !existingSpecFamily) {
+				tasknotesLogger.warn(
+					"[TaskNotes][mdbase-spec] Refusing to overwrite the generated type for an unreadable or unsupported mdbase.yaml.",
+					{
+						category: "configuration",
+						operation: "unsupported-mdbase-version",
+						details: { specVersion: existingCollection.config?.spec_version },
+					}
+				);
+				return;
+			}
+
+			const specFamily = existingSpecFamily ?? "v0.3";
+			const specVersion =
+				typeof existingCollection.config?.spec_version === "string"
+					? existingCollection.config.spec_version
+					: MDBASE_V03_SPEC_VERSION;
+			const typesFolder =
+				this.normalizeTypesFolder(existingCollection.config?.settings?.types_folder) ??
+				DEFAULT_TYPES_FOLDER;
 			const taskTypePath = `${typesFolder}/task.md`;
 
 			await this.ensureFolderPath(typesFolder);
 
-			const taskTypeDef = this.buildTaskTypeDef();
+			const taskTypeDef = this.buildTaskTypeDef(specVersion);
 			await this.writeFile(taskTypePath, taskTypeDef);
 
 			// Only create mdbase.yaml if it doesn't already exist so that
 			// user customisations (extra excludes, description, etc.) are preserved.
-			const mdbaseExists = await vault.adapter.exists("mdbase.yaml");
-			if (!mdbaseExists) {
+			if (!existingCollection.exists) {
 				const mdbaseYaml = this.buildMdbaseYaml(typesFolder);
 				await this.writeFile("mdbase.yaml", mdbaseYaml);
 			}
 
 			tasknotesLogger.debug(
-				`[TaskNotes][mdbase-spec] Generated mdbase.yaml and ${taskTypePath}`,
-				{ category: "configuration", operation: "generated-mdbase-yaml-and" }
+				`[TaskNotes][mdbase-spec] Generated ${specFamily} collection metadata and ${taskTypePath}`,
+				{
+					category: "configuration",
+					operation: "generated-mdbase-yaml-and",
+					details: { specVersion },
+				}
 			);
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][mdbase-spec] Failed to generate files:", {
@@ -75,26 +110,27 @@ export class MdbaseSpecService {
 		}
 	}
 
-	private async getTypesFolder(): Promise<string> {
+	private async readExistingCollection(): Promise<ExistingCollection> {
 		const vault = this.plugin.app.vault;
 		const mdbaseExists = await vault.adapter.exists("mdbase.yaml");
 		if (!mdbaseExists) {
-			return DEFAULT_TYPES_FOLDER;
+			return { exists: false, config: null };
 		}
 
 		try {
 			const content = await vault.adapter.read("mdbase.yaml");
-			const parsed = YAML.parse(content) as MdbaseYamlConfig | null;
-			return (
-				this.normalizeTypesFolder(parsed?.settings?.types_folder) ?? DEFAULT_TYPES_FOLDER
-			);
+			const parsed = YAML.parse(content) as unknown;
+			if (!isRecord(parsed)) {
+				return { exists: true, config: null };
+			}
+			return { exists: true, config: parsed };
 		} catch (error) {
 			tasknotesLogger.warn("[TaskNotes][mdbase-spec] Failed to read mdbase.yaml:", {
 				category: "configuration",
 				operation: "read-mdbase-yaml",
 				error: error,
 			});
-			return DEFAULT_TYPES_FOLDER;
+			return { exists: true, config: null };
 		}
 	}
 
@@ -158,12 +194,15 @@ export class MdbaseSpecService {
 			this.normalizeTypesFolder(typesFolder) ?? DEFAULT_TYPES_FOLDER;
 
 		return [
-			'spec_version: "0.2.0"',
+			`spec_version: "${MDBASE_V03_SPEC_VERSION}"`,
 			'name: "TaskNotes"',
 			'description: "Task collection managed by TaskNotes for Obsidian"',
 			"settings:",
 			`  types_folder: ${yamlQuote(normalizedTypesFolder)}`,
-			"  default_strict: false",
+			"  record_extensions: [md]",
+			"  validation: warn",
+			"  explicit_type_keys: [type, types]",
+			"  id_field: id",
 			"  exclude:",
 			`    - ${yamlQuote(normalizedTypesFolder)}`,
 			"",
@@ -171,9 +210,23 @@ export class MdbaseSpecService {
 	}
 
 	/**
-	 * Build the _types/task.md content with YAML frontmatter.
+	 * Build the _types/task.md content for a supported collection version.
 	 */
-	buildTaskTypeDef(): string {
+	buildTaskTypeDef(specVersion = MDBASE_V03_SPEC_VERSION): string {
+		const family = getSpecFamily(specVersion);
+		if (family === "v0.2") {
+			return this.buildTaskTypeDefV02();
+		}
+		if (family === "v0.3") {
+			return this.buildTaskTypeDefV03();
+		}
+		throw new Error(`Unsupported mdbase spec version: ${specVersion}`);
+	}
+
+	/**
+	 * Build the legacy v0.2 task type. Retained only for existing collections.
+	 */
+	private buildTaskTypeDefV02(): string {
 		const settings = this.plugin.settings;
 		const fm = this.plugin.fieldMapper;
 
@@ -406,6 +459,270 @@ export class MdbaseSpecService {
 	}
 
 	/**
+	 * Build the v0.3 JSON Schema wrapper from the same settings-backed field
+	 * model as the legacy generator. The YAML round trip keeps the legacy path
+	 * stable while the two formats coexist.
+	 */
+	private buildTaskTypeDefV03(): string {
+		const legacy = parseGeneratedFrontmatter(this.buildTaskTypeDefV02());
+		const legacyFields = isRecord(legacy.fields) ? legacy.fields : {};
+		const properties: Record<string, unknown> = {};
+		const required: string[] = [];
+		const readDefaults: Record<string, unknown> = {};
+		const links: Record<string, unknown> = {};
+		const fieldRoles: Record<string, string> = {};
+		const lifecycle: Record<string, unknown> = {};
+		const omittedFieldPaths = new Set<string>();
+		let completedValues: unknown[] = [];
+
+		for (const [fieldName, value] of Object.entries(legacyFields)) {
+			if (!isRecord(value)) {
+				continue;
+			}
+
+			const role = typeof value.tn_role === "string" ? value.tn_role : undefined;
+			properties[fieldName] = this.convertV02Field(
+				fieldName,
+				value,
+				role,
+				links,
+				omittedFieldPaths
+			);
+
+			if (value.required === true) {
+				required.push(fieldName);
+			}
+			if (Object.prototype.hasOwnProperty.call(value, "default")) {
+				const defaultValue = cloneYamlValue(value.default);
+				(properties[fieldName] as Record<string, unknown>).default = defaultValue;
+				readDefaults[fieldName] = defaultValue;
+			}
+			if (role) {
+				fieldRoles[role] = fieldName;
+			}
+			if (Array.isArray(value.tn_completed_values)) {
+				completedValues = cloneYamlValue(value.tn_completed_values) as unknown[];
+			}
+
+			if (value.generated === "now") {
+				addLifecycleValue(lifecycle, "on_create", fieldName, omittedFieldPaths);
+			} else if (value.generated === "now_on_write") {
+				addLifecycleValue(lifecycle, "on_create", fieldName, omittedFieldPaths);
+				addLifecycleValue(lifecycle, "on_update", fieldName, omittedFieldPaths);
+			}
+		}
+
+		const titleField = fieldRoles.title ?? this.plugin.fieldMapper.toUserField("title");
+		const collection: Record<string, unknown> = {
+			read_defaults: readDefaults,
+			links,
+			path: {
+				runtime: "tasknotes",
+				template: this.getFilenameTemplate(),
+				folder: normalizeRuntimeFolder(this.plugin.settings.tasksFolder || ""),
+				generated_by: "tasknotes.filename.create",
+			},
+		};
+
+		if (isMdbaseFieldPath(titleField)) {
+			collection.display = { name_field: titleField };
+		} else {
+			omittedFieldPaths.add(titleField);
+		}
+
+		const statusField = fieldRoles.status;
+		const priorityField = fieldRoles.priority;
+		const tasknotesExtension: Record<string, unknown> = {
+			contract: "tasknotes.task",
+			version: 1,
+			field_roles: fieldRoles,
+			status: {
+				completed_values: completedValues,
+				...(statusField && Object.prototype.hasOwnProperty.call(readDefaults, statusField)
+					? { default: readDefaults[statusField] }
+					: {}),
+			},
+			priority:
+				priorityField && Object.prototype.hasOwnProperty.call(readDefaults, priorityField)
+					? { default: readDefaults[priorityField] }
+					: {},
+			archive: {
+				tags_field: fieldRoles.tags ?? "tags",
+				archived_tag: this.plugin.fieldMapper.toUserField("archiveTag"),
+			},
+		};
+
+		if (omittedFieldPaths.size > 0) {
+			tasknotesExtension.generator = {
+				omitted_collection_paths: [...omittedFieldPaths].sort(),
+			};
+		}
+
+		const schema: Record<string, unknown> = {
+			$schema: "https://json-schema.org/draft/2020-12/schema",
+			type: "object",
+			additionalProperties: true,
+			properties,
+		};
+		if (required.length > 0) {
+			schema.required = required;
+		}
+
+		const frontmatter: Record<string, unknown> = {
+			kind: "mdbase.type",
+			name: "task",
+			version: 1,
+			description: "A task managed by the TaskNotes plugin for Obsidian.",
+			match: legacy.match,
+			schema: {
+				dialect: "json-schema-2020-12",
+				value: schema,
+			},
+			collection,
+			lifecycle,
+			"x-tasknotes": tasknotesExtension,
+		};
+
+		const renderedFrontmatter = YAML.stringify(frontmatter, { lineWidth: 0 }).trimEnd();
+		return [
+			"---",
+			renderedFrontmatter,
+			"---",
+			"",
+			"# Task",
+			"",
+			"This type definition is generated from TaskNotes settings for mdbase v0.3.",
+			"Its JSON Schema describes persisted task frontmatter; collection and lifecycle",
+			"metadata describe generic mdbase behavior; `x-tasknotes` records the optional",
+			"TaskNotes task contract.",
+			"",
+			"This file is automatically generated and should not be edited manually.",
+			"",
+		].join("\n");
+	}
+
+	private convertV02Field(
+		selector: string,
+		definition: Record<string, unknown>,
+		rootRole: string | undefined,
+		links: Record<string, unknown>,
+		omittedFieldPaths: Set<string>
+	): Record<string, unknown> {
+		const fieldType = definition.type;
+		let schema: Record<string, unknown>;
+
+		if (rootRole === "reminders" && fieldType === "list") {
+			schema = buildReminderSchema();
+		} else {
+			switch (fieldType) {
+				case "string":
+					schema = { type: "string" };
+					break;
+				case "integer":
+					schema = { type: "integer" };
+					break;
+				case "number":
+					schema = { type: "number" };
+					break;
+				case "boolean":
+					schema = { type: "boolean" };
+					break;
+				case "date":
+					schema = { type: "string", format: "date" };
+					break;
+				case "datetime":
+					schema = { type: "string", format: "date-time" };
+					break;
+				case "enum": {
+					const values = Array.isArray(definition.values)
+						? cloneYamlValue(definition.values)
+						: [];
+					schema = Array.isArray(values) && values.length > 0 ? { enum: values } : {};
+					break;
+				}
+				case "link":
+					schema = { type: "string" };
+					if (isMdbaseFieldPath(selector)) {
+						links[selector] = {
+							target_type:
+								rootRole === "recurrenceParent" ||
+								(rootRole === "blockedBy" && selector.endsWith(".uid"))
+									? "task"
+									: "any",
+							validate_exists: false,
+						};
+					} else {
+						omittedFieldPaths.add(selector);
+					}
+					break;
+				case "list": {
+					const itemDefinition = isRecord(definition.items) ? definition.items : {};
+					schema = {
+						type: "array",
+						items: this.convertV02Field(
+							`${selector}[]`,
+							itemDefinition,
+							rootRole,
+							links,
+							omittedFieldPaths
+						),
+					};
+					break;
+				}
+				case "object": {
+					const childProperties: Record<string, unknown> = {};
+					const childRequired: string[] = [];
+					const fields = isRecord(definition.fields) ? definition.fields : {};
+					for (const [childName, childValue] of Object.entries(fields)) {
+						if (!isRecord(childValue)) {
+							continue;
+						}
+						childProperties[childName] = this.convertV02Field(
+							`${selector}.${childName}`,
+							childValue,
+							rootRole,
+							links,
+							omittedFieldPaths
+						);
+						if (childValue.required === true) {
+							childRequired.push(childName);
+						}
+					}
+					schema = {
+						type: "object",
+						additionalProperties: Object.keys(childProperties).length === 0,
+						properties: childProperties,
+					};
+					if (childRequired.length > 0) {
+						schema.required = childRequired;
+					}
+					break;
+				}
+				default:
+					schema = {};
+			}
+		}
+
+		if (rootRole === "title" && !selector.includes(".") && !selector.endsWith("[]")) {
+			schema.minLength = 1;
+		}
+		if (typeof definition.min === "number") {
+			if (fieldType === "string") {
+				schema.minLength = definition.min;
+			} else if (fieldType === "list") {
+				schema.minItems = definition.min;
+			} else {
+				schema.minimum = definition.min;
+			}
+		}
+		if (typeof definition.description === "string") {
+			schema.description = definition.description;
+		}
+
+		return schema;
+	}
+
+	/**
 	 * Add a field definition to the YAML lines array using multi-line format.
 	 */
 	private addField(lines: string[], name: string, def: FieldDef, indent = 2): void {
@@ -443,13 +760,15 @@ export class MdbaseSpecService {
 			lines.push(`${pad}generated: ${def.generated}`);
 		}
 		if (def.values) {
-			lines.push(`${pad}values: [${def.values.join(", ")}]`);
+			lines.push(`${pad}values: [${def.values.map(yamlQuote).join(", ")}]`);
 		}
 		if (def.tn_completed_values && def.tn_completed_values.length > 0) {
-			lines.push(`${pad}tn_completed_values: [${def.tn_completed_values.join(", ")}]`);
+			lines.push(
+				`${pad}tn_completed_values: [${def.tn_completed_values.map(yamlQuote).join(", ")}]`
+			);
 		}
 		if (def.default !== undefined) {
-			lines.push(`${pad}default: ${def.default}`);
+			lines.push(`${pad}default: ${yamlQuote(def.default)}`);
 		}
 		if (def.min !== undefined) {
 			lines.push(`${pad}min: ${def.min}`);
@@ -606,6 +925,112 @@ export class MdbaseSpecService {
 			scheduled: fm.toUserField("scheduled"),
 		};
 	}
+}
+
+function getSpecFamily(specVersion: unknown): SupportedSpecFamily | null {
+	if (typeof specVersion !== "string") {
+		return null;
+	}
+	if (/^0\.2\.\d+(?:[-+].*)?$/.test(specVersion)) {
+		return "v0.2";
+	}
+	if (/^0\.3\.\d+(?:[-+].*)?$/.test(specVersion)) {
+		return "v0.3";
+	}
+	return null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function parseGeneratedFrontmatter(markdown: string): Record<string, unknown> {
+	const match = markdown.match(/^---\n([\s\S]*?)\n---(?:\n|$)/);
+	if (!match) {
+		throw new Error("Generated TaskNotes type is missing YAML frontmatter");
+	}
+	const parsed = YAML.parse(match[1]) as unknown;
+	if (!isRecord(parsed)) {
+		throw new Error("Generated TaskNotes type frontmatter is not an object");
+	}
+	return parsed;
+}
+
+function cloneYamlValue(value: unknown): unknown {
+	if (Array.isArray(value)) {
+		return value.map(cloneYamlValue);
+	}
+	if (isRecord(value)) {
+		return Object.fromEntries(
+			Object.entries(value).map(([key, child]) => [key, cloneYamlValue(child)])
+		);
+	}
+	return value;
+}
+
+function isMdbaseFieldPath(value: string): boolean {
+	return /^[A-Za-z_][A-Za-z0-9_:-]*(?:\[\])?(?:\.[A-Za-z_][A-Za-z0-9_:-]*(?:\[\])?)*$/.test(
+		value
+	);
+}
+
+function addLifecycleValue(
+	lifecycle: Record<string, unknown>,
+	event: "on_create" | "on_update",
+	fieldName: string,
+	omittedFieldPaths: Set<string>
+): void {
+	if (!isMdbaseFieldPath(fieldName)) {
+		omittedFieldPaths.add(fieldName);
+		return;
+	}
+
+	const action = isRecord(lifecycle[event]) ? lifecycle[event] : {};
+	const set = isRecord(action.set) ? action.set : {};
+	set[fieldName] = { now: true };
+	action.set = set;
+	lifecycle[event] = action;
+}
+
+function normalizeRuntimeFolder(value: string): string {
+	return value
+		.trim()
+		.replace(/\\/g, "/")
+		.replace(/\/{2,}/g, "/")
+		.replace(/^\/+|\/+$/g, "");
+}
+
+function buildReminderSchema(): Record<string, unknown> {
+	return {
+		type: "array",
+		items: {
+			oneOf: [
+				{
+					type: "object",
+					required: ["id", "type", "absoluteTime"],
+					additionalProperties: false,
+					properties: {
+						id: { type: "string" },
+						type: { const: "absolute" },
+						description: { type: "string" },
+						absoluteTime: { type: "string", format: "date-time" },
+					},
+				},
+				{
+					type: "object",
+					required: ["id", "type", "relatedTo", "offset"],
+					additionalProperties: false,
+					properties: {
+						id: { type: "string" },
+						type: { const: "relative" },
+						description: { type: "string" },
+						relatedTo: { enum: ["due", "scheduled"] },
+						offset: { type: "string" },
+					},
+				},
+			],
+		},
+	};
 }
 
 /**

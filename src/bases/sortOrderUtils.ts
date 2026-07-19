@@ -551,7 +551,7 @@ async function writeSortOrder(
 	if (!(file instanceof TFile)) return;
 
 	const sortOrderField = plugin.settings.fieldMapping.sortOrder;
-	await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+	await plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
 		frontmatter[sortOrderField] = sortOrder;
 	});
 }

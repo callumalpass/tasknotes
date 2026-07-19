@@ -673,6 +673,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.emitter?.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS.unloading, {
 			timestamp: new Date().toISOString(),
 		});
+		void (this.api as import("./api/TaskNotesAPI").TaskNotesAPI | undefined)?.dispose();
 		void cleanupPluginRuntime(this);
 	}
 

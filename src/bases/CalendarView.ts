@@ -2180,7 +2180,7 @@ export class CalendarView extends BasesViewBase {
 				}
 
 				// Update frontmatter
-				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
 					const plan = planPropertyEventDrop({
 						frontmatter,
 						startProperty: startProp,
@@ -2315,7 +2315,7 @@ export class CalendarView extends BasesViewBase {
 
 						await this.plugin.app.fileManager.processFrontMatter(
 							spanFile,
-							(frontmatter) => {
+							(frontmatter: Record<string, unknown>) => {
 								if (plan.scheduled) frontmatter[scheduledField] = plan.scheduled;
 								if (plan.due) frontmatter[dueField] = plan.due;
 							}
@@ -2416,7 +2416,7 @@ export class CalendarView extends BasesViewBase {
 				}
 
 				// Update frontmatter
-				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
 					for (const [property, value] of Object.entries(plan.updates)) {
 						frontmatter[property] = value;
 					}

@@ -4,7 +4,7 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
-    "target": "ES6",
+		"target": "ES2021",
     "allowJs": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
@@ -21,15 +21,15 @@
     "paths": {
       "obsidian": ["./node_modules/obsidian"]
     },
-    "types": [
-      "obsidian-typings"
-    ],
+		"types": [
+			"node",
+			"obsidian",
+			"obsidian-typings"
+		],
     "lib": [
       "DOM",
       "DOM.Iterable",
-      "ES5",
-      "ES6",
-      "ES7"
+			"ES2021"
     ]
   },
   "include": [

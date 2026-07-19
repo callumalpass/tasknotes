@@ -1128,7 +1128,6 @@ export interface TaskNotesRuntimeApiV1 {
 	readonly lifecycle: TaskNotesRuntimeLifecycleApi;
 	readonly errors: TaskNotesRuntimeErrorsApi;
 	readonly extensions: TaskNotesRuntimeExtensionsApi;
-
 	parseNaturalLanguage(text: string): ParsedTaskData;
 
 	getTask(path: string): Promise<Nullable<TaskInfo>>;

@@ -142,7 +142,7 @@ export class TaskUpdateService {
 					? getCurrentDateString()
 					: "";
 
-			await runtime.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			await runtime.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
 				const frontmatterResult = applyTaskUpdateFrontmatterChange({
 					frontmatter,
 					originalTask,

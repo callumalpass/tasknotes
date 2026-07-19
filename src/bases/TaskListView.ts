@@ -1392,7 +1392,7 @@ export class TaskListView extends BasesViewBase {
 			});
 
 			// Single atomic write: group property + sort_order + derivative fields
-			await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+			await this.plugin.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 				applyTaskListDropFrontmatterMutation({
 					frontmatter: fm,
 					plan: groupDropPlan,

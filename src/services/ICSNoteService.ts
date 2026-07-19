@@ -608,17 +608,16 @@ export class ICSNoteService {
 			}
 
 			// Update the note's frontmatter to include the ICS event ID
-			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
 				const icsEventIdField = this.plugin.fieldMapper.toUserField("icsEventId");
 
 				// Get existing ICS event IDs or create new array
-				let existingIds = frontmatter[icsEventIdField];
-				if (!existingIds) {
-					existingIds = [];
-				} else if (!Array.isArray(existingIds)) {
-					// Convert single value to array for backwards compatibility
-					existingIds = [existingIds];
-				}
+				const existing = frontmatter[icsEventIdField];
+				const existingIds = Array.isArray(existing)
+					? existing
+					: existing
+						? [existing]
+						: [];
 
 				// Add new event ID if not already present
 				if (!existingIds.includes(icsEvent.id)) {

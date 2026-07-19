@@ -1835,7 +1835,7 @@ export class KanbanView extends BasesViewBase {
 		groupKey: string,
 		swimLaneKey: string | null = null
 	): Promise<void> {
-		await this.createFileForView(undefined, (frontmatter) => {
+		await this.createFileForView(undefined, (frontmatter: Record<string, unknown>) => {
 			const applyCreationDefault = (
 				propertyId: string | null,
 				defaultGroupKey: string | null
@@ -3742,7 +3742,7 @@ export class KanbanView extends BasesViewBase {
 					}
 
 					// Single atomic write: groupBy + swimlane + sort_order
-					await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+					await this.plugin.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 						applyKanbanTaskDropFrontmatterPlan(fm, dropPlan, {
 							coerceGroupValue: (frontmatterKey, groupKey) =>
 								this.coerceGroupKeyForFrontmatter(frontmatterKey, groupKey),
