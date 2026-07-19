@@ -838,7 +838,6 @@ describe('TaskService', () => {
       expect(result.completedDate).toBeUndefined();
     });
 
-    // U4: an explicit completion date threads through the status pipeline.
     it('should record an explicit completion date on a non-recurring status completion', async () => {
       const nonRecurringTask = TaskFactory.createTask({ recurrence: undefined });
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(nonRecurringTask);
@@ -935,9 +934,8 @@ describe('TaskService', () => {
     });
 
     it('clears an off-schedule completion/skip recorded on or after the rescheduled date, keeping older history', async () => {
-      // Completed off-schedule on 2026-06-08 and a later skip on 2026-06-19; the
-      // user reschedules back to 2026-06-05. Exact-match would miss both; the
-      // ">= new date" rule clears them while preserving the genuine older 2026-05-29.
+      // Off-schedule completion (06-08) + later skip (06-19), reschedule back to 06-05:
+      // the ">= new date" rule clears both while keeping the older 05-29 history.
       const recurringTask = TaskFactory.createTask({
         recurrence: 'FREQ=WEEKLY',
         scheduled: '2026-06-12',

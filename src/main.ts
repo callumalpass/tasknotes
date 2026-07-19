@@ -1123,10 +1123,7 @@ export default class TaskNotesPlugin extends Plugin {
 		} = {}
 	): Promise<TaskInfo> {
 		try {
-			// When rescheduling a recurring task would clear recorded completions/
-			// skips, prompt for confirmation (unless silent or the caller supplied its
-			// own handler). A declined prompt aborts the reschedule, so suppress the
-			// success notice in that case.
+			// A declined clear-confirmation aborts the reschedule, so the success notice is suppressed below.
 			let cancelledByUser = false;
 			const confirmClearInstances =
 				options.confirmClearInstances ??
@@ -1145,7 +1142,6 @@ export default class TaskNotesPlugin extends Plugin {
 				confirmClearInstances,
 			});
 
-			// Provide user feedback unless silent or the user cancelled the reschedule
 			if (!options.silent && !cancelledByUser) {
 				if (property === "status") {
 					const statusValue = typeof value === "string" ? value : String(value);

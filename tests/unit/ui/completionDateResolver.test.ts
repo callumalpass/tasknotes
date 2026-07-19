@@ -2,12 +2,6 @@ import { resolveCompletionDate } from "../../../src/ui/completionDateResolver";
 import { formatDateForStorage, getTodayString } from "../../../src/utils/dateUtils";
 import type { TaskInfo } from "../../../src/types";
 
-/**
- * U3 — the four-mode completion-date resolver (KTD1). Modes resolve to a concrete
- * date; `asScheduled`/`onDue` report unavailable (never silently substitute)
- * when their source is absent, so the menu can disable the option (R4).
- */
-
 function task(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
 		id: "Tasks/t.md",
@@ -19,7 +13,7 @@ function task(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	} as TaskInfo;
 }
 
-describe("U3: resolveCompletionDate", () => {
+describe("resolveCompletionDate", () => {
 	describe("today", () => {
 		it("resolves to today for recurring and non-recurring", () => {
 			const nonRecurring = resolveCompletionDate(task({ scheduled: "2026-06-02" }), "today");

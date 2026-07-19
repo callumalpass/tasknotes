@@ -165,7 +165,6 @@ describe("Issue #1724: recurring task actions belong with date menu items", () =
 			titles.indexOf("Reminders")
 		);
 
-		// The submenu holds the completion actions + skip.
 		const submenuTitles = getAllMenuTitles();
 		expect(submenuTitles).toEqual(
 			expect.arrayContaining([

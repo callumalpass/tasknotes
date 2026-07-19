@@ -867,18 +867,12 @@ export class TaskContextMenu {
 		});
 	}
 
-	/**
-	 * Render the completion (and, for recurring tasks, skip) actions. By default
-	 * they are nested under a single "Mark complete or skip" submenu ("Mark
-	 * complete" for non-recurring tasks) to keep the top-level menu compact; when
-	 * `completionMenuAsSubmenu` is disabled they are added directly to the menu.
-	 */
+	/** Render the completion and, for recurring tasks, skip actions. */
 	private addCompleteOrSkipSection(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		const isRecurring = !!task.recurrence;
 
 		// Default to the submenu when the setting is unset (backward compatible).
 		if (plugin.settings.completionMenuAsSubmenu === false) {
-			// Delimit the flat completion/skip block from the surrounding menu.
 			this.menu.addSeparator();
 			this.addCompletionMenuItems(task, plugin, this.menu);
 			if (isRecurring) {
@@ -906,11 +900,8 @@ export class TaskContextMenu {
 	}
 
 	/**
-	 * Render the four explicit completion actions (Complete today / as scheduled /
-	 * on due date / on…) into the given menu, with the un-complete affordance
-	 * indexed per task type (R11): recurring completeness is per-date (each action
-	 * toggles its own resolved date); non-recurring completeness is a single
-	 * status (all four collapse to one "Mark incomplete").
+	 * Render the four completion actions. Un-complete differs by type: recurring
+	 * toggles each action's own date; non-recurring collapses to one "Mark incomplete".
 	 */
 	private addCompletionMenuItems(task: TaskInfo, plugin: TaskNotesPlugin, menu: Menu): void {
 		const isRecurring = !!task.recurrence;
@@ -963,7 +954,7 @@ export class TaskContextMenu {
 
 		menu.addItem((item) => {
 			if (!resolution.available) {
-				// Shown disabled (not hidden) with a reason tooltip (R4).
+				// Shown disabled (not hidden) with a reason tooltip.
 				item.setTitle(this.t(baseLabelKey));
 				item.setIcon("check");
 				item.setDisabled(true);
@@ -975,8 +966,6 @@ export class TaskContextMenu {
 			}
 
 			const resolvedDate = resolution.date;
-			// Recurring: this action independently reflects whether ITS resolved
-			// date is already recorded, and toggles that date out.
 			const alreadyComplete =
 				isRecurring &&
 				(task.complete_instances?.includes(formatDateForStorage(resolvedDate)) ?? false);
@@ -1007,10 +996,8 @@ export class TaskContextMenu {
 	}
 
 	/**
-	 * U6: open the shared date picker and record completion against the chosen
-	 * date. Completion is recorded date-only (both `completedDate` and
-	 * `complete_instances` keys are date-only in storage), so the picker does not
-	 * offer a time. Cancel is a no-op.
+	 * Open the shared date picker and record completion date-only (storage keys are
+	 * date-only, so the picker offers no time). Cancel is a no-op.
 	 */
 	private pickCompletionDate(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		this.menu.hide();
@@ -1041,9 +1028,7 @@ export class TaskContextMenu {
 	): Promise<void> {
 		try {
 			if (task.recurrence) {
-				// Recurring records into complete_instances via the date-accepting
-				// toggle; completion-anchored recurrences re-anchor DTSTART from the
-				// recorded date through the existing toggle behavior.
+				// Completion-anchored recurrences re-anchor DTSTART from the recorded date.
 				await plugin.toggleRecurringTaskComplete(task, resolvedDate);
 			} else {
 				const completedStatus = plugin.statusManager.getCompletedStatuses()[0];
@@ -1051,7 +1036,6 @@ export class TaskContextMenu {
 					new Notice(this.t("contextMenus.task.completion.noCompletedStatus"));
 					return;
 				}
-				// Non-recurring completion is a status transition carrying the date.
 				await plugin.updateTaskProperty(task, "status", completedStatus, {
 					completionDate: formatDateForStorage(resolvedDate),
 				});

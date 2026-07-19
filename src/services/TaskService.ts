@@ -591,11 +591,8 @@ export class TaskService {
 			// Get fresh task data to prevent overwrites
 			const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
 
-			// A status completion may carry an explicit completion date (context-menu
-			// "Complete on…/as scheduled/on due"); otherwise fall back to the default
-			// (task.occurrence_date || today). Only meaningful for non-recurring
-			// status completions — the frontmatter write is guarded by
-			// `property === "status" && !recurring`.
+			// Only affects non-recurring status completions (the frontmatter write is
+			// guarded by `property === "status" && !recurring`).
 			const completionDateString =
 				options.completionDate ?? this.getCompletionDateForTask(freshTask);
 
@@ -621,14 +618,8 @@ export class TaskService {
 				applyGoogleCalendarRecurringExceptionCleanup(updatePlan.updatedTask);
 			}
 
-			// Rescheduling a recurring task onto a date restarts its timeline from
-			// that date: drop every complete_instances/skipped_instances entry on or
-			// after the new scheduled date so the user doesn't have to manually
-			// un-complete/un-skip after moving the schedule back (e.g. undoing an
-			// accidental completion — including an off-schedule one recorded on a
-			// later date than the reschedule target). Entries strictly before the new
-			// scheduled date are genuine history and are preserved. Instances are
-			// stored as YYYY-MM-DD, so a lexicographic compare is chronological.
+			// Reschedule reactivates the timeline: drop instances on/after the new date
+			// (kept as YYYY-MM-DD, so a lexicographic compare is chronological).
 			let rescheduleClearedOccurrence = false;
 			if (
 				property === "scheduled" &&

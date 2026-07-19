@@ -12,12 +12,6 @@ import { formatDateForStorage } from "../../../src/utils/dateUtils";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 
-/**
- * U6 — "Complete on… (pick a date)" opens the shared picker and records the
- * chosen date (recurring -> complete_instances; non-recurring -> status +
- * completedDate). Cancel is a no-op. Covers AE3.
- */
-
 type MockMenuItem = Record<string, jest.Mock> | { type: string };
 type MockMenu = { items: MockMenuItem[] };
 
@@ -112,7 +106,7 @@ function getPickerOnSelect(): (date: string | null) => void {
 	return modalMock.mock.calls[modalMock.mock.calls.length - 1][1].onSelect;
 }
 
-describe("U6: Complete on… date picker", () => {
+describe("Complete on… date picker", () => {
 	beforeEach(() => {
 		menuMock.mockClear();
 		modalMock.mockClear();
@@ -133,7 +127,7 @@ describe("U6: Complete on… date picker", () => {
 		expect(formatDateForStorage(date)).toBe("2026-05-20");
 	});
 
-	it("records the picked date as completedDate via a status change for a non-recurring task (AE3)", async () => {
+	it("records the picked date as completedDate via a status change for a non-recurring task", async () => {
 		const plugin = createPlugin();
 		const t = task(); // undated
 		new TaskContextMenu({ task: t, plugin, targetDate: new Date("2026-06-15T12:00:00") });
