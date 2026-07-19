@@ -6,14 +6,6 @@ import { formatDateForStorage } from "../../../src/utils/dateUtils";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 
-/**
- * U1 — a distinct optional `occurrenceDate` carries the clicked-occurrence
- * signal, separate from the overloaded `targetDate`. Occurrence-aware menu
- * logic must read `occurrenceDate` and never infer occurrence-ness from
- * `targetDate` (KTD5). When absent, behavior falls through to the anchor-aware
- * service default.
- */
-
 type MockMenuItem = Record<string, jest.Mock> | { type: string };
 type MockMenu = { items: MockMenuItem[] };
 
@@ -92,7 +84,7 @@ function findTopLevelMenuItem(title: string): Record<string, jest.Mock> | undefi
 	);
 }
 
-describe("U1: occurrenceDate context field", () => {
+describe("occurrenceDate context field", () => {
 	beforeEach(() => {
 		jest.useFakeTimers();
 		menuMock.mockClear();
@@ -138,10 +130,7 @@ describe("U1: occurrenceDate context field", () => {
 	});
 
 	it("showTaskContextMenu forwards occurrenceDate into the built menu", async () => {
-		// Proves the U1 plumbing: any occurrence-addressed producer routing through
-		// showTaskContextMenu has its occurrenceDate honored. The already-skipped
-		// date matches the forwarded occurrenceDate but not the targetDate, so a
-		// forwarded field is the only way the menu shows "Unskip instance".
+		// Skipped date matches occurrenceDate but not targetDate, so "Unskip" proves forwarding.
 		const occurrence = new Date("2026-06-09T00:00:00Z");
 		const task = createRecurringTask({
 			skipped_instances: [formatDateForStorage(occurrence)],
