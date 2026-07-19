@@ -6,16 +6,6 @@ import { formatDateForStorage, getTodayString } from "../../../src/utils/dateUti
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 
-/**
- * U2 — "Skip this instance" records the occurrence date, never the card's
- * view-wide "today". Covers AE4:
- *   - List/Kanban skip (no occurrenceDate) → the service resolves the
- *     anchor-aware date (scheduled for scheduled-anchored recurrences).
- *   - Calendar skip (occurrenceDate present) → the clicked occurrence.
- *   - Completion-anchored skip → still today (unchanged behavior).
- *   - Unskip toggles the same recorded date back out.
- */
-
 type MockMenuItem = Record<string, jest.Mock> | { type: string };
 type MockMenu = { items: MockMenuItem[] };
 
@@ -94,7 +84,7 @@ function findTopLevelMenuItem(title: string): Record<string, jest.Mock> | undefi
 	);
 }
 
-describe("U2: Skip this instance records the occurrence date", () => {
+describe("Skip this instance records the occurrence date", () => {
 	beforeEach(() => {
 		jest.useFakeTimers();
 		// Freeze at midday UTC so "today" resolves deterministically regardless of

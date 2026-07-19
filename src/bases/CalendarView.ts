@@ -2755,11 +2755,6 @@ export class CalendarView extends BasesViewBase {
 					task: taskInfo,
 					plugin: this.plugin,
 					targetDate: targetDate,
-					// Calendar addresses a concrete occurrence: carry the clicked
-					// date as the occurrence signal for recurring tasks so skip and
-					// completion resolution record against it rather than falling
-					// back to the anchor-aware default. Omitted for non-recurring
-					// tasks, which have no occurrence concept.
 					occurrenceDate: taskInfo.recurrence ? targetDate : undefined,
 					promoteOccurrenceControls: Boolean(
 						taskInfo.recurrence ||
