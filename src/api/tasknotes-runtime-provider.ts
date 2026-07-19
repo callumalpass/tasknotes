@@ -1,11 +1,21 @@
+import type { EventRef } from "obsidian";
 import type {
 	MdbaseRuntimeContract,
 	MdbaseRuntimeDispatchContext,
 	MdbaseRuntimeDisposable,
+	MdbaseRuntimeEventEnvelope,
 	MdbaseRuntimeEventHandler,
 	MdbaseRuntimeProvider,
 } from "@callumalpass/mdbase-runtime";
-import type { TaskNotesRuntimeApiV1 } from "./runtime-api";
+import {
+	TASKNOTES_RUNTIME_EVENT_DEFINITIONS,
+	type TaskNotesRuntimeApiV1,
+	type TaskNotesRuntimeEventName,
+	type TaskNotesRuntimeEventPayload,
+} from "./runtime-api";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+const tasknotesRuntimeProviderLogger = createTaskNotesLogger({ tag: "API/MdbaseRuntimeProvider" });
 
 const TASK_PATCH_ACTION = "tasknotes.task.patch";
 const ZONE_ACTIONS = [
@@ -28,10 +38,27 @@ const ZONE_ACTION_INPUT_SCHEMA = {
 	properties: { path: { type: "string", minLength: 1 } },
 } as const;
 
+const TASKNOTES_RUNTIME_EVENT_NAMES = new Set<string>(
+	TASKNOTES_RUNTIME_EVENT_DEFINITIONS.map(({ name }) => name)
+);
+
+const TASKNOTES_EVENT_PAYLOAD_SCHEMA = {
+	type: "object",
+	required: ["event", "timestamp", "changes", "rawEvent"],
+	additionalProperties: true,
+	properties: {
+		event: { type: "string" },
+		timestamp: { type: "string", format: "date-time" },
+		changes: { type: "object" },
+		rawEvent: { type: "string" },
+	},
+} as const;
+
 export function createTaskNotesRuntimeProvider(
 	api: TaskNotesRuntimeApiV1,
 	providerVersion: string
 ): MdbaseRuntimeProvider {
+	const subscriptions = new Set<EventRef>();
 	const contracts: MdbaseRuntimeContract[] = [
 		{
 			type: "capability",
@@ -107,6 +134,24 @@ export function createTaskNotesRuntimeProvider(
 			},
 			effects: [effect],
 		})),
+		...TASKNOTES_RUNTIME_EVENT_DEFINITIONS.map(({ name, label, description }): MdbaseRuntimeContract => ({
+			type: "event",
+			id: name,
+			version: 1,
+			name: label,
+			description,
+			provider: "tasknotes",
+			schemas: {
+				dialect: "json-schema-2020-12",
+				payload: {
+					...TASKNOTES_EVENT_PAYLOAD_SCHEMA,
+					properties: {
+						...TASKNOTES_EVENT_PAYLOAD_SCHEMA.properties,
+						event: { const: name },
+					},
+				},
+			},
+		})),
 	];
 
 	return {
@@ -119,13 +164,35 @@ export function createTaskNotesRuntimeProvider(
 			contracts: {
 				actions: [TASK_PATCH_ACTION, ...ZONE_ACTIONS.map(({ id }) => id)],
 				capabilities: ["task.read", "task.patch", "time.write", "pomodoro.write", "recurring.write"],
+				events: TASKNOTES_RUNTIME_EVENT_DEFINITIONS.map(({ name }) => name),
 			},
 		}),
 		contracts: () => contracts,
 		readiness: () => ({ valid: true, status: "ready", diagnostics: [] }),
-		subscribe: (_eventId: string, _handler: MdbaseRuntimeEventHandler): MdbaseRuntimeDisposable => ({
-			dispose: () => undefined,
-		}),
+		subscribe: (eventId: string, handler: MdbaseRuntimeEventHandler): MdbaseRuntimeDisposable => {
+			if (!isTaskNotesRuntimeEventName(eventId)) {
+				throw new Error(`Unsupported TaskNotes runtime event: ${eventId}`);
+			}
+			let active = true;
+			const ref = api.events.on(eventId, (payload) => {
+				try {
+					void Promise.resolve(handler(runtimeEventEnvelope(payload))).catch((error: unknown) => {
+						logRuntimeEventHandlerError(eventId, error);
+					});
+				} catch (error) {
+					logRuntimeEventHandlerError(eventId, error);
+				}
+			});
+			subscriptions.add(ref);
+			return {
+				dispose: () => {
+					if (!active) return;
+					active = false;
+					subscriptions.delete(ref);
+					api.events.off(ref);
+				},
+			};
+		},
 		dispatch: async (actionId: string, input: unknown, context: MdbaseRuntimeDispatchContext) => {
 			if (!isRecord(input)) {
 				throw new Error(`Unsupported TaskNotes runtime action: ${actionId}`);
@@ -163,8 +230,62 @@ export function createTaskNotesRuntimeProvider(
 					throw new Error(`Unsupported TaskNotes runtime action: ${actionId}`);
 			}
 		},
-		dispose: () => undefined,
+		dispose: () => {
+			for (const ref of subscriptions) api.events.off(ref);
+			subscriptions.clear();
+		},
 	};
+}
+
+function logRuntimeEventHandlerError(eventId: string, error: unknown): void {
+	tasknotesRuntimeProviderLogger.error("Runtime event handler failed.", {
+		category: "internal",
+		operation: "runtime-event-handler",
+		details: { eventId },
+		error,
+	});
+}
+
+function runtimeEventEnvelope(payload: TaskNotesRuntimeEventPayload): MdbaseRuntimeEventEnvelope {
+	const correlationId = isRuntimeIdentifier(payload.correlationId) ? payload.correlationId : undefined;
+	const envelope: MdbaseRuntimeEventEnvelope = {
+		type: payload.event,
+		contract_version: 1,
+		id: runtimeEventId(),
+		occurred_at: payload.timestamp,
+		source: {
+			runtime: "obsidian",
+			provider: "tasknotes",
+		},
+		payload: Object.fromEntries(
+			Object.entries(payload).filter(([, value]) => value !== undefined)
+		),
+	};
+	return correlationId
+		? { ...envelope, trace: { correlation_id: correlationId } }
+		: envelope;
+}
+
+function runtimeEventId(): string {
+	if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+		return `tasknotes.event:${crypto.randomUUID()}`;
+	}
+	return `tasknotes.event:${Date.now().toString(36)}-${nextEventSequence().toString(36)}`;
+}
+
+let runtimeEventSequence = 0;
+
+function nextEventSequence(): number {
+	runtimeEventSequence += 1;
+	return runtimeEventSequence;
+}
+
+function isTaskNotesRuntimeEventName(value: string): value is TaskNotesRuntimeEventName {
+	return TASKNOTES_RUNTIME_EVENT_NAMES.has(value);
+}
+
+function isRuntimeIdentifier(value: unknown): value is string {
+	return typeof value === "string" && /^[A-Za-z][A-Za-z0-9._:-]*$/u.test(value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

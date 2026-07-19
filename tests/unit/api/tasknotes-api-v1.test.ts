@@ -1,4 +1,5 @@
 import { Menu, TFile } from "obsidian";
+import { InMemoryRuntimeHost } from "@callumalpass/mdbase-runtime";
 import {
 	TaskNotesAPI,
 	type CompleteTaskOptions,
@@ -528,6 +529,29 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 }
 
 describe("TaskNotesApiV1", () => {
+	it("registers with and unregisters from the real mdbase runtime host", async () => {
+		const { plugin } = createPluginContext();
+		const runtime = new InMemoryRuntimeHost();
+		const app = plugin.app as typeof plugin.app & {
+			plugins?: { getPlugin(id: string): unknown };
+		};
+		app.plugins = {
+			getPlugin: jest.fn((id: string) =>
+				id === "mdbase-obsidian" ? { api: { apiVersion: 1, runtime } } : null
+			),
+		};
+
+		const api = new TaskNotesAPI(plugin);
+		for (let attempt = 0; attempt < 10 && runtime.providers().length === 0; attempt += 1) {
+			await Promise.resolve();
+		}
+
+		expect(runtime.providers().map(({ descriptor }) => descriptor.id)).toEqual(["tasknotes"]);
+		await api.dispose();
+		expect(runtime.providers()).toEqual([]);
+		await runtime.dispose();
+	});
+
 	it("registers its provider with the mdbase Obsidian runtime and unregisters on dispose", async () => {
 		const { plugin } = createPluginContext();
 		const unregister = jest.fn(async () => undefined);
