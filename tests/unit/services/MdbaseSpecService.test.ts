@@ -1100,6 +1100,37 @@ describe("MdbaseSpecService", () => {
 			expect(parseFrontmatter(typeWrite?.[1] as string).kind).toBe("mdbase.type");
 		});
 
+		it("should preserve v0.2 value compatibility after a metadata migration", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockResolvedValue(true);
+			plugin.app.vault.adapter.read.mockResolvedValue(
+				YAML.stringify({
+					spec_version: "0.3.0",
+					settings: { types_folder: "_types" },
+					"x-legacy-v0.2": { settings: { write_defaults: true } },
+				})
+			);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			const typeWrite = plugin.app.vault.adapter.write.mock.calls.find(
+				([path]: [string]) => path === "_types/task.md"
+			);
+			const frontmatter = parseFrontmatter(typeWrite?.[1] as string);
+			const schema = asObject(asObject(frontmatter.schema).value);
+			const properties = asObject(schema.properties);
+			expect(asObject(properties.title).type).toEqual(["string", "number", "boolean"]);
+			expect(asObject(properties.priority).anyOf).toEqual(
+				expect.arrayContaining([expect.objectContaining({ type: "null" })])
+			);
+			expect(asObject(properties.dateCreated).pattern).toContain("[+-]");
+			expect(asObject(frontmatter["x-legacy-v0.2"]).coercion_compatible_schema).toBe(true);
+			expect(
+				asObject(asObject(frontmatter["x-tasknotes"]).generator).legacy_compatibility
+			).toBe(true);
+		});
+
 		it("should not touch generated files for an unsupported collection version", async () => {
 			const plugin = createMockPlugin();
 			plugin.app.vault.adapter.exists.mockResolvedValue(true);

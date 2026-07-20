@@ -18,6 +18,11 @@ type MdbaseYamlConfig = {
 	settings?: {
 		types_folder?: unknown;
 	};
+	"x-legacy-v0.2"?: unknown;
+};
+
+type TypeGenerationOptions = {
+	legacyCompatibility?: boolean;
 };
 
 type ExistingCollection = {
@@ -83,7 +88,10 @@ export class MdbaseSpecService {
 
 			await this.ensureFolderPath(typesFolder);
 
-			const taskTypeDef = this.buildTaskTypeDef(specVersion);
+			const taskTypeDef = this.buildTaskTypeDef(specVersion, {
+				legacyCompatibility:
+					specFamily === "v0.3" && isRecord(existingCollection.config?.["x-legacy-v0.2"]),
+			});
 			await this.writeFile(taskTypePath, taskTypeDef);
 
 			// Only create mdbase.yaml if it doesn't already exist so that
@@ -212,13 +220,16 @@ export class MdbaseSpecService {
 	/**
 	 * Build the _types/task.md content for a supported collection version.
 	 */
-	buildTaskTypeDef(specVersion = MDBASE_V03_SPEC_VERSION): string {
+	buildTaskTypeDef(
+		specVersion = MDBASE_V03_SPEC_VERSION,
+		options: TypeGenerationOptions = {}
+	): string {
 		const family = getSpecFamily(specVersion);
 		if (family === "v0.2") {
 			return this.buildTaskTypeDefV02();
 		}
 		if (family === "v0.3") {
-			return this.buildTaskTypeDefV03();
+			return this.buildTaskTypeDefV03(options.legacyCompatibility === true);
 		}
 		throw new Error(`Unsupported mdbase spec version: ${specVersion}`);
 	}
@@ -463,7 +474,7 @@ export class MdbaseSpecService {
 	 * model as the legacy generator. The YAML round trip keeps the legacy path
 	 * stable while the two formats coexist.
 	 */
-	private buildTaskTypeDefV03(): string {
+	private buildTaskTypeDefV03(legacyCompatibility: boolean): string {
 		const legacy = parseGeneratedFrontmatter(this.buildTaskTypeDefV02());
 		const legacyFields = isRecord(legacy.fields) ? legacy.fields : {};
 		const properties: Record<string, unknown> = {};
@@ -486,7 +497,9 @@ export class MdbaseSpecService {
 				value,
 				role,
 				links,
-				omittedFieldPaths
+				omittedFieldPaths,
+				legacyCompatibility,
+				value.required !== true
 			);
 
 			if (value.required === true) {
@@ -557,6 +570,13 @@ export class MdbaseSpecService {
 				omitted_collection_paths: [...omittedFieldPaths].sort(),
 			};
 		}
+		if (legacyCompatibility) {
+			const generator = isRecord(tasknotesExtension.generator)
+				? tasknotesExtension.generator
+				: {};
+			generator.legacy_compatibility = true;
+			tasknotesExtension.generator = generator;
+		}
 
 		const schema: Record<string, unknown> = {
 			$schema: "https://json-schema.org/draft/2020-12/schema",
@@ -581,6 +601,9 @@ export class MdbaseSpecService {
 			collection,
 			lifecycle,
 			"x-tasknotes": tasknotesExtension,
+			...(legacyCompatibility
+				? { "x-legacy-v0.2": { coercion_compatible_schema: true } }
+				: {}),
 		};
 
 		const renderedFrontmatter = YAML.stringify(frontmatter, { lineWidth: 0 }).trimEnd();
@@ -606,32 +629,71 @@ export class MdbaseSpecService {
 		definition: Record<string, unknown>,
 		rootRole: string | undefined,
 		links: Record<string, unknown>,
-		omittedFieldPaths: Set<string>
+		omittedFieldPaths: Set<string>,
+		legacyCompatibility: boolean,
+		allowNull: boolean
 	): Record<string, unknown> {
 		const fieldType = definition.type;
 		let schema: Record<string, unknown>;
 
-		if (rootRole === "reminders" && fieldType === "list") {
+		if (!legacyCompatibility && rootRole === "reminders" && fieldType === "list") {
 			schema = buildReminderSchema();
 		} else {
 			switch (fieldType) {
 				case "string":
-					schema = { type: "string" };
+					schema = legacyCompatibility
+						? { type: ["string", "number", "boolean"] }
+						: { type: "string" };
 					break;
 				case "integer":
-					schema = { type: "integer" };
+					schema = legacyCompatibility
+						? {
+								anyOf: [
+									{ type: "integer" },
+									{ type: "number", multipleOf: 1 },
+									{
+										type: "string",
+										pattern: "^-?(?:0|[1-9][0-9]*)(?:\\.0+)?$",
+									},
+								],
+							}
+						: { type: "integer" };
 					break;
 				case "number":
-					schema = { type: "number" };
+					schema = legacyCompatibility
+						? {
+								anyOf: [
+									{ type: "number" },
+									{
+										type: "string",
+										pattern:
+											"^-?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+									},
+								],
+							}
+						: { type: "number" };
 					break;
 				case "boolean":
-					schema = { type: "boolean" };
+					schema = legacyCompatibility
+						? {
+								anyOf: [
+									{ type: "boolean" },
+									{ enum: ["true", "false", "yes", "no", "on", "off"] },
+								],
+							}
+						: { type: "boolean" };
 					break;
 				case "date":
 					schema = { type: "string", format: "date" };
 					break;
 				case "datetime":
-					schema = { type: "string", format: "date-time" };
+					schema = legacyCompatibility
+						? {
+								type: "string",
+								pattern:
+									"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})?$",
+							}
+						: { type: "string", format: "date-time" };
 					break;
 				case "enum": {
 					const values = Array.isArray(definition.values)
@@ -664,7 +726,9 @@ export class MdbaseSpecService {
 							itemDefinition,
 							rootRole,
 							links,
-							omittedFieldPaths
+							omittedFieldPaths,
+							legacyCompatibility,
+							legacyCompatibility
 						),
 					};
 					break;
@@ -682,7 +746,9 @@ export class MdbaseSpecService {
 							childValue,
 							rootRole,
 							links,
-							omittedFieldPaths
+							omittedFieldPaths,
+							legacyCompatibility,
+							legacyCompatibility && childValue.required !== true
 						);
 						if (childValue.required === true) {
 							childRequired.push(childName);
@@ -690,7 +756,8 @@ export class MdbaseSpecService {
 					}
 					schema = {
 						type: "object",
-						additionalProperties: Object.keys(childProperties).length === 0,
+						additionalProperties:
+							legacyCompatibility || Object.keys(childProperties).length === 0,
 						properties: childProperties,
 					};
 					if (childRequired.length > 0) {
@@ -717,6 +784,9 @@ export class MdbaseSpecService {
 		}
 		if (typeof definition.description === "string") {
 			schema.description = definition.description;
+		}
+		if (legacyCompatibility && allowNull) {
+			schema = { anyOf: [schema, { type: "null" }] };
 		}
 
 		return schema;
