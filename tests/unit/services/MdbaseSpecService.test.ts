@@ -93,6 +93,18 @@ function createMockPlugin(overrides: Record<string, any> = {}): any {
 		nlpTriggers: {
 			triggers: DEFAULT_NLP_TRIGGERS.triggers.map((trigger) => ({ ...trigger })),
 		},
+		moveArchivedTasks: false,
+		archiveFolder: "TaskNotes/Archive",
+		maintainDueDateOffsetInRecurring: false,
+		resetCheckboxesOnRecurrence: false,
+		useFrontmatterMarkdownLinks: false,
+		autoStopTimeTrackingOnComplete: true,
+		taskCreationDefaults: {
+			bodyTemplate: "",
+			useBodyTemplate: false,
+			occurrenceBodyTemplate: "",
+			useOccurrenceBodyTemplate: false,
+		},
 		userFields: [],
 		...overrides,
 	};
@@ -119,9 +131,10 @@ describe("MdbaseSpecService", () => {
 		it("should create a v0.3 collection", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const yaml = service.buildMdbaseYaml();
+			const config = asObject(YAML.parse(yaml));
 
-			expect(yaml).toContain('spec_version: "0.3.0"');
-			expect(validateCanonicalSchema("config", YAML.parse(yaml))).toEqual({
+			expect(config.spec_version).toBe("0.3.0");
+			expect(validateCanonicalSchema("config", config)).toEqual({
 				valid: true,
 				errors: [],
 			});
@@ -129,44 +142,52 @@ describe("MdbaseSpecService", () => {
 
 		it("should include name and description", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const yaml = service.buildMdbaseYaml();
+			const config = asObject(YAML.parse(service.buildMdbaseYaml()));
 
-			expect(yaml).toContain('name: "TaskNotes"');
-			expect(yaml).toContain(
-				'description: "Task collection managed by TaskNotes for Obsidian"'
+			expect(config).toMatchObject(
+				{
+					name: "TaskNotes",
+					description: "Task collection managed by TaskNotes for Obsidian",
+				}
 			);
 		});
 
 		it("should set types_folder to _types", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const yaml = service.buildMdbaseYaml();
+			const config = asObject(YAML.parse(service.buildMdbaseYaml()));
 
-			expect(yaml).toContain('types_folder: "_types"');
+			expect(asObject(config.settings).types_folder).toBe("_types");
 		});
 
 		it("should use warning validation and Markdown records", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const yaml = service.buildMdbaseYaml();
+			const settings = asObject(
+				asObject(YAML.parse(service.buildMdbaseYaml())).settings
+			);
 
-			expect(yaml).toContain("record_extensions: [md]");
-			expect(yaml).toContain("validation: warn");
-			expect(yaml).toContain("explicit_type_keys: [type, types]");
-			expect(yaml).toContain("id_field: id");
+			expect(settings.record_extensions).toEqual(["md"]);
+			expect(settings.validation).toBe("warn");
+			expect(settings.explicit_type_keys).toEqual(["type", "types"]);
+			expect(settings.id_field).toBe("id");
 		});
 
 		it("should exclude the _types folder", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const yaml = service.buildMdbaseYaml();
+			const settings = asObject(
+				asObject(YAML.parse(service.buildMdbaseYaml())).settings
+			);
 
-			expect(yaml).toContain('- "_types"');
+			expect(settings.exclude).toEqual(["_types"]);
 		});
 
 		it("should include a custom types folder when provided", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const yaml = service.buildMdbaseYaml("System/_types");
+			const settings = asObject(
+				asObject(YAML.parse(service.buildMdbaseYaml("System/_types"))).settings
+			);
 
-			expect(yaml).toContain('types_folder: "System/_types"');
-			expect(yaml).toContain('- "System/_types"');
+			expect(settings.types_folder).toBe("System/_types");
+			expect(settings.exclude).toEqual(["System/_types"]);
 		});
 	});
 
@@ -808,7 +829,7 @@ describe("MdbaseSpecService", () => {
 			expect(schemaWrapper.dialect).toBe("json-schema-2020-12");
 			expect(schema.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
 			expect(schema.additionalProperties).toBe(true);
-			expect(schema.required).toEqual(["title", "status", "dateCreated"]);
+			expect(schema.required).toEqual(["status", "dateCreated"]);
 			expect(asObject(properties.due)).toMatchObject({ type: "string", format: "date" });
 			expect(asObject(properties.dateModified)).toMatchObject({
 				type: "string",
@@ -818,6 +839,30 @@ describe("MdbaseSpecService", () => {
 				valid: true,
 				errors: [],
 			});
+		});
+
+		it("requires the mapped title only when frontmatter owns the title", () => {
+			const filenameTitle = parseFrontmatter(
+				new MdbaseSpecService(
+					createMockPlugin({
+						storeTitleInFilename: true,
+						fieldMapping: { ...DEFAULT_FIELD_MAPPING, title: "summary" },
+					})
+				).buildTaskTypeDef()
+			);
+			const frontmatterTitle = parseFrontmatter(
+				new MdbaseSpecService(
+					createMockPlugin({
+						storeTitleInFilename: false,
+						fieldMapping: { ...DEFAULT_FIELD_MAPPING, title: "summary" },
+					})
+				).buildTaskTypeDef()
+			);
+
+			expect(asObject(asObject(filenameTitle.schema).value).required).not.toContain(
+				"summary"
+			);
+			expect(asObject(asObject(frontmatterTitle.schema).value).required).toContain("summary");
 		});
 
 		it("moves defaults, links, lifecycle behavior, and roles to v0.3 metadata", () => {
@@ -843,6 +888,7 @@ describe("MdbaseSpecService", () => {
 				"blockedBy[].uid": { target_type: "task", validate_exists: false },
 			});
 			expect(asObject(onCreate.set)).toEqual({
+				id: { uuid: true },
 				dateCreated: { now: true },
 				dateModified: { now: true },
 			});
@@ -904,6 +950,194 @@ describe("MdbaseSpecService", () => {
 				title: "summary",
 				status: "task_status",
 				projects: "related_projects",
+			});
+		});
+
+		it("embeds a portable snapshot of TaskNotes domain settings", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					fieldMapping: {
+						...DEFAULT_FIELD_MAPPING,
+						title: "summary",
+						status: "state",
+						priority: "importance",
+						archiveTag: "filed-away",
+					},
+					storeTitleInFilename: false,
+					taskFilenameFormat: "custom",
+					customFilenameTemplate: "{{priority}}-{{title}}",
+					customStatuses: [
+						{
+							id: "todo",
+							value: "todo",
+							label: "To do",
+							color: "#888888",
+							icon: "circle",
+							isCompleted: false,
+							isSkipped: false,
+							excludeFromCycle: false,
+							nextStatus: "done",
+							order: 1,
+							autoArchive: false,
+							autoArchiveDelay: 5,
+						},
+						{
+							id: "done",
+							value: "done",
+							label: "Done",
+							color: "#00aa00",
+							isCompleted: true,
+							isSkipped: false,
+							excludeFromCycle: false,
+							order: 2,
+							autoArchive: true,
+							autoArchiveDelay: 15,
+						},
+						{
+							id: "cancelled",
+							value: "cancelled",
+							label: "Cancelled",
+							color: "#aa0000",
+							isCompleted: false,
+							isSkipped: true,
+							excludeFromCycle: true,
+							order: 3,
+							autoArchive: false,
+							autoArchiveDelay: 5,
+						},
+					],
+					defaultTaskStatus: "todo",
+					customPriorities: [
+						{
+							id: "routine",
+							value: "routine",
+							label: "Routine",
+							color: "#777777",
+							weight: 1,
+						},
+						{
+							id: "critical",
+							value: "critical",
+							label: "Critical",
+							color: "#ff0000",
+							icon: "flame",
+							weight: 5,
+						},
+					],
+					defaultTaskPriority: "routine",
+					moveArchivedTasks: true,
+					archiveFolder: "Archive/Tasks",
+					maintainDueDateOffsetInRecurring: true,
+					resetCheckboxesOnRecurrence: true,
+					useFrontmatterMarkdownLinks: true,
+					autoStopTimeTrackingOnComplete: false,
+					taskCreationDefaults: {
+						bodyTemplate: "Templates/Task.md",
+						useBodyTemplate: true,
+						occurrenceBodyTemplate: "Templates/Occurrence.md",
+						useOccurrenceBodyTemplate: true,
+					},
+				})
+			);
+			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
+			const collection = asObject(frontmatter.collection);
+			const extension = asObject(frontmatter["x-tasknotes"]);
+
+			expect(extension).toMatchObject({
+				contract: "tasknotes.task",
+				version: 1,
+				spec_version: "0.2.0",
+				profiles: [
+					"core-lite",
+					"recurrence",
+					"templating",
+					"materialized-occurrences",
+					"extended",
+				],
+				capabilities: [
+					"dependencies",
+					"reminders",
+					"links",
+					"time-tracking",
+					"materialized-occurrences",
+					"archive",
+					"templating",
+				],
+				title: {
+					storage: "frontmatter",
+					filename_format: "custom",
+					custom_filename_template: "{{priority}}-{{title}}",
+				},
+				status: {
+					default: "todo",
+					completed_values: ["done"],
+					skipped_values: ["cancelled"],
+					default_skipped: "cancelled",
+				},
+				priority: { default: "routine" },
+				recurrence: {
+					syntax: "tasknotes",
+					maintain_due_date_offset: true,
+					reset_body_checkboxes: true,
+				},
+				occurrences: {
+					identity_roles: ["recurrenceParent", "occurrenceDate"],
+					default_materialization: "manual",
+					default_next_trigger: "completion",
+				},
+				links: {
+					accepted_formats: ["wikilink", "markdown"],
+					write_format: "markdown",
+				},
+				archive: {
+					tags_field: "tags",
+					archived_tag: "filed-away",
+					move_on_archive: true,
+					folder: "Archive/Tasks",
+				},
+				time_tracking: { auto_stop_on_complete: false },
+				templating: {
+					enabled: true,
+					template_path: "Templates/Task.md",
+					occurrence_enabled: true,
+					occurrence_template_path: "Templates/Occurrence.md",
+				},
+			});
+			expect(asObject(extension.field_roles)).toMatchObject({
+				title: "summary",
+				status: "state",
+				priority: "importance",
+			});
+			expect(asObject(collection.read_defaults)).toMatchObject({
+				state: "todo",
+				importance: "routine",
+			});
+
+			const statusDefinitions = asObject(extension.status).definitions as unknown[];
+			expect(statusDefinitions).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						value: "done",
+						is_completed: true,
+						auto_archive: true,
+						auto_archive_delay_minutes: 15,
+					}),
+					expect.objectContaining({
+						value: "cancelled",
+						is_skipped: true,
+						exclude_from_cycle: true,
+					}),
+				])
+			);
+			const priorityDefinitions = asObject(extension.priority).definitions as unknown[];
+			expect(priorityDefinitions).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ value: "critical", weight: 5, icon: "flame" }),
+				])
+			);
+			expect(validateCanonicalSchema("typeFile", frontmatter)).toEqual({
+				valid: true,
+				errors: [],
 			});
 		});
 
@@ -1064,7 +1298,7 @@ describe("MdbaseSpecService", () => {
 				([path]: [string]) => path === "mdbase.yaml"
 			);
 			expect(parseFrontmatter(typeCall?.[1] as string).kind).toBe("mdbase.type");
-			expect(configCall?.[1]).toContain('spec_version: "0.3.0"');
+			expect(asObject(YAML.parse(configCall?.[1] as string)).spec_version).toBe("0.3.0");
 		});
 
 		it("should retain the v0.2 type grammar for an existing v0.2 collection", async () => {

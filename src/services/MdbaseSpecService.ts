@@ -1,5 +1,9 @@
 import { normalizePath } from "obsidian";
 import YAML from "yaml";
+import {
+	buildTaskNotesMdbaseResources,
+	type TaskNotesMdbaseResources,
+} from "@tasknotes/model/mdbase";
 
 import TaskNotesPlugin from "../main";
 import { FieldMapping } from "../types";
@@ -200,21 +204,7 @@ export class MdbaseSpecService {
 	buildMdbaseYaml(typesFolder = DEFAULT_TYPES_FOLDER): string {
 		const normalizedTypesFolder =
 			this.normalizeTypesFolder(typesFolder) ?? DEFAULT_TYPES_FOLDER;
-
-		return [
-			`spec_version: "${MDBASE_V03_SPEC_VERSION}"`,
-			'name: "TaskNotes"',
-			'description: "Task collection managed by TaskNotes for Obsidian"',
-			"settings:",
-			`  types_folder: ${yamlQuote(normalizedTypesFolder)}`,
-			"  record_extensions: [md]",
-			"  validation: warn",
-			"  explicit_type_keys: [type, types]",
-			"  id_field: id",
-			"  exclude:",
-			`    - ${yamlQuote(normalizedTypesFolder)}`,
-			"",
-		].join("\n");
+		return this.buildCanonicalMdbaseResources(normalizedTypesFolder, false).configDocument;
 	}
 
 	/**
@@ -470,326 +460,90 @@ export class MdbaseSpecService {
 	}
 
 	/**
-	 * Build the v0.3 JSON Schema wrapper from the same settings-backed field
-	 * model as the legacy generator. The YAML round trip keeps the legacy path
-	 * stable while the two formats coexist.
+	 * Delegate the v0.3 contract projection to @tasknotes/model. The plugin owns
+	 * vault I/O and its legacy v0.2 writer; the package owns the portable v0.3
+	 * config, schema, lifecycle, and TaskNotes extension.
 	 */
 	private buildTaskTypeDefV03(legacyCompatibility: boolean): string {
-		const legacy = parseGeneratedFrontmatter(this.buildTaskTypeDefV02());
-		const legacyFields = isRecord(legacy.fields) ? legacy.fields : {};
-		const properties: Record<string, unknown> = {};
-		const required: string[] = [];
-		const readDefaults: Record<string, unknown> = {};
-		const links: Record<string, unknown> = {};
-		const fieldRoles: Record<string, string> = {};
-		const lifecycle: Record<string, unknown> = {};
-		const omittedFieldPaths = new Set<string>();
-		let completedValues: unknown[] = [];
-
-		for (const [fieldName, value] of Object.entries(legacyFields)) {
-			if (!isRecord(value)) {
-				continue;
-			}
-
-			const role = typeof value.tn_role === "string" ? value.tn_role : undefined;
-			properties[fieldName] = this.convertV02Field(
-				fieldName,
-				value,
-				role,
-				links,
-				omittedFieldPaths,
-				legacyCompatibility,
-				value.required !== true
-			);
-
-			if (value.required === true) {
-				required.push(fieldName);
-			}
-			if (Object.prototype.hasOwnProperty.call(value, "default")) {
-				const defaultValue = cloneYamlValue(value.default);
-				(properties[fieldName] as Record<string, unknown>).default = defaultValue;
-				readDefaults[fieldName] = defaultValue;
-			}
-			if (role) {
-				fieldRoles[role] = fieldName;
-			}
-			if (Array.isArray(value.tn_completed_values)) {
-				completedValues = cloneYamlValue(value.tn_completed_values) as unknown[];
-			}
-
-			if (value.generated === "now") {
-				addLifecycleValue(lifecycle, "on_create", fieldName, omittedFieldPaths);
-			} else if (value.generated === "now_on_write") {
-				addLifecycleValue(lifecycle, "on_create", fieldName, omittedFieldPaths);
-				addLifecycleValue(lifecycle, "on_update", fieldName, omittedFieldPaths);
-			}
-		}
-
-		const titleField = fieldRoles.title ?? this.plugin.fieldMapper.toUserField("title");
-		const collection: Record<string, unknown> = {
-			read_defaults: readDefaults,
-			links,
-			path: {
-				runtime: "tasknotes",
-				template: this.getFilenameTemplate(),
-				folder: normalizeRuntimeFolder(this.plugin.settings.tasksFolder || ""),
-				generated_by: "tasknotes.filename.create",
-			},
-		};
-
-		if (isMdbaseFieldPath(titleField)) {
-			collection.display = { name_field: titleField };
-		} else {
-			omittedFieldPaths.add(titleField);
-		}
-
-		const statusField = fieldRoles.status;
-		const priorityField = fieldRoles.priority;
-		const tasknotesExtension: Record<string, unknown> = {
-			contract: "tasknotes.task",
-			version: 1,
-			field_roles: fieldRoles,
-			status: {
-				completed_values: completedValues,
-				...(statusField && Object.prototype.hasOwnProperty.call(readDefaults, statusField)
-					? { default: readDefaults[statusField] }
-					: {}),
-			},
-			priority:
-				priorityField && Object.prototype.hasOwnProperty.call(readDefaults, priorityField)
-					? { default: readDefaults[priorityField] }
-					: {},
-			archive: {
-				tags_field: fieldRoles.tags ?? "tags",
-				archived_tag: this.plugin.fieldMapper.toUserField("archiveTag"),
-			},
-		};
-
-		if (omittedFieldPaths.size > 0) {
-			tasknotesExtension.generator = {
-				omitted_collection_paths: [...omittedFieldPaths].sort(),
-			};
-		}
-		if (legacyCompatibility) {
-			const generator = isRecord(tasknotesExtension.generator)
-				? tasknotesExtension.generator
-				: {};
-			generator.legacy_compatibility = true;
-			tasknotesExtension.generator = generator;
-		}
-
-		const schema: Record<string, unknown> = {
-			$schema: "https://json-schema.org/draft/2020-12/schema",
-			type: "object",
-			additionalProperties: true,
-			properties,
-		};
-		if (required.length > 0) {
-			schema.required = required;
-		}
-
-		const frontmatter: Record<string, unknown> = {
-			kind: "mdbase.type",
-			name: "task",
-			version: 1,
-			description: "A task managed by the TaskNotes plugin for Obsidian.",
-			match: legacy.match,
-			schema: {
-				dialect: "json-schema-2020-12",
-				value: schema,
-			},
-			collection,
-			lifecycle,
-			"x-tasknotes": tasknotesExtension,
-			...(legacyCompatibility
-				? { "x-legacy-v0.2": { coercion_compatible_schema: true } }
-				: {}),
-		};
-
-		const renderedFrontmatter = YAML.stringify(frontmatter, { lineWidth: 0 }).trimEnd();
-		return [
-			"---",
-			renderedFrontmatter,
-			"---",
-			"",
-			"# Task",
-			"",
-			"This type definition is generated from TaskNotes settings for mdbase v0.3.",
-			"Its JSON Schema describes persisted task frontmatter; collection and lifecycle",
-			"metadata describe generic mdbase behavior; `x-tasknotes` records the optional",
-			"TaskNotes task contract.",
-			"",
-			"This file is automatically generated and should not be edited manually.",
-			"",
-		].join("\n");
+		return this.buildCanonicalMdbaseResources(
+			DEFAULT_TYPES_FOLDER,
+			legacyCompatibility
+		).typeDocument;
 	}
 
-	private convertV02Field(
-		selector: string,
-		definition: Record<string, unknown>,
-		rootRole: string | undefined,
-		links: Record<string, unknown>,
-		omittedFieldPaths: Set<string>,
-		legacyCompatibility: boolean,
-		allowNull: boolean
-	): Record<string, unknown> {
-		const fieldType = definition.type;
-		let schema: Record<string, unknown>;
+	private buildCanonicalMdbaseResources(
+		typesFolder: string,
+		legacyCompatibility: boolean
+	): TaskNotesMdbaseResources {
+		const settings = this.plugin.settings;
+		const filenameFormat = settings.storeTitleInFilename
+			? "title"
+			: settings.taskFilenameFormat;
+		const templatePath = settings.taskCreationDefaults?.bodyTemplate?.trim() ?? "";
+		const occurrenceTemplatePath =
+			settings.taskCreationDefaults?.occurrenceBodyTemplate?.trim() ?? "";
 
-		if (!legacyCompatibility && rootRole === "reminders" && fieldType === "list") {
-			schema = buildReminderSchema();
-		} else {
-			switch (fieldType) {
-				case "string":
-					schema = legacyCompatibility
-						? { type: ["string", "number", "boolean"] }
-						: { type: "string" };
-					break;
-				case "integer":
-					schema = legacyCompatibility
-						? {
-								anyOf: [
-									{ type: "integer" },
-									{ type: "number", multipleOf: 1 },
-									{
-										type: "string",
-										pattern: "^-?(?:0|[1-9][0-9]*)(?:\\.0+)?$",
-									},
-								],
-							}
-						: { type: "integer" };
-					break;
-				case "number":
-					schema = legacyCompatibility
-						? {
-								anyOf: [
-									{ type: "number" },
-									{
-										type: "string",
-										pattern:
-											"^-?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
-									},
-								],
-							}
-						: { type: "number" };
-					break;
-				case "boolean":
-					schema = legacyCompatibility
-						? {
-								anyOf: [
-									{ type: "boolean" },
-									{ enum: ["true", "false", "yes", "no", "on", "off"] },
-								],
-							}
-						: { type: "boolean" };
-					break;
-				case "date":
-					schema = { type: "string", format: "date" };
-					break;
-				case "datetime":
-					schema = legacyCompatibility
-						? {
-								type: "string",
-								pattern:
-									"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})?$",
-							}
-						: { type: "string", format: "date-time" };
-					break;
-				case "enum": {
-					const values = Array.isArray(definition.values)
-						? cloneYamlValue(definition.values)
-						: [];
-					schema = Array.isArray(values) && values.length > 0 ? { enum: values } : {};
-					break;
-				}
-				case "link":
-					schema = { type: "string" };
-					if (isMdbaseFieldPath(selector)) {
-						links[selector] = {
-							target_type:
-								rootRole === "recurrenceParent" ||
-								(rootRole === "blockedBy" && selector.endsWith(".uid"))
-									? "task"
-									: "any",
-							validate_exists: false,
-						};
-					} else {
-						omittedFieldPaths.add(selector);
-					}
-					break;
-				case "list": {
-					const itemDefinition = isRecord(definition.items) ? definition.items : {};
-					schema = {
-						type: "array",
-						items: this.convertV02Field(
-							`${selector}[]`,
-							itemDefinition,
-							rootRole,
-							links,
-							omittedFieldPaths,
-							legacyCompatibility,
-							legacyCompatibility
-						),
-					};
-					break;
-				}
-				case "object": {
-					const childProperties: Record<string, unknown> = {};
-					const childRequired: string[] = [];
-					const fields = isRecord(definition.fields) ? definition.fields : {};
-					for (const [childName, childValue] of Object.entries(fields)) {
-						if (!isRecord(childValue)) {
-							continue;
-						}
-						childProperties[childName] = this.convertV02Field(
-							`${selector}.${childName}`,
-							childValue,
-							rootRole,
-							links,
-							omittedFieldPaths,
-							legacyCompatibility,
-							legacyCompatibility && childValue.required !== true
-						);
-						if (childValue.required === true) {
-							childRequired.push(childName);
-						}
-					}
-					schema = {
-						type: "object",
-						additionalProperties:
-							legacyCompatibility || Object.keys(childProperties).length === 0,
-						properties: childProperties,
-					};
-					if (childRequired.length > 0) {
-						schema.required = childRequired;
-					}
-					break;
-				}
-				default:
-					schema = {};
-			}
-		}
-
-		if (rootRole === "title" && !selector.includes(".") && !selector.endsWith("[]")) {
-			schema.minLength = 1;
-		}
-		if (typeof definition.min === "number") {
-			if (fieldType === "string") {
-				schema.minLength = definition.min;
-			} else if (fieldType === "list") {
-				schema.minItems = definition.min;
-			} else {
-				schema.minimum = definition.min;
-			}
-		}
-		if (typeof definition.description === "string") {
-			schema.description = definition.description;
-		}
-		if (legacyCompatibility && allowNull) {
-			schema = { anyOf: [schema, { type: "null" }] };
-		}
-
-		return schema;
+		return buildTaskNotesMdbaseResources({
+			typesFolder,
+			tasksFolder: settings.tasksFolder || "",
+			legacyCompatibility,
+			modelConfig: {
+				fieldMapping: { ...settings.fieldMapping },
+				statuses: settings.customStatuses.map((status) => ({ ...status })),
+				priorities: settings.customPriorities.map((priority) => ({ ...priority })),
+				defaults: {
+					status: settings.defaultTaskStatus,
+					priority: settings.defaultTaskPriority,
+					taskTag: settings.taskTag || "task",
+				},
+				taskIdentification: {
+					method: settings.taskIdentificationMethod,
+					tag: settings.taskTag || "task",
+					propertyName: settings.taskPropertyName || "",
+					propertyValue: settings.taskPropertyValue || "",
+					excludedFolders: settings.excludedFolders || "",
+				},
+				storeTitleInFilename: settings.storeTitleInFilename,
+				userFields: (settings.userFields ?? []).map((field) => ({ ...field })),
+				recurrence: {
+					maintainDueDateOffset: settings.maintainDueDateOffsetInRecurring === true,
+					resetCheckboxesOnRecurrence: settings.resetCheckboxesOnRecurrence === true,
+				},
+				occurrences: {
+					defaultMaterialization: "manual",
+					defaultNextTrigger: "completion",
+				},
+				timeTracking: {
+					autoStopOnComplete: settings.autoStopTimeTrackingOnComplete === true,
+					autoStopNotification: false,
+					defaultSessionDescription: "Work session",
+				},
+			},
+			path: { template: this.getFilenameTemplate() },
+			title: {
+				filenameFormat,
+				...(filenameFormat === "custom"
+					? { customFilenameTemplate: settings.customFilenameTemplate }
+					: {}),
+			},
+			links: {
+				writeFormat: settings.useFrontmatterMarkdownLinks ? "markdown" : "wikilink",
+			},
+			archive: {
+				moveOnArchive: settings.moveArchivedTasks === true,
+				...(settings.archiveFolder?.trim() ? { folder: settings.archiveFolder.trim() } : {}),
+			},
+			templating: {
+				enabled:
+					settings.taskCreationDefaults?.useBodyTemplate === true &&
+					templatePath.length > 0,
+				templatePath,
+				occurrenceEnabled:
+					settings.taskCreationDefaults?.useOccurrenceBodyTemplate === true &&
+					occurrenceTemplatePath.length > 0,
+				occurrenceTemplatePath,
+			},
+		});
 	}
 
 	/**
@@ -1012,95 +766,6 @@ function getSpecFamily(specVersion: unknown): SupportedSpecFamily | null {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function parseGeneratedFrontmatter(markdown: string): Record<string, unknown> {
-	const match = markdown.match(/^---\n([\s\S]*?)\n---(?:\n|$)/);
-	if (!match) {
-		throw new Error("Generated TaskNotes type is missing YAML frontmatter");
-	}
-	const parsed = YAML.parse(match[1]) as unknown;
-	if (!isRecord(parsed)) {
-		throw new Error("Generated TaskNotes type frontmatter is not an object");
-	}
-	return parsed;
-}
-
-function cloneYamlValue(value: unknown): unknown {
-	if (Array.isArray(value)) {
-		return value.map(cloneYamlValue);
-	}
-	if (isRecord(value)) {
-		return Object.fromEntries(
-			Object.entries(value).map(([key, child]) => [key, cloneYamlValue(child)])
-		);
-	}
-	return value;
-}
-
-function isMdbaseFieldPath(value: string): boolean {
-	return /^[A-Za-z_][A-Za-z0-9_:-]*(?:\[\])?(?:\.[A-Za-z_][A-Za-z0-9_:-]*(?:\[\])?)*$/.test(
-		value
-	);
-}
-
-function addLifecycleValue(
-	lifecycle: Record<string, unknown>,
-	event: "on_create" | "on_update",
-	fieldName: string,
-	omittedFieldPaths: Set<string>
-): void {
-	if (!isMdbaseFieldPath(fieldName)) {
-		omittedFieldPaths.add(fieldName);
-		return;
-	}
-
-	const action = isRecord(lifecycle[event]) ? lifecycle[event] : {};
-	const set = isRecord(action.set) ? action.set : {};
-	set[fieldName] = { now: true };
-	action.set = set;
-	lifecycle[event] = action;
-}
-
-function normalizeRuntimeFolder(value: string): string {
-	return value
-		.trim()
-		.replace(/\\/g, "/")
-		.replace(/\/{2,}/g, "/")
-		.replace(/^\/+|\/+$/g, "");
-}
-
-function buildReminderSchema(): Record<string, unknown> {
-	return {
-		type: "array",
-		items: {
-			oneOf: [
-				{
-					type: "object",
-					required: ["id", "type", "absoluteTime"],
-					additionalProperties: false,
-					properties: {
-						id: { type: "string" },
-						type: { const: "absolute" },
-						description: { type: "string" },
-						absoluteTime: { type: "string", format: "date-time" },
-					},
-				},
-				{
-					type: "object",
-					required: ["id", "type", "relatedTo", "offset"],
-					additionalProperties: false,
-					properties: {
-						id: { type: "string" },
-						type: { const: "relative" },
-						description: { type: "string" },
-						relatedTo: { enum: ["due", "scheduled"] },
-						offset: { type: "string" },
-					},
-				},
-			],
-		},
-	};
 }
 
 /**
