@@ -31,3 +31,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Changed
+
+- Generated TaskNotes type contracts now include configured natural-language
+  capture triggers, allowing compatible clients to offer the same field
+  suggestions.
