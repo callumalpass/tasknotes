@@ -19,6 +19,8 @@ const DISPATCH_CONTEXT: MdbaseRuntimeDispatchContext = {
 	actor: { id: "test-user", kind: "user" },
 	origin: { workflow: "workflow.test" },
 	run_id: "run.test",
+	invocation_id: "invocation.test",
+	attempt: 1,
 	correlation_id: "correlation.test",
 	executor: "tasknotes-workflows",
 };

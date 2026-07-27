@@ -116,6 +116,8 @@ function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 		priority: "normal",
 		path: "Tasks/write-plan.md",
 		archived: false,
+		dateCreated: "2026-06-01T09:00:00.000Z",
+		dateModified: "2026-06-01T09:00:00.000Z",
 		...overrides,
 	};
 }
