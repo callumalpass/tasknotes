@@ -86,6 +86,7 @@ nav:
                 - Configuration: spec/09-configuration.md
                 - Dependencies and reminders: spec/10-dependencies-and-reminders.md
                 - Links: spec/11-links.md
+                - mdbase v0.3 binding: spec/12-mdbase-v0.3-binding.md
                 - Changelog: spec/CHANGELOG.md
           - Translation workflow: development/translations.md
           - i18n-state-manager: development/i18n-state-manager.md
