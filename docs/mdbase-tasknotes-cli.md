@@ -37,13 +37,19 @@ npm install -g mdbase-tasknotes
 
 ### Using an existing TaskNotes vault
 
-If you already use TaskNotes with mdbase spec generation enabled (Settings → Integrations → Enable mdbase spec), point `mtn` at your vault root:
+If you already use TaskNotes with canonical mdbase configuration enabled
+(Settings → Integrations → Use canonical mdbase configuration), point `mtn` at
+your vault root:
 
 ```bash
 mtn config --set collectionPath=/path/to/your/vault
 ```
 
-The plugin generates `mdbase.yaml` and `_types/task.md` automatically — `mtn` reads these to understand your task schema, including your custom statuses and priorities.
+The plugin creates `mdbase.yaml` and a TaskNotes type when the integration is
+enabled. The type then becomes the portable source of truth: both TaskNotes and
+`mtn` read it for field mappings, custom statuses, priorities, and task
+behavior, while portable settings changes made in TaskNotes are written back
+to it.
 
 ### Creating a standalone collection
 

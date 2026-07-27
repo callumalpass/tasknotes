@@ -93,6 +93,10 @@ export function registerTaskNotesIcon(): void {
 export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<void> {
 	plugin.api = new TaskNotesAPI(plugin);
 
+	const { MdbaseSpecService } = await import("../services/MdbaseSpecService");
+	plugin.mdbaseSpecService = new MdbaseSpecService(plugin);
+	await plugin.mdbaseSpecService.initialize();
+
 	plugin.fieldMapper = new FieldMapper(
 		plugin.settings.fieldMapping,
 		plugin.settings.userFields ?? [],
@@ -117,6 +121,7 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 			showNotice(payload.message, payload.timeout);
 		})
 	);
+	plugin.mdbaseSpecService.flushPendingNotices();
 
 	plugin.dependencyCache = new DependencyCache(
 		plugin.app,
@@ -149,9 +154,6 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 
 	const { BasesFilterConverter } = await import("../services/BasesFilterConverter");
 	plugin.basesFilterConverter = new BasesFilterConverter(plugin);
-
-	const { MdbaseSpecService } = await import("../services/MdbaseSpecService");
-	plugin.mdbaseSpecService = new MdbaseSpecService(plugin);
 
 	plugin.icsSubscriptionService = new ICSSubscriptionService(plugin);
 	plugin.icsNoteService = new ICSNoteService(plugin);

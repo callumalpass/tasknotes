@@ -138,4 +138,24 @@ describe("settings save coalescing", () => {
 		expect(plugin.emitter.trigger).toHaveBeenCalledTimes(1);
 		expect(plugin.emitter.trigger).toHaveBeenCalledWith("settings-changed", plugin.settings);
 	});
+
+	it("persists TaskNotes settings when canonical mdbase synchronization fails", async () => {
+		const saveSettingsDataOnly = jest.fn().mockResolvedValue(undefined);
+		const plugin = createLifecyclePlugin(saveSettingsDataOnly);
+		plugin.mdbaseSpecService.onSettingsChanged.mockRejectedValue(
+			new Error("read-only filesystem")
+		);
+		const service = new SettingsLifecycleService(plugin);
+
+		await service.saveSettings();
+
+		expect(saveSettingsDataOnly).toHaveBeenCalledTimes(1);
+		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
+			"user-notice",
+			expect.objectContaining({
+				message: expect.stringContaining("could not synchronize"),
+			})
+		);
+		expect(plugin.emitter.trigger).toHaveBeenCalledWith("settings-changed", plugin.settings);
+	});
 });

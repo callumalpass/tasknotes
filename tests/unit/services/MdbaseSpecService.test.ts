@@ -5,6 +5,7 @@
  */
 
 import { validateCanonicalSchema } from "@callumalpass/mdbase-runtime";
+import { buildTaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
 import YAML from "yaml";
 
 import { FieldMapper } from "../../../src/services/FieldMapper";
@@ -118,11 +119,14 @@ function createMockPlugin(overrides: Record<string, any> = {}): any {
 					exists: jest.fn().mockResolvedValue(false),
 					read: jest.fn().mockResolvedValue('spec_version: "0.3.0"'),
 					write: jest.fn().mockResolvedValue(undefined),
+					list: jest.fn().mockResolvedValue({ files: [], folders: [] }),
 				},
+				on: jest.fn().mockReturnValue({}),
 				create: jest.fn().mockResolvedValue({}),
 				createFolder: jest.fn().mockResolvedValue(undefined),
 			},
 		},
+		registerEvent: jest.fn(),
 	};
 }
 
@@ -144,12 +148,10 @@ describe("MdbaseSpecService", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const config = asObject(YAML.parse(service.buildMdbaseYaml()));
 
-			expect(config).toMatchObject(
-				{
-					name: "TaskNotes",
-					description: "Task collection managed by TaskNotes for Obsidian",
-				}
-			);
+			expect(config).toMatchObject({
+				name: "TaskNotes",
+				description: "Task collection managed by TaskNotes for Obsidian",
+			});
 		});
 
 		it("should set types_folder to _types", () => {
@@ -161,9 +163,7 @@ describe("MdbaseSpecService", () => {
 
 		it("should use warning validation and Markdown records", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const settings = asObject(
-				asObject(YAML.parse(service.buildMdbaseYaml())).settings
-			);
+			const settings = asObject(asObject(YAML.parse(service.buildMdbaseYaml())).settings);
 
 			expect(settings.record_extensions).toEqual(["md"]);
 			expect(settings.validation).toBe("warn");
@@ -173,9 +173,7 @@ describe("MdbaseSpecService", () => {
 
 		it("should exclude the _types folder", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
-			const settings = asObject(
-				asObject(YAML.parse(service.buildMdbaseYaml())).settings
-			);
+			const settings = asObject(asObject(YAML.parse(service.buildMdbaseYaml())).settings);
 
 			expect(settings.exclude).toEqual(["_types"]);
 		});
@@ -1324,6 +1322,13 @@ describe("MdbaseSpecService", () => {
 		it("should regenerate v0.3 types for an existing v0.3 collection", async () => {
 			const plugin = createMockPlugin();
 			plugin.app.vault.adapter.exists.mockResolvedValue(true);
+			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
+				Promise.resolve(
+					path === "mdbase.yaml"
+						? 'spec_version: "0.3.0"'
+						: buildTaskNotesMdbaseResources().typeDocument
+				)
+			);
 			const service = new MdbaseSpecService(plugin);
 
 			await service.generate();
@@ -1337,12 +1342,18 @@ describe("MdbaseSpecService", () => {
 		it("should preserve v0.2 value compatibility after a metadata migration", async () => {
 			const plugin = createMockPlugin();
 			plugin.app.vault.adapter.exists.mockResolvedValue(true);
-			plugin.app.vault.adapter.read.mockResolvedValue(
-				YAML.stringify({
-					spec_version: "0.3.0",
-					settings: { types_folder: "_types" },
-					"x-legacy-v0.2": { settings: { write_defaults: true } },
-				})
+			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
+				Promise.resolve(
+					path === "mdbase.yaml"
+						? YAML.stringify({
+								spec_version: "0.3.0",
+								settings: { types_folder: "_types" },
+								"x-legacy-v0.2": { settings: { write_defaults: true } },
+							})
+						: buildTaskNotesMdbaseResources({
+								legacyCompatibility: true,
+							}).typeDocument
+				)
 			);
 			const service = new MdbaseSpecService(plugin);
 
@@ -1393,6 +1404,13 @@ describe("MdbaseSpecService", () => {
 		it("should update _types/task.md via adapter.write when it exists", async () => {
 			const plugin = createMockPlugin();
 			plugin.app.vault.adapter.exists.mockResolvedValue(true);
+			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
+				Promise.resolve(
+					path === "mdbase.yaml"
+						? 'spec_version: "0.3.0"'
+						: buildTaskNotesMdbaseResources().typeDocument
+				)
+			);
 			const service = new MdbaseSpecService(plugin);
 
 			await service.generate();
@@ -1440,6 +1458,259 @@ describe("MdbaseSpecService", () => {
 			await service.onSettingsChanged();
 
 			expect(plugin.app.vault.create).toHaveBeenCalled();
+		});
+	});
+
+	describe("canonical v0.3 configuration", () => {
+		it("loads the task type into effective settings before runtime initialization", async () => {
+			const plugin = createMockPlugin();
+			const resources = buildTaskNotesMdbaseResources({
+				tasksFolder: "Canonical/Tasks",
+				modelConfig: {
+					fieldMapping: { status: "state" },
+					statuses: [
+						{
+							id: "queued",
+							value: "queued",
+							label: "Queued",
+							color: "#777777",
+							isCompleted: false,
+							order: 0,
+							autoArchive: false,
+							autoArchiveDelay: 5,
+						},
+						{
+							id: "done",
+							value: "done",
+							label: "Done",
+							color: "#00aa00",
+							isCompleted: true,
+							order: 1,
+							autoArchive: false,
+							autoArchiveDelay: 5,
+						},
+					],
+					defaults: { status: "queued" },
+				},
+			});
+			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
+				Promise.resolve(
+					path === "mdbase.yaml" || path === "_types" || path === "_types/task.md"
+				)
+			);
+			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
+				Promise.resolve(
+					path === "mdbase.yaml"
+						? 'spec_version: "0.3.0"\nsettings:\n  types_folder: _types\n'
+						: resources.typeDocument
+				)
+			);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.initialize();
+
+			expect(plugin.settings.tasksFolder).toBe("Canonical/Tasks");
+			expect(plugin.settings.fieldMapping.status).toBe("state");
+			expect(plugin.settings.defaultTaskStatus).toBe("queued");
+			expect(
+				plugin.settings.customStatuses.map((status: { value: string }) => status.value)
+			).toEqual(["queued", "done"]);
+			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalled();
+			expect(plugin.registerEvent).toHaveBeenCalledTimes(4);
+		});
+
+		it("adopts an existing canonical type before creating missing collection metadata", async () => {
+			const plugin = createMockPlugin();
+			const resources = buildTaskNotesMdbaseResources({
+				tasksFolder: "Existing/Tasks",
+			});
+			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
+				Promise.resolve(path === "_types" || path === "_types/task.md")
+			);
+			plugin.app.vault.adapter.read.mockResolvedValue(resources.typeDocument);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.initialize();
+
+			expect(plugin.settings.tasksFolder).toBe("Existing/Tasks");
+			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalled();
+			expect(plugin.app.vault.create).toHaveBeenCalledWith("mdbase.yaml", expect.any(String));
+			expect(plugin.app.vault.create).not.toHaveBeenCalledWith(
+				"_types/task.md",
+				expect.any(String)
+			);
+		});
+
+		it("does not overwrite a non-TaskNotes task type when creating the canonical contract", async () => {
+			const plugin = createMockPlugin();
+			const unrelatedType = [
+				"---",
+				"kind: mdbase.type",
+				"name: task",
+				"version: 1",
+				"schema:",
+				"  dialect: json-schema-2020-12",
+				"  value:",
+				"    type: object",
+				"    properties: {}",
+				"---",
+				"",
+			].join("\n");
+			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
+				Promise.resolve(
+					path === "mdbase.yaml" || path === "_types" || path === "_types/task.md"
+				)
+			);
+			plugin.app.vault.adapter.list.mockResolvedValue({
+				files: ["_types/task.md"],
+				folders: [],
+			});
+			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
+				Promise.resolve(path === "mdbase.yaml" ? 'spec_version: "0.3.0"' : unrelatedType)
+			);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.initialize();
+
+			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalledWith(
+				"_types/task.md",
+				expect.any(String)
+			);
+			expect(plugin.app.vault.create).toHaveBeenCalledWith(
+				"_types/tasknotes-task.md",
+				expect.stringContaining("name: tasknotes-task")
+			);
+		});
+
+		it("discovers a custom TaskNotes type and writes settings back to that file", async () => {
+			const plugin = createMockPlugin();
+			const typePath = "System/_types/work-item.md";
+			const resources = buildTaskNotesMdbaseResources({
+				typeName: "work-item",
+				typesFolder: "System/_types",
+			});
+			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
+				Promise.resolve(
+					path === "mdbase.yaml" ||
+						path === "System" ||
+						path === "System/_types" ||
+						path === typePath
+				)
+			);
+			plugin.app.vault.adapter.list.mockResolvedValue({
+				files: [typePath],
+				folders: [],
+			});
+			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
+				Promise.resolve(
+					path === "mdbase.yaml"
+						? 'spec_version: "0.3.0"\nsettings:\n  types_folder: System/_types\n'
+						: resources.typeDocument
+				)
+			);
+			const service = new MdbaseSpecService(plugin);
+			await service.initialize();
+			plugin.settings.maintainDueDateOffsetInRecurring = false;
+
+			await service.onSettingsChanged();
+
+			expect(plugin.app.vault.adapter.write).toHaveBeenCalledWith(
+				typePath,
+				expect.stringContaining("maintain_due_date_offset: false")
+			);
+		});
+
+		it("restores a canonical type that is deleted while the integration is enabled", async () => {
+			const plugin = createMockPlugin();
+			const resources = buildTaskNotesMdbaseResources();
+			const files = new Map<string, string>([
+				["mdbase.yaml", 'spec_version: "0.3.0"\nsettings:\n  types_folder: _types\n'],
+				["_types/task.md", resources.typeDocument],
+			]);
+			plugin.emitter = { trigger: jest.fn() };
+			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
+				Promise.resolve(path === "_types" || files.has(path))
+			);
+			plugin.app.vault.adapter.list.mockImplementation(() =>
+				Promise.resolve({
+					files: [...files.keys()].filter((path) => path.startsWith("_types/")),
+					folders: [],
+				})
+			);
+			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
+				Promise.resolve(files.get(path) ?? "")
+			);
+			plugin.app.vault.create.mockImplementation((path: string, content: string) => {
+				files.set(path, content);
+				return Promise.resolve({});
+			});
+			const service = new MdbaseSpecService(plugin);
+			await service.initialize();
+			files.delete("_types/task.md");
+
+			await (service as any).reconcileCanonicalType();
+
+			expect(plugin.app.vault.create).toHaveBeenCalledWith(
+				"_types/task.md",
+				expect.stringContaining("contract: tasknotes.task")
+			);
+			expect(plugin.emitter.trigger).toHaveBeenCalledWith(
+				"user-notice",
+				expect.objectContaining({
+					message: expect.stringContaining("restored the missing canonical type"),
+				})
+			);
+		});
+
+		it("restores a deleted mdbase.yaml without requiring a portable settings change", async () => {
+			const plugin = createMockPlugin();
+			const resources = buildTaskNotesMdbaseResources({
+				typesFolder: "System/_types",
+			});
+			const files = new Map<string, string>([
+				[
+					"mdbase.yaml",
+					'spec_version: "0.3.0"\nsettings:\n  types_folder: System/_types\n',
+				],
+				["System/_types/task.md", resources.typeDocument],
+			]);
+			plugin.emitter = { trigger: jest.fn() };
+			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
+				Promise.resolve(path === "System" || path === "System/_types" || files.has(path))
+			);
+			plugin.app.vault.adapter.list.mockImplementation(() =>
+				Promise.resolve({
+					files: [...files.keys()].filter((path) => path.startsWith("System/_types/")),
+					folders: [],
+				})
+			);
+			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
+				Promise.resolve(files.get(path) ?? "")
+			);
+			plugin.app.vault.create.mockImplementation((path: string, content: string) => {
+				files.set(path, content);
+				return Promise.resolve({});
+			});
+			const service = new MdbaseSpecService(plugin);
+			await service.initialize();
+			files.delete("mdbase.yaml");
+
+			await (service as any).reconcileCanonicalType();
+
+			expect(plugin.app.vault.create).toHaveBeenCalledWith(
+				"mdbase.yaml",
+				expect.stringContaining("types_folder: System/_types")
+			);
+			expect(plugin.app.vault.create).not.toHaveBeenCalledWith(
+				"_types/task.md",
+				expect.any(String)
+			);
+			expect(plugin.emitter.trigger).toHaveBeenCalledWith(
+				"user-notice",
+				expect.objectContaining({
+					message: expect.stringContaining("restored the missing canonical mdbase.yaml"),
+				})
+			);
 		});
 	});
 });

@@ -1,4 +1,4 @@
-import { normalizePath } from "obsidian";
+import { Modal, normalizePath, type TAbstractFile } from "obsidian";
 import YAML from "yaml";
 import {
 	buildTaskNotesMdbaseResources,
@@ -9,6 +9,15 @@ import TaskNotesPlugin from "../main";
 import { FieldMapping } from "../types";
 import { UserMappedField } from "../types/settings";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { publishUserNotice } from "../core/userNotices";
+import {
+	applyCanonicalTaskTypeToSettings,
+	buildTaskNotesModelConfig,
+	mergeCanonicalTaskTypeDocument,
+	parseMdbaseTaskTypeDocument,
+	portableSettingsFingerprint,
+	validateCanonicalTaskType,
+} from "./mdbaseCanonicalConfig";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MdbaseSpecService" });
 
@@ -34,30 +43,177 @@ type ExistingCollection = {
 	config: MdbaseYamlConfig | null;
 };
 
+type CanonicalTypeState = {
+	path: string;
+	content: string;
+	type: Record<string, unknown>;
+};
+
+type ConflictChoice = "type" | "settings";
+
+class MdbaseConfigurationConflictModal extends Modal {
+	private settled = false;
+
+	constructor(
+		app: TaskNotesPlugin["app"],
+		private readonly typePath: string,
+		private readonly invalidType: boolean,
+		private readonly resolveChoice: (choice: ConflictChoice) => void
+	) {
+		super(app);
+	}
+
+	onOpen(): void {
+		this.titleEl.setText("Configuration conflict");
+		this.contentEl.createEl("p", {
+			text: this.invalidType
+				? `${this.typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings.`
+				: `${this.typePath} and TaskNotes settings both changed since they were last synchronized.`,
+		});
+		this.contentEl.createEl("p", {
+			text: this.invalidType
+				? "Keep the file unchanged so you can repair it manually, or replace its managed TaskNotes fields with the current settings."
+				: "Choose which version should become canonical. Unknown mdbase extensions will be preserved.",
+		});
+
+		const actions = this.contentEl.createDiv({ cls: "modal-button-container" });
+		const useTypeButton = actions.createEl("button", {
+			text: this.invalidType ? "Keep file unchanged" : "Use mdbase type",
+		});
+		useTypeButton.addEventListener("click", () => this.finish("type"));
+
+		const useSettingsButton = actions.createEl("button", {
+			text: this.invalidType ? "Repair from TaskNotes" : "Use TaskNotes settings",
+		});
+		useSettingsButton.addClass("mod-cta");
+		useSettingsButton.addEventListener("click", () => this.finish("settings"));
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
+		if (!this.settled) {
+			this.settled = true;
+			this.resolveChoice("type");
+		}
+	}
+
+	private finish(choice: ConflictChoice): void {
+		if (this.settled) return;
+		this.settled = true;
+		this.resolveChoice(choice);
+		this.close();
+	}
+}
+
 /**
- * Service that generates mdbase collection and TaskNotes type definition files
- * (mdbase.yaml at the vault root and task.md in the configured types folder).
+ * Service that owns the mdbase collection binding and canonical TaskNotes type
+ * (mdbase.yaml at the vault root and a TaskNotes contract in the configured
+ * types folder).
  *
  * New collections use v0.3. Existing v0.2 collections retain the legacy type
- * grammar until they are migrated explicitly. Files are regenerated when
- * settings change while the feature is enabled.
+ * grammar until they are migrated explicitly. V0.3 types are loaded into the
+ * effective portable settings and receive write-through settings updates.
  * Files are NOT deleted when the feature is disabled.
  */
 export class MdbaseSpecService {
 	private plugin: TaskNotesPlugin;
+	private canonicalTypePath: string | null = null;
+	private canonicalTypesFolder: string | null = null;
+	private lastKnownTypeContent: string | null = null;
+	private lastAppliedSettingsFingerprint: string | null = null;
+	private canonicalReadBlocked = false;
+	private watcherRegistered = false;
+	private reconcileRequested = false;
+	private reconcilePromise: Promise<void> | null = null;
+	private writeInProgress = false;
+	private pendingUserNotices: string[] = [];
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
 	}
 
 	/**
-	 * Called when settings change. Regenerates files if enabled.
+	 * Load an enabled v0.3 TaskNotes type before runtime services capture their
+	 * settings. Existing v0.2 collections retain the legacy settings provider.
 	 */
-	async onSettingsChanged(): Promise<void> {
+	async initialize(): Promise<void> {
 		if (!this.plugin.settings.enableMdbaseSpec) {
 			return;
 		}
-		await this.generate();
+
+		try {
+			const existingCollection = await this.readExistingCollection();
+			const specFamily = getSpecFamily(existingCollection.config?.spec_version);
+			if (!existingCollection.exists) {
+				await this.syncSettingsToCanonicalType(existingCollection);
+			} else if (specFamily === "v0.3") {
+				const state = await this.readCanonicalType(existingCollection);
+				if (state) {
+					this.applyCanonicalState(state);
+				} else {
+					await this.syncSettingsToCanonicalType(existingCollection);
+				}
+			} else if (!specFamily) {
+				this.reportInvalidCanonicalType(
+					"mdbase.yaml has an unreadable or unsupported spec version."
+				);
+			}
+		} catch (error) {
+			tasknotesLogger.error("[TaskNotes][mdbase] Failed to initialize canonical settings.", {
+				category: "configuration",
+				operation: "canonical-settings-initialize",
+				error,
+			});
+			this.publishNotice(
+				"TaskNotes could not initialize the canonical mdbase configuration. Plugin settings remain active."
+			);
+		} finally {
+			this.registerCanonicalWatchers();
+		}
+	}
+
+	/**
+	 * Called when settings change. In canonical v0.3 collections, portable
+	 * settings are written through to the type after checking for concurrent
+	 * edits. Legacy v0.2 collections retain their existing generated writer.
+	 */
+	async onSettingsChanged(): Promise<void> {
+		if (!this.plugin.settings.enableMdbaseSpec) {
+			this.clearCanonicalState();
+			return;
+		}
+
+		this.registerCanonicalWatchers();
+		const existingCollection = await this.readExistingCollection();
+		const specFamily = getSpecFamily(existingCollection.config?.spec_version);
+		if (existingCollection.exists && specFamily === "v0.2") {
+			await this.generate();
+			return;
+		}
+		if (existingCollection.exists && !specFamily) {
+			this.reportInvalidCanonicalType(
+				"mdbase.yaml has an unreadable or unsupported spec version."
+			);
+			return;
+		}
+
+		await this.syncSettingsToCanonicalType(existingCollection);
+	}
+
+	async reloadCanonicalSettingsFromDisk(): Promise<void> {
+		if (!this.plugin.settings.enableMdbaseSpec) return;
+		const collection = await this.readExistingCollection();
+		if (getSpecFamily(collection.config?.spec_version) !== "v0.3") return;
+		const state = await this.readCanonicalType(collection);
+		if (state) {
+			this.applyCanonicalState(state);
+		}
+	}
+
+	flushPendingNotices(): void {
+		for (const message of this.pendingUserNotices.splice(0)) {
+			publishUserNotice(this.plugin.emitter, message);
+		}
 	}
 
 	/**
@@ -92,16 +248,31 @@ export class MdbaseSpecService {
 
 			await this.ensureFolderPath(typesFolder);
 
-			const taskTypeDef = this.buildTaskTypeDef(specVersion, {
-				legacyCompatibility:
-					specFamily === "v0.3" && isRecord(existingCollection.config?.["x-legacy-v0.2"]),
-			});
-			await this.writeFile(taskTypePath, taskTypeDef);
+			const legacyCompatibility =
+				specFamily === "v0.3" && isRecord(existingCollection.config?.["x-legacy-v0.2"]);
+			let canonicalResources: TaskNotesMdbaseResources | null = null;
+			if (specFamily === "v0.2") {
+				await this.writeFile(taskTypePath, this.buildTaskTypeDefV02());
+			} else {
+				canonicalResources = this.buildCanonicalMdbaseResources(
+					typesFolder,
+					legacyCompatibility
+				);
+				const written = await this.writeCanonicalType(
+					taskTypePath,
+					canonicalResources,
+					!existingCollection.exists
+				);
+				if (!written) {
+					return;
+				}
+			}
 
 			// Only create mdbase.yaml if it doesn't already exist so that
 			// user customisations (extra excludes, description, etc.) are preserved.
 			if (!existingCollection.exists) {
-				const mdbaseYaml = this.buildMdbaseYaml(typesFolder);
+				const mdbaseYaml =
+					canonicalResources?.configDocument ?? this.buildMdbaseYaml(typesFolder);
 				await this.writeFile("mdbase.yaml", mdbaseYaml);
 			}
 
@@ -120,6 +291,428 @@ export class MdbaseSpecService {
 				error: error,
 			});
 		}
+	}
+
+	private async syncSettingsToCanonicalType(
+		existingCollection: ExistingCollection
+	): Promise<void> {
+		const typesFolder = this.resolveTypesFolder(existingCollection);
+		const legacyCompatibility = isRecord(existingCollection.config?.["x-legacy-v0.2"]);
+		this.canonicalTypesFolder = typesFolder;
+		await this.ensureFolderPath(typesFolder);
+
+		const state = await this.readCanonicalType(existingCollection, false);
+		if (this.canonicalReadBlocked) {
+			return;
+		}
+		const rememberedPath =
+			this.canonicalTypePath?.startsWith(`${typesFolder}/`) === true
+				? this.canonicalTypePath
+				: null;
+		const defaultPath = `${typesFolder}/task.md`;
+		const defaultPathOccupied =
+			!state && !rememberedPath && (await this.plugin.app.vault.adapter.exists(defaultPath));
+		const typePath =
+			state?.path ??
+			rememberedPath ??
+			(defaultPathOccupied ? `${typesFolder}/tasknotes-task.md` : defaultPath);
+		const localFingerprint = portableSettingsFingerprint(this.plugin.settings);
+
+		if (state) {
+			if (
+				this.lastKnownTypeContent === null ||
+				this.lastAppliedSettingsFingerprint === null
+			) {
+				this.applyCanonicalState(state);
+				if (!existingCollection.exists) {
+					await this.writeMissingCollectionConfig(
+						typesFolder,
+						legacyCompatibility,
+						state
+					);
+				}
+				return;
+			}
+			const externalChanged =
+				this.lastKnownTypeContent !== null && state.content !== this.lastKnownTypeContent;
+			const localChanged =
+				this.lastAppliedSettingsFingerprint !== null &&
+				localFingerprint !== this.lastAppliedSettingsFingerprint;
+
+			if (externalChanged && localChanged) {
+				const choice = await this.askConflict(typePath, false);
+				if (choice === "type") {
+					this.applyCanonicalState(state);
+					if (!existingCollection.exists) {
+						await this.writeMissingCollectionConfig(
+							typesFolder,
+							legacyCompatibility,
+							state
+						);
+					}
+					return;
+				}
+				this.lastKnownTypeContent = state.content;
+			} else if (externalChanged && !localChanged) {
+				this.applyCanonicalState(state);
+				if (!existingCollection.exists) {
+					await this.writeMissingCollectionConfig(
+						typesFolder,
+						legacyCompatibility,
+						state
+					);
+				}
+				return;
+			} else if (!externalChanged && !localChanged) {
+				if (!existingCollection.exists) {
+					await this.writeMissingCollectionConfig(
+						typesFolder,
+						legacyCompatibility,
+						state
+					);
+				}
+				return;
+			}
+		} else if (await this.plugin.app.vault.adapter.exists(typePath)) {
+			const choice = await this.askConflict(typePath, true);
+			if (choice === "type") {
+				return;
+			}
+		}
+
+		const typePathParts = typePath.split("/");
+		const typeName =
+			state && typeof state.type.name === "string"
+				? state.type.name
+				: (typePathParts[typePathParts.length - 1]?.replace(/\.md$/i, "") ?? "task");
+		const resources = this.buildCanonicalMdbaseResources(
+			typesFolder,
+			legacyCompatibility,
+			typeName
+		);
+		const written = await this.writeCanonicalType(typePath, resources, true);
+		if (!written) return;
+
+		if (!existingCollection.exists) {
+			await this.writeFile("mdbase.yaml", resources.configDocument);
+		}
+	}
+
+	private async readCanonicalType(
+		existingCollection: ExistingCollection,
+		reportErrors = true
+	): Promise<CanonicalTypeState | null> {
+		this.canonicalReadBlocked = false;
+		const typesFolder = this.resolveTypesFolder(existingCollection);
+		this.canonicalTypesFolder = typesFolder;
+		const defaultPath = `${typesFolder}/task.md`;
+		const defaultState = await this.readCanonicalTypeAtPath(defaultPath, reportErrors);
+		const adapter = this.plugin.app.vault.adapter;
+		if (typeof adapter.list !== "function" || !(await adapter.exists(typesFolder))) {
+			return defaultState;
+		}
+
+		const listing = await adapter.list(typesFolder);
+		const candidates: CanonicalTypeState[] = defaultState ? [defaultState] : [];
+		for (const path of listing.files.filter((file) => file.endsWith(".md"))) {
+			if (path === defaultPath) continue;
+			const state = await this.readCanonicalTypeAtPath(path, false);
+			if (state) candidates.push(state);
+		}
+
+		if (candidates.length > 1) {
+			this.canonicalReadBlocked = true;
+			if (reportErrors) {
+				this.reportInvalidCanonicalType(
+					`Multiple TaskNotes contracts were found in ${typesFolder}. Keep one canonical type before continuing.`
+				);
+			}
+			return null;
+		}
+		return candidates[0] ?? null;
+	}
+
+	private async readCanonicalTypeAtPath(
+		path: string,
+		reportErrors: boolean
+	): Promise<CanonicalTypeState | null> {
+		const adapter = this.plugin.app.vault.adapter;
+		if (!(await adapter.exists(path))) return null;
+
+		let content: string;
+		try {
+			content = await adapter.read(path);
+		} catch (error) {
+			if (reportErrors) {
+				this.reportInvalidCanonicalType(`Could not read ${path}.`, error);
+			}
+			return null;
+		}
+
+		try {
+			const parsed = parseMdbaseTaskTypeDocument(content);
+			const extension = parsed.type["x-tasknotes"];
+			if (!isRecord(extension) || extension.contract !== "tasknotes.task") {
+				return null;
+			}
+			const validation = validateCanonicalTaskType(parsed.type);
+			if (!validation.valid) {
+				this.canonicalTypePath = path;
+				if (reportErrors) {
+					this.reportInvalidCanonicalType(
+						`${path} is inconsistent: ${validation.issues.join("; ")}`
+					);
+				}
+				return null;
+			}
+			return { path, content, type: parsed.type };
+		} catch (error) {
+			this.canonicalTypePath = path;
+			if (reportErrors) {
+				this.reportInvalidCanonicalType(`${path} could not be parsed.`, error);
+			}
+			return null;
+		}
+	}
+
+	private applyCanonicalState(state: CanonicalTypeState): void {
+		applyCanonicalTaskTypeToSettings(this.plugin.settings, state.type);
+		this.canonicalTypePath = state.path;
+		this.lastKnownTypeContent = state.content;
+		this.lastAppliedSettingsFingerprint = portableSettingsFingerprint(this.plugin.settings);
+	}
+
+	private async writeCanonicalType(
+		path: string,
+		resources: TaskNotesMdbaseResources,
+		allowRepair: boolean
+	): Promise<boolean> {
+		const adapter = this.plugin.app.vault.adapter;
+		const exists = await adapter.exists(path);
+		let content = resources.typeDocument;
+
+		if (exists) {
+			const existing = await adapter.read(path);
+			try {
+				const parsed = parseMdbaseTaskTypeDocument(existing);
+				const validation = validateCanonicalTaskType(parsed.type);
+				if (!validation.valid && !allowRepair) {
+					this.reportInvalidCanonicalType(
+						`${path} is inconsistent: ${validation.issues.join("; ")}`
+					);
+					return false;
+				}
+				if (!validation.valid) {
+					await this.backupInvalidType(path, existing);
+				}
+				content = mergeCanonicalTaskTypeDocument(existing, resources);
+			} catch (error) {
+				if (!allowRepair) {
+					this.reportInvalidCanonicalType(
+						`${path} could not be updated without replacing invalid frontmatter.`,
+						error
+					);
+					return false;
+				}
+				await this.backupInvalidType(path, existing);
+			}
+		}
+
+		this.writeInProgress = true;
+		try {
+			if (exists) {
+				await adapter.write(path, content);
+			} else {
+				await this.plugin.app.vault.create(path, content);
+			}
+		} finally {
+			this.writeInProgress = false;
+		}
+
+		const parsed = parseMdbaseTaskTypeDocument(content);
+		this.applyCanonicalState({ path, content, type: parsed.type });
+		return true;
+	}
+
+	private async backupInvalidType(path: string, content: string): Promise<void> {
+		const suffix = new Date().toISOString().replace(/[:.]/g, "-");
+		const backupPath = `${path}.tasknotes-backup-${suffix}`;
+		await this.plugin.app.vault.create(backupPath, content);
+		this.publishNotice(`TaskNotes backed up the invalid type to ${backupPath}.`);
+	}
+
+	private registerCanonicalWatchers(): void {
+		if (this.watcherRegistered) return;
+		const vault = this.plugin.app.vault;
+		if (typeof vault.on !== "function" || typeof this.plugin.registerEvent !== "function") {
+			return;
+		}
+		this.watcherRegistered = true;
+		const handle = (file: TAbstractFile, oldPath?: string) => {
+			if (
+				this.writeInProgress ||
+				(!this.isCanonicalPath(file.path) && (!oldPath || !this.isCanonicalPath(oldPath)))
+			) {
+				return;
+			}
+			this.requestReconciliation();
+		};
+		this.plugin.registerEvent(vault.on("create", (file) => handle(file)));
+		this.plugin.registerEvent(vault.on("modify", (file) => handle(file)));
+		this.plugin.registerEvent(vault.on("delete", (file) => handle(file)));
+		this.plugin.registerEvent(vault.on("rename", (file, oldPath) => handle(file, oldPath)));
+	}
+
+	private isCanonicalPath(path: string): boolean {
+		if (path === "mdbase.yaml" || path === this.canonicalTypePath) return true;
+		return Boolean(
+			this.canonicalTypesFolder &&
+				path.startsWith(`${this.canonicalTypesFolder}/`) &&
+				path.endsWith(".md")
+		);
+	}
+
+	private requestReconciliation(): void {
+		this.reconcileRequested = true;
+		if (!this.reconcilePromise) {
+			this.reconcilePromise = this.drainReconciliation();
+		}
+	}
+
+	private async drainReconciliation(): Promise<void> {
+		try {
+			while (this.reconcileRequested) {
+				this.reconcileRequested = false;
+				try {
+					await this.reconcileCanonicalType();
+				} catch (error) {
+					tasknotesLogger.error(
+						"[TaskNotes][mdbase] Failed to reconcile the canonical task type.",
+						{
+							category: "configuration",
+							operation: "canonical-type-reconcile",
+							error,
+						}
+					);
+				}
+			}
+		} finally {
+			this.reconcilePromise = null;
+			if (this.reconcileRequested) {
+				this.requestReconciliation();
+			}
+		}
+	}
+
+	private async reconcileCanonicalType(): Promise<void> {
+		if (!this.plugin.settings.enableMdbaseSpec) return;
+		const collection = await this.readExistingCollection();
+		if (!collection.exists) {
+			await this.syncSettingsToCanonicalType(collection);
+			if (await this.plugin.app.vault.adapter.exists("mdbase.yaml")) {
+				this.publishNotice("TaskNotes restored the missing canonical mdbase.yaml file.");
+			}
+			return;
+		}
+		if (getSpecFamily(collection.config?.spec_version) !== "v0.3") return;
+		const state = await this.readCanonicalType(collection);
+		if (!state) {
+			if (this.canonicalReadBlocked) return;
+			const previousPath = this.canonicalTypePath;
+			const wasMissing =
+				previousPath !== null &&
+				!(await this.plugin.app.vault.adapter.exists(previousPath));
+			await this.syncSettingsToCanonicalType(collection);
+			if (
+				wasMissing &&
+				previousPath &&
+				(await this.plugin.app.vault.adapter.exists(previousPath))
+			) {
+				this.publishNotice(
+					`TaskNotes restored the missing canonical type at ${previousPath}.`
+				);
+			}
+			return;
+		}
+		if (state.content === this.lastKnownTypeContent) {
+			this.canonicalTypePath = state.path;
+			return;
+		}
+
+		const localChanged =
+			this.lastAppliedSettingsFingerprint !== null &&
+			portableSettingsFingerprint(this.plugin.settings) !==
+				this.lastAppliedSettingsFingerprint;
+		if (localChanged) {
+			const choice = await this.askConflict(state.path, false);
+			if (choice === "settings") {
+				this.lastKnownTypeContent = state.content;
+				await this.syncSettingsToCanonicalType(collection);
+				return;
+			}
+		}
+
+		this.applyCanonicalState(state);
+		await this.plugin.saveSettingsDataOnly();
+		await this.plugin.settingsLifecycleService?.onCanonicalSettingsChanged();
+	}
+
+	private askConflict(path: string, invalidType: boolean): Promise<ConflictChoice> {
+		return new Promise((resolve) => {
+			new MdbaseConfigurationConflictModal(
+				this.plugin.app,
+				path,
+				invalidType,
+				resolve
+			).open();
+		});
+	}
+
+	private reportInvalidCanonicalType(message: string, error?: unknown): void {
+		tasknotesLogger.warn(`[TaskNotes][mdbase] ${message}`, {
+			category: "configuration",
+			operation: "canonical-type-invalid",
+			...(error ? { error } : {}),
+		});
+		this.publishNotice(`${message} TaskNotes kept its last-known-good configuration.`);
+	}
+
+	private publishNotice(message: string): void {
+		if (this.plugin.emitter) {
+			publishUserNotice(this.plugin.emitter, message);
+		} else {
+			this.pendingUserNotices.push(message);
+		}
+	}
+
+	private clearCanonicalState(): void {
+		this.canonicalTypePath = null;
+		this.canonicalTypesFolder = null;
+		this.lastKnownTypeContent = null;
+		this.lastAppliedSettingsFingerprint = null;
+		this.canonicalReadBlocked = false;
+	}
+
+	private resolveTypesFolder(existingCollection: ExistingCollection): string {
+		return (
+			this.normalizeTypesFolder(existingCollection.config?.settings?.types_folder) ??
+			this.canonicalTypesFolder ??
+			DEFAULT_TYPES_FOLDER
+		);
+	}
+
+	private async writeMissingCollectionConfig(
+		typesFolder: string,
+		legacyCompatibility: boolean,
+		state: CanonicalTypeState
+	): Promise<void> {
+		const typeName = typeof state.type.name === "string" ? state.type.name : "task";
+		const resources = this.buildCanonicalMdbaseResources(
+			typesFolder,
+			legacyCompatibility,
+			typeName
+		);
+		await this.writeFile("mdbase.yaml", resources.configDocument);
 	}
 
 	private async readExistingCollection(): Promise<ExistingCollection> {
@@ -465,15 +1058,14 @@ export class MdbaseSpecService {
 	 * config, schema, lifecycle, and TaskNotes extension.
 	 */
 	private buildTaskTypeDefV03(legacyCompatibility: boolean): string {
-		return this.buildCanonicalMdbaseResources(
-			DEFAULT_TYPES_FOLDER,
-			legacyCompatibility
-		).typeDocument;
+		return this.buildCanonicalMdbaseResources(DEFAULT_TYPES_FOLDER, legacyCompatibility)
+			.typeDocument;
 	}
 
 	private buildCanonicalMdbaseResources(
 		typesFolder: string,
-		legacyCompatibility: boolean
+		legacyCompatibility: boolean,
+		typeName = "task"
 	): TaskNotesMdbaseResources {
 		const settings = this.plugin.settings;
 		const filenameFormat = settings.storeTitleInFilename
@@ -484,41 +1076,11 @@ export class MdbaseSpecService {
 			settings.taskCreationDefaults?.occurrenceBodyTemplate?.trim() ?? "";
 
 		return buildTaskNotesMdbaseResources({
+			typeName,
 			typesFolder,
 			tasksFolder: settings.tasksFolder || "",
 			legacyCompatibility,
-			modelConfig: {
-				fieldMapping: { ...settings.fieldMapping },
-				statuses: settings.customStatuses.map((status) => ({ ...status })),
-				priorities: settings.customPriorities.map((priority) => ({ ...priority })),
-				defaults: {
-					status: settings.defaultTaskStatus,
-					priority: settings.defaultTaskPriority,
-					taskTag: settings.taskTag || "task",
-				},
-				taskIdentification: {
-					method: settings.taskIdentificationMethod,
-					tag: settings.taskTag || "task",
-					propertyName: settings.taskPropertyName || "",
-					propertyValue: settings.taskPropertyValue || "",
-					excludedFolders: settings.excludedFolders || "",
-				},
-				storeTitleInFilename: settings.storeTitleInFilename,
-				userFields: (settings.userFields ?? []).map((field) => ({ ...field })),
-				recurrence: {
-					maintainDueDateOffset: settings.maintainDueDateOffsetInRecurring === true,
-					resetCheckboxesOnRecurrence: settings.resetCheckboxesOnRecurrence === true,
-				},
-				occurrences: {
-					defaultMaterialization: "manual",
-					defaultNextTrigger: "completion",
-				},
-				timeTracking: {
-					autoStopOnComplete: settings.autoStopTimeTrackingOnComplete === true,
-					autoStopNotification: false,
-					defaultSessionDescription: "Work session",
-				},
-			},
+			modelConfig: buildTaskNotesModelConfig(settings),
 			path: { template: this.getFilenameTemplate() },
 			title: {
 				filenameFormat,
@@ -531,7 +1093,9 @@ export class MdbaseSpecService {
 			},
 			archive: {
 				moveOnArchive: settings.moveArchivedTasks === true,
-				...(settings.archiveFolder?.trim() ? { folder: settings.archiveFolder.trim() } : {}),
+				...(settings.archiveFolder?.trim()
+					? { folder: settings.archiveFolder.trim() }
+					: {}),
 			},
 			templating: {
 				enabled:

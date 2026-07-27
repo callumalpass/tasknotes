@@ -71,7 +71,30 @@ export class SettingsLifecycleService {
 		try {
 			while (this.saveSettingsRequested) {
 				this.saveSettingsRequested = false;
+				let mdbaseSyncError: unknown = null;
+				try {
+					const mdbaseSync = this.plugin.mdbaseSpecService?.onSettingsChanged();
+					if (mdbaseSync !== undefined) {
+						await mdbaseSync;
+					}
+				} catch (error) {
+					mdbaseSyncError = error;
+					tasknotesLogger.error(
+						"Could not synchronize settings with the canonical mdbase type:",
+						{
+							category: "configuration",
+							operation: "canonical-mdbase-settings-sync",
+							error,
+						}
+					);
+				}
 				await this.plugin.saveSettingsDataOnly();
+				if (mdbaseSyncError) {
+					publishUserNotice(
+						this.plugin.emitter,
+						"TaskNotes saved your settings, but could not synchronize the canonical mdbase type."
+					);
+				}
 
 				if (this.saveSettingsRequested) {
 					continue;
@@ -119,7 +142,6 @@ export class SettingsLifecycleService {
 		}
 
 		this.plugin.statusBarService?.updateVisibility();
-		void this.plugin.mdbaseSpecService?.onSettingsChanged();
 		this.plugin.filterService?.refreshFilterOptions();
 		this.plugin.notifyDataChanged();
 		this.plugin.emitter.trigger("settings-changed", this.plugin.settings);
@@ -127,6 +149,15 @@ export class SettingsLifecycleService {
 
 	async onExternalSettingsChange(): Promise<void> {
 		await this.plugin.loadSettings();
+		await this.plugin.mdbaseSpecService?.reloadCanonicalSettingsFromDisk();
+		this.applyEffectiveSettings();
+	}
+
+	async onCanonicalSettingsChanged(): Promise<void> {
+		this.applyEffectiveSettings();
+	}
+
+	private applyEffectiveSettings(): void {
 		this.plugin.apiService?.syncWebhookSettings?.();
 
 		this.plugin.fieldMapper?.updateMapping(this.plugin.settings.fieldMapping);
@@ -191,7 +222,10 @@ export class SettingsLifecycleService {
 		try {
 			await this.plugin.stopTimeTracking(updatedTask);
 			if (this.plugin.settings.autoStopTimeTrackingNotification) {
-				publishUserNotice(this.plugin.emitter, `Auto-stopped time tracking for: ${updatedTask.title}`);
+				publishUserNotice(
+					this.plugin.emitter,
+					`Auto-stopped time tracking for: ${updatedTask.title}`
+				);
 			}
 		} catch (error) {
 			tasknotesLogger.error("Error auto-stopping time tracking:", {
