@@ -1970,6 +1970,11 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__context-m
 
 
 /* Selected task card styling */
+.tasknotes-plugin .task-card--keyboard-focused {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 2px;
+}
+
 .tasknotes-plugin .task-card--selected {
     background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
     border-radius: var(--tn-radius-sm);

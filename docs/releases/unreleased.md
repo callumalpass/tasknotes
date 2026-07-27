@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Task list cards now retain a distinct keyboard focus across view refreshes and
+  support Arrow Up/Down and Home/End navigation without changing batch selection.
 - Generated TaskNotes type contracts now include configured natural-language
   capture triggers, allowing compatible clients to offer the same field
   suggestions.

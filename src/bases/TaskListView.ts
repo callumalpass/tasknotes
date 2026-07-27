@@ -64,6 +64,7 @@ import {
 	moveItemsRelativeToTarget,
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { TaskListFocusController } from "./TaskListFocusController";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -139,6 +140,7 @@ export class TaskListView extends BasesViewBase {
 	private clickTimeouts = new Map<string, number>();
 	private currentTargetDate = createUTCDateFromLocalCalendarDate(new Date());
 	private containerListenersRegistered = false;
+	private focusController: TaskListFocusController | null = null;
 	private virtualScroller: VirtualScroller<TaskListVirtualItem> | null = null; // Can render TaskInfo or group headers
 	private useVirtualScrolling = false;
 	private collapsedGroups = new Set<string>(); // Track collapsed group keys
@@ -494,6 +496,7 @@ export class TaskListView extends BasesViewBase {
 		itemsContainer.classList.add("tn-static-margin-top-12px-91e0f558");
 		this.rootElement?.appendChild(itemsContainer);
 		this.itemsContainer = itemsContainer;
+		this.focusController = new TaskListFocusController(itemsContainer);
 		this.registerContainerListeners();
 		this.setupContainerDragHandlers();
 	}
@@ -508,6 +511,7 @@ export class TaskListView extends BasesViewBase {
 			this.pendingRender = true;
 			return;
 		}
+		this.focusController?.prepareForRender();
 
 		// Always re-read view options to catch config changes such as
 		// switching expanded relationship filtering modes in Bases.
@@ -579,6 +583,8 @@ export class TaskListView extends BasesViewBase {
 			this.sortScopeTaskPaths.clear();
 			this.sortScopeCandidateTaskPaths.clear();
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
+		} finally {
+			this.focusController?.restoreAfterRender();
 		}
 	}
 
@@ -2119,6 +2125,8 @@ export class TaskListView extends BasesViewBase {
 		// We just need to clean up view-specific state
 		this.unregisterContainerListeners();
 		this.destroyVirtualScroller();
+		this.focusController?.clear();
+		this.focusController = null;
 
 		this.currentTaskElements.clear();
 		this.itemsContainer = null;
@@ -2262,6 +2270,15 @@ export class TaskListView extends BasesViewBase {
 		// Register click listener for group header collapse/expand using Component API
 		// This automatically cleans up on component unload
 		this.registerDomEvent(this.itemsContainer, "click", this.handleItemClick);
+		this.registerDomEvent(this.itemsContainer, "focusin", (event: FocusEvent) => {
+			this.focusController?.handleFocusIn(event);
+		});
+		this.registerDomEvent(this.itemsContainer, "pointerdown", (event: PointerEvent) => {
+			this.focusController?.handlePointerDown(event);
+		});
+		this.registerDomEvent(this.itemsContainer, "keydown", (event: KeyboardEvent) => {
+			this.focusController?.handleKeyDown(event);
+		});
 		this.containerListenersRegistered = true;
 	}
 
