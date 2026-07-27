@@ -20,7 +20,7 @@ priority: high
 due: 2025-01-15
 scheduled: 2025-01-14
 contexts:
-  - "@office"
+  - office
 projects:
   - "[[Q1 Planning]]"
 ---

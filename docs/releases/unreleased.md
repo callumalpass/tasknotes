@@ -37,3 +37,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Generated TaskNotes type contracts now include configured natural-language
   capture triggers, allowing compatible clients to offer the same field
   suggestions.
+- Rebuilt the TaskNotes documentation as a v5-ready, source-generated site with
+  reorganized navigation, full-text search, mobile and accessibility
+  improvements, and references generated from the current commands, settings,
+  compatibility metadata, HTTP routes, and default Bases. Added practical
+  guides for adopting TaskNotes in an existing vault, mobile use, custom Bases,
+  and backup and recovery. See the
+  [TaskNotes documentation](https://tasknotes.dev/).

@@ -37,7 +37,7 @@ For internal note links, type `[[` in a text or list field to use the same file 
 
 When using text or list type custom fields, you can configure **autosuggestion filters** to control which files appear in the autocomplete dropdown when you type `[[` in the field.
 
-![Custom Field Filtering](../assets/CustomFields-Selection-Filter.gif)
+![Custom field autosuggestion filters for tags, folders, and property values](../assets/custom-fields-selection-filter.webp)
 
 This is useful when you want to limit suggestions to specific types of notes. For example:
 - An "Assignee" field that only suggests notes tagged with `#person`

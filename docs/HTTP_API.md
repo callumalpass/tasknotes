@@ -299,7 +299,7 @@ Filter tasks by context:
       "id": "context",
       "property": "contexts",
       "operator": "contains",
-      "value": "@office"
+      "value": "office"
     }
   ],
   "sortKey": "due",
