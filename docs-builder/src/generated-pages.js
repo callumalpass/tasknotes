@@ -85,6 +85,7 @@ async function loadRuntimeDocumentationData() {
 		format: "esm",
 		platform: "node",
 		target: "node22",
+		nodePaths: [path.join(ROOT, "docs-builder", "node_modules")],
 		write: false,
 		logLevel: "silent",
 	});
