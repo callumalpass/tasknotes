@@ -73,6 +73,34 @@ describe("TaskListView keyboard actions", () => {
 		expect(executeTaskListAction).toHaveBeenCalledWith("edit-due");
 	});
 
+	it.each([
+		["Enter", { shiftKey: true }, "open-task-notes"],
+		["s", { shiftKey: true }, "edit-scheduled"],
+		["#", { shiftKey: true }, "add-tags"],
+		["@", { shiftKey: true }, "add-context"],
+		["+", { shiftKey: true }, "add-project"],
+		["Delete", { ctrlKey: true }, "delete-tasks"],
+		["Delete", { metaKey: true }, "delete-tasks"],
+	] as const)("allows the modifier chord %s after action recognition", (keyValue, modifiers, action) => {
+		const executeTaskListAction = jest.fn();
+		const getFocusedPathForEvent = jest.fn(() => "focused.md");
+		const view = {
+			focusController: { getFocusedPathForEvent },
+			executeTaskListAction,
+		};
+		const event = new KeyboardEvent("keydown", {
+			key: keyValue,
+			cancelable: true,
+			...modifiers,
+		});
+
+		(TaskListView.prototype as any).handleTaskListActionKeyDown.call(view, event);
+
+		expect(getFocusedPathForEvent).toHaveBeenCalledWith(event, true);
+		expect(event.defaultPrevented).toBe(true);
+		expect(executeTaskListAction).toHaveBeenCalledWith(action);
+	});
+
 	it("does not claim shortcuts when an interactive control owns focus", () => {
 		const executeTaskListAction = jest.fn();
 		const view = {

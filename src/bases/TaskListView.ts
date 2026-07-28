@@ -2311,7 +2311,7 @@ export class TaskListView extends BasesViewBase {
 
 	private handleTaskListActionKeyDown(event: KeyboardEvent): void {
 		const action = resolveDefaultTaskListKeyboardAction(event);
-		if (!action || !this.focusController?.getFocusedPathForEvent(event)) return;
+		if (!action || !this.focusController?.getFocusedPathForEvent(event, true)) return;
 
 		event.preventDefault();
 		event.stopPropagation();

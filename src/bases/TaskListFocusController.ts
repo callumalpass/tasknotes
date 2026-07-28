@@ -125,8 +125,12 @@ export class TaskListFocusController {
 		return index >= 0 ? cards[index] : null;
 	}
 
-	getFocusedPathForEvent(event: KeyboardEvent): string | null {
-		if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+	getFocusedPathForEvent(event: KeyboardEvent, allowModifiers = false): string | null {
+		if (
+			event.defaultPrevented ||
+			(!allowModifiers &&
+				(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey))
+		) {
 			return null;
 		}
 

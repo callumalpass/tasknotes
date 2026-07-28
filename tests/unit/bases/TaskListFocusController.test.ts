@@ -49,6 +49,27 @@ describe("TaskListFocusController", () => {
 		expect(document.activeElement).toBe(cards[0]);
 	});
 
+	it("handles navigation when a Bases capture listener already prevented the default", () => {
+		const cards = [createCard("a.md"), createCard("b.md")];
+		root.append(...cards);
+		controller.restoreAfterRender();
+		cards[0].focus();
+		const event = new KeyboardEvent("keydown", {
+			key: "ArrowDown",
+			bubbles: true,
+			cancelable: true,
+		});
+		root.addEventListener("keydown", (capturedEvent) => capturedEvent.preventDefault(), {
+			capture: true,
+			once: true,
+		});
+
+		cards[0].dispatchEvent(event);
+
+		expect(event.defaultPrevented).toBe(true);
+		expect(document.activeElement).toBe(cards[1]);
+	});
+
 	it("tracks repeated task paths by rendered occurrence", () => {
 		const first = createCard("same.md");
 		const middle = createCard("other.md");
@@ -148,5 +169,22 @@ describe("TaskListFocusController", () => {
 		Object.defineProperty(event, "target", { value: card });
 
 		expect(controller.getFocusedPathForEvent(event)).toBe("focused.md");
+	});
+
+	it("allows a shifted action chord when modifiers were already validated", () => {
+		const card = createCard("focused.md");
+		root.appendChild(card);
+		controller.restoreAfterRender();
+		card.focus();
+		const event = new KeyboardEvent("keydown", {
+			key: "Enter",
+			shiftKey: true,
+			bubbles: true,
+			cancelable: true,
+		});
+		Object.defineProperty(event, "target", { value: card });
+
+		expect(controller.getFocusedPathForEvent(event)).toBeNull();
+		expect(controller.getFocusedPathForEvent(event, true)).toBe("focused.md");
 	});
 });
