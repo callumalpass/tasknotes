@@ -65,6 +65,7 @@ import {
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { TaskListFocusController } from "./TaskListFocusController";
+import { resolveTaskListTargetPaths } from "./taskListTargetResolver";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -2277,9 +2278,33 @@ export class TaskListView extends BasesViewBase {
 			this.focusController?.handlePointerDown(event);
 		});
 		this.registerDomEvent(this.itemsContainer, "keydown", (event: KeyboardEvent) => {
-			this.focusController?.handleKeyDown(event);
+			if (this.focusController?.handleKeyDown(event)) return;
+			this.handleTaskListSelectionKeyDown(event);
 		});
 		this.containerListenersRegistered = true;
+	}
+
+	private handleTaskListSelectionKeyDown(event: KeyboardEvent): void {
+		if (event.key !== " " && event.key !== "Spacebar") return;
+
+		const taskPath = this.focusController?.getFocusedPathForEvent(event);
+		const selectionService = this.plugin.taskSelectionService;
+		if (!taskPath || !selectionService) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+		selectionService.toggleSelection(taskPath);
+	}
+
+	/**
+	 * Resolve action targets using upstream selection state first, then keyboard focus.
+	 * Task actions added in later keyboard-navigation slices should use this method.
+	 */
+	getTaskActionTargetPaths(): string[] {
+		return resolveTaskListTargetPaths(
+			this.plugin.taskSelectionService,
+			this.focusController?.getFocusedIdentity()?.path
+		);
 	}
 
 	private unregisterContainerListeners(): void {

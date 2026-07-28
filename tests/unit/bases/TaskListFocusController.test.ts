@@ -134,4 +134,19 @@ describe("TaskListFocusController", () => {
 		expect(event.defaultPrevented).toBe(false);
 		expect(document.activeElement).toBe(button);
 	});
+
+	it("exposes the focused task for an unmodified Space key", () => {
+		const card = createCard("focused.md");
+		root.appendChild(card);
+		controller.restoreAfterRender();
+		card.focus();
+		const event = new KeyboardEvent("keydown", {
+			key: " ",
+			bubbles: true,
+			cancelable: true,
+		});
+		Object.defineProperty(event, "target", { value: card });
+
+		expect(controller.getFocusedPathForEvent(event)).toBe("focused.md");
+	});
 });

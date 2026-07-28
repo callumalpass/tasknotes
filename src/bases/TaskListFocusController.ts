@@ -119,6 +119,18 @@ export class TaskListFocusController {
 		return this.focusedIdentity ? { ...this.focusedIdentity } : null;
 	}
 
+	getFocusedPathForEvent(event: KeyboardEvent): string | null {
+		if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+			return null;
+		}
+
+		const target = event.target;
+		if (!(target instanceof Element) || target.closest(INTERACTIVE_SELECTOR)) return null;
+
+		const card = this.getCardFromTarget(target);
+		return card?.dataset.taskPath ?? null;
+	}
+
 	private getCards(): HTMLElement[] {
 		return Array.from(this.root.querySelectorAll<HTMLElement>(CARD_SELECTOR));
 	}
@@ -150,7 +162,7 @@ export class TaskListFocusController {
 
 		cards.forEach((card, index) => {
 			const focused = index === focusedIndex;
-			
+
 			card.tabIndex = index === tabbableIndex ? 0 : -1;
 			card.classList.toggle("task-card--keyboard-focused", focused);
 		});
