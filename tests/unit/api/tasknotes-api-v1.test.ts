@@ -1,5 +1,4 @@
 import { Menu, TFile } from "obsidian";
-import { InMemoryRuntimeHost } from "@callumalpass/mdbase-runtime";
 import {
 	TaskNotesAPI,
 	type CompleteTaskOptions,
@@ -531,71 +530,6 @@ function createPluginContext(initialTasks: TaskInfo[] = [createTask()]): TestPlu
 }
 
 describe("TaskNotesApiV1", () => {
-	it("registers with and unregisters from the real mdbase runtime host", async () => {
-		const { plugin } = createPluginContext();
-		const runtime = new InMemoryRuntimeHost();
-		const app = plugin.app as typeof plugin.app & {
-			plugins?: { getPlugin(id: string): unknown };
-		};
-		app.plugins = {
-			getPlugin: jest.fn((id: string) =>
-				id === "mdbase-obsidian" ? { api: { apiVersion: 1, runtime } } : null
-			),
-		};
-
-		const api = new TaskNotesAPI(plugin);
-		for (let attempt = 0; attempt < 10 && runtime.providers().length === 0; attempt += 1) {
-			await Promise.resolve();
-		}
-
-		expect(runtime.providers().map(({ descriptor }) => descriptor.id)).toEqual(["tasknotes"]);
-		await api.dispose();
-		expect(runtime.providers()).toEqual([]);
-		await runtime.dispose();
-	});
-
-	it("registers its provider with the mdbase Obsidian runtime and unregisters on dispose", async () => {
-		const { plugin } = createPluginContext();
-		const unregister = jest.fn(async () => undefined);
-		const registerProvider = jest.fn(async () => ({
-			providerId: "tasknotes",
-			unregister,
-		}));
-		const app = plugin.app as typeof plugin.app & {
-			plugins?: { getPlugin(id: string): unknown };
-		};
-		app.plugins = {
-			getPlugin: jest.fn((id: string) =>
-				id === "mdbase-obsidian"
-					? { api: { apiVersion: 1, runtime: { registerProvider } } }
-					: null
-			),
-		};
-
-		const api = new TaskNotesAPI(plugin);
-		await Promise.resolve();
-		await Promise.resolve();
-
-		expect(registerProvider).toHaveBeenCalledTimes(1);
-		expect(registerProvider.mock.calls[0]?.[0].descriptor()).toMatchObject({
-			id: "tasknotes",
-			type: "provider",
-		});
-		const provider = registerProvider.mock.calls[0]?.[0];
-		expect(provider.descriptor().contracts.actions).toEqual(expect.arrayContaining([
-			"tasknotes.task.patch",
-			"task.complete",
-			"time.start",
-			"pomodoro.assign",
-			"recurring.skip",
-		]));
-		expect(provider.contracts().filter((contract: { type: string }) => contract.type === "action"))
-			.toHaveLength(11);
-
-		await api.dispose();
-		expect(unregister).toHaveBeenCalledTimes(1);
-	});
-
 	it("exposes a version and capability discovery for companion plugins", () => {
 		const { plugin } = createPluginContext();
 		const api = new TaskNotesAPI(plugin);

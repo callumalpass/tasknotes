@@ -7,10 +7,6 @@ import {
 	type TaskNotesModelConfig,
 	type TaskValidationResult,
 } from "@tasknotes/model";
-import type {
-	MdbaseRuntimeHostApi,
-	MdbaseRuntimeProviderRegistration,
-} from "@callumalpass/mdbase-runtime";
 import type TaskNotesPlugin from "../main";
 import { NaturalLanguageParser, type ParsedTaskData } from "../services/NaturalLanguageParser";
 import type {
@@ -41,10 +37,8 @@ import {
 import type { TaskNotesSettings } from "../types/settings";
 import { ensureFolderExists } from "../utils/helpers";
 import { parseLinkToPath } from "../utils/linkUtils";
-import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { computeTaskTimeData, computeTimeSummary } from "../utils/timeTrackingUtils";
 import { TaskContextMenu } from "../components/TaskContextMenu";
-import { createTaskNotesRuntimeProvider } from "./tasknotes-runtime-provider";
 import { TaskNotesInteropPublisher } from "./tasknotes-interop";
 import {
 	TASKNOTES_RUNTIME_API_CAPABILITIES,
@@ -106,8 +100,6 @@ import {
 	type TaskNotesTaskPatch,
 	type UncompleteTaskOptions,
 } from "./runtime-api";
-
-const tasknotesRuntimeLogger = createTaskNotesLogger({ tag: "API/Runtime" });
 
 export * from "./runtime-api";
 
@@ -947,67 +939,20 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	private readonly mutationContextByPath = new Map<string, TaskNotesMutationContext[]>();
 	private readonly mutationContextStack: TaskNotesMutationContext[] = [];
 	private readonly extensionRegistry = new Map<string, RegisteredRuntimeExtension>();
-	private externalRuntimeHost: MdbaseRuntimeHostApi | null = null;
-	private externalRuntimeHandle: MdbaseRuntimeProviderRegistration | null = null;
-	private externalRuntimeRegistration: Promise<void> | null = null;
 	private readonly interopPublisher: TaskNotesInteropPublisher;
 
 	constructor(private plugin: TaskNotesPlugin) {
 		this.interopPublisher = new TaskNotesInteropPublisher(plugin, this);
-		this.connectMdbaseRuntimeHost();
 		this.interopPublisher.connect();
 		if (typeof window !== "undefined" && typeof plugin.registerInterval === "function") {
 			plugin.registerInterval(window.setInterval(() => {
-				this.connectMdbaseRuntimeHost();
 				this.interopPublisher.connect();
 			}, 5000));
 		}
 	}
 
-	connectMdbaseRuntimeHost(): void {
-		const runtime = this.getExternalMdbaseRuntimeHost();
-		if (!runtime || this.externalRuntimeRegistration) return;
-		if (this.externalRuntimeHandle && this.externalRuntimeHost === runtime) return;
-		const providerVersion = this.plugin.manifest?.version ?? "0.0.0";
-		this.externalRuntimeRegistration = (async () => {
-			if (this.externalRuntimeHandle) await this.externalRuntimeHandle.unregister();
-			this.externalRuntimeHandle = null;
-			this.externalRuntimeHost = runtime;
-			this.externalRuntimeHandle = await runtime.registerProvider(
-				createTaskNotesRuntimeProvider(this, providerVersion)
-			);
-		})()
-			.catch((error: unknown) => {
-				this.externalRuntimeHost = null;
-				tasknotesRuntimeLogger.error("Failed to register TaskNotes with the mdbase Obsidian host.", {
-					category: "internal",
-					operation: "external-provider-registration",
-					error,
-				});
-			})
-			.finally(() => {
-				this.externalRuntimeRegistration = null;
-			});
-	}
-
 	async dispose(): Promise<void> {
 		await this.interopPublisher.dispose();
-		await this.externalRuntimeRegistration;
-		const handle = this.externalRuntimeHandle;
-		this.externalRuntimeHandle = null;
-		this.externalRuntimeHost = null;
-		await handle?.unregister();
-	}
-
-	private getExternalMdbaseRuntimeHost(): MdbaseRuntimeHostApi | null {
-		const app = this.plugin.app as
-			| { plugins?: { getPlugin(id: string): unknown } }
-			| undefined;
-		if (!app) return null;
-		const mdbase = app.plugins?.getPlugin("mdbase-obsidian") as {
-			api?: { apiVersion: number; runtime?: MdbaseRuntimeHostApi };
-		} | null;
-		return mdbase?.api?.apiVersion === 1 ? mdbase.api.runtime ?? null : null;
 	}
 
 	get capabilities(): readonly string[] {

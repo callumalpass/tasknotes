@@ -4,7 +4,6 @@
  * Validates v0.3 generation and the retained v0.2 compatibility path.
  */
 
-import { validateCanonicalSchema } from "@callumalpass/mdbase-runtime";
 import { buildTaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
 import YAML from "yaml";
 
@@ -154,10 +153,6 @@ describe("MdbaseSpecService", () => {
 			const config = asObject(YAML.parse(yaml));
 
 			expect(config.spec_version).toBe("0.3.0");
-			expect(validateCanonicalSchema("config", config)).toEqual({
-				valid: true,
-				errors: [],
-			});
 		});
 
 		it("should include name and description", () => {
@@ -849,10 +844,6 @@ describe("MdbaseSpecService", () => {
 				type: "string",
 				format: "date-time",
 			});
-			expect(validateCanonicalSchema("typeFile", frontmatter)).toEqual({
-				valid: true,
-				errors: [],
-			});
 		});
 
 		it("requires the mapped title only when frontmatter owns the title", () => {
@@ -1145,10 +1136,6 @@ describe("MdbaseSpecService", () => {
 					expect.objectContaining({ value: "critical", weight: 5, icon: "flame" }),
 				])
 			);
-			expect(validateCanonicalSchema("typeFile", frontmatter)).toEqual({
-				valid: true,
-				errors: [],
-			});
 		});
 
 		it("quotes configured enum strings before converting them", () => {
