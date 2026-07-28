@@ -45,11 +45,11 @@ your vault root:
 mtn config --set collectionPath=/path/to/your/vault
 ```
 
-The plugin creates `mdbase.yaml` and a TaskNotes type when the integration is
-enabled. The type then becomes the portable source of truth: both TaskNotes and
-`mtn` read it for field mappings, custom statuses, priorities, and task
-behavior, while portable settings changes made in TaskNotes are written back
-to it.
+The plugin creates `mdbase.yaml`, the `tasknotes.task` contract and schemas,
+and an implementing TaskNotes type when the integration is enabled. The type
+binding then becomes the portable source of truth: both TaskNotes and `mtn`
+read it for field mappings, custom statuses, priorities, and task behavior,
+while portable settings changes made in TaskNotes are written back to it.
 
 ### Creating a standalone collection
 

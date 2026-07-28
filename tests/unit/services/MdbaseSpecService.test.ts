@@ -41,6 +41,22 @@ function asObject(value: unknown): Record<string, unknown> {
 	return value as Record<string, unknown>;
 }
 
+function tasknotesImplementation(
+	type: Record<string, unknown>
+): Record<string, unknown> {
+	const implementations = type.implements as Record<string, unknown>[];
+	const implementation = implementations?.find(
+		(candidate) =>
+			candidate.contract === "tasknotes.task" && candidate.version === "0.2.0"
+	);
+	if (!implementation) throw new Error("Expected a TaskNotes implementation");
+	return implementation;
+}
+
+function tasknotesBinding(type: Record<string, unknown>): Record<string, unknown> {
+	return asObject(tasknotesImplementation(type).binding);
+}
+
 /** Parse a simple YAML key at root level (returns raw string value) */
 function getYamlValue(yaml: string, key: string): string | undefined {
 	const re = new RegExp(`^${key}:\\s*(.+)$`, "m");
@@ -870,7 +886,8 @@ describe("MdbaseSpecService", () => {
 			const lifecycle = asObject(frontmatter.lifecycle);
 			const onCreate = asObject(lifecycle.on_create);
 			const onUpdate = asObject(lifecycle.on_update);
-			const extension = asObject(frontmatter["x-tasknotes"]);
+			const taskImplementation = tasknotesImplementation(frontmatter);
+			const extension = tasknotesBinding(frontmatter);
 
 			expect(collection.read_defaults).toEqual({
 				status: "open",
@@ -892,13 +909,11 @@ describe("MdbaseSpecService", () => {
 			});
 			expect(asObject(onUpdate.set)).toEqual({ dateModified: { now: true } });
 			expect(extension).toMatchObject({
-				contract: "tasknotes.task",
-				version: 1,
 				status: { default: "open" },
 				priority: { default: "normal" },
-				archive: { tags_field: "tags", archived_tag: "archived" },
+				archive: { archived_tag: "archived" },
 			});
-			expect(asObject(extension.field_roles)).toMatchObject({
+			expect(asObject(taskImplementation.fields)).toMatchObject({
 				title: "title",
 				status: "status",
 				blockedBy: "blockedBy",
@@ -935,7 +950,7 @@ describe("MdbaseSpecService", () => {
 			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
 			const schema = asObject(asObject(frontmatter.schema).value);
 			const collection = asObject(frontmatter.collection);
-			const extension = asObject(frontmatter["x-tasknotes"]);
+			const taskImplementation = tasknotesImplementation(frontmatter);
 			const links = asObject(collection.links);
 
 			expect(asObject(schema.properties)).toHaveProperty("summary");
@@ -944,7 +959,7 @@ describe("MdbaseSpecService", () => {
 				target_type: "any",
 				validate_exists: false,
 			});
-			expect(asObject(extension.field_roles)).toMatchObject({
+			expect(asObject(taskImplementation.fields)).toMatchObject({
 				title: "summary",
 				status: "task_status",
 				projects: "related_projects",
@@ -1039,12 +1054,10 @@ describe("MdbaseSpecService", () => {
 			);
 			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
 			const collection = asObject(frontmatter.collection);
-			const extension = asObject(frontmatter["x-tasknotes"]);
+			const taskImplementation = tasknotesImplementation(frontmatter);
+			const extension = tasknotesBinding(frontmatter);
 
 			expect(extension).toMatchObject({
-				contract: "tasknotes.task",
-				version: 1,
-				spec_version: "0.2.0",
 				profiles: [
 					"core-lite",
 					"recurrence",
@@ -1088,7 +1101,6 @@ describe("MdbaseSpecService", () => {
 					write_format: "markdown",
 				},
 				archive: {
-					tags_field: "tags",
 					archived_tag: "filed-away",
 					move_on_archive: true,
 					folder: "Archive/Tasks",
@@ -1101,7 +1113,7 @@ describe("MdbaseSpecService", () => {
 					occurrence_template_path: "Templates/Occurrence.md",
 				},
 			});
-			expect(asObject(extension.field_roles)).toMatchObject({
+			expect(asObject(taskImplementation.fields)).toMatchObject({
 				title: "summary",
 				status: "state",
 				priority: "importance",
@@ -1187,8 +1199,7 @@ describe("MdbaseSpecService", () => {
 			);
 			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
 			const collection = asObject(frontmatter.collection);
-			const extension = asObject(frontmatter["x-tasknotes"]);
-			const generator = asObject(extension.generator);
+			const generator = asObject(frontmatter["x-tasknotes-generator"]);
 
 			expect(collection.display).toBeUndefined();
 			expect(asObject(collection.links)).not.toHaveProperty("related projects[]");
@@ -1225,7 +1236,7 @@ describe("MdbaseSpecService", () => {
 
 			await service.generate();
 
-			expect(plugin.app.vault.createFolder).not.toHaveBeenCalled();
+			expect(plugin.app.vault.createFolder).not.toHaveBeenCalledWith("_types");
 		});
 
 		it("should use the types_folder from an existing mdbase.yaml", async () => {
@@ -1275,6 +1286,18 @@ describe("MdbaseSpecService", () => {
 				"_types/task.md",
 				expect.any(String)
 			);
+			expect(plugin.app.vault.create).toHaveBeenCalledWith(
+				"_contracts/tasknotes.task.md",
+				expect.stringContaining("kind: mdbase.contract")
+			);
+			expect(plugin.app.vault.create).toHaveBeenCalledWith(
+				"_schemas/tasknotes/tasknotes-task.schema.json",
+				expect.stringContaining('"$schema"')
+			);
+			expect(plugin.app.vault.create).toHaveBeenCalledWith(
+				"_schemas/tasknotes/tasknotes-task-binding.schema.json",
+				expect.stringContaining('"profiles"')
+			);
 		});
 
 		it("should create new files when they do not exist", async () => {
@@ -1297,6 +1320,30 @@ describe("MdbaseSpecService", () => {
 			);
 			expect(parseFrontmatter(typeCall?.[1] as string).kind).toBe("mdbase.type");
 			expect(asObject(YAML.parse(configCall?.[1] as string)).spec_version).toBe("0.3.0");
+		});
+
+		it("uses the configured contracts folder for the canonical contract", async () => {
+			const plugin = createMockPlugin();
+			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
+				Promise.resolve(path === "mdbase.yaml")
+			);
+			plugin.app.vault.adapter.read.mockResolvedValue(
+				YAML.stringify({
+					spec_version: "0.3.0",
+					settings: {
+						types_folder: "_types",
+						contracts_folder: "System/contracts",
+					},
+				})
+			);
+			const service = new MdbaseSpecService(plugin);
+
+			await service.generate();
+
+			expect(plugin.app.vault.create).toHaveBeenCalledWith(
+				"System/contracts/tasknotes.task.md",
+				expect.stringContaining("id: tasknotes.task")
+			);
 		});
 
 		it("should retain the v0.2 type grammar for an existing v0.2 collection", async () => {
@@ -1372,7 +1419,7 @@ describe("MdbaseSpecService", () => {
 			expect(asObject(properties.dateCreated).pattern).toContain("[+-]");
 			expect(asObject(frontmatter["x-legacy-v0.2"]).coercion_compatible_schema).toBe(true);
 			expect(
-				asObject(asObject(frontmatter["x-tasknotes"]).generator).legacy_compatibility
+				asObject(frontmatter["x-tasknotes-generator"]).legacy_compatibility
 			).toBe(true);
 		});
 

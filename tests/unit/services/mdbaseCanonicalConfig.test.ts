@@ -126,15 +126,13 @@ describe("canonical mdbase TaskNotes configuration", () => {
 	it("rejects contracts that omit required canonical metadata", () => {
 		const resources = buildTaskNotesMdbaseResources();
 		const type = clone(resources.type);
-		const extension = type["x-tasknotes"] as Record<string, unknown>;
-		delete extension.spec_version;
-		delete extension.status;
+		const taskImplementation = implementation(type);
+		delete (taskImplementation.binding as Record<string, unknown>).status;
 
 		expect(validateCanonicalTaskType(type)).toEqual({
 			valid: false,
 			issues: expect.arrayContaining([
-				"x-tasknotes.spec_version must be a semantic version",
-				"x-tasknotes.status must be an object",
+				"the TaskNotes implementation binding.status must be an object",
 			]),
 		});
 	});
@@ -187,9 +185,11 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		});
 		const initialType = clone(initial.type);
 		initialType["x-another-tool"] = { enabled: true };
-		(initialType["x-tasknotes"] as Record<string, unknown>).future_extension = {
-			preserve: true,
-		};
+		(initialType.implements as unknown[]).push({
+			contract: "example.audit",
+			version: "1.0.0",
+			fields: { created: "dateCreated" },
+		});
 		const initialDocument = initial.typeDocument
 			.replace(
 				initial.typeDocument.match(/^---\n[\s\S]*?\n---\n/)?.[0] ?? "",
@@ -233,10 +233,13 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		};
 
 		expect(parsed.type["x-another-tool"]).toEqual({ enabled: true });
-		expect(parsed.type["x-tasknotes"]).toEqual(
-			expect.objectContaining({
-				future_extension: { preserve: true },
-			})
+		expect(parsed.type.implements).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					contract: "example.audit",
+					version: "1.0.0",
+				}),
+			])
 		);
 		expect(schema.value.properties).not.toHaveProperty("effort");
 		expect(merged).toContain("name: task # keep this comment");
@@ -250,4 +253,14 @@ function initialDocumentYaml(value: Record<string, unknown>): string {
 
 function clone<T>(value: T): T {
 	return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function implementation(type: Record<string, unknown>): Record<string, unknown> {
+	const implementations = type.implements as Record<string, unknown>[];
+	const implementation = implementations.find(
+		(candidate) =>
+			candidate.contract === "tasknotes.task" && candidate.version === "0.2.0"
+	);
+	if (!implementation) throw new Error("Missing TaskNotes implementation");
+	return implementation;
 }

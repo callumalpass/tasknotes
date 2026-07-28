@@ -4,6 +4,7 @@ import {
 	buildTaskNotesMdbaseResources,
 	type TaskNotesMdbaseResources,
 } from "@tasknotes/model/mdbase";
+import { TASKNOTES_SPEC_VERSION as TASKNOTES_CONTRACT_VERSION } from "@tasknotes/model";
 
 import TaskNotesPlugin from "../main";
 import { FieldMapping } from "../types";
@@ -22,6 +23,7 @@ import {
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MdbaseSpecService" });
 
 const DEFAULT_TYPES_FOLDER = "_types";
+const DEFAULT_CONTRACTS_FOLDER = "_contracts";
 const MDBASE_V03_SPEC_VERSION = "0.3.0";
 
 type SupportedSpecFamily = "v0.2" | "v0.3";
@@ -30,6 +32,7 @@ type MdbaseYamlConfig = {
 	spec_version?: unknown;
 	settings?: {
 		types_folder?: unknown;
+		contracts_folder?: unknown;
 	};
 	"x-legacy-v0.2"?: unknown;
 };
@@ -119,6 +122,7 @@ export class MdbaseSpecService {
 	private plugin: TaskNotesPlugin;
 	private canonicalTypePath: string | null = null;
 	private canonicalTypesFolder: string | null = null;
+	private canonicalResourcePaths = new Set<string>();
 	private lastKnownTypeContent: string | null = null;
 	private lastAppliedSettingsFingerprint: string | null = null;
 	private canonicalReadBlocked = false;
@@ -244,6 +248,10 @@ export class MdbaseSpecService {
 			const typesFolder =
 				this.normalizeTypesFolder(existingCollection.config?.settings?.types_folder) ??
 				DEFAULT_TYPES_FOLDER;
+			const contractsFolder =
+				this.normalizeTypesFolder(
+					existingCollection.config?.settings?.contracts_folder
+				) ?? DEFAULT_CONTRACTS_FOLDER;
 			const taskTypePath = `${typesFolder}/task.md`;
 
 			await this.ensureFolderPath(typesFolder);
@@ -256,8 +264,11 @@ export class MdbaseSpecService {
 			} else {
 				canonicalResources = this.buildCanonicalMdbaseResources(
 					typesFolder,
-					legacyCompatibility
+					legacyCompatibility,
+					"task",
+					contractsFolder
 				);
+				await this.writeCanonicalSupportResources(canonicalResources);
 				const written = await this.writeCanonicalType(
 					taskTypePath,
 					canonicalResources,
@@ -297,6 +308,7 @@ export class MdbaseSpecService {
 		existingCollection: ExistingCollection
 	): Promise<void> {
 		const typesFolder = this.resolveTypesFolder(existingCollection);
+		const contractsFolder = this.resolveContractsFolder(existingCollection);
 		const legacyCompatibility = isRecord(existingCollection.config?.["x-legacy-v0.2"]);
 		this.canonicalTypesFolder = typesFolder;
 		await this.ensureFolderPath(typesFolder);
@@ -304,6 +316,16 @@ export class MdbaseSpecService {
 		const state = await this.readCanonicalType(existingCollection, false);
 		if (this.canonicalReadBlocked) {
 			return;
+		}
+		if (state) {
+			await this.writeCanonicalSupportResources(
+				this.buildCanonicalMdbaseResources(
+					typesFolder,
+					legacyCompatibility,
+					typeof state.type.name === "string" ? state.type.name : "task",
+					contractsFolder
+				)
+			);
 		}
 		const rememberedPath =
 			this.canonicalTypePath?.startsWith(`${typesFolder}/`) === true
@@ -388,8 +410,10 @@ export class MdbaseSpecService {
 		const resources = this.buildCanonicalMdbaseResources(
 			typesFolder,
 			legacyCompatibility,
-			typeName
+			typeName,
+			contractsFolder
 		);
+		await this.writeCanonicalSupportResources(resources);
 		const written = await this.writeCanonicalType(typePath, resources, true);
 		if (!written) return;
 
@@ -451,8 +475,7 @@ export class MdbaseSpecService {
 
 		try {
 			const parsed = parseMdbaseTaskTypeDocument(content);
-			const extension = parsed.type["x-tasknotes"];
-			if (!isRecord(extension) || extension.contract !== "tasknotes.task") {
+			if (!hasTaskNotesImplementation(parsed.type)) {
 				return null;
 			}
 			const validation = validateCanonicalTaskType(parsed.type);
@@ -569,7 +592,7 @@ export class MdbaseSpecService {
 			this.canonicalTypesFolder &&
 				path.startsWith(`${this.canonicalTypesFolder}/`) &&
 				path.endsWith(".md")
-		);
+		) || this.canonicalResourcePaths.has(path);
 	}
 
 	private requestReconciliation(): void {
@@ -688,6 +711,7 @@ export class MdbaseSpecService {
 	private clearCanonicalState(): void {
 		this.canonicalTypePath = null;
 		this.canonicalTypesFolder = null;
+		this.canonicalResourcePaths.clear();
 		this.lastKnownTypeContent = null;
 		this.lastAppliedSettingsFingerprint = null;
 		this.canonicalReadBlocked = false;
@@ -701,6 +725,14 @@ export class MdbaseSpecService {
 		);
 	}
 
+	private resolveContractsFolder(existingCollection: ExistingCollection): string {
+		return (
+			this.normalizeTypesFolder(
+				existingCollection.config?.settings?.contracts_folder
+			) ?? DEFAULT_CONTRACTS_FOLDER
+		);
+	}
+
 	private async writeMissingCollectionConfig(
 		typesFolder: string,
 		legacyCompatibility: boolean,
@@ -710,8 +742,10 @@ export class MdbaseSpecService {
 		const resources = this.buildCanonicalMdbaseResources(
 			typesFolder,
 			legacyCompatibility,
-			typeName
+			typeName,
+			DEFAULT_CONTRACTS_FOLDER
 		);
+		await this.writeCanonicalSupportResources(resources);
 		await this.writeFile("mdbase.yaml", resources.configDocument);
 	}
 
@@ -788,6 +822,28 @@ export class MdbaseSpecService {
 			await vault.adapter.write(path, content);
 		} else {
 			await vault.create(path, content);
+		}
+	}
+
+	private async writeCanonicalSupportResources(
+		resources: TaskNotesMdbaseResources
+	): Promise<void> {
+		const entries = [
+			[resources.paths.contract, resources.contractDocument],
+			[resources.paths.taskSchema, resources.taskSchemaDocument],
+			[resources.paths.bindingSchema, resources.bindingSchemaDocument],
+		] as const;
+		const previousWriteState = this.writeInProgress;
+		this.writeInProgress = true;
+		try {
+			for (const [path, content] of entries) {
+				const parent = path.split("/").slice(0, -1).join("/");
+				if (parent) await this.ensureFolderPath(parent);
+				await this.writeFile(path, content);
+				this.canonicalResourcePaths.add(path);
+			}
+		} finally {
+			this.writeInProgress = previousWriteState;
 		}
 	}
 
@@ -1055,7 +1111,7 @@ export class MdbaseSpecService {
 	/**
 	 * Delegate the v0.3 contract projection to @tasknotes/model. The plugin owns
 	 * vault I/O and its legacy v0.2 writer; the package owns the portable v0.3
-	 * config, schema, lifecycle, and TaskNotes extension.
+	 * config, data contract, schemas, lifecycle, and implementation binding.
 	 */
 	private buildTaskTypeDefV03(legacyCompatibility: boolean): string {
 		return this.buildCanonicalMdbaseResources(DEFAULT_TYPES_FOLDER, legacyCompatibility)
@@ -1065,7 +1121,8 @@ export class MdbaseSpecService {
 	private buildCanonicalMdbaseResources(
 		typesFolder: string,
 		legacyCompatibility: boolean,
-		typeName = "task"
+		typeName = "task",
+		contractsFolder = DEFAULT_CONTRACTS_FOLDER
 	): TaskNotesMdbaseResources {
 		const settings = this.plugin.settings;
 		const filenameFormat = settings.storeTitleInFilename
@@ -1078,6 +1135,7 @@ export class MdbaseSpecService {
 		return buildTaskNotesMdbaseResources({
 			typeName,
 			typesFolder,
+			contractsFolder,
 			tasksFolder: settings.tasksFolder || "",
 			legacyCompatibility,
 			modelConfig: buildTaskNotesModelConfig(settings),
@@ -1330,6 +1388,18 @@ function getSpecFamily(specVersion: unknown): SupportedSpecFamily | null {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function hasTaskNotesImplementation(type: Record<string, unknown>): boolean {
+	return (
+		Array.isArray(type.implements) &&
+		type.implements.some(
+			(implementation) =>
+				isRecord(implementation) &&
+				implementation.contract === "tasknotes.task" &&
+				implementation.version === TASKNOTES_CONTRACT_VERSION
+		)
+	);
 }
 
 /**

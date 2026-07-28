@@ -2,6 +2,7 @@ import {
 	resolveTaskNotesModelConfigFromMdbaseType,
 	type TaskNotesMdbaseResources,
 } from "@tasknotes/model/mdbase";
+import { TASKNOTES_SPEC_VERSION as TASKNOTES_CONTRACT_VERSION } from "@tasknotes/model";
 import YAML from "yaml";
 
 import type { TaskNotesSettings, UserMappedField } from "../types/settings";
@@ -17,20 +18,11 @@ export type ParsedMdbaseTaskType = {
 export type CanonicalTypeValidationResult = { valid: true } | { valid: false; issues: string[] };
 
 const MANAGED_OPTIONAL_PATHS: DocumentPath[] = [
-	["x-tasknotes", "title", "custom_filename_template"],
-	["x-tasknotes", "status", "default_skipped"],
-	["x-tasknotes", "occurrences", "past_horizon"],
-	["x-tasknotes", "occurrences", "future_horizon"],
-	["x-tasknotes", "archive", "folder"],
-	["x-tasknotes", "templating", "template_path"],
-	["x-tasknotes", "templating", "occurrence_template_path"],
-	["x-tasknotes", "generator", "omitted_collection_paths"],
-	["x-tasknotes", "generator", "legacy_compatibility"],
+	["x-tasknotes-generator", "omitted_collection_paths"],
+	["x-tasknotes-generator", "legacy_compatibility"],
 ];
 
 const MANAGED_REPLACE_PATHS: DocumentPath[] = [["match"]];
-const SEMVER_PATTERN =
-	/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
 export function parseMdbaseTaskTypeDocument(markdown: string): ParsedMdbaseTaskType {
 	const parts = splitFrontmatter(markdown);
@@ -47,31 +39,27 @@ export function parseMdbaseTaskTypeDocument(markdown: string): ParsedMdbaseTaskT
 
 export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeValidationResult {
 	const issues: string[] = [];
-	const extension = recordAt(type, ["x-tasknotes"]);
+	const implementation = taskNotesImplementation(type);
+	const extension = asRecord(implementation?.binding);
 	const schemaProperties = recordAt(type, ["schema", "value", "properties"]);
-	const fieldRoles = recordAt(type, ["x-tasknotes", "field_roles"]);
+	const fieldRoles = asRecord(implementation?.fields);
 
 	if (type.kind !== "mdbase.type") {
 		issues.push("kind must be mdbase.type");
 	}
-	if (!extension || extension.contract !== "tasknotes.task") {
-		issues.push("x-tasknotes.contract must be tasknotes.task");
+	if (!implementation) {
+		issues.push(
+			`implements must contain tasknotes.task ${TASKNOTES_CONTRACT_VERSION}`
+		);
 	}
-	if (!extension || extension.version !== 1) {
-		issues.push("x-tasknotes.version must be 1");
-	}
-	if (
-		!extension ||
-		typeof extension.spec_version !== "string" ||
-		!SEMVER_PATTERN.test(extension.spec_version)
-	) {
-		issues.push("x-tasknotes.spec_version must be a semantic version");
+	if (!extension) {
+		issues.push("the TaskNotes implementation binding must be an object");
 	}
 	if (!schemaProperties) {
 		issues.push("schema.value.properties must be an object");
 	}
 	if (!fieldRoles || Object.keys(fieldRoles).length === 0) {
-		issues.push("x-tasknotes.field_roles must map at least one role");
+		issues.push("the TaskNotes implementation fields must map at least one contract field");
 	} else if (schemaProperties) {
 		for (const [role, field] of Object.entries(fieldRoles)) {
 			if (typeof field !== "string" || !field.trim()) {
@@ -82,24 +70,26 @@ export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeVal
 		}
 	}
 
-	const status = recordAt(type, ["x-tasknotes", "status"]);
+	const status = asRecord(extension?.status);
 	if (!status) {
-		issues.push("x-tasknotes.status must be an object");
+		issues.push("the TaskNotes implementation binding.status must be an object");
 	} else if (!Array.isArray(status.completed_values)) {
-		issues.push("x-tasknotes.status.completed_values must be an array");
+		issues.push("binding.status.completed_values must be an array");
 	}
 
 	validateTaskIdentification(type, issues);
-	validateVocabularyMirror(type, "status", issues);
-	validateVocabularyMirror(type, "priority", issues);
+	if (implementation) {
+		validateVocabularyMirror(type, implementation, "status", issues);
+		validateVocabularyMirror(type, implementation, "priority", issues);
+	}
 
-	const statusField = valueAt(type, ["x-tasknotes", "field_roles", "status"]);
-	const advertisedStatusValues = stringArrayAt(type, ["x-tasknotes", "status", "values"]);
+	const statusField = fieldRoles?.status;
+	const advertisedStatusValues = stringArray(extension?.status, "values");
 	const statusValues =
 		advertisedStatusValues.length > 0 || typeof statusField !== "string"
 			? advertisedStatusValues
 			: stringArrayAt(type, ["schema", "value", "properties", statusField, "enum"]);
-	const completedValues = stringArrayAt(type, ["x-tasknotes", "status", "completed_values"]);
+	const completedValues = stringArray(extension?.status, "completed_values");
 	for (const value of completedValues) {
 		if (!statusValues.includes(value)) {
 			issues.push(`completed status ${value} is not present in status.values`);
@@ -107,7 +97,7 @@ export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeVal
 	}
 	validateUniqueStrings(completedValues, "completed status", issues);
 
-	const skippedValues = stringArrayAt(type, ["x-tasknotes", "status", "skipped_values"]);
+	const skippedValues = stringArray(extension?.status, "skipped_values");
 	for (const value of skippedValues) {
 		if (!statusValues.includes(value)) {
 			issues.push(`skipped status ${value} is not present in status.values`);
@@ -118,7 +108,7 @@ export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeVal
 	}
 	validateUniqueStrings(skippedValues, "skipped status", issues);
 
-	const defaultSkipped = valueAt(type, ["x-tasknotes", "status", "default_skipped"]);
+	const defaultSkipped = asRecord(extension?.status)?.default_skipped;
 	if (
 		defaultSkipped !== undefined &&
 		(typeof defaultSkipped !== "string" || !skippedValues.includes(defaultSkipped))
@@ -137,7 +127,7 @@ export function applyCanonicalTaskTypeToSettings(
 		type,
 		buildTaskNotesModelConfig(settings)
 	);
-	const extension = recordAt(type, ["x-tasknotes"]) ?? {};
+	const extension = asRecord(taskNotesImplementation(type)?.binding) ?? {};
 	const title = asRecord(extension.title);
 	const links = asRecord(extension.links);
 	const archive = asRecord(extension.archive);
@@ -280,6 +270,19 @@ export function mergeCanonicalTaskTypeDocument(
 	}
 
 	const desired = generated.type;
+	const existingImplementations = Array.isArray(existingValue.implements)
+		? existingValue.implements.filter(isRecord)
+		: [];
+	const desiredImplementation = taskNotesImplementation(desired);
+	if (!desiredImplementation) {
+		throw new Error("The generated mdbase type has no TaskNotes implementation.");
+	}
+	const mergedImplementations = existingImplementations.filter(
+		(implementation) => implementation.contract !== "tasknotes.task"
+	);
+	mergedImplementations.push(cloneValue(desiredImplementation) as UnknownRecord);
+	document.setIn(["implements"], mergedImplementations);
+
 	deleteStaleManagedFields(document, existingValue, desired);
 	for (const path of MANAGED_OPTIONAL_PATHS) {
 		if (!hasPath(desired, path)) {
@@ -293,7 +296,9 @@ export function mergeCanonicalTaskTypeDocument(
 			document.deleteIn(path);
 		}
 	}
-	syncDocumentValue(document, [], desired);
+	const desiredWithoutImplementations = cloneValue(desired) as UnknownRecord;
+	delete desiredWithoutImplementations.implements;
+	syncDocumentValue(document, [], desiredWithoutImplementations);
 
 	const body = isLegacyGeneratedBody(existingParts.body)
 		? generatedParts.body
@@ -335,18 +340,20 @@ function validateTaskIdentification(type: UnknownRecord, issues: string[]): void
 
 function validateVocabularyMirror(
 	type: UnknownRecord,
+	implementation: UnknownRecord,
 	role: "status" | "priority",
 	issues: string[]
 ): void {
-	const fieldName = valueAt(type, ["x-tasknotes", "field_roles", role]);
-	const extensionValues = stringArrayAt(type, ["x-tasknotes", role, "values"]);
+	const fieldName = asRecord(implementation.fields)?.[role];
+	const policy = asRecord(asRecord(implementation.binding)?.[role]);
+	const extensionValues = stringArray(policy, "values");
 	if (typeof fieldName !== "string" || extensionValues.length === 0) return;
 	const schemaValues = stringArrayAt(type, ["schema", "value", "properties", fieldName, "enum"]);
 	if (schemaValues.length > 0 && !sameStrings(extensionValues, schemaValues)) {
 		issues.push(`${role}.values contradicts schema enum for ${fieldName}`);
 	}
 
-	const extensionDefault = valueAt(type, ["x-tasknotes", role, "default"]);
+	const extensionDefault = policy?.default;
 	const schemaDefault = valueAt(type, ["schema", "value", "properties", fieldName, "default"]);
 	const collectionDefault = valueAt(type, ["collection", "read_defaults", fieldName]);
 	if (
@@ -376,8 +383,13 @@ function deleteStaleManagedFields(
 	existing: UnknownRecord,
 	desired: UnknownRecord
 ): void {
-	const previous = stringArrayAt(existing, ["x-tasknotes", "generator", "managed_fields"]);
-	const next = new Set(stringArrayAt(desired, ["x-tasknotes", "generator", "managed_fields"]));
+	const previous = stringArrayAt(existing, [
+		"x-tasknotes-generator",
+		"managed_fields",
+	]);
+	const next = new Set(
+		stringArrayAt(desired, ["x-tasknotes-generator", "managed_fields"])
+	);
 	const stale = previous.filter((field) => !next.has(field));
 	if (stale.length === 0) return;
 
@@ -463,6 +475,24 @@ function isTaskFilenameFormat(value: unknown): value is TaskNotesSettings["taskF
 
 function sameStrings(left: string[], right: string[]): boolean {
 	return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function taskNotesImplementation(type: UnknownRecord): UnknownRecord | null {
+	if (!Array.isArray(type.implements)) return null;
+	return (
+		type.implements.find(
+			(value) =>
+				isRecord(value) &&
+				value.contract === "tasknotes.task" &&
+				value.version === TASKNOTES_CONTRACT_VERSION
+		) ?? null
+	);
+}
+
+function stringArray(value: unknown, key: string): string[] {
+	return isRecord(value) && Array.isArray(value[key])
+		? value[key].filter((entry): entry is string => typeof entry === "string")
+		: [];
 }
 
 function stringArrayAt(value: unknown, path: DocumentPath): string[] {
