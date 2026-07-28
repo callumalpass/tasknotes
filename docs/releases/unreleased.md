@@ -38,7 +38,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   support Arrow Up/Down and Home/End navigation, and toggle the focused task's
   existing batch-selection state with Space. Focused or selected tasks can now
   be created, opened, edited, organized, rescheduled, reprioritized, updated,
-  or deleted with task-list keyboard actions.
+  or deleted with task-list keyboard actions. Menus and modals temporarily own
+  their keyboard input and return focus to the originating task after closing.
 - Generated TaskNotes type contracts now include configured natural-language
   capture triggers, allowing compatible clients to offer the same field
   suggestions.

@@ -49,7 +49,7 @@ export class TaskListFocusController {
 	}
 
 	handleKeyDown(event: KeyboardEvent): boolean {
-		if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+		if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
 			return false;
 		}
 
@@ -123,6 +123,15 @@ export class TaskListFocusController {
 		const cards = this.getCards();
 		const index = this.findFocusedIndex(cards);
 		return index >= 0 ? cards[index] : null;
+	}
+
+	restoreFocusedElement(): boolean {
+		const card = this.getFocusedElement();
+		if (!card) return false;
+
+		card.focus({ preventScroll: true });
+		card.scrollIntoView({ block: "nearest" });
+		return true;
 	}
 
 	getFocusedPathForEvent(event: KeyboardEvent, allowModifiers = false): string | null {

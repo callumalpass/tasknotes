@@ -77,6 +77,7 @@ import {
 import { addTagsToList, parseTaskTagInput } from "../utils/taskTagList";
 import { addContextToList } from "../components/TaskContextMenu";
 import { addTaskToProject } from "../services/taskRelationshipActions";
+import { TaskListInputOwnershipController } from "./TaskListInputOwnershipController";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -153,6 +154,7 @@ export class TaskListView extends BasesViewBase {
 	private currentTargetDate = createUTCDateFromLocalCalendarDate(new Date());
 	private containerListenersRegistered = false;
 	private focusController: TaskListFocusController | null = null;
+	private inputOwnershipController: TaskListInputOwnershipController | null = null;
 	private virtualScroller: VirtualScroller<TaskListVirtualItem> | null = null; // Can render TaskInfo or group headers
 	private useVirtualScrolling = false;
 	private collapsedGroups = new Set<string>(); // Track collapsed group keys
@@ -456,10 +458,12 @@ export class TaskListView extends BasesViewBase {
 
 	protected setupContainer(): void {
 		super.setupContainer();
+		const rootElement = this.rootElement;
+		if (!rootElement) return;
 
 		// Make rootElement fill its container and establish flex context
-		if (this.rootElement) {
-			this.rootElement.classList.remove(
+		{
+			rootElement.classList.remove(
 				"tn-static-display-block-2a1b75c9",
 				"tn-static-display-flex-75816cae",
 				"tn-static-display-flex-8bb39979",
@@ -475,7 +479,7 @@ export class TaskListView extends BasesViewBase {
 				"tn-static-height-24px-29a11d37",
 				"tn-static-min-height-800px-997b4c8c"
 			);
-			this.rootElement.classList.add("tn-static-display-flex-4d51fc62");
+			rootElement.classList.add("tn-static-display-flex-4d51fc62");
 		}
 
 		// Use correct document for pop-out window support
@@ -506,9 +510,13 @@ export class TaskListView extends BasesViewBase {
 			"tn-static-position-relative-d461c96d"
 		);
 		itemsContainer.classList.add("tn-static-margin-top-12px-91e0f558");
-		this.rootElement?.appendChild(itemsContainer);
+		rootElement.appendChild(itemsContainer);
 		this.itemsContainer = itemsContainer;
 		this.focusController = new TaskListFocusController(itemsContainer);
+		this.inputOwnershipController = new TaskListInputOwnershipController(
+			rootElement,
+			this.focusController
+		);
 		this.registerContainerListeners();
 		this.setupContainerDragHandlers();
 	}
@@ -2137,6 +2145,8 @@ export class TaskListView extends BasesViewBase {
 		// We just need to clean up view-specific state
 		this.unregisterContainerListeners();
 		this.destroyVirtualScroller();
+		this.inputOwnershipController?.destroy();
+		this.inputOwnershipController = null;
 		this.focusController?.clear();
 		this.focusController = null;
 
@@ -2289,11 +2299,43 @@ export class TaskListView extends BasesViewBase {
 			this.focusController?.handlePointerDown(event);
 		});
 		this.registerDomEvent(this.itemsContainer, "keydown", (event: KeyboardEvent) => {
+			if (!this.inputOwnershipController?.canHandleListKeyDown(event)) return;
+			if (this.handleTaskListEscape(event)) return;
 			if (this.focusController?.handleKeyDown(event)) return;
 			if (this.handleTaskListSelectionKeyDown(event)) return;
 			this.handleTaskListActionKeyDown(event);
 		});
+		const doc = this.itemsContainer.ownerDocument;
+		this.registerDomEvent(doc, "focusin", (event: FocusEvent) => {
+			this.inputOwnershipController?.handleDocumentFocusIn(event);
+		});
+		this.registerDomEvent(doc, "pointerdown", (event: PointerEvent) => {
+			this.inputOwnershipController?.handleOverlayInteraction(event);
+		});
+		this.registerDomEvent(
+			doc,
+			"keydown",
+			(event: KeyboardEvent) => {
+				if (event.key === "Escape" || event.key === "Backspace") {
+					this.inputOwnershipController?.handleOverlayInteraction(event);
+				}
+			},
+			true
+		);
 		this.containerListenersRegistered = true;
+	}
+
+	private handleTaskListEscape(event: KeyboardEvent): boolean {
+		if (event.key !== "Escape") return false;
+
+		event.preventDefault();
+		event.stopPropagation();
+		this.plugin.taskSelectionService?.exitSelectionMode(true);
+		return true;
+	}
+
+	protected handleSearchDismissed(): void {
+		this.focusController?.restoreFocusedElement();
 	}
 
 	private handleTaskListSelectionKeyDown(event: KeyboardEvent): boolean {
@@ -2315,6 +2357,7 @@ export class TaskListView extends BasesViewBase {
 
 		event.preventDefault();
 		event.stopPropagation();
+		this.inputOwnershipController?.noteOverlayOpening();
 		void this.executeTaskListAction(action);
 	}
 

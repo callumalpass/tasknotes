@@ -614,6 +614,7 @@ export abstract class BasesViewBase extends Component {
 			visibleProperties,
 			currentSearchTerm: this.currentSearchTerm,
 			onSearch: (term) => this.handleSearch(term),
+			onDismiss: () => this.handleSearchDismissed(),
 		});
 		this.searchFilter = searchControls.searchFilter;
 		this.searchBox = searchControls.searchBox;
@@ -622,6 +623,8 @@ export abstract class BasesViewBase extends Component {
 		// Register cleanup using Component lifecycle
 		this.register(() => this.teardownSearch());
 	}
+
+	protected handleSearchDismissed(): void {}
 
 	/**
 	 * Remove the search UI and reset search state.

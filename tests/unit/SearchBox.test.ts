@@ -204,6 +204,24 @@ describe('SearchBox', () => {
 			expect(clearBtn.classList.contains('is-visible')).toBe(false);
 		});
 
+		it('should dismiss an empty search with Backspace', () => {
+			const onDismiss = jest.fn();
+			searchBox = new SearchBox(container, onSearchMock, 300, onDismiss);
+			searchBox.render();
+			const input = container.querySelector('.tn-search-box__input') as HTMLInputElement;
+			input.focus();
+			const event = new KeyboardEvent('keydown', {
+				key: 'Backspace',
+				bubbles: true,
+				cancelable: true,
+			});
+
+			input.dispatchEvent(event);
+
+			expect(event.defaultPrevented).toBe(true);
+			expect(onDismiss).toHaveBeenCalled();
+		});
+
 		it('should clear input when clear button clicked', () => {
 			searchBox = new SearchBox(container, onSearchMock, 300);
 			searchBox.render();
