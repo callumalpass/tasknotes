@@ -82,6 +82,7 @@
 		"typescript": "^5.9.2"
 	},
 	"dependencies": {
+		"@callumalpass/mdbase-interop": "file:../mdbase-spec/packages/interop",
 		"@callumalpass/mdbase-runtime": "file:../mdbase-spec/packages/runtime-contracts",
 		"@codemirror/view": "^6.38.6",
 		"@fullcalendar/core": "^6.1.17",

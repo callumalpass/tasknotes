@@ -45,6 +45,7 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { computeTaskTimeData, computeTimeSummary } from "../utils/timeTrackingUtils";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { createTaskNotesRuntimeProvider } from "./tasknotes-runtime-provider";
+import { TaskNotesInteropPublisher } from "./tasknotes-interop";
 import {
 	TASKNOTES_RUNTIME_API_CAPABILITIES,
 	TASKNOTES_RUNTIME_EVENT_DEFINITIONS,
@@ -949,11 +950,17 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	private externalRuntimeHost: MdbaseRuntimeHostApi | null = null;
 	private externalRuntimeHandle: MdbaseRuntimeProviderRegistration | null = null;
 	private externalRuntimeRegistration: Promise<void> | null = null;
+	private readonly interopPublisher: TaskNotesInteropPublisher;
 
 	constructor(private plugin: TaskNotesPlugin) {
+		this.interopPublisher = new TaskNotesInteropPublisher(plugin, this);
 		this.connectMdbaseRuntimeHost();
+		this.interopPublisher.connect();
 		if (typeof window !== "undefined" && typeof plugin.registerInterval === "function") {
-			plugin.registerInterval(window.setInterval(() => this.connectMdbaseRuntimeHost(), 5000));
+			plugin.registerInterval(window.setInterval(() => {
+				this.connectMdbaseRuntimeHost();
+				this.interopPublisher.connect();
+			}, 5000));
 		}
 	}
 
@@ -984,6 +991,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	}
 
 	async dispose(): Promise<void> {
+		await this.interopPublisher.dispose();
 		await this.externalRuntimeRegistration;
 		const handle = this.externalRuntimeHandle;
 		this.externalRuntimeHandle = null;

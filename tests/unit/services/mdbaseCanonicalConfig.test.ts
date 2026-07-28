@@ -259,7 +259,7 @@ function implementation(type: Record<string, unknown>): Record<string, unknown> 
 	const implementations = type.implements as Record<string, unknown>[];
 	const implementation = implementations.find(
 		(candidate) =>
-			candidate.contract === "tasknotes.task" && candidate.version === "0.2.0"
+			candidate.contract === "tasknotes.task" && candidate.version === "0.3.0-rc.1"
 	);
 	if (!implementation) throw new Error("Missing TaskNotes implementation");
 	return implementation;
