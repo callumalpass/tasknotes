@@ -176,6 +176,13 @@ export class SearchBox {
 	}
 
 	/**
+	 * Move keyboard focus into the search input.
+	 */
+	focus(): void {
+		this.inputEl?.focus();
+	}
+
+	/**
 	 * Set input value programmatically
 	 */
 	setValue(value: string): void {

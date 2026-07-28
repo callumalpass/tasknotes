@@ -11,7 +11,11 @@ import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
+import { StatusContextMenu } from "../components/StatusContextMenu";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
+import { showTextInputModal } from "../modals/TextInputModal";
+import { ProjectSelectModal } from "../modals/ProjectSelectModal";
+import { TagSuggest } from "../modals/taskModalSuggests";
 import { ReminderModal } from "../modals/ReminderModal";
 import {
 	getDatePart,
@@ -66,6 +70,13 @@ import {
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { TaskListFocusController } from "./TaskListFocusController";
 import { resolveTaskListTargetPaths } from "./taskListTargetResolver";
+import {
+	resolveDefaultTaskListKeyboardAction,
+	type TaskListKeyboardAction,
+} from "./taskListKeyboardActions";
+import { addTagsToList, parseTaskTagInput } from "../utils/taskTagList";
+import { addContextToList } from "../components/TaskContextMenu";
+import { addTaskToProject } from "../services/taskRelationshipActions";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -2279,21 +2290,32 @@ export class TaskListView extends BasesViewBase {
 		});
 		this.registerDomEvent(this.itemsContainer, "keydown", (event: KeyboardEvent) => {
 			if (this.focusController?.handleKeyDown(event)) return;
-			this.handleTaskListSelectionKeyDown(event);
+			if (this.handleTaskListSelectionKeyDown(event)) return;
+			this.handleTaskListActionKeyDown(event);
 		});
 		this.containerListenersRegistered = true;
 	}
 
-	private handleTaskListSelectionKeyDown(event: KeyboardEvent): void {
-		if (event.key !== " " && event.key !== "Spacebar") return;
+	private handleTaskListSelectionKeyDown(event: KeyboardEvent): boolean {
+		if (event.key !== " " && event.key !== "Spacebar") return false;
 
 		const taskPath = this.focusController?.getFocusedPathForEvent(event);
 		const selectionService = this.plugin.taskSelectionService;
-		if (!taskPath || !selectionService) return;
+		if (!taskPath || !selectionService) return false;
 
 		event.preventDefault();
 		event.stopPropagation();
 		selectionService.toggleSelection(taskPath);
+		return true;
+	}
+
+	private handleTaskListActionKeyDown(event: KeyboardEvent): void {
+		const action = resolveDefaultTaskListKeyboardAction(event);
+		if (!action || !this.focusController?.getFocusedPathForEvent(event)) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+		void this.executeTaskListAction(action);
 	}
 
 	/**
@@ -2305,6 +2327,246 @@ export class TaskListView extends BasesViewBase {
 			this.plugin.taskSelectionService,
 			this.focusController?.getFocusedIdentity()?.path
 		);
+	}
+
+	private async executeTaskListAction(action: TaskListKeyboardAction): Promise<void> {
+		switch (action) {
+			case "create-task":
+				await this.createFileForView();
+				return;
+			case "focus-search":
+				this.searchBox?.focus();
+				return;
+			case "edit-task": {
+				const task = (await this.getTaskActionTargets())[0];
+				if (task) await this.plugin.openTaskEditModal(task);
+				return;
+			}
+			case "open-task-notes":
+				await this.openTaskActionTargets();
+				return;
+			case "edit-due":
+				await this.showTaskActionDateMenu("due");
+				return;
+			case "edit-scheduled":
+				await this.showTaskActionDateMenu("scheduled");
+				return;
+			case "edit-priority":
+				await this.showTaskActionPriorityMenu();
+				return;
+			case "edit-status":
+				await this.showTaskActionStatusMenu();
+				return;
+			case "edit-recurrence":
+				await this.showTaskActionRecurrenceMenu();
+				return;
+			case "add-tags":
+				await this.addTagsToTaskActionTargets();
+				return;
+			case "add-context":
+				await this.addContextToTaskActionTargets();
+				return;
+			case "add-project":
+				this.addProjectToTaskActionTargets();
+				return;
+			case "delete-tasks":
+				await this.deleteTaskActionTargets();
+		}
+	}
+
+	private async getTaskActionTargets(): Promise<TaskInfo[]> {
+		const tasks: TaskInfo[] = [];
+		for (const path of this.getTaskActionTargetPaths()) {
+			const task = await this.plugin.cacheManager.getTaskInfo(path);
+			if (task) tasks.push(task);
+		}
+		return tasks;
+	}
+
+	private getTaskActionAnchor(): HTMLElement | null {
+		return this.focusController?.getFocusedElement() ?? this.itemsContainer;
+	}
+
+	private async updateTaskActionTargets(
+		tasks: readonly TaskInfo[],
+		property: keyof TaskInfo,
+		value: unknown
+	): Promise<void> {
+		for (const task of tasks) {
+			await this.plugin.updateTaskProperty(task, property, value);
+		}
+	}
+
+	private async openTaskActionTargets(): Promise<void> {
+		const app = this.app || this.plugin.app;
+		for (const task of await this.getTaskActionTargets()) {
+			const file = app.vault.getAbstractFileByPath(task.path);
+			if (file instanceof TFile) {
+				await app.workspace.getLeaf("tab").openFile(file);
+			}
+		}
+	}
+
+	private async showTaskActionDateMenu(dateType: "due" | "scheduled"): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		const anchor = this.getTaskActionAnchor();
+		if (tasks.length === 0 || !anchor) return;
+
+		const currentValue = dateType === "due" ? tasks[0].due : tasks[0].scheduled;
+		const menu = new DateContextMenu({
+			currentValue: getDatePart(currentValue || ""),
+			currentTime: getTimePart(currentValue || ""),
+			onSelect: (dateValue, timeValue) => {
+				const value = dateValue
+					? timeValue
+						? `${dateValue}T${timeValue}`
+						: dateValue
+					: undefined;
+				void this.updateTaskActionTargets(tasks, dateType, value);
+			},
+			dateRole: dateType,
+			plugin: this.plugin,
+			app: this.app || this.plugin.app,
+		});
+		menu.showAtElement(anchor);
+	}
+
+	private async showTaskActionPriorityMenu(): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		const anchor = this.getTaskActionAnchor();
+		if (tasks.length === 0 || !anchor) return;
+
+		new PriorityContextMenu({
+			currentValue: tasks[0].priority,
+			onSelect: (value) => void this.updateTaskActionTargets(tasks, "priority", value),
+			plugin: this.plugin,
+		}).showAtElement(anchor);
+	}
+
+	private async showTaskActionStatusMenu(): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		const anchor = this.getTaskActionAnchor();
+		if (tasks.length === 0 || !anchor) return;
+
+		new StatusContextMenu({
+			currentValue: tasks[0].status,
+			onSelect: (value) => void this.updateTaskActionTargets(tasks, "status", value),
+			plugin: this.plugin,
+		}).showAtElement(anchor);
+	}
+
+	private async showTaskActionRecurrenceMenu(): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		const anchor = this.getTaskActionAnchor();
+		if (tasks.length === 0 || !anchor) return;
+
+		new RecurrenceContextMenu({
+			currentValue:
+				typeof tasks[0].recurrence === "string" ? tasks[0].recurrence : undefined,
+			currentAnchor: tasks[0].recurrence_anchor || "scheduled",
+			scheduledDate: tasks[0].scheduled,
+			onSelect: (value, recurrenceAnchor) => {
+				void (async () => {
+					await this.updateTaskActionTargets(
+						tasks,
+						"recurrence",
+						value || undefined
+					);
+					if (recurrenceAnchor !== undefined) {
+						await this.updateTaskActionTargets(
+							tasks,
+							"recurrence_anchor",
+							recurrenceAnchor
+						);
+					}
+				})();
+			},
+			app: this.plugin.app,
+			plugin: this.plugin,
+		}).showAtElement(anchor);
+	}
+
+	private async addTagsToTaskActionTargets(): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		if (tasks.length === 0) return;
+
+		const input = await showTextInputModal(this.plugin.app, {
+			title: this.plugin.i18n.translate("contextMenus.task.addTag"),
+			placeholder: this.plugin.i18n.translate("contextMenus.task.tagPlaceholder"),
+			confirmText: this.plugin.i18n.translate("common.confirm"),
+			cancelText: this.plugin.i18n.translate("common.cancel"),
+			onInputReady: (inputEl) => {
+				new TagSuggest(this.plugin.app, inputEl, this.plugin);
+			},
+		});
+		const tags = parseTaskTagInput(input);
+		if (tags.length === 0) return;
+
+		for (const task of tasks) {
+			await this.plugin.updateTaskProperty(task, "tags", addTagsToList(task.tags, tags));
+		}
+	}
+
+	private async addContextToTaskActionTargets(): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		if (tasks.length === 0) return;
+
+		const context = await showTextInputModal(this.plugin.app, {
+			title: this.plugin.i18n.translate(
+				"contextMenus.task.organization.addContext"
+			),
+			placeholder: this.plugin.i18n.translate(
+				"contextMenus.task.organization.contextPlaceholder"
+			),
+			confirmText: this.plugin.i18n.translate("common.confirm"),
+			cancelText: this.plugin.i18n.translate("common.cancel"),
+		});
+		if (!context?.trim()) return;
+
+		for (const task of tasks) {
+			await this.plugin.updateTaskProperty(
+				task,
+				"contexts",
+				addContextToList(task.contexts, context)
+			);
+		}
+	}
+
+	private addProjectToTaskActionTargets(): void {
+		const paths = this.getTaskActionTargetPaths();
+		if (paths.length === 0) return;
+
+		new ProjectSelectModal(this.plugin.app, this.plugin, (projectFile) => {
+			if (!(projectFile instanceof TFile)) return;
+			void (async () => {
+				for (const path of paths) {
+					const task = await this.plugin.cacheManager.getTaskInfo(path);
+					if (task) await addTaskToProject(this.plugin, task, projectFile);
+				}
+			})();
+		}).open();
+	}
+
+	private async deleteTaskActionTargets(): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		if (tasks.length === 0) return;
+
+		const confirmed = await showConfirmationModal(this.plugin.app, {
+			title: tasks.length === 1 ? "Delete task" : "Delete tasks",
+			message:
+				tasks.length === 1
+					? `Are you sure you want to delete "${tasks[0].title}"? This action cannot be undone.`
+					: `Are you sure you want to delete ${tasks.length} tasks? This action cannot be undone.`,
+			confirmText: "Delete",
+			cancelText: this.plugin.i18n.translate("common.cancel"),
+			isDestructive: true,
+		});
+		if (!confirmed) return;
+
+		for (const task of tasks) {
+			await this.plugin.taskService.deleteTask(task);
+		}
+		this.plugin.taskSelectionService?.clearSelection();
 	}
 
 	private unregisterContainerListeners(): void {

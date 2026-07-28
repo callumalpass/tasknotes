@@ -119,6 +119,12 @@ export class TaskListFocusController {
 		return this.focusedIdentity ? { ...this.focusedIdentity } : null;
 	}
 
+	getFocusedElement(): HTMLElement | null {
+		const cards = this.getCards();
+		const index = this.findFocusedIndex(cards);
+		return index >= 0 ? cards[index] : null;
+	}
+
 	getFocusedPathForEvent(event: KeyboardEvent): string | null {
 		if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
 			return null;

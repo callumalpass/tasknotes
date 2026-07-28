@@ -36,7 +36,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Task list cards now retain a distinct keyboard focus across view refreshes,
   support Arrow Up/Down and Home/End navigation, and toggle the focused task's
-  existing batch-selection state with Space.
+  existing batch-selection state with Space. Focused or selected tasks can now
+  be created, opened, edited, organized, rescheduled, reprioritized, updated,
+  or deleted with task-list keyboard actions.
 - Generated TaskNotes type contracts now include configured natural-language
   capture triggers, allowing compatible clients to offer the same field
   suggestions.

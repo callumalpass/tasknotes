@@ -578,6 +578,13 @@ export class RecurrenceContextMenu {
 	public show(event: UIEvent): void {
 		this.menu.show(event);
 	}
+
+	public showAtElement(element: HTMLElement): void {
+		this.menu.showAtPosition({
+			x: element.getBoundingClientRect().left,
+			y: element.getBoundingClientRect().bottom + 4,
+		});
+	}
 }
 
 class CustomRecurrenceModal extends Modal {
