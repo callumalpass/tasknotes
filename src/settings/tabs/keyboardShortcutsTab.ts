@@ -1,4 +1,4 @@
-import { Platform, Setting } from "obsidian";
+import { Platform, Scope, Setting } from "obsidian";
 import type TaskNotesPlugin from "../../main";
 import {
 	DEFAULT_TASK_LIST_SHORTCUTS,
@@ -14,6 +14,30 @@ import { createSettingGroup } from "../components/settingHelpers";
 import type { TranslationKey } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 
+const activeCaptureCleanup = new WeakMap<HTMLElement, () => void>();
+
+export function pushKeyboardShortcutCaptureScope(
+	plugin: TaskNotesPlugin,
+	onEscape: () => void
+): () => void {
+	const captureScope = new Scope(plugin.app.scope);
+	let active = true;
+	const stop = () => {
+		if (!active) return;
+		active = false;
+		plugin.app.keymap.popScope(captureScope);
+	};
+	captureScope.register([], "Escape", (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		stop();
+		onEscape();
+		return false;
+	});
+	plugin.app.keymap.pushScope(captureScope);
+	return stop;
+}
+
 function actionKey(action: TaskListKeyboardAction): TranslationKey {
 	return `settings.keyboardShortcuts.actions.${action}`;
 }
@@ -23,6 +47,7 @@ export function renderKeyboardShortcutsTab(
 	plugin: TaskNotesPlugin,
 	save: () => void
 ): void {
+	activeCaptureCleanup.get(container)?.();
 	container.empty();
 	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
@@ -71,15 +96,32 @@ export function renderKeyboardShortcutsTab(
 							.setButtonText(translate("settings.keyboardShortcuts.add"))
 							.setTooltip(translate("settings.keyboardShortcuts.captureHint"))
 							.onClick(() => {
+								activeCaptureCleanup.get(container)?.();
 								const buttonEl = button.buttonEl;
 								buttonEl.setText(translate("settings.keyboardShortcuts.recording"));
 								buttonEl.addClass("mod-cta");
+								let stopped = false;
+								let popCaptureScope = () => {};
+								const stopCapture = () => {
+									if (stopped) return;
+									stopped = true;
+									buttonEl.removeEventListener("keydown", captureListener);
+									popCaptureScope();
+									if (activeCaptureCleanup.get(container) === stopCapture) {
+										activeCaptureCleanup.delete(container);
+									}
+								};
 								const capture = async (event: KeyboardEvent) => {
 									event.preventDefault();
 									event.stopPropagation();
+									if (event.key === "Escape") {
+										stopCapture();
+										renderKeyboardShortcutsTab(container, plugin, save);
+										return;
+									}
 									const shortcut = keyboardEventToTaskListShortcut(event);
 									if (!shortcut) return;
-									buttonEl.removeEventListener("keydown", captureListener);
+									stopCapture();
 									if (!shortcuts[action].includes(shortcut)) {
 										const owners = findTaskListShortcutOwners(
 											shortcuts,
@@ -127,6 +169,11 @@ export function renderKeyboardShortcutsTab(
 								};
 								const captureListener = (event: KeyboardEvent) => void capture(event);
 								buttonEl.addEventListener("keydown", captureListener);
+								popCaptureScope = pushKeyboardShortcutCaptureScope(plugin, () => {
+									stopCapture();
+									renderKeyboardShortcutsTab(container, plugin, save);
+								});
+								activeCaptureCleanup.set(container, stopCapture);
 								buttonEl.focus();
 							});
 					});
