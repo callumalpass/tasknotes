@@ -194,6 +194,30 @@ describe("TaskListView keyboard actions", () => {
 		expect(executeTaskListAction).toHaveBeenCalledWith("edit-due");
 	});
 
+	it("routes a body-targeted shortcut through remembered task focus after a rerender", () => {
+		const executeTaskListAction = jest.fn();
+		const canHandleListKeyDown = jest.fn(() => true);
+		const getFocusedPathForEvent = jest.fn(() => "remembered.md");
+		const event = new KeyboardEvent("keydown", {
+			key: " ",
+			cancelable: true,
+		});
+		Object.defineProperty(event, "target", { value: document.body });
+		const view = {
+			inputOwnershipController: { canHandleListKeyDown },
+			focusController: { getFocusedPathForEvent },
+			handleTaskListActionKeyDown:
+				(TaskListView.prototype as any).handleTaskListActionKeyDown,
+			executeTaskListAction,
+		};
+
+		(TaskListView.prototype as any).handleTaskListKeyDown.call(view, event, true);
+
+		expect(canHandleListKeyDown).toHaveBeenCalledWith(event, true);
+		expect(getFocusedPathForEvent).toHaveBeenCalledWith(event, true, true);
+		expect(executeTaskListAction).toHaveBeenCalledWith("toggle-select");
+	});
+
 	it("routes a prevented modifier chord from the active view shell", () => {
 		const executeTaskListAction = jest.fn();
 		const event = new KeyboardEvent("keydown", {
@@ -291,6 +315,27 @@ describe("TaskListView keyboard actions", () => {
 			"mousemove",
 			expect.any(Function)
 		);
+	});
+
+	it("keeps the active view shortcut scope when focus falls back to the body", () => {
+		const canOwnKeyboardTarget = jest.fn(() => true);
+		const activateTaskListShortcutScope = jest.fn();
+		const deactivateTaskListShortcutScope = jest.fn();
+		const view = {
+			taskListLeafActive: true,
+			inputOwnershipController: { canOwnKeyboardTarget },
+			activateTaskListShortcutScope,
+			deactivateTaskListShortcutScope,
+		};
+
+		(TaskListView.prototype as any).syncTaskListShortcutScopeForFocusTarget.call(
+			view,
+			document.body
+		);
+
+		expect(canOwnKeyboardTarget).toHaveBeenCalledWith(document.body, true);
+		expect(activateTaskListShortcutScope).toHaveBeenCalled();
+		expect(deactivateTaskListShortcutScope).not.toHaveBeenCalled();
 	});
 
 	it("pushes an Obsidian child scope for configured view-local chords", () => {

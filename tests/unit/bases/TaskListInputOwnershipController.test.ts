@@ -50,6 +50,14 @@ describe("TaskListInputOwnershipController", () => {
 		expect(controller.canHandleListKeyDown(inputEvent)).toBe(false);
 	});
 
+	it("allows body-targeted keys only for explicit remembered-focus routing", () => {
+		const event = new KeyboardEvent("keydown", { key: " " });
+		Object.defineProperty(event, "target", { value: document.body });
+
+		expect(controller.canHandleListKeyDown(event)).toBe(false);
+		expect(controller.canHandleListKeyDown(event, true)).toBe(true);
+	});
+
 	it("suppresses list shortcuts while a menu is open", () => {
 		const menu = document.createElement("div");
 		menu.className = "menu";

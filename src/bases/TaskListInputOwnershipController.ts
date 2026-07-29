@@ -15,18 +15,21 @@ export class TaskListInputOwnershipController {
 		private readonly focusController: TaskListFocusController
 	) {}
 
-	canHandleListKeyDown(event: KeyboardEvent): boolean {
+	canHandleListKeyDown(event: KeyboardEvent, allowDocumentBody = false): boolean {
 		if (event.isComposing || event.key === "Process") return false;
 		if (this.suspendedForOverlay) return false;
 
-		return this.canOwnKeyboardTarget(event.target);
+		return this.canOwnKeyboardTarget(event.target, allowDocumentBody);
 	}
 
-	canOwnKeyboardTarget(target: EventTarget | null): boolean {
+	canOwnKeyboardTarget(target: EventTarget | null, allowDocumentBody = false): boolean {
 		if (this.suspendedForOverlay) return false;
 		if (!(target instanceof Element) || target.closest(EDITABLE_SELECTOR)) return false;
 		if (this.getOverlayFromTarget(target) || this.hasOpenOverlay()) return false;
-		return this.viewRoot.contains(target);
+		return (
+			this.viewRoot.contains(target) ||
+			(allowDocumentBody && target === this.viewRoot.ownerDocument.body)
+		);
 	}
 
 	noteOverlayOpening(): void {

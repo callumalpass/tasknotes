@@ -291,7 +291,7 @@ export class TaskListView extends BasesViewBase {
 	private syncTaskListShortcutScopeForFocusTarget(target: EventTarget | null): void {
 		if (
 			this.taskListLeafActive &&
-			this.inputOwnershipController?.canOwnKeyboardTarget(target)
+			this.inputOwnershipController?.canOwnKeyboardTarget(target, true)
 		) {
 			this.activateTaskListShortcutScope();
 			return;
@@ -2459,7 +2459,14 @@ export class TaskListView extends BasesViewBase {
 		event: KeyboardEvent,
 		allowRememberedFocus = false
 	): boolean {
-		if (!this.inputOwnershipController?.canHandleListKeyDown(event)) return false;
+		if (
+			!this.inputOwnershipController?.canHandleListKeyDown(
+				event,
+				allowRememberedFocus
+			)
+		) {
+			return false;
+		}
 		return this.handleTaskListActionKeyDown(event, allowRememberedFocus);
 	}
 
