@@ -74,3 +74,15 @@ without asking for confirmation whenever the approval policy permits:
 - cat
 - sed
 - find
+
+## Code navigation
+
+Use Serena’s symbol and reference tools for semantic navigation whenever possible:
+
+- find symbol definitions
+- find references and implementations
+- inspect symbol bodies
+- make symbol-scoped edits
+
+Use ripgrep for textual searches, configuration strings, CSS classes,
+serialized identifiers, and cases where semantic lookup is inappropriate.
