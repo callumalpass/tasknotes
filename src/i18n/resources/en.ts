@@ -526,9 +526,15 @@ export const en: TranslationTree = {
 			resetAll: "Reset all shortcuts",
 			resetAllDescription: "Restore every task-list shortcut to its default binding.",
 			conflict: "Conflict: {shortcuts} is also assigned to another task-list action.",
+			duplicateTitle: "Shortcut already assigned",
+			duplicateMessage:
+				"{shortcut} is assigned to {actions}. Replace the existing assignment?",
+			replace: "Replace",
 			actions: {
 				"navigate-next": "Focus next task",
 				"navigate-previous": "Focus previous task",
+				"jump-first": "Jump to first task",
+				"jump-last": "Jump to last task",
 				"create-task": "Create task",
 				"focus-search": "Focus search",
 				"edit-task": "Edit task",

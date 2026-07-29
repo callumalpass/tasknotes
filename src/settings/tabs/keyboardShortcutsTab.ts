@@ -4,12 +4,15 @@ import {
 	DEFAULT_TASK_LIST_SHORTCUTS,
 	TASK_LIST_KEYBOARD_ACTIONS,
 	findTaskListShortcutConflicts,
+	findTaskListShortcutOwners,
 	formatTaskListShortcut,
 	keyboardEventToTaskListShortcut,
+	replaceTaskListShortcut,
 	type TaskListKeyboardAction,
 } from "../../bases/taskListKeyboardActions";
 import { createSettingGroup } from "../components/settingHelpers";
 import type { TranslationKey } from "../../i18n";
+import { showConfirmationModal } from "../../modals/ConfirmationModal";
 
 function actionKey(action: TaskListKeyboardAction): TranslationKey {
 	return `settings.keyboardShortcuts.actions.${action}`;
@@ -71,22 +74,59 @@ export function renderKeyboardShortcutsTab(
 								const buttonEl = button.buttonEl;
 								buttonEl.setText(translate("settings.keyboardShortcuts.recording"));
 								buttonEl.addClass("mod-cta");
-								const capture = (event: KeyboardEvent) => {
+								const capture = async (event: KeyboardEvent) => {
 									event.preventDefault();
 									event.stopPropagation();
 									const shortcut = keyboardEventToTaskListShortcut(event);
 									if (!shortcut) return;
-									buttonEl.removeEventListener("keydown", capture);
+									buttonEl.removeEventListener("keydown", captureListener);
 									if (!shortcuts[action].includes(shortcut)) {
-										plugin.settings.taskListShortcuts[action] = [
-											...shortcuts[action],
+										const owners = findTaskListShortcutOwners(
+											shortcuts,
 											shortcut,
-										];
+											action
+										);
+										if (owners.length > 0) {
+											const replace = await showConfirmationModal(plugin.app, {
+												title: translate(
+													"settings.keyboardShortcuts.duplicateTitle"
+												),
+												message: translate(
+													"settings.keyboardShortcuts.duplicateMessage",
+													{
+														shortcut: formatTaskListShortcut(
+															shortcut,
+															Platform.isMacOS
+														),
+														actions: owners
+															.map((owner) => translate(actionKey(owner)))
+															.join(", "),
+													}
+												),
+												confirmText: translate(
+													"settings.keyboardShortcuts.replace"
+												),
+												cancelText: translate("common.cancel"),
+												isDestructive: true,
+											});
+											if (!replace) {
+												renderKeyboardShortcutsTab(container, plugin, save);
+												return;
+											}
+											plugin.settings.taskListShortcuts =
+												replaceTaskListShortcut(shortcuts, action, shortcut);
+										} else {
+											plugin.settings.taskListShortcuts[action] = [
+												...shortcuts[action],
+												shortcut,
+											];
+										}
 										save();
 									}
 									renderKeyboardShortcutsTab(container, plugin, save);
 								};
-								buttonEl.addEventListener("keydown", capture);
+								const captureListener = (event: KeyboardEvent) => void capture(event);
+								buttonEl.addEventListener("keydown", captureListener);
 								buttonEl.focus();
 							});
 					});

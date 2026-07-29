@@ -2301,7 +2301,6 @@ export class TaskListView extends BasesViewBase {
 		this.registerDomEvent(this.itemsContainer, "keydown", (event: KeyboardEvent) => {
 			if (!this.inputOwnershipController?.canHandleListKeyDown(event)) return;
 			if (this.handleTaskListEscape(event)) return;
-			if (this.focusController?.handleKeyDown(event)) return;
 			if (this.handleTaskListSelectionKeyDown(event)) return;
 			this.handleTaskListActionKeyDown(event);
 		});
@@ -2357,10 +2356,16 @@ export class TaskListView extends BasesViewBase {
 			this.plugin?.settings?.taskListShortcuts
 		);
 		if (!action || !this.focusController?.getFocusedPathForEvent(event, true)) return;
-		if (action === "navigate-next" || action === "navigate-previous") {
+		const navigationDirections = {
+			"navigate-next": "next",
+			"navigate-previous": "previous",
+			"jump-first": "first",
+			"jump-last": "last",
+		} as const;
+		if (action in navigationDirections) {
 			this.focusController.moveFocus(
 				event,
-				action === "navigate-next" ? "next" : "previous"
+				navigationDirections[action as keyof typeof navigationDirections]
 			);
 			return;
 		}
@@ -2386,6 +2391,8 @@ export class TaskListView extends BasesViewBase {
 		switch (action) {
 			case "navigate-next":
 			case "navigate-previous":
+			case "jump-first":
+			case "jump-last":
 				return;
 			case "create-task":
 				await this.createFileForView();

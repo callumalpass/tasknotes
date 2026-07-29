@@ -48,11 +48,10 @@ export class TaskListFocusController {
 		if (card) this.focusCard(card, false);
 	}
 
-	handleKeyDown(event: KeyboardEvent): boolean {
-		if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
-			return false;
-		}
-
+	moveFocus(
+		event: KeyboardEvent,
+		direction: "next" | "previous" | "first" | "last"
+	): boolean {
 		const target = event.target;
 		if (!(target instanceof Element) || target.closest(INTERACTIVE_SELECTOR)) return false;
 
@@ -62,39 +61,21 @@ export class TaskListFocusController {
 		const activeCard = this.getCardFromTarget(target);
 		let currentIndex = activeCard ? cards.indexOf(activeCard) : this.findFocusedIndex(cards);
 		if (currentIndex < 0) currentIndex = 0;
-
 		let nextIndex: number;
-		switch (event.key) {
-			case "Home":
+		switch (direction) {
+			case "next":
+				nextIndex = Math.min(currentIndex + 1, cards.length - 1);
+				break;
+			case "previous":
+				nextIndex = Math.max(currentIndex - 1, 0);
+				break;
+			case "first":
 				nextIndex = 0;
 				break;
-			case "End":
+			case "last":
 				nextIndex = cards.length - 1;
 				break;
-			default:
-				return false;
 		}
-
-		event.preventDefault();
-		event.stopPropagation();
-		this.focusCard(cards[nextIndex], true);
-		return true;
-	}
-
-	moveFocus(event: KeyboardEvent, direction: "next" | "previous"): boolean {
-		const target = event.target;
-		if (!(target instanceof Element) || target.closest(INTERACTIVE_SELECTOR)) return false;
-
-		const cards = this.getCards();
-		if (cards.length === 0) return false;
-
-		const activeCard = this.getCardFromTarget(target);
-		let currentIndex = activeCard ? cards.indexOf(activeCard) : this.findFocusedIndex(cards);
-		if (currentIndex < 0) currentIndex = 0;
-		const nextIndex =
-			direction === "next"
-				? Math.min(currentIndex + 1, cards.length - 1)
-				: Math.max(currentIndex - 1, 0);
 
 		event.preventDefault();
 		event.stopPropagation();

@@ -1,11 +1,13 @@
 import {
 	DEFAULT_TASK_LIST_SHORTCUTS,
 	findTaskListShortcutConflicts,
+	findTaskListShortcutOwners,
 	formatTaskListShortcut,
 	normalizeTaskListShortcut,
 	normalizeTaskListShortcutMap,
 	resolveDefaultTaskListKeyboardAction,
 	resolveTaskListKeyboardAction,
+	replaceTaskListShortcut,
 } from "../../../src/bases/taskListKeyboardActions";
 
 function key(
@@ -27,6 +29,8 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 	it.each([
 		["ArrowDown", {}, "navigate-next"],
 		["ArrowUp", {}, "navigate-previous"],
+		["Home", {}, "jump-first"],
+		["End", {}, "jump-last"],
 		["c", {}, "create-task"],
 		["/", {}, "focus-search"],
 		["Enter", {}, "edit-task"],
@@ -103,6 +107,23 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 			"edit-due",
 			"edit-status",
 		]);
+	});
+
+	it("finds duplicate owners and replaces their binding atomically", () => {
+		const shortcuts = normalizeTaskListShortcutMap({
+			"edit-due": ["x"],
+			"edit-status": ["x"],
+			"jump-first": ["home"],
+		});
+
+		expect(findTaskListShortcutOwners(shortcuts, "x", "jump-first")).toEqual([
+			"edit-due",
+			"edit-status",
+		]);
+		const replaced = replaceTaskListShortcut(shortcuts, "jump-first", "x");
+		expect(replaced["edit-due"]).toEqual([]);
+		expect(replaced["edit-status"]).toEqual([]);
+		expect(replaced["jump-first"]).toEqual(["home", "x"]);
 	});
 
 	it("formats portable modifiers for the current platform", () => {

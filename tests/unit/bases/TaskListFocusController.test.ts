@@ -25,7 +25,8 @@ describe("TaskListFocusController", () => {
 		root.addEventListener("keydown", (event) => {
 			if (event.key === "ArrowDown") controller.moveFocus(event, "next");
 			else if (event.key === "ArrowUp") controller.moveFocus(event, "previous");
-			else controller.handleKeyDown(event);
+			else if (event.key === "Home") controller.moveFocus(event, "first");
+			else if (event.key === "End") controller.moveFocus(event, "last");
 		});
 		HTMLElement.prototype.scrollIntoView = jest.fn();
 	});
@@ -69,6 +70,22 @@ describe("TaskListFocusController", () => {
 
 		expect(event.defaultPrevented).toBe(true);
 		expect(document.activeElement).toBe(cards[1]);
+	});
+
+	it("supports configurable first and last navigation through the same path", () => {
+		const cards = [createCard("a.md"), createCard("b.md"), createCard("c.md")];
+		root.append(...cards);
+		controller.restoreAfterRender();
+		cards[1].focus();
+		const firstEvent = new KeyboardEvent("keydown", { key: "g", cancelable: true });
+		Object.defineProperty(firstEvent, "target", { value: cards[1] });
+		controller.moveFocus(firstEvent, "first");
+		expect(document.activeElement).toBe(cards[0]);
+
+		const lastEvent = new KeyboardEvent("keydown", { key: "G", cancelable: true });
+		Object.defineProperty(lastEvent, "target", { value: cards[0] });
+		controller.moveFocus(lastEvent, "last");
+		expect(document.activeElement).toBe(cards[2]);
 	});
 
 	it("handles navigation when a Bases capture listener already prevented the default", () => {

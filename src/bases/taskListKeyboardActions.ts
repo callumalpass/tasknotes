@@ -1,6 +1,8 @@
 export const TASK_LIST_KEYBOARD_ACTIONS = [
 	"navigate-next",
 	"navigate-previous",
+	"jump-first",
+	"jump-last",
 	"create-task",
 	"focus-search",
 	"edit-task",
@@ -22,6 +24,8 @@ export type TaskListShortcutMap = Record<TaskListKeyboardAction, string[]>;
 export const DEFAULT_TASK_LIST_SHORTCUTS: TaskListShortcutMap = {
 	"navigate-next": ["arrowdown"],
 	"navigate-previous": ["arrowup"],
+	"jump-first": ["home"],
+	"jump-last": ["end"],
 	"create-task": ["c"],
 	"focus-search": ["slash"],
 	"edit-task": ["enter"],
@@ -143,6 +147,31 @@ export function findTaskListShortcutConflicts(
 	return new Map([...actionsByShortcut].filter(([, actions]) => actions.length > 1));
 }
 
+export function findTaskListShortcutOwners(
+	shortcuts: TaskListShortcutMap,
+	shortcut: string,
+	excludeAction?: TaskListKeyboardAction
+): TaskListKeyboardAction[] {
+	return TASK_LIST_KEYBOARD_ACTIONS.filter(
+		(action) => action !== excludeAction && shortcuts[action].includes(shortcut)
+	);
+}
+
+export function replaceTaskListShortcut(
+	shortcuts: TaskListShortcutMap,
+	action: TaskListKeyboardAction,
+	shortcut: string
+): TaskListShortcutMap {
+	return Object.fromEntries(
+		TASK_LIST_KEYBOARD_ACTIONS.map((candidate) => [
+			candidate,
+			candidate === action
+				? [...new Set([...shortcuts[candidate], shortcut])]
+				: shortcuts[candidate].filter((value) => value !== shortcut),
+		])
+	) as TaskListShortcutMap;
+}
+
 export function resolveTaskListKeyboardAction(
 	event: Pick<
 		KeyboardEvent,
@@ -154,7 +183,7 @@ export function resolveTaskListKeyboardAction(
 	if (!shortcut) return null;
 
 	for (const action of TASK_LIST_KEYBOARD_ACTIONS) {
-		if (shortcuts[action].includes(shortcut)) return action;
+		if (shortcuts[action]?.includes(shortcut)) return action;
 	}
 	return null;
 }
@@ -173,6 +202,8 @@ export function formatTaskListShortcut(shortcut: string, isMacOS: boolean): stri
 		enter: "Enter",
 		delete: "Delete",
 		escape: "Esc",
+		home: "Home",
+		end: "End",
 		arrowdown: "↓",
 		arrowup: "↑",
 	};

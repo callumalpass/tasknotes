@@ -97,6 +97,31 @@ describe("TaskListView keyboard actions", () => {
 	});
 
 	it.each([
+		["g", "jump-first", "first"],
+		["G", "jump-last", "last"],
+	] as const)("routes configured boundary key %s through the focus controller", (key, action, direction) => {
+		const moveFocus = jest.fn();
+		const event = new KeyboardEvent("keydown", { key, cancelable: true });
+		const view = {
+			plugin: {
+				settings: {
+					taskListShortcuts: {
+						[action]: [key.toLowerCase()],
+					},
+				},
+			},
+			focusController: {
+				getFocusedPathForEvent: jest.fn(() => "focused.md"),
+				moveFocus,
+			},
+		};
+
+		(TaskListView.prototype as any).handleTaskListActionKeyDown.call(view, event);
+
+		expect(moveFocus).toHaveBeenCalledWith(event, direction);
+	});
+
+	it.each([
 		["Enter", { shiftKey: true }, "open-task-notes"],
 		["s", { shiftKey: true }, "edit-scheduled"],
 		["#", { shiftKey: true }, "add-tags"],
