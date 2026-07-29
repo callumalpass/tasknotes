@@ -260,4 +260,17 @@ describe("TaskListFocusController", () => {
 		expect(controller.getFocusedPathForEvent(event, false, false)).toBeNull();
 		expect(controller.getFocusedPathForEvent(event, false, true)).toBe("remembered.md");
 	});
+
+	it("clears the remembered identity and keyboard-focus styling", () => {
+		const cards = [createCard("first.md"), createCard("second.md")];
+		root.append(...cards);
+		controller.restoreAfterRender();
+		cards[1].focus();
+
+		controller.clear();
+
+		expect(controller.getFocusedIdentity()).toBeNull();
+		expect(cards[1].classList.contains("task-card--keyboard-focused")).toBe(false);
+		expect(cards.map((card) => card.tabIndex)).toEqual([0, -1]);
+	});
 });

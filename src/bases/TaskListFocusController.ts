@@ -119,6 +119,7 @@ export class TaskListFocusController {
 		this.focusedIdentity = null;
 		this.restoreDomFocus = false;
 		this.initialFocusPending = false;
+		this.syncRovingTabIndex();
 	}
 
 	getFocusedIdentity(): TaskListFocusIdentity | null {

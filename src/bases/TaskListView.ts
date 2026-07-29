@@ -25,6 +25,7 @@ import {
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { formatTasksForClipboard } from "../utils/taskClipboard";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
 	isSortOrderInSortConfig,
@@ -2385,46 +2386,19 @@ export class TaskListView extends BasesViewBase {
 		allowRememberedFocus = false
 	): void {
 		if (!this.inputOwnershipController?.canHandleListKeyDown(event)) return;
-		if (this.handleTaskListEscape(event)) return;
-		if (this.handleTaskListSelectionKeyDown(event, allowRememberedFocus)) return;
 		this.handleTaskListActionKeyDown(event, allowRememberedFocus);
 	}
 
 	protected canHandleSelectionKeyDown(event: KeyboardEvent): boolean {
-		return this.inputOwnershipController?.canHandleListKeyDown(event) ?? false;
-	}
-
-	private handleTaskListEscape(event: KeyboardEvent): boolean {
-		if (event.key !== "Escape") return false;
-
-		event.preventDefault();
-		event.stopPropagation();
-		this.plugin.taskSelectionService?.exitSelectionMode(true);
-		return true;
+		return (
+			(this.inputOwnershipController?.canHandleListKeyDown(event) ?? false) &&
+			event.shiftKey &&
+			["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)
+		);
 	}
 
 	protected handleSearchDismissed(): void {
 		this.focusController?.restoreFocusedElement();
-	}
-
-	private handleTaskListSelectionKeyDown(
-		event: KeyboardEvent,
-		allowRememberedFocus = false
-	): boolean {
-		if (event.key !== " " && event.key !== "Spacebar") return false;
-
-		const taskPath = this.focusController?.getFocusedPathForEvent(
-			event,
-			false,
-			allowRememberedFocus
-		);
-		const selectionService = this.plugin.taskSelectionService;
-		if (!taskPath || !selectionService) return false;
-
-		event.preventDefault();
-		event.stopPropagation();
-		selectionService.toggleSelection(taskPath);
-		return true;
 	}
 
 	private handleTaskListActionKeyDown(
@@ -2435,15 +2409,19 @@ export class TaskListView extends BasesViewBase {
 			event,
 			this.plugin?.settings?.taskListShortcuts
 		);
+		if (!action) return;
+		const focusedPath = this.focusController?.getFocusedPathForEvent(
+			event,
+			true,
+			allowRememberedFocus
+		);
 		if (
-			!action ||
-			!this.focusController?.getFocusedPathForEvent(
-				event,
-				true,
-				allowRememberedFocus
-			)
-		)
+			!focusedPath &&
+			action !== "clear-focus-and-selection" &&
+			action !== "select-all"
+		) {
 			return;
+		}
 		const navigationDirections = {
 			"navigate-next": "next",
 			"navigate-previous": "previous",
@@ -2451,7 +2429,7 @@ export class TaskListView extends BasesViewBase {
 			"jump-last": "last",
 		} as const;
 		if (action in navigationDirections) {
-			this.focusController.moveFocus(
+			this.focusController?.moveFocus(
 				event,
 				navigationDirections[action as keyof typeof navigationDirections]
 			);
@@ -2460,7 +2438,22 @@ export class TaskListView extends BasesViewBase {
 
 		event.preventDefault();
 		event.stopPropagation();
-		this.inputOwnershipController?.noteOverlayOpening();
+		if (
+			[
+				"edit-task",
+				"edit-due",
+				"edit-scheduled",
+				"edit-priority",
+				"edit-status",
+				"edit-recurrence",
+				"add-tags",
+				"add-context",
+				"add-project",
+				"delete-tasks",
+			].includes(action)
+		) {
+			this.inputOwnershipController?.noteOverlayOpening();
+		}
 		void this.executeTaskListAction(action);
 	}
 
@@ -2481,6 +2474,21 @@ export class TaskListView extends BasesViewBase {
 			case "navigate-previous":
 			case "jump-first":
 			case "jump-last":
+				return;
+			case "clear-focus-and-selection":
+				this.clearTaskListFocusAndSelection();
+				return;
+			case "toggle-select":
+				this.toggleFocusedTaskSelection();
+				return;
+			case "select-all":
+				this.selectAllVisibleTasks();
+				return;
+			case "copy-task-titles":
+				await this.copyTaskActionTargetTitles();
+				return;
+			case "toggle-archive":
+				await this.toggleTaskActionTargetsArchive();
 				return;
 			case "create-task":
 				await this.createFileForView();
@@ -2542,6 +2550,66 @@ export class TaskListView extends BasesViewBase {
 			if (task) tasks.push(task);
 		}
 		return tasks;
+	}
+
+	private clearTaskListFocusAndSelection(): void {
+		const selectionService = this.plugin.taskSelectionService;
+		selectionService?.clearSelection();
+		selectionService?.exitSelectionMode();
+		this.focusController?.clear();
+		this.rootElement?.focus({ preventScroll: true });
+	}
+
+	private toggleFocusedTaskSelection(): void {
+		const path = this.focusController?.getFocusedIdentity()?.path;
+		if (!path || !this.currentVisibleTaskPaths.has(path)) return;
+		this.plugin.taskSelectionService?.toggleSelection(path);
+	}
+
+	private selectAllVisibleTasks(): void {
+		const selectionService = this.plugin.taskSelectionService;
+		if (!selectionService) return;
+		selectionService.selectAll([...this.currentVisibleTaskPaths]);
+		if (this.currentVisibleTaskPaths.size > 0) {
+			selectionService.enterSelectionMode();
+		}
+	}
+
+	private async copyTaskActionTargetTitles(): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		if (tasks.length === 0) return;
+
+		try {
+			await navigator.clipboard.writeText(formatTasksForClipboard(tasks, "titles"));
+			new Notice(`Copied ${tasks.length} task title${tasks.length === 1 ? "" : "s"}`);
+		} catch (error) {
+			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to copy task titles", {
+				category: "provider",
+				operation: "copy-task-titles",
+				error,
+			});
+			new Notice("Failed to copy task titles");
+		}
+	}
+
+	private async toggleTaskActionTargetsArchive(): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		if (tasks.length === 0) return;
+
+		const archived = tasks[0].archived === true;
+		if (!tasks.every((task) => (task.archived === true) === archived)) {
+			new Notice("Select tasks with the same archive state");
+			return;
+		}
+
+		for (const task of tasks) {
+			await this.plugin.taskService.toggleArchive(task);
+		}
+		new Notice(
+			`${archived ? "Unarchived" : "Archived"} ${tasks.length} task${
+				tasks.length === 1 ? "" : "s"
+			}`
+		);
 	}
 
 	private getTaskActionAnchor(): HTMLElement | null {

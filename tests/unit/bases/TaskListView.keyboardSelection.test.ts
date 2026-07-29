@@ -13,65 +13,57 @@ describe("TaskListView keyboard selection", () => {
 		const toggleSelection = jest.fn();
 		const view = {
 			focusController: {
-				getFocusedPathForEvent: jest.fn(() => "focused.md"),
+				getFocusedIdentity: jest.fn(() => ({ path: "focused.md", occurrence: 0 })),
 			},
+			currentVisibleTaskPaths: new Set(["focused.md"]),
 			plugin: {
 				taskSelectionService: { toggleSelection },
 			},
 		};
-		const event = new KeyboardEvent("keydown", {
-			key: " ",
-			cancelable: true,
-		});
-		const stopPropagation = jest.spyOn(event, "stopPropagation");
 
-		(TaskListView.prototype as any).handleTaskListSelectionKeyDown.call(view, event);
+		(TaskListView.prototype as any).toggleFocusedTaskSelection.call(view);
 
-		expect(event.defaultPrevented).toBe(true);
-		expect(stopPropagation).toHaveBeenCalled();
 		expect(toggleSelection).toHaveBeenCalledWith("focused.md");
 	});
 
-	it("leaves Space alone when focus is in an excluded control", () => {
+	it("does not toggle a remembered task that is filtered out", () => {
 		const toggleSelection = jest.fn();
 		const view = {
 			focusController: {
-				getFocusedPathForEvent: jest.fn(() => null),
+				getFocusedIdentity: jest.fn(() => ({ path: "hidden.md", occurrence: 0 })),
 			},
+			currentVisibleTaskPaths: new Set(["visible.md"]),
 			plugin: {
 				taskSelectionService: { toggleSelection },
 			},
 		};
-		const event = new KeyboardEvent("keydown", {
-			key: " ",
-			cancelable: true,
-		});
 
-		(TaskListView.prototype as any).handleTaskListSelectionKeyDown.call(view, event);
+		(TaskListView.prototype as any).toggleFocusedTaskSelection.call(view);
 
-		expect(event.defaultPrevented).toBe(false);
 		expect(toggleSelection).not.toHaveBeenCalled();
 	});
 
-	it("clears selection on Escape without handing focus to the Bases root", () => {
+	it("clears selection and focus through the configurable action", () => {
+		const clearSelection = jest.fn();
 		const exitSelectionMode = jest.fn();
+		const clearFocus = jest.fn();
+		const rootElement = document.createElement("div");
+		rootElement.tabIndex = -1;
+		document.body.appendChild(rootElement);
 		const view = {
+			rootElement,
+			focusController: { clear: clearFocus },
 			plugin: {
-				taskSelectionService: { exitSelectionMode },
+				taskSelectionService: { clearSelection, exitSelectionMode },
 			},
 		};
-		const event = new KeyboardEvent("keydown", {
-			key: "Escape",
-			cancelable: true,
-		});
-		const stopPropagation = jest.spyOn(event, "stopPropagation");
 
-		const handled = (TaskListView.prototype as any).handleTaskListEscape.call(view, event);
+		(TaskListView.prototype as any).clearTaskListFocusAndSelection.call(view);
 
-		expect(handled).toBe(true);
-		expect(event.defaultPrevented).toBe(true);
-		expect(stopPropagation).toHaveBeenCalled();
-		expect(exitSelectionMode).toHaveBeenCalledWith(true);
+		expect(clearSelection).toHaveBeenCalled();
+		expect(exitSelectionMode).toHaveBeenCalled();
+		expect(clearFocus).toHaveBeenCalled();
+		expect(document.activeElement).toBe(rootElement);
 	});
 
 	it("does not let the inherited selection handler clear selection while a popup owns Escape", () => {

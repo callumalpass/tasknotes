@@ -33,6 +33,11 @@ describe("TaskListView keyboard actions", () => {
 	});
 
 	it.each([
+		["clear-focus-and-selection", "clearTaskListFocusAndSelection", null],
+		["toggle-select", "toggleFocusedTaskSelection", null],
+		["select-all", "selectAllVisibleTasks", null],
+		["copy-task-titles", "copyTaskActionTargetTitles", null],
+		["toggle-archive", "toggleTaskActionTargetsArchive", null],
 		["open-task-notes", "openTaskActionTargets", null],
 		["edit-due", "showTaskActionDateMenu", "due"],
 		["edit-scheduled", "showTaskActionDateMenu", "scheduled"],
@@ -236,6 +241,71 @@ describe("TaskListView keyboard actions", () => {
 
 		expect(updateTaskProperty).toHaveBeenNthCalledWith(1, tasks[0], "priority", "high");
 		expect(updateTaskProperty).toHaveBeenNthCalledWith(2, tasks[1], "priority", "high");
+	});
+
+	it("selects only tasks visible in the current filtered view", () => {
+		const selectAll = jest.fn();
+		const enterSelectionMode = jest.fn();
+		const view = {
+			currentVisibleTaskPaths: new Set(["visible-a.md", "visible-b.md"]),
+			plugin: {
+				taskSelectionService: { selectAll, enterSelectionMode },
+			},
+		};
+
+		(TaskListView.prototype as any).selectAllVisibleTasks.call(view);
+
+		expect(selectAll).toHaveBeenCalledWith(["visible-a.md", "visible-b.md"]);
+		expect(enterSelectionMode).toHaveBeenCalled();
+	});
+
+	it("copies resolved visible target titles as newline-delimited text", async () => {
+		const tasks = [
+			{ ...task("first.md"), title: "First title" },
+			{ ...task("second.md"), title: "Second title" },
+		];
+		const writeText = jest.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: { writeText },
+		});
+		const view = {
+			getTaskActionTargets: jest.fn(async () => tasks),
+		};
+
+		await (TaskListView.prototype as any).copyTaskActionTargetTitles.call(view);
+
+		expect(writeText).toHaveBeenCalledWith("First title\nSecond title");
+	});
+
+	it("toggles archive only when all resolved targets share the same state", async () => {
+		const tasks = [task("first.md"), task("second.md")];
+		const toggleArchive = jest.fn().mockResolvedValue(undefined);
+		const view = {
+			getTaskActionTargets: jest.fn(async () => tasks),
+			plugin: { taskService: { toggleArchive } },
+		};
+
+		await (TaskListView.prototype as any).toggleTaskActionTargetsArchive.call(view);
+
+		expect(toggleArchive).toHaveBeenNthCalledWith(1, tasks[0]);
+		expect(toggleArchive).toHaveBeenNthCalledWith(2, tasks[1]);
+	});
+
+	it("does not toggle a mixed archive selection", async () => {
+		const tasks = [
+			task("open.md"),
+			{ ...task("archived.md"), archived: true },
+		];
+		const toggleArchive = jest.fn();
+		const view = {
+			getTaskActionTargets: jest.fn(async () => tasks),
+			plugin: { taskService: { toggleArchive } },
+		};
+
+		await (TaskListView.prototype as any).toggleTaskActionTargetsArchive.call(view);
+
+		expect(toggleArchive).not.toHaveBeenCalled();
 	});
 
 	it("does not delete when destructive confirmation is cancelled", async () => {

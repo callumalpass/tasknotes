@@ -186,6 +186,10 @@ describe("settings persistence helpers", () => {
 			keyboardShortcuts: {
 				navigateDown: ["J", "Arrow Down"],
 				navigateUp: ["K", "Arrow Up"],
+				copyTaskTitles: ["Control+C"],
+				toggleSelect: ["Space"],
+				selectAll: ["Meta+A"],
+				clearFocusAndSelection: ["Backspace"],
 				newTask: ["N"],
 				editDueDates: ["Control+Shift+D"],
 				deleteTasks: ["Cmd+Delete"],
@@ -196,6 +200,11 @@ describe("settings persistence helpers", () => {
 		expect(settings.taskListShortcuts["create-task"]).toEqual(["n"]);
 		expect(settings.taskListShortcuts["navigate-next"]).toEqual(["j", "arrowdown"]);
 		expect(settings.taskListShortcuts["navigate-previous"]).toEqual(["k", "arrowup"]);
+		expect(settings.taskListShortcuts["copy-task-titles"]).toEqual(["mod+c"]);
+		expect(settings.taskListShortcuts["toggle-select"]).toEqual(["space"]);
+		expect(settings.taskListShortcuts["select-all"]).toEqual(["mod+a"]);
+		expect(settings.taskListShortcuts["clear-focus-and-selection"]).toEqual(["backspace"]);
+		expect(settings.taskListShortcuts["toggle-archive"]).toEqual(["a"]);
 		expect(settings.taskListShortcuts["edit-due"]).toEqual(["mod+shift+d"]);
 		expect(settings.taskListShortcuts["delete-tasks"]).toEqual(["mod+delete"]);
 		expect(shouldPersistMigratedSettings).toBe(true);

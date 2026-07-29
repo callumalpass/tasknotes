@@ -118,6 +118,11 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		migratedData.taskListShortcuts = normalizeTaskListShortcutMap({
 			"navigate-next": legacy.navigateDown,
 			"navigate-previous": legacy.navigateUp,
+			"clear-focus-and-selection": legacy.clearFocusAndSelection,
+			"toggle-select": legacy.toggleSelect,
+			"select-all": legacy.selectAll,
+			"copy-task-titles": legacy.copyTaskTitles,
+			"toggle-archive": legacy.toggleArchive,
 			"create-task": legacy.newTask,
 			"focus-search": legacy.focusFilter,
 			"edit-task": legacy.openEdit,

@@ -3,6 +3,11 @@ export const TASK_LIST_KEYBOARD_ACTIONS = [
 	"navigate-previous",
 	"jump-first",
 	"jump-last",
+	"clear-focus-and-selection",
+	"toggle-select",
+	"select-all",
+	"copy-task-titles",
+	"toggle-archive",
 	"create-task",
 	"focus-search",
 	"edit-task",
@@ -26,6 +31,11 @@ export const DEFAULT_TASK_LIST_SHORTCUTS: TaskListShortcutMap = {
 	"navigate-previous": ["arrowup"],
 	"jump-first": ["home"],
 	"jump-last": ["end"],
+	"clear-focus-and-selection": ["escape", "backspace"],
+	"toggle-select": ["space"],
+	"select-all": ["mod+a"],
+	"copy-task-titles": ["mod+c"],
+	"toggle-archive": ["y"],
 	"create-task": ["c"],
 	"focus-search": ["slash"],
 	"edit-task": ["enter"],
@@ -68,6 +78,7 @@ const KEY_ALIASES: Record<string, string> = {
 const MODIFIER_ORDER = ["mod", "ctrl", "meta", "alt", "shift"] as const;
 
 function normalizeKey(rawKey: string): string {
+	if (rawKey === " ") return "space";
 	const key = rawKey.trim().toLowerCase();
 	return KEY_ALIASES[key] ?? key;
 }
