@@ -2629,8 +2629,9 @@ export class TaskListView extends BasesViewBase {
 		const selectionService = this.plugin.taskSelectionService;
 		selectionService?.clearSelection();
 		selectionService?.exitSelectionMode();
-		this.focusController?.clear();
-		this.rootElement?.focus({ preventScroll: true });
+		if (!this.focusController?.restoreFocusedElement()) {
+			this.rootElement?.focus({ preventScroll: true });
+		}
 	}
 
 	private toggleFocusedTaskSelection(): void {

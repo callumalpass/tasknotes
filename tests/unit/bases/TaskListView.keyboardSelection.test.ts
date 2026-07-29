@@ -43,16 +43,16 @@ describe("TaskListView keyboard selection", () => {
 		expect(toggleSelection).not.toHaveBeenCalled();
 	});
 
-	it("clears selection and focus through the configurable action", () => {
+	it("clears selection while preserving task focus for subsequent shortcuts", () => {
 		const clearSelection = jest.fn();
 		const exitSelectionMode = jest.fn();
-		const clearFocus = jest.fn();
+		const restoreFocusedElement = jest.fn(() => true);
 		const rootElement = document.createElement("div");
 		rootElement.tabIndex = -1;
 		document.body.appendChild(rootElement);
 		const view = {
 			rootElement,
-			focusController: { clear: clearFocus },
+			focusController: { restoreFocusedElement },
 			plugin: {
 				taskSelectionService: { clearSelection, exitSelectionMode },
 			},
@@ -62,7 +62,27 @@ describe("TaskListView keyboard selection", () => {
 
 		expect(clearSelection).toHaveBeenCalled();
 		expect(exitSelectionMode).toHaveBeenCalled();
-		expect(clearFocus).toHaveBeenCalled();
+		expect(restoreFocusedElement).toHaveBeenCalled();
+		expect(document.activeElement).not.toBe(rootElement);
+	});
+
+	it("focuses the task-list root when no task focus can be restored after clearing selection", () => {
+		const rootElement = document.createElement("div");
+		rootElement.tabIndex = -1;
+		document.body.appendChild(rootElement);
+		const view = {
+			rootElement,
+			focusController: { restoreFocusedElement: jest.fn(() => false) },
+			plugin: {
+				taskSelectionService: {
+					clearSelection: jest.fn(),
+					exitSelectionMode: jest.fn(),
+				},
+			},
+		};
+
+		(TaskListView.prototype as any).clearTaskListFocusAndSelection.call(view);
+
 		expect(document.activeElement).toBe(rootElement);
 	});
 
