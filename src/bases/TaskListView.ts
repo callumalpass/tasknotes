@@ -1888,6 +1888,9 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 			this.virtualScroller.updateItems(items);
+			// Assign before refreshing the pin so it reads the current items, not stale data
+			// from before this collapse/expand or data update.
+			this.lastVirtualItems = items;
 			// updateItems clears container content but keeps structure; re-ensure pin.
 			this.ensureVirtualStickyHeaderPin();
 			this.updateVirtualStickyHeader();
@@ -2548,6 +2551,12 @@ export class TaskListView extends BasesViewBase {
 		if (this.useVirtualScrolling && this.virtualScroller) {
 			this.syncGroupedDragMetadata(items);
 			this.virtualScroller.updateItems(items);
+			// Recompute before refreshing the pin so header indices and the item
+			// array they reference agree — otherwise the pin can briefly show
+			// header content from the pre-toggle layout (wrong group/count).
+			this.virtualStickyHeaderIndices = this.collectVirtualStickyHeaderIndices(items);
+			this.lastVirtualItems = items;
+			this.updateVirtualStickyHeader();
 		} else {
 			// If not using virtual scrolling, do full render
 			await this.render();
