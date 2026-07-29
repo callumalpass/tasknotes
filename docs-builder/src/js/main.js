@@ -1,126 +1,284 @@
-/* TaskNotes Docs — client-side behaviour
-   - Reading progress bar
-   - Theme toggle (persisted)
-   - Mobile nav
-   - TOC active-link tracking
-*/
+/* TaskNotes documentation client behavior. */
 
-(function () {
-  'use strict';
+(() => {
+	"use strict";
 
-  // ── Theme ────────────────────────────────────────────────────────
+	const root = document.documentElement;
+	const themeSelect = document.getElementById("js-theme");
+	const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
 
-  const root = document.documentElement;
-  const themeBtn = document.getElementById('js-theme');
+	function themePreference() {
+		const stored = localStorage.getItem("mdbase:theme");
+		return stored === "light" || stored === "dark" ? stored : "system";
+	}
 
-  function applyTheme(t) {
-    root.setAttribute('data-theme', t);
-    localStorage.setItem('tn-theme', t);
-  }
+	function applyTheme(preference) {
+		const resolved =
+			preference === "system" ? (systemTheme.matches ? "dark" : "light") : preference;
+		root.dataset.theme = resolved;
+		root.dataset.themePreference = preference;
+		root.style.colorScheme = resolved;
+		if (preference === "system") localStorage.removeItem("mdbase:theme");
+		else localStorage.setItem("mdbase:theme", preference);
+		if (themeSelect) themeSelect.value = preference;
+		const themeColor = document.querySelector('meta[name="theme-color"]');
+		themeColor?.setAttribute("content", resolved === "dark" ? "#1b1d22" : "#fcfcfd");
+		window.dispatchEvent(
+			new CustomEvent("mdbase:themechange", { detail: { preference, resolved } })
+		);
+	}
 
-  // Restore persisted preference, falling back to OS preference
-  const saved = localStorage.getItem('tn-theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+	applyTheme(themePreference());
+	themeSelect?.addEventListener("change", () => applyTheme(themeSelect.value));
+	systemTheme.addEventListener("change", () => {
+		if (themePreference() === "system") applyTheme("system");
+	});
 
-  if (themeBtn) {
-    themeBtn.addEventListener('click', () => {
-      applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    });
-  }
+	// Collapsible navigation groups
+	document.querySelectorAll(".nav-section__toggle").forEach((button) => {
+		button.addEventListener("click", () => {
+			const section = button.closest(".nav-section");
+			const isOpen = section?.classList.toggle("is-open") ?? false;
+			button.setAttribute("aria-expanded", String(isOpen));
+		});
+	});
 
-  // ── Reading progress ─────────────────────────────────────────────
+	// Mobile navigation dialog behavior
+	const sidebar = document.getElementById("js-sidebar");
+	const menuButton = document.getElementById("js-menu");
+	const closeButton = document.getElementById("js-menu-close");
+	const overlay = document.getElementById("js-overlay");
+	const mobileQuery = window.matchMedia("(max-width: 48rem)");
+	let returnFocus = null;
 
-  const progressFill = document.getElementById('js-progress');
+	function focusableInSidebar() {
+		if (!sidebar) return [];
+		return [...sidebar.querySelectorAll('a[href], button:not([disabled]), select, [tabindex="0"]')];
+	}
 
-  function updateProgress() {
-    if (!progressFill) return;
-    const scrolled = window.scrollY;
-    const total    = document.body.scrollHeight - window.innerHeight;
-    const pct      = total > 0 ? (scrolled / total) * 100 : 0;
-    progressFill.style.height = pct + '%';
-  }
+	function setSidebarMode() {
+		if (!sidebar) return;
+		sidebar.inert = mobileQuery.matches && !sidebar.classList.contains("is-open");
+	}
 
-  window.addEventListener('scroll', updateProgress, { passive: true });
-  updateProgress();
+	function openNavigation() {
+		if (!sidebar || !mobileQuery.matches) return;
+		returnFocus = document.activeElement;
+		sidebar.classList.add("is-open");
+		sidebar.inert = false;
+		overlay?.classList.add("is-visible");
+		menuButton?.setAttribute("aria-expanded", "true");
+		document.body.classList.add("is-nav-open");
+		window.setTimeout(() => closeButton?.focus(), 0);
+	}
 
-  // ── Mobile nav ───────────────────────────────────────────────────
+	function closeNavigation({ restoreFocus = true } = {}) {
+		if (!sidebar) return;
+		sidebar.classList.remove("is-open");
+		overlay?.classList.remove("is-visible");
+		menuButton?.setAttribute("aria-expanded", "false");
+		document.body.classList.remove("is-nav-open");
+		setSidebarMode();
+		if (restoreFocus && returnFocus instanceof HTMLElement) returnFocus.focus();
+	}
 
-  const sidebar  = document.getElementById('js-sidebar');
-  const menuBtn  = document.getElementById('js-menu');
-  const overlay  = document.getElementById('js-overlay');
+	menuButton?.addEventListener("click", openNavigation);
+	closeButton?.addEventListener("click", () => closeNavigation());
+	overlay?.addEventListener("click", () => closeNavigation());
+	sidebar?.querySelectorAll(".nav-link").forEach((link) => {
+		link.addEventListener("click", () => closeNavigation({ restoreFocus: false }));
+	});
+	mobileQuery.addEventListener("change", () => {
+		if (!mobileQuery.matches) closeNavigation({ restoreFocus: false });
+		setSidebarMode();
+	});
+	setSidebarMode();
 
-  function openNav() {
-    sidebar?.classList.add('is-open');
-    overlay?.classList.add('is-visible');
-    menuBtn?.setAttribute('aria-expanded', 'true');
-    document.body.style.overflow = 'hidden';
-  }
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape" && sidebar?.classList.contains("is-open")) {
+			event.preventDefault();
+			closeNavigation();
+			return;
+		}
+		if (event.key !== "Tab" || !sidebar?.classList.contains("is-open")) return;
+		const focusable = focusableInSidebar();
+		if (!focusable.length) return;
+		const first = focusable[0];
+		const last = focusable.at(-1);
+		if (event.shiftKey && document.activeElement === first) {
+			event.preventDefault();
+			last.focus();
+		} else if (!event.shiftKey && document.activeElement === last) {
+			event.preventDefault();
+			first.focus();
+		}
+	});
 
-  function closeNav() {
-    sidebar?.classList.remove('is-open');
-    overlay?.classList.remove('is-visible');
-    menuBtn?.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-  }
+	// Code-copy controls stay visible for keyboard and touch users.
+	document.querySelectorAll(".prose pre").forEach((pre) => {
+		const button = document.createElement("button");
+		button.className = "copy-btn";
+		button.type = "button";
+		button.setAttribute("aria-label", "Copy code");
+		button.textContent = "Copy";
+		pre.appendChild(button);
 
-  menuBtn?.addEventListener('click', () => {
-    const isOpen = sidebar?.classList.contains('is-open');
-    isOpen ? closeNav() : openNav();
-  });
+		button.addEventListener("click", async () => {
+			const code = pre.querySelector("code");
+			try {
+				await navigator.clipboard.writeText(code ? code.textContent : pre.textContent);
+				button.textContent = "Copied";
+				button.classList.add("is-copied");
+			} catch {
+				button.textContent = "Copy failed";
+			}
+			window.setTimeout(() => {
+				button.textContent = "Copy";
+				button.classList.remove("is-copied");
+			}, 1600);
+		});
+	});
 
-  overlay?.addEventListener('click', closeNav);
+	// Current page-section indicator
+	const tocLinks = [...document.querySelectorAll(".toc a")];
+	const headings = [...document.querySelectorAll(".prose h2[id], .prose h3[id]")];
+	if (tocLinks.length && headings.length) {
+		let queued = false;
+		const updateToc = () => {
+			queued = false;
+			let active = headings[0];
+			const top = window.scrollY + 100;
+			for (const heading of headings) {
+				if (heading.offsetTop <= top) active = heading;
+			}
+			for (const link of tocLinks) {
+				link.classList.toggle("is-active", link.hash === `#${active.id}`);
+			}
+		};
+		window.addEventListener(
+			"scroll",
+			() => {
+				if (queued) return;
+				queued = true;
+				window.requestAnimationFrame(updateToc);
+			},
+			{ passive: true }
+		);
+		updateToc();
+	}
 
-  // Close on nav link tap (mobile)
-  sidebar?.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', closeNav);
-  });
+	// Client-side documentation search
+	const searchDialog = document.getElementById("js-search");
+	const searchOpen = document.getElementById("js-search-open");
+	const searchClose = document.getElementById("js-search-close");
+	const searchInput = document.getElementById("js-search-input");
+	const searchResults = document.getElementById("js-search-results");
+	const searchStatus = document.getElementById("js-search-status");
+	let searchIndex;
+	let searchReturnFocus;
 
-  // ── Code copy buttons ────────────────────────────────────────────
+	async function loadSearchIndex() {
+		if (!searchIndex) {
+			const response = await fetch("/search-index.json");
+			if (!response.ok) throw new Error(`Search index request failed: ${response.status}`);
+			searchIndex = await response.json();
+		}
+		return searchIndex;
+	}
 
-  document.querySelectorAll('.prose pre').forEach(pre => {
-    const btn = document.createElement('button');
-    btn.className = 'copy-btn';
-    btn.setAttribute('aria-label', 'Copy code');
-    btn.textContent = 'copy';
-    pre.appendChild(btn);
+	function scorePage(page, terms) {
+		const title = page.title.toLowerCase();
+		const description = page.description.toLowerCase();
+		const text = page.text.toLowerCase();
+		let score = 0;
+		for (const term of terms) {
+			if (!text.includes(term) && !title.includes(term) && !description.includes(term)) {
+				return 0;
+			}
+			if (title === term) score += 100;
+			else if (title.includes(term)) score += 30;
+			if (description.includes(term)) score += 10;
+			score += Math.min(6, text.split(term).length - 1);
+		}
+		return score;
+	}
 
-    btn.addEventListener('click', () => {
-      const code = pre.querySelector('code');
-      navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(() => {
-        btn.textContent = 'copied';
-        btn.classList.add('is-copied');
-        setTimeout(() => {
-          btn.textContent = 'copy';
-          btn.classList.remove('is-copied');
-        }, 2000);
-      });
-    });
-  });
+	function renderSearchResults(results, query) {
+		searchResults.replaceChildren();
+		if (!results.length) {
+			searchStatus.textContent = `No results for “${query}”.`;
+			return;
+		}
+		searchStatus.textContent = `${results.length} result${results.length === 1 ? "" : "s"}.`;
+		for (const page of results) {
+			const item = document.createElement("li");
+			const link = document.createElement("a");
+			const title = document.createElement("strong");
+			const description = document.createElement("span");
+			link.href = page.url;
+			title.textContent = page.title;
+			description.textContent = page.description;
+			link.append(title, description);
+			item.append(link);
+			searchResults.append(item);
+		}
+	}
 
-  // ── TOC active link ──────────────────────────────────────────────
+	async function runSearch() {
+		const query = searchInput.value.trim();
+		if (query.length < 2) {
+			searchResults.replaceChildren();
+			searchStatus.textContent = "Type at least two characters.";
+			return;
+		}
+		searchStatus.textContent = "Searching…";
+		try {
+			const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+			const pages = await loadSearchIndex();
+			const results = pages
+				.map((page) => ({ page, score: scorePage(page, terms) }))
+				.filter((result) => result.score > 0)
+				.sort((a, b) => b.score - a.score || a.page.title.localeCompare(b.page.title))
+				.slice(0, 12)
+				.map((result) => result.page);
+			renderSearchResults(results, query);
+		} catch {
+			searchStatus.textContent = "Search is unavailable. Try the navigation instead.";
+		}
+	}
 
-  const tocLinks = document.querySelectorAll('.toc a');
-  if (tocLinks.length) {
-    const headings = Array.from(
-      document.querySelectorAll('.prose h2[id], .prose h3[id]')
-    );
+	function showSearch() {
+		if (!searchDialog) return;
+		searchReturnFocus = document.activeElement;
+		searchDialog.showModal();
+		window.setTimeout(() => searchInput?.focus(), 0);
+	}
 
-    function updateToc() {
-      let active = headings[0];
-      const scrollY = window.scrollY + 80;
+	function hideSearch() {
+		searchDialog?.close();
+		if (searchReturnFocus instanceof HTMLElement) searchReturnFocus.focus();
+	}
 
-      for (const h of headings) {
-        if (h.offsetTop <= scrollY) active = h;
-      }
-
-      tocLinks.forEach(a => {
-        const isActive = active && a.getAttribute('href') === '#' + active.id;
-        a.classList.toggle('is-active', isActive);
-      });
-    }
-
-    window.addEventListener('scroll', updateToc, { passive: true });
-    updateToc();
-  }
+	searchOpen?.addEventListener("click", showSearch);
+	searchClose?.addEventListener("click", hideSearch);
+	searchDialog?.addEventListener("click", (event) => {
+		if (event.target === searchDialog) hideSearch();
+	});
+	searchDialog?.addEventListener("close", () => {
+		searchInput.value = "";
+		searchResults.replaceChildren();
+		searchStatus.textContent = "Type at least two characters.";
+	});
+	searchInput?.addEventListener("input", runSearch);
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape" && searchDialog?.open) {
+			event.preventDefault();
+			hideSearch();
+			return;
+		}
+		if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+			event.preventDefault();
+			searchDialog?.open ? hideSearch() : showSearch();
+		}
+	});
 })();

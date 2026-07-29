@@ -1,95 +1,106 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{title}} — {{site_title}}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{full_title}}</title>
+  <meta name="description" content="{{description}}">
+  <link rel="canonical" href="{{canonical}}">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#fcfcfd">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{full_title}}">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:url" content="{{canonical}}">
+  <meta property="og:site_name" content="TaskNotes">
+  <meta name="twitter:card" content="summary">
+  {{robots}}
+  <script>
+    (() => {
+      const stored = localStorage.getItem("mdbase:theme");
+      const preference = stored === "light" || stored === "dark" ? stored : "system";
+      const resolved = preference === "system"
+        ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        : preference;
+      document.documentElement.dataset.theme = resolved;
+      document.documentElement.dataset.themePreference = preference;
+      document.documentElement.style.colorScheme = resolved;
+    })();
+  </script>
+  <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles/main.css">
 </head>
 <body>
-  <!-- Left-edge reading progress -->
-  <div class="progress-rail" aria-hidden="true">
-    <div class="progress-fill" id="js-progress"></div>
-  </div>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <div class="layout">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="TaskNotes documentation home">
+      <svg class="brand__mark" viewBox="0 0 100 100" aria-hidden="true">
+        <path fill="currentColor" d="M98.5.6c-2.2-.1-5.8 2.1-7.1 3.4-3.8 3.5-9.4 11.1-15.4 18.4 3.4 7.4 1.5 17.1-9.8 28.1-8.7 8.4-16.7 14.4-21.3 20.6-4.5 6-6.2 12-2.8 22.1.2-.2.4-.5.5-.8 10.6-19.7 17.9-27.3 41.9-47.1 4.8-4 4.8-9.5 6-17 1-7 2.7-15.6 8.5-26.8.7-1.4.8-2.2.3-2.7-.2-.2-.5-.3-.8-.2ZM72.7 26.3c-9.7 11.9-21.2 25.5-30.8 32.8-5.9 4.6-11.8-4.4-17.2-9.8-5.2-6.9-9.6-12.7-12.3-6.7-1 2.6-1.6 6.2-3.4 10.1 4.1.6 7.3 2.3 9.8 4.5 6.1 5.4 8.1 13.8 12.4 17.3 1.9 1.8 4.1 3 7.5 3.2.7-1.4 1.6-2.7 2.5-4 5.2-7.1 13.3-13 21.8-21.2 7.5-7.3 12.7-17.7 9.7-26.2ZM6.4 56.9c-1.1 1.4-2.4 2.8-4.1 4.1-4.8 4 2 7 9.8 12 7.3 4.7 17.8 11.6 25.7 24.2.6 1 1.7 2 2.9 2.6-.9-5.4-.9-8.8-.5-11.9-3.3-.6-6.1-2.1-8.4-4.7-5.7-6.3-7.5-13.7-12.6-18.3-3-2.7-7-4.6-12.8-4.7Z"/>
+      </svg>
+      <span class="brand__copy">
+        <strong>TaskNotes</strong>
+        <span>Documentation</span>
+      </span>
+    </a>
 
-    <!-- Sidebar -->
-    <aside class="sidebar" id="js-sidebar">
-      <div class="sidebar__header">
-        <a href="/" class="logotype">
-          <svg class="logotype__mark" viewBox="0 0 100 100" aria-hidden="true">
-            <defs>
-              <mask id="tn-logotype-mask">
-                <rect width="100" height="100" fill="white" />
-                <path fill="black" d="m 5.9,52.4 -0.09,4.51 c 4.71,0.09 7.61,1.48 9.95,3.57 2.35,2.09 4.11,5.01 5.90,8.14 1.80,3.13 3.62,6.46 6.45,9.12 2.23,2.09 5.14,3.67 8.83,4.21 0.46,-1.51 1.05,-2.95 1.77,-4.33 -3.44,-0.21 -5.62,-1.39 -7.53,-3.17 -2.14,-2.01 -3.82,-4.92 -5.63,-8.08 -1.81,-3.16 -3.77,-6.56 -6.82,-9.27 -3.05,-2.71 -7.07,-4.59 -11.83,-4.70 z" />
-                <path fill="black" d="M 73.6,18.3 69.9,20.9 c 4.06,5.75 4.40,11.33 2.77,16.78 -1.63,5.45 -5.41,10.67 -9.65,14.78 -8.49,8.20 -16.59,14.11 -21.83,21.18 -5.24,7.07 -7.22,15.59 -3.13,27.21 l 4.25,-1.50 c -3.74,-10.62 -2.11,-16.80 2.50,-23.01 4.61,-6.21 12.63,-12.19 21.34,-20.64 4.65,-4.50 8.89,-10.23 10.84,-16.72 1.95,-6.49 1.42,-13.86 -3.40,-20.68 z" />
-              </mask>
-            </defs>
-            <path fill="currentColor" mask="url(#tn-logotype-mask)" d="m 98.5,0.6 c -0.38,0 -0.83,0.09 -1.33,0.23 -2,0.59 -4.66,2.18 -5.78,3.22 -1.25,1.16 -4.16,4.93 -6.08,7.19 -2.67,3.12 -5.65,6.58 -9.32,11.13 2.58,5.61 2.61,11.38 1.05,16.60 -1.95,6.49 -6.19,12.22 -10.84,16.72 -8.71,8.43 -16.73,14.41 -21.34,20.64 -4.47,6.03 -6.13,12.03 -2.81,22.08 0.19,-0.23 0.37,-0.49 0.54,-0.80 10.57,-19.70 17.89,-27.30 41.9,-47.08 v 0 c 2.40,-1.97 3.71,-4.33 4.52,-7.14 0.81,-2.82 1.11,-6.10 1.52,-9.92 0.81,-7.64 2.02,-17.43 8.43,-29.95 0.37,-0.73 0.57,-1.30 0.62,-1.72 0.05,-0.43 -0.04,-0.71 -0.22,-0.90 -0.19,-0.18 -0.48,-0.27 -0.86,-0.26 z M 72.7,26.3 c -0.75,0.92 -1.51,1.84 -2.27,2.78 -9.09,11.05 -19.45,22.93 -28.54,29.97 -1.48,1.14 -2.98,1.54 -4.46,1.38 -1.49,-0.16 -2.97,-0.89 -4.43,-1.96 -2.91,-2.16 -5.74,-5.74 -8.35,-9.19 -2.62,-3.45 -5.04,-6.77 -7.12,-8.39 -1.04,-0.81 -1.99,-1.19 -2.83,-0.97 -0.84,0.22 -1.60,1.05 -2.26,2.70 -1.03,2.61 -1.60,6.22 -3.42,10.05 4.08,0.62 7.27,2.27 9.73,4.45 3.05,2.71 5.01,6.11 6.82,9.27 1.81,3.16 3.49,6.07 5.63,8.08 1.90,1.78 4.08,2.96 7.53,3.17 0.71,-1.37 1.55,-2.69 2.49,-3.95 5.24,-7.07 13.34,-12.98 21.83,-21.18 4.24,-4.11 8.02,-9.33 9.65,-14.78 1.12,-3.73 1.31,-7.53 0.01,-11.42 z M 10.3,49.1 c -0.09,0.29 -0.18,0.56 -0.28,0.85 0.10,-0.29 0.19,-0.56 0.28,-0.85 z m -4.02,7.84 c -0.01,0.01 -0.02,0.02 -0.03,0.03 0.01,-0.01 0.02,-0.02 0.03,-0.03 0,0 0,0 0,0 z m 0.12,0 c -1.08,1.40 -2.40,2.79 -4.05,4.12 -1.20,1.0 -1.85,1.86 -2.03,2.71 -0.18,0.85 0.10,1.67 0.76,2.53 1.32,1.71 4.16,3.54 7.81,5.91 7.28,4.73 17.75,11.63 25.63,24.16 0.64,1.02 1.74,2.04 2.95,2.65 -0.91,-5.36 -0.91,-8.78 -0.54,-11.88 -3.33,-0.55 -6.07,-2.12 -8.39,-4.72 -2.83,-3.17 -4.69,-6.59 -6.54,-9.85 -1.85,-3.26 -3.69,-6.37 -6.08,-8.47 -2.06,-1.81 -4.61,-3.0 -8.49,-3.17 z" />
-          </svg>
-          <span class="logotype__text">
-            <span class="logotype__name">{{site_title}}</span>
-            <span class="logotype__sub">documentation</span>
-          </span>
-        </a>
+    <div class="site-header__actions">
+      <button class="search-trigger" id="js-search-open" type="button" aria-haspopup="dialog">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m12.5 12.5 4 4"/></svg>
+        <span>Search</span>
+        <kbd>⌘ K</kbd>
+      </button>
+      <label class="theme-control">
+        <span class="sr-only">Colour theme</span>
+        <select id="js-theme" aria-label="Colour theme">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <button class="menu-trigger" id="js-menu" type="button" aria-label="Open documentation navigation" aria-expanded="false" aria-controls="js-sidebar">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5.5h14M3 10h14M3 14.5h14"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="site-shell">
+    <aside class="sidebar" id="js-sidebar" aria-label="Documentation">
+      <div class="sidebar__mobile-header">
+        <span>Documentation</span>
+        <button id="js-menu-close" type="button" aria-label="Close documentation navigation">Close</button>
       </div>
-
-      <div class="sidebar__scroll">
+      <nav class="sidebar__nav" aria-label="TaskNotes documentation">
         {{nav}}
-      </div>
-
-      <div class="sidebar__footer">
-        <a
-          class="repo-link"
-          href="https://github.com/callumalpass/tasknotes"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          GitHub Repository
-          <span aria-hidden="true">↗</span>
-        </a>
-        <button class="theme-btn" id="js-theme" aria-label="Toggle colour scheme">
-          <span class="theme-btn__track">
-            <span class="theme-btn__knob"></span>
-          </span>
-          <span class="theme-btn__label">theme</span>
-        </button>
-      </div>
+      </nav>
+      <footer class="sidebar__footer">
+        <span>TaskNotes {{version}}</span>
+        <a href="https://github.com/callumalpass/tasknotes">GitHub</a>
+        <a href="/llms.txt">LLM index</a>
+      </footer>
     </aside>
 
-    <!-- Main -->
-    <div class="stage">
+    <div class="sidebar-overlay" id="js-overlay" aria-hidden="true"></div>
 
-      <!-- Mobile top bar -->
-      <header class="topbar">
-        <button class="menu-btn" id="js-menu" aria-label="Open navigation" aria-expanded="false" aria-controls="js-sidebar">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <line x1="2" y1="4.5"  x2="16" y2="4.5"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="2" y1="9"    x2="16" y2="9"    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="2" y1="13.5" x2="16" y2="13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <a href="/" class="topbar__title">{{site_title}}</a>
-      </header>
+    <main class="prose" id="main">
+      {{content}}
+    </main>
 
-      <div class="content-row">
-        <main class="prose" id="js-content">
-          {{content}}
-        </main>
-        <div class="toc-col">
-          {{toc}}
-        </div>
-      </div>
-
-    </div>
+    <aside class="toc-column" aria-label="Page outline">
+      {{toc}}
+    </aside>
   </div>
 
-  <!-- Sidebar overlay (mobile) -->
-  <div class="overlay" id="js-overlay" aria-hidden="true"></div>
+  <dialog class="search-dialog" id="js-search">
+    <div class="search-dialog__header">
+      <label for="js-search-input">Search TaskNotes documentation</label>
+      <button id="js-search-close" type="button" aria-label="Close search">Close</button>
+    </div>
+    <input id="js-search-input" type="search" autocomplete="off" placeholder="Commands, settings, Bases…">
+    <p class="search-dialog__hint" id="js-search-status" aria-live="polite">Type at least two characters.</p>
+    <ol class="search-results" id="js-search-results"></ol>
+  </dialog>
 
   <script src="/js/main.js"></script>
 </body>
