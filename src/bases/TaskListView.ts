@@ -71,7 +71,7 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { TaskListFocusController } from "./TaskListFocusController";
 import { resolveTaskListTargetPaths } from "./taskListTargetResolver";
 import {
-	resolveDefaultTaskListKeyboardAction,
+	resolveTaskListKeyboardAction,
 	type TaskListKeyboardAction,
 } from "./taskListKeyboardActions";
 import { addTagsToList, parseTaskTagInput } from "../utils/taskTagList";
@@ -2352,7 +2352,10 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private handleTaskListActionKeyDown(event: KeyboardEvent): void {
-		const action = resolveDefaultTaskListKeyboardAction(event);
+		const action = resolveTaskListKeyboardAction(
+			event,
+			this.plugin?.settings?.taskListShortcuts
+		);
 		if (!action || !this.focusController?.getFocusedPathForEvent(event, true)) return;
 
 		event.preventDefault();

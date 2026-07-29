@@ -1,5 +1,6 @@
 import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } from "../types";
 import type { FileFilterConfig } from "../suggest/FileSuggestHelper";
+import type { TaskListShortcutMap } from "../bases/taskListKeyboardActions";
 
 export interface UserFieldMapping {
 	enabled: boolean;
@@ -150,6 +151,8 @@ export interface TaskNotesSettings {
 
 	singleClickAction: "edit" | "openNote";
 	doubleClickAction: "edit" | "openNote" | "none";
+	// View-local task-list keyboard shortcuts
+	taskListShortcuts: TaskListShortcutMap;
 	// Inline task conversion settings
 	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}} and {{currentNoteTitle}}
 	// Performance settings
