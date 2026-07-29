@@ -245,4 +245,19 @@ describe("TaskListFocusController", () => {
 		expect(controller.getFocusedPathForEvent(event)).toBeNull();
 		expect(controller.getFocusedPathForEvent(event, true)).toBe("focused.md");
 	});
+
+	it("uses remembered focus for non-interactive events from the view shell", () => {
+		const card = createCard("remembered.md");
+		root.appendChild(card);
+		controller.restoreAfterRender();
+		card.focus();
+		const shell = document.createElement("div");
+		shell.appendChild(root);
+		document.body.appendChild(shell);
+		const event = new KeyboardEvent("keydown", { key: "j" });
+		Object.defineProperty(event, "target", { value: shell });
+
+		expect(controller.getFocusedPathForEvent(event, false, false)).toBeNull();
+		expect(controller.getFocusedPathForEvent(event, false, true)).toBe("remembered.md");
+	});
 });

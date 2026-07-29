@@ -140,7 +140,11 @@ export class TaskListFocusController {
 		return true;
 	}
 
-	getFocusedPathForEvent(event: KeyboardEvent, allowModifiers = false): string | null {
+	getFocusedPathForEvent(
+		event: KeyboardEvent,
+		allowModifiers = false,
+		allowRememberedFallback = false
+	): string | null {
 		if (
 			event.defaultPrevented ||
 			(!allowModifiers &&
@@ -153,7 +157,14 @@ export class TaskListFocusController {
 		if (!(target instanceof Element) || target.closest(INTERACTIVE_SELECTOR)) return null;
 
 		const card = this.getCardFromTarget(target);
-		return card?.dataset.taskPath ?? null;
+		if (card?.dataset.taskPath) return card.dataset.taskPath;
+		if (
+			allowRememberedFallback &&
+			(this.root.contains(target) || target.contains(this.root))
+		) {
+			return this.focusedIdentity?.path ?? null;
+		}
+		return null;
 	}
 
 	private getCards(): HTMLElement[] {

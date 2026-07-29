@@ -205,6 +205,7 @@ export class TaskListView extends BasesViewBase {
 	private readonly CARD_NO_DRAG_SELECTOR =
 		'[data-tn-no-drag="true"], a, button, input, select, textarea, [contenteditable="true"]';
 	private readonly CARD_DRAG_HANDLE_SELECTOR = '[data-tn-drag-handle="true"]';
+	private searchOpenedByShortcut = false;
 
 	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
@@ -361,7 +362,8 @@ export class TaskListView extends BasesViewBase {
 			this.subGroupPropertyId = this.config.getAsPropertyId("subGroup");
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get("enableSearch");
-			this.enableSearch = (enableSearchValue as boolean) ?? false;
+			this.enableSearch =
+				((enableSearchValue as boolean) ?? false) || this.searchOpenedByShortcut;
 			const defaultCollapsedStateValue = this.config.get("defaultCollapsedState");
 
 			this.defaultCollapsedState =
@@ -2348,11 +2350,16 @@ export class TaskListView extends BasesViewBase {
 			this.focusController?.handlePointerDown(event);
 		});
 		this.registerDomEvent(this.itemsContainer, "keydown", (event: KeyboardEvent) => {
-			if (!this.inputOwnershipController?.canHandleListKeyDown(event)) return;
-			if (this.handleTaskListEscape(event)) return;
-			if (this.handleTaskListSelectionKeyDown(event)) return;
-			this.handleTaskListActionKeyDown(event);
+			this.handleTaskListKeyDown(event);
 		});
+		if (this.rootElement) {
+			this.registerDomEvent(this.rootElement, "keydown", (event: KeyboardEvent) => {
+				if (event.defaultPrevented || this.itemsContainer?.contains(event.target as Node)) {
+					return;
+				}
+				this.handleTaskListKeyDown(event, true);
+			});
+		}
 		const doc = this.itemsContainer.ownerDocument;
 		this.registerDomEvent(doc, "focusin", (event: FocusEvent) => {
 			this.inputOwnershipController?.handleDocumentFocusIn(event);
@@ -2373,6 +2380,16 @@ export class TaskListView extends BasesViewBase {
 		this.containerListenersRegistered = true;
 	}
 
+	private handleTaskListKeyDown(
+		event: KeyboardEvent,
+		allowRememberedFocus = false
+	): void {
+		if (!this.inputOwnershipController?.canHandleListKeyDown(event)) return;
+		if (this.handleTaskListEscape(event)) return;
+		if (this.handleTaskListSelectionKeyDown(event, allowRememberedFocus)) return;
+		this.handleTaskListActionKeyDown(event, allowRememberedFocus);
+	}
+
 	protected canHandleSelectionKeyDown(event: KeyboardEvent): boolean {
 		return this.inputOwnershipController?.canHandleListKeyDown(event) ?? false;
 	}
@@ -2390,10 +2407,17 @@ export class TaskListView extends BasesViewBase {
 		this.focusController?.restoreFocusedElement();
 	}
 
-	private handleTaskListSelectionKeyDown(event: KeyboardEvent): boolean {
+	private handleTaskListSelectionKeyDown(
+		event: KeyboardEvent,
+		allowRememberedFocus = false
+	): boolean {
 		if (event.key !== " " && event.key !== "Spacebar") return false;
 
-		const taskPath = this.focusController?.getFocusedPathForEvent(event);
+		const taskPath = this.focusController?.getFocusedPathForEvent(
+			event,
+			false,
+			allowRememberedFocus
+		);
 		const selectionService = this.plugin.taskSelectionService;
 		if (!taskPath || !selectionService) return false;
 
@@ -2403,12 +2427,23 @@ export class TaskListView extends BasesViewBase {
 		return true;
 	}
 
-	private handleTaskListActionKeyDown(event: KeyboardEvent): void {
+	private handleTaskListActionKeyDown(
+		event: KeyboardEvent,
+		allowRememberedFocus = false
+	): void {
 		const action = resolveTaskListKeyboardAction(
 			event,
 			this.plugin?.settings?.taskListShortcuts
 		);
-		if (!action || !this.focusController?.getFocusedPathForEvent(event, true)) return;
+		if (
+			!action ||
+			!this.focusController?.getFocusedPathForEvent(
+				event,
+				true,
+				allowRememberedFocus
+			)
+		)
+			return;
 		const navigationDirections = {
 			"navigate-next": "next",
 			"navigate-previous": "previous",
@@ -2451,7 +2486,7 @@ export class TaskListView extends BasesViewBase {
 				await this.createFileForView();
 				return;
 			case "focus-search":
-				this.searchBox?.focus();
+				this.focusTaskListSearch();
 				return;
 			case "edit-task": {
 				const task = (await this.getTaskActionTargets())[0];
@@ -2488,6 +2523,16 @@ export class TaskListView extends BasesViewBase {
 			case "delete-tasks":
 				await this.deleteTaskActionTargets();
 		}
+	}
+
+	private focusTaskListSearch(): void {
+		if (!this.rootElement) return;
+		if (!this.searchBox) {
+			this.searchOpenedByShortcut = true;
+			this.enableSearch = true;
+			this.setupSearch(this.rootElement);
+		}
+		this.searchBox?.focus();
 	}
 
 	private async getTaskActionTargets(): Promise<TaskInfo[]> {

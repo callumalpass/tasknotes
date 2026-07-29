@@ -144,7 +144,7 @@ describe("TaskListView keyboard actions", () => {
 
 		(TaskListView.prototype as any).handleTaskListActionKeyDown.call(view, event);
 
-		expect(getFocusedPathForEvent).toHaveBeenCalledWith(event, true);
+		expect(getFocusedPathForEvent).toHaveBeenCalledWith(event, true, false);
 		expect(event.defaultPrevented).toBe(true);
 		expect(executeTaskListAction).toHaveBeenCalledWith(action);
 	});
@@ -166,6 +166,46 @@ describe("TaskListView keyboard actions", () => {
 
 		expect(event.defaultPrevented).toBe(false);
 		expect(executeTaskListAction).not.toHaveBeenCalled();
+	});
+
+	it("routes a shortcut from the active view shell through remembered task focus", () => {
+		const executeTaskListAction = jest.fn();
+		const getFocusedPathForEvent = jest.fn(() => "remembered.md");
+		const event = new KeyboardEvent("keydown", { key: "d", cancelable: true });
+		const view = {
+			focusController: { getFocusedPathForEvent },
+			executeTaskListAction,
+		};
+
+		(TaskListView.prototype as any).handleTaskListActionKeyDown.call(
+			view,
+			event,
+			true
+		);
+
+		expect(getFocusedPathForEvent).toHaveBeenCalledWith(event, true, true);
+		expect(executeTaskListAction).toHaveBeenCalledWith("edit-due");
+	});
+
+	it("creates search controls on demand before focusing them", () => {
+		const rootElement = document.createElement("div");
+		const focus = jest.fn();
+		const view = {
+			rootElement,
+			searchBox: null,
+			searchOpenedByShortcut: false,
+			enableSearch: false,
+			setupSearch: jest.fn(function (this: { searchBox: { focus: () => void } | null }) {
+				this.searchBox = { focus };
+			}),
+		};
+
+		(TaskListView.prototype as any).focusTaskListSearch.call(view);
+
+		expect(view.searchOpenedByShortcut).toBe(true);
+		expect(view.enableSearch).toBe(true);
+		expect(view.setupSearch).toHaveBeenCalledWith(rootElement);
+		expect(focus).toHaveBeenCalled();
 	});
 
 	it("uses the first resolved target for the single-task edit modal", async () => {
