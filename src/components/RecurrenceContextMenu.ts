@@ -722,10 +722,53 @@ class CustomRecurrenceModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
+		contentEl.addClass("tasknotes-plugin");
+		contentEl.addClass("tn-custom-recurrence-modal");
+		this.modalEl.addClass("tn-custom-recurrence-modal-host");
 		const calendarLocale = getPluginCalendarLocale(this.plugin);
 		const firstDay = this.plugin.settings?.calendarViewSettings?.firstDay;
 		const orderedWeekdays = getOrderedRecurrenceWeekdays(firstDay, calendarLocale);
 		const recurrenceStartDate = getRecurrenceStartDate(this.scheduledDate);
+
+		const getIntervalDescKey = (): TranslationKey => {
+			switch (this.frequency) {
+				case "WEEKLY":
+					return "components.recurrenceContextMenu.customRecurrenceModal.intervalDescWeekly";
+				case "MONTHLY":
+					return "components.recurrenceContextMenu.customRecurrenceModal.intervalDescMonthly";
+				case "YEARLY":
+					return "components.recurrenceContextMenu.customRecurrenceModal.intervalDescYearly";
+				case "DAILY":
+				default:
+					return "components.recurrenceContextMenu.customRecurrenceModal.intervalDescDaily";
+			}
+		};
+
+		const getDaysOfWeekDescKey = (): TranslationKey => {
+			return this.frequency === "DAILY"
+				? "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDescDaily"
+				: "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc";
+		};
+
+		// Chromium doesn't render ::before/::after generated content on <input>
+		// elements, so the "selected" indicator has to be a real sibling element
+		// inside its own positioning wrapper, rather than a pseudo-element on the
+		// input itself.
+		const createRadioInput = (
+			radioLabel: HTMLElement,
+			name: string,
+			value: string,
+			checked: boolean
+		): HTMLInputElement => {
+			const visual = radioLabel.createSpan({
+				cls: "tn-custom-recurrence-modal__radio-visual",
+			});
+			const input = visual.createEl("input", { type: "radio", value });
+			input.name = name;
+			input.checked = checked;
+			visual.createSpan({ cls: "tn-custom-recurrence-modal__radio-dot" });
+			return input;
+		};
 
 		contentEl.createEl("h2", {
 			text: this.translate("components.recurrenceContextMenu.customRecurrenceModal.title"),
@@ -733,10 +776,13 @@ class CustomRecurrenceModal extends Modal {
 
 		// Start date selection
 		new Setting(contentEl)
-			.setName("Start date")
-			.setDesc("The date when the recurrence pattern begins")
+			.setName(this.translate("components.recurrenceContextMenu.customRecurrenceModal.startDate"))
+			.setDesc(
+				this.translate("components.recurrenceContextMenu.customRecurrenceModal.startDateDesc")
+			)
 			.addText((text) => {
 				text.inputEl.type = "date";
+				text.inputEl.addClass("tn-datetime-input");
 				text.setValue(this.dtstart).onChange((value) => {
 					this.dtstart = value;
 				});
@@ -749,10 +795,13 @@ class CustomRecurrenceModal extends Modal {
 
 		// Start time selection
 		new Setting(contentEl)
-			.setName("Start time")
-			.setDesc("The time when recurring instances should appear (optional)")
+			.setName(this.translate("components.recurrenceContextMenu.customRecurrenceModal.startTime"))
+			.setDesc(
+				this.translate("components.recurrenceContextMenu.customRecurrenceModal.startTimeDesc")
+			)
 			.addText((text) => {
 				text.inputEl.type = "time";
+				text.inputEl.addClass("tn-datetime-input");
 				text.setValue(this.dtstartTime).onChange((value) => {
 					this.dtstartTime = value;
 				});
@@ -760,12 +809,24 @@ class CustomRecurrenceModal extends Modal {
 
 		// Recurrence anchor selection
 		new Setting(contentEl)
-			.setName("Recur from")
-			.setDesc("When should the next occurrence be calculated from?")
+			.setName(this.translate("components.recurrenceContextMenu.customRecurrenceModal.recurFrom"))
+			.setDesc(
+				this.translate("components.recurrenceContextMenu.customRecurrenceModal.recurFromDesc")
+			)
 			.addDropdown((dropdown) => {
 				dropdown
-					.addOption("scheduled", "Scheduled date (fixed schedule)")
-					.addOption("completion", "Completion date (flexible schedule)")
+					.addOption(
+						"scheduled",
+						this.translate(
+							"components.recurrenceContextMenu.customRecurrenceModal.scheduledDate"
+						)
+					)
+					.addOption(
+						"completion",
+						this.translate(
+							"components.recurrenceContextMenu.customRecurrenceModal.completionDate"
+						)
+					)
 					.setValue(this.recurrenceAnchor)
 					.onChange((value) => {
 						this.recurrenceAnchor = value as "scheduled" | "completion";
@@ -774,35 +835,58 @@ class CustomRecurrenceModal extends Modal {
 			});
 
 		// Frequency selection
-		new Setting(contentEl).setName("Frequency").addDropdown((dropdown) => {
-			dropdown
-				.addOption("DAILY", "Daily")
-				.addOption("WEEKLY", "Weekly")
-				.addOption("MONTHLY", "Monthly")
-				.addOption("YEARLY", "Yearly")
-				.setValue(this.frequency)
-				.onChange((value) => {
-					this.frequency = value;
-					this.updateFrequencySpecificVisibility();
-				});
-		});
+		new Setting(contentEl)
+			.setName(this.translate("components.recurrenceContextMenu.customRecurrenceModal.frequency"))
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption(
+						"DAILY",
+						this.translate(
+							"components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
+						)
+					)
+					.addOption(
+						"WEEKLY",
+						this.translate(
+							"components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly"
+						)
+					)
+					.addOption(
+						"MONTHLY",
+						this.translate(
+							"components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
+						)
+					)
+					.addOption(
+						"YEARLY",
+						this.translate(
+							"components.recurrenceContextMenu.customRecurrenceModal.frequencies.yearly"
+						)
+					)
+					.setValue(this.frequency)
+					.onChange((value) => {
+						this.frequency = value;
+						this.updateFrequencySpecificVisibility();
+					});
+			});
 
 		// Interval selection
-		new Setting(contentEl)
-			.setName("Interval")
-			.setDesc("Every X days/weeks/months/years")
+		const intervalSetting = new Setting(contentEl)
+			.setName(this.translate("components.recurrenceContextMenu.customRecurrenceModal.interval"))
+			.setDesc(this.translate(getIntervalDescKey()))
 			.addText((text) => {
 				text.setValue(this.interval.toString()).onChange((value) => {
 					this.interval = parseInt(value) || 1;
 				});
 			});
 
-		// Days of week (for weekly frequency)
+		// Days of week (for daily or weekly frequency)
 		const byDaySetting = new Setting(contentEl)
-			.setName("Days of week")
-			.setDesc("Select specific days (for daily or weekly recurrence)");
+			.setName(this.translate("components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek"))
+			.setDesc(this.translate(getDaysOfWeekDescKey()));
+		byDaySetting.settingEl.addClass("tn-custom-recurrence-modal__days-setting");
 
-		const daysContainer = byDaySetting.controlEl.createDiv("days-container");
+		const daysContainer = byDaySetting.controlEl.createDiv("tn-custom-recurrence-modal__days");
 		const days = orderedWeekdays.map((day) => ({
 			key: day.code,
 			label: this.translate(
@@ -811,20 +895,9 @@ class CustomRecurrenceModal extends Modal {
 		}));
 
 		days.forEach((day) => {
-			const dayEl = daysContainer.createEl("label", { cls: "day-checkbox" });
-			dayEl.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-display-none-6b99de8b",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			dayEl.classList.add("tn-static-display-inline-block-60e32dcb");
-			dayEl.classList.remove("tn-static-margin-right-4px-c6b76b85");
-			dayEl.classList.add("tn-static-margin-right-8px-539fa9a0");
+			const dayEl = daysContainer.createEl("label", {
+				cls: "tn-custom-recurrence-modal__day",
+			});
 
 			const checkbox = dayEl.createEl("input", { type: "checkbox" });
 			checkbox.checked = this.byDay.includes(day.key);
@@ -838,49 +911,38 @@ class CustomRecurrenceModal extends Modal {
 				}
 			});
 
-			dayEl.createSpan({ text: ` ${day.label}` });
+			dayEl.createSpan({ text: day.label });
 		});
 
 		// Monthly options
 		const monthlyTypeSetting = new Setting(contentEl)
-			.setName("Monthly recurrence")
-			.setDesc("Choose how to repeat monthly");
+			.setName(
+				this.translate("components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence")
+			)
+			.setDesc(
+				this.translate(
+					"components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenceDesc"
+				)
+			);
 
-		const monthlyTypeContainer = monthlyTypeSetting.controlEl.createDiv("monthly-options");
+		const monthlyTypeContainer = monthlyTypeSetting.controlEl.createDiv(
+			"tn-custom-recurrence-modal__options"
+		);
 
-		const monthlyByDateRadio = monthlyTypeContainer.createEl("label", { cls: "radio-option" });
-		monthlyByDateRadio.classList.remove(
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-75816cae",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
-		);
-		monthlyByDateRadio.classList.add("tn-static-display-block-2a1b75c9");
-		monthlyByDateRadio.classList.remove(
-			"tn-static-font-size-12px-65574819",
-			"tn-static-font-weight-bold-0fe8c30d",
-			"tn-static-font-weight-bold-e0b452bd",
-			"tn-static-margin-bottom-0-75rem-c05a3c6e",
-			"tn-static-margin-bottom-20px-49f14f8f"
-		);
-		monthlyByDateRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
-		const monthlyByDateInput = monthlyByDateRadio.createEl("input", {
-			type: "radio",
-			value: "bydate",
+		const monthlyByDateRadio = monthlyTypeContainer.createEl("label", {
+			cls: "tn-custom-recurrence-modal__radio-option",
 		});
-		monthlyByDateInput.name = "monthly-type";
-		monthlyByDateInput.checked =
-			this.byMonthDay.length > 0 || (this.byDay.length === 0 && this.bySetPos === undefined);
+		const monthlyByDateInput = createRadioInput(
+			monthlyByDateRadio,
+			"monthly-type",
+			"bydate",
+			this.byMonthDay.length > 0 || (this.byDay.length === 0 && this.bySetPos === undefined)
+		);
 		monthlyByDateRadio.createSpan({ text: " On " });
 
-		const monthlyDateSelect = monthlyByDateRadio.createEl("select");
-		monthlyDateSelect.classList.add("tn-static-margin-left-4px-46cec891");
-		monthlyDateSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
-		monthlyDateSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
+		const monthlyDateSelect = monthlyByDateRadio.createEl("select", {
+			cls: "tn-custom-recurrence-modal__select",
+		});
 		for (const dayOption of getMonthDayOptions()) {
 			const option = monthlyDateSelect.createEl("option", {
 				value: dayOption.value,
@@ -895,44 +957,51 @@ class CustomRecurrenceModal extends Modal {
 		}
 		monthlyByDateRadio.createSpan({ text: " of each month" });
 
-		const monthlyByDayRadio = monthlyTypeContainer.createEl("label", { cls: "radio-option" });
-		monthlyByDayRadio.classList.remove(
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-75816cae",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
-		);
-		monthlyByDayRadio.classList.add("tn-static-display-block-2a1b75c9");
-		monthlyByDayRadio.classList.remove(
-			"tn-static-font-size-12px-65574819",
-			"tn-static-font-weight-bold-0fe8c30d",
-			"tn-static-font-weight-bold-e0b452bd",
-			"tn-static-margin-bottom-0-75rem-c05a3c6e",
-			"tn-static-margin-bottom-20px-49f14f8f"
-		);
-		monthlyByDayRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
-		const monthlyByDayInput = monthlyByDayRadio.createEl("input", {
-			type: "radio",
-			value: "byday",
+		const monthlyByDayRadio = monthlyTypeContainer.createEl("label", {
+			cls: "tn-custom-recurrence-modal__radio-option",
 		});
-		monthlyByDayInput.name = "monthly-type";
-		monthlyByDayInput.checked = this.byDay.length > 0 && this.bySetPos !== undefined;
+		const monthlyByDayInput = createRadioInput(
+			monthlyByDayRadio,
+			"monthly-type",
+			"byday",
+			this.byDay.length > 0 && this.bySetPos !== undefined
+		);
 		monthlyByDayRadio.createSpan({ text: " On the " });
 
-		const monthlyWeekSelect = monthlyByDayRadio.createEl("select");
-		monthlyWeekSelect.classList.add("tn-static-margin-left-4px-46cec891");
-		monthlyWeekSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
-		monthlyWeekSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
+		const monthlyWeekSelect = monthlyByDayRadio.createEl("select", {
+			cls: "tn-custom-recurrence-modal__select",
+		});
 		const weekOptions = [
-			{ value: "1", text: "first" },
-			{ value: "2", text: "second" },
-			{ value: "3", text: "third" },
-			{ value: "4", text: "fourth" },
-			{ value: "-1", text: "last" },
+			{
+				value: "1",
+				text: this.translate(
+					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first"
+				),
+			},
+			{
+				value: "2",
+				text: this.translate(
+					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
+				),
+			},
+			{
+				value: "3",
+				text: this.translate(
+					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
+				),
+			},
+			{
+				value: "4",
+				text: this.translate(
+					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth"
+				),
+			},
+			{
+				value: "-1",
+				text: this.translate(
+					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.last"
+				),
+			},
 		];
 		weekOptions.forEach((opt) => {
 			const option = monthlyWeekSelect.createEl("option", {
@@ -946,10 +1015,9 @@ class CustomRecurrenceModal extends Modal {
 			}
 		});
 
-		const monthlyDaySelect = monthlyByDayRadio.createEl("select");
-		monthlyDaySelect.classList.add("tn-static-margin-left-4px-46cec891");
-		monthlyDaySelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
-		monthlyDaySelect.classList.add("tn-static-margin-right-4px-c6b76b85");
+		const monthlyDaySelect = monthlyByDayRadio.createEl("select", {
+			cls: "tn-custom-recurrence-modal__select",
+		});
 		const dayOptions = orderedWeekdays.map((day) => ({
 			value: day.code,
 			text: this.translate(
@@ -974,58 +1042,48 @@ class CustomRecurrenceModal extends Modal {
 
 		// Yearly options
 		const yearlyTypeSetting = new Setting(contentEl)
-			.setName("Yearly recurrence")
-			.setDesc("Choose how to repeat yearly");
+			.setName(
+				this.translate("components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence")
+			)
+			.setDesc(
+				this.translate(
+					"components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrenceDesc"
+				)
+			);
 
-		const yearlyTypeContainer = yearlyTypeSetting.controlEl.createDiv("yearly-options");
+		const yearlyTypeContainer = yearlyTypeSetting.controlEl.createDiv(
+			"tn-custom-recurrence-modal__options"
+		);
 
-		const yearlyByDateRadio = yearlyTypeContainer.createEl("label", { cls: "radio-option" });
-		yearlyByDateRadio.classList.remove(
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-75816cae",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
-		);
-		yearlyByDateRadio.classList.add("tn-static-display-block-2a1b75c9");
-		yearlyByDateRadio.classList.remove(
-			"tn-static-font-size-12px-65574819",
-			"tn-static-font-weight-bold-0fe8c30d",
-			"tn-static-font-weight-bold-e0b452bd",
-			"tn-static-margin-bottom-0-75rem-c05a3c6e",
-			"tn-static-margin-bottom-20px-49f14f8f"
-		);
-		yearlyByDateRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
-		const yearlyByDateInput = yearlyByDateRadio.createEl("input", {
-			type: "radio",
-			value: "bydate",
+		const yearlyByDateRadio = yearlyTypeContainer.createEl("label", {
+			cls: "tn-custom-recurrence-modal__radio-option",
 		});
-		yearlyByDateInput.name = "yearly-type";
-		yearlyByDateInput.checked =
-			this.byMonthDay.length > 0 || (this.byDay.length === 0 && this.bySetPos === undefined);
+		const yearlyByDateInput = createRadioInput(
+			yearlyByDateRadio,
+			"yearly-type",
+			"bydate",
+			this.byMonthDay.length > 0 || (this.byDay.length === 0 && this.bySetPos === undefined)
+		);
 		yearlyByDateRadio.createSpan({ text: " On " });
 
-		const yearlyMonthSelect = yearlyByDateRadio.createEl("select");
-		yearlyMonthSelect.classList.add("tn-static-margin-left-4px-46cec891");
-		yearlyMonthSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
-		yearlyMonthSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
-		const monthNames = [
-			"January",
-			"February",
-			"March",
-			"April",
-			"May",
-			"June",
-			"July",
-			"August",
-			"September",
-			"October",
-			"November",
-			"December",
-		];
+		const yearlyMonthSelect = yearlyByDateRadio.createEl("select", {
+			cls: "tn-custom-recurrence-modal__select",
+		});
+		const monthNameKeys = [
+			"january",
+			"february",
+			"march",
+			"april",
+			"may",
+			"june",
+			"july",
+			"august",
+			"september",
+			"october",
+			"november",
+			"december",
+		] as const;
+		const monthNames = monthNameKeys.map((key) => this.translate(`common.months.${key}`));
 		monthNames.forEach((month, index) => {
 			const option = yearlyMonthSelect.createEl("option", {
 				value: (index + 1).toString(),
@@ -1041,10 +1099,9 @@ class CustomRecurrenceModal extends Modal {
 			}
 		});
 
-		const yearlyDateSelect = yearlyByDateRadio.createEl("select");
-		yearlyDateSelect.classList.add("tn-static-margin-left-4px-46cec891");
-		yearlyDateSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
-		yearlyDateSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
+		const yearlyDateSelect = yearlyByDateRadio.createEl("select", {
+			cls: "tn-custom-recurrence-modal__select",
+		});
 		for (const dayOption of getMonthDayOptions()) {
 			const option = yearlyDateSelect.createEl("option", {
 				value: dayOption.value,
@@ -1059,38 +1116,20 @@ class CustomRecurrenceModal extends Modal {
 		}
 		yearlyByDateRadio.createSpan({ text: " each year" });
 
-		const yearlyByDayRadio = yearlyTypeContainer.createEl("label", { cls: "radio-option" });
-		yearlyByDayRadio.classList.remove(
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-75816cae",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
-		);
-		yearlyByDayRadio.classList.add("tn-static-display-block-2a1b75c9");
-		yearlyByDayRadio.classList.remove(
-			"tn-static-font-size-12px-65574819",
-			"tn-static-font-weight-bold-0fe8c30d",
-			"tn-static-font-weight-bold-e0b452bd",
-			"tn-static-margin-bottom-0-75rem-c05a3c6e",
-			"tn-static-margin-bottom-20px-49f14f8f"
-		);
-		yearlyByDayRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
-		const yearlyByDayInput = yearlyByDayRadio.createEl("input", {
-			type: "radio",
-			value: "byday",
+		const yearlyByDayRadio = yearlyTypeContainer.createEl("label", {
+			cls: "tn-custom-recurrence-modal__radio-option",
 		});
-		yearlyByDayInput.name = "yearly-type";
-		yearlyByDayInput.checked = this.byDay.length > 0 && this.bySetPos !== undefined;
+		const yearlyByDayInput = createRadioInput(
+			yearlyByDayRadio,
+			"yearly-type",
+			"byday",
+			this.byDay.length > 0 && this.bySetPos !== undefined
+		);
 		yearlyByDayRadio.createSpan({ text: " On the " });
 
-		const yearlyWeekSelect = yearlyByDayRadio.createEl("select");
-		yearlyWeekSelect.classList.add("tn-static-margin-left-4px-46cec891");
-		yearlyWeekSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
-		yearlyWeekSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
+		const yearlyWeekSelect = yearlyByDayRadio.createEl("select", {
+			cls: "tn-custom-recurrence-modal__select",
+		});
 		weekOptions.forEach((opt) => {
 			const option = yearlyWeekSelect.createEl("option", {
 				value: opt.value,
@@ -1103,10 +1142,9 @@ class CustomRecurrenceModal extends Modal {
 			}
 		});
 
-		const yearlyDaySelect = yearlyByDayRadio.createEl("select");
-		yearlyDaySelect.classList.add("tn-static-margin-left-4px-46cec891");
-		yearlyDaySelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
-		yearlyDaySelect.classList.add("tn-static-margin-right-4px-c6b76b85");
+		const yearlyDaySelect = yearlyByDayRadio.createEl("select", {
+			cls: "tn-custom-recurrence-modal__select",
+		});
 		dayOptions.forEach((opt) => {
 			const option = yearlyDaySelect.createEl("option", { value: opt.value, text: opt.text });
 			if (this.byDay.length > 0 && this.byDay[0] === opt.value) {
@@ -1116,10 +1154,9 @@ class CustomRecurrenceModal extends Modal {
 			}
 		});
 
-		const yearlyByDayMonthSelect = yearlyByDayRadio.createEl("select");
-		yearlyByDayMonthSelect.classList.add("tn-static-margin-left-4px-46cec891");
-		yearlyByDayMonthSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
-		yearlyByDayMonthSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
+		const yearlyByDayMonthSelect = yearlyByDayRadio.createEl("select", {
+			cls: "tn-custom-recurrence-modal__select",
+		});
 		monthNames.forEach((month, index) => {
 			const option = yearlyByDayMonthSelect.createEl("option", {
 				value: (index + 1).toString(),
@@ -1136,125 +1173,149 @@ class CustomRecurrenceModal extends Modal {
 		});
 		yearlyByDayRadio.createSpan({ text: " each year" });
 
+		// Keep Monthly radio selection in sync with which sub-controls are being edited,
+		// and grey out the inactive option's controls so it's clear which one applies.
+		const updateMonthlyControlsDisabled = () => {
+			const isByDate = monthlyByDateInput.checked;
+			monthlyDateSelect.disabled = !isByDate;
+			monthlyWeekSelect.disabled = isByDate;
+			monthlyDaySelect.disabled = isByDate;
+		};
+		monthlyByDateInput.addEventListener("change", updateMonthlyControlsDisabled);
+		monthlyByDayInput.addEventListener("change", updateMonthlyControlsDisabled);
+		monthlyDateSelect.addEventListener("change", () => {
+			monthlyByDateInput.checked = true;
+			updateMonthlyControlsDisabled();
+		});
+		[monthlyWeekSelect, monthlyDaySelect].forEach((select) => {
+			select.addEventListener("change", () => {
+				monthlyByDayInput.checked = true;
+				updateMonthlyControlsDisabled();
+			});
+		});
+		updateMonthlyControlsDisabled();
+
+		// Same treatment for Yearly's "on date" vs "on the Nth weekday" sub-controls.
+		const updateYearlyControlsDisabled = () => {
+			const isByDate = yearlyByDateInput.checked;
+			yearlyMonthSelect.disabled = !isByDate;
+			yearlyDateSelect.disabled = !isByDate;
+			yearlyWeekSelect.disabled = isByDate;
+			yearlyDaySelect.disabled = isByDate;
+			yearlyByDayMonthSelect.disabled = isByDate;
+		};
+		yearlyByDateInput.addEventListener("change", updateYearlyControlsDisabled);
+		yearlyByDayInput.addEventListener("change", updateYearlyControlsDisabled);
+		[yearlyMonthSelect, yearlyDateSelect].forEach((select) => {
+			select.addEventListener("change", () => {
+				yearlyByDateInput.checked = true;
+				updateYearlyControlsDisabled();
+			});
+		});
+		[yearlyWeekSelect, yearlyDaySelect, yearlyByDayMonthSelect].forEach((select) => {
+			select.addEventListener("change", () => {
+				yearlyByDayInput.checked = true;
+				updateYearlyControlsDisabled();
+			});
+		});
+		updateYearlyControlsDisabled();
+
 		// End condition
 		new Setting(contentEl)
-			.setName("End condition")
-			.setDesc("Choose when the recurrence should end");
+			.setName(
+				this.translate("components.recurrenceContextMenu.customRecurrenceModal.endCondition")
+			)
+			.setDesc(
+				this.translate("components.recurrenceContextMenu.customRecurrenceModal.endConditionDesc")
+			);
 
-		const endConditionContainer = contentEl.createDiv("end-condition-container");
+		const endConditionContainer = contentEl.createDiv(
+			"tn-custom-recurrence-modal__end-condition"
+		);
 
 		// Never ends
-		const neverRadio = endConditionContainer.createEl("label", { cls: "radio-option" });
-		neverRadio.classList.remove(
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-75816cae",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
+		const neverRadio = endConditionContainer.createEl("label", {
+			cls: "tn-custom-recurrence-modal__radio-option",
+		});
+		const neverInput = createRadioInput(
+			neverRadio,
+			"end-type",
+			"never",
+			this.endType === "never"
 		);
-		neverRadio.classList.add("tn-static-display-block-2a1b75c9");
-		neverRadio.classList.remove(
-			"tn-static-font-size-12px-65574819",
-			"tn-static-font-weight-bold-0fe8c30d",
-			"tn-static-font-weight-bold-e0b452bd",
-			"tn-static-margin-bottom-0-75rem-c05a3c6e",
-			"tn-static-margin-bottom-20px-49f14f8f"
-		);
-		neverRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
-		const neverInput = neverRadio.createEl("input", { type: "radio", value: "never" });
-		neverInput.name = "end-type";
-		neverInput.checked = this.endType === "never";
-		neverRadio.createSpan({ text: " Never ends" });
+		neverRadio.createSpan({
+			text: this.translate("components.recurrenceContextMenu.customRecurrenceModal.neverEnds"),
+		});
 
 		// End after X occurrences
-		const countRadio = endConditionContainer.createEl("label", { cls: "radio-option" });
-		countRadio.classList.remove(
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-75816cae",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
+		const countRadio = endConditionContainer.createEl("label", {
+			cls: "tn-custom-recurrence-modal__radio-option",
+		});
+		const countInput = createRadioInput(
+			countRadio,
+			"end-type",
+			"count",
+			this.endType === "count"
 		);
-		countRadio.classList.add("tn-static-display-block-2a1b75c9");
-		countRadio.classList.remove(
-			"tn-static-font-size-12px-65574819",
-			"tn-static-font-weight-bold-0fe8c30d",
-			"tn-static-font-weight-bold-e0b452bd",
-			"tn-static-margin-bottom-0-75rem-c05a3c6e",
-			"tn-static-margin-bottom-20px-49f14f8f"
+		const endAfterTemplate = this.translate(
+			"components.recurrenceContextMenu.customRecurrenceModal.endAfterOccurrences"
 		);
-		countRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
-		const countInput = countRadio.createEl("input", { type: "radio", value: "count" });
-		countInput.name = "end-type";
-		countInput.checked = this.endType === "count";
-		countRadio.createSpan({ text: " End after " });
-		const countText = countRadio.createEl("input", { type: "number", placeholder: "10" });
-		countText.classList.remove(
-			"tn-static-width-100-0466783d",
-			"tn-static-width-12px-fbf353fb",
-			"tn-static-width-16px-7375d50b",
-			"tn-static-width-1px-aa77e27e",
-			"tn-static-width-200px-2acaf3b5",
-			"tn-static-width-80px-8573bae3"
-		);
-		countText.classList.add("tn-static-width-60px-bd09c419");
-		countText.classList.add("tn-static-margin-left-4px-46cec891");
-		countText.classList.remove("tn-static-margin-right-8px-539fa9a0");
-		countText.classList.add("tn-static-margin-right-4px-c6b76b85");
+		const [endAfterPrefix, endAfterSuffix] = endAfterTemplate.split("{count}");
+		countRadio.createSpan({ text: endAfterPrefix });
+		const countText = countRadio.createEl("input", {
+			type: "number",
+			placeholder: "10",
+			cls: "tn-custom-recurrence-modal__count-input",
+		});
 		countText.value = this.count ? this.count.toString() : "";
-		countRadio.createSpan({ text: " occurrences" });
+		countRadio.createSpan({ text: endAfterSuffix ? endAfterSuffix.trim() : "" });
 
 		// End on date
-		const untilRadio = endConditionContainer.createEl("label", { cls: "radio-option" });
-		untilRadio.classList.remove(
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-75816cae",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
+		const untilRadio = endConditionContainer.createEl("label", {
+			cls: "tn-custom-recurrence-modal__radio-option",
+		});
+		const untilInput = createRadioInput(
+			untilRadio,
+			"end-type",
+			"until",
+			this.endType === "until"
 		);
-		untilRadio.classList.add("tn-static-display-block-2a1b75c9");
-		untilRadio.classList.remove(
-			"tn-static-font-size-12px-65574819",
-			"tn-static-font-weight-bold-0fe8c30d",
-			"tn-static-font-weight-bold-e0b452bd",
-			"tn-static-margin-bottom-0-75rem-c05a3c6e",
-			"tn-static-margin-bottom-20px-49f14f8f"
+		const endOnTemplate = this.translate(
+			"components.recurrenceContextMenu.customRecurrenceModal.endOnDate"
 		);
-		untilRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
-		const untilInput = untilRadio.createEl("input", { type: "radio", value: "until" });
-		untilInput.name = "end-type";
-		untilInput.checked = this.endType === "until";
-		untilRadio.createSpan({ text: " End on " });
-		const untilDate = untilRadio.createEl("input", { type: "date" });
-		untilDate.classList.add("tn-static-margin-left-4px-46cec891");
+		const [endOnPrefix] = endOnTemplate.split("{date}");
+		untilRadio.createSpan({ text: endOnPrefix });
+		const untilDate = untilRadio.createEl("input", {
+			type: "date",
+			cls: "tn-custom-recurrence-modal__select tn-datetime-input",
+		});
 		untilDate.value = this.until ? this.until.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3") : "";
+
+		const updateEndConditionDisabled = () => {
+			countText.disabled = !countInput.checked;
+			untilDate.disabled = !untilInput.checked;
+		};
+
 		attachDateInputBehavior(untilDate, {
 			onCommit: (value) => {
 				this.until = value.replace(/-/g, "");
 				untilInput.checked = true;
 				this.endType = "until";
+				updateEndConditionDisabled();
 			},
 		});
 
-		// Event listeners for end condition
 		neverInput.addEventListener("change", () => {
 			if (neverInput.checked) this.endType = "never";
+			updateEndConditionDisabled();
 		});
 		countInput.addEventListener("change", () => {
 			if (countInput.checked) this.endType = "count";
+			updateEndConditionDisabled();
 		});
 		untilInput.addEventListener("change", () => {
 			if (untilInput.checked) this.endType = "until";
+			updateEndConditionDisabled();
 		});
 
 		countText.addEventListener("input", () => {
@@ -1262,6 +1323,7 @@ class CustomRecurrenceModal extends Modal {
 			if (countText.value) {
 				countInput.checked = true;
 				this.endType = "count";
+				updateEndConditionDisabled();
 			}
 		});
 
@@ -1270,11 +1332,16 @@ class CustomRecurrenceModal extends Modal {
 			if (untilDate.value) {
 				untilInput.checked = true;
 				this.endType = "until";
+				updateEndConditionDisabled();
 			}
 		});
 
+		updateEndConditionDisabled();
+
 		this.updateFrequencySpecificVisibility = () => {
 			const useFlexibleInterval = this.recurrenceAnchor === "completion";
+			intervalSetting.setDesc(this.translate(getIntervalDescKey()));
+			byDaySetting.setDesc(this.translate(getDaysOfWeekDescKey()));
 			byDaySetting.settingEl.style.display =
 				(this.frequency === "DAILY" || this.frequency === "WEEKLY") &&
 				!useFlexibleInterval
@@ -1327,12 +1394,17 @@ class CustomRecurrenceModal extends Modal {
 		);
 		buttonContainer.classList.add("tn-static-margin-top-16px-1b0f4999");
 
-		const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
+		const cancelButton = buttonContainer.createEl("button", {
+			text: this.translate("components.recurrenceContextMenu.customRecurrenceModal.cancel"),
+		});
 		cancelButton.addEventListener("click", () => {
 			this.close();
 		});
 
-		const saveButton = buttonContainer.createEl("button", { text: "Save", cls: "mod-cta" });
+		const saveButton = buttonContainer.createEl("button", {
+			text: this.translate("components.recurrenceContextMenu.customRecurrenceModal.save"),
+			cls: "mod-cta",
+		});
 		saveButton.addEventListener("click", () => {
 			// Get current radio button states and dropdown values
 			const monthlyType = monthlyByDateInput.checked ? "bydate" : "byday";

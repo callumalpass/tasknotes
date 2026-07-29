@@ -452,6 +452,7 @@ export class ReminderModal extends Modal {
 					this.absoluteDate = value;
 				});
 			text.inputEl.type = "date";
+			text.inputEl.addClass("tn-datetime-input");
 			attachDateInputBehavior(text.inputEl, {
 				onCommit: (value) => {
 					this.absoluteDate = value;
@@ -466,6 +467,7 @@ export class ReminderModal extends Modal {
 					this.absoluteTime = value;
 				});
 			text.inputEl.type = "time";
+			text.inputEl.addClass("tn-datetime-input");
 		});
 
 		// Description field (common)

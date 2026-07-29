@@ -195,7 +195,7 @@ export class DateTimePickerModal extends Modal {
 
 		const control = field.createDiv({ cls: "date-time-picker-modal__native-date-control" });
 		this.dateInput = control.createEl("input", {
-			cls: "date-time-picker-modal__date-input",
+			cls: "date-time-picker-modal__date-input tn-datetime-input",
 			attr: {
 				id: "tasknotes-date-time-picker-date",
 				type: "date",
@@ -243,7 +243,7 @@ export class DateTimePickerModal extends Modal {
 		});
 
 		this.timeInput = field.createEl("input", {
-			cls: "date-time-picker-modal__time-input",
+			cls: "date-time-picker-modal__time-input tn-datetime-input",
 			attr: {
 				id: "tasknotes-date-time-picker-time",
 				type: "time",
