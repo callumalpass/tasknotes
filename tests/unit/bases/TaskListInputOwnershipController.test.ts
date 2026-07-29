@@ -80,6 +80,29 @@ describe("TaskListInputOwnershipController", () => {
 		expect(document.activeElement).toBe(taskCard);
 	});
 
+	it("restores a rerendered task after an overlay closes without a captured close interaction", () => {
+		controller.noteOverlayOpening();
+		const menu = document.createElement("div");
+		menu.className = "menu";
+		document.body.appendChild(menu);
+		const menuItem = document.createElement("div");
+		menuItem.tabIndex = 0;
+		menu.appendChild(menuItem);
+		menuItem.focus();
+
+		focusController.prepareForRender();
+		const replacement = card("focused.md");
+		items.replaceChildren(replacement);
+		focusController.restoreAfterRender();
+		menu.remove();
+		jest.runAllTimers();
+
+		expect(document.activeElement).toBe(replacement);
+		const event = new KeyboardEvent("keydown", { key: " " });
+		Object.defineProperty(event, "target", { value: replacement });
+		expect(controller.canHandleListKeyDown(event)).toBe(true);
+	});
+
 	it("keeps Escape overlay-owned after the menu is synchronously removed", () => {
 		controller.noteOverlayOpening();
 		const menu = document.createElement("div");

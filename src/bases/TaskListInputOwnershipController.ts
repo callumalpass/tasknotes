@@ -8,6 +8,7 @@ export class TaskListInputOwnershipController {
 	private suspendedForOverlay = false;
 	private restoreTimer: number | null = null;
 	private restoreAttempts = 0;
+	private restoreObservedOverlay = false;
 
 	constructor(
 		private readonly viewRoot: HTMLElement,
@@ -32,6 +33,7 @@ export class TaskListInputOwnershipController {
 		const activeElement = this.viewRoot.ownerDocument.activeElement;
 		if (activeElement instanceof Element && this.viewRoot.contains(activeElement)) {
 			this.suspendedForOverlay = true;
+			this.scheduleRestoreAfterOverlayClose();
 		}
 	}
 
@@ -69,17 +71,22 @@ export class TaskListInputOwnershipController {
 
 		const win = this.viewRoot.ownerDocument.defaultView ?? window;
 		this.restoreAttempts = 0;
+		this.restoreObservedOverlay = false;
 		const check = () => {
 			this.restoreTimer = null;
 			if (!this.suspendedForOverlay || !this.viewRoot.isConnected) return;
 
-			if (this.hasOpenOverlay() && this.restoreAttempts < 20) {
+			const hasOpenOverlay = this.hasOpenOverlay();
+			if (hasOpenOverlay) this.restoreObservedOverlay = true;
+			if (hasOpenOverlay) {
+				this.restoreTimer = win.setTimeout(check, 16);
+				return;
+			}
+			if (!this.restoreObservedOverlay && this.restoreAttempts < 20) {
 				this.restoreAttempts++;
 				this.restoreTimer = win.setTimeout(check, 16);
 				return;
 			}
-
-			if (this.hasOpenOverlay()) return;
 
 			const activeElement = this.viewRoot.ownerDocument.activeElement;
 			const body = this.viewRoot.ownerDocument.body;
@@ -104,6 +111,7 @@ export class TaskListInputOwnershipController {
 			this.restoreTimer = null;
 		}
 		this.suspendedForOverlay = false;
+		this.restoreObservedOverlay = false;
 	}
 
 	private hasOpenOverlay(): boolean {

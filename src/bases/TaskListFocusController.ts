@@ -38,6 +38,7 @@ export class TaskListFocusController {
 		autoFocusInitial = false
 	) {
 		this.initialFocusPending = autoFocusInitial;
+		this.syncCursorSourceClass();
 	}
 
 	handleFocusIn(event: FocusEvent): void {
@@ -60,12 +61,22 @@ export class TaskListFocusController {
 		const card = this.getCardFromTarget(event.target);
 		if (!card) return false;
 
-		this.lastCursorSource = "mouse";
+		this.setCursorSource("mouse");
 		if (card === this.lastMouseCard) return true;
 
 		this.lastMouseCard = card;
-		this.focusedIdentity = getCardIdentity(card, this.getCards());
-		this.syncRovingTabIndex();
+		const activeElement = this.root.ownerDocument.activeElement;
+		if (
+			activeElement instanceof Element &&
+			card.contains(activeElement) &&
+			activeElement.closest(INTERACTIVE_SELECTOR)
+		) {
+			this.focusedIdentity = getCardIdentity(card, this.getCards());
+			this.syncRovingTabIndex();
+			return true;
+		}
+
+		this.focusCard(card, false);
 		return true;
 	}
 
@@ -105,7 +116,7 @@ export class TaskListFocusController {
 
 		event.preventDefault();
 		event.stopPropagation();
-		this.lastCursorSource = "keyboard";
+		this.setCursorSource("keyboard");
 		this.lastMouseCard = null;
 		this.focusCard(cards[nextIndex], true);
 		return true;
@@ -141,7 +152,7 @@ export class TaskListFocusController {
 		this.focusedIdentity = null;
 		this.restoreDomFocus = false;
 		this.initialFocusPending = false;
-		this.lastCursorSource = "keyboard";
+		this.setCursorSource("keyboard");
 		this.lastMouseCard = null;
 		this.syncRovingTabIndex();
 	}
@@ -214,6 +225,22 @@ export class TaskListFocusController {
 		this.syncRovingTabIndex(cards);
 		card.focus({ preventScroll: true });
 		if (scroll) card.scrollIntoView({ block: "nearest" });
+	}
+
+	private setCursorSource(source: "keyboard" | "mouse"): void {
+		this.lastCursorSource = source;
+		this.syncCursorSourceClass();
+	}
+
+	private syncCursorSourceClass(): void {
+		this.root.classList.toggle(
+			"tn-task-list--keyboard-cursor",
+			this.lastCursorSource === "keyboard"
+		);
+		this.root.classList.toggle(
+			"tn-task-list--mouse-cursor",
+			this.lastCursorSource === "mouse"
+		);
 	}
 
 	private syncRovingTabIndex(cards: readonly HTMLElement[] = this.getCards()): void {

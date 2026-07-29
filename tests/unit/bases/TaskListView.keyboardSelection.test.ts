@@ -27,7 +27,7 @@ describe("TaskListView keyboard selection", () => {
 		expect(toggleSelection).toHaveBeenCalledWith("focused.md");
 	});
 
-	it("toggles the mouse-focused task even while DOM focus remains on another card", () => {
+	it("toggles the mouse-focused task after hover moves DOM focus to it", () => {
 		const items = document.createElement("div");
 		const first = document.createElement("div");
 		first.className = "task-card";
@@ -55,7 +55,7 @@ describe("TaskListView keyboard selection", () => {
 
 		(TaskListView.prototype as any).toggleFocusedTaskSelection.call(view);
 
-		expect(document.activeElement).toBe(first);
+		expect(document.activeElement).toBe(hovered);
 		expect(toggleSelection).toHaveBeenCalledWith("hovered.md");
 	});
 

@@ -91,7 +91,7 @@ describe("TaskListFocusController", () => {
 		expect(document.activeElement).toBe(cards[1]);
 	});
 
-	it("updates task focus from mouse movement without stealing DOM focus", () => {
+	it("moves visual and DOM focus together when mouse movement changes task focus", () => {
 		const cards = [createCard("a.md"), createCard("b.md")];
 		root.append(...cards);
 		controller.restoreAfterRender();
@@ -103,7 +103,28 @@ describe("TaskListFocusController", () => {
 
 		expect(controller.getFocusedIdentity()).toEqual({ path: "b.md", occurrence: 0 });
 		expect(cards[1].classList.contains("task-card--keyboard-focused")).toBe(true);
-		expect(document.activeElement).toBe(cards[0]);
+		expect(cards[0].classList.contains("task-card--keyboard-focused")).toBe(false);
+		expect(root.classList.contains("tn-task-list--mouse-cursor")).toBe(true);
+		expect(document.activeElement).toBe(cards[1]);
+	});
+
+	it("does not steal focus from an active interactive control within the hovered card", () => {
+		const card = createCard("interactive.md");
+		const button = document.createElement("button");
+		card.appendChild(button);
+		root.appendChild(card);
+		controller.restoreAfterRender();
+		button.focus();
+		const event = new MouseEvent("mousemove");
+		Object.defineProperty(event, "target", { value: card });
+
+		controller.handleMouseMove(event);
+
+		expect(document.activeElement).toBe(button);
+		expect(controller.getFocusedIdentity()).toEqual({
+			path: "interactive.md",
+			occurrence: 0,
+		});
 	});
 
 	it("keeps the hovered task focused when the mouse moves over empty list space", () => {
@@ -141,6 +162,8 @@ describe("TaskListFocusController", () => {
 
 		expect(document.activeElement).toBe(cards[2]);
 		expect(controller.getFocusedIdentity()).toEqual({ path: "c.md", occurrence: 0 });
+		expect(root.classList.contains("tn-task-list--keyboard-cursor")).toBe(true);
+		expect(root.classList.contains("tn-task-list--mouse-cursor")).toBe(false);
 	});
 
 	it("supports configurable first and last navigation through the same path", () => {

@@ -31,6 +31,10 @@
     background-color: var(--background-modifier-hover);
 }
 
+.tasknotes-plugin .tn-task-list--keyboard-cursor .task-card:hover:not(.task-card--keyboard-focused):not(.task-card--selected) {
+    background-color: transparent;
+}
+
 .tasknotes-plugin .task-card.task-card--nested-interactive-hover {
     background-color: transparent;
     box-shadow: none;
