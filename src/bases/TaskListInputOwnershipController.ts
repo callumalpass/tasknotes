@@ -16,6 +16,7 @@ export class TaskListInputOwnershipController {
 
 	canHandleListKeyDown(event: KeyboardEvent): boolean {
 		if (event.isComposing || event.key === "Process") return false;
+		if (this.suspendedForOverlay) return false;
 
 		const target = event.target;
 		if (!(target instanceof Element) || target.closest(EDITABLE_SELECTOR)) return false;
@@ -48,7 +49,13 @@ export class TaskListInputOwnershipController {
 
 	handleOverlayInteraction(event: Event): void {
 		const target = event.target;
-		if (!(target instanceof Element) || !this.getOverlayFromTarget(target)) return;
+		const overlayTarget =
+			target instanceof Element && Boolean(this.getOverlayFromTarget(target));
+		const overlayCloseKey =
+			event instanceof KeyboardEvent &&
+			(event.key === "Escape" || event.key === "Backspace") &&
+			(this.suspendedForOverlay || this.hasOpenOverlay());
+		if (!overlayTarget && !overlayCloseKey) return;
 
 		this.suspendedForOverlay = true;
 		this.scheduleRestoreAfterOverlayClose();

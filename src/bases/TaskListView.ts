@@ -224,6 +224,44 @@ export class TaskListView extends BasesViewBase {
 		// Call parent onload which sets up container and listeners
 		super.onload();
 		this.registerGroupContextMenuListeners();
+		this.registerEvent(
+			this.plugin.app.workspace.on("active-leaf-change", (leaf) => {
+				this.restoreFocusForActivatedLeaf(leaf);
+			})
+		);
+		this.registerDomEvent(
+			this.containerEl.ownerDocument,
+			"click",
+			(event: MouseEvent) => {
+				const target = event.target;
+				if (
+					target instanceof Element &&
+					target.closest(".workspace-tab-header")
+				) {
+					const win = this.containerEl.ownerDocument.defaultView ?? window;
+					win.setTimeout(() => {
+						this.restoreFocusForActivatedLeaf(
+							this.plugin.app.workspace.getMostRecentLeaf()
+						);
+					}, 0);
+				}
+			},
+			true
+		);
+	}
+
+	private restoreFocusForActivatedLeaf(
+		leaf: { view?: { containerEl?: HTMLElement } } | null
+	): void {
+		const leafContainer = leaf?.view?.containerEl;
+		if (!leafContainer?.contains(this.containerEl)) return;
+
+		const win = this.containerEl.ownerDocument.defaultView ?? window;
+		win.setTimeout(() => {
+			if (this.rootElement?.isConnected) {
+				this.focusController?.restoreFocusedElement();
+			}
+		}, 0);
 	}
 
 	/**
@@ -604,8 +642,19 @@ export class TaskListView extends BasesViewBase {
 			this.sortScopeCandidateTaskPaths.clear();
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		} finally {
-			this.focusController?.restoreAfterRender();
+			this.restoreInteractionStateAfterRender();
 		}
+	}
+
+	private restoreInteractionStateAfterRender(): void {
+		this.focusController?.restoreAfterRender();
+		// Rendering replaces card elements, so restore visual state from the
+		// shared selection service after every render—not only when selection
+		// itself changes.
+		this.updateSelectionVisuals();
+		this.updateSelectionIndicator(
+			this.plugin.taskSelectionService?.getSelectionCount() ?? 0
+		);
 	}
 
 	// ── Drag-to-reorder ────────────────────────────────────────────────

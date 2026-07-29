@@ -80,6 +80,22 @@ describe("TaskListInputOwnershipController", () => {
 		expect(document.activeElement).toBe(taskCard);
 	});
 
+	it("keeps Escape overlay-owned after the menu is synchronously removed", () => {
+		controller.noteOverlayOpening();
+		const menu = document.createElement("div");
+		menu.className = "menu";
+		document.body.appendChild(menu);
+		const event = new KeyboardEvent("keydown", { key: "Escape" });
+		Object.defineProperty(event, "target", { value: taskCard });
+
+		controller.handleOverlayInteraction(event);
+		menu.remove();
+
+		expect(controller.canHandleListKeyDown(event)).toBe(false);
+		jest.runAllTimers();
+		expect(controller.canHandleListKeyDown(event)).toBe(true);
+	});
+
 	it("does not steal focus when the user moved to another control", () => {
 		controller.noteOverlayOpening();
 		const outsideInput = document.createElement("input");

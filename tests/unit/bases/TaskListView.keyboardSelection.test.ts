@@ -85,6 +85,7 @@ describe("TaskListView keyboard selection", () => {
 			plugin: {
 				taskSelectionService: {
 					isSelectionModeActive: jest.fn(() => true),
+					getSelectionCount: jest.fn(() => 2),
 					exitSelectionMode,
 					onSelectionChange: jest.fn(() => jest.fn()),
 					onSelectionModeChange: jest.fn(() => jest.fn()),
@@ -102,6 +103,9 @@ describe("TaskListView keyboard selection", () => {
 			register: jest.fn(),
 		};
 		(TaskListView.prototype as any).setupSelectionHandling.call(view);
+		expect(view.updateSelectionModeUI).toHaveBeenCalledWith(true);
+		expect(view.updateSelectionVisuals).toHaveBeenCalled();
+		expect(view.updateSelectionIndicator).toHaveBeenCalledWith(2);
 		const event = new KeyboardEvent("keydown", {
 			key: "Escape",
 			bubbles: true,
@@ -112,5 +116,51 @@ describe("TaskListView keyboard selection", () => {
 
 		expect(view.inputOwnershipController.canHandleListKeyDown).toHaveBeenCalledWith(event);
 		expect(exitSelectionMode).not.toHaveBeenCalled();
+	});
+
+	it("restores remembered card focus when its workspace leaf is activated", () => {
+		jest.useFakeTimers();
+		const leafContainer = document.createElement("div");
+		const containerEl = document.createElement("div");
+		const rootElement = document.createElement("div");
+		leafContainer.append(containerEl);
+		containerEl.append(rootElement);
+		document.body.appendChild(leafContainer);
+		const restoreFocusedElement = jest.fn();
+		const view = {
+			containerEl,
+			rootElement,
+			focusController: { restoreFocusedElement },
+		};
+
+		(TaskListView.prototype as any).restoreFocusForActivatedLeaf.call(view, {
+			view: { containerEl: leafContainer },
+		});
+		jest.runAllTimers();
+
+		expect(restoreFocusedElement).toHaveBeenCalled();
+		jest.useRealTimers();
+	});
+
+	it("rehydrates selection visuals after every card render", () => {
+		const restoreAfterRender = jest.fn();
+		const updateSelectionVisuals = jest.fn();
+		const updateSelectionIndicator = jest.fn();
+		const view = {
+			focusController: { restoreAfterRender },
+			plugin: {
+				taskSelectionService: {
+					getSelectionCount: jest.fn(() => 3),
+				},
+			},
+			updateSelectionVisuals,
+			updateSelectionIndicator,
+		};
+
+		(TaskListView.prototype as any).restoreInteractionStateAfterRender.call(view);
+
+		expect(restoreAfterRender).toHaveBeenCalled();
+		expect(updateSelectionVisuals).toHaveBeenCalled();
+		expect(updateSelectionIndicator).toHaveBeenCalledWith(3);
 	});
 });

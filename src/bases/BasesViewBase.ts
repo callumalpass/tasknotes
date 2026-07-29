@@ -828,6 +828,13 @@ export abstract class BasesViewBase extends Component {
 			this.updateSelectionModeUI(active);
 		});
 
+		// A Bases refresh can recreate the view root without changing the shared
+		// selection service. Hydrate the new DOM immediately instead of waiting
+		// for another selection event.
+		this.updateSelectionModeUI(selectionService.isSelectionModeActive());
+		this.updateSelectionVisuals();
+		this.updateSelectionIndicator(selectionService.getSelectionCount());
+
 		// Register cleanup
 		this.register(() => {
 			this.rootElement?.removeEventListener("keydown", handleKeyDown);

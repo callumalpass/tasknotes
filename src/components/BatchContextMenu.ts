@@ -408,9 +408,6 @@ export class BatchContextMenu {
 				new Notice(`Updated tags on ${successCount} tasks, ${failCount} failed`);
 			}
 
-			plugin.taskSelectionService?.clearSelection();
-			plugin.taskSelectionService?.exitSelectionMode();
-
 			onUpdate?.();
 		} catch (error) {
 			tasknotesLogger.error("[BatchContextMenu] Batch tag update failed:", {
@@ -456,10 +453,6 @@ export class BatchContextMenu {
 			} else {
 				new Notice(`Updated ${successCount} tasks, ${failCount} failed`);
 			}
-
-			// Clear selection after successful batch operation
-			plugin.taskSelectionService?.clearSelection();
-			plugin.taskSelectionService?.exitSelectionMode();
 
 			onUpdate?.();
 		} catch (error) {
@@ -511,10 +504,6 @@ export class BatchContextMenu {
 					`${archive ? "Archived" : "Unarchived"} ${successCount} tasks, ${failCount} failed`
 				);
 			}
-
-			// Clear selection after successful batch operation
-			plugin.taskSelectionService?.clearSelection();
-			plugin.taskSelectionService?.exitSelectionMode();
 
 			onUpdate?.();
 		} catch (error) {
