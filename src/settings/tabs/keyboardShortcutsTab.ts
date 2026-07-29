@@ -1,4 +1,4 @@
-import { Platform, Scope, Setting } from "obsidian";
+import { Platform, Scope, Setting, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../../main";
 import {
 	DEFAULT_TASK_LIST_SHORTCUTS,
@@ -18,7 +18,7 @@ const activeCaptureCleanup = new WeakMap<HTMLElement, () => void>();
 
 export function pushKeyboardShortcutCaptureScope(
 	plugin: TaskNotesPlugin,
-	onEscape: () => void
+	onEscape: (event: KeyboardEvent) => void
 ): () => void {
 	const captureScope = new Scope(plugin.app.scope);
 	let active = true;
@@ -31,7 +31,7 @@ export function pushKeyboardShortcutCaptureScope(
 		event.preventDefault();
 		event.stopPropagation();
 		stop();
-		onEscape();
+		onEscape(event);
 		return false;
 	});
 	plugin.app.keymap.pushScope(captureScope);
@@ -64,6 +64,7 @@ export function renderKeyboardShortcutsTab(
 			for (const action of TASK_LIST_KEYBOARD_ACTIONS) {
 				group.addSetting((setting) => {
 					setting.setName(translate(actionKey(action)));
+					setting.settingEl.addClass("tasknotes-settings__shortcut-setting");
 					const actionConflicts = shortcuts[action]
 						.filter((shortcut) => conflicts.has(shortcut))
 						.map((shortcut) => formatTaskListShortcut(shortcut, Platform.isMacOS));
@@ -77,23 +78,50 @@ export function renderKeyboardShortcutsTab(
 					if (actionConflicts.length) setting.settingEl.addClass("has-conflict");
 
 					for (const shortcut of shortcuts[action]) {
-						setting.addButton((button) => {
-							button
-								.setButtonText(formatTaskListShortcut(shortcut, Platform.isMacOS))
-								.setTooltip(translate("settings.keyboardShortcuts.remove"))
-								.onClick(() => {
-									plugin.settings.taskListShortcuts[action] = shortcuts[action].filter(
-										(value) => value !== shortcut
-									);
-									save();
-									renderKeyboardShortcutsTab(container, plugin, save);
-								});
+						const shortcutButton = setting.controlEl.createEl("button", {
+							cls: "tasknotes-settings__shortcut-binding setting-hotkey",
+							attr: {
+								type: "button",
+								"aria-label": translate("settings.keyboardShortcuts.remove"),
+							},
+						});
+						shortcutButton.createSpan({
+							cls: "tasknotes-settings__shortcut-value",
+							text: formatTaskListShortcut(shortcut, Platform.isMacOS),
+						});
+						const removeIcon = shortcutButton.createSpan({
+							cls: "tasknotes-settings__shortcut-remove-icon",
+						});
+						setIcon(removeIcon, "circle-x");
+						shortcutButton.addEventListener("click", () => {
+							plugin.settings.taskListShortcuts[action] = shortcuts[action].filter(
+								(value) => value !== shortcut
+							);
+							save();
+							renderKeyboardShortcutsTab(container, plugin, save);
 						});
 					}
 
-					setting.addButton((button) => {
+					setting.addExtraButton((button) => {
 						button
-							.setButtonText(translate("settings.keyboardShortcuts.add"))
+							.setIcon("rotate-ccw")
+							.setTooltip(translate("settings.keyboardShortcuts.resetAction"))
+							.onClick(() => {
+								plugin.settings.taskListShortcuts[action] = [
+									...DEFAULT_TASK_LIST_SHORTCUTS[action],
+								];
+								save();
+								renderKeyboardShortcutsTab(container, plugin, save);
+							});
+					});
+
+					setting.addButton((button) => {
+						button.buttonEl.addClass(
+							"tasknotes-settings__shortcut-add",
+							"clickable-icon"
+						);
+						setIcon(button.buttonEl, "circle-plus");
+						button
 							.setTooltip(translate("settings.keyboardShortcuts.captureHint"))
 							.onClick(() => {
 								activeCaptureCleanup.get(container)?.();
@@ -114,11 +142,6 @@ export function renderKeyboardShortcutsTab(
 								const capture = async (event: KeyboardEvent) => {
 									event.preventDefault();
 									event.stopPropagation();
-									if (event.key === "Escape") {
-										stopCapture();
-										renderKeyboardShortcutsTab(container, plugin, save);
-										return;
-									}
 									const shortcut = keyboardEventToTaskListShortcut(event);
 									if (!shortcut) return;
 									stopCapture();
@@ -158,6 +181,29 @@ export function renderKeyboardShortcutsTab(
 											plugin.settings.taskListShortcuts =
 												replaceTaskListShortcut(shortcuts, action, shortcut);
 										} else {
+											const confirmed = await showConfirmationModal(plugin.app, {
+												title: translate(
+													"settings.keyboardShortcuts.confirmTitle"
+												),
+												message: translate(
+													"settings.keyboardShortcuts.confirmMessage",
+													{
+														shortcut: formatTaskListShortcut(
+															shortcut,
+															Platform.isMacOS
+														),
+														action: translate(actionKey(action)),
+													}
+												),
+												confirmText: translate(
+													"settings.keyboardShortcuts.confirm"
+												),
+												cancelText: translate("common.cancel"),
+											});
+											if (!confirmed) {
+												renderKeyboardShortcutsTab(container, plugin, save);
+												return;
+											}
 											plugin.settings.taskListShortcuts[action] = [
 												...shortcuts[action],
 												shortcut,
@@ -169,25 +215,12 @@ export function renderKeyboardShortcutsTab(
 								};
 								const captureListener = (event: KeyboardEvent) => void capture(event);
 								buttonEl.addEventListener("keydown", captureListener);
-								popCaptureScope = pushKeyboardShortcutCaptureScope(plugin, () => {
-									stopCapture();
-									renderKeyboardShortcutsTab(container, plugin, save);
-								});
+								popCaptureScope = pushKeyboardShortcutCaptureScope(
+									plugin,
+									(event) => void capture(event)
+								);
 								activeCaptureCleanup.set(container, stopCapture);
 								buttonEl.focus();
-							});
-					});
-
-					setting.addExtraButton((button) => {
-						button
-							.setIcon("rotate-ccw")
-							.setTooltip(translate("settings.keyboardShortcuts.resetAction"))
-							.onClick(() => {
-								plugin.settings.taskListShortcuts[action] = [
-									...DEFAULT_TASK_LIST_SHORTCUTS[action],
-								];
-								save();
-								renderKeyboardShortcutsTab(container, plugin, save);
 							});
 					});
 				});

@@ -27,7 +27,7 @@ describe("keyboard shortcut capture scope", () => {
 		expect(escapeHandler!(event)).toBe(false);
 		expect(event.preventDefault).toHaveBeenCalled();
 		expect(event.stopPropagation).toHaveBeenCalled();
-		expect(onEscape).toHaveBeenCalledTimes(1);
+		expect(onEscape).toHaveBeenCalledWith(event);
 		expect(app.keymap.popScope.mock.calls[0][0] === scope).toBe(true);
 
 		stop();
