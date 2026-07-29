@@ -29,8 +29,14 @@ function identitiesEqual(
 export class TaskListFocusController {
 	private focusedIdentity: TaskListFocusIdentity | null = null;
 	private restoreDomFocus = false;
+	private initialFocusPending: boolean;
 
-	constructor(private readonly root: HTMLElement) {}
+	constructor(
+		private readonly root: HTMLElement,
+		autoFocusInitial = false
+	) {
+		this.initialFocusPending = autoFocusInitial;
+	}
 
 	handleFocusIn(event: FocusEvent): void {
 		const card = this.getCardFromTarget(event.target);
@@ -99,7 +105,10 @@ export class TaskListFocusController {
 		}
 
 		this.syncRovingTabIndex(cards);
-		if (this.restoreDomFocus) {
+		if (this.initialFocusPending) {
+			this.initialFocusPending = false;
+			card.focus({ preventScroll: true });
+		} else if (this.restoreDomFocus) {
 			card.focus({ preventScroll: true });
 			card.scrollIntoView({ block: "nearest" });
 		}
@@ -109,6 +118,7 @@ export class TaskListFocusController {
 	clear(): void {
 		this.focusedIdentity = null;
 		this.restoreDomFocus = false;
+		this.initialFocusPending = false;
 	}
 
 	getFocusedIdentity(): TaskListFocusIdentity | null {

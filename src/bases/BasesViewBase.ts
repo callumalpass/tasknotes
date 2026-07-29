@@ -805,6 +805,7 @@ export abstract class BasesViewBase extends Component {
 
 		// Keyboard event handler for selection mode
 		const handleKeyDown = (e: KeyboardEvent) => {
+			if (!this.canHandleSelectionKeyDown(e)) return;
 			handleBasesSelectionKeyDown({
 				event: e,
 				selectionService,
@@ -833,6 +834,14 @@ export abstract class BasesViewBase extends Component {
 			unsubscribeSelection();
 			unsubscribeMode();
 		});
+	}
+
+	/**
+	 * Lets specialized Bases views defer selection keys while another UI surface
+	 * (for example a menu or modal) owns keyboard input.
+	 */
+	protected canHandleSelectionKeyDown(_event: KeyboardEvent): boolean {
+		return true;
 	}
 
 	/**

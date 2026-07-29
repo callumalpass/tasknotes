@@ -512,7 +512,7 @@ export class TaskListView extends BasesViewBase {
 		itemsContainer.classList.add("tn-static-margin-top-12px-91e0f558");
 		rootElement.appendChild(itemsContainer);
 		this.itemsContainer = itemsContainer;
-		this.focusController = new TaskListFocusController(itemsContainer);
+		this.focusController = new TaskListFocusController(itemsContainer, true);
 		this.inputOwnershipController = new TaskListInputOwnershipController(
 			rootElement,
 			this.focusController
@@ -2322,6 +2322,10 @@ export class TaskListView extends BasesViewBase {
 			true
 		);
 		this.containerListenersRegistered = true;
+	}
+
+	protected canHandleSelectionKeyDown(event: KeyboardEvent): boolean {
+		return this.inputOwnershipController?.canHandleListKeyDown(event) ?? false;
 	}
 
 	private handleTaskListEscape(event: KeyboardEvent): boolean {

@@ -54,6 +54,25 @@ describe("TaskListFocusController", () => {
 		expect(document.activeElement).toBe(cards[0]);
 	});
 
+	it("can focus the first rendered task immediately on initial view load", () => {
+		const initialRoot = document.createElement("div");
+		const cards = [createCard("first.md"), createCard("second.md")];
+		initialRoot.append(...cards);
+		document.body.appendChild(initialRoot);
+		const initialController = new TaskListFocusController(initialRoot, true);
+		initialRoot.addEventListener("focusin", (event) =>
+			initialController.handleFocusIn(event)
+		);
+
+		initialController.restoreAfterRender();
+
+		expect(document.activeElement).toBe(cards[0]);
+		expect(initialController.getFocusedIdentity()).toEqual({
+			path: "first.md",
+			occurrence: 0,
+		});
+	});
+
 	it("moves focus through the same path for configurable navigation keys", () => {
 		const cards = [createCard("a.md"), createCard("b.md")];
 		root.append(...cards);
