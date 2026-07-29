@@ -2472,7 +2472,7 @@ export class TaskListView extends BasesViewBase {
 		return resolveTaskListTargetPaths(
 			this.plugin.taskSelectionService,
 			this.focusController?.getFocusedIdentity()?.path
-		);
+		).filter((path) => this.currentVisibleTaskPaths.has(path));
 	}
 
 	private async executeTaskListAction(action: TaskListKeyboardAction): Promise<void> {
