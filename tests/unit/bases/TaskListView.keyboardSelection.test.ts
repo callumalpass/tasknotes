@@ -1,4 +1,5 @@
 import { TaskListView } from "../../../src/bases/TaskListView";
+import { TaskListFocusController } from "../../../src/bases/TaskListFocusController";
 
 jest.mock(
 	"tasknotes-nlp-core",
@@ -24,6 +25,38 @@ describe("TaskListView keyboard selection", () => {
 		(TaskListView.prototype as any).toggleFocusedTaskSelection.call(view);
 
 		expect(toggleSelection).toHaveBeenCalledWith("focused.md");
+	});
+
+	it("toggles the mouse-focused task even while DOM focus remains on another card", () => {
+		const items = document.createElement("div");
+		const first = document.createElement("div");
+		first.className = "task-card";
+		first.dataset.taskPath = "first.md";
+		const hovered = document.createElement("div");
+		hovered.className = "task-card";
+		hovered.dataset.taskPath = "hovered.md";
+		items.append(first, hovered);
+		document.body.appendChild(items);
+		const focusController = new TaskListFocusController(items);
+		items.addEventListener("focusin", (event) => focusController.handleFocusIn(event));
+		focusController.restoreAfterRender();
+		first.focus();
+		const mouseEvent = new MouseEvent("mousemove");
+		Object.defineProperty(mouseEvent, "target", { value: hovered });
+		focusController.handleMouseMove(mouseEvent);
+		const toggleSelection = jest.fn();
+		const view = {
+			currentVisibleTaskPaths: new Set(["first.md", "hovered.md"]),
+			focusController,
+			plugin: {
+				taskSelectionService: { toggleSelection },
+			},
+		};
+
+		(TaskListView.prototype as any).toggleFocusedTaskSelection.call(view);
+
+		expect(document.activeElement).toBe(first);
+		expect(toggleSelection).toHaveBeenCalledWith("hovered.md");
 	});
 
 	it("does not toggle a remembered task that is filtered out", () => {

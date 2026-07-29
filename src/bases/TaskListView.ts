@@ -2412,6 +2412,9 @@ export class TaskListView extends BasesViewBase {
 		this.registerDomEvent(this.itemsContainer, "pointerdown", (event: PointerEvent) => {
 			this.focusController?.handlePointerDown(event);
 		});
+		this.registerDomEvent(this.itemsContainer, "mousemove", (event: MouseEvent) => {
+			this.focusController?.handleMouseMove(event);
+		});
 		if (this.rootElement) {
 			// Resolve view-local shortcuts during capture so Obsidian commands such
 			// as Ctrl+B/Ctrl+D cannot stop propagation before the task list sees a

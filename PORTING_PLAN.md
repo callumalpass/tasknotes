@@ -123,6 +123,12 @@ The safest delivery order is: Jira core mapping tests â†’ Jira UI/import flow â†
 - **Difficulty / risks:** **High.** Cross-platform Ctrl/Meta naming, keyboard layouts, reserved browser/Obsidian shortcuts, multi-key sequences, and migration from legacy strings are the main risks.
 - **Tests:** Parser/serializer round trips, modifier normalization, Mac/Windows display, invalid/conflicting bindings, reset/defaults, persistence across reload, legacy setting migration, localization completeness, and input suppression.
 
+### 2.6 Mouse move task focus
+- Hovering on a task card should behave like keyboard cursoring. You should be able to move your mouse around the list using the toggle selection hotkey to select a group of tasks.
+    - A mouse move should give focus to the task under the hover unless there are no tasks under the cursor, in which case focus should not change. For example, I should be able to hover over items pressing "space" to toggle selection for items similar to the Linear desktop app
+    - Pressing one of the navigation hotkeys like an up/down arrow or home/end should switch back to applying focus with the keyboard
+    - Pressing the selection toggle hotkey should toggle selection of whatever has hover focus if the last event was mouse move or keyboard focus if the last event was keyboard navigation.
+
 ---
 
 ## 3. Other user-visible features

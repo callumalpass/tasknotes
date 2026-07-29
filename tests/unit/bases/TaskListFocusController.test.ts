@@ -91,6 +91,58 @@ describe("TaskListFocusController", () => {
 		expect(document.activeElement).toBe(cards[1]);
 	});
 
+	it("updates task focus from mouse movement without stealing DOM focus", () => {
+		const cards = [createCard("a.md"), createCard("b.md")];
+		root.append(...cards);
+		controller.restoreAfterRender();
+		cards[0].focus();
+		const event = new MouseEvent("mousemove", { bubbles: true });
+		Object.defineProperty(event, "target", { value: cards[1] });
+
+		expect(controller.handleMouseMove(event)).toBe(true);
+
+		expect(controller.getFocusedIdentity()).toEqual({ path: "b.md", occurrence: 0 });
+		expect(cards[1].classList.contains("task-card--keyboard-focused")).toBe(true);
+		expect(document.activeElement).toBe(cards[0]);
+	});
+
+	it("keeps the hovered task focused when the mouse moves over empty list space", () => {
+		const card = createCard("hovered.md");
+		root.appendChild(card);
+		controller.restoreAfterRender();
+		const cardEvent = new MouseEvent("mousemove", { bubbles: true });
+		Object.defineProperty(cardEvent, "target", { value: card });
+		controller.handleMouseMove(cardEvent);
+		const emptyEvent = new MouseEvent("mousemove", { bubbles: true });
+		Object.defineProperty(emptyEvent, "target", { value: root });
+
+		expect(controller.handleMouseMove(emptyEvent)).toBe(false);
+		expect(controller.getFocusedIdentity()).toEqual({
+			path: "hovered.md",
+			occurrence: 0,
+		});
+	});
+
+	it("continues keyboard navigation from mouse focus and switches back to DOM focus", () => {
+		const cards = [createCard("a.md"), createCard("b.md"), createCard("c.md")];
+		root.append(...cards);
+		controller.restoreAfterRender();
+		cards[0].focus();
+		const mouseEvent = new MouseEvent("mousemove", { bubbles: true });
+		Object.defineProperty(mouseEvent, "target", { value: cards[1] });
+		controller.handleMouseMove(mouseEvent);
+		const keyEvent = new KeyboardEvent("keydown", {
+			key: "ArrowDown",
+			cancelable: true,
+		});
+		Object.defineProperty(keyEvent, "target", { value: cards[0] });
+
+		controller.moveFocus(keyEvent, "next");
+
+		expect(document.activeElement).toBe(cards[2]);
+		expect(controller.getFocusedIdentity()).toEqual({ path: "c.md", occurrence: 0 });
+	});
+
 	it("supports configurable first and last navigation through the same path", () => {
 		const cards = [createCard("a.md"), createCard("b.md"), createCard("c.md")];
 		root.append(...cards);

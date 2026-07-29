@@ -30,6 +30,8 @@ export class TaskListFocusController {
 	private focusedIdentity: TaskListFocusIdentity | null = null;
 	private restoreDomFocus = false;
 	private initialFocusPending: boolean;
+	private lastCursorSource: "keyboard" | "mouse" = "keyboard";
+	private lastMouseCard: HTMLElement | null = null;
 
 	constructor(
 		private readonly root: HTMLElement,
@@ -54,6 +56,19 @@ export class TaskListFocusController {
 		if (card) this.focusCard(card, false);
 	}
 
+	handleMouseMove(event: MouseEvent): boolean {
+		const card = this.getCardFromTarget(event.target);
+		if (!card) return false;
+
+		this.lastCursorSource = "mouse";
+		if (card === this.lastMouseCard) return true;
+
+		this.lastMouseCard = card;
+		this.focusedIdentity = getCardIdentity(card, this.getCards());
+		this.syncRovingTabIndex();
+		return true;
+	}
+
 	moveFocus(
 		event: KeyboardEvent,
 		direction: "next" | "previous" | "first" | "last"
@@ -65,7 +80,12 @@ export class TaskListFocusController {
 		if (cards.length === 0) return false;
 
 		const activeCard = this.getCardFromTarget(target);
-		let currentIndex = activeCard ? cards.indexOf(activeCard) : this.findFocusedIndex(cards);
+		let currentIndex =
+			this.lastCursorSource === "mouse"
+				? this.findFocusedIndex(cards)
+				: activeCard
+					? cards.indexOf(activeCard)
+					: this.findFocusedIndex(cards);
 		if (currentIndex < 0) currentIndex = 0;
 		let nextIndex: number;
 		switch (direction) {
@@ -85,6 +105,8 @@ export class TaskListFocusController {
 
 		event.preventDefault();
 		event.stopPropagation();
+		this.lastCursorSource = "keyboard";
+		this.lastMouseCard = null;
 		this.focusCard(cards[nextIndex], true);
 		return true;
 	}
@@ -119,6 +141,8 @@ export class TaskListFocusController {
 		this.focusedIdentity = null;
 		this.restoreDomFocus = false;
 		this.initialFocusPending = false;
+		this.lastCursorSource = "keyboard";
+		this.lastMouseCard = null;
 		this.syncRovingTabIndex();
 	}
 

@@ -286,6 +286,11 @@ describe("TaskListView keyboard actions", () => {
 			expect.any(Function),
 			true
 		);
+		expect(registerDomEvent).toHaveBeenCalledWith(
+			itemsContainer,
+			"mousemove",
+			expect.any(Function)
+		);
 	});
 
 	it("pushes an Obsidian child scope for configured view-local chords", () => {
