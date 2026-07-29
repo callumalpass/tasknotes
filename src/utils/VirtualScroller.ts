@@ -25,6 +25,11 @@ export interface VirtualScrollerOptions<T> {
 	renderItem: (item: T, index: number) => HTMLElement;
 	/** Optional function to get unique key for item */
 	getItemKey?: (item: T, index: number) => string;
+	/**
+	 * Called on scroll (RAF-throttled) with the current scrollTop.
+	 * Fires even when the visible item range does not change — useful for sticky headers.
+	 */
+	onScroll?: (scrollTop: number) => void;
 }
 
 export interface VirtualScrollState {
@@ -78,6 +83,7 @@ export class VirtualScroller<T> {
 	private overscan: number;
 	private renderItem: (item: T, index: number) => HTMLElement;
 	private getItemKey: (item: T, index: number) => string;
+	private onScroll: ((scrollTop: number) => void) | null;
 
 	private state: VirtualScrollState = {
 		startIndex: 0,
@@ -105,6 +111,7 @@ export class VirtualScroller<T> {
 		this.overscan = options.overscan ?? 5;
 		this.renderItem = options.renderItem;
 		this.getItemKey = options.getItemKey ?? ((item, index) => String(index));
+		this.onScroll = options.onScroll ?? null;
 
 		this.setupDOM();
 		this.attachScrollListener();
@@ -487,6 +494,7 @@ export class VirtualScroller<T> {
 
 		this.scrollRAF = window.requestAnimationFrame(() => {
 			this.updateVisibleRange();
+			this.onScroll?.(this.scrollContainer.scrollTop);
 			this.scrollRAF = null;
 		});
 	};
@@ -865,6 +873,27 @@ export class VirtualScroller<T> {
 	 */
 	getState(): VirtualScrollState {
 		return { ...this.state };
+	}
+
+	/**
+	 * Top offset of an item within the virtual list (pixels from content start).
+	 */
+	getItemOffset(index: number): number {
+		return this.getItemPosition(index);
+	}
+
+	/**
+	 * Measured or estimated height of an item at the given index.
+	 */
+	getMeasuredItemHeight(index: number): number {
+		return this.getItemHeight(index);
+	}
+
+	/**
+	 * Current scroll offset of the scroll container.
+	 */
+	getScrollTop(): number {
+		return this.scrollContainer.scrollTop;
 	}
 
 	/**

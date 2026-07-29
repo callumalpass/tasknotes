@@ -138,6 +138,31 @@
 	z-index: calc(var(--tn-z-sticky) - 1);
 }
 
+/*
+ * Virtualized lists position rows with transform, which breaks CSS sticky.
+ * A zero-height sticky pin overlays the active group header instead.
+ */
+.tn-tasknotesTaskList .task-list-virtual-sticky-header {
+	position: sticky;
+	top: 0;
+	z-index: calc(var(--tn-z-sticky) + 1);
+	height: 0;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header.is-empty {
+	display: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header__group {
+	pointer-events: auto;
+	background: var(--tn-bg-primary);
+	position: relative;
+	top: auto;
+	z-index: auto;
+}
+
 /* Toggle button for groups */
 .tn-bases-tasknotes-list .task-group-toggle {
     appearance: none;
