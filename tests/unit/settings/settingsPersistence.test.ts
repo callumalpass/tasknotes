@@ -184,6 +184,8 @@ describe("settings persistence helpers", () => {
 			calendarViewSettings: DEFAULT_SETTINGS.calendarViewSettings,
 			commandFileMapping: DEFAULT_SETTINGS.commandFileMapping,
 			keyboardShortcuts: {
+				navigateDown: ["J", "Arrow Down"],
+				navigateUp: ["K", "Arrow Up"],
 				newTask: ["N"],
 				editDueDates: ["Control+Shift+D"],
 				deleteTasks: ["Cmd+Delete"],
@@ -192,6 +194,8 @@ describe("settings persistence helpers", () => {
 		});
 
 		expect(settings.taskListShortcuts["create-task"]).toEqual(["n"]);
+		expect(settings.taskListShortcuts["navigate-next"]).toEqual(["j", "arrowdown"]);
+		expect(settings.taskListShortcuts["navigate-previous"]).toEqual(["k", "arrowup"]);
 		expect(settings.taskListShortcuts["edit-due"]).toEqual(["mod+shift+d"]);
 		expect(settings.taskListShortcuts["delete-tasks"]).toEqual(["mod+delete"]);
 		expect(shouldPersistMigratedSettings).toBe(true);

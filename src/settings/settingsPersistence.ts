@@ -116,6 +116,8 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 	if (!migratedData.taskListShortcuts && migratedData.keyboardShortcuts) {
 		const legacy = migratedData.keyboardShortcuts;
 		migratedData.taskListShortcuts = normalizeTaskListShortcutMap({
+			"navigate-next": legacy.navigateDown,
+			"navigate-previous": legacy.navigateUp,
 			"create-task": legacy.newTask,
 			"focus-search": legacy.focusFilter,
 			"edit-task": legacy.openEdit,

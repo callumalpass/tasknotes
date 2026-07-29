@@ -25,6 +25,8 @@ function key(
 
 describe("resolveDefaultTaskListKeyboardAction", () => {
 	it.each([
+		["ArrowDown", {}, "navigate-next"],
+		["ArrowUp", {}, "navigate-previous"],
 		["c", {}, "create-task"],
 		["/", {}, "focus-search"],
 		["Enter", {}, "edit-task"],

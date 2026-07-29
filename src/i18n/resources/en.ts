@@ -527,6 +527,8 @@ export const en: TranslationTree = {
 			resetAllDescription: "Restore every task-list shortcut to its default binding.",
 			conflict: "Conflict: {shortcuts} is also assigned to another task-list action.",
 			actions: {
+				"navigate-next": "Focus next task",
+				"navigate-previous": "Focus previous task",
 				"create-task": "Create task",
 				"focus-search": "Focus search",
 				"edit-task": "Edit task",

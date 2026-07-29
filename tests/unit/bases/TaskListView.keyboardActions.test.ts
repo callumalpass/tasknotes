@@ -73,6 +73,29 @@ describe("TaskListView keyboard actions", () => {
 		expect(executeTaskListAction).toHaveBeenCalledWith("edit-due");
 	});
 
+	it("routes configured Gmail-style navigation through the focus controller", () => {
+		const moveFocus = jest.fn();
+		const event = new KeyboardEvent("keydown", { key: "j", cancelable: true });
+		const view = {
+			plugin: {
+				settings: {
+					taskListShortcuts: {
+						"navigate-next": ["j"],
+						"navigate-previous": ["k"],
+					},
+				},
+			},
+			focusController: {
+				getFocusedPathForEvent: jest.fn(() => "focused.md"),
+				moveFocus,
+			},
+		};
+
+		(TaskListView.prototype as any).handleTaskListActionKeyDown.call(view, event);
+
+		expect(moveFocus).toHaveBeenCalledWith(event, "next");
+	});
+
 	it.each([
 		["Enter", { shiftKey: true }, "open-task-notes"],
 		["s", { shiftKey: true }, "edit-scheduled"],

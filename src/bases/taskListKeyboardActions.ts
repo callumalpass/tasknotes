@@ -1,4 +1,6 @@
 export const TASK_LIST_KEYBOARD_ACTIONS = [
+	"navigate-next",
+	"navigate-previous",
 	"create-task",
 	"focus-search",
 	"edit-task",
@@ -18,6 +20,8 @@ export type TaskListKeyboardAction = (typeof TASK_LIST_KEYBOARD_ACTIONS)[number]
 export type TaskListShortcutMap = Record<TaskListKeyboardAction, string[]>;
 
 export const DEFAULT_TASK_LIST_SHORTCUTS: TaskListShortcutMap = {
+	"navigate-next": ["arrowdown"],
+	"navigate-previous": ["arrowup"],
 	"create-task": ["c"],
 	"focus-search": ["slash"],
 	"edit-task": ["enter"],
@@ -53,6 +57,8 @@ const KEY_ALIASES: Record<string, string> = {
 	esc: "escape",
 	del: "delete",
 	return: "enter",
+	"arrow down": "arrowdown",
+	"arrow up": "arrowup",
 };
 
 const MODIFIER_ORDER = ["mod", "ctrl", "meta", "alt", "shift"] as const;
@@ -167,6 +173,8 @@ export function formatTaskListShortcut(shortcut: string, isMacOS: boolean): stri
 		enter: "Enter",
 		delete: "Delete",
 		escape: "Esc",
+		arrowdown: "↓",
+		arrowup: "↑",
 	};
 	const separator = isMacOS ? "" : "+";
 	return shortcut

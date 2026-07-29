@@ -2357,6 +2357,13 @@ export class TaskListView extends BasesViewBase {
 			this.plugin?.settings?.taskListShortcuts
 		);
 		if (!action || !this.focusController?.getFocusedPathForEvent(event, true)) return;
+		if (action === "navigate-next" || action === "navigate-previous") {
+			this.focusController.moveFocus(
+				event,
+				action === "navigate-next" ? "next" : "previous"
+			);
+			return;
+		}
 
 		event.preventDefault();
 		event.stopPropagation();
@@ -2377,6 +2384,9 @@ export class TaskListView extends BasesViewBase {
 
 	private async executeTaskListAction(action: TaskListKeyboardAction): Promise<void> {
 		switch (action) {
+			case "navigate-next":
+			case "navigate-previous":
+				return;
 			case "create-task":
 				await this.createFileForView();
 				return;
