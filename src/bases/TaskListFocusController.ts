@@ -147,9 +147,8 @@ export class TaskListFocusController {
 		allowRememberedFallback = false
 	): string | null {
 		if (
-			event.defaultPrevented ||
-			(!allowModifiers &&
-				(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey))
+			!allowModifiers &&
+			(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
 		) {
 			return null;
 		}

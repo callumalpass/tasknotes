@@ -123,6 +123,7 @@ describe("TaskListView keyboard selection", () => {
 			containerEl,
 			rootElement,
 			focusController: { restoreFocusedElement },
+			isTaskListLeaf: (TaskListView.prototype as any).isTaskListLeaf,
 		};
 
 		(TaskListView.prototype as any).restoreFocusForActivatedLeaf.call(view, {

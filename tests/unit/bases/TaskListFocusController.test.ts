@@ -246,6 +246,23 @@ describe("TaskListFocusController", () => {
 		expect(controller.getFocusedPathForEvent(event, true)).toBe("focused.md");
 	});
 
+	it("resolves a modified chord after an upstream handler prevented its browser default", () => {
+		const card = createCard("focused.md");
+		root.appendChild(card);
+		controller.restoreAfterRender();
+		card.focus();
+		const event = new KeyboardEvent("keydown", {
+			key: "k",
+			ctrlKey: true,
+			cancelable: true,
+		});
+		Object.defineProperty(event, "target", { value: card });
+		event.preventDefault();
+
+		expect(event.defaultPrevented).toBe(true);
+		expect(controller.getFocusedPathForEvent(event, true)).toBe("focused.md");
+	});
+
 	it("uses remembered focus for non-interactive events from the view shell", () => {
 		const card = createCard("remembered.md");
 		root.appendChild(card);

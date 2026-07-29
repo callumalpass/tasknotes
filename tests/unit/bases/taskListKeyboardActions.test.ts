@@ -8,6 +8,7 @@ import {
 	resolveDefaultTaskListKeyboardAction,
 	resolveTaskListKeyboardAction,
 	replaceTaskListShortcut,
+	taskListShortcutToScopeBinding,
 } from "../../../src/bases/taskListKeyboardActions";
 
 function key(
@@ -137,5 +138,15 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 	it("formats portable modifiers for the current platform", () => {
 		expect(formatTaskListShortcut("mod+shift+enter", false)).toBe("Ctrl+Shift+Enter");
 		expect(formatTaskListShortcut("mod+shift+enter", true)).toBe("⌘⇧Enter");
+	});
+
+	it.each([
+		["mod+b", { modifiers: ["Mod"], key: "b" }],
+		["mod+shift+d", { modifiers: ["Mod", "Shift"], key: "d" }],
+		["space", { modifiers: [], key: " " }],
+		["shift+plus", { modifiers: ["Shift"], key: "+" }],
+		["arrowdown", { modifiers: [], key: "ArrowDown" }],
+	])("converts %s to an Obsidian scope binding", (shortcut, expected) => {
+		expect(taskListShortcutToScopeBinding(shortcut)).toEqual(expected);
 	});
 });

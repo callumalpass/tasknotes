@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Menu, Notice, TFile, setIcon } from "obsidian";
+import { Menu, Notice, Scope, TFile, setIcon } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -73,6 +73,8 @@ import { TaskListFocusController } from "./TaskListFocusController";
 import { resolveTaskListTargetPaths } from "./taskListTargetResolver";
 import {
 	resolveTaskListKeyboardAction,
+	taskListShortcutToScopeBinding,
+	TASK_LIST_KEYBOARD_ACTIONS,
 	type TaskListKeyboardAction,
 } from "./taskListKeyboardActions";
 import { addTagsToList, parseTaskTagInput } from "../utils/taskTagList";
@@ -156,6 +158,8 @@ export class TaskListView extends BasesViewBase {
 	private containerListenersRegistered = false;
 	private focusController: TaskListFocusController | null = null;
 	private inputOwnershipController: TaskListInputOwnershipController | null = null;
+	private taskListShortcutScope: Scope | null = null;
+	private taskListLeafActive = false;
 	private virtualScroller: VirtualScroller<TaskListVirtualItem> | null = null; // Can render TaskInfo or group headers
 	private useVirtualScrolling = false;
 	private collapsedGroups = new Set<string>(); // Track collapsed group keys
@@ -228,6 +232,7 @@ export class TaskListView extends BasesViewBase {
 		this.registerGroupContextMenuListeners();
 		this.registerEvent(
 			this.plugin.app.workspace.on("active-leaf-change", (leaf) => {
+				this.syncTaskListShortcutScopeForLeaf(leaf);
 				this.restoreFocusForActivatedLeaf(leaf);
 			})
 		);
@@ -242,21 +247,29 @@ export class TaskListView extends BasesViewBase {
 				) {
 					const win = this.containerEl.ownerDocument.defaultView ?? window;
 					win.setTimeout(() => {
-						this.restoreFocusForActivatedLeaf(
-							this.plugin.app.workspace.getMostRecentLeaf()
-						);
+						const leaf = this.plugin.app.workspace.getMostRecentLeaf();
+						this.syncTaskListShortcutScopeForLeaf(leaf);
+						this.restoreFocusForActivatedLeaf(leaf);
 					}, 0);
 				}
 			},
 			true
 		);
+		this.syncTaskListShortcutScopeForLeaf(
+			this.plugin.app.workspace.getMostRecentLeaf()
+		);
+	}
+
+	private isTaskListLeaf(
+		leaf: { view?: { containerEl?: HTMLElement } } | null
+	): boolean {
+		return Boolean(leaf?.view?.containerEl?.contains(this.containerEl));
 	}
 
 	private restoreFocusForActivatedLeaf(
 		leaf: { view?: { containerEl?: HTMLElement } } | null
 	): void {
-		const leafContainer = leaf?.view?.containerEl;
-		if (!leafContainer?.contains(this.containerEl)) return;
+		if (!this.isTaskListLeaf(leaf)) return;
 
 		const win = this.containerEl.ownerDocument.defaultView ?? window;
 		win.setTimeout(() => {
@@ -264,6 +277,53 @@ export class TaskListView extends BasesViewBase {
 				this.focusController?.restoreFocusedElement();
 			}
 		}, 0);
+	}
+
+	private syncTaskListShortcutScopeForLeaf(
+		leaf: { view?: { containerEl?: HTMLElement } } | null
+	): void {
+		this.taskListLeafActive = this.isTaskListLeaf(leaf);
+		this.syncTaskListShortcutScopeForFocusTarget(
+			this.containerEl.ownerDocument.activeElement
+		);
+	}
+
+	private syncTaskListShortcutScopeForFocusTarget(target: EventTarget | null): void {
+		if (
+			this.taskListLeafActive &&
+			this.inputOwnershipController?.canOwnKeyboardTarget(target)
+		) {
+			this.activateTaskListShortcutScope();
+			return;
+		}
+		this.deactivateTaskListShortcutScope();
+	}
+
+	private activateTaskListShortcutScope(): void {
+		if (this.taskListShortcutScope) return;
+
+		const scope = new Scope(this.plugin.app.scope);
+		const shortcuts = this.plugin.settings.taskListShortcuts;
+		for (const action of TASK_LIST_KEYBOARD_ACTIONS) {
+			for (const shortcut of shortcuts[action]) {
+				const binding = taskListShortcutToScopeBinding(shortcut);
+				if (!binding) continue;
+				scope.register(binding.modifiers, binding.key, (event) => {
+					if (!this.taskListLeafActive) return;
+					if (!this.handleTaskListKeyDown(event, true)) return;
+					return false;
+				});
+			}
+		}
+
+		this.taskListShortcutScope = scope;
+		this.plugin.app.keymap.pushScope(scope);
+	}
+
+	private deactivateTaskListShortcutScope(): void {
+		if (!this.taskListShortcutScope) return;
+		this.plugin.app.keymap.popScope(this.taskListShortcutScope);
+		this.taskListShortcutScope = null;
 	}
 
 	/**
@@ -2195,6 +2255,8 @@ export class TaskListView extends BasesViewBase {
 	onunload(): void {
 		// Component.register() calls will be automatically cleaned up (including search cleanup)
 		// We just need to clean up view-specific state
+		this.taskListLeafActive = false;
+		this.deactivateTaskListShortcutScope();
 		this.unregisterContainerListeners();
 		this.destroyVirtualScroller();
 		this.inputOwnershipController?.destroy();
@@ -2350,20 +2412,23 @@ export class TaskListView extends BasesViewBase {
 		this.registerDomEvent(this.itemsContainer, "pointerdown", (event: PointerEvent) => {
 			this.focusController?.handlePointerDown(event);
 		});
-		this.registerDomEvent(this.itemsContainer, "keydown", (event: KeyboardEvent) => {
-			this.handleTaskListKeyDown(event);
-		});
 		if (this.rootElement) {
-			this.registerDomEvent(this.rootElement, "keydown", (event: KeyboardEvent) => {
-				if (event.defaultPrevented || this.itemsContainer?.contains(event.target as Node)) {
-					return;
-				}
-				this.handleTaskListKeyDown(event, true);
-			});
+			// Resolve view-local shortcuts during capture so Obsidian commands such
+			// as Ctrl+B/Ctrl+D cannot stop propagation before the task list sees a
+			// user-configured chord.
+			this.registerDomEvent(
+				this.rootElement,
+				"keydown",
+				(event: KeyboardEvent) => {
+					this.handleTaskListRootKeyDown(event);
+				},
+				true
+			);
 		}
 		const doc = this.itemsContainer.ownerDocument;
 		this.registerDomEvent(doc, "focusin", (event: FocusEvent) => {
 			this.inputOwnershipController?.handleDocumentFocusIn(event);
+			this.syncTaskListShortcutScopeForFocusTarget(event.target);
 		});
 		this.registerDomEvent(doc, "pointerdown", (event: PointerEvent) => {
 			this.inputOwnershipController?.handleOverlayInteraction(event);
@@ -2381,12 +2446,18 @@ export class TaskListView extends BasesViewBase {
 		this.containerListenersRegistered = true;
 	}
 
+	private handleTaskListRootKeyDown(event: KeyboardEvent): void {
+		const eventStartedInTaskItems =
+			this.itemsContainer?.contains(event.target as Node) ?? false;
+		this.handleTaskListKeyDown(event, !eventStartedInTaskItems);
+	}
+
 	private handleTaskListKeyDown(
 		event: KeyboardEvent,
 		allowRememberedFocus = false
-	): void {
-		if (!this.inputOwnershipController?.canHandleListKeyDown(event)) return;
-		this.handleTaskListActionKeyDown(event, allowRememberedFocus);
+	): boolean {
+		if (!this.inputOwnershipController?.canHandleListKeyDown(event)) return false;
+		return this.handleTaskListActionKeyDown(event, allowRememberedFocus);
 	}
 
 	protected canHandleSelectionKeyDown(event: KeyboardEvent): boolean {
@@ -2404,12 +2475,12 @@ export class TaskListView extends BasesViewBase {
 	private handleTaskListActionKeyDown(
 		event: KeyboardEvent,
 		allowRememberedFocus = false
-	): void {
+	): boolean {
 		const action = resolveTaskListKeyboardAction(
 			event,
 			this.plugin?.settings?.taskListShortcuts
 		);
-		if (!action) return;
+		if (!action) return false;
 		const focusedPath = this.focusController?.getFocusedPathForEvent(
 			event,
 			true,
@@ -2420,7 +2491,7 @@ export class TaskListView extends BasesViewBase {
 			action !== "clear-focus-and-selection" &&
 			action !== "select-all"
 		) {
-			return;
+			return false;
 		}
 		const navigationDirections = {
 			"navigate-next": "next",
@@ -2429,11 +2500,12 @@ export class TaskListView extends BasesViewBase {
 			"jump-last": "last",
 		} as const;
 		if (action in navigationDirections) {
-			this.focusController?.moveFocus(
+			return (
+				this.focusController?.moveFocus(
 				event,
 				navigationDirections[action as keyof typeof navigationDirections]
+				) ?? false
 			);
-			return;
 		}
 
 		event.preventDefault();
@@ -2455,6 +2527,7 @@ export class TaskListView extends BasesViewBase {
 			this.inputOwnershipController?.noteOverlayOpening();
 		}
 		void this.executeTaskListAction(action);
+		return true;
 	}
 
 	/**

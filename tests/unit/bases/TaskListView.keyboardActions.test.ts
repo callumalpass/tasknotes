@@ -1,6 +1,8 @@
 import { showConfirmationModal } from "../../../src/modals/ConfirmationModal";
 import { TaskListView } from "../../../src/bases/TaskListView";
 import type { TaskInfo } from "../../../src/types";
+import { normalizeTaskListShortcutMap } from "../../../src/bases/taskListKeyboardActions";
+import { Scope } from "obsidian";
 
 jest.mock(
 	"tasknotes-nlp-core",
@@ -190,6 +192,181 @@ describe("TaskListView keyboard actions", () => {
 
 		expect(getFocusedPathForEvent).toHaveBeenCalledWith(event, true, true);
 		expect(executeTaskListAction).toHaveBeenCalledWith("edit-due");
+	});
+
+	it("routes a prevented modifier chord from the active view shell", () => {
+		const executeTaskListAction = jest.fn();
+		const event = new KeyboardEvent("keydown", {
+			key: "a",
+			ctrlKey: true,
+			cancelable: true,
+		});
+		event.preventDefault();
+		const view = {
+			plugin: {
+				settings: {
+					taskListShortcuts: {
+						"select-all": ["mod+a"],
+					},
+				},
+			},
+			focusController: {
+				getFocusedPathForEvent: jest.fn(() => null),
+			},
+			executeTaskListAction,
+		};
+
+		(TaskListView.prototype as any).handleTaskListActionKeyDown.call(
+			view,
+			event,
+			true
+		);
+
+		expect(executeTaskListAction).toHaveBeenCalledWith("select-all");
+	});
+
+	it("does not discard a prevented chord before shell shortcut routing", () => {
+		const root = document.createElement("div");
+		const itemsContainer = document.createElement("div");
+		root.appendChild(itemsContainer);
+		const event = new KeyboardEvent("keydown", {
+			key: "c",
+			metaKey: true,
+			cancelable: true,
+		});
+		Object.defineProperty(event, "target", { value: root });
+		event.preventDefault();
+		const handleTaskListKeyDown = jest.fn();
+		const view = { itemsContainer, handleTaskListKeyDown };
+
+		(TaskListView.prototype as any).handleTaskListRootKeyDown.call(view, event);
+
+		expect(handleTaskListKeyDown).toHaveBeenCalledWith(event, true);
+	});
+
+	it("routes card chords from the root without using remembered-focus fallback", () => {
+		const root = document.createElement("div");
+		const itemsContainer = document.createElement("div");
+		const card = document.createElement("div");
+		itemsContainer.appendChild(card);
+		root.appendChild(itemsContainer);
+		const event = new KeyboardEvent("keydown", {
+			key: "b",
+			ctrlKey: true,
+		});
+		Object.defineProperty(event, "target", { value: card });
+		const handleTaskListKeyDown = jest.fn();
+		const view = { itemsContainer, handleTaskListKeyDown };
+
+		(TaskListView.prototype as any).handleTaskListRootKeyDown.call(view, event);
+
+		expect(handleTaskListKeyDown).toHaveBeenCalledWith(event, false);
+	});
+
+	it("registers task-list shortcut routing in the capture phase", () => {
+		const rootElement = document.createElement("div");
+		const itemsContainer = document.createElement("div");
+		rootElement.appendChild(itemsContainer);
+		const registerDomEvent = jest.fn();
+		const view = {
+			rootElement,
+			itemsContainer,
+			containerListenersRegistered: false,
+			handleItemClick: jest.fn(),
+			focusController: null,
+			inputOwnershipController: null,
+			registerDomEvent,
+		};
+
+		(TaskListView.prototype as any).registerContainerListeners.call(view);
+
+		expect(registerDomEvent).toHaveBeenCalledWith(
+			rootElement,
+			"keydown",
+			expect.any(Function),
+			true
+		);
+	});
+
+	it("pushes an Obsidian child scope for configured view-local chords", () => {
+		const registerSpy = jest.spyOn(Scope.prototype, "register");
+		const pushScope = jest.fn();
+		const popScope = jest.fn();
+		const handleTaskListKeyDown = jest.fn(() => true);
+		const view = {
+			taskListShortcutScope: null,
+			taskListLeafActive: true,
+			plugin: {
+				settings: {
+					taskListShortcuts: normalizeTaskListShortcutMap({
+						"select-all": ["Ctrl+B"],
+						"copy-task-titles": ["Ctrl+D"],
+					}),
+				},
+				app: {
+					scope: {},
+					keymap: { pushScope, popScope },
+				},
+			},
+			handleTaskListKeyDown,
+		};
+
+		(TaskListView.prototype as any).activateTaskListShortcutScope.call(view);
+
+		expect(pushScope).toHaveBeenCalledTimes(1);
+		const scope = view.taskListShortcutScope;
+		expect(registerSpy).toHaveBeenCalledWith(
+			["Mod"],
+			"b",
+			expect.any(Function)
+		);
+		expect(registerSpy).toHaveBeenCalledWith(
+			["Mod"],
+			"d",
+			expect.any(Function)
+		);
+
+		const ctrlBHandler = registerSpy.mock.calls.find(
+			([modifiers, key]) => modifiers[0] === "Mod" && key === "b"
+		)?.[2] as (event: KeyboardEvent) => unknown;
+		const event = new KeyboardEvent("keydown", { key: "b", ctrlKey: true });
+		expect(ctrlBHandler(event)).toBe(false);
+		expect(handleTaskListKeyDown).toHaveBeenCalledWith(event, true);
+
+		(TaskListView.prototype as any).deactivateTaskListShortcutScope.call(view);
+		expect(popScope).toHaveBeenCalledTimes(1);
+		expect(popScope.mock.calls[0][0]).toBe(scope);
+		expect(view.taskListShortcutScope).toBeNull();
+		registerSpy.mockRestore();
+	});
+
+	it("does not claim a scoped chord after the task-list leaf is deactivated", () => {
+		const registerSpy = jest.spyOn(Scope.prototype, "register");
+		const view = {
+			taskListShortcutScope: null,
+			taskListLeafActive: true,
+			plugin: {
+				settings: {
+					taskListShortcuts: normalizeTaskListShortcutMap({
+						"select-all": ["Ctrl+B"],
+					}),
+				},
+				app: {
+					scope: {},
+					keymap: { pushScope: jest.fn(), popScope: jest.fn() },
+				},
+			},
+			handleTaskListKeyDown: jest.fn(() => true),
+		};
+		(TaskListView.prototype as any).activateTaskListShortcutScope.call(view);
+		const handler = registerSpy.mock.calls.find(
+			([modifiers, key]) => modifiers[0] === "Mod" && key === "b"
+		)?.[2] as (event: KeyboardEvent) => unknown;
+		view.taskListLeafActive = false;
+
+		expect(handler(new KeyboardEvent("keydown", { key: "b", ctrlKey: true }))).toBeUndefined();
+		expect(view.handleTaskListKeyDown).not.toHaveBeenCalled();
+		registerSpy.mockRestore();
 	});
 
 	it("creates search controls on demand before focusing them", () => {

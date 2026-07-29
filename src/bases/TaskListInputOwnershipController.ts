@@ -18,10 +18,13 @@ export class TaskListInputOwnershipController {
 		if (event.isComposing || event.key === "Process") return false;
 		if (this.suspendedForOverlay) return false;
 
-		const target = event.target;
+		return this.canOwnKeyboardTarget(event.target);
+	}
+
+	canOwnKeyboardTarget(target: EventTarget | null): boolean {
+		if (this.suspendedForOverlay) return false;
 		if (!(target instanceof Element) || target.closest(EDITABLE_SELECTOR)) return false;
 		if (this.getOverlayFromTarget(target) || this.hasOpenOverlay()) return false;
-
 		return this.viewRoot.contains(target);
 	}
 

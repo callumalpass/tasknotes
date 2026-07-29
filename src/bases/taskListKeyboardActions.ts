@@ -1,3 +1,5 @@
+import type { Modifier } from "obsidian";
+
 export const TASK_LIST_KEYBOARD_ACTIONS = [
 	"navigate-next",
 	"navigate-previous",
@@ -25,6 +27,11 @@ export const TASK_LIST_KEYBOARD_ACTIONS = [
 
 export type TaskListKeyboardAction = (typeof TASK_LIST_KEYBOARD_ACTIONS)[number];
 export type TaskListShortcutMap = Record<TaskListKeyboardAction, string[]>;
+
+export type TaskListScopeBinding = {
+	modifiers: Modifier[];
+	key: string;
+};
 
 export const DEFAULT_TASK_LIST_SHORTCUTS: TaskListShortcutMap = {
 	"navigate-next": ["arrowdown"],
@@ -197,6 +204,48 @@ export function resolveTaskListKeyboardAction(
 		if (shortcuts[action]?.includes(shortcut)) return action;
 	}
 	return null;
+}
+
+export function taskListShortcutToScopeBinding(
+	shortcut: string
+): TaskListScopeBinding | null {
+	const normalized = normalizeTaskListShortcut(shortcut);
+	if (!normalized) return null;
+
+	const parts = normalized.split("+");
+	const keyPart = parts.pop();
+	if (!keyPart) return null;
+
+	const modifierNames: Record<string, Modifier> = {
+		mod: "Mod",
+		ctrl: "Ctrl",
+		meta: "Meta",
+		alt: "Alt",
+		shift: "Shift",
+	};
+	const modifiers: Modifier[] = [];
+	for (const part of parts) {
+		const modifier = modifierNames[part];
+		if (!modifier) return null;
+		modifiers.push(modifier);
+	}
+
+	const keyNames: Record<string, string> = {
+		slash: "/",
+		plus: "+",
+		space: " ",
+		enter: "Enter",
+		delete: "Delete",
+		escape: "Escape",
+		home: "Home",
+		end: "End",
+		arrowdown: "ArrowDown",
+		arrowup: "ArrowUp",
+	};
+	return {
+		modifiers,
+		key: keyNames[keyPart] ?? keyPart,
+	};
 }
 
 /** Kept as a compatibility alias for tests and callers from the earlier port slices. */
