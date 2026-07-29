@@ -134,7 +134,11 @@ export class SearchBox {
 	 * Handle keydown event
 	 */
 	private handleKeydown = (e: KeyboardEvent): void => {
-		if (e.key === 'Escape') {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			e.stopPropagation();
+			this.onDismiss?.();
+		} else if (e.key === 'Escape') {
 			e.preventDefault();
 			this.clear();
 			// Trigger search with empty term
