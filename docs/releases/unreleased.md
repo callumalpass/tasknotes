@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Changed
+
+- Task list group headers now stay visible at the top of the list while scrolling
+
