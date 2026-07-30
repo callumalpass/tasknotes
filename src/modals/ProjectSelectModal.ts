@@ -5,6 +5,8 @@ import {
 	TFile,
 	SearchResult,
 	parseFrontMatterAliases,
+	setIcon,
+	setTooltip,
 } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataResolver";
@@ -17,6 +19,11 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ProjectSelectModal" });
 
+export interface ProjectSelectModalOptions {
+	selectedProjects?: TFile[];
+	onRemove?: (file: TFile) => void | Promise<void>;
+}
+
 /**
  * Modal for selecting project notes using fuzzy search
  * Based on the existing AttachmentSelectModal pattern
@@ -24,17 +31,61 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ProjectSelectModal"
 export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 	private onChoose: (file: TAbstractFile) => void;
 	private plugin: TaskNotesPlugin;
+	private options: ProjectSelectModalOptions;
 
-	constructor(app: App, plugin: TaskNotesPlugin, onChoose: (file: TAbstractFile) => void) {
+	constructor(
+		app: App,
+		plugin: TaskNotesPlugin,
+		onChoose: (file: TAbstractFile) => void,
+		options: ProjectSelectModalOptions = {}
+	) {
 		super(app);
 		this.plugin = plugin;
 		this.onChoose = onChoose;
+		this.options = options;
 		this.setPlaceholder("Type to search for project notes...");
 		this.setInstructions([
 			{ command: "↑↓", purpose: "to navigate" },
 			{ command: "↵", purpose: "to select" },
 			{ command: "esc", purpose: "to cancel" },
 		]);
+	}
+
+	onOpen(): void {
+		super.onOpen();
+		this.containerEl.addClass("tasknotes-plugin");
+		const selectedProjects = this.options.selectedProjects ?? [];
+		if (selectedProjects.length === 0 || !this.options.onRemove) return;
+
+		const resultsEl = this.modalEl.querySelector(".prompt-results");
+		if (!(resultsEl instanceof HTMLElement)) return;
+
+		const assignedEl = createDiv({ cls: "task-project-selector-assigned" });
+		assignedEl.createDiv({
+			cls: "task-project-selector-assigned__title",
+			text: "Assigned projects",
+		});
+		const listEl = assignedEl.createDiv({ cls: "task-projects-list" });
+		for (const file of selectedProjects) {
+			const itemEl = listEl.createDiv({ cls: "task-project-item" });
+			const infoEl = itemEl.createDiv({ cls: "task-project-info" });
+			infoEl.createSpan({ cls: "task-project-name", text: file.basename });
+			if (file.parent?.path) {
+				infoEl.createDiv({ cls: "task-project-path", text: file.path });
+			}
+			const removeButton = itemEl.createEl("button", {
+				cls: "task-project-remove clickable-icon",
+				attr: { "aria-label": `Remove ${file.basename}` },
+			});
+			setIcon(removeButton, "x");
+			setTooltip(removeButton, `Remove ${file.basename}`);
+			removeButton.addEventListener("click", (event) => {
+				event.preventDefault();
+				event.stopPropagation();
+				void Promise.resolve(this.options.onRemove?.(file)).then(() => itemEl.remove());
+			});
+		}
+		this.modalEl.insertBefore(assignedEl, resultsEl);
 	}
 
 	getItems(): TAbstractFile[] {

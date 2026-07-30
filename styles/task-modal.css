@@ -1455,6 +1455,17 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     overflow-y: auto;
 }
 
+.tasknotes-plugin .task-project-selector-assigned {
+    padding: var(--size-4-2) var(--size-4-3) 0;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .task-project-selector-assigned__title {
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+    font-weight: var(--font-weight-medium);
+}
+
 .tasknotes-plugin .task-projects-empty {
     padding: var(--size-4-3);
     text-align: center;

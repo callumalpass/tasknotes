@@ -79,7 +79,11 @@ import {
 } from "./taskListKeyboardActions";
 import { addTagsToList, parseTaskTagInput } from "../utils/taskTagList";
 import { addContextToList } from "../components/TaskContextMenu";
-import { addTaskToProject } from "../services/taskRelationshipActions";
+import {
+	addTaskToProject,
+	getTaskProjectFiles,
+	removeTaskFromProject,
+} from "../services/taskRelationshipActions";
 import { TaskListInputOwnershipController } from "./TaskListInputOwnershipController";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
@@ -2849,15 +2853,37 @@ export class TaskListView extends BasesViewBase {
 		const paths = this.getTaskActionTargetPaths();
 		if (paths.length === 0) return;
 
-		new ProjectSelectModal(this.plugin.app, this.plugin, (projectFile) => {
-			if (!(projectFile instanceof TFile)) return;
-			void (async () => {
-				for (const path of paths) {
-					const task = await this.plugin.cacheManager.getTaskInfo(path);
-					if (task) await addTaskToProject(this.plugin, task, projectFile);
+		void (async () => {
+			const tasks = (
+				await Promise.all(
+					paths.map((path) => this.plugin.cacheManager.getTaskInfo(path))
+				)
+			).filter((task): task is TaskInfo => task !== null);
+			new ProjectSelectModal(
+				this.plugin.app,
+				this.plugin,
+				(projectFile) => {
+					if (!(projectFile instanceof TFile)) return;
+					void (async () => {
+						for (const path of paths) {
+							const task = await this.plugin.cacheManager.getTaskInfo(path);
+							if (task) await addTaskToProject(this.plugin, task, projectFile);
+						}
+					})();
+				},
+				{
+					selectedProjects: getTaskProjectFiles(this.plugin, tasks),
+					onRemove: async (projectFile) => {
+						for (const path of paths) {
+							const task = await this.plugin.cacheManager.getTaskInfo(path);
+							if (task) {
+								await removeTaskFromProject(this.plugin, task, projectFile);
+							}
+						}
+					},
 				}
-			})();
-		}).open();
+			).open();
+		})();
 	}
 
 	private async deleteTaskActionTargets(): Promise<void> {
