@@ -29,12 +29,15 @@ function key(
 describe("resolveDefaultTaskListKeyboardAction", () => {
 	it.each([
 		["ArrowDown", {}, "navigate-next"],
+		["j", {}, "navigate-next"],
 		["ArrowUp", {}, "navigate-previous"],
+		["k", {}, "navigate-previous"],
 		["Home", {}, "jump-first"],
 		["End", {}, "jump-last"],
 		["Escape", {}, "clear-focus-and-selection"],
 		["Backspace", {}, "clear-focus-and-selection"],
 		[" ", {}, "toggle-select"],
+		["x", {}, "toggle-select"],
 		["a", { ctrlKey: true }, "select-all"],
 		["a", { metaKey: true }, "select-all"],
 		["c", { ctrlKey: true }, "copy-task-titles"],
@@ -63,7 +66,7 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 		key("d", { ctrlKey: true }),
 		key("Process"),
 		key("d", { isComposing: true }),
-		key("x"),
+		key("q"),
 	])("ignores unsupported or composition input", (event) => {
 		expect(resolveDefaultTaskListKeyboardAction(event)).toBeNull();
 	});
@@ -108,11 +111,11 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 
 	it("reports duplicate bindings across semantic actions", () => {
 		const shortcuts = normalizeTaskListShortcutMap({
-			"edit-due": ["x"],
-			"edit-status": ["X"],
+			"edit-due": ["z"],
+			"edit-status": ["Z"],
 		});
 
-		expect(findTaskListShortcutConflicts(shortcuts).get("x")).toEqual([
+		expect(findTaskListShortcutConflicts(shortcuts).get("z")).toEqual([
 			"edit-due",
 			"edit-status",
 		]);
@@ -120,19 +123,19 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 
 	it("finds duplicate owners and replaces their binding atomically", () => {
 		const shortcuts = normalizeTaskListShortcutMap({
-			"edit-due": ["x"],
-			"edit-status": ["x"],
+			"edit-due": ["z"],
+			"edit-status": ["z"],
 			"jump-first": ["home"],
 		});
 
-		expect(findTaskListShortcutOwners(shortcuts, "x", "jump-first")).toEqual([
+		expect(findTaskListShortcutOwners(shortcuts, "z", "jump-first")).toEqual([
 			"edit-due",
 			"edit-status",
 		]);
-		const replaced = replaceTaskListShortcut(shortcuts, "jump-first", "x");
+		const replaced = replaceTaskListShortcut(shortcuts, "jump-first", "z");
 		expect(replaced["edit-due"]).toEqual([]);
 		expect(replaced["edit-status"]).toEqual([]);
-		expect(replaced["jump-first"]).toEqual(["home", "x"]);
+		expect(replaced["jump-first"]).toEqual(["home", "z"]);
 	});
 
 	it("formats portable modifiers for the current platform", () => {

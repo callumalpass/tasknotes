@@ -40,12 +40,12 @@ export type TaskListScopeBinding = {
 };
 
 export const DEFAULT_TASK_LIST_SHORTCUTS: TaskListShortcutMap = {
-	"navigate-next": ["arrowdown"],
-	"navigate-previous": ["arrowup"],
+	"navigate-next": ["arrowdown", "j"],
+	"navigate-previous": ["arrowup", "k"],
 	"jump-first": ["home"],
 	"jump-last": ["end"],
 	"clear-focus-and-selection": ["escape", "backspace"],
-	"toggle-select": ["space"],
+	"toggle-select": ["space", "x"],
 	"select-all": ["mod+a"],
 	"copy-task-titles": ["mod+c"],
 	"toggle-archive": ["y"],
