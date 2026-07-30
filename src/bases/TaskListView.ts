@@ -33,6 +33,7 @@ import {
 	prepareSortOrderUpdate,
 	applySortOrderPlan,
 	DropOperationQueue,
+	stripPropertyPrefix,
 	type SortOrderPlan,
 } from "./sortOrderUtils";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
@@ -53,6 +54,7 @@ import {
 	buildTaskListSubPropertyRenderItems,
 	buildTaskListSubPropertyScopePaths,
 	groupTasksByTaskListSubProperty,
+	normalizeTaskListGroups,
 	type TaskListGroup,
 	type TaskListHeaderItem,
 	type TaskListRenderItem,
@@ -913,6 +915,21 @@ export class TaskListView extends BasesViewBase {
 			property,
 			groupKey,
 			this.plugin.settings.userFields
+		);
+	}
+
+	private getNormalizedTaskListGroups(): TaskListGroup[] {
+		const groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
+		const groupByPropertyId = this.getGroupByPropertyId();
+		if (
+			!groupByPropertyId ||
+			!this.isListTypeProperty(stripPropertyPrefix(groupByPropertyId))
+		) {
+			return groups;
+		}
+
+		return normalizeTaskListGroups(groups, (key) =>
+			this.dataAdapter.convertListGroupKeyToString(key)
 		);
 	}
 
@@ -1976,7 +1993,7 @@ export class TaskListView extends BasesViewBase {
 
 	private async renderGrouped(taskNotes: TaskInfo[]): Promise<void> {
 		const visibleProperties = this.getVisibleProperties();
-		const groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
+		const groups = this.getNormalizedTaskListGroups();
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
@@ -3151,7 +3168,7 @@ export class TaskListView extends BasesViewBase {
 			this.applyGroupingSnapshot(this.createSubPropertyHierarchySnapshot(groupedTasks));
 			items = buildTaskListSubPropertyRenderItems(groupedTasks, this.collapsedGroups);
 		} else {
-			const groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
+			const groups = this.getNormalizedTaskListGroups();
 			this.applyGroupingSnapshot(this.createGroupedHierarchySnapshot(groups, renderTasks));
 			items = buildTaskListGroupedRenderItems({
 				groups,
