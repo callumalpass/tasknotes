@@ -2222,6 +2222,16 @@ export const ko: TranslationTree = {
 		openPomodoroStats: "뽀모도로 통계 열기",
 		openStatisticsView: "작업 및 프로젝트 통계 열기",
 		createNewTask: "새 작업 만들기",
+		importJiraIssue: "Jira 이슈 가져오기",
+		jiraIssueKeyPlaceholder: "이슈 키(예: PROJ-123)",
+		jiraImportButton: "가져오기",
+		jiraImportMissingPlugin:
+			"obsidian-jira-issue 플러그인이 설치 또는 활성화되지 않았거나 호환되지 않습니다.",
+		jiraImportInvalidKey: "PROJ-123과 같은 올바른 Jira 이슈 키를 입력하세요.",
+		jiraImportFetchFailed: "Jira 이슈를 가져올 수 없습니다.",
+		jiraImportCreationFailed:
+			"Jira 이슈를 가져왔지만 작업을 만들 수 없습니다.",
+		jiraImportSuccess: "작업 “{title}”을 만들었습니다.",
 		convertCurrentNoteToTask: {
 			name: "현재 노트를 작업으로 변환",
 			noActiveFile: "변환할 활성 파일이 없습니다",

@@ -2238,6 +2238,16 @@ export const zh: TranslationTree = {
 		openPomodoroStats: "打开番茄钟统计",
 		openStatisticsView: "打开任务和项目统计",
 		createNewTask: "创建新任务",
+		importJiraIssue: "导入 Jira 问题",
+		jiraIssueKeyPlaceholder: "问题键，例如 PROJ-123",
+		jiraImportButton: "导入",
+		jiraImportMissingPlugin:
+			"obsidian-jira-issue 插件未安装、未启用或不兼容。",
+		jiraImportInvalidKey: "请输入有效的 Jira 问题键，例如 PROJ-123。",
+		jiraImportFetchFailed: "无法获取该 Jira 问题。",
+		jiraImportCreationFailed:
+			"已获取 Jira 问题，但无法创建任务。",
+		jiraImportSuccess: "已创建任务“{title}”。",
 		convertCurrentNoteToTask: {
 			name: "将当前笔记转换为任务",
 			noActiveFile: "没有可转换的活动文件",

@@ -3,6 +3,7 @@ import type TaskNotesPlugin from "../main";
 import type { TranslatedCommandDefinition } from "./types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
+import { executeJiraImportCommand } from "./jiraImportCommand";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Commands/TaskNotesCommands" });
 
@@ -95,6 +96,13 @@ export function createTaskNotesCommandDefinitions(
 			nameKey: "commands.createNewTask",
 			callback: (ctx) => {
 				ctx.openTaskCreationModal();
+			},
+		},
+		{
+			id: "import-jira-issue",
+			nameKey: "commands.importJiraIssue",
+			callback: async (ctx) => {
+				await executeJiraImportCommand(ctx);
 			},
 		},
 		{

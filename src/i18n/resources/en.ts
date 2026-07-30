@@ -2393,6 +2393,17 @@ export const en: TranslationTree = {
 		openPomodoroStats: "Open Pomodoro statistics",
 		openStatisticsView: "Open task & project statistics",
 		createNewTask: "Create new task",
+		/* eslint-disable obsidianmd/ui/sentence-case-locale-module -- Jira branding and example issue keys require canonical casing. */
+		importJiraIssue: "Import Jira issue",
+		jiraIssueKeyPlaceholder: "Issue key, for example PROJ-123",
+		jiraImportButton: "Import",
+		jiraImportMissingPlugin:
+			"The obsidian-jira-issue plugin is not installed, enabled, or compatible.",
+		jiraImportInvalidKey: "Enter a valid Jira issue key, such as PROJ-123.",
+		jiraImportFetchFailed: "Could not fetch that Jira issue.",
+		jiraImportCreationFailed: "The Jira issue was fetched, but the task could not be created.",
+		jiraImportSuccess: 'Created task "{title}".',
+		/* eslint-enable obsidianmd/ui/sentence-case-locale-module -- End Jira-specific canonical casing. */
 		convertCurrentNoteToTask: {
 			name: "Convert current note to task",
 			noActiveFile: "No active file to convert",

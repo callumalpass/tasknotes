@@ -2238,6 +2238,16 @@ export const fr: TranslationTree = {
 		openPomodoroStats: "Ouvrir les statistiques Pomodoro",
 		openStatisticsView: "Ouvrir les statistiques tâches & projets",
 		createNewTask: "Créer une nouvelle tâche",
+		importJiraIssue: "Importer un ticket Jira",
+		jiraIssueKeyPlaceholder: "Clé du ticket, par exemple PROJ-123",
+		jiraImportButton: "Importer",
+		jiraImportMissingPlugin:
+			"Le module obsidian-jira-issue n’est pas installé, activé ou compatible.",
+		jiraImportInvalidKey: "Saisissez une clé Jira valide, comme PROJ-123.",
+		jiraImportFetchFailed: "Impossible de récupérer ce ticket Jira.",
+		jiraImportCreationFailed:
+			"Le ticket Jira a été récupéré, mais la tâche n’a pas pu être créée.",
+		jiraImportSuccess: 'Tâche « {title} » créée.',
 		convertCurrentNoteToTask: {
 			name: "Convertir la note actuelle en tâche",
 			noActiveFile: "Aucun fichier actif à convertir",

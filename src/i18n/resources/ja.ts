@@ -2238,6 +2238,16 @@ export const ja: TranslationTree = {
 		openPomodoroStats: "ポモドーロ統計を開く",
 		openStatisticsView: "タスクとプロジェクト統計を開く",
 		createNewTask: "新しいタスクを作成",
+		importJiraIssue: "Jira 課題をインポート",
+		jiraIssueKeyPlaceholder: "課題キー（例: PROJ-123）",
+		jiraImportButton: "インポート",
+		jiraImportMissingPlugin:
+			"obsidian-jira-issue プラグインがインストール、有効化、または互換性のある状態ではありません。",
+		jiraImportInvalidKey: "PROJ-123 のような有効な Jira 課題キーを入力してください。",
+		jiraImportFetchFailed: "Jira 課題を取得できませんでした。",
+		jiraImportCreationFailed:
+			"Jira 課題は取得できましたが、タスクを作成できませんでした。",
+		jiraImportSuccess: "タスク「{title}」を作成しました。",
 		convertCurrentNoteToTask: {
 			name: "現在のノートをタスクに変換",
 			noActiveFile: "変換するアクティブなファイルがありません",

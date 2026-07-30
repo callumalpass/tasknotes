@@ -2238,6 +2238,16 @@ export const de: TranslationTree = {
 		openPomodoroStats: "Pomodoro-Statistiken öffnen",
 		openStatisticsView: "Aufgaben- & Projektstatistiken öffnen",
 		createNewTask: "Neue Aufgabe erstellen",
+		importJiraIssue: "Jira-Vorgang importieren",
+		jiraIssueKeyPlaceholder: "Vorgangsschlüssel, zum Beispiel PROJ-123",
+		jiraImportButton: "Importieren",
+		jiraImportMissingPlugin:
+			"Das Plugin obsidian-jira-issue ist nicht installiert, aktiviert oder kompatibel.",
+		jiraImportInvalidKey: "Gib einen gültigen Jira-Vorgangsschlüssel wie PROJ-123 ein.",
+		jiraImportFetchFailed: "Der Jira-Vorgang konnte nicht abgerufen werden.",
+		jiraImportCreationFailed:
+			"Der Jira-Vorgang wurde abgerufen, aber die Aufgabe konnte nicht erstellt werden.",
+		jiraImportSuccess: 'Aufgabe „{title}“ erstellt.',
 		convertCurrentNoteToTask: {
 			name: "Aktuelle Notiz in Aufgabe umwandeln",
 			noActiveFile: "Keine aktive Datei zum Umwandeln",

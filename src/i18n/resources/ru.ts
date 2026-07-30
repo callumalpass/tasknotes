@@ -2238,6 +2238,16 @@ export const ru: TranslationTree = {
 		openPomodoroStats: "Открыть статистику помодоро",
 		openStatisticsView: "Открыть статистику задач и проектов",
 		createNewTask: "Создать новую задачу",
+		importJiraIssue: "Импортировать задачу Jira",
+		jiraIssueKeyPlaceholder: "Ключ задачи, например PROJ-123",
+		jiraImportButton: "Импортировать",
+		jiraImportMissingPlugin:
+			"Плагин obsidian-jira-issue не установлен, не включён или несовместим.",
+		jiraImportInvalidKey: "Введите допустимый ключ Jira, например PROJ-123.",
+		jiraImportFetchFailed: "Не удалось получить задачу Jira.",
+		jiraImportCreationFailed:
+			"Задача Jira получена, но создать задачу TaskNotes не удалось.",
+		jiraImportSuccess: "Создана задача «{title}».",
 		convertCurrentNoteToTask: {
 			name: "Преобразовать текущую заметку в задачу",
 			noActiveFile: "Нет активного файла для преобразования",
