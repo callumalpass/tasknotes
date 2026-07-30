@@ -143,7 +143,7 @@ projects:
 ```
 The dialog editor is probably right. Update the code so that they both use the same method to assign a project -- either raw name or link -- spreferably via the same code path. If one implementation or the other is more correct, use the correct implementation.
 - [x] When grouping by project, dragging a task from one project and dropping into another should overwrite the tasks projects with the dropped project. Currently it sometimes moves the task to a new project, and sometimes it just assigns the new project and preserves the old project. This behavior already seems to work properly for dragging between single-value properties like status, but not for projects which has a list of values.
-- [ ] When multiple tasks are selected, dropping into a new group edits only the task under the cursor, not the other tasks. Edits should modify all selected tasks. For example, if three tasks are selected when dropping a task into a new project group, all three tasks should be assigned to the new project.
+- [x] When multiple tasks are selected, dropping into a new group edits only the task under the cursor, not the other tasks. Edits should modify all selected tasks. For example, if three tasks are selected when dropping a task into a new project group, all three tasks should be assigned to the new project.
 
 ---
 

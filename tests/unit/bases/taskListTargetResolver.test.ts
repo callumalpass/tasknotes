@@ -1,4 +1,7 @@
-import { resolveTaskListTargetPaths } from "../../../src/bases/taskListTargetResolver";
+import {
+	resolveTaskListDragPaths,
+	resolveTaskListTargetPaths,
+} from "../../../src/bases/taskListTargetResolver";
 
 describe("resolveTaskListTargetPaths", () => {
 	it("prefers selected paths over the focused task", () => {
@@ -28,5 +31,43 @@ describe("resolveTaskListTargetPaths", () => {
 		};
 
 		expect(resolveTaskListTargetPaths(selectionState, "focused.md")).toEqual(["a.md", "b.md"]);
+	});
+});
+
+describe("resolveTaskListDragPaths", () => {
+	const visiblePaths = new Set(["a.md", "b.md", "dragged.md"]);
+
+	it("moves the visible selection when the dragged task is selected", () => {
+		const selectionState = {
+			isSelected: (path: string) => path === "dragged.md",
+			getSelectedPaths: () => ["a.md", "hidden.md", "dragged.md", "a.md"],
+		};
+
+		expect(resolveTaskListDragPaths(selectionState, "dragged.md", visiblePaths)).toEqual([
+			"a.md",
+			"dragged.md",
+		]);
+	});
+
+	it("moves only the dragged task when it is not selected", () => {
+		const selectionState = {
+			isSelected: () => false,
+			getSelectedPaths: () => ["a.md", "b.md"],
+		};
+
+		expect(resolveTaskListDragPaths(selectionState, "dragged.md", visiblePaths)).toEqual([
+			"dragged.md",
+		]);
+	});
+
+	it("falls back to the dragged task if selection state is stale", () => {
+		const selectionState = {
+			isSelected: () => true,
+			getSelectedPaths: () => ["hidden.md"],
+		};
+
+		expect(resolveTaskListDragPaths(selectionState, "dragged.md", visiblePaths)).toEqual([
+			"dragged.md",
+		]);
 	});
 });

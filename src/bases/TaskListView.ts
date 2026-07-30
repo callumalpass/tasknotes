@@ -72,7 +72,10 @@ import {
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { TaskListFocusController } from "./TaskListFocusController";
-import { resolveTaskListTargetPaths } from "./taskListTargetResolver";
+import {
+	resolveTaskListDragPaths,
+	resolveTaskListTargetPaths,
+} from "./taskListTargetResolver";
 import {
 	resolveTaskListKeyboardAction,
 	taskListShortcutToScopeBinding,
@@ -188,6 +191,7 @@ export class TaskListView extends BasesViewBase {
 	// Drag-to-reorder state
 	private basesController: TaskListController;
 	private draggedTaskPath: string | null = null;
+	private draggedTaskPaths: string[] = [];
 	private dragGroupKey: string | null = null;
 	private currentInsertionGroupKey: string | null = null;
 	private currentInsertionSegmentIndex = -1;
@@ -1063,6 +1067,11 @@ export class TaskListView extends BasesViewBase {
 			}
 
 			this.draggedTaskPath = task.path;
+			this.draggedTaskPaths = resolveTaskListDragPaths(
+				this.plugin.taskSelectionService,
+				task.path,
+				this.currentVisibleTaskPaths
+			);
 			this.dragGroupKey = groupKey;
 			cardEl.classList.add("task-card--dragging");
 			if (e.dataTransfer) {
@@ -1153,6 +1162,7 @@ export class TaskListView extends BasesViewBase {
 			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
 
 			this.draggedTaskPath = null;
+			this.draggedTaskPaths = [];
 			this.dragGroupKey = null;
 			this.currentInsertionGroupKey = null;
 			this.currentInsertionSegmentIndex = -1;
@@ -1461,6 +1471,7 @@ export class TaskListView extends BasesViewBase {
 					return;
 
 				const draggedPath = this.draggedTaskPath;
+				const draggedPaths = [...this.draggedTaskPaths];
 				const sourceGroupKey = this.dragGroupKey;
 				const groupDropBehavior = this.plugin.settings.taskListGroupDropBehavior;
 				const preserveExistingListValues = shouldPreserveTaskListGroupDropValues(
@@ -1484,6 +1495,7 @@ export class TaskListView extends BasesViewBase {
 				this.cleanupDragShift();
 
 				this.draggedTaskPath = null;
+				this.draggedTaskPaths = [];
 				this.dragGroupKey = null;
 				this.currentInsertionGroupKey = null;
 				this.currentInsertionSegmentIndex = -1;
@@ -1497,7 +1509,8 @@ export class TaskListView extends BasesViewBase {
 					targetGroupKey,
 					sourceGroupKey,
 					targetVisiblePaths,
-					preserveExistingListValues
+					preserveExistingListValues,
+					draggedPaths
 				);
 			})();
 		});
@@ -1519,26 +1532,47 @@ export class TaskListView extends BasesViewBase {
 		targetGroupKey: string | null,
 		sourceGroupKey: string | null,
 		targetVisiblePaths?: string[],
-		preserveExistingListValues = false
+		preserveExistingListValues = false,
+		draggedPaths: string[] = [draggedPath]
 	): Promise<void> {
 		const groupByPropertyId = this.getGroupByPropertyId();
 		const reorderScopeKey = this.getReorderScopeQueueKey(targetGroupKey, groupByPropertyId);
 		await this.dropQueue.enqueue(reorderScopeKey, async () => {
-			const groupDropPlan = buildTaskListGroupDropPlan({
-				groupByPropertyId,
-				sourceGroupKey,
-				targetGroupKey,
-				preserveExistingListValues,
-				lookupMappingKey: (propertyName) =>
-					this.plugin.fieldMapper.lookupMappingKey(propertyName),
-				isListTypeProperty: (propertyName) => this.isListTypeProperty(propertyName),
-				normalizeListGroupValue: (taskProperty, _propertyName, groupValue) =>
-					this.normalizeListGroupValueForDrop(
-						taskProperty,
-						groupValue,
-						draggedPath
-					),
-			});
+			const pathsToUpdate = Array.from(
+				new Set([draggedPath, ...draggedPaths.filter((path) => path !== draggedPath)])
+			);
+			const groupDropPlans = new Map(
+				pathsToUpdate.map((path) => {
+					const pathSourceGroupKey = this.taskGroupKeys.has(path)
+						? (this.taskGroupKeys.get(path) ?? null)
+						: sourceGroupKey;
+					return [
+						path,
+						buildTaskListGroupDropPlan({
+							groupByPropertyId,
+							sourceGroupKey: pathSourceGroupKey,
+							targetGroupKey,
+							preserveExistingListValues,
+							lookupMappingKey: (propertyName) =>
+								this.plugin.fieldMapper.lookupMappingKey(propertyName),
+							isListTypeProperty: (propertyName) =>
+								this.isListTypeProperty(propertyName),
+							normalizeListGroupValue: (
+								taskProperty,
+								_propertyName,
+								groupValue
+							) =>
+								this.normalizeListGroupValueForDrop(
+									taskProperty,
+									groupValue,
+									path
+								),
+						}),
+					] as const;
+				})
+			);
+			const groupDropPlan = groupDropPlans.get(draggedPath);
+			if (!groupDropPlan) return;
 
 			if (groupDropPlan.isFormulaGrouping) {
 				new Notice(
@@ -1564,7 +1598,7 @@ export class TaskListView extends BasesViewBase {
 			);
 			if (sortOrderPlan.sortOrder === null) return;
 
-			const totalEditedNotes = sortOrderPlan.additionalWrites.length + 1;
+			const totalEditedNotes = sortOrderPlan.additionalWrites.length + pathsToUpdate.length;
 			if (totalEditedNotes > this.LARGE_REORDER_WARNING_THRESHOLD) {
 				const confirmed = await this.confirmLargeReorder(totalEditedNotes, targetGroupKey);
 				if (!confirmed) return;
@@ -1577,84 +1611,90 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 
-			const file = this.plugin.app.vault.getAbstractFileByPath(draggedPath);
-			if (!file || !(file instanceof TFile)) {
-				this.debouncedRefresh();
-				return;
-			}
-
 			const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 
 			await applySortOrderPlan(draggedPath, sortOrderPlan, this.plugin, {
 				includeDragged: false,
 			});
 
-			// Single atomic write: group property + sort_order + derivative fields
-			await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
-				applyTaskListDropFrontmatterMutation({
-					frontmatter: fm,
-					plan: groupDropPlan,
-					sortOrderField,
-					sortOrder: sortOrderPlan.sortOrder,
-					isRecurring: !!this.taskInfoCache.get(draggedPath)?.recurrence,
-					dateModifiedField: this.plugin.fieldMapper.toUserField("dateModified"),
-					coerceGroupKeyForFrontmatter: (property, groupKey) =>
-						this.coerceGroupKeyForFrontmatter(property, groupKey),
-					updateCompletedDateInFrontmatter: (frontmatter, status, isRecurring) =>
-						this.plugin.taskService.updateCompletedDateInFrontmatter(
-							frontmatter,
-							status,
-							isRecurring
-						),
-					getTimestamp: getCurrentTimestamp,
-				});
-			});
+			for (const path of pathsToUpdate) {
+				const pathDropPlan = groupDropPlans.get(path);
+				if (!pathDropPlan) continue;
+				if (path !== draggedPath && !pathDropPlan.needsGroupUpdate) continue;
 
-			// Fire post-write side effects for known TaskInfo property changes
-			if (groupDropPlan.needsGroupUpdate && groupDropPlan.groupByTaskProp) {
-				try {
-					const originalTask =
-						this.taskInfoCache.get(draggedPath) ??
-						(await this.plugin.cacheManager.getTaskInfo(draggedPath));
-					if (originalTask) {
-						const updatedTask = buildTaskListDropSideEffectTask(originalTask, {
-							plan: groupDropPlan,
-							isCompletedStatus: (status) =>
-								this.plugin.statusManager.isCompletedStatus(status),
-							getTimestamp: getCurrentTimestamp,
-							getCompletedDate: () => new Date().toISOString().split("T")[0],
-						});
-						if (updatedTask) {
-							await this.plugin.taskService.applyPropertyChangeSideEffects(
-								file,
-								originalTask,
-								updatedTask,
-								groupDropPlan.groupByTaskProp as keyof TaskInfo,
-								groupDropPlan.sourceGroupKey,
-								groupDropPlan.normalizedTargetGroupKey
-							);
+				const file = this.plugin.app.vault.getAbstractFileByPath(path);
+				if (!file || !(file instanceof TFile)) continue;
+
+				// Each task gets its group mutation. Only the card under the pointer
+				// receives the insertion sort order.
+				await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+					applyTaskListDropFrontmatterMutation({
+						frontmatter: fm,
+						plan: pathDropPlan,
+						sortOrderField,
+						sortOrder: path === draggedPath ? sortOrderPlan.sortOrder : null,
+						isRecurring: !!this.taskInfoCache.get(path)?.recurrence,
+						dateModifiedField: this.plugin.fieldMapper.toUserField("dateModified"),
+						coerceGroupKeyForFrontmatter: (property, groupKey) =>
+							this.coerceGroupKeyForFrontmatter(property, groupKey),
+						updateCompletedDateInFrontmatter: (frontmatter, status, isRecurring) =>
+							this.plugin.taskService.updateCompletedDateInFrontmatter(
+								frontmatter,
+								status,
+								isRecurring
+							),
+						getTimestamp: getCurrentTimestamp,
+					});
+				});
+
+				// Fire post-write side effects for known TaskInfo property changes.
+				if (pathDropPlan.needsGroupUpdate && pathDropPlan.groupByTaskProp) {
+					try {
+						const originalTask =
+							this.taskInfoCache.get(path) ??
+							(await this.plugin.cacheManager.getTaskInfo(path));
+						if (originalTask) {
+							const updatedTask = buildTaskListDropSideEffectTask(originalTask, {
+								plan: pathDropPlan,
+								isCompletedStatus: (status) =>
+									this.plugin.statusManager.isCompletedStatus(status),
+								getTimestamp: getCurrentTimestamp,
+								getCompletedDate: () => new Date().toISOString().split("T")[0],
+							});
+							if (updatedTask) {
+								await this.plugin.taskService.applyPropertyChangeSideEffects(
+									file,
+									originalTask,
+									updatedTask,
+									pathDropPlan.groupByTaskProp as keyof TaskInfo,
+									pathDropPlan.sourceGroupKey,
+									pathDropPlan.normalizedTargetGroupKey
+								);
+							}
 						}
+					} catch (sideEffectError) {
+						tasknotesLogger.warn(
+							"[TaskNotes][TaskListView] Side-effect error after drop:",
+							{
+								category: "persistence",
+								operation: "side-effect-drop",
+								error: sideEffectError,
+							}
+						);
 					}
-				} catch (sideEffectError) {
-					tasknotesLogger.warn(
-						"[TaskNotes][TaskListView] Side-effect error after drop:",
-						{
-							category: "persistence",
-							operation: "side-effect-drop",
-							error: sideEffectError,
-						}
-					);
 				}
 			}
 
-			const didOptimisticallyReorder = this.applyOptimisticSortOrderResult(
-				draggedPath,
-				targetPath,
-				above,
-				targetGroupKey,
-				sourceGroupKey,
-				sortOrderPlan
-			);
+			const didOptimisticallyReorder =
+				pathsToUpdate.length === 1 &&
+				this.applyOptimisticSortOrderResult(
+					draggedPath,
+					targetPath,
+					above,
+					targetGroupKey,
+					sourceGroupKey,
+					sortOrderPlan
+				);
 			if (!didOptimisticallyReorder) {
 				this.debouncedRefresh();
 			}
