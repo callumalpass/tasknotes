@@ -3,7 +3,7 @@ import { Menu, Notice, Platform, Scope, TFile, setIcon } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
-import { TaskInfo } from "../types";
+import { TaskInfo, type FieldMapping } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
@@ -25,6 +25,7 @@ import {
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { generateProjectReference, parseLinkToPath } from "../utils/linkUtils";
 import { formatTasksForClipboard } from "../utils/taskClipboard";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
@@ -911,6 +912,32 @@ export class TaskListView extends BasesViewBase {
 		);
 	}
 
+	private normalizeListGroupValueForDrop(
+		taskProperty: keyof FieldMapping | null,
+		groupValue: string,
+		sourcePath: string
+	): string {
+		if (taskProperty !== "projects") {
+			return groupValue;
+		}
+
+		const projectPath = parseLinkToPath(groupValue);
+		const projectFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
+			projectPath,
+			sourcePath
+		);
+		if (!(projectFile instanceof TFile)) {
+			return groupValue;
+		}
+
+		return generateProjectReference(
+			this.plugin.app,
+			projectFile,
+			sourcePath,
+			this.plugin.settings.useFrontmatterMarkdownLinks
+		);
+	}
+
 	private async confirmLargeReorder(
 		editCount: number,
 		targetGroupKey: string | null
@@ -1505,6 +1532,12 @@ export class TaskListView extends BasesViewBase {
 				lookupMappingKey: (propertyName) =>
 					this.plugin.fieldMapper.lookupMappingKey(propertyName),
 				isListTypeProperty: (propertyName) => this.isListTypeProperty(propertyName),
+				normalizeListGroupValue: (taskProperty, _propertyName, groupValue) =>
+					this.normalizeListGroupValueForDrop(
+						taskProperty,
+						groupValue,
+						draggedPath
+					),
 			});
 
 			if (groupDropPlan.isFormulaGrouping) {

@@ -157,6 +157,8 @@ describe("taskListDropPlanning", () => {
 			targetGroupKey: "Project B",
 			lookupMappingKey,
 			isListTypeProperty,
+			normalizeListGroupValue: (taskProperty, _propertyName, value) =>
+				taskProperty === "projects" ? `[[${value}]]` : value,
 		});
 		const frontmatter: Record<string, unknown> = {
 			projects: ["Project A", "Project C"],
@@ -176,7 +178,7 @@ describe("taskListDropPlanning", () => {
 
 		expect(plan.replacesListGroupingValue).toBe(true);
 		expect(frontmatter).toEqual({
-			projects: ["Project B"],
+			projects: ["[[Project B]]"],
 			sort_order: "tncccccccccc",
 		});
 	});

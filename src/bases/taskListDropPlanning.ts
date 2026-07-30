@@ -24,6 +24,11 @@ export interface BuildTaskListGroupDropPlanOptions {
 	preserveExistingListValues?: boolean;
 	lookupMappingKey: (frontmatterPropertyName: string) => keyof FieldMapping | null;
 	isListTypeProperty: (propertyName: string) => boolean;
+	normalizeListGroupValue?: (
+		taskProperty: keyof FieldMapping | null,
+		propertyName: string,
+		value: string
+	) => string;
 }
 
 export interface ApplyTaskListDropFrontmatterMutationOptions {
@@ -66,14 +71,18 @@ export function buildTaskListGroupDropPlan({
 	preserveExistingListValues = false,
 	lookupMappingKey,
 	isListTypeProperty,
+	normalizeListGroupValue,
 }: BuildTaskListGroupDropPlanOptions): TaskListGroupDropPlan {
 	const cleanGroupBy = groupByPropertyId ? stripPropertyPrefix(groupByPropertyId) : null;
 	const isFormulaGrouping = !!groupByPropertyId?.startsWith("formula.");
-	const normalizedTargetGroupKey = targetGroupKey === "None" ? null : targetGroupKey;
-	const needsGroupUpdate =
-		!!groupByPropertyId && normalizedTargetGroupKey !== sourceGroupKey;
+	const rawTargetGroupKey = targetGroupKey === "None" ? null : targetGroupKey;
+	const needsGroupUpdate = !!groupByPropertyId && rawTargetGroupKey !== sourceGroupKey;
 	const groupByTaskProp = cleanGroupBy ? lookupMappingKey(cleanGroupBy) : null;
 	const isListGrouping = !!cleanGroupBy && isListTypeProperty(cleanGroupBy);
+	const normalizedTargetGroupKey =
+		rawTargetGroupKey !== null && isListGrouping && cleanGroupBy && normalizeListGroupValue
+			? normalizeListGroupValue(groupByTaskProp, cleanGroupBy, rawTargetGroupKey)
+			: rawTargetGroupKey;
 	const replacesListGroupingValue = isListGrouping && !preserveExistingListValues;
 	const preservesListGroupingValues = isListGrouping && preserveExistingListValues;
 	const frontmatterKey = groupByPropertyId

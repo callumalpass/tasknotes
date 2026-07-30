@@ -131,7 +131,7 @@ The safest delivery order is: Jira core mapping tests → Jira UI/import flow �
 
 ### 2.7 Task view project assignment editing
 - [x] Add project dialog can remove projects in addition to adding them. (I had implemented this for TaskNotes version 3.x in commit `095a97a315d125c3c5dda9c05a8464eb64a6e35e`, although that implementation had some issues so be circumspect about whether this approach still applies.)
-- [ ] Dropping a task into a different project (and probably any other list-valued grouping property -- list valued like projects as opposed to single value at a time like status) assigns the project without a link in the yaml, e.g.
+- [x] Dropping a task into a different project (and probably any other list-valued grouping property -- list valued like projects as opposed to single value at a time like status) assigns the project without a link in the yaml, e.g.
 ```yml
 projects:
   - Make TaskNotes into Linear
@@ -143,6 +143,7 @@ projects:
 ```
 The dialog editor is probably right. Update the code so that they both use the same method to assign a project -- either raw name or link -- spreferably via the same code path. If one implementation or the other is more correct, use the correct implementation.
 - [x] When grouping by project, dragging a task from one project and dropping into another should overwrite the tasks projects with the dropped project. Currently it sometimes moves the task to a new project, and sometimes it just assigns the new project and preserves the old project. This behavior already seems to work properly for dragging between single-value properties like status, but not for projects which has a list of values.
+- [ ] When multiple tasks are selected, dropping into a new group edits only the task under the cursor, not the other tasks. Edits should modify all selected tasks. For example, if three tasks are selected when dropping a task into a new project group, all three tasks should be assigned to the new project.
 
 ---
 
