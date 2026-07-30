@@ -1037,6 +1037,16 @@ export const en: TranslationTree = {
 					name: "Double-click action",
 					description: "Action performed when double-clicking a task card",
 				},
+				groupDropBehavior: {
+					name: "Project and tag drop behavior",
+					description:
+						"Controls whether dragging tasks between project or tag groups replaces existing values or adds the destination value.",
+					options: {
+						replace: "Dropping replaces values",
+						add: "Dropping adds values",
+						replaceShiftAdd: "Dropping replaces; Shift-drop adds",
+					},
+				},
 				actions: {
 					edit: "Edit task",
 					openNote: "Open note",

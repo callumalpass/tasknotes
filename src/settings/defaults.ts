@@ -302,6 +302,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 
 	singleClickAction: "edit",
 	doubleClickAction: "openNote",
+	taskListGroupDropBehavior: "replace-shift-add",
 	taskListShortcuts: DEFAULT_TASK_LIST_SHORTCUTS,
 	// Autosuggest project card defaults
 	projectAutosuggest: DEFAULT_PROJECT_AUTOSUGGEST,

@@ -1,4 +1,5 @@
 import type { FieldMapping, TaskInfo } from "../types";
+import type { TaskListGroupDropBehavior } from "../types/settings";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { stripPropertyPrefix } from "./sortOrderUtils";
 
@@ -10,6 +11,7 @@ export interface TaskListGroupDropPlan {
 	isFormulaGrouping: boolean;
 	isListGrouping: boolean;
 	replacesListGroupingValue: boolean;
+	preservesListGroupingValues: boolean;
 	needsGroupUpdate: boolean;
 	normalizedTargetGroupKey: string | null;
 	sourceGroupKey: string | null;
@@ -19,6 +21,7 @@ export interface BuildTaskListGroupDropPlanOptions {
 	groupByPropertyId: string | null;
 	sourceGroupKey: string | null;
 	targetGroupKey: string | null;
+	preserveExistingListValues?: boolean;
 	lookupMappingKey: (frontmatterPropertyName: string) => keyof FieldMapping | null;
 	isListTypeProperty: (propertyName: string) => boolean;
 }
@@ -49,10 +52,18 @@ export interface BuildTaskListDropSideEffectTaskOptions {
 	getCompletedDate: () => string;
 }
 
+export function shouldPreserveTaskListGroupDropValues(
+	behavior: TaskListGroupDropBehavior,
+	shiftKey: boolean
+): boolean {
+	return behavior === "add" || (behavior === "replace-shift-add" && shiftKey);
+}
+
 export function buildTaskListGroupDropPlan({
 	groupByPropertyId,
 	sourceGroupKey,
 	targetGroupKey,
+	preserveExistingListValues = false,
 	lookupMappingKey,
 	isListTypeProperty,
 }: BuildTaskListGroupDropPlanOptions): TaskListGroupDropPlan {
@@ -63,7 +74,11 @@ export function buildTaskListGroupDropPlan({
 		!!groupByPropertyId && normalizedTargetGroupKey !== sourceGroupKey;
 	const groupByTaskProp = cleanGroupBy ? lookupMappingKey(cleanGroupBy) : null;
 	const isListGrouping = !!cleanGroupBy && isListTypeProperty(cleanGroupBy);
-	const replacesListGroupingValue = groupByTaskProp === "projects";
+	const replacesOnStandardDrop = groupByTaskProp === "projects" || cleanGroupBy === "tags";
+	const replacesListGroupingValue =
+		replacesOnStandardDrop && !preserveExistingListValues;
+	const preservesListGroupingValues =
+		replacesOnStandardDrop && preserveExistingListValues;
 	const frontmatterKey = groupByPropertyId
 		? groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "")
 		: null;
@@ -76,6 +91,7 @@ export function buildTaskListGroupDropPlan({
 		isFormulaGrouping,
 		isListGrouping,
 		replacesListGroupingValue,
+		preservesListGroupingValues,
 		needsGroupUpdate,
 		normalizedTargetGroupKey,
 		sourceGroupKey,
@@ -108,7 +124,9 @@ export function applyTaskListDropFrontmatterMutation({
 					: currentValue
 						? [currentValue]
 						: [];
-				const newValue = currentValues.filter((value) => value !== plan.sourceGroupKey);
+				const newValue = plan.preservesListGroupingValues
+					? [...currentValues]
+					: currentValues.filter((value) => value !== plan.sourceGroupKey);
 				if (
 					plan.normalizedTargetGroupKey !== null &&
 					!newValue.includes(plan.normalizedTargetGroupKey)
@@ -174,7 +192,9 @@ export function buildTaskListDropSideEffectTask(
 				: originalValue
 					? [stringifyUnknown(originalValue)]
 					: [];
-			const nextValues = currentValues.filter((value) => value !== plan.sourceGroupKey);
+			const nextValues = plan.preservesListGroupingValues
+				? currentValues
+				: currentValues.filter((value) => value !== plan.sourceGroupKey);
 			if (
 				plan.normalizedTargetGroupKey !== null &&
 				!nextValues.includes(plan.normalizedTargetGroupKey)

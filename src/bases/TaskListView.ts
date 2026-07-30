@@ -61,6 +61,7 @@ import {
 	applyTaskListDropFrontmatterMutation,
 	buildTaskListDropSideEffectTask,
 	buildTaskListGroupDropPlan,
+	shouldPreserveTaskListGroupDropValues,
 } from "./taskListDropPlanning";
 import {
 	applySortOrderUpdatesToItems,
@@ -1428,6 +1429,11 @@ export class TaskListView extends BasesViewBase {
 
 				const draggedPath = this.draggedTaskPath;
 				const sourceGroupKey = this.dragGroupKey;
+				const groupDropBehavior = this.plugin.settings.taskListGroupDropBehavior;
+				const preserveExistingListValues = shouldPreserveTaskListGroupDropValues(
+					groupDropBehavior,
+					e.shiftKey
+				);
 				const targetGroupKey = this.currentInsertionGroupKey;
 				const targetVisiblePaths = this.getVisibleSortScopePathsForDrag(targetGroupKey);
 				const insertionSegmentIndex = this.currentInsertionSegmentIndex;
@@ -1457,7 +1463,8 @@ export class TaskListView extends BasesViewBase {
 					dropTarget.above,
 					targetGroupKey,
 					sourceGroupKey,
-					targetVisiblePaths
+					targetVisiblePaths,
+					preserveExistingListValues
 				);
 			})();
 		});
@@ -1469,7 +1476,8 @@ export class TaskListView extends BasesViewBase {
 		above: boolean,
 		targetGroupKey: string | null,
 		sourceGroupKey: string | null,
-		targetVisiblePaths?: string[]
+		targetVisiblePaths?: string[],
+		preserveExistingListValues = false
 	): Promise<void> {
 		const groupByPropertyId = this.getGroupByPropertyId();
 		const reorderScopeKey = this.getReorderScopeQueueKey(targetGroupKey, groupByPropertyId);
@@ -1478,6 +1486,7 @@ export class TaskListView extends BasesViewBase {
 				groupByPropertyId,
 				sourceGroupKey,
 				targetGroupKey,
+				preserveExistingListValues,
 				lookupMappingKey: (propertyName) =>
 					this.plugin.fieldMapper.lookupMappingKey(propertyName),
 				isListTypeProperty: (propertyName) => this.isListTypeProperty(propertyName),

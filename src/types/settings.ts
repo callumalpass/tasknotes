@@ -82,6 +82,8 @@ export interface NLPTriggersConfig {
 
 export type HideIdentifyingTagsMode = "all" | "exact-only";
 
+export type TaskListGroupDropBehavior = "replace" | "add" | "replace-shift-add";
+
 export interface ProjectAutosuggestSettings {
 	enableFuzzy: boolean;
 	rows: string[]; // up to 3 rows; each uses {property|flags} format
@@ -151,6 +153,7 @@ export interface TaskNotesSettings {
 
 	singleClickAction: "edit" | "openNote";
 	doubleClickAction: "edit" | "openNote" | "none";
+	taskListGroupDropBehavior: TaskListGroupDropBehavior;
 	// View-local task-list keyboard shortcuts
 	taskListShortcuts: TaskListShortcutMap;
 	// Inline task conversion settings
