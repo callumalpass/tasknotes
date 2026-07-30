@@ -314,6 +314,8 @@ export class TaskListView extends BasesViewBase {
 	private activateTaskListShortcutScope(): void {
 		if (this.taskListShortcutScope) return;
 
+		// A child Obsidian scope lets view-local configurable chords win over
+		// global editor commands while this Task List leaf is active.
 		const scope = new Scope(this.plugin.app.scope);
 		const shortcuts = this.plugin.settings.taskListShortcuts;
 		for (const action of TASK_LIST_KEYBOARD_ACTIONS) {
@@ -928,6 +930,9 @@ export class TaskListView extends BasesViewBase {
 			return groups;
 		}
 
+		// Bases treats list order as part of group identity. Canonicalize and
+		// merge here so [A, B] and [B, A] render as one Task List group without
+		// rewriting either task's frontmatter.
 		return normalizeTaskListGroups(groups, (key) =>
 			this.dataAdapter.convertListGroupKeyToString(key)
 		);
@@ -1084,6 +1089,8 @@ export class TaskListView extends BasesViewBase {
 			}
 
 			this.draggedTaskPath = task.path;
+			// Match native multi-item drag semantics: dragging a selected card
+			// carries the visible selection; an unselected card moves by itself.
 			this.draggedTaskPaths = resolveTaskListDragPaths(
 				this.plugin.taskSelectionService,
 				task.path,
@@ -1560,6 +1567,9 @@ export class TaskListView extends BasesViewBase {
 			);
 			const groupDropPlans = new Map(
 				pathsToUpdate.map((path) => {
+					// Selected tasks may originate in different groups. Plan each
+					// mutation from its own source so replace/add behavior remains
+					// correct for every task in the batch.
 					const pathSourceGroupKey = this.taskGroupKeys.has(path)
 						? (this.taskGroupKeys.get(path) ?? null)
 						: sourceGroupKey;

@@ -4,6 +4,13 @@ const OVERLAY_SELECTOR = ".menu, .modal-container:not(.modals-hidden)";
 const EDITABLE_SELECTOR =
 	'input, textarea, select, [contenteditable="true"], [role="textbox"], .cm-content';
 
+/**
+ * Decides when Task List shortcuts own a keyboard event and when they must yield.
+ *
+ * It suspends list input for editors and Obsidian overlays, then restores the
+ * remembered task focus after a menu or modal closes so rerenders do not leave
+ * subsequent key events targeted at the document body.
+ */
 export class TaskListInputOwnershipController {
 	private suspendedForOverlay = false;
 	private restoreTimer: number | null = null;
@@ -93,6 +100,9 @@ export class TaskListInputOwnershipController {
 
 			const activeElement = this.viewRoot.ownerDocument.activeElement;
 			const body = this.viewRoot.ownerDocument.body;
+			// Obsidian commonly returns focus to <body> when a menu closes. Restore
+			// the remembered card only in that abandoned-focus state; intentional
+			// focus moves to another control must remain untouched.
 			if (
 				!activeElement ||
 				activeElement === body ||

@@ -61,6 +61,8 @@ export function shouldPreserveTaskListGroupDropValues(
 	behavior: TaskListGroupDropBehavior,
 	additiveModifierKey: boolean
 ): boolean {
+	// Centralize the setting/modifier decision so cursor feedback and the
+	// persisted frontmatter mutation cannot disagree about copy versus move.
 	return behavior === "add" || (behavior === "replace-modifier-add" && additiveModifierKey);
 }
 

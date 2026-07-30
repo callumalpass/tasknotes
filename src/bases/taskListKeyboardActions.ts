@@ -1,5 +1,11 @@
 import type { Modifier } from "obsidian";
 
+/**
+ * Canonical vocabulary and parsing helpers for Task List shortcuts.
+ *
+ * Keeping normalization here gives the settings editor, Obsidian keymap scope,
+ * and DOM fallback handler identical chord and modifier semantics.
+ */
 export const TASK_LIST_KEYBOARD_ACTIONS = [
 	"navigate-next",
 	"navigate-previous",

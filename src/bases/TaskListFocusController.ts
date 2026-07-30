@@ -26,6 +26,13 @@ function identitiesEqual(
 	return left?.path === right?.path && left?.occurrence === right?.occurrence;
 }
 
+/**
+ * Owns the Task List's logical focus independently of transient card DOM nodes.
+ *
+ * Bases can replace cards after edits or tab activation, so this controller keeps
+ * a path-based identity, restores roving tabindex, and coordinates mouse and
+ * keyboard focus styling across renders.
+ */
 export class TaskListFocusController {
 	private focusedIdentity: TaskListFocusIdentity | null = null;
 	private restoreDomFocus = false;
@@ -64,6 +71,8 @@ export class TaskListFocusController {
 		this.setCursorSource("mouse");
 		if (card === this.lastMouseCard) return true;
 
+		// Mouse hover advances the same logical cursor used by keyboard actions,
+		// but avoids stealing DOM focus from controls embedded in a card.
 		this.lastMouseCard = card;
 		const activeElement = this.root.ownerDocument.activeElement;
 		if (

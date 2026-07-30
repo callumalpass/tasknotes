@@ -235,6 +235,8 @@ export function generateProjectReference(
 	sourcePath: string,
 	useMarkdownLinks: boolean
 ): string {
+	// Project modal edits and group drops must serialize the same canonical
+	// reference; otherwise one path writes links while the other writes labels.
 	return generateLink(app, targetFile, sourcePath, "", "", useMarkdownLinks);
 }
 

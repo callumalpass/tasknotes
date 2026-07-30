@@ -60,6 +60,8 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 		const resultsEl = this.modalEl.querySelector(".prompt-results");
 		if (!(resultsEl instanceof HTMLElement)) return;
 
+		// Keep assigned projects in the same chooser as available projects so
+		// batch edits can add and remove relationships without a second modal.
 		const assignedEl = createDiv({ cls: "task-project-selector-assigned" });
 		assignedEl.createDiv({
 			cls: "task-project-selector-assigned__title",

@@ -16,6 +16,11 @@ import { showConfirmationModal } from "../../modals/ConfirmationModal";
 
 const activeCaptureCleanup = new WeakMap<HTMLElement, () => void>();
 
+/**
+ * Temporarily outranks the Settings modal's Escape handler while recording.
+ * Escape is forwarded as a candidate shortcut instead of dismissing the
+ * underlying settings UI.
+ */
 export function pushKeyboardShortcutCaptureScope(
 	plugin: TaskNotesPlugin,
 	onEscape: (event: KeyboardEvent) => void
@@ -152,6 +157,9 @@ export function renderKeyboardShortcutsTab(
 											action
 										);
 										if (owners.length > 0) {
+											// Shortcut ownership is exclusive. Replacing a
+											// duplicate removes it from the prior actions in
+											// one immutable shortcut-map update.
 											const replace = await showConfirmationModal(plugin.app, {
 												title: translate(
 													"settings.keyboardShortcuts.duplicateTitle"
@@ -181,6 +189,8 @@ export function renderKeyboardShortcutsTab(
 											plugin.settings.taskListShortcuts =
 												replaceTaskListShortcut(shortcuts, action, shortcut);
 										} else {
+											// Every captured chord, including Escape, is
+											// confirmed before it is persisted.
 											const confirmed = await showConfirmationModal(plugin.app, {
 												title: translate(
 													"settings.keyboardShortcuts.confirmTitle"
