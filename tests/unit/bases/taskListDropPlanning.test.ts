@@ -9,6 +9,7 @@ const lookupMappingKey = (property: string): keyof FieldMapping | null => {
 	const mappings: Partial<Record<string, keyof FieldMapping>> = {
 		status: "status",
 		contexts: "contexts",
+		projects: "projects",
 		priority: "priority",
 	};
 	return mappings[property] ?? null;
@@ -99,6 +100,37 @@ describe("taskListDropPlanning", () => {
 		expect(frontmatter).toEqual({});
 	});
 
+	it("replaces all project assignments when moving between project groups", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "note.projects",
+			sourceGroupKey: "Project A",
+			targetGroupKey: "Project B",
+			lookupMappingKey,
+			isListTypeProperty,
+		});
+		const frontmatter: Record<string, unknown> = {
+			projects: ["Project A", "Project C"],
+		};
+
+		applyTaskListDropFrontmatterMutation({
+			frontmatter,
+			plan,
+			sortOrderField: "sort_order",
+			sortOrder: "tncccccccccc",
+			isRecurring: false,
+			dateModifiedField: "dateModified",
+			coerceGroupKeyForFrontmatter: (_property, groupKey) => groupKey,
+			updateCompletedDateInFrontmatter: jest.fn(),
+			getTimestamp: () => "2026-05-19T09:40:00+10:00",
+		});
+
+		expect(plan.replacesListGroupingValue).toBe(true);
+		expect(frontmatter).toEqual({
+			projects: ["Project B"],
+			sort_order: "tncccccccccc",
+		});
+	});
+
 	it("coerces scalar group frontmatter and applies status derivative fields", () => {
 		const plan = buildTaskListGroupDropPlan({
 			groupByPropertyId: "task.status",
@@ -177,6 +209,31 @@ describe("taskListDropPlanning", () => {
 		expect(updatedTask).toMatchObject({
 			contexts: ["home", "focus"],
 			dateModified: "2026-05-19T09:43:00+10:00",
+		});
+	});
+
+	it("builds a replacement side-effect snapshot for project group moves", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "projects",
+			sourceGroupKey: "Project A",
+			targetGroupKey: "Project B",
+			lookupMappingKey,
+			isListTypeProperty,
+		});
+
+		const updatedTask = buildTaskListDropSideEffectTask(
+			createTask({ projects: ["Project A", "Project C"] }),
+			{
+				plan,
+				isCompletedStatus: () => false,
+				getTimestamp: () => "2026-05-19T09:44:00+10:00",
+				getCompletedDate: () => "2026-05-19",
+			}
+		);
+
+		expect(updatedTask).toMatchObject({
+			projects: ["Project B"],
+			dateModified: "2026-05-19T09:44:00+10:00",
 		});
 	});
 });

@@ -9,6 +9,7 @@ export interface TaskListGroupDropPlan {
 	groupByTaskProp: keyof FieldMapping | null;
 	isFormulaGrouping: boolean;
 	isListGrouping: boolean;
+	replacesListGroupingValue: boolean;
 	needsGroupUpdate: boolean;
 	normalizedTargetGroupKey: string | null;
 	sourceGroupKey: string | null;
@@ -62,6 +63,7 @@ export function buildTaskListGroupDropPlan({
 		!!groupByPropertyId && normalizedTargetGroupKey !== sourceGroupKey;
 	const groupByTaskProp = cleanGroupBy ? lookupMappingKey(cleanGroupBy) : null;
 	const isListGrouping = !!cleanGroupBy && isListTypeProperty(cleanGroupBy);
+	const replacesListGroupingValue = groupByTaskProp === "projects";
 	const frontmatterKey = groupByPropertyId
 		? groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "")
 		: null;
@@ -73,6 +75,7 @@ export function buildTaskListGroupDropPlan({
 		groupByTaskProp,
 		isFormulaGrouping,
 		isListGrouping,
+		replacesListGroupingValue,
 		needsGroupUpdate,
 		normalizedTargetGroupKey,
 		sourceGroupKey,
@@ -92,23 +95,31 @@ export function applyTaskListDropFrontmatterMutation({
 }: ApplyTaskListDropFrontmatterMutationOptions): void {
 	if (plan.needsGroupUpdate && plan.frontmatterKey) {
 		if (plan.isListGrouping) {
-			const currentValue = frontmatter[plan.frontmatterKey];
-			const currentValues = Array.isArray(currentValue)
-				? currentValue
-				: currentValue
-					? [currentValue]
-					: [];
-			const newValue = currentValues.filter((value) => value !== plan.sourceGroupKey);
-			if (
-				plan.normalizedTargetGroupKey !== null &&
-				!newValue.includes(plan.normalizedTargetGroupKey)
-			) {
-				newValue.push(plan.normalizedTargetGroupKey);
-			}
-			if (newValue.length > 0) {
-				frontmatter[plan.frontmatterKey] = newValue;
+			if (plan.replacesListGroupingValue) {
+				if (plan.normalizedTargetGroupKey === null) {
+					delete frontmatter[plan.frontmatterKey];
+				} else {
+					frontmatter[plan.frontmatterKey] = [plan.normalizedTargetGroupKey];
+				}
 			} else {
-				delete frontmatter[plan.frontmatterKey];
+				const currentValue = frontmatter[plan.frontmatterKey];
+				const currentValues = Array.isArray(currentValue)
+					? currentValue
+					: currentValue
+						? [currentValue]
+						: [];
+				const newValue = currentValues.filter((value) => value !== plan.sourceGroupKey);
+				if (
+					plan.normalizedTargetGroupKey !== null &&
+					!newValue.includes(plan.normalizedTargetGroupKey)
+				) {
+					newValue.push(plan.normalizedTargetGroupKey);
+				}
+				if (newValue.length > 0) {
+					frontmatter[plan.frontmatterKey] = newValue;
+				} else {
+					delete frontmatter[plan.frontmatterKey];
+				}
 			}
 		} else if (plan.normalizedTargetGroupKey === null) {
 			delete frontmatter[plan.frontmatterKey];
@@ -153,20 +164,25 @@ export function buildTaskListDropSideEffectTask(
 	const taskProperty = plan.groupByTaskProp;
 
 	if (plan.isListGrouping) {
-		const originalValue = originalRecord[taskProperty];
-		const currentValues = Array.isArray(originalValue)
-			? [...originalValue]
-			: originalValue
-				? [stringifyUnknown(originalValue)]
-				: [];
-		const nextValues = currentValues.filter((value) => value !== plan.sourceGroupKey);
-		if (
-			plan.normalizedTargetGroupKey !== null &&
-			!nextValues.includes(plan.normalizedTargetGroupKey)
-		) {
-			nextValues.push(plan.normalizedTargetGroupKey);
+		if (plan.replacesListGroupingValue) {
+			updatedRecord[taskProperty] =
+				plan.normalizedTargetGroupKey === null ? [] : [plan.normalizedTargetGroupKey];
+		} else {
+			const originalValue = originalRecord[taskProperty];
+			const currentValues = Array.isArray(originalValue)
+				? [...originalValue]
+				: originalValue
+					? [stringifyUnknown(originalValue)]
+					: [];
+			const nextValues = currentValues.filter((value) => value !== plan.sourceGroupKey);
+			if (
+				plan.normalizedTargetGroupKey !== null &&
+				!nextValues.includes(plan.normalizedTargetGroupKey)
+			) {
+				nextValues.push(plan.normalizedTargetGroupKey);
+			}
+			updatedRecord[taskProperty] = nextValues;
 		}
-		updatedRecord[taskProperty] = nextValues;
 	} else {
 		updatedRecord[taskProperty] = plan.normalizedTargetGroupKey;
 	}
