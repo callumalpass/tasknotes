@@ -54,9 +54,9 @@ export interface BuildTaskListDropSideEffectTaskOptions {
 
 export function shouldPreserveTaskListGroupDropValues(
 	behavior: TaskListGroupDropBehavior,
-	shiftKey: boolean
+	additiveModifierKey: boolean
 ): boolean {
-	return behavior === "add" || (behavior === "replace-shift-add" && shiftKey);
+	return behavior === "add" || (behavior === "replace-modifier-add" && additiveModifierKey);
 }
 
 export function buildTaskListGroupDropPlan({
@@ -74,11 +74,8 @@ export function buildTaskListGroupDropPlan({
 		!!groupByPropertyId && normalizedTargetGroupKey !== sourceGroupKey;
 	const groupByTaskProp = cleanGroupBy ? lookupMappingKey(cleanGroupBy) : null;
 	const isListGrouping = !!cleanGroupBy && isListTypeProperty(cleanGroupBy);
-	const replacesOnStandardDrop = groupByTaskProp === "projects" || cleanGroupBy === "tags";
-	const replacesListGroupingValue =
-		replacesOnStandardDrop && !preserveExistingListValues;
-	const preservesListGroupingValues =
-		replacesOnStandardDrop && preserveExistingListValues;
+	const replacesListGroupingValue = isListGrouping && !preserveExistingListValues;
+	const preservesListGroupingValues = isListGrouping && preserveExistingListValues;
 	const frontmatterKey = groupByPropertyId
 		? groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "")
 		: null;

@@ -925,9 +925,9 @@ export function renderAppearanceTab(
 							),
 						},
 						{
-							value: "replace-shift-add",
+							value: "replace-modifier-add",
 							label: translate(
-								"settings.general.taskInteraction.groupDropBehavior.options.replaceShiftAdd"
+								"settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd"
 							),
 						},
 					],

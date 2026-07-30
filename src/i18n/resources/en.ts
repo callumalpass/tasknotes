@@ -1038,13 +1038,14 @@ export const en: TranslationTree = {
 					description: "Action performed when double-clicking a task card",
 				},
 				groupDropBehavior: {
-					name: "Project and tag drop behavior",
+					name: "List-property drag behavior",
 					description:
-						"Controls whether dragging tasks between project or tag groups replaces existing values or adds the destination value.",
+						// eslint-disable-next-line obsidianmd/ui/sentence-case-locale-module -- Platform and key names are proper nouns.
+						"Choose whether dragging a task between list-property groups (for example, projects or tags) moves it to the destination or adds the destination while keeping its current groups. Hold Ctrl on Windows or Linux, or Option on macOS, to add with the modifier mode.",
 					options: {
-						replace: "Dropping replaces values",
-						add: "Dropping adds values",
-						replaceShiftAdd: "Dropping replaces; Shift-drop adds",
+						replace: "Move to the destination group",
+						add: "Add to the destination group",
+						replaceModifierAdd: "Move; copy-modifier drag adds",
 					},
 				},
 				actions: {

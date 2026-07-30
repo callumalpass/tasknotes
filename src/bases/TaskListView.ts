@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Menu, Notice, Scope, TFile, setIcon } from "obsidian";
+import { Menu, Notice, Platform, Scope, TFile, setIcon } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -1039,7 +1039,9 @@ export class TaskListView extends BasesViewBase {
 			this.dragGroupKey = groupKey;
 			cardEl.classList.add("task-card--dragging");
 			if (e.dataTransfer) {
-				e.dataTransfer.effectAllowed = "move";
+				// Modifier keys can request a copy effect before dragstart. Allow all
+				// effects so the platform copy modifier can initiate an additive drag.
+				e.dataTransfer.effectAllowed = "all";
 				e.dataTransfer.setData("text/plain", task.path);
 			}
 
@@ -1385,7 +1387,9 @@ export class TaskListView extends BasesViewBase {
 		this.itemsContainer.addEventListener("dragenter", (e: DragEvent) => {
 			if (!this.draggedTaskPath) return;
 			e.preventDefault();
-			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+			if (e.dataTransfer) {
+				e.dataTransfer.dropEffect = this.getTaskListDropEffect(e);
+			}
 		});
 
 		this.itemsContainer.addEventListener("dragover", (e: DragEvent) => {
@@ -1394,7 +1398,9 @@ export class TaskListView extends BasesViewBase {
 			// Always accept – must be unconditional so the browser keeps
 			// the drop zone active even when the cursor is between cards.
 			e.preventDefault();
-			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+			if (e.dataTransfer) {
+				e.dataTransfer.dropEffect = this.getTaskListDropEffect(e);
+			}
 
 			// Throttle visual updates via rAF
 			this.pendingDragClientY = e.clientY;
@@ -1432,7 +1438,7 @@ export class TaskListView extends BasesViewBase {
 				const groupDropBehavior = this.plugin.settings.taskListGroupDropBehavior;
 				const preserveExistingListValues = shouldPreserveTaskListGroupDropValues(
 					groupDropBehavior,
-					e.shiftKey
+					Platform.isMacOS ? e.altKey : e.ctrlKey
 				);
 				const targetGroupKey = this.currentInsertionGroupKey;
 				const targetVisiblePaths = this.getVisibleSortScopePathsForDrag(targetGroupKey);
@@ -1468,6 +1474,15 @@ export class TaskListView extends BasesViewBase {
 				);
 			})();
 		});
+	}
+
+	private getTaskListDropEffect(event: DragEvent): "copy" | "move" {
+		return shouldPreserveTaskListGroupDropValues(
+			this.plugin.settings.taskListGroupDropBehavior,
+			Platform.isMacOS ? event.altKey : event.ctrlKey
+		)
+			? "copy"
+			: "move";
 	}
 
 	private async handleSortOrderDrop(

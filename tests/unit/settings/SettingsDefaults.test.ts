@@ -5,8 +5,8 @@ describe('Settings defaults', () => {
     expect(DEFAULT_SETTINGS.viewsButtonAlignment).toBe('right');
   });
 
-  test('task-list project and tag drops replace unless Shift is held', () => {
-    expect(DEFAULT_SETTINGS.taskListGroupDropBehavior).toBe('replace-shift-add');
+  test('task-list list-property drops move unless the copy modifier is held', () => {
+    expect(DEFAULT_SETTINGS.taskListGroupDropBehavior).toBe('replace-modifier-add');
   });
 });
 

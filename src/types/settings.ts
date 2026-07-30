@@ -82,7 +82,7 @@ export interface NLPTriggersConfig {
 
 export type HideIdentifyingTagsMode = "all" | "exact-only";
 
-export type TaskListGroupDropBehavior = "replace" | "add" | "replace-shift-add";
+export type TaskListGroupDropBehavior = "replace" | "add" | "replace-modifier-add";
 
 export interface ProjectAutosuggestSettings {
 	enableFuzzy: boolean;
