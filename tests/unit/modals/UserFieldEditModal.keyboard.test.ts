@@ -2,6 +2,7 @@ import { UserFieldEditModal } from "../../../src/modals/UserFieldEditModal";
 
 function createModal() {
 	const onApply = jest.fn().mockResolvedValue(undefined);
+	const onClose = jest.fn();
 	const plugin = {
 		settings: {
 			userFieldMru: {
@@ -14,10 +15,11 @@ function createModal() {
 		field: { id: "effort", key: "effort", displayName: "Effort", type: "text" },
 		tasks: [{ path: "task.md", title: "Task", effort: "old" } as any],
 		onApply,
+		onClose,
 	});
 	(modal as any).onOpen();
 	document.body.appendChild(modal.contentEl);
-	return { modal, onApply };
+	return { modal, onApply, onClose };
 }
 
 describe("UserFieldEditModal MRU keyboard navigation", () => {
@@ -51,5 +53,13 @@ describe("UserFieldEditModal MRU keyboard navigation", () => {
 		buttons[0].focus();
 		buttons[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
 		expect(document.activeElement).toBe(buttons[2]);
+	});
+
+	it("notifies the task view when the popup closes", () => {
+		const { modal, onClose } = createModal();
+
+		modal.onClose();
+
+		expect(onClose).toHaveBeenCalledTimes(1);
 	});
 });

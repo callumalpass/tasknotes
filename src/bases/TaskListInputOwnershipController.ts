@@ -117,6 +117,17 @@ export class TaskListInputOwnershipController {
 		this.restoreTimer = win.setTimeout(check, 0);
 	}
 
+	/** Explicitly resumes list keyboard ownership after a modal has closed. */
+	resumeAfterOverlayClose(): void {
+		if (this.restoreTimer !== null) {
+			const win = this.viewRoot.ownerDocument.defaultView ?? window;
+			win.clearTimeout(this.restoreTimer);
+			this.restoreTimer = null;
+		}
+		this.suspendedForOverlay = false;
+		this.restoreObservedOverlay = false;
+	}
+
 	destroy(): void {
 		if (this.restoreTimer !== null) {
 			const win = this.viewRoot.ownerDocument.defaultView ?? window;

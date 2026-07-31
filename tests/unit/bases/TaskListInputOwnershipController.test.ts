@@ -127,6 +127,16 @@ describe("TaskListInputOwnershipController", () => {
 		expect(controller.canHandleListKeyDown(event)).toBe(true);
 	});
 
+	it("resumes keyboard ownership when the modal close callback runs after cleanup", () => {
+		controller.noteOverlayOpening();
+		controller.resumeAfterOverlayClose();
+
+		const event = new KeyboardEvent("keydown", { key: "d" });
+		Object.defineProperty(event, "target", { value: taskCard });
+
+		expect(controller.canHandleListKeyDown(event)).toBe(true);
+	});
+
 	it("does not steal focus when the user moved to another control", () => {
 		controller.noteOverlayOpening();
 		const outsideInput = document.createElement("input");

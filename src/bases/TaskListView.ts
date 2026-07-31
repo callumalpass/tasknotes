@@ -84,6 +84,7 @@ import {
 	taskListShortcutToScopeBinding,
 	TASK_LIST_KEYBOARD_ACTIONS,
 	type TaskListAction,
+	type TaskListKeyboardAction,
 } from "./taskListKeyboardActions";
 import { addTagsToList, parseTaskTagInput } from "../utils/taskTagList";
 import { addContextToList } from "../components/TaskContextMenu";
@@ -2664,7 +2665,7 @@ export class TaskListView extends BasesViewBase {
 
 		event.preventDefault();
 		event.stopPropagation();
-		if (
+		const opensTaskListOverlay =
 			[
 				"edit-task",
 				"open-context-menu",
@@ -2677,8 +2678,10 @@ export class TaskListView extends BasesViewBase {
 				"add-context",
 				"add-project",
 				"delete-tasks",
-			].includes(action)
-		) {
+			].includes(action as TaskListKeyboardAction) || action.startsWith("edit-user-field:");
+		if (opensTaskListOverlay) {
+			// User-field editors are overlays too; recording this before opening lets
+			// input ownership restore the remembered card when the modal closes.
 			this.inputOwnershipController?.noteOverlayOpening();
 		}
 		void this.executeTaskListAction(action, focusedPath ?? null);
@@ -2797,7 +2800,7 @@ export class TaskListView extends BasesViewBase {
 				new UserFieldEditModal(this.plugin.app, this.plugin, {
 					field,
 					tasks,
-					onApply: async (value, listChange) => {
+						onApply: async (value, listChange) => {
 						for (const task of tasks) {
 							let taskValue = value;
 							if (field.type === "list") {
@@ -2820,9 +2823,12 @@ export class TaskListView extends BasesViewBase {
 								taskValue as TaskInfo[keyof TaskInfo],
 								{ silent: true }
 							);
-						}
-					},
-				}).open();
+							}
+						},
+							onClose: () => {
+							this.restoreTaskListFocusAfterOverlayClose();
+						},
+					}).open();
 			}
 		}
 	}
@@ -2835,6 +2841,20 @@ export class TaskListView extends BasesViewBase {
 			this.setupSearch(this.rootElement);
 		}
 		this.searchBox?.focus();
+	}
+
+	/** Restores card focus after Obsidian completes its modal selection cleanup. */
+	private restoreTaskListFocusAfterOverlayClose(): void {
+		// Obsidian restores the modal's saved selection after onClose; defer card
+		// focus until that cleanup has finished so keyboard ownership is retained.
+		setTimeout(() => {
+			this.focusController?.restoreFocusedElement();
+			this.inputOwnershipController?.resumeAfterOverlayClose();
+			this.syncTaskListShortcutScopeForFocusTarget(
+				this.containerEl.ownerDocument.activeElement
+			);
+			if (this.taskListLeafActive) this.activateTaskListShortcutScope();
+		}, 0);
 	}
 
 	private async getTaskActionTargets(): Promise<TaskInfo[]> {

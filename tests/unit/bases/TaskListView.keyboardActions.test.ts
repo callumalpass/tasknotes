@@ -103,6 +103,60 @@ describe("TaskListView keyboard actions", () => {
 		expect(moveFocus).toHaveBeenCalledWith(event, "next");
 	});
 
+	it("records an overlay before opening a user-field editor so focus can be restored", () => {
+		const noteOverlayOpening = jest.fn();
+		const executeTaskListAction = jest.fn();
+		const view = {
+			plugin: {
+				settings: {
+					taskListShortcuts: normalizeTaskListShortcutMap({}),
+					taskListUserFieldShortcuts: { effort: ["q"] },
+				},
+			},
+			focusController: {
+				getFocusedPathForEvent: jest.fn(() => "focused.md"),
+			},
+			inputOwnershipController: { noteOverlayOpening },
+			executeTaskListAction,
+		};
+		const event = new KeyboardEvent("keydown", { key: "q", cancelable: true });
+
+		(TaskListView.prototype as any).handleTaskListActionKeyDown.call(view, event);
+
+		expect(noteOverlayOpening).toHaveBeenCalledTimes(1);
+		expect(executeTaskListAction).toHaveBeenCalledWith("edit-user-field:effort", "focused.md");
+	});
+
+	it("defers task-card focus until after Obsidian modal cleanup", () => {
+		jest.useFakeTimers();
+		try {
+			const restoreFocusedElement = jest.fn();
+			const resumeAfterOverlayClose = jest.fn();
+			const syncTaskListShortcutScopeForFocusTarget = jest.fn();
+			const view = {
+				focusController: { restoreFocusedElement },
+				inputOwnershipController: { resumeAfterOverlayClose },
+				containerEl: document.createElement("div"),
+				syncTaskListShortcutScopeForFocusTarget,
+				taskListLeafActive: true,
+				activateTaskListShortcutScope: jest.fn(),
+			};
+
+			(TaskListView.prototype as any).restoreTaskListFocusAfterOverlayClose.call(view);
+
+			expect(restoreFocusedElement).not.toHaveBeenCalled();
+			jest.runAllTimers();
+			expect(restoreFocusedElement).toHaveBeenCalledTimes(1);
+			expect(resumeAfterOverlayClose).toHaveBeenCalledTimes(1);
+			expect(syncTaskListShortcutScopeForFocusTarget).toHaveBeenCalledWith(
+				view.containerEl.ownerDocument.activeElement
+			);
+			expect(view.activateTaskListShortcutScope).toHaveBeenCalledTimes(1);
+		} finally {
+			jest.useRealTimers();
+		}
+	});
+
 	it.each([
 		["g", "jump-first", "first"],
 		["G", "jump-last", "last"],

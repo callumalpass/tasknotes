@@ -14,6 +14,8 @@ export interface UserFieldEditModalOptions {
 	field: UserMappedField;
 	tasks: readonly TaskInfo[];
 	onApply: (value: UserFieldValue, listChange?: { added?: string; removed?: string[] }) => Promise<void>;
+	/** Called after the popup closes so the caller can restore its keyboard target. */
+	onClose?: () => void;
 }
 
 /**
@@ -61,6 +63,8 @@ export class UserFieldEditModal extends Modal {
 		this.closed = true;
 		this.contentEl.removeEventListener("keydown", this.keydownHandler, true);
 		this.contentEl.empty();
+		// Return focus ownership to the task-list view after Apply, Cancel, or Escape.
+		this.options.onClose?.();
 	}
 
 	/** Reads the first target's current value to seed the editor and MRU choices. */
