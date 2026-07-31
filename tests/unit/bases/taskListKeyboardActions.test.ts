@@ -46,11 +46,14 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 		["c", {}, "create-task"],
 		["/", {}, "focus-search"],
 		["Enter", {}, "edit-task"],
+		["e", {}, "open-context-menu"],
 		["Enter", { shiftKey: true }, "open-task-notes"],
 		["d", {}, "edit-due"],
 		["s", { shiftKey: true }, "edit-scheduled"],
 		["p", {}, "edit-priority"],
+		["!", { shiftKey: true }, "edit-priority"],
 		["s", {}, "edit-status"],
+		["*", { shiftKey: true }, "edit-status"],
 		["r", {}, "edit-recurrence"],
 		["#", { shiftKey: true }, "add-tags"],
 		["@", { shiftKey: true }, "add-context"],
@@ -83,6 +86,22 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 			)
 		).toBe("edit-due");
 		expect(resolveTaskListKeyboardAction(key("d"), shortcuts)).toBeNull();
+	});
+
+	it("resolves a configured user-field shortcut to its dynamic action", () => {
+		const shortcuts = normalizeTaskListShortcutMap({});
+
+		expect(
+			resolveTaskListKeyboardAction(key("q"), shortcuts, { effort: ["q"] })
+		).toBe("edit-user-field:effort");
+	});
+
+	it("gives built-in shortcuts precedence over user-field collisions", () => {
+		const shortcuts = normalizeTaskListShortcutMap({});
+
+		expect(
+			resolveTaskListKeyboardAction(key("d"), shortcuts, { effort: ["d"] })
+		).toBe("edit-due");
 	});
 
 	it.each([

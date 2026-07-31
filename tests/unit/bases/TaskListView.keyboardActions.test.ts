@@ -77,7 +77,7 @@ describe("TaskListView keyboard actions", () => {
 
 		expect(event.defaultPrevented).toBe(true);
 		expect(stopPropagation).toHaveBeenCalled();
-		expect(executeTaskListAction).toHaveBeenCalledWith("edit-due");
+		expect(executeTaskListAction).toHaveBeenCalledWith("edit-due", "focused.md");
 	});
 
 	it("routes configured Gmail-style navigation through the focus controller", () => {
@@ -153,7 +153,7 @@ describe("TaskListView keyboard actions", () => {
 
 		expect(getFocusedPathForEvent).toHaveBeenCalledWith(event, true, false);
 		expect(event.defaultPrevented).toBe(true);
-		expect(executeTaskListAction).toHaveBeenCalledWith(action);
+		expect(executeTaskListAction).toHaveBeenCalledWith(action, "focused.md");
 	});
 
 	it("does not claim shortcuts when an interactive control owns focus", () => {
@@ -191,7 +191,7 @@ describe("TaskListView keyboard actions", () => {
 		);
 
 		expect(getFocusedPathForEvent).toHaveBeenCalledWith(event, true, true);
-		expect(executeTaskListAction).toHaveBeenCalledWith("edit-due");
+		expect(executeTaskListAction).toHaveBeenCalledWith("edit-due", "remembered.md");
 	});
 
 	it("routes a body-targeted shortcut through remembered task focus after a rerender", () => {
@@ -215,7 +215,7 @@ describe("TaskListView keyboard actions", () => {
 
 		expect(canHandleListKeyDown).toHaveBeenCalledWith(event, true);
 		expect(getFocusedPathForEvent).toHaveBeenCalledWith(event, true, true);
-		expect(executeTaskListAction).toHaveBeenCalledWith("toggle-select");
+		expect(executeTaskListAction).toHaveBeenCalledWith("toggle-select", "remembered.md");
 	});
 
 	it("routes a prevented modifier chord from the active view shell", () => {
@@ -246,7 +246,7 @@ describe("TaskListView keyboard actions", () => {
 			true
 		);
 
-		expect(executeTaskListAction).toHaveBeenCalledWith("select-all");
+		expect(executeTaskListAction).toHaveBeenCalledWith("select-all", null);
 	});
 
 	it("does not discard a prevented chord before shell shortcut routing", () => {
