@@ -41,6 +41,12 @@ Before editing:
 - Describe the proposed porting approach.
 - Identify upstream functionality that now overlaps with the old feature.
 
+While editing:
+- For any new class, module, or function, always write a doc comment for the entity explaining
+  its main responsibilities, and pre/post conditions if appropriate.
+- Whenever adding new functionality, add a comment at the point in code that is the fulcrum of the
+  new feature explaining what it is doing and why.
+
 After editing, run the most relevant checks:
 
 - npm run typecheck
@@ -74,6 +80,9 @@ without asking for confirmation whenever the approval policy permits:
 - cat
 - sed
 - find
+- npm test
+- npm run lint
+- npm run build
 
 ## Code navigation
 
