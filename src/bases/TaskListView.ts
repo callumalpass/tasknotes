@@ -17,6 +17,7 @@ import { showTextInputModal } from "../modals/TextInputModal";
 import { ProjectSelectModal } from "../modals/ProjectSelectModal";
 import { TagSuggest } from "../modals/taskModalSuggests";
 import { ReminderModal } from "../modals/ReminderModal";
+import { UserFieldEditModal } from "../modals/UserFieldEditModal";
 import {
 	getDatePart,
 	getTimePart,
@@ -82,7 +83,7 @@ import {
 	resolveTaskListKeyboardAction,
 	taskListShortcutToScopeBinding,
 	TASK_LIST_KEYBOARD_ACTIONS,
-	type TaskListKeyboardAction,
+	type TaskListAction,
 } from "./taskListKeyboardActions";
 import { addTagsToList, parseTaskTagInput } from "../utils/taskTagList";
 import { addContextToList } from "../components/TaskContextMenu";
@@ -318,8 +319,19 @@ export class TaskListView extends BasesViewBase {
 		// global editor commands while this Task List leaf is active.
 		const scope = new Scope(this.plugin.app.scope);
 		const shortcuts = this.plugin.settings.taskListShortcuts;
-		for (const action of TASK_LIST_KEYBOARD_ACTIONS) {
-			for (const shortcut of shortcuts[action]) {
+		const bindings = [
+			...TASK_LIST_KEYBOARD_ACTIONS.flatMap((action) =>
+				(shortcuts[action] ?? []).map((shortcut) => ({ action, shortcut }))
+			),
+			...Object.entries(this.plugin.settings.taskListUserFieldShortcuts ?? {}).flatMap(
+				([fieldId, fieldShortcuts]) =>
+					fieldShortcuts.map((shortcut) => ({
+						action: `edit-user-field:${fieldId}` as TaskListAction,
+						shortcut,
+					}))
+			),
+		];
+		for (const { shortcut } of bindings) {
 				const binding = taskListShortcutToScopeBinding(shortcut);
 				if (!binding) continue;
 				scope.register(binding.modifiers, binding.key, (event) => {
@@ -327,7 +339,6 @@ export class TaskListView extends BasesViewBase {
 					if (!this.handleTaskListKeyDown(event, true)) return;
 					return false;
 				});
-			}
 		}
 
 		this.taskListShortcutScope = scope;
@@ -2620,7 +2631,8 @@ export class TaskListView extends BasesViewBase {
 	): boolean {
 		const action = resolveTaskListKeyboardAction(
 			event,
-			this.plugin?.settings?.taskListShortcuts
+			this.plugin?.settings?.taskListShortcuts,
+			this.plugin?.settings?.taskListUserFieldShortcuts
 		);
 		if (!action) return false;
 		const focusedPath = this.focusController?.getFocusedPathForEvent(
@@ -2685,7 +2697,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private async executeTaskListAction(
-		action: TaskListKeyboardAction,
+		action: TaskListAction,
 		focusedPath: string | null
 	): Promise<void> {
 		switch (action) {
@@ -2772,6 +2784,46 @@ export class TaskListView extends BasesViewBase {
 				return;
 			case "delete-tasks":
 				await this.deleteTaskActionTargets();
+				return;
+			default: {
+				// Runtime user-field actions share the same visible-target selection
+				// path as built-in edits, so filtered-out selected tasks are excluded.
+				if (!action.startsWith("edit-user-field:")) return;
+				const fieldId = action.slice("edit-user-field:".length);
+				const field = this.plugin.settings.userFields?.find((candidate) => candidate.id === fieldId);
+				if (!field) return;
+				const tasks = await this.getTaskActionTargets();
+				if (tasks.length === 0) return;
+				new UserFieldEditModal(this.plugin.app, this.plugin, {
+					field,
+					tasks,
+					onApply: async (value, listChange) => {
+						for (const task of tasks) {
+							let taskValue = value;
+							if (field.type === "list") {
+								const customProperties = (task.customProperties ?? {}) as Record<string, unknown>;
+								const current = Array.isArray(customProperties[field.key])
+									? (customProperties[field.key] as unknown[]).map(String)
+									: [];
+								const withoutRemoved = current.filter(
+									(candidate) => !listChange?.removed?.includes(candidate)
+								);
+								taskValue = listChange?.added
+									? [...withoutRemoved, listChange.added].filter(
+											(candidate, index, list) => list.indexOf(candidate) === index
+									  )
+									: withoutRemoved;
+							}
+							await this.plugin.updateTaskProperty(
+								task,
+								field.key as keyof TaskInfo,
+								taskValue as TaskInfo[keyof TaskInfo],
+								{ silent: true }
+							);
+						}
+					},
+				}).open();
+			}
 		}
 	}
 

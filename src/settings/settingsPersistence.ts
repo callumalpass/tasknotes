@@ -253,6 +253,8 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 			...(loadedData?.commandFileMapping || {}),
 		},
 		taskListShortcuts: normalizeTaskListShortcutMap(loadedData?.taskListShortcuts),
+		taskListUserFieldShortcuts: loadedData?.taskListUserFieldShortcuts ?? {},
+		userFieldMru: loadedData?.userFieldMru ?? {},
 		icsIntegration: {
 			...DEFAULT_SETTINGS.icsIntegration,
 			...(loadedData?.icsIntegration || {}),

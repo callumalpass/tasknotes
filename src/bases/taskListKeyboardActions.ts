@@ -33,6 +33,10 @@ export const TASK_LIST_KEYBOARD_ACTIONS = [
 ] as const;
 
 export type TaskListKeyboardAction = (typeof TASK_LIST_KEYBOARD_ACTIONS)[number];
+/** Identifies a shortcut action generated from a configured user field. */
+export type TaskListDynamicKeyboardAction = `edit-user-field:${string}`;
+/** Union of built-in task-list actions and runtime user-field actions. */
+export type TaskListAction = TaskListKeyboardAction | TaskListDynamicKeyboardAction;
 export type TaskListShortcutMap = Record<TaskListKeyboardAction, string[]>;
 
 export type TaskListScopeBinding = {
@@ -203,13 +207,19 @@ export function resolveTaskListKeyboardAction(
 		KeyboardEvent,
 		"key" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey" | "isComposing"
 	>,
-	shortcuts: TaskListShortcutMap = DEFAULT_TASK_LIST_SHORTCUTS
-): TaskListKeyboardAction | null {
+	shortcuts: TaskListShortcutMap = DEFAULT_TASK_LIST_SHORTCUTS,
+	userFieldShortcuts: Record<string, readonly string[]> = {}
+): TaskListAction | null {
 	const shortcut = keyboardEventToTaskListShortcut(event);
 	if (!shortcut) return null;
 
 	for (const action of TASK_LIST_KEYBOARD_ACTIONS) {
 		if (shortcuts[action]?.includes(shortcut)) return action;
+	}
+	// Resolve user-field bindings after built-ins so collision handling remains
+	// deterministic and built-in actions retain precedence at runtime.
+	for (const [fieldId, fieldShortcuts] of Object.entries(userFieldShortcuts)) {
+		if (fieldShortcuts.includes(shortcut)) return `edit-user-field:${fieldId}`;
 	}
 	return null;
 }

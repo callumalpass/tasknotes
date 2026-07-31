@@ -558,6 +558,8 @@ export const en: TranslationTree = {
 				"add-project": "Add project",
 				"delete-tasks": "Delete tasks",
 			},
+			addUserField: "Add user field",
+			addUserFieldDescription: "Add a shortcut for a configured user-defined task field.",
 		},
 		features: {
 			inlineTasks: {

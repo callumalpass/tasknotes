@@ -156,6 +156,10 @@ export interface TaskNotesSettings {
 	taskListGroupDropBehavior: TaskListGroupDropBehavior;
 	// View-local task-list keyboard shortcuts
 	taskListShortcuts: TaskListShortcutMap;
+	// View-local shortcuts for configured user-defined task fields
+	taskListUserFieldShortcuts: Record<string, string[]>;
+	// Recently used values for configured user-defined task fields
+	userFieldMru: Record<string, unknown[]>;
 	// Inline task conversion settings
 	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}} and {{currentNoteTitle}}
 	// Performance settings

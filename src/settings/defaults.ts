@@ -304,6 +304,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	doubleClickAction: "openNote",
 	taskListGroupDropBehavior: "replace-modifier-add",
 	taskListShortcuts: DEFAULT_TASK_LIST_SHORTCUTS,
+	taskListUserFieldShortcuts: {},
+	userFieldMru: {},
 	// Autosuggest project card defaults
 	projectAutosuggest: DEFAULT_PROJECT_AUTOSUGGEST,
 
