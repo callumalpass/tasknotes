@@ -27,6 +27,9 @@ export class UserFieldEditModal extends Modal {
 	private value: UserFieldValue;
 	private listValues: string[];
 	private readonly initialListValues: string[];
+	private mruButtons: HTMLButtonElement[] = [];
+	private mruFocusIndex = -1;
+	private suppressNextMruClick = false;
 	private closed = false;
 	private readonly keydownHandler = (event: KeyboardEvent) => {
 		if (event.key === "Escape") {
@@ -76,6 +79,8 @@ export class UserFieldEditModal extends Modal {
 	/** Rebuilds the popup after a type-specific value or chip changes. */
 	private render(): void {
 		this.contentEl.empty();
+		this.mruButtons = [];
+		this.mruFocusIndex = -1;
 		const field = this.options.field;
 		const current = this.value;
 
@@ -159,13 +164,52 @@ export class UserFieldEditModal extends Modal {
 		if (values.length === 0) return;
 		this.contentEl.createDiv({ text: "Recent values", cls: "setting-item-name" });
 		const row = this.contentEl.createDiv({ cls: "tasknotes-user-field-mru" });
-		for (const value of values.slice(0, 5)) {
-			row.createEl("button", { text: this.toDisplayValue(value) }).addEventListener("click", () => {
-				this.value = value;
-				if (this.input) this.input.value = this.toInputValue(value);
-				if (this.options.field.type === "list") void this.apply();
+		for (const [index, value] of values.slice(0, 5).entries()) {
+			const button = row.createEl("button", { text: this.toDisplayValue(value) });
+			button.type = "button";
+			button.tabIndex = 0;
+			this.mruButtons.push(button);
+			button.addEventListener("focus", () => {
+				this.mruFocusIndex = index;
+			});
+			button.addEventListener("keydown", (event) => {
+				if (event.key === "Enter") {
+					// Keep Enter as a two-step keyboard flow: choose the MRU value,
+					// then confirm it from the editor input on the next Enter.
+					event.preventDefault();
+					event.stopPropagation();
+					this.suppressNextMruClick = true;
+					this.selectMruValue(value, true, false);
+					return;
+				}
+				if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) return;
+				event.preventDefault();
+				event.stopPropagation();
+				const direction = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1;
+				const count = this.mruButtons.length;
+				if (count === 0) return;
+				const currentIndex = this.mruFocusIndex >= 0 ? this.mruFocusIndex : index;
+				const nextIndex = (currentIndex + direction + count) % count;
+				this.mruButtons[nextIndex]?.focus();
+			});
+			button.addEventListener("click", () => {
+				if (this.suppressNextMruClick) {
+					this.suppressNextMruClick = false;
+					return;
+				}
+				this.selectMruValue(value, false, true);
 			});
 		}
+	}
+
+	/** Populates the editor from an MRU entry and optionally returns focus to its input. */
+	private selectMruValue(value: unknown, focusInput: boolean, applyList: boolean): void {
+		this.value = value;
+		if (this.input) {
+			this.input.value = this.toInputValue(value);
+			if (focusInput) this.input.focus();
+		}
+		if (applyList && this.options.field.type === "list") void this.apply();
 	}
 
 	/** Renders removable chips for the first target's current list values. */
