@@ -1740,6 +1740,9 @@ export const en: TranslationTree = {
 					rawJson: "Raw Jira issue JSON",
 					rawJsonDescription:
 						"Collapsed by default because Jira issues can contain sensitive information.",
+					copyRawJson: "Copy raw Jira issue JSON",
+					copySuccess: "Raw Jira issue JSON copied to clipboard",
+					copyFailure: "Failed to copy raw Jira issue JSON",
 					truncated: "The raw JSON preview was truncated to keep settings responsive.",
 				},
 			},

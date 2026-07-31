@@ -22,6 +22,9 @@ describe("Jira mapping settings", () => {
 		"settings.integrations.jiraMapping.preview.invalid": "Invalid value",
 		"settings.integrations.jiraMapping.preview.rawJson": "Raw Jira issue JSON",
 		"settings.integrations.jiraMapping.preview.rawJsonDescription": "Sensitive data",
+		"settings.integrations.jiraMapping.preview.copyRawJson": "Copy raw Jira issue JSON",
+		"settings.integrations.jiraMapping.preview.copySuccess": "Copied",
+		"settings.integrations.jiraMapping.preview.copyFailure": "Copy failed",
 		"settings.integrations.jiraMapping.preview.truncated": "Truncated",
 	};
 
@@ -101,6 +104,11 @@ describe("Jira mapping settings", () => {
 			key: "MAGIC-17",
 			fields: { summary: '<img src=x onerror="alert(1)">' },
 		};
+		const clipboardWrite = jest.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: { writeText: clipboardWrite },
+		});
 		const getIssue = jest.fn().mockResolvedValue(issue);
 		const plugin = {
 			app: {
@@ -139,6 +147,13 @@ describe("Jira mapping settings", () => {
 		expect(details?.open).toBe(false);
 		expect(save).not.toHaveBeenCalled();
 		expect(JSON.stringify(plugin.settings)).not.toContain("MAGIC-17");
+
+		const copyButton = container.querySelector(
+			'button[aria-label="Copy raw Jira issue JSON"]'
+		) as HTMLButtonElement;
+		copyButton.click();
+		await Promise.resolve();
+		expect(clipboardWrite).toHaveBeenCalledWith(JSON.stringify(issue, null, 2));
 	});
 
 	it("renders loading and fetch error states", async () => {

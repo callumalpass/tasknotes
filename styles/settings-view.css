@@ -1426,6 +1426,12 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     margin-top: 1rem;
 }
 
+.tasknotes-jira-mapping-preview__raw-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
 .tasknotes-jira-mapping-preview__raw pre {
     max-height: 24rem;
     overflow: auto;

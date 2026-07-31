@@ -1,4 +1,4 @@
-import { Setting } from "obsidian";
+import { Notice, Setting, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../../main";
 import type {
 	JiraEnumRemap,
@@ -388,6 +388,40 @@ export function renderJiraMappingSettings(
 				text: plugin.i18n.translate(
 					"settings.integrations.jiraMapping.preview.rawJsonDescription"
 				),
+			});
+			const rawToolbar = details.createDiv(
+				"tasknotes-jira-mapping-preview__raw-toolbar"
+			);
+			const copyButton = rawToolbar.createEl("button", {
+				cls: "clickable-icon",
+				attr: {
+					type: "button",
+					"aria-label": plugin.i18n.translate(
+						"settings.integrations.jiraMapping.preview.copyRawJson"
+					),
+				},
+			});
+			setIcon(copyButton, "copy");
+			copyButton.addEventListener("click", (event) => {
+				event.preventDefault();
+				event.stopPropagation();
+				// Copy the complete payload even when the on-screen preview is truncated.
+				void navigator.clipboard
+					.writeText(JSON.stringify(sampleIssue, null, 2))
+					.then(() => {
+						new Notice(
+							plugin.i18n.translate(
+								"settings.integrations.jiraMapping.preview.copySuccess"
+							)
+						);
+					})
+					.catch(() => {
+						new Notice(
+							plugin.i18n.translate(
+								"settings.integrations.jiraMapping.preview.copyFailure"
+							)
+						);
+					});
 			});
 			// Jira content is untrusted; textContent keeps markup inert in the settings DOM.
 			details.createEl("pre", { text: raw.text });
