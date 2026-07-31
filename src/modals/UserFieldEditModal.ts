@@ -137,12 +137,20 @@ export class UserFieldEditModal extends Modal {
 				this.value = this.parseInputValue(value);
 			});
 			text.inputEl.addEventListener("keydown", (event) => {
+				if (event.key === "ArrowDown" && event.altKey && this.mruButtons.length > 0) {
+					// Alt+Down is the conventional combo-box accelerator and avoids
+					// tabbing through native date-input controls to reach MRU values.
+					event.preventDefault();
+					event.stopPropagation();
+					this.mruButtons[0]?.focus();
+					return;
+				}
 				if (event.key === "Enter") {
 					event.preventDefault();
 					event.stopPropagation();
 					void this.apply();
 				}
-			});
+			}, true);
 		});
 		if (this.options.field.type === "date") {
 			setting.addButton((button) =>
@@ -211,7 +219,18 @@ export class UserFieldEditModal extends Modal {
 		this.value = value;
 		if (this.input) {
 			this.input.value = this.toInputValue(value);
-			if (focusInput) this.input.focus();
+			if (focusInput) {
+				const input = this.input;
+				input.focus();
+				// Native date controls can move focus to their adjacent picker button
+				// while completing the MRU button's Enter event; reclaim it afterward.
+				if (this.options.field.type === "date") {
+					const win = input.ownerDocument.defaultView ?? window;
+					win.setTimeout(() => {
+						if (!this.closed && this.input === input) input.focus();
+					}, 0);
+				}
+			}
 		}
 		if (applyList && this.options.field.type === "list") void this.apply();
 	}
@@ -225,7 +244,11 @@ export class UserFieldEditModal extends Modal {
 		for (const value of values) {
 			const chip = row.createDiv({ cls: "tasknotes-user-field-value" });
 			chip.createSpan({ text: value });
-			const remove = chip.createSpan({ cls: "tasknotes-user-field-value-remove" });
+			const remove = chip.createEl("button", {
+				cls: "tasknotes-user-field-value-remove",
+				attr: { "aria-label": `Remove ${value}` },
+			});
+			remove.type = "button";
 			setIcon(remove, "circle-x");
 			remove.addEventListener("click", () => {
 				this.listValues = values.filter((candidate) => candidate !== value);

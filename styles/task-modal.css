@@ -1661,6 +1661,10 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 .tasknotes-user-field-edit-modal .tasknotes-user-field-value-remove {
 	display: inline-flex;
 	cursor: pointer;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
 }
 
 .tasknotes-user-field-edit-modal .tasknotes-user-field-value-remove:hover {

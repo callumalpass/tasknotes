@@ -62,4 +62,62 @@ describe("UserFieldEditModal MRU keyboard navigation", () => {
 
 		expect(onClose).toHaveBeenCalledTimes(1);
 	});
+
+	it("makes list-value removal controls tabbable and provides Alt+Down MRU access", () => {
+		const plugin = {
+			settings: { userFieldMru: { labels: ["urgent", "later"] } },
+			saveSettings: jest.fn().mockResolvedValue(undefined),
+		};
+		const modal = new UserFieldEditModal({} as any, plugin as any, {
+			field: { id: "labels", key: "labels", displayName: "Labels", type: "list" },
+			tasks: [{ path: "task.md", title: "Task", customProperties: { labels: ["current"] } } as any],
+			onApply: jest.fn().mockResolvedValue(undefined),
+		});
+		(modal as any).onOpen();
+		document.body.appendChild(modal.contentEl);
+
+		const input = (modal as any).input as HTMLInputElement;
+		const removeButton = modal.contentEl.querySelector<HTMLButtonElement>(
+			".tasknotes-user-field-value-remove"
+		);
+		const mruButtons = Array.from(
+			modal.contentEl.querySelectorAll<HTMLButtonElement>(".tasknotes-user-field-mru button")
+		);
+
+		expect(removeButton?.tabIndex).toBe(0);
+		input.dispatchEvent(
+			new KeyboardEvent("keydown", { key: "ArrowDown", altKey: true, bubbles: true })
+		);
+		expect(document.activeElement).toBe(mruButtons[0]);
+	});
+
+	it("keeps the date input focused after selecting an MRU value with Enter", () => {
+		jest.useFakeTimers();
+		try {
+			const onApply = jest.fn().mockResolvedValue(undefined);
+			const plugin = {
+				settings: { userFieldMru: { dueDate: ["2026-08-03"] } },
+				saveSettings: jest.fn().mockResolvedValue(undefined),
+			};
+			const modal = new UserFieldEditModal({} as any, plugin as any, {
+				field: { id: "dueDate", key: "dueDate", displayName: "Due date", type: "date" },
+				tasks: [{ path: "task.md", title: "Task" } as any],
+				onApply,
+			});
+			(modal as any).onOpen();
+			document.body.appendChild(modal.contentEl);
+
+			const input = (modal as any).input as HTMLInputElement;
+			const mruButton = modal.contentEl.querySelector<HTMLButtonElement>(
+				".tasknotes-user-field-mru button"
+			);
+			mruButton?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+			jest.runAllTimers();
+
+			expect(input.value).toBe("2026-08-03");
+			expect(document.activeElement).toBe(input);
+		} finally {
+			jest.useRealTimers();
+		}
+	});
 });
