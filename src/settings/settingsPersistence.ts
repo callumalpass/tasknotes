@@ -4,6 +4,7 @@ import { hasMissingMigratedSettings } from "./settingsMigration";
 import type { TaskCreationDefaults, TaskNotesSettings } from "../types/settings";
 import { initializeFieldConfig } from "../utils/fieldConfigDefaults";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { normalizeJiraMappingSettings } from "../integrations/jira/JiraFieldMapping";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/SettingsPersistence" });
 
@@ -195,6 +196,12 @@ function buildTaskCreationDefaults(
 
 export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): SettingsBuildResult {
 	const loadedData = migrateLoadedSettingsData(data);
+	const rawJiraMapping: unknown = loadedData?.jiraMapping;
+	const migratedJiraMapping =
+		rawJiraMapping !== undefined &&
+		(!rawJiraMapping ||
+			typeof rawJiraMapping !== "object" ||
+			Reflect.get(rawJiraMapping, "version") !== 1);
 	const migratedLegacyCustomFilenameTemplate =
 		data?.taskFilenameFormat !== "custom" &&
 		data?.customFilenameTemplate === "{title}" &&
@@ -234,6 +241,7 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		customStatuses: loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses,
 		customPriorities: loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities,
 		savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews,
+		jiraMapping: normalizeJiraMappingSettings(rawJiraMapping),
 	};
 
 	return {
@@ -241,7 +249,8 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		shouldPersistMigratedSettings:
 			hasMissingMigratedSettings(loadedData) ||
 			migratedLegacyCustomFilenameTemplate ||
-			migratedParentNoteTaskCreationDefault,
+			migratedParentNoteTaskCreationDefault ||
+			migratedJiraMapping,
 	};
 }
 

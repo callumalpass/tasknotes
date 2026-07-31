@@ -3,8 +3,11 @@ import type { JiraIssue } from "../../../src/integrations/jira/JiraIssueAdapter"
 import {
 	JiraImportError,
 	JiraImportService,
-	mapJiraIssueToTaskCreationData,
 } from "../../../src/services/JiraImportService";
+import {
+	createDefaultJiraMappingSettings,
+	mapJiraIssueWithSettings,
+} from "../../../src/integrations/jira/JiraFieldMapping";
 
 const issue: JiraIssue = {
 	key: "WIZ-42",
@@ -28,9 +31,13 @@ const issue: JiraIssue = {
 	},
 };
 
-describe("mapJiraIssueToTaskCreationData", () => {
+describe("default Jira field mapping", () => {
 	it("maps the baseline Jira fields without involving core frontmatter mapping", () => {
-		expect(mapJiraIssueToTaskCreationData(issue)).toEqual({
+		expect(
+			mapJiraIssueWithSettings(issue, createDefaultJiraMappingSettings(), [])
+		).toEqual(
+			expect.objectContaining({
+			id: "WIZ-42",
 			title: "WIZ-42 Teach the build dragon to whisper",
 			details: "The CI flames are too loud.",
 			status: "In Progress",
@@ -38,9 +45,10 @@ describe("mapJiraIssueToTaskCreationData", () => {
 			dateCreated: "2026-07-30T12:00:00.000Z",
 			due: "2026-08-04",
 			timeEstimate: 45,
-			tags: ["demo", "dragon"],
+			tags: ["demo", "12", "dragon"],
 			creationContext: "import",
-		});
+			})
+		);
 	});
 });
 
@@ -54,7 +62,12 @@ describe("JiraImportService", () => {
 		const taskCreator = {
 			createTask: jest.fn().mockResolvedValue({ taskInfo }),
 		};
-		const service = new JiraImportService(adapter as never, taskCreator);
+		const service = new JiraImportService(
+			adapter as never,
+			taskCreator,
+			createDefaultJiraMappingSettings(),
+			[]
+		);
 
 		await expect(service.importIssue("WIZ-42")).resolves.toBe(taskInfo);
 		expect(adapter.getIssue).toHaveBeenCalledTimes(1);
@@ -77,7 +90,12 @@ describe("JiraImportService", () => {
 				),
 		};
 		const taskCreator = { createTask: jest.fn() };
-		const service = new JiraImportService(adapter as never, taskCreator as never);
+		const service = new JiraImportService(
+			adapter as never,
+			taskCreator as never,
+			createDefaultJiraMappingSettings(),
+			[]
+		);
 
 		await expect(service.importIssue("WIZ-42")).rejects.toMatchObject({
 			code: "fetch-failed",
@@ -90,11 +108,15 @@ describe("JiraImportService", () => {
 		const taskCreator = {
 			createTask: jest.fn().mockRejectedValue(new Error("vault is read-only")),
 		};
-		const service = new JiraImportService(adapter as never, taskCreator);
+		const service = new JiraImportService(
+			adapter as never,
+			taskCreator,
+			createDefaultJiraMappingSettings(),
+			[]
+		);
 
 		await expect(service.importIssue("WIZ-42")).rejects.toMatchObject({
 			code: "creation-failed",
 		});
 	});
 });
-

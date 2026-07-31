@@ -18,6 +18,50 @@ export interface UserMappedField {
 	defaultValue?: string | number | boolean | string[]; // Default value for the field
 }
 
+export type JiraValueSourceMode = "path" | "template" | "fixed" | "off";
+
+export interface JiraValueSource {
+	mode: JiraValueSourceMode;
+	value: string;
+}
+
+export interface JiraEnumRemap {
+	taskValue: string;
+	jiraValues: string[];
+}
+
+export type JiraBuiltInFieldId =
+	| "id"
+	| "title"
+	| "details"
+	| "status"
+	| "priority"
+	| "due"
+	| "scheduled"
+	| "timeEstimate"
+	| "dateCreated"
+	| "dateModified"
+	| "completedDate"
+	| "recurrence"
+	| "tags"
+	| "projects"
+	| "contexts";
+
+/**
+ * Versioned external-source mapping. User-field mappings are keyed by the stable
+ * UserMappedField.id so renaming a frontmatter key does not invalidate the mapping.
+ */
+export interface JiraFieldMappingSettings {
+	version: 1;
+	fields: Partial<Record<JiraBuiltInFieldId, JiraValueSource[]>>;
+	userFields: Record<string, JiraValueSource[]>;
+	enumRemaps: {
+		status: JiraEnumRemap[];
+		priority: JiraEnumRemap[];
+		contexts: JiraEnumRemap[];
+	};
+}
+
 /**
  * Field types for task modal configuration
  */
@@ -235,6 +279,7 @@ export interface TaskNotesSettings {
 	};
 	// Recurring task behavior
 	maintainDueDateOffsetInRecurring: boolean;
+	jiraMapping: JiraFieldMappingSettings;
 	resetCheckboxesOnRecurrence: boolean; // Reset markdown checkboxes in task body when recurring task completes
 	// Frontmatter link format settings
 	useFrontmatterMarkdownLinks: boolean; // Use markdown links in frontmatter (requires obsidian-frontmatter-markdown-links plugin)

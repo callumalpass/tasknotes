@@ -191,4 +191,44 @@ describe("settings persistence helpers", () => {
 			})
 		);
 	});
+
+	it("loads and preserves a valid versioned Jira mapping", () => {
+		const jiraMapping = {
+			...DEFAULT_SETTINGS.jiraMapping,
+			fields: {
+				...DEFAULT_SETTINGS.jiraMapping.fields,
+				title: [{ mode: "fixed" as const, value: "Imported task" }],
+			},
+		};
+
+		const { settings } = buildSettingsFromLoadedData({
+			jiraMapping,
+		});
+
+		expect(settings.jiraMapping.fields.title).toEqual([
+			{ mode: "fixed", value: "Imported task" },
+		]);
+	});
+
+	it("normalizes and marks legacy Jira mapping settings for persistence", () => {
+		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData({
+			jiraMapping: {
+				title: { mode: "template", value: "$key $summary" },
+				statusMap: [{ taskValue: "done", jiraValues: ["Closed"] }],
+			},
+		} as never);
+
+		expect(settings.jiraMapping).toEqual(
+			expect.objectContaining({
+				version: 1,
+				fields: expect.objectContaining({
+					title: [{ mode: "template", value: "$key $summary" }],
+				}),
+				enumRemaps: expect.objectContaining({
+					status: [{ taskValue: "done", jiraValues: ["Closed"] }],
+				}),
+			})
+		);
+		expect(shouldPersistMigratedSettings).toBe(true);
+	});
 });

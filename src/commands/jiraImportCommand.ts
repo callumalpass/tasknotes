@@ -18,7 +18,9 @@ export async function executeJiraImportCommand(plugin: TaskNotesPlugin): Promise
 
 	const service = new JiraImportService(
 		JiraIssueAdapter.fromApp(plugin.app),
-		plugin.taskService
+		plugin.taskService,
+		plugin.settings.jiraMapping,
+		plugin.settings.userFields ?? []
 	);
 
 	try {
@@ -47,4 +49,3 @@ export async function executeJiraImportCommand(plugin: TaskNotesPlugin): Promise
 		new Notice(plugin.i18n.translate(noticeKey));
 	}
 }
-

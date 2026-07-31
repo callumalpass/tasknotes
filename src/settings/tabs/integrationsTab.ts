@@ -33,6 +33,7 @@ import {
 	type CardSection,
 } from "../components/CardComponent";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { renderJiraMappingSettings } from "./jiraMappingSettings";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/Tabs/IntegrationsTab" });
 
@@ -179,6 +180,8 @@ export function renderIntegrationsTab(
 	const calendarIntegrationDisabledOnMobile = isCalendarIntegrationDisabledOnMobile(
 		plugin.settings
 	);
+
+	renderJiraMappingSettings(container, plugin, save);
 
 	// mdbase-spec Section
 	createSettingGroup(

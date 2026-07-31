@@ -1708,6 +1708,23 @@ export const en: TranslationTree = {
 			},
 		},
 		integrations: {
+			/* eslint-disable obsidianmd/ui/sentence-case-locale-module -- Jira and TaskNotes product names require canonical casing. */
+			jiraMapping: {
+				header: "Jira field mapping",
+				description:
+					"Choose how Jira values become TaskNotes properties. Paths read Jira JSON, templates interpolate $path tokens, and fixed values always apply the same value.",
+				reset: "Reset mappings",
+				sourcesHeader: "Property sources",
+				sourcesDescription:
+					"List properties can merge multiple sources. Time estimates are interpreted as Jira seconds and stored as TaskNotes minutes.",
+				userFieldsHeader: "User fields",
+				userFieldsDescription:
+					"Mappings use stable user-field IDs and continue working if their frontmatter keys are renamed.",
+				remapsHeader: "Value remapping",
+				remapsDescription:
+					"Translate Jira status, priority, and context names to the values configured in TaskNotes.",
+			},
+			/* eslint-enable obsidianmd/ui/sentence-case-locale-module -- End product-name-specific strings. */
 			mobileCalendar: {
 				disable: {
 					name: "Disable calendar integrations on mobile",

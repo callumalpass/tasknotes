@@ -7,8 +7,10 @@ import {
 	ProjectAutosuggestSettings,
 	NLPTriggersConfig,
 	GoogleCalendarExportSettings,
+	JiraFieldMappingSettings,
 } from "../types/settings";
 import { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
+import { createDefaultJiraMappingSettings } from "../integrations/jira/JiraFieldMapping";
 export { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
 
 /**
@@ -247,6 +249,9 @@ export const DEFAULT_NLP_TRIGGERS: NLPTriggersConfig = {
 	],
 };
 
+export const DEFAULT_JIRA_FIELD_MAPPING: JiraFieldMappingSettings =
+	createDefaultJiraMappingSettings();
+
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	tasksFolder: "TaskNotes/Tasks",
 	moveArchivedTasks: false,
@@ -394,6 +399,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	},
 	// Recurring task behavior defaults
 	maintainDueDateOffsetInRecurring: false,
+	jiraMapping: DEFAULT_JIRA_FIELD_MAPPING,
 	resetCheckboxesOnRecurrence: false, // Off by default - user opts in
 	// Frontmatter link format defaults
 	useFrontmatterMarkdownLinks: false, // Default to wikilinks for compatibility
