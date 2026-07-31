@@ -546,6 +546,7 @@ export const en: TranslationTree = {
 				"create-task": "Create task",
 				"focus-search": "Focus search",
 				"edit-task": "Edit task",
+				"open-context-menu": "Open task context menu",
 				"open-task-notes": "Open task note",
 				"edit-due": "Edit due date",
 				"edit-scheduled": "Edit scheduled date",

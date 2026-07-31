@@ -2541,6 +2541,10 @@ export class TaskListView extends BasesViewBase {
 			this.focusController?.handlePointerDown(event);
 		});
 		this.registerDomEvent(this.itemsContainer, "mousemove", (event: MouseEvent) => {
+			// Context-menu edits operate on the focused task/selection. While an
+			// Obsidian menu is open, hovering cards underneath it must not move the
+			// task-list mouse cursor and change the edit target.
+			if (this.itemsContainer?.ownerDocument.querySelector(".menu")) return;
 			this.focusController?.handleMouseMove(event);
 		});
 		if (this.rootElement) {
@@ -2651,6 +2655,7 @@ export class TaskListView extends BasesViewBase {
 		if (
 			[
 				"edit-task",
+				"open-context-menu",
 				"edit-due",
 				"edit-scheduled",
 				"edit-priority",
@@ -2664,7 +2669,7 @@ export class TaskListView extends BasesViewBase {
 		) {
 			this.inputOwnershipController?.noteOverlayOpening();
 		}
-		void this.executeTaskListAction(action);
+		void this.executeTaskListAction(action, focusedPath ?? null);
 		return true;
 	}
 
@@ -2679,7 +2684,10 @@ export class TaskListView extends BasesViewBase {
 		).filter((path) => this.currentVisibleTaskPaths.has(path));
 	}
 
-	private async executeTaskListAction(action: TaskListKeyboardAction): Promise<void> {
+	private async executeTaskListAction(
+		action: TaskListKeyboardAction,
+		focusedPath: string | null
+	): Promise<void> {
 		switch (action) {
 			case "navigate-next":
 			case "navigate-previous":
@@ -2710,6 +2718,29 @@ export class TaskListView extends BasesViewBase {
 			case "edit-task": {
 				const task = (await this.getTaskActionTargets())[0];
 				if (task) await this.plugin.openTaskEditModal(task);
+				return;
+			}
+			case "open-context-menu": {
+				if (!focusedPath) return;
+				const anchor = this.getTaskActionAnchor();
+				const rect = anchor?.getBoundingClientRect();
+				const menuEvent = new MouseEvent("contextmenu", {
+					bubbles: true,
+					cancelable: true,
+					clientX: rect?.right ?? 0,
+					clientY: rect?.top ?? 0,
+				});
+				const selectionService = this.plugin.taskSelectionService;
+				if (selectionService && selectionService.getSelectionCount() > 1) {
+					this.showBatchContextMenu(menuEvent);
+					return;
+				}
+				await showTaskContextMenu(
+					menuEvent,
+					focusedPath,
+					this.plugin,
+					this.currentTargetDate
+				);
 				return;
 			}
 			case "open-task-notes":
