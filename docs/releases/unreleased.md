@@ -47,6 +47,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2018) Fixed **Hide empty columns** in Kanban views with swimlanes so columns
+  with no visible tasks are hidden while pinned columns remain. Thanks to
+  @scottTomaszewski for reporting and fixing this.
 - Fixed recurring all-day ICS subscription events keeping the original end date
   on later instances, which could cause calendar list views to show events under
   the wrong day. Thanks to @abbiefalls90.
