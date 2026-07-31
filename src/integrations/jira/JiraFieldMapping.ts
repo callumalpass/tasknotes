@@ -281,33 +281,11 @@ function coerceUserField(value: unknown, field: UserMappedField): unknown {
 	}
 }
 
-function getJiraIssueUrl(issue: JiraIssue): string | undefined {
-	const host =
-		typeof issue.account?.host === "string" ? issue.account.host.trim() : "";
-	const self = typeof issue.self === "string" ? issue.self.trim() : "";
-	const candidate = host || self;
-	if (!candidate) return undefined;
-
-	try {
-		const base = new URL(
-			/^[a-z][a-z\d+.-]*:/i.test(candidate) ? candidate : `https://${candidate}`
-		);
-		if (base.protocol !== "https:" && base.protocol !== "http:") return undefined;
-		base.username = "";
-		base.password = "";
-		return new URL(`/browse/${encodeURIComponent(issue.key)}`, base.origin).toString();
-	} catch {
-		return undefined;
-	}
-}
-
 /**
- * Creates the companion Jira plugin's macro backlink, or a direct browser URL when
- * the fetched issue includes a trustworthy HTTP(S) account host.
+ * Creates the companion Jira plugin's canonical issue backlink macro.
  */
 export function buildJiraIssueBacklink(issue: JiraIssue): string {
-	const url = getJiraIssueUrl(issue);
-	return url ? `[Jira ${issue.key}](<${url}>)` : `JIRA:${issue.key}`;
+	return `JIRA:${issue.key}`;
 }
 
 export function prependJiraIssueBacklink(
@@ -315,12 +293,11 @@ export function prependJiraIssueBacklink(
 	issue: JiraIssue
 ): string {
 	const existing = details?.trim() ?? "";
-	const url = getJiraIssueUrl(issue);
 	const escapedKey = issue.key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	const hasReference =
-		new RegExp(`\\bJIRA\\s*:\\s*${escapedKey}\\b`, "i").test(existing) ||
-		new RegExp(`/browse/${escapedKey}(?:[)>\\s]|$)`, "i").test(existing) ||
-		(!!url && existing.toLocaleLowerCase().includes(url.toLocaleLowerCase()));
+	const hasReference = new RegExp(
+		`\\bJIRA\\s*:\\s*${escapedKey}\\b`,
+		"i"
+	).test(existing);
 	if (hasReference) return existing;
 
 	const backlink = buildJiraIssueBacklink(issue);

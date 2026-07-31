@@ -203,26 +203,7 @@ describe("configurable Jira mapping", () => {
 });
 
 describe("Jira issue backlinks", () => {
-	it("builds a credential-free browser URL from the Jira account host", () => {
-		const hostedIssue: JiraIssue = {
-			...issue,
-			account: {
-				host: "https://wizard:secret@magic.atlassian.net/jira?token=hidden",
-			},
-		};
-
-		expect(buildJiraIssueBacklink(hostedIssue)).toBe(
-			"[Jira MAGIC-17](<https://magic.atlassian.net/browse/MAGIC-17>)"
-		);
-	});
-
-	it("falls back to the companion plugin macro for missing or unsafe hosts", () => {
-		expect(
-			buildJiraIssueBacklink({
-				...issue,
-				account: { host: "javascript:alert(1)" },
-			})
-		).toBe("JIRA:MAGIC-17");
+	it("uses the companion plugin's canonical issue macro", () => {
 		expect(buildJiraIssueBacklink(issue)).toBe("JIRA:MAGIC-17");
 	});
 
