@@ -272,32 +272,6 @@ export function renderKeyboardShortcutsTab(
 				});
 			}
 
-			group.addSetting((setting: Setting) => {
-				// User-field shortcuts are stored separately because their action IDs
-				// are generated from settings rather than from the built-in action tuple.
-				setting
-					.setName(translate("settings.keyboardShortcuts.addUserField"))
-					.setDesc(translate("settings.keyboardShortcuts.addUserFieldDescription"))
-					.addButton((button) =>
-						button.setButtonText(translate("settings.keyboardShortcuts.addUserField")).onClick(() => {
-							new UserFieldShortcutSuggestModal(plugin.app, plugin, (field) => {
-								const trigger = plugin.settings.nlpTriggers.triggers.find(
-									(candidate) => candidate.propertyId === field.id || candidate.propertyId === field.key
-								)?.trigger;
-								const candidate = getDefaultUserFieldShortcut(trigger);
-								const occupied = new Set([
-									...Object.values(plugin.settings.taskListShortcuts).flat(),
-									...Object.values(plugin.settings.taskListUserFieldShortcuts ?? {}).flat(),
-								]);
-								plugin.settings.taskListUserFieldShortcuts[field.id] =
-									candidate && !occupied.has(candidate) ? [candidate] : [];
-								save();
-								renderKeyboardShortcutsTab(container, plugin, save);
-							}).open();
-						})
-					);
-			});
-
 			for (const field of plugin.settings.userFields ?? []) {
 				const fieldShortcuts = plugin.settings.taskListUserFieldShortcuts?.[field.id];
 				if (!fieldShortcuts) continue;
@@ -408,6 +382,32 @@ export function renderKeyboardShortcutsTab(
 					});
 				});
 			}
+
+			// Keep the add control after every configured user-field shortcut so the
+			// field list reads as one contiguous section.
+			group.addSetting((setting: Setting) => {
+				setting
+					.setName(translate("settings.keyboardShortcuts.addUserField"))
+					.setDesc(translate("settings.keyboardShortcuts.addUserFieldDescription"))
+					.addButton((button) =>
+						button.setButtonText(translate("settings.keyboardShortcuts.addUserField")).onClick(() => {
+							new UserFieldShortcutSuggestModal(plugin.app, plugin, (field) => {
+								const trigger = plugin.settings.nlpTriggers.triggers.find(
+									(candidate) => candidate.propertyId === field.id || candidate.propertyId === field.key
+								)?.trigger;
+								const candidate = getDefaultUserFieldShortcut(trigger);
+								const occupied = new Set([
+									...Object.values(plugin.settings.taskListShortcuts).flat(),
+									...Object.values(plugin.settings.taskListUserFieldShortcuts ?? {}).flat(),
+								]);
+								plugin.settings.taskListUserFieldShortcuts[field.id] =
+									candidate && !occupied.has(candidate) ? [candidate] : [];
+								save();
+								renderKeyboardShortcutsTab(container, plugin, save);
+							}).open();
+						})
+					);
+			});
 
 			group.addSetting((setting: Setting) => {
 				setting
