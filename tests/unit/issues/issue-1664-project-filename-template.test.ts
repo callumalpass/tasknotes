@@ -1,4 +1,4 @@
-import { App as MockApp, MockObsidian } from "../../__mocks__/obsidian";
+import { App as MockApp, MockObsidian } from "../../helpers/obsidian-runtime";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { TaskService } from "../../../src/services/TaskService";
 import { DEFAULT_FIELD_MAPPING, DEFAULT_SETTINGS } from "../../../src/settings/defaults";

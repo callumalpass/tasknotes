@@ -1,4 +1,21 @@
 import type { TaskInfo } from "../types";
+import type { TaskCreationDefaults } from "../types/settings";
+
+export type ParentNoteProjectDefaultContext = "task-creation" | "inline-creation";
+
+export function shouldApplyParentNoteProjectDefault(
+	defaults: Pick<
+		TaskCreationDefaults,
+		"useParentNoteForTaskCreation" | "useParentNoteAsProject"
+	>,
+	context: ParentNoteProjectDefaultContext
+): boolean {
+	if (context === "task-creation") {
+		return defaults.useParentNoteForTaskCreation;
+	}
+
+	return defaults.useParentNoteAsProject;
+}
 
 export function applyParentNoteProjectDefault(
 	prePopulatedValues?: Partial<TaskInfo>,

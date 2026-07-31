@@ -1,5 +1,5 @@
 import { renderProjectCompletionMetadata } from "../../../src/editor/NLPCodeMirrorAutocomplete";
-import { MockObsidian } from "../../__mocks__/obsidian";
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 import {
 	createCompletionPlugin,
 	createMarkdownFile,

@@ -66,8 +66,6 @@ import { PomodoroService } from '../../../src/services/PomodoroService';
 import { EVENT_POMODORO_TICK, TaskInfo, TimeEntry, PomodoroSession } from '../../../src/types';
 import { formatDateForStorage, getTodayLocal } from '../../../src/utils/dateUtils';
 
-jest.mock('obsidian');
-
 /**
  * Mock task factory for tests
  */

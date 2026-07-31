@@ -1,6 +1,6 @@
 import type { TaskInfo } from "../../../src/types";
 import { hydrateTaskDetailsFromFile } from "../../../src/utils/taskDetails";
-import { MockObsidian } from "../../__mocks__/obsidian";
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 describe("Issue #1858: single-task reads include task body details", () => {
 	beforeEach(() => {

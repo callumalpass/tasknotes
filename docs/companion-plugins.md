@@ -8,6 +8,7 @@ Use companion plugins when you want a deeper product surface than a script or we
 
 | Plugin | Purpose | Documentation |
 | --- | --- | --- |
+| Canvas Bases | TaskNotes canvas companion for Obsidian Bases views, with canvas-style boards, JSON Canvas snapshots, optional TaskNotes badges, actions, and relationship edges. | [Canvas Bases](companion-plugins/canvas-bases.md) |
 | TaskNotes Workflows | Markdown-defined automation for TaskNotes tasks, schedules, events, and manual command-palette workflows. | [TaskNotes Workflows](companion-plugins/tasknotes-workflows.md) |
 
 More companion plugins may be documented here over time.

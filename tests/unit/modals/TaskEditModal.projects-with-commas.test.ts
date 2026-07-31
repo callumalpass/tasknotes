@@ -1,12 +1,10 @@
 import { TaskEditModal } from '../../../src/modals/TaskEditModal';
-import { MockObsidian, Notice } from '../../__mocks__/obsidian';
+import { MockObsidian, Notice } from '../../helpers/obsidian-runtime';
 import type { App } from 'obsidian';
 import { TaskInfo } from '../../../src/types';
 
 // @ts-ignore helper to cast the mock app
 const createMockApp = (mockApp: any): App => mockApp as unknown as App;
-
-jest.mock('obsidian');
 
 describe('TaskEditModal - projects with commas', () => {
   let mockApp: App;

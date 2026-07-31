@@ -1,8 +1,6 @@
 import { requestUrl } from "obsidian";
 import { loadAPIEndpoints } from "../../../src/api/loadAPIEndpoints";
 
-jest.mock("obsidian");
-
 const requestUrlMock = requestUrl as jest.Mock;
 
 function mockOpenAPIResponse(status: number) {

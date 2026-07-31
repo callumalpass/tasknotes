@@ -5,10 +5,9 @@ import { extractDependencyUid } from "../../../src/utils/dependencyUtils";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskDependency, TaskInfo } from "../../../src/types";
 
-jest.mock("obsidian");
-
 type MockMenuItem = {
 	setTitle?: jest.Mock;
+	submenu?: MockMenu;
 	type?: string;
 };
 
@@ -101,13 +100,20 @@ function createPlugin(): TaskNotesPlugin {
 }
 
 function getAllTitleValues(): unknown[] {
+	const collectMenuTitles = (menu: MockMenu | undefined): unknown[] => {
+		if (!menu) {
+			return [];
+		}
+
+		return menu.items.flatMap((item) => [
+			...(item.setTitle ? item.setTitle.mock.calls.map(([title]) => title) : []),
+			...collectMenuTitles(item.submenu),
+		]);
+	};
+
 	return menuMock.mock.results.flatMap((result) => {
 		const menu = result.value as MockMenu | undefined;
-		return (
-			menu?.items.flatMap((item) =>
-				item.setTitle ? item.setTitle.mock.calls.map(([title]) => title) : []
-			) ?? []
-		);
+		return collectMenuTitles(menu);
 	});
 }
 

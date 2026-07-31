@@ -6,7 +6,7 @@ TaskNotes supports Google Calendar and Microsoft Calendar integration via OAuth 
 
 To connect calendars, create OAuth credentials with Google and/or Microsoft, then paste them into TaskNotes Integrations settings. The sections below walk through each provider.
 
-![Integrations calendar settings](../media/docs/settings-integrations-calendar.png)
+![Integrations calendar settings](assets/settings-integrations-calendar.png)
 
 ### Google Calendar
 

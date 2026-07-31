@@ -1,6 +1,6 @@
 import { Setting, setIcon, type App, type TextComponent } from "obsidian";
-import { DateContextMenu } from "../components/DateContextMenu";
 import type TaskNotesPlugin from "../main";
+import { DateTimePickerModal } from "./DateTimePickerModal";
 import type { UserMappedField } from "../types/settings";
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 import { stringifyUnknown } from "../utils/stringUtils";
@@ -266,16 +266,19 @@ function createTaskModalDateUserField(
 			setIcon(button, "calendar");
 			button.addEventListener("click", (event) => {
 				event.preventDefault();
-				const menu = new DateContextMenu({
-					currentValue: getTextValue(text) || undefined,
+				const picker = new DateTimePickerModal(context.app, {
+					currentDate: getTextValue(text) || null,
+					title: context.translate("modals.task.userFields.pickDate", {
+						field: field.displayName,
+					}),
+					showTime: false,
+					plugin: context.plugin,
 					onSelect: (value) => {
 						text.setValue(value || "");
 						options.onValueChange(field.key, parseNullableTextUserFieldInput(value));
 					},
-					plugin: context.plugin,
-					app: context.app,
 				});
-				menu.showAtElement(button);
+				picker.open();
 			});
 		}
 	});

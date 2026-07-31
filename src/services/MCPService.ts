@@ -19,6 +19,7 @@ import {
 	FilterOperator,
 	TaskGroupKey,
 	TaskSortKey,
+	Reminder,
 } from "../types";
 import {
 	computeActiveTimeSessions,
@@ -40,6 +41,23 @@ const MCP_FILTER_OPERATOR_DESCRIPTION = [
 	"Filter operator. Valid operators:",
 	MCP_FILTER_OPERATOR_VALUES.join(", "),
 ].join(" ");
+const MCP_REMINDER_SCHEMA = z.object({
+	id: z.string().describe("Unique reminder ID"),
+	type: z.enum(["absolute", "relative"]).describe("Reminder type"),
+	relatedTo: z
+		.enum(["scheduled", "due"])
+		.optional()
+		.describe("Anchor date for relative reminders"),
+	offset: z
+		.string()
+		.optional()
+		.describe("ISO 8601 duration offset for relative reminders, e.g. -PT1H"),
+	absoluteTime: z
+		.string()
+		.optional()
+		.describe("Absolute reminder time as an ISO 8601 timestamp"),
+	description: z.string().optional().describe("Optional reminder description"),
+});
 
 function createMcpJsonReplacer(): (this: unknown, key: string, value: unknown) => unknown {
 	const ancestors: unknown[] = [];
@@ -98,15 +116,17 @@ type CreateTaskArgs = {
 	projects?: string[];
 	recurrence?: string;
 	timeEstimate?: number;
+	reminders?: Reminder[];
 	details?: string;
 };
 type UpdateTaskArgs = TaskIdArgs &
-	Partial<Omit<CreateTaskArgs, "title" | "timeEstimate">> & {
+	Partial<Omit<CreateTaskArgs, "title" | "timeEstimate" | "reminders">> & {
 		title?: string;
 		recurrence?: string | null;
 		timeEstimate?: number | null;
 		due?: string | null;
 		scheduled?: string | null;
+		reminders?: Reminder[] | null;
 	};
 type CompleteRecurringArgs = TaskIdArgs & { date?: string };
 type MaterializeOccurrenceArgs = TaskIdArgs & { date: string };
@@ -299,6 +319,10 @@ export class MCPService {
 					projects: z.array(z.string()).optional().describe("Projects"),
 					recurrence: z.string().optional().describe("RFC 5545 recurrence rule"),
 					timeEstimate: z.number().optional().describe("Time estimate in minutes"),
+					reminders: z
+						.array(MCP_REMINDER_SCHEMA)
+						.optional()
+						.describe("Task reminders"),
 					details: z.string().optional().describe("Task body/description"),
 				},
 			},
@@ -317,6 +341,7 @@ export class MCPService {
 						projects: args.projects,
 						recurrence: args.recurrence,
 						timeEstimate: args.timeEstimate,
+						reminders: args.reminders,
 						details: args.details,
 						creationContext: "api",
 					};
@@ -361,6 +386,11 @@ export class MCPService {
 						.nullable()
 						.optional()
 						.describe("New time estimate in minutes or null to clear"),
+					reminders: z
+						.array(MCP_REMINDER_SCHEMA)
+						.nullable()
+						.optional()
+						.describe("New reminders array or null to clear"),
 					details: z.string().optional().describe("New body/description"),
 				},
 			},
@@ -374,6 +404,11 @@ export class MCPService {
 					// Build updates object, filtering out undefined values
 					const cleanUpdates: Record<string, unknown> = {};
 					for (const [key, value] of Object.entries(updates)) {
+						if (key === "reminders" && value === null) {
+							cleanUpdates.reminders = undefined;
+							continue;
+						}
+
 						if (value !== undefined) {
 							cleanUpdates[key] = value;
 						}

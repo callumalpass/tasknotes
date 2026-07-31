@@ -9,7 +9,9 @@ export type ExternalCalendarEventFactory = (
 	event: ICSEvent,
 	plugin: TaskNotesPlugin,
 	options: { relatedNoteCount?: number }
-) => EventInput | null;
+) => Nullable<EventInput>;
+
+type Nullable<T> = T | null;
 
 export interface BuildExternalCalendarEventsInput {
 	events: readonly ICSEvent[];

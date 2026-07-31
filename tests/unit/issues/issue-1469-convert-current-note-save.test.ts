@@ -1,9 +1,7 @@
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
-import { MockObsidian } from "../../__mocks__/obsidian";
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 import type { App } from "obsidian";
 import type { TaskInfo } from "../../../src/types";
-
-jest.mock("obsidian");
 
 const createMockApp = (mockApp: unknown): App => mockApp as App;
 

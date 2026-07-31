@@ -5,8 +5,10 @@ interface PathLike {
 	path: string;
 }
 
+type Nullable<T> = T | null;
+
 export interface TaskCreationSubtaskAssignmentContext {
-	currentTaskFile: TFile | null;
+	currentTaskFile: Nullable<TFile>;
 	subtaskFiles: readonly PathLike[];
 	getTaskInfo: (path: string) => Promise<TaskInfo | null | undefined>;
 	buildProjectReference: (currentTaskFile: TFile, subtaskPath: string) => string;

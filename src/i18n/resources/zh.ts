@@ -360,7 +360,7 @@ export const zh: TranslationTree = {
 			statsLabel: "今日完成",
 			meta: {
 				ready: "已计划 {time} · 今天已完成 {count} 个",
-				running: "剩余 {time}",
+				running: "剩余 {time} · 结束于 {endTime}",
 				paused: "{type} 已暂停 · 剩余 {time}",
 				breakReady: "{type} 已就绪 · 已计划 {time}"
 			},
@@ -482,7 +482,7 @@ export const zh: TranslationTree = {
 			viewAllLink: "在 GitHub 上查看所有版本说明 →",
 			starMessage:
 				"我们非常感谢所有反馈。如果有什么感觉不对，请在 GitHub 上告诉我们。如果你觉得 TaskNotes 有用，请考虑给它加星。",
-			baseFilesNotice: "> [!info] 关于默认 `.base` 文件\n> 默认生成的 `.base` 模板更新不会覆盖你现有的 `.base` 文件，因此你的自定义会被保留。\n> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 常规 → 创建文件** 中重新生成 base 文件。"
+			baseFilesNotice: "> [!info] 关于默认 `.base` 文件\n> 默认生成的 `.base` 模板更新不会覆盖你现有的 `.base` 文件，因此你的自定义会被保留。\n> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 常规 → 视图与 base 文件 → 创建文件** 中重新生成 base 文件。"
 		}
 	},
 	settings: {
@@ -742,9 +742,13 @@ export const zh: TranslationTree = {
 					selectTooltip: "选择默认链接的项目笔记",
 					removeTooltip: "从默认项目中移除{name}"
 				},
+				useParentNoteForTaskCreation: {
+					name: "新任务使用当前笔记作为项目",
+					description: "从命令面板或功能区打开任务创建时，自动将当前笔记链接为项目"
+				},
 				useParentNoteAsProject: {
-					name: "即时转换时使用父笔记作为项目",
-					description: "使用即时任务转换时自动将父笔记链接为项目"
+					name: "内联创建和即时转换时使用父笔记作为项目",
+					description: "使用内联任务创建或即时任务转换时，自动将源笔记链接为项目"
 				},
 				useParentHeaderAsProject: {
 					name: "即时转换时使用父级标题作为项目",
@@ -820,6 +824,16 @@ export const zh: TranslationTree = {
 					placeholder: "模板/任务模板.md",
 					ariaLabel: "正文模板文件路径"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "使用实例笔记模板",
+					description: "当重复任务未设置 occurrence_template 时，为已物化的实例笔记使用单独的备用模板"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "实例笔记模板文件",
+					description: "已物化实例笔记的模板文件路径。重复任务的 occurrence_template 字段优先于此备用模板。",
+					placeholder: "模板/实例模板.md",
+					ariaLabel: "实例笔记模板文件路径"
+				},
 				variablesHeader: "模板变量：",
 				variables: {
 					title: "{{title}} - 任务标题",
@@ -881,7 +895,7 @@ export const zh: TranslationTree = {
 				},
 				taskTag: {
 					name: "任务标签",
-					description: "识别笔记为任务的标签（不含#）"
+					description: "识别笔记为任务的标签（不含 #）。更改此设置后，现有 .base 视图筛选器会保留旧标签；请更新默认 Base 文件或手动编辑这些筛选器。"
 				},
 				hideIdentifyingTags: {
 					name: "在任务卡片中隐藏识别标签",
@@ -1083,7 +1097,8 @@ export const zh: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "默认项目：",
-				useParentNote: "使用父笔记作为项目：",
+				useParentNoteForTaskCreation: "新任务使用当前笔记：",
+				useParentNoteForInlineTasks: "内联/即时转换时使用父笔记：",
 				useParentHeader: "使用父级标题作为项目：",
 				inheritParentTaskProperties: "子任务继承父任务属性：",
 				noDefaultProjects: "未选择默认项目",
@@ -1691,6 +1706,14 @@ export const zh: TranslationTree = {
 				useICSEndAsDue: {
 					name: "使用ICS事件结束时间作为任务截止日期",
 					description: "启用后，从日历事件创建的任务将把截止日期设置为事件的结束时间。对于全天事件，截止日期将设置为事件日期。对于有时间的事件，截止日期将包含结束时间。"
+				},
+				recurringEventRelatedNotesMode: {
+					name: "重复事件的关联笔记",
+					description: "选择关联到外部日历事件某一次重复的笔记，是显示在已加载的整个系列中，还是仅显示在所选实例上。",
+					options: {
+						series: "整个系列",
+						instance: "仅所选实例"
+					}
 				}
 			},
 			subscriptionsList: {
@@ -2571,6 +2594,8 @@ export const zh: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "总跟踪时间：",
+				due: "截止：",
+				scheduled: "计划：",
 				created: "创建：",
 				modified: "修改：",
 				file: "文件："
@@ -2747,6 +2772,7 @@ export const zh: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "到期日期",
 			scheduledDate: "安排日期",
+			customDates: "自定义日期",
 			reminders: "提醒",
 			remindBeforeDue: "到期前提醒...",
 			remindBeforeScheduled: "安排前提醒...",
@@ -2854,6 +2880,7 @@ export const zh: TranslationTree = {
 				toggleSkipFailure: "切换重复任务跳过失败：{message}",
 				updateDueDateFailure: "更新任务到期日期失败：{message}",
 				updateScheduledFailure: "更新任务安排日期失败：{message}",
+				updateCustomDateFailure: "更新 {field} 失败：{message}",
 				updateRemindersFailure: "更新提醒失败",
 				clearRemindersFailure: "清除提醒失败",
 				addReminderFailure: "添加提醒失败",
@@ -3028,6 +3055,8 @@ export const zh: TranslationTree = {
 			notices: {
 				templateNotFound: "找不到任务正文模板：{path}",
 				templateReadError: "读取任务正文模板错误：{template}",
+				occurrenceTemplateNotFound: "找不到实例笔记模板：{path}",
+				occurrenceTemplateReadError: "读取实例笔记模板时出错：{template}",
 				moveTaskFailed: "移动{operation}任务失败：{error}"
 			}
 		},

@@ -6,8 +6,6 @@ import {
 } from "../../../src/bases/KanbanView";
 import type { TaskInfo } from "../../../src/types";
 
-jest.mock("obsidian");
-
 function task(path: string): TaskInfo {
 	return {
 		title: path,

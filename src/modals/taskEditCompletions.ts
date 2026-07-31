@@ -18,6 +18,7 @@ interface TaskEditCompletionsOptions {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
 	completedInstancesChanges: string[];
+	skippedInstancesChanges: string[];
 	translate: (key: string, params?: Record<string, string | number>) => string;
 }
 
@@ -104,7 +105,7 @@ function renderCalendarMonth(
 	const recurringDates = generateRecurringInstances(options.task, bufferStart, bufferEnd);
 	const recurringDateStrings = new Set(recurringDates.map((date) => formatDateForStorage(date)));
 	const completedInstances = getCurrentCompletedInstances(options);
-	const skippedInstances = new Set(options.task.skipped_instances || []);
+	const skippedInstances = getCurrentSkippedInstances(options);
 
 	allDays.forEach((day) => {
 		const dayStr = formatDateForStorage(day);
@@ -132,7 +133,7 @@ function renderCalendarMonth(
 		}
 
 		dayElement.addEventListener("click", () => {
-			toggleCompletedInstance(dayStr, options.completedInstancesChanges);
+			syncInstanceChangeState(options, dayStr, "complete");
 			renderCalendarMonth(container, displayDate, options);
 		});
 
@@ -190,7 +191,19 @@ function showOccurrenceContextMenu(
 		item.setTitle(isCompleted ? "Mark incomplete for this date" : "Mark complete for this date");
 		item.setIcon(isCompleted ? "x" : "check");
 		item.onClick(() => {
-			toggleCompletedInstance(dayStr, options.completedInstancesChanges);
+			syncInstanceChangeState(options, dayStr, "complete");
+			renderCalendarMonth(container, displayDate, options);
+		});
+	});
+
+	const skippedInstances = getCurrentSkippedInstances(options);
+	const isSkipped = skippedInstances.has(dayStr);
+
+	menu.addItem((item) => {
+		item.setTitle(isSkipped ? "Unskip instance" : "Skip instance");
+		item.setIcon(isSkipped ? "undo" : "x-circle");
+		item.onClick(() => {
+			syncInstanceChangeState(options, dayStr, "skip");
 			renderCalendarMonth(container, displayDate, options);
 		});
 	});
@@ -210,11 +223,64 @@ function getCurrentCompletedInstances(options: TaskEditCompletionsOptions): Set<
 	return completedInstances;
 }
 
-function toggleCompletedInstance(dateStr: string, changes: string[]): void {
-	const index = changes.indexOf(dateStr);
-	if (index !== -1) {
-		changes.splice(index, 1);
+function getCurrentSkippedInstances(options: TaskEditCompletionsOptions): Set<string> {
+	const skippedInstances = new Set(options.task.skipped_instances || []);
+	for (const dateStr of options.skippedInstancesChanges) {
+		if (skippedInstances.has(dateStr)) {
+			skippedInstances.delete(dateStr);
+		} else {
+			skippedInstances.add(dateStr);
+		}
+	}
+	return skippedInstances;
+}
+
+function syncInstanceChangeState(
+	options: TaskEditCompletionsOptions,
+	dateStr: string,
+	action: "complete" | "skip"
+): void {
+	const completedInstances = getCurrentCompletedInstances(options);
+	const skippedInstances = getCurrentSkippedInstances(options);
+
+	if (action === "complete") {
+		if (completedInstances.has(dateStr)) {
+			completedInstances.delete(dateStr);
+			skippedInstances.delete(dateStr);
+		} else {
+			completedInstances.add(dateStr);
+			skippedInstances.delete(dateStr);
+		}
+	} else if (skippedInstances.has(dateStr)) {
+		skippedInstances.delete(dateStr);
 	} else {
-		changes.push(dateStr);
+		skippedInstances.add(dateStr);
+		completedInstances.delete(dateStr);
+	}
+
+	replaceInstanceChanges(
+		options.completedInstancesChanges,
+		options.task.complete_instances || [],
+		completedInstances
+	);
+	replaceInstanceChanges(
+		options.skippedInstancesChanges,
+		options.task.skipped_instances || [],
+		skippedInstances
+	);
+}
+
+function replaceInstanceChanges(
+	changes: string[],
+	originalInstances: string[],
+	currentInstances: Set<string>
+): void {
+	changes.splice(0, changes.length);
+	const original = new Set(originalInstances);
+	const allDates = new Set([...original, ...currentInstances]);
+	for (const dateStr of allDates) {
+		if (original.has(dateStr) !== currentInstances.has(dateStr)) {
+			changes.push(dateStr);
+		}
 	}
 }

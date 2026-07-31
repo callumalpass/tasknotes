@@ -42,8 +42,8 @@ When work spans initiatives, assign multiple projects and combine with contexts 
 ```yaml
 title: "Prepare presentation slides"
 projects: ["[[Q4 Planning]]"]
-contexts: ["@computer", "@office"]
-tags: ["#review"]
+contexts: ["computer", "office"]
+tags: ["review"]
 ```
 
 ## Execution Workflow (Daily)
@@ -52,7 +52,7 @@ A typical daily flow is to start in Task List for prioritization, move to Calend
 
 If you use timeboxing, drag-select on calendar timeline views and create timeblocks directly from the context menu. If you use Pomodoro, run sessions against active tasks so completion and timing data stay attached to task notes.
 
-![Calendar quick add workflow](../media/docs/workflow-quick-add-calendar.png)
+![Calendar quick add workflow](assets/workflow-quick-add-calendar.png)
 
 ## Maintenance Workflow (Weekly)
 

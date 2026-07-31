@@ -113,9 +113,7 @@ export class WorkspaceNavigationService {
 	}
 
 	private findLeafForFile(normalizedPath: string): WorkspaceLeafLike | null {
-		const workspace = this.plugin.app.workspace as typeof this.plugin.app.workspace & {
-			iterateAllLeaves?(callback: (leaf: WorkspaceLeafLike) => void): void;
-		};
+		const workspace = this.plugin.app.workspace;
 		let match: WorkspaceLeafLike | null = null;
 
 		workspace.iterateAllLeaves?.((leaf) => {

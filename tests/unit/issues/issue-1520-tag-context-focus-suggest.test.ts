@@ -1,8 +1,6 @@
 import { App } from "obsidian";
 import { ContextSuggest, TagSuggest } from "../../../src/modals/taskModalSuggests";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 const createMockApp = (mockApp: unknown): App => mockApp as App;
 

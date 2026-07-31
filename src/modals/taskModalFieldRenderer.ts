@@ -32,6 +32,8 @@ export interface RenderTaskModalFieldGroupsResult {
 	ignoredFieldIds: string[];
 }
 
+const BASIC_MODAL_LAYOUT_FIELD_IDS = new Set(["title", "details"]);
+
 export function renderTaskModalField(options: RenderTaskModalFieldOptions): boolean {
 	const { container, fieldConfig, fieldRenderers, renderUserField } = options;
 	const renderer = fieldRenderers[fieldConfig.id];
@@ -60,14 +62,19 @@ export function renderTaskModalFieldGroups(
 	};
 
 	for (const groupConfig of groupsToRender) {
-		if (groupConfig.id === "basic") {
+		const fields =
+			groupConfig.id === "basic"
+				? groupConfig.fields.filter((field) => !BASIC_MODAL_LAYOUT_FIELD_IDS.has(field.id))
+				: groupConfig.fields;
+
+		if (fields.length === 0) {
 			continue;
 		}
 
 		const groupContainer = options.container.createDiv({ cls: "task-modal__field-group" });
 		result.groupsRendered += 1;
 
-		for (const field of groupConfig.fields) {
+		for (const field of fields) {
 			const rendered = renderTaskModalField({
 				container: groupContainer,
 				fieldConfig: field,

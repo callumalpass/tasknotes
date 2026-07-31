@@ -32,6 +32,7 @@ import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
 import { setElementDragImage } from "../utils/dragImage";
 import {
 	applyKanbanTaskDropFrontmatterPlan,
+	clearKanbanDropMarkers,
 	createKanbanDropTarget,
 	getKanbanCardDropTargetFromClientY,
 	getKanbanDraggedPaths,
@@ -43,6 +44,7 @@ import {
 	reconstructKanbanDropTargetFromContainer,
 	resolveKanbanContainerDropTarget,
 	resolveNestedTaskCardDragSource,
+	updateKanbanDropMarker,
 	type KanbanDropTarget,
 	type KanbanTaskDropUpdatePlan,
 	type KanbanTaskDragSource,
@@ -2806,6 +2808,7 @@ export class KanbanView extends BasesViewBase {
 								i >= insertionIndex
 							);
 						}
+						updateKanbanDropMarker(container, siblings, insertionIndex);
 					}
 				});
 			}
@@ -3177,6 +3180,7 @@ export class KanbanView extends BasesViewBase {
 				"tn-static-overflow-y-auto-03df744e",
 				"tn-static-overflow-y-clip-c5043043"
 			);
+			clearKanbanDropMarkers(this.dragContainer);
 			this.dragContainer.style.removeProperty("overflow-y");
 			this.dragContainer.style.removeProperty("padding-bottom");
 			const wrappers = this.dragContainer.querySelectorAll<HTMLElement>(
@@ -3202,6 +3206,9 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		// Also clean any wrappers on the entire board (safety net for cross-column)
+		if (this.boardEl) {
+			clearKanbanDropMarkers(this.boardEl);
+		}
 		this.boardEl
 			?.querySelectorAll<HTMLElement>(
 				".kanban-view__card-wrapper--drag-shift, .kanban-view__card-wrapper--shift-down"

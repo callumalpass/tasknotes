@@ -1,8 +1,7 @@
-jest.mock('obsidian');
 
 import type { App } from 'obsidian';
 import { ProjectSelectModal } from '../../../src/modals/ProjectSelectModal';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 
 describe('ProjectSelectModal property filtering', () => {
   let mockApp: App;

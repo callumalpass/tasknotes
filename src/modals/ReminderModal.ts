@@ -6,6 +6,7 @@ import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ReminderModal" });
+const REMINDER_FIELDS_HIDDEN_CLASS = "reminder-modal__fields--hidden";
 
 export class ReminderModal extends Modal {
 	private plugin: TaskNotesPlugin;
@@ -440,7 +441,9 @@ export class ReminderModal extends Modal {
 		});
 
 		// Absolute reminder fields
-		const absoluteContainer = form.createDiv({ cls: "absolute-fields" });
+		const absoluteContainer = form.createDiv({
+			cls: `absolute-fields ${REMINDER_FIELDS_HIDDEN_CLASS}`,
+		});
 
 		new Setting(absoluteContainer).setName("Date").addText((text) => {
 			text.setPlaceholder("Yyyy-mm-dd")
@@ -541,53 +544,8 @@ export class ReminderModal extends Modal {
 		const relativeFields = form.querySelector(".relative-fields") as HTMLElement;
 		const absoluteFields = form.querySelector(".absolute-fields") as HTMLElement;
 
-		if (type === "relative") {
-			relativeFields.classList.remove(
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-display-none-6b99de8b",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			relativeFields.classList.add("tn-static-display-block-2a1b75c9");
-			absoluteFields.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			absoluteFields.classList.add("tn-static-display-none-6b99de8b");
-		} else {
-			relativeFields.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			relativeFields.classList.add("tn-static-display-none-6b99de8b");
-			absoluteFields.classList.remove(
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-display-none-6b99de8b",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			absoluteFields.classList.add("tn-static-display-block-2a1b75c9");
-		}
+		relativeFields.classList.toggle(REMINDER_FIELDS_HIDDEN_CLASS, type !== "relative");
+		absoluteFields.classList.toggle(REMINDER_FIELDS_HIDDEN_CLASS, type !== "absolute");
 	}
 
 	private createReminder(

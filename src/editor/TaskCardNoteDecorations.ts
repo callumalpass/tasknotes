@@ -76,11 +76,13 @@ interface HTMLElementWithComponent extends HTMLElement {
 }
 
 interface CanvasNodeLike {
-	file?: string | TFile;
+	file?: OneOf<string, TFile>;
 	filePath?: string;
 	contentEl?: HTMLElement;
 	isEditing?: boolean;
 }
+
+type OneOf<T, U> = T | U;
 
 interface CanvasLike {
 	nodes?: {

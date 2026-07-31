@@ -277,6 +277,19 @@ describe('NaturalLanguageParser - Status Extraction', () => {
       expect(result.title).toBe('Task');
     });
 
+    it('prefers the full triggered status value when it contains a shorter status label', () => {
+      const statusConfigs: StatusConfig[] = [
+        { id: 'resource', value: '30 Resource', label: 'Resource', color: '#666666', isCompleted: false, order: 1, autoArchive: false, autoArchiveDelay: 0 },
+        { id: 'person', value: '31 Resource - Person', label: 'Person', color: '#0066cc', isCompleted: false, order: 2, autoArchive: false, autoArchiveDelay: 0 }
+      ];
+      const parser = new NaturalLanguageParser(statusConfigs, priorityConfigs, false);
+
+      const result = parser.parseInput('Test *31 Resource - Person*');
+
+      expect(result.status).toBe('31 Resource - Person');
+      expect(result.title).toBe('Test');
+    });
+
     it('should extract status without trigger (fallback) and remove it', () => {
       const statusConfigs: StatusConfig[] = [
         { id: 'done', value: 'done', label: 'Done', color: '#00aa00', isCompleted: true, order: 1, autoArchive: false, autoArchiveDelay: 0 }

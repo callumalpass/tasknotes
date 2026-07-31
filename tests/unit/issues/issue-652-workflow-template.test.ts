@@ -27,7 +27,7 @@
  */
 
 import { FileSystemFactory, PluginFactory } from '../../helpers/mock-factories';
-import { MockObsidian, TFile } from '../../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../../helpers/obsidian-runtime';
 import { TaskCreationData, TaskService } from '../../../src/services/TaskService';
 import { addDaysToDateString } from '../../../src/utils/dateUtils';
 

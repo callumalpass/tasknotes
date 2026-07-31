@@ -11,6 +11,7 @@ export interface DateTimePickerOptions {
 	currentTime?: string | null;
 	title?: string;
 	dateRole?: "due" | "scheduled";
+	showTime?: boolean;
 	plugin?: TaskNotesPlugin;
 	naturalLanguageParser?: NaturalLanguageDateParser;
 	onSelect: (date: string | null, time: string | null) => void;
@@ -114,7 +115,9 @@ export class DateTimePickerModal extends Modal {
 		this.renderQuickActions(contentEl);
 		this.renderNaturalLanguageInput(contentEl);
 		this.renderDateInput(contentEl);
-		this.renderTimeInput(contentEl);
+		if (this.shouldShowTime()) {
+			this.renderTimeInput(contentEl);
+		}
 		this.renderActions(contentEl);
 		this.updateSelectButtonState();
 
@@ -300,7 +303,10 @@ export class DateTimePickerModal extends Modal {
 
 	private confirmSelectedDate(): void {
 		if (!this.selectedDate) return;
-		this.options.onSelect(this.selectedDate, this.timeInput?.value || null);
+		this.options.onSelect(
+			this.selectedDate,
+			this.shouldShowTime() ? this.timeInput?.value || null : null
+		);
 		this.close();
 	}
 
@@ -312,6 +318,10 @@ export class DateTimePickerModal extends Modal {
 	private canUseNaturalLanguageInput(): boolean {
 		if (this.options.naturalLanguageParser) return true;
 		return Boolean(this.options.plugin?.settings.enableNaturalLanguageInput);
+	}
+
+	private shouldShowTime(): boolean {
+		return this.options.showTime !== false;
 	}
 
 	private getNaturalLanguageParser(): NaturalLanguageDateParser | null {
@@ -332,7 +342,7 @@ export class DateTimePickerModal extends Modal {
 			return;
 		}
 
-		this.options.onSelect(selection.date, selection.time);
+		this.options.onSelect(selection.date, this.shouldShowTime() ? selection.time : null);
 		this.close();
 	}
 }

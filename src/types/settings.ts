@@ -167,6 +167,8 @@ export interface TaskNotesSettings {
 	showReleaseNotesOnUpdate?: boolean;
 	checkForUpdatesOnStartup?: boolean;
 	lastNotifiedReleaseVersion?: string;
+	// Starter note onboarding
+	starterNoteCreated?: boolean;
 	// Status bar settings
 	showTrackedTasksInStatusBar: boolean;
 	// Time tracking settings
@@ -279,7 +281,8 @@ export interface TaskCreationDefaults {
 	defaultContexts: string; // Comma-separated list
 	defaultTags: string; // Comma-separated list
 	defaultProjects: string; // Comma-separated list of project links
-	useParentNoteAsProject: boolean; // Use the parent note as a project during instant conversion
+	useParentNoteForTaskCreation: boolean; // Use the active note as a project for normal task creation
+	useParentNoteAsProject: boolean; // Use the parent note as a project during inline creation and instant conversion
 	useParentHeaderAsProject: boolean; // Use the closest markdown heading as a project during instant conversion
 	inheritParentTaskProperties: boolean; // Copy parent task projects, contexts, priority, and tags when creating subtasks
 	defaultTimeEstimate: number; // minutes, 0 = no default
@@ -292,6 +295,8 @@ export interface TaskCreationDefaults {
 	// Body template settings
 	bodyTemplate: string; // Path to template file for task body, empty = no template
 	useBodyTemplate: boolean; // Whether to use body template by default
+	occurrenceBodyTemplate: string; // Fallback template file for materialized occurrence notes
+	useOccurrenceBodyTemplate: boolean; // Whether to use occurrenceBodyTemplate when the parent has no occurrence_template
 	// Reminder defaults
 	defaultReminders: DefaultReminder[];
 }
@@ -315,6 +320,7 @@ export interface ICSIntegrationSettings {
 	requireScheduledDateForExport: boolean; // Whether to export only tasks with scheduled dates
 	// Task creation from ICS events
 	useICSEndAsDue: boolean; // Whether to use ICS event end time as task due date
+	recurringEventRelatedNotesMode: "series" | "instance"; // How linked notes behave for recurring external calendar events
 }
 
 /**

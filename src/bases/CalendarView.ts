@@ -91,6 +91,8 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarView" });
 
+type Nullable<T> = T | null;
+
 export {
 	getCalendarConfigValue,
 	readCalendarConfigValue,
@@ -1756,7 +1758,7 @@ export class CalendarView extends BasesViewBase {
 		return null;
 	}
 
-	private getContainingMarkdownFile(): TFile | null {
+	private getContainingMarkdownFile(): Nullable<TFile> {
 		const leaves = this.plugin.app.workspace.getLeavesOfType("markdown");
 		for (const leaf of leaves) {
 			const view = leaf.view as { containerEl?: HTMLElement; file?: unknown };
@@ -2079,7 +2081,7 @@ export class CalendarView extends BasesViewBase {
 
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		let timeoutId: number | null = null;
-		let changedRef: EventRef | null = null;
+		let changedRef: Nullable<EventRef> = null;
 		let cleanedUp = false;
 
 		const cleanup = () => {

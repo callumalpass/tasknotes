@@ -295,6 +295,8 @@ For detailed reminder documentation, see [Task Reminders](../features/task-manag
 
 TaskNotes supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}`, which will be automatically replaced with the appropriate values when a new task is created.
 
+Materialized occurrence notes can use a separate template from regular new tasks. Configure a global fallback in **Settings → Features → Body template**, or set `occurrence_template` on a recurring parent task to use a template for that series.
+
 ### Unified Template Variables
 
 Body templates now support the same variables as filename templates. All variables listed in the [Filename Template Variables](#filename-template-variables) section above are available in body templates, including:

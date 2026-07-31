@@ -8,7 +8,7 @@
 import { ICSNoteService } from '../../../src/services/ICSNoteService';
 import { ICSEvent } from '../../../src/types';
 import { PluginFactory } from '../../helpers/mock-factories';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 
 // Mock dependencies
 jest.mock('../../../src/utils/dateUtils', () => ({

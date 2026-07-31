@@ -52,7 +52,9 @@ Current capabilities:
 - `recurring.materialize`
 - `recurring.events`
 - `settings.snapshot`
+- `bases.write`
 - `nlp.parse`
+- `ui.task-menu`
 - `query.tasks`
 - `query.validate`
 - `query.explain`
@@ -325,6 +327,57 @@ Canonical operators are `eq`, `ne`, `contains`, `notContains`, `in`, `notIn`, `e
 
 TaskNotes compiles this DTO into its internal filter engine. Companion plugins should treat the runtime DTO and the catalog metadata as the public query contract.
 
+## Task Menu UI
+
+Companion plugins can reuse the standard TaskNotes task context menu through `api.ui.taskMenu`. This keeps task actions, relationship actions, recurrence controls, and future menu changes behind the runtime API boundary instead of requiring companion plugins to import TaskNotes internals.
+
+This surface is only available inside Obsidian. It is not exposed through the HTTP API.
+
+| Method                                                                                         | Description                                                                                               |
+| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `api.ui.taskMenu.show({ taskPath, event, targetDate?, onUpdate?, promoteOccurrenceControls? })` | Shows the standard TaskNotes task context menu at a mouse event.                                          |
+| `api.ui.taskMenu.showAtElement({ taskPath, element, targetDate?, onUpdate?, ... })`             | Shows the standard TaskNotes task context menu anchored to an element.                                    |
+| `api.ui.taskMenu.populate(menu, { taskPath, targetDate?, onUpdate?, ... })`                     | Adds the standard TaskNotes task context menu items to an existing Obsidian `Menu` so plugins can extend it. |
+
+All methods resolve `taskPath` through the TaskNotes task cache and throw a typed `task_not_found` error when the path does not point to a cached task.
+
+`targetDate` defaults to today and is used by date-sensitive recurring-task menu items. `onUpdate` is called after menu actions mutate the task; when omitted, TaskNotes refreshes its own task views. `promoteOccurrenceControls` moves recurring-instance controls to the top of the menu.
+
+Example context menu:
+
+```javascript
+nodeEl.addEventListener("contextmenu", async (event) => {
+	event.preventDefault();
+
+	await api.ui.taskMenu.show({
+		taskPath: task.path,
+		event,
+		onUpdate: () => refreshGraph(),
+	});
+});
+```
+
+Example composed menu:
+
+```javascript
+const menu = new Menu();
+
+await api.ui.taskMenu.populate(menu, {
+	taskPath: task.path,
+	onUpdate: () => refreshGraph(),
+});
+
+menu.addSeparator();
+menu.addItem((item) =>
+	item
+		.setTitle("Focus in graph")
+		.setIcon("network")
+		.onClick(() => selectGraphNode(task.path))
+);
+
+menu.showAtMouseEvent(event);
+```
+
 ## Pomodoro
 
 | Method                                          | Description                                   |
@@ -364,6 +417,15 @@ console.log(settings.defaultTaskStatus);
 ```
 
 The returned object is a snapshot. Mutating it does not change TaskNotes settings. `api.getSettingsSnapshot()` remains available as a compatibility alias.
+
+## Bases
+
+`api.bases.updateDefaultFiles()` regenerates the configured default TaskNotes `.base` files from the current TaskNotes settings and returns the created, updated, and skipped file paths.
+
+```javascript
+const result = await api.bases.updateDefaultFiles();
+console.log(result.updated);
+```
 
 ## Mutation Context
 

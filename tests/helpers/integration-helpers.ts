@@ -3,7 +3,7 @@
  * These helpers provide utilities for testing complex workflows and integration scenarios
  */
 
-import { MockObsidian, TFile } from '../__mocks__/obsidian';
+import { MockObsidian, TFile } from './obsidian-runtime';
 import { TaskFactory, PluginFactory, FileSystemFactory } from './mock-factories';
 import { TaskInfo, TaskCreationData } from '../../src/types';
 

@@ -86,10 +86,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export abstract class BasesViewBase extends Component {
 	// BasesView properties (provided by Bases when factory returns this instance)
 	// These match the BasesView interface from Obsidian's internal Bases API
-	app!: App;
-	config!: BasesViewConfig;
-	data!: BasesQueryResult;
-	allProperties!: BasesPropertyId[];
+	app: App = undefined as unknown as App;
+	config: BasesViewConfig = undefined as unknown as BasesViewConfig;
+	data: BasesQueryResult = undefined as unknown as BasesQueryResult;
+	allProperties: BasesPropertyId[] = [];
 	protected plugin: TaskNotesPlugin;
 	protected dataAdapter: BasesDataAdapter;
 	protected propertyMapper: PropertyMappingService;

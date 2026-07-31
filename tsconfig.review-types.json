@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2021"
+    ],
+    "paths": {
+      "obsidian": ["./.review-types/stubs/obsidian.d.ts"],
+      "@tasknotes/model": ["./.review-types/stubs/tasknotes-model.d.ts"],
+      "@fullcalendar/core": ["./.review-types/stubs/fullcalendar-core.d.ts"]
+    },
+    "types": [
+      "node"
+    ]
+  }
+}

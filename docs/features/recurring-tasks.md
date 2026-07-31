@@ -117,6 +117,8 @@ timeEstimate: 45
 
 When TaskNotes creates an occurrence note, it copies the parent fields that describe how that instance should be planned: title, priority, scheduled time, due offset, contexts, projects, tags, reminders, dependencies, details, custom properties, and time estimate. Date-like fields are rebased onto the occurrence date, so a parent scheduled at `09:30` creates an occurrence scheduled at `09:30` on the selected date, and a due date one day after the parent scheduled date stays one day after the occurrence scheduled date.
 
+Occurrence notes can use a separate template from regular new tasks. Set `occurrence_template` on the recurring parent to point at a template note, or configure **Settings → Features → Body template → Occurrence note template file** as a global fallback. Parent-level `occurrence_template` wins over the global fallback. If neither occurrence-specific template is configured, occurrence note creation keeps the normal body template behavior.
+
 The parent task remains the source of the recurrence rule and series history. Occurrence notes do not copy the parent's `recurrence`, `complete_instances`, `skipped_instances`, `completedDate`, calendar provider IDs, or `timeEntries`. New time entries belong to the occurrence note once you track time there.
 
 ### Occurrence Note Policies
@@ -185,12 +187,18 @@ Materialized occurrence notes keep `occurrence_date` as their identity. If you d
 
 ## Completion Tracking
 
-Each occurrence can be completed independently (task cards, calendar menus, task edit modal completion calendar).
+Each occurrence can be completed or skipped independently (task cards, calendar menus, task edit modal completion calendar).
 
 Completed instances are stored in:
 
 ```yaml
 complete_instances: ["2025-08-04", "2025-08-06", "2025-08-08"]
+```
+
+Skipped instances are stored in:
+
+```yaml
+skipped_instances: ["2025-08-05"]
 ```
 
 When completion changes, `scheduled` updates to the next uncompleted instance. If a materialized occurrence note exists for a date, that note's own status takes precedence for that occurrence, and TaskNotes reconciles the parent compatibility lists during completion, uncompletion, skip, and unskip actions.

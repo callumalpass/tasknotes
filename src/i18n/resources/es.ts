@@ -360,7 +360,7 @@ export const es: TranslationTree = {
 			statsLabel: "completadas hoy",
 			meta: {
 				ready: "{time} planificado · {count} completados hoy",
-				running: "Quedan {time}",
+				running: "Quedan {time} · Termina a las {endTime}",
 				paused: "{type} en pausa · quedan {time}",
 				breakReady: "{type} listo · {time} planificado"
 			},
@@ -482,7 +482,7 @@ export const es: TranslationTree = {
 			viewAllLink: "Ver todas las notas de versión en GitHub →",
 			starMessage:
 				"Agradecemos mucho todos los comentarios. Si algo no te parece bien, cuéntanoslo en GitHub. Si TaskNotes te resulta útil, considera darle una estrella.",
-			baseFilesNotice: "> [!info] Acerca de los archivos `.base` predeterminados\n> Los cambios en las plantillas `.base` generadas por defecto no sobrescriben tus archivos `.base` existentes, por lo que tus personalizaciones se mantienen.\n> Si quieres las mejoras más recientes de las plantillas, regenera los archivos base en **Ajustes → TaskNotes → General → Crear archivos**."
+			baseFilesNotice: "> [!info] Acerca de los archivos `.base` predeterminados\n> Los cambios en las plantillas `.base` generadas por defecto no sobrescriben tus archivos `.base` existentes, por lo que tus personalizaciones se mantienen.\n> Si quieres las mejoras más recientes de las plantillas, regenera los archivos base en **Ajustes → TaskNotes → General → Vistas y archivos base → Crear archivos**."
 		}
 	},
 	settings: {
@@ -742,9 +742,13 @@ export const es: TranslationTree = {
 					selectTooltip: "Elegir notas de proyecto para vincular por defecto",
 					removeTooltip: "Eliminar {name} de proyectos predeterminados"
 				},
+				useParentNoteForTaskCreation: {
+					name: "Usar nota activa como proyecto para nuevas tareas",
+					description: "Vincula automáticamente la nota activa como proyecto al abrir la creación de tareas desde la paleta de comandos o la cinta"
+				},
 				useParentNoteAsProject: {
-					name: "Usar nota padre como proyecto durante conversión instantánea",
-					description: "Vincular automáticamente la nota padre como proyecto al usar conversión instantánea de tareas"
+					name: "Usar nota padre como proyecto para tareas en línea y conversión instantánea",
+					description: "Vincula automáticamente la nota de origen como proyecto al usar la creación de tareas en línea o la conversión instantánea de tareas"
 				},
 				useParentHeaderAsProject: {
 					name: "Usar encabezado padre como proyecto durante conversión instantánea",
@@ -820,6 +824,16 @@ export const es: TranslationTree = {
 					placeholder: "Plantillas/Plantilla de tarea.md",
 					ariaLabel: "Ruta al archivo de plantilla del cuerpo"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "Usar plantilla de nota de ocurrencia",
+					description: "Usar una plantilla alternativa separada para notas de ocurrencia materializadas cuando la tarea recurrente no tenga occurrence_template"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "Archivo de plantilla de nota de ocurrencia",
+					description: "Ruta al archivo de plantilla para notas de ocurrencia materializadas. El campo occurrence_template de una tarea recurrente tiene prioridad sobre esta alternativa.",
+					placeholder: "Plantillas/Plantilla de ocurrencia.md",
+					ariaLabel: "Ruta al archivo de plantilla de nota de ocurrencia"
+				},
 				variablesHeader: "Variables de plantilla:",
 				variables: {
 					title: "{{title}} - Título de la tarea",
@@ -881,7 +895,7 @@ export const es: TranslationTree = {
 				},
 				taskTag: {
 					name: "Etiqueta de tarea",
-					description: "Etiqueta que identifica notas como tareas (sin #)"
+					description: "Etiqueta que identifica notas como tareas (sin #). Los filtros de vistas .base existentes conservan la etiqueta anterior al cambiarla; actualiza los archivos Base predeterminados o edita esos filtros."
 				},
 				hideIdentifyingTags: {
 					name: "Ocultar etiquetas de identificación en tarjetas de tarea",
@@ -1083,7 +1097,8 @@ export const es: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "Proyectos predeterminados:",
-				useParentNote: "Usar nota padre como proyecto:",
+				useParentNoteForTaskCreation: "Usar nota activa para nuevas tareas:",
+				useParentNoteForInlineTasks: "Usar nota padre para tareas en línea/conversión instantánea:",
 				useParentHeader: "Usar encabezado padre como proyecto:",
 				inheritParentTaskProperties: "Heredar propiedades de la tarea padre para subtareas:",
 				noDefaultProjects: "No hay proyectos predeterminados seleccionados",
@@ -1691,6 +1706,14 @@ export const es: TranslationTree = {
 				useICSEndAsDue: {
 					name: "Usar hora de fin del evento ICS como fecha de vencimiento",
 					description: "Cuando está habilitado, las tareas creadas a partir de eventos de calendario tendrán su fecha de vencimiento establecida en la hora de fin del evento. Para eventos de todo el día, la fecha de vencimiento será la fecha del evento. Para eventos con hora, la fecha de vencimiento incluirá la hora de fin."
+				},
+				recurringEventRelatedNotesMode: {
+					name: "Notas relacionadas de eventos recurrentes",
+					description: "Elige si las notas vinculadas a una repetición de un evento de calendario externo aparecen en toda la serie cargada o solo en la instancia seleccionada.",
+					options: {
+						series: "Toda la serie",
+						instance: "Solo la instancia seleccionada"
+					}
 				}
 			},
 			subscriptionsList: {
@@ -2571,6 +2594,8 @@ export const es: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "Tiempo total rastreado:",
+				due: "Vencimiento:",
+				scheduled: "Programada:",
 				created: "Creado:",
 				modified: "Modificado:",
 				file: "Archivo:"
@@ -2748,6 +2773,7 @@ export const es: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "Fecha de vencimiento",
 			scheduledDate: "Fecha programada",
+			customDates: "Fechas personalizadas",
 			reminders: "Recordatorios",
 			remindBeforeDue: "Recordar antes del vencimiento…",
 			remindBeforeScheduled: "Recordar antes de programado…",
@@ -2855,6 +2881,7 @@ export const es: TranslationTree = {
 				toggleSkipFailure: "Error al alternar omisión de tarea recurrente: {message}",
 				updateDueDateFailure: "Error al actualizar fecha de vencimiento de tarea: {message}",
 				updateScheduledFailure: "Error al actualizar fecha programada de tarea: {message}",
+				updateCustomDateFailure: "No se pudo actualizar {field}: {message}",
 				updateRemindersFailure: "Error al actualizar recordatorios",
 				clearRemindersFailure: "Error al limpiar recordatorios",
 				addReminderFailure: "Error al agregar recordatorio",
@@ -3029,6 +3056,8 @@ export const es: TranslationTree = {
 			notices: {
 				templateNotFound: "Plantilla del cuerpo de tarea no encontrada: {path}",
 				templateReadError: "Error al leer plantilla del cuerpo de tarea: {template}",
+				occurrenceTemplateNotFound: "Plantilla de nota de ocurrencia no encontrada: {path}",
+				occurrenceTemplateReadError: "Error al leer plantilla de nota de ocurrencia: {template}",
 				moveTaskFailed: "Error al mover tarea {operation}: {error}"
 			}
 		},

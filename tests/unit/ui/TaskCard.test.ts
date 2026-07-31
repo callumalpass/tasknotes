@@ -23,10 +23,9 @@ import {
 
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
-import { MockObsidian, TFile, Menu, Notice, Modal, App } from '../../__mocks__/obsidian';
+import { MockObsidian, TFile, Menu, Notice, Modal, App } from '../../helpers/obsidian-runtime';
 
 // Mock external dependencies
-jest.mock('obsidian');
 jest.mock('date-fns', () => ({
   format: jest.fn((date: Date, formatStr: string) => {
     if (formatStr === 'yyyy-MM-dd') {

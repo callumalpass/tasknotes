@@ -15,6 +15,9 @@ import { around } from "monkey-around";
 
 declare const app: App;
 
+type Nullable<T> = T | null;
+type OneOf<T, U> = T | U;
+
 // Internal Obsidian type - not exported in official API
 interface ScrollableMarkdownEditor {
 	app: App;
@@ -62,7 +65,7 @@ type MarkdownEditorOwner = {
 type ActiveMarkdownEditorOwner = {
 	editMode: unknown;
 	editor: Editor;
-	file: TFile | null;
+	file: Nullable<TFile>;
 	getMode(): "source";
 };
 
@@ -193,7 +196,7 @@ export interface MarkdownEditorProps {
 	/** Automatically enter vim insert mode on first focus when vim keybindings are enabled */
 	enterVimInsertMode?: boolean;
 	/** File associated with this modal editor for plugins that read workspace.activeEditor */
-	file?: TFile | null;
+	file?: Nullable<TFile>;
 }
 
 type ResolvedMarkdownEditorProps = Required<Omit<MarkdownEditorProps, "cursorLocation" | "file">> &
@@ -370,7 +373,7 @@ class CodeMirrorEditorAdapter {
 		}));
 	}
 
-	setCursor(pos: EditorPosition | number, ch?: number): void {
+	setCursor(pos: OneOf<EditorPosition, number>, ch?: number): void {
 		if (typeof pos === "number") {
 			this.setSelection({ line: pos, ch: ch ?? 0 });
 			return;
@@ -607,7 +610,7 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		}
 	}
 
-	private getActiveEditorFile(): TFile | null {
+	private getActiveEditorFile(): Nullable<TFile> {
 		if (this.options.file !== undefined) {
 			return this.options.file ?? null;
 		}

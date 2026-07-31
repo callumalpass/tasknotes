@@ -11,14 +11,12 @@
 
 import { TaskCreationModal } from '../../../src/modals/TaskCreationModal';
 import { TaskEditModal } from '../../../src/modals/TaskEditModal';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 import type { App } from 'obsidian';
 import { TaskInfo } from '../../../src/types';
 
 // @ts-ignore helper to cast the mock app
 const createMockApp = (mockApp: any): App => mockApp as unknown as App;
-
-jest.mock('obsidian');
 
 describe('Issue #843: Property Mode Tag Bug', () => {
 	let mockApp: App;

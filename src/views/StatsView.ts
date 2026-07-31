@@ -16,7 +16,7 @@ import { calculateTotalTimeSpent, filterEmptyProjects } from "../utils/helpers";
 import { getTodayLocal } from "../utils/dateUtils";
 import { createTaskCard } from "../ui/TaskCard";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
-import { getProjectDisplayName } from "../utils/linkUtils";
+import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Views/StatsView" });
@@ -60,6 +60,12 @@ export interface StatsFilters {
 	customEndDate?: string;
 	selectedProjects: string[];
 	minTimeSpent: number; // in minutes
+}
+
+export interface VisibleStatsProjectNamesOptions {
+	noProjectLabel: string;
+	consolidateProjectName: (projectValue: string) => string | null | undefined;
+	isArchivedProjectReference?: (projectValue: string) => boolean;
 }
 
 const STATS_FILTERS_STORAGE_KEY = "tasknotes-stats-view-filters";
@@ -120,6 +126,29 @@ export function normalizeStatsFilters(value: unknown): StatsFilters {
 	}
 
 	return filters;
+}
+
+export function filterStatsVisibleTasks(tasks: TaskInfo[]): TaskInfo[] {
+	return tasks.filter((task) => !task.archived);
+}
+
+export function getVisibleStatsProjectNames(
+	projects: string[] | undefined,
+	options: VisibleStatsProjectNamesOptions
+): string[] {
+	if (!Array.isArray(projects)) {
+		return [options.noProjectLabel];
+	}
+
+	const filteredProjects = filterEmptyProjects(projects);
+	if (filteredProjects.length === 0) {
+		return [options.noProjectLabel];
+	}
+
+	return filteredProjects
+		.filter((project) => !options.isArchivedProjectReference?.(project))
+		.map((project) => options.consolidateProjectName(project))
+		.filter((project): project is string => typeof project === "string" && project.length > 0);
 }
 
 interface ProjectDrilldownData {
@@ -380,6 +409,8 @@ export class StatsView extends ItemView {
 			}
 		}
 
+		tasks = filterStatsVisibleTasks(tasks);
+
 		// Apply filters
 		tasks = this.applyTaskFilters(tasks);
 
@@ -579,6 +610,56 @@ export class StatsView extends ItemView {
 		if (!projectValue) return null;
 		const displayName = getProjectDisplayName(projectValue, this.plugin?.app);
 		return displayName || null;
+	}
+
+	private isArchivedProjectReference(projectValue: string): boolean {
+		return this.getProjectReferenceTask(projectValue)?.archived === true;
+	}
+
+	private getProjectReferenceTask(projectValue: string): TaskInfo | null {
+		const trimmedProject = projectValue.trim();
+		if (!this.isProjectNoteReference(trimmedProject)) {
+			return null;
+		}
+
+		const parsedPath = parseLinkToPath(trimmedProject);
+		if (!parsedPath) {
+			return null;
+		}
+
+		const pathWithoutExtension = parsedPath.replace(/\.md$/i, "");
+		const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
+			pathWithoutExtension,
+			""
+		);
+		if (resolvedFile) {
+			const resolvedTask = this.plugin.cacheManager.getCachedTaskInfoSync(resolvedFile.path);
+			if (resolvedTask) {
+				return resolvedTask;
+			}
+		}
+
+		const candidatePaths = /\.md$/i.test(parsedPath)
+			? [parsedPath]
+			: [parsedPath, `${parsedPath}.md`];
+		for (const candidatePath of candidatePaths) {
+			const task = this.plugin.cacheManager.getCachedTaskInfoSync(candidatePath);
+			if (task) {
+				return task;
+			}
+		}
+
+		return null;
+	}
+
+	private isProjectNoteReference(projectValue: string): boolean {
+		return (
+			(projectValue.startsWith("[[") && projectValue.endsWith("]]")) ||
+			/^\[[^\]]*\]\(.+\)$/.test(projectValue) ||
+			(projectValue.startsWith("<") && projectValue.endsWith(">")) ||
+			projectValue.includes("/") ||
+			/\.md$/i.test(projectValue)
+		);
 	}
 
 	private calculateOverallStats(tasks: TaskInfo[]): OverallStats {
@@ -919,17 +1000,11 @@ export class StatsView extends ItemView {
 	 */
 	private getTaskProjects(task: TaskInfo): string[] {
 		try {
-			if (!task || !Array.isArray(task.projects)) {
-				return [this.plugin.i18n.translate("views.stats.noProject")];
-			}
-
-			const filteredProjects = filterEmptyProjects(task.projects);
-			if (filteredProjects.length > 0) {
-				return filteredProjects
-					.map((project) => this.consolidateProjectName(project))
-					.filter((project) => typeof project === "string" && project.length > 0);
-			}
-			return [this.plugin.i18n.translate("views.stats.noProject")];
+			return getVisibleStatsProjectNames(task.projects, {
+				noProjectLabel: this.plugin.i18n.translate("views.stats.noProject"),
+				consolidateProjectName: (project) => this.consolidateProjectName(project),
+				isArchivedProjectReference: (project) => this.isArchivedProjectReference(project),
+			});
 		} catch {
 			return [this.plugin.i18n.translate("views.stats.noProject")];
 		}
@@ -1328,7 +1403,7 @@ export class StatsView extends ItemView {
 			for (const path of allTasks) {
 				try {
 					const task = await this.plugin.cacheManager.getTaskInfo(path);
-					if (task) {
+					if (task && !task.archived) {
 						const taskProjects = this.getTaskProjects(task);
 						if (taskProjects.includes(projectName)) {
 							projectTasks.push(task);
@@ -1532,7 +1607,7 @@ export class StatsView extends ItemView {
 		for (const path of allTasks) {
 			try {
 				const task = await this.plugin.cacheManager.getTaskInfo(path);
-				if (task) {
+				if (task && !task.archived) {
 					const taskProjects = this.getTaskProjects(task);
 					if (taskProjects.includes(projectName)) {
 						projectTasks.push(task);

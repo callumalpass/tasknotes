@@ -1,8 +1,6 @@
 import { Menu } from "obsidian";
 import { DateContextMenu } from "../../../src/components/DateContextMenu";
 
-jest.mock("obsidian");
-
 type MockMenu = {
 	showAtMouseEvent: jest.Mock;
 	hide: jest.Mock;

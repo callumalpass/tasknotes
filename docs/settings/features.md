@@ -13,6 +13,8 @@ Inline task settings control how aggressively TaskNotes turns plain note content
 
 Body template settings let you scaffold newly created tasks with consistent note content. When enabled, TaskNotes reads the configured template file and expands variables like `{{title}}`, `{{date}}`, `{{time}}`, `{{priority}}`, `{{status}}`, `{{contexts}}`, `{{tags}}`, and `{{projects}}`.
 
+Materialized occurrence notes can use a separate template. Set **Occurrence note template file** to provide a global fallback for occurrence notes; a recurring task's `occurrence_template` frontmatter field takes priority when it is set. If neither occurrence-specific template is configured, occurrence notes continue through the normal body template behavior.
+
 ## Natural Language Processing
 
 NLP settings define how text input is interpreted during task capture. **Enable natural language task input** activates date and metadata parsing, **Default to scheduled** changes ambiguous date handling, **NLP language** selects parsing patterns, and **Status suggestion trigger** controls optional status autocomplete activation.

@@ -1,12 +1,11 @@
 import { TaskCreationModal } from '../../../src/modals/TaskCreationModal';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 import type { App } from 'obsidian';
 
 // @ts-ignore helper to cast the mock app
 const createMockApp = (mockApp: any): App => mockApp as unknown as App;
 
 // Do NOT mock helpers here to keep sanitizeTags available
-jest.mock('obsidian');
 
 describe('TaskCreationModal - projects with commas', () => {
   let mockApp: App;

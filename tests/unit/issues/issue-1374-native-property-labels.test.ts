@@ -6,8 +6,6 @@ import { DEFAULT_FIELD_MAPPING, DEFAULT_SETTINGS } from "../../../src/settings/d
 import type { PriorityConfig, StatusConfig } from "../../../src/types";
 import { TaskManager } from "../../../src/utils/TaskManager";
 
-jest.mock("obsidian");
-
 const statuses: StatusConfig[] = [
 	{
 		id: "open",

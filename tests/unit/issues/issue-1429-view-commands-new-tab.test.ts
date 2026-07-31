@@ -2,8 +2,6 @@ import { TFile } from "obsidian";
 import { WorkspaceNavigationService } from "../../../src/ui/WorkspaceNavigationService";
 import type TaskNotesPlugin from "../../../src/main";
 
-jest.mock("obsidian");
-
 describe("Issue #1429: view commands open Base files in a new tab", () => {
 	it("opens configured Base command files without replacing the active leaf", async () => {
 		const file = new TFile("TaskNotes/Views/tasks-default.base");

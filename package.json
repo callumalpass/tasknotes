@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "4.10.2",
+	"version": "4.11.1",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -17,7 +17,8 @@
 		"e2e:launch": "bash e2e-launch.sh",
 		"version": "node version-bump.mjs && node generate-release-notes-import.mjs && npm run docs:sync && git add manifest.json versions.json docs/releases.md PRIVACY.md",
 		"docs:sync": "node scripts/update-release-index.mjs && node scripts/sync-privacy.mjs",
-		"docs:check": "node scripts/update-release-index.mjs --check && node scripts/sync-privacy.mjs --check && node scripts/check-docs.mjs",
+		"docs:build": "npm --prefix docs-builder run build",
+		"docs:check": "node scripts/update-release-index.mjs --check && node scripts/sync-privacy.mjs --check && node scripts/check-docs.mjs && npm run docs:build && node scripts/check-built-docs.mjs",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
@@ -30,6 +31,7 @@
 		"lint": "node scripts/run-lint.mjs",
 		"lint:architecture": "node scripts/run-architecture-conformance.mjs",
 		"lint:ts": "eslint src/ package.json --max-warnings=0",
+		"lint:review-types": "eslint src/ --config eslint.review-types.config.mjs --max-warnings=0",
 		"lint:ts:fix": "eslint src/ package.json --fix",
 		"lint:css": "stylelint \"styles/**/*.css\" \"docs-builder/src/styles/**/*.css\" --max-warnings=0",
 		"lint:css:dist": "stylelint styles.css --max-warnings=0",
@@ -71,6 +73,7 @@
 		"jest-environment-jsdom": "^30.1.1",
 		"monkey-around": "^3.0.0",
 		"obsidian": "^1.12.3",
+		"obsidian-test-mocks": "^3.1.0",
 		"obsidian-typings": "^4.49.0",
 		"prettier": "^3.6.2",
 		"stylelint": "^17.11.0",

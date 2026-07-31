@@ -9,7 +9,6 @@
 import { ensureFolderExists } from '../../../src/utils/helpers';
 
 // Mock obsidian module
-jest.mock('obsidian');
 
 describe('Issue #1016: Folder already exists race condition', () => {
 	let mockVault: {
@@ -18,17 +17,6 @@ describe('Issue #1016: Folder already exists race condition', () => {
 	};
 
 	beforeEach(() => {
-		// Mock normalizePath from obsidian
-		const obsidianMock = require('obsidian');
-		obsidianMock.normalizePath = jest.fn((path: string) => {
-			if (!path) return '';
-			return path
-				.replace(/\\/g, '/')
-				.replace(/\/+/g, '/')
-				.replace(/^\/*/, '')
-				.replace(/\/*$/, '');
-		});
-
 		mockVault = {
 			adapter: { exists: jest.fn().mockResolvedValue(false) },
 			createFolder: jest.fn().mockResolvedValue(undefined),

@@ -1,8 +1,6 @@
 import { createTaskCard } from "../../../src/ui/TaskCard";
 import { TaskFactory } from "../../helpers/mock-factories";
 
-jest.mock("obsidian");
-
 jest.mock("../../../src/utils/helpers", () => ({
 	calculateTotalTimeSpent: jest.fn(() => 0),
 	filterEmptyProjects: jest.fn((projects?: string[]) => projects?.filter(Boolean) ?? []),

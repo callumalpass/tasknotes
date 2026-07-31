@@ -2,7 +2,7 @@ import { FilterService } from '../../../src/services/FilterService';
 import { TaskManager } from '../../../src/utils/TaskManager';
 import { StatusManager } from '../../../src/services/StatusManager';
 import { PriorityManager } from '../../../src/services/PriorityManager';
-import { MockObsidian, App } from '../../__mocks__/obsidian';
+import { MockObsidian, App } from '../../helpers/obsidian-runtime';
 import { DEFAULT_SETTINGS, DEFAULT_FIELD_MAPPING } from '../../../src/settings/defaults';
 import { FieldMapper } from '../../../src/services/FieldMapper';
 
@@ -60,7 +60,6 @@ describe('FilterService - group by custom user fields', () => {
     expect(paths.has('Tasks/t1.md')).toBe(true);
     expect(paths.has('Tasks/t2.md')).toBe(true);
     expect(paths.has('Tasks/t3.md')).toBe(true);
-
     const query = fs.createDefaultQuery();
     (query as any).groupKey = 'user:assignee';
 
@@ -117,4 +116,3 @@ describe('FilterService - group by custom user fields', () => {
     expect(grouped.get('no-value')!.map(t => t.path)).toEqual(expect.arrayContaining(['Tasks/c.md']));
   });
 });
-

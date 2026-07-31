@@ -52,6 +52,16 @@ export function getSessionProgressRatio(session: PomodoroSession, nowMs = Date.n
 	return Math.max(0, Math.min(1, elapsedSeconds / durationSeconds));
 }
 
+export function getProjectedPomodoroEndTimeMs(
+	timeRemainingSeconds: number,
+	nowMs = Date.now()
+): number {
+	const remainingSeconds = Number.isFinite(timeRemainingSeconds)
+		? Math.max(0, Math.floor(timeRemainingSeconds))
+		: 0;
+	return nowMs + remainingSeconds * 1000;
+}
+
 export function getSessionCompletionTimeMs(
 	session: PomodoroSession,
 	nowMs = Date.now()

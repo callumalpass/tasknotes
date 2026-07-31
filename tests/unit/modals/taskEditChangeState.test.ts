@@ -5,9 +5,7 @@ import {
 	type TaskEditModalChangeState,
 } from "../../../src/modals/taskEditChangeState";
 import type { TaskInfo } from "../../../src/types";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 const createMockApp = (mockApp: unknown): App => mockApp as App;
 
@@ -52,6 +50,7 @@ function createState(
 		details: task.details || "",
 		originalDetails: task.details || "",
 		completedInstancesChanges: [],
+		skippedInstancesChanges: [],
 		userFields: {},
 		...overrides,
 	};
@@ -171,5 +170,62 @@ describe("taskEditChangeState", () => {
 		expect(result.changes.dateModified).toEqual(expect.any(String));
 		expect(result.blockingUpdates).toEqual({ added: [], removed: [], raw: {} });
 		expect(result.unresolvedBlockingEntries).toEqual([]);
+	});
+
+	it("builds skipped recurring instance changes from modal state", () => {
+		const app = createMockApp(MockObsidian.createMockApp());
+		const task = createTask({
+			path: "TaskNotes/Recurring.md",
+			recurrence: "DTSTART:20260517;FREQ=DAILY;INTERVAL=1",
+			scheduled: "2026-05-17",
+			complete_instances: ["2026-05-17"],
+			skipped_instances: [],
+		});
+
+		const result = buildTaskEditChangesFromModalState({
+			...createState({
+				task,
+				skippedInstancesChanges: ["2026-05-17"],
+			}),
+			app,
+			settings: {
+				maintainDueDateOffsetInRecurring: false,
+			},
+			normalizeDetails: (value) => value,
+		});
+
+		expect(result.changes.complete_instances).toEqual([]);
+		expect(result.changes.skipped_instances).toEqual(["2026-05-17"]);
+		expect(result.changes.scheduled).toEqual(expect.any(String));
+		expect(result.changes.dateModified).toEqual(expect.any(String));
+	});
+
+	it("builds completed recurring instance changes that clear skipped state", () => {
+		const app = createMockApp(MockObsidian.createMockApp());
+		const task = createTask({
+			path: "TaskNotes/Recurring.md",
+			recurrence: "DTSTART:20260517;FREQ=DAILY;INTERVAL=1",
+			scheduled: "2026-05-17",
+			complete_instances: [],
+			skipped_instances: ["2026-05-17"],
+		});
+
+		const result = buildTaskEditChangesFromModalState({
+			...createState({
+				task,
+				completedInstancesChanges: ["2026-05-17"],
+				skippedInstancesChanges: ["2026-05-17"],
+			}),
+			app,
+			settings: {
+				maintainDueDateOffsetInRecurring: false,
+			},
+			normalizeDetails: (value) => value,
+		});
+
+		expect(result.changes.complete_instances).toEqual(["2026-05-17"]);
+		expect(result.changes.skipped_instances).toEqual([]);
+		expect(result.changes.scheduled).toEqual(expect.any(String));
+		expect(result.changes.dateModified).toEqual(expect.any(String));
 	});
 });

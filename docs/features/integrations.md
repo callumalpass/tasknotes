@@ -31,4 +31,4 @@ For configuration, see [Webhooks](../webhooks.md).
 
 Companion plugins run inside Obsidian alongside TaskNotes and use the JavaScript runtime API for live task operations. They are useful when an integration needs a real Obsidian UI, command-palette commands, or vault-local configuration files.
 
-For the companion-plugin model and the TaskNotes Workflows guide, see [Companion Plugins](../companion-plugins.md).
+For the companion-plugin model and guides for Canvas Bases and TaskNotes Workflows, see [Companion Plugins](../companion-plugins.md).

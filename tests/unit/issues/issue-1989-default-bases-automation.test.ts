@@ -11,8 +11,6 @@ import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNot
 import type TaskNotesPlugin from "../../../src/main";
 import { showConfirmationModal } from "../../../src/modals/ConfirmationModal";
 import { generateOpenAPISpec } from "../../../src/utils/OpenAPIDecorators";
-
-jest.mock("obsidian");
 jest.mock("../../../src/modals/ConfirmationModal", () => ({
 	showConfirmationModal: jest.fn(),
 }));

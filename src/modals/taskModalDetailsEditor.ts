@@ -2,13 +2,15 @@ import type { App, TFile } from "obsidian";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
 
+type Nullable<T> = T | null;
+
 export interface TaskModalDetailsEditorOptions {
 	app: App;
 	parent: HTMLElement;
 	label: string;
 	value: string;
 	placeholder: string;
-	file?: TFile | null;
+	file?: Nullable<TFile>;
 	tabMovesFocus: boolean;
 	onChange: (value: string) => void;
 	onSubmit: (shift: boolean) => void;
