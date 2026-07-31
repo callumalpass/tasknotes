@@ -4,6 +4,7 @@ import type {
 	UserMappedField,
 } from "../../../src/types/settings";
 import {
+	buildJiraMappingPreview,
 	createDefaultJiraMappingSettings,
 	getJiraValueByPath,
 	mapJiraIssueWithSettings,
@@ -173,6 +174,28 @@ describe("configurable Jira mapping", () => {
 				due: undefined,
 				timeEstimate: undefined,
 			})
+		);
+	});
+
+	it("distinguishes resolved, empty, missing, and invalid preview values", () => {
+		const settings = createDefaultJiraMappingSettings();
+		settings.fields.due = [{ mode: "fixed", value: "not-a-date" }];
+		settings.fields.projects = [{ mode: "path", value: "fields.emptyProjects" }];
+		settings.fields.contexts = [{ mode: "path", value: "fields.missing" }];
+		const issueWithEmptyList = {
+			...issue,
+			fields: { ...issue.fields, emptyProjects: [] },
+		};
+
+		const preview = buildJiraMappingPreview(issueWithEmptyList, settings, []);
+
+		expect(preview).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: "title", status: "value" }),
+				expect.objectContaining({ id: "projects", status: "empty", value: [] }),
+				expect.objectContaining({ id: "contexts", status: "missing" }),
+				expect.objectContaining({ id: "due", status: "invalid" }),
+			])
 		);
 	});
 });

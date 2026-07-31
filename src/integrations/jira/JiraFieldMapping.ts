@@ -35,6 +35,13 @@ export interface JiraMappingTargetDefinition {
 	kind: "text" | "number" | "date" | "list";
 }
 
+export interface JiraMappingPreviewEntry {
+	id: string;
+	label: string;
+	status: "value" | "empty" | "missing" | "invalid";
+	value?: unknown;
+}
+
 export const JIRA_MAPPING_TARGETS: readonly JiraMappingTargetDefinition[] = [
 	{ id: "id", kind: "text" },
 	{ id: "title", kind: "text" },
@@ -411,4 +418,70 @@ export function mapJiraIssueWithSettings(
 	if (Object.keys(customFrontmatter).length) output.customFrontmatter = customFrontmatter;
 
 	return output;
+}
+
+/**
+ * Resolves every configured destination through the production mapper while retaining
+ * enough source information for the settings UI to distinguish empty and invalid values.
+ */
+export function buildJiraMappingPreview(
+	issue: JiraIssue,
+	settings: JiraFieldMappingSettings,
+	userFields: readonly UserMappedField[]
+): JiraMappingPreviewEntry[] {
+	const config = normalizeJiraMappingSettings(settings);
+	const mapped = mapJiraIssueWithSettings(issue, config, userFields);
+	const mappedFields = mapped as unknown as Record<string, unknown>;
+	const entries: JiraMappingPreviewEntry[] = [];
+
+	for (const target of JIRA_MAPPING_TARGETS) {
+		const sources = config.fields[target.id] ?? [];
+		const resolvedSources = sources
+			.map((source) => readSource(source, issue))
+			.filter((value) => value !== undefined && value !== null && value !== "");
+		const value = mappedFields[target.id];
+
+		if (value !== undefined) {
+			entries.push({
+				id: target.id,
+				label: target.id,
+				status: Array.isArray(value) && value.length === 0 ? "empty" : "value",
+				value,
+			});
+		} else if (target.kind === "list" && resolvedSources.length > 0) {
+			entries.push({ id: target.id, label: target.id, status: "empty", value: [] });
+		} else {
+			entries.push({
+				id: target.id,
+				label: target.id,
+				status: resolvedSources.length > 0 ? "invalid" : "missing",
+			});
+		}
+	}
+
+	for (const field of userFields) {
+		const sources = config.userFields[field.id] ?? [];
+		const resolvedSources = sources
+			.map((source) => readSource(source, issue))
+			.filter((value) => value !== undefined && value !== null && value !== "");
+		const value = mapped.customFrontmatter?.[field.key];
+		if (value !== undefined) {
+			entries.push({
+				id: field.id,
+				label: field.displayName,
+				status: Array.isArray(value) && value.length === 0 ? "empty" : "value",
+				value,
+			});
+		} else if (field.type === "list" && resolvedSources.length > 0) {
+			entries.push({ id: field.id, label: field.displayName, status: "empty", value: [] });
+		} else {
+			entries.push({
+				id: field.id,
+				label: field.displayName,
+				status: resolvedSources.length > 0 ? "invalid" : "missing",
+			});
+		}
+	}
+
+	return entries;
 }

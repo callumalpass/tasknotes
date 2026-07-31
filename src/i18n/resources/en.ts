@@ -1723,6 +1723,25 @@ export const en: TranslationTree = {
 				remapsHeader: "Value remapping",
 				remapsDescription:
 					"Translate Jira status, priority, and context names to the values configured in TaskNotes.",
+				preview: {
+					sampleIssue: "Sample issue",
+					sampleIssueDescription:
+						"Fetch an issue to preview the current mappings. The issue and key are not saved.",
+					issueKey: "Sample Jira issue key",
+					issueKeyPlaceholder: "PROJ-123",
+					fetch: "Fetch preview",
+					loading: "Loading…",
+					unknownError: "The Jira issue could not be loaded.",
+					resolvedValues: "Resolved values",
+					resolvedValuesDescription:
+						"These are the TaskNotes values produced by the current mappings.",
+					missing: "Not set",
+					invalid: "Invalid value",
+					rawJson: "Raw Jira issue JSON",
+					rawJsonDescription:
+						"Collapsed by default because Jira issues can contain sensitive information.",
+					truncated: "The raw JSON preview was truncated to keep settings responsive.",
+				},
 			},
 			/* eslint-enable obsidianmd/ui/sentence-case-locale-module -- End product-name-specific strings. */
 			mobileCalendar: {

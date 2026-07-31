@@ -1384,6 +1384,57 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     color: var(--text-warning);
 }
 
+/* Jira sample mapping preview */
+.tasknotes-jira-mapping-preview__values {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+}
+
+.tasknotes-jira-mapping-preview__row {
+    display: grid;
+    grid-template-columns: minmax(8rem, 1fr) minmax(0, 2fr);
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-jira-mapping-preview__row:last-child {
+    border-bottom: 0;
+}
+
+.tasknotes-jira-mapping-preview__label {
+    font-weight: var(--font-semibold);
+}
+
+.tasknotes-jira-mapping-preview__value {
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.tasknotes-jira-mapping-preview__value.is-missing,
+.tasknotes-jira-mapping-preview__value.is-invalid {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.tasknotes-jira-mapping-preview__error {
+    color: var(--text-error);
+    padding: 0.75rem 0;
+}
+
+.tasknotes-jira-mapping-preview__raw {
+    margin-top: 1rem;
+}
+
+.tasknotes-jira-mapping-preview__raw pre {
+    max-height: 24rem;
+    overflow: auto;
+    padding: 0.75rem;
+    background: var(--background-secondary);
+    border-radius: var(--radius-s);
+    white-space: pre-wrap;
+}
+
 /* ================================================
    ACCESSIBILITY & REDUCED MOTION
    ================================================ */

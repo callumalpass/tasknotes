@@ -6,9 +6,38 @@ import type {
 	JiraValueSourceMode,
 } from "../../types/settings";
 import {
+	buildJiraMappingPreview,
 	createDefaultJiraMappingSettings,
 	JIRA_MAPPING_TARGETS,
 } from "../../integrations/jira/JiraFieldMapping";
+import {
+	JiraIssueAdapter,
+	type JiraIssue,
+} from "../../integrations/jira/JiraIssueAdapter";
+
+export const MAX_JIRA_RAW_PREVIEW_CHARS = 50_000;
+const MAX_JIRA_VALUE_PREVIEW_CHARS = 500;
+
+export function serializeJiraIssuePreview(
+	issue: JiraIssue,
+	maxChars = MAX_JIRA_RAW_PREVIEW_CHARS
+): { text: string; truncated: boolean } {
+	const json = JSON.stringify(issue, null, 2);
+	if (json.length <= maxChars) return { text: json, truncated: false };
+	return {
+		text: `${json.slice(0, maxChars)}\n…`,
+		truncated: true,
+	};
+}
+
+function formatPreviewValue(value: unknown): string {
+	const text =
+		typeof value === "string"
+			? value
+			: JSON.stringify(value, null, Array.isArray(value) ? 0 : 2);
+	if (text.length <= MAX_JIRA_VALUE_PREVIEW_CHARS) return text;
+	return `${text.slice(0, MAX_JIRA_VALUE_PREVIEW_CHARS)}…`;
+}
 
 const MODE_OPTIONS: Record<JiraValueSourceMode, string> = {
 	path: "Jira path",
@@ -187,6 +216,34 @@ export function renderJiraMappingSettings(
 	save: () => void
 ): void {
 	const container = parent.createDiv("tasknotes-jira-mapping-settings");
+	let issueKey = "";
+	let issueKeyInputEl: HTMLInputElement | null = null;
+	let sampleIssue: JiraIssue | null = null;
+	let previewStatus: "idle" | "loading" | "success" | "error" = "idle";
+	let previewError = "";
+	let rawExpanded = false;
+	let refreshPreview = (): void => {};
+
+	const fetchSampleIssue = async (): Promise<void> => {
+		issueKey = issueKeyInputEl?.value.trim() ?? issueKey.trim();
+		previewStatus = "loading";
+		previewError = "";
+		render();
+		try {
+			sampleIssue = await JiraIssueAdapter.fromApp(plugin.app).getIssue(issueKey);
+			previewStatus = "success";
+		} catch (error) {
+			sampleIssue = null;
+			previewStatus = "error";
+			previewError =
+				error instanceof Error
+					? error.message
+					: plugin.i18n.translate(
+							"settings.integrations.jiraMapping.preview.unknownError"
+						);
+		}
+		render();
+	};
 
 	const render = (): void => {
 		container.empty();
@@ -207,6 +264,150 @@ export function renderJiraMappingSettings(
 			);
 
 		new Setting(container)
+			.setName(
+				plugin.i18n.translate(
+					"settings.integrations.jiraMapping.preview.sampleIssue"
+				)
+			)
+			.setDesc(
+				plugin.i18n.translate(
+					"settings.integrations.jiraMapping.preview.sampleIssueDescription"
+				)
+			)
+			.addText((text) => {
+				issueKeyInputEl = text.inputEl;
+				text.inputEl.ariaLabel = plugin.i18n.translate(
+					"settings.integrations.jiraMapping.preview.issueKey"
+				);
+				text
+					.setPlaceholder(
+						plugin.i18n.translate(
+							"settings.integrations.jiraMapping.preview.issueKeyPlaceholder"
+						)
+					)
+					.setValue(issueKey)
+					.onChange((value) => {
+						issueKey = value;
+					});
+				text.inputEl.addEventListener("keydown", (event) => {
+					if (
+						event.key === "Enter" &&
+						text.inputEl.value.trim() &&
+						previewStatus !== "loading"
+					) {
+						event.preventDefault();
+						void fetchSampleIssue();
+					}
+				});
+			})
+			.addButton((button) =>
+				button
+					.setButtonText(
+						previewStatus === "loading"
+							? plugin.i18n.translate(
+									"settings.integrations.jiraMapping.preview.loading"
+								)
+							: plugin.i18n.translate(
+									"settings.integrations.jiraMapping.preview.fetch"
+								)
+					)
+					.setDisabled(previewStatus === "loading")
+					.onClick(() => void fetchSampleIssue())
+			);
+
+		const previewContainer = container.createDiv(
+			"tasknotes-jira-mapping-preview"
+		);
+		refreshPreview = (): void => {
+			previewContainer.empty();
+			if (previewStatus === "error") {
+				previewContainer.createDiv({
+					cls: "tasknotes-jira-mapping-preview__error",
+					text: previewError,
+				});
+				return;
+			}
+			if (!sampleIssue) return;
+
+			new Setting(previewContainer)
+				.setName(
+					plugin.i18n.translate(
+						"settings.integrations.jiraMapping.preview.resolvedValues"
+					)
+				)
+				.setDesc(
+					plugin.i18n.translate(
+						"settings.integrations.jiraMapping.preview.resolvedValuesDescription"
+					)
+				)
+				.setHeading();
+
+			const values = previewContainer.createDiv(
+				"tasknotes-jira-mapping-preview__values"
+			);
+			for (const entry of buildJiraMappingPreview(
+				sampleIssue,
+				plugin.settings.jiraMapping,
+				plugin.settings.userFields ?? []
+			)) {
+				const row = values.createDiv("tasknotes-jira-mapping-preview__row");
+				row.createDiv({
+					cls: "tasknotes-jira-mapping-preview__label",
+					text: humanizeFieldId(entry.label),
+				});
+				row.createEl("code", {
+					cls: `tasknotes-jira-mapping-preview__value is-${entry.status}`,
+					text:
+						entry.status === "missing"
+							? plugin.i18n.translate(
+									"settings.integrations.jiraMapping.preview.missing"
+								)
+							: entry.status === "invalid"
+								? plugin.i18n.translate(
+										"settings.integrations.jiraMapping.preview.invalid"
+									)
+								: formatPreviewValue(entry.value),
+				});
+			}
+
+			const raw = serializeJiraIssuePreview(sampleIssue);
+			const details = previewContainer.createEl("details", {
+				cls: "tasknotes-jira-mapping-preview__raw",
+			});
+			details.open = rawExpanded;
+			details.addEventListener("toggle", () => {
+				rawExpanded = details.open;
+			});
+			details.createEl("summary", {
+				text: plugin.i18n.translate(
+					"settings.integrations.jiraMapping.preview.rawJson"
+				),
+			});
+			details.createDiv({
+				cls: "setting-item-description",
+				text: plugin.i18n.translate(
+					"settings.integrations.jiraMapping.preview.rawJsonDescription"
+				),
+			});
+			// Jira content is untrusted; textContent keeps markup inert in the settings DOM.
+			details.createEl("pre", { text: raw.text });
+			if (raw.truncated) {
+				details.createDiv({
+					cls: "setting-item-description",
+					text: plugin.i18n.translate(
+						"settings.integrations.jiraMapping.preview.truncated"
+					),
+				});
+			}
+		};
+		refreshPreview();
+
+		const saveAndRefreshPreview = (): void => {
+			save();
+			refreshPreview();
+		};
+
+		new Setting(container)
 			.setName(plugin.i18n.translate("settings.integrations.jiraMapping.sourcesHeader"))
 			.setDesc(plugin.i18n.translate("settings.integrations.jiraMapping.sourcesDescription"))
 			.setHeading();
@@ -218,7 +419,7 @@ export function renderJiraMappingSettings(
 				target.id,
 				sources,
 				target.kind === "list",
-				save,
+				saveAndRefreshPreview,
 				render
 			);
 		}
@@ -237,7 +438,7 @@ export function renderJiraMappingSettings(
 					userField.displayName,
 					sources,
 					userField.type === "list",
-					save,
+					saveAndRefreshPreview,
 					render
 				);
 			}
@@ -255,7 +456,7 @@ export function renderJiraMappingSettings(
 			remaps.status,
 			(value) => {
 				remaps.status = value;
-				save();
+				saveAndRefreshPreview();
 			}
 		);
 		renderEnumRemapSetting(
@@ -265,7 +466,7 @@ export function renderJiraMappingSettings(
 			remaps.priority,
 			(value) => {
 				remaps.priority = value;
-				save();
+				saveAndRefreshPreview();
 			}
 		);
 		renderEnumRemapSetting(
@@ -275,7 +476,7 @@ export function renderJiraMappingSettings(
 			remaps.contexts,
 			(value) => {
 				remaps.contexts = value;
-				save();
+				saveAndRefreshPreview();
 			}
 		);
 	};
