@@ -68,6 +68,7 @@ describe("Issue #1854: completing via edit modal writes completedDate", () => {
 			details: "",
 			originalDetails: "",
 			completedInstancesChanges: [],
+			skippedInstancesChanges: [],
 			userFields: {},
 			frontmatter: {},
 			userFieldConfigs: [],

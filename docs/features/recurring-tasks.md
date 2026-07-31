@@ -187,12 +187,18 @@ Materialized occurrence notes keep `occurrence_date` as their identity. If you d
 
 ## Completion Tracking
 
-Each occurrence can be completed independently (task cards, calendar menus, task edit modal completion calendar).
+Each occurrence can be completed or skipped independently (task cards, calendar menus, task edit modal completion calendar).
 
 Completed instances are stored in:
 
 ```yaml
 complete_instances: ["2025-08-04", "2025-08-06", "2025-08-08"]
+```
+
+Skipped instances are stored in:
+
+```yaml
+skipped_instances: ["2025-08-05"]
 ```
 
 When completion changes, `scheduled` updates to the next uncompleted instance. If a materialized occurrence note exists for a date, that note's own status takes precedence for that occurrence, and TaskNotes reconciles the parent compatibility lists during completion, uncompletion, skip, and unskip actions.

@@ -148,16 +148,17 @@ For large notes, converting a small section first helps validate folder and file
 
 **New in v4**: The Relationships Widget consolidates what were previously three separate widgets (project subtasks, task dependencies, and blocking tasks) into a single dynamic interface.
 
-The widget appears in task notes and automatically displays up to four tabs based on available relationship data:
+The widget appears in task notes and automatically displays up to five tabs based on available relationship data:
 
 - **Subtasks Tab (Kanban)**: Shows tasks that reference the current note as a project. Uses Kanban layout for visual task management.
+- **Occurrences Tab (List)**: Shows materialized occurrence notes that reference the current recurring task as their parent. Uses list layout sorted by occurrence date.
 - **Projects Tab (List)**: Shows projects that the current task belongs to. Uses list layout.
 - **Blocked By Tab (List)**: Shows tasks that are blocking the current task. Uses list layout.
 - **Blocking Tab (Kanban)**: Shows tasks that the current task is blocking. Uses Kanban layout.
 
 ### Automatic Tab Management
 
-Tabs automatically show or hide based on the presence of relationship data. If a task has no subtasks, the Subtasks tab does not appear. If there are no blocking relationships, those tabs remain hidden. This keeps the interface focused on relevant information.
+Tabs automatically show or hide based on the presence of relationship data. If a task has no subtasks, the Subtasks tab does not appear. If a recurring task has no materialized occurrence notes, the Occurrences tab does not appear. If there are no blocking relationships, those tabs remain hidden. This keeps the interface focused on relevant information.
 The widget layout changes with available data, so simple tasks show fewer sections.
 
 ### Features

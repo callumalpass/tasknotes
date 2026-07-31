@@ -2,9 +2,13 @@
 
 TaskNotes v4 migrates all views to the Bases system. This guide covers what changed and how to update your setup.
 
+!!! warning "Back up before migrating"
+    Back up the complete vault, including the hidden `.obsidian` directory, before changing views or plugin data.
+
 ## Requirements
 
-- **Obsidian 1.10.1 or later** (required for Bases API)
+- **Obsidian 1.10.1 or later** for early TaskNotes v4 releases
+- **Obsidian ${tasknotes.minAppVersion} or later** for the current TaskNotes ${tasknotes.version} release
 - **Bases core plugin enabled** (Settings → Core Plugins → Bases)
 
 ## What Changed
@@ -17,7 +21,7 @@ All task views (Task List, Kanban, Calendar, Agenda) are now `.base` files store
 |----|-----|
 | Views stored in plugin settings | Views stored as `.base` files |
 | Custom filter UI | Bases filter syntax |
-| Saved views in settings | Each view is a separate file |
+| Saved views in settings | Default views are separate files; exported v3 saved views share one multi-view file |
 
 ### Automatic Migration on First Launch
 
@@ -29,12 +33,12 @@ When you first open TaskNotes v4:
 
 ### Converting Saved Filter Views
 
-If you had saved filter views in v3, you can convert them to `.base` files:
+If you had saved filter views in v3, you can export them to one `.base` file:
 
-1. Go to Settings → General
-2. Find the "Convert Saved Views" button
-3. Click to convert your saved views
-4. Converted views appear in `TaskNotes/Views/`
+1. Go to **Settings → TaskNotes → General → Views & base files**.
+2. Find **Export v3 saved views to Bases**.
+3. Run the export.
+4. TaskNotes creates `TaskNotes/Views/all-saved-views.base` with one Base view for each saved v3 view.
 
 This is a one-way conversion. The original saved views remain in settings until you delete them.
 
@@ -62,7 +66,7 @@ See the [Obsidian Bases documentation](https://help.obsidian.md/Bases/Introducti
 
 ### Minimum Obsidian Version
 
-v4 requires Obsidian 1.10.1 or later. If you can't upgrade Obsidian, stay on TaskNotes v3.
+Early v4 releases required Obsidian 1.10.1. The current release requirement is generated on the [version compatibility](reference/compatibility.md) page. Use the manifest requirement for the exact TaskNotes version you install.
 
 ## New Features in v4
 
@@ -107,7 +111,7 @@ A dedicated modal for managing time entries:
 
 ### Missing Saved Views After Upgrade
 
-Saved views from v3 are preserved in settings. Use the conversion button in Settings → General to create `.base` files from them.
+Saved views from v3 are preserved in settings. Use **Export v3 saved views to Bases** in **Settings → TaskNotes → General → Views & base files** to create the multi-view `.base` file.
 
 ### Filter Syntax Errors
 

@@ -2594,6 +2594,8 @@ export const es: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "Tiempo total rastreado:",
+				due: "Vencimiento:",
+				scheduled: "Programada:",
 				created: "Creado:",
 				modified: "Modificado:",
 				file: "Archivo:"
@@ -2771,6 +2773,7 @@ export const es: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "Fecha de vencimiento",
 			scheduledDate: "Fecha programada",
+			customDates: "Fechas personalizadas",
 			reminders: "Recordatorios",
 			remindBeforeDue: "Recordar antes del vencimiento…",
 			remindBeforeScheduled: "Recordar antes de programado…",
@@ -2878,6 +2881,7 @@ export const es: TranslationTree = {
 				toggleSkipFailure: "Error al alternar omisión de tarea recurrente: {message}",
 				updateDueDateFailure: "Error al actualizar fecha de vencimiento de tarea: {message}",
 				updateScheduledFailure: "Error al actualizar fecha programada de tarea: {message}",
+				updateCustomDateFailure: "No se pudo actualizar {field}: {message}",
 				updateRemindersFailure: "Error al actualizar recordatorios",
 				clearRemindersFailure: "Error al limpiar recordatorios",
 				addReminderFailure: "Error al agregar recordatorio",
@@ -3097,6 +3101,7 @@ export const es: TranslationTree = {
 			reminderTooltipOne: "1 recordatorio configurado (clic para gestionar)",
 			reminderTooltipMany: "{count} recordatorios configurados (clic para gestionar)",
 			projectTooltip: "Esta tarea se usa como proyecto (clic para mostrar/ocultar subtareas)",
+			projectIndicatorTooltip: "Esta tarea se utiliza como proyecto",
 			expandSubtasks: "Expandir subtareas",
 			collapseSubtasks: "Contraer subtareas",
 			dueToday: "{label}: Hoy",

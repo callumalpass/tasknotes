@@ -19,7 +19,6 @@ export interface StatusCycleHandlerOptions {
 	targetDate: Date;
 	updateStatusVisuals: TaskCardStatusVisualUpdater;
 }
-
 function getTaskCardActionLogger(plugin: TaskNotesPlugin) {
 	return createTaskNotesLogger({
 		tag: "TaskCard/Actions",
@@ -183,4 +182,3 @@ export function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlug
 		modal.open();
 	};
 }
-

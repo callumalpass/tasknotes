@@ -78,18 +78,23 @@ function tTaskCard(
 	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
 }
 
+function canToggleProjectSubtasks(plugin: TaskNotesPlugin): boolean {
+	return plugin.settings?.showExpandableSubtasks === true;
+}
+
 function shouldExpandSubtasksByDefault(plugin: TaskNotesPlugin): boolean {
-	// Only auto-expand by default when expandable subtasks are enabled. Otherwise a
-	// user who disabled the feature would still see subtasks expand on render, and
-	// because this value also seeds the badge toggle, the folder badge's first click
-	// would collapse instead of expand. The folder badge still expands on demand.
+	// Only auto-expand by default when expandable subtasks are enabled.
 	return (
 		plugin.settings?.expandSubtasksByDefault === true &&
-		plugin.settings?.showExpandableSubtasks === true
+		canToggleProjectSubtasks(plugin)
 	);
 }
 
 export function isTaskCardSubtasksExpanded(task: TaskInfo, plugin: TaskNotesPlugin): boolean {
+	if (!canToggleProjectSubtasks(plugin)) {
+		return false;
+	}
+
 	return (
 		plugin.expandedProjectsService?.isExpanded(
 			task.path,
@@ -270,18 +275,24 @@ function renderProjectBadges(
 
 	const isExpanded = isTaskCardSubtasksExpanded(task, plugin);
 
-	// The folder badge toggles the inline subtask list. It is always rendered for
-	// a project and works on its own, so subtasks remain reachable from the card
-	// even when the expand chevron is disabled.
+	const canToggleSubtasks = canToggleProjectSubtasks(plugin);
+
+	// The folder badge always identifies project tasks. It only acts as an
+	// expansion control when expandable subtasks are enabled.
 	createBadgeIndicator({
 		container: badgesContainer,
 		className: "task-card__project-indicator",
 		icon: "folder",
-		tooltip: tTaskCard(plugin, "projectTooltip"),
-		onClick: createProjectSubtasksToggleHandler(task, plugin, card, handlers),
+		tooltip: tTaskCard(
+			plugin,
+			canToggleSubtasks ? "projectTooltip" : "projectIndicatorTooltip"
+		),
+		onClick: canToggleSubtasks
+			? createProjectSubtasksToggleHandler(task, plugin, card, handlers)
+			: undefined,
 	});
 
-	if (plugin.settings?.showExpandableSubtasks) {
+	if (canToggleSubtasks) {
 		createBadgeIndicator({
 			container: badgesContainer,
 			className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
@@ -291,8 +302,7 @@ function renderProjectBadges(
 		});
 	}
 
-	// Render the subtask list immediately when expanded, regardless of whether the
-	// chevron is shown — otherwise a folder-driven expansion would not re-render.
+	// Render the subtask list immediately when expanded.
 	if (isExpanded) {
 		handlers.toggleSubtasks(card, task, true).catch((error: unknown) => {
 			getTaskCardBadgeLogger(plugin).error("Error showing initial subtasks", {
@@ -395,16 +405,37 @@ function updateProjectBadges(options: UpdateTaskCardSecondaryBadgesOptions): voi
 		.then((isProject: boolean) => {
 			card.querySelector(".task-card__project-indicator-placeholder")?.remove();
 			card.querySelector(".task-card__chevron-placeholder")?.remove();
+			const canToggleSubtasks = canToggleProjectSubtasks(plugin);
+			const existingProjectBadge = card.querySelector<HTMLElement>(
+				".task-card__project-indicator"
+			);
+			const projectBadgeIsInteractive =
+				existingProjectBadge?.getAttribute("role") === "button";
+
+			// updateBadgeIndicator cannot remove existing interaction listeners, so
+			// recreate the badge if this setting changed while the card was mounted.
+			if (
+				isProject &&
+				existingProjectBadge &&
+				projectBadgeIsInteractive !== canToggleSubtasks
+			) {
+				existingProjectBadge.remove();
+			}
 
 			updateBadgeIndicator(card, ".task-card__project-indicator", {
 				shouldExist: isProject,
 				className: "task-card__project-indicator",
 				icon: "folder",
-				tooltip: tTaskCard(plugin, "projectTooltip"),
-				onClick: createProjectSubtasksToggleHandler(task, plugin, card, handlers),
+				tooltip: tTaskCard(
+					plugin,
+					canToggleSubtasks ? "projectTooltip" : "projectIndicatorTooltip"
+				),
+				onClick: canToggleSubtasks
+					? createProjectSubtasksToggleHandler(task, plugin, card, handlers)
+					: undefined,
 			});
 
-			const showChevron = isProject && plugin.settings?.showExpandableSubtasks;
+			const showChevron = isProject && canToggleSubtasks;
 			const existingChevron = card.querySelector<HTMLElement>(".task-card__chevron");
 			const isExpanded = isProject && isTaskCardSubtasksExpanded(task, plugin);
 
@@ -424,8 +455,7 @@ function updateProjectBadges(options: UpdateTaskCardSecondaryBadgesOptions): voi
 				existingChevron.remove();
 			}
 
-			// Sync the inline subtask list independently of the chevron, so the
-			// folder badge can drive expansion even when the chevron is disabled.
+			// Sync the inline subtask list with the saved expansion state.
 			if (isExpanded) {
 				handlers.toggleSubtasks(card, task, true).catch((error: unknown) => {
 					logger.error("Error showing subtasks in update", {

@@ -100,4 +100,35 @@ describe("Issue #1462: NLP date edits", () => {
 
 		expect(onSelect).toHaveBeenCalledWith("2026-01-23", "08:00");
 	});
+
+	it("can run as a date-only picker for custom date fields", () => {
+		const onSelect = jest.fn();
+		const parser = {
+			parseInput: jest.fn(() =>
+				parsedTaskData({
+					scheduledDate: "2026-01-24",
+					scheduledTime: "09:30",
+				})
+			),
+		};
+		const modal = new DateTimePickerModal({} as any, {
+			showTime: false,
+			naturalLanguageParser: parser,
+			onSelect,
+		});
+
+		modal.open();
+
+		expect(modal.contentEl.querySelector(".date-time-picker-modal__time-field")).toBeNull();
+
+		const input = modal.contentEl.querySelector<HTMLInputElement>(
+			".date-time-picker-modal__nlp-input"
+		);
+		expect(input).toBeTruthy();
+
+		input!.value = "next Saturday at 9:30am";
+		input!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+
+		expect(onSelect).toHaveBeenCalledWith("2026-01-24", null);
+	});
 });

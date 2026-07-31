@@ -321,7 +321,7 @@ export default [
 				"warn",
 				{ args: "none", varsIgnorePattern: "^_" },
 			],
-			"no-prototype-builtins": "off",
+			"no-prototype-builtins": "error",
 			"@typescript-eslint/no-empty-function": "off",
 			"@typescript-eslint/ban-ts-comment": [
 				"warn",

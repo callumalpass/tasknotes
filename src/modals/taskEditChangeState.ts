@@ -42,6 +42,7 @@ export interface TaskEditModalChangeState {
 	details: string;
 	originalDetails: string;
 	completedInstancesChanges: string[];
+	skippedInstancesChanges: string[];
 	userFields: Record<string, unknown>;
 }
 
@@ -93,6 +94,7 @@ export function buildTaskEditChangesFromModalState(
 		details: input.details,
 		originalDetails: input.originalDetails,
 		completedInstancesChanges: input.completedInstancesChanges,
+		skippedInstancesChanges: input.skippedInstancesChanges,
 		userFields: input.userFields,
 		frontmatter,
 		userFieldConfigs: input.settings.userFields || [],

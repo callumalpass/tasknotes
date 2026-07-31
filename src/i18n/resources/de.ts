@@ -2594,6 +2594,8 @@ export const de: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "Gesamte erfasste Zeit:",
+				due: "Fällig:",
+				scheduled: "Geplant:",
 				created: "Erstellt:",
 				modified: "Geändert:",
 				file: "Datei:"
@@ -2771,6 +2773,7 @@ export const de: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "Fälligkeitsdatum",
 			scheduledDate: "Planungsdatum",
+			customDates: "Benutzerdefinierte Datumsfelder",
 			reminders: "Erinnerungen",
 			remindBeforeDue: "Vor Fälligkeit erinnern…",
 			remindBeforeScheduled: "Vor Planung erinnern…",
@@ -2878,6 +2881,7 @@ export const de: TranslationTree = {
 				toggleSkipFailure: "Überspringen der wiederkehrenden Aufgabe konnte nicht umgeschaltet werden: {message}",
 				updateDueDateFailure: "Aufgaben-Fälligkeitsdatum konnte nicht aktualisiert werden: {message}",
 				updateScheduledFailure: "Aufgaben-Planungsdatum konnte nicht aktualisiert werden: {message}",
+				updateCustomDateFailure: "Fehler beim Aktualisieren von {field}: {message}",
 				updateRemindersFailure: "Erinnerungen konnten nicht aktualisiert werden",
 				clearRemindersFailure: "Erinnerungen konnten nicht gelöscht werden",
 				addReminderFailure: "Erinnerung konnte nicht hinzugefügt werden",
@@ -3097,6 +3101,7 @@ export const de: TranslationTree = {
 			reminderTooltipOne: "1 Erinnerung gesetzt (zum Verwalten klicken)",
 			reminderTooltipMany: "{count} Erinnerungen gesetzt (zum Verwalten klicken)",
 			projectTooltip: "Diese Aufgabe wird als Projekt verwendet (zum Ein-/Ausblenden von Unteraufgaben klicken)",
+			projectIndicatorTooltip: "Diese Aufgabe wird als Projekt verwendet",
 			expandSubtasks: "Unteraufgaben ausklappen",
 			collapseSubtasks: "Unteraufgaben einklappen",
 			dueToday: "{label}: Heute",

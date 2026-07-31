@@ -58,13 +58,15 @@ function findMenuItem(menu: MockMenu, title: string): Record<string, jest.Mock> 
 function renderCompletionsCalendar(
 	task: TaskInfo = createRecurringTask(),
 	plugin: TaskNotesPlugin = createPlugin(),
-	completedInstancesChanges: string[] = []
+	completedInstancesChanges: string[] = [],
+	skippedInstancesChanges: string[] = []
 ): HTMLElement {
 	const container = document.createElement("div");
 	createCompletionsCalendarSection(container, {
 		task,
 		plugin,
 		completedInstancesChanges,
+		skippedInstancesChanges,
 		translate: (key) => key,
 	});
 	return container;
@@ -100,6 +102,7 @@ describe("Task edit completions calendar occurrence context menu", () => {
 		expect(titles).toEqual([
 			"Open or create occurrence note",
 			"Mark complete for this date",
+			"Skip instance",
 		]);
 	});
 
@@ -123,7 +126,59 @@ describe("Task edit completions calendar occurrence context menu", () => {
 			container
 				.querySelector<HTMLElement>('[data-occurrence-date="2026-05-17"]')
 				?.classList.contains("recurring-calendar__day--completed")
+			).toBe(true);
+	});
+
+	it("marks the clicked occurrence skipped through the context menu without saving immediately", () => {
+		const completedInstancesChanges: string[] = [];
+		const skippedInstancesChanges: string[] = [];
+		const container = renderCompletionsCalendar(
+			createRecurringTask(),
+			createPlugin(),
+			completedInstancesChanges,
+			skippedInstancesChanges
+		);
+		const day = container.querySelector<HTMLElement>(
+			'[data-occurrence-date="2026-05-17"]'
+		);
+
+		day?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
+		const item = findMenuItem(getLatestMenu(), "Skip instance");
+		item?.onClick.mock.calls[0]?.[0]();
+
+		expect(completedInstancesChanges).toEqual([]);
+		expect(skippedInstancesChanges).toEqual(["2026-05-17"]);
+		expect(
+			container
+				.querySelector<HTMLElement>('[data-occurrence-date="2026-05-17"]')
+				?.classList.contains("recurring-calendar__day--skipped")
 		).toBe(true);
+	});
+
+	it("marks a skipped occurrence complete and clears the pending skipped state", () => {
+		const completedInstancesChanges: string[] = [];
+		const skippedInstancesChanges: string[] = [];
+		const container = renderCompletionsCalendar(
+			createRecurringTask({ skipped_instances: ["2026-05-17"] }),
+			createPlugin(),
+			completedInstancesChanges,
+			skippedInstancesChanges
+		);
+		const day = container.querySelector<HTMLElement>(
+			'[data-occurrence-date="2026-05-17"]'
+		);
+
+		day?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
+		const item = findMenuItem(getLatestMenu(), "Mark complete for this date");
+		item?.onClick.mock.calls[0]?.[0]();
+		const updatedDay = container.querySelector<HTMLElement>(
+			'[data-occurrence-date="2026-05-17"]'
+		);
+
+		expect(completedInstancesChanges).toEqual(["2026-05-17"]);
+		expect(skippedInstancesChanges).toEqual(["2026-05-17"]);
+		expect(updatedDay?.classList.contains("recurring-calendar__day--completed")).toBe(true);
+		expect(updatedDay?.classList.contains("recurring-calendar__day--skipped")).toBe(false);
 	});
 
 	it("opens or creates the occurrence note for the selected calendar occurrence", async () => {

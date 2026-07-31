@@ -6556,6 +6556,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "26859cf8e6556e20fd9d6b0822f5bcafa4b09b4b"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "2aecf62e99df0df26f85ed129b3b5e96f8e2ca31"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "67319282d3198039e690e93c22aee58365543783"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "722895da5f2d5fff9a83592a720dc4f270d4c4a4"
@@ -7024,6 +7032,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "b20833645977b748a4432ac4a36a20709f116946"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "abbb90a5bf50f03a26242b92d9ae64206b0d52b8"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "5d7bb869bb9f9995c46abff33f37f8e1f31504f8"
@@ -7391,6 +7403,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "1a1fa4c60dc18172ac47b3f5215f63b7219be07d"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "3351b0fb919a3ae33ea71c3b9786d2b48d8e7f92"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -7969,8 +7985,12 @@
       "translation": "d1f345b54af40186bd657b142ffbd41770ffbb27"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "e42ce79ea403ebdb8a93bb5b03feeeb2c3b35ae6"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "05b54725a5fac92c44fb9f2c58af44a34a4b2de4"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "867c254282ca123145a2c86db1fc90ec92ebe53d"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -15406,6 +15426,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "db6b0e27bee01a9d1f6ba6e42bc8f380b6e8dbac"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "3d3f943ba6a2b2afa80b90c3922adeb9f8f082fb"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "1e2ccb7bb4a06953f54b2f51f7fcde53e9233532"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "dd1003edc2bcb819592e88063bc51a672d643933"
@@ -15874,6 +15902,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "d993412cdda43c87b63b68675e3b219add3bb102"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "e7e0a5ed32750504f6c6b2bf73bc669a52fd54af"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "55f9302885af7b8d22d2d32fab779a69c261633e"
@@ -16241,6 +16273,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "e981267a84fcc4bf60840be275a69356f6004f1c"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "c9d64f63426f0d134bd2b1efe1137c8d383a44c1"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -16819,8 +16855,12 @@
       "translation": "5e38c0c2d684c7530d3f5312764253d8cf2c6659"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "c77ab77dc6e210d44bdd3d4f08df478cb4d83861"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "da4ae49b2f564e3708b9f9327b7ab3c373b35cd7"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "806ada5f2b7e2f450ce558fb7749059d2a2c893c"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -24256,6 +24296,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "2b9593c9e7caf350799b13dcfd76bfbf9d084e14"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "1639eeb2455a43779e2c0f44f3e1a8c2cd56cb96"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "8f6015efbda43b743b4371e3d13de29b998861b2"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "23c5a4381cf5868a4bfabdcac817a06fabee4509"
@@ -24724,6 +24772,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "a0a3c2d4cce388135d6267c00a58264fba1513b2"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "9bf95881cf9f1b9003038ebf5d32f1c204d152f4"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "2aca64b8e57e096029ccea247f7301579b273455"
@@ -25091,6 +25143,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "ed5358ebd18987e52f0630c5dac931a6cb2232a9"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "64b8a2f74740a994989792d06f7a4187c582ffb7"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -25669,8 +25725,12 @@
       "translation": "af56aa2bad75074186837e4de8f4363ad2216a89"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "b4c12df8c8d83436cefc32e0cb56b5f638af40c0"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "e689716754262c098755a4ce8c19ca6636503e77"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "f9e6aa72cdbc58f23331ebdc63452c8e4a5bf738"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -33106,6 +33166,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "26f6a665ee37b21decd231599198f136ae7f2075"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "f285c6438261ba6033c2f6679c5ddde3c168a704"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "6aaf50beca3c9b9e1dab3d258a07a1a5d7419cda"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "3be32b832b10b3860230b86d17499cb1c268e2c3"
@@ -33574,6 +33642,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "c1a4728e83ab35ff2b84086e1ba8d7c2fc6279d2"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "0b205640d22349cc8ca89e399d36a3ceac58fe3e"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "07d94016cc6ceb31a9a582d4cb3abd152122f27d"
@@ -33941,6 +34013,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "0faf9824d4d9ee0097e117007ad71e548ce8cc0e"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "cb5d1304cdff30db940723ddf1e410ad46724532"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -34519,8 +34595,12 @@
       "translation": "80e801ffbff761d536ccf02abc4f7f1784400d9c"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "b128b465d8930a5917d73784717d418fe9250dd0"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "fcbb9a6c7bfac9f4a068d5b85da05fc133ad3d49"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "2ee509f3fe1dca7720ac1683b7ee3817b941b5fb"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -41956,6 +42036,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "565ce5def13d63264a626ead9ef35d04f75cfdaa"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "b538715f35d2626a983bf8027e9c4a39ad1731d8"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "6a3e142834bcc2636713cd89a4df90dea51ac465"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "7d160da47fa592961cf9491cc6136cd57c4c4f7e"
@@ -42424,6 +42512,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "0ac577ce5eb53a87a45785afaba017ed857a8fd7"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "0b37fecfd0f5601644fc8cca8adc088f86e1f9ab"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "0f7f7106d4613e1f9e92f4b83843dbb1fb3fda9b"
@@ -42791,6 +42883,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "396b2f665084babdb1483def50bc91ff5f4e86ad"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "e2f54c6d034ea6db3174cbd3d414474b723932f6"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -43369,8 +43465,12 @@
       "translation": "c527b769cadbaa5c2e3fe77f9cee106e9e53dc17"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "3647e2aafd41da512e803d1a4b52626ad3414a65"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "26fca1dfc772091a2edc919c0d193ebea649c64d"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "05893616fca0c1c858a808124aa7114d7214fceb"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -50806,6 +50906,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "14965ef70f510bfe37cae40b0d81a815b8052355"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "6413aafa283b4598221e972e6a62c114895b6f2d"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "9212d5d7ee8a82070d417131e967350430c711c8"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "d621565a0caf0fe1bc25d198ad802397cfc37cae"
@@ -51274,6 +51382,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "17ca4e5ed72e97e99908a38a242d40e177b39c45"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "d12601d267c491f397ce69ead89aada05c8bc05d"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "c922b1de4695598699aa2fe60e42c20a3af2ebc6"
@@ -51641,6 +51753,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "8beea39c050878e7cd0b3012137af445ede245c4"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "038aad87383523364e3be232debed955bf1f93c8"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -52219,8 +52335,12 @@
       "translation": "3335ca0907d119f3c58d71e9ad7ea2aa48d613f7"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "a3e5ec764e5e1100a3245c9619e94ab97199de6b"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "f251fd424a9070903530d6f354c64034c126bd94"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "5a0c3575d7c24252117f18e5d7eec51e4ec4f4ef"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -59656,6 +59776,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "bd950e5eb73f595e544f80b77d43ab3f0f182ba9"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "6e90f85f833c63a69f54913e957d8957fdcdc73a"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "d39d0321c2dbfce41cf22017f0b34e7bfbc36e19"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "ee2fb1bf18b4b34d51375636e73cc04f3909da6d"
@@ -60124,6 +60252,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "cd12b1152eedf79bce5dd2cee1664c0384f6990e"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "9d4de6307dd5596d6eaab402a03108a57709ca54"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "6c9173653f037bea9adeab9f3cc79e07afbbc306"
@@ -60491,6 +60623,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "82cce3e72fd6170947e9be7eab1ef92bc7eb29e3"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "f8baee9e9085c8c37844e376f096a93be9872561"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -61069,8 +61205,12 @@
       "translation": "9d6d487adefac8e39a9c6c7984750cc244be3182"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "05ddbdec4eea528c618ccbdff1a879f164bc211f"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "05e348afabe4481c16a59c81493441630e4c08fa"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "7416ab7c30413864f82817f3768b95d96060e27c"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -68506,6 +68646,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "7204f9a78e3fb8c53786b2ad1458c874b696f84e"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "464c21c0a961f85dedad949039023ce1dd6c58a7"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "664548abfd1fec042494639714994936e8cf534a"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "cefcfbea2c53e00aec22833564a61ee201378591"
@@ -68974,6 +69122,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "5ec2b1a71b2df03809e56c47cc145081a8afc436"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "2b39f48d81f87423b7bb3af73c8ab2ec5e9120ea"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "81944e48a3b4755f86edeb4de2cbb27161623b89"
@@ -69341,6 +69493,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "67f4907cc5fccb05847ab22070dc172917a80528"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "665f35b95d6a89a17d0ce0e253960a32f70b04ac"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -69919,8 +70075,12 @@
       "translation": "4c8fe35a23fe0e461f32d6471a1588ade7b4b692"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "7e61085063036737cb33893a0a3530ff572e2f22"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "94d45d4d32df97bce05d43695b356bd58f6db19b"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "ac5b519e46635d48f9d13abdf07722141dd1d22c"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",

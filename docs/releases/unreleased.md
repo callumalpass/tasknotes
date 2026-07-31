@@ -32,7 +32,27 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Changed
+
+- Generated TaskNotes type contracts now include configured natural-language
+  capture triggers, allowing compatible clients to offer the same field
+  suggestions.
+- Rebuilt the TaskNotes documentation as a v5-ready, source-generated site with
+  reorganized navigation, full-text search, mobile and accessibility
+  improvements, and references generated from the current commands, settings,
+  compatibility metadata, HTTP routes, and default Bases. Added practical
+  guides for adopting TaskNotes in an existing vault, mobile use, custom Bases,
+  and backup and recovery. See the
+  [TaskNotes documentation](https://tasknotes.dev/).
+
 ## Fixed
 
-- (#2033) Clicking the project (folder) badge on a task card no longer shows "Project subtask filtering not available" — a dead action left over from an earlier internal change, while its tooltip still advertised filtering. The badge now expands or collapses the task's inline subtask list, and its tooltip has been corrected to match.
-  - Thanks to @abbiefalls90 for the fix.
+- (#2018) Fixed **Hide empty columns** in Kanban views with swimlanes so columns
+  with no visible tasks are hidden while pinned columns remain. Thanks to
+  @scottTomaszewski for reporting and fixing this.
+- Fixed recurring all-day ICS subscription events keeping the original end date
+  on later instances, which could cause calendar list views to show events under
+  the wrong day. Thanks to @abbiefalls90.
+- (#2033) Fixed the project folder badge on task cards so, when expandable
+  subtasks are enabled, it expands or collapses inline subtasks instead of
+  showing an unavailable-action notice. Thanks to @abbiefalls90.

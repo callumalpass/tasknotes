@@ -15,6 +15,8 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSSubscriptionSe
 const ICS_RECURRENCE_EXPANSION_WINDOW_MS = 365 * 24 * 60 * 60 * 1000;
 const MAX_RECURRING_ICS_VISIBLE_INSTANCES = 3000;
 const MAX_RECURRING_ICS_ITERATIONS = 10000;
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/u;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 type VaultAdapterWithBasePath = {
 	getBasePath?: () => string;
@@ -73,6 +75,43 @@ function registerCalendarVTimezones(calendar: ICAL.Component): void {
 			ICAL.TimezoneService.register(timezone);
 		});
 	});
+}
+
+function dateOnlyToUtcMs(dateString: string): number | null {
+	if (!DATE_ONLY_PATTERN.test(dateString)) {
+		return null;
+	}
+
+	const [year, month, day] = dateString.split("-").map(Number);
+	return Date.UTC(year, month - 1, day);
+}
+
+function formatUtcDateOnly(date: Date): string {
+	const year = date.getUTCFullYear().toString().padStart(4, "0");
+	const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+	const day = date.getUTCDate().toString().padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
+
+function getDateOnlyDurationDays(startDate: string, endDate: string): number | null {
+	const startMs = dateOnlyToUtcMs(startDate);
+	const endMs = dateOnlyToUtcMs(endDate);
+
+	if (startMs === null || endMs === null || endMs <= startMs) {
+		return null;
+	}
+
+	return Math.round((endMs - startMs) / MS_PER_DAY);
+}
+
+function addDaysToDateOnly(dateString: string, days: number): string {
+	const dateMs = dateOnlyToUtcMs(dateString);
+
+	if (dateMs === null) {
+		return dateString;
+	}
+
+	return formatUtcDateOnly(new Date(dateMs + days * MS_PER_DAY));
 }
 
 export class ICSSubscriptionService extends EventEmitter {
@@ -152,6 +191,25 @@ export class ICSSubscriptionService extends EventEmitter {
 		if (!prop) return null;
 		const tzid = prop.getParameter("tzid");
 		return typeof tzid === "string" ? tzid : null;
+	}
+
+	private getRecurringInstanceEnd(
+		instanceStart: string,
+		startISO: string,
+		endISO: string | undefined,
+		isAllDay: boolean
+	): string | undefined {
+		if (!endISO) {
+			return undefined;
+		}
+
+		if (isAllDay) {
+			const durationDays = getDateOnlyDurationDays(startISO, endISO);
+			return durationDays === null ? endISO : addDaysToDateOnly(instanceStart, durationDays);
+		}
+
+		const durationMs = new Date(endISO).getTime() - new Date(startISO).getTime();
+		return new Date(new Date(instanceStart).getTime() + durationMs).toISOString();
 	}
 
 	constructor(plugin: TaskNotesPlugin) {
@@ -629,19 +687,15 @@ export class ICSSubscriptionService extends EventEmitter {
 									occurrence,
 									startTzidRaw
 								);
-								let instanceEnd = endISO;
-
-								if (endISO && startISO && !isAllDay) {
-									// Derive duration from the already-resolved ISO
-									// strings so the fallback path stays consistent
-									// across the start and end of an instance.
-									const durationMs =
-										new Date(endISO).getTime() -
-										new Date(startISO).getTime();
-									instanceEnd = new Date(
-										new Date(instanceStart).getTime() + durationMs
-									).toISOString();
-								}
+								// Derive duration from the already-resolved ISO
+								// strings so the fallback path stays consistent
+								// across the start and end of an instance.
+								const instanceEnd = this.getRecurringInstanceEnd(
+									instanceStart,
+									startISO,
+									endISO,
+									isAllDay
+								);
 
 								events.push({
 									...icsEvent,

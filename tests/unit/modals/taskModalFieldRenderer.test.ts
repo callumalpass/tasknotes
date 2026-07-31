@@ -97,6 +97,55 @@ describe("taskModalFieldRenderer", () => {
 		});
 	});
 
+	it("renders user fields assigned to Basic Information while leaving layout fields to the modal", () => {
+		const container = document.createElement("div");
+		const config = createConfig();
+		config.fields?.push({
+			id: "reviewed",
+			fieldType: "user",
+			group: "basic",
+			order: 2,
+			enabled: true,
+			visibleInCreation: true,
+			visibleInEdit: true,
+		} as ModalFieldConfigLike);
+
+		const renderUserField = jest.fn((fieldContainer: HTMLElement, fieldConfig) => {
+			fieldContainer.createDiv({ text: fieldConfig.id });
+		});
+
+		const result = renderTaskModalFieldGroups({
+			container,
+			config,
+			isCreationMode: false,
+			fieldRenderers: {
+				contexts: (fieldContainer) => fieldContainer.createDiv({ text: "contexts" }),
+			},
+			renderUserField,
+		});
+
+		const groupContainers = container.querySelectorAll(".task-modal__field-group");
+		expect(groupContainers).toHaveLength(3);
+		expect(groupContainers[0].textContent).toBe("reviewed");
+		expect(renderUserField).toHaveBeenCalledWith(
+			groupContainers[0],
+			expect.objectContaining({ group: "basic", id: "reviewed" })
+		);
+		expect(renderUserField).not.toHaveBeenCalledWith(
+			expect.any(HTMLElement),
+			expect.objectContaining({ id: "title" })
+		);
+		expect(renderUserField).not.toHaveBeenCalledWith(
+			expect.any(HTMLElement),
+			expect.objectContaining({ id: "details" })
+		);
+		expect(result).toEqual({
+			groupsRendered: 3,
+			fieldsRendered: 3,
+			ignoredFieldIds: ["unknown-core"],
+		});
+	});
+
 	it("honors modal visibility filtering before rendering groups", () => {
 		const container = document.createElement("div");
 		const config = createConfig();

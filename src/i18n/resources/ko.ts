@@ -2578,6 +2578,8 @@ export const ko: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "총 기록 시간:",
+				due: "마감:",
+				scheduled: "예정:",
 				created: "생성:",
 				modified: "수정:",
 				file: "파일:"
@@ -2755,6 +2757,7 @@ export const ko: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "마감일",
 			scheduledDate: "예정일",
+			customDates: "사용자 지정 날짜",
 			reminders: "리마인더",
 			remindBeforeDue: "마감 전 알림...",
 			remindBeforeScheduled: "예정 전 알림...",
@@ -2862,6 +2865,7 @@ export const ko: TranslationTree = {
 				toggleSkipFailure: "반복 작업 건너뛰기 토글 실패: {message}",
 				updateDueDateFailure: "작업 마감일 업데이트 실패: {message}",
 				updateScheduledFailure: "작업 예정일 업데이트 실패: {message}",
+				updateCustomDateFailure: "{field} 업데이트 실패: {message}",
 				updateRemindersFailure: "리마인더 업데이트 실패",
 				clearRemindersFailure: "리마인더 지우기 실패",
 				addReminderFailure: "리마인더 추가 실패",
@@ -3081,6 +3085,7 @@ export const ko: TranslationTree = {
 			reminderTooltipOne: "알림 1개 설정됨 (관리하려면 클릭)",
 			reminderTooltipMany: "{count}개 알림 설정됨 (관리하려면 클릭)",
 			projectTooltip: "이 작업은 프로젝트로 사용됩니다 (클릭하여 하위 작업 표시/숨기기)",
+			projectIndicatorTooltip: "이 작업은 프로젝트로 사용됩니다",
 			expandSubtasks: "하위 작업 펼치기",
 			collapseSubtasks: "하위 작업 접기",
 			dueToday: "{label}: 오늘",

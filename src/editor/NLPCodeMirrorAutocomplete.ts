@@ -335,7 +335,7 @@ async function getFileSuggestions(
 				// Get file metadata for rendering
 				const file = plugin.app.vault
 					.getMarkdownFiles()
-					.find((f) => f.basename === item.insertText);
+					.find((f) => f.path === item.path);
 
 				// Build metadata rows using shared utility
 				let metadataRows: ProjectCompletionMetadata = [];

@@ -2594,6 +2594,8 @@ export const ja: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "総追跡時間：",
+				due: "期限：",
+				scheduled: "予定：",
 				created: "作成：",
 				modified: "変更：",
 				file: "ファイル："
@@ -2771,6 +2773,7 @@ export const ja: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "期限日",
 			scheduledDate: "予定日",
+			customDates: "カスタム日付",
 			reminders: "リマインダー",
 			remindBeforeDue: "期限前にリマインド…",
 			remindBeforeScheduled: "予定前にリマインド…",
@@ -2878,6 +2881,7 @@ export const ja: TranslationTree = {
 				toggleSkipFailure: "繰り返しタスクのスキップ切り替えに失敗しました：{message}",
 				updateDueDateFailure: "タスク期限日の更新に失敗しました：{message}",
 				updateScheduledFailure: "タスク予定日の更新に失敗しました：{message}",
+				updateCustomDateFailure: "{field}の更新に失敗しました：{message}",
 				updateRemindersFailure: "リマインダーの更新に失敗しました",
 				clearRemindersFailure: "リマインダーのクリアに失敗しました",
 				addReminderFailure: "リマインダーの追加に失敗しました",
@@ -3097,6 +3101,7 @@ export const ja: TranslationTree = {
 			reminderTooltipOne: "リマインダーが1件設定されています (クリックして管理)",
 			reminderTooltipMany: "{count}件のリマインダーが設定されています (クリックして管理)",
 			projectTooltip: "このタスクはプロジェクトとして使用されています（クリックでサブタスクを表示/非表示）",
+			projectIndicatorTooltip: "このタスクはプロジェクトとして使用されています",
 			expandSubtasks: "サブタスクを展開",
 			collapseSubtasks: "サブタスクを折りたたむ",
 			dueToday: "{label}: 今日",

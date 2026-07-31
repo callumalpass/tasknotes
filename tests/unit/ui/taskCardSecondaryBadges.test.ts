@@ -43,6 +43,7 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 					"ui.taskCard.reminderTooltipMany": `${vars?.count ?? 0} reminders`,
 					"ui.taskCard.detailsTooltip": "Has details",
 					"ui.taskCard.projectTooltip": "Project",
+					"ui.taskCard.projectIndicatorTooltip": "Used as a project",
 					"ui.taskCard.expandSubtasks": "Expand subtasks",
 					"ui.taskCard.collapseSubtasks": "Collapse subtasks",
 					"ui.taskCard.blockingToggle": `Blocking ${vars?.count ?? 0} tasks`,
@@ -159,7 +160,7 @@ describe("taskCardSecondaryBadges", () => {
 		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
 	});
 
-	it("renders subtasks for an expanded project even when the chevron is disabled", () => {
+	it("keeps the project badge inert when expandable subtasks are disabled", async () => {
 		const plugin = createPlugin({
 			settings: {
 				showExpandableSubtasks: false,
@@ -183,10 +184,19 @@ describe("taskCardSecondaryBadges", () => {
 			handlers,
 		});
 
-		// Folder badge is present, chevron is not, but subtasks still render.
-		expect(card.querySelector(".task-card__project-indicator")).not.toBeNull();
+		const folder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(folder).not.toBeNull();
+		expect(folder?.getAttribute("role")).toBeNull();
+		expect(folder?.getAttribute("aria-label")).toBe("Used as a project");
 		expect(card.querySelector(".task-card__chevron")).toBeNull();
-		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
+		expect(plugin.expandedProjectsService?.isExpanded).not.toHaveBeenCalled();
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
+
+		folder?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		await Promise.resolve();
+
+		expect(plugin.expandedProjectsService?.toggle).not.toHaveBeenCalled();
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
 	});
 
 	it("does not auto-expand subtasks when expandable subtasks are disabled", () => {
@@ -217,16 +227,15 @@ describe("taskCardSecondaryBadges", () => {
 			handlers,
 		});
 
-		// expand-by-default must be gated by showExpandableSubtasks, so the default
-		// passed to the service is false and the subtask list does not auto-render.
-		expect(plugin.expandedProjectsService?.isExpanded).toHaveBeenCalledWith(task.path, false);
+		// The disabled feature must not consult saved expansion state or render subtasks.
+		expect(plugin.expandedProjectsService?.isExpanded).not.toHaveBeenCalled();
 		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
 	});
 
-	it("update path expands subtasks even when the chevron is disabled", async () => {
+	it("update path removes project-badge interaction when expandable subtasks are disabled", async () => {
 		const plugin = createPlugin({
 			settings: {
-				showExpandableSubtasks: false,
+				showExpandableSubtasks: true,
 				expandSubtasksByDefault: false,
 				enableDebugLogging: false,
 			},
@@ -238,7 +247,7 @@ describe("taskCardSecondaryBadges", () => {
 		const { card, mainRow, badgesContainer } = createCard();
 		const task = createTask();
 
-		// Initial render: collapsed project with the chevron off → folder only.
+		// Initial render: both project controls are interactive.
 		renderTaskCardSecondaryBadges({
 			card,
 			badgesContainer,
@@ -250,8 +259,13 @@ describe("taskCardSecondaryBadges", () => {
 		});
 		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
 
-		// Becomes expanded: the dynamic update path must render the subtask list
-		// once (no chevron involved, no duplicate render).
+		const originalFolder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(originalFolder?.getAttribute("role")).toBe("button");
+		expect(card.querySelector(".task-card__chevron")).not.toBeNull();
+
+		// Disable expandable subtasks while the card is mounted. The update must
+		// recreate the folder as an inert indicator and remove the chevron.
+		plugin.settings.showExpandableSubtasks = false;
 		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockReturnValue(true);
 		updateTaskCardSecondaryBadges({
 			card,
@@ -264,9 +278,17 @@ describe("taskCardSecondaryBadges", () => {
 		});
 		await new Promise((resolve) => setTimeout(resolve, 0));
 
+		const updatedFolder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(updatedFolder).not.toBe(originalFolder);
+		expect(updatedFolder?.getAttribute("role")).toBeNull();
+		expect(updatedFolder?.getAttribute("aria-label")).toBe("Used as a project");
 		expect(card.querySelector(".task-card__chevron")).toBeNull();
-		expect(handlers.toggleSubtasks).toHaveBeenCalledTimes(1);
-		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
+		expect(plugin.expandedProjectsService?.isExpanded).toHaveBeenCalledTimes(1);
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
+
+		updatedFolder?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		await Promise.resolve();
+		expect(plugin.expandedProjectsService?.toggle).not.toHaveBeenCalled();
 	});
 
 	it("keeps secondary badges omitted when the option is disabled", () => {

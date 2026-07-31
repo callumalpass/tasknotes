@@ -2594,6 +2594,8 @@ export const ru: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "Общее отслеженное время:",
+				due: "Срок:",
+				scheduled: "Запланировано:",
 				created: "Создано:",
 				modified: "Изменено:",
 				file: "Файл:"
@@ -2771,6 +2773,7 @@ export const ru: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "Срок выполнения",
 			scheduledDate: "Запланированная дата",
+			customDates: "Пользовательские даты",
 			reminders: "Напоминания",
 			remindBeforeDue: "Напомнить до срока выполнения…",
 			remindBeforeScheduled: "Напомнить до запланированной даты…",
@@ -2878,6 +2881,7 @@ export const ru: TranslationTree = {
 				toggleSkipFailure: "Не удалось переключить пропуск повторяющейся задачи: {message}",
 				updateDueDateFailure: "Не удалось обновить срок выполнения задачи: {message}",
 				updateScheduledFailure: "Не удалось обновить запланированную дату задачи: {message}",
+				updateCustomDateFailure: "Не удалось обновить {field}: {message}",
 				updateRemindersFailure: "Не удалось обновить напоминания",
 				clearRemindersFailure: "Не удалось очистить напоминания",
 				addReminderFailure: "Не удалось добавить напоминание",
@@ -3097,6 +3101,7 @@ export const ru: TranslationTree = {
 			reminderTooltipOne: "1 напоминание установлено (нажмите, чтобы управлять)",
 			reminderTooltipMany: "{count} напоминаний установлено (нажмите, чтобы управлять)",
 			projectTooltip: "Эта задача используется как проект (нажмите, чтобы показать/скрыть подзадачи)",
+			projectIndicatorTooltip: "Эта задача используется как проект",
 			expandSubtasks: "Развернуть подзадачи",
 			collapseSubtasks: "Свернуть подзадачи",
 			dueToday: "{label}: Сегодня",

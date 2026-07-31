@@ -343,6 +343,12 @@ function removeUnsetMappedFields(
 	) {
 		delete frontmatter[fieldMapper.toUserField("blockedBy")];
 	}
+	if (
+		Object.prototype.hasOwnProperty.call(updates, "reminders") &&
+		(!Array.isArray(updates.reminders) || updates.reminders.length === 0)
+	) {
+		delete frontmatter[fieldMapper.toUserField("reminders")];
+	}
 }
 
 export function buildUpdatedTaskFromPlan({

@@ -2594,6 +2594,8 @@ export const fr: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "Temps suivi total :",
+				due: "Échéance :",
+				scheduled: "Planifiée :",
 				created: "Créée :",
 				modified: "Modifiée :",
 				file: "Fichier :"
@@ -2771,6 +2773,7 @@ export const fr: TranslationTree = {
 			prioritySelected: "Priorité sélectionnée : {label}",
 			dueDate: "Échéance",
 			scheduledDate: "Date planifiée",
+			customDates: "Dates personnalisées",
 			reminders: "Rappels",
 			remindBeforeDue: "Rappeler avant l'échéance…",
 			remindBeforeScheduled: "Rappeler avant la date planifiée…",
@@ -2878,6 +2881,7 @@ export const fr: TranslationTree = {
 				toggleSkipFailure: "Impossible de modifier l'omission de tâche récurrente : {message}",
 				updateDueDateFailure: "Impossible de mettre à jour l'échéance : {message}",
 				updateScheduledFailure: "Impossible de mettre à jour la date planifiée : {message}",
+				updateCustomDateFailure: "Échec de la mise à jour de {field} : {message}",
 				updateRemindersFailure: "Impossible de mettre à jour les rappels",
 				clearRemindersFailure: "Impossible de supprimer les rappels",
 				addReminderFailure: "Impossible d'ajouter un rappel",
@@ -3097,6 +3101,7 @@ export const fr: TranslationTree = {
 			reminderTooltipOne: "1 rappel défini (cliquer pour gérer)",
 			reminderTooltipMany: "{count} rappels définis (cliquer pour gérer)",
 			projectTooltip: "Cette tâche est utilisée comme projet (cliquer pour afficher/masquer les sous-tâches)",
+			projectIndicatorTooltip: "Cette tâche est utilisée comme projet",
 			expandSubtasks: "Déplier les sous-tâches",
 			collapseSubtasks: "Replier les sous-tâches",
 			dueToday: "{label}: Aujourd'hui",

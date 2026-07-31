@@ -71,6 +71,7 @@ function createEditInput(
 		details: "",
 		originalDetails: "",
 		completedInstancesChanges: [],
+		skippedInstancesChanges: [],
 		userFields: {},
 		frontmatter: {},
 		userFieldConfigs: [],
