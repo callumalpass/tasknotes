@@ -34,6 +34,8 @@ export interface JiraTaskCreator {
 	): Promise<{ taskInfo: TaskInfo }>;
 }
 
+export type JiraTaskDataPreparer = (taskData: TaskCreationData) => TaskCreationData;
+
 /**
  * Coordinates Jira retrieval and TaskNotes creation without exposing the optional
  * dependency to command registration or the core task-creation service.
@@ -43,7 +45,8 @@ export class JiraImportService {
 		private readonly adapter: JiraIssueAdapter,
 		private readonly taskCreator: JiraTaskCreator,
 		private readonly mappingSettings: JiraFieldMappingSettings,
-		private readonly userFields: readonly UserMappedField[]
+		private readonly userFields: readonly UserMappedField[],
+		private readonly prepareTaskData: JiraTaskDataPreparer = (taskData) => taskData
 	) {}
 
 	async importIssue(issueKey: string): Promise<TaskInfo> {
@@ -62,8 +65,11 @@ export class JiraImportService {
 		}
 
 		try {
+			const taskData = this.prepareTaskData(
+				mapJiraIssueWithSettings(issue, this.mappingSettings, this.userFields)
+			);
 			const result = await this.taskCreator.createTask(
-				mapJiraIssueWithSettings(issue, this.mappingSettings, this.userFields),
+				taskData,
 				{ applyDefaults: true, applyTemplate: true }
 			);
 			return result.taskInfo;

@@ -1,4 +1,4 @@
-import type { TaskInfo } from "../../../src/types";
+import type { TaskCreationData, TaskInfo } from "../../../src/types";
 import type { JiraIssue } from "../../../src/integrations/jira/JiraIssueAdapter";
 import {
 	JiraImportError,
@@ -8,6 +8,7 @@ import {
 	createDefaultJiraMappingSettings,
 	mapJiraIssueWithSettings,
 } from "../../../src/integrations/jira/JiraFieldMapping";
+import { applyParentNoteProjectDefault } from "../../../src/utils/taskCreationPrepopulation";
 
 const issue: JiraIssue = {
 	key: "WIZ-42",
@@ -39,7 +40,7 @@ describe("default Jira field mapping", () => {
 			expect.objectContaining({
 			id: "WIZ-42",
 			title: "WIZ-42 Teach the build dragon to whisper",
-			details: "The CI flames are too loud.",
+			details: "JIRA:WIZ-42\n\nThe CI flames are too loud.",
 			status: "In Progress",
 			priority: "high",
 			dateCreated: "2026-07-30T12:00:00.000Z",
@@ -78,6 +79,43 @@ describe("JiraImportService", () => {
 				creationContext: "import",
 			}),
 			{ applyDefaults: true, applyTemplate: true }
+		);
+	});
+
+	it("uses the current-note project default only when Jira did not map projects", async () => {
+		const adapter = { getIssue: jest.fn().mockResolvedValue(issue) };
+		const taskCreator = {
+			createTask: jest.fn().mockResolvedValue({
+				taskInfo: { path: "Tasks/WIZ-42.md", title: "Imported" } as TaskInfo,
+			}),
+		};
+		const applyCurrentNoteProject = (taskData: TaskCreationData): TaskCreationData =>
+			(applyParentNoteProjectDefault(
+				taskData,
+				"[[Wizard laboratory]]"
+			) as TaskCreationData | undefined) ?? taskData;
+		const defaults = createDefaultJiraMappingSettings();
+		const service = new JiraImportService(
+			adapter as never,
+			taskCreator,
+			defaults,
+			[],
+			applyCurrentNoteProject
+		);
+
+		await service.importIssue("WIZ-42");
+		expect(taskCreator.createTask).toHaveBeenLastCalledWith(
+			expect.objectContaining({ projects: ["[[Wizard laboratory]]"] }),
+			expect.anything()
+		);
+
+		defaults.fields.projects = [
+			{ mode: "fixed", value: "[[Explicit Jira project]]" },
+		];
+		await service.importIssue("WIZ-42");
+		expect(taskCreator.createTask).toHaveBeenLastCalledWith(
+			expect.objectContaining({ projects: ["[[Explicit Jira project]]"] }),
+			expect.anything()
 		);
 	});
 

@@ -20,7 +20,9 @@ export async function executeJiraImportCommand(plugin: TaskNotesPlugin): Promise
 		JiraIssueAdapter.fromApp(plugin.app),
 		plugin.taskService,
 		plugin.settings.jiraMapping,
-		plugin.settings.userFields ?? []
+		plugin.settings.userFields ?? [],
+		(taskData) =>
+			plugin.applyParentNoteProjectDefault(taskData, "task-creation") ?? taskData
 	);
 
 	try {

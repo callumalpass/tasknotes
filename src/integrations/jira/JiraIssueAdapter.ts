@@ -24,6 +24,10 @@ export class JiraIssueAdapterError extends Error {
 
 export interface JiraIssue {
 	key: string;
+	self?: string;
+	account?: {
+		host?: string;
+	};
 	fields: {
 		[key: string]: unknown;
 		summary: string;

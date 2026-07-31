@@ -4,11 +4,13 @@ import type {
 	UserMappedField,
 } from "../../../src/types/settings";
 import {
+	buildJiraIssueBacklink,
 	buildJiraMappingPreview,
 	createDefaultJiraMappingSettings,
 	getJiraValueByPath,
 	mapJiraIssueWithSettings,
 	normalizeJiraMappingSettings,
+	prependJiraIssueBacklink,
 	renderJiraTemplate,
 } from "../../../src/integrations/jira/JiraFieldMapping";
 
@@ -197,6 +199,39 @@ describe("configurable Jira mapping", () => {
 				expect.objectContaining({ id: "due", status: "invalid" }),
 			])
 		);
+	});
+});
+
+describe("Jira issue backlinks", () => {
+	it("builds a credential-free browser URL from the Jira account host", () => {
+		const hostedIssue: JiraIssue = {
+			...issue,
+			account: {
+				host: "https://wizard:secret@magic.atlassian.net/jira?token=hidden",
+			},
+		};
+
+		expect(buildJiraIssueBacklink(hostedIssue)).toBe(
+			"[Jira MAGIC-17](<https://magic.atlassian.net/browse/MAGIC-17>)"
+		);
+	});
+
+	it("falls back to the companion plugin macro for missing or unsafe hosts", () => {
+		expect(
+			buildJiraIssueBacklink({
+				...issue,
+				account: { host: "javascript:alert(1)" },
+			})
+		).toBe("JIRA:MAGIC-17");
+		expect(buildJiraIssueBacklink(issue)).toBe("JIRA:MAGIC-17");
+	});
+
+	it("preserves mapped details and does not duplicate backlinks on retries", () => {
+		const first = prependJiraIssueBacklink("Keep these details.", issue);
+		const second = prependJiraIssueBacklink(first, issue);
+
+		expect(first).toBe("JIRA:MAGIC-17\n\nKeep these details.");
+		expect(second).toBe(first);
 	});
 });
 

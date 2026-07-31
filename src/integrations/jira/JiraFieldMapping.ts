@@ -281,6 +281,52 @@ function coerceUserField(value: unknown, field: UserMappedField): unknown {
 	}
 }
 
+function getJiraIssueUrl(issue: JiraIssue): string | undefined {
+	const host =
+		typeof issue.account?.host === "string" ? issue.account.host.trim() : "";
+	const self = typeof issue.self === "string" ? issue.self.trim() : "";
+	const candidate = host || self;
+	if (!candidate) return undefined;
+
+	try {
+		const base = new URL(
+			/^[a-z][a-z\d+.-]*:/i.test(candidate) ? candidate : `https://${candidate}`
+		);
+		if (base.protocol !== "https:" && base.protocol !== "http:") return undefined;
+		base.username = "";
+		base.password = "";
+		return new URL(`/browse/${encodeURIComponent(issue.key)}`, base.origin).toString();
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Creates the companion Jira plugin's macro backlink, or a direct browser URL when
+ * the fetched issue includes a trustworthy HTTP(S) account host.
+ */
+export function buildJiraIssueBacklink(issue: JiraIssue): string {
+	const url = getJiraIssueUrl(issue);
+	return url ? `[Jira ${issue.key}](<${url}>)` : `JIRA:${issue.key}`;
+}
+
+export function prependJiraIssueBacklink(
+	details: string | undefined,
+	issue: JiraIssue
+): string {
+	const existing = details?.trim() ?? "";
+	const url = getJiraIssueUrl(issue);
+	const escapedKey = issue.key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const hasReference =
+		new RegExp(`\\bJIRA\\s*:\\s*${escapedKey}\\b`, "i").test(existing) ||
+		new RegExp(`/browse/${escapedKey}(?:[)>\\s]|$)`, "i").test(existing) ||
+		(!!url && existing.toLocaleLowerCase().includes(url.toLocaleLowerCase()));
+	if (hasReference) return existing;
+
+	const backlink = buildJiraIssueBacklink(issue);
+	return existing ? `${backlink}\n\n${existing}` : backlink;
+}
+
 function normalizeSource(value: unknown): JiraValueSource | null {
 	if (!isRecord(value) || !SOURCE_MODES.has(value.mode as JiraValueSourceMode)) return null;
 	return {
@@ -371,7 +417,9 @@ export function mapJiraIssueWithSettings(
 	output.id = coerceText(read("id"));
 	output.title =
 		coerceText(read("title")) || `${issue.key.trim()} ${issue.fields.summary.trim()}`;
-	output.details = jiraRichTextToMarkdown(read("details")) ?? coerceText(read("details"));
+	const mappedDetails =
+		jiraRichTextToMarkdown(read("details")) ?? coerceText(read("details"));
+	output.details = prependJiraIssueBacklink(mappedDetails, issue);
 	output.status = remapEnum(
 		coerceText(read("status")),
 		config.enumRemaps.status

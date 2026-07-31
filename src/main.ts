@@ -1191,7 +1191,7 @@ export default class TaskNotesPlugin extends Plugin {
 		}).open();
 	}
 
-	private applyParentNoteProjectDefault(
+	applyParentNoteProjectDefault(
 		prePopulatedValues: Partial<TaskInfo> | undefined,
 		context: ParentNoteProjectDefaultContext
 	): Partial<TaskInfo> | undefined {
