@@ -7,8 +7,6 @@
 
 import { CalendarView } from "../../../src/bases/CalendarView";
 
-jest.mock("obsidian");
-
 type SignatureItem = {
 	path: string;
 	properties: Record<string, unknown>;

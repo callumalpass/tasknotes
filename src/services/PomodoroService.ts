@@ -806,7 +806,7 @@ export class PomodoroService {
 					this.plugin.settings.defaultTaskStatus
 				);
 				if (task.archived || completedForToday) {
-					this.clearCachedTaskPath(path);
+					// Keep the selected path so reopened or unarchived tasks can be picked up later.
 					continue;
 				}
 				return task;

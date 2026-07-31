@@ -24,6 +24,7 @@ Shows or hides the inline relationships widget in notes.
 The widget surfaces:
 
 - Subtasks
+- Materialized occurrences
 - Parent project links
 - Blocking and blocked-by relationships
 

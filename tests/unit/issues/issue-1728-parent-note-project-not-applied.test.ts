@@ -20,7 +20,10 @@
  * - src/modals/TaskCreationModal.ts:applyPrePopulatedValues() (line 1161) - handles projects
  */
 
-import { applyParentNoteProjectDefault } from "../../../src/utils/taskCreationPrepopulation";
+import {
+	applyParentNoteProjectDefault,
+	shouldApplyParentNoteProjectDefault,
+} from "../../../src/utils/taskCreationPrepopulation";
 
 describe('Issue #1728: Parent note not applied as project in modal creation', () => {
 	it('applies the active parent note as the default project when none is pre-populated', () => {
@@ -43,5 +46,15 @@ describe('Issue #1728: Parent note not applied as project in modal creation', ()
 
 	it('returns undefined when there is no parent note and no existing defaults', () => {
 		expect(applyParentNoteProjectDefault(undefined, undefined)).toBeUndefined();
+	});
+
+	it("uses the normal task creation toggle independently from inline conversion", () => {
+		const defaults = {
+			useParentNoteForTaskCreation: false,
+			useParentNoteAsProject: true,
+		};
+
+		expect(shouldApplyParentNoteProjectDefault(defaults, "task-creation")).toBe(false);
+		expect(shouldApplyParentNoteProjectDefault(defaults, "inline-creation")).toBe(true);
 	});
 });

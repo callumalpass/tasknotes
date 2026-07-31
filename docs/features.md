@@ -62,7 +62,7 @@ See [Integrations](settings/integrations.md) for details.
 
 ## Companion Plugins
 
-TaskNotes can be extended by optional companion plugins that use the JavaScript runtime API while keeping task data in Markdown files. [TaskNotes Workflows](companion-plugins/tasknotes-workflows.md) adds Markdown-defined automation for TaskNotes events, schedules, manual commands, and typed task actions.
+TaskNotes can be extended by optional companion plugins that use the JavaScript runtime API while keeping task data in Markdown files. [Canvas Bases](companion-plugins/canvas-bases.md) is the TaskNotes canvas companion, adding canvas-style boards and JSON Canvas snapshots for Bases views, with optional TaskNotes badges, actions, and relationship edges. [TaskNotes Workflows](companion-plugins/tasknotes-workflows.md) adds Markdown-defined automation for TaskNotes events, schedules, manual commands, and typed task actions.
 
 See [Companion Plugins](companion-plugins.md) for details.
 

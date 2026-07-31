@@ -4,8 +4,6 @@ import {
 } from "../../../src/modals/TaskCreationModal";
 import type { TFile } from "obsidian";
 
-jest.mock("obsidian");
-
 describe("Issue #711: open task note after creation", () => {
 	it("opens the created task in the selected leaf mode", async () => {
 		const file = { path: "TaskNotes/Tasks/new-task.md" } as TFile;

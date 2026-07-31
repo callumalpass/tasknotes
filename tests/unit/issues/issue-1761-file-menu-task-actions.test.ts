@@ -1,10 +1,8 @@
 import TaskNotesPlugin from "../../../src/main";
 import { createI18nService } from "../../../src/i18n";
 import type { TaskInfo } from "../../../src/types";
-import { App, Menu, TFile } from "../../__mocks__/obsidian";
+import { App, Menu, TFile } from "../../helpers/obsidian-runtime";
 import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
-
-jest.mock("obsidian");
 jest.mock("../../../src/components/TaskContextMenu", () => ({
 	TaskContextMenu: {
 		addToMenu: jest.fn(),
@@ -70,14 +68,11 @@ describe("issue #1761 - native file menu TaskNotes actions", () => {
 		expect(taskNotesItem.setIcon).toHaveBeenCalledWith("list-checks");
 		expect(taskNotesItem.setSection).toHaveBeenCalledWith("tasknotes");
 		expect(taskNotesItem.setSubmenu).toHaveBeenCalledTimes(1);
-		expect(TaskContextMenu.addToMenu).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({
-				task,
-				plugin,
-				onUpdate: expect.any(Function),
-			})
-		);
+		const addToMenuCall = (TaskContextMenu.addToMenu as jest.Mock).mock.calls[0];
+		expect(addToMenuCall[0]).toBeTruthy();
+		expect(addToMenuCall[1].task).toBe(task);
+		expect(addToMenuCall[1].plugin).toBe(plugin);
+		expect(addToMenuCall[1].onUpdate).toEqual(expect.any(Function));
 
 		const editClick = editItem.onClick.mock.calls[0][0];
 		await editClick(new MouseEvent("click"));

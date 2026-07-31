@@ -4,8 +4,6 @@ import {
 	updateBadgeIndicator,
 } from "../../../src/ui/taskCardIndicators";
 
-jest.mock("obsidian");
-
 describe("taskCardIndicators", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";

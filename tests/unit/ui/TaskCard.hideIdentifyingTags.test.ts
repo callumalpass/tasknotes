@@ -15,7 +15,7 @@
 
 import { createTaskCard } from '../../../src/ui/TaskCard';
 import { TaskFactory } from '../../helpers/mock-factories';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 import type { TaskInfo } from '../../../src/types';
 import type TaskNotesPlugin from '../../../src/main';
 

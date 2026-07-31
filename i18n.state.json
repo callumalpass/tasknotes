@@ -969,8 +969,8 @@
       "translation": "16713ea637a4ce641361be12f1595445ec1a6e81"
     },
     "views.pomodoro.meta.running": {
-      "source": "f1885aa4adca1b4282dcf023d4e9e3b91cf0f757",
-      "translation": "8d3b30330335b7958eebbe56ffa91e1133529d59"
+      "source": "7c0265e6d539c3ed03013eac3d78b24c814cbd37",
+      "translation": "58f17f420d700d2818902e7b7e584cb3b2fad74d"
     },
     "views.pomodoro.meta.paused": {
       "source": "782cf2acb237b4450d523ab710518df4ff376d9d",
@@ -1353,8 +1353,8 @@
       "translation": "ed6c14975535f23eef7a97bee0f3cc1a1b7b32d4"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "66768051603f604e916270ef46d5c8b31ced4887"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "883b3f6da96b7e306619566a91f81c146d2ab641"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -1956,13 +1956,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "0a40d412c9a5ac26d11ef8336b2141f4436a7f52"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "1ab9156797af2ee06fbb82ddd37f03171405b8e5"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "36041269fdb0577e43bdeb6cb9b94564425255a7"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "5895e0bd1b6588253b97cd53bac2a491d00f1ff9"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "afc96bc84a3c8bb73614807a52b6e61031c458bf"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "d4b99ce9da86b63b89439c9f4ea699f4e5459b36"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "969d68004f48535b966e2ac6b4df64d79014fe75"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -2132,6 +2140,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "d0bdacf79206741db55f9c6b36a09707d5937685"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "8a24c8652046c844a18dee89658156aefe64ac97"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "42192329fcf06d58a24c18abcf8662f6bdd1791d"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "dd30945f7b08bfad6568369dcce1b496cffd374e"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "1a6b06ab1610b7156057edbacafb9024d420a5f6"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "7254091dd4c5e98191bd7abcdeec43058c064d04"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "e8231f552f17d6553ee69a95be86a78667063ba1"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "3c4467c1a1f184f5fd3332587120fb978d8de2dc"
@@ -2277,8 +2309,8 @@
       "translation": "16a200b362ae780d4230344fa54b455b0c49b455"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "26badeb063972db6f4f0d34423fa04602e3a223a"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "13e4958bfb569d73f26642b33c5fd5b08b3a00e2"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -2399,6 +2431,14 @@
     "settings.general.releaseNotes.showOnUpdate.description": {
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "ee796a1f366c9a65c175015db7cdabfef67bed7a"
+    },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "1d76a1e162759bf7391dc6a5ce61bfbea8945fc3"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "f2e314061e856e95e4dd5199d55703d02cb2fb3d"
     },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -2688,9 +2728,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "7103df6d730658889a8b1284953f44f293881a1e"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "4f845782eeab05f5077dca768f0a436cc5c03c6d"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "22fc2de609d378e21b9ec798a00059860d38fcab"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "4a6eec7fbbf37cc90183c459e5d3d1353c941a52"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -4140,6 +4184,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "17e1b7f3eeaf4948018b4da3d03fa0765b6792b9"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "26d0431c6b1d4fbde9f6062494d8ce1dfd1d145c"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "e3d399f008163245766b550cb20b3f750effd01b"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "b106811bbd969115bbab49072fb313a2fbb61de2"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "1e6ebb63a22631a37592f40fd6862698c8a8e9c4"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "7f31c6604958a07514b1355ca291b6b149350385"
@@ -5292,6 +5352,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "7f26686cfeedf2599568056031748d77186b4775"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "18b5a590fecf528dcee80b777cfa6f745e2df944"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "4297452c1a2d3753f94f77581d1cccff462dead0"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "be1d117c7288cb32621ccbdad460b7b6794e7b32"
@@ -5399,6 +5467,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "26860c71e17482b513134e2143b8b16e102bff7d"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "082037fb3cd65ed457f9e5ba73366c421cb60852"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -6484,6 +6556,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "26859cf8e6556e20fd9d6b0822f5bcafa4b09b4b"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "2aecf62e99df0df26f85ed129b3b5e96f8e2ca31"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "67319282d3198039e690e93c22aee58365543783"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "722895da5f2d5fff9a83592a720dc4f270d4c4a4"
@@ -6952,6 +7032,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "b20833645977b748a4432ac4a36a20709f116946"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "abbb90a5bf50f03a26242b92d9ae64206b0d52b8"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "5d7bb869bb9f9995c46abff33f37f8e1f31504f8"
@@ -7319,6 +7403,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "1a1fa4c60dc18172ac47b3f5215f63b7219be07d"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "3351b0fb919a3ae33ea71c3b9786d2b48d8e7f92"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -7775,6 +7863,14 @@
     "services.task.notices.templateReadError": {
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "b650a6899a7e057443713e4bd3dc4198a96cc4f2"
+    },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "949c2395f58f72b755dcb6926521405d5b8c982e"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "3d636291058e81577d0f5761c13543d2d9466460"
     },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
@@ -9739,8 +9835,8 @@
       "translation": "cbf23818d3fb38dff361b0bf24be395701ab2d27"
     },
     "views.pomodoro.meta.running": {
-      "source": "f1885aa4adca1b4282dcf023d4e9e3b91cf0f757",
-      "translation": "9814a08efc5d2924c050cebfd0038ddbed4f152d"
+      "source": "7c0265e6d539c3ed03013eac3d78b24c814cbd37",
+      "translation": "4c1f95e5f97ecf82c6ea6015110eeead560fc6d5"
     },
     "views.pomodoro.meta.paused": {
       "source": "782cf2acb237b4450d523ab710518df4ff376d9d",
@@ -10123,8 +10219,8 @@
       "translation": "e3216407e31713e194f9bd57a1561f8d73d3df4f"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "12b967d92428653dec5e5fca1e59d54cd9b4c9ff"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "85110cbe193a383ade918f15370f2b4052b00a96"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -10726,13 +10822,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "4be5533559f98c27aac4b17fac5bd7f91c44f385"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "54cbb3b7b8d30466cab7338cabcbd3086cfd18fc"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "a3e958e6d944db1efc7975c15270493f32771659"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "fb7ca9bc2f8393a5aa5855a16e6aa3853c084a19"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "5463f84e471584c3b60898d73a4b96a6f31e6849"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "8a84cab3286ed8ec862035f85d583fdb1202ece4"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "e0adb59c1646929e3c1a02428afe80672577b1de"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -10902,6 +11006,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "799408e14bd98a7c6a5cda2ca1932aad8cb72021"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "9d8d61a8fda7fbf317c7451438069155aaddedd7"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "d6840ff29df637dadf26081e9701d2aab28d65e4"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "d93f2c3172c8010ff176ee8e9f0ceeec95b491b5"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "3bef7b8183ba2ab9fcf0f8db44c90315c04155cf"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "ffe8704e7afa9ac3f29a921a4988c7f7c55431c7"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "7abe9eed192b7f82410867e64b3b57af223df4be"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "e2ec931daf6ed3bd22608c722df6b184ebdb92df"
@@ -11047,8 +11175,8 @@
       "translation": "3e76409cedbcce82145055aff8abab7427dcd82c"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "83aae4eddea6aa8212ef9b58e462a682e6a382f9"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "34b35e0f838befff39a0d71840624d938315f904"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -11169,6 +11297,14 @@
     "settings.general.releaseNotes.showOnUpdate.description": {
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "c77956cc4d10dd4e933943c49f252334743f1f0e"
+    },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "5873389c953cd4e3d1e62605aee0116a8abb0fc3"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "c537578e345feb8ec1ba0c5ce14febedae186398"
     },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -11458,9 +11594,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "8896650b68fe43498b05aeac7e78660b7772e373"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "04645b268aa038080a087097995822ba3d2dfffa"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "d199461c496a9a9df0dd65364b643ac4ae9b5059"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "4cf9440c7241db397a12b3c064ed4292e94a2e24"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -12910,6 +13050,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "ef66f13fd51af802465a65417c4fbc968d8065df"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "583034ffb185fc2d2ff757e5a97a006027c008da"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "42920a060f0a27411a5b28434dcb808844358e46"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "3b553b7365215f5b74c816df5b8662b7c672fda3"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "fd19bf2e806c96dcde7144fcae74b03876339b08"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "4d26de6f3ee282cb5553a56bdb3cae7457f2edc6"
@@ -14062,6 +14218,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "eadada3d545e2a7410275a34377cee9b196ff8ae"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "5f631ea2366de87312765eb72a8c2c1fabb3873a"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "072829bb16fc15f831c7e7afbff02d195be1aace"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "fa4a91e0206980bc84695604a6e06b8958eb8629"
@@ -14169,6 +14333,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "08bbbda56376d985dda5af37131f4a5d5984619a"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "7797e018131081323188aad307e17d6cfcfcab06"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -15254,6 +15422,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "db6b0e27bee01a9d1f6ba6e42bc8f380b6e8dbac"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "3d3f943ba6a2b2afa80b90c3922adeb9f8f082fb"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "1e2ccb7bb4a06953f54b2f51f7fcde53e9233532"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "dd1003edc2bcb819592e88063bc51a672d643933"
@@ -15722,6 +15898,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "d993412cdda43c87b63b68675e3b219add3bb102"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "e7e0a5ed32750504f6c6b2bf73bc669a52fd54af"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "55f9302885af7b8d22d2d32fab779a69c261633e"
@@ -16089,6 +16269,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "e981267a84fcc4bf60840be275a69356f6004f1c"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "c9d64f63426f0d134bd2b1efe1137c8d383a44c1"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -16545,6 +16729,14 @@
     "services.task.notices.templateReadError": {
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "667907c25abb2f1764af1d0b5bec90fa42e77d28"
+    },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "7bac2d67fca33157271de4354d0eda2550235534"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "d4e9dbb216de3d65992665faa0aff193ad8981d0"
     },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
@@ -18509,8 +18701,8 @@
       "translation": "1539b41940445cda818d18a80760edc14bfacdfc"
     },
     "views.pomodoro.meta.running": {
-      "source": "f1885aa4adca1b4282dcf023d4e9e3b91cf0f757",
-      "translation": "6852c5e46be1b4cf44ff49cfde080770a0902584"
+      "source": "7c0265e6d539c3ed03013eac3d78b24c814cbd37",
+      "translation": "4f26534c928c93e064ca63c83fa5656d6e81cd76"
     },
     "views.pomodoro.meta.paused": {
       "source": "782cf2acb237b4450d523ab710518df4ff376d9d",
@@ -18893,8 +19085,8 @@
       "translation": "44ad2a699ef1a6c783f29db1906db36a292b387f"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "4793167e1294b19e20a8215fda450a2b4b8f6777"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "51616dc0ba05f31d83307a61b05304648e23c356"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -19496,13 +19688,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "2fe21b5f78d63002ba89d7c43f3602544158c21d"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "8197cf793811c8e85fa4cf99b78e1fc722bd51aa"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "8a2b75570ca3e7b1b670fb5ea381dbc50d9f455e"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "a75564f8afe8419d9f73531ef62cd5e6155e3bb6"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "f3ed2576e81314938cc350790365703016edeb33"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "cec447eabd6b6e98298e639bc2fe6d3e3764d886"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "e1948d9c76fb4acc30001baa22fa9660f47baeb7"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -19672,6 +19872,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "fc948800ff8b37480e060da1d11ad7b7e2208b49"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "85c516f65e78471155f69c588d8f8bbd21fe69c7"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "07dd9b17ad5e5aaf70c7bf723ccbd0e8c86e8716"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "859e54336ae68f46cd20f9d17f75458050a4f315"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "f87b9e52ffab97e177351b496c8a70b41a764241"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "484ff609d097b701001c160afc1c4738b8c438d1"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "b93a5e7d585326bbb6d629f01c940e16dd0f8b93"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "94fb7bc926751579a0a94a66796c9e5019f3d762"
@@ -19817,8 +20041,8 @@
       "translation": "42bdf6f81ad38c009bd1298588d03ca41f844304"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "9fc6e104816cb592bbb6bac08c261c3cde696860"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "57f04ef796471a6e62f6afe3c415980733cf5421"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -19939,6 +20163,14 @@
     "settings.general.releaseNotes.showOnUpdate.description": {
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "eab4be44d0b8ab419957b45e1cbead3854d95154"
+    },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "7ca6356b24779a430aae1960a845599dba2f8eb2"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "d98518dfb0691ed9e8d5cd67f70bcf1d75aaea32"
     },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -20228,9 +20460,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "de05e441ad7cd5dabf6753ebe39d2ee5b5aab933"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "a0e2d7bde91b1e8ed88cffc994ee49bef89f5f50"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "eaeb7007c67684623740a3b0adf757f03236d6a9"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "9ec2284bceddd3d2352e05af23a21aac140d95a3"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -21680,6 +21916,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "ebb2fa5e523d1d98620788691a3e9c99ab7254ff"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "fc21c4b8924a5d32e8b0baafbafbcd4d049ba8f7"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "1f2bbca60b16d50a05e90288b11b08d41235b040"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "cfce7e8626cb61701eb2adf02e1dab7ebd8050ad"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "4b738676018e0df4dbd0736e97368a66f6a3fe22"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "ab0ed02b841e3fc482b6cc2572bb0aacba50d4f6"
@@ -22832,6 +23084,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "c13447e51fba9156d2fa6a1720e72bf94aecbd75"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "6a2c9644ea16315eccac34ed79f2e151634bd2aa"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "db164b21a9bda0cc8814e6ba9a9e297af58e7584"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "ff30240ef05c53aeda0d7d10e7a2fa0f55c09a30"
@@ -22939,6 +23199,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "98a00a03d738ee19d276e060a7bc6edb5a086ab8"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "f07a81853bf4993876171049228a8a66fcfdca0e"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -24024,6 +24288,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "2b9593c9e7caf350799b13dcfd76bfbf9d084e14"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "1639eeb2455a43779e2c0f44f3e1a8c2cd56cb96"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "8f6015efbda43b743b4371e3d13de29b998861b2"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "23c5a4381cf5868a4bfabdcac817a06fabee4509"
@@ -24492,6 +24764,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "a0a3c2d4cce388135d6267c00a58264fba1513b2"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "9bf95881cf9f1b9003038ebf5d32f1c204d152f4"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "2aca64b8e57e096029ccea247f7301579b273455"
@@ -24859,6 +25135,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "ed5358ebd18987e52f0630c5dac931a6cb2232a9"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "64b8a2f74740a994989792d06f7a4187c582ffb7"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -25315,6 +25595,14 @@
     "services.task.notices.templateReadError": {
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "5a20c4be92aa4a59009cce1423f553ed32f9adf6"
+    },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "89cc41cf86ee7705fe537efe08925f443259bc3c"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "89c3caf7e528b5747e26b95a0760d17d33b73100"
     },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
@@ -27279,8 +27567,8 @@
       "translation": "c9ce0d746fe64f817f395032492ad8d53cc5c8dd"
     },
     "views.pomodoro.meta.running": {
-      "source": "f1885aa4adca1b4282dcf023d4e9e3b91cf0f757",
-      "translation": "f1f1d71d6f886f1401d2096fbd0336a8d6f148b9"
+      "source": "7c0265e6d539c3ed03013eac3d78b24c814cbd37",
+      "translation": "f379e78f50ac99d3d0916bbb5fe5fcafbf8a7d4f"
     },
     "views.pomodoro.meta.paused": {
       "source": "782cf2acb237b4450d523ab710518df4ff376d9d",
@@ -27663,8 +27951,8 @@
       "translation": "69f2e4c3e9b1a2fdc6bf4caf7b53960bf0d0f3ae"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "b475d6d461d7dd4fa6176ed4286b1823a5990ca4"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "b8259d102d29acd09de0e62ec2059d424d53e8d7"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -28266,13 +28554,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "593a6e22a8ec429accea88d8ca536eddfc8440dd"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "0ba4e45cdfa96ab6a1fa122567328eb9d029eb27"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "7ec1167cbbef596190ed1b74df98fd8917cb80be"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "780f619421c554c467914653aabe024327b0420b"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "28e00bd093053d6e05f8bb748e2d093cf313e322"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "f6c920008d41d48ce7d9912693918e9b3abb1e56"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "869d7d4fa6d72bccfb87bb2426b9bd067c680372"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -28442,6 +28738,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "d77c06f9cbfc485aa0d1ea360e05dbb99969c4e2"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "ef6256c9a61106657580e7802bfbccbb068d20a2"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "9ba9ff7f37d4948c7a53664610d88b63a6955423"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "493fb33dfb4842d516f687aac99800e25db397cd"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "a44a915836bc9e02ae506407d7283f4c89af0f7f"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "19bfacecbd845e4b48855538313b6d8228939fb1"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "218caa6140dcb764c942b6d0cc7210768da4b97f"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "0631d52142d952bb0757c0da6c7dbf5b7d8fd7e6"
@@ -28587,8 +28907,8 @@
       "translation": "463ff71619c7f7e2c0ff7cbfd7f724d69a566de1"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "b64934c6cf4f77ed09796855de0b1298086c5542"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "411a2df0ef0f5c48e0e4d1700670ac107a40c3b0"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -28709,6 +29029,14 @@
     "settings.general.releaseNotes.showOnUpdate.description": {
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "8ed8c798ec55d009452177534c7f32a3010a7a14"
+    },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "df52d003dc4b2ca5c4e0647125791b9dacbfc21b"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "bf2d53d8c8ae6dfefdf7ef329bda3669bb773c80"
     },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -28998,9 +29326,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "3bad60430718bec0fba86c648a659887a7c999f7"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "e993d7bded9f91a0f018c7c95488af573d6b6b0a"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "dbc508a56357879c395e734953fe4634eb538276"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "23a02c44caac61a9cee68bc79050a2a1c070dda7"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -30450,6 +30782,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "30c209e261393b735ff1cfd2b4dc5e182faf0fe1"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "d1e5974a90ebd6f426c900985f00cbb60d8e0984"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "1f7e25d4c07b6db8c6a222deb07638c62f9f1199"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "d587fb4b6d20b259a8c85199d56f7498c8b3c95a"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "4bf0381e78f0942e9cf163426714c4d8ba06c725"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "43f35958e9ac0488d54463bce2abc1a71917c4d6"
@@ -31602,6 +31950,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "179c451a72075375c6a5e7df281cbb3cd06c0183"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "df03e7c12f3b3788d15125583286862fa74bcbca"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "8e0be8f26f3711205a45f2d1b196a673be8e594a"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "3e63ebd6fdf480923d7665253abe9ed6d5800f9d"
@@ -31709,6 +32065,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "95147f95cc43f63a46da2b73c855ea3d50a5d1da"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "ee584a0e330d7b897a50041bf5b0bad456747ce5"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -32794,6 +33154,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "26f6a665ee37b21decd231599198f136ae7f2075"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "f285c6438261ba6033c2f6679c5ddde3c168a704"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "6aaf50beca3c9b9e1dab3d258a07a1a5d7419cda"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "3be32b832b10b3860230b86d17499cb1c268e2c3"
@@ -33262,6 +33630,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "c1a4728e83ab35ff2b84086e1ba8d7c2fc6279d2"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "0b205640d22349cc8ca89e399d36a3ceac58fe3e"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "07d94016cc6ceb31a9a582d4cb3abd152122f27d"
@@ -33629,6 +34001,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "0faf9824d4d9ee0097e117007ad71e548ce8cc0e"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "cb5d1304cdff30db940723ddf1e410ad46724532"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -34085,6 +34461,14 @@
     "services.task.notices.templateReadError": {
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "9d958be24bab6aeb0851e92689d5b165b7a5dfd3"
+    },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "9e828e4cf581151397e7c04ed85c9794a781a21d"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "ea7ddb4208397086a4391f5f6cd183263ab8bc47"
     },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
@@ -36049,8 +36433,8 @@
       "translation": "caf860c62725598a30b68c286d4e4ca2078715a1"
     },
     "views.pomodoro.meta.running": {
-      "source": "f1885aa4adca1b4282dcf023d4e9e3b91cf0f757",
-      "translation": "ea0a1d3b04be54e9b9ab1d7fcccdf9b4d1c4af70"
+      "source": "7c0265e6d539c3ed03013eac3d78b24c814cbd37",
+      "translation": "4c729da42419a731f34708fb1fefe6890a5f9ef5"
     },
     "views.pomodoro.meta.paused": {
       "source": "782cf2acb237b4450d523ab710518df4ff376d9d",
@@ -36433,8 +36817,8 @@
       "translation": "bde32bbce5741e2f69fb662728b487ffd765f2e6"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "1ee47ecde6ad55c2e054902690878604f39564b0"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "dae0679909a41d3ccfb1acd58b819378ff812492"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -37036,13 +37420,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "2b73332270c3c2825c02b61b499ca792ad0845d8"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "b18d250d5db0bc5dbd8aa976f3533a6165d022ff"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "3abc82e6ebaf79a4126e5506d4edf23b5a330641"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "489597f93b9da88e4c501f0ea6b0534bf1c84334"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "55bf72a32f332ad29e232d276e0d78aafb049926"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "40fd75d5b40894023f25d756a77fd67de7f94fb6"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "470044a88a9d75e0ca1ea6e4d025fd7770e13357"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -37212,6 +37604,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "b51d9e673d96d1836fd7c8814a16b1984f132910"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "fb9e0910e346216cb67a8427fbf8700a4e38f1b2"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "803779218c914d900a3bbf43562ea09befd3522a"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "f54bd95b581a2e7f1c56c42f480c075bb632b3b1"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "83db3aa05437c4a085c423d2a80ece2b1a7b9f8d"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "f6193555f05315acdd3d6f561959bf250d226b05"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "a40609a81a96b32b7e5bb80e6cfe8543cbfbef9d"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "f87c9565a32e3160a4ae3a6e5dafa0fe2f068c76"
@@ -37357,8 +37773,8 @@
       "translation": "7dbeab4e67e19eef379284084e734e3a5ebc288f"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "505655cd56b81eb3cbefcda330ee9d26a7decadf"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "24e35c90baa39b0af92cc24784eae768316ea9bf"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -37479,6 +37895,14 @@
     "settings.general.releaseNotes.showOnUpdate.description": {
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "5e5cb02b64497b6d800da8954aba05df0dfbee07"
+    },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "998a7e30b1f697c6a9d672672745a71135fc8990"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "f4d2d80d0faecace0df9a708496b84c7d318b526"
     },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -37768,9 +38192,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "68c752476dd16ff4de69b0f19888634aa03d7bc3"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "422d107ce3f8eb4c77bbedf9a97b7cf57dd0085e"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "734ea700ff60f747fd9a91c6dd74bcdbaf411cd0"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "bf372b3a7b707a11f9a71a593a4177915f28fd10"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -39220,6 +39648,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "01db0cffbcf915132fa6c5a05956554cb1ccdc36"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "85a891d00b0ba323bfbf6efe1d5eb65e3a552c1d"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "bdac0b86d27cbe6310765af963e1e1ea04c9060d"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "0c7a2b75271be77e1590c8bb01606b5310fefe3c"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "5c4d5ce83dc4bfaf457ca13bc954f917253d9303"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "25d76c885285ef820cb2e3e9616129622f4425b6"
@@ -40372,6 +40816,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "d901211ac95a39b48de80b3ab27533968bcf9578"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "576da6a608a12b528f12aece5809852baf3deca6"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "7b81a2e377fe106ca413c8041ab6ab4bc8a7c0b9"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "548a8e23cb9e337dfca9e191bf4a600eeff61e4a"
@@ -40479,6 +40931,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "c524c5fab21e6e06aa1c094f03e48f2f67684d23"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "070d70235a0000a4e27615eea8800e257657c4a4"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -41564,6 +42020,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "565ce5def13d63264a626ead9ef35d04f75cfdaa"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "b538715f35d2626a983bf8027e9c4a39ad1731d8"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "6a3e142834bcc2636713cd89a4df90dea51ac465"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "7d160da47fa592961cf9491cc6136cd57c4c4f7e"
@@ -42032,6 +42496,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "0ac577ce5eb53a87a45785afaba017ed857a8fd7"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "0b37fecfd0f5601644fc8cca8adc088f86e1f9ab"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "0f7f7106d4613e1f9e92f4b83843dbb1fb3fda9b"
@@ -42399,6 +42867,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "396b2f665084babdb1483def50bc91ff5f4e86ad"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "e2f54c6d034ea6db3174cbd3d414474b723932f6"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -42855,6 +43327,14 @@
     "services.task.notices.templateReadError": {
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "66ae9490eb899689c1e6e01baed4948ea4628a29"
+    },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "1c4661a66bae70cf01b89e48e6d59eb1c5667b35"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "cceae7854baa8e9800fdb2098b79e5a09d4c18a6"
     },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
@@ -44819,8 +45299,8 @@
       "translation": "327e5666303665ad1a445f93a4bfd9890ea7678c"
     },
     "views.pomodoro.meta.running": {
-      "source": "f1885aa4adca1b4282dcf023d4e9e3b91cf0f757",
-      "translation": "2cc99f1f9007592abb0431b9e069641e5e2eca74"
+      "source": "7c0265e6d539c3ed03013eac3d78b24c814cbd37",
+      "translation": "dfef246292583c9b7ede6a00560124a893420823"
     },
     "views.pomodoro.meta.paused": {
       "source": "782cf2acb237b4450d523ab710518df4ff376d9d",
@@ -45203,8 +45683,8 @@
       "translation": "73b8cc8d067b37867ea0c97be0f325f0765b7583"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "694fba6f1ca8f4248be894ea519155bd4f5a6c87"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "6cd45bb1c78d96fb10c7e7b2c22e93db51a0b684"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -45806,13 +46286,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "a23aa7b2ae520070f1fc321aeb407c4fe3f4c9cd"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "717ae92df0309c11c7d153b7b257a536c7a7454b"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "ba823420a1545450f0a58842d5f362cec2dd2be1"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "33214a40aa89718baff8985d3d209b78c2ad82f4"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "6aba647d04a8088697c854146a556cc5a125238a"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "8d477e8c947c5a3e1e1c2fa5a9d3fa35140674a1"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "a263197391e4c2be262e20a26aec161fa81d8cd4"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -45982,6 +46470,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "23effb6061dd14b7210270a7e266b7b769658054"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "b9005451d835997cb19a9d224a049baa86efa394"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "c230b2efcb865f7acfd5c29d4752fe67c028e0b7"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "d523a0939f0b54213e40d1751acd2d1a043aa19a"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "289d0c621b75745840dc82e6f56fa812a60a4147"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "8373b94d8a2f10e937df2fc9b9635ed1f4f24906"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "8ddaef07ec43857db1a27234786cbb304835004e"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "09e2970a9de916027bf542c7ecb96866ca592393"
@@ -46127,8 +46639,8 @@
       "translation": "fda96b556cb2ba76a171da7279a1f037dfb7e877"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "895bc8c52c1c0e3643a844cc5c88caa87c136861"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "941b4e860c614921d04b77b84c4c422401fa7974"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -46249,6 +46761,14 @@
     "settings.general.releaseNotes.showOnUpdate.description": {
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "83f00274b19347ff1c88f1a66397333b6b37eed6"
+    },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "240398c0185a5b255d35f6dcde87824cff9e9a2e"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "14dec43aa3bc8f92b2a3fa1f6482c75deff395a7"
     },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -46538,9 +47058,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "d9105f4f59b302b2c90edf71cb7ee1360da7a380"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "cefcd91bbae4141629bbad1334b4680c431478b1"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "219a95f216dab390f6d0bb14073433a7f201f67d"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "d9ab6d9f2d0667257f9ccd7da7d028d2722804b9"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -47990,6 +48514,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "42f546280a9de71bf8f0846b854f3fe35444a076"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "28a808925d78ff1d90917e5acb65bed78305ac12"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "857a22fc68a17ead01f8f504291afe4488822514"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "6dfdcc5bbcb771ef3c54778abb8898e23beba79d"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "d1f4a52e2e017e018d988fc4b79057a5a7b58609"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "655ab4a08d400cc9957c26c469d6e576f7801cde"
@@ -49142,6 +49682,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "8e158d856f5f6df85372f2997d05ba5b0b31da83"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "b4de74c972fbae7751553503f26e6088f9dd6f7b"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "b79842d6e84ce90845fe2fafa8a6988bcd267b09"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "46f0764db400589f1fd2f1e6027f1f0a19c058cd"
@@ -49249,6 +49797,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "680b427d2559ed513fb34e49c4db616dd777070f"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "f4aa8af1e6a0c08df2d8f18e2a1307a3b293e760"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -50334,6 +50886,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "14965ef70f510bfe37cae40b0d81a815b8052355"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "6413aafa283b4598221e972e6a62c114895b6f2d"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "9212d5d7ee8a82070d417131e967350430c711c8"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "d621565a0caf0fe1bc25d198ad802397cfc37cae"
@@ -50802,6 +51362,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "17ca4e5ed72e97e99908a38a242d40e177b39c45"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "d12601d267c491f397ce69ead89aada05c8bc05d"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "c922b1de4695598699aa2fe60e42c20a3af2ebc6"
@@ -51169,6 +51733,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "8beea39c050878e7cd0b3012137af445ede245c4"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "038aad87383523364e3be232debed955bf1f93c8"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -51625,6 +52193,14 @@
     "services.task.notices.templateReadError": {
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "f84fec28fecfbd2c67a53fd0703df40e576f19de"
+    },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "a56469bbe634109051c783e80675a0448ee9ec2d"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "4af8d67d8edbf138163a7c79d406988019e7b403"
     },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
@@ -53589,8 +54165,8 @@
       "translation": "ec646a5c0990b1b7582b985ba6cb40c6c988f940"
     },
     "views.pomodoro.meta.running": {
-      "source": "f1885aa4adca1b4282dcf023d4e9e3b91cf0f757",
-      "translation": "103d24df6af5f3380558c47775d4280a781384a3"
+      "source": "7c0265e6d539c3ed03013eac3d78b24c814cbd37",
+      "translation": "ef4921326d32e9506b13201e1a402f2e2144e437"
     },
     "views.pomodoro.meta.paused": {
       "source": "782cf2acb237b4450d523ab710518df4ff376d9d",
@@ -53973,8 +54549,8 @@
       "translation": "920cb09c787ffd63d1a5874156bf28dea5f567d9"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "729d1ad5b4b3ec389c056afcf544ff2036f24cbf"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "e2ea10ee59e513ac3d2a2dbc3cd65b6381828866"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -54576,13 +55152,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "6fdc69fd70d40ab2e44731f18378df46cf7c32ef"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "0558a06771bdaa890d93634e3dc7234381a9b862"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "42b71eda2a4836c664749a0844843a5d660663ba"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "155bc87f5866804339c0fd1265debe5ab86a67aa"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "f447896065f0f516868f90a6cacba0cb82d49c8e"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "2c83c7ea3e2a792b9a0b1941a000b51212cbe2a6"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "2630f55c9d8ca20ac34c3a30618c82096e17bf0c"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -54752,6 +55336,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "2e0057a3c93c6fef1b797f61e07c6ecdfb2cf35c"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "9a1497e58dbb2772c73ad30bab911f4952c50b2d"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "f1c0a7d07af08fb1bfba795b96b6e3ec5218a160"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "8c39995d31d64475c53cf01487677e5f4f3ce351"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "9c807a85df4f3753b2764d314f21768ef4c60d75"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "0fa52f76826e077d3c1bb419d10f3a58b97bda4d"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "34ef0d7e5edbaefc1afacc60d70ca82318cd4e9f"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "a9601052d514af5012a030fea6d72d908ae132e1"
@@ -54897,8 +55505,8 @@
       "translation": "2d71c8681594a6c134392e74d169514a92534d68"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "7b3f870af1eabaee59530f9a87ef108bbeb9922c"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "8738888d3f2e842c81a5277e5baafaadaf31c9ca"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -55019,6 +55627,14 @@
     "settings.general.releaseNotes.showOnUpdate.description": {
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "87ecc0493d7d41ebd4d7bee452de66a45f3d8f83"
+    },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "1fef5c88d1fdce1c45f524040f62ae781d8f44fe"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "7072e6516fd94efec1721501e042c722d25d8cc5"
     },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -55308,9 +55924,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "fa60ff954261b016b338c55ae55015024a1d9afa"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "a7d3c07150d9363bc1f4046bcff757b339bf2d35"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "6eb8582aff2a271e45c55c550fe8b3f8af4e4e0d"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "b4a7dcf67f944cac94356cef3593b01b98aaf6c4"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -56760,6 +57380,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "8be26463cb3fa45cd1f2bcf953c22d5bd081e5de"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "fb686df12603cc5639d0f23d049c864a03168e4a"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "7bd05fe4c99552dcc5726f43fdb04d0c7b44e573"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "e190d46416683f9d74d56997f065665d0e6f59f3"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "3d5e4f21054ed48237dc9e74a349d9bbe81098bf"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "8345e1e1a85332b52e1e5e2aa6f7d1d2f2005047"
@@ -57912,6 +58548,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "0b6ef1a910125926ea606ed12afb148595f5c167"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "f4e7982d0aae98be6a7898cf6a25c0d278db6c5a"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "acc03611762474332017ac2712f9da118f8b8608"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "88288bd1c8c2c7d132cb4142f35f1f66864db850"
@@ -58019,6 +58663,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "173e4300785f5f3799b900222ca011cac9a29926"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "6003222198cc4b2e625933f27f8713e9bbae51ea"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -59104,6 +59752,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "bd950e5eb73f595e544f80b77d43ab3f0f182ba9"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "6e90f85f833c63a69f54913e957d8957fdcdc73a"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "d39d0321c2dbfce41cf22017f0b34e7bfbc36e19"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "ee2fb1bf18b4b34d51375636e73cc04f3909da6d"
@@ -59572,6 +60228,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "cd12b1152eedf79bce5dd2cee1664c0384f6990e"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "9d4de6307dd5596d6eaab402a03108a57709ca54"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "6c9173653f037bea9adeab9f3cc79e07afbbc306"
@@ -59939,6 +60599,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "82cce3e72fd6170947e9be7eab1ef92bc7eb29e3"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "f8baee9e9085c8c37844e376f096a93be9872561"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -60395,6 +61059,14 @@
     "services.task.notices.templateReadError": {
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "06d01a0fc87cedcb512944b85ccc1463b5e63513"
+    },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "d5ae0d297bf128fa4178a3a5679377fd88ec6bb3"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "d66181bd0c0075d73d38e326e2fe8ee457f9b31f"
     },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",
@@ -62359,8 +63031,8 @@
       "translation": "d2163afa710658cd7f6adf70186537b457274853"
     },
     "views.pomodoro.meta.running": {
-      "source": "f1885aa4adca1b4282dcf023d4e9e3b91cf0f757",
-      "translation": "abb2c80301aa592a14ddd38481206b84035f22b5"
+      "source": "7c0265e6d539c3ed03013eac3d78b24c814cbd37",
+      "translation": "bd41e73d730ff1d3fac0edebb56d7d5e41a29de5"
     },
     "views.pomodoro.meta.paused": {
       "source": "782cf2acb237b4450d523ab710518df4ff376d9d",
@@ -62743,8 +63415,8 @@
       "translation": "266227ca3d4da9d9e7f98c19cb60f087428e1d19"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "5f690c9a046a76b9695584a38ee3ea5eacb58384",
-      "translation": "d158cc620209ec0a3b05e5b7c0fdada7f8cc070c"
+      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
+      "translation": "c04129a717e2206fa438a84095fe9ffdfbd557f6"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -63346,13 +64018,21 @@
       "source": "f8109fa314d2bd16e328c8f06877eab99e0f512d",
       "translation": "d49ce38240716667d63247bdcacfac670f6d7202"
     },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.name": {
+      "source": "e631bfa8db3d890e06849b35908051449ae4f91b",
+      "translation": "9d845a26d6c608d630fe1ec1b0bb1829964132af"
+    },
+    "settings.defaults.basicDefaults.useParentNoteForTaskCreation.description": {
+      "source": "7b2da4a0d522fbe7cdd6542de45de58ff6e7e245",
+      "translation": "0a5720aa248ef2aa7f145df2c5b1ab7cc554eac5"
+    },
     "settings.defaults.basicDefaults.useParentNoteAsProject.name": {
-      "source": "9b0c769f634d412c6bc5fc5292cc4c5c180d3323",
-      "translation": "fbbf4782121762e9d9c37c7838c274df2e567233"
+      "source": "f29156d7b6b02bce972932ce90b3cb318c2e17fa",
+      "translation": "3fe0ffc963fffe4a86e60315009f1085ed022dd9"
     },
     "settings.defaults.basicDefaults.useParentNoteAsProject.description": {
-      "source": "a794ca6b851eb926f8d47e6300500bea0b7c5127",
-      "translation": "338aa36cbfb8f65e882844336d47fa5f470eb08f"
+      "source": "a69728df17ea85a2006b6306c2be45054064dd50",
+      "translation": "df32c668cdf338d69bae12060ad5002c2cf0cec9"
     },
     "settings.defaults.basicDefaults.useParentHeaderAsProject.name": {
       "source": "f5b1dda142cc75dec04b73a707f24c2b8b31e4f4",
@@ -63522,6 +64202,30 @@
       "source": "2869220f1deea766831798736f09706780b721f4",
       "translation": "e1681d3385b71e5059c36e223f882e52cf139695"
     },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name": {
+      "source": "edc6b01af624afc83183deae7b7ee6a636d7a3f0",
+      "translation": "1e42d12ee0f1c4a7f517c02e4740497cc3a1ec8e"
+    },
+    "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description": {
+      "source": "b72585c04fc706dbb87b9df01436a921d1505130",
+      "translation": "0e2c5bdb1864b9dd66bb410c897562658f81f593"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name": {
+      "source": "86b0ef4e844506df119b7e74b0a66b09e042ec1a",
+      "translation": "7bd533b45f3a1385c989dccbbcd5723a45a54647"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description": {
+      "source": "c9c6c1592df4b981ef15cd76172e11f3816253ef",
+      "translation": "98b7b2117ca04ac0581d7281df8c228e5e521444"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
+      "source": "65b9f2917e59c322af8ea385f768f9f5b1e76593",
+      "translation": "c345d9836b41e328cfce2a2d70fed37fd3517b1e"
+    },
+    "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
+      "source": "acdf34f8b91d6c7bc9f30f6b686f4dfbaf1a5a48",
+      "translation": "344f38f44a495925f9f18094bdcb4ee2abd24db1"
+    },
     "settings.defaults.bodyTemplate.variablesHeader": {
       "source": "dcafab11e0aba1f26412c448420a8fc2e70210e0",
       "translation": "45cf0ae7ebba3e1d6e53ae9af77c279ac1bf8b37"
@@ -63667,8 +64371,8 @@
       "translation": "d46ffa370f8eb0fc485974457276d46d9512dc83"
     },
     "settings.general.taskIdentification.taskTag.description": {
-      "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
-      "translation": "9ecff4cdf6387ad87f28136c34a5aeca816dcb9e"
+      "source": "04aedb9ad63ba84c78c54126b8508930ab201abd",
+      "translation": "647196f474d8cbac2fb5678f285ffb269232aba9"
     },
     "settings.general.taskIdentification.hideIdentifyingTags.name": {
       "source": "446bbfd987521d42035442c4652693d996565cf8",
@@ -63789,6 +64493,14 @@
     "settings.general.releaseNotes.showOnUpdate.description": {
       "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
       "translation": "2b8907d024115a489cab0f1c0d8d1509ca074b5f"
+    },
+    "settings.general.releaseNotes.checkForUpdates.name": {
+      "source": "a7b6abd9bc672e300e425eb01f06ac32e3e2817b",
+      "translation": "bfb80b8c2316a2d757533f5a547fe059d0570254"
+    },
+    "settings.general.releaseNotes.checkForUpdates.description": {
+      "source": "f264cf200a9736702468e7831ab9d43ac15d28d0",
+      "translation": "3bc4b0cc976cbacf51e866e96129869e240a5b3f"
     },
     "settings.general.releaseNotes.viewButton.name": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
@@ -64078,9 +64790,13 @@
       "source": "c4c95759b7e309633073cd625ca432bd30c08948",
       "translation": "eb34b9f0834d3d58fb1e2bdd69ef26653208ba5e"
     },
-    "settings.taskProperties.projectsCard.useParentNote": {
-      "source": "8bd1cc45533f119ec3218f2ae4ecdd84ae834fa3",
-      "translation": "a9d8310054f23f932486fc6abe96aee9832d3217"
+    "settings.taskProperties.projectsCard.useParentNoteForTaskCreation": {
+      "source": "bb5f064b77d9a79c361e7dfe82877dc51328c8d5",
+      "translation": "617362dae6452ab4a4e409db2baa849237717c2f"
+    },
+    "settings.taskProperties.projectsCard.useParentNoteForInlineTasks": {
+      "source": "d6c6404914be42235a8d8bb1811660ae7faa27ae",
+      "translation": "6aeaaa1c21defd98ac208b16c3b18a7179147919"
     },
     "settings.taskProperties.projectsCard.useParentHeader": {
       "source": "ed654c615634447acc92c71805925e8dd82f7a0b",
@@ -65530,6 +66246,22 @@
       "source": "3d5f1c326bfd35bac5b8f53cc3161712110705b5",
       "translation": "53827ffca8bacbb13efc6ba42dd4e4dd981a6efa"
     },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name": {
+      "source": "152192be2f5028cbd69e2ad0772976b3687fc6e4",
+      "translation": "8818b4618fea86d63bedd4bcae17a0180b68512d"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description": {
+      "source": "de41f93f21d40c04bfdeaa6fbabad847dad9e0e2",
+      "translation": "514bba3a44e1186a6206ee42103a4fbcf551ba3e"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series": {
+      "source": "eba4d7adff4490ca3d6d53a5ef9ab24c08ff75fd",
+      "translation": "bd50bd1607ce1226753e9ef878beecaed3057e9a"
+    },
+    "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance": {
+      "source": "9e116bcc8c8d4134ef33bb9d73d2921396d16508",
+      "translation": "75989dacafa2e5b32f3dc2863d6280acf43d6acb"
+    },
     "settings.integrations.subscriptionsList.header": {
       "source": "6570967667fd5103c370ee5c88bf816abf475510",
       "translation": "ec15c03c5d8fa61c8800948c57fb5d5871babede"
@@ -66682,6 +67414,14 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "98970fa5fc92738a2c3bd9e54e91b0ebc6801844"
     },
+    "notices.releaseAvailable.message": {
+      "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
+      "translation": "0838bd55a3d68fc40d40d68b1a799efb0f1657a5"
+    },
+    "notices.releaseAvailable.action": {
+      "source": "f296ebac414af3e7c7fc9229a7c7a1e575680fd8",
+      "translation": "56e74474ce6e35866bb553583018580f2d401668"
+    },
     "notices.exportTasksFailed": {
       "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
       "translation": "c3a29dbddca78f347cb9ce8a8d9ecb61468d6865"
@@ -66789,6 +67529,10 @@
     "commands.openKanbanView": {
       "source": "9f648a452a397ad8f8134c80a944d4f977db6ca8",
       "translation": "74bb40806e04c9c2a73df14d248936d3299fec03"
+    },
+    "commands.updateDefaultBaseFiles": {
+      "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
+      "translation": "ce644b1e738c51f9901258ab711c31b63d3e3390"
     },
     "commands.openPomodoroStats": {
       "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
@@ -67874,6 +68618,14 @@
       "source": "0d76fadd47f04672905361707353b921051bf5a9",
       "translation": "7204f9a78e3fb8c53786b2ad1458c874b696f84e"
     },
+    "modals.taskEdit.metadata.due": {
+      "source": "7513f9647738208d0fbbcf5caa12f6f8f1c634fb",
+      "translation": "464c21c0a961f85dedad949039023ce1dd6c58a7"
+    },
+    "modals.taskEdit.metadata.scheduled": {
+      "source": "72c51a5cb19f422d9799918335b7aa77d9e7c65a",
+      "translation": "664548abfd1fec042494639714994936e8cf534a"
+    },
     "modals.taskEdit.metadata.created": {
       "source": "0c78dab162bd1934043e6648cc941f63b3297301",
       "translation": "cefcfbea2c53e00aec22833564a61ee201378591"
@@ -68342,6 +69094,10 @@
       "source": "b41cf063eca8243b7b8039af57f2b039fc868668",
       "translation": "5ec2b1a71b2df03809e56c47cc145081a8afc436"
     },
+    "contextMenus.task.customDates": {
+      "source": "7e631bfb127466196f4e497dd7234a0e9c150412",
+      "translation": "2b39f48d81f87423b7bb3af73c8ab2ec5e9120ea"
+    },
     "contextMenus.task.reminders": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
       "translation": "81944e48a3b4755f86edeb4de2cbb27161623b89"
@@ -68709,6 +69465,10 @@
     "contextMenus.task.notices.updateScheduledFailure": {
       "source": "eeb48c9829997466b2edeebae4e7eb64c9843eae",
       "translation": "67f4907cc5fccb05847ab22070dc172917a80528"
+    },
+    "contextMenus.task.notices.updateCustomDateFailure": {
+      "source": "47826dedd097c1dc4e9502824e7386412aa69997",
+      "translation": "665f35b95d6a89a17d0ce0e253960a32f70b04ac"
     },
     "contextMenus.task.notices.updateRemindersFailure": {
       "source": "bf3335eecbe3a18d6dae266143cc07ae9b35d5ba",
@@ -69165,6 +69925,14 @@
     "services.task.notices.templateReadError": {
       "source": "acf9984127ca95fc0ae0c6c6edec1cb4b654792c",
       "translation": "781c6a45ef571312d3066353f8d6d7fd79f8e1c9"
+    },
+    "services.task.notices.occurrenceTemplateNotFound": {
+      "source": "5d4fcda0cb9a971f186df346524178eab25a9d90",
+      "translation": "1ed8d7e13fba8f7ad033a50a2e03e680aed1cac2"
+    },
+    "services.task.notices.occurrenceTemplateReadError": {
+      "source": "4212e8c74f9fa32b5fa93829f133137d7f366f24",
+      "translation": "64ff24e0968c3cb05da0c1261a938e80bc49df25"
     },
     "services.task.notices.moveTaskFailed": {
       "source": "34e7e2facc9ded80e3f52bb3ebebea8db0a45cc4",

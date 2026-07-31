@@ -15,7 +15,7 @@
 import { InstantTaskConvertService } from '../../../src/services/InstantTaskConvertService';
 import { NaturalLanguageParser, ParsedTaskData as NLPParsedTaskData } from '../../../src/services/NaturalLanguageParser';
 import { PluginFactory } from '../../helpers/mock-factories';
-import { MockObsidian, TFile } from '../../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../../helpers/obsidian-runtime';
 
 // Mock external dependencies
 jest.mock('../../../src/utils/dateUtils', () => ({

@@ -360,7 +360,7 @@ export const de: TranslationTree = {
 			statsLabel: "heute abgeschlossen",
 			meta: {
 				ready: "{time} geplant · {count} heute abgeschlossen",
-				running: "{time} verbleibend",
+				running: "{time} verbleibend · Endet um {endTime}",
 				paused: "{type} pausiert · {time} verbleibend",
 				breakReady: "{type} bereit · {time} geplant"
 			},
@@ -482,7 +482,7 @@ export const de: TranslationTree = {
 			viewAllLink: "Alle Versionshinweise auf GitHub anzeigen →",
 			starMessage:
 				"Wir freuen uns sehr über jedes Feedback. Wenn sich etwas nicht richtig anfühlt, lassen Sie es uns bitte auf GitHub wissen. Wenn Sie TaskNotes nützlich finden, geben Sie ihm bitte einen Stern.",
-			baseFilesNotice: "> [!info] Hinweis zu den standardmäßigen `.base`-Dateien\n> Änderungen an standardmäßig generierten `.base`-Vorlagen überschreiben Ihre vorhandenen `.base`-Dateien nicht, damit Ihre Anpassungen erhalten bleiben.\n> Wenn Sie die neuesten Vorlagenverbesserungen möchten, erstellen Sie die Base-Dateien neu unter **Einstellungen → TaskNotes → Allgemein → Dateien erstellen**."
+			baseFilesNotice: "> [!info] Hinweis zu den standardmäßigen `.base`-Dateien\n> Änderungen an standardmäßig generierten `.base`-Vorlagen überschreiben Ihre vorhandenen `.base`-Dateien nicht, damit Ihre Anpassungen erhalten bleiben.\n> Wenn Sie die neuesten Vorlagenverbesserungen möchten, erstellen Sie die Base-Dateien neu unter **Einstellungen → TaskNotes → Allgemein → Ansichten & Base-Dateien → Dateien erstellen**."
 		}
 	},
 	settings: {
@@ -742,9 +742,13 @@ export const de: TranslationTree = {
 					selectTooltip: "Wähle Projektnotizen zum standardmäßigen Verlinken",
 					removeTooltip: "{name} aus Standardprojekten entfernen"
 				},
+				useParentNoteForTaskCreation: {
+					name: "Aktive Notiz als Projekt für neue Aufgaben verwenden",
+					description: "Verlinkt die aktive Notiz automatisch als Projekt, wenn die Aufgabenerstellung über Befehlspalette oder Ribbon geöffnet wird"
+				},
 				useParentNoteAsProject: {
-					name: "Übergeordnete Notiz als Projekt bei sofortiger Konvertierung verwenden",
-					description: "Übergeordnete Notiz automatisch als Projekt verlinken bei sofortiger Aufgabenkonvertierung"
+					name: "Übergeordnete Notiz als Projekt für Inline- und Sofortkonvertierung verwenden",
+					description: "Verlinkt die Quellnotiz automatisch als Projekt, wenn Inline-Aufgabenerstellung oder sofortige Aufgabenkonvertierung verwendet wird"
 				},
 				useParentHeaderAsProject: {
 					name: "Übergeordnete Überschrift als Projekt bei sofortiger Konvertierung verwenden",
@@ -820,6 +824,16 @@ export const de: TranslationTree = {
 					placeholder: "Templates/Aufgaben Vorlage.md",
 					ariaLabel: "Pfad zur Körpervorlagendatei"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "Vorlage für Vorkommnisnotizen verwenden",
+					description: "Eine separate Fallback-Vorlage für materialisierte Vorkommnisnotizen verwenden, wenn die wiederkehrende Aufgabe kein occurrence_template festlegt"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "Vorlagendatei für Vorkommnisnotizen",
+					description: "Pfad zur Vorlagendatei für materialisierte Vorkommnisnotizen. Das occurrence_template einer wiederkehrenden Aufgabe hat Vorrang vor diesem Fallback.",
+					placeholder: "Templates/Vorkommnis Vorlage.md",
+					ariaLabel: "Pfad zur Vorlagendatei für Vorkommnisnotizen"
+				},
 				variablesHeader: "Vorlagenvariablen:",
 				variables: {
 					title: "{{title}} - Aufgabentitel",
@@ -881,7 +895,7 @@ export const de: TranslationTree = {
 				},
 				taskTag: {
 					name: "Aufgaben-Tag",
-					description: "Tag, das Notizen als Aufgaben identifiziert (ohne #)"
+					description: "Tag, das Notizen als Aufgaben identifiziert (ohne #). Bestehende .base-Ansichtsfilter behalten nach dieser Änderung den alten Tag; aktualisiere die Standard-Base-Dateien oder bearbeite diese Filter."
 				},
 				hideIdentifyingTags: {
 					name: "Identifikations-Tags in Aufgabenkarten ausblenden",
@@ -942,6 +956,10 @@ export const de: TranslationTree = {
 				showOnUpdate: {
 					name: "Versionshinweise nach Update anzeigen",
 					description: "Versionshinweise automatisch öffnen, wenn TaskNotes auf eine neue Version aktualisiert wird"
+				},
+				checkForUpdates: {
+					name: "Beim Start nach neuen Versionen suchen",
+					description: "Prüft GitHub einmal beim Start von TaskNotes und zeigt einen Hinweis, wenn eine neuere kompatible Version verfügbar ist"
 				},
 				viewButton: {
 					name: "Versionshinweise anzeigen",
@@ -1079,7 +1097,8 @@ export const de: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "Standardprojekte:",
-				useParentNote: "Übergeordnete Notiz als Projekt verwenden:",
+				useParentNoteForTaskCreation: "Aktive Notiz für neue Aufgaben verwenden:",
+				useParentNoteForInlineTasks: "Übergeordnete Notiz für Inline-/Sofortkonvertierung verwenden:",
 				useParentHeader: "Übergeordnete Überschrift als Projekt verwenden:",
 				inheritParentTaskProperties: "Eigenschaften der übergeordneten Aufgabe für Unteraufgaben übernehmen:",
 				noDefaultProjects: "Keine Standardprojekte ausgewählt",
@@ -1687,6 +1706,14 @@ export const de: TranslationTree = {
 				useICSEndAsDue: {
 					name: "ICS-Ereignis-Endzeit als Fälligkeitsdatum verwenden",
 					description: "Wenn aktiviert, wird das Fälligkeitsdatum von Aufgaben aus Kalenderereignissen auf die Endzeit des Ereignisses gesetzt. Bei ganztägigen Ereignissen wird das Fälligkeitsdatum auf das Ereignisdatum gesetzt. Bei zeitgesteuerten Ereignissen enthält das Fälligkeitsdatum die Endzeit."
+				},
+				recurringEventRelatedNotesMode: {
+					name: "Verknüpfte Notizen für wiederkehrende Ereignisse",
+					description: "Wähle, ob Notizen, die mit einer Wiederholung eines externen Kalenderereignisses verknüpft sind, in der geladenen Serie oder nur in der ausgewählten Instanz erscheinen.",
+					options: {
+						series: "Gesamte Serie",
+						instance: "Nur ausgewählte Instanz"
+					}
 				}
 			},
 			subscriptionsList: {
@@ -2174,6 +2201,10 @@ export const de: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Sprache geändert zu {language}.",
+		releaseAvailable: {
+			message: "TaskNotes {version} ist verfügbar.",
+			action: "In Community-Plugins öffnen"
+		},
 		exportTasksFailed: "Export der Aufgaben als ICS-Datei fehlgeschlagen",
 		icsNoteCreatedSuccess: "Notiz erfolgreich erstellt",
 		icsCreationModalOpenFailed: "Erstellungsmodal konnte nicht geöffnet werden",
@@ -2203,6 +2234,7 @@ export const de: TranslationTree = {
 		openAgendaView: "Agenda-Ansicht öffnen",
 		openPomodoroView: "Pomodoro-Timer öffnen",
 		openKanbanView: "Kanban-Board öffnen",
+		updateDefaultBaseFiles: "Standard-Base-Dateien aktualisieren",
 		openPomodoroStats: "Pomodoro-Statistiken öffnen",
 		openStatisticsView: "Aufgaben- & Projektstatistiken öffnen",
 		createNewTask: "Neue Aufgabe erstellen",
@@ -2562,6 +2594,8 @@ export const de: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "Gesamte erfasste Zeit:",
+				due: "Fällig:",
+				scheduled: "Geplant:",
 				created: "Erstellt:",
 				modified: "Geändert:",
 				file: "Datei:"
@@ -2739,6 +2773,7 @@ export const de: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "Fälligkeitsdatum",
 			scheduledDate: "Planungsdatum",
+			customDates: "Benutzerdefinierte Datumsfelder",
 			reminders: "Erinnerungen",
 			remindBeforeDue: "Vor Fälligkeit erinnern…",
 			remindBeforeScheduled: "Vor Planung erinnern…",
@@ -2846,6 +2881,7 @@ export const de: TranslationTree = {
 				toggleSkipFailure: "Überspringen der wiederkehrenden Aufgabe konnte nicht umgeschaltet werden: {message}",
 				updateDueDateFailure: "Aufgaben-Fälligkeitsdatum konnte nicht aktualisiert werden: {message}",
 				updateScheduledFailure: "Aufgaben-Planungsdatum konnte nicht aktualisiert werden: {message}",
+				updateCustomDateFailure: "Fehler beim Aktualisieren von {field}: {message}",
 				updateRemindersFailure: "Erinnerungen konnten nicht aktualisiert werden",
 				clearRemindersFailure: "Erinnerungen konnten nicht gelöscht werden",
 				addReminderFailure: "Erinnerung konnte nicht hinzugefügt werden",
@@ -3020,6 +3056,8 @@ export const de: TranslationTree = {
 			notices: {
 				templateNotFound: "Aufgabenkörper-Vorlage nicht gefunden: {path}",
 				templateReadError: "Fehler beim Lesen der Aufgabenkörper-Vorlage: {template}",
+				occurrenceTemplateNotFound: "Vorkommnisnotiz-Vorlage nicht gefunden: {path}",
+				occurrenceTemplateReadError: "Fehler beim Lesen der Vorkommnisnotiz-Vorlage: {template}",
 				moveTaskFailed: "{operation} Aufgabe konnte nicht verschoben werden: {error}"
 			}
 		},

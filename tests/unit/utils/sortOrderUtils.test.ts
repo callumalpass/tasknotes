@@ -6,8 +6,6 @@ import {
 	type SortOrderPlan,
 } from "../../../src/bases/sortOrderUtils";
 
-jest.mock("obsidian");
-
 type FrontmatterMap = Record<string, Record<string, any>>;
 
 const basesSortCollator = new Intl.Collator(undefined, {

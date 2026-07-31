@@ -7,8 +7,6 @@ import {
 	type TaskModalOrganizationFieldContext,
 } from "../../../src/modals/taskModalOrganizationFields";
 
-jest.mock("obsidian");
-
 function createContext(): TaskModalOrganizationFieldContext {
 	return {
 		translate: (key) => `translated:${key}`,

@@ -11,6 +11,8 @@ import {
 import { TaskLinkWidget } from "./TaskLinkWidget";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import {
+	extractTaskLinkSubpath,
+	formatTaskLinkSubpathDisplayText,
 	isImplicitTaskLinkDisplayText,
 	resolveTaskLinkDisplayText,
 } from "./taskLinkDisplayText";
@@ -20,6 +22,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/ReadingModeTaskLink
 export interface ReadingModeSourceLink {
 	target: string;
 	hasAlias: boolean;
+	subpath?: string;
 }
 
 export interface ReadingModeSourceLinkCursor {
@@ -91,6 +94,7 @@ export function parseReadingModeSourceLinks(sourceText: string): ReadingModeSour
 		links.push({
 			target,
 			hasAlias: pipeIndex !== -1,
+			subpath: extractTaskLinkSubpath(rawTarget),
 		});
 	}
 
@@ -149,6 +153,7 @@ export function shouldSkipReadingModeTaskLinkOverlay(options: {
 	hasExplicitAlias: boolean;
 	linkText: string;
 	originalLinkPath: string;
+	taskSubpath?: string;
 	taskPath?: string;
 	taskTitle: string;
 }): boolean {
@@ -156,7 +161,21 @@ export function shouldSkipReadingModeTaskLinkOverlay(options: {
 	if (options.hasExplicitAlias) return true;
 
 	const currentText = options.linkText.trim();
-	if (isImplicitTaskLinkDisplayText(currentText, options.taskPath, options.originalLinkPath)) {
+	const subpathDisplayText = formatTaskLinkSubpathDisplayText(
+		options.taskTitle,
+		options.taskSubpath ?? extractTaskLinkSubpath(options.originalLinkPath)
+	);
+	if (subpathDisplayText && currentText === subpathDisplayText) {
+		return false;
+	}
+	if (
+		isImplicitTaskLinkDisplayText(
+			currentText,
+			options.taskPath,
+			options.originalLinkPath,
+			options.taskTitle
+		)
+	) {
 		return false;
 	}
 	return currentText !== options.originalLinkPath && currentText !== options.taskTitle;
@@ -222,7 +241,8 @@ export class ReadingModeTaskLinkProcessor {
 						linkEl,
 						ctx.sourcePath,
 						"internal",
-						sourceLink?.hasAlias ?? false
+						sourceLink?.hasAlias ?? false,
+						sourceLink?.subpath
 					);
 				}
 				// Process other links that might be markdown links to internal files
@@ -236,7 +256,8 @@ export class ReadingModeTaskLinkProcessor {
 						linkEl,
 						ctx.sourcePath,
 						"external",
-						sourceLink?.hasAlias ?? false
+						sourceLink?.hasAlias ?? false,
+						sourceLink?.subpath
 					);
 				}
 			}
@@ -250,7 +271,8 @@ export class ReadingModeTaskLinkProcessor {
 		linkEl: HTMLAnchorElement,
 		sourcePath: string,
 		linkType: "internal" | "external",
-		hasExplicitAlias: boolean
+		hasExplicitAlias: boolean,
+		implicitSubpath?: string
 	): Promise<void> {
 		try {
 			// Get the link path from the href attribute
@@ -294,7 +316,13 @@ export class ReadingModeTaskLinkProcessor {
 			if (!taskInfo) return;
 
 			// Create a task widget and replace the link
-			await this.replaceWithTaskWidget(linkEl, taskInfo, linkPath, hasExplicitAlias);
+			await this.replaceWithTaskWidget(
+				linkEl,
+				taskInfo,
+				linkPath,
+				hasExplicitAlias,
+				implicitSubpath
+			);
 		} catch (error) {
 			tasknotesLogger.debug("Error processing link in reading mode:", {
 				category: "persistence",
@@ -511,11 +539,16 @@ export class ReadingModeTaskLinkProcessor {
 		linkEl: HTMLAnchorElement,
 		taskInfo: TaskInfo,
 		originalLinkPath: string,
-		hasExplicitAlias: boolean
+		hasExplicitAlias: boolean,
+		implicitSubpath?: string
 	): Promise<void> {
 		try {
 			// Get the original link text for display
 			const originalText = linkEl.textContent || `[[${originalLinkPath}]]`;
+			const implicitSubpathDisplayText = formatTaskLinkSubpathDisplayText(
+				taskInfo.title,
+				implicitSubpath ?? extractTaskLinkSubpath(originalLinkPath)
+			);
 
 			// Check for alias exclusion
 			if (
@@ -524,6 +557,7 @@ export class ReadingModeTaskLinkProcessor {
 					hasExplicitAlias,
 					linkText: linkEl.textContent || "",
 					originalLinkPath,
+					taskSubpath: implicitSubpath,
 					taskPath: taskInfo.path,
 					taskTitle: taskInfo.title,
 				})
@@ -536,6 +570,8 @@ export class ReadingModeTaskLinkProcessor {
 			const linkContent = linkEl.textContent || "";
 			if (hasExplicitAlias) {
 				displayText = linkContent.trim() || undefined;
+			} else if (implicitSubpathDisplayText) {
+				displayText = implicitSubpathDisplayText;
 			} else if (linkContent !== originalLinkPath && linkContent !== taskInfo.title) {
 				displayText = resolveTaskLinkDisplayText(
 					linkContent,

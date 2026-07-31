@@ -7,14 +7,12 @@
 
 import { TaskEditModal } from '../../../src/modals/TaskEditModal';
 import { ConfirmationModal } from '../../../src/modals/ConfirmationModal';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 import type { App } from 'obsidian';
 import { TaskInfo } from '../../../src/types';
 
 // Type helper to safely cast mock App to real App type
 const createMockApp = (mockApp: any): App => mockApp as unknown as App;
-
-jest.mock('obsidian');
 
 // Mock ConfirmationModal with callback support for thirdButton
 jest.mock('../../../src/modals/ConfirmationModal', () => ({

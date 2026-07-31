@@ -1,3 +1,8 @@
+jest.mock("../../../src/utils/helpers", () => ({
+	...jest.requireActual("../../../src/utils/helpers"),
+	generateRecurringInstances: jest.fn(),
+}));
+
 import {
 	generateCalendarEvents,
 	getTargetDateForEvent,
@@ -5,7 +10,11 @@ import {
 } from "../../../src/bases/calendar-core";
 import type TaskNotesPlugin from "../../../src/main";
 import { formatDateForStorage } from "../../../src/utils/dateUtils";
+import { generateRecurringInstances } from "../../../src/utils/helpers";
 import { TaskFactory } from "../../helpers/mock-factories";
+
+const mockedGenerateRecurringInstances =
+	generateRecurringInstances as jest.MockedFunction<typeof generateRecurringInstances>;
 
 function createPlugin(): TaskNotesPlugin {
 	return {
@@ -20,6 +29,10 @@ function createPlugin(): TaskNotesPlugin {
 
 function localDate(year: number, monthIndex: number, day: number): Date {
 	return new Date(year, monthIndex, day);
+}
+
+function localNoonDate(year: number, monthIndex: number, day: number): Date {
+	return new Date(year, monthIndex, day, 12);
 }
 
 function virtualOccurrenceDates(events: CalendarEvent[]): string[] {
@@ -37,8 +50,20 @@ function virtualOccurrenceDates(events: CalendarEvent[]): string[] {
 
 describe("calendar materialized occurrences", () => {
 	const plugin = createPlugin();
-	const start = localDate(2026, 5, 1);
-	const end = localDate(2026, 5, 4);
+	const start = localNoonDate(2026, 5, 1);
+	const end = localNoonDate(2026, 5, 4);
+
+	beforeEach(() => {
+		mockedGenerateRecurringInstances.mockReturnValue([
+			localNoonDate(2026, 5, 1),
+			localNoonDate(2026, 5, 2),
+			localNoonDate(2026, 5, 3),
+		]);
+	});
+
+	afterEach(() => {
+		mockedGenerateRecurringInstances.mockReset();
+	});
 
 	it("coalesces virtual recurrence events when a materialized occurrence exists", async () => {
 		const parent = TaskFactory.createRecurringTask("FREQ=DAILY;INTERVAL=1", {

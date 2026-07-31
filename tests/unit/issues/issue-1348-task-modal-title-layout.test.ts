@@ -8,9 +8,7 @@ import fs from "fs";
 import path from "path";
 import type { App } from "obsidian";
 import { TaskModal } from "../../../src/modals/TaskModal";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 class TaskModalHarness extends TaskModal {
 	async initializeFormData(): Promise<void> {}

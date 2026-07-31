@@ -1,9 +1,7 @@
 import { TaskSelectorWithCreateModal } from "../../../src/modals/TaskSelectorWithCreateModal";
 import { TaskInfo } from "../../../src/types";
-import { MockObsidian } from "../../__mocks__/obsidian";
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 import type { App } from "obsidian";
-
-jest.mock("obsidian");
 
 function task(overrides: Partial<TaskInfo>): TaskInfo {
 	return {

@@ -18,7 +18,7 @@
 
 import { createTaskCard } from '../../../src/ui/TaskCard';
 import { TaskFactory } from '../../helpers/mock-factories';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 import type TaskNotesPlugin from '../../../src/main';
 
 describe.skip('TaskCard - Hide Identifying Tags Exact Only Mode (#1284)', () => {

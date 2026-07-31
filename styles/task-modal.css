@@ -816,7 +816,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
 body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--size-4-2);
 }
 
@@ -824,10 +824,14 @@ body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar button {
     width: 100%;
     min-height: 40px;
     margin: 0;
+    padding-inline: var(--size-4-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__open-note-button {
-    grid-column: 1 / -1;
+body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .mod-cta {
+    grid-column: span 2;
 }
 
 body.is-mobile .tasknotes-plugin .task-project-remove {

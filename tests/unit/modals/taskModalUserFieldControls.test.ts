@@ -12,12 +12,14 @@ const mockToggleControls: Array<{
 	setValue: (value: boolean) => unknown;
 }> = [];
 
-const mockDateMenus: Array<{
+const mockDateTimePickers: Array<{
 	options: {
 		currentValue?: string | null;
-		onSelect: (value: string | null) => void;
+		currentDate?: string | null;
+		showTime?: boolean;
+		onSelect: (value: string | null, time: string | null) => void;
 	};
-	showAtElement: jest.Mock;
+	open: jest.Mock;
 }> = [];
 
 const mockSetIcon = jest.fn();
@@ -102,14 +104,14 @@ jest.mock("obsidian", () => ({
 	setIcon: mockSetIcon,
 }));
 
-jest.mock("../../../src/components/DateContextMenu", () => ({
-	DateContextMenu: jest.fn().mockImplementation((options) => {
-		const menu = {
+jest.mock("../../../src/modals/DateTimePickerModal", () => ({
+	DateTimePickerModal: jest.fn().mockImplementation((_app, options) => {
+		const picker = {
 			options,
-			showAtElement: jest.fn(),
+			open: jest.fn(),
 		};
-		mockDateMenus.push(menu);
-		return menu;
+		mockDateTimePickers.push(picker);
+		return picker;
 	}),
 }));
 
@@ -154,7 +156,7 @@ describe("taskModalUserFieldControls", () => {
 		document.body.innerHTML = "";
 		mockTextControls.length = 0;
 		mockToggleControls.length = 0;
-		mockDateMenus.length = 0;
+		mockDateTimePickers.length = 0;
 		mockSetIcon.mockClear();
 		mockUserFieldSuggest.mockClear();
 		mockAttachDateInputBehavior.mockClear();
@@ -306,7 +308,7 @@ describe("taskModalUserFieldControls", () => {
 		mockTextControls[3].onChangeCallback?.("");
 		mockToggleControls[0].onChangeCallback?.(false);
 		dateButton?.click();
-		mockDateMenus[0].options.onSelect("2026-06-03");
+		mockDateTimePickers[0].options.onSelect("2026-06-03", null);
 
 		expect(onValueChange).toHaveBeenCalledWith("assignee", null);
 		expect(onValueChange).toHaveBeenCalledWith("labels", ["one", "two"]);
@@ -314,7 +316,9 @@ describe("taskModalUserFieldControls", () => {
 		expect(onValueChange).toHaveBeenCalledWith("custom_date", null);
 		expect(onValueChange).toHaveBeenCalledWith("custom_date", "2026-06-03");
 		expect(onValueChange).toHaveBeenCalledWith("flagged", false);
-		expect(mockDateMenus[0].showAtElement).toHaveBeenCalledWith(dateButton);
+		expect(mockDateTimePickers[0].options.currentDate).toBe("2026-05-19");
+		expect(mockDateTimePickers[0].options.showTime).toBe(false);
+		expect(mockDateTimePickers[0].open).toHaveBeenCalled();
 	});
 
 	it("updates existing user-field input and toggle controls from modal state", () => {

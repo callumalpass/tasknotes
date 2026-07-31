@@ -8,6 +8,9 @@ import {
 	TFile,
 	getLanguage,
 } from "obsidian";
+
+type Nullable<T> = T | null;
+
 import { format } from "date-fns";
 import {
 	createDailyNote,
@@ -69,9 +72,22 @@ import {
 	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
-import { ensureDefaultBasesViewFiles } from "./bootstrap/defaultBasesFiles";
+import {
+	ensureDefaultBasesViewFiles,
+	type DefaultBasesFileResult,
+} from "./bootstrap/defaultBasesFiles";
+import { ensureStarterNote as ensureStarterNoteFile } from "./bootstrap/starterNote";
+import {
+	getAvailableTaskNotesReleaseVersion,
+	shouldNotifyForRelease,
+	TASKNOTES_COMMUNITY_PLUGIN_URL,
+} from "./api/releaseCheck";
 import { buildCurrentNoteConversionTaskInfo } from "./services/task-service/currentNoteConversion";
-import { applyParentNoteProjectDefault } from "./utils/taskCreationPrepopulation";
+import {
+	applyParentNoteProjectDefault,
+	shouldApplyParentNoteProjectDefault,
+} from "./utils/taskCreationPrepopulation";
+import type { ParentNoteProjectDefaultContext } from "./utils/taskCreationPrepopulation";
 import { applySearchQueryToView } from "./utils/obsidianSearchView";
 import { TaskContextMenu } from "./components/TaskContextMenu";
 import {
@@ -214,6 +230,7 @@ export default class TaskNotesPlugin extends Plugin {
 	// Migration state management
 	private migrationComplete = false;
 	private migrationPromise: Promise<void> | null = null;
+	private shouldCreateStarterNoteOnStartup = false;
 
 	// Bases registration state management
 	basesRegistered = false;
@@ -533,6 +550,56 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
+	async checkForNewReleaseOnStartup(): Promise<void> {
+		if (this.settings.checkForUpdatesOnStartup === false) {
+			return;
+		}
+
+		try {
+			const availableVersion = await getAvailableTaskNotesReleaseVersion();
+			if (
+				!shouldNotifyForRelease(
+					this.manifest.version,
+					availableVersion,
+					this.settings.lastNotifiedReleaseVersion
+				)
+			) {
+				return;
+			}
+
+			this.settings.lastNotifiedReleaseVersion = availableVersion;
+			await this.saveSettingsDataOnly();
+			new Notice(this.createReleaseAvailableNotice(availableVersion), 15000);
+		} catch (error) {
+			tasknotesLogger.debug("Release check failed", {
+				category: "provider",
+				operation: "check-release",
+				error,
+			});
+		}
+	}
+
+	private createReleaseAvailableNotice(version: string): DocumentFragment {
+		const fragment = activeDocument.createDocumentFragment();
+		fragment.appendText(
+			this.i18n.translate("notices.releaseAvailable.message", {
+				version,
+			})
+		);
+		fragment.appendText(" ");
+
+		const link = activeDocument.createElement("a");
+		link.textContent = this.i18n.translate("notices.releaseAvailable.action");
+		link.href = TASKNOTES_COMMUNITY_PLUGIN_URL;
+		link.addEventListener("click", (event) => {
+			event.preventDefault();
+			window.open(TASKNOTES_COMMUNITY_PLUGIN_URL, "_blank");
+		});
+
+		fragment.appendChild(link);
+		return fragment;
+	}
+
 	/**
 	 * Public method for views to wait for migration completion
 	 */
@@ -631,6 +698,7 @@ export default class TaskNotesPlugin extends Plugin {
 		const loadedData = await this.loadSettingsData();
 		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData(loadedData);
 		this.settings = settings;
+		this.shouldCreateStarterNoteOnStartup = !settings.lastSeenVersion;
 
 		if (shouldPersistMigratedSettings) {
 			// Save the migrated settings to include new field mappings (non-blocking)
@@ -781,6 +849,10 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 	}
 
+	async updateDefaultBasesFiles(): Promise<DefaultBasesFileResult> {
+		return this.ensureBasesViewFiles({ overwriteExisting: true });
+	}
+
 	async ensureBasesViewFiles(
 		options: { overwriteExisting?: boolean } = {}
 	): Promise<{ created: string[]; updated: string[]; skipped: string[] }> {
@@ -806,6 +878,31 @@ export default class TaskNotesPlugin extends Plugin {
 			},
 			options
 		);
+	}
+
+	async ensureStarterNote(): Promise<void> {
+		const shouldCreateStarterNote = this.shouldCreateStarterNoteOnStartup;
+		this.shouldCreateStarterNoteOnStartup = false;
+		await ensureStarterNoteFile({
+			app: this.app,
+			settings: this.settings,
+			shouldCreateStarterNote,
+			saveSettings: () => this.saveSettingsDataOnly(),
+			warn: (message, error) => {
+				if (error === undefined) {
+					tasknotesLogger.warn(message, {
+						category: "configuration",
+						operation: "ensure-starter-note",
+					});
+				} else {
+					tasknotesLogger.warn(message, {
+						category: "configuration",
+						operation: "ensure-starter-note",
+						error,
+					});
+				}
+			},
+		});
 	}
 
 	/**
@@ -1087,14 +1184,18 @@ export default class TaskNotesPlugin extends Plugin {
 
 	openTaskCreationModal(prePopulatedValues?: Partial<TaskInfo>) {
 		new TaskCreationModal(this.app, this, {
-			prePopulatedValues: this.applyParentNoteProjectDefault(prePopulatedValues),
+			prePopulatedValues: this.applyParentNoteProjectDefault(
+				prePopulatedValues,
+				"task-creation"
+			),
 		}).open();
 	}
 
 	private applyParentNoteProjectDefault(
-		prePopulatedValues?: Partial<TaskInfo>
+		prePopulatedValues: Partial<TaskInfo> | undefined,
+		context: ParentNoteProjectDefaultContext
 	): Partial<TaskInfo> | undefined {
-		if (!this.settings.taskCreationDefaults.useParentNoteAsProject) {
+		if (!shouldApplyParentNoteProjectDefault(this.settings.taskCreationDefaults, context)) {
 			return prePopulatedValues;
 		}
 
@@ -1507,7 +1608,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 	async openQuickActionsForTaskUnderCursor(
 		editor: Editor,
-		sourceFile?: TFile | null
+		sourceFile?: Nullable<TFile>
 	): Promise<void> {
 		try {
 			const activeFile = sourceFile ?? this.app.workspace.getActiveFile();
@@ -1824,7 +1925,10 @@ export default class TaskNotesPlugin extends Plugin {
 				insertionPoint,
 			};
 
-			const prePopulatedValues = this.applyParentNoteProjectDefault();
+			const prePopulatedValues = this.applyParentNoteProjectDefault(
+				undefined,
+				"inline-creation"
+			);
 
 			// Open task creation modal with callback to insert link
 			// Use modal-inline-creation context for inline folder behavior (Issue #1424)

@@ -18,6 +18,8 @@ Use **Identify tasks by** to select a strategy.
 - **Tag mode** uses a configured task tag (for example `task`) and can optionally hide that identifying tag in card displays.
 - **Property mode** matches a property/value pair (for example `isTask: true` or `category: task`) and is useful when you avoid tag-based identification.
 
+If you change the task tag after creating default Base views, existing `.base` filters will still point at the old tag until you update the default Base files or edit those filters.
+
 ### Hide Identification Tags
 
 When using tag-based identification, you may want to keep your task identification tags in the frontmatter for organizational purposes, but hide them from the visual display in task cards to reduce clutter.
@@ -41,6 +43,12 @@ If your task identification tag is `task` and a task has the tags `#task`, `#tas
 ## Folder Management
 
 Use **Excluded folders** to omit paths from Notes tab indexing and keep large archive areas out of regular task browsing.
+
+## Views & Base Files
+
+TaskNotes uses Obsidian Bases files (`.base`) to power its task views. By default, missing view files are created automatically on startup.
+
+Use **Create files** to generate missing default files in `TaskNotes/Views/` without overwriting existing files. Use **Update files** to overwrite the configured default files with templates generated from your current TaskNotes settings.
 
 ## Frontmatter
 

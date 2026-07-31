@@ -85,6 +85,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 type ICSNoteFilenameFormat = ICSIntegrationSettings["icsNoteFilenameFormat"];
+type RecurringEventRelatedNotesMode = ICSIntegrationSettings["recurringEventRelatedNotesMode"];
 
 const ICS_NOTE_FILENAME_FORMATS: readonly ICSNoteFilenameFormat[] = [
 	"title",
@@ -92,9 +93,19 @@ const ICS_NOTE_FILENAME_FORMATS: readonly ICSNoteFilenameFormat[] = [
 	"timestamp",
 	"custom",
 ];
+const RECURRING_EVENT_RELATED_NOTES_MODES: readonly RecurringEventRelatedNotesMode[] = [
+	"series",
+	"instance",
+];
 
 function isICSNoteFilenameFormat(value: string): value is ICSNoteFilenameFormat {
 	return ICS_NOTE_FILENAME_FORMATS.some((format) => format === value);
+}
+
+function isRecurringEventRelatedNotesMode(
+	value: string
+): value is RecurringEventRelatedNotesMode {
+	return RECURRING_EVENT_RELATED_NOTES_MODES.some((mode) => mode === value);
 }
 
 function formatDefaultReminderMinutes(value: number | number[] | null | undefined): string {
@@ -1320,6 +1331,43 @@ export function renderIntegrationsTab(
 						getValue: () => plugin.settings.icsIntegration.useICSEndAsDue ?? false,
 						setValue: async (value: boolean) => {
 							plugin.settings.icsIntegration.useICSEndAsDue = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate(
+							"settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name"
+						),
+						desc: translate(
+							"settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description"
+						),
+						options: [
+							{
+								value: "series",
+								label: translate(
+									"settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
+								),
+							},
+							{
+								value: "instance",
+								label: translate(
+									"settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance"
+								),
+							},
+						],
+						getValue: () =>
+							plugin.settings.icsIntegration.recurringEventRelatedNotesMode ??
+							"series",
+						setValue: async (value: string) => {
+							if (!isRecurringEventRelatedNotesMode(value)) {
+								return;
+							}
+							plugin.settings.icsIntegration.recurringEventRelatedNotesMode =
+								value;
 							save();
 						},
 					})

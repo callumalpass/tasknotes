@@ -706,6 +706,21 @@ export function renderGeneralTab(
 					})
 			);
 
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.general.releaseNotes.checkForUpdates.name"),
+						desc: translate(
+							"settings.general.releaseNotes.checkForUpdates.description"
+						),
+						getValue: () => plugin.settings.checkForUpdatesOnStartup ?? true,
+						setValue: async (value: boolean) => {
+							plugin.settings.checkForUpdatesOnStartup = value;
+							save();
+						},
+					})
+			);
+
 			group.addSetting((setting) => {
 				setting
 					.setName(translate("settings.general.releaseNotes.viewButton.name"))

@@ -348,7 +348,7 @@ export const en: TranslationTree = {
 			},
 			meta: {
 				ready: "{time} planned · {count} completed today",
-				running: "{time} left",
+				running: "{time} left · Ends at {endTime}",
 				paused: "{type} paused · {time} left",
 				breakReady: "{type} ready · {time} planned",
 			},
@@ -495,7 +495,7 @@ export const en: TranslationTree = {
 			starMessage:
 				"We really appreciate all feedback. If something does not feel right, please let us know on GitHub. If you find TaskNotes useful, please consider giving it a star.",
 			baseFilesNotice:
-				"> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Create Default Files**.",
+				"> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Create files**.",
 		},
 	},
 	settings: {
@@ -772,10 +772,15 @@ export const en: TranslationTree = {
 					selectTooltip: "Choose project notes to link by default",
 					removeTooltip: "Remove {name} from default projects",
 				},
-				useParentNoteAsProject: {
-					name: "Use parent note as project during instant conversion",
+				useParentNoteForTaskCreation: {
+					name: "Use active note as project for new tasks",
 					description:
-						"Automatically link the parent note as a project when using instant task conversion",
+						"Automatically link the active note as a project when opening task creation from the command palette or ribbon",
+				},
+				useParentNoteAsProject: {
+					name: "Use parent note as project for inline and instant conversion",
+					description:
+						"Automatically link the source note as a project when using inline task creation or instant task conversion",
 				},
 				useParentHeaderAsProject: {
 					name: "Use parent heading as project during instant conversion",
@@ -855,6 +860,18 @@ export const en: TranslationTree = {
 					placeholder: "Templates/Task Template.md",
 					ariaLabel: "Path to body template file",
 				},
+				useOccurrenceBodyTemplate: {
+					name: "Use occurrence note template",
+					description:
+						"Use a separate fallback template for materialized occurrence notes when the recurring task has no occurrence_template",
+				},
+				occurrenceBodyTemplateFile: {
+					name: "Occurrence note template file",
+					description:
+						"Path to template file for materialized occurrence notes. A recurring task's occurrence_template field takes priority over this fallback.",
+					placeholder: "Templates/Occurrence Template.md",
+					ariaLabel: "Path to occurrence note template file",
+				},
 				variablesHeader: "Template variables:",
 				variables: {
 					title: "{{title}} - Task title",
@@ -920,7 +937,8 @@ export const en: TranslationTree = {
 				},
 				taskTag: {
 					name: "Task tag",
-					description: "Tag that identifies notes as tasks (without #)",
+					description:
+						"Tag that identifies notes as tasks (without #). Existing .base view filters keep their old tag when this changes; update default Base files or edit those filters.",
 				},
 				hideIdentifyingTags: {
 					name: "Hide identification tags in task cards",
@@ -986,6 +1004,11 @@ export const en: TranslationTree = {
 					name: "Show release notes after update",
 					description:
 						"Automatically open release notes when TaskNotes is updated to a new version",
+				},
+				checkForUpdates: {
+					name: "Check for new releases on startup",
+					description:
+						"Check GitHub once when TaskNotes starts and show a notice when a newer compatible release is available",
 				},
 				viewButton: {
 					name: "View release notes",
@@ -1154,7 +1177,8 @@ export const en: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "Default projects:",
-				useParentNote: "Use parent note as project:",
+				useParentNoteForTaskCreation: "Use active note for new tasks:",
+				useParentNoteForInlineTasks: "Use parent note for inline/instant conversion:",
 				useParentHeader: "Use parent heading as project:",
 				inheritParentTaskProperties: "Inherit parent task properties for subtasks:",
 				noDefaultProjects: "No default projects selected",
@@ -1801,6 +1825,15 @@ export const en: TranslationTree = {
 					description:
 						"When enabled, tasks created from calendar events will have their due date set to the event's end time. For all-day events, the due date will be set to the event date. For timed events, the due date will include the end time.",
 				},
+				recurringEventRelatedNotesMode: {
+					name: "Recurring event related notes",
+					description:
+						"Choose whether notes linked to one recurrence of an external calendar event appear across the loaded series or only on the selected instance.",
+					options: {
+						series: "Series-wide",
+						instance: "Selected instance only",
+					},
+				},
 			},
 			subscriptionsList: {
 				header: "Calendar subscriptions list",
@@ -2318,6 +2351,10 @@ export const en: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Language changed to {language}.",
+		releaseAvailable: {
+			message: "TaskNotes {version} is available.",
+			action: "Open in community plugins",
+		},
 		exportTasksFailed: "Failed to export tasks as ICS file",
 		// ICS Event Info Modal notices
 		icsNoteCreatedSuccess: "Note created successfully",
@@ -2352,6 +2389,7 @@ export const en: TranslationTree = {
 		openAgendaView: "Open agenda view",
 		openPomodoroView: "Open Pomodoro timer",
 		openKanbanView: "Open Kanban board",
+		updateDefaultBaseFiles: "Update default base files",
 		openPomodoroStats: "Open Pomodoro statistics",
 		openStatisticsView: "Open task & project statistics",
 		createNewTask: "Create new task",
@@ -2715,6 +2753,8 @@ export const en: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "Total tracked time:",
+				due: "Due:",
+				scheduled: "Scheduled:",
 				created: "Created:",
 				modified: "Modified:",
 				file: "File:",
@@ -2902,6 +2942,7 @@ export const en: TranslationTree = {
 			clearTags: "Clear tags",
 			dueDate: "Due date",
 			scheduledDate: "Scheduled date",
+			customDates: "Custom dates",
 			reminders: "Reminders",
 			remindBeforeDue: "Remind before due…",
 			remindBeforeScheduled: "Remind before scheduled…",
@@ -3009,6 +3050,7 @@ export const en: TranslationTree = {
 				toggleSkipFailure: "Failed to toggle recurring task skip: {message}",
 				updateDueDateFailure: "Failed to update task due date: {message}",
 				updateScheduledFailure: "Failed to update task scheduled date: {message}",
+				updateCustomDateFailure: "Failed to update {field}: {message}",
 				updateRemindersFailure: "Failed to update reminders",
 				clearRemindersFailure: "Failed to clear reminders",
 				addReminderFailure: "Failed to add reminder",
@@ -3183,6 +3225,9 @@ export const en: TranslationTree = {
 			notices: {
 				templateNotFound: "Task body template not found: {path}",
 				templateReadError: "Error reading task body template: {template}",
+				occurrenceTemplateNotFound: "Occurrence note template not found: {path}",
+				occurrenceTemplateReadError:
+					"Error reading occurrence note template: {template}",
 				moveTaskFailed: "Failed to move {operation} task: {error}",
 			},
 		},

@@ -7,8 +7,6 @@ import {
 } from "obsidian-daily-notes-interface";
 import { MiniCalendarView } from "../../../src/bases/MiniCalendarView";
 import { PluginFactory } from "../../helpers/mock-factories";
-
-jest.mock("obsidian");
 jest.mock("obsidian-daily-notes-interface", () => ({
 	appHasDailyNotesPluginLoaded: jest.fn(() => true),
 	createDailyNote: jest.fn(),

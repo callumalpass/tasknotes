@@ -1169,7 +1169,9 @@ export function generateRecurringTaskInstances(
 			adjustedEndDate
 		);
 
-		// Filter instances to only show those within the original visible date range
+		// Filter instances to only show those within the original visible date range.
+		// FullCalendar's visibleEnd is exclusive, so an instance on that day belongs
+		// to the next fetched range.
 		// Compare by date only (not time) since FullCalendar boundaries are at midnight local time
 		// but RRule generates occurrences at the task's scheduled time in UTC (issue #1582)
 		const endDateOnly = formatDateForStorage(endDate);
@@ -1178,7 +1180,7 @@ export function generateRecurringTaskInstances(
 
 			// Skip instances outside the original visible range (for yearly tasks with extended look-ahead)
 			// Compare dates as strings (YYYY-MM-DD) to avoid timezone/time issues
-			if (instanceDate > endDateOnly) {
+			if (instanceDate >= endDateOnly) {
 				continue;
 			}
 
@@ -1292,7 +1294,7 @@ function getRecordedRecurringInstanceDatesInRange(
 
 	if (showCompletedRecurringInstances) {
 		for (const date of task.complete_instances || []) {
-			if (date >= startDateOnly && date <= endDateOnly) {
+			if (date >= startDateOnly && date < endDateOnly) {
 				dates.add(date);
 			}
 		}
@@ -1300,7 +1302,7 @@ function getRecordedRecurringInstanceDatesInRange(
 
 	if (showSkippedRecurringInstances) {
 		for (const date of task.skipped_instances || []) {
-			if (date >= startDateOnly && date <= endDateOnly) {
+			if (date >= startDateOnly && date < endDateOnly) {
 				dates.add(date);
 			}
 		}

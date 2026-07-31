@@ -10,9 +10,7 @@ import * as path from "path";
 import type { App } from "obsidian";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import type { TaskInfo } from "../../../src/types";
-import { MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 const cssFilePath = path.resolve(__dirname, "../../../styles/task-modal.css");
 
@@ -113,13 +111,25 @@ describe("Issue #1903: mobile edit task modal", () => {
 				cssContent,
 				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar"
 			)
-		).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
+		).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
 		expect(
 			extractCssBlock(
 				cssContent,
 				"body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container"
 			)
 		).toContain("margin-bottom: max(var(--size-4-1), env(safe-area-inset-bottom))");
+		expect(
+			extractCssBlock(
+				cssContent,
+				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__open-note-button"
+			)
+		).not.toContain("grid-column: 1 / -1");
+		expect(
+			extractCssBlock(
+				cssContent,
+				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .mod-cta"
+			)
+		).toContain("grid-column: span 2");
 		expect(cssContent).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.tn-task-modal__markdown-editor--details,[^{]*\{[^}]*min-height:\s*140px/s
 		);

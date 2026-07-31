@@ -353,9 +353,25 @@ export class GoogleCalendarService extends CalendarProvider {
 						// Full sync mode - use time range and orderBy
 						const now = new Date();
 						const defaultTimeMin =
-							timeMin || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+							timeMin ||
+							new Date(
+								now.getTime() -
+									GOOGLE_CALENDAR_CONSTANTS.VIEW_RANGE.DAYS_BEFORE *
+										24 *
+										60 *
+										60 *
+										1000
+							);
 						const defaultTimeMax =
-							timeMax || new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+							timeMax ||
+							new Date(
+								now.getTime() +
+									GOOGLE_CALENDAR_CONSTANTS.VIEW_RANGE.DAYS_AFTER *
+										24 *
+										60 *
+										60 *
+										1000
+							);
 						params.set("timeMin", defaultTimeMin.toISOString());
 						params.set("timeMax", defaultTimeMax.toISOString());
 						params.set("orderBy", "startTime");

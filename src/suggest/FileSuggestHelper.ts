@@ -8,8 +8,9 @@ import { isPathInExcludedFolder, parseExcludedFolders } from "../utils/pathExclu
 import { collectCacheTags } from "../utils/tagExtraction";
 
 export interface FileSuggestionItem {
-	insertText: string; // usually basename
+	insertText: string; // link text to insert inside [[...]]
 	displayText: string; // "basename [title: ... | aliases: ...]"
+	path: string;
 	score: number;
 }
 
@@ -36,8 +37,12 @@ function getSuggestableFiles(plugin: TaskNotesPlugin): TFile[] {
 	return [];
 }
 
-function getFileInsertText(file: TFile): string {
+function getFileInsertText(plugin: TaskNotesPlugin, file: TFile): string {
 	if (file.extension === "md") {
+		const linktext = plugin.app.metadataCache.fileToLinktext?.(file, "", true);
+		if (typeof linktext === "string" && linktext.trim()) {
+			return linktext;
+		}
 		return file.basename;
 	}
 	return file.name || file.path.split("/").pop() || file.basename;
@@ -265,8 +270,9 @@ export const FileSuggestHelper = {
 						: basename;
 
 					items.push({
-						insertText: getFileInsertText(file),
+						insertText: getFileInsertText(plugin, file),
 						displayText: display,
+						path: file.path,
 						score: bestScore,
 					});
 				}
@@ -274,7 +280,7 @@ export const FileSuggestHelper = {
 
 			// Sort and cap
 			items.sort((a, b) => b.score - a.score);
-			// Deduplicate by insertText (basename)
+			// Deduplicate by resolved link text so ambiguous basenames remain selectable.
 			const out: FileSuggestionItem[] = [];
 			const seen = new Set<string>();
 			for (const it of items) {

@@ -75,9 +75,14 @@ Error:
 - `POST /api/tasks/:id/toggle-status`
 - `POST /api/tasks/:id/archive`
 - `POST /api/tasks/:id/complete-instance`
+- `POST /api/tasks/:id/materialize-occurrence`
 - `POST /api/tasks/query`
 - `GET /api/filter-options`
 - `GET /api/stats`
+
+### Bases
+
+- `POST /api/bases/default-files/update`
 
 ### Time Tracking
 
@@ -232,6 +237,16 @@ Request body:
 
 - Optional `date` (ISO string). If omitted, uses current date context.
 
+When the recurring parent uses materialized occurrence notes, this endpoint completes the matching occurrence note if one exists. If the parent is set to **Create next after completion** and no matching occurrence note exists yet, TaskNotes creates and completes that occurrence note instead of only recording a virtual `complete_instances` entry.
+
+### `POST /api/tasks/:id/materialize-occurrence`
+
+Create or return a materialized occurrence note for a recurring task date. This endpoint is idempotent for the same parent and date.
+
+Request body:
+
+- Required `date` (ISO date string, for example `2026-06-01`)
+
 ### `POST /api/tasks/query`
 
 Advanced filtering.
@@ -345,6 +360,22 @@ Returns filter options for UI builders.
 Returns summary counts:
 
 - `total`, `completed`, `active`, `overdue`, `archived`, `withTimeTracking`
+
+## Bases
+
+### `POST /api/bases/default-files/update`
+
+Overwrite the configured default TaskNotes `.base` files with templates generated from the current TaskNotes settings. This is the same write operation as **Settings -> TaskNotes -> Views & base files -> Update files** and replaces manual edits in those configured default files.
+
+```bash
+curl -X POST http://localhost:8080/api/bases/default-files/update
+```
+
+Response fields:
+
+- `data.created`: default files created because they were missing
+- `data.updated`: existing default files overwritten with current templates
+- `data.skipped`: configured default files skipped
 
 ## Time Tracking
 

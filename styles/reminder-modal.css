@@ -321,7 +321,8 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     margin-top: var(--size-4-2);
 }
 
-.tasknotes-plugin .absolute-fields {
+.tasknotes-plugin .relative-fields.reminder-modal__fields--hidden,
+.tasknotes-plugin .absolute-fields.reminder-modal__fields--hidden {
     display: none;
 }
 

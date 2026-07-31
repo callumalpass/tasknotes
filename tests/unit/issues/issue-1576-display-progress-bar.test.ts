@@ -1,8 +1,6 @@
 import { createTaskCard, updateTaskCard } from "../../../src/ui/TaskCard";
 import { TaskFactory } from "../../helpers/mock-factories";
-import { App, MockObsidian } from "../../__mocks__/obsidian";
-
-jest.mock("obsidian");
+import { App, MockObsidian } from "../../helpers/obsidian-runtime";
 
 jest.mock("../../../src/utils/helpers", () => ({
 	calculateTotalTimeSpent: jest.fn(() => 0),

@@ -331,11 +331,43 @@ export class TasksController extends BaseController {
 			}
 
 			const instanceDate = date ? new Date(date) : undefined;
-			const updatedTask = await this.taskService.toggleRecurringTaskComplete(
+			const updatedTask = await this.taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
 				task,
 				instanceDate
 			);
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
+		} catch (error: unknown) {
+			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
+		}
+	}
+
+	@Post("/api/tasks/:id/materialize-occurrence")
+	async materializeOccurrence(
+		req: HTTPRequestLike,
+		res: HTTPResponseLike,
+		params?: Record<string, string>
+	): Promise<void> {
+		try {
+			const taskId = params?.id;
+			if (!taskId) {
+				this.sendResponse(res, 400, this.errorResponse("Task ID is required"));
+				return;
+			}
+
+			const { date } = await this.parseRequestBody<{ date?: string }>(req);
+			if (!date) {
+				this.sendResponse(res, 400, this.errorResponse("Date is required"));
+				return;
+			}
+
+			const task = await this.cacheManager.getTaskInfo(taskId);
+			if (!task) {
+				this.sendResponse(res, 404, this.errorResponse("Task not found"));
+				return;
+			}
+
+			const occurrence = await this.taskService.materializeOccurrence(task, date);
+			this.sendResponse(res, 200, this.successResponse(occurrence));
 		} catch (error: unknown) {
 			this.sendResponse(res, 400, this.errorResponse(this.getErrorMessage(error)));
 		}

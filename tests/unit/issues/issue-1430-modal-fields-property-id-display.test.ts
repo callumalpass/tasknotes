@@ -3,8 +3,6 @@ import { createFieldManager } from "../../../src/settings/components/FieldManage
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskModalFieldsConfig, UserMappedField } from "../../../src/types/settings";
 
-jest.mock("obsidian");
-
 describe("Issue #1430: Modal Fields displays property keys for custom fields", () => {
 	let container: HTMLElement;
 

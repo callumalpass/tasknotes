@@ -18,12 +18,22 @@ import {
 import { TaskLinkDetectionService } from "../services/TaskLinkDetectionService";
 import { TaskLinkWidget } from "./TaskLinkWidget";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { resolveTaskLinkDisplayText } from "./taskLinkDisplayText";
+import {
+	formatTaskLinkSubpathDisplayText,
+	resolveTaskLinkDisplayText,
+} from "./taskLinkDisplayText";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/TaskLinkOverlay" });
 
 // Define a state effect for task updates
 const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
+
+interface ParsedTaskLink {
+	linkPath: string;
+	displayText?: string;
+	subpath?: string;
+	hasExplicitAlias: boolean;
+}
 
 // Create a ViewPlugin factory that takes the plugin as a parameter
 export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
@@ -348,14 +358,23 @@ export function buildTaskLinkDecorations(
 					const widgetKey = `${resolvedPath}-${link.start}-${link.end}`;
 
 					// Always create a new widget with the current task info
-					const displayText =
-						link.type === "markdown"
+					let displayText: string | undefined;
+					if (link.type === "markdown") {
+						displayText = parsed.displayText
 							? resolveTaskLinkDisplayText(
 									parsed.displayText,
 									taskInfo.path,
 									linkPath
 								)
-							: parsed.displayText;
+							: formatTaskLinkSubpathDisplayText(taskInfo.title, parsed.subpath);
+					} else if (parsed.hasExplicitAlias) {
+						displayText = parsed.displayText;
+					} else {
+						displayText = formatTaskLinkSubpathDisplayText(
+							taskInfo.title,
+							parsed.subpath
+						);
+					}
 					const newWidget = new TaskLinkWidget(
 						taskInfo,
 						plugin,
@@ -423,7 +442,7 @@ export function buildTaskLinkDecorations(
 // Synchronous helper functions for State Field context
 function parseWikilinkSync(
 	wikilinkText: string
-): { linkPath: string; displayText?: string } | null {
+): ParsedTaskLink | null {
 	// Validate input
 	if (!wikilinkText || typeof wikilinkText !== "string") {
 		return null;
@@ -465,6 +484,8 @@ function parseWikilinkSync(
 		return {
 			linkPath: parsed.path,
 			displayText: aliasPart,
+			subpath: parsed.subpath || undefined,
+			hasExplicitAlias: true,
 		};
 	}
 
@@ -478,13 +499,14 @@ function parseWikilinkSync(
 
 	return {
 		linkPath: parsed.path,
-		displayText: parsed.subpath || undefined,
+		subpath: parsed.subpath || undefined,
+		hasExplicitAlias: false,
 	};
 }
 
 function parseMarkdownLinkSync(
 	markdownLinkText: string
-): { linkPath: string; displayText?: string } | null {
+): ParsedTaskLink | null {
 	// Validate input
 	if (!markdownLinkText || typeof markdownLinkText !== "string") {
 		return null;
@@ -528,7 +550,9 @@ function parseMarkdownLinkSync(
 
 	return {
 		linkPath: parsed.path,
-		displayText: displayText || parsed.subpath || undefined,
+		displayText: displayText || undefined,
+		subpath: parsed.subpath || undefined,
+		hasExplicitAlias: Boolean(displayText),
 	};
 }
 

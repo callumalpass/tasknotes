@@ -4,17 +4,6 @@ import { TaskCalendarSyncService } from "../../../src/services/TaskCalendarSyncS
 import { EventNotFoundError } from "../../../src/services/errors";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 
-jest.mock("obsidian", () => ({
-	Notice: jest.fn(),
-	TFile: class MockTFile {
-		path: string;
-
-		constructor(path = "") {
-			this.path = path;
-		}
-	},
-}));
-
 const createPlugin = (pluginData: Record<string, any> = {}, calendarSettings = {}) => {
 	const basePlugin = PluginFactory.createMockPlugin();
 	const plugin = PluginFactory.createMockPlugin({

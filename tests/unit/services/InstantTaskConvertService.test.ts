@@ -16,7 +16,7 @@ import { NaturalLanguageParser, ParsedTaskData as NLPParsedTaskData } from '../.
 import { ParsedTaskData } from '../../../src/utils/TasksPluginParser';
 import { TaskInfo } from '../../../src/types';
 import { PluginFactory } from '../../helpers/mock-factories';
-import { MockObsidian, TFile } from '../../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../../helpers/obsidian-runtime';
 
 // Mock external dependencies
 jest.mock('../../../src/utils/dateUtils', () => ({

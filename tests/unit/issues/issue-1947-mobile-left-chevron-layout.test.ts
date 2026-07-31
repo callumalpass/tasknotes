@@ -12,7 +12,7 @@ describe("Issue #1947: mobile left-chevron task cards", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card\.task-card--chevron-left \.task-card__chevron\s*\{[^}]*left:\s*var\(--tn-spacing-xs\);[^}]*width:\s*32px;[^}]*height:\s*32px;/s
+			/body\.is-mobile \.tasknotes-plugin \.task-card\.task-card--chevron-left \.task-card__chevron\s*\{[^}]*left:\s*calc\(-1 \* var\(--tn-mobile-task-card-menu-size\) - var\(--tn-spacing-xs\)\);[^}]*width:\s*32px;[^}]*height:\s*32px;/s
 		);
 		expect(css).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.task-card\.task-card--chevron-left:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\)\s*\{[^}]*padding-left:\s*calc\(var\(--tn-mobile-task-card-menu-size\) \+ var\(--tn-spacing-sm\)\);/s

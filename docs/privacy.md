@@ -1,6 +1,6 @@
 # TaskNotes Privacy Policy
 
-Last updated: February 21, 2026
+Last updated: June 4, 2026
 
 ## Overview
 
@@ -17,11 +17,12 @@ Plugin settings are stored in Obsidian's local plugin configuration.
 
 ## Optional Network Features
 
-TaskNotes is local-first. Network requests occur only when you enable features that require them.
+TaskNotes is local-first. Network requests occur only for enabled features that require them.
 Some enabled integrations perform periodic background refreshes, such as calendar provider sync and ICS subscription updates.
 
 Optional network features:
 
+- Release checks: when enabled, TaskNotes checks GitHub once on startup for newer compatible TaskNotes releases. This is enabled by default and can be disabled in TaskNotes settings.
 - OAuth calendar integration (Google/Microsoft): fetches and updates calendar events through provider APIs.
 - ICS subscriptions: fetches events from configured ICS URLs.
 - Webhooks: sends event payloads to webhook endpoints you configure.
@@ -37,6 +38,7 @@ Optional network features:
 
 - Google APIs: https://policies.google.com/privacy
 - Microsoft APIs: https://privacy.microsoft.com/privacystatement
+- GitHub: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement
 - Any ICS host or webhook endpoint you configure
 
 ## What TaskNotes Does Not Do

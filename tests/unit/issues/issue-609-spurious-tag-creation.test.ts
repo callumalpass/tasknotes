@@ -26,12 +26,10 @@
 
 import { FieldMapper } from '../../../src/services/FieldMapper';
 import { TaskEditModal } from '../../../src/modals/TaskEditModal';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../helpers/obsidian-runtime';
 import { DEFAULT_FIELD_MAPPING } from '../../../src/settings/defaults';
 import type { App, TFile } from 'obsidian';
 import type { TaskInfo, FieldMapping } from '../../../src/types';
-
-jest.mock('obsidian');
 
 // @ts-ignore helper to cast the mock app
 const createMockApp = (mockApp: any): App => mockApp as unknown as App;

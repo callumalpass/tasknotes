@@ -18,7 +18,7 @@ import { formatDateForStorage } from '../../../src/utils/dateUtils';
 import { format } from 'date-fns';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
-import { MockObsidian, TFile } from '../../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../../helpers/obsidian-runtime';
 
 // Mock date-fns to simulate timezone differences
 jest.mock('date-fns', () => ({

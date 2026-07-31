@@ -40,6 +40,7 @@ export interface TaskEditChangeInput {
 	details: string;
 	originalDetails: string;
 	completedInstancesChanges: string[];
+	skippedInstancesChanges: string[];
 	userFields: Record<string, unknown>;
 	frontmatter: Record<string, unknown>;
 	userFieldConfigs: UserMappedField[];
@@ -184,7 +185,7 @@ export function buildTaskEditChanges(input: TaskEditChangeInput): TaskEditChange
 		changes.details = normalizedDetails.trimEnd();
 	}
 
-	applyCompletedInstanceChanges(input, changes);
+	applyRecurringInstanceChanges(input, changes);
 
 	const userFieldsChanges = getUserFieldChanges(
 		input.userFields,
@@ -252,29 +253,62 @@ function buildBlockingUpdates(input: TaskEditChangeInput): {
 	};
 }
 
-function applyCompletedInstanceChanges(
+function applyRecurringInstanceChanges(
 	input: TaskEditChangeInput,
 	changes: Partial<TaskInfo>
 ): void {
-	if (input.completedInstancesChanges.length === 0) {
+	if (
+		input.completedInstancesChanges.length === 0 &&
+		input.skippedInstancesChanges.length === 0
+	) {
 		return;
 	}
 
-	const currentCompleted = new Set(input.task.complete_instances || []);
-	let latestAddedCompletion: string | null = null;
+	const originalCompleted = new Set(input.task.complete_instances || []);
+	const originalSkipped = new Set(input.task.skipped_instances || []);
+	const currentCompleted = new Set(originalCompleted);
+	const currentSkipped = new Set(originalSkipped);
 
 	for (const dateStr of input.completedInstancesChanges) {
 		if (currentCompleted.has(dateStr)) {
 			currentCompleted.delete(dateStr);
 		} else {
 			currentCompleted.add(dateStr);
+		}
+	}
+
+	for (const dateStr of input.skippedInstancesChanges) {
+		if (currentSkipped.has(dateStr)) {
+			currentSkipped.delete(dateStr);
+		} else {
+			currentSkipped.add(dateStr);
+			currentCompleted.delete(dateStr);
+		}
+	}
+
+	for (const dateStr of currentCompleted) {
+		currentSkipped.delete(dateStr);
+	}
+	for (const dateStr of currentSkipped) {
+		currentCompleted.delete(dateStr);
+	}
+
+	let latestAddedCompletion: string | null = null;
+	for (const dateStr of input.completedInstancesChanges) {
+		if (!originalCompleted.has(dateStr) && currentCompleted.has(dateStr)) {
 			if (!latestAddedCompletion || dateStr > latestAddedCompletion) {
 				latestAddedCompletion = dateStr;
 			}
 		}
 	}
 
-	changes.complete_instances = Array.from(currentCompleted);
+	if (!setsEqual(originalCompleted, currentCompleted)) {
+		changes.complete_instances = Array.from(currentCompleted);
+	}
+
+	if (!setsEqual(originalSkipped, currentSkipped)) {
+		changes.skipped_instances = Array.from(currentSkipped);
+	}
 
 	if (!input.task.recurrence || typeof input.task.recurrence !== "string") {
 		return;
@@ -306,4 +340,18 @@ function applyCompletedInstanceChanges(
 	if (nextDates.due) {
 		changes.due = nextDates.due;
 	}
+}
+
+function setsEqual(left: Set<string>, right: Set<string>): boolean {
+	if (left.size !== right.size) {
+		return false;
+	}
+
+	for (const value of left) {
+		if (!right.has(value)) {
+			return false;
+		}
+	}
+
+	return true;
 }

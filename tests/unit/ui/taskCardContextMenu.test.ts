@@ -6,8 +6,6 @@ import {
 	createTaskCardContextMenuButton,
 	showTaskContextMenu,
 } from "../../../src/ui/taskCardContextMenu";
-
-jest.mock("obsidian");
 jest.mock("../../../src/components/TaskContextMenu", () => ({
 	TaskContextMenu: jest.fn().mockImplementation((options) => ({
 		options,

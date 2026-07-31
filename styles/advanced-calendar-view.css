@@ -747,6 +747,14 @@ body.is-mobile .timeblock-attachment-remove {
     width: 100%;
 }
 
+.advanced-calendar-view .fc-timegrid-cols table {
+    margin: 0;
+}
+
+.advanced-calendar-view .fc-timegrid-cols .fc-timegrid-col {
+    padding: 0;
+}
+
 /* Remove outer borders only */
 .advanced-calendar-view .fc-theme-standard .fc-scrollgrid {
     border: none;
@@ -770,6 +778,7 @@ body.is-mobile .timeblock-attachment-remove {
     border-bottom: 1px solid var(--background-modifier-border-hover);
     background: var(--background-primary);
     color: var(--text-normal);
+    overflow: visible;
 }
 
 .advanced-calendar-view .fc-timegrid-slot {
@@ -892,6 +901,11 @@ body.is-mobile .timeblock-attachment-remove {
 
 .advanced-calendar-view.advanced-calendar-view--list .fc-scroller {
     overflow-x: hidden;
+}
+
+body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller {
+    padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
 }
 
 .advanced-calendar-view.advanced-calendar-view--list .fc-list-table {
@@ -1306,15 +1320,15 @@ body.is-mobile .timeblock-attachment-remove {
         display: none;
     }
 
-    .advanced-calendar-view .fc-timegrid-event.fc-task-event,
-    .advanced-calendar-view .fc-timegrid-event.fc-ics-event,
-    .advanced-calendar-view .fc-timegrid-event[data-event-type="property-based"] {
+    body.is-mobile .advanced-calendar-view .fc-timegrid-event.fc-task-event,
+    body.is-mobile .advanced-calendar-view .fc-timegrid-event.fc-ics-event,
+    body.is-mobile .advanced-calendar-view .fc-timegrid-event[data-event-type="property-based"] {
         background-color: var(--fc-event-border-color);
     }
 
-    .advanced-calendar-view .fc-timegrid-event.fc-task-event .fc-event-main,
-    .advanced-calendar-view .fc-timegrid-event.fc-ics-event .fc-event-main,
-    .advanced-calendar-view .fc-timegrid-event[data-event-type="property-based"] .fc-event-main {
+    body.is-mobile .advanced-calendar-view .fc-timegrid-event.fc-task-event .fc-event-main,
+    body.is-mobile .advanced-calendar-view .fc-timegrid-event.fc-ics-event .fc-event-main,
+    body.is-mobile .advanced-calendar-view .fc-timegrid-event[data-event-type="property-based"] .fc-event-main {
         color: var(--text-on-accent);
     }
 }

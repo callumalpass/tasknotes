@@ -234,6 +234,25 @@ function formatOrderArray(orderArray: string[]): string {
 	return orderArray.map(prop => `      - ${prop}`).join('\n');
 }
 
+function insertOrderPropertyAfterOrAppend(
+	orderArray: string[],
+	property: string,
+	afterProperty: string
+): string[] {
+	if (!property) {
+		return orderArray;
+	}
+
+	const updatedOrder = orderArray.filter((entry) => entry !== property);
+	const insertAfterIndex = updatedOrder.indexOf(afterProperty);
+	if (insertAfterIndex === -1) {
+		updatedOrder.push(property);
+	} else {
+		updatedOrder.splice(insertAfterIndex + 1, 0, property);
+	}
+	return updatedOrder;
+}
+
 /**
  * Generate a priorityWeight formula based on user's custom priorities.
  * Creates nested if() statements that map priority values to their weights.
@@ -928,8 +947,14 @@ ${agendaOrderYaml}
 				// Extract just the property names (without prefixes) since the template controls the context
 				const projectsProperty = getPropertyName(mapPropertyToBasesProperty('projects', plugin));
 				const blockedByProperty = getPropertyName(mapPropertyToBasesProperty('blockedBy', plugin));
+				const recurrenceParentProperty = getPropertyName(mapPropertyToBasesProperty('recurrenceParent', plugin));
+				const occurrenceDateProperty = mapPropertyToBasesProperty('occurrenceDate', plugin);
+				const scheduledProperty = mapPropertyToBasesProperty('scheduled', plugin);
 				const statusProperty = getPropertyName(mapPropertyToBasesProperty('status', plugin));
 				const sortOrderProperty = mapPropertyToBasesProperty('sortOrder', plugin);
+				const occurrenceOrderYaml = formatOrderArray(
+					insertOrderPropertyAfterOrAppend(orderArray, occurrenceDateProperty, scheduledProperty)
+				);
 				const taskRelationshipFilterYaml = taskFilterConditions
 					.map((condition) => `        - ${condition}`)
 					.join('\n');
@@ -965,6 +990,17 @@ ${orderYaml}
     groupBy:
       property: ${statusProperty}
       direction: ASC
+  - type: tasknotesTaskList
+    name: "Occurrences"
+    filters:
+      and:
+${taskRelationshipFilterYaml}
+        - file.hasLink(this.file) && note.${recurrenceParentProperty} && ${formatProjectEntryLinkExpression(`note.${recurrenceParentProperty}`)} == this.file.asLink()
+    order:
+${occurrenceOrderYaml}
+    sort:
+      - column: ${occurrenceDateProperty}
+        direction: ASC
   - type: tasknotesTaskList
     name: "Projects"
     filters:

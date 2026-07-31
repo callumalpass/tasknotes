@@ -1,145 +1,129 @@
+# TaskNotes documentation publication manifest.
+#
+# The custom builder reads this file directly. Navigation entries are the
+# publication allowlist; Markdown outside this list stays private unless it is
+# part of the release-note collection.
+
 site_name: TaskNotes Documentation
 site_url: https://tasknotes.dev/
-site_description: Comprehensive task and note management with calendar integration for Obsidian
+site_description: Note-based task management, scheduling, and automation for Obsidian.
 site_author: Callum Alpass
 repo_name: callumalpass/tasknotes
 repo_url: https://github.com/callumalpass/tasknotes
 
-# Configuration
-theme:
-  name: material
-  features:
-    - navigation.sections
-    - navigation.top
-    - navigation.tracking
-    - search.suggest
-    - search.highlight
-    - search.share
-    - content.code.copy
-    - content.code.annotate
-    - content.tabs.link
-    - toc.follow
-  font:
-    text: Lexend
-    code: JetBrains Mono
-  palette:
-  - media: "(prefers-color-scheme)"
-    primary: deep purple
-    accent: purple
-    toggle:
-      icon: material/brightness-auto
-      name: Switch to light mode
-  - media: "(prefers-color-scheme: light)"
-    scheme: default
-    primary: deep purple
-    accent: purple
-    toggle:
-      icon: material/brightness-7
-      name: Switch to dark mode
-  - media: "(prefers-color-scheme: dark)"
-    scheme: slate
-    primary: deep purple
-    accent: purple
-    toggle:
-      icon: material/brightness-4
-      name: Switch to system preference
-
 nav:
-  - Home: index.md
-  - Core Concepts: core-concepts.md
-  - Features:
-    - Overview: features.md
-    - Task Management: features/task-management.md
-    - Recurring Tasks: features/recurring-tasks.md
-    - Task Reminders: features/reminders.md
-    - Inline Task Integration: features/inline-tasks.md
-    - Time Management: features/time-management.md
-    - Calendar Integration: features/calendar-integration.md
-    - ICS Integration: features/ics-integration.md
-    - Third-party Integrations: features/integrations.md
-    - User Fields: features/user-fields.md
-    - Template Variables: features/template-variables.md
-    - Workflow Ideas: workflows.md
-  - Views:
-    - Overview: views.md
-    - Task List View: views/task-list.md
-    - Agenda View: views/agenda-view.md
-    - Kanban View: views/kanban-view.md
-    - Calendar Views: views/calendar-views.md
-    - Pomodoro View: views/pomodoro-view.md
-    - Default Base Templates: views/default-base-templates.md
-  - Settings:
-    - Overview: settings.md
-    - General: settings/general.md
-    - Features: settings/features.md
-    - Task Properties: settings/task-properties.md
-    - Modal Fields: settings/modal-fields.md
-    - Property Identification: settings/property-identification.md
-    - Property Types Reference: settings/property-types-reference.md
-    - Defaults & Templates: settings/defaults.md
-    - Task Defaults: settings/task-defaults.md
-    - Appearance & UI: settings/appearance.md
-    - Inline Task Settings: settings/inline-task-settings.md
-    - Calendar Settings: settings/calendar-settings.md
-    - Misc Settings: settings/misc-settings.md
-    - Integrations: settings/integrations.md
-    - Advanced Settings: settings/advanced-settings.md
-  - APIs & Integration:
-    - HTTP API: HTTP_API.md
-    - JavaScript API: javascript-api.md
-    - TaskNotes Obsidian CLI: obsidian-cli.md
-    - NLP API: nlp-api.md
-    - mdbase-tasknotes CLI: mdbase-tasknotes-cli.md
-    - Webhooks: webhooks.md
-    - Calendar Setup: calendar-setup.md
-  - Companion Plugins:
-    - Overview: companion-plugins.md
-    - TaskNotes Workflows: companion-plugins/tasknotes-workflows.md
-  - Specification:
-    - About the Spec: spec.md
-    - Overview: spec/00-overview.md
-    - Terminology: spec/01-terminology.md
-    - Model & Mapping: spec/02-model-and-mapping.md
-    - Temporal Semantics: spec/03-temporal-semantics.md
-    - Recurrence: spec/04-recurrence.md
-    - Operations: spec/05-operations.md
-    - Validation: spec/06-validation.md
-    - Conformance: spec/07-conformance.md
-    - Compatibility & Migrations: spec/08-compatibility-and-migrations.md
-    - Configuration: spec/09-configuration.md
-    - Dependencies & Reminders: spec/10-dependencies-and-reminders.md
-    - Links: spec/11-links.md
-    - Changelog: spec/CHANGELOG.md
-  - Migration Guide: migration-v3-to-v4.md
-  - Development:
-    - Translation Workflow: development/translations.md
-    - i18n-state-manager: development/i18n-state-manager.md
-  - Release Notes: releases.md
-  - Troubleshooting: troubleshooting.md
-  - Privacy Policy: privacy.md
+    - Home: index.md
+    - Start here:
+          - Core concepts: core-concepts.md
+          - Adopt TaskNotes in an existing vault: getting-started/existing-vault.md
+          - Mobile guide: getting-started/mobile.md
+          - Migrate from v3 to v4: migration-v3-to-v4.md
+    - Guides:
+          - Task workflows:
+                - Task management: features/task-management.md
+                - Recurring tasks: features/recurring-tasks.md
+                - Task reminders: features/reminders.md
+                - Inline tasks: features/inline-tasks.md
+                - Time management: features/time-management.md
+                - User fields: features/user-fields.md
+                - Workflow ideas: workflows.md
+          - Views:
+                - Views overview: views.md
+                - Task list: views/task-list.md
+                - Agenda: views/agenda-view.md
+                - Kanban: views/kanban-view.md
+                - Calendar views: views/calendar-views.md
+                - Pomodoro: views/pomodoro-view.md
+                - Build a custom Base: guides/custom-bases.md
+          - Calendar and integrations:
+                - Calendar integration: features/calendar-integration.md
+                - ICS integration: features/ics-integration.md
+                - Third-party integrations: features/integrations.md
+                - Calendar setup: calendar-setup.md
+          - Backup, restore, and removal: guides/backup-recovery.md
+          - Feature overview: features.md
+    - Reference:
+          - Command reference: reference/commands.md
+          - Settings:
+                - Settings overview: settings.md
+                - General: settings/general.md
+                - Task properties: settings/task-properties.md
+                - Modal fields: settings/modal-fields.md
+                - Appearance and UI: settings/appearance.md
+                - Features: settings/features.md
+                - Integrations: settings/integrations.md
+                - Generated settings source: reference/settings-source.md
+          - Task data:
+                - Property identification: settings/property-identification.md
+                - Property types: settings/property-types-reference.md
+                - Template variables: features/template-variables.md
+                - Natural language API: nlp-api.md
+          - Version compatibility: reference/compatibility.md
+          - Generated default Base templates: reference/default-base-templates.md
+    - APIs and automation:
+          - HTTP API guide: HTTP_API.md
+          - Generated HTTP route index: reference/http-routes.md
+          - JavaScript API: javascript-api.md
+          - TaskNotes Obsidian CLI: obsidian-cli.md
+          - mdbase-tasknotes CLI: mdbase-tasknotes-cli.md
+          - Webhooks: webhooks.md
+    - Companion plugins:
+          - Overview: companion-plugins.md
+          - Canvas Bases: companion-plugins/canvas-bases.md
+          - TaskNotes Workflows: companion-plugins/tasknotes-workflows.md
+    - Developer and specification:
+          - About the specification: spec.md
+          - Specification:
+                - Overview: spec/00-overview.md
+                - Terminology: spec/01-terminology.md
+                - Model and mapping: spec/02-model-and-mapping.md
+                - Temporal semantics: spec/03-temporal-semantics.md
+                - Recurrence: spec/04-recurrence.md
+                - Operations: spec/05-operations.md
+                - Validation: spec/06-validation.md
+                - Conformance: spec/07-conformance.md
+                - Compatibility and migrations: spec/08-compatibility-and-migrations.md
+                - Configuration: spec/09-configuration.md
+                - Dependencies and reminders: spec/10-dependencies-and-reminders.md
+                - Links: spec/11-links.md
+                - Changelog: spec/CHANGELOG.md
+          - Translation workflow: development/translations.md
+          - i18n-state-manager: development/i18n-state-manager.md
+    - Releases and support:
+          - Release notes: releases.md
+          - Troubleshooting: troubleshooting.md
+          - Privacy policy: privacy.md
 
-markdown_extensions:
-  - admonition
-  - attr_list
-  - md_in_html
-  - def_list
-  - footnotes
-  - toc:
-      permalink: true
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.superfences
-  - pymdownx.inlinehilite
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.details
-  - pymdownx.keys
-  - pymdownx.mark
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+redirects:
+    /views/default-base-templates/: /reference/default-base-templates/
+    /settings/defaults/: /settings/task-properties/
+    /settings/task-defaults/: /settings/task-properties/
+    /settings/inline-task-settings/: /settings/features/
+    /settings/calendar-settings/: /settings/appearance/
+    /settings/misc-settings/: /settings/features/
+    /settings/advanced-settings/: /settings/features/
 
-extra_css:
-  - stylesheets/extra.css
+# Source notes kept in the repository but deliberately excluded from the site.
+# Redirected legacy pages remain here so their old Markdown can still support
+# maintainers without becoming a second public source of truth.
+drafts:
+    - development/architecture.md
+    - development/data-flow.md
+    - development/refactor-smoke-checks.md
+    - development/runtime-api-query-contract.md
+    - examples/tasknotes-starter-note.md
+    - examples/webhook-transforms/README.md
+    - settings/advanced-settings.md
+    - settings/calendar-settings.md
+    - settings/defaults.md
+    - settings/inline-task-settings.md
+    - settings/misc-settings.md
+    - settings/task-defaults.md
+    - spec/CONFORMANCE_WORKPLAN.md
+    - spec/README.md
+    - spec/conformance/README.md
+    - spec/conformance/docs/ADAPTER_CONTRACT.md
+    - spec/conformance/docs/FIXTURE_FORMAT.md
+    - spec/conformance/docs/RUNNER_GUIDE.md
+    - views/default-base-templates.md
+    - views/notes-view.md

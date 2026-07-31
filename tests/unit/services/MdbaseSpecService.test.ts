@@ -5,9 +5,16 @@
  * mdbase-spec v0.2.0 structural requirements.
  */
 
-import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
+import YAML from "yaml";
+
 import { FieldMapper } from "../../../src/services/FieldMapper";
-import { DEFAULT_FIELD_MAPPING, DEFAULT_STATUSES, DEFAULT_PRIORITIES } from "../../../src/settings/defaults";
+import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
+import {
+	DEFAULT_FIELD_MAPPING,
+	DEFAULT_NLP_TRIGGERS,
+	DEFAULT_PRIORITIES,
+	DEFAULT_STATUSES,
+} from "../../../src/settings/defaults";
 import { FieldMapping } from "../../../src/types";
 
 /** Extract the YAML frontmatter string (between --- delimiters) from markdown */
@@ -72,6 +79,9 @@ function createMockPlugin(overrides: Record<string, any> = {}): any {
 		customPriorities: [...DEFAULT_PRIORITIES],
 		defaultTaskStatus: "open",
 		defaultTaskPriority: "normal",
+		nlpTriggers: {
+			triggers: DEFAULT_NLP_TRIGGERS.triggers.map((trigger) => ({ ...trigger })),
+		},
 		userFields: [],
 		...overrides,
 	};
@@ -107,7 +117,9 @@ describe("MdbaseSpecService", () => {
 			const yaml = service.buildMdbaseYaml();
 
 			expect(yaml).toContain('name: "TaskNotes"');
-			expect(yaml).toContain('description: "Task collection managed by TaskNotes for Obsidian"');
+			expect(yaml).toContain(
+				'description: "Task collection managed by TaskNotes for Obsidian"'
+			);
 		});
 
 		it("should set types_folder to _types", () => {
@@ -260,7 +272,9 @@ describe("MdbaseSpecService", () => {
 				})
 			);
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
-			expect(getYamlValue(fm, "path_pattern")).toBe('"Calendar/{year}/{month}/{importance}-{name}-{titleKebab}.md"');
+			expect(getYamlValue(fm, "path_pattern")).toBe(
+				'"Calendar/{year}/{month}/{importance}-{name}-{titleKebab}.md"'
+			);
 		});
 	});
 
@@ -276,9 +290,7 @@ describe("MdbaseSpecService", () => {
 		});
 
 		it("should match by custom tag when configured", () => {
-			const service = new MdbaseSpecService(
-				createMockPlugin({ taskTag: "my-task-tag" })
-			);
+			const service = new MdbaseSpecService(createMockPlugin({ taskTag: "my-task-tag" }));
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
 			expect(fm).toContain('contains: "my-task-tag"');
@@ -548,9 +560,36 @@ describe("MdbaseSpecService", () => {
 			const service = new MdbaseSpecService(
 				createMockPlugin({
 					customStatuses: [
-						{ id: "todo", value: "todo", label: "Todo", color: "#ccc", isCompleted: false, order: 0, autoArchive: false, autoArchiveDelay: 5 },
-						{ id: "doing", value: "doing", label: "Doing", color: "#00f", isCompleted: false, order: 1, autoArchive: false, autoArchiveDelay: 5 },
-						{ id: "finished", value: "finished", label: "Finished", color: "#0a0", isCompleted: true, order: 2, autoArchive: false, autoArchiveDelay: 5 },
+						{
+							id: "todo",
+							value: "todo",
+							label: "Todo",
+							color: "#ccc",
+							isCompleted: false,
+							order: 0,
+							autoArchive: false,
+							autoArchiveDelay: 5,
+						},
+						{
+							id: "doing",
+							value: "doing",
+							label: "Doing",
+							color: "#00f",
+							isCompleted: false,
+							order: 1,
+							autoArchive: false,
+							autoArchiveDelay: 5,
+						},
+						{
+							id: "finished",
+							value: "finished",
+							label: "Finished",
+							color: "#0a0",
+							isCompleted: true,
+							order: 2,
+							autoArchive: false,
+							autoArchiveDelay: 5,
+						},
 					],
 					defaultTaskStatus: "todo",
 				})
@@ -570,9 +609,27 @@ describe("MdbaseSpecService", () => {
 			const service = new MdbaseSpecService(
 				createMockPlugin({
 					customPriorities: [
-						{ id: "p1", value: "critical", label: "Critical", color: "#f00", weight: 3 },
-						{ id: "p2", value: "important", label: "Important", color: "#fa0", weight: 2 },
-						{ id: "p3", value: "nice", label: "Nice to have", color: "#0a0", weight: 1 },
+						{
+							id: "p1",
+							value: "critical",
+							label: "Critical",
+							color: "#f00",
+							weight: 3,
+						},
+						{
+							id: "p2",
+							value: "important",
+							label: "Important",
+							color: "#fa0",
+							weight: 2,
+						},
+						{
+							id: "p3",
+							value: "nice",
+							label: "Nice to have",
+							color: "#0a0",
+							weight: 1,
+						},
 					],
 					defaultTaskPriority: "important",
 				})
@@ -594,8 +651,18 @@ describe("MdbaseSpecService", () => {
 					userFields: [
 						{ id: "effort", displayName: "Effort", key: "effort", type: "number" },
 						{ id: "notes", displayName: "Notes", key: "extra_notes", type: "text" },
-						{ id: "reviewed", displayName: "Reviewed", key: "reviewed", type: "boolean" },
-						{ id: "review_date", displayName: "Review Date", key: "review_date", type: "date" },
+						{
+							id: "reviewed",
+							displayName: "Reviewed",
+							key: "reviewed",
+							type: "boolean",
+						},
+						{
+							id: "review_date",
+							displayName: "Review Date",
+							key: "review_date",
+							type: "date",
+						},
 						{ id: "labels", displayName: "Labels", key: "labels", type: "list" },
 					],
 				})
@@ -613,14 +680,44 @@ describe("MdbaseSpecService", () => {
 		});
 
 		it("should not include user fields section when none are defined", () => {
-			const service = new MdbaseSpecService(
-				createMockPlugin({ userFields: [] })
-			);
+			const service = new MdbaseSpecService(createMockPlugin({ userFields: [] }));
 			const fm = extractFrontmatter(service.buildTaskTypeDef());
 
 			// Should still have core fields but no extra fields beyond the known set
 			expect(getFieldBlock(fm, "title")).toBeDefined();
 			expect(getFieldBlock(fm, "effort")).toBeUndefined();
+		});
+	});
+
+	describe("buildTaskTypeDef - portable capture settings", () => {
+		it("exports configured NLP triggers by stable property id", () => {
+			const service = new MdbaseSpecService(
+				createMockPlugin({
+					nlpTriggers: {
+						triggers: [
+							{ propertyId: "tags", trigger: "##", enabled: true },
+							{ propertyId: "priority", trigger: "!", enabled: false },
+							{ propertyId: "energy", trigger: "~", enabled: true },
+						],
+					},
+				})
+			);
+			const frontmatter = YAML.parse(extractFrontmatter(service.buildTaskTypeDef()));
+
+			expect(frontmatter["x-tasknotes"].nlp).toEqual({
+				triggers: [
+					{ property_id: "tags", trigger: "##", enabled: true },
+					{ property_id: "priority", trigger: "!", enabled: false },
+					{ property_id: "energy", trigger: "~", enabled: true },
+				],
+			});
+		});
+
+		it("exports an empty trigger list when capture triggers are unavailable", () => {
+			const service = new MdbaseSpecService(createMockPlugin({ nlpTriggers: undefined }));
+			const frontmatter = YAML.parse(extractFrontmatter(service.buildTaskTypeDef()));
+
+			expect(frontmatter["x-tasknotes"].nlp.triggers).toEqual([]);
 		});
 	});
 
@@ -752,10 +849,7 @@ describe("MdbaseSpecService", () => {
 
 			await service.generate();
 
-			expect(plugin.app.vault.create).toHaveBeenCalledWith(
-				"mdbase.yaml",
-				expect.any(String)
-			);
+			expect(plugin.app.vault.create).toHaveBeenCalledWith("mdbase.yaml", expect.any(String));
 			expect(plugin.app.vault.create).toHaveBeenCalledWith(
 				"_types/task.md",
 				expect.any(String)

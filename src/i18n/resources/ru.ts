@@ -360,7 +360,7 @@ export const ru: TranslationTree = {
 			statsLabel: "завершено сегодня",
 			meta: {
 				ready: "{time} запланировано · {count} завершено сегодня",
-				running: "Осталось {time}",
+				running: "Осталось {time} · Завершится в {endTime}",
 				paused: "{type} на паузе · осталось {time}",
 				breakReady: "{type} готово · {time} запланировано"
 			},
@@ -482,7 +482,7 @@ export const ru: TranslationTree = {
 			viewAllLink: "Посмотреть все примечания к выпуску на GitHub →",
 			starMessage:
 				"Мы очень ценим любые отзывы. Если что-то кажется неправильным, пожалуйста, сообщите нам на GitHub. Если TaskNotes полезен для вас, пожалуйста, поставьте звезду.",
-			baseFilesNotice: "> [!info] О файлах `.base` по умолчанию\n> Изменения в шаблонах `.base`, которые генерируются по умолчанию, не перезаписывают ваши существующие файлы `.base`, поэтому ваши настройки сохраняются.\n> Чтобы получить улучшения новых шаблонов, пересоздайте базовые файлы в **Настройки → TaskNotes → Общие → Создать файлы**."
+			baseFilesNotice: "> [!info] О файлах `.base` по умолчанию\n> Изменения в шаблонах `.base`, которые генерируются по умолчанию, не перезаписывают ваши существующие файлы `.base`, поэтому ваши настройки сохраняются.\n> Чтобы получить улучшения новых шаблонов, пересоздайте базовые файлы в **Настройки → TaskNotes → Общие → Представления и файлы base → Создать файлы**."
 		}
 	},
 	settings: {
@@ -742,9 +742,13 @@ export const ru: TranslationTree = {
 					selectTooltip: "Выберите заметки проектов для связывания по умолчанию",
 					removeTooltip: "Удалить {name} из проектов по умолчанию"
 				},
+				useParentNoteForTaskCreation: {
+					name: "Использовать активную заметку как проект для новых задач",
+					description: "Автоматически связывать активную заметку как проект при открытии создания задачи из палитры команд или ленты"
+				},
 				useParentNoteAsProject: {
-					name: "Использовать родительскую заметку как проект при мгновенном преобразовании",
-					description: "Автоматически связывать родительскую заметку как проект при использовании мгновенного преобразования задач"
+					name: "Использовать родительскую заметку как проект для встроенного создания и мгновенного преобразования",
+					description: "Автоматически связывать исходную заметку как проект при использовании встроенного создания задач или мгновенного преобразования"
 				},
 				useParentHeaderAsProject: {
 					name: "Использовать родительский заголовок как проект при мгновенном преобразовании",
@@ -820,6 +824,16 @@ export const ru: TranslationTree = {
 					placeholder: "Шаблоны/Шаблон задачи.md",
 					ariaLabel: "Путь к файлу шаблона тела"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "Использовать шаблон заметки экземпляра",
+					description: "Использовать отдельный резервный шаблон для материализованных заметок экземпляров, когда у повторяющейся задачи нет occurrence_template"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "Файл шаблона заметки экземпляра",
+					description: "Путь к файлу шаблона для материализованных заметок экземпляров. Поле occurrence_template повторяющейся задачи имеет приоритет над этим резервным шаблоном.",
+					placeholder: "Шаблоны/Шаблон экземпляра.md",
+					ariaLabel: "Путь к файлу шаблона заметки экземпляра"
+				},
 				variablesHeader: "Переменные шаблона:",
 				variables: {
 					title: "{{title}} - Название задачи",
@@ -881,7 +895,7 @@ export const ru: TranslationTree = {
 				},
 				taskTag: {
 					name: "Тег задачи",
-					description: "Тег, который идентифицирует заметки как задачи (без #)"
+					description: "Тег, который идентифицирует заметки как задачи (без #). Существующие фильтры представлений .base сохраняют старый тег после изменения; обновите файлы Base по умолчанию или отредактируйте эти фильтры."
 				},
 				hideIdentifyingTags: {
 					name: "Скрыть идентификационные теги в карточках задач",
@@ -942,6 +956,10 @@ export const ru: TranslationTree = {
 				showOnUpdate: {
 					name: "Показывать примечания к выпуску после обновления",
 					description: "Автоматически открывать примечания к выпуску при обновлении TaskNotes до новой версии"
+				},
+				checkForUpdates: {
+					name: "Проверять новые выпуски при запуске",
+					description: "Проверяет GitHub один раз при запуске TaskNotes и показывает уведомление, если доступен более новый совместимый выпуск"
 				},
 				viewButton: {
 					name: "Просмотреть примечания к выпуску",
@@ -1079,7 +1097,8 @@ export const ru: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "Проекты по умолчанию:",
-				useParentNote: "Использовать родительскую заметку как проект:",
+				useParentNoteForTaskCreation: "Использовать активную заметку для новых задач:",
+				useParentNoteForInlineTasks: "Использовать родительскую заметку для встроенного/мгновенного преобразования:",
 				useParentHeader: "Использовать родительский заголовок как проект:",
 				inheritParentTaskProperties: "Наследовать свойства родительской задачи для подзадач:",
 				noDefaultProjects: "Проекты по умолчанию не выбраны",
@@ -1687,6 +1706,14 @@ export const ru: TranslationTree = {
 				useICSEndAsDue: {
 					name: "Использовать время окончания события ICS как срок выполнения",
 					description: "При включении задачи, созданные из событий календаря, будут иметь срок выполнения, установленный на время окончания события. Для событий на весь день срок выполнения будет установлен на дату события. Для событий с указанным временем срок выполнения будет включать время окончания."
+				},
+				recurringEventRelatedNotesMode: {
+					name: "Связанные заметки повторяющихся событий",
+					description: "Выберите, будут ли заметки, связанные с одним повторением события внешнего календаря, отображаться для всей загруженной серии или только для выбранного экземпляра.",
+					options: {
+						series: "Вся серия",
+						instance: "Только выбранный экземпляр"
+					}
 				}
 			},
 			subscriptionsList: {
@@ -2174,6 +2201,10 @@ export const ru: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Язык изменен на {language}.",
+		releaseAvailable: {
+			message: "Доступен TaskNotes {version}.",
+			action: "Открыть в плагинах сообщества"
+		},
 		exportTasksFailed: "Не удалось экспортировать задачи как файл ICS",
 		icsNoteCreatedSuccess: "Заметка успешно создана",
 		icsCreationModalOpenFailed: "Не удалось открыть модальное окно создания",
@@ -2203,6 +2234,7 @@ export const ru: TranslationTree = {
 		openAgendaView: "Открыть представление планов",
 		openPomodoroView: "Открыть таймер помодоро",
 		openKanbanView: "Открыть доску канбан",
+		updateDefaultBaseFiles: "Обновить файлы Base по умолчанию",
 		openPomodoroStats: "Открыть статистику помодоро",
 		openStatisticsView: "Открыть статистику задач и проектов",
 		createNewTask: "Создать новую задачу",
@@ -2562,6 +2594,8 @@ export const ru: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "Общее отслеженное время:",
+				due: "Срок:",
+				scheduled: "Запланировано:",
 				created: "Создано:",
 				modified: "Изменено:",
 				file: "Файл:"
@@ -2739,6 +2773,7 @@ export const ru: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "Срок выполнения",
 			scheduledDate: "Запланированная дата",
+			customDates: "Пользовательские даты",
 			reminders: "Напоминания",
 			remindBeforeDue: "Напомнить до срока выполнения…",
 			remindBeforeScheduled: "Напомнить до запланированной даты…",
@@ -2846,6 +2881,7 @@ export const ru: TranslationTree = {
 				toggleSkipFailure: "Не удалось переключить пропуск повторяющейся задачи: {message}",
 				updateDueDateFailure: "Не удалось обновить срок выполнения задачи: {message}",
 				updateScheduledFailure: "Не удалось обновить запланированную дату задачи: {message}",
+				updateCustomDateFailure: "Не удалось обновить {field}: {message}",
 				updateRemindersFailure: "Не удалось обновить напоминания",
 				clearRemindersFailure: "Не удалось очистить напоминания",
 				addReminderFailure: "Не удалось добавить напоминание",
@@ -3020,6 +3056,8 @@ export const ru: TranslationTree = {
 			notices: {
 				templateNotFound: "Шаблон тела задачи не найден: {path}",
 				templateReadError: "Ошибка чтения шаблона тела задачи: {template}",
+				occurrenceTemplateNotFound: "Шаблон заметки экземпляра не найден: {path}",
+				occurrenceTemplateReadError: "Ошибка чтения шаблона заметки экземпляра: {template}",
 				moveTaskFailed: "Не удалось переместить {operation} задачу: {error}"
 			}
 		},

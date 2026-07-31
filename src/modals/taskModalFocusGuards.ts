@@ -272,6 +272,6 @@ function isInstanceOf<T extends Element>(
 ): element is T {
 	return (
 		element.instanceOf?.(constructor) === true ||
-		constructor.prototype.isPrototypeOf(element)
+		Object.prototype.isPrototypeOf.call(constructor.prototype, element)
 	);
 }

@@ -15,10 +15,9 @@
 import { TestEnvironment, WorkflowTester } from '../helpers/integration-helpers';
 import { TaskFactory } from '../helpers/mock-factories';
 import { TaskInfo, TimeBlock } from '../../src/types';
-import { MockObsidian, TFile } from '../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../helpers/obsidian-runtime';
 
 // Mock external dependencies
-jest.mock('obsidian');
 jest.mock('date-fns', () => ({
   format: jest.fn((date: Date, formatStr: string) => {
     if (formatStr === 'yyyy-MM-dd') {

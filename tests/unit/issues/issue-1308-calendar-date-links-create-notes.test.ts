@@ -6,8 +6,6 @@ import {
 	getDailyNote,
 } from "obsidian-daily-notes-interface";
 import { handleDateTitleClick } from "../../../src/bases/calendar-core";
-
-jest.mock("obsidian");
 jest.mock("obsidian-daily-notes-interface", () => ({
 	appHasDailyNotesPluginLoaded: jest.fn(),
 	createDailyNote: jest.fn(),

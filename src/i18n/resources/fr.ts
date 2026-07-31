@@ -360,7 +360,7 @@ export const fr: TranslationTree = {
 			statsLabel: "terminées aujourd'hui",
 			meta: {
 				ready: "{time} prévu · {count} terminés aujourd’hui",
-				running: "{time} restant",
+				running: "{time} restant · Se termine à {endTime}",
 				paused: "{type} en pause · {time} restant",
 				breakReady: "{type} prêt · {time} prévu"
 			},
@@ -482,7 +482,7 @@ export const fr: TranslationTree = {
 			viewAllLink: "Voir toutes les notes de version sur GitHub →",
 			starMessage:
 				"Nous apprécions vraiment tous les retours. Si quelque chose ne vous semble pas correct, dites-le-nous sur GitHub. Si TaskNotes vous est utile, pensez à lui donner une étoile.",
-			baseFilesNotice: "> [!info] À propos des fichiers `.base` par défaut\n> Les modifications des modèles `.base` générés par défaut n'écrasent pas vos fichiers `.base` existants, afin de préserver vos personnalisations.\n> Si vous souhaitez profiter des dernières améliorations de modèles, régénérez les fichiers base via **Paramètres → TaskNotes → Général → Créer les fichiers**."
+			baseFilesNotice: "> [!info] À propos des fichiers `.base` par défaut\n> Les modifications des modèles `.base` générés par défaut n'écrasent pas vos fichiers `.base` existants, afin de préserver vos personnalisations.\n> Si vous souhaitez profiter des dernières améliorations de modèles, régénérez les fichiers base via **Paramètres → TaskNotes → Général → Vues et fichiers base → Créer les fichiers**."
 		}
 	},
 	settings: {
@@ -742,9 +742,13 @@ export const fr: TranslationTree = {
 					selectTooltip: "Choisir les notes de projet à lier par défaut",
 					removeTooltip: "Retirer {name} des projets par défaut"
 				},
+				useParentNoteForTaskCreation: {
+					name: "Utiliser la note active comme projet pour les nouvelles tâches",
+					description: "Associe automatiquement la note active comme projet lors de l'ouverture de la création de tâche depuis la palette de commandes ou le ruban"
+				},
 				useParentNoteAsProject: {
-					name: "Utiliser la note parent comme projet lors de la conversion instantanée",
-					description: "Lier automatiquement la note parent comme projet lors de la conversion instantanée de tâche"
+					name: "Utiliser la note parent comme projet pour la création en ligne et la conversion instantanée",
+					description: "Associe automatiquement la note source comme projet lors de l'utilisation de la création de tâches en ligne ou de la conversion instantanée"
 				},
 				useParentHeaderAsProject: {
 					name: "Utiliser le titre parent comme projet lors de la conversion instantanée",
@@ -820,6 +824,16 @@ export const fr: TranslationTree = {
 					placeholder: "Templates/Modèle de tâche.md",
 					ariaLabel: "Chemin vers le fichier modèle de contenu"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "Utiliser un modèle de note d'occurrence",
+					description: "Utiliser un modèle de secours séparé pour les notes d'occurrence matérialisées lorsque la tâche récurrente n'a pas de occurrence_template"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "Fichier modèle de note d'occurrence",
+					description: "Chemin vers le fichier modèle pour les notes d'occurrence matérialisées. Le champ occurrence_template d'une tâche récurrente est prioritaire sur ce secours.",
+					placeholder: "Templates/Modèle occurrence.md",
+					ariaLabel: "Chemin vers le fichier modèle de note d'occurrence"
+				},
 				variablesHeader: "Variables du modèle :",
 				variables: {
 					title: "{{title}} - Titre de la tâche",
@@ -881,7 +895,7 @@ export const fr: TranslationTree = {
 				},
 				taskTag: {
 					name: "Tag de tâche",
-					description: "Tag qui identifie les notes comme des tâches (sans #)"
+					description: "Tag qui identifie les notes comme des tâches (sans #). Les filtres des vues .base existantes conservent l'ancien tag après ce changement ; mettez à jour les fichiers Base par défaut ou modifiez ces filtres."
 				},
 				hideIdentifyingTags: {
 					name: "Masquer les tags d'identification dans les cartes de tâches",
@@ -942,6 +956,10 @@ export const fr: TranslationTree = {
 				showOnUpdate: {
 					name: "Afficher les notes de version après la mise à jour",
 					description: "Ouvrir automatiquement les notes de version lorsque TaskNotes est mis à jour vers une nouvelle version"
+				},
+				checkForUpdates: {
+					name: "Vérifier les nouvelles versions au démarrage",
+					description: "Vérifie GitHub une fois au démarrage de TaskNotes et affiche une notification lorsqu'une nouvelle version compatible est disponible"
 				},
 				viewButton: {
 					name: "Voir les notes de version",
@@ -1079,7 +1097,8 @@ export const fr: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "Projets par défaut :",
-				useParentNote: "Utiliser la note parente comme projet :",
+				useParentNoteForTaskCreation: "Utiliser la note active pour les nouvelles tâches :",
+				useParentNoteForInlineTasks: "Utiliser la note parente pour la création en ligne/conversion instantanée :",
 				useParentHeader: "Utiliser le titre parent comme projet :",
 				inheritParentTaskProperties: "Hériter des propriétés de la tâche parente pour les sous-tâches :",
 				noDefaultProjects: "Aucun projet par défaut sélectionné",
@@ -1687,6 +1706,14 @@ export const fr: TranslationTree = {
 				useICSEndAsDue: {
 					name: "Utiliser l'heure de fin de l'événement ICS comme date d'échéance",
 					description: "Lorsqu'activé, les tâches créées à partir d'événements de calendrier auront leur date d'échéance définie sur l'heure de fin de l'événement. Pour les événements sur toute la journée, la date d'échéance sera la date de l'événement. Pour les événements avec horaire, la date d'échéance inclura l'heure de fin."
+				},
+				recurringEventRelatedNotesMode: {
+					name: "Notes liées aux événements récurrents",
+					description: "Choisissez si les notes liées à une occurrence d'un événement de calendrier externe apparaissent sur toute la série chargée ou seulement sur l'instance sélectionnée.",
+					options: {
+						series: "Toute la série",
+						instance: "Instance sélectionnée uniquement"
+					}
 				}
 			},
 			subscriptionsList: {
@@ -2174,6 +2201,10 @@ export const fr: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Langue changée pour {language}.",
+		releaseAvailable: {
+			message: "TaskNotes {version} est disponible.",
+			action: "Ouvrir dans les plugins communautaires"
+		},
 		exportTasksFailed: "Échec de l'export des tâches au format ICS",
 		icsNoteCreatedSuccess: "Note créée avec succès",
 		icsCreationModalOpenFailed: "Échec de l'ouverture de la modale de création",
@@ -2203,6 +2234,7 @@ export const fr: TranslationTree = {
 		openAgendaView: "Ouvrir la vue agenda",
 		openPomodoroView: "Ouvrir le minuteur Pomodoro",
 		openKanbanView: "Ouvrir le tableau Kanban",
+		updateDefaultBaseFiles: "Mettre à jour les fichiers Base par défaut",
 		openPomodoroStats: "Ouvrir les statistiques Pomodoro",
 		openStatisticsView: "Ouvrir les statistiques tâches & projets",
 		createNewTask: "Créer une nouvelle tâche",
@@ -2562,6 +2594,8 @@ export const fr: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "Temps suivi total :",
+				due: "Échéance :",
+				scheduled: "Planifiée :",
 				created: "Créée :",
 				modified: "Modifiée :",
 				file: "Fichier :"
@@ -2739,6 +2773,7 @@ export const fr: TranslationTree = {
 			prioritySelected: "Priorité sélectionnée : {label}",
 			dueDate: "Échéance",
 			scheduledDate: "Date planifiée",
+			customDates: "Dates personnalisées",
 			reminders: "Rappels",
 			remindBeforeDue: "Rappeler avant l'échéance…",
 			remindBeforeScheduled: "Rappeler avant la date planifiée…",
@@ -2846,6 +2881,7 @@ export const fr: TranslationTree = {
 				toggleSkipFailure: "Impossible de modifier l'omission de tâche récurrente : {message}",
 				updateDueDateFailure: "Impossible de mettre à jour l'échéance : {message}",
 				updateScheduledFailure: "Impossible de mettre à jour la date planifiée : {message}",
+				updateCustomDateFailure: "Échec de la mise à jour de {field} : {message}",
 				updateRemindersFailure: "Impossible de mettre à jour les rappels",
 				clearRemindersFailure: "Impossible de supprimer les rappels",
 				addReminderFailure: "Impossible d'ajouter un rappel",
@@ -3020,6 +3056,8 @@ export const fr: TranslationTree = {
 			notices: {
 				templateNotFound: "Modèle de corps de tâche introuvable : {path}",
 				templateReadError: "Erreur de lecture du modèle de corps de tâche : {template}",
+				occurrenceTemplateNotFound: "Modèle de note d'occurrence introuvable : {path}",
+				occurrenceTemplateReadError: "Erreur de lecture du modèle de note d'occurrence : {template}",
 				moveTaskFailed: "Échec du déplacement de la tâche {operation} : {error}"
 			}
 		},

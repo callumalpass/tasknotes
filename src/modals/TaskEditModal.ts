@@ -3,7 +3,11 @@ import { App, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskDependency, TaskInfo } from "../types";
-import { formatTimestampForDisplay, getCurrentTimestamp } from "../utils/dateUtils";
+import {
+	formatDateTimeForDisplay,
+	formatTimestampForDisplay,
+	getCurrentTimestamp,
+} from "../utils/dateUtils";
 import { extractTaskInfo, calculateTotalTimeSpent, formatTime } from "../utils/helpers";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { ConfirmationModal, showConfirmationModal } from "./ConfirmationModal";
@@ -30,6 +34,7 @@ export class TaskEditModal extends TaskModal {
 	private editModalKeyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 	// Changed from Set to array for consistency with other state management
 	private completedInstancesChanges: string[] = [];
+	private skippedInstancesChanges: string[] = [];
 	private initialBlockedBy: TaskDependency[] = [];
 	private initialBlockingPaths: string[] = [];
 	private pendingBlockingUpdates: BlockingUpdates = { added: [], removed: [], raw: {} };
@@ -134,6 +139,7 @@ export class TaskEditModal extends TaskModal {
 	private async openEditModal(): Promise<void> {
 		// Clear any previous completion changes
 		this.completedInstancesChanges = [];
+		this.skippedInstancesChanges = [];
 
 		// Refresh task data from file before opening
 		await this.refreshTaskData();
@@ -248,6 +254,7 @@ export class TaskEditModal extends TaskModal {
 			task: this.task,
 			plugin: this.plugin,
 			completedInstancesChanges: this.completedInstancesChanges,
+			skippedInstancesChanges: this.skippedInstancesChanges,
 			translate: (key, params) => this.t(key, params),
 		});
 		this.createMetadataSection(container);
@@ -371,43 +378,68 @@ export class TaskEditModal extends TaskModal {
 		metadataLabel.textContent = this.t("modals.taskEdit.sections.taskInfo");
 
 		const metadataContent = this.metadataContainer.createDiv("metadata-content");
+		const timeFormat = this.plugin.settings.calendarViewSettings?.timeFormat ?? "24";
 
 		// Total tracked time
 		const totalTimeSpent = calculateTotalTimeSpent(this.task.timeEntries || []);
 		if (totalTimeSpent > 0) {
-			const timeDiv = metadataContent.createDiv("metadata-item");
-			timeDiv.createSpan("metadata-key").textContent =
-				this.t("modals.taskEdit.metadata.totalTrackedTime") + " ";
-			timeDiv.createSpan("metadata-value").textContent = formatTime(totalTimeSpent);
+			this.createMetadataItem(
+				metadataContent,
+				this.t("modals.taskEdit.metadata.totalTrackedTime"),
+				formatTime(totalTimeSpent)
+			);
+		}
+
+		// Due date
+		if (this.task.due) {
+			this.createMetadataItem(
+				metadataContent,
+				this.t("modals.taskEdit.metadata.due"),
+				formatDateTimeForDisplay(this.task.due, { userTimeFormat: timeFormat })
+			);
+		}
+
+		// Scheduled date
+		if (this.task.scheduled) {
+			this.createMetadataItem(
+				metadataContent,
+				this.t("modals.taskEdit.metadata.scheduled"),
+				formatDateTimeForDisplay(this.task.scheduled, { userTimeFormat: timeFormat })
+			);
 		}
 
 		// Created date
 		if (this.task.dateCreated) {
-			const createdDiv = metadataContent.createDiv("metadata-item");
-			createdDiv.createSpan("metadata-key").textContent =
-				this.t("modals.taskEdit.metadata.created") + " ";
-			createdDiv.createSpan("metadata-value").textContent = formatTimestampForDisplay(
-				this.task.dateCreated
+			this.createMetadataItem(
+				metadataContent,
+				this.t("modals.taskEdit.metadata.created"),
+				formatTimestampForDisplay(this.task.dateCreated)
 			);
 		}
 
 		// Modified date
 		if (this.task.dateModified) {
-			const modifiedDiv = metadataContent.createDiv("metadata-item");
-			modifiedDiv.createSpan("metadata-key").textContent =
-				this.t("modals.taskEdit.metadata.modified") + " ";
-			modifiedDiv.createSpan("metadata-value").textContent = formatTimestampForDisplay(
-				this.task.dateModified
+			this.createMetadataItem(
+				metadataContent,
+				this.t("modals.taskEdit.metadata.modified"),
+				formatTimestampForDisplay(this.task.dateModified)
 			);
 		}
 
 		// File path (if available)
 		if (this.task.path) {
-			const pathDiv = metadataContent.createDiv("metadata-item");
-			pathDiv.createSpan("metadata-key").textContent =
-				this.t("modals.taskEdit.metadata.file") + " ";
-			pathDiv.createSpan("metadata-value").textContent = this.task.path;
+			this.createMetadataItem(
+				metadataContent,
+				this.t("modals.taskEdit.metadata.file"),
+				this.task.path
+			);
 		}
+	}
+
+	private createMetadataItem(container: HTMLElement, key: string, value: string): void {
+		const item = container.createDiv("metadata-item");
+		item.createSpan("metadata-key").textContent = `${key} `;
+		item.createSpan("metadata-value").textContent = value;
 	}
 
 	async handleSave(): Promise<void> {
@@ -529,6 +561,7 @@ export class TaskEditModal extends TaskModal {
 			details: this.details,
 			originalDetails: this.originalDetails,
 			completedInstancesChanges: this.completedInstancesChanges,
+			skippedInstancesChanges: this.skippedInstancesChanges,
 			userFields: this.userFields,
 			settings: {
 				userFields: this.plugin.settings?.userFields,

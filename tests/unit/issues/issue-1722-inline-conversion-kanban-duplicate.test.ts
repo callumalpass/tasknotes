@@ -22,8 +22,6 @@ import type { Editor } from "obsidian";
 import { TFile } from "obsidian";
 import { InstantTaskConvertService } from "../../../src/services/InstantTaskConvertService";
 
-jest.mock("obsidian");
-
 describe('Issue #1722: Inline task conversion Kanban duplicate', () => {
 	function createService(editor: Editor, sourceFile: TFile) {
 		const plugin = {

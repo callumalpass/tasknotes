@@ -24,15 +24,18 @@ import { modifyVaultFile } from "./VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/InstantTaskConvertService" });
 
+type Nullable<T> = T | null;
+type Optional<T> = T | undefined;
+
 export function findClosestHeadingAboveLine(
-	headings: HeadingCache[] | undefined,
+	headings: Optional<HeadingCache[]>,
 	lineNumber: number
-): HeadingCache | null {
+): Nullable<HeadingCache> {
 	if (!headings || !Number.isInteger(lineNumber) || lineNumber < 0) {
 		return null;
 	}
 
-	let closest: HeadingCache | null = null;
+	let closest: Nullable<HeadingCache> = null;
 	for (const heading of headings) {
 		if (heading.position.start.line >= lineNumber) {
 			continue;
@@ -1166,10 +1169,10 @@ export class InstantTaskConvertService {
 		}
 	}
 
-	private async persistSourceNoteAfterReplacement(editor: Editor): Promise<TFile | null> {
+	private async persistSourceNoteAfterReplacement(editor: Editor): Promise<Nullable<TFile>> {
 		type WorkspaceWithActiveEditor = {
-			activeEditor?: { editor?: Editor; file?: TFile | null } | null;
-			getActiveFile?: () => TFile | null;
+			activeEditor?: Nullable<{ editor?: Editor; file?: Nullable<TFile> }>;
+			getActiveFile?: () => Nullable<TFile>;
 		};
 
 		const workspace = this.plugin.app.workspace as WorkspaceWithActiveEditor;

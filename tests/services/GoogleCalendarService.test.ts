@@ -227,6 +227,28 @@ describe('GoogleCalendarService', () => {
 			// Cancelled events should be filtered out or marked
 			expect(events.every(e => e.id !== 'deleted-event')).toBe(true);
 		});
+
+		test('should include six months of historical events on a fresh full sync', async () => {
+			jest.useFakeTimers().setSystemTime(new Date('2026-06-09T12:00:00Z'));
+
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: { items: [], nextSyncToken: 'sync-token-123' },
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			await service.getEvents('primary');
+
+			const request = mockRequestUrl.mock.calls[0]?.[0];
+			expect(request).toBeDefined();
+			const params = new URL(request.url).searchParams;
+			expect(params.get('timeMin')).toBe('2025-12-11T12:00:00.000Z');
+			expect(params.get('timeMax')).toBe('2026-09-07T12:00:00.000Z');
+
+			jest.useRealTimers();
+		});
 	});
 
 	describe('createEvent', () => {

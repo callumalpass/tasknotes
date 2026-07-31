@@ -360,7 +360,7 @@ export const ja: TranslationTree = {
 			statsLabel: "今日完了",
 			meta: {
 				ready: "{time} 予定 · 今日 {count} 完了",
-				running: "残り {time}",
+				running: "残り {time} · {endTime} に終了",
 				paused: "{type} 一時停止中 · 残り {time}",
 				breakReady: "{type} 準備完了 · {time} 予定"
 			},
@@ -482,7 +482,7 @@ export const ja: TranslationTree = {
 			viewAllLink: "GitHubですべてのリリースノートを表示 →",
 			starMessage:
 				"どんなフィードバックも本当にありがたいです。何か違和感があれば、GitHubでお知らせください。TaskNotesが役に立ったら、スターもご検討ください。",
-			baseFilesNotice: "> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ファイルを作成** からベースファイルを再生成してください。"
+			baseFilesNotice: "> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ビューとbaseファイル → ファイルを作成** からベースファイルを再生成してください。"
 		}
 	},
 	settings: {
@@ -742,9 +742,13 @@ export const ja: TranslationTree = {
 					selectTooltip: "デフォルトでリンクするプロジェクトノートを選択",
 					removeTooltip: "デフォルトプロジェクトから{name}を削除"
 				},
+				useParentNoteForTaskCreation: {
+					name: "新しいタスクでアクティブノートをプロジェクトとして使用",
+					description: "コマンドパレットまたはリボンからタスク作成を開くとき、アクティブノートをプロジェクトとして自動的にリンクします"
+				},
 				useParentNoteAsProject: {
-					name: "インスタント変換時に親ノートをプロジェクトとして使用",
-					description: "インスタントタスク変換使用時に親ノートを自動的にプロジェクトとしてリンク"
+					name: "インライン作成とインスタント変換で親ノートをプロジェクトとして使用",
+					description: "インラインタスク作成またはインスタントタスク変換を使うとき、元のノートをプロジェクトとして自動的にリンクします"
 				},
 				useParentHeaderAsProject: {
 					name: "インスタント変換時に親見出しをプロジェクトとして使用",
@@ -820,6 +824,16 @@ export const ja: TranslationTree = {
 					placeholder: "テンプレート/タスクテンプレート.md",
 					ariaLabel: "ボディテンプレートファイルへのパス"
 				},
+				useOccurrenceBodyTemplate: {
+					name: "発生ノートテンプレートを使用",
+					description: "繰り返しタスクに occurrence_template がない場合、マテリアライズされた発生ノート用の別のフォールバックテンプレートを使用します"
+				},
+				occurrenceBodyTemplateFile: {
+					name: "発生ノートテンプレートファイル",
+					description: "マテリアライズされた発生ノート用テンプレートファイルへのパス。繰り返しタスクの occurrence_template フィールドがこのフォールバックより優先されます。",
+					placeholder: "テンプレート/発生テンプレート.md",
+					ariaLabel: "発生ノートテンプレートファイルへのパス"
+				},
 				variablesHeader: "テンプレート変数：",
 				variables: {
 					title: "{{title}} - タスクタイトル",
@@ -881,7 +895,7 @@ export const ja: TranslationTree = {
 				},
 				taskTag: {
 					name: "タスクタグ",
-					description: "ノートをタスクとして識別するタグ（#なし）"
+					description: "ノートをタスクとして識別するタグ（#なし）。これを変更しても既存の .base ビューのフィルターは古いタグのままです。デフォルトの Base ファイルを更新するか、それらのフィルターを編集してください。"
 				},
 				hideIdentifyingTags: {
 					name: "タスクカードで識別タグを非表示",
@@ -942,6 +956,10 @@ export const ja: TranslationTree = {
 				showOnUpdate: {
 					name: "更新後にリリースノートを表示",
 					description: "TaskNotesが新しいバージョンに更新されたときに自動的にリリースノートを開く"
+				},
+				checkForUpdates: {
+					name: "起動時に新しいリリースを確認",
+					description: "TaskNotes の起動時に GitHub を一度だけ確認し、互換性のある新しいリリースが利用可能な場合に通知を表示します"
 				},
 				viewButton: {
 					name: "リリースノートを表示",
@@ -1079,7 +1097,8 @@ export const ja: TranslationTree = {
 			},
 			projectsCard: {
 				defaultProjects: "デフォルトプロジェクト:",
-				useParentNote: "親ノートをプロジェクトとして使用:",
+				useParentNoteForTaskCreation: "新しいタスクでアクティブノートを使用:",
+				useParentNoteForInlineTasks: "インライン/インスタント変換で親ノートを使用:",
 				useParentHeader: "親見出しをプロジェクトとして使用:",
 				inheritParentTaskProperties: "サブタスクに親タスクのプロパティを継承:",
 				noDefaultProjects: "デフォルトプロジェクトが選択されていません",
@@ -1687,6 +1706,14 @@ export const ja: TranslationTree = {
 				useICSEndAsDue: {
 					name: "ICSイベント終了時刻をタスク期日として使用",
 					description: "有効にすると、カレンダーイベントから作成されたタスクの期日がイベントの終了時刻に設定されます。終日イベントの場合、期日はイベントの日付に設定されます。時間指定イベントの場合、期日に終了時刻が含まれます。"
+				},
+				recurringEventRelatedNotesMode: {
+					name: "繰り返しイベントの関連ノート",
+					description: "外部カレンダーイベントの1回の繰り返しにリンクしたノートを、読み込まれたシリーズ全体に表示するか、選択したインスタンスのみに表示するかを選択します。",
+					options: {
+						series: "シリーズ全体",
+						instance: "選択したインスタンスのみ"
+					}
 				}
 			},
 			subscriptionsList: {
@@ -2174,6 +2201,10 @@ export const ja: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "言語を{language}に変更しました。",
+		releaseAvailable: {
+			message: "TaskNotes {version} が利用可能です。",
+			action: "コミュニティプラグインで開く"
+		},
 		exportTasksFailed: "タスクのICSファイルエクスポートに失敗しました",
 		icsNoteCreatedSuccess: "ノートが正常に作成されました",
 		icsCreationModalOpenFailed: "作成モーダルを開けませんでした",
@@ -2203,6 +2234,7 @@ export const ja: TranslationTree = {
 		openAgendaView: "アジェンダビューを開く",
 		openPomodoroView: "ポモドーロタイマーを開く",
 		openKanbanView: "カンバンボードを開く",
+		updateDefaultBaseFiles: "既定の Base ファイルを更新",
 		openPomodoroStats: "ポモドーロ統計を開く",
 		openStatisticsView: "タスクとプロジェクト統計を開く",
 		createNewTask: "新しいタスクを作成",
@@ -2562,6 +2594,8 @@ export const ja: TranslationTree = {
 			},
 			metadata: {
 				totalTrackedTime: "総追跡時間：",
+				due: "期限：",
+				scheduled: "予定：",
 				created: "作成：",
 				modified: "変更：",
 				file: "ファイル："
@@ -2739,6 +2773,7 @@ export const ja: TranslationTree = {
 			prioritySelected: "✓ {label}",
 			dueDate: "期限日",
 			scheduledDate: "予定日",
+			customDates: "カスタム日付",
 			reminders: "リマインダー",
 			remindBeforeDue: "期限前にリマインド…",
 			remindBeforeScheduled: "予定前にリマインド…",
@@ -2846,6 +2881,7 @@ export const ja: TranslationTree = {
 				toggleSkipFailure: "繰り返しタスクのスキップ切り替えに失敗しました：{message}",
 				updateDueDateFailure: "タスク期限日の更新に失敗しました：{message}",
 				updateScheduledFailure: "タスク予定日の更新に失敗しました：{message}",
+				updateCustomDateFailure: "{field}の更新に失敗しました：{message}",
 				updateRemindersFailure: "リマインダーの更新に失敗しました",
 				clearRemindersFailure: "リマインダーのクリアに失敗しました",
 				addReminderFailure: "リマインダーの追加に失敗しました",
@@ -3020,6 +3056,8 @@ export const ja: TranslationTree = {
 			notices: {
 				templateNotFound: "タスクボディテンプレートが見つかりません：{path}",
 				templateReadError: "タスクボディテンプレートの読み込みエラー：{template}",
+				occurrenceTemplateNotFound: "発生ノートテンプレートが見つかりません：{path}",
+				occurrenceTemplateReadError: "発生ノートテンプレートの読み込みエラー：{template}",
 				moveTaskFailed: "{operation}タスクの移動に失敗しました：{error}"
 			}
 		},

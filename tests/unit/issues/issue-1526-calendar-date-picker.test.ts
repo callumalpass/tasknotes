@@ -1,7 +1,5 @@
 import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
 
-jest.mock("obsidian");
-
 describe("Issue #1526: native task date picker", () => {
 	it("uses a native date input initialized with the current date", () => {
 		const onSelect = jest.fn();

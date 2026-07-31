@@ -9,8 +9,6 @@ import {
 	type TaskCardRelationshipExpansionContext,
 } from "../../../src/ui/taskCardRelationshipExpansion";
 
-jest.mock("obsidian");
-
 function createTask(path: string, title = path): TaskInfo {
 	return {
 		title,

@@ -1,4 +1,4 @@
-import type { EventRef } from "obsidian";
+import type { EventRef, Menu } from "obsidian";
 import type {
 	Reminder,
 	PriorityConfig,
@@ -57,9 +57,12 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"pomodoro.write",
 	"pomodoro.events",
 	"recurring.write",
+	"recurring.materialize",
 	"recurring.events",
 	"settings.snapshot",
+	"bases.write",
 	"nlp.parse",
+	"ui.task-menu",
 	"query.tasks",
 	"query.validate",
 	"query.explain",
@@ -426,9 +429,11 @@ export type TaskNotesApiResult<T> =
 	| { ok: true; value: T }
 	| { ok: false; error: TaskNotesApiErrorPayload };
 
-export type TaskNotesTaskPatch = Partial<TaskInfo> & {
+type Nullable<T> = T | null;
+
+export interface TaskNotesTaskPatch extends Partial<TaskInfo> {
 	details?: string;
-};
+}
 
 export interface CompleteTaskOptions {
 	status?: string;
@@ -447,7 +452,7 @@ export interface ActiveTimeEntry {
 
 export interface ResolvedTaskDependency {
 	dependency: TaskDependency;
-	task: TaskInfo | null;
+	task: Nullable<TaskInfo>;
 	path: string | null;
 }
 
@@ -691,7 +696,7 @@ export type TaskNotesRuntimeEventHandler<EventName extends TaskNotesRuntimeEvent
 ) => void;
 
 export interface TaskNotesRuntimeTasksApi {
-	get(path: string): Promise<TaskInfo | null>;
+	get(path: string): Promise<Nullable<TaskInfo>>;
 	list(query?: TaskNotesRuntimeTaskQuery): Promise<TaskInfo[]>;
 	create(taskData: TaskCreationData, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	update(
@@ -832,6 +837,11 @@ export interface TaskNotesRuntimeRecurringApi {
 		date?: string,
 		context?: TaskNotesMutationContext
 	): Promise<TaskInfo>;
+	materializeOccurrence(
+		path: string,
+		date: string,
+		context?: TaskNotesMutationContext
+	): Promise<TaskInfo>;
 }
 
 export interface TaskNotesRuntimeEventsApi {
@@ -845,6 +855,16 @@ export interface TaskNotesRuntimeEventsApi {
 
 export interface TaskNotesRuntimeSettingsApi {
 	snapshot(): Readonly<TaskNotesSettings>;
+}
+
+export interface TaskNotesRuntimeDefaultBasesResult {
+	created: string[];
+	updated: string[];
+	skipped: string[];
+}
+
+export interface TaskNotesRuntimeBasesApi {
+	updateDefaultFiles(): Promise<TaskNotesRuntimeDefaultBasesResult>;
 }
 
 export interface TaskNotesRuntimeNlpApi {
@@ -1059,6 +1079,32 @@ export interface TaskNotesRuntimeSystemApi {
 	health(): Promise<TaskNotesRuntimeHealth>;
 }
 
+export interface TaskNotesRuntimeTaskMenuOptions {
+	taskPath: string;
+	targetDate?: Date;
+	onUpdate?: () => void;
+	promoteOccurrenceControls?: boolean;
+}
+
+export interface TaskNotesRuntimeTaskMenuShowOptions extends TaskNotesRuntimeTaskMenuOptions {
+	event: MouseEvent;
+}
+
+export interface TaskNotesRuntimeTaskMenuShowAtElementOptions
+	extends TaskNotesRuntimeTaskMenuOptions {
+	element: HTMLElement;
+}
+
+export interface TaskNotesRuntimeTaskMenuApi {
+	show(options: TaskNotesRuntimeTaskMenuShowOptions): Promise<void>;
+	showAtElement(options: TaskNotesRuntimeTaskMenuShowAtElementOptions): Promise<void>;
+	populate(menu: Menu, options: TaskNotesRuntimeTaskMenuOptions): Promise<void>;
+}
+
+export interface TaskNotesRuntimeUiApi {
+	readonly taskMenu: TaskNotesRuntimeTaskMenuApi;
+}
+
 export interface TaskNotesRuntimeApiV1 {
 	readonly apiVersion: TaskNotesRuntimeApiVersion;
 	readonly capabilities: readonly TaskNotesRuntimeApiCapability[];
@@ -1073,17 +1119,19 @@ export interface TaskNotesRuntimeApiV1 {
 	readonly recurring: TaskNotesRuntimeRecurringApi;
 	readonly events: TaskNotesRuntimeEventsApi;
 	readonly settings: TaskNotesRuntimeSettingsApi;
+	readonly bases: TaskNotesRuntimeBasesApi;
 	readonly nlp: TaskNotesRuntimeNlpApi;
 	readonly query: TaskNotesRuntimeQueryApi;
 	readonly stats: TaskNotesRuntimeStatsApi;
 	readonly system: TaskNotesRuntimeSystemApi;
+	readonly ui: TaskNotesRuntimeUiApi;
 	readonly lifecycle: TaskNotesRuntimeLifecycleApi;
 	readonly errors: TaskNotesRuntimeErrorsApi;
 	readonly extensions: TaskNotesRuntimeExtensionsApi;
 
 	parseNaturalLanguage(text: string): ParsedTaskData;
 
-	getTask(path: string): Promise<TaskInfo | null>;
+	getTask(path: string): Promise<Nullable<TaskInfo>>;
 	listTasks(query?: TaskNotesRuntimeTaskQuery): Promise<TaskInfo[]>;
 	createTask(taskData: TaskCreationData, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	updateTask(

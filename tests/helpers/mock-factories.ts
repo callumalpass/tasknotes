@@ -16,7 +16,7 @@ import {
   ICSEvent,
   TimeBlock
 } from '../../src/types';
-import { MockObsidian, TFile } from '../__mocks__/obsidian';
+import { MockObsidian, TFile } from './obsidian-runtime';
 import { FieldMapper } from '../../src/services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../../src/settings/defaults';
 
@@ -448,7 +448,9 @@ export const PluginFactory = {
       taskCreationDefaults: {
         defaultFolder: '',
         useBodyTemplate: false,
-        bodyTemplate: ''
+        bodyTemplate: '',
+        useOccurrenceBodyTemplate: false,
+        occurrenceBodyTemplate: ''
       },
       fieldMapping: SettingsFactory.createFieldMapping(),
       customStatuses: [SettingsFactory.createStatusConfig()],

@@ -28,6 +28,7 @@ function getDateLocaleFromPlugin(plugin: TaskNotesPlugin): string {
  */
 export class NaturalLanguageParser extends NaturalLanguageParserCore {
 	private readonly taskNotesNlpTriggers?: NLPTriggersConfig;
+	private readonly taskNotesStatusConfigs: StatusConfig[];
 	private readonly taskNotesUserFields: UserMappedField[];
 	private readonly taskNotesPriorityConfigs: PriorityConfig[];
 
@@ -63,15 +64,85 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			options
 		);
 		this.taskNotesNlpTriggers = nlpTriggers;
+		this.taskNotesStatusConfigs = statusConfigs;
 		this.taskNotesUserFields = userFields || [];
 		this.taskNotesPriorityConfigs = priorityConfigs;
 	}
 
 	parseInput(input: string): ParsedTaskData {
 		const parsed = super.parseInput(input);
-		const withPriorityShortcutResidueRemoved = this.removePriorityShortcutResidue(input, parsed);
+		const withStatusShortcutResidueRemoved = this.applyTriggeredStatusMatch(input, parsed);
+		const withPriorityShortcutResidueRemoved = this.removePriorityShortcutResidue(
+			input,
+			withStatusShortcutResidueRemoved
+		);
 		const withLinkedFields = this.extractLinkedUserFields(input, withPriorityShortcutResidueRemoved);
 		return this.normalizeUserFieldValues(withLinkedFields);
+	}
+
+	private applyTriggeredStatusMatch(input: string, parsed: ParsedTaskData): ParsedTaskData {
+		const match = this.findTriggeredStatusMatch(input);
+		if (!match) {
+			return parsed;
+		}
+
+		parsed.status = match.config.value;
+
+		let title = parsed.title;
+		for (const residue of this.getStatusShortcutResidues(match.token)) {
+			title = this.removeTokenFragment(title, residue);
+		}
+
+		parsed.title = title || "Untitled Task";
+		return parsed;
+	}
+
+	private findTriggeredStatusMatch(
+		input: string
+	): { config: StatusConfig; token: string } | null {
+		const trigger = this.getStatusTrigger();
+		if (!trigger || this.taskNotesStatusConfigs.length === 0) {
+			return null;
+		}
+
+		const candidates: Array<{ config: StatusConfig; token: string }> = [];
+		for (const config of this.taskNotesStatusConfigs) {
+			for (const phrase of this.getStatusPhrases(config)) {
+				candidates.push({ config, token: `${trigger}${phrase}${trigger}` });
+				candidates.push({ config, token: `${trigger}${phrase}` });
+			}
+		}
+
+		candidates.sort((a, b) => b.token.length - a.token.length);
+		return candidates.find((candidate) => this.containsToken(input, candidate.token)) ?? null;
+	}
+
+	private getStatusShortcutResidues(token: string): string[] {
+		const residues = new Set<string>([token]);
+
+		for (const config of this.taskNotesStatusConfigs) {
+			for (const phrase of this.getStatusPhrases(config)) {
+				const residue = this.removeFirstCaseInsensitive(token, phrase);
+				if (residue && residue !== token) {
+					this.addStatusShortcutResidue(residues, residue);
+				}
+			}
+		}
+
+		return Array.from(residues)
+			.filter((residue) => residue.trim().length > 0)
+			.sort((a, b) => b.length - a.length);
+	}
+
+	private addStatusShortcutResidue(residues: Set<string>, residue: string): void {
+		residues.add(residue);
+		residues.add(residue.replace(/\s+/g, " ").trim());
+	}
+
+	private getStatusPhrases(config: StatusConfig): string[] {
+		return [config.value, config.label]
+			.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+			.map((value) => value.trim());
 	}
 
 	private removePriorityShortcutResidue(input: string, parsed: ParsedTaskData): ParsedTaskData {
@@ -122,6 +193,13 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		return priorityTrigger?.trigger || "";
 	}
 
+	private getStatusTrigger(): string {
+		const statusTrigger = this.taskNotesNlpTriggers?.triggers.find(
+			(trigger) => trigger.propertyId === "status"
+		);
+		return statusTrigger?.enabled === false ? "" : statusTrigger?.trigger || "*";
+	}
+
 	private containsToken(text: string, token: string): boolean {
 		const escaped = this.escapeRegexLiteral(token);
 		return new RegExp(`(^|\\s)${escaped}(?=\\s|$)`, "iu").test(text);
@@ -152,20 +230,30 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		const userFields = parsed.userFields as Record<string, unknown>;
 
 		for (const userField of this.taskNotesUserFields) {
-			if (userField.type !== "boolean") continue;
-
 			const value = userFields[userField.id];
 			if (typeof value !== "string") continue;
 
-			const normalized = value.trim().toLowerCase();
-			if (normalized === "true") {
-				userFields[userField.id] = true;
-			} else if (normalized === "false") {
-				userFields[userField.id] = false;
+			if (userField.type === "boolean") {
+				const normalized = value.trim().toLowerCase();
+				if (normalized === "true") {
+					userFields[userField.id] = true;
+				} else if (normalized === "false") {
+					userFields[userField.id] = false;
+				}
+			} else if (userField.type === "date") {
+				userFields[userField.id] = this.normalizeDateUserFieldValue(value) ?? value;
 			}
 		}
 
 		return parsed;
+	}
+
+	private normalizeDateUserFieldValue(value: string): string | null {
+		const trimmed = value.trim();
+		if (!trimmed) return null;
+
+		const parsed = super.parseInput(trimmed);
+		return parsed.scheduledDate || parsed.dueDate || null;
 	}
 
 	private extractLinkedUserFields(input: string, parsed: ParsedTaskData): ParsedTaskData {

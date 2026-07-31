@@ -39,6 +39,8 @@ TaskNotes provides Calendar and Mini Calendar views that display tasks alongside
 
 For detailed view documentation, see [Calendar Views](../views/calendar-views.md).
 
+Notes linked from recurring external calendar events can be matched either across the loaded event series or only to the selected recurrence instance. Configure this in [Integrations settings](../settings/integrations.md#calendar-subscriptions-ics).
+
 ## Time Entry Editor
 
 TaskNotes includes a time entry editor for tracking time spent on tasks. Time entries are created and managed through the Calendar View.

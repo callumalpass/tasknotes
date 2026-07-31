@@ -319,7 +319,6 @@ describe('Issue #1318: Wikilink alias support for inline tasks', () => {
  */
 
 // Mock external dependencies for createTaskCard tests
-jest.mock('obsidian');
 jest.mock('../../../src/utils/helpers', () => ({
     calculateTotalTimeSpent: jest.fn(() => 0),
     getEffectiveTaskStatus: jest.fn((task) => task.status || 'open'),

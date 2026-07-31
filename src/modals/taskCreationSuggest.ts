@@ -15,6 +15,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskCreationSuggest
 interface ProjectSuggestion {
 	basename: string;
 	displayName: string;
+	linkText: string;
 	type: "project";
 	entry?: ProjectEntry;
 	toString(): string;
@@ -241,11 +242,12 @@ export class NLPSuggest extends AbstractInputSuggest<
 			return list.map((item): ProjectSuggestion => {
 				const file = appRef?.vault
 					.getMarkdownFiles()
-					.find((f) => f.basename === item.insertText);
+					.find((f) => f.path === item.path);
 				if (!file) {
 					return {
 						basename: item.insertText,
 						displayName: item.displayText,
+						linkText: item.insertText,
 						type: "project" as const,
 						toString() {
 							return this.basename;
@@ -285,8 +287,9 @@ export class NLPSuggest extends AbstractInputSuggest<
 				);
 
 				return {
-					basename: item.insertText,
+					basename: file.basename,
 					displayName: displayName,
+					linkText: item.insertText,
 					type: "project",
 					entry: {
 						basename: fileData.basename,
@@ -314,6 +317,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 			return list.map((item) => ({
 				basename: item.insertText,
 				displayName: item.displayText,
+				linkText: item.insertText,
 				type: "project" as const,
 				toString() {
 					return this.basename;
@@ -570,7 +574,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 
 		// Get the actual suggestion text to insert
 		const suggestionText =
-			suggestion.type === "project" ? suggestion.basename : suggestion.value;
+			suggestion.type === "project" ? suggestion.linkText : suggestion.value;
 
 		// Replace the trigger and partial text with the full suggestion
 		const beforeTrigger = textBeforeCursor.slice(0, lastTriggerIndex);
