@@ -32,6 +32,13 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2105) Added `{{projectFolder}}` and `{{projectFolders}}` folder template
+  variables for storing tasks alongside linked project notes. See
+  [Template Variables](https://tasknotes.dev/features/template-variables/).
+  Thanks to @carypruitt for this contribution.
+
 ## Fixed
 
 - (#2064, #2066) Recurring tasks now advance correctly after their next
