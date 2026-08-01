@@ -7985,8 +7985,12 @@
       "translation": "d1f345b54af40186bd657b142ffbd41770ffbb27"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "e42ce79ea403ebdb8a93bb5b03feeeb2c3b35ae6"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "05b54725a5fac92c44fb9f2c58af44a34a4b2de4"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "867c254282ca123145a2c86db1fc90ec92ebe53d"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -16851,8 +16855,12 @@
       "translation": "5e38c0c2d684c7530d3f5312764253d8cf2c6659"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "c77ab77dc6e210d44bdd3d4f08df478cb4d83861"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "da4ae49b2f564e3708b9f9327b7ab3c373b35cd7"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "806ada5f2b7e2f450ce558fb7749059d2a2c893c"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -25717,8 +25725,12 @@
       "translation": "af56aa2bad75074186837e4de8f4363ad2216a89"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "b4c12df8c8d83436cefc32e0cb56b5f638af40c0"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "e689716754262c098755a4ce8c19ca6636503e77"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "f9e6aa72cdbc58f23331ebdc63452c8e4a5bf738"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -34583,8 +34595,12 @@
       "translation": "80e801ffbff761d536ccf02abc4f7f1784400d9c"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "b128b465d8930a5917d73784717d418fe9250dd0"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "fcbb9a6c7bfac9f4a068d5b85da05fc133ad3d49"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "2ee509f3fe1dca7720ac1683b7ee3817b941b5fb"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -43449,8 +43465,12 @@
       "translation": "c527b769cadbaa5c2e3fe77f9cee106e9e53dc17"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "3647e2aafd41da512e803d1a4b52626ad3414a65"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "26fca1dfc772091a2edc919c0d193ebea649c64d"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "05893616fca0c1c858a808124aa7114d7214fceb"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -52315,8 +52335,12 @@
       "translation": "3335ca0907d119f3c58d71e9ad7ea2aa48d613f7"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "a3e5ec764e5e1100a3245c9619e94ab97199de6b"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "f251fd424a9070903530d6f354c64034c126bd94"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "5a0c3575d7c24252117f18e5d7eec51e4ec4f4ef"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -61181,8 +61205,12 @@
       "translation": "9d6d487adefac8e39a9c6c7984750cc244be3182"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "05ddbdec4eea528c618ccbdff1a879f164bc211f"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "05e348afabe4481c16a59c81493441630e4c08fa"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "7416ab7c30413864f82817f3768b95d96060e27c"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",
@@ -70047,8 +70075,12 @@
       "translation": "4c8fe35a23fe0e461f32d6471a1588ade7b4b692"
     },
     "ui.taskCard.projectTooltip": {
-      "source": "0236231ede6436c6aa38eb74d5b4467c9680945a",
-      "translation": "7e61085063036737cb33893a0a3530ff572e2f22"
+      "source": "cd359c35a908c00e4e72047651ece2063270ec4b",
+      "translation": "94d45d4d32df97bce05d43695b356bd58f6db19b"
+    },
+    "ui.taskCard.projectIndicatorTooltip": {
+      "source": "2b40a2d7b3604874a55787a593ac354c91de54a8",
+      "translation": "ac5b519e46635d48f9d13abdf07722141dd1d22c"
     },
     "ui.taskCard.expandSubtasks": {
       "source": "071739c23c0cef8acf5b704018981d0eaf267f39",

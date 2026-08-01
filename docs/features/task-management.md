@@ -11,7 +11,7 @@ You can create and edit tasks in a variety of ways. The primary method is throug
 
 ![Task creation modal](../assets/feature-task-modal-filled.png)
 
-When creating a task, the title will be automatically sanitized to remove any characters that are forbidden in filenames.
+TaskNotes keeps a storage title and a filename-safe title separate. When **Store title in filename** is enabled, forbidden filename characters are removed from the filename while the task title is preserved whenever it cannot be represented exactly by that filename. With another filename format, such as timestamp or UUID, the full title is stored in frontmatter.
 
 For existing tasks, the **Quick actions for current task** command opens a keyboard-searchable action palette. It includes status, priority, time-tracking, archive, edit, and date actions, including built-in due and scheduled date presets such as today, tomorrow, this weekend, next week, and next month.
 

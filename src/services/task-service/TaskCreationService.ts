@@ -360,6 +360,7 @@ export class TaskCreationService {
 
 			if (
 				runtime.taskCalendarSyncService &&
+				runtime.settings.googleCalendarExport.enabled &&
 				runtime.settings.googleCalendarExport.syncOnTaskCreate
 			) {
 				runtime.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {

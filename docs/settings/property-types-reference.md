@@ -16,7 +16,7 @@ This reference documents the expected data types for each frontmatter property t
 | dateCreated | text (datetime) | `"2025-01-01T08:00:00Z"` |
 | dateModified | text (datetime) | `"2025-01-15T10:30:00Z"` |
 | tags | list | `["work", "urgent"]` |
-| contexts | list | `["@office", "@home"]` |
+| contexts | list | `["office", "home"]` |
 | projects | list | `["[[Project A]]"]` |
 | timeEstimate | number | `120` (minutes) |
 | recurrence | text | `"FREQ=WEEKLY;BYDAY=MO"` |
@@ -361,7 +361,7 @@ tags:
   - work
   - reports
 contexts:
-  - "@office"
+  - office
 projects:
   - "[[Q1 Planning]]"
 timeEstimate: 240

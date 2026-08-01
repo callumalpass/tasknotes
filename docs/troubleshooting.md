@@ -2,7 +2,18 @@
 
 Common issues and solutions for TaskNotes.
 
-When debugging, start with the smallest reproducible scenario: one affected task, one affected view, and current settings. Most issues fall into one of three categories: task identification mismatch, malformed frontmatter, or view/cache state.
+When debugging, start with one affected task and one affected view. Record the TaskNotes version from the plugin list, the Obsidian version from **About**, the operating system, and whether the problem also occurs in a fresh default Base.
+
+## First checks
+
+1. Confirm Obsidian meets the current [version requirement](reference/compatibility.md) and **Bases** is enabled.
+2. Open the affected task as Markdown and validate the `---` frontmatter delimiters and indentation.
+3. Confirm the task matches **Settings → TaskNotes → General → Task identification** and is not in an excluded folder.
+4. Run **TaskNotes: Refresh cache** from the command palette.
+5. Close and reopen the affected `.base` file.
+6. Restart Obsidian only after the targeted checks above.
+
+If the issue remains, enable **Settings → TaskNotes → Features → Debug logging**, reproduce it once, and inspect the developer console with `Ctrl/Cmd + Shift + I`. Disable debug logging after collecting the relevant entries.
 
 ## Bases and Views (v4)
 
@@ -24,7 +35,19 @@ Check command mappings in `Settings -> TaskNotes -> General` (`View Commands`). 
 
 **Symptoms**: Tasks you've created don't show up in TaskNotes views
 
-Common causes are task-identification mismatch, excluded folders, invalid frontmatter, or stale view state. Verify the configured task identifier is present, ensure files are not excluded, and confirm YAML frontmatter is valid and wrapped with `---` delimiters. If all data looks correct, reopen the affected view and then restart Obsidian to refresh cache state.
+Follow this decision tree:
+
+1. **Does Quick actions for current task work on the note?**
+   - **No:** compare its tag or identification property with **General → Task identification**.
+   - **Yes:** task recognition works; continue to the Base filter.
+2. **Is the note inside an excluded folder?**
+   - **Yes:** move it or update **Excluded folders**.
+   - **No:** continue.
+3. **Does a newly generated default task Base show it?**
+   - **Yes:** the custom Base has a stale property name or filter.
+   - **No:** run **TaskNotes: Refresh cache** and validate the frontmatter.
+4. **Did identification or field mapping change recently?**
+   - **Yes:** update the default Base files or edit their filters and columns. Generated files do not update automatically when settings change.
 
 ### Task Link Widgets Not Working
 
@@ -114,20 +137,25 @@ Check refresh intervals and force a manual refresh first. If source data is curr
 
 Report bugs on [GitHub Issues](https://github.com/callumalpass/tasknotes/issues). Include:
 
-- TaskNotes and Obsidian versions
+- Exact TaskNotes and Obsidian versions
 - Operating system
-- Steps to reproduce
-- Error messages (open console with `Ctrl/Cmd + Shift + I`)
+- The smallest affected task frontmatter with private values removed
+- The `.base` path and whether a regenerated default has the same problem
+- Steps to reproduce from a fresh Obsidian start
+- Relevant console errors and TaskNotes debug entries
 - Screenshots if relevant
 
 ### Configuration Reset
 
-If all else fails, reset TaskNotes configuration:
+Use a reversible reset only after the checks above:
 
 1. Close Obsidian
 2. Navigate to `.obsidian/plugins/tasknotes/`
-3. Rename or delete `data.json`
-4. Restart Obsidian
+3. Copy `data.json` to a backup outside the plugin directory
+4. Rename the original to `data.json.backup-YYYY-MM-DD`
+5. Restart Obsidian
 
 !!! warning
-    This resets all settings, status configurations, and calendar subscriptions. Document your settings before resetting.
+    A reset affects settings, status and priority configurations, integration state, saved views, and plugin-stored Pomodoro history. Keep the backup until the problem is resolved. Restore it only while Obsidian is closed.
+
+For full restore and uninstall guidance, see [Backup, restore, and removal](guides/backup-recovery.md).

@@ -359,6 +359,23 @@ export class MdbaseSpecService {
 			}
 		}
 
+		// Portable TaskNotes extension settings. These are optional contract
+		// fields, so older mdbase consumers can safely ignore them.
+		lines.push("");
+		lines.push("x-tasknotes:");
+		lines.push("  nlp:");
+		const nlpTriggers = settings.nlpTriggers?.triggers ?? [];
+		if (nlpTriggers.length === 0) {
+			lines.push("    triggers: []");
+		} else {
+			lines.push("    triggers:");
+			for (const trigger of nlpTriggers) {
+				lines.push(`      - property_id: ${yamlQuote(trigger.propertyId)}`);
+				lines.push(`        trigger: ${yamlQuote(trigger.trigger)}`);
+				lines.push(`        enabled: ${trigger.enabled === true}`);
+			}
+		}
+
 		lines.push("---");
 		lines.push("");
 		lines.push("# Task");
