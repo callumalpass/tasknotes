@@ -2515,9 +2515,6 @@ export class TaskListView extends BasesViewBase {
 					event
 				);
 				return;
-			case "filter-project-subtasks":
-				await this.filterProjectSubtasks(task);
-				return;
 			case "toggle-subtasks":
 				await this.toggleSubtasks(task, target);
 				return;
@@ -2750,19 +2747,6 @@ export class TaskListView extends BasesViewBase {
 			} else {
 				void app.workspace.getLeaf(false).openFile(file);
 			}
-		}
-	}
-
-	private async filterProjectSubtasks(task: TaskInfo): Promise<void> {
-		try {
-			await this.plugin.applyProjectSubtaskFilter(task);
-		} catch (error) {
-			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to filter project subtasks", {
-				category: "persistence",
-				operation: "filter-project-subtasks",
-				error: error,
-			});
-			new Notice("Failed to filter project subtasks");
 		}
 	}
 

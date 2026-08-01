@@ -1,0 +1,23 @@
+name: Documentation external links
+
+on:
+    workflow_dispatch:
+    schedule:
+        - cron: "17 4 * * 1"
+
+permissions:
+    contents: read
+
+jobs:
+    links:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  submodules: true
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+            - name: Check external documentation links
+              run: node scripts/check-external-docs-links.mjs

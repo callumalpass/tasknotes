@@ -1,16 +1,29 @@
 {
-  "name": "tasknotes-docs-builder",
-  "type": "module",
-  "version": "0.0.1",
-  "scripts": {
-    "build": "node build.js",
-    "dev": "node build.js && python3 -m http.server 4321 --directory dist"
-  },
-  "dependencies": {
-    "gray-matter": "^4.0.3",
-    "highlight.js": "^11.0.0",
-    "js-yaml": "^4.1.0",
-    "marked": "^13.0.0",
-    "marked-highlight": "^2.1.0"
-  }
+	"name": "tasknotes-docs-builder",
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"build": "node build.js",
+		"check": "node ../scripts/check-built-docs.mjs dist",
+		"dev": "node build.js && python3 -m http.server 4321 --directory dist",
+		"test:e2e": "playwright test"
+	},
+	"dependencies": {
+		"@fontsource/atkinson-hyperlegible": "^5.3.0",
+		"@fontsource/azeret-mono": "^5.3.0",
+		"@tasknotes/model": "^0.2.1",
+		"esbuild": "^0.25.12",
+		"highlight.js": "^11.0.0",
+		"js-yaml": "^4.3.0",
+		"marked": "^13.0.0",
+		"marked-highlight": "^2.1.0",
+		"typescript": "^5.9.3"
+	},
+	"overrides": {
+		"js-yaml": "^4.3.0"
+	},
+	"devDependencies": {
+		"@axe-core/playwright": "^4.12.1",
+		"@playwright/test": "1.57.0"
+	}
 }

@@ -42,8 +42,8 @@ When work spans initiatives, assign multiple projects and combine with contexts 
 ```yaml
 title: "Prepare presentation slides"
 projects: ["[[Q4 Planning]]"]
-contexts: ["@computer", "@office"]
-tags: ["#review"]
+contexts: ["computer", "office"]
+tags: ["review"]
 ```
 
 ## Execution Workflow (Daily)

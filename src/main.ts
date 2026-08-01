@@ -1268,30 +1268,6 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	/**
-	 * Apply a filter to show subtasks of a project
-	 */
-	async applyProjectSubtaskFilter(projectTask: TaskInfo): Promise<void> {
-		try {
-			const file = this.app.vault.getAbstractFileByPath(projectTask.path);
-			if (!file) {
-				new Notice("Project file not found");
-				return;
-			}
-
-			// Note: This feature was part of the old view system (deprecated in v4)
-			// TODO: Re-implement for Bases views if needed
-			new Notice("Project subtask filtering not available");
-		} catch (error) {
-			tasknotesLogger.error("Error applying project subtask filter:", {
-				category: "persistence",
-				operation: "applying-project-subtask-filter",
-				error: error,
-			});
-			new Notice("Failed to apply project filter");
-		}
-	}
-
-	/**
 	 * Starts a time tracking session for a task
 	 */
 	async startTimeTracking(task: TaskInfo, description?: string): Promise<TaskInfo> {

@@ -1,7 +1,6 @@
 import { Notice } from "obsidian";
 import {
 	createPriorityClickHandler,
-	createProjectClickHandler,
 	createRecurrenceClickHandler,
 	createReminderClickHandler,
 	createStatusCycleHandler,
@@ -67,7 +66,6 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 			...updatedTask,
 			status: "done",
 		})),
-		applyProjectSubtaskFilter: jest.fn(async () => undefined),
 		...overrides,
 	} as unknown as TaskNotesPlugin;
 }
@@ -192,15 +190,5 @@ describe("taskCardActions", () => {
 
 		expect(modalInstance.open).toHaveBeenCalled();
 		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "reminders", reminders);
-	});
-
-	it("wires project indicators to the project-subtask filter", async () => {
-		const plugin = createPlugin();
-		const handler = createProjectClickHandler(task, plugin);
-
-		handler();
-		await flushAsyncHandlers();
-
-		expect(plugin.applyProjectSubtaskFilter).toHaveBeenCalledWith(task);
 	});
 });
