@@ -51,6 +51,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   variables for storing tasks alongside linked project notes. See
   [Template Variables](https://tasknotes.dev/features/template-variables/).
   Thanks to @carypruitt for this contribution.
+- TaskNotes can publish its `tasknotes.task.completed` contract event through
+  the optional `mdbase-obsidian` interoperability bridge. Compatible companion
+  apps can consume the same CloudEvent without TaskNotes or mdbase-obsidian
+  pretending to be a durable workflow runtime.
 
 ## Changed
 
@@ -64,6 +68,36 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   guides for adopting TaskNotes in an existing vault, mobile use, custom Bases,
   and backup and recovery. See the
   [TaskNotes documentation](https://tasknotes.dev/).
+- Enabled mdbase v0.3 collections now publish the first-class
+  `tasknotes.task 0.2.0` data contract, its JSON Schemas, and an implementing
+  task type. The contract defines the application-facing task view; the type's
+  `implements` entry maps that view to the collection's frontmatter and stores
+  TaskNotes behavior. TaskNotes loads valid external type edits into its
+  effective settings, writes portable settings changes back to the discovered
+  implementation, preserves unknown extensions and user-maintained type notes,
+  and asks before resolving concurrent changes. Invalid implementations leave the
+  last-known-good configuration active and are backed up before an explicitly
+  approved repair. Missing canonical files are restored while the integration
+  remains enabled, and a filesystem synchronization error no longer prevents
+  TaskNotes from saving other settings.
+- New mdbase exports now use the v0.3 JSON Schema format, including generic
+  collection, link, lifecycle, and TaskNotes contract metadata. Existing v0.2
+  collections continue to receive the v0.2 type format until they are migrated;
+  TaskNotes will not rewrite generated files when the collection version is
+  unsupported or cannot be read.
+- Mdbase v0.3 task types now implement the portable TaskNotes contract with
+  explicit field mappings and a JSON-Schema-validated behavior binding,
+  including custom status and priority definitions, title storage, recurrence
+  and occurrence policies, link format, archiving, time tracking, and task
+  templates. Any number of task types can implement the same contract, and
+  multiple applications can consume their normalized union without knowing
+  custom property names. TaskNotes generates the complete resource set through
+  the canonical `@tasknotes/model` package instead of maintaining a separate
+  plugin implementation.
+- TaskNotes now retains v0.2-compatible scalar, null, datetime, and nested-object
+  validation when regenerating a task type for a collection migrated to mdbase
+  v0.3, so changing TaskNotes settings does not make previously accepted task
+  frontmatter invalid.
 - (#2088) Convert current note to task now uses your default scheduled date when
   the note does not already have `scheduled` frontmatter, while the **None**
   default still leaves converted notes unscheduled. See
