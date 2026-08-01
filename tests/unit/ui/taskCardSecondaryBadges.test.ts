@@ -43,6 +43,7 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 					"ui.taskCard.reminderTooltipMany": `${vars?.count ?? 0} reminders`,
 					"ui.taskCard.detailsTooltip": "Has details",
 					"ui.taskCard.projectTooltip": "Project",
+					"ui.taskCard.projectIndicatorTooltip": "Used as a project",
 					"ui.taskCard.expandSubtasks": "Expand subtasks",
 					"ui.taskCard.collapseSubtasks": "Collapse subtasks",
 					"ui.taskCard.blockingToggle": `Blocking ${vars?.count ?? 0} tasks`,
@@ -127,6 +128,167 @@ describe("taskCardSecondaryBadges", () => {
 			"button"
 		);
 		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
+	});
+
+	it("toggles the inline subtask list when the project folder badge is clicked", async () => {
+		const plugin = createPlugin();
+		(plugin.projectSubtasksService.isTaskUsedAsProjectSync as jest.Mock).mockReturnValue(true);
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockReturnValue(false);
+		(plugin.expandedProjectsService?.toggle as jest.Mock).mockReturnValue(true);
+		const handlers = createHandlers();
+		const { card, badgesContainer } = createCard();
+		const task = createTask();
+
+		renderTaskCardSecondaryBadges({
+			card,
+			badgesContainer,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+
+		const folder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(folder).not.toBeNull();
+
+		folder?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		await Promise.resolve();
+		await Promise.resolve();
+
+		expect(plugin.expandedProjectsService?.toggle).toHaveBeenCalledWith(task.path, false);
+		expect(handlers.toggleSubtasks).toHaveBeenCalledWith(card, task, true);
+	});
+
+	it("keeps the project badge inert when expandable subtasks are disabled", async () => {
+		const plugin = createPlugin({
+			settings: {
+				showExpandableSubtasks: false,
+				expandSubtasksByDefault: false,
+				enableDebugLogging: false,
+			},
+		} as unknown as Partial<TaskNotesPlugin>);
+		(plugin.projectSubtasksService.isTaskUsedAsProjectSync as jest.Mock).mockReturnValue(true);
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockReturnValue(true);
+		const handlers = createHandlers();
+		const { card, badgesContainer } = createCard();
+		const task = createTask();
+
+		renderTaskCardSecondaryBadges({
+			card,
+			badgesContainer,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+
+		const folder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(folder).not.toBeNull();
+		expect(folder?.getAttribute("role")).toBeNull();
+		expect(folder?.getAttribute("aria-label")).toBe("Used as a project");
+		expect(card.querySelector(".task-card__chevron")).toBeNull();
+		expect(plugin.expandedProjectsService?.isExpanded).not.toHaveBeenCalled();
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
+
+		folder?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		await Promise.resolve();
+
+		expect(plugin.expandedProjectsService?.toggle).not.toHaveBeenCalled();
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
+	});
+
+	it("does not auto-expand subtasks when expandable subtasks are disabled", () => {
+		const plugin = createPlugin({
+			settings: {
+				// The user disabled expandable subtasks but left expand-by-default on.
+				showExpandableSubtasks: false,
+				expandSubtasksByDefault: true,
+				enableDebugLogging: false,
+			},
+		} as unknown as Partial<TaskNotesPlugin>);
+		(plugin.projectSubtasksService.isTaskUsedAsProjectSync as jest.Mock).mockReturnValue(true);
+		// Reflect the real service: an untoggled project falls back to the passed default.
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockImplementation(
+			(_path: string, def: boolean) => def
+		);
+		const handlers = createHandlers();
+		const { card, badgesContainer } = createCard();
+		const task = createTask();
+
+		renderTaskCardSecondaryBadges({
+			card,
+			badgesContainer,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+
+		// The disabled feature must not consult saved expansion state or render subtasks.
+		expect(plugin.expandedProjectsService?.isExpanded).not.toHaveBeenCalled();
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
+	});
+
+	it("update path removes project-badge interaction when expandable subtasks are disabled", async () => {
+		const plugin = createPlugin({
+			settings: {
+				showExpandableSubtasks: true,
+				expandSubtasksByDefault: false,
+				enableDebugLogging: false,
+			},
+		} as unknown as Partial<TaskNotesPlugin>);
+		(plugin.projectSubtasksService.isTaskUsedAsProjectSync as jest.Mock).mockReturnValue(true);
+		(plugin.projectSubtasksService.isTaskUsedAsProject as jest.Mock).mockResolvedValue(true);
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockReturnValue(false);
+		const handlers = createHandlers();
+		const { card, mainRow, badgesContainer } = createCard();
+		const task = createTask();
+
+		// Initial render: both project controls are interactive.
+		renderTaskCardSecondaryBadges({
+			card,
+			badgesContainer,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
+
+		const originalFolder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(originalFolder?.getAttribute("role")).toBe("button");
+		expect(card.querySelector(".task-card__chevron")).not.toBeNull();
+
+		// Disable expandable subtasks while the card is mounted. The update must
+		// recreate the folder as an inert indicator and remove the chevron.
+		plugin.settings.showExpandableSubtasks = false;
+		(plugin.expandedProjectsService?.isExpanded as jest.Mock).mockReturnValue(true);
+		updateTaskCardSecondaryBadges({
+			card,
+			mainRow,
+			task,
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const updatedFolder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(updatedFolder).not.toBe(originalFolder);
+		expect(updatedFolder?.getAttribute("role")).toBeNull();
+		expect(updatedFolder?.getAttribute("aria-label")).toBe("Used as a project");
+		expect(card.querySelector(".task-card__chevron")).toBeNull();
+		expect(plugin.expandedProjectsService?.isExpanded).toHaveBeenCalledTimes(1);
+		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
+
+		updatedFolder?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		await Promise.resolve();
+		expect(plugin.expandedProjectsService?.toggle).not.toHaveBeenCalled();
 	});
 
 	it("keeps secondary badges omitted when the option is disabled", () => {

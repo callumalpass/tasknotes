@@ -2430,7 +2430,10 @@ export class TaskCalendarSyncService {
 
 		try {
 			if (!this.isEnabled()) {
-				if (queueOnFailure) {
+				if (queueOnFailure && settings.enabled) {
+					// Only queue if sync is enabled but temporarily not ready
+					// (e.g. no calendar selected yet, or OAuth not connected).
+					// When sync is intentionally disabled, don't populate the queue.
 					await this.queueTaskSync(
 						task.path,
 						new Error("Google Calendar sync is not ready")

@@ -70,6 +70,11 @@ jobs:
         echo "Timezone: $(date)"
         echo "Jest version: $(npx jest --version)"
 
+    - name: Install documentation dependencies
+      run: npm ci
+      working-directory: docs-builder
+      timeout-minutes: 3
+
     - name: Run docs quality checks
       run: npm run docs:check
       timeout-minutes: 3

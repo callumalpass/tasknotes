@@ -11,6 +11,7 @@ import {
 	findKanbanStatusConfigForGroupKey,
 	formatKanbanColumnCount,
 	getKanbanColumnTaskCounts,
+	getVisibleKanbanSwimLaneColumnKeys,
 	getConfiguredKanbanOrder,
 	getKanbanListPropertyValue,
 	getKanbanStatusGroupKeyAliases,
@@ -372,6 +373,80 @@ describe("Kanban grouping helpers", () => {
 				["blocked", 0],
 			])
 		);
+	});
+
+	it("hides columns that are empty across all swimlanes when hideEmptyColumns is enabled", () => {
+		const swimlanes = new Map<string, Map<string, TestTask[]>>([
+			[
+				"Research",
+				new Map([
+					["todo", [task("a.md")]],
+					["done", []],
+					["blocked", []],
+				]),
+			],
+			[
+				"Review",
+				new Map([
+					["todo", [task("b.md")]],
+					["done", []],
+					["blocked", []],
+				]),
+			],
+		]);
+
+		expect(
+			getVisibleKanbanSwimLaneColumnKeys(
+				["todo", "done", "blocked"],
+				swimlanes,
+				true,
+				[]
+			)
+		).toEqual(["todo"]);
+	});
+
+	it("keeps empty pinned columns even when hideEmptyColumns is enabled", () => {
+		const swimlanes = new Map<string, Map<string, TestTask[]>>([
+			[
+				"Research",
+				new Map([
+					["todo", [task("a.md")]],
+					["done", []],
+					["blocked", []],
+				]),
+			],
+		]);
+
+		expect(
+			getVisibleKanbanSwimLaneColumnKeys(
+				["todo", "done", "blocked"],
+				swimlanes,
+				true,
+				["done"]
+			)
+		).toEqual(["todo", "done"]);
+	});
+
+	it("keeps all columns when hideEmptyColumns is disabled", () => {
+		const swimlanes = new Map<string, Map<string, TestTask[]>>([
+			[
+				"Research",
+				new Map([
+					["todo", [task("a.md")]],
+					["done", []],
+					["blocked", []],
+				]),
+			],
+		]);
+
+		expect(
+			getVisibleKanbanSwimLaneColumnKeys(
+				["todo", "done", "blocked"],
+				swimlanes,
+				false,
+				[]
+			)
+		).toEqual(["todo", "done", "blocked"]);
 	});
 
 	it("orders columns from saved order and appends default-ordered new columns", () => {
