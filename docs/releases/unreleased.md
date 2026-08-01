@@ -32,6 +32,13 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Fixed
+
+- (#2064, #2066) Recurring tasks now advance correctly after their next
+  scheduled date is manually adjusted, preserving due-date offsets and times
+  without jumping back to an earlier occurrence. Thanks to @chmac for reporting
+  and fixing this.
+
 ## Changed
 
 - Generated TaskNotes type contracts now include configured natural-language

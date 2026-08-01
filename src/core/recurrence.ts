@@ -17,6 +17,10 @@ type RecurringTaskInput = Parameters<typeof getNextUncompletedOccurrenceModel>[0
 type RecurrenceUpdateTaskInput = Parameters<typeof updateToNextScheduledOccurrenceModel>[0];
 type RecurrenceUpdateResult = ReturnType<typeof updateToNextScheduledOccurrenceModel>;
 
+export interface RecurrenceOccurrenceOptions {
+	minOccurrenceDate?: string;
+}
+
 export function addDTSTARTToRecurrenceRule(task: AddDTSTARTTaskInput): string | null {
 	return addDTSTARTToRecurrenceRuleModel(normalizeMinutePrecisionDateInputs(task));
 }
@@ -33,14 +37,19 @@ export function addDTSTARTToRecurrenceRuleWithDraggedTime(
 	);
 }
 
-export function getNextUncompletedOccurrence(task: RecurringTaskInput): Date | null {
-	return getNextUncompletedOccurrenceModel(task, { today: getTodayString() });
+export function getNextUncompletedOccurrence(
+	task: RecurringTaskInput,
+	options?: RecurrenceOccurrenceOptions
+): Date | null {
+	return getNextUncompletedOccurrenceModel(task, {
+		today: options?.minOccurrenceDate ?? getTodayString(),
+	});
 }
 
 export function updateToNextScheduledOccurrence(
 	task: RecurrenceUpdateTaskInput,
 	maintainDueOffset = true,
-	options?: { minOccurrenceDate?: string }
+	options?: RecurrenceOccurrenceOptions
 ): RecurrenceUpdateResult {
 	return updateToNextScheduledOccurrenceModel(task, maintainDueOffset, {
 		today: options?.minOccurrenceDate ?? getTodayString(),
@@ -67,9 +76,7 @@ function normalizeMinutePrecisionDateInputs<T extends { scheduled?: string; date
 function normalizeMinutePrecisionDateTime(value: string | undefined): string | undefined {
 	if (!value) return value;
 
-	const match = value
-		.trim()
-		.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(Z|[+-]\d{2}:\d{2})?$/);
+	const match = value.trim().match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(Z|[+-]\d{2}:\d{2})?$/);
 
 	if (!match) {
 		return value;

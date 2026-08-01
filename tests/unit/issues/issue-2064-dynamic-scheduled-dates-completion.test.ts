@@ -207,4 +207,63 @@ describe("dynamic scheduled dates — skipped instance uses recurrence date", ()
 		expect(plan.updatedTask.skipped_instances).not.toContain("2026-07-03");
 		expect(plan.updatedTask.scheduled).toBe("2026-10-01");
 	});
+
+	it("keeps a moved Google Calendar exception keyed to its moved date", () => {
+		mockGetTodayString.mockReturnValue("2026-04-15");
+
+		const plan = buildRecurringTaskSkippedPlan({
+			freshTask: task({
+				recurrence: "DTSTART:20260316;FREQ=WEEKLY;INTERVAL=4;BYDAY=MO",
+				scheduled: "2026-04-15",
+				googleCalendarEventId: "master-event-id",
+				googleCalendarExceptionEventId: "detached-exception-id",
+				googleCalendarExceptionOriginalScheduled: "2026-04-13",
+			}),
+			targetDate: new Date("2026-04-15T00:00:00.000Z"),
+			currentTimestamp: "2026-04-15T00:00:00.000Z",
+			maintainDueDateOffsetInRecurring: true,
+		});
+
+		expect(plan.dateStr).toBe("2026-04-15");
+		expect(plan.updatedTask.skipped_instances).toContain("2026-04-15");
+		expect(plan.updatedTask.googleCalendarMovedOriginalDates).toEqual(["2026-04-13"]);
+		expect(plan.updatedTask.googleCalendarExceptionOriginalScheduled).toBeUndefined();
+	});
+});
+
+describe("dynamic scheduled dates — recurrence identity edge cases", () => {
+	it("preserves the scheduled time while advancing a shifted timed occurrence", () => {
+		mockGetTodayString.mockReturnValue("2026-07-01");
+
+		const plan = buildRecurringTaskCompletePlan({
+			freshTask: task({
+				recurrence: "DTSTART:20260401T100000Z;FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=1",
+				scheduled: "2026-07-03T10:00:00",
+				complete_instances: ["2026-04-01"],
+			}),
+			targetDate: new Date("2026-07-03T00:00:00.000Z"),
+			currentTimestamp: "2026-07-03T00:00:00.000Z",
+			maintainDueDateOffsetInRecurring: true,
+		});
+
+		expect(plan.updatedTask.scheduled).toBe("2026-10-01T10:00:00");
+	});
+
+	it("finds the owning occurrence beyond the previous fixed search window", () => {
+		mockGetTodayString.mockReturnValue("2026-06-01");
+
+		const plan = buildRecurringTaskCompletePlan({
+			freshTask: task({
+				recurrence: "DTSTART:20250101;FREQ=MONTHLY;INTERVAL=24;BYMONTHDAY=1",
+				scheduled: "2026-06-01",
+			}),
+			targetDate: new Date("2026-06-01T00:00:00.000Z"),
+			currentTimestamp: "2026-06-01T00:00:00.000Z",
+			maintainDueDateOffsetInRecurring: true,
+		});
+
+		expect(plan.dateStr).toBe("2025-01-01");
+		expect(plan.updatedTask.complete_instances).toContain("2025-01-01");
+		expect(plan.updatedTask.scheduled).toBe("2027-01-01");
+	});
 });
