@@ -222,8 +222,11 @@ function calculateChecklistProgress(cache: unknown): ChecklistProgress | null {
 		const isNested = typeof item.parent === "number" && item.parent >= 0;
 		if (isNested) continue;
 
+		const marker = item.task.toLowerCase();
+		if (marker === "-") continue; // cancelled — excluded from progress count
+
 		total += 1;
-		if (item.task.toLowerCase() === "x") {
+		if (marker === "x") {
 			completed += 1;
 		}
 	}
