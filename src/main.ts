@@ -238,6 +238,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Bases registration state management
 	basesRegistered = false;
+	basesRegistrationRetryIntervalId: number | null = null;
 
 	/**
 	 * Get the system UI locale with proper priority order for TaskNotes plugin.
@@ -1264,6 +1265,7 @@ export default class TaskNotesPlugin extends Plugin {
 			content,
 			frontmatter,
 			settings: this.settings,
+			fieldMapper: this.fieldMapper,
 		});
 
 		// Open the task edit modal with the constructed TaskInfo

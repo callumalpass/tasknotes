@@ -53,7 +53,9 @@ describe("defaultBasesFiles", () => {
 
 		expect(template).toContain('name: "Kanban Board"');
 		expect(template).toContain("sort:\n      - column: tasknotes_manual_order\n        direction: DESC");
-		expect(template).toContain("groupBy:\n      property: status");
+		expect(template).toContain("groupBy:\n      property: task.status");
+		expect(template).toContain("config:\n      columnWidth: 280\n      hideEmptyColumns: false");
+		expect(template).not.toContain("    options:\n      columnWidth: 280");
 	});
 
 	it("adds a dedicated manual-order task list view while preserving urgency views", () => {
@@ -74,6 +76,7 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain('name: "Blocked By"');
 		expect(template).toContain('name: "Blocking"');
 		expect((template.match(/column: tasknotes_manual_order/g) ?? []).length).toBe(3);
+		expect((template.match(/property: task\.status/g) ?? []).length).toBe(2);
 		expect(template).toContain('name: "Projects"');
 	});
 
@@ -122,16 +125,16 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain("listDayCount: 7");
 	});
 
-	it("lets generated calendar views inherit app-level time bounds", () => {
+	it("lets generated calendar views inherit app-level time settings", () => {
 		const template = generateBasesFileTemplate(
 			"open-advanced-calendar-view",
 			createMockPlugin() as any
 		);
 
 		expect(template).toContain('calendarView: "timeGridWeek"');
-		expect(template).toContain('slotDuration: "00:30:00"');
 		expect(template).not.toContain("slotMinTime");
 		expect(template).not.toContain("slotMaxTime");
+		expect(template).not.toContain("slotDuration");
 	});
 
 	it("uses the configured first day for generated calendar views", () => {

@@ -144,12 +144,15 @@ export class ICSSubscriptionService extends EventEmitter {
 	 * the caller can pass the raw TZID parameter from the source property; if
 	 * it maps to a known IANA zone (directly or via the Windows TZID alias
 	 * table), Intl.DateTimeFormat is used to compute the correct UTC instant.
+	 * Timed values with no TZID are floating wall times, so they are resolved
+	 * against the user's local runtime timezone before storing as UTC.
 	 *
 	 * This fixes issues with:
 	 * - Outlook/Exchange feeds that reference Windows TZIDs without
 	 *   inlining a VTIMEZONE block for every referenced zone.
 	 * - Events with IANA TZIDs that have no accompanying VTIMEZONE.
 	 * - Non-IANA timezones (e.g., TZID=Zurich without VTIMEZONE).
+	 * - Floating timed events with no TZID.
 	 * - All-day events (date-only output, no zone math).
 	 */
 	private icalTimeToISOString(icalTime: ICAL.Time, rawTzid?: string | null): string {
@@ -172,6 +175,14 @@ export class ICSSubscriptionService extends EventEmitter {
 			if (iana) {
 				return wallTimeInZoneToUtcIso(icalTime, iana);
 			}
+
+			const hasExplicitTzid = typeof rawTzid === "string" && rawTzid.trim().length > 0;
+			if (!hasExplicitTzid) {
+				const localTimeZone = this.getLocalTimeZoneForFloatingTime();
+				if (localTimeZone) {
+					return wallTimeInZoneToUtcIso(icalTime, localTimeZone);
+				}
+			}
 		}
 
 		// Normal path: ical.js has a registered timezone for this Time
@@ -181,10 +192,18 @@ export class ICSSubscriptionService extends EventEmitter {
 		return new Date(unixTime * 1000).toISOString();
 	}
 
+	private getLocalTimeZoneForFloatingTime(): string | null {
+		try {
+			return resolveTzidToIANA(Intl.DateTimeFormat().resolvedOptions().timeZone);
+		} catch {
+			return null;
+		}
+	}
+
 	/**
 	 * Extract the raw TZID parameter from a property (e.g. DTSTART, DTEND).
 	 * Returns null when the property is missing or has no TZID parameter
-	 * (which means the value is either UTC, date-only, or floating by intent).
+	 * (which means the value is either UTC, date-only, or a floating wall time).
 	 */
 	private rawTzidOf(vevent: ICAL.Component, propName: string): string | null {
 		const prop = vevent.getFirstProperty(propName);

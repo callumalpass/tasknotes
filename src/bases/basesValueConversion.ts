@@ -10,7 +10,8 @@ type BasesValueInternals = {
 	display?: unknown;
 	file?: BasesFileLike;
 	icon?: string;
-	value?: unknown[];
+	label?: unknown;
+	value?: unknown;
 	get?: (index: number) => unknown;
 	at?: (index: number) => unknown;
 	length?: () => number;
@@ -41,6 +42,11 @@ export function convertBasesValueToNative(value: unknown): unknown {
 	const listValue = convertBasesListValueToNative(basesValue);
 	if (listValue) {
 		return listValue;
+	}
+
+	const scalarValue = extractBasesScalarValue(basesValue);
+	if (scalarValue !== undefined) {
+		return scalarValue;
 	}
 
 	if (basesValue.date instanceof Date) {
@@ -102,6 +108,11 @@ function extractBasesGroupKeyValue(basesKey: BasesValueInternals): unknown {
 		return basesKey.data;
 	}
 
+	const scalarValue = extractBasesScalarValue(basesKey);
+	if (scalarValue !== undefined) {
+		return scalarValue;
+	}
+
 	return basesKey;
 }
 
@@ -110,6 +121,7 @@ function isBasesEmptyPlaceholderValue(value: BasesValueInternals): boolean {
 		value.icon === "lucide-file-question" &&
 		typeof value.data === "undefined" &&
 		typeof value.display === "undefined" &&
+		typeof value.label === "undefined" &&
 		!(value.date instanceof Date) &&
 		!value.file &&
 		!Array.isArray(value.value) &&
@@ -118,6 +130,20 @@ function isBasesEmptyPlaceholderValue(value: BasesValueInternals): boolean {
 		typeof value.length !== "function" &&
 		typeof value.toISOString !== "function"
 	);
+}
+
+function extractBasesScalarValue(value: BasesValueInternals): string | number | boolean | undefined {
+	for (const candidate of [value.value, value.display, value.label]) {
+		if (
+			typeof candidate === "string" ||
+			typeof candidate === "number" ||
+			typeof candidate === "boolean"
+		) {
+			return candidate;
+		}
+	}
+
+	return undefined;
 }
 
 function formatBasesGroupKeyValue(actualValue: unknown): string {

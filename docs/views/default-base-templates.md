@@ -236,9 +236,9 @@ views:
       - column: tasknotes_manual_order
         direction: DESC
     groupBy:
-      property: status
+      property: task.status
       direction: ASC
-    options:
+    config:
       columnWidth: 280
       hideEmptyColumns: false
 ```
@@ -528,7 +528,6 @@ views:
       calendarView: "timeGridWeek"
       customDayCount: 3
       firstDay: 1
-      slotDuration: "00:30:00"
 ```
 
 ## Agenda
@@ -731,7 +730,7 @@ views:
       - column: tasknotes_manual_order
         direction: DESC
     groupBy:
-      property: status
+      property: task.status
       direction: ASC
   - type: tasknotesTaskList
     name: "Occurrences"
@@ -819,7 +818,7 @@ views:
       - column: tasknotes_manual_order
         direction: DESC
     groupBy:
-      property: status
+      property: task.status
       direction: ASC
 ```
 

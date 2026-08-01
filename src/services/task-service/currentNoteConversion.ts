@@ -7,7 +7,16 @@ import { stringifyUnknownArray } from "../../utils/stringUtils";
 type CurrentNoteConversionSettings = Pick<
 	TaskNotesSettings,
 	"defaultTaskStatus" | "defaultTaskPriority" | "taskCreationDefaults"
->;
+> &
+	Partial<Pick<TaskNotesSettings, "storeTitleInFilename">>;
+
+export interface CurrentNoteConversionFieldMapper {
+	mapFromFrontmatter(
+		frontmatter: Record<string, unknown>,
+		filePath: string,
+		storeTitleInFilename?: boolean
+	): Partial<TaskInfo>;
+}
 
 export interface CurrentNoteConversionAdapters {
 	calculateDefaultDateTime?: typeof calculateDefaultDateTime;
@@ -19,6 +28,7 @@ export interface CurrentNoteConversionInput {
 	content: string;
 	frontmatter?: Record<string, unknown>;
 	settings: CurrentNoteConversionSettings;
+	fieldMapper?: CurrentNoteConversionFieldMapper;
 	now?: string;
 	adapters?: CurrentNoteConversionAdapters;
 }
@@ -29,10 +39,18 @@ export function buildCurrentNoteConversionTaskInfo({
 	content,
 	frontmatter = {},
 	settings,
+	fieldMapper,
 	now = getCurrentTimestamp(),
 	adapters = {},
 }: CurrentNoteConversionInput): TaskInfo {
-	const frontmatterScheduled = frontmatterString(frontmatter.scheduled);
+	const mappedFrontmatter = fieldMapper?.mapFromFrontmatter(
+		frontmatter,
+		path,
+		settings.storeTitleInFilename
+	);
+	const frontmatterScheduled = mappedFrontmatter
+		? frontmatterString(mappedFrontmatter.scheduled)
+		: frontmatterString(frontmatter.scheduled);
 	const scheduled =
 		frontmatterScheduled ??
 		resolveCurrentNoteDefaultScheduled(
@@ -42,18 +60,43 @@ export function buildCurrentNoteConversionTaskInfo({
 
 	return {
 		path,
-		title: frontmatterString(frontmatter.title) || basename,
-		status: frontmatterString(frontmatter.status) ?? settings.defaultTaskStatus,
-		priority: frontmatterString(frontmatter.priority) ?? settings.defaultTaskPriority,
+		title:
+			(mappedFrontmatter
+				? frontmatterString(mappedFrontmatter.title)
+				: frontmatterString(frontmatter.title)) || basename,
+		status:
+			(mappedFrontmatter
+				? frontmatterString(mappedFrontmatter.status)
+				: frontmatterString(frontmatter.status)) ?? settings.defaultTaskStatus,
+		priority:
+			(mappedFrontmatter
+				? frontmatterString(mappedFrontmatter.priority)
+				: frontmatterString(frontmatter.priority)) ?? settings.defaultTaskPriority,
 		archived: false,
-		due: frontmatterString(frontmatter.due),
+		due: mappedFrontmatter
+			? frontmatterString(mappedFrontmatter.due)
+			: frontmatterString(frontmatter.due),
 		scheduled,
-		contexts: frontmatterStringArray(frontmatter.contexts),
-		projects: frontmatterStringArray(frontmatter.projects),
-		tags: frontmatterStringArray(frontmatter.tags) ?? [],
-		timeEstimate: frontmatterNumber(frontmatter.timeEstimate),
-		recurrence: frontmatterString(frontmatter.recurrence),
-		dateCreated: frontmatterString(frontmatter.dateCreated) || now,
+		contexts: mappedFrontmatter
+			? frontmatterStringArray(mappedFrontmatter.contexts)
+			: frontmatterStringArray(frontmatter.contexts),
+		projects: mappedFrontmatter
+			? frontmatterStringArray(mappedFrontmatter.projects)
+			: frontmatterStringArray(frontmatter.projects),
+		tags:
+			(mappedFrontmatter
+				? frontmatterStringArray(mappedFrontmatter.tags)
+				: frontmatterStringArray(frontmatter.tags)) ?? [],
+		timeEstimate: mappedFrontmatter
+			? frontmatterNumber(mappedFrontmatter.timeEstimate)
+			: frontmatterNumber(frontmatter.timeEstimate),
+		recurrence: mappedFrontmatter
+			? frontmatterString(mappedFrontmatter.recurrence)
+			: frontmatterString(frontmatter.recurrence),
+		dateCreated:
+			(mappedFrontmatter
+				? frontmatterString(mappedFrontmatter.dateCreated)
+				: frontmatterString(frontmatter.dateCreated)) || now,
 		dateModified: now,
 		details: extractMarkdownBodyAfterFrontmatter(content),
 	};

@@ -1397,6 +1397,7 @@ export class KanbanView extends BasesViewBase {
 		allGroups: Map<string, TaskInfo[]>
 	): Promise<void> {
 		if (!this.boardEl) return;
+		this.boardEl.classList.remove("kanban-view__board--swimlanes");
 		this.sortScopeTaskPaths.clear();
 		this.setSortScopeCandidatePaths(
 			Array.from(allGroups.entries()).map(([groupKey, tasks]) => [
