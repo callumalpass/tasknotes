@@ -298,6 +298,52 @@ describe("Issue #2081: reading mode note widgets stay mounted", () => {
 		}
 	});
 
+	it("removes a stale task card when confirmed metadata has no frontmatter", async () => {
+		const leaf = createMarkdownLeaf();
+		const pluginMock = createPluginMock(leaf);
+		const cleanup = setupTaskCardReadingModeHandlers(pluginMock.plugin);
+
+		try {
+			await flushMicrotasks();
+			expect(
+				leaf.containerEl.querySelector(".tasknotes-task-card-note-widget")
+			).not.toBeNull();
+			pluginMock.setTask(null);
+			pluginMock.setMetadata({});
+
+			pluginMock.metadataEvents.trigger("changed", leaf.file);
+			await flushMicrotasks();
+
+			expect(leaf.containerEl.querySelector(".tasknotes-task-card-note-widget")).toBeNull();
+		} finally {
+			cleanup();
+		}
+	});
+
+	it("removes stale relationships when confirmed metadata has no frontmatter", async () => {
+		jest.useFakeTimers();
+		const leaf = createMarkdownLeaf();
+		const pluginMock = createPluginMock(leaf);
+		const cleanup = setupRelationshipsReadingModeHandlers(pluginMock.plugin);
+
+		try {
+			jest.runOnlyPendingTimers();
+			await flushMicrotasks();
+			expect(
+				leaf.containerEl.querySelector(".tasknotes-relationships-widget")
+			).not.toBeNull();
+			pluginMock.setTask(null);
+			pluginMock.setMetadata({});
+
+			pluginMock.metadataEvents.trigger("changed", leaf.file);
+			await flushMicrotasks();
+
+			expect(leaf.containerEl.querySelector(".tasknotes-relationships-widget")).toBeNull();
+		} finally {
+			cleanup();
+		}
+	});
+
 	it("re-injects a relationships widget removed by Obsidian reading-mode DOM updates", async () => {
 		jest.useFakeTimers();
 		const leaf = createMarkdownLeaf();

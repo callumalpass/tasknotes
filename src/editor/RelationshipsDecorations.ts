@@ -718,7 +718,7 @@ async function injectReadingModeWidget(
 			const hasWidgetForDifferentFile = existingWidgets.some(
 				(widget) => widget.dataset.notePath !== file.path
 			);
-			const isConfirmedNonRelationshipsNote = Boolean(metadata?.frontmatter);
+			const isConfirmedNonRelationshipsNote = metadata !== null;
 
 			if (hasWidgetForDifferentFile || isConfirmedNonRelationshipsNote) {
 				existingWidgets.forEach((el) => {
@@ -836,11 +836,11 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 			observeMarkdownLeaf(leaf);
 		});
 	};
-	const leafMatchesFile = (leaf: WorkspaceLeaf, file: TFile | null) => {
+	const leafMatchesFile = (leaf: WorkspaceLeaf, file: { path: string } | null) => {
 		const view = leaf.view;
 		return view instanceof MarkdownView && (!file || view.file?.path === file.path);
 	};
-	const refreshLeavesForFile = (file: TFile | null) => {
+	const refreshLeavesForFile = (file: { path: string } | null) => {
 		const leaves = plugin.app.workspace.getLeavesOfType("markdown");
 		leaves.forEach((leaf) => {
 			if (leafMatchesFile(leaf, file)) {
