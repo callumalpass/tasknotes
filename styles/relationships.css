@@ -21,6 +21,22 @@
     overflow: visible;
 }
 
+.markdown-source-view .cm-sizer > .tasknotes-relationships-widget {
+    /*
+     * CodeMirror editor selection autoscroll can stop when drag selection reaches
+     * the non-editable widget after the editable document content.
+     */
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.markdown-source-view .cm-sizer > .tasknotes-relationships-widget input,
+.markdown-source-view .cm-sizer > .tasknotes-relationships-widget textarea,
+.markdown-source-view .cm-sizer > .tasknotes-relationships-widget [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
 .is-readable-line-width .tasknotes-relationships-widget {
     width: min(100%, var(--file-line-width, 100%));
     max-width: var(--file-line-width, 100%);

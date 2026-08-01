@@ -164,6 +164,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2114) Completing a rescheduled occurrence for a scheduled-anchored recurring
   task now advances the parent from the moved occurrence date instead of an
   earlier original occurrence date. Thanks to @chrabia for reporting this.
+- (#2113) Failed Google Calendar manual refreshes no longer make the next
+  immediate refresh show a misleading success notice. Thanks to @JohWQ for
+  reporting this.
 - (#2109) TaskNotes no longer injects instant-conversion controls into embedded
   or detached Markdown editors, preventing checkbox notes opened from unrelated
   Bases from freezing Obsidian on mobile. Thanks to @jmartinmcfly for the clear
@@ -178,6 +181,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2100) Tags added while creating a task now keep the same frontmatter order as
   tags added later from the task context menu. Thanks to @mgrecar for reporting
   this.
+- (#2092) New non-recurring tasks created directly in a completed status now get
+  a completed date, so completed-date views can find them immediately. Thanks
+  to @Crell for reporting this.
 - (#2096) Fixed TaskNotes Kanban swimlanes falling back to **None** when the
   swimlane used a Bases formula that was not already cached by Bases. Thanks to
   @ddevaal for reporting this.
@@ -185,6 +191,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   core plugin is enabled after TaskNotes, preventing default views from showing
   **Unknown view type** until TaskNotes is reloaded. Thanks to @yaye-work for
   reporting this.
+- (#2084) The Relationships widget no longer prevents editor text selection from
+  autoscrolling when dragging below the bottom edge of a task note. Thanks to
+  @lostwildland for reporting this.
 - (#2081, #2103) Kept task card and relationships widgets visible in reading mode
   when Obsidian scroll or preview updates remove their DOM, and refreshed visible
   widgets promptly after metadata changes. Thanks to @mukhozhuk for reporting and

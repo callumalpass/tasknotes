@@ -661,8 +661,8 @@ export class GoogleCalendarService extends CalendarProvider {
 			return;
 		}
 
-		this.lastManualRefresh = now;
 		await this.refreshAllCalendars({ propagateErrors: true });
+		this.lastManualRefresh = Date.now();
 	}
 
 	/**

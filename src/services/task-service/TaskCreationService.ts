@@ -16,7 +16,7 @@ import {
 	generateOccurrenceFilename,
 } from "../../utils/filenameGenerator";
 import { ensureFolderExists } from "../../utils/helpers";
-import { getCurrentTimestamp } from "../../utils/dateUtils";
+import { getCurrentDateString, getCurrentTimestamp } from "../../utils/dateUtils";
 import { stringifyUnknown } from "../../utils/stringUtils";
 import { mergeTemplateFrontmatter } from "../../utils/templateProcessor";
 import {
@@ -66,6 +66,10 @@ interface TaskCreationCalendarSyncService {
 	syncTaskToCalendar(task: TaskInfo): Promise<unknown>;
 }
 
+interface TaskCreationStatusManager {
+	isCompletedStatus(status: string): boolean;
+}
+
 type TaskCreationSettings = Pick<
 	TaskNotesSettings,
 	| "storeTitleInFilename"
@@ -88,6 +92,7 @@ export interface TaskCreationRuntime {
 	};
 	settings: TaskCreationSettings;
 	fieldMapper: TaskCreationFieldMapper;
+	statusManager?: TaskCreationStatusManager;
 	cacheManager: TaskCreationCacheManager;
 	emitter: TaskCreationEmitter;
 	taskCalendarSyncService?: TaskCreationCalendarSyncService;
@@ -140,6 +145,13 @@ export class TaskCreationService {
 			const status = taskData.status || runtime.settings.defaultTaskStatus;
 			const dateCreated = taskData.dateCreated || getCurrentTimestamp();
 			const dateModified = taskData.dateModified || getCurrentTimestamp();
+			const recurrence = taskData.recurrence || undefined;
+			const completedDate = !recurrence
+				? taskData.completedDate ||
+					(runtime.statusManager?.isCompletedStatus(status)
+						? getCurrentDateString()
+						: undefined)
+				: undefined;
 
 			const contextsArray = taskData.contexts || [];
 			const projectsArray = taskData.projects || [];
@@ -208,7 +220,8 @@ export class TaskCreationService {
 						: undefined,
 				dateCreated,
 				dateModified,
-				recurrence: taskData.recurrence || undefined,
+				recurrence,
+				completedDate,
 				recurrence_anchor: taskData.recurrence_anchor || undefined,
 				recurrence_parent: taskData.recurrence_parent || undefined,
 				occurrence_date: taskData.occurrence_date || undefined,
