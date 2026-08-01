@@ -151,6 +151,9 @@ export function applyCanonicalTaskTypeToSettings(
 	settings.maintainDueDateOffsetInRecurring = modelConfig.recurrence.maintainDueDateOffset;
 	settings.resetCheckboxesOnRecurrence = modelConfig.recurrence.resetCheckboxesOnRecurrence;
 	settings.autoStopTimeTrackingOnComplete = modelConfig.timeTracking.autoStopOnComplete;
+	settings.nlpTriggers = {
+		triggers: (modelConfig.nlp?.triggers ?? []).map((trigger) => ({ ...trigger })),
+	};
 
 	if (collectionPath && typeof collectionPath.folder === "string") {
 		settings.tasksFolder = collectionPath.folder;
@@ -215,6 +218,9 @@ export function buildTaskNotesModelConfig(settings: TaskNotesSettings) {
 			autoStopNotification: false,
 			defaultSessionDescription: "Work session",
 		},
+		nlp: {
+			triggers: (settings.nlpTriggers?.triggers ?? []).map((trigger) => ({ ...trigger })),
+		},
 	};
 }
 
@@ -244,6 +250,7 @@ export function portableSettingsFingerprint(settings: TaskNotesSettings): string
 		autoStopTimeTrackingOnComplete: settings.autoStopTimeTrackingOnComplete,
 		maintainDueDateOffsetInRecurring: settings.maintainDueDateOffsetInRecurring,
 		resetCheckboxesOnRecurrence: settings.resetCheckboxesOnRecurrence,
+		nlpTriggers: settings.nlpTriggers?.triggers ?? [],
 		useFrontmatterMarkdownLinks: settings.useFrontmatterMarkdownLinks,
 		templating: {
 			useBodyTemplate: creationDefaults.useBodyTemplate,

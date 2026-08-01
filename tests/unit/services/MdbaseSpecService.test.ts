@@ -739,6 +739,11 @@ describe("MdbaseSpecService", () => {
 
 	describe("buildTaskTypeDef - portable capture settings", () => {
 		it("exports configured NLP triggers by stable property id", () => {
+			const triggers = [
+				{ property_id: "tags", trigger: "##", enabled: true },
+				{ property_id: "priority", trigger: "!", enabled: false },
+				{ property_id: "energy", trigger: "~", enabled: true },
+			];
 			const service = new MdbaseSpecService(
 				createMockPlugin({
 					nlpTriggers: {
@@ -750,22 +755,24 @@ describe("MdbaseSpecService", () => {
 					},
 				})
 			);
-			const frontmatter = YAML.parse(extractFrontmatter(service.buildTaskTypeDef()));
+			const legacyFrontmatter = YAML.parse(
+				extractFrontmatter(service.buildTaskTypeDef("0.2.0"))
+			);
+			const canonicalFrontmatter = parseFrontmatter(service.buildTaskTypeDef());
 
-			expect(frontmatter["x-tasknotes"].nlp).toEqual({
-				triggers: [
-					{ property_id: "tags", trigger: "##", enabled: true },
-					{ property_id: "priority", trigger: "!", enabled: false },
-					{ property_id: "energy", trigger: "~", enabled: true },
-				],
-			});
+			expect(legacyFrontmatter["x-tasknotes"].nlp).toEqual({ triggers });
+			expect(tasknotesBinding(canonicalFrontmatter).nlp).toEqual({ triggers });
 		});
 
 		it("exports an empty trigger list when capture triggers are unavailable", () => {
 			const service = new MdbaseSpecService(createMockPlugin({ nlpTriggers: undefined }));
-			const frontmatter = YAML.parse(extractFrontmatter(service.buildTaskTypeDef()));
+			const legacyFrontmatter = YAML.parse(
+				extractFrontmatter(service.buildTaskTypeDef("0.2.0"))
+			);
+			const canonicalFrontmatter = parseFrontmatter(service.buildTaskTypeDef());
 
-			expect(frontmatter["x-tasknotes"].nlp.triggers).toEqual([]);
+			expect(legacyFrontmatter["x-tasknotes"].nlp.triggers).toEqual([]);
+			expect(tasknotesBinding(canonicalFrontmatter).nlp).toEqual({ triggers: [] });
 		});
 	});
 
