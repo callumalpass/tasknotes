@@ -35,10 +35,7 @@ import {
 	getCurrentTimestamp,
 	getDatePart,
 } from "../utils/dateUtils";
-import {
-	updateDTSTARTInRecurrenceRule,
-	updateToNextScheduledOccurrence,
-} from "../core/recurrence";
+import { updateToNextScheduledOccurrence } from "../core/recurrence";
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
@@ -1058,17 +1055,13 @@ export class TaskService {
 			return plan;
 		}
 
-		let recurrence =
+		const recurrence =
 			typeof plan.updatedParentTask.recurrence === "string"
 				? plan.updatedParentTask.recurrence
 				: parentTask.recurrence;
 		const recurrenceAnchor = plan.updatedParentTask.recurrence_anchor || "scheduled";
 		if (recurrenceAnchor === "completion") {
-			recurrence =
-				updateDTSTARTInRecurrenceRule(
-					recurrence,
-					occurrenceTask.scheduled || progressionDate
-				) || recurrence;
+			return plan;
 		}
 
 		const nextDates = updateToNextScheduledOccurrence(

@@ -100,6 +100,8 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 				settings: {
 					taskTag: 'task',
 					taskIdentificationMethod: 'tag', // Tag mode
+					hideIdentifyingTagsInCards: true,
+					hideIdentifyingTagsMode: 'all',
 					enableNaturalLanguageInput: false,
 					defaultTaskPriority: 'normal',
 					defaultTaskStatus: 'open',

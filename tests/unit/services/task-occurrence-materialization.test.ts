@@ -582,42 +582,9 @@ describe("TaskService materialized occurrences", () => {
 		});
 	});
 
-	it("advances completion-anchored parents from a rescheduled occurrence date", async () => {
-		const parent = TaskFactory.createTask({
-			title: "Weekly task",
-			path: "Tasks/Weekly task.md",
-			recurrence: "DTSTART:20260101;FREQ=WEEKLY",
-			recurrence_anchor: "completion",
-			scheduled: "2026-01-01",
-			complete_instances: [],
-		});
-		const occurrence = TaskFactory.createTask({
-			title: "Weekly task",
-			path: "Tasks/Weekly task 2026-01-01.md",
-			status: "open",
-			recurrence_parent: "[[Tasks/Weekly task]]",
-			occurrence_date: "2026-01-01",
-			scheduled: "2026-01-05",
-		});
-		const { taskService, frontmatterByPath } = createService({
-			[parent.path]: parent,
-			[occurrence.path]: occurrence,
-		});
-
-		await taskService.updateProperty(occurrence, "status", "done");
-
-		expect(frontmatterByPath.get(occurrence.path)).toMatchObject({
-			status: "done",
-			completedDate: "2026-01-01",
-		});
-		expect(frontmatterByPath.get(parent.path)).toMatchObject({
-			complete_instances: ["2026-01-01"],
-			recurrence: "DTSTART:20260105;FREQ=WEEKLY",
-			scheduled: "2026-01-12",
-		});
-	});
-
 	it("does not advance scheduled-anchored parents before a rescheduled occurrence", async () => {
+		const dateUtils = jest.requireMock("../../../src/utils/dateUtils");
+		dateUtils.getCurrentDateString.mockReturnValue("2026-01-01");
 		const parent = TaskFactory.createTask({
 			title: "Weekly task",
 			path: "Tasks/Weekly task.md",

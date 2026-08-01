@@ -134,9 +134,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2124) Fixed a Kanban crash when opening or closing the edit modal immediately
   after moving a task between list-valued swimlanes such as contexts. Thanks to
   @Decia-C for reporting this.
-- (#2114) Completing a rescheduled materialized occurrence now advances the
-  recurring parent from the moved occurrence date instead of an earlier original
-  occurrence date. Thanks to @chrabia for reporting this.
+- (#2114) Completing a rescheduled occurrence for a scheduled-anchored recurring
+  task now advances the parent from the moved occurrence date instead of an
+  earlier original occurrence date. Thanks to @chrabia for reporting this.
 - (#2107, #2108) Creating tasks with **Store title in filename** enabled now
   handles duplicate or case-variant titles without failing or replacing the task
   title with a suffixed filename. Thanks to @AdmiralClackington for reporting and
