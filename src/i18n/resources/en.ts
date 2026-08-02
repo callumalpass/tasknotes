@@ -2413,6 +2413,7 @@ export const en: TranslationTree = {
 		quickActionsTaskUnderCursor: "Quick actions for task under cursor",
 		editCurrentTask: "Edit current task",
 		cycleCurrentTaskStatus: "Cycle current task status",
+		repeatCurrentTask: "Repeat current task",
 		cycleCurrentTaskPriority: "Cycle current task priority",
 		addProjectToCurrentTask: "Add project to current task",
 		addSubtaskToCurrentNote: "Add subtask to current note",

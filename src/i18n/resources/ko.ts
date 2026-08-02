@@ -2256,6 +2256,7 @@ export const ko: TranslationTree = {
 		quickActionsTaskUnderCursor: "커서 아래 작업의 빠른 작업",
 		editCurrentTask: "현재 작업 편집",
 		cycleCurrentTaskStatus: "현재 작업 상태 순환",
+		repeatCurrentTask: "현재 작업 반복",
 		cycleCurrentTaskPriority: "현재 작업 우선순위 순환",
 		addProjectToCurrentTask: "현재 작업에 프로젝트 추가",
 		addSubtaskToCurrentNote: "현재 노트에 하위 작업 추가"

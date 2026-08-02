@@ -178,6 +178,25 @@ These settings let you align task files with existing vault conventions (for exa
 For configuration details, see [Task Defaults](../settings/task-defaults.md).  
 For template variables, see [Template Variables Reference](template-variables.md).
 
+## Repeating a Completed Task
+
+Some tasks come back without following a schedule you can express as a rule: replacing a filter, reviewing a document, or watering a plant when it needs it. For these, **TaskNotes: Repeat current task** reuses the same note for the next round instead of creating a new one.
+
+Run the command from the command palette with the completed task's note open. TaskNotes will:
+
+1. Append the task's completion date to its `complete_instances` list, building up a record of every time you have finished it.
+2. Return the task to your default status, clearing `completedDate`.
+3. Unarchive the task if it had been archived, moving the file back out of the archive folder when **Move archived tasks to folder** is enabled.
+4. Open the task edit modal so you can set the new scheduled and due dates.
+
+The old scheduled and due dates are left as they were until you change them in the modal, so closing the modal without saving leaves the task open with its previous dates.
+
+The command applies to completed tasks that are not recurring. Recurring tasks and materialized occurrence notes already record each occurrence in `complete_instances` when you complete them, so the command declines to act on them. A task completed without a `completedDate` value is still reopened, but there is no date to add to the history.
+
+If **Reset checkboxes on recurrence** is enabled in **Settings → Features → Recurring tasks**, the checkboxes in the task body are also unchecked, the same as when a recurring task completes.
+
+Note that the `complete_instances` history recorded this way is stored in frontmatter for your own reference and for Bases views; the completions calendar in the task edit modal is only shown for tasks with a recurrence rule.
+
 ## Recurring Tasks
 
 TaskNotes recurring tasks use RFC 5545 RRule syntax with `DTSTART`, separate pattern definition from next occurrence scheduling, and support independent instance completion. When an individual recurrence needs its own checklist, time entries, or notes, you can create a materialized occurrence note from the task or calendar context menu.
