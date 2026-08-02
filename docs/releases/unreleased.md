@@ -106,6 +106,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2182) Checklist progress on task cards now excludes cancelled markdown
+  checklist items such as `[-]` from the completed/total count. Thanks to
+  @ctrl-q for reporting this.
 - (#2180) Inline task cards in Live Preview now keep their click and context menu
   handlers active on Obsidian 1.13, so clicking a rendered task link opens the
   edit modal instead of revealing the raw wikilink. Thanks to @npondel for the
