@@ -161,6 +161,13 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "repeat-current-task",
+			nameKey: "commands.repeatCurrentTask",
+			callback: async (ctx) => {
+				await ctx.repeatCurrentTask();
+			},
+		},
+		{
 			id: "cycle-current-task-priority",
 			nameKey: "commands.cycleCurrentTaskPriority",
 			callback: async (ctx) => {

@@ -2272,6 +2272,7 @@ export const fr: TranslationTree = {
 		quickActionsTaskUnderCursor: "Actions rapides pour la tâche sous le curseur",
 		editCurrentTask: "Modifier la tâche actuelle",
 		cycleCurrentTaskStatus: "Faire défiler le statut de la tâche actuelle",
+		repeatCurrentTask: "Répéter la tâche en cours",
 		cycleCurrentTaskPriority: "Faire défiler la priorité de la tâche actuelle",
 		addProjectToCurrentTask: "Ajouter un projet à la tâche actuelle",
 		addSubtaskToCurrentNote: "Ajouter une sous-tâche à la note actuelle"

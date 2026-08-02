@@ -2272,6 +2272,7 @@ export const zh: TranslationTree = {
 		quickActionsTaskUnderCursor: "光标下任务的快速操作",
 		editCurrentTask: "编辑当前任务",
 		cycleCurrentTaskStatus: "循环当前任务状态",
+		repeatCurrentTask: "重复当前任务",
 		cycleCurrentTaskPriority: "循环当前任务优先级",
 		addProjectToCurrentTask: "向当前任务添加项目",
 		addSubtaskToCurrentNote: "向当前笔记添加子任务"

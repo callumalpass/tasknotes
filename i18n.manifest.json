@@ -1386,6 +1386,7 @@
   "commands.quickActionsTaskUnderCursor": "3cd5d4f1806626306cd61e494c92503f16a73cb7",
   "commands.editCurrentTask": "21af1c6600d8208725cd6b57c07f10c7c66421ad",
   "commands.cycleCurrentTaskStatus": "61c5c35adec710369dbcd6da430c381a70156e5d",
+  "commands.repeatCurrentTask": "b1a568d46de22dc7529d7234dea3d56b17043ad4",
   "commands.cycleCurrentTaskPriority": "943d8224c722f6f234c78dbe137391b70e468627",
   "commands.addProjectToCurrentTask": "398692671e3609ec5b8b0fec36d7490e231a1ede",
   "commands.addSubtaskToCurrentNote": "6a632e4256dc14f31c838090636eea96590fea1a",

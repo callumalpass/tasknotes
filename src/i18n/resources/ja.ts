@@ -2272,6 +2272,7 @@ export const ja: TranslationTree = {
 		quickActionsTaskUnderCursor: "カーソル下のタスクのクイックアクション",
 		editCurrentTask: "現在のタスクを編集",
 		cycleCurrentTaskStatus: "現在のタスクのステータスを切り替え",
+		repeatCurrentTask: "現在のタスクを繰り返す",
 		cycleCurrentTaskPriority: "現在のタスクの優先度を切り替え",
 		addProjectToCurrentTask: "現在のタスクにプロジェクトを追加",
 		addSubtaskToCurrentNote: "現在のノートにサブタスクを追加"

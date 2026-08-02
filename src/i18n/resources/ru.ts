@@ -2272,6 +2272,7 @@ export const ru: TranslationTree = {
 		quickActionsTaskUnderCursor: "Быстрые действия для задачи под курсором",
 		editCurrentTask: "Редактировать текущую задачу",
 		cycleCurrentTaskStatus: "Переключить статус текущей задачи",
+		repeatCurrentTask: "Повторить текущую задачу",
 		cycleCurrentTaskPriority: "Переключить приоритет текущей задачи",
 		addProjectToCurrentTask: "Добавить проект к текущей задаче",
 		addSubtaskToCurrentNote: "Добавить подзадачу к текущей заметке"
