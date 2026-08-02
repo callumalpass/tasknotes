@@ -35,13 +35,14 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Security
 
 - Calendar OAuth credentials and account tokens are now stored in Obsidian Secret Storage instead of TaskNotes' `data.json`, with automatic migration for existing connections. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/).
-  - Thanks to @mcuste for the contribution
+    - Thanks to @mcuste for the contribution
 
 ## Added
 
 - Added portable task attachment references. Attachments now round-trip as an
   ordered `attachments` link list in task frontmatter and are exposed through
-  the TaskNotes model and runtime API.
+  the TaskNotes model and runtime API. These are collection-file references
+  only; attachment bytes and binary metadata remain owned by the host.
 - (#2142) MCP `tasknotes_create_task` and `tasknotes_update_task` now accept
   `customProperties` for configured TaskNotes user fields. Thanks to
   @phillipadsmith for suggesting this.
