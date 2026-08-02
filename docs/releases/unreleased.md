@@ -39,6 +39,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- Added portable task attachment references. Attachments now round-trip as an
+  ordered `attachments` link list in task frontmatter and are exposed through
+  the TaskNotes model and runtime API.
 - (#2142) MCP `tasknotes_create_task` and `tasknotes_update_task` now accept
   `customProperties` for configured TaskNotes user fields. Thanks to
   @phillipadsmith for suggesting this.
