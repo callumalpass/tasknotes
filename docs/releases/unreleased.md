@@ -35,3 +35,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Fixed `PUT /api/tasks/:id` ignoring empty arrays for `contexts` and `blockedBy`: sending `{"contexts": []}` or `{"blockedBy": []}` now clears the corresponding frontmatter field instead of silently leaving the previous value in place. The deletion pass previously fired only on a literal `undefined`, which JSON cannot express, so HTTP clients had no way to clear these fields. Thanks to @tgrosinger for the contribution.
+- (#2191) Completing or skipping a recurring occurrence that was moved earlier
+  than its original date no longer schedules that original date again. Thanks to
+  @martin-forge for the contribution.
