@@ -8,7 +8,12 @@ import { GoogleCalendarError, RateLimitError, EventNotFoundError } from '../../s
 jest.mock('obsidian', () => ({
 	Notice: jest.fn(),
 	requestUrl: jest.fn(),
-	Platform: { isDesktopApp: true }
+	Platform: { isDesktopApp: true },
+	sanitizeHTMLToDom: (html: string) => {
+		const template = document.createElement('template');
+		template.innerHTML = html;
+		return template.content;
+	}
 }));
 
 describe('GoogleCalendarService', () => {
@@ -155,6 +160,39 @@ describe('GoogleCalendarService', () => {
 			});
 			expect(events[0].allDay).toBe(false);
 			expect(events[1].allDay).toBe(true);
+		});
+
+		test('should normalize HTML descriptions without changing angle-bracketed text', async () => {
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					items: [
+						{
+							id: 'html-description',
+							summary: 'HTML description',
+							description: '<p>Agenda</p><ul><li>First item</li></ul>',
+							start: { date: '2025-10-22' },
+							end: { date: '2025-10-23' }
+						},
+						{
+							id: 'plain-description',
+							summary: 'Plain description',
+							description: 'Contact <user@example.com>; venue <TBC>',
+							start: { date: '2025-10-23' },
+							end: { date: '2025-10-24' }
+						}
+					],
+					nextSyncToken: 'sync-token-123'
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			const events = await service.getEvents('primary');
+
+			expect(events[0].description).toBe('Agenda\n\n- First item');
+			expect(events[1].description).toBe('Contact <user@example.com>; venue <TBC>');
 		});
 
 		test('should use sync token for incremental updates', async () => {

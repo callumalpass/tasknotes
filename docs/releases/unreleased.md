@@ -204,3 +204,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   IDs instead of failing local validation before contacting Microsoft Graph.
   Thanks to @fmacondray for reporting this and providing the follow-up stack
   trace.
+- Google Calendar event descriptions containing HTML now appear as readable
+  plain text in event details, copied text, and generated notes instead of
+  exposing raw tags. Paragraphs, lists, and link destinations are preserved.
+  Thanks to @martin-forge for reporting and fixing this.

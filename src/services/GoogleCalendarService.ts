@@ -16,6 +16,7 @@ import { validateCalendarId, validateEventId, validateRequired } from "./validat
 import { CalendarProvider, ProviderCalendar } from "./CalendarProvider";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
+import { normalizeCalendarDescription } from "../utils/calendarDescription";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/GoogleCalendarService" });
 
@@ -499,7 +500,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			id: `google-${calendarId}-${googleEvent.id}`,
 			subscriptionId: `google-${calendarId}`,
 			title: googleEvent.summary || "Untitled Event",
-			description: googleEvent.description,
+			description: normalizeCalendarDescription(googleEvent.description),
 			start: start,
 			end: end,
 			allDay: allDay,
