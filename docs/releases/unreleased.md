@@ -76,6 +76,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- ([#2191](https://github.com/callumalpass/tasknotes/pull/2191)) Google Calendar
+  recurring occurrences moved before their original series date now advance past
+  the replaced date when completed or skipped. Thanks to @martin-forge for fixing
+  this.
 - (#2182) Checklist progress on task cards now excludes cancelled markdown
   checklist items such as `[-]` from the completed/total count. Thanks to
   @ctrl-q for reporting this.
