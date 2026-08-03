@@ -915,7 +915,7 @@ export const ja: TranslationTree = {
 				},
 				taskPropertyValue: {
 					name: "タスクプロパティ値",
-					description: "ノートをタスクとして識別する値（例：\"task\"）"
+					description: "ノートをタスクとして識別する値（例：\"task\"）。空欄にすると任意の値に一致し、プロパティが存在すればノートはタスクになります。"
 				}
 			},
 			folderManagement: {

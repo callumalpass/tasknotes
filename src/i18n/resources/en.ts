@@ -960,7 +960,8 @@ export const en: TranslationTree = {
 				},
 				taskPropertyValue: {
 					name: "Task property value",
-					description: 'The value that identifies a note as a task (e.g., "task")',
+					description:
+						'The value that identifies a note as a task (e.g., "task"). Leave empty to match any value, so a note is a task whenever the property is present.',
 				},
 			},
 			folderManagement: {

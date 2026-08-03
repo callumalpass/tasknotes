@@ -915,7 +915,7 @@ export const zh: TranslationTree = {
 				},
 				taskPropertyValue: {
 					name: "任务属性值",
-					description: "识别笔记为任务的值（例如，\"task\"）"
+					description: "识别笔记为任务的值（例如，\"task\"）。留空可匹配任意值，只要存在该属性，笔记即视为任务。"
 				}
 			},
 			folderManagement: {

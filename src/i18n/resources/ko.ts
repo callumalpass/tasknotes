@@ -915,7 +915,7 @@ export const ko: TranslationTree = {
 				},
 				taskPropertyValue: {
 					name: "작업 속성 값",
-					description: "노트를 작업으로 식별하는 값 (예: \"task\")"
+					description: "노트를 작업으로 식별하는 값 (예: \"task\"). 비워 두면 모든 값과 일치하여 속성이 존재하기만 하면 노트가 작업이 됩니다."
 				}
 			},
 			folderManagement: {

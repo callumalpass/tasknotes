@@ -915,7 +915,7 @@ export const es: TranslationTree = {
 				},
 				taskPropertyValue: {
 					name: "Valor de propiedad de tarea",
-					description: "El valor que identifica una nota como tarea (ej. \"tarea\")"
+					description: "El valor que identifica una nota como tarea (ej. \"tarea\"). Déjelo vacío para que coincida con cualquier valor, de modo que una nota sea una tarea siempre que la propiedad esté presente."
 				}
 			},
 			folderManagement: {
