@@ -25,7 +25,7 @@
 		"test:ci": "jest --ci --coverage --watchAll=false",
 		"test:integration": "jest --config jest.integration.config.js",
 		"test:unit": "jest --testPathPatterns=unit",
-		"test:testbed": "npm run build:testbed-adapter && node ../mdbase-spec/packages/testbed/src/cli.mjs run --adapter .testbed/testbed-adapter.cjs --scenario interop.application-event-multicast",
+		"test:testbed": "npm run build:testbed-adapter && mdbase-testbed run --adapter .testbed/testbed-adapter.cjs --scenario interop.application-event-multicast",
 		"test:performance": "jest --testPathPatterns=performance --detectOpenHandles --passWithNoTests",
 		"test:build": "node -e \"console.log('Build test passed - plugin bundle created successfully')\"",
 		"conformance:test": "node scripts/run-tasknotes-spec-conformance.mjs",
@@ -53,6 +53,7 @@
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
+		"@callumalpass/mdbase-testbed": "0.1.0-rc.1",
 		"@codemirror/autocomplete": "^6.19.1",
 		"@codemirror/state": "^6.5.0",
 		"@electron/asar": "^3.4.1",
