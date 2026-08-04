@@ -112,6 +112,8 @@ export interface TaskNotesSettings {
 	taskFilenameFormat: "title" | "zettel" | "timestamp" | "uuid" | "custom";
 	storeTitleInFilename: boolean;
 	customFilenameTemplate: string; // Template for custom format
+	occurrenceFilenameTemplate: string; // Template for materialized occurrence filenames ("" = legacy dedup suffix)
+	occurrenceFilenameTemplateProperty: string; // Frontmatter property on the parent that overrides the template
 	// Task creation defaults
 	taskCreationDefaults: TaskCreationDefaults;
 	openTaskAfterCreation: "none" | "same-tab" | "new-tab";
@@ -249,10 +251,7 @@ export interface TaskNotesSettings {
 	// Frontmatter link format settings
 	useFrontmatterMarkdownLinks: boolean; // Use markdown links in frontmatter (requires obsidian-frontmatter-markdown-links plugin)
 	// OAuth Calendar Integration settings
-	googleOAuthClientId: string;
-	googleOAuthClientSecret: string;
-	microsoftOAuthClientId: string;
-	microsoftOAuthClientSecret: string;
+	// OAuth client credentials and account tokens are stored in Obsidian SecretStorage.
 	enableGoogleCalendar: boolean;
 	enableMicrosoftCalendar: boolean;
 	disableCalendarOnMobile: boolean;

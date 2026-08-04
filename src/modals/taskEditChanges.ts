@@ -110,14 +110,14 @@ export function buildTaskEditChanges(input: TaskEditChangeInput): TaskEditChange
 		.split(",")
 		.map((context) => context.trim())
 		.filter((context) => context.length > 0);
-	const oldContexts = input.task.contexts || [];
+	const oldContexts = toTaskStringList(input.task.contexts);
 
 	if (JSON.stringify(newContexts.sort()) !== JSON.stringify(oldContexts.sort())) {
 		changes.contexts = newContexts.length > 0 ? newContexts : undefined;
 	}
 
 	const newProjects = splitListPreservingLinksAndQuotes(input.projects);
-	const oldProjects = input.task.projects || [];
+	const oldProjects = toTaskStringList(input.task.projects);
 	const normalizedNewProjects = normalizeProjectList(newProjects).sort();
 	const normalizedOldProjects = normalizeProjectList(oldProjects).sort();
 
@@ -132,17 +132,16 @@ export function buildTaskEditChanges(input: TaskEditChangeInput): TaskEditChange
 		.split(",")
 		.map((tag) => tag.trim())
 		.filter((tag) => tag.length > 0);
+	const oldTags = toTaskStringList(input.task.tags);
 
 	if (input.taskIdentificationMethod === "tag" && input.taskTag) {
 		newTags = appendMissingTaskIdentificationTags(
 			newTags,
-			input.task.tags || [],
+			oldTags,
 			input.taskTag,
 			input.hideIdentifyingTagsMode
 		);
 	}
-
-	const oldTags = input.task.tags || [];
 
 	if (!tagsUnchanged && JSON.stringify(newTags.sort()) !== JSON.stringify(oldTags.sort())) {
 		changes.tags = newTags.length > 0 ? newTags : undefined;
@@ -216,6 +215,16 @@ function normalizeProjectList(projects: string[]): string[] {
 			return parseLinkToPath(trimmed).trim();
 		})
 		.filter((project) => project.length > 0);
+}
+
+function toTaskStringList(value: unknown): string[] {
+	if (Array.isArray(value)) {
+		return value.filter((entry): entry is string => typeof entry === "string");
+	}
+	if (typeof value === "string") {
+		return value ? [value] : [];
+	}
+	return [];
 }
 
 function buildBlockingUpdates(input: TaskEditChangeInput): {

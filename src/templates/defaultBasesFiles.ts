@@ -61,16 +61,15 @@ function generateTaskFilterCondition(settings: TaskNotesSettings): string {
 			if (isTagsTaskIdentifierProperty(propertyName)) {
 				return `file.hasTag("${escapeBasesStringLiteral(propertyValue)}")`;
 			}
-			// Check property has specific value
-			// Boolean values must not be quoted — Obsidian stores checkbox/boolean
-			// frontmatter as actual booleans, so the Bases filter needs e.g.
-			// note["prop"] == true rather than note["prop"] == "true" (#1491)
+			// Check property has a specific value. list() handles scalar and list
+			// frontmatter values consistently, while preserving exact element
+			// comparisons. Boolean values must not be quoted (#1491).
 			const propertyRef = formatNotePropertyReference(propertyName);
 			const lower = propertyValue.toLowerCase();
 			if (lower === "true" || lower === "false") {
-				return `${propertyRef} == ${lower}`;
+				return `list(${propertyRef}).contains(${lower})`;
 			}
-			return `${propertyRef} == "${escapeBasesStringLiteral(propertyValue)}"`;
+			return `list(${propertyRef}).contains("${escapeBasesStringLiteral(propertyValue)}")`;
 		} else {
 			// Just check property exists (is not empty)
 			const propertyRef = formatNotePropertyReference(propertyName);
@@ -109,6 +108,10 @@ ${formattedConditions}`;
  */
 function getPropertyName(fullPath: string): string {
 	return fullPath.replace(/^(note\.|file\.|task\.|formula\.)/, '');
+}
+
+function formatTaskPropertyId(propertyName: string): string {
+	return `task.${propertyName}`;
 }
 
 function formatBasesDateDayExpression(dateExpression: string): string {
@@ -662,6 +665,7 @@ ${orderYaml}
 		}
 		case 'open-kanban-view': {
 			const statusProperty = getPropertyName(mapPropertyToBasesProperty('status', plugin));
+			const statusTaskProperty = formatTaskPropertyId(statusProperty);
 			const sortOrderProperty = mapPropertyToBasesProperty('sortOrder', plugin);
 			return `# Kanban Board
 
@@ -678,9 +682,9 @@ ${orderYaml}
       - column: ${sortOrderProperty}
         direction: DESC
     groupBy:
-      property: ${statusProperty}
+      property: ${statusTaskProperty}
       direction: ASC
-    options:
+    config:
       columnWidth: 280
       hideEmptyColumns: false
 `;
@@ -901,8 +905,7 @@ ${orderYaml}
       createDailyNotesFromDateLinks: true
       calendarView: "timeGridWeek"
       customDayCount: 3
-      firstDay: 0
-      slotDuration: "00:30:00"
+      firstDay: ${plugin.settings.calendarViewSettings.firstDay}
 `;
 
 		case 'open-agenda-view': {
@@ -951,6 +954,7 @@ ${agendaOrderYaml}
 				const occurrenceDateProperty = mapPropertyToBasesProperty('occurrenceDate', plugin);
 				const scheduledProperty = mapPropertyToBasesProperty('scheduled', plugin);
 				const statusProperty = getPropertyName(mapPropertyToBasesProperty('status', plugin));
+				const statusTaskProperty = formatTaskPropertyId(statusProperty);
 				const sortOrderProperty = mapPropertyToBasesProperty('sortOrder', plugin);
 				const occurrenceOrderYaml = formatOrderArray(
 					insertOrderPropertyAfterOrAppend(orderArray, occurrenceDateProperty, scheduledProperty)
@@ -988,7 +992,7 @@ ${orderYaml}
       - column: ${sortOrderProperty}
         direction: DESC
     groupBy:
-      property: ${statusProperty}
+      property: ${statusTaskProperty}
       direction: ASC
   - type: tasknotesTaskList
     name: "Occurrences"
@@ -1031,7 +1035,7 @@ ${orderYaml}
       - column: ${sortOrderProperty}
         direction: DESC
     groupBy:
-      property: ${statusProperty}
+      property: ${statusTaskProperty}
       direction: ASC
 `;
 		}

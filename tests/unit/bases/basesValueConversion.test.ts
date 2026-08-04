@@ -58,6 +58,18 @@ describe("Bases value conversion", () => {
 		expect(convertBasesValueToNative(value)).toBe("Custom value");
 	});
 
+	it("extracts scalar values from rich Bases select objects", () => {
+		const statusValue = {
+			icon: "lucide-circle",
+			color: "#44aa99",
+			value: "open",
+			label: "Open",
+		};
+
+		expect(convertBasesValueToNative(statusValue)).toBe("open");
+		expect(convertBasesGroupKeyToString(statusValue)).toBe("open");
+	});
+
 	it("formats group keys for display without leaking Bases wrapper objects", () => {
 		expect(convertBasesGroupKeyToString(null)).toBe("Unknown");
 		expect(convertBasesGroupKeyToString({ constructor: { name: "NullValue" } })).toBe(

@@ -36,7 +36,7 @@ describe("taskEditFormState", () => {
 		MockObsidian.reset();
 	});
 
-	it("builds core edit form state and hides identifying tags in tag mode", () => {
+	it("builds core edit form state and hides identifying tags when enabled", () => {
 		const reminder = { id: "reminder-1", type: "absolute" as const, date: "2026-05-19" };
 		const task = createTask({
 			title: "Tagged task",
@@ -60,6 +60,7 @@ describe("taskEditFormState", () => {
 			settings: {
 				taskIdentificationMethod: "tag",
 				taskTag: "task",
+				hideIdentifyingTagsInCards: true,
 				hideIdentifyingTagsMode: "all",
 			},
 			normalizeDetails: (value) => value.replace(/\r\n/g, "\n").trimEnd(),
@@ -102,6 +103,29 @@ describe("taskEditFormState", () => {
 
 		expect(state.tags).toBe("task, work");
 		expect(state.initialTags).toBe("task, work");
+	});
+
+	it("normalizes scalar list fields before opening the edit modal", () => {
+		const task = createTask({
+			contexts: "Routine" as unknown as string[],
+			projects: "[[Projects/Alpha]]" as unknown as string[],
+			tags: "work" as unknown as string[],
+		});
+
+		const state = buildTaskEditFormState({
+			task,
+			details: "",
+			frontmatter: {},
+			settings: {
+				taskIdentificationMethod: "property",
+				taskTag: "task",
+			},
+			normalizeDetails: (value) => value,
+		});
+
+		expect(state.contexts).toBe("Routine");
+		expect(state.projectValues).toEqual(["[[Projects/Alpha]]"]);
+		expect(state.tags).toBe("work");
 	});
 
 	it("loads only configured user field values from frontmatter", () => {

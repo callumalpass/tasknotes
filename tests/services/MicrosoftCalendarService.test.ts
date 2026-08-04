@@ -398,6 +398,41 @@ describe('MicrosoftCalendarService', () => {
 	});
 
 	describe('updateEvent', () => {
+		test('should update events for opaque Exchange calendar IDs with URL-safe Base64 padding', async () => {
+			const exchangeCalendarId = 'AAMkAGVmMDEzLWQ2ZTItNDlhNi04ZGVlLWE5YzI0ZDBmZmI0MQBGAAAAAABJfK9X-6kTRqRX4dQ0n5I8BwABF5Gfe_M0Tqe7tZxHdg4mAAAAAAEGAABF5Gfe_M0Tqe7tZxHdg4mAAABJrC3AAA=';
+			const exchangeEventId = 'AAMkAGVmMDEzLWQ2ZTItNDlhNi04ZGVlLWE5YzI0ZDBmZmI0MQBGAAAAAABJfK9X-6kTRqRX4dQ0n5I8BwABF5Gfe_M0Tqe7tZxHdg4mAAABJrC3AABk_TEST=';
+			const updates = {
+				start: '2025-10-23T10:00:00',
+				end: '2025-10-23T11:00:00'
+			};
+
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					id: exchangeEventId,
+					subject: 'Meeting',
+					start: { dateTime: updates.start, timeZone: 'UTC' },
+					end: { dateTime: updates.end, timeZone: 'UTC' },
+					isAllDay: false,
+					webLink: 'https://outlook.office365.com/calendar/item'
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			await service.updateEvent(exchangeCalendarId, exchangeEventId, updates);
+
+			expect(mockRequestUrl).toHaveBeenCalledWith(
+				expect.objectContaining({
+					url: expect.stringContaining(
+						`/calendars/${encodeURIComponent(exchangeCalendarId)}/events/${encodeURIComponent(exchangeEventId)}`
+					),
+					method: 'PATCH'
+				})
+			);
+		});
+
 		test('should update event properties', async () => {
 			const updates = {
 				title: 'Updated Meeting',

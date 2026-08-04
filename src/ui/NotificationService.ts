@@ -127,8 +127,9 @@ export class NotificationService {
 		// Clear existing queue and rebuild
 		this.notificationQueue = [];
 
-		// Get all tasks from the cache
-		const tasks = await this.plugin.cacheManager.getAllTasks();
+		// Broad background scans must stay cache-only so an incomplete metadata cache
+		// cannot cause recurring vault-wide disk reads.
+		const tasks = this.plugin.cacheManager.getAllCachedTasks();
 		const now = Date.now();
 		const windowEnd = now + this.QUEUE_WINDOW;
 

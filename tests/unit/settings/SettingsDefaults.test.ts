@@ -8,5 +8,8 @@ describe('Settings defaults', () => {
   test('task-list list-property drops move unless the copy modifier is held', () => {
     expect(DEFAULT_SETTINGS.taskListGroupDropBehavior).toBe('replace-modifier-add');
   });
-});
 
+  test('occurrence filename templates are opt-in', () => {
+    expect(DEFAULT_SETTINGS.occurrenceFilenameTemplate).toBe('');
+  });
+});

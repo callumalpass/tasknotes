@@ -3,7 +3,6 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import {
-	createProjectClickHandler,
 	createRecurrenceClickHandler,
 	createReminderClickHandler,
 } from "./taskCardActions";
@@ -79,11 +78,23 @@ function tTaskCard(
 	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
 }
 
+function canToggleProjectSubtasks(plugin: TaskNotesPlugin): boolean {
+	return plugin.settings?.showExpandableSubtasks === true;
+}
+
 function shouldExpandSubtasksByDefault(plugin: TaskNotesPlugin): boolean {
-	return plugin.settings?.expandSubtasksByDefault === true;
+	// Only auto-expand by default when expandable subtasks are enabled.
+	return (
+		plugin.settings?.expandSubtasksByDefault === true &&
+		canToggleProjectSubtasks(plugin)
+	);
 }
 
 export function isTaskCardSubtasksExpanded(task: TaskInfo, plugin: TaskNotesPlugin): boolean {
+	if (!canToggleProjectSubtasks(plugin)) {
+		return false;
+	}
+
 	return (
 		plugin.expandedProjectsService?.isExpanded(
 			task.path,
@@ -144,6 +155,51 @@ function createChevronClickHandler(
 				logger.error("Error toggling subtasks", {
 					category: "internal",
 					operation: "toggle-subtasks",
+					details: { taskPath: task.path },
+					error,
+				});
+				new Notice("Failed to toggle subtasks");
+			}
+		})();
+	};
+}
+
+/**
+ * Toggles the inline subtask list for a project task card. Used by the folder
+ * (project) badge so it works whether or not the expand chevron is rendered,
+ * keeping the chevron visual in sync when it is present. Shares expansion state
+ * with the chevron via expandedProjectsService, so the two never diverge.
+ */
+function createProjectSubtasksToggleHandler(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	card: HTMLElement,
+	handlers: TaskCardSecondaryBadgeHandlers
+): () => void {
+	return () => {
+		void (async () => {
+			const logger = getTaskCardBadgeLogger(plugin);
+			try {
+				if (!plugin.expandedProjectsService) {
+					new Notice("Service not available. Please try reloading the plugin.");
+					return;
+				}
+
+				const newExpanded = plugin.expandedProjectsService.toggle(
+					task.path,
+					shouldExpandSubtasksByDefault(plugin)
+				);
+
+				const chevron = card.querySelector<HTMLElement>(".task-card__chevron");
+				if (chevron) {
+					updateChevronElement(chevron, plugin, newExpanded);
+				}
+
+				await handlers.toggleSubtasks(card, task, newExpanded);
+			} catch (error) {
+				logger.error("Error toggling project subtasks", {
+					category: "internal",
+					operation: "toggle-project-subtasks",
 					details: { taskPath: task.path },
 					error,
 				});
@@ -217,27 +273,36 @@ function renderProjectBadges(
 		return;
 	}
 
+	const isExpanded = isTaskCardSubtasksExpanded(task, plugin);
+
+	const canToggleSubtasks = canToggleProjectSubtasks(plugin);
+
+	// The folder badge always identifies project tasks. It only acts as an
+	// expansion control when expandable subtasks are enabled.
 	createBadgeIndicator({
 		container: badgesContainer,
 		className: "task-card__project-indicator",
 		icon: "folder",
-		tooltip: tTaskCard(plugin, "projectTooltip"),
-		onClick: createProjectClickHandler(task, plugin),
+		tooltip: tTaskCard(
+			plugin,
+			canToggleSubtasks ? "projectTooltip" : "projectIndicatorTooltip"
+		),
+		onClick: canToggleSubtasks
+			? createProjectSubtasksToggleHandler(task, plugin, card, handlers)
+			: undefined,
 	});
 
-	if (!plugin.settings?.showExpandableSubtasks) {
-		return;
+	if (canToggleSubtasks) {
+		createBadgeIndicator({
+			container: badgesContainer,
+			className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
+			icon: "chevron-right",
+			tooltip: getChevronTooltip(plugin, isExpanded),
+			onClick: createChevronClickHandler(task, plugin, card, handlers),
+		});
 	}
 
-	const isExpanded = isTaskCardSubtasksExpanded(task, plugin);
-	createBadgeIndicator({
-		container: badgesContainer,
-		className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
-		icon: "chevron-right",
-		tooltip: getChevronTooltip(plugin, isExpanded),
-		onClick: createChevronClickHandler(task, plugin, card, handlers),
-	});
-
+	// Render the subtask list immediately when expanded.
 	if (isExpanded) {
 		handlers.toggleSubtasks(card, task, true).catch((error: unknown) => {
 			getTaskCardBadgeLogger(plugin).error("Error showing initial subtasks", {
@@ -340,20 +405,42 @@ function updateProjectBadges(options: UpdateTaskCardSecondaryBadgesOptions): voi
 		.then((isProject: boolean) => {
 			card.querySelector(".task-card__project-indicator-placeholder")?.remove();
 			card.querySelector(".task-card__chevron-placeholder")?.remove();
+			const canToggleSubtasks = canToggleProjectSubtasks(plugin);
+			const existingProjectBadge = card.querySelector<HTMLElement>(
+				".task-card__project-indicator"
+			);
+			const projectBadgeIsInteractive =
+				existingProjectBadge?.getAttribute("role") === "button";
+
+			// updateBadgeIndicator cannot remove existing interaction listeners, so
+			// recreate the badge if this setting changed while the card was mounted.
+			if (
+				isProject &&
+				existingProjectBadge &&
+				projectBadgeIsInteractive !== canToggleSubtasks
+			) {
+				existingProjectBadge.remove();
+			}
 
 			updateBadgeIndicator(card, ".task-card__project-indicator", {
 				shouldExist: isProject,
 				className: "task-card__project-indicator",
 				icon: "folder",
-				tooltip: tTaskCard(plugin, "projectTooltip"),
-				onClick: createProjectClickHandler(task, plugin),
+				tooltip: tTaskCard(
+					plugin,
+					canToggleSubtasks ? "projectTooltip" : "projectIndicatorTooltip"
+				),
+				onClick: canToggleSubtasks
+					? createProjectSubtasksToggleHandler(task, plugin, card, handlers)
+					: undefined,
 			});
 
-			const showChevron = isProject && plugin.settings?.showExpandableSubtasks;
+			const showChevron = isProject && canToggleSubtasks;
 			const existingChevron = card.querySelector<HTMLElement>(".task-card__chevron");
+			const isExpanded = isProject && isTaskCardSubtasksExpanded(task, plugin);
 
+			// Keep the chevron in sync with the setting (create / update / remove).
 			if (showChevron && !existingChevron) {
-				const isExpanded = isTaskCardSubtasksExpanded(task, plugin);
 				createBadgeIndicator({
 					container:
 						card.querySelector<HTMLElement>(".task-card__badges") ?? mainRow ?? card,
@@ -362,35 +449,23 @@ function updateProjectBadges(options: UpdateTaskCardSecondaryBadgesOptions): voi
 					tooltip: getChevronTooltip(plugin, isExpanded),
 					onClick: createChevronClickHandler(task, plugin, card, handlers),
 				});
-
-				if (isExpanded) {
-					handlers.toggleSubtasks(card, task, true).catch((error: unknown) => {
-						logger.error("Error showing initial subtasks in update", {
-							category: "internal",
-							operation: "show-initial-subtasks-update",
-							details: { taskPath: task.path },
-							error,
-						});
-					});
-				}
 			} else if (showChevron && existingChevron) {
-				const isExpanded = isTaskCardSubtasksExpanded(task, plugin);
 				updateChevronElement(existingChevron, plugin, isExpanded);
-
-				if (isExpanded) {
-					handlers.toggleSubtasks(card, task, true).catch((error: unknown) => {
-						logger.error("Error refreshing default-expanded subtasks", {
-							category: "internal",
-							operation: "refresh-default-expanded-subtasks",
-							details: { taskPath: task.path },
-							error,
-						});
-					});
-				} else {
-					removeRelationshipContainer(card, ".task-card__subtasks");
-				}
 			} else if (!showChevron && existingChevron) {
 				existingChevron.remove();
+			}
+
+			// Sync the inline subtask list with the saved expansion state.
+			if (isExpanded) {
+				handlers.toggleSubtasks(card, task, true).catch((error: unknown) => {
+					logger.error("Error showing subtasks in update", {
+						category: "internal",
+						operation: "show-subtasks-update",
+						details: { taskPath: task.path },
+						error,
+					});
+				});
+			} else {
 				removeRelationshipContainer(card, ".task-card__subtasks");
 			}
 		})

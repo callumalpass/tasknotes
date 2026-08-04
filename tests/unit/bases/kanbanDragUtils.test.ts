@@ -376,6 +376,32 @@ describe("kanbanDragUtils", () => {
 		expect(plan.changedTaskProp).toBe("contexts");
 	});
 
+	it("keeps list-valued swimlane side-effect task snapshots as arrays", () => {
+		const plan = planKanbanTaskDropUpdate({
+			path: "Tasks/a.md",
+			sourceColumn: "open",
+			sourceSwimlane: "Deep",
+			newGroupValue: "open",
+			newSwimLaneValue: "Routine",
+			groupByPropertyId: "task.status",
+			swimLanePropertyId: "note.contexts",
+			groupByTaskProp: "status",
+			swimlaneTaskProp: "contexts",
+			isGroupByListProperty: false,
+			isSwimlaneListProperty: true,
+		});
+
+		const sideEffectPlan = planKanbanDropSideEffect({
+			plan,
+			originalTask: createTask({ contexts: ["Deep", "Project"] }),
+			dateModifiedValue: "2026-07-16T22:10:00Z",
+			isCompletedStatus: (status) => status === "done",
+		});
+
+		expect(sideEffectPlan?.updatedTask.contexts).toEqual(["Project", "Routine"]);
+		expect(sideEffectPlan?.newPropValue).toEqual(["Project", "Routine"]);
+	});
+
 	it("plans derived frontmatter writes for status column drops", () => {
 		const plan = planKanbanTaskDropUpdate({
 			path: "Tasks/a.md",

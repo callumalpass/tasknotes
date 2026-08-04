@@ -199,7 +199,7 @@ describe("Issue #1576 - Display Progress Bar on task cards", () => {
 		expect((card.querySelector(".task-card__progress-fill") as HTMLElement).style.width).toBe("100%");
 	});
 
-	it("treats non-x task markers as incomplete", () => {
+	it("treats non-cancelled non-x task markers as incomplete", () => {
 		const task = TaskFactory.createTask({
 			path: "tasks/custom-marker-task.md",
 			title: "Custom marker",
@@ -209,7 +209,7 @@ describe("Issue #1576 - Display Progress Bar on task cards", () => {
 		app.metadataCache.setCache(task.path, {
 			frontmatter: { title: task.title },
 			listItems: [
-				listItem("-", -1, 10), // not completed
+				listItem("/", -1, 10), // not completed
 				listItem("x", -1, 11), // completed
 			],
 		});
@@ -217,5 +217,25 @@ describe("Issue #1576 - Display Progress Bar on task cards", () => {
 		const card = createTaskCard(task, plugin, ["checklistProgress"]);
 		expect(card.querySelector(".task-card__progress-label")?.textContent).toBe("1/2");
 		expect((card.querySelector(".task-card__progress-fill") as HTMLElement).style.width).toBe("50%");
+	});
+
+	it("excludes cancelled task markers from checklist progress", () => {
+		const task = TaskFactory.createTask({
+			path: "tasks/cancelled-marker-task.md",
+			title: "Cancelled marker",
+		});
+
+		MockObsidian.createTestFile(task.path, "# Cancelled marker");
+		app.metadataCache.setCache(task.path, {
+			frontmatter: { title: task.title },
+			listItems: [
+				listItem("x", -1, 10),
+				listItem("-", -1, 11),
+			],
+		});
+
+		const card = createTaskCard(task, plugin, ["checklistProgress"]);
+		expect(card.querySelector(".task-card__progress-label")?.textContent).toBe("1/1");
+		expect((card.querySelector(".task-card__progress-fill") as HTMLElement).style.width).toBe("100%");
 	});
 });

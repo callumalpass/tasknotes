@@ -59,6 +59,25 @@ import { EVENT_USER_NOTICE, type UserNoticePayload } from "../core/userNotices";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bootstrap/PluginBootstrap" });
 
+const TASKNOTES_BASES_VIEW_TYPES = [
+	"tasknotesTaskList",
+	"tasknotesKanban",
+	"tasknotesCalendar",
+	"tasknotesMiniCalendar",
+];
+
+type EnabledBasesPlugin = {
+	registrations?: Record<string, unknown>;
+};
+
+type InternalPluginManagerWithBases = {
+	getEnabledPluginById?: (id: string) => EnabledBasesPlugin | null;
+};
+
+type AppWithInternalPlugins = {
+	internalPlugins?: InternalPluginManagerWithBases;
+};
+
 type FileDeletedEventData = { path: string; prevCache?: unknown };
 type FileUpdatedEventData = { path: string; file?: unknown; updatedTask?: TaskInfo };
 
@@ -217,7 +236,7 @@ export function registerRibbonIcons(plugin: TaskNotesPlugin): void {
 }
 
 export function initializeCalendarProviders(plugin: TaskNotesPlugin): void {
-	plugin.oauthService = new OAuthService(plugin);
+	plugin.oauthService = new OAuthService(plugin, plugin.oauthSecretStore);
 	plugin.googleCalendarService = new GoogleCalendarService(plugin, plugin.oauthService);
 	plugin.microsoftCalendarService = new MicrosoftCalendarService(plugin, plugin.oauthService);
 	plugin.calendarProviderRegistry = new CalendarProviderRegistry();
@@ -226,14 +245,26 @@ export function initializeCalendarProviders(plugin: TaskNotesPlugin): void {
 }
 
 export async function registerBasesIntegration(plugin: TaskNotesPlugin): Promise<void> {
-	if (!plugin.settings?.enableBases || plugin.basesRegistered) {
+	if (!plugin.settings?.enableBases) {
+		clearBasesRegistrationRetry(plugin);
 		return;
 	}
 
+	if (plugin.basesRegistered && areTaskNotesBasesViewsRegistered(plugin)) {
+		clearBasesRegistrationRetry(plugin);
+		return;
+	}
+
+	plugin.basesRegistered = false;
+
 	try {
 		const { registerBasesTaskList } = await import("../bases/registration");
-		await registerBasesTaskList(plugin);
-		plugin.basesRegistered = true;
+		const registered = await registerBasesTaskList(plugin);
+		plugin.basesRegistered = registered;
+		if (registered) {
+			clearBasesRegistrationRetry(plugin);
+			return;
+		}
 	} catch (error) {
 		tasknotesLogger.debug("[TaskNotes][Bases] Registration failed:", {
 			category: "internal",
@@ -241,6 +272,58 @@ export async function registerBasesIntegration(plugin: TaskNotesPlugin): Promise
 			error: error,
 		});
 	}
+
+	scheduleBasesRegistrationRetry(plugin);
+}
+
+function getEnabledBasesPlugin(plugin: TaskNotesPlugin): EnabledBasesPlugin | null {
+	return (
+		(plugin.app as unknown as AppWithInternalPlugins).internalPlugins?.getEnabledPluginById?.(
+			"bases"
+		) ?? null
+	);
+}
+
+function areTaskNotesBasesViewsRegistered(plugin: TaskNotesPlugin): boolean {
+	const registrations = getEnabledBasesPlugin(plugin)?.registrations;
+	return (
+		!!registrations &&
+		TASKNOTES_BASES_VIEW_TYPES.every((viewType) => Boolean(registrations[viewType]))
+	);
+}
+
+function clearBasesRegistrationRetry(plugin: TaskNotesPlugin): void {
+	if (plugin.basesRegistrationRetryIntervalId === null) {
+		return;
+	}
+
+	window.clearInterval(plugin.basesRegistrationRetryIntervalId);
+	plugin.basesRegistrationRetryIntervalId = null;
+}
+
+function scheduleBasesRegistrationRetry(plugin: TaskNotesPlugin): void {
+	if (
+		!plugin.settings?.enableBases ||
+		plugin.basesRegistrationRetryIntervalId !== null ||
+		areTaskNotesBasesViewsRegistered(plugin)
+	) {
+		return;
+	}
+
+	plugin.basesRegistrationRetryIntervalId = window.setInterval(() => {
+		if (plugin.basesRegistered && areTaskNotesBasesViewsRegistered(plugin)) {
+			clearBasesRegistrationRetry(plugin);
+			return;
+		}
+
+		if (!getEnabledBasesPlugin(plugin)) {
+			return;
+		}
+
+		void registerBasesIntegration(plugin);
+	}, 5000);
+
+	plugin.register(() => clearBasesRegistrationRetry(plugin));
 }
 
 export async function initializeHTTPAPI(plugin: TaskNotesPlugin): Promise<void> {
@@ -457,7 +540,7 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 					(data: { path?: string; updatedTask?: TaskInfo }) => {
 						plugin.app.workspace.iterateRootLeaves((leaf) => {
 							if (leaf.view && leaf.view.getViewType() === "markdown") {
-									const editor = (leaf.view as MarkdownView).editor;
+								const editor = (leaf.view as MarkdownView).editor;
 								const cm = getCodeMirrorEditor(editor);
 								if (cm) {
 									const taskPath = data?.path || data?.updatedTask?.path;
@@ -472,7 +555,7 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 					plugin.app.workspace.on("active-leaf-change", (leaf) => {
 						window.setTimeout(() => {
 							if (leaf && leaf.view && leaf.view.getViewType() === "markdown") {
-									const editor = (leaf.view as MarkdownView).editor;
+								const editor = (leaf.view as MarkdownView).editor;
 								const cm = getCodeMirrorEditor(editor);
 								if (cm) {
 									dispatchTaskUpdate(cm as EditorView);

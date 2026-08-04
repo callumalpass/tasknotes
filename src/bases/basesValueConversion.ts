@@ -7,8 +7,11 @@ type BasesFileLike = {
 type BasesValueInternals = {
 	data?: unknown;
 	date?: Date;
+	display?: unknown;
 	file?: BasesFileLike;
-	value?: unknown[];
+	icon?: string;
+	label?: unknown;
+	value?: unknown;
 	get?: (index: number) => unknown;
 	at?: (index: number) => unknown;
 	length?: () => number;
@@ -28,6 +31,10 @@ export function convertBasesValueToNative(value: unknown): unknown {
 		return null;
 	}
 
+	if (isBasesEmptyPlaceholderValue(basesValue)) {
+		return null;
+	}
+
 	if (typeof basesValue.data !== "undefined") {
 		return basesValue.data;
 	}
@@ -35,6 +42,11 @@ export function convertBasesValueToNative(value: unknown): unknown {
 	const listValue = convertBasesListValueToNative(basesValue);
 	if (listValue) {
 		return listValue;
+	}
+
+	const scalarValue = extractBasesScalarValue(basesValue);
+	if (scalarValue !== undefined) {
+		return scalarValue;
 	}
 
 	if (basesValue.date instanceof Date) {
@@ -68,6 +80,10 @@ export function convertBasesGroupKeyToString(key: unknown): string {
 	const basesKey = key as BasesValueInternals;
 	if (basesKey.constructor?.name === "NullValue") {
 		return "Unknown";
+	}
+
+	if (isBasesEmptyPlaceholderValue(basesKey)) {
+		return "None";
 	}
 
 	const actualValue = extractBasesGroupKeyValue(basesKey);
@@ -111,7 +127,42 @@ function extractBasesGroupKeyValue(basesKey: BasesValueInternals): unknown {
 		return basesKey.data;
 	}
 
+	const scalarValue = extractBasesScalarValue(basesKey);
+	if (scalarValue !== undefined) {
+		return scalarValue;
+	}
+
 	return basesKey;
+}
+
+function isBasesEmptyPlaceholderValue(value: BasesValueInternals): boolean {
+	return (
+		value.icon === "lucide-file-question" &&
+		typeof value.data === "undefined" &&
+		typeof value.display === "undefined" &&
+		typeof value.label === "undefined" &&
+		!(value.date instanceof Date) &&
+		!value.file &&
+		!Array.isArray(value.value) &&
+		typeof value.get !== "function" &&
+		typeof value.at !== "function" &&
+		typeof value.length !== "function" &&
+		typeof value.toISOString !== "function"
+	);
+}
+
+function extractBasesScalarValue(value: BasesValueInternals): string | number | boolean | undefined {
+	for (const candidate of [value.value, value.display, value.label]) {
+		if (
+			typeof candidate === "string" ||
+			typeof candidate === "number" ||
+			typeof candidate === "boolean"
+		) {
+			return candidate;
+		}
+	}
+
+	return undefined;
 }
 
 function formatBasesGroupKeyValue(actualValue: unknown): string {

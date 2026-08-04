@@ -33,6 +33,9 @@ const createMockPlugin = (settingsOverride: Record<string, unknown> = {}) => {
 				{ value: "done", label: "Done", isCompleted: true },
 			],
 			defaultVisibleProperties: ["status", "priority", "due"],
+			calendarViewSettings: {
+				firstDay: 1,
+			},
 			userFields: [],
 			fieldMapping,
 			...settingsOverride,
@@ -50,7 +53,9 @@ describe("defaultBasesFiles", () => {
 
 		expect(template).toContain('name: "Kanban Board"');
 		expect(template).toContain("sort:\n      - column: tasknotes_manual_order\n        direction: DESC");
-		expect(template).toContain("groupBy:\n      property: status");
+		expect(template).toContain("groupBy:\n      property: task.status");
+		expect(template).toContain("config:\n      columnWidth: 280\n      hideEmptyColumns: false");
+		expect(template).not.toContain("    options:\n      columnWidth: 280");
 	});
 
 	it("adds a dedicated manual-order task list view while preserving urgency views", () => {
@@ -71,6 +76,7 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain('name: "Blocked By"');
 		expect(template).toContain('name: "Blocking"');
 		expect((template.match(/column: tasknotes_manual_order/g) ?? []).length).toBe(3);
+		expect((template.match(/property: task\.status/g) ?? []).length).toBe(2);
 		expect(template).toContain('name: "Projects"');
 	});
 
@@ -119,16 +125,30 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain("listDayCount: 7");
 	});
 
-	it("lets generated calendar views inherit app-level time bounds", () => {
+	it("lets generated calendar views inherit app-level time settings", () => {
 		const template = generateBasesFileTemplate(
 			"open-advanced-calendar-view",
 			createMockPlugin() as any
 		);
 
 		expect(template).toContain('calendarView: "timeGridWeek"');
-		expect(template).toContain('slotDuration: "00:30:00"');
 		expect(template).not.toContain("slotMinTime");
 		expect(template).not.toContain("slotMaxTime");
+		expect(template).not.toContain("slotDuration");
+	});
+
+	it("uses the configured first day for generated calendar views", () => {
+		const template = generateBasesFileTemplate(
+			"open-advanced-calendar-view",
+			createMockPlugin({
+				calendarViewSettings: {
+					firstDay: 1,
+				},
+			}) as any
+		);
+
+		expect(template).toContain("firstDay: 1");
+		expect(template).not.toContain("firstDay: 0");
 	});
 
 	it("does not force the due-in agenda property when due dates are hidden by default", () => {
@@ -151,8 +171,22 @@ describe("defaultBasesFiles", () => {
 			}) as any
 		);
 
-		expect(template).toContain('note["Task Type"] == "task"');
+		expect(template).toContain('list(note["Task Type"]).contains("task")');
 		expect(template).not.toContain("note.Task Type");
+	});
+
+	it("matches list-valued property task identifiers in generated Bases filters", () => {
+		const template = generateBasesFileTemplate(
+			"open-tasks-view",
+			createMockPlugin({
+				taskIdentificationMethod: "property",
+				taskPropertyName: "type",
+				taskPropertyValue: "task",
+			}) as any
+		);
+
+		expect(template).toContain('list(note["type"]).contains("task")');
+		expect(template).not.toContain('note["type"] == "task"');
 	});
 
 	it("uses tag membership when property-based task identification targets tags (#1156)", () => {
@@ -179,7 +213,7 @@ describe("defaultBasesFiles", () => {
 			}) as any
 		);
 
-		expect(template).toContain('note["Task Type"] == true');
+		expect(template).toContain('list(note["Task Type"]).contains(true)');
 		expect(template).not.toContain('note["Task Type"] == "true"');
 	});
 
