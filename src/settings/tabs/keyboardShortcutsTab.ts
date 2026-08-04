@@ -83,6 +83,22 @@ function actionKey(action: TaskListKeyboardAction): TranslationKey {
 	return `settings.keyboardShortcuts.actions.${action}`;
 }
 
+/** Formats a shortcut owner for conflict prompts using its user-facing label and stable ID. */
+export function formatShortcutOwnerLabel(
+	owner: string,
+	fields: readonly UserMappedField[],
+	translate: (key: TranslationKey) => string
+): string {
+	if ((TASK_LIST_KEYBOARD_ACTIONS as readonly string[]).includes(owner)) {
+		return translate(actionKey(owner as TaskListKeyboardAction));
+	}
+
+	// Dynamic shortcut maps are keyed by stable field IDs, so resolve that ID
+	// back to the configured display name while retaining the ID for diagnosis.
+	const field = fields.find((candidate) => candidate.id === owner);
+	return field ? `${field.displayName} (${field.id})` : owner;
+}
+
 export function renderKeyboardShortcutsTab(
 	container: HTMLElement,
 	plugin: TaskNotesPlugin,
@@ -347,7 +363,15 @@ export function renderKeyboardShortcutsTab(
 										title: translate("settings.keyboardShortcuts.duplicateTitle"),
 										message: translate("settings.keyboardShortcuts.duplicateMessage", {
 											shortcut: formatTaskListShortcut(shortcut, Platform.isMacOS),
-											actions: owners.join(", "),
+											actions: owners
+												.map((owner) =>
+													formatShortcutOwnerLabel(
+														owner,
+														plugin.settings.userFields ?? [],
+														translate
+													)
+												)
+												.join(", "),
 										}),
 										confirmText: translate("settings.keyboardShortcuts.replace"),
 										cancelText: translate("common.cancel"),

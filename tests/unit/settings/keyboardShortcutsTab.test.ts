@@ -1,5 +1,34 @@
 import { Scope } from "obsidian";
-import { pushKeyboardShortcutCaptureScope } from "../../../src/settings/tabs/keyboardShortcutsTab";
+import {
+	formatShortcutOwnerLabel,
+	pushKeyboardShortcutCaptureScope,
+} from "../../../src/settings/tabs/keyboardShortcutsTab";
+import type { UserMappedField } from "../../../src/types/settings";
+
+describe("keyboard shortcut owner labels", () => {
+	const translate = (key: string) =>
+		key === "settings.keyboardShortcuts.actions.edit-task" ? "Edit task" : key;
+
+	it("shows a user field display name followed by its stable ID", () => {
+		const fields: UserMappedField[] = [
+			{
+				id: "field_1234",
+				key: "storyPoints",
+				displayName: "Story Points",
+				type: "number",
+			},
+		];
+
+		expect(formatShortcutOwnerLabel("field_1234", fields, translate)).toBe(
+			"Story Points (field_1234)"
+		);
+	});
+
+	it("keeps translated built-in action labels and unknown owner fallbacks", () => {
+		expect(formatShortcutOwnerLabel("edit-task", [], translate)).toBe("Edit task");
+		expect(formatShortcutOwnerLabel("missing_field", [], translate)).toBe("missing_field");
+	});
+});
 
 describe("keyboard shortcut capture scope", () => {
 	it("swallows Escape, cancels capture, and pops itself", () => {
