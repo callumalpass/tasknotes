@@ -1,6 +1,7 @@
 import { Scope } from "obsidian";
 import {
 	formatShortcutOwnerLabel,
+	partitionShortcutOwners,
 	pushKeyboardShortcutCaptureScope,
 } from "../../../src/settings/tabs/keyboardShortcutsTab";
 import type { UserMappedField } from "../../../src/types/settings";
@@ -27,6 +28,27 @@ describe("keyboard shortcut owner labels", () => {
 	it("keeps translated built-in action labels and unknown owner fallbacks", () => {
 		expect(formatShortcutOwnerLabel("edit-task", [], translate)).toBe("Edit task");
 		expect(formatShortcutOwnerLabel("missing_field", [], translate)).toBe("missing_field");
+	});
+
+	it("separates deleted fields from conflicts that still require confirmation", () => {
+		const fields: UserMappedField[] = [
+			{
+				id: "field_1234",
+				key: "storyPoints",
+				displayName: "Story Points",
+				type: "number",
+			},
+		];
+
+		expect(
+			partitionShortcutOwners(
+				["edit-task", "field_1234", "field_removed"],
+				fields
+			)
+		).toEqual({
+			activeOwners: ["edit-task", "field_1234"],
+			staleFieldOwners: ["field_removed"],
+		});
 	});
 });
 

@@ -99,6 +99,29 @@ export function formatShortcutOwnerLabel(
 	return field ? `${field.displayName} (${field.id})` : owner;
 }
 
+/** Separates live shortcut owners from IDs left behind by deleted user fields. */
+export function partitionShortcutOwners(
+	owners: readonly string[],
+	fields: readonly UserMappedField[]
+): { activeOwners: string[]; staleFieldOwners: string[] } {
+	const fieldIds = new Set(fields.map((field) => field.id));
+	const activeOwners: string[] = [];
+	const staleFieldOwners: string[] = [];
+
+	for (const owner of owners) {
+		if (
+			(TASK_LIST_KEYBOARD_ACTIONS as readonly string[]).includes(owner) ||
+			fieldIds.has(owner)
+		) {
+			activeOwners.push(owner);
+		} else {
+			staleFieldOwners.push(owner);
+		}
+	}
+
+	return { activeOwners, staleFieldOwners };
+}
+
 export function renderKeyboardShortcutsTab(
 	container: HTMLElement,
 	plugin: TaskNotesPlugin,
@@ -358,12 +381,21 @@ export function renderKeyboardShortcutsTab(
 										.filter(([id, values]) => id !== field.id && values.includes(shortcut))
 										.map(([id]) => id),
 								];
-								if (owners.length > 0) {
+								const { activeOwners, staleFieldOwners } = partitionShortcutOwners(
+									owners,
+									plugin.settings.userFields ?? []
+								);
+								// Deleted fields cannot receive actions, so discard their orphaned
+								// bindings without interrupting assignment to a live field.
+								for (const staleOwner of staleFieldOwners) {
+									delete plugin.settings.taskListUserFieldShortcuts[staleOwner];
+								}
+								if (activeOwners.length > 0) {
 									void showConfirmationModal(plugin.app, {
 										title: translate("settings.keyboardShortcuts.duplicateTitle"),
 										message: translate("settings.keyboardShortcuts.duplicateMessage", {
 											shortcut: formatTaskListShortcut(shortcut, Platform.isMacOS),
-											actions: owners
+											actions: activeOwners
 												.map((owner) =>
 													formatShortcutOwnerLabel(
 														owner,
@@ -377,7 +409,7 @@ export function renderKeyboardShortcutsTab(
 										cancelText: translate("common.cancel"),
 									}).then((replace) => {
 										if (!replace) return;
-										for (const action of owners) {
+										for (const action of activeOwners) {
 											if (action in plugin.settings.taskListShortcuts) {
 												const key = action as keyof typeof plugin.settings.taskListShortcuts;
 												plugin.settings.taskListShortcuts[key] = plugin.settings.taskListShortcuts[key].filter((value) => value !== shortcut);
