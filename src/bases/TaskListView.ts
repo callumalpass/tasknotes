@@ -2694,6 +2694,7 @@ export class TaskListView extends BasesViewBase {
 				"edit-due",
 				"edit-scheduled",
 				"edit-priority",
+				"mark-complete",
 				"edit-status",
 				"edit-recurrence",
 				"add-tags",
@@ -2791,6 +2792,9 @@ export class TaskListView extends BasesViewBase {
 				return;
 			case "edit-priority":
 				await this.showTaskActionPriorityMenu();
+				return;
+			case "mark-complete":
+				await this.markTaskActionTargetsComplete();
 				return;
 			case "edit-status":
 				await this.showTaskActionStatusMenu();
@@ -2963,6 +2967,44 @@ export class TaskListView extends BasesViewBase {
 		}
 	}
 
+	/**
+	 * Completes the focused/selected visible tasks through their semantic completion paths.
+	 * Recurring parents record the scheduled instance; ordinary tasks receive a completed status.
+	 */
+	private async markTaskActionTargetsComplete(): Promise<void> {
+		const tasks = await this.getTaskActionTargets();
+		for (const task of tasks) {
+			if (task.recurrence) {
+				await this.plugin.toggleRecurringTaskComplete(task, this.getTaskActionDate(task));
+				continue;
+			}
+
+			const completedStatus = this.plugin.statusManager.getCompletedStatuses()[0] || "done";
+			if (!this.plugin.statusManager.isCompletedStatus(task.status)) {
+				await this.plugin.updateTaskProperty(task, "status", completedStatus);
+			}
+		}
+	}
+
+	/**
+	 * Applies a status selected from the Task List while preserving recurring-instance semantics.
+	 * Selecting a completed status completes the current occurrence instead of completing its parent.
+	 */
+	private async updateTaskActionTargetStatuses(
+		tasks: readonly TaskInfo[],
+		status: string
+	): Promise<void> {
+		for (const task of tasks) {
+			if (task.recurrence && this.plugin.statusManager.isCompletedStatus(status)) {
+				// A recurring parent's completed state lives in complete_instances; writing
+				// status directly would make the whole series appear terminal.
+				await this.plugin.toggleRecurringTaskComplete(task, this.getTaskActionDate(task));
+			} else {
+				await this.plugin.updateTaskProperty(task, "status", status);
+			}
+		}
+	}
+
 	private async openTaskActionTargets(): Promise<void> {
 		const app = this.app || this.plugin.app;
 		for (const task of await this.getTaskActionTargets()) {
@@ -3016,7 +3058,7 @@ export class TaskListView extends BasesViewBase {
 
 		new StatusContextMenu({
 			currentValue: tasks[0].status,
-			onSelect: (value) => void this.updateTaskActionTargets(tasks, "status", value),
+			onSelect: (value) => void this.updateTaskActionTargetStatuses(tasks, value),
 			plugin: this.plugin,
 		}).showAtElement(anchor);
 	}

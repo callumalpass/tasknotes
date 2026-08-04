@@ -551,6 +551,7 @@ export const en: TranslationTree = {
 				"edit-due": "Edit due date",
 				"edit-scheduled": "Edit scheduled date",
 				"edit-priority": "Edit priority",
+				"mark-complete": "Mark complete",
 				"edit-status": "Edit status",
 				"edit-recurrence": "Edit recurrence",
 				"add-tags": "Add tags",

@@ -44,6 +44,7 @@ describe("TaskListView keyboard actions", () => {
 		["edit-due", "showTaskActionDateMenu", "due"],
 		["edit-scheduled", "showTaskActionDateMenu", "scheduled"],
 		["edit-priority", "showTaskActionPriorityMenu", null],
+		["mark-complete", "markTaskActionTargetsComplete", null],
 		["edit-status", "showTaskActionStatusMenu", null],
 		["edit-recurrence", "showTaskActionRecurrenceMenu", null],
 		["add-tags", "addTagsToTaskActionTargets", null],
@@ -522,6 +523,31 @@ describe("TaskListView keyboard actions", () => {
 
 		expect(updateTaskProperty).toHaveBeenNthCalledWith(1, tasks[0], "priority", "high");
 		expect(updateTaskProperty).toHaveBeenNthCalledWith(2, tasks[1], "priority", "high");
+	});
+
+	it("routes a completed status through recurring-instance completion", async () => {
+		const recurring = { ...task("recurring.md"), recurrence: "FREQ=WEEKLY" };
+		const ordinary = task("ordinary.md");
+		const actionDate = new Date("2026-08-02T00:00:00.000Z");
+		const toggleRecurringTaskComplete = jest.fn(async () => recurring);
+		const updateTaskProperty = jest.fn(async () => ordinary);
+		const view = {
+			plugin: {
+				statusManager: { isCompletedStatus: (status: string) => status === "done" },
+				toggleRecurringTaskComplete,
+				updateTaskProperty,
+			},
+			getTaskActionDate: jest.fn(() => actionDate),
+		};
+
+		await (TaskListView.prototype as any).updateTaskActionTargetStatuses.call(
+			view,
+			[recurring, ordinary],
+			"done"
+		);
+
+		expect(toggleRecurringTaskComplete).toHaveBeenCalledWith(recurring, actionDate);
+		expect(updateTaskProperty).toHaveBeenCalledWith(ordinary, "status", "done");
 	});
 
 	it("selects only tasks visible in the current filtered view", () => {

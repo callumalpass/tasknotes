@@ -52,6 +52,8 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 		["s", { shiftKey: true }, "edit-scheduled"],
 		["p", {}, "edit-priority"],
 		["!", { shiftKey: true }, "edit-priority"],
+		["d", { ctrlKey: true }, "mark-complete"],
+		["d", { metaKey: true }, "mark-complete"],
 		["s", {}, "edit-status"],
 		["*", { shiftKey: true }, "edit-status"],
 		["r", {}, "edit-recurrence"],
@@ -66,7 +68,6 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 
 	it.each([
 		key("d", { altKey: true }),
-		key("d", { ctrlKey: true }),
 		key("Process"),
 		key("d", { isComposing: true }),
 		key("q"),
