@@ -271,6 +271,13 @@ const CORE_FIELD_DEFINITIONS: ReadonlyArray<
 		writable: true,
 	},
 	{
+		id: "attachments",
+		label: "Attachments",
+		valueType: "string[]",
+		source: "model",
+		writable: true,
+	},
+	{
 		id: "dateCreated",
 		label: "Date created",
 		valueType: "datetime",
@@ -349,6 +356,7 @@ const FIELD_MAPPING_KEY_BY_FIELD_ID: Partial<
 	scheduled: "scheduled",
 	contexts: "contexts",
 	projects: "projects",
+	attachments: "attachments",
 	recurrence: "recurrence",
 	recurrence_anchor: "recurrenceAnchor",
 	complete_instances: "completeInstances",
@@ -2826,6 +2834,10 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 
 		if (before && after && !areValuesEqual(before.projects ?? [], after.projects ?? [])) {
 			events.push({ ...common, event: "task.projects.changed" });
+		}
+
+		if (before && after && !areValuesEqual(before.attachments ?? [], after.attachments ?? [])) {
+			events.push({ ...common, event: "task.attachments.changed" });
 		}
 
 		if (before && after && !areValuesEqual(before.reminders ?? [], after.reminders ?? [])) {

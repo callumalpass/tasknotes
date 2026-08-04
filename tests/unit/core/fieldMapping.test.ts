@@ -14,6 +14,7 @@ describe("core/fieldMapping", () => {
 				status: true,
 				contexts: "work",
 				projects: ["alpha"],
+				attachments: "[[Attachments/receipt.jpg]]",
 				recurrence_anchor: "completion",
 				complete_instances: ["2026-03-01", 123, "2026-03-02"],
 				tags: ["task", "archived"],
@@ -27,6 +28,7 @@ describe("core/fieldMapping", () => {
 			status: "true",
 			contexts: ["work"],
 			projects: ["alpha"],
+			attachments: ["[[Attachments/receipt.jpg]]"],
 			recurrence_anchor: "completion",
 			complete_instances: ["2026-03-01", "2026-03-02"],
 			tags: ["task", "archived"],
@@ -43,6 +45,7 @@ describe("core/fieldMapping", () => {
 				status: "open",
 				blockedBy: [{ uid: "[[Other Task]]", reltype: "FINISHTOSTART" }],
 				recurrence_anchor: "scheduled",
+				attachments: ["[[Attachments/receipt.jpg]]"],
 				tags: ["alpha"],
 				archived: true,
 			},
@@ -52,6 +55,7 @@ describe("core/fieldMapping", () => {
 		expect(frontmatter.title).toBe("Task");
 		expect(frontmatter.status).toBe("open");
 		expect(frontmatter.recurrence_anchor).toBe("scheduled");
+		expect(frontmatter.attachments).toEqual(["[[Attachments/receipt.jpg]]"]);
 		expect(frontmatter.blockedBy).toEqual([{ uid: "[[Other Task]]", reltype: "FINISHTOSTART" }]);
 		expect(frontmatter.tags).toEqual(expect.arrayContaining(["alpha", "task", "archived"]));
 	});

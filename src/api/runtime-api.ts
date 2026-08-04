@@ -94,6 +94,7 @@ export type TaskNotesTaskEventName =
 	| "task.tags.changed"
 	| "task.contexts.changed"
 	| "task.projects.changed"
+	| "task.attachments.changed"
 	| "task.reminders.changed"
 	| "task.dependencies.changed"
 	| "task.recurrence.changed";
@@ -198,6 +199,12 @@ export const TASKNOTES_RUNTIME_EVENT_DEFINITIONS: readonly TaskNotesRuntimeEvent
 		name: "task.projects.changed",
 		label: "Task projects changed",
 		description: "A TaskNotes task project list changed.",
+		category: "task",
+	},
+	{
+		name: "task.attachments.changed",
+		label: "Task attachments changed",
+		description: "A TaskNotes task attachment list changed.",
 		category: "task",
 	},
 	{
