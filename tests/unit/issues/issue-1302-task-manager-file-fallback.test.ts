@@ -37,6 +37,7 @@ describe("Issue #1302: TaskManager file frontmatter fallback", () => {
 			[
 				"---",
 				JSON.stringify({
+					id: "smoke-alarm-check-id",
 					title: "Smoke alarm check",
 					status: "open",
 					priority: "normal",
@@ -52,6 +53,7 @@ describe("Issue #1302: TaskManager file frontmatter fallback", () => {
 		app.metadataCache.deleteCache(path);
 
 		await expect(manager.getTaskInfo(path)).resolves.toMatchObject({
+			id: "smoke-alarm-check-id",
 			path,
 			title: "Smoke alarm check",
 			status: "open",
@@ -61,6 +63,34 @@ describe("Issue #1302: TaskManager file frontmatter fallback", () => {
 
 		const allTasks = await manager.getAllTasks();
 		expect(allTasks.map((task) => task.path)).toContain(path);
+		await expect(manager.getTaskInfoById("smoke-alarm-check-id")).resolves.toMatchObject({
+			id: "smoke-alarm-check-id",
+			path,
+		});
+	});
+
+	it("leaves legacy tasks ID-less and refuses to select an arbitrary duplicate ID", async () => {
+		const legacyPath = "TaskNotes/Tasks/legacy.md";
+		const duplicateA = "TaskNotes/Tasks/duplicate-a.md";
+		const duplicateB = "TaskNotes/Tasks/duplicate-b.md";
+		MockObsidian.createTestFile(
+			legacyPath,
+			`---\n${JSON.stringify({ title: "Legacy", status: "open", tags: ["task"] })}\n---\n`
+		);
+		for (const path of [duplicateA, duplicateB]) {
+			MockObsidian.createTestFile(
+				path,
+				`---\n${JSON.stringify({ id: "duplicate-id", title: path, status: "open", tags: ["task"] })}\n---\n`
+			);
+			app.metadataCache.deleteCache(path);
+		}
+		app.metadataCache.deleteCache(legacyPath);
+
+		const legacyTask = await manager.getTaskInfo(legacyPath);
+		expect(legacyTask).toMatchObject({ path: legacyPath });
+		expect(legacyTask?.id).toBeUndefined();
+		await expect(manager.getTasksById("duplicate-id")).resolves.toHaveLength(2);
+		await expect(manager.getTaskInfoById("duplicate-id")).resolves.toBeNull();
 	});
 
 	it("does not classify non-task files from the fallback parse", async () => {

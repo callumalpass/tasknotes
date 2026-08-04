@@ -33,6 +33,7 @@ function settingsWithScheduledDefault(
 
 describe("current note conversion planning", () => {
 	it("builds task info from frontmatter, defaults, and markdown body", () => {
+		const generateUuid = jest.fn(() => "converted-note-id");
 		const task = buildCurrentNoteConversionTaskInfo({
 			path: "Notes/plain.md",
 			basename: "plain",
@@ -52,9 +53,11 @@ describe("current note conversion planning", () => {
 			},
 			settings,
 			now: "2026-05-19T09:20:00+10:00",
+			adapters: { generateUuid },
 		});
 
 		expect(task).toMatchObject({
+			id: "converted-note-id",
 			path: "Notes/plain.md",
 			title: "Frontmatter title",
 			status: "none",
@@ -71,6 +74,7 @@ describe("current note conversion planning", () => {
 			dateModified: "2026-05-19T09:20:00+10:00",
 			details: "Existing note body",
 		});
+		expect(generateUuid).toHaveBeenCalledTimes(1);
 	});
 
 	it("falls back to basename and default priority/status without losing empty strings", () => {

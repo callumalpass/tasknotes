@@ -226,12 +226,20 @@ export function applyTaskUpdateFrontmatterChange({
 
 	if (updates.customFrontmatter) {
 		Object.entries(updates.customFrontmatter).forEach(([key, value]) => {
+			if (key === "id") return;
 			if (value === null) {
 				delete frontmatter[key];
 			} else {
 				frontmatter[key] = value;
 			}
 		});
+	}
+
+	// The shared mapper deliberately leaves the fixed identity field alone.
+	// Reassert an existing ID so converting a note persists its newly assigned
+	// identity and ordinary edits cannot replace it through a patch/template.
+	if (originalTask.id) {
+		frontmatter.id = originalTask.id;
 	}
 
 	removeUnsetMappedFields(frontmatter, { ...updates, ...recurrenceUpdates }, fieldMapper);
@@ -386,6 +394,11 @@ export function buildUpdatedTaskFromPlan({
 		path: newPath,
 		dateModified,
 	};
+	if (originalTask.id === undefined) {
+		delete updatedTask.id;
+	} else {
+		updatedTask.id = originalTask.id;
+	}
 
 	if (finalTags) {
 		updatedTask.tags = finalTags;

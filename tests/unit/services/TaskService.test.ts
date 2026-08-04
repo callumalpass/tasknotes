@@ -146,8 +146,27 @@ describe('TaskService', () => {
         archived: false
       });
       expect(taskInfo.path).toMatch(/test-task\.md$/);
+      expect(taskInfo.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      );
+      expect(getLastCreatedFrontmatter().id).toBe(taskInfo.id);
       expect(taskInfo.dateCreated).toBe('2025-01-01T12:00:00Z');
       expect(taskInfo.dateModified).toBe('2025-01-01T12:00:00Z');
+    });
+
+    it('should not allow custom frontmatter to reuse another task ID', async () => {
+      const { taskInfo } = await taskService.createTask({
+        title: 'Copied Task',
+        id: 'copied-task-id',
+        customFrontmatter: { id: 'template-task-id' }
+      });
+
+      expect(taskInfo.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      );
+      expect(taskInfo.id).not.toBe('copied-task-id');
+      expect(taskInfo.id).not.toBe('template-task-id');
+      expect(getLastCreatedFrontmatter().id).toBe(taskInfo.id);
     });
 
     it('should preserve wikilinks in the task title while keeping the filename safe (#1733)', async () => {

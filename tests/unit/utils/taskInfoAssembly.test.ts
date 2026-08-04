@@ -17,7 +17,7 @@ function makeTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 }
 
 describe("buildTaskInfoFromMappedTask", () => {
-	it("adds path identity and computed blocking state", () => {
+	it("preserves stable identity separately from path and adds computed blocking state", () => {
 		const task = buildTaskInfoFromMappedTask({
 			path: "Tasks/current.md",
 			mappedTask: makeTask({ id: "old-id", path: "Mapped/original.md" }),
@@ -27,12 +27,25 @@ describe("buildTaskInfoFromMappedTask", () => {
 		});
 
 		expect(task).toMatchObject({
-			id: "Tasks/current.md",
+			id: "old-id",
 			path: "Tasks/current.md",
 			isBlocked: true,
 			isBlocking: true,
 			blocking: ["Tasks/dependent.md"],
 		});
+	});
+
+	it("keeps legacy tasks without a stable identity", () => {
+		const task = buildTaskInfoFromMappedTask({
+			path: "Tasks/legacy.md",
+			mappedTask: makeTask({ id: undefined }),
+			defaultTaskStatus: "open",
+			isBlocked: false,
+			blockingTasks: [],
+		});
+
+		expect(task.path).toBe("Tasks/legacy.md");
+		expect(task.id).toBeUndefined();
 	});
 
 	it("defaults missing display fields and list fields", () => {

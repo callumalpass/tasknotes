@@ -452,7 +452,7 @@ export interface TaskDependency {
 }
 
 export interface TaskInfo {
-	id?: string; // Task identifier (typically same as path for API consistency)
+	id?: string; // Stable task identity from frontmatter. Legacy tasks may omit it.
 	title: string;
 	status: string;
 	priority: string;

@@ -44,6 +44,7 @@ export const TASKNOTES_RUNTIME_API_CAPABILITIES = [
 	"extensions.read",
 	"extensions.register",
 	"tasks.read",
+	"tasks.lookup-id",
 	"tasks.write",
 	"tasks.delete",
 	"tasks.move",
@@ -352,6 +353,7 @@ export interface TaskNotesMutationContext {
 export const TASKNOTES_API_ERROR_CODES = [
 	"invalid_input",
 	"invalid_task_path",
+	"duplicate_task_id",
 	"invalid_status",
 	"task_not_found",
 	"task_file_not_found",
@@ -671,6 +673,7 @@ export type TaskNotesApiChanges = Record<string, TaskNotesApiChange>;
 export interface TaskNotesRuntimeEventPayload {
 	event: TaskNotesRuntimeEventName;
 	timestamp: string;
+	taskId?: string;
 	taskPath?: string;
 	task?: TaskInfo;
 	before?: TaskInfo;
@@ -696,7 +699,10 @@ export type TaskNotesRuntimeEventHandler<EventName extends TaskNotesRuntimeEvent
 ) => void;
 
 export interface TaskNotesRuntimeTasksApi {
+	/** @deprecated Use getByPath() to make the locator explicit. */
 	get(path: string): Promise<Nullable<TaskInfo>>;
+	getByPath(path: string): Promise<Nullable<TaskInfo>>;
+	getById(id: string): Promise<Nullable<TaskInfo>>;
 	list(query?: TaskNotesRuntimeTaskQuery): Promise<TaskInfo[]>;
 	create(taskData: TaskCreationData, context?: TaskNotesMutationContext): Promise<TaskInfo>;
 	update(

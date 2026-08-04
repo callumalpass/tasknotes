@@ -39,6 +39,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- New and converted tasks now receive stable UUIDs that survive file renames and moves. Existing
+  tasks remain valid without IDs, path-based integrations keep working, and compatible mdbase
+  clients can continue to create and mutate TaskNotes task files through the shared model contract.
+  The JavaScript API now provides explicit `getByPath()` and duplicate-safe `getById()` lookups.
+  See the [JavaScript API](https://tasknotes.dev/javascript-api/).
 - (#2142) MCP `tasknotes_create_task` and `tasknotes_update_task` now accept
   `customProperties` for configured TaskNotes user fields. Thanks to
   @phillipadsmith for suggesting this.

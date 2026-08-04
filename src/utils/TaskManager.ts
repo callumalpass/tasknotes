@@ -228,7 +228,6 @@ export class TaskManager extends Events {
 			this.pendingTaskInfoByPath.delete(oldPath);
 			this.pendingTaskInfoByPath.set(file.path, {
 				...pendingTaskInfo,
-				id: file.path,
 				path: file.path,
 			});
 		}
@@ -299,7 +298,6 @@ export class TaskManager extends Events {
 
 		return {
 			...taskInfo,
-			id: taskInfo.id ?? path,
 			path,
 		};
 	}
@@ -727,6 +725,30 @@ export class TaskManager extends Events {
 		}
 
 		return tasks;
+	}
+
+	/**
+	 * Find tasks by their optional stable frontmatter identity.
+	 *
+	 * Paths remain the operational cache key, so ID lookup deliberately returns
+	 * every match. Callers must not select an arbitrary task when a manually
+	 * copied note has introduced a duplicate ID.
+	 */
+	async getTasksById(id: string): Promise<TaskInfo[]> {
+		const normalizedId = id.trim();
+		if (!normalizedId) return [];
+
+		const tasks = await this.getAllTasks();
+		return tasks.filter((task) => task.id?.trim() === normalizedId);
+	}
+
+	/**
+	 * Resolve one unique stable ID. Missing and duplicate IDs both resolve to
+	 * null so path-based callers never mutate an arbitrary duplicate.
+	 */
+	async getTaskInfoById(id: string): Promise<TaskInfo | null> {
+		const matches = await this.getTasksById(id);
+		return matches.length === 1 ? matches[0] : null;
 	}
 
 	/**
@@ -1260,7 +1282,6 @@ export class TaskManager extends Events {
 
 		this.pendingTaskInfoByPath.set(path, {
 			...taskInfo,
-			id: taskInfo.id ?? path,
 			path,
 		});
 		filterIndexChanged = this.updateFilterIndexesFromTaskInfo(path, taskInfo);
