@@ -13,8 +13,10 @@ import { sanitizeHTMLToDom } from "obsidian";
  * those write the value into the vault, so raw markup does not merely look
  * wrong on screen — it is persisted into notes and folder names.
  *
- * Normalizing once at the provider boundary keeps every consumer plain-text and
- * avoids making each plain-text consumer handle HTML independently.
+ * Normalizing at the Google provider boundary keeps every one of those
+ * consumers plain-text, rather than making each handle HTML independently.
+ * ICS subscriptions read descriptions through their own boundary and are not
+ * normalized here.
  */
 
 /**
