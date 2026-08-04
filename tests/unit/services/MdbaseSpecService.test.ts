@@ -4,7 +4,10 @@
  * Validates v0.3 generation and the retained v0.2 compatibility path.
  */
 
-import { buildTaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
+import {
+	buildTaskNotesMdbaseResources,
+	TASKNOTES_TASK_CONTRACT_VERSION,
+} from "@tasknotes/model/mdbase";
 import YAML from "yaml";
 
 import { FieldMapper } from "../../../src/services/FieldMapper";
@@ -46,7 +49,8 @@ function tasknotesImplementation(
 	const implementations = type.implements as Record<string, unknown>[];
 	const implementation = implementations?.find(
 		(candidate) =>
-			candidate.contract === "tasknotes.task" && candidate.version === "0.3.0-rc.1"
+			candidate.contract === "tasknotes.task" &&
+			candidate.version === TASKNOTES_TASK_CONTRACT_VERSION
 	);
 	if (!implementation) throw new Error("Expected a TaskNotes implementation");
 	return implementation;
@@ -846,7 +850,12 @@ describe("MdbaseSpecService", () => {
 			expect(schema.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
 			expect(schema.additionalProperties).toBe(true);
 			expect(schema.required).toEqual(["status", "dateCreated"]);
-			expect(asObject(properties.due)).toMatchObject({ type: "string", format: "date" });
+			expect(asObject(properties.due)).toMatchObject({
+				anyOf: expect.arrayContaining([
+					expect.objectContaining({ type: "string", format: "date" }),
+					expect.objectContaining({ type: "string", format: "date-time" }),
+				]),
+			});
 			expect(asObject(properties.dateModified)).toMatchObject({
 				type: "string",
 				format: "date-time",
@@ -895,6 +904,7 @@ describe("MdbaseSpecService", () => {
 				occurrence_next_trigger: "completion",
 			});
 			expect(collection.links).toEqual({
+				"attachments[]": { validate_exists: false },
 				"projects[]": { target_type: "any", validate_exists: false },
 				occurrence_template: { target_type: "any", validate_exists: false },
 				recurrence_parent: { target_type: "task", validate_exists: false },
@@ -1066,6 +1076,7 @@ describe("MdbaseSpecService", () => {
 				capabilities: [
 					"dependencies",
 					"reminders",
+					"attachments",
 					"links",
 					"time-tracking",
 					"materialized-occurrences",

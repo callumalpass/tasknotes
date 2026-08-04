@@ -1,4 +1,7 @@
-import { buildTaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
+import {
+	buildTaskNotesMdbaseResources,
+	TASKNOTES_TASK_CONTRACT_VERSION,
+} from "@tasknotes/model/mdbase";
 import YAML from "yaml";
 
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
@@ -259,7 +262,8 @@ function implementation(type: Record<string, unknown>): Record<string, unknown> 
 	const implementations = type.implements as Record<string, unknown>[];
 	const implementation = implementations.find(
 		(candidate) =>
-			candidate.contract === "tasknotes.task" && candidate.version === "0.3.0-rc.1"
+			candidate.contract === "tasknotes.task" &&
+			candidate.version === TASKNOTES_TASK_CONTRACT_VERSION
 	);
 	if (!implementation) throw new Error("Missing TaskNotes implementation");
 	return implementation;
