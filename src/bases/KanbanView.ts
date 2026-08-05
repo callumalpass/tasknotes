@@ -10,7 +10,9 @@ import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { VirtualScroller } from "../utils/VirtualScroller";
-import { getCurrentTimestamp } from "../utils/dateUtils";
+import { getCurrentTimestamp, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
+import type { BasesTaskCardActionViewContext } from "./BasesTaskCardKeyboardController";
+import type { TaskListAction } from "./taskListKeyboardActions";
 import { getProjectDisplayName } from "../utils/linkUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import {
@@ -568,6 +570,7 @@ export class KanbanView extends BasesViewBase {
 			this.setupSearch(this.rootElement);
 		}
 
+		this.taskCardKeyboardController?.prepareForRender();
 		try {
 			const dataItems = this.dataAdapter.extractDataItems();
 
@@ -635,6 +638,10 @@ export class KanbanView extends BasesViewBase {
 				error: error,
 			});
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
+		} finally {
+			this.taskCardKeyboardController?.restoreAfterRender();
+			this.updateSelectionVisuals();
+			this.updateSelectionIndicator(this.plugin.taskSelectionService?.getSelectionCount() ?? 0);
 		}
 	}
 
@@ -4307,6 +4314,45 @@ export class KanbanView extends BasesViewBase {
 
 	private getTaskActionDate(task: TaskInfo): Date {
 		return getKanbanTaskActionDate(task);
+	}
+
+
+	/**
+	 * Kanban supports the full Task List action set against real, focusable
+	 * `.task-card` elements. Navigation/selection reach only cards currently
+	 * rendered by a column's VirtualScroller, matching the same limitation
+	 * mouse-based selection already has for large virtualized columns.
+	 */
+	protected getTaskCardActionsConfig(): {
+		isActionSupported(action: TaskListAction): boolean;
+		buildViewContext(): BasesTaskCardActionViewContext;
+		autoFocusInitial?: boolean;
+		cardAreaElement?: HTMLElement;
+	} | null {
+		return {
+			cardAreaElement: this.boardEl ?? undefined,
+			isActionSupported: () => true,
+			buildViewContext: () => ({
+				plugin: this.plugin,
+				app: this.app || this.plugin.app,
+				taskSelectionService: this.plugin.taskSelectionService,
+				getVisibleTaskPaths: () => [...this.currentVisibleTaskPaths],
+				isPathVisible: (path) => this.currentVisibleTaskPaths.has(path),
+				getCurrentTargetDate: () => createUTCDateFromLocalCalendarDate(new Date()),
+				rootElement: this.rootElement,
+				showBatchContextMenu: (event) => this.showBatchContextMenu(event),
+				createFileForView: () => this.createFileForView(),
+				focusSearch: () => {
+					if (!this.rootElement) return;
+					if (!this.searchBox) {
+						this.enableSearch = true;
+						this.setupSearch(this.rootElement);
+					}
+					this.searchBox?.focus();
+				},
+				fallbackAnchor: this.boardEl ?? undefined,
+			}),
+		};
 	}
 
 	private destroyColumnScrollers(): void {

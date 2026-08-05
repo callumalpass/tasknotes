@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Menu, Notice, Platform, Scope, TFile, setIcon } from "obsidian";
+import { Menu, Notice, Platform, TFile, setIcon } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -11,23 +11,16 @@ import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
-import { StatusContextMenu } from "../components/StatusContextMenu";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
-import { showTextInputModal } from "../modals/TextInputModal";
-import { ProjectSelectModal } from "../modals/ProjectSelectModal";
-import { TagSuggest } from "../modals/taskModalSuggests";
 import { ReminderModal } from "../modals/ReminderModal";
-import { UserFieldEditModal } from "../modals/UserFieldEditModal";
 import {
 	getDatePart,
 	getTimePart,
 	getCurrentTimestamp,
-	parseDateToUTC,
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { generateProjectReference, parseLinkToPath } from "../utils/linkUtils";
-import { formatTasksForClipboard } from "../utils/taskClipboard";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
 	isSortOrderInSortConfig,
@@ -74,26 +67,10 @@ import {
 	moveItemsRelativeToTarget,
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { TaskListFocusController } from "./TaskListFocusController";
-import {
-	resolveTaskListDragPaths,
-	resolveTaskListTargetPaths,
-} from "./taskListTargetResolver";
-import {
-	resolveTaskListKeyboardAction,
-	taskListShortcutToScopeBinding,
-	TASK_LIST_KEYBOARD_ACTIONS,
-	type TaskListAction,
-	type TaskListKeyboardAction,
-} from "./taskListKeyboardActions";
-import { addTagsToList, parseTaskTagInput } from "../utils/taskTagList";
-import { addContextToList } from "../components/TaskContextMenu";
-import {
-	addTaskToProject,
-	getTaskProjectFiles,
-	removeTaskFromProject,
-} from "../services/taskRelationshipActions";
-import { TaskListInputOwnershipController } from "./TaskListInputOwnershipController";
+import { resolveTaskListDragPaths } from "./taskListTargetResolver";
+import { type TaskListAction } from "./taskListKeyboardActions";
+import { getTaskActionDate } from "./basesTaskCardActions";
+import type { BasesTaskCardActionViewContext } from "./BasesTaskCardKeyboardController";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -170,10 +147,6 @@ export class TaskListView extends BasesViewBase {
 	private clickTimeouts = new Map<string, number>();
 	private currentTargetDate = createUTCDateFromLocalCalendarDate(new Date());
 	private containerListenersRegistered = false;
-	private focusController: TaskListFocusController | null = null;
-	private inputOwnershipController: TaskListInputOwnershipController | null = null;
-	private taskListShortcutScope: Scope | null = null;
-	private taskListLeafActive = false;
 	private virtualScroller: VirtualScroller<TaskListVirtualItem> | null = null; // Can render TaskInfo or group headers
 	private useVirtualScrolling = false;
 	private collapsedGroups = new Set<string>(); // Track collapsed group keys
@@ -242,116 +215,12 @@ export class TaskListView extends BasesViewBase {
 	onload(): void {
 		// Read view options now that config is available
 		this.readViewOptions();
-		// Call parent onload which sets up container and listeners
+		// Call parent onload which sets up container, listeners, and the shared
+		// task-card keyboard controller (focus, hotkeys, and Scope activation).
 		super.onload();
 		this.registerGroupContextMenuListeners();
-		this.registerEvent(
-			this.plugin.app.workspace.on("active-leaf-change", (leaf) => {
-				this.syncTaskListShortcutScopeForLeaf(leaf);
-				this.restoreFocusForActivatedLeaf(leaf);
-			})
-		);
-		this.registerDomEvent(
-			this.containerEl.ownerDocument,
-			"click",
-			(event: MouseEvent) => {
-				const target = event.target;
-				if (
-					target instanceof Element &&
-					target.closest(".workspace-tab-header")
-				) {
-					const win = this.containerEl.ownerDocument.defaultView ?? window;
-					win.setTimeout(() => {
-						const leaf = this.plugin.app.workspace.getMostRecentLeaf();
-						this.syncTaskListShortcutScopeForLeaf(leaf);
-						this.restoreFocusForActivatedLeaf(leaf);
-					}, 0);
-				}
-			},
-			true
-		);
-		this.syncTaskListShortcutScopeForLeaf(
-			this.plugin.app.workspace.getMostRecentLeaf()
-		);
 	}
 
-	private isTaskListLeaf(
-		leaf: { view?: { containerEl?: HTMLElement } } | null
-	): boolean {
-		return Boolean(leaf?.view?.containerEl?.contains(this.containerEl));
-	}
-
-	private restoreFocusForActivatedLeaf(
-		leaf: { view?: { containerEl?: HTMLElement } } | null
-	): void {
-		if (!this.isTaskListLeaf(leaf)) return;
-
-		const win = this.containerEl.ownerDocument.defaultView ?? window;
-		win.setTimeout(() => {
-			if (this.rootElement?.isConnected) {
-				this.focusController?.restoreFocusedElement();
-			}
-		}, 0);
-	}
-
-	private syncTaskListShortcutScopeForLeaf(
-		leaf: { view?: { containerEl?: HTMLElement } } | null
-	): void {
-		this.taskListLeafActive = this.isTaskListLeaf(leaf);
-		this.syncTaskListShortcutScopeForFocusTarget(
-			this.containerEl.ownerDocument.activeElement
-		);
-	}
-
-	private syncTaskListShortcutScopeForFocusTarget(target: EventTarget | null): void {
-		if (
-			this.taskListLeafActive &&
-			this.inputOwnershipController?.canOwnKeyboardTarget(target, true)
-		) {
-			this.activateTaskListShortcutScope();
-			return;
-		}
-		this.deactivateTaskListShortcutScope();
-	}
-
-	private activateTaskListShortcutScope(): void {
-		if (this.taskListShortcutScope) return;
-
-		// A child Obsidian scope lets view-local configurable chords win over
-		// global editor commands while this Task List leaf is active.
-		const scope = new Scope(this.plugin.app.scope);
-		const shortcuts = this.plugin.settings.taskListShortcuts;
-		const bindings = [
-			...TASK_LIST_KEYBOARD_ACTIONS.flatMap((action) =>
-				(shortcuts[action] ?? []).map((shortcut) => ({ action, shortcut }))
-			),
-			...Object.entries(this.plugin.settings.taskListUserFieldShortcuts ?? {}).flatMap(
-				([fieldId, fieldShortcuts]) =>
-					fieldShortcuts.map((shortcut) => ({
-						action: `edit-user-field:${fieldId}` as TaskListAction,
-						shortcut,
-					}))
-			),
-		];
-		for (const { shortcut } of bindings) {
-				const binding = taskListShortcutToScopeBinding(shortcut);
-				if (!binding) continue;
-				scope.register(binding.modifiers, binding.key, (event) => {
-					if (!this.taskListLeafActive) return;
-					if (!this.handleTaskListKeyDown(event, true)) return;
-					return false;
-				});
-		}
-
-		this.taskListShortcutScope = scope;
-		this.plugin.app.keymap.pushScope(scope);
-	}
-
-	private deactivateTaskListShortcutScope(): void {
-		if (!this.taskListShortcutScope) return;
-		this.plugin.app.keymap.popScope(this.taskListShortcutScope);
-		this.taskListShortcutScope = null;
-	}
 
 	/**
 	 * Register contextmenu listeners for group collapse actions.
@@ -640,11 +509,6 @@ export class TaskListView extends BasesViewBase {
 		itemsContainer.classList.add("tn-static-margin-top-12px-91e0f558");
 		rootElement.appendChild(itemsContainer);
 		this.itemsContainer = itemsContainer;
-		this.focusController = new TaskListFocusController(itemsContainer, true);
-		this.inputOwnershipController = new TaskListInputOwnershipController(
-			rootElement,
-			this.focusController
-		);
 		this.registerContainerListeners();
 		this.setupContainerDragHandlers();
 	}
@@ -659,7 +523,7 @@ export class TaskListView extends BasesViewBase {
 			this.pendingRender = true;
 			return;
 		}
-		this.focusController?.prepareForRender();
+		this.taskCardKeyboardController?.prepareForRender();
 
 		// Always re-read view options to catch config changes such as
 		// switching expanded relationship filtering modes in Bases.
@@ -737,7 +601,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private restoreInteractionStateAfterRender(): void {
-		this.focusController?.restoreAfterRender();
+		this.taskCardKeyboardController?.restoreAfterRender();
 		// Rendering replaces card elements, so restore visual state from the
 		// shared selection service after every render—not only when selection
 		// itself changes.
@@ -2394,16 +2258,11 @@ export class TaskListView extends BasesViewBase {
 	 * Override from Component base class.
 	 */
 	onunload(): void {
-		// Component.register() calls will be automatically cleaned up (including search cleanup)
+		// Component.register() calls will be automatically cleaned up (including
+		// search cleanup and the shared task-card keyboard controller)
 		// We just need to clean up view-specific state
-		this.taskListLeafActive = false;
-		this.deactivateTaskListShortcutScope();
 		this.unregisterContainerListeners();
 		this.destroyVirtualScroller();
-		this.inputOwnershipController?.destroy();
-		this.inputOwnershipController = null;
-		this.focusController?.clear();
-		this.focusController = null;
 
 		this.currentTaskElements.clear();
 		this.itemsContainer = null;
@@ -2566,300 +2425,51 @@ export class TaskListView extends BasesViewBase {
 		if (!this.itemsContainer || this.containerListenersRegistered) return;
 
 		// Register click listener for group header collapse/expand using Component API
-		// This automatically cleans up on component unload
+		// This automatically cleans up on component unload. Focus, hover, and
+		// keyboard-shortcut handling are wired up by the shared task-card
+		// keyboard controller installed in `BasesViewBase.onload()`.
 		this.registerDomEvent(this.itemsContainer, "click", this.handleItemClick);
-		this.registerDomEvent(this.itemsContainer, "focusin", (event: FocusEvent) => {
-			this.focusController?.handleFocusIn(event);
-		});
-		this.registerDomEvent(this.itemsContainer, "pointerdown", (event: PointerEvent) => {
-			this.focusController?.handlePointerDown(event);
-		});
-		this.registerDomEvent(this.itemsContainer, "mousemove", (event: MouseEvent) => {
-			// Context-menu edits operate on the focused task/selection. While an
-			// Obsidian menu is open, hovering cards underneath it must not move the
-			// task-list mouse cursor and change the edit target.
-			if (this.itemsContainer?.ownerDocument.querySelector(".menu")) return;
-			this.focusController?.handleMouseMove(event);
-		});
-		if (this.rootElement) {
-			// Resolve view-local shortcuts during capture so Obsidian commands such
-			// as Ctrl+B/Ctrl+D cannot stop propagation before the task list sees a
-			// user-configured chord.
-			this.registerDomEvent(
-				this.rootElement,
-				"keydown",
-				(event: KeyboardEvent) => {
-					this.handleTaskListRootKeyDown(event);
-				},
-				true
-			);
-		}
-		const doc = this.itemsContainer.ownerDocument;
-		this.registerDomEvent(doc, "focusin", (event: FocusEvent) => {
-			this.inputOwnershipController?.handleDocumentFocusIn(event);
-			this.syncTaskListShortcutScopeForFocusTarget(event.target);
-		});
-		this.registerDomEvent(doc, "pointerdown", (event: PointerEvent) => {
-			this.inputOwnershipController?.handleOverlayInteraction(event);
-		});
-		this.registerDomEvent(
-			doc,
-			"keydown",
-			(event: KeyboardEvent) => {
-				if (event.key === "Escape" || event.key === "Backspace") {
-					this.inputOwnershipController?.handleOverlayInteraction(event);
-				}
-			},
-			true
-		);
 		this.containerListenersRegistered = true;
 	}
 
-	private handleTaskListRootKeyDown(event: KeyboardEvent): void {
-		const eventStartedInTaskItems =
-			this.itemsContainer?.contains(event.target as Node) ?? false;
-		this.handleTaskListKeyDown(event, !eventStartedInTaskItems);
-	}
-
-	private handleTaskListKeyDown(
-		event: KeyboardEvent,
-		allowRememberedFocus = false
-	): boolean {
-		if (
-			!this.inputOwnershipController?.canHandleListKeyDown(
-				event,
-				allowRememberedFocus
-			)
-		) {
-			return false;
-		}
-		return this.handleTaskListActionKeyDown(event, allowRememberedFocus);
-	}
-
-	protected canHandleSelectionKeyDown(event: KeyboardEvent): boolean {
-		return (
-			(this.inputOwnershipController?.canHandleListKeyDown(event) ?? false) &&
-			event.shiftKey &&
-			["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)
-		);
-	}
 
 	protected handleSearchDismissed(): void {
-		this.focusController?.restoreFocusedElement();
+		this.taskCardKeyboardController?.focusController.restoreFocusedElement();
 	}
 
-	private handleTaskListActionKeyDown(
-		event: KeyboardEvent,
-		allowRememberedFocus = false
-	): boolean {
-		const action = resolveTaskListKeyboardAction(
-			event,
-			this.plugin?.settings?.taskListShortcuts,
-			this.plugin?.settings?.taskListUserFieldShortcuts
-		);
-		if (!action) return false;
-		const focusedPath = this.focusController?.getFocusedPathForEvent(
-			event,
-			true,
-			allowRememberedFocus
-		);
-		if (
-			!focusedPath &&
-			action !== "clear-focus-and-selection" &&
-			action !== "select-all"
-		) {
-			return false;
-		}
-		const navigationDirections = {
-			"navigate-next": "next",
-			"navigate-previous": "previous",
-			"jump-first": "first",
-			"jump-last": "last",
-		} as const;
-		if (action in navigationDirections) {
-			return (
-				this.focusController?.moveFocus(
-				event,
-				navigationDirections[action as keyof typeof navigationDirections]
-				) ?? false
-			);
-		}
-
-		event.preventDefault();
-		event.stopPropagation();
-		const opensTaskListOverlay =
-			[
-				"edit-task",
-				"open-context-menu",
-				"edit-due",
-				"edit-scheduled",
-				"edit-priority",
-				"mark-complete",
-				"edit-status",
-				"edit-recurrence",
-				"add-tags",
-				"add-context",
-				"add-project",
-				"delete-tasks",
-			].includes(action as TaskListKeyboardAction) || action.startsWith("edit-user-field:");
-		if (opensTaskListOverlay) {
-			// User-field editors are overlays too; recording this before opening lets
-			// input ownership restore the remembered card when the modal closes.
-			this.inputOwnershipController?.noteOverlayOpening();
-		}
-		void this.executeTaskListAction(action, focusedPath ?? null);
-		return true;
-	}
 
 	/**
-	 * Resolve action targets using upstream selection state first, then keyboard focus.
-	 * Task actions added in later keyboard-navigation slices should use this method.
+	 * Task List supports every built-in action plus any configured user-field
+	 * edits, using its search box, item container, and current view date as
+	 * the view-specific pieces the shared executor needs.
 	 */
-	getTaskActionTargetPaths(): string[] {
-		return resolveTaskListTargetPaths(
-			this.plugin.taskSelectionService,
-			this.focusController?.getFocusedIdentity()?.path
-		).filter((path) => this.currentVisibleTaskPaths.has(path));
+	protected getTaskCardActionsConfig(): {
+		isActionSupported(action: TaskListAction): boolean;
+		buildViewContext(): BasesTaskCardActionViewContext;
+		autoFocusInitial?: boolean;
+		cardAreaElement?: HTMLElement;
+	} | null {
+		return {
+			autoFocusInitial: true,
+			cardAreaElement: this.itemsContainer ?? undefined,
+			isActionSupported: () => true,
+			buildViewContext: () => ({
+				plugin: this.plugin,
+				app: this.app || this.plugin.app,
+				taskSelectionService: this.plugin.taskSelectionService,
+				getVisibleTaskPaths: () => [...this.currentVisibleTaskPaths],
+				isPathVisible: (path) => this.currentVisibleTaskPaths.has(path),
+				getCurrentTargetDate: () => this.currentTargetDate,
+				rootElement: this.rootElement,
+				showBatchContextMenu: (event) => this.showBatchContextMenu(event),
+				createFileForView: () => this.createFileForView(),
+				focusSearch: () => this.focusTaskListSearch(),
+				fallbackAnchor: this.itemsContainer,
+			}),
+		};
 	}
 
-	private async executeTaskListAction(
-		action: TaskListAction,
-		focusedPath: string | null
-	): Promise<void> {
-		switch (action) {
-			case "navigate-next":
-			case "navigate-previous":
-			case "jump-first":
-			case "jump-last":
-				return;
-			case "clear-focus-and-selection":
-				this.clearTaskListFocusAndSelection();
-				return;
-			case "toggle-select":
-				this.toggleFocusedTaskSelection();
-				return;
-			case "select-all":
-				this.selectAllVisibleTasks();
-				return;
-			case "copy-task-titles":
-				await this.copyTaskActionTargetTitles();
-				return;
-			case "toggle-archive":
-				await this.toggleTaskActionTargetsArchive();
-				return;
-			case "create-task":
-				await this.createFileForView();
-				return;
-			case "focus-search":
-				this.focusTaskListSearch();
-				return;
-			case "edit-task": {
-				const task = (await this.getTaskActionTargets())[0];
-				if (task) await this.plugin.openTaskEditModal(task);
-				return;
-			}
-			case "open-context-menu": {
-				if (!focusedPath) return;
-				const anchor = this.getTaskActionAnchor();
-				const rect = anchor?.getBoundingClientRect();
-				const menuEvent = new MouseEvent("contextmenu", {
-					bubbles: true,
-					cancelable: true,
-					clientX: rect?.right ?? 0,
-					clientY: rect?.top ?? 0,
-				});
-				const selectionService = this.plugin.taskSelectionService;
-				if (selectionService && selectionService.getSelectionCount() > 1) {
-					this.showBatchContextMenu(menuEvent);
-					return;
-				}
-				await showTaskContextMenu(
-					menuEvent,
-					focusedPath,
-					this.plugin,
-					this.currentTargetDate
-				);
-				return;
-			}
-			case "open-task-notes":
-				await this.openTaskActionTargets();
-				return;
-			case "edit-due":
-				await this.showTaskActionDateMenu("due");
-				return;
-			case "edit-scheduled":
-				await this.showTaskActionDateMenu("scheduled");
-				return;
-			case "edit-priority":
-				await this.showTaskActionPriorityMenu();
-				return;
-			case "mark-complete":
-				await this.markTaskActionTargetsComplete();
-				return;
-			case "edit-status":
-				await this.showTaskActionStatusMenu();
-				return;
-			case "edit-recurrence":
-				await this.showTaskActionRecurrenceMenu();
-				return;
-			case "add-tags":
-				await this.addTagsToTaskActionTargets();
-				return;
-			case "add-context":
-				await this.addContextToTaskActionTargets();
-				return;
-			case "add-project":
-				this.addProjectToTaskActionTargets();
-				return;
-			case "delete-tasks":
-				await this.deleteTaskActionTargets();
-				return;
-			default: {
-				// Runtime user-field actions share the same visible-target selection
-				// path as built-in edits, so filtered-out selected tasks are excluded.
-				if (!action.startsWith("edit-user-field:")) return;
-				const fieldId = action.slice("edit-user-field:".length);
-				const field = this.plugin.settings.userFields?.find((candidate) => candidate.id === fieldId);
-				if (!field) return;
-				const tasks = await this.getTaskActionTargets();
-				if (tasks.length === 0) return;
-				new UserFieldEditModal(this.plugin.app, this.plugin, {
-					field,
-					tasks,
-						onApply: async (value, listChange) => {
-						for (const task of tasks) {
-							let taskValue = value;
-							if (field.type === "list") {
-								const customProperties = (task.customProperties ?? {}) as Record<string, unknown>;
-								const current = Array.isArray(customProperties[field.key])
-									? (customProperties[field.key] as unknown[]).map(String)
-									: [];
-								const withoutRemoved = current.filter(
-									(candidate) => !listChange?.removed?.includes(candidate)
-								);
-								taskValue = listChange?.added
-									? [...withoutRemoved, listChange.added].filter(
-											(candidate, index, list) => list.indexOf(candidate) === index
-									  )
-									: withoutRemoved;
-							}
-							await this.plugin.updateTaskProperty(
-								task,
-								field.key as keyof TaskInfo,
-								taskValue as TaskInfo[keyof TaskInfo],
-								{ silent: true }
-							);
-							}
-						},
-							onClose: () => {
-							this.restoreTaskListFocusAfterOverlayClose();
-						},
-					}).open();
-			}
-		}
-	}
-
-	private focusTaskListSearch(): void {
+private focusTaskListSearch(): void {
 		if (!this.rootElement) return;
 		if (!this.searchBox) {
 			this.searchOpenedByShortcut = true;
@@ -2867,336 +2477,6 @@ export class TaskListView extends BasesViewBase {
 			this.setupSearch(this.rootElement);
 		}
 		this.searchBox?.focus();
-	}
-
-	/** Restores card focus after Obsidian completes its modal selection cleanup. */
-	private restoreTaskListFocusAfterOverlayClose(): void {
-		// Obsidian restores the modal's saved selection after onClose; defer card
-		// focus until that cleanup has finished so keyboard ownership is retained.
-		setTimeout(() => {
-			this.focusController?.restoreFocusedElement();
-			this.inputOwnershipController?.resumeAfterOverlayClose();
-			this.syncTaskListShortcutScopeForFocusTarget(
-				this.containerEl.ownerDocument.activeElement
-			);
-			if (this.taskListLeafActive) this.activateTaskListShortcutScope();
-		}, 0);
-	}
-
-	private async getTaskActionTargets(): Promise<TaskInfo[]> {
-		const tasks: TaskInfo[] = [];
-		for (const path of this.getTaskActionTargetPaths()) {
-			const task = await this.plugin.cacheManager.getTaskInfo(path);
-			if (task) tasks.push(task);
-		}
-		return tasks;
-	}
-
-	private clearTaskListFocusAndSelection(): void {
-		const selectionService = this.plugin.taskSelectionService;
-		selectionService?.clearSelection();
-		selectionService?.exitSelectionMode();
-		if (!this.focusController?.restoreFocusedElement()) {
-			this.rootElement?.focus({ preventScroll: true });
-		}
-	}
-
-	private toggleFocusedTaskSelection(): void {
-		const path = this.focusController?.getFocusedIdentity()?.path;
-		if (!path || !this.currentVisibleTaskPaths.has(path)) return;
-		this.plugin.taskSelectionService?.toggleSelection(path);
-	}
-
-	private selectAllVisibleTasks(): void {
-		const selectionService = this.plugin.taskSelectionService;
-		if (!selectionService) return;
-		selectionService.selectAll([...this.currentVisibleTaskPaths]);
-		if (this.currentVisibleTaskPaths.size > 0) {
-			selectionService.enterSelectionMode();
-		}
-	}
-
-	private async copyTaskActionTargetTitles(): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		if (tasks.length === 0) return;
-
-		try {
-			await navigator.clipboard.writeText(formatTasksForClipboard(tasks, "titles"));
-			new Notice(`Copied ${tasks.length} task title${tasks.length === 1 ? "" : "s"}`);
-		} catch (error) {
-			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to copy task titles", {
-				category: "provider",
-				operation: "copy-task-titles",
-				error,
-			});
-			new Notice("Failed to copy task titles");
-		}
-	}
-
-	private async toggleTaskActionTargetsArchive(): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		if (tasks.length === 0) return;
-
-		const archived = tasks[0].archived === true;
-		if (!tasks.every((task) => (task.archived === true) === archived)) {
-			new Notice("Select tasks with the same archive state");
-			return;
-		}
-
-		for (const task of tasks) {
-			await this.plugin.taskService.toggleArchive(task);
-		}
-		new Notice(
-			`${archived ? "Unarchived" : "Archived"} ${tasks.length} task${
-				tasks.length === 1 ? "" : "s"
-			}`
-		);
-	}
-
-	private getTaskActionAnchor(): HTMLElement | null {
-		return this.focusController?.getFocusedElement() ?? this.itemsContainer;
-	}
-
-	private async updateTaskActionTargets(
-		tasks: readonly TaskInfo[],
-		property: keyof TaskInfo,
-		value: unknown
-	): Promise<void> {
-		for (const task of tasks) {
-			await this.plugin.updateTaskProperty(task, property, value);
-		}
-	}
-
-	/**
-	 * Completes the focused/selected visible tasks through their semantic completion paths.
-	 * Recurring parents record the scheduled instance; ordinary tasks receive a completed status.
-	 */
-	private async markTaskActionTargetsComplete(): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		for (const task of tasks) {
-			if (task.recurrence) {
-				await this.plugin.toggleRecurringTaskComplete(task, this.getTaskActionDate(task));
-				continue;
-			}
-
-			const completedStatus = this.plugin.statusManager.getCompletedStatuses()[0] || "done";
-			if (!this.plugin.statusManager.isCompletedStatus(task.status)) {
-				await this.plugin.updateTaskProperty(task, "status", completedStatus);
-			}
-		}
-	}
-
-	/**
-	 * Applies a status selected from the Task List while preserving recurring-instance semantics.
-	 * Selecting a completed status completes the current occurrence instead of completing its parent.
-	 */
-	private async updateTaskActionTargetStatuses(
-		tasks: readonly TaskInfo[],
-		status: string
-	): Promise<void> {
-		for (const task of tasks) {
-			if (task.recurrence && this.plugin.statusManager.isCompletedStatus(status)) {
-				// A recurring parent's completed state lives in complete_instances; writing
-				// status directly would make the whole series appear terminal.
-				await this.plugin.toggleRecurringTaskComplete(task, this.getTaskActionDate(task));
-			} else {
-				await this.plugin.updateTaskProperty(task, "status", status);
-			}
-		}
-	}
-
-	private async openTaskActionTargets(): Promise<void> {
-		const app = this.app || this.plugin.app;
-		for (const task of await this.getTaskActionTargets()) {
-			const file = app.vault.getAbstractFileByPath(task.path);
-			if (file instanceof TFile) {
-				await app.workspace.getLeaf("tab").openFile(file);
-			}
-		}
-	}
-
-	private async showTaskActionDateMenu(dateType: "due" | "scheduled"): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		const anchor = this.getTaskActionAnchor();
-		if (tasks.length === 0 || !anchor) return;
-
-		const currentValue = dateType === "due" ? tasks[0].due : tasks[0].scheduled;
-		const menu = new DateContextMenu({
-			currentValue: getDatePart(currentValue || ""),
-			currentTime: getTimePart(currentValue || ""),
-			onSelect: (dateValue, timeValue) => {
-				const value = dateValue
-					? timeValue
-						? `${dateValue}T${timeValue}`
-						: dateValue
-					: undefined;
-				void this.updateTaskActionTargets(tasks, dateType, value);
-			},
-			dateRole: dateType,
-			plugin: this.plugin,
-			app: this.app || this.plugin.app,
-		});
-		menu.showAtElement(anchor);
-	}
-
-	private async showTaskActionPriorityMenu(): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		const anchor = this.getTaskActionAnchor();
-		if (tasks.length === 0 || !anchor) return;
-
-		new PriorityContextMenu({
-			currentValue: tasks[0].priority,
-			onSelect: (value) => void this.updateTaskActionTargets(tasks, "priority", value),
-			plugin: this.plugin,
-		}).showAtElement(anchor);
-	}
-
-	private async showTaskActionStatusMenu(): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		const anchor = this.getTaskActionAnchor();
-		if (tasks.length === 0 || !anchor) return;
-
-		new StatusContextMenu({
-			currentValue: tasks[0].status,
-			onSelect: (value) => void this.updateTaskActionTargetStatuses(tasks, value),
-			plugin: this.plugin,
-		}).showAtElement(anchor);
-	}
-
-	private async showTaskActionRecurrenceMenu(): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		const anchor = this.getTaskActionAnchor();
-		if (tasks.length === 0 || !anchor) return;
-
-		new RecurrenceContextMenu({
-			currentValue:
-				typeof tasks[0].recurrence === "string" ? tasks[0].recurrence : undefined,
-			currentAnchor: tasks[0].recurrence_anchor || "scheduled",
-			scheduledDate: tasks[0].scheduled,
-			onSelect: (value, recurrenceAnchor) => {
-				void (async () => {
-					await this.updateTaskActionTargets(
-						tasks,
-						"recurrence",
-						value || undefined
-					);
-					if (recurrenceAnchor !== undefined) {
-						await this.updateTaskActionTargets(
-							tasks,
-							"recurrence_anchor",
-							recurrenceAnchor
-						);
-					}
-				})();
-			},
-			app: this.plugin.app,
-			plugin: this.plugin,
-		}).showAtElement(anchor);
-	}
-
-	private async addTagsToTaskActionTargets(): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		if (tasks.length === 0) return;
-
-		const input = await showTextInputModal(this.plugin.app, {
-			title: this.plugin.i18n.translate("contextMenus.task.addTag"),
-			placeholder: this.plugin.i18n.translate("contextMenus.task.tagPlaceholder"),
-			confirmText: this.plugin.i18n.translate("common.confirm"),
-			cancelText: this.plugin.i18n.translate("common.cancel"),
-			onInputReady: (inputEl) => {
-				new TagSuggest(this.plugin.app, inputEl, this.plugin);
-			},
-		});
-		const tags = parseTaskTagInput(input);
-		if (tags.length === 0) return;
-
-		for (const task of tasks) {
-			await this.plugin.updateTaskProperty(task, "tags", addTagsToList(task.tags, tags));
-		}
-	}
-
-	private async addContextToTaskActionTargets(): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		if (tasks.length === 0) return;
-
-		const context = await showTextInputModal(this.plugin.app, {
-			title: this.plugin.i18n.translate(
-				"contextMenus.task.organization.addContext"
-			),
-			placeholder: this.plugin.i18n.translate(
-				"contextMenus.task.organization.contextPlaceholder"
-			),
-			confirmText: this.plugin.i18n.translate("common.confirm"),
-			cancelText: this.plugin.i18n.translate("common.cancel"),
-		});
-		if (!context?.trim()) return;
-
-		for (const task of tasks) {
-			await this.plugin.updateTaskProperty(
-				task,
-				"contexts",
-				addContextToList(task.contexts, context)
-			);
-		}
-	}
-
-	private addProjectToTaskActionTargets(): void {
-		const paths = this.getTaskActionTargetPaths();
-		if (paths.length === 0) return;
-
-		void (async () => {
-			const tasks = (
-				await Promise.all(
-					paths.map((path) => this.plugin.cacheManager.getTaskInfo(path))
-				)
-			).filter((task): task is TaskInfo => task !== null);
-			new ProjectSelectModal(
-				this.plugin.app,
-				this.plugin,
-				(projectFile) => {
-					if (!(projectFile instanceof TFile)) return;
-					void (async () => {
-						for (const path of paths) {
-							const task = await this.plugin.cacheManager.getTaskInfo(path);
-							if (task) await addTaskToProject(this.plugin, task, projectFile);
-						}
-					})();
-				},
-				{
-					selectedProjects: getTaskProjectFiles(this.plugin, tasks),
-					onRemove: async (projectFile) => {
-						for (const path of paths) {
-							const task = await this.plugin.cacheManager.getTaskInfo(path);
-							if (task) {
-								await removeTaskFromProject(this.plugin, task, projectFile);
-							}
-						}
-					},
-				}
-			).open();
-		})();
-	}
-
-	private async deleteTaskActionTargets(): Promise<void> {
-		const tasks = await this.getTaskActionTargets();
-		if (tasks.length === 0) return;
-
-		const confirmed = await showConfirmationModal(this.plugin.app, {
-			title: tasks.length === 1 ? "Delete task" : "Delete tasks",
-			message:
-				tasks.length === 1
-					? `Are you sure you want to delete "${tasks[0].title}"? This action cannot be undone.`
-					: `Are you sure you want to delete ${tasks.length} tasks? This action cannot be undone.`,
-			confirmText: "Delete",
-			cancelText: this.plugin.i18n.translate("common.cancel"),
-			isDestructive: true,
-		});
-		if (!confirmed) return;
-
-		for (const task of tasks) {
-			await this.plugin.taskService.deleteTask(task);
-		}
-		this.plugin.taskSelectionService?.clearSelection();
 	}
 
 	private unregisterContainerListeners(): void {
@@ -3439,7 +2719,7 @@ export class TaskListView extends BasesViewBase {
 					event,
 					task.path,
 					this.plugin,
-					this.getTaskActionDate(task)
+					getTaskActionDate(task, this.currentTargetDate)
 				);
 				return;
 			case "edit-date":
@@ -3463,7 +2743,7 @@ export class TaskListView extends BasesViewBase {
 	private async handleToggleStatus(task: TaskInfo, event: MouseEvent): Promise<void> {
 		try {
 			if (task.recurrence) {
-				const actionDate = this.getTaskActionDate(task);
+				const actionDate = getTaskActionDate(task, this.currentTargetDate);
 				await this.plugin.toggleRecurringTaskComplete(task, actionDate);
 			} else {
 				await this.plugin.toggleTaskStatus(task);
@@ -3478,19 +2758,6 @@ export class TaskListView extends BasesViewBase {
 			});
 			new Notice(`Failed to toggle task status: ${message}`);
 		}
-	}
-
-	/**
-	 * Determine the date to use when completing a recurring task from Bases.
-	 * Prefers the task's scheduled (or due) date to avoid marking the wrong instance.
-	 */
-	private getTaskActionDate(task: TaskInfo): Date {
-		const dateStr = getDatePart(task.scheduled || task.due || "");
-		if (dateStr) {
-			return parseDateToUTC(dateStr);
-		}
-
-		return this.currentTargetDate;
 	}
 
 	private showPriorityMenu(task: TaskInfo, event: MouseEvent): void {

@@ -31,6 +31,29 @@ describe("TaskListFocusController", () => {
 		HTMLElement.prototype.scrollIntoView = jest.fn();
 	});
 
+	it("does not move task focus from hover when the hover guard denies ownership", () => {
+		const guardedRoot = document.createElement("div");
+		const first = createCard("Tasks/First.md");
+		const second = createCard("Tasks/Second.md");
+		guardedRoot.append(first, second);
+		document.body.appendChild(guardedRoot);
+		const guardedController = new TaskListFocusController(
+			guardedRoot,
+			false,
+			() => false
+		);
+
+		first.focus();
+		const focusEvent = new FocusEvent("focusin", { bubbles: true });
+		Object.defineProperty(focusEvent, "target", { value: first });
+		guardedController.handleFocusIn(focusEvent);
+		const hover = new MouseEvent("mousemove", { bubbles: true });
+		Object.defineProperty(hover, "target", { value: second });
+
+		expect(guardedController.handleMouseMove(hover)).toBe(false);
+		expect(guardedController.getFocusedIdentity()?.path).toBe("Tasks/First.md");
+	});
+
 	afterEach(() => {
 		document.body.innerHTML = "";
 		jest.restoreAllMocks();

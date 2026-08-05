@@ -42,7 +42,8 @@ export class TaskListFocusController {
 
 	constructor(
 		private readonly root: HTMLElement,
-		autoFocusInitial = false
+		autoFocusInitial = false,
+		private readonly canClaimHover: () => boolean = () => true
 	) {
 		this.initialFocusPending = autoFocusInitial;
 		this.syncCursorSourceClass();
@@ -67,6 +68,7 @@ export class TaskListFocusController {
 	handleMouseMove(event: MouseEvent): boolean {
 		const card = this.getCardFromTarget(event.target);
 		if (!card) return false;
+		if (!this.canClaimHover()) return false;
 
 		this.setCursorSource("mouse");
 		if (card === this.lastMouseCard) return true;

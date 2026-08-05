@@ -275,6 +275,18 @@ The Task List View provides interaction with tasks through clicking and context 
 
 Context menu availability depends on your TaskNotes settings and task properties.
 
+## Keyboard Shortcuts
+
+Once a task card has keyboard focus (click a card, tab to it, or hover it), the Task List View supports keyboard shortcuts for the same actions available by mouse, plus navigation and multi-select:
+
+- Move focus between cards and jump to the first/last card
+- Toggle selection on the focused card, select all visible cards, or clear focus and selection
+- Edit due/scheduled dates, priority, status, and recurrence
+- Mark complete, toggle archive, add tags/context/project
+- Copy task titles, open the task note, open the context menu, or delete
+
+Shortcuts are configurable per action, including per-user-field bindings, in **Settings → TaskNotes → Keyboard shortcuts**. Kanban and Agenda share this same shortcut set on their own task cards, and Calendar's month/week/day/year views support the single-task subset of it against whichever task is currently hovered.
+
 ## Virtual Scrolling
 
 The Task List View automatically enables virtual scrolling when displaying 100 or more items (tasks + group headers). Virtual scrolling provides:

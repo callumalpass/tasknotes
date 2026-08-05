@@ -68,6 +68,12 @@ import {
 import { filterTopLevelSubtasks } from "./topLevelSubtasks";
 import type { BasesTaskUpdateSource } from "./basesUpdateEvents";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
+import {
+	BasesTaskCardKeyboardController,
+	type BasesTaskCardActionViewContext,
+} from "./BasesTaskCardKeyboardController";
+import { canHoverClaimBasesTaskFocus } from "./embeddedBasesKeyboard";
+import type { TaskListAction } from "./taskListKeyboardActions";
 
 type BasesEphemeralState = {
 	scrollTop?: unknown;
@@ -96,6 +102,7 @@ export abstract class BasesViewBase extends Component {
 	protected logger: TaskNotesLogger;
 	protected containerEl: HTMLElement;
 	protected rootElement: HTMLElement | null = null;
+	protected taskCardKeyboardController: BasesTaskCardKeyboardController | null = null;
 	protected taskUpdateListener: EventRef[] | null = null;
 	protected updateDebounceTimer: number | null = null;
 	protected dataUpdateDebounceTimer: number | null = null;
@@ -170,10 +177,66 @@ export abstract class BasesViewBase extends Component {
 	 */
 	onload(): void {
 		this.setupContainer();
+		this.setupTaskCardKeyboard();
 		this.setupTaskUpdateListener();
 		this.setupSelectionHandling();
 		this.updateRelevantPathsCache();
 		void this.render();
+	}
+
+	/**
+	 * Installs roving task-card focus for every TaskNotes Bases presentation.
+	 * This gives Agenda, Calendar, Kanban, and Task List the same explicit-focus
+	 * and guarded-hover behavior without changing their view-specific rendering.
+	 */
+	private setupTaskCardKeyboard(): void {
+		if (!this.rootElement || this.taskCardKeyboardController) return;
+
+		const root = this.rootElement;
+		const readConfig = () => this.getTaskCardActionsConfig();
+		this.taskCardKeyboardController = new BasesTaskCardKeyboardController(
+			this,
+			root,
+			this.containerEl,
+			this.plugin,
+			{
+				// Hover is the feature fulcrum: it may move the task cursor only when
+				// the surrounding project-note editor does not currently own an edit cursor.
+				canClaimHover: () => canHoverClaimBasesTaskFocus(root),
+				autoFocusInitial: readConfig()?.autoFocusInitial ?? false,
+				cardAreaElement: readConfig()?.cardAreaElement,
+				isActionSupported: (action) => readConfig()?.isActionSupported(action) ?? false,
+				buildViewContext: () => {
+					const config = readConfig();
+					if (!config) {
+						throw new Error(
+							"Task card action dispatched without an actions config"
+						);
+					}
+					return config.buildViewContext();
+				},
+			}
+		);
+		this.register(() => {
+			this.taskCardKeyboardController?.destroy();
+			this.taskCardKeyboardController = null;
+		});
+	}
+
+	/**
+	 * Opt-in hook for views that dispatch Task List-style keyboard actions
+	 * (Task List, Kanban, Calendar's Agenda/list mode) through the shared
+	 * `BasesTaskCardKeyboardController`. Views that only need hover/focus
+	 * tracking (or that implement their own separate dispatch, like Calendar's
+	 * grid modes) leave this at its default of `null`.
+	 */
+	protected getTaskCardActionsConfig(): {
+		isActionSupported(action: TaskListAction): boolean;
+		buildViewContext(): BasesTaskCardActionViewContext;
+		autoFocusInitial?: boolean;
+		cardAreaElement?: HTMLElement;
+	} | null {
+		return null;
 	}
 
 	/**
@@ -847,8 +910,8 @@ export abstract class BasesViewBase extends Component {
 	 * Lets specialized Bases views defer selection keys while another UI surface
 	 * (for example a menu or modal) owns keyboard input.
 	 */
-	protected canHandleSelectionKeyDown(_event: KeyboardEvent): boolean {
-		return true;
+	protected canHandleSelectionKeyDown(event: KeyboardEvent): boolean {
+		return this.taskCardKeyboardController?.canHandleSelectionKeyDown(event) ?? true;
 	}
 
 	/**

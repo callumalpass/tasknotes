@@ -514,9 +514,9 @@ export const en: TranslationTree = {
 			integrations: "Integrations",
 		},
 		keyboardShortcuts: {
-			header: "Task-list keyboard shortcuts",
+			header: "Task card keyboard shortcuts",
 			description:
-				"Configure view-local shortcuts. They only run while a task card has keyboard focus.",
+				"Configure shortcuts for task cards in the task list, Kanban, and agenda views, and for the task currently hovered in calendar grid views. They only run while a task has keyboard focus or is hovered.",
 			actionDescription: "Click a shortcut to remove it, or add another binding.",
 			add: "Add shortcut",
 			remove: "Remove shortcut",
@@ -527,8 +527,8 @@ export const en: TranslationTree = {
 			confirm: "Add",
 			resetAction: "Reset this action",
 			resetAll: "Reset all shortcuts",
-			resetAllDescription: "Restore every task-list shortcut to its default binding.",
-			conflict: "Conflict: {shortcuts} is also assigned to another task-list action.",
+			resetAllDescription: "Restore every task card shortcut to its default binding.",
+			conflict: "Conflict: {shortcuts} is also assigned to another task card action.",
 			duplicateTitle: "Shortcut already assigned",
 			duplicateMessage:
 				"{shortcut} is assigned to {actions}. Replace the existing assignment?",
