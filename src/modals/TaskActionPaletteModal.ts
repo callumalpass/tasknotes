@@ -10,7 +10,7 @@ import {
 } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
-import { getDatePart } from "../utils/dateUtils";
+import { getDatePart, parseDateToUTC } from "../utils/dateUtils";
 import {
 	openMaterializedOccurrenceParent,
 	openOrCreateOccurrenceNote,
@@ -296,7 +296,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 					await openOrCreateOccurrenceNote({
 						plugin,
 						parentTask: task,
-						targetDate,
+						targetDate: this.getOccurrenceNoteTargetDate(task, targetDate),
 						openInNewLeaf: true,
 					});
 				},
@@ -409,6 +409,15 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 		);
 
 		return actions;
+	}
+
+	private getOccurrenceNoteTargetDate(task: TaskInfo, targetDate: Date): Date {
+		try {
+			const scheduledDate = getDatePart(task.scheduled || "");
+			return scheduledDate ? parseDateToUTC(scheduledDate) : targetDate;
+		} catch {
+			return targetDate;
+		}
 	}
 
 	private getQuickDatePresets(): QuickDatePreset[] {

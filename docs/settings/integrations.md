@@ -47,7 +47,7 @@ OAuth integration requires creating your own OAuth application with Google and/o
 
 ### Google Calendar
 
-Provide **Client ID** and **Client Secret** from Google Cloud Console, then use **Connect Google Calendar** to complete OAuth loopback authentication. **Disconnect** revokes local credentials.
+Provide **Client ID** and **Client Secret** from Google Cloud Console, then use **Connect Google Calendar** to complete OAuth loopback authentication. **Disconnect** revokes account tokens while retaining the OAuth app credentials for reconnection. Use **Forget saved credentials** to remove the client ID and client secret.
 
 The **Target calendar** setting used for exporting tasks to Google Calendar is also used as the default selection when creating a manual external calendar event from the calendar view. If the target calendar is unavailable, TaskNotes falls back to the provider's primary calendar.
 
@@ -61,7 +61,7 @@ When connected, displays:
 
 ### Microsoft Outlook Calendar
 
-Provide **Client ID** and **Client Secret** from Azure App Registration, then use **Connect Microsoft Calendar** to authenticate. **Disconnect** removes stored credentials and sync access.
+Provide **Client ID** and **Client Secret** from Azure App Registration, then use **Connect Microsoft Calendar** to authenticate. **Disconnect** revokes account tokens while retaining the OAuth app credentials for reconnection. Use **Forget saved credentials** to remove the client ID and client secret.
 
 When connected, displays:
 - Connected account email
@@ -70,10 +70,11 @@ When connected, displays:
 
 ### Security
 
-- OAuth credentials are stored locally in Obsidian's data folder
+- OAuth client credentials and account tokens are stored in Obsidian Secret Storage, which is encrypted at rest when supported by the operating system
+- OAuth credentials and account tokens are not written to TaskNotes' `data.json`
 - Access tokens refresh automatically
 - Calendar data syncs directly between Obsidian and the calendar provider (no intermediary servers)
-- Disconnect at any time to revoke access
+- Disconnect at any time to revoke account access; use **Forget saved credentials** to remove the OAuth app credentials
 
 ## Calendar subscriptions (ICS)
 

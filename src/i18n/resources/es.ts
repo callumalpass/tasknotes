@@ -1112,7 +1112,13 @@ export const es: TranslationTree = {
 				filenameUpdatesWithTitle: "El nombre del archivo se actualizará automáticamente cuando cambie el título de la tarea.",
 				filenameFormat: "Formato de nombre de archivo:",
 				customTemplate: "Plantilla personalizada:",
-				legacySyntaxWarning: "La sintaxis de llaves simples como {title} está obsoleta. Por favor, use la sintaxis de llaves dobles {{title}} para consistencia con las plantillas de cuerpo."
+				legacySyntaxWarning: "La sintaxis de llaves simples como {title} está obsoleta. Por favor, use la sintaxis de llaves dobles {{title}} para consistencia con las plantillas de cuerpo.",
+				occurrenceFilenameTemplate: "Plantilla de nombre de archivo para ocurrencias",
+				occurrenceFilenameTemplateHelp:
+					"Plantilla de nombre de archivo para ocurrencias materializadas de tareas recurrentes. Déjala vacía para conservar el nombre existente (título de la tarea principal más un sufijo numérico). Elige explícitamente la granularidad con {{occurrenceDate}}, {{occurrenceWeek}}, {{occurrenceMonth}}, {{occurrenceYear}} o {{occurrenceMonthName}}. También funcionan todas las variables normales de nombres de archivo. Una tarea principal puede sobrescribir esta plantilla mediante la propiedad de frontmatter configurada abajo.",
+				occurrenceFilenameProperty: "Propiedad para sobrescribir la plantilla de ocurrencias",
+				occurrenceFilenamePropertyHelp:
+					"Nombre de la propiedad de frontmatter de una tarea recurrente principal que sobrescribe la plantilla de nombre de archivo de sus ocurrencias."
 			},
 			tagsCard: {
 				nativeObsidianTags: "Usa etiquetas nativas de Obsidian"
@@ -3100,7 +3106,8 @@ export const es: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 recordatorio configurado (clic para gestionar)",
 			reminderTooltipMany: "{count} recordatorios configurados (clic para gestionar)",
-			projectTooltip: "Esta tarea se usa como proyecto (clic para filtrar subtareas)",
+			projectTooltip: "Esta tarea se usa como proyecto (clic para mostrar/ocultar subtareas)",
+			projectIndicatorTooltip: "Esta tarea se utiliza como proyecto",
 			expandSubtasks: "Expandir subtareas",
 			collapseSubtasks: "Contraer subtareas",
 			dueToday: "{label}: Hoy",

@@ -18,7 +18,7 @@ function createPlugin(tasks: Array<Record<string, unknown>>) {
 		settings: { showTrackedTasksInStatusBar: true },
 		addStatusBarItem: jest.fn(() => statusBarElement),
 		cacheManager: {
-			getAllTasks: jest.fn().mockResolvedValue(tasks),
+			getAllCachedTasks: jest.fn().mockReturnValue(tasks),
 		},
 		getActiveTimeSession: jest.fn((task) => {
 			const entry = (task as { timeEntries?: Array<{ startTime: string; endTime?: string }> })
@@ -70,7 +70,7 @@ describe("Issue #1655: time tracking status widget", () => {
 		jest.advanceTimersByTime(1000);
 
 		expect(statusBarElement.textContent).toContain("Tracking: Timer task (2:06)");
-		expect(plugin.cacheManager.getAllTasks).toHaveBeenCalledTimes(1);
+		expect(plugin.cacheManager.getAllCachedTasks).toHaveBeenCalledTimes(1);
 
 		service.destroy();
 	});

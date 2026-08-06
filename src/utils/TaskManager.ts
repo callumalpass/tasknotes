@@ -269,6 +269,11 @@ export class TaskManager extends Events {
 				return pendingTaskInfo;
 			}
 
+			// getFileCache returns null only while a file is still unindexed; an indexed
+			// file that reports no frontmatter genuinely has no YAML block, so reading it
+			// from disk cannot surface anything the cache is missing.
+			if (metadata) return null;
+
 			const frontmatter = await this.readFrontmatterFromFile(file);
 			if (!frontmatter || !this.isTaskFile(frontmatter)) return null;
 
@@ -694,6 +699,28 @@ export class TaskManager extends Events {
 			if (!this.isValidFile(file.path)) continue;
 
 			const taskInfo = await this.getTaskInfo(file.path);
+			if (taskInfo) {
+				tasks.push(taskInfo);
+			}
+		}
+
+		return tasks;
+	}
+
+	/**
+	 * Get every task currently available in Obsidian's metadata cache.
+	 *
+	 * This intentionally avoids getTaskInfo's disk fallback so recurring background
+	 * scans cannot turn an incomplete metadata cache into a vault-wide read.
+	 */
+	getAllCachedTasks(): TaskInfo[] {
+		const tasks: TaskInfo[] = [];
+		const files = this.app.vault.getMarkdownFiles();
+
+		for (const file of files) {
+			if (!this.isValidFile(file.path)) continue;
+
+			const taskInfo = this.getCachedTaskInfoSync(file.path);
 			if (taskInfo) {
 				tasks.push(taskInfo);
 			}

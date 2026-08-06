@@ -222,6 +222,7 @@ export const SettingsFactory = {
     scheduled: 'scheduled',
     contexts: 'contexts',
     projects: 'projects',
+	attachments: 'attachments',
     timeEstimate: 'timeEstimate',
     completedDate: 'completedDate',
     dateCreated: 'dateCreated',
@@ -329,6 +330,7 @@ export const FileSystemFactory = {
       scheduled: task.scheduled,
       tags: task.tags,
       contexts: task.contexts,
+	  attachments: task.attachments,
       dateCreated: task.dateCreated,
       dateModified: task.dateModified,
       recurrence: task.recurrence,
@@ -409,6 +411,7 @@ export const PluginFactory = {
       // Core TaskManager methods
       initialize: jest.fn(),
       getAllTasks: jest.fn().mockResolvedValue([]),
+      getAllCachedTasks: jest.fn().mockReturnValue([]),
       getAllTaskPaths: jest.fn().mockReturnValue(new Set()),
       getTaskInfo: jest.fn().mockResolvedValue(null),
       getCachedTaskInfo: jest.fn().mockResolvedValue(null),

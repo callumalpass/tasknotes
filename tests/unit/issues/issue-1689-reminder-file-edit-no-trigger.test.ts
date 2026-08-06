@@ -37,7 +37,7 @@ const flushPromises = async (): Promise<void> => {
 const createService = () => {
 	const emitter = new TestEmitter();
 	const cacheManager = {
-		getAllTasks: jest.fn<Promise<TaskInfo[]>, []>().mockResolvedValue([]),
+		getAllCachedTasks: jest.fn<TaskInfo[], []>().mockReturnValue([]),
 		getTaskInfo: jest.fn<Promise<TaskInfo | null>, [string]>(),
 	};
 	const plugin = {
@@ -86,6 +86,7 @@ describe("Issue #1689: reminders edited in frontmatter refresh notification time
 
 		await service.initialize();
 		expect((service as any).notificationQueue).toEqual([]);
+		expect(cacheManager.getAllCachedTasks).toHaveBeenCalledTimes(1);
 
 		emitter.trigger("file-updated", { path: taskPath });
 		await flushPromises();

@@ -6,6 +6,7 @@ import { OAuthNotConfiguredError, TokenExpiredError, TokenRefreshError } from ".
 import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/httpTypes";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
+import { OAuthSecretStore, type OAuthCredentials } from "./OAuthSecretStore";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/OAuthService" });
 
@@ -43,6 +44,7 @@ function ensureHttpModule(): HttpModuleLike {
  */
 export class OAuthService {
 	private plugin: TaskNotesPlugin;
+	private readonly secretStore: OAuthSecretStore;
 	private callbackServer: HTTPServerLike | null = null;
 	private pendingOAuthState: Map<
 		string,
@@ -57,6 +59,7 @@ export class OAuthService {
 	// Token refresh mutex to prevent race conditions
 	// Maps provider to pending refresh promise
 	private tokenRefreshPromises: Map<OAuthProvider, Promise<OAuthTokens>> = new Map();
+	private connectionGenerations: Map<OAuthProvider, number> = new Map();
 
 	// OAuth configurations for different providers
 	private configs: Record<OAuthProvider, OAuthConfig> = {
@@ -85,23 +88,30 @@ export class OAuthService {
 		},
 	};
 
-	constructor(plugin: TaskNotesPlugin) {
+	constructor(plugin: TaskNotesPlugin, secretStore: OAuthSecretStore) {
 		this.plugin = plugin;
-		void this.loadClientIds();
+		this.secretStore = secretStore;
 	}
 
-	/**
-	 * Loads OAuth client IDs and secrets
-	 * from user settings.
-	 */
-	async loadClientIds(): Promise<void> {
-		// Google Calendar
-		this.configs.google.clientId = this.plugin.settings.googleOAuthClientId || "";
-		this.configs.google.clientSecret = this.plugin.settings.googleOAuthClientSecret || "";
+	getCredentials(provider: OAuthProvider): OAuthCredentials | null {
+		return this.secretStore.getCredentials(provider);
+	}
 
-		// Microsoft Calendar
-		this.configs.microsoft.clientId = this.plugin.settings.microsoftOAuthClientId || "";
-		this.configs.microsoft.clientSecret = this.plugin.settings.microsoftOAuthClientSecret || "";
+	setCredentials(provider: OAuthProvider, credentials: OAuthCredentials): void {
+		this.secretStore.setCredentials(provider, credentials);
+	}
+
+	clearCredentials(provider: OAuthProvider): void {
+		this.secretStore.clearCredentials(provider);
+	}
+
+	private getConfig(provider: OAuthProvider): OAuthConfig {
+		const credentials = this.secretStore.getCredentials(provider);
+		return {
+			...this.configs[provider],
+			clientId: credentials?.clientId ?? "",
+			clientSecret: credentials?.clientSecret,
+		};
 	}
 
 	/**
@@ -109,17 +119,8 @@ export class OAuthService {
 	 * Uses standard loopback redirect flow with user-provided credentials.
 	 */
 	async authenticate(provider: OAuthProvider): Promise<void> {
-		const config = this.configs[provider];
-
+		const config = this.getConfig(provider);
 		if (!config.clientId) {
-			throw new OAuthNotConfiguredError(provider);
-		}
-
-		const hasCredentials =
-			(provider === "google" && this.plugin.settings.googleOAuthClientId) ||
-			(provider === "microsoft" && this.plugin.settings.microsoftOAuthClientId);
-
-		if (!hasCredentials) {
 			throw new OAuthNotConfiguredError(provider);
 		}
 
@@ -132,10 +133,13 @@ export class OAuthService {
 	 */
 	private async authenticateStandard(provider: OAuthProvider): Promise<void> {
 		try {
-			const config = this.configs[provider];
+			const config = this.getConfig(provider);
 
 			if (!Platform.isDesktopApp) {
-				publishUserNotice(this.plugin.emitter, "OAUTH authentication requires the desktop app.");
+				publishUserNotice(
+					this.plugin.emitter,
+					"OAUTH authentication requires the desktop app."
+				);
 				throw new Error("OAuth authentication requires the desktop app.");
 			}
 
@@ -170,7 +174,10 @@ export class OAuthService {
 					reject: () => {},
 				});
 
-				publishUserNotice(this.plugin.emitter, `Opening browser for ${provider} authorization...`);
+				publishUserNotice(
+					this.plugin.emitter,
+					`Opening browser for ${provider} authorization...`
+				);
 
 				// Open browser to authorization URL
 				window.open(authUrl, "_blank");
@@ -184,7 +191,10 @@ export class OAuthService {
 				// Store connection
 				await this.storeConnection(provider, tokens);
 
-				publishUserNotice(this.plugin.emitter, `Successfully connected to ${provider} Calendar!`);
+				publishUserNotice(
+					this.plugin.emitter,
+					`Successfully connected to ${provider} Calendar!`
+				);
 			} finally {
 				// Restore original redirect URI
 				config.redirectUri = originalRedirectUri;
@@ -195,7 +205,10 @@ export class OAuthService {
 				operation: "oauth-authentication",
 				error: error,
 			});
-			publishUserNotice(this.plugin.emitter, `Failed to connect to ${provider}: ${error.message}`);
+			publishUserNotice(
+				this.plugin.emitter,
+				`Failed to connect to ${provider}: ${error.message}`
+			);
 			throw error;
 		} finally {
 			await this.stopCallbackServer();
@@ -546,7 +559,8 @@ export class OAuthService {
 			throw new Error(`No refresh token available for ${provider}`);
 		}
 
-		const config = this.configs[provider];
+		const connectionGeneration = this.connectionGenerations.get(provider) ?? 0;
+		const config = this.getConfig(provider);
 		const params: Record<string, string> = {
 			client_id: config.clientId,
 			refresh_token: connection.tokens.refreshToken,
@@ -603,11 +617,16 @@ export class OAuthService {
 						(oauthError === "invalid_grant" || oauthError === "invalid_client"));
 
 				if (isIrrecoverableError) {
-					// Auto-disconnect to prevent repeated failures
-					// This clears local tokens but doesn't revoke on provider (token is already invalid)
-					await this.clearConnection(provider);
+					// Clear only if this response still belongs to the active connection.
+					// The user may have reconnected while the request was in flight.
+					if (!this.clearConnection(provider, connectionGeneration)) {
+						throw new Error(
+							`${provider} OAuth connection changed during token refresh`
+						);
+					}
 
-					publishUserNotice(this.plugin.emitter,
+					publishUserNotice(
+						this.plugin.emitter,
 						`${provider} connection expired. Please reconnect in Settings > Integrations.`
 					);
 					throw new TokenRefreshError(provider, oauthError, oauthErrorDescription);
@@ -637,8 +656,13 @@ export class OAuthService {
 				tokenType: data.token_type || "Bearer",
 			};
 
-			// Update stored connection
-			await this.storeConnection(provider, newTokens, connection.userEmail);
+			// Update stored connection unless it was disconnected while refresh was in flight.
+			await this.storeConnection(
+				provider,
+				newTokens,
+				connection.userEmail,
+				connectionGeneration
+			);
 
 			return newTokens;
 		} catch (error) {
@@ -660,12 +684,15 @@ export class OAuthService {
 	 * Clears a stored OAuth connection without revoking tokens on the provider.
 	 * Used when tokens are already invalid (e.g., after refresh failure with invalid_grant).
 	 */
-	private async clearConnection(provider: OAuthProvider): Promise<void> {
-		const data = (await this.plugin.loadData()) || {};
-		if (data.oauthConnections) {
-			delete data.oauthConnections[provider];
-			await this.plugin.saveData(data);
+	private clearConnection(provider: OAuthProvider, expectedGeneration?: number): boolean {
+		const currentGeneration = this.connectionGenerations.get(provider) ?? 0;
+		if (expectedGeneration !== undefined && expectedGeneration !== currentGeneration) {
+			return false;
 		}
+
+		this.secretStore.clearConnection(provider);
+		this.connectionGenerations.set(provider, currentGeneration + 1);
+		return true;
 	}
 
 	/**
@@ -707,13 +734,21 @@ export class OAuthService {
 	}
 
 	/**
-	 * Stores OAuth connection (encrypted)
+	 * Stores an OAuth connection in Obsidian SecretStorage.
 	 */
 	private async storeConnection(
 		provider: OAuthProvider,
 		tokens: OAuthTokens,
-		userEmail?: string
+		userEmail?: string,
+		expectedGeneration?: number
 	): Promise<void> {
+		if (
+			expectedGeneration !== undefined &&
+			expectedGeneration !== (this.connectionGenerations.get(provider) ?? 0)
+		) {
+			throw new Error(`${provider} OAuth connection changed during token refresh`);
+		}
+
 		const connection: OAuthConnection = {
 			provider,
 			tokens,
@@ -721,22 +756,18 @@ export class OAuthService {
 			connectedAt: new Date().toISOString(),
 			lastRefreshed: new Date().toISOString(),
 		};
-
-		// Store in plugin data (Obsidian handles encryption)
-		const data = (await this.plugin.loadData()) || {};
-		if (!data.oauthConnections) {
-			data.oauthConnections = {};
+		this.secretStore.setConnection(provider, connection);
+		if (expectedGeneration === undefined) {
+			const currentGeneration = this.connectionGenerations.get(provider) ?? 0;
+			this.connectionGenerations.set(provider, currentGeneration + 1);
 		}
-		data.oauthConnections[provider] = connection;
-		await this.plugin.saveData(data);
 	}
 
 	/**
-	 * Retrieves stored OAuth connection
+	 * Retrieves a connection from Obsidian SecretStorage.
 	 */
 	async getConnection(provider: OAuthProvider): Promise<OAuthConnection | null> {
-		const data = await this.plugin.loadData();
-		return data?.oauthConnections?.[provider] || null;
+		return this.secretStore.getConnection(provider);
 	}
 
 	/**
@@ -756,19 +787,15 @@ export class OAuthService {
 			return;
 		}
 
-		// Revoke tokens on the OAuth provider's server
+		// Clear local tokens first so an interrupted or concurrent refresh cannot reconnect.
+		this.clearConnection(provider);
+
+		// Revoke tokens on the OAuth provider's server.
 		await this.revokeToken(provider, connection.tokens.accessToken);
 
-		// Also revoke refresh token if present (best practice)
+		// Also revoke refresh token if present (best practice).
 		if (connection.tokens.refreshToken) {
 			await this.revokeToken(provider, connection.tokens.refreshToken);
-		}
-
-		// Remove from local storage
-		const data = (await this.plugin.loadData()) || {};
-		if (data.oauthConnections) {
-			delete data.oauthConnections[provider];
-			await this.plugin.saveData(data);
 		}
 
 		publishUserNotice(this.plugin.emitter, `Disconnected from ${provider} Calendar`);
@@ -779,7 +806,7 @@ export class OAuthService {
 	 * Note: Revocation failures are logged but don't prevent local disconnection
 	 */
 	private async revokeToken(provider: OAuthProvider, token: string): Promise<void> {
-		const config = this.configs[provider];
+		const config = this.getConfig(provider);
 
 		if (!config.revocationEndpoint) {
 			tasknotesLogger.warn(`No revocation endpoint configured for ${provider}`, {
@@ -825,7 +852,8 @@ export class OAuthService {
 		// Clear pending OAuth state
 		this.pendingOAuthState.clear();
 
-		// Clear token refresh mutex to prevent orphaned promises
+		// Clear token refresh state to prevent orphaned promises.
 		this.tokenRefreshPromises.clear();
+		this.connectionGenerations.clear();
 	}
 }

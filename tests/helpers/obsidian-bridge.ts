@@ -5,8 +5,12 @@ export * from "obsidian-test-mocks/obsidian";
 let fallbackApp = stabilizeApp(Runtime.App.createConfigured__());
 
 function stabilizeApp(app: Runtime.App): Runtime.App {
-	const appRecord = app as unknown as { renderContext?: Record<string, never> };
+	const appRecord = app as unknown as {
+		renderContext?: Record<string, never>;
+		secretStorage?: ReturnType<typeof Runtime.SecretStorage.create__>;
+	};
 	appRecord.renderContext = {};
+	appRecord.secretStorage = Runtime.SecretStorage.create__(app);
 	return app;
 }
 
@@ -120,9 +124,11 @@ Object.defineProperty(TAbstractFileFacade, Symbol.hasInstance, {
 });
 export { TAbstractFileFacade as TAbstractFile };
 
-export const Notice = jest.fn().mockImplementation((message: string | DocumentFragment, timeout?: number) => {
-	return new Runtime.Notice(message, timeout);
-});
+export const Notice = jest
+	.fn()
+	.mockImplementation((message: string | DocumentFragment, timeout?: number) => {
+		return new Runtime.Notice(message, timeout);
+	});
 
 export const requestUrl = jest.fn((request: Parameters<typeof Runtime.requestUrl>[0]) =>
 	Runtime.requestUrl(request)
@@ -144,7 +150,7 @@ export const MarkdownRenderer = {
 } as unknown as typeof Runtime.MarkdownRenderer;
 
 export const Menu = jest.fn().mockImplementation(() => {
-	return wrapMenu(new Runtime.Menu());
+	return wrapMenu(Runtime.Menu.create2__());
 });
 (Menu as unknown as { forEvent: jest.Mock }).forEvent = jest.fn((event) =>
 	wrapMenu(Runtime.Menu.forEvent(event))
@@ -245,7 +251,9 @@ function wrapMenuItem(item: RuntimeMenuItem): TestMenuItem {
 	}
 	if (!jest.isMockFunction(record.setDisabled)) {
 		const original = record.setDisabled.bind(record);
-		record.setDisabled = jest.fn((disabled) => original(disabled)) as TestMenuItem["setDisabled"];
+		record.setDisabled = jest.fn((disabled) =>
+			original(disabled)
+		) as TestMenuItem["setDisabled"];
 	}
 	if (!jest.isMockFunction(record.setIsLabel)) {
 		const original = record.setIsLabel.bind(record);
@@ -265,7 +273,9 @@ function wrapMenuItem(item: RuntimeMenuItem): TestMenuItem {
 	}
 	if (!jest.isMockFunction(record.setWarning)) {
 		const original = record.setWarning.bind(record);
-		record.setWarning = jest.fn((isWarning) => original(isWarning)) as TestMenuItem["setWarning"];
+		record.setWarning = jest.fn((isWarning) =>
+			original(isWarning)
+		) as TestMenuItem["setWarning"];
 	}
 
 	return record;

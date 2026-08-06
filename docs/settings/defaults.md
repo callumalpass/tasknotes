@@ -36,6 +36,8 @@ Instant task conversion settings are in the **Features** tab:
 
 - **Use task defaults on instant convert**: Apply default task settings when converting text to tasks instantly.
 
+The **Convert current note to task** command also uses the configured default scheduled date when the note being converted does not already have `scheduled` frontmatter. Set the Scheduled Date default to **None** to leave converted notes unscheduled.
+
 ## Related Documentation
 
 - [Task Properties Settings](task-properties.md) - Configure property keys, defaults, and NLP triggers

@@ -463,6 +463,7 @@ export interface TaskInfo {
 	tags?: string[];
 	contexts?: string[];
 	projects?: string[];
+	attachments?: string[]; // Ordered links to files that belong to this task
 	recurrence?: string; // RFC 5545 recurrence rule string
 	recurrence_anchor?: 'scheduled' | 'completion'; // Determines if recurrence is from scheduled date (fixed) or completion date (flexible). Defaults to 'scheduled'
 	complete_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was completed
@@ -502,6 +503,7 @@ export interface TaskCreationData extends Partial<TaskInfo> {
 	parentNote?: string; // Optional parent note name/path for template variable
 	creationContext?: "inline-conversion" | "manual-creation" | "modal-inline-creation" | "api" | "import" | "ics-event"; // Context for folder determination
 	customFrontmatter?: Record<string, unknown>; // Custom frontmatter properties (including user fields)
+	occurrenceFilenameTemplate?: string; // Resolved filename template for a materialized occurrence (creation-only)
 }
 
 export interface TimeEntry {
@@ -575,6 +577,7 @@ export interface TaskFrontmatter {
 	priority: "low" | "normal" | "high";
 	contexts?: string[];
 	projects?: string[];
+	attachments?: string[];
 	recurrence?: string; // RFC 5545 recurrence rule string
 	complete_instances?: string[];
 	skipped_instances?: string[];
@@ -699,6 +702,7 @@ export interface FieldMapping {
 	scheduled: string;
 	contexts: string;
 	projects: string;
+	attachments: string;
 	timeEstimate: string;
 	completedDate: string;
 	dateCreated: string;
