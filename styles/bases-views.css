@@ -85,7 +85,10 @@
     padding: var(--tn-spacing-xs) var(--tn-spacing-md) var(--tn-spacing-xs) var(--tn-spacing-sm);
     margin-bottom: var(--tn-spacing-sm);
     border-bottom: 1px solid var(--tn-border-color);
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: var(--tn-z-sticky);
+    background: var(--tn-bg-primary);
     font-size: var(--tn-font-size-lg);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
@@ -110,6 +113,54 @@
 .tn-tasknotesTaskList .tn-search-box {
 	flex: 1;
 	min-width: 0;
+}
+
+/* Own the vertical scroll so group headers can stick relative to this container.
+   Embed overrides below set overflow-y: visible when a parent note scroller should win. */
+.tn-tasknotesTaskList .tn-bases-items-container {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+}
+
+/* Flat grouped list: headers are siblings of task cards (not wrapping them), so
+   sticky must be on the section wrapper. Sticky on the inner h3 fails because its
+   containing block is only as tall as the header itself. */
+.tn-tasknotesTaskList .tn-bases-items-container > .task-section.task-group {
+	position: sticky;
+	top: 0;
+	z-index: var(--tn-z-sticky);
+	background: var(--tn-bg-primary);
+}
+
+.tn-tasknotesTaskList .tn-bases-items-container > .task-section.task-group[data-level="sub"] {
+	top: calc(var(--tn-spacing-md) + var(--tn-spacing-sm) + (1.4 * var(--tn-font-size-lg)) + 1px);
+	z-index: calc(var(--tn-z-sticky) - 1);
+}
+
+/*
+ * Virtualized lists position rows with transform, which breaks CSS sticky.
+ * A zero-height sticky pin overlays the active group header instead.
+ */
+.tn-tasknotesTaskList .task-list-virtual-sticky-header {
+	position: sticky;
+	top: 0;
+	z-index: calc(var(--tn-z-sticky) + 1);
+	height: 0;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header.is-empty {
+	display: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header__group {
+	pointer-events: auto;
+	background: var(--tn-bg-primary);
+	position: relative;
+	top: auto;
+	z-index: auto;
 }
 
 /* Toggle button for groups */

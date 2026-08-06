@@ -142,6 +142,10 @@ export class TaskListView extends BasesViewBase {
 	private containerListenersRegistered = false;
 	private virtualScroller: VirtualScroller<TaskListVirtualItem> | null = null; // Can render TaskInfo or group headers
 	private useVirtualScrolling = false;
+	/** Pinned group header overlay for virtualized lists (CSS sticky cannot work under transform). */
+	private virtualStickyHeaderPin: HTMLElement | null = null;
+	private virtualStickyHeaderKey: string | null = null;
+	private virtualStickyHeaderIndices: number[] = [];
 	private collapsedGroups = new Set<string>(); // Track collapsed group keys
 	private collapsedSubGroups = new Set<string>(); // Track collapsed sub-group keys
 	private subGroupPropertyId: string | null = null; // Property ID for sub-grouping
@@ -1823,6 +1827,7 @@ export class TaskListView extends BasesViewBase {
 	): Promise<void> {
 		// Populate group key lookup for cross-group drag detection
 		this.syncGroupedDragMetadata(items);
+		this.virtualStickyHeaderIndices = this.collectVirtualStickyHeaderIndices(items);
 
 		if (!this.virtualScroller) {
 			this.virtualScroller = new VirtualScroller<TaskListVirtualItem>({
@@ -1865,10 +1870,15 @@ export class TaskListView extends BasesViewBase {
 						return item.task.path;
 					}
 				},
+				onScroll: () => this.updateVirtualStickyHeader(),
 			});
+
+			// VirtualScroller empties the container on setup — mount the pin after that.
+			this.ensureVirtualStickyHeaderPin();
 
 			window.setTimeout(() => {
 				this.virtualScroller?.recalculate();
+				this.updateVirtualStickyHeader();
 			}, 0);
 		} else {
 			this.resetVirtualScrollerIfCardRenderChanged(
@@ -1879,12 +1889,124 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 			this.virtualScroller.updateItems(items);
+			// Assign before refreshing the pin so it reads the current items, not stale data
+			// from before this collapse/expand or data update.
+			this.lastVirtualItems = items;
+			// updateItems clears container content but keeps structure; re-ensure pin.
+			this.ensureVirtualStickyHeaderPin();
+			this.updateVirtualStickyHeader();
 		}
 		this.lastVirtualItems = items;
 		this.lastCardRenderSignature = this.buildCardRenderSignature(
 			visibleProperties,
 			cardOptions
 		);
+	}
+
+	private collectVirtualStickyHeaderIndices(items: readonly TaskListRenderItem[]): number[] {
+		const indices: number[] = [];
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i];
+			if (item.type === "primary-header" || item.type === "sub-header") {
+				indices.push(i);
+			}
+		}
+		return indices;
+	}
+
+	private ensureVirtualStickyHeaderPin(): void {
+		if (!this.itemsContainer) return;
+		if (this.virtualStickyHeaderPin?.isConnected) return;
+
+		const doc = this.containerEl.ownerDocument;
+		const pin = doc.createElement("div");
+		pin.className = "task-list-virtual-sticky-header";
+		pin.setAttribute("aria-hidden", "true");
+		this.itemsContainer.prepend(pin);
+		this.virtualStickyHeaderPin = pin;
+		this.virtualStickyHeaderKey = null;
+	}
+
+	private clearVirtualStickyHeaderPin(): void {
+		this.virtualStickyHeaderPin?.remove();
+		this.virtualStickyHeaderPin = null;
+		this.virtualStickyHeaderKey = null;
+		this.virtualStickyHeaderIndices = [];
+	}
+
+	private updateVirtualStickyHeader(): void {
+		const pin = this.virtualStickyHeaderPin;
+		const scroller = this.virtualScroller;
+		if (!pin || !scroller || this.virtualStickyHeaderIndices.length === 0) {
+			if (pin) {
+				pin.empty();
+				pin.classList.add("is-empty");
+			}
+			this.virtualStickyHeaderKey = null;
+			return;
+		}
+
+		const scrollTop = scroller.getScrollTop();
+		let activeIndex = -1;
+		for (const index of this.virtualStickyHeaderIndices) {
+			// Strictly past the header so we don't double up with the in-list header at rest.
+			if (scroller.getItemOffset(index) < scrollTop) {
+				activeIndex = index;
+			} else {
+				break;
+			}
+		}
+
+		if (activeIndex < 0) {
+			pin.empty();
+			pin.classList.add("is-empty");
+			pin.style.removeProperty("transform");
+			this.virtualStickyHeaderKey = null;
+			return;
+		}
+
+		const items = this.lastVirtualItems;
+		const activeItem = items[activeIndex];
+		if (!activeItem || !("type" in activeItem)) {
+			return;
+		}
+		if (activeItem.type !== "primary-header" && activeItem.type !== "sub-header") {
+			return;
+		}
+
+		const headerKey =
+			activeItem.type === "primary-header"
+				? `primary-${activeItem.groupKey}`
+				: `sub-${activeItem.groupKey}:${activeItem.subGroupKey}`;
+
+		if (this.virtualStickyHeaderKey !== headerKey) {
+			pin.empty();
+			const headerEl = this.createGroupHeader(activeItem);
+			headerEl.classList.add("task-list-virtual-sticky-header__group");
+			pin.appendChild(headerEl);
+			pin.classList.remove("is-empty");
+			pin.removeAttribute("aria-hidden");
+			this.virtualStickyHeaderKey = headerKey;
+		}
+
+		// Push the sticky header up as the next group header approaches (classic sticky behavior).
+		const activePos = this.virtualStickyHeaderIndices.indexOf(activeIndex);
+		const nextHeaderIndex =
+			activePos >= 0 && activePos < this.virtualStickyHeaderIndices.length - 1
+				? this.virtualStickyHeaderIndices[activePos + 1]
+				: -1;
+
+		const pinHeight = pin.getBoundingClientRect().height || scroller.getMeasuredItemHeight(activeIndex);
+		if (nextHeaderIndex >= 0) {
+			const distanceToNext = scroller.getItemOffset(nextHeaderIndex) - scrollTop;
+			if (distanceToNext < pinHeight) {
+				pin.style.transform = `translateY(${distanceToNext - pinHeight}px)`;
+			} else {
+				pin.style.removeProperty("transform");
+			}
+		} else {
+			pin.style.removeProperty("transform");
+		}
 	}
 
 	private async renderGroupedNormal(
@@ -2451,6 +2573,12 @@ export class TaskListView extends BasesViewBase {
 		if (this.useVirtualScrolling && this.virtualScroller) {
 			this.syncGroupedDragMetadata(items);
 			this.virtualScroller.updateItems(items);
+			// Recompute before refreshing the pin so header indices and the item
+			// array they reference agree — otherwise the pin can briefly show
+			// header content from the pre-toggle layout (wrong group/count).
+			this.virtualStickyHeaderIndices = this.collectVirtualStickyHeaderIndices(items);
+			this.lastVirtualItems = items;
+			this.updateVirtualStickyHeader();
 		} else {
 			// If not using virtual scrolling, do full render
 			await this.render();
@@ -2848,6 +2976,7 @@ export class TaskListView extends BasesViewBase {
 			this.virtualScroller.destroy();
 			this.virtualScroller = null;
 		}
+		this.clearVirtualStickyHeaderPin();
 		this.lastVirtualItems = [];
 	}
 
