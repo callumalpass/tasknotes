@@ -76,6 +76,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Completing or skipping an instance of a scheduled-anchored recurring task from
+  the edit modal's completions calendar no longer creates a duplicate Google
+  Calendar event at the next occurrence date. The scheduled date advancing as
+  part of completion is no longer mistaken for manually moving that occurrence.
 - (#2182) Checklist progress on task cards now excludes cancelled markdown
   checklist items such as `[-]` from the completed/total count. Thanks to
   @ctrl-q for reporting this.
