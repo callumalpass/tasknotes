@@ -59,6 +59,21 @@ export class TaskLinkWidget extends WidgetType {
 		wrapper.classList.add("tn-static-display-inline-cccfa456");
 		wrapper.classList.add("tn-static-vertical-align-baseline-657d9c46");
 
+		// Keep CodeMirror from moving the selection onto the replaced link before
+		// the card receives its click/contextmenu event.
+		wrapper.addEventListener("pointerdown", (event) => {
+			event.stopPropagation();
+		});
+		wrapper.addEventListener("mousedown", (event) => {
+			event.stopPropagation();
+			if (event.button === 0) {
+				event.preventDefault();
+			}
+		});
+		wrapper.addEventListener("mouseup", (event) => {
+			event.stopPropagation();
+		});
+
 		// Use createTaskCard with inline layout
 		const card = createTaskCard(this.taskInfo, this.plugin, visibleProperties, {
 			layout: "inline",

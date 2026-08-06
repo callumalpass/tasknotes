@@ -20,6 +20,7 @@ function createPlugin(options: { dataFileExists: boolean; version?: string }) {
 	(plugin as any).settingsLifecycleService = {
 		saveSettings: jest.fn(() => plugin.saveSettingsDataOnly()),
 	};
+	(plugin as any).oauthSecretStore = {};
 	plugin.saveData = jest.fn().mockResolvedValue(undefined);
 
 	return plugin;

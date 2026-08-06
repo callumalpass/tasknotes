@@ -102,6 +102,45 @@ describe("TaskListView group collapse controls", () => {
 		expect((view as any).collapsedSubGroups.has("Open:Urgent")).toBe(true);
 	});
 
+	it("keeps the collapsed default when a pre-render ephemeral snapshot is restored after seeding", () => {
+		const view = createView();
+		(view as any).defaultCollapsedState = "Collapsed";
+
+		const savedState = view.getEphemeralState();
+		(view as any).initializeCollapseStateForSnapshot(
+			["Open", "Done"],
+			new Map([
+				["Open", ["Open:Urgent"]],
+				["Done", ["Done:Later"]],
+			])
+		);
+		view.setEphemeralState(savedState);
+
+		expect((view as any).collapsedGroups.has("Open")).toBe(true);
+		expect((view as any).collapsedGroups.has("Done")).toBe(true);
+		expect((view as any).collapsedSubGroups.has("Open:Urgent")).toBe(true);
+	});
+
+	it("expands only the toggled group after a pre-render ephemeral snapshot is restored", async () => {
+		const view = createView();
+		(view as any).defaultCollapsedState = "Collapsed";
+
+		const savedState = view.getEphemeralState();
+		(view as any).initializeCollapseStateForSnapshot(
+			["Open", "Done"],
+			new Map([
+				["Open", ["Open:Urgent"]],
+				["Done", ["Done:Later"]],
+			])
+		);
+		view.setEphemeralState(savedState);
+
+		await (view as any).handleGroupToggle("Open");
+
+		expect((view as any).collapsedGroups.has("Open")).toBe(false);
+		expect((view as any).collapsedGroups.has("Done")).toBe(true);
+	});
+
 	it("reads defaultCollapsedState correctly from config.get", () => {
 		const view = createView();
 		(view as any).config = {

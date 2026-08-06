@@ -1,5 +1,6 @@
 import { OAuthService } from "../../../src/services/OAuthService";
 import type TaskNotesPlugin from "../../../src/main";
+import { OAuthSecretStore } from "../../../src/services/OAuthSecretStore";
 import type { OAuthConfig } from "../../../src/types";
 
 jest.mock("obsidian", () => ({
@@ -7,24 +8,30 @@ jest.mock("obsidian", () => ({
 	requestUrl: jest.fn(),
 }));
 
-type BuildAuthorizationUrl = (
-	config: OAuthConfig,
-	codeChallenge: string,
-	state: string
-) => string;
+type BuildAuthorizationUrl = (config: OAuthConfig, codeChallenge: string, state: string) => string;
+
+class InMemorySecretStorage {
+	private readonly values = new Map<string, string>();
+
+	getSecret(id: string): string | null {
+		return this.values.get(id) ?? null;
+	}
+
+	setSecret(id: string, value: string): void {
+		this.values.set(id, value);
+	}
+}
 
 function createOAuthService(): OAuthService {
-	return new OAuthService({
-		settings: {
-			googleOAuthClientId: "",
-			googleOAuthClientSecret: "",
-			microsoftOAuthClientId: "",
-			microsoftOAuthClientSecret: "",
-		},
-		emitter: {
-			trigger: jest.fn(),
-		},
-	} as unknown as TaskNotesPlugin);
+	const secretStore = new OAuthSecretStore(new InMemorySecretStorage());
+	return new OAuthService(
+		{
+			emitter: {
+				trigger: jest.fn(),
+			},
+		} as unknown as TaskNotesPlugin,
+		secretStore
+	);
 }
 
 function buildUrl(config: OAuthConfig): URL {
@@ -41,8 +48,7 @@ describe("Issue #1964: Microsoft OAuth consent prompt", () => {
 			clientId: "microsoft-client-id",
 			redirectUri: "http://127.0.0.1:8080",
 			scope: ["Calendars.Read", "Calendars.ReadWrite", "offline_access"],
-			authorizationEndpoint:
-				"https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+			authorizationEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
 			tokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
 		});
 

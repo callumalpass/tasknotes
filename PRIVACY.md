@@ -1,6 +1,6 @@
 # TaskNotes Privacy Policy
 
-Last updated: June 4, 2026
+Last updated: July 11, 2026
 
 ## Overview
 
@@ -30,9 +30,11 @@ Optional network features:
 
 ## OAuth Credentials and Tokens
 
-- OAuth client credentials are configured by you in TaskNotes settings.
-- Access and refresh tokens are stored locally on your device.
-- You can disconnect providers at any time to revoke TaskNotes access.
+- OAuth client IDs and client secrets are configured by you in TaskNotes settings.
+- OAuth client credentials, access tokens, and refresh tokens are stored locally in Obsidian Secret Storage, which is encrypted at rest when supported by the operating system.
+- These values are not written to TaskNotes' `data.json`.
+- Secret Storage is local to the Obsidian installation and vault, so another device may require its own credentials and calendar connection.
+- You can disconnect providers at any time to revoke TaskNotes access. Disconnecting retains the OAuth app credentials for reconnection; **Forget saved credentials** removes them from Secret Storage.
 
 ## Third-Party Services (When Enabled)
 
@@ -50,7 +52,7 @@ Optional network features:
 ## Data Deletion
 
 You can stop TaskNotes processing by disabling the plugin.
-You can remove plugin settings by uninstalling the plugin.
+You can remove plugin settings by uninstalling the plugin. Before uninstalling, disconnect calendar providers and use **Forget saved credentials** to remove OAuth values from Obsidian Secret Storage.
 Your notes remain in your vault.
 
 ## Changes to This Policy

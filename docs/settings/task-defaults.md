@@ -26,6 +26,8 @@ The **Default Tasks Folder** setting supports dynamic folder creation using temp
 - `{{projects}}` - All projects from the task's projects array, joined by `/`
 - `{{projectFilePath}}` - Full path of the first project, without `.md`
 - `{{projectFilePaths}}` - Full paths of all projects, without `.md`, joined by `/`
+- `{{projectFolder}}` - Folder containing the first project note (the project file path without the note's own name); empty when the project note is at the top level. Use this to store tasks beside their project note, e.g. `{{projectFolder}}` stores a task for `[[Areas/EFC/EFC]]` in `Areas/EFC/`
+- `{{projectFolders}}` - Folders of all projects, joined by `/`
 - `{{priority}}` - Task priority (e.g., "high", "medium", "low")
 - `{{status}}` - Task status (e.g., "todo", "in-progress", "done")
 - `{{title}}` - Task title (sanitized for folder names)
@@ -208,6 +210,10 @@ Date/time components provide uniqueness without relying only on title text.
 - `{{zettel}}` - Zettelkasten ID (e.g., "250815abc")
 - `{{uuid}}` - UUID v4 (e.g., "550e8400-e29b-41d4-a716-446655440000")
 - `{{nano}}` - Nano ID with timestamp and random string
+
+### Materialized Occurrence Filename Variables
+
+Materialized recurring occurrence notes can use a separate, optional filename template. It supports all variables above plus explicit occurrence date, ISO week, month, year, and month-name variables. See [Recurring Tasks](../features/recurring-tasks.md#occurrence-filenames) for configuration, per-parent overrides, and examples.
 
 ### Filename Template Examples
 

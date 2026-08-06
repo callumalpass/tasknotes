@@ -10,7 +10,7 @@ import {
 	RateLimitError,
 	TokenExpiredError,
 } from "./errors";
-import { validateCalendarId, validateEventId, validateRequired } from "./validation";
+import { validateEventId, validateMicrosoftCalendarId, validateRequired } from "./validation";
 import { CalendarProvider, ProviderCalendar } from "./CalendarProvider";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
@@ -874,7 +874,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		}
 	): Promise<ICSEvent> {
 		// Validate inputs
-		validateCalendarId(calendarId);
+		validateMicrosoftCalendarId(calendarId);
 		validateEventId(eventId);
 		validateRequired(updates, "updates");
 
@@ -1014,7 +1014,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		}
 	): Promise<ICSEvent> {
 		// Validate inputs
-		validateCalendarId(calendarId);
+		validateMicrosoftCalendarId(calendarId);
 		validateRequired(event, "event");
 
 		// Support both 'title' and 'summary' for test compatibility
@@ -1125,7 +1125,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	 */
 	async deleteEvent(calendarId: string, eventId: string): Promise<void> {
 		// Validate inputs
-		validateCalendarId(calendarId);
+		validateMicrosoftCalendarId(calendarId);
 		validateEventId(eventId);
 
 		try {

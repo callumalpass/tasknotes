@@ -1,275 +1,162 @@
-import { OAuthService } from '../../src/services/OAuthService';
-import { requestUrl } from 'obsidian';
-import type TaskNotesPlugin from '../../src/main';
-import { EVENT_USER_NOTICE } from '../../src/core/userNotices';
+import { requestUrl } from "obsidian";
+import type TaskNotesPlugin from "../../src/main";
+import { EVENT_USER_NOTICE } from "../../src/core/userNotices";
+import { OAuthSecretStore } from "../../src/services/OAuthSecretStore";
+import { OAuthService } from "../../src/services/OAuthService";
+import type { OAuthConnection, OAuthProvider } from "../../src/types";
 
-// Mock Obsidian APIs
-jest.mock('obsidian', () => ({
-	Notice: jest.fn(),
+jest.mock("obsidian", () => ({
+	Platform: { isDesktopApp: true },
 	requestUrl: jest.fn(),
-	Modal: class MockModal {
-		constructor() {}
-		open() {}
-		close() {}
+}));
+
+class InMemorySecretStorage {
+	private readonly values = new Map<string, string>();
+
+	getSecret(id: string): string | null {
+		return this.values.get(id) ?? null;
 	}
-}));
 
-// Mock DeviceCodeModal
-jest.mock('../../src/modals/DeviceCodeModal', () => ({
-	DeviceCodeModal: jest.fn().mockImplementation(() => ({
-		open: jest.fn(),
-		close: jest.fn()
-	}))
-}));
+	setSecret(id: string, value: string): void {
+		this.values.set(id, value);
+	}
+}
 
-describe('OAuthService - Token Revocation', () => {
-	let oauthService: OAuthService;
+function getRequestCall(
+	mockRequestUrl: jest.MockedFunction<typeof requestUrl>,
+	index: number
+): Exclude<Parameters<typeof requestUrl>[0], string> {
+	const request = mockRequestUrl.mock.calls[index][0];
+	if (typeof request === "string") {
+		throw new Error("Expected requestUrl to receive request parameters");
+	}
+	return request;
+}
+
+function createConnection(
+	provider: OAuthProvider,
+	options: { refreshToken?: string } = { refreshToken: `${provider}-refresh-token` }
+): OAuthConnection {
+	return {
+		provider,
+		tokens: {
+			accessToken: `${provider}-access-token`,
+			refreshToken: options.refreshToken ?? "",
+			expiresAt: Date.now() + 3_600_000,
+			scope: "calendar.read calendar.write",
+			tokenType: "Bearer",
+		},
+		connectedAt: "2026-01-01T00:00:00.000Z",
+	};
+}
+
+describe("OAuthService token revocation", () => {
+	let sut: OAuthService;
+	let secretStore: OAuthSecretStore;
 	let mockPlugin: Partial<TaskNotesPlugin>;
 	let mockRequestUrl: jest.MockedFunction<typeof requestUrl>;
-	let mockConnectionData: any;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-
-		// Setup mock connection data
-		mockConnectionData = {
-			oauthConnections: {
-				google: {
-					provider: 'google',
-					tokens: {
-						accessToken: 'test-access-token',
-						refreshToken: 'test-refresh-token',
-						expiresAt: Date.now() + 3600000,
-						scope: 'calendar.readonly',
-						tokenType: 'Bearer'
-					},
-					connectedAt: new Date().toISOString()
-				}
-			}
-		};
-
-		// Setup mock plugin
+		secretStore = new OAuthSecretStore(new InMemorySecretStorage());
+		secretStore.setCredentials("google", {
+			clientId: "google-client-id",
+			clientSecret: "google-client-secret",
+		});
+		secretStore.setConnection("google", createConnection("google"));
 		mockPlugin = {
-			app: {} as any,
-			settings: {
-				googleOAuthClientId: 'test-client-id',
-				googleOAuthClientSecret: 'test-client-secret',
-				microsoftOAuthClientId: '',
-				microsoftOAuthClientSecret: ''
-			} as any,
-			emitter: {
-				trigger: jest.fn()
-			} as any,
-			loadData: jest.fn().mockResolvedValue(mockConnectionData),
-			saveData: jest.fn().mockResolvedValue(undefined)
+			emitter: { trigger: jest.fn() } as never,
 		};
-
-		// Create service instance
-		oauthService = new OAuthService(mockPlugin as TaskNotesPlugin);
-
-		// Setup requestUrl mock
+		sut = new OAuthService(mockPlugin as TaskNotesPlugin, secretStore);
 		mockRequestUrl = requestUrl as jest.MockedFunction<typeof requestUrl>;
 	});
 
-	describe('Token Revocation on Disconnect', () => {
-		test('should revoke both access and refresh tokens on disconnect', async () => {
-			// Mock successful revocation responses
-			mockRequestUrl
-				.mockResolvedValueOnce({
-					status: 200,
-					json: {},
-					text: 'OK',
-					arrayBuffer: new ArrayBuffer(0),
-					headers: {}
-				})
-				.mockResolvedValueOnce({
-					status: 200,
-					json: {},
-					text: 'OK',
-					arrayBuffer: new ArrayBuffer(0),
-					headers: {}
-				});
-
-			await oauthService.disconnect('google');
-
-			// Verify both tokens were revoked
-			expect(mockRequestUrl).toHaveBeenCalledTimes(2);
-
-			// Check first call (access token)
-			const firstCall = mockRequestUrl.mock.calls[0][0];
-			expect(firstCall.url).toBe('https://oauth2.googleapis.com/revoke');
-			expect(firstCall.method).toBe('POST');
-			expect(firstCall.body).toContain('token=test-access-token');
-
-			// Check second call (refresh token)
-			const secondCall = mockRequestUrl.mock.calls[1][0];
-			expect(secondCall.url).toBe('https://oauth2.googleapis.com/revoke');
-			expect(secondCall.method).toBe('POST');
-			expect(secondCall.body).toContain('token=test-refresh-token');
+	it("revokes both tokens, clears the connection, and preserves app credentials", async () => {
+		mockRequestUrl.mockResolvedValue({
+			status: 200,
+			json: {},
+			text: "OK",
+			arrayBuffer: new ArrayBuffer(0),
+			headers: {},
 		});
 
-		test('should remove connection from storage after revocation', async () => {
-			mockRequestUrl.mockResolvedValue({
-				status: 200,
-				json: {},
-				text: 'OK',
-				arrayBuffer: new ArrayBuffer(0),
-				headers: {}
-			});
+		await sut.disconnect("google");
 
-			await oauthService.disconnect('google');
-
-			// Verify saveData was called to remove connection
-			expect(mockPlugin.saveData).toHaveBeenCalledWith({
-				oauthConnections: {}
-			});
+		expect(mockRequestUrl).toHaveBeenCalledTimes(2);
+		const firstRequest = getRequestCall(mockRequestUrl, 0);
+		const secondRequest = getRequestCall(mockRequestUrl, 1);
+		expect(firstRequest).toEqual(
+			expect.objectContaining({
+				url: "https://oauth2.googleapis.com/revoke",
+				method: "POST",
+				body: expect.stringContaining("token=google-access-token"),
+			})
+		);
+		expect(secondRequest.body).toContain("token=google-refresh-token");
+		expect(firstRequest.body).toContain("client_id=google-client-id");
+		expect(secretStore.getConnection("google")).toBeNull();
+		expect(secretStore.getCredentials("google")).toEqual({
+			clientId: "google-client-id",
+			clientSecret: "google-client-secret",
 		});
-
-		test('should show disconnect notice to user', async () => {
-			mockRequestUrl.mockResolvedValue({
-				status: 200,
-				json: {},
-				text: 'OK',
-				arrayBuffer: new ArrayBuffer(0),
-				headers: {}
-			});
-
-			await oauthService.disconnect('google');
-
-			expect(mockPlugin.emitter?.trigger).toHaveBeenCalledWith(
-				EVENT_USER_NOTICE,
-				expect.objectContaining({ message: 'Disconnected from google Calendar' })
-			);
-		});
-
-		test('should handle revocation failure gracefully', async () => {
-			// Mock failed revocation (e.g., network error)
-			mockRequestUrl.mockRejectedValue(new Error('Network error'));
-
-			// Should not throw - disconnection should complete
-			await expect(oauthService.disconnect('google')).resolves.not.toThrow();
-
-			// Should still remove from storage
-			expect(mockPlugin.saveData).toHaveBeenCalled();
-
-			// Should still show disconnect notice
-			expect(mockPlugin.emitter?.trigger).toHaveBeenCalledWith(
-				EVENT_USER_NOTICE,
-				expect.objectContaining({ message: 'Disconnected from google Calendar' })
-			);
-		});
-
-		test('should handle already-revoked tokens (400 error)', async () => {
-			mockRequestUrl.mockResolvedValue({
-				status: 400,
-				json: { error: 'invalid_token' },
-				text: 'Bad Request',
-				arrayBuffer: new ArrayBuffer(0),
-				headers: {}
-			});
-
-			// Should not throw
-			await expect(oauthService.disconnect('google')).resolves.not.toThrow();
-
-			// Should still complete disconnection
-			expect(mockPlugin.saveData).toHaveBeenCalled();
-		});
-
-		test('should handle provider without revocation endpoint', async () => {
-			// Create connection for a provider without revocation endpoint configured
-			// (This test ensures backwards compatibility if endpoint is missing)
-
-			// Setup connection without revocation endpoint
-			mockConnectionData.oauthConnections.test = {
-				provider: 'test',
-				tokens: {
-					accessToken: 'test-token',
-					expiresAt: Date.now() + 3600000
-				}
-			};
-
-			await oauthService.disconnect('google');
-
-			// Should still work even if revocation endpoint is undefined
-			expect(mockPlugin.saveData).toHaveBeenCalled();
-		});
+		expect(mockPlugin.emitter?.trigger).toHaveBeenCalledWith(
+			EVENT_USER_NOTICE,
+			expect.objectContaining({ message: "Disconnected from google Calendar" })
+		);
 	});
 
-	describe('Revocation for Microsoft', () => {
-		beforeEach(() => {
-			// Add Microsoft connection
-			mockConnectionData.oauthConnections.microsoft = {
-				provider: 'microsoft',
-				tokens: {
-					accessToken: 'ms-access-token',
-					refreshToken: 'ms-refresh-token',
-					expiresAt: Date.now() + 3600000
-				},
-				connectedAt: new Date().toISOString()
-			};
-		});
+	it("keeps the local connection cleared when provider revocation fails", async () => {
+		mockRequestUrl.mockRejectedValue(new Error("Network error"));
 
-		test('should use Microsoft revocation endpoint', async () => {
-			mockRequestUrl.mockResolvedValue({
-				status: 200,
-				json: {},
-				text: 'OK',
-				arrayBuffer: new ArrayBuffer(0),
-				headers: {}
-			});
+		await expect(sut.disconnect("google")).resolves.toBeUndefined();
 
-			await oauthService.disconnect('microsoft');
-
-			// Verify Microsoft endpoint was called
-			const calls = mockRequestUrl.mock.calls;
-			expect(calls[0][0].url).toBe('https://login.microsoftonline.com/common/oauth2/v2.0/logout');
-		});
+		expect(secretStore.getConnection("google")).toBeNull();
+		expect(mockPlugin.emitter?.trigger).toHaveBeenCalledWith(
+			EVENT_USER_NOTICE,
+			expect.objectContaining({ message: "Disconnected from google Calendar" })
+		);
 	});
 
-	describe('Edge Cases', () => {
-		test('should handle disconnect when already disconnected', async () => {
-			// Remove connection
-			mockConnectionData.oauthConnections = {};
+	it("does nothing when the provider is already disconnected", async () => {
+		secretStore.clearConnection("google");
 
-			await expect(oauthService.disconnect('google')).resolves.not.toThrow();
+		await sut.disconnect("google");
 
-			// Should not attempt revocation or storage update
-			expect(mockRequestUrl).not.toHaveBeenCalled();
-			expect(mockPlugin.saveData).not.toHaveBeenCalled();
+		expect(mockRequestUrl).not.toHaveBeenCalled();
+		expect(mockPlugin.emitter?.trigger).not.toHaveBeenCalled();
+	});
+
+	it("revokes only the access token when no refresh token is available", async () => {
+		secretStore.setConnection("google", createConnection("google", { refreshToken: "" }));
+		mockRequestUrl.mockResolvedValue({
+			status: 200,
+			json: {},
+			text: "OK",
+			arrayBuffer: new ArrayBuffer(0),
+			headers: {},
 		});
 
-		test('should handle connection with only access token (no refresh token)', async () => {
-			// Remove refresh token
-			delete mockConnectionData.oauthConnections.google.tokens.refreshToken;
+		await sut.disconnect("google");
 
-			mockRequestUrl.mockResolvedValue({
-				status: 200,
-				json: {},
-				text: 'OK',
-				arrayBuffer: new ArrayBuffer(0),
-				headers: {}
-			});
+		expect(mockRequestUrl).toHaveBeenCalledTimes(1);
+		expect(getRequestCall(mockRequestUrl, 0).body).toContain("token=google-access-token");
+	});
 
-			await oauthService.disconnect('google');
-
-			// Should only revoke access token (1 call)
-			expect(mockRequestUrl).toHaveBeenCalledTimes(1);
-			expect(mockRequestUrl.mock.calls[0][0].body).toContain('token=test-access-token');
+	it("uses the Microsoft revocation endpoint", async () => {
+		secretStore.setCredentials("microsoft", { clientId: "microsoft-client-id" });
+		secretStore.setConnection("microsoft", createConnection("microsoft"));
+		mockRequestUrl.mockResolvedValue({
+			status: 200,
+			json: {},
+			text: "OK",
+			arrayBuffer: new ArrayBuffer(0),
+			headers: {},
 		});
 
-		test('should include client_id in revocation request', async () => {
-			mockRequestUrl.mockResolvedValue({
-				status: 200,
-				json: {},
-				text: 'OK',
-				arrayBuffer: new ArrayBuffer(0),
-				headers: {}
-			});
+		await sut.disconnect("microsoft");
 
-			await oauthService.disconnect('google');
-
-			const firstCall = mockRequestUrl.mock.calls[0][0];
-			expect(firstCall.body).toContain('client_id=test-client-id');
-		});
+		expect(getRequestCall(mockRequestUrl, 0).url).toBe(
+			"https://login.microsoftonline.com/common/oauth2/v2.0/logout"
+		);
 	});
 });

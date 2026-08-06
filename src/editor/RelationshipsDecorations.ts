@@ -57,6 +57,7 @@ import {
 	ReadingModeInjectionContext,
 	ReadingModeInjectionScheduler,
 } from "./ReadingModeInjectionScheduler";
+import { observeReadingModeWidgetMutations } from "./ReadingModeWidgetObserver";
 import {
 	shouldSkipMarkdownWidgetEditor,
 	shouldSkipMarkdownWidgetLeaf,
@@ -211,10 +212,7 @@ export function applyRelationshipsBottomOffset(container: HTMLElement, widget: H
 
 	const spacerGap = Math.max(
 		0,
-		Math.round(
-				contentContainer.getBoundingClientRect().bottom -
-					contentBottom
-			)
+		Math.round(contentContainer.getBoundingClientRect().bottom - contentBottom)
 	);
 	if (spacerGap > 0) {
 		const defaultMarginTop = getRelationshipsWidgetDefaultMarginTop(widget);
@@ -249,6 +247,7 @@ async function createRelationshipsWidget(
 	container.setAttribute("contenteditable", "false");
 	container.setAttribute("spellcheck", "false");
 	container.setAttribute("data-widget-type", "relationships");
+	container.setAttribute("data-note-path", notePath);
 
 	// Create container for embedded Bases view
 	const basesContainer = activeDocument.createElement("div");
@@ -709,15 +708,25 @@ async function injectReadingModeWidget(
 	}
 
 	if (!isTaskNote && !isProjectNote) {
-		// Remove any existing widgets if conditions no longer met
+		// Preserve same-file widgets while Obsidian is rebuilding metadata.
 		try {
 			const previewView = view.previewMode;
 			const containerEl = previewView.containerEl;
-			containerEl.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach((el) => {
-				const holder = el as HTMLElementWithComponent;
-				holder.component?.unload();
-				el.remove();
-			});
+			const existingWidgets = Array.from(
+				containerEl.querySelectorAll<HTMLElement>(`.${CSS_RELATIONSHIPS_WIDGET}`)
+			);
+			const hasWidgetForDifferentFile = existingWidgets.some(
+				(widget) => widget.dataset.notePath !== file.path
+			);
+			const isConfirmedNonRelationshipsNote = metadata !== null;
+
+			if (hasWidgetForDifferentFile || isConfirmedNonRelationshipsNote) {
+				existingWidgets.forEach((el) => {
+					const holder = el as HTMLElementWithComponent;
+					holder.component?.unload();
+					el.remove();
+				});
+			}
 		} catch (error) {
 			tasknotesLogger.debug(
 				"[TaskNotes] Error cleaning up relationships widget in reading mode:",
@@ -797,9 +806,48 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	const workspaceRefs: EventRef[] = [];
 	const metadataCacheRefs: EventRef[] = [];
 	const dependencyCacheRefs: EventRef[] = [];
+	const markdownWidgetObserverCleanups: Array<() => void> = [];
+	const observedMarkdownContainers = new WeakSet<HTMLElement>();
 	const scheduler = new ReadingModeInjectionScheduler();
 	const scheduleInjection = (leaf: WorkspaceLeaf) => {
 		scheduler.schedule(leaf, (context) => injectReadingModeWidget(leaf, plugin, context));
+	};
+	const shouldRefreshMarkdownLeaf = (leaf: WorkspaceLeaf) => {
+		const view = leaf.view;
+		return (
+			plugin.settings.showRelationships &&
+			view instanceof MarkdownView &&
+			view.getMode() === "preview" &&
+			Boolean(view.file)
+		);
+	};
+	const observeMarkdownLeaf = (leaf: WorkspaceLeaf) => {
+		observeReadingModeWidgetMutations(
+			leaf,
+			`.${CSS_RELATIONSHIPS_WIDGET}`,
+			scheduleInjection,
+			observedMarkdownContainers,
+			markdownWidgetObserverCleanups,
+			shouldRefreshMarkdownLeaf
+		);
+	};
+	const observeMarkdownLeaves = () => {
+		plugin.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
+			observeMarkdownLeaf(leaf);
+		});
+	};
+	const leafMatchesFile = (leaf: WorkspaceLeaf, file: { path: string } | null) => {
+		const view = leaf.view;
+		return view instanceof MarkdownView && (!file || view.file?.path === file.path);
+	};
+	const refreshLeavesForFile = (file: { path: string } | null) => {
+		const leaves = plugin.app.workspace.getLeavesOfType("markdown");
+		leaves.forEach((leaf) => {
+			if (leafMatchesFile(leaf, file)) {
+				scheduleInjection(leaf);
+				observeMarkdownLeaf(leaf);
+			}
+		});
 	};
 
 	// Debounce to prevent excessive re-renders
@@ -811,6 +859,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 			leaves.forEach((leaf) => {
 				scheduleInjection(leaf);
 			});
+			observeMarkdownLeaves();
 		}, 100);
 	};
 
@@ -822,9 +871,16 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	const activeLeafChangeRef = plugin.app.workspace.on("active-leaf-change", (leaf) => {
 		if (leaf) {
 			scheduleInjection(leaf);
+			observeMarkdownLeaf(leaf);
 		}
 	});
 	workspaceRefs.push(activeLeafChangeRef);
+
+	// Inject widget when a new file is opened in the same leaf
+	const fileOpenRef = plugin.app.workspace.on("file-open", (file) => {
+		refreshLeavesForFile(file instanceof TFile ? file : null);
+	});
+	workspaceRefs.push(fileOpenRef);
 
 	// Inject widget when file is modified (metadata changes) - debounced per file
 	const metadataDebounceTimers = new Map<string, number>();
@@ -833,14 +889,33 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 		const existingTimer = metadataDebounceTimers.get(file.path);
 		if (existingTimer) window.clearTimeout(existingTimer);
 
+		const leaves = plugin.app.workspace.getLeavesOfType("markdown");
+		const visibleReadingLeaves = leaves.filter((leaf) => {
+			const view = leaf.view;
+			return (
+				view instanceof MarkdownView &&
+				view.file?.path === file.path &&
+				view.getMode() === "preview"
+			);
+		});
+
+		if (visibleReadingLeaves.length > 0) {
+			metadataDebounceTimers.delete(file.path);
+			visibleReadingLeaves.forEach((leaf) => {
+				scheduleInjection(leaf);
+				observeMarkdownLeaf(leaf);
+			});
+			return;
+		}
+
 		// Debounce per file to avoid freezing during typing
 		const timer = window.setTimeout(() => {
 			metadataDebounceTimers.delete(file.path);
-			const leaves = plugin.app.workspace.getLeavesOfType("markdown");
 			leaves.forEach((leaf) => {
 				const view = leaf.view;
-				if (view instanceof MarkdownView && view.file === file) {
+				if (view instanceof MarkdownView && view.file?.path === file.path) {
 					scheduleInjection(leaf);
+					observeMarkdownLeaf(leaf);
 				}
 			});
 		}, 500);
@@ -861,10 +936,14 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	leaves.forEach((leaf) => {
 		scheduleInjection(leaf);
 	});
+	observeMarkdownLeaves();
 
 	// Return cleanup function
 	return () => {
 		if (debounceTimer) window.clearTimeout(debounceTimer);
+		metadataDebounceTimers.forEach((timer) => window.clearTimeout(timer));
+		metadataDebounceTimers.clear();
+		markdownWidgetObserverCleanups.forEach((cleanup) => cleanup());
 
 		// Clean up each type of event ref with the correct method
 		workspaceRefs.forEach((ref) => plugin.app.workspace.offref(ref));

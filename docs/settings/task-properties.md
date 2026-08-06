@@ -112,6 +112,9 @@ When to work on the task. Configuration options:
 
 - **Property key**: Frontmatter field name (default: `scheduled`)
 - **Default**: Default scheduled date for new tasks (None, Today, Tomorrow, Next Week)
+
+When you use **Convert current note to task**, this default is also applied if the source note does not already have `scheduled` frontmatter. Choose **None** to keep converted notes unscheduled by default.
+
 `due` tracks commitment deadlines, while `scheduled` tracks intended execution time.
 
 ## Organization Properties

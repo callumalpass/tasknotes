@@ -196,6 +196,10 @@ interface ChecklistProgress {
 	percent: number;
 }
 
+function normalizeChecklistTaskMarker(taskMarker: string): string {
+	return taskMarker.trim().toLowerCase();
+}
+
 function getChecklistProgress(taskPath: string, plugin: TaskNotesPlugin): ChecklistProgress | null {
 	const file = plugin.app.vault.getAbstractFileByPath(taskPath);
 	if (!(file instanceof TFile)) return null;
@@ -222,8 +226,11 @@ function calculateChecklistProgress(cache: unknown): ChecklistProgress | null {
 		const isNested = typeof item.parent === "number" && item.parent >= 0;
 		if (isNested) continue;
 
+		const marker = normalizeChecklistTaskMarker(item.task);
+		if (marker === "-") continue;
+
 		total += 1;
-		if (item.task.toLowerCase() === "x") {
+		if (marker === "x") {
 			completed += 1;
 		}
 	}
