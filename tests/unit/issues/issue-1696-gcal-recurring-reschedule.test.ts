@@ -284,4 +284,34 @@ describe("Issue #1696: Google Calendar recurring reschedule sync", () => {
 		expect(frontmatter.googleCalendarMovedOriginalDates).toEqual(["2026-04-13"]);
 		expect(frontmatter.googleCalendarExceptionOriginalScheduled).toBeUndefined();
 	});
+
+	it("does not flag a moved occurrence when the completions calendar advances scheduled (regression)", async () => {
+		const frontmatter: Record<string, unknown> = {};
+		const plugin = createGoogleSyncPlugin(frontmatter);
+		const taskService = new TaskService(plugin);
+		const task = {
+			path: "TaskNotes/Tasks/Collect medication.md",
+			title: "Collect medication",
+			status: "ready",
+			priority: "normal",
+			archived: false,
+			scheduled: "2026-04-13",
+			recurrence: "DTSTART:20260316;FREQ=WEEKLY;INTERVAL=4;BYDAY=MO",
+			recurrence_anchor: "scheduled",
+			complete_instances: [],
+			skipped_instances: [],
+			googleCalendarEventId: "master-event-id",
+		} as TaskInfo;
+
+		// Mirrors what the task edit modal's completions calendar sends: it checks off
+		// the current instance and advances `scheduled` to the next occurrence in the
+		// same update, unlike a manual drag-to-reschedule which only changes `scheduled`.
+		const updatedTask = await taskService.updateTask(task, {
+			complete_instances: ["2026-04-13"],
+			scheduled: "2026-05-11",
+		});
+
+		expect(updatedTask.googleCalendarExceptionOriginalScheduled).toBeUndefined();
+		expect(frontmatter.googleCalendarExceptionOriginalScheduled).toBeUndefined();
+	});
 });
