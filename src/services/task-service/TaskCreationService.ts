@@ -7,7 +7,7 @@ import {
 	TaskInfo,
 } from "../../types";
 import type { TaskNotesSettings } from "../../types/settings";
-import { addDTSTARTToRecurrenceRule } from "../../core/recurrence";
+import { getRecurrenceSchedulingDefaults } from "./taskUpdatePlanning";
 import {
 	FilenameContext,
 	type TaskFilenameSettings,
@@ -77,6 +77,7 @@ type TaskCreationSettings = Pick<
 	| "inlineTaskConvertFolder"
 	| "tasksFolder"
 	| "googleCalendarExport"
+	| "maintainDueDateOffsetInRecurring"
 > &
 	TaskFilenameSettings;
 
@@ -233,11 +234,7 @@ export class TaskCreationService {
 				}
 			}
 
-			if (
-				completeTaskData.recurrence &&
-				typeof completeTaskData.recurrence === "string" &&
-				!completeTaskData.recurrence.includes("DTSTART:")
-			) {
+			if (completeTaskData.recurrence && typeof completeTaskData.recurrence === "string") {
 				const tempTaskInfo: TaskInfo = {
 					...completeTaskData,
 					title,
@@ -246,9 +243,18 @@ export class TaskCreationService {
 					path: "",
 					archived: false,
 				};
-				const recurrenceWithDtstart = addDTSTARTToRecurrenceRule(tempTaskInfo);
-				if (recurrenceWithDtstart) {
-					completeTaskData.recurrence = recurrenceWithDtstart;
+				const schedulingDefaults = getRecurrenceSchedulingDefaults(
+					tempTaskInfo,
+					runtime.settings.maintainDueDateOffsetInRecurring
+				);
+				if (schedulingDefaults.recurrence) {
+					completeTaskData.recurrence = schedulingDefaults.recurrence;
+				}
+				if (schedulingDefaults.scheduled) {
+					completeTaskData.scheduled = schedulingDefaults.scheduled;
+				}
+				if (schedulingDefaults.due) {
+					completeTaskData.due = schedulingDefaults.due;
 				}
 			}
 

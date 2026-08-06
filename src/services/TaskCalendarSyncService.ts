@@ -1275,10 +1275,10 @@ export class TaskCalendarSyncService {
 	shouldSyncTask(task: TaskInfo): boolean {
 		if (!this.isEnabled()) return false;
 
-		const settings = this.plugin.settings.googleCalendarExport;
-
 		// Don't sync archived tasks
 		if (task.archived) return false;
+
+		const settings = this.plugin.settings.googleCalendarExport;
 
 		// Check if task has the required date(s) based on sync trigger setting
 		switch (settings.syncTrigger) {

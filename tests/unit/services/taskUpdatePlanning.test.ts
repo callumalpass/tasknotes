@@ -3,6 +3,8 @@ import {
 	applyTaskUpdateFrontmatterChange,
 	buildTaskUpdateRecurrenceUpdates,
 	buildUpdatedTaskFromPlan,
+	getRecurrenceSchedulingDefaults,
+	resolveScheduledDateForRecurrence,
 	normalizeTaskUpdateDetails,
 	normalizeTaskUpdateInput,
 	type TaskUpdateFieldMapper,
@@ -134,6 +136,74 @@ describe("taskUpdatePlanning", () => {
 			scheduled: "2026-05-20",
 			due: "2026-05-21",
 			recurrence: "DTSTART:20260520;FREQ=WEEKLY",
+		});
+	});
+
+	it("sets scheduled when recurrence is saved without a start date", () => {
+		const updateToNextScheduledOccurrenceFn = jest.fn(() => ({
+			scheduled: "2026-08-04",
+			due: null,
+		}));
+		const addDTSTARTToRecurrenceRuleFn = jest.fn(
+			() => "DTSTART:20260804T125706Z;FREQ=MONTHLY;BYMONTHDAY=4"
+		);
+
+		const result = buildTaskUpdateRecurrenceUpdates({
+			originalTask: createTask({
+				dateCreated: "2026-08-04T12:57:06.490+02:00",
+			}),
+			updates: { recurrence: "FREQ=MONTHLY;BYMONTHDAY=4" },
+			maintainDueDateOffsetInRecurring: true,
+			updateToNextScheduledOccurrenceFn,
+			addDTSTARTToRecurrenceRuleFn,
+		});
+
+		expect(result).toEqual({
+			scheduled: "2026-08-04",
+			recurrence: "DTSTART:20260804T125706Z;FREQ=MONTHLY;BYMONTHDAY=4",
+		});
+	});
+
+	it("falls back to dateCreated when recurrence has no start date and no next occurrence", () => {
+		const updateToNextScheduledOccurrenceFn = jest.fn(() => ({
+			scheduled: null,
+			due: null,
+		}));
+
+		const scheduled = resolveScheduledDateForRecurrence(
+			{
+				recurrence: "FREQ=MONTHLY;BYMONTHDAY=4",
+				dateCreated: "2026-08-04T12:57:06.490+02:00",
+			},
+			true,
+			updateToNextScheduledOccurrenceFn
+		);
+
+		expect(scheduled).toBe("2026-08-04T12:57");
+	});
+
+	it("adds scheduled defaults when recurrence is set without a scheduled date", () => {
+		const updateToNextScheduledOccurrenceFn = jest.fn(() => ({
+			scheduled: "2026-08-04",
+			due: null,
+		}));
+		const addDTSTARTToRecurrenceRuleFn = jest.fn(
+			() => "DTSTART:20260804T125706Z;FREQ=MONTHLY;BYMONTHDAY=4"
+		);
+
+		const result = getRecurrenceSchedulingDefaults(
+			{
+				recurrence: "FREQ=MONTHLY;BYMONTHDAY=4",
+				dateCreated: "2026-08-04T12:57:06.490+02:00",
+			},
+			true,
+			updateToNextScheduledOccurrenceFn,
+			addDTSTARTToRecurrenceRuleFn
+		);
+
+		expect(result).toEqual({
+			recurrence: "DTSTART:20260804T125706Z;FREQ=MONTHLY;BYMONTHDAY=4",
+			scheduled: "2026-08-04",
 		});
 	});
 

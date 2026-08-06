@@ -44,3 +44,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   guides for adopting TaskNotes in an existing vault, mobile use, custom Bases,
   and backup and recovery. See the
   [TaskNotes documentation](https://tasknotes.dev/).
+
+## Fixed
+
+- Fixed recurring tasks without a scheduled date not syncing to Google Calendar by ensuring a scheduled date is set whenever recurrence is saved, even when the custom recurrence start date is left empty.
