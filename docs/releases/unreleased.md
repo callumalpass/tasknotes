@@ -76,6 +76,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed recurring tasks without a scheduled date not syncing to Google Calendar by ensuring a scheduled date is set whenever recurrence is saved, even when the custom recurrence start date is left empty.
 - (#2182) Checklist progress on task cards now excludes cancelled markdown
   checklist items such as `[-]` from the completed/total count. Thanks to
   @ctrl-q for reporting this.

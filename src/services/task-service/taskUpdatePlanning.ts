@@ -3,6 +3,7 @@ import {
 	addDTSTARTToRecurrenceRule,
 	updateToNextScheduledOccurrence,
 } from "../../core/recurrence";
+import { getDatePart } from "../../utils/dateUtils";
 import {
 	applyGoogleCalendarRecurringExceptionCleanup,
 	applyGoogleCalendarRecurringExceptionForScheduledChange,
@@ -98,6 +99,92 @@ export function normalizeTaskUpdateDetails(updates: TaskUpdateInput): string | n
 	return typeof updates.details === "string" ? updates.details.replace(/\r\n/g, "\n") : "";
 }
 
+function formatScheduledFromTimestamp(timestamp: string): string {
+	const datePart = getDatePart(timestamp);
+	const timeMatch = timestamp.match(/T(\d{2}:\d{2})/);
+	return timeMatch ? `${datePart}T${timeMatch[1]}` : datePart;
+}
+
+type RecurrenceSchedulingTask = Pick<
+	TaskInfo,
+	| "recurrence"
+	| "scheduled"
+	| "dateCreated"
+	| "recurrence_anchor"
+	| "complete_instances"
+	| "skipped_instances"
+>;
+
+export function resolveScheduledDateForRecurrence(
+	task: RecurrenceSchedulingTask,
+	maintainDueDateOffset = true,
+	updateToNextScheduledOccurrenceFn: typeof updateToNextScheduledOccurrence = updateToNextScheduledOccurrence
+): string | undefined {
+	if (task.scheduled) {
+		return task.scheduled;
+	}
+
+	if (!task.recurrence || typeof task.recurrence !== "string") {
+		return undefined;
+	}
+
+	const nextDates = updateToNextScheduledOccurrenceFn(task, maintainDueDateOffset);
+	if (nextDates.scheduled) {
+		return nextDates.scheduled;
+	}
+
+	if (task.dateCreated) {
+		return formatScheduledFromTimestamp(task.dateCreated);
+	}
+
+	return undefined;
+}
+
+export function getRecurrenceSchedulingDefaults(
+	task: RecurrenceSchedulingTask & Pick<TaskInfo, "due">,
+	maintainDueDateOffset = true,
+	updateToNextScheduledOccurrenceFn: typeof updateToNextScheduledOccurrence = updateToNextScheduledOccurrence,
+	addDTSTARTToRecurrenceRuleFn: typeof addDTSTARTToRecurrenceRule = addDTSTARTToRecurrenceRule
+): { recurrence?: string; scheduled?: string; due?: string } {
+	if (!task.recurrence || typeof task.recurrence !== "string") {
+		return {};
+	}
+
+	const updates: { recurrence?: string; scheduled?: string; due?: string } = {};
+	let recurrence = task.recurrence;
+
+	if (!recurrence.includes("DTSTART:")) {
+		const recurrenceWithDtstart = addDTSTARTToRecurrenceRuleFn(task);
+		if (recurrenceWithDtstart) {
+			recurrence = recurrenceWithDtstart;
+			updates.recurrence = recurrenceWithDtstart;
+		}
+	}
+
+	if (!task.scheduled) {
+		const scheduled = resolveScheduledDateForRecurrence(
+			{ ...task, recurrence, ...updates },
+			maintainDueDateOffset,
+			updateToNextScheduledOccurrenceFn
+		);
+		if (scheduled) {
+			updates.scheduled = scheduled;
+		}
+
+		if (!task.due) {
+			const nextDates = updateToNextScheduledOccurrenceFn(
+				{ ...task, recurrence, scheduled, ...updates },
+				maintainDueDateOffset
+			);
+			if (nextDates.due) {
+				updates.due = nextDates.due;
+			}
+		}
+	}
+
+	return updates;
+}
+
 export function buildTaskUpdateRecurrenceUpdates({
 	originalTask,
 	updates,
@@ -134,21 +221,35 @@ export function buildTaskUpdateRecurrenceUpdates({
 				recurrenceUpdates.recurrence = updatedRecurrence;
 			}
 		}
+
+		if (
+			typeof updates.recurrence === "string" &&
+			updates.recurrence &&
+			!recurrenceUpdates.scheduled &&
+			!originalTask.scheduled &&
+			updates.scheduled === undefined
+		) {
+			const scheduled = resolveScheduledDateForRecurrence(
+				{ ...originalTask, ...updates, ...recurrenceUpdates },
+				maintainDueDateOffsetInRecurring,
+				updateToNextScheduledOccurrenceFn
+			);
+			if (scheduled) {
+				recurrenceUpdates.scheduled = scheduled;
+			}
+		}
 	} else if (
 		updates.recurrence !== undefined &&
 		!originalTask.recurrence &&
 		updates.recurrence
 	) {
-		if (
-			typeof updates.recurrence === "string" &&
-			!updates.recurrence.includes("DTSTART:")
-		) {
-			const tempTask: TaskInfo = { ...originalTask, ...updates };
-			const updatedRecurrence = addDTSTARTToRecurrenceRuleFn(tempTask);
-			if (updatedRecurrence) {
-				recurrenceUpdates.recurrence = updatedRecurrence;
-			}
-		}
+		const schedulingDefaults = getRecurrenceSchedulingDefaults(
+			{ ...originalTask, ...updates },
+			maintainDueDateOffsetInRecurring,
+			updateToNextScheduledOccurrenceFn,
+			addDTSTARTToRecurrenceRuleFn
+		);
+		Object.assign(recurrenceUpdates, schedulingDefaults);
 	}
 
 	if (
