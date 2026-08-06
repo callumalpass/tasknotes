@@ -68,6 +68,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   guides for adopting TaskNotes in an existing vault, mobile use, custom Bases,
   and backup and recovery. See the
   [TaskNotes documentation](https://tasknotes.dev/).
+- Custom recurrence dialog Interval and Days of week descriptions now update based on the selected frequency (for example, "Every x days" when Daily is selected).
+- Custom recurrence dialog weekday checkboxes stay on one row with clearer spacing below the description, and radio option markers are centered when selected.
+- Native date and time fields across recurrence, date/time picker, timeblock, and reminder modals share consistent padding, border, and corner rounding.
 - (#2088) Convert current note to task now uses your default scheduled date when
   the note does not already have `scheduled` frontmatter, while the **None**
   default still leaves converted notes unscheduled. See
@@ -76,6 +79,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed the Custom recurrence dialog's Monthly, Yearly, and End condition options so switching between "on this date" and "on the Nth weekday" (or between "never"/"after N occurrences"/"until a date") greys out the fields that no longer apply, instead of leaving both sets of controls active and editable at once.
+- Fixed the Custom recurrence dialog not being translated, despite translations already being available for it.
 - (#2182) Checklist progress on task cards now excludes cancelled markdown
   checklist items such as `[-]` from the completed/total count. Thanks to
   @ctrl-q for reporting this.

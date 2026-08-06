@@ -305,30 +305,35 @@
 
 /* User-field date input: full width textbox; icon overlayed on the left */
 .tasknotes-plugin .tn-date-control {
-  position: relative;
-  padding-left: 35px; /* reserve space for the icon to the left of the textbox */
+    position: relative;
+    padding-left: 35px;
+    /* reserve space for the icon to the left of the textbox */
 }
+
 .tasknotes-plugin .tn-date-control input[type="text"] {
-  padding-left: 0; /* the padding-left is applied on the container */
+    padding-left: 0;
+    /* the padding-left is applied on the container */
 }
+
 .tasknotes-plugin .tn-date-control .user-field-date-picker-btn {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  color: var(--tn-text-muted);
-  z-index: 1;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: var(--tn-text-muted);
+    z-index: 1;
 }
+
 .tasknotes-plugin .tn-date-control .user-field-date-picker-btn:hover {
-  color: var(--text-normal);
+    color: var(--text-normal);
 }
 
 
@@ -762,6 +767,7 @@
    ===================================================================== */
 
 @media (max-width: 768px) {
+
     .tasknotes-plugin .due-date-modal,
     .tasknotes-plugin .scheduled-date-modal {
         padding: var(--tn-spacing-lg);
@@ -833,7 +839,7 @@
     color: var(--tn-interactive-accent);
 }
 
-.tasknotes-plugin .event-details > div {
+.tasknotes-plugin .event-details>div {
     margin-bottom: var(--size-4-1);
     font-size: var(--tn-font-size-md);
     line-height: 1.4;
@@ -841,12 +847,12 @@
 
 /* Align all modal setting controls to the right edge of the column */
 .tasknotes-plugin .modal .setting-item .setting-item-control {
-  flex: none;
-  text-align: end;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: var(--size-4-2);
+    flex: none;
+    text-align: end;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--size-4-2);
 }
 
 
@@ -888,7 +894,7 @@
     color: var(--tn-interactive-accent);
 }
 
-.tasknotes-plugin .preview-details > div {
+.tasknotes-plugin .preview-details>div {
     margin-bottom: var(--size-4-1);
     font-size: var(--tn-font-size-md);
 }
@@ -1132,4 +1138,153 @@
     font-size: var(--tn-font-size-sm);
     color: var(--tn-text-muted);
     font-style: italic;
+}
+
+/* =====================================================================
+   NATIVE DATE/TIME INPUTS (shared across modals)
+   ===================================================================== */
+
+.tasknotes-plugin .tn-datetime-input {
+    padding: var(--size-4-1) var(--size-4-2);
+    border: 1px solid color-mix(in srgb, var(--background-modifier-border) 65%, transparent);
+    border-radius: var(--radius-s);
+}
+
+/* =====================================================================
+   CUSTOM RECURRENCE MODAL
+   ===================================================================== */
+
+.modal.tn-custom-recurrence-modal-host {
+    width: min(560px, 92vw);
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal {
+    max-width: 100%;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__days-setting {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--size-4-3);
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__days-setting .setting-item-info {
+    margin-right: 0;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__days-setting .setting-item-control {
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: var(--size-4-2);
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__days {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--tn-spacing-md);
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__day {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: var(--cursor-link, pointer);
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__day input[type="checkbox"] {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__options,
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__end-condition {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-sm);
+    width: 100%;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__radio-option {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--tn-spacing-sm);
+    margin: 0;
+    line-height: 1.2;
+    cursor: var(--cursor-link, pointer);
+}
+
+/* Chromium does not render ::before/::after generated content on <input>
+   elements, so the "selected" dot is a real sibling span layered on top of
+   the radio input inside a small positioning wrapper, instead of a
+   pseudo-element on the input itself. */
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__radio-visual {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__radio-visual input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    padding: 0;
+    border: 2px solid var(--text-muted);
+    border-radius: 50%;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: none;
+    outline: none;
+    vertical-align: middle;
+    cursor: inherit;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__radio-visual input[type="radio"]:checked {
+    border-color: var(--interactive-accent);
+    background-color: transparent;
+    background-image: none;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__radio-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--interactive-accent);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 80ms ease, opacity 80ms ease;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__radio-visual input[type="radio"]:checked~.tn-custom-recurrence-modal__radio-dot {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__select {
+    margin: 0;
+    width: auto;
+    min-width: 0;
+}
+
+.tasknotes-plugin.tn-custom-recurrence-modal .tn-custom-recurrence-modal__count-input {
+    width: 60px;
+    margin: 0;
+    text-align: center;
 }

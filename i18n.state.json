@@ -8724,6 +8724,22 @@
       "source": "5e0d9119317427c6517942235c7ee7c72c3f1eba",
       "translation": "d45992fe7e4b03553a46221afe4558b4f3690e36"
     },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescDaily": {
+      "source": "e236ef92e5f3f2d38f99c1aa182f757fbf097bdb",
+      "translation": "c3d515af1d633fe683e20618d0e3de3420829dc3"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescWeekly": {
+      "source": "cf6745ebffd319ac91db22b896353d0dd8d72dd2",
+      "translation": "cc25dcbd4f8ca8c9f7dc3d9644e92cff560d08df"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescMonthly": {
+      "source": "80c69ef898a0d3731a9f09fe4f4cc07cbc332ce5",
+      "translation": "a9ad003eae6ce2c4b051b5b702e12724c9881f4c"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescYearly": {
+      "source": "dca87051697daf49d7f7da5b2d97a6f8b37e70de",
+      "translation": "090ee18bc0de4e0f6bf14e3e78246c73d40a0928"
+    },
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek": {
       "source": "318d817389a2ddc335aabaaea49dd75a998bc7b5",
       "translation": "1d474635b5d26d18871e4f555a4d8634855eb08a"
@@ -8731,6 +8747,10 @@
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc": {
       "source": "a6eebf484377fe1bbc03824b639a3b4f7d8b3225",
       "translation": "003b98a14b62214b48b25d3e5757c7e8984b946b"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDescDaily": {
+      "source": "b6edf522d10c13fd3723d455ebee16141a70ed68",
+      "translation": "04a621198f0ca39052fc214130af6fe12b6b3e6d"
     },
     "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence": {
       "source": "e0c2c6f69efcf30626e7a5b71ba3b504ee5fe8e6",
@@ -17610,6 +17630,22 @@
       "source": "5e0d9119317427c6517942235c7ee7c72c3f1eba",
       "translation": "b324e86167e22e49f7d26014422c07c24e4dd7cd"
     },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescDaily": {
+      "source": "e236ef92e5f3f2d38f99c1aa182f757fbf097bdb",
+      "translation": "843f410b90d8490068b3b18305b89eb7eee87b48"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescWeekly": {
+      "source": "cf6745ebffd319ac91db22b896353d0dd8d72dd2",
+      "translation": "c8de42daea359ccde55b95527712d66b382eddea"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescMonthly": {
+      "source": "80c69ef898a0d3731a9f09fe4f4cc07cbc332ce5",
+      "translation": "098f02de83f54ea69d4e634630fc336df6841128"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescYearly": {
+      "source": "dca87051697daf49d7f7da5b2d97a6f8b37e70de",
+      "translation": "3380675e6d1f84934396df46338b1b5f4ad38037"
+    },
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek": {
       "source": "318d817389a2ddc335aabaaea49dd75a998bc7b5",
       "translation": "e65fcf42b9a3b24a99b6b67999aaf7603db83692"
@@ -17617,6 +17653,10 @@
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc": {
       "source": "a6eebf484377fe1bbc03824b639a3b4f7d8b3225",
       "translation": "ab2808699f882a069aaf0cbfe083267840da74d3"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDescDaily": {
+      "source": "b6edf522d10c13fd3723d455ebee16141a70ed68",
+      "translation": "60529e6a37b5e1f18b79e8d3f16bb809e53dec29"
     },
     "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence": {
       "source": "e0c2c6f69efcf30626e7a5b71ba3b504ee5fe8e6",
@@ -26496,6 +26536,22 @@
       "source": "5e0d9119317427c6517942235c7ee7c72c3f1eba",
       "translation": "1292eb0c8dceb4123a55700ed789ec1105dde4d5"
     },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescDaily": {
+      "source": "e236ef92e5f3f2d38f99c1aa182f757fbf097bdb",
+      "translation": "a3ac31d20d9eaa5cd76bd0d848246e68e45acfc4"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescWeekly": {
+      "source": "cf6745ebffd319ac91db22b896353d0dd8d72dd2",
+      "translation": "99f1aa3847319036bab6ff1959931f7aae7d7ed5"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescMonthly": {
+      "source": "80c69ef898a0d3731a9f09fe4f4cc07cbc332ce5",
+      "translation": "38876d26d7759820aeb72fb03ddef230a6571436"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescYearly": {
+      "source": "dca87051697daf49d7f7da5b2d97a6f8b37e70de",
+      "translation": "df80775997ab731d4000ed5bd80f76cfcae58e3c"
+    },
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek": {
       "source": "318d817389a2ddc335aabaaea49dd75a998bc7b5",
       "translation": "8cf350a0e2caf535ce868898a8943f9755ebab10"
@@ -26503,6 +26559,10 @@
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc": {
       "source": "a6eebf484377fe1bbc03824b639a3b4f7d8b3225",
       "translation": "a8099711803b56edc81fda3fce33fa7cc2f76e53"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDescDaily": {
+      "source": "b6edf522d10c13fd3723d455ebee16141a70ed68",
+      "translation": "e0e63f921cf98f2700cd532496bcbb235e24e887"
     },
     "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence": {
       "source": "e0c2c6f69efcf30626e7a5b71ba3b504ee5fe8e6",
@@ -35382,6 +35442,22 @@
       "source": "5e0d9119317427c6517942235c7ee7c72c3f1eba",
       "translation": "f8e1d3ebb3803e2c1e6cb007fbca9826f5ab0842"
     },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescDaily": {
+      "source": "e236ef92e5f3f2d38f99c1aa182f757fbf097bdb",
+      "translation": "9ff5a5d0be000d16c6184cb9639223f0287cd18a"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescWeekly": {
+      "source": "cf6745ebffd319ac91db22b896353d0dd8d72dd2",
+      "translation": "2878740708f635d155610290632a1a9dbfc637d2"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescMonthly": {
+      "source": "80c69ef898a0d3731a9f09fe4f4cc07cbc332ce5",
+      "translation": "96df23a6cc46acf4c28492b992055e93ccf35657"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescYearly": {
+      "source": "dca87051697daf49d7f7da5b2d97a6f8b37e70de",
+      "translation": "c48ed1fb5f54e1c07ce4053baca0ba04e08f29c4"
+    },
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek": {
       "source": "318d817389a2ddc335aabaaea49dd75a998bc7b5",
       "translation": "234df0a0cf39f296d2b6cf2944354a6380e90e80"
@@ -35389,6 +35465,10 @@
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc": {
       "source": "a6eebf484377fe1bbc03824b639a3b4f7d8b3225",
       "translation": "f24641e4e57c9d5505d420ade3a74dff5b66c215"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDescDaily": {
+      "source": "b6edf522d10c13fd3723d455ebee16141a70ed68",
+      "translation": "b0a95ec35cc5d0a157cdf1910b1b4d6182f25f82"
     },
     "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence": {
       "source": "e0c2c6f69efcf30626e7a5b71ba3b504ee5fe8e6",
@@ -44268,6 +44348,22 @@
       "source": "5e0d9119317427c6517942235c7ee7c72c3f1eba",
       "translation": "77a102dc23b4e112c190328f9a616b65d9e045a4"
     },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescDaily": {
+      "source": "e236ef92e5f3f2d38f99c1aa182f757fbf097bdb",
+      "translation": "28317054b0464c43e8123c2bd9dc1fe7e5b3b0a0"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescWeekly": {
+      "source": "cf6745ebffd319ac91db22b896353d0dd8d72dd2",
+      "translation": "3092f778e898a8fd5cf4e6675ccc221bb49fe195"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescMonthly": {
+      "source": "80c69ef898a0d3731a9f09fe4f4cc07cbc332ce5",
+      "translation": "296f6d311b85421bc279e5b9a3a7ffcee823042a"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescYearly": {
+      "source": "dca87051697daf49d7f7da5b2d97a6f8b37e70de",
+      "translation": "b9e12b2af18059e0dd79d51fbdaecb6a3c736aa4"
+    },
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek": {
       "source": "318d817389a2ddc335aabaaea49dd75a998bc7b5",
       "translation": "e7215fb35261da63918112f9017c9c0305f65694"
@@ -44275,6 +44371,10 @@
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc": {
       "source": "a6eebf484377fe1bbc03824b639a3b4f7d8b3225",
       "translation": "b29adffec57cd5506483d26aee4d9aac9530cd8f"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDescDaily": {
+      "source": "b6edf522d10c13fd3723d455ebee16141a70ed68",
+      "translation": "16132e5e1ada3b2f0ee8b9f02c19e831e2c8d422"
     },
     "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence": {
       "source": "e0c2c6f69efcf30626e7a5b71ba3b504ee5fe8e6",
@@ -53154,6 +53254,22 @@
       "source": "5e0d9119317427c6517942235c7ee7c72c3f1eba",
       "translation": "962411a1c0e633fb1ad58fa2cf31f10ac1bfd754"
     },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescDaily": {
+      "source": "e236ef92e5f3f2d38f99c1aa182f757fbf097bdb",
+      "translation": "2520d43ff40983d2696a4ccec1a30f358c811cf7"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescWeekly": {
+      "source": "cf6745ebffd319ac91db22b896353d0dd8d72dd2",
+      "translation": "b17e3681182e8742476ecaa14f31d939829677cb"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescMonthly": {
+      "source": "80c69ef898a0d3731a9f09fe4f4cc07cbc332ce5",
+      "translation": "3731e4458b9e091e8ee8eeeee45575de19fdb1de"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescYearly": {
+      "source": "dca87051697daf49d7f7da5b2d97a6f8b37e70de",
+      "translation": "5e3951e90e521117d17b8059c3904d438f5e44cf"
+    },
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek": {
       "source": "318d817389a2ddc335aabaaea49dd75a998bc7b5",
       "translation": "cec95235f4dee9444e15056b440e4a18ac394f4a"
@@ -53161,6 +53277,10 @@
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc": {
       "source": "a6eebf484377fe1bbc03824b639a3b4f7d8b3225",
       "translation": "24016c4914db9f6f5d80511538ca8902e6d30054"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDescDaily": {
+      "source": "b6edf522d10c13fd3723d455ebee16141a70ed68",
+      "translation": "677cbea33b6321c8961b76f282005bcee6c49578"
     },
     "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence": {
       "source": "e0c2c6f69efcf30626e7a5b71ba3b504ee5fe8e6",
@@ -62040,6 +62160,22 @@
       "source": "5e0d9119317427c6517942235c7ee7c72c3f1eba",
       "translation": "79cd1a9542a4a265933552f506dc12fef41a6bc7"
     },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescDaily": {
+      "source": "e236ef92e5f3f2d38f99c1aa182f757fbf097bdb",
+      "translation": "7e7f976bdca45d108aae2bd1e3c59d97dbc7ed47"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescWeekly": {
+      "source": "cf6745ebffd319ac91db22b896353d0dd8d72dd2",
+      "translation": "301a3611a61c55aabf99d31a082c437e3d664fea"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescMonthly": {
+      "source": "80c69ef898a0d3731a9f09fe4f4cc07cbc332ce5",
+      "translation": "956e658af99cf34e07e288f0b493ad57d164e61b"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescYearly": {
+      "source": "dca87051697daf49d7f7da5b2d97a6f8b37e70de",
+      "translation": "8a7d812133c4324ab9d72c57b49b11c822476554"
+    },
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek": {
       "source": "318d817389a2ddc335aabaaea49dd75a998bc7b5",
       "translation": "5b471418f723305e477e2366b05932e22325b297"
@@ -62047,6 +62183,10 @@
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc": {
       "source": "a6eebf484377fe1bbc03824b639a3b4f7d8b3225",
       "translation": "0e0ce5484ff11a3058e2b3d8a5b8dc6f1042c69d"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDescDaily": {
+      "source": "b6edf522d10c13fd3723d455ebee16141a70ed68",
+      "translation": "71dd74361470b441b3ec0b8daad98a3374c28409"
     },
     "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence": {
       "source": "e0c2c6f69efcf30626e7a5b71ba3b504ee5fe8e6",
@@ -70926,6 +71066,22 @@
       "source": "5e0d9119317427c6517942235c7ee7c72c3f1eba",
       "translation": "db774e0760bf80d7718cb376f15d3e4d5a099e7c"
     },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescDaily": {
+      "source": "e236ef92e5f3f2d38f99c1aa182f757fbf097bdb",
+      "translation": "482e6c2514ef82879b26e4f524f6c7973b30054e"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescWeekly": {
+      "source": "cf6745ebffd319ac91db22b896353d0dd8d72dd2",
+      "translation": "9b75d17b29dcd40daaaf528a95b1f97acc45ce5f"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescMonthly": {
+      "source": "80c69ef898a0d3731a9f09fe4f4cc07cbc332ce5",
+      "translation": "3bc98c36d67c2e9b02391033e715ca163a687cc9"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.intervalDescYearly": {
+      "source": "dca87051697daf49d7f7da5b2d97a6f8b37e70de",
+      "translation": "3dff2bb8bd58d097f88e9c1ea05fa526c7532e9d"
+    },
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek": {
       "source": "318d817389a2ddc335aabaaea49dd75a998bc7b5",
       "translation": "417ed486f9a6c1909e97ff5285e6deea2c0d73ac"
@@ -70933,6 +71089,10 @@
     "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc": {
       "source": "a6eebf484377fe1bbc03824b639a3b4f7d8b3225",
       "translation": "e92f42241a2e1a3778ac58de2434c88c346b68ee"
+    },
+    "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDescDaily": {
+      "source": "b6edf522d10c13fd3723d455ebee16141a70ed68",
+      "translation": "8d37386127b3c6d7598e58f7e90ed919b24ce51c"
     },
     "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence": {
       "source": "e0c2c6f69efcf30626e7a5b71ba3b504ee5fe8e6",

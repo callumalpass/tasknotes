@@ -162,6 +162,7 @@ export class TimeblockCreationModal extends Modal {
 					.setValue(this.options.startTime || "")
 					.onChange(() => this.validateForm());
 				this.startTimeInput.type = "time";
+				this.startTimeInput.addClass("tn-datetime-input");
 			});
 
 		new Setting(contentEl)
@@ -175,6 +176,7 @@ export class TimeblockCreationModal extends Modal {
 						this.validateForm();
 					});
 				this.endTimeInput.type = "time";
+				this.endTimeInput.addClass("tn-datetime-input");
 			});
 
 		// Description (optional)
