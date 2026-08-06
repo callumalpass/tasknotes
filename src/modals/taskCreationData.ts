@@ -54,7 +54,7 @@ export function buildTaskCreationData(input: TaskCreationDataInput): TaskCreatio
 		input.taskTag &&
 		!tagList.includes(input.taskTag)
 	) {
-		tagList.push(input.taskTag);
+		tagList.unshift(input.taskTag);
 	}
 
 	const taskData: TaskCreationData = {

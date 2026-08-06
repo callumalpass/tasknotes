@@ -1,6 +1,6 @@
 import { Notice, Platform, Modal, Setting, setIcon, App } from "obsidian";
 import TaskNotesPlugin from "../../main";
-import type { WebhookConfig, WebhookEvent } from "../../types";
+import type { OAuthProvider, WebhookConfig, WebhookEvent } from "../../types";
 import type { ICSIntegrationSettings } from "../../types/settings";
 import { TranslationKey } from "../../i18n";
 import { loadAPIEndpoints } from "../../api/loadAPIEndpoints";
@@ -102,9 +102,7 @@ function isICSNoteFilenameFormat(value: string): value is ICSNoteFilenameFormat 
 	return ICS_NOTE_FILENAME_FORMATS.some((format) => format === value);
 }
 
-function isRecurringEventRelatedNotesMode(
-	value: string
-): value is RecurringEventRelatedNotesMode {
+function isRecurringEventRelatedNotesMode(value: string): value is RecurringEventRelatedNotesMode {
 	return RECURRING_EVENT_RELATED_NOTES_MODES.some((mode) => mode === value);
 }
 
@@ -130,6 +128,72 @@ function parseDefaultReminderMinutes(value: string): number | number[] | null {
 		return uniqueMinutes[0];
 	}
 	return uniqueMinutes;
+}
+
+type OAuthCredentialControls = {
+	clientIdInput: HTMLInputElement;
+	clientSecretInput: HTMLInputElement;
+	persistPendingValues(): void;
+	hasStoredCredentials: boolean;
+};
+
+function createOAuthCredentialControls(
+	plugin: TaskNotesPlugin,
+	provider: OAuthProvider,
+	clientIdPlaceholder: string,
+	clientSecretPlaceholder: string
+): OAuthCredentialControls {
+	const oauthService = plugin.oauthService;
+	const storedCredentials = oauthService?.getCredentials(provider);
+	const clientIdInput = createCardInput(
+		"text",
+		clientIdPlaceholder,
+		storedCredentials?.clientId ?? ""
+	);
+	const clientSecretInput = createCardInput(
+		"text",
+		storedCredentials?.clientSecret
+			? "Stored securely - enter a new value to replace"
+			: clientSecretPlaceholder,
+		""
+	);
+	clientSecretInput.setAttribute("type", "password");
+
+	const persistClientId = () => {
+		if (!oauthService) return;
+		const existing = oauthService.getCredentials(provider);
+		const clientId = clientIdInput.value.trim();
+		if (!clientId && !existing?.clientSecret) return;
+		oauthService.setCredentials(provider, {
+			clientId,
+			...(existing?.clientSecret ? { clientSecret: existing.clientSecret } : {}),
+		});
+	};
+
+	const persistClientSecret = () => {
+		if (!oauthService) return;
+		const clientSecret = clientSecretInput.value.trim();
+		if (!clientSecret) return;
+		oauthService.setCredentials(provider, {
+			clientId: clientIdInput.value.trim(),
+			clientSecret,
+		});
+		clientSecretInput.value = "";
+		clientSecretInput.placeholder = "Stored securely - enter a new value to replace";
+	};
+
+	clientIdInput.addEventListener("blur", persistClientId);
+	clientSecretInput.addEventListener("blur", persistClientSecret);
+
+	return {
+		clientIdInput,
+		clientSecretInput,
+		persistPendingValues: () => {
+			persistClientSecret();
+			persistClientId();
+		},
+		hasStoredCredentials: storedCredentials !== null,
+	};
 }
 
 const WEBHOOK_EVENT_OPTIONS: ReadonlyArray<{
@@ -381,46 +445,22 @@ export function renderIntegrationsTab(
 				},
 			];
 
-			const clientIdInput = createCardInput(
-				"text",
+			const credentialControls = createOAuthCredentialControls(
+				plugin,
+				"google",
 				"your-client-id.apps.googleusercontent.com",
-				plugin.settings.googleOAuthClientId
+				"your-client-secret"
 			);
-			clientIdInput.addEventListener("blur", () => {
-				runAsyncSettingCallback(async () => {
-					plugin.settings.googleOAuthClientId = clientIdInput.value.trim();
-					save();
-					if (plugin.oauthService) {
-						await plugin.oauthService.loadClientIds();
-					}
-				});
-			});
-
-			const clientSecretInput = createCardInput(
-				"text",
-				"your-client-secret",
-				plugin.settings.googleOAuthClientSecret
-			);
-			clientSecretInput.setAttribute("type", "password");
-			clientSecretInput.addEventListener("blur", () => {
-				runAsyncSettingCallback(async () => {
-					plugin.settings.googleOAuthClientSecret = clientSecretInput.value.trim();
-					save();
-					if (plugin.oauthService) {
-						await plugin.oauthService.loadClientIds();
-					}
-				});
-			});
 
 			const credentialNote = activeDocument.createElement("div");
 			credentialNote.className = "tasknotes-credential-note";
 			credentialNote.textContent =
-				"Enter your OAUTH app credentials from Google cloud console.";
+				"Enter your OAUTH app credentials from Google cloud console. Obsidian secret storage encrypts credentials at rest when supported by the operating system.";
 
 			sections.push({
 				rows: [
-					{ label: "Client ID:", input: clientIdInput },
-					{ label: "Client Secret:", input: clientSecretInput },
+					{ label: "Client ID:", input: credentialControls.clientIdInput },
+					{ label: "Client Secret:", input: credentialControls.clientSecretInput },
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -449,6 +489,7 @@ export function renderIntegrationsTab(
 								try {
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
+									credentialControls.persistPendingValues();
 									await oauthService.authenticate("google");
 									new Notice("Google calendar connected successfully!");
 									void renderGoogleCalendarCard(); // Re-render to show connected state
@@ -462,6 +503,31 @@ export function renderIntegrationsTab(
 								}
 							},
 						},
+						...(credentialControls.hasStoredCredentials
+							? [
+									{
+										text: "Forget saved credentials",
+										icon: "trash-2",
+										variant: "warning" as const,
+										onClick: async () => {
+											const confirmed = await showConfirmationModal(
+												plugin.app,
+												{
+													title: "Forget Google OAuth credentials?",
+													message:
+														"This removes the saved client ID and client secret from Obsidian Secret Storage.",
+													confirmText: "Forget credentials",
+													isDestructive: true,
+												}
+											);
+											if (!confirmed) return;
+											plugin.oauthService.clearCredentials("google");
+											new Notice("Forgot Google OAUTH credentials");
+											void renderGoogleCalendarCard();
+										},
+									},
+								]
+							: []),
 					],
 				},
 			});
@@ -648,45 +714,22 @@ export function renderIntegrationsTab(
 				},
 			];
 
-			const clientIdInput = createCardInput(
-				"text",
+			const credentialControls = createOAuthCredentialControls(
+				plugin,
+				"microsoft",
 				"your-microsoft-client-id",
-				plugin.settings.microsoftOAuthClientId
+				"your-microsoft-client-secret"
 			);
-			clientIdInput.addEventListener("blur", () => {
-				runAsyncSettingCallback(async () => {
-					plugin.settings.microsoftOAuthClientId = clientIdInput.value.trim();
-					save();
-					if (plugin.oauthService) {
-						await plugin.oauthService.loadClientIds();
-					}
-				});
-			});
-
-			const clientSecretInput = createCardInput(
-				"text",
-				"your-microsoft-client-secret",
-				plugin.settings.microsoftOAuthClientSecret
-			);
-			clientSecretInput.setAttribute("type", "password");
-			clientSecretInput.addEventListener("blur", () => {
-				runAsyncSettingCallback(async () => {
-					plugin.settings.microsoftOAuthClientSecret = clientSecretInput.value.trim();
-					save();
-					if (plugin.oauthService) {
-						await plugin.oauthService.loadClientIds();
-					}
-				});
-			});
 
 			const credentialNote = activeDocument.createElement("div");
 			credentialNote.className = "tasknotes-credential-note";
-			credentialNote.textContent = "Enter your OAUTH app credentials from azure portal.";
+			credentialNote.textContent =
+				"Enter your OAUTH app credentials from azure portal. Obsidian secret storage encrypts credentials at rest when supported by the operating system.";
 
 			sections.push({
 				rows: [
-					{ label: "Client ID:", input: clientIdInput },
-					{ label: "Client Secret:", input: clientSecretInput },
+					{ label: "Client ID:", input: credentialControls.clientIdInput },
+					{ label: "Client Secret:", input: credentialControls.clientSecretInput },
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -715,6 +758,7 @@ export function renderIntegrationsTab(
 								try {
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
+									credentialControls.persistPendingValues();
 									await oauthService.authenticate("microsoft");
 									new Notice("Microsoft calendar connected successfully!");
 									void renderMicrosoftCalendarCard();
@@ -728,6 +772,31 @@ export function renderIntegrationsTab(
 								}
 							},
 						},
+						...(credentialControls.hasStoredCredentials
+							? [
+									{
+										text: "Forget saved credentials",
+										icon: "trash-2",
+										variant: "warning" as const,
+										onClick: async () => {
+											const confirmed = await showConfirmationModal(
+												plugin.app,
+												{
+													title: "Forget Microsoft OAuth credentials?",
+													message:
+														"This removes the saved client ID and client secret from Obsidian Secret Storage.",
+													confirmText: "Forget credentials",
+													isDestructive: true,
+												}
+											);
+											if (!confirmed) return;
+											plugin.oauthService.clearCredentials("microsoft");
+											new Notice("Forgot Microsoft OAUTH credentials");
+											void renderMicrosoftCalendarCard();
+										},
+									},
+								]
+							: []),
 					],
 				},
 			});
@@ -1366,8 +1435,7 @@ export function renderIntegrationsTab(
 							if (!isRecurringEventRelatedNotesMode(value)) {
 								return;
 							}
-							plugin.settings.icsIntegration.recurringEventRelatedNotesMode =
-								value;
+							plugin.settings.icsIntegration.recurringEventRelatedNotesMode = value;
 							save();
 						},
 					})

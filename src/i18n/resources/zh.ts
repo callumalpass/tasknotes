@@ -1112,7 +1112,13 @@ export const zh: TranslationTree = {
 				filenameUpdatesWithTitle: "文件名将在任务标题更改时自动更新。",
 				filenameFormat: "文件名格式：",
 				customTemplate: "自定义模板：",
-				legacySyntaxWarning: "像 {title} 这样的单花括号语法已弃用。请使用双花括号语法 {{title}} 以与正文模板保持一致。"
+				legacySyntaxWarning: "像 {title} 这样的单花括号语法已弃用。请使用双花括号语法 {{title}} 以与正文模板保持一致。",
+				occurrenceFilenameTemplate: "实例文件名模板",
+				occurrenceFilenameTemplateHelp:
+					"用于周期性任务实体化实例的文件名模板。留空可保留现有命名方式（父任务标题加数字后缀）。请使用 {{occurrenceDate}}、{{occurrenceWeek}}、{{occurrenceMonth}}、{{occurrenceYear}} 或 {{occurrenceMonthName}} 明确选择文件名粒度。所有常规文件名变量也可使用。父任务可以通过下方配置的 frontmatter 属性覆盖此模板。",
+				occurrenceFilenameProperty: "实例模板覆盖属性",
+				occurrenceFilenamePropertyHelp:
+					"周期性父任务中用于覆盖其实例文件名模板的 frontmatter 属性名称。"
 			},
 			tagsCard: {
 				nativeObsidianTags: "使用原生Obsidian标签"
@@ -3099,7 +3105,8 @@ export const zh: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "已设置 1 个提醒（点击管理）",
 			reminderTooltipMany: "已设置 {count} 个提醒（点击管理）",
-			projectTooltip: "此任务用作项目（点击可筛选子任务）",
+			projectTooltip: "此任务用作项目（点击可显示/隐藏子任务）",
+			projectIndicatorTooltip: "此任务用作项目",
 			expandSubtasks: "展开子任务",
 			collapseSubtasks: "折叠子任务",
 			dueToday: "{label}: 今天",

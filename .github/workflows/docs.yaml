@@ -36,8 +36,24 @@ jobs:
       working-directory: docs-builder
 
     - name: Build documentation
-      run: node build.js
+      run: npm run build
       working-directory: docs-builder
+
+    - name: Install documentation test browser
+      run: npx playwright install --with-deps chromium
+      working-directory: docs-builder
+
+    - name: Test desktop and mobile documentation
+      run: npm run test:e2e
+      working-directory: docs-builder
+
+    - name: Upload documentation screenshots
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-browser-checks
+        path: docs-builder/test-results/docs-site
+        if-no-files-found: ignore
 
     - name: Detect release video sources
       id: release-videos
@@ -107,6 +123,10 @@ jobs:
         mkdir -p docs-builder/dist/assets/release-videos
       # NOTE: This branch is a fallback. In practice the cache should be
       # restored AFTER the docs build step — see workflow ordering above.
+
+    - name: Crawl and validate built documentation
+      run: npm run check
+      working-directory: docs-builder
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3

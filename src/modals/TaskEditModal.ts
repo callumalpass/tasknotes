@@ -78,6 +78,7 @@ export class TaskEditModal extends TaskModal {
 			settings: {
 				taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
 				taskTag: this.plugin.settings.taskTag,
+				hideIdentifyingTagsInCards: this.plugin.settings.hideIdentifyingTagsInCards,
 				hideIdentifyingTagsMode: this.plugin.settings.hideIdentifyingTagsMode,
 				userFields: this.plugin.settings?.userFields,
 			},

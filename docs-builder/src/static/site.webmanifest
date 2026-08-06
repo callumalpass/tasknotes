@@ -1,0 +1,15 @@
+{
+  "name": "TaskNotes Documentation",
+  "short_name": "TaskNotes Docs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fcfcfd",
+  "theme_color": "#fcfcfd",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

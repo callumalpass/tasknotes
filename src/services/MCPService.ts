@@ -58,6 +58,12 @@ const MCP_REMINDER_SCHEMA = z.object({
 		.describe("Absolute reminder time as an ISO 8601 timestamp"),
 	description: z.string().optional().describe("Optional reminder description"),
 });
+const MCP_CUSTOM_PROPERTIES_SCHEMA = z
+	.record(z.string(), z.unknown())
+	.optional()
+	.describe(
+		"Configured TaskNotes custom user-field values keyed by frontmatter property key"
+	);
 
 function createMcpJsonReplacer(): (this: unknown, key: string, value: unknown) => unknown {
 	const ancestors: unknown[] = [];
@@ -118,6 +124,7 @@ type CreateTaskArgs = {
 	timeEstimate?: number;
 	reminders?: Reminder[];
 	details?: string;
+	customProperties?: Record<string, unknown>;
 };
 type UpdateTaskArgs = TaskIdArgs &
 	Partial<Omit<CreateTaskArgs, "title" | "timeEstimate" | "reminders">> & {
@@ -324,6 +331,7 @@ export class MCPService {
 						.optional()
 						.describe("Task reminders"),
 					details: z.string().optional().describe("Task body/description"),
+					customProperties: MCP_CUSTOM_PROPERTIES_SCHEMA,
 				},
 			},
 			async (args: CreateTaskArgs) => {
@@ -343,6 +351,7 @@ export class MCPService {
 						timeEstimate: args.timeEstimate,
 						reminders: args.reminders,
 						details: args.details,
+						customProperties: args.customProperties,
 						creationContext: "api",
 					};
 					const result = await this.taskService.createTask(taskData);
@@ -392,6 +401,7 @@ export class MCPService {
 						.optional()
 						.describe("New reminders array or null to clear"),
 					details: z.string().optional().describe("New body/description"),
+					customProperties: MCP_CUSTOM_PROPERTIES_SCHEMA,
 				},
 			},
 			async ({ id, ...updates }: UpdateTaskArgs) => {

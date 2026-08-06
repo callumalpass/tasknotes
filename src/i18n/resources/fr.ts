@@ -1112,7 +1112,13 @@ export const fr: TranslationTree = {
 				filenameUpdatesWithTitle: "Le nom du fichier sera automatiquement mis à jour quand le titre de la tâche change.",
 				filenameFormat: "Format du nom de fichier :",
 				customTemplate: "Modèle personnalisé :",
-				legacySyntaxWarning: "La syntaxe à accolades simples comme {title} est obsolète. Veuillez utiliser la syntaxe à accolades doubles {{title}} pour la cohérence avec les modèles de corps."
+				legacySyntaxWarning: "La syntaxe à accolades simples comme {title} est obsolète. Veuillez utiliser la syntaxe à accolades doubles {{title}} pour la cohérence avec les modèles de corps.",
+				occurrenceFilenameTemplate: "Modèle de nom de fichier des occurrences",
+				occurrenceFilenameTemplateHelp:
+					"Modèle de nom de fichier pour les occurrences matérialisées des tâches récurrentes. Laissez-le vide pour conserver le nom existant (titre de la tâche parente suivi d’un suffixe numérique). Choisissez explicitement la granularité avec {{occurrenceDate}}, {{occurrenceWeek}}, {{occurrenceMonth}}, {{occurrenceYear}} ou {{occurrenceMonthName}}. Toutes les variables de nom de fichier habituelles fonctionnent également. Une tâche parente peut remplacer ce modèle via la propriété de frontmatter configurée ci-dessous.",
+				occurrenceFilenameProperty: "Propriété de remplacement du modèle d’occurrence",
+				occurrenceFilenamePropertyHelp:
+					"Nom de la propriété de frontmatter d’une tâche récurrente parente qui remplace le modèle de nom de fichier de ses occurrences."
 			},
 			tagsCard: {
 				nativeObsidianTags: "Utilise les étiquettes Obsidian natives"
@@ -3100,7 +3106,8 @@ export const fr: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 rappel défini (cliquer pour gérer)",
 			reminderTooltipMany: "{count} rappels définis (cliquer pour gérer)",
-			projectTooltip: "Cette tâche est utilisée comme projet (cliquer pour filtrer les sous-tâches)",
+			projectTooltip: "Cette tâche est utilisée comme projet (cliquer pour afficher/masquer les sous-tâches)",
+			projectIndicatorTooltip: "Cette tâche est utilisée comme projet",
 			expandSubtasks: "Déplier les sous-tâches",
 			collapseSubtasks: "Replier les sous-tâches",
 			dueToday: "{label}: Aujourd'hui",

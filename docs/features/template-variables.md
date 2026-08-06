@@ -35,6 +35,8 @@ Variables for task-specific data.
 | `{{projects}}` | All projects joined by `/` | No | Yes | `ProjectA/ProjectB` |
 | `{{projectFilePath}}` | Full path of the first project, without `.md` | No | Yes | `Work/Projects/ProjectA` |
 | `{{projectFilePaths}}` | Full paths of all projects, joined by `/` | No | Yes | `Work/Alpha/Personal/Beta` |
+| `{{projectFolder}}` | Folder containing the first project note (its file path without the note's own name) | No | Yes | `Work/Projects` |
+| `{{projectFolders}}` | Folders of all projects, joined by `/` | No | Yes | `Work/Personal` |
 | `{{dueDate}}` | Task due date | Yes | Yes | `2025-01-15` |
 | `{{scheduledDate}}` | Task scheduled date | Yes | Yes | `2025-01-10` |
 

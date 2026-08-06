@@ -165,6 +165,22 @@ function getProjectFilePath(
 }
 
 /**
+ * Get the folder that contains a project note, i.e. the project file path with
+ * its final (basename) segment removed. Returns an empty string when the
+ * project note lives at the top level with no containing folder.
+ */
+function getProjectFolder(
+	project: string,
+	extractProjectFilePath?: (project: string) => string
+): string {
+	const filePath = getProjectFilePath(project, extractProjectFilePath);
+	if (!filePath) {
+		return "";
+	}
+	return filePath.split("/").slice(0, -1).join("/");
+}
+
+/**
  * Process a folder path template by replacing template variables with actual values
  *
  * Supported template variables:
@@ -188,6 +204,7 @@ function getProjectFilePath(
  * - {{context}}, {{contexts}} - First context or all contexts joined with /
  * - {{project}}, {{projects}} - First project or all projects joined with /
  * - {{projectFilePath}}, {{projectFilePaths}} - First project path or all project paths joined with /
+ * - {{projectFolder}}, {{projectFolders}} - Folder containing the first project note or all project folders joined with /
  * - {{priority}}, {{priorityShort}}
  * - {{status}}, {{statusShort}}
  * - {{title}}, {{titleLower}}, {{titleUpper}}, {{titleSnake}}, {{titleKebab}}, {{titleCamel}}, {{titlePascal}}
@@ -287,6 +304,22 @@ export function processFolderTemplate(
 						.join("/")
 				: "";
 		processedPath = processedPath.replace(/\{\{projectFilePaths\}\}/g, projectFilePaths);
+
+		// Handle project folder (folder containing the first project note)
+		const projectFolder =
+			Array.isArray(taskData.projects) && taskData.projects.length > 0
+				? getProjectFolder(taskData.projects[0], extractProjectFilePath)
+				: "";
+		processedPath = processedPath.replace(/\{\{projectFolder\}\}/g, projectFolder);
+
+		const projectFolders =
+			Array.isArray(taskData.projects) && taskData.projects.length > 0
+				? taskData.projects
+						.map((proj) => getProjectFolder(proj, extractProjectFilePath))
+						.filter((folder) => folder.length > 0)
+						.join("/")
+				: "";
+		processedPath = processedPath.replace(/\{\{projectFolders\}\}/g, projectFolders);
 
 		// Handle multiple contexts
 		const contexts =

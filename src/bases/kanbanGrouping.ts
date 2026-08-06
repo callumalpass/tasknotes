@@ -681,6 +681,22 @@ export function getKanbanColumnTaskCounts<TTask>(
 	return counts;
 }
 
+export function getVisibleKanbanSwimLaneColumnKeys<TTask>(
+	columnKeys: readonly string[],
+	swimLanes: ReadonlyMap<string, ReadonlyMap<string, readonly TTask[]>>,
+	hideEmptyColumns: boolean,
+	pinnedColumns: readonly string[]
+): string[] {
+	if (!hideEmptyColumns) {
+		return [...columnKeys];
+	}
+
+	const counts = getKanbanColumnTaskCounts(swimLanes, columnKeys);
+	return columnKeys.filter(
+		(columnKey) => (counts.get(columnKey) ?? 0) > 0 || pinnedColumns.includes(columnKey)
+	);
+}
+
 export function compareKanbanSpecialColumnKeys(a: string, b: string): number {
 	if (a === "None" && b !== "None") return 1;
 	if (b === "None" && a !== "None") return -1;

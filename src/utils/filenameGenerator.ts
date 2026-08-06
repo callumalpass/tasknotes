@@ -3,6 +3,7 @@ import type { Vault } from "obsidian";
 import { TaskNotesSettings } from "../types/settings";
 import { getProjectDisplayName } from "./linkUtils";
 import { createTaskNotesLogger } from "./tasknotesLogger";
+import { parseDateToLocal } from "./dateUtils";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/FilenameGenerator" });
 
@@ -11,6 +12,14 @@ function normalizeVaultPath(path: string): string {
 		.replace(/\\/g, "/")
 		.replace(/\/+/g, "/")
 		.replace(/^\/+/, "");
+}
+
+async function vaultPathExists(vault: Vault, path: string): Promise<boolean> {
+	if (vault.getAbstractFileByPath(path)) {
+		return true;
+	}
+
+	return vault.adapter.exists(path, false);
 }
 
 export interface FilenameContext {
@@ -589,7 +598,7 @@ export async function generateUniqueFilename(
 		}
 
 		// Check if the base filename is available
-		if (!vault.getAbstractFileByPath(basePath)) {
+		if (!(await vaultPathExists(vault, basePath))) {
 			return sanitizedFilename;
 		}
 
@@ -603,7 +612,7 @@ export async function generateUniqueFilename(
 				break; // Stop if paths become too long
 			}
 
-			if (!vault.getAbstractFileByPath(candidatePath)) {
+			if (!(await vaultPathExists(vault, candidatePath))) {
 				return candidateFilename;
 			}
 		}
@@ -622,5 +631,51 @@ export async function generateUniqueFilename(
 		// Final fallback with timestamp
 		const timestamp = Date.now().toString(36);
 		return `task-${timestamp}`;
+	}
+}
+
+/**
+ * Builds the template variables derived from a materialized occurrence's date.
+ */
+export function buildOccurrenceFilenameVariables(occurrenceDate: string): Record<string, string> {
+	const date = parseDateToLocal(occurrenceDate);
+	if (!(date instanceof Date) || isNaN(date.getTime())) {
+		throw new Error(`Invalid occurrence date: ${occurrenceDate}`);
+	}
+	const variables: Record<string, string> = {
+		occurrenceDate: format(date, "yyyy-MM-dd"),
+		occurrenceWeek: format(date, "RRRR-'W'II"),
+		occurrenceMonth: format(date, "yyyy-MM"),
+		occurrenceYear: format(date, "yyyy"),
+		occurrenceMonthName: format(date, "MMMM"),
+	};
+	return variables;
+}
+
+/**
+ * Generates the filename for a materialized occurrence from a template.
+ * Falls back to the sanitized parent title on any error (a bad template must
+ * never break materialization).
+ */
+export function generateOccurrenceFilename(
+	context: FilenameContext,
+	template: string,
+	occurrenceDate: string
+): string {
+	try {
+		const occurrenceVariables = buildOccurrenceFilenameVariables(occurrenceDate);
+		return generateCustomFilename(
+			context,
+			template,
+			context.date || new Date(),
+			occurrenceVariables
+		);
+	} catch (error) {
+		tasknotesLogger.error("Error generating occurrence filename:", {
+			category: "persistence",
+			operation: "generating-occurrence-filename",
+			error: error,
+		});
+		return sanitizeForFilename(context.title);
 	}
 }

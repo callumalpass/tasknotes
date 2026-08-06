@@ -121,6 +121,26 @@ Occurrence notes can use a separate template from regular new tasks. Set `occurr
 
 The parent task remains the source of the recurrence rule and series history. Occurrence notes do not copy the parent's `recurrence`, `complete_instances`, `skipped_instances`, `completedDate`, calendar provider IDs, or `timeEntries`. New time entries belong to the occurrence note once you track time there.
 
+### Occurrence Filenames
+
+By default, materialized occurrence notes use the existing filename behavior: the parent title followed by a numeric suffix. To opt in to custom filenames, set **Occurrence filename template** under **Settings → Task Properties → Title**. For example, `{{title}} — {{occurrenceDate}}` produces `Weekly review — 2026-08-01.md`.
+
+Occurrence filename templates support all regular filename variables plus these occurrence-specific variables:
+
+- `{{occurrenceDate}}` - occurrence date, such as `2026-08-01`
+- `{{occurrenceWeek}}` - ISO week, such as `2026-W31`
+- `{{occurrenceMonth}}` - month, such as `2026-08`
+- `{{occurrenceYear}}` - year, such as `2026`
+- `{{occurrenceMonthName}}` - full month name, such as `August`
+
+Choose the date granularity explicitly in the template; TaskNotes does not infer it from the recurrence rule. A recurring parent can override the global template with the frontmatter property configured by **Occurrence template override property** (by default, `occurrenceFilenameTemplate`):
+
+```yaml
+occurrenceFilenameTemplate: "{{title}} ({{occurrenceWeek}})"
+```
+
+Leaving the global template empty preserves the existing filename behavior. TaskNotes never renames existing occurrence notes, and filename collisions continue to receive a numeric suffix.
+
 ### Occurrence Note Policies
 
 Each recurring parent has an **Occurrence notes** submenu under its recurrence menu:

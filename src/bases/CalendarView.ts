@@ -1813,6 +1813,8 @@ export class CalendarView extends BasesViewBase {
 			showICSEvents: false, // ICS handled separately
 			visibleStart: fetchInfo.start,
 			visibleEnd: fetchInfo.end,
+			visibleStartDate: fetchInfo.startStr,
+			visibleEndDate: fetchInfo.endStr,
 		};
 
 		// Use existing calendar-core helper to generate task events

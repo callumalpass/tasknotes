@@ -265,6 +265,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	taskFilenameFormat: "zettel", // Keep existing behavior as default
 	storeTitleInFilename: true,
 	customFilenameTemplate: "{{title}}", // Simple title template
+	occurrenceFilenameTemplate: "",
+	occurrenceFilenameTemplateProperty: "occurrenceFilenameTemplate",
 	// Task creation defaults
 	taskCreationDefaults: DEFAULT_TASK_CREATION_DEFAULTS,
 	openTaskAfterCreation: "none",
@@ -398,10 +400,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Frontmatter link format defaults
 	useFrontmatterMarkdownLinks: false, // Default to wikilinks for compatibility
 	// OAuth Calendar Integration defaults
-	googleOAuthClientId: "",
-	googleOAuthClientSecret: "",
-	microsoftOAuthClientId: "",
-	microsoftOAuthClientSecret: "",
+	// OAuth client credentials and account tokens are stored in Obsidian SecretStorage.
 	enableGoogleCalendar: false,
 	enableMicrosoftCalendar: false,
 	disableCalendarOnMobile: false,

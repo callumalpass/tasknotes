@@ -27,10 +27,10 @@ const EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS: Record<string, string> = {
  * Register TaskNotes views with Bases plugin
  * Requires Obsidian 1.10.1+ (public Bases API with groupBy support)
  */
-export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<void> {
-	if (!plugin.settings.enableBases) return;
+export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<boolean> {
+	if (!plugin.settings.enableBases) return false;
 	// All views now require Obsidian 1.10.1+ (public Bases API with groupBy support)
-	if (!requireApiVersion("1.10.1")) return;
+	if (!requireApiVersion("1.10.1")) return false;
 	const logger = createTaskNotesLogger({
 		tag: "Bases/Registration",
 		isDebugEnabled: () => plugin.settings.enableDebugLogging,
@@ -227,11 +227,24 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 				logger
 			);
 
-			// Consider it successful if any view registered successfully
 			if (!taskListSuccess && !kanbanSuccess && !calendarSuccess && !miniCalendarSuccess) {
 				logger.debug("Bases plugin not available for registration", {
 					category: "configuration",
 					operation: "register-views",
+				});
+				return false;
+			}
+
+			if (!taskListSuccess || !kanbanSuccess || !calendarSuccess || !miniCalendarSuccess) {
+				logger.warn("Some TaskNotes Bases views failed to register", {
+					category: "configuration",
+					operation: "register-views",
+					details: {
+						taskListSuccess,
+						kanbanSuccess,
+						calendarSuccess,
+						miniCalendarSuccess,
+					},
 				});
 				return false;
 			}
@@ -267,14 +280,14 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
 	// Try immediate registration
 	if (await attemptRegistration()) {
-		return;
+		return true;
 	}
 
 	// If that fails, try a few more times with short delays
 	for (let i = 0; i < 5; i++) {
 		await new Promise((r) => window.setTimeout(r, 200));
 		if (await attemptRegistration()) {
-			return;
+			return true;
 		}
 	}
 
@@ -282,6 +295,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 		category: "configuration",
 		operation: "register-views",
 	});
+	return false;
 }
 
 /**

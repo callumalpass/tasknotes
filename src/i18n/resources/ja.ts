@@ -1112,7 +1112,13 @@ export const ja: TranslationTree = {
 				filenameUpdatesWithTitle: "タスクタイトルが変更されると、ファイル名は自動的に更新されます。",
 				filenameFormat: "ファイル名形式:",
 				customTemplate: "カスタムテンプレート:",
-				legacySyntaxWarning: "{title}のような単一波括弧構文は非推奨です。本文テンプレートとの一貫性のために、{{title}}のような二重波括弧構文を使用してください。"
+				legacySyntaxWarning: "{title}のような単一波括弧構文は非推奨です。本文テンプレートとの一貫性のために、{{title}}のような二重波括弧構文を使用してください。",
+				occurrenceFilenameTemplate: "オカレンスのファイル名テンプレート",
+				occurrenceFilenameTemplateHelp:
+					"繰り返しタスクから実体化されたオカレンス用のファイル名テンプレートです。空欄にすると、既存の名前（親タスクのタイトルと連番のサフィックス）が維持されます。{{occurrenceDate}}、{{occurrenceWeek}}、{{occurrenceMonth}}、{{occurrenceYear}}、{{occurrenceMonthName}}のいずれかを使って粒度を明示的に選択してください。通常のファイル名変数もすべて使用できます。親タスクは、下で設定するフロントマターのプロパティを使ってこのテンプレートを上書きできます。",
+				occurrenceFilenameProperty: "オカレンステンプレートの上書きプロパティ",
+				occurrenceFilenamePropertyHelp:
+					"繰り返し親タスクで、そのオカレンスのファイル名テンプレートを上書きするフロントマタープロパティの名前です。"
 			},
 			tagsCard: {
 				nativeObsidianTags: "ネイティブObsidianタグを使用"
@@ -3100,7 +3106,8 @@ export const ja: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "リマインダーが1件設定されています (クリックして管理)",
 			reminderTooltipMany: "{count}件のリマインダーが設定されています (クリックして管理)",
-			projectTooltip: "このタスクはプロジェクトとして使用されています（サブタスクをフィルタするにはクリック）",
+			projectTooltip: "このタスクはプロジェクトとして使用されています（クリックでサブタスクを表示/非表示）",
+			projectIndicatorTooltip: "このタスクはプロジェクトとして使用されています",
 			expandSubtasks: "サブタスクを展開",
 			collapseSubtasks: "サブタスクを折りたたむ",
 			dueToday: "{label}: 今日",

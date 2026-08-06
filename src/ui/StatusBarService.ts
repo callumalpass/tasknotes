@@ -154,8 +154,9 @@ export class StatusBarService {
 	 * Get all currently tracked tasks (tasks with active time sessions)
 	 */
 	private async getTrackedTasks(): Promise<TaskInfo[]> {
-		// Force a fresh lookup of all tasks to avoid stale data
-		const allTasks = await this.plugin.cacheManager.getAllTasks();
+		// Status-bar refreshes are frequent, so keep this scan in memory. File events
+		// schedule another refresh after Obsidian updates its metadata cache.
+		const allTasks = this.plugin.cacheManager.getAllCachedTasks();
 
 		return allTasks.filter((task) => {
 			// Skip archived tasks
