@@ -612,7 +612,14 @@ describe("TaskNotesApiV1", () => {
 			})
 		);
 
-		expect(api.model.validateTask(createTask()).valid).toBe(true);
+		expect(
+			api.model.validateTask(
+				createTask({
+					dateCreated: "2026-06-01T12:00:00Z",
+					dateModified: "2026-06-01T12:00:00Z",
+				})
+			).valid
+		).toBe(true);
 		expect(api.model.validatePatch({ timeEntries: "invalid" as never })).toEqual(
 			expect.objectContaining({
 				valid: false,

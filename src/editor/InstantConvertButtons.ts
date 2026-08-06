@@ -12,6 +12,7 @@ import { setIcon, MarkdownView, Editor, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TasksPluginParser } from "../utils/TasksPluginParser";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { shouldSkipMarkdownWidgetEditor } from "./MarkdownWidgetContext";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/InstantConvertButtons" });
 
@@ -239,15 +240,30 @@ type ConvertButtonDocument = {
 };
 
 type ConvertButtonView = {
+	dom?: HTMLElement;
 	state: { doc: ConvertButtonDocument };
 	visibleRanges: readonly { from: number; to: number }[];
 };
+
+function shouldSkipConvertButtonDecorations(view: ConvertButtonView): boolean {
+	const stateWithField = view.state as { field?: unknown };
+	if (!(view.dom instanceof HTMLElement) || typeof stateWithField.field !== "function") {
+		return false;
+	}
+
+	return shouldSkipMarkdownWidgetEditor(view as unknown as EditorView);
+}
 
 export function buildConvertButtonDecorations(
 	view: ConvertButtonView,
 	plugin: TaskNotesPlugin
 ): DecorationSet {
 	const builder = new RangeSetBuilder<Decoration>();
+
+	if (shouldSkipConvertButtonDecorations(view)) {
+		return builder.finish();
+	}
+
 	const doc = view.state?.doc;
 
 	// Validate inputs

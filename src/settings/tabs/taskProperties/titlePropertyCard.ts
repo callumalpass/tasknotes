@@ -106,6 +106,49 @@ function renderFilenameSettingsContent(
 ): void {
 	container.empty();
 
+	// Occurrence filename template — applies to materialized occurrences of
+	// recurring tasks regardless of the filename format below (#2126)
+	const occurrenceTemplateContainer = container.createDiv("tasknotes-settings__card-config-row");
+	occurrenceTemplateContainer.createSpan({
+		text: translate("settings.taskProperties.titleCard.occurrenceFilenameTemplate"),
+		cls: "tasknotes-settings__card-config-label",
+	});
+	const occurrenceTemplateInput = createCardInput(
+		"text",
+		"{{title}} — {{occurrenceDate}}",
+		plugin.settings.occurrenceFilenameTemplate
+	);
+	occurrenceTemplateInput.addEventListener("change", () => {
+		plugin.settings.occurrenceFilenameTemplate = occurrenceTemplateInput.value;
+		save();
+	});
+	occurrenceTemplateContainer.appendChild(occurrenceTemplateInput);
+	container.createDiv({
+		text: translate("settings.taskProperties.titleCard.occurrenceFilenameTemplateHelp"),
+		cls: "setting-item-description",
+	});
+
+	const occurrencePropertyContainer = container.createDiv("tasknotes-settings__card-config-row");
+	occurrencePropertyContainer.createSpan({
+		text: translate("settings.taskProperties.titleCard.occurrenceFilenameProperty"),
+		cls: "tasknotes-settings__card-config-label",
+	});
+	const occurrencePropertyInput = createCardInput(
+		"text",
+		"occurrenceFilenameTemplate",
+		plugin.settings.occurrenceFilenameTemplateProperty
+	);
+	occurrencePropertyInput.addEventListener("change", () => {
+		plugin.settings.occurrenceFilenameTemplateProperty =
+			occurrencePropertyInput.value.trim() || "occurrenceFilenameTemplate";
+		save();
+	});
+	occurrencePropertyContainer.appendChild(occurrencePropertyInput);
+	container.createDiv({
+		text: translate("settings.taskProperties.titleCard.occurrenceFilenamePropertyHelp"),
+		cls: "setting-item-description",
+	});
+
 	// Only show filename format settings when storeTitleInFilename is off
 	if (plugin.settings.storeTitleInFilename) {
 		container.createDiv({

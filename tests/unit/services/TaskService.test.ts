@@ -161,7 +161,7 @@ describe('TaskService', () => {
       expect(taskInfo.title).toBe('Buy milk from [[Lidl]]');
       expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
         'Tasks/buy-milk-from-lidl.md',
-        expect.not.stringContaining('title:')
+        expect.stringContaining('title: Buy milk from [[Lidl]]')
       );
     });
 

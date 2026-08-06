@@ -334,6 +334,32 @@ export class GoogleCalendarService extends CalendarProvider {
 			let nextSyncToken: string | undefined;
 			let isFullSync = !syncToken;
 			let hasDeletes = false;
+			let fullSyncTimeMin: Date | undefined;
+			let fullSyncTimeMax: Date | undefined;
+
+			if (!syncToken) {
+				const now = new Date();
+				fullSyncTimeMin =
+					timeMin ||
+					new Date(
+						now.getTime() -
+							GOOGLE_CALENDAR_CONSTANTS.VIEW_RANGE.DAYS_BEFORE *
+								24 *
+								60 *
+								60 *
+								1000
+					);
+				fullSyncTimeMax =
+					timeMax ||
+					new Date(
+						now.getTime() +
+							GOOGLE_CALENDAR_CONSTANTS.VIEW_RANGE.DAYS_AFTER *
+								24 *
+								60 *
+								60 *
+								1000
+					);
+			}
 
 			do {
 				try {
@@ -342,39 +368,20 @@ export class GoogleCalendarService extends CalendarProvider {
 						maxResults: GOOGLE_CALENDAR_CONSTANTS.MAX_RESULTS_PER_REQUEST.toString(),
 					});
 
-					if (syncToken && !nextPageToken) {
+					if (syncToken) {
 						// Incremental sync mode - use syncToken
 						// NOTE: Cannot use timeMin/timeMax with syncToken
 						params.set("syncToken", syncToken);
-					} else if (nextPageToken) {
-						// Pagination mode - use pageToken
-						params.set("pageToken", nextPageToken);
 					} else {
 						// Full sync mode - use time range and orderBy
-						const now = new Date();
-						const defaultTimeMin =
-							timeMin ||
-							new Date(
-								now.getTime() -
-									GOOGLE_CALENDAR_CONSTANTS.VIEW_RANGE.DAYS_BEFORE *
-										24 *
-										60 *
-										60 *
-										1000
-							);
-						const defaultTimeMax =
-							timeMax ||
-							new Date(
-								now.getTime() +
-									GOOGLE_CALENDAR_CONSTANTS.VIEW_RANGE.DAYS_AFTER *
-										24 *
-										60 *
-										60 *
-										1000
-							);
-						params.set("timeMin", defaultTimeMin.toISOString());
-						params.set("timeMax", defaultTimeMax.toISOString());
+						params.set("timeMin", fullSyncTimeMin!.toISOString());
+						params.set("timeMax", fullSyncTimeMax!.toISOString());
 						params.set("orderBy", "startTime");
+					}
+
+					if (nextPageToken) {
+						// Google page tokens are bound to the original query parameters.
+						params.set("pageToken", nextPageToken);
 					}
 
 					// Wrap the API call with retry logic
@@ -654,8 +661,8 @@ export class GoogleCalendarService extends CalendarProvider {
 			return;
 		}
 
-		this.lastManualRefresh = now;
 		await this.refreshAllCalendars({ propagateErrors: true });
+		this.lastManualRefresh = Date.now();
 	}
 
 	/**

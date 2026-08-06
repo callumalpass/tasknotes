@@ -309,6 +309,7 @@ export function applyTaskUpdateFrontmatterChange({
 		taskIdentification.method === "tag" ? taskIdentification.tag : undefined,
 		storeTitleInFilename
 	);
+	preserveUnchangedExistingTitleFrontmatter(frontmatter, updates, mappedFrontmatter, fieldMapper);
 
 	Object.entries(mappedFrontmatter).forEach(([key, value]) => {
 		if (value !== undefined) {
@@ -360,6 +361,22 @@ export function applyTaskUpdateFrontmatterChange({
 	return {
 		finalTags: getFrontmatterTags(frontmatter.tags),
 	};
+}
+
+function preserveUnchangedExistingTitleFrontmatter(
+	frontmatter: Record<string, unknown>,
+	updates: TaskUpdateInput,
+	mappedFrontmatter: Record<string, unknown>,
+	fieldMapper: TaskUpdateFieldMapper
+): void {
+	if (Object.prototype.hasOwnProperty.call(updates, "title")) {
+		return;
+	}
+
+	const titleField = fieldMapper.toUserField("title");
+	if (Object.prototype.hasOwnProperty.call(frontmatter, titleField)) {
+		delete mappedFrontmatter[titleField];
+	}
 }
 
 function applyConfiguredPropertyTaskIdentifier(

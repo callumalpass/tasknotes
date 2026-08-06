@@ -143,6 +143,55 @@ describe('processFolderTemplate', () => {
 			expect(result).toBe('MyProject/OtherProject');
 		});
 
+		describe('{{projectFolder}} and {{projectFolders}}', () => {
+			// Resolve a wikilink to its full file path, mirroring how the plugin
+			// wires extractProjectFilePath in production.
+			const extractFilePath = (project: string) => {
+				const match = project.match(/^\[\[([^\]]+)\]\]$/);
+				return match ? match[1] : project;
+			};
+
+			it('should return the folder containing a nested project note', () => {
+				const result = processFolderTemplate('{{projectFolder}}', {
+					taskData: { projects: ['[[Areas/EFC/EFC]]'] },
+					extractProjectFilePath: extractFilePath,
+				});
+				expect(result).toBe('Areas/EFC');
+			});
+
+			it('should return an empty string for a top-level project note', () => {
+				const result = processFolderTemplate('{{projectFolder}}', {
+					taskData: { projects: ['[[EFC]]'] },
+					extractProjectFilePath: extractFilePath,
+				});
+				expect(result).toBe('');
+			});
+
+			it('should place a task beside its project note', () => {
+				const result = processFolderTemplate('{{projectFolder}}/{{title}}', {
+					taskData: { title: 'Practice plan', projects: ['[[EFC/EFC]]'] },
+					extractProjectFilePath: extractFilePath,
+				});
+				expect(result).toBe('EFC/Practice plan');
+			});
+
+			it('should join folders and drop empties for {{projectFolders}}', () => {
+				const result = processFolderTemplate('{{projectFolders}}', {
+					taskData: { projects: ['[[EFC/EFC]]', '[[TopLevel]]', '[[a/b/c]]'] },
+					extractProjectFilePath: extractFilePath,
+				});
+				expect(result).toBe('EFC/a/b');
+			});
+
+			it('should return an empty string when no projects are set', () => {
+				const result = processFolderTemplate('{{projectFolder}}', {
+					taskData: { projects: [] },
+					extractProjectFilePath: extractFilePath,
+				});
+				expect(result).toBe('');
+			});
+		});
+
 		it('should handle empty task arrays gracefully', () => {
 			const emptyTaskData: TaskTemplateData = {
 				contexts: [],

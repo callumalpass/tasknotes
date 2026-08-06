@@ -9,6 +9,8 @@ These settings allow you to enable, disable, and configure the various features 
 
 Inline task settings control how aggressively TaskNotes turns plain note content into structured task interactions. **Task link overlay** enables the Live Preview card behavior for task links, while **Instant task convert** surfaces conversion buttons next to list items and checkboxes. **Keep checkbox when converting** leaves the original Markdown checkbox marker in the source note when a checkbox becomes a TaskNote link. For conversion output, **Inline task convert folder** sets destination behavior and supports `{{currentNotePath}}`, and **Use task defaults on instant convert** applies your default task values at conversion time.
 
+The separate **Convert current note to task** command keeps the current note body as the task details. If the note has no `scheduled` frontmatter, the command uses the Scheduled Date default from **Task Properties**; it does not apply body templates.
+
 ## Body Template
 
 Body template settings let you scaffold newly created tasks with consistent note content. When enabled, TaskNotes reads the configured template file and expands variables like `{{title}}`, `{{date}}`, `{{time}}`, `{{priority}}`, `{{status}}`, `{{contexts}}`, `{{tags}}`, and `{{projects}}`.

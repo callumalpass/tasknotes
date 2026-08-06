@@ -244,6 +244,7 @@ function createTaskInfoFromProperties(
 		scheduled: toOptionalString(props.scheduled),
 		contexts: toStringArray(props.contexts),
 		projects: toStringArray(props.projects),
+		attachments: toStringArray(props.attachments),
 		tags: toStringArray(props.tags),
 		timeEstimate: toOptionalNumber(props.timeEstimate),
 		completedDate: toOptionalString(props.completedDate),

@@ -14,7 +14,9 @@ import {
 	buildMaterializedOccurrenceUnskipPlan,
 	findMaterializedOccurrence,
 	isMaterializedOccurrenceTask,
+	taskInfoToSpecFields,
 	taskInfoUpdatesToFrontmatterPatch,
+	type MaterializedOccurrenceStatusPlan,
 } from "@tasknotes/model/operations";
 import { AutoArchiveService } from "./AutoArchiveService";
 import { TFile, normalizePath } from "obsidian";
@@ -31,7 +33,9 @@ import {
 	formatDateForStorage,
 	getCurrentDateString,
 	getCurrentTimestamp,
+	getDatePart,
 } from "../utils/dateUtils";
+import { updateToNextScheduledOccurrence } from "../core/recurrence";
 import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
@@ -204,7 +208,10 @@ export class TaskService {
 	}
 
 	private getCompletionDateForTask(task: TaskInfo): string {
-		return task.occurrence_date || getCurrentDateString();
+		// Record the real completion date, matching non-recurring task behavior.
+		// Which occurrence was fulfilled is tracked separately on the parent's
+		// complete_instances (see buildMaterializedOccurrenceCompletePlan). #2125
+		return getCurrentDateString();
 	}
 
 	/**
@@ -755,12 +762,43 @@ export class TaskService {
 			...(plan.occurrenceTask as Partial<TaskInfo>),
 			creationContext: "api",
 			customFrontmatter: occurrenceTemplate.customFrontmatter,
+			occurrenceFilenameTemplate: this.resolveOccurrenceFilenameTemplate(freshParent),
 		};
 		const { taskInfo } = await this.createTask(taskData, {
 			applyDefaults: false,
 			applyTemplate: !occurrenceTemplate.configured,
 		});
 		return taskInfo;
+	}
+
+	/**
+	 * Resolves the filename template for a materialized occurrence (#2126):
+	 * the parent's frontmatter override property wins over the global setting.
+	 * Returns undefined when no non-empty template applies (legacy naming).
+	 */
+	private resolveOccurrenceFilenameTemplate(parentTask: TaskInfo): string | undefined {
+		try {
+			const propertyName =
+				this.plugin.settings.occurrenceFilenameTemplateProperty?.trim() ||
+				"occurrenceFilenameTemplate";
+			const parentFile = this.plugin.app.vault.getAbstractFileByPath(parentTask.path);
+			const frontmatter = parentFile instanceof TFile
+				? this.plugin.app.metadataCache.getFileCache(parentFile)?.frontmatter
+				: undefined;
+			const override = frontmatter?.[propertyName];
+			const template =
+				typeof override === "string" && override.trim()
+					? override
+					: this.plugin.settings.occurrenceFilenameTemplate;
+			return typeof template === "string" && template.trim() ? template : undefined;
+		} catch (error) {
+			tasknotesLogger.warn("Failed to resolve occurrence filename template:", {
+				category: "persistence",
+				operation: "resolving-occurrence-filename-template",
+				error,
+			});
+			return this.plugin.settings.occurrenceFilenameTemplate?.trim() || undefined;
+		}
 	}
 
 	async findMaterializedOccurrence(
@@ -940,12 +978,14 @@ export class TaskService {
 		}
 
 		const currentTimestamp = getCurrentTimestamp();
-		const plan = isCompleted
+		let plan = isCompleted
 			? buildMaterializedOccurrenceCompletePlan({
 					occurrenceTask: updatedOccurrence,
 					parentTask,
 					completedStatus: this.normalizeStatusValue(newValue),
 					currentTimestamp,
+					completionDate:
+						updatedOccurrence.completedDate || getCurrentDateString(),
 					maintainDueDateOffsetInRecurring:
 						this.plugin.settings.maintainDueDateOffsetInRecurring,
 				})
@@ -955,6 +995,15 @@ export class TaskService {
 					activeStatus: this.normalizeStatusValue(newValue),
 					currentTimestamp,
 				});
+
+		if (isCompleted) {
+			plan = this.adjustRescheduledOccurrenceCompletionProgression(
+				plan,
+				updatedOccurrence,
+				parentTask,
+				currentTimestamp
+			);
+		}
 
 		const updatedParent = await this.persistTaskInfoUpdates(
 			parentTask,
@@ -992,6 +1041,90 @@ export class TaskService {
 					error: materializeError,
 				});
 			}
+		}
+	}
+
+	private adjustRescheduledOccurrenceCompletionProgression(
+		plan: MaterializedOccurrenceStatusPlan,
+		occurrenceTask: TaskInfo,
+		parentTask: TaskInfo,
+		currentTimestamp: string
+	): MaterializedOccurrenceStatusPlan {
+		const progressionDate = this.getRescheduledOccurrenceProgressionDate(occurrenceTask);
+		if (!progressionDate || typeof parentTask.recurrence !== "string") {
+			return plan;
+		}
+
+		const recurrence =
+			typeof plan.updatedParentTask.recurrence === "string"
+				? plan.updatedParentTask.recurrence
+				: parentTask.recurrence;
+		const recurrenceAnchor = plan.updatedParentTask.recurrence_anchor || "scheduled";
+		if (recurrenceAnchor === "completion") {
+			return plan;
+		}
+
+		const nextDates = updateToNextScheduledOccurrence(
+			{
+				...plan.updatedParentTask,
+				recurrence,
+				scheduled: occurrenceTask.scheduled || progressionDate,
+				due: occurrenceTask.due ?? parentTask.due,
+			},
+			this.plugin.settings.maintainDueDateOffsetInRecurring,
+			{ minOccurrenceDate: progressionDate }
+		);
+
+		const parentUpdates: Partial<TaskInfo> = {
+			...plan.parentUpdates,
+			recurrence,
+			dateModified: currentTimestamp,
+		};
+		if (nextDates.scheduled) {
+			parentUpdates.scheduled = nextDates.scheduled;
+		} else {
+			delete parentUpdates.scheduled;
+		}
+		if (nextDates.due) {
+			parentUpdates.due = nextDates.due;
+		} else {
+			delete parentUpdates.due;
+		}
+
+		const updatedParentTask: TaskInfo = { ...parentTask, ...parentUpdates };
+		const materializeNextDate = plan.materializeNextDate
+			? getDatePart(updatedParentTask.scheduled || "")
+			: undefined;
+
+		return {
+			...plan,
+			updatedParentTask,
+			parentUpdates,
+			parentFields: taskInfoToSpecFields(parentUpdates),
+			materializeNextDate: materializeNextDate || undefined,
+			changed: true,
+		};
+	}
+
+	private getRescheduledOccurrenceProgressionDate(occurrenceTask: TaskInfo): string | null {
+		const occurrenceDate = this.getSafeDatePart(occurrenceTask.occurrence_date);
+		const scheduledDate = this.getSafeDatePart(occurrenceTask.scheduled);
+		if (!occurrenceDate || !scheduledDate || scheduledDate <= occurrenceDate) {
+			return null;
+		}
+
+		return scheduledDate;
+	}
+
+	private getSafeDatePart(value: string | undefined): string {
+		if (!value) {
+			return "";
+		}
+
+		try {
+			return getDatePart(value);
+		} catch {
+			return "";
 		}
 	}
 

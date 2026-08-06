@@ -13,9 +13,10 @@ import {
 	type TaskFilenameSettings,
 	generateTaskFilename,
 	generateUniqueFilename,
+	generateOccurrenceFilename,
 } from "../../utils/filenameGenerator";
 import { ensureFolderExists } from "../../utils/helpers";
-import { getCurrentTimestamp } from "../../utils/dateUtils";
+import { getCurrentDateString, getCurrentTimestamp } from "../../utils/dateUtils";
 import { stringifyUnknown } from "../../utils/stringUtils";
 import { mergeTemplateFrontmatter } from "../../utils/templateProcessor";
 import {
@@ -65,6 +66,10 @@ interface TaskCreationCalendarSyncService {
 	syncTaskToCalendar(task: TaskInfo): Promise<unknown>;
 }
 
+interface TaskCreationStatusManager {
+	isCompletedStatus(status: string): boolean;
+}
+
 type TaskCreationSettings = Pick<
 	TaskNotesSettings,
 	| "storeTitleInFilename"
@@ -88,6 +93,7 @@ export interface TaskCreationRuntime {
 	};
 	settings: TaskCreationSettings;
 	fieldMapper: TaskCreationFieldMapper;
+	statusManager?: TaskCreationStatusManager;
 	cacheManager: TaskCreationCacheManager;
 	emitter: TaskCreationEmitter;
 	taskCalendarSyncService?: TaskCreationCalendarSyncService;
@@ -140,6 +146,13 @@ export class TaskCreationService {
 			const status = taskData.status || runtime.settings.defaultTaskStatus;
 			const dateCreated = taskData.dateCreated || getCurrentTimestamp();
 			const dateModified = taskData.dateModified || getCurrentTimestamp();
+			const recurrence = taskData.recurrence || undefined;
+			const completedDate = !recurrence
+				? taskData.completedDate ||
+					(runtime.statusManager?.isCompletedStatus(status)
+						? getCurrentDateString()
+						: undefined)
+				: undefined;
 
 			const contextsArray = taskData.contexts || [];
 			const projectsArray = taskData.projects || [];
@@ -168,7 +181,15 @@ export class TaskCreationService {
 				parentNote: taskData.parentNote,
 			};
 
-			const baseFilename = generateTaskFilename(filenameContext, runtime.settings);
+			const occurrenceFilenameTemplate = taskData.occurrenceFilenameTemplate?.trim();
+			const baseFilename =
+				occurrenceFilenameTemplate && taskData.occurrence_date
+					? generateOccurrenceFilename(
+							filenameContext,
+							occurrenceFilenameTemplate,
+							taskData.occurrence_date
+						)
+					: generateTaskFilename(filenameContext, runtime.settings);
 			const folder = await this.resolveTargetFolder(taskData);
 
 			if (folder) {
@@ -181,6 +202,10 @@ export class TaskCreationService {
 				runtime.app.vault
 			);
 			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
+			const titleIsRepresentedByFilename =
+				runtime.settings.storeTitleInFilename &&
+				uniqueFilename === filenameTitle &&
+				title === filenameTitle;
 
 			const completeTaskData: Partial<TaskInfo> = {
 				title,
@@ -196,7 +221,8 @@ export class TaskCreationService {
 						: undefined,
 				dateCreated,
 				dateModified,
-				recurrence: taskData.recurrence || undefined,
+				recurrence,
+				completedDate,
 				recurrence_anchor: taskData.recurrence_anchor || undefined,
 				recurrence_parent: taskData.recurrence_parent || undefined,
 				occurrence_date: taskData.occurrence_date || undefined,
@@ -264,7 +290,7 @@ export class TaskCreationService {
 			const frontmatter = runtime.fieldMapper.mapToFrontmatter(
 				completeTaskData,
 				taskTagForFrontmatter,
-				runtime.settings.storeTitleInFilename
+				titleIsRepresentedByFilename
 			);
 
 			if (runtime.settings.taskIdentificationMethod === "property") {
@@ -296,7 +322,7 @@ export class TaskCreationService {
 			if (taskData.customFrontmatter) {
 				finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
 			}
-			if (runtime.settings.storeTitleInFilename) {
+			if (titleIsRepresentedByFilename) {
 				delete finalFrontmatter[runtime.fieldMapper.toUserField("title")];
 			}
 			if (runtime.settings.taskIdentificationMethod === "property") {
@@ -366,6 +392,7 @@ export class TaskCreationService {
 
 			if (
 				runtime.taskCalendarSyncService &&
+				runtime.settings.googleCalendarExport.enabled &&
 				runtime.settings.googleCalendarExport.syncOnTaskCreate
 			) {
 				runtime.taskCalendarSyncService.syncTaskToCalendar(taskInfo).catch((error) => {

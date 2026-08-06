@@ -41,6 +41,34 @@ export function validateCalendarId(calendarId: string): void {
 	}
 }
 
+function containsControlCharacter(value: string): boolean {
+	for (let index = 0; index < value.length; index++) {
+		const code = value.charCodeAt(index);
+		if (code < 32 || code === 127) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Validates Microsoft Graph calendar IDs.
+ *
+ * Microsoft returns opaque Exchange/Graph IDs, including Base64URL-style values
+ * that can mix dashes, underscores, and padding. Treat them as opaque path
+ * segments and rely on callers to URL-encode them before making Graph requests.
+ */
+export function validateMicrosoftCalendarId(calendarId: string): void {
+	validateNotEmpty(calendarId, "Calendar ID");
+
+	if (containsControlCharacter(calendarId)) {
+		throw new ValidationError(
+			"Invalid calendar ID format. Microsoft calendar IDs cannot contain control characters.",
+			"calendarId"
+		);
+	}
+}
+
 /**
  * Validates event ID format
  */

@@ -21,6 +21,7 @@ function createTaskServiceWithZettelSettings(): TaskService {
 
 	// Simulate no filename collisions so the generated base filename is used.
 	plugin.app.vault.getAbstractFileByPath = jest.fn().mockReturnValue(null);
+	plugin.app.vault.adapter.exists = jest.fn(async (path: string) => !path.endsWith(".md"));
 	plugin.app.workspace.getActiveFile = jest.fn().mockReturnValue(null);
 
 	return new TaskService(plugin);

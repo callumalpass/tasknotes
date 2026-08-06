@@ -1114,7 +1114,13 @@ export const pt: TranslationTree = {
 				filenameUpdatesWithTitle: "O nome do arquivo será atualizado automaticamente quando o título da tarefa mudar.",
 				filenameFormat: "Formato do nome do arquivo:",
 				customTemplate: "Modelo personalizado:",
-				legacySyntaxWarning: "A sintaxe de chaves simples como {title} está obsoleta. Por favor, use a sintaxe de chaves duplas {{title}} para consistência com os modelos de corpo."
+				legacySyntaxWarning: "A sintaxe de chaves simples como {title} está obsoleta. Por favor, use a sintaxe de chaves duplas {{title}} para consistência com os modelos de corpo.",
+				occurrenceFilenameTemplate: "Modelo de nome de arquivo das ocorrências",
+				occurrenceFilenameTemplateHelp:
+					"Modelo do nome de arquivo das ocorrências materializadas de tarefas recorrentes. Deixe vazio para manter o nome existente (título da tarefa-mãe com sufixo numérico). Escolha explicitamente a granularidade com {{occurrenceDate}}, {{occurrenceWeek}}, {{occurrenceMonth}}, {{occurrenceYear}} ou {{occurrenceMonthName}}. Todas as variáveis normais de nome de arquivo também funcionam. Uma tarefa-mãe pode sobrescrever este modelo pela propriedade de frontmatter configurada abaixo.",
+				occurrenceFilenameProperty: "Propriedade de sobrescrita do modelo",
+				occurrenceFilenamePropertyHelp:
+					"Nome da propriedade de frontmatter na tarefa recorrente (mãe) que sobrescreve o modelo de nome de arquivo para as ocorrências daquela tarefa."
 			},
 			tagsCard: {
 				nativeObsidianTags: "Usa tags nativas do Obsidian"
@@ -3105,7 +3111,8 @@ export const pt: TranslationTree = {
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 lembrete definido (clique para gerenciar)",
 			reminderTooltipMany: "{count} lembretes definidos (clique para gerenciar)",
-			projectTooltip: "Esta tarefa é usada como projeto (clique para filtrar subtarefas)",
+			projectTooltip: "Esta tarefa é usada como projeto (clique para mostrar/ocultar subtarefas)",
+			projectIndicatorTooltip: "Esta tarefa é usada como projeto",
 			expandSubtasks: "Expandir subtarefas",
 			collapseSubtasks: "Recolher subtarefas",
 			dueToday: "{label}: Hoje",

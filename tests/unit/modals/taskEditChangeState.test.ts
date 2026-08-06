@@ -172,6 +172,28 @@ describe("taskEditChangeState", () => {
 		expect(result.unresolvedBlockingEntries).toEqual([]);
 	});
 
+	it("normalizes scalar task contexts before comparing edit changes", () => {
+		const app = createMockApp(MockObsidian.createMockApp());
+		const task = createTask({
+			contexts: "Routine" as unknown as string[],
+		});
+		const state = createState({
+			contexts: "Routine",
+		});
+
+		const result = buildTaskEditChangesFromModalState({
+			...state,
+			task,
+			app,
+			settings: {
+				maintainDueDateOffsetInRecurring: false,
+			},
+			normalizeDetails: (value) => value,
+		});
+
+		expect(result.changes.contexts).toBeUndefined();
+	});
+
 	it("builds skipped recurring instance changes from modal state", () => {
 		const app = createMockApp(MockObsidian.createMockApp());
 		const task = createTask({

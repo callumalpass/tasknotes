@@ -20,6 +20,7 @@ export const format = jest.fn((date: Date, formatStr: string) => {
   if (formatStr === 'MM') return String(month + 1).padStart(2, '0');
   if (formatStr === 'dd') return String(day).padStart(2, '0');
   if (formatStr === 'yyyy-MM-dd') return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  if (formatStr === 'yyyy-MM') return `${year}-${String(month + 1).padStart(2, '0')}`;
 
   // Time formats
   if (formatStr === 'HH') return String(hours).padStart(2, '0');
@@ -112,6 +113,24 @@ export const format = jest.fn((date: Date, formatStr: string) => {
   }
   if (formatStr === "yyyy-MM-dd'T'HH:mm") {
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  }
+
+  // ISO week-numbering year + week (e.g. "2026-W31")
+  if (formatStr === "RRRR-'W'II") {
+    const target = new Date(date.getTime());
+    target.setHours(0, 0, 0, 0);
+    // Thursday of the current ISO week decides the ISO week-numbering year
+    target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7));
+    const firstThursday = new Date(target.getFullYear(), 0, 4);
+    const week =
+      1 +
+      Math.round(
+        ((target.getTime() - firstThursday.getTime()) / 86400000 -
+          3 +
+          ((firstThursday.getDay() + 6) % 7)) /
+          7
+      );
+    return `${target.getFullYear()}-W${String(week).padStart(2, '0')}`;
   }
 
   // Default fallback

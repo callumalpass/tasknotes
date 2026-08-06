@@ -65,9 +65,17 @@ jest.mock("../../../src/utils/dateUtils", () => {
 jest.mock("../../../src/utils/filenameGenerator", () => ({
 	generateTaskFilename: jest.fn((context) => context.title.toLowerCase().replace(/\s+/g, "-")),
 	generateUniqueFilename: jest.fn((base) => base),
+	generateOccurrenceFilename: jest.fn(
+		(context, template, occurrenceDate) => `${context.title} OCC ${occurrenceDate}`
+	),
 }));
 
 describe("TaskService materialized occurrences", () => {
+	beforeEach(() => {
+		const dateUtils = jest.requireMock("../../../src/utils/dateUtils");
+		dateUtils.getCurrentDateString.mockReturnValue("2025-01-01");
+	});
+
 	function createService(tasks: Record<string, TaskInfo> = {}) {
 		const frontmatterByPath = new Map<string, Record<string, unknown>>();
 		const plugin = PluginFactory.createMockPlugin({
@@ -437,14 +445,177 @@ describe("TaskService materialized occurrences", () => {
 
 		await taskService.updateProperty(occurrence, "status", "done");
 
+		// completedDate records when the user actually completed the occurrence
+		// (the mocked "today", 2025-01-01), while the parent's complete_instances
+		// keeps tracking WHICH occurrence was fulfilled (the occurrence date).
 		expect(frontmatterByPath.get(occurrence.path)).toMatchObject({
 			status: "done",
-			completedDate: "2026-06-01",
+			completedDate: "2025-01-01",
 		});
 		expect(frontmatterByPath.get(parent.path)).toMatchObject({
 			complete_instances: ["2026-06-01"],
 			scheduled: "2026-06-02",
 		});
 		expect(frontmatterByPath.get(parent.path)?.skipped_instances).toBeUndefined();
+	});
+
+	it("advances completion-anchored parents from the actual completion date", async () => {
+		const dateUtils = jest.requireMock("../../../src/utils/dateUtils");
+		dateUtils.getCurrentDateString.mockReturnValue("2026-07-30");
+		const parent = TaskFactory.createTask({
+			title: "Weekly task",
+			path: "Tasks/Weekly task.md",
+			recurrence: "DTSTART:20260727;FREQ=WEEKLY",
+			recurrence_anchor: "completion",
+			scheduled: "2026-07-27",
+			complete_instances: [],
+			occurrence_materialization: "on_completion",
+		});
+		const occurrence = TaskFactory.createTask({
+			title: "Weekly task",
+			path: "Tasks/Weekly task 2026-07-28.md",
+			status: "open",
+			recurrence_parent: "[[Tasks/Weekly task]]",
+			occurrence_date: "2026-07-28",
+			scheduled: "2026-07-29",
+		});
+		const { taskService, frontmatterByPath } = createService({
+			[parent.path]: parent,
+			[occurrence.path]: occurrence,
+		});
+
+		const completedOccurrence = await taskService.updateProperty(
+			occurrence,
+			"status",
+			"done"
+		);
+
+		expect(frontmatterByPath.get(occurrence.path)).toMatchObject({
+			status: "done",
+			completedDate: "2026-07-30",
+		});
+		expect(frontmatterByPath.get(parent.path)).toMatchObject({
+			complete_instances: ["2026-07-28"],
+			recurrence: "DTSTART:20260730;FREQ=WEEKLY",
+			scheduled: "2026-08-06",
+		});
+
+		await taskService.updateProperty(completedOccurrence, "status", "open");
+
+		expect(frontmatterByPath.get(parent.path)).toMatchObject({
+			recurrence: "DTSTART:20260730;FREQ=WEEKLY",
+			scheduled: "2026-08-06",
+		});
+		expect(frontmatterByPath.get(parent.path)?.complete_instances).toBeUndefined();
+	});
+
+	describe("issue #2126 — occurrence filename template wiring", () => {
+		const filenameGenerator = jest.requireMock("../../../src/utils/filenameGenerator");
+
+		beforeEach(() => {
+			filenameGenerator.generateOccurrenceFilename.mockClear();
+			filenameGenerator.generateTaskFilename.mockClear();
+		});
+
+		it("uses the global template", async () => {
+			const parent = TaskFactory.createTask({
+				title: "Pay rent",
+				path: "Tasks/Pay rent.md",
+				recurrence: "FREQ=MONTHLY",
+				scheduled: "2026-08-01",
+			});
+			const { taskService, plugin } = createService({ [parent.path]: parent });
+			plugin.settings.occurrenceFilenameTemplate = "{{title}} — {{occurrenceDate}}";
+
+			const occurrence = await taskService.materializeOccurrence(parent, "2026-08-01");
+
+			expect(filenameGenerator.generateOccurrenceFilename).toHaveBeenCalledWith(
+				expect.objectContaining({ title: "Pay rent" }),
+				"{{title}} — {{occurrenceDate}}",
+				"2026-08-01"
+			);
+			expect(filenameGenerator.generateTaskFilename).not.toHaveBeenCalled();
+			expect(occurrence.path).toBe("Tasks/Pay rent OCC 2026-08-01.md");
+		});
+
+		it("parent frontmatter property overrides the global template", async () => {
+			const parent = TaskFactory.createTask({
+				title: "Weekly review",
+				path: "Tasks/Weekly review.md",
+				recurrence: "FREQ=WEEKLY",
+				scheduled: "2026-08-03",
+			});
+			const { taskService, plugin } = createService({ [parent.path]: parent });
+			plugin.settings.occurrenceFilenameTemplate = "{{title}} — {{occurrenceDate}}";
+			plugin.settings.occurrenceFilenameTemplateProperty = "occurrenceFilenameTemplate";
+			// the harness resolves the parent frontmatter via metadataCache.getFileCache —
+			// override it so the parent note carries the per-task template override
+			plugin.app.metadataCache.getFileCache = jest.fn((file: { path: string }) =>
+				file.path === "Tasks/Weekly review.md"
+					? { frontmatter: { occurrenceFilenameTemplate: "{{title}} ({{occurrenceWeek}})" } }
+					: { frontmatter: {} }
+			);
+
+			await taskService.materializeOccurrence(parent, "2026-08-03");
+
+			expect(filenameGenerator.generateOccurrenceFilename).toHaveBeenCalledWith(
+				expect.anything(),
+				"{{title}} ({{occurrenceWeek}})",
+				"2026-08-03"
+			);
+		});
+
+		it("empty template preserves legacy filename behavior", async () => {
+			const parent = TaskFactory.createTask({
+				title: "Daily task",
+				path: "Tasks/Daily task.md",
+				recurrence: "FREQ=DAILY",
+				scheduled: "2026-08-01",
+			});
+			const { taskService, plugin } = createService({ [parent.path]: parent });
+			plugin.settings.occurrenceFilenameTemplate = "";
+
+			await taskService.materializeOccurrence(parent, "2026-08-01");
+
+			expect(filenameGenerator.generateOccurrenceFilename).not.toHaveBeenCalled();
+			expect(filenameGenerator.generateTaskFilename).toHaveBeenCalled();
+		});
+	});
+
+	it("does not advance scheduled-anchored parents before a rescheduled occurrence", async () => {
+		const dateUtils = jest.requireMock("../../../src/utils/dateUtils");
+		dateUtils.getCurrentDateString.mockReturnValue("2026-01-01");
+		const parent = TaskFactory.createTask({
+			title: "Weekly task",
+			path: "Tasks/Weekly task.md",
+			recurrence: "DTSTART:20260101;FREQ=WEEKLY",
+			recurrence_anchor: "scheduled",
+			scheduled: "2026-01-01",
+			complete_instances: [],
+		});
+		const occurrence = TaskFactory.createTask({
+			title: "Weekly task",
+			path: "Tasks/Weekly task 2026-01-01.md",
+			status: "open",
+			recurrence_parent: "[[Tasks/Weekly task]]",
+			occurrence_date: "2026-01-01",
+			scheduled: "2026-01-10",
+		});
+		const { taskService, frontmatterByPath } = createService({
+			[parent.path]: parent,
+			[occurrence.path]: occurrence,
+		});
+
+		await taskService.updateProperty(occurrence, "status", "done");
+
+		expect(frontmatterByPath.get(occurrence.path)).toMatchObject({
+			status: "done",
+			completedDate: "2026-01-01",
+		});
+		expect(frontmatterByPath.get(parent.path)).toMatchObject({
+			complete_instances: ["2026-01-01"],
+			recurrence: "DTSTART:20260101;FREQ=WEEKLY",
+			scheduled: "2026-01-15",
+		});
 	});
 });

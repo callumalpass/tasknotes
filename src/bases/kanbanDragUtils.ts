@@ -87,8 +87,8 @@ export type KanbanStatusDerivativePlanInput = {
 
 export type KanbanDropSideEffectPlan = {
 	changedTaskProp: keyof TaskInfo;
-	oldPropValue: string | null | undefined;
-	newPropValue: string | null;
+	oldPropValue: unknown;
+	newPropValue: unknown;
 	updatedTask: TaskInfo;
 };
 
@@ -528,15 +528,16 @@ export function planKanbanDropSideEffect({
 	}
 
 	const changedTaskProp = plan.changedTaskProp as keyof TaskInfo;
+	const newPropValue = resolveKanbanDropTaskInfoValue(plan, originalTask, changedTaskProp);
 	const updatedTask: TaskInfo = {
 		...originalTask,
-		[changedTaskProp]: plan.newPropValue,
+		[changedTaskProp]: newPropValue,
 		dateModified: dateModifiedValue,
 	};
 
 	if (changedTaskProp === "status" && !originalTask.recurrence) {
 		updatedTask.completedDate =
-			typeof plan.newPropValue === "string" && isCompletedStatus(plan.newPropValue)
+			typeof newPropValue === "string" && isCompletedStatus(newPropValue)
 				? new Date().toISOString().split("T")[0]
 				: undefined;
 	}
@@ -544,7 +545,26 @@ export function planKanbanDropSideEffect({
 	return {
 		changedTaskProp,
 		oldPropValue: plan.oldPropValue,
-		newPropValue: plan.newPropValue,
+		newPropValue,
 		updatedTask,
 	};
+}
+
+function resolveKanbanDropTaskInfoValue(
+	plan: KanbanTaskDropUpdatePlan,
+	originalTask: TaskInfo,
+	changedTaskProp: keyof TaskInfo
+): unknown {
+	const currentValue = originalTask[changedTaskProp];
+	if (plan.needsGroupUpdate && plan.isGroupByListProperty) {
+		return updateListDropValue(currentValue, plan.sourceColumn, plan.newGroupValue);
+	}
+	if (
+		plan.needsSwimlaneUpdate &&
+		plan.isSwimlaneListProperty &&
+		plan.newSwimLaneValue !== null
+	) {
+		return updateListDropValue(currentValue, plan.sourceSwimlane, plan.newSwimLaneValue);
+	}
+	return plan.newPropValue;
 }
