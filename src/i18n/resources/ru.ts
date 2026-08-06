@@ -2452,9 +2452,9 @@ export const ru: TranslationTree = {
 		task: {
 			titlePlaceholder: "Что нужно сделать?",
 			titleLabel: "Название",
-			titleDetailedPlaceholder: "Название задачи...",
+			titleDetailedPlaceholder: "Название",
 			detailsLabel: "Детали",
-			detailsPlaceholder: "Добавить больше деталей...",
+			detailsPlaceholder: "Описание",
 			projectsLabel: "Проекты",
 			projectsAdd: "Добавить проект",
 			projectsTooltip: "Выберите заметку проекта, используя нечеткий поиск",
@@ -2496,12 +2496,12 @@ export const ru: TranslationTree = {
 			},
 			customFieldsLabel: "Пользовательские поля",
 			actions: {
-				due: "Установить срок выполнения",
-				scheduled: "Установить запланированную дату",
-				status: "Установить статус",
-				priority: "Установить приоритет",
-				recurrence: "Установить повторение",
-				reminders: "Установить напоминания"
+				due: "Срок выполнения",
+				scheduled: "Запланированная дата",
+				status: "Статус",
+				priority: "Приоритет",
+				recurrence: "Повторение",
+				reminders: "Напоминания"
 			},
 			buttons: {
 				openNote: "Открыть заметку",

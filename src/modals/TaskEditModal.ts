@@ -18,6 +18,7 @@ import { showTaskModalReminderContextMenu } from "./taskModalActionMenus";
 import { buildTaskEditChangesFromModalState } from "./taskEditChangeState";
 import { buildTaskEditFormStateFromTask } from "./taskEditFormState";
 import { applyTaskEditSubtaskChanges, hasTaskEditSubtaskChanges } from "./taskEditSubtasks";
+import { shouldUseSplitLayoutEnabledClass } from "./taskModalLayout";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskEditModal" });
@@ -134,7 +135,29 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	onOpen(): void {
+		this.applyEditModalLayoutClasses();
 		void this.openEditModal();
+	}
+
+	private applyEditModalLayoutClasses(): void {
+		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal", "expanded");
+		if (
+			shouldUseSplitLayoutEnabledClass({
+				enableModalSplitLayout: this.plugin.settings.enableModalSplitLayout,
+				usesEditSidebarLayout: this.usesEditSidebarLayout(),
+				usesSheetLayout: this.usesSheetLayout(),
+			})
+		) {
+			this.containerEl.addClass("split-layout-enabled");
+		}
+		if (this.usesSheetLayout()) {
+			this.containerEl.addClass("tn-task-modal--sheet");
+			this.modalEl.addClass("tn-task-modal__sheet--pending");
+		}
+		if (this.usesEditSidebarLayout()) {
+			this.containerEl.addClass("tn-task-modal--edit-desktop");
+		}
+		this.modalEl.addClass("mod-tasknotes");
 	}
 
 	private async openEditModal(): Promise<void> {
@@ -144,12 +167,6 @@ export class TaskEditModal extends TaskModal {
 
 		// Refresh task data from file before opening
 		await this.refreshTaskData();
-
-		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal", "expanded");
-		if (this.plugin.settings.enableModalSplitLayout) {
-			this.containerEl.addClass("split-layout-enabled");
-		}
-		this.modalEl.addClass("mod-tasknotes");
 
 		// Set the modal title using the standard Obsidian approach (preserves close button)
 		this.titleEl.setText(this.getModalTitle());
@@ -168,9 +185,8 @@ export class TaskEditModal extends TaskModal {
 
 		void this.initializeFormData().then(() => {
 			this.createModalContent();
-			// Render projects list after modal content is created
+			this.setupSheetGestures();
 			this.renderProjectsList();
-			// Update icon states after creating the action bar
 			this.updateIconStates();
 			this.focusTitleInput();
 		});
@@ -373,12 +389,14 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	private createMetadataSection(container: HTMLElement): void {
-		this.metadataContainer = container.createDiv("metadata-container");
+		this.metadataContainer = container.createDiv({
+			cls: "metadata-container tn-task-modal__task-info",
+		});
 
 		const metadataLabel = this.metadataContainer.createDiv("detail-label");
 		metadataLabel.textContent = this.t("modals.taskEdit.sections.taskInfo");
 
-		const metadataContent = this.metadataContainer.createDiv("metadata-content");
+		const metadataContent = this.metadataContainer.createDiv("tn-task-modal__task-info-card");
 		const timeFormat = this.plugin.settings.calendarViewSettings?.timeFormat ?? "24";
 
 		// Total tracked time
@@ -438,9 +456,9 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	private createMetadataItem(container: HTMLElement, key: string, value: string): void {
-		const item = container.createDiv("metadata-item");
-		item.createSpan("metadata-key").textContent = `${key} `;
-		item.createSpan("metadata-value").textContent = value;
+		const item = container.createDiv("tn-task-modal__task-info-row metadata-item");
+		item.createSpan("tn-task-modal__task-info-key").textContent = `${key} `;
+		item.createSpan("tn-task-modal__task-info-value metadata-value").textContent = value;
 	}
 
 	async handleSave(): Promise<void> {
@@ -682,26 +700,31 @@ export class TaskEditModal extends TaskModal {
 			leadingButtons: [
 				{
 					className: "tn-task-modal__open-note-button",
-					text: this.t("modals.task.buttons.openNote"),
+					iconName: "external-link",
+					label: this.t("modals.task.buttons.openNote"),
 					onClick: () => {
 						void this.openTaskNote();
 					},
 				},
 				{
-					className: "mod-warning tn-task-modal__archive-button",
-					text: this.task.archived
+					className: "tn-task-modal__archive-button",
+					iconName: "archive",
+					label: this.task.archived
 						? this.t("modals.taskEdit.buttons.unarchive")
 						: this.t("modals.taskEdit.buttons.archive"),
 					onClick: () => {
 						void this.archiveTask();
 					},
+					isWarning: true,
 				},
 				{
-					className: "mod-warning tn-task-modal__delete-button",
-					text: this.t("contextMenus.task.delete"),
+					className: "tn-task-modal__delete-button",
+					iconName: "trash-2",
+					label: this.t("contextMenus.task.delete"),
 					onClick: () => {
 						void this.deleteTask();
 					},
+					isWarning: true,
 				},
 			],
 			onSave: () => this.handleSave(),

@@ -74,7 +74,7 @@ describe("taskModalActionBar", () => {
 				onClick: jest.fn(),
 			},
 			{
-				iconName: "calendar",
+				iconName: "target",
 				tooltip: "Due",
 				dataType: "due-date",
 				onClick: jest.fn(),

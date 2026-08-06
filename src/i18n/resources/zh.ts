@@ -2452,9 +2452,9 @@ export const zh: TranslationTree = {
 		task: {
 			titlePlaceholder: "需要做什么？",
 			titleLabel: "标题",
-			titleDetailedPlaceholder: "任务标题...",
+			titleDetailedPlaceholder: "标题",
 			detailsLabel: "详情",
-			detailsPlaceholder: "添加更多详情...",
+			detailsPlaceholder: "描述",
 			projectsLabel: "项目",
 			projectsAdd: "添加项目",
 			projectsTooltip: "使用模糊搜索选择项目笔记",
@@ -2496,12 +2496,12 @@ export const zh: TranslationTree = {
 			},
 			customFieldsLabel: "自定义字段",
 			actions: {
-				due: "设置到期日期",
-				scheduled: "设置安排日期",
-				status: "设置状态",
-				priority: "设置优先级",
-				recurrence: "设置重复",
-				reminders: "设置提醒"
+				due: "到期日期",
+				scheduled: "安排日期",
+				status: "状态",
+				priority: "优先级",
+				recurrence: "重复",
+				reminders: "提醒"
 			},
 			buttons: {
 				openNote: "打开笔记",

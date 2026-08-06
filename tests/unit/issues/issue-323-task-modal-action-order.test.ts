@@ -64,6 +64,9 @@ describe("Issue #323: task modal action order", () => {
 			"scheduled-date",
 			"recurrence",
 			"reminders",
+			"contexts",
+			"tags",
+			"time-estimate",
 		]);
 	});
 });

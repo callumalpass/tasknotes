@@ -60,7 +60,7 @@ export class TaskModalFocusGuards {
 		};
 
 		input.addEventListener("pointerdown", capture, { capture: true });
-		input.addEventListener("touchstart", capture, { capture: true });
+		input.addEventListener("touchstart", capture, { capture: true, passive: true });
 		input.addEventListener("focus", () => {
 			if (!this.pendingTitleFocusScrollPositions) return;
 			this.scheduleTitleFocusScrollRestore(this.pendingTitleFocusScrollPositions);
@@ -130,9 +130,17 @@ export class TaskModalFocusGuards {
 		const addElement = (element: Element | null | undefined) => {
 			const elementWindow = element?.ownerDocument.defaultView;
 			const HTMLElementConstructor = elementWindow?.HTMLElement ?? HTMLElement;
-			if (element instanceof HTMLElementConstructor) {
-				elements.add(element);
+			if (!(element instanceof HTMLElementConstructor)) {
+				return;
 			}
+
+			// CodeMirror manages its own scroller; forcing scrollTop on it triggers
+			// Obsidian's markdown scroll sync and can spam console errors.
+			if (element.classList.contains("cm-scroller")) {
+				return;
+			}
+
+			elements.add(element);
 		};
 
 		addElement(this.elements.containerEl);
@@ -222,8 +230,16 @@ export class TaskModalFocusGuards {
 		}
 	}
 
+	private usesSheetLayout(): boolean {
+		return this.elements.containerEl.classList.contains("tn-task-modal--sheet");
+	}
+
 	private scrollMobileKeyboardTargetIntoView(input: HTMLElement): void {
 		if (!this.isMobileLikeEnvironment()) return;
+		// The sheet layout lifts the whole modal above the keyboard/toolbar.
+		// Scrolling inside the content area fights that and leaves the footer
+		// behind the bottom obstruction.
+		if (this.usesSheetLayout()) return;
 
 		const target = input.closest<HTMLElement>(".setting-item") ?? input;
 		target.scrollIntoView({

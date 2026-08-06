@@ -69,13 +69,14 @@ describe("Issue #2009: task creation NLP editor Tab focus", () => {
 		const app = MockObsidian.createMockApp() as unknown as App;
 		const modal = new TaskCreationModal(app, createPlugin(app));
 		const previousButton = document.createElement("button");
-		const titleInput = document.createElement("textarea");
+		const detailsEditor = document.createElement("div");
 		previousButton.focus = jest.fn();
-		titleInput.focus = jest.fn();
-		titleInput.className = "title-input-detailed";
+		detailsEditor.focus = jest.fn();
+		detailsEditor.tabIndex = 0;
+		detailsEditor.className = "tn-task-modal__markdown-editor--details";
 
 		modal.contentEl.append(previousButton);
-		modal.modalEl.append(modal.contentEl, titleInput);
+		modal.modalEl.append(modal.contentEl, detailsEditor);
 		(modal as any).isExpanded = true;
 		(modal as any).createNaturalLanguageInput(modal.contentEl);
 
@@ -85,7 +86,7 @@ describe("Issue #2009: task creation NLP editor Tab focus", () => {
 
 		expect(editorOptions.onTab?.(editor, false)).toBe(true);
 		jest.advanceTimersByTime(50);
-		expect(titleInput.focus).toHaveBeenCalledTimes(1);
+		expect(detailsEditor.focus).toHaveBeenCalledTimes(1);
 
 		expect(editorOptions.onTab?.(editor, true)).toBe(true);
 		jest.advanceTimersByTime(50);

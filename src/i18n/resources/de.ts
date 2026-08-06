@@ -2452,9 +2452,9 @@ export const de: TranslationTree = {
 		task: {
 			titlePlaceholder: "Was muss getan werden?",
 			titleLabel: "Titel",
-			titleDetailedPlaceholder: "Aufgabentitel...",
+			titleDetailedPlaceholder: "Titel",
 			detailsLabel: "Details",
-			detailsPlaceholder: "Weitere Details hinzufügen...",
+			detailsPlaceholder: "Beschreibung",
 			projectsLabel: "Projekte",
 			projectsAdd: "Projekt hinzufügen",
 			projectsTooltip: "Projektnotiz mit unscharfer Suche auswählen",
@@ -2496,12 +2496,12 @@ export const de: TranslationTree = {
 			},
 			customFieldsLabel: "Benutzerdefinierte Felder",
 			actions: {
-				due: "Fälligkeitsdatum setzen",
-				scheduled: "Planungsdatum setzen",
-				status: "Status setzen",
-				priority: "Priorität setzen",
-				recurrence: "Wiederholung setzen",
-				reminders: "Erinnerungen setzen"
+				due: "Fälligkeitsdatum",
+				scheduled: "Planungsdatum",
+				status: "Status",
+				priority: "Priorität",
+				recurrence: "Wiederholung",
+				reminders: "Erinnerungen"
 			},
 			buttons: {
 				openNote: "Notiz öffnen",

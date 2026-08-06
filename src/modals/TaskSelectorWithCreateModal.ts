@@ -398,7 +398,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		// Due date
 		if (parsed.dueDate) {
 			const dateStr = parsed.dueTime ? `${parsed.dueDate} ${parsed.dueTime}` : parsed.dueDate;
-			parts.push({ icon: "calendar", text: dateStr, type: "due" });
+			parts.push({ icon: "target", text: dateStr, type: "due" });
 		}
 
 		// Scheduled date

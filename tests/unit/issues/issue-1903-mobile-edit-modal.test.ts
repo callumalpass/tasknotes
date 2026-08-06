@@ -97,39 +97,33 @@ describe("Issue #1903: mobile edit task modal", () => {
 		expect(
 			extractCssBlock(
 				cssContent,
-				"body.is-mobile .tasknotes-plugin.minimalist-task-modal > .modal"
+				"body.is-mobile .tasknotes-plugin.minimalist-task-modal:not(.tn-task-modal--sheet) > .modal"
 			)
 		).toContain("width: calc(100vw - 16px");
 		expect(
 			extractCssBlock(
 				cssContent,
-				"body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-left .details-container"
+				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__icon-button-bar"
 			)
-		).toContain("order: 3");
+		).toContain("flex-wrap: nowrap");
 		expect(
 			extractCssBlock(
 				cssContent,
-				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar"
+				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__icon-button-bar .tn-task-modal__icon-button-trailing"
 			)
-		).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
+		).toContain("margin-left: auto");
 		expect(
 			extractCssBlock(
 				cssContent,
-				"body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container"
+				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__icon-button-bar .tn-task-modal__icon-button"
+			)
+		).toContain("flex-shrink: 0");
+		expect(
+			extractCssBlock(
+				cssContent,
+				"body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded:not(.tn-task-modal--sheet) .modal-button-container"
 			)
 		).toContain("margin-bottom: max(var(--size-4-1), env(safe-area-inset-bottom))");
-		expect(
-			extractCssBlock(
-				cssContent,
-				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__open-note-button"
-			)
-		).not.toContain("grid-column: 1 / -1");
-		expect(
-			extractCssBlock(
-				cssContent,
-				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .mod-cta"
-			)
-		).toContain("grid-column: span 2");
 		expect(cssContent).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.tn-task-modal__markdown-editor--details,[^{]*\{[^}]*min-height:\s*140px/s
 		);

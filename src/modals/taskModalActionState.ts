@@ -104,9 +104,31 @@ export function buildTaskModalActionIconState(
 		recurrenceRule: state.recurrenceRule,
 		recurrenceDisplayText: getTaskModalRecurrenceDisplayText(state.recurrenceRule),
 		reminderCount: state.reminders.length,
+		contexts: "",
+		tags: "",
+		timeEstimate: 0,
 		defaultStatus: getDefaultTaskModalStatus(statusConfigs),
 		defaultPriority: getDefaultTaskModalPriority(priorityConfigs),
 		statusConfigs,
 		priorityConfigs,
+	};
+}
+
+export interface TaskModalChipStateInput extends TaskModalActionMenuState {
+	contexts: string;
+	tags: string;
+	timeEstimate: number;
+}
+
+export function buildTaskModalChipState(
+	state: TaskModalChipStateInput,
+	options: TaskModalActionIconStateOptions
+): TaskModalActionIconState {
+	const base = buildTaskModalActionIconState(state, options);
+	return {
+		...base,
+		contexts: state.contexts,
+		tags: state.tags,
+		timeEstimate: state.timeEstimate,
 	};
 }

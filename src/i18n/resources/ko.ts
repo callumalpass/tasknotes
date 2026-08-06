@@ -2436,9 +2436,9 @@ export const ko: TranslationTree = {
 		task: {
 			titlePlaceholder: "무엇을 해야 하나요?",
 			titleLabel: "제목",
-			titleDetailedPlaceholder: "작업 제목...",
+			titleDetailedPlaceholder: "제목",
 			detailsLabel: "세부정보",
-			detailsPlaceholder: "세부정보 추가...",
+			detailsPlaceholder: "설명",
 			projectsLabel: "프로젝트",
 			projectsAdd: "프로젝트 추가",
 			projectsTooltip: "퍼지 검색을 사용하여 프로젝트 노트 선택",
@@ -2480,12 +2480,12 @@ export const ko: TranslationTree = {
 			},
 			customFieldsLabel: "사용자 지정 필드",
 			actions: {
-				due: "마감일 설정",
-				scheduled: "예정일 설정",
-				status: "상태 설정",
-				priority: "우선순위 설정",
-				recurrence: "반복 설정",
-				reminders: "리마인더 설정"
+				due: "마감일",
+				scheduled: "예정일",
+				status: "상태",
+				priority: "우선순위",
+				recurrence: "반복",
+				reminders: "리마인더"
 			},
 			buttons: {
 				openNote: "노트 열기",

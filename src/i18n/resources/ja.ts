@@ -2452,9 +2452,9 @@ export const ja: TranslationTree = {
 		task: {
 			titlePlaceholder: "何をする必要がありますか？",
 			titleLabel: "タイトル",
-			titleDetailedPlaceholder: "タスクタイトル...",
+			titleDetailedPlaceholder: "タイトル",
 			detailsLabel: "詳細",
-			detailsPlaceholder: "詳細を追加...",
+			detailsPlaceholder: "説明",
 			projectsLabel: "プロジェクト",
 			projectsAdd: "プロジェクトを追加",
 			projectsTooltip: "ファジー検索を使用してプロジェクトノートを選択",
@@ -2496,12 +2496,12 @@ export const ja: TranslationTree = {
 			},
 			customFieldsLabel: "カスタムフィールド",
 			actions: {
-				due: "期限日を設定",
-				scheduled: "予定日を設定",
-				status: "ステータスを設定",
-				priority: "優先度を設定",
-				recurrence: "繰り返しを設定",
-				reminders: "リマインダーを設定"
+				due: "期限日",
+				scheduled: "予定日",
+				status: "ステータス",
+				priority: "優先度",
+				recurrence: "繰り返し",
+				reminders: "リマインダー"
 			},
 			buttons: {
 				openNote: "ノートを開く",

@@ -27,6 +27,10 @@ describe("Issue #1383: modal markdown editors expose active editor API", () => {
 			file: file as any,
 		});
 
+		expect(typeof (editor as { owner: { syncScroll?: () => void } }).owner.syncScroll).toBe(
+			"function"
+		);
+
 		editor.editor.cm.contentDOM.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
 
 		const activeEditor = app.workspace.activeEditor;

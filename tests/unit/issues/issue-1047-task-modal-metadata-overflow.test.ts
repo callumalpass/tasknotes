@@ -13,11 +13,17 @@ const cssFilePath = path.resolve(__dirname, "../../../styles/task-modal.css");
 describe("Issue #1047: task modal metadata overflow", () => {
 	it("allows long metadata values to wrap instead of widening the modal", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
-		const metadataItemBlock = extractCssBlock(cssContent, ".tasknotes-plugin .metadata-item");
-		const metadataKeyBlock = extractCssBlock(cssContent, ".tasknotes-plugin .metadata-key");
+		const metadataItemBlock = extractCssBlock(
+			cssContent,
+			".tasknotes-plugin .metadata-container:not(.tn-task-modal__task-info) .metadata-item"
+		);
+		const metadataKeyBlock = extractCssBlock(
+			cssContent,
+			".tasknotes-plugin .metadata-container:not(.tn-task-modal__task-info) .metadata-key"
+		);
 		const metadataValueBlock = extractCssBlock(
 			cssContent,
-			".tasknotes-plugin .metadata-value"
+			".tasknotes-plugin .metadata-container:not(.tn-task-modal__task-info) .metadata-value"
 		);
 
 		expect(metadataItemBlock).toContain("min-width: 0");

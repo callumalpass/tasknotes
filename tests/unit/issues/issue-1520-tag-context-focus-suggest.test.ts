@@ -1,5 +1,9 @@
 import { App } from "obsidian";
-import { ContextSuggest, TagSuggest } from "../../../src/modals/taskModalSuggests";
+import {
+	attachChipEditorContextSuggest,
+	ContextSuggest,
+	TagSuggest,
+} from "../../../src/modals/taskModalSuggests";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 const createMockApp = (mockApp: unknown): App => mockApp as App;
@@ -73,5 +77,45 @@ describe("Issue #1520: tag and context suggestions on field focus", () => {
 			"review",
 			"writing",
 		]);
+	});
+});
+
+describe("Chip editor suggests", () => {
+	let app: App;
+
+	beforeEach(() => {
+		MockObsidian.reset();
+		app = createMockApp(MockObsidian.createMockApp());
+		document.body.innerHTML = "";
+	});
+
+	it("does not open the suggest popover when every context is already selected", async () => {
+		jest.useFakeTimers();
+		const input = document.createElement("input");
+		document.body.appendChild(input);
+		const plugin = {
+			cacheManager: {
+				getAllContexts: jest.fn(() => ["awd", "fdawd"]),
+			},
+		};
+		const suggest = attachChipEditorContextSuggest(app, input, plugin as never, {
+			getSelectedValues: () => ["awd", "fdawd"],
+			onAdd: jest.fn(),
+		});
+		const openSpy = jest.spyOn(suggest, "open");
+		const closeSpy = jest.spyOn(suggest, "close");
+
+		jest.runOnlyPendingTimers();
+		await Promise.resolve();
+
+		openSpy.mockClear();
+		closeSpy.mockClear();
+
+		input.dispatchEvent(new Event("focus"));
+		await Promise.resolve();
+
+		expect(openSpy).not.toHaveBeenCalled();
+		expect(closeSpy).toHaveBeenCalled();
+		jest.useRealTimers();
 	});
 });

@@ -78,6 +78,20 @@ describe("Task edit completions calendar occurrence context menu", () => {
 		document.body.innerHTML = "";
 	});
 
+	it("renders month navigation icons inside a wrapper span", () => {
+		const container = renderCompletionsCalendar();
+		const navButtons = Array.from(
+			container.querySelectorAll<HTMLButtonElement>(".recurring-calendar__nav")
+		);
+
+		expect(navButtons).toHaveLength(2);
+		for (const button of navButtons) {
+			const iconWrap = button.querySelector(".recurring-calendar__nav-icon");
+			expect(iconWrap?.parentElement).toBe(button);
+			expect(button.firstElementChild?.classList.contains("recurring-calendar__nav-icon")).toBe(true);
+		}
+	});
+
 	afterEach(() => {
 		jest.clearAllMocks();
 	});

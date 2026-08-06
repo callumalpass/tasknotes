@@ -16,6 +16,7 @@ const CSS_FILES = [
     'styles/search-box.css',         // SearchBox component with proper BEM scoping
     'styles/modal-bem.css',          // Modal components with proper BEM scoping
     'styles/task-modal.css',         // Task modal components (Google Keep/Todoist style)
+    'styles/task-modal-sheet.css',   // Task modal sheet, chips, sidebar
     'styles/reminder-modal.css',     // Reminder modal component with proper BEM scoping
     'styles/date-picker.css',        // Enhanced date/time picker styling
     'styles/task-selector-with-create-modal.css', // TaskSelectorWithCreateModal component with proper BEM scoping

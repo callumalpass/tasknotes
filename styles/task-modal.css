@@ -2,6 +2,222 @@
    TASK MODAL - Google Keep/Todoist Inspired
    ===================================================================== */
 
+/* Keep vault context/tag suggestions above text-input modals */
+.suggestion-container {
+    z-index: calc(var(--layer-modal, 30) + 1);
+}
+
+.suggestion-container:empty {
+    display: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+}
+
+/* Compact property editors (contexts, tags, time estimate) */
+.modal.tn-text-input-modal--fit-content {
+    width: auto;
+    max-width: min(92vw, 28rem);
+}
+
+.modal.tn-text-input-modal--fit-content .modal-content {
+    width: auto;
+    min-width: min(92vw, 14rem);
+}
+
+.modal.tn-text-input-modal--fit-content .tn-text-input-modal__content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--size-4-2);
+}
+
+.modal.tn-text-input-modal--fit-content .tn-text-input-modal__content .setting-item-heading {
+    border: none;
+    padding: 0;
+}
+
+.modal.tn-text-input-modal--fit-content .tn-text-input-modal__input-setting {
+    border: none;
+    padding: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--size-4-1);
+}
+
+.modal.tn-text-input-modal--fit-content .tn-text-input-modal__input-setting .setting-item-info {
+    display: none;
+}
+
+.modal.tn-text-input-modal--fit-content .tn-text-input-modal__input-setting .setting-item-control {
+    width: auto;
+    max-width: 100%;
+}
+
+.modal.tn-text-input-modal--fit-content .tn-text-input-modal__input-setting input {
+    width: auto;
+    min-width: 8ch;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.modal.tn-text-input-modal--fit-content .tn-text-input-modal__buttons {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+/* Context/tag chip list editor */
+.modal.tn-chip-list-editor {
+    width: auto;
+    max-width: min(92vw, 28rem);
+}
+
+.modal.tn-chip-list-editor .modal-content {
+    width: auto;
+    min-width: min(92vw, 16rem);
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__content .setting-item {
+    border: none;
+    border-top: none;
+    border-bottom: none;
+    padding: 0;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__content .setting-item::before,
+.modal.tn-chip-list-editor .tn-chip-list-editor__content .setting-item::after {
+    display: none;
+    content: none;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__content .setting-item-heading {
+    border: none;
+    padding: 0;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-4-1);
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__chips.is-empty {
+    display: none;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    max-width: 100%;
+    padding: 4px 6px 4px 10px;
+    border-radius: var(--radius-l);
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+    line-height: 1.2;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__chip-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text-muted);
+    cursor: var(--cursor-link, pointer);
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__chip-remove:hover {
+    background: var(--background-modifier-border);
+    border: none;
+    box-shadow: none;
+    color: var(--text-normal);
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__chip-remove:focus,
+.modal.tn-chip-list-editor .tn-chip-list-editor__chip-remove:focus-visible {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 1px;
+    border: none;
+    box-shadow: none;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__chip-remove svg {
+    width: 12px;
+    height: 12px;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__input-setting {
+    border: none;
+    padding: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--size-4-1);
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__input-setting .setting-item-info {
+    display: none;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__input-setting .setting-item-control {
+    width: 100%;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__input-setting input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal.tn-chip-list-editor .tn-chip-list-editor__buttons {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--size-4-2);
+}
+
+.modal.tn-chip-list-editor--mobile-actions .tn-chip-list-editor__buttons {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.modal.tn-chip-list-editor--mobile-actions .tn-task-modal__icon-button-trailing {
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--size-4-2);
+    flex-shrink: 0;
+}
+
 /* Fix suggestion text truncation */
 .suggestion-item .nlp-suggest-text {
     white-space: nowrap;
@@ -16,15 +232,22 @@
    ===================================================================== */
 
 .tn-task-modal__markdown-editor--details {
+    display: flex;
+    flex-direction: column;
     margin-bottom: var(--size-4-3);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
     overflow: hidden;
     min-height: 200px;
     max-height: 400px;
+    cursor: text;
 }
 
+.tn-task-modal__markdown-editor--details .details-editor,
 .tn-task-modal__markdown-editor--details .task-details-editor {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
     min-height: 200px;
     max-height: 400px;
     overflow-y: auto;
@@ -32,15 +255,17 @@
 
 /* Make the editor container scrollable */
 .tn-task-modal__markdown-editor--details .cm-editor {
-    height: 100%;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
     min-height: 200px;
     max-height: 400px;
 }
 
 .tn-task-modal__markdown-editor--details .cm-scroller {
     overflow: auto;
-    min-height: inherit;
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 200px;
     max-height: 400px;
     cursor: text;
 }
@@ -49,7 +274,7 @@
 .tn-task-modal__markdown-editor--details .cm-contentContainer,
 .tn-task-modal__markdown-editor--details .cm-content {
     box-sizing: border-box;
-    min-height: inherit;
+    min-height: 100%;
     min-width: 100%;
     width: 100%;
 }
@@ -652,13 +877,20 @@
    ===================================================================== */
 
 /* Use native modal-button-container class */
-.modal.mod-tasknotes .modal-button-container {
+.modal.mod-tasknotes .modal-button-container:not(.tn-task-modal__icon-button-bar) {
     display: flex;
     gap: var(--size-4-2);
 }
 
-/* Push Save/Cancel buttons to the right on desktop only */
-body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
+.modal.mod-tasknotes .modal-button-container.tn-task-modal__icon-button-bar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    width: 100%;
+}
+
+body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container:not(.tn-task-modal__icon-button-bar) .mod-cta {
     margin-left: auto;
 }
 
@@ -691,11 +923,14 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 }
 
 /* Keep buttons pinned at the bottom, outside the scrollable area */
-.tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container {
+.tasknotes-plugin.minimalist-task-modal.expanded:not(.tn-task-modal--sheet) .modal-button-container {
     flex-shrink: 0;
-    flex-wrap: wrap;
     padding-top: var(--size-4-3);
     margin-top: var(--size-4-3);
+}
+
+.tasknotes-plugin.minimalist-task-modal.expanded .tn-task-modal__icon-button-bar {
+    flex-wrap: nowrap;
 }
 
 /* =====================================================================
@@ -717,16 +952,15 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
         gap: var(--size-4-2);
     }
 
-    .modal.mod-tasknotes .modal-button-container {
+    .modal.mod-tasknotes .modal-button-container:not(.tn-task-modal__icon-button-bar) {
         flex-direction: column;
     }
 
-    .modal.mod-tasknotes .modal-button-container button {
+    .modal.mod-tasknotes .modal-button-container:not(.tn-task-modal__icon-button-bar) button {
         width: 100%;
     }
 
-    /* Reset margin for small screens on desktop too */
-    .modal.mod-tasknotes .modal-button-container .mod-cta {
+    .modal.mod-tasknotes .modal-button-container:not(.tn-task-modal__icon-button-bar) .mod-cta {
         margin-left: 0;
     }
 }
@@ -746,7 +980,13 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-content {
     max-height: calc(100vh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal > .modal {
+/* Excludes the bottom-sheet layout: its own rule in task-modal-sheet.css caps
+   the sheet at a content-driven width instead of the full mobile viewport.
+   Without the :not() here, this rule's "body" type selector outranks that
+   sheet-specific rule on specificity alone (despite having fewer classes),
+   overriding it regardless of stylesheet order and forcing the sheet back to
+   full width. */
+body.is-mobile .tasknotes-plugin.minimalist-task-modal:not(.tn-task-modal--sheet) > .modal {
     width: calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right));
     max-width: calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right));
     max-height: 100%;
@@ -775,15 +1015,8 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-split-con
     padding-bottom: var(--size-4-2);
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-left .details-container {
-    order: 3;
-}
-
-body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-right {
-    order: 4;
-}
-
 body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details,
+body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .details-editor,
 body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .task-details-editor,
 body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .cm-editor,
 body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .details-editor-fallback {
@@ -800,12 +1033,12 @@ body.is-mobile .tasknotes-plugin .action-icon {
     height: 40px;
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal.is-mobile-keyboard-focused.expanded .modal-split-content {
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.is-mobile-keyboard-focused.expanded:not(.tn-task-modal--sheet) .modal-split-content {
     padding-bottom: calc(min(42vh, 320px) + env(safe-area-inset-bottom));
     scroll-padding-bottom: calc(min(42vh, 320px) + env(safe-area-inset-bottom));
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container {
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded:not(.tn-task-modal--sheet) .modal-button-container {
     flex-shrink: 0;
     position: relative;
     background: var(--modal-background);
@@ -814,24 +1047,30 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
     margin-bottom: max(var(--size-4-1), env(safe-area-inset-bottom));
 }
 
-body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+/* Icon button bars keep leading actions on the left and cancel/save grouped on
+   the right. The legacy 3-column grid targeted flat text buttons and breaks once
+   cancel/save live inside .tn-task-modal__icon-button-trailing. */
+body.is-mobile .modal.mod-tasknotes .tn-task-modal__icon-button-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
     gap: var(--size-4-2);
 }
 
-body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar button {
-    width: 100%;
-    min-height: 40px;
+body.is-mobile .modal.mod-tasknotes .tn-task-modal__icon-button-bar .tn-task-modal__icon-button {
+    width: 40px;
+    min-width: 40px;
+    flex-shrink: 0;
     margin: 0;
-    padding-inline: var(--size-4-2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .mod-cta {
-    grid-column: span 2;
+body.is-mobile .modal.mod-tasknotes .tn-task-modal__icon-button-bar .tn-task-modal__icon-button-trailing {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 body.is-mobile .tasknotes-plugin .task-project-remove {
@@ -1082,37 +1321,94 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
    METADATA SECTION - FOR EDIT MODAL
    ===================================================================== */
 
-.tasknotes-plugin .metadata-container {
+.tasknotes-plugin .metadata-container:not(.tn-task-modal__task-info) {
     margin-top: var(--size-4-3);
     padding-top: var(--size-4-3);
     border-top: 0.5px solid var(--background-modifier-border);
 }
 
-.tasknotes-plugin .metadata-content {
+.tasknotes-plugin .metadata-container:not(.tn-task-modal__task-info) > .detail-label {
+    padding-inline: var(--size-4-3);
+}
+
+.tasknotes-plugin .metadata-container:not(.tn-task-modal__task-info) > .metadata-content {
     display: flex;
     flex-direction: column;
     gap: var(--size-4-1);
+    min-width: 0;
+    box-sizing: border-box;
+    padding: var(--size-4-3);
 }
 
-.tasknotes-plugin .metadata-item {
+.tasknotes-plugin .metadata-container:not(.tn-task-modal__task-info) .metadata-item {
     display: flex;
     align-items: center;
     font-size: var(--font-ui-small);
     min-width: 0;
 }
 
-.tasknotes-plugin .metadata-key {
+.tasknotes-plugin .metadata-container:not(.tn-task-modal__task-info) .metadata-key {
     color: var(--text-muted);
     flex: 0 0 auto;
     font-weight: 500;
     min-width: 80px;
 }
 
-.tasknotes-plugin .metadata-value {
+.tasknotes-plugin .metadata-container:not(.tn-task-modal__task-info) .metadata-value {
     color: var(--text-normal);
     flex: 1 1 auto;
     font-family: var(--font-monospace);
     min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+/* Task information — grouped card with aligned monospace rows */
+.tasknotes-plugin .tn-task-modal__task-info {
+    margin-top: var(--size-4-6);
+    margin-bottom: var(--size-4-3);
+    padding-top: 0;
+    border-top: none;
+}
+
+.tasknotes-plugin .tn-task-modal__task-info > .detail-label {
+    margin: 0 0 var(--size-4-3) 0;
+    padding: 0;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.tasknotes-plugin .tn-task-modal__task-info-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+    min-width: 0;
+    box-sizing: border-box;
+    padding: var(--size-4-3);
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .tn-task-modal__task-info-card .tn-task-modal__task-info-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--size-4-3);
+    align-items: baseline;
+    font-size: var(--font-ui-small);
+    min-width: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__task-info-card .tn-task-modal__task-info-key,
+.tasknotes-plugin .tn-task-modal__task-info-card .tn-task-modal__task-info-value {
+    font-family: var(--font-monospace);
+    font-weight: 400;
+    color: var(--text-normal);
+    min-width: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__task-info-card .tn-task-modal__task-info-value {
     overflow-wrap: anywhere;
     white-space: normal;
 }
@@ -1193,9 +1489,33 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     border-top: 0.5px solid var(--background-modifier-border);
 }
 
+/* Redesigned edit modal — replace section dividers with spacing */
+.tasknotes-plugin.minimalist-task-modal .completions-calendar-container {
+    padding-top: 0;
+    border-top: none;
+    margin-top: var(--size-4-6);
+}
+
+.tasknotes-plugin.minimalist-task-modal .completions-calendar-container > .detail-label {
+    margin: 0 0 var(--size-4-3) 0;
+    padding: 0;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
 .tasknotes-plugin .completions-calendar-content {
+    width: min(100%, 200px);
     max-width: 200px;
-    margin: 0 auto;
+    margin-inline: auto;
+    box-sizing: border-box;
+}
+
+/* Redesigned edit modal — keep the compact calendar width fixed so the header
+   navigation buttons are not clipped by the mobile sheet scroll container's
+   overflow-x: hidden when the grid would otherwise grow with the viewport. */
+.tasknotes-plugin.minimalist-task-modal .completions-calendar-content {
+    width: 200px;
+    max-width: 100%;
 }
 
 /* =====================================================================
@@ -1212,13 +1532,24 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     font-size: var(--font-ui-small);
     width: 100%;
     max-width: 200px;
+    box-sizing: border-box;
+}
+
+.tasknotes-plugin.minimalist-task-modal .recurring-calendar {
+    width: 200px;
+    max-width: 100%;
+    margin-inline: auto;
 }
 
 .tasknotes-plugin .recurring-calendar__header {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(20px, auto) minmax(0, 1fr) minmax(20px, auto);
     align-items: center;
-    justify-content: space-between;
+    column-gap: var(--size-4-1);
     margin-bottom: var(--size-4-1);
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
 }
 
 .tasknotes-plugin .recurring-calendar__nav {
@@ -1230,6 +1561,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     height: 20px;
     min-width: 20px;
     min-height: 20px;
+    flex-shrink: 0;
     margin: 0;
     padding: 0;
     border: 0;
@@ -1248,13 +1580,31 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     color: var(--text-normal);
 }
 
-.tasknotes-plugin .recurring-calendar__nav svg {
+.tasknotes-plugin .recurring-calendar__nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 0;
+    color: inherit;
+}
+
+.tasknotes-plugin .recurring-calendar__nav-icon svg,
+.tasknotes-plugin .recurring-calendar__nav-icon .svg-icon {
     width: 16px;
     height: 16px;
+    color: inherit;
+    stroke: currentColor;
+}
+
+.tasknotes-plugin .recurring-calendar__nav-icon svg path {
     stroke: currentColor;
 }
 
 .tasknotes-plugin .recurring-calendar__month {
+    grid-column: 2;
+    min-width: 0;
+    text-align: center;
     font-size: var(--font-ui-small);
     color: var(--text-normal);
     font-weight: 500;
@@ -1262,13 +1612,18 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
 .tasknotes-plugin .recurring-calendar__grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 2px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .tasknotes-plugin .recurring-calendar__day {
-    width: 20px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 20px;
     height: 20px;
+    justify-self: center;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1578,6 +1933,9 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
 /* Use consistent button system for project remove button */
 .tasknotes-plugin .task-project-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     border: none;
     box-shadow: none;

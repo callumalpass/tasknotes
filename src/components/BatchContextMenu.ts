@@ -103,7 +103,7 @@ export class BatchContextMenu {
 		// Due Date submenu
 		this.menu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.task.dueDate"));
-			item.setIcon("calendar");
+			item.setIcon("target");
 
 			const submenu = getSubmenu(item);
 			this.addDateOptions(submenu, "due");

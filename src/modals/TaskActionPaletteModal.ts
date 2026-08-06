@@ -136,7 +136,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				id: "set-due-date",
 				title: "Set due date",
 				description: "Set or change the task due date",
-				icon: "calendar",
+				icon: "target",
 				category: "dates",
 				keywords: ["due", "date", "deadline", "set", "change"],
 				isApplicable: () => true,

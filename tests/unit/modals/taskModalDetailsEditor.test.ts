@@ -19,7 +19,7 @@ describe("taskModalDetailsEditor", () => {
 		jest.clearAllMocks();
 	});
 
-	it("creates the details label, editor container, and markdown editor options", () => {
+	it("creates the editor container and markdown editor options without a persisting label", () => {
 		const app = {} as never;
 		const parent = document.createElement("div");
 		const editor = {
@@ -37,7 +37,6 @@ describe("taskModalDetailsEditor", () => {
 		const returnedEditor = createTaskModalDetailsEditor({
 			app,
 			parent,
-			label: "Details",
 			value: "Existing details",
 			placeholder: "Add details",
 			file,
@@ -54,7 +53,7 @@ describe("taskModalDetailsEditor", () => {
 			".tn-task-modal__markdown-editor--details"
 		);
 		expect(returnedEditor).toBe(editor);
-		expect(label?.textContent).toBe("Details");
+		expect(label).toBeNull();
 		expect(container).not.toBeNull();
 		expect(createTaskModalMarkdownEditorMock).toHaveBeenCalledWith(
 			app,
@@ -86,7 +85,6 @@ describe("taskModalDetailsEditor", () => {
 		createTaskModalDetailsEditor({
 			app: {} as never,
 			parent,
-			label: "Details",
 			value: "",
 			placeholder: "",
 			tabMovesFocus: true,
@@ -114,7 +112,6 @@ describe("taskModalDetailsEditor", () => {
 		createTaskModalDetailsEditor({
 			app: {} as never,
 			parent,
-			label: "Details",
 			value: "",
 			placeholder: "",
 			tabMovesFocus: false,
@@ -146,5 +143,78 @@ describe("taskModalDetailsEditor", () => {
 
 		expect(editor.setValue).toHaveBeenCalledWith("Parsed details");
 		expect(editor.destroy).toHaveBeenCalledTimes(1);
+	});
+
+	it("focuses the markdown editor when clicking the empty area of the details field", () => {
+		const parent = document.createElement("div");
+		const focus = jest.fn();
+		createTaskModalMarkdownEditorMock.mockReturnValue({
+			destroy: jest.fn(),
+			editor: { cm: { focus } },
+		} as never);
+
+		createTaskModalDetailsEditor({
+			app: {} as never,
+			parent,
+			value: "",
+			placeholder: "Description",
+			tabMovesFocus: false,
+			onChange: jest.fn(),
+			onSubmit: jest.fn(),
+			onEscape: jest.fn(),
+			focusNextField: jest.fn(),
+			focusPreviousField: jest.fn(),
+		});
+
+		const container = parent.querySelector<HTMLElement>(
+			".tn-task-modal__markdown-editor--details"
+		);
+		expect(container).not.toBeNull();
+
+		container?.dispatchEvent(
+			new MouseEvent("mousedown", { bubbles: true, cancelable: true, button: 0 })
+		);
+
+		expect(focus).toHaveBeenCalledTimes(1);
+	});
+
+	it("focuses the fallback textarea when clicking the empty area of the details field", () => {
+		const parent = document.createElement("div");
+		createTaskModalMarkdownEditorMock.mockImplementation((_app, container, options) => {
+			const fallback = container.createEl("textarea", {
+				cls: `${options.cls}-fallback`,
+			});
+			Object.defineProperty(fallback, "focus", {
+				value: jest.fn(),
+				configurable: true,
+			});
+			return null;
+		});
+
+		createTaskModalDetailsEditor({
+			app: {} as never,
+			parent,
+			value: "",
+			placeholder: "Description",
+			tabMovesFocus: false,
+			onChange: jest.fn(),
+			onSubmit: jest.fn(),
+			onEscape: jest.fn(),
+			focusNextField: jest.fn(),
+			focusPreviousField: jest.fn(),
+		});
+
+		const container = parent.querySelector<HTMLElement>(
+			".tn-task-modal__markdown-editor--details"
+		);
+		const fallback = parent.querySelector<HTMLTextAreaElement>(".details-editor-fallback");
+		expect(container).not.toBeNull();
+		expect(fallback).not.toBeNull();
+
+		container?.dispatchEvent(
+			new MouseEvent("mousedown", { bubbles: true, cancelable: true, button: 0 })
+		);
+
+		expect(fallback?.focus).toHaveBeenCalledTimes(1);
 	});
 });

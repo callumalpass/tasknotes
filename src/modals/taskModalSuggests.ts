@@ -21,6 +21,18 @@ function openSuggestionsOnFieldSelection(
 	input.addEventListener("click", openSuggestions);
 }
 
+export function attachTaskModalContextSuggest(
+	app: App,
+	inputEl: HTMLInputElement,
+	plugin: TaskNotesPlugin
+): ContextSuggest {
+	const suggest = new ContextSuggest(app, inputEl, plugin);
+	window.setTimeout(() => {
+		suggest.open();
+	}, 0);
+	return suggest;
+}
+
 export class ContextSuggest extends AbstractInputSuggest<ContextSuggestion> {
 	private plugin: TaskNotesPlugin;
 	private input: HTMLInputElement;
@@ -36,7 +48,7 @@ export class ContextSuggest extends AbstractInputSuggest<ContextSuggestion> {
 		const currentValues = this.input.value.split(",").map((value: string) => value.trim());
 		const currentQuery = currentValues[currentValues.length - 1];
 
-		const contexts = this.plugin.cacheManager.getAllContexts();
+		const contexts = this.plugin.cacheManager.getAllContexts?.() ?? [];
 		const alreadySelected = currentValues.slice(0, -1);
 		return contexts
 			.filter((context) => context && typeof context === "string")
@@ -76,6 +88,18 @@ interface TagSuggestion {
 	toString(): string;
 }
 
+export function attachTaskModalTagSuggest(
+	app: App,
+	inputEl: HTMLInputElement,
+	plugin: TaskNotesPlugin
+): TagSuggest {
+	const suggest = new TagSuggest(app, inputEl, plugin);
+	window.setTimeout(() => {
+		suggest.open();
+	}, 0);
+	return suggest;
+}
+
 export class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
 	private plugin: TaskNotesPlugin;
 	private input: HTMLInputElement;
@@ -92,7 +116,7 @@ export class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
 		const currentQuery = currentValues[currentValues.length - 1];
 
 		const tags = filterTagsForTaskModalSuggestions(
-			this.plugin.cacheManager.getAllTags(),
+			this.plugin.cacheManager.getAllTags?.() ?? [],
 			this.plugin.settings
 		);
 		const alreadySelected = currentValues.slice(0, -1);
@@ -124,6 +148,176 @@ export class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
 		this.input.value = currentValues.join(", ") + ", ";
 		this.input.dispatchEvent(new Event("input", { bubbles: true }));
 		this.input.focus();
+	}
+}
+
+export interface ChipEditorSuggestCallbacks {
+	getSelectedValues: () => string[];
+	onAdd: (value: string) => void;
+}
+
+interface ChipEditorSuggestLike {
+	getSuggestions(query: string): Promise<unknown[]>;
+	open(): void;
+	close(): void;
+}
+
+async function openChipEditorSuggestWhenAvailable(
+	suggest: ChipEditorSuggestLike,
+	query: string
+): Promise<void> {
+	const suggestions = await suggest.getSuggestions(query);
+	if (suggestions.length === 0) {
+		suggest.close();
+		return;
+	}
+	suggest.open();
+}
+
+function bindChipEditorSuggestHandlers(
+	input: HTMLInputElement,
+	suggest: ChipEditorSuggestLike
+): void {
+	const tryOpen = (): void => {
+		void openChipEditorSuggestWhenAvailable(suggest, input.value);
+	};
+	input.addEventListener("focus", tryOpen);
+	input.addEventListener("click", tryOpen);
+	input.addEventListener("input", tryOpen);
+}
+
+export function attachChipEditorContextSuggest(
+	app: App,
+	inputEl: HTMLInputElement,
+	plugin: TaskNotesPlugin,
+	callbacks: ChipEditorSuggestCallbacks
+): ChipEditorContextSuggest {
+	const suggest = new ChipEditorContextSuggest(app, inputEl, plugin, callbacks);
+	window.setTimeout(() => {
+		void openChipEditorSuggestWhenAvailable(suggest, inputEl.value);
+	}, 0);
+	return suggest;
+}
+
+export function attachChipEditorTagSuggest(
+	app: App,
+	inputEl: HTMLInputElement,
+	plugin: TaskNotesPlugin,
+	callbacks: ChipEditorSuggestCallbacks
+): ChipEditorTagSuggest {
+	const suggest = new ChipEditorTagSuggest(app, inputEl, plugin, callbacks);
+	window.setTimeout(() => {
+		void openChipEditorSuggestWhenAvailable(suggest, inputEl.value);
+	}, 0);
+	return suggest;
+}
+
+class ChipEditorContextSuggest extends AbstractInputSuggest<ContextSuggestion> {
+	private plugin: TaskNotesPlugin;
+	private input: HTMLInputElement;
+	private callbacks: ChipEditorSuggestCallbacks;
+
+	constructor(
+		app: App,
+		inputEl: HTMLInputElement,
+		plugin: TaskNotesPlugin,
+		callbacks: ChipEditorSuggestCallbacks
+	) {
+		super(app, inputEl);
+		this.plugin = plugin;
+		this.input = inputEl;
+		this.callbacks = callbacks;
+		bindChipEditorSuggestHandlers(this.input, this);
+	}
+
+	public async getSuggestions(_query: string): Promise<ContextSuggestion[]> {
+		const query = this.input.value.trim();
+		const selected = new Set(this.callbacks.getSelectedValues());
+		const contexts = this.plugin.cacheManager.getAllContexts?.() ?? [];
+
+		return contexts
+			.filter((context) => context && typeof context === "string")
+			.filter(
+				(context) =>
+					!selected.has(context) &&
+					(!query || context.toLowerCase().includes(query.toLowerCase()))
+			)
+			.slice(0, 10)
+			.map((context) => ({
+				value: context,
+				display: context,
+				type: "context" as const,
+				toString() {
+					return this.value;
+				},
+			}));
+	}
+
+	public renderSuggestion(contextSuggestion: ContextSuggestion, el: HTMLElement): void {
+		el.textContent = contextSuggestion.display;
+	}
+
+	public selectSuggestion(contextSuggestion: ContextSuggestion): void {
+		this.callbacks.onAdd(contextSuggestion.value);
+		this.input.value = "";
+		this.input.focus();
+		void openChipEditorSuggestWhenAvailable(this, this.input.value);
+	}
+}
+
+class ChipEditorTagSuggest extends AbstractInputSuggest<TagSuggestion> {
+	private plugin: TaskNotesPlugin;
+	private input: HTMLInputElement;
+	private callbacks: ChipEditorSuggestCallbacks;
+
+	constructor(
+		app: App,
+		inputEl: HTMLInputElement,
+		plugin: TaskNotesPlugin,
+		callbacks: ChipEditorSuggestCallbacks
+	) {
+		super(app, inputEl);
+		this.plugin = plugin;
+		this.input = inputEl;
+		this.callbacks = callbacks;
+		bindChipEditorSuggestHandlers(this.input, this);
+	}
+
+	public async getSuggestions(_query: string): Promise<TagSuggestion[]> {
+		const query = this.input.value.trim();
+		const selected = new Set(this.callbacks.getSelectedValues());
+		const tags = filterTagsForTaskModalSuggestions(
+			this.plugin.cacheManager.getAllTags?.() ?? [],
+			this.plugin.settings
+		);
+
+		return tags
+			.filter((tag) => tag && typeof tag === "string")
+			.filter(
+				(tag) =>
+					!selected.has(tag) &&
+					(!query || tag.toLowerCase().includes(query.toLowerCase()))
+			)
+			.slice(0, 10)
+			.map((tag) => ({
+				value: tag,
+				display: tag,
+				type: "tag" as const,
+				toString() {
+					return this.value;
+				},
+			}));
+	}
+
+	public renderSuggestion(tagSuggestion: TagSuggestion, el: HTMLElement): void {
+		el.textContent = tagSuggestion.display;
+	}
+
+	public selectSuggestion(tagSuggestion: TagSuggestion): void {
+		this.callbacks.onAdd(tagSuggestion.value);
+		this.input.value = "";
+		this.input.focus();
+		void openChipEditorSuggestWhenAvailable(this, this.input.value);
 	}
 }
 

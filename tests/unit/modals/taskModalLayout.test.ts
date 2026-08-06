@@ -1,6 +1,8 @@
 import {
 	collapseTaskModalDetailsLayout,
 	expandTaskModalDetailsLayout,
+	shouldUseEditSidebarLayout,
+	shouldUseSplitLayoutEnabledClass,
 } from "../../../src/modals/taskModalLayout";
 
 describe("taskModalLayout", () => {
@@ -90,5 +92,93 @@ describe("taskModalLayout", () => {
 		expect(
 			detailsContainer.classList.contains("tn-static-transform-translatey-0-1b976432")
 		).toBe(true);
+	});
+});
+
+describe("shouldUseEditSidebarLayout", () => {
+	it("uses the edit sidebar for desktop edit modals", () => {
+		expect(
+			shouldUseEditSidebarLayout({
+				isEditMode: true,
+				isCreationMode: false,
+				isExpanded: false,
+				isMobileLikeEnvironment: false,
+			})
+		).toBe(true);
+	});
+
+	it("uses the edit sidebar for expanded desktop creation modals", () => {
+		expect(
+			shouldUseEditSidebarLayout({
+				isEditMode: false,
+				isCreationMode: true,
+				isExpanded: true,
+				isMobileLikeEnvironment: false,
+			})
+		).toBe(true);
+	});
+
+	it("keeps collapsed desktop creation modals on the chip-row layout", () => {
+		expect(
+			shouldUseEditSidebarLayout({
+				isEditMode: false,
+				isCreationMode: true,
+				isExpanded: false,
+				isMobileLikeEnvironment: false,
+			})
+		).toBe(false);
+	});
+
+	it("never uses the edit sidebar on mobile-like environments", () => {
+		expect(
+			shouldUseEditSidebarLayout({
+				isEditMode: true,
+				isCreationMode: false,
+				isExpanded: true,
+				isMobileLikeEnvironment: true,
+			})
+		).toBe(false);
+	});
+});
+
+describe("shouldUseSplitLayoutEnabledClass", () => {
+	it("enables the legacy split layout on a wide desktop window when the setting is on", () => {
+		expect(
+			shouldUseSplitLayoutEnabledClass({
+				enableModalSplitLayout: true,
+				usesEditSidebarLayout: false,
+				usesSheetLayout: false,
+			})
+		).toBe(true);
+	});
+
+	it("stays disabled when the setting is off", () => {
+		expect(
+			shouldUseSplitLayoutEnabledClass({
+				enableModalSplitLayout: false,
+				usesEditSidebarLayout: false,
+				usesSheetLayout: false,
+			})
+		).toBe(false);
+	});
+
+	it("stays disabled for the desktop edit sidebar layout", () => {
+		expect(
+			shouldUseSplitLayoutEnabledClass({
+				enableModalSplitLayout: true,
+				usesEditSidebarLayout: true,
+				usesSheetLayout: false,
+			})
+		).toBe(false);
+	});
+
+	it("never combines with the mobile/touch bottom-sheet layout, even on a wide viewport", () => {
+		expect(
+			shouldUseSplitLayoutEnabledClass({
+				enableModalSplitLayout: true,
+				usesEditSidebarLayout: false,
+				usesSheetLayout: true,
+			})
+		).toBe(false);
 	});
 });
