@@ -388,4 +388,100 @@ describe("TaskListFocusController", () => {
 		expect(cards[1].classList.contains("task-card--keyboard-focused")).toBe(false);
 		expect(cards.map((card) => card.tabIndex)).toEqual([0, -1]);
 	});
+
+	describe("syncFocusStyles", () => {
+		it("re-syncs roving tabindex and keyboard-focus classes without moving DOM focus or scrolling", () => {
+			const cards = [createCard("a.md"), createCard("b.md"), createCard("c.md")];
+			root.append(...cards);
+			controller.restoreAfterRender();
+			cards[1].focus();
+			cards.forEach((card) => {
+				card.tabIndex = -1;
+				card.classList.remove("task-card--keyboard-focused");
+			});
+			const focusSpy = jest.spyOn(HTMLElement.prototype, "focus");
+			const scrollSpy = jest.spyOn(HTMLElement.prototype, "scrollIntoView");
+
+			controller.syncFocusStyles();
+
+			expect(cards.map((card) => card.tabIndex)).toEqual([-1, 0, -1]);
+			expect(cards[1].classList.contains("task-card--keyboard-focused")).toBe(true);
+			expect(focusSpy).not.toHaveBeenCalled();
+			expect(scrollSpy).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("resolveOffscreenCard", () => {
+		function dispatchArrowDown(target: HTMLElement, resolvingController: TaskListFocusController) {
+			const event = new KeyboardEvent("keydown", { key: "ArrowDown", cancelable: true });
+			Object.defineProperty(event, "target", { value: target });
+			return resolvingController.moveFocus(event, "next");
+		}
+
+		it("is consulted only when moveFocus would otherwise clamp, and focuses the resolved element", () => {
+			const cards = [createCard("a.md"), createCard("b.md")];
+			root.append(...cards);
+			const offscreenCard = createCard("c.md");
+			const resolveOffscreenCard = jest.fn((currentPath: string | null, direction: string) => {
+				expect(currentPath).toBe("b.md");
+				expect(direction).toBe("next");
+				root.appendChild(offscreenCard);
+				return offscreenCard;
+			});
+			const resolvingController = new TaskListFocusController(
+				root,
+				false,
+				() => true,
+				resolveOffscreenCard
+			);
+			root.addEventListener("focusin", (event) => resolvingController.handleFocusIn(event));
+			resolvingController.restoreAfterRender();
+			cards[1].focus();
+
+			expect(dispatchArrowDown(cards[1], resolvingController)).toBe(true);
+
+			expect(resolveOffscreenCard).toHaveBeenCalledTimes(1);
+			expect(document.activeElement).toBe(offscreenCard);
+		});
+
+		it("falls back to the clamped card when the resolver returns null", () => {
+			const cards = [createCard("a.md"), createCard("b.md")];
+			root.append(...cards);
+			const resolveOffscreenCard = jest.fn(() => null);
+			const resolvingController = new TaskListFocusController(
+				root,
+				false,
+				() => true,
+				resolveOffscreenCard
+			);
+			root.addEventListener("focusin", (event) => resolvingController.handleFocusIn(event));
+			resolvingController.restoreAfterRender();
+			cards[1].focus();
+
+			expect(dispatchArrowDown(cards[1], resolvingController)).toBe(true);
+
+			expect(resolveOffscreenCard).toHaveBeenCalledTimes(1);
+			expect(document.activeElement).toBe(cards[1]);
+		});
+
+		it("is not consulted when moveFocus does not clamp", () => {
+			const cards = [createCard("a.md"), createCard("b.md"), createCard("c.md")];
+			root.append(...cards);
+			const resolveOffscreenCard = jest.fn(() => null);
+			const resolvingController = new TaskListFocusController(
+				root,
+				false,
+				() => true,
+				resolveOffscreenCard
+			);
+			root.addEventListener("focusin", (event) => resolvingController.handleFocusIn(event));
+			resolvingController.restoreAfterRender();
+			cards[0].focus();
+
+			dispatchArrowDown(cards[0], resolvingController);
+
+			expect(resolveOffscreenCard).not.toHaveBeenCalled();
+			expect(document.activeElement).toBe(cards[1]);
+		});
+	});
 });

@@ -764,6 +764,25 @@ export class KanbanView extends BasesViewBase {
 		}
 	}
 
+
+	/**
+	 * Updates only the visible-task path/order bookkeeping (used for
+	 * Ctrl+A/Shift+Arrow-range select) from the true column-major/swimlane-major
+	 * visual render order. Deliberately narrower than setCurrentVisibleTaskPathOrder,
+	 * which also re-derives the subtask-expansion scope from whatever list it's
+	 * given — reusing that here would corrupt expandedRelationshipTaskPaths with
+	 * a top-level-only list instead of the broader relationship scope render()
+	 * already established via setExpandedRelationshipTaskScope().
+	 */
+	private setVisibleTaskPathOrder(paths: readonly string[]): void {
+		this.currentVisibleTaskPaths.clear();
+		this.currentVisibleTaskOrder.clear();
+		paths.forEach((path, index) => {
+			this.currentVisibleTaskPaths.add(path);
+			this.currentVisibleTaskOrder.set(path, index);
+		});
+	}
+
 	private applyOptimisticSortOrderResult(
 		draggedPath: string,
 		targetPath: string,
@@ -1431,6 +1450,7 @@ export class KanbanView extends BasesViewBase {
 			? this.applyColumnOrder(groupByPropertyId, columnKeys)
 			: columnKeys;
 
+		const visualTaskOrder: string[] = [];
 		for (const groupKey of orderedKeys) {
 			const tasks = groups.get(groupKey) || [];
 
@@ -1450,6 +1470,7 @@ export class KanbanView extends BasesViewBase {
 				this.getSortScopeKey(groupKey),
 				tasks.map((task) => task.path)
 			);
+			visualTaskOrder.push(...tasks.map((task) => task.path));
 
 			// Create column
 			const column = await this.createColumn(
@@ -1462,6 +1483,7 @@ export class KanbanView extends BasesViewBase {
 				this.boardEl.appendChild(column);
 			}
 		}
+		this.setVisibleTaskPathOrder(visualTaskOrder);
 	}
 
 	private async renderWithSwimLanes(
@@ -1594,6 +1616,7 @@ export class KanbanView extends BasesViewBase {
 		// No manual sorting needed - Bases provides pre-sorted data
 
 		// Render each swimlane row
+		const visualTaskOrder: string[] = [];
 		for (const [swimLaneKey, columns] of swimLanes) {
 			const row = this.boardEl.createEl("div", { cls: "kanban-view__swimlane-row" });
 
@@ -1625,6 +1648,7 @@ export class KanbanView extends BasesViewBase {
 					this.getSortScopeKey(columnKey, swimLaneKey),
 					tasks.map((task) => task.path)
 				);
+				visualTaskOrder.push(...tasks.map((task) => task.path));
 
 				// Create cell
 				const cell = row.createEl("div", {
@@ -1684,6 +1708,7 @@ export class KanbanView extends BasesViewBase {
 				this.createAddTaskButton(cell, groupByPropertyId, columnKey, swimLaneKey);
 			}
 		}
+		this.setVisibleTaskPathOrder(visualTaskOrder);
 	}
 
 	private async createColumn(
@@ -1910,6 +1935,10 @@ export class KanbanView extends BasesViewBase {
 				return cardWrapper;
 			},
 			getItemKey: (task: TaskInfo) => task.path,
+			onRenderedElementsChanged: () => {
+				this.updateSelectionVisuals();
+				this.taskCardKeyboardController?.syncFocusStyles();
+			},
 		});
 
 		this.columnScrollers.set(groupKey, scroller);
@@ -1949,6 +1978,10 @@ export class KanbanView extends BasesViewBase {
 				return cardWrapper;
 			},
 			getItemKey: (task: TaskInfo) => task.path,
+			onRenderedElementsChanged: () => {
+				this.updateSelectionVisuals();
+				this.taskCardKeyboardController?.syncFocusStyles();
+			},
 		});
 
 		this.columnScrollers.set(cellKey, scroller);
@@ -4353,6 +4386,19 @@ export class KanbanView extends BasesViewBase {
 				fallbackAnchor: this.boardEl ?? undefined,
 			}),
 		};
+	}
+
+
+	/**
+	 * Full-board override for Ctrl+A/Shift+Arrow-range/Shift+click-range select,
+	 * which otherwise fall back to a DOM query that only sees cards each
+	 * column's virtual scroller currently has mounted. currentVisibleTaskOrder
+	 * is kept in true column-major/swimlane-major visual order by
+	 * setVisibleTaskPathOrder(), called at the end of every renderFlat()/
+	 * renderSwimLaneTable() pass, so it's always fully populated after a render.
+	 */
+	protected override getVisibleTaskPaths(): string[] {
+		return this.getCurrentVisibleTaskPathOrder();
 	}
 
 	private destroyColumnScrollers(): void {

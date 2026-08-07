@@ -71,6 +71,7 @@ import { resolveTaskListDragPaths } from "./taskListTargetResolver";
 import { type TaskListAction } from "./taskListKeyboardActions";
 import { getTaskActionDate } from "./basesTaskCardActions";
 import type { BasesTaskCardActionViewContext } from "./BasesTaskCardKeyboardController";
+import type { TaskListFocusMoveDirection } from "./TaskListFocusController";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -665,6 +666,55 @@ export class TaskListView extends BasesViewBase {
 
 	private getVirtualItemPath(item: TaskListVirtualItem): string | null {
 		return this.getVirtualItemTask(item)?.path ?? null;
+	}
+
+
+	/**
+	 * Lets keyboard navigation reach task cards the virtual scroller hasn't
+	 * mounted yet. Consulted by TaskListFocusController only when moveFocus()
+	 * would otherwise clamp at the edge of currently-rendered cards.
+	 */
+	private resolveOffscreenTaskCard(
+		currentPath: string | null,
+		direction: TaskListFocusMoveDirection
+	): HTMLElement | null {
+		const scroller = this.virtualScroller;
+		if (!scroller) return null;
+
+		const items = scroller.getItems();
+		if (items.length === 0) return null;
+
+		const currentIndex = currentPath
+			? items.findIndex((item) => this.getVirtualItemPath(item) === currentPath)
+			: -1;
+
+		let targetIndex: number;
+		if (direction === "first") {
+			targetIndex = 0;
+		} else if (direction === "last") {
+			targetIndex = items.length - 1;
+		} else if (currentIndex < 0) {
+			return null;
+		} else {
+			targetIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
+		}
+
+		// Skip over group-header pseudo-items, continuing to search in the
+		// direction we're already moving.
+		const searchStep = direction === "previous" || direction === "last" ? -1 : 1;
+		while (
+			targetIndex >= 0 &&
+			targetIndex < items.length &&
+			!this.getVirtualItemPath(items[targetIndex])
+		) {
+			targetIndex += searchStep;
+		}
+
+		if (targetIndex < 0 || targetIndex >= items.length || targetIndex === currentIndex) {
+			return null;
+		}
+
+		return scroller.ensureIndexRendered(targetIndex);
 	}
 
 	private getVirtualItemGroupKey(item: TaskListVirtualItem): string | null {
@@ -1696,6 +1746,10 @@ export class TaskListView extends BasesViewBase {
 					}
 					return item.path;
 				},
+				onRenderedElementsChanged: () => {
+					this.updateSelectionVisuals();
+					this.taskCardKeyboardController?.syncFocusStyles();
+				},
 			});
 
 			// Force recalculation after DOM settles
@@ -2006,6 +2060,10 @@ export class TaskListView extends BasesViewBase {
 					} else {
 						return item.task.path;
 					}
+				},
+				onRenderedElementsChanged: () => {
+					this.updateSelectionVisuals();
+					this.taskCardKeyboardController?.syncFocusStyles();
 				},
 			});
 
@@ -2448,10 +2506,16 @@ export class TaskListView extends BasesViewBase {
 		buildViewContext(): BasesTaskCardActionViewContext;
 		autoFocusInitial?: boolean;
 		cardAreaElement?: HTMLElement;
+		resolveOffscreenCard?: (
+			currentPath: string | null,
+			direction: TaskListFocusMoveDirection
+		) => HTMLElement | null;
 	} | null {
 		return {
 			autoFocusInitial: true,
 			cardAreaElement: this.itemsContainer ?? undefined,
+			resolveOffscreenCard: (currentPath, direction) =>
+				this.resolveOffscreenTaskCard(currentPath, direction),
 			isActionSupported: () => true,
 			buildViewContext: () => ({
 				plugin: this.plugin,
@@ -2467,6 +2531,24 @@ export class TaskListView extends BasesViewBase {
 				fallbackAnchor: this.itemsContainer,
 			}),
 		};
+	}
+
+
+	/**
+	 * Full-list override for Ctrl+A/Shift+Arrow-range/Shift+click-range select,
+	 * which otherwise fall back to a DOM query that only sees cards the virtual
+	 * scroller currently has mounted. `lastVirtualItems` retains the true
+	 * post-grouping render order even for entries virtualization has unmounted;
+	 * when virtualization isn't active nothing is hidden, so the DOM query
+	 * already sees everything.
+	 */
+	protected override getVisibleTaskPaths(): string[] {
+		if (!this.useVirtualScrolling || this.lastVirtualItems.length === 0) {
+			return super.getVisibleTaskPaths();
+		}
+		return this.lastVirtualItems
+			.map((item) => this.getVirtualItemPath(item))
+			.filter((path): path is string => path !== null);
 	}
 
 private focusTaskListSearch(): void {

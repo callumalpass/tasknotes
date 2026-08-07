@@ -55,3 +55,42 @@ describe("KanbanView keyboard actions", () => {
 		expect(mockThis.enableSearch).toBe(true);
 	});
 });
+
+describe("KanbanView.getVisibleTaskPaths", () => {
+	it("returns the full board in true visual order via getCurrentVisibleTaskPathOrder", () => {
+		const view = {
+			currentVisibleTaskOrder: new Map([
+				["a.md", 0],
+				["b.md", 1],
+				["c.md", 2],
+			]),
+			getCurrentVisibleTaskPathOrder: (KanbanView.prototype as any)
+				.getCurrentVisibleTaskPathOrder,
+		};
+
+		const result = (KanbanView.prototype as any).getVisibleTaskPaths.call(view);
+
+		expect(result).toEqual(["a.md", "b.md", "c.md"]);
+	});
+});
+
+describe("KanbanView.setVisibleTaskPathOrder", () => {
+	it("updates only currentVisibleTaskPaths/currentVisibleTaskOrder, leaving subtask-expansion scope untouched", () => {
+		const view = {
+			currentVisibleTaskPaths: new Set(["stale.md"]),
+			currentVisibleTaskOrder: new Map([["stale.md", 0]]),
+			expandedRelationshipTaskPaths: new Set(["kept.md"]),
+			expandedRelationshipTaskOrder: new Map([["kept.md", 0]]),
+		};
+
+		(KanbanView.prototype as any).setVisibleTaskPathOrder.call(view, ["a.md", "b.md"]);
+
+		expect([...view.currentVisibleTaskPaths]).toEqual(["a.md", "b.md"]);
+		expect([...view.currentVisibleTaskOrder.entries()]).toEqual([
+			["a.md", 0],
+			["b.md", 1],
+		]);
+		expect([...view.expandedRelationshipTaskPaths]).toEqual(["kept.md"]);
+		expect([...view.expandedRelationshipTaskOrder.entries()]).toEqual([["kept.md", 0]]);
+	});
+});

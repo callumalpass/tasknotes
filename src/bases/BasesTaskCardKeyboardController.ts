@@ -1,6 +1,9 @@
 import { Component, Scope } from "obsidian";
 import type TaskNotesPlugin from "../main";
-import { TaskListFocusController } from "./TaskListFocusController";
+import {
+	TaskListFocusController,
+	type TaskListFocusOffscreenResolver,
+} from "./TaskListFocusController";
 import { TaskListInputOwnershipController } from "./TaskListInputOwnershipController";
 import { resolveTaskListTargetPaths } from "./taskListTargetResolver";
 import {
@@ -47,6 +50,12 @@ export interface BasesTaskCardKeyboardOptions {
 	isActionSupported(action: TaskListAction): boolean;
 	/** Builds the view-supplied half of the action context; called once per dispatch. */
 	buildViewContext(): BasesTaskCardActionViewContext;
+	/**
+	 * Lets a view with its own virtualized card list (e.g. Task List's
+	 * VirtualScroller) mount and return an off-screen card when keyboard
+	 * navigation would otherwise clamp at the edge of currently-rendered cards.
+	 */
+	resolveOffscreenCard?: TaskListFocusOffscreenResolver;
 }
 
 type LeafLike = { view?: { containerEl?: HTMLElement } } | null;
@@ -102,7 +111,8 @@ export class BasesTaskCardKeyboardController {
 		this.focusController = new TaskListFocusController(
 			root,
 			options.autoFocusInitial ?? false,
-			options.canClaimHover ?? (() => true)
+			options.canClaimHover ?? (() => true),
+			options.resolveOffscreenCard
 		);
 		this.inputOwnershipController = new TaskListInputOwnershipController(root, this.focusController);
 		this.registerListeners();
@@ -114,6 +124,11 @@ export class BasesTaskCardKeyboardController {
 
 	restoreAfterRender(): void {
 		this.focusController.restoreAfterRender();
+	}
+
+	/** See TaskListFocusController.syncFocusStyles(). */
+	syncFocusStyles(): void {
+		this.focusController.syncFocusStyles();
 	}
 
 	/** Shared gate for the Shift+Arrow range-select shortcuts BasesViewBase wires up. */

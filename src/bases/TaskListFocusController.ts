@@ -3,6 +3,20 @@ export type TaskListFocusIdentity = {
 	occurrence: number;
 };
 
+export type TaskListFocusMoveDirection = "next" | "previous" | "first" | "last";
+
+/**
+ * Given the currently-focused path (if any) and the requested move direction,
+ * mount and return the off-screen card that virtualization would otherwise
+ * hide, or null if there truly is no further item in that direction. Consulted
+ * only when moveFocus() would otherwise clamp at the edge of currently-rendered
+ * cards, so views that don't supply this see no behavior change.
+ */
+export type TaskListFocusOffscreenResolver = (
+	currentPath: string | null,
+	direction: TaskListFocusMoveDirection
+) => HTMLElement | null;
+
 const CARD_SELECTOR = ".task-card[data-task-path]";
 const INTERACTIVE_SELECTOR =
 	'input, textarea, select, button, a, [contenteditable="true"], [role="textbox"], .cm-content';
@@ -43,7 +57,8 @@ export class TaskListFocusController {
 	constructor(
 		private readonly root: HTMLElement,
 		autoFocusInitial = false,
-		private readonly canClaimHover: () => boolean = () => true
+		private readonly canClaimHover: () => boolean = () => true,
+		private readonly resolveOffscreenCard?: TaskListFocusOffscreenResolver
 	) {
 		this.initialFocusPending = autoFocusInitial;
 		this.syncCursorSourceClass();
@@ -91,10 +106,7 @@ export class TaskListFocusController {
 		return true;
 	}
 
-	moveFocus(
-		event: KeyboardEvent,
-		direction: "next" | "previous" | "first" | "last"
-	): boolean {
+	moveFocus(event: KeyboardEvent, direction: TaskListFocusMoveDirection): boolean {
 		const target = event.target;
 		if (!(target instanceof Element) || target.closest(INTERACTIVE_SELECTOR)) return false;
 
@@ -129,6 +141,16 @@ export class TaskListFocusController {
 		event.stopPropagation();
 		this.setCursorSource("keyboard");
 		this.lastMouseCard = null;
+
+		if (nextIndex === currentIndex && this.resolveOffscreenCard) {
+			const currentPath = cards[currentIndex]?.dataset.taskPath ?? this.focusedIdentity?.path ?? null;
+			const resolved = this.resolveOffscreenCard(currentPath, direction);
+			if (resolved) {
+				this.focusCard(resolved, true);
+				return true;
+			}
+		}
+
 		this.focusCard(cards[nextIndex], true);
 		return true;
 	}
@@ -157,6 +179,16 @@ export class TaskListFocusController {
 			card.scrollIntoView({ block: "nearest" });
 		}
 		this.restoreDomFocus = false;
+	}
+
+	/**
+	 * Re-applies roving-tabindex and keyboard-focus styling to whatever cards
+	 * currently exist in the DOM, without moving DOM focus or scrolling. Safe to
+	 * call reactively (e.g. after virtualization mounts/unmounts cards) while the
+	 * user is actively scrolling or typing elsewhere.
+	 */
+	syncFocusStyles(): void {
+		this.syncRovingTabIndex();
 	}
 
 	clear(): void {

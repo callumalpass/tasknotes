@@ -72,6 +72,7 @@ import {
 	BasesTaskCardKeyboardController,
 	type BasesTaskCardActionViewContext,
 } from "./BasesTaskCardKeyboardController";
+import type { TaskListFocusOffscreenResolver } from "./TaskListFocusController";
 import { canHoverClaimBasesTaskFocus } from "./embeddedBasesKeyboard";
 import type { TaskListAction } from "./taskListKeyboardActions";
 
@@ -205,6 +206,8 @@ export abstract class BasesViewBase extends Component {
 				canClaimHover: () => canHoverClaimBasesTaskFocus(root),
 				autoFocusInitial: readConfig()?.autoFocusInitial ?? false,
 				cardAreaElement: readConfig()?.cardAreaElement,
+				resolveOffscreenCard: (currentPath, direction) =>
+					readConfig()?.resolveOffscreenCard?.(currentPath, direction) ?? null,
 				isActionSupported: (action) => readConfig()?.isActionSupported(action) ?? false,
 				buildViewContext: () => {
 					const config = readConfig();
@@ -235,6 +238,7 @@ export abstract class BasesViewBase extends Component {
 		buildViewContext(): BasesTaskCardActionViewContext;
 		autoFocusInitial?: boolean;
 		cardAreaElement?: HTMLElement;
+		resolveOffscreenCard?: TaskListFocusOffscreenResolver;
 	} | null {
 		return null;
 	}
