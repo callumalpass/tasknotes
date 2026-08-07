@@ -123,6 +123,7 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain("      - due\n      - formula.dueIn\n      - file.name");
 		expect(template).toContain('calendarView: "listWeek"');
 		expect(template).toContain("listDayCount: 7");
+		expect(template).toContain("showOverdueOnToday: true");
 	});
 
 	it("lets generated calendar views inherit app-level time settings", () => {

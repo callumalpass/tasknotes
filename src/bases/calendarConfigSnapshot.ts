@@ -13,6 +13,7 @@ const CALENDAR_CONFIG_SNAPSHOT_KEYS = [
 	"showTimeEntries",
 	"showTimeblocks",
 	"showPropertyBasedEvents",
+	"showOverdueOnToday",
 	// Layout options
 	"calendarView",
 	"heightMode",

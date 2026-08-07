@@ -235,6 +235,7 @@ export const zh: TranslationTree = {
 				events: {
 					showScheduledTasks: "显示计划任务",
 					showDueTasks: "显示到期任务",
+					showOverdueOnToday: "在今天显示逾期任务",
 					showRecurringTasks: "显示重复任务",
 					showTimeEntries: "显示时间条目",
 					showTimeblocks: "显示时间块",

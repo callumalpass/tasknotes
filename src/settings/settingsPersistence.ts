@@ -26,7 +26,7 @@ export type SettingsDataHost = {
 		dir?: string;
 		id?: string;
 	};
-	loadData(): Promise<LoadedSettingsData | null>;
+	loadData(): Promise<LoadedSettingsData | null | undefined>;
 };
 
 export type SettingsDataReadResult = {
@@ -82,7 +82,7 @@ export async function loadPluginSettingsDataWithRetry(
 	const retryCount = options.retryCount ?? 3;
 	const retryDelayMs = options.retryDelayMs ?? 50;
 
-	const loadedData = await host.loadData();
+	const loadedData = (await host.loadData()) ?? null;
 	if (loadedData !== null) {
 		return { data: loadedData, compromised: false };
 	}
@@ -93,7 +93,7 @@ export async function loadPluginSettingsDataWithRetry(
 
 	for (let attempt = 0; attempt < retryCount; attempt++) {
 		await delay(retryDelayMs);
-		const retryData = await host.loadData();
+		const retryData = (await host.loadData()) ?? null;
 		if (retryData !== null) {
 			return { data: retryData, compromised: false };
 		}

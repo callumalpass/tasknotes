@@ -32,6 +32,27 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+> [!info] TaskNotes v5 beta
+>
+> [TaskNotes v5](https://github.com/callumalpass/tasknotes/releases) is available
+> as an opt-in beta alongside TaskNotes 4.12. TaskNotes 4.12 remains the
+> recommended stable release.
+>
+> The major change in v5 is support for portable TaskNotes collections. These
+> collections can be used in both Obsidian and the
+> [TaskNotes app](https://app.tasknotes.dev/), which is also available in beta, so
+> the same tasks can be managed through either interface.
+>
+> TaskNotes collections are built on [mdbase](https://mdbase.dev/), a
+> Markdown-native collection format. [mdbase Connect](https://mdbase.dev/connect/)
+> provides the permissioned bridge that makes those collections available to the
+> TaskNotes app. Your tasks remain ordinary Markdown files in your vault; mdbase
+> adds a shared structure that compatible tools can understand.
+>
+> TaskNotes v5, mdbase Connect, and the TaskNotes app are all under active
+> development. Please use a backed-up vault, expect some rough edges, and
+> [report any problems you encounter](https://github.com/callumalpass/tasknotes/issues).
+
 ## Security
 
 - Calendar OAuth credentials and account tokens are now stored in Obsidian Secret Storage instead of TaskNotes' `data.json`, with automatic migration for existing connections. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/).
@@ -72,7 +93,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Generated TaskNotes type contracts now include configured natural-language
   capture triggers, allowing compatible clients to offer the same field
   suggestions.
-- Rebuilt the TaskNotes documentation as a v5-ready, source-generated site with
+- Rebuilt the TaskNotes documentation with
   reorganized navigation, full-text search, mobile and accessibility
   improvements, and references generated from the current commands, settings,
   compatibility metadata, HTTP routes, and default Bases. Added practical
@@ -117,6 +138,18 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Plugin settings now recover when Obsidian briefly returns no data while
+  reloading an externally changed settings file, preventing a post-reload error
+  without overwriting the existing settings.
+- (#2194) Pomodoro task selection suggestions now keep rich task cards at the
+  menu width, preventing task titles from wrapping one letter per line. Thanks
+  to @Evilgenee for reporting this.
+- (#2196) Drag-to-reorder now works for Task List Bases embedded in Live Preview
+  notes, matching the behavior of directly opened Bases and Reading mode embeds.
+  Thanks to @jimbo108108 for reporting this.
+- (#2198) Agenda Bases can now show overdue scheduled or due tasks on today's
+  row with `showOverdueOnToday`, and regenerated default Agenda files enable
+  that behavior by default. Thanks to @vicrdguez for reporting this.
 - (#2182) Checklist progress on task cards now excludes cancelled markdown
   checklist items such as `[-]` from the completed/total count. Thanks to
   @ctrl-q for reporting this.
@@ -124,7 +157,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   handlers active on Obsidian 1.13, so clicking a rendered task link opens the
   edit modal instead of revealing the raw wikilink. Thanks to @npondel for the
   detailed diagnosis and @minchinweb for confirming the issue.
-- ([#2171](https://github.com/callumalpass/tasknotes/pull/2171)) Stopped recurring
+- (#2171) Stopped recurring
   notification and status-bar scans from reading unindexed notes directly from
   disk while preserving the fallback for direct task lookups. Thanks to
   @tgrosinger for identifying and diagnosing the excessive vault reads.
@@ -191,7 +224,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   diagnosing this.
 - (#2106) Regenerated default Calendar Base files now use your configured first
   day of the week instead of forcing Sunday. Thanks to @atos2212-blip, @cweekly,
-  and @idontcode34 for reporting this.
+  @idontcode34, and @hikatamika for reporting this.
 - (#2100) Tags added while creating a task now keep the same frontmatter order as
   tags added later from the task context menu. Thanks to @mgrecar for reporting
   this.
@@ -224,7 +257,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   the wrong day. Thanks to @abbiefalls90.
 - (#2033) Fixed the project folder badge on task cards so, when expandable
   subtasks are enabled, it expands or collapses inline subtasks instead of
-  showing an unavailable-action notice. Thanks to @abbiefalls90.
+  showing an unavailable-action notice. Thanks to @abbiefalls90 for the fix and
+  @scottkodai for the follow-up feedback.
 - (#2040, #2041) Stopped newly created tasks from filling the Google Calendar
   retry queue when calendar export is disabled. Thanks to @chmac for reporting
   and fixing this.

@@ -235,6 +235,7 @@ export const ja: TranslationTree = {
 				events: {
 					showScheduledTasks: "予定されたタスクを表示",
 					showDueTasks: "期限のあるタスクを表示",
+					showOverdueOnToday: "期限切れタスクを今日に表示",
 					showRecurringTasks: "繰り返しタスクを表示",
 					showTimeEntries: "時間エントリを表示",
 					showTimeblocks: "タイムブロックを表示",

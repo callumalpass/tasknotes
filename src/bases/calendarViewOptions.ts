@@ -156,6 +156,13 @@ function buildCalendarEventOptions(
 			},
 			{
 				type: "toggle",
+				key: "showOverdueOnToday",
+				displayName: t("events.showOverdueOnToday"),
+				default: false,
+				shouldHide: () => getCalendarView(config, calendarSettings.defaultView) !== "listWeek",
+			},
+			{
+				type: "toggle",
 				key: "showScheduledToDueSpan",
 				displayName: t("layout.spanScheduledToDue"),
 				default: calendarSettings.defaultShowScheduledToDueSpan,

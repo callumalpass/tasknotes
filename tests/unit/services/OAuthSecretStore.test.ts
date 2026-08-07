@@ -48,6 +48,13 @@ function createConnection(provider: OAuthProvider, accessToken: string): OAuthCo
 }
 
 describe("OAuth secret migration", () => {
+	it("treats a transient undefined settings read as empty data", () => {
+		expect(migrateLegacyOAuthData(undefined, createStore())).toEqual({
+			data: null,
+			changed: false,
+		});
+	});
+
 	it("moves OAuth credentials and account tokens out of plugin data", () => {
 		const sut = createStore();
 		const legacyGoogleConnection = createConnection("google", "google-access");

@@ -544,6 +544,7 @@ To build an Agenda variant for completed tasks that do not have due or scheduled
       showRecurring: false
       showTimeEntries: false
       showPropertyBasedEvents: true
+      showOverdueOnToday: false
       createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
     startDateProperty: completedDate
@@ -584,6 +585,7 @@ views:
       - file.tasks
     options:
       showPropertyBasedEvents: false
+      showOverdueOnToday: true
       createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
     startDateProperty: file.ctime

@@ -235,6 +235,7 @@ export const ru: TranslationTree = {
 				events: {
 					showScheduledTasks: "Показать запланированные задачи",
 					showDueTasks: "Показать задачи с крайним сроком",
+					showOverdueOnToday: "Показывать просроченные задачи сегодня",
 					showRecurringTasks: "Показать повторяющиеся задачи",
 					showTimeEntries: "Показать записи времени",
 					showTimeblocks: "Показать временные блоки",
