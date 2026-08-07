@@ -664,6 +664,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "a55c0dfe5b2d0ae4539ba2082ed56b914e0c5de8"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "3b50664c6111d5c8d382467850855322d6ccfb80"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "9c5d69492c72d4b0d158297522d00b7c2f7c1978"
@@ -5333,20 +5337,20 @@
       "translation": "a9ad098ea6d51c9d8441b0dc905806dd934a7812"
     },
     "settings.integrations.mdbaseSpec.header": {
-      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
-      "translation": "ca092fddcef0244d2b93db6db7efeef378ca980c"
+      "source": "3122fe68b2d29d2b5955d17b071ff98a8869ec65",
+      "translation": "df06413a954c6603621f6021a6d3ad57f9d8a68b"
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
       "translation": "2ebc76bde9fde223aadce2ad115af34fd1b5f8e3"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
-      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "b6fc0f38dd097206b6f9ba48bbe550a35a6332c4"
+      "source": "dbfee159de77e775f50108e2f21550cd8ee024e8",
+      "translation": "d7a9bd1fd3a0cb1577977d9475bac8449ebfdfc3"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
-      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "ebfc6b461b985f416d6c864764157f6a55b2d61c"
+      "source": "a660038515638e51bbf1025c8802f704353f86e2",
+      "translation": "2ba021e20f62fa3df56387bf1481781d3d06704e"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -9549,6 +9553,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "d5d0c1043fae801c058724e24f6aa74412ab2eb1"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "fb529dfe5de1e9e651b47585f8e4d588ee213286"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -14219,20 +14227,20 @@
       "translation": "9e6c83ec09e6ff8d5a7863d91a8d50b0fbb36f68"
     },
     "settings.integrations.mdbaseSpec.header": {
-      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
-      "translation": "998bdb5e69b1fc63e9e2a7cf842db5b4911c4bb1"
+      "source": "3122fe68b2d29d2b5955d17b071ff98a8869ec65",
+      "translation": "348336635eb4af1fe246ca58c8fafe1404a21453"
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
       "translation": "7fd9a8ce788bd086cd773985ae5c7c4f64a0a549"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
-      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "e503e991ef813b0bb3c2581f8951b5b2eb5d9f26"
+      "source": "dbfee159de77e775f50108e2f21550cd8ee024e8",
+      "translation": "fe19c12c29ebf468eaf24572b10644f8971d6cf6"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
-      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "ef875c2cc49e12517f43866969d0cefb860f339e"
+      "source": "a660038515638e51bbf1025c8802f704353f86e2",
+      "translation": "e1c49cda2640b3defe802b2fbdf4acc390a19416"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -18435,6 +18443,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "23ae5138ff279431437bc2c322fd713c6012a652"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "b1baf1e81eed1362e08a6afb40337a49edab3aff"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -23105,20 +23117,20 @@
       "translation": "315c661eb529e3455ff66898b81b408f6dada12a"
     },
     "settings.integrations.mdbaseSpec.header": {
-      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
-      "translation": "7623bcf3268949a9df03ae260473f01b610685fc"
+      "source": "3122fe68b2d29d2b5955d17b071ff98a8869ec65",
+      "translation": "a74197a29be79e45f5e70f16c413c97e29b2c497"
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
       "translation": "2f345a699a67a52a372eda0b52ece21495d1f7f5"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
-      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "4504794663d5d575827777ad7db35315607d4609"
+      "source": "dbfee159de77e775f50108e2f21550cd8ee024e8",
+      "translation": "5b64eaf0ca3cb62ecb7dc6629d5ee07d61b768b6"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
-      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "aec57eb1e62a2212d0ee9b3612708a7a50f0a2ba"
+      "source": "a660038515638e51bbf1025c8802f704353f86e2",
+      "translation": "81eeb267eee4966985531c76f609ca14725e041d"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -27321,6 +27333,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "4c762bb48b7510d547142f815e12de70b1bf429d"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "fb70dab58d76f084b80905cd70b2fb3e8b0b7dce"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -31991,20 +32007,20 @@
       "translation": "59604217dc299a0cb3dad6369ed6ec4adae9cf27"
     },
     "settings.integrations.mdbaseSpec.header": {
-      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
-      "translation": "872ed039ed54018fa4acc57119b7be464c43e111"
+      "source": "3122fe68b2d29d2b5955d17b071ff98a8869ec65",
+      "translation": "522cfc217fa94852fea9d072d5ef222a7012c11e"
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
       "translation": "bdf3046eb079ff776e4d3cfac72c439bd43b789b"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
-      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "535be58eceda8f215f968f44317afbabe28fd881"
+      "source": "dbfee159de77e775f50108e2f21550cd8ee024e8",
+      "translation": "5128d782b03833e9790337765d2873b51fb19903"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
-      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "b57acce5acce6d6fd92e8dfc978103091127dec0"
+      "source": "a660038515638e51bbf1025c8802f704353f86e2",
+      "translation": "bcb41fc1c0caca9834920139bfc74b3b004d588e"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -36207,6 +36223,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "4a55aafd6fe9e62d510859ef9a24574599fb80b3"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "a2232f185ad8e4bb6cef859071bae5f57deb863a"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -40877,20 +40897,20 @@
       "translation": "8341639e9aa4ec2f63a3da4747592e70352935d3"
     },
     "settings.integrations.mdbaseSpec.header": {
-      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
-      "translation": "093366d0d8e58b488283a44f3f1dd937840bb0ba"
+      "source": "3122fe68b2d29d2b5955d17b071ff98a8869ec65",
+      "translation": "43ea4f46518727d7f5bcd877ac41a6b811c79e0b"
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
       "translation": "5c2dc0c54d2da30af544ab02e5a59d5e383c5241"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
-      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "b00132dbabeb57102936bb2a9a799e922e766401"
+      "source": "dbfee159de77e775f50108e2f21550cd8ee024e8",
+      "translation": "3455042469a99be681088e3f88194c164dc9d09c"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
-      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "42ded92793032f7a7916222635afcd83b6bbe1c2"
+      "source": "a660038515638e51bbf1025c8802f704353f86e2",
+      "translation": "7532fdc85dac407f3381734166f9b9186280eab9"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -45093,6 +45113,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "8e1dd146032a622bfece8d5fe92e6913c7ff9e36"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "5dee93f80bf9dcc04c985e8d0b3d083fa5ee824e"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -49763,20 +49787,20 @@
       "translation": "6271b873a5542dc55b8c2b7f7bd6d35205864d00"
     },
     "settings.integrations.mdbaseSpec.header": {
-      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
-      "translation": "7a0bf1226e2e6966bf6519cda4650d00405fc07a"
+      "source": "3122fe68b2d29d2b5955d17b071ff98a8869ec65",
+      "translation": "e42cc04023838ec60bafb3eff3dc7834783bd3a3"
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
       "translation": "cfafdd3be6c1be69bf944f4c56e0f5b59ee371a4"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
-      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "d7d76e86302ba213d5a09eaeb547e1e6fcf7702d"
+      "source": "dbfee159de77e775f50108e2f21550cd8ee024e8",
+      "translation": "12c9d21a142d3cab94b48c5d5f97275b4113078a"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
-      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "d727aedb73b9a418d4f1a360053b98e5125af01f"
+      "source": "a660038515638e51bbf1025c8802f704353f86e2",
+      "translation": "e4d64f809785ce12738df53ba3bc4dcab9abafa0"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -53979,6 +54003,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "4e595807c56ae1fc8abe4779eb1115d48224f921"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "1715e2d8bf1bcd2c2a6fa6e5e73db489f3d263d7"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -58649,20 +58677,20 @@
       "translation": "dcf0c36e6c3a6c710e2b64338c13f4713c06fb84"
     },
     "settings.integrations.mdbaseSpec.header": {
-      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
-      "translation": "b01a7c497875abdcb369c5a6945102af47fda404"
+      "source": "3122fe68b2d29d2b5955d17b071ff98a8869ec65",
+      "translation": "f46e9d9702ea2d4f505aa8926c68c316cae962db"
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
       "translation": "ca1c480770ecf414593592eb6441a670c5491962"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
-      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "7cf1e5f8543b6c20c115dba775f2142c04b9a505"
+      "source": "dbfee159de77e775f50108e2f21550cd8ee024e8",
+      "translation": "1d0ba8c6a60a6939c5ada08d30fd767a0a69e4c8"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
-      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "af8dc8a1409628d92f943542761d3b7bb30b4c22"
+      "source": "a660038515638e51bbf1025c8802f704353f86e2",
+      "translation": "e5df71864b06bc5e9817cd3660d3421b3aad07cf"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",
@@ -62865,6 +62893,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "a7900ba5bb9844704fa978824ef146d6773f3e07"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "88e403dc99094bbef2f76797fcc15542d979853e"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -67535,20 +67567,20 @@
       "translation": "74cee8e32b417f4bfc515dc9e278d74361ed1587"
     },
     "settings.integrations.mdbaseSpec.header": {
-      "source": "97d38d598032d674bc61addc6d8cebe69c1a3cfb",
-      "translation": "6d13826c99ac032131b0b6441f864b11404464c8"
+      "source": "3122fe68b2d29d2b5955d17b071ff98a8869ec65",
+      "translation": "a51a9f152ed285332545f0660c40824e5c6301e4"
     },
     "settings.integrations.mdbaseSpec.learnMore": {
       "source": "698859ca41e7c55409c85ecc3e624db48e036ee3",
       "translation": "621b3188c4a250fc071dcdc5eb3c54dbbca2139c"
     },
     "settings.integrations.mdbaseSpec.enable.name": {
-      "source": "4dd758ea2e869c2d28334d1d05ac113c1041488d",
-      "translation": "9fab51011201f685b326d21c96ceb9c6a245717b"
+      "source": "dbfee159de77e775f50108e2f21550cd8ee024e8",
+      "translation": "6641fa1b97f35683e8ca3844ca102e4d252e22bf"
     },
     "settings.integrations.mdbaseSpec.enable.description": {
-      "source": "5099f3310b8be8de073cdf93685ce2038279c93a",
-      "translation": "7acafc42bc2c3414072ea1f228ebb6d56dbb3631"
+      "source": "a660038515638e51bbf1025c8802f704353f86e2",
+      "translation": "a23f9049f9ede8c6c31dd5e196045566db04c916"
     },
     "settings.integrations.timeFormats.justNow": {
       "source": "a69f482dfa32327d1f3e8bd7d5ebf8aaf5c7e0aa",

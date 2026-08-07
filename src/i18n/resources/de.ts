@@ -2191,11 +2191,11 @@ export const de: TranslationTree = {
 				description: "Konfiguriere Integrationen mit anderen Obsidian-Plugins."
 			},
 			mdbaseSpec: {
-				header: "mdbase-Typdefinitionen",
+				header: "mdbase-Aufgabenvertrag",
 				learnMore: "Mehr über mdbase-spec erfahren",
 				enable: {
-					name: "mdbase-Typdefinitionen generieren",
-					description: "mdbase-Typdateien (mdbase.yaml und _types/task.md) im Stammverzeichnis des Vaults generieren und pflegen, wenn sich deine Einstellungen ändern."
+					name: "Kanonische mdbase-Konfiguration verwenden",
+					description: "Veröffentlicht den TaskNotes-Datenvertrag und macht den implementierenden mdbase-Typ zur portablen maßgeblichen Quelle. Dateiänderungen aktualisieren TaskNotes, und Änderungen an portablen Einstellungen aktualisieren die Typbindung."
 				}
 			},
 			timeFormats: {

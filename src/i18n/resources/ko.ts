@@ -2175,11 +2175,11 @@ export const ko: TranslationTree = {
 				description: "다른 Obsidian 플러그인과의 통합을 설정합니다."
 			},
 			mdbaseSpec: {
-				header: "mdbase 타입 정의",
+				header: "mdbase 작업 계약",
 				learnMore: "mdbase-spec에 대해 자세히 알아보기",
 				enable: {
-					name: "mdbase 타입 정의 생성",
-					description: "설정이 변경될 때 보관소 루트에 mdbase 타입 파일(mdbase.yaml 및 _types/task.md)을 생성하고 유지합니다."
+					name: "표준 mdbase 구성 사용",
+					description: "TaskNotes 데이터 계약을 게시하고 이를 구현하는 mdbase 타입을 이식 가능한 단일 기준 정보로 사용합니다. 파일을 수정하면 TaskNotes가 업데이트되고, 이식 가능한 설정을 변경하면 타입 바인딩이 업데이트됩니다."
 				}
 			},
 			timeFormats: {

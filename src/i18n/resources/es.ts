@@ -2191,11 +2191,11 @@ export const es: TranslationTree = {
 				description: "Configurar integraciones con otros plugins de Obsidian."
 			},
 			mdbaseSpec: {
-				header: "Definiciones de tipos mdbase",
+				header: "Contrato de tareas de mdbase",
 				learnMore: "Más información sobre mdbase-spec",
 				enable: {
-					name: "Generar definiciones de tipos mdbase",
-					description: "Genera y mantiene archivos de tipos mdbase (mdbase.yaml y _types/task.md) en la raíz de la bóveda cuando cambien tus ajustes."
+					name: "Usar la configuración canónica de mdbase",
+					description: "Publica el contrato de datos de TaskNotes y convierte el tipo de mdbase que lo implementa en la fuente de referencia portátil. Las ediciones de archivos actualizan TaskNotes y los cambios en la configuración portátil actualizan la vinculación del tipo."
 				}
 			},
 			timeFormats: {

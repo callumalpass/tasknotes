@@ -2191,11 +2191,11 @@ export const ja: TranslationTree = {
 				description: "他のObsidianプラグインとの統合を設定します。"
 			},
 			mdbaseSpec: {
-				header: "mdbase型定義",
+				header: "mdbaseタスク契約",
 				learnMore: "mdbase-spec について詳しく見る",
 				enable: {
-					name: "mdbase 型定義を生成",
-					description: "設定の変更に合わせて、ボルトルートに mdbase 型ファイル（mdbase.yaml と _types/task.md）を生成して維持します。"
+					name: "正規のmdbase設定を使用",
+					description: "TaskNotesのデータ契約を公開し、それを実装するmdbase型を移植可能な信頼できる情報源として使用します。ファイルの編集はTaskNotesを更新し、移植可能な設定の変更は型のバインディングを更新します。"
 				}
 			},
 			timeFormats: {

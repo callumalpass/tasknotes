@@ -2191,11 +2191,11 @@ export const zh: TranslationTree = {
 				description: "配置与其他Obsidian插件的集成。"
 			},
 			mdbaseSpec: {
-				header: "mdbase类型定义",
+				header: "mdbase 任务契约",
 				learnMore: "了解更多关于 mdbase-spec 的信息",
 				enable: {
-					name: "生成 mdbase 类型定义",
-					description: "随着设置变化，在库根目录生成并维护 mdbase 类型文件（mdbase.yaml 和 _types/task.md）。"
+					name: "使用规范的 mdbase 配置",
+					description: "发布 TaskNotes 数据契约，并将实现该契约的 mdbase 类型作为可移植的权威数据源。文件编辑会更新 TaskNotes，可移植设置的更改会更新类型绑定。"
 				}
 			},
 			timeFormats: {
