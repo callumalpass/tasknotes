@@ -314,7 +314,9 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
 		initializeCalendarProviders(this);
-		await registerBasesIntegration(this);
+		// Not awaited: if Bases has not loaded yet this schedules a retry timer,
+		// and initializeAfterLayoutReady attempts registration again.
+		void registerBasesIntegration(this);
 
 		// Defer expensive initialization until layout is ready
 		this.app.workspace.onLayoutReady(() => {
