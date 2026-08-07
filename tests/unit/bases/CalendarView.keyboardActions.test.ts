@@ -1,5 +1,6 @@
 import { CalendarView } from "../../../src/bases/CalendarView";
 import { executeBasesTaskCardAction } from "../../../src/bases/basesTaskCardActions";
+import { mountCalendarListEventCard } from "../../../src/bases/calendarEventMount";
 
 jest.mock(
 	"tasknotes-nlp-core",
@@ -11,9 +12,18 @@ jest.mock(
 jest.mock("../../../src/bases/basesTaskCardActions", () => ({
 	executeBasesTaskCardAction: jest.fn().mockResolvedValue(undefined),
 }));
+jest.mock("../../../src/bases/calendarEventMount", () => ({
+	decorateCalendarIcsEventElement: jest.fn(),
+	getCalendarRelatedNoteTooltip: jest.fn(() => ""),
+	mountCalendarListEventCard: jest.fn(() => false),
+	normalizeCalendarRelatedNoteCount: jest.fn(() => 0),
+}));
 
 const mockedExecuteAction = executeBasesTaskCardAction as jest.MockedFunction<
 	typeof executeBasesTaskCardAction
+>;
+const mockedMountCalendarListEventCard = mountCalendarListEventCard as jest.MockedFunction<
+	typeof mountCalendarListEventCard
 >;
 
 const proto = CalendarView.prototype as any;
@@ -159,5 +169,56 @@ describe("CalendarView grid-mode hover hotkeys", () => {
 		Object.defineProperty(offEvent, "target", { value: root });
 		root.dispatchEvent(offEvent);
 		expect(mockThis.hoveredGridTaskPath).toBeNull();
+	});
+});
+
+describe("CalendarView.handleEventDidMount", () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	function baseMockThis(overrides: Record<string, unknown> = {}) {
+		return {
+			plugin: {},
+			config: {},
+			basesEntryByPath: new Map(),
+			getVisibleProperties: () => [],
+			buildTaskCardOptions: (options: unknown) => options,
+			updateSelectionVisuals: jest.fn(),
+			taskCardKeyboardController: { syncFocusStyles: jest.fn() },
+			...overrides,
+		};
+	}
+
+	function baseArg(overrides: Record<string, unknown> = {}) {
+		return {
+			event: { extendedProps: { taskInfo: { path: "a.md" } } },
+			el: document.createElement("tr"),
+			view: { type: "listWeek" },
+			...overrides,
+		};
+	}
+
+	it("re-syncs selection and keyboard-focus styling after mounting a list-mode card", () => {
+		mockedMountCalendarListEventCard.mockReturnValue(true);
+		const mockThis = baseMockThis();
+
+		(proto.handleEventDidMount as any).call(mockThis, baseArg());
+
+		expect(mockThis.updateSelectionVisuals).toHaveBeenCalled();
+		expect(mockThis.taskCardKeyboardController.syncFocusStyles).toHaveBeenCalled();
+	});
+
+	it("does not resync selection/focus styling for events outside list mode", () => {
+		mockedMountCalendarListEventCard.mockReturnValue(false);
+		const mockThis = baseMockThis();
+
+		(proto.handleEventDidMount as any).call(
+			mockThis,
+			baseArg({ event: { extendedProps: {} }, view: { type: "dayGridMonth" } })
+		);
+
+		expect(mockThis.updateSelectionVisuals).not.toHaveBeenCalled();
+		expect(mockThis.taskCardKeyboardController.syncFocusStyles).not.toHaveBeenCalled();
 	});
 });

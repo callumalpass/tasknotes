@@ -2685,6 +2685,13 @@ export class CalendarView extends BasesViewBase {
 					}),
 			})
 		) {
+			// FullCalendar mounts list-mode events on its own async render cycle,
+			// independent of CalendarView.render()'s synchronous finally block, so
+			// the freshly-created card needs its own selection/focus styling pass
+			// (same gap VirtualScroller's onRenderedElementsChanged hook closes for
+			// Kanban/Task List's virtualized cards).
+			this.updateSelectionVisuals();
+			this.taskCardKeyboardController?.syncFocusStyles();
 			return;
 		}
 
