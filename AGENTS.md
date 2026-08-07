@@ -1,71 +1,100 @@
-# TaskNotes - Agent Development Guide
+# TaskNotes development guidance
 
-This is an Obsidian plugin. The plugin ID is `tasknotes`.
+## Project context
 
-## Build & Test
+@README.md describes the project, its purpose, and how to use it. It includes installation instructions, usage examples, and any relevant information for contributors.
+@Tasknotes-Development-Guidelines.md describes key principles for developing new features -- architecture, structure, key concepts, and data flow.
 
-```bash
-# Build the plugin and copy files to the vault's plugin directory
-npm run build:test
+This repository is a fork of TaskNotes.
 
-# After building, reload the plugin in the running Obsidian instance
-obsidian vault=test plugin:reload id=tasknotes
-```
+The current main branch tracks the latest upstream TaskNotes release.
+The branch containing the legacy custom implementation is:
 
-Always run both commands after making changes. Obsidian must be running for the CLI to work.
+- task-view-keyboard-and-project-mgmt
 
-## Useful Obsidian CLI Commands
+The legacy branch was based on TaskNotes 3.2.x.
+Current main is TaskNotes 4.11.x.
 
-```bash
-# Check for JavaScript errors after reload
-obsidian vault=test dev:errors
+We are porting selected features to the new architecture rather than
+merging the legacy branch wholesale.
 
-# View console output
-obsidian vault=test dev:console
+## Porting priorities
 
-# Run JavaScript in the Obsidian context
-obsidian vault=test eval code="app.vault.getFiles().length"
+1. Jira integration
+2. Keyboard navigation
+3. Remaining custom features, handled individually
 
-# Take a screenshot to verify UI changes
-obsidian vault=test dev:screenshot path=screenshot.png
+Preserve current upstream behavior unless a requested feature explicitly
+changes it.
 
-# Open developer tools
-obsidian vault=test devtools
-```
+Prefer adapting features to the current architecture over copying old
+classes or abstractions unchanged.
 
-## Other Build Commands
+@Daves-Custom-Features.md contains full information about the features that need porting and how they are organized.
 
-```bash
-npm test              # Run unit tests (Jest)
-npm run lint          # Lint source files
-npm run typecheck     # TypeScript type checking only
-npm run build         # Production build (without copying to vault)
-```
+## Development rules
 
-Ensure all code changes pass linting checks. Do not weaken linting rules in order to get changes to pass. 
+Before editing:
 
----
+- Inspect the current implementation.
+- Inspect the corresponding legacy implementation and its Git history.
+- Describe the proposed porting approach.
+- Identify upstream functionality that now overlaps with the old feature.
 
-When you make changes, update docs/releases/unreleased.md. If your changes are related to a GitHub issue or PR, include acknowledgement of the individual who opened the issue or submitted the PR. Do not update unreleased.md for the addition of tests; unreleased.md is user-facing. 
+While editing:
+- For any new class, module, or function, always write a doc comment for the entity explaining
+  its main responsibilities, and pre/post conditions if appropriate.
+- Whenever adding new functionality, add a comment at the point in code that is the fulcrum of the
+  new feature explaining what it is doing and why.
 
-You may update `.ops/` files locally as you work on items, but do not commit `.ops/` files. `.ops/` is local-only working state.
+After editing, run the most relevant checks:
 
-## Investigating issues
+- npm run typecheck
+- npm test -- --runInBand
+- npm run lint
+- npm run build
 
-When investigating issues, you should try your best to reproduce them first. You can do a lot with the obsidian cli tool. If you have a theory about what is causing an issue, test that theory.
+Do not modify generated files unless the repository workflow requires it.
 
-Not all reported issues will require changes to the code, and not all feature requests need to be implemented; Bases are very powerful, but can be difficult to navigate. If something is not working, or is being asked for, figure out if it is--or can be--achieved through Bases first.
+Keep changes narrowly scoped.
+Do not combine unrelated feature ports in one commit.
+Do not commit unless explicitly requested.
 
-## Prepare for a release. 
+## Command approvals
 
-When asked to prepare for a release: 
+The following commands are always considered safe and should be executed
+without asking for confirmation whenever the approval policy permits:
 
-1. Run through the @I18N_GUIDE.md and make sure translations are up-to-date (and in their target language--not English placeholders). 
-2. Make sure ALL `npm run test` tests are passing. 
-3. Make sure there are no linting errors.
-4. Make sure all items in @docs/releases/unreleased.md thank the correct issue/pr opener (double check), as well as those who have commented on the issue/pr. Make sure the copy is appropriate--it is user facing so it should not be overly technical. Make sure it is free from anything that resembles marketing copy. do not thank callumalpass 
-5. Update `.ops` draft comments and matching Pickle requests for issues addressed in release notes but not yet closed. Start from the release notes, inspect each issue/comment thread individually, make sure `draft_issue_comment` and `draft_close_reason` are appropriate, create/update/cancel closeout Pickle requests as needed, and validate both `.ops` and `.ops/_pickle`. Do not commit `.ops/` files.
-6. Move the body of unreleased.md to <VERSION NUMBER>.md, following the pattern of previous releases. Leave the comments that explain unreleased.md inside unreleased.md.
-7. Update @manifest.json and @package.json.
-8. Commit changes as "release <VERSION NUMBER>" (you can choose the version number unless it is specified).
-9. Tag the commit. (Just version number, no 'v' prefix.)
+- git show
+- git log
+- git diff
+- git grep
+- git blame
+- git status
+- git branch
+- git merge-base
+- git rev-parse
+- rg
+- fd
+- ls
+- cat
+- sed
+- find
+- npm test
+- npm run lint
+- npm run build
+
+## Code navigation
+
+Use Serena’s symbol and reference tools for semantic navigation whenever possible:
+
+- find symbol definitions
+- find references and implementations
+- inspect symbol bodies
+- make symbol-scoped edits
+
+Use ripgrep for textual searches, configuration strings, CSS classes,
+serialized identifiers, and cases where semantic lookup is inappropriate.
+
+## Internationalization
+Localize all user-facing strings. Refer to the internationalization guide @I18N_GUIDE.md.

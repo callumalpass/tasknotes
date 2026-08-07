@@ -68,6 +68,13 @@ import {
 import { filterTopLevelSubtasks } from "./topLevelSubtasks";
 import type { BasesTaskUpdateSource } from "./basesUpdateEvents";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
+import {
+	BasesTaskCardKeyboardController,
+	type BasesTaskCardActionViewContext,
+} from "./BasesTaskCardKeyboardController";
+import type { TaskListFocusOffscreenResolver } from "./TaskListFocusController";
+import { canHoverClaimBasesTaskFocus } from "./embeddedBasesKeyboard";
+import type { TaskListAction } from "./taskListKeyboardActions";
 
 type BasesEphemeralState = {
 	scrollTop?: unknown;
@@ -96,6 +103,7 @@ export abstract class BasesViewBase extends Component {
 	protected logger: TaskNotesLogger;
 	protected containerEl: HTMLElement;
 	protected rootElement: HTMLElement | null = null;
+	protected taskCardKeyboardController: BasesTaskCardKeyboardController | null = null;
 	protected taskUpdateListener: EventRef[] | null = null;
 	protected updateDebounceTimer: number | null = null;
 	protected dataUpdateDebounceTimer: number | null = null;
@@ -170,10 +178,69 @@ export abstract class BasesViewBase extends Component {
 	 */
 	onload(): void {
 		this.setupContainer();
+		this.setupTaskCardKeyboard();
 		this.setupTaskUpdateListener();
 		this.setupSelectionHandling();
 		this.updateRelevantPathsCache();
 		void this.render();
+	}
+
+	/**
+	 * Installs roving task-card focus for every TaskNotes Bases presentation.
+	 * This gives Agenda, Calendar, Kanban, and Task List the same explicit-focus
+	 * and guarded-hover behavior without changing their view-specific rendering.
+	 */
+	private setupTaskCardKeyboard(): void {
+		if (!this.rootElement || this.taskCardKeyboardController) return;
+
+		const root = this.rootElement;
+		const readConfig = () => this.getTaskCardActionsConfig();
+		this.taskCardKeyboardController = new BasesTaskCardKeyboardController(
+			this,
+			root,
+			this.containerEl,
+			this.plugin,
+			{
+				// Hover is the feature fulcrum: it may move the task cursor only when
+				// the surrounding project-note editor does not currently own an edit cursor.
+				canClaimHover: () => canHoverClaimBasesTaskFocus(root),
+				autoFocusInitial: readConfig()?.autoFocusInitial ?? false,
+				cardAreaElement: readConfig()?.cardAreaElement,
+				resolveOffscreenCard: (currentPath, direction) =>
+					readConfig()?.resolveOffscreenCard?.(currentPath, direction) ?? null,
+				isActionSupported: (action) => readConfig()?.isActionSupported(action) ?? false,
+				buildViewContext: () => {
+					const config = readConfig();
+					if (!config) {
+						throw new Error(
+							"Task card action dispatched without an actions config"
+						);
+					}
+					return config.buildViewContext();
+				},
+			}
+		);
+		this.register(() => {
+			this.taskCardKeyboardController?.destroy();
+			this.taskCardKeyboardController = null;
+		});
+	}
+
+	/**
+	 * Opt-in hook for views that dispatch Task List-style keyboard actions
+	 * (Task List, Kanban, Calendar's Agenda/list mode) through the shared
+	 * `BasesTaskCardKeyboardController`. Views that only need hover/focus
+	 * tracking (or that implement their own separate dispatch, like Calendar's
+	 * grid modes) leave this at its default of `null`.
+	 */
+	protected getTaskCardActionsConfig(): {
+		isActionSupported(action: TaskListAction): boolean;
+		buildViewContext(): BasesTaskCardActionViewContext;
+		autoFocusInitial?: boolean;
+		cardAreaElement?: HTMLElement;
+		resolveOffscreenCard?: TaskListFocusOffscreenResolver;
+	} | null {
+		return null;
 	}
 
 	/**
@@ -614,6 +681,7 @@ export abstract class BasesViewBase extends Component {
 			visibleProperties,
 			currentSearchTerm: this.currentSearchTerm,
 			onSearch: (term) => this.handleSearch(term),
+			onDismiss: () => this.handleSearchDismissed(),
 		});
 		this.searchFilter = searchControls.searchFilter;
 		this.searchBox = searchControls.searchBox;
@@ -622,6 +690,8 @@ export abstract class BasesViewBase extends Component {
 		// Register cleanup using Component lifecycle
 		this.register(() => this.teardownSearch());
 	}
+
+	protected handleSearchDismissed(): void {}
 
 	/**
 	 * Remove the search UI and reset search state.
@@ -802,6 +872,7 @@ export abstract class BasesViewBase extends Component {
 
 		// Keyboard event handler for selection mode
 		const handleKeyDown = (e: KeyboardEvent) => {
+			if (!this.canHandleSelectionKeyDown(e)) return;
 			handleBasesSelectionKeyDown({
 				event: e,
 				selectionService,
@@ -824,12 +895,27 @@ export abstract class BasesViewBase extends Component {
 			this.updateSelectionModeUI(active);
 		});
 
+		// A Bases refresh can recreate the view root without changing the shared
+		// selection service. Hydrate the new DOM immediately instead of waiting
+		// for another selection event.
+		this.updateSelectionModeUI(selectionService.isSelectionModeActive());
+		this.updateSelectionVisuals();
+		this.updateSelectionIndicator(selectionService.getSelectionCount());
+
 		// Register cleanup
 		this.register(() => {
 			this.rootElement?.removeEventListener("keydown", handleKeyDown);
 			unsubscribeSelection();
 			unsubscribeMode();
 		});
+	}
+
+	/**
+	 * Lets specialized Bases views defer selection keys while another UI surface
+	 * (for example a menu or modal) owns keyboard input.
+	 */
+	protected canHandleSelectionKeyDown(event: KeyboardEvent): boolean {
+		return this.taskCardKeyboardController?.canHandleSelectionKeyDown(event) ?? true;
 	}
 
 	/**

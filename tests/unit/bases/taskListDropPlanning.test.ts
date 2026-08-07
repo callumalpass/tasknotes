@@ -2,6 +2,7 @@ import {
 	applyTaskListDropFrontmatterMutation,
 	buildTaskListDropSideEffectTask,
 	buildTaskListGroupDropPlan,
+	shouldPreserveTaskListGroupDropValues,
 } from "../../../src/bases/taskListDropPlanning";
 import type { FieldMapping, TaskInfo } from "../../../src/types";
 
@@ -9,6 +10,7 @@ const lookupMappingKey = (property: string): keyof FieldMapping | null => {
 	const mappings: Partial<Record<string, keyof FieldMapping>> = {
 		status: "status",
 		contexts: "contexts",
+		projects: "projects",
 		priority: "priority",
 	};
 	return mappings[property] ?? null;
@@ -27,6 +29,22 @@ const createTask = (overrides: Partial<TaskInfo> = {}): TaskInfo => ({
 });
 
 describe("taskListDropPlanning", () => {
+	it.each([
+		["replace", false, false],
+		["replace", true, false],
+		["add", false, true],
+		["add", true, true],
+		["replace-modifier-add", false, false],
+		["replace-modifier-add", true, true],
+	] as const)(
+		"resolves %s behavior with additive modifier=%s to preserve=%s",
+		(behavior, additiveModifierKey, expected) => {
+			expect(shouldPreserveTaskListGroupDropValues(behavior, additiveModifierKey)).toBe(
+				expected
+			);
+		}
+	);
+
 	it("marks formula grouping as read-only while preserving the stripped property for sorting", () => {
 		const plan = buildTaskListGroupDropPlan({
 			groupByPropertyId: "formula.score",
@@ -42,7 +60,7 @@ describe("taskListDropPlanning", () => {
 		expect(plan.groupByTaskProp).toBeNull();
 	});
 
-	it("moves list-valued group frontmatter and writes the new sort order", () => {
+	it("replaces list-valued group frontmatter and writes the new sort order", () => {
 		const plan = buildTaskListGroupDropPlan({
 			groupByPropertyId: "note.contexts",
 			sourceGroupKey: "work",
@@ -67,8 +85,41 @@ describe("taskListDropPlanning", () => {
 		});
 
 		expect(frontmatter).toEqual({
-			contexts: ["home", "deep-work"],
+			contexts: ["deep-work"],
 			sort_order: "tnbbbbbbbbbb",
+		});
+	});
+
+	it("preserves existing values for an additive custom list-property move", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "note.reviewers",
+			sourceGroupKey: "Alice",
+			targetGroupKey: "Bob",
+			preserveExistingListValues: true,
+			lookupMappingKey,
+			isListTypeProperty: (property) =>
+				property === "reviewers" || isListTypeProperty(property),
+		});
+		const frontmatter: Record<string, unknown> = {
+			reviewers: ["Alice", "Carol"],
+		};
+
+		applyTaskListDropFrontmatterMutation({
+			frontmatter,
+			plan,
+			sortOrderField: "sort_order",
+			sortOrder: null,
+			isRecurring: false,
+			dateModifiedField: "dateModified",
+			coerceGroupKeyForFrontmatter: (_property, groupKey) => groupKey,
+			updateCompletedDateInFrontmatter: jest.fn(),
+			getTimestamp: () => "2026-05-19T09:40:00+10:00",
+		});
+
+		expect(plan.groupByTaskProp).toBeNull();
+		expect(plan.preservesListGroupingValues).toBe(true);
+		expect(frontmatter).toEqual({
+			reviewers: ["Alice", "Carol", "Bob"],
 		});
 	});
 
@@ -97,6 +148,127 @@ describe("taskListDropPlanning", () => {
 		});
 
 		expect(frontmatter).toEqual({});
+	});
+
+	it("replaces all project assignments when moving between project groups", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "note.projects",
+			sourceGroupKey: "Project A",
+			targetGroupKey: "Project B",
+			lookupMappingKey,
+			isListTypeProperty,
+			normalizeListGroupValue: (taskProperty, _propertyName, value) =>
+				taskProperty === "projects" ? `[[${value}]]` : value,
+		});
+		const frontmatter: Record<string, unknown> = {
+			projects: ["Project A", "Project C"],
+		};
+
+		applyTaskListDropFrontmatterMutation({
+			frontmatter,
+			plan,
+			sortOrderField: "sort_order",
+			sortOrder: "tncccccccccc",
+			isRecurring: false,
+			dateModifiedField: "dateModified",
+			coerceGroupKeyForFrontmatter: (_property, groupKey) => groupKey,
+			updateCompletedDateInFrontmatter: jest.fn(),
+			getTimestamp: () => "2026-05-19T09:40:00+10:00",
+		});
+
+		expect(plan.replacesListGroupingValue).toBe(true);
+		expect(frontmatter).toEqual({
+			projects: ["[[Project B]]"],
+			sort_order: "tncccccccccc",
+		});
+	});
+
+	it("preserves project assignments for an additive project group move", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "note.projects",
+			sourceGroupKey: "Project A",
+			targetGroupKey: "Project B",
+			preserveExistingListValues: true,
+			lookupMappingKey,
+			isListTypeProperty,
+		});
+		const frontmatter: Record<string, unknown> = {
+			projects: ["Project A", "Project C"],
+		};
+
+		applyTaskListDropFrontmatterMutation({
+			frontmatter,
+			plan,
+			sortOrderField: "sort_order",
+			sortOrder: null,
+			isRecurring: false,
+			dateModifiedField: "dateModified",
+			coerceGroupKeyForFrontmatter: (_property, groupKey) => groupKey,
+			updateCompletedDateInFrontmatter: jest.fn(),
+			getTimestamp: () => "2026-05-19T09:40:00+10:00",
+		});
+
+		expect(plan.replacesListGroupingValue).toBe(false);
+		expect(frontmatter).toEqual({
+			projects: ["Project A", "Project C", "Project B"],
+		});
+	});
+
+	it("replaces all tags on a left-button tag group move", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "note.tags",
+			sourceGroupKey: "work",
+			targetGroupKey: "focus",
+			lookupMappingKey,
+			isListTypeProperty,
+		});
+		const frontmatter: Record<string, unknown> = {
+			tags: ["work", "home"],
+		};
+
+		applyTaskListDropFrontmatterMutation({
+			frontmatter,
+			plan,
+			sortOrderField: "sort_order",
+			sortOrder: null,
+			isRecurring: false,
+			dateModifiedField: "dateModified",
+			coerceGroupKeyForFrontmatter: (_property, groupKey) => groupKey,
+			updateCompletedDateInFrontmatter: jest.fn(),
+			getTimestamp: () => "2026-05-19T09:40:00+10:00",
+		});
+
+		expect(plan.replacesListGroupingValue).toBe(true);
+		expect(frontmatter).toEqual({ tags: ["focus"] });
+	});
+
+	it("preserves tags for an additive tag group move", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "tags",
+			sourceGroupKey: "work",
+			targetGroupKey: "focus",
+			preserveExistingListValues: true,
+			lookupMappingKey,
+			isListTypeProperty,
+		});
+		const frontmatter: Record<string, unknown> = {
+			tags: ["work", "home"],
+		};
+
+		applyTaskListDropFrontmatterMutation({
+			frontmatter,
+			plan,
+			sortOrderField: "sort_order",
+			sortOrder: null,
+			isRecurring: false,
+			dateModifiedField: "dateModified",
+			coerceGroupKeyForFrontmatter: (_property, groupKey) => groupKey,
+			updateCompletedDateInFrontmatter: jest.fn(),
+			getTimestamp: () => "2026-05-19T09:40:00+10:00",
+		});
+
+		expect(plan.replacesListGroupingValue).toBe(false);
+		expect(frontmatter).toEqual({ tags: ["work", "home", "focus"] });
 	});
 
 	it("coerces scalar group frontmatter and applies status derivative fields", () => {
@@ -155,7 +327,7 @@ describe("taskListDropPlanning", () => {
 		});
 	});
 
-	it("builds side-effect task snapshots for list-valued group moves", () => {
+	it("builds replacement side-effect task snapshots for list-valued group moves", () => {
 		const plan = buildTaskListGroupDropPlan({
 			groupByPropertyId: "contexts",
 			sourceGroupKey: "work",
@@ -175,8 +347,83 @@ describe("taskListDropPlanning", () => {
 		);
 
 		expect(updatedTask).toMatchObject({
-			contexts: ["home", "focus"],
+			contexts: ["focus"],
 			dateModified: "2026-05-19T09:43:00+10:00",
 		});
+	});
+
+	it("builds additive side-effect task snapshots for list-valued group moves", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "contexts",
+			sourceGroupKey: "work",
+			targetGroupKey: "focus",
+			preserveExistingListValues: true,
+			lookupMappingKey,
+			isListTypeProperty,
+		});
+
+		const updatedTask = buildTaskListDropSideEffectTask(
+			createTask({ contexts: ["work", "home"] }),
+			{
+				plan,
+				isCompletedStatus: () => false,
+				getTimestamp: () => "2026-05-19T09:43:30+10:00",
+				getCompletedDate: () => "2026-05-19",
+			}
+		);
+
+		expect(updatedTask).toMatchObject({
+			contexts: ["work", "home", "focus"],
+			dateModified: "2026-05-19T09:43:30+10:00",
+		});
+	});
+
+	it("builds a replacement side-effect snapshot for project group moves", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "projects",
+			sourceGroupKey: "Project A",
+			targetGroupKey: "Project B",
+			lookupMappingKey,
+			isListTypeProperty,
+		});
+
+		const updatedTask = buildTaskListDropSideEffectTask(
+			createTask({ projects: ["Project A", "Project C"] }),
+			{
+				plan,
+				isCompletedStatus: () => false,
+				getTimestamp: () => "2026-05-19T09:44:00+10:00",
+				getCompletedDate: () => "2026-05-19",
+			}
+		);
+
+		expect(updatedTask).toMatchObject({
+			projects: ["Project B"],
+			dateModified: "2026-05-19T09:44:00+10:00",
+		});
+	});
+
+	it("does not build a TaskInfo side-effect snapshot for additive native tag grouping", () => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: "tags",
+			sourceGroupKey: "work",
+			targetGroupKey: "focus",
+			preserveExistingListValues: true,
+			lookupMappingKey,
+			isListTypeProperty,
+		});
+
+		const updatedTask = buildTaskListDropSideEffectTask(
+			createTask({ tags: ["work", "home"] }),
+			{
+				plan,
+				isCompletedStatus: () => false,
+				getTimestamp: () => "2026-05-19T09:45:00+10:00",
+				getCompletedDate: () => "2026-05-19",
+			}
+		);
+
+		expect(plan.groupByTaskProp).toBeNull();
+		expect(updatedTask).toBeNull();
 	});
 });

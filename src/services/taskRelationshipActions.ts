@@ -64,6 +64,25 @@ function resolveProjectReference(
 	return trimmedReference;
 }
 
+function projectReferenceMatchesFile(
+	plugin: TaskNotesPlugin,
+	projectReference: string,
+	projectFile: TFile,
+	sourcePath: string
+): boolean {
+	const stableReference = buildStableFileLink(plugin, projectFile, sourcePath);
+	if (resolveProjectReference(plugin, projectReference, sourcePath) === stableReference) {
+		return true;
+	}
+
+	const unresolvedPath = parseLinkToPath(projectReference.trim()).replace(/\.md$/i, "");
+	if (unresolvedPath.includes("/")) {
+		return false;
+	}
+	const unresolvedBasename = unresolvedPath.split("/").pop();
+	return unresolvedBasename === projectFile.basename;
+}
+
 export async function addTaskToProject(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo,
@@ -99,6 +118,40 @@ export async function addTaskToProject(
 		})
 	);
 	return updatedTask;
+}
+
+export function getTaskProjectFiles(
+	plugin: TaskNotesPlugin,
+	tasks: TaskInfo[]
+): TFile[] {
+	const filesByPath = new Map<string, TFile>();
+	for (const task of tasks) {
+		for (const project of task.projects ?? []) {
+			const linkPath = parseLinkToPath(project.trim());
+			const file = plugin.app.metadataCache.getFirstLinkpathDest?.(linkPath, task.path);
+			if (file instanceof TFile) {
+				filesByPath.set(file.path, file);
+			}
+		}
+	}
+	return [...filesByPath.values()].sort((left, right) =>
+		left.basename.localeCompare(right.basename)
+	);
+}
+
+export async function removeTaskFromProject(
+	plugin: TaskNotesPlugin,
+	task: TaskInfo,
+	projectFile: TFile
+): Promise<TaskInfo | null> {
+	const currentProjects = Array.isArray(task.projects) ? task.projects : [];
+	const updatedProjects = currentProjects.filter(
+		(entry) => !projectReferenceMatchesFile(plugin, entry, projectFile, task.path)
+	);
+	if (updatedProjects.length === currentProjects.length) {
+		return null;
+	}
+	return plugin.updateTaskProperty(task, "projects", updatedProjects);
 }
 
 export async function assignTaskAsSubtask(

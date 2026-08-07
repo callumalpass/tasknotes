@@ -12,6 +12,7 @@ export type CreateBasesSearchControlsOptions = {
 	visibleProperties: readonly string[];
 	currentSearchTerm: string;
 	onSearch: (term: string) => void;
+	onDismiss?: () => void;
 	debounceMs?: number;
 };
 
@@ -20,6 +21,7 @@ export function createBasesSearchControls({
 	visibleProperties,
 	currentSearchTerm,
 	onSearch,
+	onDismiss,
 	debounceMs = 300,
 }: CreateBasesSearchControlsOptions): BasesSearchControls {
 	const doc = container.ownerDocument;
@@ -33,7 +35,7 @@ export function createBasesSearchControls({
 	}
 
 	const searchFilter = new TaskSearchFilter([...visibleProperties]);
-	const searchBox = new SearchBox(searchContainer, onSearch, debounceMs);
+	const searchBox = new SearchBox(searchContainer, onSearch, debounceMs, onDismiss);
 	searchBox.render();
 
 	if (currentSearchTerm) {

@@ -50,6 +50,10 @@ Edit the `.base` file to tailor the agenda:
 
 Because the view runs inside Bases, any YAML changes are applied immediately after saving the file.
 
+## Keyboard Shortcuts
+
+Because the Agenda view renders real task cards (the same as Task List), it supports the full set of task-card keyboard shortcuts once a card has keyboard focus or is hovered: move focus between entries, select one or more tasks, edit due/scheduled dates, priority, status, and recurrence, mark complete, archive, add tags/context/project, copy titles, and delete. See **Settings → TaskNotes → Keyboard shortcuts** to view or customize the bindings.
+
 ## Usage Tips
 
 - Use the calendar toolbar arrows (Previous/Next) to move the agenda window forward or backward, or simply scroll the list to review upcoming entries

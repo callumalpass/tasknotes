@@ -57,7 +57,16 @@ import type { EventRef } from "obsidian";
 import { format } from "date-fns";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
-import { parseDateToLocal } from "../utils/dateUtils";
+import { parseDateToLocal, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
+import {
+	resolveTaskListKeyboardAction,
+	type TaskListAction,
+} from "./taskListKeyboardActions";
+import {
+	executeBasesTaskCardAction,
+	type BasesTaskCardActionContext,
+} from "./basesTaskCardActions";
+import type { BasesTaskCardActionViewContext } from "./BasesTaskCardKeyboardController";
 import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
@@ -429,10 +438,31 @@ export function getTodayColumnWidths(
 	);
 }
 
+// Grid modes have no roving-focus or selection model, so navigation, selection,
+// search, and create hotkeys are meaningless there; only single-target actions
+// against the hovered task are dispatched.
+const GRID_HOVER_EXCLUDED_ACTIONS: ReadonlySet<TaskListAction> = new Set([
+	"navigate-next",
+	"navigate-previous",
+	"jump-first",
+	"jump-last",
+	"clear-focus-and-selection",
+	"toggle-select",
+	"select-all",
+	"focus-search",
+	"create-task",
+]);
+
 export class CalendarView extends BasesViewBase {
 	type = "tasknotesCalendar";
 	calendar: Calendar | null = null; // Made public for factory access
 	private calendarEl: HTMLElement | null = null;
+	// Grid modes (Month/Week/Day/Year/Custom) render FullCalendar's own event
+	// elements, not `.task-card`, so there is no roving-focus model to key
+	// hotkeys off of. These track the task under the mouse instead; hotkeys in
+	// grid mode dispatch against whichever task is currently hovered.
+	private hoveredGridTaskPath: string | null = null;
+	private hoveredGridTaskElement: HTMLElement | null = null;
 	private currentTasks: TaskInfo[] = [];
 	private basesEntryByPath: Map<string, BasesEntryWithGetValue> = new Map(); // Map task path to Bases entry for enrichment
 	private basesSortIndexByPath = new Map<string, number>();
@@ -1181,6 +1211,7 @@ export class CalendarView extends BasesViewBase {
 			this.setupSearch(this.rootElement);
 		}
 
+		this.taskCardKeyboardController?.prepareForRender();
 		try {
 			// Extract tasks from Bases
 			const dataItems = this.dataAdapter.extractDataItems();
@@ -1216,6 +1247,9 @@ export class CalendarView extends BasesViewBase {
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		} finally {
 			this._isRendering = false;
+			this.taskCardKeyboardController?.restoreAfterRender();
+			this.updateSelectionVisuals();
+			this.updateSelectionIndicator(this.plugin.taskSelectionService?.getSelectionCount() ?? 0);
 		}
 
 		// If a render was requested while we were rendering, do it now
@@ -2658,6 +2692,13 @@ export class CalendarView extends BasesViewBase {
 					}),
 			})
 		) {
+			// FullCalendar mounts list-mode events on its own async render cycle,
+			// independent of CalendarView.render()'s synchronous finally block, so
+			// the freshly-created card needs its own selection/focus styling pass
+			// (same gap VirtualScroller's onRenderedElementsChanged hook closes for
+			// Kanban/Task List's virtualized cards).
+			this.updateSelectionVisuals();
+			this.taskCardKeyboardController?.syncFocusStyles();
 			return;
 		}
 
@@ -2904,7 +2945,118 @@ export class CalendarView extends BasesViewBase {
 			this.rootElement.appendChild(calendarEl);
 			this.calendarEl = calendarEl;
 			this.applyLayoutClasses();
+			this.registerGridHoverActionListeners(this.rootElement);
 		}
+	}
+
+
+	private isCalendarListMode(): boolean {
+		return this.viewOptions.calendarView.startsWith("list");
+	}
+
+	/**
+	 * Task List-style hotkeys reach Calendar's grid modes (Month/Week/Day/Year/
+	 * Custom) through whichever task is currently under the mouse, since those
+	 * modes render FullCalendar's own event elements rather than `.task-card`
+	 * and have no roving-focus model to key a shortcut off of. Leaving this
+	 * tracking running in list mode too is harmless: it is simply never
+	 * consulted there, since the shared task-card keyboard controller already
+	 * owns that mode.
+	 */
+	private registerGridHoverActionListeners(root: HTMLElement): void {
+		this.registerDomEvent(root, "mousemove", (event: MouseEvent) => {
+			const target = event.target;
+			const card =
+				target instanceof Element
+					? target.closest<HTMLElement>(".fc-task-event[data-task-path]")
+					: null;
+			this.hoveredGridTaskElement = card;
+			this.hoveredGridTaskPath = card?.dataset.taskPath ?? null;
+		});
+		// Resolve view-local shortcuts during capture, matching the shared
+		// task-card keyboard controller's own registration.
+		this.registerDomEvent(
+			root,
+			"keydown",
+			(event: KeyboardEvent) => this.handleGridHoverActionKeyDown(event),
+			true
+		);
+	}
+
+	private handleGridHoverActionKeyDown(event: KeyboardEvent): void {
+		// The shared task-card keyboard controller already owns list/Agenda mode.
+		if (this.isCalendarListMode()) return;
+		if (!this.taskCardKeyboardController?.canHandleKeyDown(event)) return;
+
+		const path = this.hoveredGridTaskPath;
+		if (!path) return;
+
+		const action = resolveTaskListKeyboardAction(
+			event,
+			this.plugin.settings.taskListShortcuts,
+			this.plugin.settings.taskListUserFieldShortcuts
+		);
+		if (!action || GRID_HOVER_EXCLUDED_ACTIONS.has(action)) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+		void executeBasesTaskCardAction(action, path, this.buildGridHoverActionContext());
+	}
+
+	private buildGridHoverActionContext(): BasesTaskCardActionContext {
+		return {
+			plugin: this.plugin,
+			app: this.app || this.plugin.app,
+			taskSelectionService: undefined,
+			getTargetPaths: () => (this.hoveredGridTaskPath ? [this.hoveredGridTaskPath] : []),
+			getVisibleTaskPaths: () => [],
+			isPathVisible: () => false,
+			getAnchor: () => this.hoveredGridTaskElement,
+			getCurrentTargetDate: () => createUTCDateFromLocalCalendarDate(new Date()),
+			restoreFocus: () => false,
+			rootElement: this.rootElement,
+			showBatchContextMenu: () => {
+				// No selection model in grid mode; batch actions never apply.
+			},
+			createFileForView: () => this.createFileForView(),
+		};
+	}
+
+	/**
+	 * List/Agenda mode renders real `.task-card` elements
+	 * (`calendarEventMount.ts`), so it gets full Task List parity through the
+	 * shared task-card keyboard controller. Grid modes return `null` here —
+	 * they have no cards for that controller to focus, and are instead
+	 * covered by the hover-target handling above.
+	 */
+	protected getTaskCardActionsConfig(): {
+		isActionSupported(action: TaskListAction): boolean;
+		buildViewContext(): BasesTaskCardActionViewContext;
+		autoFocusInitial?: boolean;
+		cardAreaElement?: HTMLElement;
+	} | null {
+		if (!this.isCalendarListMode()) return null;
+
+		return {
+			cardAreaElement: this.calendarEl ?? undefined,
+			isActionSupported: () => true,
+			buildViewContext: () => {
+				const visiblePaths = this.getVisibleTaskPaths();
+				const visiblePathSet = new Set(visiblePaths);
+				return {
+					plugin: this.plugin,
+					app: this.app || this.plugin.app,
+					taskSelectionService: this.plugin.taskSelectionService,
+					getVisibleTaskPaths: () => visiblePaths,
+					isPathVisible: (path) => visiblePathSet.has(path),
+					getCurrentTargetDate: () => createUTCDateFromLocalCalendarDate(new Date()),
+					rootElement: this.rootElement,
+					showBatchContextMenu: (event) => this.showBatchContextMenu(event),
+					createFileForView: () => this.createFileForView(),
+					fallbackAnchor: this.calendarEl ?? undefined,
+				};
+			},
+		};
 	}
 
 	protected async handleTaskUpdate(

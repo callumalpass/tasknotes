@@ -7,6 +7,7 @@ import { renderModalFieldsTab } from "./tabs/modalFieldsTab";
 import { renderAppearanceTab } from "./tabs/appearanceTab";
 import { renderFeaturesTab } from "./tabs/featuresTab";
 import { renderIntegrationsTab } from "./tabs/integrationsTab";
+import { renderKeyboardShortcutsTab } from "./tabs/keyboardShortcutsTab";
 import type { TranslationKey } from "../i18n";
 
 interface TabConfig {
@@ -80,6 +81,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				id: "features",
 				nameKey: "settings.tabs.features",
 				renderFn: renderFeaturesTab,
+			},
+			{
+				id: "keyboard-shortcuts",
+				nameKey: "settings.tabs.keyboardShortcuts",
+				renderFn: renderKeyboardShortcutsTab,
 			},
 			{
 				id: "integrations",
@@ -241,6 +247,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				id: "features",
 				nameKey: "settings.tabs.features",
 				renderFn: renderFeaturesTab,
+			},
+			{
+				id: "keyboard-shortcuts",
+				nameKey: "settings.tabs.keyboardShortcuts",
+				renderFn: renderKeyboardShortcutsTab,
 			},
 			{
 				id: "integrations",

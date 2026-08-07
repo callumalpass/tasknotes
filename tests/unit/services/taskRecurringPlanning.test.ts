@@ -84,6 +84,22 @@ describe("taskRecurringPlanning", () => {
 		expect(plan.updatedTask.skipped_instances).toEqual([]);
 	});
 
+	it("reports the owning recurrence date when a shifted target is completed", () => {
+		const plan = buildRecurringTaskCompletePlan({
+			freshTask: createRecurringTask({
+				recurrence: "DTSTART:20260802;FREQ=WEEKLY;BYDAY=SU",
+				scheduled: "2026-08-04",
+			}),
+			targetDate: new Date("2026-08-04T12:00:00.000Z"),
+			currentTimestamp: "2026-08-04T12:00:00.000Z",
+			maintainDueDateOffsetInRecurring: true,
+		});
+
+		expect(plan.dateStr).toBe("2026-08-02");
+		expect(plan.newComplete).toBe(true);
+		expect(plan.updatedTask.complete_instances).toEqual(["2026-08-02"]);
+	});
+
 	it("updates DTSTART for completion-anchored recurrence plans", () => {
 		const plan = buildRecurringTaskCompletePlan({
 			freshTask: createRecurringTask({

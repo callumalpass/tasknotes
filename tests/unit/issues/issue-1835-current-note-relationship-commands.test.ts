@@ -3,6 +3,7 @@ import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNot
 import {
 	addTaskToProject,
 	assignTaskAsSubtask,
+	removeTaskFromProject,
 } from "../../../src/services/taskRelationshipActions";
 import { EVENT_USER_NOTICE } from "../../../src/core/userNotices";
 import type { TaskInfo } from "../../../src/types";
@@ -126,5 +127,20 @@ describe("Issue #1835: current note relationship commands", () => {
 				message: "contextMenus.task.organization.notices.alreadyInProject",
 			})
 		);
+	});
+
+	it("removes canonical and legacy references to a selected project", async () => {
+		const plugin = makePlugin();
+		const task = {
+			title: "Task",
+			path: "Tasks/task.md",
+			projects: ["[[Projects/Alpha]]", "Beta"],
+		} as TaskInfo;
+		const projectFile = new TFile("Projects/Alpha.md");
+
+		const updatedTask = await removeTaskFromProject(plugin as any, task, projectFile);
+
+		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "projects", ["Beta"]);
+		expect(updatedTask?.projects).toEqual(["Beta"]);
 	});
 });

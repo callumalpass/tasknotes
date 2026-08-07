@@ -12,6 +12,28 @@ export type TaskListGroup = {
 	entries: TaskListGroupEntry[];
 };
 
+export function normalizeTaskListGroups(
+	groups: readonly TaskListGroup[],
+	convertGroupKeyToString: (key: unknown) => string
+): TaskListGroup[] {
+	const normalizedGroups = new Map<string, TaskListGroup>();
+
+	for (const group of groups) {
+		const normalizedKey = convertGroupKeyToString(group.key);
+		const existingGroup = normalizedGroups.get(normalizedKey);
+		if (existingGroup) {
+			existingGroup.entries.push(...group.entries);
+		} else {
+			normalizedGroups.set(normalizedKey, {
+				key: normalizedKey,
+				entries: [...group.entries],
+			});
+		}
+	}
+
+	return Array.from(normalizedGroups.values());
+}
+
 export type TaskListPrimaryHeaderItem = {
 	type: "primary-header";
 	groupKey: string;

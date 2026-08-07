@@ -24,6 +24,7 @@
 import { formatDateForStorage, createUTCDateFromLocalCalendarDate } from "../../../src/utils/dateUtils";
 import { TaskListView } from "../../../src/bases/TaskListView";
 import { KanbanView } from "../../../src/bases/KanbanView";
+import { getTaskActionDate } from "../../../src/bases/basesTaskCardActions";
 
 describe("Issue #1026 & #1177: Bases recurring completion timezone bug", () => {
 	/**
@@ -49,11 +50,6 @@ describe("Issue #1026 & #1177: Bases recurring completion timezone bug", () => {
 		});
 
 		it("getTaskActionDate should return UTC-anchored date from scheduled date", () => {
-			const mockPlugin = {
-				fieldMapper: {},
-			};
-			const view = new TaskListView({}, document.createElement("div"), mockPlugin as any);
-
 			// Task with scheduled date
 			const taskWithScheduled = {
 				title: "Test task",
@@ -63,7 +59,10 @@ describe("Issue #1026 & #1177: Bases recurring completion timezone bug", () => {
 				scheduled: "2025-11-19",
 			};
 
-			const actionDate = (view as any).getTaskActionDate(taskWithScheduled) as Date;
+			const actionDate = getTaskActionDate(
+				taskWithScheduled as any,
+				createUTCDateFromLocalCalendarDate(new Date())
+			);
 
 			// Should be UTC-anchored at midnight UTC for Nov 19
 			expect(actionDate.toISOString()).toBe("2025-11-19T00:00:00.000Z");
@@ -71,11 +70,6 @@ describe("Issue #1026 & #1177: Bases recurring completion timezone bug", () => {
 		});
 
 		it("getTaskActionDate fallback should return UTC-anchored date", () => {
-			const mockPlugin = {
-				fieldMapper: {},
-			};
-			const view = new TaskListView({}, document.createElement("div"), mockPlugin as any);
-
 			// Task without scheduled or due date (triggers fallback)
 			const taskWithoutDates = {
 				title: "Test task",
@@ -84,7 +78,8 @@ describe("Issue #1026 & #1177: Bases recurring completion timezone bug", () => {
 				recurrence: "RRULE:FREQ=DAILY",
 			};
 
-			const actionDate = (view as any).getTaskActionDate(taskWithoutDates) as Date;
+			const fallback = createUTCDateFromLocalCalendarDate(new Date());
+			const actionDate = getTaskActionDate(taskWithoutDates as any, fallback);
 
 			// The fallback date should be UTC-anchored (midnight UTC)
 			expect(actionDate.getUTCHours()).toBe(0);

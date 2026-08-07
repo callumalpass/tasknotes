@@ -8,6 +8,7 @@ import {
 	buildTaskListSubPropertyScopePaths,
 	getTaskListPropertyValue,
 	groupTasksByTaskListSubProperty,
+	normalizeTaskListGroups,
 	stringifyTaskListGroupValue,
 	type TaskListGroup,
 } from "../../../src/bases/taskListGrouping";
@@ -162,6 +163,26 @@ describe("taskListGrouping", () => {
 			taskCount: 1,
 			isCollapsed: true,
 		});
+	});
+
+	it("merges equivalent list-valued groups after key normalization", () => {
+		const groups: TaskListGroup[] = [
+			{ key: ["[[Kitchen]]", "[[Baking]]"], entries: [{ file: { path: "cookies.md" } }] },
+			{ key: ["[[Baking]]", "[[Kitchen]]"], entries: [{ file: { path: "cake.md" } }] },
+		];
+		const normalized = normalizeTaskListGroups(groups, (key) =>
+			(key as string[]).slice().sort().join(", ")
+		);
+
+		expect(normalized).toEqual([
+			{
+				key: "[[Baking]], [[Kitchen]]",
+				entries: [
+					{ file: { path: "cookies.md" } },
+					{ file: { path: "cake.md" } },
+				],
+			},
+		]);
 	});
 
 	it("builds sub-property-only render items", () => {

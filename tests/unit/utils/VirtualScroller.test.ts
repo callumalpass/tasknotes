@@ -223,4 +223,98 @@ describe("VirtualScroller", () => {
 		expect(container.querySelector("[data-key='a']")).toBe(firstElement);
 		expect(container.querySelector("[data-key='c']")).toBe(thirdElement);
 	});
+
+	describe("onRenderedElementsChanged", () => {
+		it("fires on initial construction with the mounted elements already attached", () => {
+			const container = document.createElement("div");
+			container.style.overflowY = "auto";
+			const onRenderedElementsChanged = jest.fn(() => {
+				expect(renderedKeys(container)).toEqual(["a", "b", "c"]);
+			});
+
+			new VirtualScroller<TestItem>({
+				container,
+				items: [
+					{ id: "a", label: "A" },
+					{ id: "b", label: "B" },
+					{ id: "c", label: "C" },
+				],
+				itemHeight: 20,
+				overscan: 0,
+				renderItem: (item) => {
+					const element = document.createElement("div");
+					element.dataset.key = item.id;
+					return element;
+				},
+				getItemKey: (item) => item.id,
+				onRenderedElementsChanged,
+			});
+
+			expect(onRenderedElementsChanged).toHaveBeenCalledTimes(1);
+		});
+
+		it("fires again when invalidateItems re-renders a visible item", () => {
+			const { container, scroller } = createTestScroller([
+				{ id: "a", label: "A" },
+				{ id: "b", label: "B" },
+				{ id: "c", label: "C" },
+			]);
+			const onRenderedElementsChanged = jest.fn();
+			(scroller as any).onRenderedElementsChanged = onRenderedElementsChanged;
+
+			scroller.invalidateItems(["b"]);
+
+			expect(onRenderedElementsChanged).toHaveBeenCalledTimes(1);
+			void container;
+		});
+
+		it("fires again when updateItems changes the rendered set", () => {
+			const { container, scroller } = createTestScroller([
+				{ id: "a", label: "A" },
+				{ id: "b", label: "B" },
+			]);
+			const onRenderedElementsChanged = jest.fn();
+			(scroller as any).onRenderedElementsChanged = onRenderedElementsChanged;
+
+			scroller.updateItems([
+				{ id: "a", label: "A" },
+				{ id: "b", label: "B" },
+				{ id: "c", label: "C" },
+			]);
+
+			expect(onRenderedElementsChanged).toHaveBeenCalledTimes(1);
+			void container;
+		});
+	});
+
+	describe("ensureIndexRendered", () => {
+		function manyItems(count: number): TestItem[] {
+			return Array.from({ length: count }, (_, i) => ({ id: `item-${i}`, label: `Item ${i}` }));
+		}
+
+		it("mounts and returns the element for an index outside the initially visible range", () => {
+			const items = manyItems(100);
+			const { container, scroller } = createTestScroller(items);
+
+			// With a 20px itemHeight and no explicit viewport height, only a
+			// bounded prefix of items is initially rendered (jsdom's fallback
+			// window-height viewport) — index 90 should not be mounted yet.
+			expect(container.querySelector("[data-key='item-90']")).toBeNull();
+
+			const element = scroller.ensureIndexRendered(90);
+
+			expect(element).not.toBeNull();
+			expect(element).toBe(container.querySelector("[data-key='item-90']"));
+		});
+
+		it("returns null for an out-of-range index", () => {
+			const { scroller } = createTestScroller([
+				{ id: "a", label: "A" },
+				{ id: "b", label: "B" },
+			]);
+
+			expect(scroller.ensureIndexRendered(-1)).toBeNull();
+			expect(scroller.ensureIndexRendered(5)).toBeNull();
+		});
+	});
 });

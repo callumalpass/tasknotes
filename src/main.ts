@@ -1152,19 +1152,17 @@ export default class TaskNotesPlugin extends Plugin {
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
-			const updatedTask = await this.taskService.toggleRecurringTaskComplete(
+			const result = await this.taskService.toggleRecurringTaskCompleteWithResult(
 				task,
 				targetDate
 			);
+			const action = result.isCompleted ? "completed" : "marked incomplete";
 
-			const dateStr = formatDateForStorage(targetDate);
-			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);
-			const action = wasCompleted ? "completed" : "marked incomplete";
-
-			// Format date for display: convert UTC-anchored date back to local display
-			const displayDate = parseDateToLocal(dateStr);
+			// The service resolves shifted schedules back to their owning recurrence;
+			// report that authoritative date rather than the view's projection date.
+			const displayDate = parseDateToLocal(result.dateStr);
 			new Notice(`Recurring task ${action} for ${format(displayDate, "MMM d")}`);
-			return updatedTask;
+			return result.task;
 		} catch (error) {
 			tasknotesLogger.error("Failed to toggle recurring task completion:", {
 				category: "persistence",
