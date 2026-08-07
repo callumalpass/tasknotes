@@ -14,7 +14,7 @@ function createHost(options: {
 	id?: string;
 	configDir?: string;
 	dataFileExists?: boolean;
-	loadResults?: Array<Record<string, unknown> | null>;
+	loadResults?: Array<Record<string, unknown> | null | undefined>;
 }) {
 	const loadResults = [...(options.loadResults ?? [])];
 	return {
@@ -30,7 +30,11 @@ function createHost(options: {
 			dir: options.dir,
 			id: options.id,
 		},
-		loadData: jest.fn().mockImplementation(() => Promise.resolve(loadResults.shift() ?? null)),
+		loadData: jest
+			.fn()
+			.mockImplementation(() =>
+				Promise.resolve(loadResults.length > 0 ? loadResults.shift() : null)
+			),
 	};
 }
 
@@ -84,6 +88,21 @@ describe("settings persistence helpers", () => {
 			compromised: false,
 		});
 		expect(host.loadData).toHaveBeenCalledTimes(1);
+	});
+
+	it("retries when Obsidian transiently returns undefined for existing plugin data", async () => {
+		const recoveredData = { tasksFolder: "Projects/Tasks" };
+		const host = createHost({
+			dir: ".obsidian/plugins/tasknotes",
+			dataFileExists: true,
+			loadResults: [undefined, recoveredData],
+		});
+
+		await expect(loadPluginSettingsDataWithRetry(host, { retryDelayMs: 0 })).resolves.toEqual({
+			data: recoveredData,
+			compromised: false,
+		});
+		expect(host.loadData).toHaveBeenCalledTimes(2);
 	});
 
 	it("returns false when checking data file existence fails", async () => {

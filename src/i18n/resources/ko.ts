@@ -235,6 +235,7 @@ export const ko: TranslationTree = {
 				events: {
 					showScheduledTasks: "예정된 작업 표시",
 					showDueTasks: "마감 작업 표시",
+					showOverdueOnToday: "기한이 지난 작업을 오늘에 표시",
 					showRecurringTasks: "반복 작업 표시",
 					showTimeEntries: "시간 기록 표시",
 					showTimeblocks: "타임블록 표시",

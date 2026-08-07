@@ -503,6 +503,7 @@ export class CalendarView extends BasesViewBase {
 		showTimeEntries: boolean;
 		showTimeblocks: boolean;
 		showPropertyBasedEvents: boolean;
+		showOverdueOnToday: boolean;
 
 		// Date navigation
 		initialDate: string;
@@ -570,6 +571,7 @@ export class CalendarView extends BasesViewBase {
 			showTimeEntries: calendarSettings.defaultShowTimeEntries,
 			showTimeblocks: calendarSettings.defaultShowTimeblocks,
 			showPropertyBasedEvents: true,
+			showOverdueOnToday: false,
 
 			// Date navigation
 			initialDate: "",
@@ -923,6 +925,10 @@ export class CalendarView extends BasesViewBase {
 			this.viewOptions.showPropertyBasedEvents = this.getConfigOption(
 				"showPropertyBasedEvents",
 				this.viewOptions.showPropertyBasedEvents
+			);
+			this.viewOptions.showOverdueOnToday = this.getConfigOption(
+				"showOverdueOnToday",
+				this.viewOptions.showOverdueOnToday
 			);
 
 			// ICS calendar toggles
@@ -1845,6 +1851,7 @@ export class CalendarView extends BasesViewBase {
 			showTimeEntries: this.viewOptions.showTimeEntries,
 			showTimeblocks: this.viewOptions.showTimeblocks,
 			showICSEvents: false, // ICS handled separately
+			showOverdueOnToday: this.viewOptions.showOverdueOnToday,
 			visibleStart: fetchInfo.start,
 			visibleEnd: fetchInfo.end,
 			visibleStartDate: fetchInfo.startStr,

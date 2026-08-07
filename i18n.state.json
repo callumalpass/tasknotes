@@ -664,6 +664,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "a55c0dfe5b2d0ae4539ba2082ed56b914e0c5de8"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "3b50664c6111d5c8d382467850855322d6ccfb80"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "9c5d69492c72d4b0d158297522d00b7c2f7c1978"
@@ -9549,6 +9553,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "d5d0c1043fae801c058724e24f6aa74412ab2eb1"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "fb529dfe5de1e9e651b47585f8e4d588ee213286"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -18436,6 +18444,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "23ae5138ff279431437bc2c322fd713c6012a652"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "b1baf1e81eed1362e08a6afb40337a49edab3aff"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "a02df4070dfb22fc593ae3f2f1622fff9eeef9cd"
@@ -27321,6 +27333,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "4c762bb48b7510d547142f815e12de70b1bf429d"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "fb70dab58d76f084b80905cd70b2fb3e8b0b7dce"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -36208,6 +36224,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "4a55aafd6fe9e62d510859ef9a24574599fb80b3"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "a2232f185ad8e4bb6cef859071bae5f57deb863a"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "60d4dbc9254042c2bbd466307f6243df291d3b3c"
@@ -45093,6 +45113,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "8e1dd146032a622bfece8d5fe92e6913c7ff9e36"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "5dee93f80bf9dcc04c985e8d0b3d083fa5ee824e"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
@@ -53980,6 +54004,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "4e595807c56ae1fc8abe4779eb1115d48224f921"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "1715e2d8bf1bcd2c2a6fa6e5e73db489f3d263d7"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "43bda8697005c860e120eb52f694dfe5bff29fc8"
@@ -62865,6 +62893,10 @@
     "views.basesCalendar.settings.events.showDueTasks": {
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "a7900ba5bb9844704fa978824ef146d6773f3e07"
+    },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "88e403dc99094bbef2f76797fcc15542d979853e"
     },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",

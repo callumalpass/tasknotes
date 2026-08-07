@@ -92,8 +92,10 @@ describe("calendar view options", () => {
 		);
 
 		expect(isHidden(findOption(listOptions, "listDayCount"))).toBe(false);
+		expect(isHidden(findOption(listOptions, "showOverdueOnToday"))).toBe(false);
 		expect(isHidden(findOption(listOptions, "customDayCount"))).toBe(true);
 		expect(isHidden(findOption(customOptions, "listDayCount"))).toBe(true);
+		expect(isHidden(findOption(customOptions, "showOverdueOnToday"))).toBe(true);
 		expect(isHidden(findOption(customOptions, "customDayCount"))).toBe(false);
 	});
 

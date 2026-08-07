@@ -930,7 +930,8 @@ export class TaskListView extends BasesViewBase {
 			return false;
 		}
 
-		if (targetEl.closest(this.CARD_NO_DRAG_SELECTOR)) {
+		const noDragElement = targetEl.closest(this.CARD_NO_DRAG_SELECTOR);
+		if (noDragElement && cardEl.contains(noDragElement)) {
 			return true;
 		}
 
@@ -982,29 +983,49 @@ export class TaskListView extends BasesViewBase {
 		groupKey: string | null
 	): void {
 		let dragOriginTarget: EventTarget | null = null;
+		let dragOriginSuppressed = false;
 		const restoreCardDraggable = () => {
 			cardEl.setAttribute(
 				"draggable",
 				this.isMobileDragHandleOnlyMode(cardEl) ? "false" : "true"
 			);
 			dragOriginTarget = null;
+			dragOriginSuppressed = false;
+		};
+		const isPrimaryPress = (event: MouseEvent | PointerEvent) =>
+			typeof event.button !== "number" || event.button === 0;
+		const captureDragOrigin = (event: MouseEvent | PointerEvent) => {
+			dragOriginTarget = event.target;
+			dragOriginSuppressed = this.shouldSuppressCardDrag(event.target, cardEl);
+			cardEl.setAttribute("draggable", dragOriginSuppressed ? "false" : "true");
+
+			if (dragOriginSuppressed || !isPrimaryPress(event)) {
+				return;
+			}
+
+			// Live Preview embeds sit inside CodeMirror. Keep reorder presses from
+			// becoming editor selection gestures before the browser can start DnD.
+			event.stopPropagation();
+			if (event.type === "mousedown") {
+				event.preventDefault();
+			}
 		};
 
 		this.setupCardDragHandle(cardEl);
 		restoreCardDraggable();
 
+		cardEl.addEventListener("pointerdown", captureDragOrigin, { capture: true });
 		cardEl.addEventListener(
 			"mousedown",
-			(e: MouseEvent) => {
-				dragOriginTarget = e.target;
-				cardEl.setAttribute(
-					"draggable",
-					this.shouldSuppressCardDrag(e.target, cardEl) ? "false" : "true"
-				);
-			},
+			captureDragOrigin,
 			{ capture: true }
 		);
-		cardEl.addEventListener("mouseup", restoreCardDraggable);
+		cardEl.addEventListener("mouseup", (e: MouseEvent) => {
+			if (!dragOriginSuppressed && isPrimaryPress(e)) {
+				e.stopPropagation();
+			}
+			restoreCardDraggable();
+		});
 		cardEl.addEventListener("click", restoreCardDraggable, { capture: true });
 
 		cardEl.addEventListener("dragstart", (e: DragEvent) => {
@@ -1015,6 +1036,7 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 
+			e.stopPropagation();
 			this.draggedTaskPath = task.path;
 			// Match native multi-item drag semantics: dragging a selected card
 			// carries the visible selection; an unselected card moves by itself.

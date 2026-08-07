@@ -235,6 +235,7 @@ export const fr: TranslationTree = {
 				events: {
 					showScheduledTasks: "Afficher les tâches planifiées",
 					showDueTasks: "Afficher les tâches échues",
+					showOverdueOnToday: "Afficher les tâches en retard aujourd'hui",
 					showRecurringTasks: "Afficher les tâches récurrentes",
 					showTimeEntries: "Afficher les entrées de temps",
 					showTimeblocks: "Afficher les blocs de temps",

@@ -13,6 +13,10 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+const nodeBuiltins = [
+	...builtinModules,
+	...builtinModules.map((moduleName) => `node:${moduleName}`),
+];
 
 // Read copy destinations from .copy-files.local (same logic as copy-files.mjs)
 function getCopyDestinations() {
@@ -83,7 +87,7 @@ const context = await esbuild.context({
 		"@lezer/common",
 		"@lezer/highlight",
 		"@lezer/lr",
-		...builtinModules,
+		...nodeBuiltins,
 	],
 	format: "cjs",
 	target: "es2018",

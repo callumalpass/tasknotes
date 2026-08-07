@@ -934,6 +934,7 @@ views:
 ${agendaOrderYaml}
     options:
       showPropertyBasedEvents: false
+      showOverdueOnToday: true
       createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
     startDateProperty: file.ctime

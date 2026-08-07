@@ -165,6 +165,7 @@
   "views.basesCalendar.settings.dateNavigation.strategies.latest": "42ffdcce79d33f576cb58283305ef7ab756c0478",
   "views.basesCalendar.settings.events.showScheduledTasks": "0fd520d76ebff53e4708b9034c0a56b86c32d34c",
   "views.basesCalendar.settings.events.showDueTasks": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
+  "views.basesCalendar.settings.events.showOverdueOnToday": "72b24493383f4ec770a15dd196ca87013156c6cb",
   "views.basesCalendar.settings.events.showRecurringTasks": "a0cb06969984df001beafafd38566341051237cb",
   "views.basesCalendar.settings.events.showCompletedRecurringInstances": "ae565586707b491628ecfd9df346e44bca386c03",
   "views.basesCalendar.settings.events.showSkippedRecurringInstances": "e4c0eb51a0a13366e2b3e313f040429e08b37585",

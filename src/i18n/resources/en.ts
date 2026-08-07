@@ -242,6 +242,7 @@ export const en: TranslationTree = {
 				events: {
 					showScheduledTasks: "Show scheduled tasks",
 					showDueTasks: "Show due tasks",
+					showOverdueOnToday: "Show overdue tasks on today",
 					showRecurringTasks: "Show recurring tasks",
 					showCompletedRecurringInstances: "Show completed recurring instances",
 					showSkippedRecurringInstances: "Show skipped recurring instances",

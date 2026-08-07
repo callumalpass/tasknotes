@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "4.11.1",
+	"version": "4.12.0",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -89,8 +89,8 @@
 		"@fullcalendar/list": "^6.1.17",
 		"@fullcalendar/multimonth": "^6.1.17",
 		"@fullcalendar/timegrid": "^6.1.17",
-		"@modelcontextprotocol/sdk": "^1.12.1",
-		"@tasknotes/model": "^0.3.0-rc.9",
+		"@modelcontextprotocol/sdk": "1.26.0",
+		"@tasknotes/model": "0.3.0-rc.9",
 		"chrono-node": "^2.7.5",
 		"date-fns": "^4.1.0",
 		"ical.js": "^2.2.1",
@@ -101,5 +101,8 @@
 		"tasknotes-nlp-core": "^0.1.5",
 		"yaml": "^2.3.1",
 		"zod": "^3.24.0"
+	},
+	"overrides": {
+		"@hono/node-server": "2.1.0"
 	}
 }
