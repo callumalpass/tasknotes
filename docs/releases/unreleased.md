@@ -31,3 +31,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Changed
+
+- Public documentation is now published from the dedicated `tasknotes.dev`
+  repository. Plugin release notes and internal documentation remain in this
+  repository.
