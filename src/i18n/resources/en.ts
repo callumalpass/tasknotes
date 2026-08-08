@@ -1646,8 +1646,8 @@ export const en: TranslationTree = {
 				requiredPropertyValue: {
 					name: "Required property value",
 					description:
-						"Only notes where the property equals this value are suggested. Leave empty to require the property to exist.",
-					placeholder: "project",
+						'Only notes that have the property (above) are suggested; this narrows which values are allowed. Use a comma-separated allow-list (e.g. "project, area"), or an expression like containsAny("active", "planned"). Prefix with ! or "not" to exclude, e.g. !containsAny("completed", "archived"). Leave empty to allow any value as long as the property exists.',
+					placeholder: '!containsAny("completed", "archived")',
 				},
 				customizeDisplay: {
 					name: "Customize suggestion display",
