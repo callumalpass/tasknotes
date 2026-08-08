@@ -10,6 +10,7 @@ import {
 	buildSubtaskCreationPrePopulatedValues,
 } from "../services/taskRelationshipActions";
 import { renameVaultFile } from "../services/VaultMutationService";
+import { getRecurringTaskActionDate } from "../services/task-service/taskRecurringPlanning";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { DateContextMenu } from "./DateContextMenu";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
@@ -142,6 +143,8 @@ export interface TaskContextMenuOptions {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
 	targetDate: Date;
+	/** The clicked occurrence (Calendar); omit to let the service's anchor-aware default resolve the date. */
+	occurrenceDate?: Date;
 	onUpdate?: () => void;
 	promoteOccurrenceControls?: boolean;
 }
@@ -888,7 +891,11 @@ export class TaskContextMenu {
 			});
 		});
 
-		const isSkippedForDate = task.skipped_instances?.includes(dateStr) || false;
+		// Not routed through the four-mode resolver: that would drop the completion-anchor guard.
+		const skipOccurrenceDate = this.options.occurrenceDate;
+		const skipLabelDate = skipOccurrenceDate ?? getRecurringTaskActionDate(task);
+		const skipDateStr = formatDateForStorage(skipLabelDate);
+		const isSkippedForDate = task.skipped_instances?.includes(skipDateStr) || false;
 
 		this.menu.addItem((item) => {
 			item.setTitle(
@@ -899,10 +906,7 @@ export class TaskContextMenu {
 			item.setIcon(isSkippedForDate ? "undo" : "x-circle");
 			item.onClick(async () => {
 				try {
-					await plugin.taskService.toggleRecurringTaskSkipped(
-						task,
-						this.options.targetDate
-					);
+					await plugin.taskService.toggleRecurringTaskSkipped(task, skipOccurrenceDate);
 					this.options.onUpdate?.();
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
