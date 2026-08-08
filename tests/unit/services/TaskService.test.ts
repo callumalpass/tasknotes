@@ -838,6 +838,200 @@ describe('TaskService', () => {
       expect(result.completedDate).toBeUndefined();
     });
 
+    it('should record an explicit completion date on a non-recurring status completion', async () => {
+      const nonRecurringTask = TaskFactory.createTask({ recurrence: undefined });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(nonRecurringTask);
+
+      const result = await taskService.updateProperty(nonRecurringTask, 'status', 'done', {
+        completionDate: '2025-05-20',
+      });
+
+      expect(result.status).toBe('done');
+      expect(result.completedDate).toBe('2025-05-20');
+    });
+
+    it('should record a chosen completion date for an undated non-recurring task', async () => {
+      const undatedTask = TaskFactory.createTask({
+        recurrence: undefined,
+        scheduled: undefined,
+        due: undefined,
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(undatedTask);
+
+      const result = await taskService.updateProperty(undatedTask, 'status', 'done', {
+        completionDate: '2025-04-15',
+      });
+
+      expect(result.status).toBe('done');
+      expect(result.completedDate).toBe('2025-04-15');
+    });
+
+    it('should default the completion date to today when none is provided', async () => {
+      const nonRecurringTask = TaskFactory.createTask({ recurrence: undefined });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(nonRecurringTask);
+
+      const result = await taskService.updateProperty(nonRecurringTask, 'status', 'done');
+
+      expect(result.completedDate).toBe('2025-01-01'); // mocked today, unchanged
+    });
+
+    it('should ignore an explicit completion date for recurring tasks', async () => {
+      const recurringTask = TaskFactory.createTask({ recurrence: 'FREQ=DAILY' });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const result = await taskService.updateProperty(recurringTask, 'status', 'done', {
+        completionDate: '2025-05-20',
+      });
+
+      expect(result.completedDate).toBeUndefined();
+    });
+
+    // #3: rescheduling a recurring task onto a recorded date reactivates that occurrence.
+    it('removes the rescheduled date from complete_instances for a recurring task', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-09',
+        complete_instances: ['2026-06-02', '2026-05-26'],
+        skipped_instances: [],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-02');
+
+      expect(result.complete_instances).toEqual(['2026-05-26']);
+    });
+
+    it('removes the rescheduled date from skipped_instances for a recurring task', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-09',
+        complete_instances: [],
+        skipped_instances: ['2026-06-02'],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-02');
+
+      expect(result.skipped_instances).toEqual([]);
+    });
+
+    it('ignores the time component when matching the rescheduled date', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-09',
+        complete_instances: ['2026-06-02'],
+        skipped_instances: [],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const result = await taskService.updateProperty(
+        recurringTask,
+        'scheduled',
+        '2026-06-02T09:30'
+      );
+
+      expect(result.complete_instances).toEqual([]);
+    });
+
+    it('clears an off-schedule completion/skip recorded on or after the rescheduled date, keeping older history', async () => {
+      // Off-schedule completion (06-08) + later skip (06-19), reschedule back to 06-05:
+      // the ">= new date" rule clears both while keeping the older 05-29 history.
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        complete_instances: ['2026-05-29', '2026-06-08'],
+        skipped_instances: ['2026-06-19'],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05');
+
+      expect(result.complete_instances).toEqual(['2026-05-29']);
+      expect(result.skipped_instances).toEqual([]);
+    });
+
+    it('leaves complete/skipped instances untouched when nothing is on or after the rescheduled date', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-09',
+        complete_instances: ['2026-06-02'],
+        skipped_instances: ['2026-05-26'],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-16');
+
+      expect(result.complete_instances).toEqual(['2026-06-02']);
+      expect(result.skipped_instances).toEqual(['2026-05-26']);
+    });
+
+    it('does not touch instances for a non-recurring reschedule', async () => {
+      const nonRecurring = TaskFactory.createTask({
+        recurrence: undefined,
+        scheduled: '2026-06-09',
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(nonRecurring);
+
+      await expect(
+        taskService.updateProperty(nonRecurring, 'scheduled', '2026-06-02')
+      ).resolves.toBeDefined();
+    });
+
+    it('aborts the reschedule (no write, instances intact) when confirmClearInstances returns false', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        complete_instances: ['2026-06-08'],
+        skipped_instances: ['2026-06-19'],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+      const confirm = jest.fn(async () => false);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05', {
+        confirmClearInstances: confirm,
+      });
+
+      expect(confirm).toHaveBeenCalledWith({ complete: ['2026-06-08'], skipped: ['2026-06-19'] });
+      expect(result.complete_instances).toEqual(['2026-06-08']);
+      expect(result.scheduled).toBe('2026-06-12'); // unchanged
+      expect(mockPlugin.app.fileManager.processFrontMatter).not.toHaveBeenCalled();
+    });
+
+    it('proceeds and clears when confirmClearInstances returns true', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        complete_instances: ['2026-06-08'],
+        skipped_instances: [],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+      const confirm = jest.fn(async () => true);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05', {
+        confirmClearInstances: confirm,
+      });
+
+      expect(confirm).toHaveBeenCalled();
+      expect(result.complete_instances).toEqual([]);
+    });
+
+    it('does not call confirmClearInstances when nothing would be cleared', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        complete_instances: ['2026-05-01'],
+        skipped_instances: [],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+      const confirm = jest.fn(async () => true);
+
+      await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05', {
+        confirmClearInstances: confirm,
+      });
+
+      expect(confirm).not.toHaveBeenCalled();
+    });
+
     it('should remove empty due/scheduled dates', async () => {
       await taskService.updateProperty(task, 'due', undefined);
 

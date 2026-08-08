@@ -1386,6 +1386,11 @@ export const en: TranslationTree = {
 					name: "Default visible properties",
 					description: "Choose which properties appear on task cards by default.",
 				},
+				completionSubmenu: {
+					name: "Group complete and skip actions in a submenu",
+					description:
+						"Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu.",
+				},
 				propertyGroups: {
 					coreProperties: "Core properties",
 					organization: "ORGANIZATION",
@@ -3045,6 +3050,25 @@ export const en: TranslationTree = {
 			markIncomplete: "Mark incomplete for this date",
 			skipInstance: "Skip instance",
 			unskipInstance: "Unskip instance",
+			completion: {
+				submenu: "Mark complete or skip",
+				submenuCompleteOnly: "Mark complete",
+				completeToday: "Completed today",
+				completeAsScheduled: "Completed on schedule",
+				completeOnDue: "Completed on due date",
+				completeOnPicked: "Completed on (pick date)",
+				markIncomplete: "Mark incomplete",
+				noScheduledDate: "No scheduled date on this task",
+				noDueDate: "No due date on this task",
+				noPickedDate: "No date selected",
+				noCompletedStatus: "No completed status configured",
+				pickDateTitle: "Complete on date",
+				completeFailure: "Failed to update task completion: {message}",
+				clearInstancesConfirmTitle: "Clear recorded instances?",
+				clearInstancesConfirmMessage:
+					"Rescheduling will clear these recorded completed/skipped instances on or after the new date: {dates}. They will no longer be marked complete or skipped. Continue?",
+				clearInstancesConfirmButton: "Reschedule and clear",
+			},
 			quickReminders: {
 				atTime: "At time of event",
 				fiveMinutes: "5 minutes before",

@@ -2763,6 +2763,7 @@ export class CalendarView extends BasesViewBase {
 					task: taskInfo,
 					plugin: this.plugin,
 					targetDate: targetDate,
+					occurrenceDate: taskInfo.recurrence ? targetDate : undefined,
 					promoteOccurrenceControls: Boolean(
 						taskInfo.recurrence ||
 							(taskInfo.recurrence_parent && taskInfo.occurrence_date)

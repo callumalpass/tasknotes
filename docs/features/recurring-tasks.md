@@ -209,6 +209,8 @@ Materialized occurrence notes keep `occurrence_date` as their identity. If you d
 
 Each occurrence can be completed or skipped independently (task cards, calendar menus, task edit modal completion calendar).
 
+When you complete an occurrence from the context menu, you can choose which date it is recorded against — today, the occurrence's scheduled date, its due date, or a date you pick (see [Completing Tasks](task-management.md#completing-tasks)). Completion-anchored recurrences resolve *on schedule* to the newly scheduled date, an explicit re-anchor.
+
 Completed instances are stored in:
 
 ```yaml
@@ -224,6 +226,10 @@ skipped_instances: ["2025-08-05"]
 When completion changes, `scheduled` updates to the next uncompleted instance. If a materialized occurrence note exists for a date, that note's own status takes precedence for that occurrence, and TaskNotes reconciles the parent compatibility lists during completion, uncompletion, skip, and unskip actions.
 
 This means completion history and next-action planning stay synchronized automatically, without manually advancing recurring tasks.
+
+### Rescheduling clears later instances
+
+When you change a recurring task's scheduled date (from the context menu or the scheduled-date field), TaskNotes restarts the timeline from the new date: it clears every completed and skipped instance dated **on or after** that date, while keeping older instances as history. This reactivates occurrences you had completed or skipped off-schedule so they can be acted on again. Because clearing is destructive, TaskNotes asks you to confirm first — listing the dates that will be cleared — and cancelling leaves both the schedule and the recorded instances untouched.
 
 ## Flexible Scheduling
 
