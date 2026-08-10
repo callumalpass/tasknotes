@@ -392,7 +392,7 @@ export function createListHeaders(
 	const headersRow = container.createDiv(`settings-view__list-headers ${className}`.trim());
 
 	headers.forEach((header) => {
-		headersRow.createEl("span", {
+		headersRow.createSpan({
 			text: header,
 			cls: "settings-view__column-header",
 		});

@@ -397,7 +397,10 @@ export class TaskCalendarSyncService {
 	}
 
 	private async saveDeletionQueue(queue: PendingGoogleCalendarDeletion[]): Promise<void> {
-		const data = (await this.plugin.loadData()) || {};
+		const data = await this.plugin.loadPluginDataForSafeWrite(
+			"save-google-calendar-deletion-queue"
+		);
+		if (!data) return;
 		data[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] = queue;
 		await this.plugin.saveData(data);
 	}
@@ -408,7 +411,8 @@ export class TaskCalendarSyncService {
 	}
 
 	private async saveEventIndex(index: GoogleCalendarEventIndexEntry[]): Promise<void> {
-		const data = (await this.plugin.loadData()) || {};
+		const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-event-index");
+		if (!data) return;
 		data[GOOGLE_CALENDAR_EVENT_INDEX_KEY] = index;
 		await this.plugin.saveData(data);
 	}
@@ -419,7 +423,8 @@ export class TaskCalendarSyncService {
 	}
 
 	private async saveSyncQueue(queue: PendingGoogleCalendarSync[]): Promise<void> {
-		const data = (await this.plugin.loadData()) || {};
+		const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-sync-queue");
+		if (!data) return;
 		data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] = queue;
 		await this.plugin.saveData(data);
 	}
@@ -447,7 +452,10 @@ export class TaskCalendarSyncService {
 
 	private async saveCalendarFingerprints(fingerprints?: Map<string, string>): Promise<void> {
 		const map = fingerprints || (await this.getCalendarFingerprints());
-		const data = (await this.plugin.loadData()) || {};
+		const data = await this.plugin.loadPluginDataForSafeWrite(
+			"save-google-calendar-fingerprints"
+		);
+		if (!data) return;
 		data[GOOGLE_CALENDAR_FINGERPRINTS_KEY] = Object.fromEntries(map.entries());
 		await this.plugin.saveData(data);
 	}

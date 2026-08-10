@@ -11,6 +11,7 @@ import { PropertyMappingService } from "./PropertyMappingService";
 import { normalizeDependencyList } from "../utils/dependencyUtils";
 import { stringifyUnknown, stringifyUnknownArray } from "../utils/stringUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { createElementInDocument } from "../utils/documentDom";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/Helpers" });
 
@@ -484,7 +485,7 @@ export async function renderTaskNotesInBasesView(
 
 	// Use container's document for pop-out window support
 	const doc = container.ownerDocument;
-	const taskListEl = doc.createElement("div");
+	const taskListEl = createElementInDocument(doc, "div");
 	taskListEl.className = "tn-bases-tasknotes-list";
 	taskListEl.classList.remove(
 		"tn-static-display-block-2a1b75c9",
@@ -704,7 +705,7 @@ export async function renderGroupedTasksInBasesView(
 	const doc = container.ownerDocument;
 
 	// Create wrapper with proper class for CSS styling
-	const listWrapper = doc.createElement("div");
+	const listWrapper = createElementInDocument(doc, "div");
 	listWrapper.className = "tn-bases-tasknotes-list";
 	container.appendChild(listWrapper);
 
@@ -753,18 +754,18 @@ export async function renderGroupedTasksInBasesView(
 		if (groupEntries.length === 0) continue;
 
 		// Create group section
-		const groupSection = doc.createElement("div");
+		const groupSection = createElementInDocument(doc, "div");
 		groupSection.className = "task-section task-group";
 		groupSection.setAttribute("data-group", groupName);
 		listWrapper.appendChild(groupSection);
 
 		// Create group header
-		const headerElement = doc.createElement("h3");
+		const headerElement = createElementInDocument(doc, "h3");
 		headerElement.className = "task-group-header task-list-view__group-header";
 		groupSection.appendChild(headerElement);
 
 		// Add toggle button (chevron)
-		const toggleBtn = doc.createElement("button");
+		const toggleBtn = createElementInDocument(doc, "button");
 		toggleBtn.className = "task-group-toggle";
 		toggleBtn.type = "button";
 		toggleBtn.setAttribute("aria-label", "Toggle group");
@@ -792,7 +793,7 @@ export async function renderGroupedTasksInBasesView(
 		});
 
 		// Create task cards container BEFORE adding click handler
-		const taskCardsContainer = doc.createElement("div");
+		const taskCardsContainer = createElementInDocument(doc, "div");
 		taskCardsContainer.className = "tasks-container task-cards";
 		groupSection.appendChild(taskCardsContainer);
 
@@ -883,7 +884,7 @@ export function renderBasesDataItem(
 ): void {
 	// Use container's document for pop-out window support
 	const doc = container.ownerDocument;
-	const itemEl = doc.createElement("div");
+	const itemEl = createElementInDocument(doc, "div");
 	itemEl.className = "tn-bases-data-item";
 	itemEl.classList.remove(
 		"tn-static-border-1px-solid-var-background-mo-b65b5121",
@@ -907,7 +908,7 @@ export function renderBasesDataItem(
 	);
 	itemEl.classList.add("tn-static-padding-12px-43bef435");
 
-	const header = doc.createElement("div");
+	const header = createElementInDocument(doc, "div");
 	header.classList.remove(
 		"tn-static-color-var-color-accent-d2cad743",
 		"tn-static-color-var-text-accent-65b47ee3",
@@ -933,7 +934,7 @@ export function renderBasesDataItem(
 	itemEl.appendChild(header);
 
 	if (item.path) {
-		const pathEl = doc.createElement("div");
+		const pathEl = createElementInDocument(doc, "div");
 		pathEl.classList.remove(
 			"tn-static-color-var-color-accent-d2cad743",
 			"tn-static-color-var-text-accent-65b47ee3",
@@ -967,7 +968,7 @@ export function renderBasesDataItem(
 
 	const props = item.properties;
 	if (props && typeof props === "object") {
-		const propsEl = doc.createElement("div");
+		const propsEl = createElementInDocument(doc, "div");
 		propsEl.classList.remove(
 			"tn-static-font-size-0-75em-948e16e5",
 			"tn-static-font-size-0-8em-19dc7c13",
@@ -989,7 +990,7 @@ export function renderBasesDataItem(
 		);
 		propsEl.classList.add("tn-static-font-size-12px-b0cc7e05");
 
-		const propsHeader = doc.createElement("div");
+		const propsHeader = createElementInDocument(doc, "div");
 		propsHeader.classList.remove(
 			"tn-static-color-var-color-accent-d2cad743",
 			"tn-static-color-var-text-accent-65b47ee3",
@@ -1014,7 +1015,7 @@ export function renderBasesDataItem(
 		propsHeader.textContent = "Properties:";
 		propsEl.appendChild(propsHeader);
 
-		const propsList = doc.createElement("ul");
+		const propsList = createElementInDocument(doc, "ul");
 		propsList.classList.remove(
 			"tn-static-margin-0-11696618",
 			"tn-static-margin-0-auto-266e9b04",
@@ -1027,7 +1028,7 @@ export function renderBasesDataItem(
 		propsList.classList.add("tn-static-margin-0-db0d5f36");
 
 		Object.entries(props).forEach(([key, value]) => {
-			const li = doc.createElement("li");
+			const li = createElementInDocument(doc, "li");
 			li.classList.remove(
 				"tn-static-color-var-color-accent-d2cad743",
 				"tn-static-color-var-text-accent-65b47ee3",
@@ -1058,7 +1059,7 @@ export function renderBasesDataItem(
 		itemEl.appendChild(propsEl);
 	}
 
-	const rawDataEl = doc.createElement("details");
+	const rawDataEl = createElementInDocument(doc, "details");
 	rawDataEl.classList.remove(
 		"tn-static-font-size-0-75em-948e16e5",
 		"tn-static-font-size-0-8em-19dc7c13",
@@ -1080,7 +1081,7 @@ export function renderBasesDataItem(
 	);
 	rawDataEl.classList.add("tn-static-margin-top-8px-f4f01e68");
 
-	const summary = doc.createElement("summary");
+	const summary = createElementInDocument(doc, "summary");
 	summary.classList.remove(
 		"tn-static-color-var-color-accent-d2cad743",
 		"tn-static-color-var-text-accent-65b47ee3",
@@ -1104,7 +1105,7 @@ export function renderBasesDataItem(
 	summary.textContent = "Raw data structure";
 	rawDataEl.appendChild(summary);
 
-	const pre = doc.createElement("pre");
+	const pre = createElementInDocument(doc, "pre");
 	pre.classList.remove(
 		"tn-static-border-radius-4px-c290c56e",
 		"tn-static-border-radius-6px-0dc8408c",

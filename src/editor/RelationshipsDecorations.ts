@@ -241,7 +241,7 @@ async function createRelationshipsWidget(
 	plugin: TaskNotesPlugin,
 	notePath: string
 ): Promise<HTMLElementWithComponent> {
-	const container = activeDocument.createElement("div") as HTMLElementWithComponent;
+	const container = activeWindow.createDiv() as HTMLElementWithComponent;
 	container.className = `tasknotes-plugin ${CSS_RELATIONSHIPS_WIDGET}`;
 
 	container.setAttribute("contenteditable", "false");
@@ -250,7 +250,7 @@ async function createRelationshipsWidget(
 	container.setAttribute("data-note-path", notePath);
 
 	// Create container for embedded Bases view
-	const basesContainer = activeDocument.createElement("div");
+	const basesContainer = activeWindow.createDiv();
 	basesContainer.className = "relationships__bases-container";
 	container.appendChild(basesContainer);
 
@@ -263,7 +263,7 @@ async function createRelationshipsWidget(
 		// Get the Bases file path from settings
 		const basesFilePath = plugin.settings.commandFileMapping["relationships"];
 		if (!basesFilePath) {
-			const errorDiv = activeDocument.createElement("div");
+			const errorDiv = activeWindow.createDiv();
 			errorDiv.className = "relationships__error";
 			errorDiv.textContent = "Relationships view not configured";
 			basesContainer.appendChild(errorDiv);
@@ -286,7 +286,7 @@ async function createRelationshipsWidget(
 			operation: "rendering-bases-view-relationships-widget",
 			error: error,
 		});
-		const errorDiv = activeDocument.createElement("div");
+		const errorDiv = activeWindow.createDiv();
 		errorDiv.className = "relationships__error";
 		errorDiv.textContent = "Failed to load relationships view";
 		basesContainer.appendChild(errorDiv);

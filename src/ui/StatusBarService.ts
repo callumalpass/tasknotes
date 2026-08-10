@@ -213,13 +213,13 @@ export class StatusBarService {
 		this.statusBarElement.empty();
 
 		// Create icon
-		const iconEl = this.statusBarElement.createEl("span", {
+		const iconEl = this.statusBarElement.createSpan({
 			cls: "tasknotes-status-icon",
 		});
 		setIcon(iconEl, "timer");
 
 		// Create text content
-		const textEl = this.statusBarElement.createEl("span", {
+		const textEl = this.statusBarElement.createSpan({
 			cls: "tasknotes-status-text",
 		});
 
@@ -266,12 +266,12 @@ export class StatusBarService {
 
 		this.pomodoroStatusBarElement.empty();
 
-		const iconEl = this.pomodoroStatusBarElement.createEl("span", {
+		const iconEl = this.pomodoroStatusBarElement.createSpan({
 			cls: "tasknotes-status-icon",
 		});
 		setIcon(iconEl, state.currentSession.type === "work" ? "timer" : "coffee");
 
-		const textEl = this.pomodoroStatusBarElement.createEl("span", {
+		const textEl = this.pomodoroStatusBarElement.createSpan({
 			cls: "tasknotes-status-text",
 		});
 		const timeRemaining = formatPomodoroTime(state.timeRemaining);

@@ -32,6 +32,7 @@ import {
 import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardActions";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
 import { setElementDragImage } from "../utils/dragImage";
+import { createElementInDocument } from "../utils/documentDom";
 import {
 	applyKanbanTaskDropFrontmatterPlan,
 	clearKanbanDropMarkers,
@@ -1063,7 +1064,7 @@ export class KanbanView extends BasesViewBase {
 
 	private createRenderedTaskWrapper(task: TaskInfo): HTMLElement {
 		const doc = this.containerEl.ownerDocument;
-		const cardWrapper = doc.createElement("div");
+		const cardWrapper = createElementInDocument(doc, "div");
 		cardWrapper.className = "kanban-view__card-wrapper";
 		cardWrapper.setAttribute("draggable", "true");
 		cardWrapper.setAttribute("data-task-path", task.path);
@@ -1566,17 +1567,17 @@ export class KanbanView extends BasesViewBase {
 		this.boardEl.addClass("kanban-view__board--swimlanes");
 
 		// Create header row
-		const headerRow = this.boardEl.createEl("div", {
+		const headerRow = this.boardEl.createDiv({
 			cls: "kanban-view__swimlane-row kanban-view__swimlane-row--header",
 		});
 
 		// Empty corner cell for swimlane label column
-		headerRow.createEl("div", { cls: "kanban-view__swimlane-label" });
+		headerRow.createDiv({ cls: "kanban-view__swimlane-label" });
 
 		// Column headers
 		const columnTaskCounts = getKanbanColumnTaskCounts(swimLanes, columnKeys);
 		for (const columnKey of columnKeys) {
-			const headerCell = headerRow.createEl("div", {
+			const headerCell = headerRow.createDiv({
 				cls: "kanban-view__column-header-cell",
 			});
 			headerCell.setAttribute("draggable", "true");
@@ -1618,13 +1619,13 @@ export class KanbanView extends BasesViewBase {
 		// Render each swimlane row
 		const visualTaskOrder: string[] = [];
 		for (const [swimLaneKey, columns] of swimLanes) {
-			const row = this.boardEl.createEl("div", { cls: "kanban-view__swimlane-row" });
+			const row = this.boardEl.createDiv({ cls: "kanban-view__swimlane-row" });
 
 			// Swimlane label cell
-			const labelCell = row.createEl("div", { cls: "kanban-view__swimlane-label" });
+			const labelCell = row.createDiv({ cls: "kanban-view__swimlane-label" });
 
 			// Add swimlane title and count
-			const titleEl = labelCell.createEl("div", { cls: "kanban-view__swimlane-title" });
+			const titleEl = labelCell.createDiv({ cls: "kanban-view__swimlane-title" });
 			this.renderGroupTitleWrapper(titleEl, swimLaneKey, true);
 
 			// Count total tasks in this swimlane
@@ -1632,7 +1633,7 @@ export class KanbanView extends BasesViewBase {
 				(sum, tasks) => sum + tasks.length,
 				0
 			);
-			labelCell.createEl("div", {
+			labelCell.createDiv({
 				cls: "kanban-view__swimlane-count",
 				text: `${totalTasks}`,
 			});
@@ -1651,7 +1652,7 @@ export class KanbanView extends BasesViewBase {
 				visualTaskOrder.push(...tasks.map((task) => task.path));
 
 				// Create cell
-				const cell = row.createEl("div", {
+				const cell = row.createDiv({
 					cls: "kanban-view__swimlane-column",
 					attr: {
 						"data-column": columnKey,
@@ -1719,7 +1720,7 @@ export class KanbanView extends BasesViewBase {
 	): Promise<HTMLElement> {
 		// Use containerEl.ownerDocument for pop-out window support
 		const doc = this.containerEl.ownerDocument;
-		const column = doc.createElement("div");
+		const column = createElementInDocument(doc, "div");
 		column.className = "kanban-view__column";
 		column.style.width = `${this.columnWidth}px`;
 		column.setAttribute("data-group", groupKey);
@@ -1921,7 +1922,7 @@ export class KanbanView extends BasesViewBase {
 			// itemHeight omitted - automatically calculated from sample
 			overscan: 3,
 			renderItem: (task: TaskInfo) => {
-				const cardWrapper = doc.createElement("div");
+				const cardWrapper = createElementInDocument(doc, "div");
 				cardWrapper.className = "kanban-view__card-wrapper";
 				cardWrapper.setAttribute("draggable", "true");
 				cardWrapper.setAttribute("data-task-path", task.path);
@@ -1963,7 +1964,7 @@ export class KanbanView extends BasesViewBase {
 			// itemHeight omitted - automatically calculated from sample
 			overscan: 3,
 			renderItem: (task: TaskInfo) => {
-				const cardWrapper = doc.createElement("div");
+				const cardWrapper = createElementInDocument(doc, "div");
 				cardWrapper.className = "kanban-view__card-wrapper";
 				cardWrapper.setAttribute("draggable", "true");
 				cardWrapper.setAttribute("data-task-path", task.path);
@@ -3272,9 +3273,9 @@ export class KanbanView extends BasesViewBase {
 		if (!body) return;
 
 		const rect = sourceElement.getBoundingClientRect();
-		const preview = doc.createElement("div");
+		const preview = createElementInDocument(doc, "div");
 		const title = this.getFloatingDragPreviewTitle(sourceElement);
-		const titleEl = doc.createElement("span");
+		const titleEl = createElementInDocument(doc, "span");
 
 		titleEl.className = "kanban-view__floating-drag-preview-title";
 		titleEl.textContent = title;
@@ -3934,7 +3935,7 @@ export class KanbanView extends BasesViewBase {
 
 		// Use containerEl.ownerDocument for pop-out window support
 		const doc = this.containerEl.ownerDocument;
-		const board = doc.createElement("div");
+		const board = createElementInDocument(doc, "div");
 		board.className = "kanban-view__board";
 		this.rootElement?.appendChild(board);
 		this.boardEl = board;
@@ -4031,7 +4032,7 @@ export class KanbanView extends BasesViewBase {
 		if (!this.boardEl) return;
 		// Use containerEl.ownerDocument for pop-out window support
 		const doc = this.containerEl.ownerDocument;
-		const empty = doc.createElement("div");
+		const empty = createElementInDocument(doc, "div");
 		empty.className = "tn-bases-empty";
 		empty.textContent = "No tasknotes tasks found for this base.";
 		this.boardEl.appendChild(empty);
@@ -4041,7 +4042,7 @@ export class KanbanView extends BasesViewBase {
 		if (!this.boardEl) return;
 		// Use containerEl.ownerDocument for pop-out window support
 		const doc = this.containerEl.ownerDocument;
-		const error = doc.createElement("div");
+		const error = createElementInDocument(doc, "div");
 		error.className = "tn-bases-error";
 		error.textContent = this.plugin.i18n.translate("views.kanban.errors.noGroupBy");
 		this.boardEl.appendChild(error);
@@ -4051,7 +4052,7 @@ export class KanbanView extends BasesViewBase {
 		if (!this.boardEl) return;
 		// Use containerEl.ownerDocument for pop-out window support
 		const doc = this.containerEl.ownerDocument;
-		const errorEl = doc.createElement("div");
+		const errorEl = createElementInDocument(doc, "div");
 		errorEl.className = "tn-bases-error";
 		errorEl.textContent = `Error loading kanban: ${error.message || "Unknown error"}`;
 		this.boardEl.appendChild(errorEl);
@@ -4449,3 +4450,5 @@ export function buildKanbanViewFactory(plugin: TaskNotesPlugin): BasesViewFactor
 		return new KanbanView(controller, containerEl, plugin) as unknown as BasesView;
 	};
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the legacy view implementation. */

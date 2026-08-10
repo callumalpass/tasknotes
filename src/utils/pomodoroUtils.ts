@@ -44,3 +44,5 @@ export function getSessionDuration(session: PomodoroSessionLike): number {
 
 	return 0;
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the Pomodoro utility implementation. */

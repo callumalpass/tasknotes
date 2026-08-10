@@ -22,6 +22,7 @@ function createPluginWithQueue(initialQueue: PendingAutoArchive[]) {
 		plugin: {
 			settings: {},
 			loadData: jest.fn(async () => data),
+			loadPluginDataForSafeWrite: jest.fn(async () => data),
 			saveData: jest.fn(async (updatedData: { autoArchiveQueue: PendingAutoArchive[] }) => {
 				data.autoArchiveQueue = updatedData.autoArchiveQueue;
 			}),

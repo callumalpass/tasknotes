@@ -470,7 +470,7 @@ export class ReadingModeTaskLinkProcessor {
 			return;
 		}
 
-		const linkEl = activeDocument.createElement("a");
+		const linkEl = activeWindow.createEl("a");
 		linkEl.className = "internal-link";
 		linkEl.setAttribute("href", originalLinkPath);
 		linkEl.setAttribute("data-href", originalLinkPath);

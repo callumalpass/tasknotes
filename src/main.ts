@@ -585,7 +585,7 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	private createReleaseAvailableNotice(version: string): DocumentFragment {
-		const fragment = activeDocument.createDocumentFragment();
+		const fragment = activeWindow.createFragment();
 		fragment.appendText(
 			this.i18n.translate("notices.releaseAvailable.message", {
 				version,
@@ -593,7 +593,7 @@ export default class TaskNotesPlugin extends Plugin {
 		);
 		fragment.appendText(" ");
 
-		const link = activeDocument.createElement("a");
+		const link = activeWindow.createEl("a");
 		link.textContent = this.i18n.translate("notices.releaseAvailable.action");
 		link.href = TASKNOTES_COMMUNITY_PLUGIN_URL;
 		link.addEventListener("click", (event) => {
@@ -679,6 +679,51 @@ export default class TaskNotesPlugin extends Plugin {
 
 	private async pluginDataFileExists(): Promise<boolean> {
 		return pluginDataFileExists(this);
+	}
+
+	async loadPluginDataForSafeWrite(
+		operation: string
+	): Promise<Record<string, unknown> | null> {
+		const loadedData = (await this.loadData()) as Record<string, unknown> | null | undefined;
+		if (
+			(loadedData === null || loadedData === undefined) &&
+			(await this.pluginDataFileExists())
+		) {
+			this.settingsLoadCompromised = true;
+			tasknotesLogger.warn(
+				"[TaskNotes] Skipping plugin data save because data.json exists but could not be read.",
+				{
+					category: "configuration",
+					operation: "load-plugin-data-for-safe-write",
+					details: {
+						requestedOperation: operation,
+						settingsSavesBlocked: true,
+					},
+				}
+			);
+			return null;
+		}
+
+		if (loadedData === null || loadedData === undefined) {
+			return {};
+		}
+
+		if (typeof loadedData === "object" && !Array.isArray(loadedData)) {
+			return loadedData;
+		}
+
+		tasknotesLogger.warn(
+			"[TaskNotes] Skipping plugin data save because loaded plugin data was not an object.",
+			{
+				category: "configuration",
+				operation: "load-plugin-data-for-safe-write",
+				details: {
+					requestedOperation: operation,
+					dataType: Array.isArray(loadedData) ? "array" : typeof loadedData,
+				},
+			}
+		);
+		return null;
 	}
 
 	private async loadSettingsData(): Promise<LoadedSettingsData | null> {
@@ -791,21 +836,11 @@ export default class TaskNotesPlugin extends Plugin {
 			return;
 		}
 
-		// Load existing plugin data to preserve non-settings data like pomodoroHistory
-		const loadedData = await this.loadData();
-		if (loadedData === null && (await this.pluginDataFileExists())) {
-			this.settingsLoadCompromised = true;
-			tasknotesLogger.warn(
-				"[TaskNotes] Skipping settings save because data.json exists but could not be read.",
-				{
-					category: "configuration",
-					operation: "skipping-settings-save-because-data-json-exists-but-read",
-				}
-			);
+		const data = await this.loadPluginDataForSafeWrite("save-settings-data-only");
+		if (!data) {
 			return;
 		}
 
-		const data = loadedData || {};
 		await this.saveData(buildSettingsDataForSave(data, this.settings));
 	}
 
@@ -1084,29 +1119,26 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	/**
-	 * Inject dynamic CSS for custom statuses and priorities
+	 * Apply dynamic CSS variables for custom statuses and priorities.
 	 */
 	injectCustomStyles(): void {
-		// Remove existing custom styles
-		const existingStyle = activeDocument.getElementById("tasknotes-custom-styles");
-		if (existingStyle) {
-			existingStyle.remove();
+		// Remove the style element used by TaskNotes 4.12.0 and earlier.
+		activeDocument.getElementById("tasknotes-custom-styles")?.remove();
+
+		const rootStyle = activeDocument.documentElement.style;
+		for (let index = rootStyle.length - 1; index >= 0; index -= 1) {
+			const propertyName = rootStyle.item(index);
+			if (propertyName.startsWith("--status-") || propertyName.startsWith("--priority-")) {
+				rootStyle.removeProperty(propertyName);
+			}
 		}
 
-		// Generate new styles
-		const statusStyles = this.statusManager.getStatusStyles();
-		const priorityStyles = this.priorityManager.getPriorityStyles();
-
-		// Create style element
-		const styleEl = activeDocument.createElement("style");
-		styleEl.id = "tasknotes-custom-styles";
-		styleEl.textContent = `
-		${statusStyles}
-		${priorityStyles}
-	`;
-
-		// Inject into document head
-		activeDocument.head.appendChild(styleEl);
+		for (const [propertyName, value] of [
+			...this.statusManager.getStatusColorVariables(),
+			...this.priorityManager.getPriorityColorVariables(),
+		]) {
+			rootStyle.setProperty(propertyName, value);
+		}
 	}
 
 	async updateTaskProperty(

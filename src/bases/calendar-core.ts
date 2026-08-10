@@ -2245,3 +2245,5 @@ export function calculateTaskCreationValues(
 
 	return prePopulatedValues;
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the legacy calendar helpers. */

@@ -153,10 +153,10 @@ views:
   - name: TaskNotes Kanban
     type: tasknotesKanban
     groupBy:
-      property: task.status
+      property: status
     config:
-      swimLane: task.priority
-      swimLaneOrder: '{"task.priority":["high","normal","low"]}'
+      swimLane: priority
+      swimLaneOrder: '{"priority":["high","normal","low"]}'
       columnWidth: 300
       hideEmptyColumns: true
       pinnedColumns: to-do, in-progress, done

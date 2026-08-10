@@ -98,6 +98,7 @@ function createGoogleSyncPlugin(frontmatter: Record<string, unknown> = {}) {
 			trigger: jest.fn(),
 		},
 		loadData: jest.fn().mockImplementation(async () => pluginData),
+		loadPluginDataForSafeWrite: jest.fn().mockImplementation(async () => pluginData),
 		saveData: jest.fn().mockImplementation(async (data: Record<string, unknown>) => {
 			for (const key of Object.keys(pluginData)) {
 				delete pluginData[key];

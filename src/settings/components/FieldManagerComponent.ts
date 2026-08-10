@@ -113,7 +113,7 @@ function createFieldCard(
 	groupId: FieldGroup
 ): void {
 	// Create type badge
-	const typeBadge = activeDocument.createElement("span");
+	const typeBadge = activeWindow.createSpan();
 	typeBadge.classList.add("field-card__type");
 	typeBadge.classList.add(`field-card__type--${field.fieldType}`);
 	typeBadge.textContent = field.fieldType;
@@ -273,90 +273,4 @@ function getFieldSecondaryText(
 
 	const userField = userFields?.find((candidate) => candidate.id === field.id);
 	return userField?.key ? `Key: ${userField.key}` : "No key set";
-}
-
-/**
- * Add styles for field manager
- */
-export function addFieldManagerStyles(): void {
-	const styleId = "field-manager-styles";
-	if (activeDocument.getElementById(styleId)) return;
-
-	const style = activeDocument.createElement("style");
-	style.id = styleId;
-	style.textContent = `
-		.field-manager {
-			display: flex;
-			flex-direction: column;
-			gap: 1rem;
-		}
-
-		.field-manager__tabs {
-			display: flex;
-			gap: 0.5rem;
-			border-bottom: 2px solid var(--background-modifier-border);
-			padding-bottom: 0.5rem;
-		}
-
-		.field-manager__tab {
-			padding: 0.5rem 1rem;
-			cursor: pointer;
-			border-radius: 4px;
-			transition: background-color 0.2s;
-		}
-
-		.field-manager__tab:hover {
-			background-color: var(--background-modifier-hover);
-		}
-
-		.field-manager__tab--active {
-			background-color: var(--interactive-accent);
-			color: var(--text-on-accent);
-		}
-
-		.field-manager__content {
-			padding: 1rem 0;
-		}
-
-		.field-manager__cards {
-			display: flex;
-			flex-direction: column;
-			gap: 0.75rem;
-		}
-
-		.field-manager__empty {
-			text-align: center;
-			padding: 2rem;
-			color: var(--text-muted);
-		}
-
-		.field-card__type {
-			font-size: 0.75rem;
-			padding: 0.125rem 0.5rem;
-			border-radius: 3px;
-			background: var(--background-modifier-border);
-		}
-
-		.field-card__type--core {
-			background: var(--interactive-accent);
-			color: var(--text-on-accent);
-		}
-
-			.field-card__type--user {
-				background: var(--color-purple);
-				color: var(--text-on-accent);
-			}
-
-			.field-card__type--dependency {
-				background: var(--color-orange);
-				color: var(--text-on-accent);
-			}
-
-			.field-card__type--organization {
-				background: var(--color-green);
-				color: var(--text-on-accent);
-			}
-	`;
-
-	activeDocument.head.appendChild(style);
 }

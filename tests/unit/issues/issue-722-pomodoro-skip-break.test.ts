@@ -27,6 +27,7 @@ function createMockPlugin() {
 			translate: jest.fn((key: string) => key),
 		},
 		loadData: jest.fn(async () => data),
+		loadPluginDataForSafeWrite: jest.fn(async () => data),
 		saveData: jest.fn(async (nextData: Record<string, unknown>) => {
 			data = { ...nextData };
 		}),

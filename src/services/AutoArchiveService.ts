@@ -286,7 +286,8 @@ export class AutoArchiveService {
 	 * Save the auto-archive queue to plugin data
 	 */
 	private async saveQueue(queue: PendingAutoArchive[]): Promise<void> {
-		const data = (await this.plugin.loadData()) || {};
+		const data = await this.plugin.loadPluginDataForSafeWrite("save-auto-archive-queue");
+		if (!data) return;
 		data.autoArchiveQueue = queue;
 		await this.plugin.saveData(data);
 	}

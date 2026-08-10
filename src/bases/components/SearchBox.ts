@@ -1,5 +1,6 @@
 import { setIcon } from 'obsidian';
 import { debounce } from '../../settings/components/settingHelpers';
+import { createElementInDocument } from '../../utils/documentDom';
 
 /**
  * SearchBox - UI component for task search functionality
@@ -57,27 +58,27 @@ export class SearchBox {
 		const doc = this.container.ownerDocument;
 
 		// Create main container
-		this.searchBoxEl = doc.createElement('div');
+		this.searchBoxEl = createElementInDocument(doc, 'div');
 		this.searchBoxEl.className = 'tn-search-box';
 
 		// Create input wrapper
-		const inputWrapper = doc.createElement('div');
+		const inputWrapper = createElementInDocument(doc, 'div');
 		inputWrapper.className = 'tn-search-box__input-wrapper';
 
 		// Create search icon using Lucide icon (like Obsidian)
-		const icon = doc.createElement('div');
+		const icon = createElementInDocument(doc, 'div');
 		icon.className = 'tn-search-box__icon';
 		setIcon(icon, 'search');
 
 		// Create input element
-		this.inputEl = doc.createElement('input');
+		this.inputEl = createElementInDocument(doc, 'input');
 		this.inputEl.type = 'text';
 		this.inputEl.className = 'tn-search-box__input';
 		this.inputEl.placeholder = 'Search tasks...';
 		this.inputEl.setAttribute('aria-label', 'Search tasks');
 
 		// Create clear button
-		const clearBtn = doc.createElement('button');
+		const clearBtn = createElementInDocument(doc, 'button');
 		clearBtn.type = 'button';
 		clearBtn.className = 'tn-search-box__clear';
 		clearBtn.textContent = '×';

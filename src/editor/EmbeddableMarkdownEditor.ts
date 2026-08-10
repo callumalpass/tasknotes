@@ -106,7 +106,7 @@ function resolveEditorPrototype(app: App): Constructor<ScrollableMarkdownEditor>
 
 	// @ts-expect-error - Using internal API
 	const widgetEditorView = app.embedRegistry.embedByExtension.md(
-		{ app, containerEl: activeDocument.createElement("div") },
+		{ app, containerEl: activeWindow.createDiv() },
 		activeFile,
 		""
 	) as WidgetEditorView;
@@ -135,11 +135,11 @@ function getEditorBase(): Constructor<ScrollableMarkdownEditor> {
 	if (typeof app === "undefined") {
 		return class MockScrollableMarkdownEditor {
 			app: App;
-			containerEl: HTMLElement = activeDocument.createElement("div");
+			containerEl: HTMLElement = activeWindow.createDiv();
 			editor: MarkdownEditorInternal = {
 				cm: new EditorView(),
 			};
-			editorEl: HTMLElement = activeDocument.createElement("div");
+			editorEl: HTMLElement = activeWindow.createDiv();
 			activeCM: unknown;
 			owner: MarkdownEditorOwner = { editMode: null, editor: null };
 			_loaded = false;

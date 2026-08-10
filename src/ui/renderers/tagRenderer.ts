@@ -105,7 +105,7 @@ function renderContextItem(
 	const linkText = stripContextPrefix(value);
 	if (services?.linkServices && isLinkLikeContext(linkText)) {
 		const colorClass = getContextColorClass(linkText);
-		const el = container.createEl("span", {
+		const el = container.createSpan({
 			cls: `context-tag context-tag--link ${colorClass}`,
 			attr: {
 				"data-tn-click-exclude": "true",
@@ -120,7 +120,7 @@ function renderContextItem(
 	if (!normalized) return false;
 
 	const colorClass = getContextColorClass(normalized);
-	const el = container.createEl("span", {
+	const el = container.createSpan({
 		cls: `context-tag ${colorClass}`,
 		text: normalized,
 		attr: {
@@ -237,3 +237,5 @@ export function normalizeContext(raw: string): string | null {
 
 	return cleaned ? `@${cleaned}` : null;
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the tag renderer implementation. */

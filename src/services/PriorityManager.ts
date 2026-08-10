@@ -68,17 +68,13 @@ export class PriorityManager {
 	}
 
 	/**
-	 * Get CSS variables for priority colors
+	 * Get CSS variables for priority colors.
 	 */
-	getPriorityStyles(): string {
-		const cssRules: string[] = [];
-
-		for (const priority of this.priorities) {
-			const cssClass = `--priority-${priority.value.replace(/[^a-zA-Z0-9-]/g, "-")}-color`;
-			cssRules.push(`${cssClass}: ${normalizeThemeColor(priority.color)};`);
-		}
-
-		return `:root { ${cssRules.join(" ")} }`;
+	getPriorityColorVariables(): ReadonlyArray<readonly [string, string]> {
+		return this.priorities.map((priority) => [
+			`--priority-${priority.value.replace(/[^a-zA-Z0-9-]/g, "-")}-color`,
+			normalizeThemeColor(priority.color),
+		]);
 	}
 
 	/**

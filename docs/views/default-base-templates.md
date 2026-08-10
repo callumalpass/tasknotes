@@ -236,7 +236,7 @@ views:
       - column: tasknotes_manual_order
         direction: DESC
     groupBy:
-      property: task.status
+      property: status
       direction: ASC
     config:
       columnWidth: 280
@@ -732,7 +732,7 @@ views:
       - column: tasknotes_manual_order
         direction: DESC
     groupBy:
-      property: task.status
+      property: status
       direction: ASC
   - type: tasknotesTaskList
     name: "Occurrences"
@@ -820,7 +820,7 @@ views:
       - column: tasknotes_manual_order
         direction: DESC
     groupBy:
-      property: task.status
+      property: status
       direction: ASC
 ```
 

@@ -6,7 +6,10 @@ import { isSupportedColorValue, normalizeThemeColor } from "../utils/themeColors
  * Service for managing custom task statuses
  */
 export class StatusManager {
-	constructor(private statuses: StatusConfig[], private defaultStatus = "open") {}
+	constructor(
+		private statuses: StatusConfig[],
+		private defaultStatus = "open"
+	) {}
 
 	normalizeStatusValue(value: unknown): string {
 		return normalizeStatusConfigValue(value, this.statuses) ?? String(value);
@@ -91,10 +94,8 @@ export class StatusManager {
 		}
 
 		return (
-			[...cycleStatuses]
-				.reverse()
-				.find((status) => status.order < currentStatusConfig.order)?.value ||
-			cycleStatuses[cycleStatuses.length - 1].value
+			[...cycleStatuses].reverse().find((status) => status.order < currentStatusConfig.order)
+				?.value || cycleStatuses[cycleStatuses.length - 1].value
 		);
 	}
 
@@ -103,9 +104,7 @@ export class StatusManager {
 	 */
 	getStatusConfig(value: string): StatusConfig | undefined {
 		const normalizedValue = this.normalizeStatusValue(value);
-		return this.statuses.find(
-			(s) => this.normalizeStatusValue(s.value) === normalizedValue
-		);
+		return this.statuses.find((s) => this.normalizeStatusValue(s.value) === normalizedValue);
 	}
 
 	/**
@@ -146,17 +145,13 @@ export class StatusManager {
 	}
 
 	/**
-	 * Get CSS variables for status colors
+	 * Get CSS variables for status colors.
 	 */
-	getStatusStyles(): string {
-		const cssRules: string[] = [];
-
-		for (const status of this.statuses) {
-			const cssClass = `--status-${status.value.replace(/[^a-zA-Z0-9-]/g, "-")}-color`;
-			cssRules.push(`${cssClass}: ${normalizeThemeColor(status.color)};`);
-		}
-
-		return `:root { ${cssRules.join(" ")} }`;
+	getStatusColorVariables(): ReadonlyArray<readonly [string, string]> {
+		return this.statuses.map((status) => [
+			`--status-${status.value.replace(/[^a-zA-Z0-9-]/g, "-")}-color`,
+			normalizeThemeColor(status.color),
+		]);
 	}
 
 	/**

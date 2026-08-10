@@ -43,7 +43,7 @@ export class TaskLinkWidget extends WidgetType {
 		const visibleProperties = convertInternalToUserProperties(internalProperties, this.plugin);
 
 		// Create a wrapper span with the tasknotes-plugin class for CSS scoping
-		const wrapper = activeDocument.createElement("span");
+		const wrapper = activeWindow.createSpan();
 		wrapper.className = "tasknotes-plugin tasknotes-inline-widget";
 		// Ensure wrapper displays inline to prevent line breaks
 		wrapper.classList.remove(

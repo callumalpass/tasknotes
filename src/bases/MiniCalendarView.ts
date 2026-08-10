@@ -35,6 +35,7 @@ import {
 } from "obsidian-daily-notes-interface";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { createElementInDocument } from "../utils/documentDom";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/MiniCalendarView" });
 
@@ -1531,7 +1532,7 @@ export class MiniCalendarView extends BasesViewBase {
 
 		// Use correct document for pop-out window support
 		const doc = this.containerEl.ownerDocument;
-		const calendar = doc.createElement("div");
+		const calendar = createElementInDocument(doc, "div");
 		calendar.className = "mini-calendar-bases-view";
 		this.rootElement?.appendChild(calendar);
 		this.calendarEl = calendar;
@@ -1547,7 +1548,7 @@ export class MiniCalendarView extends BasesViewBase {
 
 		// Use correct document for pop-out window support
 		const doc = this.calendarEl.ownerDocument;
-		const errorEl = doc.createElement("div");
+		const errorEl = createElementInDocument(doc, "div");
 		errorEl.className = "tn-bases-error";
 		errorEl.classList.remove(
 			"tn-static-border-radius-4px-c290c56e",

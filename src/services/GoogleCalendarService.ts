@@ -1054,3 +1054,5 @@ export class GoogleCalendarService extends CalendarProvider {
 		this.removeAllListeners();
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the calendar service implementation. */

@@ -102,7 +102,7 @@ export class GroupCountUtils {
 	): HTMLElement {
 		const countResult = GroupCountUtils.formatGroupCount(completed, total, options);
 
-		const countEl = container.createEl("div", {
+		const countEl = container.createDiv({
 			text: countResult.text,
 			cls: countResult.classes.join(" "),
 		});

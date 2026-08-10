@@ -49,6 +49,7 @@ import {
 	updateBasesSelectionVisuals,
 	clearBasesSelectionVisuals,
 } from "./basesSelectionUi";
+import { createElementInDocument } from "../utils/documentDom";
 import {
 	installBasesConfigRefreshHook,
 	scheduleBasesDataUpdateRender,
@@ -402,7 +403,7 @@ export abstract class BasesViewBase extends Component {
 
 		// Use correct document for pop-out window support
 		const doc = this.containerEl.ownerDocument;
-		const root = doc.createElement("div");
+		const root = createElementInDocument(doc, "div");
 		root.className = `tn-bases-integration tasknotes-plugin tasknotes-container tn-${this.type}`;
 		root.tabIndex = -1; // Make focusable without adding to tab order
 		this.containerEl.appendChild(root);
@@ -821,7 +822,7 @@ export abstract class BasesViewBase extends Component {
 			const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
 			const win = this.containerEl.ownerDocument.defaultView ?? window;
 			const url = win.URL.createObjectURL(blob);
-			const link = this.containerEl.ownerDocument.createElement("a");
+			const link = createElementInDocument(this.containerEl.ownerDocument, "a");
 			link.href = url;
 			link.download = this.getBasesExportFileName();
 			link.click();

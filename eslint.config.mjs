@@ -348,8 +348,6 @@ export default [
 			"obsidianmd/rule-custom-message": "warn",
 			"obsidianmd/ui/sentence-case": "warn",
 			"obsidianmd/no-forbidden-elements": "warn",
-			"obsidianmd/settings-tab": "off",
-			"obsidianmd/platform": "off",
 
 			"@typescript-eslint/no-unsafe-assignment": "off",
 			"@typescript-eslint/no-unsafe-member-access": "off",
@@ -366,7 +364,6 @@ export default [
 			"@typescript-eslint/prefer-promise-reject-errors": "warn",
 			"@typescript-eslint/no-non-null-assertion": "warn",
 			"@typescript-eslint/no-require-imports": "warn",
-			"import/no-nodejs-modules": "warn",
 		},
 	},
 

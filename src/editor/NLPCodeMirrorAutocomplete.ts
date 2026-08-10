@@ -15,6 +15,7 @@ import { FileSuggestHelper } from "../suggest/FileSuggestHelper";
 import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { createElementInDocument } from "../utils/documentDom";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/NLPCodeMirrorAutocomplete" });
 
@@ -183,11 +184,11 @@ export function renderProjectCompletionMetadata(
 	const projectCompletion = completion as unknown as ProjectCompletion;
 	if (!projectCompletion.projectMetadata) return null;
 
-	const container = doc.createElement("div");
+	const container = createElementInDocument(doc, "div");
 	container.className = "cm-project-suggestion__metadata";
 
 	for (const row of projectCompletion.projectMetadata) {
-		const metaRow = doc.createElement("div");
+		const metaRow = createElementInDocument(doc, "div");
 		metaRow.className = "cm-project-suggestion__meta";
 
 		row.forEach((part, index) => {
@@ -195,7 +196,7 @@ export function renderProjectCompletionMetadata(
 				metaRow.appendChild(doc.createTextNode(" "));
 			}
 
-			const span = doc.createElement("span");
+			const span = createElementInDocument(doc, "span");
 			span.className =
 				part.kind === "value"
 					? "cm-project-suggestion__meta-value"
@@ -494,7 +495,7 @@ function appendHighlightedText(container: HTMLElement, text: string, query: stri
 			container.appendChild(doc.createTextNode(text.slice(lastIndex, match.start)));
 		}
 
-		const mark = doc.createElement("mark");
+		const mark = createElementInDocument(doc, "mark");
 		mark.textContent = text.slice(match.start, match.end);
 		container.appendChild(mark);
 		lastIndex = match.end;

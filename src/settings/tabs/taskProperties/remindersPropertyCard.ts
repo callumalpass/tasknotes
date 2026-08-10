@@ -33,7 +33,7 @@ export function renderRemindersPropertyCard(
 	});
 
 	// Create nested content for default reminders
-	const nestedContainer = activeDocument.createElement("div");
+	const nestedContainer = activeWindow.createDiv();
 	nestedContainer.addClass("tasknotes-settings__nested-cards");
 
 	// Create collapsible section for default reminders

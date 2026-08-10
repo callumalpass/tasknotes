@@ -176,10 +176,16 @@ function middleRank(): RankLike {
  */
 export function stripPropertyPrefix(propertyId: string): string {
 	const parts = propertyId.split(".");
-	if (parts.length > 1 && ["note", "file", "formula", "task"].includes(parts[0])) {
-		return parts.slice(1).join(".");
+	let prefixCount = 0;
+
+	while (
+		prefixCount < parts.length - 1 &&
+		["note", "file", "formula", "task"].includes(parts[prefixCount])
+	) {
+		prefixCount++;
 	}
-	return propertyId;
+
+	return prefixCount > 0 ? parts.slice(prefixCount).join(".") : propertyId;
 }
 
 /**

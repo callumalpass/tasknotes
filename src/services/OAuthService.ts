@@ -17,17 +17,17 @@ type HttpModuleLike = {
 let cachedHttpModule: HttpModuleLike | null = null;
 
 function ensureHttpModule(): HttpModuleLike {
-	if (!Platform.isDesktopApp) {
-		throw new Error("OAuth redirect handling is only available on desktop.");
+	if (Platform.isDesktop && Platform.isDesktopApp) {
+		if (!cachedHttpModule) {
+			// Lazy-load the Node http module so mobile builds don't crash at load time.
+			// eslint-disable-next-line @typescript-eslint/no-require-imports -- The guarded desktop path needs Node's HTTP server.
+			cachedHttpModule = require("http") as HttpModuleLike;
+		}
+
+		return cachedHttpModule;
 	}
 
-	if (!cachedHttpModule) {
-		// Lazy-load the Node http module so mobile builds don't crash at load time.
-		// eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-nodejs-modules -- OAuth redirect handling needs Node http only on desktop.
-		cachedHttpModule = require("http") as HttpModuleLike;
-	}
-
-	return cachedHttpModule;
+	throw new Error("OAuth redirect handling is only available on desktop.");
 }
 
 /**

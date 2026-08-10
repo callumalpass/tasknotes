@@ -573,6 +573,8 @@ export function buildKanbanTaskGroups(options: KanbanTaskGroupingOptions): Map<s
 	const groups = new Map<string, TaskInfo[]>();
 	const taskOrder = new Map(options.taskNotes.map((task, index) => [task.path, index]));
 	const cleanGroupBy = stripPropertyPrefix(options.groupByPropertyId);
+	const isStatusGroup = options.isStatusGroupingProperty(options.groupByPropertyId);
+	const isPriorityGroup = options.isPriorityGroupingProperty(options.groupByPropertyId);
 	const shouldExplode =
 		options.explodeListColumns && options.isListTypeProperty(cleanGroupBy);
 
@@ -584,6 +586,14 @@ export function buildKanbanTaskGroups(options: KanbanTaskGroupingOptions): Map<s
 			for (const columnKey of columnKeys) {
 				addKanbanTaskToGroup(groups, columnKey, task);
 			}
+		}
+	} else if (isStatusGroup || isPriorityGroup) {
+		for (const task of options.taskNotes) {
+			const rawValue = isStatusGroup ? task.status : task.priority;
+			const rawGroupKey = valueToKanbanGroupString(rawValue);
+			const groupKey = options.canonicalizeGroupKey(rawGroupKey, options.groupByPropertyId);
+
+			addKanbanTaskToGroup(groups, groupKey, task);
 		}
 	} else {
 		const tasksByPath = new Map(options.taskNotes.map((task) => [task.path, task]));

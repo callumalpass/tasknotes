@@ -106,6 +106,7 @@ function createPlugin(
 			trigger: jest.fn(),
 		},
 		loadData: jest.fn().mockImplementation(async () => pluginData),
+		loadPluginDataForSafeWrite: jest.fn().mockImplementation(async () => pluginData),
 		saveData: jest.fn().mockImplementation(async (data: Record<string, unknown>) => {
 			const nextData = { ...data };
 			for (const key of Object.keys(pluginData)) {

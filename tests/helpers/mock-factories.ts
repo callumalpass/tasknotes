@@ -543,6 +543,10 @@ export const PluginFactory = {
       getActiveTimeSession: jest.fn().mockReturnValue(null),
       selectedDate: new Date(),
 
+      loadData: jest.fn().mockResolvedValue({}),
+      loadPluginDataForSafeWrite: jest.fn().mockResolvedValue({}),
+      saveData: jest.fn().mockResolvedValue(undefined),
+
       i18n: {
         translate: jest.fn((key: string, params?: Record<string, string | number>) => {
           // Mock translations for specific keys used in tests

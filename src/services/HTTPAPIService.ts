@@ -27,6 +27,7 @@ import {
 import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/httpTypes";
 import { parseRequestUrl } from "../api/httpTypes";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { Platform } from "obsidian";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/HTTPAPIService" });
 export const API_BIND_HOST = "127.0.0.1";
@@ -292,32 +293,43 @@ export class HTTPAPIService implements IWebhookNotifier {
 
 	async start(): Promise<void> {
 		return new Promise((resolve, reject) => {
+			if (!Platform.isDesktop || !Platform.isDesktopApp) {
+				reject(new Error("The HTTP API is only available in the desktop app."));
+				return;
+			}
+
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-nodejs-modules -- HTTP API is desktop-only and lazy-loads Node http at server start.
-				const http = require("http") as HttpModuleLike;
-				this.server = http.createServer((req, res) => {
-					this.handleRequest(req, res).catch((error) => {
-						tasknotesLogger.error("Request handling error:", {
-							category: "provider",
-							operation: "request-handling",
-							error: error,
+				if (Platform.isDesktop && Platform.isDesktopApp) {
+					// eslint-disable-next-line @typescript-eslint/no-require-imports -- The guarded desktop path lazy-loads Node's HTTP server.
+					const http = require("http") as HttpModuleLike;
+					this.server = http.createServer((req, res) => {
+						this.handleRequest(req, res).catch((error) => {
+							tasknotesLogger.error("Request handling error:", {
+								category: "provider",
+								operation: "request-handling",
+								error: error,
+							});
+							this.sendResponse(
+								res,
+								500,
+								this.errorResponse("Internal server error")
+							);
 						});
-						this.sendResponse(res, 500, this.errorResponse("Internal server error"));
 					});
-				});
 
-				this.server.listen(this.plugin.settings.apiPort, API_BIND_HOST, () => {
-					resolve();
-				});
-
-				this.server.on("error", (err) => {
-					tasknotesLogger.error("API server error:", {
-						category: "provider",
-						operation: "api-server",
-						error: err,
+					this.server.listen(this.plugin.settings.apiPort, API_BIND_HOST, () => {
+						resolve();
 					});
-					reject(err);
-				});
+
+					this.server.on("error", (err) => {
+						tasknotesLogger.error("API server error:", {
+							category: "provider",
+							operation: "api-server",
+							error: err,
+						});
+						reject(err);
+					});
+				}
 			} catch (error) {
 				reject(error instanceof Error ? error : new Error(String(error)));
 			}

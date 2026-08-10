@@ -342,3 +342,5 @@ export class ViewPerformanceService {
 		this.globalTaskVersionCache.clear();
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the performance service implementation. */
