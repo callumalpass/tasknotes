@@ -11,6 +11,11 @@ import {
 import type { BasesEntry, BasesPropertyId, BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
+import {
+	buildLinkedExternalCalendarEventPredicate,
+	type LinkedExternalCalendarEventPredicate,
+} from "./calendarExternalEvents";
+import { identifyTaskNotesFromBasesData } from "./helpers";
 import { ICSEvent, TaskInfo } from "../types";
 import { format } from "date-fns";
 import {
@@ -248,8 +253,19 @@ export class MiniCalendarView extends BasesViewBase {
 			// Use raw Bases data (has getValue() method)
 			const basesEntries = this.data.data;
 
+			// Build a linked-event filter from the TaskNotes tasks in this view so
+			// provider-side mirrors of exported tasks are suppressed (issue #1451).
+			const linkedGoogleEventFilter = buildLinkedExternalCalendarEventPredicate(
+				await identifyTaskNotesFromBasesData(
+					this.dataAdapter.extractDataItems(),
+					this.plugin
+				),
+				"google",
+				this.plugin
+			);
+
 			// Index notes by date
-			this.indexNotesByDate(basesEntries);
+			this.indexNotesByDate(basesEntries, linkedGoogleEventFilter);
 
 			// Render calendar grid
 			this.renderCalendarControls();
@@ -287,11 +303,14 @@ export class MiniCalendarView extends BasesViewBase {
 		}
 	}
 
-	private indexNotesByDate(dataItems: BasesEntry[]): void {
+	private indexNotesByDate(
+		dataItems: BasesEntry[],
+		linkedGoogleEventFilter?: LinkedExternalCalendarEventPredicate
+	): void {
 		this.notesByDate.clear();
 
 		if (!this.dateProperty) {
-			this.indexExternalCalendarEvents();
+			this.indexExternalCalendarEvents(linkedGoogleEventFilter);
 			return;
 		}
 
@@ -400,7 +419,7 @@ export class MiniCalendarView extends BasesViewBase {
 			}
 		}
 
-		this.indexExternalCalendarEvents();
+		this.indexExternalCalendarEvents(linkedGoogleEventFilter);
 	}
 
 	private addEntryToDate(dateKey: string, entry: NoteEntry): void {
@@ -411,9 +430,11 @@ export class MiniCalendarView extends BasesViewBase {
 		this.notesByDate.get(dateKey)?.push(entry);
 	}
 
-	private indexExternalCalendarEvents(): void {
+	private indexExternalCalendarEvents(
+		linkedGoogleEventFilter?: LinkedExternalCalendarEventPredicate
+	): void {
 		this.indexICSEvents();
-		this.indexGoogleCalendarEvents();
+		this.indexGoogleCalendarEvents(linkedGoogleEventFilter);
 		this.indexMicrosoftCalendarEvents();
 	}
 
@@ -442,7 +463,9 @@ export class MiniCalendarView extends BasesViewBase {
 		}
 	}
 
-	private indexGoogleCalendarEvents(): void {
+	private indexGoogleCalendarEvents(
+		linkedGoogleEventFilter?: LinkedExternalCalendarEventPredicate
+	): void {
 		if (!this.plugin.googleCalendarService) {
 			return;
 		}
@@ -456,6 +479,9 @@ export class MiniCalendarView extends BasesViewBase {
 		for (const icsEvent of this.plugin.googleCalendarService.getAllEvents()) {
 			const calendarId = icsEvent.subscriptionId.replace("google-", "");
 			if (this.googleCalendarToggles.get(calendarId) === false) continue;
+
+			// Suppress provider-side mirrors of tasks exported from TaskNotes (issue #1451).
+			if (linkedGoogleEventFilter?.(icsEvent)) continue;
 
 			const calendar = calendars.get(calendarId);
 			this.indexExternalEvent(
