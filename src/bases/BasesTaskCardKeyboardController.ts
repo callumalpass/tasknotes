@@ -76,6 +76,7 @@ const OVERLAY_ACTIONS: ReadonlySet<TaskListAction> = new Set([
 	"mark-complete",
 	"edit-status",
 	"edit-recurrence",
+	"edit-time-estimate",
 	"add-tags",
 	"add-context",
 	"add-project",

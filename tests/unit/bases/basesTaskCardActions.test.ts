@@ -18,10 +18,16 @@ jest.mock(
 jest.mock("../../../src/modals/ConfirmationModal", () => ({
 	showConfirmationModal: jest.fn(),
 }));
+jest.mock("../../../src/modals/UserFieldEditModal", () => ({
+	UserFieldEditModal: jest.fn().mockImplementation(() => ({ open: jest.fn() })),
+}));
 
 const mockedConfirmation = showConfirmationModal as jest.MockedFunction<
 	typeof showConfirmationModal
 >;
+const mockedUserFieldEditModal = jest.requireMock(
+	"../../../src/modals/UserFieldEditModal"
+).UserFieldEditModal as jest.Mock;
 
 function task(path: string, overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
@@ -164,6 +170,56 @@ describe("executeBasesTaskCardAction", () => {
 		expect(openFile).toHaveBeenCalledTimes(2);
 		expect(openFile).toHaveBeenNthCalledWith(1, files.get("first.md"));
 		expect(openFile).toHaveBeenNthCalledWith(2, files.get("second.md"));
+	});
+
+	it("opens the numeric field editor for time estimates and updates every target", async () => {
+		const tasks = [task("first.md", { timeEstimate: 30 }), task("second.md")];
+		const updateTaskProperty = jest.fn(async () => undefined);
+		const onOverlayClosed = jest.fn();
+		const context = createContext(tasks, {
+			plugin: {
+				cacheManager: { getTaskInfo: jest.fn(async (path: string) => tasks.find((t) => t.path === path)) },
+				app: {},
+				i18n: { translate: jest.fn(() => "Time estimate (minutes)") },
+				updateTaskProperty,
+			} as any,
+			onOverlayClosed,
+		});
+
+		await executeBasesTaskCardAction("edit-time-estimate", null, context);
+
+		expect(mockedUserFieldEditModal).toHaveBeenCalledWith(
+			context.plugin.app,
+			context.plugin,
+			expect.objectContaining({
+				field: expect.objectContaining({
+					id: "builtin-time-estimate",
+					key: "timeEstimate",
+					type: "number",
+				}),
+				tasks,
+			})
+		);
+		expect(mockedUserFieldEditModal.mock.results[0].value.open).toHaveBeenCalledTimes(1);
+
+		const options = mockedUserFieldEditModal.mock.calls[0][2];
+		await options.onApply(45);
+		expect(updateTaskProperty).toHaveBeenNthCalledWith(
+			1,
+			tasks[0],
+			"timeEstimate",
+			45,
+			{ silent: true }
+		);
+		expect(updateTaskProperty).toHaveBeenNthCalledWith(
+			2,
+			tasks[1],
+			"timeEstimate",
+			45,
+			{ silent: true }
+		);
+		options.onClose();
+		expect(onOverlayClosed).toHaveBeenCalledTimes(1);
 	});
 
 	it("does not delete when destructive confirmation is cancelled", async () => {

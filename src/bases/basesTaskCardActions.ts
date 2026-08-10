@@ -311,6 +311,35 @@ export async function executeBasesTaskCardAction(
 			}).showAtElement(anchor);
 			return;
 		}
+		case "edit-time-estimate": {
+			const tasks = await getActionTargets(context);
+			if (tasks.length === 0) return;
+
+			// Time estimate has no specialized quick editor, so reuse the established
+			// numeric field modal to preserve keyboard, bulk-edit, and clear semantics.
+			new UserFieldEditModal(context.plugin.app, context.plugin, {
+				field: {
+					id: "builtin-time-estimate",
+					displayName: context.plugin.i18n.translate("modals.task.timeEstimateLabel"),
+					key: "timeEstimate",
+					type: "number",
+				},
+				tasks,
+				onApply: async (value) => {
+					const timeEstimate =
+						typeof value === "number" && value > 0 ? value : undefined;
+					for (const task of tasks) {
+						await context.plugin.updateTaskProperty(task, "timeEstimate", timeEstimate, {
+							silent: true,
+						});
+					}
+				},
+				onClose: () => {
+					context.onOverlayClosed?.();
+				},
+			}).open();
+			return;
+		}
 		case "add-tags": {
 			const tasks = await getActionTargets(context);
 			if (tasks.length === 0) return;

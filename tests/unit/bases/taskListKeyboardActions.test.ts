@@ -57,6 +57,7 @@ describe("resolveDefaultTaskListKeyboardAction", () => {
 		["s", {}, "edit-status"],
 		["*", { shiftKey: true }, "edit-status"],
 		["r", {}, "edit-recurrence"],
+		["t", {}, "edit-time-estimate"],
 		["#", { shiftKey: true }, "add-tags"],
 		["@", { shiftKey: true }, "add-context"],
 		["+", { shiftKey: true }, "add-project"],

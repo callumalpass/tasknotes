@@ -80,6 +80,7 @@ export function pushKeyboardShortcutCaptureScope(
 }
 
 function actionKey(action: TaskListKeyboardAction): TranslationKey {
+	if (action === "edit-time-estimate") return "modals.task.timeEstimateLabel";
 	return `settings.keyboardShortcuts.actions.${action}`;
 }
 

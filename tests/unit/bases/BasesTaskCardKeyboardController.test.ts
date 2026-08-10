@@ -223,6 +223,32 @@ describe("BasesTaskCardKeyboardController.handleActionKeyDown", () => {
 		);
 	});
 
+	it("records an overlay before opening the time-estimate editor", () => {
+		const noteOverlayOpening = jest.fn();
+		const mockThis = {
+			plugin: {
+				settings: {
+					taskListShortcuts: normalizeTaskListShortcutMap({}),
+					taskListUserFieldShortcuts: {},
+				},
+			},
+			options: { isActionSupported: () => true, buildViewContext: () => ({} as any) },
+			focusController: { getFocusedPathForEvent: jest.fn(() => "focused.md") },
+			inputOwnershipController: { noteOverlayOpening },
+			buildActionContext: () => ({} as any),
+		};
+		const event = new KeyboardEvent("keydown", { key: "t", cancelable: true });
+
+		proto.handleActionKeyDown.call(mockThis, event, false);
+
+		expect(noteOverlayOpening).toHaveBeenCalledTimes(1);
+		expect(mockedExecuteAction).toHaveBeenCalledWith(
+			"edit-time-estimate",
+			"focused.md",
+			expect.anything()
+		);
+	});
+
 	it.each([
 		["g", "jump-first", "first"],
 		["G", "jump-last", "last"],
