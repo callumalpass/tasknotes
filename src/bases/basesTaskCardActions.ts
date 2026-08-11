@@ -70,12 +70,11 @@ async function getTasksForPaths(
 	context: BasesTaskCardActionContext,
 	paths: string[]
 ): Promise<TaskInfo[]> {
-	const tasks: TaskInfo[] = [];
-	for (const path of paths) {
-		const task = await context.plugin.cacheManager.getTaskInfo(path);
-		if (task) tasks.push(task);
-	}
-	return tasks;
+	// Cache lookups are independent reads. Start them together while retaining
+	// the caller's path order once all results have resolved.
+	return (
+		await Promise.all(paths.map((path) => context.plugin.cacheManager.getTaskInfo(path)))
+	).filter((task): task is TaskInfo => task !== null);
 }
 
 async function getActionTargets(context: BasesTaskCardActionContext): Promise<TaskInfo[]> {
@@ -397,20 +396,18 @@ export async function executeBasesTaskCardAction(
 				(projectFile) => {
 					if (!(projectFile instanceof TFile)) return;
 					void (async () => {
-						for (const path of paths) {
-							const task = await context.plugin.cacheManager.getTaskInfo(path);
-							if (task) await addTaskToProject(context.plugin, task, projectFile);
+						const targetTasks = await getTasksForPaths(context, paths);
+						for (const task of targetTasks) {
+							await addTaskToProject(context.plugin, task, projectFile);
 						}
 					})();
 				},
 				{
 					selectedProjects: getTaskProjectFiles(context.plugin, tasks),
 					onRemove: async (projectFile) => {
-						for (const path of paths) {
-							const task = await context.plugin.cacheManager.getTaskInfo(path);
-							if (task) {
-								await removeTaskFromProject(context.plugin, task, projectFile);
-							}
+						const targetTasks = await getTasksForPaths(context, paths);
+						for (const task of targetTasks) {
+							await removeTaskFromProject(context.plugin, task, projectFile);
 						}
 					},
 				}

@@ -96,6 +96,34 @@ describe("executeBasesTaskCardAction", () => {
 		expect(openTaskEditModal).toHaveBeenCalledWith(first);
 	});
 
+	it("starts all selected task cache reads before awaiting their results", async () => {
+		const first = task("first.md");
+		const second = task("second.md");
+		let resolveFirst: (value: TaskInfo | null) => void;
+		let resolveSecond: (value: TaskInfo | null) => void;
+		const firstRead = new Promise<TaskInfo | null>((resolve) => {
+			resolveFirst = resolve;
+		});
+		const secondRead = new Promise<TaskInfo | null>((resolve) => {
+			resolveSecond = resolve;
+		});
+		const getTaskInfo = jest.fn((path: string) =>
+			path === first.path ? firstRead : secondRead
+		);
+		const openTaskEditModal = jest.fn();
+		const context = createContext([first, second], {
+			plugin: { cacheManager: { getTaskInfo }, openTaskEditModal } as any,
+		});
+
+		const action = executeBasesTaskCardAction("edit-task", null, context);
+		expect(getTaskInfo).toHaveBeenCalledTimes(2);
+		resolveFirst!(first);
+		resolveSecond!(second);
+		await action;
+
+		expect(openTaskEditModal).toHaveBeenCalledWith(first);
+	});
+
 	it("selects only tasks visible in the current filtered view", async () => {
 		const selectAll = jest.fn();
 		const enterSelectionMode = jest.fn();
