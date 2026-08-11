@@ -946,6 +946,17 @@ export class TaskListView extends BasesViewBase {
 		return cardEl.ownerDocument.body.classList.contains("is-mobile");
 	}
 
+	/**
+	 * Reports whether a card is embedded in a CodeMirror Live Preview editor.
+	 *
+	 * Only these cards need their press events kept out of the editor so that a
+	 * reorder gesture does not become an editor selection gesture. Standalone
+	 * Bases views must retain the browser's normal drag initiation behavior.
+	 */
+	private isEmbeddedLivePreviewCard(cardEl: HTMLElement): boolean {
+		return Boolean(cardEl.closest(".markdown-source-view .cm-editor"));
+	}
+
 	private setupCardDragHandle(cardEl: HTMLElement): void {
 		cardEl.classList.add("task-card--reorderable");
 		cardEl.classList.toggle(
@@ -1004,11 +1015,10 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 
-			// Live Preview embeds sit inside CodeMirror. Keep reorder presses from
-			// becoming editor selection gestures before the browser can start DnD.
-			event.stopPropagation();
-			if (event.type === "mousedown") {
-				event.preventDefault();
+			if (this.isEmbeddedLivePreviewCard(cardEl)) {
+				// Keep an embedded editor from claiming the press, while preserving the
+				// event default action that starts the browser's native drag sequence.
+				event.stopPropagation();
 			}
 		};
 
