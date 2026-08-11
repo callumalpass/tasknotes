@@ -43,6 +43,7 @@ import { FieldMapper } from "./services/FieldMapper";
 import { StatusManager } from "./services/StatusManager";
 import { PriorityManager } from "./services/PriorityManager";
 import { TaskService } from "./services/TaskService";
+import { isMaterializedOccurrenceTask } from "@tasknotes/model/operations";
 import { FilterService } from "./services/FilterService";
 import { TaskStatsService } from "./services/TaskStatsService";
 import type { ViewPerformanceService } from "./services/ViewPerformanceService";
@@ -1708,6 +1709,40 @@ export default class TaskNotesPlugin extends Plugin {
 				error: error,
 			});
 			new Notice("Failed to cycle task status");
+		}
+	}
+
+	async repeatCurrentTask(): Promise<void> {
+		try {
+			const taskInfo = await this.getCurrentTaskForCommand();
+			if (!taskInfo) {
+				return;
+			}
+
+			if (taskInfo.recurrence) {
+				new Notice("Recurring tasks already track each occurrence");
+				return;
+			}
+
+			if (isMaterializedOccurrenceTask(taskInfo)) {
+				new Notice("This task is an occurrence of a recurring task");
+				return;
+			}
+
+			if (!this.statusManager.isCompletedStatus(taskInfo.status)) {
+				new Notice("Current task is not completed");
+				return;
+			}
+
+			const repeatedTask = await this.taskService.repeatTask(taskInfo);
+			await this.openTaskEditModal(repeatedTask);
+		} catch (error) {
+			tasknotesLogger.error("Failed to repeat current task:", {
+				category: "persistence",
+				operation: "repeat-current-task",
+				error: error,
+			});
+			new Notice("Failed to repeat task");
 		}
 	}
 

@@ -5552,6 +5552,10 @@
       "source": "61c5c35adec710369dbcd6da430c381a70156e5d",
       "translation": "701ef7cbc5e9410a49a411169cc61ecb29860976"
     },
+    "commands.repeatCurrentTask": {
+      "source": "b1a568d46de22dc7529d7234dea3d56b17043ad4",
+      "translation": "a1ea8fbfef22bd7dee871bcc04f042f4fd78c047"
+    },
     "commands.cycleCurrentTaskPriority": {
       "source": "943d8224c722f6f234c78dbe137391b70e468627",
       "translation": "58afd3ef24b97707f57b09bb5f2374c8ec29ba67"
@@ -14441,6 +14445,10 @@
     "commands.cycleCurrentTaskStatus": {
       "source": "61c5c35adec710369dbcd6da430c381a70156e5d",
       "translation": "5a39bc387e6eea8bb5a4daadf6821b3b459e40d0"
+    },
+    "commands.repeatCurrentTask": {
+      "source": "b1a568d46de22dc7529d7234dea3d56b17043ad4",
+      "translation": "ba0e902580a0a462631797761fa047c2e0ebe3b8"
     },
     "commands.cycleCurrentTaskPriority": {
       "source": "943d8224c722f6f234c78dbe137391b70e468627",
@@ -23332,6 +23340,10 @@
       "source": "61c5c35adec710369dbcd6da430c381a70156e5d",
       "translation": "f3655e1a9e3bea33eb3fc614ffc8f9ef66e92fce"
     },
+    "commands.repeatCurrentTask": {
+      "source": "b1a568d46de22dc7529d7234dea3d56b17043ad4",
+      "translation": "f1ee690411b80cc528f2914c809a7178299917d3"
+    },
     "commands.cycleCurrentTaskPriority": {
       "source": "943d8224c722f6f234c78dbe137391b70e468627",
       "translation": "984ba6464d80fa3ddd90ab976313eee77983b0bf"
@@ -32221,6 +32233,10 @@
     "commands.cycleCurrentTaskStatus": {
       "source": "61c5c35adec710369dbcd6da430c381a70156e5d",
       "translation": "c822eb9692a7f8dd6eab45edddc517f6720c5af2"
+    },
+    "commands.repeatCurrentTask": {
+      "source": "b1a568d46de22dc7529d7234dea3d56b17043ad4",
+      "translation": "b3d9cd9f506ade3a7940d9544a64c2e4a97f3ba1"
     },
     "commands.cycleCurrentTaskPriority": {
       "source": "943d8224c722f6f234c78dbe137391b70e468627",
@@ -41112,6 +41128,10 @@
       "source": "61c5c35adec710369dbcd6da430c381a70156e5d",
       "translation": "4c834a48b9ada6c8697fd5ecc08a6b86ca0228d1"
     },
+    "commands.repeatCurrentTask": {
+      "source": "b1a568d46de22dc7529d7234dea3d56b17043ad4",
+      "translation": "cc9bc8a91df886aee6338d39cc00211a6e0f3f8d"
+    },
     "commands.cycleCurrentTaskPriority": {
       "source": "943d8224c722f6f234c78dbe137391b70e468627",
       "translation": "aa9c56274d2710c95529ed88b2244bc75066e559"
@@ -50001,6 +50021,10 @@
     "commands.cycleCurrentTaskStatus": {
       "source": "61c5c35adec710369dbcd6da430c381a70156e5d",
       "translation": "ff9264bd736905ee499a2f2c573ece7c4f765f20"
+    },
+    "commands.repeatCurrentTask": {
+      "source": "b1a568d46de22dc7529d7234dea3d56b17043ad4",
+      "translation": "ae22993299f77df5554e731a07e4b9bd4ba42365"
     },
     "commands.cycleCurrentTaskPriority": {
       "source": "943d8224c722f6f234c78dbe137391b70e468627",
@@ -58892,6 +58916,10 @@
       "source": "61c5c35adec710369dbcd6da430c381a70156e5d",
       "translation": "b7e9b24542615253bbd005d57c91afe6168be29c"
     },
+    "commands.repeatCurrentTask": {
+      "source": "b1a568d46de22dc7529d7234dea3d56b17043ad4",
+      "translation": "5763d6683d7d5b651ee89fd682986af80c0a29f2"
+    },
     "commands.cycleCurrentTaskPriority": {
       "source": "943d8224c722f6f234c78dbe137391b70e468627",
       "translation": "726c4d162c2dd284d830dfef55ca22bb76e1eb2c"
@@ -67781,6 +67809,10 @@
     "commands.cycleCurrentTaskStatus": {
       "source": "61c5c35adec710369dbcd6da430c381a70156e5d",
       "translation": "cd39cf908e9bf16b756d7dc2565bdb5e3f95d737"
+    },
+    "commands.repeatCurrentTask": {
+      "source": "b1a568d46de22dc7529d7234dea3d56b17043ad4",
+      "translation": "a7bc1d6dc3d4eef1c6530765525f0078136de9cd"
     },
     "commands.cycleCurrentTaskPriority": {
       "source": "943d8224c722f6f234c78dbe137391b70e468627",

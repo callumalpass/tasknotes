@@ -31,3 +31,13 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+
+## Added
+
+- Added a **Repeat current task** command for reusing a completed task on a new
+  date. It records the completion date in `complete_instances`, reopens the
+  task, unarchives it if needed, and opens the edit modal so you can set the
+  next scheduled and due dates. Useful for tasks that come back irregularly and
+  do not fit a recurrence rule. See
+  [Task Management](https://tasknotes.dev/features/task-management/#repeating-a-completed-task).

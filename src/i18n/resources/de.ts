@@ -2273,6 +2273,7 @@ export const de: TranslationTree = {
 		quickActionsTaskUnderCursor: "Schnellaktionen für Aufgabe unter dem Cursor",
 		editCurrentTask: "Aktuelle Aufgabe bearbeiten",
 		cycleCurrentTaskStatus: "Status der aktuellen Aufgabe wechseln",
+		repeatCurrentTask: "Aktuelle Aufgabe wiederholen",
 		cycleCurrentTaskPriority: "Priorität der aktuellen Aufgabe wechseln",
 		addProjectToCurrentTask: "Projekt zur aktuellen Aufgabe hinzufügen",
 		addSubtaskToCurrentNote: "Unteraufgabe zur aktuellen Notiz hinzufügen"
