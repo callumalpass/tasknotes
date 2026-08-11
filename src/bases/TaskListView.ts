@@ -24,6 +24,7 @@ import { generateProjectReference, parseLinkToPath } from "../utils/linkUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
 	isSortOrderInSortConfig,
+	prepareBatchSortOrderUpdate,
 	prepareSortOrderUpdate,
 	applySortOrderPlan,
 	DropOperationQueue,
@@ -1569,20 +1570,34 @@ export class TaskListView extends BasesViewBase {
 			}
 
 			// Compute sort_order first (read-only — no file writes yet)
-			const sortOrderPlan = await prepareSortOrderUpdate(
-				targetPath,
-				above,
-				targetGroupKey,
-				groupDropPlan.cleanGroupBy,
-				draggedPath,
-				this.plugin,
-				{
-					taskInfoCache: this.taskInfoCache,
-					visibleTaskPaths:
-						targetVisiblePaths ?? this.getVisibleSortScopePaths(targetGroupKey),
-					candidateTaskPaths: this.getCandidateSortScopePaths(targetGroupKey),
-				}
-			);
+			const sortOrderOptions = {
+				taskInfoCache: this.taskInfoCache,
+				visibleTaskPaths:
+					targetVisiblePaths ?? this.getVisibleSortScopePaths(targetGroupKey),
+				candidateTaskPaths: this.getCandidateSortScopePaths(targetGroupKey),
+			};
+			// A selected drag is a single ordered block, so every selected path must
+			// receive a rank at the destination rather than only the grabbed card.
+			const sortOrderPlan =
+				pathsToUpdate.length > 1
+					? await prepareBatchSortOrderUpdate(
+							targetPath,
+							above,
+							targetGroupKey,
+							groupDropPlan.cleanGroupBy,
+							pathsToUpdate,
+							this.plugin,
+							sortOrderOptions
+						)
+					: await prepareSortOrderUpdate(
+							targetPath,
+							above,
+							targetGroupKey,
+							groupDropPlan.cleanGroupBy,
+							draggedPath,
+							this.plugin,
+							sortOrderOptions
+						);
 			if (sortOrderPlan.sortOrder === null) return;
 
 			const totalEditedNotes = sortOrderPlan.additionalWrites.length + pathsToUpdate.length;

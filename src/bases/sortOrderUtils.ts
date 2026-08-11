@@ -700,6 +700,76 @@ export async function prepareSortOrderUpdate(
 }
 
 /**
+ * Prepare a persistent manual-order update for a block of dragged tasks.
+ *
+ * The moved paths are inserted together in their supplied display order. The
+ * result uses the existing single-drag plan shape: the primary dragged path is
+ * represented by `sortOrder` and every other changed task is an additional
+ * write. No files are written by this function.
+ */
+export async function prepareBatchSortOrderUpdate(
+	targetTaskPath: string,
+	above: boolean,
+	groupKey: string | null,
+	groupByProperty: string | null,
+	draggedPaths: readonly string[],
+	plugin: TaskNotesPlugin,
+	options: SortOrderComputationOptions = {}
+): Promise<SortOrderPlan> {
+	const orderedDraggedPaths = Array.from(
+		new Set(draggedPaths.filter((path) => path.length > 0))
+	);
+	const primaryDraggedPath = orderedDraggedPaths[0];
+	if (!primaryDraggedPath) {
+		return { sortOrder: null, additionalWrites: [], reason: "boundary" };
+	}
+
+	const columnTasks = getGroupTasks(groupKey, groupByProperty, plugin, options);
+	const scopePaths = options.visibleTaskPaths
+		? Array.from(new Set([...options.visibleTaskPaths, ...orderedDraggedPaths]))
+		: Array.from(new Set([...columnTasks.map((task) => task.path), ...orderedDraggedPaths]));
+	const movedPathSet = new Set(orderedDraggedPaths);
+	const remainingPaths = scopePaths.filter((path) => !movedPathSet.has(path));
+	const targetIndex = remainingPaths.indexOf(targetTaskPath);
+	if (targetIndex === -1 || movedPathSet.has(targetTaskPath)) {
+		return { sortOrder: null, additionalWrites: [], reason: "boundary" };
+	}
+
+	const insertAt = above ? targetIndex : targetIndex + 1;
+	const reorderedPaths = [
+		...remainingPaths.slice(0, insertAt),
+		...orderedDraggedPaths,
+		...remainingPaths.slice(insertAt),
+	];
+	const taskByPath = new Map(columnTasks.map((task) => [task.path, task]));
+	const sortDirection = inferSortDirection(
+		reorderedPaths
+			.map((path) => taskByPath.get(path))
+			.filter((task): task is TaskInfo => task !== undefined)
+	);
+
+	// Rebalance the visible destination scope so every selected card has a
+	// distinct rank and therefore persists as one contiguous dragged block.
+	const additionalWrites: SortOrderWrite[] = [];
+	let primarySortOrder: string | null = null;
+	for (let index = 0; index < reorderedPaths.length; index++) {
+		const path = reorderedPaths[index];
+		const sortOrder = createAlphaRankForDisplayIndex(index, reorderedPaths.length, sortDirection);
+		if (path === primaryDraggedPath) {
+			primarySortOrder = sortOrder;
+		} else {
+			additionalWrites.push({ path, sortOrder });
+		}
+	}
+
+	return {
+		sortOrder: primarySortOrder,
+		additionalWrites,
+		reason: "rebalance",
+	};
+}
+
+/**
  * Apply a previously prepared sort-order plan using the configured mapping.
  */
 export async function applySortOrderPlan(
