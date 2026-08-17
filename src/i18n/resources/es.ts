@@ -3103,6 +3103,7 @@ export const es: TranslationTree = {
 			blockingBadgeTooltip: "Esta tarea bloquea otra tarea",
 			blockingToggle: "Bloqueando {count} tareas",
 			priorityAriaLabel: "Prioridad: {label}",
+			selectTask: "Seleccionar tarea",
 			taskOptions: "Opciones de tarea",
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 recordatorio configurado (clic para gestionar)",

@@ -3087,6 +3087,7 @@ export const ko: TranslationTree = {
 			blockingBadgeTooltip: "이 작업이 다른 작업을 차단하고 있습니다",
 			blockingToggle: "{count}개의 작업을 차단 중",
 			priorityAriaLabel: "우선순위: {label}",
+			selectTask: "작업 선택",
 			taskOptions: "작업 옵션",
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "알림 1개 설정됨 (관리하려면 클릭)",

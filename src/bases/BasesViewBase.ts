@@ -43,6 +43,7 @@ import {
 import {
 	getVisibleTaskPathsFromBasesRoot,
 	handleBasesSelectionClick,
+	handleBasesSelectionCheckboxClick,
 	handleBasesSelectionKeyDown,
 	setBasesSelectionModeUi,
 	updateBasesSelectionIndicator,
@@ -985,6 +986,20 @@ export abstract class BasesViewBase extends Component {
 		}
 
 		return handled;
+	}
+
+	/**
+	 * Handle the explicit checkbox used to select a task for batch actions.
+	 */
+	protected handleSelectionCheckboxClick(event: MouseEvent, taskPath: string): void {
+		handleBasesSelectionCheckboxClick({
+			event,
+			taskPath,
+			selectionService: this.plugin.taskSelectionService,
+			getVisibleTaskPaths: () => this.getVisibleTaskPaths(),
+			updateSelectionVisuals: () => this.updateSelectionVisuals(),
+		});
+		this.rootElement?.focus({ preventScroll: true });
 	}
 
 	/**

@@ -89,6 +89,12 @@ export function updateBasesSelectionVisuals(
 			selectedClass: "task-card--selected",
 			primaryClass: "task-card--selected-primary",
 		});
+		const selectionCheckbox = card.querySelector<HTMLInputElement>(
+			".task-card__selection-checkbox"
+		);
+		if (selectionCheckbox && card.dataset.taskPath) {
+			selectionCheckbox.checked = selectionService.isSelected(card.dataset.taskPath);
+		}
 	}
 
 	const cardWrappers = rootElement.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper");
@@ -182,6 +188,35 @@ export function handleBasesSelectionClick({
 
 	updateSelectionVisuals();
 	return true;
+}
+
+/**
+ * Apply Gmail-style task selection from a dedicated checkbox.
+ *
+ * A normal checkbox click toggles one task. A Shift+checkbox click keeps the
+ * previous selection endpoint and selects the inclusive visible range.
+ */
+export function handleBasesSelectionCheckboxClick({
+	event,
+	taskPath,
+	selectionService,
+	getVisibleTaskPaths,
+	updateSelectionVisuals,
+}: SelectionClickOptions): void {
+	if (!selectionService) return;
+
+	// The checkbox is the explicit batch-selection affordance, so a plain click
+	// must begin selection mode instead of invoking the task card's open/edit action.
+	if (event.shiftKey) {
+		if (!selectionService.isSelectionModeActive()) {
+			selectionService.enterSelectionMode();
+		}
+		selectionService.selectRange(taskPath, getVisibleTaskPaths());
+	} else {
+		selectionService.toggleSelection(taskPath);
+	}
+
+	updateSelectionVisuals();
 }
 
 export function handleBasesSelectionKeyDown({

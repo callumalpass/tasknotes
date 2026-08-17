@@ -3102,6 +3102,7 @@ export const zh: TranslationTree = {
 			blockingBadgeTooltip: "此任务正在阻塞其他任务",
 			blockingToggle: "阻塞 {count} 个任务",
 			priorityAriaLabel: "优先级: {label}",
+			selectTask: "选择任务",
 			taskOptions: "任务选项",
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "已设置 1 个提醒（点击管理）",

@@ -2493,6 +2493,10 @@ export class TaskListView extends BasesViewBase {
 				),
 			expandedRelationshipTaskPaths: this.expandedRelationshipTaskPaths,
 			expandedRelationshipTaskOrder: this.expandedRelationshipTaskOrder,
+			selectionControl: {
+				isSelected: (taskPath) => this.plugin.taskSelectionService?.isSelected(taskPath) ?? false,
+				onClick: (taskPath, event) => this.handleSelectionCheckboxClick(event, taskPath),
+			},
 		});
 	}
 

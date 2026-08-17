@@ -57,6 +57,15 @@ export interface TaskCardOptions {
 	expandedRelationshipTaskOrder?: ReadonlyMap<string, number>;
 	/** When true, occurrence actions are promoted to the top of the card context menu. */
 	promoteOccurrenceControlsInContextMenu?: boolean;
+	/** Optional checkbox control used by list views to select tasks for batch actions. */
+	selectionControl?: TaskCardSelectionControl;
+}
+
+export interface TaskCardSelectionControl {
+	/** Returns whether the task should render as selected. */
+	isSelected(taskPath: string): boolean;
+	/** Applies the view-specific selection behavior for a checkbox click. */
+	onClick(taskPath: string, event: MouseEvent): void;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -156,6 +165,16 @@ export function createTaskCard(
 	});
 
 	applyTaskCardPriorityColor(card, task, plugin);
+
+	// Task Lists opt into this separate control so status changes remain distinct from batch selection.
+	if (opts.selectionControl && layout !== "inline") {
+		createTaskSelectionCheckbox({
+			mainRow,
+			taskPath: task.path,
+			plugin,
+			selectionControl: opts.selectionControl,
+		});
+	}
 
 	createStatusIndicator({
 		mainRow,
@@ -266,6 +285,9 @@ export function createTaskCard(
 					selectedPaths,
 					onUpdate,
 				}),
+			selectionClickHandler: opts.selectionControl
+				? (event) => opts.selectionControl?.onClick(task.path, event)
+				: undefined,
 		});
 
 	card.addEventListener("click", clickHandler);
@@ -278,6 +300,36 @@ export function createTaskCard(
 	}
 
 	return card;
+}
+
+/**
+ * Create the Task List's batch-selection checkbox.
+ *
+ * The caller owns selection state; this control only reports its click and
+ * renders the caller-provided current state.
+ */
+function createTaskSelectionCheckbox({
+	mainRow,
+	taskPath,
+	plugin,
+	selectionControl,
+}: {
+	mainRow: HTMLElement;
+	taskPath: string;
+	plugin: TaskNotesPlugin;
+	selectionControl: TaskCardSelectionControl;
+}): HTMLInputElement {
+	const checkbox = mainRow.createEl("input", {
+		cls: "task-card__selection-checkbox",
+		type: "checkbox",
+	});
+	checkbox.checked = selectionControl.isSelected(taskPath);
+	checkbox.setAttribute("aria-label", plugin.i18n.translate("ui.taskCard.selectTask"));
+	checkbox.addEventListener("click", (event) => {
+		event.stopPropagation();
+		selectionControl.onClick(taskPath, event);
+	});
+	return checkbox;
 }
 
 /**
