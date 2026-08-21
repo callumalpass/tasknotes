@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2246) Fixed materialized recurring occurrences hiding occurrence-template filename suffixes in TaskNotes views. Thanks to @raphaelfaouakhiri for reporting and fixing this issue.
