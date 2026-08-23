@@ -278,24 +278,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 		}
 	};
 
-	// Try immediate registration
-	if (await attemptRegistration()) {
-		return true;
-	}
-
-	// If that fails, try a few more times with short delays
-	for (let i = 0; i < 5; i++) {
-		await new Promise((r) => window.setTimeout(r, 200));
-		if (await attemptRegistration()) {
-			return true;
-		}
-	}
-
-	logger.warn("Failed to register views after multiple attempts", {
-		category: "configuration",
-		operation: "register-views",
-	});
-	return false;
+	return attemptRegistration();
 }
 
 /**

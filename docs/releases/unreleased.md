@@ -32,6 +32,21 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Changed
+
+- Improved TaskNotes startup performance by allowing Bases registration to finish asynchronously. Thanks to @tgrosinger for the contribution.
+
 ## Fixed
 
 - (#2246) Fixed materialized recurring occurrences hiding occurrence-template filename suffixes in TaskNotes views. Thanks to @raphaelfaouakhiri for reporting and fixing this issue.
+- Fixed `PUT /api/tasks/:id` ignoring empty arrays for `contexts` and `blockedBy`: sending `{"contexts": []}` or `{"blockedBy": []}` now clears the corresponding frontmatter field instead of silently leaving the previous value in place. The deletion pass previously fired only on a literal `undefined`, which JSON cannot express, so HTTP clients had no way to clear these fields. Thanks to @tgrosinger for the contribution.
+- (#2191) Completing or skipping a recurring occurrence that was moved earlier
+  than its original date no longer schedules that original date again. Thanks to
+  @martin-forge for the contribution.
+- (#2193) Google Calendar event descriptions written with formatting now read as
+  plain text in event details, copied text, and generated notes, instead of
+  showing raw HTML tags. Paragraph breaks, list structure, and link addresses are
+  kept. Thanks to @martin-forge for the contribution.
+- (#2192) Agenda and list cards for Google and Microsoft calendar events now
+  show the name of the calendar the event belongs to, instead of the generic
+  "Calendar" label. Thanks to @martin-forge for the contribution.
