@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- TaskNotes now automatically upgrades unmodified TaskNotes-generated mdbase v0.2 collection metadata to the canonical v0.3 task type and contract when the integration is enabled. Existing task notes are not rewritten, custom collection settings are preserved, the previous metadata is backed up, and ambiguous, interrupted, or failed upgrades are safely restored or left for manual review. See [Integrations Settings](https://tasknotes.dev/settings/integrations/#mdbase).
