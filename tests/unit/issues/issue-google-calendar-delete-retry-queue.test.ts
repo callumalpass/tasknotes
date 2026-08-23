@@ -5,6 +5,12 @@ import { EventNotFoundError } from "../../../src/services/errors";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 
 const createPlugin = (pluginData: Record<string, any> = {}, calendarSettings = {}) => {
+	const connectionId = "google-connection-a";
+	for (const key of ["googleCalendarDeletionQueue", "googleCalendarEventIndex"]) {
+		for (const item of pluginData[key] ?? []) {
+			if (!("connectionId" in item)) item.connectionId = connectionId;
+		}
+	}
 	const basePlugin = PluginFactory.createMockPlugin();
 	const plugin = PluginFactory.createMockPlugin({
 		settings: {
@@ -30,6 +36,7 @@ const createPlugin = (pluginData: Record<string, any> = {}, calendarSettings = {
 	});
 
 	plugin.loadData = jest.fn().mockImplementation(async () => pluginData);
+	plugin.loadPluginDataForSafeWrite = jest.fn().mockImplementation(async () => pluginData);
 	plugin.saveData = jest.fn().mockImplementation(async (data: Record<string, any>) => {
 		const nextData = { ...data };
 		for (const key of Object.keys(pluginData)) {
@@ -44,6 +51,10 @@ const createPlugin = (pluginData: Record<string, any> = {}, calendarSettings = {
 	plugin.priorityManager = {
 		...plugin.priorityManager,
 		getPriorityConfig: jest.fn().mockReturnValue(null),
+	};
+	plugin.oauthService = {
+		...plugin.oauthService,
+		getConnection: jest.fn().mockResolvedValue({ connectionId }),
 	};
 
 	return plugin;
@@ -105,8 +116,57 @@ describe("Google Calendar deletion retry queue", () => {
 		const result = await syncService.processDeletionQueue();
 
 		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-1");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"event-1",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
+	});
+
+	it("clears recurring exception metadata after its queued deletion succeeds", async () => {
+		const taskPath = "TaskNotes/Tasks/recurring-exception.md";
+		const pluginData = {
+			googleCalendarDeletionQueue: [
+				{
+					taskPath,
+					calendarId: "primary",
+					eventId: "exception-event",
+					createdAt: 1,
+					attempts: 1,
+					lastAttemptAt: 1,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.cacheManager.getTaskInfo = jest.fn().mockResolvedValue(
+			TaskFactory.createTask({
+				path: taskPath,
+				googleCalendarEventId: "primary-event",
+				googleCalendarExceptionEventId: "exception-event",
+				googleCalendarExceptionOriginalScheduled: "2026-08-05",
+			})
+		);
+		const syncService = new TaskCalendarSyncService(
+			plugin,
+			createGoogleCalendarService() as any
+		);
+		const saveExceptionMetadata = jest
+			.spyOn(syncService as any, "saveTaskExceptionMetadata")
+			.mockResolvedValue(undefined);
+
+		const result = await syncService.processDeletionQueue();
+
+		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
+		expect(saveExceptionMetadata).toHaveBeenCalledWith(
+			taskPath,
+			{
+				googleCalendarExceptionEventId: undefined,
+				googleCalendarExceptionOriginalScheduled: undefined,
+			},
+			"primary",
+			expect.any(Number)
+		);
 	});
 
 	it("treats already-deleted Google events as successful cleanup", async () => {
@@ -131,6 +191,66 @@ describe("Google Calendar deletion retry queue", () => {
 		const result = await syncService.processDeletionQueue();
 
 		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
+		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
+	});
+
+	it("retains queued cleanup when it belongs to a different Google connection", async () => {
+		const pluginData = {
+			googleCalendarDeletionQueue: [
+				{
+					taskPath: "TaskNotes/Tasks/account-a.md",
+					calendarId: "primary",
+					eventId: "account-a-event",
+					connectionId: "google-connection-a",
+					createdAt: 1,
+					attempts: 0,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.oauthService.getConnection = jest
+			.fn()
+			.mockResolvedValue({ connectionId: "google-connection-b" });
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const result = await syncService.processDeletionQueue();
+
+		expect(result).toEqual({ deleted: 0, failed: 1, remaining: 1 });
+		expect(googleCalendarService.deleteEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarDeletionQueue).toEqual([
+			expect.objectContaining({
+				connectionId: "google-connection-a",
+				lastError: "Queued Google Calendar deletion belongs to a different connection",
+			}),
+		]);
+	});
+
+	it("binds a legacy queued cleanup to the current Google connection once", async () => {
+		const pluginData = {
+			googleCalendarDeletionQueue: [
+				{
+					taskPath: "TaskNotes/Tasks/legacy.md",
+					calendarId: "primary",
+					eventId: "legacy-event",
+					connectionId: undefined,
+					createdAt: 1,
+					attempts: 0,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const result = await syncService.processDeletionQueue();
+
+		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"legacy-event",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
 	});
 
@@ -199,7 +319,11 @@ describe("Google Calendar deletion retry queue", () => {
 		const result = await syncService.processDeletionQueue();
 
 		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-from-index");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"event-from-index",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
 		expect(pluginData.googleCalendarEventIndex).toEqual([]);
 	});
@@ -223,7 +347,11 @@ describe("Google Calendar deletion retry queue", () => {
 
 		await syncService.processRecoveryQueues();
 
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-from-index");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"event-from-index",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
 		expect(pluginData.googleCalendarEventIndex).toEqual([]);
 	});
@@ -384,7 +512,11 @@ describe("Google Calendar deletion retry queue", () => {
 		);
 
 		expect(synced).toBe(true);
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "old-event");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"old-event",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toBeUndefined();
 		expect(pluginData.googleCalendarEventIndex).toEqual([
 			expect.objectContaining({
@@ -498,7 +630,8 @@ describe("Google Calendar deletion retry queue", () => {
 			"primary",
 			expect.objectContaining({
 				start: { date: "2026-04-29" },
-			})
+			}),
+			expect.any(Number)
 		);
 		expect(pluginData.googleCalendarSyncQueue).toEqual([]);
 		expect(pluginData.googleCalendarEventIndex).toEqual([
@@ -539,7 +672,8 @@ describe("Google Calendar deletion retry queue", () => {
 			"existing-event-id",
 			expect.objectContaining({
 				start: { date: "2026-05-02" },
-			})
+			}),
+			expect.any(Number)
 		);
 		expect(pluginData.googleCalendarSyncQueue).toEqual([]);
 	});
@@ -568,7 +702,11 @@ describe("Google Calendar deletion retry queue", () => {
 		const result = await syncService.processPendingSyncQueue();
 
 		expect(result).toEqual({ synced: 0, failed: 0, deleted: 1, dropped: 0, remaining: 0 });
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-to-delete");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"event-to-delete",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarSyncQueue).toEqual([]);
 	});
 });

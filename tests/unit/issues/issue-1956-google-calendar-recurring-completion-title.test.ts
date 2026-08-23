@@ -79,6 +79,7 @@ function createPlugin(pluginData: Record<string, unknown> = {}) {
 			getAllTasks: jest.fn().mockResolvedValue([]),
 		},
 		loadData: jest.fn().mockImplementation(async () => pluginData),
+		loadPluginDataForSafeWrite: jest.fn().mockImplementation(async () => pluginData),
 		saveData: jest.fn().mockImplementation(async (data: Record<string, unknown>) => {
 			for (const key of Object.keys(pluginData)) {
 				delete pluginData[key];
@@ -126,7 +127,8 @@ describe("Issue #1956: recurring Google Calendar completion title", () => {
 				summary: "✓ Weekly review",
 				description: expect.stringContaining("Status: Done"),
 				recurrence: expect.arrayContaining(["EXDATE;VALUE=DATE:20260528"]),
-			})
+			}),
+			expect.any(Number)
 		);
 	});
 });

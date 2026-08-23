@@ -3,6 +3,7 @@ import { TFile } from "obsidian";
 import {
 	applySortOrderPlan,
 	prepareSortOrderUpdate,
+	stripPropertyPrefix,
 	type SortOrderPlan,
 } from "../../../src/bases/sortOrderUtils";
 
@@ -70,6 +71,14 @@ function createPlugin(frontmatterByPath: FrontmatterMap, sortOrderField = "taskn
 }
 
 describe("sortOrderUtils", () => {
+	it("strips repeated Bases property prefixes", () => {
+		expect(stripPropertyPrefix("status")).toBe("status");
+		expect(stripPropertyPrefix("task.status")).toBe("status");
+		expect(stripPropertyPrefix("note.task.status")).toBe("status");
+		expect(stripPropertyPrefix("file.name")).toBe("name");
+		expect(stripPropertyPrefix("formula.weekDay")).toBe("weekDay");
+	});
+
 	it("writes the configured sort-order field when applying a plan", async () => {
 		const frontmatterByPath = {
 			"alpha.md": { custom_order: "0|hzzzzz:" },

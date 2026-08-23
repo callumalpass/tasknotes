@@ -48,6 +48,7 @@ describe('Issue #1569 - Local ICS file path fails with absolute paths', () => {
 	beforeEach(() => {
 		mockPlugin = {
 			loadData: jest.fn().mockResolvedValue({ icsSubscriptions: [] }),
+			loadPluginDataForSafeWrite: jest.fn().mockResolvedValue({ icsSubscriptions: [] }),
 			saveData: jest.fn().mockResolvedValue(undefined),
 			app: {
 				vault: {

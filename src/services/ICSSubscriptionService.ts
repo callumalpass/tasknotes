@@ -283,7 +283,8 @@ export class ICSSubscriptionService extends EventEmitter {
 
 	private async saveSubscriptions(): Promise<void> {
 		try {
-			const data = (await this.plugin.loadData()) || {};
+			const data = await this.plugin.loadPluginDataForSafeWrite("save-ics-subscriptions");
+			if (!data) return;
 			data.icsSubscriptions = this.subscriptions;
 			await this.plugin.saveData(data);
 		} catch (error) {
@@ -1059,3 +1060,5 @@ export class ICSSubscriptionService extends EventEmitter {
 			.sort((a, b) => a.path.localeCompare(b.path));
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the subscription service implementation. */

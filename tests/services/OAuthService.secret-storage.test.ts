@@ -71,6 +71,7 @@ describe("OAuthService SecretStorage persistence", () => {
 	});
 
 	it("refreshes and persists tokens without writing plugin data", async () => {
+		const initialConnection = await sut.getConnection("google");
 		mockRequestUrl.mockResolvedValue({
 			status: 200,
 			json: {
@@ -92,11 +93,26 @@ describe("OAuthService SecretStorage persistence", () => {
 			})
 		);
 		expect(secretStore.getConnection("google")?.tokens).toEqual(result);
+		expect(secretStore.getConnection("google")?.connectionId).toBe(
+			initialConnection?.connectionId
+		);
+		expect(secretStore.getConnection("google")?.connectedAt).toBe(
+			initialConnection?.connectedAt
+		);
 		expect(mockPlugin.saveData).not.toHaveBeenCalled();
 		const request = getRequestCall(mockRequestUrl);
 		expect(request.body).toContain("client_id=current-client-id");
 		expect(request.body).toContain("client_secret=current-client-secret");
 		expect(request.body).toContain("refresh_token=current-refresh-token");
+	});
+
+	it("assigns a durable identity to a legacy stored connection", async () => {
+		const migrated = await sut.getConnection("google");
+		const reloadedService = new OAuthService(mockPlugin as TaskNotesPlugin, secretStore);
+		const reloaded = await reloadedService.getConnection("google");
+
+		expect(migrated?.connectionId).toEqual(expect.any(String));
+		expect(reloaded?.connectionId).toBe(migrated?.connectionId);
 	});
 
 	it("clears invalid tokens without deleting the saved app credentials", async () => {

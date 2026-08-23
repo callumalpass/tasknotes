@@ -8,7 +8,12 @@ import { GoogleCalendarError, RateLimitError, EventNotFoundError } from '../../s
 jest.mock('obsidian', () => ({
 	Notice: jest.fn(),
 	requestUrl: jest.fn(),
-	Platform: { isDesktopApp: true }
+	Platform: { isDesktopApp: true },
+	sanitizeHTMLToDom: (html: string) => {
+		const template = document.createElement('template');
+		template.innerHTML = html;
+		return template.content;
+	}
 }));
 
 describe('GoogleCalendarService', () => {
@@ -111,6 +116,31 @@ describe('GoogleCalendarService', () => {
 			);
 		});
 
+		test('discards a calendar list that finishes after the OAuth connection changes', async () => {
+			let connectionGeneration = 1;
+			let resolveRequest!: (value: Awaited<ReturnType<typeof requestUrl>>) => void;
+			mockOAuthService.getConnectionGeneration = jest.fn(() => connectionGeneration);
+			mockRequestUrl.mockReturnValueOnce(
+				new Promise((resolve) => {
+					resolveRequest = resolve;
+				}) as ReturnType<typeof requestUrl>
+			);
+
+			const pendingList = service.listCalendars();
+			await Promise.resolve();
+			connectionGeneration = 2;
+			resolveRequest({
+				status: 200,
+				json: mockCalendarList,
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			await expect(pendingList).rejects.toThrow('connection changed');
+			expect((service as any).calendarColors.size).toBe(0);
+		});
+
 		test('should handle empty calendar list', async () => {
 			mockRequestUrl.mockResolvedValueOnce({
 				status: 200,
@@ -155,6 +185,39 @@ describe('GoogleCalendarService', () => {
 			});
 			expect(events[0].allDay).toBe(false);
 			expect(events[1].allDay).toBe(true);
+		});
+
+		test('should normalize HTML descriptions without changing angle-bracketed text', async () => {
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: {
+					items: [
+						{
+							id: 'html-description',
+							summary: 'HTML description',
+							description: '<p>Agenda</p><ul><li>First item</li></ul>',
+							start: { date: '2025-10-22' },
+							end: { date: '2025-10-23' }
+						},
+						{
+							id: 'plain-description',
+							summary: 'Plain description',
+							description: 'Contact <user@example.com>; venue <TBC>',
+							start: { date: '2025-10-23' },
+							end: { date: '2025-10-24' }
+						}
+					],
+					nextSyncToken: 'sync-token-123'
+				},
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			const events = await service.getEvents('primary');
+
+			expect(events[0].description).toBe('Agenda\n\n- First item');
+			expect(events[1].description).toBe('Contact <user@example.com>; venue <TBC>');
 		});
 
 		test('should use sync token for incremental updates', async () => {
@@ -777,6 +840,18 @@ describe('GoogleCalendarService', () => {
 			// Test that getCached Events returns an array
 			const cachedEvents = service.getCachedEvents();
 			expect(Array.isArray(cachedEvents)).toBe(true);
+		});
+
+		test('clears cached calendars and events after the OAuth connection changes', () => {
+			let connectionGeneration = 0;
+			mockOAuthService.getConnectionGeneration = jest.fn(() => connectionGeneration);
+			(service as any).availableCalendars = [{ id: 'primary', summary: 'Account A' }];
+			(service as any).cache.set('all', [{ id: 'account-a-event' }]);
+
+			connectionGeneration = 1;
+
+			expect(service.getAvailableCalendars()).toEqual([]);
+			expect(service.getAllEvents()).toEqual([]);
 		});
 
 		test('should respect manual refresh rate limit', async () => {

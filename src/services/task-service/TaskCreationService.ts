@@ -203,9 +203,17 @@ export class TaskCreationService {
 				runtime.app.vault
 			);
 			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
+			// A templated occurrence filename intentionally differs from the
+			// title, but still represents it as long as the generated name was
+			// used as-is (no collision suffix) and nothing was lost to
+			// filename sanitization.
+			const expectedFilename =
+				occurrenceFilenameTemplate && taskData.occurrence_date
+					? baseFilename
+					: filenameTitle;
 			const titleIsRepresentedByFilename =
 				runtime.settings.storeTitleInFilename &&
-				uniqueFilename === filenameTitle &&
+				uniqueFilename === expectedFilename &&
 				title === filenameTitle;
 
 			const completeTaskData: Partial<TaskInfo> = {

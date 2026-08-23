@@ -81,6 +81,30 @@ interface HTMLElementWithComponent extends HTMLElement {
 	component?: Component;
 }
 
+function getOwnedReadingModeRelationshipWidgets(view: MarkdownView): HTMLElementWithComponent[] {
+	const widgetParents = new Set<HTMLElement>();
+	const previewSizer = view.previewMode.containerEl.querySelector<HTMLElement>(
+		".markdown-preview-sizer"
+	);
+	const editorSizer = view.containerEl.querySelector<HTMLElement>(".cm-sizer");
+	if (previewSizer) widgetParents.add(previewSizer);
+	if (editorSizer) widgetParents.add(editorSizer);
+
+	return Array.from(widgetParents).flatMap((parent) =>
+		getHTMLElementChildren(parent).filter(
+			(child): child is HTMLElementWithComponent =>
+				child.classList.contains(CSS_RELATIONSHIPS_WIDGET)
+		)
+	);
+}
+
+function removeOwnedReadingModeRelationshipWidgets(view: MarkdownView): void {
+	getOwnedReadingModeRelationshipWidgets(view).forEach((widget) => {
+		widget.component?.unload();
+		widget.remove();
+	});
+}
+
 function getHTMLElementChildren(element: HTMLElement): HTMLElement[] {
 	return Array.from(element.children).filter((child): child is HTMLElement =>
 		child.instanceOf(HTMLElement)
@@ -180,13 +204,13 @@ function getRenderedElementBottom(element: HTMLElement): number | null {
 	return bottom;
 }
 
-function getRenderedLinesBottom(lines: HTMLElement[]): number | null {
+function getRenderedContentBottom(elements: HTMLElement[]): number | null {
 	let bottom: number | null = null;
 
-	for (const line of lines) {
-		const lineBottom = getRenderedElementBottom(line);
-		if (lineBottom !== null && (bottom === null || lineBottom > bottom)) {
-			bottom = lineBottom;
+	for (const element of elements) {
+		const elementBottom = getRenderedElementBottom(element);
+		if (elementBottom !== null && (bottom === null || elementBottom > bottom)) {
+			bottom = elementBottom;
 		}
 	}
 
@@ -201,10 +225,7 @@ export function applyRelationshipsBottomOffset(container: HTMLElement, widget: H
 		return;
 	}
 
-	const lines = getHTMLElementChildren(cmContent).filter((child) =>
-		child.classList.contains("cm-line")
-	);
-	const contentBottom = getRenderedLinesBottom(lines);
+	const contentBottom = getRenderedContentBottom(getHTMLElementChildren(cmContent));
 	const contentContainer = cmContent.closest<HTMLElement>(".cm-contentContainer");
 	if (contentBottom === null || !contentContainer) {
 		return;
@@ -241,7 +262,7 @@ async function createRelationshipsWidget(
 	plugin: TaskNotesPlugin,
 	notePath: string
 ): Promise<HTMLElementWithComponent> {
-	const container = activeDocument.createElement("div") as HTMLElementWithComponent;
+	const container = activeWindow.createDiv() as HTMLElementWithComponent;
 	container.className = `tasknotes-plugin ${CSS_RELATIONSHIPS_WIDGET}`;
 
 	container.setAttribute("contenteditable", "false");
@@ -250,7 +271,7 @@ async function createRelationshipsWidget(
 	container.setAttribute("data-note-path", notePath);
 
 	// Create container for embedded Bases view
-	const basesContainer = activeDocument.createElement("div");
+	const basesContainer = activeWindow.createDiv();
 	basesContainer.className = "relationships__bases-container";
 	container.appendChild(basesContainer);
 
@@ -263,7 +284,7 @@ async function createRelationshipsWidget(
 		// Get the Bases file path from settings
 		const basesFilePath = plugin.settings.commandFileMapping["relationships"];
 		if (!basesFilePath) {
-			const errorDiv = activeDocument.createElement("div");
+			const errorDiv = activeWindow.createDiv();
 			errorDiv.className = "relationships__error";
 			errorDiv.textContent = "Relationships view not configured";
 			basesContainer.appendChild(errorDiv);
@@ -286,7 +307,7 @@ async function createRelationshipsWidget(
 			operation: "rendering-bases-view-relationships-widget",
 			error: error,
 		});
-		const errorDiv = activeDocument.createElement("div");
+		const errorDiv = activeWindow.createDiv();
 		errorDiv.className = "relationships__error";
 		errorDiv.textContent = "Failed to load relationships view";
 		basesContainer.appendChild(errorDiv);
@@ -511,24 +532,28 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 
 	private cleanupOrphanedWidgets(view: EditorView): void {
 		try {
-			// Remove any widget DOM that might exist from previous or overlapping instances.
-			const container = view.dom.closest(".workspace-leaf-content");
+			// Remove only widgets owned by this editor. Embedded notes manage their own widgets.
+			const container = view.dom
+				.closest(".markdown-source-view")
+				?.querySelector<HTMLElement>(".cm-sizer");
 			if (!container) {
 				tasknotesLogger.debug(
-					"[TaskNotes] Could not find workspace-leaf-content for orphan cleanup",
+					"[TaskNotes] Could not find .cm-sizer for orphan cleanup",
 					{
 						category: "stale-data",
-						operation: "find-workspace-leaf-content-orphan-cleanup",
+						operation: "find-cm-sizer-orphan-cleanup",
 					}
 				);
 				return;
 			}
 
-			container.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach((el) => {
-				const holder = el as HTMLElementWithComponent;
-				holder.component?.unload();
-				el.remove();
-			});
+			getHTMLElementChildren(container)
+				.filter((child) => child.classList.contains(CSS_RELATIONSHIPS_WIDGET))
+				.forEach((widget) => {
+					const holder = widget as HTMLElementWithComponent;
+					holder.component?.unload();
+					widget.remove();
+				});
 			this.currentWidget = null;
 			this.widgetContainer = null;
 		} catch (error) {
@@ -625,8 +650,8 @@ class RelationshipsDecorationsPlugin implements PluginValue {
 			if (position === "top") {
 				// Try to find task card widget first (should come before relationships)
 				// RISK: Relies on task card widget class name
-				const taskCardWidget = targetContainer.querySelector(
-					".tasknotes-task-card-note-widget"
+				const taskCardWidget = getHTMLElementChildren(targetContainer).find((child) =>
+					child.classList.contains("tasknotes-task-card-note-widget")
 				);
 				if (taskCardWidget) {
 					// Insert after task card widget to maintain order
@@ -710,21 +735,16 @@ async function injectReadingModeWidget(
 	if (!isTaskNote && !isProjectNote) {
 		// Preserve same-file widgets while Obsidian is rebuilding metadata.
 		try {
-			const previewView = view.previewMode;
-			const containerEl = previewView.containerEl;
-			const existingWidgets = Array.from(
-				containerEl.querySelectorAll<HTMLElement>(`.${CSS_RELATIONSHIPS_WIDGET}`)
-			);
+			const existingWidgets = getOwnedReadingModeRelationshipWidgets(view);
 			const hasWidgetForDifferentFile = existingWidgets.some(
 				(widget) => widget.dataset.notePath !== file.path
 			);
 			const isConfirmedNonRelationshipsNote = metadata !== null;
 
 			if (hasWidgetForDifferentFile || isConfirmedNonRelationshipsNote) {
-				existingWidgets.forEach((el) => {
-					const holder = el as HTMLElementWithComponent;
-					holder.component?.unload();
-					el.remove();
+				existingWidgets.forEach((widget) => {
+					widget.component?.unload();
+					widget.remove();
 				});
 			}
 		} catch (error) {
@@ -740,21 +760,18 @@ async function injectReadingModeWidget(
 		return;
 	}
 
+	let widget: HTMLElementWithComponent | null = null;
 	try {
 		// Remove any existing widgets first
 		const previewView = view.previewMode;
 		const containerEl = previewView.containerEl;
-		containerEl.querySelectorAll(`.${CSS_RELATIONSHIPS_WIDGET}`).forEach((el) => {
-			const holder = el as HTMLElementWithComponent;
-			holder.component?.unload();
-			el.remove();
-		});
+		removeOwnedReadingModeRelationshipWidgets(view);
 
 		const position = plugin.settings.relationshipsPosition || "bottom";
 		const notePath = file.path;
 
 		// Create the widget
-		const widget = await createRelationshipsWidget(plugin, notePath);
+		widget = await createRelationshipsWidget(plugin, notePath);
 		if (context && !context.isCurrent()) {
 			widget.component?.unload();
 			widget.remove();
@@ -765,6 +782,8 @@ async function injectReadingModeWidget(
 		// RISK: Relies on Obsidian's internal DOM structure
 		const sizer = containerEl.querySelector<HTMLElement>(".markdown-preview-sizer");
 		if (!sizer) {
+			widget.component?.unload();
+			widget.remove();
 			tasknotesLogger.warn(
 				"[TaskNotes] Could not find .markdown-preview-sizer for relationships in reading mode",
 				{
@@ -778,7 +797,9 @@ async function injectReadingModeWidget(
 		// Position the widget
 		if (position === "top") {
 			// Try to find task card widget first (should come before relationships)
-			const taskCardWidget = sizer.querySelector(".tasknotes-task-card-note-widget");
+			const taskCardWidget = getHTMLElementChildren(sizer).find((child) =>
+				child.classList.contains("tasknotes-task-card-note-widget")
+			);
 			if (taskCardWidget) {
 				// Insert after task card widget to maintain order
 				insertAfterElement(taskCardWidget, widget);
@@ -789,6 +810,8 @@ async function injectReadingModeWidget(
 			insertRelationshipsWidgetAtBottom(sizer, widget);
 		}
 	} catch (error) {
+		widget?.component?.unload();
+		widget?.remove();
 		tasknotesLogger.error("[TaskNotes] Error injecting relationships widget in reading mode:", {
 			category: "persistence",
 			operation: "injecting-relationships-widget-reading-mode",
@@ -940,6 +963,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 
 	// Return cleanup function
 	return () => {
+		scheduler.dispose();
 		if (debounceTimer) window.clearTimeout(debounceTimer);
 		metadataDebounceTimers.forEach((timer) => window.clearTimeout(timer));
 		metadataDebounceTimers.clear();
@@ -949,5 +973,10 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 		workspaceRefs.forEach((ref) => plugin.app.workspace.offref(ref));
 		metadataCacheRefs.forEach((ref) => plugin.app.metadataCache.offref(ref));
 		dependencyCacheRefs.forEach((ref) => plugin.dependencyCache?.offref(ref));
+		plugin.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
+			if (leaf.view instanceof MarkdownView) {
+				removeOwnedReadingModeRelationshipWidgets(leaf.view);
+			}
+		});
 	};
 }

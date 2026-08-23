@@ -129,6 +129,36 @@ describe("Issue #1329: relationships widget bottom placement", () => {
 		expect(widget.style.getPropertyValue("--tn-relationships-widget-margin-top")).toBe("20px");
 	});
 
+	it("uses rendered Live Preview Dataview blocks that are direct content children", () => {
+		const sizer = el("cm-sizer");
+		const contentContainer = el("cm-contentContainer");
+		const cmContent = el("cm-content cm-lineWrapping");
+		const lastLine = el("cm-line");
+		const dataviewBlock = el(
+			"cm-preview-code-block cm-embed-block markdown-rendered cm-lang-dataview"
+		);
+		const widget = el("tasknotes-relationships-widget");
+		widget.style.marginTop = "24px";
+
+		cmContent.append(lastLine, dataviewBlock);
+		contentContainer.append(cmContent);
+		sizer.append(contentContainer, widget);
+
+		Object.defineProperty(contentContainer, "getBoundingClientRect", {
+			value: () => ({ bottom: 224 }),
+		});
+		Object.defineProperty(lastLine, "getBoundingClientRect", {
+			value: () => ({ bottom: 100, width: 100, height: 20 }),
+		});
+		Object.defineProperty(dataviewBlock, "getBoundingClientRect", {
+			value: () => ({ bottom: 220, width: 100, height: 120 }),
+		});
+
+		applyRelationshipsBottomOffset(sizer, widget);
+
+		expect(widget.style.getPropertyValue("--tn-relationships-widget-margin-top")).toBe("20px");
+	});
+
 	it("anchors reading mode widgets after the last content section", () => {
 		const sizer = el("markdown-preview-sizer");
 		const firstSection = el("markdown-preview-section");

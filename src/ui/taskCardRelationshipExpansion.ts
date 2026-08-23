@@ -2,6 +2,7 @@ import { TFile, parseLinktext } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { createElementInDocument } from "../utils/documentDom";
 import {
 	filterExpandedRelationshipTasks,
 	getBlockedByTaskPaths,
@@ -84,7 +85,7 @@ function ensureRelationshipContainer(
 		return existing;
 	}
 
-	const container = card.ownerDocument.createElement("div");
+	const container = createElementInDocument(card.ownerDocument, "div");
 	container.className = className;
 
 	const clickHandler = (event: Event) => {
@@ -160,7 +161,7 @@ export async function toggleSubtasksExpansion(
 		);
 		clearContainer(container);
 
-		const loadingEl = container.createEl("div", {
+		const loadingEl = container.createDiv({
 			cls: "task-card__subtasks-loading",
 			text: plugin.i18n.translate("contextMenus.task.subtasks.loading"),
 		});
@@ -184,7 +185,7 @@ export async function toggleSubtasksExpansion(
 			loadingEl.remove();
 
 			if (subtasks.length === 0) {
-				container.createEl("div", {
+				container.createDiv({
 					cls: "task-card__subtasks-loading",
 					text: plugin.i18n.translate("contextMenus.task.subtasks.noSubtasks"),
 				});

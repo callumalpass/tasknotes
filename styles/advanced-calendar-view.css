@@ -1167,6 +1167,30 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
     white-space: nowrap;
 }
 
+.advanced-calendar-view .fc-timegrid .fc-daygrid-body .fc-daygrid-event {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.advanced-calendar-view .fc-timegrid .fc-daygrid-body .fc-event-main,
+.advanced-calendar-view .fc-timegrid .fc-daygrid-body .fc-event-main-frame,
+.advanced-calendar-view .fc-timegrid .fc-daygrid-body .fc-event-title-container {
+    min-width: 0;
+}
+
+.advanced-calendar-view .fc-timegrid .fc-daygrid-body .fc-event-title-container {
+    overflow: hidden;
+}
+
+.advanced-calendar-view .fc-timegrid .fc-daygrid-body .fc-event-title {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .advanced-calendar-view .fc-timegrid-slot-label {
     font-size: 0.8rem;
     color: var(--text-muted);

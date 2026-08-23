@@ -30,7 +30,7 @@ export function createNoteCard(
 ): HTMLElement {
 	const opts = { ...DEFAULT_NOTE_CARD_OPTIONS, ...options };
 
-	const item = activeDocument.createElement("div");
+	const item = activeWindow.createDiv();
 	// Check if this is a daily note using the core plugin
 	let isDailyNote = false;
 	try {
@@ -64,8 +64,8 @@ export function createNoteCard(
 	const mainRow = item.createDiv({ cls: "note-card__main-row" });
 
 	// Left indicator area: note icon
-	const leftIconWrap = mainRow.createEl("span", { cls: "note-card__icon" });
-	const leftIcon = leftIconWrap.createEl("span");
+	const leftIconWrap = mainRow.createSpan({ cls: "note-card__icon" });
+	const leftIcon = leftIconWrap.createSpan();
 	setIcon(leftIcon, "file-text");
 
 	// Content container
@@ -80,7 +80,7 @@ export function createNoteCard(
 	// Tags section (separate from other metadata)
 	if (opts.showTags && note.tags && note.tags.length > 0) {
 		// Divider line
-		contentContainer.createEl("div", { cls: "note-card__divider" });
+		contentContainer.createDiv({ cls: "note-card__divider" });
 
 		// Tags line
 		const tagsToShow = note.tags.slice(0, opts.maxTags);
@@ -91,7 +91,7 @@ export function createNoteCard(
 			tagsText += ` +${note.tags.length - opts.maxTags}`;
 		}
 
-		contentContainer.createEl("div", {
+		contentContainer.createDiv({
 			cls: "note-card__tags-text",
 			text: tagsText,
 		});
@@ -199,8 +199,8 @@ export function updateNoteCard(
 		const mainRow =
 			element.querySelector(".note-card__main-row") ||
 			element.createDiv({ cls: "note-card__main-row" });
-		iconWrap = mainRow.createEl("span", { cls: "note-card__icon" });
-		const leftIcon = iconWrap.createEl("span");
+		iconWrap = mainRow.createSpan({ cls: "note-card__icon" });
+		const leftIcon = iconWrap.createSpan();
 		setIcon(leftIcon, "file-text");
 
 		// Move existing content into the main row structure if needed

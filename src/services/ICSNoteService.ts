@@ -14,6 +14,7 @@ import { processTemplate, ICSTemplateData } from "../utils/templateProcessor";
 import type { InterpolationValues, TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
+import { processVaultFrontMatter } from "./VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSNoteService" });
 
@@ -608,16 +609,16 @@ export class ICSNoteService {
 			}
 
 			// Update the note's frontmatter to include the ICS event ID
-			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+			await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 				const icsEventIdField = this.plugin.fieldMapper.toUserField("icsEventId");
 
 				// Get existing ICS event IDs or create new array
-				const existing = frontmatter[icsEventIdField];
-				const existingIds = Array.isArray(existing)
-					? existing
-					: existing
-						? [existing]
-						: [];
+				const existingValue = frontmatter[icsEventIdField];
+				const existingIds: unknown[] = !existingValue
+					? []
+					: Array.isArray(existingValue)
+						? [...existingValue]
+						: [existingValue];
 
 				// Add new event ID if not already present
 				if (!existingIds.includes(icsEvent.id)) {

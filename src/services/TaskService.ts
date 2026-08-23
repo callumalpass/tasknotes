@@ -84,6 +84,7 @@ import {
 	computeBlockedByUpdate,
 } from "./task-service/taskBlockingRelationships";
 import { resolveTaskPropertyFrontmatterField } from "./task-service/taskPropertyFrontmatterField";
+import { processVaultFile, processVaultFrontMatter } from "./VaultMutationService";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService" });
@@ -607,7 +608,7 @@ export class TaskService {
 			}
 
 			// Step 2: Persist to file
-			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+			await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 				// Use field mapper to get the correct frontmatter property name
 				const fieldName = resolveTaskPropertyFrontmatterField(
 					this.plugin.fieldMapper,
@@ -1205,7 +1206,7 @@ export class TaskService {
 		}
 
 		const updatedTask: TaskInfo = { ...task, ...updates };
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			this.applyModelTaskUpdatesToFrontmatter(frontmatter, updates);
 		});
 
@@ -1259,7 +1260,7 @@ export class TaskService {
 		const { updatedTask, isCurrentlyArchived, dateModified } = archivePlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyTaskArchiveFrontmatterChange({
 				frontmatter,
@@ -1449,7 +1450,7 @@ export class TaskService {
 		const { updatedTask, newEntry } = timeTrackingPlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyStartTimeTrackingFrontmatterChange({
@@ -1527,7 +1528,7 @@ export class TaskService {
 		const { updatedTask } = timeTrackingPlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyStopTimeTrackingFrontmatterChange({
@@ -1776,7 +1777,7 @@ export class TaskService {
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const completeInstancesField = this.plugin.fieldMapper.toUserField("completeInstances");
 			const skippedInstancesField = this.plugin.fieldMapper.toUserField("skippedInstances");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
@@ -1805,20 +1806,24 @@ export class TaskService {
 
 		// Step 2b: Reset checkboxes in task body when completing (if setting enabled)
 		if (newComplete && this.plugin.settings.resetCheckboxesOnRecurrence) {
-			const currentContent = await this.plugin.app.vault.read(file);
-			const { frontmatter: frontmatterText, body } = splitFrontmatterAndBody(currentContent);
-			const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
+			let resetDetails: string | null = null;
+			await processVaultFile(this.plugin.app, file, (currentContent) => {
+				const { frontmatter: frontmatterText, body } =
+					splitFrontmatterAndBody(currentContent);
+				const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
+				if (!changed) {
+					return currentContent;
+				}
 
-			if (changed) {
 				const frontmatterBlock =
 					frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
 				const finalBody = resetBody.trimEnd();
-				const newContent =
-					finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
-				await this.plugin.app.vault.modify(file, newContent);
+				resetDetails = resetBody.replace(/\r\n/g, "\n").trimEnd();
+				return finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
+			});
 
-				// Update the details field in the returned task
-				updatedTask.details = resetBody.replace(/\r\n/g, "\n").trimEnd();
+			if (resetDetails !== null) {
+				updatedTask.details = resetDetails;
 			}
 		}
 
@@ -1926,7 +1931,7 @@ export class TaskService {
 		const { updatedTask, dateStr, newSkipped, targetDate } = recurringPlan;
 
 		// Step 3: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const skippedField = this.plugin.fieldMapper.toUserField("skippedInstances");
 			const completeField = this.plugin.fieldMapper.toUserField("completeInstances");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
@@ -2021,7 +2026,7 @@ export class TaskService {
 		const { updatedTask } = deletePlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyDeleteTimeEntryFrontmatterChange({

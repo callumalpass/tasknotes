@@ -750,3 +750,5 @@ export class DependencyCache extends Events {
 		this.indexesBuilt = false;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the dependency cache implementation. */

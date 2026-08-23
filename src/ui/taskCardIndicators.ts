@@ -49,7 +49,7 @@ export function createBadgeIndicator(config: BadgeIndicatorConfig): HTMLElement 
 
 	if (!visible) return null;
 
-	const indicator = container.createEl("div", {
+	const indicator = container.createDiv({
 		cls: className,
 		attr: { "aria-label": ariaLabel || tooltip },
 	});

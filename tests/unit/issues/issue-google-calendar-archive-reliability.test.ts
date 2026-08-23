@@ -85,6 +85,7 @@ describe("Google Calendar archive reliability", () => {
 				getAllTasks: jest.fn().mockResolvedValue([]),
 			},
 			loadData: jest.fn().mockImplementation(async () => pluginData),
+			loadPluginDataForSafeWrite: jest.fn().mockImplementation(async () => pluginData),
 			saveData: jest.fn().mockImplementation(async (data: Record<string, any>) => {
 				const nextData = { ...data };
 				for (const key of Object.keys(pluginData)) {
@@ -206,6 +207,7 @@ describe("Google Calendar archive reliability", () => {
 		};
 		const pluginData = { autoArchiveQueue: [initialItem] };
 		plugin.loadData = jest.fn().mockResolvedValue(pluginData);
+		plugin.loadPluginDataForSafeWrite = jest.fn().mockResolvedValue(pluginData);
 		plugin.saveData = jest.fn().mockResolvedValue(undefined);
 		plugin.cacheManager.getTaskByPath = jest.fn();
 		plugin.taskService.toggleArchive = jest.fn();

@@ -333,7 +333,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	recurrenceParent: (element, value, task, plugin) => {
 		if (typeof value === "string" && value.trim() !== "") {
-			element.createEl("span", { text: "Parent: " });
+			element.createSpan({ text: "Parent: " });
 			const linkServices: LinkServices = {
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
@@ -370,7 +370,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	occurrenceTemplate: (element, value, task, plugin) => {
 		if (typeof value === "string" && value.trim() !== "") {
-			element.createEl("span", { text: "Template: " });
+			element.createSpan({ text: "Template: " });
 			const linkServices: LinkServices = {
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
@@ -453,8 +453,8 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	blockedBy: (element, value, task, plugin) => {
 		if (Array.isArray(value) && value.length > 0) {
-			element.createEl("span", { text: "Blocked by: " });
-			const linksContainer = element.createEl("span");
+			element.createSpan({ text: "Blocked by: " });
+			const linksContainer = element.createSpan();
 			const linkServices: LinkServices = {
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
@@ -476,8 +476,8 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	blockingTasks: (element, value, _task, plugin) => {
 		if (Array.isArray(value) && value.length > 0) {
-			element.createEl("span", { text: "Blocking: " });
-			const linksContainer = element.createEl("span");
+			element.createSpan({ text: "Blocking: " });
+			const linksContainer = element.createSpan();
 			value.forEach((path, index) => {
 				if (index > 0) linksContainer.appendChild(activeDocument.createTextNode(", "));
 				const linkEl = linksContainer.createEl("a", {
@@ -527,16 +527,16 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			return;
 		}
 
-		const progressEl = element.createEl("span", { cls: "task-card__progress" });
-		const progressBar = progressEl.createEl("span", { cls: "task-card__progress-bar" });
-		const progressFill = progressBar.createEl("span", { cls: "task-card__progress-fill" });
+		const progressEl = element.createSpan({ cls: "task-card__progress" });
+		const progressBar = progressEl.createSpan({ cls: "task-card__progress-bar" });
+		const progressFill = progressBar.createSpan({ cls: "task-card__progress-fill" });
 		progressFill.style.width = `${progress.percent}%`;
 		if (progress.percent > 0 && progress.percent < 5) {
 			progressFill.classList.remove("tn-static-min-width-0-3922d326");
 			progressFill.classList.add("tn-static-min-width-2px-709d7da0");
 		}
 
-		progressEl.createEl("span", {
+		progressEl.createSpan({
 			cls: "task-card__progress-label",
 			text: `${progress.completed}/${progress.total}`,
 		});
@@ -564,7 +564,7 @@ export function renderPropertyMetadata(
 		return null;
 	}
 
-	const element = container.createEl("span", {
+	const element = container.createSpan({
 		cls: `task-card__metadata-property task-card__metadata-property--${propertyId.replace(":", "-")}`,
 	});
 
@@ -622,8 +622,8 @@ function renderUserProperty(
 	}
 
 	const fieldName = userField.displayName || fieldId;
-	element.createEl("span", { text: `${fieldName}: ` });
-	const valueContainer = element.createEl("span", {
+	element.createSpan({ text: `${fieldName}: ` });
+	const valueContainer = element.createSpan({
 		cls: "task-card__metadata-value",
 	});
 	const linkServices: LinkServices = {
@@ -645,7 +645,7 @@ function renderUserProperty(
 			if (typeof item === "string" && item.trim() !== "") {
 				const itemString = item.trim();
 				if (containsRichTextLink(itemString)) {
-					const itemContainer = valueContainer.createEl("span");
+					const itemContainer = valueContainer.createSpan();
 					renderTextWithLinks(itemContainer, itemString, linkServices);
 				} else {
 					valueContainer.appendChild(activeDocument.createTextNode(String(item)));
@@ -675,8 +675,8 @@ function renderGenericProperty(
 	displayNameOverride?: string
 ): void {
 	const displayName = resolveTaskCardPropertyLabel(propertyId, {}, displayNameOverride);
-	element.createEl("span", { text: `${displayName}: ` });
-	const valueContainer = element.createEl("span", {
+	element.createSpan({ text: `${displayName}: ` });
+	const valueContainer = element.createSpan({
 		cls: "task-card__metadata-value",
 	});
 

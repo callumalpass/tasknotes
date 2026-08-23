@@ -11,11 +11,52 @@ describe("TimeEntryEditorModal", () => {
 		typeof createTaskModalMarkdownEditor
 	>;
 
+	function focusFirstDescriptionEditor(modal: TimeEntryEditorModal) {
+		const textarea = modal.contentEl.querySelector<HTMLTextAreaElement>(
+			".time-entry-editor-modal__description-editor-fallback"
+		);
+		expect(textarea).not.toBeNull();
+
+		textarea?.dispatchEvent(new Event("focus"));
+		expect(createTaskModalMarkdownEditorMock).toHaveBeenCalled();
+
+		return createTaskModalMarkdownEditorMock.mock.calls[
+			createTaskModalMarkdownEditorMock.mock.calls.length - 1
+		][2];
+	}
+
 	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
-	it("saves description updates coming from the markdown editor", () => {
+	it("saves description updates from the lightweight description field", () => {
+		const plugin = PluginFactory.createMockPlugin();
+		const task = TaskFactory.createTask({
+			timeEntries: [TimeEntryFactory.createEntry({ description: "Initial work" })],
+		});
+		const onSave = jest.fn();
+
+		const modal = new TimeEntryEditorModal(plugin.app as any, plugin as any, task, onSave);
+		modal.onOpen();
+
+		const textarea = modal.contentEl.querySelector<HTMLTextAreaElement>(
+			".time-entry-editor-modal__description-editor-fallback"
+		);
+		expect(textarea).not.toBeNull();
+		expect(createTaskModalMarkdownEditorMock).not.toHaveBeenCalled();
+
+		if (textarea) {
+			textarea.value = "Worked on #learning";
+			textarea.dispatchEvent(new Event("input"));
+		}
+		(modal as any).save();
+
+		expect(onSave).toHaveBeenCalledWith([
+			expect.objectContaining({ description: "Worked on #learning" }),
+		]);
+	});
+
+	it("saves description updates coming from the lazily hydrated markdown editor", () => {
 		const plugin = PluginFactory.createMockPlugin();
 		const task = TaskFactory.createTask({
 			timeEntries: [TimeEntryFactory.createEntry({ description: "Initial work" })],
@@ -29,8 +70,9 @@ describe("TimeEntryEditorModal", () => {
 		const modal = new TimeEntryEditorModal(plugin.app as any, plugin as any, task, onSave);
 		modal.onOpen();
 
+		expect(createTaskModalMarkdownEditorMock).not.toHaveBeenCalled();
+		const editorOptions = focusFirstDescriptionEditor(modal);
 		expect(createTaskModalMarkdownEditorMock).toHaveBeenCalledTimes(1);
-		const editorOptions = createTaskModalMarkdownEditorMock.mock.calls[0][2];
 
 		editorOptions.onChange("Worked on #learning");
 		(modal as any).save();
@@ -54,7 +96,7 @@ describe("TimeEntryEditorModal", () => {
 		const closeSpy = jest.spyOn(modal, "close").mockImplementation(jest.fn());
 		modal.onOpen();
 
-		const editorOptions = createTaskModalMarkdownEditorMock.mock.calls[0][2];
+		const editorOptions = focusFirstDescriptionEditor(modal);
 		editorOptions.onEscape();
 
 		expect(closeSpy).toHaveBeenCalledTimes(1);
@@ -72,20 +114,22 @@ describe("TimeEntryEditorModal", () => {
 
 		createTaskModalMarkdownEditorMock
 			.mockReturnValueOnce(firstEditor)
-			.mockReturnValueOnce(secondEditor)
-			.mockReturnValueOnce(thirdEditor);
+			.mockReturnValueOnce(secondEditor);
 
 		const modal = new TimeEntryEditorModal(plugin.app as any, plugin as any, task, jest.fn());
 		modal.onOpen();
+		focusFirstDescriptionEditor(modal);
 
 		(modal as any).addNewEntry();
 
 		expect(firstEditor.destroy).toHaveBeenCalledTimes(1);
-		expect(createTaskModalMarkdownEditorMock).toHaveBeenCalledTimes(3);
+		expect(createTaskModalMarkdownEditorMock).toHaveBeenCalledTimes(1);
+
+		focusFirstDescriptionEditor(modal);
 
 		modal.onClose();
 
 		expect(secondEditor.destroy).toHaveBeenCalledTimes(1);
-		expect(thirdEditor.destroy).toHaveBeenCalledTimes(1);
+		expect(createTaskModalMarkdownEditorMock).toHaveBeenCalledTimes(2);
 	});
 });

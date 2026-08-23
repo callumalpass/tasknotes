@@ -211,6 +211,8 @@ Update task with partial payload.
 
 Configured TaskNotes user fields can be updated either by their frontmatter property key or via `customProperties`.
 
+Sending an empty array for `contexts` or `blockedBy` clears the corresponding frontmatter field.
+
 ```bash
 curl -X PUT "http://localhost:8080/api/tasks/TaskNotes%2FTasks%2FReview%20docs.md" \
   -H "Content-Type: application/json" \

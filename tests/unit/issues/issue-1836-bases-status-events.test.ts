@@ -236,6 +236,9 @@ describe("Issue #1836: Bases views receive TaskService update events", () => {
 			loadData: jest.fn().mockResolvedValue({
 				autoArchiveQueue: [dueQueueItem],
 			}),
+			loadPluginDataForSafeWrite: jest.fn().mockResolvedValue({
+				autoArchiveQueue: [dueQueueItem],
+			}),
 			saveData: jest.fn().mockResolvedValue(undefined),
 			cacheManager: {
 				getTaskByPath: jest.fn().mockResolvedValue(task),
@@ -282,6 +285,9 @@ describe("Issue #1836: Bases views receive TaskService update events", () => {
 				},
 			},
 			loadData: jest.fn().mockResolvedValue({
+				autoArchiveQueue: [dueQueueItem],
+			}),
+			loadPluginDataForSafeWrite: jest.fn().mockResolvedValue({
 				autoArchiveQueue: [dueQueueItem],
 			}),
 			saveData: jest.fn().mockResolvedValue(undefined),

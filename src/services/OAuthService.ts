@@ -7,6 +7,7 @@ import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/h
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { OAuthSecretStore, type OAuthCredentials } from "./OAuthSecretStore";
+import { generateUuidV4 } from "../utils/uuid";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/OAuthService" });
 
@@ -14,20 +15,26 @@ type HttpModuleLike = {
 	createServer(handler?: (req: HTTPRequestLike, res: HTTPResponseLike) => void): HTTPServerLike;
 };
 
+type ElectronModuleLike = {
+	shell?: {
+		openExternal?: (url: string) => Promise<void> | void;
+	};
+};
+
 let cachedHttpModule: HttpModuleLike | null = null;
 
 function ensureHttpModule(): HttpModuleLike {
-	if (!Platform.isDesktopApp) {
-		throw new Error("OAuth redirect handling is only available on desktop.");
+	if (Platform.isDesktop && Platform.isDesktopApp) {
+		if (!cachedHttpModule) {
+			// Lazy-load the Node http module so mobile builds don't crash at load time.
+			// eslint-disable-next-line @typescript-eslint/no-require-imports -- The guarded desktop path needs Node's HTTP server.
+			cachedHttpModule = require("http") as HttpModuleLike;
+		}
+
+		return cachedHttpModule;
 	}
 
-	if (!cachedHttpModule) {
-		// Lazy-load the Node http module so mobile builds don't crash at load time.
-		// eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-nodejs-modules -- OAuth redirect handling needs Node http only on desktop.
-		cachedHttpModule = require("http") as HttpModuleLike;
-	}
-
-	return cachedHttpModule;
+	throw new Error("OAuth redirect handling is only available on desktop.");
 }
 
 /**
@@ -180,7 +187,7 @@ export class OAuthService {
 				);
 
 				// Open browser to authorization URL
-				window.open(authUrl, "_blank");
+				await this.openAuthorizationUrl(authUrl);
 
 				// Wait for callback with timeout
 				const code = await this.waitForCallback(state, 300000); // 5 minute timeout
@@ -213,6 +220,26 @@ export class OAuthService {
 		} finally {
 			await this.stopCallbackServer();
 		}
+	}
+
+	private async openAuthorizationUrl(authUrl: string): Promise<void> {
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-extraneous-dependencies -- OAuth must bypass Obsidian's in-app Web Viewer and use the system browser on desktop.
+			const electron = require("electron") as ElectronModuleLike;
+			const shell = electron.shell;
+			if (shell?.openExternal) {
+				await shell.openExternal(authUrl);
+				return;
+			}
+		} catch (error) {
+			tasknotesLogger.warn("Failed to open OAuth URL in system browser; falling back to window.open.", {
+				category: "provider",
+				operation: "oauth-open-external",
+				error,
+			});
+		}
+
+		window.open(authUrl, "_blank");
 	}
 
 	/**
@@ -661,7 +688,9 @@ export class OAuthService {
 				provider,
 				newTokens,
 				connection.userEmail,
-				connectionGeneration
+				connectionGeneration,
+				connection.connectionId,
+				connection.connectedAt
 			);
 
 			return newTokens;
@@ -700,8 +729,13 @@ export class OAuthService {
 	 * Uses mutex pattern to prevent race conditions when multiple API calls
 	 * happen simultaneously with an expired token.
 	 */
-	async getValidToken(provider: OAuthProvider): Promise<string> {
+	async getValidToken(
+		provider: OAuthProvider,
+		expectedGeneration?: number
+	): Promise<string> {
+		this.assertExpectedConnectionGeneration(provider, expectedGeneration);
 		const connection = await this.getConnection(provider);
+		this.assertExpectedConnectionGeneration(provider, expectedGeneration);
 		if (!connection) {
 			throw new TokenExpiredError(provider);
 		}
@@ -715,6 +749,7 @@ export class OAuthService {
 			const pendingRefresh = this.tokenRefreshPromises.get(provider);
 			if (pendingRefresh) {
 				const newTokens = await pendingRefresh;
+				this.assertExpectedConnectionGeneration(provider, expectedGeneration);
 				return newTokens.accessToken;
 			}
 
@@ -727,10 +762,24 @@ export class OAuthService {
 			this.tokenRefreshPromises.set(provider, refreshPromise);
 
 			const newTokens = await refreshPromise;
+			this.assertExpectedConnectionGeneration(provider, expectedGeneration);
 			return newTokens.accessToken;
 		}
 
+		this.assertExpectedConnectionGeneration(provider, expectedGeneration);
 		return connection.tokens.accessToken;
+	}
+
+	private assertExpectedConnectionGeneration(
+		provider: OAuthProvider,
+		expectedGeneration: number | undefined
+	): void {
+		if (
+			expectedGeneration !== undefined &&
+			this.getConnectionGeneration(provider) !== expectedGeneration
+		) {
+			throw new Error(`${provider} OAuth connection changed during calendar operation`);
+		}
 	}
 
 	/**
@@ -740,7 +789,9 @@ export class OAuthService {
 		provider: OAuthProvider,
 		tokens: OAuthTokens,
 		userEmail?: string,
-		expectedGeneration?: number
+		expectedGeneration?: number,
+		connectionId?: string,
+		connectedAt?: string
 	): Promise<void> {
 		if (
 			expectedGeneration !== undefined &&
@@ -752,8 +803,9 @@ export class OAuthService {
 		const connection: OAuthConnection = {
 			provider,
 			tokens,
+			connectionId: connectionId ?? generateUuidV4(),
 			userEmail,
-			connectedAt: new Date().toISOString(),
+			connectedAt: connectedAt ?? new Date().toISOString(),
 			lastRefreshed: new Date().toISOString(),
 		};
 		this.secretStore.setConnection(provider, connection);
@@ -767,7 +819,17 @@ export class OAuthService {
 	 * Retrieves a connection from Obsidian SecretStorage.
 	 */
 	async getConnection(provider: OAuthProvider): Promise<OAuthConnection | null> {
-		return this.secretStore.getConnection(provider);
+		const connection = this.secretStore.getConnection(provider);
+		if (!connection || connection.connectionId) {
+			return connection;
+		}
+
+		const migratedConnection = {
+			...connection,
+			connectionId: generateUuidV4(),
+		};
+		this.secretStore.setConnection(provider, migratedConnection);
+		return migratedConnection;
 	}
 
 	/**
@@ -778,17 +840,35 @@ export class OAuthService {
 		return connection !== null;
 	}
 
+	getConnectionGeneration(provider: OAuthProvider): number {
+		return this.connectionGenerations.get(provider) ?? 0;
+	}
+
+	async isConnectionGenerationCurrent(
+		provider: OAuthProvider,
+		expectedGeneration: number
+	): Promise<boolean> {
+		return (
+			this.getConnectionGeneration(provider) === expectedGeneration &&
+			(await this.isConnected(provider))
+		);
+	}
+
 	/**
 	 * Disconnects from a provider (revokes tokens and removes stored data)
 	 */
 	async disconnect(provider: OAuthProvider): Promise<void> {
+		const connectionGeneration = this.getConnectionGeneration(provider);
 		const connection = await this.getConnection(provider);
 		if (!connection) {
 			return;
 		}
 
 		// Clear local tokens first so an interrupted or concurrent refresh cannot reconnect.
-		this.clearConnection(provider);
+		// If the connection changed while it was being read, leave the newer connection alone.
+		if (!this.clearConnection(provider, connectionGeneration)) {
+			return;
+		}
 
 		// Revoke tokens on the OAuth provider's server.
 		await this.revokeToken(provider, connection.tokens.accessToken);

@@ -485,8 +485,10 @@ export function renderArrayWithLinks(
 
 		renderTextWithLinks(container, item, deps, {
 			renderPlain: (container, text) => {
-				container.createEl("span", { text, cls: cssClass });
+				container.createSpan({ text, cls: cssClass });
 			},
 		});
 	});
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the link renderer implementation. */

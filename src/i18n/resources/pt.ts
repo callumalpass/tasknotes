@@ -483,7 +483,7 @@ export const pt: TranslationTree = {
 			viewAllLink: "Ver todas as notas de lançamento no GitHub →",
 			starMessage:
 				"Agradecemos muito todo feedback. Se algo não parecer certo, conte para nós no GitHub. Se você acha o TaskNotes útil, considere dar uma estrela.",
-			baseFilesNotice: "> [!info] Sobre os arquivos `.base` padrão\n> Alterações nos modelos `.base` gerados por padrão não substituem seus arquivos `.base` existentes, para manter suas personalizações.\n> Se quiser as melhorias mais recentes dos modelos, regenere os arquivos base em **Configurações → TaskNotes → Geral → Visualizações e arquivos base → Criar arquivos**."
+			baseFilesNotice: "> [!info] Sobre os arquivos `.base` padrão\n> Alterações nos modelos `.base` gerados por padrão não substituem seus arquivos `.base` existentes, para manter suas personalizações.\n> Se quiser as melhorias mais recentes dos modelos, regenere os arquivos base em **Configurações → TaskNotes → Geral → Visualizações e arquivos base → Atualizar arquivos**."
 		}
 	},
 	settings: {

@@ -98,6 +98,9 @@ export function parseOAuthConnection(
 			scope: optionalString(value.tokens.scope) ?? "",
 			tokenType: optionalString(value.tokens.tokenType) ?? "Bearer",
 		},
+		...(optionalString(value.connectionId) !== undefined && {
+			connectionId: optionalString(value.connectionId),
+		}),
 		...(optionalString(value.userEmail) !== undefined && {
 			userEmail: optionalString(value.userEmail),
 		}),

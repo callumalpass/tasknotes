@@ -16,11 +16,13 @@ interface InjectionState {
  */
 export class ReadingModeInjectionScheduler {
 	private readonly states = new WeakMap<WorkspaceLeaf, InjectionState>();
+	private disposed = false;
 
 	schedule(
 		leaf: WorkspaceLeaf,
 		run: (context: ReadingModeInjectionContext) => Promise<void>
 	): void {
+		if (this.disposed) return;
 		const state = this.getState(leaf);
 		state.version += 1;
 
@@ -31,6 +33,10 @@ export class ReadingModeInjectionScheduler {
 
 		state.running = true;
 		void this.runLoop(leaf, run);
+	}
+
+	dispose(): void {
+		this.disposed = true;
 	}
 
 	private getState(leaf: WorkspaceLeaf): InjectionState {
@@ -57,12 +63,13 @@ export class ReadingModeInjectionScheduler {
 				state.rerun = false;
 				const runVersion = state.version;
 				await run({
-					isCurrent: () => this.states.get(leaf)?.version === runVersion,
+					isCurrent: () =>
+						!this.disposed && this.states.get(leaf)?.version === runVersion,
 				});
-			} while (state.rerun);
+			} while (state.rerun && !this.disposed);
 		} finally {
 			state.running = false;
-			if (state.rerun) {
+			if (state.rerun && !this.disposed) {
 				state.running = true;
 				void this.runLoop(leaf, run);
 			}

@@ -1,6 +1,6 @@
 import { setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { ICSEvent } from "../types";
+import { ICSEvent, ICSSubscription } from "../types";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { formatTime } from "../utils/dateUtils";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
@@ -46,6 +46,31 @@ function renderRelatedNoteIndicator(
 	});
 }
 
+function getEventSourceName(
+	icsEvent: ICSEvent,
+	plugin: TaskNotesPlugin,
+	subscription: ICSSubscription | undefined
+): string {
+	if (subscription?.name) {
+		return subscription.name;
+	}
+
+	const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
+	if (provider) {
+		const { calendarId } = provider.extractEventIds(icsEvent);
+		const calendar = provider
+			.getAvailableCalendars()
+			.find(
+				(candidate) =>
+					candidate.id === calendarId ||
+					(calendarId === "primary" && candidate.primary === true)
+			);
+		return calendar?.summary || provider.providerName;
+	}
+
+	return plugin.i18n.translate("ui.icsCard.calendarFallback");
+}
+
 function formatTimeRange(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
 	try {
 		if (!icsEvent.start) return "";
@@ -76,7 +101,7 @@ export function createICSEventCard(
 ): HTMLElement {
 	const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options };
 
-	const card = activeDocument.createElement("div");
+	const card = activeWindow.createDiv();
 	// Reuse task-card base styling for visual consistency
 	card.className = "task-card task-card--ics";
 	card.dataset.key = icsEvent.id;
@@ -85,18 +110,18 @@ export function createICSEventCard(
 		card.dataset.relatedNoteCount = String(opts.relatedNoteCount);
 	}
 
-	// Determine subscription color and name
+	// Determine subscription color and source name
 	const subscription = plugin.icsSubscriptionService
 		?.getSubscriptions()
 		.find((s) => s.id === icsEvent.subscriptionId);
 	const color = icsEvent.color || subscription?.color || "var(--color-accent)";
-	const sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
+	const sourceName = getEventSourceName(icsEvent, plugin, subscription);
 
 	// Main row
-	const mainRow = card.createEl("div", { cls: "task-card__main-row" });
+	const mainRow = card.createDiv({ cls: "task-card__main-row" });
 
 	// Left indicator area: calendar icon (no ring/checkbox)
-	const leftIconWrap = mainRow.createEl("span", { cls: "ics-card__icon" });
+	const leftIconWrap = mainRow.createSpan({ cls: "ics-card__icon" });
 	const leftIcon = leftIconWrap.createDiv({
 		attr: { "aria-label": plugin.i18n.translate("ui.icsCard.calendarEvent") },
 	});
@@ -167,15 +192,15 @@ export function createICSEventCard(
 	(leftIcon as HTMLElement).style.color = color;
 
 	// Content
-	const content = mainRow.createEl("div", { cls: "task-card__content" });
-	const titleEl = content.createEl("div", {
+	const content = mainRow.createDiv({ cls: "task-card__content" });
+	const titleEl = content.createDiv({
 		cls: "task-card__title",
 		text: icsEvent.title || plugin.i18n.translate("ui.icsCard.untitledEvent"),
 	});
 	renderRelatedNoteIndicator(titleEl, plugin, opts.relatedNoteCount);
 
 	// Metadata line: time range • location • source
-	const metadata = content.createEl("div", { cls: "task-card__metadata" });
+	const metadata = content.createDiv({ cls: "task-card__metadata" });
 	const parts: string[] = [];
 	const timeText = formatTimeRange(icsEvent, plugin);
 	if (timeText) parts.push(timeText);
@@ -228,7 +253,7 @@ export function updateICSEventCard(
 		?.getSubscriptions()
 		.find((s) => s.id === icsEvent.subscriptionId);
 	const color = icsEvent.color || subscription?.color || "var(--color-accent)";
-	const sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
+	const sourceName = getEventSourceName(icsEvent, plugin, subscription);
 
 	// Update icon color on wrapper to propagate to svg (icons use currentColor)
 	element.style.setProperty("--current-status-color", color);

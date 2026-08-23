@@ -17,6 +17,7 @@ const CSS_FILES = [
     'styles/modal-bem.css',          // Modal components with proper BEM scoping
     'styles/task-modal.css',         // Task modal components (Google Keep/Todoist style)
     'styles/reminder-modal.css',     // Reminder modal component with proper BEM scoping
+    'styles/device-code-modal.css',  // OAuth device-code modal
     'styles/date-picker.css',        // Enhanced date/time picker styling
     'styles/task-selector-with-create-modal.css', // TaskSelectorWithCreateModal component with proper BEM scoping
     'styles/file-selector-modal.css', // FileSelectorModal component with proper BEM scoping
@@ -37,6 +38,7 @@ const CSS_FILES = [
     'styles/stats-view.css',         // StatsView component with proper BEM scoping
     'styles/release-notes-view.css', // Release notes view typography
     'styles/settings-view.css',      // SettingsView component with proper BEM scoping
+    'styles/field-manager.css',      // Modal field manager settings
     'styles/webhook-settings.css',   // Webhook settings UI with proper BEM scoping
     'styles/status-bar.css',         // StatusBar component with proper BEM scoping
     'styles/bases-views.css',        // Bases integration views (list and kanban)

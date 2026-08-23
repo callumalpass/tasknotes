@@ -147,7 +147,7 @@ export function createNLPTriggerRows(
  * Creates a description element for property cards
  */
 export function createPropertyDescription(text: string): HTMLElement {
-	const descEl = activeDocument.createElement("p");
+	const descEl = activeWindow.createEl("p");
 	descEl.className = "setting-item-description";
 	descEl.classList.remove(
 		"tn-static-font-size-12px-b0cc7e05",

@@ -315,7 +315,7 @@ function removeUnsetMappedFields(
 	}
 	if (
 		Object.prototype.hasOwnProperty.call(updates, "contexts") &&
-		updates.contexts === undefined
+		(!Array.isArray(updates.contexts) || updates.contexts.length === 0)
 	) {
 		delete frontmatter[fieldMapper.toUserField("contexts")];
 	}
@@ -364,7 +364,7 @@ function removeUnsetMappedFields(
 	}
 	if (
 		Object.prototype.hasOwnProperty.call(updates, "blockedBy") &&
-		updates.blockedBy === undefined
+		(!Array.isArray(updates.blockedBy) || updates.blockedBy.length === 0)
 	) {
 		delete frontmatter[fieldMapper.toUserField("blockedBy")];
 	}

@@ -100,7 +100,7 @@ interface CanvasViewLike {
  * Now includes Component lifecycle management for proper cleanup
  */
 function createTaskCardWidget(plugin: TaskNotesPlugin, task: TaskInfo): HTMLElementWithComponent {
-	const container = activeDocument.createElement("div") as HTMLElementWithComponent;
+	const container = activeWindow.createDiv() as HTMLElementWithComponent;
 	container.className = `tasknotes-plugin task-card-note-widget ${CSS_TASK_CARD_WIDGET}`;
 
 	container.setAttribute("contenteditable", "false");

@@ -63,7 +63,7 @@ export function renderPriorityPropertyCard(
 	});
 
 	// Create nested content for priority values
-	const nestedContainer = activeDocument.createElement("div");
+	const nestedContainer = activeWindow.createDiv();
 	nestedContainer.addClass("tasknotes-settings__nested-cards");
 
 	// Create collapsible section for priority values
@@ -417,3 +417,5 @@ function renderPriorityList(
 		});
 	});
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the priority settings renderer. */

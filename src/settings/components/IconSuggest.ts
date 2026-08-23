@@ -94,16 +94,16 @@ export function createIconInput(
 	value?: string,
 	onChange?: (value: string) => void
 ): { container: HTMLElement; input: HTMLInputElement } {
-	const container = activeDocument.createElement("div");
+	const container = activeWindow.createDiv();
 	container.addClass("icon-input-container");
 
 	// Create preview element
-	const preview = activeDocument.createElement("span");
+	const preview = activeWindow.createSpan();
 	preview.addClass("icon-input-preview");
 	container.appendChild(preview);
 
 	// Create input
-	const input = activeDocument.createElement("input");
+	const input = activeWindow.createEl("input");
 	input.type = "text";
 	input.addClass("tasknotes-settings__card-input");
 	input.addClass("icon-input");

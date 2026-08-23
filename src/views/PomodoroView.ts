@@ -286,7 +286,7 @@ export class PomodoroView extends ItemView {
 		});
 
 		// Create SVG progress circle
-		const svg = activeDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
+		const svg = activeWindow.createSvg("svg");
 		svg.setAttribute("class", "pomodoro-view__progress-svg");
 		svg.setAttribute("width", "300");
 		svg.setAttribute("height", "300");
@@ -294,7 +294,7 @@ export class PomodoroView extends ItemView {
 		this.progressContainer.appendChild(svg);
 
 		// Background circle
-		const bgCircle = activeDocument.createElementNS("http://www.w3.org/2000/svg", "circle");
+		const bgCircle = activeWindow.createSvg("circle");
 		bgCircle.setAttributeNS(null, "cx", "150");
 		bgCircle.setAttributeNS(null, "cy", "150");
 		bgCircle.setAttributeNS(null, "r", "140");
@@ -304,10 +304,7 @@ export class PomodoroView extends ItemView {
 		svg.appendChild(bgCircle);
 
 		// Progress circle
-		this.progressCircle = activeDocument.createElementNS(
-			"http://www.w3.org/2000/svg",
-			"circle"
-		);
+		this.progressCircle = activeWindow.createSvg("circle");
 		this.progressCircle.setAttributeNS(null, "cx", "150");
 		this.progressCircle.setAttributeNS(null, "cy", "150");
 		this.progressCircle.setAttributeNS(null, "r", "140");

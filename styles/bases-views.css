@@ -194,6 +194,18 @@ body.is-mobile .tn-bases-tasknotes-list {
     scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
 }
 
+body.is-mobile .internal-embed .tn-tasknotesTaskList .tn-bases-items-container,
+body.is-mobile .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container {
+    padding-bottom: 0;
+    scroll-padding-bottom: 0;
+}
+
+body.is-mobile .internal-embed .tn-bases-tasknotes-list,
+body.is-mobile .markdown-embed .tn-bases-tasknotes-list {
+    padding-bottom: var(--tn-spacing-sm);
+    scroll-padding-bottom: 0;
+}
+
 /* Sidebar and popout note embeds already have a constrained note scroller. Let
    that parent own vertical scrolling so Task List embeds do not reserve empty
    viewport-height space inside the note. */

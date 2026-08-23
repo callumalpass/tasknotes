@@ -1,5 +1,6 @@
 import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
+import { createElementInDocument } from "../utils/documentDom";
 
 export type BasesSearchControls = {
 	searchContainer: HTMLElement;
@@ -23,7 +24,7 @@ export function createBasesSearchControls({
 	debounceMs = 300,
 }: CreateBasesSearchControlsOptions): BasesSearchControls {
 	const doc = container.ownerDocument;
-	const searchContainer = doc.createElement("div");
+	const searchContainer = createElementInDocument(doc, "div");
 	searchContainer.className = "tn-search-container";
 
 	if (container.firstChild) {
@@ -61,14 +62,14 @@ export function renderBasesSearchNoResults(
 ): HTMLElement {
 	const doc = container.ownerDocument;
 
-	const noResultsEl = doc.createElement("div");
+	const noResultsEl = createElementInDocument(doc, "div");
 	noResultsEl.className = "tn-search-no-results";
 
-	const textEl = doc.createElement("div");
+	const textEl = createElementInDocument(doc, "div");
 	textEl.className = "tn-search-no-results__text";
 	textEl.textContent = `No tasks match "${searchTerm}"`;
 
-	const hintEl = doc.createElement("div");
+	const hintEl = createElementInDocument(doc, "div");
 	hintEl.className = "tn-search-no-results__hint";
 	hintEl.textContent = "Try a different search term or clear the search";
 

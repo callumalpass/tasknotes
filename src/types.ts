@@ -908,6 +908,7 @@ export interface PendingGoogleCalendarDeletion {
 	taskPath: string;
 	calendarId: string;
 	eventId: string;
+	connectionId?: string;
 	createdAt: number;
 	attempts: number;
 	lastAttemptAt?: number;
@@ -918,6 +919,7 @@ export interface GoogleCalendarEventIndexEntry {
 	taskPath: string;
 	calendarId: string;
 	eventId: string;
+	connectionId?: string;
 	updatedAt: number;
 }
 
@@ -948,6 +950,7 @@ export interface OAuthTokens {
 export interface OAuthConnection {
 	provider: OAuthProvider;
 	tokens: OAuthTokens;
+	connectionId?: string;
 	userEmail?: string; // Optional user identifier
 	connectedAt: string; // ISO timestamp
 	lastRefreshed?: string; // ISO timestamp

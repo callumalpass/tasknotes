@@ -56,7 +56,7 @@ export class TextInputModal extends Modal {
 			this.options.onInputReady?.(this.inputEl);
 		});
 
-		const buttonContainer = contentEl.createEl("div", { cls: "modal-button-container" });
+		const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
 		buttonContainer.classList.remove(
 			"tn-static-display-block-2a1b75c9",
 			"tn-static-display-flex-4d51fc62",

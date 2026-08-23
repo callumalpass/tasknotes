@@ -26,16 +26,16 @@ export function createTimeBlockCard(
 ): HTMLElement {
 	const opts = { ...DEFAULT_TIMEBLOCK_CARD_OPTIONS, ...options };
 
-	const card = activeDocument.createElement("div");
+	const card = activeWindow.createDiv();
 	card.className = "task-card task-card--timeblock";
 
 	card.dataset.key = `timeblock-${timeblock.id}`;
 
 	// Main row
-	const mainRow = card.createEl("div", { cls: "task-card__main-row" });
+	const mainRow = card.createDiv({ cls: "task-card__main-row" });
 
 	// Left indicator area: clock icon
-	const leftIconWrap = mainRow.createEl("span", { cls: "timeblock-card__icon" });
+	const leftIconWrap = mainRow.createSpan({ cls: "timeblock-card__icon" });
 	const leftIcon = leftIconWrap.createDiv();
 	setIcon(leftIcon, "clock");
 
@@ -103,23 +103,23 @@ export function createTimeBlockCard(
 	leftIcon.style.color = timeblock.color || "var(--color-accent)";
 
 	// Content
-	const content = mainRow.createEl("div", { cls: "task-card__content" });
+	const content = mainRow.createDiv({ cls: "task-card__content" });
 
 	// Title with time range
 	const titleText = timeblock.title || "Timeblock";
 	const timeRange = `${timeblock.startTime} - ${timeblock.endTime}`;
-	content.createEl("div", {
+	content.createDiv({
 		cls: "task-card__title",
 		text: titleText,
 	});
 
 	// Metadata line: time range
-	const metadata = content.createEl("div", { cls: "task-card__metadata" });
+	const metadata = content.createDiv({ cls: "task-card__metadata" });
 	metadata.textContent = timeRange;
 
 	// Description (if available and enabled)
 	if (opts.showDescription && timeblock.description) {
-		const description = content.createEl("div", {
+		const description = content.createDiv({
 			cls: "task-card__description",
 			text: timeblock.description,
 		});
@@ -167,7 +167,7 @@ export function createTimeBlockCard(
 
 	// Attachments (if available and enabled)
 	if (opts.showAttachments && timeblock.attachments && timeblock.attachments.length > 0) {
-		const attachmentsEl = content.createEl("div", {
+		const attachmentsEl = content.createDiv({
 			cls: "timeblock-card__attachments",
 		});
 		attachmentsEl.classList.remove(

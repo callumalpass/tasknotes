@@ -80,8 +80,17 @@ describe("OAuthService token revocation", () => {
 			headers: {},
 		});
 
+		const connectionGeneration = sut.getConnectionGeneration("google");
+		await expect(
+			sut.isConnectionGenerationCurrent("google", connectionGeneration)
+		).resolves.toBe(true);
+
 		await sut.disconnect("google");
 
+		expect(sut.getConnectionGeneration("google")).toBe(connectionGeneration + 1);
+		await expect(
+			sut.isConnectionGenerationCurrent("google", connectionGeneration)
+		).resolves.toBe(false);
 		expect(mockRequestUrl).toHaveBeenCalledTimes(2);
 		const firstRequest = getRequestCall(mockRequestUrl, 0);
 		const secondRequest = getRequestCall(mockRequestUrl, 1);

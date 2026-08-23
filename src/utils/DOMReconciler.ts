@@ -204,7 +204,7 @@ export class DOMReconciler {
 		});
 
 		const newKeys = new Set(newItems.map(getKey));
-		const fragment = activeDocument.createDocumentFragment();
+		const fragment = activeWindow.createFragment();
 
 		// Process new items
 		newItems.forEach((item) => {

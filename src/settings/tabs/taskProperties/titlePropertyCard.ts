@@ -46,7 +46,7 @@ export function renderTitlePropertyCard(
 		});
 
 		// Create nested content for filename settings
-		const nestedContainer = activeDocument.createElement("div");
+		const nestedContainer = activeWindow.createDiv();
 		nestedContainer.addClass("tasknotes-settings__nested-content");
 		renderFilenameSettingsContent(nestedContainer, plugin, save, translate);
 
