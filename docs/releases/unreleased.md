@@ -38,6 +38,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Skipping a recurring task instance from Task List or Kanban now records the
+  task's occurrence date instead of the view's current date. Thanks to
+  @renatomen for the contribution.
 - (#2130) Tasks added by external sync while Obsidian is closed are now exported
   to Google Calendar after TaskNotes starts. Thanks to @seththepeacock for
   reporting this and @raphaelfaouakhiri for the contribution.
