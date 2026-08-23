@@ -874,6 +874,11 @@ export class TaskCalendarSyncService {
 			let changedTasks = 0;
 			let linkedTasks = 0;
 			let baselineTasks = 0;
+			let createdTasks = 0;
+
+			// An empty fingerprint map means this vault was never reconciled: every task is
+			// unknown, so baseline all of them instead of flooding the calendar on first run.
+			const isFirstReconciliation = fingerprints.size === 0;
 
 			for (const task of tasks) {
 				activeTaskPaths.add(task.path);
@@ -881,6 +886,21 @@ export class TaskCalendarSyncService {
 				const previousFingerprint = fingerprints.get(task.path);
 
 				if (previousFingerprint === undefined) {
+					// A task file that appeared while Obsidian was closed (external sync, git pull,
+					// another device) has no fingerprint yet. Treat it the way the live path in
+					// handleExternalTaskFileUpdated already does: export it, instead of baselining
+					// it into permanent invisibility.
+					if (
+						!isFirstReconciliation &&
+						settings.syncOnTaskCreate &&
+						!this.hasTaskCalendarLink(task) &&
+						this.isTaskCalendarEligible(task)
+					) {
+						createdTasks++;
+						await this.syncTaskToCalendar(task);
+						continue;
+					}
+
 					fingerprints.set(task.path, fingerprint);
 					changed = true;
 					baselineTasks++;
@@ -927,6 +947,7 @@ export class TaskCalendarSyncService {
 			this.profileGauge("initializeExternalFileReconciliation.linkedTasks", linkedTasks);
 			this.profileGauge("initializeExternalFileReconciliation.changedTasks", changedTasks);
 			this.profileGauge("initializeExternalFileReconciliation.baselineTasks", baselineTasks);
+			this.profileGauge("initializeExternalFileReconciliation.createdTasks", createdTasks);
 			this.profileGauge(
 				"initializeExternalFileReconciliation.removedFingerprints",
 				removedFingerprints

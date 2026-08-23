@@ -1,6 +1,6 @@
 import { setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { ICSEvent } from "../types";
+import { ICSEvent, ICSSubscription } from "../types";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { formatTime } from "../utils/dateUtils";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
@@ -46,6 +46,31 @@ function renderRelatedNoteIndicator(
 	});
 }
 
+function getEventSourceName(
+	icsEvent: ICSEvent,
+	plugin: TaskNotesPlugin,
+	subscription: ICSSubscription | undefined
+): string {
+	if (subscription?.name) {
+		return subscription.name;
+	}
+
+	const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
+	if (provider) {
+		const { calendarId } = provider.extractEventIds(icsEvent);
+		const calendar = provider
+			.getAvailableCalendars()
+			.find(
+				(candidate) =>
+					candidate.id === calendarId ||
+					(calendarId === "primary" && candidate.primary === true)
+			);
+		return calendar?.summary || provider.providerName;
+	}
+
+	return plugin.i18n.translate("ui.icsCard.calendarFallback");
+}
+
 function formatTimeRange(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
 	try {
 		if (!icsEvent.start) return "";
@@ -85,12 +110,12 @@ export function createICSEventCard(
 		card.dataset.relatedNoteCount = String(opts.relatedNoteCount);
 	}
 
-	// Determine subscription color and name
+	// Determine subscription color and source name
 	const subscription = plugin.icsSubscriptionService
 		?.getSubscriptions()
 		.find((s) => s.id === icsEvent.subscriptionId);
 	const color = icsEvent.color || subscription?.color || "var(--color-accent)";
-	const sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
+	const sourceName = getEventSourceName(icsEvent, plugin, subscription);
 
 	// Main row
 	const mainRow = card.createDiv({ cls: "task-card__main-row" });
@@ -228,7 +253,7 @@ export function updateICSEventCard(
 		?.getSubscriptions()
 		.find((s) => s.id === icsEvent.subscriptionId);
 	const color = icsEvent.color || subscription?.color || "var(--color-accent)";
-	const sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
+	const sourceName = getEventSourceName(icsEvent, plugin, subscription);
 
 	// Update icon color on wrapper to propagate to svg (icons use currentColor)
 	element.style.setProperty("--current-status-color", color);
