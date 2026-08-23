@@ -58,6 +58,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Improved TaskNotes startup performance by allowing Bases registration to finish asynchronously. Thanks to @tgrosinger for the contribution.
 - Generated TaskNotes type contracts now include configured natural-language
   capture triggers, allowing compatible clients to offer the same field
   suggestions.
