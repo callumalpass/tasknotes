@@ -446,14 +446,14 @@ export class NLPSuggest extends AbstractInputSuggest<
 							filtered.push(m);
 					}
 					if (!filtered.length) return;
-					const frag = activeDocument.createDocumentFragment();
+					const frag = activeWindow.createFragment();
 					let last = 0;
 					for (const m of filtered) {
 						if (m.start > last)
 							frag.appendChild(
 								activeDocument.createTextNode(original.slice(last, m.start))
 							);
-						const mark = activeDocument.createElement("mark");
+						const mark = activeWindow.createEl("mark");
 						mark.textContent = original.slice(m.start, m.end);
 						frag.appendChild(mark);
 						last = m.end;
@@ -520,13 +520,13 @@ export class NLPSuggest extends AbstractInputSuggest<
 							if (metaRow.childNodes.length)
 								metaRow.appendChild(activeDocument.createTextNode(" "));
 							if (t.showName) {
-								const labelSpan = activeDocument.createElement("span");
+								const labelSpan = activeWindow.createSpan();
 								labelSpan.className = "nlp-suggest-project__meta-label";
 								labelSpan.textContent = `${t.displayName ?? t.property}:`;
 								metaRow.appendChild(labelSpan);
 								metaRow.appendChild(activeDocument.createTextNode(" "));
 							}
-							const valueSpan = activeDocument.createElement("span");
+							const valueSpan = activeWindow.createSpan();
 							valueSpan.className = "nlp-suggest-project__meta-value";
 							valueSpan.textContent = value;
 							metaRow.appendChild(valueSpan);

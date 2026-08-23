@@ -1,4 +1,10 @@
-import { App, PluginSettingTab, Platform, requireApiVersion } from "obsidian";
+import {
+	App,
+	PluginSettingTab,
+	Platform,
+	requireApiVersion,
+	type SettingDefinitionItem,
+} from "obsidian";
 import TaskNotesPlugin from "../main";
 import { debounce, DebouncedFunction } from "./components/settingHelpers";
 import { renderGeneralTab } from "./tabs/generalTab";
@@ -36,14 +42,37 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		this.plugin.registerEvent(
 			this.plugin.i18n.on("locale-changed", () => {
 				if (this.containerEl.isConnected) {
-					this.display();
+					if (requireApiVersion("1.13.0")) {
+						this.update();
+					} else {
+						this.renderSettings(this.containerEl);
+					}
 				}
 			})
 		);
 	}
 
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return [
+			{
+				name: this.plugin.i18n.translate("common.appName"),
+				aliases: this.getTabConfigurations().map((tab) =>
+					this.plugin.i18n.translate(tab.nameKey)
+				),
+				render: (setting) => {
+					setting.settingEl.empty();
+					this.renderSettings(setting.settingEl);
+				},
+			},
+		];
+	}
+
 	display(): void {
-		const { containerEl } = this;
+		this.renderSettings(this.containerEl);
+	}
+
+	private renderSettings(containerEl: HTMLElement): void {
+		this.tabContents = {};
 		containerEl.empty();
 		containerEl.addClass("tasknotes-settings");
 		containerEl.addClass("tasknotes-plugin");
@@ -55,38 +84,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		const tabNav = settingsToolbar.createDiv("settings-tab-nav settings-view__tab-nav");
 
 		// Define the 6-tab structure (defaults merged into task-properties)
-		const allTabs: TabConfig[] = [
-			{
-				id: "general",
-				nameKey: "settings.tabs.general",
-				renderFn: renderGeneralTab,
-			},
-			{
-				id: "task-properties",
-				nameKey: "settings.tabs.taskProperties",
-				renderFn: renderTaskPropertiesTab,
-			},
-			{
-				id: "modal-fields",
-				nameKey: "settings.tabs.modalFields",
-				renderFn: renderModalFieldsTab,
-			},
-			{
-				id: "appearance",
-				nameKey: "settings.tabs.appearance",
-				renderFn: renderAppearanceTab,
-			},
-			{
-				id: "features",
-				nameKey: "settings.tabs.features",
-				renderFn: renderFeaturesTab,
-			},
-			{
-				id: "integrations",
-				nameKey: "settings.tabs.integrations",
-				renderFn: renderIntegrationsTab,
-			},
-		];
+		const allTabs = this.getTabConfigurations();
 
 		// Filter out integrations tab on mobile if it only contains API settings
 		const tabs = Platform.isMobile

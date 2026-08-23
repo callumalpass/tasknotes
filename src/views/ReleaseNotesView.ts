@@ -250,7 +250,7 @@ export class ReleaseNotesView extends ItemView {
 		versionTitle.classList.add("tn-static-font-weight-600-eed0f8fb");
 
 		if (versionData.isCurrent) {
-			const currentBadge = headerLeft.createEl("span", {
+			const currentBadge = headerLeft.createSpan({
 				text: "Current",
 			});
 			currentBadge.classList.remove(
@@ -316,7 +316,7 @@ export class ReleaseNotesView extends ItemView {
 		}
 
 		if (versionData.date) {
-			const dateSpan = headerLeft.createEl("span", {
+			const dateSpan = headerLeft.createSpan({
 				text: this.formatDate(versionData.date),
 			});
 			dateSpan.classList.remove(
@@ -349,7 +349,7 @@ export class ReleaseNotesView extends ItemView {
 		}
 
 		// Right side: chevron icon
-		const chevron = header.createEl("span", {
+		const chevron = header.createSpan({
 			text: isExpanded ? "▼" : "▶",
 		});
 		chevron.classList.remove(
@@ -451,7 +451,7 @@ export class ReleaseNotesView extends ItemView {
 		container.classList.add("tn-static-margin-0-auto-266e9b04");
 
 		// Header with version
-		const header = container.createEl("div", { cls: "release-notes-header" });
+		const header = container.createDiv({ cls: "release-notes-header" });
 		header.classList.remove(
 			"tn-static-font-size-12px-65574819",
 			"tn-static-font-weight-bold-0fe8c30d",
@@ -537,7 +537,7 @@ export class ReleaseNotesView extends ItemView {
 		}
 
 		// Create all version sections
-		const versionsContainer = container.createEl("div", { cls: "release-notes-versions" });
+		const versionsContainer = container.createDiv({ cls: "release-notes-versions" });
 		for (let i = 0; i < this.releaseNotesBundle.length; i++) {
 			const versionData = this.releaseNotesBundle[i];
 			// Current version and newest bundled version expanded, others collapsed
@@ -546,7 +546,7 @@ export class ReleaseNotesView extends ItemView {
 		}
 
 		// Footer with link to all releases
-		const footer = container.createEl("div", { cls: "release-notes-footer" });
+		const footer = container.createDiv({ cls: "release-notes-footer" });
 		footer.classList.add("tn-static-border-top-1px-solid-var-backgroun-aab7c2ca");
 		footer.classList.add("tn-static-padding-top-20px-49826953");
 		footer.classList.remove(

@@ -236,7 +236,7 @@ views:
       - column: tasknotes_manual_order
         direction: DESC
     groupBy:
-      property: task.status
+      property: status
       direction: ASC
     config:
       columnWidth: 280
@@ -544,6 +544,7 @@ To build an Agenda variant for completed tasks that do not have due or scheduled
       showRecurring: false
       showTimeEntries: false
       showPropertyBasedEvents: true
+      showOverdueOnToday: false
       createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
     startDateProperty: completedDate
@@ -584,6 +585,7 @@ views:
       - file.tasks
     options:
       showPropertyBasedEvents: false
+      showOverdueOnToday: true
       createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
     startDateProperty: file.ctime
@@ -730,7 +732,7 @@ views:
       - column: tasknotes_manual_order
         direction: DESC
     groupBy:
-      property: task.status
+      property: status
       direction: ASC
   - type: tasknotesTaskList
     name: "Occurrences"
@@ -818,7 +820,7 @@ views:
       - column: tasknotes_manual_order
         direction: DESC
     groupBy:
-      property: task.status
+      property: status
       direction: ASC
 ```
 

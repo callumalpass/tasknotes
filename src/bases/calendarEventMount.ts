@@ -9,6 +9,7 @@ import { createICSEventCard } from "../ui/ICSCard";
 import { createPropertyEventCard } from "../ui/PropertyEventCard";
 import { createTimeBlockCard } from "../ui/TimeBlockCard";
 import { getTargetDateForEvent } from "./calendar-core";
+import { createElementInDocument } from "../utils/documentDom";
 
 type BasesEntryValue = {
 	data?: string;
@@ -68,7 +69,7 @@ export function appendCalendarRelatedNoteIndicator(
 	}
 
 	const doc = container.ownerDocument;
-	const iconContainer = doc.createElement("span");
+	const iconContainer = createElementInDocument(doc, "span");
 	iconContainer.classList.add("ics-related-note-indicator");
 	iconContainer.setAttribute(
 		"aria-label",
@@ -107,7 +108,7 @@ export function decorateCalendarIcsEventElement({
 
 	const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
 	if (provider && !element.querySelector(".fc-event-provider-icon")) {
-		const iconEl = element.ownerDocument.createElement("span");
+		const iconEl = createElementInDocument(element.ownerDocument, "span");
 		iconEl.classList.add("fc-event-provider-icon");
 		iconEl.setAttribute("aria-hidden", "true");
 		setIcon(iconEl, "calendar");
@@ -237,7 +238,7 @@ export function mountCalendarListEventCard({
 		return false;
 	}
 
-	const cardCell = arg.el.ownerDocument.createElement("td");
+	const cardCell = createElementInDocument(arg.el.ownerDocument, "td");
 	cardCell.className = "fc-list-event-title fc-list-card-content";
 	cardCell.colSpan = 3;
 	cardCell.appendChild(cardElement);

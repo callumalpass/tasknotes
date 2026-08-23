@@ -97,11 +97,11 @@ export function stripLegacyOAuthData(data: Record<string, unknown>): Record<stri
  * making retries safe if the eventual data.json write is interrupted.
  */
 export function migrateLegacyOAuthData(
-	data: Record<string, unknown> | null,
+	data: Record<string, unknown> | null | undefined,
 	secretStore: OAuthSecretStore
 ): OAuthSecretMigrationResult {
-	if (data === null) {
-		return { data, changed: false };
+	if (data == null) {
+		return { data: null, changed: false };
 	}
 
 	for (const provider of PROVIDERS) {

@@ -37,6 +37,7 @@ describe("calendarConfigSnapshot", () => {
 		).toEqual(
 			expect.arrayContaining([
 				"showScheduled",
+				"showOverdueOnToday",
 				"calendarView",
 				"snapDuration",
 				"createDailyNotesFromDateLinks",

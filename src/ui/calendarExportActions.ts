@@ -27,7 +27,7 @@ function downloadICSFile(download: ICSDownloadFile): void {
 	const url = URL.createObjectURL(blob);
 
 	try {
-		const anchor = activeDocument.createElement("a");
+		const anchor = activeWindow.createEl("a");
 		anchor.href = url;
 		anchor.download = download.filename;
 		anchor.click();

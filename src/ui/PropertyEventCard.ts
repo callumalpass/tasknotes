@@ -26,7 +26,7 @@ export function createPropertyEventCard(
 ): HTMLElement {
 	const opts = { ...DEFAULT_PROPERTY_EVENT_CARD_OPTIONS, ...options };
 
-	const card = activeDocument.createElement("div");
+	const card = activeWindow.createDiv();
 	card.className = "task-card task-card--property-event";
 
 	const file = entry.file;
@@ -39,10 +39,10 @@ export function createPropertyEventCard(
 	card.dataset.filePath = file.path;
 
 	// Main row
-	const mainRow = card.createEl("div", { cls: "task-card__main-row" });
+	const mainRow = card.createDiv({ cls: "task-card__main-row" });
 
 	// Left indicator area: file icon
-	const leftIconWrap = mainRow.createEl("span", { cls: "property-event-card__icon" });
+	const leftIconWrap = mainRow.createSpan({ cls: "property-event-card__icon" });
 	const leftIcon = leftIconWrap.createDiv();
 	setIcon(leftIcon, "file-text");
 
@@ -125,17 +125,17 @@ export function createPropertyEventCard(
 	leftIcon.classList.add("tn-static-color-var-color-accent-d2cad743");
 
 	// Content
-	const content = mainRow.createEl("div", { cls: "task-card__content" });
+	const content = mainRow.createDiv({ cls: "task-card__content" });
 
 	// Title
-	content.createEl("div", {
+	content.createDiv({
 		cls: "task-card__title",
 		text: file.basename || file.name,
 	});
 
 	// Metadata line: show visible properties from Bases view
 	if (opts.showProperties && viewConfig) {
-		const metadata = content.createEl("div", { cls: "task-card__metadata" });
+		const metadata = content.createDiv({ cls: "task-card__metadata" });
 		let renderedProperties = 0;
 
 		try {

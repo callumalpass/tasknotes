@@ -318,3 +318,5 @@ export class ProjectSubtasksService {
 		});
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the project service implementation. */

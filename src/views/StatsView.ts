@@ -1347,25 +1347,19 @@ export class StatsView extends ItemView {
 		const circumference = 2 * Math.PI * radius;
 		const offset = circumference - (percentage / 100) * circumference;
 
-		const svg = activeDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
+		const svg = activeWindow.createSvg("svg");
 		svg.setAttribute("width", size.toString());
 		svg.setAttribute("height", size.toString());
 		svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
 		svg.classList.add("stats-view__progress-circle-svg");
 
-		const backgroundCircle = activeDocument.createElementNS(
-			"http://www.w3.org/2000/svg",
-			"circle"
-		);
+		const backgroundCircle = activeWindow.createSvg("circle");
 		backgroundCircle.setAttribute("cx", (size / 2).toString());
 		backgroundCircle.setAttribute("cy", (size / 2).toString());
 		backgroundCircle.setAttribute("r", radius.toString());
 		backgroundCircle.classList.add("stats-view__progress-circle-bg");
 
-		const foregroundCircle = activeDocument.createElementNS(
-			"http://www.w3.org/2000/svg",
-			"circle"
-		);
+		const foregroundCircle = activeWindow.createSvg("circle");
 		foregroundCircle.setAttribute("cx", (size / 2).toString());
 		foregroundCircle.setAttribute("cy", (size / 2).toString());
 		foregroundCircle.setAttribute("r", radius.toString());
@@ -1373,7 +1367,7 @@ export class StatsView extends ItemView {
 		foregroundCircle.setAttribute("stroke-dashoffset", offset.toString());
 		foregroundCircle.classList.add("stats-view__progress-circle-fg");
 
-		const text = activeDocument.createElementNS("http://www.w3.org/2000/svg", "text");
+		const text = activeWindow.createSvg("text");
 		text.setAttribute("x", "50%");
 		text.setAttribute("y", "50%");
 		text.setAttribute("dy", "0.3em");
@@ -1467,14 +1461,14 @@ export class StatsView extends ItemView {
 			return;
 		}
 
-		const svg = activeDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
+		const svg = activeWindow.createSvg("svg");
 		svg.setAttribute("width", width.toString());
 		svg.setAttribute("height", height.toString());
 		svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 		svg.classList.add("stats-view__sparkline-svg");
 
 		// Create path
-		const path = activeDocument.createElementNS("http://www.w3.org/2000/svg", "path");
+		const path = activeWindow.createSvg("path");
 
 		let pathD = "";
 		data.forEach((point, index) => {

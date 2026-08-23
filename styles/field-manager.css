@@ -1,0 +1,71 @@
+.tasknotes-plugin .field-manager {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.tasknotes-plugin .field-manager__tabs {
+	display: flex;
+	gap: 0.5rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .field-manager__tab {
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+	border-radius: 4px;
+	transition: background-color 0.2s;
+}
+
+.tasknotes-plugin .field-manager__tab:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .field-manager__tab--active {
+	color: var(--text-on-accent);
+	background-color: var(--interactive-accent);
+}
+
+.tasknotes-plugin .field-manager__content {
+	padding: 1rem 0;
+}
+
+.tasknotes-plugin .field-manager__cards {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.tasknotes-plugin .field-manager__empty {
+	padding: 2rem;
+	color: var(--text-muted);
+	text-align: center;
+}
+
+.tasknotes-plugin .field-card__type {
+	padding: 0.125rem 0.5rem;
+	font-size: 0.75rem;
+	background: var(--background-modifier-border);
+	border-radius: 3px;
+}
+
+.tasknotes-plugin .field-card__type--core {
+	color: var(--text-on-accent);
+	background: var(--interactive-accent);
+}
+
+.tasknotes-plugin .field-card__type--user {
+	color: var(--text-on-accent);
+	background: var(--color-purple);
+}
+
+.tasknotes-plugin .field-card__type--dependency {
+	color: var(--text-on-accent);
+	background: var(--color-orange);
+}
+
+.tasknotes-plugin .field-card__type--organization {
+	color: var(--text-on-accent);
+	background: var(--color-green);
+}

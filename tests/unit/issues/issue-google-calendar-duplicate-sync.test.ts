@@ -85,6 +85,7 @@ const createPlugin = (
 			getAllTasks: jest.fn().mockResolvedValue([]),
 		},
 		loadData: jest.fn().mockResolvedValue({}),
+		loadPluginDataForSafeWrite: jest.fn().mockResolvedValue({}),
 		saveData: jest.fn().mockResolvedValue(undefined),
 	};
 };

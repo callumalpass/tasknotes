@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
+import { showConfirmationModal } from "../../../modals/ConfirmationModal";
 import {
 	createCard,
 	createStatusBadge,
@@ -59,7 +60,7 @@ export function renderStatusPropertyCard(
 	});
 
 	// Create nested content for status values
-	const nestedContainer = activeDocument.createElement("div");
+	const nestedContainer = activeWindow.createDiv();
 	nestedContainer.addClass("tasknotes-settings__nested-cards");
 
 	// Create collapsible section for status values
@@ -331,13 +332,21 @@ function renderStatusList(
 		};
 
 		const deleteStatus = () => {
-			// eslint-disable-next-line no-alert -- Native confirm matches existing destructive settings confirmation behavior.
-			const confirmDelete = confirm(
-				translate("settings.taskProperties.taskStatuses.deleteConfirm", {
+			void (async () => {
+				const message = translate("settings.taskProperties.taskStatuses.deleteConfirm", {
 					label: status.label || status.value,
-				})
-			);
-			if (confirmDelete) {
+				});
+				const confirmDelete = await showConfirmationModal(plugin.app, {
+					title: translate("common.confirm"),
+					message,
+					confirmText: translate("common.confirm"),
+					cancelText: translate("common.cancel"),
+					isDestructive: true,
+				});
+				if (!confirmDelete) {
+					return;
+				}
+
 				const statusIndex = plugin.settings.customStatuses.findIndex(
 					(s) => s.id === status.id
 				);
@@ -363,7 +372,7 @@ function renderStatusList(
 					renderStatusList(container, plugin, save, translate, onStatusesChanged);
 					if (onStatusesChanged) onStatusesChanged();
 				}
-			}
+			})();
 		};
 
 		const cardConfig: CardConfig = {
@@ -535,3 +544,5 @@ function renderStatusList(
 		});
 	});
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the status settings renderer. */

@@ -235,6 +235,7 @@ export const ja: TranslationTree = {
 				events: {
 					showScheduledTasks: "予定されたタスクを表示",
 					showDueTasks: "期限のあるタスクを表示",
+					showOverdueOnToday: "期限切れタスクを今日に表示",
 					showRecurringTasks: "繰り返しタスクを表示",
 					showTimeEntries: "時間エントリを表示",
 					showTimeblocks: "タイムブロックを表示",
@@ -482,7 +483,7 @@ export const ja: TranslationTree = {
 			viewAllLink: "GitHubですべてのリリースノートを表示 →",
 			starMessage:
 				"どんなフィードバックも本当にありがたいです。何か違和感があれば、GitHubでお知らせください。TaskNotesが役に立ったら、スターもご検討ください。",
-			baseFilesNotice: "> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ビューとbaseファイル → ファイルを作成** からベースファイルを再生成してください。"
+			baseFilesNotice: "> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ビューとbaseファイル → ファイルを更新** からベースファイルを再生成してください。"
 		}
 	},
 	settings: {

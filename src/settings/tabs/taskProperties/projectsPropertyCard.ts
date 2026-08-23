@@ -39,7 +39,7 @@ export function renderProjectsPropertyCard(
 		});
 
 		// Create nested content for default projects
-		const nestedContainer = activeDocument.createElement("div");
+		const nestedContainer = activeWindow.createDiv();
 		nestedContainer.addClass("tasknotes-settings__nested-content");
 
 		// Default projects container
@@ -143,7 +143,7 @@ export function renderProjectsPropertyCard(
 		);
 
 		// Create autosuggest settings section
-		const autosuggestSection = activeDocument.createElement("div");
+		const autosuggestSection = activeWindow.createDiv();
 		autosuggestSection.addClass("tasknotes-settings__nested-content");
 		renderProjectAutosuggestSettings(autosuggestSection, plugin, save, translate, renderCard);
 

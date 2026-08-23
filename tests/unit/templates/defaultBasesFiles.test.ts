@@ -53,7 +53,7 @@ describe("defaultBasesFiles", () => {
 
 		expect(template).toContain('name: "Kanban Board"');
 		expect(template).toContain("sort:\n      - column: tasknotes_manual_order\n        direction: DESC");
-		expect(template).toContain("groupBy:\n      property: task.status");
+		expect(template).toContain("groupBy:\n      property: status");
 		expect(template).toContain("config:\n      columnWidth: 280\n      hideEmptyColumns: false");
 		expect(template).not.toContain("    options:\n      columnWidth: 280");
 	});
@@ -76,7 +76,7 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain('name: "Blocked By"');
 		expect(template).toContain('name: "Blocking"');
 		expect((template.match(/column: tasknotes_manual_order/g) ?? []).length).toBe(3);
-		expect((template.match(/property: task\.status/g) ?? []).length).toBe(2);
+		expect((template.match(/property: status/g) ?? []).length).toBe(2);
 		expect(template).toContain('name: "Projects"');
 	});
 
@@ -123,6 +123,7 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain("      - due\n      - formula.dueIn\n      - file.name");
 		expect(template).toContain('calendarView: "listWeek"');
 		expect(template).toContain("listDayCount: 7");
+		expect(template).toContain("showOverdueOnToday: true");
 	});
 
 	it("lets generated calendar views inherit app-level time settings", () => {

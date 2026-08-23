@@ -74,6 +74,7 @@ function createPlugin(options: {
 			translate: jest.fn((key: string) => key),
 		},
 		loadData: jest.fn(async () => pluginData),
+		loadPluginDataForSafeWrite: jest.fn(async () => pluginData),
 		saveData: jest.fn(async (data: typeof pluginData) => {
 			pluginData = data;
 		}),

@@ -1,4 +1,5 @@
 import TaskNotesPlugin from "../main";
+import { createElementInDocument } from "../utils/documentDom";
 import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
 import type { TaskInfo } from "../types";
@@ -473,6 +474,7 @@ export class CalendarView extends BasesViewBase {
 		showTimeEntries: boolean;
 		showTimeblocks: boolean;
 		showPropertyBasedEvents: boolean;
+		showOverdueOnToday: boolean;
 
 		// Date navigation
 		initialDate: string;
@@ -540,6 +542,7 @@ export class CalendarView extends BasesViewBase {
 			showTimeEntries: calendarSettings.defaultShowTimeEntries,
 			showTimeblocks: calendarSettings.defaultShowTimeblocks,
 			showPropertyBasedEvents: true,
+			showOverdueOnToday: false,
 
 			// Date navigation
 			initialDate: "",
@@ -893,6 +896,10 @@ export class CalendarView extends BasesViewBase {
 			this.viewOptions.showPropertyBasedEvents = this.getConfigOption(
 				"showPropertyBasedEvents",
 				this.viewOptions.showPropertyBasedEvents
+			);
+			this.viewOptions.showOverdueOnToday = this.getConfigOption(
+				"showOverdueOnToday",
+				this.viewOptions.showOverdueOnToday
 			);
 
 			// ICS calendar toggles
@@ -1659,14 +1666,14 @@ export class CalendarView extends BasesViewBase {
 		this.calendarEl.classList.add("advanced-calendar-view__calendar--popout-blocked");
 
 		const doc = this.calendarEl.ownerDocument;
-		const noticeEl = doc.createElement("div");
+		const noticeEl = createElementInDocument(doc, "div");
 		noticeEl.className = "advanced-calendar-view__popout-blocked";
 
-		const titleEl = doc.createElement("h3");
+		const titleEl = createElementInDocument(doc, "h3");
 		titleEl.textContent = "Calendar view is unavailable in a separate window";
 		noticeEl.appendChild(titleEl);
 
-		const messageEl = doc.createElement("p");
+		const messageEl = createElementInDocument(doc, "p");
 		messageEl.textContent =
 			"Open this calendar view in the main Obsidian window. The calendar can freeze Obsidian when restored inside a separate window.";
 		noticeEl.appendChild(messageEl);
@@ -1811,6 +1818,7 @@ export class CalendarView extends BasesViewBase {
 			showTimeEntries: this.viewOptions.showTimeEntries,
 			showTimeblocks: this.viewOptions.showTimeblocks,
 			showICSEvents: false, // ICS handled separately
+			showOverdueOnToday: this.viewOptions.showOverdueOnToday,
 			visibleStart: fetchInfo.start,
 			visibleEnd: fetchInfo.end,
 			visibleStartDate: fetchInfo.startStr,
@@ -2885,7 +2893,7 @@ export class CalendarView extends BasesViewBase {
 			const doc = this.containerEl.ownerDocument;
 
 			// Calendar element for FullCalendar to render into
-			const calendarEl = doc.createElement("div");
+			const calendarEl = createElementInDocument(doc, "div");
 			calendarEl.id = "bases-calendar";
 			calendarEl.classList.remove(
 				"tn-static-flex-1-97445a8d",
@@ -2948,7 +2956,7 @@ export class CalendarView extends BasesViewBase {
 
 		// Use correct document for pop-out window support
 		const doc = this.calendarEl.ownerDocument;
-		const errorEl = doc.createElement("div");
+		const errorEl = createElementInDocument(doc, "div");
 		errorEl.className = "tn-bases-error";
 		errorEl.classList.remove(
 			"tn-static-border-radius-4px-c290c56e",

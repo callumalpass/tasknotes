@@ -48,7 +48,7 @@ export class ReminderModal extends Modal {
 
 		// Show loading state while we fetch fresh data
 		const loadingContainer = contentEl.createDiv({ cls: "reminder-modal__loading" });
-		loadingContainer.createEl("div", { text: "Loading reminders..." });
+		loadingContainer.createDiv({ text: "Loading reminders..." });
 
 		// Fetch fresh data and render the modal
 		this.initializeWithFreshData().catch((error) => {
@@ -207,7 +207,7 @@ export class ReminderModal extends Modal {
 		if (this.reminders.length === 0) {
 			const emptyState = section.createDiv({ cls: "reminder-modal__empty-state" });
 			setIcon(emptyState.createDiv({ cls: "reminder-modal__empty-icon" }), "bell-off");
-			emptyState.createEl("div", {
+			emptyState.createDiv({
 				cls: "reminder-modal__empty-text",
 				text: "No reminders set",
 			});
@@ -714,7 +714,7 @@ export class ReminderModal extends Modal {
 			}
 
 			// Re-render only the existing reminders section at the top
-			const tempContainer = activeDocument.createElement("div");
+			const tempContainer = activeWindow.createDiv();
 			this.renderExistingReminders(tempContainer);
 			const newRemindersSection = tempContainer.firstChild as HTMLElement;
 			if (newRemindersSection) {

@@ -664,6 +664,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "a55c0dfe5b2d0ae4539ba2082ed56b914e0c5de8"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "3b50664c6111d5c8d382467850855322d6ccfb80"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "9c5d69492c72d4b0d158297522d00b7c2f7c1978"
@@ -1353,8 +1357,8 @@
       "translation": "ed6c14975535f23eef7a97bee0f3cc1a1b7b32d4"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
-      "translation": "883b3f6da96b7e306619566a91f81c146d2ab641"
+      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
+      "translation": "818053e1a1b1da0d3e97bec2fe7857d25b6bc4a9"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -9550,6 +9554,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "d5d0c1043fae801c058724e24f6aa74412ab2eb1"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "fb529dfe5de1e9e651b47585f8e4d588ee213286"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "fdc2866b822d871766cbae08417af82765c96da2"
@@ -10239,8 +10247,8 @@
       "translation": "e3216407e31713e194f9bd57a1561f8d73d3df4f"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
-      "translation": "85110cbe193a383ade918f15370f2b4052b00a96"
+      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
+      "translation": "b775583849f963d10908ad9bc8ea58a637c93f4b"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -18436,6 +18444,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "23ae5138ff279431437bc2c322fd713c6012a652"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "b1baf1e81eed1362e08a6afb40337a49edab3aff"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "a02df4070dfb22fc593ae3f2f1622fff9eeef9cd"
@@ -19125,8 +19137,8 @@
       "translation": "44ad2a699ef1a6c783f29db1906db36a292b387f"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
-      "translation": "51616dc0ba05f31d83307a61b05304648e23c356"
+      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
+      "translation": "10afbb8b42a910e3a559e5511f1b3c899fe8960a"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -27322,6 +27334,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "4c762bb48b7510d547142f815e12de70b1bf429d"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "fb70dab58d76f084b80905cd70b2fb3e8b0b7dce"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "d3a508edc866a66327c1dc6512ed2056ae110951"
@@ -28011,8 +28027,8 @@
       "translation": "69f2e4c3e9b1a2fdc6bf4caf7b53960bf0d0f3ae"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
-      "translation": "b8259d102d29acd09de0e62ec2059d424d53e8d7"
+      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
+      "translation": "dbebd044573eb9dd2545401ec88653e131504400"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -36208,6 +36224,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "4a55aafd6fe9e62d510859ef9a24574599fb80b3"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "a2232f185ad8e4bb6cef859071bae5f57deb863a"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "60d4dbc9254042c2bbd466307f6243df291d3b3c"
@@ -36897,8 +36917,8 @@
       "translation": "bde32bbce5741e2f69fb662728b487ffd765f2e6"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
-      "translation": "dae0679909a41d3ccfb1acd58b819378ff812492"
+      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
+      "translation": "bc52e551378e1ac95afee1aebee4d8cacbd497de"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -45094,6 +45114,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "8e1dd146032a622bfece8d5fe92e6913c7ff9e36"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "5dee93f80bf9dcc04c985e8d0b3d083fa5ee824e"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "ddd5a8c0111e48cb9d7cb06b34b1ed6087427da4"
@@ -45783,8 +45807,8 @@
       "translation": "73b8cc8d067b37867ea0c97be0f325f0765b7583"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
-      "translation": "6cd45bb1c78d96fb10c7e7b2c22e93db51a0b684"
+      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
+      "translation": "919fe94480018acb1b8ac768d46f7c03466b0d59"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -53980,6 +54004,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "4e595807c56ae1fc8abe4779eb1115d48224f921"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "1715e2d8bf1bcd2c2a6fa6e5e73db489f3d263d7"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "43bda8697005c860e120eb52f694dfe5bff29fc8"
@@ -54669,8 +54697,8 @@
       "translation": "920cb09c787ffd63d1a5874156bf28dea5f567d9"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
-      "translation": "e2ea10ee59e513ac3d2a2dbc3cd65b6381828866"
+      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
+      "translation": "a76413c5dadc77886a27bc98285551a3cb7c703f"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
@@ -62866,6 +62894,10 @@
       "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
       "translation": "a7900ba5bb9844704fa978824ef146d6773f3e07"
     },
+    "views.basesCalendar.settings.events.showOverdueOnToday": {
+      "source": "72b24493383f4ec770a15dd196ca87013156c6cb",
+      "translation": "88e403dc99094bbef2f76797fcc15542d979853e"
+    },
     "views.basesCalendar.settings.events.showRecurringTasks": {
       "source": "a0cb06969984df001beafafd38566341051237cb",
       "translation": "50058864686d78b4b08a89f32a2519204ce116ef"
@@ -63555,8 +63587,8 @@
       "translation": "266227ca3d4da9d9e7f98c19cb60f087428e1d19"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "bb40b58a6ad1be832d3103ac7f096541edb8be8e",
-      "translation": "c04129a717e2206fa438a84095fe9ffdfbd557f6"
+      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
+      "translation": "55cac338d4504abd81b32abd2c30f5bd62da1153"
     },
     "settings.header.documentation": {
       "source": "9e9cf3221a30246219863f1d2366e36cb580debc",

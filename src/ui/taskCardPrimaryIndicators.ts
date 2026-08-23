@@ -125,7 +125,7 @@ export function createStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 		return null;
 	}
 
-	const statusDot = mainRow.createEl("span", { cls: "task-card__status-dot" });
+	const statusDot = mainRow.createSpan({ cls: "task-card__status-dot" });
 	configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus));
 	prepareInteractiveControl(statusDot);
 	statusDot.addEventListener("click", onClick);
@@ -217,7 +217,7 @@ export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 		return null;
 	}
 
-	const priorityDot = mainRow.createEl("span", {
+	const priorityDot = mainRow.createSpan({
 		cls: "task-card__priority-dot",
 	});
 	configurePriorityIndicator(priorityDot, priorityConfig, plugin);

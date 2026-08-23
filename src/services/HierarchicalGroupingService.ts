@@ -213,3 +213,5 @@ export class HierarchicalGroupingService {
 		return sortDirection === "desc" ? asc.reverse() : asc;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the grouping service implementation. */

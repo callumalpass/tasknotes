@@ -6,6 +6,20 @@
 .task-selector-with-create-modal .prompt {
     display: flex;
     flex-direction: column;
+    width: min(720px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+}
+
+.task-selector-with-create-modal .suggestion-container {
+    width: 100%;
+    max-width: 100%;
+}
+
+.task-selector-with-create-modal .suggestion-item {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 /* ================================================
@@ -18,10 +32,27 @@
     box-shadow: none;
     padding: var(--tn-spacing-sm) 0;
     margin: 0;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .task-selector-with-create-modal .task-card:hover {
     background: transparent;
+}
+
+.task-selector-with-create-modal .task-card__main-row,
+.task-selector-with-create-modal .task-card__content,
+.task-selector-with-create-modal .task-card__title,
+.task-selector-with-create-modal .task-card__title-text {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.task-selector-with-create-modal .task-card__title-text {
+    word-break: normal;
+    overflow-wrap: anywhere;
 }
 
 /* Hide context menu icon in modal suggestions */

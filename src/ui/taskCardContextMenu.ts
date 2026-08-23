@@ -36,7 +36,7 @@ export function createTaskCardContextMenuButton(
 ): HTMLElement {
 	const { mainRow, taskPath, plugin, targetDate, promoteOccurrenceControls } = options;
 	const taskOptionsLabel = tTaskCard(plugin, "taskOptions");
-	const contextIcon = mainRow.createEl("div", {
+	const contextIcon = mainRow.createDiv({
 		cls: "task-card__context-menu",
 		attr: {
 			"aria-label": taskOptionsLabel,

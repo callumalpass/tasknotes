@@ -350,11 +350,11 @@ export function renderIntegrationsTab(
 			const timeAgo = connectedDate ? getRelativeTime(connectedDate, translate) : "";
 
 			// Create info displays
-			const connectedInfo = activeDocument.createElement("div");
+			const connectedInfo = activeWindow.createDiv();
 			connectedInfo.className = "tasknotes-calendar-info";
 			connectedInfo.textContent = connectedDate ? `Connected ${timeAgo}` : "Connected";
 
-			const lastRefreshInfo = activeDocument.createElement("div");
+			const lastRefreshInfo = activeWindow.createDiv();
 			lastRefreshInfo.className = "tasknotes-calendar-info";
 			if (connection.lastRefreshed) {
 				const lastRefreshDate = new Date(connection.lastRefreshed);
@@ -433,7 +433,7 @@ export function renderIntegrationsTab(
 			});
 		} else {
 			// Disconnected state card
-			const helpText = activeDocument.createElement("div");
+			const helpText = activeWindow.createDiv();
 			helpText.className = "tasknotes-calendar-help";
 			helpText.textContent =
 				"Connect your Google calendar account to sync events directly into tasknotes. Events will automatically refresh every 15 minutes.";
@@ -452,7 +452,7 @@ export function renderIntegrationsTab(
 				"your-client-secret"
 			);
 
-			const credentialNote = activeDocument.createElement("div");
+			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
 			credentialNote.textContent =
 				"Enter your OAUTH app credentials from Google cloud console. Obsidian secret storage encrypts credentials at rest when supported by the operating system.";
@@ -568,11 +568,11 @@ export function renderIntegrationsTab(
 			const timeAgo = connectedDate ? getRelativeTime(connectedDate, translate) : "";
 
 			// Create info displays
-			const connectedInfo = activeDocument.createElement("div");
+			const connectedInfo = activeWindow.createDiv();
 			connectedInfo.className = "tasknotes-calendar-info";
 			connectedInfo.textContent = connectedDate ? `Connected ${timeAgo}` : "Connected";
 
-			const tokenRefreshInfo = activeDocument.createElement("div");
+			const tokenRefreshInfo = activeWindow.createDiv();
 			tokenRefreshInfo.className = "tasknotes-calendar-info";
 			if (connection.lastRefreshed) {
 				const lastRefreshDate = new Date(connection.lastRefreshed);
@@ -582,7 +582,7 @@ export function renderIntegrationsTab(
 			}
 
 			const syncStatus = plugin.microsoftCalendarService?.getSyncStatus();
-			const syncInfo = activeDocument.createElement("div");
+			const syncInfo = activeWindow.createDiv();
 			syncInfo.className = "tasknotes-calendar-info";
 			if (!plugin.microsoftCalendarService) {
 				syncInfo.addClass("tasknotes-calendar-info--warning");
@@ -613,7 +613,7 @@ export function renderIntegrationsTab(
 			];
 
 			if (syncStatus?.calendarErrors.length) {
-				const errorInfo = activeDocument.createElement("div");
+				const errorInfo = activeWindow.createDiv();
 				errorInfo.className = "tasknotes-calendar-info tasknotes-calendar-info--warning";
 				const firstError = syncStatus.calendarErrors[0];
 				const calendarLabel =
@@ -702,7 +702,7 @@ export function renderIntegrationsTab(
 			});
 		} else {
 			// Disconnected state card
-			const helpText = activeDocument.createElement("div");
+			const helpText = activeWindow.createDiv();
 			helpText.className = "tasknotes-calendar-help";
 			helpText.textContent =
 				"Connect your Microsoft outlook calendar to sync events directly into tasknotes.";
@@ -721,7 +721,7 @@ export function renderIntegrationsTab(
 				"your-microsoft-client-secret"
 			);
 
-			const credentialNote = activeDocument.createElement("div");
+			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
 			credentialNote.textContent =
 				"Enter your OAUTH app credentials from azure portal. Obsidian secret storage encrypts credentials at rest when supported by the operating system.";
@@ -2038,16 +2038,16 @@ function renderICSSubscriptionsList(
 		const nameInput = createCardInput("text", "Calendar name", subscription.name);
 
 		// Create type dropdown
-		const typeSelect = activeDocument.createElement("select");
+		const typeSelect = activeWindow.createEl("select");
 		typeSelect.className = "tasknotes-settings__card-input";
 
-		const remoteOption = activeDocument.createElement("option");
+		const remoteOption = activeWindow.createEl("option");
 		remoteOption.value = "remote";
 		remoteOption.textContent = "Remote URL";
 		remoteOption.selected = subscription.type === "remote";
 		typeSelect.appendChild(remoteOption);
 
-		const localOption = activeDocument.createElement("option");
+		const localOption = activeWindow.createEl("option");
 		localOption.value = "local";
 		localOption.textContent = "Local file";
 		localOption.selected = subscription.type === "local";
@@ -2445,11 +2445,11 @@ function renderWebhookList(
 			: "Creation date unknown";
 
 		// Create events display as a formatted string
-		const eventsDisplay = activeDocument.createElement("div");
+		const eventsDisplay = activeWindow.createDiv();
 		eventsDisplay.className = "tasknotes-webhook-events";
 
 		if (webhook.events.length === 0) {
-			const noEventsSpan = activeDocument.createElement("span");
+			const noEventsSpan = activeWindow.createSpan();
 			noEventsSpan.className = "tasknotes-webhook-events--empty";
 			noEventsSpan.textContent = translate(
 				"settings.integrations.webhooks.eventsDisplay.noEvents"
@@ -2462,7 +2462,7 @@ function renderWebhookList(
 		}
 
 		// Create transform file display if exists
-		const transformDisplay = activeDocument.createElement("span");
+		const transformDisplay = activeWindow.createSpan();
 		if (webhook.transformFile) {
 			transformDisplay.className = "tasknotes-transform-file";
 			transformDisplay.textContent = webhook.transformFile;

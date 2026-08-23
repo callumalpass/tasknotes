@@ -1,5 +1,4 @@
-/* eslint-disable @microsoft/sdl/no-inner-html -- This modal renders controlled plugin-owned HTML fragments. */
-import { App, Modal, Notice, Setting } from "obsidian";
+import { App, Modal, Notice, Setting, setIcon } from "obsidian";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { TimeEntry, TaskInfo } from "../types";
 import type TaskNotesPlugin from "../main";
@@ -63,7 +62,7 @@ export class TimeEntryEditorModal extends Modal {
 
 		// Add new entry button
 		const addButtonContainer = contentEl.createDiv({
-			cls: "time-entry-editor-modal__add-button-container"
+			cls: "time-entry-editor-modal__add-button-container",
 		});
 		const addButton = addButtonContainer.createEl("button", {
 			text: this.translate("modals.timeEntryEditor.addEntry"),
@@ -118,7 +117,9 @@ export class TimeEntryEditorModal extends Modal {
 	}
 
 	private renderEntry(entry: TimeEntry, index: number) {
-		const entryEl = this.entriesContainerEl.createDiv({ cls: "time-entry-editor-modal__entry" });
+		const entryEl = this.entriesContainerEl.createDiv({
+			cls: "time-entry-editor-modal__entry",
+		});
 
 		// Entry header with delete button
 		const headerEl = entryEl.createDiv({ cls: "time-entry-editor-modal__entry-header" });
@@ -126,22 +127,23 @@ export class TimeEntryEditorModal extends Modal {
 		const dateStr = new Date(entry.startTime).toLocaleDateString();
 		headerEl.createSpan({
 			cls: "time-entry-editor-modal__entry-date",
-			text: dateStr
+			text: dateStr,
 		});
 
 		const deleteButton = headerEl.createEl("button", {
 			cls: "time-entry-editor-modal__delete-button",
 			attr: { "aria-label": this.translate("modals.timeEntryEditor.deleteEntry") },
 		});
-		deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+		setIcon(deleteButton, "trash-2");
 		deleteButton.addEventListener("click", () => this.deleteEntry(index));
 
 		// Time inputs
 		const timeContainer = entryEl.createDiv({ cls: "time-entry-editor-modal__time-container" });
 
 		// Start time input
-		const startSetting = new Setting(timeContainer)
-			.setName(this.translate("modals.timeEntryEditor.startTime"));
+		const startSetting = new Setting(timeContainer).setName(
+			this.translate("modals.timeEntryEditor.startTime")
+		);
 
 		const startInput = startSetting.controlEl.createEl("input", {
 			type: "datetime-local",
@@ -157,8 +159,9 @@ export class TimeEntryEditorModal extends Modal {
 		});
 
 		// End time input
-		const endSetting = new Setting(timeContainer)
-			.setName(this.translate("modals.timeEntryEditor.endTime"));
+		const endSetting = new Setting(timeContainer).setName(
+			this.translate("modals.timeEntryEditor.endTime")
+		);
 
 		const endInput = endSetting.controlEl.createEl("input", {
 			type: "datetime-local",
@@ -181,8 +184,9 @@ export class TimeEntryEditorModal extends Modal {
 		});
 
 		// Description
-		const descriptionSetting = new Setting(timeContainer)
-			.setName(this.translate("modals.timeEntryEditor.description"));
+		const descriptionSetting = new Setting(timeContainer).setName(
+			this.translate("modals.timeEntryEditor.description")
+		);
 		descriptionSetting.settingEl.addClass("time-entry-editor-modal__description-setting");
 
 		const editorContainer = descriptionSetting.controlEl.createDiv({
@@ -219,14 +223,15 @@ export class TimeEntryEditorModal extends Modal {
 		const totalMinutes = this.calculateTotalMinutes();
 		const totalHours = Math.floor(totalMinutes / 60);
 		const remainingMinutes = totalMinutes % 60;
-		const totalText = totalHours > 0
-			? this.translate("modals.timeEntryEditor.totalTime", {
-				hours: totalHours.toString(),
-				minutes: remainingMinutes.toString()
-			})
-			: this.translate("modals.timeEntryEditor.totalMinutes", {
-				minutes: totalMinutes.toString()
-			});
+		const totalText =
+			totalHours > 0
+				? this.translate("modals.timeEntryEditor.totalTime", {
+						hours: totalHours.toString(),
+						minutes: remainingMinutes.toString(),
+					})
+				: this.translate("modals.timeEntryEditor.totalMinutes", {
+						minutes: totalMinutes.toString(),
+					});
 
 		this.totalEl.setText(totalText);
 	}
@@ -274,10 +279,10 @@ export class TimeEntryEditorModal extends Modal {
 	private formatDateTimeForInput(date: Date): string {
 		// Format for datetime-local input: YYYY-MM-DDTHH:mm
 		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const day = String(date.getDate()).padStart(2, '0');
-		const hours = String(date.getHours()).padStart(2, '0');
-		const minutes = String(date.getMinutes()).padStart(2, '0');
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		const day = String(date.getDate()).padStart(2, "0");
+		const hours = String(date.getHours()).padStart(2, "0");
+		const minutes = String(date.getMinutes()).padStart(2, "0");
 		return `${year}-${month}-${day}T${hours}:${minutes}`;
 	}
 

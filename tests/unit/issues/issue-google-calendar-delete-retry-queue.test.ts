@@ -30,6 +30,7 @@ const createPlugin = (pluginData: Record<string, any> = {}, calendarSettings = {
 	});
 
 	plugin.loadData = jest.fn().mockImplementation(async () => pluginData);
+	plugin.loadPluginDataForSafeWrite = jest.fn().mockImplementation(async () => pluginData);
 	plugin.saveData = jest.fn().mockImplementation(async (data: Record<string, any>) => {
 		const nextData = { ...data };
 		for (const key of Object.keys(pluginData)) {

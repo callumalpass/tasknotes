@@ -363,7 +363,7 @@ function renderUserFieldsList(
 		);
 
 		// Create collapsible filter settings section
-		const filterSectionWrapper = activeDocument.createElement("div");
+		const filterSectionWrapper = activeWindow.createDiv();
 		filterSectionWrapper.addClass("tasknotes-settings__collapsible-section");
 		filterSectionWrapper.addClass("tasknotes-settings__collapsible-section--collapsed");
 

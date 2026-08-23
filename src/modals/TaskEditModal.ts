@@ -780,3 +780,5 @@ export class TaskEditModal extends TaskModal {
 	// Start expanded for edit modal - override parent property
 	protected isExpanded = true;
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the modal implementation. */

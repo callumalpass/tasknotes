@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { createSettingGroup, configureToggleSetting } from "../components/settingHelpers";
-import { createFieldManager, addFieldManagerStyles } from "../components/FieldManagerComponent";
+import { createFieldManager } from "../components/FieldManagerComponent";
 import { initializeFieldConfig } from "../../utils/fieldConfigDefaults";
 import type { TaskModalFieldsConfig, UserMappedField } from "../../types/settings";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
@@ -15,9 +15,6 @@ export function renderModalFieldsTab(
 	save: () => void
 ): void {
 	container.empty();
-
-	// Add styles for field manager
-	addFieldManagerStyles();
 
 	// Ensure modal fields config exists
 	if (!plugin.settings.modalFieldsConfig) {

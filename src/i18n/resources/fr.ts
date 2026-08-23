@@ -235,6 +235,7 @@ export const fr: TranslationTree = {
 				events: {
 					showScheduledTasks: "Afficher les tâches planifiées",
 					showDueTasks: "Afficher les tâches échues",
+					showOverdueOnToday: "Afficher les tâches en retard aujourd'hui",
 					showRecurringTasks: "Afficher les tâches récurrentes",
 					showTimeEntries: "Afficher les entrées de temps",
 					showTimeblocks: "Afficher les blocs de temps",
@@ -482,7 +483,7 @@ export const fr: TranslationTree = {
 			viewAllLink: "Voir toutes les notes de version sur GitHub →",
 			starMessage:
 				"Nous apprécions vraiment tous les retours. Si quelque chose ne vous semble pas correct, dites-le-nous sur GitHub. Si TaskNotes vous est utile, pensez à lui donner une étoile.",
-			baseFilesNotice: "> [!info] À propos des fichiers `.base` par défaut\n> Les modifications des modèles `.base` générés par défaut n'écrasent pas vos fichiers `.base` existants, afin de préserver vos personnalisations.\n> Si vous souhaitez profiter des dernières améliorations de modèles, régénérez les fichiers base via **Paramètres → TaskNotes → Général → Vues et fichiers base → Créer les fichiers**."
+			baseFilesNotice: "> [!info] À propos des fichiers `.base` par défaut\n> Les modifications des modèles `.base` générés par défaut n'écrasent pas vos fichiers `.base` existants, afin de préserver vos personnalisations.\n> Si vous souhaitez profiter des dernières améliorations de modèles, régénérez les fichiers base via **Paramètres → TaskNotes → Général → Vues et fichiers base → Mettre à jour les fichiers**."
 		}
 	},
 	settings: {

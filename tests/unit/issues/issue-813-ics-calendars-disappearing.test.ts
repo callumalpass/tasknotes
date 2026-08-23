@@ -29,6 +29,7 @@ describe('Issue #813 - ICS Calendars Disappearing', () => {
         // Mock plugin
         mockPlugin = {
             loadData: jest.fn().mockResolvedValue({ icsSubscriptions: [] }),
+            loadPluginDataForSafeWrite: jest.fn().mockResolvedValue({ icsSubscriptions: [] }),
             saveData: jest.fn().mockResolvedValue(undefined),
             app: {
                 vault: {

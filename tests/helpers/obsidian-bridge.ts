@@ -35,7 +35,7 @@ type TestMenuItem = RuntimeMenuItem & {
 	setDisabled: jest.MockedFunction<RuntimeMenuItem["setDisabled"]>;
 	setIsLabel: jest.MockedFunction<RuntimeMenuItem["setIsLabel"]>;
 	setSection: jest.MockedFunction<RuntimeMenuItem["setSection"]>;
-	setSubmenu: jest.MockedFunction<RuntimeMenuItem["setSubmenu"]>;
+	setSubmenu: jest.Mock<TestMenu, []>;
 	setWarning: jest.MockedFunction<RuntimeMenuItem["setWarning"]>;
 };
 
@@ -190,8 +190,9 @@ function wrapMenu(menuValue: Runtime.Menu): TestMenu {
 		return menu;
 	});
 	menu.addSeparator = jest.fn(() => {
-		menu.items__.push({ type: "separator" } as never);
+		const before = menu.items__.length;
 		originalAddSeparator();
+		menu.items__[before] = { type: "separator" } as never;
 		return menu;
 	});
 	menu.showAtMouseEvent = jest.fn((event) => originalShowAtMouseEvent(event));
@@ -263,14 +264,12 @@ function wrapMenuItem(item: RuntimeMenuItem): TestMenuItem {
 		const original = record.setSection.bind(record);
 		record.setSection = jest.fn((section) => original(section)) as TestMenuItem["setSection"];
 	}
-	if (!jest.isMockFunction(record.setSubmenu)) {
-		const original = record.setSubmenu.bind(record);
-		record.setSubmenu = jest.fn(() => {
-			const submenu = wrapMenu(original());
-			record.submenu = submenu;
-			return submenu as never;
-		}) as TestMenuItem["setSubmenu"];
-	}
+	const originalSetSubmenu = record.setSubmenu__.bind(record);
+	record.setSubmenu = jest.fn(() => {
+		const submenu = wrapMenu(originalSetSubmenu());
+		record.submenu = submenu;
+		return submenu;
+	});
 	if (!jest.isMockFunction(record.setWarning)) {
 		const original = record.setWarning.bind(record);
 		record.setWarning = jest.fn((isWarning) =>

@@ -18,6 +18,8 @@ import {
 	formatDateForStorage,
 	parseDateToUTC,
 	getTodayLocal,
+	getCurrentDateString,
+	isOverdueTimeAware,
 } from "../utils/dateUtils";
 import {
 	generateRecurringInstances,
@@ -106,6 +108,7 @@ export interface CalendarEvent {
 		timeEntryIndex?: number;
 		originalDate?: string; // For timeblock events - tracks original date for move operations
 		relatedNoteCount?: number; // For calendar events linked to notes/tasks
+		isOverdueOnToday?: boolean;
 	};
 }
 
@@ -167,6 +170,7 @@ export interface CalendarEventGenerationOptions {
 	showSkippedRecurringInstances?: boolean;
 	showICSEvents?: boolean;
 	showTimeblocks?: boolean;
+	showOverdueOnToday?: boolean;
 	visibleStart?: Date;
 	visibleEnd?: Date;
 	visibleStartDate?: string;
@@ -1505,6 +1509,68 @@ function isDateInVisibleRange(
 	}
 }
 
+function formatCalendarEventDate(date: Date, hasTime: boolean): string {
+	return hasTime ? format(date, "yyyy-MM-dd'T'HH:mm") : format(date, "yyyy-MM-dd");
+}
+
+function shiftCalendarEventDateToToday(
+	dateString: string | undefined,
+	todayDate: string
+): string | undefined {
+	if (!dateString) return undefined;
+	return replaceDatePartPreservingTime(dateString, todayDate);
+}
+
+function shiftCalendarEventEndToToday(
+	event: CalendarEvent,
+	todayStart: string
+): string | undefined {
+	if (!event.end) return undefined;
+
+	try {
+		const originalStart = parseDateToLocal(event.start);
+		const originalEnd = parseDateToLocal(event.end);
+		const shiftedStart = parseDateToLocal(todayStart);
+		const shiftedEnd = new Date(
+			shiftedStart.getTime() + (originalEnd.getTime() - originalStart.getTime())
+		);
+
+		return formatCalendarEventDate(shiftedEnd, hasTimeComponent(event.end));
+	} catch {
+		return shiftCalendarEventDateToToday(event.end, getDatePart(todayStart));
+	}
+}
+
+function createOverdueOnTodayEvent(
+	event: CalendarEvent,
+	taskDate: string | undefined,
+	todayDate: string,
+	hideCompletedFromOverdue: boolean,
+	visibleStart?: Date,
+	visibleEnd?: Date
+): CalendarEvent | null {
+	if (!taskDate) return null;
+	if (!isDateInVisibleRange(todayDate, visibleStart, visibleEnd)) return null;
+	if (getDatePart(taskDate) === todayDate) return null;
+
+	const isCompleted = Boolean(event.extendedProps.isCompleted);
+	if (!isOverdueTimeAware(taskDate, isCompleted, hideCompletedFromOverdue)) return null;
+
+	const start = shiftCalendarEventDateToToday(event.start, todayDate);
+	if (!start) return null;
+
+	return {
+		...event,
+		id: `${event.id}-overdue-today`,
+		start,
+		end: shiftCalendarEventEndToToday(event, start),
+		extendedProps: {
+			...event.extendedProps,
+			isOverdueOnToday: true,
+		},
+	};
+}
+
 /**
  * Generate calendar events from tasks
  */
@@ -1523,6 +1589,7 @@ export async function generateCalendarEvents(
 		showSkippedRecurringInstances = true,
 		showICSEvents = true,
 		showTimeblocks = false,
+		showOverdueOnToday = false,
 		visibleStart,
 		visibleEnd,
 		visibleStartDate,
@@ -1531,6 +1598,8 @@ export async function generateCalendarEvents(
 
 	const events: CalendarEvent[] = [];
 	const materializedOccurrenceDateIndex = buildMaterializedOccurrenceDateIndex(tasks, plugin);
+	const todayDate = showOverdueOnToday ? getCurrentDateString() : null;
+	const hideCompletedFromOverdue = plugin.settings?.hideCompletedFromOverdue ?? true;
 
 	const addStandaloneDateEvents = (
 		task: TaskInfo,
@@ -1563,6 +1632,21 @@ export async function generateCalendarEvents(
 				if (scheduledEvent) {
 					events.push(addMaterializedOccurrenceMetadata(scheduledEvent, task));
 				}
+			} else if (todayDate) {
+				const scheduledEvent = createScheduledEvent(task, plugin);
+				const overdueEvent = scheduledEvent
+					? createOverdueOnTodayEvent(
+							addMaterializedOccurrenceMetadata(scheduledEvent, task),
+							task.scheduled,
+							todayDate,
+							hideCompletedFromOverdue,
+							visibleStart,
+							visibleEnd
+						)
+					: null;
+				if (overdueEvent) {
+					events.push(overdueEvent);
+				}
 			}
 		}
 
@@ -1577,6 +1661,21 @@ export async function generateCalendarEvents(
 				const dueEvent = createDueEvent(task, plugin);
 				if (dueEvent) {
 					events.push(addMaterializedOccurrenceMetadata(dueEvent, task));
+				}
+			} else if (todayDate) {
+				const dueEvent = createDueEvent(task, plugin);
+				const overdueEvent = dueEvent
+					? createOverdueOnTodayEvent(
+							addMaterializedOccurrenceMetadata(dueEvent, task),
+							task.due,
+							todayDate,
+							hideCompletedFromOverdue,
+							visibleStart,
+							visibleEnd
+						)
+					: null;
+				if (overdueEvent) {
+					events.push(overdueEvent);
 				}
 			}
 		}
@@ -2146,3 +2245,5 @@ export function calculateTaskCreationValues(
 
 	return prePopulatedValues;
 }
+
+/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the legacy calendar helpers. */

@@ -1,3 +1,5 @@
+import { createElementInDocument } from "../utils/documentDom";
+
 export type BasesSelectionVisualState = {
 	isSelected(path: string): boolean;
 	getPrimarySelectedPath(): string | null;
@@ -232,7 +234,7 @@ export function getVisibleTaskPathsFromBasesRoot(rootElement: HTMLElement | null
 
 function createSelectionIndicator(rootElement: HTMLElement): HTMLElement {
 	const doc = rootElement.ownerDocument;
-	const indicator = doc.createElement("div");
+	const indicator = createElementInDocument(doc, "div");
 	indicator.className = "tn-selection-indicator";
 	indicator.setAttribute("role", "button");
 	indicator.tabIndex = 0;

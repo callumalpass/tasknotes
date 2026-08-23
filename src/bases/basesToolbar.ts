@@ -1,4 +1,5 @@
 import { setIcon } from "obsidian";
+import { createElementInDocument } from "../utils/documentDom";
 
 export type BasesNewTaskButtonInjectionResult =
 	| "injected"
@@ -46,20 +47,20 @@ export function injectBasesNewTaskButton(
 	toolbarEl.querySelector(`.${NEW_TASK_BUTTON_CLASS}`)?.remove();
 
 	const doc = options.containerEl.ownerDocument;
-	const newTaskBtn = doc.createElement("div");
+	const newTaskBtn = createElementInDocument(doc, "div");
 	newTaskBtn.className = `bases-toolbar-item ${NEW_TASK_BUTTON_CLASS}`;
 
-	const innerBtn = doc.createElement("button");
+	const innerBtn = createElementInDocument(doc, "button");
 	innerBtn.className = "text-icon-button";
 	innerBtn.type = "button";
 	innerBtn.setAttribute("aria-label", options.label);
 
-	const iconSpan = doc.createElement("span");
+	const iconSpan = createElementInDocument(doc, "span");
 	iconSpan.className = "text-button-icon";
 	setIcon(iconSpan, "plus");
 	innerBtn.appendChild(iconSpan);
 
-	const labelSpan = doc.createElement("span");
+	const labelSpan = createElementInDocument(doc, "span");
 	labelSpan.className = "text-button-label";
 	labelSpan.textContent = options.label;
 	innerBtn.appendChild(labelSpan);
