@@ -185,7 +185,7 @@
    ================================================ */
 
 /* Column */
-.tasknotes-plugin .kanban-view__column {
+ .tasknotes-plugin .kanban-view__column {
     min-width: 200px;
     max-width: 500px;
     flex-shrink: 0;
@@ -197,6 +197,11 @@
     height: fit-content;
     max-height: calc(100vh - 200px);
     transition: border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), background-color var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .kanban-view__column--status-colored {
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 6%, var(--tn-bg-primary));
+    border-color: color-mix(in srgb, var(--tn-kanban-status-color) 38%, var(--tn-border-color));
 }
 
 .tasknotes-plugin .kanban-view__column--dragover {
