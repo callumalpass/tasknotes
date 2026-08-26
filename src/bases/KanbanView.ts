@@ -114,6 +114,7 @@ type VirtualScrollerWithContainer = {
 type KanbanEphemeralState = {
 	scrollTop?: unknown;
 	columnScroll?: unknown;
+	collapsedColumns?: unknown;
 };
 
 type KanbanDropExecutionOptions = {
@@ -153,6 +154,16 @@ function getColumnScrollState(state: KanbanEphemeralState): Record<string, numbe
 		}
 	}
 	return result;
+}
+
+function getCollapsedColumnState(state: KanbanEphemeralState): Set<string> | null {
+	if (
+		!Array.isArray(state.collapsedColumns) ||
+		!state.collapsedColumns.every((value): value is string => typeof value === "string")
+	) {
+		return null;
+	}
+	return new Set(state.collapsedColumns);
 }
 
 function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "show-all" {
@@ -237,6 +248,7 @@ export class KanbanView extends BasesViewBase {
 	private sortScopeCandidateTaskPaths = new Map<string, string[]>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
+	private collapsedColumns = new Set<string>();
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
@@ -472,6 +484,7 @@ export class KanbanView extends BasesViewBase {
 			...baseStateObject,
 			scrollTop: this.rootElement?.scrollTop || 0,
 			columnScroll,
+			collapsedColumns: Array.from(this.collapsedColumns),
 		};
 	}
 
@@ -482,6 +495,12 @@ export class KanbanView extends BasesViewBase {
 		if (!isKanbanEphemeralState(state)) return;
 		super.setEphemeralState(state);
 		const columnScroll = getColumnScrollState(state);
+		const collapsedColumns = getCollapsedColumnState(state);
+		if (collapsedColumns) {
+			this.collapsedColumns = collapsedColumns;
+		} else if ("collapsedColumns" in state) {
+			this.collapsedColumns.clear();
+		}
 
 		// Restore board-level horizontal scroll
 		if (typeof state.scrollTop === "number" && this.rootElement) {
@@ -1725,6 +1744,7 @@ export class KanbanView extends BasesViewBase {
 		this.renderGroupTitleWrapper(titleContainer, groupKey, false, true);
 
 		this.renderColumnCount(header, groupKey, tasks.length);
+		this.createColumnCollapseButton(header, column, groupKey, groupByPropertyId);
 
 		// Setup column header drag handlers
 		this.setupColumnHeaderDragHandlers(header);
@@ -1756,6 +1776,54 @@ export class KanbanView extends BasesViewBase {
 		this.createAddTaskButton(column, groupByPropertyId, groupKey);
 
 		return column;
+	}
+
+	private createColumnCollapseButton(
+		header: HTMLElement,
+		column: HTMLElement,
+		groupKey: string,
+		groupByPropertyId: string | null
+	): void {
+		const button = header.createEl("button", {
+			cls: "kanban-view__column-collapse-button",
+			attr: {
+				type: "button",
+				"aria-label": this.plugin.i18n.translate("views.kanban.toggleColumn", {
+					column: this.getGroupDisplayTitle(groupKey, groupByPropertyId),
+				}),
+			},
+		});
+
+		const applyState = (collapsed: boolean) => {
+			column.classList.toggle("kanban-view__column--collapsed", collapsed);
+			column.dataset.collapsed = String(collapsed);
+			column.style.width = collapsed
+				? "var(--tn-kanban-collapsed-column-width, 48px)"
+				: `${this.columnWidth}px`;
+			button.setAttribute("aria-expanded", String(!collapsed));
+			setIcon(button, collapsed ? "chevron-right" : "chevron-left");
+		};
+
+		applyState(this.collapsedColumns.has(groupKey));
+
+		for (const eventName of ["mousedown", "pointerdown", "touchstart"]) {
+			button.addEventListener(eventName, (event) => event.stopPropagation());
+		}
+		button.addEventListener("dragstart", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+		});
+		button.addEventListener("click", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			const collapsed = !this.collapsedColumns.has(groupKey);
+			if (collapsed) {
+				this.collapsedColumns.add(groupKey);
+			} else {
+				this.collapsedColumns.delete(groupKey);
+			}
+			applyState(collapsed);
+		});
 	}
 
 	private renderColumnCount(container: HTMLElement, groupKey: string, taskCount: number): void {
