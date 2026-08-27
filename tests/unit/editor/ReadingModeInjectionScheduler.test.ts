@@ -51,4 +51,31 @@ describe("ReadingModeInjectionScheduler", () => {
 			"finish-2-current",
 		]);
 	});
+
+	it("invalidates an in-flight run and prevents queued work after disposal", async () => {
+		const scheduler = new ReadingModeInjectionScheduler();
+		const leaf = {} as any;
+		let releaseRun: (() => void) | undefined;
+		let contextIsCurrent: (() => boolean) | undefined;
+		let runCount = 0;
+
+		scheduler.schedule(leaf, async ({ isCurrent }) => {
+			runCount += 1;
+			contextIsCurrent = isCurrent;
+			await new Promise<void>((resolve) => {
+				releaseRun = resolve;
+			});
+		});
+		await Promise.resolve();
+		scheduler.schedule(leaf, async () => {
+			runCount += 1;
+		});
+
+		scheduler.dispose();
+		expect(contextIsCurrent?.()).toBe(false);
+		releaseRun?.();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(runCount).toBe(1);
+	});
 });

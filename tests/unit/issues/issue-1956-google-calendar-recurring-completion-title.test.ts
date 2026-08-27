@@ -127,7 +127,8 @@ describe("Issue #1956: recurring Google Calendar completion title", () => {
 				summary: "✓ Weekly review",
 				description: expect.stringContaining("Status: Done"),
 				recurrence: expect.arrayContaining(["EXDATE;VALUE=DATE:20260528"]),
-			})
+			}),
+			expect.any(Number)
 		);
 	});
 });

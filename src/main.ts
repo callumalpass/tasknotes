@@ -101,6 +101,7 @@ import {
 } from "./settings/settingsPersistence";
 import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
 import { createTaskNotesLogger } from "./utils/tasknotesLogger";
+import { sanitizeLinkAliasText } from "./utils/linkAliasUtils";
 import { TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS } from "./api/runtime-api";
 import {
 	createTaskNotesPerformanceProfiler,
@@ -314,7 +315,9 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
 		initializeCalendarProviders(this);
-		await registerBasesIntegration(this);
+		// Not awaited: if Bases has not loaded yet this schedules a retry timer,
+		// and initializeAfterLayoutReady attempts registration again.
+		void registerBasesIntegration(this);
 
 		// Defer expensive initialization until layout is ready
 		this.app.workspace.onLayoutReady(() => {
@@ -2012,7 +2015,7 @@ export default class TaskNotesPlugin extends Plugin {
 				file,
 				sourcePath,
 				"",
-				task.title // Use task title as alias
+				sanitizeLinkAliasText(task.title)
 			);
 
 			// Insert the link at the determined insertion point

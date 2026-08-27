@@ -366,4 +366,104 @@ describe("Issue #2081: reading mode note widgets stay mounted", () => {
 			cleanup();
 		}
 	});
+
+	it("preserves relationship widgets owned by nested Markdown embeds", async () => {
+		jest.useFakeTimers();
+		const leaf = createMarkdownLeaf();
+		const outerSizer = leaf.containerEl.querySelector(".markdown-preview-sizer");
+		const nestedEmbed = document.createElement("div");
+		nestedEmbed.className = "markdown-embed";
+		nestedEmbed.innerHTML = `
+			<div class="markdown-preview-sizer">
+				<div class="tasknotes-task-card-note-widget"></div>
+				<div class="tasknotes-relationships-widget" data-note-path="Projects/nested.md"></div>
+			</div>
+		`;
+		outerSizer?.appendChild(nestedEmbed);
+		const nestedWidget = nestedEmbed.querySelector(".tasknotes-relationships-widget");
+		const pluginMock = createPluginMock(leaf);
+		const cleanup = setupRelationshipsReadingModeHandlers(pluginMock.plugin);
+
+		try {
+			jest.runOnlyPendingTimers();
+			await flushMicrotasks();
+
+			expect(nestedWidget?.isConnected).toBe(true);
+			expect(
+				Array.from(outerSizer?.children ?? []).filter((child) =>
+					child.classList.contains("tasknotes-relationships-widget")
+				)
+			).toHaveLength(1);
+		} finally {
+			cleanup();
+		}
+	});
+
+	it("unloads a rendered widget when Reading mode has no preview sizer", async () => {
+		jest.useFakeTimers();
+		const leaf = createMarkdownLeaf();
+		leaf.containerEl.querySelector(".markdown-preview-sizer")?.remove();
+		const pluginMock = createPluginMock(leaf);
+		const unload = Component.prototype.unload as unknown as jest.Mock;
+		unload.mockClear();
+		const cleanup = setupRelationshipsReadingModeHandlers(pluginMock.plugin);
+
+		try {
+			jest.runOnlyPendingTimers();
+			await flushMicrotasks();
+			expect(unload).toHaveBeenCalled();
+			expect(leaf.containerEl.querySelector(".tasknotes-relationships-widget")).toBeNull();
+		} finally {
+			cleanup();
+		}
+	});
+
+	it("removes a hidden Live Preview relationships widget when Reading mode opens", async () => {
+		jest.useFakeTimers();
+		const leaf = createMarkdownLeaf();
+		const editorContainer = document.createElement("div");
+		editorContainer.className = "markdown-source-view";
+		editorContainer.innerHTML = `
+			<div class="cm-sizer">
+				<div class="tasknotes-relationships-widget" data-note-path="${leaf.file.path}"></div>
+			</div>
+		`;
+		leaf.containerEl.prepend(editorContainer);
+		const pluginMock = createPluginMock(leaf);
+		const cleanup = setupRelationshipsReadingModeHandlers(pluginMock.plugin);
+
+		try {
+			jest.runOnlyPendingTimers();
+			await flushMicrotasks();
+
+			expect(
+				leaf.containerEl.querySelectorAll(".tasknotes-relationships-widget")
+			).toHaveLength(1);
+			expect(
+				leaf.containerEl.querySelector(
+					".markdown-preview-sizer > .tasknotes-relationships-widget"
+				)
+			).not.toBeNull();
+			expect(
+				leaf.containerEl.querySelector(
+					".cm-sizer > .tasknotes-relationships-widget"
+				)
+			).toBeNull();
+		} finally {
+			cleanup();
+		}
+	});
+
+	it("removes owned relationships widgets when handlers are torn down", async () => {
+		jest.useFakeTimers();
+		const leaf = createMarkdownLeaf();
+		const pluginMock = createPluginMock(leaf);
+		const cleanup = setupRelationshipsReadingModeHandlers(pluginMock.plugin);
+		jest.runOnlyPendingTimers();
+		await flushMicrotasks();
+
+		expect(leaf.containerEl.querySelector(".tasknotes-relationships-widget")).not.toBeNull();
+		cleanup();
+		expect(leaf.containerEl.querySelector(".tasknotes-relationships-widget")).toBeNull();
+	});
 });

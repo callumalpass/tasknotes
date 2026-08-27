@@ -69,6 +69,7 @@ import {
 	moveItemsRelativeToTarget,
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { processVaultFrontMatter } from "../services/VaultMutationService";
 import { resolveTaskListDragPaths } from "./taskListTargetResolver";
 import { type TaskListAction } from "./taskListKeyboardActions";
 import { getTaskActionDate } from "./basesTaskCardActions";
@@ -1629,7 +1630,7 @@ export class TaskListView extends BasesViewBase {
 
 				// Each task gets its group mutation. Only the card under the pointer
 				// receives the insertion sort order.
-				await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+			await processVaultFrontMatter(this.plugin.app, file, (fm) => {
 					applyTaskListDropFrontmatterMutation({
 						frontmatter: fm,
 						plan: pathDropPlan,

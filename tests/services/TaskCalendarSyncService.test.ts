@@ -190,7 +190,8 @@ describe("TaskCalendarSyncService", () => {
             {
                 summary: "✓ Task Title",
                 description: undefined
-            }
+            },
+            expect.any(Number)
         );
     });
 

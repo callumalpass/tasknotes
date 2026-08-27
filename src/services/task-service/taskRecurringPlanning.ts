@@ -149,6 +149,49 @@ function moveScheduledDateToOccurrence(
 	return `${occurrenceDateStr}${scheduled.slice(scheduledDatePart.length)}`;
 }
 
+function withGoogleCalendarReplacedDatesProcessedForNextOccurrence(
+	task: TaskInfo,
+	originalTask: TaskInfo,
+	actionDate: string
+): TaskInfo {
+	if ((originalTask.recurrence_anchor || "scheduled") !== "scheduled") {
+		return task;
+	}
+
+	const replacedDates = new Set<string>();
+	for (const date of originalTask.googleCalendarMovedOriginalDates || []) {
+		const normalized = getDatePart(date);
+		if (normalized) {
+			replacedDates.add(normalized);
+		}
+	}
+
+	const pendingOriginal = getDatePart(
+		originalTask.googleCalendarExceptionOriginalScheduled || ""
+	);
+	const movedDate = getDatePart(originalTask.scheduled || "");
+	if (pendingOriginal && pendingOriginal !== actionDate && movedDate === actionDate) {
+		replacedDates.add(pendingOriginal);
+	}
+
+	// Moved occurrences replace their original series dates. Mark those dates as
+	// processed only for this calculation; persisted state stays keyed to moved dates.
+	const completeInstances = new Set(getStringArray(task.complete_instances));
+	const skippedInstances = getStringArray(task.skipped_instances);
+	const skippedInstanceSet = new Set(skippedInstances);
+	const additionalSkippedInstances = Array.from(replacedDates)
+		.filter((date) => !completeInstances.has(date) && !skippedInstanceSet.has(date))
+		.sort();
+	if (additionalSkippedInstances.length === 0) {
+		return task;
+	}
+
+	return {
+		...task,
+		skipped_instances: [...skippedInstances, ...additionalSkippedInstances],
+	};
+}
+
 export function getRecurringTaskActionDate(task: TaskInfo, date?: Date): Date {
 	if (date) {
 		return date;
@@ -225,7 +268,7 @@ export function buildRecurringTaskCompletePlan({
 	// due-date offset calculation and next-occurrence search.
 	// Pass max(today, instanceDate) as the floor so future-dated tasks advance past
 	// the current cycle rather than jumping back to today's nearest occurrence.
-	const taskForNextOccurrence = owningRecurrenceDate
+	const taskForNextOccurrenceBase = owningRecurrenceDate
 		? {
 				...updatedTask,
 				scheduled: moveScheduledDateToOccurrence(
@@ -234,6 +277,11 @@ export function buildRecurringTaskCompletePlan({
 				),
 			}
 		: updatedTask;
+	const taskForNextOccurrence = withGoogleCalendarReplacedDatesProcessedForNextOccurrence(
+		taskForNextOccurrenceBase,
+		freshTask,
+		dateStr
+	);
 	const todayStr = getTodayString();
 	const floorDate = dateStr > todayStr ? dateStr : todayStr;
 	const nextDates = updateToNextScheduledOccurrence(
@@ -353,7 +401,7 @@ export function buildRecurringTaskSkippedPlan({
 		updatedTask.skipped_instances = skippedInstances.filter((d) => d !== dateStr);
 	}
 
-	const taskForNextOccurrence = owningRecurrenceDate
+	const taskForNextOccurrenceBase = owningRecurrenceDate
 		? {
 				...updatedTask,
 				scheduled: moveScheduledDateToOccurrence(
@@ -362,6 +410,11 @@ export function buildRecurringTaskSkippedPlan({
 				),
 			}
 		: updatedTask;
+	const taskForNextOccurrence = withGoogleCalendarReplacedDatesProcessedForNextOccurrence(
+		taskForNextOccurrenceBase,
+		freshTask,
+		dateStr
+	);
 	const todayStr = getTodayString();
 	const floorDate = dateStr > todayStr ? dateStr : todayStr;
 	const nextDates = updateToNextScheduledOccurrence(

@@ -14,6 +14,7 @@ import {
 	type TaskUpdateFieldMapper,
 } from "./taskUpdatePlanning";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { processVaultFile, processVaultFrontMatter } from "../VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService/TaskUpdateService" });
 
@@ -142,7 +143,7 @@ export class TaskUpdateService {
 					? getCurrentDateString()
 					: "";
 
-			await runtime.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			await processVaultFrontMatter(runtime.app, file, (frontmatter) => {
 				const frontmatterResult = applyTaskUpdateFrontmatterChange({
 					frontmatter,
 					originalTask,
@@ -174,14 +175,15 @@ export class TaskUpdateService {
 			if (normalizedDetails !== null) {
 				const targetFile = runtime.app.vault.getAbstractFileByPath(newPath);
 				if (targetFile instanceof TFile) {
-					const currentContent = await runtime.app.vault.read(targetFile);
-					const { frontmatter: frontmatterText } =
-						splitFrontmatterAndBody(currentContent);
-					const frontmatterBlock =
-						frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
-					const bodyContent = normalizedDetails.trimEnd();
-					const finalBody = bodyContent.length > 0 ? `${bodyContent}\n` : "";
-					await runtime.app.vault.modify(targetFile, `${frontmatterBlock}${finalBody}`);
+					await processVaultFile(runtime.app, targetFile, (currentContent) => {
+						const { frontmatter: frontmatterText } =
+							splitFrontmatterAndBody(currentContent);
+						const frontmatterBlock =
+							frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
+						const bodyContent = normalizedDetails.trimEnd();
+						const finalBody = bodyContent.length > 0 ? `${bodyContent}\n` : "";
+						return `${frontmatterBlock}${finalBody}`;
+					});
 				}
 			}
 

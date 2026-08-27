@@ -16,6 +16,7 @@ import { validateCalendarId, validateEventId, validateRequired } from "./validat
 import { CalendarProvider, ProviderCalendar } from "./CalendarProvider";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
+import { normalizeCalendarDescription } from "../utils/calendarDescription";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/GoogleCalendarService" });
 
@@ -161,6 +162,14 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	getAvailableCalendars(): ProviderCalendar[] {
 		return this.availableCalendars;
+	}
+
+	getConnectionGeneration(): number {
+		return this.oauthService.getConnectionGeneration("google");
+	}
+
+	async isConnectionGenerationCurrent(expectedGeneration: number): Promise<boolean> {
+		return this.oauthService.isConnectionGenerationCurrent("google", expectedGeneration);
 	}
 
 	/**
@@ -499,7 +508,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			id: `google-${calendarId}-${googleEvent.id}`,
 			subscriptionId: `google-${calendarId}`,
 			title: googleEvent.summary || "Untitled Event",
-			description: googleEvent.description,
+			description: normalizeCalendarDescription(googleEvent.description),
 			start: start,
 			end: end,
 			allDay: allDay,
@@ -693,7 +702,8 @@ export class GoogleCalendarService extends CalendarProvider {
 			};
 			colorId?: string;
 			recurrence?: string[];
-		}
+		},
+		expectedConnectionGeneration?: number
 	): Promise<ICSEvent> {
 		// Validate inputs
 		validateCalendarId(calendarId);
@@ -701,7 +711,10 @@ export class GoogleCalendarService extends CalendarProvider {
 		validateRequired(updates, "updates");
 
 		try {
-			const token = await this.oauthService.getValidToken("google");
+			const token = await this.oauthService.getValidToken(
+				"google",
+				expectedConnectionGeneration
+			);
 
 			// First, get the current event to merge with updates
 			const getResponse = await this.withRetry(async () => {
@@ -852,7 +865,8 @@ export class GoogleCalendarService extends CalendarProvider {
 			};
 			colorId?: string;
 			recurrence?: string[];
-		}
+		},
+		expectedConnectionGeneration?: number
 	): Promise<ICSEvent> {
 		// Validate inputs
 		validateCalendarId(calendarId);
@@ -865,7 +879,10 @@ export class GoogleCalendarService extends CalendarProvider {
 		validateRequired(event.end, "event.end");
 
 		try {
-			const token = await this.oauthService.getValidToken("google");
+			const token = await this.oauthService.getValidToken(
+				"google",
+				expectedConnectionGeneration
+			);
 
 			// Build Google Calendar API payload
 			const payload: GoogleCalendarEventPayload = {
@@ -952,13 +969,20 @@ export class GoogleCalendarService extends CalendarProvider {
 	/**
 	 * Deletes a Google Calendar event
 	 */
-	async deleteEvent(calendarId: string, eventId: string): Promise<void> {
+	async deleteEvent(
+		calendarId: string,
+		eventId: string,
+		expectedConnectionGeneration?: number
+	): Promise<void> {
 		// Validate inputs
 		validateCalendarId(calendarId);
 		validateEventId(eventId);
 
 		try {
-			const token = await this.oauthService.getValidToken("google");
+			const token = await this.oauthService.getValidToken(
+				"google",
+				expectedConnectionGeneration
+			);
 
 			await this.withRetry(async () => {
 				return await requestUrl({

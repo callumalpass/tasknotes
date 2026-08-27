@@ -203,7 +203,8 @@ describe("Issue #1696: Google Calendar recurring reschedule sync", () => {
 			"master-event-id",
 			expect.objectContaining({
 				recurrence: expect.arrayContaining(["EXDATE;VALUE=DATE:20260413"]),
-			})
+			}),
+			expect.any(Number)
 		);
 		expect(googleCalendarService.createEvent).toHaveBeenCalledWith(
 			"primary",
@@ -212,7 +213,8 @@ describe("Issue #1696: Google Calendar recurring reschedule sync", () => {
 				start: { date: "2026-04-15" },
 				end: { date: "2026-04-16" },
 				isAllDay: true,
-			})
+			}),
+			expect.any(Number)
 		);
 		expect(frontmatter.googleCalendarExceptionEventId).toBe("detached-exception-id");
 	});
@@ -249,7 +251,8 @@ describe("Issue #1696: Google Calendar recurring reschedule sync", () => {
 
 		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
 			"primary",
-			"detached-exception-id"
+			"detached-exception-id",
+			expect.any(Number)
 		);
 		expect(frontmatter.googleCalendarExceptionEventId).toBeUndefined();
 	});
