@@ -41,3 +41,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2306) Fixed the task editor's completion calendar showing dates from a different month than its heading in some time zones, and skipping short months when navigating from a month-end completion.
   - Thanks to @teampbevolution for reporting.
+
+- (#2258) Task cards now preserve spaces and emoji in context and tag labels instead of collapsing them during display. Thanks to @Oblique82 for reporting this and tracing the affected renderer.
