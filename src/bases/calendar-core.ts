@@ -467,6 +467,28 @@ export async function handleRecurringTaskDrop(
 }
 
 /**
+ * Return the recurrence instance addressed by a calendar event. Rendered dates
+ * from due events or time entries must not become occurrence identity.
+ */
+export function getOccurrenceDateForEvent(
+	taskInfo: TaskInfo,
+	eventArg: unknown
+): Date | undefined {
+	if (!taskInfo.recurrence) {
+		return undefined;
+	}
+
+	const eventContainer = eventArg as CalendarEventArgLike;
+	const event = eventContainer.event || eventContainer;
+	const instanceDate = event.extendedProps?.instanceDate;
+	if (typeof instanceDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(instanceDate)) {
+		return undefined;
+	}
+
+	return parseDateToUTC(instanceDate);
+}
+
+/**
  * Get target date for calendar event context menu
  * Uses the same UTC-anchored logic as AdvancedCalendarView
  */

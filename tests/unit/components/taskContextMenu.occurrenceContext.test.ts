@@ -76,12 +76,27 @@ function createPlugin(): TaskNotesPlugin {
 	} as unknown as TaskNotesPlugin;
 }
 
-function findTopLevelMenuItem(title: string): Record<string, jest.Mock> | undefined {
-	const topLevelMenu = menuMock.mock.results[0].value as MockMenu;
-	return topLevelMenu.items.find(
-		(item): item is Record<string, jest.Mock> =>
-			!("type" in item) && item.setTitle.mock.calls[0]?.[0] === title
-	);
+function submenuOf(item: MockMenuItem): MockMenu | undefined {
+	if ("type" in item) return undefined;
+	const results = item.setSubmenu?.mock.results;
+	return results && results.length ? (results[results.length - 1].value as MockMenu) : undefined;
+}
+
+// Skip now lives inside the "Complete or skip" submenu, so search deep.
+function findTopLevelMenuItem(
+	title: string,
+	menu: MockMenu | undefined = menuMock.mock.results[0]?.value as MockMenu,
+	seen = new Set<MockMenu>()
+): Record<string, jest.Mock> | undefined {
+	if (!menu || seen.has(menu)) return undefined;
+	seen.add(menu);
+	for (const item of menu.items) {
+		if ("type" in item) continue;
+		if (item.setTitle?.mock.calls[0]?.[0] === title) return item as Record<string, jest.Mock>;
+		const found = findTopLevelMenuItem(title, submenuOf(item), seen);
+		if (found) return found;
+	}
+	return undefined;
 }
 
 describe("occurrenceDate context field", () => {
