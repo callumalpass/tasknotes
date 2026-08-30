@@ -116,6 +116,23 @@ function applyFilterRuleDefault(
 		return;
 	}
 
+	// Generated relationship views (e.g. the default Subtasks tab) normalize each
+	// link before comparing, producing a rule such as:
+	//   file.hasLink(this.file) && list(note.projects).map(...).contains(this.file.asLink())
+	// The generic matcher below cannot reduce that prefix to a field name, so detect
+	// the normalized list/map form explicitly and recover the wrapped property.
+	const mappedListContainsCurrentFileMatch = trimmedRule.match(
+		/(?:^|&&\s*)(list\((?:note\.|task\.)?[\w-]+\))\.map\([\s\S]*\)\.contains\(this\.file\.asLink\(\)\)$/
+	);
+	if (mappedListContainsCurrentFileMatch) {
+		const property = normalizeFilterProperty(mappedListContainsCurrentFileMatch[1], options);
+		const currentFileLink = resolveCurrentFileLink(options.currentFileLink);
+		if (property && currentFileLink) {
+			addFrontmatterDefault(defaults, property, currentFileLink, options.fieldMapper);
+		}
+		return;
+	}
+
 	const currentFileContainsMatch = trimmedRule.match(
 		/^(.+?)\.contains\(this\.file\.asLink\(\)\)$/
 	);

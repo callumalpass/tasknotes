@@ -124,4 +124,51 @@ describe("Bases filter defaults", () => {
 
 		expect(defaults).toEqual({});
 	});
+
+	it("extracts the project default from the generated normalized relationship filter", () => {
+		// This is the filter the default Subtasks relationship view generates.
+		const generatedSubtasksFilter =
+			'file.hasLink(this.file) && list(note.projects).map(file(value.replace(/^\\[[^\\]]+\\]\\((.*)\\)$/, "$1").replace(/%20/g, " ")).asLink()).contains(this.file.asLink())';
+
+		const defaults = extractBasesFilterDefaults({
+			config: {
+				query: {
+					filters: {
+						conjunction: "and",
+						filters: [
+							{ rule: { text: 'file.hasTag("task")' } },
+							{ rule: { text: generatedSubtasksFilter } },
+						],
+					},
+				},
+			},
+			fieldMapper: createFieldMapper(),
+			taskTag: "task",
+			currentFileLink: "[[Current]]",
+		});
+
+		expect(defaults).toEqual({
+			projects: ["[[Current]]"],
+		});
+	});
+
+	it("honors field mapping for the generated normalized relationship filter", () => {
+		const generatedSubtasksFilter =
+			'file.hasLink(this.file) && list(note.projectLinks).map(file(value.replace(/^\\[[^\\]]+\\]\\((.*)\\)$/, "$1").replace(/%20/g, " ")).asLink()).contains(this.file.asLink())';
+
+		const defaults = extractBasesFilterDefaults({
+			config: {
+				filters: {
+					rule: { text: generatedSubtasksFilter },
+				},
+			},
+			fieldMapper: createFieldMapper({ projects: "projectLinks" }),
+			taskTag: "task",
+			currentFileLink: "[[Current]]",
+		});
+
+		expect(defaults).toEqual({
+			projectLinks: ["[[Current]]"],
+		});
+	});
 });
