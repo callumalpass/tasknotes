@@ -851,6 +851,12 @@ function renderDueDateProperty(
 	if (isDueOverdue) {
 		element.classList.add("task-card__metadata-date--overdue");
 	}
+	if (isDueToday) {
+		element.classList.add("task-card__metadata-date--today");
+	}
+	if (!isDueOverdue && !isDueToday) {
+		element.classList.add("task-card__metadata-date--future");
+	}
 	element.dataset.tnAction = "edit-date";
 	element.dataset.tnDateType = "due";
 
@@ -905,6 +911,12 @@ function renderScheduledDateProperty(
 	element.classList.add("task-card__metadata-date", "task-card__metadata-date--scheduled");
 	if (isScheduledPast) {
 		element.classList.add("task-card__metadata-date--past");
+	}
+	if (isScheduledToday) {
+		element.classList.add("task-card__metadata-date--today");
+	}
+	if (!isScheduledPast && !isScheduledToday) {
+		element.classList.add("task-card__metadata-date--future");
 	}
 	element.dataset.tnAction = "edit-date";
 	element.dataset.tnDateType = "scheduled";
