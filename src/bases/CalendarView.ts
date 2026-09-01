@@ -29,6 +29,7 @@ import {
 	handleTimeEntryCreation,
 	handleDateTitleClick,
 	getTargetDateForEvent,
+	getOccurrenceDateForEvent,
 	calculateTaskCreationValues,
 	generateTaskTooltip,
 	applyRecurringTaskStyling,
@@ -2806,7 +2807,7 @@ export class CalendarView extends BasesViewBase {
 					task: taskInfo,
 					plugin: this.plugin,
 					targetDate: targetDate,
-					occurrenceDate: taskInfo.recurrence ? targetDate : undefined,
+					occurrenceDate: getOccurrenceDateForEvent(taskInfo, arg),
 					promoteOccurrenceControls: Boolean(
 						taskInfo.recurrence ||
 							(taskInfo.recurrence_parent && taskInfo.occurrence_date)

@@ -901,6 +901,7 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 		if (canvasDebounceTimer) window.clearTimeout(canvasDebounceTimer);
 		metadataDebounceTimers.forEach((timer) => window.clearTimeout(timer));
 		metadataDebounceTimers.clear();
+		scheduler.dispose();
 		markdownWidgetObserverCleanups.forEach((cleanup) => cleanup());
 		canvasObservers.forEach((observer) => observer.disconnect());
 		canvasInteractionCleanups.forEach((cleanup) => cleanup());

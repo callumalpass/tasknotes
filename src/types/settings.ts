@@ -198,6 +198,8 @@ export interface TaskNotesSettings {
 	expandSubtasksByDefault: boolean;
 	// Subtask chevron position in task cards
 	subtaskChevronPosition: "left" | "right";
+	// Nest the complete/skip context-menu actions under a submenu (vs. flat menu items)
+	completionMenuAsSubmenu: boolean;
 	// Filter toolbar layout
 	viewsButtonAlignment: "left" | "right";
 	// Overdue behavior settings

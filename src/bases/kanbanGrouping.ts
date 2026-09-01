@@ -845,7 +845,12 @@ export function applyDefaultKanbanSwimLaneOrder(options: {
 		});
 	}
 
-	return orderedKeys.sort();
+	// No configured or priority/status default applies. Preserve the incoming
+	// key order instead of sorting alphabetically: `actualKeys` derives from the
+	// Bases-sorted task sequence, so this keeps global sort-driven swimlane row
+	// ordering (#2256) — e.g. a formula sort like `daysUntilDue` floats the
+	// swimlane holding the nearest due date to the top.
+	return orderedKeys;
 }
 
 export function applyKanbanSwimLaneOrder(options: {

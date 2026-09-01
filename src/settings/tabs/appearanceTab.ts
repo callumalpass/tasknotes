@@ -110,6 +110,18 @@ export function renderAppearanceTab(
 				setting.setDesc(`Currently showing: ${currentLabels.join(", ")}`);
 				setting.settingEl.addClass("settings-view__group-description");
 			});
+
+			group.addSetting((setting) =>
+				void configureToggleSetting(setting, {
+					name: translate("settings.appearance.taskCards.completionSubmenu.name"),
+					desc: translate("settings.appearance.taskCards.completionSubmenu.description"),
+					getValue: () => plugin.settings.completionMenuAsSubmenu,
+					setValue: async (value: boolean) => {
+						plugin.settings.completionMenuAsSubmenu = value;
+						save();
+					},
+				})
+			);
 		}
 	);
 
