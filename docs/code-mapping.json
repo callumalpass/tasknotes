@@ -187,6 +187,18 @@
       "description": "Time tracking HTTP API endpoints",
       "source": ["src/api/TimeTrackingController.ts"],
       "docs": ["docs/HTTP_API.md"]
+    },
+    {
+      "id": "caldav-sync",
+      "description": "Two-way CalDAV VTODO task sync",
+      "source": [
+        "src/services/CalDavSyncService.ts",
+        "src/services/CalDavClient.ts",
+        "src/services/CalDavSecretStore.ts",
+        "src/services/caldav/**",
+        "src/settings/tabs/caldavSection.ts"
+      ],
+      "docs": ["docs/features/caldav-sync.md"]
     }
   ]
 }

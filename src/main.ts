@@ -216,6 +216,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Task-to-Google Calendar sync service
 	taskCalendarSyncService: TaskCalendarSyncService;
+
+	// Two-way CalDAV VTODO sync (independent of the OAuth calendar integration)
+	caldavSyncService?: import("./services/CalDavSyncService").CalDavSyncService;
 	taskFileLifecycleReconciliationService?: import("./services/TaskFileLifecycleReconciliationService").TaskFileLifecycleReconciliationService;
 
 	// mdbase-spec generation service

@@ -1,5 +1,5 @@
 import { normalizePath } from "obsidian";
-import { DEFAULT_NLP_TRIGGERS, DEFAULT_SETTINGS } from "./defaults";
+import { DEFAULT_CALDAV_ACCOUNT, DEFAULT_NLP_TRIGGERS, DEFAULT_SETTINGS } from "./defaults";
 import { hasMissingMigratedSettings } from "./settingsMigration";
 import type { TaskCreationDefaults, TaskNotesSettings } from "../types/settings";
 import { initializeFieldConfig } from "../utils/fieldConfigDefaults";
@@ -226,6 +226,16 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 			...DEFAULT_SETTINGS.nlpTriggers,
 			...(loadedData?.nlpTriggers || {}),
 			triggers: loadedData?.nlpTriggers?.triggers || DEFAULT_SETTINGS.nlpTriggers.triggers,
+		},
+		caldav: {
+			...DEFAULT_SETTINGS.caldav,
+			...(loadedData?.caldav || {}),
+			// Accounts written by an older build may lack fields added since, so
+			// each one is merged over the account defaults rather than trusted whole.
+			accounts: (loadedData?.caldav?.accounts || []).map((account) => ({
+				...DEFAULT_CALDAV_ACCOUNT,
+				...account,
+			})),
 		},
 		modalFieldsConfig: initializeFieldConfig(
 			loadedData?.modalFieldsConfig,

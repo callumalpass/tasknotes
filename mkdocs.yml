@@ -38,6 +38,7 @@ nav:
           - Calendar and integrations:
                 - Calendar integration: features/calendar-integration.md
                 - ICS integration: features/ics-integration.md
+                - CalDAV sync: features/caldav-sync.md
                 - Third-party integrations: features/integrations.md
                 - Calendar setup: calendar-setup.md
           - Backup, restore, and removal: guides/backup-recovery.md
