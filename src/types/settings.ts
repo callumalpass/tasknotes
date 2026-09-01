@@ -1,4 +1,11 @@
-import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } from "../types";
+import {
+	FieldMapping,
+	FilterGroup,
+	StatusConfig,
+	PriorityConfig,
+	SavedView,
+	WebhookConfig,
+} from "../types";
 import type { FileFilterConfig } from "../suggest/FileSuggestHelper";
 
 export interface UserFieldMapping {
@@ -257,6 +264,8 @@ export interface TaskNotesSettings {
 	microsoftCalendarSyncTokens: Record<string, string>; // Maps calendar ID to delta link
 	// Google Calendar task export settings
 	googleCalendarExport: GoogleCalendarExportSettings;
+	// Two-way CalDAV VTODO sync
+	caldav: CalDavSettings;
 	// Debug logging
 	enableDebugLogging: boolean;
 }
@@ -342,6 +351,54 @@ export interface GoogleCalendarExportSettings {
 	defaultEventDuration: number; // Duration in minutes if timed (uses timeEstimate if available)
 	includeObsidianLink: boolean; // Include obsidian:// link in event description
 	defaultReminderMinutes: number | number[] | null; // Popup reminder(s) X minutes before event (null = no reminder)
+}
+
+/**
+ * What happens locally when a task's VTODO disappears from the server.
+ *
+ * Defaults to `archive`: nothing is destroyed, but the task leaves the active
+ * list. Deleting notes is not reversible from inside Obsidian, so it is opt-in.
+ */
+export type CalDavRemoteDeletionPolicy = "archive" | "delete" | "unlink";
+
+/** VTODO STATUS values, for the per-status override table. */
+export type CalDavVTodoStatus = "NEEDS-ACTION" | "IN-PROCESS" | "COMPLETED" | "CANCELLED";
+
+/**
+ * One CalDAV collection synced as a task list.
+ *
+ * Credentials are deliberately absent: only the username is stored here, and
+ * the password lives in Obsidian's SecretStorage via CalDavSecretStore.
+ */
+export interface CalDavAccountSettings {
+	id: string; // Stable id, also namespaces the stored secret
+	name: string; // User-facing label
+	enabled: boolean;
+	serverUrl: string; // Base URL used for discovery
+	collectionUrl: string; // The chosen VTODO collection
+	username: string; // Non-secret half of the credentials
+	syncIntervalMinutes: number; // Poll interval for inbound changes
+	/** Membership rule; undefined or empty means every task. */
+	filter?: FilterGroup;
+	taskFolder: string; // Where tasks created from remote VTODOs are written
+	/** Overrides the status mapping auto-derived from StatusConfig flags. */
+	statusOverrides: Record<string, CalDavVTodoStatus>;
+	remoteDeletionPolicy: CalDavRemoteDeletionPolicy;
+	/** Set once the user has confirmed the first-sync preview for this account. */
+	initialSyncCompleted: boolean;
+}
+
+/**
+ * Two-way CalDAV VTODO sync. Independent of the OAuth calendar integration,
+ * which syncs tasks as calendar events rather than as task-list entries.
+ */
+export interface CalDavSettings {
+	enabled: boolean; // Master switch
+	accounts: CalDavAccountSettings[];
+	/** Push local edits as they happen rather than waiting for the poll. */
+	pushOnChange: boolean;
+	/** Debounce before an edit is pushed, so a burst of keystrokes is one write. */
+	pushDebounceMs: number;
 }
 
 export type TimeblockAttachmentSearchOrder =

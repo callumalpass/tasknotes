@@ -7,6 +7,8 @@ import {
 	ProjectAutosuggestSettings,
 	NLPTriggersConfig,
 	GoogleCalendarExportSettings,
+	CalDavSettings,
+	CalDavAccountSettings,
 } from "../types/settings";
 import { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
 export { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
@@ -204,6 +206,27 @@ export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 	defaultEventDuration: 60, // 1 hour if timed events
 	includeObsidianLink: true, // Include link back to Obsidian
 	defaultReminderMinutes: null, // No reminder override by default (user opts in)
+};
+
+export const DEFAULT_CALDAV_SETTINGS: CalDavSettings = {
+	enabled: false, // Opt-in; an account must be configured first
+	accounts: [],
+	pushOnChange: true, // Local edits reach the server in seconds
+	pushDebounceMs: 1500, // One write per burst of edits, not per keystroke
+};
+
+/** Sensible starting point for a newly added CalDAV account. */
+export const DEFAULT_CALDAV_ACCOUNT: Omit<CalDavAccountSettings, "id"> = {
+	name: "",
+	enabled: false, // Stays off until credentials and a collection are chosen
+	serverUrl: "",
+	collectionUrl: "",
+	username: "",
+	syncIntervalMinutes: 15,
+	taskFolder: "",
+	statusOverrides: {},
+	remoteDeletionPolicy: "archive", // Never destroy notes without being asked
+	initialSyncCompleted: false,
 };
 
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
@@ -415,6 +438,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	microsoftCalendarSyncTokens: {},
 	// Google Calendar task export settings
 	googleCalendarExport: DEFAULT_GOOGLE_CALENDAR_EXPORT,
+	// Two-way CalDAV VTODO sync
+	caldav: DEFAULT_CALDAV_SETTINGS,
 	// Debug logging
 	enableDebugLogging: false,
 };

@@ -379,5 +379,51 @@ export function createTaskNotesCommandDefinitions(
 				await ctx.rolloverOverdueScheduledTasks();
 			},
 		},
+		{
+			id: "caldav-sync-now",
+			nameKey: "commands.caldavSyncNow",
+			callback: async (ctx) => {
+				// The service is only constructed when the integration is on, so
+				// its absence is the same situation as it being disabled.
+				if (!ctx.caldavSyncService?.isEnabled()) {
+					new Notice(
+						ctx.i18n.translate("settings.integrations.caldav.notices.reloadRequired")
+					);
+					return;
+				}
+
+				await ctx.caldavSyncService.syncAllAccounts();
+				new Notice(ctx.i18n.translate("settings.integrations.caldav.notices.syncComplete"));
+			},
+		},
+		{
+			id: "caldav-unlink-all-tasks",
+			nameKey: "commands.caldavUnlinkAllTasks",
+			callback: async (ctx) => {
+				if (!ctx.caldavSyncService) {
+					new Notice(
+						ctx.i18n.translate("settings.integrations.caldav.notices.reloadRequired")
+					);
+					return;
+				}
+
+				const confirmed = await showConfirmationModal(ctx.app, {
+					title: ctx.i18n.translate("settings.integrations.caldav.unlinkAll.confirmTitle"),
+					message: ctx.i18n.translate(
+						"settings.integrations.caldav.unlinkAll.confirmMessage"
+					),
+					confirmText: ctx.i18n.translate(
+						"settings.integrations.caldav.unlinkAll.confirmText"
+					),
+					isDestructive: true,
+				});
+				if (!confirmed) return;
+
+				const count = await ctx.caldavSyncService.unlinkAllTasks();
+				new Notice(
+					ctx.i18n.translate("settings.integrations.caldav.notices.unlinkedAll", { count })
+				);
+			},
+		},
 	];
 }

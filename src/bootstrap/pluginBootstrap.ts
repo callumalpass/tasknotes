@@ -510,6 +510,50 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 					await plugin.microsoftCalendarService.initialize();
 				}
 
+				// CalDAV VTODO sync deliberately sits outside the mobile
+				// calendar-integration guard above: it syncs tasks, not calendar
+				// events, and reaching the phone is the whole point of it.
+				if (plugin.settings.caldav?.enabled) {
+					const { CalDavSyncService } = await import("../services/CalDavSyncService");
+					plugin.caldavSyncService = new CalDavSyncService(plugin);
+					await plugin.caldavSyncService.initialize();
+
+					plugin.registerEvent(
+						plugin.emitter.on("file-updated", (data: FileUpdatedEventData) => {
+							if (!plugin.caldavSyncService || !data?.path) return;
+							plugin.caldavSyncService
+								.handleTaskFileUpdated(data.path, data.updatedTask)
+								.catch((error) => {
+									tasknotesLogger.warn("Failed to handle task update for CalDAV:", {
+										category: "provider",
+										operation: "caldav-handle-task-update",
+										error: error,
+									});
+								});
+						})
+					);
+
+					plugin.registerEvent(
+						plugin.emitter.on("file-deleted", (data: FileDeletedEventData) => {
+							if (!plugin.caldavSyncService || !data?.path) return;
+							// The frontmatter is already gone from the vault, so the
+							// href and ETag have to come from the previous cache entry.
+							const prevCache = data.prevCache as
+								| { frontmatter?: Record<string, unknown> }
+								| undefined;
+							plugin.caldavSyncService
+								.handleTaskFileDeleted(data.path, prevCache?.frontmatter)
+								.catch((error) => {
+									tasknotesLogger.warn("Failed to delete remote CalDAV task:", {
+										category: "provider",
+										operation: "caldav-handle-task-delete",
+										error: error,
+									});
+								});
+						})
+					);
+				}
+
 				plugin.taskFileLifecycleReconciliationService =
 					new TaskFileLifecycleReconciliationService(plugin);
 				await plugin.taskFileLifecycleReconciliationService.initialize();
