@@ -84,6 +84,7 @@ import {
 	computeBlockedByUpdate,
 } from "./task-service/taskBlockingRelationships";
 import { resolveTaskPropertyFrontmatterField } from "./task-service/taskPropertyFrontmatterField";
+import { processVaultFile, processVaultFrontMatter } from "./VaultMutationService";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService" });
@@ -573,7 +574,14 @@ export class TaskService {
 		task: TaskInfo,
 		property: keyof TaskInfo,
 		value: unknown,
-		options: { silent?: boolean } = {}
+		options: {
+			silent?: boolean;
+			completionDate?: string;
+			confirmClearInstances?: (cleared: {
+				complete: string[];
+				skipped: string[];
+			}) => Promise<boolean>;
+		} = {}
 	): Promise<TaskInfo> {
 		try {
 			const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
@@ -584,13 +592,18 @@ export class TaskService {
 			// Get fresh task data to prevent overwrites
 			const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
 
+			// Only affects non-recurring status completions (the frontmatter write is
+			// guarded by `property === "status" && !recurring`).
+			const completionDateString =
+				options.completionDate ?? this.getCompletionDateForTask(freshTask);
+
 			// Step 1: Construct new state in memory using fresh data
 			const updatePlan = buildTaskPropertyUpdatePlan({
 				freshTask,
 				property,
 				value,
 				currentTimestamp: getCurrentTimestamp(),
-				currentDateString: this.getCompletionDateForTask(freshTask),
+				currentDateString: completionDateString,
 				normalizeStatusValue: (candidate) => this.normalizeStatusValue(candidate),
 				isCompletedStatus: (status) => this.plugin.statusManager.isCompletedStatus(status),
 			});
@@ -606,8 +619,50 @@ export class TaskService {
 				applyGoogleCalendarRecurringExceptionCleanup(updatePlan.updatedTask);
 			}
 
+			// Reschedule reactivates the timeline: drop instances on/after the new date
+			// (kept as YYYY-MM-DD, so a lexicographic compare is chronological).
+			let rescheduleClearedOccurrence = false;
+			if (
+				property === "scheduled" &&
+				freshTask.recurrence &&
+				typeof freshTask.scheduled === "string" &&
+				typeof updatePlan.normalizedValue === "string" &&
+				updatePlan.normalizedValue.length > 0
+			) {
+				const previousScheduledDateStr = getDatePart(freshTask.scheduled);
+				const scheduledDateStr = getDatePart(updatePlan.normalizedValue);
+				const scheduledDateChanged = previousScheduledDateStr !== scheduledDateStr;
+				const completeInstances = freshTask.complete_instances ?? [];
+				const skippedInstances = freshTask.skipped_instances ?? [];
+				const removedComplete = completeInstances.filter((d) => d >= scheduledDateStr);
+				const removedSkipped = skippedInstances.filter((d) => d >= scheduledDateStr);
+				if (
+					scheduledDateChanged &&
+					(removedComplete.length > 0 || removedSkipped.length > 0)
+				) {
+					// Give the caller a chance to confirm the destructive clear before
+					// anything is written; a false result aborts the whole reschedule.
+					if (options.confirmClearInstances) {
+						const proceed = await options.confirmClearInstances({
+							complete: removedComplete,
+							skipped: removedSkipped,
+						});
+						if (!proceed) {
+							return freshTask;
+						}
+					}
+					rescheduleClearedOccurrence = true;
+					updatePlan.updatedTask.complete_instances = completeInstances.filter(
+						(d) => d < scheduledDateStr
+					);
+					updatePlan.updatedTask.skipped_instances = skippedInstances.filter(
+						(d) => d < scheduledDateStr
+					);
+				}
+			}
+
 			// Step 2: Persist to file
-			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 				// Use field mapper to get the correct frontmatter property name
 				const fieldName = resolveTaskPropertyFrontmatterField(
 					this.plugin.fieldMapper,
@@ -628,7 +683,7 @@ export class TaskService {
 					normalizeStatusValue: (candidate) => this.normalizeStatusValue(candidate),
 					isCompletedStatus: (status) =>
 						this.plugin.statusManager.isCompletedStatus(status),
-					currentDateString: this.getCompletionDateForTask(freshTask),
+					currentDateString: completionDateString,
 				});
 
 				this.writeOptionalFrontmatterField(
@@ -641,6 +696,19 @@ export class TaskService {
 					this.plugin.fieldMapper.toUserField("googleCalendarMovedOriginalDates"),
 					updatePlan.updatedTask.googleCalendarMovedOriginalDates
 				);
+
+				if (rescheduleClearedOccurrence) {
+					this.writeOptionalFrontmatterField(
+						frontmatter,
+						this.plugin.fieldMapper.toUserField("completeInstances"),
+						updatePlan.updatedTask.complete_instances
+					);
+					this.writeOptionalFrontmatterField(
+						frontmatter,
+						this.plugin.fieldMapper.toUserField("skippedInstances"),
+						updatePlan.updatedTask.skipped_instances
+					);
+				}
 			});
 
 			// Step 3: Run post-write side effects (cache, events, webhooks, calendar, auto-archive)
@@ -1205,7 +1273,7 @@ export class TaskService {
 		}
 
 		const updatedTask: TaskInfo = { ...task, ...updates };
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			this.applyModelTaskUpdatesToFrontmatter(frontmatter, updates);
 		});
 
@@ -1259,7 +1327,7 @@ export class TaskService {
 		const { updatedTask, isCurrentlyArchived, dateModified } = archivePlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyTaskArchiveFrontmatterChange({
 				frontmatter,
@@ -1449,7 +1517,7 @@ export class TaskService {
 		const { updatedTask, newEntry } = timeTrackingPlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyStartTimeTrackingFrontmatterChange({
@@ -1527,7 +1595,7 @@ export class TaskService {
 		const { updatedTask } = timeTrackingPlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyStopTimeTrackingFrontmatterChange({
@@ -1776,7 +1844,7 @@ export class TaskService {
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const completeInstancesField = this.plugin.fieldMapper.toUserField("completeInstances");
 			const skippedInstancesField = this.plugin.fieldMapper.toUserField("skippedInstances");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
@@ -1805,20 +1873,24 @@ export class TaskService {
 
 		// Step 2b: Reset checkboxes in task body when completing (if setting enabled)
 		if (newComplete && this.plugin.settings.resetCheckboxesOnRecurrence) {
-			const currentContent = await this.plugin.app.vault.read(file);
-			const { frontmatter: frontmatterText, body } = splitFrontmatterAndBody(currentContent);
-			const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
+			let resetDetails: string | null = null;
+			await processVaultFile(this.plugin.app, file, (currentContent) => {
+				const { frontmatter: frontmatterText, body } =
+					splitFrontmatterAndBody(currentContent);
+				const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
+				if (!changed) {
+					return currentContent;
+				}
 
-			if (changed) {
 				const frontmatterBlock =
 					frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
 				const finalBody = resetBody.trimEnd();
-				const newContent =
-					finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
-				await this.plugin.app.vault.modify(file, newContent);
+				resetDetails = resetBody.replace(/\r\n/g, "\n").trimEnd();
+				return finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
+			});
 
-				// Update the details field in the returned task
-				updatedTask.details = resetBody.replace(/\r\n/g, "\n").trimEnd();
+			if (resetDetails !== null) {
+				updatedTask.details = resetDetails;
 			}
 		}
 
@@ -1926,7 +1998,7 @@ export class TaskService {
 		const { updatedTask, dateStr, newSkipped, targetDate } = recurringPlan;
 
 		// Step 3: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const skippedField = this.plugin.fieldMapper.toUserField("skippedInstances");
 			const completeField = this.plugin.fieldMapper.toUserField("completeInstances");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
@@ -2021,7 +2093,7 @@ export class TaskService {
 		const { updatedTask } = deletePlan;
 
 		// Step 2: Persist to file
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyDeleteTimeEntryFrontmatterChange({

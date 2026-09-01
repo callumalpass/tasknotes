@@ -232,6 +232,85 @@ describe("taskUpdatePlanning", () => {
 		expect(result.finalTags).toEqual([]);
 	});
 
+	it("clears contexts and blockedBy when an update explicitly sets them to empty arrays", () => {
+		const frontmatter: Record<string, unknown> = {
+			title: "Old",
+			status: "open",
+			contexts: ["old"],
+			blockedBy: [{ uid: "[[Other]]", reltype: "FINISHTOSTART" }],
+			tags: ["task"],
+		};
+
+		applyTaskUpdateFrontmatterChange({
+			frontmatter,
+			originalTask: createTask(),
+			updates: { contexts: [], blockedBy: [] },
+			recurrenceUpdates: {},
+			dateModified: "2026-05-19T09:00:00.000Z",
+			fieldMapper: createFieldMapper(),
+			taskIdentification: {
+				method: "tag",
+				tag: "task",
+				propertyName: "",
+				propertyValue: "",
+			},
+			storeTitleInFilename: false,
+			updateCompletedDateInFrontmatter: jest.fn(),
+		});
+
+		expect(frontmatter).not.toHaveProperty("contexts");
+		expect(frontmatter).not.toHaveProperty("blockedBy");
+	});
+
+	it("leaves contexts and blockedBy alone when the update omits them or keeps values", () => {
+		const frontmatter: Record<string, unknown> = {
+			title: "Old",
+			status: "open",
+			contexts: ["old"],
+			blockedBy: [{ uid: "[[Other]]", reltype: "FINISHTOSTART" }],
+			tags: ["task"],
+		};
+
+		applyTaskUpdateFrontmatterChange({
+			frontmatter,
+			originalTask: createTask(),
+			updates: { title: "Renamed" },
+			recurrenceUpdates: {},
+			dateModified: "2026-05-19T09:00:00.000Z",
+			fieldMapper: createFieldMapper(),
+			taskIdentification: {
+				method: "tag",
+				tag: "task",
+				propertyName: "",
+				propertyValue: "",
+			},
+			storeTitleInFilename: false,
+			updateCompletedDateInFrontmatter: jest.fn(),
+		});
+
+		expect(frontmatter.contexts).toEqual(["old"]);
+		expect(frontmatter.blockedBy).toEqual([{ uid: "[[Other]]", reltype: "FINISHTOSTART" }]);
+
+		applyTaskUpdateFrontmatterChange({
+			frontmatter,
+			originalTask: createTask(),
+			updates: { contexts: ["new"] },
+			recurrenceUpdates: {},
+			dateModified: "2026-05-19T09:00:00.000Z",
+			fieldMapper: createFieldMapper(),
+			taskIdentification: {
+				method: "tag",
+				tag: "task",
+				propertyName: "",
+				propertyValue: "",
+			},
+			storeTitleInFilename: false,
+			updateCompletedDateInFrontmatter: jest.fn(),
+		});
+
+		expect(frontmatter.contexts).toEqual(["new"]);
+	});
+
 	it("builds the returned task state from the same planned mutation", () => {
 		const updated = buildUpdatedTaskFromPlan({
 			originalTask: createTask({ completedDate: undefined }),

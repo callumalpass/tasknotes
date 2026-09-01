@@ -65,6 +65,7 @@ import {
 	moveItemsRelativeToTarget,
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { processVaultFrontMatter } from "../services/VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -1415,7 +1416,7 @@ export class TaskListView extends BasesViewBase {
 			});
 
 			// Single atomic write: group property + sort_order + derivative fields
-			await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+			await processVaultFrontMatter(this.plugin.app, file, (fm) => {
 				applyTaskListDropFrontmatterMutation({
 					frontmatter: fm,
 					plan: groupDropPlan,

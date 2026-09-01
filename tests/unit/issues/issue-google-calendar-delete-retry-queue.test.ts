@@ -106,8 +106,57 @@ describe("Google Calendar deletion retry queue", () => {
 		const result = await syncService.processDeletionQueue();
 
 		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-1");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"event-1",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
+	});
+
+	it("clears recurring exception metadata after its queued deletion succeeds", async () => {
+		const taskPath = "TaskNotes/Tasks/recurring-exception.md";
+		const pluginData = {
+			googleCalendarDeletionQueue: [
+				{
+					taskPath,
+					calendarId: "primary",
+					eventId: "exception-event",
+					createdAt: 1,
+					attempts: 1,
+					lastAttemptAt: 1,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.cacheManager.getTaskInfo = jest.fn().mockResolvedValue(
+			TaskFactory.createTask({
+				path: taskPath,
+				googleCalendarEventId: "primary-event",
+				googleCalendarExceptionEventId: "exception-event",
+				googleCalendarExceptionOriginalScheduled: "2026-08-05",
+			})
+		);
+		const syncService = new TaskCalendarSyncService(
+			plugin,
+			createGoogleCalendarService() as any
+		);
+		const saveExceptionMetadata = jest
+			.spyOn(syncService as any, "saveTaskExceptionMetadata")
+			.mockResolvedValue(undefined);
+
+		const result = await syncService.processDeletionQueue();
+
+		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
+		expect(saveExceptionMetadata).toHaveBeenCalledWith(
+			taskPath,
+			{
+				googleCalendarExceptionEventId: undefined,
+				googleCalendarExceptionOriginalScheduled: undefined,
+			},
+			"primary",
+			expect.any(Number)
+		);
 	});
 
 	it("treats already-deleted Google events as successful cleanup", async () => {
@@ -200,7 +249,11 @@ describe("Google Calendar deletion retry queue", () => {
 		const result = await syncService.processDeletionQueue();
 
 		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-from-index");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"event-from-index",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
 		expect(pluginData.googleCalendarEventIndex).toEqual([]);
 	});
@@ -224,7 +277,11 @@ describe("Google Calendar deletion retry queue", () => {
 
 		await syncService.processRecoveryQueues();
 
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-from-index");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"event-from-index",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
 		expect(pluginData.googleCalendarEventIndex).toEqual([]);
 	});
@@ -385,7 +442,11 @@ describe("Google Calendar deletion retry queue", () => {
 		);
 
 		expect(synced).toBe(true);
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "old-event");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"old-event",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toBeUndefined();
 		expect(pluginData.googleCalendarEventIndex).toEqual([
 			expect.objectContaining({
@@ -499,7 +560,8 @@ describe("Google Calendar deletion retry queue", () => {
 			"primary",
 			expect.objectContaining({
 				start: { date: "2026-04-29" },
-			})
+			}),
+			expect.any(Number)
 		);
 		expect(pluginData.googleCalendarSyncQueue).toEqual([]);
 		expect(pluginData.googleCalendarEventIndex).toEqual([
@@ -540,7 +602,8 @@ describe("Google Calendar deletion retry queue", () => {
 			"existing-event-id",
 			expect.objectContaining({
 				start: { date: "2026-05-02" },
-			})
+			}),
+			expect.any(Number)
 		);
 		expect(pluginData.googleCalendarSyncQueue).toEqual([]);
 	});
@@ -569,7 +632,11 @@ describe("Google Calendar deletion retry queue", () => {
 		const result = await syncService.processPendingSyncQueue();
 
 		expect(result).toEqual({ synced: 0, failed: 0, deleted: 1, dropped: 0, remaining: 0 });
-		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith("primary", "event-to-delete");
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"event-to-delete",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarSyncQueue).toEqual([]);
 	});
 });

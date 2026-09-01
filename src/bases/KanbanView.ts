@@ -80,6 +80,7 @@ import {
 	shouldRenderKanbanColumn,
 } from "./kanbanGrouping";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { processVaultFrontMatter } from "../services/VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/KanbanView" });
 
@@ -3744,7 +3745,7 @@ export class KanbanView extends BasesViewBase {
 					}
 
 					// Single atomic write: groupBy + swimlane + sort_order
-					await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+					await processVaultFrontMatter(this.plugin.app, file, (fm) => {
 						applyKanbanTaskDropFrontmatterPlan(fm, dropPlan, {
 							coerceGroupValue: (frontmatterKey, groupKey) =>
 								this.coerceGroupKeyForFrontmatter(frontmatterKey, groupKey),

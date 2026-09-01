@@ -1,6 +1,24 @@
 import { MarkdownView, WorkspaceLeaf } from "obsidian";
 import { shouldSkipMarkdownWidgetLeaf } from "./MarkdownWidgetContext";
 
+/**
+ * How long after the last scroll event re-injection stays deferred.
+ *
+ * Obsidian's virtualised reading view deletes direct children of
+ * `.markdown-preview-sizer` on every render pass (`setChildrenInPlace`), so a
+ * widget injected between sections is removed again while the user scrolls.
+ * Re-injecting per frame against that churn perturbs the renderer's scroll
+ * model and makes the note visibly jump (#2255). These widgets sit at the top
+ * or bottom of the note, so deferring their return until scrolling settles is
+ * invisible in practice and stops the add/remove cycle.
+ */
+export const DEFAULT_SCROLL_QUIET_PERIOD_MS = 200;
+
+export interface ReadingModeObserverOptions {
+	/** Override the quiet period; 0 disables scroll deferral (used by tests). */
+	scrollQuietPeriodMs?: number;
+}
+
 type FrameHandle = {
 	id: number;
 	cancel: () => void;
@@ -20,6 +38,13 @@ function scheduleBeforePaint(win: Window, callback: () => void): FrameHandle {
 		id,
 		cancel: () => win.clearTimeout(id),
 	};
+}
+
+function nowIn(win: Window): number {
+	if (typeof win.performance?.now === "function") {
+		return win.performance.now();
+	}
+	return Date.now();
 }
 
 function nodeContainsSelector(node: Node, selector: string): boolean {
@@ -59,14 +84,27 @@ export function observeReadingModeWidgetMutations(
 	scheduleInjection: (leaf: WorkspaceLeaf) => void,
 	observedContainers: WeakSet<HTMLElement>,
 	cleanupCallbacks: Array<() => void>,
-	shouldRefresh: (leaf: WorkspaceLeaf) => boolean
+	shouldRefresh: (leaf: WorkspaceLeaf) => boolean,
+	options: ReadingModeObserverOptions = {}
 ): void {
 	const containerEl = getReadingModeContainer(leaf);
 	if (!containerEl || observedContainers.has(containerEl)) {
 		return;
 	}
 
+	const scrollQuietPeriodMs = options.scrollQuietPeriodMs ?? DEFAULT_SCROLL_QUIET_PERIOD_MS;
+
 	let pendingFrame: FrameHandle | null = null;
+	let lastScrollAt = Number.NEGATIVE_INFINITY;
+
+	const handleScroll = () => {
+		lastScrollAt = nowIn(containerEl.ownerDocument.defaultView ?? window);
+	};
+
+	// Scroll events do not bubble, so capture them from the container down to
+	// catch whichever descendant is the actual preview scroller.
+	containerEl.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+
 	const requestRefresh = () => {
 		if (pendingFrame) {
 			return;
@@ -80,9 +118,19 @@ export function observeReadingModeWidgetMutations(
 			}
 
 			const sizer = containerEl.querySelector<HTMLElement>(".markdown-preview-sizer");
-			if (sizer && !sizer.querySelector(widgetSelector)) {
-				scheduleInjection(leaf);
+			if (!sizer || sizer.querySelector(widgetSelector)) {
+				return;
 			}
+
+			// While scrolling, Obsidian's own virtualisation keeps removing the
+			// widget. Re-injecting every frame only creates DOM churn and scroll
+			// corrections, so wait until scrolling settles before restoring it.
+			if (scrollQuietPeriodMs > 0 && nowIn(win) - lastScrollAt < scrollQuietPeriodMs) {
+				requestRefresh();
+				return;
+			}
+
+			scheduleInjection(leaf);
 		});
 	};
 
@@ -100,6 +148,7 @@ export function observeReadingModeWidgetMutations(
 	observedContainers.add(containerEl);
 	cleanupCallbacks.push(() => {
 		pendingFrame?.cancel();
+		containerEl.removeEventListener("scroll", handleScroll, { capture: true });
 		observer.disconnect();
 	});
 }

@@ -130,7 +130,7 @@ describe("Issue #1724: recurring task actions belong with date menu items", () =
 		menuMock.mockClear();
 	});
 
-	it("places recurring complete and skip actions after scheduled date, not between status and priority", () => {
+	it("places the 'Complete or Skip' submenu after scheduled date, before the occurrence note", () => {
 		new TaskContextMenu({
 			task: createRecurringTask(),
 			plugin: createPlugin(),
@@ -145,28 +145,35 @@ describe("Issue #1724: recurring task actions belong with date menu items", () =
 				"Priority",
 				"Due date",
 				"Scheduled date",
-				"Mark complete for this date",
-				"Skip instance",
+				"Mark complete or skip",
 				"Open or create occurrence note",
 				"Reminders",
 			])
 		);
 
+		// The single "Mark complete for this date" item was replaced by the
+		// "Mark complete or skip" submenu; the completion actions live inside it.
+		expect(titles).not.toContain("Mark complete for this date");
+
 		expect(titles.indexOf("Status")).toBeLessThan(titles.indexOf("Priority"));
-		expect(titles.indexOf("Priority")).toBeLessThan(
-			titles.indexOf("Mark complete for this date")
-		);
-		expect(titles.indexOf("Scheduled date")).toBeLessThan(
-			titles.indexOf("Mark complete for this date")
-		);
-		expect(titles.indexOf("Mark complete for this date")).toBeLessThan(
-			titles.indexOf("Skip instance")
-		);
-		expect(titles.indexOf("Skip instance")).toBeLessThan(
+		expect(titles.indexOf("Priority")).toBeLessThan(titles.indexOf("Mark complete or skip"));
+		expect(titles.indexOf("Scheduled date")).toBeLessThan(titles.indexOf("Mark complete or skip"));
+		expect(titles.indexOf("Mark complete or skip")).toBeLessThan(
 			titles.indexOf("Open or create occurrence note")
 		);
 		expect(titles.indexOf("Open or create occurrence note")).toBeLessThan(
 			titles.indexOf("Reminders")
+		);
+
+		const submenuTitles = getAllMenuTitles();
+		expect(submenuTitles).toEqual(
+			expect.arrayContaining([
+				"Completed today",
+				"Completed on schedule",
+				"Completed on due date",
+				"Completed on (pick date)",
+				"Skip instance",
+			])
 		);
 	});
 
@@ -226,6 +233,87 @@ describe("Issue #1724: recurring task actions belong with date menu items", () =
 			task,
 			new Date("2026-05-16T12:00:00")
 		);
+		expect(openFile).toHaveBeenCalledWith(expect.objectContaining({ path: occurrence.path }));
+	});
+
+	it("uses the parent scheduled date for generic completion-anchor occurrence notes", async () => {
+		const task = createRecurringTask({
+			title: "Task2",
+			path: "Tasks/Task2.md",
+			recurrence: "DTSTART:20260810;FREQ=DAILY;INTERVAL=3",
+			recurrence_anchor: "completion",
+			scheduled: "2026-08-13",
+		});
+		const plugin = createPlugin();
+		const occurrence = {
+			...task,
+			path: "Tasks/Task2 2026-08-13.md",
+			recurrence: undefined,
+			recurrence_parent: "[[Tasks/Task2]]",
+			occurrence_date: "2026-08-13",
+			scheduled: "2026-08-13",
+		};
+		const openFile = jest.fn();
+		plugin.taskService.findMaterializedOccurrence = jest.fn(async () => undefined);
+		plugin.taskService.materializeOccurrence = jest.fn(async () => occurrence);
+		plugin.app.vault.getAbstractFileByPath = jest.fn((path: string) => new TFile(path));
+		plugin.app.workspace.getLeaf = jest.fn(() => ({ openFile }));
+
+		new TaskContextMenu({
+			task,
+			plugin,
+			targetDate: new Date("2026-08-14T12:00:00"),
+		});
+
+		const item = findTopLevelMenuItem("Open or create occurrence note");
+		await item?.onClick.mock.calls[0]?.[0]();
+
+		const findTarget = (plugin.taskService.findMaterializedOccurrence as jest.Mock).mock
+			.calls[0][1] as Date;
+		const materializeTarget = (plugin.taskService.materializeOccurrence as jest.Mock).mock
+			.calls[0][1] as Date;
+		expect(findTarget.toISOString().slice(0, 10)).toBe("2026-08-13");
+		expect(materializeTarget.toISOString().slice(0, 10)).toBe("2026-08-13");
+		expect(openFile).toHaveBeenCalledWith(expect.objectContaining({ path: occurrence.path }));
+	});
+
+	it("keeps promoted occurrence-note actions tied to the event target date", async () => {
+		const task = createRecurringTask({
+			title: "Task2",
+			path: "Tasks/Task2.md",
+			recurrence: "DTSTART:20260810;FREQ=DAILY;INTERVAL=3",
+			recurrence_anchor: "completion",
+			scheduled: "2026-08-13",
+		});
+		const plugin = createPlugin();
+		const occurrence = {
+			...task,
+			path: "Tasks/Task2 2026-08-16.md",
+			recurrence: undefined,
+			recurrence_parent: "[[Tasks/Task2]]",
+			occurrence_date: "2026-08-16",
+			scheduled: "2026-08-16",
+		};
+		const openFile = jest.fn();
+		plugin.taskService.findMaterializedOccurrence = jest.fn(async () => undefined);
+		plugin.taskService.materializeOccurrence = jest.fn(async () => occurrence);
+		plugin.app.vault.getAbstractFileByPath = jest.fn((path: string) => new TFile(path));
+		plugin.app.workspace.getLeaf = jest.fn(() => ({ openFile }));
+
+		new TaskContextMenu({
+			task,
+			plugin,
+			targetDate: new Date("2026-08-16T12:00:00"),
+			occurrenceDate: new Date("2026-08-16T12:00:00"),
+			promoteOccurrenceControls: true,
+		});
+
+		const item = findTopLevelMenuItem("Open or create occurrence note");
+		await item?.onClick.mock.calls[0]?.[0]();
+
+		const materializeTarget = (plugin.taskService.materializeOccurrence as jest.Mock).mock
+			.calls[0][1] as Date;
+		expect(materializeTarget.toISOString().slice(0, 10)).toBe("2026-08-16");
 		expect(openFile).toHaveBeenCalledWith(expect.objectContaining({ path: occurrence.path }));
 	});
 

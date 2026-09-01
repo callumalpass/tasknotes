@@ -164,7 +164,8 @@ describe("Google Calendar external file reconciliation", () => {
 			expect.objectContaining({
 				summary: "✓ Prepare plan",
 				description: expect.stringContaining("Status: Done"),
-			})
+			}),
+			expect.any(Number)
 		);
 		expect(pluginData.googleCalendarTaskFingerprints).toMatchObject({
 			[doneTask.path]: (syncService as any).getCalendarRelevantFingerprint(doneTask),
@@ -290,8 +291,144 @@ describe("Google Calendar external file reconciliation", () => {
 			expect.objectContaining({
 				summary: "✓ Offline linked",
 				description: expect.stringContaining("Status: Done"),
-			})
+			}),
+			expect.any(Number)
 		);
+	});
+
+	it("exports a task created while Obsidian was closed", async () => {
+		const knownTask = {
+			path: "TaskNotes/Tasks/already-known.md",
+			title: "Already known",
+			status: "ready",
+			priority: "3-medium",
+			archived: false,
+			scheduled: "2026-05-14",
+			googleCalendarEventId: "event-1",
+		} as TaskInfo;
+		const newTask = {
+			path: "TaskNotes/Tasks/created-offline.md",
+			title: "Created offline",
+			status: "ready",
+			priority: "3-medium",
+			archived: false,
+			scheduled: "2026-05-15",
+		} as TaskInfo;
+		const pluginData: Record<string, unknown> = {};
+		const plugin = createPlugin([knownTask, newTask], {}, pluginData);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+		pluginData.googleCalendarTaskFingerprints = {
+			[knownTask.path]: (syncService as any).getCalendarRelevantFingerprint(knownTask),
+		};
+
+		await syncService.initializeExternalFileReconciliation();
+
+		expect(googleCalendarService.createEvent).toHaveBeenCalledTimes(1);
+		expect(googleCalendarService.createEvent).toHaveBeenCalledWith(
+			"primary",
+			expect.objectContaining({ summary: "Created offline" }),
+			expect.any(Number)
+		);
+	});
+
+	it("does not export tasks on the first reconciliation of a vault", async () => {
+		const firstTask = {
+			path: "TaskNotes/Tasks/first-run-a.md",
+			title: "First run A",
+			status: "ready",
+			priority: "3-medium",
+			archived: false,
+			scheduled: "2026-05-14",
+		} as TaskInfo;
+		const secondTask = {
+			...firstTask,
+			path: "TaskNotes/Tasks/first-run-b.md",
+			title: "First run B",
+		} as TaskInfo;
+		const pluginData: Record<string, unknown> = {};
+		const plugin = createPlugin([firstTask, secondTask], {}, pluginData);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		await syncService.initializeExternalFileReconciliation();
+
+		expect(googleCalendarService.createEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarTaskFingerprints).toMatchObject({
+			[firstTask.path]: (syncService as any).getCalendarRelevantFingerprint(firstTask),
+			[secondTask.path]: (syncService as any).getCalendarRelevantFingerprint(secondTask),
+		});
+	});
+
+	it("does not duplicate an event when the new task already carries an event id", async () => {
+		const knownTask = {
+			path: "TaskNotes/Tasks/already-known.md",
+			title: "Already known",
+			status: "ready",
+			priority: "3-medium",
+			archived: false,
+			scheduled: "2026-05-14",
+			googleCalendarEventId: "event-1",
+		} as TaskInfo;
+		const newTaskWithEvent = {
+			path: "TaskNotes/Tasks/created-offline-with-event.md",
+			title: "Created offline with event",
+			status: "ready",
+			priority: "3-medium",
+			archived: false,
+			scheduled: "2026-05-15",
+			googleCalendarEventId: "event-created-elsewhere",
+		} as TaskInfo;
+		const pluginData: Record<string, unknown> = {};
+		const plugin = createPlugin([knownTask, newTaskWithEvent], {}, pluginData);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+		pluginData.googleCalendarTaskFingerprints = {
+			[knownTask.path]: (syncService as any).getCalendarRelevantFingerprint(knownTask),
+		};
+
+		await syncService.initializeExternalFileReconciliation();
+
+		expect(googleCalendarService.createEvent).not.toHaveBeenCalled();
+		expect(googleCalendarService.updateEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarTaskFingerprints).toMatchObject({
+			[newTaskWithEvent.path]: (syncService as any).getCalendarRelevantFingerprint(
+				newTaskWithEvent
+			),
+		});
+	});
+
+	it("does not export an ineligible task created while Obsidian was closed", async () => {
+		const knownTask = {
+			path: "TaskNotes/Tasks/already-known.md",
+			title: "Already known",
+			status: "ready",
+			priority: "3-medium",
+			archived: false,
+			scheduled: "2026-05-14",
+			googleCalendarEventId: "event-1",
+		} as TaskInfo;
+		const undatedTask = {
+			path: "TaskNotes/Tasks/created-offline-undated.md",
+			title: "Created offline undated",
+			status: "ready",
+			priority: "3-medium",
+			archived: false,
+		} as TaskInfo;
+		const pluginData: Record<string, unknown> = {};
+		const plugin = createPlugin([knownTask, undatedTask], {}, pluginData);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+		pluginData.googleCalendarTaskFingerprints = {
+			[knownTask.path]: (syncService as any).getCalendarRelevantFingerprint(knownTask),
+		};
+
+		await syncService.initializeExternalFileReconciliation();
+
+		expect(googleCalendarService.createEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarTaskFingerprints).toMatchObject({
+			[undatedTask.path]: (syncService as any).getCalendarRelevantFingerprint(undatedTask),
+		});
 	});
 
 	it("baselines missing startup fingerprints for linked tasks without API writes", async () => {

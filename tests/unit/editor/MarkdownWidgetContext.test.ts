@@ -8,7 +8,7 @@ import { createTaskNotesLogger } from "../../../src/utils/tasknotesLogger";
 
 function createMockView(options: {
 	dom?: HTMLElement;
-	leaf?: { parent?: unknown };
+	leaf?: { parent?: unknown; view?: { getMode?: () => string } };
 	containerEl?: HTMLElement;
 }): EditorView {
 	return {
@@ -47,6 +47,14 @@ describe("MarkdownWidgetContext", () => {
 		});
 
 		expect(shouldSkipMarkdownWidgetEditor(view)).toBe(false);
+	});
+
+	it("skips stale editors after their Markdown view switches to Reading mode", () => {
+		const view = createMockView({
+			leaf: { parent: {}, view: { getMode: () => "preview" } },
+		});
+
+		expect(shouldSkipMarkdownWidgetEditor(view)).toBe(true);
 	});
 
 	it("skips editors mounted inside markdown embeds", () => {

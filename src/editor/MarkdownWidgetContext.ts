@@ -45,10 +45,17 @@ export function shouldSkipMarkdownWidgetEditor(
 	try {
 		const editorInfo = view.state.field(editorInfoField, false) as
 			| {
-					leaf?: WorkspaceLeaf;
+					leaf?: {
+						parent?: unknown;
+						view?: { getMode?: () => string };
+					};
 					containerEl?: HTMLElement;
 			  }
 			| undefined;
+
+		if (editorInfo?.leaf?.view?.getMode?.() === "preview") {
+			return true;
+		}
 
 		if (isDetachedLeaf(editorInfo?.leaf)) {
 			return true;

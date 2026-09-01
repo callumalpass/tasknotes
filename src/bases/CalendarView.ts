@@ -29,6 +29,7 @@ import {
 	handleTimeEntryCreation,
 	handleDateTitleClick,
 	getTargetDateForEvent,
+	getOccurrenceDateForEvent,
 	calculateTaskCreationValues,
 	generateTaskTooltip,
 	applyRecurringTaskStyling,
@@ -91,6 +92,7 @@ import {
 } from "./calendarEventMount";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../utils/calendarTime";
 import { filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
+import { processVaultFrontMatter } from "../services/VaultMutationService";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarView" });
@@ -2198,7 +2200,7 @@ export class CalendarView extends BasesViewBase {
 				}
 
 				// Update frontmatter
-				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 					const plan = planPropertyEventDrop({
 						frontmatter,
 						startProperty: startProp,
@@ -2331,7 +2333,8 @@ export class CalendarView extends BasesViewBase {
 						const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
 						const dueField = this.plugin.fieldMapper.toUserField("due");
 
-						await this.plugin.app.fileManager.processFrontMatter(
+						await processVaultFrontMatter(
+							this.plugin.app,
 							spanFile,
 							(frontmatter) => {
 								if (plan.scheduled) frontmatter[scheduledField] = plan.scheduled;
@@ -2434,7 +2437,7 @@ export class CalendarView extends BasesViewBase {
 				}
 
 				// Update frontmatter
-				await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 					for (const [property, value] of Object.entries(plan.updates)) {
 						frontmatter[property] = value;
 					}
@@ -2771,6 +2774,7 @@ export class CalendarView extends BasesViewBase {
 					task: taskInfo,
 					plugin: this.plugin,
 					targetDate: targetDate,
+					occurrenceDate: getOccurrenceDateForEvent(taskInfo, arg),
 					promoteOccurrenceControls: Boolean(
 						taskInfo.recurrence ||
 							(taskInfo.recurrence_parent && taskInfo.occurrence_date)

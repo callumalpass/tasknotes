@@ -193,6 +193,54 @@ export class TimeEntryEditorModal extends Modal {
 			cls: "time-entry-editor-modal__description-editor-container",
 		});
 
+		this.renderLazyDescriptionEditor(entry, editorContainer);
+	}
+
+	private renderLazyDescriptionEditor(entry: TimeEntry, editorContainer: HTMLElement): void {
+		const textarea = editorContainer.createEl("textarea", {
+			cls: "time-entry-editor-modal__description-editor-fallback",
+			placeholder: this.translate("modals.timeEntryEditor.descriptionPlaceholder"),
+		});
+		textarea.value = entry.description || "";
+
+		textarea.addEventListener("input", () => {
+			entry.description = textarea.value || undefined;
+		});
+
+		textarea.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+				e.preventDefault();
+				this.save();
+			} else if (e.key === "Escape") {
+				e.preventDefault();
+				this.close();
+			}
+		});
+
+		let hydrated = false;
+		const hydrateMarkdownEditor = () => {
+			if (hydrated) {
+				return;
+			}
+			hydrated = true;
+
+			entry.description = textarea.value || undefined;
+			editorContainer.empty();
+
+			const editor = this.createDescriptionMarkdownEditor(entry, editorContainer);
+			if (editor) {
+				this.descriptionEditors.push(editor);
+			}
+			this.focusDescriptionEditor(editorContainer);
+		};
+
+		textarea.addEventListener("focus", hydrateMarkdownEditor, { once: true });
+	}
+
+	private createDescriptionMarkdownEditor(
+		entry: TimeEntry,
+		editorContainer: HTMLElement
+	): EmbeddableMarkdownEditor | null {
 		const editor = createTaskModalMarkdownEditor(this.app, editorContainer, {
 			value: entry.description || "",
 			placeholder: this.translate("modals.timeEntryEditor.descriptionPlaceholder"),
@@ -205,9 +253,14 @@ export class TimeEntryEditorModal extends Modal {
 			onTab: () => false,
 		});
 
-		if (editor) {
-			this.descriptionEditors.push(editor);
-		}
+		return editor;
+	}
+
+	private focusDescriptionEditor(editorContainer: HTMLElement): void {
+		window.setTimeout(() => {
+			const focusTarget = editorContainer.querySelector<HTMLElement>(".cm-content, textarea");
+			focusTarget?.focus();
+		}, 0);
 	}
 
 	private cleanupDescriptionEditors(): void {

@@ -467,6 +467,28 @@ export async function handleRecurringTaskDrop(
 }
 
 /**
+ * Return the recurrence instance addressed by a calendar event. Rendered dates
+ * from due events or time entries must not become occurrence identity.
+ */
+export function getOccurrenceDateForEvent(
+	taskInfo: TaskInfo,
+	eventArg: unknown
+): Date | undefined {
+	if (!taskInfo.recurrence) {
+		return undefined;
+	}
+
+	const eventContainer = eventArg as CalendarEventArgLike;
+	const event = eventContainer.event || eventContainer;
+	const instanceDate = event.extendedProps?.instanceDate;
+	if (typeof instanceDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(instanceDate)) {
+		return undefined;
+	}
+
+	return parseDateToUTC(instanceDate);
+}
+
+/**
  * Get target date for calendar event context menu
  * Uses the same UTC-anchored logic as AdvancedCalendarView
  */
@@ -1606,9 +1628,11 @@ export async function generateCalendarEvents(
 		includeScheduled: boolean,
 		allowScheduledToDueSpan: boolean,
 		includeDue = showDue,
-		hasGeneratedScheduledLayer = false
+		hasGeneratedScheduledLayer = false,
+		hasGeneratedScheduledLayerOnToday = false
 	): void => {
 		let showedSpan = false;
+		let showedScheduledOverdueOnToday = false;
 		if (allowScheduledToDueSpan && showScheduledToDueSpan && task.scheduled && task.due) {
 			const spanEvents = createScheduledToDueSpanEvents(
 				task,
@@ -1646,6 +1670,7 @@ export async function generateCalendarEvents(
 					: null;
 				if (overdueEvent) {
 					events.push(overdueEvent);
+					showedScheduledOverdueOnToday = true;
 				}
 			}
 		}
@@ -1662,7 +1687,11 @@ export async function generateCalendarEvents(
 				if (dueEvent) {
 					events.push(addMaterializedOccurrenceMetadata(dueEvent, task));
 				}
-			} else if (todayDate) {
+			} else if (
+				todayDate &&
+				!((showedScheduledOverdueOnToday || hasGeneratedScheduledLayerOnToday) &&
+					!hasTimeComponent(task.due))
+			) {
 				const dueEvent = createDueEvent(task, plugin);
 				const overdueEvent = dueEvent
 					? createOverdueOnTodayEvent(
@@ -1689,6 +1718,7 @@ export async function generateCalendarEvents(
 				let includeStandaloneDue = showDue;
 				let allowScheduledToDueSpan = true;
 				let hasGeneratedScheduledLayer = false;
+				let hasGeneratedScheduledLayerOnToday = false;
 
 				if (
 					(showRecurring ||
@@ -1719,6 +1749,12 @@ export async function generateCalendarEvents(
 						events.push(...recurringEvents);
 						if (showRecurring) {
 							hasGeneratedScheduledLayer = recurringEvents.length > 0;
+							hasGeneratedScheduledLayerOnToday = Boolean(
+								todayDate &&
+									recurringEvents.some(
+										(event) => getDatePart(event.start) === todayDate
+									)
+							);
 							includeStandaloneScheduled = false;
 							allowScheduledToDueSpan = false;
 							if (
@@ -1738,7 +1774,8 @@ export async function generateCalendarEvents(
 					includeStandaloneScheduled,
 					allowScheduledToDueSpan,
 					includeStandaloneDue,
-					hasGeneratedScheduledLayer
+					hasGeneratedScheduledLayer,
+					hasGeneratedScheduledLayerOnToday
 				);
 			} else {
 				// Handle non-recurring tasks with date range filtering

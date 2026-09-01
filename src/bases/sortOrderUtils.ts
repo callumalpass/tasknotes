@@ -7,6 +7,7 @@ import { TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { processVaultFrontMatter } from "../services/VaultMutationService";
 
 export interface SortOrderScopeFilter {
 	property: string;
@@ -557,7 +558,7 @@ async function writeSortOrder(
 	if (!(file instanceof TFile)) return;
 
 	const sortOrderField = plugin.settings.fieldMapping.sortOrder;
-	await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+	await processVaultFrontMatter(plugin.app, file, (frontmatter) => {
 		frontmatter[sortOrderField] = sortOrder;
 	});
 }
