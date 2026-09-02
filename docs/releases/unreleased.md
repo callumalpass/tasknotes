@@ -61,3 +61,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Avoid showing a recurring task twice when its original occurrence date is recorded by a calendar move. Keep requested completion and skip history visible.
 
 - (#2309) Fixed Google calendars enabled through the `primary` alias falling back to the
+
+- (#2284) Prevented repeated activation of instant checkbox conversion from creating duplicate TaskNotes while the first conversion is still in progress. Thanks to @doyoonear for reporting the issue.
