@@ -1,4 +1,9 @@
-import type { Menu } from "obsidian";
+interface CoordinatedMenu {
+	hide(): void;
+	onHide(callback: () => void): void;
+	showAtMouseEvent(event: MouseEvent): void;
+	showAtPosition(position: { x: number; y: number }, document?: Document): void;
+}
 
 /**
  * Coordinates context-menu visibility across the plugin.
@@ -47,7 +52,7 @@ function isMouseEvent(event: UIEvent): event is MouseEvent {
  */
 const TRIGGER_SELECTOR = '[data-tn-action], [data-type], [role="button"], button, .clickable-icon';
 
-let activeMenu: Menu | null = null;
+let activeMenu: CoordinatedMenu | null = null;
 let activeTrigger: Element | null = null;
 
 /**
@@ -69,7 +74,7 @@ export function getContextMenuTrigger(event: UIEvent): Element | null {
 	return target?.closest(TRIGGER_SELECTOR) ?? target;
 }
 
-function showWithTrigger(menu: Menu, trigger: Element | null, show: () => void): void {
+function showWithTrigger(menu: CoordinatedMenu, trigger: Element | null, show: () => void): void {
 	if (trigger && activeMenu && activeTrigger === trigger) {
 		// Same trigger activated again: toggle the menu closed.
 		closeActiveContextMenu();
@@ -94,7 +99,7 @@ function showWithTrigger(menu: Menu, trigger: Element | null, show: () => void):
  * Mouse events show the menu at the cursor; keyboard events anchor the menu
  * below the event's current target.
  */
-export function showCoordinatedMenu(menu: Menu, event: UIEvent): void {
+export function showCoordinatedMenu(menu: CoordinatedMenu, event: UIEvent): void {
 	showWithTrigger(menu, getContextMenuTrigger(event), () => {
 		if (isMouseEvent(event)) {
 			menu.showAtMouseEvent(event);
@@ -119,7 +124,7 @@ export function showCoordinatedMenu(menu: Menu, event: UIEvent): void {
  * The element doubles as the trigger, so showing at the same element again
  * toggles the menu closed.
  */
-export function showCoordinatedMenuAtElement(menu: Menu, element: HTMLElement): void {
+export function showCoordinatedMenuAtElement(menu: CoordinatedMenu, element: HTMLElement): void {
 	showWithTrigger(menu, element, () => {
 		menu.showAtPosition(
 			{
