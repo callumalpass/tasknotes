@@ -32,6 +32,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Fixed
+
+- (#1849) Fixed context menus stacking on top of each other. Only one menu stays open at a time, and clicking the same indicator again closes its menu. This previously applied to date fields only, and now covers priority, status, recurrence, reminders, task, ICS event, and batch menus.
+  - Thanks to @3zra47 for reporting and @YBKF for the contribution.
+
 ## Added
 
 - (#2147) Added context-menu actions for recording task completion today, on the scheduled date, on the due date, or on a chosen date. The actions can be grouped in a submenu from Appearance settings. See [Completing Tasks](https://tasknotes.dev/features/task-management/#completing-tasks).

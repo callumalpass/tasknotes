@@ -2,6 +2,7 @@ import { App, Modal, Setting } from "obsidian";
 import { TranslationKey } from "../i18n";
 import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
+import { showCoordinatedMenu } from "./ContextMenuCoordinator";
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 
 export interface RecurrenceOption {
@@ -576,7 +577,7 @@ export class RecurrenceContextMenu {
 	}
 
 	public show(event: UIEvent): void {
-		this.menu.show(event);
+		showCoordinatedMenu(this.menu, event);
 	}
 }
 
