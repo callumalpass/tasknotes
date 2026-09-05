@@ -58,6 +58,58 @@ type GoogleCalendarEventPayload = Record<string, unknown> & {
 	end?: GoogleCalendarDateTime;
 };
 
+export type TaskProjectionEvent = {
+	id: string;
+	etag?: string;
+	status?: string;
+	recurringEventId?: string;
+	attendees?: unknown[];
+	summary?: string;
+	description?: string;
+	location?: string;
+	start?: GoogleCalendarDateTime;
+	end?: GoogleCalendarDateTime;
+	recurrence?: string[];
+	reminders?: { useDefault: boolean; overrides?: Array<{ method: string; minutes: number }> };
+	colorId?: string;
+	transparency?: string;
+	visibility?: string;
+	extendedProperties?: { private?: Record<string, string> };
+};
+
+/** Compare the owned projection fields, allowing provider date normalisation. */
+export function taskProjectionMatches(
+	actual: Omit<TaskProjectionEvent, "id">,
+	expected: Omit<TaskProjectionEvent, "id">
+): boolean {
+	const date = (value?: GoogleCalendarDateTime) =>
+		value?.date ||
+		(value?.dateTime ? `${Date.parse(value.dateTime)}:${value.timeZone || ""}` : "");
+	const normalise = (value: Omit<TaskProjectionEvent, "id">) => ({
+		summary: value.summary || "",
+		description: value.description || "",
+		location: value.location || "",
+		start: date(value.start),
+		end: date(value.end),
+		recurrence: [...(value.recurrence || [])].sort(),
+		reminders: {
+			useDefault: value.reminders?.useDefault ?? true,
+			overrides: [...(value.reminders?.overrides || [])].sort(
+				(a, b) => a.method.localeCompare(b.method) || a.minutes - b.minutes
+			),
+		},
+		colorId: value.colorId || "",
+		transparency: value.transparency || "opaque",
+		visibility: value.visibility || "default",
+	});
+	return (
+		JSON.stringify(normalise(actual)) === JSON.stringify(normalise(expected)) &&
+		Object.entries(expected.extendedProperties?.private || {}).every(
+			([key, value]) => actual.extendedProperties?.private?.[key] === value
+		)
+	);
+}
+
 /**
  * GoogleCalendarService handles Google Calendar API interactions.
  * Uses OAuth for authentication and provides calendar event access.
@@ -674,6 +726,46 @@ export class GoogleCalendarService extends CalendarProvider {
 		this.lastManualRefresh = Date.now();
 	}
 
+	/** List only this vault's explicitly marked task projections, with all pages. */
+	async listTaskProjections(
+		calendarId: string,
+		vaultName: string
+	): Promise<TaskProjectionEvent[]> {
+		validateCalendarId(calendarId);
+		const token = await this.oauthService.getValidToken("google");
+		const events: TaskProjectionEvent[] = [];
+		let pageToken: string | undefined;
+		do {
+			const params = new URLSearchParams({
+				maxResults: "2500",
+				singleEvents: "false",
+				showDeleted: "false",
+			});
+			params.append("privateExtendedProperty", "tasknotesProjection=1");
+			params.append("privateExtendedProperty", `tasknotesVault=${vaultName}`);
+			if (pageToken) params.set("pageToken", pageToken);
+			const response = await this.withRetry(
+				() =>
+					requestUrl({
+						url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+						method: "GET",
+						headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+					}),
+				"List owned task projections"
+			);
+			const page = response.json as { items?: TaskProjectionEvent[]; nextPageToken?: string };
+			if (!page || (page.items !== undefined && !Array.isArray(page.items)))
+				throw new Error("Incomplete task projection listing");
+			events.push(
+				...(page.items || []).filter(
+					(event) => event.status !== "cancelled" && !event.recurringEventId
+				)
+			);
+			pageToken = page.nextPageToken;
+		} while (pageToken);
+		return events;
+	}
+
 	/**
 	 * Clears the cache
 	 */
@@ -702,6 +794,9 @@ export class GoogleCalendarService extends CalendarProvider {
 			};
 			colorId?: string;
 			recurrence?: string[];
+			transparency?: "transparent";
+			visibility?: "private";
+			extendedProperties?: { private: Record<string, string> };
 		},
 		expectedConnectionGeneration?: number
 	): Promise<ICSEvent> {
@@ -730,8 +825,28 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			const currentEvent = getResponse.json as GoogleCalendarEventPayload;
 
+			// Task projections are private and attendee-free; never overwrite an invitation.
+			if (
+				updates.extendedProperties &&
+				Array.isArray(currentEvent.attendees) &&
+				currentEvent.attendees.length
+			) {
+				throw new Error("A task projection has attendees; refusing to overwrite it");
+			}
 			// Build update payload
 			const payload: GoogleCalendarEventPayload = { ...currentEvent };
+			if (updates.extendedProperties && typeof currentEvent.etag !== "string")
+				throw new Error("Task projection has no concurrency token");
+			const currentOwner = (currentEvent as TaskProjectionEvent).extendedProperties?.private;
+			if (
+				updates.extendedProperties &&
+				currentOwner?.tasknotesUid &&
+				currentOwner.tasknotesUid !== updates.extendedProperties.private.tasknotesUid
+			)
+				throw new Error("Task projection belongs to another task");
+			if (updates.extendedProperties) payload.extendedProperties = updates.extendedProperties;
+			if (updates.transparency) payload.transparency = updates.transparency;
+			if (updates.visibility) payload.visibility = updates.visibility;
 			if (payload.status === "cancelled") {
 				payload.status = "confirmed";
 			}
@@ -809,6 +924,9 @@ export class GoogleCalendarService extends CalendarProvider {
 					method: "PUT",
 					headers: {
 						Authorization: `Bearer ${token}`,
+						...(updates.extendedProperties
+							? { "If-Match": currentEvent.etag as string }
+							: {}),
 						"Content-Type": "application/json",
 						Accept: "application/json",
 					},
@@ -817,6 +935,23 @@ export class GoogleCalendarService extends CalendarProvider {
 			}, `Update event ${eventId}`);
 
 			const updatedEvent = updateResponse.json;
+
+			if (updates.extendedProperties) {
+				const readback = await this.withRetry(
+					() =>
+						requestUrl({
+							url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+							method: "GET",
+							headers: { Authorization: `Bearer ${token}` },
+						}),
+					"Verify task projection update"
+				);
+				if (
+					(readback.json as TaskProjectionEvent).attendees?.length ||
+					!taskProjectionMatches(readback.json as TaskProjectionEvent, payload)
+				)
+					throw new Error("Task projection update did not read back");
+			}
 
 			// Convert to ICSEvent for return
 			const icsEvent = this.convertToICSEvent(updatedEvent, calendarId);
@@ -865,6 +1000,9 @@ export class GoogleCalendarService extends CalendarProvider {
 			};
 			colorId?: string;
 			recurrence?: string[];
+			transparency?: "transparent";
+			visibility?: "private";
+			extendedProperties?: { private: Record<string, string> };
 		},
 		expectedConnectionGeneration?: number
 	): Promise<ICSEvent> {
@@ -889,6 +1027,9 @@ export class GoogleCalendarService extends CalendarProvider {
 				summary: summary,
 				description: event.description,
 				location: event.location,
+				...(event.extendedProperties && { extendedProperties: event.extendedProperties }),
+				...(event.transparency && { transparency: event.transparency }),
+				...(event.visibility && { visibility: event.visibility }),
 			};
 
 			// Add reminders if provided
@@ -940,6 +1081,23 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			const createdEvent = response.json;
 
+			if (event.extendedProperties) {
+				const readback = await this.withRetry(
+					() =>
+						requestUrl({
+							url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(createdEvent.id)}`,
+							method: "GET",
+							headers: { Authorization: `Bearer ${token}` },
+						}),
+					"Verify task projection creation"
+				);
+				if (
+					(readback.json as TaskProjectionEvent).attendees?.length ||
+					!taskProjectionMatches(readback.json as TaskProjectionEvent, payload)
+				)
+					throw new Error("Task projection creation did not read back");
+			}
+
 			// Convert to ICSEvent for return
 			const icsEvent = this.convertToICSEvent(createdEvent, calendarId);
 
@@ -984,12 +1142,42 @@ export class GoogleCalendarService extends CalendarProvider {
 				expectedConnectionGeneration
 			);
 
+			let etag: string | undefined;
+			if (
+				this.plugin.settings.googleCalendarExport.reconcileFromTasks &&
+				calendarId === this.plugin.settings.googleCalendarExport.targetCalendarId
+			) {
+				const response = await this.withRetry(
+					() =>
+						requestUrl({
+							url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+							method: "GET",
+							headers: { Authorization: `Bearer ${token}` },
+						}),
+					"Read task projection before deletion"
+				);
+				const event = response.json as TaskProjectionEvent;
+				const owner = event.extendedProperties?.private;
+				if (
+					event.attendees?.length ||
+					owner?.tasknotesProjection !== "1" ||
+					owner.tasknotesVault !== this.plugin.app.vault.getName() ||
+					!owner.tasknotesUid ||
+					typeof event.etag !== "string"
+				)
+					throw new Error(
+						"Refusing to delete an unowned, invited or unversioned task projection"
+					);
+				etag = event.etag;
+			}
+
 			await this.withRetry(async () => {
 				return await requestUrl({
 					url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
 					method: "DELETE",
 					headers: {
 						Authorization: `Bearer ${token}`,
+						...(etag ? { "If-Match": etag } : {}),
 					},
 				});
 			}, `Delete event ${eventId}`);

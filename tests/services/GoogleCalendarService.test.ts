@@ -66,6 +66,7 @@ describe('GoogleCalendarService', () => {
 		mockPlugin = {
 			app: {} as any,
 			settings: {
+                googleCalendarExport: {reconcileFromTasks: false},
 				enabledGoogleCalendars: [],
 				googleCalendarSyncTokens: {}
 			} as any,
