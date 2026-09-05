@@ -744,6 +744,10 @@ export default class TaskNotesPlugin extends Plugin {
 				},
 			});
 		}
+		if (result.compromised)
+			throw new Error(
+				"TaskNotes settings are unreadable; restore settings before loading the plugin."
+			);
 		return result.data;
 	}
 
