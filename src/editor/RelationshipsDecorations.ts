@@ -39,20 +39,24 @@
  * 3. Using Obsidian's registerMarkdownPostProcessor for reading mode only
  */
 
+import { Extension } from "@codemirror/state";
 import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from "@codemirror/view";
 import {
 	Component,
+	editorInfoField,
 	EventRef,
+	MarkdownRenderer,
 	MarkdownView,
 	TFile,
-	editorInfoField,
-	MarkdownRenderer,
 	WorkspaceLeaf,
 } from "obsidian";
-import { Extension } from "@codemirror/state";
 
 import TaskNotesPlugin from "../main";
 import { EVENT_DEPENDENCY_CACHE_CHANGED } from "../utils/DependencyCache";
+import { FilterUtils } from "../utils/FilterUtils";
+import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
+import { collectCacheTags } from "../utils/tagExtraction";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import {
 	ReadingModeInjectionContext,
 	ReadingModeInjectionScheduler,
@@ -63,10 +67,6 @@ import {
 	shouldSkipMarkdownWidgetLeaf,
 } from "./MarkdownWidgetContext";
 import { insertAfterElement, insertAfterMetadataOrHeader } from "./MarkdownWidgetInsertion";
-import { FilterUtils } from "../utils/FilterUtils";
-import { collectCacheTags } from "../utils/tagExtraction";
-import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
-import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/RelationshipsDecorations" });
 

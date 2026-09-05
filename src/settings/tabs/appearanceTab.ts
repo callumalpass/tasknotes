@@ -10,7 +10,10 @@ import {
 } from "../components/settingHelpers";
 import { PropertySelectorModal } from "../../modals/PropertySelectorModal";
 import { getAvailableProperties, getPropertyLabels } from "../../utils/propertyHelpers";
-import type { CalendarViewSettings } from "../../types/settings";
+import type {
+	CalendarViewSettings,
+	TaskListGroupDropBehavior,
+} from "../../types/settings";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../../utils/calendarTime";
 
 type CalendarDefaultView = CalendarViewSettings["defaultView"];
@@ -907,6 +910,43 @@ export function renderAppearanceTab(
 					getValue: () => plugin.settings.doubleClickAction,
 					setValue: async (value: string) => {
 						plugin.settings.doubleClickAction = value as "edit" | "openNote" | "none";
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				void configureDropdownSetting(setting, {
+					name: translate(
+						"settings.general.taskInteraction.groupDropBehavior.name"
+					),
+					desc: translate(
+						"settings.general.taskInteraction.groupDropBehavior.description"
+					),
+					options: [
+						{
+							value: "replace",
+							label: translate(
+								"settings.general.taskInteraction.groupDropBehavior.options.replace"
+							),
+						},
+						{
+							value: "add",
+							label: translate(
+								"settings.general.taskInteraction.groupDropBehavior.options.add"
+							),
+						},
+						{
+							value: "replace-modifier-add",
+							label: translate(
+								"settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd"
+							),
+						},
+					],
+					getValue: () => plugin.settings.taskListGroupDropBehavior,
+					setValue: async (value: string) => {
+						plugin.settings.taskListGroupDropBehavior =
+							value as TaskListGroupDropBehavior;
 						save();
 					},
 				})

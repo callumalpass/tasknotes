@@ -84,6 +84,35 @@ describe('TaskService Completion (Issue #160)', () => {
   });
 
   describe('toggleRecurringTaskComplete', () => {
+		it('returns the normalized occurrence result and repairs a completed parent status', async () => {
+			fridayRecurringTask = TaskFactory.createTask({
+				...fridayRecurringTask,
+				status: 'done',
+				scheduled: '2024-01-13',
+				recurrence: 'DTSTART:20240112;FREQ=WEEKLY;BYDAY=FR',
+			});
+			taskService['plugin'].cacheManager.getTaskInfo.mockResolvedValue(fridayRecurringTask);
+			let persistedFrontmatter: Record<string, unknown> = {};
+			taskService['plugin'].app.fileManager.processFrontMatter.mockImplementation(
+				(_file: TFile, update: (frontmatter: Record<string, unknown>) => void) => {
+					persistedFrontmatter = { ...fridayRecurringTask };
+					update(persistedFrontmatter);
+					return Promise.resolve();
+				}
+			);
+
+			const result = await taskService.toggleRecurringTaskCompleteWithResult(
+				fridayRecurringTask,
+				new Date('2024-01-13T12:00:00.000Z')
+			);
+
+			expect(result.dateStr).toBe('2024-01-12');
+			expect(result.isCompleted).toBe(true);
+			expect(result.task.status).toBe('open');
+			expect(persistedFrontmatter.status).toBe('open');
+			expect(persistedFrontmatter.completeInstances).toEqual(['2024-01-12']);
+		});
+
     it('should add completion for the correct date (Friday)', async () => {
       const targetDate = new Date('2024-01-12T12:00:00.000Z'); // Friday
       await taskService.toggleRecurringTaskComplete(fridayRecurringTask, targetDate);

@@ -1392,10 +1392,54 @@
       "source": "fc338f87a058158eb824b53705961801516a9460",
       "translation": "c5f23a4eba091c54c9fe0afeca4dbfa596554fd5"
     },
+    "settings.tabs.keyboardShortcuts": null,
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "a5126e7c9412cef1a03d744ebed395eb7214db26"
     },
+    "settings.keyboardShortcuts.header": null,
+    "settings.keyboardShortcuts.description": null,
+    "settings.keyboardShortcuts.actionDescription": null,
+    "settings.keyboardShortcuts.add": null,
+    "settings.keyboardShortcuts.remove": null,
+    "settings.keyboardShortcuts.captureHint": null,
+    "settings.keyboardShortcuts.recording": null,
+    "settings.keyboardShortcuts.confirmTitle": null,
+    "settings.keyboardShortcuts.confirmMessage": null,
+    "settings.keyboardShortcuts.confirm": null,
+    "settings.keyboardShortcuts.resetAction": null,
+    "settings.keyboardShortcuts.resetAll": null,
+    "settings.keyboardShortcuts.resetAllDescription": null,
+    "settings.keyboardShortcuts.conflict": null,
+    "settings.keyboardShortcuts.duplicateTitle": null,
+    "settings.keyboardShortcuts.duplicateMessage": null,
+    "settings.keyboardShortcuts.replace": null,
+    "settings.keyboardShortcuts.actions.navigate-next": null,
+    "settings.keyboardShortcuts.actions.navigate-previous": null,
+    "settings.keyboardShortcuts.actions.jump-first": null,
+    "settings.keyboardShortcuts.actions.jump-last": null,
+    "settings.keyboardShortcuts.actions.clear-focus-and-selection": null,
+    "settings.keyboardShortcuts.actions.toggle-select": null,
+    "settings.keyboardShortcuts.actions.select-all": null,
+    "settings.keyboardShortcuts.actions.copy-task-titles": null,
+    "settings.keyboardShortcuts.actions.toggle-archive": null,
+    "settings.keyboardShortcuts.actions.create-task": null,
+    "settings.keyboardShortcuts.actions.focus-search": null,
+    "settings.keyboardShortcuts.actions.edit-task": null,
+    "settings.keyboardShortcuts.actions.open-context-menu": null,
+    "settings.keyboardShortcuts.actions.open-task-notes": null,
+    "settings.keyboardShortcuts.actions.edit-due": null,
+    "settings.keyboardShortcuts.actions.edit-scheduled": null,
+    "settings.keyboardShortcuts.actions.edit-priority": null,
+    "settings.keyboardShortcuts.actions.mark-complete": null,
+    "settings.keyboardShortcuts.actions.edit-status": null,
+    "settings.keyboardShortcuts.actions.edit-recurrence": null,
+    "settings.keyboardShortcuts.actions.add-tags": null,
+    "settings.keyboardShortcuts.actions.add-context": null,
+    "settings.keyboardShortcuts.actions.add-project": null,
+    "settings.keyboardShortcuts.actions.delete-tasks": null,
+    "settings.keyboardShortcuts.addUserField": null,
+    "settings.keyboardShortcuts.addUserFieldDescription": null,
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "f98acefe1cdc9c888903a42f94689b0e6d7bef41"
@@ -2408,6 +2452,11 @@
       "source": "da2d900ba2974dde90a7c9b3744359f33043415e",
       "translation": "a6ded3a1f1196f191ef32976bbfc3fd3ceb97e81"
     },
+    "settings.general.taskInteraction.groupDropBehavior.name": null,
+    "settings.general.taskInteraction.groupDropBehavior.description": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replace": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.add": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd": null,
     "settings.general.taskInteraction.actions.edit": {
       "source": "8a4d4e6eb9a367d616b8a4cbfa2792068482e884",
       "translation": "be02f3392dd894bf6d897e8d076e137b6d45092e"
@@ -8002,6 +8051,10 @@
       "source": "28f478cb8ee60d0167b0507b87fa966e52061d81",
       "translation": "86e4a49489b8cc0ced8c7249cfce2ae618268af3"
     },
+    "ui.taskCard.selectTask": {
+      "source": "957bbd1116cdb7c59e3f7649b8bc2c2e8ed3de54",
+      "translation": "6bb0bea62643ea5869733fd42e1faae5bfa8939c"
+    },
     "ui.taskCard.taskOptions": {
       "source": "d7788a93bb9a5f6b6770830ead3075c0b91cc9a3",
       "translation": "90cc2f72527c565c0df522da59b86e82b7a3439c"
@@ -10300,10 +10353,54 @@
       "source": "fc338f87a058158eb824b53705961801516a9460",
       "translation": "2d11e4ac40f26bfed27c58007396a58483fc95e6"
     },
+    "settings.tabs.keyboardShortcuts": null,
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "6082310864faed1ba917afb4164aae29fb80803a"
     },
+    "settings.keyboardShortcuts.header": null,
+    "settings.keyboardShortcuts.description": null,
+    "settings.keyboardShortcuts.actionDescription": null,
+    "settings.keyboardShortcuts.add": null,
+    "settings.keyboardShortcuts.remove": null,
+    "settings.keyboardShortcuts.captureHint": null,
+    "settings.keyboardShortcuts.recording": null,
+    "settings.keyboardShortcuts.confirmTitle": null,
+    "settings.keyboardShortcuts.confirmMessage": null,
+    "settings.keyboardShortcuts.confirm": null,
+    "settings.keyboardShortcuts.resetAction": null,
+    "settings.keyboardShortcuts.resetAll": null,
+    "settings.keyboardShortcuts.resetAllDescription": null,
+    "settings.keyboardShortcuts.conflict": null,
+    "settings.keyboardShortcuts.duplicateTitle": null,
+    "settings.keyboardShortcuts.duplicateMessage": null,
+    "settings.keyboardShortcuts.replace": null,
+    "settings.keyboardShortcuts.actions.navigate-next": null,
+    "settings.keyboardShortcuts.actions.navigate-previous": null,
+    "settings.keyboardShortcuts.actions.jump-first": null,
+    "settings.keyboardShortcuts.actions.jump-last": null,
+    "settings.keyboardShortcuts.actions.clear-focus-and-selection": null,
+    "settings.keyboardShortcuts.actions.toggle-select": null,
+    "settings.keyboardShortcuts.actions.select-all": null,
+    "settings.keyboardShortcuts.actions.copy-task-titles": null,
+    "settings.keyboardShortcuts.actions.toggle-archive": null,
+    "settings.keyboardShortcuts.actions.create-task": null,
+    "settings.keyboardShortcuts.actions.focus-search": null,
+    "settings.keyboardShortcuts.actions.edit-task": null,
+    "settings.keyboardShortcuts.actions.open-context-menu": null,
+    "settings.keyboardShortcuts.actions.open-task-notes": null,
+    "settings.keyboardShortcuts.actions.edit-due": null,
+    "settings.keyboardShortcuts.actions.edit-scheduled": null,
+    "settings.keyboardShortcuts.actions.edit-priority": null,
+    "settings.keyboardShortcuts.actions.mark-complete": null,
+    "settings.keyboardShortcuts.actions.edit-status": null,
+    "settings.keyboardShortcuts.actions.edit-recurrence": null,
+    "settings.keyboardShortcuts.actions.add-tags": null,
+    "settings.keyboardShortcuts.actions.add-context": null,
+    "settings.keyboardShortcuts.actions.add-project": null,
+    "settings.keyboardShortcuts.actions.delete-tasks": null,
+    "settings.keyboardShortcuts.addUserField": null,
+    "settings.keyboardShortcuts.addUserFieldDescription": null,
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "a7f016a7bf869a4faec082a631841e0f359e46c2"
@@ -11316,6 +11413,11 @@
       "source": "da2d900ba2974dde90a7c9b3744359f33043415e",
       "translation": "781edd4b3365316a818941153ec5b37d03617853"
     },
+    "settings.general.taskInteraction.groupDropBehavior.name": null,
+    "settings.general.taskInteraction.groupDropBehavior.description": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replace": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.add": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd": null,
     "settings.general.taskInteraction.actions.edit": {
       "source": "8a4d4e6eb9a367d616b8a4cbfa2792068482e884",
       "translation": "051083fa034ad55509d16dafb492a62f62a261fe"
@@ -16910,6 +17012,10 @@
       "source": "28f478cb8ee60d0167b0507b87fa966e52061d81",
       "translation": "f15a805078c511a9555a8a88c16b670a4b9c6f92"
     },
+    "ui.taskCard.selectTask": {
+      "source": "957bbd1116cdb7c59e3f7649b8bc2c2e8ed3de54",
+      "translation": "36751f44d4f3680455e9d26242664a766f673e6b"
+    },
     "ui.taskCard.taskOptions": {
       "source": "d7788a93bb9a5f6b6770830ead3075c0b91cc9a3",
       "translation": "2096e2755fdcbe02cb13702058e6ce7137b8f33b"
@@ -19208,10 +19314,54 @@
       "source": "fc338f87a058158eb824b53705961801516a9460",
       "translation": "78190a6fcec718abbe908f2e3af5fff5e71f9d3d"
     },
+    "settings.tabs.keyboardShortcuts": null,
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "4f90e5966c8332bc8de5124dbb9ca107372bb513"
     },
+    "settings.keyboardShortcuts.header": null,
+    "settings.keyboardShortcuts.description": null,
+    "settings.keyboardShortcuts.actionDescription": null,
+    "settings.keyboardShortcuts.add": null,
+    "settings.keyboardShortcuts.remove": null,
+    "settings.keyboardShortcuts.captureHint": null,
+    "settings.keyboardShortcuts.recording": null,
+    "settings.keyboardShortcuts.confirmTitle": null,
+    "settings.keyboardShortcuts.confirmMessage": null,
+    "settings.keyboardShortcuts.confirm": null,
+    "settings.keyboardShortcuts.resetAction": null,
+    "settings.keyboardShortcuts.resetAll": null,
+    "settings.keyboardShortcuts.resetAllDescription": null,
+    "settings.keyboardShortcuts.conflict": null,
+    "settings.keyboardShortcuts.duplicateTitle": null,
+    "settings.keyboardShortcuts.duplicateMessage": null,
+    "settings.keyboardShortcuts.replace": null,
+    "settings.keyboardShortcuts.actions.navigate-next": null,
+    "settings.keyboardShortcuts.actions.navigate-previous": null,
+    "settings.keyboardShortcuts.actions.jump-first": null,
+    "settings.keyboardShortcuts.actions.jump-last": null,
+    "settings.keyboardShortcuts.actions.clear-focus-and-selection": null,
+    "settings.keyboardShortcuts.actions.toggle-select": null,
+    "settings.keyboardShortcuts.actions.select-all": null,
+    "settings.keyboardShortcuts.actions.copy-task-titles": null,
+    "settings.keyboardShortcuts.actions.toggle-archive": null,
+    "settings.keyboardShortcuts.actions.create-task": null,
+    "settings.keyboardShortcuts.actions.focus-search": null,
+    "settings.keyboardShortcuts.actions.edit-task": null,
+    "settings.keyboardShortcuts.actions.open-context-menu": null,
+    "settings.keyboardShortcuts.actions.open-task-notes": null,
+    "settings.keyboardShortcuts.actions.edit-due": null,
+    "settings.keyboardShortcuts.actions.edit-scheduled": null,
+    "settings.keyboardShortcuts.actions.edit-priority": null,
+    "settings.keyboardShortcuts.actions.mark-complete": null,
+    "settings.keyboardShortcuts.actions.edit-status": null,
+    "settings.keyboardShortcuts.actions.edit-recurrence": null,
+    "settings.keyboardShortcuts.actions.add-tags": null,
+    "settings.keyboardShortcuts.actions.add-context": null,
+    "settings.keyboardShortcuts.actions.add-project": null,
+    "settings.keyboardShortcuts.actions.delete-tasks": null,
+    "settings.keyboardShortcuts.addUserField": null,
+    "settings.keyboardShortcuts.addUserFieldDescription": null,
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "a32a664acc6d5279c6600620c1a3fb0a8bb8cd1b"
@@ -20224,6 +20374,11 @@
       "source": "da2d900ba2974dde90a7c9b3744359f33043415e",
       "translation": "c7156793f0a781c7c7710eb29ce2b4a6b71f30e2"
     },
+    "settings.general.taskInteraction.groupDropBehavior.name": null,
+    "settings.general.taskInteraction.groupDropBehavior.description": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replace": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.add": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd": null,
     "settings.general.taskInteraction.actions.edit": {
       "source": "8a4d4e6eb9a367d616b8a4cbfa2792068482e884",
       "translation": "898357e84ecd04bb3ff8c8faa6d87d17138a9e6f"
@@ -25818,6 +25973,10 @@
       "source": "28f478cb8ee60d0167b0507b87fa966e52061d81",
       "translation": "9e64071edad38ec04234439e93121798318e2d06"
     },
+    "ui.taskCard.selectTask": {
+      "source": "957bbd1116cdb7c59e3f7649b8bc2c2e8ed3de54",
+      "translation": "69f3dfdebd2b07a4e21b7eddc84a71b688692a22"
+    },
     "ui.taskCard.taskOptions": {
       "source": "d7788a93bb9a5f6b6770830ead3075c0b91cc9a3",
       "translation": "7c36c6f6e42464ff78702a1a86dca2fb04fbac11"
@@ -28116,10 +28275,54 @@
       "source": "fc338f87a058158eb824b53705961801516a9460",
       "translation": "e5b8788a4e01390303641e363b4278edcc053e99"
     },
+    "settings.tabs.keyboardShortcuts": null,
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "3fdb3a4c402e9c819b75361b4849b530f25dfb41"
     },
+    "settings.keyboardShortcuts.header": null,
+    "settings.keyboardShortcuts.description": null,
+    "settings.keyboardShortcuts.actionDescription": null,
+    "settings.keyboardShortcuts.add": null,
+    "settings.keyboardShortcuts.remove": null,
+    "settings.keyboardShortcuts.captureHint": null,
+    "settings.keyboardShortcuts.recording": null,
+    "settings.keyboardShortcuts.confirmTitle": null,
+    "settings.keyboardShortcuts.confirmMessage": null,
+    "settings.keyboardShortcuts.confirm": null,
+    "settings.keyboardShortcuts.resetAction": null,
+    "settings.keyboardShortcuts.resetAll": null,
+    "settings.keyboardShortcuts.resetAllDescription": null,
+    "settings.keyboardShortcuts.conflict": null,
+    "settings.keyboardShortcuts.duplicateTitle": null,
+    "settings.keyboardShortcuts.duplicateMessage": null,
+    "settings.keyboardShortcuts.replace": null,
+    "settings.keyboardShortcuts.actions.navigate-next": null,
+    "settings.keyboardShortcuts.actions.navigate-previous": null,
+    "settings.keyboardShortcuts.actions.jump-first": null,
+    "settings.keyboardShortcuts.actions.jump-last": null,
+    "settings.keyboardShortcuts.actions.clear-focus-and-selection": null,
+    "settings.keyboardShortcuts.actions.toggle-select": null,
+    "settings.keyboardShortcuts.actions.select-all": null,
+    "settings.keyboardShortcuts.actions.copy-task-titles": null,
+    "settings.keyboardShortcuts.actions.toggle-archive": null,
+    "settings.keyboardShortcuts.actions.create-task": null,
+    "settings.keyboardShortcuts.actions.focus-search": null,
+    "settings.keyboardShortcuts.actions.edit-task": null,
+    "settings.keyboardShortcuts.actions.open-context-menu": null,
+    "settings.keyboardShortcuts.actions.open-task-notes": null,
+    "settings.keyboardShortcuts.actions.edit-due": null,
+    "settings.keyboardShortcuts.actions.edit-scheduled": null,
+    "settings.keyboardShortcuts.actions.edit-priority": null,
+    "settings.keyboardShortcuts.actions.mark-complete": null,
+    "settings.keyboardShortcuts.actions.edit-status": null,
+    "settings.keyboardShortcuts.actions.edit-recurrence": null,
+    "settings.keyboardShortcuts.actions.add-tags": null,
+    "settings.keyboardShortcuts.actions.add-context": null,
+    "settings.keyboardShortcuts.actions.add-project": null,
+    "settings.keyboardShortcuts.actions.delete-tasks": null,
+    "settings.keyboardShortcuts.addUserField": null,
+    "settings.keyboardShortcuts.addUserFieldDescription": null,
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "7277ee93a6bc575b91eacbff0045075f71fa9b22"
@@ -29132,6 +29335,11 @@
       "source": "da2d900ba2974dde90a7c9b3744359f33043415e",
       "translation": "9ccb4f3bb4fdddeab7a6fc6d5569aa23f7d00cfe"
     },
+    "settings.general.taskInteraction.groupDropBehavior.name": null,
+    "settings.general.taskInteraction.groupDropBehavior.description": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replace": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.add": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd": null,
     "settings.general.taskInteraction.actions.edit": {
       "source": "8a4d4e6eb9a367d616b8a4cbfa2792068482e884",
       "translation": "2f764f11562e8c595ca2dadff6ffa138b40bdd18"
@@ -34726,6 +34934,10 @@
       "source": "28f478cb8ee60d0167b0507b87fa966e52061d81",
       "translation": "c4a27cd7c9b3e2f6e9db4992ef231d61f66cbdba"
     },
+    "ui.taskCard.selectTask": {
+      "source": "957bbd1116cdb7c59e3f7649b8bc2c2e8ed3de54",
+      "translation": "79c399b2c86da79d4f25556f8230ce69a9f44e18"
+    },
     "ui.taskCard.taskOptions": {
       "source": "d7788a93bb9a5f6b6770830ead3075c0b91cc9a3",
       "translation": "9c5f4352213dcb7796f2270c7eb5f42d0d640ece"
@@ -37024,10 +37236,54 @@
       "source": "fc338f87a058158eb824b53705961801516a9460",
       "translation": "81063b5b6d3a534956699148d106d27dee212628"
     },
+    "settings.tabs.keyboardShortcuts": null,
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "892f1c0be159b891166ca6b5d3ad9923e0888b10"
     },
+    "settings.keyboardShortcuts.header": null,
+    "settings.keyboardShortcuts.description": null,
+    "settings.keyboardShortcuts.actionDescription": null,
+    "settings.keyboardShortcuts.add": null,
+    "settings.keyboardShortcuts.remove": null,
+    "settings.keyboardShortcuts.captureHint": null,
+    "settings.keyboardShortcuts.recording": null,
+    "settings.keyboardShortcuts.confirmTitle": null,
+    "settings.keyboardShortcuts.confirmMessage": null,
+    "settings.keyboardShortcuts.confirm": null,
+    "settings.keyboardShortcuts.resetAction": null,
+    "settings.keyboardShortcuts.resetAll": null,
+    "settings.keyboardShortcuts.resetAllDescription": null,
+    "settings.keyboardShortcuts.conflict": null,
+    "settings.keyboardShortcuts.duplicateTitle": null,
+    "settings.keyboardShortcuts.duplicateMessage": null,
+    "settings.keyboardShortcuts.replace": null,
+    "settings.keyboardShortcuts.actions.navigate-next": null,
+    "settings.keyboardShortcuts.actions.navigate-previous": null,
+    "settings.keyboardShortcuts.actions.jump-first": null,
+    "settings.keyboardShortcuts.actions.jump-last": null,
+    "settings.keyboardShortcuts.actions.clear-focus-and-selection": null,
+    "settings.keyboardShortcuts.actions.toggle-select": null,
+    "settings.keyboardShortcuts.actions.select-all": null,
+    "settings.keyboardShortcuts.actions.copy-task-titles": null,
+    "settings.keyboardShortcuts.actions.toggle-archive": null,
+    "settings.keyboardShortcuts.actions.create-task": null,
+    "settings.keyboardShortcuts.actions.focus-search": null,
+    "settings.keyboardShortcuts.actions.edit-task": null,
+    "settings.keyboardShortcuts.actions.open-context-menu": null,
+    "settings.keyboardShortcuts.actions.open-task-notes": null,
+    "settings.keyboardShortcuts.actions.edit-due": null,
+    "settings.keyboardShortcuts.actions.edit-scheduled": null,
+    "settings.keyboardShortcuts.actions.edit-priority": null,
+    "settings.keyboardShortcuts.actions.mark-complete": null,
+    "settings.keyboardShortcuts.actions.edit-status": null,
+    "settings.keyboardShortcuts.actions.edit-recurrence": null,
+    "settings.keyboardShortcuts.actions.add-tags": null,
+    "settings.keyboardShortcuts.actions.add-context": null,
+    "settings.keyboardShortcuts.actions.add-project": null,
+    "settings.keyboardShortcuts.actions.delete-tasks": null,
+    "settings.keyboardShortcuts.addUserField": null,
+    "settings.keyboardShortcuts.addUserFieldDescription": null,
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "1e85b7120ae8c808302b3a235b6f91916bbf7de8"
@@ -38040,6 +38296,11 @@
       "source": "da2d900ba2974dde90a7c9b3744359f33043415e",
       "translation": "66037ea3866594da9b1f5dbc951091d0a2d637a8"
     },
+    "settings.general.taskInteraction.groupDropBehavior.name": null,
+    "settings.general.taskInteraction.groupDropBehavior.description": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replace": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.add": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd": null,
     "settings.general.taskInteraction.actions.edit": {
       "source": "8a4d4e6eb9a367d616b8a4cbfa2792068482e884",
       "translation": "f937c6e3ab68662a7dd9e7d0cfc306125cbb40c7"
@@ -43634,6 +43895,10 @@
       "source": "28f478cb8ee60d0167b0507b87fa966e52061d81",
       "translation": "f67350f40f7ad2d24672f5e562f54a3bdb8d1103"
     },
+    "ui.taskCard.selectTask": {
+      "source": "957bbd1116cdb7c59e3f7649b8bc2c2e8ed3de54",
+      "translation": "64c0d1c7a2e7ddf43db911f142e86fd6198e8fd1"
+    },
     "ui.taskCard.taskOptions": {
       "source": "d7788a93bb9a5f6b6770830ead3075c0b91cc9a3",
       "translation": "9dfa65b7ff96471bd4ba450f2831250b07ef7f2b"
@@ -45932,10 +46197,54 @@
       "source": "fc338f87a058158eb824b53705961801516a9460",
       "translation": "fb7f240fb3f7bbf79f7aa28f97150b9b46e81ced"
     },
+    "settings.tabs.keyboardShortcuts": null,
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "935a73f2095899b2cc1730e3257e5c96e4e35b5c"
     },
+    "settings.keyboardShortcuts.header": null,
+    "settings.keyboardShortcuts.description": null,
+    "settings.keyboardShortcuts.actionDescription": null,
+    "settings.keyboardShortcuts.add": null,
+    "settings.keyboardShortcuts.remove": null,
+    "settings.keyboardShortcuts.captureHint": null,
+    "settings.keyboardShortcuts.recording": null,
+    "settings.keyboardShortcuts.confirmTitle": null,
+    "settings.keyboardShortcuts.confirmMessage": null,
+    "settings.keyboardShortcuts.confirm": null,
+    "settings.keyboardShortcuts.resetAction": null,
+    "settings.keyboardShortcuts.resetAll": null,
+    "settings.keyboardShortcuts.resetAllDescription": null,
+    "settings.keyboardShortcuts.conflict": null,
+    "settings.keyboardShortcuts.duplicateTitle": null,
+    "settings.keyboardShortcuts.duplicateMessage": null,
+    "settings.keyboardShortcuts.replace": null,
+    "settings.keyboardShortcuts.actions.navigate-next": null,
+    "settings.keyboardShortcuts.actions.navigate-previous": null,
+    "settings.keyboardShortcuts.actions.jump-first": null,
+    "settings.keyboardShortcuts.actions.jump-last": null,
+    "settings.keyboardShortcuts.actions.clear-focus-and-selection": null,
+    "settings.keyboardShortcuts.actions.toggle-select": null,
+    "settings.keyboardShortcuts.actions.select-all": null,
+    "settings.keyboardShortcuts.actions.copy-task-titles": null,
+    "settings.keyboardShortcuts.actions.toggle-archive": null,
+    "settings.keyboardShortcuts.actions.create-task": null,
+    "settings.keyboardShortcuts.actions.focus-search": null,
+    "settings.keyboardShortcuts.actions.edit-task": null,
+    "settings.keyboardShortcuts.actions.open-context-menu": null,
+    "settings.keyboardShortcuts.actions.open-task-notes": null,
+    "settings.keyboardShortcuts.actions.edit-due": null,
+    "settings.keyboardShortcuts.actions.edit-scheduled": null,
+    "settings.keyboardShortcuts.actions.edit-priority": null,
+    "settings.keyboardShortcuts.actions.mark-complete": null,
+    "settings.keyboardShortcuts.actions.edit-status": null,
+    "settings.keyboardShortcuts.actions.edit-recurrence": null,
+    "settings.keyboardShortcuts.actions.add-tags": null,
+    "settings.keyboardShortcuts.actions.add-context": null,
+    "settings.keyboardShortcuts.actions.add-project": null,
+    "settings.keyboardShortcuts.actions.delete-tasks": null,
+    "settings.keyboardShortcuts.addUserField": null,
+    "settings.keyboardShortcuts.addUserFieldDescription": null,
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "e4840351a15b65cb43b38b53ce73a1b976f8993f"
@@ -46948,6 +47257,11 @@
       "source": "da2d900ba2974dde90a7c9b3744359f33043415e",
       "translation": "0a16eedc80343eb7329f68625bbfc59d443ed192"
     },
+    "settings.general.taskInteraction.groupDropBehavior.name": null,
+    "settings.general.taskInteraction.groupDropBehavior.description": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replace": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.add": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd": null,
     "settings.general.taskInteraction.actions.edit": {
       "source": "8a4d4e6eb9a367d616b8a4cbfa2792068482e884",
       "translation": "2fc5428146590ec9e251d86d5eda909f045c16ff"
@@ -52542,6 +52856,10 @@
       "source": "28f478cb8ee60d0167b0507b87fa966e52061d81",
       "translation": "96c717aafcb524053df980be7f24731052107dd9"
     },
+    "ui.taskCard.selectTask": {
+      "source": "957bbd1116cdb7c59e3f7649b8bc2c2e8ed3de54",
+      "translation": "52b12996c15cfd8d0a3416bc521953e5d9b15094"
+    },
     "ui.taskCard.taskOptions": {
       "source": "d7788a93bb9a5f6b6770830ead3075c0b91cc9a3",
       "translation": "1121bef387659d3190b56c3b78fa3c23bb3a0482"
@@ -54840,10 +55158,54 @@
       "source": "fc338f87a058158eb824b53705961801516a9460",
       "translation": "3aba49bc56ef38937125b52781a6aa50cd3c5ac2"
     },
+    "settings.tabs.keyboardShortcuts": null,
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "55ca8fac219f5e28fd59d8bb5fbf076eb08046d3"
     },
+    "settings.keyboardShortcuts.header": null,
+    "settings.keyboardShortcuts.description": null,
+    "settings.keyboardShortcuts.actionDescription": null,
+    "settings.keyboardShortcuts.add": null,
+    "settings.keyboardShortcuts.remove": null,
+    "settings.keyboardShortcuts.captureHint": null,
+    "settings.keyboardShortcuts.recording": null,
+    "settings.keyboardShortcuts.confirmTitle": null,
+    "settings.keyboardShortcuts.confirmMessage": null,
+    "settings.keyboardShortcuts.confirm": null,
+    "settings.keyboardShortcuts.resetAction": null,
+    "settings.keyboardShortcuts.resetAll": null,
+    "settings.keyboardShortcuts.resetAllDescription": null,
+    "settings.keyboardShortcuts.conflict": null,
+    "settings.keyboardShortcuts.duplicateTitle": null,
+    "settings.keyboardShortcuts.duplicateMessage": null,
+    "settings.keyboardShortcuts.replace": null,
+    "settings.keyboardShortcuts.actions.navigate-next": null,
+    "settings.keyboardShortcuts.actions.navigate-previous": null,
+    "settings.keyboardShortcuts.actions.jump-first": null,
+    "settings.keyboardShortcuts.actions.jump-last": null,
+    "settings.keyboardShortcuts.actions.clear-focus-and-selection": null,
+    "settings.keyboardShortcuts.actions.toggle-select": null,
+    "settings.keyboardShortcuts.actions.select-all": null,
+    "settings.keyboardShortcuts.actions.copy-task-titles": null,
+    "settings.keyboardShortcuts.actions.toggle-archive": null,
+    "settings.keyboardShortcuts.actions.create-task": null,
+    "settings.keyboardShortcuts.actions.focus-search": null,
+    "settings.keyboardShortcuts.actions.edit-task": null,
+    "settings.keyboardShortcuts.actions.open-context-menu": null,
+    "settings.keyboardShortcuts.actions.open-task-notes": null,
+    "settings.keyboardShortcuts.actions.edit-due": null,
+    "settings.keyboardShortcuts.actions.edit-scheduled": null,
+    "settings.keyboardShortcuts.actions.edit-priority": null,
+    "settings.keyboardShortcuts.actions.mark-complete": null,
+    "settings.keyboardShortcuts.actions.edit-status": null,
+    "settings.keyboardShortcuts.actions.edit-recurrence": null,
+    "settings.keyboardShortcuts.actions.add-tags": null,
+    "settings.keyboardShortcuts.actions.add-context": null,
+    "settings.keyboardShortcuts.actions.add-project": null,
+    "settings.keyboardShortcuts.actions.delete-tasks": null,
+    "settings.keyboardShortcuts.addUserField": null,
+    "settings.keyboardShortcuts.addUserFieldDescription": null,
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "ed325e2a0e049939e66b927ab4ad76ff76319842"
@@ -55856,6 +56218,11 @@
       "source": "da2d900ba2974dde90a7c9b3744359f33043415e",
       "translation": "49b442f424450984786e4d10e6bedf1b3f2a467a"
     },
+    "settings.general.taskInteraction.groupDropBehavior.name": null,
+    "settings.general.taskInteraction.groupDropBehavior.description": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replace": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.add": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd": null,
     "settings.general.taskInteraction.actions.edit": {
       "source": "8a4d4e6eb9a367d616b8a4cbfa2792068482e884",
       "translation": "d928b6f60bfea2fe71815b9ef0a16da98290e3e1"
@@ -61450,6 +61817,10 @@
       "source": "28f478cb8ee60d0167b0507b87fa966e52061d81",
       "translation": "d05244686c421dd71e5cca6c8bc76879f43ca0cf"
     },
+    "ui.taskCard.selectTask": {
+      "source": "957bbd1116cdb7c59e3f7649b8bc2c2e8ed3de54",
+      "translation": "827344c843a29108fa93038d46817e0725c92822"
+    },
     "ui.taskCard.taskOptions": {
       "source": "d7788a93bb9a5f6b6770830ead3075c0b91cc9a3",
       "translation": "0feac49588233e47ad946845905042c210efa16b"
@@ -63748,10 +64119,54 @@
       "source": "fc338f87a058158eb824b53705961801516a9460",
       "translation": "4e1ff3eb775957c295e7dc31e1b3ca70eda907a6"
     },
+    "settings.tabs.keyboardShortcuts": null,
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "2a213ace35b25b9171b9198828a4d3151a85f77f"
     },
+    "settings.keyboardShortcuts.header": null,
+    "settings.keyboardShortcuts.description": null,
+    "settings.keyboardShortcuts.actionDescription": null,
+    "settings.keyboardShortcuts.add": null,
+    "settings.keyboardShortcuts.remove": null,
+    "settings.keyboardShortcuts.captureHint": null,
+    "settings.keyboardShortcuts.recording": null,
+    "settings.keyboardShortcuts.confirmTitle": null,
+    "settings.keyboardShortcuts.confirmMessage": null,
+    "settings.keyboardShortcuts.confirm": null,
+    "settings.keyboardShortcuts.resetAction": null,
+    "settings.keyboardShortcuts.resetAll": null,
+    "settings.keyboardShortcuts.resetAllDescription": null,
+    "settings.keyboardShortcuts.conflict": null,
+    "settings.keyboardShortcuts.duplicateTitle": null,
+    "settings.keyboardShortcuts.duplicateMessage": null,
+    "settings.keyboardShortcuts.replace": null,
+    "settings.keyboardShortcuts.actions.navigate-next": null,
+    "settings.keyboardShortcuts.actions.navigate-previous": null,
+    "settings.keyboardShortcuts.actions.jump-first": null,
+    "settings.keyboardShortcuts.actions.jump-last": null,
+    "settings.keyboardShortcuts.actions.clear-focus-and-selection": null,
+    "settings.keyboardShortcuts.actions.toggle-select": null,
+    "settings.keyboardShortcuts.actions.select-all": null,
+    "settings.keyboardShortcuts.actions.copy-task-titles": null,
+    "settings.keyboardShortcuts.actions.toggle-archive": null,
+    "settings.keyboardShortcuts.actions.create-task": null,
+    "settings.keyboardShortcuts.actions.focus-search": null,
+    "settings.keyboardShortcuts.actions.edit-task": null,
+    "settings.keyboardShortcuts.actions.open-context-menu": null,
+    "settings.keyboardShortcuts.actions.open-task-notes": null,
+    "settings.keyboardShortcuts.actions.edit-due": null,
+    "settings.keyboardShortcuts.actions.edit-scheduled": null,
+    "settings.keyboardShortcuts.actions.edit-priority": null,
+    "settings.keyboardShortcuts.actions.mark-complete": null,
+    "settings.keyboardShortcuts.actions.edit-status": null,
+    "settings.keyboardShortcuts.actions.edit-recurrence": null,
+    "settings.keyboardShortcuts.actions.add-tags": null,
+    "settings.keyboardShortcuts.actions.add-context": null,
+    "settings.keyboardShortcuts.actions.add-project": null,
+    "settings.keyboardShortcuts.actions.delete-tasks": null,
+    "settings.keyboardShortcuts.addUserField": null,
+    "settings.keyboardShortcuts.addUserFieldDescription": null,
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "29a6c4edbeac9373f6e112eee10387b97be35a25"
@@ -64764,6 +65179,11 @@
       "source": "da2d900ba2974dde90a7c9b3744359f33043415e",
       "translation": "1f0a27c13aac98f2a3ad01e60a45998bb41a0b94"
     },
+    "settings.general.taskInteraction.groupDropBehavior.name": null,
+    "settings.general.taskInteraction.groupDropBehavior.description": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replace": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.add": null,
+    "settings.general.taskInteraction.groupDropBehavior.options.replaceModifierAdd": null,
     "settings.general.taskInteraction.actions.edit": {
       "source": "8a4d4e6eb9a367d616b8a4cbfa2792068482e884",
       "translation": "67659ba581add1dfdc7d691c0cd73dd7812f9577"
@@ -70357,6 +70777,10 @@
     "ui.taskCard.priorityAriaLabel": {
       "source": "28f478cb8ee60d0167b0507b87fa966e52061d81",
       "translation": "8783c8a8decc50ccc704bfb179c3a43374df33a8"
+    },
+    "ui.taskCard.selectTask": {
+      "source": "957bbd1116cdb7c59e3f7649b8bc2c2e8ed3de54",
+      "translation": "f440af604feeb5a35d80ff2ae750849304d81478"
     },
     "ui.taskCard.taskOptions": {
       "source": "d7788a93bb9a5f6b6770830ead3075c0b91cc9a3",

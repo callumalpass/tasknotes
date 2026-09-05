@@ -186,6 +186,49 @@ describe("settings persistence helpers", () => {
 		expect(shouldPersistMigratedSettings).toBe(false);
 	});
 
+	it("deep-merges saved task-list shortcuts with current defaults", () => {
+		const { settings } = buildSettingsFromLoadedData({
+			taskListShortcuts: {
+				"edit-due": ["Ctrl+K"],
+			} as TaskNotesSettings["taskListShortcuts"],
+		});
+
+		expect(settings.taskListShortcuts["edit-due"]).toEqual(["mod+k"]);
+		expect(settings.taskListShortcuts["create-task"]).toEqual(["c"]);
+	});
+
+	it("migrates supported legacy keyboard action names", () => {
+		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData({
+			fieldMapping: DEFAULT_SETTINGS.fieldMapping,
+			calendarViewSettings: DEFAULT_SETTINGS.calendarViewSettings,
+			commandFileMapping: DEFAULT_SETTINGS.commandFileMapping,
+			keyboardShortcuts: {
+				navigateDown: ["J", "Arrow Down"],
+				navigateUp: ["K", "Arrow Up"],
+				copyTaskTitles: ["Control+C"],
+				toggleSelect: ["Space"],
+				selectAll: ["Meta+A"],
+				clearFocusAndSelection: ["Backspace"],
+				newTask: ["N"],
+				editDueDates: ["Control+Shift+D"],
+				deleteTasks: ["Cmd+Delete"],
+				toggleArchive: ["a"],
+			},
+		});
+
+		expect(settings.taskListShortcuts["create-task"]).toEqual(["n"]);
+		expect(settings.taskListShortcuts["navigate-next"]).toEqual(["j", "arrowdown"]);
+		expect(settings.taskListShortcuts["navigate-previous"]).toEqual(["k", "arrowup"]);
+		expect(settings.taskListShortcuts["copy-task-titles"]).toEqual(["mod+c"]);
+		expect(settings.taskListShortcuts["toggle-select"]).toEqual(["space"]);
+		expect(settings.taskListShortcuts["select-all"]).toEqual(["mod+a"]);
+		expect(settings.taskListShortcuts["clear-focus-and-selection"]).toEqual(["backspace"]);
+		expect(settings.taskListShortcuts["toggle-archive"]).toEqual(["a"]);
+		expect(settings.taskListShortcuts["edit-due"]).toEqual(["mod+shift+d"]);
+		expect(settings.taskListShortcuts["delete-tasks"]).toEqual(["mod+delete"]);
+		expect(shouldPersistMigratedSettings).toBe(true);
+	});
+
 	it("merges only known settings keys into saved data while preserving other persisted data", () => {
 		const settings = {
 			...DEFAULT_SETTINGS,

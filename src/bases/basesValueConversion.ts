@@ -90,6 +90,25 @@ export function convertBasesGroupKeyToString(key: unknown): string {
 	return formatBasesGroupKeyValue(actualValue);
 }
 
+export function convertBasesListGroupKeyToString(key: unknown): string {
+	if (key === null || key === undefined) {
+		return convertBasesGroupKeyToString(key);
+	}
+
+	const basesKey = key as BasesValueInternals;
+	const actualValue = extractBasesGroupKeyValue(basesKey);
+	if (!Array.isArray(actualValue)) {
+		return formatBasesGroupKeyValue(actualValue);
+	}
+
+	const sortedValues = actualValue.map(stringifyUnknown).sort((left, right) => {
+		if (left < right) return -1;
+		if (left > right) return 1;
+		return 0;
+	});
+	return sortedValues.length > 0 ? sortedValues.join(", ") : "None";
+}
+
 function extractBasesGroupKeyValue(basesKey: BasesValueInternals): unknown {
 	if (basesKey.file && typeof basesKey.file === "object") {
 		return basesKey.file.path;

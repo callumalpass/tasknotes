@@ -31,6 +31,10 @@
     background-color: var(--background-modifier-hover);
 }
 
+.tasknotes-plugin .tn-task-list--keyboard-cursor .task-card:hover:not(.task-card--keyboard-focused):not(.task-card--selected) {
+    background-color: transparent;
+}
+
 .tasknotes-plugin .task-card.task-card--nested-interactive-hover {
     background-color: transparent;
     box-shadow: none;
@@ -67,6 +71,16 @@
     gap: var(--tn-spacing-sm);
     width: 100%;
     position: relative;
+}
+
+/* Explicit batch selection stays visually and behaviorally separate from task status. */
+.tasknotes-plugin .task-card__selection-checkbox {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--interactive-accent);
 }
 
 .tasknotes-plugin .task-card__content {
@@ -1970,12 +1984,27 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__context-m
 
 
 /* Selected task card styling */
+.tasknotes-plugin .task-card--keyboard-focused {
+    background-color: var(--background-modifier-hover);
+    outline: 2px solid var(--background-modifier-border-focus);
+    outline-offset: -2px;
+}
+
 .tasknotes-plugin .task-card--selected {
     background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
     border-radius: var(--tn-radius-sm);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 55%, transparent);
 }
 
-.tasknotes-plugin .task-card--selected:hover {
+/* Selection background always wins when focus and selection overlap. */
+.tasknotes-plugin .task-card--selected:focus,
+.tasknotes-plugin .task-card--selected.task-card--keyboard-focused {
+    background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+}
+
+.tasknotes-plugin .task-card--selected:hover,
+.tasknotes-plugin .task-card--selected:focus:hover,
+.tasknotes-plugin .task-card--selected.task-card--keyboard-focused:hover {
     background-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 }
 
@@ -1984,6 +2013,11 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__context-m
     box-shadow: inset 0 0 0 2px var(--interactive-accent);
 }
 
+/* Keyboard focus border wins over both selected border strengths. */
+.tasknotes-plugin .task-card--selected.task-card--keyboard-focused,
+.tasknotes-plugin .task-card--selected:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--background-modifier-border-focus);
+}
 
 /* Selection indicator floating badge */
 .tasknotes-plugin .tn-selection-indicator {

@@ -12,6 +12,7 @@ export class SearchBox {
 	private container: HTMLElement;
 	private onSearch: (term: string) => void;
 	private debounceMs: number;
+	private onDismiss?: () => void;
 	
 	private searchBoxEl: HTMLElement | null = null;
 	private inputEl: HTMLInputElement | null = null;
@@ -28,11 +29,13 @@ export class SearchBox {
 	constructor(
 		container: HTMLElement,
 		onSearch: (term: string) => void,
-		debounceMs = 300
+		debounceMs = 300,
+		onDismiss?: () => void
 	) {
 		this.container = container;
 		this.onSearch = onSearch;
 		this.debounceMs = debounceMs;
+		this.onDismiss = onDismiss;
 
 		// Create debounced search handler with destroyed check
 		this.debouncedSearch = debounce(
@@ -132,12 +135,21 @@ export class SearchBox {
 	 * Handle keydown event
 	 */
 	private handleKeydown = (e: KeyboardEvent): void => {
-		if (e.key === 'Escape') {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			e.stopPropagation();
+			this.onDismiss?.();
+		} else if (e.key === 'Escape') {
+			e.preventDefault();
 			this.clear();
 			// Trigger search with empty term
 			if (this.debouncedSearch) {
 				this.debouncedSearch('');
 			}
+			this.onDismiss?.();
+		} else if (e.key === 'Backspace' && this.inputEl?.value.length === 0) {
+			e.preventDefault();
+			this.onDismiss?.();
 		}
 	};
 
@@ -174,6 +186,13 @@ export class SearchBox {
 	 */
 	getValue(): string {
 		return this.inputEl?.value || '';
+	}
+
+	/**
+	 * Move keyboard focus into the search input.
+	 */
+	focus(): void {
+		this.inputEl?.focus();
 	}
 
 	/**
@@ -218,5 +237,6 @@ export class SearchBox {
 		this.clearBtnEl = null;
 		this.searchBoxEl = null;
 		this.debouncedSearch = null;
+		this.onDismiss = undefined;
 	}
 }

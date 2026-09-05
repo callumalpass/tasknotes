@@ -97,6 +97,27 @@ function parseLinkSegment(segment: string): LinkTitleSegment | null {
 	return parseWikiLinkSegment(segment) || parseMarkdownLinkSegment(segment);
 }
 
+/**
+ * Converts a bare Bases file-path segment into a link only when Obsidian can resolve it.
+ * This prevents ordinary comma-delimited text from being mistaken for a project list.
+ */
+function parseResolvedPathSegment(
+	segment: string,
+	linkServices: LinkServices
+): LinkTitleSegment | null {
+	const filePath = segment.trim();
+	if (!filePath) return null;
+
+	const sourcePath = linkServices.sourcePath ?? "";
+	const normalizedPath = parseLinkToPath(filePath);
+	const file =
+		linkServices.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
+		linkServices.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+	if (!(file instanceof TFile)) return null;
+
+	return { filePath: normalizedPath, displayText: normalizedPath };
+}
+
 function parseLinkAt(title: string, startIndex: number): { segment: LinkTitleSegment; endIndex: number } | null {
 	const remaining = title.slice(startIndex);
 	const wikiMatch = remaining.match(/^\[\[([^\]]+)\]\]/);
@@ -122,7 +143,27 @@ function parseLinkAt(title: string, startIndex: number): { segment: LinkTitleSeg
 	return null;
 }
 
-function parseDelimitedLinkTitle(title: string): GroupTitlePart[] | null {
+function parseDelimitedLinkTitle(
+	title: string,
+	linkServices: LinkServices
+): GroupTitlePart[] | null {
+	const bareSegments = title.split(",");
+	const containsExplicitLinkSyntax = bareSegments.some((segment) =>
+		parseLinkSegment(segment.trim())
+	);
+	if (bareSegments.length > 1 && !containsExplicitLinkSyntax) {
+		const resolvedPaths = bareSegments.map((segment) =>
+			parseResolvedPathSegment(segment, linkServices)
+		);
+		if (resolvedPaths.every((segment): segment is LinkTitleSegment => segment !== null)) {
+			// Bases serializes list-valued FileValue groups as comma-separated paths;
+			// reconstruct links here after confirming that every item is a real note.
+			return resolvedPaths.flatMap((segment, index) =>
+				index === 0 ? [segment] : [", ", segment]
+			);
+		}
+	}
+
 	const parts: GroupTitlePart[] = [];
 	let index = 0;
 	let linkCount = 0;
@@ -186,7 +227,7 @@ export function renderGroupTitle(
 		return;
 	}
 
-	const delimitedLinkTitle = parseDelimitedLinkTitle(title);
+	const delimitedLinkTitle = parseDelimitedLinkTitle(title, linkServices);
 	if (delimitedLinkTitle) {
 		for (const part of delimitedLinkTitle) {
 			if (typeof part === "string") {

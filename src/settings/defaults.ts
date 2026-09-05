@@ -9,6 +9,7 @@ import {
 	GoogleCalendarExportSettings,
 } from "../types/settings";
 import { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
+import { DEFAULT_TASK_LIST_SHORTCUTS } from "../bases/taskListKeyboardActions";
 export { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
 
 /**
@@ -303,6 +304,10 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 
 	singleClickAction: "edit",
 	doubleClickAction: "openNote",
+	taskListGroupDropBehavior: "replace-modifier-add",
+	taskListShortcuts: DEFAULT_TASK_LIST_SHORTCUTS,
+	taskListUserFieldShortcuts: {},
+	userFieldMru: {},
 	// Autosuggest project card defaults
 	projectAutosuggest: DEFAULT_PROJECT_AUTOSUGGEST,
 

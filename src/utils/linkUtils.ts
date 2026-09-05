@@ -229,6 +229,17 @@ export function generateLink(
 	return link;
 }
 
+export function generateProjectReference(
+	app: App,
+	targetFile: TFile,
+	sourcePath: string,
+	useMarkdownLinks: boolean
+): string {
+	// Project modal edits and group drops must serialize the same canonical
+	// reference; otherwise one path writes links while the other writes labels.
+	return generateLink(app, targetFile, sourcePath, "", "", useMarkdownLinks);
+}
+
 /**
  * Generate a link with the file's basename as the alias.
  * Useful for creating links that display the file name.
