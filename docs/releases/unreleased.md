@@ -46,4 +46,3 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Security
 
 - Require an API token before starting local API/MCP listeners, and validate one-use OAuth callbacks on an OS-assigned loopback port without reflecting callback text into HTML.
-  - Thanks to @martin-forge for the contribution.
