@@ -34,11 +34,16 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#1849) Fixed context menus stacking on top of each other. Only one menu stays open at a time, and clicking the same indicator again closes its menu. This previously applied to date fields only, and now covers priority, status, recurrence, reminders, task, ICS event, and batch menus.
+  - Thanks to @3zra47 for reporting and @YBKF for the contribution.
 - Rebase task edits on current frontmatter so an older edit window preserves externally completed recurrence occurrences and unrelated field changes.
 - Stop plugin loading when an existing settings file cannot be read safely, and keep saved Pomodoro sessions paused at mobile startup.
 
 ## Added
 
+- (#2147) Added context-menu actions for recording task completion today, on the scheduled date, on the due date, or on a chosen date. The actions can be grouped in a submenu from Appearance settings. See [Completing Tasks](https://tasknotes.dev/features/task-management/#completing-tasks).
+  - Rescheduling a recurring task can reactivate affected completed or skipped instances after confirmation. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/).
+  - Thanks to @renatomen for the contribution.
 - An optional **Rebuild private task projections** Google export setting gives projected tasks a durable `tasknotesUid`. At startup and every 15 minutes it repairs provider drift, duplicates, missing events and renamed source links from task files, even after the local event index is lost. It removes only marked, attendee-free projections and refuses ambiguous task identities. Unchanged projections do not write to Calendar.
 
 ## Security

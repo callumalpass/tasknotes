@@ -130,7 +130,7 @@ describe("Issue #1724: recurring task actions belong with date menu items", () =
 		menuMock.mockClear();
 	});
 
-	it("places recurring complete and skip actions after scheduled date, not between status and priority", () => {
+	it("places the 'Complete or Skip' submenu after scheduled date, before the occurrence note", () => {
 		new TaskContextMenu({
 			task: createRecurringTask(),
 			plugin: createPlugin(),
@@ -145,28 +145,35 @@ describe("Issue #1724: recurring task actions belong with date menu items", () =
 				"Priority",
 				"Due date",
 				"Scheduled date",
-				"Mark complete for this date",
-				"Skip instance",
+				"Mark complete or skip",
 				"Open or create occurrence note",
 				"Reminders",
 			])
 		);
 
+		// The single "Mark complete for this date" item was replaced by the
+		// "Mark complete or skip" submenu; the completion actions live inside it.
+		expect(titles).not.toContain("Mark complete for this date");
+
 		expect(titles.indexOf("Status")).toBeLessThan(titles.indexOf("Priority"));
-		expect(titles.indexOf("Priority")).toBeLessThan(
-			titles.indexOf("Mark complete for this date")
-		);
-		expect(titles.indexOf("Scheduled date")).toBeLessThan(
-			titles.indexOf("Mark complete for this date")
-		);
-		expect(titles.indexOf("Mark complete for this date")).toBeLessThan(
-			titles.indexOf("Skip instance")
-		);
-		expect(titles.indexOf("Skip instance")).toBeLessThan(
+		expect(titles.indexOf("Priority")).toBeLessThan(titles.indexOf("Mark complete or skip"));
+		expect(titles.indexOf("Scheduled date")).toBeLessThan(titles.indexOf("Mark complete or skip"));
+		expect(titles.indexOf("Mark complete or skip")).toBeLessThan(
 			titles.indexOf("Open or create occurrence note")
 		);
 		expect(titles.indexOf("Open or create occurrence note")).toBeLessThan(
 			titles.indexOf("Reminders")
+		);
+
+		const submenuTitles = getAllMenuTitles();
+		expect(submenuTitles).toEqual(
+			expect.arrayContaining([
+				"Completed today",
+				"Completed on schedule",
+				"Completed on due date",
+				"Completed on (pick date)",
+				"Skip instance",
+			])
 		);
 	});
 

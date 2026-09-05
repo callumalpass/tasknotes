@@ -1150,18 +1150,36 @@ export default class TaskNotesPlugin extends Plugin {
 		task: TaskInfo,
 		property: keyof TaskInfo,
 		value: TaskInfo[keyof TaskInfo],
-		options: { silent?: boolean } = {}
+		options: {
+			silent?: boolean;
+			completionDate?: string;
+			confirmClearInstances?: (cleared: {
+				complete: string[];
+				skipped: string[];
+			}) => Promise<boolean>;
+		} = {}
 	): Promise<TaskInfo> {
 		try {
-			const updatedTask = await this.taskService.updateProperty(
-				task,
-				property,
-				value,
-				options
-			);
+			// A declined clear-confirmation aborts the reschedule, so the success notice is suppressed below.
+			let cancelledByUser = false;
+			const confirmClearInstances =
+				options.confirmClearInstances ??
+				(options.silent
+					? undefined
+					: async (cleared: { complete: string[]; skipped: string[] }) => {
+							const proceed = await this.confirmClearRescheduledInstances(cleared);
+							if (!proceed) {
+								cancelledByUser = true;
+							}
+							return proceed;
+						});
 
-			// Provide user feedback unless silent
-			if (!options.silent) {
+			const updatedTask = await this.taskService.updateProperty(task, property, value, {
+				...options,
+				confirmClearInstances,
+			});
+
+			if (!options.silent && !cancelledByUser) {
 				if (property === "status") {
 					const statusValue = typeof value === "string" ? value : String(value);
 					const statusConfig = this.statusManager.getStatusConfig(statusValue);
@@ -1181,6 +1199,28 @@ export default class TaskNotesPlugin extends Plugin {
 			new Notice(`Failed to update task ${property}`);
 			throw error;
 		}
+	}
+
+	/**
+	 * Ask the user to confirm clearing recorded completed/skipped instances that a
+	 * reschedule would remove (those on or after the new scheduled date).
+	 */
+	private async confirmClearRescheduledInstances(cleared: {
+		complete: string[];
+		skipped: string[];
+	}): Promise<boolean> {
+		const { showConfirmationModal } = await import("./modals/ConfirmationModal");
+		const dates = Array.from(new Set([...cleared.complete, ...cleared.skipped])).sort();
+		return showConfirmationModal(this.app, {
+			title: this.i18n.translate("contextMenus.task.completion.clearInstancesConfirmTitle"),
+			message: this.i18n.translate(
+				"contextMenus.task.completion.clearInstancesConfirmMessage",
+				{ dates: dates.join(", ") }
+			),
+			confirmText: this.i18n.translate(
+				"contextMenus.task.completion.clearInstancesConfirmButton"
+			),
+		});
 	}
 
 	/**
@@ -1408,7 +1448,10 @@ export default class TaskNotesPlugin extends Plugin {
 					void (async () => {
 						const value =
 							date && time ? combineDateAndTime(date, time) : date || undefined;
-						await this.taskService.updateProperty(task, field, value);
+						await this.taskService.updateProperty(task, field, value, {
+							confirmClearInstances: (cleared) =>
+								this.confirmClearRescheduledInstances(cleared),
+						});
 					})();
 				},
 			});

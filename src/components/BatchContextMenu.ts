@@ -3,6 +3,10 @@ import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { DateContextMenu, type DateOption } from "./DateContextMenu";
 import { ContextMenu } from "./ContextMenu";
+import {
+	closeActiveContextMenu,
+	showCoordinatedMenu,
+} from "./ContextMenuCoordinator";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { showTextInputModal } from "../modals/TextInputModal";
 import { TagSuggest } from "../modals/taskModalSuggests";
@@ -589,10 +593,11 @@ export class BatchContextMenu {
 	}
 
 	public show(event: MouseEvent): void {
-		this.menu.showAtMouseEvent(event);
+		showCoordinatedMenu(this.menu, event);
 	}
 
 	public showAtPosition(x: number, y: number): void {
+		closeActiveContextMenu();
 		this.menu.showAtPosition({ x, y });
 	}
 }
