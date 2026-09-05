@@ -1425,6 +1425,7 @@ describe('TaskService', () => {
         complete_instances: ['2024-12-30', '2024-12-31']
       });
 
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementation(async (_file, fn) => fn({...recurringTask}));
       const result = await taskService.updateTask(recurringTask, { priority: 'high' });
 
       expect(result.complete_instances).toEqual(['2024-12-30', '2024-12-31']);
@@ -1465,6 +1466,7 @@ describe('TaskService', () => {
       const taskWithTags = TaskFactory.createTask({ tags: ['task', 'important'] });
       const updates = { priority: 'high' };
 
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementation(async (_file, fn) => fn({...taskWithTags}));
       const result = await taskService.updateTask(taskWithTags, updates);
 
       expect(result.tags).toEqual(['task', 'important']);

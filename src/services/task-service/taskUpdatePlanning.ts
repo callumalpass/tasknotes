@@ -1,8 +1,5 @@
 import type { FieldMappingKey, TaskInfo, TimeEntry } from "../../types";
-import {
-	addDTSTARTToRecurrenceRule,
-	updateToNextScheduledOccurrence,
-} from "../../core/recurrence";
+import { addDTSTARTToRecurrenceRule, updateToNextScheduledOccurrence } from "../../core/recurrence";
 import {
 	applyGoogleCalendarRecurringExceptionCleanup,
 	applyGoogleCalendarRecurringExceptionForScheduledChange,
@@ -18,6 +15,11 @@ export type TaskUpdateInput = Partial<TaskInfo> & {
 };
 
 export interface TaskUpdateFieldMapper {
+	mapFromFrontmatter: (
+		frontmatter: unknown,
+		filePath: string,
+		storeTitleInFilename?: boolean
+	) => Partial<TaskInfo>;
 	mapToFrontmatter: (
 		taskData: Partial<TaskInfo>,
 		taskTag?: string,
@@ -196,8 +198,9 @@ export function applyTaskUpdateFrontmatterChange({
 	storeTitleInFilename,
 	updateCompletedDateInFrontmatter,
 }: ApplyTaskUpdateFrontmatterChangeInput): ApplyTaskUpdateFrontmatterChangeResult {
+	// Publish only the named patch and its recurrence consequences.
 	const completeTaskData: Partial<TaskInfo> = {
-		...originalTask,
+		tags: getFrontmatterTags(frontmatter.tags),
 		...updates,
 		...recurrenceUpdates,
 		dateModified,
