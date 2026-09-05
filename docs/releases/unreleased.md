@@ -32,3 +32,17 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Fixed
+
+- Rebase task edits on current frontmatter so an older edit window preserves externally completed recurrence occurrences and unrelated field changes.
+- Stop plugin loading when an existing settings file cannot be read safely, and keep saved Pomodoro sessions paused at mobile startup.
+
+## Added
+
+- An optional **Rebuild private task projections** Google export setting gives projected tasks a durable `tasknotesUid`. At startup and every 15 minutes it repairs provider drift, duplicates, missing events and renamed source links from task files, even after the local event index is lost. It removes only marked, attendee-free projections and refuses ambiguous task identities. Unchanged projections do not write to Calendar.
+
+## Security
+
+- Generate a 256-bit token before starting API/MCP listeners and reject empty-token authentication.
+- Bind OAuth callbacks to an OS-assigned loopback port, consume valid state before responding, reject replay, and return static pages with restrictive security headers.
+- Re-read managed task events before deletion and use their ETags for conditional writes, preserving a competing provider edit for a subsequent reconciliation.

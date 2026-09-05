@@ -684,9 +684,7 @@ export default class TaskNotesPlugin extends Plugin {
 		return pluginDataFileExists(this);
 	}
 
-	async loadPluginDataForSafeWrite(
-		operation: string
-	): Promise<Record<string, unknown> | null> {
+	async loadPluginDataForSafeWrite(operation: string): Promise<Record<string, unknown> | null> {
 		const loadedData = (await this.loadData()) as Record<string, unknown> | null | undefined;
 		if (
 			(loadedData === null || loadedData === undefined) &&
@@ -744,6 +742,10 @@ export default class TaskNotesPlugin extends Plugin {
 				},
 			});
 		}
+		if (result.compromised)
+			throw new Error(
+				"TaskNotes settings are unreadable; restore settings before loading the plugin."
+			);
 		return result.data;
 	}
 

@@ -1,8 +1,5 @@
 import type { FieldMappingKey, TaskInfo, TimeEntry } from "../../types";
-import {
-	addDTSTARTToRecurrenceRule,
-	updateToNextScheduledOccurrence,
-} from "../../core/recurrence";
+import { addDTSTARTToRecurrenceRule, updateToNextScheduledOccurrence } from "../../core/recurrence";
 import {
 	applyGoogleCalendarRecurringExceptionCleanup,
 	applyGoogleCalendarRecurringExceptionForScheduledChange,
@@ -18,6 +15,11 @@ export type TaskUpdateInput = Partial<TaskInfo> & {
 };
 
 export interface TaskUpdateFieldMapper {
+	mapFromFrontmatter: (
+		frontmatter: unknown,
+		filePath: string,
+		storeTitleInFilename?: boolean
+	) => Partial<TaskInfo>;
 	mapToFrontmatter: (
 		taskData: Partial<TaskInfo>,
 		taskTag?: string,
@@ -134,15 +136,8 @@ export function buildTaskUpdateRecurrenceUpdates({
 				recurrenceUpdates.recurrence = updatedRecurrence;
 			}
 		}
-	} else if (
-		updates.recurrence !== undefined &&
-		!originalTask.recurrence &&
-		updates.recurrence
-	) {
-		if (
-			typeof updates.recurrence === "string" &&
-			!updates.recurrence.includes("DTSTART:")
-		) {
+	} else if (updates.recurrence !== undefined && !originalTask.recurrence && updates.recurrence) {
+		if (typeof updates.recurrence === "string" && !updates.recurrence.includes("DTSTART:")) {
 			const tempTask: TaskInfo = { ...originalTask, ...updates };
 			const updatedRecurrence = addDTSTARTToRecurrenceRuleFn(tempTask);
 			if (updatedRecurrence) {
@@ -196,8 +191,9 @@ export function applyTaskUpdateFrontmatterChange({
 	storeTitleInFilename,
 	updateCompletedDateInFrontmatter,
 }: ApplyTaskUpdateFrontmatterChangeInput): ApplyTaskUpdateFrontmatterChangeResult {
+	// Publish only the named patch and its recurrence consequences.
 	const completeTaskData: Partial<TaskInfo> = {
-		...originalTask,
+		tags: getFrontmatterTags(frontmatter.tags),
 		...updates,
 		...recurrenceUpdates,
 		dateModified,
@@ -339,10 +335,7 @@ function removeUnsetMappedFields(
 		delete frontmatter[fieldMapper.toUserField("recurrence")];
 	}
 	if (
-		Object.prototype.hasOwnProperty.call(
-			updates,
-			"googleCalendarExceptionOriginalScheduled"
-		) &&
+		Object.prototype.hasOwnProperty.call(updates, "googleCalendarExceptionOriginalScheduled") &&
 		updates.googleCalendarExceptionOriginalScheduled === undefined
 	) {
 		delete frontmatter[fieldMapper.toUserField("googleCalendarExceptionOriginalScheduled")];

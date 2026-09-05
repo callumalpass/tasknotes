@@ -16,6 +16,7 @@ export interface HTTPResponseLike {
 }
 
 export interface HTTPServerLike {
+	address?(): { port: number } | string | null;
 	listening?: boolean;
 	listen(port: number, callback?: () => void): void;
 	listen(port: number, hostname: string, callback?: () => void): void;
@@ -25,8 +26,6 @@ export interface HTTPServerLike {
 	once(event: "listening", listener: () => void): void;
 }
 
-export function parseRequestUrl(
-	req: Pick<HTTPRequestLike, "url">
-): URL {
+export function parseRequestUrl(req: Pick<HTTPRequestLike, "url">): URL {
 	return new URL(req.url ?? "", "http://localhost");
 }

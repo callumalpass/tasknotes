@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Pomodoro state transitions guard active sessions before dereferencing. */
-import { TFile, moment as obsidianMoment } from "obsidian";
+import { TFile, Platform, moment as obsidianMoment } from "obsidian";
 import TaskNotesPlugin from "../main";
 import {
 	createDailyNote,
@@ -92,6 +92,8 @@ export class PomodoroService {
 
 	async initialize() {
 		await this.loadState();
+		// Opening a phone presenter must not resume an old task writer.
+		if (Platform.isMobile) this.state.isRunning = false;
 		this.setupTicker();
 		this.subscribeToTaskFileRenames();
 

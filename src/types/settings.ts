@@ -326,6 +326,8 @@ export interface ICSIntegrationSettings {
  * Configuration for exporting tasks to Google Calendar
  */
 export interface GoogleCalendarExportSettings {
+	/** Opt-in one-way reconciliation on a dedicated projection calendar. */
+	reconcileFromTasks?: boolean;
 	enabled: boolean; // Master enable/disable for task export
 	targetCalendarId: string; // Which calendar to create events in
 	syncOnTaskCreate: boolean; // Auto-sync when task is created

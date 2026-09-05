@@ -830,6 +830,20 @@ export function renderIntegrationsTab(
 					})
 			);
 
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: "Rebuild private task projections",
+						desc: "Tasks own a private, free-busy-transparent projection. Repair edits, duplicates and missing events at startup and every 15 minutes; remove marked events when their task is archived or deleted. Adds a stable tasknotesUid property. Use a dedicated calendar.",
+						getValue: () =>
+							plugin.settings.googleCalendarExport.reconcileFromTasks ?? false,
+						setValue: async (value: boolean) => {
+							plugin.settings.googleCalendarExport.reconcileFromTasks = value;
+							save();
+						},
+					})
+			);
+
 			// Target calendar dropdown (populated dynamically)
 			group.addSetting((setting) => {
 				setting.setName(
