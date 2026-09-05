@@ -79,7 +79,10 @@ import {
 	getCalendarConfigValue as getCalendarConfigValueFromSnapshot,
 } from "./calendarConfigSnapshot";
 import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
-import { buildExternalCalendarEvents } from "./calendarExternalEvents";
+import {
+	buildExternalCalendarEvents,
+	buildLinkedExternalCalendarEventPredicate,
+} from "./calendarExternalEvents";
 import {
 	decorateCalendarIcsEventElement,
 	getCalendarRelatedNoteTooltip,
@@ -1874,6 +1877,11 @@ export class CalendarView extends BasesViewBase {
 					plugin: this.plugin,
 					toggles: this.googleCalendarToggles,
 					relatedNoteCountsByEventId,
+					isLinkedToTask: buildLinkedExternalCalendarEventPredicate(
+						this.currentTasks,
+						"google",
+						this.plugin
+					),
 				})
 			);
 		}

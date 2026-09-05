@@ -42,3 +42,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2147) Added context-menu actions for recording task completion today, on the scheduled date, on the due date, or on a chosen date. The actions can be grouped in a submenu from Appearance settings. See [Completing Tasks](https://tasknotes.dev/features/task-management/#completing-tasks).
   - Rescheduling a recurring task can reactivate affected completed or skipped instances after confirmation. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/).
   - Thanks to @renatomen for the contribution.
+
+## Fixed
+
+- (#1451) Calendar views no longer render the Google Calendar copy of an event that
+  was already exported from a TaskNotes task. The task-side event is shown instead, so
+  exported tasks no longer appear twice on the calendar and mini-calendar. Unrelated
+  Google Calendar events remain visible. Detached recurring exceptions and expanded
+  recurring instances of an exported series are also suppressed.
