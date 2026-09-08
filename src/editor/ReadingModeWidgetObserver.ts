@@ -18,6 +18,16 @@ export const DEFAULT_SCROLL_QUIET_PERIOD_MS = 200;
 export interface ReadingModeObserverOptions {
 	/** Override the quiet period; 0 disables scroll deferral (used by tests). */
 	scrollQuietPeriodMs?: number;
+	/**
+	 * Only inject while the note's header is rendered.
+	 *
+	 * For widgets nested inside `.mod-header.mod-ui`, which Obsidian detaches once
+	 * the reader scrolls past the top of the note. Injecting then falls back to the
+	 * preview pusher and lands the widget in the middle of the text being read
+	 * (#2255). Off by default: widgets positioned elsewhere in the note, such as the
+	 * relationships widget at the bottom, must still inject when the header is gone.
+	 */
+	requireHeaderAnchor?: boolean;
 }
 
 type FrameHandle = {
@@ -94,6 +104,7 @@ export function observeReadingModeWidgetMutations(
 	}
 
 	const scrollQuietPeriodMs = options.scrollQuietPeriodMs ?? DEFAULT_SCROLL_QUIET_PERIOD_MS;
+	const requireHeaderAnchor = options.requireHeaderAnchor ?? false;
 
 	let pendingFrame: FrameHandle | null = null;
 	let lastScrollAt = Number.NEGATIVE_INFINITY;
@@ -123,13 +134,12 @@ export function observeReadingModeWidgetMutations(
 				return;
 			}
 
-			// The header these widgets nest into is itself a virtualised section, so it
-			// is absent while the reader is scrolled past the top of the note. Injecting
-			// then falls back to the preview pusher, which lands the widget in the middle
-			// of the text being read and shoves the page down by its height, once per
-			// attempt (#2255). This observer runs again when the header is rendered, so
-			// skipping here defers the widget rather than dropping it.
-			if (!hasMetadataOrHeaderAnchor(sizer)) {
+			// A header-nested widget has nowhere correct to go while the header is
+			// scrolled out of the render window: injection would fall back to the preview
+			// pusher and land it in the middle of the text being read (#2255). This
+			// observer runs again when the header returns, so skipping defers the widget
+			// rather than dropping it. Only applies to callers that opted in.
+			if (requireHeaderAnchor && !hasMetadataOrHeaderAnchor(sizer)) {
 				return;
 			}
 

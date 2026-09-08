@@ -750,7 +750,10 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 			scheduleInjection,
 			observedMarkdownContainers,
 			markdownWidgetObserverCleanups,
-			shouldRefreshMarkdownLeaf
+			shouldRefreshMarkdownLeaf,
+			// The card nests inside the header, so it must not be re-injected while
+			// Obsidian has that section detached.
+			{ requireHeaderAnchor: true }
 		);
 	};
 	const observeMarkdownLeaves = () => {
