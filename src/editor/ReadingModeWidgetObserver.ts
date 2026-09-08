@@ -1,5 +1,6 @@
 import { MarkdownView, WorkspaceLeaf } from "obsidian";
 import { shouldSkipMarkdownWidgetLeaf } from "./MarkdownWidgetContext";
+import { hasMetadataOrHeaderAnchor } from "./MarkdownWidgetInsertion";
 
 /**
  * How long after the last scroll event re-injection stays deferred.
@@ -119,6 +120,16 @@ export function observeReadingModeWidgetMutations(
 
 			const sizer = containerEl.querySelector<HTMLElement>(".markdown-preview-sizer");
 			if (!sizer || sizer.querySelector(widgetSelector)) {
+				return;
+			}
+
+			// The header these widgets nest into is itself a virtualised section, so it
+			// is absent while the reader is scrolled past the top of the note. Injecting
+			// then falls back to the preview pusher, which lands the widget in the middle
+			// of the text being read and shoves the page down by its height, once per
+			// attempt (#2255). This observer runs again when the header is rendered, so
+			// skipping here defers the widget rather than dropping it.
+			if (!hasMetadataOrHeaderAnchor(sizer)) {
 				return;
 			}
 
