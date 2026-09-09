@@ -38,3 +38,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2305) Fixed tasks due after 11:30 PM appearing on the following day in Calendar and Agenda views.
   - Thanks to @PeterYuLi1204 for reporting.
+
+- (#2306) Fixed the task editor's completion calendar showing dates from a different month than its heading in some time zones, and skipping short months when navigating from a month-end completion.
+  - Thanks to @teampbevolution for reporting.
