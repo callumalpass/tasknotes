@@ -81,6 +81,36 @@ describe("calendar task event builders", () => {
 		});
 	});
 
+	it.each([
+		["2026-09-23T23:29", "2026-09-23T23:59"],
+		["2026-09-23T23:30", "2026-09-24T00:00"],
+		["2026-09-23T23:31", "2026-09-24T00:00"],
+		["2026-09-23T23:59", "2026-09-24T00:00"],
+		["2026-12-31T23:59", "2027-01-01T00:00"],
+		["2026-09-23T00:00", "2026-09-23T00:30"],
+	])("keeps the due marker on its due day: %s", (due, end) => {
+		const task = createTask({ due, timeEstimate: 120 });
+		expect(createDueTaskEvent(task, createContext())).toMatchObject({
+			start: due,
+			end,
+			allDay: false,
+		});
+		expect(task.due).toBe(due);
+	});
+
+	it("preserves genuine scheduled durations across midnight", () => {
+		const event = createScheduledTaskEvent(
+			createTask({ scheduled: "2026-09-23T23:59", timeEstimate: 30 }),
+			createContext()
+		);
+		expect(event?.end).toBe("2026-09-24T00:29");
+	});
+
+	it("keeps date-only due markers all-day without a synthetic end", () => {
+		expect(createDueTaskEvent(createTask({ due: "2026-09-23" }), createContext()))
+			.toMatchObject({ start: "2026-09-23", end: undefined, allDay: true });
+	});
+
 	it("uses theme text color for theme-variable priority colors", () => {
 		const context = createContext({
 			getPriorityColor: () => "accent",

@@ -35,3 +35,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - (#2304) Fixed embedded month calendars not filling their available width with Minimal theme and Readable Line Length enabled. Thanks to @same774 for reporting.
+
+- (#2305) Fixed tasks due after 11:30 PM appearing on the following day in Calendar and Agenda views.
+  - Thanks to @PeterYuLi1204 for reporting.
