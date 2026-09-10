@@ -85,3 +85,27 @@ The Calendar View supports time blocking for scheduling dedicated work periods. 
 Time blocks are stored in the frontmatter of daily notes and can be linked to specific tasks. This differs from time entries, which track actual time spent and are stored in task frontmatter rather than daily notes.
 
 Enable time blocking under `Settings -> TaskNotes -> Features` (Timeblocking section).
+
+## Export only scheduled time commitments
+
+In **Settings → TaskNotes → Integrations → Export tasks to Google Calendar**, enable **Only sync tasks with a scheduled time**, then use **Sync all tasks** to reconcile existing events.
+
+This option is off by default for compatibility. When enabled:
+
+- A scheduled date without a time creates no Google event, even if the task has a time estimate or a due time.
+- A scheduled date and time creates a timed **Busy** event. The time estimate supplies its duration; otherwise the configured default duration applies.
+- Removing the scheduled time or date removes the linked event. This cleanup applies even when deletion on task-file deletion is disabled.
+- The scheduled field supplies the event time regardless of the sync trigger and all-day options. Turning the option off restores those settings.
+- Bulk sync reconciles old links. Startup reconciliation also removes linked tasks that no longer qualify. Failed or disconnected deletions retain their links and retry through the existing recovery queues.
+
+Keep task-update synchronization enabled for immediate schedule changes. If automatic updates are disabled, use bulk sync to reconcile changes. Existing task creation, completion and deletion preferences remain available.
+
+| Task schedule | Time estimate | Google Calendar |
+| --- | --- | --- |
+| `2026-09-10` | None or 60 minutes | No event |
+| No schedule, even with a timed due date | Any | No event |
+| `2026-09-10T14:00` | 60 minutes | Busy, 14:00–15:00 |
+| `2026-09-10T14:00` | None | Busy, using the default duration |
+| `2026-09-10T00:00` | 60 minutes | Busy, 00:00–01:00 |
+
+Recurring tasks retain their recurrence rule and series start date, using the scheduled time for the time of day. Removing the scheduled time deletes both the series and any linked detached exception event. External Google events without TaskNotes links are unaffected.

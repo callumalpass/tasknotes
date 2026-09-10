@@ -32,3 +32,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- Added an optional Google Calendar export setting to sync only tasks with a scheduled time. Date-only tasks and due-only tasks stay out of Google Calendar, and removing a scheduled time cleans up the linked event with retries when offline. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/).

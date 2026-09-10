@@ -702,6 +702,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			};
 			colorId?: string;
 			recurrence?: string[];
+			transparency?: "opaque" | "transparent";
 		},
 		expectedConnectionGeneration?: number
 	): Promise<ICSEvent> {
@@ -754,6 +755,10 @@ export class GoogleCalendarService extends CalendarProvider {
 			}
 			if (updates.recurrence !== undefined) {
 				payload.recurrence = updates.recurrence;
+			}
+
+			if (updates.transparency !== undefined) {
+				payload.transparency = updates.transparency;
 			}
 
 			// Handle start/end updates
@@ -865,6 +870,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			};
 			colorId?: string;
 			recurrence?: string[];
+			transparency?: "opaque" | "transparent";
 		},
 		expectedConnectionGeneration?: number
 	): Promise<ICSEvent> {
@@ -890,6 +896,10 @@ export class GoogleCalendarService extends CalendarProvider {
 				description: event.description,
 				location: event.location,
 			};
+
+			if (event.transparency !== undefined) {
+				payload.transparency = event.transparency;
+			}
 
 			// Add reminders if provided
 			if (event.reminders) {

@@ -10,7 +10,7 @@ import {
 } from "../types";
 import { convertToGoogleRecurrence } from "../utils/rruleConverter";
 import { stringifyUnknown } from "../utils/stringUtils";
-import { getDatePart } from "../utils/dateUtils";
+import { getDatePart, hasTimeComponent } from "../utils/dateUtils";
 import { TokenRefreshError } from "./errors";
 import { GOOGLE_CALENDAR_CONSTANTS } from "./constants";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -63,6 +63,7 @@ type CalendarEventPayload = {
 		overrides?: Array<{ method: string; minutes: number }>;
 	};
 	recurrence?: string[];
+	transparency?: "opaque" | "transparent";
 };
 
 function getErrorStatus(error: unknown): number | undefined {
@@ -415,12 +416,34 @@ export class TaskCalendarSyncService {
 		return `${item.calendarId}::${item.taskPath}`;
 	}
 
+	private hasScheduledTime(task: TaskInfo): boolean {
+		return !!task.scheduled && hasTimeComponent(task.scheduled) &&
+			!Number.isNaN(new Date(task.scheduled).getTime());
+	}
+
+	private shouldCreateAsAllDay(): boolean {
+		const settings = this.plugin.settings.googleCalendarExport;
+		return settings.createAsAllDay && !settings.onlyScheduledTime;
+	}
+
+	/** Eligibility cleanup is independent of the task-file deletion preference. */
+	private async removeIneligibleTaskEvent(task: TaskInfo): Promise<boolean> {
+		if (!this.plugin.settings.googleCalendarExport.enabled) return false;
+		// A time can be removed while the first event is still being created.
+		// Wait for its ID to be saved before attempting eligibility cleanup.
+		const cacheKey = this.getTaskEventIdCacheKey(task.path);
+		await TaskCalendarSyncService.pendingEventCreates.get(cacheKey)?.catch(() => undefined);
+		await TaskCalendarSyncService.pendingExceptionEventCreates.get(cacheKey)?.catch(() => undefined);
+		return this.deleteTaskFromCalendar(task, !!this.plugin.settings.googleCalendarExport.onlyScheduledTime);
+	}
+
 	private isTaskCalendarEligible(task: TaskInfo): boolean {
 		if (task.archived) {
 			return false;
 		}
 
 		const settings = this.plugin.settings.googleCalendarExport;
+		if (settings.onlyScheduledTime) return this.hasScheduledTime(task);
 		switch (settings.syncTrigger) {
 			case "scheduled":
 				return !!task.scheduled;
@@ -516,6 +539,7 @@ export class TaskCalendarSyncService {
 
 	private getCalendarRelevantFingerprint(task: TaskInfo): string {
 		return JSON.stringify({
+			...(this.plugin.settings.googleCalendarExport.onlyScheduledTime ? { onlyScheduledTime: true } : {}),
 			title: task.title || "",
 			status: task.status || "",
 			priority: task.priority || "",
@@ -824,9 +848,10 @@ export class TaskCalendarSyncService {
 		taskPath: string,
 		calendarId: string,
 		eventId: string,
-		expectedConnectionGeneration?: number
+		expectedConnectionGeneration?: number,
+		force = false
 	): Promise<boolean> {
-		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
+		if (!force && !this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
 			return true;
 		}
 
@@ -964,6 +989,11 @@ export class TaskCalendarSyncService {
 				const fingerprint = this.getCalendarRelevantFingerprint(task);
 				const previousFingerprint = fingerprints.get(task.path);
 
+				if (settings.onlyScheduledTime && this.hasTaskCalendarLink(task) && !this.isTaskCalendarEligible(task)) {
+					await this.removeIneligibleTaskEvent(task);
+					continue;
+				}
+
 				if (previousFingerprint === undefined) {
 					// A task file that appeared while Obsidian was closed (external sync, git pull,
 					// another device) has no fingerprint yet. Treat it the way the live path in
@@ -1004,6 +1034,12 @@ export class TaskCalendarSyncService {
 						fingerprints.set(task.path, fingerprint);
 						changed = true;
 					}
+					continue;
+				}
+
+				if (settings.onlyScheduledTime && settings.syncOnTaskUpdate &&
+					previousFingerprint !== fingerprint && this.isTaskCalendarEligible(task)) {
+					await this.syncTaskToCalendar(task, previousTask);
 					continue;
 				}
 
@@ -1262,8 +1298,8 @@ export class TaskCalendarSyncService {
 
 				if (!this.isTaskCalendarEligible(task)) {
 					const eventId = this.getTaskEventId(task);
-					if (eventId) {
-						const deleted = await this.deleteTaskFromCalendar(task);
+					if (eventId || this.hasStoredRecurringExceptionMetadata(task)) {
+						const deleted = await this.removeIneligibleTaskEvent(task);
 						if (!deleted) {
 							tasknotesLogger.warn(
 								`[TaskCalendarSync] Calendar deletion queued while replaying sync for ${item.taskPath}`,
@@ -1406,24 +1442,7 @@ export class TaskCalendarSyncService {
 	 * Determine if a task should be synced based on settings and task properties
 	 */
 	shouldSyncTask(task: TaskInfo): boolean {
-		if (!this.isEnabled()) return false;
-
-		const settings = this.plugin.settings.googleCalendarExport;
-
-		// Don't sync archived tasks
-		if (task.archived) return false;
-
-		// Check if task has the required date(s) based on sync trigger setting
-		switch (settings.syncTrigger) {
-			case "scheduled":
-				return !!task.scheduled;
-			case "due":
-				return !!task.due;
-			case "both":
-				return !!task.scheduled || !!task.due;
-			default:
-				return false;
-		}
+		return this.isEnabled() && this.isTaskCalendarEligible(task);
 	}
 
 	/**
@@ -2016,6 +2035,8 @@ export class TaskCalendarSyncService {
 	private getEventDate(task: TaskInfo): string | undefined {
 		const settings = this.plugin.settings.googleCalendarExport;
 
+		if (settings.onlyScheduledTime) return task.scheduled;
+
 		switch (settings.syncTrigger) {
 			case "scheduled":
 				return task.scheduled;
@@ -2067,7 +2088,7 @@ export class TaskCalendarSyncService {
 	): { date?: string; dateTime?: string; timeZone?: string } {
 		const settings = this.plugin.settings.googleCalendarExport;
 
-		if (startInfo.isAllDay || settings.createAsAllDay) {
+		if (startInfo.isAllDay || this.shouldCreateAsAllDay()) {
 			// All-day events: end is the same date (or next day for multi-day)
 			// Google Calendar requires end date to be the day AFTER for all-day events
 			if (startInfo.date) {
@@ -2316,6 +2337,7 @@ export class TaskCalendarSyncService {
 		task: TaskInfo,
 		clearRecurrence?: boolean
 	): CalendarEventPayload | null {
+		if (this.plugin.settings.googleCalendarExport.onlyScheduledTime && !this.isTaskCalendarEligible(task)) return null;
 		const eventDate = this.getEventDate(task);
 		if (!eventDate) return null;
 
@@ -2324,7 +2346,7 @@ export class TaskCalendarSyncService {
 
 		// If user prefers all-day events, convert timed to all-day
 		let start: { date?: string; dateTime?: string; timeZone?: string };
-		if (settings.createAsAllDay && !startInfo.isAllDay) {
+		if (this.shouldCreateAsAllDay() && !startInfo.isAllDay) {
 			// Convert to all-day - use local date to handle timezone correctly
 			// e.g., "2024-01-15T23:00:00" in UTC+5 should become "2024-01-16" not "2024-01-15"
 			const localDate = new Date(eventDate);
@@ -2339,7 +2361,7 @@ export class TaskCalendarSyncService {
 		// Calculate end based on start and duration
 		const adjustedStartInfo = {
 			...startInfo,
-			isAllDay: settings.createAsAllDay || startInfo.isAllDay,
+			isAllDay: this.shouldCreateAsAllDay() || startInfo.isAllDay,
 			date: start.date,
 			dateTime: start.dateTime,
 		};
@@ -2350,6 +2372,8 @@ export class TaskCalendarSyncService {
 			start,
 			end,
 		};
+
+		if (settings.onlyScheduledTime) event.transparency = "opaque";
 
 		if (settings.includeDescription) {
 			event.description = this.buildEventDescription(task);
@@ -2362,6 +2386,7 @@ export class TaskCalendarSyncService {
 		// Determine which date field was used for the event (for reminder conversion)
 		let eventDateSource: "due" | "scheduled";
 		if (
+			settings.onlyScheduledTime ||
 			settings.syncTrigger === "scheduled" ||
 			(settings.syncTrigger === "both" && task.scheduled)
 		) {
@@ -2389,7 +2414,7 @@ export class TaskCalendarSyncService {
 			// (configured by the user in their Google Calendar settings) rather than
 			// overriding with minutes-based reminders which would fire at the wrong time
 			// (e.g., 11:30 PM the night before instead of 9 AM day-of). See #1465.
-			const isAllDay = settings.createAsAllDay || startInfo.isAllDay;
+			const isAllDay = this.shouldCreateAsAllDay() || startInfo.isAllDay;
 			if (isAllDay) {
 				event.reminders = { useDefault: true };
 			} else {
@@ -2414,7 +2439,13 @@ export class TaskCalendarSyncService {
 				// Override start date with DTSTART from recurrence rule
 				// This ensures the recurring event starts from the correct date
 				if (recurrenceData.dtstart) {
-					if (settings.createAsAllDay || !recurrenceData.hasTime) {
+					if (settings.onlyScheduledTime) {
+						// Keep the series anchor date while taking its time from the schedule.
+						const scheduledTime = format(new Date(eventDate), "HH:mm:ss");
+						const recurringStart = this.parseDateForEvent(`${recurrenceData.dtstart}T${scheduledTime}`);
+						event.start = { dateTime: recurringStart.dateTime, timeZone: recurringStart.timeZone };
+						event.end = this.getEventEnd(recurringStart, task);
+					} else if (this.shouldCreateAsAllDay() || !recurrenceData.hasTime) {
 						event.start = { date: recurrenceData.dtstart };
 						// Recalculate end for all-day event
 						const endDate = new Date(recurrenceData.dtstart + "T00:00:00");
@@ -2508,7 +2539,7 @@ export class TaskCalendarSyncService {
 		const startInfo = this.parseDateForEvent(task.scheduled);
 
 		let start: { date?: string; dateTime?: string; timeZone?: string };
-		if (settings.createAsAllDay && !startInfo.isAllDay) {
+		if (this.shouldCreateAsAllDay() && !startInfo.isAllDay) {
 			const localDate = new Date(task.scheduled);
 			start = { date: format(localDate, "yyyy-MM-dd") };
 		} else if (startInfo.isAllDay) {
@@ -2519,7 +2550,7 @@ export class TaskCalendarSyncService {
 
 		const adjustedStartInfo = {
 			...startInfo,
-			isAllDay: settings.createAsAllDay || startInfo.isAllDay,
+			isAllDay: this.shouldCreateAsAllDay() || startInfo.isAllDay,
 			date: start.date,
 			dateTime: start.dateTime,
 		};
@@ -2530,6 +2561,8 @@ export class TaskCalendarSyncService {
 			start,
 			end,
 		};
+
+		if (settings.onlyScheduledTime) event.transparency = "opaque";
 
 		if (settings.includeDescription) {
 			event.description = this.buildEventDescription(task);
@@ -2702,6 +2735,9 @@ export class TaskCalendarSyncService {
 			options.connectionGeneration ?? this.getConnectionGeneration();
 
 		if (!this.isTaskCalendarEligible(task)) {
+			if (this.plugin.settings.googleCalendarExport.onlyScheduledTime) {
+				return this.removeIneligibleTaskEvent(task);
+			}
 			return true;
 		}
 
@@ -2963,8 +2999,8 @@ export class TaskCalendarSyncService {
 
 		// If task no longer meets sync criteria, delete the event
 		if (!this.isTaskCalendarEligible(task)) {
-			if (existingEventId || this.hasStoredRecurringExceptionMetadata(task)) {
-				const deleted = await this.deleteTaskFromCalendar(task);
+			if (this.plugin.settings.googleCalendarExport.onlyScheduledTime || existingEventId || this.hasStoredRecurringExceptionMetadata(task)) {
+				const deleted = await this.removeIneligibleTaskEvent(task);
 				if (!deleted) {
 					tasknotesLogger.warn(`Google Calendar deletion queued for ${task.path}`, {
 						category: "provider",
@@ -3024,6 +3060,9 @@ export class TaskCalendarSyncService {
 		connectionGeneration: number
 	): Promise<boolean> {
 		const settings = this.plugin.settings.googleCalendarExport;
+		if (settings.onlyScheduledTime && !this.isTaskCalendarEligible(task)) {
+			return this.removeIneligibleTaskEvent(task);
+		}
 		let existingEventId = this.getTaskEventId(task);
 		if (!existingEventId) {
 			const synced = await this.syncTaskToCalendar(task, undefined, {
@@ -3153,8 +3192,8 @@ export class TaskCalendarSyncService {
 	/**
 	 * Delete a task's calendar event
 	 */
-	async deleteTaskFromCalendar(task: TaskInfo): Promise<boolean> {
-		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
+	async deleteTaskFromCalendar(task: TaskInfo, force = false): Promise<boolean> {
+		if (!force && !this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
 			return true;
 		}
 
@@ -3188,7 +3227,8 @@ export class TaskCalendarSyncService {
 				task.path,
 				targetCalendarId,
 				eventId,
-				connectionGeneration
+				connectionGeneration,
+				force
 			);
 			if (!deleted) {
 				return false;
@@ -3287,6 +3327,7 @@ export class TaskCalendarSyncService {
 		// Filter to only tasks that should be synced
 		const tasksToSync = allTasks.filter((task) => {
 			if (!this.shouldSyncTask(task)) {
+				if (this.plugin.settings.googleCalendarExport.onlyScheduledTime && this.hasTaskCalendarLink(task)) return true;
 				results.skipped++;
 				return false;
 			}

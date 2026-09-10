@@ -1998,6 +1998,10 @@ export const en: TranslationTree = {
 						both: "Both (prefer scheduled)",
 					},
 				},
+				onlyScheduledTime: {
+					name: "Only sync tasks with a scheduled time",
+					description: "Export only tasks with a scheduled date and time as timed events. Overrides the sync trigger and all-day event options. Removing the time removes the linked event, even if deletion on task delete is off. Use the bulk sync button to apply this to existing events.",
+				},
 				allDayEvents: {
 					name: "Create as all-day events",
 					description:

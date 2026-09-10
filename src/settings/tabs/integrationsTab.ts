@@ -983,6 +983,18 @@ export function renderIntegrationsTab(
 					})
 			);
 
+			group.addSetting((setting) =>
+				void configureToggleSetting(setting, {
+					name: translate("settings.integrations.googleCalendarExport.onlyScheduledTime.name"),
+					desc: translate("settings.integrations.googleCalendarExport.onlyScheduledTime.description"),
+					getValue: () => !!plugin.settings.googleCalendarExport.onlyScheduledTime,
+					setValue: async (value: boolean) => {
+						plugin.settings.googleCalendarExport.onlyScheduledTime = value;
+						save();
+					},
+				})
+			);
+
 			// Create as all-day
 			group.addSetting(
 				(setting) =>

@@ -336,6 +336,7 @@ export interface GoogleCalendarExportSettings {
 	includeDescription: boolean; // Include task details in event description
 	eventColorId: string | null; // Optional: Google Calendar color ID for TaskNotes events (null = calendar default)
 	syncTrigger: "scheduled" | "due" | "both"; // Which date triggers event creation
+	onlyScheduledTime?: boolean; // Export only scheduled time commitments; overrides trigger/all-day
 	createAsAllDay: boolean; // Create as all-day events vs timed
 	defaultEventDuration: number; // Duration in minutes if timed (uses timeEstimate if available)
 	includeObsidianLink: boolean; // Include obsidian:// link in event description

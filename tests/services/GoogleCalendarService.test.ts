@@ -89,6 +89,25 @@ describe('GoogleCalendarService', () => {
 		mockRequestUrl = requestUrl as jest.MockedFunction<typeof requestUrl>;
 	});
 
+	test('sends explicit busy availability when creating a timed commitment', async () => {
+		const event = {summary:'Commitment', start:{dateTime:'2026-09-10T14:00:00+08:00'}, end:{dateTime:'2026-09-10T15:00:00+08:00'}, transparency:'opaque' as const};
+		mockRequestUrl.mockResolvedValueOnce({status:200,json:{id:'event',...event},text:'',arrayBuffer:new ArrayBuffer(0),headers:{}});
+		await service.createEvent('primary',event);
+		expect(JSON.parse(mockRequestUrl.mock.calls[0][0].body as string).transparency).toBe('opaque');
+	});
+
+	test('replaces free all-day availability with a busy timed commitment', async () => {
+		const existing = {id:'event',summary:'Commitment',start:{date:'2026-09-10'},end:{date:'2026-09-11'},transparency:'transparent'};
+		const updates = {start:{dateTime:'2026-09-10T14:00:00+08:00'},end:{dateTime:'2026-09-10T15:00:00+08:00'},transparency:'opaque' as const};
+		mockRequestUrl.mockResolvedValueOnce({status:200,json:existing,text:'',arrayBuffer:new ArrayBuffer(0),headers:{}});
+		mockRequestUrl.mockResolvedValueOnce({status:200,json:{...existing,...updates},text:'',arrayBuffer:new ArrayBuffer(0),headers:{}});
+		await service.updateEvent('primary','event',updates);
+		const payload=JSON.parse(mockRequestUrl.mock.calls[1][0].body as string);
+		expect(payload.transparency).toBe('opaque');
+		expect(payload.start).toEqual(updates.start);
+		expect(payload.end).toEqual(updates.end);
+	});
+
 	describe('listCalendars', () => {
 		test('should fetch and return list of calendars', async () => {
 			mockRequestUrl.mockResolvedValueOnce({
