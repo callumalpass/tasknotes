@@ -63,3 +63,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2309) Fixed Google calendars enabled through the `primary` alias falling back to the
 
 - (#2284) Prevented repeated activation of instant checkbox conversion from creating duplicate TaskNotes while the first conversion is still in progress. Thanks to @doyoonear for reporting the issue.
+
+- (#2314) Fixed rescheduled ICS recurring events appearing at their original time and cancelled occurrences remaining visible. Thanks to @benschifman for reporting.
