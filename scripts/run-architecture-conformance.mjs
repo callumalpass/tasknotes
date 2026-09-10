@@ -33,6 +33,9 @@ const VAULT_WRITE_METHODS = new Set([
 
 const pureModulePatterns = [
 	/^src\/bases\/.*(?:Planning|Conversion|Defaults|Signature|Snapshot|Properties|Export|Value|Values|State)\.ts$/,
+	// CalDAV VTODO mapping and scoping. caldavXml.ts is deliberately absent: it
+	// parses with DOMParser, which a pure module may not reach for.
+	/^src\/services\/caldav\/(?:caldavFingerprint|caldavReconciliation|collectionMembership|icsDateValue|vtodoAlarms|vtodoDocument|vtodoMapping|vtodoRelations)\.ts$/,
 	/^src\/services\/filter-service\/.*\.ts$/,
 	/^src\/services\/task-service\/.*Planning\.ts$/,
 	/^src\/services\/task-service\/taskTitleSanitizer\.ts$/,
@@ -73,7 +76,7 @@ const vaultWriteAllowedPatterns = [
 
 const networkAllowedPatterns = [
 	/^src\/api\/.*\.ts$/,
-	/^src\/services\/(?:GoogleCalendarService|HTTPAPIService|ICSSubscriptionService|MCPService|MicrosoftCalendarService|OAuthService)\.ts$/,
+	/^src\/services\/(?:CalDavClient|GoogleCalendarService|HTTPAPIService|ICSSubscriptionService|MCPService|MicrosoftCalendarService|OAuthService)\.ts$/,
 ];
 
 const pluginImportAllowedPatterns = [

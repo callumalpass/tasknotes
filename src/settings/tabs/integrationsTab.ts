@@ -33,6 +33,7 @@ import {
 	type CardSection,
 } from "../components/CardComponent";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { renderCalDavSection } from "./caldavSection";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/Tabs/IntegrationsTab" });
 
@@ -1441,6 +1442,11 @@ export function renderIntegrationsTab(
 					})
 			);
 		}
+	);
+
+	// CalDAV two-way task sync
+	renderCalDavSection(container, plugin, save, translate, () =>
+		renderIntegrationsTab(container, plugin, save)
 	);
 
 	// ICS Subscriptions List - buttons first, then cards

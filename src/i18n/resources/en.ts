@@ -1978,6 +1978,115 @@ export const en: TranslationTree = {
 					serviceUnavailable: "Auto export service not available",
 				},
 			},
+			caldav: {
+				header: "CalDAV task sync",
+				description:
+					"Two-way sync between your tasks and a CalDAV task list, such as Nextcloud, Apple Reminders, Radicale or Baikal. This is separate from the calendar integrations above: it syncs tasks as VTODO entries rather than as calendar events.",
+				enable: {
+					name: "Enable CalDAV sync",
+					description: "Sync tasks two ways with one or more CalDAV task lists.",
+				},
+				pushOnChange: {
+					name: "Push changes immediately",
+					description:
+						"Send local edits to the server as they happen. When off, changes are sent on the next scheduled sync instead.",
+				},
+				addAccount: {
+					name: "Add account",
+					description: "Configure another CalDAV task list.",
+					button: "Add account",
+					defaultName: "New account",
+				},
+				account: {
+					name: {
+						name: "Name",
+						description: "A label for this account.",
+					},
+					serverUrl: {
+						name: "Server URL",
+						description:
+							"Base URL of the CalDAV server. Credentials are only sent over HTTPS, except to localhost.",
+					},
+					username: {
+						name: "Username",
+						description: "The account name on the CalDAV server.",
+					},
+					password: {
+						name: "Password",
+						description:
+							"Stored in Obsidian secret storage, never in the plugin's data file. Use an app password where your provider offers one.",
+						stored: "A password is stored for this account. Type a new one to replace it.",
+						placeholder: "Enter a password",
+						clear: "Clear",
+					},
+					discover: {
+						name: "Task list",
+						description: "Find the task lists this account can reach.",
+						button: "Discover",
+					},
+					collection: {
+						name: "Selected task list",
+						choose: "Choose which list this account syncs with.",
+					},
+					interval: {
+						name: "Check for changes every",
+						description: "How often to look for changes on the server, in minutes.",
+					},
+					deletionPolicy: {
+						name: "When a task is deleted on the server",
+						description: "What happens to the local note when its entry disappears from the server.",
+						archive: "Archive the note",
+						unlink: "Keep the note and stop syncing it",
+						delete: "Delete the note",
+					},
+					enable: {
+						name: "Sync this account",
+						description: "Turn syncing on once the details above are correct.",
+					},
+					firstSync: {
+						name: "First sync",
+						description:
+							"Compare this task list against your vault and show what would change before anything is written.",
+						button: "Preview",
+					},
+					remove: {
+						name: "Remove account",
+						description: "Stop syncing and forget this account's stored password.",
+						button: "Remove",
+					},
+				},
+				firstSync: {
+					title: "Review the first sync",
+					summary:
+						"{upload} to upload, {import} to import, {link} already matching, {resolve} changed on both sides. Nothing has been written yet.",
+					confirm: "Sync now",
+				},
+				remove: {
+					title: "Remove account",
+					message:
+						"Remove \"{name}\"? Tasks already in your vault are kept, but they stop syncing and the stored password is deleted.",
+					confirm: "Remove",
+				},
+				notices: {
+					missingCredentials: "Enter a username and password for this account first.",
+					credentialsNotStored: "TaskNotes could not save the password to secret storage.",
+					noCollections: "No task lists were found for this account.",
+					noCollectionSelected: "Choose a task list for this account first.",
+					discovered: "Found {count} task list(s). Using \"{name}\".",
+					authFailed: "The server rejected those credentials.",
+					connectionFailed: "TaskNotes could not reach the CalDAV server.",
+					firstSyncComplete: "First sync finished.",
+					reloadRequired: "Reload the plugin to start CalDAV syncing.",
+					syncComplete: "CalDAV sync finished.",
+					unlinkedAll: "Unlinked {count} task(s) from CalDAV.",
+				},
+				unlinkAll: {
+					confirmTitle: "Unlink all tasks",
+					confirmMessage:
+						"Remove the CalDAV link from every task in this vault? Nothing is deleted, here or on the server. The link is what stops a task syncing twice, so if you sync this vault with the same list again afterwards, you will get a second copy of every task.",
+					confirmText: "Unlink",
+				},
+			},
 			googleCalendarExport: {
 				header: "Export tasks to Google Calendar",
 				description:
@@ -2436,6 +2545,8 @@ export const en: TranslationTree = {
 		createOrOpenTask: "Create or open task",
 		createOrOpenTaskWithTracking: "Create or open task and start time tracking",
 		rolloverOverdueScheduledTasks: "Postpone overdue scheduled tasks to today",
+		caldavSyncNow: "Sync tasks with CalDAV now",
+		caldavUnlinkAllTasks: "Unlink all tasks from CalDAV",
 	},
 	modals: {
 		deviceCode: {
