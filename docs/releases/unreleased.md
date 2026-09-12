@@ -53,3 +53,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Stop plugin startup when an existing settings file cannot be read, preserving it for recovery instead of starting services with default settings.
 
 - Require an API token before starting local API/MCP listeners, and validate one-use OAuth callbacks on an OS-assigned loopback port without reflecting callback text into HTML.
+
+- (#2322) Fixed editing task metadata deleting the saved title when the filename could not represent it, such as for long titles.

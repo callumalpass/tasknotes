@@ -239,7 +239,14 @@ export function applyTaskUpdateFrontmatterChange({
 
 	removeUnsetMappedFields(frontmatter, { ...updates, ...recurrenceUpdates }, fieldMapper);
 
-	if (storeTitleInFilename) {
+	// Creation keeps a title property when the filename cannot represent it
+	// (for example, a long title needs a fallback filename). Metadata-only
+	// edits, including forms resubmitting the same title, must retain it.
+	if (
+		storeTitleInFilename &&
+		updates.title !== undefined &&
+		updates.title !== originalTask.title
+	) {
 		delete frontmatter[fieldMapper.toUserField("title")];
 	}
 
