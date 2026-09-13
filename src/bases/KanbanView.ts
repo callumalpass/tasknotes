@@ -4,7 +4,7 @@ import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import type { StatusConfig, TaskInfo } from "../types";
-import { identifyTaskNotesFromBasesData } from "./helpers";
+import { identifyTaskNotesFromBasesData, type BasesDataItem } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
@@ -584,6 +584,14 @@ export class KanbanView extends BasesViewBase {
 			const renderTasks = this.getTopLevelRenderTasks(filteredTasks);
 			const candidateTasks = this.getTopLevelRenderTasks(taskNotes);
 			this.setCurrentVisibleTaskPaths(renderTasks);
+			this.updateRelevantPathsCache();
+
+			const renderSignature = this.buildRenderSignature(dataItems, taskNotes, renderTasks);
+			if (renderSignature !== null && renderSignature === this.lastRenderSignature) {
+				return;
+			}
+			// Only remember successful renders, so an interrupted/error render can retry.
+			this.lastRenderSignature = null;
 
 			// Clear board and cleanup scrollers
 			this.destroyColumnScrollers();
@@ -598,6 +606,7 @@ export class KanbanView extends BasesViewBase {
 				} else {
 					this.renderEmptyState();
 				}
+				this.lastRenderSignature = renderSignature;
 				return;
 			}
 
@@ -610,6 +619,7 @@ export class KanbanView extends BasesViewBase {
 			if (!groupByPropertyId) {
 				// No groupBy - show error
 				this.renderNoGroupByError();
+				this.lastRenderSignature = renderSignature;
 				return;
 			}
 
@@ -630,13 +640,66 @@ export class KanbanView extends BasesViewBase {
 			} else {
 				await this.renderFlat(groups, allGroups);
 			}
+			this.lastRenderSignature = renderSignature;
 		} catch (error: unknown) {
+			this.lastRenderSignature = null;
 			tasknotesLogger.error("[TaskNotes][KanbanView] Error rendering:", {
 				category: "internal",
 				operation: "rendering",
 				error: error,
 			});
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
+		}
+	}
+
+	private lastRenderSignature: string | null = null;
+
+	/** Bases also emits updates for files outside this board. Keep the existing DOM
+	 * when its inputs are unchanged, preserving hover, focus and open controls. */
+	private buildRenderSignature(
+		dataItems: BasesDataItem[],
+		tasks: TaskInfo[],
+		renderTasks: TaskInfo[]
+	): string | null {
+		try {
+			const withoutBasesEntry = ({ basesData: _entry, ...task }: TaskInfo) => task;
+			const propertyIds = this.config.getOrder();
+			const taskPaths = new Set(tasks.map((task) => task.path));
+			const relatedPaths = new Set(
+				Array.from(
+					this.boardEl?.querySelectorAll<HTMLElement>(".task-card[data-task-path]") ?? []
+				)
+					.map((card) => card.dataset.taskPath)
+					.filter((path): path is string => typeof path === "string" && path.length > 0 && !taskPaths.has(path))
+			);
+			const relatedTasks = Array.from(relatedPaths, (path) => {
+				const task = this.plugin.cacheManager.getCachedTaskInfoSync(path);
+				return task ? withoutBasesEntry(task) : { path };
+			});
+
+			return JSON.stringify({
+				tasks: tasks.map(withoutBasesEntry),
+				relatedTasks,
+				visiblePaths: renderTasks.map((task) => task.path),
+				properties: dataItems.map((item) => ({
+					path: item.path,
+					values: item.properties,
+					computed: propertyIds.map((id) =>
+						this.dataAdapter.getComputedProperty(item.basesData, id)
+					),
+				})),
+				propertyIds,
+				cardOptions: this.getCardOptions(),
+				views: this.basesController?.query?.views,
+				viewName: this.basesController?.viewName,
+				sort: this.config.getSort(),
+				settings: this.plugin.settings,
+				// Relative dates and running time totals may change without a file update.
+				minute: Math.floor(Date.now() / 60_000),
+			});
+		} catch {
+			// Unknown/non-serializable property values must still get a fresh render.
+			return null;
 		}
 	}
 
@@ -3893,6 +3956,7 @@ export class KanbanView extends BasesViewBase {
 
 	protected setupContainer(): void {
 		super.setupContainer();
+		this.lastRenderSignature = null;
 
 		// Use containerEl.ownerDocument for pop-out window support
 		const doc = this.containerEl.ownerDocument;
