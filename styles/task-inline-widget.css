@@ -516,3 +516,21 @@
 .tasknotes-plugin .task-inline-preview[draggable="true"]:active {
     cursor: grabbing;
 }
+
+/* =================================================================
+   INLINE LAYOUT: NO TRAILING CONTEXT-MENU BOX
+   ================================================================= */
+
+/*
+ * The context-menu affordance is `opacity: 0` until its card is hovered. That hides
+ * it but keeps its 14px box in layout. In the card layouts it costs nothing, because
+ * it sits at the end of a row of its own and `margin-left: auto` parks it against the
+ * edge. Inline, it leaves 14px of dead space plus the row's gap after every task
+ * link, in the middle of running prose - and `margin-left: auto` does nothing there.
+ *
+ * Removed rather than hidden-on-hover: an invisible target inside a sentence cannot
+ * be aimed for, and the link still has its right-click menu.
+ */
+.tasknotes-plugin .task-card--layout-inline .task-card__context-menu {
+    display: none;
+}

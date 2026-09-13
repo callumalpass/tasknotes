@@ -41,9 +41,17 @@ class ConvertButtonWidget extends WidgetType {
 		const iconSpan = button.createSpan({ cls: "instant-convert-button__icon" });
 		setIcon(iconSpan, "file-plus");
 
+		let activationInProgress = false;
 		const handleActivation = (e: Event) => {
 			e.preventDefault();
 			e.stopPropagation();
+			if (activationInProgress) {
+				return;
+			}
+
+			activationInProgress = true;
+			button.disabled = true;
+			button.setAttribute("aria-busy", "true");
 			void (async () => {
 				try {
 					// Validate button state before proceeding
@@ -84,6 +92,10 @@ class ConvertButtonWidget extends WidgetType {
 						operation: "convert-button-click-handler",
 						error: error,
 					});
+				} finally {
+					activationInProgress = false;
+					button.disabled = false;
+					button.removeAttribute("aria-busy");
 				}
 			})();
 		};

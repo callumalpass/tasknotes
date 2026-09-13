@@ -36,6 +36,7 @@ import {
 } from "../utils/dependencyUtils";
 import { generateLink } from "../utils/linkUtils";
 import { ContextMenu } from "./ContextMenu";
+import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenuCoordinator";
 import { buildTimeblockPrefillForTask } from "../utils/timeblockPrefillUtils";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
 import {
@@ -2555,15 +2556,12 @@ export class TaskContextMenu {
 		if ((event.target as Node)?.instanceOf?.(HTMLElement)) {
 			this.targetDoc = (event.target as HTMLElement).ownerDocument;
 		}
-		this.menu.showAtMouseEvent(event);
+		showCoordinatedMenu(this.menu, event);
 	}
 
 	public showAtElement(element: HTMLElement): void {
 		// Store the document reference from the element to support pop-out windows
 		this.targetDoc = element.ownerDocument;
-		this.menu.showAtPosition({
-			x: element.getBoundingClientRect().left,
-			y: element.getBoundingClientRect().bottom + 4,
-		});
+		showCoordinatedMenuAtElement(this.menu, element);
 	}
 }

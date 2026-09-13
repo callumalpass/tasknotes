@@ -23,6 +23,29 @@ export interface ProviderCalendar {
 }
 
 /**
+ * Google accepts `primary` as an alias for the signed-in account's own calendar.
+ * A calendar configured that way is fetched under the alias, so its events carry
+ * `primary` as their calendar id while the provider's calendar list reports the
+ * account's real calendar id.
+ */
+export const PRIMARY_CALENDAR_ALIAS = "primary";
+
+/**
+ * Finds a provider calendar by id, resolving the primary alias to the account's
+ * own calendar so alias-configured events still match their calendar metadata.
+ */
+export function findProviderCalendar<T extends Pick<ProviderCalendar, "id" | "primary">>(
+	calendars: readonly T[],
+	calendarId: string
+): T | undefined {
+	return calendars.find(
+		(candidate) =>
+			candidate.id === calendarId ||
+			(calendarId === PRIMARY_CALENDAR_ALIAS && candidate.primary === true)
+	);
+}
+
+/**
  * Event date/time configuration
  * Supports both all-day events (date) and timed events (dateTime + timeZone)
  *

@@ -1141,6 +1141,13 @@ export function generateRecurringTaskInstances(
 	const hasOriginalTime = hasTimeComponent(task.scheduled);
 	const templateTime = getRecurringTime(task);
 	const nextScheduledDate = getDatePart(task.scheduled);
+	// A moved occurrence is represented at its current scheduled placement.
+	// Its original rule date must not also become a projected task. Recorded
+	// completions/skips are handled separately below and remain available.
+	const movedOriginalDates = new Set(task.googleCalendarMovedOriginalDates || []);
+	if (task.googleCalendarExceptionOriginalScheduled) {
+		movedOriginalDates.add(getDatePart(task.googleCalendarExceptionOriginalScheduled));
+	}
 	const spanDayOffset = showScheduledToDueSpan ? getScheduledToDueSpanDayOffset(task) : null;
 	const shouldCreateRecurringSpan = spanDayOffset !== null;
 	const recurringSearchStartDate = shouldCreateRecurringSpan
@@ -1227,7 +1234,7 @@ export function generateRecurringTaskInstances(
 			}
 
 			// Skip if conflicts with next scheduled occurrence
-			if (instanceDate === nextScheduledDate) {
+			if (instanceDate === nextScheduledDate || movedOriginalDates.has(instanceDate)) {
 				continue;
 			}
 
