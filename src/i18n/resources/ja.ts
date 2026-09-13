@@ -1974,7 +1974,7 @@ export const ja: TranslationTree = {
 				},
 				authToken: {
 					name: "API認証トークン",
-					description: "API認証に必要なトークン（認証なしの場合は空白のままにする）",
+					description: "API認証に必要です。空欄の場合、サーバー起動時にトークンが生成されます。",
 					placeholder: "あなたのシークレットトークン"
 				},
 				mcp: {

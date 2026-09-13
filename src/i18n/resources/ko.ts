@@ -1958,7 +1958,7 @@ export const ko: TranslationTree = {
 				},
 				authToken: {
 					name: "API 인증 토큰",
-					description: "API 인증에 필요한 토큰 (인증 없이 사용하려면 비워두세요)",
+					description: "API 인증에 필요합니다. 비워두면 서버 시작 시 토큰이 생성됩니다.",
 					placeholder: "비밀-토큰"
 				},
 				mcp: {

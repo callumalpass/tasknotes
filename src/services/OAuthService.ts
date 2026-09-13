@@ -137,7 +137,14 @@ export class OAuthService {
 	 * Standard OAuth flow with loopback redirect (client_id required, client_secret optional)
 	 * Used for desktop applications with PKCE for security
 	 */
+	private authenticationInProgress = false;
+
 	private async authenticateStandard(provider: OAuthProvider): Promise<void> {
+		// A second attempt must not close the first attempt's listener in finally.
+		if (this.authenticationInProgress) {
+			throw new Error("An OAuth authorization is already in progress");
+		}
+		this.authenticationInProgress = true;
 		try {
 			const config = this.getConfig(provider);
 
@@ -182,8 +189,13 @@ export class OAuthService {
 
 				// Register the resolver before the browser can return a fast callback.
 				const callback = this.waitForCallback(state, 300000);
-				void callback.catch(() => undefined);
-				await this.openAuthorizationUrl(authUrl);
+				// Electron can open the browser without ever settling openExternal.
+				// Let the callback/timeout drive the flow independently (#2279).
+				void this.openAuthorizationUrl(authUrl).catch((error: unknown) => {
+					this.pendingOAuthState.get(state)?.reject(
+						error instanceof Error ? error : new Error("Could not open OAuth browser")
+					);
+				});
 				const code = await callback;
 
 				// Exchange code for tokens
@@ -216,7 +228,11 @@ export class OAuthService {
 			);
 			throw error;
 		} finally {
-			await this.stopCallbackServer();
+			try {
+				await this.stopCallbackServer();
+			} finally {
+				this.authenticationInProgress = false;
+			}
 		}
 	}
 
@@ -358,10 +374,9 @@ export class OAuthService {
 				return;
 			}
 
-			this.callbackServer.close(() => {
-				this.callbackServer = null;
-				resolve();
-			});
+			const server = this.callbackServer;
+			this.callbackServer = null;
+			server.close(() => resolve());
 		});
 	}
 
@@ -424,12 +439,17 @@ export class OAuthService {
 				return;
 			}
 
-			// Update the pending state with resolve/reject functions
-			pending.resolve = resolve;
-			pending.reject = reject;
+			// Release the timer on success, provider rejection, or browser failure.
+			pending.resolve = (code) => {
+				window.clearTimeout(timer);
+				resolve(code);
+			};
+			pending.reject = (error) => {
+				window.clearTimeout(timer);
+				reject(error);
+			};
 
-			// Set timeout
-			window.setTimeout(() => {
+			const timer = window.setTimeout(() => {
 				if (this.pendingOAuthState.has(state)) {
 					this.pendingOAuthState.delete(state);
 					reject(new Error("OAuth timeout - authorization took too long"));
@@ -868,11 +888,13 @@ export class OAuthService {
 	 * Ensures all resources are properly released to prevent memory leaks
 	 */
 	async destroy(): Promise<void> {
-		// Stop HTTP callback server
-		await this.stopCallbackServer();
-
-		// Clear pending OAuth state
+		// Reject pending flows as well as clearing state, so callbacks and their
+		// timeout handles cannot remain orphaned when the plugin unloads.
+		for (const pending of this.pendingOAuthState.values()) {
+			pending.reject(new Error("OAuth authorization cancelled"));
+		}
 		this.pendingOAuthState.clear();
+		await this.stopCallbackServer();
 
 		// Clear token refresh state to prevent orphaned promises.
 		this.tokenRefreshPromises.clear();

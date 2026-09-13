@@ -131,6 +131,37 @@ describe("Issue #1923: HTTP API loopback binding and CORS", () => {
 		(http.createServer as CreateServerMock).mockReset();
 	});
 
+	it("persists a generated credential before binding, including concurrent starts", async () => {
+		const plugin = createPlugin();
+		plugin.settings.apiAuthToken = "";
+		let saved!: () => void;
+		(plugin.saveSettings as jest.Mock).mockImplementation(() => new Promise<void>((resolve) => { saved = resolve; }));
+		const server = createMockServer();
+		(http.createServer as CreateServerMock).mockReturnValue(server as never);
+		const service = new HTTPAPIService(plugin, {} as TaskService, {} as FilterService, {} as TaskManager);
+		const first = service.start();
+		const second = service.start();
+		expect(plugin.settings.apiAuthToken).toMatch(/^[A-Za-z0-9_-]{43}$/);
+		expect(plugin.saveSettings).toHaveBeenCalledTimes(1);
+		expect(http.createServer).not.toHaveBeenCalled();
+		saved();
+		await Promise.all([first, second]);
+		expect(http.createServer).toHaveBeenCalledTimes(1);
+	});
+
+	it("does not bind after a failed token save, and persists again on retry", async () => {
+		const plugin = createPlugin();
+		plugin.settings.apiAuthToken = "";
+		(plugin.saveSettings as jest.Mock).mockRejectedValueOnce(new Error("disk unavailable"));
+		const service = new HTTPAPIService(plugin, {} as TaskService, {} as FilterService, {} as TaskManager);
+		await expect(service.start()).rejects.toThrow("disk unavailable");
+		expect(http.createServer).not.toHaveBeenCalled();
+		expect(plugin.settings.apiAuthToken).toBe("");
+		(http.createServer as CreateServerMock).mockReturnValue(createMockServer() as never);
+		await service.start();
+		expect(plugin.saveSettings).toHaveBeenCalledTimes(2);
+	});
+
 	it("binds the HTTP API server to loopback instead of all interfaces", async () => {
 		const server = createMockServer();
 		(http.createServer as CreateServerMock).mockReturnValue(server as never);

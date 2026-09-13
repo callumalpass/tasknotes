@@ -1974,7 +1974,7 @@ export const de: TranslationTree = {
 				},
 				authToken: {
 					name: "API-Authentifizierungstoken",
-					description: "Token für API-Authentifizierung erforderlich (leer lassen für keine Authentifizierung)",
+					description: "Für die API-Authentifizierung erforderlich. Ist das Feld leer, wird beim Serverstart ein Token generiert.",
 					placeholder: "dein-geheimes-token"
 				},
 				mcp: {

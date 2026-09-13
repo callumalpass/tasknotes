@@ -1974,7 +1974,7 @@ export const fr: TranslationTree = {
 				},
 				authToken: {
 					name: "Jeton d'authentification API",
-					description: "Jeton requis pour l'authentification API (laisser vide pour pas d'authentification)",
+					description: "Requis pour l'authentification API. Si le champ est vide, un jeton est généré au démarrage du serveur.",
 					placeholder: "votre-jeton-secret"
 				},
 				mcp: {

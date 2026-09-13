@@ -1974,7 +1974,7 @@ export const zh: TranslationTree = {
 				},
 				authToken: {
 					name: "API认证令牌",
-					description: "API认证所需的令牌（留空表示无认证）",
+					description: "API认证必需的令牌。如果留空，将在服务器启动时生成令牌。",
 					placeholder: "你的秘密令牌"
 				},
 				mcp: {
