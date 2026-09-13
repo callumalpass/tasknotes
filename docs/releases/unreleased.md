@@ -16,6 +16,8 @@ Example:
 ```
 ## Fixed
 
+- Keep agenda events chronological when a Base sort is configured; use Base order at the same calendar time. Follow-up to #1411, reported by @ky1ejs.
+
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
