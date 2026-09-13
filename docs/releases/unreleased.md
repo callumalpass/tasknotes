@@ -57,3 +57,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Require an API token before starting local API/MCP listeners, and validate one-use OAuth callbacks on an OS-assigned loopback port without reflecting callback text into HTML.
 
 - (#2322) Fixed editing task metadata deleting the saved title when the filename could not represent it, such as for long titles.
+
+- Avoid showing a recurring task twice when its original occurrence date is recorded by a calendar move. Keep requested completion and skip history visible.
