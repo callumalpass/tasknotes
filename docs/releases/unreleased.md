@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- Added a dedicated TaskNotes v5 and app beta section to the plugin's release notes, including instructions for joining the Android test. The beta announcement now appears once rather than repeating inside individual versions.
+
 - (#2147) Added context-menu actions for recording task completion today, on the scheduled date, on the due date, or on a chosen date. The actions can be grouped in a submenu from Appearance settings. See [Completing Tasks](https://tasknotes.dev/features/task-management/#completing-tasks).
   - Rescheduling a recurring task can reactivate affected completed or skipped instances after confirmation. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/).
   - Thanks to @renatomen for the contribution.

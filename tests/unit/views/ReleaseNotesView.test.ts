@@ -1,6 +1,7 @@
 import { MarkdownRenderer } from "obsidian";
 import { ReleaseNotesView, transformReleaseNoteIssueLinks } from "../../../src/views/ReleaseNotesView";
 import type { ReleaseNoteVersion } from "../../../src/releaseNotes";
+import releaseNotesAnnouncement from "../../../src/releaseNotesAnnouncement.md";
 
 describe("transformReleaseNoteIssueLinks", () => {
 	it("links a single parenthesized issue reference", () => {
@@ -72,6 +73,32 @@ describe("ReleaseNotesView", () => {
 
 	beforeEach(() => {
 		jest.mocked(MarkdownRenderer.render).mockClear();
+	});
+
+	it("renders one shared announcement before the version list", async () => {
+		const view = createView();
+		await view.onOpen();
+
+		expect(view.contentEl.querySelectorAll(".release-notes-announcement")).toHaveLength(1);
+		const announcement = view.contentEl.querySelector(".release-notes-announcement");
+		expect(announcement?.nextElementSibling?.className).toBe("release-notes-versions");
+		const calls = jest.mocked(MarkdownRenderer.render).mock.calls;
+		expect(calls).toHaveLength(1);
+		expect(calls[0][1]).toBe(releaseNotesAnnouncement);
+		expect(calls[0][2]).toBe(announcement);
+		expect(calls[0][4]).toBe(view);
+	});
+
+	it("omits legacy beta callouts without changing other release content", async () => {
+		const content = "# TaskNotes 4.12.4\n\n> [!info] TaskNotes v5 beta\n>\n> Old announcement\n\n## Fixed\n\n- A fix\n\n> [!info] Another notice\n> Keep this\n";
+		await createSection(releaseNote({ content }), true);
+
+		const rendered = jest.mocked(MarkdownRenderer.render).mock.calls[0][1];
+		expect(rendered).not.toContain("Old announcement");
+		expect(rendered).not.toContain("[!info] TaskNotes v5 beta");
+		expect(rendered).toContain("## Fixed\n\n- A fix");
+		expect(rendered).toContain("> [!info] Another notice\n> Keep this");
+		expect(content).toContain("Old announcement");
 	});
 
 	it("renders initially expanded release notes immediately", async () => {
