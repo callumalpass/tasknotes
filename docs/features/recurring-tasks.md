@@ -265,7 +265,9 @@ Recurring task logic uses a UTC anchor approach:
 - Display adapts to local timezone
 - Prevents common off-by-one date issues
 
-In other words, calculations stay stable internally while display remains local, which avoids drift when traveling or sharing vaults across timezones.
+The recurrence editor preserves the anchor's calendar date and clock components when opening and saving a rule; it does not reinterpret an existing anchor through the device's timezone. Timed anchors are serialized as `YYYYMMDDTHHMMSSZ`, including seconds. Existing anchors without `Z` are normalized on save using the same clock components, rather than silently shifting their time.
+
+Completing an instance of a **completion-anchored** task moves the anchor to the selected completion day while retaining its existing clock components. Date-only anchors remain date-only. Completing a **scheduled-anchored** task leaves its anchor unchanged. This time-preserving behavior applies to instance completion; explicitly replacing the recurrence rule can still remove or change its time.
 
 ## Backward Compatibility
 
