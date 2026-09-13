@@ -2,6 +2,7 @@ import type { EventInput } from "@fullcalendar/core";
 import type TaskNotesPlugin from "../main";
 import type { ICSEvent } from "../types";
 import { createICSEvent } from "./calendar-core";
+import { PRIMARY_CALENDAR_ALIAS, ProviderCalendar } from "../services/CalendarProvider";
 
 export type ExternalCalendarProvider = "ics" | "google" | "microsoft";
 
@@ -33,6 +34,22 @@ export function getExternalCalendarToggleId(
 		return event.subscriptionId.replace("microsoft-", "");
 	}
 	return event.subscriptionId;
+}
+
+/**
+ * Registers a provider calendar's visibility toggle. Calendars fetched under the
+ * primary alias carry that alias as their calendar id, so the account's own
+ * calendar has to answer to both keys for its toggle to take effect.
+ */
+export function setProviderCalendarToggle(
+	toggles: Map<string, boolean>,
+	calendar: Pick<ProviderCalendar, "id" | "primary">,
+	visible: boolean
+): void {
+	toggles.set(calendar.id, visible);
+	if (calendar.primary) {
+		toggles.set(PRIMARY_CALENDAR_ALIAS, visible);
+	}
 }
 
 export function shouldIncludeExternalCalendarEvent(

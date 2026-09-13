@@ -79,7 +79,7 @@ import {
 	getCalendarConfigValue as getCalendarConfigValueFromSnapshot,
 } from "./calendarConfigSnapshot";
 import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
-import { buildExternalCalendarEvents } from "./calendarExternalEvents";
+import { buildExternalCalendarEvents, setProviderCalendarToggle } from "./calendarExternalEvents";
 import {
 	decorateCalendarIcsEventElement,
 	getCalendarRelatedNoteTooltip,
@@ -920,7 +920,11 @@ export class CalendarView extends BasesViewBase {
 				const calendars = this.plugin.googleCalendarService.getAvailableCalendars();
 				for (const cal of calendars) {
 					const key = `showGoogleCalendar_${cal.id}`;
-					this.googleCalendarToggles.set(cal.id, this.getConfigOption(key, true));
+					setProviderCalendarToggle(
+						this.googleCalendarToggles,
+						cal,
+						this.getConfigOption(key, true)
+					);
 				}
 			}
 

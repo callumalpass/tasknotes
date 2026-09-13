@@ -4,6 +4,7 @@ import { ICSEvent, ICSSubscription } from "../types";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { formatTime } from "../utils/dateUtils";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
+import { findProviderCalendar } from "../services/CalendarProvider";
 
 export interface ICSCardOptions {
 	showDate: boolean;
@@ -58,13 +59,7 @@ function getEventSourceName(
 	const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
 	if (provider) {
 		const { calendarId } = provider.extractEventIds(icsEvent);
-		const calendar = provider
-			.getAvailableCalendars()
-			.find(
-				(candidate) =>
-					candidate.id === calendarId ||
-					(calendarId === "primary" && candidate.primary === true)
-			);
+		const calendar = findProviderCalendar(provider.getAvailableCalendars(), calendarId);
 		return calendar?.summary || provider.providerName;
 	}
 
