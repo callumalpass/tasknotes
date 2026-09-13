@@ -1264,7 +1264,7 @@
   "settings.integrations.httpApi.port.description": "b6428bfa6964ba7f4e87759cca444726cb674f67",
   "settings.integrations.httpApi.port.placeholder": "7507d41ecbd162a0d6dfdaaa9988a91184351735",
   "settings.integrations.httpApi.authToken.name": "1ba4dadc61225e43b73eaa19ae9c57856129ff60",
-  "settings.integrations.httpApi.authToken.description": "93591c952b15b9261d1b5d5700e04a92329c45bd",
+  "settings.integrations.httpApi.authToken.description": "4645950dc83ea5b5601e58223affbd795b962da4",
   "settings.integrations.httpApi.authToken.placeholder": "dfd8e9adf613d1b2a46dfac755c50174ccecef4c",
   "settings.integrations.httpApi.mcp.enable.name": "9eba0b2f5b88c4347b23d9fa6c942fc6aa0482f8",
   "settings.integrations.httpApi.mcp.enable.description": "8d7793dc5646fed97cd0505769894e69227f59c4",

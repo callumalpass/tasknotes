@@ -40,6 +40,7 @@ function createFieldMapper(): TaskUpdateFieldMapper {
 	};
 
 	return {
+		mapFromFrontmatter: (frontmatter) => frontmatter as Partial<TaskInfo>,
 		mapToFrontmatter: (taskData, taskTag, storeTitleInFilename) => {
 			const frontmatter: Record<string, unknown> = {
 				title: taskData.title,
@@ -162,6 +163,7 @@ describe("taskUpdatePlanning", () => {
 
 	it("applies mapped updates, custom frontmatter, removals, and task identification", () => {
 		const frontmatter: Record<string, unknown> = {
+			priority: "normal",
 			title: "Old",
 			status: "open",
 			due: "2026-05-19",

@@ -6,6 +6,7 @@ import { ICSNoteCreationModal } from "../modals/ICSNoteCreationModal";
 import { openFileSelector } from "../modals/FileSelectorModal";
 import { SafeAsync } from "../utils/safeAsync";
 import { ContextMenu } from "./ContextMenu";
+import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenuCoordinator";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showNotice } from "../ui/notifications";
 
@@ -322,13 +323,10 @@ export class ICSEventContextMenu {
 	}
 
 	public show(event: MouseEvent): void {
-		this.menu.showAtMouseEvent(event);
+		showCoordinatedMenu(this.menu, event);
 	}
 
 	public showAtElement(element: HTMLElement): void {
-		this.menu.showAtPosition({
-			x: element.getBoundingClientRect().left,
-			y: element.getBoundingClientRect().bottom + 4,
-		});
+		showCoordinatedMenuAtElement(this.menu, element);
 	}
 }

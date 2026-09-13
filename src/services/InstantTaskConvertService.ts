@@ -96,6 +96,7 @@ export class InstantTaskConvertService {
 	private statusManager: StatusManager;
 	private priorityManager: PriorityManager;
 	private nlParser: NaturalLanguageParser;
+	private inFlightConversions = new WeakMap<Editor, Map<number, Promise<void>>>();
 
 	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
@@ -230,10 +231,44 @@ export class InstantTaskConvertService {
 	}
 
 	/**
-	 * Instantly convert a checkbox task to a TaskNote without showing the modal
-	 * Supports multi-line selection where additional lines become task details
+	 * Instantly convert a checkbox task to a TaskNote without showing the modal.
+	 * Repeated activation for the same editor line reuses the active conversion.
 	 */
 	async instantConvertTask(editor: Editor, lineNumber: number): Promise<void> {
+		if (!editor) {
+			await this.performInstantConversion(editor, lineNumber);
+			return;
+		}
+
+		let editorConversions = this.inFlightConversions.get(editor);
+		if (!editorConversions) {
+			editorConversions = new Map<number, Promise<void>>();
+			this.inFlightConversions.set(editor, editorConversions);
+		}
+
+		const existingConversion = editorConversions.get(lineNumber);
+		if (existingConversion) {
+			await existingConversion;
+			return;
+		}
+
+		const conversion = this.performInstantConversion(editor, lineNumber);
+		editorConversions.set(lineNumber, conversion);
+
+		try {
+			await conversion;
+		} finally {
+			if (editorConversions.get(lineNumber) === conversion) {
+				editorConversions.delete(lineNumber);
+			}
+		}
+	}
+
+	/**
+	 * Performs one instant conversion after the caller has claimed its source line.
+	 * Supports multi-line selection where additional lines become task details.
+	 */
+	private async performInstantConversion(editor: Editor, lineNumber: number): Promise<void> {
 		try {
 			// Validate input parameters
 			const validationResult = this.validateInputParameters(editor, lineNumber);

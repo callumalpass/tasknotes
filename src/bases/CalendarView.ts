@@ -88,7 +88,7 @@ import {
 	getCalendarConfigValue as getCalendarConfigValueFromSnapshot,
 } from "./calendarConfigSnapshot";
 import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
-import { buildExternalCalendarEvents } from "./calendarExternalEvents";
+import { buildExternalCalendarEvents, setProviderCalendarToggle } from "./calendarExternalEvents";
 import {
 	decorateCalendarIcsEventElement,
 	getCalendarRelatedNoteTooltip,
@@ -188,7 +188,9 @@ export function getTaskNotesCalendarEventOrder(sortConfig: unknown): string {
 	if (!hasBasesCalendarSortConfig(sortConfig)) {
 		return DEFAULT_CALENDAR_EVENT_ORDER;
 	}
-	return `${TASKNOTES_CALENDAR_SORT_INDEX},${DEFAULT_CALENDAR_EVENT_ORDER}`;
+	// Bases ranks break ties at the same placement. They must not put a timed
+	// task ahead of an earlier appointment that has no Bases result index.
+	return `start,allDay,${TASKNOTES_CALENDAR_SORT_INDEX},-duration,title`;
 }
 
 function getCalendarEventSortPath(event: EventInput): string | null {
@@ -948,7 +950,11 @@ export class CalendarView extends BasesViewBase {
 				const calendars = this.plugin.googleCalendarService.getAvailableCalendars();
 				for (const cal of calendars) {
 					const key = `showGoogleCalendar_${cal.id}`;
-					this.googleCalendarToggles.set(cal.id, this.getConfigOption(key, true));
+					setProviderCalendarToggle(
+						this.googleCalendarToggles,
+						cal,
+						this.getConfigOption(key, true)
+					);
 				}
 			}
 

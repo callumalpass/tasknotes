@@ -13,7 +13,7 @@ import {
 	TokenExpiredError,
 } from "./errors";
 import { validateCalendarId, validateEventId, validateRequired } from "./validation";
-import { CalendarProvider, ProviderCalendar } from "./CalendarProvider";
+import { CalendarProvider, findProviderCalendar, ProviderCalendar } from "./CalendarProvider";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { normalizeCalendarDescription } from "../utils/calendarDescription";
@@ -455,6 +455,20 @@ export class GoogleCalendarService extends CalendarProvider {
 	}
 
 	/**
+	 * Resolves a calendar's color, including for calendars fetched under the
+	 * primary alias, whose colors are cached under the account's real calendar id.
+	 */
+	private getCalendarColor(calendarId: string): string | undefined {
+		const directColor = this.calendarColors.get(calendarId);
+		if (directColor) {
+			return directColor;
+		}
+
+		const calendar = findProviderCalendar(this.availableCalendars, calendarId);
+		return calendar ? this.calendarColors.get(calendar.id) : undefined;
+	}
+
+	/**
 	 * Converts a Google Calendar event to TaskNotes ICSEvent format
 	 */
 	private convertToICSEvent(googleEvent: GoogleCalendarEvent, calendarId: string): ICSEvent {
@@ -492,7 +506,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 		// Priority 2: Calendar-level color (from calendar metadata)
 		if (!color) {
-			color = this.calendarColors.get(calendarId);
+			color = this.getCalendarColor(calendarId);
 		}
 
 		// Priority 3: Default Google Calendar blue

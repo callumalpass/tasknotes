@@ -7,6 +7,16 @@ import {
 } from "../../../src/bases/calendarDataSignature";
 
 describe("calendarDataSignature", () => {
+	it("invalidates the calendar when mapped occurrence-move markers change", () => {
+		const properties = buildCalendarDataSignaturePropertyIds({
+			mapField: (field) => field === "googleCalendarExceptionOriginalScheduled" ? "originalOccurrence" : undefined,
+			showPropertyBasedEvents: false,
+		});
+		const before = [{path: "task.md", properties: {originalOccurrence: "2026-09-12"}}];
+		const after = [{path: "task.md", properties: {originalOccurrence: "2026-09-19"}}];
+		expect(buildCalendarDataSignature(before, properties)).not.toEqual(buildCalendarDataSignature(after, properties));
+		expect(properties).toContain("googleCalendarMovedOriginalDates");
+	});
 	it("selects mapped core fields, visible properties, and property-event fields", () => {
 		const propertyIds = buildCalendarDataSignaturePropertyIds({
 			mapField: (field) => (field === "scheduled" ? "planned" : undefined),

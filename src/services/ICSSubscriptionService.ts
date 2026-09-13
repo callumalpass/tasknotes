@@ -5,7 +5,6 @@ import { ICSSubscription, ICSEvent, ICSCache } from "../types";
 import { EventEmitter } from "../utils/EventEmitter";
 import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
-import { stringifyUnknown } from "../utils/stringUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { resolveTzidToIANA, wallTimeInZoneToUtcIso } from "../utils/icsTimezoneFallback";
@@ -520,11 +519,13 @@ export class ICSSubscriptionService extends EventEmitter {
 
 				// Check if this is a modified instance (has RECURRENCE-ID)
 				const recurrenceId = vevent.getFirstPropertyValue("recurrence-id");
-				if (recurrenceId) {
+				if (recurrenceId instanceof ICAL.Time) {
 					if (!modifiedInstances.has(uid)) {
 						modifiedInstances.set(uid, new Map());
 					}
-					const recurrenceIdStr = stringifyUnknown(recurrenceId);
+					// Use the same ICAL.Time representation as iterator occurrences,
+					// not JSON serialization of the time's internal fields.
+					const recurrenceIdStr = recurrenceId.toString();
 					modifiedInstances.get(uid)!.set(recurrenceIdStr, event);
 				}
 			});
@@ -664,6 +665,10 @@ export class ICSSubscriptionService extends EventEmitter {
 							// Check if this instance has been modified
 							const modifiedEvent = modifiedForThisEvent.get(occurrenceStr);
 							if (modifiedEvent) {
+								const modifiedStatus = modifiedEvent.component.getFirstPropertyValue("status");
+								if (typeof modifiedStatus === "string" && modifiedStatus.toUpperCase() === "CANCELLED") {
+									continue;
+								}
 								// Use the modified event instead
 								const modifiedStart = modifiedEvent.startDate;
 								const modifiedEnd = modifiedEvent.endDate;

@@ -2179,7 +2179,7 @@ export const en: TranslationTree = {
 				},
 				authToken: {
 					name: "API authentication token",
-					description: "Token required for API authentication (leave empty for no auth)",
+					description: "Required for API authentication. If empty, a token is generated when the server starts.",
 					placeholder: "your-secret-token",
 				},
 				mcp: {

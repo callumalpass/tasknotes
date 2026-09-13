@@ -3,11 +3,9 @@
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1623
  *
- * Docs currently state that when `storeTitleInFilename` is enabled,
- * the `title` property is removed from frontmatter.
- *
- * Current behavior in code keeps title in frontmatter (changed in PR #1608).
- * This test documents the reported expectation from issue #1623.
+ * Filename-mode creation omits redundant titles, but metadata updates must
+ * preserve existing title properties: they may be the only lossless title
+ * when creation used a sanitized or fallback filename (#2322).
  */
 
 import { FieldMapper } from '../../../src/services/FieldMapper';
@@ -160,7 +158,7 @@ describe('Issue #1623: Store title in filename still writes title frontmatter', 
 		);
 	});
 
-	it('removes stale title frontmatter when updating another field', async () => {
+	it('preserves existing title frontmatter when updating another field (#2322)', async () => {
 		const mockPlugin = PluginFactory.createMockPlugin();
 		mockPlugin.settings.storeTitleInFilename = true;
 		const service = new TaskService(mockPlugin);
@@ -185,7 +183,7 @@ describe('Issue #1623: Store title in filename still writes title frontmatter', 
 
 		await service.updateTask(task, { priority: 'high' });
 
-		expect(capturedFrontmatter.title).toBeUndefined();
+		expect(capturedFrontmatter.title).toBe('Plan quarterly review');
 		expect(capturedFrontmatter.priority).toBe('high');
 	});
 });
