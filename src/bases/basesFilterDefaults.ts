@@ -1,4 +1,5 @@
 import type { FieldMappingKey } from "../types";
+import { formatProjectEntryLinkExpression } from "../templates/defaultBasesFiles";
 import type { UserMappedField } from "../types/settings";
 import type {
 	BasesCreateFileFrontmatter,
@@ -120,7 +121,15 @@ function applyFilterRuleDefault(
 		/^(.+?)\.contains\(this\.file\.asLink\(\)\)$/
 	);
 	if (currentFileContainsMatch) {
-		const property = normalizeFilterProperty(currentFileContainsMatch[1], options);
+		let expression = currentFileContainsMatch[1].trim();
+		// Only unwrap the link normalization we generate ourselves. Arbitrary
+		// map/filter transformations do not imply a writable source default.
+		const normalization = `.map(${formatProjectEntryLinkExpression("value")})`;
+		if (expression.endsWith(normalization)) {
+			expression = expression.slice(0, -normalization.length)
+				.replace(/^file\.hasLink\(this\.file\)\s*&&\s*/, "");
+		}
+		const property = normalizeFilterProperty(expression, options);
 		const currentFileLink = resolveCurrentFileLink(options.currentFileLink);
 		if (property && currentFileLink) {
 			addFrontmatterDefault(defaults, property, currentFileLink, options.fieldMapper);
@@ -140,46 +149,12 @@ function normalizeFilterProperty(
 ): string | null {
 	let property = propertyExpression.trim();
 
-	// Strip a leading `&&`-joined left side. The generated default-relationships
-	// filter (see `formatProjectEntryLinkExpression` in `defaultBasesFiles.ts`,
-	// issue #2043) concatenates `file.hasLink(this.file) &&` before the
-	// `list(note.PROP).map(...)` expression so the regex above matches the
-	// whole conjunction. Keep only the right-hand operand.
-	const conjunctionIndex = property.lastIndexOf("&&");
-	if (conjunctionIndex !== -1) {
-		property = property.slice(conjunctionIndex + 2).trim();
-	}
-
-	// Strip generated `.map(...)` chains emitted by the relationship templates
-	// in `defaultBasesFiles.ts`. These wrap `list(note.PROP)` to normalize link
-	// formats (markdown links, `%20`, paths). The wrapper closes one balanced
-	// call, so find the last `.map(` and strip up to its matching `)`.
-	const mapStart = property.lastIndexOf(".map(");
-	if (mapStart !== -1) {
-		let depth = 0;
-		let endIndex = -1;
-		for (let i = mapStart + 5; i < property.length; i++) {
-			const ch = property[i];
-			if (ch === "(") {
-				depth++;
-			} else if (ch === ")") {
-				if (depth === 0) {
-					endIndex = i;
-					break;
-				}
-				depth--;
-			}
-		}
-		if (endIndex !== -1) {
-			property = property.slice(0, mapStart).trim();
-		}
-	}
 
 	const listMatch = property.match(/^list\((.+)\)$/);
 	if (listMatch) {
 		property = listMatch[1].trim();
 	}
-	property = property.replace(/^(note|task|this\.note)\./, "");
+	property = property.replace(/^(note|task)\./, "");
 
 	if (property === "tags" || property === "file.tags") {
 		return "tags";

@@ -1,3 +1,4 @@
+import { formatProjectEntryLinkExpression } from "../../../src/templates/defaultBasesFiles";
 import { extractBasesFilterDefaults } from "../../../src/bases/basesFilterDefaults";
 import type { TaskCreationFieldMapper } from "../../../src/bases/basesTaskCreation";
 import type { FieldMapping } from "../../../src/types";
@@ -37,6 +38,27 @@ function createFieldMapper(overrides: Partial<FieldMapping> = {}): TaskCreationF
 }
 
 describe("Bases filter defaults", () => {
+	it.each([
+		'list(note.projects).map("constant").contains(this.file.asLink())',
+		'list(note.projects).map(value).filter(false).contains(this.file.asLink())',
+		'!file.hasLink(this.file) && note.status == "done"',
+		'this.note.status == "done"',
+		`file.hasLink(this.file) || list(note.projects).map(${formatProjectEntryLinkExpression("value")}).contains(this.file.asLink())`,
+	])("does not infer defaults from transformed or source-note expressions: %s", (text) => {
+		expect(extractBasesFilterDefaults({
+			config: { filters: { rule: { text } } },
+			fieldMapper: createFieldMapper(), taskTag: "task", currentFileLink: "[[Current]]",
+		})).toEqual({});
+	});
+
+	it("recognizes the generated normalization with a mapped project field", () => {
+		const text = `file.hasLink(this.file) && list(note.projectLinks).map(${formatProjectEntryLinkExpression("value")}).contains(this.file.asLink())`;
+		expect(extractBasesFilterDefaults({
+			config: { filters: { rule: { text } } },
+			fieldMapper: createFieldMapper({ projects: "projectLinks" }),
+			taskTag: "task", currentFileLink: "[[Current]]",
+		})).toEqual({ projectLinks: ["[[Current]]"] });
+	});
 	it("extracts deterministic task defaults from Base filters", () => {
 		const defaults = extractBasesFilterDefaults({
 			config: {
