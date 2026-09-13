@@ -1,8 +1,5 @@
 import type { FieldMappingKey, TaskInfo, TimeEntry } from "../../types";
-import {
-	addDTSTARTToRecurrenceRule,
-	updateToNextScheduledOccurrence,
-} from "../../core/recurrence";
+import { addDTSTARTToRecurrenceRule, updateToNextScheduledOccurrence } from "../../core/recurrence";
 import {
 	applyGoogleCalendarRecurringExceptionCleanup,
 	applyGoogleCalendarRecurringExceptionForScheduledChange,
@@ -18,6 +15,11 @@ export type TaskUpdateInput = Partial<TaskInfo> & {
 };
 
 export interface TaskUpdateFieldMapper {
+	mapFromFrontmatter: (
+		frontmatter: unknown,
+		filePath: string,
+		storeTitleInFilename?: boolean
+	) => Partial<TaskInfo>;
 	mapToFrontmatter: (
 		taskData: Partial<TaskInfo>,
 		taskTag?: string,
@@ -196,8 +198,9 @@ export function applyTaskUpdateFrontmatterChange({
 	storeTitleInFilename,
 	updateCompletedDateInFrontmatter,
 }: ApplyTaskUpdateFrontmatterChangeInput): ApplyTaskUpdateFrontmatterChangeResult {
+	// Publish only the named patch and its recurrence consequences.
 	const completeTaskData: Partial<TaskInfo> = {
-		...originalTask,
+		tags: getFrontmatterTags(frontmatter.tags),
 		...updates,
 		...recurrenceUpdates,
 		dateModified,
@@ -236,7 +239,14 @@ export function applyTaskUpdateFrontmatterChange({
 
 	removeUnsetMappedFields(frontmatter, { ...updates, ...recurrenceUpdates }, fieldMapper);
 
-	if (storeTitleInFilename) {
+	// Creation keeps a title property when the filename cannot represent it
+	// (for example, a long title needs a fallback filename). Metadata-only
+	// edits, including forms resubmitting the same title, must retain it.
+	if (
+		storeTitleInFilename &&
+		updates.title !== undefined &&
+		updates.title !== originalTask.title
+	) {
 		delete frontmatter[fieldMapper.toUserField("title")];
 	}
 

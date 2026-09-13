@@ -48,7 +48,7 @@ function createPlugin(): TaskNotesPlugin {
 			...DEFAULT_SETTINGS,
 			enableAPI: true,
 			apiPort: 9191,
-			apiAuthToken: "",
+			apiAuthToken: "test-auth-token",
 		},
 		app: {
 			vault: {
@@ -83,7 +83,7 @@ function createRequest(origin?: string): HTTPRequestLike {
 	return {
 		method: "GET",
 		url: "/api/health",
-		headers: origin ? { origin } : {},
+		headers: { ...(origin ? { origin } : {}), authorization: "Bearer test-auth-token" },
 		on: jest.fn(),
 	};
 }
@@ -129,6 +129,37 @@ async function handleRequest(
 describe("Issue #1923: HTTP API loopback binding and CORS", () => {
 	beforeEach(() => {
 		(http.createServer as CreateServerMock).mockReset();
+	});
+
+	it("persists a generated credential before binding, including concurrent starts", async () => {
+		const plugin = createPlugin();
+		plugin.settings.apiAuthToken = "";
+		let saved!: () => void;
+		(plugin.saveSettings as jest.Mock).mockImplementation(() => new Promise<void>((resolve) => { saved = resolve; }));
+		const server = createMockServer();
+		(http.createServer as CreateServerMock).mockReturnValue(server as never);
+		const service = new HTTPAPIService(plugin, {} as TaskService, {} as FilterService, {} as TaskManager);
+		const first = service.start();
+		const second = service.start();
+		expect(plugin.settings.apiAuthToken).toMatch(/^[A-Za-z0-9_-]{43}$/);
+		expect(plugin.saveSettings).toHaveBeenCalledTimes(1);
+		expect(http.createServer).not.toHaveBeenCalled();
+		saved();
+		await Promise.all([first, second]);
+		expect(http.createServer).toHaveBeenCalledTimes(1);
+	});
+
+	it("does not bind after a failed token save, and persists again on retry", async () => {
+		const plugin = createPlugin();
+		plugin.settings.apiAuthToken = "";
+		(plugin.saveSettings as jest.Mock).mockRejectedValueOnce(new Error("disk unavailable"));
+		const service = new HTTPAPIService(plugin, {} as TaskService, {} as FilterService, {} as TaskManager);
+		await expect(service.start()).rejects.toThrow("disk unavailable");
+		expect(http.createServer).not.toHaveBeenCalled();
+		expect(plugin.settings.apiAuthToken).toBe("");
+		(http.createServer as CreateServerMock).mockReturnValue(createMockServer() as never);
+		await service.start();
+		expect(plugin.saveSettings).toHaveBeenCalledTimes(2);
 	});
 
 	it("binds the HTTP API server to loopback instead of all interfaces", async () => {
@@ -192,5 +223,16 @@ describe("Issue #1923: HTTP API loopback binding and CORS", () => {
 		);
 		expect(resolveLocalCORSOrigin("http://192.168.1.20:5173", "http://127.0.0.1:9191"))
 			.toBeUndefined();
+	});
+
+	it("does not enable unauthenticated HTTP API access when the token is empty", () => {
+		const service: any = Object.create(HTTPAPIService.prototype);
+		service.plugin = { settings: { apiAuthToken: "" } };
+		expect(service.authenticate({ headers: {} })).toBe(false);
+		service.plugin.settings.apiAuthToken = "fixture-token";
+		expect(service.authenticate({ headers: { authorization: "Bearer wrong" } })).toBe(false);
+		expect(service.authenticate({ headers: { authorization: "Bearer fixture-token" } })).toBe(
+			true
+		);
 	});
 });
