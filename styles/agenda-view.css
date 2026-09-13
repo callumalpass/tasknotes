@@ -1,6 +1,4 @@
-/* ================================================
-   AGENDA VIEW - BEM STRUCTURE
-   ================================================ */
+/* AGENDA VIEW - BEM STRUCTURE */
 
 /* Agenda View Container - Root Block */
 .tasknotes-plugin .agenda-view {
@@ -141,7 +139,7 @@
 .tasknotes-plugin .agenda-view__period-select:focus {
     outline: none;
     border-color: var(--tn-interactive-accent);
-    background-color: color-mix(in srgb, var(--tn-interactive-accent) 0.1, var(--tn-bg-primary));
+    background-color: color-mix(in srgb, var(--tn-interactive-accent) 10%, var(--tn-bg-primary));
 }
 
 /* Today Button */
@@ -203,7 +201,6 @@
     background: var(--tn-interactive-hover);
 }
 
-
 /* Content Area */
 .tasknotes-plugin .agenda-view__content {
     display: flex;
@@ -235,7 +232,7 @@
     content: '';
     width: 16px;
     height: 16px;
-    border: 2px solid color-mix(in srgb, var(--tn-text-muted) 0.3, transparent);
+    border: 2px solid color-mix(in srgb, var(--tn-text-muted) 30%, transparent);
     border-top: 2px solid var(--tn-text-muted);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -384,7 +381,6 @@
     gap: var(--tn-spacing-xs);
 }
 
-
 /* Empty States */
 .tasknotes-plugin .agenda-view__empty {
     padding: var(--tn-spacing-xl) var(--tn-spacing-lg);
@@ -434,15 +430,14 @@
     padding: var(--tn-spacing-lg);
     text-align: center;
     color: var(--tn-color-error);
-    background: color-mix(in srgb, var(--tn-color-error) 0.05, var(--tn-bg-secondary));
-    border: 1px solid color-mix(in srgb, var(--tn-color-error) 0.3, transparent);
+    background: color-mix(in srgb, var(--tn-color-error) 5%, var(--tn-bg-secondary));
+    border: 1px solid color-mix(in srgb, var(--tn-color-error) 30%, transparent);
     border-radius: var(--tn-radius-md);
     font-size: var(--tn-font-size-md);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1.5;
     box-shadow: var(--tn-shadow-light);
 }
-
 
 .tasknotes-plugin .agenda-view .tasks-container {
     margin-bottom: var(--tn-spacing-xs);

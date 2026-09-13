@@ -10,21 +10,6 @@
     margin-bottom: var(--size-4-3);
 }
 
-.tasknotes-plugin .nl-input {
-    background: var(--background-secondary);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    font-size: var(--tn-font-size-lg);
-    line-height: 1.5;
-    transition: border-color 0.2s ease;
-}
-
-.tasknotes-plugin .nl-input:focus {
-    outline: none;
-    border-color: var(--interactive-accent);
-    box-shadow: none;
-}
-
 .tasknotes-plugin .nl-button-container {
     display: flex;
     gap: 6px;
@@ -84,22 +69,6 @@
     background: var(--background-modifier-hover);
     color: var(--tn-text-normal);
     border-color: var(--interactive-accent);
-}
-
-.tasknotes-plugin .nl-preview-container {
-    margin-top: var(--size-4-1);
-    padding: var(--size-4-1);
-    background: var(--background-primary-alt);
-    border-radius: var(--radius-s);
-    border: 1px solid var(--background-modifier-border);
-}
-
-.tasknotes-plugin .nl-preview-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 2px;
-    font-size: var(--tn-font-size-md);
-    color: var(--tn-text-muted);
 }
 
 .tasknotes-plugin .nl-preview-icon {
@@ -331,7 +300,6 @@
   color: var(--text-normal);
 }
 
-
 /* Date and Time Input Modifiers */
 .tasknotes-plugin .modal-form__input--date {
     flex: 1;
@@ -490,9 +458,6 @@
     display: none;
 }
 
-
-
-
 /* End Condition Options */
 .tasknotes-plugin .modal-form__end-condition {
     margin: var(--tn-spacing-md) 0;
@@ -636,8 +601,6 @@
     background: var(--tn-interactive-hover);
     color: var(--tn-text-normal);
 }
-
-
 
 /* =====================================================================
    QUICK DATE MODALS SPECIFIC
@@ -848,7 +811,6 @@
   align-items: center;
   gap: var(--size-4-2);
 }
-
 
 .tasknotes-plugin .content-type-selector .setting-item-control {
     display: flex;
@@ -1102,7 +1064,6 @@
     flex-wrap: wrap;
     gap: var(--size-4-2);
 }
-
 
 .tasknotes-plugin .close-button-container {
     display: flex;

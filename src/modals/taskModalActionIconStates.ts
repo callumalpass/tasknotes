@@ -20,6 +20,7 @@ const STATIC_COLOR_CLASSES = [
 
 export interface TaskModalActionIconStateContext {
 	translate: (key: string, params?: Record<string, string | number>) => string;
+	formatDate?: (value: string) => string;
 }
 
 export interface TaskModalActionIconState {
@@ -69,6 +70,7 @@ function updateDateIcon(
 ): void {
 	const icon = getActionIcon(actionBar, dataType);
 	if (!icon) return;
+	updateActionValue(icon, value ? (context.formatDate?.(value) ?? value) : "");
 
 	if (value) {
 		icon.classList.add("has-value");
@@ -111,9 +113,7 @@ function updatePriorityIcon(
 	const icon = getActionIcon(actionBar, "priority");
 	if (!icon) return;
 
-	const priorityConfig = state.priorityConfigs.find(
-		(config) => config.value === state.priority
-	);
+	const priorityConfig = state.priorityConfigs.find((config) => config.value === state.priority);
 	const priorityLabel = priorityConfig ? priorityConfig.label : state.priority;
 	updateConfiguredValueIcon(icon, context, {
 		isActive: Boolean(
@@ -137,6 +137,7 @@ function updateConfiguredValueIcon(
 		color?: string;
 	}
 ): void {
+	updateActionValue(icon, options.isActive ? options.label : "");
 	if (options.isActive) {
 		icon.classList.add("has-value");
 		setTooltip(icon, context.translate(options.activeTooltipKey, { value: options.label }), {
@@ -166,6 +167,7 @@ function updateRecurrenceIcon(
 ): void {
 	const icon = getActionIcon(actionBar, "recurrence");
 	if (!icon) return;
+	updateActionValue(icon, state.recurrenceRule.trim() ? state.recurrenceDisplayText : "");
 
 	if (state.recurrenceRule.trim()) {
 		icon.classList.add("has-value");
@@ -192,6 +194,7 @@ function updateReminderIcon(
 ): void {
 	const icon = getActionIcon(actionBar, "reminders");
 	if (!icon) return;
+	updateActionValue(icon, reminderCount > 0 ? String(reminderCount) : "");
 
 	if (reminderCount > 0) {
 		icon.classList.add("has-value");
@@ -209,6 +212,15 @@ function updateReminderIcon(
 	setTooltip(icon, context.translate("modals.task.actions.reminders"), {
 		placement: "top",
 	});
+}
+
+function updateActionValue(icon: HTMLElement, value: string): void {
+	const label =
+		icon.querySelector<HTMLElement>(".action-icon__value") ??
+		icon.createSpan({ cls: "action-icon__value", attr: { "aria-hidden": "true" } });
+	// The button's translated tooltip supplies the complete accessible name.
+	// Text content also keeps user-defined status and priority labels literal.
+	label.textContent = value;
 }
 
 function getActionIcon(actionBar: HTMLElement, dataType: string): HTMLElement | null {

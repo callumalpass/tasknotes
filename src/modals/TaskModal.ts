@@ -1,3 +1,4 @@
+import { formatDateTimeForDisplay } from "../utils/dateUtils";
 import { App, Modal, TAbstractFile, TFile } from "obsidian";
 
 type Nullable<T> = T | null;
@@ -352,8 +353,7 @@ export abstract class TaskModal extends Modal {
 	// UI elements
 	protected titleInput: TaskModalTitleInputElement =
 		undefined as unknown as TaskModalTitleInputElement;
-	protected detailsInput: HTMLTextAreaElement =
-		undefined as unknown as HTMLTextAreaElement; // Legacy - kept for compatibility
+	protected detailsInput: HTMLTextAreaElement = undefined as unknown as HTMLTextAreaElement; // Legacy - kept for compatibility
 	protected detailsMarkdownEditor: EmbeddableMarkdownEditor | null = null;
 	protected contextsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
 	protected projectsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
@@ -1044,7 +1044,16 @@ export abstract class TaskModal extends Modal {
 
 		updateTaskModalActionIconStates(
 			this.actionBar,
-			{ translate: (key, params) => this.t(key, params) },
+			{
+				translate: (key, params) => this.t(key, params),
+				formatDate: (value) =>
+					formatDateTimeForDisplay(value, {
+						dateFormat: value.startsWith(`${new Date().getFullYear()}-`)
+							? "MMM d"
+							: "MMM d, yyyy",
+						userTimeFormat: this.plugin.settings.calendarViewSettings.timeFormat,
+					}),
+			},
 			buildTaskModalActionIconState(actionMenuState, {
 				statusConfigs: this.plugin.settings.customStatuses || [],
 				priorityConfigs: this.plugin.settings.customPriorities || [],

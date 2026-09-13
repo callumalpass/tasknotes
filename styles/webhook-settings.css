@@ -329,6 +329,7 @@
 }
 
 .tasknotes-webhook-modal-icon {
+    font-size: 1.5rem;
   display: flex;
   align-items: center;
   color: var(--interactive-accent);
@@ -373,7 +374,6 @@
   color: var(--text-normal);
 }
 
-
 /* Events List */
 .tasknotes-webhook-events-list {
   margin-top: 0;
@@ -383,9 +383,9 @@
   gap: 0;
 }
 
-
 /* Transform Help */
 .tasknotes-webhook-transform-help {
+    border-inline-start-color: var(--interactive-accent);
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
@@ -397,6 +397,7 @@
 }
 
 .tasknotes-webhook-help-header {
+    color: var(--text-normal);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -405,6 +406,8 @@
 }
 
 .tasknotes-webhook-help-list {
+    color: var(--text-muted);
+    font-size: var(--tn-font-size-sm);
   margin: 0.75rem 0;
   padding-left: 1.25rem;
 }
@@ -417,6 +420,7 @@
 }
 
 .tasknotes-webhook-help-example {
+    color: var(--text-muted);
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--background-modifier-border);
@@ -483,16 +487,21 @@
 }
 
 .tasknotes-webhook-modal-btn-icon {
+    font-size: 0.9rem;
+    line-height: 1;
   display: flex;
   align-items: center;
 }
 
 /* Secret Notice */
 .tasknotes-webhook-secret-notice {
+    text-align: center;
   padding: 1rem;
 }
 
 .tasknotes-webhook-secret-title {
+    justify-content: center;
+    font-size: 1.125rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -502,11 +511,16 @@
 }
 
 .tasknotes-webhook-secret-content {
+    margin-bottom: var(--tn-spacing-lg);
   font-size: 0.9rem;
   line-height: 1.4;
 }
 
 .tasknotes-webhook-secret-code {
+    display: block;
+    word-break: break-all;
+    user-select: all;
+    cursor: var(--cursor-link, pointer);
   background: var(--background-modifier-form-field);
   border: 1px solid var(--background-modifier-border);
   border-radius: 3px;
@@ -561,4 +575,35 @@
 .tasknotes-webhook-modal-btn:focus {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
+}
+.tasknotes-webhook-modal {
+    max-width: 800px;
+    padding: var(--tn-spacing-lg);
+}
+.tasknotes-webhook-events-list .setting-item {
+    padding: var(--tn-spacing-sm) 0;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+.tasknotes-webhook-events-list .setting-item:last-child {
+    border-bottom: none;
+}
+.tasknotes-webhook-secret-content p {
+    margin-bottom: var(--tn-spacing-md);
+    color: var(--text-normal);
+}
+.tasknotes-webhook-secret-code:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent);
+}
+.tasknotes-webhook-events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 1.5rem;
+    line-height: 1.5rem;
+}
+.tasknotes-webhook-events--empty {
+    color: var(--text-muted);
+    font-style: italic;
 }

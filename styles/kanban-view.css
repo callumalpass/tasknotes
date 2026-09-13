@@ -1,6 +1,4 @@
-/* ================================================
-   KANBAN VIEW - BEM STRUCTURE
-   ================================================ */
+/* KANBAN VIEW - BEM STRUCTURE */
 
 /* Kanban View Container - Root Block */
 .tasknotes-plugin .kanban-view {
@@ -108,10 +106,11 @@
     height: 100%;
     overflow-x: auto;
     overflow-y: auto;
-    padding: var(--tn-spacing-md);
-    gap: var(--tn-spacing-md);
+    padding: var(--tn-spacing-lg);
+    gap: var(--tn-spacing-lg);
     min-height: 0;
     flex-wrap: nowrap;
+    align-items: flex-start;
 }
 
 .tasknotes-plugin.tn-tasknotesKanban .kanban-view__board {
@@ -158,7 +157,7 @@
     content: '';
     width: 16px;
     height: 16px;
-    border: 2px solid color-mix(in srgb, var(--tn-text-muted) 0.3, transparent);
+    border: 2px solid color-mix(in srgb, var(--tn-text-muted) 30%, transparent);
     border-top: 2px solid var(--tn-text-muted);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -172,25 +171,23 @@
     justify-content: center;
     padding: var(--tn-spacing-lg);
     color: var(--tn-color-error);
-    background: color-mix(in srgb, var(--tn-color-error) 0.05, var(--tn-bg-secondary));
-    border: 1px solid color-mix(in srgb, var(--tn-color-error) 0.3, transparent);
+    background: color-mix(in srgb, var(--tn-color-error) 5%, var(--tn-bg-secondary));
+    border: 1px solid color-mix(in srgb, var(--tn-color-error) 30%, transparent);
     border-radius: var(--tn-radius-md);
     font-size: var(--tn-font-size-md);
     font-weight: var(--tn-font-weight-medium);
     margin: var(--tn-spacing-md);
 }
 
-/* ================================================
-   KANBAN COLUMNS
-   ================================================ */
+/* KANBAN COLUMNS */
 
 /* Column */
 .tasknotes-plugin .kanban-view__column {
     min-width: 200px;
     max-width: 500px;
     flex-shrink: 0;
-    background: var(--tn-bg-primary);
-    border: 1px solid var(--tn-border-color);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-divider-color);
     border-radius: var(--tn-radius-md);
     display: flex;
     flex-direction: column;
@@ -268,9 +265,9 @@
     display: flex;
     align-items: center;
     gap: var(--tn-spacing-xs);
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
-    border-bottom: 1px solid var(--tn-border-color);
-    background: var(--tn-bg-secondary);
+    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
+    border-bottom: none;
+    background: transparent;
     position: sticky;
     top: 0;
     z-index: 5;
@@ -278,6 +275,7 @@
     cursor: grab;
     user-select: none;
     transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), opacity var(--tn-transition-fast), transform var(--tn-transition-fast);
+    min-height: 40px;
 }
 
 .tasknotes-plugin .kanban-view__column-header:active {
@@ -328,7 +326,7 @@
 
 .tasknotes-plugin .kanban-view__column-title {
     font-weight: var(--tn-font-weight-semibold);
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-font-size-md);
     color: var(--tn-text-normal);
     line-height: 1.2;
     margin: 0;
@@ -356,13 +354,14 @@
 
 .tasknotes-plugin .kanban-view__column-count {
     color: var(--tn-text-muted);
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-font-size-sm);
     line-height: 1.2;
     font-weight: 400;
     margin: 0;
     margin-left: var(--tn-spacing-xs);
     white-space: nowrap;
     flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
 }
 
 .tasknotes-plugin .kanban-view__column-count--exceeded {
@@ -370,28 +369,28 @@
     font-weight: var(--tn-font-weight-semibold);
 }
 
-/* ================================================
-   KANBAN TASK CARDS
-   ================================================ */
+/* KANBAN TASK CARDS */
 
 /* Cards container (used for non-virtualized columns) */
 .tasknotes-plugin .kanban-view__cards {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-spacing-md);
     overflow-y: auto; /* Allow vertical scrolling */
     flex: 1; /* Fill available space in column */
     min-height: 0; /* Allow container to shrink and enable scrolling */
+    padding: var(--tn-spacing-md);
+    padding-top: 0;
 }
 
 .tasknotes-plugin .kanban-view__card-wrapper .task-card--layout-compact {
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    padding: 6px var(--tn-spacing-md);
     border-radius: var(--tn-radius-sm);
 }
 
 .tasknotes-plugin .kanban-view__card-wrapper .task-card--layout-compact .task-card__title {
-    font-size: var(--tn-font-size-md);
-    line-height: 1.3;
+    font-size: var(--tn-font-size-lg);
+    line-height: 1.4;
 }
 
 .tasknotes-plugin .kanban-view__card-wrapper .task-card--layout-compact .task-card__metadata {
@@ -401,17 +400,17 @@
 .tasknotes-plugin .kanban-view__add-task-footer {
     display: flex;
     justify-content: center;
-    padding: var(--tn-spacing-xs);
-    border-top: 1px solid color-mix(in srgb, var(--tn-border-color) 72%, transparent);
+    padding: 0 var(--tn-spacing-md) var(--tn-spacing-md);
+    border-top: none;
     flex-shrink: 0;
 }
 
 .tasknotes-plugin .kanban-view__add-task-button {
     width: 100%;
-    min-height: 28px;
+    min-height: 32px;
     color: var(--tn-text-muted);
     border-radius: var(--tn-radius-sm);
-    opacity: 0.72;
+    opacity: 1;
     transition: opacity var(--tn-transition-fast), color var(--tn-transition-fast), background-color var(--tn-transition-fast);
 }
 
@@ -477,9 +476,7 @@
     cursor: grabbing;
 }
 
-/* ================================================
-   RESPONSIVE DESIGN
-   ================================================ */
+/* RESPONSIVE DESIGN */
 
 @media (max-width: 768px) {
     .tasknotes-plugin .kanban-view {
@@ -749,4 +746,68 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
         background: var(--tn-bg-secondary);
         transition: border-color 0.15s ease;
     }
+}
+
+/* Shared surface for column and swimlane cards. */
+
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card {
+    background-color: var(--tn-bg-primary);
+    border: 1px solid var(--tn-divider-color);
+    border-radius: var(--tn-radius-md);
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card:hover {
+    border-color: var(--tn-border-color-hover);
+    background-color: var(--tn-bg-primary-alt);
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card:focus-visible {
+    outline: 2px solid var(--tn-border-color-focus);
+    outline-offset: -2px;
+}
+
+/* Keep multi-selection visible on the opaque card surface. */
+.tasknotes-plugin .kanban-view__card-wrapper--selected > .task-card,
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card--selected {
+    background-color: color-mix(in srgb, var(--interactive-accent) 15%, var(--tn-bg-primary));
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper--selected > .task-card:hover,
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card--selected:hover {
+    background-color: color-mix(in srgb, var(--interactive-accent) 20%, var(--tn-bg-primary));
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper--selected-primary > .task-card {
+    box-shadow: inset 0 0 0 2px var(--interactive-accent);
+}
+
+/* Put secondary actions below the content so narrow columns have room for
+   titles and properties. Keep status and priority beside the title. */
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card > .task-card__main-row {
+    flex-wrap: wrap;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card > .task-card__main-row > .task-card__content {
+    flex: 1 1 calc(100% - 54px);
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card > .task-card__main-row > .task-card__badges {
+    flex: 1 1 calc(100% - 32px);
+    order: 1;
+    justify-content: flex-end;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card > .task-card__main-row > .task-card__context-menu {
+    order: 2;
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper > .task-card > .task-card__main-row > .task-card__badges {
+    flex: 1 1 calc(100% - var(--tn-mobile-task-card-menu-size) - 6px);
+    padding-left: 0;
+    order: 1;
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper > .task-card > .task-card__main-row > .task-card__context-menu {
+    order: 2;
 }

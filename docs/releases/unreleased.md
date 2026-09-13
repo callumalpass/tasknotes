@@ -32,3 +32,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Changed
+
+- Refreshed task lists, Kanban boards, calendars, and task dialogs with clearer typography, more consistent spacing, and colours that follow the Obsidian theme.
+- Task dialog controls now show selected dates, status, priority, recurrence, and reminder counts directly. Controls wrap on narrow screens.
+- Improved the readability of completed tasks and keyboard access to task menus. Simplified the shared styling and removed unused CSS utilities.
