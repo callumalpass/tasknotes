@@ -48,7 +48,7 @@ function createPlugin(): TaskNotesPlugin {
 			...DEFAULT_SETTINGS,
 			enableAPI: true,
 			apiPort: 9191,
-			apiAuthToken: "",
+			apiAuthToken: "test-auth-token",
 		},
 		app: {
 			vault: {
@@ -83,7 +83,7 @@ function createRequest(origin?: string): HTTPRequestLike {
 	return {
 		method: "GET",
 		url: "/api/health",
-		headers: origin ? { origin } : {},
+		headers: { ...(origin ? { origin } : {}), authorization: "Bearer test-auth-token" },
 		on: jest.fn(),
 	};
 }
@@ -192,5 +192,16 @@ describe("Issue #1923: HTTP API loopback binding and CORS", () => {
 		);
 		expect(resolveLocalCORSOrigin("http://192.168.1.20:5173", "http://127.0.0.1:9191"))
 			.toBeUndefined();
+	});
+
+	it("does not enable unauthenticated HTTP API access when the token is empty", () => {
+		const service: any = Object.create(HTTPAPIService.prototype);
+		service.plugin = { settings: { apiAuthToken: "" } };
+		expect(service.authenticate({ headers: {} })).toBe(false);
+		service.plugin.settings.apiAuthToken = "fixture-token";
+		expect(service.authenticate({ headers: { authorization: "Bearer wrong" } })).toBe(false);
+		expect(service.authenticate({ headers: { authorization: "Bearer fixture-token" } })).toBe(
+			true
+		);
 	});
 });

@@ -188,9 +188,9 @@ export class HTTPAPIService implements IWebhookNotifier {
 	private authenticate(req: HTTPRequestLike): boolean {
 		const authToken = this.plugin.settings.apiAuthToken;
 
-		// Skip auth if no token is configured
+		// A missing credential never opens an unauthenticated listener.
 		if (!authToken) {
-			return true;
+			return false;
 		}
 
 		const authHeader = req.headers.authorization;
@@ -292,6 +292,17 @@ export class HTTPAPIService implements IWebhookNotifier {
 	}
 
 	async start(): Promise<void> {
+		if (!Platform.isDesktop || !Platform.isDesktopApp)
+			throw new Error("The HTTP API is only available in the desktop app.");
+		if (!this.plugin.settings.apiAuthToken) {
+			this.plugin.settings.apiAuthToken = btoa(
+				String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))
+			)
+				.replace(/\+/g, "-")
+				.replace(/\//g, "_")
+				.replace(/=+$/g, "");
+			await this.plugin.saveSettings();
+		}
 		return new Promise((resolve, reject) => {
 			if (!Platform.isDesktop || !Platform.isDesktopApp) {
 				reject(new Error("The HTTP API is only available in the desktop app."));

@@ -51,3 +51,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @nelsonlove for the fix.
 
 - Stop plugin startup when an existing settings file cannot be read, preserving it for recovery instead of starting services with default settings.
+
+- Require an API token before starting local API/MCP listeners, and validate one-use OAuth callbacks on an OS-assigned loopback port without reflecting callback text into HTML.
