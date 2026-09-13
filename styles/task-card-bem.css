@@ -828,15 +828,16 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--chevron-left .task-card__
     margin-left: auto;
 }
 
-.tasknotes-plugin .task-card__context-menu:hover {
-    color: var(--tn-text-normal);
-    background: var(--tn-interactive-hover);
-    opacity: 1;
-}
-
 .tasknotes-plugin .task-card:hover .task-card__context-menu,
 .tasknotes-plugin .task-card:focus-within .task-card__context-menu {
     opacity: 0.6;
+}
+
+.tasknotes-plugin .task-card .task-card__context-menu:hover,
+.tasknotes-plugin .task-card .task-card__context-menu:focus-visible {
+    color: var(--tn-text-normal);
+    background: var(--tn-interactive-hover);
+    opacity: 1;
 }
 
 body.is-mobile .tasknotes-plugin .task-card__context-menu {
