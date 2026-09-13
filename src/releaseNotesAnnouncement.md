@@ -3,11 +3,11 @@
 **TaskNotes v5** introduces portable collections that you can use in both Obsidian and the new **TaskNotes app**. Your tasks remain ordinary Markdown files in your vault, with [mdbase Connect](https://mdbase.dev/connect/) providing access from the app.
 
 Available to try now:
-- **[Try the TaskNotes v5 plugin beta](https://github.com/callumalpass/tasknotes/releases/tag/5.0.0-beta.0)**
+- **[Try the TaskNotes v5 plugin beta](https://github.com/callumalpass/tasknotes/releases/tag/5.0.0-beta.2)**
 - **[Try the TaskNotes web app](https://app.tasknotes.dev/)**
 - **[Download TaskNotes for iOS](https://apps.apple.com/app/tasknotes/id6797168033)**
 
-These are early releases under active development. Please back up your vault before trying them and [report any problems](https://github.com/callumalpass/tasknotes/issues). TaskNotes 4.12 remains the recommended stable plugin release.
+These are early releases under active development. Please back up your vault before trying them and [report any problems](https://github.com/callumalpass/tasknotes/issues). TaskNotes 4.13 remains the recommended stable plugin release.
 
 ### Help bring TaskNotes to Android
 
