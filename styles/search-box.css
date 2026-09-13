@@ -52,7 +52,11 @@
 
 .tn-search-box__input::placeholder {
 	color: var(--text-muted);
-	font-style: italic;
+}
+
+.tn-search-box__input:focus-visible {
+	border-color: var(--background-modifier-border-focus);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 15%, transparent);
 }
 
 .tn-search-box__clear {
@@ -116,4 +120,3 @@
 	font-size: var(--font-ui-small, 13px);
 	color: var(--text-muted);
 }
-

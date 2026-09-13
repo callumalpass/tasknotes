@@ -710,7 +710,8 @@ body.is-mobile .timeblock-attachment-remove {
     height: 100%;
     width: 100%;
     font-family: var(--font-interface);
-    --fc-today-bg-color: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
+    --fc-today-bg-color: color-mix(in srgb, var(--interactive-accent) 4%, var(--background-primary));
+    --fc-border-color: var(--tn-divider-color);
 }
 
 .advanced-calendar-view.advanced-calendar-view--auto-height .fc {
@@ -762,39 +763,39 @@ body.is-mobile .timeblock-attachment-remove {
 
 /* Light dividers for clean look */
 .advanced-calendar-view .fc-col-header-cell {
-    border-bottom: 1px solid var(--background-modifier-border);
-    border-top: 1px solid var(--background-modifier-border);
+    border-bottom: 1px solid var(--fc-border-color);
+    border-top: none;
     background: var(--background-primary);
     color: var(--text-muted);
-    font-weight: 400;
-    font-size: 0.75rem;
+    font-weight: 500;
+    font-size: var(--tn-font-size-sm);
     /* text-transform: lowercase; */
     letter-spacing: 0;
-    padding: 0.5rem 0.5rem;
+    padding: var(--tn-spacing-md) var(--tn-spacing-sm);
 }
 
 .advanced-calendar-view .fc-daygrid-day {
-    border-right: 1px solid var(--background-modifier-border-hover);
-    border-bottom: 1px solid var(--background-modifier-border-hover);
+    border-right: 1px solid var(--fc-border-color);
+    border-bottom: 1px solid var(--fc-border-color);
     background: var(--background-primary);
     color: var(--text-normal);
     overflow: visible;
 }
 
 .advanced-calendar-view .fc-timegrid-slot {
-    border-bottom: 1px solid var(--background-modifier-border-hover);
+    border-bottom: 1px solid var(--fc-border-color);
     height: 3rem;
 }
 
 .advanced-calendar-view .fc-timegrid-col {
-    border-right: 1px solid var(--background-modifier-border-hover);
+    border-right: 1px solid var(--fc-border-color);
 }
 
 /* Header toolbar styling */
 .advanced-calendar-view .fc-header-toolbar {
     flex-wrap: wrap;
-    gap: 0.25rem 0.5rem;
-    padding: 0;
+    gap: var(--tn-spacing-sm) var(--tn-spacing-md);
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     border-bottom: 1px solid var(--background-modifier-border);
     background: transparent;
     max-width: 100%;
@@ -802,12 +803,12 @@ body.is-mobile .timeblock-attachment-remove {
 
 /* Calendar title styling - smaller and minimalist */
 .advanced-calendar-view .fc-toolbar-title {
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--text-muted);
+    font-size: var(--tn-font-size-xl);
+    font-weight: 500;
+    color: var(--text-normal);
     margin: 0;
     padding: 0.3rem 0.6rem;
-    line-height: 1.2;
+    line-height: 1.4;
     overflow-wrap: normal;
     white-space: nowrap;
     word-break: keep-all;
@@ -823,68 +824,43 @@ body.is-mobile .timeblock-attachment-remove {
 .advanced-calendar-view .fc-toolbar.fc-header-toolbar {
     margin-bottom: 0;
 }
-
-/* Remove all borders from FullCalendar buttons */
-.advanced-calendar-view .fc-button,
-.advanced-calendar-view .fc-button-primary,
-.advanced-calendar-view .fc-button-secondary,
-.advanced-calendar-view .fc-prev-button,
-.advanced-calendar-view .fc-next-button,
-.advanced-calendar-view .fc-today-button,
-.advanced-calendar-view .fc-dayGridMonth-button,
-.advanced-calendar-view .fc-timeGridWeek-button,
-.advanced-calendar-view .fc-timeGridDay-button,
-.advanced-calendar-view .fc-listWeek-button {
+.advanced-calendar-view .fc .fc-button {
     border: none;
     box-shadow: none;
     background: transparent;
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: var(--tn-font-size-md);
     font-weight: 400;
-    padding: 0.3rem 0.6rem;
-    border-radius: 4px;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    padding: 4px 10px;
+    border-radius: var(--tn-radius-sm);
+    transition: background-color var(--tn-transition-fast), color var(--tn-transition-fast);
+    min-height: 32px;
 }
 
 /* Hover states for all FC buttons */
-.advanced-calendar-view .fc-button:hover:not(:disabled),
-.advanced-calendar-view .fc-button-primary:hover:not(:disabled),
-.advanced-calendar-view .fc-button-secondary:hover:not(:disabled),
-.advanced-calendar-view .fc-prev-button:hover:not(:disabled),
-.advanced-calendar-view .fc-next-button:hover:not(:disabled) {
+.advanced-calendar-view .fc .fc-button:hover:not(:disabled) {
     background: var(--tn-interactive-hover);
     color: var(--text-normal);
     border: none;
     box-shadow: none;
 }
 
-.advanced-calendar-view .fc-button-primary:disabled {
+.advanced-calendar-view .fc .fc-button:disabled {
     background: transparent;
     color: var(--text-faint);
     opacity: 0.5;
 }
 
 /* Active state for FC buttons (currently selected view) */
-.advanced-calendar-view .fc-button-active,
-.advanced-calendar-view .fc-button.fc-button-active {
-    background: var(--interactive-accent);
+.advanced-calendar-view .fc .fc-button.fc-button-active {
+    background: var(--background-modifier-hover);
     border: none;
     box-shadow: none;
-    color: var(--text-on-accent);
+    color: var(--text-normal);
+    font-weight: 600;
 }
 
 /* Use consistent button system for today button */
-.advanced-calendar-view .fc-today-button {
-    background: var(--interactive-accent);
-    border: none;
-    box-shadow: none;
-    color: var(--text-on-accent);
-}
-
-.advanced-calendar-view .fc-today-button:hover:not(:disabled) {
-    background: var(--interactive-accent-hover);
-    box-shadow: none;
-}
 
 /* Agenda/list mode can live in narrow sidebars; respond to container width, not viewport width. */
 .advanced-calendar-view.advanced-calendar-view--list {
@@ -986,46 +962,24 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
         min-width: 0;
     }
 }
-
-/* Clean today styling */
 .advanced-calendar-view .fc-daygrid-day.fc-day-today {
-    background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
-    border: 2px solid var(--interactive-accent);
+    background: var(--fc-today-bg-color);
     position: relative;
 }
 
 .advanced-calendar-view .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
     font-weight: 600;
-    color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    background: var(--interactive-accent);
+    border-radius: var(--tn-radius-full);
 }
 
 /* Fix today styling specifically for multi-month (year) view */
-.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day.fc-day-today {
-    background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
-    border: 2px solid var(--interactive-accent);
-}
-
-.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-    font-weight: 600;
-    color: var(--interactive-accent);
-}
-
-.advanced-calendar-view .fc-daygrid-day.fc-day-today::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 6px;
-    height: 6px;
-    background: var(--interactive-accent);
-    border-radius: 50%;
-    z-index: 1;
-}
 
 /* Timegrid (week/day view) today column - use subtle accent instead of FullCalendar default yellow */
 /* Must match FullCalendar's specificity: .fc .fc-timegrid-col.fc-day-today */
 .advanced-calendar-view .fc .fc-timegrid-col.fc-day-today {
-    background-color: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
+    background-color: var(--fc-today-bg-color);
 }
 
 /* Multi-month (year view) styling - minimalist */
@@ -1063,17 +1017,20 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
 .advanced-calendar-view .fc-multimonth .fc-col-header-cell {
     background: transparent;
     color: var(--text-muted);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: var(--tn-font-size-sm);
 }
 
 /* Day numbers */
 .advanced-calendar-view .fc-daygrid-day-number {
     color: var(--text-normal);
     font-weight: 400;
-    font-size: 0.9rem;
-    padding: 0.5rem;
+    font-size: var(--tn-font-size-md);
+    padding: 3px 7px;
+    margin: 4px;
+    text-decoration: none;
+    min-width: 26px;
+    text-align: center;
+    line-height: 20px;
 }
 
 /* List view day headers - minimalist */
@@ -1108,18 +1065,18 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
 
 /* Clean event styling */
 .advanced-calendar-view .fc-event {
-    border-radius: 6px;
+    border-radius: var(--tn-radius-sm);
     border: 1px solid;
-    font-size: 0.8rem;
+    font-size: var(--tn-font-size-sm);
     font-weight: 500;
-    padding: 0.2rem 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    padding: 2px 5px;
+    box-shadow: none;
+    transition: background-color var(--tn-transition-fast), opacity var(--tn-transition-fast);
     cursor: var(--cursor-link, pointer);
 }
 
 .advanced-calendar-view .fc-event:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 0 0 1px currentColor;
 }
 
 .advanced-calendar-view .fc-event.fc-task-event--hover-source,
@@ -1147,6 +1104,13 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
     overflow-wrap: anywhere;
     text-decoration: inherit;
     white-space: normal;
+}
+
+/* Task colours remain in the border, background and priority indicator.
+   Keep event text legible across custom priorities and light/dark themes. */
+.advanced-calendar-view .fc-task-event .fc-event-title,
+.advanced-calendar-view .fc-task-event .fc-event-time {
+    color: var(--text-normal);
 }
 
 .advanced-calendar-view .fc-timegrid-all-day-events .fc-daygrid-event {
@@ -1214,7 +1178,6 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
     width: 4rem;
 }
 
-
 /* More events link */
 .advanced-calendar-view .fc-more-link {
     color: var(--interactive-accent);
@@ -1238,6 +1201,23 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
 .theme-dark .advanced-calendar-view .fc-more-link:hover {
     color: var(--text-normal);
     background: var(--background-modifier-hover);
+}
+
+/* Mobile scrollbars consume space after FullCalendar measures its month grid.
+   Touch scrolling still works; keep the last column and its day number visible. */
+body.is-mobile .advanced-calendar-view .fc-dayGridMonth-view .fc-scroller {
+    scrollbar-width: none;
+}
+
+body.is-mobile .advanced-calendar-view .fc-daygrid-more-link {
+    display: block;
+    max-width: 100%;
+    padding: 2px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 /* Current time indicator (red line) */
@@ -1308,8 +1288,7 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
         align-items: stretch;
         gap: 0.75rem;
     }
-    
-    
+
     .advanced-calendar-view__schedule-tasks-btn {
         align-self: center;
     }
@@ -1388,6 +1367,7 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
 .hide-today-highlight .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
     font-weight: 400;
     color: var(--text-normal);
+    background: transparent;
 }
 
 .hide-today-highlight .fc-daygrid-day.fc-day-today::before {
@@ -1454,7 +1434,7 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
     box-shadow: none;
 }
 
-/* ===== CLEAN LIST VIEW STYLING - NO INHERITANCE ===== */
+/* CLEAN LIST VIEW STYLING - NO INHERITANCE */
 
 /* Base styling for ALL list events - completely independent from calendar views */
 .fc-list-event {
@@ -1499,14 +1479,13 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
     vertical-align: top;
 }
 
-
 .fc-list-event .fc-list-event-dot {
     /* Standard dot styling for all events */
     border: inherit;
     background: inherit;
 }
 
-/* ===== TASK-SPECIFIC ENHANCEMENTS ===== */
+/* TASK-SPECIFIC ENHANCEMENTS */
 
 /* Task events get ONLY functional enhancements - NO visual styling differences */
 .fc-list-event.fc-list-task-card .fc-list-event-title {
@@ -1720,4 +1699,20 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
 .theme-dark .advanced-calendar-view .fc-timegrid-more-link:hover {
     background: var(--background-modifier-hover);
     color: var(--text-normal);
+}
+
+.advanced-calendar-view .fc-col-header-cell-cushion {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.advanced-calendar-view .fc-col-header-cell-cushion:hover,
+.advanced-calendar-view .fc-daygrid-day-number:hover {
+    text-decoration: underline;
+}
+
+.advanced-calendar-view .fc .fc-button:focus-visible {
+    outline: 2px solid var(--background-modifier-border-focus);
+    outline-offset: 2px;
+    box-shadow: none;
 }

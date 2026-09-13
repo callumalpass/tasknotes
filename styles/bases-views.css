@@ -1,11 +1,6 @@
-/* ================================================
-   BASES VIEWS - TaskNotes Integration Styles
-   ================================================ */
+/* BASES VIEWS - TaskNotes Integration Styles */
 
-/* ================================================
-   CUSTOM NEW TASK BUTTON
-   Toggle between native and TaskNotes "New" button
-   ================================================ */
+/* CUSTOM NEW TASK BUTTON Toggle between native and TaskNotes "New" button */
 
 /* Hide TaskNotes button by default */
 .tn-bases-new-task-btn {
@@ -68,7 +63,7 @@
     flex-direction: column;
     gap: var(--tn-spacing-xs);
     width: 100%;
-    padding: var(--tn-spacing-sm);
+    padding: var(--tn-spacing-md);
 }
 
 /* Task Group Section (matches TaskListView structure) */
@@ -84,12 +79,12 @@
     justify-content: flex-start;
     padding: var(--tn-spacing-xs) var(--tn-spacing-md) var(--tn-spacing-xs) var(--tn-spacing-sm);
     margin-bottom: var(--tn-spacing-sm);
-    border-bottom: 1px solid var(--tn-border-color);
+    border-bottom: 1px solid var(--tn-divider-color);
     position: relative;
-    font-size: var(--tn-font-size-lg);
-    font-weight: var(--tn-font-weight-medium);
-    color: var(--tn-text-normal);
-    letter-spacing: 0.01em;
+    font-size: var(--tn-font-size-md);
+    font-weight: var(--tn-font-weight-semibold);
+    color: var(--tn-text-muted);
+    letter-spacing: 0;
     line-height: 1.4;
     cursor: var(--cursor-link, pointer);
 }
@@ -246,13 +241,14 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--tn-spacing-xl);
+    padding: var(--tn-spacing-xxl);
     text-align: center;
     color: var(--tn-text-muted);
-    background: var(--tn-bg-secondary);
-    border: 1px solid var(--tn-border-color);
+    background: transparent;
+    border: none;
     border-radius: var(--tn-radius-md);
     margin: var(--tn-spacing-lg) 0;
+    line-height: 1.5;
 }
 
 /* Kanban Board Styles */
@@ -385,7 +381,7 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
 
 /* Override FullCalendar's bright white border color in dark mode */
 .theme-dark #bases-calendar.fc-theme-standard {
-    --fc-border-color: var(--background-modifier-border);
+    --fc-border-color: var(--tn-divider-color);
 }
 
 /* Responsive design for Bases views */
@@ -397,7 +393,7 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
 	.tn-bases-kanban-column {
 	    flex: 0 0 min(76vw, 260px);
 	    min-width: min(76vw, 260px);
-	}
+    }
 }
 
 @media (max-width: 480px) {
@@ -409,7 +405,7 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
 	.tn-bases-kanban-column {
 	    flex: 0 0 min(82vw, 240px);
 	    min-width: min(82vw, 240px);
-	}
+    }
 }
 
 body.is-mobile .tn-bases-kanban-board {
@@ -423,9 +419,7 @@ body.is-mobile .tn-bases-kanban-column {
     scroll-snap-align: start;
 }
 
-/* ================================================
-   SWIMLANE KANBAN LAYOUT
-   ================================================ */
+/* SWIMLANE KANBAN LAYOUT */
 
 /* Board with swimlanes - use CSS Grid instead of flexbox */
 .kanban-view__board--swimlanes {
@@ -447,7 +441,7 @@ body.is-mobile .tn-bases-kanban-column {
     grid-auto-flow: column;
     gap: 0;
     background: transparent;
-    border: 1px solid var(--tn-border-color);
+    border: 1px solid var(--tn-divider-color);
     border-radius: var(--tn-radius-sm);
     min-width: max-content;
     overflow: hidden;
@@ -480,7 +474,7 @@ body.is-mobile .tn-bases-kanban-column {
     gap: var(--tn-spacing-xs);
     align-items: flex-start;
     justify-content: flex-start;
-    border-right: 1px solid var(--tn-border-color);
+    border-right: 1px solid var(--tn-divider-color);
     position: sticky;
     left: 0;
     z-index: 5;
@@ -524,7 +518,7 @@ body.is-mobile .tn-bases-kanban-column {
     transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), opacity var(--tn-transition-fast), transform var(--tn-transition-fast);
     gap: var(--tn-spacing-xs);
     min-height: 40px;
-    border-right: 1px solid var(--tn-border-color);
+    border-right: 1px solid var(--tn-divider-color);
 }
 
 .kanban-view__column-header-cell:active {

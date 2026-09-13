@@ -5,9 +5,9 @@
     box-sizing: border-box;
     border-radius: var(--radius-s);
     border: 1px solid var(--background-modifier-border);
-    margin-block: var(--cs-spacing-md);
+    margin-block: var(--tn-spacing-md);
     margin-inline: var(--file-margins, 0);
-    padding: var(--cs-spacing-sm);
+    padding: var(--tn-spacing-sm);
 }
 
 /* Keep widget aligned with the centered readable column when enabled */
