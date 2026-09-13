@@ -1296,6 +1296,10 @@ export const zh: TranslationTree = {
 					name: "默认可见属性",
 					description: "选择默认在任务卡片上显示的属性。"
 				},
+				completionSubmenu: {
+					name: "将完成和跳过操作归入子菜单",
+					description: "在任务右键菜单的子菜单中显示完成和跳过操作。关闭后，这些操作将直接显示在菜单中。"
+				},
 				propertyGroups: {
 					coreProperties: "核心属性",
 					organization: "组织",
@@ -2875,6 +2879,24 @@ export const zh: TranslationTree = {
 			markIncomplete: "标记此日期未完成",
 			skipInstance: "跳过实例",
 			unskipInstance: "取消跳过实例",
+			completion: {
+				submenu: "标记完成或跳过",
+				submenuCompleteOnly: "标记完成",
+				completeToday: "今天完成",
+				completeAsScheduled: "在计划日期完成",
+				completeOnDue: "在截止日期完成",
+				completeOnPicked: "在指定日期完成（选择日期）",
+				markIncomplete: "标记未完成",
+				noScheduledDate: "此任务没有计划日期",
+				noDueDate: "此任务没有截止日期",
+				noPickedDate: "未选择日期",
+				noCompletedStatus: "未配置已完成状态",
+				pickDateTitle: "选择完成日期",
+				completeFailure: "无法更新任务完成状态：{message}",
+				clearInstancesConfirmTitle: "清除已记录的实例？",
+				clearInstancesConfirmMessage: "重新安排将清除新日期当天及之后记录为已完成或已跳过的以下实例：{dates}。它们将不再标记为已完成或已跳过。是否继续？",
+				clearInstancesConfirmButton: "重新安排并清除"
+			},
 			quickReminders: {
 				atTime: "在事件时间",
 				fiveMinutes: "提前5分钟",

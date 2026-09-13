@@ -1296,6 +1296,10 @@ export const ja: TranslationTree = {
 					name: "デフォルト表示プロパティ",
 					description: "タスクカードにデフォルトで表示するプロパティを選択します。"
 				},
+				completionSubmenu: {
+					name: "完了とスキップの操作をサブメニューにまとめる",
+					description: "完了とスキップの操作をタスクのコンテキストメニュー内のサブメニューに表示します。無効にすると、メニューに直接表示されます。"
+				},
 				propertyGroups: {
 					coreProperties: "コアプロパティ",
 					organization: "組織",
@@ -2876,6 +2880,24 @@ export const ja: TranslationTree = {
 			markIncomplete: "この日付で未完了としてマーク",
 			skipInstance: "インスタンスをスキップ",
 			unskipInstance: "インスタンスのスキップを解除",
+			completion: {
+				submenu: "完了としてマークまたはスキップ",
+				submenuCompleteOnly: "完了としてマーク",
+				completeToday: "今日完了",
+				completeAsScheduled: "予定日に完了",
+				completeOnDue: "期限日に完了",
+				completeOnPicked: "指定日に完了（日付を選択）",
+				markIncomplete: "未完了としてマーク",
+				noScheduledDate: "このタスクには予定日が設定されていません",
+				noDueDate: "このタスクには期限日が設定されていません",
+				noPickedDate: "日付が選択されていません",
+				noCompletedStatus: "完了ステータスが設定されていません",
+				pickDateTitle: "完了日を選択",
+				completeFailure: "タスクの完了状態を更新できませんでした: {message}",
+				clearInstancesConfirmTitle: "記録されたインスタンスを消去しますか？",
+				clearInstancesConfirmMessage: "予定を変更すると、新しい日付以降に完了またはスキップとして記録された次のインスタンスが消去されます: {dates}。これらは完了またはスキップとしてマークされなくなります。続行しますか？",
+				clearInstancesConfirmButton: "予定を変更して消去"
+			},
 			quickReminders: {
 				atTime: "イベント時刻に",
 				fiveMinutes: "5分前",

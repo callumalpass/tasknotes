@@ -1296,6 +1296,10 @@ export const fr: TranslationTree = {
 					name: "Propriétés visibles par défaut",
 					description: "Choisissez quelles propriétés apparaissent sur les cartes de tâches par défaut."
 				},
+				completionSubmenu: {
+					name: "Regrouper les actions de fin et d'omission dans un sous-menu",
+					description: "Place les actions permettant de terminer ou d'ignorer une tâche dans un sous-menu du menu contextuel. Désactivez cette option pour les afficher directement dans le menu."
+				},
 				propertyGroups: {
 					coreProperties: "PROPRIÉTÉS PRINCIPALES",
 					organization: "ORGANISATION",
@@ -2876,6 +2880,24 @@ export const fr: TranslationTree = {
 			markIncomplete: "Marquer comme incomplète pour cette date",
 			skipInstance: "Ignorer l'instance",
 			unskipInstance: "Ne plus ignorer l'instance",
+			completion: {
+				submenu: "Marquer comme terminée ou ignorer",
+				submenuCompleteOnly: "Marquer comme terminée",
+				completeToday: "Terminée aujourd'hui",
+				completeAsScheduled: "Terminée à la date planifiée",
+				completeOnDue: "Terminée à la date d'échéance",
+				completeOnPicked: "Terminée le (choisir une date)",
+				markIncomplete: "Marquer comme incomplète",
+				noScheduledDate: "Cette tâche n'a pas de date planifiée",
+				noDueDate: "Cette tâche n'a pas de date d'échéance",
+				noPickedDate: "Aucune date sélectionnée",
+				noCompletedStatus: "Aucun statut de tâche terminée n'est configuré",
+				pickDateTitle: "Choisir la date de fin",
+				completeFailure: "Impossible de mettre à jour la fin de la tâche : {message}",
+				clearInstancesConfirmTitle: "Effacer les instances enregistrées ?",
+				clearInstancesConfirmMessage: "La replanification effacera ces instances enregistrées comme terminées ou ignorées à la nouvelle date ou après celle-ci : {dates}. Elles ne seront plus marquées comme terminées ou ignorées. Continuer ?",
+				clearInstancesConfirmButton: "Replanifier et effacer"
+			},
 			quickReminders: {
 				atTime: "À l'heure de l'événement",
 				fiveMinutes: "5 minutes avant",

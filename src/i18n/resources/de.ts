@@ -1296,6 +1296,10 @@ export const de: TranslationTree = {
 					name: "Standard sichtbare Eigenschaften",
 					description: "Wähle, welche Eigenschaften standardmäßig auf Aufgabenkarten erscheinen."
 				},
+				completionSubmenu: {
+					name: "Abschluss- und Überspringen-Aktionen in einem Untermenü gruppieren",
+					description: "Zeige die Aktionen zum Abschließen und Überspringen in einem Untermenü des Aufgaben-Kontextmenüs. Deaktiviere diese Option, um sie direkt im Menü anzuzeigen."
+				},
 				propertyGroups: {
 					coreProperties: "KERNEIGENSCHAFTEN",
 					organization: "ORGANISATION",
@@ -2876,6 +2880,24 @@ export const de: TranslationTree = {
 			markIncomplete: "Als unvollständig für dieses Datum markieren",
 			skipInstance: "Instanz überspringen",
 			unskipInstance: "Instanz nicht überspringen",
+			completion: {
+				submenu: "Als abgeschlossen markieren oder überspringen",
+				submenuCompleteOnly: "Als abgeschlossen markieren",
+				completeToday: "Heute abgeschlossen",
+				completeAsScheduled: "Am geplanten Datum abgeschlossen",
+				completeOnDue: "Am Fälligkeitsdatum abgeschlossen",
+				completeOnPicked: "Abgeschlossen am (Datum wählen)",
+				markIncomplete: "Als unvollständig markieren",
+				noScheduledDate: "Für diese Aufgabe ist kein geplantes Datum festgelegt",
+				noDueDate: "Für diese Aufgabe ist kein Fälligkeitsdatum festgelegt",
+				noPickedDate: "Kein Datum ausgewählt",
+				noCompletedStatus: "Kein Status für abgeschlossene Aufgaben konfiguriert",
+				pickDateTitle: "Abschlussdatum wählen",
+				completeFailure: "Aufgabenabschluss konnte nicht aktualisiert werden: {message}",
+				clearInstancesConfirmTitle: "Aufgezeichnete Instanzen löschen?",
+				clearInstancesConfirmMessage: "Durch die Neuplanung werden diese aufgezeichneten abgeschlossenen oder übersprungenen Instanzen am oder nach dem neuen Datum gelöscht: {dates}. Sie werden nicht mehr als abgeschlossen oder übersprungen markiert sein. Fortfahren?",
+				clearInstancesConfirmButton: "Neu planen und löschen"
+			},
 			quickReminders: {
 				atTime: "Zur Zeit des Events",
 				fiveMinutes: "5 Minuten vorher",

@@ -1292,6 +1292,10 @@ export const ko: TranslationTree = {
 					name: "기본 표시 속성",
 					description: "작업 카드에 기본으로 표시할 속성을 선택합니다."
 				},
+				completionSubmenu: {
+					name: "완료 및 건너뛰기 동작을 하위 메뉴로 묶기",
+					description: "작업의 컨텍스트 메뉴에서 완료 및 건너뛰기 동작을 하위 메뉴에 표시합니다. 끄면 메뉴에 바로 표시됩니다."
+				},
 				propertyGroups: {
 					coreProperties: "핵심 속성",
 					organization: "조직",
@@ -2860,6 +2864,24 @@ export const ko: TranslationTree = {
 			markIncomplete: "이 날짜에 미완료로 표시",
 			skipInstance: "인스턴스 건너뛰기",
 			unskipInstance: "인스턴스 건너뛰기 취소",
+			completion: {
+				submenu: "완료로 표시 또는 건너뛰기",
+				submenuCompleteOnly: "완료로 표시",
+				completeToday: "오늘 완료",
+				completeAsScheduled: "예정일에 완료",
+				completeOnDue: "마감일에 완료",
+				completeOnPicked: "선택한 날짜에 완료 (날짜 선택)",
+				markIncomplete: "미완료로 표시",
+				noScheduledDate: "이 작업에 예정일이 없습니다",
+				noDueDate: "이 작업에 마감일이 없습니다",
+				noPickedDate: "선택한 날짜가 없습니다",
+				noCompletedStatus: "완료 상태가 설정되어 있지 않습니다",
+				pickDateTitle: "완료 날짜 선택",
+				completeFailure: "작업 완료 상태를 업데이트하지 못했습니다: {message}",
+				clearInstancesConfirmTitle: "기록된 인스턴스를 지울까요?",
+				clearInstancesConfirmMessage: "일정을 변경하면 새 날짜 당일 또는 이후에 완료되거나 건너뛴 것으로 기록된 다음 인스턴스가 지워집니다: {dates}. 더 이상 완료 또는 건너뛰기로 표시되지 않습니다. 계속할까요?",
+				clearInstancesConfirmButton: "일정 변경 및 지우기"
+			},
 			quickReminders: {
 				atTime: "이벤트 시간에",
 				fiveMinutes: "5분 전",

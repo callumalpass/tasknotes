@@ -1298,6 +1298,10 @@ export const pt: TranslationTree = {
 					name: "Propriedades visíveis padrão",
 					description: "Escolha quais propriedades aparecem nos cartões de tarefa por padrão."
 				},
+				completionSubmenu: {
+					name: "Agrupar as ações de concluir e pular em um submenu",
+					description: "Coloque as ações de concluir e pular em um submenu do menu de contexto da tarefa. Desative esta opção para exibi-las diretamente no menu."
+				},
 				propertyGroups: {
 					coreProperties: "PROPRIEDADES PRINCIPAIS",
 					organization: "ORGANIZAÇÃO",
@@ -2878,6 +2882,24 @@ export const pt: TranslationTree = {
 			markIncomplete: "Marcar como incompleta para esta data",
 			skipInstance: "Pular instância",
 			unskipInstance: "Desfazer pulo de instância",
+			completion: {
+				submenu: "Marcar como concluída ou pular",
+				submenuCompleteOnly: "Marcar como concluída",
+				completeToday: "Concluída hoje",
+				completeAsScheduled: "Concluída na data agendada",
+				completeOnDue: "Concluída na data de vencimento",
+				completeOnPicked: "Concluída em (escolher data)",
+				markIncomplete: "Marcar como incompleta",
+				noScheduledDate: "Esta tarefa não tem uma data agendada",
+				noDueDate: "Esta tarefa não tem uma data de vencimento",
+				noPickedDate: "Nenhuma data selecionada",
+				noCompletedStatus: "Nenhum status de conclusão configurado",
+				pickDateTitle: "Escolher data de conclusão",
+				completeFailure: "Falha ao atualizar a conclusão da tarefa: {message}",
+				clearInstancesConfirmTitle: "Limpar as instâncias registradas?",
+				clearInstancesConfirmMessage: "O reagendamento limpará estas instâncias registradas como concluídas ou puladas na nova data ou após ela: {dates}. Elas não estarão mais marcadas como concluídas ou puladas. Continuar?",
+				clearInstancesConfirmButton: "Reagendar e limpar"
+			},
 			quickReminders: {
 				atTime: "Na hora do evento",
 				fiveMinutes: "5 minutos antes",
