@@ -16,6 +16,7 @@ Example:
 ```
 ## Fixed
 
+- (#2301) Fixed clicking the Pomodoro timer display to edit its duration. Thanks to @minnyee for reporting and identifying the cause.
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
