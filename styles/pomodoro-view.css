@@ -144,6 +144,9 @@
 .tasknotes-plugin .pomodoro-view__timer-input {
     pointer-events: auto;
     width: 5.5em;
+    height: auto;
+    min-height: 1.4em;
+    padding: 0.1em 0.2em;
     border: none;
     border-radius: var(--tn-radius-sm);
     background: var(--background-secondary);
