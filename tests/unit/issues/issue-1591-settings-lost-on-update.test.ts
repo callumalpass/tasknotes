@@ -38,8 +38,8 @@ describe("issue #1591 settings reset on update", () => {
 		const plugin = createPlugin({ dataFileExists: true });
 		plugin.loadData = jest.fn().mockResolvedValue(null);
 
-		await plugin.loadSettings();
-		await plugin.checkForVersionUpdate();
+		await expect(plugin.loadSettings()).rejects.toThrow("settings are unreadable");
+		await plugin.saveSettingsDataOnly();
 
 		expect(plugin.loadData).toHaveBeenCalledTimes(4);
 		expect(plugin.saveData).not.toHaveBeenCalled();

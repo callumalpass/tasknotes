@@ -2,16 +2,18 @@ import { readFileSync } from "fs";
 import path from "path";
 
 describe("Issue #1524: pop-out task card typography", () => {
-	it("uses absolute font-size tokens so Obsidian pop-out root font sizes do not shrink task cards", () => {
+	it("uses Obsidian font-size tokens without root-relative units that shrink pop-out task cards", () => {
 		const variablesCss = readFileSync(
 			path.join(process.cwd(), "styles", "variables.css"),
 			"utf8"
 		);
 
-		expect(variablesCss).toContain("--cs-text-body-large: 14px;");
-		expect(variablesCss).toContain("--cs-text-body-medium: 12px;");
-		expect(variablesCss).toContain("--cs-text-label-medium: 11px;");
-		expect(variablesCss).toContain("--cs-text-title-medium: 14px;");
-		expect(variablesCss).not.toContain("--cs-text-body-large: 0.875rem;");
+		const fontSizes = [...variablesCss.matchAll(/--tn-font-size-[\w-]+:\s*([^;]+);/g)];
+		expect(fontSizes).toHaveLength(7);
+		expect(variablesCss).toContain("--tn-font-size-base: var(--font-text-size, 16px);");
+		for (const [, value] of fontSizes) {
+			expect(value).not.toMatch(/\d(?:rem|em)\b/);
+			expect(value).toMatch(/var\(--(?:tn-font-size-base|font-text-size)/);
+		}
 	});
 });

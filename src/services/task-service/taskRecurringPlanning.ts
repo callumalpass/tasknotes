@@ -254,7 +254,13 @@ export function buildRecurringTaskCompletePlan({
 				dateStr
 			);
 			if (updatedRecurrence) {
-				updatedTask.recurrence = updatedRecurrence;
+				// Instance completion selects a calendar day, not a new clock time.
+				// Carry the existing anchor's clock components forward without a
+				// local Date round trip (which could shift them across DST).
+				const anchorTime = freshTask.recurrence.match(/DTSTART:\d{8}T(\d{6})Z?(?=;|$)/)?.[1];
+				updatedTask.recurrence = anchorTime
+					? updatedRecurrence.replace(/DTSTART:(\d{8})(?=;|$)/, `DTSTART:$1T${anchorTime}Z`)
+					: updatedRecurrence;
 			}
 		} else if (!updatedTask.recurrence.includes("DTSTART:")) {
 			const updatedRecurrence = addDTSTARTToRecurrenceRule(updatedTask);

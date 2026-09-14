@@ -64,6 +64,7 @@ function createGoogleSyncPlugin(frontmatter: Record<string, unknown> = {}) {
 			},
 		},
 		fieldMapper: {
+			mapFromFrontmatter: (fm: Record<string, unknown>) => ({ ...fm }),
 			toUserField: jest.fn((field: string) => field),
 			mapToFrontmatter: jest.fn((taskData: Record<string, unknown>) => {
 				const mapped: Record<string, unknown> = {};
@@ -131,6 +132,7 @@ describe("Issue #1696: Google Calendar recurring reschedule sync", () => {
 			googleCalendarEventId: "master-event-id",
 		} as TaskInfo;
 
+		Object.assign(frontmatter, task);
 		const updatedTask = await taskService.updateTask(task, {
 			scheduled: "2026-04-15",
 		});

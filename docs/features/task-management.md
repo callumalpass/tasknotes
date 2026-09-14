@@ -178,6 +178,25 @@ These settings let you align task files with existing vault conventions (for exa
 For configuration details, see [Task Defaults](../settings/task-defaults.md).  
 For template variables, see [Template Variables Reference](template-variables.md).
 
+## Completing Tasks
+
+You can record a task's completion — and choose the date it is recorded against — directly from the task context menu, without opening the task. Four actions are offered:
+
+- **Completed today** — records today's date.
+- **Completed on schedule** — records the task's scheduled date (for a recurring task, the scheduled date of the occurrence you clicked).
+- **Completed on due date** — records the due date.
+- **Completed on (pick date)** — opens a date picker and records the date you choose.
+
+An action is disabled when the date it needs is not set — for example *Completed on schedule* on a task with no scheduled date — rather than silently falling back to another date. Recurring tasks also get a **Skip instance** action alongside these.
+
+By default the actions are grouped under a single **Mark complete or skip** entry (**Mark complete** for non-recurring tasks). To show them directly in the menu instead — set off by dividers — turn off **Settings → Appearance & UI → Task cards → Group complete and skip actions in a submenu**.
+
+![Completion actions grouped under a submenu (default)](../assets/feature-completion-date-actions.png)
+
+With the submenu grouping turned off, the same actions appear directly in the menu:
+
+![Completion actions shown flat in the menu](../assets/feature-completion-date-actions-flat.png)
+
 ## Recurring Tasks
 
 TaskNotes recurring tasks use RFC 5545 RRule syntax with `DTSTART`, separate pattern definition from next occurrence scheduling, and support independent instance completion. When an individual recurrence needs its own checklist, time entries, or notes, you can create a materialized occurrence note from the task or calendar context menu.

@@ -40,4 +40,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed Google Calendar events using the default colour when the primary calendar is first refreshed or its colour changes.
 - Fixed Kanban hover highlights and menus flickering when unrelated notes update in the background. Unchanged boards now retain their cards and keyboard focus.
+- (#2328) Fixed direct status edits on occurrence notes not updating the recurring parent’s completion history or creating the next occurrence when configured. Thanks to @mudnug for reporting this.

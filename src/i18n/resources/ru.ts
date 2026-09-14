@@ -1296,6 +1296,10 @@ export const ru: TranslationTree = {
 					name: "Видимые свойства по умолчанию",
 					description: "Выберите, какие свойства появляются на карточках задач по умолчанию."
 				},
+				completionSubmenu: {
+					name: "Объединять действия выполнения и пропуска в подменю",
+					description: "Размещать действия выполнения и пропуска в подменю контекстного меню задачи. Отключите, чтобы показывать их непосредственно в меню."
+				},
 				propertyGroups: {
 					coreProperties: "ОСНОВНЫЕ СВОЙСТВА",
 					organization: "ОРГАНИЗАЦИЯ",
@@ -1974,7 +1978,7 @@ export const ru: TranslationTree = {
 				},
 				authToken: {
 					name: "Токен аутентификации API",
-					description: "Токен, необходимый для аутентификации API (оставьте пустым для отсутствия аутентификации)",
+					description: "Необходим для аутентификации API. Если поле пустое, токен создаётся при запуске сервера.",
 					placeholder: "ваш-секретный-токен"
 				},
 				mcp: {
@@ -2876,6 +2880,24 @@ export const ru: TranslationTree = {
 			markIncomplete: "Отметить как невыполненную для этой даты",
 			skipInstance: "Пропустить экземпляр",
 			unskipInstance: "Отменить пропуск экземпляра",
+			completion: {
+				submenu: "Отметить как выполненную или пропустить",
+				submenuCompleteOnly: "Отметить как выполненную",
+				completeToday: "Выполнена сегодня",
+				completeAsScheduled: "Выполнена в запланированную дату",
+				completeOnDue: "Выполнена в дату срока выполнения",
+				completeOnPicked: "Выполнена в выбранную дату",
+				markIncomplete: "Отметить как невыполненную",
+				noScheduledDate: "У этой задачи нет запланированной даты",
+				noDueDate: "У этой задачи нет срока выполнения",
+				noPickedDate: "Дата не выбрана",
+				noCompletedStatus: "Статус выполненной задачи не настроен",
+				pickDateTitle: "Выберите дату выполнения",
+				completeFailure: "Не удалось обновить выполнение задачи: {message}",
+				clearInstancesConfirmTitle: "Удалить записи об экземплярах?",
+				clearInstancesConfirmMessage: "Перенос удалит записи об этих выполненных или пропущенных экземплярах на новую дату или позже: {dates}. Они больше не будут отмечены как выполненные или пропущенные. Продолжить?",
+				clearInstancesConfirmButton: "Перенести и очистить"
+			},
 			quickReminders: {
 				atTime: "Во время события",
 				fiveMinutes: "За 5 минут",

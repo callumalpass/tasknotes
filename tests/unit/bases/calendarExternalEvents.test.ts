@@ -1,6 +1,7 @@
 import {
 	buildExternalCalendarEvents,
 	getExternalCalendarToggleId,
+	setProviderCalendarToggle,
 	shouldIncludeExternalCalendarEvent,
 } from "../../../src/bases/calendarExternalEvents";
 import type TaskNotesPlugin from "../../../src/main";
@@ -50,6 +51,35 @@ describe("calendar external event assembly", () => {
 		expect(
 			shouldIncludeExternalCalendarEvent(
 				createEvent({ subscriptionId: "google-secondary" }),
+				"google",
+				toggles
+			)
+		).toBe(true);
+	});
+
+	it("applies a primary calendar's toggle to events fetched under the alias", () => {
+		const toggles = new Map<string, boolean>();
+
+		setProviderCalendarToggle(toggles, { id: "person@example.com", primary: true }, false);
+		setProviderCalendarToggle(toggles, { id: "team@example.com" }, true);
+
+		expect(
+			shouldIncludeExternalCalendarEvent(
+				createEvent({ subscriptionId: "google-primary" }),
+				"google",
+				toggles
+			)
+		).toBe(false);
+		expect(
+			shouldIncludeExternalCalendarEvent(
+				createEvent({ subscriptionId: "google-person@example.com" }),
+				"google",
+				toggles
+			)
+		).toBe(false);
+		expect(
+			shouldIncludeExternalCalendarEvent(
+				createEvent({ subscriptionId: "google-team@example.com" }),
 				"google",
 				toggles
 			)

@@ -1,3 +1,10 @@
+// Pin the test timezone to UTC so local runs match CI (GitHub Actions runs in
+// UTC). Set here — before Jest spawns its worker processes — so each worker
+// inherits TZ and reads it at startup, before any Date is constructed (V8 caches
+// the zone on first use). Overridable with an explicit `TZ=... jest` for
+// timezone-specific testing.
+process.env.TZ = process.env.TZ || 'UTC';
+
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',

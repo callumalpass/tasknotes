@@ -13,7 +13,12 @@ import {
 	TokenExpiredError,
 } from "./errors";
 import { validateCalendarId, validateEventId, validateRequired } from "./validation";
-import { CalendarProvider, ProviderCalendar } from "./CalendarProvider";
+import {
+	CalendarProvider,
+	findProviderCalendar,
+	PRIMARY_CALENDAR_ALIAS,
+	ProviderCalendar,
+} from "./CalendarProvider";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { normalizeCalendarDescription } from "../utils/calendarDescription";
@@ -330,6 +335,11 @@ export class GoogleCalendarService extends CalendarProvider {
 				for (const calendar of calendars) {
 					if (calendar.backgroundColor) {
 						calendarColors.set(calendar.id, calendar.backgroundColor);
+						// Event conversion precedes publishing availableCalendars during a
+						// refresh, so resolve the alias from this same metadata snapshot.
+						if (calendar.primary) {
+							calendarColors.set(PRIMARY_CALENDAR_ALIAS, calendar.backgroundColor);
+						}
 					}
 					providerCalendars.push({
 						id: calendar.id,
@@ -504,6 +514,20 @@ export class GoogleCalendarService extends CalendarProvider {
 	}
 
 	/**
+	 * Resolves a calendar's color, including for calendars fetched under the
+	 * primary alias, whose colors are cached under the account's real calendar id.
+	 */
+	private getCalendarColor(calendarId: string): string | undefined {
+		const directColor = this.calendarColors.get(calendarId);
+		if (directColor) {
+			return directColor;
+		}
+
+		const calendar = findProviderCalendar(this.availableCalendars, calendarId);
+		return calendar ? this.calendarColors.get(calendar.id) : undefined;
+	}
+
+	/**
 	 * Converts a Google Calendar event to TaskNotes ICSEvent format
 	 */
 	private convertToICSEvent(googleEvent: GoogleCalendarEvent, calendarId: string): ICSEvent {
@@ -541,7 +565,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 		// Priority 2: Calendar-level color (from calendar metadata)
 		if (!color) {
-			color = this.calendarColors.get(calendarId);
+			color = this.getCalendarColor(calendarId);
 		}
 
 		// Priority 3: Default Google Calendar blue
