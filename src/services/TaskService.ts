@@ -721,14 +721,6 @@ export class TaskService {
 				updatePlan.normalizedValue
 			);
 
-			await this.reconcileMaterializedOccurrenceStatusChange(
-				freshTask,
-				updatePlan.updatedTask,
-				property,
-				freshTask[property],
-				updatePlan.normalizedValue
-			);
-
 			// Step 4: Return authoritative data
 			return updatePlan.updatedTask;
 		} catch (error) {
@@ -753,7 +745,8 @@ export class TaskService {
 	/**
 	 * Run all post-write side effects for a property change WITHOUT performing a
 	 * frontmatter write. This includes: cache update, EVENT_TASK_UPDATED,
-	 * dependent-task UI refresh, webhooks, Google Calendar sync, and auto-archive.
+	 * dependent-task UI refresh, webhooks, Google Calendar sync, auto-archive,
+	 * and materialized occurrence parent reconciliation.
 	 *
 	 * Callers are responsible for having already persisted the change to frontmatter.
 	 */
@@ -783,6 +776,16 @@ export class TaskService {
 				oldValue,
 				newValue,
 			}
+		);
+
+		// Direct file edits and bulk property writes must reconcile occurrence
+		// parents just like updateProperty, without repeating the occurrence write.
+		await this.reconcileMaterializedOccurrenceStatusChange(
+			originalTask,
+			updatedTask,
+			property,
+			oldValue,
+			newValue
 		);
 	}
 
