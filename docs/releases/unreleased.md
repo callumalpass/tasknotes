@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2328) Fixed direct status edits on occurrence notes not updating the recurring parent’s completion history or creating the next occurrence when configured. Thanks to @mudnug for reporting this.
