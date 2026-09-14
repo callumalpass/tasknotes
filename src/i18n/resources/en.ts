@@ -307,6 +307,7 @@ export const en: TranslationTree = {
 			title: "Kanban",
 			newTask: "New task",
 			addCard: "+ Add a card",
+			toggleColumn: "Collapse or expand {column}",
 			noTasks: "No tasks",
 			uncategorized: "Uncategorized",
 			noProject: "No project",
