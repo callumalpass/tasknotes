@@ -227,6 +227,23 @@ describe('TaskService', () => {
       expect(mockPlugin.app.vault.read).toHaveBeenCalledWith(mockTemplateFile);
     });
 
+    it.each([undefined, 'inline-conversion', 'modal-inline-creation'] as const)(
+      'preserves date-like current note paths for %s creation (#2335)', async (creationContext) => {
+        mockPlugin.settings.tasksFolder = '{{currentNotePath}}/YYYY/{{currentNoteTitle}}';
+        mockPlugin.settings.inlineTaskConvertFolder = mockPlugin.settings.tasksFolder;
+        const file = new TFile('AMM-01/AMM-01.md');
+        file.parent = { path: 'AMM-01' } as any;
+        mockPlugin.app.workspace.getActiveFile.mockReturnValue(file);
+
+        await taskService.createTask({ title: 'Literal Path', creationContext });
+
+        expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+          `AMM-01/${new Date().getFullYear()}/AMM-01/literal-path.md`,
+          expect.any(String)
+        );
+      }
+    );
+
     it('should handle inline conversion context with currentNotePath variable', async () => {
       mockPlugin.settings.inlineTaskConvertFolder = 'Tasks/{{currentNotePath}}';
 

@@ -36,7 +36,7 @@ import {
 	getDatePart,
 } from "../utils/dateUtils";
 import { updateToNextScheduledOccurrence } from "../core/recurrence";
-import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
+import { processFolderTemplate, TaskTemplateData, FolderTemplateOptions } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
 import type { InterpolationValues, TranslationKey } from "../i18n";
@@ -108,8 +108,13 @@ export class TaskService {
 			applyTaskCreationDefaults: (taskData) =>
 				Promise.resolve(applyTaskCreationDefaultsToData(taskData, this.plugin.settings)),
 			applyTemplate: (taskData) => this.applyTemplate(taskData),
-			processFolderTemplate: (folderTemplate, taskData, date) =>
-				this.processFolderTemplate(folderTemplate, taskData, date),
+			processFolderTemplate: (folderTemplate, taskData, date) => {
+				const currentFile = this.plugin.app.workspace.getActiveFile();
+				return this.processFolderTemplate(folderTemplate, taskData, date, {
+					path: currentFile?.parent?.path || "",
+					title: currentFile?.basename || "",
+				});
+			},
 			sanitizeTitleForFilename: sanitizeTaskTitleForFilename,
 			sanitizeTitleForStorage: sanitizeTaskTitleForStorage,
 		});
@@ -252,7 +257,8 @@ export class TaskService {
 	private processFolderTemplate(
 		folderTemplate: string,
 		taskData?: TaskCreationData,
-		date: Date = new Date()
+		date: Date = new Date(),
+		currentNote?: FolderTemplateOptions["currentNote"]
 	): string {
 		// Convert TaskCreationData to TaskTemplateData
 		const templateData: TaskTemplateData | undefined = taskData
@@ -271,6 +277,7 @@ export class TaskService {
 		return processFolderTemplate(folderTemplate, {
 			date,
 			taskData: templateData,
+			currentNote,
 			extractProjectBasename: (project) => this.extractProjectBasename(project),
 			extractProjectFilePath: (project) => this.extractProjectFilePath(project),
 		});

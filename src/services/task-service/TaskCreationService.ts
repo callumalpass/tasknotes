@@ -419,43 +419,22 @@ export class TaskCreationService {
 		}
 	}
 
-	private resolveCurrentNoteFolderVariables(folderTemplate: string): string {
-		if (
-			!folderTemplate.includes("{{currentNotePath}}") &&
-			!folderTemplate.includes("{{currentNoteTitle}}")
-		) {
-			return folderTemplate;
-		}
-
-		const currentFile = this.deps.runtime.app.workspace.getActiveFile();
-		return folderTemplate
-			.replace(/\{\{currentNotePath\}\}/g, currentFile?.parent?.path || "")
-			.replace(/\{\{currentNoteTitle\}\}/g, currentFile?.basename || "");
-	}
-
 	private async resolveTargetFolder(taskData: TaskCreationData): Promise<string> {
 		const { runtime } = this.deps;
-		let folder = "";
-
 		if (
 			taskData.creationContext === "inline-conversion" ||
 			taskData.creationContext === "modal-inline-creation"
 		) {
 			const inlineFolder = runtime.settings.inlineTaskConvertFolder || "";
 			if (inlineFolder.trim()) {
-				folder = this.resolveCurrentNoteFolderVariables(inlineFolder);
-				return this.deps.processFolderTemplate(folder, taskData);
+				return this.deps.processFolderTemplate(inlineFolder, taskData);
 			}
 
-			const tasksFolder = this.resolveCurrentNoteFolderVariables(
-				runtime.settings.tasksFolder || ""
-			);
+			const tasksFolder = runtime.settings.tasksFolder || "";
 			return this.deps.processFolderTemplate(tasksFolder, taskData);
 		}
 
-		const tasksFolder = this.resolveCurrentNoteFolderVariables(
-			runtime.settings.tasksFolder || ""
-		);
+		const tasksFolder = runtime.settings.tasksFolder || "";
 		return this.deps.processFolderTemplate(tasksFolder, taskData);
 	}
 }

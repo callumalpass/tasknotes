@@ -36,6 +36,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2336) Reduced the plugin bundle below Obsidian Sync Standard's 5 MB per-file limit so it can sync between devices again, and removed duplicate bundled dependencies to leave more room for future updates. Thanks to @kmalakoff for reporting and @CyberBlaed for confirming.
 
+- (#2335) Fixed date-like text in the current note’s folder or title being replaced when choosing a task folder with `{{currentNotePath}}` or `{{currentNoteTitle}}`. Date tokens written in the folder template still work. Thanks to @hikatamika for reporting.
+
 - (#2301) Fixed clicking the Pomodoro timer display to edit its duration. Thanks to @minnyee for reporting and identifying the cause.
 
 - (#2328) Fixed direct status edits on occurrence notes not updating the recurring parent’s completion history or creating the next occurrence when configured. Thanks to @mudnug for reporting this.
