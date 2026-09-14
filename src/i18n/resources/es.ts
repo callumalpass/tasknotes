@@ -1296,6 +1296,10 @@ export const es: TranslationTree = {
 					name: "Propiedades visibles predeterminadas",
 					description: "Elegir qué propiedades aparecen en las tarjetas de tareas por defecto."
 				},
+				completionSubmenu: {
+					name: "Agrupar las acciones de completar y omitir en un submenú",
+					description: "Coloca las acciones de completar y omitir en un submenú del menú contextual de la tarea. Desactiva esta opción para mostrarlas directamente en el menú."
+				},
 				propertyGroups: {
 					coreProperties: "PROPIEDADES PRINCIPALES",
 					organization: "ORGANIZACIÓN",
@@ -1974,7 +1978,7 @@ export const es: TranslationTree = {
 				},
 				authToken: {
 					name: "Token de autenticación API",
-					description: "Token requerido para autenticación API (dejar vacío para sin autenticación)",
+					description: "Obligatorio para la autenticación de la API. Si está vacío, se genera un token al iniciar el servidor.",
 					placeholder: "tu-token-secreto"
 				},
 				mcp: {
@@ -2876,6 +2880,24 @@ export const es: TranslationTree = {
 			markIncomplete: "Marcar como incompleto para esta fecha",
 			skipInstance: "Omitir instancia",
 			unskipInstance: "Deshacer omisión de instancia",
+			completion: {
+				submenu: "Marcar como completada u omitir",
+				submenuCompleteOnly: "Marcar como completada",
+				completeToday: "Completada hoy",
+				completeAsScheduled: "Completada en la fecha programada",
+				completeOnDue: "Completada en la fecha de vencimiento",
+				completeOnPicked: "Completada el (elegir fecha)",
+				markIncomplete: "Marcar como incompleta",
+				noScheduledDate: "Esta tarea no tiene una fecha programada",
+				noDueDate: "Esta tarea no tiene una fecha de vencimiento",
+				noPickedDate: "No se ha seleccionado ninguna fecha",
+				noCompletedStatus: "No hay ningún estado de finalización configurado",
+				pickDateTitle: "Elegir fecha de finalización",
+				completeFailure: "No se pudo actualizar la finalización de la tarea: {message}",
+				clearInstancesConfirmTitle: "¿Borrar las instancias registradas?",
+				clearInstancesConfirmMessage: "Al reprogramar se borrarán estas instancias registradas como completadas u omitidas en la nueva fecha o después de ella: {dates}. Dejarán de estar marcadas como completadas u omitidas. ¿Continuar?",
+				clearInstancesConfirmButton: "Reprogramar y borrar"
+			},
 			quickReminders: {
 				atTime: "A la hora del evento",
 				fiveMinutes: "5 minutos antes",

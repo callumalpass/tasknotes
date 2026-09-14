@@ -198,6 +198,8 @@ function createTaskInfoFromProperties(
 		"icsEventId",
 		"complete_instances",
 		"skipped_instances",
+		"googleCalendarExceptionOriginalScheduled",
+		"googleCalendarMovedOriginalDates",
 		"blockedBy",
 		"blocking",
 		"sortOrder",
@@ -267,6 +269,10 @@ function createTaskInfoFromProperties(
 		icsEventId: toStringArray(props.icsEventId),
 		complete_instances: toStringArray(props.complete_instances),
 		skipped_instances: toStringArray(props.skipped_instances),
+		googleCalendarExceptionOriginalScheduled: toOptionalString(
+			props.googleCalendarExceptionOriginalScheduled
+		),
+		googleCalendarMovedOriginalDates: toStringArray(props.googleCalendarMovedOriginalDates),
 		blockedBy: toDependencies(props.blockedBy),
 		blocking: blockingTasks.length > 0 ? blockingTasks : undefined,
 		isBlocked: isBlocked,

@@ -16,6 +16,7 @@ export interface HTTPResponseLike {
 }
 
 export interface HTTPServerLike {
+	address?(): { port: number } | string | null;
 	listening?: boolean;
 	listen(port: number, callback?: () => void): void;
 	listen(port: number, hostname: string, callback?: () => void): void;

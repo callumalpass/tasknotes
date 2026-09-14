@@ -2,6 +2,9 @@
 
 A task management plugin where each task is a separate Markdown note, and all views are powered by [Obsidian Bases](https://help.obsidian.md/bases).
 
+> [!NOTE]
+> **TaskNotes is also available in Beta on the web and iPhone.** [Open TaskNotes on the web](https://app.tasknotes.dev/) or [download it from the App Store](https://apps.apple.com/app/tasknotes/id6797168033).
+
 <img src="https://github.com/callumalpass/tasknotes/blob/main/media/2025-12-07T15-43-26.png?raw=true" />
 
 ## Overview

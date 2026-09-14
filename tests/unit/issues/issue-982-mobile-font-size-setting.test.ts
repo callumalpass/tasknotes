@@ -12,9 +12,15 @@ describe("Issue #982: Obsidian text font size inheritance", () => {
 		const css = readRepoFile("styles/variables.css");
 
 		expect(css).toContain("--tn-font-size-base: var(--font-text-size, 16px)");
-		expect(css).toContain("--tn-font-size-xs: calc(var(--tn-font-size-base) * 0.625)");
-		expect(css).toContain("--tn-font-size-md: calc(var(--tn-font-size-base) * 0.75)");
-		expect(css).toContain("--tn-font-size-lg: calc(var(--tn-font-size-base) * 0.875)");
+		expect(css).toContain(
+			"--tn-font-size-xs: max(var(--font-ui-smaller, 12px), calc(var(--tn-font-size-base) * 0.6875))"
+		);
+		expect(css).toContain(
+			"--tn-font-size-md: max(var(--font-ui-small, 13px), calc(var(--tn-font-size-base) * 0.8125))"
+		);
+		expect(css).toContain(
+			"--tn-font-size-lg: max(var(--font-ui-medium, 14px), calc(var(--tn-font-size-base) * 0.9375))"
+		);
 		expect(css).toContain("--tn-font-size-2xl: calc(var(--tn-font-size-base) * 1.125)");
 	});
 

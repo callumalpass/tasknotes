@@ -2,6 +2,7 @@ import { App, Modal, Setting } from "obsidian";
 import { TranslationKey } from "../i18n";
 import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
+import { showCoordinatedMenu } from "./ContextMenuCoordinator";
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 
 export interface RecurrenceOption {
@@ -218,12 +219,12 @@ function getScheduledDateTimePart(scheduledDate?: string): string | undefined {
 		return undefined;
 	}
 
-	const timeMatch = scheduledDate.match(/T(\d{2}):(\d{2})/);
+	const timeMatch = scheduledDate.match(/T(\d{2}):(\d{2})(?::(\d{2}))?/);
 	if (!timeMatch) {
 		return undefined;
 	}
 
-	return `${timeMatch[1]}${timeMatch[2]}00Z`;
+	return `${timeMatch[1]}${timeMatch[2]}${timeMatch[3] ?? "00"}Z`;
 }
 
 function getOrdinal(n: number): string {
@@ -270,7 +271,7 @@ export function buildRecurrenceOptions(input: BuildRecurrenceOptionsInput): Recu
 		);
 		if (existingDtstartMatch && existingDtstartMatch[1].includes("T")) {
 			// Extract time part from existing DTSTART
-			const existingTime = existingDtstartMatch[1].split("T")[1];
+			const existingTime = existingDtstartMatch[1].split("T")[1].replace(/Z$/, "") + "Z";
 			startDTSTART = `${startDTSTART}T${existingTime}`;
 		}
 	}
@@ -387,8 +388,12 @@ export function buildCustomRecurrenceRule(input: CustomRecurrenceRuleInput): str
 		let dtstartFormatted = input.dtstart.replace(/-/g, "");
 
 		if (input.dtstartTime) {
-			const timeFormatted = input.dtstartTime.replace(":", "") + "00";
-			dtstartFormatted = `${dtstartFormatted}T${timeFormatted}`;
+			// Match the model's calendar-anchor convention: retain the entered
+			// clock components, just as parsing and preset generation do. Do not
+			// reinterpret an existing anchor through the machine's timezone.
+			const timeParts = input.dtstartTime.split(":");
+			const timeFormatted = `${timeParts[0]}${timeParts[1]}${timeParts[2] ?? "00"}`;
+			dtstartFormatted = `${dtstartFormatted}T${timeFormatted}Z`;
 		}
 
 		parts.push(`DTSTART:${dtstartFormatted}`);
@@ -576,7 +581,7 @@ export class RecurrenceContextMenu {
 	}
 
 	public show(event: UIEvent): void {
-		this.menu.show(event);
+		showCoordinatedMenu(this.menu, event);
 	}
 }
 
@@ -624,9 +629,9 @@ class CustomRecurrenceModal extends Modal {
 
 			// Check if we should preserve time from scheduled date
 			if (this.scheduledDate && this.scheduledDate.includes("T")) {
-				const timeMatch = this.scheduledDate.match(/T(\d{2}):(\d{2})/);
+				const timeMatch = this.scheduledDate.match(/T(\d{2}):(\d{2})(?::(\d{2}))?/);
 				if (timeMatch) {
-					this.dtstartTime = `${timeMatch[1]}:${timeMatch[2]}`;
+					this.dtstartTime = `${timeMatch[1]}:${timeMatch[2]}:${timeMatch[3] ?? "00"}`;
 				}
 			}
 			return;
@@ -650,7 +655,7 @@ class CustomRecurrenceModal extends Modal {
 						if (value.length > 8 && value.includes("T")) {
 							const timeStr = value.slice(9); // Get HHMMSSZ part
 							if (timeStr.length >= 4) {
-								this.dtstartTime = `${timeStr.slice(0, 2)}:${timeStr.slice(2, 4)}`;
+								this.dtstartTime = `${timeStr.slice(0, 2)}:${timeStr.slice(2, 4)}:${timeStr.slice(4, 6) || "00"}`;
 							}
 						}
 					} else {
@@ -753,6 +758,7 @@ class CustomRecurrenceModal extends Modal {
 			.setDesc("The time when recurring instances should appear (optional)")
 			.addText((text) => {
 				text.inputEl.type = "time";
+				text.inputEl.step = "1";
 				text.setValue(this.dtstartTime).onChange((value) => {
 					this.dtstartTime = value;
 				});

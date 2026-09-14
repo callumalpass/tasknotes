@@ -60,7 +60,10 @@ import {
 	shouldSkipMarkdownWidgetEditor,
 	shouldSkipMarkdownWidgetLeaf,
 } from "./MarkdownWidgetContext";
-import { insertAfterMetadataOrHeader } from "./MarkdownWidgetInsertion";
+import {
+	insertAfterMetadataOrHeader,
+	insertInsideHeaderAnchor,
+} from "./MarkdownWidgetInsertion";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/TaskCardNoteDecorations" });
@@ -643,7 +646,17 @@ async function injectReadingModeWidget(
 			return;
 		}
 
-		insertAfterMetadataOrHeader(sizer, widget);
+		// Nest inside the header rather than sitting between sections. Obsidian
+		// deletes unexpected *direct* children of the sizer on every render pass, so
+		// a widget placed between sections churns and drags the scroll position down
+		// the note (#2255). While the header is scrolled out of the render window
+		// there is nowhere correct to put the widget, so skip and let the observer
+		// re-run once it is back.
+		if (!insertInsideHeaderAnchor(sizer, widget)) {
+			widget.component?.unload();
+			widget.remove();
+			return;
+		}
 	} catch (error) {
 		tasknotesLogger.error("[TaskNotes] Error injecting task card widget in reading mode:", {
 			category: "persistence",
@@ -737,7 +750,10 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 			scheduleInjection,
 			observedMarkdownContainers,
 			markdownWidgetObserverCleanups,
-			shouldRefreshMarkdownLeaf
+			shouldRefreshMarkdownLeaf,
+			// The card nests inside the header, so it must not be re-injected while
+			// Obsidian has that section detached.
+			{ requireHeaderAnchor: true }
 		);
 	};
 	const observeMarkdownLeaves = () => {

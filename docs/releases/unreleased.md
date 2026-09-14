@@ -16,6 +16,8 @@ Example:
 ```
 ## Fixed
 
+- (#2301) Fixed clicking the Pomodoro timer display to edit its duration. Thanks to @minnyee for reporting and identifying the cause.
+- Fixed the Pomodoro duration editor clipping its timer digits.
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
@@ -42,4 +44,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Improved mdbase upgrades from TaskNotes v4, including older generated formatting and retries after interrupted updates. New collections use a dedicated membership property without claiming bibliographic `type` fields; existing custom membership keys are preserved.
 - TaskNotes now bundles the same portable task contract as TaskNotes App and preserves customized contract/schema resources rather than replacing them automatically.
+- Fixed Google Calendar events using the default colour when the primary calendar is first refreshed or its colour changes.
 - Fixed Kanban hover highlights and menus flickering when unrelated notes update in the background. Unchanged boards now retain their cards and keyboard focus.
+- (#2328) Fixed direct status edits on occurrence notes not updating the recurring parent’s completion history or creating the next occurrence when configured. Thanks to @mudnug for reporting this.

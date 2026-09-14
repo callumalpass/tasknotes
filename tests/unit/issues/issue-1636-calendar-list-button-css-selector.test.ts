@@ -25,19 +25,29 @@ describe("Issue #1636: list button CSS selector mismatch", () => {
 		const calendarCssSource = readRepoFile("styles/advanced-calendar-view.css");
 
 		const toolbarRightMatch = calendarViewSource.match(/right:\s*"([^"]+)"/);
-		const toolbarButtons = toolbarRightMatch?.[1]
-			.split(",")
-			.map((button) => button.trim())
-			.filter(Boolean) ?? [];
+		const toolbarButtons =
+			toolbarRightMatch?.[1]
+				.split(",")
+				.map((button) => button.trim())
+				.filter(Boolean) ?? [];
 
 		const toolbarUsesCustomListButton = toolbarButtons.includes("listWeekButton");
 		const toolbarUsesBuiltInListButton = toolbarButtons.includes("listWeek");
 
-		const cssTargetsBuiltInListButtonClass = calendarCssSource.includes(".fc-listWeek-button");
+		const activeSelector = calendarCssSource
+			.replace(/\/\*[\s\S]*?\*\//g, "")
+			.match(/([^{}]+\.fc-button-active)\s*\{/)?.[1]
+			.trim();
+		const calendar = document.createElement("div");
+		calendar.className = "advanced-calendar-view";
+		calendar.innerHTML =
+			'<div class="fc"><button class="fc-button fc-listWeek-button fc-button-active"></button></div>';
+		const listButton = calendar.querySelector("button")!;
 
 		expect(toolbarUsesCustomListButton).toBe(false);
 		expect(calendarViewSource).not.toContain("listWeekButton");
 		expect(toolbarUsesBuiltInListButton).toBe(true);
-		expect(cssTargetsBuiltInListButtonClass).toBe(true);
+		expect(activeSelector).toBeDefined();
+		expect(listButton.matches(activeSelector!)).toBe(true);
 	});
 });

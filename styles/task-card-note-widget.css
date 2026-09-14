@@ -17,6 +17,21 @@
     margin-inline: auto;
 }
 
+/*
+ * Reading mode nests the widget inside `.mod-header.mod-ui`, after the properties
+ * block, so that Obsidian's virtualisation cannot delete it (see
+ * MarkdownWidgetInsertion and #2255). That host spaces differently from sitting
+ * between sections. Keep the native properties spacing and add a paragraph-sized
+ * gap between the widget and the note body, without broad :has invalidation.
+ */
+
+.markdown-preview-view .mod-header .task-card-note-widget {
+    margin-block-start: 0;
+    /* The note's own gap between blocks, so the widget sits in the same vertical
+       rhythm as a paragraph rather than on a value of our choosing. */
+    margin-block-end: var(--p-spacing);
+}
+
 .task-card-note-widget__card {
     /* Reset margins for the inner task card */
     margin: 0;

@@ -1,5 +1,6 @@
 import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
+import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenuCoordinator";
 
 export interface StatusOption {
 	label: string;
@@ -81,7 +82,7 @@ export class StatusContextMenu {
 		if ((event.target as Node)?.instanceOf?.(HTMLElement)) {
 			this.targetDoc = (event.target as HTMLElement).ownerDocument;
 		}
-		this.menu.show(event);
+		showCoordinatedMenu(this.menu, event);
 
 		// Apply color styling after menu is shown
 		window.setTimeout(() => {
@@ -92,10 +93,7 @@ export class StatusContextMenu {
 	public showAtElement(element: HTMLElement): void {
 		// Store the document reference from the element to support pop-out windows
 		this.targetDoc = element.ownerDocument;
-		this.menu.showAtPosition({
-			x: element.getBoundingClientRect().left,
-			y: element.getBoundingClientRect().bottom + 4,
-		});
+		showCoordinatedMenuAtElement(this.menu, element);
 
 		// Apply color styling after menu is shown
 		window.setTimeout(() => {

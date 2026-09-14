@@ -188,9 +188,9 @@ export class HTTPAPIService implements IWebhookNotifier {
 	private authenticate(req: HTTPRequestLike): boolean {
 		const authToken = this.plugin.settings.apiAuthToken;
 
-		// Skip auth if no token is configured
+		// A missing credential never opens an unauthenticated listener.
 		if (!authToken) {
-			return true;
+			return false;
 		}
 
 		const authHeader = req.headers.authorization;
@@ -291,7 +291,41 @@ export class HTTPAPIService implements IWebhookNotifier {
 		return parseJSONBody(req);
 	}
 
+	private starting: Promise<void> | null = null;
+
 	async start(): Promise<void> {
+		if (this.starting) return this.starting;
+		if (this.isRunning()) return;
+		const starting = this.startServer();
+		this.starting = starting;
+		try {
+			await starting;
+		} finally {
+			this.starting = null;
+		}
+	}
+
+	private async startServer(): Promise<void> {
+		if (!Platform.isDesktop || !Platform.isDesktopApp)
+			throw new Error("The HTTP API is only available in the desktop app.");
+		if (!this.plugin.settings.apiAuthToken) {
+			const token = btoa(
+				String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))
+			)
+				.replace(/\+/g, "-")
+				.replace(/\//g, "_")
+				.replace(/=+$/g, "");
+			this.plugin.settings.apiAuthToken = token;
+			try {
+				await this.plugin.saveSettings();
+			} catch (error) {
+				// A retry must persist a credential, not reuse an unsaved one.
+				if (this.plugin.settings.apiAuthToken === token) {
+					this.plugin.settings.apiAuthToken = "";
+				}
+				throw error;
+			}
+		}
 		return new Promise((resolve, reject) => {
 			if (!Platform.isDesktop || !Platform.isDesktopApp) {
 				reject(new Error("The HTTP API is only available in the desktop app."));

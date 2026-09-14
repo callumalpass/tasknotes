@@ -28,13 +28,15 @@
     },
     {
       "id": "task-management",
-      "description": "Task CRUD, filtering, status, priority, and auto-archiving",
+      "description": "Task CRUD, filtering, status, priority, completion menu, and auto-archiving",
       "source": [
         "src/services/TaskService.ts",
         "src/services/FilterService.ts",
         "src/services/StatusManager.ts",
         "src/services/PriorityManager.ts",
-        "src/services/AutoArchiveService.ts"
+        "src/services/AutoArchiveService.ts",
+        "src/components/TaskContextMenu.ts",
+        "src/ui/completionDateResolver.ts"
       ],
       "docs": ["docs/features/task-management.md"]
     },

@@ -33,7 +33,7 @@ function formatDependencyEntryLinkExpression(entryExpression: string): string {
 	return `${formatDependencyEntryFileExpression(entryExpression)}.asLink()`;
 }
 
-function formatProjectEntryLinkExpression(entryExpression: string): string {
+export function formatProjectEntryLinkExpression(entryExpression: string): string {
 	return `file(${entryExpression}.replace(/^\\[[^\\]]+\\]\\((.*)\\)$/, "$1").replace(/%20/g, " ")).asLink()`;
 }
 

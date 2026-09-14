@@ -1,5 +1,22 @@
+.tasknotes-release-notes-view .release-notes-announcement,
 .tasknotes-release-notes-view .release-notes-version-content {
     font-family: var(--font-text);
     font-size: var(--font-text-size);
     line-height: var(--line-height-normal);
+}
+
+.tasknotes-release-notes-view .release-notes-announcement {
+    margin-bottom: var(--size-4-5);
+    padding: var(--size-4-4);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    background: var(--background-secondary);
+}
+
+.tasknotes-release-notes-view .release-notes-announcement > :first-child {
+    margin-top: 0;
+}
+
+.tasknotes-release-notes-view .release-notes-announcement > :last-child {
+    margin-bottom: 0;
 }

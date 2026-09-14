@@ -1,8 +1,13 @@
-import { Menu, Notice, Platform, TFile, type MenuItem, type TAbstractFile } from "obsidian";
+import { Menu, Notice, Platform, TFile, setTooltip, type MenuItem, type TAbstractFile } from "obsidian";
 import type { OccurrenceMaterializationMode, OccurrenceNextTrigger } from "@tasknotes/model";
 import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
 import { formatDateForStorage, getDatePart, parseDateToUTC } from "../utils/dateUtils";
+import {
+	resolveCompletionDate,
+	type CompletionDateContext,
+	type CompletionMode,
+} from "../ui/completionDateResolver";
 import { ReminderModal } from "../modals/ReminderModal";
 import {
 	addTaskToProject,
@@ -31,6 +36,7 @@ import {
 } from "../utils/dependencyUtils";
 import { generateLink } from "../utils/linkUtils";
 import { ContextMenu } from "./ContextMenu";
+import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenuCoordinator";
 import { buildTimeblockPrefillForTask } from "../utils/timeblockPrefillUtils";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
 import {
@@ -273,8 +279,11 @@ export class TaskContextMenu {
 
 		this.addCustomDateFieldMenuItems(task, plugin);
 
-		if (task.recurrence) {
-			this.addRecurringInstanceMenuItems(task, plugin);
+		this.addCompleteOrSkipSection(task, plugin);
+
+		// Occurrence note stays at the top level (it is not a complete/skip action).
+		if (task.recurrence && !this.options.promoteOccurrenceControls) {
+			this.addOccurrenceNoteMenuItem(task, plugin);
 		}
 
 		if (!hasPromotedOccurrenceControls && task.recurrence_parent && task.occurrence_date) {
@@ -859,45 +868,230 @@ export class TaskContextMenu {
 		});
 	}
 
-	private addRecurringInstanceMenuItems(task: TaskInfo, plugin: TaskNotesPlugin): void {
-		const dateStr = formatDateForStorage(this.options.targetDate);
-		const isCompletedForDate = task.complete_instances?.includes(dateStr) || false;
+	/** Render the completion and, for recurring tasks, skip actions. */
+	private addCompleteOrSkipSection(task: TaskInfo, plugin: TaskNotesPlugin): void {
+		const isRecurring = !!task.recurrence;
+
+		// Default to the submenu when the setting is unset (backward compatible).
+		if (plugin.settings.completionMenuAsSubmenu === false) {
+			this.menu.addSeparator();
+			this.addCompletionMenuItems(task, plugin, this.menu);
+			if (isRecurring) {
+				this.addSkipMenuItem(task, plugin, this.menu);
+			}
+			this.menu.addSeparator();
+			return;
+		}
 
 		this.menu.addItem((item) => {
 			item.setTitle(
-				isCompletedForDate
-					? this.t("contextMenus.task.markIncomplete")
-					: this.t("contextMenus.task.markComplete")
+				this.t(
+					isRecurring
+						? "contextMenus.task.completion.submenu"
+						: "contextMenus.task.completion.submenuCompleteOnly"
+				)
 			);
-			item.setIcon(isCompletedForDate ? "x" : "check");
-			item.onClick(async () => {
-				try {
-					await plugin.toggleRecurringTaskComplete(task, this.options.targetDate);
-					this.options.onUpdate?.();
-				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
-					tasknotesLogger.error("Error toggling recurring task completion:", {
-						category: "persistence",
-						operation: "toggling-recurring-task-completion",
-						details: { taskPath: task.path },
-						error: errorMessage,
-					});
-					new Notice(
-						this.t("contextMenus.task.notices.toggleCompletionFailure", {
-							message: errorMessage,
-						})
-					);
+			item.setIcon("check-check");
+			const submenu = getSubmenu(item);
+			this.addCompletionMenuItems(task, plugin, submenu);
+			if (isRecurring) {
+				this.addSkipMenuItem(task, plugin, submenu);
+			}
+		});
+	}
+
+	/**
+	 * Render the four completion actions. Un-complete differs by type: recurring
+	 * toggles each action's own date; non-recurring collapses to one "Mark incomplete".
+	 */
+	private addCompletionMenuItems(task: TaskInfo, plugin: TaskNotesPlugin, menu: Menu): void {
+		const isRecurring = !!task.recurrence;
+
+		if (!isRecurring && plugin.statusManager.isCompletedStatus(task.status)) {
+			menu.addItem((item) => {
+				item.setTitle(this.t("contextMenus.task.completion.markIncomplete"));
+				item.setIcon("x");
+				item.onClick(async () => {
+					await this.uncompleteNonRecurringTask(task, plugin);
+				});
+			});
+			return;
+		}
+
+		this.addConcreteCompletionAction(
+			task,
+			plugin,
+			"today",
+			"contextMenus.task.completion.completeToday",
+			menu
+		);
+		this.addConcreteCompletionAction(
+			task,
+			plugin,
+			"asScheduled",
+			"contextMenus.task.completion.completeAsScheduled",
+			menu
+		);
+		this.addConcreteCompletionAction(
+			task,
+			plugin,
+			"onDue",
+			"contextMenus.task.completion.completeOnDue",
+			menu
+		);
+		this.addPickCompletionDateAction(task, plugin, menu);
+	}
+
+	private addConcreteCompletionAction(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		mode: CompletionMode,
+		baseLabelKey: string,
+		menu: Menu
+	): void {
+		const isRecurring = !!task.recurrence;
+		const ctx: CompletionDateContext = { occurrenceDate: this.options.occurrenceDate };
+		const resolution = resolveCompletionDate(task, mode, ctx);
+
+		menu.addItem((item) => {
+			if (!resolution.available) {
+				// Shown disabled (not hidden) with a reason tooltip.
+				item.setTitle(this.t(baseLabelKey));
+				item.setIcon("check");
+				item.setDisabled(true);
+				const el = getMenuItemElement(item);
+				if (el) {
+					setTooltip(el, this.t(resolution.reasonKey));
 				}
+				return;
+			}
+
+			const resolvedDate = resolution.date;
+			const alreadyComplete =
+				isRecurring &&
+				(task.complete_instances?.includes(formatDateForStorage(resolvedDate)) ?? false);
+			item.setTitle(
+				alreadyComplete
+					? this.t("contextMenus.task.completion.markIncomplete")
+					: this.t(baseLabelKey)
+			);
+			item.setIcon(alreadyComplete ? "x" : "check");
+			item.onClick(async () => {
+				await this.dispatchCompletion(task, plugin, resolvedDate);
 			});
 		});
+	}
 
+	private addPickCompletionDateAction(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		menu: Menu
+	): void {
+		menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.completion.completeOnPicked"));
+			item.setIcon("calendar-plus");
+			item.onClick(() => {
+				this.pickCompletionDate(task, plugin);
+			});
+		});
+	}
+
+	/**
+	 * Open the shared date picker and record completion date-only (storage keys are
+	 * date-only, so the picker offers no time). Cancel is a no-op.
+	 */
+	private pickCompletionDate(task: TaskInfo, plugin: TaskNotesPlugin): void {
+		this.menu.hide();
+		const modal = new DateTimePickerModal(plugin.app, {
+			currentDate: null,
+			title: this.t("contextMenus.task.completion.pickDateTitle"),
+			showTime: false,
+			plugin,
+			onSelect: (date) => {
+				if (!date) {
+					return;
+				}
+				const picked = parseDateToUTC(getDatePart(date));
+				const resolution = resolveCompletionDate(task, "onPicked", { pickedDate: picked });
+				if (!resolution.available) {
+					return;
+				}
+				void this.dispatchCompletion(task, plugin, resolution.date);
+			},
+		});
+		modal.open();
+	}
+
+	private async dispatchCompletion(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		resolvedDate: Date
+	): Promise<void> {
+		try {
+			if (task.recurrence) {
+				// Completion-anchored recurrences re-anchor DTSTART from the recorded date.
+				await plugin.toggleRecurringTaskComplete(task, resolvedDate);
+			} else {
+				const completedStatus = plugin.statusManager.getCompletedStatuses()[0];
+				if (!completedStatus) {
+					new Notice(this.t("contextMenus.task.completion.noCompletedStatus"));
+					return;
+				}
+				await plugin.updateTaskProperty(task, "status", completedStatus, {
+					completionDate: formatDateForStorage(resolvedDate),
+				});
+			}
+			this.options.onUpdate?.();
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			tasknotesLogger.error("Error completing task:", {
+				category: "persistence",
+				operation: "completing-task",
+				details: { taskPath: task.path },
+				error: errorMessage,
+			});
+			new Notice(
+				this.t("contextMenus.task.completion.completeFailure", {
+					message: errorMessage,
+				})
+			);
+		}
+	}
+
+	private async uncompleteNonRecurringTask(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin
+	): Promise<void> {
+		try {
+			// Revert to the default open status; the status pipeline clears
+			// completedDate for a non-completed status (mirrors uncompleteTask).
+			const openStatus = plugin.settings.defaultTaskStatus ?? "open";
+			await plugin.updateTaskProperty(task, "status", openStatus);
+			this.options.onUpdate?.();
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			tasknotesLogger.error("Error marking task incomplete:", {
+				category: "persistence",
+				operation: "uncompleting-task",
+				details: { taskPath: task.path },
+				error: errorMessage,
+			});
+			new Notice(
+				this.t("contextMenus.task.completion.completeFailure", {
+					message: errorMessage,
+				})
+			);
+		}
+	}
+
+	private addSkipMenuItem(task: TaskInfo, plugin: TaskNotesPlugin, menu: Menu): void {
 		// Not routed through the four-mode resolver: that would drop the completion-anchor guard.
 		const skipOccurrenceDate = this.options.occurrenceDate;
 		const skipLabelDate = skipOccurrenceDate ?? getRecurringTaskActionDate(task);
 		const skipDateStr = formatDateForStorage(skipLabelDate);
 		const isSkippedForDate = task.skipped_instances?.includes(skipDateStr) || false;
 
-		this.menu.addItem((item) => {
+		menu.addItem((item) => {
 			item.setTitle(
 				isSkippedForDate
 					? this.t("contextMenus.task.unskipInstance")
@@ -924,10 +1118,6 @@ export class TaskContextMenu {
 				}
 			});
 		});
-
-		if (!this.options.promoteOccurrenceControls) {
-			this.addOccurrenceNoteMenuItem(task, plugin);
-		}
 	}
 
 	private addPromotedOccurrenceControls(task: TaskInfo, plugin: TaskNotesPlugin): boolean {
@@ -2366,15 +2556,12 @@ export class TaskContextMenu {
 		if ((event.target as Node)?.instanceOf?.(HTMLElement)) {
 			this.targetDoc = (event.target as HTMLElement).ownerDocument;
 		}
-		this.menu.showAtMouseEvent(event);
+		showCoordinatedMenu(this.menu, event);
 	}
 
 	public showAtElement(element: HTMLElement): void {
 		// Store the document reference from the element to support pop-out windows
 		this.targetDoc = element.ownerDocument;
-		this.menu.showAtPosition({
-			x: element.getBoundingClientRect().left,
-			y: element.getBoundingClientRect().bottom + 4,
-		});
+		showCoordinatedMenuAtElement(this.menu, element);
 	}
 }

@@ -15,6 +15,7 @@ import type { InterpolationValues, TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { processVaultFrontMatter } from "./VaultMutationService";
+import { findProviderCalendar } from "./CalendarProvider";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSNoteService" });
 
@@ -60,10 +61,9 @@ export class ICSNoteService {
 			.find((event) => event.id === trimmedEventId);
 		if (googleEvent) {
 			const calendarId = googleEvent.subscriptionId.replace("google-", "");
+			const calendars = this.plugin.googleCalendarService?.getAvailableCalendars() ?? [];
 			const subscriptionName =
-				this.plugin.googleCalendarService
-					?.getAvailableCalendars()
-					.find((calendar) => calendar.id === calendarId)?.summary || "Google Calendar";
+				findProviderCalendar(calendars, calendarId)?.summary || "Google Calendar";
 			return { event: googleEvent, subscriptionName };
 		}
 

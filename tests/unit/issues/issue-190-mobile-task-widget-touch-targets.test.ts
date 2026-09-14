@@ -13,7 +13,7 @@ describe("Issue #190: mobile task widget touch targets", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 
 		expect(variablesCss).toMatch(
-			/body\.is-mobile \.tasknotes-plugin\s*\{[^}]*--tn-mobile-task-card-indicator-size:\s*24px;[^}]*--tn-mobile-task-card-menu-size:\s*32px;[^}]*--tn-mobile-inline-indicator-size:\s*20px;[^}]*--tn-mobile-inline-menu-size:\s*24px;/s
+			/body\.is-mobile \.tasknotes-plugin\s*\{[^}]*--tn-mobile-task-card-indicator-size:\s*24px;[^}]*--tn-mobile-task-card-menu-size:\s*36px;[^}]*--tn-mobile-inline-indicator-size:\s*24px;[^}]*--tn-mobile-inline-menu-size:\s*28px;/s
 		);
 		expect(css).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__main-row\s*\{[^}]*align-items:\s*flex-start;[^}]*flex-wrap:\s*wrap;/s

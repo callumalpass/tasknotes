@@ -1,4 +1,5 @@
 import type { FieldMappingKey } from "../types";
+import { formatProjectEntryLinkExpression } from "../templates/defaultBasesFiles";
 import type { UserMappedField } from "../types/settings";
 import type {
 	BasesCreateFileFrontmatter,
@@ -120,7 +121,15 @@ function applyFilterRuleDefault(
 		/^(.+?)\.contains\(this\.file\.asLink\(\)\)$/
 	);
 	if (currentFileContainsMatch) {
-		const property = normalizeFilterProperty(currentFileContainsMatch[1], options);
+		let expression = currentFileContainsMatch[1].trim();
+		// Only unwrap the link normalization we generate ourselves. Arbitrary
+		// map/filter transformations do not imply a writable source default.
+		const normalization = `.map(${formatProjectEntryLinkExpression("value")})`;
+		if (expression.endsWith(normalization)) {
+			expression = expression.slice(0, -normalization.length)
+				.replace(/^file\.hasLink\(this\.file\)\s*&&\s*/, "");
+		}
+		const property = normalizeFilterProperty(expression, options);
 		const currentFileLink = resolveCurrentFileLink(options.currentFileLink);
 		if (property && currentFileLink) {
 			addFrontmatterDefault(defaults, property, currentFileLink, options.fieldMapper);
@@ -139,6 +148,8 @@ function normalizeFilterProperty(
 	options: BasesFilterDefaultOptions
 ): string | null {
 	let property = propertyExpression.trim();
+
+
 	const listMatch = property.match(/^list\((.+)\)$/);
 	if (listMatch) {
 		property = listMatch[1].trim();

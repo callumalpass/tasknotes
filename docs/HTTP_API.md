@@ -22,12 +22,12 @@ Default port is `8080`.
 
 ## Authentication
 
-Authentication is optional.
+Authentication is required for both HTTP API and MCP requests.
 
-- If `apiAuthToken` is empty, all API requests are accepted.
-- If `apiAuthToken` is set, send `Authorization: Bearer <token>`.
-- Set a token for any workflow where local browser pages, scripts, or other
-  desktop apps are not fully trusted.
+- Send `Authorization: Bearer <token>` using the token in Integrations settings.
+- If `apiAuthToken` is empty at startup, TaskNotes generates and saves a token before starting the server.
+- Clearing the token does not enable unauthenticated access; requests are rejected until a token is configured or generated at the next server start.
+- Existing clients that omitted authentication must be updated to send the token.
 
 Example:
 

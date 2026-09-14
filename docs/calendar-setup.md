@@ -55,6 +55,12 @@ Verify credentials first, then confirm loopback redirect configuration. TaskNote
 
 For Google 403 `access_denied` errors during sign-in, confirm the account is listed as a test user in the Google Auth Platform audience settings while your OAuth app is in testing mode.
 
+**Google `400 redirect_uri_mismatch`**
+
+Check that the credentials entered in TaskNotes belong to an OAuth client of type **Desktop app**, not **Web application**. TaskNotes uses `http://127.0.0.1:<port>` and the operating system chooses the port for each connection attempt. A Web application client configured with a fixed `8080` redirect may work for one attempt but is not compatible with this dynamic-port setup. A `flowName` query parameter is not part of TaskNotes' callback URI and should not be added as a required redirect.
+
+If a Desktop app client still fails, report your TaskNotes and Obsidian versions, operating system, client application type, and only the `redirect_uri` from Google's error details. Do not post the full authorization URL, client secret, authorization code, state, tokens, or exported settings. Adding a test user addresses testing-mode `403 access_denied`, not a redirect mismatch.
+
 **"Failed to fetch events"**
 
 Disconnect and reconnect to refresh OAuth tokens, then re-check provider-side calendar permissions.

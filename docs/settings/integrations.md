@@ -101,7 +101,7 @@ HTTP API settings control the local server lifecycle, listening port, and reques
 Changes to API enablement or port require an Obsidian restart to take effect.
 
 !!! warning
-    The HTTP API binds to loopback only and browser CORS is limited to loopback origins. If the authentication token is empty, local API requests are still unauthenticated. Set a token unless your local environment is fully trusted.
+    The HTTP API binds to loopback only and browser CORS is limited to loopback and supported extension origins. Authentication is required for HTTP API and MCP requests. If the token is empty when the server starts, TaskNotes generates and saves one. Copy it into your clients' authentication settings; clearing it does not enable unauthenticated access.
 
 ## Webhooks
 

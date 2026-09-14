@@ -52,6 +52,7 @@ import { TFile } from "../../helpers/obsidian-runtime";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 import { TaskService } from "../../../src/services/TaskService";
 import type { TaskInfo } from "../../../src/types";
+import { TaskFileLifecycleReconciliationService } from "../../../src/services/TaskFileLifecycleReconciliationService";
 
 jest.mock("../../../src/utils/dateUtils", () => {
 	const actual = jest.requireActual("../../../src/utils/dateUtils");
@@ -457,6 +458,54 @@ describe("TaskService materialized occurrences", () => {
 			scheduled: "2026-06-02",
 		});
 		expect(frontmatterByPath.get(parent.path)?.skipped_instances).toBeUndefined();
+	});
+
+	it.each([
+		[false, "open", "done"],
+		[true, "open", "done"],
+		[false, "false", "true"],
+		[true, "false", "true"],
+	] as const)("reconciles direct occurrence status edits (automatic next: %s, %s → %s) (#2328)", async (automaticNext, activeStatus, completedStatus) => {
+		const parent = TaskFactory.createTask({
+			path: "Tasks/Parent.md",
+			recurrence: "DTSTART:20260601;FREQ=DAILY",
+			scheduled: "2026-06-01",
+			complete_instances: [],
+			skipped_instances: ["2026-06-01"],
+			occurrence_materialization: automaticNext ? "on_completion" : "manual",
+		});
+		const occurrence = TaskFactory.createTask({
+			path: "Tasks/Occurrence.md",
+			status: activeStatus,
+			recurrence_parent: "[[Tasks/Parent]]",
+			occurrence_date: "2026-06-01",
+			scheduled: "2026-06-01",
+		});
+		const { plugin, taskService, frontmatterByPath } = createService({
+			[parent.path]: parent,
+			[occurrence.path]: occurrence,
+		});
+		plugin.taskService = taskService;
+		plugin.statusManager.isCompletedStatus = jest.fn((status) => status === completedStatus);
+		const materialize = jest.spyOn(taskService, "materializeOccurrence").mockResolvedValue(occurrence);
+		const lifecycle = new TaskFileLifecycleReconciliationService(plugin);
+		await lifecycle.initialize();
+		try {
+			const completed = { ...occurrence, status: completedStatus };
+			await lifecycle.handleTaskUpdatedEvent({ task: completed });
+			expect(frontmatterByPath.get(parent.path)).toMatchObject({
+				complete_instances: ["2026-06-01"],
+				scheduled: "2026-06-02",
+			});
+			expect(frontmatterByPath.get(parent.path)?.skipped_instances).toBeUndefined();
+			expect(materialize).toHaveBeenCalledTimes(automaticNext ? 1 : 0);
+			await lifecycle.handleTaskUpdatedEvent({ task: completed });
+			expect(materialize).toHaveBeenCalledTimes(automaticNext ? 1 : 0);
+			await lifecycle.handleTaskUpdatedEvent({ task: occurrence });
+			expect(frontmatterByPath.get(parent.path)?.complete_instances).toBeUndefined();
+		} finally {
+			lifecycle.destroy();
+		}
 	});
 
 	it("advances completion-anchored parents from the actual completion date", async () => {

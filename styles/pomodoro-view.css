@@ -117,6 +117,7 @@
 
 /* Timer Display */
 .tasknotes-plugin .pomodoro-view__timer-display {
+    pointer-events: auto;
     font-size: 3.5rem;
     color: var(--tn-text-normal);
     text-align: center;
@@ -141,7 +142,11 @@
 }
 
 .tasknotes-plugin .pomodoro-view__timer-input {
+    pointer-events: auto;
     width: 5.5em;
+    height: auto;
+    min-height: 1.4em;
+    padding: 0.1em 0.2em;
     border: none;
     border-radius: var(--tn-radius-sm);
     background: var(--background-secondary);
