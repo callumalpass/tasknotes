@@ -2,6 +2,7 @@ import { Modal, normalizePath, type TAbstractFile, TFile } from "obsidian";
 import YAML from "yaml";
 import { canonicalTaskNotesResources } from "./canonicalTaskNotesPack";
 import { legacyTaskNotesSupport } from "./legacyTaskNotesSupport";
+import { remapMdbaseTypeReferences } from "./mdbaseTypeReferences";
 import {
 	buildTaskNotesMdbaseResources,
 	type TaskNotesMdbaseResources,
@@ -1612,6 +1613,7 @@ export class MdbaseSpecService {
 		return {
 			...resources,
 			configDocument: config.toString(),
+			typeDocument: remapMdbaseTypeReferences(resources.typeDocument, new Map([["task", typeName]]), [], true),
 			contractDocument: document("contracts/tasknotes.task/0.3.0-rc.3.md"),
 			taskSchemaDocument: document("schemas/tasknotes.task/0.3.0-rc.3.schema.json"),
 			bindingSchemaDocument: document("schemas/tasknotes.task.binding/0.3.0-rc.3.schema.json"),

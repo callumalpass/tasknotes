@@ -277,6 +277,16 @@ describe("MdbaseSpecService", () => {
 			}
 		);
 
+		it.each(["tasknotes-task", "custom-task", "nested-task"])("targets its own chosen type identity: %s", (name) => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const resources = (service as unknown as {
+				buildCanonicalMdbaseResources(folder: string, legacy: boolean, typeName: string): { typeDocument: string };
+			}).buildCanonicalMdbaseResources("_types", false, name);
+			const document = YAML.parse(resources.typeDocument.split("---")[1]);
+			expect(document.collection.links.recurrence_parent.target_type).toBe(name);
+			expect(document.collection.links["blockedBy[].uid"].target_type).toBe(name);
+		});
+
 		it("recognizes v4 plain enum scalars rather than requiring v5 quotation bytes", async () => {
 			const plugin = createMockPlugin();
 			const service = new MdbaseSpecService(plugin);
