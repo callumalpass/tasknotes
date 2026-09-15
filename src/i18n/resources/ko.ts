@@ -1962,7 +1962,7 @@ export const ko: TranslationTree = {
 				},
 				authToken: {
 					name: "API 인증 토큰",
-					description: "API 인증에 필요합니다. 비워두면 서버 시작 시 토큰이 생성됩니다.",
+					description: "TaskNotes 토큰이며 AI 서비스 제공업체의 API 키가 아닙니다. 생성하려면 HTTP API를 활성화하고 이 필드를 비운 뒤 Obsidian을 다시 시작하세요. 생성된 토큰을 클라이언트의 Bearer 인증 설정에 복사하세요. 토큰이 변경될 때마다 클라이언트 설정도 업데이트하세요.",
 					placeholder: "비밀-토큰"
 				},
 				mcp: {

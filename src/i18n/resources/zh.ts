@@ -1978,7 +1978,7 @@ export const zh: TranslationTree = {
 				},
 				authToken: {
 					name: "API认证令牌",
-					description: "API认证必需的令牌。如果留空，将在服务器启动时生成令牌。",
+					description: "这是TaskNotes令牌，不是AI服务提供商的API密钥。要生成令牌，请启用HTTP API，将此字段留空，然后重启Obsidian。随后将生成的令牌复制到客户端的Bearer认证设置中。每次更改令牌后，都需要更新客户端设置。",
 					placeholder: "你的秘密令牌"
 				},
 				mcp: {

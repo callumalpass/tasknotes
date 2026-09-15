@@ -3,6 +3,7 @@ import { addDTSTARTToRecurrenceRule, updateToNextScheduledOccurrence } from "../
 import {
 	applyGoogleCalendarRecurringExceptionCleanup,
 	applyGoogleCalendarRecurringExceptionForScheduledChange,
+	resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction,
 } from "./googleCalendarRecurringExceptions";
 import {
 	applyPropertyTaskIdentifier,
@@ -92,6 +93,54 @@ function stripTimeEntryDuration(entry: TimeEntry): TimeEntry {
 	return sanitizedEntry;
 }
 
+function getStringArray(value: unknown): string[] {
+	return Array.isArray(value)
+		? value.filter((entry): entry is string => typeof entry === "string")
+		: [];
+}
+
+/**
+ * When completing or skipping a recurring instance also advances `scheduled` to the
+ * next occurrence, that's the series cursor rolling forward - not a manual reschedule
+ * of a single occurrence. Returns the instance date that was newly marked complete or
+ * skipped, if any, so the caller can resolve (rather than create) a Google Calendar
+ * "moved occurrence" exception. Without this distinction, sync would create a detached
+ * event for the next occurrence in addition to the recurring series event already
+ * covering that date.
+ */
+function getNewlyRecordedInstanceDate(
+	originalTask: TaskInfo,
+	updates: TaskUpdateInput
+): string | undefined {
+	const originalCompleted = new Set(getStringArray(originalTask.complete_instances));
+	const originalSkipped = new Set(getStringArray(originalTask.skipped_instances));
+
+	let latest: string | undefined;
+	const consider = (dateStr: string) => {
+		if (!latest || dateStr > latest) {
+			latest = dateStr;
+		}
+	};
+
+	if (Object.prototype.hasOwnProperty.call(updates, "complete_instances")) {
+		for (const dateStr of getStringArray(updates.complete_instances)) {
+			if (!originalCompleted.has(dateStr)) {
+				consider(dateStr);
+			}
+		}
+	}
+
+	if (Object.prototype.hasOwnProperty.call(updates, "skipped_instances")) {
+		for (const dateStr of getStringArray(updates.skipped_instances)) {
+			if (!originalSkipped.has(dateStr)) {
+				consider(dateStr);
+			}
+		}
+	}
+
+	return latest;
+}
+
 export function normalizeTaskUpdateDetails(updates: TaskUpdateInput): string | null {
 	if (!Object.prototype.hasOwnProperty.call(updates, "details")) {
 		return null;
@@ -169,13 +218,40 @@ export function buildTaskUpdateRecurrenceUpdates({
 
 	if (Object.prototype.hasOwnProperty.call(updates, "scheduled")) {
 		const nextTask: TaskInfo = { ...originalTask, ...updates, ...recurrenceUpdates };
-		applyGoogleCalendarRecurringExceptionForScheduledChange(
-			originalTask,
-			updates.scheduled,
-			nextTask
-		);
+		const completionActionDate = getNewlyRecordedInstanceDate(originalTask, updates);
+
+		// History edits alone do not prove this is automatic advancement: API/modal
+		// patches can also include an intentional reschedule. Compare against the
+		// next occurrence from the original cursor, using only the updated history.
+		const expectedAdvance = completionActionDate
+			? updateToNextScheduledOccurrenceFn({
+				...originalTask,
+				complete_instances: updates.complete_instances ?? originalTask.complete_instances,
+				skipped_instances: updates.skipped_instances ?? originalTask.skipped_instances,
+			}, maintainDueDateOffsetInRecurring)
+			: undefined;
+		const isAutomaticAdvance = completionActionDate &&
+			updates.scheduled !== originalTask.scheduled &&
+			updates.scheduled === expectedAdvance?.scheduled &&
+			(updates.recurrence === undefined || updates.recurrence === originalTask.recurrence);
+
+		if (isAutomaticAdvance) {
+			resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
+				originalTask,
+				completionActionDate,
+				nextTask
+			);
+		} else {
+			applyGoogleCalendarRecurringExceptionForScheduledChange(
+				originalTask,
+				updates.scheduled,
+				nextTask
+			);
+		}
+
 		recurrenceUpdates.googleCalendarExceptionOriginalScheduled =
 			nextTask.googleCalendarExceptionOriginalScheduled;
+		recurrenceUpdates.googleCalendarMovedOriginalDates = nextTask.googleCalendarMovedOriginalDates;
 	}
 
 	const nextTask: TaskInfo = { ...originalTask, ...updates, ...recurrenceUpdates };

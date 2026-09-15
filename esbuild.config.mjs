@@ -96,6 +96,8 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
+	// Avoid bulky Unicode escapes in translations; keep the bundle within Obsidian Sync's limit.
+	charset: "utf8",
 	plugins: [markdownPlugin, ...(!prod ? [copyToVaultPlugin] : [])],
 });
 
