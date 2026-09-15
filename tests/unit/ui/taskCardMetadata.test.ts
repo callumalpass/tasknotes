@@ -18,7 +18,11 @@ function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 
 function createPlugin(): TaskNotesPlugin {
 	return {
-		settings: {},
+		settings: {
+			calendarViewSettings: {
+				timeFormat: "24",
+			},
+		},
 		app: {
 			metadataCache: {
 				getFirstLinkpathDest: jest.fn(() => null),
@@ -37,7 +41,7 @@ function createPlugin(): TaskNotesPlugin {
 			toUserField: jest.fn((field: string) => field),
 		},
 		i18n: {
-			translate: jest.fn((key: string) => {
+			translate: jest.fn((key: string, vars?: Record<string, string | number>) => {
 				const translations: Record<string, string> = {
 					"ui.taskCard.blockedBadge": "Blocked",
 					"ui.taskCard.blockedBadgeTooltip": "This task is blocked",
@@ -45,10 +49,21 @@ function createPlugin(): TaskNotesPlugin {
 					"ui.taskCard.blockingBadgeTooltip": "This task is blocking another task",
 					"ui.taskCard.googleCalendarSyncTooltip": "Synced to Google Calendar",
 					"ui.taskCard.labels.due": "Due",
+					"ui.taskCard.labels.scheduled": "Scheduled",
 				};
-				return translations[key] ?? key;
+				if (translations[key]) {
+					return translations[key];
+				}
+				if (vars) {
+					return `${key} ${Object.values(vars).join(" ")}`;
+				}
+				return key;
 			}),
 		},
+		statusManager: {
+			isCompletedStatus: jest.fn((status: string) => status === "done"),
+		},
+		updateTaskProperty: jest.fn(),
 	} as unknown as TaskNotesPlugin;
 }
 
@@ -62,10 +77,140 @@ function createMetadataHost() {
 	return { card, metadataLine };
 }
 
+function renderMetadataForTask(
+	task: TaskInfo,
+	visibleProperties: string[]
+): { metadataLine: HTMLElement; elements: HTMLElement[] } {
+	const plugin = createPlugin();
+	const { card, metadataLine } = createMetadataHost();
+	const elements = renderTaskCardMetadata({
+		metadataLine,
+		card,
+		task,
+		plugin,
+		visibleProperties,
+		onBlockedByToggle: jest.fn(),
+	});
+
+	return { metadataLine, elements };
+}
+
+function getDateMetadata(metadataLine: HTMLElement, dateType: "due" | "scheduled"): HTMLElement {
+	const element = metadataLine.querySelector<HTMLElement>(
+		`.task-card__metadata-date--${dateType}`
+	);
+	if (!element) {
+		throw new Error(`Missing ${dateType} date metadata`);
+	}
+	return element;
+}
+
 describe("taskCardMetadata", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
 		jest.clearAllMocks();
+	});
+
+	describe("date metadata state classes", () => {
+		beforeEach(() => {
+			jest.useFakeTimers();
+			jest.setSystemTime(new Date("2026-08-12T12:00:00"));
+		});
+
+		afterEach(() => {
+			jest.useRealTimers();
+		});
+
+		it.each([
+			{
+				due: "2026-08-11",
+				expectedClass: "task-card__metadata-date--overdue",
+				absentClasses: [
+					"task-card__metadata-date--today",
+					"task-card__metadata-date--future",
+				],
+			},
+			{
+				due: "2026-08-12",
+				expectedClass: "task-card__metadata-date--today",
+				absentClasses: [
+					"task-card__metadata-date--overdue",
+					"task-card__metadata-date--future",
+				],
+			},
+			{
+				due: "2026-08-13",
+				expectedClass: "task-card__metadata-date--future",
+				absentClasses: [
+					"task-card__metadata-date--overdue",
+					"task-card__metadata-date--today",
+				],
+			},
+		])("adds due metadata state class for $due", ({ due, expectedClass, absentClasses }) => {
+			const { metadataLine } = renderMetadataForTask(createTask({ due }), ["due"]);
+			const dueElement = getDateMetadata(metadataLine, "due");
+
+			expect(dueElement.classList.contains("task-card__metadata-date")).toBe(true);
+			expect(dueElement.classList.contains(expectedClass)).toBe(true);
+			for (const absentClass of absentClasses) {
+				expect(dueElement.classList.contains(absentClass)).toBe(false);
+			}
+		});
+
+		it.each([
+			{
+				scheduled: "2026-08-11",
+				expectedClass: "task-card__metadata-date--past",
+				absentClasses: [
+					"task-card__metadata-date--today",
+					"task-card__metadata-date--future",
+				],
+			},
+			{
+				scheduled: "2026-08-12",
+				expectedClass: "task-card__metadata-date--today",
+				absentClasses: [
+					"task-card__metadata-date--past",
+					"task-card__metadata-date--future",
+				],
+			},
+			{
+				scheduled: "2026-08-13",
+				expectedClass: "task-card__metadata-date--future",
+				absentClasses: [
+					"task-card__metadata-date--past",
+					"task-card__metadata-date--today",
+				],
+			},
+		])(
+			"adds scheduled metadata state class for $scheduled",
+			({ scheduled, expectedClass, absentClasses }) => {
+				const { metadataLine } = renderMetadataForTask(createTask({ scheduled }), [
+					"scheduled",
+				]);
+				const scheduledElement = getDateMetadata(metadataLine, "scheduled");
+
+				expect(scheduledElement.classList.contains("task-card__metadata-date")).toBe(true);
+				expect(scheduledElement.classList.contains(expectedClass)).toBe(true);
+				for (const absentClass of absentClasses) {
+					expect(scheduledElement.classList.contains(absentClass)).toBe(false);
+				}
+			}
+		);
+
+		it("does not classify a completed past due date as future when overdue styling is hidden", () => {
+			const { metadataLine } = renderMetadataForTask(
+				createTask({
+					due: "2026-08-11",
+					status: "done",
+				}),
+				["due"]
+			);
+			const dueElement = getDateMetadata(metadataLine, "due");
+
+			expect(dueElement.classList.contains("task-card__metadata-date--overdue")).toBe(false);
+			expect(dueElement.classList.contains("task-card__metadata-date--future")).toBe(false);
+		});
 	});
 
 	it("renders blocked metadata as an interactive blocked-by expansion control", () => {

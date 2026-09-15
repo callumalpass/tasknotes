@@ -32,6 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2223, #2224) Added `task-card__metadata-date--today` and `task-card__metadata-date--future` CSS classes for due and scheduled dates. Completed past dates are not classified as future when overdue styling is hidden. Thanks to @chmac for the suggestion and contribution.
+
 ## Fixed
 
 - (#2203) Fixed completing or skipping a recurring instance in the edit modal creating a duplicate Google Calendar event when the scheduled date advances. Manual rescheduling still creates the appropriate moved occurrence. Thanks to @christenbc for the fix.
