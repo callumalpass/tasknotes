@@ -3125,6 +3125,7 @@ export const ja: TranslationTree = {
 			blockingBadgeTooltip: "このタスクは他のタスクをブロックしています",
 			blockingToggle: "{count} 件のタスクをブロック",
 			priorityAriaLabel: "優先度: {label}",
+			selectTask: "タスクを選択",
 			taskOptions: "タスクオプション",
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "リマインダーが1件設定されています (クリックして管理)",

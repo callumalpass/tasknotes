@@ -25,6 +25,14 @@ export interface VirtualScrollerOptions<T> {
 	renderItem: (item: T, index: number) => HTMLElement;
 	/** Optional function to get unique key for item */
 	getItemKey?: (item: T, index: number) => string;
+	/**
+	 * Called whenever renderVisibleItems() finishes mounting/unmounting DOM nodes,
+	 * for any reason (scroll-driven recycle, updateItems, invalidateItems, etc.).
+	 * Lets callers re-apply per-item visual state (selection, focus) that the
+	 * scroller itself has no knowledge of, since freshly-created elements always
+	 * start in their default unstyled state.
+	 */
+	onRenderedElementsChanged?: () => void;
 }
 
 export interface VirtualScrollState {
@@ -78,6 +86,7 @@ export class VirtualScroller<T> {
 	private overscan: number;
 	private renderItem: (item: T, index: number) => HTMLElement;
 	private getItemKey: (item: T, index: number) => string;
+	private onRenderedElementsChanged?: () => void;
 
 	private state: VirtualScrollState = {
 		startIndex: 0,
@@ -105,6 +114,7 @@ export class VirtualScroller<T> {
 		this.overscan = options.overscan ?? 5;
 		this.renderItem = options.renderItem;
 		this.getItemKey = options.getItemKey ?? ((item, index) => String(index));
+		this.onRenderedElementsChanged = options.onRenderedElementsChanged;
 
 		this.setupDOM();
 		this.attachScrollListener();
@@ -629,6 +639,8 @@ export class VirtualScroller<T> {
 			}
 		}
 
+		this.onRenderedElementsChanged?.();
+
 		// Schedule measurement after render
 		window.requestAnimationFrame(() => {
 			this.measureRenderedItems();
@@ -829,6 +841,21 @@ export class VirtualScroller<T> {
 			top: targetScroll,
 			behavior,
 		});
+	}
+
+	/**
+	 * Synchronously scrolls to and mounts the item at `index`, bypassing the
+	 * scroll-event throttle, and returns its now-mounted element. Used to let
+	 * keyboard navigation reach items the scroller hasn't rendered yet.
+	 */
+	ensureIndexRendered(index: number): HTMLElement | null {
+		if (index < 0 || index >= this.items.length) return null;
+
+		this.scrollContainer.scrollTop = this.getItemPosition(index);
+		this.updateVisibleRange();
+
+		const key = this.getItemKey(this.items[index], index);
+		return this.renderedElements.get(key) ?? null;
 	}
 
 	/**

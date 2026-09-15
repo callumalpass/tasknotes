@@ -151,6 +151,15 @@ This option is useful for project planning and visualizing how long tasks are ex
 
 These display options are preserved when you save a view, allowing you to create specialized calendar views that show only specific types of events and maintain those preferences across sessions.
 
+### Keyboard Shortcuts
+
+Keyboard shortcut support depends on the active view mode:
+
+- **List mode**: Renders the same task cards as Task List, so it supports the full shortcut set once a card has keyboard focus or is hovered — navigation, multi-select, editing dates/priority/status/recurrence, marking complete, archiving, and more.
+- **Month, Week, Day, Year, and Custom Days modes**: These render FullCalendar's own event elements rather than task cards, so there is no keyboard-focus or multi-select model to navigate. Shortcuts instead act on whichever task the mouse is currently hovering — edit dates/priority/status/recurrence, mark complete, archive, add tags/context/project, open the context menu, copy the title, or delete. Navigation, selection, search, and create-task shortcuts don't apply in these modes.
+
+Shortcuts are configured once for all views in **Settings → TaskNotes → Keyboard shortcuts**.
+
 ### OAuth Calendar Integration
 
 The Calendar View supports bidirectional synchronization with external calendar services through OAuth authentication:

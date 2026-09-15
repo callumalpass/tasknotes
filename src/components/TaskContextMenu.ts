@@ -1891,7 +1891,16 @@ export class TaskContextMenu {
 
 				item.onClick(async () => {
 					try {
-						await plugin.updateTaskProperty(task, "status", option.value);
+						if (
+							task.recurrence &&
+							plugin.statusManager.isCompletedStatus(option.value)
+						) {
+							// Completed statuses on a recurring parent represent completion of
+							// the active occurrence, not termination of the whole series.
+							await plugin.toggleRecurringTaskComplete(task, this.options.targetDate);
+						} else {
+							await plugin.updateTaskProperty(task, "status", option.value);
+						}
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);

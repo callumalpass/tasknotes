@@ -110,6 +110,21 @@ describe('Settings UI - Tab Button CSS Classes', () => {
     expect(appearanceButton.classList.contains('vertical-tab-nav-item')).toBe(true);
   });
 
+  test('switches tabs in an Obsidian settings-search result', () => {
+    const searchResult = document.createElement('div');
+    const definition = tab.getSettingDefinitions()[0];
+    definition.render({ settingEl: searchResult } as any);
+
+    const generalButton = searchResult.querySelector('#tab-button-general') as HTMLElement;
+    const appearanceButton = searchResult.querySelector('#tab-button-appearance') as HTMLElement;
+
+    appearanceButton.click();
+
+    expect(generalButton.classList.contains('is-active')).toBe(false);
+    expect(appearanceButton.classList.contains('is-active')).toBe(true);
+    expect(searchResult.querySelector('#settings-tab-appearance')?.classList.contains('active')).toBe(true);
+  });
+
   test('all tab buttons have vertical-tab-nav-item class', () => {
     tab.display();
 

@@ -4,6 +4,7 @@ import { hasMissingMigratedSettings } from "./settingsMigration";
 import type { TaskCreationDefaults, TaskNotesSettings } from "../types/settings";
 import { initializeFieldConfig } from "../utils/fieldConfigDefaults";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { normalizeTaskListShortcutMap } from "../bases/taskListKeyboardActions";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/SettingsPersistence" });
 
@@ -11,6 +12,7 @@ export type LoadedSettingsData = Partial<TaskNotesSettings> &
 	Record<string, unknown> & {
 		statusSuggestionTrigger?: string;
 		useNativeMetadataCache?: unknown;
+		keyboardShortcuts?: Record<string, readonly string[]>;
 	};
 
 export type SettingsDataHost = {
@@ -109,6 +111,35 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 
 	const migratedData: LoadedSettingsData = { ...data };
 
+	// Migration from the v3 custom branch. Only actions that still exist in the
+	// current semantic action layer are carried forward.
+	if (!migratedData.taskListShortcuts && migratedData.keyboardShortcuts) {
+		const legacy = migratedData.keyboardShortcuts;
+		migratedData.taskListShortcuts = normalizeTaskListShortcutMap({
+			"navigate-next": legacy.navigateDown,
+			"navigate-previous": legacy.navigateUp,
+			"clear-focus-and-selection": legacy.clearFocusAndSelection,
+			"toggle-select": legacy.toggleSelect,
+			"select-all": legacy.selectAll,
+			"copy-task-titles": legacy.copyTaskTitles,
+			"toggle-archive": legacy.toggleArchive,
+			"create-task": legacy.newTask,
+			"focus-search": legacy.focusFilter,
+			"edit-task": legacy.openEdit,
+			"open-task-notes": legacy.openInNewPane,
+			"edit-due": legacy.editDueDates,
+			"edit-scheduled": legacy.editScheduleDates,
+			"edit-priority": legacy.editPriorities,
+			"edit-status": legacy.editStatuses,
+			"edit-recurrence": legacy.editRecurrence,
+			"add-tags": legacy.editTags,
+			"add-context": legacy.editContexts,
+			"add-project": legacy.editProjects,
+			"delete-tasks": legacy.deleteTasks,
+		});
+		delete migratedData.keyboardShortcuts;
+	}
+
 	// Migration: Remove old useNativeMetadataCache setting if it exists.
 	delete migratedData.useNativeMetadataCache;
 
@@ -194,6 +225,9 @@ function buildTaskCreationDefaults(
 }
 
 export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): SettingsBuildResult {
+	const migratedLegacyKeyboardShortcuts = Boolean(
+		data?.keyboardShortcuts && !data.taskListShortcuts
+	);
 	const loadedData = migrateLoadedSettingsData(data);
 	const migratedLegacyCustomFilenameTemplate =
 		data?.taskFilenameFormat !== "custom" &&
@@ -218,6 +252,9 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 			...DEFAULT_SETTINGS.commandFileMapping,
 			...(loadedData?.commandFileMapping || {}),
 		},
+		taskListShortcuts: normalizeTaskListShortcutMap(loadedData?.taskListShortcuts),
+		taskListUserFieldShortcuts: loadedData?.taskListUserFieldShortcuts ?? {},
+		userFieldMru: loadedData?.userFieldMru ?? {},
 		icsIntegration: {
 			...DEFAULT_SETTINGS.icsIntegration,
 			...(loadedData?.icsIntegration || {}),
@@ -241,7 +278,8 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		shouldPersistMigratedSettings:
 			hasMissingMigratedSettings(loadedData) ||
 			migratedLegacyCustomFilenameTemplate ||
-			migratedParentNoteTaskCreationDefault,
+			migratedParentNoteTaskCreationDefault ||
+			migratedLegacyKeyboardShortcuts,
 	};
 }
 

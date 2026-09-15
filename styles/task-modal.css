@@ -1455,6 +1455,17 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     overflow-y: auto;
 }
 
+.tasknotes-plugin .task-project-selector-assigned {
+    padding: var(--size-4-2) var(--size-4-3) 0;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .task-project-selector-assigned__title {
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+    font-weight: var(--font-weight-medium);
+}
+
 .tasknotes-plugin .task-projects-empty {
     padding: var(--size-4-3);
     text-align: center;
@@ -1624,4 +1635,43 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     font-size: var(--font-ui-smaller);
     color: var(--text-muted);
     margin-top: 2px;
+}
+/* Compact editor used by configurable user-field shortcuts. */
+.tasknotes-user-field-edit-modal .tasknotes-user-field-mru,
+.tasknotes-user-field-edit-modal .tasknotes-user-field-values {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-2);
+	margin: var(--size-4-2) 0;
+}
+
+.tasknotes-user-field-edit-modal .tasknotes-user-field-mru button,
+.tasknotes-user-field-edit-modal .tasknotes-user-field-value {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: var(--size-4-1) var(--size-4-2);
+}
+
+.tasknotes-user-field-edit-modal .tasknotes-user-field-value {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-4-1);
+}
+
+.tasknotes-user-field-edit-modal .tasknotes-user-field-value-remove {
+	display: inline-flex;
+	cursor: pointer;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+}
+
+.tasknotes-user-field-edit-modal .tasknotes-user-field-value-remove:hover {
+	color: var(--text-error);
+}
+
+.tasknotes-user-field-edit-footer {
+	display: flex;
+	justify-content: flex-end;
 }

@@ -2,6 +2,7 @@ import { jest } from "@jest/globals";
 import { TFile } from "obsidian";
 import {
 	applySortOrderPlan,
+	prepareBatchSortOrderUpdate,
 	prepareSortOrderUpdate,
 	stripPropertyPrefix,
 	type SortOrderPlan,
@@ -96,6 +97,34 @@ describe("sortOrderUtils", () => {
 		expect(frontmatterByPath["alpha.md"].custom_order).toBe("0|hzzzzx:");
 		expect(frontmatterByPath["beta.md"].custom_order).toBe("0|i00003:");
 		expect(plugin.app.fileManager.processFrontMatter).toHaveBeenCalledTimes(2);
+	});
+
+	it("assigns consecutive ranks to a selected block at the drop target", async () => {
+		const plugin = createPlugin({
+			"first.md": { status: "todo", tasknotes_manual_order: "0|hzzzzz:" },
+			"second.md": { status: "todo", tasknotes_manual_order: "0|i00007:" },
+			"target.md": { status: "todo", tasknotes_manual_order: "0|i0000f:" },
+		});
+
+		const plan = await prepareBatchSortOrderUpdate(
+			"target.md",
+			true,
+			"todo",
+			"status",
+			["first.md", "second.md"],
+			plugin,
+			{ visibleTaskPaths: ["first.md", "second.md", "target.md"] }
+		);
+
+		const firstRank = plan.sortOrder!;
+		const secondRank = plan.additionalWrites.find((write) => write.path === "second.md")!
+			.sortOrder;
+		const targetRank = plan.additionalWrites.find((write) => write.path === "target.md")!
+			.sortOrder;
+
+		expect(plan.reason).toBe("rebalance");
+		expectAlphaRanks([firstRank, secondRank, targetRank]);
+		expectAscendingDisplayOrder([firstRank, secondRank, targetRank]);
 	});
 
 	it("initializes a sparse visible run in the dragged display order", async () => {

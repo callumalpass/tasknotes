@@ -3125,6 +3125,7 @@ export const ru: TranslationTree = {
 			blockingBadgeTooltip: "Эта задача блокирует другую задачу",
 			blockingToggle: "Блокирует {count} задач",
 			priorityAriaLabel: "Приоритет: {label}",
+			selectTask: "Выбрать задачу",
 			taskOptions: "Параметры задачи",
 			recurrenceTooltip: "{label}: {value}",
 			reminderTooltipOne: "1 напоминание установлено (нажмите, чтобы управлять)",

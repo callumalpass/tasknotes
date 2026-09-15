@@ -1,5 +1,6 @@
 import {
 	convertBasesGroupKeyToString,
+	convertBasesListGroupKeyToString,
 	convertBasesValueToNative,
 } from "../../../src/bases/basesValueConversion";
 
@@ -24,6 +25,16 @@ describe("Bases value conversion", () => {
 				toISOString: () => "2026-05-19T00:00:00.000Z",
 			})
 		).toBe("2026-05-19T00:00:00.000Z");
+	});
+
+	it("canonicalizes list group keys without changing scalar keys", () => {
+		expect(
+			convertBasesListGroupKeyToString({
+				constructor: { name: "ListValue" },
+				value: [{ data: "[[Kitchen]]" }, { data: "[[Baking]]" }],
+			})
+		).toBe("[[Baking]], [[Kitchen]]");
+		expect(convertBasesListGroupKeyToString({ data: "open" })).toBe("open");
 	});
 
 	it("converts list values recursively through get/length and value arrays", () => {

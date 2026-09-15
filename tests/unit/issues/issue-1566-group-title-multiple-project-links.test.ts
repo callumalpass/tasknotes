@@ -52,6 +52,21 @@ describe("Issue #1566: grouped project links", () => {
 		expect(container.textContent).toBe("Project A, Project B");
 	});
 
+	it("renders comma-delimited Bases file paths as individual links", () => {
+		const container = document.createElement("div");
+
+		renderGroupTitle(container, "Project A, Project B", makeServices());
+
+		const links = Array.from(container.querySelectorAll<HTMLAnchorElement>("a.task-group-link"));
+		expect(links).toHaveLength(2);
+		expect(links.map((link) => link.textContent)).toEqual(["Project A", "Project B"]);
+		expect(links.map((link) => link.getAttribute("data-href"))).toEqual([
+			"Project A",
+			"Project B",
+		]);
+		expect(container.textContent).toBe("Project A, Project B");
+	});
+
 	it("keeps mixed link and plain text group titles as plain text", () => {
 		const container = document.createElement("div");
 

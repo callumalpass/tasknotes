@@ -40,6 +40,7 @@ describe("Issue #2196: embedded Task List Live Preview drag", () => {
 	it("keeps reorder-card press events from reaching the Live Preview editor", () => {
 		const view = createView();
 		const task = TaskFactory.createTask({ path: "tasks/live-preview-drag.md" });
+		const sourceView = document.createElement("div");
 		const editorParent = document.createElement("div");
 		const card = document.createElement("div");
 		const title = document.createElement("div");
@@ -47,7 +48,8 @@ describe("Issue #2196: embedded Task List Live Preview drag", () => {
 		const editorMouseDown = jest.fn();
 		const editorMouseUp = jest.fn();
 
-		editorParent.setAttribute("contenteditable", "true");
+		sourceView.className = "markdown-source-view";
+		editorParent.className = "cm-editor";
 		editorParent.addEventListener("pointerdown", editorPointerDown);
 		editorParent.addEventListener("mousedown", editorMouseDown);
 		editorParent.addEventListener("mouseup", editorMouseUp);
@@ -55,6 +57,7 @@ describe("Issue #2196: embedded Task List Live Preview drag", () => {
 		title.className = "task-card__title-text";
 		card.appendChild(title);
 		editorParent.appendChild(card);
+		sourceView.appendChild(editorParent);
 
 		(view as any).setupCardDragHandlers(card, task, null);
 
@@ -73,10 +76,32 @@ describe("Issue #2196: embedded Task List Live Preview drag", () => {
 			})
 		);
 
-		expect(mouseDown.defaultPrevented).toBe(true);
+		expect(mouseDown.defaultPrevented).toBe(false);
 		expect(editorPointerDown).not.toHaveBeenCalled();
 		expect(editorMouseDown).not.toHaveBeenCalled();
 		expect(editorMouseUp).not.toHaveBeenCalled();
+		expect(card.getAttribute("draggable")).toBe("true");
+	});
+
+	it("preserves the native drag-start mouse event in a standalone Task List", () => {
+		const view = createView();
+		const task = TaskFactory.createTask({ path: "tasks/standalone-drag.md" });
+		const card = document.createElement("div");
+		const title = document.createElement("div");
+
+		card.className = "task-card";
+		title.className = "task-card__title-text";
+		card.appendChild(title);
+		(view as any).setupCardDragHandlers(card, task, null);
+
+		const mouseDown = new MouseEvent("mousedown", {
+			bubbles: true,
+			cancelable: true,
+			button: 0,
+		});
+		title.dispatchEvent(mouseDown);
+
+		expect(mouseDown.defaultPrevented).toBe(false);
 		expect(card.getAttribute("draggable")).toBe("true");
 	});
 });

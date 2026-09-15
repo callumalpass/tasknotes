@@ -1,0 +1,11 @@
+{
+	"id": "tasknotes-views",
+	"name": "TaskNotes Views",
+	"version": "1.0.0",
+	"minAppVersion": "1.13.0",
+	"description": "Adds project progress views to TaskNotes project notes.",
+	"author": "Dave Smith",
+	"authorUrl": "https://github.com/thisisthedave",
+	"fundingUrl": "https://buymeacoffee.com/thisisthedave",
+	"isDesktopOnly": false
+}

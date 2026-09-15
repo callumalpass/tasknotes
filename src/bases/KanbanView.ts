@@ -10,7 +10,9 @@ import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { VirtualScroller } from "../utils/VirtualScroller";
-import { getCurrentTimestamp } from "../utils/dateUtils";
+import { getCurrentTimestamp, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
+import type { BasesTaskCardActionViewContext } from "./BasesTaskCardKeyboardController";
+import type { TaskListAction } from "./taskListKeyboardActions";
 import { getProjectDisplayName } from "../utils/linkUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import {
@@ -570,6 +572,7 @@ export class KanbanView extends BasesViewBase {
 			this.setupSearch(this.rootElement);
 		}
 
+		this.taskCardKeyboardController?.prepareForRender();
 		try {
 			const dataItems = this.dataAdapter.extractDataItems();
 
@@ -637,6 +640,10 @@ export class KanbanView extends BasesViewBase {
 				error: error,
 			});
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
+		} finally {
+			this.taskCardKeyboardController?.restoreAfterRender();
+			this.updateSelectionVisuals();
+			this.updateSelectionIndicator(this.plugin.taskSelectionService?.getSelectionCount() ?? 0);
 		}
 	}
 
@@ -757,6 +764,25 @@ export class KanbanView extends BasesViewBase {
 				this.expandedRelationshipTaskOrder.set(path, index);
 			});
 		}
+	}
+
+
+	/**
+	 * Updates only the visible-task path/order bookkeeping (used for
+	 * Ctrl+A/Shift+Arrow-range select) from the true column-major/swimlane-major
+	 * visual render order. Deliberately narrower than setCurrentVisibleTaskPathOrder,
+	 * which also re-derives the subtask-expansion scope from whatever list it's
+	 * given — reusing that here would corrupt expandedRelationshipTaskPaths with
+	 * a top-level-only list instead of the broader relationship scope render()
+	 * already established via setExpandedRelationshipTaskScope().
+	 */
+	private setVisibleTaskPathOrder(paths: readonly string[]): void {
+		this.currentVisibleTaskPaths.clear();
+		this.currentVisibleTaskOrder.clear();
+		paths.forEach((path, index) => {
+			this.currentVisibleTaskPaths.add(path);
+			this.currentVisibleTaskOrder.set(path, index);
+		});
 	}
 
 	private applyOptimisticSortOrderResult(
@@ -1426,6 +1452,7 @@ export class KanbanView extends BasesViewBase {
 			? this.applyColumnOrder(groupByPropertyId, columnKeys)
 			: columnKeys;
 
+		const visualTaskOrder: string[] = [];
 		for (const groupKey of orderedKeys) {
 			const tasks = groups.get(groupKey) || [];
 
@@ -1445,6 +1472,7 @@ export class KanbanView extends BasesViewBase {
 				this.getSortScopeKey(groupKey),
 				tasks.map((task) => task.path)
 			);
+			visualTaskOrder.push(...tasks.map((task) => task.path));
 
 			// Create column
 			const column = await this.createColumn(
@@ -1457,6 +1485,7 @@ export class KanbanView extends BasesViewBase {
 				this.boardEl.appendChild(column);
 			}
 		}
+		this.setVisibleTaskPathOrder(visualTaskOrder);
 	}
 
 	private async renderWithSwimLanes(
@@ -1589,6 +1618,7 @@ export class KanbanView extends BasesViewBase {
 		// No manual sorting needed - Bases provides pre-sorted data
 
 		// Render each swimlane row
+		const visualTaskOrder: string[] = [];
 		for (const [swimLaneKey, columns] of swimLanes) {
 			const row = this.boardEl.createDiv({ cls: "kanban-view__swimlane-row" });
 
@@ -1620,6 +1650,7 @@ export class KanbanView extends BasesViewBase {
 					this.getSortScopeKey(columnKey, swimLaneKey),
 					tasks.map((task) => task.path)
 				);
+				visualTaskOrder.push(...tasks.map((task) => task.path));
 
 				// Create cell
 				const cell = row.createDiv({
@@ -1679,6 +1710,7 @@ export class KanbanView extends BasesViewBase {
 				this.createAddTaskButton(cell, groupByPropertyId, columnKey, swimLaneKey);
 			}
 		}
+		this.setVisibleTaskPathOrder(visualTaskOrder);
 	}
 
 	private async createColumn(
@@ -1905,6 +1937,10 @@ export class KanbanView extends BasesViewBase {
 				return cardWrapper;
 			},
 			getItemKey: (task: TaskInfo) => task.path,
+			onRenderedElementsChanged: () => {
+				this.updateSelectionVisuals();
+				this.taskCardKeyboardController?.syncFocusStyles();
+			},
 		});
 
 		this.columnScrollers.set(groupKey, scroller);
@@ -1944,6 +1980,10 @@ export class KanbanView extends BasesViewBase {
 				return cardWrapper;
 			},
 			getItemKey: (task: TaskInfo) => task.path,
+			onRenderedElementsChanged: () => {
+				this.updateSelectionVisuals();
+				this.taskCardKeyboardController?.syncFocusStyles();
+			},
 		});
 
 		this.columnScrollers.set(cellKey, scroller);
@@ -4309,6 +4349,58 @@ export class KanbanView extends BasesViewBase {
 
 	private getTaskActionDate(task: TaskInfo): Date {
 		return getKanbanTaskActionDate(task);
+	}
+
+
+	/**
+	 * Kanban supports the full Task List action set against real, focusable
+	 * `.task-card` elements. Navigation/selection reach only cards currently
+	 * rendered by a column's VirtualScroller, matching the same limitation
+	 * mouse-based selection already has for large virtualized columns.
+	 */
+	protected getTaskCardActionsConfig(): {
+		isActionSupported(action: TaskListAction): boolean;
+		buildViewContext(): BasesTaskCardActionViewContext;
+		autoFocusInitial?: boolean;
+		cardAreaElement?: HTMLElement;
+	} | null {
+		return {
+			cardAreaElement: this.boardEl ?? undefined,
+			isActionSupported: () => true,
+			buildViewContext: () => ({
+				plugin: this.plugin,
+				app: this.app || this.plugin.app,
+				taskSelectionService: this.plugin.taskSelectionService,
+				getVisibleTaskPaths: () => [...this.currentVisibleTaskPaths],
+				isPathVisible: (path) => this.currentVisibleTaskPaths.has(path),
+				getCurrentTargetDate: () => createUTCDateFromLocalCalendarDate(new Date()),
+				rootElement: this.rootElement,
+				showBatchContextMenu: (event) => this.showBatchContextMenu(event),
+				createFileForView: () => this.createFileForView(),
+				focusSearch: () => {
+					if (!this.rootElement) return;
+					if (!this.searchBox) {
+						this.enableSearch = true;
+						this.setupSearch(this.rootElement);
+					}
+					this.searchBox?.focus();
+				},
+				fallbackAnchor: this.boardEl ?? undefined,
+			}),
+		};
+	}
+
+
+	/**
+	 * Full-board override for Ctrl+A/Shift+Arrow-range/Shift+click-range select,
+	 * which otherwise fall back to a DOM query that only sees cards each
+	 * column's virtual scroller currently has mounted. currentVisibleTaskOrder
+	 * is kept in true column-major/swimlane-major visual order by
+	 * setVisibleTaskPathOrder(), called at the end of every renderFlat()/
+	 * renderSwimLaneTable() pass, so it's always fully populated after a render.
+	 */
+	protected override getVisibleTaskPaths(): string[] {
+		return this.getCurrentVisibleTaskPathOrder();
 	}
 
 	private destroyColumnScrollers(): void {

@@ -13,6 +13,7 @@ import { renderModalFieldsTab } from "./tabs/modalFieldsTab";
 import { renderAppearanceTab } from "./tabs/appearanceTab";
 import { renderFeaturesTab } from "./tabs/featuresTab";
 import { renderIntegrationsTab } from "./tabs/integrationsTab";
+import { renderKeyboardShortcutsTab } from "./tabs/keyboardShortcutsTab";
 import type { TranslationKey } from "../i18n";
 
 interface TabConfig {
@@ -25,6 +26,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	plugin: TaskNotesPlugin;
 	private activeTab = "general";
 	private tabContents: Record<string, HTMLElement> = {};
+	/** The element currently hosting this tab, including an Obsidian settings-search result. */
+	private settingsContainerEl: HTMLElement | null = null;
 	private debouncedSave: DebouncedFunction<() => Promise<void>> = debounce(
 		() => this.plugin.saveSettings(),
 		500
@@ -72,6 +75,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	}
 
 	private renderSettings(containerEl: HTMLElement): void {
+		// Keep every interaction scoped to the actual render target so settings-search results work.
+		this.settingsContainerEl = containerEl;
 		this.tabContents = {};
 		containerEl.empty();
 		containerEl.addClass("tasknotes-settings");
@@ -171,12 +176,17 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	}
 
 	private switchTab(tabId: string): void {
+		const containerEl = this.settingsContainerEl;
+		if (!containerEl) {
+			return;
+		}
+
 		// Update active tab state
 		// const previousTab = this.activeTab;
 		this.activeTab = tabId;
 
 		// Update tab button states
-		this.containerEl.querySelectorAll(".settings-tab-button").forEach((button) => {
+		containerEl.querySelectorAll(".settings-tab-button").forEach((button) => {
 			const isActive = button.id === `tab-button-${tabId}`;
 			button.classList.toggle("active", isActive);
 			button.classList.toggle("settings-view__tab-button--active", isActive);
@@ -186,7 +196,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		});
 
 		// Update tab content states
-		this.containerEl.querySelectorAll(".settings-tab-content").forEach((content) => {
+		containerEl.querySelectorAll(".settings-tab-content").forEach((content) => {
 			const isActive = content.id === `settings-tab-${tabId}`;
 			content.classList.toggle("active", isActive);
 			content.classList.toggle("settings-view__tab-content--active", isActive);
@@ -204,7 +214,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// Focus the newly active tab button
 		window.setTimeout(() => {
-			const activeTabButton = this.containerEl.querySelector(
+			const activeTabButton = containerEl.querySelector(
 				`#tab-button-${tabId}`
 			) as HTMLElement;
 			if (activeTabButton) {
@@ -239,6 +249,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				id: "features",
 				nameKey: "settings.tabs.features",
 				renderFn: renderFeaturesTab,
+			},
+			{
+				id: "keyboard-shortcuts",
+				nameKey: "settings.tabs.keyboardShortcuts",
+				renderFn: renderKeyboardShortcutsTab,
 			},
 			{
 				id: "integrations",

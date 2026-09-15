@@ -1,6 +1,7 @@
 import {
 	clearBasesSelectionVisuals,
 	getVisibleTaskPathsFromBasesRoot,
+	handleBasesSelectionCheckboxClick,
 	handleBasesSelectionClick,
 	handleBasesSelectionKeyDown,
 	setBasesSelectionModeUi,
@@ -9,6 +10,7 @@ import {
 	type BasesSelectionClickState,
 	type BasesSelectionKeyboardState,
 } from "../../../src/bases/basesSelectionUi";
+import { TaskSelectionService } from "../../../src/services/TaskSelectionService";
 
 function createTaskCard(path: string): HTMLElement {
 	const card = document.createElement("div");
@@ -217,6 +219,63 @@ describe("basesSelectionUi", () => {
 		).toBe(true);
 		expect(activeService.toggleSelection).toHaveBeenCalledWith("Tasks/b.md");
 		expect(updateSelectionVisuals).toHaveBeenCalledTimes(3);
+	});
+
+	it("selects the inclusive visible block between a prior selection and a shift-click", () => {
+		const selectionService = new TaskSelectionService({} as never);
+		const visiblePaths = ["Tasks/a.md", "Tasks/b.md", "Tasks/c.md", "Tasks/d.md"];
+
+		selectionService.selectTask("Tasks/a.md");
+
+		const handled = handleBasesSelectionClick({
+			event: new MouseEvent("click", { shiftKey: true }),
+			taskPath: "Tasks/d.md",
+			selectionService,
+			getVisibleTaskPaths: () => visiblePaths,
+			updateSelectionVisuals: jest.fn(),
+		});
+
+		expect(handled).toBe(true);
+		expect(selectionService.getSelectedPaths()).toEqual(visiblePaths);
+	});
+
+	it("toggles one task from its checkbox and selects a visible block with Shift", () => {
+		const selectionService = new TaskSelectionService({} as never);
+		const visiblePaths = ["Tasks/a.md", "Tasks/b.md", "Tasks/c.md", "Tasks/d.md"];
+		const updateSelectionVisuals = jest.fn();
+
+		handleBasesSelectionCheckboxClick({
+			event: new MouseEvent("click"),
+			taskPath: "Tasks/a.md",
+			selectionService,
+			getVisibleTaskPaths: () => visiblePaths,
+			updateSelectionVisuals,
+		});
+		handleBasesSelectionCheckboxClick({
+			event: new MouseEvent("click", { shiftKey: true }),
+			taskPath: "Tasks/d.md",
+			selectionService,
+			getVisibleTaskPaths: () => visiblePaths,
+			updateSelectionVisuals,
+		});
+
+		expect(selectionService.getSelectedPaths()).toEqual(visiblePaths);
+		expect(updateSelectionVisuals).toHaveBeenCalledTimes(2);
+	});
+
+	it("synchronizes selection checkboxes with shared selection state", () => {
+		const root = document.createElement("div");
+		const card = createTaskCard("Tasks/a.md");
+		const checkbox = document.createElement("input");
+		checkbox.type = "checkbox";
+		checkbox.className = "task-card__selection-checkbox";
+		card.appendChild(checkbox);
+		root.appendChild(card);
+		const selectionService = createSelectionService({ selected: ["Tasks/a.md"] });
+
+		updateBasesSelectionVisuals(root, selectionService);
+
+		expect(checkbox.checked).toBe(true);
 	});
 
 	it("handles selection keyboard shortcuts only while selection mode is active", () => {

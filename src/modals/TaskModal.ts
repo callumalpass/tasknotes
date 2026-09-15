@@ -19,7 +19,7 @@ import { ProjectSelectModal } from "./ProjectSelectModal";
 import { TaskDependency, Reminder } from "../types";
 import { DEFAULT_DEPENDENCY_RELTYPE, formatDependencyLink } from "../utils/dependencyUtils";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
-import { generateLink } from "../utils/linkUtils";
+import { generateProjectReference } from "../utils/linkUtils";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import {
 	createTaskModalBlockedByField,
@@ -1103,12 +1103,10 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected buildProjectReference(targetFile: TFile, sourcePath: string): string {
-		return generateLink(
+		return generateProjectReference(
 			this.app,
 			targetFile,
 			sourcePath,
-			"",
-			"",
 			this.plugin.settings.useFrontmatterMarkdownLinks
 		);
 	}

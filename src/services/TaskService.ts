@@ -78,6 +78,13 @@ import {
 	applyGoogleCalendarRecurringExceptionCleanup,
 	applyGoogleCalendarRecurringExceptionForScheduledChange,
 } from "./task-service/googleCalendarRecurringExceptions";
+
+/** Describes the authoritative occurrence affected by a recurring completion toggle. */
+export interface RecurringTaskCompletionResult {
+	task: TaskInfo;
+	dateStr: string;
+	isCompleted: boolean;
+}
 import {
 	buildBlockedByTaskUpdate,
 	buildBlockingRelationshipPathChanges,
@@ -1836,6 +1843,17 @@ export class TaskService {
 	}
 
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
+		return (await this.toggleRecurringTaskCompleteWithResult(task, date)).task;
+	}
+
+	/**
+	 * Toggles one recurring occurrence and returns its normalized date and resulting state.
+	 * The result date may differ from a view's target date when a shifted schedule maps back to its RRULE.
+	 */
+	async toggleRecurringTaskCompleteWithResult(
+		task: TaskInfo,
+		date?: Date
+	): Promise<RecurringTaskCompletionResult> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
 			throw new Error(`Cannot find task file: ${task.path}`);
@@ -1855,6 +1873,12 @@ export class TaskService {
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 		});
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
+		const resetCompletedParentStatus =
+			this.plugin.statusManager?.isCompletedStatus?.(freshTask.status) ??
+			["done", "completed"].includes(freshTask.status);
+		if (resetCompletedParentStatus) {
+			updatedTask.status = this.plugin.settings.defaultTaskStatus;
+		}
 
 		// Step 2: Persist to file
 		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
@@ -1864,6 +1888,7 @@ export class TaskService {
 			const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
 			const dueField = this.plugin.fieldMapper.toUserField("due");
 			const recurrenceField = this.plugin.fieldMapper.toUserField("recurrence");
+			const statusField = this.plugin.fieldMapper.toUserField("status");
 			const googleCalendarExceptionOriginalScheduledField =
 				this.plugin.fieldMapper.toUserField("googleCalendarExceptionOriginalScheduled");
 			const googleCalendarMovedOriginalDatesField = this.plugin.fieldMapper.toUserField(
@@ -1882,6 +1907,11 @@ export class TaskService {
 				googleCalendarMovedOriginalDatesField,
 				plan: recurringPlan,
 			});
+			// Recurring completion belongs to the occurrence history, so repair any
+			// completed parent status left by a generic property edit.
+			if (resetCompletedParentStatus) {
+				frontmatter[statusField] = this.plugin.settings.defaultTaskStatus;
+			}
 		});
 
 		// Step 2b: Reset checkboxes in task body when completing (if setting enabled)
@@ -1973,7 +2003,7 @@ export class TaskService {
 		}
 
 		// Step 7: Return authoritative data
-		return updatedTask;
+		return { task: updatedTask, dateStr, isCompleted: newComplete };
 	}
 
 	/**

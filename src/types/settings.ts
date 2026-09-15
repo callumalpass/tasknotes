@@ -1,5 +1,6 @@
 import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } from "../types";
 import type { FileFilterConfig } from "../suggest/FileSuggestHelper";
+import type { TaskListShortcutMap } from "../bases/taskListKeyboardActions";
 
 export interface UserFieldMapping {
 	enabled: boolean;
@@ -81,6 +82,8 @@ export interface NLPTriggersConfig {
 
 export type HideIdentifyingTagsMode = "all" | "exact-only";
 
+export type TaskListGroupDropBehavior = "replace" | "add" | "replace-modifier-add";
+
 export interface ProjectAutosuggestSettings {
 	enableFuzzy: boolean;
 	rows: string[]; // up to 3 rows; each uses {property|flags} format
@@ -152,6 +155,13 @@ export interface TaskNotesSettings {
 
 	singleClickAction: "edit" | "openNote";
 	doubleClickAction: "edit" | "openNote" | "none";
+	taskListGroupDropBehavior: TaskListGroupDropBehavior;
+	// View-local task-list keyboard shortcuts
+	taskListShortcuts: TaskListShortcutMap;
+	// View-local shortcuts for configured user-defined task fields
+	taskListUserFieldShortcuts: Record<string, string[]>;
+	// Recently used values for configured user-defined task fields
+	userFieldMru: Record<string, unknown[]>;
 	// Inline task conversion settings
 	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}} and {{currentNoteTitle}}
 	// Performance settings

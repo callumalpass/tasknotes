@@ -8,6 +8,7 @@ import type {
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 import {
 	convertBasesGroupKeyToString,
+	convertBasesListGroupKeyToString,
 	convertBasesValueToNative,
 } from "./basesValueConversion";
 import { extractBasesEntryProperties } from "./basesEntryProperties";
@@ -131,6 +132,10 @@ export class BasesDataAdapter {
 	 */
 	convertGroupKeyToString(key: unknown): string {
 		return convertBasesGroupKeyToString(key);
+	}
+
+	convertListGroupKeyToString(key: unknown): string {
+		return convertBasesListGroupKeyToString(key);
 	}
 
 	/**

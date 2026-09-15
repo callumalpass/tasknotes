@@ -1407,6 +1407,37 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     color: var(--text-warning);
 }
 
+/* Task-list keyboard shortcuts */
+.tasknotes-settings__shortcut-setting .setting-item-control {
+    flex-wrap: wrap;
+    gap: var(--size-2-2);
+}
+
+.tasknotes-settings__shortcut-binding {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-2-1);
+    cursor: pointer;
+}
+
+.tasknotes-settings__shortcut-remove-icon {
+    display: inline-flex;
+    color: var(--text-muted);
+    transition: color 100ms ease-in-out;
+}
+
+.tasknotes-settings__shortcut-binding:hover .tasknotes-settings__shortcut-remove-icon {
+    color: var(--text-on-accent);
+}
+
+.tasknotes-settings__shortcut-binding:hover .tasknotes-settings__shortcut-remove-icon svg {
+    fill: var(--background-modifier-error);
+}
+
+.tasknotes-settings__shortcut-add {
+    padding: var(--size-2-2);
+}
+
 /* ================================================
    ACCESSIBILITY & REDUCED MOTION
    ================================================ */

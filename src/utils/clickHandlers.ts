@@ -19,6 +19,8 @@ export interface ClickHandlerOptions {
 	onDoubleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for double click
 	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>; // Optional context menu handler
 	createBatchContextMenu?: BatchContextMenuFactory;
+	/** Optional view-specific handler for Shift+click task selection. */
+	selectionClickHandler?: (e: MouseEvent) => void;
 }
 
 const DEFAULT_EXCLUDE_SELECTOR = [
@@ -47,6 +49,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		onDoubleClick,
 		contextMenuHandler,
 		createBatchContextMenu,
+		selectionClickHandler,
 	} = options;
 	const clickExcludeSelector = excludeSelector
 		? `${DEFAULT_EXCLUDE_SELECTOR}, ${excludeSelector}`
@@ -111,6 +114,12 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		// Check for selection mode - only shift+click triggers selection
 		const selectionService = plugin.taskSelectionService;
 		if (selectionService) {
+			if (e.shiftKey && selectionClickHandler) {
+				e.stopPropagation();
+				selectionClickHandler(e);
+				return;
+			}
+
 			if (e.shiftKey) {
 				e.stopPropagation();
 

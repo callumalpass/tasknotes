@@ -88,6 +88,12 @@ For existing `.base` files, add this in YAML manually first; after it is in `ord
 
 Click a card to open the task file for editing. Right-click to access the context menu for task actions. Drag cards between columns or swimlane cells to update the task's properties.
 
+## Keyboard Shortcuts
+
+Kanban cards support the same keyboard shortcuts as Task List once a card has keyboard focus or is hovered: move focus between cards, select one or more, edit dates/priority/status/recurrence, mark complete, archive, add tags/context/project, copy titles, and delete. See **Settings → TaskNotes → Keyboard shortcuts** to view or customize the bindings.
+
+Keyboard navigation reaches only cards currently rendered by a column's virtual scroller, the same limitation mouse-based selection already has in large virtualized columns.
+
 ## Column Operations
 
 ### Reordering Columns
