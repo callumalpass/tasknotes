@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2336) Reduced the plugin bundle below Obsidian Sync Standard's 5 MB per-file limit so it can sync between devices again. Thanks to @kmalakoff for reporting and @CyberBlaed for confirming.
+
 - (#2301) Fixed clicking the Pomodoro timer display to edit its duration. Thanks to @minnyee for reporting and identifying the cause.
 
 - (#2328) Fixed direct status edits on occurrence notes not updating the recurring parent’s completion history or creating the next occurrence when configured. Thanks to @mudnug for reporting this.

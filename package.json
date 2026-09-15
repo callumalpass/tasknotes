@@ -7,6 +7,7 @@
 		"build": "npm run build-css && node generate-release-notes-import.mjs && tsc -noEmit --skipLibCheck && node esbuild.config.mjs production",
 		"dev": "npm run build-css && node generate-release-notes-import.mjs && node esbuild.config.mjs",
 		"build:test": "npm run build && node copy-files.mjs",
+		"check:bundle-size": "node scripts/check-bundle-size.mjs",
 		"copy-files": "node copy-files.mjs",
 		"build-css": "node build-css.mjs",
 		"e2e": "playwright test",
