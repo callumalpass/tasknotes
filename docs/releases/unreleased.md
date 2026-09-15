@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2203) Fixed completing or skipping a recurring instance in the edit modal creating a duplicate Google Calendar event when the scheduled date advances. Manual rescheduling still creates the appropriate moved occurrence. Thanks to @christenbc for the fix.
+
 - (#2336) Reduced the plugin bundle below Obsidian Sync Standard's 5 MB per-file limit so it can sync between devices again, and removed duplicate bundled dependencies to leave more room for future updates. Thanks to @kmalakoff for reporting and @CyberBlaed for confirming.
 
 - (#2335) Fixed date-like text in the current note’s folder or title being replaced when choosing a task folder with `{{currentNotePath}}` or `{{currentNoteTitle}}`. Date tokens written in the folder template still work. Thanks to @hikatamika for reporting.
