@@ -146,8 +146,14 @@ Control which notes appear when selecting projects:
 - **Required tags**: Comma-separated list of tags (shows notes with ANY of these tags)
 - **Include folders**: Comma-separated list of folder paths (shows notes in ANY of these folders)
 - **Required property key**: Frontmatter property that must exist
-- **Required property value**: Expected value for the property (optional)
-These filters reduce suggestion noise in large vaults.
+- **Required property value**: Which values of that property are allowed (optional). Supports:
+    - A comma-separated allow-list — `active, planned` shows notes whose property equals any of these.
+    - A `containsAny(...)` expression — `containsAny("active", "planned")` (equivalent to the allow-list, but explicit).
+    - A negated expression — prefix with `!` or `not` to *exclude* values, e.g. `!containsAny("completed", "archived", "cancelled", "done")`.
+    - Leave empty to allow any value (the property just has to exist).
+
+    In all cases the **property must exist** with a non-empty value: a note without the configured property (e.g. a project with no `status`) is never suggested.
+These filters reduce suggestion noise in large vaults — for example, hiding completed or archived projects from the `+` project picker.
 
 A "Filters On" badge appears when any filters are configured.
 
@@ -273,7 +279,7 @@ Each custom field can configure filters to control which files appear in wikilin
 - **Required tags**: Comma-separated list of tags (shows files with ANY of these tags)
 - **Include folders**: Comma-separated list of folder paths (shows files in ANY of these folders)
 - **Required property key**: Frontmatter property that must exist
-- **Required property value**: Expected value for the property (optional)
+- **Required property value**: Which values of that property are allowed (optional). Accepts a comma-separated allow-list, a `containsAny("a", "b")` expression, or a negated `!containsAny("a", "b")` expression to exclude values
 
 A "Filters On" badge appears when filters are configured.
 
