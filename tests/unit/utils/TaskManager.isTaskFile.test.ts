@@ -227,4 +227,64 @@ describe('TaskManager.isTaskFile - tag hash prefix handling', () => {
 			expect(isTaskFile({ flags: ['note', true] }, settings)).toBe(true);
 		});
 	});
+
+	describe('Property-based identification with empty value (match any value)', () => {
+		const anyValueSettings: IsTaskFileSettings = {
+			taskIdentificationMethod: 'property',
+			taskPropertyName: 'status',
+			taskPropertyValue: '',
+			taskTag: 'task',
+		};
+
+		it('should identify a task when the property exists with any value', () => {
+			expect(isTaskFile({ status: 'open' }, anyValueSettings)).toBe(true);
+			expect(isTaskFile({ status: 'done' }, anyValueSettings)).toBe(true);
+			expect(isTaskFile({ status: 'anything-at-all' }, anyValueSettings)).toBe(true);
+		});
+
+		it('should treat whitespace-only configured value as match-any', () => {
+			const settings: IsTaskFileSettings = { ...anyValueSettings, taskPropertyValue: '   ' };
+			expect(isTaskFile({ status: 'open' }, settings)).toBe(true);
+		});
+
+		it('should identify a task for non-string scalar values', () => {
+			expect(isTaskFile({ status: 3 }, anyValueSettings)).toBe(true);
+			expect(isTaskFile({ status: true }, anyValueSettings)).toBe(true);
+			expect(isTaskFile({ status: false }, anyValueSettings)).toBe(true);
+		});
+
+		it('should identify a task when the property is a non-empty array', () => {
+			expect(isTaskFile({ status: ['open'] }, anyValueSettings)).toBe(true);
+			expect(isTaskFile({ status: ['', 'open'] }, anyValueSettings)).toBe(true);
+		});
+
+		it('should NOT identify a task when the property is absent', () => {
+			expect(isTaskFile({ type: 'note' }, anyValueSettings)).toBe(false);
+			expect(isTaskFile({}, anyValueSettings)).toBe(false);
+		});
+
+		it('should NOT identify a task when the property is present but empty', () => {
+			expect(isTaskFile({ status: '' }, anyValueSettings)).toBe(false);
+			expect(isTaskFile({ status: '   ' }, anyValueSettings)).toBe(false);
+			expect(isTaskFile({ status: null }, anyValueSettings)).toBe(false);
+			expect(isTaskFile({ status: [] }, anyValueSettings)).toBe(false);
+			expect(isTaskFile({ status: ['', '  '] }, anyValueSettings)).toBe(false);
+		});
+
+		it('should still exact-match when a value is configured', () => {
+			const settings: IsTaskFileSettings = { ...anyValueSettings, taskPropertyValue: 'done' };
+			expect(isTaskFile({ status: 'done' }, settings)).toBe(true);
+			expect(isTaskFile({ status: 'open' }, settings)).toBe(false);
+		});
+
+		it('should return false when no property name is configured, even with match-any value', () => {
+			const settings: IsTaskFileSettings = {
+				taskIdentificationMethod: 'property',
+				taskPropertyName: '',
+				taskPropertyValue: '',
+				taskTag: 'task',
+			};
+			expect(isTaskFile({ status: 'open' }, settings)).toBe(false);
+		});
+	});
 });

@@ -11,6 +11,23 @@ function isFrontmatterRecord(frontmatter: unknown): frontmatter is Record<string
 	return Boolean(frontmatter) && typeof frontmatter === "object" && !Array.isArray(frontmatter);
 }
 
+// A frontmatter value counts as "present" only when it holds a real value:
+// non-empty/non-whitespace string, non-empty array, or any non-null scalar.
+// Mirrors the Bases filter (`prop != "" && prop != null`) so an empty `status:`
+// is not treated as a task when identifying by key-existence alone.
+function hasNonEmptyValue(value: unknown): boolean {
+	if (value === undefined || value === null) {
+		return false;
+	}
+	if (typeof value === "string") {
+		return value.trim().length > 0;
+	}
+	if (Array.isArray(value)) {
+		return value.some((item) => hasNonEmptyValue(item));
+	}
+	return true;
+}
+
 export function compareTaskPropertyIdentifierValue(
 	frontmatterValue: unknown,
 	settingValue: string
@@ -37,9 +54,17 @@ export function isTaskFrontmatter(
 	if (settings.taskIdentificationMethod === "property") {
 		const propName = settings.taskPropertyName;
 		const propValue = settings.taskPropertyValue;
-		if (!propName || !propValue) return false;
+		if (!propName) return false;
 
 		const frontmatterValue = frontmatter[propName];
+
+		// Empty configured value means "match any value": the note is a task as
+		// long as the property key exists with a non-empty value, regardless of
+		// what that value is (e.g. identify by `status` alone).
+		if (propValue.trim().length === 0) {
+			return hasNonEmptyValue(frontmatterValue);
+		}
+
 		if (frontmatterValue === undefined) return false;
 
 		if (Array.isArray(frontmatterValue)) {
