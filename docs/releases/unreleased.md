@@ -34,7 +34,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
-- (#2336) Reduced the plugin bundle below Obsidian Sync Standard's 5 MB per-file limit so it can sync between devices again. Thanks to @kmalakoff for reporting and @CyberBlaed for confirming.
+- (#2336) Reduced the plugin bundle below Obsidian Sync Standard's 5 MB per-file limit so it can sync between devices again, and removed duplicate bundled dependencies to leave more room for future updates. Thanks to @kmalakoff for reporting and @CyberBlaed for confirming.
 
 - (#2301) Fixed clicking the Pomodoro timer display to edit its duration. Thanks to @minnyee for reporting and identifying the cause.
 

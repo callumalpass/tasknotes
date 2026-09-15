@@ -25,8 +25,8 @@ jobs:
       run: npm ci --prefer-offline --no-audit
       timeout-minutes: 5
 
-    - name: Test bundle size guard
-      run: node --test scripts/check-bundle-size.test.mjs
+    - name: Test bundle size guard and dependency deduplication
+      run: node --test scripts/check-bundle-size.test.mjs scripts/bundle-dependencies.test.mjs
 
     - name: Build production plugin
       run: npm run build
