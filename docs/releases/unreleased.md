@@ -38,6 +38,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2313) Fixed ICS meetings disappearing when another guest declined. Declined meetings are hidden only when the feed identifies the calendar owner's response; otherwise they remain visible. Refresh subscriptions after updating. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/#ics-calendar-subscriptions). Thanks to @benschifman for reporting and providing the reproduction.
+
 - (#2203) Fixed completing or skipping a recurring instance in the edit modal creating a duplicate Google Calendar event when the scheduled date advances. Manual rescheduling still creates the appropriate moved occurrence. Thanks to @christenbc for the fix.
 
 - (#2336) Reduced the plugin bundle below Obsidian Sync Standard's 5 MB per-file limit so it can sync between devices again, and removed duplicate bundled dependencies to leave more room for future updates. Thanks to @kmalakoff for reporting and @CyberBlaed for confirming.
@@ -47,3 +49,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2301) Fixed clicking the Pomodoro timer display to edit its duration. Thanks to @minnyee for reporting and identifying the cause.
 
 - (#2328) Fixed direct status edits on occurrence notes not updating the recurring parent’s completion history or creating the next occurrence when configured. Thanks to @mudnug for reporting this.
+
+## Changed
+
+- (#2329) Clarified how to generate a TaskNotes API token and configure Claude Desktop's MCP bearer authentication, including restart and token replacement instructions. See [HTTP API](https://tasknotes.dev/HTTP_API/#connecting-claude-desktop-with-mcp). Thanks to @kmaustral for reporting the setup confusion and confirming the solution.

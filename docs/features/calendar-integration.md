@@ -72,6 +72,8 @@ TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) for
 
 Add and manage ICS subscriptions from `Settings -> TaskNotes -> Integrations` (Calendar Subscriptions section).
 
+Cancelled events are hidden. A guest declining an invitation does not hide the meeting. When a feed's `X-WR-CALNAME` is an email address (as in many personal Google Calendar feeds), TaskNotes matches that address to the owner's `ATTENDEE` response and hides meetings they declined. Recurring exceptions can override the series response. If the feed does not identify the owner, TaskNotes keeps events visible rather than guessing whose response applies. This does not use the subscription's display name. Refresh the subscription after updating to restore previously hidden meetings.
+
 For details on creating notes and tasks from calendar events, see [ICS Integration](ics-integration.md).
 
 ## Time Blocking

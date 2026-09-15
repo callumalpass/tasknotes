@@ -1978,7 +1978,7 @@ export const de: TranslationTree = {
 				},
 				authToken: {
 					name: "API-Authentifizierungstoken",
-					description: "Für die API-Authentifizierung erforderlich. Ist das Feld leer, wird beim Serverstart ein Token generiert.",
+					description: "TaskNotes-Token, nicht der API-Schlüssel Ihres KI-Anbieters. Zum Erstellen HTTP-API aktivieren, dieses Feld leer lassen und Obsidian neu starten. Anschließend das erzeugte Token in die Bearer-Authentifizierungseinstellungen des Clients kopieren. Bei jeder Token-Änderung die Clients aktualisieren.",
 					placeholder: "dein-geheimes-token"
 				},
 				mcp: {

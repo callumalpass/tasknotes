@@ -109,6 +109,9 @@ export class TaskService {
 				Promise.resolve(applyTaskCreationDefaultsToData(taskData, this.plugin.settings)),
 			applyTemplate: (taskData) => this.applyTemplate(taskData),
 			processFolderTemplate: (folderTemplate, taskData, date) => {
+				if (!/\{\{currentNote(?:Path|Title)\}\}/.test(folderTemplate)) {
+					return this.processFolderTemplate(folderTemplate, taskData, date);
+				}
 				const currentFile = this.plugin.app.workspace.getActiveFile();
 				return this.processFolderTemplate(folderTemplate, taskData, date, {
 					path: currentFile?.parent?.path || "",

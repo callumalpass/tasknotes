@@ -1,4 +1,5 @@
 import { ICSSubscriptionService } from '../../../src/services/ICSSubscriptionService';
+jest.mock('ical.js', () => jest.requireActual('../../../node_modules/ical.js/dist/ical.es5.cjs'));
 
 jest.mock('obsidian', () => ({
 	Notice: jest.fn(),
@@ -32,6 +33,7 @@ describe('Issue #1542 - Declined events showing up in calendar view', () => {
 			'BEGIN:VCALENDAR',
 			'VERSION:2.0',
 			'PRODID:-//Test//Test//EN',
+			'X-WR-CALNAME:me@example.com',
 			...vevents,
 			'END:VCALENDAR'
 		].join('\r\n');
@@ -71,7 +73,7 @@ describe('Issue #1542 - Declined events showing up in calendar view', () => {
 		expect(events).toHaveLength(0);
 	});
 
-	it('should filter out events where an attendee has PARTSTAT=DECLINED', () => {
+	it('should filter out events where the identified owner has PARTSTAT=DECLINED', () => {
 		const ics = buildICS(
 			...makeEvent('declined-1', [
 				'ORGANIZER;CN=Boss:mailto:boss@example.com',
