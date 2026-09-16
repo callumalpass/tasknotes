@@ -1,4 +1,7 @@
 import type { FieldMappingKey, TaskInfo } from "../../../src/types";
+
+// Exercise the real recurrence engine, not the global simplified RRULE mock.
+jest.mock("rrule", () => jest.requireActual("rrule/dist/es5/rrule.js"));
 import {
 	applyTaskUpdateFrontmatterChange,
 	buildTaskUpdateRecurrenceUpdates,
@@ -69,6 +72,12 @@ function createFieldMapper(): TaskUpdateFieldMapper {
 }
 
 describe("taskUpdatePlanning", () => {
+	beforeEach(() => {
+		jest.useFakeTimers();
+		jest.setSystemTime(new Date("2026-04-13T12:00:00Z"));
+	});
+	afterEach(() => jest.useRealTimers());
+
 	it("sanitizes time entries without mutating the caller's update object", () => {
 		const updates = {
 			timeEntries: [
@@ -137,6 +146,91 @@ describe("taskUpdatePlanning", () => {
 			recurrence: "DTSTART:20260520;FREQ=WEEKLY",
 		});
 	});
+
+	it("does not flag a moved-occurrence exception when scheduled advances from completing an instance", () => {
+		const result = buildTaskUpdateRecurrenceUpdates({
+			originalTask: createTask({
+				recurrence: "DTSTART:20260316;FREQ=WEEKLY;INTERVAL=4;BYDAY=MO",
+				recurrence_anchor: "scheduled",
+				scheduled: "2026-04-13",
+				complete_instances: [],
+				skipped_instances: [],
+				googleCalendarEventId: "master-event-id",
+			}),
+			updates: {
+				scheduled: "2026-05-11",
+				complete_instances: ["2026-04-13"],
+			},
+			maintainDueDateOffsetInRecurring: false,
+		});
+
+		expect(result.googleCalendarExceptionOriginalScheduled).toBeUndefined();
+	});
+
+	it("resolves a pending moved-occurrence exception when the moved instance is completed", () => {
+		jest.setSystemTime(new Date("2026-04-15T12:00:00Z"));
+		const result = buildTaskUpdateRecurrenceUpdates({
+			originalTask: createTask({
+				recurrence: "DTSTART:20260316;FREQ=WEEKLY;INTERVAL=4;BYDAY=MO",
+				recurrence_anchor: "scheduled",
+				scheduled: "2026-04-15",
+				complete_instances: [],
+				skipped_instances: [],
+				googleCalendarEventId: "master-event-id",
+				googleCalendarExceptionOriginalScheduled: "2026-04-13",
+			}),
+			updates: {
+				scheduled: "2026-05-11",
+				complete_instances: ["2026-04-15"],
+			},
+			maintainDueDateOffsetInRecurring: false,
+		});
+
+		expect(result.googleCalendarExceptionOriginalScheduled).toBeUndefined();
+		expect(result.googleCalendarMovedOriginalDates).toEqual(["2026-04-13"]);
+	});
+
+	it("still flags a moved-occurrence exception for a genuine manual reschedule alongside instance edits", () => {
+		const result = buildTaskUpdateRecurrenceUpdates({
+			originalTask: createTask({
+				recurrence: "DTSTART:20260316;FREQ=WEEKLY;INTERVAL=4;BYDAY=MO",
+				recurrence_anchor: "scheduled",
+				scheduled: "2026-04-13",
+				complete_instances: ["2026-03-16"],
+				skipped_instances: [],
+				googleCalendarEventId: "master-event-id",
+			}),
+			updates: {
+				scheduled: "2026-04-14",
+				complete_instances: ["2026-03-16"],
+			},
+			maintainDueDateOffsetInRecurring: false,
+		});
+
+		expect(result.googleCalendarExceptionOriginalScheduled).toBe("2026-04-13");
+	});
+
+	it.each(["complete_instances", "skipped_instances"] as const)(
+		"distinguishes automatic advancement from manual moves with new %s (#2203)", (field) => {
+			const originalTask = createTask({
+				recurrence: "DTSTART:20260413;FREQ=DAILY",
+				recurrence_anchor: "scheduled",
+				scheduled: "2026-04-13",
+				googleCalendarEventId: "master-event-id",
+			});
+			for (const [scheduled, expected] of [
+				["2026-04-14", undefined],
+				["2026-04-20", "2026-04-13"],
+			] as const) {
+				const result = buildTaskUpdateRecurrenceUpdates({
+					originalTask,
+					updates: { scheduled, [field]: ["2026-04-13"] },
+					maintainDueDateOffsetInRecurring: false,
+				});
+				expect(result.googleCalendarExceptionOriginalScheduled).toBe(expected);
+			}
+		}
+	);
 
 	it("adds DTSTART when a scheduled recurring task moves and the rule lacks DTSTART", () => {
 		const addDTSTARTToRecurrenceRuleFn = jest.fn(() => "DTSTART:20260521;FREQ=DAILY");

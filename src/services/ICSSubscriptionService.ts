@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- ICS parsing normalizes optional event fields before use. */
 import { requestUrl, TFile } from "obsidian";
 import ICAL from "ical.js";
+import { getICSCalendarOwnerEmail, getICSOwnerDeclined } from "../utils/icsAttendeeFiltering";
 import { ICSSubscription, ICSEvent, ICSCache } from "../types";
 import { EventEmitter } from "../utils/EventEmitter";
 import TaskNotesPlugin from "../main";
@@ -504,6 +505,7 @@ export class ICSSubscriptionService extends EventEmitter {
 			// Register VTIMEZONE components before processing events.
 			registerCalendarVTimezones(comp);
 
+			const ownerEmail = getICSCalendarOwnerEmail(comp);
 			const vevents = comp.getAllSubcomponents("vevent");
 			const events: ICSEvent[] = [];
 
@@ -547,23 +549,11 @@ export class ICSSubscriptionService extends EventEmitter {
 						return;
 					}
 
-					// Skip events the user has declined.
-					// In a personal calendar's ICS feed the owner's ATTENDEE
-					// entry carries their own PARTSTAT, so if any attendee is
-					// marked DECLINED the event was almost certainly declined
-					// by the calendar owner.
-					const attendees = vevent.getAllProperties("attendee");
-					if (attendees && attendees.length > 0) {
-						const hasDeclined = attendees.some((a) => {
-							const partstat = a.getParameter("partstat");
-							return (
-								typeof partstat === "string" &&
-								partstat.toUpperCase() === "DECLINED"
-							);
-						});
-						if (hasDeclined) {
-							return;
-						}
+					// Another guest declining is not evidence that the owner declined.
+					// Keep events visible when the feed does not identify the owner.
+					const ownerDeclined = getICSOwnerDeclined(vevent, ownerEmail) ?? false;
+					if (ownerDeclined && !event.isRecurring()) {
+						return;
 					}
 
 					// Extract basic properties
@@ -669,6 +659,9 @@ export class ICSSubscriptionService extends EventEmitter {
 								if (typeof modifiedStatus === "string" && modifiedStatus.toUpperCase() === "CANCELLED") {
 									continue;
 								}
+								if (getICSOwnerDeclined(modifiedEvent.component, ownerEmail) ?? ownerDeclined) {
+									continue;
+								}
 								// Use the modified event instead
 								const modifiedStart = modifiedEvent.startDate;
 								const modifiedEnd = modifiedEvent.endDate;
@@ -705,6 +698,7 @@ export class ICSSubscriptionService extends EventEmitter {
 									visibleInstanceCount++;
 								}
 							} else {
+								if (ownerDeclined) continue;
 								// Use the original recurring event instance.
 								// The iterator emits ICAL.Time values that share the
 								// startDate's TZID, so pass startTzidRaw for fallback.

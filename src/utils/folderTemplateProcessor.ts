@@ -29,6 +29,9 @@ export interface ICSTemplateData {
  * Options for processing folder templates
  */
 export interface FolderTemplateOptions {
+	/** Literal current-note values, expanded after date and task variables. */
+	currentNote?: { path: string; title: string };
+
 	/**
 	 * Date to use for date-based template variables
 	 * @default new Date()
@@ -494,6 +497,14 @@ export function processFolderTemplate(
 
 	const nanoId = Date.now().toString() + Math.random().toString(36).substring(2, 7);
 	processedPath = processedPath.replace(/\{\{nano\}\}/g, nanoId);
+
+	if (options.currentNote) {
+		const currentNote = options.currentNote;
+		processedPath = processedPath.replace(
+			/\{\{currentNote(Path|Title)\}\}/g,
+			(_match, field: string) => field === "Path" ? currentNote.path : currentNote.title
+		);
+	}
 
 	return shouldNormalizeRelativeSegments
 		? normalizeRelativeFolderPath(processedPath)

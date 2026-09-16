@@ -60,6 +60,9 @@ jobs:
           EOF
           npm run build  # This includes CSS building via npm run build-css
 
+      - name: Check Obsidian Sync bundle size budget
+        run: npm run check:bundle-size
+
       - name: Verify release notes
         run: |
           if [ ! -f "$RELEASE_NOTES_PATH" ]; then

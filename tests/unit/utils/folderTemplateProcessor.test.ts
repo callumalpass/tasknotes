@@ -1,6 +1,18 @@
 import { processFolderTemplate, TaskTemplateData, ICSTemplateData } from '../../../src/utils/folderTemplateProcessor';
 
 describe('processFolderTemplate', () => {
+  it('treats current-note values as literal data while expanding template dates (#2335)', () => {
+    expect(processFolderTemplate('{{currentNotePath}}/YYYY/MM/{{currentNoteTitle}}', {
+      date: new Date(2026, 8, 14),
+      currentNote: { path: 'AMM-01/YYYY', title: '$&-{{month}}-{{currentNotePath}}-DD' }
+    })).toBe('AMM-01/YYYY/2026/09/$&-{{month}}-{{currentNotePath}}-DD');
+  });
+
+  it('normalizes relative templates only after inserting literal note paths (#2335)', () => {
+    expect(processFolderTemplate('{{currentNotePath}}/../Tasks/{{currentNoteTitle}}', {
+      currentNote: { path: 'AMM-01/Meetings', title: 'AMM-01' }
+    })).toBe('AMM-01/Tasks/AMM-01');
+  });
 	const testDate = new Date('2025-10-05T14:30:00');
 
 	describe('date variables', () => {

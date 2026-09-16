@@ -1978,7 +1978,7 @@ export const ja: TranslationTree = {
 				},
 				authToken: {
 					name: "API認証トークン",
-					description: "API認証に必要です。空欄の場合、サーバー起動時にトークンが生成されます。",
+					description: "TaskNotesのトークンです。AIプロバイダーのAPIキーではありません。生成するにはHTTP APIを有効にし、この欄を空にしてObsidianを再起動してください。生成されたトークンをクライアントのBearer認証設定にコピーします。トークンを変更したら、各クライアントの設定も更新してください。",
 					placeholder: "あなたのシークレットトークン"
 				},
 				mcp: {

@@ -35,6 +35,41 @@ Example:
 curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:8080/api/health
 ```
 
+## Connecting Claude Desktop with MCP
+
+TaskNotes 4.13.0 and later require a **TaskNotes API token**, not a Claude/Anthropic API key. The local MCP endpoint uses bearer authentication, not OAuth registration.
+
+1. In **Settings → TaskNotes → Integrations**, enable **HTTP API** and **MCP server**.
+2. To generate a TaskNotes token, leave **API authentication token** empty and restart Obsidian. An existing TaskNotes token can be reused; do not clear it unless you intend to replace it for all clients.
+3. Reopen Integrations and copy the generated token. Keep it private.
+4. In Claude Desktop, open **Settings → Developer → Edit Config** and add the following entry, preserving any other MCP servers:
+
+```json
+{
+  "mcpServers": {
+    "Tasknotes": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "http://127.0.0.1:8080/mcp",
+        "--header",
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer YOUR_TASKNOTES_API_TOKEN"
+      }
+    }
+  }
+}
+```
+
+Replace `YOUR_TASKNOTES_API_TOKEN` with the token from TaskNotes, keeping the `Bearer ` prefix. Change `8080` if you configured a different port. This configuration requires Node.js/npm so Claude can run `npx`.
+
+5. Fully quit and reopen Claude Desktop. Keep Obsidian running while using the tools.
+
+If Claude reports **Server Disconnected**, or `mcp-remote` fails in `registerClient`/OAuth registration, first check that the bearer header contains the current TaskNotes token. A missing or rejected token can cause the client to attempt OAuth registration, which this endpoint does not provide. After changing the token in TaskNotes, update every client and restart Claude. Do not disable authentication as a workaround.
+
 ## Response Format
 
 Success:

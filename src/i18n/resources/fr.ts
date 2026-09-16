@@ -1978,7 +1978,7 @@ export const fr: TranslationTree = {
 				},
 				authToken: {
 					name: "Jeton d'authentification API",
-					description: "Requis pour l'authentification API. Si le champ est vide, un jeton est généré au démarrage du serveur.",
+					description: "Jeton TaskNotes, et non la clé API de votre fournisseur d’IA. Pour en générer un, activez l’API HTTP, laissez ce champ vide et redémarrez Obsidian. Copiez ensuite le jeton généré dans les paramètres d’authentification Bearer du client. Mettez les clients à jour chaque fois que ce jeton change.",
 					placeholder: "votre-jeton-secret"
 				},
 				mcp: {
