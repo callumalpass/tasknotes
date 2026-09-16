@@ -108,6 +108,7 @@ redirects:
 # Redirected legacy pages remain here so their old Markdown can still support
 # maintainers without becoming a second public source of truth.
 drafts:
+    - development/styling.md
     - development/architecture.md
     - development/data-flow.md
     - development/refactor-smoke-checks.md
