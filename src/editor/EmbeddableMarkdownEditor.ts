@@ -12,6 +12,7 @@ import {
 import { EditorSelection as CMEditorSelection, Extension, Prec } from "@codemirror/state";
 import { EditorView, keymap, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
 import { around } from "monkey-around";
+import { resolveMarkdownEditorPrototype } from "./resolveMarkdownEditorPrototype";
 
 declare const app: App;
 
@@ -31,14 +32,6 @@ interface ScrollableMarkdownEditor {
 	onUpdate(update: ViewUpdate, changed: boolean): void;
 	buildLocalExtensions(): Extension[];
 	destroy(): void;
-	unload(): void;
-}
-
-// Internal Obsidian type - not exported in official API
-interface WidgetEditorView {
-	editable: boolean;
-	editMode: unknown;
-	showEditor(): void;
 	unload(): void;
 }
 
@@ -92,41 +85,6 @@ type WindowWithCodeMirrorAdapter = Window & {
 };
 
 /**
- * Resolves the internal ScrollableMarkdownEditor prototype from Obsidian
- * @param app - The Obsidian App instance
- * @returns The ScrollableMarkdownEditor constructor
- */
-function resolveEditorPrototype(app: App): Constructor<ScrollableMarkdownEditor> {
-	const activeFile = app.workspace.getActiveFile();
-	if (!(activeFile instanceof TFile)) {
-		throw new Error(
-			"Cannot resolve markdown editor prototype without an active markdown file."
-		);
-	}
-
-	// @ts-expect-error - Using internal API
-	const widgetEditorView = app.embedRegistry.embedByExtension.md(
-		{ app, containerEl: activeWindow.createDiv() },
-		activeFile,
-		""
-	) as WidgetEditorView;
-
-	widgetEditorView.editable = true;
-	widgetEditorView.showEditor();
-
-	const editMode = widgetEditorView.editMode;
-	if (!editMode) {
-		widgetEditorView.unload();
-		throw new Error("Markdown editor edit mode was not initialized");
-	}
-
-	const MarkdownEditor = Object.getPrototypeOf(Object.getPrototypeOf(editMode));
-
-	widgetEditorView.unload();
-	return MarkdownEditor.constructor as Constructor<ScrollableMarkdownEditor>;
-}
-
-/**
  * Gets the editor base class, with fallback for test environments
  * @returns The ScrollableMarkdownEditor constructor or a mock for tests
  */
@@ -165,7 +123,7 @@ function getEditorBase(): Constructor<ScrollableMarkdownEditor> {
 			}
 		};
 	}
-	return resolveEditorPrototype(app);
+	return resolveMarkdownEditorPrototype<ScrollableMarkdownEditor>(app);
 }
 
 export interface MarkdownEditorProps {

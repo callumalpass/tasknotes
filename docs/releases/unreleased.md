@@ -5,6 +5,10 @@
 - Rebuilt settings around Obsidian’s native navigation, search, and editable lists. Individual settings are searchable. Ordinary preferences and property triggers use inline groups, while larger editors and advanced filters retain detail pages. See [Settings](https://tasknotes.dev/settings/) for the new layout.
 - TaskNotes now requires Obsidian 1.13.1 or newer.
 
+## Fixed
+
+- Fixed task dialogs falling back to plain text inputs when opened without an active note, including from release notes or in an empty vault.
+
 <!--
 
 **Added** for new features.
