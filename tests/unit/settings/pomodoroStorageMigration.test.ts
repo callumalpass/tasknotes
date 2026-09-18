@@ -1,116 +1,32 @@
-import { renderFeaturesTab } from "../../../src/settings/tabs/featuresTab";
-import { configureDropdownSetting } from "../../../src/settings/components/settingHelpers";
+import { settingsFixture } from "../../helpers/native-settings";
 import { showStorageLocationConfirmationModal } from "../../../src/modals/StorageLocationConfirmationModal";
-import type TaskNotesPlugin from "../../../src/main";
 
-jest.mock("../../../src/settings/components/settingHelpers", () => ({
-	createSettingGroup: jest.fn(
-		(
-			_container: HTMLElement,
-			options: { heading: string },
-			addSettings: (group: { addSetting: (callback: (setting: unknown) => void) => unknown }) => void
-		) => {
-			const group = {
-				addSetting: jest.fn((callback: (setting: unknown) => void) => {
-					callback({});
-					return group;
-				}),
-			};
+jest.mock("../../../src/modals/StorageLocationConfirmationModal", () => ({ showStorageLocationConfirmationModal: jest.fn() }));
 
-			if (options.heading === "settings.features.pomodoro.header") {
-				addSettings(group);
-			}
-
-			return group;
-		}
-	),
-	configureTextSetting: jest.fn((setting: unknown) => setting),
-	configureToggleSetting: jest.fn((setting: unknown) => setting),
-	configureDropdownSetting: jest.fn((setting: unknown) => setting),
-	configureNumberSetting: jest.fn((setting: unknown) => setting),
-	configureButtonSetting: jest.fn((setting: unknown) => setting),
-}));
-
-jest.mock("../../../src/modals/StorageLocationConfirmationModal", () => ({
-	showStorageLocationConfirmationModal: jest.fn(),
-}));
-
-function createPlugin(pluginHistory: unknown[]) {
-	return {
-		settings: {
-			pomodoroStorageLocation: "plugin",
-			pomodoroSoundEnabled: false,
-			inlineVisibleProperties: [],
-			userFields: [],
-		},
-		i18n: {
-			translate: jest.fn((key: string) => key),
-		},
-		loadData: jest.fn(async () => ({ pomodoroHistory: pluginHistory })),
-		pomodoroService: {
-			migrateTodailyNotes: jest.fn().mockResolvedValue(undefined),
-		},
-		fieldMapper: {
-			toUserField: jest.fn((key: string) => key),
-		},
-	} as unknown as TaskNotesPlugin;
-}
-
-function getDataStorageDropdownOptions() {
-	const dataStorageCall = (configureDropdownSetting as jest.Mock).mock.calls.find(
-		([, options]) => options.name === "settings.features.dataStorage.name"
-	);
-
-	if (!dataStorageCall) {
-		throw new Error("Data storage dropdown was not rendered");
-	}
-
-	return dataStorageCall[1] as { setValue: (value: string) => Promise<void> };
-}
-
-describe("Pomodoro storage migration setting", () => {
-	beforeEach(() => {
-		jest.clearAllMocks();
-		(showStorageLocationConfirmationModal as jest.Mock).mockResolvedValue(true);
-	});
-
-	it("migrates existing plugin history before switching to daily notes storage", async () => {
-		const plugin = createPlugin([{ id: "session-1" }]);
-		const save = jest.fn();
-
-		renderFeaturesTab(document.createElement("div"), plugin, save);
-		await getDataStorageDropdownOptions().setValue("daily-notes");
-
-		expect(showStorageLocationConfirmationModal).toHaveBeenCalledWith(plugin, true);
-		expect(plugin.pomodoroService?.migrateTodailyNotes).toHaveBeenCalledTimes(1);
+describe("Native Pomodoro storage migration setting", () => {
+	beforeEach(() => { jest.clearAllMocks(); (showStorageLocationConfirmationModal as jest.Mock).mockResolvedValue(true); });
+	it.each([true, false])("validates and migrates before switching, existing history: %s", async hasHistory => {
+		const { plugin, tab } = settingsFixture();
+		plugin.settings.pomodoroStorageLocation = "plugin";
+		(plugin.loadData as jest.Mock).mockResolvedValue({ pomodoroHistory: hasHistory ? [{ id: "session-1" }] : [] });
+		tab.getSettingDefinitions();
+		await tab.setControlValue("pomodoroStorageLocation", "daily-notes");
+		expect(showStorageLocationConfirmationModal).toHaveBeenCalledWith(plugin, hasHistory);
+		expect(plugin.pomodoroService.migrateTodailyNotes).toHaveBeenCalledTimes(1);
 		expect(plugin.settings.pomodoroStorageLocation).toBe("daily-notes");
-		expect(save).toHaveBeenCalledTimes(1);
+		expect(plugin.saveSettings).toHaveBeenCalledTimes(1);
 	});
-
-	it("does not switch storage when migration fails", async () => {
-		const plugin = createPlugin([{ id: "session-1" }]);
-		const save = jest.fn();
-		(plugin.pomodoroService?.migrateTodailyNotes as jest.Mock).mockRejectedValueOnce(
-			new Error("Daily notes unavailable")
-		);
-
-		renderFeaturesTab(document.createElement("div"), plugin, save);
-		await getDataStorageDropdownOptions().setValue("daily-notes");
-
-		expect(plugin.settings.pomodoroStorageLocation).toBe("plugin");
-		expect(save).not.toHaveBeenCalled();
+	it("keeps the original location if migration fails", async () => {
+		const { plugin, tab } = settingsFixture(); plugin.settings.pomodoroStorageLocation = "plugin";
+		(plugin.pomodoroService.migrateTodailyNotes as jest.Mock).mockRejectedValueOnce(new Error("Daily notes unavailable"));
+		tab.getSettingDefinitions();
+		await expect(tab.setControlValue("pomodoroStorageLocation", "daily-notes")).rejects.toThrow("Daily notes unavailable");
+		expect(plugin.settings.pomodoroStorageLocation).toBe("plugin"); expect(plugin.saveSettings).not.toHaveBeenCalled();
 	});
-
-	it("validates daily notes storage before switching without existing plugin history", async () => {
-		const plugin = createPlugin([]);
-		const save = jest.fn();
-
-		renderFeaturesTab(document.createElement("div"), plugin, save);
-		await getDataStorageDropdownOptions().setValue("daily-notes");
-
-		expect(showStorageLocationConfirmationModal).toHaveBeenCalledWith(plugin, false);
-		expect(plugin.pomodoroService?.migrateTodailyNotes).toHaveBeenCalledTimes(1);
-		expect(plugin.settings.pomodoroStorageLocation).toBe("daily-notes");
-		expect(save).toHaveBeenCalledTimes(1);
+	it("keeps the original location if confirmation is cancelled", async () => {
+		const { plugin, tab } = settingsFixture(); plugin.settings.pomodoroStorageLocation = "plugin";
+		(showStorageLocationConfirmationModal as jest.Mock).mockResolvedValue(false);
+		tab.getSettingDefinitions(); await tab.setControlValue("pomodoroStorageLocation", "daily-notes");
+		expect(plugin.settings.pomodoroStorageLocation).toBe("plugin"); expect(plugin.saveSettings).not.toHaveBeenCalled();
 	});
 });

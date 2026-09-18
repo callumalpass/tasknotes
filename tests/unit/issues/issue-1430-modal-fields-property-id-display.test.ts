@@ -1,106 +1,18 @@
-import { App } from "obsidian";
-import { createFieldManager } from "../../../src/settings/components/FieldManagerComponent";
-import type TaskNotesPlugin from "../../../src/main";
-import type { TaskModalFieldsConfig, UserMappedField } from "../../../src/types/settings";
+import { settingsFixture, page } from "../../helpers/native-settings";
+import { initializeFieldConfig } from "../../../src/utils/fieldConfigDefaults";
 
-describe("Issue #1430: Modal Fields displays property keys for custom fields", () => {
-	let container: HTMLElement;
-
-	beforeEach(() => {
-		document.body.innerHTML = "";
-		container = document.createElement("div");
-		document.body.appendChild(container);
+describe("Issue #1430: form fields display property keys, not internal custom IDs", () => {
+	it.each(["propID", ""])("shows a custom key or clear fallback (%s)", key => {
+		const { plugin, tab } = settingsFixture();
+		plugin.settings.userFields = [{ id: "field_1735011234", displayName: "My custom field", key, type: "text" }];
+		plugin.settings.modalFieldsConfig = initializeFieldConfig(undefined, plugin.settings.userFields);
+		const form = page(tab.getSettingDefinitions(), "Form fields");
+		const field = page(form.items!, "My custom field");
+		expect(field.desc).toBe(key || "No key set");
+		expect(field.desc).not.toContain("field_1735011234");
 	});
-
-	it("shows the customized property key for user fields instead of the internal ID", () => {
-		const userFields: UserMappedField[] = [
-			{
-				id: "field_1735011234",
-				displayName: "My Custom Field",
-				key: "propID",
-				type: "text",
-			},
-		];
-
-		renderFieldManager(userFields);
-
-		expect(getSecondaryText("field_1735011234")).toBe("Key: propID");
-		expect(getSecondaryText("field_1735011234")).not.toContain("field_1735011234");
+	it("keeps stable IDs on core form fields", () => {
+		const { tab } = settingsFixture();
+		expect(page(page(tab.getSettingDefinitions(), "Form fields").items!, "Title").desc).toBe("ID: title");
 	});
-
-	it("keeps core fields labelled by their stable modal field ID", () => {
-		renderFieldManager([]);
-
-		expect(getSecondaryText("title")).toBe("ID: title");
-	});
-
-	it("shows a clear fallback for user fields without a configured property key", () => {
-		renderFieldManager([
-			{
-				id: "field_1735011234",
-				displayName: "My Custom Field",
-				key: "",
-				type: "text",
-			},
-		]);
-
-		expect(getSecondaryText("field_1735011234")).toBe("No key set");
-	});
-
-	function renderFieldManager(userFields: UserMappedField[]) {
-		const plugin = {
-			settings: { userFields },
-		} as TaskNotesPlugin;
-
-		createFieldManager(
-			container,
-			plugin,
-			createModalFieldsConfig(),
-			jest.fn(),
-			new App()
-		);
-	}
-
-	function getSecondaryText(fieldId: string): string | null | undefined {
-		return container.querySelector(
-			`[data-card-id="${fieldId}"] .tasknotes-settings__card-secondary-text`
-		)?.textContent;
-	}
-
-	function createModalFieldsConfig(): TaskModalFieldsConfig {
-		return {
-			version: 1,
-			fields: [
-				{
-					id: "title",
-					fieldType: "core",
-					group: "custom",
-					displayName: "Title",
-					visibleInCreation: true,
-					visibleInEdit: true,
-					order: 0,
-					enabled: true,
-				},
-				{
-					id: "field_1735011234",
-					fieldType: "user",
-					group: "custom",
-					displayName: "My Custom Field",
-					visibleInCreation: true,
-					visibleInEdit: true,
-					order: 1,
-					enabled: true,
-				},
-			],
-			groups: [
-				{
-					id: "custom",
-					displayName: "Custom Fields",
-					order: 0,
-					collapsible: true,
-					defaultCollapsed: false,
-				},
-			],
-		};
-	}
 });

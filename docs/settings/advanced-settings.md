@@ -1,86 +1,23 @@
-# Advanced Settings
+# Advanced settings
 
-This page documents advanced configuration patterns that are spread across multiple TaskNotes settings tabs.
+Open **Settings → TaskNotes → Advanced** for indexing, diagnostics, the desktop HTTP API, and webhooks. Property configuration and workflow controls remain in their own pages; see [Settings](../settings.md) for the complete layout.
 
-## Where Advanced Configuration Lives
+## Field mapping and custom properties
 
-TaskNotes v4 uses a 6-tab settings layout:
+Under **Properties**, open a built-in property to change the frontmatter key TaskNotes reads and writes. This can match an existing vault convention or another plugin’s schema. Changing a mapping does not rename keys in existing notes.
 
-- `General`
-- `Task Properties`
-- `Modal Fields`
-- `Appearance`
-- `Features`
-- `Integrations`
+Custom properties support text, number, date, boolean, and list values. Open a custom property's detail page to set its type, default value, NLP trigger, and advanced autosuggestion filters.
 
-There is no separate `Advanced` tab in the current UI.
+Calendar identifiers such as `icsEventId` are under **Properties → Metadata & integration properties**. They maintain links between imported events and task notes.
 
-## Field Mapping
+## Status and priority workflows
 
-Field mapping controls which frontmatter keys TaskNotes reads and writes for core properties.
+Open **Properties → Status** or **Properties → Priority** to manage values, labels, colours, and behaviour. Statuses define progression and completion semantics. Priority names sort lexicographically in Bases unless a view uses an explicit formula.
 
-Location:
+## Form layout
 
-- `Settings -> TaskNotes -> Task Properties`
+Open **Task creation → Form fields** to control group order, field order, and visibility in creation and editing forms. Hiding a field does not remove its frontmatter value.
 
-Use field mapping when:
+## Time tracking and Pomodoro
 
-- You already use different frontmatter key names in your vault.
-- You are integrating with other plugins that expect specific keys.
-
-## User Fields
-
-User fields add custom properties that become available in filters, grouping, sorting, and modal forms.
-
-Location:
-
-- `Settings -> TaskNotes -> Task Properties`
-
-Typical fields:
-
-- Text (`client`, `assignee`)
-- Number (`effort`, `score`)
-- Date (`reviewDate`)
-- Boolean (`urgent`)
-- List (`labels`, `stakeholders`)
-
-## Status and Priority Workflows
-
-Custom statuses and priorities are configured in Task Properties.
-
-Location:
-
-- `Settings -> TaskNotes -> Task Properties`
-
-Notes:
-
-- Statuses define workflow progression and completion semantics.
-- Priority names sort lexicographically in Bases unless your view uses explicit formulas.
-
-## Modal Field Layout
-
-The create/edit modal can be reconfigured to show only relevant fields.
-
-Location:
-
-- `Settings -> TaskNotes -> Modal Fields`
-
-This is useful when your team standardizes a minimal required schema.
-
-## Time Tracking and Pomodoro Controls
-
-Time tracking auto-stop and pomodoro behavior are configured in Features.
-
-Location:
-
-- `Settings -> TaskNotes -> Features`
-
-## ICS-Specific Field Mapping
-
-ICS-related identifiers (`icsEventId`, ICS tag field) are part of field mapping.
-
-Location:
-
-- `Settings -> TaskNotes -> Task Properties`
-
-These fields are used to maintain links between imported calendar events and created notes/tasks.
+Open **Time & reminders** for time-tracking auto-stop, Pomodoro timers and storage, notifications, and timeblocking.

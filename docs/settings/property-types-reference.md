@@ -386,7 +386,7 @@ reminders:
 
 ## Field Mapping
 
-All property names can be customized via **Settings → Task Properties → Field Mapping**. If you change a field mapping, TaskNotes will read and write using your custom property name.
+All property names can be customized via **Settings → TaskNotes → Properties**. If you change a field mapping, TaskNotes will read and write using your custom property name.
 
 Custom property names are frontmatter keys, so names with spaces or punctuation are valid in task files. When you write your own Bases filters or formulas for those keys, use bracket notation such as `note["TN-status"]` or `note["Task Type"]` instead of dot notation. Dot notation only works reliably for simple identifier-style names.
 

@@ -487,6 +487,226 @@ export const ja: TranslationTree = {
 		}
 	},
 	settings: {
+		native: {
+			enterValue: "値を入力してください。",
+			duplicateValue: "この値はすでに存在します。",
+			enterCalendarName: "カレンダー名を入力してください。",
+			chooseCalendarFile: "ローカルの .ics ファイルを選択してください。",
+			noDefaultHint: "既定値を設定しない場合は空欄にします。",
+			optionalNumber: "数値を入力するか、空欄にしてください。",
+			validDate: "YYYY-MM-DD 形式で有効な日付を入力してください。",
+			validTime: "00:00〜23:59 の時刻を入力してください。",
+			includedFolders: "対象フォルダー",
+			statuses: "ステータス",
+			priorities: "優先度",
+			allNotes: "すべてのノート",
+			nextInOrder: "順序内の次のステータス",
+			off: "オフ",
+			newProperty: "新しいプロパティ",
+			noKeySet: "キー未設定",
+			notSyncedYet: "未同期",
+			secretSaved: "シークレットを保存済み",
+			notConnected: "未接続",
+			connected: "接続済み",
+			defaultDueTime: "既定の期限時刻",
+			defaultScheduledTime: "既定の予定時刻",
+			reminderNumber: "リマインダー {number}",
+			displayRow: "表示行 {number}",
+			deleteEntry: "{name} を削除しますか？",
+			connectAccount: "{name} に接続",
+			disconnectAccount: "{name} の接続を解除",
+			forgetAccountCredentials: "{name} の認証情報を削除しますか？",
+			connectedSince: "接続日時：{date}",
+			tokenRefreshed: "トークン更新日時：{date}",
+			deliveryCounts: "成功：{success} · 失敗：{failure}",
+			minutesValue: "{minutes} 分",
+			saveError: "TaskNotes の設定を保存できませんでした：{error}",
+			numberRange: "{min} から {max} の数値を入力してください。",
+			taskFiles: "タスクファイル",
+			taskIdentificationFoldersFilenamesAndFrontmatter:
+				"タスクの識別、フォルダー、ファイル名、フロントマター。",
+			filenames: "ファイル名",
+			namesForTaskNotesAndRecurringOccurrences:
+				"タスクノートと繰り返しタスクの各回のファイル名。",
+			propertyMappingsStatusesPrioritiesAndCustomProperties:
+				"プロパティの対応付け、ステータス、優先度、カスタムプロパティ。",
+			defaultsTemplatesNaturalLanguageInputAndFormFields:
+				"既定値、テンプレート、自然言語入力、フォームのフィールド。",
+			defaults: "既定値",
+			valuesToUseWhenCreatingATask: "タスク作成時に使用する値。",
+			templates: "テンプレート",
+			taskBodiesAndRecurringOccurrenceNotes: "タスクの本文と繰り返しタスクの各回のノート。",
+			formFields: "フォームのフィールド",
+			chooseWhichFieldsAppearWhenCreatingAndEditingTasks:
+				"タスクの作成時と編集時に表示するフィールドを選択します。",
+			appearanceInteraction: "外観と操作",
+			taskCardsInlineTasksClickBehaviourAndViewDefaults:
+				"タスクカード、インラインタスク、クリック操作、ビューの既定値。",
+			calendarDefaults: "カレンダーの既定値",
+			defaultsForCalendarViewsIndividualBasesViewsMayOverride:
+				"カレンダービューの既定値です。各 Bases ビューで上書きできます。",
+			configureViewCommandsChangeFiltersSortingAndGroupingInside:
+				"ビューのコマンドを設定します。フィルター、並び順、グループ化は各 Base 内で変更してください。",
+			timeReminders: "時間とリマインダー",
+			notificationsTimeTrackingRecurrencePomodoroAndTimeblocking:
+				"通知、時間記録、繰り返し、ポモドーロ、タイムブロック。",
+			reminderDeliveryAndSounds: "リマインダーの配信とサウンド。",
+			timerDurationsSoundsHistoryAndMobilePlacement:
+				"タイマーの時間、サウンド、履歴、モバイルでの表示位置。",
+			calendarBlocksAndAttachments: "カレンダーのブロックと添付ファイル。",
+			calendarsIntegrations: "カレンダーと連携",
+			calendarAccountsSubscriptionsTaskExportAndInteroperability:
+				"カレンダーアカウント、購読、タスクのエクスポート、相互運用。",
+			advanced: "詳細設定",
+			indexingHTTPAPIWebhooksAndDiagnostics: "インデックス、HTTP API、Webhook、診断。",
+			defaultTaskCardPropertiesUpdated: "タスクカードの既定プロパティを更新しました",
+			invalidTimeFormatPleaseUseHhMmFormatE:
+				"時刻の形式が無効です。hh:mm 形式を使用してください（例：08:00）。",
+			invalidTimeHoursMustBe0023AndMinutes:
+				"時刻が無効です。時は 00〜23、分は 00〜59 で入力してください。",
+			invalidTimeFormatPleaseUseHhMmFormatE2:
+				"時刻の形式が無効です。hh:mm 形式を使用してください（例：26:00）。",
+			invalidTimeUse00004800ValuesAfter:
+				"時刻が無効です。00:00〜48:00 を使用してください。翌日は 24:00〜48:00 で指定します（例：翌日午前2時は 26:00）。",
+			enterAnHTTPOrHTTPSURL: "HTTP または HTTPS の URL を入力してください。",
+			connectionStatus: "接続状態",
+			oAuthCredentials: "OAuth 認証情報",
+			storedInObsidianSecretStorageNotTaskNotesSettings:
+				"TaskNotes の設定ではなく、Obsidian のシークレットストレージに保存されます。",
+			clientID: "クライアント ID",
+			clientSecret: "クライアントシークレット",
+			leaveEmptyToKeepTheSavedSecretEnterA:
+				"空欄なら保存済みの値を維持します。置き換える値を入力し、このフィールドから移動すると保存されます。",
+			forgetSavedCredentials: "保存済み認証情報を削除",
+			forgetCredentials: "認証情報を削除",
+			thisRemovesTheSavedClientIDAndClientSecret:
+				"Obsidian のシークレットストレージからクライアント ID とシークレットを削除します。",
+			connect: "接続",
+			calendarIntegrationIsUnavailableOnThisDevice:
+				"この端末ではカレンダー連携を利用できません。",
+			refreshCalendarEvents: "カレンダーの予定を更新",
+			calendarSyncServiceUnavailable: "カレンダー同期サービスを利用できません。",
+			disconnect: "接続解除",
+			calendarSubscriptionServiceUnavailable: "カレンダー購読サービスを利用できません。",
+			theCalendarSubscriptionWillBeRemovedLinkedNotesWill:
+				"カレンダーの購読を削除します。リンクされたノートは保持されます。",
+			source: "取得元",
+			calendarURL: "カレンダー URL",
+			hTTPHTTPSWebcalOrWebcalsURL: "HTTP、HTTPS、webcal、webcals の URL。",
+			aCSSColorOrThemeVariable: "CSS の色またはテーマ変数。",
+			refreshIntervalMinutes: "更新間隔（分）",
+			lastSync: "最終同期",
+			refreshSubscription: "購読を更新",
+			calendarFile: "カレンダーファイル",
+			anIcsFileInThisVault: "この保管庫内の .ics ファイル。",
+			noWebhooksConfiguredAddOneToSendTaskEvents:
+				"Webhook は未設定です。追加すると、タスクのイベントを外部サービスに送信できます。",
+			deleteWebhook: "Webhook を削除しますか？",
+			eventsWillNoLongerBeSentToThisEndpoint:
+				"このエンドポイントにはイベントが送信されなくなります。",
+			selectAtLeastOneEventBeforeEnablingThisWebhook:
+				"この Webhook を有効にする前に、イベントを1つ以上選択してください。",
+			anOptionalJsonTemplateInTheVaultLeaveEmpty:
+				"保管庫内の任意の .json テンプレート。空欄なら未加工のイベントデータを送信します。",
+			includeEventTypeSignatureAndDeliveryIDTurnOff:
+				"イベント種別、署名、配信 ID を含めます。CORS ポリシーが厳格なサービスでは無効にしてください。",
+			deliveryStatus: "配信状態",
+			signingSecret: "署名用シークレット",
+			useThisSecretToVerifyPayloadsInTheReceiving:
+				"受信側のアプリケーションでペイロードを検証するために使用します。",
+			copySecret: "シークレットをコピー",
+			signingSecretCopied: "署名用シークレットをコピーしました",
+			leaveEmptyToUseTheNormalTaskFilenameWith:
+				"空欄なら通常のタスクファイル名に一意の接尾辞を付けます。",
+			occurrenceFilenameTemplateProperty: "各回のファイル名テンプレートのプロパティ",
+			aPropertyOnTheParentTaskThatOverridesThe:
+				"各回のファイル名テンプレートを上書きする、親タスクのプロパティ。",
+			defaultsApplyToNewTasks: "既定値は新しいタスクに適用されます",
+			changingTheseValuesDoesNotUpdateExistingTaskNotes:
+				"これらの値を変更しても、既存のタスクノートは更新されません。",
+			hHMmLeaveEmptyForAnAllDayTask: "HH:mm。終日タスクの場合は空欄にします。",
+			separateContextsWithCommas: "コンテキストをカンマで区切ります。",
+			separateTagsWithCommas: "タグをカンマで区切ります。",
+			defaultTimeEstimateMinutes: "既定の見積もり時間（分）",
+			newTasksHaveNoDefaultProjects: "新しいタスクに既定のプロジェクトはありません。",
+			newTasksHaveNoDefaultReminders: "新しいタスクに既定のリマインダーはありません。",
+			relativeTo: "基準",
+			splitLayoutOnWideScreens: "広い画面で分割表示",
+			showTheDetailsEditorBesideTheFieldsOnScreens:
+				"幅 900px 以上の画面では、詳細エディターをフィールドの横に表示します。",
+			tabMovesFocusInDetailsEditor: "詳細エディターで Tab キーによるフォーカス移動",
+			whenOffTabIndentsTextInTheMarkdownEditor:
+				"無効の場合、Tab キーは Markdown エディター内のテキストを字下げします。",
+			syncCustomProperties: "カスタムプロパティを同期",
+			syncProperties: "プロパティを同期",
+			noFieldsInThisGroup: "このグループにはフィールドがありません。",
+			showWhenCreatingTasks: "タスク作成時に表示",
+			showWhenEditingTasks: "タスク編集時に表示",
+			resetFormFields: "フォームのフィールドをリセット",
+			restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept:
+				"表示、グループ分け、順序を元に戻します。カスタムプロパティは保持されます。",
+			resetFields: "フィールドをリセット",
+			resetFormFields2: "フォームのフィールドをリセットしますか？",
+			yourCustomFieldLayoutWillBeReplacedWithThe:
+				"カスタムレイアウトを既定のレイアウトに置き換えます。",
+			inlineTaskCardProperties: "インラインタスクカードのプロパティ",
+			selectWhichPropertiesToShowInInlineTaskCards:
+				"インラインタスクカードに表示するプロパティを選択します。",
+			inlineTaskCardPropertiesUpdated: "インラインタスクカードのプロパティを更新しました",
+			attachmentSearchOrder: "添付ファイルの検索順序",
+			controlsHowFilesAreOrderedInTheAddAttachment:
+				"タイムブロックへの添付ファイル追加時に、検索結果のファイルを並べる順序を指定します。",
+			nameAToZ: "名前（A〜Z）",
+			nameZToA: "名前（Z〜A）",
+			pathAToZ: "パス（A〜Z）",
+			pathZToA: "パス（Z〜A）",
+			createdNewestFirst: "作成日時（新しい順）",
+			createdOldestFirst: "作成日時（古い順）",
+			modifiedNewestFirst: "更新日時（新しい順）",
+			modifiedOldestFirst: "更新日時（古い順）",
+			baseFile: "Base ファイル",
+			resetFileMapping: "ファイルの対応付けをリセット",
+			calendarSetupGuide: "カレンダー設定ガイド",
+			connectAGoogleOrMicrosoftCalendarUsingYourOwn:
+				"独自の OAuth アプリ認証情報を使って Google または Microsoft のカレンダーに接続します。",
+			enterAPropertyKey: "プロパティキーを入力してください。",
+			useAPropertyKeyWithoutSurroundingSpacesLineBreaks:
+				"前後の空白、改行、YAML の記号を含まないキーを使用してください。",
+			theTagsPropertyIsReservedByObsidian: "tags プロパティは Obsidian が予約しています。",
+			anotherPropertyAlreadyUsesThisKey: "別のプロパティがこのキーを使用しています。",
+			separateValuesWithCommas: "値をカンマで区切ります。",
+			propertyName: "プロパティ名",
+			propertyValue: "プロパティ値",
+			leaveEmptyToMatchAnyNoteWithThisProperty:
+				"空欄なら、このプロパティを持つすべてのノートに一致します。",
+			noValuesConfigured: "値が設定されていません。",
+			keepAtLeastOneConfiguredValue: "設定済みの値を1つ以上残してください。",
+			existingTaskNotesWillNotBeChangedTasksUsing:
+				"既存のタスクノートは変更されません。この値を使うタスクはフロントマターに値を保持します。",
+			storedInTaskNotesChangingThisDoesNotRename:
+				"タスクノートに保存されます。変更しても既存のノート内の値は改名されません。",
+			aCSSColorOrThemeVariableSuchAsVar:
+				"CSS の色またはテーマ変数（例：var(--text-accent)）。",
+			lucideIconNameLeaveEmptyForTheDefaultIndicator:
+				"Lucide アイコン名。空欄なら既定の表示を使用します。",
+			countsAsCompleted: "完了と見なす",
+			countsAsSkipped: "スキップ済みと見なす",
+			excludeFromStatusCycle: "ステータスの循環から除外",
+			automaticArchiving: "自動アーカイブ",
+			automaticallyArchive: "自動的にアーカイブ",
+			sortWeight: "並び替えの重み",
+			higherValuesSortFirst: "値が大きいものを先に表示します。",
+			thisRemovesThePropertyFromTaskNotesFormsNotFrom:
+				"TaskNotes のフォームから削除しますが、既存のノートからは削除しません。",
+			deleteProperty: "プロパティを削除",
+			changingThisKeyDoesNotMigrateExistingNotes:
+				"このキーを変更しても既存のノートは移行されません。",
+			changingThisMappingDoesNotRenamePropertiesInExisting:
+				"この対応付けを変更しても既存のノートのプロパティ名は変わりません。",
+			metadataIntegrationProperties: "メタデータと連携用プロパティ",
+			timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents:
+				"日時、繰り返しの記録、順序、リンクされたカレンダーの予定。",
+		},
 		header: {
 			documentation: "ドキュメント",
 			documentationUrl: "https://tasknotes.dev"

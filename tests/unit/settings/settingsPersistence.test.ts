@@ -122,6 +122,18 @@ describe("settings persistence helpers", () => {
 		);
 	});
 
+	it("migrates a legacy custom property before indexing without dropping colliding names", () => {
+		const original = { userField: { enabled: true, key: "legacy", displayName: "Client", type: "text" as const }, userFields: [{ id: "client", key: "other", displayName: "Client", type: "text" as const }] };
+		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData(original);
+		expect(settings.userFields).toEqual([
+			original.userFields[0], { id: "client-2", key: "legacy", displayName: "Client", type: "text" },
+		]);
+		expect(settings.userField.enabled).toBe(false);
+		expect(original.userField.enabled).toBe(true);
+		expect(shouldPersistMigratedSettings).toBe(true);
+		expect(buildSettingsFromLoadedData(settings).settings.userFields).toHaveLength(2);
+	});
+
 	it("migrates legacy settings and preserves explicit false/null nested defaults", () => {
 		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData({
 			statusSuggestionTrigger: "/",

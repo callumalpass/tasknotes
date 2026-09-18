@@ -487,6 +487,230 @@ export const pt: TranslationTree = {
 		}
 	},
 	settings: {
+		native: {
+			enterValue: "Insira um valor.",
+			duplicateValue: "Este valor já existe.",
+			enterCalendarName: "Insira um nome de calendário.",
+			chooseCalendarFile: "Escolha um arquivo .ics local.",
+			noDefaultHint: "Deixe vazio para não definir um valor padrão.",
+			optionalNumber: "Insira um número ou deixe vazio.",
+			validDate: "Insira uma data válida no formato YYYY-MM-DD.",
+			validTime: "Insira um horário entre 00:00 e 23:59.",
+			includedFolders: "Pastas incluídas",
+			statuses: "Estados",
+			priorities: "Prioridades",
+			allNotes: "Todas as notas",
+			nextInOrder: "Próximo na ordem",
+			off: "Desativado",
+			newProperty: "Nova propriedade",
+			noKeySet: "Nenhuma chave definida",
+			notSyncedYet: "Ainda não sincronizado",
+			secretSaved: "Segredo salvo",
+			notConnected: "Não conectado",
+			connected: "Conectado",
+			defaultDueTime: "Horário de vencimento padrão",
+			defaultScheduledTime: "Horário agendado padrão",
+			reminderNumber: "Lembrete {number}",
+			displayRow: "Linha de exibição {number}",
+			deleteEntry: "Excluir {name}?",
+			connectAccount: "Conectar {name}",
+			disconnectAccount: "Desconectar {name}",
+			forgetAccountCredentials: "Esquecer as credenciais de {name}?",
+			connectedSince: "Conectado: {date}",
+			tokenRefreshed: "Token atualizado: {date}",
+			deliveryCounts: "Bem-sucedidos: {success} · Falhas: {failure}",
+			minutesValue: "{minutes} minutos",
+			saveError: "Não foi possível salvar as configurações do TaskNotes: {error}",
+			numberRange: "Insira um número entre {min} e {max}.",
+			taskFiles: "Arquivos de tarefas",
+			taskIdentificationFoldersFilenamesAndFrontmatter:
+				"Identificação de tarefas, pastas, nomes de arquivos e propriedades YAML.",
+			filenames: "Nomes de arquivos",
+			namesForTaskNotesAndRecurringOccurrences:
+				"Nomes das notas de tarefas e das ocorrências recorrentes.",
+			propertyMappingsStatusesPrioritiesAndCustomProperties:
+				"Mapeamento de propriedades, status, prioridades e propriedades personalizadas.",
+			defaultsTemplatesNaturalLanguageInputAndFormFields:
+				"Valores padrão, modelos, entrada em linguagem natural e campos do formulário.",
+			defaults: "Valores padrão",
+			valuesToUseWhenCreatingATask: "Valores usados ao criar uma tarefa.",
+			templates: "Modelos",
+			taskBodiesAndRecurringOccurrenceNotes:
+				"Conteúdo das tarefas e notas de ocorrências recorrentes.",
+			formFields: "Campos do formulário",
+			chooseWhichFieldsAppearWhenCreatingAndEditingTasks:
+				"Escolha os campos exibidos ao criar e editar tarefas.",
+			appearanceInteraction: "Aparência e interação",
+			taskCardsInlineTasksClickBehaviourAndViewDefaults:
+				"Cartões de tarefas, tarefas em linha, ações de clique e padrões das visualizações.",
+			calendarDefaults: "Padrões do calendário",
+			defaultsForCalendarViewsIndividualBasesViewsMayOverride:
+				"Padrões para visualizações de calendário. Cada visualização do Bases pode substituí-los.",
+			configureViewCommandsChangeFiltersSortingAndGroupingInside:
+				"Configure comandos de visualização. Altere filtros, ordenação e agrupamento em cada Base.",
+			timeReminders: "Tempo e lembretes",
+			notificationsTimeTrackingRecurrencePomodoroAndTimeblocking:
+				"Notificações, controle de tempo, recorrência, Pomodoro e blocos de tempo.",
+			reminderDeliveryAndSounds: "Entrega de lembretes e sons.",
+			timerDurationsSoundsHistoryAndMobilePlacement:
+				"Durações, sons, histórico e posição do temporizador no celular.",
+			calendarBlocksAndAttachments: "Blocos do calendário e anexos.",
+			calendarsIntegrations: "Calendários e integrações",
+			calendarAccountsSubscriptionsTaskExportAndInteroperability:
+				"Contas de calendário, assinaturas, exportação de tarefas e interoperabilidade.",
+			advanced: "Avançado",
+			indexingHTTPAPIWebhooksAndDiagnostics: "Indexação, API HTTP, webhooks e diagnóstico.",
+			defaultTaskCardPropertiesUpdated:
+				"Propriedades padrão dos cartões de tarefas atualizadas",
+			invalidTimeFormatPleaseUseHhMmFormatE:
+				"Formato de hora inválido. Use hh:mm (por exemplo, 08:00).",
+			invalidTimeHoursMustBe0023AndMinutes:
+				"Hora inválida. As horas devem estar entre 00 e 23 e os minutos entre 00 e 59.",
+			invalidTimeFormatPleaseUseHhMmFormatE2:
+				"Formato de hora inválido. Use hh:mm (por exemplo, 26:00).",
+			invalidTimeUse00004800ValuesAfter:
+				"Hora inválida. Use 00:00 a 48:00; após meia-noite, use 24:00 a 48:00, como 26:00 para 2h do dia seguinte.",
+			enterAnHTTPOrHTTPSURL: "Insira uma URL HTTP ou HTTPS.",
+			connectionStatus: "Estado da conexão",
+			oAuthCredentials: "Credenciais OAuth",
+			storedInObsidianSecretStorageNotTaskNotesSettings:
+				"Armazenadas no armazenamento secreto do Obsidian, não nas configurações do TaskNotes.",
+			clientID: "ID do cliente",
+			clientSecret: "Segredo do cliente",
+			leaveEmptyToKeepTheSavedSecretEnterA:
+				"Deixe vazio para manter o segredo salvo. Insira um substituto e saia do campo para salvá-lo.",
+			forgetSavedCredentials: "Esquecer credenciais salvas",
+			forgetCredentials: "Esquecer credenciais",
+			thisRemovesTheSavedClientIDAndClientSecret:
+				"Remove o ID e o segredo do cliente do armazenamento secreto do Obsidian.",
+			connect: "Conectar",
+			calendarIntegrationIsUnavailableOnThisDevice:
+				"A integração de calendário não está disponível neste dispositivo.",
+			refreshCalendarEvents: "Atualizar eventos do calendário",
+			calendarSyncServiceUnavailable: "Serviço de sincronização de calendário indisponível.",
+			disconnect: "Desconectar",
+			calendarSubscriptionServiceUnavailable:
+				"Serviço de assinaturas de calendário indisponível.",
+			theCalendarSubscriptionWillBeRemovedLinkedNotesWill:
+				"A assinatura do calendário será removida. As notas vinculadas serão mantidas.",
+			source: "Origem",
+			calendarURL: "URL do calendário",
+			hTTPHTTPSWebcalOrWebcalsURL: "URL HTTP, HTTPS, webcal ou webcals.",
+			aCSSColorOrThemeVariable: "Uma cor CSS ou variável do tema.",
+			refreshIntervalMinutes: "Intervalo de atualização (minutos)",
+			lastSync: "Última sincronização",
+			refreshSubscription: "Atualizar assinatura",
+			calendarFile: "Arquivo de calendário",
+			anIcsFileInThisVault: "Um arquivo .ics neste cofre.",
+			noWebhooksConfiguredAddOneToSendTaskEvents:
+				"Nenhum webhook configurado. Adicione um para enviar eventos de tarefas a outro serviço.",
+			deleteWebhook: "Excluir webhook?",
+			eventsWillNoLongerBeSentToThisEndpoint:
+				"Os eventos não serão mais enviados a este endpoint.",
+			selectAtLeastOneEventBeforeEnablingThisWebhook:
+				"Selecione pelo menos um evento antes de ativar este webhook.",
+			anOptionalJsonTemplateInTheVaultLeaveEmpty:
+				"Um modelo .json opcional no cofre. Deixe vazio para enviar os dados brutos dos eventos.",
+			includeEventTypeSignatureAndDeliveryIDTurnOff:
+				"Incluir tipo de evento, assinatura e ID de entrega. Desative para serviços com políticas CORS rígidas.",
+			deliveryStatus: "Estado das entregas",
+			signingSecret: "Segredo de assinatura",
+			useThisSecretToVerifyPayloadsInTheReceiving:
+				"Use este segredo para verificar os dados no aplicativo destinatário.",
+			copySecret: "Copiar segredo",
+			signingSecretCopied: "Segredo de assinatura copiado",
+			leaveEmptyToUseTheNormalTaskFilenameWith:
+				"Deixe vazio para usar o nome de arquivo normal da tarefa com um sufixo único.",
+			occurrenceFilenameTemplateProperty: "Propriedade do modelo de nome de ocorrência",
+			aPropertyOnTheParentTaskThatOverridesThe:
+				"Uma propriedade da tarefa principal que substitui o modelo de nome de arquivo das ocorrências.",
+			defaultsApplyToNewTasks: "Os valores padrão se aplicam às novas tarefas",
+			changingTheseValuesDoesNotUpdateExistingTaskNotes:
+				"Alterar estes valores não atualiza notas de tarefas existentes.",
+			hHMmLeaveEmptyForAnAllDayTask: "HH:mm. Deixe vazio para uma tarefa de dia inteiro.",
+			separateContextsWithCommas: "Separe os contextos por vírgulas.",
+			separateTagsWithCommas: "Separe as etiquetas por vírgulas.",
+			defaultTimeEstimateMinutes: "Estimativa de tempo padrão (minutos)",
+			newTasksHaveNoDefaultProjects: "Novas tarefas não têm projetos padrão.",
+			newTasksHaveNoDefaultReminders: "Novas tarefas não têm lembretes padrão.",
+			relativeTo: "Em relação a",
+			splitLayoutOnWideScreens: "Layout dividido em telas largas",
+			showTheDetailsEditorBesideTheFieldsOnScreens:
+				"Exibir o editor de detalhes ao lado dos campos em telas com pelo menos 900 px de largura.",
+			tabMovesFocusInDetailsEditor: "Tab move o foco no editor de detalhes",
+			whenOffTabIndentsTextInTheMarkdownEditor:
+				"Quando desativado, Tab recua o texto no editor Markdown.",
+			syncCustomProperties: "Sincronizar propriedades personalizadas",
+			syncProperties: "Sincronizar propriedades",
+			noFieldsInThisGroup: "Nenhum campo neste grupo.",
+			showWhenCreatingTasks: "Exibir ao criar tarefas",
+			showWhenEditingTasks: "Exibir ao editar tarefas",
+			resetFormFields: "Redefinir campos do formulário",
+			restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept:
+				"Restaurar visibilidade, agrupamento e ordem. As propriedades personalizadas são mantidas.",
+			resetFields: "Redefinir campos",
+			resetFormFields2: "Redefinir campos do formulário?",
+			yourCustomFieldLayoutWillBeReplacedWithThe:
+				"Seu layout personalizado será substituído pelo layout padrão.",
+			inlineTaskCardProperties: "Propriedades dos cartões de tarefas em linha",
+			selectWhichPropertiesToShowInInlineTaskCards:
+				"Escolha as propriedades exibidas nos cartões de tarefas em linha.",
+			inlineTaskCardPropertiesUpdated:
+				"Propriedades dos cartões de tarefas em linha atualizadas",
+			attachmentSearchOrder: "Ordem de busca de anexos",
+			controlsHowFilesAreOrderedInTheAddAttachment:
+				"Controla a ordem dos arquivos na busca para adicionar anexos aos blocos de tempo.",
+			nameAToZ: "Nome (A a Z)",
+			nameZToA: "Nome (Z a A)",
+			pathAToZ: "Caminho (A a Z)",
+			pathZToA: "Caminho (Z a A)",
+			createdNewestFirst: "Criação (mais recentes primeiro)",
+			createdOldestFirst: "Criação (mais antigos primeiro)",
+			modifiedNewestFirst: "Modificação (mais recentes primeiro)",
+			modifiedOldestFirst: "Modificação (mais antigos primeiro)",
+			baseFile: "Arquivo Base",
+			resetFileMapping: "Redefinir mapeamento do arquivo",
+			calendarSetupGuide: "Guia de configuração do calendário",
+			connectAGoogleOrMicrosoftCalendarUsingYourOwn:
+				"Conecte um calendário do Google ou Microsoft com suas próprias credenciais de aplicativo OAuth.",
+			enterAPropertyKey: "Insira uma chave de propriedade.",
+			useAPropertyKeyWithoutSurroundingSpacesLineBreaks:
+				"Use uma chave sem espaços nas extremidades, quebras de linha ou pontuação YAML.",
+			theTagsPropertyIsReservedByObsidian: "A propriedade tags é reservada pelo Obsidian.",
+			anotherPropertyAlreadyUsesThisKey: "Outra propriedade já usa esta chave.",
+			separateValuesWithCommas: "Separe os valores por vírgulas.",
+			propertyName: "Nome da propriedade",
+			propertyValue: "Valor da propriedade",
+			leaveEmptyToMatchAnyNoteWithThisProperty:
+				"Deixe vazio para corresponder a qualquer nota com esta propriedade.",
+			noValuesConfigured: "Nenhum valor configurado.",
+			keepAtLeastOneConfiguredValue: "Mantenha pelo menos um valor configurado.",
+			existingTaskNotesWillNotBeChangedTasksUsing:
+				"As notas existentes não serão alteradas. Tarefas com este valor o manterão nas propriedades YAML.",
+			storedInTaskNotesChangingThisDoesNotRename:
+				"Armazenado nas notas de tarefas. Alterar isto não renomeia valores nas notas existentes.",
+			aCSSColorOrThemeVariableSuchAsVar:
+				"Uma cor CSS ou variável do tema, como var(--text-accent).",
+			lucideIconNameLeaveEmptyForTheDefaultIndicator:
+				"Nome de ícone Lucide. Deixe vazio para usar o indicador padrão.",
+			countsAsCompleted: "Conta como concluído",
+			countsAsSkipped: "Conta como ignorado",
+			excludeFromStatusCycle: "Excluir do ciclo de status",
+			automaticArchiving: "Arquivamento automático",
+			automaticallyArchive: "Arquivar automaticamente",
+			sortWeight: "Peso de ordenação",
+			higherValuesSortFirst: "Valores maiores aparecem primeiro.",
+			thisRemovesThePropertyFromTaskNotesFormsNotFrom:
+				"Remove a propriedade dos formulários do TaskNotes, não das notas existentes.",
+			deleteProperty: "Excluir propriedade",
+			changingThisKeyDoesNotMigrateExistingNotes:
+				"Alterar esta chave não migra as notas existentes.",
+			changingThisMappingDoesNotRenamePropertiesInExisting:
+				"Alterar este mapeamento não renomeia propriedades nas notas existentes.",
+			metadataIntegrationProperties: "Metadados e propriedades de integração",
+			timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents:
+				"Datas e horas, registros de recorrência, ordem e eventos de calendário vinculados.",
+		},
 		header: {
 			documentation: "Documentação",
 			documentationUrl: "https://tasknotes.dev"

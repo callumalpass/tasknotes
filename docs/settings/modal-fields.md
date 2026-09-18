@@ -1,36 +1,19 @@
-# Modal Fields Settings
+# Form fields
 
-The Modal Fields tab lets you decide exactly which fields appear in the task creation and edit modals. Open **Settings → TaskNotes → Modal Fields** to manage the configuration.
+Open **Settings → TaskNotes → Task creation → Form fields** to configure task creation and editing forms.
 
-![Modal Fields Settings](../assets/settings-modal-fields.png)
+## Groups and ordering
 
-## Field Groups
+Fields are grouped into basic information, metadata, organization, dependencies, and custom fields. Reorder groups using the native list handles. Open a group to reorder its fields, then open a field to change its options.
 
-Fields are organized into draggable groups:
+Each field offers creation and editing visibility controls and an enabled toggle. Fields that support it also have a required toggle. Custom fields show their property key, not their internal identifier.
 
-- **Basic Information** – Title and Details
-- **Metadata** – Contexts, Tags, Time Estimate
-- **Organization** – Projects and Subtasks
-- **Dependencies** – Blocked By and Blocking
-- **Custom Fields** – Any user-defined fields that you add through Task Properties
+Changes save automatically. Hiding a field does not remove its value from existing notes.
 
-Each group can be collapsed, and their order in the manager matches the order shown in the modal.
+## Custom properties
 
-## Managing Fields
+Create and configure custom properties under **Properties**. Adding, renaming, or deleting a custom property updates the corresponding form field. **Sync custom properties** can reconcile the form with imported or externally changed property definitions.
 
-Every field entry includes:
+## Resetting
 
-- **Visibility toggles** for creation and edit modals
-- **Enable/disable** checkbox
-- **Drag handle** for ordering within its group
-- **Required** toggle (where applicable, e.g., Title)
-
-Changes are saved automatically. Use this to hide fields you never touch, ensure required metadata appears up front, or reorder fields to match your workflow.
-
-## Syncing User Fields
-
-The **Sync User Fields** button pulls the latest user-defined fields from the Task Properties tab into the Custom Fields group. New user fields are appended, renamed fields update in place, and removed fields drop out of the configuration. Re-run the sync whenever you add or rename custom fields.
-
-## Resetting to Defaults
-
-Select **Reset to Defaults** to restore the stock configuration (all built-in fields enabled plus empty custom slots). The reset keeps your existing user field definitions; it only reverts modal layout and visibility.
+**Reset form fields** restores the default group order, field order, and visibility after confirmation. It keeps your custom property definitions and does not change existing task notes.

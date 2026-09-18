@@ -1,22 +1,11 @@
 import { Notice } from "obsidian";
-import TaskNotesPlugin from "../../main";
 import type { TranslationKey } from "../../i18n";
-import {
-	createSettingGroup,
-	configureTextSetting,
-	configureToggleSetting,
-	configureDropdownSetting,
-	configureNumberSetting,
-} from "../components/settingHelpers";
-import { PropertySelectorModal } from "../../modals/PropertySelectorModal";
-import { getAvailableProperties, getPropertyLabels } from "../../utils/propertyHelpers";
+import { propertySelectionPage } from "./propertySelection";
 import type { CalendarViewSettings } from "../../types/settings";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../../utils/calendarTime";
-
 type CalendarDefaultView = CalendarViewSettings["defaultView"];
 type CalendarFirstDay = CalendarViewSettings["firstDay"];
 type CalendarSlotDuration = CalendarViewSettings["slotDuration"];
-
 const CALENDAR_DEFAULT_VIEWS: readonly CalendarDefaultView[] = [
 	"dayGridMonth",
 	"timeGridWeek",
@@ -24,92 +13,41 @@ const CALENDAR_DEFAULT_VIEWS: readonly CalendarDefaultView[] = [
 	"multiMonthYear",
 	"timeGridCustom",
 ];
-
 const CALENDAR_FIRST_DAYS: readonly CalendarFirstDay[] = [0, 1, 2, 3, 4, 5, 6];
-
 const CALENDAR_SLOT_DURATIONS: readonly CalendarSlotDuration[] = [
 	"00:15:00",
 	"00:30:00",
 	"01:00:00",
 ];
-
 function isCalendarDefaultView(value: string): value is CalendarDefaultView {
 	return CALENDAR_DEFAULT_VIEWS.some((view) => view === value);
 }
-
 function parseCalendarFirstDay(value: string, fallback: CalendarFirstDay): CalendarFirstDay {
 	const parsed = Number.parseInt(value, 10);
 	return CALENDAR_FIRST_DAYS.find((day) => day === parsed) ?? fallback;
 }
-
 function isCalendarSlotDuration(value: string): value is CalendarSlotDuration {
 	return CALENDAR_SLOT_DURATIONS.some((duration) => duration === value);
 }
+import { SettingsContext } from "../native/SettingsContext";
+import type { SettingDefinitionGroup } from "obsidian";
 
-/**
- * Renders the Appearance & UI tab - visual customization settings
- */
-export function renderAppearanceTab(
-	container: HTMLElement,
-	plugin: TaskNotesPlugin,
-	save: () => void
-): void {
-	container.empty();
-
+export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGroup[] {
+	const { plugin, save } = ctx;
 	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
-
-	// Task Cards Section
-	const availableProperties = getAvailableProperties(plugin);
-	const currentProperties = plugin.settings.defaultVisibleProperties || [];
-	const currentLabels = getPropertyLabels(plugin, currentProperties);
-
-	createSettingGroup(
-		container,
+	return [
 		{
+			type: "group",
 			heading: translate("settings.appearance.taskCards.header"),
-			description: translate("settings.appearance.taskCards.description"),
-		},
-		(group) => {
-			group.addSetting((setting) => {
-				setting
-					.setName(
-						translate("settings.appearance.taskCards.defaultVisibleProperties.name")
-					)
-					.setDesc(
-						translate(
-							"settings.appearance.taskCards.defaultVisibleProperties.description"
-						)
-					)
-					.addButton((button) => {
-						button.setButtonText("Configure").onClick(() => {
-							const modal = new PropertySelectorModal(
-								plugin.app,
-								availableProperties,
-								currentProperties,
-								async (selected) => {
-									plugin.settings.defaultVisibleProperties = selected;
-									save();
-									new Notice("Default task card properties updated");
-									// Re-render to update display
-									renderAppearanceTab(container, plugin, save);
-								},
-								"Select Default Task Card Properties",
-								"Choose which properties to display in task cards (views, kanban, etc.). Selected properties will appear in the order shown below."
-							);
-							modal.open();
-						});
-					});
-			});
-
-			// Show currently selected properties
-			group.addSetting((setting) => {
-				setting.setDesc(`Currently showing: ${currentLabels.join(", ")}`);
-				setting.settingEl.addClass("settings-view__group-description");
-			});
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+			items: [
+				propertySelectionPage(
+					ctx,
+					"defaultVisibleProperties",
+					translate("settings.appearance.taskCards.defaultVisibleProperties.name"),
+					translate("settings.appearance.taskCards.defaultVisibleProperties.description")
+				),
+				ctx.toggle("completionMenuAsSubmenu", {
 					name: translate("settings.appearance.taskCards.completionSubmenu.name"),
 					desc: translate("settings.appearance.taskCards.completionSubmenu.description"),
 					getValue: () => plugin.settings.completionMenuAsSubmenu,
@@ -117,21 +55,14 @@ export function renderAppearanceTab(
 						plugin.settings.completionMenuAsSubmenu = value;
 						save();
 					},
-				})
-			);
-		}
-	);
-
-	// Display Formatting Section
-	createSettingGroup(
-		container,
-		{
-			heading: translate("settings.appearance.displayFormatting.header"),
-			description: translate("settings.appearance.displayFormatting.description"),
+				}),
+			],
 		},
-		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
+		{
+			type: "group",
+			heading: translate("settings.appearance.displayFormatting.header"),
+			items: [
+				ctx.dropdown("calendarViewSettings.timeFormat", {
 					name: translate("settings.appearance.displayFormatting.timeFormat.name"),
 					desc: translate("settings.appearance.displayFormatting.timeFormat.description"),
 					options: [
@@ -153,21 +84,14 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.timeFormat = value as "12" | "24";
 						save();
 					},
-				})
-			);
-		}
-	);
-
-	// Calendar View Section
-	createSettingGroup(
-		container,
-		{
-			heading: translate("settings.appearance.calendarView.header"),
-			description: translate("settings.appearance.calendarView.description"),
+				}),
+			],
 		},
-		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
+		{
+			type: "group",
+			heading: translate("settings.appearance.calendarView.header"),
+			items: [
+				ctx.dropdown("calendarViewSettings.defaultView", {
 					name: translate("settings.appearance.calendarView.defaultView.name"),
 					desc: translate("settings.appearance.calendarView.defaultView.description"),
 					options: [
@@ -210,14 +134,12 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.defaultView = value;
 						save();
 						// Re-render to show custom day count if needed
-						renderAppearanceTab(container, plugin, save);
+						ctx.refresh();
 					},
-				})
-			);
-
-			if (plugin.settings.calendarViewSettings.defaultView === "timeGridCustom") {
-				group.addSetting((setting) =>
-					void configureNumberSetting(setting, {
+				}),
+				ctx.number(
+					"calendarViewSettings.customDayCount",
+					{
 						name: translate("settings.appearance.calendarView.customDayCount.name"),
 						desc: translate(
 							"settings.appearance.calendarView.customDayCount.description"
@@ -232,12 +154,10 @@ export function renderAppearanceTab(
 							plugin.settings.calendarViewSettings.customDayCount = value;
 							save();
 						},
-					})
-				);
-			}
-
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
+					},
+					() => !(plugin.settings.calendarViewSettings.defaultView === "timeGridCustom")
+				),
+				ctx.dropdown("calendarViewSettings.firstDay", {
 					name: translate("settings.appearance.calendarView.firstDayOfWeek.name"),
 					desc: translate("settings.appearance.calendarView.firstDayOfWeek.description"),
 					options: [
@@ -257,11 +177,8 @@ export function renderAppearanceTab(
 						);
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.showWeekends", {
 					name: translate("settings.appearance.calendarView.showWeekends.name"),
 					desc: translate("settings.appearance.calendarView.showWeekends.description"),
 					getValue: () => plugin.settings.calendarViewSettings.showWeekends,
@@ -269,11 +186,8 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.showWeekends = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.weekNumbers", {
 					name: translate("settings.appearance.calendarView.showWeekNumbers.name"),
 					desc: translate("settings.appearance.calendarView.showWeekNumbers.description"),
 					getValue: () => plugin.settings.calendarViewSettings.weekNumbers,
@@ -281,11 +195,8 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.weekNumbers = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.showTodayHighlight", {
 					name: translate("settings.appearance.calendarView.showTodayHighlight.name"),
 					desc: translate(
 						"settings.appearance.calendarView.showTodayHighlight.description"
@@ -295,11 +206,8 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.showTodayHighlight = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.nowIndicator", {
 					name: translate(
 						"settings.appearance.calendarView.showCurrentTimeIndicator.name"
 					),
@@ -311,11 +219,8 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.nowIndicator = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.selectMirror", {
 					name: translate("settings.appearance.calendarView.selectionMirror.name"),
 					desc: translate("settings.appearance.calendarView.selectionMirror.description"),
 					getValue: () => plugin.settings.calendarViewSettings.selectMirror,
@@ -323,64 +228,32 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.selectMirror = value;
 						save();
 					},
-				})
-			);
-
-			// Calendar locale setting with blur validation
-			group.addSetting((setting) => {
-				setting
-					.setName(translate("settings.appearance.calendarView.calendarLocale.name"))
-					.setDesc(
-						translate("settings.appearance.calendarView.calendarLocale.description")
-					)
-					.addText((text) => {
-						text.setPlaceholder(
-							translate("settings.appearance.calendarView.calendarLocale.placeholder")
-						);
-						text.setValue(plugin.settings.calendarViewSettings.locale || "");
-						text.inputEl.addClass("settings-view__input");
-
-						// Validate and save on blur (when user clicks out of field)
-						text.inputEl.addEventListener("blur", () => {
-							const trimmed = text.getValue().trim();
-							if (trimmed) {
-								try {
-									// Use Intl.getCanonicalLocales to validate the locale tag
-									Intl.getCanonicalLocales(trimmed);
-									plugin.settings.calendarViewSettings.locale = trimmed;
-									save();
-								} catch {
-									// Invalid locale - show notice and clear the field
-									new Notice(
-										translate(
-											"settings.appearance.calendarView.calendarLocale.invalidLocale"
-										)
-									);
-									plugin.settings.calendarViewSettings.locale = "";
-									text.setValue("");
-									save();
-								}
-							} else {
-								// Empty string is valid (means auto-detect)
-								plugin.settings.calendarViewSettings.locale = "";
-								save();
-							}
-						});
-					});
-			});
-		}
-	);
-
-	// Default event visibility section
-	createSettingGroup(
-		container,
-		{
-			heading: translate("settings.appearance.defaultEventVisibility.header"),
-			description: translate("settings.appearance.defaultEventVisibility.description"),
+				}),
+				ctx.text("calendarViewSettings.locale", {
+					name: translate("settings.appearance.calendarView.calendarLocale.name"),
+					desc: translate("settings.appearance.calendarView.calendarLocale.description"),
+					getValue: () => plugin.settings.calendarViewSettings.locale || "",
+					validate: (value) => {
+						try {
+							if (value.trim()) Intl.getCanonicalLocales(value.trim());
+						} catch {
+							return translate(
+								"settings.appearance.calendarView.calendarLocale.invalidLocale"
+							);
+						}
+					},
+					setValue: (value) => {
+						plugin.settings.calendarViewSettings.locale = value.trim();
+						save();
+					},
+				}),
+			],
 		},
-		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+		{
+			type: "group",
+			heading: translate("settings.appearance.defaultEventVisibility.header"),
+			items: [
+				ctx.toggle("calendarViewSettings.defaultShowScheduled", {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showScheduledTasks.name"
 					),
@@ -392,11 +265,8 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.defaultShowScheduled = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.defaultShowDue", {
 					name: translate("settings.appearance.defaultEventVisibility.showDueDates.name"),
 					desc: translate(
 						"settings.appearance.defaultEventVisibility.showDueDates.description"
@@ -406,11 +276,8 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.defaultShowDue = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.defaultShowDueWhenScheduled", {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
 					),
@@ -423,11 +290,8 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.defaultShowTimeEntries", {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showTimeEntries.name"
 					),
@@ -439,11 +303,8 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.defaultShowTimeEntries = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.defaultShowRecurring", {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showRecurringTasks.name"
 					),
@@ -455,11 +316,8 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.defaultShowRecurring = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("calendarViewSettings.defaultShowICSEvents", {
 					name: translate(
 						"settings.appearance.defaultEventVisibility.showICSEvents.name"
 					),
@@ -471,21 +329,14 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.defaultShowICSEvents = value;
 						save();
 					},
-				})
-			);
-		}
-	);
-
-	// Time Settings
-	createSettingGroup(
-		container,
-		{
-			heading: translate("settings.appearance.timeSettings.header"),
-			description: translate("settings.appearance.timeSettings.description"),
+				}),
+			],
 		},
-		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
+		{
+			type: "group",
+			heading: translate("settings.appearance.timeSettings.header"),
+			items: [
+				ctx.dropdown("calendarViewSettings.slotDuration", {
 					name: translate("settings.appearance.timeSettings.timeSlotDuration.name"),
 					desc: translate(
 						"settings.appearance.timeSettings.timeSlotDuration.description"
@@ -518,11 +369,12 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.slotDuration = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureTextSetting(setting, {
+				}),
+				ctx.text("calendarViewSettings.slotMinTime", {
+					validate: (value) =>
+						/^([01]\d|2[0-3]):[0-5]\d$/.test(value)
+							? undefined
+							: ctx.t("settings.native.invalidTimeHoursMustBe0023AndMinutes"),
 					name: translate("settings.appearance.timeSettings.startTime.name"),
 					desc: translate("settings.appearance.timeSettings.startTime.description"),
 					placeholder: translate(
@@ -543,25 +395,30 @@ export function renderAppearanceTab(
 					setValue: async (value: string) => {
 						if (!/^\d{2}:\d{2}$/.test(value)) {
 							new Notice(
-								"Invalid time format. Please use hh:mm format (e.g., 08:00)"
+								ctx.t("settings.native.invalidTimeFormatPleaseUseHhMmFormatE")
 							);
 							return;
 						}
 						const [hours, minutes] = value.split(":").map(Number);
 						if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
 							new Notice(
-								"Invalid time. Hours must be 00-23 and minutes must be 00-59"
+								ctx.t("settings.native.invalidTimeHoursMustBe0023AndMinutes")
 							);
 							return;
 						}
 						plugin.settings.calendarViewSettings.slotMinTime = value + ":00";
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureTextSetting(setting, {
+				}),
+				ctx.text("calendarViewSettings.slotMaxTime", {
+					validate: (value) =>
+						/^\d{2}:\d{2}$/.test(value) &&
+						normalizeCalendarTimeValue(value, "24:00:00", {
+							maxHour: CALENDAR_END_TIME_MAX_HOUR,
+							allowMaxHourOnlyAtZero: true,
+						}).isValid
+							? undefined
+							: ctx.t("settings.native.invalidTimeUse00004800ValuesAfter"),
 					name: translate("settings.appearance.timeSettings.endTime.name"),
 					desc: translate("settings.appearance.timeSettings.endTime.description"),
 					placeholder: translate("settings.appearance.timeSettings.endTime.placeholder"),
@@ -580,7 +437,7 @@ export function renderAppearanceTab(
 					setValue: async (value: string) => {
 						if (!/^\d{2}:\d{2}$/.test(value)) {
 							new Notice(
-								"Invalid time format. Please use hh:mm format (e.g., 26:00)"
+								ctx.t("settings.native.invalidTimeFormatPleaseUseHhMmFormatE2")
 							);
 							return;
 						}
@@ -589,19 +446,18 @@ export function renderAppearanceTab(
 							allowMaxHourOnlyAtZero: true,
 						});
 						if (!result.isValid) {
-							new Notice(
-								"Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day"
-							);
+							new Notice(ctx.t("settings.native.invalidTimeUse00004800ValuesAfter"));
 							return;
 						}
 						plugin.settings.calendarViewSettings.slotMaxTime = result.value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureTextSetting(setting, {
+				}),
+				ctx.text("calendarViewSettings.scrollTime", {
+					validate: (value) =>
+						/^([01]\d|2[0-3]):[0-5]\d$/.test(value)
+							? undefined
+							: ctx.t("settings.native.invalidTimeHoursMustBe0023AndMinutes"),
 					name: translate("settings.appearance.timeSettings.initialScrollTime.name"),
 					desc: translate(
 						"settings.appearance.timeSettings.initialScrollTime.description"
@@ -624,25 +480,22 @@ export function renderAppearanceTab(
 					setValue: async (value: string) => {
 						if (!/^\d{2}:\d{2}$/.test(value)) {
 							new Notice(
-								"Invalid time format. Please use hh:mm format (e.g., 08:00)"
+								ctx.t("settings.native.invalidTimeFormatPleaseUseHhMmFormatE")
 							);
 							return;
 						}
 						const [hours, minutes] = value.split(":").map(Number);
 						if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
 							new Notice(
-								"Invalid time. Hours must be 00-23 and minutes must be 00-59"
+								ctx.t("settings.native.invalidTimeHoursMustBe0023AndMinutes")
 							);
 							return;
 						}
 						plugin.settings.calendarViewSettings.scrollTime = value + ":00";
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureNumberSetting(setting, {
+				}),
+				ctx.number("calendarViewSettings.eventMinHeight", {
 					name: translate("settings.appearance.timeSettings.eventMinHeight.name"),
 					desc: translate("settings.appearance.timeSettings.eventMinHeight.description"),
 					placeholder: translate(
@@ -656,21 +509,14 @@ export function renderAppearanceTab(
 						plugin.settings.calendarViewSettings.eventMinHeight = value;
 						save();
 					},
-				})
-			);
-		}
-	);
-
-	// UI Elements Section
-	createSettingGroup(
-		container,
-		{
-			heading: translate("settings.appearance.uiElements.header"),
-			description: translate("settings.appearance.uiElements.description"),
+				}),
+			],
 		},
-		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+		{
+			type: "group",
+			heading: translate("settings.appearance.uiElements.header"),
+			items: [
+				ctx.toggle("showTrackedTasksInStatusBar", {
 					name: translate(
 						"settings.appearance.uiElements.showTrackedTasksInStatusBar.name"
 					),
@@ -682,11 +528,8 @@ export function renderAppearanceTab(
 						plugin.settings.showTrackedTasksInStatusBar = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("showRelationships", {
 					name: translate("settings.appearance.uiElements.showRelationshipsWidget.name"),
 					desc: translate(
 						"settings.appearance.uiElements.showRelationshipsWidget.description"
@@ -695,14 +538,12 @@ export function renderAppearanceTab(
 					setValue: async (value: boolean) => {
 						plugin.settings.showRelationships = value;
 						save();
-						renderAppearanceTab(container, plugin, save);
+						ctx.refresh();
 					},
-				})
-			);
-
-			if (plugin.settings.showRelationships) {
-				group.addSetting((setting) =>
-					void configureDropdownSetting(setting, {
+				}),
+				ctx.dropdown(
+					"relationshipsPosition",
+					{
 						name: translate(
 							"settings.appearance.uiElements.relationshipsPosition.name"
 						),
@@ -728,12 +569,10 @@ export function renderAppearanceTab(
 							plugin.settings.relationshipsPosition = value as "top" | "bottom";
 							save();
 						},
-					})
-				);
-			}
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+					},
+					() => !plugin.settings.showRelationships
+				),
+				ctx.toggle("showTaskCardInNote", {
 					name: translate("settings.appearance.uiElements.showTaskCardInNote.name"),
 					desc: translate(
 						"settings.appearance.uiElements.showTaskCardInNote.description"
@@ -743,11 +582,8 @@ export function renderAppearanceTab(
 						plugin.settings.showTaskCardInNote = value;
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("showCompletedTaskStrikethrough", {
 					name: translate(
 						"settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
 					),
@@ -760,11 +596,8 @@ export function renderAppearanceTab(
 						save();
 						plugin.app.workspace.trigger("tasknotes:refresh-views");
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
+				}),
+				ctx.toggle("showExpandableSubtasks", {
 					name: translate("settings.appearance.uiElements.showExpandableSubtasks.name"),
 					desc: translate(
 						"settings.appearance.uiElements.showExpandableSubtasks.description"
@@ -773,14 +606,12 @@ export function renderAppearanceTab(
 					setValue: async (value: boolean) => {
 						plugin.settings.showExpandableSubtasks = value;
 						save();
-						renderAppearanceTab(container, plugin, save);
+						ctx.refresh();
 					},
-				})
-			);
-
-			if (plugin.settings.showExpandableSubtasks) {
-				group.addSetting((setting) =>
-					void configureToggleSetting(setting, {
+				}),
+				ctx.toggle(
+					"expandSubtasksByDefault",
+					{
 						name: translate(
 							"settings.appearance.uiElements.expandSubtasksByDefault.name"
 						),
@@ -792,11 +623,12 @@ export function renderAppearanceTab(
 							plugin.settings.expandSubtasksByDefault = value;
 							save();
 						},
-					})
-				);
-
-				group.addSetting((setting) =>
-					void configureDropdownSetting(setting, {
+					},
+					() => !plugin.settings.showExpandableSubtasks
+				),
+				ctx.dropdown(
+					"subtaskChevronPosition",
+					{
 						name: translate(
 							"settings.appearance.uiElements.subtaskChevronPosition.name"
 						),
@@ -822,12 +654,10 @@ export function renderAppearanceTab(
 							plugin.settings.subtaskChevronPosition = value as "left" | "right";
 							save();
 						},
-					})
-				);
-			}
-
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
+					},
+					() => !plugin.settings.showExpandableSubtasks
+				),
+				ctx.dropdown("viewsButtonAlignment", {
 					name: translate("settings.appearance.uiElements.viewsButtonAlignment.name"),
 					desc: translate(
 						"settings.appearance.uiElements.viewsButtonAlignment.description"
@@ -851,21 +681,14 @@ export function renderAppearanceTab(
 						plugin.settings.viewsButtonAlignment = value as "left" | "right";
 						save();
 					},
-				})
-			);
-		}
-	);
-
-	// Task Interaction Section
-	createSettingGroup(
-		container,
-		{
-			heading: translate("settings.general.taskInteraction.header"),
-			description: translate("settings.general.taskInteraction.description"),
+				}),
+			],
 		},
-		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
+		{
+			type: "group",
+			heading: translate("settings.general.taskInteraction.header"),
+			items: [
+				ctx.dropdown("singleClickAction", {
 					name: translate("settings.general.taskInteraction.singleClick.name"),
 					desc: translate("settings.general.taskInteraction.singleClick.description"),
 					options: [
@@ -883,11 +706,8 @@ export function renderAppearanceTab(
 						plugin.settings.singleClickAction = value as "edit" | "openNote";
 						save();
 					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
+				}),
+				ctx.dropdown("doubleClickAction", {
 					name: translate("settings.general.taskInteraction.doubleClick.name"),
 					desc: translate("settings.general.taskInteraction.doubleClick.description"),
 					options: [
@@ -909,8 +729,8 @@ export function renderAppearanceTab(
 						plugin.settings.doubleClickAction = value as "edit" | "openNote" | "none";
 						save();
 					},
-				})
-			);
-		}
-	);
+				}),
+			],
+		},
+	];
 }

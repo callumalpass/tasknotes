@@ -1,15 +1,15 @@
 # Task Defaults
 
-This page documents folder management, filename templates, archive settings, and the template system. These settings are found in the **General** tab.
+This page documents folder management, filename templates, archive settings, and the template system. Folder settings are under **Task files**; templates are under **Task creation → Templates**.
 
 !!! note "Default Property Values"
-    Default values for task properties (status, priority, dates, etc.) are now configured in the [Task Properties](task-properties.md) tab within each property's card.
+    Default values for new tasks are configured under **Task creation → Defaults**.
 
 ## Folder and File Management
 
 You can specify a **Default Tasks Folder** where new tasks will be created. You can also configure the **Task Tag** that identifies notes as TaskNotes, and you can specify a list of **Excluded Folders** that will be ignored by the plugin.
 
-Filename generation settings are configured in the **Task Properties** tab within the Title property card. You can choose from title-based, timestamp-based, Zettelkasten-style patterns, or create a custom filename template. These filename settings also apply to inline task conversion and instant-created task notes.
+Filename generation settings are under **Task files → Filenames**. You can choose from title-based, timestamp-based, Zettelkasten-style patterns, or create a custom filename template. These filename settings also apply to inline task conversion and instant-created task notes.
 These settings define folder paths and filename behavior for new tasks, which affects long-term vault structure.
 
 ### Folder Template Variables
@@ -260,7 +260,7 @@ For ICS event notes, additional variables are available:
 
 ### Store Title in Filename
 
-This setting is configured in the **Task Properties** tab within the Title property card.
+This setting is under **Task files → Filenames**.
 
 When enabled, the task's title is stored in the filename instead of frontmatter. The `title` property is removed from frontmatter, and the filename updates when the title changes. This disables other filename templating options.
 
@@ -273,7 +273,7 @@ Storing title in filename favors path-readable tasks and external tooling that k
 
 ## Default Reminders
 
-Configure default reminders in `Settings -> TaskNotes -> Task Properties` (Reminders card). These reminders automatically apply to new tasks.
+Configure default reminders in `Settings -> TaskNotes -> Task creation -> Defaults` (Reminders card). These reminders automatically apply to new tasks.
 Default reminders apply to all new tasks and can be supplemented with per-task reminders.
 
 ### Reminder Types
@@ -287,7 +287,7 @@ Default reminders apply to all new tasks and can be supplemented with per-task r
 
 ### Configuration
 
-1. Navigate to `Settings -> TaskNotes -> Task Properties`
+1. Navigate to `Settings -> TaskNotes -> Task creation -> Defaults`
 2. Expand the Reminders card
 3. In the Default Reminders section, select type (Relative or Absolute)
 4. Configure timing and optional description
@@ -301,7 +301,7 @@ For detailed reminder documentation, see [Task Reminders](../features/task-manag
 
 TaskNotes supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}`, which will be automatically replaced with the appropriate values when a new task is created.
 
-Materialized occurrence notes can use a separate template from regular new tasks. Configure a global fallback in **Settings → Features → Body template**, or set `occurrence_template` on a recurring parent task to use a template for that series.
+Materialized occurrence notes can use a separate template from regular new tasks. Configure a global fallback in **Settings → TaskNotes → Task creation → Templates**, or set `occurrence_template` on a recurring parent task to use a template for that series.
 
 ### Unified Template Variables
 

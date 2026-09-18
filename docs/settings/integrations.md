@@ -3,8 +3,6 @@
 These settings control the integration with other plugins and services, such as Bases and external calendars.
 
 
-![Integrations Settings](../assets/settings-integrations.png)
-
 ## mdbase
 
 Enable the mdbase integration to publish TaskNotes' portable task type, data contract, and schemas for compatible applications. The generated type reflects TaskNotes field mappings, statuses, priorities, filename rules, recurrence behavior, reminders, and user-defined fields.
@@ -19,7 +17,7 @@ TaskNotes v4 uses Obsidian's Bases core plugin for its main views. For setup ins
 
 View command settings map TaskNotes commands and ribbon actions to specific `.base` files. This is useful when you maintain custom variants of the default views and want first-class command access to those files.
 
-Access these settings in **Settings → TaskNotes → General → Views & base files**.
+Access these settings in **Settings → TaskNotes → Appearance & interaction → Views & base files**.
 
 Default mappings:
 
@@ -37,7 +35,7 @@ Each command allows you to specify a custom `.base` file path and includes a res
 
 **Create files**: Button to generate all default `.base` files in the `TaskNotes/Views/` directory. Existing files are not overwritten.
 
-The generated Pomodoro statistics Base reads Pomodoro sessions from daily notes frontmatter. If your Pomodoro history is still stored in plugin data, migrate it from **Settings → TaskNotes → Features** before using that Base file.
+The generated Pomodoro statistics Base reads Pomodoro sessions from daily notes frontmatter. If your Pomodoro history is still stored in plugin data, migrate it from **Settings → TaskNotes → Time & reminders** before using that Base file.
 
 ## OAuth Calendar Integration
 

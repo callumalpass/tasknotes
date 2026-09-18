@@ -141,6 +141,29 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		}
 	}
 
+	// Legacy single custom fields used to migrate only when their settings card opened.
+	// Native settings indexing must be read-only, so migrate during settings load instead.
+	if (migratedData.userField?.enabled) {
+		const legacy = migratedData.userField;
+		const fields = [...(migratedData.userFields ?? [])];
+		const baseId = (legacy.displayName || legacy.key || "field")
+			.toLowerCase()
+			.replace(/[^a-z0-9_-]/g, "-");
+		if (!fields.some((field) => field.key === legacy.key)) {
+			let id = baseId;
+			let suffix = 2;
+			while (fields.some((field) => field.id === id)) id = `${baseId}-${suffix++}`;
+			fields.push({
+				id,
+				displayName: legacy.displayName || "",
+				key: legacy.key || "",
+				type: legacy.type || "text",
+			});
+		}
+		migratedData.userFields = fields;
+		migratedData.userField = { ...legacy, enabled: false };
+	}
+
 	// Migration: Initialize modal fields configuration if not present.
 	if (!migratedData.modalFieldsConfig) {
 		migratedData.modalFieldsConfig = initializeFieldConfig(undefined, migratedData.userFields);

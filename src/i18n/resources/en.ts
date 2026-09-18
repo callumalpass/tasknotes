@@ -500,6 +500,226 @@ export const en: TranslationTree = {
 		},
 	},
 	settings: {
+		native: {
+			enterValue: "Enter a value.",
+			duplicateValue: "This value already exists.",
+			enterCalendarName: "Enter a calendar name.",
+			chooseCalendarFile: "Choose a local .ics file.",
+			noDefaultHint: "Leave empty for no default.",
+			optionalNumber: "Enter a number or leave empty.",
+			validDate: "Enter a valid date in YYYY-MM-DD format.",
+			validTime: "Enter a time from 00:00 to 23:59.",
+			includedFolders: "Included folders",
+			statuses: "Statuses",
+			priorities: "Priorities",
+			allNotes: "All notes",
+			nextInOrder: "Next in order",
+			off: "Off",
+			newProperty: "New property",
+			noKeySet: "No key set",
+			notSyncedYet: "Not synced yet",
+			secretSaved: "Secret saved",
+			notConnected: "Not connected",
+			connected: "Connected",
+			defaultDueTime: "Default due time",
+			defaultScheduledTime: "Default scheduled time",
+			reminderNumber: "Reminder {number}",
+			displayRow: "Display row {number}",
+			deleteEntry: "Delete {name}?",
+			connectAccount: "Connect {name}",
+			disconnectAccount: "Disconnect {name}",
+			forgetAccountCredentials: "Forget credentials for {name}?",
+			connectedSince: "Connected: {date}",
+			tokenRefreshed: "Token refreshed: {date}",
+			deliveryCounts: "Successful: {success} · Failed: {failure}",
+			minutesValue: "{minutes} minutes",
+			saveError: "Could not save TaskNotes settings: {error}",
+			numberRange: "Enter a number between {min} and {max}.",
+			taskFiles: "Task files",
+			taskIdentificationFoldersFilenamesAndFrontmatter:
+				"Task identification, folders, filenames, and frontmatter.",
+			filenames: "Filenames",
+			namesForTaskNotesAndRecurringOccurrences:
+				"Names for task notes and recurring occurrences.",
+			propertyMappingsStatusesPrioritiesAndCustomProperties:
+				"Property mappings, statuses, priorities, and custom properties.",
+			defaultsTemplatesNaturalLanguageInputAndFormFields:
+				"Defaults, templates, natural-language input, and form fields.",
+			defaults: "Defaults",
+			valuesToUseWhenCreatingATask: "Values to use when creating a task.",
+			templates: "Templates",
+			taskBodiesAndRecurringOccurrenceNotes: "Task bodies and recurring occurrence notes.",
+			formFields: "Form fields",
+			chooseWhichFieldsAppearWhenCreatingAndEditingTasks:
+				"Choose which fields appear when creating and editing tasks.",
+			appearanceInteraction: "Appearance & interaction",
+			taskCardsInlineTasksClickBehaviourAndViewDefaults:
+				"Task cards, inline tasks, click behaviour, and view defaults.",
+			calendarDefaults: "Calendar defaults",
+			defaultsForCalendarViewsIndividualBasesViewsMayOverride:
+				"Defaults for calendar views. Individual Bases views may override these settings.",
+			configureViewCommandsChangeFiltersSortingAndGroupingInside:
+				"Configure view commands. Change filters, sorting, and grouping inside each Bases view.",
+			timeReminders: "Time & reminders",
+			notificationsTimeTrackingRecurrencePomodoroAndTimeblocking:
+				"Notifications, time tracking, recurrence, Pomodoro, and timeblocking.",
+			reminderDeliveryAndSounds: "Reminder delivery and sounds.",
+			timerDurationsSoundsHistoryAndMobilePlacement:
+				"Timer durations, sounds, history, and mobile placement.",
+			calendarBlocksAndAttachments: "Calendar blocks and attachments.",
+			calendarsIntegrations: "Calendars & integrations",
+			calendarAccountsSubscriptionsTaskExportAndInteroperability:
+				"Calendar accounts, subscriptions, task export, and interoperability.",
+			advanced: "Advanced",
+			indexingHTTPAPIWebhooksAndDiagnostics: "Indexing, HTTP API, webhooks, and diagnostics.",
+			defaultTaskCardPropertiesUpdated: "Default task card properties updated",
+			invalidTimeFormatPleaseUseHhMmFormatE:
+				"Invalid time format. Please use hh:mm format (e.g., 08:00)",
+			invalidTimeHoursMustBe0023AndMinutes:
+				"Invalid time. Hours must be 00-23 and minutes must be 00-59",
+			invalidTimeFormatPleaseUseHhMmFormatE2:
+				"Invalid time format. Please use hh:mm format (e.g., 26:00)",
+			invalidTimeUse00004800ValuesAfter:
+				"Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day",
+			enterAnHTTPOrHTTPSURL: "Enter an HTTP or HTTPS URL.",
+			connectionStatus: "Connection status",
+			oAuthCredentials: "Application credentials",
+			storedInObsidianSecretStorageNotTaskNotesSettings:
+				"Stored in Obsidian secret storage, not TaskNotes settings.",
+			clientID: "Client ID",
+			clientSecret: "Client secret",
+			leaveEmptyToKeepTheSavedSecretEnterA:
+				"Leave empty to keep the saved secret. Enter a replacement, then leave this field to save it.",
+			forgetSavedCredentials: "Forget saved credentials",
+			forgetCredentials: "Forget credentials",
+			thisRemovesTheSavedClientIDAndClientSecret:
+				"This removes the saved client ID and client secret from Obsidian secret storage.",
+			connect: "Connect",
+			calendarIntegrationIsUnavailableOnThisDevice:
+				"Calendar integration is unavailable on this device.",
+			refreshCalendarEvents: "Refresh calendar events",
+			calendarSyncServiceUnavailable: "Calendar sync service unavailable.",
+			disconnect: "Disconnect",
+			calendarSubscriptionServiceUnavailable: "Calendar subscription service unavailable.",
+			theCalendarSubscriptionWillBeRemovedLinkedNotesWill:
+				"The calendar subscription will be removed. Linked notes will be kept.",
+			source: "Source",
+			calendarURL: "Calendar URL",
+			hTTPHTTPSWebcalOrWebcalsURL: "HTTP, HTTPS, webcal, or webcals URL.",
+			aCSSColorOrThemeVariable: "A CSS color or theme variable.",
+			refreshIntervalMinutes: "Refresh interval (minutes)",
+			lastSync: "Last sync",
+			refreshSubscription: "Refresh subscription",
+			calendarFile: "Calendar file",
+			anIcsFileInThisVault: "An .ics file in this vault.",
+			noWebhooksConfiguredAddOneToSendTaskEvents:
+				"No webhooks configured. Add one to send task events to another service.",
+			deleteWebhook: "Delete webhook?",
+			eventsWillNoLongerBeSentToThisEndpoint:
+				"Events will no longer be sent to this endpoint.",
+			selectAtLeastOneEventBeforeEnablingThisWebhook:
+				"Select at least one event before enabling this webhook.",
+			anOptionalJsonTemplateInTheVaultLeaveEmpty:
+				"An optional .json template in the vault. Leave empty to send raw event data.",
+			includeEventTypeSignatureAndDeliveryIDTurnOff:
+				"Include event type, signature, and delivery ID. Turn off for services with strict CORS policies.",
+			deliveryStatus: "Delivery status",
+			signingSecret: "Signing secret",
+			useThisSecretToVerifyPayloadsInTheReceiving:
+				"Use this secret to verify payloads in the receiving application.",
+			copySecret: "Copy secret",
+			signingSecretCopied: "Signing secret copied",
+			leaveEmptyToUseTheNormalTaskFilenameWith:
+				"Leave empty to use the normal task filename with a unique suffix.",
+			occurrenceFilenameTemplateProperty: "Occurrence filename template property",
+			aPropertyOnTheParentTaskThatOverridesThe:
+				"A property on the parent task that overrides the occurrence filename template.",
+			defaultsApplyToNewTasks: "Defaults apply to new tasks",
+			changingTheseValuesDoesNotUpdateExistingTaskNotes:
+				"Changing these values does not update existing task notes.",
+			hHMmLeaveEmptyForAnAllDayTask: "HH:mm. Leave empty for an all-day task.",
+			separateContextsWithCommas: "Separate contexts with commas.",
+			separateTagsWithCommas: "Separate tags with commas.",
+			defaultTimeEstimateMinutes: "Default time estimate (minutes)",
+			newTasksHaveNoDefaultProjects: "New tasks have no default projects.",
+			newTasksHaveNoDefaultReminders: "New tasks have no default reminders.",
+			relativeTo: "Relative to",
+			splitLayoutOnWideScreens: "Split layout on wide screens",
+			showTheDetailsEditorBesideTheFieldsOnScreens:
+				"Show the details editor beside the fields on screens 900px or wider.",
+			tabMovesFocusInDetailsEditor: "Tab moves focus in details editor",
+			whenOffTabIndentsTextInTheMarkdownEditor:
+				"When off, the tab key indents text in the Markdown editor.",
+			syncCustomProperties: "Sync custom properties",
+			syncProperties: "Sync properties",
+			noFieldsInThisGroup: "No fields in this group.",
+			showWhenCreatingTasks: "Show when creating tasks",
+			showWhenEditingTasks: "Show when editing tasks",
+			resetFormFields: "Reset form fields",
+			restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept:
+				"Restore visibility, grouping, and ordering. Custom properties are kept.",
+			resetFields: "Reset fields",
+			resetFormFields2: "Reset form fields?",
+			yourCustomFieldLayoutWillBeReplacedWithThe:
+				"Your custom field layout will be replaced with the default layout.",
+			inlineTaskCardProperties: "Inline task card properties",
+			selectWhichPropertiesToShowInInlineTaskCards:
+				"Select which properties to show in inline task cards.",
+			inlineTaskCardPropertiesUpdated: "Inline task card properties updated",
+			attachmentSearchOrder: "Attachment search order",
+			controlsHowFilesAreOrderedInTheAddAttachment:
+				"Controls file order when searching for timeblock attachments.",
+			nameAToZ: "Name (ascending)",
+			nameZToA: "Name (descending)",
+			pathAToZ: "Path (ascending)",
+			pathZToA: "Path (descending)",
+			createdNewestFirst: "Created (newest first)",
+			createdOldestFirst: "Created (oldest first)",
+			modifiedNewestFirst: "Modified (newest first)",
+			modifiedOldestFirst: "Modified (oldest first)",
+			baseFile: "Base file",
+			resetFileMapping: "Reset file mapping",
+			calendarSetupGuide: "Calendar setup guide",
+			connectAGoogleOrMicrosoftCalendarUsingYourOwn:
+				"Connect a Google or Microsoft calendar using credentials from your own developer application.",
+			enterAPropertyKey: "Enter a property key.",
+			useAPropertyKeyWithoutSurroundingSpacesLineBreaks:
+				"Use a property key without surrounding spaces, line breaks, or YAML punctuation.",
+			theTagsPropertyIsReservedByObsidian: "The tags property is reserved by Obsidian.",
+			anotherPropertyAlreadyUsesThisKey: "Another property already uses this key.",
+			separateValuesWithCommas: "Separate values with commas.",
+			propertyName: "Property name",
+			propertyValue: "Property value",
+			leaveEmptyToMatchAnyNoteWithThisProperty:
+				"Leave empty to match any note with this property.",
+			noValuesConfigured: "No values configured.",
+			keepAtLeastOneConfiguredValue: "Keep at least one configured value.",
+			existingTaskNotesWillNotBeChangedTasksUsing:
+				"Existing task notes will not be changed. Tasks using this value keep it in their frontmatter.",
+			storedInTaskNotesChangingThisDoesNotRename:
+				"Stored in task notes. Changing this does not rename values in existing notes.",
+			aCSSColorOrThemeVariableSuchAsVar:
+				"A CSS color or theme variable, such as var(--text-accent).",
+			lucideIconNameLeaveEmptyForTheDefaultIndicator:
+				"Lucide icon name. Leave empty for the default indicator.",
+			countsAsCompleted: "Counts as completed",
+			countsAsSkipped: "Counts as skipped",
+			excludeFromStatusCycle: "Exclude from status cycle",
+			automaticArchiving: "Automatic archiving",
+			automaticallyArchive: "Automatically archive",
+			sortWeight: "Sort weight",
+			higherValuesSortFirst: "Higher values sort first.",
+			thisRemovesThePropertyFromTaskNotesFormsNotFrom:
+				"This removes the property from TaskNotes forms, not from existing notes.",
+			deleteProperty: "Delete property",
+			changingThisKeyDoesNotMigrateExistingNotes:
+				"Changing this key does not migrate existing notes.",
+			changingThisMappingDoesNotRenamePropertiesInExisting:
+				"Changing this mapping does not rename properties in existing notes.",
+			metadataIntegrationProperties: "Metadata & integration properties",
+			timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents:
+				"Timestamps, recurrence records, ordering, and linked calendar events.",
+		},
 		header: {
 			documentation: "Documentation",
 			documentationUrl: "https://tasknotes.dev",

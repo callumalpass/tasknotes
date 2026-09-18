@@ -4,11 +4,11 @@ Calendar behavior is configured across multiple tabs.
 
 ## Settings Map
 
-### Appearance tab
+### Appearance & interaction
 
 Location:
 
-- `Settings -> TaskNotes -> Appearance`
+- `Settings -> TaskNotes -> Appearance & interaction`
 
 Controls include:
 
@@ -20,22 +20,22 @@ Controls include:
 - Default event visibility toggles (due, scheduled, recurring, time entries, ICS)
 - Event stacking and overlap display options
 
-### Features tab
+### Time & reminders
 
 Location:
 
-- `Settings -> TaskNotes -> Features`
+- `Settings -> TaskNotes -> Time & reminders`
 
 Controls include:
 
 - Timeblocking enable/disable
 - Timeblocking behavior options
 
-### Integrations tab
+### Calendars & integrations
 
 Location:
 
-- `Settings -> TaskNotes -> Integrations`
+- `Settings -> TaskNotes -> Calendars & integrations`
 
 Controls include:
 

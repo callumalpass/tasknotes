@@ -487,6 +487,228 @@ export const ru: TranslationTree = {
 		}
 	},
 	settings: {
+		native: {
+			enterValue: "Введите значение.",
+			duplicateValue: "Это значение уже существует.",
+			enterCalendarName: "Введите название календаря.",
+			chooseCalendarFile: "Выберите локальный файл .ics.",
+			noDefaultHint: "Оставьте пустым, чтобы не задавать значение по умолчанию.",
+			optionalNumber: "Введите число или оставьте поле пустым.",
+			validDate: "Введите допустимую дату в формате YYYY-MM-DD.",
+			validTime: "Введите время от 00:00 до 23:59.",
+			includedFolders: "Включённые папки",
+			statuses: "Статусы",
+			priorities: "Приоритеты",
+			allNotes: "Все заметки",
+			nextInOrder: "Следующий по порядку",
+			off: "Выкл.",
+			newProperty: "Новое свойство",
+			noKeySet: "Ключ не задан",
+			notSyncedYet: "Ещё не синхронизировано",
+			secretSaved: "Секрет сохранён",
+			notConnected: "Не подключено",
+			connected: "Подключено",
+			defaultDueTime: "Время срока по умолчанию",
+			defaultScheduledTime: "Плановое время по умолчанию",
+			reminderNumber: "Напоминание {number}",
+			displayRow: "Строка отображения {number}",
+			deleteEntry: "Удалить {name}?",
+			connectAccount: "Подключить {name}",
+			disconnectAccount: "Отключить {name}",
+			forgetAccountCredentials: "Забыть учётные данные для {name}?",
+			connectedSince: "Подключено: {date}",
+			tokenRefreshed: "Токен обновлён: {date}",
+			deliveryCounts: "Успешно: {success} · Ошибок: {failure}",
+			minutesValue: "{minutes} мин.",
+			saveError: "Не удалось сохранить настройки TaskNotes: {error}",
+			numberRange: "Введите число от {min} до {max}.",
+			taskFiles: "Файлы задач",
+			taskIdentificationFoldersFilenamesAndFrontmatter:
+				"Распознавание задач, папки, имена файлов и свойства YAML.",
+			filenames: "Имена файлов",
+			namesForTaskNotesAndRecurringOccurrences:
+				"Имена заметок задач и экземпляров повторяющихся задач.",
+			propertyMappingsStatusesPrioritiesAndCustomProperties:
+				"Сопоставление свойств, статусы, приоритеты и пользовательские свойства.",
+			defaultsTemplatesNaturalLanguageInputAndFormFields:
+				"Значения по умолчанию, шаблоны, ввод на естественном языке и поля формы.",
+			defaults: "Значения по умолчанию",
+			valuesToUseWhenCreatingATask: "Значения, используемые при создании задачи.",
+			templates: "Шаблоны",
+			taskBodiesAndRecurringOccurrenceNotes:
+				"Содержимое задач и заметки экземпляров повторяющихся задач.",
+			formFields: "Поля формы",
+			chooseWhichFieldsAppearWhenCreatingAndEditingTasks:
+				"Выберите поля, отображаемые при создании и редактировании задач.",
+			appearanceInteraction: "Внешний вид и взаимодействие",
+			taskCardsInlineTasksClickBehaviourAndViewDefaults:
+				"Карточки задач, встроенные задачи, действия по щелчку и настройки представлений.",
+			calendarDefaults: "Настройки календаря по умолчанию",
+			defaultsForCalendarViewsIndividualBasesViewsMayOverride:
+				"Настройки календаря по умолчанию. Отдельные представления Bases могут их переопределять.",
+			configureViewCommandsChangeFiltersSortingAndGroupingInside:
+				"Настройте команды представлений. Фильтры, сортировка и группировка меняются внутри каждой Base.",
+			timeReminders: "Время и напоминания",
+			notificationsTimeTrackingRecurrencePomodoroAndTimeblocking:
+				"Уведомления, учёт времени, повторения, Pomodoro и временные блоки.",
+			reminderDeliveryAndSounds: "Доставка напоминаний и звуки.",
+			timerDurationsSoundsHistoryAndMobilePlacement:
+				"Длительность таймера, звуки, история и расположение на мобильных устройствах.",
+			calendarBlocksAndAttachments: "Блоки календаря и вложения.",
+			calendarsIntegrations: "Календари и интеграции",
+			calendarAccountsSubscriptionsTaskExportAndInteroperability:
+				"Учётные записи календарей, подписки, экспорт задач и совместимость.",
+			advanced: "Дополнительно",
+			indexingHTTPAPIWebhooksAndDiagnostics:
+				"Индексирование, HTTP API, вебхуки и диагностика.",
+			defaultTaskCardPropertiesUpdated: "Свойства карточек задач по умолчанию обновлены",
+			invalidTimeFormatPleaseUseHhMmFormatE:
+				"Неверный формат времени. Используйте hh:mm, например 08:00.",
+			invalidTimeHoursMustBe0023AndMinutes:
+				"Неверное время. Часы должны быть от 00 до 23, минуты от 00 до 59.",
+			invalidTimeFormatPleaseUseHhMmFormatE2:
+				"Неверный формат времени. Используйте hh:mm, например 26:00.",
+			invalidTimeUse00004800ValuesAfter:
+				"Неверное время. Используйте 00:00–48:00; после полуночи 24:00–48:00, например 26:00 для 2 часов следующего дня.",
+			enterAnHTTPOrHTTPSURL: "Введите URL с протоколом HTTP или HTTPS.",
+			connectionStatus: "Состояние подключения",
+			oAuthCredentials: "Учётные данные OAuth",
+			storedInObsidianSecretStorageNotTaskNotesSettings:
+				"Хранятся в секретном хранилище Obsidian, а не в настройках TaskNotes.",
+			clientID: "ID клиента",
+			clientSecret: "Секрет клиента",
+			leaveEmptyToKeepTheSavedSecretEnterA:
+				"Оставьте пустым, чтобы сохранить текущий секрет. Для замены введите новое значение и покиньте поле.",
+			forgetSavedCredentials: "Забыть сохранённые учётные данные",
+			forgetCredentials: "Забыть учётные данные",
+			thisRemovesTheSavedClientIDAndClientSecret:
+				"Удаляет ID и секрет клиента из секретного хранилища Obsidian.",
+			connect: "Подключить",
+			calendarIntegrationIsUnavailableOnThisDevice:
+				"Интеграция календаря недоступна на этом устройстве.",
+			refreshCalendarEvents: "Обновить события календаря",
+			calendarSyncServiceUnavailable: "Служба синхронизации календаря недоступна.",
+			disconnect: "Отключить",
+			calendarSubscriptionServiceUnavailable: "Служба подписок на календари недоступна.",
+			theCalendarSubscriptionWillBeRemovedLinkedNotesWill:
+				"Подписка на календарь будет удалена. Связанные заметки сохранятся.",
+			source: "Источник",
+			calendarURL: "URL календаря",
+			hTTPHTTPSWebcalOrWebcalsURL: "URL с протоколом HTTP, HTTPS, webcal или webcals.",
+			aCSSColorOrThemeVariable: "Цвет CSS или переменная темы.",
+			refreshIntervalMinutes: "Интервал обновления (минуты)",
+			lastSync: "Последняя синхронизация",
+			refreshSubscription: "Обновить подписку",
+			calendarFile: "Файл календаря",
+			anIcsFileInThisVault: "Файл .ics в этом хранилище.",
+			noWebhooksConfiguredAddOneToSendTaskEvents:
+				"Вебхуки не настроены. Добавьте вебхук для отправки событий задач в другой сервис.",
+			deleteWebhook: "Удалить вебхук?",
+			eventsWillNoLongerBeSentToThisEndpoint:
+				"События больше не будут отправляться на этот адрес.",
+			selectAtLeastOneEventBeforeEnablingThisWebhook:
+				"Выберите хотя бы одно событие перед включением вебхука.",
+			anOptionalJsonTemplateInTheVaultLeaveEmpty:
+				"Необязательный шаблон .json в хранилище. Оставьте пустым для отправки исходных данных событий.",
+			includeEventTypeSignatureAndDeliveryIDTurnOff:
+				"Включать тип события, подпись и ID доставки. Отключите для сервисов со строгими правилами CORS.",
+			deliveryStatus: "Состояние доставки",
+			signingSecret: "Секрет подписи",
+			useThisSecretToVerifyPayloadsInTheReceiving:
+				"Используйте этот секрет для проверки данных в принимающем приложении.",
+			copySecret: "Копировать секрет",
+			signingSecretCopied: "Секрет подписи скопирован",
+			leaveEmptyToUseTheNormalTaskFilenameWith:
+				"Оставьте пустым для обычного имени файла задачи с уникальным суффиксом.",
+			occurrenceFilenameTemplateProperty: "Свойство шаблона имени экземпляра",
+			aPropertyOnTheParentTaskThatOverridesThe:
+				"Свойство родительской задачи, переопределяющее шаблон имени файла экземпляра.",
+			defaultsApplyToNewTasks: "Значения по умолчанию применяются к новым задачам",
+			changingTheseValuesDoesNotUpdateExistingTaskNotes:
+				"Изменение этих значений не обновляет существующие заметки задач.",
+			hHMmLeaveEmptyForAnAllDayTask: "HH:mm. Оставьте пустым для задачи на весь день.",
+			separateContextsWithCommas: "Разделяйте контексты запятыми.",
+			separateTagsWithCommas: "Разделяйте теги запятыми.",
+			defaultTimeEstimateMinutes: "Оценка времени по умолчанию (минуты)",
+			newTasksHaveNoDefaultProjects: "У новых задач нет проектов по умолчанию.",
+			newTasksHaveNoDefaultReminders: "У новых задач нет напоминаний по умолчанию.",
+			relativeTo: "Относительно",
+			splitLayoutOnWideScreens: "Раздельная компоновка на широких экранах",
+			showTheDetailsEditorBesideTheFieldsOnScreens:
+				"Показывать редактор описания рядом с полями на экранах шириной от 900 пикселей.",
+			tabMovesFocusInDetailsEditor: "Tab перемещает фокус в редакторе описания",
+			whenOffTabIndentsTextInTheMarkdownEditor:
+				"Если отключено, Tab добавляет отступ в редакторе Markdown.",
+			syncCustomProperties: "Синхронизировать пользовательские свойства",
+			syncProperties: "Синхронизировать свойства",
+			noFieldsInThisGroup: "В этой группе нет полей.",
+			showWhenCreatingTasks: "Показывать при создании задач",
+			showWhenEditingTasks: "Показывать при редактировании задач",
+			resetFormFields: "Сбросить поля формы",
+			restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept:
+				"Восстановить видимость, группировку и порядок. Пользовательские свойства сохранятся.",
+			resetFields: "Сбросить поля",
+			resetFormFields2: "Сбросить поля формы?",
+			yourCustomFieldLayoutWillBeReplacedWithThe:
+				"Пользовательская компоновка полей будет заменена стандартной.",
+			inlineTaskCardProperties: "Свойства встроенных карточек задач",
+			selectWhichPropertiesToShowInInlineTaskCards:
+				"Выберите свойства для отображения во встроенных карточках задач.",
+			inlineTaskCardPropertiesUpdated: "Свойства встроенных карточек задач обновлены",
+			attachmentSearchOrder: "Порядок поиска вложений",
+			controlsHowFilesAreOrderedInTheAddAttachment:
+				"Определяет порядок файлов при поиске вложений для временных блоков.",
+			nameAToZ: "Имя (А–Я)",
+			nameZToA: "Имя (Я–А)",
+			pathAToZ: "Путь (А–Я)",
+			pathZToA: "Путь (Я–А)",
+			createdNewestFirst: "Создание (сначала новые)",
+			createdOldestFirst: "Создание (сначала старые)",
+			modifiedNewestFirst: "Изменение (сначала новые)",
+			modifiedOldestFirst: "Изменение (сначала старые)",
+			baseFile: "Файл Base",
+			resetFileMapping: "Сбросить сопоставление файла",
+			calendarSetupGuide: "Руководство по настройке календаря",
+			connectAGoogleOrMicrosoftCalendarUsingYourOwn:
+				"Подключите календарь Google или Microsoft с помощью собственных учётных данных приложения OAuth.",
+			enterAPropertyKey: "Введите ключ свойства.",
+			useAPropertyKeyWithoutSurroundingSpacesLineBreaks:
+				"Используйте ключ без пробелов по краям, переносов строк и знаков YAML.",
+			theTagsPropertyIsReservedByObsidian: "Свойство tags зарезервировано Obsidian.",
+			anotherPropertyAlreadyUsesThisKey: "Другое свойство уже использует этот ключ.",
+			separateValuesWithCommas: "Разделяйте значения запятыми.",
+			propertyName: "Имя свойства",
+			propertyValue: "Значение свойства",
+			leaveEmptyToMatchAnyNoteWithThisProperty:
+				"Оставьте пустым, чтобы находить любые заметки с этим свойством.",
+			noValuesConfigured: "Нет настроенных значений.",
+			keepAtLeastOneConfiguredValue: "Оставьте хотя бы одно настроенное значение.",
+			existingTaskNotesWillNotBeChangedTasksUsing:
+				"Существующие заметки задач не изменятся. Задачи с этим значением сохранят его в свойствах YAML.",
+			storedInTaskNotesChangingThisDoesNotRename:
+				"Хранится в заметках задач. Изменение не переименовывает значения в существующих заметках.",
+			aCSSColorOrThemeVariableSuchAsVar:
+				"Цвет CSS или переменная темы, например var(--text-accent).",
+			lucideIconNameLeaveEmptyForTheDefaultIndicator:
+				"Имя значка Lucide. Оставьте пустым для стандартного индикатора.",
+			countsAsCompleted: "Считается завершённым",
+			countsAsSkipped: "Считается пропущенным",
+			excludeFromStatusCycle: "Исключить из цикла статусов",
+			automaticArchiving: "Автоматическое архивирование",
+			automaticallyArchive: "Архивировать автоматически",
+			sortWeight: "Вес сортировки",
+			higherValuesSortFirst: "Более высокие значения отображаются первыми.",
+			thisRemovesThePropertyFromTaskNotesFormsNotFrom:
+				"Удаляет свойство из форм TaskNotes, но не из существующих заметок.",
+			deleteProperty: "Удалить свойство",
+			changingThisKeyDoesNotMigrateExistingNotes:
+				"Изменение ключа не переносит данные в существующих заметках.",
+			changingThisMappingDoesNotRenamePropertiesInExisting:
+				"Изменение сопоставления не переименовывает свойства в существующих заметках.",
+			metadataIntegrationProperties: "Метаданные и свойства интеграций",
+			timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents:
+				"Метки времени, записи повторений, порядок и связанные события календаря.",
+		},
 		header: {
 			documentation: "Документация",
 			documentationUrl: "https://tasknotes.dev"

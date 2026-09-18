@@ -487,6 +487,224 @@ export const ko: TranslationTree = {
 		}
 	},
 	settings: {
+		native: {
+			enterValue: "값을 입력하세요.",
+			duplicateValue: "이 값은 이미 존재합니다.",
+			enterCalendarName: "캘린더 이름을 입력하세요.",
+			chooseCalendarFile: "로컬 .ics 파일을 선택하세요.",
+			noDefaultHint: "기본값을 설정하지 않으려면 비워 두세요.",
+			optionalNumber: "숫자를 입력하거나 비워 두세요.",
+			validDate: "YYYY-MM-DD 형식으로 유효한 날짜를 입력하세요.",
+			validTime: "00:00부터 23:59 사이의 시각을 입력하세요.",
+			includedFolders: "포함할 폴더",
+			statuses: "상태",
+			priorities: "우선순위",
+			allNotes: "모든 노트",
+			nextInOrder: "순서상 다음 상태",
+			off: "끄기",
+			newProperty: "새 속성",
+			noKeySet: "키 미설정",
+			notSyncedYet: "아직 동기화되지 않음",
+			secretSaved: "비밀 키 저장됨",
+			notConnected: "연결되지 않음",
+			connected: "연결됨",
+			defaultDueTime: "기본 마감 시각",
+			defaultScheduledTime: "기본 예정 시각",
+			reminderNumber: "알림 {number}",
+			displayRow: "표시 행 {number}",
+			deleteEntry: "{name}을(를) 삭제할까요?",
+			connectAccount: "{name} 연결",
+			disconnectAccount: "{name} 연결 해제",
+			forgetAccountCredentials: "{name}의 자격 증명을 삭제할까요?",
+			connectedSince: "연결 일시: {date}",
+			tokenRefreshed: "토큰 갱신 일시: {date}",
+			deliveryCounts: "성공: {success} · 실패: {failure}",
+			minutesValue: "{minutes}분",
+			saveError: "TaskNotes 설정을 저장할 수 없습니다: {error}",
+			numberRange: "{min}에서 {max} 사이의 숫자를 입력하세요.",
+			taskFiles: "작업 파일",
+			taskIdentificationFoldersFilenamesAndFrontmatter:
+				"작업 식별, 폴더, 파일 이름 및 프런트매터.",
+			filenames: "파일 이름",
+			namesForTaskNotesAndRecurringOccurrences: "작업 노트와 반복 작업 회차의 파일 이름.",
+			propertyMappingsStatusesPrioritiesAndCustomProperties:
+				"속성 매핑, 상태, 우선순위 및 사용자 지정 속성.",
+			defaultsTemplatesNaturalLanguageInputAndFormFields:
+				"기본값, 템플릿, 자연어 입력 및 양식 필드.",
+			defaults: "기본값",
+			valuesToUseWhenCreatingATask: "작업을 만들 때 사용할 값.",
+			templates: "템플릿",
+			taskBodiesAndRecurringOccurrenceNotes: "작업 본문과 반복 작업 회차 노트.",
+			formFields: "양식 필드",
+			chooseWhichFieldsAppearWhenCreatingAndEditingTasks:
+				"작업을 만들거나 편집할 때 표시할 필드를 선택합니다.",
+			appearanceInteraction: "모양 및 상호작용",
+			taskCardsInlineTasksClickBehaviourAndViewDefaults:
+				"작업 카드, 인라인 작업, 클릭 동작 및 보기 기본값.",
+			calendarDefaults: "캘린더 기본값",
+			defaultsForCalendarViewsIndividualBasesViewsMayOverride:
+				"캘린더 보기의 기본값입니다. 각 Bases 보기에서 재정의할 수 있습니다.",
+			configureViewCommandsChangeFiltersSortingAndGroupingInside:
+				"보기 명령을 설정합니다. 필터, 정렬 및 그룹화는 각 Base에서 변경하세요.",
+			timeReminders: "시간 및 알림",
+			notificationsTimeTrackingRecurrencePomodoroAndTimeblocking:
+				"알림, 시간 추적, 반복, 뽀모도로 및 시간 블록.",
+			reminderDeliveryAndSounds: "알림 전달 방식 및 소리.",
+			timerDurationsSoundsHistoryAndMobilePlacement:
+				"타이머 시간, 소리, 기록 및 모바일 표시 위치.",
+			calendarBlocksAndAttachments: "캘린더 블록 및 첨부 파일.",
+			calendarsIntegrations: "캘린더 및 연동",
+			calendarAccountsSubscriptionsTaskExportAndInteroperability:
+				"캘린더 계정, 구독, 작업 내보내기 및 상호운용 설정.",
+			advanced: "고급",
+			indexingHTTPAPIWebhooksAndDiagnostics: "색인, HTTP API, 웹훅 및 진단.",
+			defaultTaskCardPropertiesUpdated: "기본 작업 카드 속성이 업데이트되었습니다",
+			invalidTimeFormatPleaseUseHhMmFormatE:
+				"잘못된 시간 형식입니다. hh:mm 형식을 사용하세요(예: 08:00).",
+			invalidTimeHoursMustBe0023AndMinutes:
+				"잘못된 시간입니다. 시는 00~23, 분은 00~59여야 합니다.",
+			invalidTimeFormatPleaseUseHhMmFormatE2:
+				"잘못된 시간 형식입니다. hh:mm 형식을 사용하세요(예: 26:00).",
+			invalidTimeUse00004800ValuesAfter:
+				"잘못된 시간입니다. 00:00~48:00을 사용하세요. 자정 이후는 24:00~48:00으로 지정합니다(예: 다음 날 오전 2시는 26:00).",
+			enterAnHTTPOrHTTPSURL: "HTTP 또는 HTTPS URL을 입력하세요.",
+			connectionStatus: "연결 상태",
+			oAuthCredentials: "OAuth 자격 증명",
+			storedInObsidianSecretStorageNotTaskNotesSettings:
+				"TaskNotes 설정이 아닌 Obsidian 비밀 저장소에 보관됩니다.",
+			clientID: "클라이언트 ID",
+			clientSecret: "클라이언트 비밀 키",
+			leaveEmptyToKeepTheSavedSecretEnterA:
+				"비워 두면 저장된 비밀 키를 유지합니다. 새 값을 입력한 후 필드를 벗어나면 저장됩니다.",
+			forgetSavedCredentials: "저장된 자격 증명 삭제",
+			forgetCredentials: "자격 증명 삭제",
+			thisRemovesTheSavedClientIDAndClientSecret:
+				"Obsidian 비밀 저장소에서 클라이언트 ID와 비밀 키를 제거합니다.",
+			connect: "연결",
+			calendarIntegrationIsUnavailableOnThisDevice:
+				"이 기기에서는 캘린더 연동을 사용할 수 없습니다.",
+			refreshCalendarEvents: "캘린더 일정 새로고침",
+			calendarSyncServiceUnavailable: "캘린더 동기화 서비스를 사용할 수 없습니다.",
+			disconnect: "연결 해제",
+			calendarSubscriptionServiceUnavailable: "캘린더 구독 서비스를 사용할 수 없습니다.",
+			theCalendarSubscriptionWillBeRemovedLinkedNotesWill:
+				"캘린더 구독을 제거합니다. 연결된 노트는 유지됩니다.",
+			source: "원본",
+			calendarURL: "캘린더 URL",
+			hTTPHTTPSWebcalOrWebcalsURL: "HTTP, HTTPS, webcal 또는 webcals URL.",
+			aCSSColorOrThemeVariable: "CSS 색상 또는 테마 변수.",
+			refreshIntervalMinutes: "새로고침 간격(분)",
+			lastSync: "마지막 동기화",
+			refreshSubscription: "구독 새로고침",
+			calendarFile: "캘린더 파일",
+			anIcsFileInThisVault: "이 보관함의 .ics 파일.",
+			noWebhooksConfiguredAddOneToSendTaskEvents:
+				"설정된 웹훅이 없습니다. 다른 서비스에 작업 이벤트를 보내려면 웹훅을 추가하세요.",
+			deleteWebhook: "웹훅을 삭제할까요?",
+			eventsWillNoLongerBeSentToThisEndpoint:
+				"이 엔드포인트로 더 이상 이벤트를 보내지 않습니다.",
+			selectAtLeastOneEventBeforeEnablingThisWebhook:
+				"웹훅을 활성화하기 전에 이벤트를 하나 이상 선택하세요.",
+			anOptionalJsonTemplateInTheVaultLeaveEmpty:
+				"보관함의 선택적 .json 템플릿입니다. 비워 두면 원본 이벤트 데이터를 보냅니다.",
+			includeEventTypeSignatureAndDeliveryIDTurnOff:
+				"이벤트 유형, 서명 및 전달 ID를 포함합니다. CORS 정책이 엄격한 서비스에서는 끄세요.",
+			deliveryStatus: "전달 상태",
+			signingSecret: "서명 비밀 키",
+			useThisSecretToVerifyPayloadsInTheReceiving:
+				"수신 애플리케이션에서 페이로드를 검증할 때 이 비밀 키를 사용하세요.",
+			copySecret: "비밀 키 복사",
+			signingSecretCopied: "서명 비밀 키를 복사했습니다",
+			leaveEmptyToUseTheNormalTaskFilenameWith:
+				"비워 두면 일반 작업 파일 이름에 고유 접미사를 붙입니다.",
+			occurrenceFilenameTemplateProperty: "회차 파일 이름 템플릿 속성",
+			aPropertyOnTheParentTaskThatOverridesThe:
+				"회차 파일 이름 템플릿을 재정의하는 상위 작업의 속성.",
+			defaultsApplyToNewTasks: "기본값은 새 작업에 적용됩니다",
+			changingTheseValuesDoesNotUpdateExistingTaskNotes:
+				"이 값을 변경해도 기존 작업 노트는 업데이트되지 않습니다.",
+			hHMmLeaveEmptyForAnAllDayTask: "HH:mm. 종일 작업은 비워 두세요.",
+			separateContextsWithCommas: "컨텍스트를 쉼표로 구분하세요.",
+			separateTagsWithCommas: "태그를 쉼표로 구분하세요.",
+			defaultTimeEstimateMinutes: "기본 예상 시간(분)",
+			newTasksHaveNoDefaultProjects: "새 작업에 기본 프로젝트가 없습니다.",
+			newTasksHaveNoDefaultReminders: "새 작업에 기본 알림이 없습니다.",
+			relativeTo: "기준",
+			splitLayoutOnWideScreens: "넓은 화면에서 분할 배치",
+			showTheDetailsEditorBesideTheFieldsOnScreens:
+				"너비가 900px 이상인 화면에서 필드 옆에 세부 정보 편집기를 표시합니다.",
+			tabMovesFocusInDetailsEditor: "세부 정보 편집기에서 Tab으로 포커스 이동",
+			whenOffTabIndentsTextInTheMarkdownEditor:
+				"끄면 Markdown 편집기에서 Tab이 텍스트를 들여씁니다.",
+			syncCustomProperties: "사용자 지정 속성 동기화",
+			syncProperties: "속성 동기화",
+			noFieldsInThisGroup: "이 그룹에 필드가 없습니다.",
+			showWhenCreatingTasks: "작업 생성 시 표시",
+			showWhenEditingTasks: "작업 편집 시 표시",
+			resetFormFields: "양식 필드 초기화",
+			restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept:
+				"표시 여부, 그룹화 및 순서를 복원합니다. 사용자 지정 속성은 유지됩니다.",
+			resetFields: "필드 초기화",
+			resetFormFields2: "양식 필드를 초기화할까요?",
+			yourCustomFieldLayoutWillBeReplacedWithThe:
+				"사용자 지정 필드 배치를 기본 배치로 바꿉니다.",
+			inlineTaskCardProperties: "인라인 작업 카드 속성",
+			selectWhichPropertiesToShowInInlineTaskCards:
+				"인라인 작업 카드에 표시할 속성을 선택합니다.",
+			inlineTaskCardPropertiesUpdated: "인라인 작업 카드 속성이 업데이트되었습니다",
+			attachmentSearchOrder: "첨부 파일 검색 순서",
+			controlsHowFilesAreOrderedInTheAddAttachment:
+				"시간 블록에 첨부 파일을 추가할 때 검색 창에 나오는 파일 순서를 설정합니다.",
+			nameAToZ: "이름(A~Z)",
+			nameZToA: "이름(Z~A)",
+			pathAToZ: "경로(A~Z)",
+			pathZToA: "경로(Z~A)",
+			createdNewestFirst: "생성일(최신순)",
+			createdOldestFirst: "생성일(오래된 순)",
+			modifiedNewestFirst: "수정일(최신순)",
+			modifiedOldestFirst: "수정일(오래된 순)",
+			baseFile: "Base 파일",
+			resetFileMapping: "파일 매핑 초기화",
+			calendarSetupGuide: "캘린더 설정 안내",
+			connectAGoogleOrMicrosoftCalendarUsingYourOwn:
+				"자신의 OAuth 앱 자격 증명으로 Google 또는 Microsoft 캘린더에 연결하세요.",
+			enterAPropertyKey: "속성 키를 입력하세요.",
+			useAPropertyKeyWithoutSurroundingSpacesLineBreaks:
+				"앞뒤 공백, 줄바꿈 또는 YAML 문장 부호가 없는 키를 사용하세요.",
+			theTagsPropertyIsReservedByObsidian: "tags 속성은 Obsidian에서 예약되어 있습니다.",
+			anotherPropertyAlreadyUsesThisKey: "다른 속성이 이미 이 키를 사용합니다.",
+			separateValuesWithCommas: "값을 쉼표로 구분하세요.",
+			propertyName: "속성 이름",
+			propertyValue: "속성 값",
+			leaveEmptyToMatchAnyNoteWithThisProperty:
+				"비워 두면 이 속성이 있는 모든 노트와 일치합니다.",
+			noValuesConfigured: "설정된 값이 없습니다.",
+			keepAtLeastOneConfiguredValue: "설정된 값을 하나 이상 유지하세요.",
+			existingTaskNotesWillNotBeChangedTasksUsing:
+				"기존 작업 노트는 변경되지 않습니다. 이 값을 사용하는 작업은 프런트매터에 해당 값을 유지합니다.",
+			storedInTaskNotesChangingThisDoesNotRename:
+				"작업 노트에 저장됩니다. 변경해도 기존 노트의 값 이름은 바뀌지 않습니다.",
+			aCSSColorOrThemeVariableSuchAsVar: "CSS 색상 또는 테마 변수(예: var(--text-accent)).",
+			lucideIconNameLeaveEmptyForTheDefaultIndicator:
+				"Lucide 아이콘 이름입니다. 비워 두면 기본 표시를 사용합니다.",
+			countsAsCompleted: "완료로 간주",
+			countsAsSkipped: "건너뜀으로 간주",
+			excludeFromStatusCycle: "상태 순환에서 제외",
+			automaticArchiving: "자동 보관",
+			automaticallyArchive: "자동으로 보관",
+			sortWeight: "정렬 가중치",
+			higherValuesSortFirst: "값이 클수록 먼저 표시됩니다.",
+			thisRemovesThePropertyFromTaskNotesFormsNotFrom:
+				"TaskNotes 양식에서만 속성을 제거하며 기존 노트에서는 제거하지 않습니다.",
+			deleteProperty: "속성 삭제",
+			changingThisKeyDoesNotMigrateExistingNotes:
+				"이 키를 변경해도 기존 노트는 마이그레이션되지 않습니다.",
+			changingThisMappingDoesNotRenamePropertiesInExisting:
+				"이 매핑을 변경해도 기존 노트의 속성 이름은 바뀌지 않습니다.",
+			metadataIntegrationProperties: "메타데이터 및 연동 속성",
+			timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents:
+				"타임스탬프, 반복 기록, 순서 및 연결된 캘린더 일정.",
+		},
 		header: {
 			documentation: "문서",
 			documentationUrl: "https://tasknotes.dev"

@@ -1,5 +1,10 @@
 # TaskNotes - Unreleased
 
+## Changed
+
+- Rebuilt settings around Obsidian’s native navigation, search, and editable lists. Individual settings are searchable, while custom-property triggers and advanced filters remain on separate detail pages. See [Settings](https://tasknotes.dev/settings/) for the new layout.
+- TaskNotes now requires Obsidian 1.13.1 or newer.
+
 <!--
 
 **Added** for new features.
