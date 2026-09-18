@@ -1,4 +1,4 @@
-import type { SettingDefinitionItem, SettingDefinitionList } from "obsidian";
+import type { SettingDefinitionItem, SettingDefinitionList, SettingGroupItem } from "obsidian";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { ProjectSelectModal } from "../../modals/ProjectSelectModal";
 import { splitListPreservingLinksAndQuotes } from "../../utils/stringSplit";
@@ -7,7 +7,7 @@ import { SettingsContext } from "./SettingsContext";
 import type { DefaultTaskTime } from "../../types/settings";
 import { reorder } from "./properties";
 
-export function filenameDefinitions(ctx: SettingsContext): SettingDefinitionItem[] {
+export function filenameDefinitions(ctx: SettingsContext): SettingGroupItem[] {
 	const { plugin } = ctx;
 	const s = plugin.settings;
 	const t = plugin.i18n.translate.bind(plugin.i18n);
@@ -67,7 +67,7 @@ export function filenameDefinitions(ctx: SettingsContext): SettingDefinitionItem
 	];
 }
 
-export function creationDefaults(ctx: SettingsContext): SettingDefinitionItem[] {
+export function creationDefaults(ctx: SettingsContext): SettingGroupItem[] {
 	const { plugin, save } = ctx;
 	const s = plugin.settings;
 	const d = s.taskCreationDefaults;

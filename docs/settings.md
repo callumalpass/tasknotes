@@ -2,7 +2,7 @@
 
 Open **Settings → TaskNotes**. TaskNotes uses Obsidian’s native settings pages and requires Obsidian **1.13.1 or newer**.
 
-Use Obsidian’s settings search to find individual options without opening their pages first. Changes save automatically; invalid values are not saved. Nested pages use Obsidian’s back button and keyboard navigation.
+Use Obsidian’s settings search to find individual options without opening their pages first. Within each main category, ordinary settings appear in headed inline groups rather than separate pages. Larger editors, such as calendar defaults and form fields, retain detail pages. Changes save automatically; invalid values are not saved.
 
 | Page | What belongs here |
 | --- | --- |
@@ -24,7 +24,7 @@ These settings answer different questions:
 - **Task creation → Defaults:** Which values should a new task start with?
 - **Task creation → Form fields:** Which fields should people see when creating or editing a task?
 
-Under **Properties**, add a custom property, then open its detail page to set its display name, key, type, and optional default. NLP triggers and advanced autosuggestion filters have separate nested pages. New custom properties are added to the form configuration automatically.
+Under **Properties**, add a custom property, then open its detail page to set its display name, key, type, and optional default. NLP triggers appear in an inline group in the same editor. Advanced autosuggestion filters remain on a separate detail page. New custom properties are added to the form configuration automatically.
 
 Changing a property mapping does **not** rename properties in existing notes. Likewise, changing a status value or deleting a configured property does not rewrite existing task frontmatter. Plan any vault-wide migration separately.
 

@@ -2,6 +2,7 @@ import {
 	Notice,
 	type SettingDefinitionItem,
 	type SettingDefinitionList,
+	type SettingDefinitionGroup,
 	type SettingDefinitionPage,
 } from "obsidian";
 import type { FieldMapping, StatusConfig, PriorityConfig } from "../../types";
@@ -46,7 +47,7 @@ export function validatePropertyKey(
 		return ctx.t("settings.native.anotherPropertyAlreadyUsesThisKey");
 }
 
-function triggerPage(ctx: SettingsContext, id: string, fallback: string): SettingDefinitionPage {
+function triggerGroup(ctx: SettingsContext, id: string, fallback: string): SettingDefinitionGroup {
 	const { plugin, save } = ctx;
 	const t = plugin.i18n.translate.bind(plugin.i18n);
 	const read = () =>
@@ -61,9 +62,8 @@ function triggerPage(ctx: SettingsContext, id: string, fallback: string): Settin
 		save();
 	};
 	return {
-		type: "page",
-		name: t("settings.taskProperties.propertyCard.nlpTrigger"),
-		displayValue: () => read()?.trigger ?? fallback,
+		type: "group",
+		heading: t("settings.features.nlp.header"),
 		items: [
 			ctx.toggle(`nlp.${id}.enabled`, {
 				name: t("settings.taskProperties.propertyCard.nlpTrigger"),
@@ -346,14 +346,8 @@ function configuredValues(
 						}
 					),
 					{
-						type: "page",
-						name: ctx.t("settings.native.automaticArchiving"),
-						displayValue: () =>
-							item.autoArchive
-								? ctx.t("settings.native.minutesValue", {
-										minutes: item.autoArchiveDelay ?? 0,
-									})
-								: ctx.t("settings.native.off"),
+						type: "group",
+						heading: ctx.t("settings.native.automaticArchiving"),
 						items: [
 							ctx.field(
 								item,
@@ -532,7 +526,7 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 						}
 					),
 					customDefault(ctx, field),
-					triggerPage(ctx, field.id, `${field.key.slice(0, 9) || "field"}:`),
+					triggerGroup(ctx, field.id, `${field.key.slice(0, 9) || "field"}:`),
 					filterPage(
 						ctx,
 						id,
@@ -639,7 +633,7 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 				}
 			),
 		];
-		if (property in triggers) items.push(triggerPage(ctx, property, triggers[property]));
+		if (property in triggers) items.push(triggerGroup(ctx, property, triggers[property]));
 		if (property === "status" || property === "priority")
 			items.push(configuredValues(ctx, property));
 		if (property === "projects") {
@@ -719,7 +713,7 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		{
 			type: "page",
 			name: ctx.t("settings.taskProperties.properties.tags.name"),
-			items: [triggerPage(ctx, "tags", "#")],
+			items: [triggerGroup(ctx, "tags", "#")],
 		},
 		customProperties(ctx),
 	];

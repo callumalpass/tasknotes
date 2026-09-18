@@ -48,7 +48,7 @@ try {
 	backup = true;
 	test(
 		"native search indexes unvisited settings",
-		`s.searchComponent.setValue('pomodoro');const el=s.searchComponent.inputEl;el.dispatchEvent(new el.ownerDocument.defaultView.Event('input',{bubbles:true}));await wait(350);const result=[...s.searchResultsEl.querySelectorAll('.setting-search-result-item')].find(el=>el.textContent==='Work duration');assert(result,'Work duration missing from native search');result.click();await wait(100);assert(row('Work duration'),'Search did not open the correct page');return 'ok';`
+		`s.searchComponent.setValue('pomodoro');const el=s.searchComponent.inputEl;el.dispatchEvent(new el.ownerDocument.defaultView.Event('input',{bubbles:true}));await wait(350);const result=[...s.searchResultsEl.querySelectorAll('.setting-search-result-item')].find(el=>el.textContent==='Work duration');assert(result,'Work duration missing from native search');result.click();await wait(100);assert(row('Work duration'),'Search did not open the correct page');assert(current().querySelector('.setting-page-title')?.textContent==='Time & reminders','Search should open the category containing the inline group');return 'ok';`
 	);
 	test(
 		"native numeric validation blocks invalid values",
@@ -61,7 +61,7 @@ try {
 	screenshot("root-desktop");
 	test(
 		"custom properties use native add and detail navigation",
-		`click('Properties');await wait(50);const add=current().querySelector('[aria-label="Add user field"]');assert(add,'Native list add control missing');add.click();await wait(400);const entry=[...current().querySelectorAll('.setting-item-name')].filter(el=>el.textContent.startsWith('New property')).at(-1);assert(entry,'New property not listed');entry.closest('.setting-item').click();await wait(50);assert(row('Property key:'),'No property key control');assert(row('Autosuggestion filters (advanced)'),'Missing progressive disclosure');return 'ok';`
+		`click('Properties');await wait(50);const add=current().querySelector('[aria-label="Add user field"]');assert(add,'Native list add control missing');add.click();await wait(400);const entry=[...current().querySelectorAll('.setting-item-name')].filter(el=>el.textContent.startsWith('New property')).at(-1);assert(entry,'New property not listed');entry.closest('.setting-item').click();await wait(50);assert(row('Property key:'),'No property key control');assert(row('Autosuggestion filters (advanced)'),'Missing progressive disclosure');assert(row(p.i18n.translate('settings.taskProperties.propertyCard.triggerChar'))?.querySelector('input'),'NLP trigger should be editable inline');return 'ok';`
 	);
 	test(
 		"name edits preserve focus and refresh list metadata",
@@ -104,6 +104,16 @@ try {
 		"status labels refresh without leaving their editor",
 		`s.openTabById('tasknotes');click('Properties');await wait(50);click('Status');await wait(50);const status=p.settings.customStatuses[0];click(status.label||status.value);await wait(50);const label=p.i18n.translate('settings.taskProperties.taskStatuses.fields.label');input(label,'Native smoke status');await wait(700);assert(p.settings.customStatuses[0].label==='Native smoke status','Status label not saved');assert(row(label),'Renaming lost the status editor');current().querySelector('.setting-page-back-button').click();await wait(50);assert(row('Native smoke status'),'Status list name is stale');return 'ok';`
 	);
+	test(
+		"creation defaults and templates are inline groups",
+		`s.openTabById('tasknotes');click('Task creation');await wait(100);const headings=[...current().querySelectorAll('.setting-item-heading')].map(el=>el.textContent);assert(headings.includes('Defaults')&&headings.includes('Templates'),'Creation settings are not grouped inline');return 'ok';`
+	);
+	screenshot("creation-inline-groups");
+	test(
+		"filenames are editable without opening another page",
+		`s.openTabById('tasknotes');click('Task files');await wait(100);const heading=[...current().querySelectorAll('.setting-item-heading')].find(el=>el.textContent==='Filenames');assert(heading,'Filename group missing');heading.scrollIntoView({block:'start'});return 'ok';`
+	);
+	screenshot("filenames-inline-group");
 	test(
 		"localized definitions and native search aliases",
 		`p.i18n.setLocale('de');t.update();const definitions=t.getSettingDefinitions();assert(definitions.some(item=>item.name==='Aufgabendateien'),'Navigation is not translated');assert(!flatten(definitions).some(item=>item.name?.startsWith('settings.')),'Unresolved translation key');s.openTabById('tasknotes');return 'ok';`

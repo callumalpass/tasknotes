@@ -1,6 +1,6 @@
 # Task Properties Settings
 
-Open **Settings → TaskNotes → Properties** to configure property mappings and definitions. Open a property to edit its settings; triggers and advanced filters have separate detail pages. Built-in default values are under **Task creation → Defaults**.
+Open **Settings → TaskNotes → Properties** to configure property mappings and definitions. Open a property to edit its settings and NLP trigger in inline groups. Advanced filters have a separate detail page. Built-in default values are under **Task creation → Defaults**.
 
 
 !!! tip "Looking for property type documentation?"

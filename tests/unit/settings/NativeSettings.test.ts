@@ -2,6 +2,45 @@ import { Platform } from "obsidian";
 import { settingsFixture, flattenSettings, control, page } from "../../helpers/native-settings";
 
 describe("Native settings navigation and search", () => {
+	test("uses inline groups for ordinary preferences while retaining substantial editors", () => {
+		const { tab } = settingsFixture();
+		const definitions = tab.getSettingDefinitions();
+		const time = page(definitions, "Time & reminders");
+		expect(time.items?.every((item) => "type" in item && item.type === "group")).toBe(true);
+		expect(control(time.items ?? [], "pomodoroWorkDuration")).toBeDefined();
+		const creation = page(definitions, "Task creation");
+		expect(
+			creation.items?.some(
+				(item) => "type" in item && item.type === "group" && item.heading === "Defaults"
+			)
+		).toBe(true);
+		expect(page(creation.items ?? [], "Form fields")).toBeDefined();
+		expect(page(definitions, "Calendar defaults")).toBeDefined();
+		const files = page(definitions, "Task files");
+		expect(
+			files.items?.some(
+				(item) => "type" in item && item.type === "group" && item.heading === "Filenames"
+			)
+		).toBe(true);
+	});
+
+	test("keeps custom-property triggers inline and advanced filters on a detail page", () => {
+		const { plugin, tab } = settingsFixture();
+		plugin.settings.userFields = [
+			{ id: "client", key: "client", displayName: "Client", type: "text" },
+		];
+		const editor = page(tab.getSettingDefinitions(), "Client");
+		const nlp = editor.items?.find((item) => "type" in item && item.type === "group");
+		expect(
+			nlp && "items" in nlp && control(nlp.items ?? [], "nlp.client.trigger")
+		).toBeTruthy();
+		expect(page(editor.items ?? [], "Autosuggestion filters (advanced)")).toBeDefined();
+		expect(
+			editor.items?.some(
+				(item) => "type" in item && item.type === "page" && item.name === "NLP trigger:"
+			)
+		).toBe(false);
+	});
 	test("preserves every scalar binding inventoried from the v5 beta.3 settings", () => {
 		const inventory: string[] = require("../../fixtures/native-settings-coverage.json");
 		const { tab } = settingsFixture();

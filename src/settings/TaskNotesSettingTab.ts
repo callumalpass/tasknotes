@@ -74,11 +74,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					storage,
 					identification,
 					folders,
-					page(
-						ctx.t("settings.native.filenames"),
-						ctx.t("settings.native.namesForTaskNotesAndRecurringOccurrences"),
-						filenameDefinitions(ctx)
-					),
+					{
+						type: "group",
+						heading: ctx.t("settings.native.filenames"),
+						items: filenameDefinitions(ctx),
+					},
 					frontmatter,
 				]
 			),
@@ -92,16 +92,12 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				ctx.t("settings.native.defaultsTemplatesNaturalLanguageInputAndFormFields"),
 				[
 					creation,
-					page(
-						ctx.t("settings.native.defaults"),
-						ctx.t("settings.native.valuesToUseWhenCreatingATask"),
-						creationDefaults(ctx)
-					),
-					page(
-						ctx.t("settings.native.templates"),
-						ctx.t("settings.native.taskBodiesAndRecurringOccurrenceNotes"),
-						[templates]
-					),
+					{
+						type: "group",
+						heading: ctx.t("settings.native.defaults"),
+						items: creationDefaults(ctx),
+					},
+					{ ...templates, heading: ctx.t("settings.native.templates") },
 					nlp,
 					page(
 						ctx.t("settings.native.formFields"),
@@ -126,37 +122,13 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						),
 						[calendar, visibility, times]
 					),
-					page(
-						ctx.t("settings.integrations.basesIntegration.viewCommands.header"),
-						ctx.t(
-							"settings.native.configureViewCommandsChangeFiltersSortingAndGroupingInside"
-						),
-						[bases]
-					),
+					bases,
 				]
 			),
 			page(
 				ctx.t("settings.native.timeReminders"),
 				ctx.t("settings.native.notificationsTimeTrackingRecurrencePomodoroAndTimeblocking"),
-				[
-					page(
-						ctx.t("settings.features.notifications.header"),
-						ctx.t("settings.native.reminderDeliveryAndSounds"),
-						[notifications]
-					),
-					tracking,
-					recurring,
-					page(
-						ctx.t("views.pomodoro.title"),
-						ctx.t("settings.native.timerDurationsSoundsHistoryAndMobilePlacement"),
-						[pomodoro]
-					),
-					page(
-						ctx.t("settings.features.timeblocking.header"),
-						ctx.t("settings.native.calendarBlocksAndAttachments"),
-						[timeblocking]
-					),
-				]
+				[notifications, tracking, recurring, pomodoro, timeblocking]
 			),
 			page(
 				ctx.t("settings.native.calendarsIntegrations"),
