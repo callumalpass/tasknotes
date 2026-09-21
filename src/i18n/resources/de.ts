@@ -1575,6 +1575,11 @@ export const de: TranslationTree = {
 				}
 			},
 			displayFormatting: {
+				dateFormat: {
+					name: "Datumsformat",
+					description: "Wähle die Datumsanzeige in TaskNotes. Gespeicherte Datumswerte und eigene Bases-Formeln bleiben unverändert. Das Zeitformat wird separat eingestellt.",
+					options: { default: "Standard" },
+				},
 				header: "Anzeigeformatierung",
 				description: "Konfiguriere, wie Daten, Zeiten und andere Daten im Plugin angezeigt werden.",
 				timeFormat: {

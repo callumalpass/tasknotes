@@ -92,6 +92,7 @@ export interface ProjectAutosuggestSettings {
 }
 
 export interface TaskNotesSettings {
+	dateDisplayFormat: "default" | "iso";
 	tasksFolder: string; // Now just a default location for new tasks
 	moveArchivedTasks: boolean; // Whether to move tasks to archive folder when archived
 	archiveFolder: string; // Folder to move archived tasks to, supports template variables

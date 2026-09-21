@@ -1,5 +1,6 @@
 import { App, Modal, Setting, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { formatDateLabel, formatTime } from "../utils/dateUtils";
 import {
 	CalendarProvider,
 	ProviderCalendar,
@@ -100,8 +101,8 @@ export class CalendarEventCreationModal extends Modal {
 			text: this.translate("modals.calendarEventCreation.dateTimeLabel"),
 		});
 		const dateText = this.options.allDay
-			? format(this.options.start, "PPP")
-			: `${format(this.options.start, "PPP p")} – ${format(this.options.end, "p")}`;
+			? formatDateLabel(this.options.start, this.plugin.settings, "PPP")
+			: `${formatDateLabel(this.options.start, this.plugin.settings, "PPP", true)} – ${formatTime(this.options.end, this.plugin.settings.calendarViewSettings.timeFormat)}`;
 		dateDisplay.createSpan({ text: dateText });
 
 		// Title

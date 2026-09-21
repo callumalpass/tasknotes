@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import type { App } from "obsidian";
 import { ReminderModal } from "../../../src/modals/ReminderModal";
+import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import type { TaskInfo } from "../../../src/types";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 
@@ -14,6 +15,7 @@ function readRepoFile(relativePath: string): string {
 function createPlugin(app: App): any {
 	return {
 		app,
+		settings: { ...DEFAULT_SETTINGS },
 		emitter: {
 			trigger: jest.fn(),
 		},

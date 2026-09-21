@@ -60,6 +60,7 @@ import { format } from "date-fns";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { parseDateToLocal } from "../utils/dateUtils";
+import { getCalendarDateDisplayOptions } from "./calendarDateDisplay";
 import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
@@ -692,7 +693,7 @@ export class CalendarView extends BasesViewBase {
 	 * Used to detect user-initiated config changes.
 	 */
 	private getConfigSnapshot(): string {
-		return buildCalendarConfigSnapshot({
+		return `${this.plugin.settings.dateDisplayFormat}|${this.plugin.settings.calendarViewSettings.timeFormat}|${buildCalendarConfigSnapshot({
 			config: this.config,
 			icsCalendarIds:
 				this.plugin.icsSubscriptionService?.getSubscriptions().map((sub) => sub.id) ?? [],
@@ -704,7 +705,7 @@ export class CalendarView extends BasesViewBase {
 				this.plugin.microsoftCalendarService
 					?.getAvailableCalendars()
 					.map((calendar) => calendar.id) ?? [],
-		});
+		})}`;
 	}
 
 	/**
@@ -1290,7 +1291,9 @@ export class CalendarView extends BasesViewBase {
 					},
 				},
 			},
+			...getCalendarDateDisplayOptions(this.plugin.settings.dateDisplayFormat),
 			views: {
+				...getCalendarDateDisplayOptions(this.plugin.settings.dateDisplayFormat).views,
 				timeGridCustom: {
 					type: "timeGrid",
 					duration: { days: this.viewOptions.customDayCount },
@@ -1300,7 +1303,9 @@ export class CalendarView extends BasesViewBase {
 							count: this.viewOptions.customDayCount.toString(),
 						}
 					),
-					titleFormat: { year: "numeric", month: "short", day: "numeric" },
+					titleFormat: this.plugin.settings.dateDisplayFormat === "iso"
+						? getCalendarDateDisplayOptions("iso").titleFormat
+						: { year: "numeric", month: "short", day: "numeric" },
 				},
 				listWeek: {
 					type: "list",

@@ -8,6 +8,7 @@ import type { OAuthProvider, WebhookEvent, ICSSubscription } from "../../types";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { isCalendarIntegrationDisabledOnMobile } from "../../utils/calendarIntegration";
 import { SettingsContext } from "./SettingsContext";
+import { formatDateLabel } from "../../utils/dateUtils";
 
 export function validateHttpUrl(
 	value: string,
@@ -57,16 +58,12 @@ export function connectionPage(
 							? [
 									connection.connectedAt
 										? ctx.t("settings.native.connectedSince", {
-												date: new Date(
-													connection.connectedAt
-												).toLocaleString(),
+												date: formatDateLabel(new Date(connection.connectedAt), plugin.settings, undefined, true),
 											})
 										: ctx.t("settings.native.connected"),
 									connection.lastRefreshed
 										? ctx.t("settings.native.tokenRefreshed", {
-												date: new Date(
-													connection.lastRefreshed
-												).toLocaleString(),
+												date: formatDateLabel(new Date(connection.lastRefreshed), plugin.settings, undefined, true),
 											})
 										: "",
 								]
@@ -83,7 +80,7 @@ export function connectionPage(
 							});
 						else if (sync?.lastSuccess)
 							setting.descEl.createDiv({
-								text: `Last synced: ${new Date(sync.lastSuccess).toLocaleString()} (${sync.eventsLoaded} events)`,
+								text: `Last synced: ${formatDateLabel(new Date(sync.lastSuccess), plugin.settings, undefined, true)} (${sync.eventsLoaded} events)`,
 							});
 						for (const error of sync?.calendarErrors ?? [])
 							setting.descEl.createDiv({

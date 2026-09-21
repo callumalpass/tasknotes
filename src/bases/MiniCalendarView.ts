@@ -14,6 +14,7 @@ import { BasesViewBase } from "./BasesViewBase";
 import { ICSEvent, TaskInfo } from "../types";
 import { format } from "date-fns";
 import {
+	formatDateLabel,
 	formatDateForStorage,
 	getTodayLocal,
 	createUTCDateFromLocalCalendarDate,
@@ -702,7 +703,7 @@ export class MiniCalendarView extends BasesViewBase {
 		// Current month display
 		navSection.createDiv({
 			cls: "mini-calendar-view__month-display",
-			text: format(convertUTCToLocalCalendarDate(this.selectedDate), "MMMM yyyy"),
+			text: format(convertUTCToLocalCalendarDate(this.selectedDate), this.plugin.settings.dateDisplayFormat === "iso" ? "yyyy-MM" : "MMMM yyyy"),
 		});
 
 		// Next month button
@@ -750,7 +751,7 @@ export class MiniCalendarView extends BasesViewBase {
 			cls: "mini-calendar-view__grid",
 			attr: {
 				role: "grid",
-				"aria-label": `Calendar for ${format(convertUTCToLocalCalendarDate(new Date(Date.UTC(currentYear, currentMonth, 1))), "MMMM yyyy")}`,
+				"aria-label": `Calendar for ${format(convertUTCToLocalCalendarDate(new Date(Date.UTC(currentYear, currentMonth, 1))), this.plugin.settings.dateDisplayFormat === "iso" ? "yyyy-MM" : "MMMM yyyy")}`,
 				tabindex: "0",
 			},
 		});
@@ -905,7 +906,7 @@ export class MiniCalendarView extends BasesViewBase {
 			attr: {
 				role: "gridcell",
 				"aria-label":
-					format(convertUTCToLocalCalendarDate(dayDate), "EEEE, MMMM d, yyyy") +
+					formatDateLabel(convertUTCToLocalCalendarDate(dayDate), this.plugin.settings, "EEEE, MMMM d, yyyy") +
 					(isToday ? " (Today)" : ""),
 				"aria-selected": isSelected ? "true" : "false",
 				"aria-current": isToday ? "date" : null,

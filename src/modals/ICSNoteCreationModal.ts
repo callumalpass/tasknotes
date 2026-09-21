@@ -1,5 +1,6 @@
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { formatDateLabel } from "../utils/dateUtils";
 import { ICSEvent, NoteInfo } from "../types";
 import { format } from "date-fns";
 import { SafeAsync } from "../utils/safeAsync";
@@ -158,7 +159,7 @@ export class ICSNoteCreationModal extends Modal {
 			startDiv.createEl("strong", {
 				text: this.translate("modals.icsNoteCreation.startLabel"),
 			});
-			startDiv.appendText(format(startDate, "PPPp"));
+			startDiv.appendText(formatDateLabel(startDate, this.plugin.settings, "PPP", !icsEvent.allDay));
 		}
 
 		if (icsEvent.end && !icsEvent.allDay) {
@@ -168,7 +169,7 @@ export class ICSNoteCreationModal extends Modal {
 			const endDate = new Date(endDateStr);
 			const endDiv = details.createDiv();
 			endDiv.createEl("strong", { text: this.translate("modals.icsNoteCreation.endLabel") });
-			endDiv.appendText(format(endDate, "PPPp"));
+			endDiv.appendText(formatDateLabel(endDate, this.plugin.settings, "PPP", true));
 		}
 
 		if (icsEvent.location) {

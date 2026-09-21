@@ -1,10 +1,10 @@
 import { ItemView, Menu, Notice, WorkspaceLeaf, Setting, setIcon, setTooltip } from "obsidian";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import { startOfWeek, endOfWeek } from "date-fns";
 import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { POMODORO_STATS_VIEW_TYPE, PomodoroHistoryStats, PomodoroSessionHistory } from "../types";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
-import { getTodayLocal, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
+import { formatDateLabel, getTodayLocal, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 import { getSessionDuration } from "../utils/pomodoroUtils";
 import { calculatePomodoroStats } from "../utils/pomodoroStats";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -135,6 +135,9 @@ export class PomodoroStatsView extends ItemView {
 			cls: "pomodoro-recent-sessions pomodoro-stats-view__recent-sessions",
 		});
 
+		const settingsListener = this.plugin.emitter.on("settings-changed", () => { void this.refreshStats(); });
+		this.register(() => this.plugin.emitter.offref(settingsListener));
+
 		// Initial load
 		await this.refreshStats();
 	}
@@ -251,10 +254,8 @@ export class PomodoroStatsView extends ItemView {
 			const dateEl = sessionEl.createSpan({
 				cls: "session-date pomodoro-stats-view__session-date",
 			});
-			const timeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
-			dateEl.textContent = format(
-				new Date(session.startTime),
-				timeFormat === "12" ? "MMM d, h:mm a" : "MMM d, HH:mm"
+			dateEl.textContent = formatDateLabel(
+				new Date(session.startTime), this.plugin.settings, "MMM d", true
 			);
 
 			const durationEl = sessionEl.createSpan({

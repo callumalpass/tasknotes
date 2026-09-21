@@ -18,7 +18,7 @@ import {
 	getAllDailyNotes,
 	appHasDailyNotesPluginLoaded,
 } from "obsidian-daily-notes-interface";
-import { formatDateForStorage } from "../utils/dateUtils";
+import { formatDateLabel, formatDateForStorage } from "../utils/dateUtils";
 import { colorValueToInputValue, normalizeThemeColor } from "../utils/themeColors";
 import { configureThemeColorInput } from "../settings/components/CardComponent";
 import type { InterpolationValues, TranslationKey } from "../i18n";
@@ -119,7 +119,10 @@ export class TimeblockInfoModal extends Modal {
 		dateDisplay.createEl("strong", {
 			text: this.translate("modals.timeblockInfo.dateTimeLabel"),
 		});
-		const dateText = `${this.eventDate.toLocaleDateString()} from ${this.timeblock.startTime} to ${this.timeblock.endTime}`;
+		const dateLabel = this.plugin.settings.dateDisplayFormat === "iso"
+			? formatDateLabel(this.eventDate, this.plugin.settings)
+			: this.eventDate.toLocaleDateString();
+		const dateText = `${dateLabel} from ${this.timeblock.startTime} to ${this.timeblock.endTime}`;
 		dateDisplay.createSpan({ text: dateText });
 
 		// Title field (editable)

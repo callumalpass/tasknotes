@@ -1,5 +1,6 @@
 import { ItemView, WorkspaceLeaf, MarkdownRenderer } from "obsidian";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
+import { formatDateLabel } from "../utils/dateUtils";
 import TaskNotesPlugin from "../main";
 import type { ReleaseNoteVersion } from "../releaseNotes";
 import releaseNotesAnnouncement from "../releaseNotesAnnouncement.md";
@@ -75,7 +76,7 @@ export class ReleaseNotesView extends ItemView {
 		if (!dateString) return "";
 		try {
 			const date = parseISO(dateString);
-			return format(date, "MMMM d, yyyy");
+			return formatDateLabel(date, this.plugin.settings, "MMMM d, yyyy");
 		} catch {
 			return "";
 		}

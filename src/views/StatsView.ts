@@ -13,7 +13,7 @@ import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { STATS_VIEW_TYPE, TaskInfo, EVENT_TASK_UPDATED } from "../types";
 import { calculateTotalTimeSpent, filterEmptyProjects } from "../utils/helpers";
-import { getTodayLocal } from "../utils/dateUtils";
+import { formatDateLabel, parseDateToLocal, getTodayLocal } from "../utils/dateUtils";
 import { createTaskCard } from "../ui/TaskCard";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
@@ -237,6 +237,7 @@ export class StatsView extends ItemView {
 			}
 		);
 		this.listeners.push(taskUpdateListener);
+		this.listeners.push(this.plugin.emitter.on("settings-changed", () => { void this.render(); }));
 
 		await this.render();
 	}
@@ -1201,7 +1202,7 @@ export class StatsView extends ItemView {
 			if (!dateString) return this.plugin.i18n.translate("views.stats.notAvailable");
 			try {
 				const date = new Date(dateString);
-				return format(date, "MMM d, yyyy");
+				return formatDateLabel(date, this.plugin.settings);
 			} catch {
 				return this.plugin.i18n.translate("views.stats.notAvailable");
 			}
@@ -1891,7 +1892,7 @@ export class StatsView extends ItemView {
 			bar.style.height = `${height}px`;
 
 			// Tooltip
-			const tooltip = `${format(new Date(day.date), "MMM d")}: ${Math.round(day.timeSpent)}m`;
+			const tooltip = `${formatDateLabel(parseDateToLocal(day.date), this.plugin.settings, "MMM d")}: ${Math.round(day.timeSpent)}m`;
 			bar.setAttribute("title", tooltip);
 		}
 	}

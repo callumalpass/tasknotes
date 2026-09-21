@@ -1572,6 +1572,11 @@ export const ru: TranslationTree = {
 				}
 			},
 			displayFormatting: {
+				dateFormat: {
+					name: "Формат даты",
+					description: "Выберите формат отображения дат в TaskNotes. Сохранённые даты и пользовательские формулы Bases не изменятся. Формат времени настраивается отдельно.",
+					options: { default: "По умолчанию" },
+				},
 				header: "Форматирование отображения",
 				description: "Настройте отображение дат, времени и других данных в плагине.",
 				timeFormat: {

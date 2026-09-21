@@ -128,6 +128,7 @@ function createOccurrenceMetadataPill(config: RenderTaskCardMetadataConfig): HTM
 	}
 
 	const dateLabel = formatDateTimeForDisplay(task.occurrence_date, {
+		dateDisplayFormat: plugin.settings.dateDisplayFormat,
 		dateFormat: "MMM d",
 		showTime: false,
 		userTimeFormat: plugin.settings.calendarViewSettings?.timeFormat,

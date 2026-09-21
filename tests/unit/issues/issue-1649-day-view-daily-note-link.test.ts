@@ -8,6 +8,7 @@
  */
 
 import { attachDailyNoteHeaderLink } from "../../../src/bases/calendar-core";
+import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 
 describe("Issue #1649: Daily note link in day view header", () => {
 	it("wires the timeGridDay header cushion to open the daily note", () => {
@@ -20,7 +21,7 @@ describe("Issue #1649: Daily note link in day view header", () => {
 		cushion.textContent = "Thursday";
 		headerCell.appendChild(cushion);
 
-		const plugin = { app: { workspace: { getLeaf: jest.fn() } } } as never;
+		const plugin = { settings: DEFAULT_SETTINGS, app: { workspace: { getLeaf: jest.fn() } } } as never;
 		const clickHandler = jest.fn();
 		const date = new Date(2026, 1, 26);
 

@@ -1,4 +1,5 @@
-import type { RenderContext } from "obsidian";
+import { DateValue, type RenderContext } from "obsidian";
+import { formatDateTimeForDisplay, type DateDisplaySettings } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -69,13 +70,21 @@ export function isEmptyCardDisplayValue(value: unknown): boolean {
 export function renderBasesValue(
 	container: HTMLElement,
 	value: unknown,
-	renderContext: RenderContext
+	renderContext: RenderContext,
+	settings?: DateDisplaySettings
 ): boolean {
 	if (!isBasesValue(value) || isNullBasesValue(value)) {
 		return false;
 	}
 
 	try {
+		if (settings?.dateDisplayFormat === "iso" && typeof DateValue === "function" && value instanceof DateValue) {
+			container.textContent = formatDateTimeForDisplay(value.toString(), {
+				dateDisplayFormat: settings.dateDisplayFormat,
+				userTimeFormat: settings.calendarViewSettings?.timeFormat,
+			});
+			return true;
+		}
 		value.renderTo(container, renderContext);
 		if (!container.hasChildNodes() && !container.textContent) {
 			container.textContent = getBasesDisplayString(value);

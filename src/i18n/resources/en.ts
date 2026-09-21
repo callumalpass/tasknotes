@@ -1664,6 +1664,11 @@ export const en: TranslationTree = {
 				},
 			},
 			displayFormatting: {
+				dateFormat: {
+					name: "Date format",
+					description: "Choose how dates appear throughout TaskNotes. Stored dates and custom Bases formulas are unchanged. Time format is set separately.",
+					options: { default: "Default" },
+				},
 				header: "Display formatting",
 				description:
 					"Configure how dates, times, and other data are displayed across the plugin.",

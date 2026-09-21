@@ -1,7 +1,7 @@
 import { TFile, setIcon } from "obsidian";
 import { NoteInfo } from "../types";
 import TaskNotesPlugin from "../main";
-import { formatDateForDisplay } from "../utils/dateUtils";
+import { formatDateTimeForDisplay } from "../utils/dateUtils";
 import { getAllDailyNotes } from "obsidian-daily-notes-interface";
 
 export interface NoteCardOptions {
@@ -99,12 +99,12 @@ export function createNoteCard(
 
 	// Other metadata (date, path) if needed
 	if (opts.showCreatedDate && note.createdDate) {
-		const timeFormat = plugin.settings.calendarViewSettings.timeFormat;
-		const dateFormat = timeFormat === "12" ? "MMM d, yyyy h:mm a" : "MMM d, yyyy HH:mm";
-		const dateStr =
-			note.createdDate.indexOf("T") > 0
-				? formatDateForDisplay(note.createdDate, dateFormat)
-				: note.createdDate;
+		const dateStr = note.createdDate.includes("T")
+			? formatDateTimeForDisplay(note.createdDate, {
+				dateDisplayFormat: plugin.settings.dateDisplayFormat,
+				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
+			})
+			: note.createdDate;
 		contentContainer.createDiv({
 			cls: "note-card__metadata",
 			text: `${plugin.i18n.translate("ui.noteCard.createdLabel")} ${dateStr}`,
@@ -222,12 +222,12 @@ export function updateNoteCard(
 	// Update created date
 	const dateEl = element.querySelector(".note-card__metadata") as HTMLElement;
 	if (dateEl && opts.showCreatedDate && note.createdDate) {
-		const timeFormat = plugin.settings.calendarViewSettings.timeFormat;
-		const dateFormat = timeFormat === "12" ? "MMM d, yyyy h:mm a" : "MMM d, yyyy HH:mm";
-		const dateStr =
-			note.createdDate.indexOf("T") > 0
-				? formatDateForDisplay(note.createdDate, dateFormat)
-				: note.createdDate;
+		const dateStr = note.createdDate.includes("T")
+			? formatDateTimeForDisplay(note.createdDate, {
+				dateDisplayFormat: plugin.settings.dateDisplayFormat,
+				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
+			})
+			: note.createdDate;
 		dateEl.textContent = `${plugin.i18n.translate("ui.noteCard.createdLabel")} ${dateStr}`;
 	}
 

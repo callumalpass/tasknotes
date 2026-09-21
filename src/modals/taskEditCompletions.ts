@@ -2,6 +2,7 @@ import { Menu, setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import {
+	formatDateLabel,
 	formatDateForStorage,
 	generateUTCCalendarDates,
 	getTodayLocal,
@@ -79,7 +80,9 @@ function renderCalendarMonth(
 	const monthLabel = header.createSpan("recurring-calendar__month");
 	const locale = options.plugin.i18n.getCurrentLocale() || "en";
 	const monthFormatter = new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" });
-	monthLabel.textContent = monthFormatter.format(displayDate);
+	monthLabel.textContent = options.plugin.settings.dateDisplayFormat === "iso"
+		? formatDateLabel(displayDate, options.plugin.settings).slice(0, 7)
+		: monthFormatter.format(displayDate);
 	const nextButton = header.createEl("button", {
 		cls: "recurring-calendar__nav",
 		attr: {

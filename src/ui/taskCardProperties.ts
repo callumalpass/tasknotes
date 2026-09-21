@@ -84,6 +84,7 @@ function normalizeICSEventIds(value: unknown): string[] {
 function formatICSEventSummary(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
 	const dateText = icsEvent.start
 		? formatDateTimeForDisplay(icsEvent.start, {
+				dateDisplayFormat: plugin.settings.dateDisplayFormat,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
 			})
 		: "";
@@ -345,6 +346,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	occurrenceDate: (element, value, _task, plugin) => {
 		if (typeof value === "string") {
 			element.textContent = `Occurrence: ${formatDateTimeForDisplay(value, {
+				dateDisplayFormat: plugin.settings.dateDisplayFormat,
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings?.timeFormat,
@@ -409,6 +411,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 				options?.propertyLabels
 			);
 			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
+				dateDisplayFormat: plugin.settings.dateDisplayFormat,
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
@@ -419,6 +422,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		if (typeof value === "string") {
 			const label = getTaskCardPropertyLabel("dateCreated", plugin, options?.propertyLabels);
 			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
+				dateDisplayFormat: plugin.settings.dateDisplayFormat,
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
@@ -429,6 +433,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		if (typeof value === "string") {
 			const label = getTaskCardPropertyLabel("dateModified", plugin, options?.propertyLabels);
 			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
+				dateDisplayFormat: plugin.settings.dateDisplayFormat,
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
@@ -636,7 +641,7 @@ function renderUserProperty(
 		if (containsRichTextLink(stringValue)) {
 			renderTextWithLinks(valueContainer, stringValue, linkServices);
 		} else {
-			valueContainer.textContent = formatUserPropertyValue(value, userField);
+			valueContainer.textContent = formatUserPropertyValue(value, userField, plugin);
 		}
 	} else if (userField.type === "list" && Array.isArray(value)) {
 		const validItems = value.map((item) => extractBasesValue(item)).filter(hasValidValue);
@@ -655,7 +660,7 @@ function renderUserProperty(
 			}
 		});
 	} else {
-		const displayValue = formatUserPropertyValue(value, userField);
+		const displayValue = formatUserPropertyValue(value, userField, plugin);
 		valueContainer.textContent = displayValue.trim() !== "" ? displayValue : "(empty)";
 	}
 }
@@ -700,7 +705,7 @@ function renderPropertyValue(
 		return;
 	}
 
-	if (plugin && renderBasesValue(container, value, plugin.app.renderContext)) {
+	if (plugin && renderBasesValue(container, value, plugin.app.renderContext, plugin.settings)) {
 		return;
 	}
 
@@ -729,6 +734,7 @@ function renderPropertyValue(
 	if (typeof value === "object" && value !== null) {
 		if (value instanceof Date) {
 			displayValue = formatDateTimeForDisplay(value.toISOString(), {
+				dateDisplayFormat: plugin?.settings.dateDisplayFormat,
 				dateFormat: "MMM d, yyyy",
 				timeFormat: "",
 				showTime: false,
@@ -766,7 +772,7 @@ function containsRichTextLink(value: string): boolean {
 	);
 }
 
-function formatUserPropertyValue(value: unknown, userField: UserField): string {
+function formatUserPropertyValue(value: unknown, userField: UserField, plugin: TaskNotesPlugin): string {
 	if (value === null || value === undefined) return "";
 
 	try {
@@ -776,6 +782,7 @@ function formatUserPropertyValue(value: unknown, userField: UserField): string {
 				return stringifyUnknown(value);
 			case "date":
 				return formatDateTimeForDisplay(stringifyUnknown(value), {
+					dateDisplayFormat: plugin.settings.dateDisplayFormat,
 					dateFormat: "MMM d, yyyy",
 					timeFormat: "",
 					showTime: false,
@@ -820,7 +827,7 @@ function renderDueDateProperty(
 	const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
 	const dueLabel = getTaskCardPropertyLabel("due", plugin, propertyLabels);
 	let dueDateText = "";
-	if (isDueToday) {
+	if (isDueToday && plugin.settings.dateDisplayFormat !== "iso") {
 		const timeDisplay = formatDateTimeForDisplay(due, {
 			dateFormat: "",
 			showTime: true,
@@ -832,6 +839,7 @@ function renderDueDateProperty(
 				: tTaskCard(plugin, "dueTodayAt", { label: dueLabel, time: timeDisplay });
 	} else if (isDueOverdue) {
 		const display = formatDateTimeForDisplay(due, {
+			dateDisplayFormat: plugin.settings.dateDisplayFormat,
 			dateFormat: getTaskCardDateFormat(due),
 			showTime: true,
 			userTimeFormat,
@@ -839,6 +847,7 @@ function renderDueDateProperty(
 		dueDateText = tTaskCard(plugin, "dueOverdue", { label: dueLabel, display });
 	} else {
 		const display = formatDateTimeForDisplay(due, {
+			dateDisplayFormat: plugin.settings.dateDisplayFormat,
 			dateFormat: getTaskCardDateFormat(due),
 			showTime: true,
 			userTimeFormat,
@@ -878,7 +887,7 @@ function renderScheduledDateProperty(
 	const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
 	const scheduledLabel = getTaskCardPropertyLabel("scheduled", plugin, propertyLabels);
 	let scheduledDateText = "";
-	if (isScheduledToday) {
+	if (isScheduledToday && plugin.settings.dateDisplayFormat !== "iso") {
 		const timeDisplay = formatDateTimeForDisplay(scheduled, {
 			dateFormat: "",
 			showTime: true,
@@ -893,6 +902,7 @@ function renderScheduledDateProperty(
 					});
 	} else if (isScheduledPast) {
 		const display = formatDateTimeForDisplay(scheduled, {
+			dateDisplayFormat: plugin.settings.dateDisplayFormat,
 			dateFormat: getTaskCardDateFormat(scheduled),
 			showTime: true,
 			userTimeFormat,
@@ -900,6 +910,7 @@ function renderScheduledDateProperty(
 		scheduledDateText = tTaskCard(plugin, "scheduledPast", { label: scheduledLabel, display });
 	} else {
 		const display = formatDateTimeForDisplay(scheduled, {
+			dateDisplayFormat: plugin.settings.dateDisplayFormat,
 			dateFormat: getTaskCardDateFormat(scheduled),
 			showTime: true,
 			userTimeFormat,

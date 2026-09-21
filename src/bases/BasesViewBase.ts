@@ -172,6 +172,8 @@ export abstract class BasesViewBase extends Component {
 	onload(): void {
 		this.setupContainer();
 		this.setupTaskUpdateListener();
+		const settingsListener = this.plugin.emitter.on("settings-changed", () => this.onDataUpdated());
+		this.register(() => this.plugin.emitter.offref(settingsListener));
 		this.setupSelectionHandling();
 		this.updateRelevantPathsCache();
 		void this.render();

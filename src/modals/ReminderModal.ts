@@ -1,7 +1,7 @@
 import { App, Modal, Setting, setIcon, Notice, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder } from "../types";
-import { formatDateForDisplay } from "../utils/dateUtils";
+import { formatDateTimeForDisplay } from "../utils/dateUtils";
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -154,11 +154,11 @@ export class ReminderModal extends Modal {
 		const parts: string[] = [];
 
 		if (this.task.due) {
-			parts.push(`Due: ${formatDateForDisplay(this.task.due)}`);
+			parts.push(`Due: ${this.formatDisplayDate(this.task.due)}`);
 		}
 
 		if (this.task.scheduled) {
-			parts.push(`Scheduled: ${formatDateForDisplay(this.task.scheduled)}`);
+			parts.push(`Scheduled: ${this.formatDisplayDate(this.task.scheduled)}`);
 		}
 
 		return parts.length > 0 ? parts.join(" • ") : null;
@@ -255,13 +255,19 @@ export class ReminderModal extends Modal {
 		});
 	}
 
+	private formatDisplayDate(value: string): string {
+		return formatDateTimeForDisplay(value, {
+			dateDisplayFormat: this.plugin.settings.dateDisplayFormat,
+			userTimeFormat: this.plugin.settings.calendarViewSettings.timeFormat,
+		});
+	}
+
 	private formatReminderDisplayText(reminder: Reminder): string {
 		if (reminder.type === "absolute") {
 			// For absolute reminders, show the full date and time
 			if (reminder.absoluteTime) {
 				try {
-					const date = new Date(reminder.absoluteTime);
-					return `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+					return this.formatDisplayDate(reminder.absoluteTime);
 				} catch {
 					return `At ${reminder.absoluteTime}`;
 				}
@@ -419,10 +425,10 @@ export class ReminderModal extends Modal {
 		new Setting(relativeContainer).setName("Relative to").addDropdown((dropdown) => {
 			const options: Record<string, string> = {};
 			if (this.task.due) {
-				options.due = `Due date (${formatDateForDisplay(this.task.due)})`;
+				options.due = `Due date (${this.formatDisplayDate(this.task.due)})`;
 			}
 			if (this.task.scheduled) {
-				options.scheduled = `Scheduled date (${formatDateForDisplay(this.task.scheduled)})`;
+				options.scheduled = `Scheduled date (${this.formatDisplayDate(this.task.scheduled)})`;
 			}
 
 			if (Object.keys(options).length === 0) {
@@ -620,13 +626,13 @@ export class ReminderModal extends Modal {
 
 	private formatReminderDetails(reminder: Reminder): string {
 		if (reminder.type === "absolute") {
-			return `At ${formatDateForDisplay(reminder.absoluteTime || "")}`;
+			return `At ${this.formatDisplayDate(reminder.absoluteTime || "")}`;
 		} else {
 			const anchor = reminder.relatedTo === "due" ? this.task.due : this.task.scheduled;
 			if (!anchor) {
 				return `Relative to ${reminder.relatedTo} date (not set)`;
 			}
-			return `When ${reminder.relatedTo} date is ${formatDateForDisplay(anchor)}`;
+			return `When ${reminder.relatedTo} date is ${this.formatDisplayDate(anchor)}`;
 		}
 	}
 
@@ -636,7 +642,7 @@ export class ReminderModal extends Modal {
 		}
 
 		if (reminder.type === "absolute") {
-			return `At ${formatDateForDisplay(reminder.absoluteTime || "")}`;
+			return `At ${this.formatDisplayDate(reminder.absoluteTime || "")}`;
 		} else {
 			const anchor = reminder.relatedTo === "due" ? "due date" : "scheduled date";
 			const offset = this.formatOffset(reminder.offset || "");

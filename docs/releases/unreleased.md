@@ -1,5 +1,9 @@
 # TaskNotes - Unreleased
 
+## Added
+
+- Added a date format setting under Appearance → Display formatting. Choose ISO 8601 dates across TaskNotes while keeping the separate 12/24-hour preference. Stored dates and custom Bases formulas are unchanged. See [Appearance settings](https://tasknotes.dev/settings/appearance/). Thanks to @spozzi99 for requesting this in [#2354](https://github.com/callumalpass/tasknotes/issues/2354).
+
 ## Changed
 
 - Rebuilt settings around Obsidian’s native navigation, search, and editable lists. Individual settings are searchable. Ordinary preferences and property triggers use inline groups, while larger editors and advanced filters retain detail pages. See [Settings](https://tasknotes.dev/settings/) for the new layout.

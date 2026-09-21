@@ -396,7 +396,7 @@ export class TaskEditModal extends TaskModal {
 			this.createMetadataItem(
 				metadataContent,
 				this.t("modals.taskEdit.metadata.due"),
-				formatDateTimeForDisplay(this.task.due, { userTimeFormat: timeFormat })
+				formatDateTimeForDisplay(this.task.due, { userTimeFormat: timeFormat, dateDisplayFormat: this.plugin.settings.dateDisplayFormat })
 			);
 		}
 
@@ -405,7 +405,7 @@ export class TaskEditModal extends TaskModal {
 			this.createMetadataItem(
 				metadataContent,
 				this.t("modals.taskEdit.metadata.scheduled"),
-				formatDateTimeForDisplay(this.task.scheduled, { userTimeFormat: timeFormat })
+				formatDateTimeForDisplay(this.task.scheduled, { userTimeFormat: timeFormat, dateDisplayFormat: this.plugin.settings.dateDisplayFormat })
 			);
 		}
 
@@ -414,7 +414,7 @@ export class TaskEditModal extends TaskModal {
 			this.createMetadataItem(
 				metadataContent,
 				this.t("modals.taskEdit.metadata.created"),
-				formatTimestampForDisplay(this.task.dateCreated)
+				formatTimestampForDisplay(this.task.dateCreated, undefined, timeFormat, this.plugin.settings.dateDisplayFormat)
 			);
 		}
 
@@ -423,7 +423,7 @@ export class TaskEditModal extends TaskModal {
 			this.createMetadataItem(
 				metadataContent,
 				this.t("modals.taskEdit.metadata.modified"),
-				formatTimestampForDisplay(this.task.dateModified)
+				formatTimestampForDisplay(this.task.dateModified, undefined, timeFormat, this.plugin.settings.dateDisplayFormat)
 			);
 		}
 

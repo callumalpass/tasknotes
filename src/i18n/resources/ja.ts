@@ -1570,6 +1570,11 @@ export const ja: TranslationTree = {
 				}
 			},
 			displayFormatting: {
+				dateFormat: {
+					name: "日付の表示形式",
+					description: "TaskNotes全体の日付表示を選択します。保存された日付と独自のBases数式は変更されません。時刻の表示形式は別に設定します。",
+					options: { default: "既定" },
+				},
 				header: "表示形式",
 				description: "プラグイン全体での日付、時間、その他のデータの表示方法を設定します。",
 				timeFormat: {

@@ -172,7 +172,7 @@ export function createPropertyEventCard(
 					const valueEl = propertyEl.createSpan({
 						cls: "property-event-card__metadata-value",
 					});
-					renderBasesValue(valueEl, value, plugin.app.renderContext);
+					renderBasesValue(valueEl, value, plugin.app.renderContext, plugin.settings);
 
 					renderedProperties++;
 				}

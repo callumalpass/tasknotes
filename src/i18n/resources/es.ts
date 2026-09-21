@@ -1576,6 +1576,11 @@ export const es: TranslationTree = {
 				}
 			},
 			displayFormatting: {
+				dateFormat: {
+					name: "Formato de fecha",
+					description: "Elige cómo se muestran las fechas en TaskNotes. Las fechas guardadas y las fórmulas personalizadas de Bases no cambian. El formato de hora se configura por separado.",
+					options: { default: "Predeterminado" },
+				},
 				header: "Formato de visualización",
 				description: "Configurar cómo se muestran fechas, horas y otros datos en todo el plugin.",
 				timeFormat: {

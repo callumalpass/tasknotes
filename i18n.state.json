@@ -4100,6 +4100,18 @@
       "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
       "translation": "c3322671b0cc265a47889354fb0031ba8bbf70c2"
     },
+    "settings.appearance.displayFormatting.dateFormat.name": {
+      "source": "94ee8869082873abf458deca86a2b8e3a3091aa0",
+      "translation": "0e4fdd9958183ea106316312279154c47f68d424"
+    },
+    "settings.appearance.displayFormatting.dateFormat.description": {
+      "source": "d9fcc9a3d96733960fc30a0b08f0b56f9e1a6e09",
+      "translation": "bec7e8b9d7580da6f3444d065c58e8087561b030"
+    },
+    "settings.appearance.displayFormatting.dateFormat.options.default": {
+      "source": "808d7dca8a74d84af27a2d6602c3d786de45fe1e",
+      "translation": "2dfa66079d9b7229409430972fd5f1567d78a3b6"
+    },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
       "translation": "2f12ac5f203d6973c1cc45aab3f9b98c26b0374c"
@@ -13749,6 +13761,18 @@
     "settings.appearance.taskFilenames.customTemplate.helpText": {
       "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
       "translation": "e7b8be0869a2e17a9d7d5ddae0f4205f38f31088"
+    },
+    "settings.appearance.displayFormatting.dateFormat.name": {
+      "source": "94ee8869082873abf458deca86a2b8e3a3091aa0",
+      "translation": "03be7f87a6909e1af9dd296d601c62ab91e67358"
+    },
+    "settings.appearance.displayFormatting.dateFormat.description": {
+      "source": "d9fcc9a3d96733960fc30a0b08f0b56f9e1a6e09",
+      "translation": "0d7d89dba3da4d39992c6a8bdfcfb62a1c5d8db5"
+    },
+    "settings.appearance.displayFormatting.dateFormat.options.default": {
+      "source": "808d7dca8a74d84af27a2d6602c3d786de45fe1e",
+      "translation": "ca6b8b7b7abc5c1cb7e576a0c406cedbe1085275"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -23400,6 +23424,18 @@
       "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
       "translation": "9dc2d993c405232749dc6be07ffe2de64db97723"
     },
+    "settings.appearance.displayFormatting.dateFormat.name": {
+      "source": "94ee8869082873abf458deca86a2b8e3a3091aa0",
+      "translation": "cda3f0901f8fa1dd97af38db81f8e2051a9d4f9f"
+    },
+    "settings.appearance.displayFormatting.dateFormat.description": {
+      "source": "d9fcc9a3d96733960fc30a0b08f0b56f9e1a6e09",
+      "translation": "59e192fa89ad1fffaf3b3b45164216ddc8bfb1a2"
+    },
+    "settings.appearance.displayFormatting.dateFormat.options.default": {
+      "source": "808d7dca8a74d84af27a2d6602c3d786de45fe1e",
+      "translation": "4550c68ee1cf772de8a87b27342a4bf241cbf0b3"
+    },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
       "translation": "e08963e7f7b66ff422ec18584276122e81a2f767"
@@ -33049,6 +33085,18 @@
     "settings.appearance.taskFilenames.customTemplate.helpText": {
       "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
       "translation": "e6086e8e251499645622f31c1f1d98150b0f03ed"
+    },
+    "settings.appearance.displayFormatting.dateFormat.name": {
+      "source": "94ee8869082873abf458deca86a2b8e3a3091aa0",
+      "translation": "feb1b8fd1093ab2c14bd73b7e8068d00e8ac5e84"
+    },
+    "settings.appearance.displayFormatting.dateFormat.description": {
+      "source": "d9fcc9a3d96733960fc30a0b08f0b56f9e1a6e09",
+      "translation": "573477af223fba4c43cab3cfbdaa292c8031e9d5"
+    },
+    "settings.appearance.displayFormatting.dateFormat.options.default": {
+      "source": "808d7dca8a74d84af27a2d6602c3d786de45fe1e",
+      "translation": "e73acfa0fdf577967f217a4f26f1a94fcc9ef9da"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -42700,6 +42748,18 @@
       "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
       "translation": "7673f7823448ef314704f58f7e96276c5bb9ab11"
     },
+    "settings.appearance.displayFormatting.dateFormat.name": {
+      "source": "94ee8869082873abf458deca86a2b8e3a3091aa0",
+      "translation": "1498bdf1d79316e31df44294d9f7018e5293e1cd"
+    },
+    "settings.appearance.displayFormatting.dateFormat.description": {
+      "source": "d9fcc9a3d96733960fc30a0b08f0b56f9e1a6e09",
+      "translation": "00a015d75ae48741435796c3275bad3143111a96"
+    },
+    "settings.appearance.displayFormatting.dateFormat.options.default": {
+      "source": "808d7dca8a74d84af27a2d6602c3d786de45fe1e",
+      "translation": "8cf63d61bc596df71e3b1a4a8e3fac119cee3a50"
+    },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
       "translation": "dccf7981339ad4da6aa9e7631e5937c42a479ea0"
@@ -52349,6 +52409,18 @@
     "settings.appearance.taskFilenames.customTemplate.helpText": {
       "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
       "translation": "8dd74a46e0bf77e7bca80b7c62d2452990722e4d"
+    },
+    "settings.appearance.displayFormatting.dateFormat.name": {
+      "source": "94ee8869082873abf458deca86a2b8e3a3091aa0",
+      "translation": "1a1aa8165581dbd7e02d1cc99cd4e06d1463866f"
+    },
+    "settings.appearance.displayFormatting.dateFormat.description": {
+      "source": "d9fcc9a3d96733960fc30a0b08f0b56f9e1a6e09",
+      "translation": "274aa44285ce91886e7077740139c2a61002d910"
+    },
+    "settings.appearance.displayFormatting.dateFormat.options.default": {
+      "source": "808d7dca8a74d84af27a2d6602c3d786de45fe1e",
+      "translation": "d8e00743b1a453a6488119c7f39d986f600e7947"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
@@ -62000,6 +62072,18 @@
       "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
       "translation": "bd77da240bfe5944f18beba87c530ce183d570f6"
     },
+    "settings.appearance.displayFormatting.dateFormat.name": {
+      "source": "94ee8869082873abf458deca86a2b8e3a3091aa0",
+      "translation": "00c4ee39e4c95c24c043576810de99206643c45a"
+    },
+    "settings.appearance.displayFormatting.dateFormat.description": {
+      "source": "d9fcc9a3d96733960fc30a0b08f0b56f9e1a6e09",
+      "translation": "33642b72bee0bf62e1e856b5dd347f015ccb6738"
+    },
+    "settings.appearance.displayFormatting.dateFormat.options.default": {
+      "source": "808d7dca8a74d84af27a2d6602c3d786de45fe1e",
+      "translation": "469631cb165dcbbfea9e747056c25fbccb28c481"
+    },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",
       "translation": "84d93fbf1350c504d14a3769df65d0ba0457d7b5"
@@ -71649,6 +71733,18 @@
     "settings.appearance.taskFilenames.customTemplate.helpText": {
       "source": "73a96f5b68b8a0c7b51e06f9963a226e6d9694bd",
       "translation": "555714be462f091a28f4b95a11a612b7c924fb33"
+    },
+    "settings.appearance.displayFormatting.dateFormat.name": {
+      "source": "94ee8869082873abf458deca86a2b8e3a3091aa0",
+      "translation": "65d46035fa59dbb25df94367e9ecffb31b34e5e9"
+    },
+    "settings.appearance.displayFormatting.dateFormat.description": {
+      "source": "d9fcc9a3d96733960fc30a0b08f0b56f9e1a6e09",
+      "translation": "ff998c52e8df68de5d85d8b79c5947c3aa4cc0cb"
+    },
+    "settings.appearance.displayFormatting.dateFormat.options.default": {
+      "source": "808d7dca8a74d84af27a2d6602c3d786de45fe1e",
+      "translation": "c8d09cf955f59ce8c6e5eed43d7752fbf1ff5001"
     },
     "settings.appearance.displayFormatting.header": {
       "source": "42395f00a299620a56816617144c8aaf872ca355",

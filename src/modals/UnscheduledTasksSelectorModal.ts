@@ -1,5 +1,5 @@
 import { App, FuzzySuggestModal, FuzzyMatch, setIcon } from "obsidian";
-import { format } from "date-fns";
+import { formatDateLabel } from "../utils/dateUtils";
 import { TaskInfo } from "../types";
 import {
 	isPastDate,
@@ -159,13 +159,9 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 		if (task.due) {
 			const dueEl = metaEl.createSpan({ cls: "unscheduled-tasks-selector__due" });
 
-			const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
-			const dueDateStr = hasTimeComponent(task.due)
-				? format(
-						parseDateToLocal(task.due),
-						userTimeFormat === "12" ? "MMM d, h:mm a" : "MMM d, HH:mm"
-					)
-				: format(parseDateToLocal(task.due), "MMM d");
+			const dueDateStr = formatDateLabel(
+				parseDateToLocal(task.due), this.plugin.settings, "MMM d", hasTimeComponent(task.due)
+			);
 
 			if (isPastDate(getDatePart(task.due))) {
 				dueEl.addClass("overdue");

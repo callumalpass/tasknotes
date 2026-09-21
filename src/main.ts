@@ -11,7 +11,6 @@ import {
 
 type Nullable<T> = T | null;
 
-import { format } from "date-fns";
 import {
 	createDailyNote,
 	getDailyNote,
@@ -34,7 +33,7 @@ import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { ProjectSelectModal } from "./modals/ProjectSelectModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
-import { convertUTCToLocalCalendarDate } from "./utils/dateUtils";
+import { formatDateLabel, convertUTCToLocalCalendarDate } from "./utils/dateUtils";
 import { TaskManager } from "./utils/TaskManager";
 import { DependencyCache } from "./utils/DependencyCache";
 import { RequestDeduplicator, PredictivePrefetcher } from "./utils/RequestDeduplicator";
@@ -1243,7 +1242,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Format date for display: convert UTC-anchored date back to local display
 			const displayDate = parseDateToLocal(dateStr);
-			new Notice(`Recurring task ${action} for ${format(displayDate, "MMM d")}`);
+			new Notice(`Recurring task ${action} for ${formatDateLabel(displayDate, this.settings, "MMM d")}`);
 			return updatedTask;
 		} catch (error) {
 			tasknotesLogger.error("Failed to toggle recurring task completion:", {

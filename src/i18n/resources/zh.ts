@@ -1553,6 +1553,11 @@ export const zh: TranslationTree = {
 				}
 			},
 			displayFormatting: {
+				dateFormat: {
+					name: "日期格式",
+					description: "选择 TaskNotes 中的日期显示方式。已存储的日期和自定义 Bases 公式保持不变。时间格式单独设置。",
+					options: { default: "默认" },
+				},
 				header: "显示格式",
 				description: "配置整个插件中日期、时间和其他数据的显示方式。",
 				timeFormat: {

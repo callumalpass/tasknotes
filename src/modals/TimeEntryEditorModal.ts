@@ -2,6 +2,7 @@ import { App, Modal, Notice, Setting, setIcon } from "obsidian";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { TimeEntry, TaskInfo } from "../types";
 import type TaskNotesPlugin from "../main";
+import { formatDateLabel } from "../utils/dateUtils";
 import { TranslationKey } from "../i18n";
 import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
 
@@ -124,7 +125,10 @@ export class TimeEntryEditorModal extends Modal {
 		// Entry header with delete button
 		const headerEl = entryEl.createDiv({ cls: "time-entry-editor-modal__entry-header" });
 
-		const dateStr = new Date(entry.startTime).toLocaleDateString();
+		const date = new Date(entry.startTime);
+		const dateStr = this.plugin.settings.dateDisplayFormat === "iso"
+			? formatDateLabel(date, this.plugin.settings)
+			: date.toLocaleDateString();
 		headerEl.createSpan({
 			cls: "time-entry-editor-modal__entry-date",
 			text: dateStr,

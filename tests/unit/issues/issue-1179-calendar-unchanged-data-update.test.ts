@@ -6,6 +6,7 @@
  */
 
 import { CalendarView } from "../../../src/bases/CalendarView";
+import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 
 type SignatureItem = {
 	path: string;
@@ -52,6 +53,7 @@ function createCalendarViewFixture(
 		},
 		dataUpdateDebounceTimer: null,
 		plugin: {
+			settings: { ...DEFAULT_SETTINGS },
 			fieldMapper: {
 				toUserField: jest.fn((field: string) => FIELD_MAPPING[field] ?? field),
 			},

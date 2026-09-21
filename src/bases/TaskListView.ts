@@ -2901,6 +2901,8 @@ export class TaskListView extends BasesViewBase {
 			: [];
 		return JSON.stringify({
 			visibleProperties: visibleProperties ?? null,
+			dateDisplayFormat: this.plugin.settings.dateDisplayFormat,
+			timeFormat: this.plugin.settings.calendarViewSettings?.timeFormat,
 			propertyLabels,
 			expandedRelationshipFilterMode: cardOptions.expandedRelationshipFilterMode ?? null,
 			targetDate: cardOptions.targetDate?.toISOString().slice(0, 10) ?? null,

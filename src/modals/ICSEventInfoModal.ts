@@ -7,6 +7,7 @@ import { SafeAsync } from "../utils/safeAsync";
 import { TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showNotice } from "../ui/notifications";
+import { formatDateLabel, formatTime } from "../utils/dateUtils";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ICSEventInfoModal" });
 
@@ -63,7 +64,9 @@ export class ICSEventInfoModal extends Modal {
 				? this.icsEvent.start + "T00:00:00"
 				: this.icsEvent.start;
 		const startDate = new Date(startDateStr);
-		let dateText = startDate.toLocaleDateString("en-US", {
+		let dateText = this.plugin.settings.dateDisplayFormat === "iso"
+			? formatDateLabel(startDate, this.plugin.settings)
+			: startDate.toLocaleDateString("en-US", {
 			weekday: "long",
 			year: "numeric",
 			month: "long",
@@ -71,14 +74,14 @@ export class ICSEventInfoModal extends Modal {
 		});
 
 		if (!this.icsEvent.allDay) {
-			dateText += ` at ${startDate.toLocaleTimeString()}`;
+			dateText += ` at ${formatTime(startDate, this.plugin.settings.calendarViewSettings.timeFormat)}`;
 
 			if (this.icsEvent.end) {
 				const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(this.icsEvent.end)
 					? this.icsEvent.end + "T00:00:00"
 					: this.icsEvent.end;
 				const endDate = new Date(endDateStr);
-				dateText += ` - ${endDate.toLocaleTimeString()}`;
+				dateText += ` - ${formatTime(endDate, this.plugin.settings.calendarViewSettings.timeFormat)}`;
 			}
 		}
 

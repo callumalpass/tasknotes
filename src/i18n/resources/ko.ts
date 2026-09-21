@@ -1564,6 +1564,11 @@ export const ko: TranslationTree = {
 				}
 			},
 			displayFormatting: {
+				dateFormat: {
+					name: "날짜 형식",
+					description: "TaskNotes 전체의 날짜 표시 방식을 선택합니다. 저장된 날짜와 사용자 지정 Bases 수식은 변경되지 않습니다. 시간 형식은 별도로 설정합니다.",
+					options: { default: "기본값" },
+				},
 				header: "표시 형식",
 				description: "플러그인 전체에서 날짜, 시간 및 기타 데이터가 표시되는 방식을 설정합니다.",
 				timeFormat: {

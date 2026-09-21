@@ -62,6 +62,20 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 			type: "group",
 			heading: translate("settings.appearance.displayFormatting.header"),
 			items: [
+				ctx.dropdown("dateDisplayFormat", {
+					name: translate("settings.appearance.displayFormatting.dateFormat.name"),
+					desc: translate("settings.appearance.displayFormatting.dateFormat.description"),
+					options: [
+						{ value: "default", label: translate("settings.appearance.displayFormatting.dateFormat.options.default") },
+						{ value: "iso", label: "ISO 8601 (2026-08-23)" },
+					],
+					getValue: () => plugin.settings.dateDisplayFormat,
+					setValue: async (value: string) => {
+						if (value !== "default" && value !== "iso") return;
+						plugin.settings.dateDisplayFormat = value;
+						save();
+					},
+				}),
 				ctx.dropdown("calendarViewSettings.timeFormat", {
 					name: translate("settings.appearance.displayFormatting.timeFormat.name"),
 					desc: translate("settings.appearance.displayFormatting.timeFormat.description"),

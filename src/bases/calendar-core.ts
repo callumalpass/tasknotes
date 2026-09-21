@@ -15,6 +15,7 @@ import {
 	getDatePart,
 	getTimePart,
 	parseDateToLocal,
+	formatDateLabel,
 	formatDateForStorage,
 	parseDateToUTC,
 	getTodayLocal,
@@ -2208,7 +2209,7 @@ export function attachDailyNoteHeaderLink(
 
 	const linkEl =
 		headerCell.querySelector<HTMLElement>(".fc-col-header-cell-cushion") || headerCell;
-	const title = `Go to ${format(date, "d MMMM yyyy")}`;
+	const title = `Go to ${formatDateLabel(date, plugin.settings, "d MMMM yyyy")}`;
 
 	linkEl.setAttribute("data-navlink", "");
 	linkEl.setAttribute("title", title);

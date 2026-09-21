@@ -15,7 +15,7 @@ import { TimeBlock, DailyNoteFrontmatter, TaskInfo } from "../types";
 import { generateTimeblockId } from "../utils/helpers";
 import { openFileSelector } from "./FileSelectorModal";
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
-import { parseDateAsLocal } from "../utils/dateUtils";
+import { formatDateLabel, parseDateAsLocal } from "../utils/dateUtils";
 import { colorValueToInputValue, normalizeThemeColor } from "../utils/themeColors";
 import { configureThemeColorInput } from "../settings/components/CardComponent";
 import { modifyVaultFile } from "../services/VaultMutationService";
@@ -137,7 +137,7 @@ export class TimeblockCreationModal extends Modal {
 		});
 		// Parse the date string to get a proper date object for display (using local for UI)
 		const dateObj = parseDateAsLocal(this.options.date);
-		dateDisplay.createSpan({ text: dateObj.toLocaleDateString() });
+		dateDisplay.createSpan({ text: this.plugin.settings.dateDisplayFormat === "iso" ? formatDateLabel(dateObj, this.plugin.settings) : dateObj.toLocaleDateString() });
 
 		// Title field
 		new Setting(contentEl)

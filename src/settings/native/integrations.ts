@@ -1,5 +1,6 @@
 import { Notice, Platform, type SettingDefinitionItem, type SettingDefinitionPage } from "obsidian";
 import { SettingsContext } from "./SettingsContext";
+import { formatDateLabel } from "../../utils/dateUtils";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { loadAPIEndpoints } from "../../api/loadAPIEndpoints";
 import { GOOGLE_CALENDAR_CONSTANTS } from "../../services/constants";
@@ -26,6 +27,8 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		});
 	const notePrefix = "settings.integrations.calendarSubscriptions";
 	const exportPrefix = "settings.integrations.autoExport";
+	const formatExportTime = (date: Date | null | undefined): string =>
+		date ? formatDateLabel(date, plugin.settings, undefined, true) : "—";
 	const googlePrefix = "settings.integrations.googleCalendarExport";
 	return [
 		{
@@ -341,7 +344,7 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 					render: (setting) => {
 						setting.setDesc(
 							plugin.autoExportService
-								? `${t(`${exportPrefix}.status.lastExport`, { time: plugin.autoExportService.getLastExportTime()?.toLocaleString() ?? "—" })}\n${t(`${exportPrefix}.status.nextExport`, { time: plugin.autoExportService.getNextExportTime()?.toLocaleString() ?? "—" })}`
+								? `${t(`${exportPrefix}.status.lastExport`, { time: formatExportTime(plugin.autoExportService.getLastExportTime()) })}\n${t(`${exportPrefix}.status.nextExport`, { time: formatExportTime(plugin.autoExportService.getNextExportTime()) })}`
 								: t(`${exportPrefix}.status.serviceNotInitialized`)
 						);
 					},

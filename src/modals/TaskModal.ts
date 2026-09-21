@@ -1048,6 +1048,7 @@ export abstract class TaskModal extends Modal {
 				translate: (key, params) => this.t(key, params),
 				formatDate: (value) =>
 					formatDateTimeForDisplay(value, {
+						dateDisplayFormat: this.plugin.settings.dateDisplayFormat,
 						dateFormat: value.startsWith(`${new Date().getFullYear()}-`)
 							? "MMM d"
 							: "MMM d, yyyy",
