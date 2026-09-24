@@ -301,6 +301,8 @@ export const ko: TranslationTree = {
 			newTask: "새 작업",
 			addCard: "+ 카드 추가",
 			noTasks: "작업 없음",
+			collapseSwimlane: "스윔레인 접기",
+			expandSwimlane: "스윔레인 펼치기",
 			uncategorized: "미분류",
 			noProject: "프로젝트 없음",
 			reorder: {
@@ -3032,6 +3034,7 @@ export const ko: TranslationTree = {
 			clearRecurrence: "반복 지우기",
 			customRecurrence: "사용자 지정 반복...",
 			createSubtask: "하위 작업 만들기",
+			more: "더 보기",
 			dependencies: {
 				title: "종속성",
 				addBlockedBy: "\"차단 원인\" 추가...",
@@ -3348,6 +3351,10 @@ export const ko: TranslationTree = {
 			scheduledTodayAt: "{label}: 오늘 {time}",
 			scheduledPast: "{label}: {display} (지난)",
 			scheduledLabel: "{label}: {display}",
+			relativeYesterday: "어제",
+			relativeTomorrow: "내일",
+			relativeDaysAgo: "{count}일 전",
+			relativeDayAtTime: "{day} {time}",
 			loadingDependencies: "종속성 로딩 중...",
 			blockingEmpty: "종속 작업 없음",
 			blockingLoadError: "종속성 로드 실패",

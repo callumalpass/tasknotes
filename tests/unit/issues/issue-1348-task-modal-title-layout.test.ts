@@ -83,7 +83,7 @@ describe("Issue #1348: task modal title layout", () => {
 		expect(css).toContain(".tasknotes-plugin .title-input");
 		expect(css).toContain(".tasknotes-plugin .title-input-detailed");
 		expect(css).toContain("max-height: calc((var(--font-ui-large) * 1.4 * 3)");
-		expect(css).toContain(".tn-task-modal__wide-text-setting .setting-item-control");
-		expect(css).toContain("flex: 1 1 65%;");
+		expect(css).toContain(".details-container .setting-item > .setting-item-control");
+		expect(css).toContain("flex: 0 0 35%;");
 	});
 });

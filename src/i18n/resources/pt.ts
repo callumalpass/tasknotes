@@ -301,6 +301,8 @@ export const pt: TranslationTree = {
 			newTask: "Nova tarefa",
 			addCard: "+ Adicionar um cartão",
 			noTasks: "Sem tarefas",
+			collapseSwimlane: "Recolher raia",
+			expandSwimlane: "Expandir raia",
 			uncategorized: "Sem categoria",
 			noProject: "Sem Projeto",
 			reorder: {
@@ -3056,6 +3058,7 @@ export const pt: TranslationTree = {
 			clearRecurrence: "Limpar recorrência",
 			customRecurrence: "Recorrência personalizada...",
 			createSubtask: "Criar subtarefa",
+			more: "Mais",
 			dependencies: {
 				title: "Dependências",
 				addBlockedBy: "Adicionar \"bloqueada por\"...",
@@ -3375,6 +3378,10 @@ export const pt: TranslationTree = {
 			scheduledTodayAt: "{label}: Hoje às {time}",
 			scheduledPast: "{label}: {display} (passado)",
 			scheduledLabel: "{label}: {display}",
+			relativeYesterday: "Ontem",
+			relativeTomorrow: "Amanhã",
+			relativeDaysAgo: "há {count} dias",
+			relativeDayAtTime: "{day} às {time}",
 			loadingDependencies: "Carregando dependências...",
 			blockingEmpty: "Nenhuma tarefa dependente",
 			blockingLoadError: "Falha ao carregar dependências",

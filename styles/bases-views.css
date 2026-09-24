@@ -495,6 +495,35 @@ body.is-mobile .tn-bases-kanban-column {
     text-overflow: ellipsis;
 }
 
+.kanban-view__swimlane-toggle {
+    padding: 2px;
+    margin: -2px 0 0 -2px;
+    color: var(--tn-text-muted);
+}
+
+.kanban-view__swimlane-toggle svg {
+    transition: transform var(--tn-transition-fast);
+}
+
+.kanban-view__swimlane-row.is-collapsed .kanban-view__swimlane-toggle svg {
+    transform: rotate(-90deg);
+}
+
+/* Collapsed swimlanes keep their cells as drop targets but hide the cards. */
+.kanban-view__swimlane-row.is-collapsed .kanban-view__swimlane-label {
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+}
+
+.kanban-view__swimlane-row.is-collapsed .kanban-view__swimlane-column {
+    min-height: 0;
+}
+
+.kanban-view__swimlane-row.is-collapsed .kanban-view__tasks-container {
+    display: none;
+}
+
 /* Swimlane task count */
 .kanban-view__swimlane-count {
     font-size: var(--tn-font-size-sm);

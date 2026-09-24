@@ -536,9 +536,11 @@
 
 /* ADDITIONAL FIELDS - SETTINGS STYLE */
 
+/* Fixed label column so every field's control starts at the same edge. */
 .tasknotes-plugin .details-container .setting-item {
     border: none;
     padding: var(--size-4-2) 0;
+    gap: var(--size-4-3);
 }
 
 .tasknotes-plugin .details-container .setting-item-name {
@@ -565,21 +567,20 @@
     outline: none;
 }
 
-.tasknotes-plugin .details-container .tn-task-modal__wide-text-setting {
-    gap: var(--size-4-3);
-}
-
-.tasknotes-plugin .details-container .tn-task-modal__wide-text-setting .setting-item-info {
-    flex: 1 1 35%;
+.tasknotes-plugin .details-container .setting-item > .setting-item-info {
+    flex: 0 0 35%;
     min-width: 7rem;
+    margin-inline-end: 0;
 }
 
-.tasknotes-plugin .details-container .tn-task-modal__wide-text-setting .setting-item-control {
-    flex: 1 1 65%;
+.tasknotes-plugin .details-container .setting-item > .setting-item-control {
+    flex: 1 1 0;
     min-width: min(100%, 14rem);
 }
 
-.tasknotes-plugin .details-container .tn-task-modal__wide-text-setting .setting-item-control input {
+.tasknotes-plugin .details-container .setting-item-control input[type="text"],
+.tasknotes-plugin .details-container .setting-item-control input[type="number"],
+.tasknotes-plugin .details-container .setting-item-control input:not([type]) {
     width: 100%;
 }
 
@@ -615,6 +616,18 @@
 
 .tasknotes-plugin .tn-task-modal__archive-button:focus-visible {
 	box-shadow: 0 0 0 3px var(--background-modifier-border-focus);
+}
+
+/* Delete asks for confirmation, so it reads as a quiet destructive action. */
+.tasknotes-plugin .tn-task-modal__delete-button {
+    background: transparent;
+    box-shadow: none;
+    color: var(--text-error);
+}
+
+.tasknotes-plugin .tn-task-modal__delete-button:hover {
+    background: color-mix(in srgb, var(--text-error) 10%, transparent);
+    color: var(--text-error);
 }
 
 /* MODAL BUTTON CONTAINER - Native Obsidian style */

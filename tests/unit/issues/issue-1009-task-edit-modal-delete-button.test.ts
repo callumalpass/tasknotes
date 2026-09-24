@@ -122,7 +122,7 @@ describe('Issue #1009 - Edit Task modal delete action', () => {
 
 		expect(deleteButton).not.toBeNull();
 		expect(deleteButton?.textContent).toBe('Delete');
-		expect(deleteButton?.classList.contains('mod-warning')).toBe(true);
+		expect(deleteButton?.classList.contains('mod-warning')).toBe(false);
 	});
 
 	it('confirms before deleting the task file from the modal', async () => {

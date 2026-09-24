@@ -688,7 +688,7 @@ export class TaskEditModal extends TaskModal {
 					},
 				},
 				{
-					className: "mod-warning tn-task-modal__archive-button",
+					className: "tn-task-modal__archive-button",
 					text: this.task.archived
 						? this.t("modals.taskEdit.buttons.unarchive")
 						: this.t("modals.taskEdit.buttons.archive"),
@@ -697,7 +697,7 @@ export class TaskEditModal extends TaskModal {
 					},
 				},
 				{
-					className: "mod-warning tn-task-modal__delete-button",
+					className: "tn-task-modal__delete-button",
 					text: this.t("contextMenus.task.delete"),
 					onClick: () => {
 						void this.deleteTask();

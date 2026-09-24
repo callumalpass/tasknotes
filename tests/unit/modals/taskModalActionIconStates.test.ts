@@ -118,14 +118,18 @@ describe("taskModalActionIconStates", () => {
 		expect(actionBar.querySelectorAll(".action-icon__value")).toHaveLength(6);
 		expect(
 			actionBar.querySelector('[data-type="due-date"] .action-icon__value')?.textContent
-		).toBe("Formatted 2026-05-21");
+		).toBe("modals.task.tooltips.dueValue:value=Formatted 2026-05-21");
 		expect(priority.querySelector(".action-icon__value")?.textContent).toBe("Review <draft>");
 		expect(priority.querySelector("draft")).toBeNull();
 		expect(priority.querySelector(".icon")).toBe(originalIcon);
 
 		updateTaskModalActionIconStates(actionBar, context, createState());
 		for (const label of actionBar.querySelectorAll(".action-icon__value")) {
-			expect(label.textContent).toBe("");
+			// Status and priority always name their current value; other chips clear.
+			const dataType = label.parentElement?.dataset.type;
+			const expected =
+				dataType === "status" ? "Open" : dataType === "priority" ? "Normal" : "";
+			expect(label.textContent).toBe(expected);
 			expect(label.getAttribute("aria-hidden")).toBe("true");
 		}
 	});

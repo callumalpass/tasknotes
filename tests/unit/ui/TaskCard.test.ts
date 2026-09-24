@@ -720,6 +720,7 @@ describe('TaskCard Component', () => {
         },
       });
       mockPlugin.fieldMapper.lookupMappingKey = jest.fn(() => null);
+      mockPlugin.openTagsPane = jest.fn();
       const tagCard = createTaskCard(tagTask, mockPlugin, ['file.tags']);
       container.appendChild(tagCard);
 

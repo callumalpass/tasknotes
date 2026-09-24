@@ -107,6 +107,8 @@ export class TaskCreationModal extends TaskModal {
 	private nlInput: HTMLTextAreaElement = undefined as unknown as HTMLTextAreaElement; // Legacy - keeping for compatibility
 	private nlMarkdownEditor: EmbeddableMarkdownEditor | null = null;
 	private nlPreviewContainer: HTMLElement = undefined as unknown as HTMLElement;
+	// Parsed natural language values shown in the action bar before they are applied on save.
+	private nlPreviewParsed: NLParsedTaskData | null = null;
 	private nlButtonContainer: HTMLElement = undefined as unknown as HTMLElement;
 	private nlpSuggest: NLPSuggest | null = null; // Will be replaced with CodeMirror autocomplete
 
@@ -358,6 +360,8 @@ export class TaskCreationModal extends TaskModal {
 
 		const parsed = this.nlParser.parseInput(input);
 		const previewData = this.nlParser.getPreviewData(parsed);
+		this.nlPreviewParsed = parsed;
+		this.updateIconStates();
 
 		if (previewData.length > 0 && parsed.title) {
 			this.nlPreviewContainer.empty();
@@ -382,7 +386,35 @@ export class TaskCreationModal extends TaskModal {
 		}
 	}
 
+	protected getPendingActionIconValues() {
+		const parsed = this.nlPreviewParsed;
+		// Mirrors handleSave: the text is only parsed on save while no title has been entered.
+		if (!parsed || this.title.trim()) return {};
+		return {
+			...(parsed.status ? { status: parsed.status } : {}),
+			...(parsed.priority ? { priority: parsed.priority } : {}),
+			...(parsed.dueDate
+				? {
+						dueDate: parsed.dueTime
+							? combineDateAndTime(parsed.dueDate, parsed.dueTime)
+							: parsed.dueDate,
+					}
+				: {}),
+			...(parsed.scheduledDate
+				? {
+						scheduledDate: parsed.scheduledTime
+							? combineDateAndTime(parsed.scheduledDate, parsed.scheduledTime)
+							: parsed.scheduledDate,
+					}
+				: {}),
+		};
+	}
+
 	private clearNaturalLanguagePreview(): void {
+		if (this.nlPreviewParsed) {
+			this.nlPreviewParsed = null;
+			this.updateIconStates();
+		}
 		if (this.nlPreviewContainer) {
 			this.nlPreviewContainer.empty();
 			this.nlPreviewContainer.classList.remove("nl-preview-container--visible");

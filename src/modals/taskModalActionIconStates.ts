@@ -70,7 +70,14 @@ function updateDateIcon(
 ): void {
 	const icon = getActionIcon(actionBar, dataType);
 	if (!icon) return;
-	updateActionValue(icon, value ? (context.formatDate?.(value) ?? value) : "");
+	const displayValue = value ? (context.formatDate?.(value) ?? value) : "";
+	// Due and scheduled share similar icons, so the chip names which date it holds.
+	updateActionValue(
+		icon,
+		displayValue
+			? context.translate(tooltipKeys.activeTooltipKey, { value: displayValue })
+			: ""
+	);
 
 	if (value) {
 		icon.classList.add("has-value");
@@ -137,7 +144,8 @@ function updateConfiguredValueIcon(
 		color?: string;
 	}
 ): void {
-	updateActionValue(icon, options.isActive ? options.label : "");
+	// Status and priority always have a value, so always name it; accent marks non-defaults.
+	updateActionValue(icon, options.label);
 	if (options.isActive) {
 		icon.classList.add("has-value");
 		setTooltip(icon, context.translate(options.activeTooltipKey, { value: options.label }), {

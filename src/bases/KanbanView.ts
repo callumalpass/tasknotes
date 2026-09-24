@@ -282,6 +282,8 @@ export class KanbanView extends BasesViewBase {
 	private wipLimits: Record<string, number> = {};
 	private swimLaneOrders: Record<string, string[]> = {};
 	private hideEmptySwimLanes = false;
+	// Collapse choices made in this session. Lanes without an entry start collapsed when empty.
+	private swimLaneCollapseOverrides = new Map<string, boolean>();
 	private cardLayout: TaskCardOptions["layout"] = "default";
 	private configLoaded = false; // Track if we've successfully loaded config
 	/**
@@ -1658,15 +1660,16 @@ export class KanbanView extends BasesViewBase {
 			// Swimlane label cell
 			const labelCell = row.createDiv({ cls: "kanban-view__swimlane-label" });
 
-			// Add swimlane title and count
-			const titleEl = labelCell.createDiv({ cls: "kanban-view__swimlane-title" });
-			this.renderGroupTitleWrapper(titleEl, swimLaneKey, true);
-
 			// Count total tasks in this swimlane
 			const totalTasks = Array.from(columns.values()).reduce(
 				(sum, tasks) => sum + tasks.length,
 				0
 			);
+			this.renderSwimLaneToggle(row, labelCell, swimLaneKey, totalTasks);
+
+			// Add swimlane title and count
+			const titleEl = labelCell.createDiv({ cls: "kanban-view__swimlane-title" });
+			this.renderGroupTitleWrapper(titleEl, swimLaneKey, true);
 			labelCell.createDiv({
 				cls: "kanban-view__swimlane-count",
 				text: `${totalTasks}`,
@@ -4107,6 +4110,38 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		return title;
+	}
+
+	private renderSwimLaneToggle(
+		row: HTMLElement,
+		labelCell: HTMLElement,
+		swimLaneKey: string,
+		totalTasks: number
+	): void {
+		const toggle = labelCell.createEl("button", {
+			cls: "kanban-view__swimlane-toggle clickable-icon",
+			attr: { type: "button" },
+		});
+		setIcon(toggle, "chevron-down");
+
+		const applyState = (collapsed: boolean) => {
+			row.toggleClass("is-collapsed", collapsed);
+			toggle.setAttribute("aria-expanded", String(!collapsed));
+			toggle.setAttribute(
+				"aria-label",
+				this.plugin.i18n.translate(
+					collapsed ? "views.kanban.expandSwimlane" : "views.kanban.collapseSwimlane"
+				)
+			);
+		};
+
+		applyState(this.swimLaneCollapseOverrides.get(swimLaneKey) ?? totalTasks === 0);
+		toggle.addEventListener("click", (event) => {
+			event.stopPropagation();
+			const collapsed = !row.hasClass("is-collapsed");
+			this.swimLaneCollapseOverrides.set(swimLaneKey, collapsed);
+			applyState(collapsed);
+		});
 	}
 
 	private renderGroupTitleWrapper(

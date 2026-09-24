@@ -198,15 +198,6 @@ export class TaskContextMenu {
 			this.addPriorityOptions(submenu, task, plugin);
 		});
 
-		// Tags submenu
-		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.tags"));
-			item.setIcon("tags");
-
-			const submenu = getSubmenu(item);
-			this.addTagOptions(submenu, task, plugin);
-		});
-
 		this.menu.addSeparator();
 
 		// Due Date submenu
@@ -369,6 +360,112 @@ export class TaskContextMenu {
 
 		this.menu.addSeparator();
 
+		// Time Tracking
+		this.menu.addItem((item) => {
+			const activeSession = plugin.getActiveTimeSession(task);
+			item.setTitle(
+				activeSession
+					? this.t("contextMenus.task.stopTimeTracking")
+					: this.t("contextMenus.task.startTimeTracking")
+			);
+			item.setIcon(activeSession ? "pause" : "play");
+			item.onClick(async () => {
+				const activeSession = plugin.getActiveTimeSession(task);
+				if (activeSession) {
+					await plugin.stopTimeTracking(task);
+				} else {
+					await plugin.startTimeTracking(task);
+				}
+				this.options.onUpdate?.();
+			});
+		});
+
+		this.menu.addSeparator();
+
+		// Edit Task
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("modals.taskEdit.title"));
+			item.setIcon("pencil");
+			item.onClick(() => {
+				void plugin.openTaskEditModal(task, () => {
+					this.options.onUpdate?.();
+				});
+			});
+		});
+
+		// Open Note
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.openNote"));
+			item.setIcon("file-text");
+			item.onClick(() => {
+				const file = plugin.app.vault.getAbstractFileByPath(task.path);
+				if (file instanceof TFile) {
+					void plugin.app.workspace.getLeaf(false).openFile(file);
+				}
+			});
+		});
+
+		this.menu.addSeparator();
+
+		// Less frequent actions live under "More" to keep the top level short.
+		const mainMenu = this.menu;
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.more"));
+			item.setIcon("more-horizontal");
+			this.menu = getSubmenu(item);
+		});
+
+		// Recurrence submenu
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.recurrence"));
+			item.setIcon("refresh-ccw");
+
+			const submenu = getSubmenu(item);
+			const currentRecurrence =
+				typeof task.recurrence === "string" ? task.recurrence : undefined;
+			this.addRecurrenceOptions(
+				submenu,
+				currentRecurrence,
+				async (value: string | null) => {
+					try {
+						await plugin.updateTaskProperty(task, "recurrence", value || undefined);
+						this.options.onUpdate?.();
+					} catch (error) {
+						const errorMessage = error instanceof Error ? error.message : String(error);
+						tasknotesLogger.error("Error updating task recurrence:", {
+							category: "persistence",
+							operation: "updating-task-recurrence",
+							details: { taskPath: task.path },
+							error: errorMessage,
+						});
+						new Notice(
+							this.t("contextMenus.task.notices.updateRecurrenceFailure", {
+								message: errorMessage,
+							})
+						);
+					}
+				},
+				plugin
+			);
+
+			if (currentRecurrence) {
+				this.addOccurrencePolicyOptions(submenu, task, plugin);
+			}
+		});
+
+		this.menu.addSeparator();
+
+		// Tags submenu
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.tags"));
+			item.setIcon("tags");
+
+			const submenu = getSubmenu(item);
+			this.addTagOptions(submenu, task, plugin);
+		});
+
+		this.menu.addSeparator();
+
 		this.menu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.task.dependencies.title"));
 			item.setIcon("git-branch");
@@ -390,25 +487,21 @@ export class TaskContextMenu {
 
 		this.menu.addSeparator();
 
-		// Time Tracking
+		// Create subtask
 		this.menu.addItem((item) => {
-			const activeSession = plugin.getActiveTimeSession(task);
-			item.setTitle(
-				activeSession
-					? this.t("contextMenus.task.stopTimeTracking")
-					: this.t("contextMenus.task.startTimeTracking")
-			);
-			item.setIcon(activeSession ? "pause" : "play");
-			item.onClick(async () => {
-				const activeSession = plugin.getActiveTimeSession(task);
-				if (activeSession) {
-					await plugin.stopTimeTracking(task);
-				} else {
-					await plugin.startTimeTracking(task);
+			item.setTitle(this.t("contextMenus.task.createSubtask"));
+			item.setIcon("plus");
+			item.onClick(() => {
+				const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
+				if (taskFile instanceof TFile) {
+					plugin.openTaskCreationModal({
+						...buildSubtaskCreationPrePopulatedValues(plugin, task, taskFile),
+					});
 				}
-				this.options.onUpdate?.();
 			});
 		});
+
+		this.menu.addSeparator();
 
 		// Edit Time Entries
 		this.menu.addItem((item) => {
@@ -438,59 +531,7 @@ export class TaskContextMenu {
 			});
 		}
 
-		// Archive/Unarchive
-		this.menu.addItem((item) => {
-			item.setTitle(
-				task.archived
-					? this.t("contextMenus.task.unarchive")
-					: this.t("contextMenus.task.archive")
-			);
-			item.setIcon(task.archived ? "archive-restore" : "archive");
-			item.onClick(async () => {
-				try {
-					await plugin.toggleTaskArchive(task);
-					this.options.onUpdate?.();
-				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
-					tasknotesLogger.error("Error toggling task archive:", {
-						category: "persistence",
-						operation: "toggling-task-archive",
-						details: { taskPath: task.path },
-						error: errorMessage,
-					});
-					new Notice(
-						this.t("contextMenus.task.notices.archiveFailure", {
-							message: errorMessage,
-						})
-					);
-				}
-			});
-		});
-
 		this.menu.addSeparator();
-
-		// Edit Task
-		this.menu.addItem((item) => {
-			item.setTitle(this.t("modals.taskEdit.title"));
-			item.setIcon("pencil");
-			item.onClick(() => {
-				void plugin.openTaskEditModal(task, () => {
-					this.options.onUpdate?.();
-				});
-			});
-		});
-
-		// Open Note
-		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.openNote"));
-			item.setIcon("file-text");
-			item.onClick(() => {
-				const file = plugin.app.vault.getAbstractFileByPath(task.path);
-				if (file instanceof TFile) {
-					void plugin.app.workspace.getLeaf(false).openFile(file);
-				}
-			});
-		});
 
 		this.menu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.task.openNoteInNewTab"));
@@ -791,59 +832,36 @@ export class TaskContextMenu {
 
 		this.menu.addSeparator();
 
-		// Recurrence submenu
+		// Archive/Unarchive
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.recurrence"));
-			item.setIcon("refresh-ccw");
-
-			const submenu = getSubmenu(item);
-			const currentRecurrence =
-				typeof task.recurrence === "string" ? task.recurrence : undefined;
-			this.addRecurrenceOptions(
-				submenu,
-				currentRecurrence,
-				async (value: string | null) => {
-					try {
-						await plugin.updateTaskProperty(task, "recurrence", value || undefined);
-						this.options.onUpdate?.();
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						tasknotesLogger.error("Error updating task recurrence:", {
-							category: "persistence",
-							operation: "updating-task-recurrence",
-							details: { taskPath: task.path },
-							error: errorMessage,
-						});
-						new Notice(
-							this.t("contextMenus.task.notices.updateRecurrenceFailure", {
-								message: errorMessage,
-							})
-						);
-					}
-				},
-				plugin
+			item.setTitle(
+				task.archived
+					? this.t("contextMenus.task.unarchive")
+					: this.t("contextMenus.task.archive")
 			);
-
-			if (currentRecurrence) {
-				this.addOccurrencePolicyOptions(submenu, task, plugin);
-			}
-		});
-
-		this.menu.addSeparator();
-
-		// Create subtask
-		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.createSubtask"));
-			item.setIcon("plus");
-			item.onClick(() => {
-				const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
-				if (taskFile instanceof TFile) {
-					plugin.openTaskCreationModal({
-						...buildSubtaskCreationPrePopulatedValues(plugin, task, taskFile),
+			item.setIcon(task.archived ? "archive-restore" : "archive");
+			item.onClick(async () => {
+				try {
+					await plugin.toggleTaskArchive(task);
+					this.options.onUpdate?.();
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					tasknotesLogger.error("Error toggling task archive:", {
+						category: "persistence",
+						operation: "toggling-task-archive",
+						details: { taskPath: task.path },
+						error: errorMessage,
 					});
+					new Notice(
+						this.t("contextMenus.task.notices.archiveFailure", {
+							message: errorMessage,
+						})
+					);
 				}
 			});
 		});
+
+		this.menu = mainMenu;
 
 		this.addMobileDismissOption();
 

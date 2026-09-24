@@ -8,6 +8,7 @@ import type { TaskInfo } from "../../../src/types";
 type MockMenuItem = {
 	setTitle?: jest.Mock;
 	onClick?: jest.Mock;
+	setSubmenu?: jest.Mock;
 };
 
 type MockMenu = {
@@ -101,7 +102,7 @@ describe("Issue #144: task context menu opens notes in a new tab", () => {
 		menuMock.mockClear();
 	});
 
-	it("adds an Open note in new tab action to the task context menu", async () => {
+	it("adds an Open note in new tab action under More in the task context menu", async () => {
 		const plugin = createPlugin();
 		await plugin.app.vault.create("Tasks/open-new-tab.md", "");
 
@@ -112,7 +113,9 @@ describe("Issue #144: task context menu opens notes in a new tab", () => {
 		});
 
 		const menu = getTopLevelMenu();
-		const newTabItem = findTopLevelTitle(menu, "Open note in new tab");
+		const moreItem = findTopLevelTitle(menu, "More");
+		const moreMenu = moreItem?.setSubmenu?.mock.results[0].value as MockMenu;
+		const newTabItem = findTopLevelTitle(moreMenu, "Open note in new tab");
 
 		expect(newTabItem).toBeDefined();
 

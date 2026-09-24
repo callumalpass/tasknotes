@@ -154,6 +154,15 @@ function createOccurrenceMetadataPill(config: RenderTaskCardMetadataConfig): HTM
 	return pill;
 }
 
+/** The card heading already shows the title, so the file name would repeat it. */
+function isTitleProperty(propertyId: string, plugin: TaskNotesPlugin): boolean {
+	return (
+		propertyId === "file.name" ||
+		propertyId === "file.basename" ||
+		isPropertyForField(propertyId, "title", plugin)
+	);
+}
+
 export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HTMLElement[] {
 	const { metadataLine, task, plugin, visibleProperties, propertyOptions = {} } = config;
 	metadataLine.empty();
@@ -168,7 +177,8 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 	for (const propertyId of propertiesToShow) {
 		if (
 			isPropertyForField(propertyId, "status", plugin) ||
-			isPropertyForField(propertyId, "priority", plugin)
+			isPropertyForField(propertyId, "priority", plugin) ||
+			isTitleProperty(propertyId, plugin)
 		) {
 			continue;
 		}

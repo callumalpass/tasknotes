@@ -301,6 +301,8 @@ export const ru: TranslationTree = {
 			newTask: "Новая задача",
 			addCard: "+ Добавить карточку",
 			noTasks: "Нет задач",
+			collapseSwimlane: "Свернуть дорожку",
+			expandSwimlane: "Развернуть дорожку",
 			uncategorized: "Без категории",
 			noProject: "Без проекта",
 			reorder: {
@@ -3052,6 +3054,7 @@ export const ru: TranslationTree = {
 			clearRecurrence: "Очистить повторение",
 			customRecurrence: "Пользовательское повторение...",
 			createSubtask: "Создать подзадачу",
+			more: "Ещё",
 			dependencies: {
 				title: "Зависимости",
 				addBlockedBy: "Добавить «заблокирована»…",
@@ -3368,6 +3371,10 @@ export const ru: TranslationTree = {
 			scheduledTodayAt: "{label}: Сегодня в {time}",
 			scheduledPast: "{label}: {display} (в прошлом)",
 			scheduledLabel: "{label}: {display}",
+			relativeYesterday: "Вчера",
+			relativeTomorrow: "Завтра",
+			relativeDaysAgo: "{count} дн. назад",
+			relativeDayAtTime: "{day} в {time}",
 			loadingDependencies: "Загрузка зависимостей…",
 			blockingEmpty: "Нет зависимых задач",
 			blockingLoadError: "Не удалось загрузить зависимости",

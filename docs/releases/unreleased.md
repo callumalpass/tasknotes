@@ -8,6 +8,13 @@
 
 - Rebuilt settings around Obsidian’s native navigation, search, and editable lists. Individual settings are searchable. Ordinary preferences and property triggers use inline groups, while larger editors and advanced filters retain detail pages. See [Settings](https://tasknotes.dev/settings/) for the new layout.
 - TaskNotes now requires Obsidian 1.13.1 or newer.
+- Task cards show dates within a week of today as relative days, such as "Due: Yesterday", "Due: 3 days ago" or "Scheduled: Monday". The full date appears on hover. Past scheduled dates no longer carry a "(past)" suffix. Choosing ISO dates keeps absolute dates.
+- Task cards no longer repeat the task title as a "file name" property, and tags shown through Bases use the same tag style and identifying-tag hiding as other tags. New vaults hide the identifying tag on cards by default.
+- Kanban swimlanes can be collapsed from their label. Empty swimlanes start collapsed.
+- The task dialog labels its date buttons ("Due: …", "Scheduled: …") and always shows the current status and priority. While typing natural language in the create dialog, the buttons show the values that will be saved.
+- In the edit dialog, fields line up in one column, Archive is a plain button, and Delete is a quieter text button.
+- The task context menu keeps status, priority, dates, reminders, time tracking, edit and open at the top level. Other actions are under "More".
+- Calendar year view shows the first event on each day instead of collapsing every day into "+1 more". The refresh button only appears when external calendars are connected, and the custom day-count view button has a tooltip.
 
 ## Fixed
 

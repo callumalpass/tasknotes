@@ -1242,6 +1242,10 @@ export class CalendarView extends BasesViewBase {
 		// Determine initial date
 		const initialDate = this._recreateTargetDate ?? this.determineInitialDate(taskNotes);
 
+		const dateDisplayOptions = getCalendarDateDisplayOptions(
+			this.plugin.settings.dateDisplayFormat
+		);
+
 		// Build calendar options
 		const calendarOptions: CalendarOptions = {
 			plugins: [
@@ -1254,7 +1258,10 @@ export class CalendarView extends BasesViewBase {
 			initialView: this.viewOptions.calendarView,
 			initialDate: initialDate,
 			headerToolbar: {
-				left: "prev,next today refreshCalendars",
+				// Refresh only reloads external calendars, so it is hidden when none are connected.
+				left: this.hasExternalCalendars()
+					? "prev,next today refreshCalendars"
+					: "prev,next today",
 				center: "title",
 				right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek",
 			},
@@ -1291,14 +1298,20 @@ export class CalendarView extends BasesViewBase {
 					},
 				},
 			},
-			...getCalendarDateDisplayOptions(this.plugin.settings.dateDisplayFormat),
+			...dateDisplayOptions,
 			views: {
-				...getCalendarDateDisplayOptions(this.plugin.settings.dateDisplayFormat).views,
+				...dateDisplayOptions.views,
 				timeGridCustom: {
 					type: "timeGrid",
 					duration: { days: this.viewOptions.customDayCount },
 					buttonText: this.plugin.i18n.translate(
 						"views.basesCalendar.buttonText.customDays",
+						{
+							count: this.viewOptions.customDayCount.toString(),
+						}
+					),
+					buttonHint: this.plugin.i18n.translate(
+						"views.basesCalendar.hints.customDays",
 						{
 							count: this.viewOptions.customDayCount.toString(),
 						}
@@ -1496,6 +1509,14 @@ export class CalendarView extends BasesViewBase {
 		void handleDateTitleClick(date, this.plugin, {
 			createIfMissing: this.viewOptions.createDailyNotesFromDateLinks,
 		});
+	}
+
+	private hasExternalCalendars(): boolean {
+		return (
+			(this.plugin.icsSubscriptionService?.getSubscriptions().length ?? 0) > 0 ||
+			(this.plugin.googleCalendarService?.getAvailableCalendars().length ?? 0) > 0 ||
+			(this.plugin.microsoftCalendarService?.getAvailableCalendars().length ?? 0) > 0
+		);
 	}
 
 	private async refreshExternalCalendars(): Promise<void> {

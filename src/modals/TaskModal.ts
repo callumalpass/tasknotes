@@ -64,7 +64,10 @@ import {
 	createTaskModalActionIcons,
 	type TaskModalActionIconSpec,
 } from "./taskModalActionBar";
-import { updateTaskModalActionIconStates } from "./taskModalActionIconStates";
+import {
+	type TaskModalActionIconState,
+	updateTaskModalActionIconStates,
+} from "./taskModalActionIconStates";
 import {
 	buildTaskModalActionIconState,
 	createTaskModalActionMenuContext,
@@ -1055,11 +1058,21 @@ export abstract class TaskModal extends Modal {
 						userTimeFormat: this.plugin.settings.calendarViewSettings.timeFormat,
 					}),
 			},
-			buildTaskModalActionIconState(actionMenuState, {
-				statusConfigs: this.plugin.settings.customStatuses || [],
-				priorityConfigs: this.plugin.settings.customPriorities || [],
-			})
+			{
+				...buildTaskModalActionIconState(actionMenuState, {
+					statusConfigs: this.plugin.settings.customStatuses || [],
+					priorityConfigs: this.plugin.settings.customPriorities || [],
+				}),
+				...this.getPendingActionIconValues(),
+			}
 		);
+	}
+
+	/** Values not yet applied to the form that the action bar should already show. */
+	protected getPendingActionIconValues(): Partial<
+		Pick<TaskModalActionIconState, "status" | "priority" | "dueDate" | "scheduledDate">
+	> {
+		return {};
 	}
 
 	protected focusTitleInput(): void {

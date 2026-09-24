@@ -254,7 +254,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	archiveFolder: "TaskNotes/Archive",
 	taskTag: "task",
 	taskIdentificationMethod: "tag", // Default to tag-based identification
-	hideIdentifyingTagsInCards: false, // Default to showing all tags (backward compatibility)
+	hideIdentifyingTagsInCards: true, // The identifying tag is on every task, so cards hide it by default
 	hideIdentifyingTagsMode: "all", // Default to existing exact + hierarchical hiding behavior
 	taskPropertyName: "",
 	taskPropertyValue: "",

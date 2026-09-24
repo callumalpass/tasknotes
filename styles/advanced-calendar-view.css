@@ -976,6 +976,25 @@ body.is-mobile .advanced-calendar-view.advanced-calendar-view--list .fc-scroller
 
 /* Fix today styling specifically for multi-month (year) view */
 
+/* Year cells are short. FullCalendar always limits their events by height, so a
+   full-size day number and wrapping titles left room for nothing but "+1 more". */
+.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day-number {
+    padding: 1px 5px;
+    margin: 2px;
+    line-height: 18px;
+}
+
+.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-event,
+.advanced-calendar-view .fc-multimonth-daygrid .fc-event-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-event .fc-event-time {
+    display: none;
+}
+
 /* Timegrid (week/day view) today column - use subtle accent instead of FullCalendar default yellow */
 /* Must match FullCalendar's specificity: .fc .fc-timegrid-col.fc-day-today */
 .advanced-calendar-view .fc .fc-timegrid-col.fc-day-today {

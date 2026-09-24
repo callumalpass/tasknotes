@@ -301,6 +301,8 @@ export const zh: TranslationTree = {
 			newTask: "新任务",
 			addCard: "+ 添加卡片",
 			noTasks: "没有任务",
+			collapseSwimlane: "折叠泳道",
+			expandSwimlane: "展开泳道",
 			uncategorized: "未分类",
 			noProject: "无项目",
 			reorder: {
@@ -3032,6 +3034,7 @@ export const zh: TranslationTree = {
 			clearRecurrence: "清除重复",
 			customRecurrence: "自定义重复...",
 			createSubtask: "创建子任务",
+			more: "更多",
 			dependencies: {
 				title: "依赖关系",
 				addBlockedBy: "添加\"被阻塞\"…",
@@ -3348,6 +3351,10 @@ export const zh: TranslationTree = {
 			scheduledTodayAt: "{label}: 今天 {time}",
 			scheduledPast: "{label}: {display}（过期）",
 			scheduledLabel: "{label}: {display}",
+			relativeYesterday: "昨天",
+			relativeTomorrow: "明天",
+			relativeDaysAgo: "{count}天前",
+			relativeDayAtTime: "{day} {time}",
 			loadingDependencies: "正在加载依赖…",
 			blockingEmpty: "没有依赖的任务",
 			blockingLoadError: "无法加载依赖",

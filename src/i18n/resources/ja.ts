@@ -301,6 +301,8 @@ export const ja: TranslationTree = {
 			newTask: "新しいタスク",
 			addCard: "+ カードを追加",
 			noTasks: "タスクなし",
+			collapseSwimlane: "スイムレーンを折りたたむ",
+			expandSwimlane: "スイムレーンを展開",
 			uncategorized: "未分類",
 			noProject: "プロジェクトなし",
 			reorder: {
@@ -3050,6 +3052,7 @@ export const ja: TranslationTree = {
 			clearRecurrence: "繰り返しをクリア",
 			customRecurrence: "カスタム繰り返し...",
 			createSubtask: "サブタスクを作成",
+			more: "その他",
 			dependencies: {
 				title: "依存関係",
 				addBlockedBy: "「ブロック元」を追加…",
@@ -3366,6 +3369,10 @@ export const ja: TranslationTree = {
 			scheduledTodayAt: "{label}: 今日 {time}",
 			scheduledPast: "{label}: {display} (過去)",
 			scheduledLabel: "{label}: {display}",
+			relativeYesterday: "昨日",
+			relativeTomorrow: "明日",
+			relativeDaysAgo: "{count}日前",
+			relativeDayAtTime: "{day} {time}",
 			loadingDependencies: "依存関係を読み込み中…",
 			blockingEmpty: "依存タスクはありません",
 			blockingLoadError: "依存関係の読み込みに失敗しました",
