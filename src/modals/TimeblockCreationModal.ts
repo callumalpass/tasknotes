@@ -491,8 +491,10 @@ export class TimeblockCreationModal extends Modal {
 				(selectedTask) => {
 					if (!selectedTask) return;
 
-					this.titleInput.value = selectedTask.title || "";
-					this.validateForm();
+					if (!this.titleInput.value.trim()) {
+						this.titleInput.value = selectedTask.title || "";
+						this.validateForm();
+					}
 
 					const taskFile = this.app.vault.getAbstractFileByPath(selectedTask.path);
 					if (taskFile) {
