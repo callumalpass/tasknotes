@@ -341,6 +341,12 @@ export async function initializeHTTPAPI(plugin: TaskNotesPlugin): Promise<void> 
 		plugin.pomodoroService.setWebhookNotifier(plugin.apiService);
 		await plugin.apiService.start();
 		showNotice(`TaskNotes API started on port ${plugin.apiService.getPort()}`);
+		if (plugin.apiService.didGenerateAuthToken()) {
+			showNotice(
+				"TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients.",
+				15000
+			);
+		}
 	} catch (error) {
 		tasknotesLogger.error("Failed to initialize HTTP API:", {
 			category: "provider",

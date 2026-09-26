@@ -96,6 +96,8 @@ Export filters can omit archived tasks, completed tasks, tasks without due dates
 
 HTTP API settings control the local server lifecycle, listening port, and request authentication token.
 
+The authentication token is stored in Obsidian Secret Storage on this device rather than in `data.json`, so each synced device has its own token. See [HTTP API](../HTTP_API.md#authentication) for client setup.
+
 Changes to API enablement or port require an Obsidian restart to take effect.
 
 !!! warning

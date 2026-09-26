@@ -62,6 +62,12 @@ import { createI18nService, I18nService } from "./i18n";
 import { OAuthService } from "./services/OAuthService";
 import { OAuthSecretStore } from "./services/OAuthSecretStore";
 import { migrateLegacyOAuthData, stripLegacyOAuthData } from "./services/oauthSecretMigration";
+import {
+	loadDeviceLocalSettings,
+	persistDeviceLocalSettings,
+	stripDeviceLocalSettings,
+	type DeviceLocalSettings,
+} from "./settings/deviceLocalSettings";
 import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
@@ -203,6 +209,7 @@ export default class TaskNotesPlugin extends Plugin {
 	oauthService: OAuthService;
 	oauthSecretStore: OAuthSecretStore;
 	private oauthSecretStorageReady = false;
+	private deviceLocalStorageReady = false;
 
 	// Google Calendar service
 	googleCalendarService: GoogleCalendarService;
@@ -684,9 +691,7 @@ export default class TaskNotesPlugin extends Plugin {
 		return pluginDataFileExists(this);
 	}
 
-	async loadPluginDataForSafeWrite(
-		operation: string
-	): Promise<Record<string, unknown> | null> {
+	async loadPluginDataForSafeWrite(operation: string): Promise<Record<string, unknown> | null> {
 		const loadedData = (await this.loadData()) as Record<string, unknown> | null | undefined;
 		if (
 			(loadedData === null || loadedData === undefined) &&
@@ -755,19 +760,27 @@ export default class TaskNotesPlugin extends Plugin {
 		let loadedData = await this.loadSettingsData();
 		this.oauthSecretStore ??= new OAuthSecretStore(this.app.secretStorage);
 		this.oauthSecretStorageReady = false;
+		this.deviceLocalStorageReady = false;
+		let deviceLocal: DeviceLocalSettings | null = null;
 
 		if (!this.settingsLoadCompromised) {
 			const migration = migrateLegacyOAuthData(loadedData, this.oauthSecretStore);
-			if (migration.changed && migration.data) {
-				await super.saveData(migration.data);
+			// Copy values from earlier versions to device storage before data.json drops them.
+			deviceLocal = loadDeviceLocalSettings(this.app, migration.data);
+			const sanitized = migration.data && stripDeviceLocalSettings(migration.data);
+			if ((migration.changed || sanitized !== migration.data) && sanitized) {
+				await super.saveData(sanitized);
 			}
-			loadedData = migration.data;
+			loadedData = sanitized;
 			this.oauthSecretStorageReady = true;
+			this.deviceLocalStorageReady = true;
 		}
 
 		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData(loadedData);
+		if (deviceLocal) Object.assign(settings, deviceLocal);
 		this.settings = settings;
-		this.shouldCreateStarterNoteOnStartup = !settings.lastSeenVersion;
+		// Release bookkeeping is per device, so only a missing data.json marks a new install.
+		this.shouldCreateStarterNoteOnStartup = !loadedData && !settings.lastSeenVersion;
 
 		if (shouldPersistMigratedSettings) {
 			// Save the migrated settings to include new field mappings (non-blocking)
@@ -790,13 +803,17 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	async saveData(data: unknown): Promise<void> {
-		const sanitizedData =
-			this.oauthSecretStorageReady &&
-			typeof data === "object" &&
-			data !== null &&
-			!Array.isArray(data)
-				? stripLegacyOAuthData(data as Record<string, unknown>)
-				: data;
+		let sanitizedData = data;
+		if (typeof data === "object" && data !== null && !Array.isArray(data)) {
+			let record = data as Record<string, unknown>;
+			if (this.deviceLocalStorageReady) {
+				record = persistDeviceLocalSettings(this.app, record);
+			}
+			if (this.oauthSecretStorageReady) {
+				record = stripLegacyOAuthData(record);
+			}
+			sanitizedData = record;
+		}
 		await super.saveData(sanitizedData);
 	}
 
@@ -1236,9 +1253,10 @@ export default class TaskNotesPlugin extends Plugin {
 				targetDate
 			);
 			// Task cards still represent the recurring parent, not the occurrence note.
-			const updatedTask = result.path === task.path
-				? result
-				: (await this.cacheManager.getTaskInfo(task.path)) || task;
+			const updatedTask =
+				result.path === task.path
+					? result
+					: (await this.cacheManager.getTaskInfo(task.path)) || task;
 
 			const dateStr = formatDateForStorage(targetDate);
 			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);
@@ -1246,7 +1264,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Format date for display: convert UTC-anchored date back to local display
 			const displayDate = parseDateToLocal(dateStr);
-			new Notice(`Recurring task ${action} for ${formatDateLabel(displayDate, this.settings, "MMM d")}`);
+			new Notice(
+				`Recurring task ${action} for ${formatDateLabel(displayDate, this.settings, "MMM d")}`
+			);
 			return updatedTask;
 		} catch (error) {
 			tasknotesLogger.error("Failed to toggle recurring task completion:", {

@@ -292,6 +292,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 	}
 
 	private starting: Promise<void> | null = null;
+	private generatedAuthToken = false;
 
 	async start(): Promise<void> {
 		if (this.starting) return this.starting;
@@ -309,15 +310,14 @@ export class HTTPAPIService implements IWebhookNotifier {
 		if (!Platform.isDesktop || !Platform.isDesktopApp)
 			throw new Error("The HTTP API is only available in the desktop app.");
 		if (!this.plugin.settings.apiAuthToken) {
-			const token = btoa(
-				String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))
-			)
+			const token = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))
 				.replace(/\+/g, "-")
 				.replace(/\//g, "_")
 				.replace(/=+$/g, "");
 			this.plugin.settings.apiAuthToken = token;
 			try {
 				await this.plugin.saveSettings();
+				this.generatedAuthToken = true;
 			} catch (error) {
 				// A retry must persist a credential, not reuse an unsaved one.
 				if (this.plugin.settings.apiAuthToken === token) {
@@ -384,6 +384,11 @@ export class HTTPAPIService implements IWebhookNotifier {
 
 	isRunning(): boolean {
 		return this.server?.listening === true;
+	}
+
+	/** True once this service has created and saved a token for this device. */
+	didGenerateAuthToken(): boolean {
+		return this.generatedAuthToken;
 	}
 
 	getPort(): number {

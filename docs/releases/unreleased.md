@@ -4,8 +4,13 @@
 
 - Added a date format setting under Appearance → Display formatting. Choose ISO 8601 dates across TaskNotes while keeping the separate 12/24-hour preference. Stored dates and custom Bases formulas are unchanged. See [Appearance settings](https://tasknotes.dev/settings/appearance/). Thanks to @spozzi99 for requesting this in [#2354](https://github.com/callumalpass/tasknotes/issues/2354).
 
+## Security
+
+- (#2345) The HTTP API token is now stored in Obsidian Secret Storage on each device instead of in `data.json`, so `data.json` can be kept in git or shared without exposing it. Existing tokens move automatically. Each device now has its own token: a synced device that starts TaskNotes after the token has left `data.json` generates a new one and shows a notice; copy it into that device's API and MCP clients. See [HTTP API](https://tasknotes.dev/HTTP_API/#authentication). Thanks to @Oriery for requesting this.
+
 ## Changed
 
+- (#2345) The last-seen and last-notified release versions are now remembered per device instead of in `data.json`, so opening Obsidian after an update no longer changes `data.json`. Thanks to @Oriery.
 - Rebuilt settings around Obsidian’s native navigation, search, and editable lists. Individual settings are searchable. Ordinary preferences and property triggers use inline groups, while larger editors and advanced filters retain detail pages. See [Settings](https://tasknotes.dev/settings/) for the new layout.
 - TaskNotes now requires Obsidian 1.13.1 or newer.
 - This beta includes the fixes released in [4.13.2](https://github.com/callumalpass/tasknotes/releases/tag/4.13.2), [4.13.3](https://github.com/callumalpass/tasknotes/releases/tag/4.13.3), [4.13.4](https://github.com/callumalpass/tasknotes/releases/tag/4.13.4), [4.13.5](https://github.com/callumalpass/tasknotes/releases/tag/4.13.5), and [4.13.6](https://github.com/callumalpass/tasknotes/releases/tag/4.13.6).

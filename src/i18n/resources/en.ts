@@ -1668,7 +1668,8 @@ export const en: TranslationTree = {
 			displayFormatting: {
 				dateFormat: {
 					name: "Date format",
-					description: "Choose how dates appear throughout TaskNotes. Stored dates and custom Bases formulas are unchanged. Time format is set separately.",
+					description:
+						"Choose how dates appear throughout TaskNotes. Stored dates and custom Bases formulas are unchanged. Time format is set separately.",
 					options: { default: "Default" },
 				},
 				header: "Display formatting",
@@ -2176,7 +2177,8 @@ export const en: TranslationTree = {
 				},
 				requireDueDate: {
 					name: "Require due date",
-					description: "When enabled, only tasks with a due date are included in ICS exports.",
+					description:
+						"When enabled, only tasks with a due date are included in ICS exports.",
 				},
 				requireScheduledDate: {
 					name: "Require scheduled date",
@@ -2345,7 +2347,8 @@ export const en: TranslationTree = {
 				},
 				authToken: {
 					name: "API authentication token",
-					description: "TaskNotes token, not your AI provider's API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client's bearer authentication settings. Update clients whenever this token changes.",
+					description:
+						"TaskNotes token, not your AI provider's API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client's bearer authentication settings. Update clients whenever this token changes. The token is stored securely on this device and is not saved in data.json, so each synced device has its own token.",
 					placeholder: "your-secret-token",
 				},
 				mcp: {
@@ -3487,8 +3490,7 @@ export const en: TranslationTree = {
 				templateNotFound: "Task body template not found: {path}",
 				templateReadError: "Error reading task body template: {template}",
 				occurrenceTemplateNotFound: "Occurrence note template not found: {path}",
-				occurrenceTemplateReadError:
-					"Error reading occurrence note template: {template}",
+				occurrenceTemplateReadError: "Error reading occurrence note template: {template}",
 				moveTaskFailed: "Failed to move {operation} task: {error}",
 			},
 		},

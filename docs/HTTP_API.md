@@ -25,7 +25,8 @@ Default port is `8080`.
 Authentication is required for both HTTP API and MCP requests.
 
 - Send `Authorization: Bearer <token>` using the token in Integrations settings.
-- If `apiAuthToken` is empty at startup, TaskNotes generates and saves a token before starting the server.
+- If the token is empty at startup, TaskNotes generates and saves a token before starting the server and shows a notice asking you to update your clients.
+- The token is stored in Obsidian Secret Storage on each device, not in TaskNotes' `data.json`. Each device that runs the HTTP API has its own token, and syncing or committing `data.json` does not share it. When upgrading from TaskNotes 4.x, an existing token in `data.json` moves to Secret Storage automatically; a synced device that starts after the token has been removed from `data.json` generates a new one.
 - Clearing the token does not enable unauthenticated access; requests are rejected until a token is configured or generated at the next server start.
 - Existing clients that omitted authentication must be updated to send the token.
 
