@@ -259,7 +259,7 @@ export class BatchContextMenu {
 		for (const priority of priorityOptions) {
 			submenu.addItem((item) => {
 				item.setTitle(priority.label);
-				item.setIcon("star");
+				item.setIcon(priority.icon || "star");
 				item.onClick(async () => {
 					await this.batchUpdateProperty("priority", priority.value);
 				});

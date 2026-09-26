@@ -29,8 +29,8 @@ export class PriorityContextMenu {
 			this.menu.addItem((item) => {
 				let title = priority.label;
 
-				// Use consistent icon for all items
-				item.setIcon("star");
+				// Preview the priority's own icon, if it has one
+				item.setIcon(priority.icon || "star");
 
 				// Highlight current selection with visual indicator
 				if (priority.value === this.options.currentValue) {

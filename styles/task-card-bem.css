@@ -1040,6 +1040,8 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
 
 /* Priority dot with icon mode - uses Lucide icons from theme */
 .tasknotes-plugin .task-card__priority-dot--icon {
+    width: 18px;
+    height: 18px;
     border-radius: 0;
     background-color: transparent;
     display: inline-flex;
@@ -1059,8 +1061,9 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
 }
 
 .tasknotes-plugin .task-card__priority-dot--icon svg {
-    width: 16px;
-    height: 16px;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
     color: var(--current-priority-color, var(--priority-color, var(--tn-text-muted)));
     stroke-width: 2;
 }
