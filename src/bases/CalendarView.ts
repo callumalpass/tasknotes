@@ -2,6 +2,7 @@ import TaskNotesPlugin from "../main";
 import { createElementInDocument } from "../utils/documentDom";
 import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
+import { installCanvasTimeGridScaleCorrection } from "./calendarCanvasScale";
 import type { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import type { TimeblockCreationResult } from "../modals/TimeblockCreationModal";
@@ -438,6 +439,8 @@ export class CalendarView extends BasesViewBase {
 	type = "tasknotesCalendar";
 	calendar: Calendar | null = null; // Made public for factory access
 	private calendarEl: HTMLElement | null = null;
+	private releaseCanvasTimeGridScaleCorrection: (() => void) | null = null;
+	private canvasZoomObserver: MutationObserver | null = null;
 	private currentTasks: TaskInfo[] = [];
 	private basesEntryByPath: Map<string, BasesEntryWithGetValue> = new Map(); // Map task path to Bases entry for enrichment
 	private basesSortIndexByPath = new Map<string, number>();
@@ -604,6 +607,8 @@ export class CalendarView extends BasesViewBase {
 		this._previousConfigSnapshot = this.getConfigSnapshot();
 		this._previousDataSignature = this.getDataSignature();
 		this._previousControllerViewName = this.getControllerViewName();
+		// Install before FullCalendar creates its first time-grid slat coordinates.
+		this.releaseCanvasTimeGridScaleCorrection = installCanvasTimeGridScaleCorrection();
 		// Call parent onload which sets up container and listeners
 		super.onload();
 	}
@@ -1411,6 +1416,7 @@ export class CalendarView extends BasesViewBase {
 		// Create calendar
 		this.calendar = new Calendar(this.calendarEl, calendarOptions);
 		this.calendar.render();
+		this.observeCanvasZoom();
 		this._recreateTargetDate = null;
 		this.applyLayoutClasses();
 
@@ -1652,6 +1658,29 @@ export class CalendarView extends BasesViewBase {
 				});
 			}
 		});
+	}
+
+	private observeCanvasZoom(): void {
+		this.canvasZoomObserver?.disconnect();
+		const canvas = this.containerEl.closest(".canvas");
+		const win = this.containerEl.ownerDocument.defaultView;
+		if (!canvas || !win?.MutationObserver) return;
+
+		const getScale = (): number => {
+			const slat = this.calendarEl?.querySelector<HTMLElement>(".fc-timegrid-slot-lane");
+			return slat?.offsetHeight
+				? slat.getBoundingClientRect().height / slat.offsetHeight
+				: 1;
+		};
+		let lastScale = getScale();
+		this.canvasZoomObserver = new win.MutationObserver(() => {
+			const scale = getScale();
+			if (Math.abs(scale - lastScale) > 0.0001) {
+				lastScale = scale;
+				this.onResize();
+			}
+		});
+		this.canvasZoomObserver.observe(canvas, { attributes: true, attributeFilter: ["style"] });
 	}
 
 	private canUpdateCalendarSize(): boolean {
@@ -3033,6 +3062,10 @@ export class CalendarView extends BasesViewBase {
 			this.calendar = null;
 		}
 
+		this.canvasZoomObserver?.disconnect();
+		this.canvasZoomObserver = null;
+		this.releaseCanvasTimeGridScaleCorrection?.();
+		this.releaseCanvasTimeGridScaleCorrection = null;
 		this.calendarEl = null;
 		this.currentTasks = [];
 	}
