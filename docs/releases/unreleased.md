@@ -8,6 +8,7 @@
 
 - Rebuilt settings around Obsidian’s native navigation, search, and editable lists. Individual settings are searchable. Ordinary preferences and property triggers use inline groups, while larger editors and advanced filters retain detail pages. See [Settings](https://tasknotes.dev/settings/) for the new layout.
 - TaskNotes now requires Obsidian 1.13.1 or newer.
+- This beta includes the fixes released in [4.13.2](https://github.com/callumalpass/tasknotes/releases/tag/4.13.2), [4.13.3](https://github.com/callumalpass/tasknotes/releases/tag/4.13.3), [4.13.4](https://github.com/callumalpass/tasknotes/releases/tag/4.13.4), [4.13.5](https://github.com/callumalpass/tasknotes/releases/tag/4.13.5), and [4.13.6](https://github.com/callumalpass/tasknotes/releases/tag/4.13.6).
 - Task cards show dates within a week of today as relative days, such as "Due: Yesterday", "Due: 3 days ago" or "Scheduled: Monday". The full date appears on hover. Past scheduled dates no longer carry a "(past)" suffix. Choosing ISO dates keeps absolute dates.
 - Task cards no longer repeat the task title as a "file name" property, and tags shown through Bases use the same tag style and identifying-tag hiding as other tags. New vaults hide the identifying tag on cards by default.
 - Kanban swimlanes can be collapsed from their label. Empty swimlanes start collapsed.
@@ -19,6 +20,9 @@
 ## Fixed
 
 - Fixed task dialogs falling back to plain text inputs when opened without an active note, including from release notes or in an empty vault.
+- Fixed generated recurrence and dependency link targets when the TaskNotes type uses a name other than `task`.
+- Improved mdbase upgrades from TaskNotes v4, including older generated formatting and retries after interrupted updates. New collections use a dedicated membership property without claiming bibliographic `type` fields; existing custom membership keys are preserved.
+- TaskNotes now bundles the same portable task contract as TaskNotes App and preserves customized contract/schema resources rather than replacing them automatically.
 
 <!--
 
@@ -51,9 +55,3 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
-
-## Fixed
-
-- Fixed generated recurrence and dependency link targets when the TaskNotes type uses a name other than `task`.
-- Improved mdbase upgrades from TaskNotes v4, including older generated formatting and retries after interrupted updates. New collections use a dedicated membership property without claiming bibliographic `type` fields; existing custom membership keys are preserved.
-- TaskNotes now bundles the same portable task contract as TaskNotes App and preserves customized contract/schema resources rather than replacing them automatically.
