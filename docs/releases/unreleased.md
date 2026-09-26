@@ -34,6 +34,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
-- (#2369) Aligned time-grid events and the current-time indicator with their time slots when a Calendar Base is embedded in a zoomed Canvas. Thanks to @rotzd for reporting this.
 - (#2370) Fixed duplicate entries in the task modal's Blocked by list when dependency cards load concurrently. Thanks to @sandrahalling for reporting this.
-- (#2367) Adding tasks to a timeblock no longer replaces an existing title. An empty title still defaults to the first selected task. Thanks to @m4to-3pe for reporting this.
