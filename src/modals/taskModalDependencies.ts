@@ -146,6 +146,8 @@ export function removeDependencyItemAtIndex(
 	return items.filter((_, index) => index !== indexToRemove);
 }
 
+const dependencyListRenderVersions = new WeakMap<HTMLElement, number>();
+
 export async function renderDependencyList({
 	plugin,
 	listEl,
@@ -158,14 +160,16 @@ export async function renderDependencyList({
 		return;
 	}
 
-	listEl.empty();
-	if (items.length === 0) {
-		return;
-	}
+	const version = (dependencyListRenderVersions.get(listEl) ?? 0) + 1;
+	dependencyListRenderVersions.set(listEl, version);
+	// Build off-DOM so concurrent renders cannot interleave rows in the visible list.
+	const rows = listEl.cloneNode(false) as HTMLElement;
 
 	for (const [index, item] of items.entries()) {
+		if (dependencyListRenderVersions.get(listEl) !== version) return;
+
 		const hasResolvedTaskPath = Boolean(item.path && !item.unresolved);
-		const itemEl = listEl.createDiv({
+		const itemEl = rows.createDiv({
 			cls: hasResolvedTaskPath
 				? "task-project-item task-project-item--task-card"
 				: "task-project-item",
@@ -187,6 +191,7 @@ export async function renderDependencyList({
 
 		if (item.path && !item.unresolved) {
 			await renderResolvedDependency(plugin, contentEl, item, linkServices);
+			if (dependencyListRenderVersions.get(listEl) !== version) return;
 		} else {
 			renderUnresolvedDependency(contentEl, item);
 		}
@@ -203,6 +208,10 @@ export async function renderDependencyList({
 			event.stopPropagation();
 			onRemove(index);
 		});
+	}
+
+	if (dependencyListRenderVersions.get(listEl) === version) {
+		listEl.replaceChildren(...rows.childNodes);
 	}
 }
 
