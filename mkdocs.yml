@@ -17,6 +17,7 @@ nav:
           - Core concepts: core-concepts.md
           - Adopt TaskNotes in an existing vault: getting-started/existing-vault.md
           - Mobile guide: getting-started/mobile.md
+          - Upgrade from v4 to v5: migration-v4-to-v5.md
           - Migrate from v3 to v4: migration-v3-to-v4.md
     - Guides:
           - Task workflows:

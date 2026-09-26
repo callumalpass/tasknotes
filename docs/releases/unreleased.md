@@ -2,6 +2,7 @@
 
 ## Added
 
+- Added an [upgrade guide for TaskNotes v4 to v5](https://tasknotes.dev/migration-v4-to-v5/) covering first-launch changes, synced devices, the reorganized settings, and returning to v4.
 - Added a date format setting under Appearance → Display formatting. Choose ISO 8601 dates across TaskNotes while keeping the separate 12/24-hour preference. Stored dates and custom Bases formulas are unchanged. See [Appearance settings](https://tasknotes.dev/settings/appearance/). Thanks to @spozzi99 for requesting this in [#2354](https://github.com/callumalpass/tasknotes/issues/2354).
 
 ## Security

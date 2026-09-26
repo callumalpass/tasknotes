@@ -65,6 +65,10 @@ Use [Core Concepts](core-concepts.md) to understand the data model, [Features](f
     <span class="card__title">Companion Plugins</span>
     <span class="card__desc">Optional plugins such as Canvas Bases and TaskNotes Workflows that build on TaskNotes</span>
   </a>
+  <a class="card" href="/migration-v4-to-v5/">
+    <span class="card__title">Upgrade Guide</span>
+    <span class="card__desc">Upgrading from TaskNotes v4 to v5</span>
+  </a>
   <a class="card" href="/migration-v3-to-v4/">
     <span class="card__title">Migration Guide</span>
     <span class="card__desc">Upgrading from TaskNotes v3 to v4</span>
