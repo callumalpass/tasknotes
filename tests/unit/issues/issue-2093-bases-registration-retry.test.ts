@@ -18,7 +18,7 @@ jest.mock("../../../src/bases/registration", () => {
 });
 
 type MockPlugin = {
-	settings: { enableBases: boolean; enableDebugLogging?: boolean };
+	settings: { enableDebugLogging?: boolean };
 	app: {
 		internalPlugins: {
 			getEnabledPluginById: jest.Mock;
@@ -35,7 +35,7 @@ type MockPlugin = {
 
 function createPlugin(): MockPlugin {
 	return {
-		settings: { enableBases: true },
+		settings: {},
 		app: {
 			internalPlugins: {
 				getEnabledPluginById: jest.fn(() => null),
@@ -97,9 +97,15 @@ describe("issue #2093 - Bases registration helper result", () => {
 		plugin.registerBasesView.mockReturnValue(false);
 
 		await expect(registerBasesTaskList(plugin as never)).resolves.toBe(false);
-		expect(plugin.registerBasesView).toHaveBeenCalledWith("tasknotesTaskList", expect.anything());
+		expect(plugin.registerBasesView).toHaveBeenCalledWith(
+			"tasknotesTaskList",
+			expect.anything()
+		);
 		expect(plugin.registerBasesView).toHaveBeenCalledWith("tasknotesKanban", expect.anything());
-		expect(plugin.registerBasesView).toHaveBeenCalledWith("tasknotesCalendar", expect.anything());
+		expect(plugin.registerBasesView).toHaveBeenCalledWith(
+			"tasknotesCalendar",
+			expect.anything()
+		);
 		expect(plugin.registerBasesView).toHaveBeenCalledWith(
 			"tasknotesMiniCalendar",
 			expect.anything()

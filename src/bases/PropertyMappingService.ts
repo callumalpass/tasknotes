@@ -31,10 +31,8 @@ import type { TaskCardPropertyId } from "../types";
 export class PropertyMappingService {
 	private fieldMapper: FieldMapper;
 
-	constructor(fieldMapper: FieldMapper);
-	constructor(_legacyPlugin: unknown, fieldMapper: FieldMapper);
-	constructor(fieldMapperOrLegacyPlugin: unknown, legacyFieldMapper?: FieldMapper) {
-		this.fieldMapper = legacyFieldMapper ?? (fieldMapperOrLegacyPlugin as FieldMapper);
+	constructor(fieldMapper: FieldMapper) {
+		this.fieldMapper = fieldMapper;
 	}
 
 	/**
@@ -172,14 +170,6 @@ export class PropertyMappingService {
 	}
 
 	/**
-	 * Alias for basesToTaskCardProperty() for backward compatibility.
-	 * @deprecated Use basesToTaskCardProperty() for clarity
-	 */
-	basesToInternal(basesPropertyId: string): string {
-		return this.basesToTaskCardProperty(basesPropertyId);
-	}
-
-	/**
 	 * Map Bases property ID to TaskInfo property name.
 	 * This is used when calling updateTaskProperty() which expects TaskInfo keys.
 	 *
@@ -193,7 +183,7 @@ export class PropertyMappingService {
 	 */
 	basesToTaskInfoProperty(basesPropertyId: string): string {
 		// Strip Bases prefix
-		let cleanId = basesPropertyId.replace(/^(note\.|file\.|task\.)/, '');
+		let cleanId = basesPropertyId.replace(/^(note\.|file\.|task\.)/, "");
 
 		// Try to map back from user-configured property name to internal field name
 		const internalField = this.fieldMapper?.lookupMappingKey(cleanId);

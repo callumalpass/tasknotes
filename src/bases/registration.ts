@@ -28,7 +28,6 @@ const EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS: Record<string, string> = {
  * Requires Obsidian 1.10.1+ (public Bases API with groupBy support)
  */
 export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<boolean> {
-	if (!plugin.settings.enableBases) return false;
 	// All views now require Obsidian 1.10.1+ (public Bases API with groupBy support)
 	if (!requireApiVersion("1.10.1")) return false;
 	const logger = createTaskNotesLogger({
@@ -54,7 +53,11 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 							placeholder: "Select property for sub-grouping (optional)",
 							filter: (prop: string) => {
 								// Show all note, task, and formula properties that could be used for sub-grouping
-								return prop.startsWith("note.") || prop.startsWith("task.") || prop.startsWith("formula.");
+								return (
+									prop.startsWith("note.") ||
+									prop.startsWith("task.") ||
+									prop.startsWith("formula.")
+								);
 							},
 						},
 						{
@@ -97,105 +100,109 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 					icon: "tasknotes-simple",
 					factory: buildKanbanViewFactory(plugin),
 					options: () => [
-					{
-						type: "property",
-						key: "swimLane",
-						displayName: "Swim Lane",
-						placeholder: "Select property for swim lanes (optional)",
-						filter: (prop: string) => {
-							// Show all note, task, and formula properties that could be used for swimlanes
-							return prop.startsWith("note.") || prop.startsWith("task.") || prop.startsWith("formula.");
+						{
+							type: "property",
+							key: "swimLane",
+							displayName: "Swim Lane",
+							placeholder: "Select property for swim lanes (optional)",
+							filter: (prop: string) => {
+								// Show all note, task, and formula properties that could be used for swimlanes
+								return (
+									prop.startsWith("note.") ||
+									prop.startsWith("task.") ||
+									prop.startsWith("formula.")
+								);
+							},
 						},
-					},
-					{
-						type: "slider",
-						key: "columnWidth",
-						displayName: "Column Width",
-						default: 280,
-						min: 200,
-						max: 500,
-						step: 20,
-					},
-					{
-						type: "slider",
-						key: "maxSwimlaneHeight",
-						displayName: "Max Swimlane Height",
-						default: 600,
-						min: 300,
-						max: 1200,
-						step: 50,
-					},
-					{
-						type: "toggle",
-						key: "hideEmptyColumns",
-						displayName: "Hide Empty Columns",
-						default: false,
-					},
-					{
-						type: "text",
-						key: "pinnedColumns",
-						displayName: "Pinned Columns",
-						placeholder: "Comma-separated column values to keep visible",
-						default: "",
-					},
-					{
-						type: "toggle",
-						key: "hideEmptySwimLanes",
-						displayName: "Hide Empty Swimlanes",
-						default: false,
-					},
-					{
-						type: "toggle",
-						key: "enableSearch",
-						displayName: "Enable search box",
-						default: false,
-					},
-					{
-						type: "toggle",
-						key: "explodeListColumns",
-						displayName: "Show items in multiple columns",
-						default: true,
-					},
-					{
-						type: "toggle",
-						key: "consolidateStatusIcon",
-						displayName: "Show status icon in column header only",
-						default: false,
-					},
-					{
-						type: "dropdown",
-						key: "cardLayout",
-						displayName: "Card layout",
-						default: "default",
-						options: KANBAN_CARD_LAYOUT_OPTIONS,
-					},
-					{
-						type: "text",
-						key: "columnOrder",
-						displayName: "Column Order (Advanced)",
-						placeholder: "Auto-managed when dragging columns",
-						default: "{}",
-					},
-					{
-						type: "text",
-						key: "swimLaneOrder",
-						displayName: "Swim Lane Order (Advanced)",
-						placeholder: "JSON object keyed by swim lane property",
-						default: "{}",
-					},
-					{
-						type: "dropdown",
-						key: "expandedRelationshipFilterMode",
-						displayName: "Expanded relationships",
-						default: "inherit",
-						options: EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS,
-					},
-					{
-						type: "toggle",
-						key: "hideTopLevelSubtasks",
-						displayName: "Hide top-level subtasks",
-						default: false,
-					},
+						{
+							type: "slider",
+							key: "columnWidth",
+							displayName: "Column Width",
+							default: 280,
+							min: 200,
+							max: 500,
+							step: 20,
+						},
+						{
+							type: "slider",
+							key: "maxSwimlaneHeight",
+							displayName: "Max Swimlane Height",
+							default: 600,
+							min: 300,
+							max: 1200,
+							step: 50,
+						},
+						{
+							type: "toggle",
+							key: "hideEmptyColumns",
+							displayName: "Hide Empty Columns",
+							default: false,
+						},
+						{
+							type: "text",
+							key: "pinnedColumns",
+							displayName: "Pinned Columns",
+							placeholder: "Comma-separated column values to keep visible",
+							default: "",
+						},
+						{
+							type: "toggle",
+							key: "hideEmptySwimLanes",
+							displayName: "Hide Empty Swimlanes",
+							default: false,
+						},
+						{
+							type: "toggle",
+							key: "enableSearch",
+							displayName: "Enable search box",
+							default: false,
+						},
+						{
+							type: "toggle",
+							key: "explodeListColumns",
+							displayName: "Show items in multiple columns",
+							default: true,
+						},
+						{
+							type: "toggle",
+							key: "consolidateStatusIcon",
+							displayName: "Show status icon in column header only",
+							default: false,
+						},
+						{
+							type: "dropdown",
+							key: "cardLayout",
+							displayName: "Card layout",
+							default: "default",
+							options: KANBAN_CARD_LAYOUT_OPTIONS,
+						},
+						{
+							type: "text",
+							key: "columnOrder",
+							displayName: "Column Order (Advanced)",
+							placeholder: "Auto-managed when dragging columns",
+							default: "{}",
+						},
+						{
+							type: "text",
+							key: "swimLaneOrder",
+							displayName: "Swim Lane Order (Advanced)",
+							placeholder: "JSON object keyed by swim lane property",
+							default: "{}",
+						},
+						{
+							type: "dropdown",
+							key: "expandedRelationshipFilterMode",
+							displayName: "Expanded relationships",
+							default: "inherit",
+							options: EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS,
+						},
+						{
+							type: "toggle",
+							key: "hideTopLevelSubtasks",
+							displayName: "Hide top-level subtasks",
+							default: false,
+						},
 					],
 				},
 				logger

@@ -142,9 +142,6 @@ export interface TaskNotesSettings {
 	nlpLanguage: string; // Language code for natural language processing (e.g., 'en', 'es', 'fr')
 	uiLanguage: string; // 'system' or supported locale code for UI translations
 
-	// NLP status suggestion trigger (empty to disable) - DEPRECATED: Use nlpTriggers instead
-	statusSuggestionTrigger: string;
-
 	// NLP triggers configuration
 	nlpTriggers: NLPTriggersConfig;
 
@@ -224,7 +221,6 @@ export interface TaskNotesSettings {
 	// Default visible properties for inline task cards (task link widgets in editor)
 	inlineVisibleProperties?: string[];
 	// Bases integration settings
-	enableBases: boolean;
 	enableMdbaseSpec: boolean;
 	autoCreateDefaultBasesFiles: boolean; // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)

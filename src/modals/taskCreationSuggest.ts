@@ -5,12 +5,13 @@ import { ProjectEntry, ProjectMetadataResolver } from "../utils/projectMetadataR
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { filterTagsForTaskModalSuggestions } from "../utils/taskTagFiltering";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { DEFAULT_NLP_TRIGGERS } from "../settings/defaults";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskCreationSuggest" });
 
 /**
- * Auto-suggestion provider for NLP textarea with @, #, and + triggers
- * @ = contexts, # = tags, + = wikilinks to vault files
+ * Auto-suggestion provider for NLP textarea with the configured context, tag,
+ * project and status triggers (by default @, #, + and *).
  */
 interface ProjectSuggestion {
 	basename: string;
@@ -44,12 +45,21 @@ export interface StatusSuggestion {
 	toString(): string;
 }
 
+type SuggestTrigger = "@" | "#" | "+" | "status";
+
+const TRIGGER_PROPERTY: Record<SuggestTrigger, string> = {
+	"@": "contexts",
+	"#": "tags",
+	"+": "projects",
+	status: "status",
+};
+
 export class NLPSuggest extends AbstractInputSuggest<
 	TagSuggestion | ContextSuggestion | ProjectSuggestion | StatusSuggestion
 > {
 	private plugin: TaskNotesPlugin;
 	private textarea: HTMLInputElement | HTMLTextAreaElement;
-	private currentTrigger: "@" | "#" | "+" | "status" | null = null;
+	private currentTrigger: SuggestTrigger | null = null;
 	// Store app reference explicitly to avoid relying on plugin.app in tests and runtime
 	private obsidianApp: App;
 	// Cache ProjectMetadataResolver to avoid recreating it for each suggestion
@@ -70,6 +80,21 @@ export class NLPSuggest extends AbstractInputSuggest<
 		return this.textarea.selectionStart ?? this.textarea.value.length;
 	}
 
+	/** The configured trigger text for a suggestion kind, or "" when it is disabled. */
+	private triggerText(kind: SuggestTrigger): string {
+		const propertyId = TRIGGER_PROPERTY[kind];
+		const triggers =
+			this.plugin.settings.nlpTriggers?.triggers ?? DEFAULT_NLP_TRIGGERS.triggers;
+		const config = triggers.find((trigger) => trigger.propertyId === propertyId);
+		if (!config) {
+			return (
+				DEFAULT_NLP_TRIGGERS.triggers.find((trigger) => trigger.propertyId === propertyId)
+					?.trigger ?? ""
+			);
+		}
+		return config.enabled ? config.trigger.trim() : "";
+	}
+
 	/**
 	 * Helper: Check if index is at a word boundary
 	 */
@@ -84,35 +109,27 @@ export class NLPSuggest extends AbstractInputSuggest<
 	 * Find the most recent valid trigger before cursor
 	 */
 	private findActiveTrigger(textBeforeCursor: string): {
-		trigger: "@" | "#" | "+" | "status" | null;
+		trigger: SuggestTrigger | null;
 		triggerIndex: number;
 		queryAfterTrigger: string;
 	} {
-		const lastAtIndex = textBeforeCursor.lastIndexOf("@");
-		const lastHashIndex = textBeforeCursor.lastIndexOf("#");
-		const lastPlusIndex = textBeforeCursor.lastIndexOf("+");
-		const statusTrig = (this.plugin.settings.statusSuggestionTrigger || "").trim();
-		const lastStatusIndex = statusTrig ? textBeforeCursor.lastIndexOf(statusTrig) : -1;
-
 		// Determine most recent valid trigger by index
-		const candidates: Array<{ type: "@" | "#" | "+" | "status"; index: number }> = [
-			{ type: "@" as const, index: lastAtIndex },
-			{ type: "#" as const, index: lastHashIndex },
-			{ type: "+" as const, index: lastPlusIndex },
-			{ type: "status" as const, index: lastStatusIndex },
-		].filter((c) => this.isBoundary(textBeforeCursor, c.index));
+		const candidates = (["@", "#", "+", "status"] as const)
+			.map((type) => {
+				const text = this.triggerText(type);
+				return { type, text, index: text ? textBeforeCursor.lastIndexOf(text) : -1 };
+			})
+			.filter((c) => this.isBoundary(textBeforeCursor, c.index));
 
 		if (candidates.length === 0) {
 			return { trigger: null, triggerIndex: -1, queryAfterTrigger: "" };
 		}
 
 		candidates.sort((a, b) => b.index - a.index);
-		const triggerIndex = candidates[0].index;
-		const trigger = candidates[0].type;
+		const { index: triggerIndex, type: trigger, text } = candidates[0];
 
-		// Extract the query after the trigger (respect multi-char trigger for status)
-		const offset = trigger === "status" ? statusTrig?.length || 0 : 1;
-		const queryAfterTrigger = textBeforeCursor.slice(triggerIndex + offset);
+		// Extract the query after the trigger (triggers may be several characters)
+		const queryAfterTrigger = textBeforeCursor.slice(triggerIndex + text.length);
 
 		return { trigger, triggerIndex, queryAfterTrigger };
 	}
@@ -121,7 +138,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 	 * Check if the query context should end suggestion display
 	 */
 	private shouldEndSuggestionContext(
-		trigger: "@" | "#" | "+" | "status",
+		trigger: SuggestTrigger,
 		queryAfterTrigger: string
 	): boolean {
 		// If '+' trigger already has a completed wikilink (+[[...]]), do not suggest again
@@ -240,9 +257,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 			const rowConfigs = (this.plugin.settings?.projectAutosuggest?.rows ?? []).slice(0, 3);
 
 			return list.map((item): ProjectSuggestion => {
-				const file = appRef?.vault
-					.getMarkdownFiles()
-					.find((f) => f.path === item.path);
+				const file = appRef?.vault.getMarkdownFiles().find((f) => f.path === item.path);
 				if (!file) {
 					return {
 						basename: item.insertText,
@@ -414,10 +429,7 @@ export class NLPSuggest extends AbstractInputSuggest<
 		el.setAttribute("aria-label", `${suggestion.type}: ${displayText}`);
 
 		const icon = el.createSpan("nlp-suggest-icon");
-		icon.textContent =
-			this.currentTrigger === "status"
-				? this.plugin.settings.statusSuggestionTrigger || ""
-				: this.currentTrigger || "";
+		icon.textContent = this.currentTrigger ? this.triggerText(this.currentTrigger) : "";
 		icon.setAttribute("aria-hidden", "true");
 
 		const text = el.createSpan("nlp-suggest-text");
@@ -477,9 +489,10 @@ export class NLPSuggest extends AbstractInputSuggest<
 		if (this.currentTrigger === "+") {
 			const cursorPos = this.getCursorPosition();
 			const before = this.textarea.value.slice(0, cursorPos);
-			const lastPlus = before.lastIndexOf("+");
+			const projectTrigger = this.triggerText("+");
+			const lastPlus = projectTrigger ? before.lastIndexOf(projectTrigger) : -1;
 			if (lastPlus !== -1) {
-				const after = before.slice(lastPlus + 1);
+				const after = before.slice(lastPlus + projectTrigger.length);
 				if (after && !after.includes("\n")) activeQuery = after.trim();
 			}
 		}
@@ -557,18 +570,9 @@ export class NLPSuggest extends AbstractInputSuggest<
 		const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
 		const textAfterCursor = this.textarea.value.slice(cursorPos);
 
-		// Find the last trigger position (handle custom status trigger length)
-		let lastTriggerIndex = -1;
-		const statusTrig = (this.plugin.settings.statusSuggestionTrigger || "").trim();
-		if (this.currentTrigger === "@") {
-			lastTriggerIndex = textBeforeCursor.lastIndexOf("@");
-		} else if (this.currentTrigger === "#") {
-			lastTriggerIndex = textBeforeCursor.lastIndexOf("#");
-		} else if (this.currentTrigger === "+") {
-			lastTriggerIndex = textBeforeCursor.lastIndexOf("+");
-		} else if (this.currentTrigger === "status" && statusTrig) {
-			lastTriggerIndex = textBeforeCursor.lastIndexOf(statusTrig);
-		}
+		// Find the last trigger position (triggers may be several characters)
+		const triggerText = this.triggerText(this.currentTrigger);
+		const lastTriggerIndex = triggerText ? textBeforeCursor.lastIndexOf(triggerText) : -1;
 
 		if (lastTriggerIndex === -1) return;
 
@@ -581,14 +585,14 @@ export class NLPSuggest extends AbstractInputSuggest<
 		let replacement = "";
 
 		if (this.currentTrigger === "+") {
-			// For project (+) trigger, wrap in wikilink syntax but keep the + sign
-			replacement = "+[[" + suggestionText + "]]";
+			// For the project trigger, wrap in wikilink syntax but keep the trigger
+			replacement = triggerText + "[[" + suggestionText + "]]";
 		} else if (this.currentTrigger === "status") {
 			// For status: insert the label text (like other suggestions)
 			replacement = suggestion.type === "status" ? suggestion.label : suggestionText;
 		} else {
-			// For @ and #, keep the trigger and the suggestion
-			replacement = this.currentTrigger + suggestionText;
+			// For contexts and tags, keep the trigger and the suggestion
+			replacement = triggerText + suggestionText;
 		}
 
 		const newText = beforeTrigger + replacement + (replacement ? " " : "") + textAfterCursor;

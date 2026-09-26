@@ -2,7 +2,10 @@ import { App } from "obsidian";
 import { TagSuggest } from "../../../src/modals/taskModalSuggests";
 import { NLPSuggest } from "../../../src/modals/taskCreationSuggest";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
-import { buildTaskEditChanges, type TaskEditChangeInput } from "../../../src/modals/taskEditChanges";
+import {
+	buildTaskEditChanges,
+	type TaskEditChangeInput,
+} from "../../../src/modals/taskEditChanges";
 import type { TaskInfo } from "../../../src/types";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 
@@ -28,7 +31,6 @@ function createPlugin(settings: Record<string, unknown> = {}, tags: string[] = [
 			taskTag: "task",
 			taskIdentificationMethod: "tag",
 			hideIdentifyingTagsInCards: true,
-			statusSuggestionTrigger: "/",
 			userFields: [],
 			maintainDueDateOffsetInRecurring: false,
 			...settings,
@@ -110,9 +112,11 @@ describe("issue #1790 identifying tags in task modals", () => {
 		document.body.appendChild(input);
 		const suggest = new TagSuggest(app, input, plugin as never);
 
-		const suggestions = await (suggest as unknown as {
-			getSuggestions(query: string): Promise<Array<{ value: string }>>;
-		}).getSuggestions("");
+		const suggestions = await (
+			suggest as unknown as {
+				getSuggestions(query: string): Promise<Array<{ value: string }>>;
+			}
+		).getSuggestions("");
 
 		expect(suggestions.map((suggestion) => suggestion.value)).toEqual(["taskish", "work"]);
 	});
@@ -127,9 +131,11 @@ describe("issue #1790 identifying tags in task modals", () => {
 		document.body.appendChild(input);
 		const suggest = new TagSuggest(app, input, plugin as never);
 
-		const suggestions = await (suggest as unknown as {
-			getSuggestions(query: string): Promise<Array<{ value: string }>>;
-		}).getSuggestions("");
+		const suggestions = await (
+			suggest as unknown as {
+				getSuggestions(query: string): Promise<Array<{ value: string }>>;
+			}
+		).getSuggestions("");
 
 		expect(suggestions.map((suggestion) => suggestion.value)).toEqual([
 			"task",
@@ -144,9 +150,11 @@ describe("issue #1790 identifying tags in task modals", () => {
 		document.body.appendChild(input);
 		const suggest = new NLPSuggest(app, input, plugin as never);
 
-		const suggestions = (suggest as unknown as {
-			getTagSuggestions(query: string): Array<{ value: string }>;
-		}).getTagSuggestions("");
+		const suggestions = (
+			suggest as unknown as {
+				getTagSuggestions(query: string): Array<{ value: string }>;
+			}
+		).getTagSuggestions("");
 
 		expect(suggestions.map((suggestion) => suggestion.value)).toEqual(["taskish", "work"]);
 	});

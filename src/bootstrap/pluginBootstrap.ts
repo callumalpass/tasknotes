@@ -247,11 +247,6 @@ export function initializeCalendarProviders(plugin: TaskNotesPlugin): void {
 }
 
 export async function registerBasesIntegration(plugin: TaskNotesPlugin): Promise<void> {
-	if (!plugin.settings?.enableBases) {
-		clearBasesRegistrationRetry(plugin);
-		return;
-	}
-
 	if (plugin.basesRegistered && areTaskNotesBasesViewsRegistered(plugin)) {
 		clearBasesRegistrationRetry(plugin);
 		return;
@@ -305,7 +300,6 @@ function clearBasesRegistrationRetry(plugin: TaskNotesPlugin): void {
 
 function scheduleBasesRegistrationRetry(plugin: TaskNotesPlugin): void {
 	if (
-		!plugin.settings?.enableBases ||
 		plugin.basesRegistrationRetryIntervalId !== null ||
 		areTaskNotesBasesViewsRegistered(plugin)
 	) {

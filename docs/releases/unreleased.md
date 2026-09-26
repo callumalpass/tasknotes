@@ -20,6 +20,7 @@
 ## Fixed
 
 - Fixed task dialogs falling back to plain text inputs when opened without an active note, including from release notes or in an empty vault.
+- Suggestions in the task selector and fallback task input now use your configured natural language triggers for contexts, tags, projects and status. Previously they always used `@`, `#`, `+` and the old status trigger, and inserted characters the parser no longer recognised after a trigger was changed. See [Customizable Triggers](https://tasknotes.dev/features/inline-tasks/#customizable-triggers).
 - Fixed generated recurrence and dependency link targets when the TaskNotes type uses a name other than `task`.
 - Improved mdbase upgrades from TaskNotes v4, including older generated formatting and retries after interrupted updates. New collections use a dedicated membership property without claiming bibliographic `type` fields; existing custom membership keys are preserved.
 - TaskNotes now bundles the same portable task contract as TaskNotes App and preserves customized contract/schema resources rather than replacing them automatically.

@@ -123,10 +123,21 @@ describe("settings persistence helpers", () => {
 	});
 
 	it("migrates a legacy custom property before indexing without dropping colliding names", () => {
-		const original = { userField: { enabled: true, key: "legacy", displayName: "Client", type: "text" as const }, userFields: [{ id: "client", key: "other", displayName: "Client", type: "text" as const }] };
+		const original = {
+			userField: {
+				enabled: true,
+				key: "legacy",
+				displayName: "Client",
+				type: "text" as const,
+			},
+			userFields: [
+				{ id: "client", key: "other", displayName: "Client", type: "text" as const },
+			],
+		};
 		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData(original);
 		expect(settings.userFields).toEqual([
-			original.userFields[0], { id: "client-2", key: "legacy", displayName: "Client", type: "text" },
+			original.userFields[0],
+			{ id: "client-2", key: "legacy", displayName: "Client", type: "text" },
 		]);
 		expect(settings.userField.enabled).toBe(false);
 		expect(original.userField.enabled).toBe(true);
@@ -145,7 +156,8 @@ describe("settings persistence helpers", () => {
 			},
 		});
 
-		expect(settings.enableBases).toBe(true);
+		expect("enableBases" in settings).toBe(false);
+		expect("statusSuggestionTrigger" in settings).toBe(false);
 		expect(settings.enableAPI).toBe(false);
 		expect(settings.apiPort).toBe(8080);
 		expect(settings.apiAuthToken).toBe("");

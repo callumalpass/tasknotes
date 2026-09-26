@@ -34,7 +34,7 @@ export async function initializePluginRuntime(plugin: TaskNotesPlugin): Promise<
 }
 
 export async function cleanupPluginRuntime(plugin: TaskNotesPlugin): Promise<void> {
-	if (plugin.settings?.enableBases) {
+	if (plugin.basesRegistered) {
 		try {
 			unregisterBasesViews(plugin);
 			plugin.basesRegistered = false;

@@ -10,6 +10,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/SettingsPersisten
 export type LoadedSettingsData = Partial<TaskNotesSettings> &
 	Record<string, unknown> & {
 		statusSuggestionTrigger?: string;
+		enableBases?: unknown;
 		useNativeMetadataCache?: unknown;
 	};
 
@@ -140,6 +141,8 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 				migratedData.statusSuggestionTrigger;
 		}
 	}
+	// nlpTriggers is now the only status trigger. The saved key is left for 4.x devices.
+	delete migratedData.statusSuggestionTrigger;
 
 	// Legacy single custom fields used to migrate only when their settings card opened.
 	// Native settings indexing must be read-only, so migrate during settings load instead.
@@ -169,10 +172,8 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		migratedData.modalFieldsConfig = initializeFieldConfig(undefined, migratedData.userFields);
 	}
 
-	// Migration: Force enableBases to true (issue #1187).
-	if (migratedData.enableBases === false) {
-		migratedData.enableBases = true;
-	}
+	// Bases integration is always enabled (issue #1187). The saved key is left for 4.x devices.
+	delete migratedData.enableBases;
 
 	// Migration: Update the unused legacy default custom filename template to the
 	// preferred double-brace syntax while preserving active custom templates.
