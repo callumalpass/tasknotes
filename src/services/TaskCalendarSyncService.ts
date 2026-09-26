@@ -550,7 +550,7 @@ export class TaskCalendarSyncService {
 	}
 
 	private async isExternalReconciliationInitialized(): Promise<boolean> {
-		const data = await this.plugin.loadData();
+		const data = (await this.plugin.loadData()) as Record<string, unknown> | null;
 		return data?.[GOOGLE_CALENDAR_RECONCILIATION_INITIALIZED_KEY] === true;
 	}
 

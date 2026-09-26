@@ -1,5 +1,8 @@
 import { Modal, normalizePath, type TAbstractFile, TFile } from "obsidian";
 import YAML from "yaml";
+import { canonicalTaskNotesResources } from "./canonicalTaskNotesPack";
+import { legacyTaskNotesSupport } from "./legacyTaskNotesSupport";
+import { remapMdbaseTypeReferences } from "./mdbaseTypeReferences";
 import {
 	buildTaskNotesMdbaseResources,
 	type TaskNotesMdbaseResources,
@@ -26,6 +29,17 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MdbaseSpecService
 const DEFAULT_TYPES_FOLDER = "_types";
 const DEFAULT_CONTRACTS_FOLDER = "_contracts";
 const MDBASE_V03_SPEC_VERSION = "0.3.0";
+
+function writableMembershipKeys(value: unknown): string[] {
+	if (value === undefined || (Array.isArray(value) && value.length === 0)) {
+		return ["mdbase_type"];
+	}
+	if (!Array.isArray(value) || value.some((key) => typeof key !== "string" || !key.trim())) {
+		throw new Error("Invalid explicit_type_keys; existing collection settings were preserved.");
+	}
+	return value as string[];
+}
+
 const MDBASE_MIGRATION_BACKUP_FOLDER = ".tasknotes/migrations";
 const MDBASE_MIGRATION_PENDING_PATH = `${MDBASE_MIGRATION_BACKUP_FOLDER}/mdbase-v0.2-pending.json`;
 
@@ -173,12 +187,7 @@ export class MdbaseSpecService {
 			if (!existingCollection.exists) {
 				await this.syncSettingsToCanonicalType(existingCollection);
 			} else if (specFamily === "v0.3") {
-				const state = await this.readCanonicalType(existingCollection);
-				if (state) {
-					this.applyCanonicalState(state);
-				} else {
-					await this.syncSettingsToCanonicalType(existingCollection);
-				}
+				await this.syncSettingsToCanonicalType(existingCollection);
 			} else if (specFamily === "v0.2") {
 				await this.migrateGeneratedV02Collection(existingCollection);
 			} else if (!specFamily) {
@@ -224,12 +233,15 @@ export class MdbaseSpecService {
 			legacyType.typeName,
 			contractsFolder
 		);
-		for (const path of [
-			resources.paths.contract,
-			resources.paths.taskSchema,
-			resources.paths.bindingSchema,
-		]) {
-			if (await this.plugin.app.vault.adapter.exists(path)) {
+		const support = new Map([
+			[resources.paths.contract, resources.contractDocument],
+			[resources.paths.taskSchema, resources.taskSchemaDocument],
+			[resources.paths.bindingSchema, resources.bindingSchemaDocument],
+		]);
+		for (const [path, intended] of support) {
+			if (await this.plugin.app.vault.adapter.exists(path) &&
+				await this.plugin.app.vault.adapter.read(path) !== intended &&
+				!legacyTaskNotesSupport.includes(await this.plugin.app.vault.adapter.read(path))) {
 				this.publishNotice(
 					`TaskNotes left the mdbase v0.2 collection unchanged because ${path} already exists and may be user-maintained.`
 				);
@@ -255,7 +267,7 @@ export class MdbaseSpecService {
 			snapshots.find(({ path }) => path === legacyType.path)?.content !== legacyType.content ||
 			snapshots.some(
 				({ path, content }) =>
-					path !== "mdbase.yaml" && path !== legacyType.path && content !== null
+					path !== "mdbase.yaml" && path !== legacyType.path && content !== null && content !== support.get(path) && !legacyTaskNotesSupport.includes(content)
 			)
 		) {
 			this.publishNotice(
@@ -410,6 +422,7 @@ export class MdbaseSpecService {
 			settings: {
 				...generatedSettings,
 				...sourceSettings,
+				explicit_type_keys: writableMembershipKeys(sourceSettings.explicit_type_keys),
 				types_folder: typesFolder,
 				contracts_folder: contractsFolder,
 				record_extensions:
@@ -610,7 +623,7 @@ export class MdbaseSpecService {
 		const existingCollection = await this.readExistingCollection();
 		const specFamily = getSpecFamily(existingCollection.config?.spec_version);
 		if (existingCollection.exists && specFamily === "v0.2") {
-			await this.generate();
+			await this.migrateGeneratedV02Collection(existingCollection);
 			return;
 		}
 		if (existingCollection.exists && !specFamily) {
@@ -659,61 +672,12 @@ export class MdbaseSpecService {
 				return;
 			}
 
-			const specFamily = existingSpecFamily ?? "v0.3";
-			const specVersion =
-				typeof existingCollection.config?.spec_version === "string"
-					? existingCollection.config.spec_version
-					: MDBASE_V03_SPEC_VERSION;
-			const typesFolder =
-				this.normalizeTypesFolder(existingCollection.config?.settings?.types_folder) ??
-				DEFAULT_TYPES_FOLDER;
-			const contractsFolder =
-				this.normalizeTypesFolder(
-					existingCollection.config?.settings?.contracts_folder
-				) ?? DEFAULT_CONTRACTS_FOLDER;
-			const taskTypePath = `${typesFolder}/task.md`;
-
-			await this.ensureFolderPath(typesFolder);
-
-			const legacyCompatibility =
-				specFamily === "v0.3" && isRecord(existingCollection.config?.["x-legacy-v0.2"]);
-			let canonicalResources: TaskNotesMdbaseResources | null = null;
-			if (specFamily === "v0.2") {
-				await this.writeFile(taskTypePath, this.buildTaskTypeDefV02());
-			} else {
-				canonicalResources = this.buildCanonicalMdbaseResources(
-					typesFolder,
-					legacyCompatibility,
-					"task",
-					contractsFolder
-				);
-				await this.writeCanonicalSupportResources(canonicalResources);
-				const written = await this.writeCanonicalType(
-					taskTypePath,
-					canonicalResources,
-					!existingCollection.exists
-				);
-				if (!written) {
-					return;
-				}
+			if (existingSpecFamily === "v0.2") {
+				await this.migrateGeneratedV02Collection(existingCollection);
+				return;
 			}
+			await this.syncSettingsToCanonicalType(existingCollection);
 
-			// Only create mdbase.yaml if it doesn't already exist so that
-			// user customisations (extra excludes, description, etc.) are preserved.
-			if (!existingCollection.exists) {
-				const mdbaseYaml =
-					canonicalResources?.configDocument ?? this.buildMdbaseYaml(typesFolder);
-				await this.writeFile("mdbase.yaml", mdbaseYaml);
-			}
-
-			tasknotesLogger.debug(
-				`[TaskNotes][mdbase-spec] Generated ${specFamily} collection metadata and ${taskTypePath}`,
-				{
-					category: "configuration",
-					operation: "generated-mdbase-yaml-and",
-					details: { specVersion },
-				}
-			);
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][mdbase-spec] Failed to generate files:", {
 				category: "configuration",
@@ -721,6 +685,19 @@ export class MdbaseSpecService {
 				error: error,
 			});
 		}
+	}
+
+	private async reconcileMembershipKeys(): Promise<void> {
+		const adapter = this.plugin.app.vault.adapter;
+		if (!(await adapter.exists("mdbase.yaml"))) return;
+		const before = await adapter.read("mdbase.yaml");
+		const config = YAML.parseDocument(before);
+		if (config.errors.length) throw new Error("Cannot reconcile invalid mdbase.yaml");
+		const current = config.toJS() as MdbaseYamlConfig;
+		const keys = writableMembershipKeys(current.settings?.explicit_type_keys);
+		if (Array.isArray(current.settings?.explicit_type_keys) && current.settings.explicit_type_keys.length) return;
+		config.setIn(["settings", "explicit_type_keys"], keys);
+		await this.writeFileIfUnchanged({ path: "mdbase.yaml", content: before }, config.toString());
 	}
 
 	private async syncSettingsToCanonicalType(
@@ -737,6 +714,7 @@ export class MdbaseSpecService {
 			return;
 		}
 		if (state) {
+			await this.reconcileMembershipKeys();
 			await this.writeCanonicalSupportResources(
 				this.buildCanonicalMdbaseResources(
 					typesFolder,
@@ -838,6 +816,8 @@ export class MdbaseSpecService {
 
 		if (!existingCollection.exists) {
 			await this.writeFile("mdbase.yaml", resources.configDocument);
+		} else {
+			await this.reconcileMembershipKeys();
 		}
 	}
 
@@ -855,9 +835,9 @@ export class MdbaseSpecService {
 			return defaultState;
 		}
 
-		const listing = await adapter.list(typesFolder);
+		const paths = await this.listMarkdownFilesRecursively(typesFolder);
 		const candidates: CanonicalTypeState[] = defaultState ? [defaultState] : [];
-		for (const path of listing.files.filter((file) => file.endsWith(".md"))) {
+		for (const path of paths) {
 			if (path === defaultPath) continue;
 			const state = await this.readCanonicalTypeAtPath(path, false);
 			if (state) candidates.push(state);
@@ -1282,10 +1262,21 @@ export class MdbaseSpecService {
 		const previousWriteState = this.writeInProgress;
 		this.writeInProgress = true;
 		try {
+			const snapshots = await this.snapshotFiles(entries.map(([path]) => path));
 			for (const [path, content] of entries) {
-				const parent = path.split("/").slice(0, -1).join("/");
-				if (parent) await this.ensureFolderPath(parent);
-				await this.writeFile(path, content);
+				const before = snapshots.find((item) => item.path === path)?.content ?? null;
+				if (before !== null && before !== content && !legacyTaskNotesSupport.includes(before)) {
+					throw new Error(`Preserved customized mdbase support resource: ${path}`);
+				}
+			}
+			await this.assertSnapshotsUnchanged(snapshots);
+			for (const [path, content] of entries) {
+				const snapshot = snapshots.find((item) => item.path === path);
+				if (!snapshot) throw new Error(`Missing support snapshot: ${path}`);
+				if (snapshot.content !== content) {
+					if (snapshot.content !== null) await this.backupInvalidType(path, snapshot.content);
+					await this.writeFileIfUnchanged(snapshot, content);
+				}
 				this.canonicalResourcePaths.add(path);
 			}
 		} finally {
@@ -1578,7 +1569,7 @@ export class MdbaseSpecService {
 		const occurrenceTemplatePath =
 			settings.taskCreationDefaults?.occurrenceBodyTemplate?.trim() ?? "";
 
-		return buildTaskNotesMdbaseResources({
+		const resources = buildTaskNotesMdbaseResources({
 			typeName,
 			typesFolder,
 			contractsFolder,
@@ -1612,6 +1603,21 @@ export class MdbaseSpecService {
 				occurrenceTemplatePath,
 			},
 		});
+		const config = YAML.parseDocument(resources.configDocument);
+		config.setIn(["settings", "explicit_type_keys"], ["mdbase_type"]);
+		const document = (source: string): string => {
+			const resource = canonicalTaskNotesResources.find((entry) => entry.source === source);
+			if (!resource) throw new Error(`Missing canonical TaskNotes resource: ${source}`);
+			return resource.document;
+		};
+		return {
+			...resources,
+			configDocument: config.toString(),
+			typeDocument: remapMdbaseTypeReferences(resources.typeDocument, new Map([["task", typeName]]), [], true),
+			contractDocument: document("contracts/tasknotes.task/0.3.0-rc.3.md"),
+			taskSchemaDocument: document("schemas/tasknotes.task/0.3.0-rc.3.schema.json"),
+			bindingSchemaDocument: document("schemas/tasknotes.task.binding/0.3.0-rc.3.schema.json"),
+		};
 	}
 
 	/**
@@ -1847,7 +1853,16 @@ function uniqueStrings(values: string[]): string[] {
 }
 
 function isUnmodifiedGeneratedV02Type(content: string, expected: string): boolean {
-	return content.replace(/\r\n/g, "\n") === expected.replace(/\r\n/g, "\n");
+	// v4 emitted plain enum scalars; v5 quotes them. Formatting alone must not
+	// strand an otherwise identical v4 collection. Compare the parsed schema,
+	// while retaining the exact generated body check and backing up source bytes.
+	try {
+		const source = parseMdbaseTaskTypeDocument(content.replace(/\r\n/g, "\n"));
+		const generated = parseMdbaseTaskTypeDocument(expected.replace(/\r\n/g, "\n"));
+		return source.body === generated.body && JSON.stringify(source.type) === JSON.stringify(generated.type);
+	} catch {
+		return false;
+	}
 }
 
 function parseMigrationJournal(value: unknown): MigrationJournal {

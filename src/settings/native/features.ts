@@ -400,10 +400,11 @@ export function featuresDefinitions(ctx: SettingsContext): SettingDefinitionGrou
 					setValue: async (value: string) => {
 						const newLocation = value as "plugin" | "daily-notes";
 						if (newLocation !== plugin.settings.pomodoroStorageLocation) {
-							const data = await plugin.loadData();
+							const data = (await plugin.loadData()) as {
+								pomodoroHistory?: unknown;
+							} | null;
 							const hasExistingData =
-								data?.pomodoroHistory &&
-								Array.isArray(data.pomodoroHistory) &&
+								Array.isArray(data?.pomodoroHistory) &&
 								data.pomodoroHistory.length > 0;
 
 							const confirmed = await showStorageLocationConfirmationModal(

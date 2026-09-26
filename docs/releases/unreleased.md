@@ -51,3 +51,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Fixed generated recurrence and dependency link targets when the TaskNotes type uses a name other than `task`.
+- Improved mdbase upgrades from TaskNotes v4, including older generated formatting and retries after interrupted updates. New collections use a dedicated membership property without claiming bibliographic `type` fields; existing custom membership keys are preserved.
+- TaskNotes now bundles the same portable task contract as TaskNotes App and preserves customized contract/schema resources rather than replacing them automatically.
