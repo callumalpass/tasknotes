@@ -31,7 +31,3 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
-
-## Fixed
-
-- (#2370) Fixed duplicate entries in the task modal's Blocked by list when dependency cards load concurrently. Thanks to @sandrahalling for reporting this.
