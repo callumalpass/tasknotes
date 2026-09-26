@@ -2494,6 +2494,8 @@ export const ja: TranslationTree = {
 		refreshCache: "キャッシュを更新",
 		exportAllTasksIcs: "すべてのタスクをICSファイルとしてエクスポート",
 		viewReleaseNotes: "リリースノートを表示",
+		startTimeTrackingCurrentTask: "現在のタスクの時間追跡を開始",
+		stopTimeTrackingCurrentTask: "現在のタスクの時間追跡を停止",
 		startTimeTrackingWithSelector: "時間追跡を開始（タスクを選択）",
 		editTimeEntries: "時間エントリを編集（タスクを選択）",
 		createOrOpenTask: "タスクを作成または開く",

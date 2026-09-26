@@ -6,6 +6,7 @@ import {
 	EventRef,
 	MarkdownView,
 	parseLinktext,
+	TFile,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
 import {
@@ -37,16 +38,13 @@ interface ParsedTaskLink {
 
 // Create a ViewPlugin factory that takes the plugin as a parameter
 export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
-	// Track widget instances for updates
-	const activeWidgets = new Map<string, TaskLinkWidget>();
-	// Fallback cache keyed by resolvedPath only — survives position shifts and activeWidgets.clear()
-	const lastKnownWidgets = new Map<string, TaskLinkWidget>();
-
 	return ViewPlugin.fromClass(
 		class {
 			decorations: DecorationSet;
 			private eventListeners: EventRef[] = [];
 			private view: EditorView;
+			private activeWidgets = new Map<string, TaskLinkWidget>();
+			private lastKnownTasks = new Map<string, TaskInfo>();
 
 			constructor(view: EditorView) {
 				this.view = view;
@@ -60,6 +58,8 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 					plugin.emitter.offref(listener);
 				});
 				this.eventListeners = [];
+				this.activeWidgets.clear();
+				this.lastKnownTasks.clear();
 			}
 
 			setupEventListeners() {
@@ -76,14 +76,14 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 					EVENT_TASK_DELETED,
 					(data?: { path?: string }) => {
 						if (data?.path) {
-							lastKnownWidgets.delete(data.path);
+							this.lastKnownTasks.delete(data.path);
 						}
 						this.refreshDecorations();
 					}
 				);
 
 				const dateChangeListener = plugin.emitter.on(EVENT_DATE_CHANGED, () => {
-					lastKnownWidgets.clear();
+					this.lastKnownTasks.clear();
 					this.refreshDecorations();
 				});
 
@@ -107,7 +107,7 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 					queueMicrotask(() => {
 						try {
 							// Clear all widgets to force fresh recreation with updated data
-							activeWidgets.clear();
+							this.activeWidgets.clear();
 
 							this.view.dispatch({
 								effects: [taskUpdateEffect.of({})],
@@ -161,14 +161,14 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 
 						if (taskUpdateData?.taskPath) {
 							// Clear only widgets for the specific task that was updated
-							for (const [key] of activeWidgets.entries()) {
+							for (const [key] of this.activeWidgets.entries()) {
 								if (key.includes(taskUpdateData.taskPath)) {
-									activeWidgets.delete(key);
+									this.activeWidgets.delete(key);
 								}
 							}
 						} else {
 							// If no specific path, clear all widgets
-							activeWidgets.clear();
+							this.activeWidgets.clear();
 						}
 					}
 					this.decorations = this.buildDecorations(update.view);
@@ -194,9 +194,9 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
 					return buildTaskLinkDecorations(
 						view.state,
 						plugin,
-						activeWidgets,
+						this.activeWidgets,
 						currentFile,
-						lastKnownWidgets
+						this.lastKnownTasks
 					);
 				} catch (error) {
 					tasknotesLogger.error("Error building task link decorations:", {
@@ -222,7 +222,7 @@ export function buildTaskLinkDecorations(
 	plugin: TaskNotesPlugin,
 	activeWidgets: Map<string, TaskLinkWidget>,
 	currentFile?: string,
-	lastKnownWidgets?: Map<string, TaskLinkWidget>
+	lastKnownTasks?: Map<string, TaskInfo>
 ): DecorationSet {
 	const builder = new RangeSetBuilder<Decoration>();
 
@@ -337,7 +337,27 @@ export function buildTaskLinkDecorations(
 				if (!resolvedPath) continue;
 
 				// Check if we have cached task info for this file
-				const taskInfo = getTaskInfoSync(resolvedPath, plugin);
+				let taskInfo = getTaskInfoSync(resolvedPath, plugin);
+				if (taskInfo) {
+					lastKnownTasks?.set(resolvedPath, taskInfo);
+				} else if (lastKnownTasks?.has(resolvedPath)) {
+					const file = plugin.app.vault.getAbstractFileByPath(resolvedPath);
+					const metadata = file instanceof TFile
+						? plugin.app.metadataCache.getFileCache(file)
+						: null;
+					// A missing task result is only transient while the file is still
+					// eligible and metadata has not confirmed removal of task identity.
+					if (
+						!(file instanceof TFile) ||
+						!plugin.cacheManager.isValidFile(resolvedPath) ||
+						(metadata != null && !plugin.cacheManager.isTaskFile(metadata.frontmatter))
+					) {
+						lastKnownTasks.delete(resolvedPath);
+						activeWidgets.clear();
+					} else {
+						taskInfo = lastKnownTasks.get(resolvedPath) ?? null;
+					}
+				}
 				if (taskInfo) {
 					// Validate task info
 					if (!taskInfo.title || typeof taskInfo.title !== "string") {
@@ -379,7 +399,9 @@ export function buildTaskLinkDecorations(
 						taskInfo,
 						plugin,
 						link.match,
-						displayText
+						displayText,
+						undefined,
+						parsed.subpath
 					);
 
 					// Check if we need to update the cached widget
@@ -388,36 +410,9 @@ export function buildTaskLinkDecorations(
 						activeWidgets.set(widgetKey, newWidget);
 					}
 
-					// Store in fallback cache so transient cache misses reuse this widget
-					lastKnownWidgets?.set(resolvedPath, newWidget);
-
 					// Create a replacement decoration that replaces the wikilink with our widget
 					const decoration = Decoration.replace({
 						widget: activeWidgets.get(widgetKey),
-						inclusive: true,
-					});
-
-					builder.add(link.start, link.end, decoration);
-				} else if (lastKnownWidgets?.has(resolvedPath)) {
-					// Cache miss (transient invalidation) — reuse the last-known widget
-					// Check if cursor is within link range
-					if (
-						cursorPos !== undefined &&
-						cursorPos >= link.start &&
-						cursorPos < link.end
-					) {
-						continue;
-					}
-
-					const fallbackWidget = lastKnownWidgets.get(resolvedPath);
-					if (!fallbackWidget) {
-						continue;
-					}
-					const widgetKey = `${resolvedPath}-${link.start}-${link.end}`;
-					activeWidgets.set(widgetKey, fallbackWidget);
-
-					const decoration = Decoration.replace({
-						widget: fallbackWidget,
 						inclusive: true,
 					});
 

@@ -6,6 +6,7 @@ import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
+import { getTaskCardPropertyValue } from "../ui/taskCardPropertyAccess";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { DateContextMenu } from "../components/DateContextMenu";
@@ -885,10 +886,8 @@ export class TaskListView extends BasesViewBase {
 
 			// Live Preview embeds sit inside CodeMirror. Keep reorder presses from
 			// becoming editor selection gestures before the browser can start DnD.
+			// Do not preventDefault: cancelling mousedown also cancels native dragging.
 			event.stopPropagation();
-			if (event.type === "mousedown") {
-				event.preventDefault();
-			}
 		};
 
 		this.setupCardDragHandle(cardEl);
@@ -1626,7 +1625,7 @@ export class TaskListView extends BasesViewBase {
 
 		for (const taskInfo of taskNotes) {
 			let cardEl = orderChanged ? null : this.currentTaskElements.get(taskInfo.path) || null;
-			const signature = this.buildTaskSignature(taskInfo);
+			const signature = this.buildTaskSignature(taskInfo, visibleProperties);
 			const previousSignature = this.lastTaskSignatures.get(taskInfo.path);
 			const needsUpdate = cardRenderChanged || signature !== previousSignature || !cardEl;
 
@@ -2885,9 +2884,17 @@ export class TaskListView extends BasesViewBase {
 		}
 	}
 
-	private buildTaskSignature(task: TaskInfo): string {
-		// Fast signature using only fields that affect rendering
-		return `${task.path}|${task.title}|${task.status}|${task.priority}|${task.due}|${task.scheduled}|${task.recurrence}|${task.archived}|${task.sortOrder}|${task.complete_instances?.join(",")}|${task.reminders?.length}|${task.blocking?.length}|${task.blockedBy?.length}`;
+	private buildTaskSignature(task: TaskInfo, visibleProperties: string[] = []): string {
+		// Snapshot task data, not just a hand-maintained subset: badges and controls
+		// also depend on fields that may not be selected as visible properties.
+		// Raw Bases entries are live objects (and can be circular); resolve only
+		// displayed values through the same accessor used by task cards instead.
+		return JSON.stringify({
+			task: { ...task, basesData: undefined },
+			visibleValues: visibleProperties.map((property) =>
+				getTaskCardPropertyValue(task, property, this.plugin)
+			),
+		});
 	}
 
 	private buildCardRenderSignature(

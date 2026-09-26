@@ -2477,6 +2477,8 @@ export const zh: TranslationTree = {
 		refreshCache: "刷新缓存",
 		exportAllTasksIcs: "导出所有任务为ICS文件",
 		viewReleaseNotes: "查看版本说明",
+		startTimeTrackingCurrentTask: "开始跟踪当前任务的时间",
+		stopTimeTrackingCurrentTask: "停止跟踪当前任务的时间",
 		startTimeTrackingWithSelector: "开始时间跟踪（选择任务）",
 		editTimeEntries: "编辑时间条目（选择任务）",
 		createOrOpenTask: "创建或打开任务",

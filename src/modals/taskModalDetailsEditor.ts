@@ -17,6 +17,7 @@ export interface TaskModalDetailsEditorOptions {
 	onEscape: () => void;
 	focusNextField: () => boolean;
 	focusPreviousField: () => boolean;
+	attachMobileKeyboardScrollGuard: (container: HTMLElement) => void;
 }
 
 export function createTaskModalDetailsEditor(
@@ -28,6 +29,8 @@ export function createTaskModalDetailsEditor(
 	const editorContainer = options.parent.createDiv(
 		"tn-task-modal__markdown-editor tn-task-modal__markdown-editor--details"
 	);
+
+	options.attachMobileKeyboardScrollGuard(editorContainer);
 
 	return createTaskModalMarkdownEditor(options.app, editorContainer, {
 		value: options.value,

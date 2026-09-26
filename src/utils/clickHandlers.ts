@@ -19,6 +19,7 @@ export interface ClickHandlerOptions {
 	onDoubleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for double click
 	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>; // Optional context menu handler
 	createBatchContextMenu?: BatchContextMenuFactory;
+	navigationSubpath?: string;
 }
 
 const DEFAULT_EXCLUDE_SELECTOR = [
@@ -47,6 +48,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		onDoubleClick,
 		contextMenuHandler,
 		createBatchContextMenu,
+		navigationSubpath,
 	} = options;
 	const clickExcludeSelector = excludeSelector
 		? `${DEFAULT_EXCLUDE_SELECTOR}, ${excludeSelector}`
@@ -57,7 +59,9 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 	const openNote = (newTab = false) => {
 		const file = plugin.app.vault.getAbstractFileByPath(task.path);
 		if (file instanceof TFile) {
-			if (newTab) {
+			if (navigationSubpath) {
+				void plugin.app.workspace.openLinkText(task.path + navigationSubpath, "", newTab);
+			} else if (newTab) {
 				void plugin.app.workspace.openLinkText(task.path, "", true);
 			} else {
 				void plugin.app.workspace.getLeaf(false).openFile(file);

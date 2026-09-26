@@ -79,7 +79,7 @@
 		"monkey-around": "^3.0.0",
 		"obsidian": "^1.13.1",
 		"obsidian-test-mocks": "^3.11.0",
-		"obsidian-typings": "^4.49.0",
+		"obsidian-typings": "^6.37.0",
 		"prettier": "^3.6.2",
 		"stylelint": "^17.11.0",
 		"ts-jest": "^29.1.1",
@@ -108,6 +108,14 @@
 		"tasknotes-nlp-core": "^0.1.5",
 		"yaml": "^2.3.1",
 		"zod": "^3.24.0"
+	},
+	"peerDependencies": {
+		"electron": "*"
+	},
+	"peerDependenciesMeta": {
+		"electron": {
+			"optional": true
+		}
 	},
 	"overrides": {
 		"@hono/node-server": "2.1.0"

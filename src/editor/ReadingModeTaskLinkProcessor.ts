@@ -1,4 +1,4 @@
-import { MarkdownPostProcessor } from "obsidian";
+import { MarkdownPostProcessor, parseLinktext } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import TaskNotesPlugin from "../main";
 import {
@@ -426,7 +426,10 @@ export class ReadingModeTaskLinkProcessor {
 				const originalLinkPath = widgetEl.dataset.originalLinkPath || taskInfo.path;
 				const originalText = widgetEl.dataset.originalText || taskInfo.title;
 				const displayText = widgetEl.dataset.displayText || undefined;
-				const widget = new TaskLinkWidget(taskInfo, this.plugin, originalText, displayText);
+				const widget = new TaskLinkWidget(
+					taskInfo, this.plugin, originalText, displayText,
+					undefined, parseLinktext(originalLinkPath).subpath || undefined
+				);
 				const refreshedElement = this.createReadingModeWidget(
 					widget,
 					taskInfo,
@@ -484,7 +487,9 @@ export class ReadingModeTaskLinkProcessor {
 	private resolveLinkPath(linkPath: string, sourcePath: string): string | null {
 		try {
 			// Use Obsidian's metadata cache to resolve the link - it handles relative paths safely
-			const file = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, sourcePath);
+			const file = this.plugin.app.metadataCache.getFirstLinkpathDest(
+				parseLinktext(linkPath).path, sourcePath
+			);
 			return file?.path || null;
 		} catch (error) {
 			tasknotesLogger.debug("Error resolving link path:", {
@@ -581,7 +586,10 @@ export class ReadingModeTaskLinkProcessor {
 			}
 
 			// Create a task widget instance
-			const widget = new TaskLinkWidget(taskInfo, this.plugin, originalText, displayText);
+			const widget = new TaskLinkWidget(
+				taskInfo, this.plugin, originalText, displayText,
+				undefined, parseLinktext(originalLinkPath).subpath || undefined
+			);
 
 			// Create the DOM element for reading mode
 			const widgetElement = this.createReadingModeWidget(

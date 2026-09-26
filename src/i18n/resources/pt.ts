@@ -2500,6 +2500,8 @@ export const pt: TranslationTree = {
 		refreshCache: "Atualizar cache",
 		exportAllTasksIcs: "Exportar todas as tarefas como arquivo ICS",
 		viewReleaseNotes: "Ver notas de lançamento",
+		startTimeTrackingCurrentTask: "Iniciar registro de tempo da tarefa atual",
+		stopTimeTrackingCurrentTask: "Parar registro de tempo da tarefa atual",
 		startTimeTrackingWithSelector: "Iniciar registro de tempo (selecionar tarefa)",
 		editTimeEntries: "Editar registros de tempo (selecionar tarefa)",
 		createOrOpenTask: "Criar ou abrir tarefa",

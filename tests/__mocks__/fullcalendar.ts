@@ -3,6 +3,26 @@
  * Used for calendar views in TaskNotes plugin
  */
 
+// Minimal time-grid internals for unit-testing Canvas zoom correction.
+export class PositionCache {
+  els: HTMLElement[];
+  tops: number[];
+  bottoms: number[];
+  constructor(origin: HTMLElement, els: HTMLElement[]) {
+    this.els = els;
+    this.tops = els.map(el => el.getBoundingClientRect().top - origin.getBoundingClientRect().top);
+    this.bottoms = els.map(el => el.getBoundingClientRect().bottom - origin.getBoundingClientRect().top);
+  }
+  getHeight(index: number): number { return this.bottoms[index] - this.tops[index]; }
+}
+
+export class TimeColsSlatsCoords {
+  constructor(public positions: PositionCache) {}
+  computeTimeTop(duration: { milliseconds: number }): number {
+    return this.positions.tops[0] + this.positions.getHeight(0) * duration.milliseconds / 1800000;
+  }
+}
+
 // Mock event object structure
 export interface CalendarEvent {
   id: string;

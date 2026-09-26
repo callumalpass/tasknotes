@@ -1578,6 +1578,8 @@
   "commands.syncAllTasksGoogleCalendar": "a142233976ac0191e2a4d0221f7a9cd24054e7b3",
   "commands.syncCurrentTaskGoogleCalendar": "b3a2c7b2038e709301e677d8c1070ee0b8b257a1",
   "commands.viewReleaseNotes": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+  "commands.startTimeTrackingCurrentTask": "4355d3895598bd9c23c4b59df721a6bde5a91128",
+  "commands.stopTimeTrackingCurrentTask": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
   "commands.startTimeTrackingWithSelector": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
   "commands.editTimeEntries": "b8c5b41ec8f55348f7ae4acf087d62edaf588a0c",
   "commands.createOrOpenTask": "17dd392d243d955d9a4fdaf9a4c29066f26c408a",

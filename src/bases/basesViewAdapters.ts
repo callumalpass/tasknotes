@@ -1,4 +1,5 @@
-import type { App } from "obsidian";
+import type { App, BasesPropertyId } from "obsidian";
+import { convertBasesValueToNative } from "./basesValueConversion";
 import type { BasesDataItem } from "./helpers";
 
 type MetadataTypeManagerSource = {
@@ -119,6 +120,30 @@ export function buildBasesPathProperties(
 	}
 
 	return map;
+}
+
+// A formula used only as a custom view option may not be evaluated by Bases.
+// Read it through the public entry API rather than depending on internal caches.
+export function populateBasesFormulaProperty(
+	dataItems: readonly BasesDataItem[],
+	pathToProps: Map<string, Record<string, unknown>>,
+	propertyId: string
+): void {
+	if (!propertyId.startsWith("formula.")) return;
+
+	for (const item of dataItems) {
+		if (!item.path || !item.data || typeof item.data !== "object") continue;
+		const getValue = (item.data as { getValue?: (id: BasesPropertyId) => unknown }).getValue;
+		if (typeof getValue !== "function") continue;
+
+		try {
+			const value = getValue.call(item.data, propertyId);
+			const props = pathToProps.get(item.path);
+			if (props) props[propertyId] = convertBasesValueToNative(value);
+		} catch {
+			// A failed formula should not prevent the other swimlanes from rendering.
+		}
+	}
 }
 
 export function computeBasesFormulas(

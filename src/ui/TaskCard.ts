@@ -47,6 +47,8 @@ export interface TaskCardOptions {
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
 	/** Optional title override for inline/embedded cards, such as wikilink aliases. */
 	displayText?: string;
+	/** Heading or block target retained by inline task links when opening the note. */
+	navigationSubpath?: string;
 	/** How expanded subtasks/dependencies should interact with the current view filter. */
 	expandedRelationshipFilterMode?: "inherit" | "show-all";
 	/** Optional live resolver for the current expanded relationship filter mode. */
@@ -249,6 +251,7 @@ export function createTaskCard(
 		createTaskClickHandler({
 			task,
 			plugin,
+			navigationSubpath: opts.navigationSubpath,
 			contextMenuHandler: (e) => {
 				const path = card.dataset.taskPath;
 				if (!path) return;

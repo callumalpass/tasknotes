@@ -22,16 +22,15 @@ describe("Issue #2006: Pomodoro projected end time", () => {
 		expect(en.views.pomodoro.meta.running).toBe("{time} left · Ends at {endTime}");
 
 		const source = readRepoFile("src/views/PomodoroView.ts");
-		expect(source).toContain("getProjectedPomodoroEndTimeMs(state.timeRemaining)");
+		expect(source).toContain("getProjectedPomodoroEndTimeMs(state.timeRemaining, nowMs)");
 		expect(source).toContain("views.pomodoro.meta.running");
 	});
 
 	it("refreshes session metadata after timer duration adjustments", () => {
 		const source = readRepoFile("src/views/PomodoroView.ts");
 		const adjustSessionTimeBody =
-			source.match(/private adjustSessionTime\(seconds: number\)[\s\S]*?\n\t}\n/)?.[0] ??
-			"";
+			source.match(/private adjustSessionTime\(seconds: number\)[\s\S]*?\n\t}\n/)?.[0] ?? "";
 
-		expect(adjustSessionTimeBody).toContain("this.updateSessionMeta(updatedState);");
+		expect(adjustSessionTimeBody).toContain("this.updateDisplay();");
 	});
 });

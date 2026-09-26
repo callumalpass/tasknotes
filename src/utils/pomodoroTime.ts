@@ -24,7 +24,7 @@ export function getSessionDurationSeconds(session: PomodoroSession): number {
 }
 
 export function getActiveElapsedSeconds(session: PomodoroSession, nowMs = Date.now()): number {
-	return (session.activePeriods ?? []).reduce((total, period) => {
+	const elapsedMs = (session.activePeriods ?? []).reduce((total, period) => {
 		const startMs = parseTimestampMs(period.startTime);
 		if (startMs === null) {
 			return total;
@@ -32,8 +32,10 @@ export function getActiveElapsedSeconds(session: PomodoroSession, nowMs = Date.n
 
 		const endMs = parseTimestampMs(period.endTime) ?? nowMs;
 		const durationMs = Math.max(0, endMs - startMs);
-		return total + Math.floor(durationMs / 1000);
+		return total + durationMs;
 	}, 0);
+	// Preserve fractions across pause/resume periods; round only the total.
+	return Math.floor(elapsedMs / 1000);
 }
 
 export function getSessionRemainingSeconds(session: PomodoroSession, nowMs = Date.now()): number {

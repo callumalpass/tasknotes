@@ -17,6 +17,7 @@ jest.mock("../../../src/modals/TaskCreationModal", () => ({
 type MockMenu = {
 	hide: jest.Mock;
 	showAtMouseEvent: jest.Mock;
+	showAtPosition: jest.Mock;
 };
 
 const menuMock = Menu as unknown as jest.Mock;
@@ -44,6 +45,25 @@ function createCalendarView(calendar: { unselect: jest.Mock }): CalendarView {
 describe("Issue #1183: calendar selection menu lifecycle", () => {
 	afterEach(() => {
 		menuMock.mockClear();
+	});
+
+	it("positions a touch selection menu at the released finger", async () => {
+		const view = createCalendarView({ unselect: jest.fn() });
+		const event = new Event("touchend");
+		Object.defineProperty(event, "changedTouches", {
+			value: [{ clientX: 240, clientY: 360 }],
+		});
+
+		await (view as any).handleDateSelect({
+			allDay: false,
+			end: new Date("2026-06-01T11:00:00"),
+			jsEvent: event,
+			start: new Date("2026-06-01T09:00:00"),
+		});
+
+		const menu = menuMock.mock.results[0].value as MockMenu;
+		expect(menu.showAtPosition).toHaveBeenCalledWith({ x: 240, y: 360 });
+		expect(menu.showAtMouseEvent).not.toHaveBeenCalled();
 	});
 
 	it("does not clear a drag selection until the creation menu closes", async () => {

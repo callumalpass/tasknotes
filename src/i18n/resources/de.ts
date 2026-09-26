@@ -2499,6 +2499,8 @@ export const de: TranslationTree = {
 		refreshCache: "Cache aktualisieren",
 		exportAllTasksIcs: "Alle Aufgaben als ICS-Datei exportieren",
 		viewReleaseNotes: "Versionshinweise anzeigen",
+		startTimeTrackingCurrentTask: "Zeiterfassung für die aktuelle Aufgabe starten",
+		stopTimeTrackingCurrentTask: "Zeiterfassung für die aktuelle Aufgabe stoppen",
 		startTimeTrackingWithSelector: "Zeiterfassung starten (Aufgabe auswählen)",
 		editTimeEntries: "Zeiteinträge bearbeiten (Aufgabe auswählen)",
 		createOrOpenTask: "Aufgabe erstellen oder öffnen",

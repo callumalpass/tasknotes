@@ -23,6 +23,7 @@ export class TaskModalFocusGuards {
 	private pendingTitleFocusScrollPositions: TaskModalScrollPosition[] | null = null;
 	private mobileKeyboardFocusCleanups: Array<() => void> = [];
 	private mobileKeyboardScrollTimers: number[] = [];
+	private activeMobileKeyboardInput: HTMLElement | null = null;
 
 	constructor(elements: TaskModalFocusGuardElements) {
 		this.elements = elements;
@@ -75,32 +76,49 @@ export class TaskModalFocusGuards {
 		this.guardedMobileKeyboardInputs.add(input);
 		const shouldScrollOnFocus = options.scrollOnFocus ?? true;
 
-		const handleFocus = () => {
+		const handleFocus = (event: FocusEvent) => {
 			if (!this.isMobileLikeEnvironment()) return;
+			const target = event.target as HTMLElement;
+			this.activeMobileKeyboardInput = target;
 			this.elements.containerEl.addClass("is-mobile-keyboard-focused");
 			if (shouldScrollOnFocus) {
-				this.scheduleMobileKeyboardScrollIntoView(input);
+				this.scheduleMobileKeyboardScrollIntoView(target);
+			}
+		};
+		const viewport = input.ownerDocument.defaultView?.visualViewport;
+		const handleViewportResize = () => {
+			const target = this.activeMobileKeyboardInput;
+			if (shouldScrollOnFocus && target && input.contains(target)) {
+				this.scheduleMobileKeyboardScrollIntoView(target);
 			}
 		};
 		const handleBlur = () => {
 			const win = input.ownerDocument.defaultView || window;
-			win.setTimeout(() => {
+			const timer = win.setTimeout(() => {
+				this.mobileKeyboardScrollTimers = this.mobileKeyboardScrollTimers.filter(
+					(id) => id !== timer
+				);
 				const activeElement = input.ownerDocument.activeElement;
 				if (
 					!activeElement ||
 					!this.elements.modalEl.contains(activeElement) ||
 					!this.isKeyboardTextEntryElement(activeElement)
 				) {
+					this.activeMobileKeyboardInput = null;
 					this.elements.containerEl.removeClass("is-mobile-keyboard-focused");
 				}
 			}, 100);
+			this.mobileKeyboardScrollTimers.push(timer);
 		};
 
-		input.addEventListener("focus", handleFocus);
-		input.addEventListener("blur", handleBlur);
+		// Capture also covers CodeMirror's contenteditable and the textarea fallback.
+		input.addEventListener("focus", handleFocus, true);
+		input.addEventListener("blur", handleBlur, true);
+		viewport?.addEventListener("resize", handleViewportResize);
 		this.mobileKeyboardFocusCleanups.push(() => {
-			input.removeEventListener("focus", handleFocus);
-			input.removeEventListener("blur", handleBlur);
+			input.removeEventListener("focus", handleFocus, true);
+			input.removeEventListener("blur", handleBlur, true);
+			viewport?.removeEventListener("resize", handleViewportResize);
 		});
 	}
 
@@ -115,6 +133,7 @@ export class TaskModalFocusGuards {
 			win.clearTimeout(timer);
 		}
 		this.mobileKeyboardScrollTimers = [];
+		this.activeMobileKeyboardInput = null;
 		this.elements.containerEl.removeClass("is-mobile-keyboard-focused");
 		this.pendingTitleFocusScrollPositions = null;
 	}
@@ -188,6 +207,11 @@ export class TaskModalFocusGuards {
 		const InputConstructor = win.HTMLInputElement ?? HTMLInputElement;
 		const TextAreaConstructor = win.HTMLTextAreaElement ?? HTMLTextAreaElement;
 
+		const HTMLElementConstructor = win.HTMLElement ?? HTMLElement;
+		if (isInstanceOf(element, HTMLElementConstructor) && element.isContentEditable) {
+			return true;
+		}
+
 		if (isInstanceOf(element, TextAreaConstructor)) {
 			return true;
 		}
@@ -216,7 +240,9 @@ export class TaskModalFocusGuards {
 				this.mobileKeyboardScrollTimers = this.mobileKeyboardScrollTimers.filter(
 					(id) => id !== timer
 				);
-				this.scrollMobileKeyboardTargetIntoView(input);
+				if (this.activeMobileKeyboardInput === input) {
+					this.scrollMobileKeyboardTargetIntoView(input);
+				}
 			}, delay);
 			this.mobileKeyboardScrollTimers.push(timer);
 		}

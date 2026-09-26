@@ -278,7 +278,9 @@ export class AutoArchiveService {
 	 * Get the current auto-archive queue from plugin data
 	 */
 	private async getQueue(): Promise<PendingAutoArchive[]> {
-		const data = await this.plugin.loadData();
+		const data = (await this.plugin.loadData()) as {
+			autoArchiveQueue?: PendingAutoArchive[];
+		} | null;
 		return data?.autoArchiveQueue || [];
 	}
 

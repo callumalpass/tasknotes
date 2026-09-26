@@ -1,4 +1,5 @@
 import { EditorState, EditorSelection } from '@codemirror/state';
+import { TFile } from 'obsidian';
 import { buildTaskLinkDecorations } from '../../../src/editor/TaskLinkOverlay';
 import { TaskLinkWidget } from '../../../src/editor/TaskLinkWidget';
 import { PluginFactory, TaskFactory } from '../../helpers/mock-factories';
@@ -13,7 +14,7 @@ describe('Issue #1567 - Inline task card display inconsistent on cache miss', ()
     let mockPlugin: TaskNotesPlugin;
     let mockTask: TaskInfo;
     let activeWidgets: Map<string, TaskLinkWidget>;
-    let lastKnownWidgets: Map<string, TaskLinkWidget>;
+    let lastKnownWidgets: Map<string, TaskInfo>;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -30,18 +31,23 @@ describe('Issue #1567 - Inline task card display inconsistent on cache miss', ()
             },
             cacheManager: {
                 ...PluginFactory.createMockPlugin().cacheManager,
+                isValidFile: jest.fn(() => true),
                 getCachedTaskInfoSync: jest.fn().mockImplementation((path: string) => {
                     if (path === 'test-task.md') return mockTask;
                     return null;
                 })
             },
             app: {
+                vault: {
+                    getAbstractFileByPath: jest.fn(() => new TFile('test-task.md')),
+                },
                 workspace: {
                     getActiveViewOfType: jest.fn().mockReturnValue({
                         file: { path: 'current-file.md' }
                     })
                 },
                 metadataCache: {
+                    getFileCache: jest.fn(() => null),
                     getFirstLinkpathDest: jest.fn().mockImplementation((linkPath: string) => {
                         if (linkPath === 'test-task') {
                             return { path: 'test-task.md' };

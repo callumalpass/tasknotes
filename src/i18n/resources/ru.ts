@@ -2496,6 +2496,8 @@ export const ru: TranslationTree = {
 		refreshCache: "Обновить кэш",
 		exportAllTasksIcs: "Экспортировать все задачи как файл ICS",
 		viewReleaseNotes: "Посмотреть примечания к выпуску",
+		startTimeTrackingCurrentTask: "Начать отслеживание времени для текущей задачи",
+		stopTimeTrackingCurrentTask: "Остановить отслеживание времени для текущей задачи",
 		startTimeTrackingWithSelector: "Начать отслеживание времени (выбрать задачу)",
 		editTimeEntries: "Редактировать временные записи (выбрать задачу)",
 		createOrOpenTask: "Создать или открыть задачу",

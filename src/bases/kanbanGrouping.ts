@@ -902,14 +902,21 @@ export function applyKanbanSwimLaneOrderToMap<TTask>(options: {
 	columnKeys: readonly string[];
 	swimLaneOrders: Readonly<Record<string, readonly string[]>>;
 	hideEmptySwimLanes: boolean;
+	priorityKeys: readonly string[];
 	isPriorityField: (propertyId: string | null) => boolean;
 	isStatusField: (propertyId: string | null) => boolean;
 	getPriorityWeight: (key: string) => number;
 	getStatusOrder: (key: string) => number;
 }): Map<string, Map<string, TTask[]>> {
+	const actualKeys = Array.from(options.swimLanes.keys());
+	if (!options.hideEmptySwimLanes && options.isPriorityField(options.swimLanePropertyId)) {
+		for (const key of options.priorityKeys) {
+			if (!options.swimLanes.has(key)) actualKeys.push(key);
+		}
+	}
 	const orderedKeys = applyKanbanSwimLaneOrder({
 		swimLanePropertyId: options.swimLanePropertyId,
-		actualKeys: Array.from(options.swimLanes.keys()),
+		actualKeys,
 		swimLaneOrders: options.swimLaneOrders,
 		hideEmptySwimLanes: options.hideEmptySwimLanes,
 		isPriorityField: options.isPriorityField,

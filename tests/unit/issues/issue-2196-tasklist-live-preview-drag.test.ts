@@ -37,7 +37,12 @@ describe("Issue #2196: embedded Task List Live Preview drag", () => {
 		document.body.innerHTML = "";
 	});
 
-	it("keeps reorder-card press events from reaching the Live Preview editor", () => {
+	it.each([
+		[false, "title"],
+		[false, "handle"],
+		[true, "title"],
+		[true, "handle"],
+	])("preserves native drag defaults and isolates presses (embedded=%s, origin=%s)", (embedded, origin) => {
 		const view = createView();
 		const task = TaskFactory.createTask({ path: "tasks/live-preview-drag.md" });
 		const editorParent = document.createElement("div");
@@ -47,7 +52,7 @@ describe("Issue #2196: embedded Task List Live Preview drag", () => {
 		const editorMouseDown = jest.fn();
 		const editorMouseUp = jest.fn();
 
-		editorParent.setAttribute("contenteditable", "true");
+		if (embedded) editorParent.setAttribute("contenteditable", "true");
 		editorParent.addEventListener("pointerdown", editorPointerDown);
 		editorParent.addEventListener("mousedown", editorMouseDown);
 		editorParent.addEventListener("mouseup", editorMouseUp);
@@ -58,14 +63,18 @@ describe("Issue #2196: embedded Task List Live Preview drag", () => {
 
 		(view as any).setupCardDragHandlers(card, task, null);
 
-		title.dispatchEvent(new Event("pointerdown", { bubbles: true, cancelable: true }));
+		const target = origin === "handle"
+			? card.querySelector<HTMLElement>("[data-tn-drag-handle='true']")!
+			: title;
+		const pointerDown = new Event("pointerdown", { bubbles: true, cancelable: true });
+		target.dispatchEvent(pointerDown);
 		const mouseDown = new MouseEvent("mousedown", {
 			bubbles: true,
 			cancelable: true,
 			button: 0,
 		});
-		title.dispatchEvent(mouseDown);
-		title.dispatchEvent(
+		target.dispatchEvent(mouseDown);
+		target.dispatchEvent(
 			new MouseEvent("mouseup", {
 				bubbles: true,
 				cancelable: true,
@@ -73,7 +82,9 @@ describe("Issue #2196: embedded Task List Live Preview drag", () => {
 			})
 		);
 
-		expect(mouseDown.defaultPrevented).toBe(true);
+		// #2210: cancelling mousedown prevents the browser from ever firing dragstart.
+		expect(pointerDown.defaultPrevented).toBe(false);
+		expect(mouseDown.defaultPrevented).toBe(false);
 		expect(editorPointerDown).not.toHaveBeenCalled();
 		expect(editorMouseDown).not.toHaveBeenCalled();
 		expect(editorMouseUp).not.toHaveBeenCalled();

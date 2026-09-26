@@ -9,7 +9,8 @@ export type TaskModalTaskSelectorStatus = "opened" | "empty" | "error";
 export type TaskModalTaskSelectorOpener = (
 	plugin: TaskNotesPlugin,
 	tasks: TaskInfo[],
-	onChooseTask: (task: TaskInfo | null) => void
+	onChooseTask: (task: TaskInfo | null) => void,
+	options?: Parameters<typeof openTaskSelector>[3]
 ) => void;
 
 export interface OpenTaskModalTaskSelectorOptions {
@@ -22,6 +23,7 @@ export interface OpenTaskModalTaskSelectorOptions {
 	openFailedMessageKey: string;
 	logOperation: string;
 	openSelector?: TaskModalTaskSelectorOpener;
+	selectorOptions?: Parameters<typeof openTaskSelector>[3];
 	showNotice?: (message: string) => void;
 	logger?: Pick<TaskNotesLogger, "error">;
 }
@@ -38,6 +40,7 @@ export async function openTaskModalTaskSelector({
 	openFailedMessageKey,
 	logOperation,
 	openSelector = openTaskSelector,
+	selectorOptions,
 	showNotice = (message) => {
 		new Notice(message);
 	},
@@ -52,12 +55,17 @@ export async function openTaskModalTaskSelector({
 			return "empty";
 		}
 
-		openSelector(plugin, candidates, (task) => {
+		const onChooseTask = (task: TaskInfo | null) => {
 			if (!task) {
 				return;
 			}
 			onSelect(task);
-		});
+		};
+		if (selectorOptions) {
+			openSelector(plugin, candidates, onChooseTask, selectorOptions);
+		} else {
+			openSelector(plugin, candidates, onChooseTask);
+		}
 		return "opened";
 	} catch (error) {
 		logger.error("Failed to open task selector", {

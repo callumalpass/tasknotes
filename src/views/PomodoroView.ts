@@ -17,9 +17,9 @@ import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { getTaskWithInstanceStatus, isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
 import {
 	formatPomodoroTime,
-	getActiveElapsedSeconds,
 	getProjectedPomodoroEndTimeMs,
-	getSessionProgressRatio,
+	getSessionDurationSeconds,
+	getSessionRemainingSeconds,
 	parsePomodoroDurationInput,
 } from "../utils/pomodoroTime";
 import { formatTime } from "../utils/dateUtils";
@@ -95,9 +95,19 @@ export class PomodoroView extends ItemView {
 	// Resize handling
 	private resizeObserver: ResizeObserver | null = null;
 	private resizeTimeout: number | null = null;
+	private resizeWindow: Window | null = null;
 	private functionListeners: (() => void)[] = [];
 	private currentCircleSize = 300;
 	private currentCircumference = 0;
+	private lastLayoutSize: PomodoroLayoutSize | null = null;
+	private responsiveClass: string | null = null;
+	private workspaceListeners: EventRef[] = [];
+	private visibilityObserver: IntersectionObserver | null = null;
+	private wasVisible = false;
+	private isClosed = false;
+	private openGeneration = 0;
+	private displayStateKey: string | null = null;
+	private taskCardDirty = false;
 
 	// Event listeners
 	private listeners: EventRef[] = [];
@@ -160,13 +170,9 @@ export class PomodoroView extends ItemView {
 		});
 		this.listeners.push(interruptListener);
 
-		const tickListener = this.plugin.emitter.on(
-			EVENT_POMODORO_TICK,
-			({ timeRemaining, session }) => {
-				this.updateTimer(timeRemaining);
-				this.updateDisplay(session);
-			}
-		);
+		const tickListener = this.plugin.emitter.on(EVENT_POMODORO_TICK, ({ session }) => {
+			this.updateDisplay(session);
+		});
 		this.listeners.push(tickListener);
 
 		// Listen for task updates to refresh the selected task card
@@ -205,40 +211,82 @@ export class PomodoroView extends ItemView {
 	}
 
 	async onOpen() {
-		// Wait for the plugin to be fully initialized before proceeding
+		this.isClosed = false;
+		const generation = ++this.openGeneration;
 		await this.plugin.onReady();
+		if (this.isClosed || generation !== this.openGeneration) return;
+		this.registerEvents();
 		await this.render();
+		if (this.isClosed || generation !== this.openGeneration) return;
+		// Observers also handle initially hidden/zero-size panes; no retry timers needed.
+		this.setupResizeHandling();
+	}
 
-		// Robust setup for cases where view was already open during reload
-		this.ensureResizeHandlingSetup();
+	onResize(): void {
+		// Obsidian can move an existing leaf between the main window and a popout.
+		if (this.resizeWindow && this.resizeWindow !== this.contentEl.ownerDocument.defaultView) {
+			this.setupResizeHandling();
+			return;
+		}
+		this.handleVisibilityChange();
+		this.updateResponsiveLayout();
+	}
 
-		// Also listen for workspace ready event as an additional safeguard
-		if (this.plugin.app.workspace.layoutReady) {
-			// Workspace is already ready
-			window.setTimeout(() => this.ensureResizeHandlingSetup(), 50);
-		} else {
-			// Wait for workspace to be ready
-			this.plugin.app.workspace.onLayoutReady(() => {
-				this.ensureResizeHandlingSetup();
-			});
+	private isViewVisible(): boolean {
+		return (
+			!this.isClosed &&
+			this.contentEl.ownerDocument.visibilityState !== "hidden" &&
+			this.contentEl.isShown()
+		);
+	}
+
+	private handleVisibilityChange(): void {
+		if (this.isClosed) return;
+		const visible = this.isViewVisible();
+		if (visible === this.wasVisible) return;
+		this.wasVisible = visible;
+		this.contentEl
+			.querySelector(".pomodoro-view")
+			?.classList.toggle("pomodoro-view--rendering-paused", !visible);
+		if (visible) {
+			this.displayStateKey = null;
+			this.updateDisplay();
+			if (this.taskCardDirty) this.updateTaskCardDisplay(this.currentSelectedTask);
 		}
 	}
 
 	async onClose() {
+		this.isClosed = true;
+		this.openGeneration++;
+		this.wasVisible = false;
+		this.displayStateKey = null;
+		this.lastLayoutSize = null;
+		this.responsiveClass = null;
+		this.currentCircleSize = 300;
+		this.currentCircumference = 0;
+		this.taskCardDirty = false;
+		this.visibilityObserver?.disconnect();
+		this.visibilityObserver = null;
 		// Clean up resize handling
 		if (this.resizeObserver) {
 			this.resizeObserver.disconnect();
 			this.resizeObserver = null;
 		}
 
-		if (this.resizeTimeout) {
-			window.clearTimeout(this.resizeTimeout);
+		if (this.resizeTimeout !== null) {
+			(this.resizeWindow || window).clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = null;
 		}
 
-		// Remove event listeners
+		this.resizeWindow = null;
+
+		// Each event reference must be removed from its owning emitter.
 		this.listeners.forEach((listener) => this.plugin.emitter.offref(listener));
+		this.listeners = [];
+		this.workspaceListeners.forEach((listener) => this.plugin.app.workspace.offref(listener));
+		this.workspaceListeners = [];
 		this.functionListeners.forEach((unsubscribe) => unsubscribe());
+		this.functionListeners = [];
 
 		// Clear cached references to prevent memory leaks
 		this.timerDisplay = null;
@@ -544,108 +592,59 @@ export class PomodoroView extends ItemView {
 		// Initial display update
 		this.updateDisplay();
 		this.refreshStats();
-
-		// Update initial timer based on current state
-		if (this.plugin.pomodoroService) {
-			const state = this.plugin.pomodoroService.getState();
-			this.updateTimer(state.timeRemaining);
-		}
 	}
 
 	private setupResizeHandling(): void {
-		// Clean up previous resize handling
-		if (this.resizeObserver) {
-			this.resizeObserver.disconnect();
-			this.resizeObserver = null;
-		}
-		if (this.resizeTimeout) {
-			window.clearTimeout(this.resizeTimeout);
+		if (this.isClosed) return;
+		const win = this.contentEl.ownerDocument.defaultView || window;
+		this.resizeObserver?.disconnect();
+		this.visibilityObserver?.disconnect();
+		if (this.resizeTimeout !== null) {
+			(this.resizeWindow || win).clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = null;
 		}
-		// Clean up previous listeners
+		this.resizeWindow = win;
+		this.lastLayoutSize = null;
+		this.workspaceListeners.forEach((listener) => this.plugin.app.workspace.offref(listener));
+		this.workspaceListeners = [];
 		this.functionListeners.forEach((unsubscribe) => unsubscribe());
 		this.functionListeners = [];
 
-		// Use the correct window reference (supports popout windows)
-		const win = this.contentEl.ownerDocument.defaultView || window;
-
-		// Debounced resize handler
-		const debouncedResize = () => {
-			if (this.resizeTimeout) {
-				win.clearTimeout(this.resizeTimeout);
-			}
+		const scheduleLayout = () => {
+			if (this.isClosed || this.resizeWindow !== win) return;
+			this.handleVisibilityChange();
+			if (this.resizeTimeout !== null) win.clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = win.setTimeout(() => {
+				this.resizeTimeout = null;
+				this.handleVisibilityChange();
 				this.updateResponsiveLayout();
 			}, 150);
 		};
-
-		// Use ResizeObserver to detect container size changes
 		if (win.ResizeObserver) {
-			this.resizeObserver = new win.ResizeObserver(debouncedResize);
-			const pomodoroContainer = this.contentEl.querySelector(".pomodoro-view");
-			if (pomodoroContainer) {
-				this.resizeObserver.observe(this.contentEl);
-			}
+			this.resizeObserver = new win.ResizeObserver(scheduleLayout);
+			this.resizeObserver.observe(this.contentEl);
 		}
-
-		// Listen for workspace layout changes (Obsidian-specific)
-		const layoutChangeListener = this.plugin.app.workspace.on("layout-change", debouncedResize);
-		this.listeners.push(layoutChangeListener);
-
-		// Listen for window resize as fallback
-		win.addEventListener("resize", debouncedResize);
-		this.functionListeners.push(() => win.removeEventListener("resize", debouncedResize));
-
-		// Listen for active leaf changes that might affect layout
-		const activeLeafListener = this.plugin.app.workspace.on("active-leaf-change", (leaf) => {
-			if (leaf === this.leaf) {
-				// Small delay to ensure layout has settled after leaf activation
-				win.setTimeout(() => {
-					this.updateResponsiveLayout();
-				}, 100);
-			}
-		});
-		this.listeners.push(activeLeafListener);
-
-		// Set initial responsive state
+		if (win.IntersectionObserver) {
+			this.visibilityObserver = new win.IntersectionObserver(scheduleLayout);
+			this.visibilityObserver.observe(this.contentEl);
+		}
+		this.workspaceListeners.push(
+			this.plugin.app.workspace.on("layout-change", scheduleLayout),
+			this.plugin.app.workspace.on("active-leaf-change", scheduleLayout)
+		);
+		const doc = this.contentEl.ownerDocument;
+		doc.addEventListener("visibilitychange", scheduleLayout);
+		win.addEventListener("resize", scheduleLayout);
+		this.functionListeners.push(
+			() => doc.removeEventListener("visibilitychange", scheduleLayout),
+			() => win.removeEventListener("resize", scheduleLayout)
+		);
+		this.handleVisibilityChange();
 		this.updateResponsiveLayout();
 	}
 
-	private ensureResizeHandlingSetup(attempt = 0): void {
-		const maxAttempts = 10;
-		const delay = Math.min(100 * Math.pow(1.5, attempt), 1000); // Exponential backoff, max 1s
-
-		window.setTimeout(() => {
-			// Check if we need to set up resize handling
-			if (!this.resizeObserver) {
-				const pomodoroContainer = this.contentEl.querySelector(
-					".pomodoro-view"
-				) as HTMLElement;
-				if (pomodoroContainer) {
-					const viewportRect = this.contentEl.getBoundingClientRect();
-					const contentRect = pomodoroContainer.getBoundingClientRect();
-					const { width, height } = resolvePomodoroLayoutSize(
-						{ width: viewportRect.width, height: viewportRect.height },
-						{ width: contentRect.width, height: contentRect.height }
-					);
-
-					// Check if container has proper dimensions (not zero width)
-					if (width > 0 && height > 0) {
-						// DOM is ready with proper dimensions, set up resize handling
-						this.setupResizeHandling();
-					} else if (attempt < maxAttempts) {
-						// Container exists but no dimensions yet, try again
-						this.ensureResizeHandlingSetup(attempt + 1);
-					}
-				} else if (attempt < maxAttempts) {
-					// DOM not ready yet, try again
-					this.ensureResizeHandlingSetup(attempt + 1);
-				}
-			}
-		}, delay);
-	}
-
 	private updateResponsiveLayout(): void {
+		if (!this.isViewVisible()) return;
 		const pomodoroContainer = this.contentEl.querySelector(".pomodoro-view") as HTMLElement;
 		if (!pomodoroContainer) return;
 
@@ -656,95 +655,38 @@ export class PomodoroView extends ItemView {
 			{ width: containerRect.width, height: containerRect.height }
 		);
 
+		if (containerWidth <= 0 || containerHeight <= 0) return;
+		if (
+			this.lastLayoutSize?.width === containerWidth &&
+			this.lastLayoutSize.height === containerHeight
+		)
+			return;
+		this.lastLayoutSize = { width: containerWidth, height: containerHeight };
+
 		// Calculate a responsive scale factor based on both width and height
 		// Use the smaller dimension as the limiting factor, but weight width more heavily
 		const widthScale = Math.min(containerWidth / 600, 1); // 600px is our "ideal" width
 		const heightScale = Math.min(containerHeight / 800, 1); // 800px is our "ideal" height
 		const responsiveScale = Math.min(widthScale * 0.7 + heightScale * 0.3, 1); // Weight width 70%, height 30%
 
-		// Remove all responsive classes first
-		pomodoroContainer.classList.remove(
-			"pomodoro-view--tiny",
-			"pomodoro-view--extra-narrow",
-			"pomodoro-view--very-narrow",
-			"pomodoro-view--narrow",
-			"pomodoro-view--small",
-			"pomodoro-view--medium-small",
-			"pomodoro-view--medium",
-			"pomodoro-view--wide"
-		);
-
-		// Apply appropriate responsive class based on granular breakpoints (still use width for layout)
-		if (containerWidth <= 200) {
-			pomodoroContainer.classList.add("pomodoro-view--tiny");
-		} else if (containerWidth <= 250) {
-			pomodoroContainer.classList.add("pomodoro-view--extra-narrow");
-		} else if (containerWidth <= 300) {
-			pomodoroContainer.classList.add("pomodoro-view--very-narrow");
-		} else if (containerWidth <= 350) {
-			pomodoroContainer.classList.add("pomodoro-view--narrow");
-		} else if (containerWidth <= 400) {
-			pomodoroContainer.classList.add("pomodoro-view--small");
-		} else if (containerWidth <= 500) {
-			pomodoroContainer.classList.add("pomodoro-view--medium-small");
-		} else if (containerWidth <= 600) {
-			pomodoroContainer.classList.add("pomodoro-view--medium");
-		} else {
-			pomodoroContainer.classList.add("pomodoro-view--wide");
+		const breakpoints: [number, string][] = [
+			[200, "tiny"],
+			[250, "extra-narrow"],
+			[300, "very-narrow"],
+			[350, "narrow"],
+			[400, "small"],
+			[500, "medium-small"],
+			[600, "medium"],
+		];
+		const size = breakpoints.find(([width]) => containerWidth <= width)?.[1] ?? "wide";
+		const nextClass = `pomodoro-view--${size}`;
+		if (nextClass !== this.responsiveClass) {
+			if (this.responsiveClass) pomodoroContainer.classList.remove(this.responsiveClass);
+			pomodoroContainer.classList.add(nextClass);
+			this.responsiveClass = nextClass;
 		}
-
-		// Apply font size directly via JavaScript, now considering both width and height
-		const timerDisplay = pomodoroContainer.querySelector(
-			".pomodoro-view__timer-display"
-		) as HTMLElement;
-		const timerInput = pomodoroContainer.querySelector(
-			".pomodoro-view__timer-input"
-		) as HTMLElement;
-		if (timerDisplay || timerInput) {
-			let baseFontSize: number;
-			let fontWeight: string;
-
-			// Base font sizes still determined by width breakpoints
-			if (containerWidth <= 200) {
-				baseFontSize = 2;
-				fontWeight = "700";
-			} else if (containerWidth <= 250) {
-				baseFontSize = 2.2;
-				fontWeight = "650";
-			} else if (containerWidth <= 300) {
-				baseFontSize = 2.5;
-				fontWeight = "600";
-			} else if (containerWidth <= 350) {
-				baseFontSize = 3;
-				fontWeight = "600";
-			} else if (containerWidth <= 400) {
-				baseFontSize = 3.2;
-				fontWeight = "550";
-			} else if (containerWidth <= 500) {
-				baseFontSize = 3.6;
-				fontWeight = "500";
-			} else if (containerWidth <= 600) {
-				baseFontSize = 4;
-				fontWeight = "500";
-			} else {
-				baseFontSize = 4.5;
-				fontWeight = "400";
-			}
-
-			// Apply height-based scaling to the base font size
-			const scaledFontSize = Math.max(baseFontSize * responsiveScale, 1.5); // Minimum 1.5rem
-			const fontSize = `${scaledFontSize.toFixed(1)}rem`;
-
-			// Apply styles directly via JavaScript
-			if (timerDisplay) {
-				timerDisplay.style.fontSize = fontSize;
-				timerDisplay.style.fontWeight = fontWeight;
-			}
-			if (timerInput) {
-				timerInput.style.fontSize = fontSize;
-				timerInput.style.fontWeight = fontWeight;
-			}
-		}
+		// CSS owns typography, shared by the timer label and editable input.
+		pomodoroContainer.style.setProperty("--pomodoro-scale", responsiveScale.toString());
 
 		// Update progress circle size based on available space
 		this.updateProgressCircleSize(containerWidth, containerHeight);
@@ -862,8 +804,24 @@ export class PomodoroView extends ItemView {
 	}
 
 	private async selectTask(task: TaskInfo | null) {
+		if (this.isClosed) return;
 		this.currentSelectedTask = task;
+		this.updateTaskCardDisplay(task);
+		await this.plugin.pomodoroService.saveLastSelectedTask(task?.path);
+		if (this.isClosed) return;
+		const state = this.plugin.pomodoroService.getState();
+		if (state.currentSession && state.currentSession.type === "work") {
+			await this.plugin.pomodoroService.assignTaskToCurrentSession(task || undefined);
+		}
+	}
 
+	private updateTaskCardDisplay(task: TaskInfo | null) {
+		if (!this.isViewVisible()) {
+			this.taskCardDirty = true;
+			return;
+		}
+		if (!this.taskCardContainer) return;
+		this.taskCardDirty = false;
 		// Update button text - keep it simple since we have the task card
 		if (this.taskSelectButton) {
 			if (task) {
@@ -890,22 +848,6 @@ export class PomodoroView extends ItemView {
 				this.taskClearButton.addClass("pomodoro-view__task-clear-button--hidden");
 			}
 		}
-
-		// Update task card display
-		this.updateTaskCardDisplay(task);
-
-		// Save selection for persistence
-		await this.plugin.pomodoroService.saveLastSelectedTask(task?.path);
-
-		// If there's a current work session, update its task assignment
-		const state = this.plugin.pomodoroService.getState();
-		if (state.currentSession && state.currentSession.type === "work") {
-			await this.plugin.pomodoroService.assignTaskToCurrentSession(task || undefined);
-		}
-	}
-
-	private updateTaskCardDisplay(task: TaskInfo | null) {
-		if (!this.taskCardContainer) return;
 
 		// Clear existing content
 		this.taskCardContainer.empty();
@@ -939,6 +881,7 @@ export class PomodoroView extends ItemView {
 	}
 
 	private async restoreLastSelectedTask() {
+		const generation = this.openGeneration;
 		try {
 			// Check if pomodoroService is available
 			if (!this.plugin.pomodoroService) {
@@ -946,11 +889,13 @@ export class PomodoroView extends ItemView {
 			}
 
 			const lastTaskPath = await this.plugin.pomodoroService.getLastSelectedTaskPath();
-			if (lastTaskPath) {
+			if (lastTaskPath && !this.isClosed && generation === this.openGeneration) {
 				// Use the optimized getTaskByPath method
 				const task = await this.plugin.cacheManager.getTaskByPath(lastTaskPath);
 
 				if (
+					!this.isClosed &&
+					generation === this.openGeneration &&
 					task &&
 					!isTaskInstanceCompleted(
 						task,
@@ -974,43 +919,19 @@ export class PomodoroView extends ItemView {
 	}
 
 	private async updateTaskButtonFromPath(taskPath: string) {
+		const generation = this.openGeneration;
 		try {
 			// Use the cache manager as the single source of truth
 			const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
 
-			if (task) {
-				this.currentSelectedTask = task;
-				if (this.taskSelectButton) {
-					this.taskSelectButton.textContent = this.t("views.pomodoro.buttons.changeTask");
-					setTooltip(
-						this.taskSelectButton,
-						this.t("views.pomodoro.buttons.selectDifferentTask"),
-						{ placement: "top" }
-					);
-					this.taskSelectButton.removeClass("pomodoro-no-task");
-					this.taskSelectButton.removeClass("pomodoro-view__task-select-button--no-task");
-				}
-
-				// Update clear button and task card display
-				if (this.taskClearButton) {
-					this.taskClearButton.removeClass("pomodoro-view__task-clear-button--hidden");
-				}
-				this.updateTaskCardDisplay(task);
+			if (
+				this.isClosed ||
+				generation !== this.openGeneration ||
+				this.plugin.pomodoroService.getState().currentSession?.taskPath !== taskPath
+			)
 				return;
-			}
-
-			// Task not found - reset to no task selected
-			this.currentSelectedTask = null;
-			if (this.taskSelectButton) {
-				this.taskSelectButton.textContent = this.t("views.pomodoro.buttons.chooseTask");
-				// Remove tooltip for no-task state
-				this.taskSelectButton.removeAttribute("title");
-				this.taskSelectButton.addClass("pomodoro-view__task-select-button--no-task");
-			}
-			if (this.taskClearButton) {
-				this.taskClearButton.addClass("pomodoro-view__task-clear-button--hidden");
-			}
-			this.updateTaskCardDisplay(null);
+			this.currentSelectedTask = task ?? null;
+			this.updateTaskCardDisplay(this.currentSelectedTask);
 		} catch (error) {
 			tasknotesLogger.error("Error updating task button from path:", {
 				category: "persistence",
@@ -1025,6 +946,12 @@ export class PomodoroView extends ItemView {
 		task?: TaskInfo,
 		options: { refreshStats?: boolean } = {}
 	) {
+		if (this.isClosed) return;
+		if (options.refreshStats) this.refreshStats();
+		if (!this.isViewVisible()) {
+			this.displayStateKey = null;
+			return;
+		}
 		// Check if pomodoroService is available
 		if (!this.plugin.pomodoroService) {
 			// Set default UI state when service is not available
@@ -1035,13 +962,37 @@ export class PomodoroView extends ItemView {
 			return;
 		}
 
+		const nowMs = Date.now();
 		const state = this.plugin.pomodoroService.getState();
-
-		// Update timer and progress
+		// One timestamp and remaining-time snapshot drives all countdown output,
+		// including the first render after a hidden/backgrounded pane is shown.
+		if (state.isRunning && state.currentSession) {
+			state.timeRemaining = getSessionRemainingSeconds(state.currentSession, nowMs);
+		}
 		this.updateTimer(state.timeRemaining);
 		this.updateProgress(state);
-		this.updateSessionMeta(state);
+		this.updateSessionMeta(state, nowMs);
 
+		const stateKey = JSON.stringify([
+			state.isRunning,
+			state.currentSession?.id,
+			state.currentSession?.type,
+			state.currentSession?.taskPath,
+			state.nextSessionType,
+		]);
+		if (stateKey === this.displayStateKey) return;
+		this.displayStateKey = stateKey;
+		if (
+			this.statElements.pomodoros &&
+			this.statElements.pomodoros.textContent !== this.todaysPomodoros.toString()
+		) {
+			this.statElements.pomodoros.textContent = this.todaysPomodoros.toString();
+		}
+		this.contentEl
+			.querySelector(".pomodoro-view")
+			?.classList.toggle("pomodoro-view--rendering-paused", !state.isRunning);
+
+		// Only state transitions touch controls, status and task selection.
 		// Update status
 		if (this.statusDisplay) {
 			if (state.isRunning && state.currentSession) {
@@ -1078,7 +1029,10 @@ export class PomodoroView extends ItemView {
 
 		// Update task selector button to reflect current session
 		if (this.taskSelectButton) {
-			if (state.currentSession?.taskPath && !this.currentSelectedTask) {
+			if (
+				state.currentSession?.taskPath &&
+				state.currentSession.taskPath !== this.currentSelectedTask?.path
+			) {
 				// Try to get the task info for display
 				void this.updateTaskButtonFromPath(state.currentSession.taskPath);
 			}
@@ -1150,13 +1104,9 @@ export class PomodoroView extends ItemView {
 				this.timerDisplay.setAttribute("aria-disabled", "true");
 			}
 		}
-
-		if (options.refreshStats) {
-			this.refreshStats();
-		}
 	}
 
-	private updateSessionMeta(state: PomodoroState): void {
+	private updateSessionMeta(state: PomodoroState, nowMs = Date.now()): void {
 		if (!this.sessionMetaDisplay) {
 			return;
 		}
@@ -1168,7 +1118,7 @@ export class PomodoroView extends ItemView {
 			const sessionLabel = this.getSessionTypeLabel(state.currentSession.type);
 			if (state.isRunning) {
 				const projectedEndTime = formatTime(
-					new Date(getProjectedPomodoroEndTimeMs(state.timeRemaining)),
+					new Date(getProjectedPomodoroEndTimeMs(state.timeRemaining, nowMs)),
 					this.plugin.settings.calendarViewSettings.timeFormat
 				);
 				text = this.t("views.pomodoro.meta.running", {
@@ -1196,7 +1146,8 @@ export class PomodoroView extends ItemView {
 			});
 		}
 
-		this.sessionMetaDisplay.textContent = text;
+		if (this.sessionMetaDisplay.textContent !== text)
+			this.sessionMetaDisplay.textContent = text;
 	}
 
 	private getSessionTypeLabel(type: PomodoroSession["type"]): string {
@@ -1247,7 +1198,7 @@ export class PomodoroView extends ItemView {
 		if (parsedSeconds === null) {
 			new Notice(this.t("views.pomodoro.notices.invalidDuration"));
 			const state = this.plugin.pomodoroService?.getState();
-			if (state) {
+			if (state && this.isViewVisible()) {
 				this.updateTimer(state.timeRemaining);
 			}
 			return;
@@ -1264,10 +1215,7 @@ export class PomodoroView extends ItemView {
 			this.plugin.pomodoroService.adjustPreparedTimer(parsedSeconds);
 		}
 
-		const updatedState = this.plugin.pomodoroService.getState();
-		this.updateTimer(updatedState.timeRemaining);
-		this.updateProgress(updatedState);
-		this.updateSessionMeta(updatedState);
+		this.updateDisplay();
 	}
 
 	private cancelTimerEdit(): void {
@@ -1279,7 +1227,7 @@ export class PomodoroView extends ItemView {
 		this.timerInput.addClass("pomodoro-view__timer-input--hidden");
 		this.timerDisplay.removeClass("pomodoro-view__timer-display--hidden");
 		const state = this.plugin.pomodoroService?.getState();
-		if (state) {
+		if (state && this.isViewVisible()) {
 			this.updateTimer(state.timeRemaining);
 		}
 	}
@@ -1291,14 +1239,14 @@ export class PomodoroView extends ItemView {
 			}
 			// Ensure seconds is valid
 			const validSeconds = Math.max(0, Math.floor(seconds));
-			this.timerDisplay.textContent = formatPomodoroTime(validSeconds);
+			const text = formatPomodoroTime(validSeconds);
+			if (this.timerDisplay.textContent !== text) this.timerDisplay.textContent = text;
 
 			// Update timer color based on time remaining
-			if (validSeconds <= 60 && validSeconds > 0) {
-				this.timerDisplay.addClass("pomodoro-view__timer-display--warning");
-			} else {
-				this.timerDisplay.removeClass("pomodoro-view__timer-display--warning");
-			}
+			this.timerDisplay.classList.toggle(
+				"pomodoro-view__timer-display--warning",
+				validSeconds <= 60 && validSeconds > 0
+			);
 		}
 	}
 
@@ -1315,53 +1263,44 @@ export class PomodoroView extends ItemView {
 			this.currentCircumference = circumference;
 		}
 
-		if (!state.currentSession) {
-			// No session active - show full circle (ready to start)
-			this.progressCircle.setAttributeNS(null, "stroke-dashoffset", circumference.toString());
-			this.progressCircle.removeClass("pomodoro-view__progress-circle--work");
-			this.progressCircle.removeClass("pomodoro-view__progress-circle--short-break");
-			this.progressCircle.removeClass("pomodoro-view__progress-circle--long-break");
-			this.progressCircle.removeClass("pomodoro-view__progress-circle--warning");
-			return;
-		}
-
-		const progress = state.isRunning
-			? getSessionProgressRatio(state.currentSession)
-			: (() => {
-					const elapsedSeconds = getActiveElapsedSeconds(state.currentSession);
-					const totalDuration = state.currentSession.plannedDuration * 60;
-					return totalDuration > 0
-						? Math.max(0, Math.min(1, elapsedSeconds / totalDuration))
-						: 0;
-				})();
+		const progress = state.currentSession
+			? Math.max(
+					0,
+					Math.min(
+						1,
+						1 - state.timeRemaining / getSessionDurationSeconds(state.currentSession)
+					)
+				)
+			: 0;
 
 		// Calculate stroke-dashoffset (progress goes clockwise)
 		const offset = circumference - progress * circumference;
 
 		// Update progress circle
-		this.progressCircle.setAttributeNS(null, "stroke-dashoffset", offset.toString());
+		if (this.progressCircle.getAttribute("stroke-dashoffset") !== offset.toString()) {
+			this.progressCircle.setAttributeNS(null, "stroke-dashoffset", offset.toString());
+		}
 
-		// Update color based on session type
-		this.progressCircle.removeClass("pomodoro-view__progress-circle--work");
-		this.progressCircle.removeClass("pomodoro-view__progress-circle--short-break");
-		this.progressCircle.removeClass("pomodoro-view__progress-circle--long-break");
-		this.progressCircle.addClass(
-			`pomodoro-view__progress-circle--${state.currentSession.type}`
-		);
+		for (const type of ["work", "short-break", "long-break"]) {
+			this.progressCircle.classList.toggle(
+				`pomodoro-view__progress-circle--${type}`,
+				type === state.currentSession?.type
+			);
+		}
 
 		// Add warning class for last minute
-		if (state.timeRemaining <= 60 && state.timeRemaining > 0) {
-			this.progressCircle.addClass("pomodoro-view__progress-circle--warning");
-		} else {
-			this.progressCircle.removeClass("pomodoro-view__progress-circle--warning");
-		}
+		this.progressCircle.classList.toggle(
+			"pomodoro-view__progress-circle--warning",
+			Boolean(state.currentSession) && state.timeRemaining <= 60 && state.timeRemaining > 0
+		);
 	}
 
 	private async updateStats() {
+		const generation = this.openGeneration;
 		try {
 			if (!this.plugin.pomodoroService) {
 				// Set default stats when service is not available
-				if (this.statElements.pomodoros) {
+				if (this.isViewVisible() && this.statElements.pomodoros) {
 					this.statElements.pomodoros.textContent = "0";
 				}
 				return;
@@ -1369,17 +1308,19 @@ export class PomodoroView extends ItemView {
 
 			// Get reliable stats from session history
 			const stats = await this.plugin.pomodoroService.getTodayStats();
+			if (this.isClosed || generation !== this.openGeneration) return;
 			this.todaysPomodoros = stats.pomodorosCompleted;
 
 			// Update only if values changed to avoid unnecessary DOM updates
 			if (
+				this.isViewVisible() &&
 				this.statElements.pomodoros &&
 				this.statElements.pomodoros.textContent !== stats.pomodorosCompleted.toString()
 			) {
 				this.statElements.pomodoros.textContent = stats.pomodorosCompleted.toString();
 			}
 
-			this.updateSessionMeta(this.plugin.pomodoroService.getState());
+			this.updateDisplay();
 		} catch (error) {
 			tasknotesLogger.error("Failed to update stats:", {
 				category: "validation",
@@ -1387,7 +1328,8 @@ export class PomodoroView extends ItemView {
 				error: error,
 			});
 			// Fallback to show zeros if stats loading fails
-			if (this.statElements.pomodoros) this.statElements.pomodoros.textContent = "0";
+			if (this.isViewVisible() && this.statElements.pomodoros)
+				this.statElements.pomodoros.textContent = "0";
 		}
 	}
 
@@ -1407,13 +1349,7 @@ export class PomodoroView extends ItemView {
 			this.plugin.pomodoroService.adjustPreparedTimer(newTime);
 		}
 
-		// Force an immediate update to ensure UI reflects changes
-		if (this.plugin.pomodoroService) {
-			const updatedState = this.plugin.pomodoroService.getState();
-			this.updateTimer(updatedState.timeRemaining);
-			this.updateProgress(updatedState);
-			this.updateSessionMeta(updatedState);
-		}
+		this.updateDisplay();
 	}
 
 	private onPomodoroComplete(session: PomodoroSession, nextType: string) {

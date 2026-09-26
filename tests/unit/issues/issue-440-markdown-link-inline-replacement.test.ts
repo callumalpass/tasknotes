@@ -187,7 +187,9 @@ describe('Issue #440: Markdown link inline replacement', () => {
                 mockTask,
                 mockPlugin,
                 expect.stringContaining('Buy groceries task'),
-                'Buy groceries task'
+                'Buy groceries task',
+                undefined,
+                undefined
             );
         });
 
@@ -205,6 +207,8 @@ describe('Issue #440: Markdown link inline replacement', () => {
                 mockTask,
                 mockPlugin,
                 expect.stringContaining('task-202508181001'),
+                undefined,
+                undefined,
                 undefined
             );
         });

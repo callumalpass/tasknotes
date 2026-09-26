@@ -74,7 +74,7 @@
 
 /* Progress Circle Elements */
 .tasknotes-plugin .pomodoro-view__progress-circle {
-    transition: stroke-dashoffset 0.5s ease;
+    /* A discrete second tick avoids continuous SVG repainting. */
     stroke: var(--tn-interactive-accent);
     stroke-width: 6;
     fill: none;
@@ -118,13 +118,13 @@
 /* Timer Display */
 .tasknotes-plugin .pomodoro-view__timer-display {
     pointer-events: auto;
-    font-size: 3.5rem;
+    font-size: max(1.5rem, calc(var(--pomodoro-font-size, 3.5rem) * var(--pomodoro-scale, 1)));
     color: var(--tn-text-normal);
     text-align: center;
     font-family: var(--tn-font-mono);
     letter-spacing: 0.05em;
     transition: color var(--tn-transition-fast);
-    font-weight: var(--tn-font-weight-bold);
+    font-weight: var(--pomodoro-font-weight, var(--tn-font-weight-bold));
     margin-bottom: var(--tn-spacing-md);
 }
 
@@ -152,8 +152,8 @@
     background: var(--background-secondary);
     color: var(--tn-text-normal);
     font-family: var(--tn-font-mono);
-    font-size: 3.5rem;
-    font-weight: var(--tn-font-weight-bold);
+    font-size: max(1.5rem, calc(var(--pomodoro-font-size, 3.5rem) * var(--pomodoro-scale, 1)));
+    font-weight: var(--pomodoro-font-weight, var(--tn-font-weight-bold));
     line-height: 1.1;
     text-align: center;
     margin-bottom: var(--tn-spacing-md);
@@ -172,6 +172,11 @@
 .tasknotes-plugin .pomodoro-view__timer-display--warning {
     color: var(--tn-color-error);
     animation: tn-timer-pulse 2s infinite;
+}
+
+.tasknotes-plugin.pomodoro-view--rendering-paused .pomodoro-view__timer-display--warning,
+.tasknotes-plugin.pomodoro-view--rendering-paused .pomodoro-view__progress-circle--warning {
+    animation: none;
 }
 
 @keyframes tn-timer-pulse {
@@ -652,27 +657,26 @@
 
 /* Extra responsive breakpoints for very granular control */
 .tasknotes-plugin.pomodoro-view--tiny {
+    --pomodoro-font-size: 2rem;
+    --pomodoro-font-weight: 700;
+
     padding: var(--tn-spacing-sm);
     gap: var(--tn-spacing-sm);
 }
 
-.tasknotes-plugin.pomodoro-view.pomodoro-view--tiny .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 2rem;
-    font-weight: 700;
-}
-
 .tasknotes-plugin.pomodoro-view--extra-narrow {
+    --pomodoro-font-size: 2.2rem;
+    --pomodoro-font-weight: 650;
+
     padding: var(--tn-spacing-md);
     gap: var(--tn-spacing-sm);
 }
 
-.tasknotes-plugin.pomodoro-view.pomodoro-view--extra-narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 2.2rem;
-    font-weight: 650;
-}
-
 /* Very narrow view (≤ 300px) - Minimal layout */
 .tasknotes-plugin.pomodoro-view--very-narrow {
+    --pomodoro-font-size: 2.5rem;
+    --pomodoro-font-weight: 600;
+
     padding: var(--tn-spacing-md);
     gap: var(--tn-spacing-md);
 }
@@ -684,16 +688,6 @@
 
 .tasknotes-plugin.pomodoro-view--very-narrow .pomodoro-view__timer-section {
     padding: var(--tn-spacing-sm) 0;
-}
-
-.tasknotes-plugin.pomodoro-view.pomodoro-view--very-narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 2.5rem;
-    font-weight: 600;
-}
-
-.tasknotes-plugin.pomodoro-view.pomodoro-view--very-narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-input {
-    font-size: 2.5rem;
-    font-weight: 600;
 }
 
 .tasknotes-plugin.pomodoro-view--very-narrow .pomodoro-view__time-controls {
@@ -746,18 +740,11 @@
 
 /* Narrow view (≤ 400px) - Compact layout */
 .tasknotes-plugin.pomodoro-view--narrow {
+    --pomodoro-font-size: 3rem;
+    --pomodoro-font-weight: 600;
+
     padding: var(--tn-spacing-lg);
     gap: var(--tn-spacing-lg);
-}
-
-.tasknotes-plugin.pomodoro-view.pomodoro-view--narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 3rem;
-    font-weight: 600;
-}
-
-.tasknotes-plugin.pomodoro-view.pomodoro-view--narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-input {
-    font-size: 3rem;
-    font-weight: 600;
 }
 
 .tasknotes-plugin.pomodoro-view--narrow .pomodoro-view__time-controls {
@@ -787,13 +774,11 @@
 
 /* Small view (≤ 400px) - Enhanced compact layout */
 .tasknotes-plugin.pomodoro-view--small {
+    --pomodoro-font-size: 3.2rem;
+    --pomodoro-font-weight: 550;
+
     padding: var(--tn-spacing-lg);
     gap: var(--tn-spacing-md);
-}
-
-.tasknotes-plugin.pomodoro-view.pomodoro-view--small .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 3.2rem;
-    font-weight: 550;
 }
 
 .tasknotes-plugin.pomodoro-view--small .pomodoro-view__primary-controls {
@@ -802,24 +787,20 @@
 
 /* Medium-small view (≤ 500px) - Transitional layout */
 .tasknotes-plugin.pomodoro-view--medium-small {
+    --pomodoro-font-size: 3.6rem;
+    --pomodoro-font-weight: 500;
+
     padding: var(--tn-spacing-lg);
     gap: var(--tn-spacing-lg);
 }
 
-.tasknotes-plugin.pomodoro-view.pomodoro-view--medium-small .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 3.6rem;
-    font-weight: 500;
-}
-
 /* Medium view (≤ 600px) - Standard responsive adjustments */
 .tasknotes-plugin.pomodoro-view--medium {
+    --pomodoro-font-size: 4rem;
+    --pomodoro-font-weight: 500;
+
     padding: var(--tn-spacing-xl);
     gap: var(--tn-spacing-xl);
-}
-
-.tasknotes-plugin.pomodoro-view.pomodoro-view--medium .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 4rem;
-    font-weight: 500;
 }
 
 .tasknotes-plugin.pomodoro-view--medium .pomodoro-view__task-buttons {
@@ -828,13 +809,11 @@
 
 /* Wide view (> 600px) - Enhanced layout */
 .tasknotes-plugin.pomodoro-view--wide {
+    --pomodoro-font-size: 4.5rem;
+    --pomodoro-font-weight: 400;
+
     padding: var(--tn-spacing-xl);
     gap: var(--tn-spacing-xl);
-}
-
-.tasknotes-plugin.pomodoro-view.pomodoro-view--wide .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
-    font-size: 4.5rem;
-    font-weight: 400;
 }
 
 /* Task card responsiveness */

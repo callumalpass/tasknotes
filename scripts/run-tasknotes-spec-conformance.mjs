@@ -1,11 +1,26 @@
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { adaptPinnedSpecRuntime } from "./conformance-adapter-compat.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const tasknotesRoot = resolve(scriptDir, "..");
-const specRoot = resolve(tasknotesRoot, "../tasknotes-spec");
+// Use the pinned spec submodule, not an unrelated sibling checkout. Its bridge
+// imports expect sibling repositories, so reproduce that layout in a disposable
+// directory. Fixture generation and existing waivers never mutate the submodule.
+const specSource = resolve(tasknotesRoot, "docs/spec");
+requirePath(resolve(specSource, "package.json"), "pinned docs/spec submodule (run git submodule update --init docs/spec)");
+const workspace = mkdtempSync(resolve(tmpdir(), "tasknotes-conformance-"));
+process.on("exit", () => rmSync(workspace, { recursive: true, force: true }));
+const specRoot = resolve(workspace, "tasknotes-spec");
+cpSync(specSource, specRoot, {
+  recursive: true,
+  filter: (path) => ![".git", "node_modules", ".generated"].includes(path.split(/[\\/]/).pop()),
+});
+symlinkSync(tasknotesRoot, resolve(workspace, "tasknotes"), "dir");
+adaptPinnedSpecRuntime(specRoot);
 const adapterPath = resolve(specRoot, "conformance/adapters/tasknotes.adapter.mjs");
 const defaultWaiverPath = resolve(tasknotesRoot, "conformance/waivers.json");
 

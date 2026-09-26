@@ -31,6 +31,7 @@ describe("taskModalDetailsEditor", () => {
 		const onEscape = jest.fn();
 		const focusNextField = jest.fn();
 		const focusPreviousField = jest.fn();
+		const attachMobileKeyboardScrollGuard = jest.fn();
 		const file = { path: "Tasks/example.md" } as never;
 		createTaskModalMarkdownEditorMock.mockReturnValue(editor);
 
@@ -41,6 +42,7 @@ describe("taskModalDetailsEditor", () => {
 			value: "Existing details",
 			placeholder: "Add details",
 			file,
+			attachMobileKeyboardScrollGuard,
 			tabMovesFocus: true,
 			onChange,
 			onSubmit,
@@ -56,6 +58,7 @@ describe("taskModalDetailsEditor", () => {
 		expect(returnedEditor).toBe(editor);
 		expect(label?.textContent).toBe("Details");
 		expect(container).not.toBeNull();
+		expect(attachMobileKeyboardScrollGuard).toHaveBeenCalledWith(container);
 		expect(createTaskModalMarkdownEditorMock).toHaveBeenCalledWith(
 			app,
 			container,
@@ -89,6 +92,7 @@ describe("taskModalDetailsEditor", () => {
 			label: "Details",
 			value: "",
 			placeholder: "",
+			attachMobileKeyboardScrollGuard: jest.fn(),
 			tabMovesFocus: true,
 			onChange: jest.fn(),
 			onSubmit: jest.fn(),
@@ -117,6 +121,7 @@ describe("taskModalDetailsEditor", () => {
 			label: "Details",
 			value: "",
 			placeholder: "",
+			attachMobileKeyboardScrollGuard: jest.fn(),
 			tabMovesFocus: false,
 			onChange: jest.fn(),
 			onSubmit: jest.fn(),

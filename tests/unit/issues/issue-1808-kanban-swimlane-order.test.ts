@@ -76,6 +76,34 @@ describe("Issue #1808: Kanban swimlane order", () => {
 		expect(ordered.get("bill")).toBe(billColumns);
 	});
 
+	it("renders configured priority lanes without top-level cards and hides them when requested", () => {
+		const view = makeView();
+		(view as any).plugin.priorityManager.getAllPriorities = () => [
+			{ value: "high" },
+			{ value: "low" },
+		];
+		(view as any).plugin.priorityManager.getPriorityWeight = (key: string) =>
+			key === "high" ? 2 : 1;
+		(view as any).plugin.statusManager = { getStatusOrder: () => 0 };
+		(view as any).hideEmptySwimLanes = false;
+
+		const shown = (view as any).applySwimLaneOrderToMap(
+			"task.priority",
+			new Map(),
+			["todo"]
+		);
+		expect([...shown.keys()]).toEqual(["high", "low"]);
+		expect(shown.get("high")?.get("todo")).toEqual([]);
+
+		(view as any).hideEmptySwimLanes = true;
+		const hidden = (view as any).applySwimLaneOrderToMap(
+			"task.priority",
+			new Map(),
+			["todo"]
+		);
+		expect([...hidden.keys()]).toEqual([]);
+	});
+
 	it("reads JSON and object swimlane order configs", () => {
 		const view = makeView();
 		const configValues: Record<string, unknown> = {

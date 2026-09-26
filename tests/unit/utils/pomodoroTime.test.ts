@@ -63,6 +63,34 @@ describe("pomodoroTime", () => {
 		expect(getSessionProgressRatio(current, now)).toBe(0.5);
 	});
 
+	it("preserves fractional seconds across repeated pauses and agrees with completion time", () => {
+		const start = Date.parse("2026-05-16T09:00:00.000Z");
+		const current = session({
+			plannedDuration: 1,
+			activePeriods: Array.from({ length: 100 }, (_, i) => ({
+				startTime: new Date(start + i * 1000).toISOString(),
+				endTime: new Date(start + i * 1000 + 600).toISOString(),
+			})),
+		});
+		const now = start + 100000;
+		expect(getActiveElapsedSeconds(current, now)).toBe(60);
+		expect(getSessionRemainingSeconds(current, now)).toBe(0);
+		expect(getSessionProgressRatio(current, now)).toBe(1);
+		expect(getSessionCompletionTimeMs(current, now)).toBe(start + 99600);
+	});
+
+	it("rounds the accumulated elapsed time once, including the current active period", () => {
+		const current = session({
+			activePeriods: [
+				{ startTime: "2026-05-16T09:00:00.000Z", endTime: "2026-05-16T09:00:00.600Z" },
+				{ startTime: "2026-05-16T09:00:02.000Z" },
+			],
+		});
+		const now = Date.parse("2026-05-16T09:00:02.600Z");
+		expect(getActiveElapsedSeconds(current, now)).toBe(1);
+		expect(getSessionRemainingSeconds(current, now)).toBe(1499);
+	});
+
 	it("projects an end timestamp from the current remaining duration", () => {
 		const now = Date.parse("2026-05-16T09:25:00.000Z");
 

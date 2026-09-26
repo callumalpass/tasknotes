@@ -6316,6 +6316,14 @@
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "d69d1c26f388903bba0094ba00f61217c47fa732"
     },
+    "commands.startTimeTrackingCurrentTask": {
+      "source": "4355d3895598bd9c23c4b59df721a6bde5a91128",
+      "translation": "fb92d2dca422f7883620fe887020f879a896b743"
+    },
+    "commands.stopTimeTrackingCurrentTask": {
+      "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
+      "translation": "e18c050f8a28b1091306bdb97c33ab4e28bdd853"
+    },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
       "translation": "71454ccfe06493325d441cffc6ffa78fd69b48d0"
@@ -16005,6 +16013,14 @@
     "commands.viewReleaseNotes": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "19ef9ab3a718f13f42fe08b4dcbcdcb7f7e57601"
+    },
+    "commands.startTimeTrackingCurrentTask": {
+      "source": "4355d3895598bd9c23c4b59df721a6bde5a91128",
+      "translation": "ad86e74455c04b3b60ef86d17550770795cfa2b4"
+    },
+    "commands.stopTimeTrackingCurrentTask": {
+      "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
+      "translation": "f5b1b6d52f49e220f82c3736d83326418de6f60f"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -25696,6 +25712,14 @@
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "e8e1d32313d229666301e29a37df418032835142"
     },
+    "commands.startTimeTrackingCurrentTask": {
+      "source": "4355d3895598bd9c23c4b59df721a6bde5a91128",
+      "translation": "5cce66919bb898f80905b1d581a9fdddc82c06d6"
+    },
+    "commands.stopTimeTrackingCurrentTask": {
+      "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
+      "translation": "ed69e667fc9430394a043d5912ca72a07d4ab65d"
+    },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
       "translation": "d35f2f3eaa8d9006158e16041632583a1b2c0f1e"
@@ -35385,6 +35409,14 @@
     "commands.viewReleaseNotes": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "2add1152032ee15c68c3fc05a7923fc50d2d0c31"
+    },
+    "commands.startTimeTrackingCurrentTask": {
+      "source": "4355d3895598bd9c23c4b59df721a6bde5a91128",
+      "translation": "40588be1ac2c314fc36c4418b450508919347ab0"
+    },
+    "commands.stopTimeTrackingCurrentTask": {
+      "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
+      "translation": "f7a8d49518731afe9bfa61164898ddcbbbb73035"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -45076,6 +45108,14 @@
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "60893879670a62c5051d4cfdd8d67cf1d8d93821"
     },
+    "commands.startTimeTrackingCurrentTask": {
+      "source": "4355d3895598bd9c23c4b59df721a6bde5a91128",
+      "translation": "44772f514a2f39e376a6e9a9fea2075e2ea7e9a5"
+    },
+    "commands.stopTimeTrackingCurrentTask": {
+      "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
+      "translation": "a7627914f43d9057c9fa73578dcc541d64d84f1f"
+    },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
       "translation": "a3c5e5f6ae995c7b87363746274c3a1b5cc2fe9e"
@@ -54765,6 +54805,14 @@
     "commands.viewReleaseNotes": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "5729e8da9990dd95e32ffab749a63e181263be8a"
+    },
+    "commands.startTimeTrackingCurrentTask": {
+      "source": "4355d3895598bd9c23c4b59df721a6bde5a91128",
+      "translation": "2d0018b957fe0f6caeb3f999b0adecba41de6d8e"
+    },
+    "commands.stopTimeTrackingCurrentTask": {
+      "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
+      "translation": "46fda24583634b3cba6a6c3571969a4c2107b870"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -64456,6 +64504,14 @@
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "060c1aa179717a8ebedce8eeae250cf12307291d"
     },
+    "commands.startTimeTrackingCurrentTask": {
+      "source": "4355d3895598bd9c23c4b59df721a6bde5a91128",
+      "translation": "73c3e4e5ce96ae17e2a69b3403afbc93af8706c4"
+    },
+    "commands.stopTimeTrackingCurrentTask": {
+      "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
+      "translation": "04390728fab04161bd0f3e4e91437ec829c1879a"
+    },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
       "translation": "03b858a180310d895a6c6de42c41360ac5fecd5f"
@@ -74145,6 +74201,14 @@
     "commands.viewReleaseNotes": {
       "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
       "translation": "524c479f706f46cb1f6e70be920671d9ed610e5c"
+    },
+    "commands.startTimeTrackingCurrentTask": {
+      "source": "4355d3895598bd9c23c4b59df721a6bde5a91128",
+      "translation": "87f9378fbbcfa70ae232be66e886f64748dadf57"
+    },
+    "commands.stopTimeTrackingCurrentTask": {
+      "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
+      "translation": "1eb582ff03bc6a3fdd5aa4d7a62db7ff76169906"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",

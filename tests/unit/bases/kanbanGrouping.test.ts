@@ -543,6 +543,7 @@ describe("Kanban grouping helpers", () => {
 			columnKeys: ["todo", "done"],
 			swimLaneOrders: { priority: ["medium", "low", "high"] },
 			hideEmptySwimLanes: false,
+			priorityKeys: [],
 			isPriorityField: (propertyId) => propertyId === "task.priority",
 			isStatusField: () => false,
 			getPriorityWeight: (key) => ({ high: 3, medium: 2, low: 1 })[key] ?? 0,
@@ -564,6 +565,7 @@ describe("Kanban grouping helpers", () => {
 			columnKeys: ["todo", "done"],
 			swimLaneOrders: { priority: ["medium", "low", "high"] },
 			hideEmptySwimLanes: true,
+			priorityKeys: [],
 			isPriorityField: (propertyId) => propertyId === "task.priority",
 			isStatusField: () => false,
 			getPriorityWeight: (key) => ({ high: 3, medium: 2, low: 1 })[key] ?? 0,
@@ -571,6 +573,40 @@ describe("Kanban grouping helpers", () => {
 		});
 
 		expect([...hiddenEmpty.keys()]).toEqual(["low"]);
+	});
+
+	it("shows all configured priority swimlanes even when only hidden subtasks have those values", () => {
+		const parent = task("parent.md");
+		const visibleLanes = new Map([
+			["low", new Map([["todo", [parent]]])],
+		]);
+		const options = {
+			swimLanePropertyId: "task.priority",
+			swimLanes: visibleLanes,
+			columnKeys: ["todo", "done"],
+			swimLaneOrders: {},
+			priorityKeys: ["high", "medium", "low", "none"],
+			isPriorityField: (propertyId: string | null) => propertyId === "task.priority",
+			isStatusField: () => false,
+			getPriorityWeight: (key: string) => ({ high: 3, medium: 2, low: 1 })[key] ?? 0,
+			getStatusOrder: () => 0,
+		};
+
+		const shown = applyKanbanSwimLaneOrderToMap({
+			...options,
+			hideEmptySwimLanes: false,
+		});
+		expect([...shown.keys()]).toEqual(["high", "medium", "low", "none"]);
+		expect(shown.get("high")?.get("todo")).toEqual([]);
+		expect(shown.get("medium")?.get("done")).toEqual([]);
+		expect(shown.get("low")?.get("todo")).toEqual([parent]);
+		expect([...visibleLanes.keys()]).toEqual(["low"]);
+
+		const hidden = applyKanbanSwimLaneOrderToMap({
+			...options,
+			hideEmptySwimLanes: true,
+		});
+		expect([...hidden.keys()]).toEqual(["low"]);
 	});
 
 	it("exposes small ordering helpers for view adapters", () => {

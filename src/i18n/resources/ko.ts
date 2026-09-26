@@ -2476,6 +2476,8 @@ export const ko: TranslationTree = {
 		refreshCache: "캐시 새로고침",
 		exportAllTasksIcs: "모든 작업을 ICS 파일로 내보내기",
 		viewReleaseNotes: "릴리스 노트 보기",
+		startTimeTrackingCurrentTask: "현재 작업의 시간 추적 시작",
+		stopTimeTrackingCurrentTask: "현재 작업의 시간 추적 중지",
 		startTimeTrackingWithSelector: "시간 추적 시작 (작업 선택)",
 		editTimeEntries: "시간 기록 편집 (작업 선택)",
 		createOrOpenTask: "작업 만들기 또는 열기",

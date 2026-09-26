@@ -56,6 +56,27 @@ describe("openTaskModalTaskSelector", () => {
 		expect(onSelect).toHaveBeenCalledWith(selectedTask);
 	});
 
+	it("passes creation defaults through without changing existing-task selection", async () => {
+		const existing = task("Tasks/existing.md");
+		const onSelect = jest.fn();
+		const selectorOptions = { creationDefaults: { projects: ["[[Parent]]"] } };
+		const openSelector = jest.fn((_plugin, _tasks, chooseTask) => chooseTask(existing));
+		await openTaskModalTaskSelector({
+			plugin: pluginWithTasks([existing]),
+			getCandidates: (tasks) => tasks,
+			onSelect,
+			selectorOptions,
+			openSelector,
+			translate: (key) => key,
+			noEligibleTasksMessageKey: "empty",
+			openFailedMessageKey: "failed",
+			logOperation: "test-selector",
+		});
+		expect(openSelector).toHaveBeenCalledWith(expect.anything(), [existing], expect.any(Function), selectorOptions);
+		expect(onSelect).toHaveBeenCalledWith(existing);
+		expect(existing.projects).toBeUndefined();
+	});
+
 	it("shows the configured notice when no tasks are eligible", async () => {
 		const showNotice = jest.fn();
 		const openSelector = jest.fn();

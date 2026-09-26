@@ -2658,6 +2658,8 @@ export const en: TranslationTree = {
 		syncAllTasksGoogleCalendar: "Sync all tasks to Google Calendar",
 		syncCurrentTaskGoogleCalendar: "Sync current task to Google Calendar",
 		viewReleaseNotes: "View release notes",
+		startTimeTrackingCurrentTask: "Start time tracking for current task",
+		stopTimeTrackingCurrentTask: "Stop time tracking for current task",
 		startTimeTrackingWithSelector: "Start time tracking (select task)",
 		editTimeEntries: "Edit time entries (select task)",
 		createOrOpenTask: "Create or open task",

@@ -28,14 +28,14 @@ import {
 	resetMarkdownCheckboxes,
 } from "../utils/helpers";
 import { formatDependencyLink, resolveDependencyEntry } from "../utils/dependencyUtils";
-import { generateLink, getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
+import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
 import {
 	formatDateForStorage,
 	getCurrentDateString,
 	getCurrentTimestamp,
 	getDatePart,
 } from "../utils/dateUtils";
-import { updateToNextScheduledOccurrence } from "../core/recurrence";
+import { getNextUncompletedOccurrence, updateToNextScheduledOccurrence } from "../core/recurrence";
 import { processFolderTemplate, TaskTemplateData, FolderTemplateOptions } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
@@ -100,6 +100,7 @@ export class TaskService {
 	private autoArchiveService?: AutoArchiveService;
 	private readonly taskCreationService: TaskCreationService;
 	private readonly taskUpdateService: TaskUpdateService;
+	private readonly occurrenceMaterializations = new Map<string, Promise<TaskInfo>>();
 
 	constructor(private plugin: TaskNotesPlugin) {
 		this.taskCreationService = new TaskCreationService({
@@ -298,7 +299,9 @@ export class TaskService {
 		taskData: TaskCreationData,
 		options: { applyDefaults?: boolean; applyTemplate?: boolean } = {}
 	): Promise<{ file: TFile; taskInfo: TaskInfo }> {
-		return this.taskCreationService.createTask(taskData, options);
+		const result = await this.taskCreationService.createTask(taskData, options);
+		await this.seedInitialOccurrence(result.taskInfo);
+		return result;
 	}
 
 	/**
@@ -788,6 +791,8 @@ export class TaskService {
 			}
 		);
 
+		await this.seedInitialOccurrence(updatedTask, originalTask);
+
 		// Direct file edits and bulk property writes must reconcile occurrence
 		// parents just like updateProperty, without repeating the occurrence write.
 		await this.reconcileMaterializedOccurrenceStatusChange(
@@ -799,7 +804,51 @@ export class TaskService {
 		);
 	}
 
+	/** Seed only on activation; never backfill history or restart an exhausted series. */
+	private async seedInitialOccurrence(task: TaskInfo, previous?: TaskInfo): Promise<void> {
+		if (
+			!task.recurrence || task.recurrence_parent || task.archived ||
+			task.occurrence_materialization !== "on_completion" ||
+			(previous?.recurrence && previous.occurrence_materialization === "on_completion")
+		) {
+			return;
+		}
+		const next = getNextUncompletedOccurrence(task);
+		if (next) {
+			try {
+				await this.materializeOccurrence(task, next);
+			} catch (error) {
+				// The parent is already saved. Do not report its creation as failed,
+				// which could cause callers to create a second parent on retry.
+				tasknotesLogger.warn("Failed to create first occurrence:", {
+					category: "persistence",
+					operation: "seed-initial-occurrence",
+					error,
+				});
+				publishUserNotice(this.plugin.emitter, "Task saved, but its first occurrence could not be created. Use Create occurrence to retry.");
+			}
+		}
+	}
+
 	async materializeOccurrence(
+		parentTask: TaskInfo,
+		targetDate: string | Date,
+		overrides: Partial<TaskInfo> = {}
+	): Promise<TaskInfo> {
+		const date = typeof targetDate === "string" ? targetDate.slice(0, 10) : formatDateForStorage(targetDate);
+		const key = JSON.stringify([parentTask.path, date]);
+		const pending = this.occurrenceMaterializations.get(key);
+		if (pending) return pending;
+		const operation = this.materializeOccurrenceUnlocked(parentTask, targetDate, overrides);
+		this.occurrenceMaterializations.set(key, operation);
+		try {
+			return await operation;
+		} finally {
+			this.occurrenceMaterializations.delete(key);
+		}
+	}
+
+	private async materializeOccurrenceUnlocked(
 		parentTask: TaskInfo,
 		targetDate: string | Date,
 		overrides: Partial<TaskInfo> = {}
@@ -1239,18 +1288,11 @@ export class TaskService {
 	}
 
 	private buildOccurrenceParentReference(parentTask: TaskInfo): string {
-		const parentFile = this.plugin.app.vault.getAbstractFileByPath(parentTask.path);
-		if (parentFile instanceof TFile) {
-			return generateLink(
-				this.plugin.app,
-				parentFile,
-				"",
-				undefined,
-				undefined,
-				this.plugin.settings.useFrontmatterMarkdownLinks
-			);
+		// Occurrences may be created in any folder. Shortest links generated before
+		// creation can become ambiguous when the occurrence shares its parent's name.
+		if (this.plugin.settings.useFrontmatterMarkdownLinks) {
+			return `[${parentTask.title}](<${encodeURI(parentTask.path).replace(/\(/g, "%28").replace(/\)/g, "%29")}>)`;
 		}
-
 		return `[[${parentTask.path.replace(/\.md$/i, "")}]]`;
 	}
 
@@ -1671,7 +1713,9 @@ export class TaskService {
 		originalTask: TaskInfo,
 		updates: Partial<TaskInfo> & { details?: string }
 	): Promise<TaskInfo> {
-		return this.taskUpdateService.updateTask(originalTask, updates);
+		const updatedTask = await this.taskUpdateService.updateTask(originalTask, updates);
+		await this.seedInitialOccurrence(updatedTask, originalTask);
+		return updatedTask;
 	}
 
 	async updateBlockingRelationships(

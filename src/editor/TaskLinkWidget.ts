@@ -19,7 +19,8 @@ export class TaskLinkWidget extends WidgetType {
 		plugin: TaskNotesPlugin,
 		originalText: string,
 		displayText?: string,
-		targetDate: Date = createUTCDateFromLocalCalendarDate(new Date())
+		targetDate: Date = createUTCDateFromLocalCalendarDate(new Date()),
+		private subpath?: string
 	) {
 		super();
 		this.taskInfo = taskInfo;
@@ -79,6 +80,7 @@ export class TaskLinkWidget extends WidgetType {
 			layout: "inline",
 			targetDate: this.targetDate,
 			displayText: this.displayText,
+			navigationSubpath: this.subpath,
 		});
 
 		// Add card to wrapper
@@ -117,6 +119,8 @@ export class TaskLinkWidget extends WidgetType {
 			this.taskInfo.scheduled === other.taskInfo.scheduled &&
 			this.taskInfo.recurrence === other.taskInfo.recurrence &&
 			this.displayText === other.displayText &&
+			this.subpath === other.subpath &&
+			this.originalText === other.originalText &&
 			this.targetDateKey === other.targetDateKey &&
 			JSON.stringify(this.taskInfo.complete_instances) ===
 				JSON.stringify(other.taskInfo.complete_instances) &&

@@ -24,6 +24,8 @@ export interface TaskSelectorWithCreateOptions {
 	placeholder?: string;
 	/** Optional title override */
 	title?: string;
+	/** Defaults applied only when creating a new task, never when selecting an existing one. */
+	creationDefaults?: Partial<TaskCreationData>;
 	/** Date used for recurring task instance status in the selector */
 	targetDate?: Date;
 }
@@ -541,7 +543,18 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	}
 
 	private buildTaskDataFromParsed(parsed: ParsedTaskData): TaskCreationData {
-		return buildTaskCreationDataFromParsed(this.plugin, parsed);
+		const taskData = buildTaskCreationDataFromParsed(this.plugin, parsed);
+		const defaults = this.options.creationDefaults;
+		if (!defaults) return taskData;
+
+		return {
+			...defaults,
+			...taskData,
+			priority: parsed.priority || defaults.priority || taskData.priority,
+			projects: [...new Set([...(defaults.projects || []), ...(taskData.projects || [])])],
+			tags: [...new Set([...(defaults.tags || []), ...(taskData.tags || [])])],
+			contexts: [...new Set([...(defaults.contexts || []), ...(taskData.contexts || [])])],
+		};
 	}
 
 	getSuggestions(query: string): TaskInfo[] {
@@ -695,12 +708,13 @@ export function openTaskSelector(
 	plugin: TaskNotesPlugin,
 	tasks: TaskInfo[],
 	onChooseTask: (task: TaskInfo | null) => void,
-	options?: { placeholder?: string; title?: string; targetDate?: Date }
+	options?: Omit<TaskSelectorWithCreateOptions, "onResult">
 ): void {
 	const modal = new TaskSelectorWithCreateModal(plugin.app, plugin, tasks, {
 		placeholder: options?.placeholder,
 		title: options?.title,
 		targetDate: options?.targetDate,
+		creationDefaults: options?.creationDefaults,
 		onResult: (result) => {
 			if (result.type === "selected" || result.type === "created") {
 				onChooseTask(result.task);

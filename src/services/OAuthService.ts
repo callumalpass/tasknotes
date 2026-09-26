@@ -239,7 +239,7 @@ export class OAuthService {
 
 	private async openAuthorizationUrl(authUrl: string): Promise<void> {
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-extraneous-dependencies -- OAuth must bypass Obsidian's in-app Web Viewer and use the system browser on desktop.
+			// eslint-disable-next-line @typescript-eslint/no-require-imports -- OAuth must bypass Obsidian's in-app Web Viewer and use the system browser on desktop.
 			const electron = require("electron") as ElectronModuleLike;
 			const shell = electron.shell;
 			if (shell?.openExternal) {

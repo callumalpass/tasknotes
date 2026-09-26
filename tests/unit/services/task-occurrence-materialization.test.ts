@@ -1,3 +1,6 @@
+// Exercise finite recurrence rules with the real engine (the shared mock ignores COUNT).
+jest.mock("rrule", () => jest.requireActual("rrule/dist/es5/rrule.js"));
+
 jest.mock("yaml", () => {
 	const parseScalar = (value: string): unknown => {
 		const trimmed = value.trim();
@@ -51,6 +54,8 @@ jest.mock("yaml", () => {
 import { TFile } from "../../helpers/obsidian-runtime";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 import { TaskService } from "../../../src/services/TaskService";
+import { TaskCreationService } from "../../../src/services/task-service/TaskCreationService";
+import { TaskUpdateService } from "../../../src/services/task-service/TaskUpdateService";
 import type { TaskInfo } from "../../../src/types";
 import { TaskFileLifecycleReconciliationService } from "../../../src/services/TaskFileLifecycleReconciliationService";
 
@@ -60,6 +65,7 @@ jest.mock("../../../src/utils/dateUtils", () => {
 		...actual,
 		getCurrentTimestamp: jest.fn(() => "2025-01-01T12:00:00Z"),
 		getCurrentDateString: jest.fn(() => "2025-01-01"),
+		getTodayString: jest.fn(() => "2026-06-01"),
 	};
 });
 
@@ -125,6 +131,92 @@ describe("TaskService materialized occurrences", () => {
 			([file]: [TFile]) => file.path
 		);
 	}
+
+	it.each(["occurrence_materialization", "recurrence"] as const)(
+		"seeds the first unfinished occurrence when enabling %s (#2349)",
+		async (property) => {
+			const parent = TaskFactory.createTask({
+				path: "Obligations/Daily.md",
+				recurrence: "DTSTART:20260601;FREQ=DAILY",
+				scheduled: "2026-06-01",
+				occurrence_materialization: "on_completion",
+				complete_instances: ["2026-06-01"],
+				skipped_instances: ["2026-06-02"],
+			});
+			const original = { ...parent, [property]: undefined };
+			const { taskService } = createService({ [parent.path]: original });
+			const materialize = jest.spyOn(taskService, "materializeOccurrence").mockResolvedValue(parent);
+			await taskService.updateProperty(original, property, parent[property]);
+			expect(materialize).toHaveBeenCalledTimes(1);
+			expect(materialize.mock.calls[0][1]).toEqual(new Date("2026-06-03T00:00:00Z"));
+			await taskService.updateProperty(parent, property, parent[property]);
+			expect(materialize).toHaveBeenCalledTimes(1);
+		}
+	);
+
+	it.each(["create", "update"])("seeds through the %s task entry point (#2349)", async (operation) => {
+		const parent = TaskFactory.createTask({
+			recurrence: "DTSTART:20260601;FREQ=DAILY",
+			scheduled: "2026-06-01",
+			occurrence_materialization: "on_completion",
+		});
+		const { taskService } = createService({ [parent.path]: parent });
+		const materialize = jest.spyOn(taskService, "materializeOccurrence").mockResolvedValue(parent);
+		const create = jest.spyOn(TaskCreationService.prototype, "createTask").mockResolvedValue({ file: new TFile(parent.path), taskInfo: parent });
+		const update = jest.spyOn(TaskUpdateService.prototype, "updateTask").mockResolvedValue(parent);
+		try {
+			if (operation === "create") await taskService.createTask(parent);
+			else await taskService.updateTask({ ...parent, recurrence: undefined }, { recurrence: parent.recurrence });
+			expect(materialize).toHaveBeenCalledTimes(1);
+		} finally {
+			create.mockRestore();
+			update.mockRestore();
+		}
+	});
+
+	it("does not seed an exhausted recurrence (#2349)", async () => {
+		const parent = TaskFactory.createTask({
+			recurrence: "DTSTART:20260601;FREQ=DAILY;COUNT=1",
+			scheduled: "2026-06-01",
+			complete_instances: ["2026-06-01"],
+		});
+		const { taskService } = createService({ [parent.path]: parent });
+		const materialize = jest.spyOn(taskService, "materializeOccurrence");
+		await taskService.updateProperty(parent, "occurrence_materialization", "on_completion");
+		expect(materialize).not.toHaveBeenCalled();
+	});
+
+	it("reuses an existing occurrence when enabling the policy (#2349)", async () => {
+		const parent = TaskFactory.createTask({
+			path: "Obligations/Daily.md",
+			recurrence: "DTSTART:20260601;FREQ=DAILY",
+			scheduled: "2026-06-01",
+		});
+		const occurrence = TaskFactory.createTask({
+			path: "Tasks/Daily.md",
+			recurrence_parent: "[[Obligations/Daily]]",
+			occurrence_date: "2026-06-01",
+		});
+		const { taskService, plugin } = createService({ [parent.path]: parent, [occurrence.path]: occurrence });
+		plugin.app.metadataCache.fileToLinktext.mockReturnValue("Daily");
+		const create = jest.spyOn(taskService, "createTask");
+		await taskService.updateProperty(parent, "occurrence_materialization", "on_completion");
+		expect(create).not.toHaveBeenCalled();
+		expect(await taskService.getMaterializedOccurrenceParent(occurrence)).toMatchObject({ path: parent.path });
+	});
+
+	it("coalesces concurrent materialization requests (#2349)", async () => {
+		const parent = TaskFactory.createTask({ recurrence: "DTSTART:20260601;FREQ=DAILY", scheduled: "2026-06-01" });
+		const { taskService } = createService({ [parent.path]: parent });
+		const occurrence = TaskFactory.createTask({ path: "Tasks/Occurrence.md" });
+		const create = jest.spyOn(taskService, "createTask").mockResolvedValue({ file: new TFile(occurrence.path), taskInfo: occurrence });
+		const results = await Promise.all([
+			taskService.materializeOccurrence(parent, "2026-06-01"),
+			taskService.materializeOccurrence(parent, "2026-06-01"),
+		]);
+		expect(create).toHaveBeenCalledTimes(1);
+		expect(results).toEqual([occurrence, occurrence]);
+	});
 
 	it("creates occurrence notes with recurrence identity fields", async () => {
 		const parent = TaskFactory.createTask({

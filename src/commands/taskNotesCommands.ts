@@ -345,6 +345,20 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "start-time-tracking-current-task",
+			nameKey: "commands.startTimeTrackingCurrentTask",
+			callback: async (ctx) => {
+				await ctx.setCurrentTaskTimeTracking("start");
+			},
+		},
+		{
+			id: "stop-time-tracking-current-task",
+			nameKey: "commands.stopTimeTrackingCurrentTask",
+			callback: async (ctx) => {
+				await ctx.setCurrentTaskTimeTracking("stop");
+			},
+		},
+		{
 			id: "start-time-tracking-with-selector",
 			nameKey: "commands.startTimeTrackingWithSelector",
 			callback: async (ctx) => {

@@ -145,7 +145,9 @@ blockedBy:
 - `reltype` is stored with each dependency and defaults to `FINISHTOSTART` for dependencies created in the UI.
 - `gap` is optional and uses ISO&nbsp;8601 duration syntax (for example `PT4H` or `P2D`).
 
-Whenever a dependency is added, TaskNotes updates the upstream note’s `blocking` list so the reverse relationship stays synchronized. Removing a dependency automatically clears both sides.
+TaskNotes stores each dependency in the dependent task’s `blockedBy` field and derives the reverse “Blocking” relationship from it. For example, if Task B is blocked by Task A, B stores a reference to A; A does not need a separate `blocking` frontmatter property. Editing “Blocking” updates the selected dependent tasks’ `blockedBy` fields. Removing a dependency also removes the derived reverse relationship.
+
+Dependencies are separate from project/subtask membership: adding a blocker does not require adding either task to the other’s `projects` field. To view tasks blocked by the current note, use the Relationships widget’s **Blocking** view, which finds them through Bases without a stored `blocking` property.
 
 ### Selecting dependencies in the UI
 
