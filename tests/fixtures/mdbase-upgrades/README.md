@@ -13,6 +13,9 @@ new ones instead.
   (mdbase-rs 88d4a21): pack rc.12 (`app-rc12`), the same with a
   generator-written task type (`app-rc12-f5`), and upgraded to rc.17
   (`app-rc17`). `.mdbase/` state is omitted.
+- `beta3-app-then-beta3-*`: a beta.3 collection approved by TaskNotes App
+  (pack rc.17), then loaded again by beta.3, which did not recognize the updated
+  type and wrote a second, rc.3 `tasknotes-task` type and rc.3 support files.
 
 `-default` fixtures use each build's default settings; `-custom` fixtures map
 `due` to `deadline`, add a number property and a skipped `cancelled` status.

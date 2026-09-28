@@ -711,6 +711,7 @@ export class MdbaseSpecService {
 		const legacyCompatibility = isRecord(existingCollection.config?.["x-legacy-v0.2"]);
 		this.canonicalTypesFolder = typesFolder;
 		await this.ensureFolderPath(typesFolder);
+		await this.setAsideSupersededBetaTypes(typesFolder);
 
 		const state = await this.readCanonicalType(existingCollection, false);
 		if (this.canonicalReadBlocked) {
@@ -978,6 +979,50 @@ export class MdbaseSpecService {
 		const parsed = parseMdbaseTaskTypeDocument(content);
 		this.applyCanonicalState({ path, content, type: parsed.type });
 		return true;
+	}
+
+	/**
+	 * 5.0 betas did not recognize a task type that TaskNotes App had updated, and
+	 * wrote a second, earlier-version type beside it (named tasknotes-task, as the
+	 * default path was taken). When exactly that is present, keep the current type
+	 * and move the superseded ones to the migration backup folder. Anything else
+	 * with more than one TaskNotes type is left for the user.
+	 */
+	private async setAsideSupersededBetaTypes(typesFolder: string): Promise<void> {
+		const adapter = this.plugin.app.vault.adapter;
+		if (typeof adapter.list !== "function" || !(await adapter.exists(typesFolder))) return;
+		const states: CanonicalTypeState[] = [];
+		for (const path of await this.listMarkdownFilesRecursively(typesFolder)) {
+			const state = await this.readCanonicalTypeAtPath(path, false);
+			if (state) states.push(state);
+		}
+		const current = states.filter((state) => !state.outdated);
+		const superseded = states.filter(
+			(state) =>
+				state.outdated &&
+				state.type.name === "tasknotes-task" &&
+				isRecord(state.type["x-tasknotes-generator"])
+		);
+		if (current.length !== 1 || superseded.length === 0 || current.length + superseded.length !== states.length) {
+			return;
+		}
+		const suffix = new Date().toISOString().replace(/[:.]/g, "-");
+		const folder = `${MDBASE_MIGRATION_BACKUP_FOLDER}/superseded-types-${suffix}`;
+		await this.ensureFolderPath(folder);
+		for (const state of superseded) {
+			const fileName = state.path.split("/").pop() ?? "tasknotes-task.md";
+			await this.plugin.app.vault.create(`${folder}/${fileName}`, state.content);
+			this.writeInProgress = true;
+			try {
+				await adapter.remove(state.path);
+			} finally {
+				this.writeInProgress = false;
+			}
+		}
+		this.canonicalTypePath = current[0].path;
+		this.publishNotice(
+			`TaskNotes removed ${superseded.map((state) => state.path).join(", ")}, an earlier duplicate of ${current[0].path}. A copy is in ${folder}.`
+		);
 	}
 
 	private async backupInvalidType(path: string, content: string): Promise<void> {

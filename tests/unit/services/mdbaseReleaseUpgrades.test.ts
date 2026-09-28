@@ -119,7 +119,7 @@ const fixtures = fs.readdirSync(FIXTURES).filter((name) => name.endsWith(".json"
 
 describe("upgrading collections written by shipped TaskNotes releases", () => {
 	it("has fixtures for every shipped state", () => {
-		expect(fixtures.length).toBeGreaterThanOrEqual(13);
+		expect(fixtures.length).toBeGreaterThanOrEqual(15);
 	});
 
 	it.each(fixtures)("%s", async (name) => {

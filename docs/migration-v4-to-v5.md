@@ -57,7 +57,7 @@ If the [mdbase integration](settings/integrations.md#mdbase) is enabled, TaskNot
 
 When the collection's only active type is an unmodified TaskNotes-generated v0.2 type, TaskNotes upgrades the metadata to mdbase v0.3 automatically. The previous `mdbase.yaml` and task type are kept under `.tasknotes/migrations/`. Collections with additional, modified, or hand-maintained types are left unchanged for you to review.
 
-If you used a 5.0 beta, TaskNotes updates its task type to the current contract when the vault opens and tells you once. Your statuses, priorities, property names and custom properties are kept, and task files are not changed. Collections that TaskNotes App has already updated are left as they are.
+If you used a 5.0 beta, TaskNotes updates its task type to the current contract when the vault opens and tells you once. Your statuses, priorities, property names and custom properties are kept, and task files are not changed. Collections that TaskNotes App has already updated are left as they are. If a beta added a second task type named `tasknotes-task` after TaskNotes App updated the collection, TaskNotes removes that duplicate and keeps a copy under `.tasknotes/migrations/`.
 
 If the integration is not enabled, nothing changes.
 

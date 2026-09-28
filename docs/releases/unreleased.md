@@ -31,7 +31,7 @@
 - Fixed generated recurrence and dependency link targets when the TaskNotes type uses a name other than `task`.
 - Improved mdbase upgrades from TaskNotes v4, including older generated formatting and retries after interrupted updates. New collections use a dedicated membership property without claiming bibliographic `type` fields; existing custom membership keys are preserved.
 - TaskNotes now bundles the same portable task contract as TaskNotes App (`tasknotes.task` 0.3.0-rc.5, which adds optional assignees linked to person notes) and preserves customized contract/schema resources rather than replacing them automatically.
-- Collections written by the 5.0 betas are updated to the current contract on load, keeping their settings; contract and schema files written by earlier TaskNotes versions are replaced without backups or warnings. Task types that TaskNotes App installed (which use YAML aliases) are updated in place instead of being backed up as invalid.
+- Collections written by the 5.0 betas are updated to the current contract on load, keeping their settings; contract and schema files written by earlier TaskNotes versions are replaced without backups or warnings. Task types that TaskNotes App installed (which use YAML aliases) are updated in place instead of being backed up as invalid. If a 5.0 beta wrote a second, earlier task type (`tasknotes-task`) beside one TaskNotes App had updated, TaskNotes removes the duplicate and keeps a copy under `.tasknotes/migrations/`.
 
 <!--
 
