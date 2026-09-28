@@ -53,9 +53,11 @@ Existing tasks without an `id` remain valid and are not changed. Path-based inte
 
 ## mdbase collections
 
-If the [mdbase integration](settings/integrations.md#mdbase) is enabled, TaskNotes v5 publishes the portable `tasknotes.task` contract used by TaskNotes App and other compatible tools.
+If the [mdbase integration](settings/integrations.md#mdbase) is enabled, TaskNotes v5 publishes the portable `tasknotes.task` contract (version 0.3.0-rc.5) used by TaskNotes App and other compatible tools. It is the same contract, byte for byte, that TaskNotes App installs, so the plugin and the app can share a collection. Tasks can list assignees as links to person notes; the property is optional.
 
 When the collection's only active type is an unmodified TaskNotes-generated v0.2 type, TaskNotes upgrades the metadata to mdbase v0.3 automatically. The previous `mdbase.yaml` and task type are kept under `.tasknotes/migrations/`. Collections with additional, modified, or hand-maintained types are left unchanged for you to review.
+
+If you used a 5.0 beta, TaskNotes updates its task type to the current contract when the vault opens and tells you once. Your statuses, priorities, property names and custom properties are kept, and task files are not changed. Collections that TaskNotes App has already updated are left as they are.
 
 If the integration is not enabled, nothing changes.
 

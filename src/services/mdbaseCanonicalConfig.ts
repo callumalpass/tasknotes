@@ -37,6 +37,41 @@ export function parseMdbaseTaskTypeDocument(markdown: string): ParsedMdbaseTaskT
 	return { type: value, body: parts.body };
 }
 
+/**
+ * tasknotes.task versions written by earlier TaskNotes releases. Their binding
+ * is unchanged in the current version, which only adds optional assignees, so
+ * such a type is read as the current version and then rewritten.
+ */
+export const PREVIOUS_TASKNOTES_CONTRACT_VERSIONS: readonly string[] = ["0.3.0-rc.3"];
+
+/**
+ * Returns the type with an earlier TaskNotes implementation lifted to the
+ * current contract version, and whether it needed lifting. A type that already
+ * implements the current version, or no TaskNotes version, is returned as is.
+ */
+export function withCurrentTaskNotesContract(type: UnknownRecord): {
+	type: UnknownRecord;
+	outdated: boolean;
+} {
+	if (!Array.isArray(type.implements) || taskNotesImplementation(type)) {
+		return { type, outdated: false };
+	}
+	const index = type.implements.findIndex(
+		(value) =>
+			isRecord(value) &&
+			value.contract === "tasknotes.task" &&
+			typeof value.version === "string" &&
+			PREVIOUS_TASKNOTES_CONTRACT_VERSIONS.includes(value.version)
+	);
+	if (index < 0) return { type, outdated: false };
+	const implementations = [...type.implements];
+	implementations[index] = {
+		...(implementations[index] as UnknownRecord),
+		version: TASKNOTES_CONTRACT_VERSION,
+	};
+	return { type: { ...type, implements: implementations }, outdated: true };
+}
+
 export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeValidationResult {
 	const issues: string[] = [];
 	const implementation = taskNotesImplementation(type);
@@ -271,6 +306,7 @@ export function mergeCanonicalTaskTypeDocument(
 	if (document.errors.length > 0) {
 		throw new Error(document.errors.map((error) => error.message).join("; "));
 	}
+	expandAliases(document);
 	const existingValue = document.toJS() as unknown;
 	if (!isRecord(existingValue)) {
 		throw new Error("The existing mdbase type frontmatter must be an object.");
@@ -542,4 +578,24 @@ function cloneValue(value: unknown): unknown {
 		);
 	}
 	return value;
+}
+
+/**
+ * Replace YAML aliases with copies of their anchored nodes, so each setting can
+ * be edited on its own. Types written by the tasknotes.task pack share nodes
+ * (for example `scheduled: *a1`).
+ */
+function expandAliases(document: YAML.Document): void {
+	YAML.visit(document, {
+		Alias(_key, alias) {
+			const copy = (alias.resolve(document) as YAML.Node).clone() as YAML.Node;
+			delete (copy as { anchor?: string }).anchor;
+			return copy;
+		},
+	});
+	YAML.visit(document, {
+		Node(_key, node) {
+			delete (node as { anchor?: string }).anchor;
+		},
+	});
 }

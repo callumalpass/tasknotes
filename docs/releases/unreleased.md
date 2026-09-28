@@ -30,7 +30,8 @@
 - Suggestions in the task selector and fallback task input now use your configured natural language triggers for contexts, tags, projects and status. Previously they always used `@`, `#`, `+` and the old status trigger, and inserted characters the parser no longer recognised after a trigger was changed. See [Customizable Triggers](https://tasknotes.dev/features/inline-tasks/#customizable-triggers).
 - Fixed generated recurrence and dependency link targets when the TaskNotes type uses a name other than `task`.
 - Improved mdbase upgrades from TaskNotes v4, including older generated formatting and retries after interrupted updates. New collections use a dedicated membership property without claiming bibliographic `type` fields; existing custom membership keys are preserved.
-- TaskNotes now bundles the same portable task contract as TaskNotes App and preserves customized contract/schema resources rather than replacing them automatically.
+- TaskNotes now bundles the same portable task contract as TaskNotes App (`tasknotes.task` 0.3.0-rc.5, which adds optional assignees linked to person notes) and preserves customized contract/schema resources rather than replacing them automatically.
+- Collections written by the 5.0 betas are updated to the current contract on load, keeping their settings; contract and schema files written by earlier TaskNotes versions are replaced without backups or warnings. Task types that TaskNotes App installed (which use YAML aliases) are updated in place instead of being backed up as invalid.
 
 <!--
 

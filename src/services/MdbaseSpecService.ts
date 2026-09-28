@@ -22,6 +22,7 @@ import {
 	portableSettingsFingerprint,
 	type ParsedMdbaseTaskType,
 	validateCanonicalTaskType,
+	withCurrentTaskNotesContract,
 } from "./mdbaseCanonicalConfig";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MdbaseSpecService" });
@@ -67,6 +68,8 @@ type CanonicalTypeState = {
 	path: string;
 	content: string;
 	type: Record<string, unknown>;
+	/** The file implements an earlier tasknotes.task version and must be rewritten. */
+	outdated?: boolean;
 };
 
 type LegacyTaskNotesTypeState = {
@@ -737,6 +740,24 @@ export class MdbaseSpecService {
 			(defaultPathOccupied ? `${typesFolder}/tasknotes-task.md` : defaultPath);
 		const localFingerprint = portableSettingsFingerprint(this.plugin.settings);
 
+		if (state?.outdated) {
+			// Read the earlier type into settings, then rewrite it in place at the
+			// current contract version. Settings it does not model are kept by the merge.
+			this.applyCanonicalState(state);
+			const resources = this.buildCanonicalMdbaseResources(
+				typesFolder,
+				legacyCompatibility,
+				typeof state.type.name === "string" ? state.type.name : "task",
+				contractsFolder
+			);
+			if (await this.writeCanonicalType(state.path, resources, true)) {
+				this.publishNotice(
+					`TaskNotes updated ${state.path} to tasknotes.task ${TASKNOTES_CONTRACT_VERSION}. Task files were not changed.`
+				);
+			}
+			return;
+		}
+
 		if (state) {
 			if (
 				this.lastKnownTypeContent === null ||
@@ -874,10 +895,11 @@ export class MdbaseSpecService {
 
 		try {
 			const parsed = parseMdbaseTaskTypeDocument(content);
-			if (!hasTaskNotesImplementation(parsed.type)) {
+			const { type, outdated } = withCurrentTaskNotesContract(parsed.type);
+			if (!hasTaskNotesImplementation(type)) {
 				return null;
 			}
-			const validation = validateCanonicalTaskType(parsed.type);
+			const validation = validateCanonicalTaskType(type);
 			if (!validation.valid) {
 				this.canonicalTypePath = path;
 				if (reportErrors) {
@@ -887,7 +909,7 @@ export class MdbaseSpecService {
 				}
 				return null;
 			}
-			return { path, content, type: parsed.type };
+			return { path, content, type, outdated };
 		} catch (error) {
 			this.canonicalTypePath = path;
 			if (reportErrors) {
@@ -917,7 +939,9 @@ export class MdbaseSpecService {
 			const existing = await adapter.read(path);
 			try {
 				const parsed = parseMdbaseTaskTypeDocument(existing);
-				const validation = validateCanonicalTaskType(parsed.type);
+				const validation = validateCanonicalTaskType(
+					withCurrentTaskNotesContract(parsed.type).type
+				);
 				if (!validation.valid && !allowRepair) {
 					this.reportInvalidCanonicalType(
 						`${path} is inconsistent: ${validation.issues.join("; ")}`
@@ -1274,7 +1298,10 @@ export class MdbaseSpecService {
 				const snapshot = snapshots.find((item) => item.path === path);
 				if (!snapshot) throw new Error(`Missing support snapshot: ${path}`);
 				if (snapshot.content !== content) {
-					if (snapshot.content !== null) await this.backupInvalidType(path, snapshot.content);
+					// Earlier TaskNotes releases' files are replaced without a backup.
+					if (snapshot.content !== null && !legacyTaskNotesSupport.includes(snapshot.content)) {
+						await this.backupInvalidType(path, snapshot.content);
+					}
 					await this.writeFileIfUnchanged(snapshot, content);
 				}
 				this.canonicalResourcePaths.add(path);
@@ -1614,9 +1641,9 @@ export class MdbaseSpecService {
 			...resources,
 			configDocument: config.toString(),
 			typeDocument: remapMdbaseTypeReferences(resources.typeDocument, new Map([["task", typeName]]), [], true),
-			contractDocument: document("contracts/tasknotes.task/0.3.0-rc.3.md"),
-			taskSchemaDocument: document("schemas/tasknotes.task/0.3.0-rc.3.schema.json"),
-			bindingSchemaDocument: document("schemas/tasknotes.task.binding/0.3.0-rc.3.schema.json"),
+			contractDocument: document(`contracts/tasknotes.task/${TASKNOTES_CONTRACT_VERSION}.md`),
+			taskSchemaDocument: document(`schemas/tasknotes.task/${TASKNOTES_CONTRACT_VERSION}.schema.json`),
+			bindingSchemaDocument: document(`schemas/tasknotes.task.binding/${TASKNOTES_CONTRACT_VERSION}.schema.json`),
 		};
 	}
 

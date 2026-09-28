@@ -703,6 +703,7 @@ export interface FieldMapping {
 	contexts: string;
 	projects: string;
 	attachments: string;
+	assignees: string; // Links to person records (tasknotes.task 0.3.0-rc.5)
 	timeEstimate: string;
 	completedDate: string;
 	dateCreated: string;

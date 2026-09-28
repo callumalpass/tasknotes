@@ -6,6 +6,7 @@
 
 import {
 	buildTaskNotesMdbaseResources,
+	TASKNOTES_MDBASE_TYPE_VERSION,
 	TASKNOTES_TASK_CONTRACT_VERSION,
 } from "@tasknotes/model/mdbase";
 import { TFile } from "obsidian";
@@ -1038,7 +1039,7 @@ describe("MdbaseSpecService", () => {
 
 			expect(frontmatter.kind).toBe("mdbase.type");
 			expect(frontmatter.name).toBe("task");
-			expect(frontmatter.version).toBe(1);
+			expect(frontmatter.version).toBe(TASKNOTES_MDBASE_TYPE_VERSION);
 			expect(schemaWrapper.dialect).toBe("json-schema-2020-12");
 			expect(schema.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
 			expect(schema.additionalProperties).toBe(true);
@@ -1097,6 +1098,7 @@ describe("MdbaseSpecService", () => {
 				occurrence_next_trigger: "completion",
 			});
 			expect(collection.links).toEqual({
+				"assignees[]": { validate_exists: false },
 				"attachments[]": { validate_exists: false },
 				"projects[]": { target_type: "any", validate_exists: false },
 				occurrence_template: { target_type: "any", validate_exists: false },
