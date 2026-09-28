@@ -222,6 +222,10 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 			...DEFAULT_SETTINGS.icsIntegration,
 			...(loadedData?.icsIntegration || {}),
 		},
+		googleCalendarExport: {
+			...DEFAULT_SETTINGS.googleCalendarExport,
+			...(loadedData?.googleCalendarExport || {}),
+		},
 		nlpTriggers: {
 			...DEFAULT_SETTINGS.nlpTriggers,
 			...(loadedData?.nlpTriggers || {}),
