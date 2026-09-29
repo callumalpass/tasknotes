@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Added
+
+- Kanban boards grouped by status now tint columns with each status's configured color, including swimlane boards.
