@@ -31,17 +31,3 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
-
-## Added
-
-- (#2375) Added an option to show all-day Google Calendar task exports as Free without blocking availability, including tasks converted to all-day events. Timed exports remain Busy. Run Sync all tasks to update existing events. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/#google-calendar-task-availability).
-  - Thanks to @szatzger for the suggestion.
-- (#2326) Added a stop button to the tracking status bar and a **Stop active time tracking** command. One active tracker stops directly; multiple trackers prompt you to choose one. See [Time Management](https://tasknotes.dev/features/time-management/#stop-an-active-tracker-without-opening-its-note).
-  - Thanks to @sumiyalairu03 for the suggestion and @kjohnsen for the command-palette follow-up.
-
-## Fixed
-
-- (#2328) Fixed rapid direct edits to an occurrence's status losing subsequent completion or reopening changes while recurrence reconciliation was still running.
-  - Thanks to @mudnug for reporting the recurrence issue.
-- (#2363) Added live validation for incomplete property-based task identification, replaced misleading example placeholders, and aligned generated Base filters with task lookup. Task indexes now refresh when the identification method, property name, or value changes. See [General Settings](https://tasknotes.dev/settings/general/#task-identification).
-  - Thanks to @cagechi for reporting the status-action problem and providing settings and Base examples.

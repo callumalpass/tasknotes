@@ -1,4 +1,4 @@
-import { Page, chromium, Browser } from '@playwright/test';
+import { Page, chromium, Browser, expect } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
@@ -98,6 +98,63 @@ function installElectronScreenshotCapture(page: Page): void {
       return originalScreenshot(normalizedOptions);
     }
   };
+}
+
+/** Resize the native window as well as Chromium's emulated viewport. */
+export async function setObsidianViewport(
+  page: Page,
+  size: { width: number; height: number }
+): Promise<void> {
+  await page.evaluate(({ width, height }) => {
+    const electron = (window as any).require?.('electron');
+    const currentWindow = electron?.remote?.getCurrentWindow?.();
+    currentWindow?.setContentSize(width, height);
+  }, size);
+  await page.setViewportSize(size);
+}
+
+/** Obsidian 1.13 uses a separate Settings window; older versions use a modal. */
+export async function openObsidianSettings(page: Page): Promise<Page> {
+  await page.bringToFront();
+  await page.keyboard.press('Control+,');
+  let settingsPage: Page | undefined;
+  await expect.poll(async () => {
+    for (const candidate of page.context().pages()) {
+      if (await candidate.locator('.vertical-tab-content').first().isVisible().catch(() => false)) {
+        settingsPage = candidate;
+        return true;
+      }
+    }
+    return false;
+  }, { timeout: 10000, message: 'Obsidian Settings must open in a modal or native window' }).toBe(true);
+  const target = settingsPage!;
+  await target.bringToFront();
+  if (target !== page) installElectronScreenshotCapture(target);
+  return target;
+}
+
+export async function openTaskNotesSettings(workspacePage: Page, tabName?: string): Promise<Page> {
+  const page = await openObsidianSettings(workspacePage);
+  const pluginTab = page.locator('.vertical-tab-nav-item').filter({ hasText: /^\s*TaskNotes\s*$/ });
+  await expect(pluginTab).toBeVisible();
+  await pluginTab.click();
+  await expect(page.locator('.tasknotes-settings')).toBeVisible();
+  if (tabName) {
+    const tab = page.getByRole('tab', { name: tabName, exact: true });
+    await tab.click();
+    await expect(tab).toHaveAttribute('aria-selected', 'true');
+  }
+  return page;
+}
+
+export async function closeObsidianSettings(workspacePage: Page, settingsPage: Page): Promise<void> {
+  const closed = settingsPage !== workspacePage
+    ? settingsPage.waitForEvent('close', { timeout: 10000 })
+    : undefined;
+  await workspacePage.evaluate(() => (window as any).app.setting.close());
+  if (closed) await closed;
+  else await settingsPage.locator('.modal.mod-settings').waitFor({ state: 'hidden' });
+  await workspacePage.bringToFront();
 }
 
 async function tryConnectExisting(remoteDebuggingPort: number): Promise<string | null> {
@@ -266,6 +323,7 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     obsidianProcess = spawn(spawnCommand, spawnArgs, {
       cwd: UNPACKED_DIR,
       stdio: ['ignore', 'pipe', 'pipe'],
+      detached: true, // Own the Xvfb/Electron process group so teardown cannot leak children.
       env: {
         ...process.env,
         OBSIDIAN_CONFIG_DIR: userDataDir,
@@ -313,8 +371,13 @@ export async function launchObsidian(): Promise<ObsidianApp> {
   await page.waitForLoadState('domcontentloaded');
   installElectronScreenshotCapture(page);
 
-  // Give Obsidian time to initialize
-  await page.waitForTimeout(3000);
+  // Do not interact with an unexpected vault or a half-built workspace.
+  await page.waitForFunction(() => (window as any).app?.workspace?.layoutReady);
+  const vaultPath = await page.evaluate(() => (window as any).app.vault.adapter.basePath);
+  if (path.resolve(vaultPath) !== E2E_VAULT_DIR) {
+    throw new Error(`Refusing to test unexpected vault: ${vaultPath}`);
+  }
+  await setObsidianViewport(page, { width: 1400, height: 900 });
 
   // Handle "Trust this vault" dialog - this enables community plugins
   const trustButton = page.locator('button:has-text("Trust author and enable plugins")');
@@ -347,9 +410,9 @@ export async function launchObsidian(): Promise<ObsidianApp> {
   // Wait for the workspace to be ready
   await page.waitForSelector('.workspace', { timeout: 30000 });
 
-  // Wait for TaskNotes plugin to fully initialize
-  // The plugin adds its sidebar items and commands after loading
-  await page.waitForTimeout(2000);
+  await page.waitForFunction(() =>
+    Object.keys((window as any).app.commands.commands).some(id => id.startsWith('tasknotes:'))
+  );
 
   // Close any open modals/dialogs that might be blocking the UI
   // This is especially important when reusing an existing instance
@@ -394,17 +457,22 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
     console.log('Keeping existing Obsidian instance running');
     return;
   }
-  if (app.browser) {
-    // Close all open tabs/pages before closing the browser
-    for (const context of app.browser.contexts()) {
-      for (const page of context.pages()) {
-        await page.close().catch(() => {});
+  try {
+    if (app.browser) {
+      // Quit the owned native app, including Settings popouts, before disconnecting.
+      await app.page.evaluate(() => {
+        (window as any).require?.('electron')?.remote?.app?.quit();
+      }).catch(() => {});
+      await app.browser.close();
+    }
+  } finally {
+    if (app.process?.pid) {
+      try {
+        process.kill(-app.process.pid, 'SIGTERM');
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
       }
     }
-    await app.browser.close();
-  }
-  if (app.process) {
-    app.process.kill();
   }
 }
 
