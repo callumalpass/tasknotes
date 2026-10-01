@@ -910,6 +910,9 @@ export const zh: TranslationTree = {
 						exactOnly: "仅精确任务标签"
 					}
 				},
+				propertyNamePlaceholder: "输入属性名称",
+				propertyValuePlaceholder: "输入属性值",
+				incompletePropertyWarning: "请输入属性名称和值。示例文字不是已保存的配置。只有两者都设置后，TaskNotes 才能识别任务。现有 .base 筛选条件必须与这些设置一致。",
 				taskProperty: {
 					name: "任务属性名称",
 					description: "前置属性名称（例如，\"category\"）"
@@ -1879,6 +1882,10 @@ export const zh: TranslationTree = {
 					name: "创建为全天事件",
 					description: "启用后，任务将创建为全天事件。禁用后，使用时间估计作为持续时间。"
 				},
+				showAllDayAsFree: {
+					name: "将全天任务事件标记为空闲",
+					description: "导出的全天任务不会占用空闲时间，包括转换为全天事件的任务。带时间的事件仍显示为忙碌。请运行同步所有任务，将更改应用到现有事件。",
+				},
 				defaultDuration: {
 					name: "默认事件持续时间",
 					description: "带时间的事件持续时间（分钟）（当任务没有时间估计时使用）。"
@@ -2269,6 +2276,7 @@ export const zh: TranslationTree = {
 		viewReleaseNotes: "查看版本说明",
 		startTimeTrackingCurrentTask: "开始跟踪当前任务的时间",
 		stopTimeTrackingCurrentTask: "停止跟踪当前任务的时间",
+		stopActiveTimeTracking: "停止正在进行的时间跟踪",
 		startTimeTrackingWithSelector: "开始时间跟踪（选择任务）",
 		editTimeEntries: "编辑时间条目（选择任务）",
 		createOrOpenTask: "创建或打开任务",
@@ -2766,6 +2774,8 @@ export const zh: TranslationTree = {
 			}
 		},
 		timeTracking: {
+			noActiveTasks: "未找到正在进行的时间跟踪会话",
+			stopFailed: "无法加载正在进行的时间跟踪会话",
 			noTasksAvailable: "没有可用的任务进行时间跟踪",
 			started: "开始跟踪时间：{taskTitle}",
 			startFailed: "无法开始时间跟踪"

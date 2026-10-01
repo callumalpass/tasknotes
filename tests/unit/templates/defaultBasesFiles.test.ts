@@ -218,20 +218,18 @@ describe("defaultBasesFiles", () => {
 		expect(template).not.toContain('note["Task Type"] == "true"');
 	});
 
-	it("uses the same quoted property reference for property existence filters", () => {
+	it.each([["Task Type", ""], ["", "task"], ["", ""], [" ", "task"], ["category", " "]])("matches no tasks with incomplete property identification (%s, %s) (#2363)", (name, value) => {
 		const template = generateBasesFileTemplate(
 			"open-tasks-view",
 			createMockPlugin({
 				taskIdentificationMethod: "property",
-				taskPropertyName: "Task Type",
-				taskPropertyValue: "",
+				taskPropertyName: name,
+				taskPropertyValue: value,
 			}) as any
 		);
-
-		expect(template).toContain(
-			'note["Task Type"] && note["Task Type"] != "" && note["Task Type"] != null'
-		);
-		expect(template).not.toContain("note.Task Type");
+		expect(template).toContain('    - "false"');
+		expect(template).not.toContain('file.hasTag("task")');
+		expect(template).not.toContain('note["Task Type"] &&');
 	});
 
 	it("adds excluded folder filters to generated task Bases", () => {

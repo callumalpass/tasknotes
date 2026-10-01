@@ -16,6 +16,7 @@ import type TaskNotesPlugin from "../main";
 import type { FieldMapping } from "../types";
 import { parseExcludedFolders } from "../utils/pathExclusions";
 import { isTagsTaskIdentifierProperty } from "../utils/taskIdentificationFrontmatter";
+import { hasCompletePropertyTaskIdentification } from "../utils/taskIdentification";
 
 function escapeBasesStringLiteral(value: string): string {
 	return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
@@ -51,30 +52,22 @@ function generateTaskFilterCondition(settings: TaskNotesSettings): string {
 		const propertyName = settings.taskPropertyName;
 		const propertyValue = settings.taskPropertyValue;
 
-		if (!propertyName) {
-			// No property name specified, fall back to tag-based filtering
-			const taskTag = settings.taskTag || "task";
-			return `file.hasTag("${taskTag}")`;
+		if (!hasCompletePropertyTaskIdentification(settings)) {
+			// Match TaskManager: incomplete property identification recognizes no tasks.
+			return "false";
 		}
 
-		if (propertyValue) {
-			if (isTagsTaskIdentifierProperty(propertyName)) {
-				return `file.hasTag("${escapeBasesStringLiteral(propertyValue)}")`;
-			}
-			// Check property has a specific value. list() handles scalar and list
-			// frontmatter values consistently, while preserving exact element
-			// comparisons. Boolean values must not be quoted (#1491).
-			const propertyRef = formatNotePropertyReference(propertyName);
-			const lower = propertyValue.toLowerCase();
-			if (lower === "true" || lower === "false") {
-				return `list(${propertyRef}).contains(${lower})`;
-			}
-			return `list(${propertyRef}).contains("${escapeBasesStringLiteral(propertyValue)}")`;
-		} else {
-			// Just check property exists (is not empty)
-			const propertyRef = formatNotePropertyReference(propertyName);
-			return `${propertyRef} && ${propertyRef} != "" && ${propertyRef} != null`;
+		if (isTagsTaskIdentifierProperty(propertyName)) {
+			return `file.hasTag("${escapeBasesStringLiteral(propertyValue)}")`;
 		}
+		// list() handles scalar and list frontmatter consistently. Boolean values
+		// must not be quoted (#1491).
+		const propertyRef = formatNotePropertyReference(propertyName);
+		const lower = propertyValue.toLowerCase();
+		if (lower === "true" || lower === "false") {
+			return `list(${propertyRef}).contains(${lower})`;
+		}
+		return `list(${propertyRef}).contains("${escapeBasesStringLiteral(propertyValue)}")`;
 	}
 }
 
@@ -96,7 +89,7 @@ function generateTaskFilterConditions(settings: TaskNotesSettings): string[] {
  */
 function formatFilterAsYAML(conditions: string | string[]): string {
 	const conditionArray = Array.isArray(conditions) ? conditions : [conditions];
-	const formattedConditions = conditionArray.map(c => `    - ${c}`).join('\n');
+	const formattedConditions = conditionArray.map(c => `    - ${c === "false" ? '"false"' : c}`).join('\n');
 	return `filters:
   and:
 ${formattedConditions}`;

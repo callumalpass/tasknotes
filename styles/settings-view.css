@@ -18,6 +18,11 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     margin-inline: 0;
 }
 
+/* Native setting rows use flex, so explicitly honor the validation row's hidden state. */
+.tasknotes-plugin .settings-view__identification-warning[hidden] {
+    display: none;
+}
+
 /* ================================================
    SETTINGS HEADER
    ================================================ */

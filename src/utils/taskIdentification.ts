@@ -26,6 +26,10 @@ export function compareTaskPropertyIdentifierValue(
 	return frontmatterValue === settingValue;
 }
 
+export function hasCompletePropertyTaskIdentification(settings: TaskIdentificationSettings): boolean {
+	return Boolean(settings.taskPropertyName?.trim() && settings.taskPropertyValue?.trim());
+}
+
 export function isTaskFrontmatter(
 	frontmatter: unknown,
 	settings: TaskIdentificationSettings
@@ -37,7 +41,7 @@ export function isTaskFrontmatter(
 	if (settings.taskIdentificationMethod === "property") {
 		const propName = settings.taskPropertyName;
 		const propValue = settings.taskPropertyValue;
-		if (!propName || !propValue) return false;
+		if (!hasCompletePropertyTaskIdentification(settings)) return false;
 
 		const frontmatterValue = frontmatter[propName];
 		if (frontmatterValue === undefined) return false;

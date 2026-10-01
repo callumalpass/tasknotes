@@ -359,6 +359,13 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "stop-active-time-tracking",
+			nameKey: "commands.stopActiveTimeTracking",
+			callback: async (ctx) => {
+				await ctx.stopActiveTimeTracking();
+			},
+		},
+		{
 			id: "start-time-tracking-with-selector",
 			nameKey: "commands.startTimeTrackingWithSelector",
 			callback: async (ctx) => {

@@ -28,6 +28,12 @@ OAuth calendar integration requires creating an OAuth application with your cale
 - Per-calendar visibility toggles allow selective display of calendars
 - Access tokens are automatically refreshed when expired
 
+### Google Calendar Task Availability
+
+Under **Settings → TaskNotes → Integrations → Export tasks to Google Calendar**, enable **Show all-day task events as free** to prevent all-day task exports from blocking your availability. This includes date-only tasks and timed tasks converted by **Create as all-day events**. Timed exports remain Busy.
+
+The option is off by default. Changes apply when tasks are exported or updated. Run **Sync all tasks** to update existing eligible task events. Disabling the option makes exported task events Busy again on their next full sync. This setting does not affect unrelated calendar events.
+
 ### Token Management
 
 TaskNotes stores OAuth client credentials, access tokens, and refresh tokens in Obsidian Secret Storage, which is encrypted at rest when supported by the operating system and kept separate from TaskNotes' `data.json`. Tokens are refreshed automatically before expiration. You can revoke account access or forget the saved OAuth app credentials through the integrations settings.

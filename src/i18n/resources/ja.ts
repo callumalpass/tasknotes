@@ -910,6 +910,9 @@ export const ja: TranslationTree = {
 						exactOnly: "完全一致のタスクタグのみ"
 					}
 				},
+				propertyNamePlaceholder: "プロパティ名を入力",
+				propertyValuePlaceholder: "プロパティ値を入力",
+				incompletePropertyWarning: "プロパティ名と値の両方を入力してください。例のテキストは保存された設定ではありません。両方を設定するまで、TaskNotes はタスクを識別できません。既存の .base フィルターもこの設定に合わせてください。",
 				taskProperty: {
 					name: "タスクプロパティ名",
 					description: "フロントマタープロパティ名（例：\"category\"）"
@@ -1879,6 +1882,10 @@ export const ja: TranslationTree = {
 					name: "終日イベントとして作成",
 					description: "有効にすると、タスクは終日イベントとして作成されます。無効にすると、時間見積もりを期間として使用します。"
 				},
+				showAllDayAsFree: {
+					name: "終日のタスク予定を予定なしとして表示",
+					description: "終日としてエクスポートされたタスクは、終日に変換されたものも含め、空き時間を妨げません。時刻のある予定は「予定あり」のままです。既存の予定への変更を適用するには、すべてのタスクの同期を実行してください。",
+				},
 				defaultDuration: {
 					name: "デフォルトのイベント期間",
 					description: "時間指定イベントの期間（分）（タスクに時間見積もりがない場合に使用）。"
@@ -2269,6 +2276,7 @@ export const ja: TranslationTree = {
 		viewReleaseNotes: "リリースノートを表示",
 		startTimeTrackingCurrentTask: "現在のタスクの時間追跡を開始",
 		stopTimeTrackingCurrentTask: "現在のタスクの時間追跡を停止",
+		stopActiveTimeTracking: "実行中の時間追跡を停止",
 		startTimeTrackingWithSelector: "時間追跡を開始（タスクを選択）",
 		editTimeEntries: "時間エントリを編集（タスクを選択）",
 		createOrOpenTask: "タスクを作成または開く",
@@ -2767,6 +2775,8 @@ export const ja: TranslationTree = {
 			}
 		},
 		timeTracking: {
+			noActiveTasks: "実行中の時間追跡セッションが見つかりません",
+			stopFailed: "実行中の時間追跡セッションを読み込めませんでした",
 			noTasksAvailable: "時間を追跡できるタスクがありません",
 			started: "時間追跡を開始しました：{taskTitle}",
 			startFailed: "時間追跡の開始に失敗しました"

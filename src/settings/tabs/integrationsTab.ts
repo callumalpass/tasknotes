@@ -1001,6 +1001,23 @@ export function renderIntegrationsTab(
 					})
 			);
 
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.integrations.googleCalendarExport.showAllDayAsFree.name"
+						),
+						desc: translate(
+							"settings.integrations.googleCalendarExport.showAllDayAsFree.description"
+						),
+						getValue: () => plugin.settings.googleCalendarExport.showAllDayAsFree,
+						setValue: async (value: boolean) => {
+							plugin.settings.googleCalendarExport.showAllDayAsFree = value;
+							save();
+						},
+					})
+			);
+
 			// Default duration (only relevant for timed events)
 			group.addSetting(
 				(setting) =>

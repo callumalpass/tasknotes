@@ -2340,6 +2340,18 @@
       "source": "e39f1b4ab9d9f49b5f4ab4166aeb41c76d920012",
       "translation": "050eba79e4639f40e0f4e6f57b3ac3c9067f6010"
     },
+    "settings.general.taskIdentification.propertyNamePlaceholder": {
+      "source": "7622a1a60d1098ec7fededc7bb3945daa71ec7c3",
+      "translation": "89f6a14b82b6d6c17e90aca2816195659b94335c"
+    },
+    "settings.general.taskIdentification.propertyValuePlaceholder": {
+      "source": "ae0441de7e1491a32d73dcf30e4c52528b12c400",
+      "translation": "1ddfa237416c32de278179c094c3b130081b62e0"
+    },
+    "settings.general.taskIdentification.incompletePropertyWarning": {
+      "source": "884b2db381a7d8c783f4514bb1bafc1d4f07d3bf",
+      "translation": "b2f49769b4b161be9aa712a2ba6cdaa3ac5d6fc3"
+    },
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "8d7c7b08b22af017050540dc817b845f6edb0a4a"
@@ -4616,6 +4628,14 @@
       "source": "bf0edca956693c35301b7c1705f79502a9f311b1",
       "translation": "3977506146cb0817b2660cddeef91e3abdc0a659"
     },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.name": {
+      "source": "594d0e773199c2ab1465504fab3d4441058760c6",
+      "translation": "3cc6a49e6250c32e003af9ab0df057bb3ee9fb95"
+    },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.description": {
+      "source": "9d47c4ca7ab13b06225a8e690123597e8304ed58",
+      "translation": "6fc3df953374232d1c1d9ac5c8418ed915ecc7e9"
+    },
     "settings.integrations.googleCalendarExport.defaultDuration.name": {
       "source": "432b3d74d16406aa16b254dac95de683f6f87ffc",
       "translation": "94c0624ff2be226896bd3cf7ae99a625a8c73c85"
@@ -5615,6 +5635,10 @@
     "commands.stopTimeTrackingCurrentTask": {
       "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
       "translation": "e18c050f8a28b1091306bdb97c33ab4e28bdd853"
+    },
+    "commands.stopActiveTimeTracking": {
+      "source": "b5c76b6e502a41e8b78dff7873653614456b3f07",
+      "translation": "22391c3aa01af985cf64c0e0af13bda595bc06b0"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -7003,6 +7027,14 @@
     "modals.timeTracking.startFailed": {
       "source": "c1b914325ad18471661dcc078d2e4111856abffc",
       "translation": "26a9402fa92333a54c36b9859d59d6398a84a6e1"
+    },
+    "modals.timeTracking.noActiveTasks": {
+      "source": "fd109e8ecc9188693e4b5d3516e37757a6cc30ca",
+      "translation": "5f3df0baa676e4e70666476d18afe7f78a42b1d3"
+    },
+    "modals.timeTracking.stopFailed": {
+      "source": "9476de24a0c27461eb4939dbca5c5119fe832567",
+      "translation": "7371d8df898fb82a48afb54dd7237246069f0604"
     },
     "modals.timeEntry.mustHaveSpecificTime": {
       "source": "b5e4624ad4a4356677441185f8d75c03831d1965",
@@ -11310,6 +11342,18 @@
       "source": "e39f1b4ab9d9f49b5f4ab4166aeb41c76d920012",
       "translation": "3ff252122741bc3fdef35bb69801522abc72eba0"
     },
+    "settings.general.taskIdentification.propertyNamePlaceholder": {
+      "source": "7622a1a60d1098ec7fededc7bb3945daa71ec7c3",
+      "translation": "5dcd43fe7a88dd3dc18ee4809b24cffe56100174"
+    },
+    "settings.general.taskIdentification.propertyValuePlaceholder": {
+      "source": "ae0441de7e1491a32d73dcf30e4c52528b12c400",
+      "translation": "91a94d0fadd46495c4b2190d39d35ca520839c8d"
+    },
+    "settings.general.taskIdentification.incompletePropertyWarning": {
+      "source": "884b2db381a7d8c783f4514bb1bafc1d4f07d3bf",
+      "translation": "67cdc0864c220a752db9fde1e0dfb7f1f3adf49c"
+    },
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "23c1cedf5122cc274c710d34a3952a277e20d21d"
@@ -13586,6 +13630,14 @@
       "source": "bf0edca956693c35301b7c1705f79502a9f311b1",
       "translation": "8d2c992ba389d38500b88c136da402b74c069ea9"
     },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.name": {
+      "source": "594d0e773199c2ab1465504fab3d4441058760c6",
+      "translation": "d57551188de381f1afd40221463d9aa6d0688edd"
+    },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.description": {
+      "source": "9d47c4ca7ab13b06225a8e690123597e8304ed58",
+      "translation": "ba8e24aa5a531b70624c0238e6eb409cd4351b39"
+    },
     "settings.integrations.googleCalendarExport.defaultDuration.name": {
       "source": "432b3d74d16406aa16b254dac95de683f6f87ffc",
       "translation": "d8a046ffbc222c9d082a49a5bc3c52367b2a58e3"
@@ -14585,6 +14637,10 @@
     "commands.stopTimeTrackingCurrentTask": {
       "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
       "translation": "f5b1b6d52f49e220f82c3736d83326418de6f60f"
+    },
+    "commands.stopActiveTimeTracking": {
+      "source": "b5c76b6e502a41e8b78dff7873653614456b3f07",
+      "translation": "a174e1fd51bf698dbc94e2ea4e4c43d302c41c2e"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -15973,6 +16029,14 @@
     "modals.timeTracking.startFailed": {
       "source": "c1b914325ad18471661dcc078d2e4111856abffc",
       "translation": "78b1da893370881ecc86cd5299aa5faa3eef4906"
+    },
+    "modals.timeTracking.noActiveTasks": {
+      "source": "fd109e8ecc9188693e4b5d3516e37757a6cc30ca",
+      "translation": "0f5c875263b537d1d795ff12d9f7645a2d5adbf8"
+    },
+    "modals.timeTracking.stopFailed": {
+      "source": "9476de24a0c27461eb4939dbca5c5119fe832567",
+      "translation": "d1b6d33fa2e1c33a1d9277bb54757723cbadbf21"
     },
     "modals.timeEntry.mustHaveSpecificTime": {
       "source": "b5e4624ad4a4356677441185f8d75c03831d1965",
@@ -20280,6 +20344,18 @@
       "source": "e39f1b4ab9d9f49b5f4ab4166aeb41c76d920012",
       "translation": "93993d665f376c4e741ce44bc56bbeda6defb4d8"
     },
+    "settings.general.taskIdentification.propertyNamePlaceholder": {
+      "source": "7622a1a60d1098ec7fededc7bb3945daa71ec7c3",
+      "translation": "a66841e845c13ddb7d003d381272d6707a48bc44"
+    },
+    "settings.general.taskIdentification.propertyValuePlaceholder": {
+      "source": "ae0441de7e1491a32d73dcf30e4c52528b12c400",
+      "translation": "365cdf29b82a6b6ee94eb08e95148c36ecd46cb5"
+    },
+    "settings.general.taskIdentification.incompletePropertyWarning": {
+      "source": "884b2db381a7d8c783f4514bb1bafc1d4f07d3bf",
+      "translation": "ca8dda9d24d1138eb67c41e107db5648cfbf097b"
+    },
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "06f4bdc41d759b82d6dc63ff17155b7be8edfa69"
@@ -22556,6 +22632,14 @@
       "source": "bf0edca956693c35301b7c1705f79502a9f311b1",
       "translation": "719083b80f6a78118f3bfd49b5586a82e2a98a10"
     },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.name": {
+      "source": "594d0e773199c2ab1465504fab3d4441058760c6",
+      "translation": "f72ad9a44a4b8d6f22e4f540403626ce9e8d3f1f"
+    },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.description": {
+      "source": "9d47c4ca7ab13b06225a8e690123597e8304ed58",
+      "translation": "d475368ec90b166bb6405a3f3e522c94d3e52093"
+    },
     "settings.integrations.googleCalendarExport.defaultDuration.name": {
       "source": "432b3d74d16406aa16b254dac95de683f6f87ffc",
       "translation": "44156a172f514980c8b5144ee47c6c30b4d1adc4"
@@ -23555,6 +23639,10 @@
     "commands.stopTimeTrackingCurrentTask": {
       "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
       "translation": "ed69e667fc9430394a043d5912ca72a07d4ab65d"
+    },
+    "commands.stopActiveTimeTracking": {
+      "source": "b5c76b6e502a41e8b78dff7873653614456b3f07",
+      "translation": "7c0bd1a41f4fd512aeada1d71f6025741cb02f78"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -24943,6 +25031,14 @@
     "modals.timeTracking.startFailed": {
       "source": "c1b914325ad18471661dcc078d2e4111856abffc",
       "translation": "ad75eb99f2d10500635220a794c2587c4f59afa2"
+    },
+    "modals.timeTracking.noActiveTasks": {
+      "source": "fd109e8ecc9188693e4b5d3516e37757a6cc30ca",
+      "translation": "37f37e9c09684a94a22b2ac46655c92034b6e3e6"
+    },
+    "modals.timeTracking.stopFailed": {
+      "source": "9476de24a0c27461eb4939dbca5c5119fe832567",
+      "translation": "bdc2ac6870d14de48b88b77a3f806853defdbd24"
     },
     "modals.timeEntry.mustHaveSpecificTime": {
       "source": "b5e4624ad4a4356677441185f8d75c03831d1965",
@@ -29250,6 +29346,18 @@
       "source": "e39f1b4ab9d9f49b5f4ab4166aeb41c76d920012",
       "translation": "dc35d092cd39b59c38acdc138b03a5419e120fb9"
     },
+    "settings.general.taskIdentification.propertyNamePlaceholder": {
+      "source": "7622a1a60d1098ec7fededc7bb3945daa71ec7c3",
+      "translation": "303e761df49279a7a5501f04fbb024db28019dba"
+    },
+    "settings.general.taskIdentification.propertyValuePlaceholder": {
+      "source": "ae0441de7e1491a32d73dcf30e4c52528b12c400",
+      "translation": "0a653b1b73ebafa3c55eb1702362b3b298e49f5c"
+    },
+    "settings.general.taskIdentification.incompletePropertyWarning": {
+      "source": "884b2db381a7d8c783f4514bb1bafc1d4f07d3bf",
+      "translation": "56e16dedbc098f21695a327cd03419a4487711ad"
+    },
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "6ae7187e00f57eab334c8a458722548b27d302fc"
@@ -31526,6 +31634,14 @@
       "source": "bf0edca956693c35301b7c1705f79502a9f311b1",
       "translation": "8185c8148cce0f23bf27a4bf0ec5dc890597a9c6"
     },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.name": {
+      "source": "594d0e773199c2ab1465504fab3d4441058760c6",
+      "translation": "985e8c75cb4dc62810ef7389d0a57be3cea8a149"
+    },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.description": {
+      "source": "9d47c4ca7ab13b06225a8e690123597e8304ed58",
+      "translation": "fc92b7cd1a1712005d1e0566d6fc781df3b682b3"
+    },
     "settings.integrations.googleCalendarExport.defaultDuration.name": {
       "source": "432b3d74d16406aa16b254dac95de683f6f87ffc",
       "translation": "508d70999ab6fded1c18ca433688f210ada01c5a"
@@ -32525,6 +32641,10 @@
     "commands.stopTimeTrackingCurrentTask": {
       "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
       "translation": "f7a8d49518731afe9bfa61164898ddcbbbb73035"
+    },
+    "commands.stopActiveTimeTracking": {
+      "source": "b5c76b6e502a41e8b78dff7873653614456b3f07",
+      "translation": "6e4f02edb9f3d18d2ad0ac330504f89cd9d3305d"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -33913,6 +34033,14 @@
     "modals.timeTracking.startFailed": {
       "source": "c1b914325ad18471661dcc078d2e4111856abffc",
       "translation": "01e1e4132fecc357f4707fdbd7c6b22f51c4de49"
+    },
+    "modals.timeTracking.noActiveTasks": {
+      "source": "fd109e8ecc9188693e4b5d3516e37757a6cc30ca",
+      "translation": "0d0841261e465295d0d0dfebc3e1f392e727b1bc"
+    },
+    "modals.timeTracking.stopFailed": {
+      "source": "9476de24a0c27461eb4939dbca5c5119fe832567",
+      "translation": "8ac00a64a67a25ab209b7985fc68f61362f10d24"
     },
     "modals.timeEntry.mustHaveSpecificTime": {
       "source": "b5e4624ad4a4356677441185f8d75c03831d1965",
@@ -38220,6 +38348,18 @@
       "source": "e39f1b4ab9d9f49b5f4ab4166aeb41c76d920012",
       "translation": "74365fafbf01fdca0834ecb829550d31526cb11b"
     },
+    "settings.general.taskIdentification.propertyNamePlaceholder": {
+      "source": "7622a1a60d1098ec7fededc7bb3945daa71ec7c3",
+      "translation": "0d0a1bd8f33f42109a846c0241141f06a7ed7687"
+    },
+    "settings.general.taskIdentification.propertyValuePlaceholder": {
+      "source": "ae0441de7e1491a32d73dcf30e4c52528b12c400",
+      "translation": "f29821138f6659dc95e3c8a3a906bb39bb210230"
+    },
+    "settings.general.taskIdentification.incompletePropertyWarning": {
+      "source": "884b2db381a7d8c783f4514bb1bafc1d4f07d3bf",
+      "translation": "3fa8e0c15a5cfc455eeb9bc0e598981bbb9e1a87"
+    },
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "2a24aeb230383f8d7a605daf90edb3b440143e00"
@@ -40496,6 +40636,14 @@
       "source": "bf0edca956693c35301b7c1705f79502a9f311b1",
       "translation": "43363a1cb04fd80ece3a80bbe76ddb83001733a5"
     },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.name": {
+      "source": "594d0e773199c2ab1465504fab3d4441058760c6",
+      "translation": "db4adbd432598cde47cca15c82d8080cd7d5aff7"
+    },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.description": {
+      "source": "9d47c4ca7ab13b06225a8e690123597e8304ed58",
+      "translation": "6050e9fe86f12196394cf6b19a836974bf3030c4"
+    },
     "settings.integrations.googleCalendarExport.defaultDuration.name": {
       "source": "432b3d74d16406aa16b254dac95de683f6f87ffc",
       "translation": "f1b33f1805cc4c9e022955f376d854fc594ca847"
@@ -41495,6 +41643,10 @@
     "commands.stopTimeTrackingCurrentTask": {
       "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
       "translation": "a7627914f43d9057c9fa73578dcc541d64d84f1f"
+    },
+    "commands.stopActiveTimeTracking": {
+      "source": "b5c76b6e502a41e8b78dff7873653614456b3f07",
+      "translation": "d14b42e3bb5f8f7a711240d31b611158dfbf7296"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -42883,6 +43035,14 @@
     "modals.timeTracking.startFailed": {
       "source": "c1b914325ad18471661dcc078d2e4111856abffc",
       "translation": "1ce1c6d35df0f8fa34a02b70941c82ee3ef3d295"
+    },
+    "modals.timeTracking.noActiveTasks": {
+      "source": "fd109e8ecc9188693e4b5d3516e37757a6cc30ca",
+      "translation": "7582dece2f2d8c2f46953c3cd1d45188dbdd492f"
+    },
+    "modals.timeTracking.stopFailed": {
+      "source": "9476de24a0c27461eb4939dbca5c5119fe832567",
+      "translation": "340fa951a52430c80eca48e357e38a2c8f6506aa"
     },
     "modals.timeEntry.mustHaveSpecificTime": {
       "source": "b5e4624ad4a4356677441185f8d75c03831d1965",
@@ -47190,6 +47350,18 @@
       "source": "e39f1b4ab9d9f49b5f4ab4166aeb41c76d920012",
       "translation": "80291d0214e4bcadd8b1c6962d3924b0add97954"
     },
+    "settings.general.taskIdentification.propertyNamePlaceholder": {
+      "source": "7622a1a60d1098ec7fededc7bb3945daa71ec7c3",
+      "translation": "16c2b540b784bbea0810df759e07a94f3b413190"
+    },
+    "settings.general.taskIdentification.propertyValuePlaceholder": {
+      "source": "ae0441de7e1491a32d73dcf30e4c52528b12c400",
+      "translation": "17cba04eed71c6d67f8d5b5fad8a68bbed3eafa8"
+    },
+    "settings.general.taskIdentification.incompletePropertyWarning": {
+      "source": "884b2db381a7d8c783f4514bb1bafc1d4f07d3bf",
+      "translation": "1cca5c3bca30160f01f35f90398f12b15feeb3c2"
+    },
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "78917aa5831ad4b23c65bdb976b1b74ed9018f6e"
@@ -49466,6 +49638,14 @@
       "source": "bf0edca956693c35301b7c1705f79502a9f311b1",
       "translation": "2bbf88b4bc8d611bce9833183fdedd88cb9c3daa"
     },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.name": {
+      "source": "594d0e773199c2ab1465504fab3d4441058760c6",
+      "translation": "8886c49635b6c5a1abc7ed2cedabb76f1fc275fd"
+    },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.description": {
+      "source": "9d47c4ca7ab13b06225a8e690123597e8304ed58",
+      "translation": "0221d7b8c8066a9ec07ab62bf54ee16d9ddb0610"
+    },
     "settings.integrations.googleCalendarExport.defaultDuration.name": {
       "source": "432b3d74d16406aa16b254dac95de683f6f87ffc",
       "translation": "e8cd292b3295135b3efbe03ad6bc38ad29fc09c1"
@@ -50465,6 +50645,10 @@
     "commands.stopTimeTrackingCurrentTask": {
       "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
       "translation": "46fda24583634b3cba6a6c3571969a4c2107b870"
+    },
+    "commands.stopActiveTimeTracking": {
+      "source": "b5c76b6e502a41e8b78dff7873653614456b3f07",
+      "translation": "56e8213a4a49cc849906bc253a873cbccce71985"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -51853,6 +52037,14 @@
     "modals.timeTracking.startFailed": {
       "source": "c1b914325ad18471661dcc078d2e4111856abffc",
       "translation": "99a3f98187a9c5c8d0ffaf4ba43e892ad5aa0b15"
+    },
+    "modals.timeTracking.noActiveTasks": {
+      "source": "fd109e8ecc9188693e4b5d3516e37757a6cc30ca",
+      "translation": "6805fda274611fc7894d44b88f941a94855eb26b"
+    },
+    "modals.timeTracking.stopFailed": {
+      "source": "9476de24a0c27461eb4939dbca5c5119fe832567",
+      "translation": "90da1ee3b65b82a4d0e5fabf2cf4627126e3c466"
     },
     "modals.timeEntry.mustHaveSpecificTime": {
       "source": "b5e4624ad4a4356677441185f8d75c03831d1965",
@@ -56160,6 +56352,18 @@
       "source": "e39f1b4ab9d9f49b5f4ab4166aeb41c76d920012",
       "translation": "66ae6bcb1eabc92ae881593845c1323bd640d7f4"
     },
+    "settings.general.taskIdentification.propertyNamePlaceholder": {
+      "source": "7622a1a60d1098ec7fededc7bb3945daa71ec7c3",
+      "translation": "590c9d95c10cf13bad7f9d98be3dbe4fbf16b337"
+    },
+    "settings.general.taskIdentification.propertyValuePlaceholder": {
+      "source": "ae0441de7e1491a32d73dcf30e4c52528b12c400",
+      "translation": "5c56a0bd2e91081ab10320b535552265bdeea177"
+    },
+    "settings.general.taskIdentification.incompletePropertyWarning": {
+      "source": "884b2db381a7d8c783f4514bb1bafc1d4f07d3bf",
+      "translation": "bdd15aaba56f8de4f8fea84d23001651e7262c54"
+    },
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "529e6550b3ee48e9b545e227e3034e37be04dc7f"
@@ -58436,6 +58640,14 @@
       "source": "bf0edca956693c35301b7c1705f79502a9f311b1",
       "translation": "e02fe223a8ea7f0a867c59bcf8caec951943ad2b"
     },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.name": {
+      "source": "594d0e773199c2ab1465504fab3d4441058760c6",
+      "translation": "465fdda583f95fbf529a249c1ac364191d8de934"
+    },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.description": {
+      "source": "9d47c4ca7ab13b06225a8e690123597e8304ed58",
+      "translation": "09ad72e3af22b8a487fec9b0cc1315ce4d1b8e30"
+    },
     "settings.integrations.googleCalendarExport.defaultDuration.name": {
       "source": "432b3d74d16406aa16b254dac95de683f6f87ffc",
       "translation": "1c96c477439b300a81f20c980b15fb687520a2df"
@@ -59435,6 +59647,10 @@
     "commands.stopTimeTrackingCurrentTask": {
       "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
       "translation": "04390728fab04161bd0f3e4e91437ec829c1879a"
+    },
+    "commands.stopActiveTimeTracking": {
+      "source": "b5c76b6e502a41e8b78dff7873653614456b3f07",
+      "translation": "48a956238a8acec9644eac2b6b9afd4071d6482d"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -60823,6 +61039,14 @@
     "modals.timeTracking.startFailed": {
       "source": "c1b914325ad18471661dcc078d2e4111856abffc",
       "translation": "a693fc144ccd1fde283faf6ecfc9a9054e274ca9"
+    },
+    "modals.timeTracking.noActiveTasks": {
+      "source": "fd109e8ecc9188693e4b5d3516e37757a6cc30ca",
+      "translation": "01ee5c80166219c56229476f297b7ce102cbdae7"
+    },
+    "modals.timeTracking.stopFailed": {
+      "source": "9476de24a0c27461eb4939dbca5c5119fe832567",
+      "translation": "ce89658f9c3778b2a79f5241726731952eb2abf0"
     },
     "modals.timeEntry.mustHaveSpecificTime": {
       "source": "b5e4624ad4a4356677441185f8d75c03831d1965",
@@ -65130,6 +65354,18 @@
       "source": "e39f1b4ab9d9f49b5f4ab4166aeb41c76d920012",
       "translation": "8e3e07f63658ca2edfc8f5e50f915cd38a71b1c6"
     },
+    "settings.general.taskIdentification.propertyNamePlaceholder": {
+      "source": "7622a1a60d1098ec7fededc7bb3945daa71ec7c3",
+      "translation": "b8fdad32890eaa1eff7440e52b4aa6e039fd046b"
+    },
+    "settings.general.taskIdentification.propertyValuePlaceholder": {
+      "source": "ae0441de7e1491a32d73dcf30e4c52528b12c400",
+      "translation": "aedf65b8b1bd0ef992a5e43a47557f676fe36913"
+    },
+    "settings.general.taskIdentification.incompletePropertyWarning": {
+      "source": "884b2db381a7d8c783f4514bb1bafc1d4f07d3bf",
+      "translation": "5a70f798f5b7b07db830874a8cdcd1649317c26d"
+    },
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "3ef03311b54be061d87301dc86824007f7c17823"
@@ -67406,6 +67642,14 @@
       "source": "bf0edca956693c35301b7c1705f79502a9f311b1",
       "translation": "0cdba2944ac826ff48b63e67409ba452eca05c2a"
     },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.name": {
+      "source": "594d0e773199c2ab1465504fab3d4441058760c6",
+      "translation": "b16816235c3d789c54b455c698a7ca976ab0c97e"
+    },
+    "settings.integrations.googleCalendarExport.showAllDayAsFree.description": {
+      "source": "9d47c4ca7ab13b06225a8e690123597e8304ed58",
+      "translation": "1aa96ccd6a830946e42cae60c4d256cb8f5facaa"
+    },
     "settings.integrations.googleCalendarExport.defaultDuration.name": {
       "source": "432b3d74d16406aa16b254dac95de683f6f87ffc",
       "translation": "95a616b7693617d0b8bbd20b5b656a107207797d"
@@ -68405,6 +68649,10 @@
     "commands.stopTimeTrackingCurrentTask": {
       "source": "c599b8c3f5c5ff6fa4fd06d7f8b92d4525383777",
       "translation": "1eb582ff03bc6a3fdd5aa4d7a62db7ff76169906"
+    },
+    "commands.stopActiveTimeTracking": {
+      "source": "b5c76b6e502a41e8b78dff7873653614456b3f07",
+      "translation": "fd1c7a88fc84149adb5b094e32606ddb6a3ca643"
     },
     "commands.startTimeTrackingWithSelector": {
       "source": "32970116a0d7a74dadbf82a0aa2aa8117278d601",
@@ -69793,6 +70041,14 @@
     "modals.timeTracking.startFailed": {
       "source": "c1b914325ad18471661dcc078d2e4111856abffc",
       "translation": "9fed9a648ed6d01952088d17407251ffd8921da8"
+    },
+    "modals.timeTracking.noActiveTasks": {
+      "source": "fd109e8ecc9188693e4b5d3516e37757a6cc30ca",
+      "translation": "478f7d9c4125435e1fcd21f3f0b95dda9c0a9612"
+    },
+    "modals.timeTracking.stopFailed": {
+      "source": "9476de24a0c27461eb4939dbca5c5119fe832567",
+      "translation": "279b15d896e052127fbb4d1ec392c531c36d2885"
     },
     "modals.timeEntry.mustHaveSpecificTime": {
       "source": "b5e4624ad4a4356677441185f8d75c03831d1965",

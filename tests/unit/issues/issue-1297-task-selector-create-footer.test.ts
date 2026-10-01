@@ -60,6 +60,30 @@ describe("Issue #1297: Create or open task footer activation", () => {
 		jest.useRealTimers();
 	});
 
+	it("does not offer or perform task creation in a selection-only picker (#2326)", async () => {
+		const onResult = jest.fn();
+		const modal = new TaskSelectorWithCreateModal(mockApp, mockPlugin, [], { onResult, allowCreate: false });
+		modal.onOpen();
+		jest.runOnlyPendingTimers();
+		expect(NLPSuggest).not.toHaveBeenCalled();
+		expect(modal.modalEl.querySelector(".task-selector-create-footer")).toBeNull();
+		modal.inputEl.value = "Should not be created";
+		await (modal as any).createNewTask();
+		expect(mockPlugin.taskService.createTask).not.toHaveBeenCalled();
+		expect(onResult).not.toHaveBeenCalled();
+		modal.onClose();
+		jest.runOnlyPendingTimers();
+		expect(onResult).toHaveBeenCalledWith({ type: "cancelled" });
+	});
+
+	it("can include archived tasks explicitly for active-tracker selection", () => {
+		const archived = { path: "Tasks/Archived.md", title: "Archived", status: "open", archived: true } as any;
+		const modal = new TaskSelectorWithCreateModal(mockApp, mockPlugin, [archived], { onResult: jest.fn(), allowCreate: false, includeArchived: true });
+		expect(modal.getSuggestions("")).toEqual([archived]);
+		const defaultModal = new TaskSelectorWithCreateModal(mockApp, mockPlugin, [archived], { onResult: jest.fn() });
+		expect(defaultModal.getSuggestions("")).toEqual([]);
+	});
+
 	it("creates the typed task when the footer is tapped", async () => {
 		const onResult = jest.fn();
 		const modal = new TaskSelectorWithCreateModal(mockApp, mockPlugin, [], {

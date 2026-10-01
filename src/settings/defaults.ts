@@ -201,6 +201,7 @@ export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 	eventColorId: null, // Use calendar default color
 	syncTrigger: "scheduled", // Default to scheduled date
 	createAsAllDay: true, // All-day events by default
+	showAllDayAsFree: false, // Preserve Busy availability unless explicitly enabled
 	defaultEventDuration: 60, // 1 hour if timed events
 	includeObsidianLink: true, // Include link back to Obsidian
 	defaultReminderMinutes: null, // No reminder override by default (user opts in)

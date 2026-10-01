@@ -912,6 +912,9 @@ export const pt: TranslationTree = {
 						exactOnly: "Somente tag exata"
 					}
 				},
+				propertyNamePlaceholder: "Digite o nome da propriedade",
+				propertyValuePlaceholder: "Digite o valor da propriedade",
+				incompletePropertyWarning: "Digite um nome de propriedade e um valor. O texto de exemplo não é uma configuração salva. O TaskNotes só pode identificar tarefas quando ambos estiverem definidos. Os filtros .base existentes devem corresponder a essas configurações.",
 				taskProperty: {
 					name: "Nome da propriedade da tarefa",
 					description: "O nome da propriedade do frontmatter (ex: \"categoria\")"
@@ -1881,6 +1884,10 @@ export const pt: TranslationTree = {
 					name: "Criar como eventos de dia inteiro",
 					description: "Quando ativado, tarefas são criadas como eventos de dia inteiro. Quando desativado, usa a estimativa de tempo para a duração."
 				},
+				showAllDayAsFree: {
+					name: "Mostrar eventos de tarefas de dia inteiro como livre",
+					description: "Tarefas exportadas como eventos de dia inteiro não bloqueiam a disponibilidade, incluindo as convertidas para dia inteiro. Eventos com horário continuam como ocupado. Use a sincronização de todas as tarefas para atualizar os eventos existentes.",
+				},
 				defaultDuration: {
 					name: "Duração padrão do evento",
 					description: "Duração em minutos para eventos com horário (usada quando a tarefa não tem estimativa de tempo)."
@@ -2271,6 +2278,7 @@ export const pt: TranslationTree = {
 		viewReleaseNotes: "Ver notas de lançamento",
 		startTimeTrackingCurrentTask: "Iniciar registro de tempo da tarefa atual",
 		stopTimeTrackingCurrentTask: "Parar registro de tempo da tarefa atual",
+		stopActiveTimeTracking: "Parar registro de tempo ativo",
 		startTimeTrackingWithSelector: "Iniciar registro de tempo (selecionar tarefa)",
 		editTimeEntries: "Editar registros de tempo (selecionar tarefa)",
 		createOrOpenTask: "Criar ou abrir tarefa",
@@ -2769,6 +2777,8 @@ export const pt: TranslationTree = {
 			}
 		},
 		timeTracking: {
+			noActiveTasks: "Nenhuma sessão ativa de registro de tempo encontrada",
+			stopFailed: "Não foi possível carregar as sessões ativas de registro de tempo",
 			noTasksAvailable: "Nenhuma tarefa disponível para registrar o tempo",
 			started: "Iniciado registro de tempo para: {taskTitle}",
 			startFailed: "Falha ao iniciar registro de tempo"

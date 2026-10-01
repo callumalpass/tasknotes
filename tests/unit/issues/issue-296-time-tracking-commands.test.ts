@@ -32,6 +32,16 @@ describe("Issue #296: direct current-task time tracking commands", () => {
 		expect(plugin[`${action}TimeTracking`]).toHaveBeenCalledWith(task);
 	});
 
+	it("registers a separate active-tracker stop command that does not resolve the current note (#2326)", async () => {
+		const plugin = createPlugin(null);
+		plugin.stopActiveTimeTracking = jest.fn().mockResolvedValue(undefined);
+		const command = createTaskNotesCommandDefinitions(plugin).find((definition) => definition.id === "stop-active-time-tracking");
+		expect(command?.nameKey).toBe("commands.stopActiveTimeTracking");
+		await command!.callback!(plugin);
+		expect(plugin.stopActiveTimeTracking).toHaveBeenCalledTimes(1);
+		expect(plugin.cacheManager.getTaskInfo).not.toHaveBeenCalled();
+	});
+
 	it.each(["start", "stop"] as const)("does not %s when no file is open", async (action) => {
 		const plugin = createPlugin(null);
 		await plugin.setCurrentTaskTimeTracking(action);

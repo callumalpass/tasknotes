@@ -18,7 +18,9 @@ Use **Identify tasks by** to select a strategy.
 - **Tag mode** uses a configured task tag (for example `task`) and can optionally hide that identifying tag in card displays.
 - **Property mode** matches a property/value pair (for example `isTask: true` or `category: task`) and is useful when you avoid tag-based identification.
 
-If you change the task tag after creating default Base views, existing `.base` filters will still point at the old tag until you update the default Base files or edit those filters.
+In property mode, enter both **Task property name** and **Task property value** explicitly. The input prompts are not saved defaults. An inline warning appears while either field is empty or whitespace-only; TaskNotes does not recognize tasks until both are configured.
+
+If you change task identification after creating default Base views, existing `.base` filters keep their old settings until you update the default Base files or edit those filters. For `category: task`, filter on that value, not merely whether `category` exists. Updating default files overwrites their manual edits, so back them up first.
 
 ### Hide Identification Tags
 

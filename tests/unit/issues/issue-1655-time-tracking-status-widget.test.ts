@@ -16,6 +16,8 @@ function createPlugin(tasks: Array<Record<string, unknown>>) {
 	const statusBarElement = createStatusBarElement();
 	const plugin = {
 		settings: { showTrackedTasksInStatusBar: true },
+		i18n: { translate: jest.fn(() => "Stop active time tracking") },
+		stopActiveTimeTracking: jest.fn().mockResolvedValue(undefined),
 		addStatusBarItem: jest.fn(() => statusBarElement),
 		cacheManager: {
 			getAllCachedTasks: jest.fn().mockReturnValue(tasks),
@@ -72,6 +74,48 @@ describe("Issue #1655: time tracking status widget", () => {
 		expect(statusBarElement.textContent).toContain("Tracking: Timer task (2:06)");
 		expect(plugin.cacheManager.getAllCachedTasks).toHaveBeenCalledTimes(1);
 
+		service.destroy();
+	});
+
+	it("keeps the stop button focused across timer ticks and does not open the task when stopping (#2326)", async () => {
+		jest.useFakeTimers();
+		const { plugin, statusBarElement } = createPlugin([{ title: "Task", path: "Tasks/task.md", timeEntries: [{ startTime: new Date().toISOString() }] }]);
+		document.body.appendChild(statusBarElement);
+		const service = new StatusBarService(plugin as never);
+		service.initialize();
+		await (service as any).updateStatusBar();
+		const button = statusBarElement.querySelector<HTMLButtonElement>(".tasknotes-status-stop")!;
+		expect(button.getAttribute("aria-label")).toBe("Stop active time tracking");
+		button.focus();
+		jest.advanceTimersByTime(1000);
+		expect(statusBarElement.querySelector(".tasknotes-status-stop")).toBe(button);
+		expect(document.activeElement).toBe(button);
+		button.click();
+		await Promise.resolve();
+		expect(plugin.stopActiveTimeTracking).toHaveBeenCalledTimes(1);
+		expect(plugin.app.workspace.getLeaf).not.toHaveBeenCalled();
+		service.destroy();
+		statusBarElement.remove();
+	});
+
+	it("disables the stop button while a stop action is pending", async () => {
+		jest.useFakeTimers();
+		const { plugin, statusBarElement } = createPlugin([{ title: "Task", path: "Tasks/task.md", timeEntries: [{ startTime: new Date().toISOString() }] }]);
+		let release!: () => void;
+		plugin.stopActiveTimeTracking.mockImplementation(() => new Promise<void>((resolve) => { release = resolve; }));
+		const service = new StatusBarService(plugin as never);
+		service.initialize();
+		await (service as any).updateStatusBar();
+		const button = statusBarElement.querySelector<HTMLButtonElement>(".tasknotes-status-stop")!;
+		button.click();
+		expect(button.disabled).toBe(true);
+		jest.advanceTimersByTime(1000);
+		expect(button.disabled).toBe(true);
+		button.click();
+		expect(plugin.stopActiveTimeTracking).toHaveBeenCalledTimes(1);
+		release();
+		await Promise.resolve();
+		expect(button.disabled).toBe(false);
 		service.destroy();
 	});
 

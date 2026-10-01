@@ -703,6 +703,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		calendarId: string,
 		eventId: string,
 		updates: {
+			transparency?: "opaque" | "transparent";
 			title?: string;
 			summary?: string;
 			description?: string;
@@ -753,6 +754,9 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Support both 'title' and 'summary'
 			if (updates.title !== undefined || updates.summary !== undefined) {
 				payload.summary = updates.summary || updates.title;
+			}
+			if (updates.transparency !== undefined) {
+				payload.transparency = updates.transparency;
 			}
 			if (updates.description !== undefined) {
 				payload.description = updates.description;
@@ -866,6 +870,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	async createEvent(
 		calendarId: string,
 		event: {
+			transparency?: "opaque" | "transparent";
 			title?: string;
 			summary?: string;
 			description?: string;
@@ -904,6 +909,10 @@ export class GoogleCalendarService extends CalendarProvider {
 				description: event.description,
 				location: event.location,
 			};
+
+			if (event.transparency !== undefined) {
+				payload.transparency = event.transparency;
+			}
 
 			// Add reminders if provided
 			if (event.reminders) {

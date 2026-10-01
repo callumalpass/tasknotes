@@ -910,6 +910,9 @@ export const fr: TranslationTree = {
 						exactOnly: "Tag de tâche exact seulement"
 					}
 				},
+				propertyNamePlaceholder: "Saisissez le nom de la propriété",
+				propertyValuePlaceholder: "Saisissez la valeur de la propriété",
+				incompletePropertyWarning: "Saisissez un nom de propriété et une valeur. Le texte d’exemple n’est pas une configuration enregistrée. TaskNotes ne peut identifier les tâches que lorsque les deux sont définis. Les filtres .base existants doivent correspondre à ces paramètres.",
 				taskProperty: {
 					name: "Nom de la propriété de tâche",
 					description: "Le nom de la propriété frontmatter (ex. \"category\")"
@@ -1879,6 +1882,10 @@ export const fr: TranslationTree = {
 					name: "Créer en tant qu'événements journée entière",
 					description: "Lorsqu'activé, les tâches sont créées en tant qu'événements journée entière. Lorsque désactivé, utilise l'estimation de temps pour la durée."
 				},
+				showAllDayAsFree: {
+					name: "Afficher les événements de tâches sur toute la journée comme disponible",
+					description: "Les tâches exportées sur toute la journée ne bloquent pas la disponibilité, y compris celles converties en événements sur toute la journée. Les événements avec une heure restent occupés. Utilisez la synchronisation de toutes les tâches pour mettre à jour les événements existants.",
+				},
 				defaultDuration: {
 					name: "Durée par défaut de l'événement",
 					description: "Durée en minutes pour les événements horodatés (utilisée lorsque la tâche n'a pas d'estimation de temps)."
@@ -2269,6 +2276,7 @@ export const fr: TranslationTree = {
 		viewReleaseNotes: "Voir les notes de version",
 		startTimeTrackingCurrentTask: "Démarrer le suivi du temps pour la tâche actuelle",
 		stopTimeTrackingCurrentTask: "Arrêter le suivi du temps pour la tâche actuelle",
+		stopActiveTimeTracking: "Arrêter le suivi du temps actif",
 		startTimeTrackingWithSelector: "Démarrer le suivi du temps (sélectionner une tâche)",
 		editTimeEntries: "Modifier les entrées de temps (sélectionner une tâche)",
 		createOrOpenTask: "Créer ou ouvrir une tâche",
@@ -2767,6 +2775,8 @@ export const fr: TranslationTree = {
 			}
 		},
 		timeTracking: {
+			noActiveTasks: "Aucune session active de suivi du temps trouvée",
+			stopFailed: "Impossible de charger les sessions actives de suivi du temps",
 			noTasksAvailable: "Aucune tâche disponible pour le suivi du temps",
 			started: "Suivi du temps démarré pour : {taskTitle}",
 			startFailed: "Échec du démarrage du suivi du temps"

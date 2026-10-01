@@ -10,6 +10,7 @@ import { TranslationKey } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { hasCompletePropertyTaskIdentification } from "../../utils/taskIdentification";
 import {
 	createVaultFile,
 	createVaultFolder,
@@ -216,41 +217,78 @@ export function renderGeneralTab(
 					);
 				}
 			} else {
+				type IdentificationSetting = {
+					settingEl: HTMLElement;
+					controlEl: HTMLElement;
+					descEl: HTMLElement;
+				};
+				let nameSetting: IdentificationSetting | undefined;
+				let valueSetting: IdentificationSetting | undefined;
+				let warningSetting: IdentificationSetting | undefined;
+				const updateValidation = () => {
+					if (warningSetting) {
+						warningSetting.settingEl.hidden = hasCompletePropertyTaskIdentification(plugin.settings);
+					}
+					nameSetting?.controlEl.querySelector("input")?.setAttribute(
+						"aria-invalid", String(!plugin.settings.taskPropertyName.trim())
+					);
+					valueSetting?.controlEl.querySelector("input")?.setAttribute(
+						"aria-invalid", String(!plugin.settings.taskPropertyValue.trim())
+					);
+				};
 				group.addSetting(
-					(setting) =>
-						void configureTextSetting(setting, {
+					(setting) => {
+						nameSetting = setting;
+						configureTextSetting(setting, {
 							name: translate(
 								"settings.general.taskIdentification.taskProperty.name"
 							),
 							desc: translate(
 								"settings.general.taskIdentification.taskProperty.description"
 							),
-							placeholder: "category",
+							placeholder: translate("settings.general.taskIdentification.propertyNamePlaceholder"),
 							getValue: () => plugin.settings.taskPropertyName,
 							setValue: async (value: string) => {
 								plugin.settings.taskPropertyName = value;
+								updateValidation();
 								save();
 							},
-						})
+						});
+					}
 				);
 
 				group.addSetting(
-					(setting) =>
-						void configureTextSetting(setting, {
+					(setting) => {
+						valueSetting = setting;
+						configureTextSetting(setting, {
 							name: translate(
 								"settings.general.taskIdentification.taskPropertyValue.name"
 							),
 							desc: translate(
 								"settings.general.taskIdentification.taskPropertyValue.description"
 							),
-							placeholder: "task",
+							placeholder: translate("settings.general.taskIdentification.propertyValuePlaceholder"),
 							getValue: () => plugin.settings.taskPropertyValue,
 							setValue: async (value: string) => {
 								plugin.settings.taskPropertyValue = value;
+								updateValidation();
 								save();
 							},
-						})
+						});
+					}
 				);
+				group.addSetting((setting) => {
+					warningSetting = setting;
+					setting.settingEl.addClass("settings-view__identification-warning");
+					setting.setDesc(translate("settings.general.taskIdentification.incompletePropertyWarning"));
+					setting.descEl.addClass("mod-warning");
+					setting.descEl.setAttribute("role", "status");
+					setting.descEl.id = "tasknotes-property-identification-warning";
+					for (const field of [nameSetting, valueSetting]) {
+						field?.controlEl.querySelector("input")?.setAttribute("aria-describedby", setting.descEl.id);
+					}
+				});
+				updateValidation();
 			}
 		}
 	);

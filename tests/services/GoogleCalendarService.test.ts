@@ -289,6 +289,36 @@ describe('GoogleCalendarService', () => {
 		});
 	});
 
+	describe('availability serialization (#2375)', () => {
+		const currentEvent = {
+			id: 'availability-event', summary: 'Task',
+			start: { date: '2026-10-01' }, end: { date: '2026-10-02' },
+			transparency: 'transparent',
+		};
+		const response = (json: unknown) => ({
+			status: 200, json, text: '', arrayBuffer: new ArrayBuffer(0), headers: {},
+		});
+
+		beforeEach(() => {
+			jest.spyOn(service, 'refreshAllCalendars').mockResolvedValue(undefined);
+		});
+
+		test.each(['opaque', 'transparent'] as const)('serializes %s when creating events', async (transparency) => {
+			mockRequestUrl.mockResolvedValueOnce(response(currentEvent));
+			await service.createEvent('primary', { ...currentEvent, transparency });
+			expect(JSON.parse(mockRequestUrl.mock.calls[0][0].body as string).transparency).toBe(transparency);
+		});
+
+		test.each(['opaque', 'transparent', undefined] as const)('updates or preserves availability with %s', async (transparency) => {
+			mockRequestUrl.mockResolvedValueOnce(response(currentEvent));
+			mockRequestUrl.mockResolvedValueOnce(response(currentEvent));
+			await service.updateEvent('primary', currentEvent.id, { summary: 'Updated task', transparency });
+			const payload = JSON.parse(mockRequestUrl.mock.calls[1][0].body as string);
+			expect(payload.transparency).toBe(transparency ?? currentEvent.transparency);
+			expect(payload.start).toEqual(currentEvent.start);
+		});
+	});
+
 	describe('createEvent', () => {
 		test('should create a timed event', async () => {
 			const newEvent = {

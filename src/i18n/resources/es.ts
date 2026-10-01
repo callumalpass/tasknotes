@@ -910,6 +910,9 @@ export const es: TranslationTree = {
 						exactOnly: "Solo etiqueta exacta"
 					}
 				},
+				propertyNamePlaceholder: "Introduce el nombre de la propiedad",
+				propertyValuePlaceholder: "Introduce el valor de la propiedad",
+				incompletePropertyWarning: "Introduce un nombre de propiedad y un valor. El texto de ejemplo no es una configuración guardada. TaskNotes no puede identificar tareas hasta que ambos estén definidos. Los filtros .base existentes deben coincidir con estos ajustes.",
 				taskProperty: {
 					name: "Nombre de propiedad de tarea",
 					description: "El nombre de propiedad de frontmatter (ej. \"categoría\")"
@@ -1879,6 +1882,10 @@ export const es: TranslationTree = {
 					name: "Crear como eventos de todo el día",
 					description: "Cuando está habilitado, las tareas se crean como eventos de todo el día. Cuando está deshabilitado, usa la estimación de tiempo para la duración."
 				},
+				showAllDayAsFree: {
+					name: "Mostrar los eventos de tareas de todo el día como libre",
+					description: "Las tareas exportadas como eventos de todo el día no bloquean la disponibilidad, incluidas las convertidas a todo el día. Los eventos con hora siguen como ocupado. Usa la sincronización de todas las tareas para actualizar los eventos existentes.",
+				},
 				defaultDuration: {
 					name: "Duración predeterminada del evento",
 					description: "Duración en minutos para eventos con hora (usada cuando la tarea no tiene estimación de tiempo)."
@@ -2269,6 +2276,7 @@ export const es: TranslationTree = {
 		viewReleaseNotes: "Ver notas de la versión",
 		startTimeTrackingCurrentTask: "Iniciar seguimiento de tiempo para la tarea actual",
 		stopTimeTrackingCurrentTask: "Detener seguimiento de tiempo para la tarea actual",
+		stopActiveTimeTracking: "Detener el seguimiento de tiempo activo",
 		startTimeTrackingWithSelector: "Iniciar seguimiento de tiempo (seleccionar tarea)",
 		editTimeEntries: "Editar entradas de tiempo (seleccionar tarea)",
 		createOrOpenTask: "Crear o abrir tarea",
@@ -2767,6 +2775,8 @@ export const es: TranslationTree = {
 			}
 		},
 		timeTracking: {
+			noActiveTasks: "No se encontró ninguna sesión activa de seguimiento de tiempo",
+			stopFailed: "No se pudieron cargar las sesiones activas de seguimiento de tiempo",
 			noTasksAvailable: "No hay tareas disponibles para rastrear tiempo",
 			started: "Seguimiento de tiempo iniciado para: {taskTitle}",
 			startFailed: "Error al iniciar el seguimiento de tiempo"

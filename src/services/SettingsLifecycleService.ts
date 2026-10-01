@@ -15,6 +15,9 @@ interface TaskUpdateEventData {
 }
 
 interface CacheSettingsSnapshot {
+	taskIdentificationMethod: TaskNotesSettings["taskIdentificationMethod"];
+	taskPropertyName: string;
+	taskPropertyValue: string;
 	taskTag: string;
 	excludedFolders: string;
 	disableNoteIndexing: boolean;
@@ -208,6 +211,9 @@ export class SettingsLifecycleService {
 		}
 
 		const current: CacheSettingsSnapshot = {
+			taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
+			taskPropertyName: this.plugin.settings.taskPropertyName,
+			taskPropertyValue: this.plugin.settings.taskPropertyValue,
 			taskTag: this.plugin.settings.taskTag,
 			excludedFolders: this.plugin.settings.excludedFolders,
 			disableNoteIndexing: this.plugin.settings.disableNoteIndexing,
@@ -216,6 +222,9 @@ export class SettingsLifecycleService {
 		};
 
 		return (
+			current.taskIdentificationMethod !== this.previousCacheSettings.taskIdentificationMethod ||
+			current.taskPropertyName !== this.previousCacheSettings.taskPropertyName ||
+			current.taskPropertyValue !== this.previousCacheSettings.taskPropertyValue ||
 			current.taskTag !== this.previousCacheSettings.taskTag ||
 			current.excludedFolders !== this.previousCacheSettings.excludedFolders ||
 			current.disableNoteIndexing !== this.previousCacheSettings.disableNoteIndexing ||
@@ -238,6 +247,9 @@ export class SettingsLifecycleService {
 
 	private updatePreviousCacheSettings(): void {
 		this.previousCacheSettings = {
+			taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
+			taskPropertyName: this.plugin.settings.taskPropertyName,
+			taskPropertyValue: this.plugin.settings.taskPropertyValue,
 			taskTag: this.plugin.settings.taskTag,
 			excludedFolders: this.plugin.settings.excludedFolders,
 			disableNoteIndexing: this.plugin.settings.disableNoteIndexing,

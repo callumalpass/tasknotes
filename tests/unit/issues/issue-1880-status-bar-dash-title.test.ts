@@ -16,6 +16,7 @@ describe("Issue #1880: status bar with dash titles", () => {
 
 		const plugin = {
 			settings: { showTrackedTasksInStatusBar: true },
+			i18n: { translate: jest.fn(() => "Stop active time tracking") },
 			addStatusBarItem: jest.fn(() => obsidianStatusBarElement),
 			cacheManager: {
 				getAllCachedTasks: jest.fn().mockReturnValue([

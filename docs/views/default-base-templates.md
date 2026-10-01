@@ -23,6 +23,8 @@ The examples below assume:
 - **Priorities**: `none`, `low`, `normal`, `high` (sorted by weight)
 - **Visible properties**: `status`, `priority`, `due`, `scheduled`, `projects`, `contexts`, `tags`, `blocked`, `blocking`
 
+When property identification is incomplete (either the name or value is blank), generated task filters match no tasks, just like TaskNotes' task lookup. They do not fall back to tags or match every note with that property. Configure both fields before generating or updating default files.
+
 When task identification uses a property instead of a tag, generated filters reference the identifying note property with bracket notation and list-tolerant matching, such as `list(note["Task Type"]).contains(true)`. This keeps filters valid when custom property names contain spaces or other characters that cannot be used with dot notation, and matches tasks whose identifying property is stored as either a scalar value or a list containing that value.
 
 ## Included formulas
