@@ -2,6 +2,9 @@ import { Modal, normalizePath, type TAbstractFile, TFile } from "obsidian";
 import YAML from "yaml";
 import { canonicalTaskNotesResources } from "./canonicalTaskNotesPack";
 import { legacyTaskNotesSupport } from "./legacyTaskNotesSupport";
+import { addAppCollectionConfig, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
+import { upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
+import { backupCollectionFile } from "./mdbase/backups";
 import { remapMdbaseTypeReferences } from "./mdbaseTypeReferences";
 import {
 	buildTaskNotesMdbaseResources,
@@ -14,6 +17,7 @@ import { FieldMapping } from "../types";
 import { UserMappedField } from "../types/settings";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
+import { createI18nService } from "../i18n";
 import {
 	applyCanonicalTaskTypeToSettings,
 	buildTaskNotesModelConfig,
@@ -31,15 +35,7 @@ const DEFAULT_TYPES_FOLDER = "_types";
 const DEFAULT_CONTRACTS_FOLDER = "_contracts";
 const MDBASE_V03_SPEC_VERSION = "0.3.0";
 
-function writableMembershipKeys(value: unknown): string[] {
-	if (value === undefined || (Array.isArray(value) && value.length === 0)) {
-		return ["mdbase_type"];
-	}
-	if (!Array.isArray(value) || value.some((key) => typeof key !== "string" || !key.trim())) {
-		throw new Error("Invalid explicit_type_keys; existing collection settings were preserved.");
-	}
-	return value as string[];
-}
+const writableMembershipKeys = effectiveMembershipKeys;
 
 const MDBASE_MIGRATION_BACKUP_FOLDER = ".tasknotes/migrations";
 const MDBASE_MIGRATION_PENDING_PATH = `${MDBASE_MIGRATION_BACKUP_FOLDER}/mdbase-v0.2-pending.json`;
@@ -444,7 +440,7 @@ export class MdbaseSpecService {
 			},
 		};
 
-		return YAML.stringify(migrated);
+		return addAppCollectionConfig(YAML.stringify(migrated), this.plugin.settings);
 	}
 
 	private async snapshotFiles(paths: string[]): Promise<FileSnapshot[]> {
@@ -695,13 +691,8 @@ export class MdbaseSpecService {
 		const adapter = this.plugin.app.vault.adapter;
 		if (!(await adapter.exists("mdbase.yaml"))) return;
 		const before = await adapter.read("mdbase.yaml");
-		const config = YAML.parseDocument(before);
-		if (config.errors.length) throw new Error("Cannot reconcile invalid mdbase.yaml");
-		const current = config.toJS() as MdbaseYamlConfig;
-		const keys = writableMembershipKeys(current.settings?.explicit_type_keys);
-		if (Array.isArray(current.settings?.explicit_type_keys) && current.settings.explicit_type_keys.length) return;
-		config.setIn(["settings", "explicit_type_keys"], keys);
-		await this.writeFileIfUnchanged({ path: "mdbase.yaml", content: before }, config.toString());
+		const after = addAppCollectionConfig(before, this.plugin.settings);
+		if (after !== before) await this.writeFileIfUnchanged({ path: "mdbase.yaml", content: before }, after);
 	}
 
 	private async syncSettingsToCanonicalType(
@@ -714,11 +705,19 @@ export class MdbaseSpecService {
 		await this.ensureFolderPath(typesFolder);
 		await this.setAsideSupersededBetaTypes(typesFolder);
 
-		const state = await this.readCanonicalType(existingCollection, false);
+		let state = await this.readCanonicalType(existingCollection);
 		if (this.canonicalReadBlocked) {
 			return;
 		}
 		if (state) {
+			const savedExclusions = (state.type["x-tasknotes-generator"] as Record<string, unknown> | undefined)?.excluded_folders;
+			if (this.lastKnownTypeContent === null && Array.isArray(savedExclusions)) this.plugin.settings.excludedFolders = savedExclusions.join(", ");
+			const adjusted = this.lastKnownTypeContent === null ? applyTaskExclusions(state.content, this.plugin.settings.excludedFolders || "") : state.content;
+			if (adjusted !== state.content) {
+				await backupCollectionFile(this.plugin.app, state.path, state.content);
+				await this.writeFileIfUnchanged({ path: state.path, content: state.content }, adjusted, true);
+				state = { ...state, content: adjusted, type: withCurrentTaskNotesContract(parseMdbaseTaskTypeDocument(adjusted).type).type };
+			}
 			await this.reconcileMembershipKeys();
 			await this.writeCanonicalSupportResources(
 				this.buildCanonicalMdbaseResources(
@@ -753,7 +752,11 @@ export class MdbaseSpecService {
 				typeof state.type.name === "string" ? state.type.name : "task",
 				contractsFolder
 			);
-			if (await this.writeCanonicalType(state.path, resources, true, state.content)) {
+			await backupCollectionFile(this.plugin.app, state.path, state.content);
+			const upgraded = upgradeCanonicalDocument(state.content, resources);
+			await this.writeFileIfUnchanged({ path: state.path, content: state.content }, upgraded, true);
+			this.applyCanonicalState({ ...state, content: upgraded, type: parseMdbaseTaskTypeDocument(upgraded).type, outdated: false });
+			if (upgraded !== state.content) {
 				this.publishNotice(
 					`TaskNotes updated ${state.path} to tasknotes.task ${TASKNOTES_CONTRACT_VERSION}. Task files were not changed.`
 				);
@@ -906,11 +909,10 @@ export class MdbaseSpecService {
 			const validation = validateCanonicalTaskType(type);
 			if (!validation.valid) {
 				this.canonicalTypePath = path;
-				if (reportErrors) {
-					this.reportInvalidCanonicalType(
-						`${path} is inconsistent: ${validation.issues.join("; ")}`
-					);
-				}
+				this.canonicalReadBlocked = true;
+				this.reportInvalidCanonicalType(
+					(this.plugin.i18n ?? createI18nService()).translate("collectionCheck.invalidType", { path, issues: validation.issues.join("; ") })
+				);
 				return null;
 			}
 			return { path, content, type, outdated };
@@ -1187,7 +1189,7 @@ export class MdbaseSpecService {
 			operation: "canonical-type-invalid",
 			...(error ? { error } : {}),
 		});
-		this.publishNotice(`${message} TaskNotes kept its last-known-good configuration.`);
+		this.publishNotice(`${message} ${(this.plugin.i18n ?? createI18nService()).translate("collectionCheck.keptConfiguration")}`);
 	}
 
 	private publishNotice(message: string): void {
@@ -1703,6 +1705,8 @@ export class MdbaseSpecService {
 		});
 		const config = YAML.parseDocument(resources.configDocument);
 		config.setIn(["settings", "explicit_type_keys"], ["mdbase_type"]);
+		resources.typeDocument = applyTaskExclusions(resources.typeDocument, settings.excludedFolders || "");
+		resources.type = parseMdbaseTaskTypeDocument(resources.typeDocument).type;
 		const document = (source: string): string => {
 			const resource = canonicalTaskNotesResources.find((entry) => entry.source === source);
 			if (!resource) throw new Error(`Missing canonical TaskNotes resource: ${source}`);
@@ -1710,7 +1714,7 @@ export class MdbaseSpecService {
 		};
 		return {
 			...resources,
-			configDocument: config.toString(),
+			configDocument: addAppCollectionConfig(config.toString(), settings),
 			typeDocument: remapMdbaseTypeReferences(resources.typeDocument, new Map([["task", typeName]]), [], true),
 			contractDocument: document(`contracts/tasknotes.task/${TASKNOTES_CONTRACT_VERSION}.md`),
 			taskSchemaDocument: document(`schemas/tasknotes.task/${TASKNOTES_CONTRACT_VERSION}.schema.json`),

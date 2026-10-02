@@ -3,6 +3,7 @@ import type TaskNotesPlugin from "../main";
 import type { TranslatedCommandDefinition } from "./types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
+import { CheckCollectionModal } from "../modals/CheckCollectionModal";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Commands/TaskNotesCommands" });
 
@@ -23,6 +24,11 @@ export function createTaskNotesCommandDefinitions(
 	plugin: TaskNotesPlugin
 ): TranslatedCommandDefinition[] {
 	return [
+		{
+			id: "check-collection",
+			nameKey: "collectionCheck.title",
+			callback: (ctx) => { new CheckCollectionModal(ctx).open(); },
+		},
 		{
 			id: "open-calendar-view",
 			nameKey: "commands.openCalendarView",

@@ -256,7 +256,7 @@ function v02Config(typesFolder = "_types"): string {
 describe("MdbaseSpecService", () => {
 	describe("write-capable collection upgrades", () => {
 		it.each([undefined, [], ["record_kind"], ["type", "types"]])(
-			"preserves custom keys and repairs absent membership: %j", async (keys) => {
+			"preserves effective existing membership: %j", async (keys) => {
 				const plugin = createMockPlugin();
 				const service = new MdbaseSpecService(plugin);
 				const config = asObject(YAML.parse(v02Config()));
@@ -270,7 +270,7 @@ describe("MdbaseSpecService", () => {
 				await service.initialize();
 				const migrated = asObject(YAML.parse(files.get("mdbase.yaml")!));
 				expect(migrated.spec_version).toBe("0.3.0");
-				expect(asObject(migrated.settings).explicit_type_keys).toEqual(keys?.length ? keys : ["mdbase_type"]);
+				expect(asObject(migrated.settings).explicit_type_keys).toEqual(keys ?? ["type", "types"]);
 				expect(files.get("paper.md")).toBe(literature);
 				const snapshot = new Map(files);
 				await new MdbaseSpecService(plugin).initialize();
@@ -310,7 +310,7 @@ describe("MdbaseSpecService", () => {
 				"_types/task.md": service.buildTaskTypeDef("0.3.0"),
 			});
 			await service.initialize();
-			expect(files.get("mdbase.yaml")).toContain("mdbase_type");
+			expect(asObject(asObject(YAML.parse(files.get("mdbase.yaml")!)).settings).explicit_type_keys).toEqual([]);
 			expect(files.get("_contracts/tasknotes.task.md")).toContain("contract_type: record");
 			expect(files.get("_schemas/tasknotes/tasknotes-task.schema.json")).toBeDefined();
 			const snapshot = new Map(files);
@@ -374,7 +374,7 @@ describe("MdbaseSpecService", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const settings = asObject(asObject(YAML.parse(service.buildMdbaseYaml())).settings);
 
-			expect(settings.record_extensions).toEqual(["md"]);
+			expect(settings.record_extensions).toEqual(["md", "base"]);
 			expect(settings.validation).toBe("warn");
 			expect(settings.explicit_type_keys).toEqual(["mdbase_type"]);
 			expect(settings.id_field).toBe("id");
@@ -1582,7 +1582,7 @@ describe("MdbaseSpecService", () => {
 			);
 			expect(typeWrite).toBeUndefined(); // Adopt existing canonical settings rather than regenerate them.
 			expect(plugin.app.vault.adapter.write).toHaveBeenCalledWith(
-				"mdbase.yaml", expect.stringContaining("mdbase_type")
+				"mdbase.yaml", expect.stringContaining("record_extensions")
 			);
 		});
 
@@ -1913,7 +1913,7 @@ describe("MdbaseSpecService", () => {
 				plugin.settings.customStatuses.map((status: { value: string }) => status.value)
 			).toEqual(["queued", "done"]);
 			expect(plugin.app.vault.adapter.write).toHaveBeenCalledWith(
-				"mdbase.yaml", expect.stringContaining("mdbase_type")
+				"mdbase.yaml", expect.stringContaining("record_extensions")
 			);
 			expect(plugin.registerEvent).toHaveBeenCalledTimes(4);
 		});
@@ -2187,7 +2187,7 @@ describe("MdbaseSpecService", () => {
 				types_folder: "System/Types",
 				contracts_folder: "_contracts",
 				custom_setting: "keep-me",
-				record_extensions: ["md", "markdown"],
+				record_extensions: ["md", "markdown", "base"],
 			});
 			expect(parseFrontmatter(files.get("System/Types/task.md") ?? "").kind).toBe(
 				"mdbase.type"

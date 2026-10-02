@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tasknotes.dev/schemas/tasknotes-task.schema.json",
+  "title": "TaskNotes portable task view",
+  "description": "The storage-neutral record view exposed by the tasknotes.task 0.3.0-rc.3 record contract.",
+  "type": "object",
+  "required": [
+    "status",
+    "dateCreated"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "priority": {
+      "type": "string",
+      "minLength": 1
+    },
+    "due": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "type": "string",
+          "format": "date-time"
+        }
+      ]
+    },
+    "scheduled": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "type": "string",
+          "format": "date-time"
+        }
+      ]
+    },
+    "contexts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "timeEstimate": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "completedDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "dateCreated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dateModified": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recurrence": {
+      "type": "string"
+    },
+    "recurrenceAnchor": {
+      "enum": [
+        "scheduled",
+        "completion"
+      ]
+    },
+    "recurrenceParent": {
+      "type": "string"
+    },
+    "occurrenceDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "occurrenceMaterialization": {
+      "enum": [
+        "manual",
+        "on_completion",
+        "rolling"
+      ]
+    },
+    "occurrenceNextTrigger": {
+      "enum": [
+        "completion",
+        "completion_or_skip"
+      ]
+    },
+    "occurrenceTemplate": {
+      "type": "string"
+    },
+    "occurrencePastHorizon": {
+      "type": "string"
+    },
+    "occurrenceFutureHorizon": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timeEntries": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "reminders": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "blockedBy": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "completeInstances": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "date"
+      }
+    },
+    "skippedInstances": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "date"
+      }
+    },
+    "icsEventId": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "googleCalendarEventId": {
+      "type": "string"
+    },
+    "googleCalendarExceptionEventId": {
+      "type": "string"
+    },
+    "googleCalendarExceptionOriginalScheduled": {
+      "type": "string",
+      "format": "date"
+    },
+    "googleCalendarMovedOriginalDates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "date"
+      }
+    },
+    "sortOrder": {
+      "type": "string"
+    }
+  }
+}

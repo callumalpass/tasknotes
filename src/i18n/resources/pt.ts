@@ -1,6 +1,21 @@
 import { TranslationTree } from "../types";
 
 export const pt: TranslationTree = {
+	collectionCheck: {
+		title: "Verificar coleção",
+		invalidType: "{path} está inconsistente: {issues}. Revise implements.fields e binding antes de tentar novamente; as configurações do plugin foram mantidas.",
+		keptConfiguration: "TaskNotes manteve a última configuração válida.",
+		description: "Verifique as tarefas sem alterar as notas. Datas de criação ausentes podem ser preenchidas com a data de criação do arquivo. Estados inválidos exigem sua escolha. Outros erros precisam de revisão manual.",
+		count: "Registros inválidos: {count}",
+		clean: "Nenhuma tarefa inválida encontrada.",
+		check: "Verificar novamente",
+		fix: "Fazer backup e corrigir",
+		fixAll: "Fazer backup e aplicar as alterações escolhidas em todos os registros",
+		chooseStatus: "Escolha um estado substituto",
+		confirm: "Aplicar apenas as alterações abaixo? As notas originais serão copiadas para .tasknotes/migrations antes de cada alteração. Estados não selecionados e outros erros permanecerão inalterados.",
+		fixed: "Alterações aprovadas salvas. Os backups estão em .tasknotes/migrations. Verifique os erros restantes.",
+		error: "Verificação ou reparo da coleção interrompido. Nenhuma alteração sem aprovação foi feita.",
+	},
 	onboarding: {
 		title: "Primeiros passos com TaskNotes",
 		intro: "As tarefas são notas Markdown no seu cofre. Use a paleta de comandos para estes três passos.",

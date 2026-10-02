@@ -1,5 +1,57 @@
 {
   "de": {
+    "collectionCheck.title": {
+      "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
+      "translation": "8b5b685cb4775d06f475af95f6b152a1d4b09dee"
+    },
+    "collectionCheck.invalidType": {
+      "source": "e1b153f562bd434455fd5381298d9fb038f34e79",
+      "translation": "7a928f1010beefd8eb2569c1e39c859ef6ae56e6"
+    },
+    "collectionCheck.keptConfiguration": {
+      "source": "7d285841c954e0eb73bb769e1161b2d64e5038be",
+      "translation": "b1ce69acf1b3e71d5d2f2038ed2a5faa8b278388"
+    },
+    "collectionCheck.description": {
+      "source": "7748065aa185294fb3979333243fc121018bf0c6",
+      "translation": "72682efb034a444474197f876c85c9c4061f9263"
+    },
+    "collectionCheck.count": {
+      "source": "1c4c228f7a5547391c56bb422823780e23293d6d",
+      "translation": "e85677dd19eabd5a527d18a9a03e06317537f6a8"
+    },
+    "collectionCheck.clean": {
+      "source": "dcc79847c5e450f52c02ac0fde0bdcfbe1ddfee9",
+      "translation": "360fde2a0e0b62fbbde0dc38b757bd814468bdef"
+    },
+    "collectionCheck.check": {
+      "source": "e185048ce3c07f61069845d16a69507a66ba5ea9",
+      "translation": "4fb3ed776079a065abaebe65ca4f57182793d2a3"
+    },
+    "collectionCheck.fix": {
+      "source": "8f2b59163806e90f7752abc0ebb8b0f944e91d4b",
+      "translation": "6fde466e68fdf47035d2a24975bfdbcb898c4712"
+    },
+    "collectionCheck.fixAll": {
+      "source": "b995a78089ba5d81e05925b8b82cfccaa1042124",
+      "translation": "f0795d1735cd51172605506e9ece44e973f700e2"
+    },
+    "collectionCheck.chooseStatus": {
+      "source": "60db9167bd42c7d16b6e1d630a818b255017251c",
+      "translation": "72f8b4eee2f26eb750a025ca400ca6db17c58636"
+    },
+    "collectionCheck.confirm": {
+      "source": "8428630c7f64f40dccbbc15fa01514b91c9e7c5c",
+      "translation": "55183d71e6c72116a25ee4c89a71dfe928a325b7"
+    },
+    "collectionCheck.fixed": {
+      "source": "5a0583af4991fe917980d7a44b8328b78588d1c3",
+      "translation": "853d29a67b81ba30b7b5971e6ca2918d60d9f243"
+    },
+    "collectionCheck.error": {
+      "source": "c3b91b0a52f7221efe085e6989b50b19fda8a8fe",
+      "translation": "639e8632e07a74bd83b5bb704d3cc58db6125b79"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "3149f421df5cc81145695407250d901f7b2c7dc0"
@@ -9478,6 +9530,58 @@
     }
   },
   "es": {
+    "collectionCheck.title": {
+      "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
+      "translation": "65921b3845ef46aa5402c5329bfe11328e780451"
+    },
+    "collectionCheck.invalidType": {
+      "source": "e1b153f562bd434455fd5381298d9fb038f34e79",
+      "translation": "e9c522ce45f41474d77a80b0fefff6a6a948514a"
+    },
+    "collectionCheck.keptConfiguration": {
+      "source": "7d285841c954e0eb73bb769e1161b2d64e5038be",
+      "translation": "97577f4dd9f627ff20345411fbbc4438577cfa04"
+    },
+    "collectionCheck.description": {
+      "source": "7748065aa185294fb3979333243fc121018bf0c6",
+      "translation": "c8103d5c73a48d20a77554082b3f6e01d545ffca"
+    },
+    "collectionCheck.count": {
+      "source": "1c4c228f7a5547391c56bb422823780e23293d6d",
+      "translation": "0682055144b9f8458df42c96a325239e25a1967f"
+    },
+    "collectionCheck.clean": {
+      "source": "dcc79847c5e450f52c02ac0fde0bdcfbe1ddfee9",
+      "translation": "c5a872140ddab7bb09f6042520fbccd6c96b395d"
+    },
+    "collectionCheck.check": {
+      "source": "e185048ce3c07f61069845d16a69507a66ba5ea9",
+      "translation": "ce71c79bed30be0828d3aa040914d380b5b499c3"
+    },
+    "collectionCheck.fix": {
+      "source": "8f2b59163806e90f7752abc0ebb8b0f944e91d4b",
+      "translation": "69f80ed2eb2d96c0443084e0b84b047a39927445"
+    },
+    "collectionCheck.fixAll": {
+      "source": "b995a78089ba5d81e05925b8b82cfccaa1042124",
+      "translation": "8688ef5e3fed12b0fdc2bcf85d1878aba659edee"
+    },
+    "collectionCheck.chooseStatus": {
+      "source": "60db9167bd42c7d16b6e1d630a818b255017251c",
+      "translation": "6e629ec060ea5c8cb07f5abe89556812a1134f13"
+    },
+    "collectionCheck.confirm": {
+      "source": "8428630c7f64f40dccbbc15fa01514b91c9e7c5c",
+      "translation": "964aa0a7764d2edbf853a726bb70b0ecd9ad6f50"
+    },
+    "collectionCheck.fixed": {
+      "source": "5a0583af4991fe917980d7a44b8328b78588d1c3",
+      "translation": "dbeb270cd19a898ce7594a152a75b161de2c1468"
+    },
+    "collectionCheck.error": {
+      "source": "c3b91b0a52f7221efe085e6989b50b19fda8a8fe",
+      "translation": "f49948898718ffb483175c06b12274fd6c1acb8c"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "bfe49f7a906eea54e083c04e6f7d0c3fdb14dde1"
@@ -18956,6 +19060,58 @@
     }
   },
   "fr": {
+    "collectionCheck.title": {
+      "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
+      "translation": "01504c69ad23f505437d1fd42343556750dc431c"
+    },
+    "collectionCheck.invalidType": {
+      "source": "e1b153f562bd434455fd5381298d9fb038f34e79",
+      "translation": "eb41551d82d96c4dbec263ddd5fda729a0dc95c1"
+    },
+    "collectionCheck.keptConfiguration": {
+      "source": "7d285841c954e0eb73bb769e1161b2d64e5038be",
+      "translation": "a46a12a38adc2c6663c40b436e7bfd7d92405a5b"
+    },
+    "collectionCheck.description": {
+      "source": "7748065aa185294fb3979333243fc121018bf0c6",
+      "translation": "1f6bf883f4ead5023a9b3e4364cac0ffad80272c"
+    },
+    "collectionCheck.count": {
+      "source": "1c4c228f7a5547391c56bb422823780e23293d6d",
+      "translation": "394a6fb53ce414bc45c9c69708b1e6f42be40813"
+    },
+    "collectionCheck.clean": {
+      "source": "dcc79847c5e450f52c02ac0fde0bdcfbe1ddfee9",
+      "translation": "9d14a6c8c2f958c8d2c9c984908de89911b8fdda"
+    },
+    "collectionCheck.check": {
+      "source": "e185048ce3c07f61069845d16a69507a66ba5ea9",
+      "translation": "2528fbb03511b771b4b96a35541fb2ff32220570"
+    },
+    "collectionCheck.fix": {
+      "source": "8f2b59163806e90f7752abc0ebb8b0f944e91d4b",
+      "translation": "5f2f3dbe71277d158359f789dd6565de7b250a9e"
+    },
+    "collectionCheck.fixAll": {
+      "source": "b995a78089ba5d81e05925b8b82cfccaa1042124",
+      "translation": "a5efedc3c1d76162dbf03e6cf300698fb67a41f0"
+    },
+    "collectionCheck.chooseStatus": {
+      "source": "60db9167bd42c7d16b6e1d630a818b255017251c",
+      "translation": "006752d2af32b16ba313d0eb1b8924e0b7b68665"
+    },
+    "collectionCheck.confirm": {
+      "source": "8428630c7f64f40dccbbc15fa01514b91c9e7c5c",
+      "translation": "f0b68e7e94f7ec080119d74f190b09802ce30beb"
+    },
+    "collectionCheck.fixed": {
+      "source": "5a0583af4991fe917980d7a44b8328b78588d1c3",
+      "translation": "6021a4248cae6408d4a0c5017ca9dfaa0c6bf804"
+    },
+    "collectionCheck.error": {
+      "source": "c3b91b0a52f7221efe085e6989b50b19fda8a8fe",
+      "translation": "5014bdd4989fd99d4c80c805aadc99e2a840e6fd"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "7541830e0d419db38fc14fc06ce5933579b97c04"
@@ -28434,6 +28590,58 @@
     }
   },
   "ja": {
+    "collectionCheck.title": {
+      "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
+      "translation": "907ccfa7781cef3bb6ee18b753b5a85deee4bfcb"
+    },
+    "collectionCheck.invalidType": {
+      "source": "e1b153f562bd434455fd5381298d9fb038f34e79",
+      "translation": "3d2a8549d8ae548420e3a579a6fe8c51489f96b3"
+    },
+    "collectionCheck.keptConfiguration": {
+      "source": "7d285841c954e0eb73bb769e1161b2d64e5038be",
+      "translation": "3ccb3a1371dea55d7a417a98b3011096bab4efbd"
+    },
+    "collectionCheck.description": {
+      "source": "7748065aa185294fb3979333243fc121018bf0c6",
+      "translation": "7adb3ad97ee198fe239fb49bca5f4af848608972"
+    },
+    "collectionCheck.count": {
+      "source": "1c4c228f7a5547391c56bb422823780e23293d6d",
+      "translation": "8edd2243a55781e8cdddc7dffb7130b2b78ae1ef"
+    },
+    "collectionCheck.clean": {
+      "source": "dcc79847c5e450f52c02ac0fde0bdcfbe1ddfee9",
+      "translation": "b1205618eddec06ec52d303cb4023dee089f62fb"
+    },
+    "collectionCheck.check": {
+      "source": "e185048ce3c07f61069845d16a69507a66ba5ea9",
+      "translation": "e4fdcbc9bc68678a09a1df1261fafccac2e9ac31"
+    },
+    "collectionCheck.fix": {
+      "source": "8f2b59163806e90f7752abc0ebb8b0f944e91d4b",
+      "translation": "92d49b26dff4be87768a5b848509484cc4887b09"
+    },
+    "collectionCheck.fixAll": {
+      "source": "b995a78089ba5d81e05925b8b82cfccaa1042124",
+      "translation": "4bcf9257e1a058235ab0298d8fbfc74164a9359a"
+    },
+    "collectionCheck.chooseStatus": {
+      "source": "60db9167bd42c7d16b6e1d630a818b255017251c",
+      "translation": "c8b5f195b69c27f760daee0c9c455183fb2740b4"
+    },
+    "collectionCheck.confirm": {
+      "source": "8428630c7f64f40dccbbc15fa01514b91c9e7c5c",
+      "translation": "7237a51c567c1d8ebc3156baded9b20d9030cdde"
+    },
+    "collectionCheck.fixed": {
+      "source": "5a0583af4991fe917980d7a44b8328b78588d1c3",
+      "translation": "49e008062ebb11555dd9669b202a67ccfc3fe5b9"
+    },
+    "collectionCheck.error": {
+      "source": "c3b91b0a52f7221efe085e6989b50b19fda8a8fe",
+      "translation": "eb5e45cf69d9efa752da854af58e650f068e5cbc"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "648a0984831b6c1dd4bdef71ea11c7ef67c0ee68"
@@ -37912,6 +38120,58 @@
     }
   },
   "ko": {
+    "collectionCheck.title": {
+      "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
+      "translation": "eaa24b0a5e4b010adc2c906e4c29955185898677"
+    },
+    "collectionCheck.invalidType": {
+      "source": "e1b153f562bd434455fd5381298d9fb038f34e79",
+      "translation": "db1698c32fe0d253185b6bde066578fa065224d6"
+    },
+    "collectionCheck.keptConfiguration": {
+      "source": "7d285841c954e0eb73bb769e1161b2d64e5038be",
+      "translation": "a23a2964627c76caad543c2d52fb5e2a1da85dd2"
+    },
+    "collectionCheck.description": {
+      "source": "7748065aa185294fb3979333243fc121018bf0c6",
+      "translation": "0ec811489767ac34ff80a2142c3fc8b5f4760158"
+    },
+    "collectionCheck.count": {
+      "source": "1c4c228f7a5547391c56bb422823780e23293d6d",
+      "translation": "4b34ff8ae21f16143a28256f5c7428a06d90b196"
+    },
+    "collectionCheck.clean": {
+      "source": "dcc79847c5e450f52c02ac0fde0bdcfbe1ddfee9",
+      "translation": "2bc1dea91f912c2d7c4ed674d305b28d4e4a62cd"
+    },
+    "collectionCheck.check": {
+      "source": "e185048ce3c07f61069845d16a69507a66ba5ea9",
+      "translation": "c8fa04529337aec1868ad06e05eece0f8c49ec19"
+    },
+    "collectionCheck.fix": {
+      "source": "8f2b59163806e90f7752abc0ebb8b0f944e91d4b",
+      "translation": "4f77c9eea65877bc23b63528d2d9a7eb6e0f93ca"
+    },
+    "collectionCheck.fixAll": {
+      "source": "b995a78089ba5d81e05925b8b82cfccaa1042124",
+      "translation": "6fd03373240ee2f3fd419883f8a837f436038051"
+    },
+    "collectionCheck.chooseStatus": {
+      "source": "60db9167bd42c7d16b6e1d630a818b255017251c",
+      "translation": "841dd3b4499cd01fbccfbc1a2427a0d326b52113"
+    },
+    "collectionCheck.confirm": {
+      "source": "8428630c7f64f40dccbbc15fa01514b91c9e7c5c",
+      "translation": "8ed2f6bc1fd8dd3f71f5715941f9a9a08b6828dc"
+    },
+    "collectionCheck.fixed": {
+      "source": "5a0583af4991fe917980d7a44b8328b78588d1c3",
+      "translation": "c98d076e7aba2911dddf4a1fca3359de42379a9f"
+    },
+    "collectionCheck.error": {
+      "source": "c3b91b0a52f7221efe085e6989b50b19fda8a8fe",
+      "translation": "ff48f76fdefd6cf292b55e0b511adbfd9a837aed"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "71695fa32a0677fd93b069b0fb1a439793b353e1"
@@ -47390,6 +47650,58 @@
     }
   },
   "pt": {
+    "collectionCheck.title": {
+      "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
+      "translation": "162e99808bbac99af4096d4a549a8630c6a928c9"
+    },
+    "collectionCheck.invalidType": {
+      "source": "e1b153f562bd434455fd5381298d9fb038f34e79",
+      "translation": "c1d3ddd28166d471a6c3bea7de4f279278cca3cf"
+    },
+    "collectionCheck.keptConfiguration": {
+      "source": "7d285841c954e0eb73bb769e1161b2d64e5038be",
+      "translation": "6690d267fd4e7bfe5681dda6e8dfb6a294edfe1f"
+    },
+    "collectionCheck.description": {
+      "source": "7748065aa185294fb3979333243fc121018bf0c6",
+      "translation": "9b8364a1f0fc2ce232c231ad1f9c89c4c99eb92d"
+    },
+    "collectionCheck.count": {
+      "source": "1c4c228f7a5547391c56bb422823780e23293d6d",
+      "translation": "47bbe0ac16fc8fcb2ebe57f2948c5e98a540dcca"
+    },
+    "collectionCheck.clean": {
+      "source": "dcc79847c5e450f52c02ac0fde0bdcfbe1ddfee9",
+      "translation": "9ae459dd95f66d971ec92a21e8893730bf92ba4f"
+    },
+    "collectionCheck.check": {
+      "source": "e185048ce3c07f61069845d16a69507a66ba5ea9",
+      "translation": "95ae9f43f857298dabcd63ab84797d6639ecf3bf"
+    },
+    "collectionCheck.fix": {
+      "source": "8f2b59163806e90f7752abc0ebb8b0f944e91d4b",
+      "translation": "6c9e1f12677bb7a04e8fbb085591f7ca115c028c"
+    },
+    "collectionCheck.fixAll": {
+      "source": "b995a78089ba5d81e05925b8b82cfccaa1042124",
+      "translation": "18816180fd8910b73b6c6f7800174763dfb2be82"
+    },
+    "collectionCheck.chooseStatus": {
+      "source": "60db9167bd42c7d16b6e1d630a818b255017251c",
+      "translation": "5c3a2f05b7f9e2736a25e22fc1db52cdc74da361"
+    },
+    "collectionCheck.confirm": {
+      "source": "8428630c7f64f40dccbbc15fa01514b91c9e7c5c",
+      "translation": "38218b50997e1762e65748cc82bfad21235efbab"
+    },
+    "collectionCheck.fixed": {
+      "source": "5a0583af4991fe917980d7a44b8328b78588d1c3",
+      "translation": "d8d71dc935446b5316055cb3cd9d04fe84561518"
+    },
+    "collectionCheck.error": {
+      "source": "c3b91b0a52f7221efe085e6989b50b19fda8a8fe",
+      "translation": "e635933924b3b0fe7544dfb7388206f86a1a6f6d"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "f14fd476f4bf1df30978d6055e7058e19195a801"
@@ -56868,6 +57180,58 @@
     }
   },
   "ru": {
+    "collectionCheck.title": {
+      "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
+      "translation": "d8ab6e5a4dedc05e030bc3a7884db970bc95147c"
+    },
+    "collectionCheck.invalidType": {
+      "source": "e1b153f562bd434455fd5381298d9fb038f34e79",
+      "translation": "147fe80dcf5e5bd6bded80f5c346c252bad41315"
+    },
+    "collectionCheck.keptConfiguration": {
+      "source": "7d285841c954e0eb73bb769e1161b2d64e5038be",
+      "translation": "661be1a2c2b4a143dff8b9564f422ba0f80cb6db"
+    },
+    "collectionCheck.description": {
+      "source": "7748065aa185294fb3979333243fc121018bf0c6",
+      "translation": "d453a99809aa5cce5e02eca7bc87317dd489f1e7"
+    },
+    "collectionCheck.count": {
+      "source": "1c4c228f7a5547391c56bb422823780e23293d6d",
+      "translation": "d2040be244615774c0256d07639a8bf5eccbddde"
+    },
+    "collectionCheck.clean": {
+      "source": "dcc79847c5e450f52c02ac0fde0bdcfbe1ddfee9",
+      "translation": "1ce4ba4d9d7cbf33ab3aa29431bfba4082535183"
+    },
+    "collectionCheck.check": {
+      "source": "e185048ce3c07f61069845d16a69507a66ba5ea9",
+      "translation": "f5a9c44898fc0504dc46b7d6068bb3fcbcc54848"
+    },
+    "collectionCheck.fix": {
+      "source": "8f2b59163806e90f7752abc0ebb8b0f944e91d4b",
+      "translation": "d3c401ad6ba47812dcb7fdd5686e99821ce5d469"
+    },
+    "collectionCheck.fixAll": {
+      "source": "b995a78089ba5d81e05925b8b82cfccaa1042124",
+      "translation": "b191a224116afc938ab59187aeb1413133a66f46"
+    },
+    "collectionCheck.chooseStatus": {
+      "source": "60db9167bd42c7d16b6e1d630a818b255017251c",
+      "translation": "eabf5bbf9bfd5d36843e035a34feb499bf9ad3a8"
+    },
+    "collectionCheck.confirm": {
+      "source": "8428630c7f64f40dccbbc15fa01514b91c9e7c5c",
+      "translation": "6df5efc99947516a0645f93c283c1aa06c377725"
+    },
+    "collectionCheck.fixed": {
+      "source": "5a0583af4991fe917980d7a44b8328b78588d1c3",
+      "translation": "371b7da00c0182f3f9caf7b9d50fb8e87a9ef1d0"
+    },
+    "collectionCheck.error": {
+      "source": "c3b91b0a52f7221efe085e6989b50b19fda8a8fe",
+      "translation": "0bd272cbaae12fc0bc5cb39b3365d367d16158d1"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "6245ac635eea1c1f8bca6f50d62a538824556a75"
@@ -66346,6 +66710,58 @@
     }
   },
   "zh": {
+    "collectionCheck.title": {
+      "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
+      "translation": "4928ca5aef91d0c8641542298f45902cc4cf97c5"
+    },
+    "collectionCheck.invalidType": {
+      "source": "e1b153f562bd434455fd5381298d9fb038f34e79",
+      "translation": "349fbaeb91fb916f66c2fc9998b7295ccd5898ad"
+    },
+    "collectionCheck.keptConfiguration": {
+      "source": "7d285841c954e0eb73bb769e1161b2d64e5038be",
+      "translation": "4c3d79d5dee722875e43430746d53d5adeda54e1"
+    },
+    "collectionCheck.description": {
+      "source": "7748065aa185294fb3979333243fc121018bf0c6",
+      "translation": "86d371b7bbb4f3d11913bff35bad3ca251ba879c"
+    },
+    "collectionCheck.count": {
+      "source": "1c4c228f7a5547391c56bb422823780e23293d6d",
+      "translation": "92d9f5b4c65efa3a12ab5a5c9e60aa8e0e14c3cd"
+    },
+    "collectionCheck.clean": {
+      "source": "dcc79847c5e450f52c02ac0fde0bdcfbe1ddfee9",
+      "translation": "2b5b7fe028302ba724028a7a3b84c813d2307aea"
+    },
+    "collectionCheck.check": {
+      "source": "e185048ce3c07f61069845d16a69507a66ba5ea9",
+      "translation": "4fab98659cd2b65db7a4dbf0acdd61e567d5c6da"
+    },
+    "collectionCheck.fix": {
+      "source": "8f2b59163806e90f7752abc0ebb8b0f944e91d4b",
+      "translation": "f4cb5565a0b9b9c97c67c0e61e4590f1c8e2485a"
+    },
+    "collectionCheck.fixAll": {
+      "source": "b995a78089ba5d81e05925b8b82cfccaa1042124",
+      "translation": "4293b8391931ba8b97ec1671eb980bb1ee3bdf41"
+    },
+    "collectionCheck.chooseStatus": {
+      "source": "60db9167bd42c7d16b6e1d630a818b255017251c",
+      "translation": "010cc010d2f80a62f27c41430f09bb60d9d304f9"
+    },
+    "collectionCheck.confirm": {
+      "source": "8428630c7f64f40dccbbc15fa01514b91c9e7c5c",
+      "translation": "75b34d641d4fb4bf2d40ecdd753a0d42c3bda91a"
+    },
+    "collectionCheck.fixed": {
+      "source": "5a0583af4991fe917980d7a44b8328b78588d1c3",
+      "translation": "8aa3951bcc9b6cb34fb05187b173edd7d86ad526"
+    },
+    "collectionCheck.error": {
+      "source": "c3b91b0a52f7221efe085e6989b50b19fda8a8fe",
+      "translation": "e83c444118d6a86736468065772091cc9ff49ec6"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "985b77e61456d631358811473c3265b8f2c7f282"

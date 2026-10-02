@@ -1,6 +1,21 @@
 import { TranslationTree } from "../types";
 
 export const de: TranslationTree = {
+	collectionCheck: {
+		title: "Sammlung prüfen",
+		invalidType: "{path} ist inkonsistent: {issues}. Prüfe implements.fields und binding vor einem erneuten Versuch; die Plugin-Einstellungen wurden beibehalten.",
+		keptConfiguration: "TaskNotes hat die letzte gültige Konfiguration beibehalten.",
+		description: "Aufgaben prüfen, ohne Notizen zu ändern. Fehlende Erstellungsdaten können aus der Dateierstellungszeit ergänzt werden. Ungültige Status erfordern deine Auswahl. Andere Fehler müssen manuell geprüft werden.",
+		count: "Ungültige Datensätze: {count}",
+		clean: "Keine ungültigen Aufgaben gefunden.",
+		check: "Erneut prüfen",
+		fix: "Sichern und korrigieren",
+		fixAll: "Ausgewählte Änderungen in allen Datensätzen sichern und anwenden",
+		chooseStatus: "Einen Ersatzstatus auswählen",
+		confirm: "Nur die unten aufgeführten Änderungen anwenden? Vor jeder Änderung werden die Originalnotizen unter .tasknotes/migrations gesichert. Nicht ausgewählte Status und andere Fehler bleiben unverändert.",
+		fixed: "Genehmigte Änderungen gespeichert. Sicherungen befinden sich unter .tasknotes/migrations. Verbleibende Fehler prüfen.",
+		error: "Prüfung oder Korrektur der Sammlung gestoppt. Es wurden keine ungenehmigten Änderungen vorgenommen.",
+	},
 	onboarding: {
 		title: "Erste Schritte mit TaskNotes",
 		intro: "Aufgaben sind Markdown-Notizen in deinem Vault. Nutze die Befehlspalette für diese drei Schritte.",

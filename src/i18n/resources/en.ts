@@ -1,6 +1,21 @@
 import { TranslationTree } from "../types";
 
 export const en: TranslationTree = {
+	collectionCheck: {
+		title: "Check collection",
+		invalidType: "{path} is inconsistent: {issues}. Review its implements.fields and binding before retrying; plugin settings were kept.",
+		keptConfiguration: "TaskNotes kept its last-known-good configuration.",
+		description: "Check task records without changing notes. Missing creation dates can be filled from file creation time. Invalid statuses require your choice. Other errors need manual review.",
+		count: "Invalid records: {count}",
+		clean: "No invalid task records found.",
+		check: "Check again",
+		fix: "Back up and fix",
+		fixAll: "Back up and fix selected changes in all records",
+		chooseStatus: "Choose a replacement status",
+		confirm: "Apply only the changes listed below; original notes will be backed up in {backupFolder} before each change, and unselected statuses and other errors will remain unchanged?",
+		fixed: "Approved changes saved; backups are in {backupFolder}, please check remaining errors.",
+		error: "Collection check or repair stopped. No unapproved changes were made.",
+	},
 	onboarding: {
 		title: "Start here with TaskNotes",
 		intro: "Tasks are Markdown notes in your vault. Use the command palette for these three steps.",

@@ -1,6 +1,22 @@
 import { TranslationTree } from "../types";
 
 export const ja: TranslationTree = {
+	collectionCheck: {
+		title: "コレクションを確認",
+		invalidType: "{path} に不整合があります: {issues}。再試行する前に implements.fields と binding を確認してください。プラグイン設定は保持されました。",
+		keptConfiguration: "TaskNotes は最後の正常な設定を保持しました。",
+
+		description: "ノートを変更せずにタスクを検証します。作成日時がない場合はファイルの作成日時で補えます。無効なステータスは置き換え先を選ぶ必要があります。その他のエラーは手動で確認してください。",
+		count: "無効なレコード: {count}",
+		clean: "無効なタスクレコードはありません。",
+		check: "再確認",
+		fix: "バックアップして修正",
+		fixAll: "すべてのレコードで選択した変更をバックアップして適用",
+		chooseStatus: "置き換え先のステータスを選択",
+		confirm: "以下の変更のみ適用しますか？変更前に元のノートを .tasknotes/migrations にバックアップします。未選択のステータスとその他のエラーは変更しません。",
+		fixed: "承認された変更を保存しました。バックアップは .tasknotes/migrations にあります。残りのエラーを確認してください。",
+		error: "コレクションの確認または修正を停止しました。未承認の変更は行っていません。",
+	},
 	onboarding: {
 		title: "TaskNotes を始める",
 		intro: "タスクは保管庫内の Markdown ノートです。コマンドパレットで次の3つの手順を試してください。",

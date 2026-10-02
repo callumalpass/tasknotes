@@ -34,6 +34,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- mdbase task-type upgrades now retain existing property mappings, custom stable IDs, archive tags, occurrence policies and custom constraints, with a recovery copy before structural changes. Existing collection membership defaults are preserved. Invalid canonical definitions are reported instead of being silently adopted or overwritten.
+- Portable task detection now respects excluded folders. App-required Markdown/Base extensions and configured view-folder includes are added without removing existing collection configuration. Pack installation remains part of the App's engine-verified setup consent. See [Upgrading from v4 to v5](https://tasknotes.dev/migration-v4-to-v5/).
+
 - Fixed calendar freezes in vaults with many tasks, while preserving task and timeblock drag and resize permissions.
 
 - (#2304) Fixed embedded month calendars not filling their available width with Minimal theme and Readable Line Length enabled. Thanks to @same774 for reporting.
@@ -70,6 +73,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Date picker labels, quick actions, accessibility labels and invalid-input notices now follow the selected language.
 
 ## Added
+
+- Added **Check collection** to report invalid task records without rewriting notes. Missing creation dates and explicitly chosen status replacements can be fixed per record or together after confirmation and a verified backup. See [Migration checks](https://tasknotes.dev/migration-v4-to-v5/#check-existing-task-records).
 
 - Added Today and Inbox commands for the configured tasks Base, plus Inbox and Archived views in newly generated defaults. See [Views](https://tasknotes.dev/views/).
 

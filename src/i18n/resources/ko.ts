@@ -1,6 +1,21 @@
 import { TranslationTree } from "../types";
 
 export const ko: TranslationTree = {
+	collectionCheck: {
+		title: "컬렉션 확인",
+		invalidType: "{path}에 불일치가 있습니다: {issues}. 다시 시도하기 전에 implements.fields와 binding을 검토하세요. 플러그인 설정은 유지되었습니다.",
+		keptConfiguration: "TaskNotes가 마지막 유효한 설정을 유지했습니다.",
+		description: "노트를 변경하지 않고 작업을 검증합니다. 누락된 생성 날짜는 파일 생성 시간으로 채울 수 있습니다. 잘못된 상태는 대체 상태를 선택해야 합니다. 다른 오류는 직접 검토해야 합니다.",
+		count: "잘못된 레코드: {count}",
+		clean: "잘못된 작업 레코드가 없습니다.",
+		check: "다시 확인",
+		fix: "백업 후 수정",
+		fixAll: "모든 레코드에서 선택한 변경 사항 백업 후 적용",
+		chooseStatus: "대체 상태 선택",
+		confirm: "아래 변경 사항만 적용할까요? 변경 전에 원본 노트를 .tasknotes/migrations에 백업합니다. 선택하지 않은 상태와 다른 오류는 변경하지 않습니다.",
+		fixed: "승인한 변경 사항을 저장했습니다. 백업은 .tasknotes/migrations에 있습니다. 남은 오류를 확인하세요.",
+		error: "컬렉션 확인 또는 수정이 중단되었습니다. 승인하지 않은 변경은 없습니다.",
+	},
 	onboarding: {
 		title: "TaskNotes 시작하기",
 		intro: "작업은 보관함의 Markdown 노트입니다. 명령 팔레트에서 다음 세 단계를 따라 해 보세요.",

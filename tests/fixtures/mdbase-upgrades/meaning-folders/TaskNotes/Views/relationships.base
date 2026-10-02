@@ -1,0 +1,160 @@
+# Relationships
+# This view shows all relationships for the current file
+# Dynamically shows/hides tabs based on available data
+
+formulas:
+  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))'
+  daysUntilDue: 'if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)'
+  dueIn: 'if(due.isEmpty(), "", if(formula.daysUntilDue == 0, "Today", if(formula.daysUntilDue == 1, "1 day", if(formula.daysUntilDue > 1, formula.daysUntilDue + " days", if(formula.daysUntilDue == -1, "1 day overdue", formula.daysUntilDue * -1 + " days overdue")))))'
+  daysUntilScheduled: 'if((scheduled.isEmpty() == false), ((number(date(scheduled)) - number(today())) / 86400000).floor(), null)'
+  daysSinceCreated: '((number(now()) - number(file.ctime)) / 86400000).floor()'
+  daysSinceModified: '((number(now()) - number(file.mtime)) / 86400000).floor()'
+  isOverdue: '(due.isEmpty() == false) && date(due) < today() && status != "done"'
+  isDueToday: '(due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")'
+  isDueThisWeek: '(due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")'
+  isScheduledToday: '(scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")'
+  isRecurring: 'recurrence && !recurrence.isEmpty()'
+  hasTimeEstimate: 'timeEstimate && timeEstimate > 0'
+  timeRemaining: 'if(timeEstimate && timeEstimate > 0, timeEstimate - if(timeEntries, list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0), 0), null)'
+  efficiencyRatio: 'if(timeEstimate && timeEstimate > 0 && timeEntries, (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / timeEstimate * 100).round(), null)'
+  timeTrackedThisWeek: 'if(timeEntries, list(timeEntries).filter(value.endTime && date(value.startTime) >= today() - "7d").map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)'
+  timeTrackedToday: 'if(timeEntries, list(timeEntries).filter(value.endTime && date(value.startTime).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)'
+  dueMonth: 'if((due.isEmpty() == false), date(due).format("YYYY-MM"), "No due date")'
+  dueWeek: 'if((due.isEmpty() == false), date(due).format("YYYY-[W]WW"), "No due date")'
+  scheduledMonth: 'if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-MM"), "Not scheduled")'
+  scheduledWeek: 'if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-[W]WW"), "Not scheduled")'
+  dueDateCategory: 'if(due.isEmpty(), "No due date", if(date(due) < today(), "Overdue", if(date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"), "Today", if(date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD"), "Tomorrow", if(date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"), "This week", "Later")))))'
+  timeEstimateCategory: 'if(!timeEstimate || timeEstimate == 0 || timeEstimate == null, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))'
+  ageCategory: 'if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))'
+  createdMonth: 'file.ctime.format("YYYY-MM")'
+  modifiedMonth: 'file.mtime.format("YYYY-MM")'
+  priorityCategory: 'if(priority=="none","None",if(priority=="low","Low",if(priority=="normal","Normal",if(priority=="high","High","No priority"))))'
+  projectCount: 'if(!projects || list(projects).length == 0, "No projects", if(list(projects).length == 1, "Single project", "Multiple projects"))'
+  contextCount: 'if(!contexts || list(contexts).length == 0, "No contexts", if(list(contexts).length == 1, "Single context", "Multiple contexts"))'
+  trackingStatus: 'if(!timeEstimate || timeEstimate == 0 || timeEstimate == null, "No estimate", if(!timeEntries || list(timeEntries).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))'
+  nextDate: 'if((due.isEmpty() == false) && (scheduled.isEmpty() == false), if(date(due) < date(scheduled), due, scheduled), if((due.isEmpty() == false), due, scheduled))'
+  daysUntilNext: 'if((due.isEmpty() == false) && (scheduled.isEmpty() == false), min(formula.daysUntilDue, formula.daysUntilScheduled), if((due.isEmpty() == false), formula.daysUntilDue, formula.daysUntilScheduled))'
+  hasDate: '(due.isEmpty() == false) || (scheduled.isEmpty() == false)'
+  isToday: '((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"))'
+  isThisWeek: '((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"))'
+  nextDateCategory: 'if(due.isEmpty() && scheduled.isEmpty(), "No date", if(((due.isEmpty() == false) && date(due) < today()) || ((scheduled.isEmpty() == false) && date(scheduled) < today()), "Overdue/Past", if(((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")), "Today", if(((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD")), "Tomorrow", if(((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")), "This week", "Later")))))'
+  nextDateMonth: 'if((due.isEmpty() == false) && (scheduled.isEmpty() == false), if(date(due) < date(scheduled), date(due).format("YYYY-MM"), date(scheduled).format("YYYY-MM")), if((due.isEmpty() == false), date(due).format("YYYY-MM"), if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-MM"), "No date")))'
+  nextDateWeek: 'if((due.isEmpty() == false) && (scheduled.isEmpty() == false), if(date(due) < date(scheduled), date(due).format("YYYY-[W]WW"), date(scheduled).format("YYYY-[W]WW")), if((due.isEmpty() == false), date(due).format("YYYY-[W]WW"), if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-[W]WW"), "No date")))'
+  urgencyScore: 'if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))'
+  timeTrackedFormatted: 'if(timeEntries, if(list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) >= 60, (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor() + "h " + (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round() + "m", list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round() + "m"), "0m")'
+  dueDateDisplay: 'if(due.isEmpty(), "", if(date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"), "Today", if(date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD"), "Tomorrow", if(date(due).format("YYYY-MM-DD") == (today() - "1 day").format("YYYY-MM-DD"), "Yesterday", if(date(due) < today(), formula.daysUntilDue * -1 + "d ago", if(date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"), date(due).format("ddd"), date(due).format("MMM D")))))))'
+
+views:
+  - type: tasknotesKanban
+    name: "Subtasks"
+    filters:
+      and:
+        - file.hasTag("task")
+        - file.hasLink(this.file) && list(note.projects).map(file(value.replace(/^\[[^\]]+\]\((.*)\)$/, "$1").replace(/%20/g, " ")).asLink()).contains(this.file.asLink())
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - column: tasknotes_manual_order
+        direction: DESC
+    groupBy:
+      property: task.status
+      direction: ASC
+  - type: tasknotesTaskList
+    name: "Occurrences"
+    filters:
+      and:
+        - file.hasTag("task")
+        - file.hasLink(this.file) && note.recurrence_parent && file(note.recurrence_parent.replace(/^\[[^\]]+\]\((.*)\)$/, "$1").replace(/%20/g, " ")).asLink() == this.file.asLink()
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - occurrence_date
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - column: occurrence_date
+        direction: ASC
+  - type: tasknotesTaskList
+    name: "Projects"
+    filters:
+      and:
+        - list(this.projects).map(file(value.replace(/^\[[^\]]+\]\((.*)\)$/, "$1").replace(/%20/g, " ")).asLink()).contains(file.asLink())
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+  - type: tasknotesTaskList
+    name: "Blocked By"
+    filters:
+      and:
+        - file.hasTag("task")
+        - list(this.note.blockedBy).map(file(if(value.isType("object"), value.uid, value)).asLink()).contains(file.asLink())
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - column: tasknotes_manual_order
+        direction: DESC
+  - type: tasknotesKanban
+    name: "Blocking"
+    filters:
+      and:
+        - file.hasTag("task")
+        - list(note.blockedBy).map(file(if(value.isType("object"), value.uid, value)).asLink()).contains(this.file.asLink())
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - column: tasknotes_manual_order
+        direction: DESC
+    groupBy:
+      property: task.status
+      direction: ASC

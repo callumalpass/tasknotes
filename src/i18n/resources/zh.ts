@@ -1,6 +1,21 @@
 import { TranslationTree } from "../types";
 
 export const zh: TranslationTree = {
+	collectionCheck: {
+		title: "检查集合",
+		invalidType: "{path} 存在不一致：{issues}。重试前请检查 implements.fields 和 binding；插件设置已保留。",
+		keptConfiguration: "TaskNotes 已保留最近的有效配置。",
+		description: "检查任务记录，不修改笔记。缺失的创建日期可使用文件创建时间填充。无效状态需要您选择替代状态。其他错误需要手动检查。",
+		count: "无效记录：{count}",
+		clean: "未发现无效的任务记录。",
+		check: "重新检查",
+		fix: "备份并修复",
+		fixAll: "备份并对所有记录应用所选更改",
+		chooseStatus: "选择替代状态",
+		confirm: "仅应用以下更改吗？每次更改前，原始笔记都会备份到 .tasknotes/migrations。未选择的状态和其他错误将保持不变。",
+		fixed: "已保存获准的更改。备份位于 .tasknotes/migrations。请检查剩余错误。",
+		error: "集合检查或修复已停止。未进行未经批准的更改。",
+	},
 	onboarding: {
 		title: "开始使用 TaskNotes",
 		intro: "任务是仓库中的 Markdown 笔记。通过命令面板完成以下三步。",

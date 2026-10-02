@@ -4,6 +4,8 @@ import {
 } from "@tasknotes/model/mdbase";
 import { TASKNOTES_SPEC_VERSION as TASKNOTES_CONTRACT_VERSION } from "@tasknotes/model";
 import YAML from "yaml";
+import { validateContractMapping, validateTaskBinding, validationIssues, compileRecordSchema } from "./mdbase/contractValidation";
+import { preserveUnownedCanonicalSettings } from "./mdbase/preserveCanonical";
 
 import type { TaskNotesSettings, UserMappedField } from "../types/settings";
 
@@ -105,6 +107,16 @@ export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeVal
 		}
 	}
 
+	if (fieldRoles && schemaProperties) issues.push(...validateContractMapping(fieldRoles, schemaProperties));
+	if (extension && !validateTaskBinding(extension)) {
+		issues.push(...validationIssues(validateTaskBinding).map((issue) => `binding ${issue}`));
+	}
+	try {
+		compileRecordSchema(recordAt(type, ["schema", "value"]));
+	} catch (error) {
+		issues.push(`schema.value is invalid: ${String(error)}`);
+	}
+
 	const status = asRecord(extension?.status);
 	if (!status) {
 		issues.push("the TaskNotes implementation binding.status must be an object");
@@ -169,6 +181,10 @@ export function applyCanonicalTaskTypeToSettings(
 	const templating = asRecord(extension.templating);
 	const collectionPath = recordAt(type, ["collection", "path"]);
 
+	const excludedFolders = asRecord(type["x-tasknotes-generator"])?.excluded_folders;
+	if (Array.isArray(excludedFolders) && excludedFolders.every((folder) => typeof folder === "string")) {
+		settings.excludedFolders = excludedFolders.join(", ");
+	}
 	settings.fieldMapping = { ...modelConfig.fieldMapping };
 	settings.customStatuses = modelConfig.statuses.map((status) => ({ ...status }));
 	settings.customPriorities = modelConfig.priorities.map((priority) => ({ ...priority }));
@@ -263,6 +279,7 @@ export function portableSettingsFingerprint(settings: TaskNotesSettings): string
 	const creationDefaults = settings.taskCreationDefaults;
 	return JSON.stringify({
 		tasksFolder: settings.tasksFolder,
+		excludedFolders: settings.excludedFolders,
 		moveArchivedTasks: settings.moveArchivedTasks,
 		archiveFolder: settings.archiveFolder,
 		taskTag: settings.taskTag,
@@ -312,7 +329,7 @@ export function mergeCanonicalTaskTypeDocument(
 		throw new Error("The existing mdbase type frontmatter must be an object.");
 	}
 
-	const desired = generated.type;
+	const desired = preserveUnownedCanonicalSettings(existingValue, generated.type);
 	const existingImplementations = Array.isArray(existingValue.implements)
 		? existingValue.implements.filter(isRecord)
 		: [];
