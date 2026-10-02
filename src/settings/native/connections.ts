@@ -199,6 +199,7 @@ export function connectionPage(
 							);
 						await plugin.oauthService.authenticate(provider);
 						if (provider === "google") await plugin.googleCalendarService?.initialize();
+						else await plugin.microsoftCalendarService?.initialize();
 						ctx.rebuild();
 					},
 				},
@@ -233,6 +234,7 @@ export function connectionPage(
 						await plugin.oauthService?.disconnect(provider);
 						if (provider === "google")
 							await plugin.googleCalendarService?.handleDisconnect();
+						else await plugin.microsoftCalendarService?.disconnect();
 						ctx.rebuild();
 					},
 				},

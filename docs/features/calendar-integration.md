@@ -27,6 +27,9 @@ OAuth calendar integration requires creating an OAuth application with your cale
 - Dragging calendar events to new dates/times updates the event in the calendar provider
 - Per-calendar visibility toggles allow selective display of calendars
 - Access tokens are automatically refreshed when expired
+- Globally disabled calendars are excluded from the combined event data, not just hidden in a view
+- Connecting Microsoft starts an initial fetch and automatic refresh; disconnecting removes its cached calendars, events, and sync state
+- Google manual refresh reports calendar fetch failures, including partial failures. Successful calendars still update, while failed calendars retain their previous data; failed refreshes can be retried immediately
 
 ### Token Management
 
@@ -71,6 +74,10 @@ Access the time entry editor by clicking an existing time entry in the calendar.
 TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) format. This provides read-only access to events from calendar services. ICS subscriptions differ from OAuth calendar integration in that they are read-only—dragging ICS events to new dates does not update the source calendar.
 
 Add and manage ICS subscriptions from `Settings -> TaskNotes -> Integrations` (Calendar Subscriptions section).
+
+Recurring subscriptions load a bounded window from 30 days ago through one year ahead, with at most 3,000 retained instances per series. Historical occurrences do not consume that visible-instance limit. Non-recurring events are not affected by this window.
+
+Google recurring-task exports include completion, skip, and moved-original exclusions only when those dates belong to the exported recurrence. All-day exports use their date-only start when validating exclusions.
 
 Cancelled events are hidden. A guest declining an invitation does not hide the meeting. When a feed's `X-WR-CALNAME` is an email address (as in many personal Google Calendar feeds), TaskNotes matches that address to the owner's `ATTENDEE` response and hides meetings they declined. Recurring exceptions can override the series response. If the feed does not identify the owner, TaskNotes keeps events visible rather than guessing whose response applies. This does not use the subscription's display name. Refresh the subscription after updating to restore previously hidden meetings.
 
