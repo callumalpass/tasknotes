@@ -1330,6 +1330,10 @@ describe('TaskService', () => {
       mockFile = new TFile(task.path);
       mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(mockFile);
       mockPlugin.getActiveTimeSession.mockReturnValue(null);
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementation(async (_file: any, fn: any) => {
+        const frontmatter = { ...task, timeEntries: [...(task.timeEntries || [])] };
+        fn(frontmatter);
+      });
     });
 
     afterEach(() => {
@@ -1349,6 +1353,7 @@ describe('TaskService', () => {
 
     it('should add to existing time entries', async () => {
       const taskWithEntries = TaskFactory.createTaskWithTimeTracking();
+      task = taskWithEntries;
       const existingCount = taskWithEntries.timeEntries?.length || 0;
 
       const result = await taskService.startTimeTracking(taskWithEntries);
@@ -1358,7 +1363,7 @@ describe('TaskService', () => {
 
     it('should prevent starting when already tracking', async () => {
       const activeSession = { startTime: '2025-01-01T11:00:00Z' };
-      mockPlugin.getActiveTimeSession.mockReturnValue(activeSession);
+      task.timeEntries = [activeSession];
 
       await expect(taskService.startTimeTracking(task))
         .rejects.toThrow('Time tracking is already active for this task');
@@ -1393,6 +1398,10 @@ describe('TaskService', () => {
       mockFile = new TFile(task.path);
       mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(mockFile);
       mockPlugin.getActiveTimeSession.mockReturnValue(activeSession);
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementation(async (_file: any, fn: any) => {
+        const frontmatter = { ...task, timeEntries: [...(task.timeEntries || [])] };
+        fn(frontmatter);
+      });
     });
 
     afterEach(() => {
@@ -1410,7 +1419,7 @@ describe('TaskService', () => {
     });
 
     it('should prevent stopping when not tracking', async () => {
-      mockPlugin.getActiveTimeSession.mockReturnValue(null);
+      task.timeEntries = [];
 
       await expect(taskService.stopTimeTracking(task))
         .rejects.toThrow('No active time tracking session for this task');
@@ -1419,8 +1428,9 @@ describe('TaskService', () => {
     it('should handle missing time entries array', async () => {
       const taskWithoutEntries = TaskFactory.createTask({ timeEntries: undefined });
 
-      // Should not throw but won't find entry to update
-      await taskService.stopTimeTracking(taskWithoutEntries);
+      task = taskWithoutEntries;
+      await expect(taskService.stopTimeTracking(taskWithoutEntries))
+        .rejects.toThrow('No active time tracking session for this task');
     });
   });
 

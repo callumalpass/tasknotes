@@ -31,3 +31,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Reminders are no longer lost during rescans or sleep. Missed reminders are recovered up to 24 hours back while Obsidian remains running, and completed or archived tasks no longer notify. See [Reminders](https://tasknotes.dev/features/reminders/#delivery-and-sleep).
+- Recurring-instance completion accepts the legacy CLI date field and rejects invalid or conflicting dates. Firefox extension origins can access the authenticated local API.
+- Webhooks now disable only after consecutive deliveries exhaust their retries, rather than after intermittent lifetime failures.
+- Concurrent timer actions no longer create duplicate active entries or publish stale timer data. Pomodoro-owned trackers end at the intended completion time after sleep and leave pre-existing manual trackers running. See [Time Management](https://tasknotes.dev/features/time-management/).

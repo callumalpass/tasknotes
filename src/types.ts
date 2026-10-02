@@ -623,6 +623,8 @@ export interface PomodoroTimePeriod {
 }
 
 export interface PomodoroSession {
+	/** Start timestamp of the task timer created by this session, if owned. */
+	timeTrackingStartTime?: string;
 	id: string;
 	taskPath?: string; // optional, can run timer without task
 	startTime: string; // ISO datetime when session was first created
@@ -870,6 +872,7 @@ export interface WebhookConfig {
 	createdAt: string;
 	lastTriggered?: string;
 	failureCount: number;
+	consecutiveFailures?: number;
 	successCount: number;
 	transformFile?: string; // Optional path to a JSON transformation file
 	corsHeaders?: boolean; // Whether to include custom headers (false for Discord, Slack, etc.)
