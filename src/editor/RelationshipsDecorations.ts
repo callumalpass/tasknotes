@@ -39,6 +39,7 @@
  * 3. Using Obsidian's registerMarkdownPostProcessor for reading mode only
  */
 
+import { initializeRelationshipViewSelection } from "./relationshipViewSelection";
 import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from "@codemirror/view";
 import {
 	Component,
@@ -301,6 +302,7 @@ async function createRelationshipsWidget(
 			notePath, // Source path provides context for 'this' keyword
 			component
 		);
+		initializeRelationshipViewSelection(plugin, notePath, basesContainer, component);
 	} catch (error) {
 		tasknotesLogger.error("[TaskNotes] Error rendering Bases view in relationships widget:", {
 			category: "internal",
