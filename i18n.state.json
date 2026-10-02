@@ -1,5 +1,37 @@
 {
   "de": {
+    "onboarding.title": {
+      "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
+      "translation": "3149f421df5cc81145695407250d901f7b2c7dc0"
+    },
+    "onboarding.intro": {
+      "source": "39651d1dbcc95a937c9b0c9b702c2d4aa987959b",
+      "translation": "2767a4bde217e8957cb5665623bcf3e523a96adc"
+    },
+    "onboarding.create": {
+      "source": "ba45062e632411bedb37b4392847a4b71feacc35",
+      "translation": "bb316fdb4aef8a9ca4c7f53424c79a0d60d78043"
+    },
+    "onboarding.review": {
+      "source": "26f245788b05304621c9f9094c73e3db4a49d431",
+      "translation": "de191b00ed5c7fabbb81ba4d6bd8b03ee572c676"
+    },
+    "onboarding.complete": {
+      "source": "23c2dcbdf119283f594c7390dc948c2ac9cc9d1b",
+      "translation": "30da8960eeae814919494ab82f51e12091453be2"
+    },
+    "onboarding.inbox": {
+      "source": "11d43e8769e4c758f054914247bc2ddabf72e381",
+      "translation": "a19f0c590a057e71df107b70417361bf5d466ad6"
+    },
+    "onboarding.settings": {
+      "source": "724c3becf9188f72bd90dfa80d9b2f6f254a1e80",
+      "translation": "e988035683a42065e6d932ee32b6e66638abd7dd"
+    },
+    "common.settings": {
+      "source": "c7f73bb54d928922c3838bb789ee9fb8a5b1eb37",
+      "translation": "3e5af3d1b00c71272cf4d328ebecaae3061ff2fc"
+    },
     "common.appName": {
       "source": "6458145fdd07ad08ff52a2e72d531588936bdca6",
       "translation": "6458145fdd07ad08ff52a2e72d531588936bdca6"
@@ -1072,282 +1104,6 @@
       "source": "756705e2a00b38b9179ace891d74e6c465fd9825",
       "translation": "9baa95cd6b30b5f321ada7ecb1af5b6157481c89"
     },
-    "views.pomodoroStats.title": {
-      "source": "233208a8d46724760749627feb38c5add4b69f0a",
-      "translation": "4756038fd0612d7320039881dc80ffd757c79167"
-    },
-    "views.pomodoroStats.heading": {
-      "source": "3b8ad7de35cae6d07335c016ffd6a2bfe8a1f3df",
-      "translation": "4756038fd0612d7320039881dc80ffd757c79167"
-    },
-    "views.pomodoroStats.refresh": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "87c65f265a185afe8ec1786ae022914c838dc286"
-    },
-    "views.pomodoroStats.basesMigration.title": {
-      "source": "04caae734ce17f873869e3cbe0057bb1bfb7f509",
-      "translation": "1621b23b2d771f33ade6f4b15c342b1f63ff25bf"
-    },
-    "views.pomodoroStats.basesMigration.description": {
-      "source": "089cbdf29fe1782401115d8603876abc55718474",
-      "translation": "9847210f86fcfecfbe9f26b2824e42f78ae0ee57"
-    },
-    "views.pomodoroStats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "8f963287afb8d7eb0d4bafb0b3192539e0aadbd9"
-    },
-    "views.pomodoroStats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "1ab33097cd8e13568f48934edb37a699300295dc"
-    },
-    "views.pomodoroStats.sections.week": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "3973f6e2fd55ad755b957df3680268359575bbbb"
-    },
-    "views.pomodoroStats.sections.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "2a8a291a83fb54a66cbbac1392538ae18e0a30bb"
-    },
-    "views.pomodoroStats.sections.recent": {
-      "source": "3a63bf67767223b0a30ef1900baa43c716dec796",
-      "translation": "484d53082288afb19ccae77310da0074e9ff529f"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.label": {
-      "source": "d3099184748b60a1580656352f8b8aedcfd4b29a",
-      "translation": "1884d76bc72e292f74abff0bf69693daa3689b40"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.more": {
-      "source": "5d8982e1edb375e51eff0f10e7fd5ca0d06756cc",
-      "translation": "013098edfdd6dd293211d03b2cc9e6cda1cc4477"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.less": {
-      "source": "9791244664db2b434044aa79e9f7dfc528dbaaa2",
-      "translation": "d4bd57a5870d03b2abc36cae4bcf5b8d83499ba2"
-    },
-    "views.pomodoroStats.overviewCards.totalPomos.label": {
-      "source": "51de23e612e5c7ea58cabcd69befac9828af6132",
-      "translation": "b703c994baf89be91943a8ac417756579c99fc30"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.label": {
-      "source": "8da1719923b07697a1bee19be9081b7b6068348c",
-      "translation": "4a75b9df5101eceac76df8eb9422191ece4521b1"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.more": {
-      "source": "c8cdba4b00de5620b2900cf93c65e0c61af78357",
-      "translation": "a50d44a02e3d583e9af349c756bfda28725a7ca8"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.less": {
-      "source": "e0ac3f7251b3d826ca720eca9b743becbfb4332b",
-      "translation": "28dc61471f8e2ef7908ca7bc10b685a7a70fa779"
-    },
-    "views.pomodoroStats.overviewCards.totalFocus.label": {
-      "source": "e38707bbc5ab0dbdf0b5fedea45aece5e67227fc",
-      "translation": "5bf78c63f171f6910f904145401e1b7112c67ac1"
-    },
-    "views.pomodoroStats.stats.pomodoros": {
-      "source": "0e0dd790cfe241eb919f53037668418d757bc0cb",
-      "translation": "0e0dd790cfe241eb919f53037668418d757bc0cb"
-    },
-    "views.pomodoroStats.stats.streak": {
-      "source": "ac4792cfd48683835618b7ea9328ad36972aef2e",
-      "translation": "9868120d1ed787e1816daf5372f0252a9a11f0bb"
-    },
-    "views.pomodoroStats.stats.minutes": {
-      "source": "092f99ea11a34a8490e7a767a83a42fc45634f82",
-      "translation": "497af2bfa63344f4a683373261c910cf2fe077ba"
-    },
-    "views.pomodoroStats.stats.average": {
-      "source": "cdeb9a213bbdd7b92f27d0d6c04f9d8bc7b8b045",
-      "translation": "78da69a74d2c45620d23eb17d28e01288d5b2245"
-    },
-    "views.pomodoroStats.stats.completion": {
-      "source": "2ff255684a2277f806fcebf3fe338ed27857f350",
-      "translation": "7f2d284f16aef584b9ebc3c59f7e2e8880907272"
-    },
-    "views.pomodoroStats.recents.empty": {
-      "source": "2b266080383378811ceb0f127829f40b74913e44",
-      "translation": "3a0b539ab32cb8f8f76be81bea14a48cded5ee07"
-    },
-    "views.pomodoroStats.recents.duration": {
-      "source": "09a22c220816f5d148ab0269bda9f7d1463c55d5",
-      "translation": "f9ea01f357c0a555cfca463fc899286db980b755"
-    },
-    "views.pomodoroStats.recents.delete": {
-      "source": "ca57470202396ff277580ee2350f77a2df043983",
-      "translation": "50d7998c9dbc543f87d5e757816899eaf85132e1"
-    },
-    "views.pomodoroStats.recents.deleteAria": {
-      "source": "318e6c608b5e3dceb2394c31d3dc38792aa4f14e",
-      "translation": "6c7e9317607e93f34be16c46220d623fbc9770a4"
-    },
-    "views.pomodoroStats.recents.deleteConfirmTitle": {
-      "source": "75783f138477545cd540251bd85e4063cc24937f",
-      "translation": "9adaf44cc0dc42f196e5ac0183ddbbd86b88541d"
-    },
-    "views.pomodoroStats.recents.deleteConfirmMessage": {
-      "source": "2ea1de330fd1f5aadb2d92fddec3021fc186e611",
-      "translation": "c70fa822eecd36b54d6b4db9067917bc85a82c2c"
-    },
-    "views.pomodoroStats.recents.deleteConfirmButton": {
-      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
-      "translation": "ffa5a8a7e21d912a91eeac79a2f7c5ed6b681a57"
-    },
-    "views.pomodoroStats.recents.deleteSuccess": {
-      "source": "206765441cdb00d28b6683d443323e1f40224d57",
-      "translation": "582001747e0a54a60bf92d9cdcd39e36ae719e20"
-    },
-    "views.pomodoroStats.recents.deleteNotFound": {
-      "source": "cbd330decb3732316044f5b9f0fe219ee41200e9",
-      "translation": "ea0555420db7dfb41fa07e5c42d0934b8560a093"
-    },
-    "views.pomodoroStats.recents.status.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "be274c6e71f4a5837b1f8124da980ac92a56ac7e"
-    },
-    "views.pomodoroStats.recents.status.interrupted": {
-      "source": "50be3afcff74fd9eea61c4dfdd7da275a216bfb6",
-      "translation": "20f2cab2c486d73c439cfaa65e5904c0ce4cac82"
-    },
-    "views.stats.title": {
-      "source": "2086b21f8f49274138c38d476bee317a84a8aecc",
-      "translation": "2a1f1bf39c48f14aaff64b76030dae937b5a256a"
-    },
-    "views.stats.taskProjectStats": {
-      "source": "eb98297814b06d370748e602e85ff64efc24496a",
-      "translation": "a66a455c73f4b6d1b19a9c004843b7d75c19819b"
-    },
-    "views.stats.sections.filters": {
-      "source": "96e578211aa295317cf257310712fa28ccd8f6c6",
-      "translation": "d7decf1aa22b02ae8abf9a96849ee423eee838e4"
-    },
-    "views.stats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "8f963287afb8d7eb0d4bafb0b3192539e0aadbd9"
-    },
-    "views.stats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "1ab33097cd8e13568f48934edb37a699300295dc"
-    },
-    "views.stats.sections.thisWeek": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "3973f6e2fd55ad755b957df3680268359575bbbb"
-    },
-    "views.stats.sections.thisMonth": {
-      "source": "1b4785331db3b08cd8e3cfa4bd36216731a79e54",
-      "translation": "6705d4237cda5eaf8a3c3240c219802089cf89ee"
-    },
-    "views.stats.sections.projectBreakdown": {
-      "source": "eb495988cd625c9ce9b8048dcf9cfe6c045928ef",
-      "translation": "f34ce4d1bc88eab9f5c772dcb0a6123c6fe00c33"
-    },
-    "views.stats.sections.dateRange": {
-      "source": "c65ea4ae013589923685e6ad069dcf87c153bd0b",
-      "translation": "b5fa559da15f35440ba9ad184335cbd77c1b4d2b"
-    },
-    "views.stats.filters.minTime": {
-      "source": "0e3eea0020d6ce34a1253fa9fe52dd97cb7e2bfa",
-      "translation": "a6bce6cf45ab6987a0491268052e0770559f80a4"
-    },
-    "views.stats.filters.allTasks": {
-      "source": "2eee0bb53a4a2a4d7f59af49022804d2db8c046e",
-      "translation": "eee13ef94f7626d8b94aa312db9a02c471bd8f28"
-    },
-    "views.stats.filters.activeOnly": {
-      "source": "e5a176ab924840924eeeea31ace7de41556fa9b7",
-      "translation": "e9a53f720f0847708477c55729a83edddcc8dd52"
-    },
-    "views.stats.filters.completedOnly": {
-      "source": "7cc2d21994cc8e829f77dbd7c26959d689e9c4e2",
-      "translation": "adbda06861c5091760319cb956da40b6a0e47d29"
-    },
-    "views.stats.refreshButton": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "87c65f265a185afe8ec1786ae022914c838dc286"
-    },
-    "views.stats.timeRanges.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "2a8a291a83fb54a66cbbac1392538ae18e0a30bb"
-    },
-    "views.stats.timeRanges.last7Days": {
-      "source": "df833fe88d3888a1ce9d1dbefea78fe4d4cffc4e",
-      "translation": "a4e98a938e59e7e1de419c8a20f38cfd36f7217a"
-    },
-    "views.stats.timeRanges.last30Days": {
-      "source": "6b32985251a1f00785875492de31de15b7e04116",
-      "translation": "62d9eba87a43f9a20ced8e6127a122be0bed64dd"
-    },
-    "views.stats.timeRanges.last90Days": {
-      "source": "c328508badd742d3e0b42c06a8b0c4d7b7723f91",
-      "translation": "078988ce028af187d4310da5f0f4748318061176"
-    },
-    "views.stats.timeRanges.customRange": {
-      "source": "f365689246420c5434b1c4e95e9ba681846d6599",
-      "translation": "6d6e0de6f14bf4f299262c14967dc7c2cac241c3"
-    },
-    "views.stats.resetFiltersButton": {
-      "source": "56553100b028cf32544522d0a9ac81629de6f741",
-      "translation": "f711760625d8dbf6c5a541a4d40f865d7d37e69f"
-    },
-    "views.stats.dateRangeFrom": {
-      "source": "3f66052a107eaf9bae7cad0f61fb462f47ec2c47",
-      "translation": "a4b078f9eb7bd2df4e3753f11540dce130d74025"
-    },
-    "views.stats.dateRangeTo": {
-      "source": "ae79ea1e9c6391a9ed83a2e18a031b835feec0c9",
-      "translation": "0afaa0e566a1a30a7c185ff624fa63ec18a8098d"
-    },
-    "views.stats.noProject": {
-      "source": "c326b75775bf901d2023c5998bd2549e8cc27e3b",
-      "translation": "777afb5b67e93b44a2ea67a9f9b7c8c1da6f7b28"
-    },
-    "views.stats.cards.timeTrackedEstimated": {
-      "source": "2ae2585b134b956011569487a8c5b8f1a6610a8e",
-      "translation": "929a12ec560b8c9341b26781fc02247212fd6f70"
-    },
-    "views.stats.cards.totalTasks": {
-      "source": "d0ecac34cbfbad0f68d32dddd6abdf64c88d8c4f",
-      "translation": "08f58e74d380f56c6707596f0d8961a293a9d962"
-    },
-    "views.stats.cards.completionRate": {
-      "source": "a36008372807c922a809b75df95445c475ea9564",
-      "translation": "0fd0848466e10449fcff3cbdc186b19db4a440f8"
-    },
-    "views.stats.cards.activeProjects": {
-      "source": "f361946445f2d35605eb61f696ceeae3a1eea839",
-      "translation": "04f7b787a2d0b39221b523b1b234281432bb3cdb"
-    },
-    "views.stats.cards.avgTimePerTask": {
-      "source": "0bc83ca5e82607e3698710c73eb074854c147217",
-      "translation": "550e06afd501e2f3b0a8a7c198ffd48f6722add9"
-    },
-    "views.stats.labels.tasks": {
-      "source": "090ec5f560fc50377fcd95e5cda128e91b276e98",
-      "translation": "c667f1f22a05f7a3fde816af664758eb9240bcb1"
-    },
-    "views.stats.labels.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "be274c6e71f4a5837b1f8124da980ac92a56ac7e"
-    },
-    "views.stats.labels.projects": {
-      "source": "53e890d5f0fffe09587c55dce74e9a6febf59b5c",
-      "translation": "3930f79f07e540a93c58dbf7a3a48c45f2d91ef8"
-    },
-    "views.stats.noProjectData": {
-      "source": "f61de1237b5bf9041f1b8e00bdd5b7bf0df0232e",
-      "translation": "9498f145434ab24e10edd7f857c47fbd4b529a4b"
-    },
-    "views.stats.notAvailable": {
-      "source": "08d2e98e6754af941484848930ccbaddfefe13d6",
-      "translation": "d8fa25974630d265eba87aa8f559e326c228bef1"
-    },
-    "views.stats.noTasks": {
-      "source": "d7c07a0905ed43a32ec58ccae1353c564433d826",
-      "translation": "9fab9b825c7ba74646c0a669d22659d6d4c33dea"
-    },
-    "views.stats.loading": {
-      "source": "b04ba49f848624bb97ab094a2631d2ad74913498",
-      "translation": "c640bd3760d308375cbc9ee042b73c1a0b288827"
-    },
     "views.releaseNotes.title": {
       "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
       "translation": "13e0a79179479dd7bd03740e53af56d3b965f8fc"
@@ -1365,8 +1121,8 @@
       "translation": "ed6c14975535f23eef7a97bee0f3cc1a1b7b32d4"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
-      "translation": "818053e1a1b1da0d3e97bec2fe7857d25b6bc4a9"
+      "source": "9006cec1b312951ee9cd725f71310e1b51aeba2b",
+      "translation": "bdb744d2a4156c40de9b32b5b20feb710d60c1d1"
     },
     "settings.native.enterValue": {
       "source": "ffb4705ce609f56bee3903f822a7d1421f12745a",
@@ -4476,22 +4232,6 @@
       "source": "65a232b082e4f02149df030ec01a52ec361f1692",
       "translation": "2112d6ee683cd2272d82b1ec54ca06112c21b503"
     },
-    "settings.appearance.uiElements.viewsButtonAlignment.name": {
-      "source": "9b7b8db5a42172d1e964e7cbc15264d1e63a0526",
-      "translation": "784bc21530d417a549eb0fd7569199b8a13182be"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.description": {
-      "source": "3cd69063c32d9726b4764f3c5251486e4e70f7ea",
-      "translation": "a2e35dd16b5e3359b28d704682a93791e795c3da"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.left": {
-      "source": "7459e2ff70b4a74b12b3b42dcc8898f1325c4607",
-      "translation": "706bde867fcaf36724c9d16777df98f43a2707c7"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.right": {
-      "source": "65a232b082e4f02149df030ec01a52ec361f1692",
-      "translation": "2112d6ee683cd2272d82b1ec54ca06112c21b503"
-    },
     "settings.appearance.projectAutosuggest.header": {
       "source": "ae733299043ca65c98bf192597c7e6be6b3c3111",
       "translation": "b11e992b187a1f3f21b909947fd8e7fba7087bb3"
@@ -4708,10 +4448,6 @@
       "source": "29778b13de2c1757474ea65987a6c25f0e64cc13",
       "translation": "befbb14ea3288fc214f51bd720301c1f08aac624"
     },
-    "settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint": {
-      "source": "fe4b274723ccb4e6b012ec48e7680fb1fc5d81e8",
-      "translation": "2770ac23669ee38a9e6d947039d1d405b62fef4d"
-    },
     "settings.integrations.basesIntegration.viewCommands.docsLink": {
       "source": "600fc012cd270f71115df41a83623c799eecf3b7",
       "translation": "25fba8c9d8178ec1cdedf0b300c75f3814129d51"
@@ -4739,10 +4475,6 @@
     "settings.integrations.basesIntegration.viewCommands.commands.agenda": {
       "source": "8497bcbfd3a589408c7f7541e705729f239dcfc7",
       "translation": "6a0510583b2240e321b7fcb5f6da7b49c51ff0cb"
-    },
-    "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats": {
-      "source": "6fcbba0b914cda44f720b43b86935977e0321ed3",
-      "translation": "6d4560ea71d997a68372936290c3b550a4c55aae"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.relationships": {
       "source": "d31d66e2e1fcdc573a95fc01db407713b36ce7bd",
@@ -6184,6 +5916,14 @@
       "source": "34dc6d24bf621aca04c0190a8906dd735fac5591",
       "translation": "989566dd7d04cd9ff628774b6a23a3a52324ef1a"
     },
+    "commands.openToday": {
+      "source": "a199f140fdb8fe2459198fa013d610cc2178b9aa",
+      "translation": "c1c39760f42e5820c678934de122e5b9b1864ab9"
+    },
+    "commands.openInbox": {
+      "source": "3974ca2b10ca6457c0ca27751d303b1419fc5a2e",
+      "translation": "9c06f4c8c4f41e7cbdc99a7bd4161f555e445424"
+    },
     "commands.openTasksView": {
       "source": "767b41fb3b53b193d0a250eed7ed025f2c7ead0a",
       "translation": "72c6ae4ca5c2297444c8289823109d831fa6f496"
@@ -6207,14 +5947,6 @@
     "commands.updateDefaultBaseFiles": {
       "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
       "translation": "082037fb3cd65ed457f9e5ba73366c421cb60852"
-    },
-    "commands.openPomodoroStats": {
-      "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
-      "translation": "e5eb96e975bcdbca42b62a28abd6536826947af4"
-    },
-    "commands.openStatisticsView": {
-      "source": "ddff620f8a4d10c3c20a028fb132fb630bf118aa",
-      "translation": "786fe3f40a1313f00152caeae5806f05ed8e75d7"
     },
     "commands.createNewTask": {
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
@@ -9698,6 +9430,38 @@
     }
   },
   "es": {
+    "onboarding.title": {
+      "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
+      "translation": "bfe49f7a906eea54e083c04e6f7d0c3fdb14dde1"
+    },
+    "onboarding.intro": {
+      "source": "39651d1dbcc95a937c9b0c9b702c2d4aa987959b",
+      "translation": "38e1ae1a27f641345291e34c13eaf422f1a46abd"
+    },
+    "onboarding.create": {
+      "source": "ba45062e632411bedb37b4392847a4b71feacc35",
+      "translation": "70ac2fe4b2b138fcca7cee762c24a12982eb38a2"
+    },
+    "onboarding.review": {
+      "source": "26f245788b05304621c9f9094c73e3db4a49d431",
+      "translation": "b46fab544b5d5db21c24d0ce1a4f88fa37ac8388"
+    },
+    "onboarding.complete": {
+      "source": "23c2dcbdf119283f594c7390dc948c2ac9cc9d1b",
+      "translation": "0691d7a1e719987b2468d20f9f4e2a23760fbc4c"
+    },
+    "onboarding.inbox": {
+      "source": "11d43e8769e4c758f054914247bc2ddabf72e381",
+      "translation": "63b8301f6519e23e1699848a75130aca01534118"
+    },
+    "onboarding.settings": {
+      "source": "724c3becf9188f72bd90dfa80d9b2f6f254a1e80",
+      "translation": "03de957f44eb66a03a36911207200bb4a3e83cb0"
+    },
+    "common.settings": {
+      "source": "c7f73bb54d928922c3838bb789ee9fb8a5b1eb37",
+      "translation": "9751f876e9e759d2f43f58ab1fe8ce677b74fa32"
+    },
     "common.appName": {
       "source": "6458145fdd07ad08ff52a2e72d531588936bdca6",
       "translation": "6458145fdd07ad08ff52a2e72d531588936bdca6"
@@ -10770,282 +10534,6 @@
       "source": "756705e2a00b38b9179ace891d74e6c465fd9825",
       "translation": "a623e2a90a64515d80b5b4cd6923938c71b9f73d"
     },
-    "views.pomodoroStats.title": {
-      "source": "233208a8d46724760749627feb38c5add4b69f0a",
-      "translation": "c36dd8c58c50cfa46c2afbed6751b1ccd37f1310"
-    },
-    "views.pomodoroStats.heading": {
-      "source": "3b8ad7de35cae6d07335c016ffd6a2bfe8a1f3df",
-      "translation": "c36dd8c58c50cfa46c2afbed6751b1ccd37f1310"
-    },
-    "views.pomodoroStats.refresh": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "c725f8bffa86a8ba5464c672765f6d453b0ea543"
-    },
-    "views.pomodoroStats.basesMigration.title": {
-      "source": "04caae734ce17f873869e3cbe0057bb1bfb7f509",
-      "translation": "163c5945b19cf7d0e3924a29ec7672f0cdaf756a"
-    },
-    "views.pomodoroStats.basesMigration.description": {
-      "source": "089cbdf29fe1782401115d8603876abc55718474",
-      "translation": "74672888bad668e2a90d4beea21db0dd879ba918"
-    },
-    "views.pomodoroStats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "35414e5322be9709c12d384fed73fbf7c3abbf65"
-    },
-    "views.pomodoroStats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "565e9824d995abb146d7f796e6cb377ef5bf2cb8"
-    },
-    "views.pomodoroStats.sections.week": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "cc74a23b8c5e78642d6451199c2409903da7b393"
-    },
-    "views.pomodoroStats.sections.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "65fdb5f6ccbc6107c624ae2676108f1899fd91d8"
-    },
-    "views.pomodoroStats.sections.recent": {
-      "source": "3a63bf67767223b0a30ef1900baa43c716dec796",
-      "translation": "8f8fae78b9c24170c6db185a4beb278742d85185"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.label": {
-      "source": "d3099184748b60a1580656352f8b8aedcfd4b29a",
-      "translation": "278a03608bbeaf828c2aa9d43c966cb25a482c3c"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.more": {
-      "source": "5d8982e1edb375e51eff0f10e7fd5ca0d06756cc",
-      "translation": "a48b4465bf59e8d41971e86fba2a0af82a1ffe61"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.less": {
-      "source": "9791244664db2b434044aa79e9f7dfc528dbaaa2",
-      "translation": "764c00e805690ad2fabbffe143ff68cc29572a69"
-    },
-    "views.pomodoroStats.overviewCards.totalPomos.label": {
-      "source": "51de23e612e5c7ea58cabcd69befac9828af6132",
-      "translation": "33b5c6294b8ba3506af58f0d093a00ac25aa878b"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.label": {
-      "source": "8da1719923b07697a1bee19be9081b7b6068348c",
-      "translation": "963ca610c25d704c04ce981acc656c601d8dcb80"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.more": {
-      "source": "c8cdba4b00de5620b2900cf93c65e0c61af78357",
-      "translation": "98e74c671aa29f66ea5acac78c01c659d558003a"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.less": {
-      "source": "e0ac3f7251b3d826ca720eca9b743becbfb4332b",
-      "translation": "eb878bc64cc94429f218dece0e116561c4da5dae"
-    },
-    "views.pomodoroStats.overviewCards.totalFocus.label": {
-      "source": "e38707bbc5ab0dbdf0b5fedea45aece5e67227fc",
-      "translation": "249923ae4cd4690943abb85dd356a5e7c6671031"
-    },
-    "views.pomodoroStats.stats.pomodoros": {
-      "source": "0e0dd790cfe241eb919f53037668418d757bc0cb",
-      "translation": "0e0dd790cfe241eb919f53037668418d757bc0cb"
-    },
-    "views.pomodoroStats.stats.streak": {
-      "source": "ac4792cfd48683835618b7ea9328ad36972aef2e",
-      "translation": "6c8264ca9562b3cb000ed171ecaaa5b68aa0c629"
-    },
-    "views.pomodoroStats.stats.minutes": {
-      "source": "092f99ea11a34a8490e7a767a83a42fc45634f82",
-      "translation": "ef5a56c67aca02a3afb225e29cf69e9340502274"
-    },
-    "views.pomodoroStats.stats.average": {
-      "source": "cdeb9a213bbdd7b92f27d0d6c04f9d8bc7b8b045",
-      "translation": "10b0f8174325e3e63a59b5b62e13a90f785bfe6d"
-    },
-    "views.pomodoroStats.stats.completion": {
-      "source": "2ff255684a2277f806fcebf3fe338ed27857f350",
-      "translation": "3d00448f223a5b016044f0bc59bc06be7697a69a"
-    },
-    "views.pomodoroStats.recents.empty": {
-      "source": "2b266080383378811ceb0f127829f40b74913e44",
-      "translation": "12d232564d2da3e1a146b5f86e26b0825faff941"
-    },
-    "views.pomodoroStats.recents.duration": {
-      "source": "09a22c220816f5d148ab0269bda9f7d1463c55d5",
-      "translation": "09a22c220816f5d148ab0269bda9f7d1463c55d5"
-    },
-    "views.pomodoroStats.recents.delete": {
-      "source": "ca57470202396ff277580ee2350f77a2df043983",
-      "translation": "2fafcb1afd92839bbf82765298316a37be5b9db9"
-    },
-    "views.pomodoroStats.recents.deleteAria": {
-      "source": "318e6c608b5e3dceb2394c31d3dc38792aa4f14e",
-      "translation": "925ae8c6457192080122f160da659254a1d94a8c"
-    },
-    "views.pomodoroStats.recents.deleteConfirmTitle": {
-      "source": "75783f138477545cd540251bd85e4063cc24937f",
-      "translation": "9412e45abc9d43c8f251a4041c788e00c8a1807d"
-    },
-    "views.pomodoroStats.recents.deleteConfirmMessage": {
-      "source": "2ea1de330fd1f5aadb2d92fddec3021fc186e611",
-      "translation": "e2ea1a6bb8a97dd515d737f3198f043a589b5237"
-    },
-    "views.pomodoroStats.recents.deleteConfirmButton": {
-      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
-      "translation": "54e140f9f07354c67d82e4715c8ae1a311398525"
-    },
-    "views.pomodoroStats.recents.deleteSuccess": {
-      "source": "206765441cdb00d28b6683d443323e1f40224d57",
-      "translation": "c02ce786deb5484ce0e53e879334d647ef1fdfce"
-    },
-    "views.pomodoroStats.recents.deleteNotFound": {
-      "source": "cbd330decb3732316044f5b9f0fe219ee41200e9",
-      "translation": "f153ee9cd52ae5c15d73d490ec64176efe0f7d1a"
-    },
-    "views.pomodoroStats.recents.status.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "76a3d55ad062a9d4590170afbe43b600933f564d"
-    },
-    "views.pomodoroStats.recents.status.interrupted": {
-      "source": "50be3afcff74fd9eea61c4dfdd7da275a216bfb6",
-      "translation": "37acb877b88197ec1f7807a720ae288c5ab30635"
-    },
-    "views.stats.title": {
-      "source": "2086b21f8f49274138c38d476bee317a84a8aecc",
-      "translation": "a580d59821a0ae17a61ff04254d4ffff73797660"
-    },
-    "views.stats.taskProjectStats": {
-      "source": "eb98297814b06d370748e602e85ff64efc24496a",
-      "translation": "277673dd650643c230baf2402abed1975a81a7cf"
-    },
-    "views.stats.sections.filters": {
-      "source": "96e578211aa295317cf257310712fa28ccd8f6c6",
-      "translation": "dbcf4f737c890bed0931afcaa5babc4d65e76ec8"
-    },
-    "views.stats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "35414e5322be9709c12d384fed73fbf7c3abbf65"
-    },
-    "views.stats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "565e9824d995abb146d7f796e6cb377ef5bf2cb8"
-    },
-    "views.stats.sections.thisWeek": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "cc74a23b8c5e78642d6451199c2409903da7b393"
-    },
-    "views.stats.sections.thisMonth": {
-      "source": "1b4785331db3b08cd8e3cfa4bd36216731a79e54",
-      "translation": "4032ee61b5c4b10f8184e7f97e790e569d654fba"
-    },
-    "views.stats.sections.projectBreakdown": {
-      "source": "eb495988cd625c9ce9b8048dcf9cfe6c045928ef",
-      "translation": "7e691ca975c43de6765d772e2b4ca667f0e7f4c0"
-    },
-    "views.stats.sections.dateRange": {
-      "source": "c65ea4ae013589923685e6ad069dcf87c153bd0b",
-      "translation": "b6607d8da479a039c0a984f6be4bb48b83d74b89"
-    },
-    "views.stats.filters.minTime": {
-      "source": "0e3eea0020d6ce34a1253fa9fe52dd97cb7e2bfa",
-      "translation": "01c1479a894b4e8a3b6e679bd3630c1389c7cd60"
-    },
-    "views.stats.filters.allTasks": {
-      "source": "2eee0bb53a4a2a4d7f59af49022804d2db8c046e",
-      "translation": "9d2c107e2dfac53a036dbe28812347a525c4b215"
-    },
-    "views.stats.filters.activeOnly": {
-      "source": "e5a176ab924840924eeeea31ace7de41556fa9b7",
-      "translation": "1bc52096a744e6c8b2d34b069fb5cc11dbb45a8a"
-    },
-    "views.stats.filters.completedOnly": {
-      "source": "7cc2d21994cc8e829f77dbd7c26959d689e9c4e2",
-      "translation": "e20cc046ff4be670bf277dfe759491704c08cd62"
-    },
-    "views.stats.refreshButton": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "c725f8bffa86a8ba5464c672765f6d453b0ea543"
-    },
-    "views.stats.timeRanges.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "65fdb5f6ccbc6107c624ae2676108f1899fd91d8"
-    },
-    "views.stats.timeRanges.last7Days": {
-      "source": "df833fe88d3888a1ce9d1dbefea78fe4d4cffc4e",
-      "translation": "2a38397780874635adc7cab9e33589973bd50b0f"
-    },
-    "views.stats.timeRanges.last30Days": {
-      "source": "6b32985251a1f00785875492de31de15b7e04116",
-      "translation": "99ebcd1011b90918b224975b4f64ae3ba5bc6062"
-    },
-    "views.stats.timeRanges.last90Days": {
-      "source": "c328508badd742d3e0b42c06a8b0c4d7b7723f91",
-      "translation": "196c2e170dd6ef2341c8e08a4495f8d8d46ff526"
-    },
-    "views.stats.timeRanges.customRange": {
-      "source": "f365689246420c5434b1c4e95e9ba681846d6599",
-      "translation": "b7ea056c3bcd192fc494d60009c773d13dcf2448"
-    },
-    "views.stats.resetFiltersButton": {
-      "source": "56553100b028cf32544522d0a9ac81629de6f741",
-      "translation": "0a25a0dd65d70d73abb8780aacfab81f59ccbc79"
-    },
-    "views.stats.dateRangeFrom": {
-      "source": "3f66052a107eaf9bae7cad0f61fb462f47ec2c47",
-      "translation": "966c7c4cad9a7637ca13f8d8d785ceb61d4c34b4"
-    },
-    "views.stats.dateRangeTo": {
-      "source": "ae79ea1e9c6391a9ed83a2e18a031b835feec0c9",
-      "translation": "ccdaad85efd51c29123ec6bcc775a04f5fdb6e72"
-    },
-    "views.stats.noProject": {
-      "source": "c326b75775bf901d2023c5998bd2549e8cc27e3b",
-      "translation": "41d236886bd724837571f6173714236988db9cda"
-    },
-    "views.stats.cards.timeTrackedEstimated": {
-      "source": "2ae2585b134b956011569487a8c5b8f1a6610a8e",
-      "translation": "72a64305c6b63cb512e4b29904a01eecadd34079"
-    },
-    "views.stats.cards.totalTasks": {
-      "source": "d0ecac34cbfbad0f68d32dddd6abdf64c88d8c4f",
-      "translation": "f0f9ba479d943c685a3edf0d852cc5771cc39ffe"
-    },
-    "views.stats.cards.completionRate": {
-      "source": "a36008372807c922a809b75df95445c475ea9564",
-      "translation": "ceb552fdf70e77aa535834ff53afdc5b3aaf70f4"
-    },
-    "views.stats.cards.activeProjects": {
-      "source": "f361946445f2d35605eb61f696ceeae3a1eea839",
-      "translation": "605f746fb6cd1238b6c587f3e93874f0b466168a"
-    },
-    "views.stats.cards.avgTimePerTask": {
-      "source": "0bc83ca5e82607e3698710c73eb074854c147217",
-      "translation": "61b5eb44e0358039c7928be62475b69658e64ec1"
-    },
-    "views.stats.labels.tasks": {
-      "source": "090ec5f560fc50377fcd95e5cda128e91b276e98",
-      "translation": "0e783f9dd49b856c8b58298414ed0ee934652e73"
-    },
-    "views.stats.labels.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "149714a0b80ea279bb8223a09c7f55dcbd78e874"
-    },
-    "views.stats.labels.projects": {
-      "source": "53e890d5f0fffe09587c55dce74e9a6febf59b5c",
-      "translation": "8541c1877ee3309d0f3d1910723d879f56f38441"
-    },
-    "views.stats.noProjectData": {
-      "source": "f61de1237b5bf9041f1b8e00bdd5b7bf0df0232e",
-      "translation": "93b1b0e68e9c16bd4510d3a7a9ae2601e92b1513"
-    },
-    "views.stats.notAvailable": {
-      "source": "08d2e98e6754af941484848930ccbaddfefe13d6",
-      "translation": "635d698f7eac414a5ed50b332f7a8ad456cb5793"
-    },
-    "views.stats.noTasks": {
-      "source": "d7c07a0905ed43a32ec58ccae1353c564433d826",
-      "translation": "1937bbbc35e4e6bf83cb5308d161a74870fa61d4"
-    },
-    "views.stats.loading": {
-      "source": "b04ba49f848624bb97ab094a2631d2ad74913498",
-      "translation": "c3ec5fdd5a74619746a8e7aeeacc7eeb9c0a4563"
-    },
     "views.releaseNotes.title": {
       "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
       "translation": "d77248708380c01950bad45e2eee3593861fe33c"
@@ -11063,8 +10551,8 @@
       "translation": "e3216407e31713e194f9bd57a1561f8d73d3df4f"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
-      "translation": "b775583849f963d10908ad9bc8ea58a637c93f4b"
+      "source": "9006cec1b312951ee9cd725f71310e1b51aeba2b",
+      "translation": "15ac10edb900d422c49a92da9db7fd7456479ec8"
     },
     "settings.native.enterValue": {
       "source": "ffb4705ce609f56bee3903f822a7d1421f12745a",
@@ -14174,22 +13662,6 @@
       "source": "65a232b082e4f02149df030ec01a52ec361f1692",
       "translation": "a9641f6f856fae762fdf34999447b2a2060d265c"
     },
-    "settings.appearance.uiElements.viewsButtonAlignment.name": {
-      "source": "9b7b8db5a42172d1e964e7cbc15264d1e63a0526",
-      "translation": "397c9641c244c05dbe48f20297bc8370c31d22d2"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.description": {
-      "source": "3cd69063c32d9726b4764f3c5251486e4e70f7ea",
-      "translation": "97a8e9bc69896b45575fb4ba3385de5551e0dea8"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.left": {
-      "source": "7459e2ff70b4a74b12b3b42dcc8898f1325c4607",
-      "translation": "cb73e0bfe387a166b49718a01bc54103347554e6"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.right": {
-      "source": "65a232b082e4f02149df030ec01a52ec361f1692",
-      "translation": "a9641f6f856fae762fdf34999447b2a2060d265c"
-    },
     "settings.appearance.projectAutosuggest.header": {
       "source": "ae733299043ca65c98bf192597c7e6be6b3c3111",
       "translation": "5bf179d30ff0ffd3eb785ba148b16ceb950bbb86"
@@ -14406,10 +13878,6 @@
       "source": "29778b13de2c1757474ea65987a6c25f0e64cc13",
       "translation": "73220a9e468b41b893bb703aeb5ab25e62e28e0c"
     },
-    "settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint": {
-      "source": "fe4b274723ccb4e6b012ec48e7680fb1fc5d81e8",
-      "translation": "bda796cac152fd85683d28b9386054c4bf1179b7"
-    },
     "settings.integrations.basesIntegration.viewCommands.docsLink": {
       "source": "600fc012cd270f71115df41a83623c799eecf3b7",
       "translation": "edcf4f138233cdee5b3a4093b652d3440ba4f12a"
@@ -14437,10 +13905,6 @@
     "settings.integrations.basesIntegration.viewCommands.commands.agenda": {
       "source": "8497bcbfd3a589408c7f7541e705729f239dcfc7",
       "translation": "d97a54d4b639e36bfbdbd1c5cd15d367fc14ea28"
-    },
-    "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats": {
-      "source": "6fcbba0b914cda44f720b43b86935977e0321ed3",
-      "translation": "35ea93a10a36b7cf316b3e38bee7cf6e88cd59b6"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.relationships": {
       "source": "d31d66e2e1fcdc573a95fc01db407713b36ce7bd",
@@ -15882,6 +15346,14 @@
       "source": "34dc6d24bf621aca04c0190a8906dd735fac5591",
       "translation": "6b68f113d6ae68bb43f2d1f87f073c6df3061768"
     },
+    "commands.openToday": {
+      "source": "a199f140fdb8fe2459198fa013d610cc2178b9aa",
+      "translation": "c0f2bf48a9ff05635ded53e1f2a8fe0281f2601e"
+    },
+    "commands.openInbox": {
+      "source": "3974ca2b10ca6457c0ca27751d303b1419fc5a2e",
+      "translation": "336375c2e19178c1d22344ada17790adeabf7805"
+    },
     "commands.openTasksView": {
       "source": "767b41fb3b53b193d0a250eed7ed025f2c7ead0a",
       "translation": "c8b933810c77b7796fa6617018d99869a8be3588"
@@ -15905,14 +15377,6 @@
     "commands.updateDefaultBaseFiles": {
       "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
       "translation": "7797e018131081323188aad307e17d6cfcfcab06"
-    },
-    "commands.openPomodoroStats": {
-      "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
-      "translation": "23e8df8de9362210b4a7848f550dff0082826a72"
-    },
-    "commands.openStatisticsView": {
-      "source": "ddff620f8a4d10c3c20a028fb132fb630bf118aa",
-      "translation": "43a1d2c64851dd23af5c526bca4f5a408aaeef78"
     },
     "commands.createNewTask": {
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
@@ -19396,6 +18860,38 @@
     }
   },
   "fr": {
+    "onboarding.title": {
+      "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
+      "translation": "7541830e0d419db38fc14fc06ce5933579b97c04"
+    },
+    "onboarding.intro": {
+      "source": "39651d1dbcc95a937c9b0c9b702c2d4aa987959b",
+      "translation": "a95178a01796270c8413c26c176cc06507840833"
+    },
+    "onboarding.create": {
+      "source": "ba45062e632411bedb37b4392847a4b71feacc35",
+      "translation": "d55792a5b3f19c4bf81139cf373bde11288f517d"
+    },
+    "onboarding.review": {
+      "source": "26f245788b05304621c9f9094c73e3db4a49d431",
+      "translation": "b7982659736fc2e056dec3bda1c52ca6b24f08f4"
+    },
+    "onboarding.complete": {
+      "source": "23c2dcbdf119283f594c7390dc948c2ac9cc9d1b",
+      "translation": "6858c643bedf07aec199b3cb664b810475a2f0fe"
+    },
+    "onboarding.inbox": {
+      "source": "11d43e8769e4c758f054914247bc2ddabf72e381",
+      "translation": "9d35cbcb80bb42e629850d5a04293488cb6f674a"
+    },
+    "onboarding.settings": {
+      "source": "724c3becf9188f72bd90dfa80d9b2f6f254a1e80",
+      "translation": "f6d9931fcbcfdb734c69034e1ffbbe83919c846a"
+    },
+    "common.settings": {
+      "source": "c7f73bb54d928922c3838bb789ee9fb8a5b1eb37",
+      "translation": "ef8f01219a5655ec5aad85d23d8cff275b992057"
+    },
     "common.appName": {
       "source": "6458145fdd07ad08ff52a2e72d531588936bdca6",
       "translation": "6dfdedcb9139510d806813b83e335fac71ac1d14"
@@ -20468,282 +19964,6 @@
       "source": "756705e2a00b38b9179ace891d74e6c465fd9825",
       "translation": "f98f2744d41945fa517677ff44db92db9a67d600"
     },
-    "views.pomodoroStats.title": {
-      "source": "233208a8d46724760749627feb38c5add4b69f0a",
-      "translation": "5cf827486eaf63fd884e78007681d853f472ed25"
-    },
-    "views.pomodoroStats.heading": {
-      "source": "3b8ad7de35cae6d07335c016ffd6a2bfe8a1f3df",
-      "translation": "5cf827486eaf63fd884e78007681d853f472ed25"
-    },
-    "views.pomodoroStats.refresh": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "9d3b2a7d8b0d9634679efceda8296a8d14235392"
-    },
-    "views.pomodoroStats.basesMigration.title": {
-      "source": "04caae734ce17f873869e3cbe0057bb1bfb7f509",
-      "translation": "c19654065bdcf1c816220b11e54e6b68b02eeba1"
-    },
-    "views.pomodoroStats.basesMigration.description": {
-      "source": "089cbdf29fe1782401115d8603876abc55718474",
-      "translation": "f951270be2371c136ce1ff9a7c46b64bd7a67d9d"
-    },
-    "views.pomodoroStats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "f0f5300429dfee7d8818b525fe487d5f75c75168"
-    },
-    "views.pomodoroStats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "baca97f697fbf114ca2b08c97c106dde47583c4a"
-    },
-    "views.pomodoroStats.sections.week": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "af7dc0a9e1cce0e546393135e4c7f9bd03581f6a"
-    },
-    "views.pomodoroStats.sections.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "34f3a06a7265f54cbd5746640532a4297946cbaa"
-    },
-    "views.pomodoroStats.sections.recent": {
-      "source": "3a63bf67767223b0a30ef1900baa43c716dec796",
-      "translation": "ef396f35c66401bd81e862c733ec2a3442e56705"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.label": {
-      "source": "d3099184748b60a1580656352f8b8aedcfd4b29a",
-      "translation": "a579cbb55fff73513590708ce38a44adea6622fe"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.more": {
-      "source": "5d8982e1edb375e51eff0f10e7fd5ca0d06756cc",
-      "translation": "09a2a3c054a69df47af10b370b62db3085294ed2"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.less": {
-      "source": "9791244664db2b434044aa79e9f7dfc528dbaaa2",
-      "translation": "bbdf124130286072b1c466cd74f2ddb9790d255f"
-    },
-    "views.pomodoroStats.overviewCards.totalPomos.label": {
-      "source": "51de23e612e5c7ea58cabcd69befac9828af6132",
-      "translation": "382fe765a7d335104a6590cfc76a6e18ec40dd81"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.label": {
-      "source": "8da1719923b07697a1bee19be9081b7b6068348c",
-      "translation": "8abaa98d7aac9c2c8c38c05a506ff648b0208803"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.more": {
-      "source": "c8cdba4b00de5620b2900cf93c65e0c61af78357",
-      "translation": "88cde440ad3a62eda20ee779caa9081c227e4f53"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.less": {
-      "source": "e0ac3f7251b3d826ca720eca9b743becbfb4332b",
-      "translation": "4894028135619c559a4dd6cbd11f096ec1d53be4"
-    },
-    "views.pomodoroStats.overviewCards.totalFocus.label": {
-      "source": "e38707bbc5ab0dbdf0b5fedea45aece5e67227fc",
-      "translation": "88397a8722ee456ab3aebe4266d6b4d89fa8c49d"
-    },
-    "views.pomodoroStats.stats.pomodoros": {
-      "source": "0e0dd790cfe241eb919f53037668418d757bc0cb",
-      "translation": "e11e37a9253b34ff1c7224447e143fabca1be9fd"
-    },
-    "views.pomodoroStats.stats.streak": {
-      "source": "ac4792cfd48683835618b7ea9328ad36972aef2e",
-      "translation": "74f19285073a118935cf902b7adbab8a863a63dd"
-    },
-    "views.pomodoroStats.stats.minutes": {
-      "source": "092f99ea11a34a8490e7a767a83a42fc45634f82",
-      "translation": "4051078601e857036ec12952ed8da2e895852913"
-    },
-    "views.pomodoroStats.stats.average": {
-      "source": "cdeb9a213bbdd7b92f27d0d6c04f9d8bc7b8b045",
-      "translation": "50ef8b3028ec45ede5231c15b009e8570b4ddeba"
-    },
-    "views.pomodoroStats.stats.completion": {
-      "source": "2ff255684a2277f806fcebf3fe338ed27857f350",
-      "translation": "ab7a764e71f6bad56d973d32263fca77a3fb4385"
-    },
-    "views.pomodoroStats.recents.empty": {
-      "source": "2b266080383378811ceb0f127829f40b74913e44",
-      "translation": "712d7d24e1dfec013e30e584505a3feea92e7896"
-    },
-    "views.pomodoroStats.recents.duration": {
-      "source": "09a22c220816f5d148ab0269bda9f7d1463c55d5",
-      "translation": "72877ae07408387f2196cd56b877250c6dc02dc4"
-    },
-    "views.pomodoroStats.recents.delete": {
-      "source": "ca57470202396ff277580ee2350f77a2df043983",
-      "translation": "a32f173e8099c13d0f99a70c5e29158fd13e22ed"
-    },
-    "views.pomodoroStats.recents.deleteAria": {
-      "source": "318e6c608b5e3dceb2394c31d3dc38792aa4f14e",
-      "translation": "cb0fb4298bf06eb6f5b1f3974f641abfc5c3ca9a"
-    },
-    "views.pomodoroStats.recents.deleteConfirmTitle": {
-      "source": "75783f138477545cd540251bd85e4063cc24937f",
-      "translation": "c6b3d8e7404cc113d293c715a8dd4139252e1483"
-    },
-    "views.pomodoroStats.recents.deleteConfirmMessage": {
-      "source": "2ea1de330fd1f5aadb2d92fddec3021fc186e611",
-      "translation": "63a16a99bf2b64af406ae39abff6259a4f7daf5d"
-    },
-    "views.pomodoroStats.recents.deleteConfirmButton": {
-      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
-      "translation": "1acfc1c7d761310db2e5e876c0cade4d522cfed2"
-    },
-    "views.pomodoroStats.recents.deleteSuccess": {
-      "source": "206765441cdb00d28b6683d443323e1f40224d57",
-      "translation": "b78118802c8617ad81a0a76789d2452b17cfb2ec"
-    },
-    "views.pomodoroStats.recents.deleteNotFound": {
-      "source": "cbd330decb3732316044f5b9f0fe219ee41200e9",
-      "translation": "b594bcf0e1bf10144d3e734fca0e38ac14a1771b"
-    },
-    "views.pomodoroStats.recents.status.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "4593689202567e20b21fd3b28d25f36c74074647"
-    },
-    "views.pomodoroStats.recents.status.interrupted": {
-      "source": "50be3afcff74fd9eea61c4dfdd7da275a216bfb6",
-      "translation": "02dfaffe668177567c6770337271ad246da001b1"
-    },
-    "views.stats.title": {
-      "source": "2086b21f8f49274138c38d476bee317a84a8aecc",
-      "translation": "fdce305a50b36c642db6a3ed3bbba40efd31f679"
-    },
-    "views.stats.taskProjectStats": {
-      "source": "eb98297814b06d370748e602e85ff64efc24496a",
-      "translation": "5833df1a114c7c6c275dc1296be528f4fba4de79"
-    },
-    "views.stats.sections.filters": {
-      "source": "96e578211aa295317cf257310712fa28ccd8f6c6",
-      "translation": "2a8e76e0d96e7c546136c2f3b480f4c74326a221"
-    },
-    "views.stats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "f0f5300429dfee7d8818b525fe487d5f75c75168"
-    },
-    "views.stats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "baca97f697fbf114ca2b08c97c106dde47583c4a"
-    },
-    "views.stats.sections.thisWeek": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "af7dc0a9e1cce0e546393135e4c7f9bd03581f6a"
-    },
-    "views.stats.sections.thisMonth": {
-      "source": "1b4785331db3b08cd8e3cfa4bd36216731a79e54",
-      "translation": "db74c560772576f9a12ab357b6f488d87c9a954c"
-    },
-    "views.stats.sections.projectBreakdown": {
-      "source": "eb495988cd625c9ce9b8048dcf9cfe6c045928ef",
-      "translation": "7d94f28d6c7b79bad4b17a99b0fa8000d69e3b94"
-    },
-    "views.stats.sections.dateRange": {
-      "source": "c65ea4ae013589923685e6ad069dcf87c153bd0b",
-      "translation": "679309483b82befcb94d7dec8107801034629799"
-    },
-    "views.stats.filters.minTime": {
-      "source": "0e3eea0020d6ce34a1253fa9fe52dd97cb7e2bfa",
-      "translation": "b6a500e983b64d611aab3a9d5b2ec65fd4511f10"
-    },
-    "views.stats.filters.allTasks": {
-      "source": "2eee0bb53a4a2a4d7f59af49022804d2db8c046e",
-      "translation": "208c5a2a57565b508ddc94c3c605e83b376aa072"
-    },
-    "views.stats.filters.activeOnly": {
-      "source": "e5a176ab924840924eeeea31ace7de41556fa9b7",
-      "translation": "414bde40c22d7954e595f1f5c011da5490ad32c6"
-    },
-    "views.stats.filters.completedOnly": {
-      "source": "7cc2d21994cc8e829f77dbd7c26959d689e9c4e2",
-      "translation": "dfa017d4a8cf501d556f22e3fb1b741b08b4d5ce"
-    },
-    "views.stats.refreshButton": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "9d3b2a7d8b0d9634679efceda8296a8d14235392"
-    },
-    "views.stats.timeRanges.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "d92501d5c26c7e30d5c51732487f0fb99d13843b"
-    },
-    "views.stats.timeRanges.last7Days": {
-      "source": "df833fe88d3888a1ce9d1dbefea78fe4d4cffc4e",
-      "translation": "4ea89a9cdb7d034a6a733d0f433a8b6348f38d48"
-    },
-    "views.stats.timeRanges.last30Days": {
-      "source": "6b32985251a1f00785875492de31de15b7e04116",
-      "translation": "edd8abc9c8632034ce10003e442caa21bfd96b4d"
-    },
-    "views.stats.timeRanges.last90Days": {
-      "source": "c328508badd742d3e0b42c06a8b0c4d7b7723f91",
-      "translation": "05c1080c778666c6fb9f6ee9ea3b87125260f9d2"
-    },
-    "views.stats.timeRanges.customRange": {
-      "source": "f365689246420c5434b1c4e95e9ba681846d6599",
-      "translation": "dc490baa686e6cfbd708ed3c3a44037d696f587b"
-    },
-    "views.stats.resetFiltersButton": {
-      "source": "56553100b028cf32544522d0a9ac81629de6f741",
-      "translation": "d8915f02490b0da34ff325564777179d6baf7f73"
-    },
-    "views.stats.dateRangeFrom": {
-      "source": "3f66052a107eaf9bae7cad0f61fb462f47ec2c47",
-      "translation": "6b98c9b528241fc8135fb9fd472c7db12ec14964"
-    },
-    "views.stats.dateRangeTo": {
-      "source": "ae79ea1e9c6391a9ed83a2e18a031b835feec0c9",
-      "translation": "10738f8f8987750cb2066519caa89b901e1751fe"
-    },
-    "views.stats.noProject": {
-      "source": "c326b75775bf901d2023c5998bd2549e8cc27e3b",
-      "translation": "c77f3894fec70f53190df99f2c45ee352388c052"
-    },
-    "views.stats.cards.timeTrackedEstimated": {
-      "source": "2ae2585b134b956011569487a8c5b8f1a6610a8e",
-      "translation": "dd8f69fa291a302d9fa00f86292f08faa260c803"
-    },
-    "views.stats.cards.totalTasks": {
-      "source": "d0ecac34cbfbad0f68d32dddd6abdf64c88d8c4f",
-      "translation": "3056509f09e48bc1088f0000873e01b959fab76d"
-    },
-    "views.stats.cards.completionRate": {
-      "source": "a36008372807c922a809b75df95445c475ea9564",
-      "translation": "65c4b8869f5a8b7a60eb69f8d9a3756066962750"
-    },
-    "views.stats.cards.activeProjects": {
-      "source": "f361946445f2d35605eb61f696ceeae3a1eea839",
-      "translation": "9a6cf9d685977a6daa33fd36ee0c738d594870c0"
-    },
-    "views.stats.cards.avgTimePerTask": {
-      "source": "0bc83ca5e82607e3698710c73eb074854c147217",
-      "translation": "c8bc2fd81b8939b0a4388892f42b49089bf5cc09"
-    },
-    "views.stats.labels.tasks": {
-      "source": "090ec5f560fc50377fcd95e5cda128e91b276e98",
-      "translation": "1b018f86f2cae2df1a70e37a69cc41124105ca4e"
-    },
-    "views.stats.labels.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "7d7f40abb56b70794a5ba1a2c1dcf976ee281f1d"
-    },
-    "views.stats.labels.projects": {
-      "source": "53e890d5f0fffe09587c55dce74e9a6febf59b5c",
-      "translation": "b1e8cd4da2128109e230cd0b08a140bf854d70a8"
-    },
-    "views.stats.noProjectData": {
-      "source": "f61de1237b5bf9041f1b8e00bdd5b7bf0df0232e",
-      "translation": "6d64db329b4658c0944221ac9bc98792a733c7d8"
-    },
-    "views.stats.notAvailable": {
-      "source": "08d2e98e6754af941484848930ccbaddfefe13d6",
-      "translation": "635d698f7eac414a5ed50b332f7a8ad456cb5793"
-    },
-    "views.stats.noTasks": {
-      "source": "d7c07a0905ed43a32ec58ccae1353c564433d826",
-      "translation": "fe2c2ccc19edc2442fb28bb0e19623e467e6f584"
-    },
-    "views.stats.loading": {
-      "source": "b04ba49f848624bb97ab094a2631d2ad74913498",
-      "translation": "a209b664efa2dc592f0a28726ac7652f4039f527"
-    },
     "views.releaseNotes.title": {
       "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
       "translation": "eb15567c6afcd90288bcd72e1a8b2529f4f9c30f"
@@ -20761,8 +19981,8 @@
       "translation": "44ad2a699ef1a6c783f29db1906db36a292b387f"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
-      "translation": "10afbb8b42a910e3a559e5511f1b3c899fe8960a"
+      "source": "9006cec1b312951ee9cd725f71310e1b51aeba2b",
+      "translation": "fcc0946aa099ffc866ed7ffa4b1573ccdf0da641"
     },
     "settings.native.enterValue": {
       "source": "ffb4705ce609f56bee3903f822a7d1421f12745a",
@@ -23872,22 +23092,6 @@
       "source": "65a232b082e4f02149df030ec01a52ec361f1692",
       "translation": "7ae821876ff994c16b691608a314d7039a0cc6c0"
     },
-    "settings.appearance.uiElements.viewsButtonAlignment.name": {
-      "source": "9b7b8db5a42172d1e964e7cbc15264d1e63a0526",
-      "translation": "edcfd7e3fed2774467132927a58decbfc15a2519"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.description": {
-      "source": "3cd69063c32d9726b4764f3c5251486e4e70f7ea",
-      "translation": "fac0ea64c2281fb63108a9f7b90cdea546b65962"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.left": {
-      "source": "7459e2ff70b4a74b12b3b42dcc8898f1325c4607",
-      "translation": "a68286a99e11b719a88a3ea2f3f660166c785928"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.right": {
-      "source": "65a232b082e4f02149df030ec01a52ec361f1692",
-      "translation": "7ae821876ff994c16b691608a314d7039a0cc6c0"
-    },
     "settings.appearance.projectAutosuggest.header": {
       "source": "ae733299043ca65c98bf192597c7e6be6b3c3111",
       "translation": "c651238aa56c7ac7fda8b7a6eb784437c6d14213"
@@ -24104,10 +23308,6 @@
       "source": "29778b13de2c1757474ea65987a6c25f0e64cc13",
       "translation": "5e1b4ca8351ca2c1551dd22bdca6b2114de54869"
     },
-    "settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint": {
-      "source": "fe4b274723ccb4e6b012ec48e7680fb1fc5d81e8",
-      "translation": "30bc5eb2e17c1b703c5342f51d8834917db307c1"
-    },
     "settings.integrations.basesIntegration.viewCommands.docsLink": {
       "source": "600fc012cd270f71115df41a83623c799eecf3b7",
       "translation": "b1105d15d8360bdc3c191477ea1d0cd1663a6a8b"
@@ -24135,10 +23335,6 @@
     "settings.integrations.basesIntegration.viewCommands.commands.agenda": {
       "source": "8497bcbfd3a589408c7f7541e705729f239dcfc7",
       "translation": "f4ac85af35d7ddc432ad313847a5cf11400eb69f"
-    },
-    "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats": {
-      "source": "6fcbba0b914cda44f720b43b86935977e0321ed3",
-      "translation": "d3052ea10cbe3a3b81c46734fad2f51104841849"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.relationships": {
       "source": "d31d66e2e1fcdc573a95fc01db407713b36ce7bd",
@@ -25580,6 +24776,14 @@
       "source": "34dc6d24bf621aca04c0190a8906dd735fac5591",
       "translation": "d6d584768d6642c4d8b7f9ccd4384ded1ce0eefe"
     },
+    "commands.openToday": {
+      "source": "a199f140fdb8fe2459198fa013d610cc2178b9aa",
+      "translation": "6a552d718d51a7d6d09ceadd71e4cf30a093eecf"
+    },
+    "commands.openInbox": {
+      "source": "3974ca2b10ca6457c0ca27751d303b1419fc5a2e",
+      "translation": "7ff63260a818fa95b96cf194e3d99b5822d4b1ba"
+    },
     "commands.openTasksView": {
       "source": "767b41fb3b53b193d0a250eed7ed025f2c7ead0a",
       "translation": "f3f3dbf4d450d287e93657c63535b644bbbab453"
@@ -25603,14 +24807,6 @@
     "commands.updateDefaultBaseFiles": {
       "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
       "translation": "f07a81853bf4993876171049228a8a66fcfdca0e"
-    },
-    "commands.openPomodoroStats": {
-      "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
-      "translation": "d99ffe78cd0420128c91d6235824a26a52f42205"
-    },
-    "commands.openStatisticsView": {
-      "source": "ddff620f8a4d10c3c20a028fb132fb630bf118aa",
-      "translation": "0dcd4a5775f475c1bb88dca849005842e412d8db"
     },
     "commands.createNewTask": {
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
@@ -29094,6 +28290,38 @@
     }
   },
   "ja": {
+    "onboarding.title": {
+      "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
+      "translation": "648a0984831b6c1dd4bdef71ea11c7ef67c0ee68"
+    },
+    "onboarding.intro": {
+      "source": "39651d1dbcc95a937c9b0c9b702c2d4aa987959b",
+      "translation": "04a64cf879487f2f0a679d889b07705f9480e804"
+    },
+    "onboarding.create": {
+      "source": "ba45062e632411bedb37b4392847a4b71feacc35",
+      "translation": "04d6b203b4becbaa9626ee1896d471390d4cd59e"
+    },
+    "onboarding.review": {
+      "source": "26f245788b05304621c9f9094c73e3db4a49d431",
+      "translation": "b4443b774f1d8539cda424c3134f23699406746b"
+    },
+    "onboarding.complete": {
+      "source": "23c2dcbdf119283f594c7390dc948c2ac9cc9d1b",
+      "translation": "a3c1a408707560b3c33f41420599cf81ee1cb12b"
+    },
+    "onboarding.inbox": {
+      "source": "11d43e8769e4c758f054914247bc2ddabf72e381",
+      "translation": "4806bc6e705ba81877f11e146755886a4d2ab8ba"
+    },
+    "onboarding.settings": {
+      "source": "724c3becf9188f72bd90dfa80d9b2f6f254a1e80",
+      "translation": "275bac38218ccd615dca1bfa948fe44a629ffa1c"
+    },
+    "common.settings": {
+      "source": "c7f73bb54d928922c3838bb789ee9fb8a5b1eb37",
+      "translation": "6329f21c41636e361bb9820900690cdfef309623"
+    },
     "common.appName": {
       "source": "6458145fdd07ad08ff52a2e72d531588936bdca6",
       "translation": "6458145fdd07ad08ff52a2e72d531588936bdca6"
@@ -30166,282 +29394,6 @@
       "source": "756705e2a00b38b9179ace891d74e6c465fd9825",
       "translation": "8ddb61c2015795725a0f8e60ffeecd789f66cffa"
     },
-    "views.pomodoroStats.title": {
-      "source": "233208a8d46724760749627feb38c5add4b69f0a",
-      "translation": "4fd0c9db285457b3467a001a80d070abefe2d03f"
-    },
-    "views.pomodoroStats.heading": {
-      "source": "3b8ad7de35cae6d07335c016ffd6a2bfe8a1f3df",
-      "translation": "4fd0c9db285457b3467a001a80d070abefe2d03f"
-    },
-    "views.pomodoroStats.refresh": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "d9db02d07adb1f8ac772b955da9cb883381918fd"
-    },
-    "views.pomodoroStats.basesMigration.title": {
-      "source": "04caae734ce17f873869e3cbe0057bb1bfb7f509",
-      "translation": "7f86750a904d12687e30ea7f032558c03c04bb8b"
-    },
-    "views.pomodoroStats.basesMigration.description": {
-      "source": "089cbdf29fe1782401115d8603876abc55718474",
-      "translation": "5525c48c14bd804ee9e7c4f620cd7602592ae3d3"
-    },
-    "views.pomodoroStats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "7a52d716ffeffb5ebda81833a44f86e14982223f"
-    },
-    "views.pomodoroStats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "574cd4fb795bbf0b38d31b2edd3860f822be0c1c"
-    },
-    "views.pomodoroStats.sections.week": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "6a4d15efeb220d897c796ea1a5ead859af16d792"
-    },
-    "views.pomodoroStats.sections.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "5f5f8a4b8b1a2faaf09d399e0cec420fcbb5b231"
-    },
-    "views.pomodoroStats.sections.recent": {
-      "source": "3a63bf67767223b0a30ef1900baa43c716dec796",
-      "translation": "dae53cdbb798407c96477f66fd51149918390294"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.label": {
-      "source": "d3099184748b60a1580656352f8b8aedcfd4b29a",
-      "translation": "b83ee50ab3b9041b0dd377fc41d819541eedc316"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.more": {
-      "source": "5d8982e1edb375e51eff0f10e7fd5ca0d06756cc",
-      "translation": "2c3987dada56071fc33dff9d924f3f9d0718052f"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.less": {
-      "source": "9791244664db2b434044aa79e9f7dfc528dbaaa2",
-      "translation": "d2acc9e4828802d0e40cfef730e1559a9944e935"
-    },
-    "views.pomodoroStats.overviewCards.totalPomos.label": {
-      "source": "51de23e612e5c7ea58cabcd69befac9828af6132",
-      "translation": "20b063d06417d5a90c596696a761b6487176c152"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.label": {
-      "source": "8da1719923b07697a1bee19be9081b7b6068348c",
-      "translation": "ac121f1f13e98ad4cf5a7b3b2318f5bdeed1917e"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.more": {
-      "source": "c8cdba4b00de5620b2900cf93c65e0c61af78357",
-      "translation": "68e03c7236bfc112e2b077a53f5174b5ee9be033"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.less": {
-      "source": "e0ac3f7251b3d826ca720eca9b743becbfb4332b",
-      "translation": "cdc95e0b043539a9271973ca6be5eca900a98aaa"
-    },
-    "views.pomodoroStats.overviewCards.totalFocus.label": {
-      "source": "e38707bbc5ab0dbdf0b5fedea45aece5e67227fc",
-      "translation": "b2b493da60541be8515dd9ffee1b2036484ec3fc"
-    },
-    "views.pomodoroStats.stats.pomodoros": {
-      "source": "0e0dd790cfe241eb919f53037668418d757bc0cb",
-      "translation": "59b6bea2859f4f7bd00dba544b3d025b15fd1329"
-    },
-    "views.pomodoroStats.stats.streak": {
-      "source": "ac4792cfd48683835618b7ea9328ad36972aef2e",
-      "translation": "99d6a6a307be0b0c0cfc5d7c4ec4f7c82f07f605"
-    },
-    "views.pomodoroStats.stats.minutes": {
-      "source": "092f99ea11a34a8490e7a767a83a42fc45634f82",
-      "translation": "0d7416e2e22207b2c85fa5f0fd248730d22518cf"
-    },
-    "views.pomodoroStats.stats.average": {
-      "source": "cdeb9a213bbdd7b92f27d0d6c04f9d8bc7b8b045",
-      "translation": "1a9fce947450c1f54ccd7e03c9f7b88888cc4b57"
-    },
-    "views.pomodoroStats.stats.completion": {
-      "source": "2ff255684a2277f806fcebf3fe338ed27857f350",
-      "translation": "1cae18a9a401bd5c4ec499d517e0c653ad6a5a1b"
-    },
-    "views.pomodoroStats.recents.empty": {
-      "source": "2b266080383378811ceb0f127829f40b74913e44",
-      "translation": "a563de451c4227a4242626eaa8baf90719ceb958"
-    },
-    "views.pomodoroStats.recents.duration": {
-      "source": "09a22c220816f5d148ab0269bda9f7d1463c55d5",
-      "translation": "5c4423418cffe8b667e3be621bf0e71ef84f4c64"
-    },
-    "views.pomodoroStats.recents.delete": {
-      "source": "ca57470202396ff277580ee2350f77a2df043983",
-      "translation": "655b0264a92c8cabd28323b5e8f06039f7f8374b"
-    },
-    "views.pomodoroStats.recents.deleteAria": {
-      "source": "318e6c608b5e3dceb2394c31d3dc38792aa4f14e",
-      "translation": "18754f6ddfede715003a86648b6df5ec92b6d2cb"
-    },
-    "views.pomodoroStats.recents.deleteConfirmTitle": {
-      "source": "75783f138477545cd540251bd85e4063cc24937f",
-      "translation": "cc0b9acf14c9a5826ea6fa0854b686a39c732736"
-    },
-    "views.pomodoroStats.recents.deleteConfirmMessage": {
-      "source": "2ea1de330fd1f5aadb2d92fddec3021fc186e611",
-      "translation": "80278b16ac8b3129275d99e44280bc226495abfc"
-    },
-    "views.pomodoroStats.recents.deleteConfirmButton": {
-      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
-      "translation": "5cbdf1fd708232abb78ea2f8bc3cbfd907573b43"
-    },
-    "views.pomodoroStats.recents.deleteSuccess": {
-      "source": "206765441cdb00d28b6683d443323e1f40224d57",
-      "translation": "dde4fbf136a32e2dc89f2b72149d5ba604069b4a"
-    },
-    "views.pomodoroStats.recents.deleteNotFound": {
-      "source": "cbd330decb3732316044f5b9f0fe219ee41200e9",
-      "translation": "72f9a038446d377bd145c51e88778372088a0ec6"
-    },
-    "views.pomodoroStats.recents.status.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "1cae18a9a401bd5c4ec499d517e0c653ad6a5a1b"
-    },
-    "views.pomodoroStats.recents.status.interrupted": {
-      "source": "50be3afcff74fd9eea61c4dfdd7da275a216bfb6",
-      "translation": "44e681a374aca8a30cd5b2fbc36b1fd5236c52ea"
-    },
-    "views.stats.title": {
-      "source": "2086b21f8f49274138c38d476bee317a84a8aecc",
-      "translation": "baa4b36d8a77a7c89682c7bccd7023b002241116"
-    },
-    "views.stats.taskProjectStats": {
-      "source": "eb98297814b06d370748e602e85ff64efc24496a",
-      "translation": "6ec862ae494aa9200eab3a3505d5411a3f213372"
-    },
-    "views.stats.sections.filters": {
-      "source": "96e578211aa295317cf257310712fa28ccd8f6c6",
-      "translation": "9df89f62c896930dd4563410f8e6c1f1efdfeddc"
-    },
-    "views.stats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "7a52d716ffeffb5ebda81833a44f86e14982223f"
-    },
-    "views.stats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "574cd4fb795bbf0b38d31b2edd3860f822be0c1c"
-    },
-    "views.stats.sections.thisWeek": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "6a4d15efeb220d897c796ea1a5ead859af16d792"
-    },
-    "views.stats.sections.thisMonth": {
-      "source": "1b4785331db3b08cd8e3cfa4bd36216731a79e54",
-      "translation": "a5c45c777df3740ca26d04ea3a603716d26288b9"
-    },
-    "views.stats.sections.projectBreakdown": {
-      "source": "eb495988cd625c9ce9b8048dcf9cfe6c045928ef",
-      "translation": "2670d65f010a31c0b06265bb5f73d8f42d288377"
-    },
-    "views.stats.sections.dateRange": {
-      "source": "c65ea4ae013589923685e6ad069dcf87c153bd0b",
-      "translation": "7b54e52483928d6c17f121eccc6ca7a84713e381"
-    },
-    "views.stats.filters.minTime": {
-      "source": "0e3eea0020d6ce34a1253fa9fe52dd97cb7e2bfa",
-      "translation": "7deced4ee8b6e75d5dcafff58c7bd89905c98fd6"
-    },
-    "views.stats.filters.allTasks": {
-      "source": "2eee0bb53a4a2a4d7f59af49022804d2db8c046e",
-      "translation": "3536f389eb29cfb6fc5035198770a59bea179766"
-    },
-    "views.stats.filters.activeOnly": {
-      "source": "e5a176ab924840924eeeea31ace7de41556fa9b7",
-      "translation": "2d2cfb232ef5993efda73de5e4c2fbf118daafc2"
-    },
-    "views.stats.filters.completedOnly": {
-      "source": "7cc2d21994cc8e829f77dbd7c26959d689e9c4e2",
-      "translation": "c78458dac7b71d182a067c173fe69be738ffd6bd"
-    },
-    "views.stats.refreshButton": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "d9db02d07adb1f8ac772b955da9cb883381918fd"
-    },
-    "views.stats.timeRanges.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "5f5f8a4b8b1a2faaf09d399e0cec420fcbb5b231"
-    },
-    "views.stats.timeRanges.last7Days": {
-      "source": "df833fe88d3888a1ce9d1dbefea78fe4d4cffc4e",
-      "translation": "0ef80e1a11275be3928a22f97217e6c3242bb7c7"
-    },
-    "views.stats.timeRanges.last30Days": {
-      "source": "6b32985251a1f00785875492de31de15b7e04116",
-      "translation": "afb6771fc7ed23bc72704753a64800c60f5662c3"
-    },
-    "views.stats.timeRanges.last90Days": {
-      "source": "c328508badd742d3e0b42c06a8b0c4d7b7723f91",
-      "translation": "345de2cc21495d06ef12430a965cfcd2898b64df"
-    },
-    "views.stats.timeRanges.customRange": {
-      "source": "f365689246420c5434b1c4e95e9ba681846d6599",
-      "translation": "1845ae943fa639344a53217be961ae18934941f5"
-    },
-    "views.stats.resetFiltersButton": {
-      "source": "56553100b028cf32544522d0a9ac81629de6f741",
-      "translation": "a71a7d12860465b057832a2d2a2ec72f48ab8610"
-    },
-    "views.stats.dateRangeFrom": {
-      "source": "3f66052a107eaf9bae7cad0f61fb462f47ec2c47",
-      "translation": "a95bf2fed6e3b55406edac77008d17d64c5f2c9e"
-    },
-    "views.stats.dateRangeTo": {
-      "source": "ae79ea1e9c6391a9ed83a2e18a031b835feec0c9",
-      "translation": "ecc8edea5c443d0c411eb932d7f3d69368d5a30c"
-    },
-    "views.stats.noProject": {
-      "source": "c326b75775bf901d2023c5998bd2549e8cc27e3b",
-      "translation": "fb61d643f6d4352906918b268243c310003aa208"
-    },
-    "views.stats.cards.timeTrackedEstimated": {
-      "source": "2ae2585b134b956011569487a8c5b8f1a6610a8e",
-      "translation": "57b0e810661a86a5022db754c404c816aef8526a"
-    },
-    "views.stats.cards.totalTasks": {
-      "source": "d0ecac34cbfbad0f68d32dddd6abdf64c88d8c4f",
-      "translation": "40d98c4bba0bbb41d350011893ec3365d8440b83"
-    },
-    "views.stats.cards.completionRate": {
-      "source": "a36008372807c922a809b75df95445c475ea9564",
-      "translation": "147a63c8a2b9c2778c63b01b78a8e8d2641920a7"
-    },
-    "views.stats.cards.activeProjects": {
-      "source": "f361946445f2d35605eb61f696ceeae3a1eea839",
-      "translation": "c30d60fea634a860549b6b33f9c7db46b07df376"
-    },
-    "views.stats.cards.avgTimePerTask": {
-      "source": "0bc83ca5e82607e3698710c73eb074854c147217",
-      "translation": "a2d68b784fb281ebab38c92d29bf0f2402dcbf8a"
-    },
-    "views.stats.labels.tasks": {
-      "source": "090ec5f560fc50377fcd95e5cda128e91b276e98",
-      "translation": "2b79c0b9423d706444ac2a504d6157f503834d4f"
-    },
-    "views.stats.labels.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "1cae18a9a401bd5c4ec499d517e0c653ad6a5a1b"
-    },
-    "views.stats.labels.projects": {
-      "source": "53e890d5f0fffe09587c55dce74e9a6febf59b5c",
-      "translation": "598ab78312d81dc734208e1af4111acd9de08fac"
-    },
-    "views.stats.noProjectData": {
-      "source": "f61de1237b5bf9041f1b8e00bdd5b7bf0df0232e",
-      "translation": "82da6fbde946109d9f002327010398cbba8b5a9c"
-    },
-    "views.stats.notAvailable": {
-      "source": "08d2e98e6754af941484848930ccbaddfefe13d6",
-      "translation": "08d2e98e6754af941484848930ccbaddfefe13d6"
-    },
-    "views.stats.noTasks": {
-      "source": "d7c07a0905ed43a32ec58ccae1353c564433d826",
-      "translation": "98f062ede1655917ae749158bfce2f01162d476f"
-    },
-    "views.stats.loading": {
-      "source": "b04ba49f848624bb97ab094a2631d2ad74913498",
-      "translation": "c7c610c845d9ca63507952078ccd26419cf7ff63"
-    },
     "views.releaseNotes.title": {
       "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
       "translation": "b04d2e20a60a122b2f4926df86d88940f3050b39"
@@ -30459,8 +29411,8 @@
       "translation": "69f2e4c3e9b1a2fdc6bf4caf7b53960bf0d0f3ae"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
-      "translation": "dbebd044573eb9dd2545401ec88653e131504400"
+      "source": "9006cec1b312951ee9cd725f71310e1b51aeba2b",
+      "translation": "a87202eeae99d57547a9bc137df4e3c66291533f"
     },
     "settings.native.enterValue": {
       "source": "ffb4705ce609f56bee3903f822a7d1421f12745a",
@@ -33570,22 +32522,6 @@
       "source": "65a232b082e4f02149df030ec01a52ec361f1692",
       "translation": "ed9d988c2f6033ade909314e4f00f8b7586a7b74"
     },
-    "settings.appearance.uiElements.viewsButtonAlignment.name": {
-      "source": "9b7b8db5a42172d1e964e7cbc15264d1e63a0526",
-      "translation": "2bfb158041ffe587aee86d45a7ce16775d3cdfe1"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.description": {
-      "source": "3cd69063c32d9726b4764f3c5251486e4e70f7ea",
-      "translation": "88c504fc9a0a676836ee2b87c11161355dff93ad"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.left": {
-      "source": "7459e2ff70b4a74b12b3b42dcc8898f1325c4607",
-      "translation": "f84bbc7925a0593dce21938c4c59938b420b5954"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.right": {
-      "source": "65a232b082e4f02149df030ec01a52ec361f1692",
-      "translation": "ed9d988c2f6033ade909314e4f00f8b7586a7b74"
-    },
     "settings.appearance.projectAutosuggest.header": {
       "source": "ae733299043ca65c98bf192597c7e6be6b3c3111",
       "translation": "77706b08f5b9277456d57a63fa9113a9e5307c48"
@@ -33802,10 +32738,6 @@
       "source": "29778b13de2c1757474ea65987a6c25f0e64cc13",
       "translation": "e70663a08cbc71e7c7e38c392c7a9bd73bcd7d32"
     },
-    "settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint": {
-      "source": "fe4b274723ccb4e6b012ec48e7680fb1fc5d81e8",
-      "translation": "e56ee00cae04dd0a9e8134d6adc0a8f9ab5b8dc7"
-    },
     "settings.integrations.basesIntegration.viewCommands.docsLink": {
       "source": "600fc012cd270f71115df41a83623c799eecf3b7",
       "translation": "ceab4f6adab4065a6173bd2fd1e35f89c030eda7"
@@ -33833,10 +32765,6 @@
     "settings.integrations.basesIntegration.viewCommands.commands.agenda": {
       "source": "8497bcbfd3a589408c7f7541e705729f239dcfc7",
       "translation": "bf3b5855dabad3222754d578b9c7e8d35d3134cc"
-    },
-    "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats": {
-      "source": "6fcbba0b914cda44f720b43b86935977e0321ed3",
-      "translation": "914c64a7eb8ffe6398564597d4a7942aa0325629"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.relationships": {
       "source": "d31d66e2e1fcdc573a95fc01db407713b36ce7bd",
@@ -35278,6 +34206,14 @@
       "source": "34dc6d24bf621aca04c0190a8906dd735fac5591",
       "translation": "7fe003d05243fe6083003b08d4b2a4c3f02ed421"
     },
+    "commands.openToday": {
+      "source": "a199f140fdb8fe2459198fa013d610cc2178b9aa",
+      "translation": "74d44514857c3fa03c3665adb958fdae475ef7e1"
+    },
+    "commands.openInbox": {
+      "source": "3974ca2b10ca6457c0ca27751d303b1419fc5a2e",
+      "translation": "75503bb98786391af85bba9720a2c78b16aae534"
+    },
     "commands.openTasksView": {
       "source": "767b41fb3b53b193d0a250eed7ed025f2c7ead0a",
       "translation": "476eab779bade8e3d983ec7923ce01299a071313"
@@ -35301,14 +34237,6 @@
     "commands.updateDefaultBaseFiles": {
       "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
       "translation": "ee584a0e330d7b897a50041bf5b0bad456747ce5"
-    },
-    "commands.openPomodoroStats": {
-      "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
-      "translation": "4cabb0abf4eb78fc587928e731ba284ef29859c1"
-    },
-    "commands.openStatisticsView": {
-      "source": "ddff620f8a4d10c3c20a028fb132fb630bf118aa",
-      "translation": "d94b7acce4445faf95d9c2f0328caed751a06f6f"
     },
     "commands.createNewTask": {
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
@@ -38792,6 +37720,38 @@
     }
   },
   "ko": {
+    "onboarding.title": {
+      "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
+      "translation": "71695fa32a0677fd93b069b0fb1a439793b353e1"
+    },
+    "onboarding.intro": {
+      "source": "39651d1dbcc95a937c9b0c9b702c2d4aa987959b",
+      "translation": "dda2cc038dcb77ba570230120500d76815dec817"
+    },
+    "onboarding.create": {
+      "source": "ba45062e632411bedb37b4392847a4b71feacc35",
+      "translation": "e6589789d16a63af7ef1de39e186d47cb74d9ed5"
+    },
+    "onboarding.review": {
+      "source": "26f245788b05304621c9f9094c73e3db4a49d431",
+      "translation": "58d04510d8d9185628a1661f09c09aad0ccd7bfc"
+    },
+    "onboarding.complete": {
+      "source": "23c2dcbdf119283f594c7390dc948c2ac9cc9d1b",
+      "translation": "8eb8d4f866d92d09d926598f1f404884753c2151"
+    },
+    "onboarding.inbox": {
+      "source": "11d43e8769e4c758f054914247bc2ddabf72e381",
+      "translation": "f1b9a9d2d1d8572f9f42d4ff8c637b802e0dd007"
+    },
+    "onboarding.settings": {
+      "source": "724c3becf9188f72bd90dfa80d9b2f6f254a1e80",
+      "translation": "1e6aa5ea45083c253c991f8b341546981f749045"
+    },
+    "common.settings": {
+      "source": "c7f73bb54d928922c3838bb789ee9fb8a5b1eb37",
+      "translation": "c14a567ea996b7a5fe25c774915b0d7ff3de703b"
+    },
     "common.appName": {
       "source": "6458145fdd07ad08ff52a2e72d531588936bdca6",
       "translation": "6458145fdd07ad08ff52a2e72d531588936bdca6"
@@ -39864,282 +38824,6 @@
       "source": "756705e2a00b38b9179ace891d74e6c465fd9825",
       "translation": "ecc82466ef880e875aaf35e7a9eb33bd7fc327ba"
     },
-    "views.pomodoroStats.title": {
-      "source": "233208a8d46724760749627feb38c5add4b69f0a",
-      "translation": "d76832350bae7cdc430c474fcfa455676106efe0"
-    },
-    "views.pomodoroStats.heading": {
-      "source": "3b8ad7de35cae6d07335c016ffd6a2bfe8a1f3df",
-      "translation": "d76832350bae7cdc430c474fcfa455676106efe0"
-    },
-    "views.pomodoroStats.refresh": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "deb94acf38da1bdc1125d4b8d04100f8614fea07"
-    },
-    "views.pomodoroStats.basesMigration.title": {
-      "source": "04caae734ce17f873869e3cbe0057bb1bfb7f509",
-      "translation": "3fd4c2627369760ce7fd67c4634eba4beb8f1654"
-    },
-    "views.pomodoroStats.basesMigration.description": {
-      "source": "089cbdf29fe1782401115d8603876abc55718474",
-      "translation": "429e6a4d0c2e7faf0f730f11dd3c3ac574e4213c"
-    },
-    "views.pomodoroStats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "476966c5a8604ab912a3eb1116ba6d869d20885e"
-    },
-    "views.pomodoroStats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "2bdce5e8cc42ebd14f38135858dea1956e743c28"
-    },
-    "views.pomodoroStats.sections.week": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "89ea2d72f7d9b10010256f3a67e0a1d86c0049b4"
-    },
-    "views.pomodoroStats.sections.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "bdd03726f63c6f261c252d1cb9e5190ff8b64be4"
-    },
-    "views.pomodoroStats.sections.recent": {
-      "source": "3a63bf67767223b0a30ef1900baa43c716dec796",
-      "translation": "22c8ba683ecbdc2eea9a4f91f7f7df4612638279"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.label": {
-      "source": "d3099184748b60a1580656352f8b8aedcfd4b29a",
-      "translation": "50e81fc53bf8103d640c7fdbfb05a9732b4d9d3c"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.more": {
-      "source": "5d8982e1edb375e51eff0f10e7fd5ca0d06756cc",
-      "translation": "4da83f191cfe0a7308ec381b8cbbc7fe29f15f2c"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.less": {
-      "source": "9791244664db2b434044aa79e9f7dfc528dbaaa2",
-      "translation": "96a3d9e4de878e33ccaa6a47f7ae25663cd22d0c"
-    },
-    "views.pomodoroStats.overviewCards.totalPomos.label": {
-      "source": "51de23e612e5c7ea58cabcd69befac9828af6132",
-      "translation": "3239a73564e0016055bbe6d231e7cb3248f0472f"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.label": {
-      "source": "8da1719923b07697a1bee19be9081b7b6068348c",
-      "translation": "717b0644c55e1e48d2e5d8a629c3bd2dfd1c2ed6"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.more": {
-      "source": "c8cdba4b00de5620b2900cf93c65e0c61af78357",
-      "translation": "6da33dfcec113a296a9f81780098bfe32955f883"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.less": {
-      "source": "e0ac3f7251b3d826ca720eca9b743becbfb4332b",
-      "translation": "1a2d1f39ac86a5ee57d3530a8c047fcb37d20755"
-    },
-    "views.pomodoroStats.overviewCards.totalFocus.label": {
-      "source": "e38707bbc5ab0dbdf0b5fedea45aece5e67227fc",
-      "translation": "3d19d97d313d505205bce5431209b609599751b6"
-    },
-    "views.pomodoroStats.stats.pomodoros": {
-      "source": "0e0dd790cfe241eb919f53037668418d757bc0cb",
-      "translation": "d80a2c949f060e0fe46e85f454849dcb1fc87eaa"
-    },
-    "views.pomodoroStats.stats.streak": {
-      "source": "ac4792cfd48683835618b7ea9328ad36972aef2e",
-      "translation": "86522b3cf11e97c04e14c6bca771e9db1ed4c271"
-    },
-    "views.pomodoroStats.stats.minutes": {
-      "source": "092f99ea11a34a8490e7a767a83a42fc45634f82",
-      "translation": "0b877b72141806d645b4e4e963e3d1a3df50c10a"
-    },
-    "views.pomodoroStats.stats.average": {
-      "source": "cdeb9a213bbdd7b92f27d0d6c04f9d8bc7b8b045",
-      "translation": "6bd2a1797671f71e7849c50094a28dcf6269b79b"
-    },
-    "views.pomodoroStats.stats.completion": {
-      "source": "2ff255684a2277f806fcebf3fe338ed27857f350",
-      "translation": "611cadb3dd1dbddf26457f72ef838709de3b9350"
-    },
-    "views.pomodoroStats.recents.empty": {
-      "source": "2b266080383378811ceb0f127829f40b74913e44",
-      "translation": "fa7b2d5ed05aabbe02fbd18260acca3ef8a4432c"
-    },
-    "views.pomodoroStats.recents.duration": {
-      "source": "09a22c220816f5d148ab0269bda9f7d1463c55d5",
-      "translation": "56f90da751a0887d706afc825f18faff70b64e3d"
-    },
-    "views.pomodoroStats.recents.delete": {
-      "source": "ca57470202396ff277580ee2350f77a2df043983",
-      "translation": "e93fae1f1e682c4fe8eeb32702773ca714525311"
-    },
-    "views.pomodoroStats.recents.deleteAria": {
-      "source": "318e6c608b5e3dceb2394c31d3dc38792aa4f14e",
-      "translation": "07677ccca37125db2201c86e0aa9eafcba5f0235"
-    },
-    "views.pomodoroStats.recents.deleteConfirmTitle": {
-      "source": "75783f138477545cd540251bd85e4063cc24937f",
-      "translation": "90edc7181e11db54136fbc439dfb3defe4face95"
-    },
-    "views.pomodoroStats.recents.deleteConfirmMessage": {
-      "source": "2ea1de330fd1f5aadb2d92fddec3021fc186e611",
-      "translation": "3541faa6ad248b75ccd0309ec0ee46c501036777"
-    },
-    "views.pomodoroStats.recents.deleteConfirmButton": {
-      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
-      "translation": "fc81e222b97c3f84527d0f3c911f0ca0b7610be5"
-    },
-    "views.pomodoroStats.recents.deleteSuccess": {
-      "source": "206765441cdb00d28b6683d443323e1f40224d57",
-      "translation": "82df83c427b4eb54082e9f403ca2d743ee1e68be"
-    },
-    "views.pomodoroStats.recents.deleteNotFound": {
-      "source": "cbd330decb3732316044f5b9f0fe219ee41200e9",
-      "translation": "2171c9090d353af5ff047cad695ad8b73a1cc642"
-    },
-    "views.pomodoroStats.recents.status.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "1f74613ee3eeed953e1aa998a0b081df5eb6949f"
-    },
-    "views.pomodoroStats.recents.status.interrupted": {
-      "source": "50be3afcff74fd9eea61c4dfdd7da275a216bfb6",
-      "translation": "024e7ca4993f63174c7ef3e876d25e7275f9b879"
-    },
-    "views.stats.title": {
-      "source": "2086b21f8f49274138c38d476bee317a84a8aecc",
-      "translation": "4938fae00b041daa9e0b970e449a3298816401d3"
-    },
-    "views.stats.taskProjectStats": {
-      "source": "eb98297814b06d370748e602e85ff64efc24496a",
-      "translation": "e28cc4ad6f64aefc037fb0f3f97040757dc09c0b"
-    },
-    "views.stats.sections.filters": {
-      "source": "96e578211aa295317cf257310712fa28ccd8f6c6",
-      "translation": "f53a6e999db082f480ec0aced9693f4eead35e4a"
-    },
-    "views.stats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "476966c5a8604ab912a3eb1116ba6d869d20885e"
-    },
-    "views.stats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "2bdce5e8cc42ebd14f38135858dea1956e743c28"
-    },
-    "views.stats.sections.thisWeek": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "89ea2d72f7d9b10010256f3a67e0a1d86c0049b4"
-    },
-    "views.stats.sections.thisMonth": {
-      "source": "1b4785331db3b08cd8e3cfa4bd36216731a79e54",
-      "translation": "fa72e1d8b0e1912458ba1d1331616aaa28088814"
-    },
-    "views.stats.sections.projectBreakdown": {
-      "source": "eb495988cd625c9ce9b8048dcf9cfe6c045928ef",
-      "translation": "9b6bd44a8c1a6b562303416e57bc284033710f2e"
-    },
-    "views.stats.sections.dateRange": {
-      "source": "c65ea4ae013589923685e6ad069dcf87c153bd0b",
-      "translation": "96a6e7e41f47b94c3d95f8bdcf713938506972f1"
-    },
-    "views.stats.filters.minTime": {
-      "source": "0e3eea0020d6ce34a1253fa9fe52dd97cb7e2bfa",
-      "translation": "e1c545a3682dcc76dcdc63ad0d8a3b3c6178687a"
-    },
-    "views.stats.filters.allTasks": {
-      "source": "2eee0bb53a4a2a4d7f59af49022804d2db8c046e",
-      "translation": "df7e3ee040464d781874b1835261dd854c4c62a0"
-    },
-    "views.stats.filters.activeOnly": {
-      "source": "e5a176ab924840924eeeea31ace7de41556fa9b7",
-      "translation": "1c77df816c8017068d2f10c9dcc6844cf6249e92"
-    },
-    "views.stats.filters.completedOnly": {
-      "source": "7cc2d21994cc8e829f77dbd7c26959d689e9c4e2",
-      "translation": "8830e2197f179578f1e455f15d859dff30c7802b"
-    },
-    "views.stats.refreshButton": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "deb94acf38da1bdc1125d4b8d04100f8614fea07"
-    },
-    "views.stats.timeRanges.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "bdd03726f63c6f261c252d1cb9e5190ff8b64be4"
-    },
-    "views.stats.timeRanges.last7Days": {
-      "source": "df833fe88d3888a1ce9d1dbefea78fe4d4cffc4e",
-      "translation": "eef31a2dad66ab106509b3538dc789e0f68c889c"
-    },
-    "views.stats.timeRanges.last30Days": {
-      "source": "6b32985251a1f00785875492de31de15b7e04116",
-      "translation": "3759fbd88600fa9c4a4547b70f2024290d47189e"
-    },
-    "views.stats.timeRanges.last90Days": {
-      "source": "c328508badd742d3e0b42c06a8b0c4d7b7723f91",
-      "translation": "bdc37ac5e4ad165b4cc6f15150dfa9c6ad8ae832"
-    },
-    "views.stats.timeRanges.customRange": {
-      "source": "f365689246420c5434b1c4e95e9ba681846d6599",
-      "translation": "6204fd83391933920c433649b8d2da978827a347"
-    },
-    "views.stats.resetFiltersButton": {
-      "source": "56553100b028cf32544522d0a9ac81629de6f741",
-      "translation": "5f9c87c000c4bec30525410e983bb9f00d3e1f4e"
-    },
-    "views.stats.dateRangeFrom": {
-      "source": "3f66052a107eaf9bae7cad0f61fb462f47ec2c47",
-      "translation": "e89cc866baabe6c81d5b872fd3f7933e2a73c3b6"
-    },
-    "views.stats.dateRangeTo": {
-      "source": "ae79ea1e9c6391a9ed83a2e18a031b835feec0c9",
-      "translation": "cafdc61bbf9e743551e50126868adbb101f4910a"
-    },
-    "views.stats.noProject": {
-      "source": "c326b75775bf901d2023c5998bd2549e8cc27e3b",
-      "translation": "819b5dfed5a91829f1219806e3e0dd991546c0b7"
-    },
-    "views.stats.cards.timeTrackedEstimated": {
-      "source": "2ae2585b134b956011569487a8c5b8f1a6610a8e",
-      "translation": "f0eeb0daf6f757ef270142d0c2586b4fa46c7c93"
-    },
-    "views.stats.cards.totalTasks": {
-      "source": "d0ecac34cbfbad0f68d32dddd6abdf64c88d8c4f",
-      "translation": "b606729c8a13690b55799a32d8b9ad165059a66a"
-    },
-    "views.stats.cards.completionRate": {
-      "source": "a36008372807c922a809b75df95445c475ea9564",
-      "translation": "611cadb3dd1dbddf26457f72ef838709de3b9350"
-    },
-    "views.stats.cards.activeProjects": {
-      "source": "f361946445f2d35605eb61f696ceeae3a1eea839",
-      "translation": "e4a5b89deb61fb2fa38f7ccf39fdaebb26e5f824"
-    },
-    "views.stats.cards.avgTimePerTask": {
-      "source": "0bc83ca5e82607e3698710c73eb074854c147217",
-      "translation": "c91208d4703f89310a79e48afae2a2e1064b8b5a"
-    },
-    "views.stats.labels.tasks": {
-      "source": "090ec5f560fc50377fcd95e5cda128e91b276e98",
-      "translation": "9d9bf438ff1aa4be040a318fb253cfdb8f09cd26"
-    },
-    "views.stats.labels.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "1f74613ee3eeed953e1aa998a0b081df5eb6949f"
-    },
-    "views.stats.labels.projects": {
-      "source": "53e890d5f0fffe09587c55dce74e9a6febf59b5c",
-      "translation": "65281a189635d891eacffef53dd841d76301f6ff"
-    },
-    "views.stats.noProjectData": {
-      "source": "f61de1237b5bf9041f1b8e00bdd5b7bf0df0232e",
-      "translation": "285cb6d5a806d072cb5f3e3f69384a719e759d02"
-    },
-    "views.stats.notAvailable": {
-      "source": "08d2e98e6754af941484848930ccbaddfefe13d6",
-      "translation": "08d2e98e6754af941484848930ccbaddfefe13d6"
-    },
-    "views.stats.noTasks": {
-      "source": "d7c07a0905ed43a32ec58ccae1353c564433d826",
-      "translation": "7559c629fce3cdf3ee6f00a0e4d9cd1dd21e1608"
-    },
-    "views.stats.loading": {
-      "source": "b04ba49f848624bb97ab094a2631d2ad74913498",
-      "translation": "06e61b86cbda8ba0de2656dd96ebcc6038cfc1f3"
-    },
     "views.releaseNotes.title": {
       "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
       "translation": "6515a088a0943b6e37a28c33f251fc2b033046c5"
@@ -40157,8 +38841,8 @@
       "translation": "bde32bbce5741e2f69fb662728b487ffd765f2e6"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
-      "translation": "bc52e551378e1ac95afee1aebee4d8cacbd497de"
+      "source": "9006cec1b312951ee9cd725f71310e1b51aeba2b",
+      "translation": "8cd938ab09f338438fcbd228c9def64d4dca1515"
     },
     "settings.native.enterValue": {
       "source": "ffb4705ce609f56bee3903f822a7d1421f12745a",
@@ -43268,22 +41952,6 @@
       "source": "65a232b082e4f02149df030ec01a52ec361f1692",
       "translation": "16f66ac24b867cf4bf74d2319b30245314b000da"
     },
-    "settings.appearance.uiElements.viewsButtonAlignment.name": {
-      "source": "9b7b8db5a42172d1e964e7cbc15264d1e63a0526",
-      "translation": "64cc5fe7adc5410c5d937d465654fb543204b86a"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.description": {
-      "source": "3cd69063c32d9726b4764f3c5251486e4e70f7ea",
-      "translation": "ae7c9178578c9173ee61643a2539d028d90f2b5c"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.left": {
-      "source": "7459e2ff70b4a74b12b3b42dcc8898f1325c4607",
-      "translation": "2df94c8444e26e6d2bd623939317f3862d7db76b"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.right": {
-      "source": "65a232b082e4f02149df030ec01a52ec361f1692",
-      "translation": "16f66ac24b867cf4bf74d2319b30245314b000da"
-    },
     "settings.appearance.projectAutosuggest.header": {
       "source": "ae733299043ca65c98bf192597c7e6be6b3c3111",
       "translation": "2c3c4a3b6a64a18888c9aa83c1f2d1b6c87383c8"
@@ -43500,10 +42168,6 @@
       "source": "29778b13de2c1757474ea65987a6c25f0e64cc13",
       "translation": "27b56ea09e031b25dcd4829d93856e474efe71ae"
     },
-    "settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint": {
-      "source": "fe4b274723ccb4e6b012ec48e7680fb1fc5d81e8",
-      "translation": "327bd3bcfe75300f2f8a2083f56a5b28f42c2790"
-    },
     "settings.integrations.basesIntegration.viewCommands.docsLink": {
       "source": "600fc012cd270f71115df41a83623c799eecf3b7",
       "translation": "00155f968dda6d36c0c6856ca949b0847d682b98"
@@ -43531,10 +42195,6 @@
     "settings.integrations.basesIntegration.viewCommands.commands.agenda": {
       "source": "8497bcbfd3a589408c7f7541e705729f239dcfc7",
       "translation": "8c0ddf0fa22ab43375b746451e89718aebd57dc8"
-    },
-    "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats": {
-      "source": "6fcbba0b914cda44f720b43b86935977e0321ed3",
-      "translation": "3d06c1639e24cdf43ee0305c6e623d52bda6493f"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.relationships": {
       "source": "d31d66e2e1fcdc573a95fc01db407713b36ce7bd",
@@ -44976,6 +43636,14 @@
       "source": "34dc6d24bf621aca04c0190a8906dd735fac5591",
       "translation": "216eef70cde7a86517df664ca65fcc84b8e9b8e9"
     },
+    "commands.openToday": {
+      "source": "a199f140fdb8fe2459198fa013d610cc2178b9aa",
+      "translation": "79ef52f56c6a09e7ed41fb3a34f6d7341cb46183"
+    },
+    "commands.openInbox": {
+      "source": "3974ca2b10ca6457c0ca27751d303b1419fc5a2e",
+      "translation": "4b6e95b35d2ad17272b3cc931faab6595ecb7101"
+    },
     "commands.openTasksView": {
       "source": "767b41fb3b53b193d0a250eed7ed025f2c7ead0a",
       "translation": "15606ed4f6a8fc51766d03d7cc4a282383f0b72e"
@@ -44999,14 +43667,6 @@
     "commands.updateDefaultBaseFiles": {
       "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
       "translation": "070d70235a0000a4e27615eea8800e257657c4a4"
-    },
-    "commands.openPomodoroStats": {
-      "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
-      "translation": "75e6db37cd70e66d30d84d091905c93b3b884604"
-    },
-    "commands.openStatisticsView": {
-      "source": "ddff620f8a4d10c3c20a028fb132fb630bf118aa",
-      "translation": "5c73da065cffae688e0e6eb0d624fd4d0ef8ebb1"
     },
     "commands.createNewTask": {
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
@@ -48490,6 +47150,38 @@
     }
   },
   "pt": {
+    "onboarding.title": {
+      "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
+      "translation": "f14fd476f4bf1df30978d6055e7058e19195a801"
+    },
+    "onboarding.intro": {
+      "source": "39651d1dbcc95a937c9b0c9b702c2d4aa987959b",
+      "translation": "f39c6d43ee4ecfbe4ad86987afc5b1a5db09a414"
+    },
+    "onboarding.create": {
+      "source": "ba45062e632411bedb37b4392847a4b71feacc35",
+      "translation": "38da6565698494f3bba5f3292d8088a2c0731005"
+    },
+    "onboarding.review": {
+      "source": "26f245788b05304621c9f9094c73e3db4a49d431",
+      "translation": "824056a7c638e0d714310b3bb2e2c2d2cc84a18a"
+    },
+    "onboarding.complete": {
+      "source": "23c2dcbdf119283f594c7390dc948c2ac9cc9d1b",
+      "translation": "4cc940a9bc78b765d2baf2d693e5037827f1217a"
+    },
+    "onboarding.inbox": {
+      "source": "11d43e8769e4c758f054914247bc2ddabf72e381",
+      "translation": "e9e4df5bb8fcb9973d356e8e86f424efd323f0e6"
+    },
+    "onboarding.settings": {
+      "source": "724c3becf9188f72bd90dfa80d9b2f6f254a1e80",
+      "translation": "50418a1e2c92c7a15ccf1e34c0473630600332d0"
+    },
+    "common.settings": {
+      "source": "c7f73bb54d928922c3838bb789ee9fb8a5b1eb37",
+      "translation": "871f24c4cdafeb70d4637075c585b460f545a002"
+    },
     "common.appName": {
       "source": "6458145fdd07ad08ff52a2e72d531588936bdca6",
       "translation": "6458145fdd07ad08ff52a2e72d531588936bdca6"
@@ -49562,282 +48254,6 @@
       "source": "756705e2a00b38b9179ace891d74e6c465fd9825",
       "translation": "1fde97aae940488af4288b770e4bda8067e9f715"
     },
-    "views.pomodoroStats.title": {
-      "source": "233208a8d46724760749627feb38c5add4b69f0a",
-      "translation": "ef89e40d63e89e72248a0b1eb41c1ef33a0445a8"
-    },
-    "views.pomodoroStats.heading": {
-      "source": "3b8ad7de35cae6d07335c016ffd6a2bfe8a1f3df",
-      "translation": "ef89e40d63e89e72248a0b1eb41c1ef33a0445a8"
-    },
-    "views.pomodoroStats.refresh": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "7ed81fa447b9ac065f42d7ca8085cc6b64bb3934"
-    },
-    "views.pomodoroStats.basesMigration.title": {
-      "source": "04caae734ce17f873869e3cbe0057bb1bfb7f509",
-      "translation": "9bafa999a6067690f4d9a0f374ec0685acd98099"
-    },
-    "views.pomodoroStats.basesMigration.description": {
-      "source": "089cbdf29fe1782401115d8603876abc55718474",
-      "translation": "e2ca7a5c613d5e2891922666992650dba38f19d0"
-    },
-    "views.pomodoroStats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "1fdf014b55cbfb4af12e71f3e18d8804b80fb537"
-    },
-    "views.pomodoroStats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "ba008427845318a7ec22eed54a1897c29414a2e7"
-    },
-    "views.pomodoroStats.sections.week": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "cc74a23b8c5e78642d6451199c2409903da7b393"
-    },
-    "views.pomodoroStats.sections.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "65c20fe160f61916c5dbace3f38b63ebd1c9a7a8"
-    },
-    "views.pomodoroStats.sections.recent": {
-      "source": "3a63bf67767223b0a30ef1900baa43c716dec796",
-      "translation": "a5c5dc5dc5b895954d9cc1fe97884984ed90b6fb"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.label": {
-      "source": "d3099184748b60a1580656352f8b8aedcfd4b29a",
-      "translation": "62cae400491396e5b57944b2f22620ff267ada22"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.more": {
-      "source": "5d8982e1edb375e51eff0f10e7fd5ca0d06756cc",
-      "translation": "68a5145b807f5f1659745cd8de832d76f17cbd1c"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.less": {
-      "source": "9791244664db2b434044aa79e9f7dfc528dbaaa2",
-      "translation": "93dcb477a6ed1f5b66ab1b6ad88048f4e50258d0"
-    },
-    "views.pomodoroStats.overviewCards.totalPomos.label": {
-      "source": "51de23e612e5c7ea58cabcd69befac9828af6132",
-      "translation": "a7170e04ca1220cbe7192857f08973d4130ee5fb"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.label": {
-      "source": "8da1719923b07697a1bee19be9081b7b6068348c",
-      "translation": "34432c88fc66d31a44e076b35abe9e94881880ca"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.more": {
-      "source": "c8cdba4b00de5620b2900cf93c65e0c61af78357",
-      "translation": "9f3a451451c3ac1a1dabf00ef15526499e178e7d"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.less": {
-      "source": "e0ac3f7251b3d826ca720eca9b743becbfb4332b",
-      "translation": "e497204eea1bd0a9d95a17862ec75ab31f5324a8"
-    },
-    "views.pomodoroStats.overviewCards.totalFocus.label": {
-      "source": "e38707bbc5ab0dbdf0b5fedea45aece5e67227fc",
-      "translation": "7cae8fc3d6c9fd1fc27c12a9af695241600cc360"
-    },
-    "views.pomodoroStats.stats.pomodoros": {
-      "source": "0e0dd790cfe241eb919f53037668418d757bc0cb",
-      "translation": "0e0dd790cfe241eb919f53037668418d757bc0cb"
-    },
-    "views.pomodoroStats.stats.streak": {
-      "source": "ac4792cfd48683835618b7ea9328ad36972aef2e",
-      "translation": "49cafdb21b23fa8ea9c8ded609b002bf65a3e494"
-    },
-    "views.pomodoroStats.stats.minutes": {
-      "source": "092f99ea11a34a8490e7a767a83a42fc45634f82",
-      "translation": "ef5a56c67aca02a3afb225e29cf69e9340502274"
-    },
-    "views.pomodoroStats.stats.average": {
-      "source": "cdeb9a213bbdd7b92f27d0d6c04f9d8bc7b8b045",
-      "translation": "0965a57a34dc61259bdb4798ef68e78ea51515e5"
-    },
-    "views.pomodoroStats.stats.completion": {
-      "source": "2ff255684a2277f806fcebf3fe338ed27857f350",
-      "translation": "3f5734d237330e1b4783c97da05b761185f09aed"
-    },
-    "views.pomodoroStats.recents.empty": {
-      "source": "2b266080383378811ceb0f127829f40b74913e44",
-      "translation": "a116911e2380b8d425d3dcec92ca7e5f5423ee8e"
-    },
-    "views.pomodoroStats.recents.duration": {
-      "source": "09a22c220816f5d148ab0269bda9f7d1463c55d5",
-      "translation": "09a22c220816f5d148ab0269bda9f7d1463c55d5"
-    },
-    "views.pomodoroStats.recents.delete": {
-      "source": "ca57470202396ff277580ee2350f77a2df043983",
-      "translation": "be8a3dcb0f777be81e9e2615a21f7338383c82a1"
-    },
-    "views.pomodoroStats.recents.deleteAria": {
-      "source": "318e6c608b5e3dceb2394c31d3dc38792aa4f14e",
-      "translation": "3892a1a0b6dd08bf78d0b9bee75d21bbf26c1652"
-    },
-    "views.pomodoroStats.recents.deleteConfirmTitle": {
-      "source": "75783f138477545cd540251bd85e4063cc24937f",
-      "translation": "e47491f4b924f6b59901f1e9acefdbb3672b1c71"
-    },
-    "views.pomodoroStats.recents.deleteConfirmMessage": {
-      "source": "2ea1de330fd1f5aadb2d92fddec3021fc186e611",
-      "translation": "32a240c715db61e2c0bb6f6779a524a24e3f1b17"
-    },
-    "views.pomodoroStats.recents.deleteConfirmButton": {
-      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
-      "translation": "8e7c1314fe0b3c34bb8281e1b54aae20919cee10"
-    },
-    "views.pomodoroStats.recents.deleteSuccess": {
-      "source": "206765441cdb00d28b6683d443323e1f40224d57",
-      "translation": "32dbf843ce6db7ef359eb71d47e4120685024186"
-    },
-    "views.pomodoroStats.recents.deleteNotFound": {
-      "source": "cbd330decb3732316044f5b9f0fe219ee41200e9",
-      "translation": "9a030d2ae85f607523c7dc70ca30ee359ec8a7e9"
-    },
-    "views.pomodoroStats.recents.status.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "dbeb4db1889042371ea9e0acdbed584b61f923dc"
-    },
-    "views.pomodoroStats.recents.status.interrupted": {
-      "source": "50be3afcff74fd9eea61c4dfdd7da275a216bfb6",
-      "translation": "2f0c0769b419981907a0fe14fe24709b3704d76c"
-    },
-    "views.stats.title": {
-      "source": "2086b21f8f49274138c38d476bee317a84a8aecc",
-      "translation": "bd2902294a7ef1993f24651e75b9ecb470a23dbd"
-    },
-    "views.stats.taskProjectStats": {
-      "source": "eb98297814b06d370748e602e85ff64efc24496a",
-      "translation": "37ea6b5d132b095fd0ab47bd07cc1afdb854e294"
-    },
-    "views.stats.sections.filters": {
-      "source": "96e578211aa295317cf257310712fa28ccd8f6c6",
-      "translation": "dbcf4f737c890bed0931afcaa5babc4d65e76ec8"
-    },
-    "views.stats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "1fdf014b55cbfb4af12e71f3e18d8804b80fb537"
-    },
-    "views.stats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "ba008427845318a7ec22eed54a1897c29414a2e7"
-    },
-    "views.stats.sections.thisWeek": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "b9894533dc3e76a3f20b7c56550c706fd03bb4b1"
-    },
-    "views.stats.sections.thisMonth": {
-      "source": "1b4785331db3b08cd8e3cfa4bd36216731a79e54",
-      "translation": "e3101e1913ade5035f186599b84dbd8d92151592"
-    },
-    "views.stats.sections.projectBreakdown": {
-      "source": "eb495988cd625c9ce9b8048dcf9cfe6c045928ef",
-      "translation": "9aa48d8fa1850b0a2096367084a94d08fa6a4d65"
-    },
-    "views.stats.sections.dateRange": {
-      "source": "c65ea4ae013589923685e6ad069dcf87c153bd0b",
-      "translation": "c81a55e4088d6a27a0757a736918f926a12d6778"
-    },
-    "views.stats.filters.minTime": {
-      "source": "0e3eea0020d6ce34a1253fa9fe52dd97cb7e2bfa",
-      "translation": "78410ba95e71477bf48c965f70a29a2f33f1c61b"
-    },
-    "views.stats.filters.allTasks": {
-      "source": "2eee0bb53a4a2a4d7f59af49022804d2db8c046e",
-      "translation": "6674758c65ad83f687e013242266e68282beacc1"
-    },
-    "views.stats.filters.activeOnly": {
-      "source": "e5a176ab924840924eeeea31ace7de41556fa9b7",
-      "translation": "52e9557ec7de13dab5c95d67084c5b1c66355692"
-    },
-    "views.stats.filters.completedOnly": {
-      "source": "7cc2d21994cc8e829f77dbd7c26959d689e9c4e2",
-      "translation": "ca27eedffe26ff2cc77b9a9c1803b9579b1c7451"
-    },
-    "views.stats.refreshButton": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "7ed81fa447b9ac065f42d7ca8085cc6b64bb3934"
-    },
-    "views.stats.timeRanges.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "65c20fe160f61916c5dbace3f38b63ebd1c9a7a8"
-    },
-    "views.stats.timeRanges.last7Days": {
-      "source": "df833fe88d3888a1ce9d1dbefea78fe4d4cffc4e",
-      "translation": "0c7f53c76f97957b750f85aa5c858b9eaf749b05"
-    },
-    "views.stats.timeRanges.last30Days": {
-      "source": "6b32985251a1f00785875492de31de15b7e04116",
-      "translation": "ae8ad765b4d214ddb32e7eb2d6865d8a3ba046ca"
-    },
-    "views.stats.timeRanges.last90Days": {
-      "source": "c328508badd742d3e0b42c06a8b0c4d7b7723f91",
-      "translation": "4f44f5f04772e98898a022df1978eb208cb56009"
-    },
-    "views.stats.timeRanges.customRange": {
-      "source": "f365689246420c5434b1c4e95e9ba681846d6599",
-      "translation": "d1d67f2d40d4868354b75009286a4510f7b20c73"
-    },
-    "views.stats.resetFiltersButton": {
-      "source": "56553100b028cf32544522d0a9ac81629de6f741",
-      "translation": "c2bdeb13d137bae32a4b06603bdeb00ad80c66cb"
-    },
-    "views.stats.dateRangeFrom": {
-      "source": "3f66052a107eaf9bae7cad0f61fb462f47ec2c47",
-      "translation": "6b98c9b528241fc8135fb9fd472c7db12ec14964"
-    },
-    "views.stats.dateRangeTo": {
-      "source": "ae79ea1e9c6391a9ed83a2e18a031b835feec0c9",
-      "translation": "fc4548003743e89a3bb581af983e19c51fe54d2f"
-    },
-    "views.stats.noProject": {
-      "source": "c326b75775bf901d2023c5998bd2549e8cc27e3b",
-      "translation": "ea3f27f45983f65d6c9fd38a8b06f5a889af430e"
-    },
-    "views.stats.cards.timeTrackedEstimated": {
-      "source": "2ae2585b134b956011569487a8c5b8f1a6610a8e",
-      "translation": "d66242a07f13187f905a7578532d7dffafcf06f6"
-    },
-    "views.stats.cards.totalTasks": {
-      "source": "d0ecac34cbfbad0f68d32dddd6abdf64c88d8c4f",
-      "translation": "6097d9ae3bc36421e73ffdd0412973ae8477c8c2"
-    },
-    "views.stats.cards.completionRate": {
-      "source": "a36008372807c922a809b75df95445c475ea9564",
-      "translation": "e004f5a7d0a882fd13899d21a0e131b4ba801498"
-    },
-    "views.stats.cards.activeProjects": {
-      "source": "f361946445f2d35605eb61f696ceeae3a1eea839",
-      "translation": "707d8b815b5f4bc886837e3f6deaca9a261b6d23"
-    },
-    "views.stats.cards.avgTimePerTask": {
-      "source": "0bc83ca5e82607e3698710c73eb074854c147217",
-      "translation": "6caf6562d83b7e5e97c56f9f9644b5b966c6c082"
-    },
-    "views.stats.labels.tasks": {
-      "source": "090ec5f560fc50377fcd95e5cda128e91b276e98",
-      "translation": "5920bbfe1d67a61e9d4b6249fdf75b6f73d7cfed"
-    },
-    "views.stats.labels.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "aca53c022feb1ce900b7e48d5967677dd7694968"
-    },
-    "views.stats.labels.projects": {
-      "source": "53e890d5f0fffe09587c55dce74e9a6febf59b5c",
-      "translation": "2ae76d4e12e2430967afb4ae125496ffa76bbeba"
-    },
-    "views.stats.noProjectData": {
-      "source": "f61de1237b5bf9041f1b8e00bdd5b7bf0df0232e",
-      "translation": "72ca3aa3db9f7be33d2949a6f4f0e7c2647a7db7"
-    },
-    "views.stats.notAvailable": {
-      "source": "08d2e98e6754af941484848930ccbaddfefe13d6",
-      "translation": "635d698f7eac414a5ed50b332f7a8ad456cb5793"
-    },
-    "views.stats.noTasks": {
-      "source": "d7c07a0905ed43a32ec58ccae1353c564433d826",
-      "translation": "38b265ee8514f789ed73e9e99442ac6aff44cd6b"
-    },
-    "views.stats.loading": {
-      "source": "b04ba49f848624bb97ab094a2631d2ad74913498",
-      "translation": "9e0a4030b8894479c89c1c0b90bf93e0a6d9800e"
-    },
     "views.releaseNotes.title": {
       "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
       "translation": "09e80bb16ce2b51552feabf8454e04741c41c7c1"
@@ -49855,8 +48271,8 @@
       "translation": "73b8cc8d067b37867ea0c97be0f325f0765b7583"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
-      "translation": "919fe94480018acb1b8ac768d46f7c03466b0d59"
+      "source": "9006cec1b312951ee9cd725f71310e1b51aeba2b",
+      "translation": "5f8a5b2f37d1cc3a141d8e5c7450afc1e862096e"
     },
     "settings.native.enterValue": {
       "source": "ffb4705ce609f56bee3903f822a7d1421f12745a",
@@ -52966,22 +51382,6 @@
       "source": "65a232b082e4f02149df030ec01a52ec361f1692",
       "translation": "3757966918ed715eafa32142e0b3600a5240d1a3"
     },
-    "settings.appearance.uiElements.viewsButtonAlignment.name": {
-      "source": "9b7b8db5a42172d1e964e7cbc15264d1e63a0526",
-      "translation": "7a94942db61c9a9c44e705ef4f3cbe4ea94996b9"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.description": {
-      "source": "3cd69063c32d9726b4764f3c5251486e4e70f7ea",
-      "translation": "e13ec75f0c8a328af3c24c538691b1411c4e55dc"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.left": {
-      "source": "7459e2ff70b4a74b12b3b42dcc8898f1325c4607",
-      "translation": "bf2f34935e0bb3bcb8a753d2017cd1e9ded67e96"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.right": {
-      "source": "65a232b082e4f02149df030ec01a52ec361f1692",
-      "translation": "3757966918ed715eafa32142e0b3600a5240d1a3"
-    },
     "settings.appearance.projectAutosuggest.header": {
       "source": "ae733299043ca65c98bf192597c7e6be6b3c3111",
       "translation": "9bb89d7070f8ae140db1eac7f5fbed5aa8561634"
@@ -53198,10 +51598,6 @@
       "source": "29778b13de2c1757474ea65987a6c25f0e64cc13",
       "translation": "aa5ec8fb581ec300a0e2149e44d966f2a45ac7be"
     },
-    "settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint": {
-      "source": "fe4b274723ccb4e6b012ec48e7680fb1fc5d81e8",
-      "translation": "75a999369cf658c52d998777645e049e0dab8a44"
-    },
     "settings.integrations.basesIntegration.viewCommands.docsLink": {
       "source": "600fc012cd270f71115df41a83623c799eecf3b7",
       "translation": "f954a63919ab287512d8da4fc6eb71a341ca5699"
@@ -53229,10 +51625,6 @@
     "settings.integrations.basesIntegration.viewCommands.commands.agenda": {
       "source": "8497bcbfd3a589408c7f7541e705729f239dcfc7",
       "translation": "6f4f11d04cb715a7d83b805fac3b3ffa2269a806"
-    },
-    "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats": {
-      "source": "6fcbba0b914cda44f720b43b86935977e0321ed3",
-      "translation": "9885cd10b07e150855aaf5cb38238afc9cb8a19d"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.relationships": {
       "source": "d31d66e2e1fcdc573a95fc01db407713b36ce7bd",
@@ -54674,6 +53066,14 @@
       "source": "34dc6d24bf621aca04c0190a8906dd735fac5591",
       "translation": "82dbe8807613e27824c116b585814efc0d29b989"
     },
+    "commands.openToday": {
+      "source": "a199f140fdb8fe2459198fa013d610cc2178b9aa",
+      "translation": "17632ce77b3e5c3815deb8919c302a2291638d8c"
+    },
+    "commands.openInbox": {
+      "source": "3974ca2b10ca6457c0ca27751d303b1419fc5a2e",
+      "translation": "5ba8e71e2f24ec4550e8dc33018e30e5b4cc419b"
+    },
     "commands.openTasksView": {
       "source": "767b41fb3b53b193d0a250eed7ed025f2c7ead0a",
       "translation": "f6ec7f818a52adbca2f39111f342a5145873023d"
@@ -54697,14 +53097,6 @@
     "commands.updateDefaultBaseFiles": {
       "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
       "translation": "f4aa8af1e6a0c08df2d8f18e2a1307a3b293e760"
-    },
-    "commands.openPomodoroStats": {
-      "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
-      "translation": "b760be18e0477f61f038ac031f9937847920770d"
-    },
-    "commands.openStatisticsView": {
-      "source": "ddff620f8a4d10c3c20a028fb132fb630bf118aa",
-      "translation": "ce0fcd96e67b1e171daf5b60798b866d26556e15"
     },
     "commands.createNewTask": {
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
@@ -58188,6 +56580,38 @@
     }
   },
   "ru": {
+    "onboarding.title": {
+      "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
+      "translation": "6245ac635eea1c1f8bca6f50d62a538824556a75"
+    },
+    "onboarding.intro": {
+      "source": "39651d1dbcc95a937c9b0c9b702c2d4aa987959b",
+      "translation": "c0d3085baadafd40f60b35d56f1743e48e0f4296"
+    },
+    "onboarding.create": {
+      "source": "ba45062e632411bedb37b4392847a4b71feacc35",
+      "translation": "e94fa97a894cf76ec0636173569cfb3fe09a1f22"
+    },
+    "onboarding.review": {
+      "source": "26f245788b05304621c9f9094c73e3db4a49d431",
+      "translation": "fa547c4d7b25e32347b8d3b95735f10e13eb8cd0"
+    },
+    "onboarding.complete": {
+      "source": "23c2dcbdf119283f594c7390dc948c2ac9cc9d1b",
+      "translation": "e96dfc842a23804ca0a1ed70eb7dc590f33e8ed3"
+    },
+    "onboarding.inbox": {
+      "source": "11d43e8769e4c758f054914247bc2ddabf72e381",
+      "translation": "d44b5febd0b001395e218ab054021661027c42b3"
+    },
+    "onboarding.settings": {
+      "source": "724c3becf9188f72bd90dfa80d9b2f6f254a1e80",
+      "translation": "e5ea5ffe26760ee0a6b09bb56d7af42e937ed7e1"
+    },
+    "common.settings": {
+      "source": "c7f73bb54d928922c3838bb789ee9fb8a5b1eb37",
+      "translation": "7f17c7c62a7fd8d1a508481f4778688927734c2f"
+    },
     "common.appName": {
       "source": "6458145fdd07ad08ff52a2e72d531588936bdca6",
       "translation": "6458145fdd07ad08ff52a2e72d531588936bdca6"
@@ -59260,282 +57684,6 @@
       "source": "756705e2a00b38b9179ace891d74e6c465fd9825",
       "translation": "bfbc9fb366f6eb6f88fb82715c4d256cec3d0264"
     },
-    "views.pomodoroStats.title": {
-      "source": "233208a8d46724760749627feb38c5add4b69f0a",
-      "translation": "f66b5fcc2c536425b478c93096eda04524d9fbb0"
-    },
-    "views.pomodoroStats.heading": {
-      "source": "3b8ad7de35cae6d07335c016ffd6a2bfe8a1f3df",
-      "translation": "f66b5fcc2c536425b478c93096eda04524d9fbb0"
-    },
-    "views.pomodoroStats.refresh": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "c2f668e54fb6decffdd97e6cdc0f1884f8626fc2"
-    },
-    "views.pomodoroStats.basesMigration.title": {
-      "source": "04caae734ce17f873869e3cbe0057bb1bfb7f509",
-      "translation": "89ed308ddba039e56f054c4cec2d96afa3f78b2b"
-    },
-    "views.pomodoroStats.basesMigration.description": {
-      "source": "089cbdf29fe1782401115d8603876abc55718474",
-      "translation": "29a90a583451197e470f9c7fd67a3b7e0765c245"
-    },
-    "views.pomodoroStats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "39c63872060e2d6372c2481dd2a682dd6781f79e"
-    },
-    "views.pomodoroStats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "5d5d2ea20a2583d5068219949a2230a19abff3b0"
-    },
-    "views.pomodoroStats.sections.week": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "19295833d9c27ea685efb8dd3d89a50d7620c8b3"
-    },
-    "views.pomodoroStats.sections.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "84c1c26deb4cf512d0d9fd240ee25a50154b4914"
-    },
-    "views.pomodoroStats.sections.recent": {
-      "source": "3a63bf67767223b0a30ef1900baa43c716dec796",
-      "translation": "4a834c1196bfd04ea9145dcf13594e42c0ad46ab"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.label": {
-      "source": "d3099184748b60a1580656352f8b8aedcfd4b29a",
-      "translation": "f254373b1a1987ed5c48b9a420c89febd1940fe0"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.more": {
-      "source": "5d8982e1edb375e51eff0f10e7fd5ca0d06756cc",
-      "translation": "cf4eeeaa3c6d289390256f881df3cf46ce10a3bf"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.less": {
-      "source": "9791244664db2b434044aa79e9f7dfc528dbaaa2",
-      "translation": "18cdf5141dd1c97350c84d3647d48fc9c14d8ef5"
-    },
-    "views.pomodoroStats.overviewCards.totalPomos.label": {
-      "source": "51de23e612e5c7ea58cabcd69befac9828af6132",
-      "translation": "ea771a5337d4e24447f14715ee64206b6c319ed4"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.label": {
-      "source": "8da1719923b07697a1bee19be9081b7b6068348c",
-      "translation": "afbe94d46527208dfa3e8895f8f0edb8e7d2aaa8"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.more": {
-      "source": "c8cdba4b00de5620b2900cf93c65e0c61af78357",
-      "translation": "355d06067c76260d95899d18a67fa9e92da6a213"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.less": {
-      "source": "e0ac3f7251b3d826ca720eca9b743becbfb4332b",
-      "translation": "45256a773840eb4496b93755956a1ae0b64eb47e"
-    },
-    "views.pomodoroStats.overviewCards.totalFocus.label": {
-      "source": "e38707bbc5ab0dbdf0b5fedea45aece5e67227fc",
-      "translation": "0435ed4c026a2cb6157fa022b609f9f8b8da1af7"
-    },
-    "views.pomodoroStats.stats.pomodoros": {
-      "source": "0e0dd790cfe241eb919f53037668418d757bc0cb",
-      "translation": "00536aca4a23643885ecfe4ffaabea84d92e0d1b"
-    },
-    "views.pomodoroStats.stats.streak": {
-      "source": "ac4792cfd48683835618b7ea9328ad36972aef2e",
-      "translation": "0dc90fa890de497689b70ef69d99e613e2c10061"
-    },
-    "views.pomodoroStats.stats.minutes": {
-      "source": "092f99ea11a34a8490e7a767a83a42fc45634f82",
-      "translation": "b571ae10fad2cd347bd32e2430f5868cb1c9551e"
-    },
-    "views.pomodoroStats.stats.average": {
-      "source": "cdeb9a213bbdd7b92f27d0d6c04f9d8bc7b8b045",
-      "translation": "fd63e76761499268044ef37e47a77c632a2af6e8"
-    },
-    "views.pomodoroStats.stats.completion": {
-      "source": "2ff255684a2277f806fcebf3fe338ed27857f350",
-      "translation": "be19888666e4061e099245df533cea86d4852cdb"
-    },
-    "views.pomodoroStats.recents.empty": {
-      "source": "2b266080383378811ceb0f127829f40b74913e44",
-      "translation": "3fb87fa8d8649cf56297ad0f6f486fdca4c28de1"
-    },
-    "views.pomodoroStats.recents.duration": {
-      "source": "09a22c220816f5d148ab0269bda9f7d1463c55d5",
-      "translation": "ed662b742188bfb4f9552dca6c82e76d18caf4dd"
-    },
-    "views.pomodoroStats.recents.delete": {
-      "source": "ca57470202396ff277580ee2350f77a2df043983",
-      "translation": "13c92bc17db2abce85682c393f8d1433fcffa91a"
-    },
-    "views.pomodoroStats.recents.deleteAria": {
-      "source": "318e6c608b5e3dceb2394c31d3dc38792aa4f14e",
-      "translation": "e19c5c37c9f045da23b9a518ae3dec38b3f1d778"
-    },
-    "views.pomodoroStats.recents.deleteConfirmTitle": {
-      "source": "75783f138477545cd540251bd85e4063cc24937f",
-      "translation": "08b5552908137aeba6f4316ba4fcb9ceb6d4f026"
-    },
-    "views.pomodoroStats.recents.deleteConfirmMessage": {
-      "source": "2ea1de330fd1f5aadb2d92fddec3021fc186e611",
-      "translation": "55a2d0d5c87447156625e109393570ffd5b94fb8"
-    },
-    "views.pomodoroStats.recents.deleteConfirmButton": {
-      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
-      "translation": "86ea33aef5e95d4fcc0f64369dd9a131a61638b8"
-    },
-    "views.pomodoroStats.recents.deleteSuccess": {
-      "source": "206765441cdb00d28b6683d443323e1f40224d57",
-      "translation": "972fe887406c92f5afdf3651a254aa51908dbac5"
-    },
-    "views.pomodoroStats.recents.deleteNotFound": {
-      "source": "cbd330decb3732316044f5b9f0fe219ee41200e9",
-      "translation": "fe3953885add36beb47bd3025eca008853d6ec22"
-    },
-    "views.pomodoroStats.recents.status.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "016bc923f7ff6c70ac895a10fe7d5205b7fb35f0"
-    },
-    "views.pomodoroStats.recents.status.interrupted": {
-      "source": "50be3afcff74fd9eea61c4dfdd7da275a216bfb6",
-      "translation": "4550b8537abc8e20f0c98136ad4a7a9124387ba0"
-    },
-    "views.stats.title": {
-      "source": "2086b21f8f49274138c38d476bee317a84a8aecc",
-      "translation": "a77d7f6c0d08b6913c86fcc0695407bf1371d23c"
-    },
-    "views.stats.taskProjectStats": {
-      "source": "eb98297814b06d370748e602e85ff64efc24496a",
-      "translation": "3f9de639465e3c206164a322cdcb77c7becf9e54"
-    },
-    "views.stats.sections.filters": {
-      "source": "96e578211aa295317cf257310712fa28ccd8f6c6",
-      "translation": "67e16da29928c30751dea29f4c2d8049cad9e823"
-    },
-    "views.stats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "39c63872060e2d6372c2481dd2a682dd6781f79e"
-    },
-    "views.stats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "5d5d2ea20a2583d5068219949a2230a19abff3b0"
-    },
-    "views.stats.sections.thisWeek": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "19295833d9c27ea685efb8dd3d89a50d7620c8b3"
-    },
-    "views.stats.sections.thisMonth": {
-      "source": "1b4785331db3b08cd8e3cfa4bd36216731a79e54",
-      "translation": "a0113f46a3c4d411c73a512405736a668720f18a"
-    },
-    "views.stats.sections.projectBreakdown": {
-      "source": "eb495988cd625c9ce9b8048dcf9cfe6c045928ef",
-      "translation": "88bccaf736477b883de5b6dbd65440ddd2b8f397"
-    },
-    "views.stats.sections.dateRange": {
-      "source": "c65ea4ae013589923685e6ad069dcf87c153bd0b",
-      "translation": "86314f9131b789afd0956dd4ab5fa89bbda8975d"
-    },
-    "views.stats.filters.minTime": {
-      "source": "0e3eea0020d6ce34a1253fa9fe52dd97cb7e2bfa",
-      "translation": "a82231aecd1ee2ec08d32031cf19b6f6a4f2842e"
-    },
-    "views.stats.filters.allTasks": {
-      "source": "2eee0bb53a4a2a4d7f59af49022804d2db8c046e",
-      "translation": "4fa7d72354b54ff6ca4f318e7e31cca3b7188d44"
-    },
-    "views.stats.filters.activeOnly": {
-      "source": "e5a176ab924840924eeeea31ace7de41556fa9b7",
-      "translation": "d738cc31791fd436c051d9dddb94a039f9f39de9"
-    },
-    "views.stats.filters.completedOnly": {
-      "source": "7cc2d21994cc8e829f77dbd7c26959d689e9c4e2",
-      "translation": "c93b8946def958ecd3fd2547b9161fe948f5e02a"
-    },
-    "views.stats.refreshButton": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "c2f668e54fb6decffdd97e6cdc0f1884f8626fc2"
-    },
-    "views.stats.timeRanges.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "c8d80c567be0136aaeeb261e94912ab5fbce0537"
-    },
-    "views.stats.timeRanges.last7Days": {
-      "source": "df833fe88d3888a1ce9d1dbefea78fe4d4cffc4e",
-      "translation": "19f43d2c549f070af7f85543d02c48cfa5f0ef44"
-    },
-    "views.stats.timeRanges.last30Days": {
-      "source": "6b32985251a1f00785875492de31de15b7e04116",
-      "translation": "95b45eafc9cee753c77f8d16205914a744d02445"
-    },
-    "views.stats.timeRanges.last90Days": {
-      "source": "c328508badd742d3e0b42c06a8b0c4d7b7723f91",
-      "translation": "b5f13b97ee7893de5087fc93bacfce8c71b6cc86"
-    },
-    "views.stats.timeRanges.customRange": {
-      "source": "f365689246420c5434b1c4e95e9ba681846d6599",
-      "translation": "d81d77acc9fda39b65a7ce6242cd989f650b9c26"
-    },
-    "views.stats.resetFiltersButton": {
-      "source": "56553100b028cf32544522d0a9ac81629de6f741",
-      "translation": "03ead01c5b2d9d61f4ede818f8cc48a261b3d51f"
-    },
-    "views.stats.dateRangeFrom": {
-      "source": "3f66052a107eaf9bae7cad0f61fb462f47ec2c47",
-      "translation": "67bbe9f7599fe8bbcb9dbc99e2d436b254233966"
-    },
-    "views.stats.dateRangeTo": {
-      "source": "ae79ea1e9c6391a9ed83a2e18a031b835feec0c9",
-      "translation": "1520dcf50638530a5bebbec6efddf47b60476427"
-    },
-    "views.stats.noProject": {
-      "source": "c326b75775bf901d2023c5998bd2549e8cc27e3b",
-      "translation": "298f90108d823b2f3f1efe4906d59aeceadc37fe"
-    },
-    "views.stats.cards.timeTrackedEstimated": {
-      "source": "2ae2585b134b956011569487a8c5b8f1a6610a8e",
-      "translation": "e0e8defe6ff8d805838472bfc04b2128120675b1"
-    },
-    "views.stats.cards.totalTasks": {
-      "source": "d0ecac34cbfbad0f68d32dddd6abdf64c88d8c4f",
-      "translation": "51ab3c44d0e61793dfbfd2545e507c5226d4173e"
-    },
-    "views.stats.cards.completionRate": {
-      "source": "a36008372807c922a809b75df95445c475ea9564",
-      "translation": "d9ac66d89a05dcadac0fd3f75f3be3f16e2d10ca"
-    },
-    "views.stats.cards.activeProjects": {
-      "source": "f361946445f2d35605eb61f696ceeae3a1eea839",
-      "translation": "80329fc805f13e0cbb547a74b3c8e4216c7df13a"
-    },
-    "views.stats.cards.avgTimePerTask": {
-      "source": "0bc83ca5e82607e3698710c73eb074854c147217",
-      "translation": "0a90f1876a124c2cbf6dcb63c4f01d83cc4fc527"
-    },
-    "views.stats.labels.tasks": {
-      "source": "090ec5f560fc50377fcd95e5cda128e91b276e98",
-      "translation": "2ff08344934d2f5c54e31d9346e380a747f8ac33"
-    },
-    "views.stats.labels.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "016bc923f7ff6c70ac895a10fe7d5205b7fb35f0"
-    },
-    "views.stats.labels.projects": {
-      "source": "53e890d5f0fffe09587c55dce74e9a6febf59b5c",
-      "translation": "b90d9f72b44e086831c38646ac95961cc7d79c64"
-    },
-    "views.stats.noProjectData": {
-      "source": "f61de1237b5bf9041f1b8e00bdd5b7bf0df0232e",
-      "translation": "8bdbba0456fe35dcb1810302f4ddef970993ff89"
-    },
-    "views.stats.notAvailable": {
-      "source": "08d2e98e6754af941484848930ccbaddfefe13d6",
-      "translation": "90d1d6683b5f2538782545d1bf8c9c6f0906cbf0"
-    },
-    "views.stats.noTasks": {
-      "source": "d7c07a0905ed43a32ec58ccae1353c564433d826",
-      "translation": "b0fe8d0abe9938aa4dd99774c4e9c7c7ce43a757"
-    },
-    "views.stats.loading": {
-      "source": "b04ba49f848624bb97ab094a2631d2ad74913498",
-      "translation": "a90ed3357338f605e50a085dc337a9047a332950"
-    },
     "views.releaseNotes.title": {
       "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
       "translation": "92e2d6dcf90925e3073f30916467f8d01ead921a"
@@ -59553,8 +57701,8 @@
       "translation": "920cb09c787ffd63d1a5874156bf28dea5f567d9"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
-      "translation": "a76413c5dadc77886a27bc98285551a3cb7c703f"
+      "source": "9006cec1b312951ee9cd725f71310e1b51aeba2b",
+      "translation": "005923937c7bc12cda8c52e41ce6e25fa375b74e"
     },
     "settings.native.enterValue": {
       "source": "ffb4705ce609f56bee3903f822a7d1421f12745a",
@@ -62664,22 +60812,6 @@
       "source": "65a232b082e4f02149df030ec01a52ec361f1692",
       "translation": "34711f7322367d06e9676de3fc271dee3417a7f0"
     },
-    "settings.appearance.uiElements.viewsButtonAlignment.name": {
-      "source": "9b7b8db5a42172d1e964e7cbc15264d1e63a0526",
-      "translation": "b896698acbdea5460513b8204b73e06fa9f1b590"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.description": {
-      "source": "3cd69063c32d9726b4764f3c5251486e4e70f7ea",
-      "translation": "51ed18bfeaf1275a66213dc7d9f83e314046182f"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.left": {
-      "source": "7459e2ff70b4a74b12b3b42dcc8898f1325c4607",
-      "translation": "8721133c76547d0f9a07640cc7b19a525831ab59"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.right": {
-      "source": "65a232b082e4f02149df030ec01a52ec361f1692",
-      "translation": "34711f7322367d06e9676de3fc271dee3417a7f0"
-    },
     "settings.appearance.projectAutosuggest.header": {
       "source": "ae733299043ca65c98bf192597c7e6be6b3c3111",
       "translation": "9ae80197034f29cf22b7ecedc7085e7448361c09"
@@ -62896,10 +61028,6 @@
       "source": "29778b13de2c1757474ea65987a6c25f0e64cc13",
       "translation": "2c88c34755e5a6cf9276a90ccaefc05c34d94dcf"
     },
-    "settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint": {
-      "source": "fe4b274723ccb4e6b012ec48e7680fb1fc5d81e8",
-      "translation": "6e5ae3d3b1b225fc00b9eadfd1e24137100779c1"
-    },
     "settings.integrations.basesIntegration.viewCommands.docsLink": {
       "source": "600fc012cd270f71115df41a83623c799eecf3b7",
       "translation": "c748244686f86d508922f301e6e1d640c18425e9"
@@ -62927,10 +61055,6 @@
     "settings.integrations.basesIntegration.viewCommands.commands.agenda": {
       "source": "8497bcbfd3a589408c7f7541e705729f239dcfc7",
       "translation": "f0bd6a00695e1d11aff6e6be7112b3c003eb7464"
-    },
-    "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats": {
-      "source": "6fcbba0b914cda44f720b43b86935977e0321ed3",
-      "translation": "5f570d18b8da7c2310bc8d3304901b7ad9fa4643"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.relationships": {
       "source": "d31d66e2e1fcdc573a95fc01db407713b36ce7bd",
@@ -64372,6 +62496,14 @@
       "source": "34dc6d24bf621aca04c0190a8906dd735fac5591",
       "translation": "7f802b549e90b5ce50856f0e52163a5a5a142aff"
     },
+    "commands.openToday": {
+      "source": "a199f140fdb8fe2459198fa013d610cc2178b9aa",
+      "translation": "351cd526e54440e0b466dd564387c70ee0b546b8"
+    },
+    "commands.openInbox": {
+      "source": "3974ca2b10ca6457c0ca27751d303b1419fc5a2e",
+      "translation": "a8dbb382dae8d5506ed652117a8f27e9b74632af"
+    },
     "commands.openTasksView": {
       "source": "767b41fb3b53b193d0a250eed7ed025f2c7ead0a",
       "translation": "f5d69a940857e67c58c916f26504c69dfc500a66"
@@ -64395,14 +62527,6 @@
     "commands.updateDefaultBaseFiles": {
       "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
       "translation": "6003222198cc4b2e625933f27f8713e9bbae51ea"
-    },
-    "commands.openPomodoroStats": {
-      "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
-      "translation": "cf2c274b7f2bf3095bd16ff610411cbdb180cb02"
-    },
-    "commands.openStatisticsView": {
-      "source": "ddff620f8a4d10c3c20a028fb132fb630bf118aa",
-      "translation": "8ae13a67a86a365de46d92acf23b63e06404ffcd"
     },
     "commands.createNewTask": {
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
@@ -67886,6 +66010,38 @@
     }
   },
   "zh": {
+    "onboarding.title": {
+      "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
+      "translation": "985b77e61456d631358811473c3265b8f2c7f282"
+    },
+    "onboarding.intro": {
+      "source": "39651d1dbcc95a937c9b0c9b702c2d4aa987959b",
+      "translation": "72c9d2dc740a7ce38c55dc2766eeab6b4bedcd74"
+    },
+    "onboarding.create": {
+      "source": "ba45062e632411bedb37b4392847a4b71feacc35",
+      "translation": "c96873191dd11d4babcfc3e9a036340573f352a8"
+    },
+    "onboarding.review": {
+      "source": "26f245788b05304621c9f9094c73e3db4a49d431",
+      "translation": "418f4bef658dc926e4dce64fbb856eb6ed3b379c"
+    },
+    "onboarding.complete": {
+      "source": "23c2dcbdf119283f594c7390dc948c2ac9cc9d1b",
+      "translation": "3f76ad998e04804ed3b6e1b23101f2d2b96b0fb6"
+    },
+    "onboarding.inbox": {
+      "source": "11d43e8769e4c758f054914247bc2ddabf72e381",
+      "translation": "b83f59962d0dbcf2bed65548cc5260694747a87c"
+    },
+    "onboarding.settings": {
+      "source": "724c3becf9188f72bd90dfa80d9b2f6f254a1e80",
+      "translation": "9df6b1c6d3cdadd0a2e500b39f5c3eb44dc6a7e2"
+    },
+    "common.settings": {
+      "source": "c7f73bb54d928922c3838bb789ee9fb8a5b1eb37",
+      "translation": "7debf9cb0372cb4396ae2a7451e507abac4d6fc3"
+    },
     "common.appName": {
       "source": "6458145fdd07ad08ff52a2e72d531588936bdca6",
       "translation": "6458145fdd07ad08ff52a2e72d531588936bdca6"
@@ -68958,282 +67114,6 @@
       "source": "756705e2a00b38b9179ace891d74e6c465fd9825",
       "translation": "451f8c773c43e8b8788910881f0d9530fd5845d8"
     },
-    "views.pomodoroStats.title": {
-      "source": "233208a8d46724760749627feb38c5add4b69f0a",
-      "translation": "191fb3e34f2be7c294bfaa9c0ccbdbf2fbf4ef47"
-    },
-    "views.pomodoroStats.heading": {
-      "source": "3b8ad7de35cae6d07335c016ffd6a2bfe8a1f3df",
-      "translation": "05e7754cd65f99ef4dc77f3689b7045cf999fccd"
-    },
-    "views.pomodoroStats.refresh": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "38108eaa1d32994acea9c1bfccdd5ce955541a8f"
-    },
-    "views.pomodoroStats.basesMigration.title": {
-      "source": "04caae734ce17f873869e3cbe0057bb1bfb7f509",
-      "translation": "6635e6a5ea8613bc891e493b2e5eea832974ad04"
-    },
-    "views.pomodoroStats.basesMigration.description": {
-      "source": "089cbdf29fe1782401115d8603876abc55718474",
-      "translation": "1297c8fa03bb39c4a6469dc24a55829541a3c4df"
-    },
-    "views.pomodoroStats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "5060421d1574dce019daa79bf73f0829bf37edd9"
-    },
-    "views.pomodoroStats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "17e83cc25e229b05c4c91b60fba8d5cc7c0ef931"
-    },
-    "views.pomodoroStats.sections.week": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "e16e8248b16f6990d0f8bc8a96e342d59d5b1c87"
-    },
-    "views.pomodoroStats.sections.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "2d2587806259d9324ef36086a061b70be1fb51a8"
-    },
-    "views.pomodoroStats.sections.recent": {
-      "source": "3a63bf67767223b0a30ef1900baa43c716dec796",
-      "translation": "6cacfa56f3c563335e4be9acc64869071d7dee1e"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.label": {
-      "source": "d3099184748b60a1580656352f8b8aedcfd4b29a",
-      "translation": "214c72fc1a39c0d5ca3faaa167f19d5955d5e9ef"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.more": {
-      "source": "5d8982e1edb375e51eff0f10e7fd5ca0d06756cc",
-      "translation": "8f3102c3e80bbbf4e8207a1adbf40f21a881d179"
-    },
-    "views.pomodoroStats.overviewCards.todayPomos.change.less": {
-      "source": "9791244664db2b434044aa79e9f7dfc528dbaaa2",
-      "translation": "eefbde5d32a7faa48a114e242d79366f0b92e246"
-    },
-    "views.pomodoroStats.overviewCards.totalPomos.label": {
-      "source": "51de23e612e5c7ea58cabcd69befac9828af6132",
-      "translation": "d4e23f7328b492ee3763514c826038cf33d024eb"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.label": {
-      "source": "8da1719923b07697a1bee19be9081b7b6068348c",
-      "translation": "76cf5a5e19fce97ef832e0dc7f962968579ca168"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.more": {
-      "source": "c8cdba4b00de5620b2900cf93c65e0c61af78357",
-      "translation": "515d34480953a5549c3b35166fd182e9842b4916"
-    },
-    "views.pomodoroStats.overviewCards.todayFocus.change.less": {
-      "source": "e0ac3f7251b3d826ca720eca9b743becbfb4332b",
-      "translation": "527f31249ad7551843f5134e99a72891d2325aaf"
-    },
-    "views.pomodoroStats.overviewCards.totalFocus.label": {
-      "source": "e38707bbc5ab0dbdf0b5fedea45aece5e67227fc",
-      "translation": "68f710784ce2e1d2cda7e2d4bf25dd9c8db80a3d"
-    },
-    "views.pomodoroStats.stats.pomodoros": {
-      "source": "0e0dd790cfe241eb919f53037668418d757bc0cb",
-      "translation": "0162a10275f2d94b5596a4d1163605e75e2360b7"
-    },
-    "views.pomodoroStats.stats.streak": {
-      "source": "ac4792cfd48683835618b7ea9328ad36972aef2e",
-      "translation": "519b65e72c35e7923f5c0e33f41bfe51185a3218"
-    },
-    "views.pomodoroStats.stats.minutes": {
-      "source": "092f99ea11a34a8490e7a767a83a42fc45634f82",
-      "translation": "28bf227b9bf77d7be07a37686bd3dc3b9138dc1f"
-    },
-    "views.pomodoroStats.stats.average": {
-      "source": "cdeb9a213bbdd7b92f27d0d6c04f9d8bc7b8b045",
-      "translation": "87ff8dd9a61e0a652ee4bcbb1f1e4e27aeaabaaa"
-    },
-    "views.pomodoroStats.stats.completion": {
-      "source": "2ff255684a2277f806fcebf3fe338ed27857f350",
-      "translation": "3413828c101c792c4b90024476ba93136ca23fde"
-    },
-    "views.pomodoroStats.recents.empty": {
-      "source": "2b266080383378811ceb0f127829f40b74913e44",
-      "translation": "d91418217a8c33e4be415b2b7d14de663db10ce1"
-    },
-    "views.pomodoroStats.recents.duration": {
-      "source": "09a22c220816f5d148ab0269bda9f7d1463c55d5",
-      "translation": "99234795d717785b7363077bca6e4797731a9523"
-    },
-    "views.pomodoroStats.recents.delete": {
-      "source": "ca57470202396ff277580ee2350f77a2df043983",
-      "translation": "19cf29f82669f39149be78b834dbdc923a18c9ad"
-    },
-    "views.pomodoroStats.recents.deleteAria": {
-      "source": "318e6c608b5e3dceb2394c31d3dc38792aa4f14e",
-      "translation": "35da3dfc17b150491afd30548e4ec5d6f14365e5"
-    },
-    "views.pomodoroStats.recents.deleteConfirmTitle": {
-      "source": "75783f138477545cd540251bd85e4063cc24937f",
-      "translation": "e274333b5edce16c5b91d1cca2eb0394620571c5"
-    },
-    "views.pomodoroStats.recents.deleteConfirmMessage": {
-      "source": "2ea1de330fd1f5aadb2d92fddec3021fc186e611",
-      "translation": "3842dc734df4baa7b523a9fd84fce7041ce45a6c"
-    },
-    "views.pomodoroStats.recents.deleteConfirmButton": {
-      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
-      "translation": "3755f56f2f83187613e709269508ddfdb8018b9c"
-    },
-    "views.pomodoroStats.recents.deleteSuccess": {
-      "source": "206765441cdb00d28b6683d443323e1f40224d57",
-      "translation": "cc979e2061d5b72d0b0768e917e04d295cb9db34"
-    },
-    "views.pomodoroStats.recents.deleteNotFound": {
-      "source": "cbd330decb3732316044f5b9f0fe219ee41200e9",
-      "translation": "562921614402827fadb89f45710f145f9e4ed911"
-    },
-    "views.pomodoroStats.recents.status.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "e99b48a29bdfdc828623c75b4e5f41367c3c076c"
-    },
-    "views.pomodoroStats.recents.status.interrupted": {
-      "source": "50be3afcff74fd9eea61c4dfdd7da275a216bfb6",
-      "translation": "8dd5ad764e4bb7022c91b00312f830b86165700d"
-    },
-    "views.stats.title": {
-      "source": "2086b21f8f49274138c38d476bee317a84a8aecc",
-      "translation": "ca8ffc39903423bbb2a931df40ee377f6b028570"
-    },
-    "views.stats.taskProjectStats": {
-      "source": "eb98297814b06d370748e602e85ff64efc24496a",
-      "translation": "7ef78f7745f00017bf18ba42a5c0bf65963ef9dd"
-    },
-    "views.stats.sections.filters": {
-      "source": "96e578211aa295317cf257310712fa28ccd8f6c6",
-      "translation": "1242069d3368ac6ce0038d863086b44336db58b8"
-    },
-    "views.stats.sections.overview": {
-      "source": "0efc2e6be4c23b9a513d7ce0dcff8ed80e8912e7",
-      "translation": "5060421d1574dce019daa79bf73f0829bf37edd9"
-    },
-    "views.stats.sections.today": {
-      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
-      "translation": "17e83cc25e229b05c4c91b60fba8d5cc7c0ef931"
-    },
-    "views.stats.sections.thisWeek": {
-      "source": "7b72883e078a6858cf0c79bf3e93e72e765e9ada",
-      "translation": "e16e8248b16f6990d0f8bc8a96e342d59d5b1c87"
-    },
-    "views.stats.sections.thisMonth": {
-      "source": "1b4785331db3b08cd8e3cfa4bd36216731a79e54",
-      "translation": "389f0007de41e2232b27843cf20d56d073f5f963"
-    },
-    "views.stats.sections.projectBreakdown": {
-      "source": "eb495988cd625c9ce9b8048dcf9cfe6c045928ef",
-      "translation": "ec4f5a4da8faf4a2cb6a4594c307a79d78a03f5b"
-    },
-    "views.stats.sections.dateRange": {
-      "source": "c65ea4ae013589923685e6ad069dcf87c153bd0b",
-      "translation": "3783f29c30ecf7d99e81d3d465130dbd844f6dfd"
-    },
-    "views.stats.filters.minTime": {
-      "source": "0e3eea0020d6ce34a1253fa9fe52dd97cb7e2bfa",
-      "translation": "227f72b88ebec3e37158e855352776b82662a27c"
-    },
-    "views.stats.filters.allTasks": {
-      "source": "2eee0bb53a4a2a4d7f59af49022804d2db8c046e",
-      "translation": "59a82b9833f36ec9ab1638078b1dff2c9968eee8"
-    },
-    "views.stats.filters.activeOnly": {
-      "source": "e5a176ab924840924eeeea31ace7de41556fa9b7",
-      "translation": "8f01a2aa2b941d5fe20198cd372ce716b32983c4"
-    },
-    "views.stats.filters.completedOnly": {
-      "source": "7cc2d21994cc8e829f77dbd7c26959d689e9c4e2",
-      "translation": "4a5cc1dc455702cff0540ea957b650ad2494016f"
-    },
-    "views.stats.refreshButton": {
-      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
-      "translation": "38108eaa1d32994acea9c1bfccdd5ce955541a8f"
-    },
-    "views.stats.timeRanges.allTime": {
-      "source": "dbad49d891235d758443e82ef009973685e3a639",
-      "translation": "0e4d5f3a92d75cc4f1767a04607a154e897f6975"
-    },
-    "views.stats.timeRanges.last7Days": {
-      "source": "df833fe88d3888a1ce9d1dbefea78fe4d4cffc4e",
-      "translation": "2a0a052cea785446b3ba37f502b988392440f5e1"
-    },
-    "views.stats.timeRanges.last30Days": {
-      "source": "6b32985251a1f00785875492de31de15b7e04116",
-      "translation": "279e4c240d52c5dc3872698701c2c4fa437f201f"
-    },
-    "views.stats.timeRanges.last90Days": {
-      "source": "c328508badd742d3e0b42c06a8b0c4d7b7723f91",
-      "translation": "04ea0242551d92168c14b469b4c659e54d0345fc"
-    },
-    "views.stats.timeRanges.customRange": {
-      "source": "f365689246420c5434b1c4e95e9ba681846d6599",
-      "translation": "dcdfe4950bf25b8b634f980eab3c582ec041f53b"
-    },
-    "views.stats.resetFiltersButton": {
-      "source": "56553100b028cf32544522d0a9ac81629de6f741",
-      "translation": "b63e282981b58467e9cfd3af502cb1af55044a74"
-    },
-    "views.stats.dateRangeFrom": {
-      "source": "3f66052a107eaf9bae7cad0f61fb462f47ec2c47",
-      "translation": "8ab977960a698140cf24810d2f39a66d082d6f16"
-    },
-    "views.stats.dateRangeTo": {
-      "source": "ae79ea1e9c6391a9ed83a2e18a031b835feec0c9",
-      "translation": "792bbe6e08f5c43c0c78a7793523f994c4d532ed"
-    },
-    "views.stats.noProject": {
-      "source": "c326b75775bf901d2023c5998bd2549e8cc27e3b",
-      "translation": "b977b91f038407b4a8546a34c85ba799ba476da3"
-    },
-    "views.stats.cards.timeTrackedEstimated": {
-      "source": "2ae2585b134b956011569487a8c5b8f1a6610a8e",
-      "translation": "3b37c6ffb11aa256de6f2554b196c5c66c16774d"
-    },
-    "views.stats.cards.totalTasks": {
-      "source": "d0ecac34cbfbad0f68d32dddd6abdf64c88d8c4f",
-      "translation": "3be5a57ca5ccb09130428b14cd70fdc495fda7bb"
-    },
-    "views.stats.cards.completionRate": {
-      "source": "a36008372807c922a809b75df95445c475ea9564",
-      "translation": "3413828c101c792c4b90024476ba93136ca23fde"
-    },
-    "views.stats.cards.activeProjects": {
-      "source": "f361946445f2d35605eb61f696ceeae3a1eea839",
-      "translation": "785934509945dd9bffcc23fde602f32ddd2a38b0"
-    },
-    "views.stats.cards.avgTimePerTask": {
-      "source": "0bc83ca5e82607e3698710c73eb074854c147217",
-      "translation": "49c2487c2992208e293b1b3b72e9fb00e64622bf"
-    },
-    "views.stats.labels.tasks": {
-      "source": "090ec5f560fc50377fcd95e5cda128e91b276e98",
-      "translation": "3172b317f9fc809f3aee467c0446384de4cc9255"
-    },
-    "views.stats.labels.completed": {
-      "source": "1798b3ba42ee08ea09d9720b2d9c0181abbfe3e4",
-      "translation": "e99b48a29bdfdc828623c75b4e5f41367c3c076c"
-    },
-    "views.stats.labels.projects": {
-      "source": "53e890d5f0fffe09587c55dce74e9a6febf59b5c",
-      "translation": "22336e6b892f14855e9f71b6ff9d861510dbe57b"
-    },
-    "views.stats.noProjectData": {
-      "source": "f61de1237b5bf9041f1b8e00bdd5b7bf0df0232e",
-      "translation": "9cd58d06c5dac6c4c1d3f6e885a79c06cdfe9f1b"
-    },
-    "views.stats.notAvailable": {
-      "source": "08d2e98e6754af941484848930ccbaddfefe13d6",
-      "translation": "eec46c136f613594c20aba7b47bf2a2ab85027fb"
-    },
-    "views.stats.noTasks": {
-      "source": "d7c07a0905ed43a32ec58ccae1353c564433d826",
-      "translation": "4459e7acb57ee00e29f8ee09daedbce1cbfce18e"
-    },
-    "views.stats.loading": {
-      "source": "b04ba49f848624bb97ab094a2631d2ad74913498",
-      "translation": "514c33af5cf4455f481f11a81c84af3f272db1f7"
-    },
     "views.releaseNotes.title": {
       "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
       "translation": "f2780c1c443bdaf2d9eba3d81667be844efaf310"
@@ -69251,8 +67131,8 @@
       "translation": "266227ca3d4da9d9e7f98c19cb60f087428e1d19"
     },
     "views.releaseNotes.baseFilesNotice": {
-      "source": "24ee91900eccc17d43bac480748d518432f25fd6",
-      "translation": "55cac338d4504abd81b32abd2c30f5bd62da1153"
+      "source": "9006cec1b312951ee9cd725f71310e1b51aeba2b",
+      "translation": "8fb67c606b523bec50f497f827d3339e06f3b33a"
     },
     "settings.native.enterValue": {
       "source": "ffb4705ce609f56bee3903f822a7d1421f12745a",
@@ -72362,22 +70242,6 @@
       "source": "65a232b082e4f02149df030ec01a52ec361f1692",
       "translation": "1e4e7a177d71600fb9c662052a07b35350778a3f"
     },
-    "settings.appearance.uiElements.viewsButtonAlignment.name": {
-      "source": "9b7b8db5a42172d1e964e7cbc15264d1e63a0526",
-      "translation": "f6a4beb3cf5f732e592520f1b55a3fb06c0403ac"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.description": {
-      "source": "3cd69063c32d9726b4764f3c5251486e4e70f7ea",
-      "translation": "75234686694997509d241f027d91fd51fa97452b"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.left": {
-      "source": "7459e2ff70b4a74b12b3b42dcc8898f1325c4607",
-      "translation": "440495fc2df71c67226b2f2e93f49ed70488916a"
-    },
-    "settings.appearance.uiElements.viewsButtonAlignment.options.right": {
-      "source": "65a232b082e4f02149df030ec01a52ec361f1692",
-      "translation": "1e4e7a177d71600fb9c662052a07b35350778a3f"
-    },
     "settings.appearance.projectAutosuggest.header": {
       "source": "ae733299043ca65c98bf192597c7e6be6b3c3111",
       "translation": "4f5a77a33fcab35b20c93de65c1a155012e0b192"
@@ -72594,10 +70458,6 @@
       "source": "29778b13de2c1757474ea65987a6c25f0e64cc13",
       "translation": "e38ce07529b5d0cc2092c2e2e156689a8d0e0502"
     },
-    "settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint": {
-      "source": "fe4b274723ccb4e6b012ec48e7680fb1fc5d81e8",
-      "translation": "1ccf1ea82959c698d2ca02c701c2a10eaf73d5b0"
-    },
     "settings.integrations.basesIntegration.viewCommands.docsLink": {
       "source": "600fc012cd270f71115df41a83623c799eecf3b7",
       "translation": "eff3d0ad287533091d5438f4ee31b77740b6dd8c"
@@ -72625,10 +70485,6 @@
     "settings.integrations.basesIntegration.viewCommands.commands.agenda": {
       "source": "8497bcbfd3a589408c7f7541e705729f239dcfc7",
       "translation": "a2ab407c995a9bab81eda100859d5ad6dfbac9ba"
-    },
-    "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats": {
-      "source": "6fcbba0b914cda44f720b43b86935977e0321ed3",
-      "translation": "28a8cc603907714f80f70a5b89e6a72308ae07e3"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.relationships": {
       "source": "d31d66e2e1fcdc573a95fc01db407713b36ce7bd",
@@ -74070,6 +71926,14 @@
       "source": "34dc6d24bf621aca04c0190a8906dd735fac5591",
       "translation": "1e0ef3369e5adc3d56d75849ea219325f256e8c2"
     },
+    "commands.openToday": {
+      "source": "a199f140fdb8fe2459198fa013d610cc2178b9aa",
+      "translation": "a46a7825123072326e7f6d4a047f61f89b2e7ee2"
+    },
+    "commands.openInbox": {
+      "source": "3974ca2b10ca6457c0ca27751d303b1419fc5a2e",
+      "translation": "6ce2b0e517660c12e89ce4ba5df39b529bc41787"
+    },
     "commands.openTasksView": {
       "source": "767b41fb3b53b193d0a250eed7ed025f2c7ead0a",
       "translation": "55e2cbea0f08ef479592a15fecae3cf35b61611d"
@@ -74093,14 +71957,6 @@
     "commands.updateDefaultBaseFiles": {
       "source": "45bb853f23eba250f10bf0ad2c3ba67d12f0a5d8",
       "translation": "ce644b1e738c51f9901258ab711c31b63d3e3390"
-    },
-    "commands.openPomodoroStats": {
-      "source": "e5b85acbea5f24aed21865408d44c45e148aaedb",
-      "translation": "275ad7fd680efa2a33da9474c0bad5592b405204"
-    },
-    "commands.openStatisticsView": {
-      "source": "ddff620f8a4d10c3c20a028fb132fb630bf118aa",
-      "translation": "b32fe69ca1c492188d9e3dff63774c4db5a00ec1"
     },
     "commands.createNewTask": {
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",

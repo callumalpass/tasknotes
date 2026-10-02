@@ -1,7 +1,17 @@
 import { TranslationTree } from "../types";
 
 export const ja: TranslationTree = {
+	onboarding: {
+		title: "TaskNotes を始める",
+		intro: "タスクは保管庫内の Markdown ノートです。コマンドパレットで次の3つの手順を試してください。",
+		create: "実際のタスクを作成し、今日に予定を設定します。",
+		review: "「今日」ビューでタスクを確認します。",
+		complete: "完了になるまで状態ボタンをクリックします。「今日」からは消えますが、ノートは保管庫に残ります。",
+		inbox: "日付を付けずに記録するには予定日を消します。受信トレイにはプロジェクト、予定日、期限のない未完了タスクが表示されます。",
+		settings: "必要になったら設定する",
+	},
 	common: {
+		settings: "設定",
 		appName: "TaskNotes",
 		new: "新規",
 		cancel: "キャンセル",
@@ -383,115 +393,6 @@ export const ja: TranslationTree = {
 				inputLabel: "タイマー時間",
 			},
 		},
-		pomodoroStats: {
-			title: "ポモドーロ統計",
-			heading: "ポモドーロ統計",
-			refresh: "更新",
-			sections: {
-				overview: "概要",
-				today: "今日",
-				week: "今週",
-				allTime: "全期間",
-				recent: "最近のセッション",
-			},
-			overviewCards: {
-				todayPomos: {
-					label: "今日のポモ",
-					change: {
-						more: "昨日より{count}多い",
-						less: "昨日より{count}少ない",
-					},
-				},
-				totalPomos: {
-					label: "総ポモ数",
-				},
-				todayFocus: {
-					label: "今日のフォーカス",
-					change: {
-						more: "昨日より{duration}多い",
-						less: "昨日より{duration}少ない",
-					},
-				},
-				totalFocus: {
-					label: "総フォーカス時間",
-				},
-			},
-			stats: {
-				pomodoros: "ポモドーロ",
-				streak: "連続記録",
-				minutes: "分",
-				average: "平均長さ",
-				completion: "完了",
-			},
-			recents: {
-				empty: "まだセッションが記録されていません",
-				duration: "{minutes}分",
-				status: {
-					completed: "完了",
-					interrupted: "中断",
-				},
-				delete: "セッションを削除",
-				deleteAria: "Pomodoroセッションを削除",
-				deleteConfirmTitle: "Pomodoroセッションを削除しますか？",
-				deleteConfirmMessage:
-					"これによりPomodoro履歴からセッションが削除されます。既存のタスク時間エントリは変更されません。",
-				deleteConfirmButton: "削除",
-				deleteSuccess: "Pomodoroセッションを削除しました",
-				deleteNotFound: "Pomodoroセッションが見つかりませんでした",
-			},
-			basesMigration: {
-				title: "Baseビューが必要ですか？",
-				description:
-					"Pomodoro Baseビューはデイリーノートのfrontmatterを使用します。生成されたPomodoro統計Baseでこの履歴を見るには、設定でPomodoroデータを移行し、保存先をデイリーノートに設定してください。",
-			},
-		},
-		stats: {
-			title: "統計",
-			taskProjectStats: "タスクとプロジェクトの統計",
-			sections: {
-				filters: "フィルター",
-				overview: "概要",
-				today: "今日",
-				thisWeek: "今週",
-				thisMonth: "今月",
-				projectBreakdown: "プロジェクト内訳",
-				dateRange: "日付範囲",
-			},
-			filters: {
-				minTime: "最小時間（分）",
-				allTasks: "すべてのタスク",
-				activeOnly: "アクティブのみ",
-				completedOnly: "完了のみ",
-			},
-			refreshButton: "更新",
-			timeRanges: {
-				allTime: "全期間",
-				last7Days: "過去7日間",
-				last30Days: "過去30日間",
-				last90Days: "過去90日間",
-				customRange: "カスタム範囲",
-			},
-			resetFiltersButton: "フィルターをリセット",
-			dateRangeFrom: "開始",
-			dateRangeTo: "終了",
-			noProject: "プロジェクトなし",
-			cards: {
-				timeTrackedEstimated: "追跡時間 / 見積時間",
-				totalTasks: "総タスク数",
-				completionRate: "完了率",
-				activeProjects: "アクティブプロジェクト",
-				avgTimePerTask: "タスクあたりの平均時間",
-			},
-			labels: {
-				tasks: "タスク",
-				completed: "完了",
-				projects: "プロジェクト",
-			},
-			noProjectData: "プロジェクトデータがありません",
-			notAvailable: "N/A",
-			noTasks: "タスクが見つかりません",
-			loading: "読み込み中...",
-		},
 		releaseNotes: {
 			title: "TaskNotes {version} の新機能",
 			header: "TaskNotes {version} の新機能",
@@ -499,7 +400,7 @@ export const ja: TranslationTree = {
 			starMessage:
 				"どんなフィードバックも本当にありがたいです。何か違和感があれば、GitHubでお知らせください。TaskNotesが役に立ったら、スターもご検討ください。",
 			baseFilesNotice:
-				"> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ビューとbaseファイル → ファイルを更新** からベースファイルを再生成してください。",
+				"> [!info] デフォルトの `.base` ファイルについて\n> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 外観と操作 → ビューとBaseファイル → ファイルを更新** からベースファイルを再生成してください。",
 		},
 	},
 	settings: {
@@ -1861,14 +1762,6 @@ export const ja: TranslationTree = {
 						right: "右側",
 					},
 				},
-				viewsButtonAlignment: {
-					name: "ビューボタン配置",
-					description: "タスクインターフェースのビュー/フィルターボタンの配置",
-					options: {
-						left: "左側",
-						right: "右側",
-					},
-				},
 			},
 			projectAutosuggest: {
 				header: "プロジェクト自動提案",
@@ -1998,13 +1891,10 @@ export const ja: TranslationTree = {
 						advancedCalendar: "高度なカレンダービューを開く",
 						agenda: "アジェンダビューを開く",
 						relationships: "関係ウィジェット",
-						pomodoroStats: "Pomodoro統計Base",
 					},
 					fileLabel: "ファイル：{path}",
 					resetButton: "リセット",
 					resetTooltip: "デフォルトパスにリセット",
-					pomodoroDailyNotesHint:
-						"生成されたPomodoro統計BaseはデイリーノートからPomodoro履歴を読み取ります。履歴がまだプラグインデータに保存されている場合は、このBaseファイルを使う前に設定で移行してください。",
 				},
 				autoCreateDefaultFiles: {
 					name: "デフォルトファイルを自動作成",
@@ -2643,14 +2533,14 @@ export const ja: TranslationTree = {
 	commands: {
 		openCalendarView: "ミニカレンダービューを開く",
 		openAdvancedCalendarView: "カレンダービューを開く",
+		openToday: "今日を開く",
+		openInbox: "受信トレイを開く",
 		openTasksView: "タスクビューを開く",
 		openNotesView: "ノートビューを開く",
 		openAgendaView: "アジェンダビューを開く",
 		openPomodoroView: "ポモドーロタイマーを開く",
 		openKanbanView: "カンバンボードを開く",
 		updateDefaultBaseFiles: "既定の Base ファイルを更新",
-		openPomodoroStats: "ポモドーロ統計を開く",
-		openStatisticsView: "タスクとプロジェクト統計を開く",
 		createNewTask: "新しいタスクを作成",
 		convertCurrentNoteToTask: {
 			name: "現在のノートをタスクに変換",

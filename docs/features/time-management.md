@@ -16,7 +16,7 @@ TaskNotes can automatically stop time tracking when a task is marked as complete
 
 The auto-stop feature works by monitoring task status changes across all views and interfaces. When a task's status changes from any non-completed state to a completed state (as defined by the custom status configuration), any active time tracking session for that task is automatically terminated.
 
-**Configuration Options:** Configure these under `Settings -> TaskNotes -> Features` (Time Tracking section).
+**Configuration Options:** Configure these under `Settings → TaskNotes → Time & reminders` (Time Tracking section).
 
 - **Auto-stop tracking** - Enable or disable the automatic stopping behavior (enabled by default)
 - **Completion notification** - Show a notice when auto-stop occurs (disabled by default)
@@ -37,8 +37,6 @@ TaskNotes also includes a Pomodoro timer, which is a tool for time management th
 
 When a task is associated with a Pomodoro session, the time is automatically recorded in the task's time tracking data upon completion of the session.
 
-## Productivity Analytics
+## Recorded data
 
-The **Pomodoro Stats View** provides analytics and historical data about your Pomodoro sessions. This includes a history of completed sessions, as well as metrics like completion rates and total time spent on tasks. The data can be visualized to show productivity patterns over time.
-
-![Task Statistics](../assets/feature-task-statistics.png)
+Version 5 removes the Statistics and Pomodoro statistics dashboards and no longer generates a Pomodoro statistics Base. Time tracking, the timer, session storage settings, recorded history, and the API remain available. Existing statistics Base files are kept as ordinary user-editable Bases. No task notes or history are deleted. Close any old statistics dashboard tabs after upgrading.

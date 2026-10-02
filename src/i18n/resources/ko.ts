@@ -1,7 +1,17 @@
 import { TranslationTree } from "../types";
 
 export const ko: TranslationTree = {
+	onboarding: {
+		title: "TaskNotes 시작하기",
+		intro: "작업은 보관함의 Markdown 노트입니다. 명령 팔레트에서 다음 세 단계를 따라 해 보세요.",
+		create: "실제 작업을 만들고 오늘로 예정일을 설정하세요.",
+		review: "오늘 보기에서 작업을 찾으세요.",
+		complete: "작업이 완료될 때까지 상태 버튼을 클릭하세요. 오늘 보기에서는 사라지지만 노트는 보관함에 남습니다.",
+		inbox: "날짜 없이 기록하려면 예정일을 지우세요. 수신함은 프로젝트, 예정일, 마감일이 없는 미완료 작업을 보여 줍니다.",
+		settings: "필요할 때 설정하기",
+	},
 	common: {
+		settings: "설정",
 		appName: "TaskNotes",
 		new: "새로 만들기",
 		cancel: "취소",
@@ -382,115 +392,6 @@ export const ko: TranslationTree = {
 				inputLabel: "타이머 시간",
 			},
 		},
-		pomodoroStats: {
-			title: "뽀모도로 통계",
-			heading: "뽀모도로 통계",
-			refresh: "새로고침",
-			sections: {
-				overview: "개요",
-				today: "오늘",
-				week: "이번 주",
-				allTime: "전체 기간",
-				recent: "최근 세션",
-			},
-			overviewCards: {
-				todayPomos: {
-					label: "오늘의 뽀모도로",
-					change: {
-						more: "어제보다 {count}개 더 많음",
-						less: "어제보다 {count}개 더 적음",
-					},
-				},
-				totalPomos: {
-					label: "총 뽀모도로",
-				},
-				todayFocus: {
-					label: "오늘의 집중 시간",
-					change: {
-						more: "어제보다 {duration} 더 많음",
-						less: "어제보다 {duration} 더 적음",
-					},
-				},
-				totalFocus: {
-					label: "총 집중 시간",
-				},
-			},
-			stats: {
-				pomodoros: "뽀모도로",
-				streak: "연속",
-				minutes: "분",
-				average: "평균 길이",
-				completion: "완료율",
-			},
-			recents: {
-				empty: "아직 기록된 세션이 없습니다",
-				duration: "{minutes}분",
-				status: {
-					completed: "완료됨",
-					interrupted: "중단됨",
-				},
-				delete: "세션 삭제",
-				deleteAria: "Pomodoro 세션 삭제",
-				deleteConfirmTitle: "Pomodoro 세션을 삭제할까요?",
-				deleteConfirmMessage:
-					"Pomodoro 기록에서 이 세션을 제거합니다. 기존 작업 시간 항목은 변경되지 않습니다.",
-				deleteConfirmButton: "삭제",
-				deleteSuccess: "Pomodoro 세션이 삭제되었습니다",
-				deleteNotFound: "Pomodoro 세션을 찾을 수 없습니다",
-			},
-			basesMigration: {
-				title: "Base 보기 원하시나요?",
-				description:
-					"Pomodoro Base 보기는 데일리 노트 frontmatter를 사용합니다. 생성된 Pomodoro 통계 Base에서 이 기록을 보려면 설정에서 Pomodoro 데이터를 마이그레이션한 다음 저장 위치를 데일리 노트로 설정하세요.",
-			},
-		},
-		stats: {
-			title: "통계",
-			taskProjectStats: "작업 및 프로젝트 통계",
-			sections: {
-				filters: "필터",
-				overview: "개요",
-				today: "오늘",
-				thisWeek: "이번 주",
-				thisMonth: "이번 달",
-				projectBreakdown: "프로젝트별 분석",
-				dateRange: "날짜 범위",
-			},
-			filters: {
-				minTime: "최소 시간 (분)",
-				allTasks: "모든 작업",
-				activeOnly: "활성 작업만",
-				completedOnly: "완료된 작업만",
-			},
-			refreshButton: "새로고침",
-			timeRanges: {
-				allTime: "전체 기간",
-				last7Days: "최근 7일",
-				last30Days: "최근 30일",
-				last90Days: "최근 90일",
-				customRange: "사용자 지정 범위",
-			},
-			resetFiltersButton: "필터 초기화",
-			dateRangeFrom: "시작",
-			dateRangeTo: "종료",
-			noProject: "프로젝트 없음",
-			cards: {
-				timeTrackedEstimated: "기록 시간 / 예상 시간",
-				totalTasks: "총 작업",
-				completionRate: "완료율",
-				activeProjects: "활성 프로젝트",
-				avgTimePerTask: "작업당 평균 시간",
-			},
-			labels: {
-				tasks: "작업",
-				completed: "완료됨",
-				projects: "프로젝트",
-			},
-			noProjectData: "프로젝트 데이터가 없습니다",
-			notAvailable: "N/A",
-			noTasks: "작업을 찾을 수 없습니다",
-			loading: "로딩 중...",
-		},
 		releaseNotes: {
 			title: "TaskNotes {version}의 새로운 기능",
 			header: "TaskNotes {version}의 새로운 기능",
@@ -498,7 +399,7 @@ export const ko: TranslationTree = {
 			starMessage:
 				"모든 피드백을 정말 감사하게 생각합니다. 뭔가 맞지 않는 느낌이 들면 GitHub에서 알려 주세요. TaskNotes가 유용하다면 별표도 고려해 주세요.",
 			baseFilesNotice:
-				"> [!info] 기본 `.base` 파일 안내\n> 기본으로 생성되는 `.base` 템플릿이 변경되어도 기존 `.base` 파일은 덮어쓰지 않으므로 사용자 설정이 유지됩니다.\n> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 일반 → 보기 및 base 파일 → 파일 업데이트**에서 베이스 파일을 다시 생성하세요.",
+				"> [!info] 기본 `.base` 파일 안내\n> 기본으로 생성되는 `.base` 템플릿이 변경되어도 기존 `.base` 파일은 덮어쓰지 않으므로 사용자 설정이 유지됩니다.\n> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 모양 및 상호작용 → 뷰 및 베이스 파일 → 파일 업데이트**에서 베이스 파일을 다시 생성하세요.",
 		},
 	},
 	settings: {
@@ -1821,14 +1722,6 @@ export const ko: TranslationTree = {
 						right: "오른쪽",
 					},
 				},
-				viewsButtonAlignment: {
-					name: "뷰 버튼 정렬",
-					description: "작업 인터페이스에서 뷰/필터 버튼의 정렬",
-					options: {
-						left: "왼쪽",
-						right: "오른쪽",
-					},
-				},
 			},
 			projectAutosuggest: {
 				header: "프로젝트 자동 제안",
@@ -1957,13 +1850,10 @@ export const ko: TranslationTree = {
 						advancedCalendar: "고급 캘린더 뷰 열기",
 						agenda: "일정 뷰 열기",
 						relationships: "관계 위젯",
-						pomodoroStats: "Pomodoro 통계 Base",
 					},
 					fileLabel: "파일: {path}",
 					resetButton: "초기화",
 					resetTooltip: "기본 경로로 초기화",
-					pomodoroDailyNotesHint:
-						"생성된 Pomodoro 통계 Base는 데일리 노트에서 Pomodoro 기록을 읽습니다. 기록이 아직 플러그인 데이터에 저장되어 있다면 이 Base 파일을 사용하기 전에 설정에서 마이그레이션하세요.",
 				},
 				autoCreateDefaultFiles: {
 					name: "기본 파일 자동 생성",
@@ -2594,14 +2484,14 @@ export const ko: TranslationTree = {
 	commands: {
 		openCalendarView: "미니 캘린더 뷰 열기",
 		openAdvancedCalendarView: "캘린더 뷰 열기",
+		openToday: "오늘 열기",
+		openInbox: "수신함 열기",
 		openTasksView: "작업 뷰 열기",
 		openNotesView: "노트 뷰 열기",
 		openAgendaView: "일정 뷰 열기",
 		openPomodoroView: "뽀모도로 타이머 열기",
 		openKanbanView: "칸반 보드 열기",
 		updateDefaultBaseFiles: "기본 Base 파일 업데이트",
-		openPomodoroStats: "뽀모도로 통계 열기",
-		openStatisticsView: "작업 및 프로젝트 통계 열기",
 		createNewTask: "새 작업 만들기",
 		convertCurrentNoteToTask: {
 			name: "현재 노트를 작업으로 변환",

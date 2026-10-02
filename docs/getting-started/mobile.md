@@ -19,13 +19,13 @@ TaskNotes task files, Base files, settings, and most commands work on Obsidian m
 | --- | --- |
 | HTTP API and MCP server | Desktop only. The HTTP API settings section is hidden on mobile. |
 | Calendar integrations | Available, with an option to disable calendar integration on mobile when startup time or provider behavior is a problem. |
-| Settings layout | Uses the same six tabs. Desktop-only controls are omitted where they cannot run. |
+| Settings layout | Uses the same native settings pages. Desktop-only controls are omitted where they cannot run. |
 | Keyboard commands | Commands remain available in the command palette; desktop key bindings may not have a mobile equivalent. |
 | Wide views | Calendar, Kanban, and large tables may require horizontal scrolling or a narrower Base configuration. |
 
 ## A practical mobile setup
 
-- Keep task cards compact under **Settings → Appearance and UI**.
+- Keep task cards compact under **Settings → TaskNotes → Appearance & interaction**.
 - Limit visible Base columns and calendar event layers.
 - Increase remote calendar refresh intervals when mobile networking or battery use matters.
 - Use the task creation modal or command palette for predictable capture.

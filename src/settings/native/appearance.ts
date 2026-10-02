@@ -671,31 +671,6 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 					() => !plugin.settings.showExpandableSubtasks
 				),
-				ctx.dropdown("viewsButtonAlignment", {
-					name: translate("settings.appearance.uiElements.viewsButtonAlignment.name"),
-					desc: translate(
-						"settings.appearance.uiElements.viewsButtonAlignment.description"
-					),
-					options: [
-						{
-							value: "left",
-							label: translate(
-								"settings.appearance.uiElements.viewsButtonAlignment.options.left"
-							),
-						},
-						{
-							value: "right",
-							label: translate(
-								"settings.appearance.uiElements.viewsButtonAlignment.options.right"
-							),
-						},
-					],
-					getValue: () => plugin.settings.viewsButtonAlignment,
-					setValue: async (value: string) => {
-						plugin.settings.viewsButtonAlignment = value as "left" | "right";
-						save();
-					},
-				}),
 			],
 		},
 		{

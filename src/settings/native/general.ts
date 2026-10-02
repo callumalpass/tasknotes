@@ -43,11 +43,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 			defaultPath: "TaskNotes/Views/agenda-default.base",
 		},
 		{
-			id: "pomodoro-stats-base",
-			nameKey: "pomodoroStats" as const,
-			defaultPath: "TaskNotes/Views/pomodoro-stats.base",
-		},
-		{
 			id: "relationships",
 			nameKey: "relationships" as const,
 			defaultPath: "TaskNotes/Views/relationships.base",
@@ -268,20 +263,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 						setting.setDesc(
 							translate(
 								"settings.integrations.basesIntegration.viewCommands.descriptionRegen"
-							)
-						);
-						setting.settingEl.addClass("settings-view__group-description");
-					},
-				},
-				{
-					name: "",
-					desc: translate(
-						"settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint"
-					),
-					render: (setting) => {
-						setting.setDesc(
-							translate(
-								"settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint"
 							)
 						);
 						setting.settingEl.addClass("settings-view__group-description");

@@ -35,8 +35,6 @@ const CSS_FILES = [
     'styles/kanban-view.css',        // KanbanView component with proper BEM scoping
     'styles/agenda-view.css',        // AgendaView component with proper BEM scoping
     'styles/pomodoro-view.css',      // PomodoroView component with proper BEM scoping
-    'styles/pomodoro-stats-view.css', // PomodoroStatsView component with proper BEM scoping
-    'styles/stats-view.css',         // StatsView component with proper BEM scoping
     'styles/release-notes-view.css', // Release notes view typography
     'styles/settings-view.css',      // SettingsView component with proper BEM scoping
     'styles/field-manager.css',      // Modal field manager settings

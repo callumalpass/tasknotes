@@ -604,7 +604,7 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		due: ctx.t("settings.taskProperties.properties.due.name"),
 		scheduled: ctx.t("settings.taskProperties.properties.scheduled.name"),
 		contexts: ctx.t("settings.taskProperties.properties.contexts.name"),
-		projects: ctx.t("views.stats.labels.projects"),
+		projects: ctx.t("modals.task.organization.projects"),
 		timeEstimate: ctx.t("settings.taskProperties.properties.timeEstimate.name"),
 		recurrence: ctx.t("settings.taskProperties.properties.recurrence.name"),
 		reminders: ctx.t("settings.taskProperties.properties.reminders.name"),

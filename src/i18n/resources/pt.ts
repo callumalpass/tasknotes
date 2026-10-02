@@ -1,7 +1,17 @@
 import { TranslationTree } from "../types";
 
 export const pt: TranslationTree = {
+	onboarding: {
+		title: "Primeiros passos com TaskNotes",
+		intro: "As tarefas são notas Markdown no seu cofre. Use a paleta de comandos para estes três passos.",
+		create: "Crie uma tarefa real e agende-a para hoje.",
+		review: "Encontre sua tarefa em Hoje.",
+		complete: "Clique no status até concluir a tarefa. Ela sai de Hoje, mas a nota permanece no seu cofre.",
+		inbox: "Para capturar sem data, apague a data agendada. A caixa de entrada mostra tarefas incompletas sem projeto, data agendada ou prazo.",
+		settings: "Configurações, quando precisar",
+	},
 	common: {
+		settings: "Configurações",
 		appName: "TaskNotes",
 		new: "Novo",
 		cancel: "Cancelar",
@@ -384,115 +394,6 @@ export const pt: TranslationTree = {
 				inputLabel: "Duração do timer",
 			},
 		},
-		pomodoroStats: {
-			title: "Estatísticas Pomodoro",
-			heading: "Estatísticas Pomodoro",
-			refresh: "Atualizar",
-			sections: {
-				overview: "Visão Geral",
-				today: "Hoje",
-				week: "Esta semana",
-				allTime: "Todo o período",
-				recent: "Sessões recentes",
-			},
-			overviewCards: {
-				todayPomos: {
-					label: "Pomos de Hoje",
-					change: {
-						more: "{count} a mais que ontem",
-						less: "{count} a menos que ontem",
-					},
-				},
-				totalPomos: {
-					label: "Total de Pomos",
-				},
-				todayFocus: {
-					label: "Foco de Hoje",
-					change: {
-						more: "{duration} a mais que ontem",
-						less: "{duration} a menos que ontem",
-					},
-				},
-				totalFocus: {
-					label: "Duração Total de Foco",
-				},
-			},
-			stats: {
-				pomodoros: "Pomodoros",
-				streak: "Sequência",
-				minutes: "Minutos",
-				average: "Duração média",
-				completion: "Conclusão",
-			},
-			recents: {
-				empty: "Nenhuma sessão registrada ainda",
-				duration: "{minutes} min",
-				status: {
-					completed: "Concluído",
-					interrupted: "Interrompido",
-				},
-				delete: "Excluir sessão",
-				deleteAria: "Excluir sessão Pomodoro",
-				deleteConfirmTitle: "Excluir sessão Pomodoro?",
-				deleteConfirmMessage:
-					"Isso remove a sessão do histórico Pomodoro. Entradas de tempo de tarefas existentes não são alteradas.",
-				deleteConfirmButton: "Excluir",
-				deleteSuccess: "Sessão Pomodoro excluída",
-				deleteNotFound: "Sessão Pomodoro não encontrada",
-			},
-			basesMigration: {
-				title: "Quer uma visualização Base?",
-				description:
-					"As visualizações Base de Pomodoro usam o frontmatter das notas diárias. Para ver esse histórico na Base de estatísticas Pomodoro gerada, migre os dados do Pomodoro nas configurações e defina o armazenamento como notas diárias.",
-			},
-		},
-		stats: {
-			title: "Estatísticas",
-			taskProjectStats: "Estatísticas de Tarefas e Projetos",
-			sections: {
-				filters: "Filtros",
-				overview: "Visão Geral",
-				today: "Hoje",
-				thisWeek: "Esta Semana",
-				thisMonth: "Este Mês",
-				projectBreakdown: "Detalhamento por Projeto",
-				dateRange: "Intervalo de Datas",
-			},
-			filters: {
-				minTime: "Tempo mín. (minutos)",
-				allTasks: "Todas as Tarefas",
-				activeOnly: "Somente Ativas",
-				completedOnly: "Somente Concluídas",
-			},
-			refreshButton: "Atualizar",
-			timeRanges: {
-				allTime: "Todo o período",
-				last7Days: "Últimos 7 dias",
-				last30Days: "Últimos 30 dias",
-				last90Days: "Últimos 90 dias",
-				customRange: "Intervalo Personalizado",
-			},
-			resetFiltersButton: "Redefinir Filtros",
-			dateRangeFrom: "De",
-			dateRangeTo: "Até",
-			noProject: "Sem Projeto",
-			cards: {
-				timeTrackedEstimated: "Tempo Rastreado / Estimado",
-				totalTasks: "Total de Tarefas",
-				completionRate: "Taxa de Conclusão",
-				activeProjects: "Projetos Ativos",
-				avgTimePerTask: "Tempo Médio por Tarefa",
-			},
-			labels: {
-				tasks: "Tarefas",
-				completed: "Concluídas",
-				projects: "Projetos",
-			},
-			noProjectData: "Nenhum dado de projeto disponível",
-			notAvailable: "N/D",
-			noTasks: "Nenhuma tarefa encontrada",
-			loading: "Carregando...",
-		},
 		releaseNotes: {
 			title: "O que há de novo no TaskNotes {version}",
 			header: "O que há de novo no TaskNotes {version}",
@@ -500,7 +401,7 @@ export const pt: TranslationTree = {
 			starMessage:
 				"Agradecemos muito todo feedback. Se algo não parecer certo, conte para nós no GitHub. Se você acha o TaskNotes útil, considere dar uma estrela.",
 			baseFilesNotice:
-				"> [!info] Sobre os arquivos `.base` padrão\n> Alterações nos modelos `.base` gerados por padrão não substituem seus arquivos `.base` existentes, para manter suas personalizações.\n> Se quiser as melhorias mais recentes dos modelos, regenere os arquivos base em **Configurações → TaskNotes → Geral → Visualizações e arquivos base → Atualizar arquivos**.",
+				"> [!info] Sobre os arquivos `.base` padrão\n> Alterações nos modelos `.base` gerados por padrão não substituem seus arquivos `.base` existentes, para manter suas personalizações.\n> Se quiser as melhorias mais recentes dos modelos, regenere os arquivos base em **Configurações → TaskNotes → Aparência e interação → Visualizações e arquivos base → Atualizar arquivos**.",
 		},
 	},
 	settings: {
@@ -1903,15 +1804,6 @@ export const pt: TranslationTree = {
 						right: "Lado direito",
 					},
 				},
-				viewsButtonAlignment: {
-					name: "Alinhamento do botão de visualizações",
-					description:
-						"Alinhamento do botão de visualizações/filtros na interface de tarefas",
-					options: {
-						left: "Lado esquerdo",
-						right: "Lado direito",
-					},
-				},
 			},
 			projectAutosuggest: {
 				header: "Autossugestão de Projeto",
@@ -2044,13 +1936,10 @@ export const pt: TranslationTree = {
 						advancedCalendar: "Abrir visualização de calendário avançado",
 						agenda: "Abrir visualização de agenda",
 						relationships: "Widget de relacionamentos",
-						pomodoroStats: "Base de estatísticas Pomodoro",
 					},
 					fileLabel: "Arquivo: {path}",
 					resetButton: "Redefinir",
 					resetTooltip: "Redefinir para caminho padrão",
-					pomodoroDailyNotesHint:
-						"A Base de estatísticas Pomodoro gerada lê o histórico do Pomodoro nas notas diárias. Se o histórico ainda estiver nos dados do plugin, migre-o nas configurações antes de usar esse arquivo Base.",
 				},
 				autoCreateDefaultFiles: {
 					name: "Criar arquivos padrão automaticamente",
@@ -2699,14 +2588,14 @@ export const pt: TranslationTree = {
 	commands: {
 		openCalendarView: "Abrir visualização de mini calendário",
 		openAdvancedCalendarView: "Abrir visualização de calendário",
+		openToday: "Abrir Hoje",
+		openInbox: "Abrir caixa de entrada",
 		openTasksView: "Abrir visualização de tarefas",
 		openNotesView: "Abrir visualização de notas",
 		openAgendaView: "Abrir visualização de agenda",
 		openPomodoroView: "Abrir temporizador pomodoro",
 		openKanbanView: "Abrir quadro kanban",
 		updateDefaultBaseFiles: "Atualizar arquivos Base padrão",
-		openPomodoroStats: "Abrir estatísticas pomodoro",
-		openStatisticsView: "Abrir estatísticas de tarefas e projetos",
 		createNewTask: "Criar nova tarefa",
 		convertCurrentNoteToTask: {
 			name: "Converter nota atual em tarefa",

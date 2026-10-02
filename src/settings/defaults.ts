@@ -390,7 +390,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		"open-tasks-view": "TaskNotes/Views/tasks-default.base",
 		"open-advanced-calendar-view": "TaskNotes/Views/calendar-default.base",
 		"open-agenda-view": "TaskNotes/Views/agenda-default.base",
-		"pomodoro-stats-base": "TaskNotes/Views/pomodoro-stats.base",
 		relationships: "TaskNotes/Views/relationships.base",
 	},
 	// Recurring task behavior defaults

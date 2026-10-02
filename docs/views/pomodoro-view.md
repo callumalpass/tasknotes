@@ -9,8 +9,4 @@ The Pomodoro View includes a timer with controls to start, stop, and reset the t
 
 ![Pomodoro Timer](../assets/feature-pomodoro-timer.png)
 
-## Pomodoro Stats View
-
-The Pomodoro Stats View provides analytics and historical data about your Pomodoro sessions. This includes a history of completed sessions, as well as metrics like completion rates and total time spent on tasks.
-
-![Pomodoro Statistics](../assets/feature-pomodoro-stats.png)
+Pomodoro history and task time entries remain stored in your vault or plugin data according to your settings. Version 5 removes the separate statistics dashboards, not the timer or recorded sessions.

@@ -242,6 +242,9 @@ export default class TaskNotesPlugin extends Plugin {
 	private migrationComplete = false;
 	private migrationPromise: Promise<void> | null = null;
 	private shouldCreateStarterNoteOnStartup = false;
+	get isNewInstall(): boolean {
+		return this.shouldCreateStarterNoteOnStartup;
+	}
 
 	// Bases registration state management
 	basesRegistered = false;
@@ -894,20 +897,12 @@ export default class TaskNotesPlugin extends Plugin {
 		return this.workspaceNavigationService.activatePomodoroView();
 	}
 
-	async activatePomodoroStatsView() {
-		return this.workspaceNavigationService.activatePomodoroStatsView();
-	}
-
-	async activateStatsView() {
-		return this.workspaceNavigationService.activateStatsView();
-	}
-
 	async activateReleaseNotesView() {
 		return this.workspaceNavigationService.activateReleaseNotesView();
 	}
 
-	async openBasesFileForCommand(commandId: string): Promise<void> {
-		await this.workspaceNavigationService.openBasesFileForCommand(commandId);
+	async openBasesFileForCommand(commandId: string, preferredView?: string): Promise<void> {
+		await this.workspaceNavigationService.openBasesFileForCommand(commandId, preferredView);
 	}
 
 	/**
@@ -943,7 +938,7 @@ export default class TaskNotesPlugin extends Plugin {
 	async ensureBasesViewFiles(
 		options: { overwriteExisting?: boolean } = {}
 	): Promise<{ created: string[]; updated: string[]; skipped: string[] }> {
-		return ensureDefaultBasesViewFiles(
+		const result = await ensureDefaultBasesViewFiles(
 			{
 				app: this.app,
 				settings: this.settings,
@@ -965,6 +960,8 @@ export default class TaskNotesPlugin extends Plugin {
 			},
 			options
 		);
+		await this.workspaceNavigationService.repairOpenBasesLeaves(result.updated);
+		return result;
 	}
 
 	async ensureStarterNote(): Promise<void> {
@@ -974,6 +971,7 @@ export default class TaskNotesPlugin extends Plugin {
 			app: this.app,
 			settings: this.settings,
 			shouldCreateStarterNote,
+			translate: this.i18n.translate.bind(this.i18n),
 			saveSettings: () => this.saveSettingsDataOnly(),
 			warn: (message, error) => {
 				if (error === undefined) {

@@ -1,4 +1,6 @@
 import { App, TFile } from "obsidian";
+import { en } from "../../../src/i18n/resources/en";
+import { createI18nService } from "../../../src/i18n";
 import {
 	ensureStarterNote,
 	STARTER_NOTE_CONTENT,
@@ -42,6 +44,18 @@ function createHost(options: { shouldCreateStarterNote: boolean; starterNoteCrea
 }
 
 describe("starter note onboarding", () => {
+	it("uses the current native settings vocabulary and starts with create, review, complete", () => {
+		for (const route of [en.settings.native.taskFiles, en.ui.filterBar.properties,
+			en.settings.features.taskCreation.header, en.settings.native.formFields,
+			en.settings.native.appearanceInteraction]) {
+			expect(STARTER_NOTE_CONTENT).toContain(route);
+		}
+		expect(STARTER_NOTE_CONTENT).not.toMatch(/General|Inline Task Settings|Modal Fields|Task Properties/);
+		expect(STARTER_NOTE_CONTENT.indexOf("Create new task")).toBeLessThan(STARTER_NOTE_CONTENT.indexOf("Open today"));
+		expect(STARTER_NOTE_CONTENT).toContain("Done");
+		expect(STARTER_NOTE_CONTENT.length).toBeLessThan(2200);
+	});
+
 	beforeEach(async () => {
 		await removeStarterNoteIfPresent();
 		jest.clearAllMocks();
@@ -61,6 +75,16 @@ describe("starter note onboarding", () => {
 		expect(saveSettings).toHaveBeenCalledTimes(1);
 		expect(openFile).toHaveBeenCalledTimes(1);
 		expect(openFile.mock.calls[0][0].path).toBe(STARTER_NOTE_PATH);
+	});
+
+	it("writes the activation steps in the configured language", async () => {
+		const { app, host } = createHost({ shouldCreateStarterNote: true });
+		const i18n = createI18nService({ initialLocale: "fr" });
+		await ensureStarterNote({ ...host, translate: i18n.translate.bind(i18n) });
+		const text = await app.vault.read(app.vault.getAbstractFileByPath(STARTER_NOTE_PATH) as TFile);
+		expect(text).toContain("Premiers pas avec TaskNotes");
+		expect(text).toContain("Apparence et interactions");
+		expect(text).not.toContain("Tasks are Markdown notes");
 	});
 
 	it("opens an existing starter note without overwriting it", async () => {
