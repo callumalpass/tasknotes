@@ -19,6 +19,16 @@ TaskNotes also supports **Natural Language Creation**, which allows you to creat
 
 In most workflows, users combine both approaches: fast capture with natural language, then occasional structured edits in the modal when more precision is needed.
 
+### Natural Language Selector Rules
+
+Tag, context, project and custom-field selectors must start at the beginning of input or after whitespace (including tabs). `Task @work` extracts a context; `task@work` and `Task (@work)` remain literal. Boundaries use the original input: `Task @work+project` extracts `work` but keeps `+project` in the title. These selector rules preserve email addresses such as `jane+work@example.com`, URL fragments, and `C++programming`. Status/priority phrase matching and date parsing are separate; this is not a general URL or code shield.
+
+Only the first line is parsed; the remaining lines become details. Wikilinks, quoted spans (double quotes, single quotes or backticks), and backslash-escaped words are protected. For example, `[[Meeting @ Work]]`, `"[[Email@domain.com]]"`, and `\\oggi` are literal text. Quoting removes the surrounding quote delimiters; escaping removes the leading backslash.
+
+Repeated project prefixes remove only the first configured prefix: `++personal` selects project `+personal`. With a custom prefix `::`, `::::personal` selects `::personal`. Linked projects are returned before simple projects, preserving order within each group.
+
+Italian relative days `oggi`, `domani`, and `dopodomani` use the local calendar date. Bare words follow the default date setting; `entro oggi` and `per domani` set Due, while `programmato per oggi` sets Scheduled. This is partial Italian date support, not a complete Italian date grammar. Links, metadata, escaped words, and details containing these words are not converted to dates.
+
 ### Auto-Suggestions in Natural Language Input
 
 The natural language input field includes auto-suggestion functionality that activates when typing specific trigger characters:

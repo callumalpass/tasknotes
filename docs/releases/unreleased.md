@@ -36,3 +36,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Trim surrounding whitespace from custom property keys when loading, editing and saving settings, while retaining native validation for empty and colliding keys. This does not rename properties in existing notes. Thanks to @prethrive for reporting (#2269). See [Settings](https://tasknotes.dev/settings/).
 - Prevent custom list fields from duplicating wikilinks already extracted by the shared parser.
+- Preserve wikilinks containing NLP triggers, including quoted links, during task capture. Thanks to @Hermegenius for reporting (#694).
+- Preserve email addresses and URL fragments when extracting tags, contexts, projects and custom fields. These selectors now require start-of-input or preceding whitespace; punctuation-adjacent selectors such as `(@work)` stay literal. See [Natural Language Input](https://tasknotes.dev/features/task-management/#natural-language-selector-rules).
+- Parse repeated project prefixes without leaving a stray trigger in the title: `++personal` selects project `+personal`. Thanks to @prethrive for reporting (#2269).
+- Parse Italian relative days `oggi`, `domani` and `dopodomani`, including `entro`/`per` Due forms, without changing links, metadata, escaped words or details. Thanks to @MarcoBarna for reporting (#2274).
