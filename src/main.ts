@@ -1528,7 +1528,8 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	async convertTaskToTaskNote(editor: Editor): Promise<void> {
 		try {
-			const cursor = editor.getCursor();
+			// The selection's head may be at ch:0 of the next, unselected line.
+			const cursor = editor.getCursor("from");
 
 			// Check if instant convert service is available
 			if (!this.instantTaskConvertService) {
