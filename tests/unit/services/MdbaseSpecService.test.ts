@@ -1709,6 +1709,42 @@ describe("MdbaseSpecService", () => {
 	});
 
 	describe("canonical v0.3 configuration", () => {
+		it("preserves an external edit made between the compared snapshot and the atomic write", async () => {
+			const plugin = createMockPlugin();
+			const service = new MdbaseSpecService(plugin);
+			const path = "_types/task.md";
+			const original = service.buildTaskTypeDef();
+			const files = installMemoryVault(plugin, { [path]: original });
+			const process = plugin.app.vault.process.getMockImplementation();
+			plugin.app.vault.process.mockImplementation((file: TFile, update: (content: string) => string) => {
+				files.set(path, original + "\nExternal body edit\n");
+				return process(file, update);
+			});
+			const reconcile = jest.spyOn(service as any, "requestReconciliation").mockImplementation(() => {});
+			const resources = (service as any).buildCanonicalMdbaseResources("_types", false, "task", "_contracts");
+			await expect((service as any).writeCanonicalType(path, resources, true, original)).rejects.toThrow("concurrent change");
+			expect(files.get(path)).toBe(original + "\nExternal body edit\n");
+			expect(reconcile).toHaveBeenCalledTimes(1);
+		});
+
+		it("serializes canonical writers, including recovery after a failed write", async () => {
+			const plugin = createMockPlugin();
+			const service = new MdbaseSpecService(plugin);
+			let release!: () => void;
+			const gate = new Promise<void>((resolve) => { release = resolve; });
+			const write = jest.spyOn(service as any, "writeCanonicalTypeSnapshot")
+				.mockImplementationOnce(async () => { await gate; throw new Error("conflict"); })
+				.mockResolvedValueOnce(true);
+			const first = (service as any).writeCanonicalType("_types/task.md", {}, true);
+			const second = (service as any).writeCanonicalType("_types/task.md", {}, true);
+			await Promise.resolve();
+			await Promise.resolve();
+			expect(write).toHaveBeenCalledTimes(1);
+			release();
+			await expect(first).rejects.toThrow("conflict");
+			await expect(second).resolves.toBe(true);
+			expect(write).toHaveBeenCalledTimes(2);
+		});
 		it("keeps an invalid canonical type unchanged until repair is chosen, then creates a backup", async () => {
 			const plugin = createMockPlugin();
 			const invalidType = "---\nkind: mdbase.type\nname: task\nimplements: [\n---\n";

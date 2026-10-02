@@ -165,6 +165,7 @@ export class MdbaseSpecService {
 	private lastAppliedSettingsFingerprint: string | null = null;
 	private canonicalReadBlocked = false;
 	private watcherRegistered = false;
+	private canonicalWritePromise: Promise<boolean> = Promise.resolve(true);
 	private reconcileRequested = false;
 	private reconcilePromise: Promise<void> | null = null;
 	private writeInProgress = false;
@@ -740,6 +741,7 @@ export class MdbaseSpecService {
 			rememberedPath ??
 			(defaultPathOccupied ? `${typesFolder}/tasknotes-task.md` : defaultPath);
 		const localFingerprint = portableSettingsFingerprint(this.plugin.settings);
+		let comparedContent = state?.content ?? null;
 
 		if (state?.outdated) {
 			// Read the earlier type into settings, then rewrite it in place at the
@@ -751,7 +753,7 @@ export class MdbaseSpecService {
 				typeof state.type.name === "string" ? state.type.name : "task",
 				contractsFolder
 			);
-			if (await this.writeCanonicalType(state.path, resources, true)) {
+			if (await this.writeCanonicalType(state.path, resources, true, state.content)) {
 				this.publishNotice(
 					`TaskNotes updated ${state.path} to tasknotes.task ${TASKNOTES_CONTRACT_VERSION}. Task files were not changed.`
 				);
@@ -815,6 +817,7 @@ export class MdbaseSpecService {
 				return;
 			}
 		} else if (await this.plugin.app.vault.adapter.exists(typePath)) {
+			comparedContent = await this.plugin.app.vault.adapter.read(typePath);
 			const choice = await this.askConflict(typePath, true);
 			if (choice === "type") {
 				return;
@@ -833,7 +836,7 @@ export class MdbaseSpecService {
 			contractsFolder
 		);
 		await this.writeCanonicalSupportResources(resources);
-		const written = await this.writeCanonicalType(typePath, resources, true);
+		const written = await this.writeCanonicalType(typePath, resources, true, comparedContent);
 		if (!written) return;
 
 		if (!existingCollection.exists) {
@@ -930,14 +933,32 @@ export class MdbaseSpecService {
 	private async writeCanonicalType(
 		path: string,
 		resources: TaskNotesMdbaseResources,
-		allowRepair: boolean
+		allowRepair: boolean,
+		comparedContent?: string | null
+	): Promise<boolean> {
+		const work = this.canonicalWritePromise.catch(() => false).then(() =>
+			this.writeCanonicalTypeSnapshot(path, resources, allowRepair, comparedContent)
+		);
+		this.canonicalWritePromise = work;
+		return work;
+	}
+
+	private async writeCanonicalTypeSnapshot(
+		path: string,
+		resources: TaskNotesMdbaseResources,
+		allowRepair: boolean,
+		comparedContent?: string | null
 	): Promise<boolean> {
 		const adapter = this.plugin.app.vault.adapter;
 		const exists = await adapter.exists(path);
 		let content = resources.typeDocument;
+		const snapshot: FileSnapshot = {
+			path,
+			content: comparedContent !== undefined ? comparedContent : (exists ? await adapter.read(path) : null),
+		};
 
-		if (exists) {
-			const existing = await adapter.read(path);
+		if (snapshot.content !== null) {
+			const existing = snapshot.content;
 			try {
 				const parsed = parseMdbaseTaskTypeDocument(existing);
 				const validation = validateCanonicalTaskType(
@@ -967,11 +988,12 @@ export class MdbaseSpecService {
 
 		this.writeInProgress = true;
 		try {
-			if (exists) {
-				await adapter.write(path, content);
-			} else {
-				await this.plugin.app.vault.create(path, content);
-			}
+			await this.writeFileIfUnchanged(snapshot, content);
+		} catch (error) {
+			// Re-read the disk state through normal conflict reconciliation. Never
+			// retry with a fresh snapshot and stale settings after a failed CAS.
+			this.requestReconciliation();
+			throw error;
 		} finally {
 			this.writeInProgress = false;
 		}

@@ -36,3 +36,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Rapid direct status edits now reconcile each completion and reopening in order, including recurring occurrence notes. Thanks to @mudnug for reporting #2328.
 - Changing task identification settings now refreshes the task index, including already-existing notes recognized by the new property.
+- Canonical type updates preserve concurrent external edits and return to conflict reconciliation instead of overwriting them.
