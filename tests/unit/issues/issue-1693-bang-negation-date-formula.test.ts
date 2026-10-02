@@ -1,3 +1,4 @@
+import { parse } from "yaml";
 import { generateBasesFileTemplate } from "../../../src/templates/defaultBasesFiles";
 
 const createMockPlugin = () => {
@@ -43,16 +44,17 @@ describe("Issue #1693: bang negation on date properties in base formulas", () =>
 	it("generates default formulas using date isEmpty checks instead of date truthiness", () => {
 		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
 
-		expect(template).toContain(
-			`urgencyScore: 'if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight`
+		const { formulas } = parse(template);
+		expect(formulas.urgencyScore).toContain(
+			`if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight`
 		);
-		expect(template).toContain(`dueDateCategory: 'if(due.isEmpty(), "No due date"`);
-		expect(template).toContain(`dueDateDisplay: 'if(due.isEmpty(), ""`);
-		expect(template).toContain(
-			`nextDate: 'if((due.isEmpty() == false) && (scheduled.isEmpty() == false)`
+		expect(formulas.dueDateCategory).toContain(`if(due.isEmpty(), "No due date"`);
+		expect(formulas.dueDateDisplay).toContain(`if(due.isEmpty(), ""`);
+		expect(formulas.nextDate).toContain(
+			`if((due.isEmpty() == false) && (scheduled.isEmpty() == false)`
 		);
-		expect(template).toContain(
-			`hasDate: '(due.isEmpty() == false) || (scheduled.isEmpty() == false)'`
+		expect(formulas.hasDate).toBe(
+			`(due.isEmpty() == false) || (scheduled.isEmpty() == false)`
 		);
 
 		expect(template).not.toContain("if(!due");
