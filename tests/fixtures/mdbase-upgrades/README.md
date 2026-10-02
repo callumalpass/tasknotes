@@ -21,6 +21,12 @@ new ones instead.
 
 `-default` fixtures use each build's default settings; `-custom` fixtures map
 `due` to `deadline`, add a number property and a skipped `cancelled` status.
+Additional captured collections (also immutable):
+
+- `meaning-policy/`: COMPAT-02 before-state captured by the compat migration audit from beta.0 with custom `uid`, archive tag `cold`, rolling occurrence policy and `P90D` horizon; `.mdbase/` state omitted.
+- `meaning-folders/`: MATRIX-02 live 4.13.7 → beta.5 folder-exclusion collection; original task/template bytes retained and transient state omitted. Includes a PATHS-04 real beta.0 `relationships.base` capture from the paths audit, which was invisible before additive Base configuration.
+- `meaning-minimal/`: MATRIX-08 live 4.13.7 → beta.5 collection with one dateless tag-identified task; captured metadata and task bytes retained, `.obsidian/` and `.mdbase/` state omitted.
+
 Each build ran its own `MdbaseSpecService` (`generate()` for new collections,
 `initialize()` on load) against an in-memory vault holding two task notes and
 one unrelated note.

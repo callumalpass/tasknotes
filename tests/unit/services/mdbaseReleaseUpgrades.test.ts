@@ -131,12 +131,12 @@ describe("upgrading collections written by shipped TaskNotes releases", () => {
 
 		const notices = await load(files, vault, settings);
 		if (name.startsWith("app-rc17")) {
-			// Already current: only the membership keys are added to mdbase.yaml,
-			// so TaskNotes does not claim unrelated `type` properties.
+			// Already current: additive App config only; omitted membership keys retain engine defaults.
 			const { "mdbase.yaml": config, ...rest } = Object.fromEntries(files);
 			const { "mdbase.yaml": _previous, ...previous } = before;
 			expect(rest).toEqual(previous);
-			expect(YAML.parse(config).settings.explicit_type_keys).toEqual(["mdbase_type"]);
+			expect(YAML.parse(config).settings.explicit_type_keys).toBeUndefined();
+			expect(YAML.parse(config).settings.record_extensions).toEqual(expect.arrayContaining(["md", "base"]));
 			expect(notices).toEqual([]);
 		}
 

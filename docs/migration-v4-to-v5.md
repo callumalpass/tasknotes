@@ -63,13 +63,35 @@ Incomplete synced metadata is not treated as a new collection. If type or suppor
 
 Additional v0.2 types or genuinely edited task/support definitions are preserved for review. The notice names the affected file. Back up the vault, finish syncing and restart first. If still blocked, restore the unmodified generated type **and matching saved settings** from a known-good backup, or use mdbase to migrate a separate copy and review all type definitions before replacing the active metadata. Do not delete a user-maintained type merely to make ownership recognition succeed. Known generated support resources tolerate line-ending changes; custom commentary or schema edits are not silently overwritten.
 
-If you used a 5.0 beta, TaskNotes updates its task type to the current contract when the vault opens and tells you once. Your statuses, priorities, property names and custom properties are kept, and task files are not changed. Collections that TaskNotes App has already updated are left as they are. If a beta added a second task type named `tasknotes-task` after TaskNotes App updated the collection, TaskNotes removes that duplicate and keeps a copy under `.tasknotes/migrations/`.
+If you used a 5.0 beta, TaskNotes updates its task type to the current contract when the vault opens and tells you once. The previous type is backed up under `.tasknotes/migrations/`. The upgrade keeps existing property-role mappings (including custom stable IDs), binding policies, archive tags, occurrence horizons, custom schema constraints, extensions and Markdown body. It lifts the contract version and adds optional assignee support without rebuilding these policies from plugin defaults. Ordinary settings changes update only plugin-owned options. Task files are not changed. Collections that TaskNotes App has already updated retain their task definitions. If a beta added a second task type named `tasknotes-task` after TaskNotes App updated the collection, TaskNotes removes that duplicate and keeps a copy under `.tasknotes/migrations/`.
 
 ### Connecting TaskNotes App
 
 Publishing a compatible task contract is not pack installation. The plugin does not write `mdbase.lock.yaml` or claim pack provenance. On the first App connection, use **Set up and allow access** for the App's engine-verified pack installation or upgrade, including its view/Base contracts. Use an App version that supports the current task contract; do not install an older task pack over it. Review the collection's task count and custom mapped values after setup. A CLI pack assessment of `install` or `upgrade` before that consent is expected, not a claim that the task metadata migration failed.
 
 If the integration is not enabled, nothing changes.
+
+Existing collection membership settings are retained: omitting `explicit_type_keys` means the engine's `type` and `types` defaults, and an explicit empty list remains empty. Only genuinely new plugin collections choose `mdbase_type`. TaskNotes encodes excluded folders as task-type path predicates, including nested folders but not similarly named siblings; it does not globally exclude records of other types.
+
+TaskNotes additively includes `md` and `base` record extensions and Base includes for `TaskNotes/Views` and folders containing configured view files. Existing extensions, includes and other collection configuration are never removed. Invalid canonical mappings or binding policies are reported with the type's path and validation details; plugin settings remain at their last valid values. Review `implements.fields` (especially required `status` and `dateCreated`) and `binding`, then retry after correcting the configuration.
+
+### TaskNotes App setup is separate
+
+Metadata compatibility is not pack installation. TaskNotes does **not** create or stamp `mdbase.lock.yaml` or pack provenance. When connecting the App, approve its one-time **Set up and allow access** step: the engine assesses and installs or upgrades packs, including saved-view/Base contracts. An `install` or `upgrade` assessment before that consent is expected, even when the task contract is already current. Existing pack locks are retained until engine-approved setup.
+
+### Check existing task records
+
+Metadata migration never silently repairs old notes. A tag-identified task may lack the portable contract's required creation timestamp, or contain a status outside the configured vocabulary. Run **TaskNotes: Check collection** from the command palette after upgrading:
+
+1. Review the invalid records and their schema/contract errors. Checking alone changes no notes.
+2. For missing creation dates, **Back up and fix** offers the file's creation time. Check that time in the confirmation; copying files between devices can change filesystem creation times.
+3. For invalid statuses, choose a replacement separately for each record. No status mapping is inferred. The all-record action applies only selected replacements and missing-date fixes; it leaves other errors untouched.
+4. Confirm the exact listed changes. Each original note is verified in `.tasknotes/migrations/` before its change, and the repair refuses to overwrite a note changed since the check. Cancel keeps every note unchanged.
+5. Recheck the results. Other invalid fields, malformed notes and custom schema constraints need manual review. Custom CEL match expressions not generated by TaskNotes require engine validation rather than guessed membership.
+
+For independent verification, use `mdbase -C <collection> validate`, `types list`, `query --types <task-type-name>` and `packs assess` with the App's manifest/resources. Compare task counts and mapped values, not just metadata version numbers. `Check collection` checks task record schemas, portable contract projections and status vocabulary; engine validation also checks collection-wide rules and links.
+
+If the integration is not enabled, migration does nothing. The collection-check command requires existing canonical mdbase metadata.
 
 ## Interface changes
 
