@@ -129,6 +129,7 @@ export class TaskCalendarSyncService {
 
 	/** Serialized plugin-data updates for the orphaned-event deletion queue. */
 	private static googleCalendarDeletionQueueWrite: Promise<unknown> = Promise.resolve();
+	private static googleCalendarSyncQueueWrite: Promise<unknown> = Promise.resolve();
 
 	private plugin: TaskNotesPlugin;
 	private googleCalendarService: GoogleCalendarService;
@@ -509,11 +510,20 @@ export class TaskCalendarSyncService {
 		return data?.[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] || [];
 	}
 
-	private async saveSyncQueue(queue: PendingGoogleCalendarSync[]): Promise<void> {
-		const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-sync-queue");
-		if (!data) return;
-		data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] = queue;
-		await this.plugin.saveData(data);
+	private async mutateSyncQueue(
+		mutation: (queue: PendingGoogleCalendarSync[]) => PendingGoogleCalendarSync[]
+	): Promise<void> {
+		const currentMutation = TaskCalendarSyncService.googleCalendarSyncQueueWrite
+			.catch(() => undefined).then(async () => {
+					const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-sync-queue");
+					if (!data) return;
+					data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] = mutation(
+						(data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] || []) as PendingGoogleCalendarSync[]
+					);
+					await this.plugin.saveData(data);
+				});
+		TaskCalendarSyncService.googleCalendarSyncQueueWrite = currentMutation;
+		await currentMutation;
 	}
 
 	private async getCalendarFingerprints(): Promise<Map<string, string>> {
@@ -808,30 +818,29 @@ export class TaskCalendarSyncService {
 		attempted = false
 	): Promise<void> {
 		const now = Date.now();
-		const queue = await this.getSyncQueue();
-		const existing = queue.find((item) => item.taskPath === taskPath);
-		const lastError = error ? getErrorMessage(error) : undefined;
+		await this.mutateSyncQueue((queue) => {
+			const existing = queue.find((item) => item.taskPath === taskPath);
+			const lastError = error ? getErrorMessage(error) : undefined;
 
-		if (existing) {
-			existing.requestedAt = now;
-			if (attempted) {
-				existing.attempts += 1;
-				existing.lastAttemptAt = now;
+			if (existing) {
+				// Monotonic even for two edits within the same millisecond.
+				existing.requestedAt = Math.max(now, existing.requestedAt + 1);
+				if (attempted) {
+					existing.attempts += 1;
+					existing.lastAttemptAt = now;
+				}
+				if (lastError) existing.lastError = lastError;
+			} else {
+				queue.push({
+					taskPath,
+					requestedAt: now,
+					attempts: attempted ? 1 : 0,
+					lastAttemptAt: attempted ? now : undefined,
+					lastError,
+				});
 			}
-			if (lastError) {
-				existing.lastError = lastError;
-			}
-		} else {
-			queue.push({
-				taskPath,
-				requestedAt: now,
-				attempts: attempted ? 1 : 0,
-				lastAttemptAt: attempted ? now : undefined,
-				lastError,
-			});
-		}
-
-		await this.saveSyncQueue(queue);
+			return queue;
+		});
 	}
 
 	private async removeFromDeletionQueue(
@@ -1337,7 +1346,7 @@ export class TaskCalendarSyncService {
 	}> {
 		return this.profileAsync("processPendingSyncQueue", async () => {
 			const results = { synced: 0, failed: 0, deleted: 0, dropped: 0, remaining: 0 };
-			const queue = await this.getSyncQueue();
+			const queue = (await this.getSyncQueue()).map((item) => ({ ...item }));
 			this.profileGauge("processPendingSyncQueue.queueLength", queue.length);
 
 			if (queue.length === 0) {
@@ -1401,8 +1410,17 @@ export class TaskCalendarSyncService {
 				});
 			}
 
-			results.remaining = remainingItems.length;
-			await this.saveSyncQueue(remainingItems);
+			await this.mutateSyncQueue((currentQueue) => {
+				const remainingByPath = new Map(remainingItems.map((item) => [item.taskPath, item]));
+				const merged = currentQueue.flatMap((item) => {
+					const processed = dedupedQueue.get(item.taskPath);
+					if (!processed || item.requestedAt !== processed.requestedAt) return [item];
+					const remaining = remainingByPath.get(item.taskPath);
+					return remaining ? [remaining] : [];
+				});
+				results.remaining = merged.length;
+				return merged;
+			});
 			this.profileGauge("processPendingSyncQueue.synced", results.synced);
 			this.profileGauge("processPendingSyncQueue.failed", results.failed);
 			this.profileGauge("processPendingSyncQueue.deleted", results.deleted);
@@ -2536,6 +2554,7 @@ export class TaskCalendarSyncService {
 		// Add recurrence rules for scheduled-based recurring tasks
 		if (this.shouldSyncAsRecurring(task) && task.recurrence) {
 			const recurrenceData = convertToGoogleRecurrence(task.recurrence, {
+				allDay: settings.createAsAllDay,
 				completedInstances: task.complete_instances,
 				skippedInstances: task.skipped_instances,
 				additionalExcludedDates: this.getAdditionalRecurringExdates(task),
@@ -3252,6 +3271,7 @@ export class TaskCalendarSyncService {
 
 		try {
 			const recurrenceData = convertToGoogleRecurrence(task.recurrence, {
+				allDay: settings.createAsAllDay,
 				completedInstances: task.complete_instances,
 				skippedInstances: task.skipped_instances,
 				additionalExcludedDates: this.getAdditionalRecurringExdates(task),

@@ -168,7 +168,9 @@ describe("Issue #1696: Google Calendar recurring reschedule sync", () => {
 		const event = (syncService as any).taskToCalendarEvent(task);
 
 		expect(event?.recurrence).toContain("EXDATE;VALUE=DATE:20260413");
-		expect(event?.recurrence).toContain("EXDATE;VALUE=DATE:20260415");
+		// The moved Wednesday is not a member of the Monday series. Only
+		// its original recurrence date belongs in the master's exclusions.
+		expect(event?.recurrence).not.toContain("EXDATE;VALUE=DATE:20260415");
 	});
 
 	it("creates a detached exception event for a pending moved occurrence", async () => {
