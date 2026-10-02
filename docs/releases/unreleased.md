@@ -43,3 +43,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @teampbevolution for reporting.
 
 - (#2258) Task cards now preserve spaces and emoji in context and tag labels instead of collapsing them during display. Thanks to @Oblique82 for reporting this and tracing the affected renderer.
+
+- Fixed generated default Bases files failing to open when custom priority labels or status/priority values contain quotes, backslashes, or line breaks. Regenerate affected files with **Update default base files**. See [Default Base Templates](https://tasknotes.dev/views/default-base-templates/).
