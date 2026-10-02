@@ -11,7 +11,9 @@
     max-width: 100%;
 }
 
-.tasknotes-plugin.tn-tasknotesTaskList .task-card__drag-handle {
+/* Touch reordering needs the handle above the main row; the row reserves
+   space for it so the handle never covers the status control. */
+body.is-mobile .tasknotes-plugin.tn-tasknotesTaskList .task-card.task-card--drag-handle-only .task-card__drag-handle {
     z-index: 1;
     touch-action: pan-y;
 }
