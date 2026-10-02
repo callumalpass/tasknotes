@@ -4,34 +4,15 @@ This is an Obsidian plugin. The plugin ID is `tasknotes`.
 
 ## Build & Test
 
-```bash
-# Build the plugin and copy files to the vault's plugin directory
-npm run build:test
-
-# After building, reload the plugin in the running Obsidian instance
-obsidian vault=test plugin:reload id=tasknotes
-```
-
-Always run both commands after making changes. Obsidian must be running for the CLI to work.
-
-## Useful Obsidian CLI Commands
+Test using Playwright/CDP against an isolated Obsidian instance: a separate `--user-data-dir` profile and test vault, never the user's normal instance. Use `e2e/obsidian.ts`, which launches an isolated instance by default and verifies the vault path. Do not enable instance reuse; concurrent sessions need separate profiles, vaults, and debug ports.
 
 ```bash
-# Check for JavaScript errors after reload
-obsidian vault=test dev:errors
-
-# View console output
-obsidian vault=test dev:console
-
-# Run JavaScript in the Obsidian context
-obsidian vault=test eval code="app.vault.getFiles().length"
-
-# Take a screenshot to verify UI changes
-obsidian vault=test dev:screenshot path=screenshot.png
-
-# Open developer tools
-obsidian vault=test devtools
+npm run e2e:setup # One-time setup
+OBSIDIAN_PLUGIN_PATH="$PWD/tasknotes-e2e-vault/.obsidian/plugins/tasknotes" npm run build:test
+TASKNOTES_E2E_REUSE_OBSIDIAN=0 npm run e2e -- e2e/tasknotes.spec.ts
 ```
+
+After changes, rebuild and restart or reload the plugin in the isolated instance. For ad hoc testing, explicitly target your test vault with `OBSIDIAN_PLUGIN_PATH`, verify its path over CDP, and clean up only your own instance.
 
 ## Other Build Commands
 
@@ -52,7 +33,7 @@ You may update `.ops/` files locally as you work on items, but do not commit `.o
 
 ## Investigating issues
 
-When investigating issues, you should try your best to reproduce them first. You can do a lot with the obsidian cli tool. If you have a theory about what is causing an issue, test that theory.
+Reproduce issues in an isolated Obsidian instance first. If you have a theory about the cause, test it.
 
 Not all reported issues will require changes to the code, and not all feature requests need to be implemented; Bases are very powerful, but can be difficult to navigate. If something is not working, or is being asked for, figure out if it is--or can be--achieved through Bases first.
 
