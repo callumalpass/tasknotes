@@ -2745,6 +2745,20 @@ export const de: TranslationTree = {
 		addProjectToCurrentTask: "Projekt zur aktuellen Aufgabe hinzufügen",
 		addSubtaskToCurrentNote: "Unteraufgabe zur aktuellen Notiz hinzufügen",
 	},
+	dateTimePicker: {
+		today: "Heute",
+		tomorrow: "Morgen",
+		nextWeek: "Nächste Woche",
+		date: "Datum",
+		time: "Uhrzeit (optional)",
+		clearDate: "Datum löschen",
+		select: "Auswählen",
+		naturalLanguagePlaceholder: "Morgen um 15 Uhr",
+		naturalLanguageLabel: "Datum in natürlicher Sprache",
+		applyNaturalLanguage: "Datum in natürlicher Sprache übernehmen",
+		openNativePicker: "Native Datumsauswahl öffnen",
+		invalidInput: "In diesem Text wurde kein Datum gefunden.",
+	},
 	modals: {
 		deviceCode: {
 			title: "Google Kalender-Autorisierung",

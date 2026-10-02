@@ -4,6 +4,7 @@ import {
 	NaturalLanguageParser,
 	type ParsedTaskData,
 } from "../services/NaturalLanguageParser";
+import { createI18nService, type TranslationKey } from "../i18n";
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 
 export interface DateTimePickerOptions {
@@ -87,6 +88,7 @@ function nextMonday(from: Date): Date {
  */
 export class DateTimePickerModal extends Modal {
 	private readonly options: DateTimePickerOptions;
+	private readonly translate: (key: TranslationKey) => string;
 	private selectedDate: string | null;
 	private naturalLanguageInput: HTMLInputElement | null = null;
 	private dateInput: HTMLInputElement | null = null;
@@ -97,6 +99,8 @@ export class DateTimePickerModal extends Modal {
 	constructor(app: App, options: DateTimePickerOptions) {
 		super(app);
 		this.options = options;
+		const i18n = options.plugin?.i18n ?? createI18nService();
+		this.translate = i18n.translate.bind(i18n);
 		this.selectedDate = options.currentDate ?? null;
 	}
 
@@ -142,9 +146,9 @@ export class DateTimePickerModal extends Modal {
 	private renderQuickActions(container: HTMLElement): void {
 		const today = new Date();
 		const quickActions = [
-			{ label: "Today", date: today },
-			{ label: "Tomorrow", date: addDays(today, 1) },
-			{ label: "Next week", date: nextMonday(today) },
+			{ label: this.translate("dateTimePicker.today"), date: today },
+			{ label: this.translate("dateTimePicker.tomorrow"), date: addDays(today, 1) },
+			{ label: this.translate("dateTimePicker.nextWeek"), date: nextMonday(today) },
 		];
 
 		const row = container.createDiv({ cls: "date-time-picker-modal__quick-actions" });
@@ -170,8 +174,8 @@ export class DateTimePickerModal extends Modal {
 			cls: "date-time-picker-modal__nlp-input",
 			attr: {
 				type: "text",
-				placeholder: "Tomorrow at 3pm",
-				"aria-label": "Natural language date",
+				placeholder: this.translate("dateTimePicker.naturalLanguagePlaceholder"),
+				"aria-label": this.translate("dateTimePicker.naturalLanguageLabel"),
 			},
 		});
 		this.naturalLanguageInput.addEventListener("keydown", (event) => {
@@ -184,8 +188,8 @@ export class DateTimePickerModal extends Modal {
 			cls: "clickable-icon date-time-picker-modal__nlp-button",
 			attr: {
 				type: "button",
-				"aria-label": "Apply natural language date",
-				title: "Apply natural language date",
+				"aria-label": this.translate("dateTimePicker.applyNaturalLanguage"),
+				title: this.translate("dateTimePicker.applyNaturalLanguage"),
 			},
 		});
 		setIcon(applyButton, "wand");
@@ -195,7 +199,7 @@ export class DateTimePickerModal extends Modal {
 	private renderDateInput(container: HTMLElement): void {
 		const field = container.createDiv({ cls: "date-time-picker-modal__date-field" });
 		field.createEl("label", {
-			text: "Date",
+			text: this.translate("dateTimePicker.date"),
 			cls: "date-time-picker-modal__field-label",
 			attr: { for: "tasknotes-date-time-picker-date" },
 		});
@@ -207,7 +211,7 @@ export class DateTimePickerModal extends Modal {
 				id: "tasknotes-date-time-picker-date",
 				type: "date",
 				value: this.selectedDate ?? "",
-				"aria-label": "Date",
+				"aria-label": this.translate("dateTimePicker.date"),
 			},
 		});
 		const updateDateFromInput = () => {
@@ -230,8 +234,8 @@ export class DateTimePickerModal extends Modal {
 			cls: "clickable-icon date-time-picker-modal__native-date-button",
 			attr: {
 				type: "button",
-				"aria-label": "Open native date picker",
-				title: "Open native date picker",
+				"aria-label": this.translate("dateTimePicker.openNativePicker"),
+				title: this.translate("dateTimePicker.openNativePicker"),
 			},
 		});
 		setIcon(pickerButton, "calendar-days");
@@ -244,7 +248,7 @@ export class DateTimePickerModal extends Modal {
 	private renderTimeInput(container: HTMLElement): void {
 		const field = container.createDiv({ cls: "date-time-picker-modal__time-field" });
 		field.createEl("label", {
-			text: "Time (optional)",
+			text: this.translate("dateTimePicker.time"),
 			cls: "date-time-picker-modal__field-label",
 			attr: { for: "tasknotes-date-time-picker-time" },
 		});
@@ -270,7 +274,7 @@ export class DateTimePickerModal extends Modal {
 
 		if (this.options.currentDate) {
 			const clearButton = actions.createEl("button", {
-				text: "Clear date",
+				text: this.translate("dateTimePicker.clearDate"),
 				cls: "date-time-picker-modal__action-button",
 				attr: { type: "button" },
 			});
@@ -281,14 +285,14 @@ export class DateTimePickerModal extends Modal {
 		}
 
 		const cancelButton = actions.createEl("button", {
-			text: "Cancel",
+			text: this.translate("common.cancel"),
 			cls: "date-time-picker-modal__action-button",
 			attr: { type: "button" },
 		});
 		cancelButton.addEventListener("click", () => this.close());
 
 		this.selectButtonEl = actions.createEl("button", {
-			text: "Select",
+			text: this.translate("dateTimePicker.select"),
 			cls: "mod-cta date-time-picker-modal__action-button",
 			attr: { type: "button" },
 		});
@@ -345,7 +349,7 @@ export class DateTimePickerModal extends Modal {
 			: null;
 
 		if (!selection) {
-			new Notice("Could not find a date in that text.");
+			new Notice(this.translate("dateTimePicker.invalidInput"));
 			return;
 		}
 

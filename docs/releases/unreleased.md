@@ -61,3 +61,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Recurring-instance completion accepts the legacy CLI date field and rejects invalid or conflicting dates. Firefox extension origins can access the authenticated local API.
 - Webhooks now disable only after consecutive deliveries exhaust their retries, rather than after intermittent lifetime failures.
 - Concurrent timer actions no longer create duplicate active entries or publish stale timer data. Pomodoro-owned trackers end at the intended completion time after sleep and leave pre-existing manual trackers running. See [Time Management](https://tasknotes.dev/features/time-management/).
+
+- Rapid direct status edits now reconcile each completion and reopening in order, including recurring occurrence notes. Thanks to @mudnug for reporting #2328.
+- Changing task identification settings now refreshes the task index, including already-existing notes recognized by the new property.
+- Canonical type updates require atomic file updates, preserve concurrent external edits and return to conflict reconciliation instead of overwriting them.
+- The Relationships widget initially opens the first populated view and remembers an explicitly selected view for each note during the session. See [Relationships Widget](https://tasknotes.dev/features/inline-tasks/#relationships-widget).
+- (#2032) Mobile list reorder handles now support long-press dragging, cancellation and edge scrolling. Thanks to @spasche for reporting. See [Manual ordering](https://tasknotes.dev/views/task-list/#manual-ordering).
+- Date picker labels, quick actions, accessibility labels and invalid-input notices now follow the selected language.

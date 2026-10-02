@@ -2754,6 +2754,20 @@ export const es: TranslationTree = {
 		addProjectToCurrentTask: "Añadir proyecto a la tarea actual",
 		addSubtaskToCurrentNote: "Añadir subtarea a la nota actual",
 	},
+	dateTimePicker: {
+		today: "Hoy",
+		tomorrow: "Mañana",
+		nextWeek: "La próxima semana",
+		date: "Fecha",
+		time: "Hora (opcional)",
+		clearDate: "Borrar fecha",
+		select: "Seleccionar",
+		naturalLanguagePlaceholder: "Mañana a las 15:00",
+		naturalLanguageLabel: "Fecha en lenguaje natural",
+		applyNaturalLanguage: "Aplicar fecha en lenguaje natural",
+		openNativePicker: "Abrir selector de fecha nativo",
+		invalidInput: "No se pudo encontrar una fecha en ese texto.",
+	},
 	modals: {
 		deviceCode: {
 			title: "Autorización del Calendario de Google",

@@ -11,6 +11,20 @@
     max-width: 100%;
 }
 
+.tasknotes-plugin.tn-tasknotesTaskList .task-card__drag-handle {
+    z-index: 1;
+    touch-action: pan-y;
+}
+
+.tasknotes-plugin.task-list-view__touch-ghost {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0.8;
+    transform: translate(-50%, -50%);
+    box-shadow: var(--tn-shadow-medium);
+}
+
 /* Task List View Header */
 .tasknotes-plugin .task-list-view__header {
     display: flex;

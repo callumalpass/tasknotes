@@ -2721,6 +2721,20 @@ export const ru: TranslationTree = {
 		addProjectToCurrentTask: "Добавить проект к текущей задаче",
 		addSubtaskToCurrentNote: "Добавить подзадачу к текущей заметке",
 	},
+	dateTimePicker: {
+		today: "Сегодня",
+		tomorrow: "Завтра",
+		nextWeek: "На следующей неделе",
+		date: "Дата",
+		time: "Время (необязательно)",
+		clearDate: "Очистить дату",
+		select: "Выбрать",
+		naturalLanguagePlaceholder: "Завтра в 15:00",
+		naturalLanguageLabel: "Дата на естественном языке",
+		applyNaturalLanguage: "Применить дату на естественном языке",
+		openNativePicker: "Открыть системный выбор даты",
+		invalidInput: "В этом тексте не удалось найти дату.",
+	},
 	modals: {
 		deviceCode: {
 			title: "Авторизация Google Календаря",

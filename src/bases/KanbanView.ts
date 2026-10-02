@@ -80,6 +80,7 @@ import {
 	normalizePinnedColumnConfig,
 	shouldRenderKanbanColumn,
 } from "./kanbanGrouping";
+import { attachLongPressTouchDrag } from "./longPressTouchDrag";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { processVaultFrontMatter } from "../services/VaultMutationService";
 
@@ -3430,69 +3431,24 @@ export class KanbanView extends BasesViewBase {
 			touchDragSourceOverride = null;
 		};
 
-		cardWrapper.addEventListener(
-			"touchstart",
-			(e: TouchEvent) => {
-				if (e.touches.length !== 1) return;
-				touchDragSourceOverride = resolveNestedTaskCardDragSource(e.target, cardWrapper);
-				const touch = e.touches[0];
-				this.touchStartX = touch.clientX;
-				this.touchStartY = touch.clientY;
-				this.longPressTimer = window.setTimeout(() => {
-					this.initiateTouchDrag(
-						cardWrapper,
-						task,
-						touch.clientX,
-						touch.clientY,
-						touchDragSourceOverride
-					);
-				}, this.LONG_PRESS_DELAY);
+		attachLongPressTouchDrag(cardWrapper, {
+			delay: this.LONG_PRESS_DELAY,
+			threshold: this.TOUCH_MOVE_THRESHOLD,
+			onPress: (target) => {
+				touchDragSourceOverride = resolveNestedTaskCardDragSource(target, cardWrapper);
 			},
-			{ passive: true }
-		);
-
-		cardWrapper.addEventListener(
-			"touchmove",
-			(e: TouchEvent) => {
-				if (e.touches.length !== 1) return;
-				const touch = e.touches[0];
-
-				if (!this.touchDragActive && this.longPressTimer) {
-					const dx = Math.abs(touch.clientX - this.touchStartX);
-					const dy = Math.abs(touch.clientY - this.touchStartY);
-					if (dx > this.TOUCH_MOVE_THRESHOLD || dy > this.TOUCH_MOVE_THRESHOLD) {
-						window.clearTimeout(this.longPressTimer);
-						this.longPressTimer = null;
-					}
-					return;
-				}
-
-				if (this.touchDragActive && this.touchDragType === "task") {
-					e.preventDefault();
-					this.updateTouchDragGhost(touch.clientX, touch.clientY);
-					this.updateDropTargetFeedback(touch.clientX, touch.clientY);
-					this.handleAutoScroll(touch.clientX);
-				}
+			onPending: (timer) => { this.longPressTimer = timer; },
+			onStart: ({ x, y }) => {
+				this.initiateTouchDrag(cardWrapper, task, x, y, touchDragSourceOverride);
 			},
-			{ passive: false }
-		);
-
-		cardWrapper.addEventListener("touchend", (e: TouchEvent) => {
-			void (async () => {
-				if (this.longPressTimer) {
-					window.clearTimeout(this.longPressTimer);
-					this.longPressTimer = null;
-				}
-
+			onMove: ({ x, y }) => {
+				this.updateTouchDragGhost(x, y);
+				this.updateDropTargetFeedback(x, y);
+				this.handleAutoScroll(x);
+			},
+			onDrop: async ({ x, y }) => {
 				if (!this.touchDragActive || this.touchDragType !== "task") return;
-
-				const touch = e.changedTouches[0];
-				if (!touch) {
-					this.clearTouchDragState();
-					return;
-				}
-
-				const target = this.findDropTargetAt(touch.clientX, touch.clientY);
+				const target = this.findDropTargetAt(x, y);
 				if (target.groupKey && this.draggedTaskPath) {
 					const dropTarget =
 						target.type === "task"
@@ -3528,14 +3484,11 @@ export class KanbanView extends BasesViewBase {
 					);
 				}
 
-				this.clearTouchDragState();
+			},
+			onCancel: () => {
 				resetTouchDragSourceOverride();
-			})();
-		});
-
-		cardWrapper.addEventListener("touchcancel", () => {
-			resetTouchDragSourceOverride();
-			this.clearTouchDragState();
+				this.clearTouchDragState();
+			},
 		});
 	}
 

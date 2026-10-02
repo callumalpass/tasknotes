@@ -66,6 +66,7 @@ import {
 	moveItemsRelativeToTarget,
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { attachLongPressTouchDrag, findTouchDragScrollContainer, scrollTouchDragContainer, type TouchDragPoint } from "./longPressTouchDrag";
 import { processVaultFrontMatter } from "../services/VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
@@ -180,6 +181,7 @@ export class TaskListView extends BasesViewBase {
 	private currentDropSlotPosition: "before" | "after" | null = null;
 	private dragBaselineCards: TaskListDropBaselineCard[] = [];
 	private dropQueue = new DropOperationQueue();
+	private cancelTouchDrag: (() => void) | null = null;
 
 	/**
 	 * Threshold for enabling virtual scrolling in task list view.
@@ -891,6 +893,7 @@ export class TaskListView extends BasesViewBase {
 		};
 
 		this.setupCardDragHandle(cardEl);
+		this.setupCardTouchDrag(cardEl, task, groupKey);
 		restoreCardDraggable();
 
 		cardEl.addEventListener("pointerdown", captureDragOrigin, { capture: true });
@@ -1027,6 +1030,91 @@ export class TaskListView extends BasesViewBase {
 					}
 				}, 200);
 			}
+		});
+	}
+
+	private setupCardTouchDrag(cardEl: HTMLElement, task: TaskInfo, groupKey: string | null): void {
+		const handle = cardEl.querySelector<HTMLElement>(this.CARD_DRAG_HANDLE_SELECTOR);
+		if (!handle) return;
+		const win = cardEl.ownerDocument.defaultView ?? window;
+		let ghost: HTMLElement | null = null;
+		let scrollFrame = 0;
+		let point: TouchDragPoint = { x: 0, y: 0 };
+		const cleanup = () => {
+			// An earlier queued drop must not clear a newer gesture's view state.
+			if (!ghost && this.cancelTouchDrag !== cancel) return;
+			if (scrollFrame) win.cancelAnimationFrame(scrollFrame);
+			scrollFrame = 0;
+			ghost?.remove();
+			ghost = null;
+			cardEl.classList.remove("task-card--dragging");
+			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
+			this.cleanupDragShift();
+			this.draggedTaskPath = null;
+			this.dragGroupKey = null;
+			this.cancelTouchDrag = null;
+			if (this.pendingRender) {
+				this.pendingRender = false;
+				this.debouncedRefresh();
+			}
+		};
+		const cancel = attachLongPressTouchDrag(handle, {
+			onPress: () => {
+				this.cancelTouchDrag?.();
+				this.cancelTouchDrag = cancel;
+			},
+			onStart: (start) => {
+				point = start;
+				this.draggedTaskPath = task.path;
+				this.dragGroupKey = groupKey;
+				this.dragContainer = this.itemsContainer;
+				this.captureDropBaseline();
+				ghost = createElementInDocument(cardEl.ownerDocument, "div");
+				ghost.classList.add("tasknotes-plugin", "task-list-view__touch-ghost");
+				ghost.appendChild(cardEl.cloneNode(true));
+				ghost.setAttribute("aria-hidden", "true");
+				ghost.style.width = `${cardEl.getBoundingClientRect().width}px`;
+				ghost.style.left = `${point.x + win.scrollX}px`;
+				ghost.style.top = `${point.y + win.scrollY}px`;
+				cardEl.ownerDocument.body.appendChild(ghost);
+				cardEl.classList.add("task-card--dragging");
+				this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
+				const scrollContainer = this.itemsContainer ? findTouchDragScrollContainer(this.itemsContainer) : null;
+				const scroll = () => {
+					if (this.itemsContainer && scrollContainer) {
+						scrollTouchDragContainer(scrollContainer, point, "y");
+						this.updateResolvedInsertionSlot(point.y);
+					}
+					scrollFrame = win.requestAnimationFrame(scroll);
+				};
+				scrollFrame = win.requestAnimationFrame(scroll);
+			},
+			onMove: (next) => {
+				point = next;
+				if (ghost) {
+					ghost.style.left = `${point.x + win.scrollX}px`;
+					ghost.style.top = `${point.y + win.scrollY}px`;
+				}
+				this.updateResolvedInsertionSlot(point.y);
+			},
+			onDrop: async ({ x, y }) => {
+				const rect = this.itemsContainer?.getBoundingClientRect();
+				if (!rect || x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return;
+				this.flushPendingInsertionSlot(y);
+				const target = this.getCurrentInsertionTarget();
+				const targetGroup = this.currentInsertionGroupKey;
+				const visiblePaths = this.getVisibleSortScopePathsForDrag(targetGroup);
+				cleanup();
+				if (!target) return;
+				try {
+					await this.handleSortOrderDrop(task.path, target.taskPath, target.above, targetGroup, groupKey, visiblePaths);
+				} catch (error) {
+					tasknotesLogger.error("Failed to reorder task by touch", {
+						category: "persistence", operation: "touch-task-reorder", error,
+					});
+				}
+			},
+			onCancel: cleanup,
 		});
 	}
 
@@ -2139,6 +2227,7 @@ export class TaskListView extends BasesViewBase {
 	 * Override from Component base class.
 	 */
 	onunload(): void {
+		this.cancelTouchDrag?.();
 		// Component.register() calls will be automatically cleaned up (including search cleanup)
 		// We just need to clean up view-specific state
 		this.unregisterContainerListeners();

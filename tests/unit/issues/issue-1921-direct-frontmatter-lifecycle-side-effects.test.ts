@@ -144,6 +144,95 @@ describe("Issue #1921: direct frontmatter edits trigger lifecycle side effects",
 		service.destroy();
 	});
 
+	it.each([["ready", "done"], ["false", "true"]])("serializes rapid completion and reopening (%s → %s) (#2328)", async (active, complete) => {
+		const original = createTask({ status: active, recurrence_parent: "[[Parent]]", occurrence_date: "2026-05-18" });
+		const completed = { ...original, status: complete };
+		const { plugin, taskService } = createPlugin([original]);
+		let release!: () => void;
+		taskService.applyPropertyChangeSideEffects.mockImplementationOnce(() => new Promise<void>((resolve) => { release = resolve; }));
+		const service = new TaskFileLifecycleReconciliationService(plugin as any);
+		await service.initialize();
+		const first = service.handleTaskUpdatedEvent({ task: completed });
+		await flushPromises();
+		const second = service.handleTaskUpdatedEvent({ task: original });
+		await flushPromises();
+		expect(taskService.applyPropertyChangeSideEffects).toHaveBeenCalledTimes(1);
+		release();
+		await Promise.all([first, second]);
+		expect(taskService.applyPropertyChangeSideEffects).toHaveBeenCalledTimes(2);
+		expect(taskService.applyPropertyChangeSideEffects.mock.calls[1].slice(1)).toEqual([
+			completed, original, "status", complete, active,
+		]);
+		await service.handleTaskUpdatedEvent({ task: original });
+		expect(taskService.applyPropertyChangeSideEffects).toHaveBeenCalledTimes(2);
+		service.destroy();
+	});
+
+	it("continues queued reconciliation after a side-effect failure", async () => {
+		const original = createTask();
+		const completed = { ...original, status: "done" };
+		const { plugin, taskService } = createPlugin([original]);
+		taskService.applyPropertyChangeSideEffects.mockRejectedValueOnce(new Error("First edit failed"));
+		const service = new TaskFileLifecycleReconciliationService(plugin as any);
+		await service.initialize();
+		await Promise.all([
+			service.handleTaskUpdatedEvent({ task: completed }),
+			service.handleTaskUpdatedEvent({ task: original }),
+		]);
+		expect(taskService.applyPropertyChangeSideEffects).toHaveBeenCalledTimes(2);
+		service.destroy();
+	});
+
+	it("does not let one task block another task's reconciliation", async () => {
+		const original = createTask();
+		const other = createTask({ path: "TaskNotes/Tasks/other.md" });
+		const { plugin, taskService } = createPlugin([original, other]);
+		let release!: () => void;
+		taskService.applyPropertyChangeSideEffects.mockImplementationOnce(() => new Promise<void>((resolve) => { release = resolve; }));
+		const service = new TaskFileLifecycleReconciliationService(plugin as any);
+		await service.initialize();
+		const first = service.handleTaskUpdatedEvent({ task: { ...original, status: "done" } });
+		await flushPromises();
+		await service.handleTaskUpdatedEvent({ task: { ...other, status: "done" } });
+		expect(taskService.applyPropertyChangeSideEffects).toHaveBeenCalledTimes(2);
+		release();
+		await first;
+		service.destroy();
+	});
+
+	it("drops queued work when the service is destroyed", async () => {
+		const original = createTask();
+		const { plugin, taskService } = createPlugin([original]);
+		let release!: () => void;
+		taskService.applyPropertyChangeSideEffects.mockImplementationOnce(() => new Promise<void>((resolve) => { release = resolve; }));
+		const service = new TaskFileLifecycleReconciliationService(plugin as any);
+		await service.initialize();
+		const first = service.handleTaskUpdatedEvent({ task: { ...original, status: "done" } });
+		await flushPromises();
+		const second = service.handleTaskUpdatedEvent({ task: original });
+		service.destroy();
+		release();
+		await Promise.all([first, second]);
+		expect(taskService.applyPropertyChangeSideEffects).toHaveBeenCalledTimes(1);
+	});
+
+	it("does not replay side-effect-generated events while draining direct edits", async () => {
+		const original = createTask();
+		const completed = { ...original, status: "done" };
+		const { plugin, taskService } = createPlugin([original]);
+		const service = new TaskFileLifecycleReconciliationService(plugin as any);
+		await service.initialize();
+		taskService.applyPropertyChangeSideEffects.mockImplementation(async (_file, before, after) => {
+			await service.handleTaskUpdatedEvent({ originalTask: before, updatedTask: after });
+		});
+		await Promise.all([
+			service.handleTaskUpdatedEvent({ task: completed }),
+			service.handleTaskUpdatedEvent({ task: original }),
+		]);
+		expect(taskService.applyPropertyChangeSideEffects).toHaveBeenCalledTimes(2);
+		service.destroy();
+	});
+
 	it("ignores Google Calendar event id bookkeeping changes", async () => {
 		const originalTask = createTask({ googleCalendarEventId: undefined });
 		const updatedTask = createTask({ googleCalendarEventId: "new-event-id" });
