@@ -74,6 +74,13 @@ export class GoogleCalendarService extends CalendarProvider {
 	private availableCalendars: ProviderCalendar[] = [];
 	private calendarColors: Map<string, string> = new Map(); // Map calendar ID to color
 	private lastManualRefresh = 0; // Timestamp of last manual refresh for rate limiting
+	private syncStatus: { lastSuccess: string | null; calendarErrors: { calendarId: string; message: string }[]; calendarsChecked: number } = {
+		lastSuccess: null, calendarErrors: [], calendarsChecked: 0,
+	};
+
+	getSyncStatus() {
+		return { ...this.syncStatus, calendarErrors: this.syncStatus.calendarErrors.map((error) => ({ ...error })) };
+	}
 
 	constructor(plugin: TaskNotesPlugin, oauthService: OAuthService) {
 		super();
@@ -550,7 +557,8 @@ export class GoogleCalendarService extends CalendarProvider {
 			const enabledCalendarIds = this.getEnabledCalendarIds();
 
 			// Get current cached events
-			let cachedEvents = this.cache.get("all") || [];
+			let cachedEvents = this.getAllEvents();
+			const calendarErrors: { calendarId: string; message: string }[] = [];
 
 			// Fetch events from each enabled calendar
 			for (const calendarId of enabledCalendarIds) {
@@ -602,6 +610,7 @@ export class GoogleCalendarService extends CalendarProvider {
 						operation: "fetch-events-calendar",
 						error: error,
 					});
+					calendarErrors.push({ calendarId, message: error instanceof Error ? error.message : String(error) });
 					// Continue with other calendars
 				}
 			}
@@ -609,8 +618,16 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Update cache
 			this.cache.set("all", cachedEvents);
 
-			// Emit data-changed event
+			this.syncStatus = {
+				lastSuccess: calendarErrors.length === 0 ? new Date().toISOString() : this.syncStatus.lastSuccess,
+				calendarErrors,
+				calendarsChecked: enabledCalendarIds.length,
+			};
+			// Publish successful calendars even when other calendars failed.
 			this.emit("data-changed");
+			if (calendarErrors.length > 0 && options.propagateErrors) {
+				throw new Error(calendarErrors.map(({ calendarId, message }) => `${calendarId}: ${message}`).join("\n"));
+			}
 		} catch (error) {
 			tasknotesLogger.error("Failed to refresh Google calendars:", {
 				category: "provider",
@@ -640,7 +657,8 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	getAllEvents(): ICSEvent[] {
 		const events = this.cache.get("all") || [];
-		return events;
+		const enabled = new Set(this.getEnabledCalendarIds().map((id) => `google-${id}`));
+		return events.filter((event) => enabled.has(event.subscriptionId));
 	}
 
 	/**
