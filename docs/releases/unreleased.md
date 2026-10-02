@@ -61,3 +61,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Recurring-instance completion accepts the legacy CLI date field and rejects invalid or conflicting dates. Firefox extension origins can access the authenticated local API.
 - Webhooks now disable only after consecutive deliveries exhaust their retries, rather than after intermittent lifetime failures.
 - Concurrent timer actions no longer create duplicate active entries or publish stale timer data. Pomodoro-owned trackers end at the intended completion time after sleep and leave pre-existing manual trackers running. See [Time Management](https://tasknotes.dev/features/time-management/).
+
+- Trim surrounding whitespace from custom user-field property keys when loading, editing and saving settings. Empty keys and keys already used by another property are rejected when editing. This does not rename properties in existing notes. Thanks to @prethrive for reporting (#2269). See [Settings](https://tasknotes.dev/settings/).
+- Prevent custom list fields from duplicating wikilinks already extracted by the shared parser.

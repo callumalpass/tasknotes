@@ -318,8 +318,29 @@ function renderUserFieldsList(
 			save();
 		});
 
+		keyInput.addEventListener("blur", () => {
+			if (keyInput.reportValidity()) keyInput.value = field.key;
+		});
 		keyInput.addEventListener("input", () => {
-			field.key = keyInput.value;
+			const key = keyInput.value.trim();
+			const duplicate =
+				key.toLowerCase() === "tags" ||
+				plugin.settings.userFields?.some(
+					(other) => other.id !== field.id && other.key.trim().toLowerCase() === key.toLowerCase()
+				) ||
+				Object.entries(plugin.settings.fieldMapping).some(
+					([id, value]) => id !== "archiveTag" && id !== "icsEventTag" && value.toLowerCase() === key.toLowerCase()
+				);
+			const error = !key
+				? translate("settings.taskProperties.customUserFields.validation.emptyKey")
+				: duplicate
+					? translate("settings.taskProperties.customUserFields.validation.duplicateKey")
+					: "";
+			keyInput.setCustomValidity(error);
+			keyInput.setAttribute("aria-invalid", String(Boolean(error)));
+			keyInput.title = error;
+			if (error) return;
+			field.key = key;
 
 			// Update the card header secondary text directly without re-rendering
 			const card = container.querySelector(`[data-card-id="${field.id}"]`);

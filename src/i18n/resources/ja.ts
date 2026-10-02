@@ -1252,6 +1252,10 @@ export const ja: TranslationTree = {
 				}
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "プロパティキーを入力してください。",
+					duplicateKey: "別のプロパティがこのキーを使用しています。",
+				},
 				header: "カスタムユーザーフィールド",
 				description: "すべてのビューで型認識フィルターオプションとして表示されるカスタムフロントマタープロパティを定義します。各行：表示名、プロパティ名、タイプ。",
 				addNew: {
