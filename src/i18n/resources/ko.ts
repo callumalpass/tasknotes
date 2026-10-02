@@ -1248,6 +1248,10 @@ export const ko: TranslationTree = {
 				}
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "속성 키를 입력하세요.",
+					duplicateKey: "다른 속성이 이미 이 키를 사용하고 있습니다.",
+				},
 				header: "사용자 지정 필드",
 				description: "뷰 전체에서 유형 인식 필터 옵션으로 나타나는 사용자 지정 프론트매터 속성을 정의합니다. 각 행: 표시 이름, 속성 이름, 유형.",
 				addNew: {

@@ -1252,6 +1252,10 @@ export const de: TranslationTree = {
 				}
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "Gib einen Eigenschaftsschlüssel ein.",
+					duplicateKey: "Eine andere Eigenschaft verwendet diesen Schlüssel bereits.",
+				},
 				header: "Benutzerdefinierte Felder",
 				description: "Definiere benutzerdefinierte Frontmatter-Eigenschaften, die als typisierte Filteroptionen in allen Ansichten erscheinen. Jede Zeile: Anzeigename, Eigenschaftsname, Typ.",
 				addNew: {

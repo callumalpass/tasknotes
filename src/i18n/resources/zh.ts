@@ -1252,6 +1252,10 @@ export const zh: TranslationTree = {
 				}
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "请输入属性键。",
+					duplicateKey: "其他属性已使用此键。",
+				},
 				header: "自定义用户字段",
 				description: "定义自定义前置属性，作为类型感知过滤选项出现在各个视图中。每行：显示名称、属性名称、类型。",
 				addNew: {

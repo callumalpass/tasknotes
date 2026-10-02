@@ -1254,6 +1254,10 @@ export const pt: TranslationTree = {
 				}
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "Insira uma chave de propriedade.",
+					duplicateKey: "Outra propriedade já usa esta chave.",
+				},
 				header: "Campos de Usuário Personalizados",
 				description: "Defina propriedades de frontmatter personalizadas para aparecerem como opções de filtro com reconhecimento de tipo nas visualizações. Cada linha: Nome de Exibição, Nome da Propriedade, Tipo.",
 				addNew: {

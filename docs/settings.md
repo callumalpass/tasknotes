@@ -13,6 +13,8 @@ For more information, see the [General Settings](settings/general.md) documentat
 
 Task Properties defines the schema TaskNotes writes to frontmatter, including status, priority, dates, reminders, projects, and user fields. Each property card lets you remap key names and behavior so TaskNotes can match existing metadata rather than forcing a migration.
 
+Custom user-field property keys are trimmed when loading, editing and saving settings. Settings edits require a non-empty key that is not already used by another task property or custom field (case-insensitive). Invalid edits retain the last accepted key. Changing or trimming a configured key does not rename properties in existing notes; migrate those notes separately if needed.
+
 For more detailed information, see the [Task Properties Settings](settings/task-properties.md) documentation.
 
 ## Modal Fields

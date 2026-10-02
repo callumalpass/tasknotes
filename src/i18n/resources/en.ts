@@ -1339,6 +1339,10 @@ export const en: TranslationTree = {
 				},
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "Enter a property key.",
+					duplicateKey: "Another property already uses this key.",
+				},
 				header: "Custom user fields",
 				description:
 					"Define custom frontmatter properties to appear as type-aware filter options across views. Each row: Display name, property name, type.",

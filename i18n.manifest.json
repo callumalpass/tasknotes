@@ -790,6 +790,8 @@
   "settings.taskProperties.fieldMapping.fields.icsEventId": "5f7391c727e90965de23c6dec9d3a97f70a56ba0",
   "settings.taskProperties.fieldMapping.fields.icsEventTag": "012ef7a7e5792349b4d6d33a8c9269d41a17a8d2",
   "settings.taskProperties.fieldMapping.fields.reminders": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
+  "settings.taskProperties.customUserFields.validation.emptyKey": "0f209dbd8086980be09d8ba47ab996eef184c06b",
+  "settings.taskProperties.customUserFields.validation.duplicateKey": "64ac521b8a90cbc4a5c48bf47588f140fe10d2fd",
   "settings.taskProperties.customUserFields.header": "6b26aad1950b4fe68965c591a904a89b679fd3cc",
   "settings.taskProperties.customUserFields.description": "20c8ecdaa70158c9fd68e566b44c1b0d7ae55baa",
   "settings.taskProperties.customUserFields.addNew.name": "122d131a7d875ae4514e57b1d041f55a5717eabe",
