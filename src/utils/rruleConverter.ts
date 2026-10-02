@@ -10,6 +10,8 @@
  * 3. Google expects "RRULE:" prefix for recurrence rules
  */
 
+import { RRule } from "rrule";
+
 export interface GoogleRecurrenceData {
 	/** Recurrence array for Google Calendar API */
 	recurrence: string[];
@@ -22,6 +24,8 @@ export interface GoogleRecurrenceData {
 }
 
 export interface ConversionOptions {
+	/** Validate against the DATE start actually exported to Google. */
+	allDay?: boolean;
 	/** Completed instances to exclude via EXDATE (YYYY-MM-DD format) */
 	completedInstances?: string[];
 	/** Skipped instances to exclude via EXDATE (YYYY-MM-DD format) */
@@ -74,12 +78,30 @@ export function convertToGoogleRecurrence(
 	const recurrence: string[] = [`RRULE:${rruleWithoutDtstart}`];
 
 	// Add EXDATE entries for completed and skipped instances
-	const exdates = formatExdates([
+	const excludedDates = [
 		...(options?.completedInstances || []),
 		...(options?.skippedInstances || []),
 		...(options?.additionalExcludedDates || []),
-	]);
-	recurrence.push(...exdates);
+	];
+	const validDates = [...new Set(excludedDates)].filter((date) =>
+		/^\d{4}-\d{2}-\d{2}$/.test(date) &&
+		!Number.isNaN(Date.parse(date)) &&
+		new Date(date).toISOString().slice(0, 10) === date
+	);
+	if (validDates.length > 0) {
+		// One bounded expansion, not one full traversal per exclusion. Use the
+		// effective exported DTSTART so DATE events retain the last UNTIL day.
+		const ruleOptions = RRule.parseString(rruleWithoutDtstart);
+		ruleOptions.dtstart = new Date(`${dtstart}T${options?.allDay || !time ? "00:00:00" : time}Z`);
+		const rule = new RRule(ruleOptions);
+		const sorted = [...validDates].sort();
+		const members = new Set(rule.between(
+			new Date(`${sorted[0]}T00:00:00Z`),
+			new Date(`${sorted[sorted.length - 1]}T23:59:59Z`),
+			true
+		).map((date) => date.toISOString().slice(0, 10)));
+		recurrence.push(...formatExdates(validDates.filter((date) => members.has(date))));
+	}
 
 	return {
 		recurrence,

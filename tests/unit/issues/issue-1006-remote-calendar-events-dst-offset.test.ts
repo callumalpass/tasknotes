@@ -376,6 +376,8 @@ describe('Issue #1006 - Remote calendar events 1h ahead during DST transition pe
 
 	describe('Multi-week recurring event across DST transitions', () => {
 		it('should maintain correct times for recurring events spanning DST transition', () => {
+			// Keep this historical fixture inside the bounded subscription window.
+			jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2025-03-20T00:00:00Z'));
 			// Recurring weekly event starting in March, spanning the European DST transition
 			// Event every Thursday at 3 PM local time
 			// March 20 (before DST): 3 PM CET = 14:00 UTC
