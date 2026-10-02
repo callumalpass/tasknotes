@@ -1727,6 +1727,20 @@ describe("MdbaseSpecService", () => {
 			expect(reconcile).toHaveBeenCalledTimes(1);
 		});
 
+		it("aborts rather than using a non-atomic adapter write for an unindexed canonical file", async () => {
+			const plugin = createMockPlugin();
+			const service = new MdbaseSpecService(plugin);
+			const path = "_types/task.md";
+			const original = service.buildTaskTypeDef();
+			const files = installMemoryVault(plugin, { [path]: original });
+			plugin.app.vault.getAbstractFileByPath.mockReturnValue(null);
+			jest.spyOn(service as any, "requestReconciliation").mockImplementation(() => {});
+			const resources = (service as any).buildCanonicalMdbaseResources("_types", false, "task", "_contracts");
+			await expect((service as any).writeCanonicalType(path, resources, true, original)).rejects.toThrow("atomically update");
+			expect(files.get(path)).toBe(original);
+			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalled();
+		});
+
 		it("serializes canonical writers, including recovery after a failed write", async () => {
 			const plugin = createMockPlugin();
 			const service = new MdbaseSpecService(plugin);
@@ -1748,33 +1762,11 @@ describe("MdbaseSpecService", () => {
 		it("keeps an invalid canonical type unchanged until repair is chosen, then creates a backup", async () => {
 			const plugin = createMockPlugin();
 			const invalidType = "---\nkind: mdbase.type\nname: task\nimplements: [\n---\n";
-			const files = new Map<string, string>([
-				["mdbase.yaml", 'spec_version: "0.3.0"\nsettings:\n  types_folder: _types\n'],
-				["_types/task.md", invalidType],
-			]);
-			plugin.emitter = { trigger: jest.fn() };
-			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
-				Promise.resolve(path === "_types" || files.has(path))
-			);
-			plugin.app.vault.adapter.list.mockImplementation(() =>
-				Promise.resolve({
-					files: [...files.keys()].filter((path) => path.startsWith("_types/")),
-					folders: [],
-				})
-			);
-			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
-				Promise.resolve(files.get(path) ?? "")
-			);
-			plugin.app.vault.adapter.write.mockImplementation(
-				(path: string, content: string) => {
-					files.set(path, content);
-					return Promise.resolve();
-				}
-			);
-			plugin.app.vault.create.mockImplementation((path: string, content: string) => {
-				files.set(path, content);
-				return Promise.resolve({});
+			const files = installMemoryVault(plugin, {
+				"mdbase.yaml": 'spec_version: "0.3.0"\nsettings:\n  types_folder: _types\n',
+				"_types/task.md": invalidType,
 			});
+			plugin.emitter = { trigger: jest.fn() };
 			const service = new MdbaseSpecService(plugin);
 			const conflict = jest.spyOn(service as any, "askConflict");
 			conflict.mockResolvedValueOnce("type");
@@ -1810,28 +1802,10 @@ describe("MdbaseSpecService", () => {
 				const plugin = createMockPlugin({ tasksFolder: "Initial/Tasks" });
 				const initial = buildTaskNotesMdbaseResources({ tasksFolder: "Initial/Tasks" });
 				const external = buildTaskNotesMdbaseResources({ tasksFolder: "External/Tasks" });
-				const files = new Map<string, string>([
-					[
-						"mdbase.yaml",
-						'spec_version: "0.3.0"\nsettings:\n  types_folder: _types\n',
-					],
-					["_types/task.md", initial.typeDocument],
-				]);
-				plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
-					Promise.resolve(path === "_types" || files.has(path))
-				);
-				plugin.app.vault.adapter.list.mockImplementation(() =>
-					Promise.resolve({ files: ["_types/task.md"], folders: [] })
-				);
-				plugin.app.vault.adapter.read.mockImplementation((path: string) =>
-					Promise.resolve(files.get(path) ?? "")
-				);
-				plugin.app.vault.adapter.write.mockImplementation(
-					(path: string, content: string) => {
-						files.set(path, content);
-						return Promise.resolve();
-					}
-				);
+				const files = installMemoryVault(plugin, {
+					"mdbase.yaml": 'spec_version: "0.3.0"\nsettings:\n  types_folder: _types\n',
+					"_types/task.md": initial.typeDocument,
+				});
 				const service = new MdbaseSpecService(plugin);
 				await service.initialize();
 				plugin.app.vault.adapter.write.mockClear();
@@ -1847,6 +1821,7 @@ describe("MdbaseSpecService", () => {
 						"_types/task.md",
 						expect.any(String)
 					);
+					expect(files.get("_types/task.md")).toBe(external.typeDocument);
 				} else {
 					expect(files.get("_types/task.md")).toContain("folder: Local/Tasks");
 				}
@@ -2013,35 +1988,18 @@ describe("MdbaseSpecService", () => {
 				typeName: "work-item",
 				typesFolder: "System/_types",
 			});
-			plugin.app.vault.adapter.exists.mockImplementation((path: string) =>
-				Promise.resolve(
-					path === "mdbase.yaml" ||
-						path === "System" ||
-						path === "System/_types" ||
-						path === typePath
-				)
-			);
-			plugin.app.vault.adapter.list.mockResolvedValue({
-				files: [typePath],
-				folders: [],
+			const files = installMemoryVault(plugin, {
+				"mdbase.yaml": 'spec_version: "0.3.0"\nsettings:\n  types_folder: System/_types\n',
+				[typePath]: resources.typeDocument,
 			});
-			plugin.app.vault.adapter.read.mockImplementation((path: string) =>
-				Promise.resolve(
-					path === "mdbase.yaml"
-						? 'spec_version: "0.3.0"\nsettings:\n  types_folder: System/_types\n'
-						: resources.typeDocument
-				)
-			);
 			const service = new MdbaseSpecService(plugin);
 			await service.initialize();
 			plugin.settings.maintainDueDateOffsetInRecurring = false;
 
 			await service.onSettingsChanged();
 
-			expect(plugin.app.vault.adapter.write).toHaveBeenCalledWith(
-				typePath,
-				expect.stringContaining("maintain_due_date_offset: false")
-			);
+			expect(plugin.app.vault.process).toHaveBeenCalled();
+			expect(files.get(typePath)).toContain("maintain_due_date_offset: false");
 		});
 
 		it("restores a canonical type that is deleted while the integration is enabled", async () => {

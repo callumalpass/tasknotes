@@ -988,7 +988,7 @@ export class MdbaseSpecService {
 
 		this.writeInProgress = true;
 		try {
-			await this.writeFileIfUnchanged(snapshot, content);
+			await this.writeFileIfUnchanged(snapshot, content, true);
 		} catch (error) {
 			// Re-read the disk state through normal conflict reconciliation. Never
 			// retry with a fresh snapshot and stale settings after a failed CAS.
@@ -1303,7 +1303,8 @@ export class MdbaseSpecService {
 
 	private async writeFileIfUnchanged(
 		snapshot: FileSnapshot,
-		content: string
+		content: string,
+		requireAtomic = false
 	): Promise<void> {
 		const vault = this.plugin.app.vault;
 		if (snapshot.content === null) {
@@ -1321,6 +1322,9 @@ export class MdbaseSpecService {
 				return content;
 			});
 			return;
+		}
+		if (requireAtomic) {
+			throw new Error(`Cannot atomically update ${snapshot.path} before Obsidian indexes the file`);
 		}
 		if ((await vault.adapter.read(snapshot.path)) !== snapshot.content) {
 			throw new Error(`Refusing to overwrite a concurrent change to ${snapshot.path}`);
