@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Fixed selected-text conversion including the next unselected line when a selection ends at the start of that line. Reversed selections and partial-line selections now preserve text outside the selection. See [Inline Tasks](https://tasknotes.dev/features/inline-tasks/#instant-task-conversion).
+- (#1157) Fixed long inline task titles exceeding the available line width or dropping below their status indicator in nested bullets on Obsidian mobile. Enabled properties remain available in a bounded, scrollable strip. Thanks to @3zra47 for the continued reports and screenshots, and @renatomen for fresh-vault testing. See [Inline Tasks](https://tasknotes.dev/features/inline-tasks/#task-link-overlays).

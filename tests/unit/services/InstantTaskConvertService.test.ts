@@ -78,6 +78,84 @@ describe('InstantTaskConvertService', () => {
     (service as any).nlParser = mockNLParser;
   });
 
+  describe('Half-open editor selections (CAP-08)', () => {
+    const lines = ['- [ ] First task', 'Selected details and untouched suffix', '- [ ] Next task'];
+
+    beforeEach(() => {
+      mockPlugin.app.workspace.getActiveFile = jest.fn(() => null);
+    });
+
+    function selectionEditor(anchor: { line: number; ch: number }, head: { line: number; ch: number }) {
+      const positions = [anchor, head].sort((a, b) => a.line - b.line || a.ch - b.ch);
+      const [from, to] = positions;
+      const selected = lines.slice(from.line, to.line + 1).map((line, index) => {
+        const lineNumber = from.line + index;
+        return line.slice(lineNumber === from.line ? from.ch : 0, lineNumber === to.line ? to.ch : undefined);
+      }).join('\n');
+      return {
+        getSelection: () => selected,
+        listSelections: () => [{ anchor, head }],
+        getLine: (line: number) => lines[line],
+        lineCount: () => lines.length,
+        replaceRange: jest.fn(),
+      } as any;
+    }
+
+    it.each([false, true])('excludes the ch:0 endpoint of Home+Shift+Down (reversed: %s)', async (reversed) => {
+      const from = { line: 0, ch: 0 };
+      const to = { line: 1, ch: 0 };
+      const editor = selectionEditor(reversed ? to : from, reversed ? from : to);
+      const info = service['extractSelectionInfo'](editor, 0);
+      expect(info.taskLine).toBe(lines[0]);
+      expect(info.details).toBe('');
+      expect(info.endLine).toBe(0);
+      const file = new TFile('tasks/first.md');
+      mockPlugin.app.fileManager.generateMarkdownLink = jest.fn(() => '[[tasks/first]]');
+      expect((await service['replaceOriginalTaskLines'](editor, info, file, 'First task')).success).toBe(true);
+      expect(editor.replaceRange).toHaveBeenCalledWith('- [[tasks/first]]', from, { line: 0, ch: lines[0].length });
+    });
+
+    it('excludes the next unselected line from multiline details and replacement', async () => {
+      const editor = selectionEditor({ line: 0, ch: 0 }, { line: 2, ch: 0 });
+      const info = service['extractSelectionInfo'](editor, 0);
+      expect(info.details).toBe(lines[1]);
+      expect(info.originalContent).toEqual(lines.slice(0, 2));
+      mockPlugin.app.fileManager.generateMarkdownLink = jest.fn(() => '[[tasks/first]]');
+      await service['replaceOriginalTaskLines'](editor, info, new TFile('tasks/first.md'), 'First task');
+      expect(editor.replaceRange).toHaveBeenCalledWith('- [[tasks/first]]', { line: 0, ch: 0 }, { line: 1, ch: lines[1].length });
+    });
+
+    it.each([false, true])('preserves text outside mid-line endpoints (reversed: %s)', async (reversed) => {
+      const from = { line: 0, ch: 6 };
+      const to = { line: 1, ch: 16 };
+      const editor = selectionEditor(reversed ? to : from, reversed ? from : to);
+      const info = service['extractSelectionInfo'](editor, 0);
+      expect(info.taskLine).toBe('First task');
+      expect(info.details).toBe('Selected details');
+      mockPlugin.app.fileManager.generateMarkdownLink = jest.fn(() => '[[tasks/first]]');
+      await service['replaceOriginalTaskLines'](editor, info, new TFile('tasks/first.md'), 'First task');
+      expect(editor.replaceRange).toHaveBeenCalledWith('[[tasks/first]]', from, to);
+    });
+
+    it('does not use a selection when converting its excluded endpoint line', () => {
+      const editor = selectionEditor({ line: 0, ch: 0 }, { line: 1, ch: 0 });
+      const info = service['extractSelectionInfo'](editor, 1);
+      expect(info.taskLine).toBe(lines[1]);
+      expect(info.details).toBe('');
+      expect(info.startLine).toBe(1);
+    });
+
+    it('preserves both ends of a reversed selection on one line', async () => {
+      const editor = selectionEditor({ line: 1, ch: 16 }, { line: 1, ch: 9 });
+      const info = service['extractSelectionInfo'](editor, 1);
+      expect(info.taskLine).toBe('details');
+      expect(info.details).toBe('');
+      mockPlugin.app.fileManager.generateMarkdownLink = jest.fn(() => '[[tasks/details]]');
+      await service['replaceOriginalTaskLines'](editor, info, new TFile('tasks/details.md'), 'details');
+      expect(editor.replaceRange).toHaveBeenCalledWith('[[tasks/details]]', { line: 1, ch: 9 }, { line: 1, ch: 16 });
+    });
+  });
+
   describe('Context Detection - Natural Language Tasks', () => {
     it('should extract single context from @context syntax', async () => {
       // Mock NLP parser to return contexts
