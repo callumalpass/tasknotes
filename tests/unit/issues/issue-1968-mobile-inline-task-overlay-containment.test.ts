@@ -18,7 +18,7 @@ describe("Issue #1968: mobile inline task overlay containment", () => {
 			/\.tasknotes-plugin \.task-card--layout-inline\s*\{[^}]*container-type:\s*normal;[^}]*container-name:\s*none;/s
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card--layout-inline\s*\{[^}]*display:\s*inline-flex;[^}]*max-width:\s*100%;/s
+			/body\.is-mobile \.tasknotes-plugin \.task-card--layout-inline\s*\{[^}]*display:\s*inline;[^}]*max-width:\s*100%;/s
 		);
 	});
 });

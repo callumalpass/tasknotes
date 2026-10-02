@@ -446,14 +446,30 @@ export class InstantTaskConvertService {
 		startLine: number;
 		endLine: number;
 		originalContent: string[];
+		rangeStart?: EditorPosition;
+		rangeEnd?: EditorPosition;
 	} {
 		const selection = editor.getSelection();
 
 		// If there's a selection, check if the specified lineNumber is within it
 		if (selection && selection.trim()) {
 			const selectionRange = editor.listSelections()[0];
-			const startLine = Math.min(selectionRange.anchor.line, selectionRange.head.line);
-			const endLine = Math.max(selectionRange.anchor.line, selectionRange.head.line);
+			const { anchor, head } = selectionRange;
+			const isForward =
+				anchor.line < head.line || (anchor.line === head.line && anchor.ch <= head.ch);
+			const rangeStart = isForward ? anchor : head;
+			const selectionEnd = isForward ? head : anchor;
+			// Editor selections are half-open. Keep a selected trailing newline in the
+			// source, rather than consuming the next line or joining it to the link.
+			const rangeEnd =
+				selectionEnd.ch === 0 && selectionEnd.line > rangeStart.line
+					? {
+							line: selectionEnd.line - 1,
+							ch: editor.getLine(selectionEnd.line - 1).length,
+						}
+					: selectionEnd;
+			const startLine = rangeStart.line;
+			const endLine = rangeEnd.line;
 
 			// Only use selection if the specified lineNumber is within the selection range
 			// This handles cases where instant convert button is clicked with an active selection
@@ -464,9 +480,16 @@ export class InstantTaskConvertService {
 					selectedLines.push(editor.getLine(i));
 				}
 
-				// First line should be the task, rest become details
-				const taskLine = selectedLines[0];
-				const detailLines = selectedLines.slice(1);
+				// Snapshot whole lines for the existing race check, but only convert
+				// selected text; prefixes and suffixes outside the range stay untouched.
+				const selectedContent = selectedLines.map((line, index) =>
+					line.slice(
+						index === 0 ? rangeStart.ch : 0,
+						index === selectedLines.length - 1 ? rangeEnd.ch : undefined
+					)
+				);
+				const taskLine = selectedContent[0];
+				const detailLines = selectedContent.slice(1);
 				// Join without trimming to preserve indentation, but remove trailing whitespace only
 				const details = detailLines.join("\n").trimEnd();
 
@@ -476,6 +499,8 @@ export class InstantTaskConvertService {
 					startLine,
 					endLine,
 					originalContent: selectedLines,
+					rangeStart,
+					rangeEnd,
 				};
 			}
 		}
@@ -989,6 +1014,8 @@ export class InstantTaskConvertService {
 			startLine: number;
 			endLine: number;
 			originalContent: string[];
+			rangeStart?: EditorPosition;
+			rangeEnd?: EditorPosition;
 		},
 		file: TFile,
 		title: string
@@ -1022,7 +1049,7 @@ export class InstantTaskConvertService {
 			}
 
 			// Re-validate that the first line still has content (additional safety)
-			const taskLineInfo = TasksPluginParser.parseTaskLine(originalContent[0]);
+			const taskLineInfo = TasksPluginParser.parseTaskLine(selectionInfo.taskLine);
 			const isCheckboxTask = taskLineInfo.isTaskLine;
 
 			// For checkbox tasks, ensure it's still a valid task
@@ -1031,7 +1058,7 @@ export class InstantTaskConvertService {
 				return { success: false, error: "First line is no longer a valid task." };
 			} else if (
 				!isCheckboxTask &&
-				!this.extractLineContentAsTitle(originalContent[0]).trim()
+				!this.extractLineContentAsTitle(selectionInfo.taskLine).trim()
 			) {
 				return { success: false, error: "First line no longer contains valid content." };
 			}
@@ -1046,7 +1073,9 @@ export class InstantTaskConvertService {
 			);
 
 			// Create the final line with proper indentation and original list format
-			const replacementPrefix = this.getReplacementPrefix(originalContent[0], isCheckboxTask);
+			const replacementPrefix = (selectionInfo.rangeStart?.ch ?? 0) > 0
+				? ""
+				: this.getReplacementPrefix(selectionInfo.taskLine, isCheckboxTask);
 			const linkText = `${replacementPrefix}${properLink}`;
 
 			// Validate the generated link text
@@ -1056,8 +1085,11 @@ export class InstantTaskConvertService {
 			}
 
 			// Replace the entire selection with the link
-			const rangeStart: EditorPosition = { line: startLine, ch: 0 };
-			const rangeEnd: EditorPosition = { line: endLine, ch: editor.getLine(endLine).length };
+			const rangeStart = selectionInfo.rangeStart ?? { line: startLine, ch: 0 };
+			const rangeEnd = selectionInfo.rangeEnd ?? {
+				line: endLine,
+				ch: editor.getLine(endLine).length,
+			};
 
 			editor.replaceRange(linkText, rangeStart, rangeEnd);
 
