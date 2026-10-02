@@ -35,3 +35,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Editing filename-backed task titles now preserves the full title when sanitization, a long filename, or a duplicate name prevents an exact match. A failed rename leaves the previous title and task properties unchanged.
+- (#2148) Empty project, context and tag properties no longer produce a literal `null` entry when editing tasks. Thanks to @minchinweb for reporting this.
+- Completing tasks with multiline recurrence rules now retains the rule's frequency, timezone and clock instead of losing the RRULE line.

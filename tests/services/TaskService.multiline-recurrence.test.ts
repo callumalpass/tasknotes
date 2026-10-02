@@ -2,9 +2,8 @@ import { TFile } from "obsidian";
 import { TaskService } from "../../src/services/TaskService";
 import { TaskFactory } from "../helpers/mock-factories";
 
-// TODO: enable after main consumes @tasknotes/model >= 0.3.0-rc.16.
-// The rc.9/rc.15 model erases RRULE:FREQ across the DTSTART line break.
-it.skip("completes a multiline completion-anchor task without losing FREQ", async () => {
+// Requires @tasknotes/model >= 0.3.0-rc.16; rc.15 lost RRULE:FREQ on completion.
+it("completes a multiline completion-anchor task without losing FREQ", async () => {
 	const task = TaskFactory.createTask({
 		title: "Weekly task", path: "Tasks/weekly.md", status: "open",
 		recurrence: "DTSTART:20260101T090000Z\nRRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR",
