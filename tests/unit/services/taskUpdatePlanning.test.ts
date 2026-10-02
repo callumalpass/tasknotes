@@ -302,6 +302,7 @@ describe("taskUpdatePlanning", () => {
 				propertyValue: "true",
 			},
 			storeTitleInFilename: true,
+			titleIsRepresentedByFilename: true,
 			updateCompletedDateInFrontmatter: jest.fn((target) => {
 				target.completedDate = "should-not-survive-explicit-removal";
 			}),
