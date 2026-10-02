@@ -1,7 +1,17 @@
 import { TranslationTree } from "../types";
 
 export const ru: TranslationTree = {
+	onboarding: {
+		title: "Начало работы с TaskNotes",
+		intro: "Задачи — это заметки Markdown в вашем хранилище. Выполните эти три шага через палитру команд.",
+		create: "Создайте настоящую задачу и запланируйте её на сегодня.",
+		review: "Найдите задачу в представлении «Сегодня».",
+		complete: "Нажимайте на статус, пока задача не будет выполнена. Она исчезнет из «Сегодня», но её заметка останется в хранилище.",
+		inbox: "Для записи без даты очистите запланированную дату. «Входящие» показывают невыполненные задачи без проекта, запланированной даты и срока.",
+		settings: "Настройки, когда они понадобятся",
+	},
 	common: {
+		settings: "Настройки",
 		appName: "TaskNotes",
 		new: "Новый",
 		cancel: "Отмена",
@@ -384,115 +394,6 @@ export const ru: TranslationTree = {
 				inputLabel: "Длительность таймера",
 			},
 		},
-		pomodoroStats: {
-			title: "Статистика помодоро",
-			heading: "Статистика помодоро",
-			refresh: "Обновить",
-			sections: {
-				overview: "Обзор",
-				today: "Сегодня",
-				week: "Эта неделя",
-				allTime: "За все время",
-				recent: "Последние сессии",
-			},
-			overviewCards: {
-				todayPomos: {
-					label: "Помодоро сегодня",
-					change: {
-						more: "на {count} больше чем вчера",
-						less: "на {count} меньше чем вчера",
-					},
-				},
-				totalPomos: {
-					label: "Всего помодоро",
-				},
-				todayFocus: {
-					label: "Фокус сегодня",
-					change: {
-						more: "на {duration} больше чем вчера",
-						less: "на {duration} меньше чем вчера",
-					},
-				},
-				totalFocus: {
-					label: "Общее время фокуса",
-				},
-			},
-			stats: {
-				pomodoros: "Помодоро",
-				streak: "Серия",
-				minutes: "Минуты",
-				average: "Средняя длина",
-				completion: "Завершение",
-			},
-			recents: {
-				empty: "Сессии еще не записаны",
-				duration: "{minutes} мин",
-				status: {
-					completed: "Завершено",
-					interrupted: "Прервано",
-				},
-				delete: "Удалить сессию",
-				deleteAria: "Удалить сессию Pomodoro",
-				deleteConfirmTitle: "Удалить сессию Pomodoro?",
-				deleteConfirmMessage:
-					"Это удалит сессию из истории Pomodoro. Существующие записи времени задач не изменятся.",
-				deleteConfirmButton: "Удалить",
-				deleteSuccess: "Сессия Pomodoro удалена",
-				deleteNotFound: "Сессия Pomodoro не найдена",
-			},
-			basesMigration: {
-				title: "Нужно представление Base?",
-				description:
-					"Представления Base Pomodoro используют frontmatter ежедневных заметок. Чтобы увидеть эту историю в сгенерированной Base статистики Pomodoro, перенесите данные Pomodoro в настройках, затем выберите хранение в ежедневных заметках.",
-			},
-		},
-		stats: {
-			title: "Статистика",
-			taskProjectStats: "Статистика задач и проектов",
-			sections: {
-				filters: "Фильтры",
-				overview: "Обзор",
-				today: "Сегодня",
-				thisWeek: "Эта неделя",
-				thisMonth: "Этот месяц",
-				projectBreakdown: "Разбивка по проектам",
-				dateRange: "Диапазон дат",
-			},
-			filters: {
-				minTime: "Мин. время (минуты)",
-				allTasks: "Все задачи",
-				activeOnly: "Только активные",
-				completedOnly: "Только завершенные",
-			},
-			refreshButton: "Обновить",
-			timeRanges: {
-				allTime: "Все время",
-				last7Days: "Последние 7 дней",
-				last30Days: "Последние 30 дней",
-				last90Days: "Последние 90 дней",
-				customRange: "Пользовательский диапазон",
-			},
-			resetFiltersButton: "Сбросить фильтры",
-			dateRangeFrom: "С",
-			dateRangeTo: "До",
-			noProject: "Без проекта",
-			cards: {
-				timeTrackedEstimated: "Отслежено / Запланировано времени",
-				totalTasks: "Доtal Tasks",
-				completionRate: "Процент завершения",
-				activeProjects: "Активные проекты",
-				avgTimePerTask: "Среднее время на задачу",
-			},
-			labels: {
-				tasks: "Задачи",
-				completed: "Завершено",
-				projects: "Проекты",
-			},
-			noProjectData: "Нет данных о проектах",
-			notAvailable: "Н/Д",
-			noTasks: "Задачи не найдены",
-			loading: "Загрузка...",
-		},
 		releaseNotes: {
 			title: "Что нового в TaskNotes {version}",
 			header: "Что нового в TaskNotes {version}",
@@ -500,7 +401,7 @@ export const ru: TranslationTree = {
 			starMessage:
 				"Мы очень ценим любые отзывы. Если что-то кажется неправильным, пожалуйста, сообщите нам на GitHub. Если TaskNotes полезен для вас, пожалуйста, поставьте звезду.",
 			baseFilesNotice:
-				"> [!info] О файлах `.base` по умолчанию\n> Изменения в шаблонах `.base`, которые генерируются по умолчанию, не перезаписывают ваши существующие файлы `.base`, поэтому ваши настройки сохраняются.\n> Чтобы получить улучшения новых шаблонов, пересоздайте базовые файлы в **Настройки → TaskNotes → Общие → Представления и файлы base → Обновить файлы**.",
+				"> [!info] О файлах `.base` по умолчанию\n> Изменения в шаблонах `.base`, которые генерируются по умолчанию, не перезаписывают ваши существующие файлы `.base`, поэтому ваши настройки сохраняются.\n> Чтобы получить улучшения новых шаблонов, пересоздайте базовые файлы в **Настройки → TaskNotes → Внешний вид и взаимодействие → Представления и файлы Base → Обновить файлы**.",
 		},
 	},
 	settings: {
@@ -1891,14 +1792,6 @@ export const ru: TranslationTree = {
 						right: "Правая сторона",
 					},
 				},
-				viewsButtonAlignment: {
-					name: "Выравнивание кнопки представлений",
-					description: "Выравнивание кнопки представлений/фильтров в интерфейсе задач",
-					options: {
-						left: "Левая сторона",
-						right: "Правая сторона",
-					},
-				},
 			},
 			projectAutosuggest: {
 				header: "Автопредложения проектов",
@@ -2030,13 +1923,10 @@ export const ru: TranslationTree = {
 						advancedCalendar: "Открыть расширенный календарь",
 						agenda: "Открыть повестку дня",
 						relationships: "Виджет связей",
-						pomodoroStats: "Base статистики Pomodoro",
 					},
 					fileLabel: "Файл: {path}",
 					resetButton: "Сбросить",
 					resetTooltip: "Сбросить к пути по умолчанию",
-					pomodoroDailyNotesHint:
-						"Сгенерированная Base статистики Pomodoro читает историю Pomodoro из ежедневных заметок. Если история всё ещё хранится в данных плагина, перенесите её в настройках перед использованием этого Base-файла.",
 				},
 				autoCreateDefaultFiles: {
 					name: "Автоматически создавать файлы по умолчанию",
@@ -2678,14 +2568,14 @@ export const ru: TranslationTree = {
 	commands: {
 		openCalendarView: "Открыть представление мини-календаря",
 		openAdvancedCalendarView: "Открыть представление календаря",
+		openToday: "Открыть «Сегодня»",
+		openInbox: "Открыть «Входящие»",
 		openTasksView: "Открыть представление задач",
 		openNotesView: "Открыть представление заметок",
 		openAgendaView: "Открыть представление планов",
 		openPomodoroView: "Открыть таймер помодоро",
 		openKanbanView: "Открыть доску канбан",
 		updateDefaultBaseFiles: "Обновить файлы Base по умолчанию",
-		openPomodoroStats: "Открыть статистику помодоро",
-		openStatisticsView: "Открыть статистику задач и проектов",
 		createNewTask: "Создать новую задачу",
 		convertCurrentNoteToTask: {
 			name: "Преобразовать текущую заметку в задачу",

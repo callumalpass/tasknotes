@@ -236,7 +236,7 @@ function defaultProjects(ctx: SettingsContext): SettingDefinitionList {
 	};
 	return {
 		type: "list",
-		heading: ctx.t("views.stats.labels.projects"),
+		heading: ctx.t("modals.task.organization.projects"),
 		emptyState: ctx.t("settings.native.newTasksHaveNoDefaultProjects"),
 		addItem: {
 			name: ctx.t("modals.task.projectsAdd"),
@@ -338,7 +338,7 @@ function reminderDefaults(ctx: SettingsContext): SettingDefinitionList {
 						{
 							type: "dropdown",
 							options: {
-								minutes: ctx.t("views.pomodoroStats.stats.minutes"),
+								minutes: ctx.t("settings.defaults.reminders.units.minutes"),
 								hours: ctx.t("settings.defaults.reminders.units.hours"),
 								days: ctx.t("settings.defaults.reminders.units.days"),
 							},

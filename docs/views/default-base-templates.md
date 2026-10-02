@@ -9,9 +9,11 @@ dateModified: 2026-05-17T21:57:48+1000
 TaskNotes automatically generates [Bases](https://help.obsidian.md/Bases/Introduction+to+Bases) files for its built-in views when you first open them. These templates are configured based on your TaskNotes settings, including custom property names, statuses, and task identification methods.
 
 This page shows the default templates as they would appear with TaskNotes' default settings. The actual templates generated in your vault may differ if you've customized your settings.
+Version 5 no longer generates Pomodoro statistics files. Existing files and recorded session data are kept. Calendar, Agenda, Kanban, and Mini Calendar defaults exclude archived tasks without applying hidden filters to user-created Bases.
+
 This page documents generated defaults. It is reference material for understanding and editing `.base` files already created in your vault.
 
-Generated `.base` files are regular vault files. When you change task identification, field mapping, status, or priority settings, existing files keep their current content until you edit them. To replace the configured default files with templates generated from your current settings, use **Settings → TaskNotes → Views & base files → Update files** or run the **TaskNotes: Update default base files** command. Automation clients can call `api.bases.updateDefaultFiles()` from the runtime API or `POST /api/bases/default-files/update` from the local HTTP API. These update actions overwrite the configured default `.base` files, including any manual edits in those files.
+Generated `.base` files are regular vault files. When you change task identification, field mapping, status, or priority settings, existing files keep their current content until you edit them. To replace the configured default files with templates generated from your current settings, use **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files** or run the **TaskNotes: Update default base files** command. Automation clients can call `api.bases.updateDefaultFiles()` from the runtime API or `POST /api/bases/default-files/update` from the local HTTP API. These update actions overwrite the configured default `.base` files, including any manual edits in those files.
 
 Custom priority labels and priority/status values are escaped in generated expressions, so apostrophes, double quotes, backslashes, and line breaks do not break the generated formulas or YAML. YAML quoting and line wrapping may differ from the examples below without changing the formulas. If an existing generated file cannot open after these settings were customized, regenerate it using **Update default base files** (this replaces manual edits).
 
@@ -123,54 +125,10 @@ YAML examples in this document are complete snapshots. In custom files, targeted
 filters:
   and:
     - file.hasTag("task")
+    - file.hasTag("archived") != true
 
 formulas:
-  # Sorting
-  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))'
-  urgencyScore: 'if(due.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilDue))'
-  # Date calculations
-  daysUntilDue: 'if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)'
-  dueIn: 'if(due.isEmpty(), "", if(formula.daysUntilDue == 0, "Today", if(formula.daysUntilDue == 1, "1 day", if(formula.daysUntilDue > 1, formula.daysUntilDue + " days", if(formula.daysUntilDue == -1, "1 day overdue", formula.daysUntilDue * -1 + " days overdue")))))'
-  daysUntilScheduled: 'if((scheduled.isEmpty() == false), ((number(date(scheduled)) - number(today())) / 86400000).floor(), null)'
-  daysSinceCreated: '((number(now()) - number(file.ctime)) / 86400000).floor()'
-  daysSinceModified: '((number(now()) - number(file.mtime)) / 86400000).floor()'
-  # Booleans
-  isOverdue: '(due.isEmpty() == false) && date(due) < today() && status != "done"'
-  isDueToday: '(due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")'
-  isDueThisWeek: '(due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")'
-  isScheduledToday: '(scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")'
-  isRecurring: 'recurrence && !recurrence.isEmpty()'
-  hasTimeEstimate: 'timeEstimate && timeEstimate > 0'
-  # Time tracking
-  timeRemaining: 'if(timeEstimate && timeEstimate > 0, timeEstimate - if(timeEntries, list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0), 0), null)'
-  efficiencyRatio: 'if(timeEstimate && timeEstimate > 0 && timeEntries, (list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / timeEstimate * 100).round(), null)'
-  timeTrackedThisWeek: 'if(timeEntries, list(timeEntries).filter(value.endTime && date(value.startTime) >= today() - "7d").map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)'
-  timeTrackedToday: 'if(timeEntries, list(timeEntries).filter(value.endTime && date(value.startTime).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)'
-  timeTrackedFormatted: '...'  # Formats total tracked time as "Xh Ym"
-  # Grouping
-  dueMonth: 'if((due.isEmpty() == false), date(due).format("YYYY-MM"), "No due date")'
-  dueWeek: 'if((due.isEmpty() == false), date(due).format("YYYY-[W]WW"), "No due date")'
-  scheduledMonth: 'if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-MM"), "Not scheduled")'
-  scheduledWeek: 'if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-[W]WW"), "Not scheduled")'
-  dueDateCategory: 'if(due.isEmpty(), "No due date", if(date(due) < today(), "Overdue", if(date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"), "Today", if(date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD"), "Tomorrow", if(date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"), "This week", "Later")))))'
-  dueDateDisplay: '...'  # Shows "Today", "Tomorrow", "3d ago", "Mon", "Dec 15"
-  timeEstimateCategory: 'if(!timeEstimate || timeEstimate == 0 || timeEstimate == null, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))'
-  ageCategory: 'if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))'
-  createdMonth: 'file.ctime.format("YYYY-MM")'
-  modifiedMonth: 'file.mtime.format("YYYY-MM")'
-  priorityCategory: 'if(priority=="high","High",if(priority=="normal","Normal",if(priority=="low","Low","No priority")))'
-  projectCount: 'if(!projects || list(projects).length == 0, "No projects", if(list(projects).length == 1, "Single project", "Multiple projects"))'
-  contextCount: 'if(!contexts || list(contexts).length == 0, "No contexts", if(list(contexts).length == 1, "Single context", "Multiple contexts"))'
-  trackingStatus: 'if(!timeEstimate || timeEstimate == 0 || timeEstimate == null, "No estimate", if(!timeEntries || list(timeEntries).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))'
-  # Combined due/scheduled
-  nextDate: 'if((due.isEmpty() == false) && (scheduled.isEmpty() == false), if(date(due) < date(scheduled), due, scheduled), if((due.isEmpty() == false), due, scheduled))'
-  daysUntilNext: 'if((due.isEmpty() == false) && (scheduled.isEmpty() == false), min(formula.daysUntilDue, formula.daysUntilScheduled), if((due.isEmpty() == false), formula.daysUntilDue, formula.daysUntilScheduled))'
-  hasDate: '(due.isEmpty() == false) || (scheduled.isEmpty() == false)'
-  isToday: '((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"))'
-  isThisWeek: '((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"))'
-  nextDateCategory: '...'  # "Overdue/Past", "Today", "Tomorrow", "This week", "Later", "No date"
-  nextDateMonth: '...'  # YYYY-MM format for next date
-  nextDateWeek: '...'  # YYYY-[W]WW format for next date
+  # ... shared formulas listed above ...
 
 views:
   - type: tasknotesMiniCalendar
@@ -182,7 +140,7 @@ views:
       - scheduled
       - projects
       - contexts
-      - tags
+      - file.tags
       - blockedBy
       - file.name
       - recurrence
@@ -214,9 +172,10 @@ Used by the **Kanban** command to display tasks organized by status.
 filters:
   and:
     - file.hasTag("task")
+    - file.hasTag("archived") != true
 
 formulas:
-  # ... same formulas as Mini Calendar above ...
+  # ... shared formulas listed above ...
 
 views:
   - type: tasknotesKanban
@@ -228,7 +187,7 @@ views:
       - scheduled
       - projects
       - contexts
-      - tags
+      - file.tags
       - blockedBy
       - file.name
       - recurrence
@@ -249,7 +208,7 @@ views:
 
 Used by the **Tasks** command to display filtered task views.
 
-This template includes multiple views: Manual Order, All Tasks, Not Blocked, Today, Overdue, This Week, and Unscheduled. The Manual Order view groups by status and sorts by the manual-order property so drag-to-reorder works immediately in new bases. The default property name is `tasknotes_manual_order`. The remaining views keep their existing date- and urgency-focused defaults. Each filtered view (except All Tasks) filters for incomplete tasks, handling both recurring and non-recurring tasks. For recurring tasks, the generated filters normalize `complete_instances` values before checking today's date, and missing values are treated as "not completed today" so newly created recurring tasks still appear by default. The "Not Blocked" view additionally filters for tasks that are ready to work on (no incomplete blocking dependencies).
+Newly generated files open on Today and also include Inbox, Archived, Manual Order, All Tasks, Not Blocked, Overdue, This Week, and Unscheduled. Inbox contains incomplete tasks without projects, due dates, or scheduled dates. Active views exclude the mapped archive tag (default: `archived`); Archived shows those tagged tasks, and All Tasks includes the full history. The Manual Order view groups by status and sorts by `tasknotes_manual_order`. Today, Inbox, Not Blocked, Overdue, This Week, and Unscheduled filter for incomplete tasks, handling both recurring and non-recurring tasks. For recurring tasks, the generated filters normalize `complete_instances` values before checking today's date, and missing values are treated as "not completed today" so newly created recurring tasks still appear by default. The "Not Blocked" view additionally filters for tasks that are ready to work on (no incomplete blocking dependencies).
 The default views cover common review horizons and can be kept, removed, or cloned with modified filters.
 
 ```yaml
@@ -260,11 +219,28 @@ filters:
     - file.hasTag("task")
 
 formulas:
-  # ... same formulas as Mini Calendar above ...
+  # ... shared formulas listed above ...
 
 views:
   - type: tasknotesTaskList
-    name: "Manual Order"
+    name: "Today"
+    filters:
+      and:
+        - file.hasTag("archived") != true
+        - or:
+          - and:
+            - recurrence.isEmpty()
+            - status != "done"
+          - and:
+            - recurrence.isEmpty() == false
+            - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
+        - or:
+          - and:
+            - due.isEmpty() == false
+            - date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
+          - and:
+            - scheduled.isEmpty() == false
+            - date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
     order:
       - status
       - priority
@@ -272,7 +248,77 @@ views:
       - scheduled
       - projects
       - contexts
-      - tags
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - column: formula.urgencyScore
+        direction: DESC
+  - type: tasknotesTaskList
+    name: "Inbox"
+    filters:
+      and:
+        - file.hasTag("archived") != true
+        - projects.isEmpty()
+        - due.isEmpty()
+        - scheduled.isEmpty()
+        - or:
+          - and:
+            - recurrence.isEmpty()
+            - status != "done"
+          - and:
+            - recurrence.isEmpty() == false
+            - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+    sort:
+      - column: tasknotes_manual_order
+        direction: DESC
+  - type: tasknotesTaskList
+    name: "Archived"
+    filters:
+      and:
+        - file.hasTag("archived")
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
+  - type: tasknotesTaskList
+    name: "Manual Order"
+    filters:
+      and:
+        - file.hasTag("archived") != true
+    order:
+      - status
+      - priority
+      - due
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
       - blockedBy
       - file.name
       - recurrence
@@ -293,7 +339,7 @@ views:
       - scheduled
       - projects
       - contexts
-      - tags
+      - file.tags
       - blockedBy
       - file.name
       - recurrence
@@ -306,6 +352,7 @@ views:
     name: "Not Blocked"
     filters:
       and:
+        - file.hasTag("archived") != true
         # Incomplete tasks
         - or:
           # Non-recurring task that's not in any completed status
@@ -329,45 +376,7 @@ views:
       - scheduled
       - projects
       - contexts
-      - tags
-      - blockedBy
-      - file.name
-      - recurrence
-      - complete_instances
-      - file.tasks
-    sort:
-      - column: formula.urgencyScore
-        direction: DESC
-  - type: tasknotesTaskList
-    name: "Today"
-    filters:
-      and:
-        # Incomplete tasks (handles both recurring and non-recurring)
-        - or:
-          # Non-recurring task that's not in any completed status
-          - and:
-            - recurrence.isEmpty()
-            - status != "done"
-          # Recurring task where today is not in complete_instances
-          - and:
-            - recurrence.isEmpty() == false
-            - complete_instances.map(date(value).format("YYYY-MM-DD")).contains(today().format("YYYY-MM-DD")) != true
-        # Due or scheduled today
-        - or:
-          - and:
-            - due.isEmpty() == false
-            - date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
-          - and:
-            - scheduled.isEmpty() == false
-            - date(scheduled).format("YYYY-MM-DD") == today().format("YYYY-MM-DD")
-    order:
-      - status
-      - priority
-      - due
-      - scheduled
-      - projects
-      - contexts
-      - tags
+      - file.tags
       - blockedBy
       - file.name
       - recurrence
@@ -380,6 +389,7 @@ views:
     name: "Overdue"
     filters:
       and:
+        - file.hasTag("archived") != true
         # Incomplete tasks
         - or:
           # Non-recurring task that's not in any completed status
@@ -405,7 +415,7 @@ views:
       - scheduled
       - projects
       - contexts
-      - tags
+      - file.tags
       - blockedBy
       - file.name
       - recurrence
@@ -418,6 +428,7 @@ views:
     name: "This Week"
     filters:
       and:
+        - file.hasTag("archived") != true
         # Incomplete tasks
         - or:
           # Non-recurring task that's not in any completed status
@@ -445,7 +456,7 @@ views:
       - scheduled
       - projects
       - contexts
-      - tags
+      - file.tags
       - blockedBy
       - file.name
       - recurrence
@@ -458,6 +469,7 @@ views:
     name: "Unscheduled"
     filters:
       and:
+        - file.hasTag("archived") != true
         # Incomplete tasks
         - or:
           # Non-recurring task that's not in any completed status
@@ -478,7 +490,7 @@ views:
       - scheduled
       - projects
       - contexts
-      - tags
+      - file.tags
       - blockedBy
       - file.name
       - recurrence
@@ -499,9 +511,10 @@ Used by the **Calendar** command to display tasks in a full calendar view with t
 filters:
   and:
     - file.hasTag("task")
+    - file.hasTag("archived") != true
 
 formulas:
-  # ... same formulas as Mini Calendar above ...
+  # ... shared formulas listed above ...
 
 views:
   - type: tasknotesCalendar
@@ -513,7 +526,7 @@ views:
       - scheduled
       - projects
       - contexts
-      - tags
+      - file.tags
       - blockedBy
       - file.name
       - recurrence
@@ -540,16 +553,44 @@ Note: Property-based events are disabled by default to avoid duplicate entries w
 To build an Agenda variant for completed tasks that do not have due or scheduled dates, enable property-based events and use the completed-date property as the event start date:
 
 ```yaml
+# Agenda
+
+filters:
+  and:
+    - file.hasTag("task")
+    - file.hasTag("archived") != true
+
+formulas:
+  # ... shared formulas listed above ...
+
+properties:
+  formula.dueIn:
+    displayName: Due in
+
+
+views:
+  - type: tasknotesCalendar
+    name: "Agenda"
+    order:
+      - status
+      - priority
+      - due
+      - formula.dueIn
+      - scheduled
+      - projects
+      - contexts
+      - file.tags
+      - blockedBy
+      - file.name
+      - recurrence
+      - complete_instances
+      - file.tasks
     options:
-      showScheduled: false
-      showDue: false
-      showRecurring: false
-      showTimeEntries: false
-      showPropertyBasedEvents: true
-      showOverdueOnToday: false
+      showPropertyBasedEvents: false
+      showOverdueOnToday: true
       createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
-    startDateProperty: completedDate
+    startDateProperty: file.ctime
     listDayCount: 7
     titleProperty: file.basename
 ```
@@ -593,100 +634,6 @@ views:
     startDateProperty: file.ctime
     listDayCount: 7
     titleProperty: file.basename
-```
-
-## Pomodoro Statistics
-
-Generated alongside the default view files to summarize Pomodoro history stored in daily notes.
-
-Note: This Base only reads Pomodoro sessions written to daily note frontmatter. If your history is stored in plugin data, migrate it from **Settings → TaskNotes → Features** before using this view.
-
-```yaml
-# Pomodoro statistics
-# Generated with your TaskNotes settings
-# Requires Pomodoro data storage to be set to Daily notes.
-
-filters:
-  and:
-    - file.hasProperty("pomodoros")
-    - list(note["pomodoros"]).filter(value.startTime).isEmpty() == false
-
-formulas:
-  pomodoroDate: 'if(note["pomodoros"], list(note["pomodoros"]).filter(value.startTime).map(date(value.startTime).format("YYYY-MM-DD")).unique().join(", "), file.basename)'
-  pomodoroMonth: 'if(note["pomodoros"], list(note["pomodoros"]).filter(value.startTime).map(date(value.startTime).format("YYYY-MM")).unique().join(", "), "")'
-  completedPomos: 'if(note["pomodoros"], list(note["pomodoros"]).filter(value.type == "work" && value.completed == true).length, 0)'
-  attemptedPomos: 'if(note["pomodoros"], list(note["pomodoros"]).filter(value.type == "work").length, 0)'
-  interruptedPomos: 'if(note["pomodoros"], list(note["pomodoros"]).filter(value.type == "work" && value.completed == false).length, 0)'
-  focusMinutes: 'if(note["pomodoros"], list(note["pomodoros"]).filter(value.type == "work" && value.completed == true).map(if(value.plannedDuration && value.plannedDuration > 0, value.plannedDuration, if(value.startTime && value.endTime, ((number(date(value.endTime)) - number(date(value.startTime))) / 60000).round(), 0))).reduce(acc + value, 0).round(), 0)'
-  focusTime: 'if(formula.focusMinutes >= 60, (formula.focusMinutes / 60).floor() + "h " + (formula.focusMinutes % 60).round() + "m", formula.focusMinutes + "m")'
-  completionRate: 'if(formula.attemptedPomos > 0, (formula.completedPomos / formula.attemptedPomos * 100).round() + "%", "0%")'
-  shortBreaks: 'if(note["pomodoros"], list(note["pomodoros"]).filter(value.type == "short-break").length, 0)'
-  longBreaks: 'if(note["pomodoros"], list(note["pomodoros"]).filter(value.type == "long-break").length, 0)'
-
-properties:
-  formula.pomodoroDate:
-    displayName: Date
-  formula.pomodoroMonth:
-    displayName: Month
-  formula.completedPomos:
-    displayName: Completed
-  formula.attemptedPomos:
-    displayName: Attempted
-  formula.interruptedPomos:
-    displayName: Interrupted
-  formula.focusMinutes:
-    displayName: Focus minutes
-  formula.focusTime:
-    displayName: Focus time
-  formula.completionRate:
-    displayName: Completion
-  formula.shortBreaks:
-    displayName: Short breaks
-  formula.longBreaks:
-    displayName: Long breaks
-
-views:
-  - type: table
-    name: "Daily"
-    order:
-      - formula.pomodoroDate
-      - formula.completedPomos
-      - formula.focusTime
-      - formula.attemptedPomos
-      - formula.completionRate
-      - formula.interruptedPomos
-      - formula.shortBreaks
-      - formula.longBreaks
-      - file.name
-    sort:
-      - column: formula.pomodoroDate
-        direction: DESC
-  - type: table
-    name: "Monthly"
-    groupBy:
-      property: formula.pomodoroMonth
-      direction: DESC
-    order:
-      - formula.pomodoroDate
-      - formula.completedPomos
-      - formula.focusMinutes
-      - formula.focusTime
-      - formula.attemptedPomos
-      - formula.completionRate
-      - formula.interruptedPomos
-      - formula.shortBreaks
-      - formula.longBreaks
-      - file.name
-    summaries:
-      formula.completedPomos: Sum
-      formula.focusMinutes: Sum
-      formula.attemptedPomos: Sum
-      formula.interruptedPomos: Sum
-      formula.shortBreaks: Sum
-      formula.longBreaks: Sum
-    sort:
-      - column: formula.pomodoroDate
-        direction: DESC
 ```
 
 ## Relationships

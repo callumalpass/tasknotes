@@ -70,6 +70,7 @@ export class I18nService extends Events {
 			ru: "Русский",
 			zh: "中文",
 			ja: "日本語",
+			ko: "한국어",
 		};
 		return nativeNames[languageCode] || languageCode;
 	}

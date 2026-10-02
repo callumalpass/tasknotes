@@ -6,7 +6,7 @@ describe('I18nService', () => {
         const i18n = createI18nService();
         expect(i18n.getCurrentLocale()).toBe('en');
         expect(i18n.translate('common.systemDefault')).toBe('System default');
-        expect(i18n.translate('views.pomodoroStats.sections.week')).toBe('This week');
+        expect(i18n.translate('commands.openToday')).toBe('Open today');
         expect(i18n.translate('views.pomodoro.buttons.start')).toBe('Start');
         expect(i18n.translate('modals.taskCreation.notices.titleRequired')).toBe('Please enter a task title');
     });
@@ -16,7 +16,7 @@ describe('I18nService', () => {
         i18n.setLocale('fr');
         expect(i18n.getCurrentLocale()).toBe('fr');
         expect(i18n.translate('common.systemDefault')).toBe('Langue du système');
-        expect(i18n.translate('views.pomodoroStats.sections.week')).toBe('Cette semaine');
+        expect(i18n.translate('commands.openToday')).toBe('Ouvrir Aujourd’hui');
         expect(i18n.translate('views.pomodoro.buttons.start')).toBe('Démarrer');
         expect(i18n.translate('modals.taskCreation.notices.titleRequired')).toBe('Veuillez saisir un titre de tâche');
 

@@ -1,7 +1,29 @@
 import { Platform } from "obsidian";
+import { STARTER_NOTE_CONTENT } from "../../../src/bootstrap/starterNote";
 import { settingsFixture, flattenSettings, control, page } from "../../helpers/native-settings";
 
 describe("Native settings navigation and search", () => {
+	test("starter routes name real native settings pages and groups", () => {
+		const { tab } = settingsFixture();
+		const definitions = tab.getSettingDefinitions();
+		for (const name of ["Task files", "Properties", "Task creation", "Form fields", "Appearance & interaction"]) {
+			expect(page(definitions, name)).toBeDefined();
+			expect(STARTER_NOTE_CONTENT).toContain(name);
+		}
+		expect(flattenSettings(definitions).some(item => "heading" in item && item.heading === "Views & base files")).toBe(true);
+		expect(STARTER_NOTE_CONTENT).toContain("Views & base files");
+	});
+
+	test("does not expose retired settings while retaining the persisted legacy alignment key", () => {
+		const { plugin, tab } = settingsFixture();
+		plugin.settings.viewsButtonAlignment = "left";
+		const entries = flattenSettings(tab.getSettingDefinitions());
+		const keys = entries.flatMap(item => "control" in item && item.control ? [item.control.key] : []);
+		expect(keys).not.toContain("viewsButtonAlignment");
+		expect(keys).not.toContain("commandFileMapping.pomodoro-stats-base");
+		expect(plugin.settings.viewsButtonAlignment).toBe("left");
+	});
+
 	test("uses inline groups for ordinary preferences while retaining substantial editors", () => {
 		const { tab } = settingsFixture();
 		const definitions = tab.getSettingDefinitions();

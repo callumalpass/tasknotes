@@ -189,6 +189,7 @@ export interface TaskNotesSettings {
 	// Nest the complete/skip context-menu actions under a submenu (vs. flat menu items)
 	completionMenuAsSubmenu: boolean;
 	// Filter toolbar layout
+	/** Legacy persisted key, ignored by Bases. Retained for downgrade compatibility. */
 	viewsButtonAlignment: "left" | "right";
 	// Overdue behavior settings
 	hideCompletedFromOverdue: boolean;
@@ -230,7 +231,6 @@ export interface TaskNotesSettings {
 		"open-tasks-view": string;
 		"open-advanced-calendar-view": string;
 		"open-agenda-view": string;
-		"pomodoro-stats-base": string;
 		relationships: string; // Bases file for unified relationships widget
 		[key: string]: string; // Allow string indexing
 	};

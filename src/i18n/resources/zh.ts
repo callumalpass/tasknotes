@@ -1,7 +1,17 @@
 import { TranslationTree } from "../types";
 
 export const zh: TranslationTree = {
+	onboarding: {
+		title: "开始使用 TaskNotes",
+		intro: "任务是仓库中的 Markdown 笔记。通过命令面板完成以下三步。",
+		create: "创建一个实际任务，并安排在今天。",
+		review: "在“今天”视图中找到任务。",
+		complete: "点击状态控件，直到任务完成。任务会离开“今天”视图，但笔记仍保留在仓库中。",
+		inbox: "记录无日期任务时，清除安排日期。收件箱显示没有项目、安排日期或截止日期的未完成任务。",
+		settings: "需要时再调整设置",
+	},
 	common: {
+		settings: "设置",
 		appName: "TaskNotes",
 		new: "新建",
 		cancel: "取消",
@@ -378,115 +388,6 @@ export const zh: TranslationTree = {
 				inputLabel: "计时器时长",
 			},
 		},
-		pomodoroStats: {
-			title: "番茄钟统计",
-			heading: "番茄钟统计数据",
-			refresh: "刷新",
-			sections: {
-				overview: "概览",
-				today: "今天",
-				week: "本周",
-				allTime: "全部时间",
-				recent: "最近的会话",
-			},
-			overviewCards: {
-				todayPomos: {
-					label: "今日番茄钟",
-					change: {
-						more: "比昨天多{count}个",
-						less: "比昨天少{count}个",
-					},
-				},
-				totalPomos: {
-					label: "总番茄钟数",
-				},
-				todayFocus: {
-					label: "今日专注时间",
-					change: {
-						more: "比昨天多{duration}",
-						less: "比昨天少{duration}",
-					},
-				},
-				totalFocus: {
-					label: "总专注时长",
-				},
-			},
-			stats: {
-				pomodoros: "番茄钟",
-				streak: "连击",
-				minutes: "分钟",
-				average: "平均时长",
-				completion: "完成率",
-			},
-			recents: {
-				empty: "尚未记录会话",
-				duration: "{minutes}分钟",
-				status: {
-					completed: "已完成",
-					interrupted: "已中断",
-				},
-				delete: "删除会话",
-				deleteAria: "删除 Pomodoro 会话",
-				deleteConfirmTitle: "删除 Pomodoro 会话？",
-				deleteConfirmMessage:
-					"这会从 Pomodoro 历史中删除该会话。现有任务时间条目不会更改。",
-				deleteConfirmButton: "删除",
-				deleteSuccess: "Pomodoro 会话已删除",
-				deleteNotFound: "未找到 Pomodoro 会话",
-			},
-			basesMigration: {
-				title: "想要 Base 视图吗？",
-				description:
-					"Pomodoro Base 视图使用每日笔记 frontmatter。要在生成的 Pomodoro 统计 Base 中查看此历史，请先在设置中迁移 Pomodoro 数据，然后将存储位置设为每日笔记。",
-			},
-		},
-		stats: {
-			title: "统计",
-			taskProjectStats: "任务和项目统计",
-			sections: {
-				filters: "筛选器",
-				overview: "概览",
-				today: "今天",
-				thisWeek: "本周",
-				thisMonth: "本月",
-				projectBreakdown: "项目分解",
-				dateRange: "日期范围",
-			},
-			filters: {
-				minTime: "最少时间（分钟）",
-				allTasks: "所有任务",
-				activeOnly: "仅活跃的",
-				completedOnly: "仅已完成的",
-			},
-			refreshButton: "刷新",
-			timeRanges: {
-				allTime: "一直",
-				last7Days: "最近 7 天",
-				last30Days: "最近 30 天",
-				last90Days: "最近 90 天",
-				customRange: "自定义范围",
-			},
-			resetFiltersButton: "重置筛选",
-			dateRangeFrom: "从",
-			dateRangeTo: "到",
-			noProject: "无项目",
-			cards: {
-				timeTrackedEstimated: "跟踪时间/预估时间",
-				totalTasks: "总任务数",
-				completionRate: "完成率",
-				activeProjects: "活跃项目",
-				avgTimePerTask: "每个任务的平均时间",
-			},
-			labels: {
-				tasks: "任务",
-				completed: "已完成",
-				projects: "项目",
-			},
-			noProjectData: "无可用的项目数据",
-			notAvailable: "不适用",
-			noTasks: "未找到任务",
-			loading: "加载中...",
-		},
 		releaseNotes: {
 			title: "TaskNotes {version} 的新功能",
 			header: "TaskNotes {version} 的新功能",
@@ -494,7 +395,7 @@ export const zh: TranslationTree = {
 			starMessage:
 				"我们非常感谢所有反馈。如果有什么感觉不对，请在 GitHub 上告诉我们。如果你觉得 TaskNotes 有用，请考虑给它加星。",
 			baseFilesNotice:
-				"> [!info] 关于默认 `.base` 文件\n> 默认生成的 `.base` 模板更新不会覆盖你现有的 `.base` 文件，因此你的自定义会被保留。\n> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 常规 → 视图与 base 文件 → 更新文件** 中重新生成 base 文件。",
+				"> [!info] 关于默认 `.base` 文件\n> 默认生成的 `.base` 模板更新不会覆盖你现有的 `.base` 文件，因此你的自定义会被保留。\n> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 外观与交互 → 视图与 Base 文件 → 更新文件** 中重新生成 base 文件。",
 		},
 	},
 	settings: {
@@ -1793,14 +1694,6 @@ export const zh: TranslationTree = {
 						right: "右侧",
 					},
 				},
-				viewsButtonAlignment: {
-					name: "视图按钮对齐",
-					description: "任务界面中视图/过滤器按钮的对齐方式",
-					options: {
-						left: "左侧",
-						right: "右侧",
-					},
-				},
 			},
 			projectAutosuggest: {
 				header: "项目自动建议",
@@ -1920,13 +1813,10 @@ export const zh: TranslationTree = {
 						advancedCalendar: "打开高级日历视图",
 						agenda: "打开议程视图",
 						relationships: "关系小部件",
-						pomodoroStats: "Pomodoro 统计 Base",
 					},
 					fileLabel: "文件：{path}",
 					resetButton: "重置",
 					resetTooltip: "重置为默认路径",
-					pomodoroDailyNotesHint:
-						"生成的 Pomodoro 统计 Base 会从每日笔记读取 Pomodoro 历史。如果历史仍存储在插件数据中，请先在设置中迁移后再使用该 Base 文件。",
 				},
 				autoCreateDefaultFiles: {
 					name: "自动创建默认文件",
@@ -2529,14 +2419,14 @@ export const zh: TranslationTree = {
 	commands: {
 		openCalendarView: "打开迷你日历视图",
 		openAdvancedCalendarView: "打开日历视图",
+		openToday: "打开今天",
+		openInbox: "打开收件箱",
 		openTasksView: "打开任务视图",
 		openNotesView: "打开笔记视图",
 		openAgendaView: "打开议程视图",
 		openPomodoroView: "打开番茄钟计时器",
 		openKanbanView: "打开看板",
 		updateDefaultBaseFiles: "更新默认 Base 文件",
-		openPomodoroStats: "打开番茄钟统计",
-		openStatisticsView: "打开任务和项目统计",
 		createNewTask: "创建新任务",
 		convertCurrentNoteToTask: {
 			name: "将当前笔记转换为任务",

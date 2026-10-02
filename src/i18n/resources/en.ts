@@ -1,7 +1,17 @@
 import { TranslationTree } from "../types";
 
 export const en: TranslationTree = {
+	onboarding: {
+		title: "Start here with TaskNotes",
+		intro: "Tasks are Markdown notes in your vault. Use the command palette for these three steps.",
+		create: "Create a real task and schedule it for today.",
+		review: "Find your task in `Today`.",
+		complete: "Click the status control until the task is `Done`. It leaves `Today`, but its note stays in your vault.",
+		inbox: "For undated capture, clear the scheduled date. The inbox shows incomplete tasks with no project, scheduled date, or due date.",
+		settings: "Settings, when you need them",
+	},
 	common: {
+		settings: "Settings",
 		appName: "TaskNotes",
 		new: "New",
 		cancel: "Cancel",
@@ -382,115 +392,6 @@ export const en: TranslationTree = {
 			},
 			statsLabel: "completed today",
 		},
-		pomodoroStats: {
-			title: "Pomodoro stats",
-			heading: "Pomodoro statistics",
-			refresh: "Refresh",
-			basesMigration: {
-				title: "Want a base view?",
-				description:
-					"Pomodoro base views use daily notes frontmatter; to see this history in the generated Pomodoro statistics base, migrate Pomodoro data in settings, then set storage to daily notes.",
-			},
-			sections: {
-				overview: "Overview",
-				today: "Today",
-				week: "This week",
-				allTime: "All time",
-				recent: "Recent sessions",
-			},
-			overviewCards: {
-				todayPomos: {
-					label: "Today's pomos",
-					change: {
-						more: "{count} more than yesterday",
-						less: "{count} fewer than yesterday",
-					},
-				},
-				totalPomos: {
-					label: "Total pomos",
-				},
-				todayFocus: {
-					label: "Today's focus",
-					change: {
-						more: "{duration} more than yesterday",
-						less: "{duration} less than yesterday",
-					},
-				},
-				totalFocus: {
-					label: "Total focus duration",
-				},
-			},
-			stats: {
-				pomodoros: "Pomodoros",
-				streak: "Streak",
-				minutes: "Minutes",
-				average: "Avg length",
-				completion: "Completion",
-			},
-			recents: {
-				empty: "No sessions recorded yet",
-				duration: "{minutes} min",
-				delete: "Delete session",
-				deleteAria: "Delete Pomodoro session",
-				deleteConfirmTitle: "Delete Pomodoro session?",
-				deleteConfirmMessage:
-					"This removes the session from Pomodoro history. Existing task time entries are not changed.",
-				deleteConfirmButton: "Delete",
-				deleteSuccess: "Pomodoro session deleted",
-				deleteNotFound: "Pomodoro session was not found",
-				status: {
-					completed: "Completed",
-					interrupted: "Interrupted",
-				},
-			},
-		},
-		stats: {
-			title: "Statistics",
-			taskProjectStats: "Task & project statistics",
-			sections: {
-				filters: "Filters",
-				overview: "Overview",
-				today: "Today",
-				thisWeek: "This week",
-				thisMonth: "This month",
-				projectBreakdown: "Project breakdown",
-				dateRange: "Date range",
-			},
-			filters: {
-				minTime: "Min time (minutes)",
-				allTasks: "All tasks",
-				activeOnly: "Active only",
-				completedOnly: "Completed only",
-			},
-			refreshButton: "Refresh",
-			timeRanges: {
-				allTime: "All time",
-				last7Days: "Last 7 days",
-				last30Days: "Last 30 days",
-				last90Days: "Last 90 days",
-				customRange: "Custom range",
-			},
-			resetFiltersButton: "Reset filters",
-			dateRangeFrom: "From",
-			dateRangeTo: "To",
-			noProject: "No project",
-			cards: {
-				timeTrackedEstimated: "Time tracked / estimated",
-				totalTasks: "Total tasks",
-				completionRate: "Completion rate",
-				activeProjects: "Active projects",
-				avgTimePerTask: "Avg time per task",
-			},
-			labels: {
-				tasks: "Tasks",
-				completed: "Completed",
-				projects: "Projects",
-			},
-			noProjectData: "No project data available",
-			notAvailable: "N/A",
-			noTasks: "No tasks found",
-			loading: "Loading...",
-		},
 		releaseNotes: {
 			title: "What's new in TaskNotes {version}",
 			header: "What's new in TaskNotes {version}",
@@ -498,7 +399,7 @@ export const en: TranslationTree = {
 			starMessage:
 				"We really appreciate all feedback. If something does not feel right, please let us know on GitHub. If you find TaskNotes useful, please consider giving it a star.",
 			baseFilesNotice:
-				"> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**.",
+				"> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**.",
 		},
 	},
 	settings: {
@@ -1846,14 +1747,6 @@ export const en: TranslationTree = {
 						right: "Right side",
 					},
 				},
-				viewsButtonAlignment: {
-					name: "Views button alignment",
-					description: "Alignment of the views/filters button in the task interface",
-					options: {
-						left: "Left side",
-						right: "Right side",
-					},
-				},
 			},
 			projectAutosuggest: {
 				header: "Project autosuggest",
@@ -1975,8 +1868,6 @@ export const en: TranslationTree = {
 						"TaskNotes uses Obsidian Bases files (.base) to power its views. These files are generated automatically on startup if they don't exist, configured with your current settings (task identification, field mappings, statuses, etc.).",
 					descriptionRegen:
 						'Base files are not automatically updated when you change settings. To apply new settings, use "Update files" below, delete the existing .base files and restart Obsidian, or edit them manually.',
-					pomodoroDailyNotesHint:
-						"The generated Pomodoro statistics base reads Pomodoro history from daily notes; if your history is still stored in plugin data, migrate it in settings before using that base file.",
 					docsLink: "View documentation for available formulas and customization options",
 					docsLinkUrl: "https://tasknotes.dev/views/default-base-templates",
 					commands: {
@@ -1985,7 +1876,6 @@ export const en: TranslationTree = {
 						tasks: "Open tasks view",
 						advancedCalendar: "Open advanced calendar view",
 						agenda: "Open agenda view",
-						pomodoroStats: "Pomodoro statistics base",
 						relationships: "Relationships widget",
 					},
 					fileLabel: "File: {path}",
@@ -2626,14 +2516,14 @@ export const en: TranslationTree = {
 	commands: {
 		openCalendarView: "Open mini calendar view",
 		openAdvancedCalendarView: "Open calendar view",
+		openToday: "Open today",
+		openInbox: "Open inbox",
 		openTasksView: "Open tasks view",
 		openNotesView: "Open notes view",
 		openAgendaView: "Open agenda view",
 		openPomodoroView: "Open Pomodoro timer",
 		openKanbanView: "Open Kanban board",
 		updateDefaultBaseFiles: "Update default base files",
-		openPomodoroStats: "Open Pomodoro statistics",
-		openStatisticsView: "Open task & project statistics",
 		createNewTask: "Create new task",
 		convertCurrentNoteToTask: {
 			name: "Convert current note to task",
