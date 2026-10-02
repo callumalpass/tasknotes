@@ -262,12 +262,12 @@ For ICS event notes, additional variables are available:
 
 This setting is configured in the **Task Properties** tab within the Title property card.
 
-When enabled, the task's title is stored in the filename instead of frontmatter. The `title` property is removed from frontmatter, and the filename updates when the title changes. This disables other filename templating options.
+When enabled, the task's title is stored in the filename when it can represent the title exactly. Sanitized characters, links, long filenames and collision suffixes require a frontmatter title to preserve the full text. The filename updates when the title changes; a failed rename leaves the old title and properties unchanged. This disables other filename templating options.
 
 **Important Considerations:**
 
 - **Backward Compatibility:** This feature is designed to be backward-compatible. Existing tasks with the `title` property in their frontmatter will continue to work as expected. The plugin will always prioritize reading the title from the frontmatter if it exists.
-- **New Tasks:** New tasks created with this setting enabled will have their title stored exclusively in the filename.
+- **New Tasks:** Titles are stored exclusively in the filename only when it represents the full title exactly.
 - **Migration:** To migrate an existing task to this system, rename the file to match the task's title and remove the `title` property from frontmatter.
 Storing title in filename favors path-readable tasks and external tooling that keys off filenames. Keeping title in frontmatter avoids path changes when titles are edited.
 

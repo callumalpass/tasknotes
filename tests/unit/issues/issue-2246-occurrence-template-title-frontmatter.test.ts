@@ -31,6 +31,7 @@ jest.mock('../../../src/utils/dateUtils', () => ({
 }));
 
 jest.mock('../../../src/utils/filenameGenerator', () => ({
+	...jest.requireActual('../../../src/utils/filenameGenerator'),
 	generateTaskFilename: jest.fn(() => 'Pay rent'),
 	generateUniqueFilename: jest.fn(async (base) => base),
 	generateOccurrenceFilename: jest.fn(() => 'Pay rent — 2026-09'),

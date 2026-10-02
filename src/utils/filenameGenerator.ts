@@ -199,6 +199,15 @@ export function generateTaskFilename(
 	}
 }
 
+export function isTitleRepresentedByFilename(
+	title: string,
+	filenameTitle: string,
+	actualFilename: string,
+	expectedFilename = filenameTitle
+): boolean {
+	return actualFilename === expectedFilename && title === filenameTitle;
+}
+
 type TaskFilenameNoticeSettings = Pick<
 	TaskNotesSettings,
 	"storeTitleInFilename" | "taskFilenameFormat"

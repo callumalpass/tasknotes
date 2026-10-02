@@ -27,7 +27,7 @@ Property keys are YAML/frontmatter keys. TaskNotes can read and write keys that 
 The task title property. Configuration options:
 
 - **Property key**: Frontmatter field name (default: `title`)
-- **Store title in filename**: When enabled, the task title is stored in the filename instead of frontmatter when the filename can represent it. Long, sanitized, or duplicate filenames may require a title property to preserve the full text. Editing other properties preserves an existing title property. The filename updates when the title changes.
+- **Store title in filename**: When enabled, the task title is stored in the filename instead of frontmatter when the filename can represent it. Long, sanitized, or duplicate filenames may require a title property to preserve the full text. Editing titles or other properties preserves the full title whenever the resulting filename cannot represent it exactly. The filename updates when the title changes; if the rename fails, the previous title and properties remain unchanged.
 - **Filename format**: When "Store title in filename" is disabled, choose how filenames are generated:
     - Title-based
     - Zettelkasten-style

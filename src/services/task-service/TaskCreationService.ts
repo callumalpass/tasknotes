@@ -14,6 +14,7 @@ import {
 	generateTaskFilename,
 	generateUniqueFilename,
 	generateOccurrenceFilename,
+	isTitleRepresentedByFilename,
 } from "../../utils/filenameGenerator";
 import { ensureFolderExists } from "../../utils/helpers";
 import { getCurrentDateString, getCurrentTimestamp } from "../../utils/dateUtils";
@@ -211,8 +212,7 @@ export class TaskCreationService {
 					: filenameTitle;
 			const titleIsRepresentedByFilename =
 				runtime.settings.storeTitleInFilename &&
-				uniqueFilename === expectedFilename &&
-				title === filenameTitle;
+				isTitleRepresentedByFilename(title, filenameTitle, uniqueFilename, expectedFilename);
 
 			const completeTaskData: Partial<TaskInfo> = {
 				title,

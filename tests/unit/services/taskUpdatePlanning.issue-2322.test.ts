@@ -61,10 +61,10 @@ describe("#2322 fallback title preservation", () => {
 		expect(frontmatter).not.toHaveProperty("title");
 	});
 
-	it("retains existing title-change behavior in filename mode", () => {
+	it("keeps a changed title until the resolved filename is confirmed lossless", () => {
 		const frontmatter = { title: longTitle };
 		update(frontmatter, { title: "Short new title" });
-		expect(frontmatter).not.toHaveProperty("title");
+		expect(frontmatter.title).toBe("Short new title");
 	});
 
 	it("continues writing changed titles in property mode", () => {

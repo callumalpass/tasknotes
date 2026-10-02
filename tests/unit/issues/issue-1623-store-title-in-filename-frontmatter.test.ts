@@ -21,6 +21,7 @@ jest.mock('../../../src/utils/dateUtils', () => ({
 }));
 
 jest.mock('../../../src/utils/filenameGenerator', () => ({
+	...jest.requireActual('../../../src/utils/filenameGenerator'),
 	generateTaskFilename: jest.fn(() => 'Plan quarterly review'),
 	generateUniqueFilename: jest.fn(() => 'Plan quarterly review'),
 }));
