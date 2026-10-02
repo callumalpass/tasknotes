@@ -34,7 +34,7 @@ describe("Issue #1157: mobile inline task cards in markdown bullets", () => {
 		expect(mobileInlineRule).toMatch(/vertical-align:\s*baseline;/);
 		expect(mobileInlineInnerRule).toMatch(/display:\s*inline;/);
 		const titleRule = readRule(css, "body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__title-text");
-		expect(mobileInlineRule).toContain("--tn-mobile-inline-title-reserve: calc(2 * var(--tn-mobile-inline-indicator-size) + 0.5em)");
+		expect(mobileInlineRule).toContain("--tn-mobile-inline-title-reserve: calc(2 * var(--tn-mobile-inline-indicator-size) + var(--tn-mobile-inline-menu-size) + 0.85em)");
 		expect(titleRule).toContain("max-width: max(0px, calc(100% - var(--tn-mobile-inline-title-reserve)))");
 		expect(titleRule).toMatch(/display:\s*inline-block;/);
 		expect(titleRule).toMatch(/white-space:\s*nowrap;/);

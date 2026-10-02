@@ -67,6 +67,9 @@ const assert = require('node:assert/strict');
             if (properties) metadata.scrollLeft = 30;
             return {
               available, padding, line: rect(line), lineScroll: line.scrollWidth,
+              indicatorSize: parseFloat(getComputedStyle(card).getPropertyValue('--tn-mobile-inline-indicator-size')),
+              menuSize: parseFloat(getComputedStyle(card).getPropertyValue('--tn-mobile-inline-menu-size')),
+              gapBudget: parseFloat(getComputedStyle(card).fontSize) * 0.85,
               title: rect(title), status: rect(status), priority: rect(priority), menu: rect(menu),
               client: title.clientWidth, scrollTitle: title.scrollWidth,
               ellipsis: style.textOverflow, whiteSpace: style.whiteSpace, overflow: style.overflowX,
@@ -79,7 +82,7 @@ const assert = require('node:assert/strict');
           }, { available, properties });
           results.push({ kind, propertiesEnabled: properties, ...metrics });
           fs.writeFileSync(path.join(process.env.EDITOR_EVIDENCE, 'geometry.json'), JSON.stringify(results, null, 2));
-          assert(metrics.title.width > 0 && metrics.title.width <= available - 48 + 1, 'reserve indicator space');
+          assert(metrics.title.width > 0 && metrics.title.width <= available - 2 * metrics.indicatorSize - metrics.menuSize - metrics.gapBudget + 1, 'reserve indicator space');
           assert(Math.abs(metrics.title.bottom - metrics.status.bottom) < 3, 'title must remain beside status');
           assert(metrics.title.left >= metrics.priority.right, 'title must follow priority');
           assert(metrics.title.right <= metrics.line.right + 1, 'title inside line');
@@ -89,14 +92,19 @@ const assert = require('node:assert/strict');
           assert.equal(metrics.whiteSpace, 'nowrap');
           assert.equal(metrics.overflow, 'hidden');
           assert(metrics.scrollTitle > metrics.client, 'long title is truncated');
-          assert.equal(metrics.status.width, 20); assert.equal(metrics.priority.width, 20);
-          assert.equal(metrics.menu.width, 24);
+          assert.equal(metrics.status.width, metrics.indicatorSize); assert.equal(metrics.priority.width, metrics.indicatorSize);
+          assert.equal(metrics.menu.width, metrics.menuSize);
           if (kind === 'linked') assert(metrics.links > 0, 'linked title is rendered');
           if (properties) {
             assert(metrics.properties > 0 && metrics.propertyActions > 0, 'properties remain accessible');
             assert(metrics.metadataWidth <= available, 'metadata strip bounded by line');
             assert(metrics.metadataScroll > 0, 'properties scroll locally');
-          } else assert.equal(metrics.properties, 0);
+          } else {
+            assert.equal(metrics.properties, 0);
+            assert(metrics.menu.top < metrics.title.bottom && metrics.menu.bottom > metrics.title.top,
+              'property-free menu stays on title line');
+            assert(metrics.menu.left >= metrics.title.right, 'menu does not overlap title');
+          }
           await page.screenshot({ path: path.join(process.env.EDITOR_EVIDENCE, `${kind}-${properties}-${available}.png`) });
         }
       }

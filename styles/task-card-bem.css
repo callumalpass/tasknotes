@@ -1633,8 +1633,9 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline {
     /* Percentages use the containing line's width, including its indentation.
-       Budget both indicators even when one is hidden so titles cannot orphan. */
-    --tn-mobile-inline-title-reserve: calc(2 * var(--tn-mobile-inline-indicator-size) + 0.5em);
+       Reserve indicators, menu and their margins so titles cannot orphan and
+       property-free cards still fit on one line. */
+    --tn-mobile-inline-title-reserve: calc(2 * var(--tn-mobile-inline-indicator-size) + var(--tn-mobile-inline-menu-size) + 0.85em);
 
     display: inline;
     max-width: 100%;
