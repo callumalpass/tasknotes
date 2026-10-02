@@ -53,6 +53,7 @@ export interface ApplyTaskUpdateFrontmatterChangeInput {
 	fieldMapper: TaskUpdateFieldMapper;
 	taskIdentification: TaskIdentificationSettings;
 	storeTitleInFilename: boolean;
+	titleIsRepresentedByFilename?: boolean;
 	updateCompletedDateInFrontmatter: (
 		frontmatter: Record<string, unknown>,
 		newStatus: string,
@@ -272,6 +273,7 @@ export function applyTaskUpdateFrontmatterChange({
 	fieldMapper,
 	taskIdentification,
 	storeTitleInFilename,
+	titleIsRepresentedByFilename = false,
 	updateCompletedDateInFrontmatter,
 }: ApplyTaskUpdateFrontmatterChangeInput): ApplyTaskUpdateFrontmatterChangeResult {
 	// Publish only the named patch and its recurrence consequences.
@@ -315,15 +317,19 @@ export function applyTaskUpdateFrontmatterChange({
 
 	removeUnsetMappedFields(frontmatter, { ...updates, ...recurrenceUpdates }, fieldMapper);
 
-	// Creation keeps a title property when the filename cannot represent it
-	// (for example, a long title needs a fallback filename). Metadata-only
-	// edits, including forms resubmitting the same title, must retain it.
+	// Use the resolved filename, not just the requested title: sanitization,
+	// fallback names and collision suffixes all need a lossless property copy.
 	if (
 		storeTitleInFilename &&
 		updates.title !== undefined &&
 		updates.title !== originalTask.title
 	) {
-		delete frontmatter[fieldMapper.toUserField("title")];
+		const titleField = fieldMapper.toUserField("title");
+		if (titleIsRepresentedByFilename) {
+			delete frontmatter[titleField];
+		} else {
+			frontmatter[titleField] = updates.title;
+		}
 	}
 
 	if (Object.prototype.hasOwnProperty.call(updates, "tags")) {

@@ -3,7 +3,11 @@ import { AutoArchiveService } from "../AutoArchiveService";
 import { EVENT_TASK_UPDATED, IWebhookNotifier, StatusConfig, TaskInfo } from "../../types";
 import type { TaskNotesSettings } from "../../types/settings";
 import { splitFrontmatterAndBody } from "../../utils/helpers";
-import { generateUniqueFilename } from "../../utils/filenameGenerator";
+import {
+	generateUniqueFilename,
+	isTitleRepresentedByFilename,
+	sanitizeForFilename,
+} from "../../utils/filenameGenerator";
 import { getCurrentDateString, getCurrentTimestamp } from "../../utils/dateUtils";
 import {
 	applyTaskUpdateFrontmatterChange,
@@ -130,6 +134,12 @@ export class TaskUpdateService {
 				newPath = parentPath ? `${parentPath}/${newFilename}.md` : `${newFilename}.md`;
 			}
 
+			// Rename before changing frontmatter so a failed rename leaves the old
+			// title (and all other fields) untouched.
+			if (isRenameNeeded) {
+				await runtime.app.fileManager.renameFile(file, newPath);
+			}
+
 			let recurrenceUpdates: Partial<TaskInfo> = {};
 			const normalizedDetails = normalizeTaskUpdateDetails(taskUpdates);
 			let finalTags: string[] | undefined;
@@ -181,6 +191,12 @@ export class TaskUpdateService {
 						propertyValue: runtime.settings.taskPropertyValue,
 					},
 					storeTitleInFilename: runtime.settings.storeTitleInFilename,
+					titleIsRepresentedByFilename: taskUpdates.title !== undefined &&
+						isTitleRepresentedByFilename(
+							taskUpdates.title,
+							sanitizeForFilename(taskUpdates.title),
+							file.basename
+						),
 					updateCompletedDateInFrontmatter: (targetFrontmatter, newStatus, isRecurring) =>
 						this.deps.updateCompletedDateInFrontmatter(
 							targetFrontmatter,
@@ -190,10 +206,6 @@ export class TaskUpdateService {
 				});
 				finalTags = frontmatterResult.finalTags;
 			});
-
-			if (isRenameNeeded) {
-				await runtime.app.fileManager.renameFile(file, newPath);
-			}
 
 			if (normalizedDetails !== null) {
 				const targetFile = runtime.app.vault.getAbstractFileByPath(newPath);

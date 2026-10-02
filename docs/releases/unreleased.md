@@ -64,3 +64,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Trim surrounding whitespace from custom user-field property keys when loading, editing and saving settings. Empty keys and keys already used by another property are rejected when editing. This does not rename properties in existing notes. Thanks to @prethrive for reporting (#2269). See [Settings](https://tasknotes.dev/settings/).
 - Prevent custom list fields from duplicating wikilinks already extracted by the shared parser.
+
+- Editing filename-backed task titles now preserves the full title when sanitization, a long filename, or a duplicate name prevents an exact match. A failed rename leaves the previous title and task properties unchanged.
