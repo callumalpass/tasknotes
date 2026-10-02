@@ -162,7 +162,7 @@ sort:
     direction: DESC
 ```
 
-Once the first sort criterion is the manual-order property, you can drag task cards to reorder them. TaskNotes writes updated LexoRank-style values into task frontmatter so the order persists across refreshes and sessions.
+Once the first sort criterion is the manual-order property, you can drag task cards to reorder them. On touch devices, hold the reorder handle until the drag preview appears, then move it to the desired position and release. Moving before the hold completes remains a scrolling gesture. Holding near the top or bottom edge scrolls the list; cancelling the gesture leaves the order unchanged. TaskNotes writes updated LexoRank-style values into task frontmatter so the order persists across refreshes and sessions.
 
 If your field mapping changes the sort-order property name, use that mapped property name instead of `tasknotes_manual_order`.
 
