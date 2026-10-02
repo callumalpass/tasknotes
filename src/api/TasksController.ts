@@ -331,11 +331,12 @@ export class TasksController extends BaseController {
 			const requestedDate = date !== undefined ? date : legacyDate;
 			if (requestedDate !== undefined && (
 				typeof requestedDate !== "string" ||
-				!/^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ||
+				!/^\d{4}-\d{2}-\d{2}(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?)?$/.test(requestedDate) ||
 				!Number.isFinite(new Date(requestedDate).getTime()) ||
-				new Date(requestedDate).toISOString().slice(0, 10) !== requestedDate
+				!Number.isFinite(new Date(requestedDate.slice(0, 10)).getTime()) ||
+				new Date(requestedDate.slice(0, 10)).toISOString().slice(0, 10) !== requestedDate.slice(0, 10)
 			)) {
-				throw new Error("Date must be a valid YYYY-MM-DD calendar date");
+				throw new Error("Date must be a valid ISO calendar date or timestamp");
 			}
 			const task = await this.cacheManager.getTaskInfo(taskId);
 

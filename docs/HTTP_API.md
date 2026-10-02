@@ -273,7 +273,7 @@ Complete recurring instance.
 
 Request body:
 
-- Optional `date` (`YYYY-MM-DD`, a valid calendar date). If omitted, uses current date context.
+- Optional `date` (a valid ISO calendar date, such as `YYYY-MM-DD`, or an ISO timestamp). If omitted, uses current date context. Date-only values are recommended for occurrence selection; ISO timestamps remain supported for existing clients.
 - Legacy `instanceDate` is accepted as an alias. Conflicting aliases or malformed dates return `400` without completing an occurrence.
 
 When the recurring parent uses materialized occurrence notes, this endpoint completes the matching occurrence note if one exists. If the parent is set to **Create next after completion** and no matching occurrence note exists yet, TaskNotes creates and completes that occurrence note instead of only recording a virtual `complete_instances` entry.
