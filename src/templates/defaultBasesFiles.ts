@@ -11,6 +11,7 @@
  * 3. Ensure all Bases syntax is valid according to https://help.obsidian.md/Bases/Bases+syntax
  */
 
+import { stringifyYaml } from "obsidian";
 import type { TaskNotesSettings } from "../types/settings";
 import type TaskNotesPlugin from "../main";
 import type { FieldMapping } from "../types";
@@ -19,7 +20,8 @@ import { isTagsTaskIdentifierProperty } from "../utils/taskIdentificationFrontma
 import { hasCompletePropertyTaskIdentification } from "../utils/taskIdentification";
 
 function escapeBasesStringLiteral(value: string): string {
-	return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+	return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
+		.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
 }
 
 function formatNotePropertyReference(propertyName: string): string {
@@ -272,7 +274,7 @@ function generatePriorityWeightFormula(plugin: TaskNotesPlugin): string {
 	for (let i = sortedPriorities.length - 1; i >= 0; i--) {
 		const priority = sortedPriorities[i];
 		// Use the index as the weight value (0 = highest priority)
-		formula = `if(${priorityProperty}=="${priority.value}",${i},${formula})`;
+		formula = `if(${priorityProperty}=="${escapeBasesStringLiteral(priority.value)}",${i},${formula})`;
 	}
 
 	return formula;
@@ -294,7 +296,7 @@ function generatePriorityCategoryFormula(plugin: TaskNotesPlugin): string {
 	let formula = '"No priority"';
 	for (let i = priorities.length - 1; i >= 0; i--) {
 		const p = priorities[i];
-		formula = `if(${priorityProperty}=="${p.value}","${p.label}",${formula})`;
+		formula = `if(${priorityProperty}=="${escapeBasesStringLiteral(p.value)}","${escapeBasesStringLiteral(p.label)}",${formula})`;
 	}
 
 	return formula;
@@ -317,7 +319,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		.filter(s => s.isCompleted)
 		.map(s => s.value);
 	const completedStatusCheck = completedStatuses
-		.map(status => `${statusProperty} != "${status}"`)
+		.map(status => `${statusProperty} != "${escapeBasesStringLiteral(status)}"`)
 		.join(' && ');
 
 	const scheduledProperty = getPropertyName(mapPropertyToBasesProperty('scheduled', plugin));
@@ -481,11 +483,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 function generateFormulasSection(plugin: TaskNotesPlugin): string {
 	const formulas = generateAllFormulas(plugin);
 
-	const formulaLines = Object.entries(formulas)
-		.map(([name, formula]) => `  ${name}: '${formula}'`)
-		.join('\n');
-
-	return `formulas:\n${formulaLines}`;
+	return stringifyYaml({ formulas }).trimEnd();
 }
 
 function insertOrderPropertyAfter(
@@ -701,7 +699,7 @@ ${orderYaml}
 			// Generate filter for non-recurring incomplete tasks
 			// Status must not be in any of the completed statuses
 			const nonRecurringIncompleteFilter = completedStatuses
-				.map(status => `${statusProperty} != "${status}"`)
+				.map(status => `${statusProperty} != "${escapeBasesStringLiteral(status)}"`)
 				.join('\n            - ');
 
 			// Normalize completion dates before comparing so YAML date values and strings both work.
@@ -711,7 +709,7 @@ ${orderYaml}
 			// Generate filter condition for checking if a blocking task is incomplete
 			// This is used in the "Not Blocked" view to filter out completed blocking tasks
 			const blockingTaskIncompleteCondition = completedStatuses
-				.map(status => `${formatDependencyEntryFileExpression("value")}.properties.${getPropertyName(statusProperty)} != "${status}"`)
+				.map(status => `${formatDependencyEntryFileExpression("value")}.properties.${getPropertyName(statusProperty)} != "${escapeBasesStringLiteral(status)}"`)
 				.join(' && ');
 
 			return `# All Tasks
@@ -757,7 +755,7 @@ ${orderYaml}
           # No blocking dependencies at all
           - ${blockedByProperty}.isEmpty()
           # All blocking tasks are completed (filter returns only incomplete, then check if empty)
-          - 'list(${blockedByProperty}).filter(${blockingTaskIncompleteCondition}).isEmpty()'
+          - ${JSON.stringify(`list(${blockedByProperty}).filter(${blockingTaskIncompleteCondition}).isEmpty()`)}
     order:
 ${orderYaml}
     sort:

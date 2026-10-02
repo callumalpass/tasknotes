@@ -108,7 +108,11 @@ export function createDueTaskEvent(
 	let endDate: string | undefined;
 	if (hasTime) {
 		const start = parseDateToLocal(startDate);
-		const end = new Date(start.getTime() + 30 * 60 * 1000);
+		// Due events are deadline markers, not work durations. Keep the visual
+		// marker within its due day; FullCalendar treats midnight as exclusive.
+		const nextMidnight = new Date(start);
+		nextMidnight.setHours(24, 0, 0, 0);
+		const end = new Date(Math.min(start.getTime() + 30 * 60 * 1000, nextMidnight.getTime()));
 		endDate = format(end, "yyyy-MM-dd'T'HH:mm");
 	}
 

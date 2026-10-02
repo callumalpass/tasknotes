@@ -72,6 +72,54 @@ function renderCompletionsCalendar(
 	return container;
 }
 
+describe("Completion calendar month consistency (issue #2306)", () => {
+	it.each([0, 1])("shows September dates beneath September with firstDay=%s", (firstDay) => {
+		const plugin = createPlugin();
+		plugin.settings.calendarViewSettings.firstDay = firstDay;
+		const container = renderCompletionsCalendar(createRecurringTask({
+			complete_instances: ["2026-08-27", "2026-09-01"],
+		}), plugin);
+		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe("Sep 2026");
+		const days = Array.from(container.querySelectorAll<HTMLElement>(".recurring-calendar__day"));
+		const currentDays = days.filter((day) => !day.classList.contains("recurring-calendar__day--faded"));
+		expect(currentDays).toHaveLength(30);
+		expect(currentDays[0].dataset.occurrenceDate).toBe("2026-09-01");
+		expect(days.findIndex((day) => day.dataset.occurrenceDate === "2026-09-09") % 7).toBe((3 - firstDay + 7) % 7);
+	});
+
+	it("uses the current local month on its first day without completions", () => {
+		jest.useFakeTimers().setSystemTime(new Date(2026, 8, 1, 0, 30));
+		try {
+			const container = renderCompletionsCalendar(createRecurringTask({ complete_instances: [] }));
+			expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe("Sep 2026");
+			expect(container.querySelector('.recurring-calendar__day:not(.recurring-calendar__day--faded)')?.getAttribute("data-occurrence-date")).toBe("2026-09-01");
+		} finally {
+			jest.useRealTimers();
+		}
+	});
+
+	it.each([
+		["2026-12-31", "Next month", "Jan 2027", 31],
+		["2026-03-31", "Previous month", "Feb 2026", 28],
+		["2028-01-31", "Next month", "Feb 2028", 29],
+		["2026-10-31", "Previous month", "Sep 2026", 30],
+	])("navigates %s via %s to %s", (date, direction, heading, count) => {
+		const container = renderCompletionsCalendar(createRecurringTask({ complete_instances: [date as string] }));
+		container.querySelector<HTMLButtonElement>(`[aria-label="${direction}"]`)?.click();
+		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe(heading);
+		expect(container.querySelectorAll(".recurring-calendar__day:not(.recurring-calendar__day--faded)")).toHaveLength(count as number);
+	});
+
+	it("navigates from a month-end completion without skipping February", () => {
+		const container = renderCompletionsCalendar(createRecurringTask({ complete_instances: ["2026-01-31"] }));
+		container.querySelector<HTMLButtonElement>('[aria-label="Next month"]')?.click();
+		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe("Feb 2026");
+		expect(container.querySelectorAll(".recurring-calendar__day:not(.recurring-calendar__day--faded)")).toHaveLength(28);
+		container.querySelector<HTMLButtonElement>('[aria-label="Previous month"]')?.click();
+		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe("Jan 2026");
+	});
+});
+
 describe("Task edit completions calendar occurrence context menu", () => {
 	beforeEach(() => {
 		menuMock.mockClear();

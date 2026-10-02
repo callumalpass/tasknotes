@@ -57,7 +57,12 @@ function createRecurringCalendar(
 		}
 	}
 
-	renderCalendarMonth(calendarWrapper, mostRecentCompletion, options);
+	// Carry the selected local calendar month as a UTC month anchor, not an instant.
+	// Day one also prevents month navigation overflowing short months.
+	const displayMonth = new Date(Date.UTC(
+		mostRecentCompletion.getFullYear(), mostRecentCompletion.getMonth(), 1
+	));
+	renderCalendarMonth(calendarWrapper, displayMonth, options);
 }
 
 function renderCalendarMonth(
@@ -78,7 +83,9 @@ function renderCalendarMonth(
 	setIcon(prevButton, "chevron-left");
 	const monthLabel = header.createSpan("recurring-calendar__month");
 	const locale = options.plugin.i18n.getCurrentLocale() || "en";
-	const monthFormatter = new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" });
+	const monthFormatter = new Intl.DateTimeFormat(locale, {
+		month: "short", year: "numeric", timeZone: "UTC",
+	});
 	monthLabel.textContent = monthFormatter.format(displayDate);
 	const nextButton = header.createEl("button", {
 		cls: "recurring-calendar__nav",

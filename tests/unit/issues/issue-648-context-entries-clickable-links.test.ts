@@ -50,8 +50,8 @@ describe("Issues #648 and #1605: context entries clickable links", () => {
 		expect(internalLink?.getAttribute("data-href")).toBe("Joe Smith");
 	});
 
-	it("leaves plain context normalization unchanged", () => {
-		expect(normalizeContext("[[Joe Smith]]")).toBe("@JoeSmith");
+	it("preserves spaces while removing wiki-link punctuation from plain normalization", () => {
+		expect(normalizeContext("[[Joe Smith]]")).toBe("@Joe Smith");
 	});
 
 	it("does not call the plain-context tag handler for link contexts", () => {
