@@ -1952,6 +1952,39 @@ export class CalendarView extends BasesViewBase {
 			);
 		}
 
+		// Resolve editability before FullCalendar receives the events. setProp in
+		// eventDidMount dispatches a whole-store update for every mounted element.
+		// List cards do not use drag/resize and previously bypassed that hook logic.
+		if ((this.calendar?.view?.type || this.viewOptions.calendarView) !== "listWeek") {
+			for (const event of allEvents) {
+				const props = event.extendedProps;
+				if (!props) continue;
+
+				let editable: boolean;
+				if (props.eventType === "timeblock" && props.timeblock) {
+					editable = true;
+				} else if (
+					props.taskInfo?.path &&
+					["scheduled", "recurring", "timeEntry", "due", "scheduledToDueSpan"].includes(
+						props.eventType
+					)
+				) {
+					editable =
+						props.eventType !== "scheduledToDueSpan" ||
+						!(
+							props.isRecurringInstance ||
+							props.isNextScheduledOccurrence ||
+							props.isPatternInstance
+						);
+				} else {
+					continue; // Keep property-based and external provider permissions.
+				}
+				event.editable = editable;
+				event.startEditable = editable;
+				event.durationEditable = editable;
+			}
+		}
+
 		return filterAllDayEventsForCalendarView(
 			allEvents,
 			this.calendar?.view?.type || this.viewOptions.calendarView,
@@ -2697,16 +2730,7 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
-		const {
-			taskInfo,
-			timeblock,
-			icsEvent,
-			eventType,
-			relatedNoteCount,
-			isRecurringInstance,
-			isNextScheduledOccurrence,
-			isPatternInstance,
-		} = extendedProps;
+		const { taskInfo, timeblock, icsEvent, eventType, relatedNoteCount } = extendedProps;
 		suppressCalendarContextMenuOnMobile(arg.el);
 
 		const relatedNoteTotal = normalizeCalendarRelatedNoteCount(relatedNoteCount);
@@ -2746,11 +2770,6 @@ export class CalendarView extends BasesViewBase {
 			// Apply timeblock styling
 			applyTimeblockStyling(arg.el, timeblock);
 
-			// Ensure timeblocks are editable
-			if (arg.event.setProp) {
-				arg.event.setProp("editable", true);
-			}
-
 			// Add tooltip
 			const tooltipText = generateTimeblockTooltip(timeblock);
 			setTooltip(arg.el, tooltipText, { placement: "top" });
@@ -2780,26 +2799,6 @@ export class CalendarView extends BasesViewBase {
 					arg.el.classList.add(`fc-project-${sanitizedProject}`);
 				}
 			});
-
-			// Set editable based on event type
-			if (arg.event.setProp) {
-				switch (eventType) {
-					case "scheduled":
-					case "recurring":
-					case "timeEntry":
-					case "due":
-					case "scheduledToDueSpan":
-						arg.event.setProp(
-							"editable",
-							eventType !== "scheduledToDueSpan" ||
-								!(isRecurringInstance || isNextScheduledOccurrence || isPatternInstance)
-						);
-						break;
-					default:
-						// Non-task events (like ICS without provider) remain non-editable
-						break;
-				}
-			}
 
 			// Apply recurring task styling (handles completion styling as well)
 			applyRecurringTaskStyling(arg.el, extendedProps);
