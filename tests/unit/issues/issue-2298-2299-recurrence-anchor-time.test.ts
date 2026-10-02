@@ -39,8 +39,9 @@ describe("Recurrence anchor time (#2298, #2299)", () => {
 
 	it.each(["Z", ""])("retains timed anchor components when completing an instance (%s)", (suffix) => {
 		const rule = `DTSTART:20260906T200037${suffix};FREQ=DAILY`;
-		expect(complete(rule).updatedTask.recurrence).toBe("DTSTART:20260907T200037Z;FREQ=DAILY");
-		expect(complete(rule, { scheduled: "2026-09-06T09:30:00" }).updatedTask.recurrence).toBe("DTSTART:20260907T200037Z;FREQ=DAILY");
+		// rc.16 preserves the original floating/UTC clock rather than forcing Z.
+		expect(complete(rule).updatedTask.recurrence).toBe(`DTSTART:20260907T200037${suffix};FREQ=DAILY`);
+		expect(complete(rule, { scheduled: "2026-09-06T09:30:00" }).updatedTask.recurrence).toBe(`DTSTART:20260907T200037${suffix};FREQ=DAILY`);
 	});
 
 	it.each(["2026-03-08", "2026-11-01", "2026-10-04", "2026-04-05"])("does not shift the anchor through local DST on %s", (date) => {
@@ -55,7 +56,7 @@ describe("Recurrence anchor time (#2298, #2299)", () => {
 		expect(complete(rule, { complete_instances: ["2026-09-07"] }).updatedTask.recurrence).toBe(rule);
 	});
 
-	it("does not change the explicit anchor-update API's date-only contract", () => {
-		expect(updateDTSTARTInRecurrenceRule("DTSTART:20260906T200000Z;FREQ=DAILY", "2026-09-07")).toBe("DTSTART:20260907;FREQ=DAILY");
+	it("preserves an existing clock when the explicit anchor-update API receives only a date", () => {
+		expect(updateDTSTARTInRecurrenceRule("DTSTART:20260906T200000Z;FREQ=DAILY", "2026-09-07")).toBe("DTSTART:20260907T200000Z;FREQ=DAILY");
 	});
 });

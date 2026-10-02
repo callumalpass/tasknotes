@@ -96,3 +96,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Preserve email addresses and URL fragments when extracting tags, contexts, projects and custom fields. These selectors now require start-of-input or preceding whitespace; punctuation-adjacent selectors such as `(@work)` stay literal. See [Natural Language Input](https://tasknotes.dev/features/task-management/#natural-language-selector-rules).
 - Parse repeated project prefixes without leaving a stray trigger in the title: `++personal` selects project `+personal`. Thanks to @prethrive for reporting (#2269).
 - Parse Italian relative days `oggi`, `domani` and `dopodomani`, including `entro`/`per` Due forms, without changing links, metadata, escaped words or details. Thanks to @MarcoBarna for reporting (#2274).
+
+- Editing filename-backed task titles now preserves the full title when sanitization, a long filename, or a duplicate name prevents an exact match. A failed rename leaves the previous title and task properties unchanged.
+- (#2148) Empty project, context and tag properties no longer produce a literal `null` entry when editing tasks. Thanks to @minchinweb for reporting this.
+- Completing tasks with multiline recurrence rules now retains the rule's frequency, timezone and clock instead of losing the RRULE line.
