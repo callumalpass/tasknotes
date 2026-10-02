@@ -35,3 +35,15 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Fixed calendar freezes in vaults with many tasks, while preserving task and timeblock drag and resize permissions.
+
+- (#2304) Fixed embedded month calendars not filling their available width with Minimal theme and Readable Line Length enabled. Thanks to @same774 for reporting.
+
+- (#2305) Fixed tasks due after 11:30 PM appearing on the following day in Calendar and Agenda views.
+  - Thanks to @PeterYuLi1204 for reporting.
+
+- (#2306) Fixed the task editor's completion calendar showing dates from a different month than its heading in some time zones, and skipping short months when navigating from a month-end completion.
+  - Thanks to @teampbevolution for reporting.
+
+- (#2258) Task cards now preserve spaces and emoji in context and tag labels instead of collapsing them during display. Thanks to @Oblique82 for reporting this and tracing the affected renderer.
+
+- Fixed generated default Bases files failing to open when custom priority labels or status/priority values contain quotes, backslashes, or line breaks. Regenerate affected files with **Update default base files**. See [Default Base Templates](https://tasknotes.dev/views/default-base-templates/).

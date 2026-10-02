@@ -8,6 +8,7 @@
  * @see https://github.com/callumalpass/tasknotes/issues/1611
  */
 
+import { parse } from "yaml";
 import { generateBasesFileTemplate } from "../../../src/templates/defaultBasesFiles";
 
 function createMockPlugin() {
@@ -55,13 +56,14 @@ describe("Issue #1611: formula.urgencyScore null propagation", () => {
 	it("falls back when daysUntilNext is null while preserving time-of-day ranking", () => {
 		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
 
-		expect(template).toContain(
+		const { urgencyScore } = parse(template).formulas;
+		expect(urgencyScore).toContain(
 			"max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0))"
 		);
-		expect(template).toContain(
+		expect(urgencyScore).toContain(
 			"(1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format(\"YYYY-MM-DD\")))) / 86400000))"
 		);
 
-		expect(template).not.toContain("max(0, 10 - formula.daysUntilNext)");
+		expect(urgencyScore).not.toContain("max(0, 10 - formula.daysUntilNext)");
 	});
 });

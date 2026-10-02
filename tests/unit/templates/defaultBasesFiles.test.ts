@@ -1,3 +1,4 @@
+import { parse } from "yaml";
 import { generateBasesFileTemplate } from "../../../src/templates/defaultBasesFiles";
 
 const createMockPlugin = (settingsOverride: Record<string, unknown> = {}) => {
@@ -48,6 +49,32 @@ const createMockPlugin = (settingsOverride: Record<string, unknown> = {}) => {
 };
 
 describe("defaultBasesFiles", () => {
+	const commands = [
+		"open-tasks-view", "open-kanban-view", "open-advanced-calendar-view",
+		"open-agenda-view", "open-calendar-view", "relationships",
+	];
+
+	it.each(["Client's work", 'Client "quoted"', "Client\\work", "Client\nwork"])(
+		"round-trips punctuation in priority/status values and labels: %s", (text) => {
+			const plugin = createMockPlugin({
+				customPriorities: [{ value: text, label: text, weight: 0 }],
+				customStatuses: [{ value: text, label: text, isCompleted: true }],
+			});
+			const literal = JSON.stringify(text);
+			for (const command of commands) {
+				const base = parse(generateBasesFileTemplate(command, plugin as any));
+				expect(base.formulas.priorityWeight).toBe(`if(priority==${literal},0,999)`);
+				expect(base.formulas.priorityCategory).toBe(`if(priority==${literal},${literal},"No priority")`);
+				expect(base.formulas.isOverdue).toContain(`status != ${literal}`);
+				if (command === "open-tasks-view") {
+					const notBlocked = base.views.find((view: any) => view.name === "Not Blocked");
+					expect(notBlocked.filters.and[0].or[0].and).toContain(`status != ${literal}`);
+					expect(notBlocked.filters.and[1].or[1]).toContain(`.properties.status != ${literal}`);
+				}
+			}
+		}
+	);
+
 	it("adds manual-order sorting to the default kanban template", () => {
 		const template = generateBasesFileTemplate("open-kanban-view", createMockPlugin() as any);
 
@@ -101,7 +128,7 @@ describe("defaultBasesFiles", () => {
 		const dependencyFileExpression = 'file(if(value.isType("object"), value.uid, value))';
 		const dependencyLinkExpression = `${dependencyFileExpression}.asLink()`;
 
-		expect(tasksTemplate).toContain(
+		expect(parse(tasksTemplate).views.find((view: any) => view.name === "Not Blocked").filters.and[1].or[1]).toBe(
 			`list(blockedBy).filter(${dependencyFileExpression}.properties.status != "done").isEmpty()`
 		);
 		expect(relationshipsTemplate).toContain(
@@ -118,7 +145,7 @@ describe("defaultBasesFiles", () => {
 	it("adds a due-in countdown to the default agenda template", () => {
 		const template = generateBasesFileTemplate("open-agenda-view", createMockPlugin() as any);
 
-		expect(template).toContain('dueIn: \'if(due.isEmpty(), "", if(formula.daysUntilDue == 0');
+		expect(parse(template).formulas.dueIn).toContain('if(due.isEmpty(), "", if(formula.daysUntilDue == 0');
 		expect(template).toContain("formula.dueIn:\n    displayName: Due in");
 		expect(template).toContain("      - due\n      - formula.dueIn\n      - file.name");
 		expect(template).toContain('calendarView: "listWeek"');
@@ -320,11 +347,11 @@ describe("defaultBasesFiles", () => {
 
 		// Pin full bodies of the affected formulas so a regression in any single
 		// clause (lower bound, upper bound, due half, scheduled half) breaks the test.
-		expect(template).toContain(
-			`isDueThisWeek: '(due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")'`
+		expect(parse(template).formulas.isDueThisWeek).toBe(
+			`(due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")`
 		);
-		expect(template).toContain(
-			`isThisWeek: '((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"))'`
+		expect(parse(template).formulas.isThisWeek).toBe(
+			`((due.isEmpty() == false) && date(due).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD")) || ((scheduled.isEmpty() == false) && date(scheduled).format("YYYY-MM-DD") >= today().format("YYYY-MM-DD") && date(scheduled).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"))`
 		);
 
 		// Negative guards against any reappearance of the time-naive shape on a
@@ -348,13 +375,13 @@ describe("defaultBasesFiles", () => {
 		// is preserved.
 		const template = generateBasesFileTemplate("open-tasks-view", createMockPlugin() as any);
 
-		expect(template).toContain(
-			`urgencyScore: 'if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))'`
+		expect(parse(template).formulas.urgencyScore).toBe(
+			`if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))`
 		);
 
 		// Guard against the time-naive form returning
-		expect(template).not.toMatch(
-			/urgencyScore: 'if\(!due && !scheduled, formula\.priorityWeight, formula\.priorityWeight \+ max\(0, 10 - formula\.daysUntilNext\)\)'/
+		expect(parse(template).formulas.urgencyScore).not.toBe(
+			'if(!due && !scheduled, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext))'
 		);
 	});
 
@@ -363,11 +390,11 @@ describe("defaultBasesFiles", () => {
 
 		expect(template).toContain("due.isEmpty()");
 		expect(template).toContain("scheduled.isEmpty()");
-		expect(template).toContain(
-			`nextDateCategory: 'if(due.isEmpty() && scheduled.isEmpty(), "No date"`
+		expect(parse(template).formulas.nextDateCategory).toContain(
+			`if(due.isEmpty() && scheduled.isEmpty(), "No date"`
 		);
-		expect(template).toContain(
-			`hasDate: '(due.isEmpty() == false) || (scheduled.isEmpty() == false)'`
+		expect(parse(template).formulas.hasDate).toBe(
+			`(due.isEmpty() == false) || (scheduled.isEmpty() == false)`
 		);
 		expect(template).not.toContain("!due");
 		expect(template).not.toContain("!scheduled");

@@ -741,6 +741,8 @@ body.is-mobile .timeblock-attachment-remove {
 }
 
 .advanced-calendar-view .fc-scrollgrid {
+    /* Minimal's readable-line-width table rules use this instead of width. */
+    --table-width: 100%;
     width: 100%;
 }
 
