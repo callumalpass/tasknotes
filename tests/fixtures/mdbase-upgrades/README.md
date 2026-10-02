@@ -17,6 +17,8 @@ new ones instead.
   (pack rc.17), then loaded again by beta.3, which did not recognize the updated
   type and wrote a second, rc.3 `tasknotes-task` type and rc.3 support files.
 
+- `recognition/`: independent historical writer captures and native Obsidian before-upgrade collections from the migration audit. Each directory records its source and contains exact metadata bytes; live captures also retain saved settings and unchanged task records. Used by `mdbaseLegacyRecognition.test.ts`.
+
 `-default` fixtures use each build's default settings; `-custom` fixtures map
 `due` to `deadline`, add a number property and a skipped `cancelled` status.
 Each build ran its own `MdbaseSpecService` (`generate()` for new collections,

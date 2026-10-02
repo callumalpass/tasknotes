@@ -1,7 +1,9 @@
 import { Modal, normalizePath, type TAbstractFile, TFile } from "obsidian";
 import YAML from "yaml";
 import { canonicalTaskNotesResources } from "./canonicalTaskNotesPack";
-import { legacyTaskNotesSupport } from "./legacyTaskNotesSupport";
+import { FieldMapper } from "./FieldMapper";
+import { hasLegacyFieldsSchema, isKnownLegacySupport, recognizeLegacyTaskType } from "./mdbase/legacyRecognition";
+import { migrationRecognitionNotice } from "./mdbase/recognitionNotices";
 import { remapMdbaseTypeReferences } from "./mdbaseTypeReferences";
 import {
 	buildTaskNotesMdbaseResources,
@@ -20,7 +22,6 @@ import {
 	mergeCanonicalTaskTypeDocument,
 	parseMdbaseTaskTypeDocument,
 	portableSettingsFingerprint,
-	type ParsedMdbaseTaskType,
 	validateCanonicalTaskType,
 	withCurrentTaskNotesContract,
 } from "./mdbaseCanonicalConfig";
@@ -205,8 +206,13 @@ export class MdbaseSpecService {
 				operation: "canonical-settings-initialize",
 				error,
 			});
-			this.publishNotice(
-				"TaskNotes could not initialize the canonical mdbase configuration. Plugin settings remain active."
+			const supportPath = error instanceof Error &&
+				error.message.startsWith("Preserved customized mdbase support resource: ")
+				? error.message.slice("Preserved customized mdbase support resource: ".length)
+				: null;
+			this.publishNotice(supportPath
+				? migrationRecognitionNotice(this.plugin, "support", { path: supportPath })
+				: "TaskNotes could not initialize the canonical mdbase configuration. Plugin settings remain active."
 			);
 		} finally {
 			this.registerCanonicalWatchers();
@@ -221,11 +227,16 @@ export class MdbaseSpecService {
 	private async migrateGeneratedV02Collection(
 		existingCollection: ExistingCollection
 	): Promise<boolean> {
-		const legacyType = await this.readGeneratedV02TaskType(existingCollection);
+		// Register the folder before scanning so delayed Sync type arrivals retry.
+		this.canonicalTypesFolder = this.resolveTypesFolder(existingCollection);
+		const legacyType = await this.readGeneratedV02TaskType(
+			existingCollection,
+			getSpecFamily(existingCollection.config?.spec_version) !== "v0.3"
+		);
 		if (!legacyType) {
-			this.publishNotice(
-				"TaskNotes left the existing mdbase v0.2 collection unchanged because it could not confirm that the active type files are generated solely by TaskNotes."
-			);
+			this.publishNotice(migrationRecognitionNotice(this.plugin, "review", {
+				path: `${this.canonicalTypesFolder}/task.md`,
+			}));
 			return false;
 		}
 
@@ -245,10 +256,8 @@ export class MdbaseSpecService {
 		for (const [path, intended] of support) {
 			if (await this.plugin.app.vault.adapter.exists(path) &&
 				await this.plugin.app.vault.adapter.read(path) !== intended &&
-				!legacyTaskNotesSupport.includes(await this.plugin.app.vault.adapter.read(path))) {
-				this.publishNotice(
-					`TaskNotes left the mdbase v0.2 collection unchanged because ${path} already exists and may be user-maintained.`
-				);
+				!isKnownLegacySupport(await this.plugin.app.vault.adapter.read(path))) {
+				this.publishNotice(migrationRecognitionNotice(this.plugin, "support", { path }));
 				return false;
 			}
 		}
@@ -271,7 +280,7 @@ export class MdbaseSpecService {
 			snapshots.find(({ path }) => path === legacyType.path)?.content !== legacyType.content ||
 			snapshots.some(
 				({ path, content }) =>
-					path !== "mdbase.yaml" && path !== legacyType.path && content !== null && content !== support.get(path) && !legacyTaskNotesSupport.includes(content)
+					path !== "mdbase.yaml" && path !== legacyType.path && content !== null && content !== support.get(path) && !isKnownLegacySupport(content)
 			)
 		) {
 			this.publishNotice(
@@ -351,7 +360,8 @@ export class MdbaseSpecService {
 	}
 
 	private async readGeneratedV02TaskType(
-		existingCollection: ExistingCollection
+		existingCollection: ExistingCollection,
+		exclusive = true
 	): Promise<LegacyTaskNotesTypeState | null> {
 		const typesFolder = this.resolveTypesFolder(existingCollection);
 		const typePath = `${typesFolder}/task.md`;
@@ -361,22 +371,12 @@ export class MdbaseSpecService {
 		const otherMarkdownTypes = (await this.listMarkdownFilesRecursively(typesFolder)).filter(
 			(path) => path !== typePath
 		);
-		if (otherMarkdownTypes.length > 0) return null;
+		if (exclusive && otherMarkdownTypes.length > 0) return null;
 
 		const content = await adapter.read(typePath);
-		let parsed: ParsedMdbaseTaskType;
-		try {
-			parsed = parseMdbaseTaskTypeDocument(content);
-		} catch {
-			return null;
-		}
-		if (!isUnmodifiedGeneratedV02Type(content, this.buildTaskTypeDefV02())) return null;
-
-		return {
-			path: typePath,
-			content,
-			typeName: typeof parsed.type.name === "string" ? parsed.type.name : "task",
-		};
+		if (!recognizeLegacyTaskType(content, this.plugin.settings)) return null;
+		// All shipped v4 writers name this type task; exact writer bytes can be invalid YAML.
+		return { path: typePath, content, typeName: "task" };
 	}
 
 	private async listMarkdownFilesRecursively(folder: string): Promise<string[]> {
@@ -711,12 +711,32 @@ export class MdbaseSpecService {
 		const contractsFolder = this.resolveContractsFolder(existingCollection);
 		const legacyCompatibility = isRecord(existingCollection.config?.["x-legacy-v0.2"]);
 		this.canonicalTypesFolder = typesFolder;
+		if (!existingCollection.exists && !this.canonicalTypePath) {
+			const adapter = this.plugin.app.vault.adapter;
+			for (const folder of [typesFolder, contractsFolder]) {
+				if (await adapter.exists(folder) && (await this.listMarkdownFilesRecursively(folder)).length > 0) {
+					this.publishNotice(migrationRecognitionNotice(this.plugin, "waiting", { path: folder }));
+					return;
+				}
+			}
+		}
+		if (existingCollection.exists && await this.readGeneratedV02TaskType(existingCollection, false)) {
+			// v4 also wrote legacy types into foreign v0.3 collections. Upgrade in place.
+			await this.migrateGeneratedV02Collection(existingCollection);
+			return;
+		}
 		await this.ensureFolderPath(typesFolder);
 		await this.setAsideSupersededBetaTypes(typesFolder);
 
 		const state = await this.readCanonicalType(existingCollection, false);
-		if (this.canonicalReadBlocked) {
-			return;
+		if (this.canonicalReadBlocked) return;
+		const legacyPath = `${typesFolder}/task.md`;
+		if (await this.plugin.app.vault.adapter.exists(legacyPath)) {
+			const content = await this.plugin.app.vault.adapter.read(legacyPath);
+			if (hasLegacyFieldsSchema(content)) {
+				this.publishNotice(migrationRecognitionNotice(this.plugin, "review", { path: legacyPath }));
+				return;
+			}
 		}
 		if (state) {
 			await this.reconcileMembershipKeys();
@@ -1127,6 +1147,10 @@ export class MdbaseSpecService {
 			}
 			return;
 		}
+		if (getSpecFamily(collection.config?.spec_version) === "v0.2") {
+			await this.migrateGeneratedV02Collection(collection);
+			return;
+		}
 		if (getSpecFamily(collection.config?.spec_version) !== "v0.3") return;
 		const state = await this.readCanonicalType(collection);
 		if (!state) {
@@ -1360,7 +1384,7 @@ export class MdbaseSpecService {
 			const snapshots = await this.snapshotFiles(entries.map(([path]) => path));
 			for (const [path, content] of entries) {
 				const before = snapshots.find((item) => item.path === path)?.content ?? null;
-				if (before !== null && before !== content && !legacyTaskNotesSupport.includes(before)) {
+				if (before !== null && before !== content && !isKnownLegacySupport(before)) {
 					throw new Error(`Preserved customized mdbase support resource: ${path}`);
 				}
 			}
@@ -1370,7 +1394,7 @@ export class MdbaseSpecService {
 				if (!snapshot) throw new Error(`Missing support snapshot: ${path}`);
 				if (snapshot.content !== content) {
 					// Earlier TaskNotes releases' files are replaced without a backup.
-					if (snapshot.content !== null && !legacyTaskNotesSupport.includes(snapshot.content)) {
+					if (snapshot.content !== null && !isKnownLegacySupport(snapshot.content)) {
 						await this.backupInvalidType(path, snapshot.content);
 					}
 					await this.writeFileIfUnchanged(snapshot, content);
@@ -1413,7 +1437,7 @@ export class MdbaseSpecService {
 	 */
 	private buildTaskTypeDefV02(): string {
 		const settings = this.plugin.settings;
-		const fm = this.plugin.fieldMapper;
+		const fm = new FieldMapper(settings.fieldMapping);
 
 		const lines: string[] = [];
 		lines.push("---");
@@ -1948,19 +1972,6 @@ function stringValues(value: unknown): string[] {
 
 function uniqueStrings(values: string[]): string[] {
 	return [...new Set(values.filter((value) => value.length > 0))];
-}
-
-function isUnmodifiedGeneratedV02Type(content: string, expected: string): boolean {
-	// v4 emitted plain enum scalars; v5 quotes them. Formatting alone must not
-	// strand an otherwise identical v4 collection. Compare the parsed schema,
-	// while retaining the exact generated body check and backing up source bytes.
-	try {
-		const source = parseMdbaseTaskTypeDocument(content.replace(/\r\n/g, "\n"));
-		const generated = parseMdbaseTaskTypeDocument(expected.replace(/\r\n/g, "\n"));
-		return source.body === generated.body && JSON.stringify(source.type) === JSON.stringify(generated.type);
-	} catch {
-		return false;
-	}
 }
 
 function parseMigrationJournal(value: unknown): MigrationJournal {

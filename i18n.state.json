@@ -1,5 +1,17 @@
 {
   "de": {
+    "migrationRecognition.review": {
+      "source": "3596ac208d802482966b594f53a0fc21aaae6bad",
+      "translation": "11ef3f01f399463b4360fd7d58f05cab108aa332"
+    },
+    "migrationRecognition.waiting": {
+      "source": "fabbe6275469c366d3c19122ffc47044ff5ebec4",
+      "translation": "8d087209f41adbc856911e27f7992b100f77f1ab"
+    },
+    "migrationRecognition.support": {
+      "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
+      "translation": "2bfbb4c7c44c0c6429a6d3c821044a6c4e4a7aa5"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "3149f421df5cc81145695407250d901f7b2c7dc0"
@@ -9478,6 +9490,18 @@
     }
   },
   "es": {
+    "migrationRecognition.review": {
+      "source": "3596ac208d802482966b594f53a0fc21aaae6bad",
+      "translation": "5d2c90271c1e6cb7bea16ab64069e73a44df4ebc"
+    },
+    "migrationRecognition.waiting": {
+      "source": "fabbe6275469c366d3c19122ffc47044ff5ebec4",
+      "translation": "56b9b109c93a3adcafff49a21e09f12958ca35db"
+    },
+    "migrationRecognition.support": {
+      "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
+      "translation": "1725a1b0242b265d4128f594c45fa1f2d52bdea4"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "bfe49f7a906eea54e083c04e6f7d0c3fdb14dde1"
@@ -18956,6 +18980,18 @@
     }
   },
   "fr": {
+    "migrationRecognition.review": {
+      "source": "3596ac208d802482966b594f53a0fc21aaae6bad",
+      "translation": "5ba03b99878a446eba63d4d9bfb9a3cb1e95d9ee"
+    },
+    "migrationRecognition.waiting": {
+      "source": "fabbe6275469c366d3c19122ffc47044ff5ebec4",
+      "translation": "d6faaa49555bae5b4c953015ab08d09ace1fd1f9"
+    },
+    "migrationRecognition.support": {
+      "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
+      "translation": "89c5a03b6f70df7de80a7969c040ebbb2293b4f5"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "7541830e0d419db38fc14fc06ce5933579b97c04"
@@ -28434,6 +28470,18 @@
     }
   },
   "ja": {
+    "migrationRecognition.review": {
+      "source": "3596ac208d802482966b594f53a0fc21aaae6bad",
+      "translation": "3f6e586cba420f6ac0aa8a0ee858a3e9bc157572"
+    },
+    "migrationRecognition.waiting": {
+      "source": "fabbe6275469c366d3c19122ffc47044ff5ebec4",
+      "translation": "80bfa3ae233f5c2f0e7029962c9b7265ee90dd8e"
+    },
+    "migrationRecognition.support": {
+      "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
+      "translation": "92c02251c0a815ef092870a8efdeb55294165cd0"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "648a0984831b6c1dd4bdef71ea11c7ef67c0ee68"
@@ -37912,6 +37960,18 @@
     }
   },
   "ko": {
+    "migrationRecognition.review": {
+      "source": "3596ac208d802482966b594f53a0fc21aaae6bad",
+      "translation": "60ca0b56a9c8af58d8e496e8e59c7aac0a44db27"
+    },
+    "migrationRecognition.waiting": {
+      "source": "fabbe6275469c366d3c19122ffc47044ff5ebec4",
+      "translation": "72d1d4a4c99984cb76a8186b2acc89385d8615d2"
+    },
+    "migrationRecognition.support": {
+      "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
+      "translation": "fc3898fd01fb5a2bc28d74fa8c8df4267b2801bf"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "71695fa32a0677fd93b069b0fb1a439793b353e1"
@@ -47390,6 +47450,18 @@
     }
   },
   "pt": {
+    "migrationRecognition.review": {
+      "source": "3596ac208d802482966b594f53a0fc21aaae6bad",
+      "translation": "633507ea6c2ee1572b8bc5656a2deeed9e00b50a"
+    },
+    "migrationRecognition.waiting": {
+      "source": "fabbe6275469c366d3c19122ffc47044ff5ebec4",
+      "translation": "b74c82144d623c996b76435d1768286b5836102c"
+    },
+    "migrationRecognition.support": {
+      "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
+      "translation": "054670ace66e7b62b78b96ce1e33df00ff4065b7"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "f14fd476f4bf1df30978d6055e7058e19195a801"
@@ -56868,6 +56940,18 @@
     }
   },
   "ru": {
+    "migrationRecognition.review": {
+      "source": "3596ac208d802482966b594f53a0fc21aaae6bad",
+      "translation": "0bbc3d9ed5c9154ea549c277507277340d52701e"
+    },
+    "migrationRecognition.waiting": {
+      "source": "fabbe6275469c366d3c19122ffc47044ff5ebec4",
+      "translation": "e8ecd1a7286c2b1df080aa767204285289f997e1"
+    },
+    "migrationRecognition.support": {
+      "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
+      "translation": "d622fbeb73fec882df24639a724c67ee48cb34c3"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "6245ac635eea1c1f8bca6f50d62a538824556a75"
@@ -66346,6 +66430,18 @@
     }
   },
   "zh": {
+    "migrationRecognition.review": {
+      "source": "3596ac208d802482966b594f53a0fc21aaae6bad",
+      "translation": "6c46e2ec62d31e82002a5479c9e352d5d7db8676"
+    },
+    "migrationRecognition.waiting": {
+      "source": "fabbe6275469c366d3c19122ffc47044ff5ebec4",
+      "translation": "76848122ea5279e9b5ed0e3f9736c4b03e5fa2b1"
+    },
+    "migrationRecognition.support": {
+      "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
+      "translation": "a59f9c463eba432ff47752030687786cebcf1c06"
+    },
     "onboarding.title": {
       "source": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
       "translation": "985b77e61456d631358811473c3265b8f2c7f282"

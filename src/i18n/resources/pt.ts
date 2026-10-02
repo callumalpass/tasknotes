@@ -1,6 +1,11 @@
 import { TranslationTree } from "../types";
 
 export const pt: TranslationTree = {
+	migrationRecognition: {
+		review: "O TaskNotes preservou {path}: os metadados antigos estão ausentes, foram editados ou incluem outros tipos. Conclua a sincronização e reinicie; caso não resolva, migre uma cópia de segurança com mdbase e revise o tipo antes de tentar novamente.",
+		waiting: "O TaskNotes encontrou metadados em {path} sem mdbase.yaml e não criou outra coleção. Conclua a sincronização ou restaure a configuração correspondente de um backup; a migração será tentada novamente quando os metadados chegarem.",
+		support: "O TaskNotes preservou o arquivo de suporte personalizado {path}. Restaure a versão gerada de um backup ou revise e migre uma cópia com mdbase; depois, reinicie.",
+	},
 	onboarding: {
 		title: "Primeiros passos com TaskNotes",
 		intro: "As tarefas são notas Markdown no seu cofre. Use a paleta de comandos para estes três passos.",

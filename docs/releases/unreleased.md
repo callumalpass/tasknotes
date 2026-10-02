@@ -35,6 +35,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Fixed calendar freezes in vaults with many tasks, while preserving task and timeblock drag and resize permissions.
+- Fixed first-launch mdbase upgrades, recognition of older generated v4 types, BOM/CRLF metadata and reordered YAML keys. Generated legacy types in existing v0.3 collections upgrade in place; incomplete synced metadata waits rather than creating another task type. Task notes remain unchanged. See [Upgrading from v4 to v5](https://tasknotes.dev/migration-v4-to-v5/#mdbase-collections).
+- Settings existence-check failures now stop startup instead of being treated as a new installation.
 
 - (#2304) Fixed embedded month calendars not filling their available width with Minimal theme and Readable Line Length enabled. Thanks to @same774 for reporting.
 

@@ -1,6 +1,11 @@
 import { TranslationTree } from "../types";
 
 export const ko: TranslationTree = {
+	migrationRecognition: {
+		review: "TaskNotes가 {path}를 그대로 보존했습니다. 이전 메타데이터가 누락되었거나 수정되었거나 다른 유형을 포함합니다. 동기화를 완료하고 다시 시작하세요. 해결되지 않으면 백업한 사본을 mdbase로 마이그레이션하고 유형을 검토한 후 다시 시도하세요.",
+		waiting: "TaskNotes가 {path}에서 mdbase.yaml이 없는 메타데이터를 발견하여 다른 컬렉션을 만들지 않았습니다. 동기화를 완료하거나 백업에서 해당 설정을 복원하세요. 메타데이터가 도착하면 마이그레이션을 다시 시도합니다.",
+		support: "TaskNotes가 사용자 지정 지원 파일 {path}를 보존했습니다. 백업에서 생성된 버전을 복원하거나 사본을 검토하고 mdbase로 마이그레이션한 다음 다시 시작하세요.",
+	},
 	onboarding: {
 		title: "TaskNotes 시작하기",
 		intro: "작업은 보관함의 Markdown 노트입니다. 명령 팔레트에서 다음 세 단계를 따라 해 보세요.",

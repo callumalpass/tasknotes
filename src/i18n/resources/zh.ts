@@ -1,6 +1,11 @@
 import { TranslationTree } from "../types";
 
 export const zh: TranslationTree = {
+	migrationRecognition: {
+		review: "TaskNotes 已保留 {path}：旧版元数据缺失、已被编辑或包含其他类型。请完成同步并重启；若仍未解决，请使用 mdbase 迁移备份副本，检查类型后再重试。",
+		waiting: "TaskNotes 在 {path} 中发现了没有 mdbase.yaml 的元数据，因此未创建另一个集合。请完成同步或从备份恢复对应的配置；元数据到达后会重试迁移。",
+		support: "TaskNotes 已保留自定义辅助文件 {path}。请从备份恢复生成的版本，或检查并使用 mdbase 迁移副本，然后重启。",
+	},
 	onboarding: {
 		title: "开始使用 TaskNotes",
 		intro: "任务是仓库中的 Markdown 笔记。通过命令面板完成以下三步。",

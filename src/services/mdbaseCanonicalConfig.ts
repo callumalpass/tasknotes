@@ -467,7 +467,7 @@ function syncDocumentValue(document: YAML.Document, path: DocumentPath, value: u
 }
 
 function splitFrontmatter(markdown: string): { frontmatter: string; body: string } {
-	const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+	const match = markdown.match(/^\uFEFF?---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
 	if (!match) {
 		throw new Error("The mdbase task type must contain YAML frontmatter.");
 	}

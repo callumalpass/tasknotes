@@ -109,6 +109,14 @@ export function registerTaskNotesIcon(): void {
 export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<void> {
 	plugin.api = new TaskNotesAPI(plugin);
 
+	// Legacy recognition runs before runtime services. Build from loaded settings,
+	// then rebuild below after the collection's canonical settings are imported.
+	plugin.fieldMapper = new FieldMapper(
+		plugin.settings.fieldMapping,
+		plugin.settings.userFields ?? [],
+		plugin.settings.customStatuses,
+		plugin.settings.customPriorities
+	);
 	const { MdbaseSpecService } = await import("../services/MdbaseSpecService");
 	plugin.mdbaseSpecService = new MdbaseSpecService(plugin);
 	await plugin.mdbaseSpecService.initialize();

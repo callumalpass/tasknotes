@@ -14,7 +14,7 @@ If you are upgrading from a release earlier than 4.13.0, HTTP API and MCP client
 
 ## What happens on first launch
 
-1. Your existing `data.json` settings are read and kept. New settings receive their defaults.
+1. Your existing `data.json` settings are read and kept. New settings receive their defaults. If TaskNotes cannot read the settings or determine whether the file exists, startup stops rather than saving defaults over it. Resolve the storage or sync error and restart.
 2. The HTTP API token moves from `data.json` to Obsidian Secret Storage on that device. The last-seen and last-notified release versions move to per-device storage. These values are removed from `data.json` once they have been stored.
 3. If the mdbase integration is enabled, TaskNotes-generated mdbase v0.2 metadata is upgraded to v0.3. See [mdbase collections](#mdbase-collections).
 
@@ -55,9 +55,19 @@ Existing tasks without an `id` remain valid and are not changed. Path-based inte
 
 If the [mdbase integration](settings/integrations.md#mdbase) is enabled, TaskNotes v5 publishes the portable `tasknotes.task` contract (version 0.3.0-rc.5) used by TaskNotes App and other compatible tools. It is the same contract, byte for byte, that TaskNotes App installs, so the plugin and the app can share a collection. Tasks can list assignees as links to person notes; the property is optional.
 
-When the collection's only active type is an unmodified TaskNotes-generated v0.2 type, TaskNotes upgrades the metadata to mdbase v0.3 automatically. The previous `mdbase.yaml` and task type are kept under `.tasknotes/migrations/`. Collections with additional, modified, or hand-maintained types are left unchanged for you to review.
+When the collection's only active type is an unmodified TaskNotes-generated v0.2 type, TaskNotes upgrades the metadata to mdbase v0.3 automatically. Generated formats from 4.3.2 through 4.13.7 are recognized using their historical writers and your saved settings, including BOM/CRLF formatting and reordered YAML mapping keys. Exact historical output containing v4's invalid unquoted status values can also be regenerated safely from those settings. The original bytes of `mdbase.yaml` and the task type are kept under `.tasknotes/migrations/`; task notes are never rewritten.
+
+If v4 added its generated task type to an existing v0.3 collection, TaskNotes upgrades that file in place and preserves foreign types and configuration instead of creating an overlapping task type.
+
+Incomplete synced metadata is not treated as a new collection. If type or support files arrive before `mdbase.yaml`, TaskNotes waits without creating another type. The upgrade retries when the configuration or task type arrives. Finish syncing all metadata before diagnosing a blocked upgrade.
+
+Additional v0.2 types or genuinely edited task/support definitions are preserved for review. The notice names the affected file. Back up the vault, finish syncing and restart first. If still blocked, restore the unmodified generated type **and matching saved settings** from a known-good backup, or use mdbase to migrate a separate copy and review all type definitions before replacing the active metadata. Do not delete a user-maintained type merely to make ownership recognition succeed. Known generated support resources tolerate line-ending changes; custom commentary or schema edits are not silently overwritten.
 
 If you used a 5.0 beta, TaskNotes updates its task type to the current contract when the vault opens and tells you once. Your statuses, priorities, property names and custom properties are kept, and task files are not changed. Collections that TaskNotes App has already updated are left as they are. If a beta added a second task type named `tasknotes-task` after TaskNotes App updated the collection, TaskNotes removes that duplicate and keeps a copy under `.tasknotes/migrations/`.
+
+### Connecting TaskNotes App
+
+Publishing a compatible task contract is not pack installation. The plugin does not write `mdbase.lock.yaml` or claim pack provenance. On the first App connection, use **Set up and allow access** for the App's engine-verified pack installation or upgrade, including its view/Base contracts. Use an App version that supports the current task contract; do not install an older task pack over it. Review the collection's task count and custom mapped values after setup. A CLI pack assessment of `install` or `upgrade` before that consent is expected, not a claim that the task metadata migration failed.
 
 If the integration is not enabled, nothing changes.
 

@@ -1,0 +1,15 @@
+spec_version: 0.3.0
+name: Existing library
+description: User-owned collection
+settings:
+  types_folder: LibraryTypes
+  explicit_type_keys:
+    - type
+    - types
+  record_extensions:
+    - md
+  exclude:
+    - LibraryTypes
+    - Private
+x-library:
+  keep: true
