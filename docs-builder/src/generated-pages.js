@@ -86,6 +86,21 @@ async function loadRuntimeDocumentationData() {
 		platform: "node",
 		target: "node22",
 		nodePaths: [path.join(ROOT, "docs-builder", "node_modules")],
+		// Obsidian is a host API, not a Node runtime package. Use a real YAML
+		// serializer when executing the Base template generator outside the host.
+		plugins: [{
+			name: "docs-obsidian-yaml",
+			setup(build) {
+				build.onResolve({ filter: /^obsidian$/ }, () => ({
+					path: "obsidian",
+					namespace: "docs-obsidian-yaml",
+				}));
+				build.onLoad({ filter: /^obsidian$/, namespace: "docs-obsidian-yaml" }, () => ({
+					contents: 'export { dump as stringifyYaml } from "js-yaml";',
+					resolveDir: path.join(ROOT, "docs-builder"),
+				}));
+			},
+		}],
 		write: false,
 		logLevel: "silent",
 	});

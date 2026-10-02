@@ -32,37 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+## Changed
+
+## Removed
+
 ## Fixed
-
-- Fixed calendar freezes in vaults with many tasks, while preserving task and timeblock drag and resize permissions.
-
-- (#2304) Fixed embedded month calendars not filling their available width with Minimal theme and Readable Line Length enabled. Thanks to @same774 for reporting.
-
-- (#2305) Fixed tasks due after 11:30 PM appearing on the following day in Calendar and Agenda views.
-  - Thanks to @PeterYuLi1204 for reporting.
-
-- (#2306) Fixed the task editor's completion calendar showing dates from a different month than its heading in some time zones, and skipping short months when navigating from a month-end completion.
-  - Thanks to @teampbevolution for reporting.
-
-- (#2258) Task cards now preserve spaces and emoji in context and tag labels instead of collapsing them during display. Thanks to @Oblique82 for reporting this and tracing the affected renderer.
-
-- Fixed generated default Bases files failing to open when custom priority labels or status/priority values contain quotes, backslashes, or line breaks. Regenerate affected files with **Update default base files**. See [Default Base Templates](https://tasknotes.dev/views/default-base-templates/).
-
-- Fixed selected-text conversion including the next unselected line when a selection ends at the start of that line. Reversed selections and partial-line selections now preserve text outside the selection. See [Inline Tasks](https://tasknotes.dev/features/inline-tasks/#instant-task-conversion).
-- (#1157) Fixed long inline task titles exceeding the available line width or dropping below their status indicator in nested bullets on Obsidian mobile. Enabled properties remain available in a bounded, scrollable strip. Thanks to @3zra47 for the continued reports and screenshots, and @renatomen for fresh-vault testing. See [Inline Tasks](https://tasknotes.dev/features/inline-tasks/#task-link-overlays).
-
-- Long-running ICS subscriptions now show recurring events from the past 30 days through the next year without using the visible-event limit on historical occurrences.
-- Microsoft calendar connections now fetch events and start automatic refresh immediately. Disconnecting clears calendar data and sync state, and late responses cannot restore disconnected data.
-- Disabled Google and Microsoft calendars are excluded from the combined event cache.
-- Google Calendar retry queues preserve concurrent edits and tasks queued while retries are running. Manual refresh reports failed calendars instead of reporting success with stale data.
-- (#2226) Cleaned up exported recurring-task exclusions to include only dates in the exported series, including the final day of all-day series. This is recurrence exclusion cleanup, not a confirmed fix for every Google Calendar 400 response. Thanks to @3zra47 for reporting.
-
-- Reminders are no longer lost during rescans or sleep. Missed reminders are recovered up to 24 hours back while Obsidian remains running, and completed or archived tasks no longer notify. See [Reminders](https://tasknotes.dev/features/reminders/#delivery-and-sleep).
-- Recurring-instance completion accepts the legacy CLI date field and rejects invalid or conflicting dates. Firefox extension origins can access the authenticated local API.
-- Webhooks now disable only after consecutive deliveries exhaust their retries, rather than after intermittent lifetime failures.
-- Concurrent timer actions no longer create duplicate active entries or publish stale timer data. Pomodoro-owned trackers end at the intended completion time after sleep and leave pre-existing manual trackers running. See [Time Management](https://tasknotes.dev/features/time-management/).
-
-- Trim surrounding whitespace from custom user-field property keys when loading, editing and saving settings. Empty keys and keys already used by another property are rejected when editing. This does not rename properties in existing notes. Thanks to @prethrive for reporting (#2269). See [Settings](https://tasknotes.dev/settings/).
-- Prevent custom list fields from duplicating wikilinks already extracted by the shared parser.
-
-- Editing filename-backed task titles now preserves the full title when sanitization, a long filename, or a duplicate name prevents an exact match. A failed rename leaves the previous title and task properties unchanged.
