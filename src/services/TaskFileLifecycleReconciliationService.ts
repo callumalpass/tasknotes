@@ -82,7 +82,8 @@ export function selectReconciledTaskProperty(
 export class TaskFileLifecycleReconciliationService {
 	private readonly taskSnapshots = new Map<string, TaskInfo>();
 	private taskUpdatedRef: Nullable<EventRef> = null;
-	private readonly handlingPaths = new Set<string>();
+	private readonly pathWork = new Map<string, Promise<void>>();
+	private generation = 0;
 
 	constructor(private readonly plugin: TaskNotesPlugin) {}
 
@@ -101,7 +102,8 @@ export class TaskFileLifecycleReconciliationService {
 			this.plugin.emitter.offref(this.taskUpdatedRef);
 			this.taskUpdatedRef = null;
 		}
-		this.handlingPaths.clear();
+		this.generation++;
+		this.pathWork.clear();
 		this.taskSnapshots.clear();
 	}
 
@@ -120,10 +122,30 @@ export class TaskFileLifecycleReconciliationService {
 			return;
 		}
 
+		// Keep every observed transition in order. Advancing the snapshot while a
+		// previous edit is still reconciling would silently lose completion/uncompletion.
+		const generation = this.generation;
+		const previousWork = this.pathWork.get(path) ?? Promise.resolve();
+		const work = previousWork.then(async () => {
+			if (generation === this.generation) {
+				await this.reconcileTaskUpdate(path, updatedTask);
+			}
+		});
+		this.pathWork.set(path, work);
+		try {
+			await work;
+		} finally {
+			if (this.pathWork.get(path) === work) {
+				this.pathWork.delete(path);
+			}
+		}
+	}
+
+	private async reconcileTaskUpdate(path: string, updatedTask: TaskInfo): Promise<void> {
 		const originalTask = this.taskSnapshots.get(path);
 		this.taskSnapshots.set(path, updatedTask);
 
-		if (!originalTask || this.handlingPaths.has(path)) {
+		if (!originalTask) {
 			return;
 		}
 
@@ -137,7 +159,6 @@ export class TaskFileLifecycleReconciliationService {
 			return;
 		}
 
-		this.handlingPaths.add(path);
 		try {
 			await this.plugin.taskService.applyPropertyChangeSideEffects(
 				file,
@@ -154,8 +175,6 @@ export class TaskFileLifecycleReconciliationService {
 				details: { taskPath: path, property },
 				error,
 			});
-		} finally {
-			this.handlingPaths.delete(path);
 		}
 	}
 
