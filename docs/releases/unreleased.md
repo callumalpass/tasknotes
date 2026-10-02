@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Fixed calendar freezes in vaults with many tasks, while preserving task and timeblock drag and resize permissions.
