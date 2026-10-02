@@ -68,8 +68,8 @@ describe("defaultBasesFiles", () => {
 				expect(base.formulas.isOverdue).toContain(`status != ${literal}`);
 				if (command === "open-tasks-view") {
 					const notBlocked = base.views.find((view: any) => view.name === "Not Blocked");
-					expect(notBlocked.filters.and[0].or[0].and).toContain(`status != ${literal}`);
-					expect(notBlocked.filters.and[1].or[1]).toContain(`.properties.status != ${literal}`);
+					expect(notBlocked.filters.and[1].or[0].and).toContain(`status != ${literal}`);
+					expect(notBlocked.filters.and[2].or[1]).toContain(`.properties.status != ${literal}`);
 				}
 			}
 		}
@@ -155,7 +155,7 @@ describe("defaultBasesFiles", () => {
 		const dependencyFileExpression = 'file(if(value.isType("object"), value.uid, value))';
 		const dependencyLinkExpression = `${dependencyFileExpression}.asLink()`;
 
-		expect(parse(tasksTemplate).views.find((view: any) => view.name === "Not Blocked").filters.and[1].or[1]).toBe(
+		expect(parse(tasksTemplate).views.find((view: any) => view.name === "Not Blocked").filters.and[2].or[1]).toBe(
 			`list(blockedBy).filter(${dependencyFileExpression}.properties.status != "done").isEmpty()`
 		);
 		expect(relationshipsTemplate).toContain(
