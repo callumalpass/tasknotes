@@ -212,7 +212,7 @@ describe('complete-instance date contract', () => {
     const response: any = { setHeader: jest.fn(), end: jest.fn() };
     return { controller, response, toggle };
   };
-  it.each([{ date: '2026-09-20' }, { instanceDate: '2026-09-20' }, { date: '2026-09-20', instanceDate: '2026-09-20' }, {}])('accepts %j', async body => {
+  it.each([{ date: '2026-09-20' }, { instanceDate: '2026-09-20' }, { date: '2026-09-20', instanceDate: '2026-09-20' }, { date: '2026-09-20T10:00:00Z' }, { instanceDate: '2026-09-20T23:00:00+10:00' }, {}])('accepts %j', async body => {
     const { controller, response, toggle } = setup();
     jest.spyOn(controller, 'parseRequestBody').mockResolvedValue(body);
     await controller.completeRecurringInstance({}, response, { id: 'task' });
@@ -220,7 +220,7 @@ describe('complete-instance date contract', () => {
     expect(toggle.mock.calls[0][1]?.toISOString().slice(0, 10)).toBe(Object.keys(body).length ? '2026-09-20' : undefined);
   });
   it.each([{ date: '2026-02-30' }, { date: 'garbage' }, { date: null }, { instanceDate: 123 }, { date: '' },
-    { date: '2026-09-20', instanceDate: '2026-09-21' }, { date: '2026-09-20T10:00:00Z' }])('rejects %j without mutation', async body => {
+    { date: '2026-09-20', instanceDate: '2026-09-21' }, { date: '2026-02-30T10:00:00Z' }, { date: '2026-09-20T24:00:00Z' }, { date: '2026-09-20T10:00:00Zjunk' }])('rejects %j without mutation', async body => {
     const { controller, response, toggle } = setup();
     jest.spyOn(controller, 'parseRequestBody').mockResolvedValue(body);
     await controller.completeRecurringInstance({}, response, { id: 'task' });
