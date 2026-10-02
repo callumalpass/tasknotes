@@ -1551,28 +1551,44 @@ export class TaskService {
 	/**
 	 * Start time tracking for a task
 	 */
+	private timeTrackingTransactions = new Map<string, Promise<unknown>>();
+
+	private async withTimeTrackingLock<T>(path: string, operation: () => Promise<T>): Promise<T> {
+		const previous = this.timeTrackingTransactions.get(path) ?? Promise.resolve();
+		const pending = previous.catch(() => {}).then(operation);
+		this.timeTrackingTransactions.set(path, pending);
+		try {
+			return await pending;
+		} finally {
+			if (this.timeTrackingTransactions.get(path) === pending) {
+				this.timeTrackingTransactions.delete(path);
+			}
+		}
+	}
+
 	async startTimeTracking(task: TaskInfo): Promise<TaskInfo> {
+		return this.withTimeTrackingLock(task.path, () => this.startTimeTrackingLocked(task));
+	}
+
+	private async startTimeTrackingLocked(task: TaskInfo): Promise<TaskInfo> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
 			throw new Error(`Cannot find task file: ${task.path}`);
 		}
 
-		// Check if already tracking
-		const activeSession = this.plugin.getActiveTimeSession(task);
-		if (activeSession) {
-			throw new Error("Time tracking is already active for this task");
-		}
-
-		// Step 1: Construct new state in memory
-		const timeTrackingPlan = buildStartTimeTrackingPlan(
-			task,
-			getCurrentTimestamp(),
-			new Date().toISOString()
-		);
-		const { updatedTask, newEntry } = timeTrackingPlan;
-
-		// Step 2: Persist to file
+		let updatedTask!: TaskInfo;
+		// Validate and plan inside the vault's existing file lock, without nesting it.
 		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
+			const persistedTask = this.plugin.fieldMapper.mapFromFrontmatter(
+				frontmatter, task.path, this.plugin.settings.storeTitleInFilename
+			) as TaskInfo;
+			if (persistedTask.timeEntries?.some((entry) => !entry.endTime)) {
+				throw new Error("Time tracking is already active for this task");
+			}
+			const timeTrackingPlan = buildStartTimeTrackingPlan(
+				persistedTask, getCurrentTimestamp(), new Date().toISOString()
+			);
+			const { newEntry } = timeTrackingPlan;
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyStartTimeTrackingFrontmatterChange({
@@ -1582,6 +1598,9 @@ export class TaskService {
 				newEntry,
 				dateModified: timeTrackingPlan.dateModified,
 			});
+			updatedTask = this.plugin.fieldMapper.mapFromFrontmatter(
+				frontmatter, task.path, this.plugin.settings.storeTitleInFilename
+			) as TaskInfo;
 		});
 
 		// Step 3: Wait for fresh data and update cache
@@ -1629,28 +1648,43 @@ export class TaskService {
 	/**
 	 * Stop time tracking for a task
 	 */
-	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
+	async stopTimeTracking(task: TaskInfo, stopTime?: string, expectedStartTime?: string): Promise<TaskInfo> {
+		return this.withTimeTrackingLock(task.path, () =>
+			this.stopTimeTrackingLocked(task, stopTime, expectedStartTime)
+		);
+	}
+
+	private async stopTimeTrackingLocked(task: TaskInfo, stopTime?: string, expectedStartTime?: string): Promise<TaskInfo> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
 			throw new Error(`Cannot find task file: ${task.path}`);
 		}
 
-		const activeSession = this.plugin.getActiveTimeSession(task);
-		if (!activeSession) {
-			throw new Error("No active time tracking session for this task");
-		}
-
-		// Step 1: Construct new state in memory
-		const timeTrackingPlan = buildStopTimeTrackingPlan(
-			task,
-			activeSession,
-			getCurrentTimestamp(),
-			new Date().toISOString()
-		);
-		const { updatedTask } = timeTrackingPlan;
-
-		// Step 2: Persist to file
+		let updatedTask!: TaskInfo;
 		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
+			const persistedTask = this.plugin.fieldMapper.mapFromFrontmatter(
+				frontmatter, task.path, this.plugin.settings.storeTitleInFilename
+			) as TaskInfo;
+			const activeSession = persistedTask.timeEntries?.find((entry) => !entry.endTime);
+			if (!activeSession) {
+				throw new Error("No active time tracking session for this task");
+			}
+			if (expectedStartTime !== undefined && activeSession.startTime !== expectedStartTime) {
+				throw new Error("Active time tracking session has changed");
+			}
+			if (stopTime !== undefined && (
+				!/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/.test(stopTime) ||
+				!Number.isFinite(new Date(stopTime.slice(0, 10)).getTime()) ||
+				new Date(stopTime.slice(0, 10)).toISOString().slice(0, 10) !== stopTime.slice(0, 10) ||
+				!Number.isFinite(new Date(stopTime).getTime()) ||
+				new Date(stopTime).getTime() < new Date(activeSession.startTime).getTime() ||
+				new Date(stopTime).getTime() > Date.now()
+			)) {
+				throw new Error("Invalid time tracking stop timestamp");
+			}
+			const timeTrackingPlan = buildStopTimeTrackingPlan(
+				persistedTask, activeSession, getCurrentTimestamp(), stopTime ?? new Date().toISOString()
+			);
 			const timeEntriesField = this.plugin.fieldMapper.toUserField("timeEntries");
 			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			applyStopTimeTrackingFrontmatterChange({
@@ -1661,6 +1695,9 @@ export class TaskService {
 				stopTimestamp: timeTrackingPlan.stopTimestamp,
 				dateModified: timeTrackingPlan.dateModified,
 			});
+			updatedTask = this.plugin.fieldMapper.mapFromFrontmatter(
+				frontmatter, task.path, this.plugin.settings.storeTitleInFilename
+			) as TaskInfo;
 		});
 
 		// Step 3: Wait for fresh data and update cache

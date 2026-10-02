@@ -9,7 +9,8 @@ The TaskNotes HTTP API provides local HTTP access to tasks, time tracking, pomod
 - Started when Obsidian starts and TaskNotes API is enabled
 - Bound to loopback (`127.0.0.1`) only, not the local network
 - Browser CORS requests are allowed only from loopback origins such as
-  `localhost`, `127.0.0.1`, and `[::1]`
+  `localhost`, `127.0.0.1`, and `[::1]`, and origin-only Chrome/Firefox extension URLs
+  (`chrome-extension://…`, `moz-extension://…`) without paths, credentials, ports, queries, or fragments
 - Not available on mobile
 
 Enable it in `Settings -> TaskNotes -> Integrations -> HTTP API`.
@@ -273,7 +274,8 @@ Complete recurring instance.
 
 Request body:
 
-- Optional `date` (ISO string). If omitted, uses current date context.
+- Optional `date` (a valid ISO calendar date, such as `YYYY-MM-DD`, or an ISO timestamp). If omitted, uses current date context. Date-only values are recommended for occurrence selection; ISO timestamps remain supported for existing clients.
+- Legacy `instanceDate` is accepted as an alias. Conflicting aliases or malformed dates return `400` without completing an occurrence.
 
 When the recurring parent uses materialized occurrence notes, this endpoint completes the matching occurrence note if one exists. If the parent is set to **Create next after completion** and no matching occurrence note exists yet, TaskNotes creates and completes that occurrence note instead of only recording a virtual `complete_instances` entry.
 
@@ -600,9 +602,9 @@ Common status codes:
 
 Current behavior:
 
-- CORS allows all origins (`*`).
+- CORS permits loopback and origin-only Chrome/Firefox extension origins, not arbitrary websites.
 - Transport is HTTP only (no TLS).
-- Node server is started with `server.listen(port)` and does not explicitly bind to `127.0.0.1`.
+- The server binds explicitly to `127.0.0.1`; bearer authentication is required.
 
 Practical guidance:
 

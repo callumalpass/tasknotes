@@ -35,7 +35,7 @@ The feature integrates with the custom status system, so completion detection re
 
 TaskNotes also includes a Pomodoro timer, which is a tool for time management that uses a timer to break down work into intervals, separated by short breaks. The Pomodoro timer in TaskNotes has a dedicated view with controls to start, stop, and reset the timer.
 
-When a task is associated with a Pomodoro session, the time is automatically recorded in the task's time tracking data upon completion of the session.
+When a task is associated with a Pomodoro session, TaskNotes starts a task tracker if none is already running. Pomodoro only stops trackers it created; a pre-existing manual tracker is left running. After sleep or a delayed timer tick, a completed Pomodoro-owned tracker ends at the session's intended completion time, rather than the wake-up time.
 
 ## Productivity Analytics
 

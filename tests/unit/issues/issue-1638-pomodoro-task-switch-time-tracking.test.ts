@@ -47,8 +47,8 @@ function createMockPlugin(tasks: TaskInfo[]) {
 			trigger: jest.fn(),
 		},
 		taskService: {
-			startTimeTracking: jest.fn(async () => undefined),
-			stopTimeTracking: jest.fn(async () => undefined),
+			startTimeTracking: jest.fn(async (task: TaskInfo) => ({ ...task, timeEntries: [{ startTime: "owned-start" }] })),
+			stopTimeTracking: jest.fn(async (_task: TaskInfo, _stopTime?: string, _expectedStart?: string) => undefined),
 		},
 		cacheManager: {
 			getTaskInfo: jest.fn(async (path: string) => tasksByPath.get(path) ?? null),
@@ -70,9 +70,9 @@ describe("Issue #1638: Pomodoro task switching updates time tracking", () => {
 		await (service as { completePomodoro: () => Promise<void> }).completePomodoro();
 
 		expect(plugin.taskService.startTimeTracking).toHaveBeenNthCalledWith(1, task1);
-		expect(plugin.taskService.stopTimeTracking).toHaveBeenNthCalledWith(1, task1);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenNthCalledWith(1, task1, undefined, "owned-start");
 		expect(plugin.taskService.startTimeTracking).toHaveBeenNthCalledWith(2, task2);
-		expect(plugin.taskService.stopTimeTracking).toHaveBeenNthCalledWith(2, task2);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenNthCalledWith(2, task2, expect.any(String), "owned-start");
 		expect(service.getState().currentSession).toBeUndefined();
 	});
 
@@ -99,7 +99,7 @@ describe("Issue #1638: Pomodoro task switching updates time tracking", () => {
 
 		expect(plugin.taskService.startTimeTracking).toHaveBeenCalledTimes(1);
 		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledTimes(1);
-		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledWith(task);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledWith(task, undefined, "owned-start");
 		expect(service.getState().currentSession?.taskPath).toBeUndefined();
 	});
 
@@ -115,7 +115,7 @@ describe("Issue #1638: Pomodoro task switching updates time tracking", () => {
 
 		expect(plugin.taskService.startTimeTracking).toHaveBeenCalledTimes(1);
 		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledTimes(1);
-		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledWith(task1);
+		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledWith(task1, undefined, "owned-start");
 		expect(service.getState().currentSession?.taskPath).toBe(task2.path);
 	});
 });

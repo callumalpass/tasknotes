@@ -114,7 +114,7 @@ Current implementation behavior:
 - Each delivery starts with one attempt.
 - Failed deliveries retry with exponential backoff: `1s`, `2s`, `4s`.
 - Maximum retries: `3` retries after initial attempt (up to 4 attempts total).
-- If cumulative `failureCount` for a webhook exceeds `10`, webhook is auto-disabled.
+- A webhook is auto-disabled after more than `10` consecutive deliveries exhaust all retries. Success resets this streak (`consecutiveFailures`); cumulative `failureCount` and `successCount` remain telemetry.
 - No explicit request timeout is set in delivery fetch.
 
 Because retries and duplicates are possible, handlers should be idempotent.
@@ -229,7 +229,7 @@ For quick inspection, use a request-bin tool such as `webhook.site`.
 
 ### Webhook disabled automatically
 
-If failures continue and `failureCount` exceeds 10, webhook is disabled.
+If more than 10 consecutive deliveries exhaust all retries, the webhook is disabled. A successful delivery resets the streak; intermittent lifetime failures do not disable a recovered endpoint.
 
 1. Fix endpoint availability or response handling.
 2. Re-enable webhook in TaskNotes settings, or recreate it via `POST /api/webhooks`.

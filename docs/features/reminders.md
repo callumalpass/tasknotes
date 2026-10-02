@@ -124,6 +124,12 @@ Default reminders are useful for recurring habits, such as pre-deadline checks o
 
 ![Task properties settings](../assets/settings-task-properties.png)
 
+## Delivery and Sleep
+
+Reminders are delivered while Obsidian is running with notifications enabled. After sleep or a delayed scan, TaskNotes catches up unprocessed reminders from the last successful scan, up to 24 hours back. A reminder is delivered once per task, reminder ID, and effective reminder time during that runtime; changing its time allows a new delivery. This is not background push delivery when Obsidian is closed.
+
+Archived tasks and completed tasks do not deliver reminders. For recurring tasks, completion is checked for the reminder's occurrence (the due/scheduled anchor for relative reminders).
+
 ## Technical Notes
 
 - Reminders follow iCalendar `VALARM` concepts with ISO 8601 offsets

@@ -47,6 +47,10 @@ const createService = () => {
 		},
 		cacheManager,
 		emitter,
+		statusManager: {
+			getCompletedStatuses: () => ["done"],
+			isCompletedStatus: (status: string) => status === "done",
+		},
 	};
 
 	return {
@@ -103,7 +107,7 @@ describe("Issue #1689: reminders edited in frontmatter refresh notification time
 		service.destroy();
 	});
 
-	it("clears processed state and recalculates a relative reminder when the task date changes", async () => {
+	it("retains delivered identities and recalculates a relative reminder when the task date changes", async () => {
 		jest.useFakeTimers();
 		jest.setSystemTime(new Date("2026-03-22T14:30:00"));
 
@@ -115,7 +119,7 @@ describe("Issue #1689: reminders edited in frontmatter refresh notification time
 			offset: "-PT5M",
 			description: "5 minutes before",
 		};
-		const reminderKey = `${taskPath}-${reminder.id}`;
+		const reminderKey = JSON.stringify([taskPath, reminder.id, new Date("2026-03-22T14:25:00").getTime()]);
 		const updatedTask: TaskInfo = {
 			path: taskPath,
 			title: "Rescheduled task",
@@ -133,7 +137,7 @@ describe("Issue #1689: reminders edited in frontmatter refresh notification time
 		emitter.trigger("file-updated", { path: taskPath });
 		await flushPromises();
 
-		expect((service as any).processedReminders.has(reminderKey)).toBe(false);
+		expect((service as any).processedReminders.has(reminderKey)).toBe(true);
 		expect((service as any).notificationQueue).toEqual([
 			expect.objectContaining({
 				taskPath,
