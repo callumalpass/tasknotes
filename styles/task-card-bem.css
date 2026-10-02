@@ -1632,25 +1632,26 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
 /* Compact context menu in inline mode */
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25em;
+    /* Percentages use the containing line's width, including its indentation.
+       Reserve indicators, menu and their margins so titles cannot orphan and
+       property-free cards still fit on one line. */
+    --tn-mobile-inline-title-reserve: calc(2 * var(--tn-mobile-inline-indicator-size) + var(--tn-mobile-inline-menu-size) + 0.85em);
+
+    display: inline;
     max-width: 100%;
     white-space: normal;
-    vertical-align: middle;
+    vertical-align: baseline;
 }
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__main-row,
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__content {
-    display: inline-flex;
-    align-items: center;
+    display: inline;
     min-width: 0;
-    vertical-align: middle;
+    vertical-align: baseline;
 }
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__content {
-    flex-direction: row;
-    gap: 0.25em;
+    white-space: normal;
 }
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__title,
@@ -1661,7 +1662,10 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__title-tex
 }
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__title-text {
-    max-width: min(42vw, 18em);
+    display: inline-block;
+    max-width: max(0px, calc(100% - var(--tn-mobile-inline-title-reserve)));
+    vertical-align: baseline;
+    white-space: nowrap;
 }
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__metadata {
@@ -1670,7 +1674,7 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__metadata 
     gap: 0.35em;
     flex: 1 1 auto;
     min-width: 0;
-    max-width: min(52vw, 24em);
+    max-width: calc(100% - 0.25em);
     margin-left: 0.25em;
     overflow-x: auto;
     overflow-y: hidden;
@@ -1687,7 +1691,7 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__status-do
     justify-content: center;
     width: var(--tn-mobile-inline-indicator-size);
     height: var(--tn-mobile-inline-indicator-size);
-    margin-right: 0;
+    margin-right: 0.25em;
     transform: none;
     flex: 0 0 var(--tn-mobile-inline-indicator-size);
 }
@@ -1700,7 +1704,7 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__priority-
     height: var(--tn-mobile-inline-indicator-size);
     min-width: var(--tn-mobile-inline-indicator-size);
     min-height: var(--tn-mobile-inline-indicator-size);
-    margin: 0;
+    margin: 0 0.25em 0 0;
     padding: 5px;
     box-sizing: border-box;
     background-clip: content-box;

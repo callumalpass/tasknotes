@@ -35,6 +35,8 @@ Task link overlays work in both Live Preview and Reading modes:
 - **Live Preview Mode**: Widgets hide when the cursor is within the wikilink range, allowing for easy editing.
 - **Reading Mode**: Widgets display with full functionality and integrate with the reading mode typography.
 
+On Obsidian mobile, long titles are ellipsized to fit the available line after the status and priority indicators, including in nested bullets. Enabled properties remain available in a horizontally scrollable strip that can flow onto the next line. Configure these properties under `Settings -> TaskNotes -> Features -> Inline Task Card Properties`.
+
 The overlays support drag-and-drop to calendar views and provide keyboard shortcuts for quick navigation (Ctrl/Cmd+Click to open the source file).
 
 ## Create New Inline Task Command
@@ -49,6 +51,8 @@ To turn the current line into a TaskNote, use `Convert to TaskNote` or the insta
 
 The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from `Settings -> TaskNotes -> Features` (`Show convert button next to checkboxes`). When enabled, a "convert" button appears next to content in edit mode. Clicking this button creates a new task note using the line text as the title and replaces the original line with a link to the new task file.
 This supports progressive conversion from draft notes to dedicated task files.
+
+With a selection, `Convert to TaskNote` uses the first selected line as the title and additional selected text as details. Text outside the selection is left in place. Selecting a whole line through the start of the next line (for example, Home then Shift+Down) does not include that next line in the conversion.
 
 ### Folder Configuration
 
