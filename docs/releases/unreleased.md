@@ -56,3 +56,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Disabled Google and Microsoft calendars are excluded from the combined event cache.
 - Google Calendar retry queues preserve concurrent edits and tasks queued while retries are running. Manual refresh reports failed calendars instead of reporting success with stale data.
 - (#2226) Cleaned up exported recurring-task exclusions to include only dates in the exported series, including the final day of all-day series. This is recurrence exclusion cleanup, not a confirmed fix for every Google Calendar 400 response. Thanks to @3zra47 for reporting.
+
+- Reminders are no longer lost during rescans or sleep. Missed reminders are recovered up to 24 hours back while Obsidian remains running, and completed or archived tasks no longer notify. See [Reminders](https://tasknotes.dev/features/reminders/#delivery-and-sleep).
+- Recurring-instance completion accepts the legacy CLI date field and rejects invalid or conflicting dates. Firefox extension origins can access the authenticated local API.
+- Webhooks now disable only after consecutive deliveries exhaust their retries, rather than after intermittent lifetime failures.
+- Concurrent timer actions no longer create duplicate active entries or publish stale timer data. Pomodoro-owned trackers end at the intended completion time after sleep and leave pre-existing manual trackers running. See [Time Management](https://tasknotes.dev/features/time-management/).

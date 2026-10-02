@@ -309,6 +309,7 @@ export class WebhookController extends BaseController {
 			if (response.status >= 200 && response.status < 300) {
 				delivery.status = "success";
 				webhook.successCount++;
+				webhook.consecutiveFailures = 0;
 				webhook.lastTriggered = new Date().toISOString();
 			} else {
 				throw new Error(`HTTP ${response.status}: ${response.text}`);
@@ -325,12 +326,13 @@ export class WebhookController extends BaseController {
 				}, delay);
 			} else {
 				delivery.status = "failed";
+				webhook.consecutiveFailures = (webhook.consecutiveFailures ?? 0) + 1;
 
-				// Disable webhook after too many failures
-				if (webhook.failureCount > 10) {
+				// Retry attempts remain cumulative telemetry, not a health streak.
+				if (webhook.consecutiveFailures > 10) {
 					webhook.active = false;
 					tasknotesLogger.warn(
-						`Webhook ${webhook.id} disabled after ${webhook.failureCount} failures`,
+						`Webhook ${webhook.id} disabled after ${webhook.consecutiveFailures} consecutive exhausted deliveries`,
 						{ category: "provider", operation: "webhook" }
 					);
 				}

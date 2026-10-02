@@ -322,7 +322,22 @@ export class TasksController extends BaseController {
 				return;
 			}
 
-			const { date } = await this.parseRequestBody<{ date?: string }>(req);
+			const { date, instanceDate: legacyDate } = await this.parseRequestBody<{
+				date?: string; instanceDate?: string;
+			}>(req);
+			if (date !== undefined && legacyDate !== undefined && date !== legacyDate) {
+				throw new Error("Conflicting date and instanceDate");
+			}
+			const requestedDate = date !== undefined ? date : legacyDate;
+			if (requestedDate !== undefined && (
+				typeof requestedDate !== "string" ||
+				!/^\d{4}-\d{2}-\d{2}(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?)?$/.test(requestedDate) ||
+				!Number.isFinite(new Date(requestedDate).getTime()) ||
+				!Number.isFinite(new Date(requestedDate.slice(0, 10)).getTime()) ||
+				new Date(requestedDate.slice(0, 10)).toISOString().slice(0, 10) !== requestedDate.slice(0, 10)
+			)) {
+				throw new Error("Date must be a valid ISO calendar date or timestamp");
+			}
 			const task = await this.cacheManager.getTaskInfo(taskId);
 
 			if (!task) {
@@ -330,7 +345,7 @@ export class TasksController extends BaseController {
 				return;
 			}
 
-			const instanceDate = date ? new Date(date) : undefined;
+			const instanceDate = requestedDate ? new Date(requestedDate) : undefined;
 			const updatedTask = await this.taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
 				task,
 				instanceDate
