@@ -39,3 +39,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Canonical type updates preserve concurrent external edits and return to conflict reconciliation instead of overwriting them.
 - The Relationships widget initially opens the first populated view and remembers an explicitly selected view for each note during the session. See [Relationships Widget](https://tasknotes.dev/features/inline-tasks/#relationships-widget).
 - (#2032) Mobile list reorder handles now support long-press dragging, cancellation and edge scrolling. Thanks to @spasche for reporting. See [Manual ordering](https://tasknotes.dev/views/task-list/#manual-ordering).
+- Date picker labels, quick actions, accessibility labels and invalid-input notices now follow the selected language.

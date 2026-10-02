@@ -2669,6 +2669,20 @@ export const en: TranslationTree = {
 		createOrOpenTaskWithTracking: "Create or open task and start time tracking",
 		rolloverOverdueScheduledTasks: "Postpone overdue scheduled tasks to today",
 	},
+	dateTimePicker: {
+		today: "Today",
+		tomorrow: "Tomorrow",
+		nextWeek: "Next week",
+		date: "Date",
+		time: "Time (optional)",
+		clearDate: "Clear date",
+		select: "Select",
+		naturalLanguagePlaceholder: "Tomorrow at 3pm",
+		naturalLanguageLabel: "Natural language date",
+		applyNaturalLanguage: "Apply natural language date",
+		openNativePicker: "Open native date picker",
+		invalidInput: "Could not find a date in that text.",
+	},
 	modals: {
 		deviceCode: {
 			title: "Google Calendar authorization",

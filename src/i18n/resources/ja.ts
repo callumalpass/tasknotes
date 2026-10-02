@@ -2686,6 +2686,20 @@ export const ja: TranslationTree = {
 		addProjectToCurrentTask: "現在のタスクにプロジェクトを追加",
 		addSubtaskToCurrentNote: "現在のノートにサブタスクを追加",
 	},
+	dateTimePicker: {
+		today: "今日",
+		tomorrow: "明日",
+		nextWeek: "来週",
+		date: "日付",
+		time: "時刻（任意）",
+		clearDate: "日付をクリア",
+		select: "選択",
+		naturalLanguagePlaceholder: "明日の午後3時",
+		naturalLanguageLabel: "自然言語での日付",
+		applyNaturalLanguage: "自然言語の日付を適用",
+		openNativePicker: "システムの日付選択を開く",
+		invalidInput: "このテキストから日付を見つけられませんでした。",
+	},
 	modals: {
 		deviceCode: {
 			title: "Googleカレンダー認証",

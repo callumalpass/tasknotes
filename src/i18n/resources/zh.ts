@@ -2572,6 +2572,20 @@ export const zh: TranslationTree = {
 		addProjectToCurrentTask: "向当前任务添加项目",
 		addSubtaskToCurrentNote: "向当前笔记添加子任务",
 	},
+	dateTimePicker: {
+		today: "今天",
+		tomorrow: "明天",
+		nextWeek: "下周",
+		date: "日期",
+		time: "时间（可选）",
+		clearDate: "清除日期",
+		select: "选择",
+		naturalLanguagePlaceholder: "明天下午3点",
+		naturalLanguageLabel: "自然语言日期",
+		applyNaturalLanguage: "应用自然语言日期",
+		openNativePicker: "打开系统日期选择器",
+		invalidInput: "无法在该文本中找到日期。",
+	},
 	modals: {
 		deviceCode: {
 			title: "谷歌日历授权",

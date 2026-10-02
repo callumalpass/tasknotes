@@ -2742,6 +2742,20 @@ export const pt: TranslationTree = {
 		addProjectToCurrentTask: "Adicionar projeto à tarefa atual",
 		addSubtaskToCurrentNote: "Adicionar subtarefa à nota atual",
 	},
+	dateTimePicker: {
+		today: "Hoje",
+		tomorrow: "Amanhã",
+		nextWeek: "Próxima semana",
+		date: "Data",
+		time: "Hora (opcional)",
+		clearDate: "Limpar data",
+		select: "Selecionar",
+		naturalLanguagePlaceholder: "Amanhã às 15h",
+		naturalLanguageLabel: "Data em linguagem natural",
+		applyNaturalLanguage: "Aplicar data em linguagem natural",
+		openNativePicker: "Abrir seletor de data nativo",
+		invalidInput: "Não foi possível encontrar uma data nesse texto.",
+	},
 	modals: {
 		deviceCode: {
 			title: "Autorização do Google Agenda",

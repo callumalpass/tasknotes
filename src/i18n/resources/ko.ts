@@ -2637,6 +2637,20 @@ export const ko: TranslationTree = {
 		addProjectToCurrentTask: "현재 작업에 프로젝트 추가",
 		addSubtaskToCurrentNote: "현재 노트에 하위 작업 추가",
 	},
+	dateTimePicker: {
+		today: "오늘",
+		tomorrow: "내일",
+		nextWeek: "다음 주",
+		date: "날짜",
+		time: "시간 (선택 사항)",
+		clearDate: "날짜 지우기",
+		select: "선택",
+		naturalLanguagePlaceholder: "내일 오후 3시",
+		naturalLanguageLabel: "자연어 날짜",
+		applyNaturalLanguage: "자연어 날짜 적용",
+		openNativePicker: "시스템 날짜 선택기 열기",
+		invalidInput: "해당 텍스트에서 날짜를 찾을 수 없습니다.",
+	},
 	modals: {
 		deviceCode: {
 			title: "Google 캘린더 인증",
