@@ -58,6 +58,25 @@ describe("provider cache and lifecycle", () => {
 		expect(service.refreshTimer).toBeNull();
 	});
 
+	it("does not restart the Microsoft periodic timer after destruction", async () => {
+		jest.useFakeTimers();
+		try {
+			const service: any = new MicrosoftCalendarService(providerPlugin() as any, oauth() as any);
+			const pending = deferred<void>();
+			service.refreshAllCalendars = jest.fn().mockReturnValue(pending.promise);
+			service.startRefreshTimer();
+			jest.advanceTimersByTime(15 * 60 * 1000);
+			expect(service.refreshAllCalendars).toHaveBeenCalledTimes(1);
+			service.destroy();
+			pending.resolve();
+			for (let i = 0; i < 10; i++) await Promise.resolve();
+			expect(service.refreshTimer).toBeNull();
+			expect(jest.getTimerCount()).toBe(0);
+		} finally {
+			jest.useRealTimers();
+		}
+	});
+
 	it.each([false, true])("reports Google total/partial failures and preserves success timestamp (%s)", async (partial) => {
 		const plugin = providerPlugin();
 		const service: any = new GoogleCalendarService(plugin as any, oauth() as any);

@@ -1,5 +1,7 @@
 import { ICSSubscriptionService } from "../../../src/services/ICSSubscriptionService";
 import { convertToGoogleRecurrence } from "../../../src/utils/rruleConverter";
+import { TaskCalendarSyncService } from "../../../src/services/TaskCalendarSyncService";
+import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 
 jest.unmock("rrule");
 jest.mock("rrule", () => jest.requireActual("../../../node_modules/rrule/dist/es5/rrule.js"));
@@ -35,6 +37,35 @@ describe("bounded real-library recurrence", () => {
 		expect(events.some((event: any) => event.start.startsWith("2026-01-01"))).toBe(false);
 		expect(events.some((event: any) => event.start.startsWith("2026-01-02"))).toBe(true);
 		expect(events.some((event: any) => event.start.startsWith("2026-01-03"))).toBe(false);
+	});
+
+	it("retains an old RECURRENCE-ID moved into the display window", () => {
+		const override = ["BEGIN:VEVENT", "UID:old", "RECURRENCE-ID:20100102T100000Z",
+			"DTSTART:20260102T140000Z", "DTEND:20260102T150000Z", "SUMMARY:Moved", "END:VEVENT"];
+		const input = feed("FREQ=DAILY;COUNT=20").replace("END:VCALENDAR", [...override, "END:VCALENDAR"].join("\r\n"));
+		const events = (service() as any).parseICS(input, "sub");
+		expect(events).toHaveLength(1);
+		expect(events[0].title).toBe("Moved");
+		expect(events[0].start).toBe("2026-01-02T14:00:00.000Z");
+	});
+
+	it("uses the exported all-day start when converting a timed task through the service", () => {
+		const plugin = PluginFactory.createMockPlugin();
+		plugin.statusManager.getStatusConfig = jest.fn().mockReturnValue(null);
+		plugin.priorityManager = { getPriorityConfig: jest.fn().mockReturnValue(null) };
+		plugin.settings.googleCalendarExport = {
+			enabled: true, createAsAllDay: true, syncTrigger: "scheduled",
+			targetCalendarId: "primary", eventTitleTemplate: "{{title}}", defaultEventDuration: 60,
+		} as any;
+		const sync: any = new TaskCalendarSyncService(plugin, {} as any);
+		const task = TaskFactory.createTask({
+			scheduled: "2026-01-01", recurrence: "DTSTART:20260101T090000Z;FREQ=DAILY;UNTIL=20260102",
+			recurrence_anchor: "scheduled", complete_instances: ["2026-01-02"],
+		});
+		const exported = sync.taskToCalendarEvent(task);
+		expect(exported.start).toEqual({ date: "2026-01-01" });
+		expect(exported.recurrence).toContain("EXDATE;VALUE=DATE:20260102");
+		sync.destroy();
 	});
 
 	it("validates DATE exports at midnight, retaining the final UNTIL day", () => {
