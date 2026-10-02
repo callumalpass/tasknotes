@@ -1,6 +1,11 @@
 import { TranslationTree } from "../types";
 
 export const ja: TranslationTree = {
+	migrationRecognition: {
+		review: "TaskNotes は {path} を変更せずに保持しました。旧形式のメタデータが不足しているか、編集されているか、他の型が含まれています。同期を完了して再起動してください。解決しない場合は、バックアップしたコピーを mdbase で移行し、型を確認してから再試行してください。",
+		waiting: "TaskNotes は {path} に mdbase.yaml のないメタデータを検出したため、別のコレクションを作成しませんでした。同期を完了するか、対応する設定をバックアップから復元してください。メタデータの到着時に移行を再試行します。",
+		support: "TaskNotes はカスタマイズされた補助ファイル {path} を保持しました。生成されたバージョンをバックアップから復元するか、コピーを確認して mdbase で移行し、再起動してください。",
+	},
 	onboarding: {
 		title: "TaskNotes を始める",
 		intro: "タスクは保管庫内の Markdown ノートです。コマンドパレットで次の3つの手順を試してください。",

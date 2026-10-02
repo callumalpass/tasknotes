@@ -2215,7 +2215,7 @@ describe("MdbaseSpecService", () => {
 			expect(plugin.app.vault.create).not.toHaveBeenCalled();
 			expect(plugin.emitter.trigger).toHaveBeenCalledWith(
 				"user-notice",
-				expect.objectContaining({ message: expect.stringContaining("left the existing") })
+				expect.objectContaining({ message: expect.stringContaining("preserved _types/task.md") })
 			);
 		});
 

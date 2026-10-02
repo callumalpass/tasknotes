@@ -1,0 +1,1 @@
+Exact historical writer output captured by the compatibility tester from shipped 4.4.0 source, using the current default settings to isolate writer shape. Type bytes are sourceType from historical-4.4.0/result.json. v4 config is retained; 4.12.0 uses the identical 4.10.0 v0.2 config because the captured collection was already upgraded. No task records were present.

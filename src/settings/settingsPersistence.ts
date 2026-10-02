@@ -72,7 +72,7 @@ export async function pluginDataFileExists(host: SettingsDataHost): Promise<bool
 			operation: "check-settings-data-file-existence",
 			error: error,
 		});
-		return false;
+		throw error;
 	}
 }
 
@@ -88,8 +88,14 @@ export async function loadPluginSettingsDataWithRetry(
 		return { data: loadedData, compromised: false };
 	}
 
-	if (!(await pluginDataFileExists(host))) {
-		return { data: null, compromised: false };
+	try {
+		if (!(await pluginDataFileExists(host))) {
+			return { data: null, compromised: false };
+		}
+	} catch {
+		// Unknown is not absent. Abort startup rather than saving defaults over
+		// possibly existing settings after an I/O or Sync existence-probe error.
+		return { data: null, compromised: true };
 	}
 
 	for (let attempt = 0; attempt < retryCount; attempt++) {

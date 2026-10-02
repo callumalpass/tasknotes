@@ -105,7 +105,7 @@ describe("settings persistence helpers", () => {
 		expect(host.loadData).toHaveBeenCalledTimes(2);
 	});
 
-	it("returns false when checking data file existence fails", async () => {
+	it("does not interpret an existence probe error as an absent settings file", async () => {
 		const host = createHost({
 			dir: ".obsidian/plugins/tasknotes",
 			dataFileExists: true,
@@ -113,13 +113,20 @@ describe("settings persistence helpers", () => {
 		host.app.vault.adapter.exists.mockRejectedValueOnce(new Error("adapter failed"));
 		jest.spyOn(console, "warn").mockImplementation(() => undefined);
 
-		await expect(pluginDataFileExists(host)).resolves.toBe(false);
+		await expect(pluginDataFileExists(host)).rejects.toThrow("adapter failed");
 		expect(console.warn).toHaveBeenCalledWith(
 			expect.stringContaining(
 				"[TaskNotes][Settings/SettingsPersistence][configuration][check-settings-data-file-existence] [TaskNotes] Could not check settings data file existence:"
 			),
 			expect.any(Error)
 		);
+	});
+
+	it("marks settings as compromised when the existence probe fails after a null read", async () => {
+		const host = createHost({ dir: ".obsidian/plugins/tasknotes", loadResults: [null] });
+		host.app.vault.adapter.exists.mockRejectedValueOnce(new Error("I/O error"));
+		jest.spyOn(console, "warn").mockImplementation(() => undefined);
+		await expect(loadPluginSettingsDataWithRetry(host)).resolves.toEqual({ data: null, compromised: true });
 	});
 
 	it("migrates a legacy custom property before indexing without dropping colliding names", () => {

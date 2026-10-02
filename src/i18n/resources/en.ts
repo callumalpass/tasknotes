@@ -1,6 +1,11 @@
 import { TranslationTree } from "../types";
 
 export const en: TranslationTree = {
+	migrationRecognition: {
+		review: "TaskNotes preserved {path}: legacy metadata is missing, edited, or includes other types. Finish syncing and restart; otherwise migrate a backed-up copy with mdbase and review the type before retrying.",
+		waiting: "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives.",
+		support: "TaskNotes preserved customized support file {path}. Restore the generated version from a backup or review and migrate a copy with mdbase, then restart.",
+	},
 	onboarding: {
 		title: "Start here with TaskNotes",
 		intro: "Tasks are Markdown notes in your vault. Use the command palette for these three steps.",
