@@ -322,7 +322,21 @@ export class TasksController extends BaseController {
 				return;
 			}
 
-			const { date } = await this.parseRequestBody<{ date?: string }>(req);
+			const { date, instanceDate: legacyDate } = await this.parseRequestBody<{
+				date?: string; instanceDate?: string;
+			}>(req);
+			if (date !== undefined && legacyDate !== undefined && date !== legacyDate) {
+				throw new Error("Conflicting date and instanceDate");
+			}
+			const requestedDate = date !== undefined ? date : legacyDate;
+			if (requestedDate !== undefined && (
+				typeof requestedDate !== "string" ||
+				!/^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ||
+				!Number.isFinite(new Date(requestedDate).getTime()) ||
+				new Date(requestedDate).toISOString().slice(0, 10) !== requestedDate
+			)) {
+				throw new Error("Date must be a valid YYYY-MM-DD calendar date");
+			}
 			const task = await this.cacheManager.getTaskInfo(taskId);
 
 			if (!task) {
@@ -330,7 +344,7 @@ export class TasksController extends BaseController {
 				return;
 			}
 
-			const instanceDate = date ? new Date(date) : undefined;
+			const instanceDate = requestedDate ? new Date(requestedDate) : undefined;
 			const updatedTask = await this.taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
 				task,
 				instanceDate

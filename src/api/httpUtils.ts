@@ -3,7 +3,7 @@ import type { HTTPRequestLike, HTTPResponseLike } from "./httpTypes";
 const DEFAULT_ALLOW_METHODS = "GET, POST, PUT, DELETE, OPTIONS";
 const DEFAULT_ALLOW_HEADERS = "Content-Type, Authorization";
 const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
-const BROWSER_EXTENSION_PROTOCOLS = new Set(["chrome-extension:"]);
+const BROWSER_EXTENSION_PROTOCOLS = new Set(["chrome-extension:", "moz-extension:"]);
 
 export interface CORSHeaderOptions {
 	allowMethods?: string;

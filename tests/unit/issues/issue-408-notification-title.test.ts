@@ -60,6 +60,10 @@ describe("Issue #408: reminder system notification title", () => {
 				mapFromFrontmatter: jest.fn().mockReturnValue(task),
 			},
 			apiService: undefined,
+			statusManager: {
+				getCompletedStatuses: () => ["done"],
+				isCompletedStatus: (status: string) => status === "done",
+			},
 		};
 		const service = new NotificationService(plugin as never);
 
