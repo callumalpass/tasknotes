@@ -296,7 +296,12 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 					: typeof existing === "string"
 						? [existing]
 						: [];
-				parsed.userFields[userField.id] = [...existingValues, ...values];
+				// Newer cores already extract linked values; keep the fallback for
+				// older cores without appending those same links a second time.
+				parsed.userFields[userField.id] = [
+					...existingValues,
+					...values.filter((value) => !existingValues.includes(value)),
+				];
 			} else {
 				parsed.userFields[userField.id] = values[values.length - 1];
 			}

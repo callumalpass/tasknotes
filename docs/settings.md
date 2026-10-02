@@ -26,7 +26,9 @@ These settings answer different questions:
 
 Under **Properties**, add a custom property, then open its detail page to set its display name, key, type, and optional default. NLP triggers appear in an inline group in the same editor. Advanced autosuggestion filters remain on a separate detail page. New custom properties are added to the form configuration automatically.
 
-Changing a property mapping does **not** rename properties in existing notes. Likewise, changing a status value or deleting a configured property does not rewrite existing task frontmatter. Plan any vault-wide migration separately.
+Custom property keys are trimmed when loading, editing and saving settings. Settings edits require a non-empty key that is not already used by another property (case-insensitive). Invalid edits retain the last accepted key.
+
+Changing or trimming a property mapping does **not** rename properties in existing notes. Likewise, changing a status value or deleting a configured property does not rewrite existing task frontmatter. Plan any vault-wide migration separately.
 
 ## Global preferences and Bases views
 

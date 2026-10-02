@@ -491,19 +491,17 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 							},
 						}
 					),
-					ctx.field(
-						field,
-						"key",
-						`${id}.key`,
-						t("settings.taskProperties.customUserFields.fields.propertyKey"),
-						{
-							validate: (value) => validatePropertyKey(ctx, value, field.id),
-							onChange: ctx.rebuild,
-							desc: ctx.t(
-								"settings.native.changingThisKeyDoesNotMigrateExistingNotes"
-							),
-						}
-					),
+					ctx.text(`${id}.key`, {
+						name: t("settings.taskProperties.customUserFields.fields.propertyKey"),
+						getValue: () => field.key,
+						validate: (value) => validatePropertyKey(ctx, value.trim(), field.id),
+						setValue: (value) => {
+							field.key = value.trim();
+							ctx.rebuild();
+							ctx.save();
+						},
+						desc: ctx.t("settings.native.changingThisKeyDoesNotMigrateExistingNotes"),
+					}),
 					ctx.field(
 						field,
 						"type",

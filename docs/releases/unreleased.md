@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Trim surrounding whitespace from custom property keys when loading, editing and saving settings, while retaining native validation for empty and colliding keys. This does not rename properties in existing notes. Thanks to @prethrive for reporting (#2269). See [Settings](https://tasknotes.dev/settings/).
+- Prevent custom list fields from duplicating wikilinks already extracted by the shared parser.
