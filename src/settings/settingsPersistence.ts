@@ -167,6 +167,14 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		migratedData.userField = { ...legacy, enabled: false };
 	}
 
+	// Normalize accidental surrounding whitespace in configured frontmatter keys.
+	if (Array.isArray(migratedData.userFields)) {
+		migratedData.userFields = migratedData.userFields.map((field) => ({
+			...field,
+			key: typeof field.key === "string" ? field.key.trim() : field.key,
+		}));
+	}
+
 	// Migration: Initialize modal fields configuration if not present.
 	if (!migratedData.modalFieldsConfig) {
 		migratedData.modalFieldsConfig = initializeFieldConfig(undefined, migratedData.userFields);
@@ -218,6 +226,11 @@ function buildTaskCreationDefaults(
 }
 
 export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): SettingsBuildResult {
+	const normalizedUserFieldPropertyKeys = Boolean(
+		data?.userFields?.some(
+			(field) => typeof field.key === "string" && field.key !== field.key.trim()
+		)
+	);
 	const loadedData = migrateLoadedSettingsData(data);
 	const migratedLegacyCustomFilenameTemplate =
 		data?.taskFilenameFormat !== "custom" &&
@@ -265,7 +278,8 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		shouldPersistMigratedSettings:
 			hasMissingMigratedSettings(loadedData) ||
 			migratedLegacyCustomFilenameTemplate ||
-			migratedParentNoteTaskCreationDefault,
+			migratedParentNoteTaskCreationDefault ||
+			normalizedUserFieldPropertyKeys,
 	};
 }
 
@@ -277,6 +291,9 @@ export function buildSettingsDataForSave(
 	const settingsKeys = Object.keys(DEFAULT_SETTINGS) as (keyof TaskNotesSettings)[];
 	for (const key of settingsKeys) {
 		data[key] = settings[key];
+	}
+	if (settings.userFields) {
+		data.userFields = settings.userFields.map((field) => ({ ...field, key: field.key.trim() }));
 	}
 	return data;
 }
