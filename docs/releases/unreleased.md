@@ -70,6 +70,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Rapid direct status edits now reconcile each completion and reopening in order, including recurring occurrence notes. Thanks to @mudnug for reporting #2328.
 - Changing task identification settings now refreshes the task index, including already-existing notes recognized by the new property.
 - Canonical type updates require atomic file updates, preserve concurrent external edits and return to conflict reconciliation instead of overwriting them.
+- mdbase beta upgrades now back up and journal type, contract, schema, and configuration changes together, roll back failed writes, and show pending recovery paths after restart. Task notes are not rewritten. See [Upgrading from v4 to v5](https://tasknotes.dev/migration-v4-to-v5/#interrupted-updates-and-blocked-collections).
+- Duplicate beta types are moved into unique recovery folders without discarding concurrent edits, and are kept when records explicitly reference them. Startup now lists conflicting provider paths and refuses symlinked metadata folders rather than reporting a successful upgrade.
 - The Relationships widget initially opens the first populated view and remembers an explicitly selected view for each note during the session. See [Relationships Widget](https://tasknotes.dev/features/inline-tasks/#relationships-widget).
 - (#2032) Mobile list reorder handles now support long-press dragging, cancellation and edge scrolling. Thanks to @spasche for reporting. See [Manual ordering](https://tasknotes.dev/views/task-list/#manual-ordering).
 - Date picker labels, quick actions, accessibility labels and invalid-input notices now follow the selected language.

@@ -67,6 +67,11 @@ function memoryVault(entries: Record<string, string>) {
 			},
 			write: async (p: string, content: string) => { files.set(p, content); parents(p); },
 			remove: async (p: string) => { files.delete(p); },
+			rename: async (from: string, to: string) => {
+				const content = files.get(from);
+				if (content === undefined) throw new Error(`Missing file: ${from}`);
+				files.set(to, content); files.delete(from); parents(to);
+			},
 			mkdir: async (p: string) => { folders.add(p); parents(`${p}/x`); },
 			list: async (folder: string) => {
 				const prefix = folder ? `${folder}/` : "";
@@ -134,7 +139,9 @@ describe("upgrading collections written by shipped TaskNotes releases", () => {
 			// Already current: additive App config only; omitted membership keys retain engine defaults.
 			const { "mdbase.yaml": config, ...rest } = Object.fromEntries(files);
 			const { "mdbase.yaml": _previous, ...previous } = before;
-			expect(rest).toEqual(previous);
+			expect(Object.fromEntries(Object.entries(rest).filter(([path]) => !path.startsWith(".tasknotes/migrations/")))).toEqual(previous);
+			const configBackups = [...files].filter(([path]) => path.startsWith(".tasknotes/migrations/") && path.endsWith("/mdbase.yaml.bak"));
+			expect(configBackups.map(([, content]) => content)).toEqual([_previous]);
 			expect(YAML.parse(config).settings.explicit_type_keys).toBeUndefined();
 			expect(YAML.parse(config).settings.record_extensions).toEqual(expect.arrayContaining(["md", "base"]));
 			expect(notices).toEqual([]);

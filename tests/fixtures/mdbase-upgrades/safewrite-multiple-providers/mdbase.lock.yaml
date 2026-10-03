@@ -1,0 +1,42 @@
+{
+  "kind": "mdbase.type-pack-lock",
+  "lock_version": 1,
+  "packs": [
+    {
+      "id": "tasknotes.task",
+      "version": "0.3.0-rc.17",
+      "digest": "sha256:e99c7c3f70dad0e07f62588b4562ae8080c62fa702f2221dfc80e3ab3cb371ee",
+      "installed_by": "dev.tasknotes.app",
+      "resources": [
+        {
+          "kind": "contract",
+          "mode": "managed",
+          "source": "contracts/tasknotes.task/0.3.0-rc.5.md",
+          "target": "_contracts/tasknotes.task.md",
+          "digest": "sha256:ecadd00700e249940f4244aaa5b5985a96557d13340463ec491dfa5e89b032a4"
+        },
+        {
+          "kind": "type",
+          "mode": "seed",
+          "source": "types/tasknotes-task/5.md",
+          "target": "_types/task.md",
+          "digest": "sha256:b3cf8dbe8885b331c494d2eeb36abfb052890e06b757877d655c269e666487dc"
+        },
+        {
+          "kind": "schema",
+          "mode": "managed",
+          "source": "schemas/tasknotes.task/0.3.0-rc.5.schema.json",
+          "target": "_schemas/tasknotes/tasknotes-task.schema.json",
+          "digest": "sha256:aec95578a093be95cbce0fb500964e7aeaeeacc611624fc2893074637dbd4125"
+        },
+        {
+          "kind": "schema",
+          "mode": "managed",
+          "source": "schemas/tasknotes.task.binding/0.3.0-rc.5.schema.json",
+          "target": "_schemas/tasknotes/tasknotes-task-binding.schema.json",
+          "digest": "sha256:5b38e8a1c426b7f7fa92d8353fe35dd98e632305cbb15ffccde387473166b267"
+        }
+      ]
+    }
+  ]
+}

@@ -14,7 +14,7 @@ TaskNotes keeps task content in your vault and configuration in the plugin data 
 | Base views | `TaskNotes/Views/` or custom paths | Filters, formulas, layout, and custom views |
 | Plugin settings | `.obsidian/plugins/tasknotes/data.json` | Field mapping, statuses, defaults, integrations, and view command paths |
 | Daily notes | Your daily-note folder | Pomodoro history when daily-note storage is enabled |
-| mdbase configuration | `tasknotes.yaml`, `mdbase.yaml`, or `.mdbase/` when configured | Shared collection and schema configuration |
+| mdbase configuration | `mdbase.yaml`, configured type/contract folders, `_schemas/`, pack lock/provisions, and `.tasknotes/migrations/` when configured | Shared collection metadata, provenance, and migration recovery copies |
 
 Treat `data.json` as sensitive because integration configuration, such as webhook URLs and calendar subscription URLs, can include private values. OAuth credentials, calendar account tokens, and the HTTP API token are kept in Obsidian Secret Storage on each device instead, so they are not part of a vault backup and must be set up again when restoring onto a new device. Store backups accordingly.
 
@@ -36,6 +36,12 @@ File-history sync is useful, but it is not a substitute for a separate tested ba
 5. Run **TaskNotes: Refresh cache** and open one default Base.
 
 If provider credentials have expired or were intentionally excluded from the backup, reconnect those integrations instead of restoring stale tokens.
+
+## Interrupted mdbase metadata updates
+
+TaskNotes journals v0.2 and beta metadata upgrades and automatically recovers interrupted writes on restart. If a file has changed externally, recovery stops and the notice lists the pending journal, backup folder, and blocked file. Keep those copies. Close all syncing Obsidian instances, back up the current vault, and compare the active files with the backup manifest before restoring the config, task type, and support resources together. Preserve external edits separately; do not delete the pending journal to bypass the conflict. Resolve permissions or the conflicting revision, then reload TaskNotes. Task notes are not rewritten by migration.
+
+See [Upgrading from v4 to v5](../migration-v4-to-v5.md#interrupted-updates-and-blocked-collections) for duplicate-provider and symlink checks.
 
 ## Reset configuration safely
 

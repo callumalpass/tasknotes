@@ -27,6 +27,11 @@ export function recognitionVault(entries: Record<string, string>) {
 				return content;
 			},
 			write: async (path: string, content: string) => { files.set(path, content); parents(path); },
+			rename: async (from: string, to: string) => {
+				const content = files.get(from);
+				if (content === undefined) throw new Error(`Missing file: ${from}`);
+				files.set(to, content); files.delete(from); parents(to);
+			},
 			remove: async (path: string) => { files.delete(path); },
 			list: async (folder: string) => {
 				const prefix = `${folder}/`;

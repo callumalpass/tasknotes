@@ -21,6 +21,11 @@ export const ko: TranslationTree = {
 		fixed: "승인한 변경 사항을 저장했습니다. 백업은 .tasknotes/migrations에 있습니다. 남은 오류를 확인하세요.",
 		error: "컬렉션 확인 또는 수정이 중단되었습니다. 승인하지 않은 변경은 없습니다.",
 	},
+	mdbaseSafety: {
+		blocked: "TaskNotes가 mdbase 메타데이터 업데이트를 중단했습니다. {details} 표시된 파일과 복구 사본을 확인하고 충돌 또는 권한 문제를 해결한 뒤 TaskNotes를 다시 불러오세요. 작업 파일은 변경되지 않았습니다.",
+		multiple: "TaskNotes 유형이 여러 개 있습니다: {paths}. 정식 제공자를 하나만 유지하거나 나머지를 유형 폴더 밖으로 옮긴 뒤 TaskNotes를 다시 불러오세요. TaskNotes는 마지막으로 확인된 유효한 설정을 유지했습니다.",
+		referenced: "TaskNotes가 {typePath}을 유지했습니다. {recordPath}에서 이 유형을 명시적으로 참조합니다. 제공자를 옮기기 전에 유형 소속을 확인하세요. 작업 파일은 변경되지 않았습니다.",
+	},
 	onboarding: {
 		title: "TaskNotes 시작하기",
 		intro: "작업은 보관함의 Markdown 노트입니다. 명령 팔레트에서 다음 세 단계를 따라 해 보세요.",

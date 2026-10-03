@@ -21,6 +21,11 @@ export const es: TranslationTree = {
 		fixed: "Cambios aprobados guardados. Las copias están en .tasknotes/migrations. Comprueba los errores restantes.",
 		error: "Comprobación o reparación de la colección detenida. No se hicieron cambios sin aprobación.",
 	},
+	mdbaseSafety: {
+		blocked: "TaskNotes detuvo la actualización de los metadatos de mdbase. {details} Revise el archivo indicado y las copias de recuperación, resuelva el conflicto o los permisos y vuelva a cargar TaskNotes. Los archivos de tareas no se modificaron.",
+		multiple: "Varios tipos de TaskNotes: {paths}. Conserve un proveedor canónico o mueva los demás fuera de la carpeta de tipos y vuelva a cargar TaskNotes. TaskNotes conservó la última configuración válida.",
+		referenced: "TaskNotes conservó {typePath}: {recordPath} hace referencia explícita a este tipo. Revise su pertenencia antes de mover el proveedor; los archivos de tareas no se modificaron.",
+	},
 	onboarding: {
 		title: "Primeros pasos con TaskNotes",
 		intro: "Las tareas son notas Markdown en tu bóveda. Usa la paleta de comandos para estos tres pasos.",

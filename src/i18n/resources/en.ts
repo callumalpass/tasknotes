@@ -21,6 +21,11 @@ export const en: TranslationTree = {
 		fixed: "Approved changes saved; backups are in {backupFolder}, please check remaining errors.",
 		error: "Collection check or repair stopped. No unapproved changes were made.",
 	},
+	mdbaseSafety: {
+		blocked: "TaskNotes stopped the mdbase metadata update. {details} Review the listed file and recovery copies, resolve the conflict or permissions, then reload TaskNotes. Task files were not changed.",
+		multiple: "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration.",
+		referenced: "TaskNotes kept {typePath}: {recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.",
+	},
 	onboarding: {
 		title: "Start here with TaskNotes",
 		intro: "Tasks are Markdown notes in your vault. Use the command palette for these three steps.",

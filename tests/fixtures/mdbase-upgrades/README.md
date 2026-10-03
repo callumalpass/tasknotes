@@ -27,6 +27,8 @@ Additional captured collections (also immutable):
 - `meaning-folders/`: MATRIX-02 live 4.13.7 → beta.5 folder-exclusion collection; original task/template bytes retained and transient state omitted. Includes a PATHS-04 real beta.0 `relationships.base` capture from the paths audit, which was invisible before additive Base configuration.
 - `meaning-minimal/`: MATRIX-08 live 4.13.7 → beta.5 collection with one dateless tag-identified task; captured metadata and task bytes retained, `.obsidian/` and `.mdbase/` state omitted.
 
+`mdbaseSafeWrites.test.ts` reuses the exact beta0/custom and duplicate-beta captures for fault-injected writes and membership/cleanup regressions. `safewrite-multiple-providers/` is compat's captured multiple-provider collection (see its README).
+
 Each build ran its own `MdbaseSpecService` (`generate()` for new collections,
 `initialize()` on load) against an in-memory vault holding two task notes and
 one unrelated note.

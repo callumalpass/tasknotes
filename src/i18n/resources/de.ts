@@ -21,6 +21,11 @@ export const de: TranslationTree = {
 		fixed: "Genehmigte Änderungen gespeichert. Sicherungen befinden sich unter .tasknotes/migrations. Verbleibende Fehler prüfen.",
 		error: "Prüfung oder Korrektur der Sammlung gestoppt. Es wurden keine ungenehmigten Änderungen vorgenommen.",
 	},
+	mdbaseSafety: {
+		blocked: "TaskNotes hat die Aktualisierung der mdbase-Metadaten gestoppt. {details} Prüfen Sie die angegebene Datei und die Sicherungskopien, beheben Sie den Konflikt oder die Zugriffsrechte und laden Sie TaskNotes neu. Aufgabendateien wurden nicht geändert.",
+		multiple: "Mehrere TaskNotes-Typen: {paths}. Behalten Sie einen kanonischen Anbieter oder verschieben Sie die anderen aus dem Typenordner und laden Sie TaskNotes neu. TaskNotes hat die letzte gültige Konfiguration beibehalten.",
+		referenced: "TaskNotes hat {typePath} beibehalten: {recordPath} verweist ausdrücklich auf diesen Typ. Prüfen Sie die Typzugehörigkeit, bevor Sie den Anbieter verschieben; Aufgabendateien wurden nicht geändert.",
+	},
 	onboarding: {
 		title: "Erste Schritte mit TaskNotes",
 		intro: "Aufgaben sind Markdown-Notizen in deinem Vault. Nutze die Befehlspalette für diese drei Schritte.",

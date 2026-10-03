@@ -43,6 +43,12 @@ function harness(entries: Record<string, string>) {
 			exists: async (p: string) => files.has(p) || folders.has(p),
 			read: async (p: string) => { if (!files.has(p)) throw new Error(`Missing ${p}`); return files.get(p); },
 			write: async (p: string, content: string) => { files.set(p, content); parents(p); },
+			rename: async (from: string, to: string) => {
+				const content = files.get(from);
+				if (content === undefined) throw new Error(`Missing ${from}`);
+				files.set(to, content); files.delete(from); parents(to);
+			},
+			remove: async (p: string) => { files.delete(p); },
 			list: async (folder: string) => {
 				const prefix = `${folder}/`;
 				const direct = (p: string) => p.startsWith(prefix) && !p.slice(prefix.length).includes("/");

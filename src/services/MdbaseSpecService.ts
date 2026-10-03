@@ -6,7 +6,9 @@ import { hasLegacyFieldsSchema, isKnownLegacySupport, recognizeLegacyTaskType } 
 import { migrationRecognitionNotice } from "./mdbase/recognitionNotices";
 import { addAppCollectionConfig, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
 import { upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
-import { backupCollectionFile } from "./mdbase/backups";
+import { MetadataQueue, SafeMetadata } from "./mdbase/SafeMetadata";
+import { MetadataTransaction } from "./mdbase/MetadataTransaction";
+import { findExplicitTypeReference } from "./mdbase/ExplicitTypeReferences";
 import { remapMdbaseTypeReferences } from "./mdbaseTypeReferences";
 import {
 	buildTaskNotesMdbaseResources,
@@ -167,9 +169,22 @@ export class MdbaseSpecService {
 	private reconcilePromise: Promise<void> | null = null;
 	private writeInProgress = false;
 	private pendingUserNotices: string[] = [];
+	private readonly metadataQueue = new MetadataQueue();
+	private readonly metadataIO: SafeMetadata;
+	private readonly metadataTransaction: MetadataTransaction;
+	private lastBlockedNotice: string | null = null;
+	private deferredMetadataNotices: string[] | null = null;
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
+		this.metadataIO = new SafeMetadata(plugin.app.vault.adapter);
+		this.metadataTransaction = new MetadataTransaction(
+			this.metadataIO,
+			(path) => this.ensureFolderPath(path),
+			async (path) => {
+				if (await plugin.app.vault.adapter.exists(path)) await plugin.app.vault.adapter.remove(path);
+			}
+		);
 	}
 
 	/**
@@ -182,6 +197,7 @@ export class MdbaseSpecService {
 		}
 
 		try {
+			await this.metadataTransaction.recover();
 			await this.recoverInterruptedV02Migration();
 			const existingCollection = await this.readExistingCollection();
 			const specFamily = getSpecFamily(existingCollection.config?.spec_version);
@@ -202,13 +218,8 @@ export class MdbaseSpecService {
 				operation: "canonical-settings-initialize",
 				error,
 			});
-			const supportPath = error instanceof Error &&
-				error.message.startsWith("Preserved customized mdbase support resource: ")
-				? error.message.slice("Preserved customized mdbase support resource: ".length)
-				: null;
-			this.publishNotice(supportPath
-				? migrationRecognitionNotice(this.plugin, "support", { path: supportPath })
-				: "TaskNotes could not initialize the canonical mdbase configuration. Plugin settings remain active."
+			this.publishNotice(
+				this.safetyNotice(String(error))
 			);
 		} finally {
 			this.registerCanonicalWatchers();
@@ -221,6 +232,16 @@ export class MdbaseSpecService {
 	 * Ambiguous collections are left unchanged.
 	 */
 	private async migrateGeneratedV02Collection(
+		existingCollection: ExistingCollection
+	): Promise<boolean> {
+		return this.metadataQueue.run(async () => {
+			await this.recoverInterruptedV02Migration();
+			await this.metadataIO.assertPhysical(this.resolveTypesFolder(existingCollection));
+			return this.migrateGeneratedV02CollectionSnapshot(existingCollection);
+		});
+	}
+
+	private async migrateGeneratedV02CollectionSnapshot(
 		existingCollection: ExistingCollection
 	): Promise<boolean> {
 		// Register the folder before scanning so delayed Sync type arrivals retry.
@@ -285,25 +306,29 @@ export class MdbaseSpecService {
 			return false;
 		}
 		const intendedWrites: FileSnapshot[] = [
-			{ path: resources.paths.contract, content: resources.contractDocument },
 			{ path: resources.paths.taskSchema, content: resources.taskSchemaDocument },
 			{ path: resources.paths.bindingSchema, content: resources.bindingSchemaDocument },
 			{ path: legacyType.path, content: resources.typeDocument },
+			{ path: resources.paths.contract, content: resources.contractDocument },
 			{ path: "mdbase.yaml", content: migratedConfig },
 		];
-		const backupFolder = await this.writeV02MigrationBackup(sourceConfig, legacyType);
+		const backupFolder = await this.writeV02MigrationBackup(sourceConfig, legacyType, snapshots);
 		const journal: MigrationJournal = { backupFolder, snapshots, intendedWrites };
-		await this.writeMigrationJournal(journal);
-
 		this.writeInProgress = true;
 		try {
+			await this.writeMigrationJournal(journal);
 			await this.assertSnapshotsUnchanged(snapshots);
+			const progress = snapshots.map((snapshot) => ({ ...snapshot }));
 			for (const intendedWrite of intendedWrites) {
+				await this.assertSnapshotsUnchanged(progress);
 				const snapshot = snapshots.find(({ path }) => path === intendedWrite.path);
 				if (!snapshot || intendedWrite.content === null) {
 					throw new Error(`Invalid migration write plan for ${intendedWrite.path}`);
 				}
 				await this.writeFileIfUnchanged(snapshot, intendedWrite.content);
+				const progressEntry = progress.find((entry) => entry.path === intendedWrite.path);
+				if (!progressEntry) throw new Error(`Missing migration progress: ${intendedWrite.path}`);
+				progressEntry.content = intendedWrite.content;
 				if (
 					intendedWrite.path === resources.paths.contract ||
 					intendedWrite.path === resources.paths.taskSchema ||
@@ -312,6 +337,7 @@ export class MdbaseSpecService {
 					this.canonicalResourcePaths.add(intendedWrite.path);
 				}
 			}
+			await this.assertSnapshotsUnchanged(progress);
 			const state = await this.verifyMigratedV03Collection(legacyType.path, resources);
 			await this.removeMigrationJournal();
 			this.canonicalTypesFolder = typesFolder;
@@ -342,7 +368,7 @@ export class MdbaseSpecService {
 			});
 			if (rollbackError) {
 				this.publishNotice(
-					`TaskNotes stopped the mdbase update after another change was detected. It did not overwrite that change; recovery copies and the pending migration record are in ${backupFolder}.`
+					this.safetyNotice(`Pending record: ${MDBASE_MIGRATION_PENDING_PATH}; backups: ${backupFolder}; blocked file: ${rollbackError instanceof Error ? rollbackError.message : "Unknown recovery error"}`)
 				);
 			} else {
 				this.publishNotice(
@@ -447,6 +473,7 @@ export class MdbaseSpecService {
 		const adapter = this.plugin.app.vault.adapter;
 		const snapshots: FileSnapshot[] = [];
 		for (const path of uniqueStrings(paths)) {
+			await this.metadataIO.assertPhysical(path);
 			snapshots.push({
 				path,
 				content: (await adapter.exists(path)) ? await adapter.read(path) : null,
@@ -495,8 +522,8 @@ export class MdbaseSpecService {
 		if (await this.plugin.app.vault.adapter.exists(MDBASE_MIGRATION_PENDING_PATH)) {
 			throw new Error("An unresolved mdbase metadata migration is already pending.");
 		}
-		await this.plugin.app.vault.create(
-			MDBASE_MIGRATION_PENDING_PATH,
+		await this.metadataIO.replace(
+			{ path: MDBASE_MIGRATION_PENDING_PATH, content: null },
 			JSON.stringify(journal, null, 2) + "\n"
 		);
 	}
@@ -510,9 +537,11 @@ export class MdbaseSpecService {
 	private async recoverInterruptedV02Migration(): Promise<void> {
 		const adapter = this.plugin.app.vault.adapter;
 		if (!(await adapter.exists(MDBASE_MIGRATION_PENDING_PATH))) return;
+		let recoveryFolder = "see pending record";
 		try {
 			const parsed = JSON.parse(await adapter.read(MDBASE_MIGRATION_PENDING_PATH)) as unknown;
 			const journal = parseMigrationJournal(parsed);
+			recoveryFolder = journal.backupFolder;
 			const configSnapshot = journal.snapshots.find(({ path }) => path === "mdbase.yaml");
 			const typeSnapshot = journal.snapshots.find(({ path }) => path.endsWith("/task.md"));
 			if (
@@ -523,6 +552,12 @@ export class MdbaseSpecService {
 				(await adapter.read(`${journal.backupFolder}/task.md.bak`)) !== typeSnapshot.content
 			) {
 				throw new Error("The migration recovery copies do not match the pending record.");
+			}
+			for (const snapshot of journal.snapshots) {
+				if (snapshot.content === null || snapshot.path === "mdbase.yaml" || snapshot.path === typeSnapshot.path) continue;
+				// Older journals only stored config/type; retain backward recovery support.
+				const backupPath = `${journal.backupFolder}/${snapshot.path}.bak`;
+				if (await adapter.exists(backupPath) && await adapter.read(backupPath) !== snapshot.content) throw new Error(`Recovery backup mismatch: ${snapshot.path}`);
 			}
 			await this.restoreSnapshotsIfUnchanged(journal);
 			await this.removeMigrationJournal();
@@ -536,14 +571,15 @@ export class MdbaseSpecService {
 				error,
 			});
 			throw new Error(
-				`An interrupted mdbase migration needs manual review; TaskNotes left all files unchanged: ${String(error)}`
+				`Pending record: ${MDBASE_MIGRATION_PENDING_PATH}; backups: ${recoveryFolder}; blocked file: ${String(error)}. Review the backup manifest before restoring metadata; do not replace changed files blindly.`
 			);
 		}
 	}
 
 	private async writeV02MigrationBackup(
 		configContent: string,
-		legacyType: LegacyTaskNotesTypeState
+		legacyType: LegacyTaskNotesTypeState,
+		snapshots: FileSnapshot[]
 	): Promise<string> {
 		const suffix = new Date().toISOString().replace(/[:.]/g, "-");
 		const baseFolder = `${MDBASE_MIGRATION_BACKUP_FOLDER}/mdbase-v0.2-${suffix}`;
@@ -554,10 +590,17 @@ export class MdbaseSpecService {
 			attempt += 1;
 		}
 		await this.ensureFolderPath(folder);
-		await this.plugin.app.vault.create(`${folder}/mdbase.yaml.bak`, configContent);
-		await this.plugin.app.vault.create(`${folder}/task.md.bak`, legacyType.content);
-		await this.plugin.app.vault.create(
-			`${folder}/manifest.json`,
+		await this.metadataIO.replace({ path: `${folder}/mdbase.yaml.bak`, content: null }, configContent);
+		await this.metadataIO.replace({ path: `${folder}/task.md.bak`, content: null }, legacyType.content);
+		for (const snapshot of snapshots) {
+			if (snapshot.content === null) continue;
+			const path = `${folder}/${snapshot.path}.bak`;
+			if (path === `${folder}/mdbase.yaml.bak`) continue;
+			await this.ensureFolderPath(path.split("/").slice(0, -1).join("/"));
+			await this.metadataIO.replace({ path, content: null }, snapshot.content);
+		}
+		await this.metadataIO.replace(
+			{ path: `${folder}/manifest.json`, content: null },
 			JSON.stringify(
 				{
 					created_at: new Date().toISOString(),
@@ -565,6 +608,7 @@ export class MdbaseSpecService {
 					files: {
 						"mdbase.yaml": "mdbase.yaml.bak",
 						[legacyType.path]: "task.md.bak",
+						...Object.fromEntries(snapshots.filter((snapshot) => snapshot.content !== null && snapshot.path !== "mdbase.yaml" && snapshot.path !== legacyType.path).map((snapshot) => [snapshot.path, `${snapshot.path}.bak`])),
 					},
 				},
 				null,
@@ -698,11 +742,48 @@ export class MdbaseSpecService {
 	private async syncSettingsToCanonicalType(
 		existingCollection: ExistingCollection
 	): Promise<void> {
+		return this.metadataQueue.run(async () => {
+			await this.metadataIO.assertPhysical(this.resolveTypesFolder(existingCollection));
+			if (existingCollection.exists && await this.readGeneratedV02TaskType(existingCollection, false)) {
+				// Already inside the shared queue: avoid a nested queue/transaction.
+				await this.recoverInterruptedV02Migration();
+				await this.migrateGeneratedV02CollectionSnapshot(existingCollection);
+				return;
+			}
+			const previous = this.writeInProgress;
+			this.writeInProgress = true;
+			this.deferredMetadataNotices = [];
+			try {
+				await this.metadataTransaction.run(async () => {
+					if (existingCollection.exists) {
+						const content = await this.metadataIO.read("mdbase.yaml");
+						if (content === null) throw new Error("mdbase.yaml disappeared while preparing the update.");
+						this.metadataTransaction.stage({ path: "mdbase.yaml", content }, content);
+					}
+					await this.syncSettingsToCanonicalTypeSnapshot(existingCollection);
+				});
+				const notices = this.deferredMetadataNotices;
+				this.deferredMetadataNotices = null;
+				for (const notice of notices) this.publishNotice(notice);
+			} catch (error) {
+				this.clearCanonicalState();
+				throw error;
+			} finally {
+				this.deferredMetadataNotices = null;
+				this.writeInProgress = previous;
+			}
+		});
+	}
+
+	private async syncSettingsToCanonicalTypeSnapshot(
+		existingCollection: ExistingCollection
+	): Promise<void> {
 		const typesFolder = this.resolveTypesFolder(existingCollection);
 		const contractsFolder = this.resolveContractsFolder(existingCollection);
 		const legacyCompatibility = isRecord(existingCollection.config?.["x-legacy-v0.2"]);
 		this.canonicalTypesFolder = typesFolder;
-		if (!existingCollection.exists && !this.canonicalTypePath) {
+		if (!existingCollection.exists && !this.canonicalTypePath &&
+			!await this.readCanonicalType(existingCollection, false)) {
 			const adapter = this.plugin.app.vault.adapter;
 			for (const folder of [typesFolder, contractsFolder]) {
 				if (await adapter.exists(folder) && (await this.listMarkdownFilesRecursively(folder)).length > 0) {
@@ -711,13 +792,8 @@ export class MdbaseSpecService {
 				}
 			}
 		}
-		if (existingCollection.exists && await this.readGeneratedV02TaskType(existingCollection, false)) {
-			// v4 also wrote legacy types into foreign v0.3 collections. Upgrade in place.
-			await this.migrateGeneratedV02Collection(existingCollection);
-			return;
-		}
 		await this.ensureFolderPath(typesFolder);
-		await this.setAsideSupersededBetaTypes(typesFolder);
+		if (!(await this.setAsideSupersededBetaTypes(typesFolder, existingCollection))) return;
 
 		let state = await this.readCanonicalType(existingCollection);
 		if (this.canonicalReadBlocked) return;
@@ -734,7 +810,6 @@ export class MdbaseSpecService {
 			if (this.lastKnownTypeContent === null && Array.isArray(savedExclusions)) this.plugin.settings.excludedFolders = savedExclusions.join(", ");
 			const adjusted = this.lastKnownTypeContent === null ? applyTaskExclusions(state.content, this.plugin.settings.excludedFolders || "") : state.content;
 			if (adjusted !== state.content) {
-				await backupCollectionFile(this.plugin.app, state.path, state.content);
 				await this.writeFileIfUnchanged({ path: state.path, content: state.content }, adjusted, true);
 				state = { ...state, content: adjusted, type: withCurrentTaskNotesContract(parseMdbaseTaskTypeDocument(adjusted).type).type };
 			}
@@ -772,7 +847,6 @@ export class MdbaseSpecService {
 				typeof state.type.name === "string" ? state.type.name : "task",
 				contractsFolder
 			);
-			await backupCollectionFile(this.plugin.app, state.path, state.content);
 			const upgraded = upgradeCanonicalDocument(state.content, resources);
 			await this.writeFileIfUnchanged({ path: state.path, content: state.content }, upgraded, true);
 			this.applyCanonicalState({ ...state, content: upgraded, type: parseMdbaseTaskTypeDocument(upgraded).type, outdated: false });
@@ -893,13 +967,16 @@ export class MdbaseSpecService {
 
 		if (candidates.length > 1) {
 			this.canonicalReadBlocked = true;
-			if (reportErrors) {
-				this.reportInvalidCanonicalType(
-					`Multiple TaskNotes contracts were found in ${typesFolder}. Keep one canonical type before continuing.`
-				);
+			const paths = candidates.map((candidate) => candidate.path).sort().join(", ");
+			const message = this.plugin.i18n?.translate("mdbaseSafety.multiple", { paths }) ??
+				`Multiple TaskNotes types: ${paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration.`;
+			if (this.lastBlockedNotice !== message) {
+				this.publishNotice(message);
+				this.lastBlockedNotice = message;
 			}
 			return null;
 		}
+		this.lastBlockedNotice = null;
 		return candidates[0] ?? null;
 	}
 
@@ -1032,9 +1109,9 @@ export class MdbaseSpecService {
 	 * and move the superseded ones to the migration backup folder. Anything else
 	 * with more than one TaskNotes type is left for the user.
 	 */
-	private async setAsideSupersededBetaTypes(typesFolder: string): Promise<void> {
+	private async setAsideSupersededBetaTypes(typesFolder: string, collection: ExistingCollection): Promise<boolean> {
 		const adapter = this.plugin.app.vault.adapter;
-		if (typeof adapter.list !== "function" || !(await adapter.exists(typesFolder))) return;
+		if (typeof adapter.list !== "function" || !(await adapter.exists(typesFolder))) return true;
 		const states: CanonicalTypeState[] = [];
 		for (const path of await this.listMarkdownFilesRecursively(typesFolder)) {
 			const state = await this.readCanonicalTypeAtPath(path, false);
@@ -1048,31 +1125,49 @@ export class MdbaseSpecService {
 				isRecord(state.type["x-tasknotes-generator"])
 		);
 		if (current.length !== 1 || superseded.length === 0 || current.length + superseded.length !== states.length) {
-			return;
+			return true;
+		}
+		const configuredKeys = collection.config?.settings?.explicit_type_keys;
+		if (configuredKeys !== undefined && (!Array.isArray(configuredKeys) || configuredKeys.some((key) => typeof key !== "string" || !key.trim()))) {
+			throw new Error("Invalid explicit_type_keys; cannot safely check duplicate type references.");
+		}
+		const reference = await findExplicitTypeReference(adapter, superseded, {
+			keys: configuredKeys === undefined ? ["type", "types"] : stringValues(configuredKeys),
+			extensions: uniqueStrings(["md", "base", ...stringValues(collection.config?.settings?.record_extensions)]),
+			excludedFolders: [typesFolder, this.resolveContractsFolder(collection), "_schemas", this.plugin.app.vault.configDir, ".tasknotes", ".mdbase"],
+		});
+		if (reference) {
+			this.publishNotice(this.plugin.i18n?.translate("mdbaseSafety.referenced", reference) ??
+				`TaskNotes kept ${reference.typePath}: ${reference.recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.`);
+			return false;
 		}
 		const suffix = new Date().toISOString().replace(/[:.]/g, "-");
-		const folder = `${MDBASE_MIGRATION_BACKUP_FOLDER}/superseded-types-${suffix}`;
+		const baseFolder = `${MDBASE_MIGRATION_BACKUP_FOLDER}/superseded-types-${suffix}`;
+		let folder = baseFolder;
+		let attempt = 2;
+		while (await adapter.exists(folder)) folder = `${baseFolder}-${attempt++}`;
 		await this.ensureFolderPath(folder);
 		for (const state of superseded) {
-			const fileName = state.path.split("/").pop() ?? "tasknotes-task.md";
-			await this.plugin.app.vault.create(`${folder}/${fileName}`, state.content);
-			this.writeInProgress = true;
+			const destination = `${folder}/${state.path}`;
+			await this.ensureFolderPath(destination.split("/").slice(0, -1).join("/"));
 			try {
-				await adapter.remove(state.path);
-			} finally {
-				this.writeInProgress = false;
+				await this.metadataIO.move({ path: state.path, content: state.content }, destination);
+			} catch (error) {
+				this.publishNotice(this.safetyNotice(`${String(error)}; backups: ${folder}`));
+				return false;
 			}
 		}
 		this.canonicalTypePath = current[0].path;
 		this.publishNotice(
 			`TaskNotes removed ${superseded.map((state) => state.path).join(", ")}, an earlier duplicate of ${current[0].path}. A copy is in ${folder}.`
 		);
+		return true;
 	}
 
 	private async backupInvalidType(path: string, content: string): Promise<void> {
 		const suffix = new Date().toISOString().replace(/[:.]/g, "-");
 		const backupPath = `${path}.tasknotes-backup-${suffix}`;
-		await this.plugin.app.vault.create(backupPath, content);
+		await this.metadataIO.replace({ path: backupPath, content: null }, content);
 		this.publishNotice(`TaskNotes backed up the invalid type to ${backupPath}.`);
 	}
 
@@ -1216,7 +1311,18 @@ export class MdbaseSpecService {
 		this.publishNotice(`${message} ${(this.plugin.i18n ?? createI18nService()).translate("collectionCheck.keptConfiguration")}`);
 	}
 
+	private safetyNotice(details: string): string {
+		const support = /Preserved customized mdbase support resource: ([^;\n]+)/.exec(details);
+		if (support) return migrationRecognitionNotice(this.plugin, "support", { path: support[1] });
+		return this.plugin.i18n?.translate("mdbaseSafety.blocked", { details }) ??
+			`TaskNotes stopped the mdbase metadata update. ${details} Review the listed file and recovery copies, resolve the conflict or permissions, then reload TaskNotes. Task files were not changed.`;
+	}
+
 	private publishNotice(message: string): void {
+		if (this.deferredMetadataNotices) {
+			this.deferredMetadataNotices.push(message);
+			return;
+		}
 		if (this.plugin.emitter) {
 			publishUserNotice(this.plugin.emitter, message);
 		} else {
@@ -1315,6 +1421,7 @@ export class MdbaseSpecService {
 
 	private async ensureFolderPath(folderPath: string): Promise<void> {
 		const vault = this.plugin.app.vault;
+		if (folderPath) await this.metadataIO.assertPhysical(folderPath);
 		const parts = folderPath.split("/").filter(Boolean);
 		let currentPath = "";
 
@@ -1331,6 +1438,20 @@ export class MdbaseSpecService {
 		snapshot: FileSnapshot,
 		content: string,
 		requireAtomic = false
+	): Promise<void> {
+		if (this.metadataTransaction.stage(snapshot, content)) return;
+		if (await this.metadataIO.read(snapshot.path) !== snapshot.content) {
+			throw new Error(`Refusing to overwrite a concurrent change to ${snapshot.path}`);
+		}
+		const parent = snapshot.path.split("/").slice(0, -1).join("/");
+		if (parent) await this.ensureFolderPath(parent);
+		await this.metadataIO.replace(snapshot, content, () => this.writeFileIfUnchangedFallback(snapshot, content, requireAtomic));
+	}
+
+	private async writeFileIfUnchangedFallback(
+		snapshot: FileSnapshot,
+		content: string,
+		requireAtomic: boolean
 	): Promise<void> {
 		const vault = this.plugin.app.vault;
 		if (snapshot.content === null) {
@@ -1362,14 +1483,7 @@ export class MdbaseSpecService {
 	 * Write a file, creating it if it doesn't exist or updating if it does.
 	 */
 	private async writeFile(path: string, content: string): Promise<void> {
-		const vault = this.plugin.app.vault;
-		const fileExists = await vault.adapter.exists(path);
-
-		if (fileExists) {
-			await vault.adapter.write(path, content);
-		} else {
-			await vault.create(path, content);
-		}
+		await this.writeFileIfUnchanged({ path, content: await this.metadataIO.read(path) }, content);
 	}
 
 	private async writeCanonicalSupportResources(
@@ -1395,7 +1509,7 @@ export class MdbaseSpecService {
 				const snapshot = snapshots.find((item) => item.path === path);
 				if (!snapshot) throw new Error(`Missing support snapshot: ${path}`);
 				if (snapshot.content !== content) {
-					// Earlier TaskNotes releases' files are replaced without a backup.
+					// The enclosing metadata transaction backs up replaced support files.
 					if (snapshot.content !== null && !isKnownLegacySupport(snapshot.content)) {
 						await this.backupInvalidType(path, snapshot.content);
 					}
