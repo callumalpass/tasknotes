@@ -2,6 +2,8 @@
   "migrationRecognition.review": "3596ac208d802482966b594f53a0fc21aaae6bad",
   "migrationRecognition.waiting": "fabbe6275469c366d3c19122ffc47044ff5ebec4",
   "migrationRecognition.support": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
+  "collectionCheck.unresolvedUserField": "33de89b89c5ffb869a087ba369a25a6a95e6964c",
+  "collectionCheck.membershipChanged": "f679d862d050b9540943b7616e1925202926aa8e",
   "collectionCheck.title": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
   "collectionCheck.invalidType": "e1b153f562bd434455fd5381298d9fb038f34e79",
   "collectionCheck.keptConfiguration": "7d285841c954e0eb73bb769e1161b2d64e5038be",

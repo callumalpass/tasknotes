@@ -7,6 +7,8 @@ export const ko: TranslationTree = {
 		support: "TaskNotes가 사용자 지정 지원 파일 {path}를 보존했습니다. 백업에서 생성된 버전을 복원하거나 사본을 검토하고 mdbase로 마이그레이션한 다음 다시 시작하세요.",
 	},
 	collectionCheck: {
+		unresolvedUserField: "관리되는 사용자 정의 필드 {field}의 유형을 확인할 수 없습니다. 설정을 저장하기 전에 스키마와 유지된 필드 유형을 검토하세요. 기존 설정과 메타데이터는 유지되었습니다.",
+		membershipChanged: "컬렉션 검사 후 소속 조건이나 레코드가 변경되었습니다. 다시 검사하세요.",
 		title: "컬렉션 확인",
 		invalidType: "{path}에 불일치가 있습니다: {issues}. 다시 시도하기 전에 implements.fields와 binding을 검토하세요. 플러그인 설정은 유지되었습니다.",
 		keptConfiguration: "TaskNotes가 마지막 유효한 설정을 유지했습니다.",

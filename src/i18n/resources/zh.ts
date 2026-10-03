@@ -7,6 +7,8 @@ export const zh: TranslationTree = {
 		support: "TaskNotes 已保留自定义辅助文件 {path}。请从备份恢复生成的版本，或检查并使用 mdbase 迁移副本，然后重启。",
 	},
 	collectionCheck: {
+		unresolvedUserField: "无法确定受管理的自定义字段 {field} 的类型。保存设置前，请检查其架构和保留的字段类型。现有设置和元数据已保留。",
+		membershipChanged: "检查后，集合成员资格或记录已发生变化。请重新检查集合。",
 		title: "检查集合",
 		invalidType: "{path} 存在不一致：{issues}。重试前请检查 implements.fields 和 binding；插件设置已保留。",
 		keptConfiguration: "TaskNotes 已保留最近的有效配置。",

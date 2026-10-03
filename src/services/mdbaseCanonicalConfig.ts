@@ -6,6 +6,8 @@ import { TASKNOTES_SPEC_VERSION as TASKNOTES_CONTRACT_VERSION } from "@tasknotes
 import YAML from "yaml";
 import { validateContractMapping, validateTaskBinding, validationIssues, compileRecordSchema } from "./mdbase/contractValidation";
 import { preserveUnownedCanonicalSettings } from "./mdbase/preserveCanonical";
+import { requireFrontmatter as splitFrontmatter } from "./mdbase/frontmatter";
+import { resolveRetainedUserFields } from "./mdbase/resolveUserFields";
 
 import type { TaskNotesSettings, UserMappedField } from "../types/settings";
 
@@ -174,6 +176,9 @@ export function applyCanonicalTaskTypeToSettings(
 		type,
 		buildTaskNotesModelConfig(settings)
 	);
+	// Resolve all owned fields before mutating any settings. Unknown owned schemas
+	// must stop import, rather than becoming deletions on an unrelated later save.
+	modelConfig.userFields = resolveRetainedUserFields(type, settings.userFields ?? [], modelConfig.userFields, Object.values(modelConfig.fieldMapping));
 	const extension = asRecord(taskNotesImplementation(type)?.binding) ?? {};
 	const title = asRecord(extension.title);
 	const links = asRecord(extension.links);
@@ -481,17 +486,6 @@ function syncDocumentValue(document: YAML.Document, path: DocumentPath, value: u
 	if (path.length > 0) {
 		document.setIn(path, cloneValue(value));
 	}
-}
-
-function splitFrontmatter(markdown: string): { frontmatter: string; body: string } {
-	const match = markdown.match(/^\uFEFF?---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
-	if (!match) {
-		throw new Error("The mdbase task type must contain YAML frontmatter.");
-	}
-	return {
-		frontmatter: match[1],
-		body: markdown.slice(match[0].length),
-	};
 }
 
 function isLegacyGeneratedBody(body: string): boolean {

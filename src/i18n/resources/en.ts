@@ -7,6 +7,8 @@ export const en: TranslationTree = {
 		support: "TaskNotes preserved customized support file {path}. Restore the generated version from a backup or review and migrate a copy with mdbase, then restart.",
 	},
 	collectionCheck: {
+		unresolvedUserField: "Cannot resolve owned user field {field}. Review its schema and retained field type before saving settings. Existing settings and metadata were preserved.",
+		membershipChanged: "Collection membership or record changed since collection check; check again.",
 		title: "Check collection",
 		invalidType: "{path} is inconsistent: {issues}. Review its implements.fields and binding before retrying; plugin settings were kept.",
 		keptConfiguration: "TaskNotes kept its last-known-good configuration.",

@@ -1024,7 +1024,8 @@ export class MdbaseSpecService {
 	}
 
 	private applyCanonicalState(state: CanonicalTypeState): void {
-		applyCanonicalTaskTypeToSettings(this.plugin.settings, state.type);
+		try { applyCanonicalTaskTypeToSettings(this.plugin.settings, state.type); }
+		catch (error) { throw new Error(`${state.path}: ${String(error)}`); }
 		this.canonicalTypePath = state.path;
 		this.lastKnownTypeContent = state.content;
 		this.lastAppliedSettingsFingerprint = portableSettingsFingerprint(this.plugin.settings);
@@ -1132,11 +1133,7 @@ export class MdbaseSpecService {
 		if (configuredKeys !== undefined && (!Array.isArray(configuredKeys) || configuredKeys.some((key) => typeof key !== "string" || !key.trim()))) {
 			throw new Error("Invalid explicit_type_keys; cannot safely check duplicate type references.");
 		}
-		const reference = await findExplicitTypeReference(adapter, superseded, {
-			keys: configuredKeys === undefined ? ["type", "types"] : stringValues(configuredKeys),
-			extensions: uniqueStrings(["md", "base", ...stringValues(collection.config?.settings?.record_extensions)]),
-			excludedFolders: [typesFolder, this.resolveContractsFolder(collection), "_schemas", this.plugin.app.vault.configDir, ".tasknotes", ".mdbase"],
-		});
+		const reference = await findExplicitTypeReference(adapter, superseded, collection.config);
 		if (reference) {
 			this.publishNotice(this.plugin.i18n?.translate("mdbaseSafety.referenced", reference) ??
 				`TaskNotes kept ${reference.typePath}: ${reference.recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.`);

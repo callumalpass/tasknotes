@@ -27,6 +27,9 @@ Additional captured collections (also immutable):
 - `meaning-folders/`: MATRIX-02 live 4.13.7 → beta.5 folder-exclusion collection; original task/template bytes retained and transient state omitted. Includes a PATHS-04 real beta.0 `relationships.base` capture from the paths audit, which was invisible before additive Base configuration.
 - `meaning-minimal/`: MATRIX-08 live 4.13.7 → beta.5 collection with one dateless tag-identified task; captured metadata and task bytes retained, `.obsidian/` and `.mdbase/` state omitted.
 
+- `scope-bom-reference/`: COMPAT-R02 captured BOM explicit-member before-state, retained byte-for-byte with both providers and existing App lock.
+- `scope-userfields/`: MATRIX-R03 historical 4.13.7 five-kind user-field metadata, saved settings and unchanged task notes. See the directory README for exact evidence paths. Used by scope and real-bootstrap regressions.
+
 `mdbaseSafeWrites.test.ts` reuses the exact beta0/custom and duplicate-beta captures for fault-injected writes and membership/cleanup regressions. `safewrite-multiple-providers/` is compat's captured multiple-provider collection (see its README).
 
 `mdbaseMetadataSwap.test.ts` also reuses these immutable `v4-custom`, `v4-default` and `beta3-custom` captures for no-clobber adapter upgrades, activation-boundary races and interrupted-swap cold-start recovery. These are the source collections used by the compat/adversarial/paths rerun; race markers are injected at runtime, not added to captured notes.

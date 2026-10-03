@@ -1,5 +1,6 @@
 import YAML from "yaml";
 import type { TaskNotesSettings } from "../../types/settings";
+import { requireFrontmatter } from "./frontmatter";
 
 /** Omission has engine semantics; an explicit empty list disables explicit membership. */
 export function effectiveMembershipKeys(value: unknown): string[] {
@@ -22,8 +23,10 @@ export function addAppCollectionConfig(markdown: string, settings: TaskNotesSett
 			throw new Error(`Invalid ${path.join(".")}; existing collection settings were preserved.`);
 		}
 		const values = current === undefined ? defaults : current as string[];
-		const next = [...new Set([...values, ...required])];
-		if (current === undefined || next.length !== values.length) {
+		// Existing user entries (including duplicates) are not ours to normalize.
+		const missing = [...new Set(required)].filter((value) => !values.includes(value));
+		const next = [...values, ...missing];
+		if (current === undefined || missing.length > 0) {
 			document.setIn(path, next);
 			changed = true;
 		}
@@ -52,9 +55,8 @@ export function taskExclusionExpression(value: string): string | null {
 
 /** Preserve a user expression while replacing only our previously recorded exclusion predicate. */
 export function applyTaskExclusions(markdown: string, value: string): string {
-	const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
-	if (!match) throw new Error("Missing type frontmatter");
-	const document = YAML.parseDocument(match[1]);
+	const parts = requireFrontmatter(markdown);
+	const document = YAML.parseDocument(parts.frontmatter);
 	if (document.errors.length) throw new Error("Invalid type frontmatter");
 	const previousNode = document.getIn(["x-tasknotes-generator", "excluded_folders"], true);
 	const previous: unknown = YAML.isNode(previousNode) ? previousNode.toJSON() : previousNode;
@@ -74,5 +76,5 @@ export function applyTaskExclusions(markdown: string, value: string): string {
 	document.setIn(["x-tasknotes-generator", "excluded_folders"], folders);
 	if (exclusion) document.setIn(["x-tasknotes-generator", "exclusion_expression"], exclusion);
 	else document.deleteIn(["x-tasknotes-generator", "exclusion_expression"]);
-	return `---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${markdown.slice(match[0].length)}`;
+	return `---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${parts.body}`;
 }

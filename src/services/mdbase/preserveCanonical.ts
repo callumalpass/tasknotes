@@ -1,6 +1,7 @@
 import YAML from "yaml";
 import type { TaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
 import { applyTaskExclusions } from "./collectionConfig";
+import { requireFrontmatter } from "./frontmatter";
 
 type ObjectValue = Record<string, unknown>;
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -11,9 +12,8 @@ const implementation = (type: ObjectValue): ObjectValue | undefined =>
 
 /** Structural contract lift: no settings round-trip and no rewriting existing policies. */
 export function upgradeCanonicalDocument(markdown: string, resources: TaskNotesMdbaseResources): string {
-	const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
-	if (!match) throw new Error("Missing type frontmatter");
-	const document = YAML.parseDocument(match[1]);
+	const parts = requireFrontmatter(markdown);
+	const document = YAML.parseDocument(parts.frontmatter);
 	if (document.errors.length) throw new Error("Invalid type frontmatter");
 	const implementations = document.toJS().implements as ObjectValue[];
 	const index = implementations.findIndex((value) => value.contract === "tasknotes.task");
@@ -25,7 +25,7 @@ export function upgradeCanonicalDocument(markdown: string, resources: TaskNotesM
 		document.setIn(["schema", "value", "properties", "assignees"], copy(object(object(object(resources.type.schema).value).properties).assignees));
 		document.setIn(["collection", "links", "assignees[]"], copy(object(object(resources.type.collection).links)["assignees[]"]));
 	}
-	return `---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${markdown.slice(match[0].length)}`;
+	return `---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${parts.body}`;
 }
 
 /** Restrict generated settings updates to options actually exposed by the plugin. */
@@ -102,7 +102,7 @@ export function preserveUnownedCanonicalSettings(existing: ObjectValue, generate
 		}
 	}
 	const desiredFolders = object(desired["x-tasknotes-generator"]).excluded_folders;
-	const reconciled = YAML.parse(applyTaskExclusions(`---\n${YAML.stringify(existing)}---\n`, Array.isArray(desiredFolders) ? desiredFolders.join(",") : "").match(/^---\n([\s\S]*?)\n---/)?.[1] ?? "") as ObjectValue;
+	const reconciled = YAML.parse(requireFrontmatter(applyTaskExclusions(`---\n${YAML.stringify(existing)}---\n`, Array.isArray(desiredFolders) ? desiredFolders.join(",") : "")).frontmatter) as ObjectValue;
 	desired.match = { ...object(reconciled.match), where: object(desired.match).where };
 	const reconciledGenerator = object(reconciled["x-tasknotes-generator"]);
 	const generator = object(desired["x-tasknotes-generator"]);

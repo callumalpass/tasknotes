@@ -7,6 +7,8 @@ export const pt: TranslationTree = {
 		support: "O TaskNotes preservou o arquivo de suporte personalizado {path}. Restaure a versão gerada de um backup ou revise e migre uma cópia com mdbase; depois, reinicie.",
 	},
 	collectionCheck: {
+		unresolvedUserField: "Não foi possível determinar o tipo do campo personalizado gerido {field}. Reveja o esquema e o tipo de campo preservado antes de guardar as definições. As definições e os metadados existentes foram preservados.",
+		membershipChanged: "A pertença à coleção ou o registo mudou desde a verificação. Verifique novamente a coleção.",
 		title: "Verificar coleção",
 		invalidType: "{path} está inconsistente: {issues}. Revise implements.fields e binding antes de tentar novamente; as configurações do plugin foram mantidas.",
 		keptConfiguration: "TaskNotes manteve a última configuração válida.",

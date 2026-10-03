@@ -56,3 +56,29 @@ it.each(["v4-custom", "beta0-custom"])("runs real bootstrap for %s without a pre
 		expect(memory.files.get(file)).toBe(fixture.files[file]);
 	}
 });
+
+it("MATRIX-R03: real historical bootstrap retains all five user fields before rebuilding FieldMapper", async () => {
+	const root = path.join(__dirname, "../../fixtures/mdbase-upgrades/scope-userfields");
+	const entries: Record<string, string> = {};
+	const walk = (folder: string, prefix = "") => {
+		for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+			if (entry.isDirectory()) walk(path.join(folder, entry.name), `${prefix}${entry.name}/`);
+			else if (entry.name !== "README.md" && entry.name !== "settings.json") entries[prefix + entry.name] = fs.readFileSync(path.join(folder, entry.name), "utf8");
+		}
+	};
+	walk(root);
+	const settings = JSON.parse(fs.readFileSync(path.join(root, "settings.json"), "utf8"));
+	const fields = settings.userFields.map(({ filterDisplay: _unsupported, ...field }: any) => field);
+	settings.enableMdbaseSpec = true;
+	const memory = recognitionVault(entries);
+	const plugin = { settings, app: { vault: memory.vault }, registerEvent: jest.fn() } as unknown as TaskNotesPlugin;
+	expect(plugin.fieldMapper).toBeUndefined();
+	await initializeCoreServices(plugin);
+	expect(plugin.settings.userFields).toEqual(fields);
+	plugin.settings.customPriorities[0].label = "Unrelated settings change";
+	await plugin.mdbaseSpecService.onSettingsChanged();
+	const type: any = parseMdbaseTaskTypeDocument(memory.files.get("_types/task.md")!).type;
+	for (const field of fields) expect(type.schema.value.properties[field.key]).toBeDefined();
+	expect(plugin.emitter.trigger).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ message: expect.stringContaining("could not initialize") }));
+	for (const [file, content] of Object.entries(entries)) if (!file.startsWith("_") && file.endsWith(".md")) expect(memory.files.get(file)).toBe(content);
+});

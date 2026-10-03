@@ -1,2 +1,4 @@
 # Captured migration metadata and records must retain their exact BOM/CRLF bytes.
 tests/fixtures/mdbase-upgrades/recognition/** -text
+tests/fixtures/mdbase-upgrades/scope-bom-reference/** -text
+tests/fixtures/mdbase-upgrades/scope-userfields/** -text
