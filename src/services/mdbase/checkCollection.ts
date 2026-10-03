@@ -6,7 +6,7 @@ import { parseMdbaseTaskTypeDocument, validateCanonicalTaskType, withCurrentTask
 import { compileRecordSchema, validateTaskRecord, validationIssues } from "./contractValidation";
 import { taskExclusionExpression } from "./collectionConfig";
 import { recordDocument } from "./frontmatter";
-import { collectionScope, isCollectionRecord, isTaskMember } from "./collectionMembership";
+import { assertSupportedMatch, collectionScope, isCollectionRecord, isTaskMember } from "./collectionMembership";
 import { backupCollectionFile } from "./backups";
 import { withVaultFileMutation, processVaultFileWithinMutation } from "../VaultMutationService";
 
@@ -21,6 +21,8 @@ export type CollectionProblem = {
 	statusField: string;
 	invalidStatus: boolean;
 	statusValues: string[];
+	repairSignature: string;
+	validateRecord: (record: ObjectValue) => string[];
 };
 
 /** Explicit scan only. Migration never invokes this and never reads or repairs task notes. */
@@ -47,14 +49,27 @@ export async function checkCollection(plugin: TaskNotesPlugin): Promise<Collecti
 		const dateCreatedField = fields.dateCreated as string;
 		const statusValues = object(object(implementation.binding).status).values as string[];
 		const match = object(type.match);
-		for (const [field, predicate] of Object.entries(object(match.where))) {
-			if (field.includes(".") || field.includes("[") || Object.keys(object(predicate)).some((key) => !["contains", "exists", "eq"].includes(key))) throw new Error(`${provider.path}: custom match.where needs engine validation with mdbase validate; no repairs were made`);
-		}
+		try { assertSupportedMatch(type.match); }
+		catch (error) { throw new Error(`${provider.path}: ${String(error)}`); }
 		const expression = object(match.expr).$expr;
 		const ownFolders = object(type["x-tasknotes-generator"]).excluded_folders;
 		const ownExpression = taskExclusionExpression(Array.isArray(ownFolders) ? ownFolders.join(",") : "");
 		if (expression !== undefined && expression !== ownExpression) throw new Error(`${provider.path}: custom match.expr needs engine validation with mdbase validate; no repairs were made`);
 		const matchExclusions = Array.isArray(ownFolders) ? ownFolders.filter((value): value is string => typeof value === "string") : [];
+		const defaults = object(object(type.collection).read_defaults);
+		const repairSignature = JSON.stringify({ provider: provider.path, type });
+		const validateRecord = (record: ObjectValue): string[] => {
+			const effective = { ...defaults, ...record };
+			const projection: ObjectValue = {};
+			for (const [role, field] of Object.entries(fields)) {
+				if (typeof field === "string" && effective[field] !== undefined) projection[role] = effective[field];
+			}
+			const issues: string[] = [];
+			if (!validate(effective)) issues.push(...validationIssues(validate));
+			if (!validateTaskRecord(projection)) issues.push(...validationIssues(validateTaskRecord));
+			if (!statusValues.includes(effective[statusField] as string)) issues.push(`${statusField}: ${JSON.stringify(effective[statusField])}`);
+			return [...new Set(issues)];
+		};
 		for (const file of vault.getFiles ? vault.getFiles() : vault.getMarkdownFiles()) {
 			if (!await isCollectionRecord(vault.adapter, file.path, scope)) continue;
 			// Obsidian vault.read strips a leading BOM; backup/CAS need original bytes.
@@ -66,17 +81,10 @@ export async function checkCollection(plugin: TaskNotesPlugin): Promise<Collecti
 				throw new Error(`${file.path}: ${String(error)}; run mdbase validate; no repairs were made`);
 			}
 			if (!isTaskMember(frontmatter, file.path, type, keys, matchExclusions)) continue;
-			const effective = { ...object(object(type.collection).read_defaults), ...frontmatter };
-			const projection: ObjectValue = {};
-			for (const [role, field] of Object.entries(fields)) {
-				if (typeof field === "string" && effective[field] !== undefined) projection[role] = effective[field];
-			}
-			const issues: string[] = [];
-			if (!validate(effective)) issues.push(...validationIssues(validate));
-			if (!validateTaskRecord(projection)) issues.push(...validationIssues(validateTaskRecord));
+			const effective = { ...defaults, ...frontmatter };
+			const issues = validateRecord(frontmatter);
 			const invalidStatus = !statusValues.includes(effective[statusField] as string);
-			if (invalidStatus) issues.push(`${statusField}: ${JSON.stringify(effective[statusField])}`);
-			if (issues.length) problems.push({ file, content, issues: [...new Set(issues)], dateCreatedField, statusField, statusValues, missingDateCreated: effective[dateCreatedField] === undefined, invalidStatus });
+			if (issues.length) problems.push({ file, content, issues, dateCreatedField, statusField, statusValues, missingDateCreated: effective[dateCreatedField] === undefined, invalidStatus, repairSignature, validateRecord });
 		}
 	}
 	if (!providerCount) throw new Error("No canonical TaskNotes task type was found; enable the mdbase integration and review the type configuration");
@@ -87,24 +95,27 @@ export async function checkCollection(plugin: TaskNotesPlugin): Promise<Collecti
 export async function repairCollectionRecord(
 	plugin: TaskNotesPlugin, problem: CollectionProblem, statusChoice?: string
 ): Promise<string | null> {
-	if (statusChoice !== undefined && !problem.statusValues.includes(statusChoice)) throw new Error("Invalid status choice");
-	// Collection settings or explicit membership may have changed since the preview.
-	const current = (await checkCollection(plugin)).find((candidate) => candidate.file.path === problem.file.path);
-	if (!current || current.content !== problem.content || current.dateCreatedField !== problem.dateCreatedField || current.statusField !== problem.statusField) throw new Error((plugin.i18n ?? createI18nService()).translate("collectionCheck.membershipChanged"));
-	const { document, body, prefix } = recordDocument(problem.content);
-	let changed = false;
-	if (problem.missingDateCreated) {
-		if (!Number.isFinite(problem.file.stat.ctime) || problem.file.stat.ctime <= 0) throw new Error("File creation time is unavailable");
-		document.set(problem.dateCreatedField, new Date(problem.file.stat.ctime).toISOString());
-		changed = true;
-	}
-	if (problem.invalidStatus && statusChoice !== undefined) {
-		document.set(problem.statusField, statusChoice);
-		changed = true;
-	}
-	if (!changed) return null;
-	const vault = plugin.app.vault;
 	return withVaultFileMutation(problem.file, async () => {
+		// Recheck scope, bytes AND the current provider's repair semantics, not the old preview vocabulary.
+		const current = (await checkCollection(plugin)).find((candidate) => candidate.file.path === problem.file.path);
+		if (!current || current.content !== problem.content || current.dateCreatedField !== problem.dateCreatedField || current.statusField !== problem.statusField) throw new Error((plugin.i18n ?? createI18nService()).translate("collectionCheck.membershipChanged"));
+		const stale = () => new Error((plugin.i18n ?? createI18nService()).translate("collectionCheck.repairChanged"));
+		if (current.repairSignature !== problem.repairSignature || (statusChoice !== undefined && !current.statusValues.includes(statusChoice))) throw stale();
+		const { document, body, prefix } = recordDocument(problem.content);
+		let changed = false;
+		if (problem.missingDateCreated) {
+			if (!Number.isFinite(problem.file.stat.ctime) || problem.file.stat.ctime <= 0) throw new Error("File creation time is unavailable");
+			document.set(problem.dateCreatedField, new Date(problem.file.stat.ctime).toISOString());
+			changed = true;
+		}
+		if (problem.invalidStatus && statusChoice !== undefined) {
+			document.set(problem.statusField, statusChoice);
+			changed = true;
+		}
+		if (!changed) return null;
+		// Partial repairs may leave existing issues, but must not introduce new schema/contract failures.
+		if (current.validateRecord(object(document.toJS())).some((issue) => !current.issues.includes(issue))) throw stale();
+		const vault = plugin.app.vault;
 		if (await vault.adapter.read(problem.file.path) !== problem.content) throw new Error("Record changed since collection check; check again");
 		const backup = await backupCollectionFile(plugin.app, problem.file.path, problem.content);
 		await processVaultFileWithinMutation(plugin.app, problem.file, (current) => {

@@ -1,6 +1,7 @@
 import YAML from "yaml";
 import type { TaskNotesSettings } from "../../types/settings";
 import { requireFrontmatter } from "./frontmatter";
+import { effectiveRecordExtensions } from "./recordExtensions";
 
 /** Omission has engine semantics; an explicit empty list disables explicit membership. */
 export function effectiveMembershipKeys(value: unknown): string[] {
@@ -18,7 +19,8 @@ export function addAppCollectionConfig(markdown: string, settings: TaskNotesSett
 	let changed = false;
 	const add = (path: string[], required: string[], defaults: string[] = []) => {
 		const node = document.getIn(path, true);
-		const current: unknown = YAML.isNode(node) ? node.toJSON() : node;
+		const raw: unknown = YAML.isNode(node) ? node.toJSON() : node;
+		const current = raw === null && path.join(".") === "settings.record_extensions" ? undefined : raw;
 		if (current !== undefined && (!Array.isArray(current) || current.some((v) => typeof v !== "string"))) {
 			throw new Error(`Invalid ${path.join(".")}; existing collection settings were preserved.`);
 		}
@@ -31,7 +33,11 @@ export function addAppCollectionConfig(markdown: string, settings: TaskNotesSett
 			changed = true;
 		}
 	};
-	add(["settings", "record_extensions"], ["md", "base"], ["md"]);
+	const collectionSettings: unknown = document.toJS()?.settings;
+	if (collectionSettings !== undefined && collectionSettings !== null && (!YAML.isMap(document.get("settings", true)))) {
+		throw new Error("Invalid settings; existing collection settings were preserved.");
+	}
+	add(["settings", "record_extensions"], ["md", "base"], effectiveRecordExtensions((collectionSettings ?? {}) as Record<string, unknown>));
 	const folders = new Set(["TaskNotes/Views"]);
 	for (const file of Object.values(settings.commandFileMapping ?? {})) {
 		if (typeof file === "string" && file.endsWith(".base")) {

@@ -2,3 +2,4 @@
 tests/fixtures/mdbase-upgrades/recognition/** -text
 tests/fixtures/mdbase-upgrades/scope-bom-reference/** -text
 tests/fixtures/mdbase-upgrades/scope-userfields/** -text
+tests/fixtures/mdbase-upgrades/round3-*/** -text

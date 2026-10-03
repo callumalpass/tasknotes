@@ -7,6 +7,7 @@ export const fr: TranslationTree = {
 		support: "TaskNotes a conservé le fichier de support personnalisé {path}. Restaurez la version générée depuis une sauvegarde ou vérifiez et migrez une copie avec mdbase, puis redémarrez.",
 	},
 	collectionCheck: {
+		repairChanged: "Le type de tâche ou les statuts autorisés ont changé, ou la réparation proposée n’est plus valide. Rien n’a été réparé ; vérifiez à nouveau la collection.",
 		unresolvedUserField: "Impossible de déterminer le type du champ personnalisé géré {field}. Vérifiez son schéma et le type de champ conservé avant d’enregistrer les paramètres. Les paramètres et métadonnées existants ont été conservés.",
 		membershipChanged: "L’appartenance à la collection ou l’enregistrement a changé depuis la vérification. Vérifiez à nouveau la collection.",
 		title: "Vérifier la collection",
@@ -24,6 +25,7 @@ export const fr: TranslationTree = {
 		error: "Vérification ou correction de la collection interrompue. Aucune modification non approuvée n’a été effectuée.",
 	},
 	mdbaseSafety: {
+		settingsSaved: "TaskNotes a enregistré vos paramètres, mais n’a pas pu synchroniser le type mdbase canonique.",
 		blocked: "TaskNotes a arrêté la mise à jour des métadonnées mdbase. {details} Vérifiez le fichier indiqué et les copies de récupération, résolvez le conflit ou les permissions, puis rechargez TaskNotes. Les fichiers de tâches n’ont pas été modifiés.",
 		multiple: "Plusieurs types TaskNotes : {paths}. Gardez un fournisseur canonique ou déplacez les autres hors du dossier des types, puis rechargez TaskNotes. TaskNotes a conservé la dernière configuration valide.",
 		referenced: "TaskNotes a conservé {typePath} : {recordPath} fait explicitement référence à ce type. Vérifiez son appartenance avant de déplacer le fournisseur ; les fichiers de tâches n’ont pas été modifiés.",

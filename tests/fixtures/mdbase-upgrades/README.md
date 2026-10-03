@@ -30,6 +30,8 @@ Additional captured collections (also immutable):
 - `scope-bom-reference/`: COMPAT-R02 captured BOM explicit-member before-state, retained byte-for-byte with both providers and existing App lock.
 - `scope-userfields/`: MATRIX-R03 historical 4.13.7 five-kind user-field metadata, saved settings and unchanged task notes. See the directory README for exact evidence paths. Used by scope and real-bootstrap regressions.
 
+- `round3-legacy-extensions/`, `round3-nested-presence/`, `round3-glob-array/`: immutable round-2 audit before-states for legacy-extension coverage, nested membership and array path-glob regressions. Directory READMEs record provenance; saved plugin data is separate from records. Used by collection robustness and real-bootstrap tests.
+
 `mdbaseSafeWrites.test.ts` reuses the exact beta0/custom and duplicate-beta captures for fault-injected writes and membership/cleanup regressions. `safewrite-multiple-providers/` is compat's captured multiple-provider collection (see its README).
 
 `mdbaseMetadataSwap.test.ts` also reuses these immutable `v4-custom`, `v4-default` and `beta3-custom` captures for no-clobber adapter upgrades, activation-boundary races and interrupted-swap cold-start recovery. These are the source collections used by the compat/adversarial/paths rerun; race markers are injected at runtime, not added to captured notes.

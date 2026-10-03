@@ -97,6 +97,50 @@ it.each(targets)("never overwrites a %s arrival at no-clobber activation", async
 	expect([...h.files].some(([p, c]) => p.includes(".tasknotes-stage-") && c === "intended")).toBe(true);
 });
 
+it.each(["POST-PUBLISH REVISION", "original"])("non-native publication read-back robustness preserves evidence when active bytes become %s", async (active) => {
+	const target = "_types/task.md";
+	const h = harness({ [target]: "original" });
+	let journal: SwapJournal | undefined;
+	let pending: string | undefined;
+	let beforeReadBack: { stage: string | undefined; recovery: string | undefined; journalExists: boolean } | undefined;
+	h.hooks.afterMove = async (from, to) => {
+		if (from.startsWith(`${target}.tasknotes-stage-`) && to === target) {
+			pending = [...h.files.keys()].find((p) => path.posix.dirname(p) === METADATA_SWAPS && p.endsWith(".json"));
+			journal = JSON.parse(h.files.get(pending!)!) as SwapJournal;
+			beforeReadBack = { stage: h.files.get(journal.stage), recovery: h.files.get(journal.recovery), journalExists: h.files.has(pending!) };
+			h.files.set(target, active);
+		}
+	};
+	await expect(h.io.replace({ path: target, content: "original" }, "intended")).rejects.toThrow(/Concurrent metadata change.*read-back/);
+	expect(beforeReadBack).toEqual({ stage: "intended", recovery: "original", journalExists: true });
+	expect(h.files.get(target)).toBe(active);
+	expect(h.files.get(journal!.stage)).toBe("intended");
+	expect(h.files.get(journal!.recovery)).toBe("original");
+	expect(h.files.has(pending!)).toBe(true);
+});
+
+it("non-native publication read-back divergence reports an actionable conflict, never upgrade success", async () => {
+	const before = fixture("beta3-custom"), target = "_types/task.md";
+	const h = harness(before);
+	let fired = false;
+	h.hooks.afterMove = async (from, to) => {
+		if (!fired && from.startsWith(`${target}.tasknotes-stage-`) && to === target) {
+			fired = true; h.files.set(target, `${before[target]}\n# ROBUSTNESS POST-PUBLISH REVISION\n`);
+		}
+	};
+	await new MdbaseSpecService(h.plugin).initialize();
+	expect(fired).toBe(true);
+	expect(h.notices.join(" ")).toMatch(/Concurrent metadata change.*read-back/);
+	expect(h.notices.join(" ")).toContain(METADATA_SWAPS);
+	expect(h.notices.join(" ")).toMatch(/resolve.*reload/);
+	expect(h.notices.some((notice) => notice.startsWith("TaskNotes updated"))).toBe(false);
+	const pending = [...h.files.keys()].find((p) => path.posix.dirname(p) === METADATA_SWAPS && p.endsWith(".json"))!;
+	const journal = JSON.parse(h.files.get(pending)!) as SwapJournal;
+	expect(h.files.get(journal.recovery)).toBe(before[target]);
+	expect(h.files.get(journal.stage)).toBe(journal.content);
+	for (const p of ["paper.md", "TaskNotes/Tasks/open.md", "TaskNotes/Tasks/cancelled.md"]) expect(h.files.get(p)).toBe(before[p]);
+});
+
 it.each(["v4-default", "beta3-custom"].flatMap((name) => ["before displacement", "after displacement", "after activation"].map((interval) => [name, interval])))
 ("cold startup recovers the real %s transaction interrupted %s", async (name, interval) => {
 	const before = fixture(name);
@@ -181,12 +225,12 @@ it("refuses adapters without a move instead of truncating active metadata", asyn
 	expect(h.files.get("mdbase.yaml")).toBe("original");
 });
 
-it.each(targets)("native %s move-boundary race retains actual bytes; link-boundary race keeps both revisions", async (target) => {
+it.each(targets.flatMap((target) => [false, true].map((desktop) => [target, desktop] as const)))("native %s publication robustness (desktop=%s) retains actual bytes and late arrivals", async (target, emulateDesktop) => {
 	const scratch = await fs.mkdtemp(path.join(process.env.TMPDIR!, "swap-native-"));
 	const previousRequire = window.require;
 	const desktop = Platform.isDesktop;
 	window.require = require;
-	(Platform as any).isDesktop = true;
+	(Platform as any).isDesktop = emulateDesktop;
 	try {
 		const full = (p: string) => path.join(scratch, p);
 		await fs.mkdir(path.dirname(full(target)), { recursive: true });
@@ -224,9 +268,16 @@ it.each(targets)("native %s move-boundary race retains actual bytes; link-bounda
 		await new SafeMetadata(adapter).recoverSwaps();
 		const originalLink = fs.link;
 		let arrived = false;
+		const inject = async (from: unknown, to: unknown) => {
+			if (!arrived && String(from).includes(".tasknotes-stage-") && to === full(target)) { arrived = true; await fs.writeFile(full(target), "NEW ARRIVAL"); }
+		};
 		const link = jest.spyOn(require("node:fs/promises"), "link").mockImplementation(async (from, to) => {
-			if (!arrived && to === full(target)) { arrived = true; await fs.writeFile(full(target), "NEW ARRIVAL"); }
-			return originalLink(from, to);
+			await inject(from, to); return originalLink(from, to);
+		});
+		// Also intercept the adapter's underlying overwrite primitive AFTER its precheck.
+		// The mobile-emulation path must not use it to publish, but the old path did.
+		const publicationRename = jest.spyOn(require("node:fs/promises"), "rename").mockImplementation(async (from, to) => {
+			await inject(from, to); return originalRename(from, to);
 		});
 		try {
 			await expect(new SafeMetadata(adapter).replace({ path: target, content: "original" }, "intended")).rejects.toThrow("Concurrent metadata change");
@@ -236,7 +287,7 @@ it.each(targets)("native %s move-boundary race retains actual bytes; link-bounda
 			expect(siblings.some((p) => p.includes(".tasknotes-stage-"))).toBe(true);
 			const retained = await fs.readdir(full(METADATA_SWAPS), { withFileTypes: true });
 			expect(retained.filter((p) => p.isDirectory()).length).toBeGreaterThanOrEqual(2);
-		} finally { link.mockRestore(); }
+		} finally { link.mockRestore(); publicationRename.mockRestore(); }
 	} finally {
 		(Platform as any).isDesktop = desktop;
 		window.require = previousRequire;

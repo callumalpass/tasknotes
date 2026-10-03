@@ -7,6 +7,7 @@ export const ja: TranslationTree = {
 		support: "TaskNotes はカスタマイズされた補助ファイル {path} を保持しました。生成されたバージョンをバックアップから復元するか、コピーを確認して mdbase で移行し、再起動してください。",
 	},
 	collectionCheck: {
+		repairChanged: "タスクの型または使用可能なステータスが変更されたか、提案された修復が無効になりました。修復は行われていません。コレクションをもう一度確認してください。",
 		unresolvedUserField: "管理対象のカスタムフィールド {field} の型を判定できません。設定を保存する前に、スキーマと保持されたフィールドの型を確認してください。既存の設定とメタデータは保持されています。",
 		membershipChanged: "コレクションの確認後に所属条件またはレコードが変更されました。もう一度確認してください。",
 		title: "コレクションを確認",
@@ -25,6 +26,7 @@ export const ja: TranslationTree = {
 		error: "コレクションの確認または修正を停止しました。未承認の変更は行っていません。",
 	},
 	mdbaseSafety: {
+		settingsSaved: "TaskNotesは設定を保存しましたが、正規のmdbase型を同期できませんでした。",
 		blocked: "TaskNotes は mdbase メタデータの更新を停止しました。{details} 表示されたファイルと復旧用コピーを確認し、競合またはアクセス権を解決してから TaskNotes を再読み込みしてください。タスクファイルは変更されていません。",
 		multiple: "TaskNotes の型が複数あります: {paths}。正規のプロバイダーを1つ残すか、他の型を型フォルダーの外へ移動してから TaskNotes を再読み込みしてください。TaskNotes は最後に確認された有効な設定を保持しました。",
 		referenced: "TaskNotes は {typePath} を保持しました。{recordPath} がこの型を明示的に参照しています。プロバイダーを移動する前に型への所属を確認してください。タスクファイルは変更されていません。",

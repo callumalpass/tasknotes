@@ -1,4 +1,6 @@
 import { effectiveMembershipKeys } from "./collectionConfig";
+import { effectiveRecordExtensions } from "./recordExtensions";
+import { assertFieldReference, fieldReferenceValue } from "./fieldReferences";
 
 type ObjectValue = Record<string, unknown>;
 const object = (value: unknown): ObjectValue => value !== null && typeof value === "object" && !Array.isArray(value) ? value as ObjectValue : {};
@@ -39,13 +41,19 @@ export function explicitTypeNames(record: ObjectValue, keys: string[]): string[]
 	});
 }
 
-function valuesEqual(left: unknown, right: unknown): boolean {
-	if (Array.isArray(left) || Array.isArray(right)) return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((value, index) => valuesEqual(value, right[index]));
+function jsonEqual(left: unknown, right: unknown): boolean {
+	if (Array.isArray(left) || Array.isArray(right)) return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((value, index) => jsonEqual(value, right[index]));
 	if (left !== null && right !== null && typeof left === "object" && typeof right === "object") {
 		const a = object(left), b = object(right);
-		return Object.keys(a).length === Object.keys(b).length && Object.keys(a).every((key) => Object.prototype.hasOwnProperty.call(b, key) && valuesEqual(a[key], b[key]));
+		return Object.keys(a).length === Object.keys(b).length && Object.keys(a).every((key) => Object.prototype.hasOwnProperty.call(b, key) && jsonEqual(a[key], b[key]));
 	}
 	return left === right;
+}
+
+function valuesEqual(left: unknown, right: unknown): boolean {
+	if (jsonEqual(left, right)) return true;
+	const numeric = (value: unknown) => typeof value === "number" ? value : typeof value === "string" && /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value) ? Number(value) : NaN;
+	return Math.abs(numeric(left) - numeric(right)) < Number.EPSILON;
 }
 
 function strings(value: unknown, fallback: string[], name: string): string[] {
@@ -66,7 +74,7 @@ export function collectionScope(config: unknown) {
 	const typesFolder = folder("types_folder", "_types");
 	const reserved = [typesFolder, folder("contracts_folder", "_contracts"), folder("cache_folder", ".mdbase"), folder("migrations_folder", "_types/_migrations"), ".mdbase"];
 	const excludes = strings(settings.exclude, [".git", "node_modules", ".mdbase"], "exclude");
-	const extensions = new Set(["md", ...strings(settings.record_extensions, ["md"], "record_extensions")]);
+	const extensions = new Set(effectiveRecordExtensions(settings));
 	const keys = effectiveMembershipKeys(settings.explicit_type_keys);
 	const contains = (path: string) => path !== "mdbase.yaml" && !(settings.include_subfolders === false && path.includes("/")) &&
 		!reserved.some((prefix) => path === prefix || path.startsWith(`${prefix}/`)) && !excludes.some((pattern) => excludedByPattern(pattern, path));
@@ -83,14 +91,42 @@ export async function isCollectionRecord(adapter: { exists(path: string): Promis
 	return true;
 }
 
-/** Check only supported generated match rules; arbitrary CEL is refused by the caller. */
+/** Refuse unsupported predicate shapes before scanning, even when there are no records. */
+export function assertSupportedMatch(value: unknown): void {
+	if (value === undefined) return;
+	const fail = () => { throw new Error("Unsupported match predicate; run mdbase validate; no repairs were made"); };
+	if (value === null || typeof value !== "object" || Array.isArray(value)) return fail();
+	const match = object(value);
+	if (Object.keys(match).some((key) => !["where", "fields_present", "path_glob", "path_globs", "expr"].includes(key))) fail();
+	if (match.where !== undefined) {
+		if (match.where === null || typeof match.where !== "object" || Array.isArray(match.where)) fail();
+		for (const [field, predicate] of Object.entries(object(match.where))) {
+			assertFieldReference(field);
+			if (predicate !== null && typeof predicate === "object" && !Array.isArray(predicate)) {
+				if (Object.entries(object(predicate)).some(([key, expected]) => !["contains", "exists", "eq"].includes(key) || (key === "exists" && typeof expected !== "boolean"))) fail();
+			}
+		}
+	}
+	if (match.fields_present !== undefined) {
+		if (!Array.isArray(match.fields_present) || match.fields_present.some((field) => typeof field !== "string")) fail();
+		for (const field of match.fields_present as string[]) assertFieldReference(field);
+	}
+	for (const key of ["path_glob", "path_globs"]) {
+		const glob = match[key];
+		if (glob !== undefined && !(key === "path_glob" && typeof glob === "string") && (!Array.isArray(glob) || glob.some((item) => typeof item !== "string"))) fail();
+	}
+	if (match.expr !== undefined && (match.expr === null || typeof match.expr !== "object" || Array.isArray(match.expr) || Object.keys(object(match.expr)).some((key) => key !== "$expr") || typeof object(match.expr).$expr !== "string")) fail();
+}
+
+/** Supported match rules use engine field references; arbitrary CEL is refused by the caller. */
 export function isTaskMember(record: ObjectValue, path: string, type: ObjectValue, keys: string[], matchExclusions: string[]): boolean {
 	const explicit = explicitTypeNames(record, keys);
 	if (explicit.length) return explicit.includes(String(type.name).toLowerCase());
 	const match = object(type.match);
 	if (!Object.keys(match).length) return false;
 	const matches = Object.entries(object(match.where)).every(([field, value]) => {
-		const actual = record[field];
+		const actual = fieldReferenceValue(record, field);
+		if (value === null || typeof value !== "object" || Array.isArray(value)) return actual !== undefined && valuesEqual(actual, value);
 		// Engine operators within one field predicate are conjunctive too.
 		return Object.entries(object(value)).every(([operator, expected]) => {
 			if (operator === "contains") return Array.isArray(actual) && actual.some((item) => valuesEqual(item, expected));
@@ -99,8 +135,11 @@ export function isTaskMember(record: ObjectValue, path: string, type: ObjectValu
 			return false;
 		});
 	});
-	const present = !Array.isArray(match.fields_present) || match.fields_present.every((field) => typeof field === "string" && record[field] !== undefined && record[field] !== null);
-	const pathMatch = typeof match.path_glob !== "string" || globMatches(match.path_glob, path);
+	const present = !Array.isArray(match.fields_present) || match.fields_present.every((field) => {
+		const value = fieldReferenceValue(record, field as string);
+		return value !== undefined && value !== null;
+	});
+	const pathMatch = match.path_glob === undefined || (typeof match.path_glob === "string" ? globMatches(match.path_glob, path) : (match.path_glob as string[]).some((glob) => globMatches(glob, path)));
 	const pathGlobsMatch = !Array.isArray(match.path_globs) || match.path_globs.some((glob) => typeof glob === "string" && globMatches(glob, path));
 	return matches && present && pathMatch && pathGlobsMatch && !matchExclusions.some((folder) => path.startsWith(`${folder}/`));
 }

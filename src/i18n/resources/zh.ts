@@ -7,6 +7,7 @@ export const zh: TranslationTree = {
 		support: "TaskNotes 已保留自定义辅助文件 {path}。请从备份恢复生成的版本，或检查并使用 mdbase 迁移副本，然后重启。",
 	},
 	collectionCheck: {
+		repairChanged: "任务类型或允许的状态值已更改，或者建议的修复已不再有效。未修复任何记录；请重新检查集合。",
 		unresolvedUserField: "无法确定受管理的自定义字段 {field} 的类型。保存设置前，请检查其架构和保留的字段类型。现有设置和元数据已保留。",
 		membershipChanged: "检查后，集合成员资格或记录已发生变化。请重新检查集合。",
 		title: "检查集合",
@@ -24,6 +25,7 @@ export const zh: TranslationTree = {
 		error: "集合检查或修复已停止。未进行未经批准的更改。",
 	},
 	mdbaseSafety: {
+		settingsSaved: "TaskNotes 已保存设置，但无法同步规范的 mdbase 类型。",
 		blocked: "TaskNotes 已停止更新 mdbase 元数据。{details} 请检查列出的文件和恢复副本，解决冲突或权限问题，然后重新加载 TaskNotes。任务文件未被更改。",
 		multiple: "发现多个 TaskNotes 类型：{paths}。请保留一个规范提供者，或将其他类型移出类型文件夹，然后重新加载 TaskNotes。TaskNotes 已保留上次有效的配置。",
 		referenced: "TaskNotes 已保留 {typePath}：{recordPath} 显式引用了此类型。移动提供者之前，请检查其类型归属；任务文件未被更改。",

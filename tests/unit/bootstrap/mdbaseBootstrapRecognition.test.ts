@@ -57,6 +57,26 @@ it.each(["v4-custom", "beta0-custom"])("runs real bootstrap for %s without a pre
 	}
 });
 
+it("real bootstrap retains legacy-extension scope before constructing FieldMapper", async () => {
+	const root = path.join(__dirname, "../../fixtures/mdbase-upgrades/round3-legacy-extensions");
+	const entries: Record<string, string> = {};
+	const walk = (folder: string, prefix = "") => {
+		for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+			if (entry.isDirectory()) walk(path.join(folder, entry.name), `${prefix}${entry.name}/`);
+			else if (entry.name !== "README.md" && entry.name !== "settings.json") entries[prefix + entry.name] = fs.readFileSync(path.join(folder, entry.name), "utf8");
+		}
+	};
+	walk(root);
+	const settings = JSON.parse(fs.readFileSync(path.join(root, "settings.json"), "utf8"));
+	const memory = recognitionVault(entries);
+	const plugin = { settings, app: { vault: memory.vault }, registerEvent: jest.fn() } as unknown as TaskNotesPlugin;
+	expect(plugin.fieldMapper).toBeUndefined();
+	await initializeCoreServices(plugin);
+	expect(plugin.fieldMapper.toUserField("due")).toBe("deadline");
+	expect(YAML.parse(memory.files.get("mdbase.yaml")!).settings.record_extensions).toEqual(["md", "mdx", "base"]);
+	expect(memory.files.get("portable.mdx")).toBe(entries["portable.mdx"]);
+});
+
 it("MATRIX-R03: real historical bootstrap retains all five user fields before rebuilding FieldMapper", async () => {
 	const root = path.join(__dirname, "../../fixtures/mdbase-upgrades/scope-userfields");
 	const entries: Record<string, string> = {};
