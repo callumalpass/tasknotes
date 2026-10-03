@@ -35,6 +35,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - mdbase upgrades retain legacy record-extension coverage when adding App-required configuration. **Check collection** now respects nested field references and array path globs, and refuses stale status repairs after the task definition changes. See [Migration checks](https://tasknotes.dev/migration-v4-to-v5/#check-existing-task-records).
+- Non-native mobile metadata migration now checks publication read-back and retains the original, intended stage and journal if the active bytes differ. Adapter-internal check-then-rename still has a residual race window; keep an independent vault backup. See [Backup and recovery](https://tasknotes.dev/guides/backup-recovery/#interrupted-mdbase-metadata-updates).
 - Settings-save metadata conflicts immediately show the affected path and recovery instructions. Native no-replace publication also applies during Obsidian mobile emulation, preserving late metadata arrivals. See [Migration recovery](https://tasknotes.dev/migration-v4-to-v5/#interrupted-updates-and-blocked-collections).
 
 - Fixed mdbase upgrades failing on mobile adapters that refuse occupied destinations. Metadata replacements now retain the actual revision before activation, preserve edits arriving during the swap, and recover interrupted swaps on restart rather than reporting a successful overwrite. Task notes remain unchanged. See [Migration recovery](https://tasknotes.dev/migration-v4-to-v5/#interrupted-updates-and-blocked-collections).

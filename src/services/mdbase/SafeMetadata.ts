@@ -1,11 +1,13 @@
 import { METADATA_SWAPS, recoverMetadataSwap, type SwapJournal } from "./MetadataSwap";
 
+class MetadataPublicationConflict extends Error {}
+
 export type MetadataSnapshot = { path: string; content: string | null };
 export interface SafeMetadataAdapter {
 	exists(path: string): Promise<boolean>;
 	read(path: string): Promise<string>;
 	write(path: string, content: string): Promise<void>;
-	/** Atomic move to an empty destination; occupied destinations must fail. */
+	/** Move to an empty destination; non-native adapters may have an internal check-then-rename window. */
 	rename?: (from: string, to: string) => Promise<void>;
 	remove(path: string): Promise<void>;
 	list(path: string): Promise<{ files: string[]; folders: string[] }>;
@@ -130,19 +132,34 @@ export class SafeMetadata {
 		}
 	}
 
-	/** Non-native adapter policy is separate; do not infer atomicity from an existence check. */
+	/** Non-native adapters migrate using their empty-destination move, with a residual internal race. */
 	private async publishWithoutNativeNoReplace(stage: string, path: string): Promise<void> {
-		await this.moveEmpty(stage, path);
+		const intended = await this.read(stage);
+		if (intended === null) throw new Error(`Missing metadata stage: ${stage}`);
+		// Move a verified publication copy so the journal's original stage survives
+		// until read-back passes. An adapter move consumes its source even on divergence.
+		const publication = `${stage}.tasknotes-publish-${this.token()}`;
+		await this.stage(publication, intended);
+		await this.moveEmpty(publication, path);
+		if (await this.read(path) !== intended || await this.read(stage) !== intended) {
+			throw new MetadataPublicationConflict(`Concurrent metadata change: ${path}; metadata publication read-back failed; intended stage: ${stage}`);
+		}
+		// The enclosing create/replace removes the original stage only after its
+		// final read-back, and removes a swap journal only after that verification.
 	}
 
 	private async create(path: string, content: string): Promise<void> {
 		const temp = `${path}.tasknotes-stage-${this.token()}`;
+		let conflict = false;
 		try {
 			await this.stage(temp, content);
 			await this.activate(temp, path);
-			if (await this.read(path) !== content) throw new Error(`Metadata read-back failed: ${path}`);
+			if (await this.read(path) !== content) throw new MetadataPublicationConflict(`Concurrent metadata change: ${path}; metadata read-back failed; intended stage: ${temp}`);
+		} catch (error) {
+			conflict = error instanceof MetadataPublicationConflict;
+			throw error;
 		} finally {
-			if (await this.adapter.exists(temp)) await this.adapter.remove(temp);
+			if (!conflict && await this.adapter.exists(temp)) await this.adapter.remove(temp);
 		}
 	}
 
@@ -195,10 +212,13 @@ export class SafeMetadata {
 				throw new Error(`Concurrent metadata change: ${snapshot.path}; retained at ${recovery}; pending record: ${pending}`);
 			}
 			await this.activate(stage, snapshot.path);
-			if (await this.read(snapshot.path) !== content) throw new Error(`Metadata read-back failed: ${snapshot.path}`);
+			if (await this.read(snapshot.path) !== content) throw new MetadataPublicationConflict(`Concurrent metadata change: ${snapshot.path}; metadata read-back failed; intended stage: ${stage}`);
 			await this.adapter.remove(pending);
 		} catch (error) {
 			if (journaled) {
+				// A divergent read-back must preserve all evidence, even if the new
+				// active bytes happen to equal the original (ordinary recovery would clear it).
+				if (error instanceof MetadataPublicationConflict) throw new Error(`Concurrent metadata change: ${snapshot.path}; retained at ${recovery}; pending record: ${pending}; ${String(error)}`);
 				try { await recoverMetadataSwap(this.swapIO(), pending, journal); }
 				catch (recoveryError) { throw new Error(`Concurrent metadata change or interrupted swap: ${snapshot.path}; retained at ${recovery}; pending record: ${pending}; ${String(error)}; ${String(recoveryError)}`); }
 			}
