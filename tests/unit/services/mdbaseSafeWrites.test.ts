@@ -37,8 +37,9 @@ export function safetyHarness(entries: Record<string, string>) {
 		exists: async (p: string) => files.has(p) || folders.has(p),
 		read: async (p: string) => { if (!files.has(p)) throw new Error(`Missing file: ${p}`); return files.get(p)!; },
 		write: async (p: string, c: string) => { await hooks.write?.(p, c); files.set(p, c); parents(p); },
-		rename: async (from: string, to: string) => { await hooks.rename?.(from, to); const c = files.get(from); if (c === undefined) throw new Error(`Missing file: ${from}`); files.set(to, c); files.delete(from); parents(to); },
+		rename: async (from: string, to: string) => { await hooks.rename?.(from, to); const c = files.get(from); if (c === undefined) throw new Error(`Missing file: ${from}`); if (files.has(to) || folders.has(to)) throw new Error(`Destination file already exists: ${to}`); files.set(to, c); files.delete(from); parents(to); },
 		remove: async (p: string) => { files.delete(p); },
+		mkdir: async (p: string) => { folders.add(p); parents(`${p}/child`); },
 		list: async (folder: string) => { const prefix = folder ? `${folder}/` : ""; const direct = (p: string) => p.startsWith(prefix) && !p.slice(prefix.length).includes("/"); return { files: [...files.keys()].filter(direct), folders: [...folders].filter((p) => p !== folder && direct(p)) }; },
 	};
 	const notices: string[] = [];

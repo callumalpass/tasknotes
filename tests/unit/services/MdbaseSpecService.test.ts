@@ -1671,15 +1671,14 @@ describe("MdbaseSpecService", () => {
 			const path = "_types/task.md";
 			const original = service.buildTaskTypeDef();
 			const files = installMemoryVault(plugin, { [path]: original });
-			plugin.app.vault.adapter.rename = undefined; // Exercise the indexed adapter fallback.
-			const process = plugin.app.vault.process.getMockImplementation();
-			plugin.app.vault.process.mockImplementation((file: TFile, update: (content: string) => string) => {
-				files.set(path, original + "\nExternal body edit\n");
-				return process(file, update);
+			const move = plugin.app.vault.adapter.rename.getMockImplementation();
+			plugin.app.vault.adapter.rename.mockImplementation((from: string, to: string) => {
+				if (from === path && to.startsWith(".tasknotes/migrations/metadata-swaps/")) files.set(path, original + "\nExternal body edit\n");
+				return move(from, to);
 			});
 			const reconcile = jest.spyOn(service as any, "requestReconciliation").mockImplementation(() => {});
 			const resources = (service as any).buildCanonicalMdbaseResources("_types", false, "task", "_contracts");
-			await expect((service as any).writeCanonicalType(path, resources, true, original)).rejects.toThrow("concurrent change");
+			await expect((service as any).writeCanonicalType(path, resources, true, original)).rejects.toThrow("Concurrent metadata change");
 			expect(files.get(path)).toBe(original + "\nExternal body edit\n");
 			expect(reconcile).toHaveBeenCalledTimes(1);
 		});
@@ -1694,7 +1693,7 @@ describe("MdbaseSpecService", () => {
 			plugin.app.vault.getAbstractFileByPath.mockReturnValue(null);
 			jest.spyOn(service as any, "requestReconciliation").mockImplementation(() => {});
 			const resources = (service as any).buildCanonicalMdbaseResources("_types", false, "task", "_contracts");
-			await expect((service as any).writeCanonicalType(path, resources, true, original)).rejects.toThrow("atomically update");
+			await expect((service as any).writeCanonicalType(path, resources, true, original)).rejects.toThrow("move unavailable");
 			expect(files.get(path)).toBe(original);
 			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalled();
 		});
