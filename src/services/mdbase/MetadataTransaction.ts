@@ -99,6 +99,7 @@ export class MetadataTransaction {
 	}
 
 	async recover(): Promise<void> {
+		await this.io.recoverSwaps();
 		const raw = await this.io.read(METADATA_PENDING);
 		if (raw === null) return;
 		let backupFolder = "unknown";

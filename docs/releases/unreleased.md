@@ -34,6 +34,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed mdbase upgrades failing on mobile adapters that refuse occupied destinations. Metadata replacements now retain the actual revision before activation, preserve edits arriving during the swap, and recover interrupted swaps on restart rather than reporting a successful overwrite. Task notes remain unchanged. See [Migration recovery](https://tasknotes.dev/migration-v4-to-v5/#interrupted-updates-and-blocked-collections).
 - mdbase task-type upgrades now retain existing property mappings, custom stable IDs, archive tags, occurrence policies and custom constraints, with a recovery copy before structural changes. Existing collection membership defaults are preserved. Invalid canonical definitions are reported instead of being silently adopted or overwritten.
 - Portable task detection now respects excluded folders. App-required Markdown/Base extensions and configured view-folder includes are added without removing existing collection configuration. Pack installation remains part of the App's engine-verified setup consent. See [Upgrading from v4 to v5](https://tasknotes.dev/migration-v4-to-v5/).
 

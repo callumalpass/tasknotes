@@ -1,4 +1,4 @@
-import { Modal, normalizePath, type TAbstractFile, TFile } from "obsidian";
+import { Modal, normalizePath, type TAbstractFile } from "obsidian";
 import YAML from "yaml";
 import { canonicalTaskNotesResources } from "./canonicalTaskNotesPack";
 import { FieldMapper } from "./FieldMapper";
@@ -177,7 +177,7 @@ export class MdbaseSpecService {
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
-		this.metadataIO = new SafeMetadata(plugin.app.vault.adapter);
+		this.metadataIO = new SafeMetadata(plugin.app.vault.adapter, (path) => this.ensureFolderPath(path));
 		this.metadataTransaction = new MetadataTransaction(
 			this.metadataIO,
 			(path) => this.ensureFolderPath(path),
@@ -197,6 +197,7 @@ export class MdbaseSpecService {
 		}
 
 		try {
+			await this.metadataIO.recoverSwaps();
 			await this.metadataTransaction.recover();
 			await this.recoverInterruptedV02Migration();
 			const existingCollection = await this.readExistingCollection();
@@ -810,7 +811,7 @@ export class MdbaseSpecService {
 			if (this.lastKnownTypeContent === null && Array.isArray(savedExclusions)) this.plugin.settings.excludedFolders = savedExclusions.join(", ");
 			const adjusted = this.lastKnownTypeContent === null ? applyTaskExclusions(state.content, this.plugin.settings.excludedFolders || "") : state.content;
 			if (adjusted !== state.content) {
-				await this.writeFileIfUnchanged({ path: state.path, content: state.content }, adjusted, true);
+				await this.writeFileIfUnchanged({ path: state.path, content: state.content }, adjusted);
 				state = { ...state, content: adjusted, type: withCurrentTaskNotesContract(parseMdbaseTaskTypeDocument(adjusted).type).type };
 			}
 			await this.reconcileMembershipKeys();
@@ -848,7 +849,7 @@ export class MdbaseSpecService {
 				contractsFolder
 			);
 			const upgraded = upgradeCanonicalDocument(state.content, resources);
-			await this.writeFileIfUnchanged({ path: state.path, content: state.content }, upgraded, true);
+			await this.writeFileIfUnchanged({ path: state.path, content: state.content }, upgraded);
 			this.applyCanonicalState({ ...state, content: upgraded, type: parseMdbaseTaskTypeDocument(upgraded).type, outdated: false });
 			if (upgraded !== state.content) {
 				this.publishNotice(
@@ -1087,7 +1088,7 @@ export class MdbaseSpecService {
 
 		this.writeInProgress = true;
 		try {
-			await this.writeFileIfUnchanged(snapshot, content, true);
+			await this.writeFileIfUnchanged(snapshot, content);
 		} catch (error) {
 			// Re-read the disk state through normal conflict reconciliation. Never
 			// retry with a fresh snapshot and stale settings after a failed CAS.
@@ -1436,8 +1437,7 @@ export class MdbaseSpecService {
 
 	private async writeFileIfUnchanged(
 		snapshot: FileSnapshot,
-		content: string,
-		requireAtomic = false
+		content: string
 	): Promise<void> {
 		if (this.metadataTransaction.stage(snapshot, content)) return;
 		if (await this.metadataIO.read(snapshot.path) !== snapshot.content) {
@@ -1445,38 +1445,7 @@ export class MdbaseSpecService {
 		}
 		const parent = snapshot.path.split("/").slice(0, -1).join("/");
 		if (parent) await this.ensureFolderPath(parent);
-		await this.metadataIO.replace(snapshot, content, () => this.writeFileIfUnchangedFallback(snapshot, content, requireAtomic));
-	}
-
-	private async writeFileIfUnchangedFallback(
-		snapshot: FileSnapshot,
-		content: string,
-		requireAtomic: boolean
-	): Promise<void> {
-		const vault = this.plugin.app.vault;
-		if (snapshot.content === null) {
-			const parent = snapshot.path.split("/").slice(0, -1).join("/");
-			if (parent) await this.ensureFolderPath(parent);
-			await vault.create(snapshot.path, content);
-			return;
-		}
-		const file = vault.getAbstractFileByPath?.(snapshot.path);
-		if (file instanceof TFile) {
-			await vault.process(file, (current) => {
-				if (current !== snapshot.content) {
-					throw new Error(`Refusing to overwrite a concurrent change to ${snapshot.path}`);
-				}
-				return content;
-			});
-			return;
-		}
-		if (requireAtomic) {
-			throw new Error(`Cannot atomically update ${snapshot.path} before Obsidian indexes the file`);
-		}
-		if ((await vault.adapter.read(snapshot.path)) !== snapshot.content) {
-			throw new Error(`Refusing to overwrite a concurrent change to ${snapshot.path}`);
-		}
-		await vault.adapter.write(snapshot.path, content);
+		await this.metadataIO.replace(snapshot, content);
 	}
 
 	/**
