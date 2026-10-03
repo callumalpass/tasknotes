@@ -7,6 +7,7 @@ export const ko: TranslationTree = {
 		support: "TaskNotes가 사용자 지정 지원 파일 {path}를 보존했습니다. 백업에서 생성된 버전을 복원하거나 사본을 검토하고 mdbase로 마이그레이션한 다음 다시 시작하세요.",
 	},
 	collectionCheck: {
+		repairChanged: "작업 유형이나 허용된 상태 값이 변경되었거나 제안된 복구가 더 이상 유효하지 않습니다. 아무것도 복구되지 않았습니다. 컬렉션을 다시 검사하세요.",
 		unresolvedUserField: "관리되는 사용자 정의 필드 {field}의 유형을 확인할 수 없습니다. 설정을 저장하기 전에 스키마와 유지된 필드 유형을 검토하세요. 기존 설정과 메타데이터는 유지되었습니다.",
 		membershipChanged: "컬렉션 검사 후 소속 조건이나 레코드가 변경되었습니다. 다시 검사하세요.",
 		title: "컬렉션 확인",
@@ -24,6 +25,7 @@ export const ko: TranslationTree = {
 		error: "컬렉션 확인 또는 수정이 중단되었습니다. 승인하지 않은 변경은 없습니다.",
 	},
 	mdbaseSafety: {
+		settingsSaved: "TaskNotes가 설정을 저장했지만 정식 mdbase 유형을 동기화하지 못했습니다.",
 		blocked: "TaskNotes가 mdbase 메타데이터 업데이트를 중단했습니다. {details} 표시된 파일과 복구 사본을 확인하고 충돌 또는 권한 문제를 해결한 뒤 TaskNotes를 다시 불러오세요. 작업 파일은 변경되지 않았습니다.",
 		multiple: "TaskNotes 유형이 여러 개 있습니다: {paths}. 정식 제공자를 하나만 유지하거나 나머지를 유형 폴더 밖으로 옮긴 뒤 TaskNotes를 다시 불러오세요. TaskNotes는 마지막으로 확인된 유효한 설정을 유지했습니다.",
 		referenced: "TaskNotes가 {typePath}을 유지했습니다. {recordPath}에서 이 유형을 명시적으로 참조합니다. 제공자를 옮기기 전에 유형 소속을 확인하세요. 작업 파일은 변경되지 않았습니다.",

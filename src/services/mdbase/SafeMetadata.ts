@@ -1,4 +1,3 @@
-import { Platform } from "obsidian";
 import { METADATA_SWAPS, recoverMetadataSwap, type SwapJournal } from "./MetadataSwap";
 
 export type MetadataSnapshot = { path: string; content: string | null };
@@ -31,10 +30,12 @@ export class SafeMetadata {
 
 	private async native() {
 		if (typeof this.adapter.getBasePath !== "function") return null;
-		if (Platform.isDesktop) {
+		if (typeof window !== "undefined" && typeof window.require === "function") {
+			// Capability, not UI platform: Electron retains Node fs in mobile emulation.
 			// Electron's renderer cannot resolve import("node:...") URLs.
-			const fs = window.require("node:fs/promises") as typeof import("node:fs/promises");
-			return { fs, root: this.adapter.getBasePath() };
+			let fs: typeof import("node:fs/promises");
+			try { fs = window.require("node:fs/promises"); } catch { return null; }
+			if (typeof fs.link === "function") return { fs, root: this.adapter.getBasePath() };
 		}
 		return null;
 	}
@@ -125,8 +126,13 @@ export class SafeMetadata {
 			await this.flushDirectory(path);
 			await this.adapter.remove(stage);
 		} else {
-			await this.moveEmpty(stage, path);
+			await this.publishWithoutNativeNoReplace(stage, path);
 		}
+	}
+
+	/** Non-native adapter policy is separate; do not infer atomicity from an existence check. */
+	private async publishWithoutNativeNoReplace(stage: string, path: string): Promise<void> {
+		await this.moveEmpty(stage, path);
 	}
 
 	private async create(path: string, content: string): Promise<void> {

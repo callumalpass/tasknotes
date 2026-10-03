@@ -4,6 +4,7 @@ import { canonicalTaskNotesResources } from "./canonicalTaskNotesPack";
 import { FieldMapper } from "./FieldMapper";
 import { hasLegacyFieldsSchema, isKnownLegacySupport, recognizeLegacyTaskType } from "./mdbase/legacyRecognition";
 import { migrationRecognitionNotice } from "./mdbase/recognitionNotices";
+import { metadataSafetyNotice } from "./mdbase/metadataFailureNotices";
 import { addAppCollectionConfig, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
 import { upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
 import { MetadataQueue, SafeMetadata } from "./mdbase/SafeMetadata";
@@ -1310,10 +1311,7 @@ export class MdbaseSpecService {
 	}
 
 	private safetyNotice(details: string): string {
-		const support = /Preserved customized mdbase support resource: ([^;\n]+)/.exec(details);
-		if (support) return migrationRecognitionNotice(this.plugin, "support", { path: support[1] });
-		return this.plugin.i18n?.translate("mdbaseSafety.blocked", { details }) ??
-			`TaskNotes stopped the mdbase metadata update. ${details} Review the listed file and recovery copies, resolve the conflict or permissions, then reload TaskNotes. Task files were not changed.`;
+		return metadataSafetyNotice(this.plugin, details);
 	}
 
 	private publishNotice(message: string): void {

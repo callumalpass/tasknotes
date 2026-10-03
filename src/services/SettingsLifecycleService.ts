@@ -5,6 +5,7 @@ import { EVENT_TASK_UPDATED } from "../types";
 import type { TaskNotesSettings } from "../types/settings";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
+import { reportSettingsMetadataResult } from "./mdbase/metadataFailureNotices";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/SettingsLifecycleService" });
 
@@ -92,12 +93,7 @@ export class SettingsLifecycleService {
 					);
 				}
 				await this.plugin.saveSettingsDataOnly();
-				if (mdbaseSyncError) {
-					publishUserNotice(
-						this.plugin.emitter,
-						"TaskNotes saved your settings, but could not synchronize the canonical mdbase type."
-					);
-				}
+				reportSettingsMetadataResult(this.plugin, mdbaseSyncError);
 
 				if (this.saveSettingsRequested) {
 					continue;

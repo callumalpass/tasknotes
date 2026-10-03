@@ -9,6 +9,7 @@ export const en: TranslationTree = {
 	collectionCheck: {
 		unresolvedUserField: "Cannot resolve owned user field {field}. Review its schema and retained field type before saving settings. Existing settings and metadata were preserved.",
 		membershipChanged: "Collection membership or record changed since collection check; check again.",
+		repairChanged: "The task type or allowed status values changed, or the proposed repair is no longer valid. Nothing was repaired; check the collection again.",
 		title: "Check collection",
 		invalidType: "{path} is inconsistent: {issues}. Review its implements.fields and binding before retrying; plugin settings were kept.",
 		keptConfiguration: "TaskNotes kept its last-known-good configuration.",
@@ -24,6 +25,7 @@ export const en: TranslationTree = {
 		error: "Collection check or repair stopped. No unapproved changes were made.",
 	},
 	mdbaseSafety: {
+		settingsSaved: "TaskNotes saved your settings, but could not synchronize the canonical mdbase type.",
 		blocked: "TaskNotes stopped the mdbase metadata update. {details} Review the listed file and recovery copies, resolve the conflict or permissions, then reload TaskNotes. Task files were not changed.",
 		multiple: "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration.",
 		referenced: "TaskNotes kept {typePath}: {recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.",

@@ -228,7 +228,7 @@ describe("explicit collection validation and approved repairs", () => {
 		expect(cancelled.file.path).toBe("TaskNotes/Tasks/cancelled.md");
 		expect(await repairCollectionRecord(h.plugin, cancelled)).toBeNull();
 		expect(h.files.get(cancelled.file.path)).toBe(cancelled.content);
-		await expect(repairCollectionRecord(h.plugin, cancelled, "invented")).rejects.toThrow("Invalid status choice");
+		await expect(repairCollectionRecord(h.plugin, cancelled, "invented")).rejects.toThrow("proposed repair is no longer valid");
 		const backup = await repairCollectionRecord(h.plugin, cancelled, "open");
 		expect(h.files.get(backup!)).toBe(cancelled.content);
 		expect(typeOf(h.files.get(cancelled.file.path)!).status).toBe("open");

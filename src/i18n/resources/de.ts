@@ -7,6 +7,7 @@ export const de: TranslationTree = {
 		support: "TaskNotes hat die angepasste Hilfsdatei {path} unverändert gelassen. Stellen Sie die generierte Version aus einer Sicherung wieder her oder prüfen und migrieren Sie eine Kopie mit mdbase. Starten Sie danach neu.",
 	},
 	collectionCheck: {
+		repairChanged: "Der Aufgabentyp oder die zulässigen Statuswerte haben sich geändert, oder die vorgeschlagene Reparatur ist nicht mehr gültig. Es wurde nichts repariert; prüfe die Sammlung erneut.",
 		unresolvedUserField: "Der Typ des verwalteten benutzerdefinierten Feldes {field} kann nicht bestimmt werden. Prüfe vor dem Speichern das Schema und den beibehaltenen Feldtyp. Bestehende Einstellungen und Metadaten wurden beibehalten.",
 		membershipChanged: "Die Sammlungszugehörigkeit oder der Datensatz wurde seit der Prüfung geändert. Prüfe die Sammlung erneut.",
 		title: "Sammlung prüfen",
@@ -24,6 +25,7 @@ export const de: TranslationTree = {
 		error: "Prüfung oder Korrektur der Sammlung gestoppt. Es wurden keine ungenehmigten Änderungen vorgenommen.",
 	},
 	mdbaseSafety: {
+		settingsSaved: "TaskNotes hat deine Einstellungen gespeichert, konnte aber den kanonischen mdbase-Typ nicht synchronisieren.",
 		blocked: "TaskNotes hat die Aktualisierung der mdbase-Metadaten gestoppt. {details} Prüfen Sie die angegebene Datei und die Sicherungskopien, beheben Sie den Konflikt oder die Zugriffsrechte und laden Sie TaskNotes neu. Aufgabendateien wurden nicht geändert.",
 		multiple: "Mehrere TaskNotes-Typen: {paths}. Behalten Sie einen kanonischen Anbieter oder verschieben Sie die anderen aus dem Typenordner und laden Sie TaskNotes neu. TaskNotes hat die letzte gültige Konfiguration beibehalten.",
 		referenced: "TaskNotes hat {typePath} beibehalten: {recordPath} verweist ausdrücklich auf diesen Typ. Prüfen Sie die Typzugehörigkeit, bevor Sie den Anbieter verschieben; Aufgabendateien wurden nicht geändert.",

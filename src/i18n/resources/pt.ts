@@ -7,6 +7,7 @@ export const pt: TranslationTree = {
 		support: "O TaskNotes preservou o arquivo de suporte personalizado {path}. Restaure a versão gerada de um backup ou revise e migre uma cópia com mdbase; depois, reinicie.",
 	},
 	collectionCheck: {
+		repairChanged: "O tipo de tarefa ou os estados permitidos mudaram, ou a reparação proposta já não é válida. Nada foi reparado; verifique novamente a coleção.",
 		unresolvedUserField: "Não foi possível determinar o tipo do campo personalizado gerido {field}. Reveja o esquema e o tipo de campo preservado antes de guardar as definições. As definições e os metadados existentes foram preservados.",
 		membershipChanged: "A pertença à coleção ou o registo mudou desde a verificação. Verifique novamente a coleção.",
 		title: "Verificar coleção",
@@ -24,6 +25,7 @@ export const pt: TranslationTree = {
 		error: "Verificação ou reparo da coleção interrompido. Nenhuma alteração sem aprovação foi feita.",
 	},
 	mdbaseSafety: {
+		settingsSaved: "O TaskNotes guardou as suas definições, mas não conseguiu sincronizar o tipo canónico do mdbase.",
 		blocked: "O TaskNotes interrompeu a atualização dos metadados do mdbase. {details} Reveja o ficheiro indicado e as cópias de recuperação, resolva o conflito ou as permissões e recarregue o TaskNotes. Os ficheiros de tarefas não foram alterados.",
 		multiple: "Vários tipos do TaskNotes: {paths}. Mantenha um fornecedor canónico ou mova os restantes para fora da pasta de tipos e recarregue o TaskNotes. O TaskNotes manteve a última configuração válida.",
 		referenced: "O TaskNotes manteve {typePath}: {recordPath} faz referência explícita a este tipo. Reveja a sua pertença antes de mover o fornecedor; os ficheiros de tarefas não foram alterados.",

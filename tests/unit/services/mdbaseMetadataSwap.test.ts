@@ -181,12 +181,12 @@ it("refuses adapters without a move instead of truncating active metadata", asyn
 	expect(h.files.get("mdbase.yaml")).toBe("original");
 });
 
-it.each(targets)("native %s move-boundary race retains actual bytes; link-boundary race keeps both revisions", async (target) => {
+it.each(targets.flatMap((target) => [false, true].map((desktop) => [target, desktop] as const)))("native %s publication robustness (desktop=%s) retains actual bytes and late arrivals", async (target, emulateDesktop) => {
 	const scratch = await fs.mkdtemp(path.join(process.env.TMPDIR!, "swap-native-"));
 	const previousRequire = window.require;
 	const desktop = Platform.isDesktop;
 	window.require = require;
-	(Platform as any).isDesktop = true;
+	(Platform as any).isDesktop = emulateDesktop;
 	try {
 		const full = (p: string) => path.join(scratch, p);
 		await fs.mkdir(path.dirname(full(target)), { recursive: true });
@@ -224,9 +224,16 @@ it.each(targets)("native %s move-boundary race retains actual bytes; link-bounda
 		await new SafeMetadata(adapter).recoverSwaps();
 		const originalLink = fs.link;
 		let arrived = false;
+		const inject = async (from: unknown, to: unknown) => {
+			if (!arrived && String(from).includes(".tasknotes-stage-") && to === full(target)) { arrived = true; await fs.writeFile(full(target), "NEW ARRIVAL"); }
+		};
 		const link = jest.spyOn(require("node:fs/promises"), "link").mockImplementation(async (from, to) => {
-			if (!arrived && to === full(target)) { arrived = true; await fs.writeFile(full(target), "NEW ARRIVAL"); }
-			return originalLink(from, to);
+			await inject(from, to); return originalLink(from, to);
+		});
+		// Also intercept the adapter's underlying overwrite primitive AFTER its precheck.
+		// The mobile-emulation path must not use it to publish, but the old path did.
+		const publicationRename = jest.spyOn(require("node:fs/promises"), "rename").mockImplementation(async (from, to) => {
+			await inject(from, to); return originalRename(from, to);
 		});
 		try {
 			await expect(new SafeMetadata(adapter).replace({ path: target, content: "original" }, "intended")).rejects.toThrow("Concurrent metadata change");
@@ -236,7 +243,7 @@ it.each(targets)("native %s move-boundary race retains actual bytes; link-bounda
 			expect(siblings.some((p) => p.includes(".tasknotes-stage-"))).toBe(true);
 			const retained = await fs.readdir(full(METADATA_SWAPS), { withFileTypes: true });
 			expect(retained.filter((p) => p.isDirectory()).length).toBeGreaterThanOrEqual(2);
-		} finally { link.mockRestore(); }
+		} finally { link.mockRestore(); publicationRename.mockRestore(); }
 	} finally {
 		(Platform as any).isDesktop = desktop;
 		window.require = previousRequire;

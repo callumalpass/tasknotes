@@ -1,0 +1,24 @@
+{
+  "kind": "mdbase.provision-lock",
+  "lock_version": 1,
+  "contributions": [
+    {
+      "path": "/x-obsidian/bases/include",
+      "value": "TaskNotes/Views/**/*.base",
+      "contributors": [
+        {
+          "application_id": "dev.tasknotes.app",
+          "declaration_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "provision_digest": "sha256:2d91ce701e43f387d7f84b060c378aef02d89254fb61269415fdc95d39f94991",
+          "requirement": "tasknotes-base-sources"
+        },
+        {
+          "application_id": "dev.tasknotes.app",
+          "declaration_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "provision_digest": "sha256:936510de84446bb3ed0154eb0be00316710620355931f68ea58257efe0bedc8b",
+          "requirement": "tasknotes-base-sources"
+        }
+      ]
+    }
+  ]
+}

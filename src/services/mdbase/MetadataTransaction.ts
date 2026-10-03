@@ -80,7 +80,7 @@ export class MetadataTransaction {
 			await this.remove(METADATA_PENDING);
 		} catch (error) {
 			try { await this.restore(journal); await this.remove(METADATA_PENDING); }
-			catch (recovery) { throw new Error(`Recovery blocked. Pending record: ${METADATA_PENDING}; backups: ${backupFolder}; ${String(recovery)}`); }
+			catch (recovery) { throw new Error(`Recovery blocked. Pending record: ${METADATA_PENDING}; backups: ${backupFolder}; ${String(error)}; ${String(recovery)}`); }
 			throw new Error(`Metadata upgrade rolled back. Backups: ${backupFolder}; ${String(error)}`);
 		}
 	}
