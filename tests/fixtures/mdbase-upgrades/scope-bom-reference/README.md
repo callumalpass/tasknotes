@@ -1,0 +1,1 @@
+Captured unchanged from compat/rerun-evidence/new-bom-explicit-before/collection (candidate b536d634). BOM explicit member references the superseded beta provider; the mixed-version input is intentionally engine-blocked. Transient runtime state omitted. Regression must retain the provider and every original record byte.

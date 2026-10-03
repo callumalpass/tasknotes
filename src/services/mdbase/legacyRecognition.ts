@@ -2,6 +2,7 @@ import type { TaskNotesSettings } from "../../types/settings";
 import { parseMdbaseTaskTypeDocument } from "../mdbaseCanonicalConfig";
 import { legacyTaskNotesSupport } from "../legacyTaskNotesSupport";
 import { renderHistoricalTaskTypes } from "./historicalTaskTypeRenderers";
+import { splitFrontmatter } from "./frontmatter";
 
 /** Normalize transport/editor formatting only, never substantive content. */
 export function normalizeLegacyMetadata(content: string): string {
@@ -65,8 +66,10 @@ export function hasLegacyFieldsSchema(content: string): boolean {
 	try {
 		return Object.prototype.hasOwnProperty.call(parseMdbaseTaskTypeDocument(normalized).type, "fields");
 	} catch {
-		const frontmatter = normalized.match(/^---\n([\s\S]*?)\n---(?:\n|$)/)?.[1];
-		return frontmatter !== undefined && /^fields:/m.test(frontmatter);
+		try {
+			const frontmatter = splitFrontmatter(normalized)?.frontmatter;
+			return frontmatter !== undefined && /^fields:/m.test(frontmatter);
+		} catch { return false; }
 	}
 }
 

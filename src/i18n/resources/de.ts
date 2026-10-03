@@ -7,6 +7,8 @@ export const de: TranslationTree = {
 		support: "TaskNotes hat die angepasste Hilfsdatei {path} unverändert gelassen. Stellen Sie die generierte Version aus einer Sicherung wieder her oder prüfen und migrieren Sie eine Kopie mit mdbase. Starten Sie danach neu.",
 	},
 	collectionCheck: {
+		unresolvedUserField: "Der Typ des verwalteten benutzerdefinierten Feldes {field} kann nicht bestimmt werden. Prüfe vor dem Speichern das Schema und den beibehaltenen Feldtyp. Bestehende Einstellungen und Metadaten wurden beibehalten.",
+		membershipChanged: "Die Sammlungszugehörigkeit oder der Datensatz wurde seit der Prüfung geändert. Prüfe die Sammlung erneut.",
 		title: "Sammlung prüfen",
 		invalidType: "{path} ist inkonsistent: {issues}. Prüfe implements.fields und binding vor einem erneuten Versuch; die Plugin-Einstellungen wurden beibehalten.",
 		keptConfiguration: "TaskNotes hat die letzte gültige Konfiguration beibehalten.",

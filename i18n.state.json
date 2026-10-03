@@ -12,6 +12,14 @@
       "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
       "translation": "2bfbb4c7c44c0c6429a6d3c821044a6c4e4a7aa5"
     },
+    "collectionCheck.unresolvedUserField": {
+      "source": "33de89b89c5ffb869a087ba369a25a6a95e6964c",
+      "translation": "28e0fee4bcac774493666c4565c18eb8a571c550"
+    },
+    "collectionCheck.membershipChanged": {
+      "source": "f679d862d050b9540943b7616e1925202926aa8e",
+      "translation": "c81c5ae0f3a83e980f200137308992c9a0480c65"
+    },
     "collectionCheck.title": {
       "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
       "translation": "8b5b685cb4775d06f475af95f6b152a1d4b09dee"
@@ -9565,6 +9573,14 @@
     "migrationRecognition.support": {
       "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
       "translation": "1725a1b0242b265d4128f594c45fa1f2d52bdea4"
+    },
+    "collectionCheck.unresolvedUserField": {
+      "source": "33de89b89c5ffb869a087ba369a25a6a95e6964c",
+      "translation": "660a16432e5cc3b0380b09fb46b688d3b88a9595"
+    },
+    "collectionCheck.membershipChanged": {
+      "source": "f679d862d050b9540943b7616e1925202926aa8e",
+      "translation": "48dc7576d22891973e08a1499795b9d8fc560041"
     },
     "collectionCheck.title": {
       "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
@@ -19120,6 +19136,14 @@
       "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
       "translation": "89c5a03b6f70df7de80a7969c040ebbb2293b4f5"
     },
+    "collectionCheck.unresolvedUserField": {
+      "source": "33de89b89c5ffb869a087ba369a25a6a95e6964c",
+      "translation": "656484b4afab1fb94bb771880ac63391741e6ac9"
+    },
+    "collectionCheck.membershipChanged": {
+      "source": "f679d862d050b9540943b7616e1925202926aa8e",
+      "translation": "e90c65caf5248c12e61552b76d5a75e36864a286"
+    },
     "collectionCheck.title": {
       "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
       "translation": "01504c69ad23f505437d1fd42343556750dc431c"
@@ -28673,6 +28697,14 @@
     "migrationRecognition.support": {
       "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
       "translation": "92c02251c0a815ef092870a8efdeb55294165cd0"
+    },
+    "collectionCheck.unresolvedUserField": {
+      "source": "33de89b89c5ffb869a087ba369a25a6a95e6964c",
+      "translation": "fe54d5929aabb3fe47cba30f5a3910bc68e812c8"
+    },
+    "collectionCheck.membershipChanged": {
+      "source": "f679d862d050b9540943b7616e1925202926aa8e",
+      "translation": "015ab5ac51d15b7d2ac0018c42ad5f2dce73e9a2"
     },
     "collectionCheck.title": {
       "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
@@ -38228,6 +38260,14 @@
       "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
       "translation": "fc3898fd01fb5a2bc28d74fa8c8df4267b2801bf"
     },
+    "collectionCheck.unresolvedUserField": {
+      "source": "33de89b89c5ffb869a087ba369a25a6a95e6964c",
+      "translation": "58be1b04fc206189389d1d45df9630d0ceb2ccaa"
+    },
+    "collectionCheck.membershipChanged": {
+      "source": "f679d862d050b9540943b7616e1925202926aa8e",
+      "translation": "2d479d351d1bab47701e7a9d91bf265ab649d20b"
+    },
     "collectionCheck.title": {
       "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
       "translation": "eaa24b0a5e4b010adc2c906e4c29955185898677"
@@ -47781,6 +47821,14 @@
     "migrationRecognition.support": {
       "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
       "translation": "054670ace66e7b62b78b96ce1e33df00ff4065b7"
+    },
+    "collectionCheck.unresolvedUserField": {
+      "source": "33de89b89c5ffb869a087ba369a25a6a95e6964c",
+      "translation": "41d9340e174ae53ca2f5048dfbf6f0145608d8be"
+    },
+    "collectionCheck.membershipChanged": {
+      "source": "f679d862d050b9540943b7616e1925202926aa8e",
+      "translation": "9c6c76490bb8dcfefa3792ea72684ffdb69536a9"
     },
     "collectionCheck.title": {
       "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
@@ -57336,6 +57384,14 @@
       "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
       "translation": "d622fbeb73fec882df24639a724c67ee48cb34c3"
     },
+    "collectionCheck.unresolvedUserField": {
+      "source": "33de89b89c5ffb869a087ba369a25a6a95e6964c",
+      "translation": "8b6aeb062daf795a0ca5f7e283d1478dfe3e3ce1"
+    },
+    "collectionCheck.membershipChanged": {
+      "source": "f679d862d050b9540943b7616e1925202926aa8e",
+      "translation": "8cc2cb3d2d4a14e603d5e1194d76bf2d09aff61c"
+    },
     "collectionCheck.title": {
       "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",
       "translation": "d8ab6e5a4dedc05e030bc3a7884db970bc95147c"
@@ -66889,6 +66945,14 @@
     "migrationRecognition.support": {
       "source": "532e9c49d7e9baca55e54bd7701b29fef3b16850",
       "translation": "a59f9c463eba432ff47752030687786cebcf1c06"
+    },
+    "collectionCheck.unresolvedUserField": {
+      "source": "33de89b89c5ffb869a087ba369a25a6a95e6964c",
+      "translation": "7085da3270e94401d74a03e7f7d593c00a3fc5fb"
+    },
+    "collectionCheck.membershipChanged": {
+      "source": "f679d862d050b9540943b7616e1925202926aa8e",
+      "translation": "c81b24084da5111183ea0eab2e387a8360776109"
     },
     "collectionCheck.title": {
       "source": "f4e959b9c5e1afafc8309f12a974cb60d8a02689",

@@ -34,6 +34,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed BOM-prefixed canonical mdbase upgrades and duplicate-provider reference checks, while preserving original task bytes.
+- **Check collection** now includes explicitly typed tasks hidden by plugin folder exclusions and respects collection-wide exclusions, subfolder settings and nested collections. Repairs recheck membership before writing. See [Migration checks](https://tasknotes.dev/migration-v4-to-v5/#check-existing-task-records).
+- Historical custom text properties now survive canonical settings import and later unrelated settings changes; unresolved owned properties are reported instead of silently dropped.
+- Existing duplicate Base include entries no longer prevent required view-folder includes from being added; user entries are retained.
+
 - mdbase task-type upgrades now retain existing property mappings, custom stable IDs, archive tags, occurrence policies and custom constraints, with a recovery copy before structural changes. Existing collection membership defaults are preserved. Invalid canonical definitions are reported instead of being silently adopted or overwritten.
 - Portable task detection now respects excluded folders. App-required Markdown/Base extensions and configured view-folder includes are added without removing existing collection configuration. Pack installation remains part of the App's engine-verified setup consent. See [Upgrading from v4 to v5](https://tasknotes.dev/migration-v4-to-v5/).
 

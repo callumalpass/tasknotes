@@ -7,6 +7,8 @@ export const fr: TranslationTree = {
 		support: "TaskNotes a conservé le fichier de support personnalisé {path}. Restaurez la version générée depuis une sauvegarde ou vérifiez et migrez une copie avec mdbase, puis redémarrez.",
 	},
 	collectionCheck: {
+		unresolvedUserField: "Impossible de déterminer le type du champ personnalisé géré {field}. Vérifiez son schéma et le type de champ conservé avant d’enregistrer les paramètres. Les paramètres et métadonnées existants ont été conservés.",
+		membershipChanged: "L’appartenance à la collection ou l’enregistrement a changé depuis la vérification. Vérifiez à nouveau la collection.",
 		title: "Vérifier la collection",
 		invalidType: "{path} est incohérent : {issues}. Vérifiez implements.fields et binding avant de réessayer ; les paramètres du plugin ont été conservés.",
 		keptConfiguration: "TaskNotes a conservé la dernière configuration valide.",

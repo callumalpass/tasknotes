@@ -7,6 +7,8 @@ export const ja: TranslationTree = {
 		support: "TaskNotes はカスタマイズされた補助ファイル {path} を保持しました。生成されたバージョンをバックアップから復元するか、コピーを確認して mdbase で移行し、再起動してください。",
 	},
 	collectionCheck: {
+		unresolvedUserField: "管理対象のカスタムフィールド {field} の型を判定できません。設定を保存する前に、スキーマと保持されたフィールドの型を確認してください。既存の設定とメタデータは保持されています。",
+		membershipChanged: "コレクションの確認後に所属条件またはレコードが変更されました。もう一度確認してください。",
 		title: "コレクションを確認",
 		invalidType: "{path} に不整合があります: {issues}。再試行する前に implements.fields と binding を確認してください。プラグイン設定は保持されました。",
 		keptConfiguration: "TaskNotes は最後の正常な設定を保持しました。",
