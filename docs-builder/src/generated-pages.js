@@ -83,9 +83,27 @@ async function loadRuntimeDocumentationData() {
 		},
 		bundle: true,
 		format: "esm",
+		banner: {
+			js: `import { createRequire } from "node:module"; const require = createRequire(${JSON.stringify(path.join(ROOT, "package.json"))});`,
+		},
 		platform: "node",
 		target: "node22",
 		nodePaths: [path.join(ROOT, "docs-builder", "node_modules")],
+		plugins: [{
+			name: "documentation-yaml",
+			setup(build) {
+				// Obsidian has no Node runtime. Templates only need its YAML serializer.
+				build.onResolve({ filter: /^obsidian$/ }, () => ({
+					path: "obsidian",
+					namespace: "documentation-yaml",
+				}));
+				build.onLoad({ filter: /.*/, namespace: "documentation-yaml" }, () => ({
+					contents: 'export { stringify as stringifyYaml } from "yaml";',
+					resolveDir: ROOT,
+					loader: "js",
+				}));
+			},
+		}],
 		write: false,
 		logLevel: "silent",
 	});
