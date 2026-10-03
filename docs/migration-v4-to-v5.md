@@ -55,9 +55,25 @@ Existing tasks without an `id` remain valid and are not changed. Path-based inte
 
 If the [mdbase integration](settings/integrations.md#mdbase) is enabled, TaskNotes v5 publishes the portable `tasknotes.task` contract (version 0.3.0-rc.5) used by TaskNotes App and other compatible tools. It is the same contract, byte for byte, that TaskNotes App installs, so the plugin and the app can share a collection. Tasks can list assignees as links to person notes; the property is optional.
 
-When the collection's only active type is an unmodified TaskNotes-generated v0.2 type, TaskNotes upgrades the metadata to mdbase v0.3 automatically. The previous `mdbase.yaml` and task type are kept under `.tasknotes/migrations/`. Collections with additional, modified, or hand-maintained types are left unchanged for you to review.
+When the collection's only active type is an unmodified TaskNotes-generated v0.2 type, TaskNotes upgrades the metadata to mdbase v0.3 automatically. The previous `mdbase.yaml`, task type, and any replaced support resources are kept under `.tasknotes/migrations/`. Collections with additional, modified, or hand-maintained types are left unchanged for you to review.
 
-If you used a 5.0 beta, TaskNotes updates its task type to the current contract when the vault opens and tells you once. Your statuses, priorities, property names and custom properties are kept, and task files are not changed. Collections that TaskNotes App has already updated are left as they are. If a beta added a second task type named `tasknotes-task` after TaskNotes App updated the collection, TaskNotes removes that duplicate and keeps a copy under `.tasknotes/migrations/`.
+If you used a 5.0 beta, TaskNotes updates its task type to the current contract when the vault opens and tells you once. Your statuses, priorities, property names and custom properties are kept, and task files are not changed. Collections that TaskNotes App has already updated keep their current task definitions. If a beta added a second task type named `tasknotes-task` after TaskNotes App updated the collection, TaskNotes moves the duplicate into a unique folder under `.tasknotes/migrations/`, preserving its relative path and actual bytes. It first checks for explicit record membership through the collection's membership keys. If a record references the duplicate, TaskNotes keeps it and names the type and record in a notice; it does not rewrite those references. A concurrent edit blocks cleanup instead of being discarded.
+
+### Interrupted updates and blocked collections
+
+Both v0.2 migrations and beta metadata upgrades are backed up and journaled. Metadata is staged in sibling temporary files, read back, then activated using native atomic replacement on desktop or the adapter's rename support where available; desktop files and containing directories are flushed where supported. The type is updated before activating its new contract, and configuration is committed last. A write failure restores unchanged original metadata. Restarting TaskNotes recovers an interrupted transaction before attempting another upgrade.
+
+Recovery does **not** overwrite an external edit. If recovery is blocked, the notice identifies the pending journal (`.tasknotes/migrations/mdbase-v0.2-pending.json` or `mdbase-v0.3-pending.json`), backup folder, and affected file. Close Obsidian on all syncing devices, make another full-vault backup, and compare the journal's snapshots/intended writes and backup manifest with the active files. Preserve external changes separately before restoring a coherent config/type/support set. Do not delete a pending journal or restore only the contract file to force an upgrade; reload TaskNotes after resolving the conflict or file permissions. See [Backup and recovery](guides/backup-recovery.md).
+
+When more than one TaskNotes provider remains, startup lists every candidate path and keeps the last-known-good plugin configuration. Review which provider the plugin should manage. Keep explicitly referenced providers until you have reviewed their membership; do not delete a definition merely to clear the warning. The App can support multiple providers, but the plugin's writable configuration currently requires one. The same unchanged multiple-provider notice is not repeated during a session.
+
+Adapters without safe metadata replacement or move support stop with a notice rather than deleting existing files. Resolve the adapter limitation on a supported device before retrying.
+
+Symlinked metadata directories are refused before changes are made. Use physical directories inside the vault and update `mdbase.yaml` to match; the engine also rejects symlinked type folders.
+
+### TaskNotes App setup
+
+Current task-contract metadata is separate from installed pack provenance. The plugin does not create or edit `mdbase.lock.yaml` or certify pack installation. In TaskNotes App, use the one-time **Set up and allow access** step to let the engine assess and install/adopt the App's packs. A pending pack install or upgrade before that consent is expected, even when the task contract is already current.
 
 If the integration is not enabled, nothing changes.
 

@@ -1,4 +1,7 @@
 {
+  "mdbaseSafety.blocked": "3610d6309b9c6bf60a6eaf52fbfab285b29e9a88",
+  "mdbaseSafety.multiple": "8e9edf0677fbb6a0c5c63cbfdb84229bfcde27c6",
+  "mdbaseSafety.referenced": "8845207c5dd3bd6ee4a7cb39f6614a58355ba625",
   "onboarding.title": "f20c32070dc7d3d6880ac085bd73bf066a0eb5bf",
   "onboarding.intro": "39651d1dbcc95a937c9b0c9b702c2d4aa987959b",
   "onboarding.create": "ba45062e632411bedb37b4392847a4b71feacc35",

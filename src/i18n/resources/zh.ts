@@ -1,6 +1,11 @@
 import { TranslationTree } from "../types";
 
 export const zh: TranslationTree = {
+	mdbaseSafety: {
+		blocked: "TaskNotes 已停止更新 mdbase 元数据。{details} 请检查列出的文件和恢复副本，解决冲突或权限问题，然后重新加载 TaskNotes。任务文件未被更改。",
+		multiple: "发现多个 TaskNotes 类型：{paths}。请保留一个规范提供者，或将其他类型移出类型文件夹，然后重新加载 TaskNotes。TaskNotes 已保留上次有效的配置。",
+		referenced: "TaskNotes 已保留 {typePath}：{recordPath} 显式引用了此类型。移动提供者之前，请检查其类型归属；任务文件未被更改。",
+	},
 	onboarding: {
 		title: "开始使用 TaskNotes",
 		intro: "任务是仓库中的 Markdown 笔记。通过命令面板完成以下三步。",

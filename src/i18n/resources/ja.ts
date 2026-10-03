@@ -1,6 +1,11 @@
 import { TranslationTree } from "../types";
 
 export const ja: TranslationTree = {
+	mdbaseSafety: {
+		blocked: "TaskNotes は mdbase メタデータの更新を停止しました。{details} 表示されたファイルと復旧用コピーを確認し、競合またはアクセス権を解決してから TaskNotes を再読み込みしてください。タスクファイルは変更されていません。",
+		multiple: "TaskNotes の型が複数あります: {paths}。正規のプロバイダーを1つ残すか、他の型を型フォルダーの外へ移動してから TaskNotes を再読み込みしてください。TaskNotes は最後に確認された有効な設定を保持しました。",
+		referenced: "TaskNotes は {typePath} を保持しました。{recordPath} がこの型を明示的に参照しています。プロバイダーを移動する前に型への所属を確認してください。タスクファイルは変更されていません。",
+	},
 	onboarding: {
 		title: "TaskNotes を始める",
 		intro: "タスクは保管庫内の Markdown ノートです。コマンドパレットで次の3つの手順を試してください。",

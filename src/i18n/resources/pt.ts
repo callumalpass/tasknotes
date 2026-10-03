@@ -1,6 +1,11 @@
 import { TranslationTree } from "../types";
 
 export const pt: TranslationTree = {
+	mdbaseSafety: {
+		blocked: "O TaskNotes interrompeu a atualização dos metadados do mdbase. {details} Reveja o ficheiro indicado e as cópias de recuperação, resolva o conflito ou as permissões e recarregue o TaskNotes. Os ficheiros de tarefas não foram alterados.",
+		multiple: "Vários tipos do TaskNotes: {paths}. Mantenha um fornecedor canónico ou mova os restantes para fora da pasta de tipos e recarregue o TaskNotes. O TaskNotes manteve a última configuração válida.",
+		referenced: "O TaskNotes manteve {typePath}: {recordPath} faz referência explícita a este tipo. Reveja a sua pertença antes de mover o fornecedor; os ficheiros de tarefas não foram alterados.",
+	},
 	onboarding: {
 		title: "Primeiros passos com TaskNotes",
 		intro: "As tarefas são notas Markdown no seu cofre. Use a paleta de comandos para estes três passos.",

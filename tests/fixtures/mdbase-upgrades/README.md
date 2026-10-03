@@ -19,6 +19,8 @@ new ones instead.
 
 `-default` fixtures use each build's default settings; `-custom` fixtures map
 `due` to `deadline`, add a number property and a skipped `cancelled` status.
+`mdbaseSafeWrites.test.ts` reuses the exact beta0/custom and duplicate-beta captures for fault-injected writes and membership/cleanup regressions. `safewrite-multiple-providers/` is compat's captured multiple-provider collection (see its README).
+
 Each build ran its own `MdbaseSpecService` (`generate()` for new collections,
 `initialize()` on load) against an in-memory vault holding two task notes and
 one unrelated note.
