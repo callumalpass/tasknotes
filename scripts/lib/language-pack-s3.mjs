@@ -74,6 +74,11 @@ export function createR2S3Client(config, env = process.env, sdk) {
 				})
 			);
 		} catch (error) {
+			const status = error.$metadata?.httpStatusCode;
+			if (status && ![409, 412, 500, 502, 503, 504].includes(status)) {
+				// Identical existing bytes cannot prove write permission or supported conditions.
+				throw new Error(`R2 conditional write rejected (${status}): ${object.key}`);
+			}
 			// Another publisher may have created it, or a successful PUT may have lost its reply.
 			// Reconcile only by reading the strongly consistent origin; never overwrite/retry blindly.
 			created = false;

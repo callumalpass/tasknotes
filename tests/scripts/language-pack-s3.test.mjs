@@ -99,20 +99,23 @@ test("reconciles identical races and uncertain success without unconditional ove
 	}
 });
 
-test("conflicts and unsupported conditions fail closed and never try unconditional PUT", async () => {
-	let puts = 0;
-	const client = createR2S3Client(config, env, {
-		send: async (command) => {
-			if (command instanceof PutObjectCommand) {
+test("permission errors and unsupported conditions fail closed even if identical bytes exist", async () => {
+	for (const status of [400, 401, 403, 501]) {
+		let puts = 0;
+		const client = createR2S3Client(config, env, {
+			send: async (command) => {
+				assert.ok(
+					command instanceof PutObjectCommand,
+					"Must not turn rejected writes into successful read-only reuse"
+				);
 				puts++;
 				assert.equal(command.input.IfNoneMatch, "*");
-				throw { $metadata: { httpStatusCode: 501 } };
-			}
-			return body(Buffer.from("different"));
-		},
-	});
-	await assert.rejects(client.write(object), /conflicting bytes/);
-	assert.equal(puts, 1);
+				throw { $metadata: { httpStatusCode: status } };
+			},
+		});
+		await assert.rejects(client.write(object), /conditional write rejected/);
+		assert.equal(puts, 1);
+	}
 });
 
 test("rejects oversized origin objects before consuming their body", async () => {

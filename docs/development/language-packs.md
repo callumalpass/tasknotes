@@ -180,10 +180,18 @@ Every PUT includes `If-None-Match: *`. Identical concurrent creates are reconcil
 
 1. Review and merge the implementation through the ordinary repository process.
 2. Configure GitHub environment `language-packs-production` with required reviewers and a main-only deployment rule. Merely naming an environment in YAML does not establish those protections.
-3. Add the two bucket-scoped credential secrets above to that environment using a secure secret-management channel; never paste them into code, logs or chat.
+3. In Cloudflare R2 → Manage API Tokens, create an **account-owned Object Read & Write** token scoped only to `product-language-packs`. Account-token creation needs `Account API Tokens Write`; the existing Wrangler OAuth session does not have it. Do not substitute broad OAuth/account credentials. Install the resulting Access Key ID and Secret Access Key through GitHub CLI's interactive secret prompts (never paste into code, logs or chat):
+
+    ```bash
+    gh secret set LANGUAGE_PACK_R2_ACCESS_KEY_ID --repo callumalpass/tasknotes --env language-packs-production
+    gh secret set LANGUAGE_PACK_R2_SECRET_ACCESS_KEY --repo callumalpass/tasknotes --env language-packs-production
+    ```
+
+    The named GitHub environment has been configured with a required `callumalpass` review and an exact `main` **branch** deployment rule. Self-review is allowed for the sole maintainer; this is an explicit owner-approval gate, not an independent second-reviewer guarantee. The keys are not installed yet.
+
 4. Dispatch at the exact reviewed main commit, approve the environment, and verify the source/catalogue receipt and candidate artifact.
 
-The workflow checks committed translations without AI calls, runs strict lint/typecheck/unit/export tests, builds and size-checks an explicitly remote candidate before cloud writes, conditionally publishes and verifies, and records the pinned public manifest URL. Its experimental candidate is an artifact, **not a plugin release**. Credentials are present only in the publish step. No workflow, protected environment or S3 credential has been activated remotely by this local implementation.
+The workflow checks committed translations without AI calls, runs strict lint/typecheck/unit/export tests, builds and size-checks an explicitly remote candidate before cloud writes, conditionally publishes and verifies, and records the pinned public manifest URL. Its experimental candidate is an artifact, **not a plugin release**. Credentials are present only in the publish step. The protected GitHub environment is now configured and read back. The workflow is still local (not on remote main), S3 credentials have not been installed, and no CI publication has run.
 
 Ordinary CI/release builds remain fully bundled. Integrating the publication step into a normal plugin release and enabling the remote URL remain separate release decisions.
 
