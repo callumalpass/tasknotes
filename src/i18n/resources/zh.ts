@@ -93,6 +93,20 @@ export const zh: TranslationTree = {
 			expandAllGroups: "展开所有分组",
 			collapseAllGroups: "折叠所有分组",
 			noTasksFound: "未找到符合所选筛选条件的任务。",
+			movement: {
+				handle: "移动任务",
+				moveTo: "移动到分组",
+				keepSubgroup: "保留当前子分组",
+				moved: "任务已移动。",
+				undo: "撤销",
+				undoConflict: "无法撤销：任务在移动后已被修改。",
+				undoFailed: "无法撤销此次移动。",
+				noValue: "无值",
+				otherDestinations: "其他目标",
+				readOnly: "无法更改 {properties}：这些分组是只读的。",
+				noChange: "已在此分组中。",
+				failed: "无法移动任务。请检查任务后重试。",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "这个未分组列表",

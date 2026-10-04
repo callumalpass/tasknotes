@@ -93,6 +93,20 @@ export const ja: TranslationTree = {
 			expandAllGroups: "すべてのグループを展開",
 			collapseAllGroups: "すべてのグループを折りたたみ",
 			noTasksFound: "選択されたフィルターにタスクが見つかりませんでした。",
+			movement: {
+				handle: "タスクを移動",
+				moveTo: "グループに移動",
+				keepSubgroup: "現在のサブグループを維持",
+				moved: "タスクを移動しました。",
+				undo: "元に戻す",
+				undoConflict: "移動後にタスクが変更されたため、元に戻せません。",
+				undoFailed: "この移動を元に戻せませんでした。",
+				noValue: "値なし",
+				otherDestinations: "その他の移動先",
+				readOnly: "{properties} は変更できません。これらのグループは読み取り専用です。",
+				noChange: "すでにこのグループにあります。",
+				failed: "タスクを移動できませんでした。タスクを確認して、もう一度お試しください。",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "この未グループ化リスト",

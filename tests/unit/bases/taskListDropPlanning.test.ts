@@ -132,6 +132,22 @@ describe("taskListDropPlanning", () => {
 		});
 	});
 
+	it("clears status derivatives and uses an inferred default in the task cache", () => {
+		const plan = buildTaskListGroupDropPlan({ groupByPropertyId: "note.status", sourceGroupKey: "done", targetGroupKey: "None", lookupMappingKey, isListTypeProperty });
+		const frontmatter: Record<string, unknown> = { status: "done", completedDate: "2026-05-19" };
+		applyTaskListDropFrontmatterMutation({
+			frontmatter, plan, sortOrderField: "rank", sortOrder: null, isRecurring: false, dateModifiedField: "modified",
+			coerceGroupKeyForFrontmatter: (_key, value) => value,
+			updateCompletedDateInFrontmatter: (fm, status) => { expect(status).toBe(""); delete fm.completedDate; }, getTimestamp: () => "now",
+		});
+		expect(frontmatter).toEqual({ modified: "now" });
+		const updatedTask = buildTaskListDropSideEffectTask(createTask({ status: "done", completedDate: "2026-05-19" }), {
+			plan, isCompletedStatus: status => status === "done", getTimestamp: () => "now", getCompletedDate: () => "today", getClearedTaskValue: () => "open",
+		});
+		expect(updatedTask?.status).toBe("open");
+		expect(updatedTask?.completedDate).toBeUndefined();
+	});
+
 	it("builds side-effect task snapshots for scalar status moves", () => {
 		const plan = buildTaskListGroupDropPlan({
 			groupByPropertyId: "status",
@@ -153,6 +169,18 @@ describe("taskListDropPlanning", () => {
 			dateModified: "2026-05-19T09:42:00+10:00",
 			completedDate: "2026-05-19",
 		});
+	});
+
+	it.each([["timeEstimate", "15", 15], ["archived", "false", false]] as const)("preserves the native %s type in side-effect task snapshots", (property, target, expected) => {
+		const plan = buildTaskListGroupDropPlan({
+			groupByPropertyId: `note.${property}`, sourceGroupKey: "before", targetGroupKey: target,
+			lookupMappingKey: () => property, isListTypeProperty: () => false,
+		});
+		const updatedTask = buildTaskListDropSideEffectTask(createTask(), {
+			plan, isCompletedStatus: () => false, getTimestamp: () => "now", getCompletedDate: () => "today",
+			coerceGroupKeyForTask: (_key, value) => property === "timeEstimate" ? Number(value) : value === "true",
+		});
+		expect(updatedTask?.[property]).toBe(expected);
 	});
 
 	it("builds side-effect task snapshots for list-valued group moves", () => {

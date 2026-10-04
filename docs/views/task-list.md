@@ -150,6 +150,21 @@ sort:
     direction: ASC
 ```
 
+### Moving Between Groups
+
+Drag a task into another group or subgroup to update its grouping properties. This works with any active sort, including due date and priority sorting; a move does not change the task's manual rank.
+
+- Dropping on a task or subgroup header applies both destination values where needed.
+- Dropping on a primary group header changes only the primary property. It does not assign a subgroup value.
+- A highlighted destination previews the properties that will change. An insertion line means manual reordering instead.
+- Collapsed headers remain drop targets. While dragging, **Other destinations** offers configured empty status/priority groups and an empty value.
+- Use the **Move task** handle to open a destination menu without dragging. On touch screens, drag from this handle so ordinary row gestures remain available for scrolling.
+- Press Escape to cancel. Holding a dragged task near the view's top or bottom edge scrolls the list.
+
+Formula groups, computed file properties, and TaskNotes-managed manual-order and modified-date fields cannot be assigned by a group move. If a drop would assign a different read-only value, the whole move is blocked rather than changing just one of its properties. Changing a writable property may still naturally recalculate a formula or update the modified date.
+
+After a property move, **Undo** is available briefly. It restores only fields changed by that move and preserves unrelated later edits. If a moved field has since changed, Undo refuses to overwrite it. Manual reordering and recurring-task status changes do not currently offer this Undo action; recurring status changes can affect multiple occurrence notes.
+
 ### Drag-to-Reorder
 
 Task List supports drag-to-reorder when the view is sorted by the manual-order property. With the default field mapping, that property is `tasknotes_manual_order`.
@@ -168,12 +183,12 @@ If your field mapping changes the sort-order property name, use that mapped prop
 
 ### Drag-to-Reorder with Grouping
 
-Grouped Task List views can also be reordered, but the reorder scope is the current group. For example, when grouping by status, dragging within the "In Progress" group updates the manual order for tasks in that group.
+Grouped Task List views can also be reordered, but the reorder scope is the current group and subgroup. For example, when grouping by status and subgrouping by priority, dragging within "In Progress / High" updates manual order only within that destination.
 
 Important constraints:
 
 - Drag-to-reorder only works when the view sort includes the manual-order property.
-- Reordering in formula-based groups is blocked because formula values are computed and cannot be edited directly.
+- Reordering within the same formula-based destination is allowed when manual ordering is active. Assigning a different formula group is blocked.
 - In filtered or partially visible lists, TaskNotes may also update hidden or filtered notes in the same reorder scope to preserve a stable persistent order.
 - Large reorder operations may show a confirmation dialog before writing changes.
 

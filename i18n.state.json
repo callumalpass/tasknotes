@@ -272,6 +272,54 @@
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "897567efe5e0d7af75505d8d18e9039d44a1c021"
     },
+    "views.taskList.movement.handle": {
+      "source": "3481b34db9ccff95e45add0050057424293dc5de",
+      "translation": "b22a3d2701b323d03429c36e23640bb62ca0c5da"
+    },
+    "views.taskList.movement.moveTo": {
+      "source": "38dfc09d843a475cc2b592342d58fbad6614eb81",
+      "translation": "5baf4341c29e3cec8e69008453c9783b030d71db"
+    },
+    "views.taskList.movement.keepSubgroup": {
+      "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
+      "translation": "52176130703b903e9fe90b0757a3ad05e2b77332"
+    },
+    "views.taskList.movement.moved": {
+      "source": "02871303b4592e907e3e7892dd99290f01866d56",
+      "translation": "72d335cceca2b586ab453ffc8a0d01d06e867f86"
+    },
+    "views.taskList.movement.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "b626f2e45925f37541f947c179a1725bfa5b6135"
+    },
+    "views.taskList.movement.undoConflict": {
+      "source": "b5ab9435da32c08cdbcaf812cea3dcea20a58407",
+      "translation": "0c76fbd02f6539a218b918ab4c48e489cd6277ed"
+    },
+    "views.taskList.movement.undoFailed": {
+      "source": "6ed3cf6476b616081cab27743f5ddbab7935e600",
+      "translation": "68594abaed1e2012436674062d4ec09fc3e5d42f"
+    },
+    "views.taskList.movement.noValue": {
+      "source": "1d402441c3b972c1257d41a23a0cf7d56800bfb6",
+      "translation": "c91262e12c3576b5930465ffa5f5ea1d16213744"
+    },
+    "views.taskList.movement.otherDestinations": {
+      "source": "1f2b285e99f3ad348877dd37331ad12b13d51ded",
+      "translation": "3186db19453387e67bdba33546f70b9ebcbb8b25"
+    },
+    "views.taskList.movement.readOnly": {
+      "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
+      "translation": "702eedc58332c217b4fd60731775aa06a7cbcecd"
+    },
+    "views.taskList.movement.noChange": {
+      "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
+      "translation": "46c0e62b33c789c8bd1c282b7921444ae37d7dcd"
+    },
+    "views.taskList.movement.failed": {
+      "source": "93675976a06f641362c13d18daf3f392ec2d5458",
+      "translation": "60bca7e61eac579e5bf87b9b7a75c1ac4b6989bc"
+    },
     "views.taskList.reorder.scope.ungrouped": {
       "source": "b45097d7640a5469ca0263a4270b5ff5dc9ac3e1",
       "translation": "5a2874a1e3dfb95f045888312c1b105bf837bb6f"
@@ -9409,6 +9457,54 @@
     "views.taskList.noTasksFound": {
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "a5c1452f1840066bbe05eeb81e33cd79b821c5af"
+    },
+    "views.taskList.movement.handle": {
+      "source": "3481b34db9ccff95e45add0050057424293dc5de",
+      "translation": "797728e21ecdbce606b4fcb73862667fc333b502"
+    },
+    "views.taskList.movement.moveTo": {
+      "source": "38dfc09d843a475cc2b592342d58fbad6614eb81",
+      "translation": "31a8593a69e86714c1393054c1191c3be9af7c3c"
+    },
+    "views.taskList.movement.keepSubgroup": {
+      "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
+      "translation": "b9bc9a305ef5357e568507292647d9c4dd6022ee"
+    },
+    "views.taskList.movement.moved": {
+      "source": "02871303b4592e907e3e7892dd99290f01866d56",
+      "translation": "33ca3c6bdd2841b0b3ab9a23ed5b26cd2527395b"
+    },
+    "views.taskList.movement.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "26060e2bc3c7dd3ab57a1eb162ff8c52488761f3"
+    },
+    "views.taskList.movement.undoConflict": {
+      "source": "b5ab9435da32c08cdbcaf812cea3dcea20a58407",
+      "translation": "f2ed588f62aad2685ccdf4a6c3977259c2a02d67"
+    },
+    "views.taskList.movement.undoFailed": {
+      "source": "6ed3cf6476b616081cab27743f5ddbab7935e600",
+      "translation": "2876af1c5ef77ab159f5d812dcabead2312ecd60"
+    },
+    "views.taskList.movement.noValue": {
+      "source": "1d402441c3b972c1257d41a23a0cf7d56800bfb6",
+      "translation": "6ed33ea7303a4987392b38f8307ebfc2bfea0f05"
+    },
+    "views.taskList.movement.otherDestinations": {
+      "source": "1f2b285e99f3ad348877dd37331ad12b13d51ded",
+      "translation": "0a208eaab18387709d32089cfdfe046cc656bbfd"
+    },
+    "views.taskList.movement.readOnly": {
+      "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
+      "translation": "4af58dcb1aee802e3562b1ddc32c38caa15a3107"
+    },
+    "views.taskList.movement.noChange": {
+      "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
+      "translation": "1eb98478a5e946e442815a95300b9919126c2619"
+    },
+    "views.taskList.movement.failed": {
+      "source": "93675976a06f641362c13d18daf3f392ec2d5458",
+      "translation": "9aec37ed0c170b8c9ff34a52520ed09dba15e63c"
     },
     "views.taskList.reorder.scope.ungrouped": {
       "source": "b45097d7640a5469ca0263a4270b5ff5dc9ac3e1",
@@ -18548,6 +18644,54 @@
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "6ede85a3fa054f6b5e77199ab2ea2535a92acff5"
     },
+    "views.taskList.movement.handle": {
+      "source": "3481b34db9ccff95e45add0050057424293dc5de",
+      "translation": "757ba841ed0e4d34f18c76c31da8b68b08f13288"
+    },
+    "views.taskList.movement.moveTo": {
+      "source": "38dfc09d843a475cc2b592342d58fbad6614eb81",
+      "translation": "c603ab216153b4eae06048f400a833daebe81afb"
+    },
+    "views.taskList.movement.keepSubgroup": {
+      "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
+      "translation": "ccb082847bbaac7d4346a19d1aaa7792d9ec972c"
+    },
+    "views.taskList.movement.moved": {
+      "source": "02871303b4592e907e3e7892dd99290f01866d56",
+      "translation": "70ee09e7a13843ac892d54c21c884479cb96eef5"
+    },
+    "views.taskList.movement.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "49ba3292420c74828e7892fadc66f3f4ee4c0111"
+    },
+    "views.taskList.movement.undoConflict": {
+      "source": "b5ab9435da32c08cdbcaf812cea3dcea20a58407",
+      "translation": "c3fb27b67dd76cfa047c7d66a2f6cbbfe611bc7a"
+    },
+    "views.taskList.movement.undoFailed": {
+      "source": "6ed3cf6476b616081cab27743f5ddbab7935e600",
+      "translation": "91bbabf2f2698d0736281d937dbd8bd02ff46d0e"
+    },
+    "views.taskList.movement.noValue": {
+      "source": "1d402441c3b972c1257d41a23a0cf7d56800bfb6",
+      "translation": "848627e5c691c50454e3512c6ff34bd6f0c7976d"
+    },
+    "views.taskList.movement.otherDestinations": {
+      "source": "1f2b285e99f3ad348877dd37331ad12b13d51ded",
+      "translation": "cc46b43180fb8bab8b80892d670ee872d4780928"
+    },
+    "views.taskList.movement.readOnly": {
+      "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
+      "translation": "65fe5a9a5af576b12b7a48df3c7beb958e52a81f"
+    },
+    "views.taskList.movement.noChange": {
+      "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
+      "translation": "9e6fc0eef1ed9a77e4bc428b0ff91479b1c13cda"
+    },
+    "views.taskList.movement.failed": {
+      "source": "93675976a06f641362c13d18daf3f392ec2d5458",
+      "translation": "6c2a60ce9def065ef5c5b53beb51fe62eccddcbc"
+    },
     "views.taskList.reorder.scope.ungrouped": {
       "source": "b45097d7640a5469ca0263a4270b5ff5dc9ac3e1",
       "translation": "d7ee786c603b9e4f01029dc716873ceab99ff8bc"
@@ -27685,6 +27829,54 @@
     "views.taskList.noTasksFound": {
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "afd44aff2109f9c19acad1921cc6316ced57833a"
+    },
+    "views.taskList.movement.handle": {
+      "source": "3481b34db9ccff95e45add0050057424293dc5de",
+      "translation": "408a0bae05179823a161182c3923afb3d9bb45d6"
+    },
+    "views.taskList.movement.moveTo": {
+      "source": "38dfc09d843a475cc2b592342d58fbad6614eb81",
+      "translation": "e16c2f578ac6d5ee900f48556fa3e1fbb2498c76"
+    },
+    "views.taskList.movement.keepSubgroup": {
+      "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
+      "translation": "5f8b5c9bf5b5f813a7dbcf0a8db35382587f4722"
+    },
+    "views.taskList.movement.moved": {
+      "source": "02871303b4592e907e3e7892dd99290f01866d56",
+      "translation": "d8b6cf883d2d47c8ccc45109557787937caa7561"
+    },
+    "views.taskList.movement.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "c7f325f13f167d696c1e0c7bcf75325af6262dcb"
+    },
+    "views.taskList.movement.undoConflict": {
+      "source": "b5ab9435da32c08cdbcaf812cea3dcea20a58407",
+      "translation": "e4394c938fedbbc5741125773d164d0eff696b61"
+    },
+    "views.taskList.movement.undoFailed": {
+      "source": "6ed3cf6476b616081cab27743f5ddbab7935e600",
+      "translation": "5b7b94223fbfa12ecffa0ef0e7e612d7769bcdc7"
+    },
+    "views.taskList.movement.noValue": {
+      "source": "1d402441c3b972c1257d41a23a0cf7d56800bfb6",
+      "translation": "7b9d8e5b8ed24ec7e8f7c2ecaf8122267093f221"
+    },
+    "views.taskList.movement.otherDestinations": {
+      "source": "1f2b285e99f3ad348877dd37331ad12b13d51ded",
+      "translation": "f33a4bccff8f6a711fa16d54472f7b67fc00d475"
+    },
+    "views.taskList.movement.readOnly": {
+      "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
+      "translation": "b647c10264435d3d794567783125424b05f31f0a"
+    },
+    "views.taskList.movement.noChange": {
+      "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
+      "translation": "95e8971b11cbe4a91c5ad6787d619615a996cb61"
+    },
+    "views.taskList.movement.failed": {
+      "source": "93675976a06f641362c13d18daf3f392ec2d5458",
+      "translation": "78384b0dab07752b8c3bfb3f3dc6aa9a3a43ce43"
     },
     "views.taskList.reorder.scope.ungrouped": {
       "source": "b45097d7640a5469ca0263a4270b5ff5dc9ac3e1",
@@ -36824,6 +37016,54 @@
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "8463f4d730feadd260e37f5d07bd63fc3d2851c1"
     },
+    "views.taskList.movement.handle": {
+      "source": "3481b34db9ccff95e45add0050057424293dc5de",
+      "translation": "f5d2df10d9e6082e2efd5a3cab844a445564da91"
+    },
+    "views.taskList.movement.moveTo": {
+      "source": "38dfc09d843a475cc2b592342d58fbad6614eb81",
+      "translation": "87c3eee570f3fb17495880f898a301e08f8176a9"
+    },
+    "views.taskList.movement.keepSubgroup": {
+      "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
+      "translation": "dc422feecdbf9b91c0a9927dcb1984bdab3eb842"
+    },
+    "views.taskList.movement.moved": {
+      "source": "02871303b4592e907e3e7892dd99290f01866d56",
+      "translation": "f37546b548321841a4a1ac3e620d344363721a25"
+    },
+    "views.taskList.movement.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "90945122e16c878b8753bf4f91b43f6158656f5f"
+    },
+    "views.taskList.movement.undoConflict": {
+      "source": "b5ab9435da32c08cdbcaf812cea3dcea20a58407",
+      "translation": "bc9a3ae49cff6588d3f55287e4195a33bb98a56b"
+    },
+    "views.taskList.movement.undoFailed": {
+      "source": "6ed3cf6476b616081cab27743f5ddbab7935e600",
+      "translation": "01d18ee18e9e891062119c33a4f29a31086bc3c9"
+    },
+    "views.taskList.movement.noValue": {
+      "source": "1d402441c3b972c1257d41a23a0cf7d56800bfb6",
+      "translation": "21fbd792f90d8a76e4d834cff07e2f2651230d4c"
+    },
+    "views.taskList.movement.otherDestinations": {
+      "source": "1f2b285e99f3ad348877dd37331ad12b13d51ded",
+      "translation": "729cc44f16a5ef2158582e6a127a4e472de521da"
+    },
+    "views.taskList.movement.readOnly": {
+      "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
+      "translation": "2f64a7f3fa8dde207fd91d12926bbc4b0e5927bd"
+    },
+    "views.taskList.movement.noChange": {
+      "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
+      "translation": "ce5a63a767d6e9a0d8ce12434d548f4320729c09"
+    },
+    "views.taskList.movement.failed": {
+      "source": "93675976a06f641362c13d18daf3f392ec2d5458",
+      "translation": "a19fce928f7bdee52dd00d580cc3216e87223a95"
+    },
     "views.taskList.reorder.scope.ungrouped": {
       "source": "b45097d7640a5469ca0263a4270b5ff5dc9ac3e1",
       "translation": "dfb91713b160b1ad3df34ac05bf56d51a992a9f4"
@@ -45961,6 +46201,54 @@
     "views.taskList.noTasksFound": {
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "fbd6dd4fa2d87ed92d1211be0c93599717a34c32"
+    },
+    "views.taskList.movement.handle": {
+      "source": "3481b34db9ccff95e45add0050057424293dc5de",
+      "translation": "4ab660a137cd2d657c6d43bd3d6452178066cbbf"
+    },
+    "views.taskList.movement.moveTo": {
+      "source": "38dfc09d843a475cc2b592342d58fbad6614eb81",
+      "translation": "c788a12bb69ef10f632d2ff4fd2bc3a6c6c4dee3"
+    },
+    "views.taskList.movement.keepSubgroup": {
+      "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
+      "translation": "a894375e4e8b21795468e545f92891d31f30aa06"
+    },
+    "views.taskList.movement.moved": {
+      "source": "02871303b4592e907e3e7892dd99290f01866d56",
+      "translation": "a0154eac92c0e370e7dd2e8f5daf622ce3df8875"
+    },
+    "views.taskList.movement.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "95d2c5ee416c8998d04725349c6031f6d91dcdaf"
+    },
+    "views.taskList.movement.undoConflict": {
+      "source": "b5ab9435da32c08cdbcaf812cea3dcea20a58407",
+      "translation": "03297ba70133feb7f3d08ec201096eafe56f8c4f"
+    },
+    "views.taskList.movement.undoFailed": {
+      "source": "6ed3cf6476b616081cab27743f5ddbab7935e600",
+      "translation": "992d50f792a4df7734a2cdf0b8491176f7332979"
+    },
+    "views.taskList.movement.noValue": {
+      "source": "1d402441c3b972c1257d41a23a0cf7d56800bfb6",
+      "translation": "ab82d3ee1b35c1919f3342c4f8f405d59aee459d"
+    },
+    "views.taskList.movement.otherDestinations": {
+      "source": "1f2b285e99f3ad348877dd37331ad12b13d51ded",
+      "translation": "0dd82d45009020385ca9aca4be689031a631e2c0"
+    },
+    "views.taskList.movement.readOnly": {
+      "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
+      "translation": "1d92d91df66dcd8b7c869602f00022d85cc90d09"
+    },
+    "views.taskList.movement.noChange": {
+      "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
+      "translation": "2ff6429b8386f22b4f7feddba029197f66c19e6b"
+    },
+    "views.taskList.movement.failed": {
+      "source": "93675976a06f641362c13d18daf3f392ec2d5458",
+      "translation": "7feb0a1a93a08f030ba7563f62920ddf530d2664"
     },
     "views.taskList.reorder.scope.ungrouped": {
       "source": "b45097d7640a5469ca0263a4270b5ff5dc9ac3e1",
@@ -55100,6 +55388,54 @@
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "ef4128ced68cdcf8297b1f7da0aec2c5a79f6bd6"
     },
+    "views.taskList.movement.handle": {
+      "source": "3481b34db9ccff95e45add0050057424293dc5de",
+      "translation": "f5f0e6065f455400ed6b834dc4ff00cc089ec6fe"
+    },
+    "views.taskList.movement.moveTo": {
+      "source": "38dfc09d843a475cc2b592342d58fbad6614eb81",
+      "translation": "6fe30675a72ef6d15465efceea3880d4af53da3e"
+    },
+    "views.taskList.movement.keepSubgroup": {
+      "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
+      "translation": "1d91b1620ceff2d11bea2d1b6547da7c4c35205b"
+    },
+    "views.taskList.movement.moved": {
+      "source": "02871303b4592e907e3e7892dd99290f01866d56",
+      "translation": "0296e23322f25eabe71db9550fcbce086264a7a2"
+    },
+    "views.taskList.movement.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "555ad1c0c33d26b34b5ca8bb38dfba4e2092df27"
+    },
+    "views.taskList.movement.undoConflict": {
+      "source": "b5ab9435da32c08cdbcaf812cea3dcea20a58407",
+      "translation": "23f3831383fe7760708fcfef8038e519e0c258c6"
+    },
+    "views.taskList.movement.undoFailed": {
+      "source": "6ed3cf6476b616081cab27743f5ddbab7935e600",
+      "translation": "add7fb49aad207ea19b7d4bc8e4708a39f39b34a"
+    },
+    "views.taskList.movement.noValue": {
+      "source": "1d402441c3b972c1257d41a23a0cf7d56800bfb6",
+      "translation": "6430ad094aa4a315262f98432894c6b2c4baf83d"
+    },
+    "views.taskList.movement.otherDestinations": {
+      "source": "1f2b285e99f3ad348877dd37331ad12b13d51ded",
+      "translation": "958859ee2b7480f805b5d647a031802dab23099b"
+    },
+    "views.taskList.movement.readOnly": {
+      "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
+      "translation": "06980861c1f600c25a87afce427e5cff69cd830b"
+    },
+    "views.taskList.movement.noChange": {
+      "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
+      "translation": "911c43299f9da48de9aeef92fc5f8fa300d85e76"
+    },
+    "views.taskList.movement.failed": {
+      "source": "93675976a06f641362c13d18daf3f392ec2d5458",
+      "translation": "46fbafaea9850270d4d149f3e3431ae24461c9f0"
+    },
     "views.taskList.reorder.scope.ungrouped": {
       "source": "b45097d7640a5469ca0263a4270b5ff5dc9ac3e1",
       "translation": "8c260994faed24b919d9e142a312296ef179ebcd"
@@ -64237,6 +64573,54 @@
     "views.taskList.noTasksFound": {
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "1960648d66992fb732d499121af72dee134295e4"
+    },
+    "views.taskList.movement.handle": {
+      "source": "3481b34db9ccff95e45add0050057424293dc5de",
+      "translation": "7c7f55995357d87ac4be2937b5f9b04b639b6268"
+    },
+    "views.taskList.movement.moveTo": {
+      "source": "38dfc09d843a475cc2b592342d58fbad6614eb81",
+      "translation": "fe238ad8bfec9201da2bb92e509753abecdb258f"
+    },
+    "views.taskList.movement.keepSubgroup": {
+      "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
+      "translation": "26dff6a7de2ef04cf68b6644edb00764069a03da"
+    },
+    "views.taskList.movement.moved": {
+      "source": "02871303b4592e907e3e7892dd99290f01866d56",
+      "translation": "864c59b0814ab6ad6e5100b3759493b1c89d99d5"
+    },
+    "views.taskList.movement.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "9fcefd8dc81ef205be34ce3148249bcd90120aa6"
+    },
+    "views.taskList.movement.undoConflict": {
+      "source": "b5ab9435da32c08cdbcaf812cea3dcea20a58407",
+      "translation": "a535f0c050d6767e3388319f3a2912ec7004a7fb"
+    },
+    "views.taskList.movement.undoFailed": {
+      "source": "6ed3cf6476b616081cab27743f5ddbab7935e600",
+      "translation": "24bf245181a469a6f9a242e228510617d5dbd27a"
+    },
+    "views.taskList.movement.noValue": {
+      "source": "1d402441c3b972c1257d41a23a0cf7d56800bfb6",
+      "translation": "4540f285c9b973980a760907a568775d94a8c0e2"
+    },
+    "views.taskList.movement.otherDestinations": {
+      "source": "1f2b285e99f3ad348877dd37331ad12b13d51ded",
+      "translation": "bb3d0413698ed039584112caf99f04164eedea3a"
+    },
+    "views.taskList.movement.readOnly": {
+      "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
+      "translation": "cfe356520e03d959bc58d4a097469edd57801b0e"
+    },
+    "views.taskList.movement.noChange": {
+      "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
+      "translation": "f235147dc0b813e7e92701dc4ea3227f4422a779"
+    },
+    "views.taskList.movement.failed": {
+      "source": "93675976a06f641362c13d18daf3f392ec2d5458",
+      "translation": "49c341e3b63d430012b6a28bf4f8cef5d3e083b2"
     },
     "views.taskList.reorder.scope.ungrouped": {
       "source": "b45097d7640a5469ca0263a4270b5ff5dc9ac3e1",

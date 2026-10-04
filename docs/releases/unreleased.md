@@ -36,6 +36,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- (#2381) Task List group and subgroup moves no longer require manual-order sorting. Drops preview the properties they will change, while reordering uses a separate insertion line. The movement handle also offers a group-selection menu, and ordinary property moves have an Undo action that preserves later unrelated edits. Thanks to @iantierney for the suggestion. See [Task List](https://tasknotes.dev/views/task-list/).
+
 ## Removed
 
 ## Fixed

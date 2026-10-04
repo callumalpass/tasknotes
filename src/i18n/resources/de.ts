@@ -93,6 +93,20 @@ export const de: TranslationTree = {
 			expandAllGroups: "Alle Gruppen ausklappen",
 			collapseAllGroups: "Alle Gruppen einklappen",
 			noTasksFound: "Keine Aufgaben für die gewählten Filter gefunden.",
+			movement: {
+				handle: "Aufgabe verschieben",
+				moveTo: "In eine Gruppe verschieben",
+				keepSubgroup: "Aktuelle Untergruppe beibehalten",
+				moved: "Aufgabe verschoben.",
+				undo: "Rückgängig",
+				undoConflict: "Rückgängig nicht möglich: Die Aufgabe wurde nach dem Verschieben geändert.",
+				undoFailed: "Das Verschieben konnte nicht rückgängig gemacht werden.",
+				noValue: "Kein Wert",
+				otherDestinations: "Weitere Ziele",
+				readOnly: "{properties} können nicht geändert werden: Diese Gruppen sind schreibgeschützt.",
+				noChange: "Bereits in dieser Gruppe.",
+				failed: "Die Aufgabe konnte nicht verschoben werden. Prüfe die Aufgabe und versuche es erneut.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "diese ungegliederte Liste",

@@ -95,6 +95,20 @@ export const en: TranslationTree = {
 			expandAllGroups: "Expand all groups",
 			collapseAllGroups: "Collapse all groups",
 			noTasksFound: "No tasks found for the selected filters.",
+			movement: {
+				handle: "Move task",
+				moveTo: "Move to a group",
+				keepSubgroup: "Keep current subgroup",
+				moved: "Task moved.",
+				undo: "Undo",
+				undoConflict: "Cannot undo: this task changed after the move.",
+				undoFailed: "Could not undo this move.",
+				noValue: "No value",
+				otherDestinations: "Other destinations",
+				readOnly: "Cannot change {properties}: these groups are read-only.",
+				noChange: "Already in this group.",
+				failed: "Could not move the task. Check the task and try again.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "this ungrouped list",

@@ -3,6 +3,7 @@ import { TaskListView } from "../../../src/bases/TaskListView";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING } from "../../../src/settings/defaults";
 import { TaskFactory } from "../../helpers/mock-factories";
+import { en } from "../../../src/i18n/resources/en";
 jest.mock("tasknotes-nlp-core", () => ({
 	NaturalLanguageParserCore: class {},
 }), { virtual: true });
@@ -12,6 +13,12 @@ describe("TaskListView drag controls", () => {
 		const plugin = {
 			app: new App(),
 			fieldMapper: new FieldMapper(DEFAULT_FIELD_MAPPING),
+			i18n: {
+				translate: (key: string) =>
+					key.split(".").reduce((value: any, part) => value?.[part], en) ?? key,
+			},
+			statusManager: { getAllStatuses: () => [] },
+			priorityManager: { getAllPriorities: () => [] },
 			settings: {
 				fieldMapping: DEFAULT_FIELD_MAPPING,
 			},
@@ -80,7 +87,7 @@ describe("TaskListView drag controls", () => {
 		expect(handle).toBeTruthy();
 		expect(handle.classList.contains("task-card__drag-handle")).toBe(true);
 		expect(handle.getAttribute("draggable")).toBe("true");
-		expect(handle.getAttribute("aria-label")).toBe("Drag to reorder");
+		expect(handle.getAttribute("aria-label")).toBe("Move task");
 		expect(card.getAttribute("draggable")).toBe("false");
 		expect(card.classList.contains("task-card--drag-handle-only")).toBe(true);
 

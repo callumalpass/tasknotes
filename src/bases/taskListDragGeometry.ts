@@ -1,6 +1,7 @@
 export type TaskListDropBaselineCard = {
 	path: string;
 	groupKey: string | null;
+	subGroupKey?: string | null;
 	card: HTMLElement;
 	top: number;
 	bottom: number;
@@ -9,6 +10,7 @@ export type TaskListDropBaselineCard = {
 
 export type TaskListDropSegment = {
 	groupKey: string | null;
+	subGroupKey?: string | null;
 	cards: TaskListDropBaselineCard[];
 };
 
@@ -28,9 +30,14 @@ export function getTaskListDropSegments(
 	const segments: TaskListDropSegment[] = [];
 	for (const card of cards) {
 		const previousSegment = segments[segments.length - 1];
-		if (!previousSegment || previousSegment.groupKey !== card.groupKey) {
+		if (
+			!previousSegment ||
+			previousSegment.groupKey !== card.groupKey ||
+			previousSegment.subGroupKey !== card.subGroupKey
+		) {
 			segments.push({
 				groupKey: card.groupKey,
+				subGroupKey: card.subGroupKey,
 				cards: [card],
 			});
 			continue;
@@ -78,8 +85,7 @@ export function resolveTaskListInsertionSlot(
 		const firstCard = currentSegment.cards[0];
 		const lastCard = currentSegment.cards[currentSegment.cards.length - 1];
 		const lowerBoundary = previousSegment
-			? (previousSegment.cards[previousSegment.cards.length - 1].bottom + firstCard.top) /
-				2
+			? (previousSegment.cards[previousSegment.cards.length - 1].bottom + firstCard.top) / 2
 			: Number.NEGATIVE_INFINITY;
 		const upperBoundary = nextSegment
 			? (lastCard.bottom + nextSegment.cards[0].top) / 2

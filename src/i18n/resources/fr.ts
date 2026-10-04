@@ -93,6 +93,20 @@ export const fr: TranslationTree = {
 			expandAllGroups: "Déplier tous les groupes",
 			collapseAllGroups: "Replier tous les groupes",
 			noTasksFound: "Aucune tâche trouvée pour les filtres sélectionnés.",
+			movement: {
+				handle: "Déplacer la tâche",
+				moveTo: "Déplacer vers un groupe",
+				keepSubgroup: "Conserver le sous-groupe actuel",
+				moved: "Tâche déplacée.",
+				undo: "Annuler",
+				undoConflict: "Annulation impossible : la tâche a été modifiée après le déplacement.",
+				undoFailed: "Impossible d’annuler ce déplacement.",
+				noValue: "Aucune valeur",
+				otherDestinations: "Autres destinations",
+				readOnly: "Impossible de modifier {properties} : ces groupes sont en lecture seule.",
+				noChange: "Déjà dans ce groupe.",
+				failed: "Impossible de déplacer la tâche. Vérifiez la tâche et réessayez.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "cette liste non groupée",

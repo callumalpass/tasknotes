@@ -1,5 +1,6 @@
 import type { TaskInfo } from "../types";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
+import { applyGroupPropertyMutation, moveGroupListValue } from "./groupPropertyMutation";
 
 export type KanbanTaskDragSource = {
 	taskPath: string;
@@ -438,24 +439,7 @@ export function kanbanDropPlanNeedsWrite(
 	return plan.needsGroupUpdate || plan.needsSwimlaneUpdate || hasSortOrderPlan;
 }
 
-function normalizeListValue(value: unknown): unknown[] {
-	if (Array.isArray(value)) {
-		return value;
-	}
-	return value ? [value] : [];
-}
-
-function updateListDropValue(
-	currentValue: unknown,
-	sourceValue: string | null | undefined,
-	targetValue: string
-): unknown[] {
-	const nextValue = normalizeListValue(currentValue).filter((value) => value !== sourceValue);
-	if (!nextValue.includes(targetValue) && targetValue !== "None") {
-		nextValue.push(targetValue);
-	}
-	return nextValue.length > 0 ? nextValue : [];
-}
+const updateListDropValue = moveGroupListValue;
 
 export function applyKanbanTaskDropFrontmatterPlan(
 	frontmatter: FrontmatterRecord,
@@ -463,33 +447,27 @@ export function applyKanbanTaskDropFrontmatterPlan(
 	options: KanbanFrontmatterDropUpdateOptions
 ): void {
 	if (plan.needsGroupUpdate) {
-		if (plan.isGroupByListProperty && plan.sourceColumn) {
-			frontmatter[plan.groupByFrontmatterKey] = updateListDropValue(
-				frontmatter[plan.groupByFrontmatterKey],
-				plan.sourceColumn,
-				plan.newGroupValue
-			);
-		} else {
-			frontmatter[plan.groupByFrontmatterKey] = options.coerceGroupValue(
-				plan.groupByFrontmatterKey,
-				plan.newGroupValue
-			);
-		}
+		applyGroupPropertyMutation({
+			frontmatter,
+			property: plan.groupByFrontmatterKey,
+			sourceValue: plan.sourceColumn,
+			targetValue: plan.newGroupValue,
+			isList: plan.isGroupByListProperty,
+			preserveEmptyList: true,
+			coerceValue: options.coerceGroupValue,
+		});
 	}
 
 	if (plan.needsSwimlaneUpdate && plan.swimlaneFrontmatterKey && plan.newSwimLaneValue !== null) {
-		if (plan.isSwimlaneListProperty && plan.sourceSwimlane) {
-			frontmatter[plan.swimlaneFrontmatterKey] = updateListDropValue(
-				frontmatter[plan.swimlaneFrontmatterKey],
-				plan.sourceSwimlane,
-				plan.newSwimLaneValue
-			);
-		} else {
-			frontmatter[plan.swimlaneFrontmatterKey] = options.coerceGroupValue(
-				plan.swimlaneFrontmatterKey,
-				plan.newSwimLaneValue
-			);
-		}
+		applyGroupPropertyMutation({
+			frontmatter,
+			property: plan.swimlaneFrontmatterKey,
+			sourceValue: plan.sourceSwimlane,
+			targetValue: plan.newSwimLaneValue,
+			isList: plan.isSwimlaneListProperty,
+			preserveEmptyList: true,
+			coerceValue: options.coerceGroupValue,
+		});
 	}
 }
 

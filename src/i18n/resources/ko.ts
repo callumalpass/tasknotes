@@ -93,6 +93,20 @@ export const ko: TranslationTree = {
 			expandAllGroups: "모든 그룹 펼치기",
 			collapseAllGroups: "모든 그룹 접기",
 			noTasksFound: "선택한 필터에 해당하는 작업이 없습니다.",
+			movement: {
+				handle: "작업 이동",
+				moveTo: "그룹으로 이동",
+				keepSubgroup: "현재 하위 그룹 유지",
+				moved: "작업을 이동했습니다.",
+				undo: "실행 취소",
+				undoConflict: "이동 후 작업이 변경되어 실행 취소할 수 없습니다.",
+				undoFailed: "이동을 실행 취소하지 못했습니다.",
+				noValue: "값 없음",
+				otherDestinations: "다른 이동 대상",
+				readOnly: "{properties}을(를) 변경할 수 없습니다. 이 그룹은 읽기 전용입니다.",
+				noChange: "이미 이 그룹에 있습니다.",
+				failed: "작업을 이동하지 못했습니다. 작업을 확인하고 다시 시도하세요.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "이 그룹 없는 목록",
