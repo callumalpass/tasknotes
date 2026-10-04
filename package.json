@@ -58,6 +58,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"braces": "file:./vendor/braces",
+		"@aws-sdk/client-s3": "3.1146.0",
 		"@codemirror/autocomplete": "^6.19.1",
 		"@codemirror/state": "^6.5.0",
 		"@electron/asar": "^3.4.1",

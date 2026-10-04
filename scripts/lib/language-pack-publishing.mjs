@@ -95,7 +95,8 @@ export async function verifyPublicObjects(plan, fetcher = fetch, objects = plan.
 
 /** Preflight all objects against the authenticated, strongly consistent origin (not CDN cache).
  * Never deletes anything. Read-before-create protects against conflicting overwrites, not
- * concurrent writers: serialize publishers until an S3 conditional-write backend is added.
+ * concurrent writers: the S3 backend also enforces atomic create-if-absent. Serialize
+ * operator/REST publishers; they do not have that conditional-write protection.
  */
 export async function publishPlan(plan, client, verify = verifyPublicObjects) {
 	const missing = new Set();
@@ -105,14 +106,14 @@ export async function publishPlan(plan, client, verify = verifyPublicObjects) {
 		else if (sha256(existing) !== sha256(object.bytes))
 			throw new Error(`Refusing immutable overwrite: ${object.key}`);
 	}
+	let uploaded = 0;
+	const write = async (object) => {
+		if (missing.has(object.key) && (await client.write(object)) !== false) uploaded++;
+	};
 	const data = plan.objects.filter((object) => !object.manifest);
-	for (const object of data) {
-		if (missing.has(object.key)) await client.write(object);
-	}
+	for (const object of data) await write(object);
 	await verify(plan, undefined, data);
-	for (const object of plan.objects.filter((object) => object.manifest)) {
-		if (missing.has(object.key)) await client.write(object);
-	}
+	for (const object of plan.objects.filter((object) => object.manifest)) await write(object);
 	await verify(plan);
-	return { uploaded: missing.size, reused: plan.objects.length - missing.size };
+	return { uploaded, reused: plan.objects.length - uploaded };
 }

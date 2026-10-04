@@ -11,9 +11,9 @@ import {
 } from "./lib/language-pack-publishing.mjs";
 
 const args = process.argv.slice(2);
-if (args.length > 1 || args.some((arg) => !["--apply", "--verify"].includes(arg))) {
+if (args.length > 1 || args.some((arg) => !["--apply", "--apply-s3", "--verify"].includes(arg))) {
 	throw new Error(
-		"Usage: node scripts/publish-language-packs.mjs [--apply | --verify] (default: local dry run)"
+		"Usage: node scripts/publish-language-packs.mjs [--apply | --apply-s3 | --verify] (default: local dry run)"
 	);
 }
 const config = JSON.parse(await readFile("infra/language-packs.json", "utf8"));
@@ -36,6 +36,25 @@ if (!args.length) {
 	console.log(
 		`Verified ${plan.objects.length} public immutable objects at ${config.publicBaseUrl}`
 	);
+} else if (args[0] === "--apply-s3") {
+	const { createR2S3Client } = await import("./lib/language-pack-s3.mjs");
+	const client = createR2S3Client(config);
+	try {
+		console.log(
+			JSON.stringify(
+				{
+					mode: "apply-s3",
+					account: config.accountId,
+					bucket: config.bucket,
+					...(await publishPlan(plan, client)),
+				},
+				null,
+				2
+			)
+		);
+	} finally {
+		client.close();
+	}
 } else {
 	const run = promisify(execFile);
 	const cli = resolve("node_modules/.bin/wrangler");

@@ -160,21 +160,37 @@ The public host is `https://i18n.mdbase.dev`, with TaskNotes assets under `/task
 npm run i18n:verify
 npm run i18n:publish                 # Local dry run; no cloud writes or authentication
 npm run i18n:publish -- --verify     # Verify public bytes and HTTP metadata; no cloud writes
-npm run i18n:publish -- --apply      # Explicitly publish using authenticated project-local Wrangler
+npm run i18n:publish -- --apply      # Operator-only Wrangler path; serialize publishers
+npm run i18n:publish -- --apply-s3   # Atomic create-if-absent with explicit bucket-scoped credentials
 ```
 
 `--apply` verifies the account-pinned bucket and preflights every object against the authenticated origin, not the CDN. Conflicting existing bytes abort before any upload; identical objects are reused. Locale JSON and the MIT license are uploaded first, their public hashes/MIME types/cache headers/CORS are checked, and the immutable versioned manifest is published last. Retain versions needed by installed releases; there is no automatic deletion and the plugin does not consume a global `/latest` catalogue.
 
 All versioned files use `Cache-Control: public, max-age=31536000, immutable`. CORS permits only public GET/HEAD without credentials. TLS minimum is 1.2; the rate-limited `r2.dev` development URL is not enabled. JSON is not edge-cache eligible by default: current responses show `CF-Cache-Status: DYNAMIC`. A host-scoped Cache Rule is a follow-up optimization, not a prerequisite for local caching or offline use.
 
-The current operator publisher uses Wrangler's existing OAuth/API-token authentication, kept in process memory and never logged or committed. Its origin preflight is **not an atomic conditional create**: serialize publishers. Before automatic CI publication, add an S3 conditional-write backend and bucket-scoped Object Read & Write credentials. Bucket-item tokens work with the S3 API, not Wrangler's Cloudflare REST API; do not export a personal OAuth token or grant an account-wide administration token to CI.
+The operator `--apply` path uses Wrangler's existing OAuth/API-token authentication, kept in process memory with debug-file logging explicitly disabled. Its origin preflight is **not atomic**: serialize these publishers. It is not the CI path.
 
-CI tests and exports catalogues and attaches them to its build artifact. It does not currently publish to R2. The normal CI/release build remains fully bundled; setting up this host does not authorize a plugin release or enable the release-build URL automatically.
+### Atomic S3 publication and CI activation
+
+`--apply-s3` uses the account-pinned R2 endpoint and region `auto`. It requires `LANGUAGE_PACK_R2_ACCESS_KEY_ID` and `LANGUAGE_PACK_R2_SECRET_ACCESS_KEY`; there is no AWS default credential chain, arbitrary endpoint, or fallback to personal Wrangler credentials. Use an R2 **Object Read & Write** credential scoped only to `product-language-packs`, not an account-administration token. An optional `LANGUAGE_PACK_R2_SESSION_TOKEN` supports operator temporary credentials.
+
+Every PUT includes `If-None-Match: *`. Identical concurrent creates are reconciled against the authenticated, strongly consistent origin. Conflicting bytes, missing buckets, permission failures and unsupported conditions fail closed. An uncertain response is inspected at the origin before proceeding, never retried as an unconditional overwrite. Nothing is deleted. Data objects are still publicly verified before manifest publication; upload counts treat identical/reconciled races as reuse.
+
+`.github/workflows/publish-language-packs.yml` is a separate manual-dispatch workflow, restricted to `main` with an affirmative publication input and non-cancelling concurrency. Before use:
+
+1. Review and merge the implementation through the ordinary repository process.
+2. Configure GitHub environment `language-packs-production` with required reviewers and a main-only deployment rule. Merely naming an environment in YAML does not establish those protections.
+3. Add the two bucket-scoped credential secrets above to that environment using a secure secret-management channel; never paste them into code, logs or chat.
+4. Dispatch at the exact reviewed main commit, approve the environment, and verify the source/catalogue receipt and candidate artifact.
+
+The workflow checks committed translations without AI calls, runs strict lint/typecheck/unit/export tests, builds and size-checks an explicitly remote candidate before cloud writes, conditionally publishes and verifies, and records the pinned public manifest URL. Its experimental candidate is an artifact, **not a plugin release**. Credentials are present only in the publish step. No workflow, protected environment or S3 credential has been activated remotely by this local implementation.
+
+Ordinary CI/release builds remain fully bundled. Integrating the publication step into a normal plugin release and enabling the remote URL remain separate release decisions.
 
 ## Follow-up
 
-- iOS and older/physical Android acceptance, plus additional desktop upgrade/failure scenarios.
-- S3 conditional-create publication with bucket-scoped CI credentials and serialized releases.
+- Older/physical Android and additional desktop upgrade/failure scenarios. iOS testing was explicitly waived by the user; iOS compatibility remains an unverified assumption, not a passed check.
+- Activate protected-environment S3 publication with bucket-scoped credentials after review.
 - A Cache Rule scoped only to the language-pack host, enabling edge caching of JSON.
 - Optional cache pruning that preserves the current catalogue.
 - Lingui/generated-ID migration as a separate change, after a representative pilot.

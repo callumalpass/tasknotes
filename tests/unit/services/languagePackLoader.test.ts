@@ -190,6 +190,107 @@ describe("LanguagePackLoader", () => {
 		).not.toThrow();
 	});
 
+	it("reuses unchanged packs offline after another catalogue changes", async () => {
+		const { config, cache, download, text } = fixture();
+		const key = `${config.manifest.packs.fr.sha256}/fr.json`;
+		cache.read.mockImplementation(async (requested) => (requested === key ? text : null));
+		download.mockRejectedValue(new Error("offline"));
+		const upgraded = {
+			...config,
+			manifest: { ...config.manifest, catalogueVersion: "c".repeat(64) },
+		};
+		const loader = new LanguagePackLoader({
+			config: upgraded,
+			english,
+			cache,
+			download,
+			sha256: async (bytes) => hash(bytes),
+		});
+		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect(download).not.toHaveBeenCalled();
+	});
+
+	it("does not substitute old target bytes for a corrected pack during an offline upgrade", async () => {
+		const old = fixture();
+		const next = fixture({
+			messages: { "common.save": "Sauvegarder", "common.hello": "Bonjour {name}" },
+		});
+		const cache = new Map([[`${old.config.manifest.packs.fr.sha256}/fr.json`, old.text]]);
+		const loader = new LanguagePackLoader({
+			config: next.config,
+			english,
+			sha256: async (bytes) => hash(bytes),
+			cache: {
+				read: async (key) => cache.get(key) ?? null,
+				write: async (key, text) => {
+					cache.set(key, text);
+				},
+			},
+			download: async () => {
+				throw new Error("offline");
+			},
+		});
+		await expect(loader.load("fr")).rejects.toThrow("offline");
+		expect([...cache.values()]).toEqual([old.text]);
+	});
+
+	it("rejects an old English-source snapshot and retains it for rollback", async () => {
+		const old = fixture();
+		const next = fixture({ sourceHash: "d".repeat(64) });
+		next.config.manifest.sourceHash = "d".repeat(64);
+		next.cache.read.mockResolvedValue(old.text);
+		next.download.mockRejectedValue(new Error("offline"));
+		const loader = new LanguagePackLoader({
+			config: next.config,
+			english,
+			cache: next.cache,
+			download: next.download,
+			sha256: async (bytes) => hash(bytes),
+		});
+		await expect(loader.load("fr")).rejects.toThrow("offline");
+		expect(next.cache.write).not.toHaveBeenCalled();
+	});
+
+	it("recovers after an interrupted download without poisoning its cache", async () => {
+		const { loader, cache, download, bytes, text } = fixture();
+		download.mockRejectedValueOnce(new Error("connection interrupted"));
+		await expect(loader.load("fr")).rejects.toThrow("connection interrupted");
+		expect(cache.write).not.toHaveBeenCalled();
+		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect(cache.write).toHaveBeenCalledWith(expect.any(String), text);
+		expect(download).toHaveBeenCalledTimes(2);
+		expect(bytes.length).toBeGreaterThan(0);
+	});
+
+	it("ignores a transport result that arrives after its deadline", async () => {
+		const { config, cache, bytes } = fixture();
+		let finish!: (bytes: Uint8Array) => void;
+		let expire!: () => void;
+		const cancel = jest.fn();
+		const loader = new LanguagePackLoader({
+			config,
+			english,
+			cache,
+			sha256: async (bytes) => hash(bytes),
+			download: () =>
+				new Promise((resolve) => {
+					finish = resolve;
+				}),
+			scheduleTimeout: (callback) => {
+				expire = callback;
+				return cancel;
+			},
+		});
+		const pending = loader.load("fr");
+		await Promise.resolve();
+		expire();
+		await expect(pending).rejects.toThrow("timed out");
+		finish(bytes);
+		await Promise.resolve();
+		expect(cache.write).not.toHaveBeenCalled();
+		expect(cancel).toHaveBeenCalledTimes(1);
+	});
+
 	it("times out and permits a subsequent retry", async () => {
 		const { config, cache, bytes } = fixture();
 		const download = jest
