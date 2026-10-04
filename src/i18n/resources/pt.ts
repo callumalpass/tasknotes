@@ -681,6 +681,8 @@ export const pt: TranslationTree = {
 				}
 			},
 			uiLanguage: {
+				downloadDescription: "Os outros idiomas da interface são baixados e armazenados no cache local para uso offline. Nenhum conteúdo do cofre é enviado.",
+				retryDownload: "Tentar baixar o idioma novamente",
 				header: "Idioma da Interface",
 				description: "Altere o idioma dos menus, avisos e visualizações do TaskNotes.",
 				dropdown: {
@@ -2299,6 +2301,7 @@ export const pt: TranslationTree = {
 		}
 	},
 	notices: {
+		languagePackDownloadFailed: "Não foi possível carregar {language}. O idioma atual permanece inalterado. Tente novamente nas configurações de idioma da interface.",
 		languageChanged: "Idioma alterado para {language}.",
 		recurringCompletion: {
 			completed: "Ocorrência concluída: {date}",

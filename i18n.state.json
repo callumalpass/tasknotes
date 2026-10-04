@@ -1832,6 +1832,14 @@
       "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
       "translation": "53c502151363306373b3ba6583e5f728a78ee217"
     },
+    "settings.features.uiLanguage.downloadDescription": {
+      "source": "f4413d80503d1d3ebe9588d97d047e758ce7e410",
+      "translation": "612c51d77dc74afa9ea869564834c531a5ecaf89"
+    },
+    "settings.features.uiLanguage.retryDownload": {
+      "source": "0173285b7087ca7b94e4c61bfdbf59768abf56d3",
+      "translation": "7e57aab0c2945e3feabc7eb8794e495492a60a5f"
+    },
     "settings.features.uiLanguage.header": {
       "source": "9407e9ca65ce326b3ca3d00c32f9af4c26ca2225",
       "translation": "d895170a7309ec578eb4d03b2bb3f14dd94f6333"
@@ -5631,6 +5639,10 @@
     "settings.integrations.timeFormats.daysAgo": {
       "source": "3b2bbbb17c26d8f902aca06fa76141862a613529",
       "translation": "125532012957c5db922d2bc2836a2653f352c68e"
+    },
+    "notices.languagePackDownloadFailed": {
+      "source": "8917465a4f2db452bd834a43b365f5f0877bcca6",
+      "translation": "f0a68084a6211be8592f7c8d1a15ccf0a69d9c97"
     },
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
@@ -11154,6 +11166,14 @@
       "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
       "translation": "c47cfeff05eb5bf7b5061e1cad51a2a8bfa29c55"
     },
+    "settings.features.uiLanguage.downloadDescription": {
+      "source": "f4413d80503d1d3ebe9588d97d047e758ce7e410",
+      "translation": "98fcbd02410e048d227b4900eed83223e31fd10a"
+    },
+    "settings.features.uiLanguage.retryDownload": {
+      "source": "0173285b7087ca7b94e4c61bfdbf59768abf56d3",
+      "translation": "dd26baccaea75a19d8bd39d3a77e922deb55b4c2"
+    },
     "settings.features.uiLanguage.header": {
       "source": "9407e9ca65ce326b3ca3d00c32f9af4c26ca2225",
       "translation": "add12ca7e25ebc36794defe7b219ec3e02f5a67d"
@@ -14953,6 +14973,10 @@
     "settings.integrations.timeFormats.daysAgo": {
       "source": "3b2bbbb17c26d8f902aca06fa76141862a613529",
       "translation": "8fc3208fb48a2ec6f52f0fca60b2af39c5b94ec5"
+    },
+    "notices.languagePackDownloadFailed": {
+      "source": "8917465a4f2db452bd834a43b365f5f0877bcca6",
+      "translation": "f45435be33e0574bdc56b41e956ee27c71f0f634"
     },
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
@@ -20476,6 +20500,14 @@
       "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
       "translation": "e1f028745302fe82cdda9f02f45f6ec77cfc1c65"
     },
+    "settings.features.uiLanguage.downloadDescription": {
+      "source": "f4413d80503d1d3ebe9588d97d047e758ce7e410",
+      "translation": "95354922ded39964a7a24e4263acf12adc625f7a"
+    },
+    "settings.features.uiLanguage.retryDownload": {
+      "source": "0173285b7087ca7b94e4c61bfdbf59768abf56d3",
+      "translation": "6c91ba91ae99724a44892b0f0ea82fbdb7da43ef"
+    },
     "settings.features.uiLanguage.header": {
       "source": "9407e9ca65ce326b3ca3d00c32f9af4c26ca2225",
       "translation": "d36a7f5b30c0d29538afea14f2e2d99e99bac035"
@@ -24275,6 +24307,10 @@
     "settings.integrations.timeFormats.daysAgo": {
       "source": "3b2bbbb17c26d8f902aca06fa76141862a613529",
       "translation": "880b693c7506688999da06df5db53fef71487208"
+    },
+    "notices.languagePackDownloadFailed": {
+      "source": "8917465a4f2db452bd834a43b365f5f0877bcca6",
+      "translation": "b671860e76a00f102c9cfb4229a7fdce6b90c9ac"
     },
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
@@ -29798,6 +29834,14 @@
       "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
       "translation": "6b5edf4b72df5a4727285445c5875a47e7d8ba70"
     },
+    "settings.features.uiLanguage.downloadDescription": {
+      "source": "f4413d80503d1d3ebe9588d97d047e758ce7e410",
+      "translation": "7130f94717c681eebc21db1feb2d8869ed0ac14a"
+    },
+    "settings.features.uiLanguage.retryDownload": {
+      "source": "0173285b7087ca7b94e4c61bfdbf59768abf56d3",
+      "translation": "1ea958376217154db5ae61603bfc85c5bd318751"
+    },
     "settings.features.uiLanguage.header": {
       "source": "9407e9ca65ce326b3ca3d00c32f9af4c26ca2225",
       "translation": "302c6a85316ba7ce01eb3bc6712e05b7f2330d61"
@@ -33597,6 +33641,10 @@
     "settings.integrations.timeFormats.daysAgo": {
       "source": "3b2bbbb17c26d8f902aca06fa76141862a613529",
       "translation": "898b64a4fc683329e9fdd5e467a05e464756bfa1"
+    },
+    "notices.languagePackDownloadFailed": {
+      "source": "8917465a4f2db452bd834a43b365f5f0877bcca6",
+      "translation": "2d1a9b0a7f050d81d05c0e65c5bd02b8ed609018"
     },
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
@@ -39120,6 +39168,14 @@
       "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
       "translation": "1a0ba764600504bca9d1025fd3e86f4e2cd1eb19"
     },
+    "settings.features.uiLanguage.downloadDescription": {
+      "source": "f4413d80503d1d3ebe9588d97d047e758ce7e410",
+      "translation": "a958ed2edd9f42f7056b6ebef8722215aec25cf1"
+    },
+    "settings.features.uiLanguage.retryDownload": {
+      "source": "0173285b7087ca7b94e4c61bfdbf59768abf56d3",
+      "translation": "98dc5c7e8183bc91e041d50e5fe6029a3cf6d23a"
+    },
     "settings.features.uiLanguage.header": {
       "source": "9407e9ca65ce326b3ca3d00c32f9af4c26ca2225",
       "translation": "53eae44a18e3be17062bdbc759568ea554465e35"
@@ -42919,6 +42975,10 @@
     "settings.integrations.timeFormats.daysAgo": {
       "source": "3b2bbbb17c26d8f902aca06fa76141862a613529",
       "translation": "fef88a27d2ed24e73f9bf2edf038ca2cd4e297a2"
+    },
+    "notices.languagePackDownloadFailed": {
+      "source": "8917465a4f2db452bd834a43b365f5f0877bcca6",
+      "translation": "6d96481f85b342acef70f0b008ea0eee48a7759e"
     },
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
@@ -48442,6 +48502,14 @@
       "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
       "translation": "0d417a85c354d21379ccf40fb1c4884a255fc7df"
     },
+    "settings.features.uiLanguage.downloadDescription": {
+      "source": "f4413d80503d1d3ebe9588d97d047e758ce7e410",
+      "translation": "2da10b3b8213a9e2056c102487ef44550da82276"
+    },
+    "settings.features.uiLanguage.retryDownload": {
+      "source": "0173285b7087ca7b94e4c61bfdbf59768abf56d3",
+      "translation": "5dd34ec70a5423df3ddfdd0d7521e0bf7370dfb6"
+    },
     "settings.features.uiLanguage.header": {
       "source": "9407e9ca65ce326b3ca3d00c32f9af4c26ca2225",
       "translation": "1b4c59b136df4f61182a52f55ceb14795ef4d3ca"
@@ -52241,6 +52309,10 @@
     "settings.integrations.timeFormats.daysAgo": {
       "source": "3b2bbbb17c26d8f902aca06fa76141862a613529",
       "translation": "858285ff7194ec31edde59a7552e035dbec526ca"
+    },
+    "notices.languagePackDownloadFailed": {
+      "source": "8917465a4f2db452bd834a43b365f5f0877bcca6",
+      "translation": "74bb43812f09811d58dca445bcd6a62b4c69a11d"
     },
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
@@ -57764,6 +57836,14 @@
       "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
       "translation": "63cd698012716a6ed8dc821fac2bd629266f6a07"
     },
+    "settings.features.uiLanguage.downloadDescription": {
+      "source": "f4413d80503d1d3ebe9588d97d047e758ce7e410",
+      "translation": "d9396630a37c9b219a301b3f9d79ed53b3542023"
+    },
+    "settings.features.uiLanguage.retryDownload": {
+      "source": "0173285b7087ca7b94e4c61bfdbf59768abf56d3",
+      "translation": "b87fe3325fe70c9f9d9065369920a57265b8e9ab"
+    },
     "settings.features.uiLanguage.header": {
       "source": "9407e9ca65ce326b3ca3d00c32f9af4c26ca2225",
       "translation": "d9396e7d7f043091de61ff08bda4303b21e81987"
@@ -61563,6 +61643,10 @@
     "settings.integrations.timeFormats.daysAgo": {
       "source": "3b2bbbb17c26d8f902aca06fa76141862a613529",
       "translation": "f0dd26856626b610cd7945fd827991ff38d41e17"
+    },
+    "notices.languagePackDownloadFailed": {
+      "source": "8917465a4f2db452bd834a43b365f5f0877bcca6",
+      "translation": "5e3d65a425164078d6876c3c2dbd698d48096dc3"
     },
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
@@ -67086,6 +67170,14 @@
       "source": "2eaf3cd2af324943c8eb66b7c49818d2a3d5da23",
       "translation": "1dbcee4b3358b9cb2e47077858c66cd2da09f71e"
     },
+    "settings.features.uiLanguage.downloadDescription": {
+      "source": "f4413d80503d1d3ebe9588d97d047e758ce7e410",
+      "translation": "8ec1e4f67f75fe647eac17fe1683865ffdbe138e"
+    },
+    "settings.features.uiLanguage.retryDownload": {
+      "source": "0173285b7087ca7b94e4c61bfdbf59768abf56d3",
+      "translation": "f309f25a9eebba668ee6dddf90bd2091f520190a"
+    },
     "settings.features.uiLanguage.header": {
       "source": "9407e9ca65ce326b3ca3d00c32f9af4c26ca2225",
       "translation": "d5d8edd12c086fe7b4f8111054448f345bd82d19"
@@ -70885,6 +70977,10 @@
     "settings.integrations.timeFormats.daysAgo": {
       "source": "3b2bbbb17c26d8f902aca06fa76141862a613529",
       "translation": "a1ab36bb5aae01ef12dde3eacfe348736ad60338"
+    },
+    "notices.languagePackDownloadFailed": {
+      "source": "8917465a4f2db452bd834a43b365f5f0877bcca6",
+      "translation": "95f1407b2f0464fd72d32bb123a83c4b6833eee9"
     },
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",

@@ -681,6 +681,8 @@ export const es: TranslationTree = {
 				}
 			},
 			uiLanguage: {
+				downloadDescription: "Los demás idiomas de la interfaz se descargan y se guardan en la caché local para usarlos sin conexión. No se envía contenido de la bóveda.",
+				retryDownload: "Reintentar la descarga del idioma",
 				header: "Idioma de la interfaz",
 				description: "Cambiar el idioma de los menús, avisos y vistas de TaskNotes.",
 				dropdown: {
@@ -2297,6 +2299,7 @@ export const es: TranslationTree = {
 		}
 	},
 	notices: {
+		languagePackDownloadFailed: "No se pudo cargar {language}. El idioma actual no ha cambiado. Vuelve a intentarlo en los ajustes de idioma de la interfaz.",
 		languageChanged: "Idioma cambiado a {language}.",
 		recurringCompletion: {
 			completed: "Ocurrencia completada: {date}",

@@ -709,6 +709,8 @@ export const en: TranslationTree = {
 				},
 			},
 			uiLanguage: {
+				downloadDescription: "Other interface languages are downloaded and cached locally for offline use. No vault content is sent.",
+				retryDownload: "Retry language download",
 				header: "Interface language",
 				description: "Change the language of TaskNotes menus, notices, and views.",
 				dropdown: {
@@ -2456,6 +2458,7 @@ export const en: TranslationTree = {
 		},
 	},
 	notices: {
+		languagePackDownloadFailed: "Could not load {language}. The current language is unchanged. Retry in the interface language settings.",
 		languageChanged: "Language changed to {language}.",
 		recurringCompletion: {
 			completed: "Completed occurrence: {date}",

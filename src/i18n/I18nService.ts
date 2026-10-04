@@ -7,20 +7,9 @@ import {
 	TranslationTree,
 } from "./types";
 
-const BASE_FALLBACK = "en";
+import { flattenTranslations } from "./catalogue";
 
-function flattenTranslations(tree: TranslationTree, prefix = ""): Record<string, string> {
-	const entries: Record<string, string> = {};
-	Object.entries(tree).forEach(([key, value]) => {
-		const fullKey = prefix ? `${prefix}.${key}` : key;
-		if (typeof value === "string") {
-			entries[fullKey] = value;
-		} else if (value && typeof value === "object") {
-			Object.assign(entries, flattenTranslations(value, fullKey));
-		}
-	});
-	return entries;
-}
+const BASE_FALLBACK = "en";
 
 function interpolate(template: string, params?: InterpolationValues): string {
 	if (!params) return template;
@@ -38,12 +27,14 @@ export class I18nService extends Events {
 	private readonly defaultLocale: string;
 	private readonly fallbackLocale: string;
 	private readonly getSystemLocaleFn?: () => string;
+	private readonly availableLocales: string[];
 	private cache: Record<string, Record<string, string>> = {};
 	private currentLocale: string;
 
 	constructor(options: I18nServiceOptions) {
 		super();
-		this.resources = options.resources;
+		this.resources = { ...options.resources };
+		this.availableLocales = options.availableLocales ?? Object.keys(options.resources);
 		this.defaultLocale = options.defaultLocale;
 		this.fallbackLocale = options.fallbackLocale ?? BASE_FALLBACK;
 		this.getSystemLocaleFn = options.getSystemLocale;
@@ -53,7 +44,25 @@ export class I18nService extends Events {
 	}
 
 	getAvailableLocales(): string[] {
-		return Object.keys(this.resources);
+		return [...new Set([...this.availableLocales, ...Object.keys(this.resources)])];
+	}
+
+	getPreferredLocale(locale: string): string {
+		const preferred = locale === "system" ? this.getSystemLocale() : normalizeLocale(locale);
+		return this.getAvailableLocales().includes(preferred) ? preferred : this.defaultLocale;
+	}
+
+	hasLocale(locale: string): boolean {
+		return Object.prototype.hasOwnProperty.call(this.resources, normalizeLocale(locale));
+	}
+
+	registerLocale(locale: string, resources: TranslationTree): void {
+		const normalized = normalizeLocale(locale);
+		if (normalized === this.defaultLocale) {
+			throw new Error("Cannot replace the bundled default language");
+		}
+		this.resources[normalized] = resources;
+		delete this.cache[normalized];
 	}
 
 	/**
@@ -70,6 +79,7 @@ export class I18nService extends Events {
 			ru: "Русский",
 			zh: "中文",
 			ja: "日本語",
+			ko: "한국어",
 		};
 		return nativeNames[languageCode] || languageCode;
 	}

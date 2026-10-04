@@ -681,6 +681,8 @@ export const de: TranslationTree = {
 				}
 			},
 			uiLanguage: {
+				downloadDescription: "Weitere Oberflächensprachen werden heruntergeladen und lokal für die Offline-Nutzung zwischengespeichert. Es werden keine Tresorinhalte gesendet.",
+				retryDownload: "Sprachdownload erneut versuchen",
 				header: "Oberflächensprache",
 				description: "Ändere die Sprache der TaskNotes-Menüs, Hinweise und Ansichten.",
 				dropdown: {
@@ -2297,6 +2299,7 @@ export const de: TranslationTree = {
 		}
 	},
 	notices: {
+		languagePackDownloadFailed: "{language} konnte nicht geladen werden. Die aktuelle Sprache bleibt unverändert. Versuche es in den Einstellungen für die Oberflächensprache erneut.",
 		languageChanged: "Sprache geändert zu {language}.",
 		recurringCompletion: {
 			completed: "Erledigtes Vorkommen: {date}",

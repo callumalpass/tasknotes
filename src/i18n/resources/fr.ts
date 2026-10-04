@@ -681,6 +681,8 @@ export const fr: TranslationTree = {
 				}
 			},
 			uiLanguage: {
+				downloadDescription: "Les autres langues de l’interface sont téléchargées et mises en cache localement pour une utilisation hors ligne. Aucun contenu du coffre n’est envoyé.",
+				retryDownload: "Réessayer le téléchargement de la langue",
 				header: "Langue de l'interface",
 				description: "Modifiez la langue des menus, notifications et vues de TaskNotes.",
 				dropdown: {
@@ -2297,6 +2299,7 @@ export const fr: TranslationTree = {
 		}
 	},
 	notices: {
+		languagePackDownloadFailed: "Impossible de charger {language}. La langue actuelle reste inchangée. Réessayez dans les paramètres de langue de l’interface.",
 		languageChanged: "Langue changée pour {language}.",
 		recurringCompletion: {
 			completed: "Occurrence terminée : {date}",

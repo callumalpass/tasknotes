@@ -681,6 +681,8 @@ export const ja: TranslationTree = {
 				}
 			},
 			uiLanguage: {
+				downloadDescription: "他の表示言語はダウンロードされ、オフラインで使えるようローカルにキャッシュされます。保管庫の内容は送信されません。",
+				retryDownload: "言語のダウンロードを再試行",
 				header: "インターフェース言語",
 				description: "TaskNotesのメニュー、通知、ビューの言語を変更します。",
 				dropdown: {
@@ -2297,6 +2299,7 @@ export const ja: TranslationTree = {
 		}
 	},
 	notices: {
+		languagePackDownloadFailed: "{language}を読み込めませんでした。現在の言語は変更されていません。表示言語の設定から再試行してください。",
 		languageChanged: "言語を{language}に変更しました。",
 		recurringCompletion: {
 			completed: "完了した繰り返し: {date}",

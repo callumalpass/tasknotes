@@ -681,6 +681,8 @@ export const ru: TranslationTree = {
 				}
 			},
 			uiLanguage: {
+				downloadDescription: "Другие языки интерфейса загружаются и сохраняются в локальном кэше для работы без интернета. Содержимое хранилища не отправляется.",
+				retryDownload: "Повторить загрузку языка",
 				header: "Язык интерфейса",
 				description: "Изменить язык меню, уведомлений и представлений TaskNotes.",
 				dropdown: {
@@ -2297,6 +2299,7 @@ export const ru: TranslationTree = {
 		}
 	},
 	notices: {
+		languagePackDownloadFailed: "Не удалось загрузить {language}. Текущий язык не изменён. Повторите попытку в настройках языка интерфейса.",
 		languageChanged: "Язык изменен на {language}.",
 		recurringCompletion: {
 			completed: "Завершённый повтор: {date}",

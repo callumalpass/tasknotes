@@ -31,3 +31,13 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Added
+
+- Added an opt-in build mode for downloadable interface language packs, with bundled English, validated local caching for offline use, and retry support. Ordinary builds continue bundling all supported languages. See [Downloadable language packs](https://tasknotes.dev/development/language-packs/) for build configuration.
+
+## Changed
+
+## Removed
+
+## Fixed

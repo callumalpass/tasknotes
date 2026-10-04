@@ -681,6 +681,8 @@ export const zh: TranslationTree = {
 				}
 			},
 			uiLanguage: {
+				downloadDescription: "其他界面语言会下载并缓存在本地，以供离线使用。不会发送仓库内容。",
+				retryDownload: "重试下载语言包",
 				header: "界面语言",
 				description: "更改TaskNotes菜单、通知和视图的语言。",
 				dropdown: {
@@ -2297,6 +2299,7 @@ export const zh: TranslationTree = {
 		}
 	},
 	notices: {
+		languagePackDownloadFailed: "无法加载{language}。当前语言未更改。请在界面语言设置中重试。",
 		languageChanged: "语言已更改为{language}。",
 		recurringCompletion: {
 			completed: "已完成的重复任务：{date}",

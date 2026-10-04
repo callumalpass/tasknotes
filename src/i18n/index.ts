@@ -1,27 +1,9 @@
 import { I18nService } from "./I18nService";
 import type { I18nServiceOptions } from "./types";
-import { TranslationResources } from "./types";
-import { en } from "./resources/en";
-import { fr } from "./resources/fr";
-import { ru } from "./resources/ru";
-import { zh } from "./resources/zh";
-import { de } from "./resources/de";
-import { es } from "./resources/es";
-import { ja } from "./resources/ja";
-import { pt } from "./resources/pt";
-import { ko } from "./resources/ko";
+import { translationResources } from "./bundledResources";
+import { languagePackConfig } from "./languagePackConfig";
 
-export const translationResources = {
-	en,
-	fr,
-	ru,
-	zh,
-	de,
-	es,
-	ja,
-	pt,
-	ko,
-} satisfies TranslationResources;
+export { translationResources };
 
 export type TranslationKey = string;
 export type { InterpolationValues } from "./types";
@@ -31,6 +13,9 @@ export function createI18nService(options?: Partial<I18nServiceOptions>): I18nSe
 		resources: translationResources,
 		defaultLocale: "en",
 		fallbackLocale: "en",
+		availableLocales: languagePackConfig
+			? Object.keys(languagePackConfig.manifest.packs)
+			: undefined,
 		...options,
 	});
 }

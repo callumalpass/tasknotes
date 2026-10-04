@@ -681,6 +681,8 @@ export const ko: TranslationTree = {
 				}
 			},
 			uiLanguage: {
+				downloadDescription: "다른 인터페이스 언어는 다운로드되어 오프라인에서 사용할 수 있도록 로컬에 캐시됩니다. 보관함 내용은 전송되지 않습니다.",
+				retryDownload: "언어 다운로드 다시 시도",
 				header: "인터페이스 언어",
 				description: "TaskNotes 메뉴, 알림 및 뷰의 언어를 변경합니다.",
 				dropdown: {
@@ -2281,6 +2283,7 @@ export const ko: TranslationTree = {
 		}
 	},
 	notices: {
+		languagePackDownloadFailed: "{language} 언어를 불러오지 못했습니다. 현재 언어는 변경되지 않았습니다. 인터페이스 언어 설정에서 다시 시도하세요.",
 		languageChanged: "언어가 {language}(으)로 변경되었습니다.",
 		recurringCompletion: {
 			completed: "완료한 반복 일정: {date}",

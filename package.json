@@ -41,6 +41,8 @@
 		"format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
 		"format:check": "prettier --check \"src/**/*.{ts,js,json,md}\"",
 		"typecheck": "tsc --noEmit",
+		"i18n:export": "node scripts/export-language-packs.mjs",
+		"test:language-packs": "node --test tests/scripts/language-packs.test.mjs",
 		"i18n:sync": "i18n-state sync",
 		"i18n:verify": "i18n-state verify",
 		"i18n:status": "i18n-state status",

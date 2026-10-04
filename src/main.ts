@@ -61,6 +61,9 @@ import { AutoExportService } from "./services/AutoExportService";
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from "./services/HTTPAPIService";
 import { createI18nService, I18nService } from "./i18n";
+import { languagePackConfig } from "./i18n/languagePackConfig";
+import type { LanguagePackController } from "./i18n/LanguagePackController";
+import { createLanguagePackController } from "./bootstrap/languagePacks";
 import { OAuthService } from "./services/OAuthService";
 import { OAuthSecretStore } from "./services/OAuthSecretStore";
 import { migrateLegacyOAuthData, stripLegacyOAuthData } from "./services/oauthSecretMigration";
@@ -126,6 +129,7 @@ function getSubmenu(item: unknown): Menu {
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
 	i18n: I18nService;
+	private languagePackController?: LanguagePackController;
 	private settingsLoadCompromised = false;
 	private settingsDataSavePromise: Promise<void> | null = null;
 	private settingsDataSaveRequested = false;
@@ -279,6 +283,26 @@ export default class TaskNotesPlugin extends Plugin {
 		// For now we don't force-refresh to avoid disrupting the workspace layout.
 	}
 
+	async setUILanguage(locale: string): Promise<boolean> {
+		if (!this.languagePackController) {
+			this.i18n.setLocale(locale);
+			return true;
+		}
+		try {
+			return await this.languagePackController.setLocale(locale);
+		} catch (error) {
+			tasknotesLogger.warn("Could not load interface language pack", {
+				category: "provider",
+				operation: "load-language-pack",
+				details: { locale, error: String(error) },
+			});
+			new Notice(this.i18n.translate("notices.languagePackDownloadFailed", {
+				language: this.i18n.getNativeLanguageName(this.i18n.getPreferredLocale(locale)),
+			}));
+			return false;
+		}
+	}
+
 	async onload() {
 		// Create the promise and store its resolver
 		this.readyPromise = new Promise((resolve) => {
@@ -300,14 +324,23 @@ export default class TaskNotesPlugin extends Plugin {
 		});
 
 		this.i18n.on("locale-changed", ({ current }) => {
+			// A cached/downloaded locale may arrive during startup, after commands register.
+			this.commandRegistry?.refreshTranslations();
 			if (!this.initializationComplete) {
 				return;
 			}
 			const languageLabel = this.i18n.getNativeLanguageName(current);
 			new Notice(this.i18n.translate("notices.languageChanged", { language: languageLabel }));
 			this.refreshLocalizedViews();
-			this.commandRegistry?.refreshTranslations();
 		});
+
+		if (languagePackConfig) {
+			this.languagePackController = createLanguagePackController(
+				this.app, this.manifest, this.i18n, languagePackConfig
+			);
+			// Startup uses bundled English immediately; never wait for the network.
+			void this.setUILanguage(this.settings.uiLanguage ?? "system");
+		}
 
 		await initializePluginRuntime(this);
 		this.registerTaskNotesFileMenuActions();
@@ -675,6 +708,7 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	onunload() {
+		this.languagePackController?.dispose();
 		this.emitter?.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS.unloading, {
 			timestamp: new Date().toISOString(),
 		});
