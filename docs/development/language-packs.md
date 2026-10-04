@@ -108,18 +108,74 @@ TASKNOTES_LANGUAGE_PACK_BASE_URL="$BASE_URL" \
   npm run e2e -- e2e/language-packs.spec.ts
 ```
 
-The test exercises native picker switching, French download, offline plugin reload, corrupt German data and retry, and a superseded Russian request. It restores the fixture's settings afterward. Mobile acceptance remains a separate requirement.
+The test exercises native picker switching, French download, offline plugin reload, corrupt German data and retry, and a superseded Russian request. It restores the fixture's settings afterward.
 
-## Publication boundary
+### Actual Android acceptance
 
-CI tests and exports catalogues and attaches them to its build artifact. It does not currently publish to R2. The normal CI/release build remains fully bundled.
+`npm run e2e:android:language-packs` operates the **real Obsidian Android app**, not a desktop mobile-mode simulation. It uses Playwright's experimental Android WebView support plus explicitly targeted ADB operations. It refuses physical devices, AVDs not named `tasknotes-language-packs`, and vaults without the exact fixture identity. It restores emulator networking after the test. The vault and all cache changes are disposable test data.
 
-Future publication should upload immutable locale objects first, verify them, and publish the manifest last, with an appropriate cache policy. Retain versions needed by installed plugin releases. No global `/latest` catalogue is consumed by the plugin.
+Prerequisites: Android SDK, KVM (or another supported accelerator), an installed Android 36 x86_64 image, and the official Obsidian Android APK. Register a fresh AVD under this worktree, never reuse a personal AVD:
+
+```bash
+export ANDROID_AVD_HOME="$PWD/.tmp/android-avd"
+mkdir -p "$ANDROID_AVD_HOME"
+avdmanager create avd --name tasknotes-language-packs \
+  --package 'system-images;android-36;google_apis_playstore;x86_64' \
+  --device pixel_7 --path "$ANDROID_AVD_HOME/tasknotes-language-packs.avd"
+emulator -avd tasknotes-language-packs -port 5574 -no-snapshot \
+  -no-window -no-audio -gpu swiftshader -memory 2048 -cores 2
+```
+
+In another terminal, install the official APK on **only** `emulator-5574`. Complete onboarding without Sync, creating a device-storage vault named `TaskNotesLanguagePacks` under `Documents`. Trust only the locally built TaskNotes plugin in this disposable vault. Then:
+
+```bash
+PLAYWRIGHT_SKIP_BROWSER_GC=1 npx --no-install playwright install android
+TASKNOTES_LANGUAGE_PACK_BASE_URL=https://i18n.mdbase.dev/tasknotes npm run build
+SERIAL=emulator-5574
+VAULT=/sdcard/Documents/TaskNotesLanguagePacks
+adb -s "$SERIAL" emu avd name # Must be tasknotes-language-packs
+adb -s "$SERIAL" push e2e/fixtures/android-language-pack-vault-identity.txt "$VAULT/vault-identity.txt"
+adb -s "$SERIAL" shell am force-stop md.obsidian
+adb -s "$SERIAL" shell mkdir -p "$VAULT/.obsidian/plugins/tasknotes"
+for FILE in main.js styles.css manifest.json; do
+  adb -s "$SERIAL" push "$FILE" "$VAULT/.obsidian/plugins/tasknotes/$FILE"
+done
+adb -s "$SERIAL" push e2e/fixtures/android-language-pack-data.json "$VAULT/.obsidian/plugins/tasknotes/data.json"
+adb -s "$SERIAL" shell am start -W -n md.obsidian/.MainActivity
+# Enable TaskNotes in this vault's Community plugins settings if not already enabled.
+npm run e2e:android:language-packs
+```
+
+Repeat runs must begin with the fixture's English settings and no previously downloaded German pack. Reset only this disposable vault's generated `language-packs/` cache while Obsidian is stopped. Never use these reset commands against a personal vault. The fixture suppresses the starter-note walkthrough so it cannot dismiss the settings screen mid-test.
+
+Evidence is written to `.tmp/android-language-packs/`: a structured report and native screenshots. The test verifies real mobile storage and WebCrypto, French picker download from public R2, offline full app force-stop/relaunch and translated commands, an uncached German failure preserving French, recovery through the retry button, every remaining target locale, and rejection/repair of a same-length corrupted French cache. Reconnection waits for real connectivity and tolerates native DNS negative-cache expiry; no transport or platform flag is mocked.
+
+Android 16 / API 36 with Obsidian 1.13.8 passed this acceptance test. This is not iOS validation, physical-device performance testing, or a complete older-Android compatibility matrix.
+
+## R2 hosting and publication
+
+The public host is `https://i18n.mdbase.dev`, with TaskNotes assets under `/tasknotes/<catalogue-version>/`. The dedicated `product-language-packs` bucket contains public translation data only, never notes or credentials. Target account, bucket, domain, zone and TLS policy are recorded in `infra/language-packs.json`; read-only wildcard CORS is in `infra/language-packs.cors.json`. The exporter also emits English for reference, but the plugin never downloads English.
+
+```bash
+npm run i18n:verify
+npm run i18n:publish                 # Local dry run; no cloud writes or authentication
+npm run i18n:publish -- --verify     # Verify public bytes and HTTP metadata; no cloud writes
+npm run i18n:publish -- --apply      # Explicitly publish using authenticated project-local Wrangler
+```
+
+`--apply` verifies the account-pinned bucket and preflights every object against the authenticated origin, not the CDN. Conflicting existing bytes abort before any upload; identical objects are reused. Locale JSON and the MIT license are uploaded first, their public hashes/MIME types/cache headers/CORS are checked, and the immutable versioned manifest is published last. Retain versions needed by installed releases; there is no automatic deletion and the plugin does not consume a global `/latest` catalogue.
+
+All versioned files use `Cache-Control: public, max-age=31536000, immutable`. CORS permits only public GET/HEAD without credentials. TLS minimum is 1.2; the rate-limited `r2.dev` development URL is not enabled. JSON is not edge-cache eligible by default: current responses show `CF-Cache-Status: DYNAMIC`. A host-scoped Cache Rule is a follow-up optimization, not a prerequisite for local caching or offline use.
+
+The current operator publisher uses Wrangler's existing OAuth/API-token authentication, kept in process memory and never logged or committed. Its origin preflight is **not an atomic conditional create**: serialize publishers. Before automatic CI publication, add an S3 conditional-write backend and bucket-scoped Object Read & Write credentials. Bucket-item tokens work with the S3 API, not Wrangler's Cloudflare REST API; do not export a personal OAuth token or grant an account-wide administration token to CI.
+
+CI tests and exports catalogues and attaches them to its build artifact. It does not currently publish to R2. The normal CI/release build remains fully bundled; setting up this host does not authorize a plugin release or enable the release-build URL automatically.
 
 ## Follow-up
 
-- Mobile acceptance coverage and additional desktop upgrade/failure scenarios.
-- Guarded Cloudflare publication with an explicit production host and least-privilege credentials.
+- iOS and older/physical Android acceptance, plus additional desktop upgrade/failure scenarios.
+- S3 conditional-create publication with bucket-scoped CI credentials and serialized releases.
+- A Cache Rule scoped only to the language-pack host, enabling edge caching of JSON.
 - Optional cache pruning that preserves the current catalogue.
 - Lingui/generated-ID migration as a separate change, after a representative pilot.
 - Shared glossary and local agent workflow conventions across the initiative workspace.
