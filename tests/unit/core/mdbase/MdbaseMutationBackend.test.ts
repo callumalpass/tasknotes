@@ -40,6 +40,12 @@ class FakeClient implements MdbaseWriteClient {
 		this.calls.push(["create", path, document]);
 		return { mutation: "m3" };
 	}
+	isResourcePath() {
+		return false;
+	}
+	async resources() {
+		return { mutation: "x" };
+	}
 	async settle(_w: unknown, vaultPath: string) {
 		this.settled.push(vaultPath);
 	}

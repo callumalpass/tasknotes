@@ -1,5 +1,6 @@
 import YAML from "yaml";
 import { SafeMetadata, type MetadataSnapshot } from "./SafeMetadata";
+import { getMdbaseMutationBackend } from "../../core/VaultMutationService";
 
 export const METADATA_PENDING = ".tasknotes/migrations/mdbase-v0.3-pending.json";
 type Journal = { backupFolder: string; snapshots: MetadataSnapshot[]; intendedWrites: MetadataSnapshot[] };
@@ -62,6 +63,19 @@ export class MetadataTransaction {
 			await this.io.replace({ path, content: null }, snapshot.content);
 		}
 		await this.io.replace({ path: `${backupFolder}/manifest.json`, content: null }, JSON.stringify(journal, null, 2));
+		const backend = getMdbaseMutationBackend();
+		if (backend && changed.every((write) => backend.claimsResource(write.path))) {
+			// The runtime hosts the collection: the whole upgrade is one mutation of
+			// resource writes, each based on its compared snapshot. The log applies it
+			// atomically (no local swap journal), and a concurrent change rejects it.
+			await this.assertUnchanged(snapshots);
+			await backend.writeResources(changed.map((write) => {
+				const snapshot = snapshots.find((item) => item.path === write.path);
+				if (!snapshot || write.content === null) throw new Error(`Invalid metadata write: ${write.path}`);
+				return { kind: "put" as const, vaultPath: write.path, doc: write.content, base: snapshot.content };
+			}));
+			return;
+		}
 		try {
 			await this.io.replace({ path: METADATA_PENDING, content: null }, JSON.stringify(journal, null, 2));
 			// Type before contract activation, collection configuration last.

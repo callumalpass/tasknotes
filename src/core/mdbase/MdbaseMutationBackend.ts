@@ -22,13 +22,13 @@
  * Files outside the collection, non-record files (backups, exports), and writes while
  * no runtime is attached keep using Obsidian's APIs unchanged.
  *
- * **Relation to v5's existing mdbase path.** v5 manages the collection's own metadata
- * (`mdbase.yaml`, `_types/`) through `SafeMetadata` and `MetadataTransaction`, with a
- * swap journal and direct adapter writes. This backend covers the record funnel only.
- * When the runtime hosts the collection, metadata writes must also become replica
- * resource writes, because type changes are ordered in the log. That is the next step
- * of the port: a `SafeMetadataAdapter` backed by this client. Until then, the runtime
- * ingests those writes as outside edits, as it does any other tool's.
+ * **Collection metadata.** v5 writes `mdbase.yaml`, type files and contract files
+ * through `SafeMetadata` and `MetadataTransaction`. When this backend is installed,
+ * those writes become **resource writes** ({@link writeResources}): each carries the
+ * content it read as its base revision, and a new file from a pack is sent with
+ * `must_not_exist`. A transaction's whole set is one mutation, so a pack lands
+ * atomically in the log, with no local swap journal. Backups under `.tasknotes/` are
+ * still written to the vault, because they are not resources.
  */
 
 /** A record as TaskNotes needs it, with plain JSON-like frontmatter. */
@@ -39,6 +39,16 @@ export interface MdbaseRecord {
 	/** The whole source, when read with `document`. */
 	readonly document?: string;
 }
+
+/**
+ * A resource write (`intent.md` §3.6): `mdbase.yaml`, type and contract files.
+ * `base` is the exact content the writer read. The client sends its revision as
+ * `base_revision`, or `must_not_exist` when `base` is `null` (a new type from a pack;
+ * contracts #201).
+ */
+export type ResourceOp =
+	| { readonly kind: "put"; readonly path: string; readonly doc: string; readonly base: string | null }
+	| { readonly kind: "delete"; readonly path: string; readonly base: string };
 
 /** An accepted write (pending or confirmed). */
 export interface MdbaseWrite {
@@ -58,6 +68,13 @@ export interface MdbaseWriteClient {
 	 * Obsidian: TaskNotes' backups, exports and attachments.
 	 */
 	isRecordPath(path: string): boolean;
+	/** Whether a collection path is a resource under the catalog in force. */
+	isResourcePath(path: string): boolean;
+	/**
+	 * Submit resource writes as **one** mutation. It is ordered in the log and applied
+	 * atomically, so a pack's types and the config change together, or not at all.
+	 */
+	resources(ops: ResourceOp[]): Promise<MdbaseWrite>;
 	/** Read a record by path, with frontmatter (and the document when asked). */
 	find(path: string, opts: { document: boolean }): Promise<MdbaseRecord | null>;
 	/** Field-level update, with `base` taken from `seen`. */
@@ -125,6 +142,11 @@ export function frontmatterDiff(
 	return { patch, unset };
 }
 
+/** A resource write in vault paths. */
+export type ResourceInput =
+	| { readonly kind: "put"; readonly vaultPath: string; readonly doc: string; readonly base: string | null }
+	| { readonly kind: "delete"; readonly vaultPath: string; readonly base: string };
+
 /** The mdbase write path for TaskNotes. */
 export class MdbaseMutationBackend {
 	constructor(private readonly client: MdbaseWriteClient) {}
@@ -171,6 +193,29 @@ export class MdbaseMutationBackend {
 	async modify(vaultPath: string, content: string): Promise<Handled<void>> {
 		const r = await this.process(vaultPath, () => content);
 		return r.handled ? { handled: true, value: undefined } : NOT_HANDLED;
+	}
+
+	/** Whether `vaultPath` is a collection resource this backend writes. */
+	claimsResource(vaultPath: string): boolean {
+		const path = this.client.collectionPath(vaultPath);
+		return path !== null && this.client.isResourcePath(path);
+	}
+
+	/**
+	 * Write resources as one mutation, with each one's read content as its base.
+	 * Every op must be a claimed resource. A mismatch is rejected by the replica
+	 * (`conflict`), never overwritten.
+	 */
+	async writeResources(ops: readonly ResourceInput[]): Promise<void> {
+		if (ops.length === 0) return;
+		const mapped: ResourceOp[] = [];
+		for (const op of ops) {
+			const path = this.client.collectionPath(op.vaultPath);
+			if (path === null || !this.client.isResourcePath(path)) throw new Error(`Not an mdbase resource: ${op.vaultPath}`);
+			mapped.push(op.kind === "put" ? { kind: "put", path, doc: op.doc, base: op.base } : { kind: "delete", path, base: op.base });
+		}
+		const write = await this.client.resources(mapped);
+		for (const op of ops) if (op.kind === "put") await this.client.settle(write, op.vaultPath);
 	}
 
 	/** `vault.create`. The caller looks up the `TFile` once this resolves. */
