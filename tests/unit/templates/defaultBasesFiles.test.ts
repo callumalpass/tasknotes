@@ -81,8 +81,25 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain('name: "Kanban Board"');
 		expect(template).toContain("sort:\n      - column: tasknotes_manual_order\n        direction: DESC");
 		expect(template).toContain("groupBy:\n      property: status");
-		expect(template).toContain("config:\n      columnWidth: 280\n      hideEmptyColumns: false");
-		expect(template).not.toContain("    options:\n      columnWidth: 280");
+		const view = parse(template).views[0];
+		expect(view.columnWidth).toBe(280);
+		expect(view.hideEmptyColumns).toBe(false);
+		expect(view.config).toBeUndefined();
+		expect(view.options).toBeUndefined();
+	});
+
+	it.each(commands)("writes custom settings directly on generated %s views", (command) => {
+		const base = parse(generateBasesFileTemplate(command, createMockPlugin() as any));
+		for (const view of base.views) {
+			expect(view.config).toBeUndefined();
+			expect(view.options).toBeUndefined();
+		}
+		if (command === "open-advanced-calendar-view") {
+			expect(base.views[0]).toMatchObject({ calendarView: "timeGridWeek", showDue: true, firstDay: 1 });
+		}
+		if (command === "open-agenda-view") {
+			expect(base.views[0]).toMatchObject({ showPropertyBasedEvents: false, showOverdueOnToday: true });
+		}
 	});
 
 	it("adds a dedicated manual-order task list view while preserving urgency views", () => {

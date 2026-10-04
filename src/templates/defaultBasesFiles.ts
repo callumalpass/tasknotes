@@ -670,9 +670,8 @@ ${orderYaml}
     groupBy:
       property: ${statusProperty}
       direction: ASC
-    config:
-      columnWidth: 280
-      hideEmptyColumns: false
+    columnWidth: 280
+    hideEmptyColumns: false
 `;
 		}
 
@@ -881,17 +880,16 @@ views:
     name: "Calendar"
     order:
 ${orderYaml}
-    options:
-      showScheduled: true
-      showDue: true
-      showRecurring: true
-      showTimeEntries: true
-      showTimeblocks: true
-      showPropertyBasedEvents: true
-      createDailyNotesFromDateLinks: true
-      calendarView: "timeGridWeek"
-      customDayCount: 3
-      firstDay: ${plugin.settings.calendarViewSettings.firstDay}
+    showScheduled: true
+    showDue: true
+    showRecurring: true
+    showTimeEntries: true
+    showTimeblocks: true
+    showPropertyBasedEvents: true
+    createDailyNotesFromDateLinks: true
+    calendarView: "timeGridWeek"
+    customDayCount: 3
+    firstDay: ${plugin.settings.calendarViewSettings.firstDay}
 `;
 
 		case 'open-agenda-view': {
@@ -918,10 +916,9 @@ views:
     name: "Agenda"
     order:
 ${agendaOrderYaml}
-    options:
-      showPropertyBasedEvents: false
-      showOverdueOnToday: true
-      createDailyNotesFromDateLinks: true
+    showPropertyBasedEvents: false
+    showOverdueOnToday: true
+    createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
     startDateProperty: file.ctime
     listDayCount: 7

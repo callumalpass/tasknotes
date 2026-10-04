@@ -3,6 +3,7 @@ import { Notice, Platform, setIcon, setTooltip, TFile } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
+import { readBasesViewConfigValue, readBasesViewPropertyId } from "./basesViewConfig";
 import type { StatusConfig, TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
@@ -374,42 +375,41 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		try {
-			this.swimLanePropertyId = this.config.getAsPropertyId("swimLane");
-			this.columnWidth = (this.config.get("columnWidth") as number) || 280;
-			this.maxSwimlaneHeight = (this.config.get("maxSwimlaneHeight") as number) || 600;
-			this.hideEmptyColumns = (this.config.get("hideEmptyColumns") as boolean) || false;
+			const get = (key: string): unknown => readBasesViewConfigValue(this.config, key);
+			this.swimLanePropertyId = readBasesViewPropertyId(this.config, "swimLane");
+			this.columnWidth = (get("columnWidth") as number) || 280;
+			this.maxSwimlaneHeight = (get("maxSwimlaneHeight") as number) || 600;
+			this.hideEmptyColumns = get("hideEmptyColumns") === true;
 
 			// Read explodeListColumns option (defaults to true)
-			const explodeValue = this.config.get("explodeListColumns");
+			const explodeValue = get("explodeListColumns");
 			this.explodeListColumns = explodeValue !== false; // Default to true if not set
 
 			// Read consolidateStatusIcon option (defaults to false)
-			const consolidateValue = this.config.get("consolidateStatusIcon");
+			const consolidateValue = get("consolidateStatusIcon");
 			this.consolidateStatusIcon = consolidateValue === true; // Default to false if not set
 
 			// Read column orders
-			this.columnOrders = normalizeKanbanOrderConfig(this.config.get("columnOrder"));
-			this.pinnedColumns = normalizePinnedColumnConfig(this.config.get("pinnedColumns"));
-			this.wipLimits = normalizeKanbanWipLimitsConfig(this.config.get("wipLimits"));
+			this.columnOrders = normalizeKanbanOrderConfig(get("columnOrder"));
+			this.pinnedColumns = normalizePinnedColumnConfig(get("pinnedColumns"));
+			this.wipLimits = normalizeKanbanWipLimitsConfig(get("wipLimits"));
 
 			// Read swimlane orders. Support both the public singular key and the
 			// originally proposed plural key for manually-authored Bases YAML.
 			this.swimLaneOrders = normalizeKanbanOrderConfig(
-				this.config.get("swimLaneOrder") ?? this.config.get("swimLaneOrders")
+				get("swimLaneOrder") ?? get("swimLaneOrders")
 			);
-			this.hideEmptySwimLanes = this.config.get("hideEmptySwimLanes") === true;
-			this.cardLayout = normalizeKanbanCardLayout(this.config.get("cardLayout"));
+			this.hideEmptySwimLanes = get("hideEmptySwimLanes") === true;
+			this.cardLayout = normalizeKanbanCardLayout(get("cardLayout"));
 
 			// Read enableSearch toggle (default: false for backward compatibility)
-			const enableSearchValue = this.config.get("enableSearch");
+			const enableSearchValue = get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
-			const expandedRelationshipFilterModeValue = this.config.get(
-				"expandedRelationshipFilterMode"
-			);
+			const expandedRelationshipFilterModeValue = get("expandedRelationshipFilterMode");
 			this.expandedRelationshipFilterMode = normalizeExpandedRelationshipFilterMode(
 				expandedRelationshipFilterModeValue
 			);
-			this.hideTopLevelSubtasks = this.config.get("hideTopLevelSubtasks") === true;
+			this.hideTopLevelSubtasks = get("hideTopLevelSubtasks") === true;
 
 			// Mark config as successfully loaded
 			this.configLoaded = true;

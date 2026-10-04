@@ -20,13 +20,13 @@ Choosing a stable `groupBy` field is the most important design decision. Frequen
 
 ### Kanban-Specific Options
 
-Access these options through the Bases view settings panel:
+Access these options through the Bases view settings panel. In YAML, put them directly on the view, alongside `type`, `groupBy`, and `sort`. Existing settings nested under `config:` or `options:` remain supported; direct settings take precedence, followed by `config:` and then `options:`. TaskNotes does not rewrite existing files.
 
 - **Swim Lane**: Optional property for horizontal grouping. Creates a two-dimensional layout where tasks are organized by both column (groupBy) and row (swimLane)
 - **Column Width**: Controls the width of columns in pixels. Range: 200-500px. Default: 280px
 - **Max Swimlane Height**: Caps each swimlane row before the task area scrolls. Range: 300-1200px. Default: 600px
-- **Hide Empty Columns**: When enabled, columns containing no tasks are hidden from the view
-- **Pinned Columns**: Optional comma-separated list of column values that should stay visible even when empty. This is useful with **Hide Empty Columns** when each board needs a small stable subset of shared statuses or categories
+- **Hide Empty Columns**: When enabled, unpinned columns containing no tasks matching the view's filters are hidden
+- **Pinned Columns**: Optional comma-separated list of column values that should stay visible even when empty. This is useful with **Hide Empty Columns** when each board needs a small stable subset of shared statuses or categories. Pinning is not a whitelist: other columns with matching tasks remain visible
 - **WIP Limits**: Advanced JSON configuration for showing per-column work-in-progress limits in column headers
 - **Hide Empty Swimlanes**: When enabled, swimlanes with no visible top-level cards are hidden. When disabled, all configured priority values appear as swimlanes, even if they have no cards or only contain hidden subtasks
 - **Card Layout**: Chooses the task card density for this board. **Default** uses the standard TaskNotes card layout. **Compact** uses a tighter card layout for denser boards
@@ -61,9 +61,8 @@ Each swimlane row includes:
 To pin swimlanes in a stable order, set the advanced `swimLaneOrder` option to a JSON object keyed by the swimlane property:
 
 ```yaml
-config:
-  swimLane: note.contexts
-  swimLaneOrder: '{"note.contexts":["transitcal","bill","cycles-research","astrolabe"]}'
+swimLane: note.contexts
+swimLaneOrder: '{"note.contexts":["transitcal","bill","cycles-research","astrolabe"]}'
 ```
 
 Listed swimlane values render first in the configured order. Values not listed in `swimLaneOrder` render below them using the default order for status and priority swimlanes, or alphabetically for other properties. If `hideEmptySwimLanes` is disabled, listed values can remain visible even when no matching tasks are currently present. Priority swimlanes also include every configured priority, including priorities with no visible top-level cards.
@@ -71,8 +70,7 @@ Listed swimlane values render first in the configured order. Values not listed i
 To show WIP limits in column headers, set the advanced `wipLimits` option to a JSON object keyed by column value:
 
 ```yaml
-config:
-  wipLimits: '{"in-progress":5,"review":2}'
+wipLimits: '{"in-progress":5,"review":2}'
 ```
 
 Columns with limits display counts as `(current/limit)`. When the current count is above the configured limit, the count uses the error color. In swimlane boards, the column header count is the total for that column across all swimlanes.
@@ -139,23 +137,18 @@ Virtual scrolling activates automatically based on task count. No configuration 
 A typical Kanban view `.base` file includes:
 
 ```yaml
----
-type: query
-source: TaskNotes
-view: TaskNotes Kanban
 views:
   - name: TaskNotes Kanban
     type: tasknotesKanban
     groupBy:
       property: status
-    config:
-      swimLane: priority
-      swimLaneOrder: '{"priority":["high","normal","low"]}'
-      columnWidth: 300
-      hideEmptyColumns: true
-      pinnedColumns: to-do, in-progress, done
-      wipLimits: '{"in-progress":5}'
----
+      direction: ASC
+    swimLane: priority
+    swimLaneOrder: '{"priority":["high","normal","low"]}'
+    columnWidth: 300
+    hideEmptyColumns: true
+    pinnedColumns: to-do, in-progress, done
+    wipLimits: '{"in-progress":5}'
 ```
 
 This configuration creates a Kanban board with:

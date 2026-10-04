@@ -8,6 +8,7 @@
 import { App, Plugin } from "obsidian";
 import type { BasesViewRegistration as ObsidianBasesViewRegistration } from "obsidian";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
+import { applyBasesViewOptionDefaults } from "./basesViewOptionDefaults";
 
 export interface BasesQuery {
 	on?: (event: string, callback: () => void) => void;
@@ -130,7 +131,14 @@ export function registerBasesView(
 	// Use public API (Obsidian 1.10.0+)
 	if (typeof plugin.registerBasesView === "function") {
 		try {
-			const success = plugin.registerBasesView(viewId, registration);
+			const options = registration.options;
+			const compatibleRegistration: BasesViewRegistration = options
+				? {
+					...registration,
+					options: (config) => applyBasesViewOptionDefaults(options(config), config),
+				}
+				: registration;
+			const success = plugin.registerBasesView(viewId, compatibleRegistration);
 			if (success) {
 				logger.debug("Successfully registered view via public API", {
 					category: "configuration",

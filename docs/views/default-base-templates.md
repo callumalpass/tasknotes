@@ -242,9 +242,8 @@ views:
     groupBy:
       property: status
       direction: ASC
-    config:
-      columnWidth: 280
-      hideEmptyColumns: false
+    columnWidth: 280
+    hideEmptyColumns: false
 ```
 
 ## Tasks List
@@ -521,17 +520,16 @@ views:
       - recurrence
       - complete_instances
       - file.tasks
-    options:
-      showScheduled: true
-      showDue: true
-      showRecurring: true
-      showTimeEntries: true
-      showTimeblocks: true
-      showPropertyBasedEvents: true
-      createDailyNotesFromDateLinks: true
-      calendarView: "timeGridWeek"
-      customDayCount: 3
-      firstDay: 1
+    showScheduled: true
+    showDue: true
+    showRecurring: true
+    showTimeEntries: true
+    showTimeblocks: true
+    showPropertyBasedEvents: true
+    createDailyNotesFromDateLinks: true
+    calendarView: "timeGridWeek"
+    customDayCount: 3
+    firstDay: 1
 ```
 
 ## Agenda
@@ -542,12 +540,11 @@ Note: Property-based events are disabled by default to avoid duplicate entries w
 To build an Agenda variant for completed tasks that do not have due or scheduled dates, enable property-based events and use the completed-date property as the event start date:
 
 ```yaml
-    options:
-      showScheduled: false
-      showDue: false
-      showRecurring: false
-      showTimeEntries: false
-      showPropertyBasedEvents: true
+    showScheduled: false
+    showDue: false
+    showRecurring: false
+    showTimeEntries: false
+    showPropertyBasedEvents: true
       showOverdueOnToday: false
       createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
@@ -587,10 +584,9 @@ views:
       - recurrence
       - complete_instances
       - file.tasks
-    options:
-      showPropertyBasedEvents: false
-      showOverdueOnToday: true
-      createDailyNotesFromDateLinks: true
+    showPropertyBasedEvents: false
+    showOverdueOnToday: true
+    createDailyNotesFromDateLinks: true
     calendarView: "listWeek"
     startDateProperty: file.ctime
     listDayCount: 7
