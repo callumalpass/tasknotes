@@ -1,6 +1,6 @@
-export type CalendarViewConfigReader = {
-	get(key: string): unknown;
-};
+import { readBasesViewConfigValue, type BasesViewConfigReader } from "./basesViewConfig";
+
+export type CalendarViewConfigReader = BasesViewConfigReader;
 
 const CALENDAR_CONFIG_SNAPSHOT_KEYS = [
 	// Event toggles
@@ -50,10 +50,6 @@ const CALENDAR_CONFIG_SNAPSHOT_KEYS = [
 	"createDailyNotesFromDateLinks",
 ] as const;
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
-}
-
 function normalizeProviderIds(ids: readonly unknown[] | undefined): string[] {
 	const normalized: string[] = [];
 
@@ -75,21 +71,7 @@ export function readCalendarConfigValue(
 	config: CalendarViewConfigReader | undefined,
 	key: string
 ): unknown {
-	if (!config || typeof config.get !== "function") {
-		return undefined;
-	}
-
-	const directValue = config.get(key);
-	if (directValue !== null && directValue !== undefined) {
-		return directValue;
-	}
-
-	const options = config.get("options");
-	if (!isRecord(options)) {
-		return undefined;
-	}
-
-	return options[key];
+	return readBasesViewConfigValue(config, key);
 }
 
 export function getCalendarConfigValue<T>(

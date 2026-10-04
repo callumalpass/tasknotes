@@ -27,6 +27,23 @@ describe("calendarConfigSnapshot", () => {
 		expect(getCalendarConfigValue(config, "missing", "fallback")).toBe("fallback");
 	});
 
+	it("reads config wrappers and preserves direct falsy overrides in snapshots", () => {
+		const config = createConfig({
+			showDue: false,
+			firstDay: 0,
+			calendarView: "",
+			config: { showDue: true, firstDay: 1, calendarView: "timeGridWeek", showScheduled: false },
+			options: { showScheduled: true, showRecurring: false },
+		});
+		const keys = getCalendarConfigSnapshotKeys();
+		const values = JSON.parse(buildCalendarConfigSnapshot({ config }));
+		expect(values[keys.indexOf("showDue")]).toBe(false);
+		expect(values[keys.indexOf("firstDay")]).toBe(0);
+		expect(values[keys.indexOf("calendarView")]).toBe("");
+		expect(values[keys.indexOf("showScheduled")]).toBe(false);
+		expect(values[keys.indexOf("showRecurring")]).toBe(false);
+	});
+
 	it("builds stable snapshot keys including external provider toggles", () => {
 		expect(
 			getCalendarConfigSnapshotKeys({

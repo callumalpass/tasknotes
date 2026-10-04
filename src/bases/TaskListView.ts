@@ -3,6 +3,7 @@ import { Menu, Notice, TFile, setIcon } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
+import { readBasesViewConfigValue, readBasesViewPropertyId } from "./basesViewConfig";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
@@ -308,23 +309,22 @@ export class TaskListView extends BasesViewBase {
 		}
 
 		try {
-			this.subGroupPropertyId = this.config.getAsPropertyId("subGroup");
+			const get = (key: string): unknown => readBasesViewConfigValue(this.config, key);
+			this.subGroupPropertyId = readBasesViewPropertyId(this.config, "subGroup");
 			// Read enableSearch toggle (default: false for backward compatibility)
-			const enableSearchValue = this.config.get("enableSearch");
+			const enableSearchValue = get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
-			const defaultCollapsedStateValue = this.config.get("defaultCollapsedState");
+			const defaultCollapsedStateValue = get("defaultCollapsedState");
 
 			this.defaultCollapsedState =
 				defaultCollapsedStateValue === "Collapsed" || defaultCollapsedStateValue === "1"
 					? "Collapsed"
 					: "Expanded";
-			const expandedRelationshipFilterModeValue = this.config.get(
-				"expandedRelationshipFilterMode"
-			);
+			const expandedRelationshipFilterModeValue = get("expandedRelationshipFilterMode");
 			this.expandedRelationshipFilterMode = normalizeExpandedRelationshipFilterMode(
 				expandedRelationshipFilterModeValue
 			);
-			this.hideTopLevelSubtasks = this.config.get("hideTopLevelSubtasks") === true;
+			this.hideTopLevelSubtasks = get("hideTopLevelSubtasks") === true;
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 		} catch (e) {

@@ -593,7 +593,6 @@ export class BasesFilterConverter {
 
 		// Add view options if present
 		if (savedView.viewOptions && Object.keys(savedView.viewOptions).length > 0) {
-			content += `    options:\n`;
 			Object.entries(savedView.viewOptions).forEach(([key, value]) => {
 				// Format value appropriately based on type
 				let formattedValue: string;
@@ -604,7 +603,7 @@ export class BasesFilterConverter {
 				} else {
 					formattedValue = JSON.stringify(value);
 				}
-				content += `      ${key}: ${formattedValue}\n`;
+				content += `    ${key}: ${formattedValue}\n`;
 			});
 		}
 
@@ -716,7 +715,6 @@ export class BasesFilterConverter {
 
 			// Add view options if present
 			if (savedView.viewOptions && Object.keys(savedView.viewOptions).length > 0) {
-				viewDef += `    options:\n`;
 				Object.entries(savedView.viewOptions).forEach(([key, value]) => {
 					// Format value appropriately based on type
 					let formattedValue: string;
@@ -727,7 +725,7 @@ export class BasesFilterConverter {
 					} else {
 						formattedValue = JSON.stringify(value);
 					}
-					viewDef += `      ${key}: ${formattedValue}\n`;
+					viewDef += `    ${key}: ${formattedValue}\n`;
 				});
 			}
 

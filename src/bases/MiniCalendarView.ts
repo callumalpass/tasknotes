@@ -11,6 +11,7 @@ import {
 import type { BasesEntry, BasesPropertyId, BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
+import { readBasesViewConfigValue } from "./basesViewConfig";
 import { ICSEvent, TaskInfo } from "../types";
 import { format } from "date-fns";
 import {
@@ -173,11 +174,10 @@ export class MiniCalendarView extends BasesViewBase {
 		}
 
 		try {
-			this.dateProperty = (this.config.get("dateProperty") as string) || "file.ctime";
-			this.titleProperty = (this.config.get("titleProperty") as string) || "file.name";
-			this.heatMapMaxCount = normalizeMiniCalendarHeatMapMaxCount(
-				this.config.get("heatMapMaxCount")
-			);
+			const get = (key: string): unknown => readBasesViewConfigValue(this.config, key);
+			this.dateProperty = (get("dateProperty") as string) || "file.ctime";
+			this.titleProperty = (get("titleProperty") as string) || "file.name";
+			this.heatMapMaxCount = normalizeMiniCalendarHeatMapMaxCount(get("heatMapMaxCount"));
 			this.readCalendarToggles();
 			this.configLoaded = true;
 		} catch (e) {
@@ -198,7 +198,8 @@ export class MiniCalendarView extends BasesViewBase {
 			return;
 		}
 
-		const getToggleValue = (key: string): boolean => this.config.get(key) !== false;
+		const getToggleValue = (key: string): boolean =>
+			readBasesViewConfigValue(this.config, key) !== false;
 
 		if (this.plugin.icsSubscriptionService) {
 			for (const subscription of this.plugin.icsSubscriptionService.getSubscriptions()) {
