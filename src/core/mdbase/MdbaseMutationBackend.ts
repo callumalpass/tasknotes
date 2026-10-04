@@ -19,8 +19,16 @@
  * {@link MdbaseWriteClient.settle}), so callers that re-read the file afterwards see
  * the new content, as with Obsidian's own APIs.
  *
- * Files outside the collection, or written while no runtime is attached, keep using
- * Obsidian's APIs unchanged.
+ * Files outside the collection, non-record files (backups, exports), and writes while
+ * no runtime is attached keep using Obsidian's APIs unchanged.
+ *
+ * **Relation to v5's existing mdbase path.** v5 manages the collection's own metadata
+ * (`mdbase.yaml`, `_types/`) through `SafeMetadata` and `MetadataTransaction`, with a
+ * swap journal and direct adapter writes. This backend covers the record funnel only.
+ * When the runtime hosts the collection, metadata writes must also become replica
+ * resource writes, because type changes are ordered in the log. That is the next step
+ * of the port: a `SafeMetadataAdapter` backed by this client. Until then, the runtime
+ * ingests those writes as outside edits, as it does any other tool's.
  */
 
 /** A record as TaskNotes needs it, with plain JSON-like frontmatter. */
@@ -44,6 +52,12 @@ export interface MdbaseWrite {
 export interface MdbaseWriteClient {
 	/** The collection-relative path for a vault path, or `null` if outside the collection. */
 	collectionPath(vaultPath: string): string | null;
+	/**
+	 * Whether a new file at this collection path becomes a record (the collection's
+	 * record globs and file inclusion, from `describe`). Other files are created through
+	 * Obsidian: TaskNotes' backups, exports and attachments.
+	 */
+	isRecordPath(path: string): boolean;
 	/** Read a record by path, with frontmatter (and the document when asked). */
 	find(path: string, opts: { document: boolean }): Promise<MdbaseRecord | null>;
 	/** Field-level update, with `base` taken from `seen`. */
@@ -162,7 +176,7 @@ export class MdbaseMutationBackend {
 	/** `vault.create`. The caller looks up the `TFile` once this resolves. */
 	async create(vaultPath: string, content: string): Promise<Handled<void>> {
 		const path = this.client.collectionPath(vaultPath);
-		if (path === null) return NOT_HANDLED;
+		if (path === null || !this.client.isRecordPath(path)) return NOT_HANDLED;
 		const write = await this.client.create(path, content);
 		await this.client.settle(write, vaultPath);
 		return { handled: true, value: undefined };

@@ -17,6 +17,9 @@ class FakeClient implements MdbaseWriteClient {
 	records = new Map<string, MdbaseRecord>();
 	calls: unknown[] = [];
 	settled: string[] = [];
+	isRecordPath(path: string) {
+		return path.endsWith(".md") && !path.startsWith(".tasknotes-backups/");
+	}
 	collectionPath(vaultPath: string) {
 		return vaultPath.startsWith("Tasks/") ? vaultPath.slice("Tasks/".length) : null;
 	}
@@ -127,6 +130,14 @@ describe("VaultMutationService with the mdbase backend", () => {
 		await createVaultFile(a as never, "Other/y.md", "y");
 		expect(a.fileManager.processFrontMatter).toHaveBeenCalledTimes(2);
 		expect(a.vault.create).toHaveBeenCalledTimes(1);
+		expect(client.calls).toEqual([]);
+	});
+
+	it("creates non-record files (backups) through Obsidian", async () => {
+		const a = app();
+		await createVaultFile(a as never, "Tasks/.tasknotes-backups/x.md", "b");
+		await createVaultFile(a as never, "Tasks/export.ics", "c");
+		expect(a.vault.create).toHaveBeenCalledTimes(2);
 		expect(client.calls).toEqual([]);
 	});
 
