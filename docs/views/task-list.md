@@ -165,6 +165,16 @@ Formula groups, computed file properties, and TaskNotes-managed manual-order and
 
 After a property move, **Undo** is available briefly. It restores only fields changed by that move and preserves unrelated later edits. If a moved field has since changed, Undo refuses to overwrite it. Manual reordering and recurring-task status changes do not currently offer this Undo action; recurring status changes can affect multiple occurrence notes.
 
+### Assigning a Parent Task
+
+While dragging, each task row shows a separate **Add as subtask** target. Drop on this labeled target to add that task as a parent. Dropping elsewhere on the row keeps the group-movement or manual-reordering behavior above.
+
+Parent assignment adds a link to the dragged task's projects property. It preserves existing project memberships, status, priority, and manual rank, even when the parent is in a different group. This also works in ungrouped lists and views grouped by read-only properties.
+
+The preview names the parent before release. Self-assignment and assignments under a descendant are blocked; existing links are recognized even when they use aliases or Markdown format. Relationships are checked again against file contents when saving. **Undo** removes the assignment while preserving unrelated edits, but refuses if the projects property has since changed.
+
+For keyboard or non-drag use, open **Move task**, select **Add as subtask of…**, and choose an existing task. You can cancel the drag or selector without changing the note.
+
 ### Drag-to-Reorder
 
 Task List supports drag-to-reorder when the view is sorted by the manual-order property. With the default field mapping, that property is `tasknotes_manual_order`.

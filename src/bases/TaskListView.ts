@@ -89,6 +89,13 @@ import {
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { processVaultFrontMatter } from "../services/VaultMutationService";
+import {
+	assignTaskParent,
+	previewTaskParentAssignment,
+	TaskParentAssignmentError,
+	type TaskParentAssignmentState,
+} from "../services/taskParentAssignment";
+import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -144,6 +151,9 @@ function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "s
 }
 
 type DefaultCollapsedState = "Expanded" | "Collapsed";
+type TaskListDropIntent =
+	| TaskListMovementPlan
+	| { kind: "parent"; parentPath: string; state: TaskParentAssignmentState };
 
 type GroupHierarchySnapshot = {
 	primaryGroupKeys: string[];
@@ -972,6 +982,10 @@ export class TaskListView extends BasesViewBase {
 
 	private beginTaskMovement(card: HTMLElement, task: TaskInfo, groupKey: string | null): void {
 		this.draggedTaskPath = task.path;
+		this.rootElement?.classList.add("task-list-view--moving");
+		this.itemsContainer
+			?.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
+			.forEach((element) => this.configureParentDropTarget(element));
 		this.dragGroupKey = groupKey;
 		this.dragSourceDestination = this.elementDestinations.get(card) ?? { groupKey };
 		this.showEmptyMovementDestinations();
@@ -1017,6 +1031,11 @@ export class TaskListView extends BasesViewBase {
 		if (!this.draggedTaskPath) return;
 		const plan = this.updateTaskMovementTarget(target, clientY);
 		const path = this.draggedTaskPath;
+		if (plan?.kind === "parent") {
+			this.cancelTaskMovement();
+			if (plan.state === "assign") await this.performParentAssignment(path, plan.parentPath);
+			return;
+		}
 		const source = this.dragSourceDestination;
 		const destination = this.dropDestination;
 		const isHeader = this.dropIsHeader;
@@ -1176,6 +1195,18 @@ export class TaskListView extends BasesViewBase {
 		const menu = new Menu();
 		menu.addItem((item) =>
 			item
+				.setTitle(this.plugin.i18n.translate("views.taskList.movement.handle"))
+				.setIsLabel(true)
+		);
+		menu.addItem((item) =>
+			item
+				.setTitle(this.plugin.i18n.translate("views.taskList.movement.parentChoose"))
+				.setIcon("corner-down-right")
+				.onClick(() => void this.showParentAssignmentSelector(task.path))
+		);
+		menu.addSeparator();
+		menu.addItem((item) =>
+			item
 				.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveTo"))
 				.setIsLabel(true)
 		);
@@ -1257,12 +1288,13 @@ export class TaskListView extends BasesViewBase {
 	private clearMovementPreview(): void {
 		this.itemsContainer
 			?.querySelectorAll(
-				".task-list-view__move-target, .task-list-view__move-target--blocked"
+				".task-list-view__move-target, .task-list-view__move-target--blocked, .task-list-view__parent-target--active"
 			)
 			.forEach((element) =>
 				element.classList.remove(
 					"task-list-view__move-target",
-					"task-list-view__move-target--blocked"
+					"task-list-view__move-target--blocked",
+					"task-list-view__parent-target--active"
 				)
 			);
 		this.movementFeedback?.remove();
@@ -1297,14 +1329,7 @@ export class TaskListView extends BasesViewBase {
 							)
 							.join(" · ")
 					: this.plugin.i18n.translate("views.taskList.movement.noChange");
-		if (!this.movementFeedback) {
-			this.movementFeedback = createElementInDocument(this.containerEl.ownerDocument, "div");
-			this.movementFeedback.className = "task-list-view__movement-feedback";
-			this.movementFeedback.setAttribute("role", "status");
-			this.movementFeedback.setAttribute("aria-live", "polite");
-			this.rootElement?.appendChild(this.movementFeedback);
-		}
-		if (this.movementFeedback.textContent !== text) this.movementFeedback.textContent = text;
+		this.setMovementFeedback(text);
 		this.itemsContainer
 			?.querySelectorAll<HTMLElement>(
 				".task-card, .task-group, [data-tn-movement-destination]"
@@ -1324,10 +1349,21 @@ export class TaskListView extends BasesViewBase {
 			});
 	}
 
+	private setMovementFeedback(text: string): void {
+		if (!this.movementFeedback) {
+			this.movementFeedback = createElementInDocument(this.containerEl.ownerDocument, "div");
+			this.movementFeedback.className = "task-list-view__movement-feedback";
+			this.movementFeedback.setAttribute("role", "status");
+			this.movementFeedback.setAttribute("aria-live", "polite");
+			this.rootElement?.appendChild(this.movementFeedback);
+		}
+		if (this.movementFeedback.textContent !== text) this.movementFeedback.textContent = text;
+	}
+
 	private updateTaskMovementTarget(
 		target: EventTarget | null,
 		clientY: number
-	): TaskListMovementPlan | null {
+	): TaskListDropIntent | null {
 		if (!this.dragSourceDestination) return null;
 		const targetElement = this.getEventTargetElement(target);
 		if (!targetElement || !this.itemsContainer?.contains(targetElement)) {
@@ -1335,6 +1371,37 @@ export class TaskListView extends BasesViewBase {
 			this.clearDropIndicators();
 			return null;
 		}
+		const parentTarget = targetElement.closest<HTMLElement>(".task-list-view__parent-target");
+		const parentPath = parentTarget?.dataset.parentTaskPath;
+		if (parentTarget && parentPath && this.draggedTaskPath) {
+			const state = previewTaskParentAssignment(
+				this.plugin,
+				this.draggedTaskPath,
+				parentPath
+			);
+			this.clearMovementPreview();
+			this.clearDropIndicators();
+			parentTarget.classList.toggle(
+				"task-list-view__parent-target--active",
+				state === "assign"
+			);
+			parentTarget.classList.toggle(
+				"task-list-view__move-target--blocked",
+				state !== "assign" && state !== "already"
+			);
+			this.setMovementFeedback(this.parentAssignmentMessage(state, parentPath));
+			return { kind: "parent", parentPath, state };
+		}
+		this.itemsContainer
+			?.querySelectorAll(
+				".task-list-view__parent-target--active, .task-list-view__parent-target.task-list-view__move-target--blocked"
+			)
+			.forEach((element) =>
+				element.classList.remove(
+					"task-list-view__parent-target--active",
+					"task-list-view__move-target--blocked"
+				)
+			);
 		const header = targetElement?.closest<HTMLElement>(
 			".task-group, [data-tn-movement-destination]"
 		);
@@ -1392,6 +1459,7 @@ export class TaskListView extends BasesViewBase {
 		this.clearDropIndicators();
 		this.clearMovementFeedback();
 		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
+		this.rootElement?.classList.remove("task-list-view--moving");
 		this.draggedTaskPath = null;
 		this.dragGroupKey = null;
 		this.dragSourceDestination = null;
@@ -1512,7 +1580,8 @@ export class TaskListView extends BasesViewBase {
 		changes: readonly TaskMovementUndoChange[],
 		originalTask: TaskInfo | null,
 		updatedTask: TaskInfo | null,
-		propertyChanges: readonly TaskListGroupDropPlan[]
+		propertyChanges: readonly Pick<TaskListGroupDropPlan, "groupByTaskProp">[],
+		successMessage?: string
 	): void {
 		const t = (key: string) => this.plugin.i18n.translate(`views.taskList.movement.${key}`);
 		// Recurring status changes can write other occurrence notes. Do not offer a
@@ -1522,11 +1591,11 @@ export class TaskListView extends BasesViewBase {
 			((originalTask?.recurrence || originalTask?.recurrence_parent) &&
 				propertyChanges.some((change) => change.groupByTaskProp === "status"))
 		) {
-			new Notice(t("moved"));
+			new Notice(successMessage ?? t("moved"));
 			return;
 		}
 		const fragment = (this.containerEl.ownerDocument.defaultView ?? window).createFragment();
-		fragment.append(`${t("moved")} `);
+		fragment.append(`${successMessage ?? t("moved")} `);
 		const button = createElementInDocument(this.containerEl.ownerDocument, "button");
 		button.textContent = t("undo");
 		fragment.append(button);
@@ -1599,6 +1668,101 @@ export class TaskListView extends BasesViewBase {
 		});
 	}
 
+	private configureParentDropTarget(card: HTMLElement): void {
+		const path = card.dataset.taskPath;
+		if (!path || card.querySelector(":scope > .task-list-view__parent-target")) return;
+		const target = createElementInDocument(card.ownerDocument, "div");
+		target.className = "task-list-view__parent-target";
+		target.dataset.parentTaskPath = path;
+		const icon = target.createSpan();
+		setIcon(icon, "corner-down-right");
+		target.createSpan({
+			text: this.plugin.i18n.translate("views.taskList.movement.parentAdd"),
+		});
+		card.appendChild(target);
+	}
+
+	private parentAssignmentMessage(state: TaskParentAssignmentState, parentPath: string): string {
+		const key =
+			state === "assign"
+				? "parentPreview"
+				: state === "self"
+					? "parentSelf"
+					: state === "cycle"
+						? "parentCycle"
+						: state === "already"
+							? "parentAlready"
+							: "parentUnavailable";
+		const parent =
+			this.taskInfoCache.get(parentPath)?.title ??
+			this.plugin.app.vault.getAbstractFileByPath(parentPath)?.name.replace(/\.md$/, "") ??
+			parentPath;
+		return this.plugin.i18n.translate(`views.taskList.movement.${key}`, { parent });
+	}
+
+	private async showParentAssignmentSelector(sourcePath: string): Promise<void> {
+		try {
+			const tasks = await this.plugin.cacheManager.getAllTasks();
+			const candidates = tasks.filter(
+				(task) =>
+					previewTaskParentAssignment(this.plugin, sourcePath, task.path) === "assign"
+			);
+			openTaskSelector(
+				this.plugin,
+				candidates,
+				(parent) => {
+					if (parent) void this.performParentAssignment(sourcePath, parent.path);
+				},
+				{
+					allowCreate: false,
+					placeholder: this.plugin.i18n.translate("views.taskList.movement.parentChoose"),
+				}
+			);
+		} catch (error) {
+			tasknotesLogger.error("Parent selector failed", {
+				category: "internal",
+				operation: "parent-selector",
+				error,
+			});
+			new Notice(this.plugin.i18n.translate("views.taskList.movement.failed"));
+		}
+	}
+
+	private async performParentAssignment(sourcePath: string, parentPath: string): Promise<void> {
+		try {
+			await this.dropQueue.enqueue(`move:${sourcePath}`, async () => {
+				const result = await assignTaskParent(this.plugin, sourcePath, parentPath);
+				const parent =
+					this.taskInfoCache.get(parentPath)?.title ??
+					this.plugin.app.vault
+						.getAbstractFileByPath(parentPath)
+						?.name.replace(/\.md$/, "") ??
+					parentPath;
+				this.showTaskMovementUndo(
+					result.file,
+					result.undoChanges,
+					result.originalTask,
+					result.updatedTask,
+					[{ groupByTaskProp: "projects" }],
+					this.plugin.i18n.translate("views.taskList.movement.parentAssigned", { parent })
+				);
+			});
+		} catch (error) {
+			if (error instanceof TaskParentAssignmentError)
+				new Notice(this.parentAssignmentMessage(error.reason, parentPath));
+			else {
+				tasknotesLogger.error("Parent assignment failed", {
+					category: "persistence",
+					operation: "parent-assignment",
+					error,
+				});
+				new Notice(this.plugin.i18n.translate("views.taskList.movement.failed"));
+			}
+		} finally {
+			this.debouncedRefresh();
+		}
+	}
+
 	private isMovableGroupingProperty(property: string): boolean {
 		return isWritableGroupingProperty(
 			property,
@@ -1626,16 +1790,8 @@ export class TaskListView extends BasesViewBase {
 		task: TaskInfo,
 		groupKey: string | null
 	): void {
-		const groupingProperties = [this.getGroupByPropertyId(), this.subGroupPropertyId];
-		if (
-			!this.shouldEnableManualReordering() &&
-			!groupingProperties.some(
-				(property) => property && this.isMovableGroupingProperty(property)
-			)
-		) {
-			return;
-		}
-
+		// Parent assignment remains available in ungrouped and read-only-grouped views.
+		this.configureParentDropTarget(cardEl);
 		cardEl.setAttribute("draggable", "true");
 		this.setupCardDragHandlers(cardEl, task, groupKey);
 	}
@@ -1943,7 +2099,9 @@ export class TaskListView extends BasesViewBase {
 			if (!this.draggedTaskPath) return;
 			e.preventDefault();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-			// Fast pointers can enter a destination before the next dragover.
+			// Do not let an older queued dragover overwrite a newly entered target.
+			this.pendingDragTarget = e.target;
+			this.pendingDragClientY = e.clientY;
 			this.updateTaskMovementTarget(e.target, e.clientY);
 			this.edgeScroll?.update(e.clientX, e.clientY);
 		});
@@ -1971,7 +2129,11 @@ export class TaskListView extends BasesViewBase {
 					const plan = this.updateTaskMovementTarget(this.pendingDragTarget, clientY);
 					if (e.dataTransfer)
 						e.dataTransfer.dropEffect =
-							plan?.kind === "move" || plan?.kind === "reorder" ? "move" : "none";
+							plan?.kind === "move" ||
+							plan?.kind === "reorder" ||
+							(plan?.kind === "parent" && plan.state === "assign")
+								? "move"
+								: "none";
 				});
 			}
 		});

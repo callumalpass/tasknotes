@@ -272,6 +272,38 @@
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "897567efe5e0d7af75505d8d18e9039d44a1c021"
     },
+    "views.taskList.movement.parentAdd": {
+      "source": "5b5eb321236f2c055bfb2c480e8c7cbd7d2eccf8",
+      "translation": "b8fadaa2c4836e427018af7d850551f75f821385"
+    },
+    "views.taskList.movement.parentChoose": {
+      "source": "e599a83ebcff3cbb6d4cbb7e64cd472869d8176c",
+      "translation": "64b58cf7b48f4ed7494272d6f842a7617539aa96"
+    },
+    "views.taskList.movement.parentPreview": {
+      "source": "35de79f0b6f6d8b09e2eb5062b13a5a52e079684",
+      "translation": "983ee11d264567712042998de960fc095bed2886"
+    },
+    "views.taskList.movement.parentSelf": {
+      "source": "5cc1043ec51341ec3b0dae9a72b3ccb82ea80b01",
+      "translation": "8f896445d9775b7f708af5debd6f625f601e0ae3"
+    },
+    "views.taskList.movement.parentCycle": {
+      "source": "9fbcd860b56cca11f04e4720285cb3f467585599",
+      "translation": "0590a02727fb1b596a11468819bbea7ac1f9dcaf"
+    },
+    "views.taskList.movement.parentAlready": {
+      "source": "94020fabd39136249c183d21ed253e731d8ecd97",
+      "translation": "3dd253665c45c4295c2570691ca5eb17ad7ced05"
+    },
+    "views.taskList.movement.parentUnavailable": {
+      "source": "38d3bfec8ab0c36f8f79ee6c701c89e5fe592128",
+      "translation": "6891000fbc2eba654f4babfec12b735698a130eb"
+    },
+    "views.taskList.movement.parentAssigned": {
+      "source": "0e1f0d5c1d8db0ff7355f4e8004125c0d9e630af",
+      "translation": "66376e765f3732cf9d4cfd76facad113fa5019b5"
+    },
     "views.taskList.movement.handle": {
       "source": "3481b34db9ccff95e45add0050057424293dc5de",
       "translation": "b22a3d2701b323d03429c36e23640bb62ca0c5da"
@@ -9457,6 +9489,38 @@
     "views.taskList.noTasksFound": {
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "a5c1452f1840066bbe05eeb81e33cd79b821c5af"
+    },
+    "views.taskList.movement.parentAdd": {
+      "source": "5b5eb321236f2c055bfb2c480e8c7cbd7d2eccf8",
+      "translation": "0d12561356f276a5f9da9f2bc48590959e28966e"
+    },
+    "views.taskList.movement.parentChoose": {
+      "source": "e599a83ebcff3cbb6d4cbb7e64cd472869d8176c",
+      "translation": "99edc157be5d7af76fdff90880d6755429f15135"
+    },
+    "views.taskList.movement.parentPreview": {
+      "source": "35de79f0b6f6d8b09e2eb5062b13a5a52e079684",
+      "translation": "c468692e956cd1aa2b687764838272dd23a3acad"
+    },
+    "views.taskList.movement.parentSelf": {
+      "source": "5cc1043ec51341ec3b0dae9a72b3ccb82ea80b01",
+      "translation": "089da83b744f21acda0505b527eaa422c86149d6"
+    },
+    "views.taskList.movement.parentCycle": {
+      "source": "9fbcd860b56cca11f04e4720285cb3f467585599",
+      "translation": "cba8a4756185cd6c7af49bc5ccf286e151a8e326"
+    },
+    "views.taskList.movement.parentAlready": {
+      "source": "94020fabd39136249c183d21ed253e731d8ecd97",
+      "translation": "8313af9fb51545b7c13579d7d7c5ac2126e64ca8"
+    },
+    "views.taskList.movement.parentUnavailable": {
+      "source": "38d3bfec8ab0c36f8f79ee6c701c89e5fe592128",
+      "translation": "215b00cf572c0b3d3b65fda5e5b3ace847326b2e"
+    },
+    "views.taskList.movement.parentAssigned": {
+      "source": "0e1f0d5c1d8db0ff7355f4e8004125c0d9e630af",
+      "translation": "373d5b4c19038b4016569328c24cf47426f161e4"
     },
     "views.taskList.movement.handle": {
       "source": "3481b34db9ccff95e45add0050057424293dc5de",
@@ -18644,6 +18708,38 @@
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "6ede85a3fa054f6b5e77199ab2ea2535a92acff5"
     },
+    "views.taskList.movement.parentAdd": {
+      "source": "5b5eb321236f2c055bfb2c480e8c7cbd7d2eccf8",
+      "translation": "4c9d7dc1bf1709ccd8a5017c9d3ad34ae77e9292"
+    },
+    "views.taskList.movement.parentChoose": {
+      "source": "e599a83ebcff3cbb6d4cbb7e64cd472869d8176c",
+      "translation": "2bc918d02ea998ffca9403059184d25025e3cdd7"
+    },
+    "views.taskList.movement.parentPreview": {
+      "source": "35de79f0b6f6d8b09e2eb5062b13a5a52e079684",
+      "translation": "94fe8f60c7cb9791d81c81a6ab37d962c34a4e45"
+    },
+    "views.taskList.movement.parentSelf": {
+      "source": "5cc1043ec51341ec3b0dae9a72b3ccb82ea80b01",
+      "translation": "54d0378b8ead06e841cc0268e5e8492096410c3c"
+    },
+    "views.taskList.movement.parentCycle": {
+      "source": "9fbcd860b56cca11f04e4720285cb3f467585599",
+      "translation": "5797576d71d7f2a78e5e9e84ca56ccbe60f00018"
+    },
+    "views.taskList.movement.parentAlready": {
+      "source": "94020fabd39136249c183d21ed253e731d8ecd97",
+      "translation": "13ce97f043571428b29c7a0e44599679b6f32354"
+    },
+    "views.taskList.movement.parentUnavailable": {
+      "source": "38d3bfec8ab0c36f8f79ee6c701c89e5fe592128",
+      "translation": "d7c86f5778a04d9d9adbed4621480ca7f1059e78"
+    },
+    "views.taskList.movement.parentAssigned": {
+      "source": "0e1f0d5c1d8db0ff7355f4e8004125c0d9e630af",
+      "translation": "702a2f74ff58247ad307d8b49be35bcbe3ffc775"
+    },
     "views.taskList.movement.handle": {
       "source": "3481b34db9ccff95e45add0050057424293dc5de",
       "translation": "757ba841ed0e4d34f18c76c31da8b68b08f13288"
@@ -27829,6 +27925,38 @@
     "views.taskList.noTasksFound": {
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "afd44aff2109f9c19acad1921cc6316ced57833a"
+    },
+    "views.taskList.movement.parentAdd": {
+      "source": "5b5eb321236f2c055bfb2c480e8c7cbd7d2eccf8",
+      "translation": "430c4cd3e598e4abf13bda92894ad02a3f990601"
+    },
+    "views.taskList.movement.parentChoose": {
+      "source": "e599a83ebcff3cbb6d4cbb7e64cd472869d8176c",
+      "translation": "e6d6b40826ed435a541672d8384f9e5f45930af4"
+    },
+    "views.taskList.movement.parentPreview": {
+      "source": "35de79f0b6f6d8b09e2eb5062b13a5a52e079684",
+      "translation": "99f0b10ca9fe33bef9c2e0fd0980bbb079bfaddf"
+    },
+    "views.taskList.movement.parentSelf": {
+      "source": "5cc1043ec51341ec3b0dae9a72b3ccb82ea80b01",
+      "translation": "be6a009baba5a2cbc5f8c2a2ae50d79c29d23968"
+    },
+    "views.taskList.movement.parentCycle": {
+      "source": "9fbcd860b56cca11f04e4720285cb3f467585599",
+      "translation": "e25b59c421b65eb0d6aef093ea8e30fac009f492"
+    },
+    "views.taskList.movement.parentAlready": {
+      "source": "94020fabd39136249c183d21ed253e731d8ecd97",
+      "translation": "161a46f19491e810c3aca01363fb2fadb45b6b98"
+    },
+    "views.taskList.movement.parentUnavailable": {
+      "source": "38d3bfec8ab0c36f8f79ee6c701c89e5fe592128",
+      "translation": "ed5a55f0c5caaa16293372e4059e5dc794554fa6"
+    },
+    "views.taskList.movement.parentAssigned": {
+      "source": "0e1f0d5c1d8db0ff7355f4e8004125c0d9e630af",
+      "translation": "58462f7dfb1e14b15c6b99fb3a0d8f1ad3981cac"
     },
     "views.taskList.movement.handle": {
       "source": "3481b34db9ccff95e45add0050057424293dc5de",
@@ -37016,6 +37144,38 @@
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "8463f4d730feadd260e37f5d07bd63fc3d2851c1"
     },
+    "views.taskList.movement.parentAdd": {
+      "source": "5b5eb321236f2c055bfb2c480e8c7cbd7d2eccf8",
+      "translation": "0952be4843a95daa4eacc26c2404819868c06afe"
+    },
+    "views.taskList.movement.parentChoose": {
+      "source": "e599a83ebcff3cbb6d4cbb7e64cd472869d8176c",
+      "translation": "be8e62ec27a8d94b77eeefef9f6897ab0c306af5"
+    },
+    "views.taskList.movement.parentPreview": {
+      "source": "35de79f0b6f6d8b09e2eb5062b13a5a52e079684",
+      "translation": "69ee7fe5829201d2ecb5c5a864095299580b4f9b"
+    },
+    "views.taskList.movement.parentSelf": {
+      "source": "5cc1043ec51341ec3b0dae9a72b3ccb82ea80b01",
+      "translation": "c83b6eeda9d708c48468c511ab272f5f17f22355"
+    },
+    "views.taskList.movement.parentCycle": {
+      "source": "9fbcd860b56cca11f04e4720285cb3f467585599",
+      "translation": "3dc9861b8dbe0144a3be4048e6dd4e8e09a03b46"
+    },
+    "views.taskList.movement.parentAlready": {
+      "source": "94020fabd39136249c183d21ed253e731d8ecd97",
+      "translation": "4562f23759c47f133cd04071007e5d141624cb71"
+    },
+    "views.taskList.movement.parentUnavailable": {
+      "source": "38d3bfec8ab0c36f8f79ee6c701c89e5fe592128",
+      "translation": "3876a87238932f2e39c8bddec2e80fd39d2cc777"
+    },
+    "views.taskList.movement.parentAssigned": {
+      "source": "0e1f0d5c1d8db0ff7355f4e8004125c0d9e630af",
+      "translation": "730aab42ac69457648ffc030fcb3bdf9ab5c2f63"
+    },
     "views.taskList.movement.handle": {
       "source": "3481b34db9ccff95e45add0050057424293dc5de",
       "translation": "f5d2df10d9e6082e2efd5a3cab844a445564da91"
@@ -46201,6 +46361,38 @@
     "views.taskList.noTasksFound": {
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "fbd6dd4fa2d87ed92d1211be0c93599717a34c32"
+    },
+    "views.taskList.movement.parentAdd": {
+      "source": "5b5eb321236f2c055bfb2c480e8c7cbd7d2eccf8",
+      "translation": "6d5a4e6619f5894e2afb97e0c73794de8a064505"
+    },
+    "views.taskList.movement.parentChoose": {
+      "source": "e599a83ebcff3cbb6d4cbb7e64cd472869d8176c",
+      "translation": "aee6ec5f2571addd79a1ae0c658a25b09c69d05a"
+    },
+    "views.taskList.movement.parentPreview": {
+      "source": "35de79f0b6f6d8b09e2eb5062b13a5a52e079684",
+      "translation": "e115d3e54897394fa845e5cbf5265cf843d5c8b6"
+    },
+    "views.taskList.movement.parentSelf": {
+      "source": "5cc1043ec51341ec3b0dae9a72b3ccb82ea80b01",
+      "translation": "807302d4ce569f3185fe7fccc97369c9a59a9333"
+    },
+    "views.taskList.movement.parentCycle": {
+      "source": "9fbcd860b56cca11f04e4720285cb3f467585599",
+      "translation": "6ee331d937a2827bc329d692603131494e915069"
+    },
+    "views.taskList.movement.parentAlready": {
+      "source": "94020fabd39136249c183d21ed253e731d8ecd97",
+      "translation": "821db8d408a625d687ab08a0e72708c9bd565347"
+    },
+    "views.taskList.movement.parentUnavailable": {
+      "source": "38d3bfec8ab0c36f8f79ee6c701c89e5fe592128",
+      "translation": "5141ff0f30ffdda64f6efe63c47a8ab551a89a0d"
+    },
+    "views.taskList.movement.parentAssigned": {
+      "source": "0e1f0d5c1d8db0ff7355f4e8004125c0d9e630af",
+      "translation": "5f75ba3a8ab0571e3616d69610640a404d3115c8"
     },
     "views.taskList.movement.handle": {
       "source": "3481b34db9ccff95e45add0050057424293dc5de",
@@ -55388,6 +55580,38 @@
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "ef4128ced68cdcf8297b1f7da0aec2c5a79f6bd6"
     },
+    "views.taskList.movement.parentAdd": {
+      "source": "5b5eb321236f2c055bfb2c480e8c7cbd7d2eccf8",
+      "translation": "e12c81a34647808da7842652c7e6c3a7ecbe2216"
+    },
+    "views.taskList.movement.parentChoose": {
+      "source": "e599a83ebcff3cbb6d4cbb7e64cd472869d8176c",
+      "translation": "23bea7dd633f7ab6e73e204fccdb512b2d483be8"
+    },
+    "views.taskList.movement.parentPreview": {
+      "source": "35de79f0b6f6d8b09e2eb5062b13a5a52e079684",
+      "translation": "3aa6b76e029dded214f0d00fe758a1b04bbbcba1"
+    },
+    "views.taskList.movement.parentSelf": {
+      "source": "5cc1043ec51341ec3b0dae9a72b3ccb82ea80b01",
+      "translation": "b52958f0a5285b9a6cb5733d7763ba80e2f1d04f"
+    },
+    "views.taskList.movement.parentCycle": {
+      "source": "9fbcd860b56cca11f04e4720285cb3f467585599",
+      "translation": "b5318a46aa759690aa0398a5dda56ca784dc84ca"
+    },
+    "views.taskList.movement.parentAlready": {
+      "source": "94020fabd39136249c183d21ed253e731d8ecd97",
+      "translation": "84d465353803130d0f6e0130506d403592850bf4"
+    },
+    "views.taskList.movement.parentUnavailable": {
+      "source": "38d3bfec8ab0c36f8f79ee6c701c89e5fe592128",
+      "translation": "e72469a9a04b2b6d3727a4305b966af0db5c7a27"
+    },
+    "views.taskList.movement.parentAssigned": {
+      "source": "0e1f0d5c1d8db0ff7355f4e8004125c0d9e630af",
+      "translation": "fe9c0e95de269dc86a490cff5de159f7c03e3e93"
+    },
     "views.taskList.movement.handle": {
       "source": "3481b34db9ccff95e45add0050057424293dc5de",
       "translation": "f5f0e6065f455400ed6b834dc4ff00cc089ec6fe"
@@ -64573,6 +64797,38 @@
     "views.taskList.noTasksFound": {
       "source": "2586b6ed986a94c1d3edca1b3f615944c7594c89",
       "translation": "1960648d66992fb732d499121af72dee134295e4"
+    },
+    "views.taskList.movement.parentAdd": {
+      "source": "5b5eb321236f2c055bfb2c480e8c7cbd7d2eccf8",
+      "translation": "10b8cd187064199c089dfda5a7219c44d7f89ceb"
+    },
+    "views.taskList.movement.parentChoose": {
+      "source": "e599a83ebcff3cbb6d4cbb7e64cd472869d8176c",
+      "translation": "7d6d8725efe464c389181089eb36213850999a9b"
+    },
+    "views.taskList.movement.parentPreview": {
+      "source": "35de79f0b6f6d8b09e2eb5062b13a5a52e079684",
+      "translation": "3bc8c049de1d206ff49dace199aec5683cb785a1"
+    },
+    "views.taskList.movement.parentSelf": {
+      "source": "5cc1043ec51341ec3b0dae9a72b3ccb82ea80b01",
+      "translation": "5ac93780f131c7254746a590fe9282b29fcd5c00"
+    },
+    "views.taskList.movement.parentCycle": {
+      "source": "9fbcd860b56cca11f04e4720285cb3f467585599",
+      "translation": "12da6dc7508592abcd6afd363cc6400835744c60"
+    },
+    "views.taskList.movement.parentAlready": {
+      "source": "94020fabd39136249c183d21ed253e731d8ecd97",
+      "translation": "3adc854b036f68e8b5de054d8bee0c8ac5b8a7e6"
+    },
+    "views.taskList.movement.parentUnavailable": {
+      "source": "38d3bfec8ab0c36f8f79ee6c701c89e5fe592128",
+      "translation": "14e3ee849ccc8e5fb0271b0a5edd2204493d6e70"
+    },
+    "views.taskList.movement.parentAssigned": {
+      "source": "0e1f0d5c1d8db0ff7355f4e8004125c0d9e630af",
+      "translation": "a01e10e52506d676a0e15e3cf340edae3010feb4"
     },
     "views.taskList.movement.handle": {
       "source": "3481b34db9ccff95e45add0050057424293dc5de",

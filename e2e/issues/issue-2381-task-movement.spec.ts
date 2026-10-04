@@ -23,14 +23,20 @@ async function frontmatter(title = "Source"): Promise<Record<string, unknown>> {
 }
 
 async function openView(
-	options: { manual?: boolean; group?: string; subgroup?: string | null; formula?: boolean } = {}
+	options: {
+		manual?: boolean;
+		group?: string;
+		subgroup?: string | null;
+		formula?: boolean;
+		ungrouped?: boolean;
+	} = {}
 ): Promise<void> {
 	await instance.page.evaluate(
 		async ({ folder, options }) => {
 			const app = (window as any).app;
 			for (const leaf of app.workspace.getLeavesOfType("bases")) leaf.detach();
 			const filePath = `${folder}/Movement-${Date.now()}.base`;
-			const content = `filters:\n  and:\n    - file.folder == "${folder}"\n    - file.ext == "md"\n${options.formula ? 'formulas:\n  bucket: \'if(status == "done", "closed", "active")\'\n' : ""}views:\n  - type: tasknotesTaskList\n    name: Movement\n    groupBy:\n      property: ${options.group ?? "note.status"}\n      direction: ASC\n${options.subgroup === null ? "" : `    subGroup: ${options.subgroup ?? "note.priority"}\n`}    sort:\n      - column: ${options.manual ? "tasknotes_manual_order" : "due"}\n        direction: DESC\n    order:\n      - note.status\n      - note.priority\n`;
+			const content = `filters:\n  and:\n    - file.folder == "${folder}"\n    - file.ext == "md"\n${options.formula ? 'formulas:\n  bucket: \'if(status == "done", "closed", "active")\'\n' : ""}views:\n  - type: tasknotesTaskList\n    name: Movement\n${options.ungrouped ? "" : `    groupBy:\n      property: ${options.group ?? "note.status"}\n      direction: ASC\n`}${options.subgroup === null ? "" : `    subGroup: ${options.subgroup ?? "note.priority"}\n`}    sort:\n      - column: ${options.manual ? "tasknotes_manual_order" : "due"}\n        direction: DESC\n    order:\n      - note.status\n      - note.priority\n`;
 			const oldFile = app.vault.getAbstractFileByPath(filePath);
 			if (oldFile) await app.vault.modify(oldFile, content);
 			else await app.vault.create(filePath, content);
@@ -153,6 +159,294 @@ test.afterAll(async () => {
 		}, rootFolder);
 	} finally {
 		await closeObsidian(instance);
+	}
+});
+
+async function setFields(title: string, fields: Record<string, unknown>): Promise<void> {
+	await instance.page.evaluate(
+		async ({ folder, title, fields }) => {
+			const app = (window as any).app;
+			await app.fileManager.processFrontMatter(
+				app.vault.getAbstractFileByPath(`${folder}/${title}.md`),
+				(fm: any) => Object.assign(fm, fields)
+			);
+		},
+		{ folder, title, fields }
+	);
+	await expect
+		.poll(async () => {
+			const fm = await frontmatter(title);
+			return Object.entries(fields).every(
+				([key, value]) => JSON.stringify(fm[key]) === JSON.stringify(value)
+			);
+		})
+		.toBe(true);
+}
+
+async function beginParentDrop(title: string): Promise<void> {
+	await beginMouseDrag(card(title));
+	const target = card(title).locator(":scope > .task-list-view__parent-target");
+	await expect(target).toBeVisible();
+	const bounds = await target.boundingBox();
+	await instance.page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2, {
+		steps: 5,
+	});
+	await instance.page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2);
+}
+
+test("parent drop adds a relationship without moving groups or manual rank", async ({}, testInfo) => {
+	await setFields("Source", { projects: ["[[Existing project]]", "Marketing"] });
+	await openView();
+	await beginParentDrop("Done");
+	await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
+		"Add as subtask of Done"
+	);
+	await expect(
+		instance.page.locator(".task-list-view__drop-slot-before, .task-list-view__drop-slot-after")
+	).toHaveCount(0);
+	await instance.page.screenshot({ path: testInfo.outputPath("parent-drop-preview.png") });
+	await instance.page.mouse.up();
+	await expect.poll(async () => (await frontmatter()).projects).toHaveLength(3);
+	expect(await frontmatter()).toMatchObject({
+		status: "open",
+		priority: "high",
+		tasknotes_manual_order: sourceRank,
+	});
+	const projects = (await frontmatter()).projects as string[];
+	expect(projects.slice(0, 2)).toEqual(["[[Existing project]]", "Marketing"]);
+	expect(projects[2]).toContain("Done");
+	await expect(instance.page.locator(".notice")).toContainText("Added as a subtask of Done");
+	await expect(instance.page.locator(".task-list-view--moving")).toHaveCount(0);
+});
+
+test("parent assignment works in an ungrouped due-sorted list", async () => {
+	await openView({ ungrouped: true, subgroup: null });
+	await beginParentDrop("Done");
+	await instance.page.mouse.up();
+	await expect.poll(async () => (await frontmatter()).projects).toHaveLength(1);
+	expect(await frontmatter()).toMatchObject({
+		status: "open",
+		priority: "high",
+		tasknotes_manual_order: sourceRank,
+	});
+});
+
+test("parent drop blocks self assignment without writing", async () => {
+	await openView();
+	const before = await frontmatter();
+	await beginParentDrop("Source");
+	await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
+		"cannot be its own parent"
+	);
+	await instance.page.mouse.up();
+	expect(await frontmatter()).toEqual(before);
+});
+
+test("parent drop blocks an indirect descendant without writing", async () => {
+	await setFields("Done", { projects: [`[[${folder}/High peer]]`] });
+	await setFields("High peer", { projects: [`[[${folder}/Source]]`] });
+	await openView();
+	const before = await frontmatter();
+	await beginParentDrop("Done");
+	await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
+		"descendants"
+	);
+	await instance.page.mouse.up();
+	expect(await frontmatter()).toEqual(before);
+});
+
+test("parent drop recognizes an existing aliased membership", async () => {
+	await setFields("Source", { projects: [`[[${folder}/Done|Different label]]`, "Marketing"] });
+	await openView();
+	const before = await frontmatter();
+	await beginParentDrop("Done");
+	await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
+		"Already a subtask"
+	);
+	await instance.page.mouse.up();
+	expect(await frontmatter()).toEqual(before);
+});
+
+test("parent assignment Undo restores memberships and preserves later unrelated edits", async () => {
+	await setFields("Source", { projects: ["Original project"] });
+	await openView();
+	await beginParentDrop("Done");
+	await instance.page.mouse.up();
+	await expect.poll(async () => (await frontmatter()).projects).toHaveLength(2);
+	await setFields("Source", { description: "Edited after assigning" });
+	await instance.page.getByRole("button", { name: "Undo", exact: true }).click();
+	await expect.poll(async () => (await frontmatter()).projects).toEqual(["Original project"]);
+	expect(await frontmatter()).toMatchObject({
+		description: "Edited after assigning",
+		status: "open",
+		priority: "high",
+		tasknotes_manual_order: sourceRank,
+	});
+});
+
+test("parent assignment is available through the keyboard movement menu", async () => {
+	await openView();
+	const handle = card("Source").getByRole("button", { name: "Move task" });
+	await handle.focus();
+	await instance.page.keyboard.press("Enter");
+	await instance.page.getByText("Add as subtask of…", { exact: true }).click();
+	const input = instance.page.locator(".prompt-input");
+	await input.fill("Done");
+	await expect(
+		instance.page.locator(".suggestion-item").filter({ hasText: "Done" }).first()
+	).toBeVisible();
+	await instance.page.keyboard.press("Enter");
+	await expect.poll(async () => (await frontmatter()).projects).toHaveLength(1);
+});
+
+test("Escape cancels a parent preview without writing memberships", async () => {
+	await openView();
+	const before = await frontmatter();
+	await beginParentDrop("Done");
+	await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
+		"Add as subtask of Done"
+	);
+	await instance.page.keyboard.press("Escape");
+	await instance.page.mouse.up();
+	await expect(instance.page.locator(".task-list-view__movement-feedback")).toHaveCount(0);
+	expect(await frontmatter()).toEqual(before);
+});
+
+test("parent Undo refuses to replace later project edits", async () => {
+	await openView();
+	await beginParentDrop("Done");
+	await instance.page.mouse.up();
+	await expect.poll(async () => (await frontmatter()).projects).toHaveLength(1);
+	await setFields("Source", { projects: ["Later project"] });
+	await instance.page.getByRole("button", { name: "Undo", exact: true }).click();
+	await expect(instance.page.locator(".notice")).toContainText("Cannot undo");
+	expect((await frontmatter()).projects).toEqual(["Later project"]);
+});
+
+test("read-only grouping does not prevent a separate parent assignment", async () => {
+	await openView({ group: "formula.bucket", formula: true });
+	await beginParentDrop("Done");
+	await instance.page.mouse.up();
+	await expect.poll(async () => (await frontmatter()).projects).toHaveLength(1);
+	expect((await frontmatter()).status).toBe("open");
+});
+
+test("parent preview wraps a long title in a small-laptop pane", async ({}, testInfo) => {
+	await instance.page.evaluate(() =>
+		(window as any).require("electron").remote.getCurrentWindow().unmaximize()
+	);
+	await setObsidianViewport(instance.page, { width: 860, height: 760 });
+	const title =
+		"A long parent task title for coordinating the research review with several collaborators and follow-up notes";
+	await setFields("Done", { title });
+	await openView();
+	await beginParentDrop("Done");
+	const feedback = instance.page.locator(".task-list-view__movement-feedback");
+	await expect(feedback).toContainText(title);
+	const fits = await feedback.evaluate((element) => element.scrollWidth <= element.clientWidth);
+	expect(fits).toBe(true);
+	await instance.page.screenshot({
+		path: testInfo.outputPath("parent-small-laptop-preview.png"),
+	});
+	await instance.page.keyboard.press("Escape");
+	await instance.page.mouse.up();
+});
+
+test("parent assignment honors Markdown frontmatter links", async () => {
+	const previous = await instance.page.evaluate(() => {
+		const app = (window as any).app;
+		const plugin = app.plugins.getPlugin("tasknotes");
+		const before = {
+			plugin: plugin.settings.useFrontmatterMarkdownLinks,
+			vault: app.vault.getConfig("useMarkdownLinks"),
+		};
+		plugin.settings.useFrontmatterMarkdownLinks = true;
+		app.vault.setConfig("useMarkdownLinks", true);
+		return before;
+	});
+	try {
+		await openView();
+		await beginParentDrop("Done");
+		await instance.page.mouse.up();
+		await expect.poll(async () => (await frontmatter()).projects).toHaveLength(1);
+		expect(((await frontmatter()).projects as string[])[0]).toMatch(/^\[.*\]\(.*\)$/);
+		await beginParentDrop("Done");
+		await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
+			"Already a subtask"
+		);
+		await instance.page.mouse.up();
+		expect((await frontmatter()).projects).toHaveLength(1);
+	} finally {
+		await instance.page.evaluate((before) => {
+			const app = (window as any).app;
+			app.plugins.getPlugin("tasknotes").settings.useFrontmatterMarkdownLinks = before.plugin;
+			app.vault.setConfig("useMarkdownLinks", before.vault);
+		}, previous);
+	}
+});
+
+test("touch parent drop stays distinct and readable at a narrow dark viewport", async ({}, testInfo) => {
+	await instance.page.evaluate(() =>
+		(window as any).require("electron").remote.getCurrentWindow().unmaximize()
+	);
+	await setObsidianViewport(instance.page, { width: 480, height: 800 });
+	await instance.page.evaluate(() => {
+		document.body.classList.add("is-mobile", "theme-dark");
+		document.body.classList.remove("theme-light");
+	});
+	await openView();
+	const cdp = await instance.page.context().newCDPSession(instance.page);
+	try {
+		await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+		const handle = await card("Source")
+			.getByRole("button", { name: "Move task" })
+			.boundingBox();
+		const x = handle!.x + handle!.width / 2,
+			y = handle!.y + handle!.height / 2;
+		await cdp.send("Input.dispatchTouchEvent", {
+			type: "touchStart",
+			touchPoints: [{ x, y, id: 1 }],
+		});
+		await cdp.send("Input.dispatchTouchEvent", {
+			type: "touchMove",
+			touchPoints: [{ x: x + 12, y, id: 1 }],
+		});
+		const target = card("Done").locator(":scope > .task-list-view__parent-target");
+		await expect(target).toBeVisible();
+		const bounds = await target.boundingBox();
+		expect(bounds!.height).toBeGreaterThanOrEqual(44);
+		for (let step = 1; step <= 8; step++)
+			await cdp.send("Input.dispatchTouchEvent", {
+				type: "touchMove",
+				touchPoints: [
+					{
+						x: x + ((bounds!.x + bounds!.width / 2 - x) * step) / 8,
+						y: y + ((bounds!.y + bounds!.height / 2 - y) * step) / 8,
+						id: 1,
+					},
+				],
+			});
+		await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
+			"Add as subtask of Done"
+		);
+		await instance.page.screenshot({
+			path: testInfo.outputPath("touch-parent-dark-preview.png"),
+		});
+		await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+		await expect.poll(async () => (await frontmatter()).projects).toHaveLength(1);
+		await expect(instance.page.locator(".task-list-view__touch-ghost")).toHaveCount(0);
+		expect(await frontmatter()).toMatchObject({
+			status: "open",
+			priority: "high",
+			tasknotes_manual_order: sourceRank,
+		});
+	} finally {
+		await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: false });
+		await cdp.detach();
+		await instance.page.evaluate(() => {
+			document.body.classList.remove("theme-dark");
+			document.body.classList.add("theme-light");
+		});
 	}
 });
 
