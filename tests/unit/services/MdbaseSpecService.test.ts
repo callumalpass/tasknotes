@@ -14,6 +14,8 @@ import YAML from "yaml";
 
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
+import { setMdbaseMutationBackend } from "../../../src/core/VaultMutationService";
+import type { MdbaseMutationBackend, ResourceInput } from "../../../src/core/mdbase/MdbaseMutationBackend";
 import {
 	DEFAULT_FIELD_MAPPING,
 	DEFAULT_NLP_TRIGGERS,
@@ -1987,6 +1989,115 @@ describe("MdbaseSpecService", () => {
 					message: expect.stringContaining("restored the missing canonical mdbase.yaml"),
 				})
 			);
+		});
+	});
+
+	describe("native canonical schema resource profile", () => {
+		const nativePaths = ["mdbase.yaml", "_contracts/tasknotes.task.md", "_types/tasknotes/tasknotes-task.schema.json", "_types/tasknotes/tasknotes-task-binding.schema.json", "_types/task.md"];
+		function installBackend(files?: Map<string, string>) {
+			// Unit-only disposition/memory fixture, not a native publication oracle.
+			const backend = {
+				claimsResource: jest.fn((path: string) => path === "mdbase.yaml" || /^(?:_types|_contracts)\//.test(path)),
+				writeResources: jest.fn(async (ops: readonly ResourceInput[]) => {
+					for (const op of ops) {
+						if (op.kind === "put") files?.set(op.vaultPath, op.doc);
+						else files?.delete(op.vaultPath);
+					}
+				}),
+			};
+			setMdbaseMutationBackend(backend as unknown as MdbaseMutationBackend);
+			return backend;
+		}
+		afterEach(() => setMdbaseMutationBackend(null));
+
+		it("keeps all five resources and preserves inline definitions and schema bytes", () => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const legacy = (service as any).buildCanonicalMdbaseResources("_types", false);
+			installBackend();
+			const native = (service as any).buildCanonicalMdbaseResources("_types", false);
+			expect([native.paths.config, native.paths.contract, native.paths.taskSchema, native.paths.bindingSchema, native.paths.type]).toEqual(nativePaths);
+			for (const key of ["typeDocument", "contractDocument", "taskSchemaDocument", "bindingSchemaDocument"]) expect(native[key]).toBe(legacy[key]);
+		});
+
+		it("uses the configured types folder, independently of the contracts folder", () => {
+			installBackend();
+			const service = new MdbaseSpecService(createMockPlugin());
+			const resource = (service as any).buildCanonicalMdbaseResources("System/Types", false, "task", "System/Contracts");
+			expect(resource.paths.taskSchema).toBe("System/Types/tasknotes/tasknotes-task.schema.json");
+			expect(resource.paths.bindingSchema).toBe("System/Types/tasknotes/tasknotes-task-binding.schema.json");
+			expect(resource.paths.contract).toBe("System/Contracts/tasknotes.task.md");
+		});
+
+		it("submits exactly five resources in one backend call and reads both JSON sidecars", async () => {
+			const plugin = createMockPlugin();
+			const files = installMemoryVault(plugin, { "mdbase.yaml": YAML.stringify({ spec_version: "0.3.0", settings: { types_folder: "_types", contracts_folder: "_contracts" } }) });
+			const backend = installBackend(files);
+			const service = new MdbaseSpecService(plugin);
+			await service.initialize();
+			const resources = (service as any).buildCanonicalMdbaseResources("_types", false);
+			await (service as any).verifyMigratedV03Collection(resources.paths.type, resources);
+			expect(backend.writeResources).toHaveBeenCalledTimes(1);
+			expect(backend.writeResources.mock.calls[0][0].map(op => op.vaultPath).sort()).toEqual([...nativePaths].sort());
+			for (const path of nativePaths.filter(path => path.endsWith(".json"))) {
+				expect(JSON.parse(files.get(path)!)["$schema"]).toBe("https://json-schema.org/draft/2020-12/schema");
+				expect(plugin.app.vault.adapter.read).toHaveBeenCalledWith(path);
+			}
+			expect(files.has("_schemas/tasknotes/tasknotes-task.schema.json")).toBe(false);
+			expect(plugin.app.vault.adapter.write.mock.calls.some(([path]: [string]) => nativePaths.includes(path))).toBe(false);
+		});
+
+		it.each(["tasknotes-task.schema.json", "tasknotes-task-binding.schema.json"])("requires explicit migration for existing %s before any metadata writes", async name => {
+			const plugin = createMockPlugin();
+			const entries = { "mdbase.yaml": "spec_version: 0.3.0\n", [`_schemas/tasknotes/${name}`]: "{\"custom\":true}" };
+			const files = installMemoryVault(plugin, entries);
+			const backend = installBackend(files);
+			await new MdbaseSpecService(plugin).initialize();
+			expect(Object.fromEntries(files)).toEqual(entries);
+			expect(backend.writeResources).not.toHaveBeenCalled();
+			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalled();
+			expect(plugin.app.vault.adapter.remove).not.toHaveBeenCalled();
+		});
+
+		it("refuses a native profile whose backend does not own every generated resource", async () => {
+			const plugin = createMockPlugin();
+			const entries = { "mdbase.yaml": "spec_version: 0.3.0\n" };
+			const files = installMemoryVault(plugin, entries);
+			const backend = installBackend(files);
+			backend.claimsResource.mockImplementation(path => path === "mdbase.yaml");
+			await new MdbaseSpecService(plugin).initialize();
+			expect(Object.fromEntries(files)).toEqual(entries);
+			expect(backend.writeResources).not.toHaveBeenCalled();
+		});
+
+		it("accepts the exact native-profile pending file set before checking recovery copies", async () => {
+			const plugin = createMockPlugin();
+			const config = v02Config();
+			const snapshots = nativePaths.map(path => ({ path, content: path === "mdbase.yaml" ? config : path === "_types/task.md" ? "synthetic-type-snapshot" : null }));
+			const pending = ".tasknotes/migrations/mdbase-v0.2-pending.json";
+			const journal = { backupFolder: ".tasknotes/migrations/test-profile", snapshots, intendedWrites: snapshots.map(s => ({ ...s, content: s.path === "mdbase.yaml" ? "spec_version: 0.3.0\n" : "synthetic-intended" })) };
+			const entries = { "mdbase.yaml": config, [pending]: JSON.stringify(journal) };
+			const files = installMemoryVault(plugin, entries);
+			const backend = installBackend(files);
+			// Deliberately absent recovery copy: acceptance must reach its read,
+			// not reject the schema namespace or perform any restoration.
+			await expect((new MdbaseSpecService(plugin) as any).recoverInterruptedV02Migration()).rejects.toThrow("Missing file: .tasknotes/migrations/test-profile/mdbase.yaml.bak");
+			expect(Object.fromEntries(files)).toEqual(entries);
+			expect(backend.writeResources).not.toHaveBeenCalled();
+		});
+
+		it("does not reinterpret an old-profile pending migration as a native-profile journal", async () => {
+			const plugin = createMockPlugin();
+			const oldPaths = nativePaths.map(path => path.replace("_types/tasknotes/", "_schemas/tasknotes/"));
+			const config = v02Config();
+			const snapshots = oldPaths.map(path => ({ path, content: path === "mdbase.yaml" ? config : null }));
+			const pending = ".tasknotes/migrations/mdbase-v0.2-pending.json";
+			const journal = { backupFolder: ".tasknotes/migrations/test-profile", snapshots, intendedWrites: snapshots.map(s => ({ ...s, content: s.path === "mdbase.yaml" ? "spec_version: 0.3.0\n" : "synthetic-intended" })) };
+			const entries = { "mdbase.yaml": config, [pending]: JSON.stringify(journal) };
+			const files = installMemoryVault(plugin, entries);
+			const backend = installBackend(files);
+			await expect((new MdbaseSpecService(plugin) as any).recoverInterruptedV02Migration()).rejects.toThrow("outside TaskNotes metadata");
+			expect(Object.fromEntries(files)).toEqual(entries);
+			expect(backend.writeResources).not.toHaveBeenCalled();
 		});
 	});
 
