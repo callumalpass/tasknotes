@@ -5,7 +5,7 @@
  * TaskNotes funnels every write through `VaultMutationService`
  * (`processFrontMatter`, `process`, `create`, `modify`). When a backend is installed
  * and claims a file, each write becomes a replica intent, in every collection state
- * (local only, synced, synced end to end), over one client API:
+ * (Cloud copy, Private, or the advanced/migration Sync: off state), over one client API:
  * - a frontmatter callback becomes a **field-level update**: the keys the callback
  *   set, and the keys it removed, with the values it read as the merge base. Two
  *   devices editing different fields of one task both win, instead of the last
@@ -163,8 +163,16 @@ export class MdbaseMutationBackend {
 	): Promise<Handled<void>> {
 		const path = this.client.collectionPath(vaultPath);
 		if (path === null) return NOT_HANDLED;
+		if (this.client.isResourcePath(path)) {
+			throw new Error("Managed resources must use the resource write API");
+		}
 		const seen = await this.client.find(path, { document: false });
-		if (!seen) return NOT_HANDLED; // not a record (yet): let Obsidian write it
+		if (!seen) {
+			if (this.client.isRecordPath(path) || this.client.isResourcePath(path)) {
+				throw new Error("Managed file is unavailable; retry after the backend is ready");
+			}
+			return NOT_HANDLED;
+		}
 		const working = clone(seen.frontmatter);
 		update(working);
 		const changes = frontmatterDiff(seen.frontmatter, working);
@@ -180,8 +188,19 @@ export class MdbaseMutationBackend {
 	async process(vaultPath: string, update: (content: string) => string): Promise<Handled<string>> {
 		const path = this.client.collectionPath(vaultPath);
 		if (path === null) return NOT_HANDLED;
+		if (this.client.isResourcePath(path)) {
+			throw new Error("Managed resources must use the resource write API");
+		}
 		const seen = await this.client.find(path, { document: true });
-		if (!seen || seen.document === undefined) return NOT_HANDLED;
+		if (!seen) {
+			if (this.client.isRecordPath(path) || this.client.isResourcePath(path)) {
+				throw new Error("Managed file is unavailable; retry after the backend is ready");
+			}
+			return NOT_HANDLED;
+		}
+		if (seen.document === undefined) {
+			throw new Error("Managed file document is unavailable; retry after the backend is ready");
+		}
 		const next = update(seen.document);
 		if (next === seen.document) return { handled: true, value: next };
 		const write = await this.client.replaceDocument(seen, next);
@@ -221,7 +240,11 @@ export class MdbaseMutationBackend {
 	/** `vault.create`. The caller looks up the `TFile` once this resolves. */
 	async create(vaultPath: string, content: string): Promise<Handled<void>> {
 		const path = this.client.collectionPath(vaultPath);
-		if (path === null || !this.client.isRecordPath(path)) return NOT_HANDLED;
+		if (path === null) return NOT_HANDLED;
+		if (this.client.isResourcePath(path)) {
+			throw new Error("Managed resources must use the resource write API");
+		}
+		if (!this.client.isRecordPath(path)) return NOT_HANDLED;
 		const write = await this.client.create(path, content);
 		await this.client.settle(write, vaultPath);
 		return { handled: true, value: undefined };
