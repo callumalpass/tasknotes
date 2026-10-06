@@ -27,6 +27,7 @@ import {
 import type { UserMappedField } from "../../types/settings";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import { generateUuidV4 } from "../../utils/uuid";
+import { createVaultFile } from "../VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService/TaskCreationService" });
 
@@ -348,7 +349,7 @@ export class TaskCreationService {
 				content += `${normalizedBody}\n`;
 			}
 
-			const file = await runtime.app.vault.create(fullPath, content);
+			const file = await createVaultFile(runtime.app, fullPath, content);
 
 			const taskInfo: TaskInfo = {
 				...completeTaskData,

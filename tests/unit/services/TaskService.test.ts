@@ -15,6 +15,8 @@ import { FileSystemFactory, PluginFactory, TaskFactory } from '../../helpers/moc
 import { MockObsidian, TFile } from '../../helpers/obsidian-runtime';
 import { TaskCreationData, TaskService } from '../../../src/services/TaskService';
 import { TaskInfo, TimeEntry } from '../../../src/types';
+import { setMdbaseMutationBackend } from '../../../src/core/VaultMutationService';
+import { MdbaseMutationBackend, type MdbaseWriteClient } from '../../../src/core/mdbase/MdbaseMutationBackend';
 
 // Mock external dependencies
 jest.mock('../../../src/utils/dateUtils', () => {
@@ -94,6 +96,22 @@ describe('TaskService', () => {
     taskService = new TaskService(mockPlugin);
   });
 
+  afterEach(() => setMdbaseMutationBackend(null));
+
+  function managedCreateClient(): MdbaseWriteClient {
+    return {
+      collectionPath: path => path.startsWith('Tasks/') ? path : null,
+      isRecordPath: path => path.endsWith('.md'),
+      isResourcePath: () => false,
+      find: jest.fn().mockResolvedValue(null),
+      create: jest.fn().mockResolvedValue({ mutation: 'test-create' }),
+      update: jest.fn().mockResolvedValue({ mutation: 'test-update' }),
+      replaceDocument: jest.fn().mockResolvedValue({ mutation: 'test-replace' }),
+      resources: jest.fn().mockResolvedValue({ mutation: 'test-resource' }),
+      settle: jest.fn().mockResolvedValue(undefined),
+    };
+  }
+
   function getLastCreatedFrontmatter(): any {
     const createCalls = mockPlugin.app.vault.create.mock.calls;
     const content = createCalls[createCalls.length - 1]?.[1] as string;
@@ -132,6 +150,46 @@ describe('TaskService', () => {
   }
 
   describe('createTask', () => {
+    it('routes the real TaskCreationService through the shared backend and waits for settle', async () => {
+      const client = managedCreateClient();
+      let release!: () => void;
+      const gate = new Promise<void>(resolve => { release = resolve; });
+      client.settle = jest.fn(() => gate);
+      setMdbaseMutationBackend(new MdbaseMutationBackend(client));
+      const indexed = new TFile('Tasks/native-task.md');
+      mockPlugin.app.vault.getFileByPath = jest.fn(() => indexed);
+      let complete = false;
+      const pending = taskService.createTask({ title: 'Native Task' }).then(result => { complete = true; return result; });
+      for (let i = 0; i < 50 && !(client.settle as jest.Mock).mock.calls.length; i++) await Promise.resolve();
+      expect(client.create).toHaveBeenCalledWith('Tasks/native-task.md', expect.stringContaining('---'));
+      expect(client.settle).toHaveBeenCalledWith({ mutation: 'test-create' }, 'Tasks/native-task.md');
+      expect(complete).toBe(false);
+      expect(mockPlugin.app.vault.create).not.toHaveBeenCalled();
+      expect(mockPlugin.emitter.trigger).not.toHaveBeenCalled();
+      release();
+      expect((await pending).file).toBe(indexed);
+      expect(mockPlugin.app.vault.create).not.toHaveBeenCalled();
+    });
+
+    it('propagates managed create rejection without a vault fallback or success event', async () => {
+      const client = managedCreateClient();
+      (client.create as jest.Mock).mockRejectedValue(new Error('typed managed rejection'));
+      setMdbaseMutationBackend(new MdbaseMutationBackend(client));
+      await expect(taskService.createTask({ title: 'Native Task' })).rejects.toThrow('typed managed rejection');
+      expect(mockPlugin.app.vault.create).not.toHaveBeenCalled();
+      expect(mockPlugin.emitter.trigger).not.toHaveBeenCalled();
+      expect(client.settle).not.toHaveBeenCalled();
+    });
+
+    it('does not acknowledge an unsettled managed create when indexing is missing', async () => {
+      const client = managedCreateClient();
+      setMdbaseMutationBackend(new MdbaseMutationBackend(client));
+      mockPlugin.app.vault.getFileByPath = jest.fn(() => null);
+      await expect(taskService.createTask({ title: 'Native Task' })).rejects.toThrow('has not indexed it yet');
+      expect(mockPlugin.app.vault.create).not.toHaveBeenCalled();
+      expect(mockPlugin.emitter.trigger).not.toHaveBeenCalled();
+    });
+
     it('should create a basic task with minimal data', async () => {
       const taskData: TaskCreationData = {
         title: 'Test Task'
