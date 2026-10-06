@@ -98,7 +98,11 @@ export async function processVaultFileWithinMutation(
 	return app.vault.process(file, update);
 }
 
-export async function createVaultFile(app: App, path: string, content: string): Promise<TFile> {
+export async function createVaultFile(
+	app: { vault: Pick<App["vault"], "create" | "getFileByPath"> },
+	path: string,
+	content: string
+): Promise<TFile> {
 	if (mdbaseBackend?.claims(path)) {
 		const r = await mdbaseBackend.create(path, content);
 		if (r.handled) {
