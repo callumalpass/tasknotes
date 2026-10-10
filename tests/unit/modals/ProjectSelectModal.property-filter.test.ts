@@ -99,4 +99,20 @@ describe('ProjectSelectModal property filtering', () => {
     expect(paths).not.toContain('Projects/Alpha.md');
     expect(paths).not.toContain('Notes/Idea.md');
   });
+
+  it('excludes files in the configured excluded folders even without other filters', async () => {
+    mockPlugin.settings.projectAutosuggest.propertyKey = '';
+    mockPlugin.settings.projectAutosuggest.propertyValue = '';
+    mockPlugin.settings.excludedFolders = '_src, Notes';
+
+    await mockApp.vault.create('_src/Hidden.md', '');
+    mockApp.metadataCache.setCache('_src/Hidden.md', { frontmatter: {}, tags: [] });
+
+    const modal = new ProjectSelectModal(mockApp, mockPlugin, jest.fn());
+    const paths = modal.getItems().map(item => (item as any).path ?? '');
+
+    expect(paths).toContain('Projects/Alpha.md');
+    expect(paths).not.toContain('_src/Hidden.md');
+    expect(paths).not.toContain('Notes/Idea.md');
+  });
 });
