@@ -43,3 +43,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2389) Added the missing public [v4-to-v5 beta upgrade guide](https://tasknotes.dev/migration-v4-to-v5/), including synced-device and metadata-recovery instructions, and corrected the HTTP API authentication documentation. Thanks to @m4to-3pe for reporting the broken link.
 
 - (#2382) Fixed Kanban settings being ignored in existing `.base` files when nested under `options:` or `config:`, including empty-column hiding and pinned columns. Newly generated default files and exported v3 views now write settings directly on each view; existing files remain unchanged. See [Kanban View](https://tasknotes.dev/views/kanban-view/#configuration). Thanks to @techwiththiru for reporting this.
+- (#2390) Fixed the "Add to Project" modal listing notes from folders set in the Excluded folders setting. Thanks to @hikatamika for reporting this.

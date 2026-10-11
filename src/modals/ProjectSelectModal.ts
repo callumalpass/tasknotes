@@ -13,6 +13,7 @@ import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/proje
 import { FilterUtils } from "../utils/FilterUtils";
 import { collectCacheTags } from "../utils/tagExtraction";
 import { getActiveFolderPath, isPathInIncludedFolders } from "../suggest/FileSuggestHelper";
+import { isPathInExcludedFolder, parseExcludedFolders } from "../utils/pathExclusions";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ProjectSelectModal" });
@@ -38,13 +39,15 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 	}
 
 	getItems(): TAbstractFile[] {
+		const excludedFolders = parseExcludedFolders(this.plugin.settings?.excludedFolders);
 		const allFiles = this.app.vault
 			.getAllLoadedFiles()
 			.filter(
 				(file) =>
 					file instanceof TFile &&
 					file.extension === "md" &&
-					!file.path.includes(".trash")
+					!file.path.includes(".trash") &&
+					!isPathInExcludedFolder(file.path, excludedFolders)
 			);
 
 		// Get filtering settings
