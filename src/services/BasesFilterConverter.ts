@@ -12,6 +12,7 @@ import { PriorityManager } from "./PriorityManager";
 import type TaskNotesPlugin from "../main";
 import type { UserMappedField } from "../types/settings";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { getNaturalLanguageDateOffsetDays } from "../utils/dateUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/BasesFilterConverter" });
@@ -353,6 +354,17 @@ export class BasesFilterConverter {
 		originalProperty: FilterProperty,
 		fieldType?: string
 	): string {
+		const naturalLanguageDateExpression = this.convertNaturalLanguageDateCondition(
+			basesProperty,
+			operator,
+			value,
+			originalProperty,
+			fieldType
+		);
+		if (naturalLanguageDateExpression) {
+			return naturalLanguageDateExpression;
+		}
+
 		switch (operator) {
 			case "is":
 				return this.convertIsOperator(basesProperty, value, fieldType);
@@ -410,6 +422,66 @@ export class BasesFilterConverter {
 				});
 				return "true";
 		}
+	}
+
+	/**
+	 * Convert a date comparison against a natural language date ("today", "in 3 days", ...)
+	 * to a Bases expression relative to today().
+	 *
+	 * Without this, the value would be compared as a literal string: `note.due == "today"`
+	 * never matches, and `note.due <= "today"` matches every date because digits sort
+	 * before letters. Dates are compared by their date part, like FilterUtils does.
+	 *
+	 * Returns null when the condition is not a natural language date comparison.
+	 */
+	private convertNaturalLanguageDateCondition(
+		basesProperty: string,
+		operator: FilterOperator,
+		value: unknown,
+		originalProperty: FilterProperty,
+		fieldType?: string
+	): string | null {
+		const dateProperties: FilterProperty[] = [
+			"due",
+			"scheduled",
+			"completedDate",
+			"dateCreated",
+			"dateModified",
+		];
+		if (!dateProperties.includes(originalProperty) && fieldType != "date") {
+			return null;
+		}
+		if (typeof value != "string") {
+			return null;
+		}
+
+		const offsetDays = getNaturalLanguageDateOffsetDays(value);
+		if (offsetDays === null) {
+			return null;
+		}
+
+		const comparisons: Partial<Record<FilterOperator, string>> = {
+			is: "==",
+			"is-not": "==",
+			"is-before": "<",
+			"is-after": ">",
+			"is-on-or-before": "<=",
+			"is-on-or-after": ">=",
+		};
+		const comparison = comparisons[operator];
+		if (!comparison) {
+			return null;
+		}
+
+		const dateFormat = `format("YYYY-MM-DD")`;
+		const days = Math.abs(offsetDays);
+		const relativeDate =
+			offsetDays == 0
+				? "today()"
+				: `(today() ${offsetDays > 0 ? "+" : "-"} "${days} ${days == 1 ? "day" : "days"}")`;
+		const expression = `(!${basesProperty}.isEmpty() && date(${basesProperty}).${dateFormat} ${comparison} ${relativeDate}.${dateFormat})`;
+
+		return operator == "is-not" ? `!${expression}` : expression;
 	}
 
 	/**

@@ -1746,6 +1746,47 @@ export function resolveNaturalLanguageDate(value: string): string {
 }
 
 /**
+ * Get a natural language date as a day offset from today (e.g. "today" → 0, "2 weeks ago" → -14).
+ * Returns null if the value is not a recognized natural language pattern.
+ *
+ * Unlike resolveNaturalLanguageDate, this keeps the date relative, so callers can emit
+ * expressions (such as Bases `today()`) that are evaluated when the filter runs.
+ */
+export function getNaturalLanguageDateOffsetDays(value: string): number | null {
+	if (!value || typeof value !== "string") {
+		return null;
+	}
+
+	const normalized = value.toLowerCase().trim().replace(/\s+/g, " ");
+
+	const exactOffsets: Record<keyof typeof NATURAL_LANGUAGE_DATE_PATTERNS, number> = {
+		today: 0,
+		tomorrow: 1,
+		yesterday: -1,
+		"next week": 7,
+		"last week": -7,
+	};
+	if (normalized in exactOffsets) {
+		return exactOffsets[normalized as keyof typeof exactOffsets];
+	}
+
+	const relativePatterns: { pattern: RegExp; daysPerUnit: number }[] = [
+		{ pattern: /^in\s+(\d+)\s+(days?)$/, daysPerUnit: 1 },
+		{ pattern: /^(\d+)\s+(days?)\s+ago$/, daysPerUnit: -1 },
+		{ pattern: /^in\s+(\d+)\s+(weeks?)$/, daysPerUnit: 7 },
+		{ pattern: /^(\d+)\s+(weeks?)\s+ago$/, daysPerUnit: -7 },
+	];
+	for (const { pattern, daysPerUnit } of relativePatterns) {
+		const match = normalized.match(pattern);
+		if (match) {
+			return parseInt(match[1], 10) * daysPerUnit;
+		}
+	}
+
+	return null;
+}
+
+/**
  * Get all supported natural language date patterns for UI suggestions
  */
 export function getNaturalLanguageDateSuggestions(): string[] {
