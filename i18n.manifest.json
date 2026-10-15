@@ -373,6 +373,8 @@
   "settings.features.nlp.enable.description": "9f67be1fa73161b17a70c87af32003bfa983355a",
   "settings.features.nlp.defaultToScheduled.name": "324d2d23ff1fcba9cbc96d1419f7df59d9e4bd64",
   "settings.features.nlp.defaultToScheduled.description": "af8a70098a26d928aabb5192cf9b164b87e686bd",
+  "settings.features.nlp.enterToSubmit.name": "30281c78622719ec7f52bbf07d8235cf0f92d724",
+  "settings.features.nlp.enterToSubmit.description": "66d434790152e62ca305fce4e4e839525cec0270",
   "settings.features.nlp.language.name": "418a84de466f8a9739547a699b0fe1869c8ba684",
   "settings.features.nlp.language.description": "e536e1bb774214bcedaebffdf31f5b7e7e187deb",
   "settings.features.nlp.statusTrigger.name": "5523613d9bdb1753545817c90c6542b8703e966f",
