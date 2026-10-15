@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- Added an **Enter saves task** option under Settings → Features → Natural language processing. When enabled, pressing Enter in the task creation dialog's natural language input saves the task, and Shift+Enter inserts a newline. Ctrl/Cmd+Enter continues to save, and Enter still accepts an open autocomplete suggestion. The option is off by default.
+
 ## Changed
 
 - (#2381) Task List group and subgroup moves no longer require manual-order sorting. Drops preview the properties they will change, while reordering uses a separate insertion line. The movement handle also offers a destination menu, and ordinary property moves have an Undo action that preserves later unrelated edits. A separate **Add as subtask** drop target assigns another task as a parent without replacing existing project memberships or changing group values or manual rank; self-assignment and cycles are blocked. Moves between list-property groups show the full list before and after, releasing a drag on its original row cancels it, and the handle menu offers **Move up** and **Move down** when the view is manually sorted. Thanks to @iantierney for the suggestion. See [Task List](https://tasknotes.dev/views/task-list/).

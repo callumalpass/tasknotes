@@ -650,6 +650,11 @@ export const en: TranslationTree = {
 					description:
 						"When NLP detects a date without context, treat it as scheduled rather than due",
 				},
+				enterToSubmit: {
+					name: "Enter saves task",
+					description:
+						"In the natural language input, press Enter to save the task. Shift+Enter inserts a newline, and Ctrl/Cmd+Enter still saves.",
+				},
 				language: {
 					name: "NLP language",
 					description:

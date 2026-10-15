@@ -255,6 +255,12 @@ export class TaskCreationModal extends TaskModal {
 						// Shift+Enter - allow newline
 						return false;
 					}
+					if (this.plugin.settings.nlpEnterToSubmit && !editor.isCompletionOpen) {
+						// Enter saves when enabled (unless accepting an autocomplete suggestion);
+						// Shift+Enter (above) still inserts a newline
+						void this.handleSubmitShortcut(false);
+						return true;
+					}
 					// Normal Enter - allow new line
 					return false;
 				},
@@ -293,6 +299,13 @@ export class TaskCreationModal extends TaskModal {
 				if (keyEvent.key === "Enter" && (keyEvent.ctrlKey || keyEvent.metaKey)) {
 					keyEvent.preventDefault();
 					void this.handleSubmitShortcut(keyEvent.shiftKey);
+				} else if (
+					keyEvent.key === "Enter" &&
+					!keyEvent.shiftKey &&
+					this.plugin.settings.nlpEnterToSubmit
+				) {
+					keyEvent.preventDefault();
+					void this.handleSubmitShortcut(false);
 				} else if (keyEvent.key === "Tab" && keyEvent.shiftKey) {
 					keyEvent.preventDefault();
 					this.parseAndFillForm(input);

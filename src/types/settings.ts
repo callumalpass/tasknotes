@@ -138,6 +138,7 @@ export interface TaskNotesSettings {
 	taskModalTabMovesFocus: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
+	nlpEnterToSubmit: boolean; // Enter saves from the NLP input; Shift+Enter inserts a newline
 	nlpLanguage: string; // Language code for natural language processing (e.g., 'en', 'es', 'fr')
 	uiLanguage: string; // 'system' or supported locale code for UI translations
 
