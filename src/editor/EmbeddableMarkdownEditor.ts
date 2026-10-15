@@ -11,6 +11,7 @@ import {
 } from "obsidian";
 import { EditorSelection as CMEditorSelection, Extension, Prec } from "@codemirror/state";
 import { EditorView, keymap, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
+import { completionStatus } from "@codemirror/autocomplete";
 import { around } from "monkey-around";
 import { resolveMarkdownEditorPrototype } from "./resolveMarkdownEditorPrototype";
 
@@ -581,6 +582,13 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	 */
 	get value(): string {
 		return this.editor.cm.state.doc.toString();
+	}
+
+	/**
+	 * Whether an autocomplete popup is currently open (Enter should accept it)
+	 */
+	get isCompletionOpen(): boolean {
+		return completionStatus((this.editor.cm as unknown as EditorView).state) !== null;
 	}
 
 	/**

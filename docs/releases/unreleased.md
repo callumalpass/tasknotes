@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- Added an **Enter saves task** option under Settings → Features → Natural language processing. When enabled, pressing Enter in the task creation dialog's natural language input saves the task, and Shift+Enter inserts a newline. Ctrl/Cmd+Enter continues to save, and Enter still accepts an open autocomplete suggestion. The option is off by default.
+
 ## Changed
 
 ## Removed

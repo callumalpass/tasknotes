@@ -295,6 +295,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	taskModalTabMovesFocus: true,
 	enableNaturalLanguageInput: true,
 	nlpDefaultToScheduled: true,
+	nlpEnterToSubmit: false,
 	nlpLanguage: "en", // Default to English
 	uiLanguage: "system",
 	// NLP status suggestion trigger (deprecated)

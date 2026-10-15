@@ -190,6 +190,19 @@ export function renderFeaturesTab(
 
 				group.addSetting(
 					(setting) =>
+						void configureToggleSetting(setting, {
+							name: translate("settings.features.nlp.enterToSubmit.name"),
+							desc: translate("settings.features.nlp.enterToSubmit.description"),
+							getValue: () => plugin.settings.nlpEnterToSubmit,
+							setValue: async (value: boolean) => {
+								plugin.settings.nlpEnterToSubmit = value;
+								save();
+							},
+						})
+				);
+
+				group.addSetting(
+					(setting) =>
 						void configureDropdownSetting(setting, {
 							name: translate("settings.features.nlp.language.name"),
 							desc: translate("settings.features.nlp.language.description"),
