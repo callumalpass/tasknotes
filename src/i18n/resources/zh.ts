@@ -1032,6 +1032,11 @@ export const zh: TranslationTree = {
 					name: "重复",
 					description: "重复任务的模式（每日、每周、每月、每年或自定义RRULE）。当重复任务完成时，其安排日期会自动更新到下一次出现。"
 				},
+				recurrenceEndAfterDone: {
+					name: "完成后结束重复",
+					description:
+						"新建任务使用默认重复时生效。任务累计完成达到该次数后结束重复（0 = 不限次数）。",
+				},
 				recurrenceAnchor: {
 					name: "重复锚点",
 					description: "控制下一次出现的计算方式：'scheduled'使用安排日期，'completion'使用实际完成日期。"

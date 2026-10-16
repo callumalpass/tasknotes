@@ -114,6 +114,7 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	inheritParentTaskProperties: false,
 	defaultTimeEstimate: 0,
 	defaultRecurrence: "none",
+	defaultEndAfterDone: 0,
 	defaultDueDate: "none",
 	defaultDueTime: "none",
 	defaultScheduledDate: "today",

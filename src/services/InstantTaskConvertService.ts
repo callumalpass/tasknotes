@@ -12,6 +12,7 @@ import {
 	formatDateForStorage,
 } from "../utils/dateUtils";
 import { calculateDefaultDateTime } from "../utils/helpers";
+import { buildDefaultRecurrenceRule } from "./task-service/taskCreationDefaults";
 import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
@@ -722,14 +723,8 @@ export class InstantTaskConvertService {
 				// Use the RRule string directly
 				recurrence = parsedData.recurrence;
 			} else if (defaults.defaultRecurrence && defaults.defaultRecurrence !== "none") {
-				// Convert default recurrence frequency to rrule string
-				const freqMap: Record<string, string> = {
-					daily: "FREQ=DAILY",
-					weekly: "FREQ=WEEKLY",
-					monthly: "FREQ=MONTHLY",
-					yearly: "FREQ=YEARLY",
-				};
-				recurrence = freqMap[defaults.defaultRecurrence] || undefined;
+			// Default recurrence rule, including the optional end-after-done cap
+			recurrence = buildDefaultRecurrenceRule(defaults);
 			}
 		} else {
 			// Minimal behavior: only use parsed data, use "none" for unset values

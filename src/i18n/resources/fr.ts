@@ -1032,6 +1032,11 @@ export const fr: TranslationTree = {
 					name: "Récurrence",
 					description: "Modèle pour les tâches répétitives (quotidien, hebdomadaire, mensuel, annuel ou RRULE personnalisée). Quand une tâche récurrente est terminée, sa date planifiée est automatiquement mise à jour à la prochaine occurrence."
 				},
+				recurrenceEndAfterDone: {
+					name: "Fin de la récurrence après exécutions",
+					description:
+						"S'applique quand la nouvelle tâche utilise la récurrence par défaut. Elle cesse de se répéter après avoir été complétée ce nombre de fois (0 = pas de limite).",
+				},
 				recurrenceAnchor: {
 					name: "Ancre de récurrence",
 					description: "Contrôle le calcul de la prochaine occurrence : 'scheduled' utilise la date planifiée, 'completion' utilise la date de complétion réelle."

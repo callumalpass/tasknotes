@@ -1032,6 +1032,11 @@ export const ko: TranslationTree = {
 					name: "반복",
 					description: "반복 작업 패턴 (매일, 매주, 매월, 매년 또는 사용자 지정 RRULE). 반복 작업이 완료되면 예정일이 자동으로 다음 발생으로 업데이트됩니다."
 				},
+				recurrenceEndAfterDone: {
+					name: "완료 횟수 후 반복 종료",
+					description:
+						"새 작업이 기본 반복을 사용하는 경우에 적용됩니다. 작업이 이 횟수만큼 완료되면 반복이 종료됩니다(0 = 제한 없음).",
+				},
 				recurrenceAnchor: {
 					name: "반복 기준",
 					description: "다음 발생 계산 방법을 제어합니다: 'scheduled'는 예정일을, 'completion'은 실제 완료일을 사용합니다."

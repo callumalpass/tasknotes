@@ -1096,6 +1096,11 @@ export const en: TranslationTree = {
 					description:
 						"Pattern for repeating tasks (daily, weekly, monthly, yearly, or custom RRULE). When a recurring task is completed, its scheduled date is automatically updated to the next occurrence.",
 				},
+				recurrenceEndAfterDone: {
+					name: "Recurrence end after done",
+					description:
+						"Applies when a new task uses the default recurrence. The task stops repeating after it has been completed this many times (0 = no limit).",
+				},
 				recurrenceAnchor: {
 					name: "Recurrence anchor",
 					description:

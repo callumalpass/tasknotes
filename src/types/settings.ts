@@ -288,6 +288,7 @@ export interface TaskCreationDefaults {
 	inheritParentTaskProperties: boolean; // Copy parent task projects, contexts, priority, and tags when creating subtasks
 	defaultTimeEstimate: number; // minutes, 0 = no default
 	defaultRecurrence: "none" | "daily" | "weekly" | "monthly" | "yearly";
+	defaultEndAfterDone: number; // Stop recurring after this many completions, 0 = no limit
 	// Date defaults
 	defaultDueDate: "none" | "today" | "tomorrow" | "next-week";
 	defaultDueTime: DefaultTaskTime;
