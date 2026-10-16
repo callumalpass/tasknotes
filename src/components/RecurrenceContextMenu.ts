@@ -31,9 +31,10 @@ export interface CustomRecurrenceRuleInput {
 	byMonthDay: number[];
 	byMonth: number[];
 	bySetPos: number | undefined;
-	endType: "never" | "count" | "until";
+	endType: "never" | "count" | "until" | "doneCount";
 	count: number | undefined;
 	until: string;
+doneCount?: number;
 	monthlyType?: string;
 	yearlyType?: string;
 }
@@ -467,6 +468,11 @@ export function buildCustomRecurrenceRule(input: CustomRecurrenceRuleInput): str
 				parts.push(`UNTIL=${input.until.replace(/-/g, "")}`);
 			}
 			break;
+		case "doneCount":
+			if (input.doneCount && input.doneCount > 0) {
+				parts.push(`ENDONDONE=${input.doneCount}`);
+			}
+			break;
 	}
 
 	return parts.join(";");
@@ -597,9 +603,10 @@ class CustomRecurrenceModal extends Modal {
 	private byMonthDay: number[] = [];
 	private byMonth: number[] = [];
 	private bySetPos: number | undefined; // For "first Monday", "last Friday", etc.
-	private count: number | undefined;
+private count: number | undefined;
+	private doneCount: number | undefined;
 	private until = "";
-	private endType: "never" | "count" | "until" = "never";
+	private endType: "never" | "count" | "until" | "doneCount" = "never";
 	private dtstart = "";
 	private dtstartTime = "";
 	private recurrenceAnchor: "scheduled" | "completion" = "scheduled"; // NEW: Recurrence anchor
@@ -718,7 +725,11 @@ class CustomRecurrenceModal extends Modal {
 					} else {
 						this.until = value;
 					}
-					this.endType = "until";
+this.endType = "until";
+				break;
+				case "ENDONDONE":
+					this.doneCount = parseInt(value, 10);
+					this.endType = "doneCount";
 					break;
 			}
 		}
@@ -1252,6 +1263,47 @@ class CustomRecurrenceModal extends Modal {
 			},
 		});
 
+// End after done N times
+		const doneCountRadio = endConditionContainer.createEl("label", { cls: "radio-option" });
+		doneCountRadio.classList.remove(
+			"tn-static-display-flex-4d51fc62",
+			"tn-static-display-flex-75816cae",
+			"tn-static-display-flex-8bb39979",
+			"tn-static-display-inline-block-60e32dcb",
+			"tn-static-display-inline-cccfa456",
+			"tn-static-display-inline-flex-f984c520",
+			"tn-static-display-none-6b99de8b",
+			"tn-static-min-height-800px-997b4c8c"
+		);
+		doneCountRadio.classList.add("tn-static-display-block-2a1b75c9");
+		doneCountRadio.classList.remove(
+			"tn-static-font-size-12px-65574819",
+			"tn-static-font-weight-bold-0fe8c30d",
+			"tn-static-font-weight-bold-e0b452bd",
+			"tn-static-margin-bottom-0-75rem-c05a3c6e",
+			"tn-static-margin-bottom-20px-49f14f8f"
+		);
+		doneCountRadio.classList.add("tn-static-margin-bottom-8px-fdf33f23");
+		const doneCountInput = doneCountRadio.createEl("input", { type: "radio", value: "doneCount" });
+		doneCountInput.name = "end-type";
+		doneCountInput.checked = this.endType === "doneCount";
+		doneCountRadio.createSpan({ text: " End after done " });
+		const doneCountText = doneCountRadio.createEl("input", { type: "number", placeholder: "5" });
+		doneCountText.classList.remove(
+			"tn-static-width-100-0466783d",
+			"tn-static-width-12px-fbf353fb",
+			"tn-static-width-16px-7375d50b",
+			"tn-static-width-1px-aa77e27e",
+			"tn-static-width-200px-2acaf3b5",
+			"tn-static-width-80px-8573bae3"
+		);
+		doneCountText.classList.add("tn-static-width-60px-bd09c419");
+		doneCountText.classList.add("tn-static-margin-left-4px-46cec891");
+		doneCountText.classList.remove("tn-static-margin-right-8px-539fa9a0");
+		doneCountText.classList.add("tn-static-margin-right-4px-c6b76b85");
+		doneCountText.value = this.doneCount ? this.doneCount.toString() : "";
+		doneCountRadio.createSpan({ text: " times" });
+
 		// Event listeners for end condition
 		neverInput.addEventListener("change", () => {
 			if (neverInput.checked) this.endType = "never";
@@ -1276,6 +1328,18 @@ class CustomRecurrenceModal extends Modal {
 			if (untilDate.value) {
 				untilInput.checked = true;
 				this.endType = "until";
+			}
+		});
+
+			doneCountInput.addEventListener("change", () => {
+			if (doneCountInput.checked) this.endType = "doneCount";
+		});
+
+		doneCountText.addEventListener("input", () => {
+			this.doneCount = parseInt(doneCountText.value) || undefined;
+			if (doneCountText.value) {
+				doneCountInput.checked = true;
+				this.endType = "doneCount";
 			}
 		});
 
@@ -1392,7 +1456,8 @@ class CustomRecurrenceModal extends Modal {
 			bySetPos: this.bySetPos,
 			endType: this.endType,
 			count: this.count,
-			until: this.until,
+until: this.until,
+			doneCount: this.doneCount,
 			monthlyType,
 			yearlyType,
 		});

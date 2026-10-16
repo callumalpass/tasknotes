@@ -1034,6 +1034,11 @@ export const pt: TranslationTree = {
 					name: "Recorrência",
 					description: "Padrão para tarefas repetitivas (diário, semanal, mensal, anual ou RRULE personalizado). Quando uma tarefa recorrente é concluída, sua data agendada é automaticamente atualizada para a próxima ocorrência."
 				},
+				recurrenceEndAfterDone: {
+					name: "Término da recorrência após concluídas",
+					description:
+						"Aplica-se quando uma nova tarefa usa a recorrência predefinida. Deixa de repetir-se depois de a tarefa ter sido concluída este número de vezes (0 = sem limite).",
+				},
 				recurrenceAnchor: {
 					name: "Âncora de recorrência",
 					description: "Controla como a próxima ocorrência é calculada: 'scheduled' usa a data agendada, 'completion' usa a data de conclusão real."

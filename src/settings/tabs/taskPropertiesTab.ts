@@ -5,7 +5,7 @@ import {
 	createSectionHeader,
 	createHelpText,
 } from "../components/settingHelpers";
-import { createCardInput } from "../components/CardComponent";
+import { createCard, createCardInput, createCardNumberInput } from "../components/CardComponent";
 
 // Import property card modules
 import {
@@ -18,6 +18,7 @@ import {
 	renderUserFieldsSection,
 	renderSimplePropertyCard,
 	renderMetadataPropertyCard,
+	createPropertyDescription,
 } from "./taskProperties";
 
 /**
@@ -190,6 +191,53 @@ export function renderTaskPropertiesTab(
 			save();
 		},
 	});
+
+	// Recurrence End-After-Done Default Card
+	const endAfterDoneInput = createCardNumberInput(
+		0,
+		undefined,
+		1,
+		plugin.settings.taskCreationDefaults.defaultEndAfterDone || 0
+	);
+	endAfterDoneInput.addEventListener("change", () => {
+		const value = parseInt(endAfterDoneInput.value, 10);
+		plugin.settings.taskCreationDefaults.defaultEndAfterDone =
+			Number.isFinite(value) && value > 0 ? value : 0;
+		save();
+	});
+	createCard(container, {
+		id: "property-defaultEndAfterDone",
+		collapsible: true,
+		defaultCollapsed: true,
+		header: {
+			primaryText: translate(
+				"settings.taskProperties.properties.recurrenceEndAfterDone.name"
+			),
+		},
+		content: {
+			sections: [
+				{
+					rows: [
+						{
+							label: "",
+							input: createPropertyDescription(
+								translate(
+									"settings.taskProperties.properties.recurrenceEndAfterDone.description"
+								)
+							),
+							fullWidth: true,
+						},
+						{
+							label: translate("settings.taskProperties.propertyCard.default"),
+							input: endAfterDoneInput,
+						},
+					],
+				},
+			],
+		},
+	});
+
+	// Recurrence Anchor Property Card
 
 	// Recurrence Anchor Property Card
 	renderMetadataPropertyCard(container, plugin, save, translate, "recurrenceAnchor",

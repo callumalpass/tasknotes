@@ -1032,6 +1032,11 @@ export const de: TranslationTree = {
 					name: "Wiederholung",
 					description: "Muster für wiederholende Aufgaben (täglich, wöchentlich, monatlich, jährlich oder benutzerdefinierte RRULE). Wenn eine wiederkehrende Aufgabe abgeschlossen wird, wird ihr geplantes Datum automatisch auf das nächste Vorkommen aktualisiert."
 				},
+				recurrenceEndAfterDone: {
+					name: "Wiederholungs-Ende nach Erledigungen",
+					description:
+						"Gilt, wenn neue Aufgaben die Standardwiederholung verwenden. Die Aufgabe hört auf wiederholt zu werden, nachdem sie diese Anzahl von Malen erledigt wurde (0 = ohne Limit).",
+				},
 				recurrenceAnchor: {
 					name: "Wiederholungsanker",
 					description: "Bestimmt, wie das nächste Vorkommen berechnet wird: 'scheduled' verwendet das geplante Datum, 'completion' verwendet das tatsächliche Abschlussdatum."

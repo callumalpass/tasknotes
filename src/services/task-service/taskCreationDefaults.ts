@@ -29,6 +29,24 @@ const DEFAULT_RECURRENCE_RULES: Record<TaskCreationDefaults["defaultRecurrence"]
 		yearly: "FREQ=YEARLY",
 	};
 
+/**
+ * Build the default recurrence rule for new tasks.
+ * Appends the non-standard `ENDONDONE=n` terminator when `defaultEndAfterDone` is set, so the
+ * default recurrence stops after n completions (enforced by the recurring completion planning
+ * in taskRecurringPlanning via `getRecurrenceEndAfterDoneCount`).
+ */
+export function buildDefaultRecurrenceRule(
+	defaults: Pick<TaskCreationDefaults, "defaultRecurrence" | "defaultEndAfterDone">
+): string | undefined {
+	const base = DEFAULT_RECURRENCE_RULES[defaults.defaultRecurrence];
+	if (base === undefined) return undefined;
+	const endAfterDone =
+		typeof defaults.defaultEndAfterDone === "number" && defaults.defaultEndAfterDone > 0
+			? Math.floor(defaults.defaultEndAfterDone)
+			: 0;
+	return endAfterDone > 0 ? `${base};ENDONDONE=${endAfterDone}` : base;
+}
+
 export function applyTaskCreationDefaults(
 	taskData: TaskCreationData,
 	context: TaskCreationDefaultsContext,
@@ -74,8 +92,8 @@ export function applyTaskCreationDefaults(
 		result.timeEstimate = defaults.defaultTimeEstimate;
 	}
 
-	if (!result.recurrence && defaults.defaultRecurrence !== "none") {
-		result.recurrence = DEFAULT_RECURRENCE_RULES[defaults.defaultRecurrence];
+	if (!result.recurrence) {
+		result.recurrence = buildDefaultRecurrenceRule(defaults);
 	}
 
 	if (

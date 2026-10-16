@@ -91,7 +91,62 @@ describe("taskRecurringPlanning", () => {
 		expect(plan.newComplete).toBe(false);
 		expect(plan.updatedTask.complete_instances).toEqual(["2026-05-18"]);
 		expect(plan.updatedTask.skipped_instances).toEqual([]);
-	});
+		});
+
+		it("terminates the recurrence when completion reaches the ENDONDONE cap", () => {
+			const plan = buildRecurringTaskCompletePlan({
+				freshTask: createRecurringTask({
+					recurrence: "DTSTART:20260501;FREQ=DAILY;ENDONDONE=2",
+					scheduled: "2026-05-19",
+					complete_instances: ["2026-05-17"],
+				}),
+				targetDate: new Date("2026-05-19T12:00:00.000Z"),
+				currentTimestamp: "2026-05-19T07:15:00+10:00",
+				maintainDueDateOffsetInRecurring: true,
+			});
+
+			expect(plan.newComplete).toBe(true);
+			expect(plan.updatedTask.complete_instances).toEqual(["2026-05-17", "2026-05-19"]);
+			// The rule is retained verbatim and scheduled/due are NOT advanced past the last instance.
+			expect(plan.updatedTask.recurrence).toBe("DTSTART:20260501;FREQ=DAILY;ENDONDONE=2");
+			expect(plan.updatedTask.scheduled).toBe("2026-05-19");
+		});
+
+		it("still advances the schedule while below the ENDONDONE cap", () => {
+			const plan = buildRecurringTaskCompletePlan({
+				freshTask: createRecurringTask({
+					recurrence: "DTSTART:20260501;FREQ=DAILY;ENDONDONE=3",
+					scheduled: "2026-05-19",
+					complete_instances: ["2026-05-17"],
+				}),
+				targetDate: new Date("2026-05-19T12:00:00.000Z"),
+				currentTimestamp: "2026-05-19T07:15:00+10:00",
+				maintainDueDateOffsetInRecurring: true,
+			});
+
+			expect(plan.newComplete).toBe(true);
+			expect(plan.updatedTask.complete_instances).toEqual(["2026-05-17", "2026-05-19"]);
+			expect(plan.updatedTask.scheduled).toBe("2026-05-20");
+		});
+
+		it("resumes the recurrence when an instance is un-completed back below the cap", () => {
+			const plan = buildRecurringTaskCompletePlan({
+				freshTask: createRecurringTask({
+					recurrence: "DTSTART:20260501;FREQ=DAILY;ENDONDONE=2",
+					scheduled: "2026-05-19",
+					complete_instances: ["2026-05-17", "2026-05-19"],
+				}),
+				targetDate: new Date("2026-05-19T12:00:00.000Z"),
+				currentTimestamp: "2026-05-19T07:15:00+10:00",
+				maintainDueDateOffsetInRecurring: true,
+			});
+
+expect(plan.newComplete).toBe(false);
+			expect(plan.updatedTask.complete_instances).toEqual(["2026-05-17"]);
+			// Below the cap again the recurrence is active, so the model recomputes a concrete
+			// scheduled date (the un-completed occurrence reopens) instead of short-circuiting.
+			expect(plan.updatedTask.scheduled).toBe("2026-05-19");
+		});
 
 	it("updates DTSTART for completion-anchored recurrence plans", () => {
 		const plan = buildRecurringTaskCompletePlan({

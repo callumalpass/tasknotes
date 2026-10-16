@@ -1,6 +1,7 @@
 import { DEFAULT_TASK_CREATION_DEFAULTS } from "../../../src/settings/defaults";
 import {
 	applyTaskCreationDefaults,
+	buildDefaultRecurrenceRule,
 	type TaskCreationDefaultAdapters,
 	type TaskCreationDefaultsContext,
 } from "../../../src/services/task-service/taskCreationDefaults";
@@ -152,6 +153,60 @@ describe("task creation defaults", () => {
 		expect(input.customFrontmatter).toEqual({
 			reviewed: true,
 			topic: "manual",
+		});
+	});
+	it("appends ENDONDONE to the default recurrence rule when defaultEndAfterDone is set", () => {
+		const result = applyTaskCreationDefaults(
+			{ title: "Capped default recurrence" },
+			createContext({
+				defaultRecurrence: "weekly",
+				defaultEndAfterDone: 3,
+			})
+		);
+
+		expect(result.recurrence).toBe("FREQ=WEEKLY;ENDONDONE=3");
+	});
+
+	it("leaves the default recurrence rule uncapped when defaultEndAfterDone is zero", () => {
+		const result = applyTaskCreationDefaults(
+			{ title: "Uncapped default recurrence" },
+			createContext({
+				defaultRecurrence: "daily",
+			})
+		);
+
+		expect(result.recurrence).toBe("FREQ=DAILY");
+	});
+
+	it("never overwrites an explicit recurrence value", () => {
+		const result = applyTaskCreationDefaults(
+			{ title: "Explicit rule", recurrence: "FREQ=MONTHLY" },
+			createContext({
+				defaultRecurrence: "weekly",
+				defaultEndAfterDone: 5,
+			})
+		);
+
+		expect(result.recurrence).toBe("FREQ=MONTHLY");
+	});
+
+	describe("buildDefaultRecurrenceRule", () => {
+		it("returns undefined for no default recurrence", () => {
+			expect(
+				buildDefaultRecurrenceRule({ defaultRecurrence: "none", defaultEndAfterDone: 3 })
+			).toBeUndefined();
+		});
+
+		it("returns the base rule when defaultEndAfterDone is zero", () => {
+			expect(
+				buildDefaultRecurrenceRule({ defaultRecurrence: "monthly", defaultEndAfterDone: 0 })
+			).toBe("FREQ=MONTHLY");
+		});
+
+		it("appends ENDONDONE for a positive cap", () => {
+			expect(
+				buildDefaultRecurrenceRule({ defaultRecurrence: "yearly", defaultEndAfterDone: 2 })
+			).toBe("FREQ=YEARLY;ENDONDONE=2");
 		});
 	});
 });

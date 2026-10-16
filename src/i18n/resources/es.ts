@@ -1032,6 +1032,11 @@ export const es: TranslationTree = {
 					name: "Recurrencia",
 					description: "Patrón para tareas repetitivas (diario, semanal, mensual, anual o RRULE personalizada). Cuando se completa una tarea recurrente, su fecha programada se actualiza automáticamente a la siguiente ocurrencia."
 				},
+				recurrenceEndAfterDone: {
+					name: "Fin de recurrencia tras completados",
+					description:
+						"Se aplica cuando una tarea nueva usa la recurrencia predeterminada. Deja de repetirse después de que la tarea se haya completado este número de veces (0 = sin límite).",
+				},
 				recurrenceAnchor: {
 					name: "Ancla de recurrencia",
 					description: "Controla cómo se calcula la siguiente ocurrencia: 'scheduled' usa la fecha programada, 'completion' usa la fecha de finalización real."
