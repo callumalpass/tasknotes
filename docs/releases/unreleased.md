@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- Custom recurrence editor now supports an "End after done [n] times" end condition: a recurring task stops advancing after it has been completed a cumulative n times, and the recurrence resumes from the most recent occurrence when instances are un-completed and the total drops below n.
+
 ## Changed
 
 ## Removed

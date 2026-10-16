@@ -2,6 +2,7 @@ import {
 	addDTSTARTToRecurrenceRule,
 	generateRecurringInstances,
 	getNextUncompletedOccurrence,
+	getRecurrenceEndAfterDoneCount,
 	updateDTSTARTInRecurrenceRule,
 	updateToNextScheduledOccurrence,
 } from "../../core/recurrence";
@@ -247,7 +248,12 @@ export function buildRecurringTaskCompletePlan({
 		updatedTask.skipped_instances = skippedInstances.filter((d) => d !== dateStr);
 	}
 
-	if (newComplete && typeof updatedTask.recurrence === "string") {
+	const endAfterDone = getRecurrenceEndAfterDoneCount(freshTask.recurrence);
+	const willTerminate = newComplete &&
+		endAfterDone !== null &&
+		(updatedTask.complete_instances?.length ?? 0) >= endAfterDone;
+
+	if (newComplete && !willTerminate && typeof updatedTask.recurrence === "string") {
 		if (recurrenceAnchor === "completion") {
 			const updatedRecurrence = updateDTSTARTInRecurrenceRule(
 				updatedTask.recurrence,
@@ -295,10 +301,10 @@ export function buildRecurringTaskCompletePlan({
 		maintainDueDateOffsetInRecurring,
 		{ minOccurrenceDate: floorDate }
 	);
-	if (nextDates.scheduled) {
+	if (!willTerminate && nextDates.scheduled) {
 		updatedTask.scheduled = nextDates.scheduled;
 	}
-	if (nextDates.due) {
+	if (!willTerminate && nextDates.due) {
 		updatedTask.due = nextDates.due;
 	}
 	resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
