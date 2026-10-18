@@ -40,6 +40,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- (#2401) The status button in the task creation and edit windows now matches task cards: it shows the status's configured icon, or a circle (a check circle for completed statuses), instead of a dotted square. Thanks to @iantierney for reporting this.
+
 - (#2400) Removed the decorative plus icon beside "No tasks" in empty Kanban columns and swimlane cells, which looked like an add-task button. Use the column's add-task button to create tasks. Thanks to @iantierney for reporting this.
 
 ## Removed
