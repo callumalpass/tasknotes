@@ -624,6 +624,10 @@ export const de: TranslationTree = {
 					name: "Standardmäßig geplant",
 					description: "Wenn NLP ein Datum ohne Kontext erkennt, behandle es als geplant statt fällig"
 				},
+				enterToSubmit: {
+					name: "Enter speichert Aufgabe",
+					description: "Im Eingabefeld für natürliche Sprache speichert Enter die Aufgabe. Umschalt+Enter fügt einen Zeilenumbruch ein, und Strg/Cmd+Enter speichert weiterhin."
+				},
 				language: {
 					name: "NLP-Sprache",
 					description: "Sprache für natürliche Sprachverarbeitungsmuster und Datumsanalyse"

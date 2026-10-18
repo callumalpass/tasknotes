@@ -624,6 +624,10 @@ export const ja: TranslationTree = {
 					name: "デフォルトで予定に設定",
 					description: "NLPがコンテキストなしで日付を検出した場合、期限ではなく予定として扱う"
 				},
+				enterToSubmit: {
+					name: "Enter でタスクを保存",
+					description: "自然言語入力で Enter キーを押すとタスクを保存します。Shift+Enter で改行を挿入し、Ctrl/Cmd+Enter でも引き続き保存できます。"
+				},
 				language: {
 					name: "NLP言語",
 					description: "自然言語処理パターンと日付解析の言語"

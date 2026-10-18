@@ -624,6 +624,10 @@ export const fr: TranslationTree = {
 					name: "Planifié par défaut",
 					description: "Si une date est détectée sans contexte, la considérer comme planifiée plutôt qu'échéance"
 				},
+				enterToSubmit: {
+					name: "Entrée enregistre la tâche",
+					description: "Dans la saisie en langage naturel, appuyez sur Entrée pour enregistrer la tâche. Maj+Entrée insère un saut de ligne, et Ctrl/Cmd+Entrée enregistre toujours."
+				},
 				language: {
 					name: "Langue du NLP",
 					description: "Langue utilisée pour les modèles de traitement du langage naturel et l'analyse des dates"

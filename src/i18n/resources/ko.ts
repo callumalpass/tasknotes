@@ -624,6 +624,10 @@ export const ko: TranslationTree = {
 					name: "예정일로 기본 설정",
 					description: "NLP가 컨텍스트 없이 날짜를 감지하면 마감일 대신 예정일로 처리"
 				},
+				enterToSubmit: {
+					name: "Enter로 작업 저장",
+					description: "자연어 입력에서 Enter를 누르면 작업이 저장됩니다. Shift+Enter는 줄바꿈을 삽입하며, Ctrl/Cmd+Enter로도 계속 저장할 수 있습니다."
+				},
 				language: {
 					name: "NLP 언어",
 					description: "자연어 처리 패턴 및 날짜 파싱을 위한 언어"

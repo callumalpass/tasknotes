@@ -624,6 +624,10 @@ export const zh: TranslationTree = {
 					name: "默认为已安排",
 					description: "当NLP检测到无上下文的日期时，将其视为已安排而不是到期"
 				},
+				enterToSubmit: {
+					name: "按 Enter 保存任务",
+					description: "在自然语言输入框中按 Enter 保存任务。Shift+Enter 插入换行，Ctrl/Cmd+Enter 仍可保存。"
+				},
 				language: {
 					name: "NLP语言",
 					description: "自然语言处理模式和日期解析的语言"

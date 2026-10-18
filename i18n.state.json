@@ -1716,8 +1716,14 @@
       "source": "af8a70098a26d928aabb5192cf9b164b87e686bd",
       "translation": "ce8fbab19c131ac1e9cab0f6938142a8e3f42d2b"
     },
-    "settings.features.nlp.enterToSubmit.name": null,
-    "settings.features.nlp.enterToSubmit.description": null,
+    "settings.features.nlp.enterToSubmit.name": {
+      "source": "30281c78622719ec7f52bbf07d8235cf0f92d724",
+      "translation": "7ffd0af75b50b276084ca4885a4cfe20fc135f2d"
+    },
+    "settings.features.nlp.enterToSubmit.description": {
+      "source": "66d434790152e62ca305fce4e4e839525cec0270",
+      "translation": "41bbf02f2943a208ba604e33a7efb0149100298c"
+    },
     "settings.features.nlp.language.name": {
       "source": "418a84de466f8a9739547a699b0fe1869c8ba684",
       "translation": "e34ca5fa9d5436b5f637cb2e42735a572c226d06"
@@ -10948,8 +10954,14 @@
       "source": "af8a70098a26d928aabb5192cf9b164b87e686bd",
       "translation": "9fa713a08adabafd044de729cda3536a007bb830"
     },
-    "settings.features.nlp.enterToSubmit.name": null,
-    "settings.features.nlp.enterToSubmit.description": null,
+    "settings.features.nlp.enterToSubmit.name": {
+      "source": "30281c78622719ec7f52bbf07d8235cf0f92d724",
+      "translation": "f1f7516a5de48ca84a6afd71977652dfbe30a26d"
+    },
+    "settings.features.nlp.enterToSubmit.description": {
+      "source": "66d434790152e62ca305fce4e4e839525cec0270",
+      "translation": "0958d078f6a51908c2dc79b7b40471b6dad641fd"
+    },
     "settings.features.nlp.language.name": {
       "source": "418a84de466f8a9739547a699b0fe1869c8ba684",
       "translation": "eec64190392ce94c55e291fa8fa83e99b3e0a444"
@@ -20180,8 +20192,14 @@
       "source": "af8a70098a26d928aabb5192cf9b164b87e686bd",
       "translation": "7de137bbcca5f0a15a981bd488fe460ebdb09e13"
     },
-    "settings.features.nlp.enterToSubmit.name": null,
-    "settings.features.nlp.enterToSubmit.description": null,
+    "settings.features.nlp.enterToSubmit.name": {
+      "source": "30281c78622719ec7f52bbf07d8235cf0f92d724",
+      "translation": "38c4b18a88c8a3cdbbd25e134b2e2f93f3b82b3b"
+    },
+    "settings.features.nlp.enterToSubmit.description": {
+      "source": "66d434790152e62ca305fce4e4e839525cec0270",
+      "translation": "c03f67fd46cf7a9236b5e9b04d5e9501e01e233b"
+    },
     "settings.features.nlp.language.name": {
       "source": "418a84de466f8a9739547a699b0fe1869c8ba684",
       "translation": "b6d44e344a0d95146178ffc52988704680c90330"
@@ -29412,8 +29430,14 @@
       "source": "af8a70098a26d928aabb5192cf9b164b87e686bd",
       "translation": "08870b2c92bf99fdcc7de191b70839f7abfa8dd0"
     },
-    "settings.features.nlp.enterToSubmit.name": null,
-    "settings.features.nlp.enterToSubmit.description": null,
+    "settings.features.nlp.enterToSubmit.name": {
+      "source": "30281c78622719ec7f52bbf07d8235cf0f92d724",
+      "translation": "5a2940bcad36a0b2b4927cd8ca5fcb042a00e7a0"
+    },
+    "settings.features.nlp.enterToSubmit.description": {
+      "source": "66d434790152e62ca305fce4e4e839525cec0270",
+      "translation": "161f40885ed777bcc1f3105d9aa4a972717faa43"
+    },
     "settings.features.nlp.language.name": {
       "source": "418a84de466f8a9739547a699b0fe1869c8ba684",
       "translation": "af521f68d12575b65d2e88d115082ea8fd581e52"
@@ -38644,8 +38668,14 @@
       "source": "af8a70098a26d928aabb5192cf9b164b87e686bd",
       "translation": "3210b4abc86c87c8dcc79d04199bd182b6b51a3c"
     },
-    "settings.features.nlp.enterToSubmit.name": null,
-    "settings.features.nlp.enterToSubmit.description": null,
+    "settings.features.nlp.enterToSubmit.name": {
+      "source": "30281c78622719ec7f52bbf07d8235cf0f92d724",
+      "translation": "e96ab896edd47e7c3f9016ca6df2c7c5dd440936"
+    },
+    "settings.features.nlp.enterToSubmit.description": {
+      "source": "66d434790152e62ca305fce4e4e839525cec0270",
+      "translation": "0a19f7328812da4ea8c877e2af26a0337ba02dc9"
+    },
     "settings.features.nlp.language.name": {
       "source": "418a84de466f8a9739547a699b0fe1869c8ba684",
       "translation": "c99f4ee671570fa67d2fed648bb047d339b08eac"
@@ -47876,8 +47906,14 @@
       "source": "af8a70098a26d928aabb5192cf9b164b87e686bd",
       "translation": "6e0b6eb0847b9ed755b4bbce79382f3b7000c3d4"
     },
-    "settings.features.nlp.enterToSubmit.name": null,
-    "settings.features.nlp.enterToSubmit.description": null,
+    "settings.features.nlp.enterToSubmit.name": {
+      "source": "30281c78622719ec7f52bbf07d8235cf0f92d724",
+      "translation": "02c97fd697d76e16a07e2c48468816368f421979"
+    },
+    "settings.features.nlp.enterToSubmit.description": {
+      "source": "66d434790152e62ca305fce4e4e839525cec0270",
+      "translation": "9ab7ce8258a21c17e3973b43d41366524be103a4"
+    },
     "settings.features.nlp.language.name": {
       "source": "418a84de466f8a9739547a699b0fe1869c8ba684",
       "translation": "088e54b541de6d254c6762f53b1373e64cbdbe32"
@@ -57108,8 +57144,14 @@
       "source": "af8a70098a26d928aabb5192cf9b164b87e686bd",
       "translation": "452d7387089212571bf781902d39702846fbdffe"
     },
-    "settings.features.nlp.enterToSubmit.name": null,
-    "settings.features.nlp.enterToSubmit.description": null,
+    "settings.features.nlp.enterToSubmit.name": {
+      "source": "30281c78622719ec7f52bbf07d8235cf0f92d724",
+      "translation": "43d6f3b141f3cb3220fdf6297bd7d55916ab40fa"
+    },
+    "settings.features.nlp.enterToSubmit.description": {
+      "source": "66d434790152e62ca305fce4e4e839525cec0270",
+      "translation": "37d4d5f9e3f70ecb5ee51c151ac31a7160b06790"
+    },
     "settings.features.nlp.language.name": {
       "source": "418a84de466f8a9739547a699b0fe1869c8ba684",
       "translation": "6cb69096fcbf0b7a0459c0d16a5126e8f9d4ac8b"
@@ -66340,8 +66382,14 @@
       "source": "af8a70098a26d928aabb5192cf9b164b87e686bd",
       "translation": "d64053c330c912c5f33acf44b3526664993534cf"
     },
-    "settings.features.nlp.enterToSubmit.name": null,
-    "settings.features.nlp.enterToSubmit.description": null,
+    "settings.features.nlp.enterToSubmit.name": {
+      "source": "30281c78622719ec7f52bbf07d8235cf0f92d724",
+      "translation": "a3a022fa18d685ade79d8778dab48a9aac32e1e2"
+    },
+    "settings.features.nlp.enterToSubmit.description": {
+      "source": "66d434790152e62ca305fce4e4e839525cec0270",
+      "translation": "77b45d59cc62082cfb5c75810c992ca201cac286"
+    },
     "settings.features.nlp.language.name": {
       "source": "418a84de466f8a9739547a699b0fe1869c8ba684",
       "translation": "7e52753633b406ed39dadf6c6841a3734accfd43"

@@ -624,6 +624,10 @@ export const es: TranslationTree = {
 					name: "Predeterminado a programado",
 					description: "Cuando NLP detecta una fecha sin contexto, tratarla como programada en lugar de vencimiento"
 				},
+				enterToSubmit: {
+					name: "Intro guarda la tarea",
+					description: "En la entrada de lenguaje natural, pulsa Intro para guardar la tarea. Mayús+Intro inserta un salto de línea y Ctrl/Cmd+Intro sigue guardando."
+				},
 				language: {
 					name: "Idioma NLP",
 					description: "Idioma para patrones de procesamiento de lenguaje natural y análisis de fechas"

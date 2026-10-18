@@ -624,6 +624,10 @@ export const pt: TranslationTree = {
 					name: "Padrão para agendado",
 					description: "Quando a NLP detectar uma data sem contexto, tratá-la como agendada em vez de vencimento"
 				},
+				enterToSubmit: {
+					name: "Enter salva a tarefa",
+					description: "Na entrada de linguagem natural, pressione Enter para salvar a tarefa. Shift+Enter insere uma quebra de linha, e Ctrl/Cmd+Enter continua salvando."
+				},
 				language: {
 					name: "Idioma da NLP",
 					description: "Idioma para padrões de processamento de linguagem natural e análise de datas"
