@@ -381,7 +381,25 @@ Condition fields:
 - `operator`: one of `is`, `is-not`, `contains`, `does-not-contain`, `is-before`, `is-after`, `is-on-or-before`, `is-on-or-after`, `is-empty`, `is-not-empty`, `is-checked`, `is-not-checked`, `is-greater-than`, `is-less-than`, `is-greater-than-or-equal`, or `is-less-than-or-equal`
 - `value`: required for comparison operators, omitted for empty/checked operators
 
-For user-defined fields, use `property: "user:<fieldId>"`.
+For user-defined fields, the canonical property is `user:<fieldId>`. Queries also accept
+`user:<frontmatter-key>`, `user.<fieldId>`, and `user.<frontmatter-key>`, including in
+`sortKey` and `groupKey`. For example, a field with ID `field_1234567890` and key
+`my-custom-field` can be queried with either `user:field_1234567890` or
+`user:my-custom-field`. Bare custom keys such as `my-custom-field` are not supported.
+
+`GET /api/filter-options` returns each configured field in `userProperties`, including
+its canonical `id`, accepted `aliases`, `frontmatterKey`, and `supportedOperators`.
+Canonical IDs take precedence if a field's ID collides with another field's key.
+
+External queries must contain complete, valid conditions. Unknown properties, invalid
+operators, incomplete conditions, and invalid sort/group keys return HTTP **400**,
+even if the vault is empty or another AND/OR branch would short-circuit evaluation.
+A valid query with no matches remains a successful response with an empty task list.
+
+The MCP tool `tasknotes_query_tasks` uses the same validation and custom-field aliases.
+Invalid queries return a tool result with `isError: true`; valid queries with no matches
+remain successful (for an ungrouped query, `{"all":[]}`). Use
+`tasknotes_get_filter_options` to discover fields before querying them.
 
 Response:
 

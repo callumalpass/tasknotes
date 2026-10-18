@@ -33,6 +33,7 @@ import {
 } from "./filter-service/filterTaskGrouping";
 import { sortFilterTasks, type FilterTaskSortingContext } from "./filter-service/filterTaskSorting";
 import { buildFilterOptions } from "./filter-service/filterOptions";
+import { normalizeExternalFilterQuery } from "./filter-service/filterQueryValidation";
 import {
 	applyQuickToggleCondition,
 	createDefaultFilterQuery,
@@ -160,35 +161,7 @@ export class FilterService extends EventEmitter {
 			// Use non-strict validation to allow incomplete filters during building
 			FilterUtils.validateFilterNode(query, false);
 
-			// PHASE 1 OPTIMIZATION: Use query-first approach with index-backed filtering
-			let candidateTaskPaths = this.queryPlanner.getIndexOptimizedTaskPaths(query);
-
-			// Convert paths to TaskInfo objects (only for candidates)
-			const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
-
-			// Apply full filter query to the reduced candidate set
-			const filteredTasks = candidateTasks.filter((task) =>
-				this.evaluateFilterNode(query, task, targetDate)
-			);
-
-			// Sort the filtered results (flat sort)
-			const sortedTasks = this.sortTasks(
-				filteredTasks,
-				query.sortKey || "due",
-				query.sortDirection || "asc"
-			);
-
-			// Expose current sort to group ordering logic (used when groupKey === sortKey)
-			this.currentSortKey = query.sortKey || "due";
-			this.currentSortDirection = query.sortDirection || "asc";
-
-			// Group the results; group order handled inside sortGroups
-			return groupFilterTasks(
-				sortedTasks,
-				query.groupKey || "none",
-				this.createTaskGroupingContext(),
-				targetDate
-			);
+			return await this.executeGroupedTasks(query, targetDate);
 		} catch (error) {
 			if (error instanceof FilterValidationError || error instanceof FilterEvaluationError) {
 				tasknotesLogger.error("Filter error:", {
@@ -206,6 +179,39 @@ export class FilterService extends EventEmitter {
 			}
 			throw error;
 		}
+	}
+
+	/** External queries must be complete and must never turn errors into successful empty results. */
+	async getGroupedTasksStrict(
+		query: FilterQuery,
+		targetDate?: Date
+	): Promise<Map<string, TaskInfo[]>> {
+		const normalized = normalizeExternalFilterQuery(query, this.runtime?.settings?.userFields);
+		return this.executeGroupedTasks(normalized, targetDate);
+	}
+
+	private async executeGroupedTasks(
+		query: FilterQuery,
+		targetDate?: Date
+	): Promise<Map<string, TaskInfo[]>> {
+		const candidateTaskPaths = this.queryPlanner.getIndexOptimizedTaskPaths(query);
+		const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
+		const filteredTasks = candidateTasks.filter((task) =>
+			this.evaluateFilterNode(query, task, targetDate)
+		);
+		const sortedTasks = this.sortTasks(
+			filteredTasks,
+			query.sortKey || "due",
+			query.sortDirection || "asc"
+		);
+		this.currentSortKey = query.sortKey || "due";
+		this.currentSortDirection = query.sortDirection || "asc";
+		return groupFilterTasks(
+			sortedTasks,
+			query.groupKey || "none",
+			this.createTaskGroupingContext(),
+			targetDate
+		);
 	}
 
 	/**

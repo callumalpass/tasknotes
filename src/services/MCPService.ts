@@ -597,7 +597,7 @@ export class MCPService {
 			property: z
 				.string()
 				.describe(
-					"Filter property (e.g. 'status', 'priority', 'due', 'tags', 'projects', 'contexts')"
+					"Filter property (e.g. 'status', 'priority', 'due', 'tags', 'projects', 'contexts'). Custom fields accept user:<id>, user:<frontmatter-key>, user.<id>, or user.<frontmatter-key>; get canonical IDs and aliases from tasknotes_get_filter_options. Bare custom keys and unknown properties are errors."
 				),
 			operator: filterOperatorSchema,
 			value: filterValueSchema,
@@ -616,7 +616,7 @@ export class MCPService {
 			"tasknotes_query_tasks",
 			{
 				description:
-					"Query tasks using advanced filters with AND/OR logic, sorting, and grouping",
+					"Query tasks using complete advanced filters with AND/OR logic, sorting, and grouping. Invalid properties, operators, or incomplete conditions return an error, not an empty result.",
 				inputSchema: {
 					conjunction: z.enum(["and", "or"]).describe("How to combine filter conditions"),
 					children: z
@@ -625,12 +625,12 @@ export class MCPService {
 					sortKey: z
 						.string()
 						.optional()
-						.describe("Sort by field (e.g. 'due', 'priority', 'title', 'status')"),
+						.describe("Sort by field (e.g. 'due', 'priority', 'title', 'status'); custom fields accept user:<id-or-key> or user.<id-or-key>"),
 					sortDirection: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
 					groupKey: z
 						.string()
 						.optional()
-						.describe("Group by field (e.g. 'priority', 'status', 'projects')"),
+						.describe("Group by field (e.g. 'priority', 'status', 'project', 'context', 'tags'); custom fields accept user:<id-or-key> or user.<id-or-key>"),
 				},
 			},
 			async (args: QueryTasksArgs) => {
@@ -645,7 +645,7 @@ export class MCPService {
 						groupKey: args.groupKey,
 					};
 
-					const grouped = await this.filterService.getGroupedTasks(query);
+					const grouped = await this.filterService.getGroupedTasksStrict(query);
 					const result: Record<string, unknown[]> = {};
 					for (const [key, tasks] of grouped) {
 						result[key] = tasks;
@@ -661,7 +661,7 @@ export class MCPService {
 			"tasknotes_get_filter_options",
 			{
 				description:
-					"Get available filter options (statuses, priorities, tags, contexts, projects)",
+					"Get available filter options (statuses, priorities, tags, contexts, projects) and custom userProperties with canonical IDs, accepted aliases, frontmatter keys, and supported operators",
 				inputSchema: {},
 			},
 			async () => {

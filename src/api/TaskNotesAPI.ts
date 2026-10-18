@@ -38,6 +38,10 @@ import type { TaskNotesSettings } from "../types/settings";
 import { ensureFolderExists } from "../utils/helpers";
 import { parseLinkToPath } from "../utils/linkUtils";
 import { computeTaskTimeData, computeTimeSummary } from "../utils/timeTrackingUtils";
+import {
+	getUserFieldPropertyAliases,
+	resolveUserFieldProperty,
+} from "../services/filter-service/userFieldValues";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import {
 	TASKNOTES_RUNTIME_API_CAPABILITIES,
@@ -1067,7 +1071,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 				supportedOperators: operatorsForRuntimeValueType(
 					userFieldTypeToRuntimeValueType(field.type)
 				),
-				aliases: [`user.${field.id || field.key}`, `user:${field.id || field.key}`],
+				aliases: getUserFieldPropertyAliases(field),
 				frontmatterKey: field.key,
 				description: `User-defined field ${field.key}`,
 			})
@@ -1611,11 +1615,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	}
 
 	private resolveRuntimeUserField(field: string): ResolvedRuntimeQueryField | null {
-		if (!field.startsWith("user.") && !field.startsWith("user:")) return null;
-		const key = field.slice(5);
-		const userField = this.getUserFields().find(
-			(candidate) => candidate.id === key || candidate.key === key
-		);
+		const userField = resolveUserFieldProperty(this.getUserFields(), field);
 		if (!userField) return null;
 		const id = userField.id || userField.key;
 		const valueType = userFieldTypeToRuntimeValueType(userField.type);

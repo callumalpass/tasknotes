@@ -689,6 +689,22 @@ describe("TaskNotesApiV1", () => {
 		);
 	});
 
+	it("resolves custom query aliases and exposes them in the field catalog", async () => {
+		const { plugin, filterService } = createPluginContext();
+		plugin.settings.userFields = [{ id: "field_1234567890", key: "my-custom-field", displayName: "My Custom Field", type: "text" }];
+		const api = new TaskNotesAPI(plugin);
+		const aliases = ["user:field_1234567890", "user.field_1234567890", "user:my-custom-field", "user.my-custom-field"];
+		expect(api.catalog.fields()).toEqual(expect.arrayContaining([
+			expect.objectContaining({ id: aliases[0], aliases: expect.arrayContaining(aliases.slice(1)), frontmatterKey: "my-custom-field" }),
+		]));
+		for (const field of aliases) {
+			await api.query.tasks({ where: { field, op: "contains", value: "ABC-123" } });
+			expect(filterService.getGroupedTasks).toHaveBeenLastCalledWith(expect.objectContaining({
+				children: [expect.objectContaining({ property: aliases[0] })],
+			}));
+		}
+	});
+
 	it("lists runtime event definitions for companion plugin UIs", () => {
 		const { plugin } = createPluginContext();
 		const api = new TaskNotesAPI(plugin);
