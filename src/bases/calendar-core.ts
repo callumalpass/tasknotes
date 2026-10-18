@@ -670,8 +670,18 @@ export function createScheduledToDueSpanEvent(
 /**
  * Create time entry events from task
  */
-export function createTimeEntryEvents(task: TaskInfo, plugin: TaskNotesPlugin): CalendarEvent[] {
-	return createTimeEntryTaskEvents(task, createTaskEventContext(plugin));
+export function createTimeEntryEvents(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	visibleStart?: Date,
+	visibleEnd?: Date
+): CalendarEvent[] {
+	return createTimeEntryTaskEvents(
+		task,
+		createTaskEventContext(plugin),
+		visibleStart,
+		visibleEnd
+	);
 }
 
 /**
@@ -1791,12 +1801,9 @@ export async function generateCalendarEvents(
 
 			// Add time entry events with date range filtering
 			if (showTimeEntries && task.timeEntries) {
-				const timeEvents = createTimeEntryEvents(task, plugin);
-				// Filter time entries by visible range
+				const timeEvents = createTimeEntryEvents(task, plugin, visibleStart, visibleEnd);
 				for (const event of timeEvents) {
-					if (isDateInVisibleRange(event.start, visibleStart, visibleEnd)) {
-						events.push(addMaterializedOccurrenceMetadata(event, task));
-					}
+					events.push(addMaterializedOccurrenceMetadata(event, task));
 				}
 			}
 		} catch (error) {

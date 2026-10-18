@@ -297,9 +297,31 @@ function hasFinishedTimeEntry(entry: TimeEntry): entry is TimeEntry & { endTime:
 	return typeof entry.endTime === "string" && entry.endTime.length > 0;
 }
 
+function isTimeEntryInVisibleRange(
+	entry: TimeEntry & { endTime: string },
+	visibleStart?: Date,
+	visibleEnd?: Date
+): boolean {
+	if (!visibleStart || !visibleEnd) return true;
+
+	try {
+		const start = parseDateToLocal(entry.startTime).getTime();
+		const end = parseDateToLocal(entry.endTime).getTime();
+		// Leave malformed dates to FullCalendar, as with other calendar events.
+		if (Number.isNaN(start) || Number.isNaN(end)) return true;
+
+		// Both intervals have exclusive ends; touching a boundary is not overlap.
+		return start < visibleEnd.getTime() && end > visibleStart.getTime();
+	} catch {
+		return true;
+	}
+}
+
 export function createTimeEntryTaskEvents(
 	task: TaskInfo,
-	context: CalendarTaskEventContext
+	context: CalendarTaskEventContext,
+	visibleStart?: Date,
+	visibleEnd?: Date
 ): CalendarTaskEvent[] {
 	if (!task.timeEntries) return [];
 
@@ -307,7 +329,11 @@ export function createTimeEntryTaskEvents(
 
 	return task.timeEntries
 		.map((entry, index) => ({ entry, index }))
-		.filter(({ entry }) => hasFinishedTimeEntry(entry))
+		.filter(
+			({ entry }) =>
+				hasFinishedTimeEntry(entry) &&
+				isTimeEntryInVisibleRange(entry, visibleStart, visibleEnd)
+		)
 		.map(({ entry, index }) => ({
 			id: `timeentry-${task.path}-${index}`,
 			title: task.title,
