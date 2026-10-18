@@ -1825,13 +1825,6 @@ export class KanbanView extends BasesViewBase {
 				"aria-label": label,
 			},
 		});
-		const icon = empty.createSpan({
-			cls: "kanban-view__empty-cell-icon",
-			attr: {
-				"aria-hidden": "true",
-			},
-		});
-		setIcon(icon, "plus-circle");
 		empty.createSpan({
 			cls: "kanban-view__empty-cell-text",
 			text: noTasksLabel,

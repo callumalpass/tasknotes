@@ -40,6 +40,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- (#2400) Removed the decorative plus icon beside "No tasks" in empty Kanban columns and swimlane cells, which looked like an add-task button. Use the column's add-task button to create tasks. Thanks to @iantierney for reporting this.
+
 ## Removed
 
 ## Fixed
