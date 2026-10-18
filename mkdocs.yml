@@ -87,6 +87,7 @@ nav:
                 - Dependencies and reminders: spec/10-dependencies-and-reminders.md
                 - Links: spec/11-links.md
                 - Changelog: spec/CHANGELOG.md
+          - Obsidian E2E harness: development/obsidian-e2e-harness.md
           - Translation workflow: development/translations.md
           - i18n-state-manager: development/i18n-state-manager.md
     - Releases and support:

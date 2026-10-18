@@ -5,8 +5,9 @@ set -eu -o pipefail
 # Adapted from biblib for tasknotes
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OBSIDIAN_APPIMAGE="${1:-$HOME/Applications/Obsidian-1.8.10.AppImage}"
-OBSIDIAN_DATA_DIR="$HOME/.config/obsidian"
+OBSIDIAN_APPIMAGE="${1:-${OBSIDIAN_APPIMAGE:-$(node "$SCRIPT_DIR/scripts/e2e-runtime.mjs" appimage)}}"
+OBSIDIAN_APPIMAGE="$(realpath "$OBSIDIAN_APPIMAGE")"
+OBSIDIAN_DATA_DIR="${OBSIDIAN_DATA_DIR:-$HOME/.config/obsidian}"
 UNPACKED_DIR="$SCRIPT_DIR/.obsidian-unpacked"
 E2E_VAULT_DIR="$SCRIPT_DIR/tasknotes-e2e-vault"
 PLUGIN_DIR="$E2E_VAULT_DIR/.obsidian/plugins/tasknotes"
@@ -34,45 +35,32 @@ if [[ ! -d "$E2E_VAULT_DIR" ]]; then
     exit 1
 fi
 
-# Find the latest obsidian.asar in the data directory
-OBSIDIAN_ASAR=$(ls -t "$OBSIDIAN_DATA_DIR"/obsidian-*.asar 2>/dev/null | head -1)
-if [[ -z "$OBSIDIAN_ASAR" ]]; then
-    echo_error "No obsidian.asar found in $OBSIDIAN_DATA_DIR"
-    exit 1
-fi
-echo_info "Using Obsidian ASAR: $OBSIDIAN_ASAR"
+# Extract privately: simultaneous setup runs must not share /tmp/squashfs-root.
+echo_info "Extracting Obsidian AppImage: $OBSIDIAN_APPIMAGE"
+TEMP_EXTRACT="$(mktemp -d "${TMPDIR:-/tmp}/tasknotes-obsidian-setup.XXXXXX")"
+trap 'rm -rf "$TEMP_EXTRACT"' EXIT
+cd "$TEMP_EXTRACT"
+# Avoid desktop AppImageLauncher interception during headless setup.
+APPIMAGELAUNCHER_DISABLE=1 "$OBSIDIAN_APPIMAGE" --appimage-extract > /dev/null
 
-# Step 1: Extract AppImage to get Electron
-echo_info "Extracting Obsidian AppImage..."
-TEMP_EXTRACT="/tmp/obsidian-appimage-extract-$$"
-rm -rf "$TEMP_EXTRACT"
-cd /tmp
-"$OBSIDIAN_APPIMAGE" --appimage-extract > /dev/null 2>&1
-mv squashfs-root "$TEMP_EXTRACT"
+# Install the selected app package where the Electron loader actually reads it.
+# Prefer the newest package by version, not file modification time. A compatible
+# bundled package also works without an existing personal Obsidian profile.
+node "$SCRIPT_DIR/scripts/e2e-runtime.mjs" install \
+    "$TEMP_EXTRACT/squashfs-root/resources" "$OBSIDIAN_DATA_DIR"
 
-# Step 2: Unpack the ASAR
-echo_info "Unpacking Obsidian ASAR..."
+# Only replace the old runtime after extraction and compatibility checks pass.
 rm -rf "$UNPACKED_DIR"
-mkdir -p "$UNPACKED_DIR"
-
-# Copy Electron files from extracted AppImage
-cp -r "$TEMP_EXTRACT"/* "$UNPACKED_DIR/"
-
-# Unpack the main obsidian.asar
-npx @electron/asar extract "$OBSIDIAN_ASAR" "$UNPACKED_DIR/resources/app"
-
-# Also extract the app.asar loader if it exists
-if [[ -f "$UNPACKED_DIR/resources/app.asar" ]]; then
-    npx @electron/asar extract "$UNPACKED_DIR/resources/app.asar" "$UNPACKED_DIR/resources/app-loader"
-fi
-
-# Clean up temp extraction
-rm -rf "$TEMP_EXTRACT"
+mv "$TEMP_EXTRACT/squashfs-root" "$UNPACKED_DIR"
 
 # Step 3: Build the plugin
 echo_info "Building the plugin..."
 cd "$SCRIPT_DIR"
-npm run build
+if [[ "${TASKNOTES_E2E_SKIP_BUILD:-0}" != "1" ]]; then
+    npm run build
+else
+    echo_warn "Skipping plugin build; using the existing bundle."
+fi
 
 # Step 4: Set up symlinks in the test vault
 echo_info "Setting up plugin symlinks in test vault..."

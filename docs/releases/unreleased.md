@@ -44,6 +44,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed isolated Obsidian test setup loading an obsolete app package, and test launches hanging on desktop keyring prompts. See [E2E Harness](https://tasknotes.dev/development/obsidian-e2e-harness/) for runtime setup and isolated testing.
+
 - (#2388) MCP and HTTP task queries now report invalid properties and incomplete filters as errors instead of successful empty results. Custom-field queries, sorting, and grouping accept IDs or frontmatter keys with `user:` or `user.` prefixes; filter options include aliases and frontmatter keys. See [HTTP API](https://tasknotes.dev/HTTP_API/#post-apitasksquery). Thanks to @jordankbartos for reporting this.
 
 - (#2399, #2377) Fixed Task List views failing with "Converting circular structure to JSON" when a displayed property or formula returns links, such as `file.backlinks`. This regression was introduced in 4.13.5. Thanks to @ewightman and @Glint-Eye for reporting this.
