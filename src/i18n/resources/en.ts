@@ -557,6 +557,12 @@ export const en: TranslationTree = {
 				fieldId: "ID: {id}",
 				fieldKey: "Key: {key}",
 				noKey: "No key set",
+				fieldTypes: {
+					core: "Core",
+					user: "User",
+					dependency: "Dependency",
+					organization: "Organization",
+				},
 			},
 		},
 		features: {

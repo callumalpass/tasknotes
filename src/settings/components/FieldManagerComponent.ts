@@ -125,7 +125,7 @@ function createFieldCard(
 	const typeBadge = activeWindow.createSpan();
 	typeBadge.classList.add("field-card__type");
 	typeBadge.classList.add(`field-card__type--${field.fieldType}`);
-	typeBadge.textContent = field.fieldType;
+	typeBadge.textContent = translate(`settings.modalFields.manager.fieldTypes.${field.fieldType}`);
 
 	// Create toggle switches with callbacks
 	const enabledToggle = createCardToggle(field.enabled, (value) => {

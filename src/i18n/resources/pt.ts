@@ -537,7 +537,13 @@ export const pt: TranslationTree = {
 				group: "Grupo:",
 				fieldId: "ID: {id}",
 				fieldKey: "Chave: {key}",
-				noKey: "Nenhuma chave definida"
+				noKey: "Nenhuma chave definida",
+				fieldTypes: {
+					core: "Principal",
+					user: "Usuário",
+					dependency: "Dependência",
+					organization: "Organização",
+				},
 			}
 		},
 		features: {

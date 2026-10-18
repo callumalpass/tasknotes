@@ -537,7 +537,13 @@ export const ko: TranslationTree = {
 				group: "그룹:",
 				fieldId: "ID: {id}",
 				fieldKey: "키: {key}",
-				noKey: "키가 설정되지 않음"
+				noKey: "키가 설정되지 않음",
+				fieldTypes: {
+					core: "기본",
+					user: "사용자",
+					dependency: "의존성",
+					organization: "정리",
+				},
 			}
 		},
 		features: {

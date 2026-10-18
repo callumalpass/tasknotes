@@ -537,7 +537,13 @@ export const ja: TranslationTree = {
 				group: "グループ:",
 				fieldId: "ID: {id}",
 				fieldKey: "キー: {key}",
-				noKey: "キーが設定されていません"
+				noKey: "キーが設定されていません",
+				fieldTypes: {
+					core: "コア",
+					user: "ユーザー",
+					dependency: "依存関係",
+					organization: "整理",
+				},
 			}
 		},
 		features: {

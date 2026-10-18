@@ -537,7 +537,13 @@ export const zh: TranslationTree = {
 				group: "分组：",
 				fieldId: "ID：{id}",
 				fieldKey: "键：{key}",
-				noKey: "未设置键"
+				noKey: "未设置键",
+				fieldTypes: {
+					core: "核心",
+					user: "用户",
+					dependency: "依赖",
+					organization: "组织",
+				},
 			}
 		},
 		features: {

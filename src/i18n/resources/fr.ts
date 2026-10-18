@@ -537,7 +537,13 @@ export const fr: TranslationTree = {
 				group: "Groupe :",
 				fieldId: "ID : {id}",
 				fieldKey: "Clé : {key}",
-				noKey: "Aucune clé définie"
+				noKey: "Aucune clé définie",
+				fieldTypes: {
+					core: "Principal",
+					user: "Utilisateur",
+					dependency: "Dépendance",
+					organization: "Organisation",
+				},
 			}
 		},
 		features: {

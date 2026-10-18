@@ -537,7 +537,13 @@ export const ru: TranslationTree = {
 				group: "Группа:",
 				fieldId: "ID: {id}",
 				fieldKey: "Ключ: {key}",
-				noKey: "Ключ не задан"
+				noKey: "Ключ не задан",
+				fieldTypes: {
+					core: "Основное",
+					user: "Пользовательское",
+					dependency: "Зависимость",
+					organization: "Организация",
+				},
 			}
 		},
 		features: {
