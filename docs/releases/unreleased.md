@@ -40,6 +40,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Localized the Modal Fields settings tab and field manager, which previously displayed hardcoded English strings regardless of the selected language. All UI text in the tab (including the reset confirmation dialog and field cards) now uses the translation system and is available in all supported languages.
+
 - (#2389) Added the missing public [v4-to-v5 beta upgrade guide](https://tasknotes.dev/migration-v4-to-v5/), including synced-device and metadata-recovery instructions, and corrected the HTTP API authentication documentation. Thanks to @m4to-3pe for reporting the broken link.
 
 - (#2382) Fixed Kanban settings being ignored in existing `.base` files when nested under `options:` or `config:`, including empty-column hiding and pinned columns. Newly generated default files and exported v3 views now write settings directly on each view; existing files remain unchanged. See [Kanban View](https://tasknotes.dev/views/kanban-view/#configuration). Thanks to @techwiththiru for reporting this.

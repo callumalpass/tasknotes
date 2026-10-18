@@ -513,6 +513,52 @@ export const en: TranslationTree = {
 			features: "Features",
 			integrations: "Integrations",
 		},
+		modalFields: {
+			header: "Task modal fields configuration",
+			description:
+				"Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group.",
+			splitLayout: {
+				name: "Split layout on wide screens",
+				description:
+					"When enabled, the details editor appears in a right column on screens 900px or wider. When disabled, the modal uses a stacked layout.",
+			},
+			tabMovesFocus: {
+				name: "Tab moves focus in details editor",
+				description:
+					"When enabled, Tab moves from the details editor to the next modal field and Shift+Tab moves to the previous field. When disabled, Tab and Shift+Tab use the markdown editor's indentation behavior.",
+			},
+			sync: {
+				name: "Sync user fields",
+				description:
+					"Click to sync custom user fields from task properties settings into this configuration.",
+				button: "Sync user fields",
+				notice: "User fields synced to modal configuration",
+			},
+			reset: {
+				name: "Reset to defaults",
+				description:
+					"Reset all field configurations to their default values. This will remove any custom configurations.",
+				button: "Reset to defaults",
+				confirmTitle: "Reset field configuration",
+				confirmMessage:
+					"Are you sure you want to reset field configuration to defaults? This will remove any custom field configurations.",
+				confirmText: "Reset",
+				cancelText: "Cancel",
+				notice: "Field configuration reset to defaults",
+			},
+			initError: "Error: Could not initialize field configuration",
+			manager: {
+				invalidConfig: "Error: Invalid field configuration. Please reset to defaults.",
+				emptyGroup: "No fields in this group",
+				enabled: "Enabled:",
+				showInCreation: "Show in creation:",
+				showInEdit: "Show in edit:",
+				group: "Group:",
+				fieldId: "ID: {id}",
+				fieldKey: "Key: {key}",
+				noKey: "No key set",
+			},
+		},
 		features: {
 			inlineTasks: {
 				header: "Inline tasks",

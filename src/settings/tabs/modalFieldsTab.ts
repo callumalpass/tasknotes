@@ -1,5 +1,6 @@
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
+import type { TranslationKey } from "../../i18n";
 import { createSettingGroup, configureToggleSetting } from "../components/settingHelpers";
 import { createFieldManager } from "../components/FieldManagerComponent";
 import { initializeFieldConfig } from "../../utils/fieldConfigDefaults";
@@ -16,6 +17,9 @@ export function renderModalFieldsTab(
 ): void {
 	container.empty();
 
+	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+		plugin.i18n.translate(key, params);
+
 	// Ensure modal fields config exists
 	if (!plugin.settings.modalFieldsConfig) {
 		plugin.settings.modalFieldsConfig = initializeFieldConfig(
@@ -29,16 +33,15 @@ export function renderModalFieldsTab(
 	createSettingGroup(
 		container,
 		{
-			heading: "Task Modal Fields Configuration",
-			description:
-				"Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group.",
+			heading: translate("settings.modalFields.header"),
+			description: translate("settings.modalFields.description"),
 		},
 		(group) => {
 			// Split layout toggle
 			group.addSetting((setting) => {
 				configureToggleSetting(setting, {
-					name: "Split layout on wide screens",
-					desc: "When enabled, the details editor appears in a right column on screens 900px or wider. When disabled, the modal uses a stacked layout.",
+					name: translate("settings.modalFields.splitLayout.name"),
+					desc: translate("settings.modalFields.splitLayout.description"),
 					getValue: () => plugin.settings.enableModalSplitLayout,
 					setValue: (value) => {
 						plugin.settings.enableModalSplitLayout = value;
@@ -49,8 +52,8 @@ export function renderModalFieldsTab(
 
 			group.addSetting((setting) => {
 				configureToggleSetting(setting, {
-					name: "Tab moves focus in details editor",
-					desc: "When enabled, Tab moves from the details editor to the next modal field and Shift+Tab moves to the previous field. When disabled, Tab and Shift+Tab use the markdown editor's indentation behavior.",
+					name: translate("settings.modalFields.tabMovesFocus.name"),
+					desc: translate("settings.modalFields.tabMovesFocus.description"),
 					getValue: () => plugin.settings.taskModalTabMovesFocus,
 					setValue: (value) => {
 						plugin.settings.taskModalTabMovesFocus = value;
@@ -62,18 +65,16 @@ export function renderModalFieldsTab(
 			// Sync button
 			group.addSetting((setting) => {
 				setting
-					.setName("Sync user fields")
-					.setDesc(
-						"Click to sync custom user fields from task properties settings into this configuration."
-					)
+					.setName(translate("settings.modalFields.sync.name"))
+					.setDesc(translate("settings.modalFields.sync.description"))
 					.addButton((button) => {
 						button
-							.setButtonText("Sync user fields")
+							.setButtonText(translate("settings.modalFields.sync.button"))
 							.setCta()
 							.onClick(() => {
 								syncUserFieldsToConfig(plugin);
 								save();
-								new Notice("User fields synced to modal configuration");
+								new Notice(translate("settings.modalFields.sync.notice"));
 								// Re-render the tab
 								renderModalFieldsTab(container, plugin, save);
 							});
@@ -83,22 +84,19 @@ export function renderModalFieldsTab(
 			// Reset button
 			group.addSetting((setting) => {
 				setting
-					.setName("Reset to defaults")
-					.setDesc(
-						"Reset all field configurations to their default values. This will remove any custom configurations."
-					)
+					.setName(translate("settings.modalFields.reset.name"))
+					.setDesc(translate("settings.modalFields.reset.description"))
 					.addButton((button) => {
 						button
-							.setButtonText("Reset to defaults")
+							.setButtonText(translate("settings.modalFields.reset.button"))
 							// Keep destructive styling compatible with Obsidian 1.12.
 							.setClass("mod-warning")
 							.onClick(async () => {
 								const confirmed = await showConfirmationModal(plugin.app, {
-									title: "Reset Field Configuration",
-									message:
-										"Are you sure you want to reset field configuration to defaults? This will remove any custom field configurations.",
-									confirmText: "Reset",
-									cancelText: "Cancel",
+									title: translate("settings.modalFields.reset.confirmTitle"),
+									message: translate("settings.modalFields.reset.confirmMessage"),
+									confirmText: translate("settings.modalFields.reset.confirmText"),
+									cancelText: translate("settings.modalFields.reset.cancelText"),
 									isDestructive: true,
 								});
 
@@ -108,7 +106,7 @@ export function renderModalFieldsTab(
 										plugin.settings.userFields
 									);
 									save();
-									new Notice("Field configuration reset to defaults");
+									new Notice(translate("settings.modalFields.reset.notice"));
 									// Re-render the tab
 									renderModalFieldsTab(container, plugin, save);
 								}
@@ -123,7 +121,7 @@ export function renderModalFieldsTab(
 
 	// Double-check config exists before creating field manager
 	if (!plugin.settings.modalFieldsConfig) {
-		managerContainer.createDiv({ text: "Error: Could not initialize field configuration" });
+		managerContainer.createDiv({ text: translate("settings.modalFields.initError") });
 		return;
 	}
 

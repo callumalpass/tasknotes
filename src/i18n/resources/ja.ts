@@ -500,6 +500,46 @@ export const ja: TranslationTree = {
 			features: "機能",
 			integrations: "統合"
 		},
+		modalFields: {
+			header: "タスクモーダルのフィールド設定",
+			description: "タスク作成モーダルと編集モーダルに表示するフィールドを設定します。フィールドをドラッグして各グループ内で並べ替えできます。",
+			splitLayout: {
+				name: "ワイド画面で分割レイアウト",
+				description: "有効にすると、900px 以上の画面で詳細エディタが右側の列に表示されます。無効にすると、モーダルは積み重ねレイアウトを使用します。"
+			},
+			tabMovesFocus: {
+				name: "詳細エディタで Tab キーがフォーカスを移動",
+				description: "有効にすると、Tab キーで詳細エディタから次のモーダルフィールドへ、Shift+Tab キーで前のフィールドへフォーカスが移動します。無効にすると、Tab キーと Shift+Tab キーは Markdown エディタのインデント動作を使用します。"
+			},
+			sync: {
+				name: "ユーザーフィールドを同期",
+				description: "クリックして、タスクプロパティ設定のカスタムユーザーフィールドをこの設定に同期します。",
+				button: "ユーザーフィールドを同期",
+				notice: "ユーザーフィールドがモーダル設定に同期されました"
+			},
+			reset: {
+				name: "既定値にリセット",
+				description: "すべてのフィールド設定を既定値にリセットします。カスタム設定はすべて削除されます。",
+				button: "既定値にリセット",
+				confirmTitle: "フィールド設定を既定値にリセット",
+				confirmMessage: "フィールド設定を既定値にリセットしますか？カスタムフィールド設定はすべて削除されます。",
+				confirmText: "リセット",
+				cancelText: "キャンセル",
+				notice: "フィールド設定が既定値にリセットされました"
+			},
+			initError: "エラー: フィールド設定を初期化できませんでした",
+			manager: {
+				invalidConfig: "エラー: フィールド設定が無効です。既定値にリセットしてください。",
+				emptyGroup: "このグループにはフィールドがありません",
+				enabled: "有効:",
+				showInCreation: "作成時に表示：",
+				showInEdit: "編集時に表示：",
+				group: "グループ:",
+				fieldId: "ID: {id}",
+				fieldKey: "キー: {key}",
+				noKey: "キーが設定されていません"
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "インラインタスク",

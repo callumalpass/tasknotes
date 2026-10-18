@@ -1396,6 +1396,118 @@
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "a5126e7c9412cef1a03d744ebed395eb7214db26"
     },
+    "settings.modalFields.header": {
+      "source": "463769fb01686447dfedbb494aa058ba8f025686",
+      "translation": "1c8884243cf0c85914baa66e6f2c68becd360b06"
+    },
+    "settings.modalFields.description": {
+      "source": "15ec3cb1720d8b370a1e04d4ca7a0b3ddd8567fc",
+      "translation": "86be7519e3afe1f7cbc90aca847ee96df5387b48"
+    },
+    "settings.modalFields.splitLayout.name": {
+      "source": "60564be9095b0be664a9d1ea663ac74e5ccef220",
+      "translation": "18ae8c2d4e5cdedc39503ec0ae97529e4e43e2b4"
+    },
+    "settings.modalFields.splitLayout.description": {
+      "source": "c37507b5356b91ddc9b2ecffb71ed8aa9bd99bc5",
+      "translation": "9b39ccfb994f3d9eae6689397b34efaebc42b033"
+    },
+    "settings.modalFields.tabMovesFocus.name": {
+      "source": "6d204daa67216709d1eb3f9c6f72b0d5289ee66b",
+      "translation": "2e361736b4089daddc836b4446cea66db9f117e4"
+    },
+    "settings.modalFields.tabMovesFocus.description": {
+      "source": "2f4053ebbcf6766caa54489d1f64196cb4b1d65f",
+      "translation": "889a6f713a55b4f3ffad61bb12d18ca0f9bd05ad"
+    },
+    "settings.modalFields.sync.name": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "fe8449f8f95f8191bc3897b265d697eb4d0dcf41"
+    },
+    "settings.modalFields.sync.description": {
+      "source": "d5ff882897bbaa153719e8cd96f42c1884977a9c",
+      "translation": "b6c693a72869a8f17fe9b05a56a0ca686527640b"
+    },
+    "settings.modalFields.sync.button": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "fe8449f8f95f8191bc3897b265d697eb4d0dcf41"
+    },
+    "settings.modalFields.sync.notice": {
+      "source": "9e18b026eb848fc00a0f405979ab0999ee69be0f",
+      "translation": "2453520487be5b54f5ffb7fa055213652be27f2e"
+    },
+    "settings.modalFields.reset.name": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "25c66b592a36fe0ae75dbf2bbadf30184d9acb95"
+    },
+    "settings.modalFields.reset.description": {
+      "source": "af2b7f65f817989f953ee108fa2ac0a3eff97670",
+      "translation": "8a854a06d4912af03ab58655161a98ce630e57b9"
+    },
+    "settings.modalFields.reset.button": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "25c66b592a36fe0ae75dbf2bbadf30184d9acb95"
+    },
+    "settings.modalFields.reset.confirmTitle": {
+      "source": "b4dfd2ca17670f8eacf7a8fe142e22522f450b40",
+      "translation": "13012892aa18c7cf1adc3ca8ed99262c86d96ed9"
+    },
+    "settings.modalFields.reset.confirmMessage": {
+      "source": "b8b0d02597a163dd9e687912551e2052b26b5234",
+      "translation": "233a0c8d5e642bb67a1edeff2600d605a6a35859"
+    },
+    "settings.modalFields.reset.confirmText": {
+      "source": "44c57abd888a66b36d4b7c902134063e4a097223",
+      "translation": "a4565af537e249212aafed5c76f83455d6918604"
+    },
+    "settings.modalFields.reset.cancelText": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "07af7cb30fca13091b0c2f0831dc8283e9f24965"
+    },
+    "settings.modalFields.reset.notice": {
+      "source": "998a1e127a85d5e119fa538c08e07eacc044ad68",
+      "translation": "294db27eda4e037c13d6433ef7fa5eef9b3f7596"
+    },
+    "settings.modalFields.initError": {
+      "source": "813bc1f0be1c2c8d047659e061029b41300e43ef",
+      "translation": "766f11b01181a27f3e3a7907b33c3ca4672379bc"
+    },
+    "settings.modalFields.manager.invalidConfig": {
+      "source": "e4d5672cae6c369bd1cd23a8c950e044319a6662",
+      "translation": "337eafc4d6036ab874774353a4875c78ccd838cb"
+    },
+    "settings.modalFields.manager.emptyGroup": {
+      "source": "f2ef4e6d48d44c229ecb83b3d3e799df8a8eb367",
+      "translation": "7134291c895e9630f07ae3ea3a97f62292c22d9c"
+    },
+    "settings.modalFields.manager.enabled": {
+      "source": "f1b45b4b3bf49e9b92c8251ac538f4cfff36209a",
+      "translation": "17dc08a74fc36573037e8289fc1191d92c8a37c0"
+    },
+    "settings.modalFields.manager.showInCreation": {
+      "source": "b8e50d533a687b109bf799f060eafd36221d094a",
+      "translation": "d7aeeca4e22b12c44dd2aed29c37c7c5c49d3ff1"
+    },
+    "settings.modalFields.manager.showInEdit": {
+      "source": "1933e97174ad50029164292cdf98e28d9f951a76",
+      "translation": "8afbf33982d23d7ab63b7d4cd58a5bac5f1402f4"
+    },
+    "settings.modalFields.manager.group": {
+      "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
+      "translation": "1f5a2cef6105d11689329ef2b18cd5fb774cf5e6"
+    },
+    "settings.modalFields.manager.fieldId": {
+      "source": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1",
+      "translation": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1"
+    },
+    "settings.modalFields.manager.fieldKey": {
+      "source": "ac49e227c79e530ebc416022e7d86a93765313e3",
+      "translation": "50c7bae61ef45c80b7cb3a22367cbdefe5bfa789"
+    },
+    "settings.modalFields.manager.noKey": {
+      "source": "367b4a155f777aae3242c44f81ca50aae3a6dee6",
+      "translation": "dda0d52e1883640d89ebdeaad8069c4e787371a6"
+    },
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "f98acefe1cdc9c888903a42f94689b0e6d7bef41"
@@ -10405,6 +10517,118 @@
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "6082310864faed1ba917afb4164aae29fb80803a"
+    },
+    "settings.modalFields.header": {
+      "source": "463769fb01686447dfedbb494aa058ba8f025686",
+      "translation": "0e30eb4440bba845e74e2b53c903a8753cea4fb3"
+    },
+    "settings.modalFields.description": {
+      "source": "15ec3cb1720d8b370a1e04d4ca7a0b3ddd8567fc",
+      "translation": "a7b8cc9ca58cf64922067e377d560c387fb87c5e"
+    },
+    "settings.modalFields.splitLayout.name": {
+      "source": "60564be9095b0be664a9d1ea663ac74e5ccef220",
+      "translation": "d897749102aefcfefcd83b1b35645fbf73c87ef8"
+    },
+    "settings.modalFields.splitLayout.description": {
+      "source": "c37507b5356b91ddc9b2ecffb71ed8aa9bd99bc5",
+      "translation": "a3cd772ae2275eeb10790306c2cce3f408456805"
+    },
+    "settings.modalFields.tabMovesFocus.name": {
+      "source": "6d204daa67216709d1eb3f9c6f72b0d5289ee66b",
+      "translation": "5f92f0b2f5d2b810dd48045f91aedc161c217de5"
+    },
+    "settings.modalFields.tabMovesFocus.description": {
+      "source": "2f4053ebbcf6766caa54489d1f64196cb4b1d65f",
+      "translation": "9c291ce54df0a67324b7229f8d6854091d99d0c6"
+    },
+    "settings.modalFields.sync.name": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "a46cad52c56b97534118ac146e3f6caa5813d31d"
+    },
+    "settings.modalFields.sync.description": {
+      "source": "d5ff882897bbaa153719e8cd96f42c1884977a9c",
+      "translation": "9f270ea4708e441f87a7399d8f0ae348dfc01b06"
+    },
+    "settings.modalFields.sync.button": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "a46cad52c56b97534118ac146e3f6caa5813d31d"
+    },
+    "settings.modalFields.sync.notice": {
+      "source": "9e18b026eb848fc00a0f405979ab0999ee69be0f",
+      "translation": "7a533685872d5da96588ec2caaa82c523416aa33"
+    },
+    "settings.modalFields.reset.name": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "a7933939f20524a980c41a0ee141e4110f05b81a"
+    },
+    "settings.modalFields.reset.description": {
+      "source": "af2b7f65f817989f953ee108fa2ac0a3eff97670",
+      "translation": "8521bdb7bffb1b3f7ad816b295c3f4e847dc969b"
+    },
+    "settings.modalFields.reset.button": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "a7933939f20524a980c41a0ee141e4110f05b81a"
+    },
+    "settings.modalFields.reset.confirmTitle": {
+      "source": "b4dfd2ca17670f8eacf7a8fe142e22522f450b40",
+      "translation": "cc5af4309fb2a7a4a919c01938b5dd1dafa88c3f"
+    },
+    "settings.modalFields.reset.confirmMessage": {
+      "source": "b8b0d02597a163dd9e687912551e2052b26b5234",
+      "translation": "ed1cd01ae8da8dfb99b167129aa046d64e12d507"
+    },
+    "settings.modalFields.reset.confirmText": {
+      "source": "44c57abd888a66b36d4b7c902134063e4a097223",
+      "translation": "1d3af0366511001349bfedd65d728f476e337206"
+    },
+    "settings.modalFields.reset.cancelText": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "c111e0ab9ddb1dfb79f8a12c741ba6dbdb07992a"
+    },
+    "settings.modalFields.reset.notice": {
+      "source": "998a1e127a85d5e119fa538c08e07eacc044ad68",
+      "translation": "be45fbc0477703a00bf419dd073c5afcdc42d82e"
+    },
+    "settings.modalFields.initError": {
+      "source": "813bc1f0be1c2c8d047659e061029b41300e43ef",
+      "translation": "71a8b5a00ed0dc650922d43d52d11d71c1101f70"
+    },
+    "settings.modalFields.manager.invalidConfig": {
+      "source": "e4d5672cae6c369bd1cd23a8c950e044319a6662",
+      "translation": "3577011b8a612dc124a58bb7f6ed180c33e88b3f"
+    },
+    "settings.modalFields.manager.emptyGroup": {
+      "source": "f2ef4e6d48d44c229ecb83b3d3e799df8a8eb367",
+      "translation": "eec67c16aeaca7957ec250e984145fea33699561"
+    },
+    "settings.modalFields.manager.enabled": {
+      "source": "f1b45b4b3bf49e9b92c8251ac538f4cfff36209a",
+      "translation": "06e0dcd77c434d5daf5b3b67244fea50ee0dd50e"
+    },
+    "settings.modalFields.manager.showInCreation": {
+      "source": "b8e50d533a687b109bf799f060eafd36221d094a",
+      "translation": "1b07c2de08fc1b735471227a3bd231ef17dd944b"
+    },
+    "settings.modalFields.manager.showInEdit": {
+      "source": "1933e97174ad50029164292cdf98e28d9f951a76",
+      "translation": "da1d2bcd01b3a70b97308e8b2303681f9f02f3c7"
+    },
+    "settings.modalFields.manager.group": {
+      "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
+      "translation": "ad3a74f3e9d7ae17762720f301f06dc921933038"
+    },
+    "settings.modalFields.manager.fieldId": {
+      "source": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1",
+      "translation": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1"
+    },
+    "settings.modalFields.manager.fieldKey": {
+      "source": "ac49e227c79e530ebc416022e7d86a93765313e3",
+      "translation": "e9272b2b1a26cf08f95bec43ca6c8d704e8b7298"
+    },
+    "settings.modalFields.manager.noKey": {
+      "source": "367b4a155f777aae3242c44f81ca50aae3a6dee6",
+      "translation": "34eb9aab1704adeb43736b54a2109bef5577cb4e"
     },
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
@@ -19416,6 +19640,118 @@
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "4f90e5966c8332bc8de5124dbb9ca107372bb513"
     },
+    "settings.modalFields.header": {
+      "source": "463769fb01686447dfedbb494aa058ba8f025686",
+      "translation": "611c3d5d0246637c93373886f742069bddd6c7e4"
+    },
+    "settings.modalFields.description": {
+      "source": "15ec3cb1720d8b370a1e04d4ca7a0b3ddd8567fc",
+      "translation": "127795f0cff9c2c693c1434c19e639c9a81c7e62"
+    },
+    "settings.modalFields.splitLayout.name": {
+      "source": "60564be9095b0be664a9d1ea663ac74e5ccef220",
+      "translation": "6e5e3f197053263fd13a4123768dbac5f2226e7b"
+    },
+    "settings.modalFields.splitLayout.description": {
+      "source": "c37507b5356b91ddc9b2ecffb71ed8aa9bd99bc5",
+      "translation": "d5e5f08d6d3e05ef7e55b2dbd2df46422841ea9a"
+    },
+    "settings.modalFields.tabMovesFocus.name": {
+      "source": "6d204daa67216709d1eb3f9c6f72b0d5289ee66b",
+      "translation": "f898584c54779689f0d0de217340e99cc28bf51f"
+    },
+    "settings.modalFields.tabMovesFocus.description": {
+      "source": "2f4053ebbcf6766caa54489d1f64196cb4b1d65f",
+      "translation": "aa3bcf4a7198eee9e099ecaee85e5e1d99beea42"
+    },
+    "settings.modalFields.sync.name": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "7780bc2f826113683cb386f93dff6f2beeb4717c"
+    },
+    "settings.modalFields.sync.description": {
+      "source": "d5ff882897bbaa153719e8cd96f42c1884977a9c",
+      "translation": "cc965199db95da7c62efed1049f59ef09603dc9f"
+    },
+    "settings.modalFields.sync.button": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "7780bc2f826113683cb386f93dff6f2beeb4717c"
+    },
+    "settings.modalFields.sync.notice": {
+      "source": "9e18b026eb848fc00a0f405979ab0999ee69be0f",
+      "translation": "da6b28574667ea70540deecd5894ade1335119e8"
+    },
+    "settings.modalFields.reset.name": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "6f1d390f3dcdbfa8fab137f53b565107efc59cfc"
+    },
+    "settings.modalFields.reset.description": {
+      "source": "af2b7f65f817989f953ee108fa2ac0a3eff97670",
+      "translation": "c237b78582e88effba1ce29c803090aec7eceae7"
+    },
+    "settings.modalFields.reset.button": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "6f1d390f3dcdbfa8fab137f53b565107efc59cfc"
+    },
+    "settings.modalFields.reset.confirmTitle": {
+      "source": "b4dfd2ca17670f8eacf7a8fe142e22522f450b40",
+      "translation": "7ac1284d620112196888abbda7890f840eb676d5"
+    },
+    "settings.modalFields.reset.confirmMessage": {
+      "source": "b8b0d02597a163dd9e687912551e2052b26b5234",
+      "translation": "cd77614f6f94be829d4ab7ae7b651f9c073389ff"
+    },
+    "settings.modalFields.reset.confirmText": {
+      "source": "44c57abd888a66b36d4b7c902134063e4a097223",
+      "translation": "e0e2ad54c1cb1ad7a01ad24df647f6d6640fa382"
+    },
+    "settings.modalFields.reset.cancelText": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "49ba3292420c74828e7892fadc66f3f4ee4c0111"
+    },
+    "settings.modalFields.reset.notice": {
+      "source": "998a1e127a85d5e119fa538c08e07eacc044ad68",
+      "translation": "3bd21c973fd406ec82d3ec5f96dbe6f126530b69"
+    },
+    "settings.modalFields.initError": {
+      "source": "813bc1f0be1c2c8d047659e061029b41300e43ef",
+      "translation": "fba5cc602c3d32d54268fac805b2a01347dc5b35"
+    },
+    "settings.modalFields.manager.invalidConfig": {
+      "source": "e4d5672cae6c369bd1cd23a8c950e044319a6662",
+      "translation": "f28007b44687c348b3be1fadac9a92cae0d68cc7"
+    },
+    "settings.modalFields.manager.emptyGroup": {
+      "source": "f2ef4e6d48d44c229ecb83b3d3e799df8a8eb367",
+      "translation": "e2e5edd3263be3596e2cbaf6bf2733b1f114188f"
+    },
+    "settings.modalFields.manager.enabled": {
+      "source": "f1b45b4b3bf49e9b92c8251ac538f4cfff36209a",
+      "translation": "7d8496410f97a7a45b0b3274b8c6ea8f6b433d64"
+    },
+    "settings.modalFields.manager.showInCreation": {
+      "source": "b8e50d533a687b109bf799f060eafd36221d094a",
+      "translation": "d0d9ce18d176d59b0dcccf0b77a35951cf990f40"
+    },
+    "settings.modalFields.manager.showInEdit": {
+      "source": "1933e97174ad50029164292cdf98e28d9f951a76",
+      "translation": "869d918b73d07572edf7258b7891deaa166cc7fc"
+    },
+    "settings.modalFields.manager.group": {
+      "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
+      "translation": "4bae19bd6dbb0b2c1a3565eebdc081b70a8d8b36"
+    },
+    "settings.modalFields.manager.fieldId": {
+      "source": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1",
+      "translation": "9bf0aa7ca5a2a19872a2c39e4f235e63516b65b2"
+    },
+    "settings.modalFields.manager.fieldKey": {
+      "source": "ac49e227c79e530ebc416022e7d86a93765313e3",
+      "translation": "efa8f99d2d71693d9949f9710c98cc0e16a0b3d6"
+    },
+    "settings.modalFields.manager.noKey": {
+      "source": "367b4a155f777aae3242c44f81ca50aae3a6dee6",
+      "translation": "149cd0de58ddf4c0055ff6547912cb5bb479ee36"
+    },
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "a32a664acc6d5279c6600620c1a3fb0a8bb8cd1b"
@@ -28425,6 +28761,118 @@
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "3fdb3a4c402e9c819b75361b4849b530f25dfb41"
+    },
+    "settings.modalFields.header": {
+      "source": "463769fb01686447dfedbb494aa058ba8f025686",
+      "translation": "e45ef31b85611172d92c5cf44f468126f7f1bab3"
+    },
+    "settings.modalFields.description": {
+      "source": "15ec3cb1720d8b370a1e04d4ca7a0b3ddd8567fc",
+      "translation": "a25da72c34c7f8c9ad5dba8b81f9620f72898c59"
+    },
+    "settings.modalFields.splitLayout.name": {
+      "source": "60564be9095b0be664a9d1ea663ac74e5ccef220",
+      "translation": "9799ba0b0ce50c1c1818bd0951114829262cf2cb"
+    },
+    "settings.modalFields.splitLayout.description": {
+      "source": "c37507b5356b91ddc9b2ecffb71ed8aa9bd99bc5",
+      "translation": "e72737a2ec77b0222b8cbda0b337829f32c52be1"
+    },
+    "settings.modalFields.tabMovesFocus.name": {
+      "source": "6d204daa67216709d1eb3f9c6f72b0d5289ee66b",
+      "translation": "b791d8598f5803245ff44ecedaa63a54c1210269"
+    },
+    "settings.modalFields.tabMovesFocus.description": {
+      "source": "2f4053ebbcf6766caa54489d1f64196cb4b1d65f",
+      "translation": "63cfdb686d8d88c103c2ba8a74f58b28791484f6"
+    },
+    "settings.modalFields.sync.name": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "dccae8bb139ddc4a9f50f3cf6edce885ab51574c"
+    },
+    "settings.modalFields.sync.description": {
+      "source": "d5ff882897bbaa153719e8cd96f42c1884977a9c",
+      "translation": "6044e23420c9f3680672d7246cb60edd9ec092e2"
+    },
+    "settings.modalFields.sync.button": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "dccae8bb139ddc4a9f50f3cf6edce885ab51574c"
+    },
+    "settings.modalFields.sync.notice": {
+      "source": "9e18b026eb848fc00a0f405979ab0999ee69be0f",
+      "translation": "909bac192f7e268cab58749b486450715f69c08c"
+    },
+    "settings.modalFields.reset.name": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "9e82b3299e774cfe560bfaf2d9307e8cdfc469a3"
+    },
+    "settings.modalFields.reset.description": {
+      "source": "af2b7f65f817989f953ee108fa2ac0a3eff97670",
+      "translation": "0d7d1159d33b4c6e9b00bb503fb3d56e4ce23f6f"
+    },
+    "settings.modalFields.reset.button": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "9e82b3299e774cfe560bfaf2d9307e8cdfc469a3"
+    },
+    "settings.modalFields.reset.confirmTitle": {
+      "source": "b4dfd2ca17670f8eacf7a8fe142e22522f450b40",
+      "translation": "153a16c2ec0cc395fd36224998524edd7e8cb12b"
+    },
+    "settings.modalFields.reset.confirmMessage": {
+      "source": "b8b0d02597a163dd9e687912551e2052b26b5234",
+      "translation": "7afa51357ff4bba36579e88faf32f7aaf2882148"
+    },
+    "settings.modalFields.reset.confirmText": {
+      "source": "44c57abd888a66b36d4b7c902134063e4a097223",
+      "translation": "97b0a1c0a9299d48da9957443dfd728cc77acc98"
+    },
+    "settings.modalFields.reset.cancelText": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "269b0f92e460f3dd51ddf582098d0a998d525974"
+    },
+    "settings.modalFields.reset.notice": {
+      "source": "998a1e127a85d5e119fa538c08e07eacc044ad68",
+      "translation": "e88bc16973884af33236614147204b23d9409930"
+    },
+    "settings.modalFields.initError": {
+      "source": "813bc1f0be1c2c8d047659e061029b41300e43ef",
+      "translation": "4017272fe58982e58b0b488575ade264fafab5d3"
+    },
+    "settings.modalFields.manager.invalidConfig": {
+      "source": "e4d5672cae6c369bd1cd23a8c950e044319a6662",
+      "translation": "29b5cac28a69e2fb183149f7b1d03a1d08c92cf3"
+    },
+    "settings.modalFields.manager.emptyGroup": {
+      "source": "f2ef4e6d48d44c229ecb83b3d3e799df8a8eb367",
+      "translation": "2eeb7c018b7c76e61e8576a6fbb298e1976cb503"
+    },
+    "settings.modalFields.manager.enabled": {
+      "source": "f1b45b4b3bf49e9b92c8251ac538f4cfff36209a",
+      "translation": "371f12e3438254442bc7c1e9010d9fb355a1c310"
+    },
+    "settings.modalFields.manager.showInCreation": {
+      "source": "b8e50d533a687b109bf799f060eafd36221d094a",
+      "translation": "6c32bb6fac841fccf6ee404021971593818657c7"
+    },
+    "settings.modalFields.manager.showInEdit": {
+      "source": "1933e97174ad50029164292cdf98e28d9f951a76",
+      "translation": "ba085fa30c50bdba77f18456a7bf0a991185ff8e"
+    },
+    "settings.modalFields.manager.group": {
+      "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
+      "translation": "fbdec3edf54bf92d5a641088d20fdadf84c1fc4b"
+    },
+    "settings.modalFields.manager.fieldId": {
+      "source": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1",
+      "translation": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1"
+    },
+    "settings.modalFields.manager.fieldKey": {
+      "source": "ac49e227c79e530ebc416022e7d86a93765313e3",
+      "translation": "7be70535e1863775a24f038b8c401ff6a2c9d220"
+    },
+    "settings.modalFields.manager.noKey": {
+      "source": "367b4a155f777aae3242c44f81ca50aae3a6dee6",
+      "translation": "2679903351c826a59039fa682e92ffb66cd5ef46"
     },
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
@@ -37436,6 +37884,118 @@
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "892f1c0be159b891166ca6b5d3ad9923e0888b10"
     },
+    "settings.modalFields.header": {
+      "source": "463769fb01686447dfedbb494aa058ba8f025686",
+      "translation": "51b609122cc26f3c18b8f7f442d3e7bda9c88edb"
+    },
+    "settings.modalFields.description": {
+      "source": "15ec3cb1720d8b370a1e04d4ca7a0b3ddd8567fc",
+      "translation": "8b23c525c713ea1c44959f59c7824fc0853de7da"
+    },
+    "settings.modalFields.splitLayout.name": {
+      "source": "60564be9095b0be664a9d1ea663ac74e5ccef220",
+      "translation": "48012c2dc2e136c6f21fab9d81549900cc3d917a"
+    },
+    "settings.modalFields.splitLayout.description": {
+      "source": "c37507b5356b91ddc9b2ecffb71ed8aa9bd99bc5",
+      "translation": "5926286199e5a0feee9ec197a941a5779db3718a"
+    },
+    "settings.modalFields.tabMovesFocus.name": {
+      "source": "6d204daa67216709d1eb3f9c6f72b0d5289ee66b",
+      "translation": "4b52afd21f8a3f808407cf767819accd16cb5dcc"
+    },
+    "settings.modalFields.tabMovesFocus.description": {
+      "source": "2f4053ebbcf6766caa54489d1f64196cb4b1d65f",
+      "translation": "dfff7b76dfabf0e69df8e86d017e8627d93a9450"
+    },
+    "settings.modalFields.sync.name": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "7a9d4efbfd8bcd4c2b299ba38a39d3d6813ec6f2"
+    },
+    "settings.modalFields.sync.description": {
+      "source": "d5ff882897bbaa153719e8cd96f42c1884977a9c",
+      "translation": "979bf60c5b7cbf0036f99c86c8685fbfeb8127af"
+    },
+    "settings.modalFields.sync.button": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "7a9d4efbfd8bcd4c2b299ba38a39d3d6813ec6f2"
+    },
+    "settings.modalFields.sync.notice": {
+      "source": "9e18b026eb848fc00a0f405979ab0999ee69be0f",
+      "translation": "9e48b7dbd045090b13ed91d98a310d32786cb9e7"
+    },
+    "settings.modalFields.reset.name": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "e886cab8cf08717ab3b627d8abaf53ad40d4677e"
+    },
+    "settings.modalFields.reset.description": {
+      "source": "af2b7f65f817989f953ee108fa2ac0a3eff97670",
+      "translation": "34b51247f98274ba0e14e96ecd1dfdb8cff73c20"
+    },
+    "settings.modalFields.reset.button": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "e886cab8cf08717ab3b627d8abaf53ad40d4677e"
+    },
+    "settings.modalFields.reset.confirmTitle": {
+      "source": "b4dfd2ca17670f8eacf7a8fe142e22522f450b40",
+      "translation": "a2131422e232d64f6d27ff90aa3332be0a548ab6"
+    },
+    "settings.modalFields.reset.confirmMessage": {
+      "source": "b8b0d02597a163dd9e687912551e2052b26b5234",
+      "translation": "80640875d57e539fb582c41caf00f092cbf0ad59"
+    },
+    "settings.modalFields.reset.confirmText": {
+      "source": "44c57abd888a66b36d4b7c902134063e4a097223",
+      "translation": "ee3963d9fa25beda9a1cf87a29d9eb274a6243d1"
+    },
+    "settings.modalFields.reset.cancelText": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "19b2d19bc14102ec9341f4c8ea5b65daa910826c"
+    },
+    "settings.modalFields.reset.notice": {
+      "source": "998a1e127a85d5e119fa538c08e07eacc044ad68",
+      "translation": "1211a169657e99632ab9cd3e4d0f3a94e2ed3d33"
+    },
+    "settings.modalFields.initError": {
+      "source": "813bc1f0be1c2c8d047659e061029b41300e43ef",
+      "translation": "0bd7b129b72f74f631643ae476201122b3408496"
+    },
+    "settings.modalFields.manager.invalidConfig": {
+      "source": "e4d5672cae6c369bd1cd23a8c950e044319a6662",
+      "translation": "8227751c1a8363b3ad57d544ad263399dfbef40e"
+    },
+    "settings.modalFields.manager.emptyGroup": {
+      "source": "f2ef4e6d48d44c229ecb83b3d3e799df8a8eb367",
+      "translation": "2f8c57e8a854d049a8377c58a73e2309aece50f6"
+    },
+    "settings.modalFields.manager.enabled": {
+      "source": "f1b45b4b3bf49e9b92c8251ac538f4cfff36209a",
+      "translation": "47fa61c7292c0919b713c4ebe8d23fd08faf585b"
+    },
+    "settings.modalFields.manager.showInCreation": {
+      "source": "b8e50d533a687b109bf799f060eafd36221d094a",
+      "translation": "5b0a747b147574a1ce56131d458e5b9df8c257f2"
+    },
+    "settings.modalFields.manager.showInEdit": {
+      "source": "1933e97174ad50029164292cdf98e28d9f951a76",
+      "translation": "83bde2c056d25706c02f23cf81a138d55799b8dd"
+    },
+    "settings.modalFields.manager.group": {
+      "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
+      "translation": "41b98112818702116777357940b1da9e7bee130b"
+    },
+    "settings.modalFields.manager.fieldId": {
+      "source": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1",
+      "translation": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1"
+    },
+    "settings.modalFields.manager.fieldKey": {
+      "source": "ac49e227c79e530ebc416022e7d86a93765313e3",
+      "translation": "f5b29991ebf0d2f2218609ebd45eb2ccb9eebb52"
+    },
+    "settings.modalFields.manager.noKey": {
+      "source": "367b4a155f777aae3242c44f81ca50aae3a6dee6",
+      "translation": "1215a69b2acaab3e8d8f6fc85bed481c0e40ef13"
+    },
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "1e85b7120ae8c808302b3a235b6f91916bbf7de8"
@@ -46445,6 +47005,118 @@
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "935a73f2095899b2cc1730e3257e5c96e4e35b5c"
+    },
+    "settings.modalFields.header": {
+      "source": "463769fb01686447dfedbb494aa058ba8f025686",
+      "translation": "9dbfd9fc2f4c0a361ccf692e28757b53c475da04"
+    },
+    "settings.modalFields.description": {
+      "source": "15ec3cb1720d8b370a1e04d4ca7a0b3ddd8567fc",
+      "translation": "9314808a2fa6e4fd4c50d9091efb0de704ae54d3"
+    },
+    "settings.modalFields.splitLayout.name": {
+      "source": "60564be9095b0be664a9d1ea663ac74e5ccef220",
+      "translation": "1b5a1e0a5fa3cebe07edae9f8f035d3128a4876f"
+    },
+    "settings.modalFields.splitLayout.description": {
+      "source": "c37507b5356b91ddc9b2ecffb71ed8aa9bd99bc5",
+      "translation": "1a5c2e097a53be3c789d6d2fa778084f27922f7a"
+    },
+    "settings.modalFields.tabMovesFocus.name": {
+      "source": "6d204daa67216709d1eb3f9c6f72b0d5289ee66b",
+      "translation": "bdbabc1f4f0d8fbec7449480b6826f4b3134ba67"
+    },
+    "settings.modalFields.tabMovesFocus.description": {
+      "source": "2f4053ebbcf6766caa54489d1f64196cb4b1d65f",
+      "translation": "fd2308bd1c86296ae19dabb70d57c429352225e1"
+    },
+    "settings.modalFields.sync.name": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "2cd50aacadda1adc1e3e67537e144c46e67e112c"
+    },
+    "settings.modalFields.sync.description": {
+      "source": "d5ff882897bbaa153719e8cd96f42c1884977a9c",
+      "translation": "3015ac927f3522169839d3048b2fc11c654b1d4e"
+    },
+    "settings.modalFields.sync.button": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "2cd50aacadda1adc1e3e67537e144c46e67e112c"
+    },
+    "settings.modalFields.sync.notice": {
+      "source": "9e18b026eb848fc00a0f405979ab0999ee69be0f",
+      "translation": "f2b284d5f9f9c066993c7e901b3d0ff992522658"
+    },
+    "settings.modalFields.reset.name": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "d01888a014f477e28a21c90848da1046afc2524f"
+    },
+    "settings.modalFields.reset.description": {
+      "source": "af2b7f65f817989f953ee108fa2ac0a3eff97670",
+      "translation": "746e2867d8541c2a4c52e969d0a03d5471e54ac0"
+    },
+    "settings.modalFields.reset.button": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "d01888a014f477e28a21c90848da1046afc2524f"
+    },
+    "settings.modalFields.reset.confirmTitle": {
+      "source": "b4dfd2ca17670f8eacf7a8fe142e22522f450b40",
+      "translation": "3d3b4ca66c43d62c227472d88689d25e911abf26"
+    },
+    "settings.modalFields.reset.confirmMessage": {
+      "source": "b8b0d02597a163dd9e687912551e2052b26b5234",
+      "translation": "7354899c39479ec3f6ad6e2c8b6c2d9e6bce3f0c"
+    },
+    "settings.modalFields.reset.confirmText": {
+      "source": "44c57abd888a66b36d4b7c902134063e4a097223",
+      "translation": "ccdfb7e8e0daac9ba528a3f3b577d764a73690a1"
+    },
+    "settings.modalFields.reset.cancelText": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "c111e0ab9ddb1dfb79f8a12c741ba6dbdb07992a"
+    },
+    "settings.modalFields.reset.notice": {
+      "source": "998a1e127a85d5e119fa538c08e07eacc044ad68",
+      "translation": "9d248b6f4eef7d1c2779f6df42cd33afe5fc5a4c"
+    },
+    "settings.modalFields.initError": {
+      "source": "813bc1f0be1c2c8d047659e061029b41300e43ef",
+      "translation": "e31e91e3e46730f7bfa31c2e187894dbbcabebca"
+    },
+    "settings.modalFields.manager.invalidConfig": {
+      "source": "e4d5672cae6c369bd1cd23a8c950e044319a6662",
+      "translation": "c7cc07045e2c4fe8df137c3dec5abdeb2786e90c"
+    },
+    "settings.modalFields.manager.emptyGroup": {
+      "source": "f2ef4e6d48d44c229ecb83b3d3e799df8a8eb367",
+      "translation": "97366436cbb1ba8f80ebbeb60a09a6bdcf15b883"
+    },
+    "settings.modalFields.manager.enabled": {
+      "source": "f1b45b4b3bf49e9b92c8251ac538f4cfff36209a",
+      "translation": "3ecc8fdce3a6777782bb96dcefd31ed1efde08d5"
+    },
+    "settings.modalFields.manager.showInCreation": {
+      "source": "b8e50d533a687b109bf799f060eafd36221d094a",
+      "translation": "cb0a0750863ede2113695a3fb3c58b105bcfd0d1"
+    },
+    "settings.modalFields.manager.showInEdit": {
+      "source": "1933e97174ad50029164292cdf98e28d9f951a76",
+      "translation": "9f06be98abd2e204424ced110372e58af32ad477"
+    },
+    "settings.modalFields.manager.group": {
+      "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
+      "translation": "ad3a74f3e9d7ae17762720f301f06dc921933038"
+    },
+    "settings.modalFields.manager.fieldId": {
+      "source": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1",
+      "translation": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1"
+    },
+    "settings.modalFields.manager.fieldKey": {
+      "source": "ac49e227c79e530ebc416022e7d86a93765313e3",
+      "translation": "838ffc034c16844b138e7d9bd651eb97ae2fbe09"
+    },
+    "settings.modalFields.manager.noKey": {
+      "source": "367b4a155f777aae3242c44f81ca50aae3a6dee6",
+      "translation": "b002eae4b0256f2e044915c6e47fd92e90e3668f"
     },
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
@@ -55456,6 +56128,118 @@
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "55ca8fac219f5e28fd59d8bb5fbf076eb08046d3"
     },
+    "settings.modalFields.header": {
+      "source": "463769fb01686447dfedbb494aa058ba8f025686",
+      "translation": "46150c2900c50d257ed2a19acdeda3c7f1424622"
+    },
+    "settings.modalFields.description": {
+      "source": "15ec3cb1720d8b370a1e04d4ca7a0b3ddd8567fc",
+      "translation": "720dde65c8f9d69eb00459f6ad70ad4aaeafefef"
+    },
+    "settings.modalFields.splitLayout.name": {
+      "source": "60564be9095b0be664a9d1ea663ac74e5ccef220",
+      "translation": "c8cce685b558d5d937ac56fa6fa32b4f8165509b"
+    },
+    "settings.modalFields.splitLayout.description": {
+      "source": "c37507b5356b91ddc9b2ecffb71ed8aa9bd99bc5",
+      "translation": "830595cda7d8931360c53e4b4bed20f869d6a8e6"
+    },
+    "settings.modalFields.tabMovesFocus.name": {
+      "source": "6d204daa67216709d1eb3f9c6f72b0d5289ee66b",
+      "translation": "1e3b60d761a98a9b4899c93eee021da1511282d5"
+    },
+    "settings.modalFields.tabMovesFocus.description": {
+      "source": "2f4053ebbcf6766caa54489d1f64196cb4b1d65f",
+      "translation": "3ca99ac9159fd6ef5549a2ec8ec243c067655dbe"
+    },
+    "settings.modalFields.sync.name": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "5124c2dd39a6b1c254431e2bb4bad6be0f22c82a"
+    },
+    "settings.modalFields.sync.description": {
+      "source": "d5ff882897bbaa153719e8cd96f42c1884977a9c",
+      "translation": "68f3b2a6e6941e4d8f28b1f790c7161e2303574e"
+    },
+    "settings.modalFields.sync.button": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "5124c2dd39a6b1c254431e2bb4bad6be0f22c82a"
+    },
+    "settings.modalFields.sync.notice": {
+      "source": "9e18b026eb848fc00a0f405979ab0999ee69be0f",
+      "translation": "bb977b0b89860e1943bfc20abfc583720dfcc68a"
+    },
+    "settings.modalFields.reset.name": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "9b37d67514c3262b51b65912b3ba003b658b2e75"
+    },
+    "settings.modalFields.reset.description": {
+      "source": "af2b7f65f817989f953ee108fa2ac0a3eff97670",
+      "translation": "30f6e1b084596893d5b53e59711dfc2521fa469e"
+    },
+    "settings.modalFields.reset.button": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "9b37d67514c3262b51b65912b3ba003b658b2e75"
+    },
+    "settings.modalFields.reset.confirmTitle": {
+      "source": "b4dfd2ca17670f8eacf7a8fe142e22522f450b40",
+      "translation": "e289dc4f3ac447079aa33d3123e658bbdc812524"
+    },
+    "settings.modalFields.reset.confirmMessage": {
+      "source": "b8b0d02597a163dd9e687912551e2052b26b5234",
+      "translation": "7eaebae1b0c0e233ddeae1960d4b4cc27d46f324"
+    },
+    "settings.modalFields.reset.confirmText": {
+      "source": "44c57abd888a66b36d4b7c902134063e4a097223",
+      "translation": "058f162d2926fb8667e77b52f171800b72657661"
+    },
+    "settings.modalFields.reset.cancelText": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "0ec753be8df955a117404fb634b01b45eb386e2a"
+    },
+    "settings.modalFields.reset.notice": {
+      "source": "998a1e127a85d5e119fa538c08e07eacc044ad68",
+      "translation": "acb748090d82abdbdf64f804e61f7c259e945c8d"
+    },
+    "settings.modalFields.initError": {
+      "source": "813bc1f0be1c2c8d047659e061029b41300e43ef",
+      "translation": "b985d38291c2c8ec2b6da1746220e8a04a83c235"
+    },
+    "settings.modalFields.manager.invalidConfig": {
+      "source": "e4d5672cae6c369bd1cd23a8c950e044319a6662",
+      "translation": "afdd3749ad6abad0b3c6de1fd83a0340c091f073"
+    },
+    "settings.modalFields.manager.emptyGroup": {
+      "source": "f2ef4e6d48d44c229ecb83b3d3e799df8a8eb367",
+      "translation": "df9be05e894b7f1a45d8dbb39096a3cbbc2e888a"
+    },
+    "settings.modalFields.manager.enabled": {
+      "source": "f1b45b4b3bf49e9b92c8251ac538f4cfff36209a",
+      "translation": "b8fb5150f97975900bc6d4fe3de353ef68ecfbb8"
+    },
+    "settings.modalFields.manager.showInCreation": {
+      "source": "b8e50d533a687b109bf799f060eafd36221d094a",
+      "translation": "7436d54717bc3b5ddb672cfe88a42cf06aa64b12"
+    },
+    "settings.modalFields.manager.showInEdit": {
+      "source": "1933e97174ad50029164292cdf98e28d9f951a76",
+      "translation": "b28553b7dbd65ac5c3ed719c4d58a44a419c0a27"
+    },
+    "settings.modalFields.manager.group": {
+      "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
+      "translation": "0e16205c35f060014eace6e7adc5fde4ea69a46e"
+    },
+    "settings.modalFields.manager.fieldId": {
+      "source": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1",
+      "translation": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1"
+    },
+    "settings.modalFields.manager.fieldKey": {
+      "source": "ac49e227c79e530ebc416022e7d86a93765313e3",
+      "translation": "a3950c8cf0f30f43c1db9f9676bae299512da925"
+    },
+    "settings.modalFields.manager.noKey": {
+      "source": "367b4a155f777aae3242c44f81ca50aae3a6dee6",
+      "translation": "59b94e657c089733dcd584269c112a416b81ddad"
+    },
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
       "translation": "ed325e2a0e049939e66b927ab4ad76ff76319842"
@@ -64465,6 +65249,118 @@
     "settings.tabs.integrations": {
       "source": "a7881cac6e64abca5eafd172df6eb31fe0b84c88",
       "translation": "2a213ace35b25b9171b9198828a4d3151a85f77f"
+    },
+    "settings.modalFields.header": {
+      "source": "463769fb01686447dfedbb494aa058ba8f025686",
+      "translation": "de5def36c9e19b0c3ea94fb6af589405567eea2b"
+    },
+    "settings.modalFields.description": {
+      "source": "15ec3cb1720d8b370a1e04d4ca7a0b3ddd8567fc",
+      "translation": "4c0e0e9a783a16191e743949808f6ad9673ed73f"
+    },
+    "settings.modalFields.splitLayout.name": {
+      "source": "60564be9095b0be664a9d1ea663ac74e5ccef220",
+      "translation": "38e6a2833adc7925b2edd7334fd658cfcb2fe557"
+    },
+    "settings.modalFields.splitLayout.description": {
+      "source": "c37507b5356b91ddc9b2ecffb71ed8aa9bd99bc5",
+      "translation": "3f2af49229ea306cab44eea2a2f5c0a54eb8c119"
+    },
+    "settings.modalFields.tabMovesFocus.name": {
+      "source": "6d204daa67216709d1eb3f9c6f72b0d5289ee66b",
+      "translation": "7c07146fdac0202276e6b187aadee0f4172e4ee8"
+    },
+    "settings.modalFields.tabMovesFocus.description": {
+      "source": "2f4053ebbcf6766caa54489d1f64196cb4b1d65f",
+      "translation": "f56a35476194f9826a2457f51b86ee83a0466471"
+    },
+    "settings.modalFields.sync.name": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "ef3f3ca1f636912f04808e464def95f744322e2f"
+    },
+    "settings.modalFields.sync.description": {
+      "source": "d5ff882897bbaa153719e8cd96f42c1884977a9c",
+      "translation": "8f55db2c2e3df4748bc1d8726b39ef460eeb0ec7"
+    },
+    "settings.modalFields.sync.button": {
+      "source": "2b5eb47f44d65dc6c694085b9365d49c1439cbf1",
+      "translation": "ef3f3ca1f636912f04808e464def95f744322e2f"
+    },
+    "settings.modalFields.sync.notice": {
+      "source": "9e18b026eb848fc00a0f405979ab0999ee69be0f",
+      "translation": "f6404bb4d91ba7c9b8c3f3d9f9bd04ab242dfb8b"
+    },
+    "settings.modalFields.reset.name": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "0d99ca7e4a07cef67e9d8a823c2f17fc168f083b"
+    },
+    "settings.modalFields.reset.description": {
+      "source": "af2b7f65f817989f953ee108fa2ac0a3eff97670",
+      "translation": "9323c2b2cfbcce1307dc7563c25595b9fff79e28"
+    },
+    "settings.modalFields.reset.button": {
+      "source": "ddefe47d697b2f5bbd08a146fc61c45ef8cf2ffb",
+      "translation": "0d99ca7e4a07cef67e9d8a823c2f17fc168f083b"
+    },
+    "settings.modalFields.reset.confirmTitle": {
+      "source": "b4dfd2ca17670f8eacf7a8fe142e22522f450b40",
+      "translation": "17a0e6daf3e11a564820405538c82fa5c24a1f9b"
+    },
+    "settings.modalFields.reset.confirmMessage": {
+      "source": "b8b0d02597a163dd9e687912551e2052b26b5234",
+      "translation": "0d61fce63d83027aba08dcb47df4c5d24d5176fb"
+    },
+    "settings.modalFields.reset.confirmText": {
+      "source": "44c57abd888a66b36d4b7c902134063e4a097223",
+      "translation": "3d81345303ab49d5bc3c696d2ae941fa31c4056e"
+    },
+    "settings.modalFields.reset.cancelText": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "4d0b4688c787cf6c33c744bdad5f7d7f56b0feee"
+    },
+    "settings.modalFields.reset.notice": {
+      "source": "998a1e127a85d5e119fa538c08e07eacc044ad68",
+      "translation": "d6b73bbdbc75584e602102e1858c59a84f8cb6d0"
+    },
+    "settings.modalFields.initError": {
+      "source": "813bc1f0be1c2c8d047659e061029b41300e43ef",
+      "translation": "19646bcbd05bf161c604517a47d3125383eb05d1"
+    },
+    "settings.modalFields.manager.invalidConfig": {
+      "source": "e4d5672cae6c369bd1cd23a8c950e044319a6662",
+      "translation": "5105821a568f3ab68b2be19ddea425e4c476bb5b"
+    },
+    "settings.modalFields.manager.emptyGroup": {
+      "source": "f2ef4e6d48d44c229ecb83b3d3e799df8a8eb367",
+      "translation": "ca23e1043b9aa45054ccecc1c26094411d282184"
+    },
+    "settings.modalFields.manager.enabled": {
+      "source": "f1b45b4b3bf49e9b92c8251ac538f4cfff36209a",
+      "translation": "c4c8324094c36c6be2397ea43daf342168a83f55"
+    },
+    "settings.modalFields.manager.showInCreation": {
+      "source": "b8e50d533a687b109bf799f060eafd36221d094a",
+      "translation": "c7cea5973ad6319f7fcfab63047966261769451a"
+    },
+    "settings.modalFields.manager.showInEdit": {
+      "source": "1933e97174ad50029164292cdf98e28d9f951a76",
+      "translation": "90b0ac79e0959dc3774eec09f2e2e12f442464c0"
+    },
+    "settings.modalFields.manager.group": {
+      "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
+      "translation": "e14c2915ed9bc410c35747099ffaba875ed06df0"
+    },
+    "settings.modalFields.manager.fieldId": {
+      "source": "6ec87ad28f7b153f828b1aa336bc8122fa86d2d1",
+      "translation": "81c655e9b8d813656b151a4d216f20782d8584b5"
+    },
+    "settings.modalFields.manager.fieldKey": {
+      "source": "ac49e227c79e530ebc416022e7d86a93765313e3",
+      "translation": "0518b6afba2a91e60a2705dc7d8c3ceaabd1673c"
+    },
+    "settings.modalFields.manager.noKey": {
+      "source": "367b4a155f777aae3242c44f81ca50aae3a6dee6",
+      "translation": "90c4dc4a5d01bb39269cc4c2fb5eee2178847dc9"
     },
     "settings.features.inlineTasks.header": {
       "source": "a0f498bf59b33369a6a0aca916b487fd04ea40a7",
