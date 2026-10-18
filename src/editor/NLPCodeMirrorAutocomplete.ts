@@ -28,6 +28,7 @@ type CompletionSourceResult = {
 	to?: number;
 	options: Completion[];
 	validFor?: RegExp;
+	filter?: boolean;
 };
 
 type ProjectCompletionMetadataPart = {
@@ -172,7 +173,11 @@ export function createNLPCompletionSource(
 			from: line.from + active.index + active.triggerLength,
 			to,
 			options,
-			validFor: /^[\w\s-]*$/,
+			// Status suggestions are already filtered using the text before the cursor.
+			// When consuming an auto-paired closing trigger, CodeMirror would otherwise
+			// filter against that trigger too (e.g. "op*") and hide every suggestion.
+			// Unfiltered results cannot use validFor; re-query after each edit instead.
+			...(to > context.pos ? { filter: false } : { validFor: /^[\w\s-]*$/ }),
 		};
 	};
 }

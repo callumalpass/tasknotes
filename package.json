@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "4.13.9",
+	"version": "4.13.10",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -53,6 +53,7 @@
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
+		"braces": "file:./vendor/braces",
 		"@codemirror/autocomplete": "^6.19.1",
 		"@codemirror/state": "^6.5.0",
 		"@electron/asar": "^3.4.1",
@@ -115,6 +116,7 @@
 	"overrides": {
 		"@hono/node-server": "2.1.0",
 		"moment": "2.31.0",
-		"js-yaml": "4.3.2"
+		"js-yaml": "4.3.2",
+		"braces": "$braces"
 	}
 }

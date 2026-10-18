@@ -2874,9 +2874,9 @@ test.describe('Mobile Mode', () => {
     await runCommand(page, 'Open kanban board');
     await page.waitForTimeout(1500);
 
-    // Verify kanban view is visible (uses kanban-view__column class)
-    const kanbanView = page.locator('.kanban-view__column, .bases-view');
-    await expect(kanbanView.first()).toBeVisible({ timeout: 10000 });
+    // Assert the active Kanban view, not an earlier hidden Calendar Bases leaf.
+    const kanbanView = page.locator('.workspace-leaf.mod-active .bases-view[data-view-type="tasknotesKanban"]');
+    await expect(kanbanView).toBeVisible({ timeout: 10000 });
 
     await page.screenshot({ path: 'test-results/screenshots/mobile-kanban-view.png' });
   });
