@@ -327,6 +327,60 @@ describe("kanbanDragUtils", () => {
 		expect(plan.newPropValue).toBe("done");
 	});
 
+	it("keeps both column and swimlane changes in the post-drop task snapshot (#2378)", () => {
+		const plan = planKanbanTaskDropUpdate({
+			path: "Tasks/a.md",
+			sourceColumn: "open",
+			sourceSwimlane: "low",
+			newGroupValue: "done",
+			newSwimLaneValue: "high",
+			groupByPropertyId: "task.status",
+			swimLanePropertyId: "task.priority",
+			groupByTaskProp: "status",
+			swimlaneTaskProp: "priority",
+			isGroupByListProperty: false,
+			isSwimlaneListProperty: false,
+		});
+
+		const sideEffectPlan = planKanbanDropSideEffect({
+			plan,
+			originalTask: createTask({ status: "open", priority: "low" }),
+			dateModifiedValue: "2026-10-18T10:00:00Z",
+			isCompletedStatus: (status) => status === "done",
+		});
+
+		expect(sideEffectPlan?.changedTaskProp).toBe("status");
+		expect(sideEffectPlan?.updatedTask.status).toBe("done");
+		expect(sideEffectPlan?.updatedTask.priority).toBe("high");
+		expect(sideEffectPlan?.updatedTask.completedDate).toBeTruthy();
+	});
+
+	it("uses the swimlane as the primary change when the column is not a task field", () => {
+		const plan = planKanbanTaskDropUpdate({
+			path: "Tasks/a.md",
+			sourceColumn: "alpha",
+			sourceSwimlane: "low",
+			newGroupValue: "beta",
+			newSwimLaneValue: "high",
+			groupByPropertyId: "note.stage",
+			swimLanePropertyId: "task.priority",
+			groupByTaskProp: null,
+			swimlaneTaskProp: "priority",
+			isGroupByListProperty: false,
+			isSwimlaneListProperty: false,
+		});
+
+		const sideEffectPlan = planKanbanDropSideEffect({
+			plan,
+			originalTask: createTask({ priority: "low" }),
+			dateModifiedValue: "2026-10-18T10:00:00Z",
+			isCompletedStatus: () => false,
+		});
+
+		expect(sideEffectPlan?.changedTaskProp).toBe("priority");
+		expect(sideEffectPlan?.updatedTask.priority).toBe("high");
+	});
+
 	it("removes source and adds target for list-valued group properties", () => {
 		const plan = planKanbanTaskDropUpdate({
 			path: "Tasks/a.md",

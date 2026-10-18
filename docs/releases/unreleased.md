@@ -16,6 +16,8 @@ Example:
 ```
 ## Fixed
 
+- (#2378) Fixed dragging a Kanban card to a different column and swimlane at once leaving the card, task cache, and other views showing the old swimlane value, such as the previous priority. Thanks to @iantierney for reporting this.
+
 - (#2399, #2377) Fixed Task List views failing with "Converting circular structure to JSON" when a displayed property or formula returns links, such as `file.backlinks`. This regression was introduced in 4.13.5. Thanks to @ewightman and @Glint-Eye for reporting this.
 
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values

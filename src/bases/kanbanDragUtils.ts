@@ -398,13 +398,16 @@ export function planKanbanTaskDropUpdate({
 	const needsGroupUpdate = sourceColumn !== newGroupValue;
 	const needsSwimlaneUpdate =
 		newSwimLaneValue !== null && !!swimLanePropertyId && sourceSwimlane !== newSwimLaneValue;
-	const changedTaskProp = needsGroupUpdate
+	// The primary change drives property-specific side effects. Prefer the column
+	// axis, but fall back to the swimlane when the column property is not a task field.
+	const useGroupAxis = needsGroupUpdate && !!groupByTaskProp;
+	const changedTaskProp = useGroupAxis
 		? groupByTaskProp
 		: needsSwimlaneUpdate
 			? swimlaneTaskProp
 			: null;
-	const oldPropValue = needsGroupUpdate ? sourceColumn : sourceSwimlane;
-	const newPropValue = needsGroupUpdate ? newGroupValue : newSwimLaneValue;
+	const oldPropValue = useGroupAxis ? sourceColumn : sourceSwimlane;
+	const newPropValue = useGroupAxis ? newGroupValue : newSwimLaneValue;
 
 	return {
 		path,
@@ -527,44 +530,49 @@ export function planKanbanDropSideEffect({
 		return null;
 	}
 
-	const changedTaskProp = plan.changedTaskProp as keyof TaskInfo;
-	const newPropValue = resolveKanbanDropTaskInfoValue(plan, originalTask, changedTaskProp);
-	const updatedTask: TaskInfo = {
-		...originalTask,
-		[changedTaskProp]: newPropValue,
-		dateModified: dateModifiedValue,
-	};
+	// Apply every changed axis so a diagonal drop (column + swimlane) produces a
+	// complete task snapshot for the cache, events, and local card refresh.
+	const updatedTask: TaskInfo = { ...originalTask, dateModified: dateModifiedValue };
+	const changedValues = new Map<keyof TaskInfo, unknown>();
+	if (plan.needsGroupUpdate && plan.groupByTaskProp) {
+		const prop = plan.groupByTaskProp as keyof TaskInfo;
+		changedValues.set(
+			prop,
+			plan.isGroupByListProperty
+				? updateListDropValue(originalTask[prop], plan.sourceColumn, plan.newGroupValue)
+				: plan.newGroupValue
+		);
+	}
+	if (plan.needsSwimlaneUpdate && plan.swimlaneTaskProp && plan.newSwimLaneValue !== null) {
+		const prop = plan.swimlaneTaskProp as keyof TaskInfo;
+		changedValues.set(
+			prop,
+			plan.isSwimlaneListProperty
+				? updateListDropValue(
+						changedValues.has(prop) ? changedValues.get(prop) : originalTask[prop],
+						plan.sourceSwimlane,
+						plan.newSwimLaneValue
+					)
+				: plan.newSwimLaneValue
+		);
+	}
+	for (const [prop, value] of changedValues) {
+		(updatedTask as unknown as Record<string, unknown>)[prop] = value;
+	}
 
-	if (changedTaskProp === "status" && !originalTask.recurrence) {
+	const statusValue = changedValues.get("status");
+	if (changedValues.has("status") && !originalTask.recurrence) {
 		updatedTask.completedDate =
-			typeof newPropValue === "string" && isCompletedStatus(newPropValue)
+			typeof statusValue === "string" && isCompletedStatus(statusValue)
 				? new Date().toISOString().split("T")[0]
 				: undefined;
 	}
 
+	const changedTaskProp = plan.changedTaskProp as keyof TaskInfo;
 	return {
 		changedTaskProp,
 		oldPropValue: plan.oldPropValue,
-		newPropValue,
+		newPropValue: changedValues.get(changedTaskProp) ?? plan.newPropValue,
 		updatedTask,
 	};
-}
-
-function resolveKanbanDropTaskInfoValue(
-	plan: KanbanTaskDropUpdatePlan,
-	originalTask: TaskInfo,
-	changedTaskProp: keyof TaskInfo
-): unknown {
-	const currentValue = originalTask[changedTaskProp];
-	if (plan.needsGroupUpdate && plan.isGroupByListProperty) {
-		return updateListDropValue(currentValue, plan.sourceColumn, plan.newGroupValue);
-	}
-	if (
-		plan.needsSwimlaneUpdate &&
-		plan.isSwimlaneListProperty &&
-		plan.newSwimLaneValue !== null
-	) {
-		return updateListDropValue(currentValue, plan.sourceSwimlane, plan.newSwimLaneValue);
-	}
-	return plan.newPropValue;
 }
