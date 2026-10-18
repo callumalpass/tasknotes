@@ -14,6 +14,8 @@ TASKNOTES_E2E_REUSE_OBSIDIAN=0 npm run e2e -- e2e/tasknotes.spec.ts
 
 After changes, rebuild and restart or reload the plugin in the isolated instance. For ad hoc testing, explicitly target your test vault with `OBSIDIAN_PLUGIN_PATH`, verify its path over CDP, and clean up only your own instance.
 
+When reproducing a reported bug by hand, record the session if your environment can, and write a short summary: the steps with times, what happened, a control case that works, and the cause if you found it. Turn a confirmed repro into `e2e/issues/issue-<number>-<slug>.spec.ts`.
+
 ## Other Build Commands
 
 ```bash
