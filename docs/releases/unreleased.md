@@ -39,3 +39,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Removed
 
 ## Fixed
+
+- (#2408) Localized the Modal Fields settings controls, field-card labels and type badges, notices, and reset confirmation. Saved field and group names remain unchanged. Thanks to @whysoslow for contributing this fix.

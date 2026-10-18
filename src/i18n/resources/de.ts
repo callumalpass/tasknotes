@@ -500,6 +500,52 @@ export const de: TranslationTree = {
 			features: "Funktionen",
 			integrations: "Integrationen"
 		},
+		modalFields: {
+			header: "Feldkonfiguration des Aufgaben-Modals",
+			description: "Konfigurieren Sie, welche Felder in den Modalen zur Aufgabenerstellung und -bearbeitung angezeigt werden. Ziehen Sie Felder, um sie innerhalb jeder Gruppe neu anzuordnen.",
+			splitLayout: {
+				name: "Geteiltes Layout auf breiten Bildschirmen",
+				description: "Wenn aktiviert, erscheint der Detail-Editor auf Bildschirmen mit 900 px oder mehr in einer rechten Spalte. Wenn deaktiviert, verwendet das Modal ein gestapeltes Layout."
+			},
+			tabMovesFocus: {
+				name: "Tabulator bewegt den Fokus im Detail-Editor",
+				description: "Wenn aktiviert, bewegt Tab den Fokus vom Detail-Editor zum nächsten Modalfeld und Umschalt+Tab zum vorherigen Feld. Wenn deaktiviert, verwenden Tab und Umschalt+Tab das Einrückungsverhalten des Markdown-Editors."
+			},
+			sync: {
+				name: "Benutzerfelder synchronisieren",
+				description: "Klicken Sie, um benutzerdefinierte Felder aus den Aufgabeneigenschaften-Einstellungen in diese Konfiguration zu synchronisieren.",
+				button: "Benutzerfelder synchronisieren",
+				notice: "Benutzerfelder wurden mit der Modalkonfiguration synchronisiert"
+			},
+			reset: {
+				name: "Auf Standardwerte zurücksetzen",
+				description: "Setzt alle Feldkonfigurationen auf ihre Standardwerte zurück. Dadurch werden alle benutzerdefinierten Konfigurationen entfernt.",
+				button: "Auf Standardwerte zurücksetzen",
+				confirmTitle: "Felderkonfiguration zurücksetzen",
+				confirmMessage: "Möchten Sie die Feldkonfiguration wirklich auf die Standardwerte zurücksetzen? Dadurch werden alle benutzerdefinierten Feldkonfigurationen entfernt.",
+				confirmText: "Zurücksetzen",
+				cancelText: "Abbrechen",
+				notice: "Feldkonfiguration auf Standardwerte zurückgesetzt"
+			},
+			initError: "Fehler: Feldkonfiguration konnte nicht initialisiert werden",
+			manager: {
+				invalidConfig: "Fehler: Ungültige Feldkonfiguration. Bitte auf Standardwerte zurücksetzen.",
+				emptyGroup: "Keine Felder in dieser Gruppe",
+				enabled: "Aktiviert:",
+				showInCreation: "Bei der Erstellung anzeigen:",
+				showInEdit: "Bei der Bearbeitung anzeigen:",
+				group: "Gruppe:",
+				fieldId: "ID: {id}",
+				fieldKey: "Schlüssel: {key}",
+				noKey: "Kein Schlüssel festgelegt",
+				fieldTypes: {
+					core: "Kern",
+					user: "Benutzerdefiniert",
+					dependency: "Abhängigkeit",
+					organization: "Organisation",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "Inline-Aufgaben",

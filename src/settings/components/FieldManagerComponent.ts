@@ -1,5 +1,6 @@
 import { App } from "obsidian";
 import type TaskNotesPlugin from "../../main";
+import type { TranslationKey } from "../../i18n";
 import type {
 	ModalFieldConfig,
 	FieldGroup,
@@ -12,6 +13,8 @@ import {
 	createCardSelect,
 	createCardToggle,
 } from "./CardComponent";
+
+type TranslateFn = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
 /**
  * Creates the field manager UI component for configuring modal fields
@@ -26,10 +29,12 @@ export function createFieldManager(
 	container.empty();
 	container.addClass("field-manager");
 
+	const translate: TranslateFn = (key, params) => plugin.i18n.translate(key, params);
+
 	// Safety check
 	if (!config || !config.groups || !config.fields) {
 		container.createDiv({
-			text: "Error: Invalid field configuration. Please reset to defaults.",
+			text: translate("settings.modalFields.manager.invalidConfig"),
 		});
 		return;
 	}
@@ -79,6 +84,8 @@ function renderFieldGroup(
 ): void {
 	container.empty();
 
+	const translate: TranslateFn = (key, params) => plugin.i18n.translate(key, params);
+
 	// Get fields for this group
 	const groupFields = config.fields
 		.filter((f) => f.group === groupId)
@@ -86,7 +93,7 @@ function renderFieldGroup(
 
 	if (groupFields.length === 0) {
 		const emptyState = container.createDiv({ cls: "field-manager__empty" });
-		emptyState.setText("No fields in this group");
+		emptyState.setText(translate("settings.modalFields.manager.emptyGroup"));
 		return;
 	}
 
@@ -112,11 +119,13 @@ function createFieldCard(
 	app: App,
 	groupId: FieldGroup
 ): void {
+	const translate: TranslateFn = (key, params) => plugin.i18n.translate(key, params);
+
 	// Create type badge
 	const typeBadge = activeWindow.createSpan();
 	typeBadge.classList.add("field-card__type");
 	typeBadge.classList.add(`field-card__type--${field.fieldType}`);
-	typeBadge.textContent = field.fieldType;
+	typeBadge.textContent = translate(`settings.modalFields.manager.fieldTypes.${field.fieldType}`);
 
 	// Create toggle switches with callbacks
 	const enabledToggle = createCardToggle(field.enabled, (value) => {
@@ -197,21 +206,21 @@ function createFieldCard(
 		draggable: canReorder,
 		header: {
 			primaryText: field.displayName,
-			secondaryText: getFieldSecondaryText(field, plugin.settings.userFields),
+			secondaryText: getFieldSecondaryText(field, plugin.settings.userFields, translate),
 			meta: [typeBadge],
 		},
 		content: {
 			sections: [
 				{
-					rows: [{ label: "Enabled:", input: enabledToggle }],
+					rows: [{ label: translate("settings.modalFields.manager.enabled"), input: enabledToggle }],
 				},
 				...(field.enabled
 					? [
 							{
 								rows: [
-									{ label: "Show in Creation:", input: creationToggle },
-									{ label: "Show in Edit:", input: editToggle },
-									{ label: "Group:", input: groupSelect, fullWidth: true },
+									{ label: translate("settings.modalFields.manager.showInCreation"), input: creationToggle },
+									{ label: translate("settings.modalFields.manager.showInEdit"), input: editToggle },
+									{ label: translate("settings.modalFields.manager.group"), input: groupSelect, fullWidth: true },
 								],
 							},
 						]
@@ -265,12 +274,15 @@ function createFieldCard(
 
 function getFieldSecondaryText(
 	field: ModalFieldConfig,
-	userFields: UserMappedField[] | undefined
+	userFields: UserMappedField[] | undefined,
+	translate: TranslateFn
 ): string {
 	if (field.fieldType !== "user") {
-		return `ID: ${field.id}`;
+		return translate("settings.modalFields.manager.fieldId", { id: field.id });
 	}
 
 	const userField = userFields?.find((candidate) => candidate.id === field.id);
-	return userField?.key ? `Key: ${userField.key}` : "No key set";
+	return userField?.key
+		? translate("settings.modalFields.manager.fieldKey", { key: userField.key })
+		: translate("settings.modalFields.manager.noKey");
 }

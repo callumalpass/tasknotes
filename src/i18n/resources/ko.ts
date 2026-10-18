@@ -500,6 +500,52 @@ export const ko: TranslationTree = {
 			features: "기능",
 			integrations: "통합"
 		},
+		modalFields: {
+			header: "작업 모달의 필드 구성",
+			description: "작업 생성 및 편집 모달에 표시할 필드를 구성합니다. 필드를 드래그하여 각 그룹 내에서 순서를 변경하세요.",
+			splitLayout: {
+				name: "넓은 화면에서 분할 레이아웃",
+				description: "활성화하면 900px 이상 화면에서 세부사항 편집기가 오른쪽 열에 나타납니다. 비활성화하면 모달이 스택 레이아웃을 사용합니다."
+			},
+			tabMovesFocus: {
+				name: "세부사항 편집기에서 Tab으로 포커스 이동",
+				description: "활성화하면 Tab이 세부사항 편집기에서 다음 모달 필드로, Shift+Tab이 이전 필드로 포커스를 이동합니다. 비활성화하면 Tab과 Shift+Tab은 Markdown 편집기의 들여쓰기 동작을 사용합니다."
+			},
+			sync: {
+				name: "사용자 필드 동기화",
+				description: "클릭하여 작업 속성 설정의 사용자 지정 필드를 이 구성으로 동기화합니다.",
+				button: "사용자 필드 동기화",
+				notice: "사용자 필드가 모달 구성에 동기화되었습니다"
+			},
+			reset: {
+				name: "기본값으로 재설정",
+				description: "모든 필드 구성을 기본값으로 재설정합니다. 사용자 지정 구성이 모두 제거됩니다.",
+				button: "기본값으로 재설정",
+				confirmTitle: "필드 구성을 기본값으로 재설정",
+				confirmMessage: "필드 구성을 기본값으로 재설정하시겠습니까? 모든 사용자 지정 필드 구성이 제거됩니다.",
+				confirmText: "재설정",
+				cancelText: "취소",
+				notice: "필드 구성이 기본값으로 재설정되었습니다"
+			},
+			initError: "오류: 필드 구성을 초기화할 수 없습니다",
+			manager: {
+				invalidConfig: "오류: 필드 구성이 잘못되었습니다. 기본값으로 재설정하세요.",
+				emptyGroup: "이 그룹에 필드가 없습니다",
+				enabled: "사용:",
+				showInCreation: "생성할 때 표시:",
+				showInEdit: "편집할 때 표시:",
+				group: "그룹:",
+				fieldId: "ID: {id}",
+				fieldKey: "키: {key}",
+				noKey: "키가 설정되지 않음",
+				fieldTypes: {
+					core: "기본",
+					user: "사용자",
+					dependency: "의존성",
+					organization: "정리",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "인라인 작업",

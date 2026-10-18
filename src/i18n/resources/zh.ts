@@ -500,6 +500,52 @@ export const zh: TranslationTree = {
 			features: "功能",
 			integrations: "集成"
 		},
+		modalFields: {
+			header: "任务模态框的字段配置",
+			description: "配置任务创建和编辑模态框中显示哪些字段。可拖动字段以在每个分组内重新排序。",
+			splitLayout: {
+				name: "宽屏下使用分栏布局",
+				description: "启用后，在 900px 或更宽的屏幕上，详情编辑器会显示在右栏；禁用后，模态框使用堆叠布局。"
+			},
+			tabMovesFocus: {
+				name: "Tab 键在详情编辑器中移动焦点",
+				description: "启用后，Tab 键从详情编辑器移到下一个模态框字段，Shift+Tab 移到上一个字段；禁用后，Tab 和 Shift+Tab 使用 Markdown 编辑器的缩进行为。"
+			},
+			sync: {
+				name: "同步用户字段",
+				description: "点击将任务属性设置中的自定义用户字段同步到此配置。",
+				button: "同步用户字段",
+				notice: "用户字段已同步到模态框配置"
+			},
+			reset: {
+				name: "重置为默认值",
+				description: "将所有字段配置重置为默认值。这将移除所有自定义配置。",
+				button: "重置为默认值",
+				confirmTitle: "字段配置重置",
+				confirmMessage: "确定要将字段配置重置为默认值吗？这将移除所有自定义字段配置。",
+				confirmText: "重置",
+				cancelText: "取消",
+				notice: "字段配置已重置为默认值"
+			},
+			initError: "错误：无法初始化字段配置",
+			manager: {
+				invalidConfig: "错误：字段配置无效。请重置为默认值。",
+				emptyGroup: "此分组中暂无字段",
+				enabled: "已启用：",
+				showInCreation: "创建任务时显示：",
+				showInEdit: "编辑任务时显示：",
+				group: "分组：",
+				fieldId: "ID：{id}",
+				fieldKey: "键：{key}",
+				noKey: "未设置键",
+				fieldTypes: {
+					core: "核心",
+					user: "用户",
+					dependency: "依赖",
+					organization: "组织",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "内联任务",

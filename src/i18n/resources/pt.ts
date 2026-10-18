@@ -500,6 +500,52 @@ export const pt: TranslationTree = {
 			features: "Recursos",
 			integrations: "Integrações"
 		},
+		modalFields: {
+			header: "Configuração de campos do modal de tarefas",
+			description: "Configure quais campos aparecem nos modais de criação e edição de tarefas. Arraste os campos para reordená-los dentro de cada grupo.",
+			splitLayout: {
+				name: "Layout dividido em telas largas",
+				description: "Quando ativado, o editor de detalhes aparece em uma coluna à direita em telas de 900px ou mais. Quando desativado, o modal usa um layout empilhado."
+			},
+			tabMovesFocus: {
+				name: "Tab move o foco no editor de detalhes",
+				description: "Quando ativado, Tab move do editor de detalhes para o próximo campo do modal e Shift+Tab para o campo anterior. Quando desativado, Tab e Shift+Tab usam o comportamento de indentação do editor Markdown."
+			},
+			sync: {
+				name: "Sincronizar campos de usuário",
+				description: "Clique para sincronizar campos personalizados das configurações de propriedades da tarefa para esta configuração.",
+				button: "Sincronizar campos de usuário",
+				notice: "Campos de usuário sincronizados com a configuração do modal"
+			},
+			reset: {
+				name: "Redefinir para os padrões",
+				description: "Redefine todas as configurações de campos para os valores padrão. Isso removerá todas as configurações personalizadas.",
+				button: "Redefinir para os padrões",
+				confirmTitle: "Redefinir a configuração de campos",
+				confirmMessage: "Tem certeza de que deseja redefinir a configuração de campos para os padrões? Isso removerá todas as configurações de campos personalizadas.",
+				confirmText: "Redefinir",
+				cancelText: "Cancelar",
+				notice: "Configuração de campos redefinida para os padrões"
+			},
+			initError: "Erro: Não foi possível inicializar a configuração de campos",
+			manager: {
+				invalidConfig: "Erro: Configuração de campos inválida. Redefina para os padrões.",
+				emptyGroup: "Nenhum campo neste grupo",
+				enabled: "Ativado:",
+				showInCreation: "Mostrar ao criar:",
+				showInEdit: "Mostrar ao editar:",
+				group: "Grupo:",
+				fieldId: "ID: {id}",
+				fieldKey: "Chave: {key}",
+				noKey: "Nenhuma chave definida",
+				fieldTypes: {
+					core: "Principal",
+					user: "Usuário",
+					dependency: "Dependência",
+					organization: "Organização",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "Tarefas Embutidas",

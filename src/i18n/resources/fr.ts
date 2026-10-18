@@ -500,6 +500,52 @@ export const fr: TranslationTree = {
 			features: "Fonctionnalités",
 			integrations: "Intégrations"
 		},
+		modalFields: {
+			header: "Configuration des champs de la modale de tâches",
+			description: "Configurez les champs affichés dans les modaux de création et de modification de tâches. Glissez les champs pour les réordonner dans chaque groupe.",
+			splitLayout: {
+				name: "Mise en page divisée sur grands écrans",
+				description: "Lorsque cette option est activée, l'éditeur de détails apparaît dans une colonne de droite sur les écrans de 900 px ou plus. Lorsqu'elle est désactivée, le modal utilise une mise en page empilée."
+			},
+			tabMovesFocus: {
+				name: "La tabulation déplace le focus dans l'éditeur de détails",
+				description: "Lorsque cette option est activée, Tab déplace le focus de l'éditeur de détails vers le champ suivant du modal et Maj+Tab vers le champ précédent. Lorsqu'elle est désactivée, Tab et Maj+Tab utilisent le comportement d'indentation de l'éditeur Markdown."
+			},
+			sync: {
+				name: "Synchroniser les champs utilisateur",
+				description: "Cliquez pour synchroniser les champs utilisateur personnalisés des paramètres de propriétés de tâches dans cette configuration.",
+				button: "Synchroniser les champs utilisateur",
+				notice: "Champs utilisateur synchronisés avec la configuration du modal"
+			},
+			reset: {
+				name: "Rétablir les valeurs par défaut",
+				description: "Rétablit toutes les configurations de champs sur leurs valeurs par défaut. Cela supprimera toutes les configurations personnalisées.",
+				button: "Rétablir les valeurs par défaut",
+				confirmTitle: "Réinitialisation de la configuration des champs",
+				confirmMessage: "Voulez-vous vraiment rétablir la configuration des champs par défaut ? Cela supprimera toutes les configurations de champs personnalisées.",
+				confirmText: "Réinitialiser",
+				cancelText: "Annuler",
+				notice: "Configuration des champs rétablie aux valeurs par défaut"
+			},
+			initError: "Erreur : Impossible d'initialiser la configuration des champs",
+			manager: {
+				invalidConfig: "Erreur : Configuration des champs invalide. Veuillez rétablir les valeurs par défaut.",
+				emptyGroup: "Aucun champ dans ce groupe",
+				enabled: "Activé :",
+				showInCreation: "Afficher lors de la création :",
+				showInEdit: "Afficher lors de la modification :",
+				group: "Groupe :",
+				fieldId: "ID : {id}",
+				fieldKey: "Clé : {key}",
+				noKey: "Aucune clé définie",
+				fieldTypes: {
+					core: "Principal",
+					user: "Utilisateur",
+					dependency: "Dépendance",
+					organization: "Organisation",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "Tâches dans les notes",
