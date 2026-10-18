@@ -1,4 +1,11 @@
-import { FilterOperator, FilterProperty, FilterCondition, FilterGroup, TaskInfo } from "../types";
+import {
+	FilterOperator,
+	FilterProperty,
+	FilterCondition,
+	FilterGroup,
+	TaskInfo,
+	PropertyDefinition,
+} from "../types";
 import {
 	isBeforeDateTimeAware,
 	getDatePart,
@@ -60,7 +67,11 @@ export class FilterUtils {
 	/**
 	 * Validate a filter node (group or condition)
 	 */
-	static validateFilterNode(node: FilterGroup | FilterCondition, strict = true): void {
+	static validateFilterNode(
+		node: FilterGroup | FilterCondition,
+		strict = true,
+		propertyDefinitions?: readonly PropertyDefinition[]
+	): void {
 		if (!node || typeof node !== "object") {
 			throw new FilterValidationError("Filter node must be an object");
 		}
@@ -74,9 +85,9 @@ export class FilterUtils {
 		}
 
 		if (node.type === "condition") {
-			this.validateCondition(node, strict);
+			this.validateCondition(node, strict, propertyDefinitions);
 		} else if (node.type === "group") {
-			this.validateGroup(node, strict);
+			this.validateGroup(node, strict, propertyDefinitions);
 			} else {
 				const invalidNode = node as Record<string, unknown>;
 				throw new FilterValidationError(
@@ -90,7 +101,11 @@ export class FilterUtils {
 	/**
 	 * Validate a filter condition
 	 */
-	private static validateCondition(condition: FilterCondition, strict = true): void {
+	private static validateCondition(
+		condition: FilterCondition,
+		strict = true,
+		propertyDefinitions?: readonly PropertyDefinition[]
+	): void {
 		if (typeof condition.property !== "string") {
 			throw new FilterValidationError(
 				"Condition must have a valid property",
@@ -109,6 +124,17 @@ export class FilterUtils {
 			return; // Skip further validation for placeholder
 		}
 
+		const definition = propertyDefinitions?.find(
+			(property) => property.id === condition.property
+		);
+		if (propertyDefinitions && !definition) {
+			throw new FilterValidationError(
+				`Unknown property: ${condition.property} (condition '${condition.id}')`,
+				"property",
+				condition.id
+			);
+		}
+
 		if (!condition.operator || typeof condition.operator !== "string") {
 			throw new FilterValidationError(
 				"Condition must have a valid operator",
@@ -118,9 +144,8 @@ export class FilterUtils {
 		}
 
 		// Validate that operator is supported for the property
-		const validOperators = this.getValidOperatorsForProperty(
-			condition.property
-		);
+		const validOperators =
+			definition?.supportedOperators ?? this.getValidOperatorsForProperty(condition.property);
 		if (!validOperators.includes(condition.operator)) {
 			throw new FilterValidationError(
 				`Operator '${condition.operator}' is not valid for property '${condition.property}'`,
@@ -151,7 +176,11 @@ export class FilterUtils {
 	/**
 	 * Validate a filter group
 	 */
-	private static validateGroup(group: FilterGroup, strict = true): void {
+	private static validateGroup(
+		group: FilterGroup,
+		strict = true,
+		propertyDefinitions?: readonly PropertyDefinition[]
+	): void {
 		if (!group.conjunction || !["and", "or"].includes(group.conjunction)) {
 			throw new FilterValidationError(
 				"Group must have a valid conjunction (and/or)",
@@ -171,13 +200,13 @@ export class FilterUtils {
 		// Recursively validate children
 		group.children.forEach((child, index) => {
 			try {
-				this.validateFilterNode(child, strict);
+				this.validateFilterNode(child, strict, propertyDefinitions);
 			} catch (error) {
 				if (error instanceof FilterValidationError) {
 					throw new FilterValidationError(
 						`Child ${index}: ${error.message}`,
 						error.field,
-						group.id
+						propertyDefinitions ? error.nodeId : group.id
 					);
 				}
 				throw error;

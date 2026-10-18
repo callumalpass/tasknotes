@@ -130,6 +130,8 @@ The Calendar View provides several display options that control what types of ev
 - **Show ICS events**: Display events from imported ICS calendars
 - **Show time entries**: Display time tracking entries
 - **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
+- **Show hourly breakdown**: Turn this off to show only the all-day area in Week, Day, and Custom views. The all-day area then fills the calendar height (unless the height is set to auto) and shows every event by default. Timed events are not shown while the hourly breakdown is hidden.
+- **Max events per day / Max event rows per day**: Limit how many events a day cell shows before a "+ more" link, in Month and Year views and in the all-day area of Week, Day, and Custom views. `0` uses the automatic limit.
 - **Create daily notes from date links**: Let date header links create a missing daily note before opening it. Turn this off if date links should only open existing daily notes.
 - **Drag/drop resolution**: Set `snapDuration` when you want events to drag or resize in smaller increments than the visible `slotDuration`, such as 5-minute dragging on a 30-minute grid.
 - **Span tasks between scheduled and due dates**: Display tasks as multi-day bars spanning from their scheduled date to their due date (see below)

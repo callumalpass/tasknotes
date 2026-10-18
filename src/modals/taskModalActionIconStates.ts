@@ -1,4 +1,4 @@
-import { setTooltip } from "obsidian";
+import { setIcon, setTooltip } from "obsidian";
 import type { PriorityConfig, StatusConfig } from "../types";
 
 const STATIC_COLOR_CLASSES = [
@@ -92,6 +92,7 @@ function updateStatusIcon(
 
 	const statusConfig = state.statusConfigs.find((config) => config.value === state.status);
 	const statusLabel = statusConfig ? statusConfig.label : state.status;
+	setStatusIconSymbol(icon, getTaskModalStatusIconName(statusConfig));
 	updateConfiguredValueIcon(icon, context, {
 		isActive: Boolean(
 			state.status && statusConfig && statusConfig.value !== state.defaultStatus
@@ -101,6 +102,20 @@ function updateStatusIcon(
 		label: statusLabel,
 		color: statusConfig?.color,
 	});
+}
+
+/** Match task cards: the configured status icon, otherwise a circle. */
+export function getTaskModalStatusIconName(statusConfig: StatusConfig | undefined): string {
+	if (statusConfig?.icon) return statusConfig.icon;
+	return statusConfig?.isCompleted ? "circle-check" : "circle";
+}
+
+function setStatusIconSymbol(icon: HTMLElement, iconName: string): void {
+	const iconElement = icon.querySelector<HTMLElement>(".icon");
+	if (!iconElement || iconElement.dataset.statusIcon === iconName) return;
+	iconElement.empty();
+	setIcon(iconElement, iconName);
+	iconElement.dataset.statusIcon = iconName;
 }
 
 function updatePriorityIcon(

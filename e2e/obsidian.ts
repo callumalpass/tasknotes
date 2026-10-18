@@ -4,8 +4,8 @@ import * as fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const UNPACKED_DIR = path.join(PROJECT_ROOT, '.obsidian-unpacked');
-const E2E_VAULT_DIR = path.join(PROJECT_ROOT, 'tasknotes-e2e-vault');
+const UNPACKED_DIR = path.resolve(process.env.TASKNOTES_E2E_RUNTIME_DIR ?? path.join(PROJECT_ROOT, '.obsidian-unpacked'));
+const E2E_VAULT_DIR = path.resolve(process.env.TASKNOTES_E2E_VAULT_DIR ?? path.join(PROJECT_ROOT, 'tasknotes-e2e-vault'));
 
 export interface ObsidianApp {
   browser?: Browser;
@@ -258,6 +258,19 @@ async function waitForCdpUrl(
   });
 }
 
+async function stopOwnedProcess(child?: ChildProcess): Promise<void> {
+  if (!child?.pid) return;
+  for (const signal of ['SIGTERM', 'SIGKILL'] as const) {
+    try {
+      process.kill(-child.pid, signal);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ESRCH') return;
+      throw error;
+    }
+    if (signal === 'SIGTERM') await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+}
+
 export async function launchObsidian(): Promise<ObsidianApp> {
   // Check that setup has been run
   const obsidianBinary = path.join(UNPACKED_DIR, 'obsidian');
@@ -279,176 +292,210 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     : null;
   let cdpUrl = '';
   let obsidianProcess: ChildProcess | undefined;
+  let browser: Browser | undefined;
+  let launchOutput = '';
 
-  if (existingCdpUrl) {
-    console.log('Found existing Obsidian instance, connecting...');
-    cdpUrl = existingCdpUrl;
-  } else {
-    // Launch Obsidian manually and connect via CDP.
-    // Pass the vault path directly to match the manual launch script.
-    // Use --user-data-dir to force a separate Electron instance (prevents single-instance detection)
-    const userDataDir = path.join(PROJECT_ROOT, '.obsidian-config-e2e');
-    if (process.env.TASKNOTES_E2E_PRESERVE_WORKSPACE !== '1') {
-      fs.rmSync(path.join(E2E_VAULT_DIR, '.obsidian', 'workspace.json'), { force: true });
-    }
-    fs.mkdirSync(userDataDir, { recursive: true });
-    const obsidianConfigPath = path.join(userDataDir, 'obsidian.json');
-    let obsidianConfig: { vaults?: Record<string, { path: string; ts: number; open?: boolean }> } = {};
-    try {
-      obsidianConfig = JSON.parse(fs.readFileSync(obsidianConfigPath, 'utf8'));
-    } catch {
-      obsidianConfig = {};
-    }
-    obsidianConfig.vaults = {
-      ...(obsidianConfig.vaults ?? {}),
-      'tasknotes-e2e': {
-        path: E2E_VAULT_DIR,
-        ts: Date.now(),
-        open: true,
-      },
-    };
-    fs.writeFileSync(obsidianConfigPath, JSON.stringify(obsidianConfig));
-    const obsidianArgs = [
-      '--no-sandbox',
-      `--remote-debugging-port=${remoteDebuggingPort}`,
-      `--user-data-dir=${userDataDir}`,
-      E2E_VAULT_DIR,
-    ];
-    const launchWithoutDisplay = !process.env.DISPLAY;
-    const spawnCommand = launchWithoutDisplay ? 'xvfb-run' : obsidianBinary;
-    const spawnArgs = launchWithoutDisplay
-      ? ['-a', obsidianBinary, ...obsidianArgs]
-      : obsidianArgs;
-
-    obsidianProcess = spawn(spawnCommand, spawnArgs, {
-      cwd: UNPACKED_DIR,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      detached: true, // Own the Xvfb/Electron process group so teardown cannot leak children.
-      env: {
-        ...process.env,
-        OBSIDIAN_CONFIG_DIR: userDataDir,
-      },
-    });
-
-    cdpUrl = await waitForCdpUrl(remoteDebuggingPort, obsidianProcess, 60000);
-  }
-
-  console.log('Connecting to CDP:', cdpUrl);
-
-  // Connect to Obsidian via CDP
-  const browser = await chromium.connectOverCDP(cdpUrl);
-
-  // Get the first page/context
-  let contexts = browser.contexts();
-  let page: Page;
-
-  if (contexts.length > 0 && contexts[0].pages().length > 0) {
-    page = contexts[0].pages()[0];
-  } else {
-    // Wait for a context and page to be created
-    if (contexts.length === 0) {
-      await new Promise<void>((resolve) => {
-        const checkContexts = () => {
-          contexts = browser.contexts();
-          if (contexts.length > 0) {
-            resolve();
-          } else {
-            setTimeout(checkContexts, 100);
-          }
-        };
-        checkContexts();
-      });
-    }
-    const context = contexts[0];
-    if (context.pages().length > 0) {
-      page = context.pages()[0];
-    } else {
-      page = await context.waitForEvent('page');
-    }
-  }
-
-  // Wait for Obsidian to fully load
-  await page.waitForLoadState('domcontentloaded');
-  installElectronScreenshotCapture(page);
-
-  // Do not interact with an unexpected vault or a half-built workspace.
-  await page.waitForFunction(() => (window as any).app?.workspace?.layoutReady);
-  const vaultPath = await page.evaluate(() => (window as any).app.vault.adapter.basePath);
-  if (path.resolve(vaultPath) !== E2E_VAULT_DIR) {
-    throw new Error(`Refusing to test unexpected vault: ${vaultPath}`);
-  }
-  await setObsidianViewport(page, { width: 1400, height: 900 });
-
-  // Handle "Trust this vault" dialog - this enables community plugins
-  const trustButton = page.locator('button:has-text("Trust author and enable plugins")');
-  if (await trustButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await trustButton.click();
-    await page.waitForTimeout(2000);
-  }
-
-  // Alternative trust button text
-  const trustButton2 = page.locator('button:has-text("Trust")');
-  if (await trustButton2.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await trustButton2.click();
-    await page.waitForTimeout(1000);
-  }
-
-  // Handle "Turn on community plugins" dialog if it appears
-  const enablePluginsButton = page.locator('button:has-text("Turn on community plugins")');
-  if (await enablePluginsButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await enablePluginsButton.click();
-    await page.waitForTimeout(2000);
-  }
-
-  // Handle any "Enable" button for plugins
-  const enableButton = page.locator('button:has-text("Enable community plugins")');
-  if (await enableButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await enableButton.click();
-    await page.waitForTimeout(1000);
-  }
-
-  // Wait for the workspace to be ready
-  await page.waitForSelector('.workspace', { timeout: 30000 });
-
-  await page.waitForFunction(() =>
-    Object.keys((window as any).app.commands.commands).some(id => id.startsWith('tasknotes:'))
-  );
-
-  // Close any open modals/dialogs that might be blocking the UI
-  // This is especially important when reusing an existing instance
-  for (let i = 0; i < 3; i++) {
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(200);
-  }
-
-  // Click on workspace to ensure focus
-  const workspaceForFocus = page.locator('.workspace');
-  if (await workspaceForFocus.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await workspaceForFocus.click({ position: { x: 100, y: 100 } }).catch(() => {});
-    await page.waitForTimeout(200);
-  }
-
-  // Verify TaskNotes is loaded by checking for its ribbon icon or commands
-  // Try to verify the plugin is active by checking command availability
   try {
-    await page.keyboard.press('Control+p');
-    await page.waitForSelector('.prompt', { timeout: 5000 });
-    const promptInput = page.locator('.prompt-input');
-    await promptInput.fill('TaskNotes');
-    await page.waitForTimeout(500);
-    const suggestion = page.locator('.suggestion-item');
-    const hasSuggestions = await suggestion.first().isVisible({ timeout: 3000 }).catch(() => false);
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
-
-    if (!hasSuggestions) {
-      console.warn('Warning: TaskNotes commands not found. Plugin may not be loaded.');
+    if (!reuseExistingInstance && await tryConnectExisting(remoteDebuggingPort)) {
+      throw new Error(`Debug port ${remoteDebuggingPort} is already occupied. Set TASKNOTES_E2E_REMOTE_DEBUGGING_PORT to a separate port.`);
     }
-  } catch (e) {
-    console.warn('Could not verify TaskNotes plugin status:', e);
-  }
+    if (existingCdpUrl) {
+      console.log('Found existing Obsidian instance, connecting...');
+      cdpUrl = existingCdpUrl;
+    } else {
+      // Launch Obsidian manually and connect via CDP.
+      // Pass the vault path directly to match the manual launch script.
+      // Use --user-data-dir to force a separate Electron instance (prevents single-instance detection)
+      const userDataDir = path.resolve(process.env.TASKNOTES_E2E_USER_DATA_DIR ?? path.join(PROJECT_ROOT, '.obsidian-config-e2e'));
+      if (process.env.TASKNOTES_E2E_PRESERVE_WORKSPACE !== '1') {
+        fs.rmSync(path.join(E2E_VAULT_DIR, '.obsidian', 'workspace.json'), { force: true });
+      }
+      fs.mkdirSync(userDataDir, { recursive: true });
+      const obsidianConfigPath = path.join(userDataDir, 'obsidian.json');
+      let obsidianConfig: { updateDisabled?: boolean; vaults?: Record<string, { path: string; ts: number; open?: boolean }> } = {};
+      try {
+        obsidianConfig = JSON.parse(fs.readFileSync(obsidianConfigPath, 'utf8'));
+      } catch {
+        obsidianConfig = {};
+      }
+      obsidianConfig.updateDisabled = true;
+      obsidianConfig.vaults = {
+        'tasknotes-e2e': {
+          path: E2E_VAULT_DIR,
+          ts: Date.now(),
+          open: true,
+        },
+      };
+      fs.writeFileSync(obsidianConfigPath, JSON.stringify(obsidianConfig));
+      const launchWithoutDisplay = !process.env.DISPLAY;
+      const obsidianArgs = [
+        '--no-sandbox',
+        '--password-store=basic', // Test profiles must not prompt to unlock the desktop keyring.
+        ...(launchWithoutDisplay ? ['--ozone-platform=x11', '--disable-gpu'] : []),
+        `--remote-debugging-port=${remoteDebuggingPort}`,
+        `--user-data-dir=${userDataDir}`,
+        E2E_VAULT_DIR,
+      ];
+      const spawnCommand = launchWithoutDisplay ? 'xvfb-run' : obsidianBinary;
+      const spawnArgs = launchWithoutDisplay
+        ? ['-a', obsidianBinary, ...obsidianArgs]
+        : obsidianArgs;
 
-  return { browser, process: obsidianProcess, page, isExistingInstance: !!existingCdpUrl };
+      obsidianProcess = spawn(spawnCommand, spawnArgs, {
+        cwd: UNPACKED_DIR,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        detached: true, // Own the Xvfb/Electron process group so teardown cannot leak children.
+        env: {
+          ...process.env,
+          OBSIDIAN_CONFIG_DIR: userDataDir,
+        },
+      });
+
+      const collectOutput = (data: Buffer) => { launchOutput = (launchOutput + data.toString()).slice(-8000); };
+      obsidianProcess.stdout?.on('data', collectOutput);
+      obsidianProcess.stderr?.on('data', collectOutput);
+      cdpUrl = await waitForCdpUrl(remoteDebuggingPort, obsidianProcess, 60000);
+    }
+
+    console.log('Connecting to CDP:', cdpUrl);
+
+    // Connect to Obsidian via CDP
+    const connectedBrowser = await chromium.connectOverCDP(cdpUrl);
+    browser = connectedBrowser;
+
+    // Get the first page/context
+    let contexts = connectedBrowser.contexts();
+    let page: Page;
+
+    if (contexts.length > 0 && contexts[0].pages().length > 0) {
+      page = contexts[0].pages()[0];
+    } else {
+      // Wait for a context and page to be created
+      if (contexts.length === 0) {
+        await new Promise<void>((resolve) => {
+          const checkContexts = () => {
+            contexts = connectedBrowser.contexts();
+            if (contexts.length > 0) {
+              resolve();
+            } else {
+              setTimeout(checkContexts, 100);
+            }
+          };
+          checkContexts();
+        });
+      }
+      const context = contexts[0];
+      if (context.pages().length > 0) {
+        page = context.pages()[0];
+      } else {
+        page = await context.waitForEvent('page');
+      }
+    }
+
+    // Wait for Obsidian to fully load
+    await page.waitForLoadState('domcontentloaded');
+    installElectronScreenshotCapture(page);
+
+    // Do not interact with an unexpected vault or a half-built workspace.
+    await page.waitForFunction(() => (window as any).app?.workspace?.layoutReady);
+    const vaultPath = await page.evaluate(() => (window as any).app.vault.adapter.basePath);
+    if (path.resolve(vaultPath) !== E2E_VAULT_DIR) {
+      throw new Error(`Refusing to test unexpected vault: ${vaultPath}`);
+    }
+    const minimumVersion = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'manifest.json'), 'utf8')).minAppVersion;
+    const runtimeVersion = await page.evaluate((minimum: string) => {
+      // Use Obsidian's app-package version, not Electron's installer version.
+      const version: string = (window as any).require('electron').ipcRenderer.sendSync('version');
+      if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error(`Invalid Obsidian runtime version: ${version}`);
+      const actual = version.split('.').map(Number);
+      const required = minimum.split('.').map(Number);
+      for (let i = 0; i < actual.length; i++) {
+        if (actual[i] !== required[i]) return { version, compatible: actual[i] > required[i] };
+      }
+      return { version, compatible: true };
+    }, minimumVersion);
+    if (!runtimeVersion.compatible) {
+      throw new Error(`Obsidian ${runtimeVersion.version} is too old; TaskNotes requires ${minimumVersion} or newer. Run npm run e2e:setup with a compatible AppImage.`);
+    }
+    console.log(`Verified Obsidian ${runtimeVersion.version}, vault: ${vaultPath}`);
+    await setObsidianViewport(page, { width: 1400, height: 900 });
+
+    // Handle "Trust this vault" dialog - this enables community plugins
+    const trustButton = page.locator('button:has-text("Trust author and enable plugins")');
+    if (await trustButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await trustButton.click();
+      await page.waitForTimeout(2000);
+    }
+
+    // Alternative trust button text
+    const trustButton2 = page.locator('button:has-text("Trust")');
+    if (await trustButton2.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await trustButton2.click();
+      await page.waitForTimeout(1000);
+    }
+
+    // Handle "Turn on community plugins" dialog if it appears
+    const enablePluginsButton = page.locator('button:has-text("Turn on community plugins")');
+    if (await enablePluginsButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await enablePluginsButton.click();
+      await page.waitForTimeout(2000);
+    }
+
+    // Handle any "Enable" button for plugins
+    const enableButton = page.locator('button:has-text("Enable community plugins")');
+    if (await enableButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await enableButton.click();
+      await page.waitForTimeout(1000);
+    }
+
+    // Wait for the workspace to be ready
+    await page.waitForSelector('.workspace', { timeout: 30000 });
+
+    await page.waitForFunction(() =>
+      Object.keys((window as any).app.commands.commands).some(id => id.startsWith('tasknotes:'))
+    );
+
+    // Close any open modals/dialogs that might be blocking the UI
+    // This is especially important when reusing an existing instance
+    for (let i = 0; i < 3; i++) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+    }
+
+    // Click on workspace to ensure focus
+    const workspaceForFocus = page.locator('.workspace');
+    if (await workspaceForFocus.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await workspaceForFocus.click({ position: { x: 100, y: 100 } }).catch(() => {});
+      await page.waitForTimeout(200);
+    }
+
+    // Verify TaskNotes is loaded by checking for its ribbon icon or commands
+    // Try to verify the plugin is active by checking command availability
+    try {
+      await page.keyboard.press('Control+p');
+      await page.waitForSelector('.prompt', { timeout: 5000 });
+      const promptInput = page.locator('.prompt-input');
+      await promptInput.fill('TaskNotes');
+      await page.waitForTimeout(500);
+      const suggestion = page.locator('.suggestion-item');
+      const hasSuggestions = await suggestion.first().isVisible({ timeout: 3000 }).catch(() => false);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+
+      if (!hasSuggestions) {
+        console.warn('Warning: TaskNotes commands not found. Plugin may not be loaded.');
+      }
+    } catch (e) {
+      console.warn('Could not verify TaskNotes plugin status:', e);
+    }
+
+    return { browser, process: obsidianProcess, page, isExistingInstance: !!existingCdpUrl };
+  } catch (error) {
+    if (launchOutput) console.error('Obsidian launch output:', launchOutput);
+    await browser?.close().catch(() => {});
+    await stopOwnedProcess(obsidianProcess);
+    throw error;
+  }
 }
 
 export async function closeObsidian(app: ObsidianApp): Promise<void> {
@@ -466,13 +513,7 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
       await app.browser.close();
     }
   } finally {
-    if (app.process?.pid) {
-      try {
-        process.kill(-app.process.pid, 'SIGTERM');
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
-      }
-    }
+    await stopOwnedProcess(app.process);
   }
 }
 

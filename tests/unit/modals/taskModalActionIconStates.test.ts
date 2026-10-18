@@ -1,6 +1,8 @@
 const mockSetTooltip = jest.fn();
+const mockSetIcon = jest.fn();
 
 jest.mock("obsidian", () => ({
+	setIcon: mockSetIcon,
 	setTooltip: mockSetTooltip,
 }));
 
@@ -94,6 +96,31 @@ describe("taskModalActionIconStates", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
 		mockSetTooltip.mockClear();
+		mockSetIcon.mockClear();
+	});
+
+	it("shows the status as a circle, check circle, or configured icon like task cards (#2401)", () => {
+		const actionBar = createActionBar();
+		const statusIconElement = actionBar.querySelector('[data-type="status"] .icon');
+		const base = createState();
+		const withIcon = base.statusConfigs.map((config) =>
+			config.value === "open" ? { ...config, icon: "clock" } : config
+		);
+
+		updateTaskModalActionIconStates(actionBar, { translate }, base);
+		updateTaskModalActionIconStates(actionBar, { translate }, base);
+		updateTaskModalActionIconStates(actionBar, { translate }, createState({ status: "done" }));
+		updateTaskModalActionIconStates(
+			actionBar,
+			{ translate },
+			createState({ statusConfigs: withIcon })
+		);
+
+		expect(mockSetIcon.mock.calls).toEqual([
+			[statusIconElement, "circle"],
+			[statusIconElement, "circle-check"],
+			[statusIconElement, "clock"],
+		]);
 	});
 
 	it("marks date icons active and updates translated tooltips when values exist", () => {

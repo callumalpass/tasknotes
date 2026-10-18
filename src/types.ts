@@ -168,6 +168,8 @@ export type FilterOperator =
 export interface PropertyDefinition {
 	id: FilterProperty;
 	label: string;
+	aliases?: readonly string[];
+	frontmatterKey?: string;
 	category: "text" | "select" | "date" | "boolean" | "numeric" | "special";
 	supportedOperators: FilterOperator[];
 	valueInputType: "text" | "select" | "multi-select" | "date" | "number" | "none";

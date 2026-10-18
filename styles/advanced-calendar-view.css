@@ -739,6 +739,19 @@ body.is-mobile .timeblock-attachment-remove {
     display: none;
 }
 
+/* Fill height without the hourly grid: give the all-day row the space. */
+.advanced-calendar-view.advanced-calendar-view--hide-time-grid:not(.advanced-calendar-view--auto-height) .fc-timegrid .fc-scrollgrid-section-liquid {
+    display: none;
+}
+
+.advanced-calendar-view.advanced-calendar-view--hide-time-grid:not(.advanced-calendar-view--auto-height) .fc-timegrid .fc-scrollgrid-section-body:not(.fc-scrollgrid-section-liquid),
+.advanced-calendar-view.advanced-calendar-view--hide-time-grid:not(.advanced-calendar-view--auto-height) .fc-timegrid .fc-scrollgrid-section-body:not(.fc-scrollgrid-section-liquid) > td > .fc-scroller-harness,
+.advanced-calendar-view.advanced-calendar-view--hide-time-grid:not(.advanced-calendar-view--auto-height) .fc-timegrid .fc-scrollgrid-section-body:not(.fc-scrollgrid-section-liquid) .fc-scroller,
+.advanced-calendar-view.advanced-calendar-view--hide-time-grid:not(.advanced-calendar-view--auto-height) .fc-timegrid .fc-daygrid-body,
+.advanced-calendar-view.advanced-calendar-view--hide-time-grid:not(.advanced-calendar-view--auto-height) .fc-timegrid .fc-daygrid-body > table {
+    height: 100%;
+}
+
 .advanced-calendar-view .fc-scrollgrid {
     /* Minimal's readable-line-width table rules use this instead of width. */
     --table-width: 100%;

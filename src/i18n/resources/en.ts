@@ -283,8 +283,8 @@ export const en: TranslationTree = {
 					slotEventOverlap: "Allow events to overlap",
 					enableSearch: "Enable search box",
 					eventMaxStack: "Max stacked events (week/day view, 0 = unlimited)",
-					dayMaxEvents: "Max events per day (month view, 0 = auto)",
-					dayMaxEventRows: "Max event rows per day (month view, 0 = unlimited)",
+					dayMaxEvents: "Max events per day (0 = auto)",
+					dayMaxEventRows: "Max event rows per day (0 = unlimited)",
 					spanScheduledToDue: "Span tasks between scheduled and due dates",
 				},
 				propertyBasedEvents: {

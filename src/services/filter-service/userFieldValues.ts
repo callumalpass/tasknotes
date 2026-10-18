@@ -120,9 +120,29 @@ export function findUserFieldByIdOrKey(
 	userFields: readonly UserFieldDefinition[] | undefined,
 	fieldIdOrKey: string
 ): UserFieldDefinition | undefined {
-	return userFields?.find(
-		(field) => getPrimaryUserFieldId(field) === fieldIdOrKey || field.key === fieldIdOrKey
+	// Prefer canonical IDs over key aliases, regardless of settings order.
+	return (
+		findUserFieldById(userFields, fieldIdOrKey) ??
+		userFields?.find((field) => field.key === fieldIdOrKey)
 	);
+}
+
+export function resolveUserFieldProperty(
+	userFields: readonly UserFieldDefinition[] | undefined,
+	property: string
+): UserFieldDefinition | undefined {
+	if (!property.startsWith("user:") && !property.startsWith("user.")) return undefined;
+	return findUserFieldByIdOrKey(userFields, property.slice(5));
+}
+
+export function getUserFieldPropertyAliases(field: UserFieldDefinition): string[] {
+	return [
+		...new Set([
+			`user.${getPrimaryUserFieldId(field)}`,
+			`user:${field.key}`,
+			`user.${field.key}`,
+		]),
+	].filter((alias) => alias !== `user:${getPrimaryUserFieldId(field)}`);
 }
 
 export function coerceUserFieldTaskValue(

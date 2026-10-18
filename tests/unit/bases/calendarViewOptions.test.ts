@@ -116,7 +116,7 @@ describe("calendar view options", () => {
 		expect(isHidden(findOption(weekOptions, "eventMaxStack"))).toBe(false);
 	});
 
-	it("only shows month density controls for month and year views", () => {
+	it("shows day density controls for month, year, and week/day views (#2387)", () => {
 		const plugin = createPlugin();
 		const monthOptions = buildCalendarViewOptions(
 			plugin,
@@ -129,8 +129,8 @@ describe("calendar view options", () => {
 
 		expect(isHidden(findOption(monthOptions, "dayMaxEvents"))).toBe(false);
 		expect(isHidden(findOption(monthOptions, "dayMaxEventRows"))).toBe(false);
-		expect(isHidden(findOption(weekOptions, "dayMaxEvents"))).toBe(true);
-		expect(isHidden(findOption(weekOptions, "dayMaxEventRows"))).toBe(true);
+		expect(isHidden(findOption(weekOptions, "dayMaxEvents"))).toBe(false);
+		expect(isHidden(findOption(weekOptions, "dayMaxEventRows"))).toBe(false);
 	});
 
 	it("hides dependent controls until their parent option is enabled", () => {

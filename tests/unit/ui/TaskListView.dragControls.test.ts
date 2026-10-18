@@ -466,6 +466,40 @@ describe("TaskListView drag controls", () => {
 		);
 	});
 
+	it("builds task signatures for link-valued formulas without serializing live Bases values (#2399)", () => {
+		const view = createView();
+		class LinkValue {
+			app: Record<string, unknown> = {};
+			constructor(private readonly target: string) {
+				this.app.app = this.app;
+			}
+			renderTo() {}
+			toString() {
+				return this.target;
+			}
+		}
+		const withBacklinks = (targets: string[]) =>
+			TaskFactory.createTask({
+				path: "tasks/backlinks.md",
+				basesData: {
+					getValue: (propertyId: string) =>
+						propertyId === "formula.backlinks"
+							? targets.map((target) => new LinkValue(target))
+							: null,
+				},
+			} as any);
+
+		const signature = (view as any).buildTaskSignature(withBacklinks(["notes/a.md"]), [
+			"formula.backlinks",
+		]);
+		expect(typeof signature).toBe("string");
+		expect(
+			(view as any).buildTaskSignature(withBacklinks(["notes/a.md", "notes/b.md"]), [
+				"formula.backlinks",
+			])
+		).not.toBe(signature);
+	});
+
 	it("resolves the final insertion slot from the drop event coordinate", () => {
 		const view = createView();
 		const updateResolvedInsertionSlot = jest

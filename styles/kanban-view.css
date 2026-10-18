@@ -444,18 +444,6 @@
     text-align: center;
 }
 
-.tasknotes-plugin .kanban-view__empty-cell-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.7;
-}
-
-.tasknotes-plugin .kanban-view__empty-cell-icon svg {
-    width: 14px;
-    height: 14px;
-}
-
 /* Virtualized columns need bounded height and relative positioning. */
 .tasknotes-plugin .kanban-view__cards--virtual {
     max-height: 100vh;
