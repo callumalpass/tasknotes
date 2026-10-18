@@ -32,6 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Security
+
+- Updated the MCP SDK and runtime dependencies to address published OAuth credential-disclosure, address-validation, and other security advisories. Updated development dependencies where patched versions are available; these changes do not update libraries supplied by Obsidian itself.
+
 ## Added
 
 - (#2404) Added an **Enter saves task** option under Settings → Features → Natural language processing. When enabled, Enter in the task creation window's natural language input saves the task, Shift+Enter inserts a newline, and Ctrl/Cmd+Enter still saves. Enter accepts a visible autocomplete suggestion instead of saving, and does not save while confirming input-method (IME) text. The option is off by default. See [Natural Language Processing](https://tasknotes.dev/settings/features/#natural-language-processing). Thanks to @k4zcho for contributing this.
