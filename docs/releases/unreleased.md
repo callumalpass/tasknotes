@@ -44,6 +44,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2328) Fixed completing or skipping an occurrence note of a recurring task scheduled with a time (such as 09:00) not recording the date on the recurring task or moving it to the next occurrence. It failed whether the status was changed in Properties, on the task card, or by another plugin. Thanks to @mudnug for reporting this and following up.
+
 - (#2409) Fixed recorded time entries disappearing from the calendar when they continue into a new week or other visible date range. Thanks to @RumiaKitinari for reporting this.
 
 - (#2408) Localized the Modal Fields settings controls, field-card labels and type badges, notices, and reset confirmation. Saved field and group names remain unchanged. Thanks to @whysoslow for contributing this fix.
