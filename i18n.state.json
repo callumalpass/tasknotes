@@ -821,12 +821,12 @@
       "translation": "d2b82746821b4464282c92cdb153536a75ba4819"
     },
     "views.basesCalendar.settings.layout.dayMaxEvents": {
-      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
-      "translation": "029ae1ea3a02b3917a10410bf2f3f7c2d4dbe2a4"
+      "source": "e28c23c54a6052f613944c768c7fa4526096bf7b",
+      "translation": "8da94fde5073599eed8a0c6ebed5295bf7620e13"
     },
     "views.basesCalendar.settings.layout.dayMaxEventRows": {
-      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
-      "translation": "444746b8d379be2e1a9a6632a99e6acd4c1f7d05"
+      "source": "0b144f4fdaf3095e8433078fc19fa0f0e35fbd44",
+      "translation": "7c1d4c8648bcc2e2f0c5fb273f7343595ba4d00d"
     },
     "views.basesCalendar.settings.layout.spanScheduledToDue": {
       "source": "c6733d6faf10872b5d82288dfe89e7ed3b19487d",
@@ -9831,12 +9831,12 @@
       "translation": "0e125a289ed0a3ac5dc3a8264a5bf11042977b84"
     },
     "views.basesCalendar.settings.layout.dayMaxEvents": {
-      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
-      "translation": "246098bff6e068a8f4f7abefedf2e90a10b6266e"
+      "source": "e28c23c54a6052f613944c768c7fa4526096bf7b",
+      "translation": "5786b5d0b94f3c1ecb4cb5a2d9590226d655ba2e"
     },
     "views.basesCalendar.settings.layout.dayMaxEventRows": {
-      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
-      "translation": "7807b7c9ab99851eb47727fd6dff0a272e86438c"
+      "source": "0b144f4fdaf3095e8433078fc19fa0f0e35fbd44",
+      "translation": "17de10ca86e459ffa7a78bcddf9d496f820e843e"
     },
     "views.basesCalendar.settings.layout.spanScheduledToDue": {
       "source": "c6733d6faf10872b5d82288dfe89e7ed3b19487d",
@@ -18841,12 +18841,12 @@
       "translation": "15143c97661ca69add35026a99a0d40b2d374b26"
     },
     "views.basesCalendar.settings.layout.dayMaxEvents": {
-      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
-      "translation": "c55ea7bc1fbe2121fe8b0cf757e9e6f41f7e5a8d"
+      "source": "e28c23c54a6052f613944c768c7fa4526096bf7b",
+      "translation": "4cace2a5542a42e417edbc862488dbed1b4c6739"
     },
     "views.basesCalendar.settings.layout.dayMaxEventRows": {
-      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
-      "translation": "c682d3eb1fab2c9548adfdea706775950fcf6779"
+      "source": "0b144f4fdaf3095e8433078fc19fa0f0e35fbd44",
+      "translation": "14ea99e1fa56aa8eb5b79a689d85f4b9fc33e89f"
     },
     "views.basesCalendar.settings.layout.spanScheduledToDue": {
       "source": "c6733d6faf10872b5d82288dfe89e7ed3b19487d",
@@ -27851,12 +27851,12 @@
       "translation": "130981bc3723501d489432756e1c8c77435c7386"
     },
     "views.basesCalendar.settings.layout.dayMaxEvents": {
-      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
-      "translation": "0e8800ad75bb44487ab035267e0c47178b0e0de0"
+      "source": "e28c23c54a6052f613944c768c7fa4526096bf7b",
+      "translation": "5274202d08a8147cf6b4362225d43a6a4bf20151"
     },
     "views.basesCalendar.settings.layout.dayMaxEventRows": {
-      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
-      "translation": "1f2e0b32ea67b7bc88bff9979581689412b069ec"
+      "source": "0b144f4fdaf3095e8433078fc19fa0f0e35fbd44",
+      "translation": "0a5eb496e44e8bcdd7bf0b08d979eda23063d5d6"
     },
     "views.basesCalendar.settings.layout.spanScheduledToDue": {
       "source": "c6733d6faf10872b5d82288dfe89e7ed3b19487d",
@@ -36861,12 +36861,12 @@
       "translation": "06fa50e86c7a75cbe8e99ac4142467bff0888f1f"
     },
     "views.basesCalendar.settings.layout.dayMaxEvents": {
-      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
-      "translation": "425a6c8ba262f12fc97ba3ffce4659c42b7e46e3"
+      "source": "e28c23c54a6052f613944c768c7fa4526096bf7b",
+      "translation": "b89fd55c9cbe879877324ad42d75f8a8d46371a9"
     },
     "views.basesCalendar.settings.layout.dayMaxEventRows": {
-      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
-      "translation": "058140c0b97332dc86a41d6d69a9252bf2407293"
+      "source": "0b144f4fdaf3095e8433078fc19fa0f0e35fbd44",
+      "translation": "ee9f75afa408a4657d021f66c80943a3827788fd"
     },
     "views.basesCalendar.settings.layout.spanScheduledToDue": {
       "source": "c6733d6faf10872b5d82288dfe89e7ed3b19487d",
@@ -45871,12 +45871,12 @@
       "translation": "51527c04be75e348e2cd9f5b2d62ebb4330878d7"
     },
     "views.basesCalendar.settings.layout.dayMaxEvents": {
-      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
-      "translation": "fa0411414300e1604ea0be730d99e522b5738100"
+      "source": "e28c23c54a6052f613944c768c7fa4526096bf7b",
+      "translation": "b558a2fa38846279ba314d53cc6e0b38e5067275"
     },
     "views.basesCalendar.settings.layout.dayMaxEventRows": {
-      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
-      "translation": "1aaa140c24f041e9b8584d986efc902a7b80d6ec"
+      "source": "0b144f4fdaf3095e8433078fc19fa0f0e35fbd44",
+      "translation": "15d0a59194eddf66e19c9878daccd3407a8f93e7"
     },
     "views.basesCalendar.settings.layout.spanScheduledToDue": {
       "source": "c6733d6faf10872b5d82288dfe89e7ed3b19487d",
@@ -54881,12 +54881,12 @@
       "translation": "32831b47fd4ae9a90d4486e87c37f77909b574a5"
     },
     "views.basesCalendar.settings.layout.dayMaxEvents": {
-      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
-      "translation": "df38ee14c9f43048db482aa2d2dac096e0636108"
+      "source": "e28c23c54a6052f613944c768c7fa4526096bf7b",
+      "translation": "aea9a26c940bb05d98687d9ffcea45eebd5b9263"
     },
     "views.basesCalendar.settings.layout.dayMaxEventRows": {
-      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
-      "translation": "5bce529be6bbe9de882971c455d651564f72ffd2"
+      "source": "0b144f4fdaf3095e8433078fc19fa0f0e35fbd44",
+      "translation": "499e6d9b2feba897e8f22e1673199ad7c45a7f37"
     },
     "views.basesCalendar.settings.layout.spanScheduledToDue": {
       "source": "c6733d6faf10872b5d82288dfe89e7ed3b19487d",
@@ -63891,12 +63891,12 @@
       "translation": "457dfbcd888b94be03d9e3282e8480d943dfd3b6"
     },
     "views.basesCalendar.settings.layout.dayMaxEvents": {
-      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
-      "translation": "fbe10e475d188602de8ce62a86574101beb0f24a"
+      "source": "e28c23c54a6052f613944c768c7fa4526096bf7b",
+      "translation": "f1508d91f44ca86cd6df4aaae2113562b1213514"
     },
     "views.basesCalendar.settings.layout.dayMaxEventRows": {
-      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
-      "translation": "e1e19ae69d25c529a01b733ba69e1c68dbdc2d84"
+      "source": "0b144f4fdaf3095e8433078fc19fa0f0e35fbd44",
+      "translation": "8bfa7ba4e1081f58dc3758ff7e181f6de1c191a7"
     },
     "views.basesCalendar.settings.layout.spanScheduledToDue": {
       "source": "c6733d6faf10872b5d82288dfe89e7ed3b19487d",

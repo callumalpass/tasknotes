@@ -467,8 +467,13 @@ function buildCalendarEventLayoutOptions(
 	const defaultView = calendarSettings.defaultView;
 	const shouldHideTimeGridOption = () =>
 		!isCurrentView(config, defaultView, (viewType) => isTimeGridView(viewType));
-	const shouldHideMonthDensityOption = () =>
-		!isCurrentView(config, defaultView, (viewType) => isMonthDensityView(viewType));
+	// Week/day views apply the same limits to their all-day row.
+	const shouldHideDayDensityOption = () =>
+		!isCurrentView(
+			config,
+			defaultView,
+			(viewType) => isMonthDensityView(viewType) || isTimeGridView(viewType)
+		);
 
 	return [
 		{
@@ -509,7 +514,7 @@ function buildCalendarEventLayoutOptions(
 			min: 0,
 			max: 20,
 			step: 1,
-			shouldHide: shouldHideMonthDensityOption,
+			shouldHide: shouldHideDayDensityOption,
 		},
 		{
 			type: "slider",
@@ -522,7 +527,7 @@ function buildCalendarEventLayoutOptions(
 			min: 0,
 			max: 10,
 			step: 1,
-			shouldHide: shouldHideMonthDensityOption,
+			shouldHide: shouldHideDayDensityOption,
 		},
 	];
 }

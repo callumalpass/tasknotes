@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 
 import {
+	getTimeGridDayMaxEvents,
 	isTimeGridCalendarView,
 	shouldHideCalendarTimeGrid,
 } from "../../../src/bases/CalendarView";
@@ -25,6 +26,12 @@ describe("Issue #1201: Calendar Bases hourly breakdown toggle", () => {
 		expect(shouldHideCalendarTimeGrid(false, "dayGridMonth")).toBe(false);
 		expect(shouldHideCalendarTimeGrid(false, "listWeek")).toBe(false);
 		expect(shouldHideCalendarTimeGrid(true, "timeGridWeek")).toBe(false);
+	});
+
+	it("shows every all-day event by default when the hourly grid is hidden (#2387)", () => {
+		expect(getTimeGridDayMaxEvents(false, true)).toBe(false);
+		expect(getTimeGridDayMaxEvents(false, 5)).toBe(5);
+		expect(getTimeGridDayMaxEvents(true, true)).toBe(true);
 	});
 
 	it("keeps the timeGrid view list explicit", () => {
