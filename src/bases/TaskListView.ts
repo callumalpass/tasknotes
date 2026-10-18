@@ -8,6 +8,7 @@ import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { getTaskCardPropertyValue } from "../ui/taskCardPropertyAccess";
+import { normalizeTaskSignatureValue } from "./taskSignatureValue";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { DateContextMenu } from "../components/DateContextMenu";
@@ -2888,13 +2889,16 @@ export class TaskListView extends BasesViewBase {
 		// Snapshot task data, not just a hand-maintained subset: badges and controls
 		// also depend on fields that may not be selected as visible properties.
 		// Raw Bases entries are live objects (and can be circular); resolve only
-		// displayed values through the same accessor used by task cards instead.
-		return JSON.stringify({
-			task: { ...task, basesData: undefined },
-			visibleValues: visibleProperties.map((property) =>
-				getTaskCardPropertyValue(task, property, this.plugin)
-			),
-		});
+		// displayed values through the same accessor used by task cards instead,
+		// then normalize any Bases Values those accessors return.
+		return JSON.stringify(
+			normalizeTaskSignatureValue({
+				task: { ...task, basesData: undefined },
+				visibleValues: visibleProperties.map((property) =>
+					getTaskCardPropertyValue(task, property, this.plugin)
+				),
+			})
+		);
 	}
 
 	private buildCardRenderSignature(

@@ -16,6 +16,8 @@ Example:
 ```
 ## Fixed
 
+- (#2399, #2377) Fixed Task List views failing with "Converting circular structure to JSON" when a displayed property or formula returns links, such as `file.backlinks`. This regression was introduced in 4.13.5. Thanks to @ewightman and @Glint-Eye for reporting this.
+
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
