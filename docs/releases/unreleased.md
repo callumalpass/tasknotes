@@ -16,12 +16,6 @@ Example:
 ```
 ## Fixed
 
-- (#2387) Fixed Week, Day, and Custom calendar views with **Show hourly breakdown** turned off staying short and showing only four all-day events per day. The all-day area now fills the calendar height unless height is set to auto, shows every event by default, and the **Max events per day** and **Max event rows per day** options are available for these views. Timed events are still hidden in this mode. See [Calendar Views](https://tasknotes.dev/views/calendar-views/#view-options). Thanks to @etiennejls for reporting this.
-
-- (#2378) Fixed dragging a Kanban card to a different column and swimlane at once leaving the card, task cache, and other views showing the old swimlane value, such as the previous priority. Thanks to @iantierney for reporting this.
-
-- (#2399, #2377) Fixed Task List views failing with "Converting circular structure to JSON" when a displayed property or formula returns links, such as `file.backlinks`. This regression was introduced in 4.13.5. Thanks to @ewightman and @Glint-Eye for reporting this.
-
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
@@ -49,6 +43,12 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Removed
 
 ## Fixed
+
+- (#2399, #2377) Fixed Task List views failing with "Converting circular structure to JSON" when a displayed property or formula returns links, such as `file.backlinks`. This regression was introduced in 4.13.5. Thanks to @ewightman and @Glint-Eye for reporting this.
+
+- (#2378) Fixed dragging a Kanban card to a different column and swimlane at once leaving the card, task cache, and other views showing the old swimlane value, such as the previous priority. Thanks to @iantierney for reporting this.
+
+- (#2387) Fixed Week, Day, and Custom calendar views with **Show hourly breakdown** turned off staying short and showing only four all-day events per day. The all-day area now fills the calendar height unless height is set to auto, shows every event by default, and the **Max events per day** and **Max event rows per day** options are available for these views. Timed events are still hidden in this mode. See [Calendar Views](https://tasknotes.dev/views/calendar-views/#view-options). Thanks to @etiennejls for reporting this.
 
 - (#2397) Fixed tags and same-note heading links such as `[[#Installation]]` being rendered as task links in Reading View when the note is a task. Thanks to @hm-24 for reporting this and @enieuwy for the fix.
 
