@@ -2,6 +2,7 @@ import { jest } from "@jest/globals";
 import { TFile } from "obsidian";
 import {
 	applySortOrderPlan,
+	getSortOrderDirection,
 	prepareSortOrderUpdate,
 	stripPropertyPrefix,
 	type SortOrderPlan,
@@ -283,6 +284,38 @@ describe("sortOrderUtils", () => {
 		expect(plan.additionalWrites).toEqual([]);
 		expect(compareBasesOrder(plan.sortOrder!, "0|jc3j7d:")).toBeLessThan(0);
 		expect(compareBasesOrder(plan.sortOrder!, "0|jc2tkt:")).toBeGreaterThan(0);
+	});
+
+	it("uses the configured direction when a scope has only one other ranked task", async () => {
+		const plugin = createPlugin({
+			"peer.md": { status: "todo", tasknotes_manual_order: "0|i0000n:" },
+			"dragged.md": { status: "todo", tasknotes_manual_order: "0|hzzzzz:" },
+		});
+
+		const plan = await prepareSortOrderUpdate("peer.md", true, "todo", "status", "dragged.md", plugin, {
+			visibleTaskPaths: ["peer.md", "dragged.md"],
+			sortDirection: "desc",
+		});
+
+		// Above the peer in a descending view means a greater rank.
+		expect(compareBasesOrder(plan.sortOrder!, "0|i0000n:")).toBeGreaterThan(0);
+	});
+
+	it("reads the sort-order direction from the view configuration", () => {
+		const adapter = (config: unknown) => ({ getSortConfig: () => config as any });
+		expect(
+			getSortOrderDirection(
+				adapter([
+					{ property: "note.due", direction: "ASC" },
+					{ property: "note.tasknotes_manual_order", direction: "DESC" },
+				]),
+				"tasknotes_manual_order"
+			)
+		).toBe("desc");
+		expect(
+			getSortOrderDirection(adapter([{ property: "note.due", direction: "DESC" }]), "tasknotes_manual_order")
+		).toBeUndefined();
+		expect(getSortOrderDirection(adapter(null), "tasknotes_manual_order")).toBeUndefined();
 	});
 
 	it("rebalances descending duplicate boundaries instead of jumping above the previous task", async () => {

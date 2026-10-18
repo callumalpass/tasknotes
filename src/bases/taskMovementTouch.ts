@@ -5,13 +5,18 @@ type TouchMovementCallbacks = {
 	cancel: () => void;
 };
 
-/** Handle-only touch input. A tap opens the existing menu; a drag uses the same operation as a mouse. */
+/**
+ * Handle-only touch input. A tap (or a hold released in place) opens the existing menu;
+ * only a gesture that actually moves commits, using the same operation as a mouse.
+ */
 export class TaskMovementTouch {
 	private pointerId: number | null = null;
 	private handle: HTMLElement | null = null;
 	private startX = 0;
 	private startY = 0;
 	private active = false;
+	private moved = false;
+	private suppressedDraggables: Array<[HTMLElement, string | null]> = [];
 	private timer: number | null = null;
 	private suppressClickUntil = 0;
 	private readonly doc: Document;
@@ -43,6 +48,7 @@ export class TaskMovementTouch {
 		this.handle = handle;
 		this.startX = event.clientX;
 		this.startY = event.clientY;
+		this.suppressNativeDrag(handle);
 		this.doc.addEventListener("pointermove", this.onPointerMove, {
 			capture: true,
 			passive: false,
@@ -61,13 +67,29 @@ export class TaskMovementTouch {
 		}
 	}
 
+	/** A native touch drag would cancel this pointer gesture, so disable it for the press. */
+	private suppressNativeDrag(handle: HTMLElement): void {
+		const card = handle.parentElement?.closest<HTMLElement>("[draggable]");
+		for (const element of new Set([handle, card])) {
+			if (!element) continue;
+			this.suppressedDraggables.push([element, element.getAttribute("draggable")]);
+			element.setAttribute("draggable", "false");
+		}
+	}
+
+	private restoreNativeDrag(): void {
+		for (const [element, value] of this.suppressedDraggables) {
+			if (value === null) element.removeAttribute("draggable");
+			else element.setAttribute("draggable", value);
+		}
+		this.suppressedDraggables = [];
+	}
+
 	private onPointerMove = (event: PointerEvent): void => {
 		if (event.pointerId !== this.pointerId) return;
-		if (
-			!this.active &&
-			Math.hypot(event.clientX - this.startX, event.clientY - this.startY) >= 6
-		) {
-			this.activate(event.clientX, event.clientY);
+		if (Math.hypot(event.clientX - this.startX, event.clientY - this.startY) >= 6) {
+			this.moved = true;
+			if (!this.active) this.activate(event.clientX, event.clientY);
 		}
 		if (!this.active) return;
 		event.preventDefault();
@@ -78,13 +100,18 @@ export class TaskMovementTouch {
 	private onPointerUp = (event: PointerEvent): void => {
 		if (event.pointerId !== this.pointerId) return;
 		const wasActive = this.active;
+		const moved = this.moved;
 		this.reset();
-		if (wasActive) {
-			event.preventDefault();
-			event.stopPropagation();
-			this.suppressClickUntil = Date.now() + 500;
-			this.callbacks.commit(event.clientX, event.clientY);
+		if (!wasActive) return;
+		if (!moved) {
+			// Released in place: nothing was previewed, so never write. Let the click open the menu.
+			this.callbacks.cancel();
+			return;
 		}
+		event.preventDefault();
+		event.stopPropagation();
+		this.suppressClickUntil = Date.now() + 500;
+		this.callbacks.commit(event.clientX, event.clientY);
 	};
 
 	private onPointerCancel = (event: PointerEvent): void => {
@@ -112,9 +139,11 @@ export class TaskMovementTouch {
 		this.doc.removeEventListener("pointermove", this.onPointerMove, true);
 		this.doc.removeEventListener("pointerup", this.onPointerUp, true);
 		this.doc.removeEventListener("pointercancel", this.onPointerCancel, true);
+		this.restoreNativeDrag();
 		this.pointerId = null;
 		this.handle = null;
 		this.active = false;
+		this.moved = false;
 	}
 
 	cancel(): void {

@@ -1,6 +1,8 @@
 import { planTaskListMovement, taskListDestinationKey } from "../../../src/bases/taskListMovement";
 import {
 	applyGroupPropertyMutation,
+	getListMembers,
+	getMovedListMembers,
 	moveGroupListValue,
 } from "../../../src/bases/groupPropertyMutation";
 import type { FieldMapping } from "../../../src/types";
@@ -123,6 +125,48 @@ describe("List movement intentions", () => {
 	});
 });
 
+describe("unresolved list destinations", () => {
+	const listMove = {
+		...defaults,
+		groupByPropertyId: "note.contexts",
+		subGroupPropertyId: null,
+		source: { groupKey: "work" },
+	};
+
+	it("blocks a populated list group whose members record no values", () => {
+		const plan = planTaskListMovement({
+			...listMove,
+			target: { groupKey: "#inline", groupValuesUnresolved: true },
+		});
+		expect(plan.kind).toBe("blocked");
+		expect(plan.unresolvedProperties).toEqual(["note.contexts"]);
+		expect(plan.readOnlyProperties).toEqual([]);
+	});
+
+	it("still allows clearing a list or targeting resolved values", () => {
+		expect(
+			planTaskListMovement({
+				...listMove,
+				target: { groupKey: "None", groupValuesUnresolved: false },
+			}).kind
+		).toBe("move");
+		expect(
+			planTaskListMovement({
+				...listMove,
+				target: { groupKey: "home", groupValues: ["home"], groupValuesUnresolved: true },
+			}).kind
+		).toBe("move");
+	});
+
+	it("ignores the unresolved flag for scalar properties", () => {
+		const plan = planTaskListMovement({
+			...defaults,
+			target: { groupKey: "open", subGroupKey: "low", subGroupValuesUnresolved: true },
+		});
+		expect(plan.kind).toBe("move");
+	});
+});
+
 describe("shared List/Kanban group mutation", () => {
 	it("preserves unrelated memberships and avoids duplicates", () => {
 		expect(moveGroupListValue(["work", "home", "focus"], "work", "focus")).toEqual([
@@ -145,6 +189,43 @@ describe("shared List/Kanban group mutation", () => {
 				["home", "focus"]
 			)
 		).toEqual(["other", "home", "focus"]);
+	});
+
+	it("matches numeric list members by value rather than their joined label", () => {
+		expect(moveGroupListValue([12, 13], "12, 13", "20", [12, 13], [20])).toEqual([20]);
+	});
+
+	it("replaces the task's whole current list when given its own members", () => {
+		const current = ["[[A|Alias]]", "[[B]]"];
+		expect(
+			moveGroupListValue(current, "A, B", "C", getListMembers(current), ["[[C]]"])
+		).toEqual(["[[C]]"]);
+	});
+
+	it("keeps a value added by another edit while the task was being moved", () => {
+		const frontmatter: Record<string, unknown> = { projects: ["[[A]]", "[[Added meanwhile]]"] };
+		applyGroupPropertyMutation({
+			frontmatter,
+			property: "projects",
+			sourceValue: "A",
+			targetValue: "C",
+			isList: true,
+			sourceValues: getMovedListMembers(
+				{ projects: ["[[A]]"] },
+				"projects",
+				frontmatter.projects
+			),
+			targetValues: ["[[C]]"],
+			coerceValue: (_property, value) => value,
+		});
+		expect(frontmatter.projects).toEqual(["[[Added meanwhile]]", "[[C]]"]);
+	});
+
+	it("normalizes scalar and empty list values to members", () => {
+		expect(getListMembers("work")).toEqual(["work"]);
+		expect(getListMembers("")).toEqual([]);
+		expect(getListMembers(null)).toEqual([]);
+		expect(getListMembers(0)).toEqual([0]);
 	});
 
 	it("does not discard false or zero values as empty", () => {

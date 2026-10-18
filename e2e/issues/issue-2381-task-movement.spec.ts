@@ -185,7 +185,9 @@ async function setFields(title: string, fields: Record<string, unknown>): Promis
 
 async function beginParentDrop(title: string): Promise<void> {
 	await beginMouseDrag(card(title));
-	const target = card(title).locator(":scope > .task-list-view__parent-target");
+	const target = card(title).locator(
+		":scope > .task-card__main-row > .task-list-view__parent-target"
+	);
 	await expect(target).toBeVisible();
 	const bounds = await target.boundingBox();
 	await instance.page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2, {
@@ -411,7 +413,9 @@ test("touch parent drop stays distinct and readable at a narrow dark viewport", 
 			type: "touchMove",
 			touchPoints: [{ x: x + 12, y, id: 1 }],
 		});
-		const target = card("Done").locator(":scope > .task-list-view__parent-target");
+		const target = card("Done").locator(
+			":scope > .task-card__main-row > .task-list-view__parent-target"
+		);
 		await expect(target).toBeVisible();
 		const bounds = await target.boundingBox();
 		expect(bounds!.height).toBeGreaterThanOrEqual(44);
@@ -546,6 +550,76 @@ test("the movement handle exposes a keyboard-accessible group menu", async () =>
 	await expect(destination).toBeVisible();
 	await destination.click();
 	await expect.poll(async () => (await frontmatter()).priority).toBe("normal");
+});
+
+test("releasing a drag back on its own row cancels instead of moving to a neighbour", async () => {
+	await openView();
+	// "Low" is alone in open / low, so the nearest other row belongs to a different subgroup.
+	const before = await frontmatter("Low");
+	const bounds = await card("Low").boundingBox();
+	const x = bounds!.x + bounds!.width / 2;
+	const y = bounds!.y + bounds!.height / 2;
+	await card("Low").hover();
+	await instance.page.mouse.move(x, y);
+	await instance.page.mouse.down();
+	await instance.page.mouse.move(x + 12, y, { steps: 3 });
+	await instance.page.mouse.move(x, y, { steps: 3 });
+	await instance.page.mouse.up();
+	await instance.page.waitForTimeout(500);
+	expect(await frontmatter("Low")).toEqual(before);
+});
+
+test("a touch hold released in place never writes", async () => {
+	await instance.page.evaluate(() => document.body.classList.add("is-mobile"));
+	await openView();
+	const before = await frontmatter("Low");
+	const cdp = await instance.page.context().newCDPSession(instance.page);
+	try {
+		await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+		const handle = await card("Low").getByRole("button", { name: "Move task" }).boundingBox();
+		const point = { x: handle!.x + handle!.width / 2, y: handle!.y + handle!.height / 2 };
+		await cdp.send("Input.dispatchTouchEvent", {
+			type: "touchStart",
+			touchPoints: [{ ...point, id: 1 }],
+		});
+		await instance.page.waitForTimeout(400);
+		await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+		await instance.page.waitForTimeout(500);
+		await expect(instance.page.locator(".task-list-view__touch-ghost")).toHaveCount(0);
+		await expect(instance.page.locator("body")).not.toHaveClass(/tn-drag-active/);
+		expect(await frontmatter("Low")).toEqual(before);
+	} finally {
+		await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: false });
+		await cdp.detach();
+	}
+});
+
+test("list moves preview the whole replacement before and after", async () => {
+	await openView({ group: "note.contexts", subgroup: null });
+	await beginMouseDrag(card("Low"));
+	await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
+		"work, call → home, focus"
+	);
+	await instance.page.mouse.up();
+	await expect.poll(async () => (await frontmatter()).contexts).toEqual(["home", "focus"]);
+});
+
+test("the keyboard menu reorders within the destination without moving properties", async () => {
+	await openView({ manual: true });
+	const handle = card("Source").getByRole("button", { name: "Move task" });
+	await handle.focus();
+	await handle.press("Enter");
+	await expect(
+		instance.page.locator(".menu-item").filter({ hasText: /^Move down$/ })
+	).toHaveCount(0);
+	await instance.page
+		.locator(".menu-item")
+		.filter({ hasText: /^Move up$/ })
+		.click();
+	await expect
+		.poll(async () => String((await frontmatter()).tasknotes_manual_order) > "0|i0000n:")
+		.toBe(true);
+	expect(await frontmatter()).toMatchObject({ status: "open", priority: "high" });
 });
 
 test("same-destination drops are a no-op when not manually sorted", async () => {

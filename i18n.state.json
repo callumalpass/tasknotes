@@ -316,6 +316,14 @@
       "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
       "translation": "52176130703b903e9fe90b0757a3ad05e2b77332"
     },
+    "views.taskList.movement.moveUp": {
+      "source": "b4f57cd0cd5c7d88461c1718646713dea47a36c9",
+      "translation": "682e1586f22f8d16fff68a8a41bf1c2856b5ba8b"
+    },
+    "views.taskList.movement.moveDown": {
+      "source": "260ff8ae7182fc851337b6b2fdb25f8cac2b8d47",
+      "translation": "cf0655b5997cee656516f28ec23ce2240cf517af"
+    },
     "views.taskList.movement.moved": {
       "source": "02871303b4592e907e3e7892dd99290f01866d56",
       "translation": "72d335cceca2b586ab453ffc8a0d01d06e867f86"
@@ -343,6 +351,10 @@
     "views.taskList.movement.readOnly": {
       "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
       "translation": "702eedc58332c217b4fd60731775aa06a7cbcecd"
+    },
+    "views.taskList.movement.unresolved": {
+      "source": "2baa4a2ad2677bca7d258c67022a603a44d71270",
+      "translation": "730c3d9e3234ba72fb0c255b4e0f16c5967efbd1"
     },
     "views.taskList.movement.noChange": {
       "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
@@ -9534,6 +9546,14 @@
       "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
       "translation": "b9bc9a305ef5357e568507292647d9c4dd6022ee"
     },
+    "views.taskList.movement.moveUp": {
+      "source": "b4f57cd0cd5c7d88461c1718646713dea47a36c9",
+      "translation": "b3fc97a5c006b278b05ce1ba24a751bf4b6febc1"
+    },
+    "views.taskList.movement.moveDown": {
+      "source": "260ff8ae7182fc851337b6b2fdb25f8cac2b8d47",
+      "translation": "aceb7a7409dc844ade8aa081f1740d598c8ecdec"
+    },
     "views.taskList.movement.moved": {
       "source": "02871303b4592e907e3e7892dd99290f01866d56",
       "translation": "33ca3c6bdd2841b0b3ab9a23ed5b26cd2527395b"
@@ -9561,6 +9581,10 @@
     "views.taskList.movement.readOnly": {
       "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
       "translation": "4af58dcb1aee802e3562b1ddc32c38caa15a3107"
+    },
+    "views.taskList.movement.unresolved": {
+      "source": "2baa4a2ad2677bca7d258c67022a603a44d71270",
+      "translation": "893a39da2fd2d88d045a27904f65f86549ca2408"
     },
     "views.taskList.movement.noChange": {
       "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
@@ -18752,6 +18776,14 @@
       "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
       "translation": "ccb082847bbaac7d4346a19d1aaa7792d9ec972c"
     },
+    "views.taskList.movement.moveUp": {
+      "source": "b4f57cd0cd5c7d88461c1718646713dea47a36c9",
+      "translation": "dd1b79d91cd08015f6db8039886bc0e9f5fb0405"
+    },
+    "views.taskList.movement.moveDown": {
+      "source": "260ff8ae7182fc851337b6b2fdb25f8cac2b8d47",
+      "translation": "383f2e3e0bee22915c11dc01029a2845a1309f55"
+    },
     "views.taskList.movement.moved": {
       "source": "02871303b4592e907e3e7892dd99290f01866d56",
       "translation": "70ee09e7a13843ac892d54c21c884479cb96eef5"
@@ -18779,6 +18811,10 @@
     "views.taskList.movement.readOnly": {
       "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
       "translation": "65fe5a9a5af576b12b7a48df3c7beb958e52a81f"
+    },
+    "views.taskList.movement.unresolved": {
+      "source": "2baa4a2ad2677bca7d258c67022a603a44d71270",
+      "translation": "900386e997cd2b5c14e0cd403299dc56721d55cc"
     },
     "views.taskList.movement.noChange": {
       "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
@@ -27970,6 +28006,14 @@
       "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
       "translation": "5f8b5c9bf5b5f813a7dbcf0a8db35382587f4722"
     },
+    "views.taskList.movement.moveUp": {
+      "source": "b4f57cd0cd5c7d88461c1718646713dea47a36c9",
+      "translation": "caedb315b96a876afa5559e2b38d881c2f41d4fc"
+    },
+    "views.taskList.movement.moveDown": {
+      "source": "260ff8ae7182fc851337b6b2fdb25f8cac2b8d47",
+      "translation": "ef5cbae6a76675898c19610691bccab3836eacc2"
+    },
     "views.taskList.movement.moved": {
       "source": "02871303b4592e907e3e7892dd99290f01866d56",
       "translation": "d8b6cf883d2d47c8ccc45109557787937caa7561"
@@ -27997,6 +28041,10 @@
     "views.taskList.movement.readOnly": {
       "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
       "translation": "b647c10264435d3d794567783125424b05f31f0a"
+    },
+    "views.taskList.movement.unresolved": {
+      "source": "2baa4a2ad2677bca7d258c67022a603a44d71270",
+      "translation": "cad7a68e3252f8a683a0255685b5e9a527115d9a"
     },
     "views.taskList.movement.noChange": {
       "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
@@ -37188,6 +37236,14 @@
       "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
       "translation": "dc422feecdbf9b91c0a9927dcb1984bdab3eb842"
     },
+    "views.taskList.movement.moveUp": {
+      "source": "b4f57cd0cd5c7d88461c1718646713dea47a36c9",
+      "translation": "0de1511afe88026974a057be5ba2a798e4390979"
+    },
+    "views.taskList.movement.moveDown": {
+      "source": "260ff8ae7182fc851337b6b2fdb25f8cac2b8d47",
+      "translation": "763e79eea6b26a71c4e063300a12fce46e6245d3"
+    },
     "views.taskList.movement.moved": {
       "source": "02871303b4592e907e3e7892dd99290f01866d56",
       "translation": "f37546b548321841a4a1ac3e620d344363721a25"
@@ -37215,6 +37271,10 @@
     "views.taskList.movement.readOnly": {
       "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
       "translation": "2f64a7f3fa8dde207fd91d12926bbc4b0e5927bd"
+    },
+    "views.taskList.movement.unresolved": {
+      "source": "2baa4a2ad2677bca7d258c67022a603a44d71270",
+      "translation": "839291adb67a7019de20c98e228cd2ca68c00ca7"
     },
     "views.taskList.movement.noChange": {
       "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
@@ -46406,6 +46466,14 @@
       "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
       "translation": "a894375e4e8b21795468e545f92891d31f30aa06"
     },
+    "views.taskList.movement.moveUp": {
+      "source": "b4f57cd0cd5c7d88461c1718646713dea47a36c9",
+      "translation": "ba2f8820896adfbf9ee680b2964daef3260991a7"
+    },
+    "views.taskList.movement.moveDown": {
+      "source": "260ff8ae7182fc851337b6b2fdb25f8cac2b8d47",
+      "translation": "f85c2eae5ece620d5a56e4dcffea3fb693e8b0c9"
+    },
     "views.taskList.movement.moved": {
       "source": "02871303b4592e907e3e7892dd99290f01866d56",
       "translation": "a0154eac92c0e370e7dd2e8f5daf622ce3df8875"
@@ -46433,6 +46501,10 @@
     "views.taskList.movement.readOnly": {
       "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
       "translation": "1d92d91df66dcd8b7c869602f00022d85cc90d09"
+    },
+    "views.taskList.movement.unresolved": {
+      "source": "2baa4a2ad2677bca7d258c67022a603a44d71270",
+      "translation": "d41088e3ef8a775ea0cb69da85e66c239cc44adf"
     },
     "views.taskList.movement.noChange": {
       "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
@@ -55624,6 +55696,14 @@
       "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
       "translation": "1d91b1620ceff2d11bea2d1b6547da7c4c35205b"
     },
+    "views.taskList.movement.moveUp": {
+      "source": "b4f57cd0cd5c7d88461c1718646713dea47a36c9",
+      "translation": "b405b1763cb9b15d4ff909962fc918026dcc1dea"
+    },
+    "views.taskList.movement.moveDown": {
+      "source": "260ff8ae7182fc851337b6b2fdb25f8cac2b8d47",
+      "translation": "30c2511a258466f72588a093ac39e6aa87320c09"
+    },
     "views.taskList.movement.moved": {
       "source": "02871303b4592e907e3e7892dd99290f01866d56",
       "translation": "0296e23322f25eabe71db9550fcbce086264a7a2"
@@ -55651,6 +55731,10 @@
     "views.taskList.movement.readOnly": {
       "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
       "translation": "06980861c1f600c25a87afce427e5cff69cd830b"
+    },
+    "views.taskList.movement.unresolved": {
+      "source": "2baa4a2ad2677bca7d258c67022a603a44d71270",
+      "translation": "ac8f288a48d43de4fbedf41b7492a4cd13ee8357"
     },
     "views.taskList.movement.noChange": {
       "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",
@@ -64842,6 +64926,14 @@
       "source": "bce11f79a4f5d9bc47e53e8c1df26748371f8fc3",
       "translation": "26dff6a7de2ef04cf68b6644edb00764069a03da"
     },
+    "views.taskList.movement.moveUp": {
+      "source": "b4f57cd0cd5c7d88461c1718646713dea47a36c9",
+      "translation": "8a0c839791d3641013a7ce497f909a24d8219156"
+    },
+    "views.taskList.movement.moveDown": {
+      "source": "260ff8ae7182fc851337b6b2fdb25f8cac2b8d47",
+      "translation": "05c46fa3b77cf23095529632c5d77b8a991e8530"
+    },
     "views.taskList.movement.moved": {
       "source": "02871303b4592e907e3e7892dd99290f01866d56",
       "translation": "864c59b0814ab6ad6e5100b3759493b1c89d99d5"
@@ -64869,6 +64961,10 @@
     "views.taskList.movement.readOnly": {
       "source": "53877a37e35de0f2588afd64fed601ec3e9c409b",
       "translation": "cfe356520e03d959bc58d4a097469edd57801b0e"
+    },
+    "views.taskList.movement.unresolved": {
+      "source": "2baa4a2ad2677bca7d258c67022a603a44d71270",
+      "translation": "7ea819baa83e9d8df737bb06a3637cd48eb56748"
     },
     "views.taskList.movement.noChange": {
       "source": "e9c92111f6b696b02ce9f60965664b1c314c95ca",

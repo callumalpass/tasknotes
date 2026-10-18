@@ -158,8 +158,9 @@ Drag a task into another group or subgroup to update its grouping properties. Th
 - Dropping on a primary group header changes only the primary property. It does not assign a subgroup value.
 - A highlighted destination previews the properties that will change. An insertion line means manual reordering instead.
 - Collapsed headers remain drop targets. While dragging, **Other destinations** offers configured empty status/priority groups and an empty value.
-- Use the **Move task** handle to open a destination menu without dragging. On touch screens, drag from this handle so ordinary row gestures remain available for scrolling.
-- Press Escape to cancel. Holding a dragged task near the view's top or bottom edge scrolls the list.
+- Use the **Move task** handle to open a destination menu without dragging. When the view is sorted by manual order, the menu also offers **Move up** and **Move down** within the current group. On touch screens, tap the handle for the menu, or drag from it so ordinary row gestures remain available for scrolling. A touch move only applies after the handle has actually moved; lifting your finger in place does nothing.
+- Press Escape, or release the task back on its own row, to cancel. Holding a dragged task near the view's top or bottom edge scrolls the list.
+- Grouping by a list property such as contexts, projects, or tags groups by the whole list. Moving a task to another such group replaces its list with that group's values, and the preview shows the values before and after, for example `contexts: work, call → home, focus`. If a group's values cannot be determined from its notes' properties (for example, a tag group that only comes from inline tags), the move is blocked rather than guessed.
 
 Formula groups, computed file properties, and TaskNotes-managed manual-order and modified-date fields cannot be assigned by a group move. If a drop would assign a different read-only value, the whole move is blocked rather than changing just one of its properties. Changing a writable property may still naturally recalculate a formula or update the modified date.
 

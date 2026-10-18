@@ -71,6 +71,34 @@ describe("handle-only touch movement", () => {
 		expect(callbacks.start).not.toHaveBeenCalled();
 	});
 
+	it("treats a hold released in place as a tap: no commit, and the menu click survives", () => {
+		pointer(handle, "pointerdown");
+		jest.advanceTimersByTime(200);
+		expect(callbacks.start).toHaveBeenCalledTimes(1);
+		pointer(document, "pointermove", { clientX: 12, clientY: 22 });
+		const up = pointer(document, "pointerup", { clientX: 12, clientY: 22 });
+		expect(callbacks.commit).not.toHaveBeenCalled();
+		expect(callbacks.cancel).toHaveBeenCalledTimes(1);
+		expect(up.defaultPrevented).toBe(false);
+		const click = new MouseEvent("click", { bubbles: true, cancelable: true });
+		handle.dispatchEvent(click);
+		expect(click.defaultPrevented).toBe(false);
+	});
+
+	it("disables native dragging for the press and restores it afterwards", () => {
+		const card = document.createElement("div");
+		card.setAttribute("draggable", "true");
+		handle.setAttribute("draggable", "true");
+		container.appendChild(card);
+		card.appendChild(handle);
+		pointer(handle, "pointerdown");
+		expect(handle.getAttribute("draggable")).toBe("false");
+		expect(card.getAttribute("draggable")).toBe("false");
+		pointer(document, "pointerup");
+		expect(handle.getAttribute("draggable")).toBe("true");
+		expect(card.getAttribute("draggable")).toBe("true");
+	});
+
 	it("cancels interrupted and multi-touch gestures without committing", () => {
 		pointer(handle, "pointerdown");
 		pointer(document, "pointermove", { clientY: 40 });

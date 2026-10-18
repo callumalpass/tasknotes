@@ -404,6 +404,84 @@ describe("kanbanDragUtils", () => {
 		expect(frontmatter.projects).toEqual(["archive", "home"]);
 	});
 
+	it("clears a scalar property, in frontmatter and in memory, for the None column", () => {
+		const plan = planKanbanTaskDropUpdate({
+			path: "Tasks/a.md",
+			sourceColumn: "high",
+			sourceSwimlane: null,
+			newGroupValue: "None",
+			newSwimLaneValue: null,
+			groupByPropertyId: "task.priority",
+			swimLanePropertyId: null,
+			groupByTaskProp: "priority",
+			swimlaneTaskProp: null,
+			isGroupByListProperty: false,
+			isSwimlaneListProperty: false,
+		});
+		const frontmatter: Record<string, unknown> = { priority: "high", title: "Task" };
+
+		applyKanbanTaskDropFrontmatterPlan(frontmatter, plan, {
+			coerceGroupValue: (_frontmatterKey, groupKey) => groupKey,
+		});
+		const sideEffect = planKanbanDropSideEffect({
+			plan,
+			originalTask: createTask({ priority: "high" }),
+			dateModifiedValue: "2026-10-04T10:00:00Z",
+			isCompletedStatus: () => false,
+		});
+
+		expect(frontmatter).toEqual({ title: "Task" });
+		expect(sideEffect?.updatedTask.priority).toBeUndefined();
+	});
+
+	it("never evaluates the None label as a status value", () => {
+		const plan = planKanbanTaskDropUpdate({
+			path: "Tasks/a.md",
+			sourceColumn: "done",
+			sourceSwimlane: null,
+			newGroupValue: "None",
+			newSwimLaneValue: null,
+			groupByPropertyId: "task.status",
+			swimLanePropertyId: null,
+			groupByTaskProp: "status",
+			swimlaneTaskProp: null,
+			isGroupByListProperty: false,
+			isSwimlaneListProperty: false,
+		});
+
+		expect(
+			planKanbanStatusDerivativeUpdate({
+				plan,
+				task: createTask(),
+				dateModifiedField: "dateModified",
+				dateModifiedValue: "2026-10-04T10:00:00Z",
+			})?.statusValue
+		).toBe("");
+	});
+
+	it("appends to a list property instead of overwriting it when the source is unknown", () => {
+		const plan = planKanbanTaskDropUpdate({
+			path: "Tasks/a.md",
+			sourceColumn: null,
+			sourceSwimlane: null,
+			newGroupValue: "home",
+			newSwimLaneValue: null,
+			groupByPropertyId: "note.contexts",
+			swimLanePropertyId: null,
+			groupByTaskProp: "contexts",
+			swimlaneTaskProp: null,
+			isGroupByListProperty: true,
+			isSwimlaneListProperty: false,
+		});
+		const frontmatter = { contexts: ["work"] };
+
+		applyKanbanTaskDropFrontmatterPlan(frontmatter, plan, {
+			coerceGroupValue: (_frontmatterKey, groupKey) => groupKey,
+		});
+
+		expect(frontmatter.contexts).toEqual(["work", "home"]);
+	});
+
 	it("removes source without adding None for list-valued swimlanes", () => {
 		const plan = planKanbanTaskDropUpdate({
 			path: "Tasks/a.md",

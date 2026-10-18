@@ -477,6 +477,16 @@
     margin-block: var(--tn-spacing-sm) var(--tn-spacing-xl);
 }
 
+.tasknotes-plugin .task-list-view__empty-destinations--virtual {
+    position: absolute;
+    inset-inline: 0;
+    top: var(--tn-shelf-top, 0);
+}
+
+.tasknotes-plugin.task-list-view--moving .task-card__main-row {
+    position: relative;
+}
+
 .tasknotes-plugin .task-list-view__parent-target {
     display: none;
     position: absolute;

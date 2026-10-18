@@ -9,14 +9,19 @@ import { isWritableGroupingProperty } from "./groupPropertyMutation";
 export type TaskListDestination = {
 	groupKey: string | null;
 	subGroupKey?: string | null;
-	groupValues?: readonly string[];
-	subGroupValues?: readonly string[];
+	groupValues?: readonly unknown[];
+	subGroupValues?: readonly unknown[];
+	/** A populated list group whose members have no recorded property value (e.g. inline tags). */
+	groupValuesUnresolved?: boolean;
+	subGroupValuesUnresolved?: boolean;
 };
 
 export type TaskListMovementPlan = {
 	kind: "move" | "reorder" | "none" | "blocked";
 	changes: TaskListGroupDropPlan[];
 	readOnlyProperties: string[];
+	/** List properties whose destination values cannot be determined without guessing. */
+	unresolvedProperties: string[];
 };
 
 export function taskListDestinationKey(destination: TaskListDestination): string {
@@ -38,12 +43,14 @@ export function planTaskListMovement(options: {
 	isListTypeProperty: BuildTaskListGroupDropPlanOptions["isListTypeProperty"];
 }): TaskListMovementPlan {
 	const changes: TaskListGroupDropPlan[] = [];
+	const unresolvedProperties: string[] = [];
 	const addChange = (
 		property: string | null,
 		source: string | null,
 		target: string | null,
-		sourceValues?: readonly string[],
-		targetValues?: readonly string[]
+		sourceValues?: readonly unknown[],
+		targetValues?: readonly unknown[],
+		targetUnresolved?: boolean
 	) => {
 		const plan = buildTaskListGroupDropPlan({
 			groupByPropertyId: property,
@@ -59,6 +66,13 @@ export function planTaskListMovement(options: {
 			!changes.some((change) => change.frontmatterKey === plan.frontmatterKey)
 		) {
 			changes.push(plan);
+			if (
+				targetUnresolved &&
+				plan.isListGrouping &&
+				plan.normalizedTargetGroupKey !== null &&
+				!targetValues
+			)
+				unresolvedProperties.push(plan.groupByPropertyId ?? "");
 		}
 	};
 	// Without native primary grouping, the List's subGroup option becomes its sole group.
@@ -67,7 +81,8 @@ export function planTaskListMovement(options: {
 		options.source.groupKey,
 		options.target.groupKey,
 		options.source.groupValues,
-		options.target.groupValues
+		options.target.groupValues,
+		options.target.groupValuesUnresolved
 	);
 	// A primary header changes only that property. It never guesses a child subgroup.
 	if (options.groupByPropertyId && options.target.subGroupKey !== undefined) {
@@ -76,7 +91,8 @@ export function planTaskListMovement(options: {
 			options.source.subGroupKey ?? null,
 			options.target.subGroupKey,
 			options.source.subGroupValues,
-			options.target.subGroupValues
+			options.target.subGroupValues,
+			options.target.subGroupValuesUnresolved
 		);
 	}
 	const readOnlyProperties = changes
@@ -87,7 +103,7 @@ export function planTaskListMovement(options: {
 		.map((change) => change.groupByPropertyId ?? "");
 	return {
 		kind:
-			readOnlyProperties.length > 0
+			readOnlyProperties.length > 0 || unresolvedProperties.length > 0
 				? "blocked"
 				: changes.length > 0
 					? "move"
@@ -96,5 +112,6 @@ export function planTaskListMovement(options: {
 						: "none",
 		changes,
 		readOnlyProperties,
+		unresolvedProperties,
 	};
 }

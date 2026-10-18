@@ -16,16 +16,16 @@ export interface TaskListGroupDropPlan {
 	needsGroupUpdate: boolean;
 	normalizedTargetGroupKey: string | null;
 	sourceGroupKey: string | null;
-	sourceValues?: readonly string[];
-	targetValues?: readonly string[];
+	sourceValues?: readonly unknown[];
+	targetValues?: readonly unknown[];
 }
 
 export interface BuildTaskListGroupDropPlanOptions {
 	groupByPropertyId: string | null;
 	sourceGroupKey: string | null;
 	targetGroupKey: string | null;
-	sourceValues?: readonly string[];
-	targetValues?: readonly string[];
+	sourceValues?: readonly unknown[];
+	targetValues?: readonly unknown[];
 	lookupMappingKey: (frontmatterPropertyName: string) => keyof FieldMapping | null;
 	isListTypeProperty: (propertyName: string) => boolean;
 }

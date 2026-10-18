@@ -1,6 +1,10 @@
 import type { TaskInfo } from "../types";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
-import { applyGroupPropertyMutation, moveGroupListValue } from "./groupPropertyMutation";
+import {
+	applyGroupPropertyMutation,
+	moveGroupListValue,
+	normalizeGroupValue,
+} from "./groupPropertyMutation";
 
 export type KanbanTaskDragSource = {
 	taskPath: string;
@@ -491,7 +495,8 @@ export function planKanbanStatusDerivativeUpdate({
 	}
 
 	return {
-		statusValue,
+		// The "None" column clears status; never evaluate the label as a status value.
+		statusValue: normalizeGroupValue(statusValue) ?? "",
 		isRecurring: !!task?.recurrence,
 		dateModifiedField,
 		dateModifiedValue,
@@ -518,7 +523,7 @@ export function planKanbanDropSideEffect({
 			prop,
 			plan.isGroupByListProperty
 				? updateListDropValue(originalTask[prop], plan.sourceColumn, plan.newGroupValue)
-				: plan.newGroupValue
+				: toKanbanDropTaskValue(plan.newGroupValue)
 		);
 	}
 	if (plan.needsSwimlaneUpdate && plan.swimlaneTaskProp && plan.newSwimLaneValue !== null) {
@@ -531,7 +536,7 @@ export function planKanbanDropSideEffect({
 						plan.sourceSwimlane,
 						plan.newSwimLaneValue
 					)
-				: plan.newSwimLaneValue
+				: toKanbanDropTaskValue(plan.newSwimLaneValue)
 		);
 	}
 	for (const [prop, value] of changedValues) {
@@ -553,4 +558,9 @@ export function planKanbanDropSideEffect({
 		newPropValue: changedValues.get(changedTaskProp) ?? plan.newPropValue,
 		updatedTask,
 	};
+}
+
+// Match the frontmatter write: dropping into "None" deletes the property.
+function toKanbanDropTaskValue(value: unknown): unknown {
+	return typeof value === "string" ? (normalizeGroupValue(value) ?? undefined) : value;
 }

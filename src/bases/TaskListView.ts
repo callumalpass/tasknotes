@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Menu, Notice, TFile, setIcon } from "obsidian";
+import { Menu, Notice, TFile, setIcon, type MenuItem } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -27,6 +27,7 @@ import { stringifyUnknown } from "../utils/stringUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
 	isSortOrderInSortConfig,
+	getSortOrderDirection,
 	prepareSortOrderUpdate,
 	applySortOrderPlan,
 	DropOperationQueue,
@@ -78,7 +79,12 @@ import {
 	applyTaskMovementUndo,
 	type TaskMovementUndoChange,
 } from "./taskMovementUndo";
-import { isWritableGroupingProperty } from "./groupPropertyMutation";
+import {
+	getListMembers,
+	getMovedListMembers,
+	isWritableGroupingProperty,
+	moveGroupListValue,
+} from "./groupPropertyMutation";
 import { TaskMovementTouch } from "./taskMovementTouch";
 import { TaskMovementAutoScroll } from "./taskMovementAutoScroll";
 import {
@@ -215,6 +221,8 @@ export class TaskListView extends BasesViewBase {
 	private dragSourceDestination: TaskListDestination | null = null;
 	private dropDestination: TaskListDestination | null = null;
 	private dropIsHeader = false;
+	/** Whether the last resolved target accepts a drop; dropEffect must be set synchronously. */
+	private currentDropAllowed = false;
 	private movementProperties = new Map<string, Record<string, unknown>>();
 	private movementSubGroupKeys = new Map<string, string>();
 	private elementDestinations = new WeakMap<HTMLElement, TaskListDestination>();
@@ -232,6 +240,8 @@ export class TaskListView extends BasesViewBase {
 	 * Lower than KanbanView (30) because task cards are simpler/smaller.
 	 */
 	private readonly VIRTUAL_SCROLL_THRESHOLD = 100;
+	/** How far from a row edge an insertion line still applies when not over a row. */
+	private readonly NEARBY_SLOT_TOLERANCE_PX = 24;
 	private readonly LARGE_REORDER_WARNING_THRESHOLD = 10;
 	private readonly UNGROUPED_SORT_SCOPE_KEY = "__ungrouped__";
 	private readonly CARD_NO_DRAG_SELECTOR =
@@ -886,6 +896,7 @@ export class TaskListView extends BasesViewBase {
 		handle.dataset.tnDragHandle = "true";
 		handle.setAttribute("draggable", "true");
 		handle.setAttribute("role", "button");
+		handle.setAttribute("aria-haspopup", "menu");
 		handle.tabIndex = 0;
 		handle.setAttribute(
 			"aria-label",
@@ -1067,31 +1078,41 @@ export class TaskListView extends BasesViewBase {
 		subGroupKey?: string | null
 	): TaskListDestination {
 		const groupProperty = this.getGroupByPropertyId() ?? this.subGroupPropertyId;
+		const isPrimitive = (value: unknown): value is string | number | boolean =>
+			typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+		// Resolve a destination's actual list members from a task already in it. A populated
+		// group whose members record no value (e.g. inline-only tags) cannot be resolved, and
+		// must not fall back to writing its joined display label as a single member.
 		const listValues = (
 			property: string | null,
 			key: string | null | undefined,
 			primary = false
-		) => {
-			if (!property || key === undefined) return undefined;
+		): { values?: readonly unknown[]; unresolved?: boolean } => {
+			if (!property || key === undefined) return {};
+			let hasMembers = false;
 			for (const [path, props] of this.movementProperties) {
+				const inDestination = primary
+					? this.taskGroupKeys.get(path) === key
+					: this.taskGroupKeys.get(path) === groupKey &&
+						this.movementSubGroupKeys.get(path) === key;
+				if (!inDestination) continue;
+				hasMembers = true;
 				const value = getTaskListPropertyValue(props, property);
-				if (
-					Array.isArray(value) &&
-					value.every((entry): entry is string => typeof entry === "string") &&
-					(primary
-						? this.taskGroupKeys.get(path) === key
-						: this.taskGroupKeys.get(path) === groupKey &&
-							this.movementSubGroupKeys.get(path) === key)
-				)
-					return value;
+				if (Array.isArray(value) && value.length > 0 && value.every(isPrimitive))
+					return { values: value };
+				if (isPrimitive(value) && value !== "") return { values: [value] };
 			}
-			return undefined;
+			return { unresolved: hasMembers && key !== null && key !== "None" };
 		};
+		const group = listValues(groupProperty, groupKey, true);
+		const subGroup = listValues(this.subGroupPropertyId, subGroupKey);
 		return {
 			groupKey,
 			subGroupKey,
-			groupValues: listValues(groupProperty, groupKey, true),
-			subGroupValues: listValues(this.subGroupPropertyId, subGroupKey),
+			groupValues: group.values,
+			subGroupValues: subGroup.values,
+			groupValuesUnresolved: group.unresolved,
+			subGroupValuesUnresolved: subGroup.unresolved,
 		};
 	}
 
@@ -1184,6 +1205,14 @@ export class TaskListView extends BasesViewBase {
 			target.dataset.tnMovementDestination = "true";
 			this.elementDestinations.set(target, destination);
 		}
+		const spacer = this.useVirtualScrolling
+			? this.itemsContainer.querySelector<HTMLElement>(":scope > .virtual-scroller__spacer")
+			: null;
+		if (spacer) {
+			// Virtual rows are translated within a spacer, so place the shelf after the last row.
+			shelf.classList.add("task-list-view__empty-destinations--virtual");
+			shelf.style.setProperty("--tn-shelf-top", `${spacer.offsetHeight}px`);
+		}
 		this.itemsContainer.appendChild(shelf);
 		this.emptyDestinations = shelf;
 	}
@@ -1204,12 +1233,15 @@ export class TaskListView extends BasesViewBase {
 				.setIcon("corner-down-right")
 				.onClick(() => void this.showParentAssignmentSelector(task.path))
 		);
+		this.addReorderMenuItems(menu, task.path, source);
 		menu.addSeparator();
 		menu.addItem((item) =>
 			item
 				.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveTo"))
 				.setIsLabel(true)
 		);
+		const move = (target: TaskListDestination) => () =>
+			void this.performTaskMovement(task.path, source, target, true, null);
 		const destinations = this.getAvailableMovementDestinations();
 		for (const destination of destinations.filter(
 			(target) => target.subGroupKey === undefined
@@ -1222,67 +1254,98 @@ export class TaskListView extends BasesViewBase {
 			);
 			const canMove = this.planMovement(source, destination, true).kind === "move";
 			if (!canMove && children.length === 0) continue;
+			const label = this.movementDestinationLabel(destination);
+			// Obsidian's own organization menus use this native submenu API, but it is not
+			// part of the public typings, so fall back to flat items without it.
+			const createSubmenu = (item: MenuItem): { menu: Menu } | undefined => {
+				const setSubmenu = (item as unknown as { setSubmenu?: unknown }).setSubmenu;
+				return typeof setSubmenu === "function"
+					? { menu: (setSubmenu as (this: MenuItem) => Menu).call(item) }
+					: undefined;
+			};
+			if (children.length === 0) {
+				menu.addItem((item) =>
+					item.setTitle(label).setIcon("move-right").onClick(move(destination))
+				);
+				continue;
+			}
+			const created: { submenu?: Menu } = {};
 			menu.addItem((item) => {
-				item.setTitle(this.movementDestinationLabel(destination)).setIcon("move-right");
-				if (children.length === 0) {
-					item.onClick(
-						() =>
-							void this.performTaskMovement(
-								task.path,
-								source,
-								destination,
-								true,
-								null
-							)
-					);
-					return;
-				}
-				// Obsidian's own organization menus use this native submenu API.
-				const submenu = (item as unknown as { setSubmenu(): Menu }).setSubmenu();
+				item.setTitle(label).setIcon("move-right");
+				created.submenu = createSubmenu(item)?.menu;
+				if (!created.submenu && canMove) item.onClick(move(destination));
+			});
+			const parentMenu = created.submenu;
+			if (parentMenu) {
 				if (canMove)
-					submenu.addItem((child) =>
+					parentMenu.addItem((child) =>
 						child
 							.setTitle(
 								this.plugin.i18n.translate("views.taskList.movement.keepSubgroup")
 							)
-							.onClick(
-								() =>
-									void this.performTaskMovement(
-										task.path,
-										source,
-										destination,
-										true,
-										null
-									)
-							)
+							.onClick(move(destination))
 					);
 				for (const target of children) {
-					submenu.addItem((child) =>
+					parentMenu.addItem((child) =>
 						child
 							.setTitle(
 								this.movementDestinationLabel({
 									groupKey: target.subGroupKey ?? null,
 								})
 							)
-							.onClick(
-								() =>
-									void this.performTaskMovement(
-										task.path,
-										source,
-										target,
-										true,
-										null
-									)
-							)
+							.onClick(move(target))
 					);
 				}
-			});
+			} else {
+				for (const target of children) {
+					menu.addItem((item) =>
+						item
+							.setTitle(this.movementDestinationLabel(target))
+							.setIcon("move-right")
+							.onClick(move(target))
+					);
+				}
+			}
 		}
 		const rect =
 			card
 				.querySelector<HTMLElement>(this.CARD_DRAG_HANDLE_SELECTOR)
 				?.getBoundingClientRect() ?? card.getBoundingClientRect();
 		menu.showAtPosition({ x: rect.left, y: rect.bottom }, this.containerEl.ownerDocument);
+	}
+
+	/** Keyboard equivalent of dragging within the current destination. */
+	private addReorderMenuItems(menu: Menu, path: string, source: TaskListDestination): void {
+		if (!this.shouldEnableManualReordering()) return;
+		const scope =
+			this.filterMovementSortScope(this.getVisibleSortScopePaths(source.groupKey), source) ??
+			[];
+		const index = scope.indexOf(path);
+		if (index < 0) return;
+		const reorder = (neighbour: string, above: boolean) => () =>
+			void this.handleSortOrderDrop(
+				path,
+				neighbour,
+				above,
+				source.groupKey,
+				source.groupKey,
+				scope,
+				source
+			).finally(() => this.debouncedRefresh());
+		if (index > 0)
+			menu.addItem((item) =>
+				item
+					.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveUp"))
+					.setIcon("arrow-up")
+					.onClick(reorder(scope[index - 1], true))
+			);
+		if (index < scope.length - 1)
+			menu.addItem((item) =>
+				item
+					.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveDown"))
+					.setIcon("arrow-down")
+					.onClick(reorder(scope[index + 1], false))
+			);
 	}
 
 	private clearMovementPreview(): void {
@@ -1314,20 +1377,21 @@ export class TaskListView extends BasesViewBase {
 		element: HTMLElement
 	): void {
 		this.clearDropIndicators();
+		const names = (properties: readonly string[]) =>
+			properties
+				.map((property) => this.dataAdapter.getPropertyDisplayName(property))
+				.join(", ");
 		const text =
 			plan.kind === "blocked"
-				? this.plugin.i18n.translate("views.taskList.movement.readOnly", {
-						properties: plan.readOnlyProperties
-							.map((property) => this.dataAdapter.getPropertyDisplayName(property))
-							.join(", "),
-					})
+				? plan.readOnlyProperties.length > 0
+					? this.plugin.i18n.translate("views.taskList.movement.readOnly", {
+							properties: names(plan.readOnlyProperties),
+						})
+					: this.plugin.i18n.translate("views.taskList.movement.unresolved", {
+							properties: names(plan.unresolvedProperties),
+						})
 				: plan.kind === "move"
-					? plan.changes
-							.map(
-								(change) =>
-									`${this.dataAdapter.getPropertyDisplayName(change.groupByPropertyId!)} → ${change.normalizedTargetGroupKey ?? this.plugin.i18n.translate("views.taskList.movement.noValue")}`
-							)
-							.join(" · ")
+					? plan.changes.map((change) => this.describeMovementChange(change)).join(" · ")
 					: this.plugin.i18n.translate("views.taskList.movement.noChange");
 		this.setMovementFeedback(text);
 		this.itemsContainer
@@ -1349,6 +1413,26 @@ export class TaskListView extends BasesViewBase {
 			});
 	}
 
+	/** Lists are replaced as a whole, so show what the task holds before and after. */
+	private describeMovementChange(change: TaskListGroupDropPlan): string {
+		const name = this.dataAdapter.getPropertyDisplayName(change.groupByPropertyId!);
+		const noValue = this.plugin.i18n.translate("views.taskList.movement.noValue");
+		if (!change.isListGrouping || !change.frontmatterKey || !this.draggedTaskPath)
+			return `${name} → ${change.normalizedTargetGroupKey ?? noValue}`;
+		const current = this.movementProperties.get(this.draggedTaskPath)?.[change.frontmatterKey];
+		const before = getListMembers(current);
+		const after = moveGroupListValue(
+			current,
+			change.sourceGroupKey,
+			change.normalizedTargetGroupKey,
+			before,
+			change.targetValues
+		);
+		const format = (values: unknown[]) =>
+			values.length > 0 ? values.map((value) => String(value)).join(", ") : noValue;
+		return `${name}: ${format(before)} → ${format(after)}`;
+	}
+
 	private setMovementFeedback(text: string): void {
 		if (!this.movementFeedback) {
 			this.movementFeedback = createElementInDocument(this.containerEl.ownerDocument, "div");
@@ -1361,6 +1445,18 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private updateTaskMovementTarget(
+		target: EventTarget | null,
+		clientY: number
+	): TaskListDropIntent | null {
+		const intent = this.resolveTaskMovementTarget(target, clientY);
+		this.currentDropAllowed =
+			intent?.kind === "move" ||
+			intent?.kind === "reorder" ||
+			(intent?.kind === "parent" && intent.state === "assign");
+		return intent;
+	}
+
+	private resolveTaskMovementTarget(
 		target: EventTarget | null,
 		clientY: number
 	): TaskListDropIntent | null {
@@ -1402,25 +1498,30 @@ export class TaskListView extends BasesViewBase {
 					"task-list-view__move-target--blocked"
 				)
 			);
-		const header = targetElement?.closest<HTMLElement>(
-			".task-group, [data-tn-movement-destination]"
-		);
-		const card = targetElement?.closest<HTMLElement>(".task-card[data-task-path]");
-		const slot = this.resolveClosestInsertionSlot(clientY);
-		const element =
-			header && this.itemsContainer?.contains(header)
-				? header
-				: card && this.getVisibleDropCards().includes(card)
-					? card
-					: slot?.element;
-		if (!element) {
+		const clear = (): null => {
 			this.clearMovementPreview();
 			this.clearDropIndicators();
 			return null;
-		}
+		};
+		const header = targetElement.closest<HTMLElement>(
+			".task-group, [data-tn-movement-destination]"
+		);
+		const card = this.getTopLevelDropCard(targetElement);
+		// Releasing on the original row (or its subtasks) cancels rather than guessing a neighbour.
+		if (!header && card?.dataset.taskPath === this.draggedTaskPath) return clear();
+		// The shelf's label and padding are not destinations.
+		if (!header && targetElement.closest(".task-list-view__empty-destinations")) return clear();
+		const visibleCard = card && this.getVisibleDropCards().includes(card) ? card : null;
+		const slot = header || visibleCard ? null : this.resolveNearbyInsertionSlot(clientY);
+		const element =
+			header && this.itemsContainer?.contains(header)
+				? header
+				: (visibleCard ?? slot?.element);
+		if (!element) return clear();
 		const isHeader = !!header && element === header;
 		const destination = this.elementDestinations.get(element) ?? {
-			groupKey: slot?.groupKey ?? null,
+			groupKey:
+				slot?.groupKey ?? this.taskGroupKeys.get(element.dataset.taskPath ?? "") ?? null,
 		};
 		const plan = this.planMovement(this.dragSourceDestination, destination, isHeader);
 		this.dropDestination = destination;
@@ -1433,6 +1534,26 @@ export class TaskListView extends BasesViewBase {
 			this.showMovementPreview(plan, destination, element);
 		}
 		return plan;
+	}
+
+	/** Nested subtask cards belong to the visible row that contains them. */
+	private getTopLevelDropCard(element: HTMLElement): HTMLElement | null {
+		let card = element.closest<HTMLElement>(".task-card[data-task-path]");
+		let parent = card?.parentElement?.closest<HTMLElement>(".task-card[data-task-path]");
+		while (card && parent && this.itemsContainer?.contains(parent)) {
+			card = parent;
+			parent = card.parentElement?.closest<HTMLElement>(".task-card[data-task-path]");
+		}
+		return card;
+	}
+
+	/** The nearest insertion line, only when the pointer is actually beside it (between rows). */
+	private resolveNearbyInsertionSlot(clientY: number): TaskListInsertionSlot | null {
+		const slot = this.resolveClosestInsertionSlot(clientY);
+		if (!slot) return null;
+		const rect = slot.element.getBoundingClientRect();
+		const edge = slot.position === "before" ? rect.top : rect.bottom;
+		return Math.abs(clientY - edge) <= this.NEARBY_SLOT_TOLERANCE_PX ? slot : null;
 	}
 
 	private cancelTaskMovement(cancelTouch = true): void {
@@ -1465,6 +1586,7 @@ export class TaskListView extends BasesViewBase {
 		this.dragSourceDestination = null;
 		this.pendingDragClientY = null;
 		this.pendingDragTarget = null;
+		this.currentDropAllowed = false;
 		if (this.pendingRender) {
 			this.pendingRender = false;
 			this.debouncedRefresh();
@@ -1479,6 +1601,9 @@ export class TaskListView extends BasesViewBase {
 		insertion: { taskPath: string; above: boolean } | null
 	): Promise<void> {
 		const plan = this.planMovement(source, destination, isHeader);
+		// The members the user saw when acting. Values added by another edit before the
+		// queued write lands are not part of the move and must survive it.
+		const shown = this.movementProperties.get(path);
 		try {
 			if (plan.kind === "reorder" && insertion) {
 				await this.handleSortOrderDrop(
@@ -1498,9 +1623,20 @@ export class TaskListView extends BasesViewBase {
 						this.taskInfoCache.get(path) ??
 						(await this.plugin.cacheManager.getTaskInfo(path));
 					let undoChanges: TaskMovementUndoChange[] = [];
+					let changes = plan.changes;
 					await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 						const before = structuredClone(frontmatter);
-						for (const change of plan.changes) {
+						// Lists group by their whole value, so the source membership is what this
+						// task held when the user acted, not another group member's spelling of it.
+						changes = plan.changes.map((change) => {
+							if (!change.isListGrouping || !change.frontmatterKey) return change;
+							const key = change.frontmatterKey;
+							return {
+								...change,
+								sourceValues: getMovedListMembers(shown, key, frontmatter[key]),
+							};
+						});
+						for (const change of changes) {
 							applyTaskListDropFrontmatterMutation({
 								frontmatter,
 								plan: change,
@@ -1528,7 +1664,7 @@ export class TaskListView extends BasesViewBase {
 					let updatedTask = originalTask;
 					if (originalTask) {
 						updatedTask = originalTask;
-						for (const change of plan.changes) {
+						for (const change of changes) {
 							updatedTask =
 								buildTaskListDropSideEffectTask(updatedTask, {
 									plan: change,
@@ -1542,16 +1678,18 @@ export class TaskListView extends BasesViewBase {
 										this.getClearedTaskValue(property, file),
 								}) ?? updatedTask;
 						}
-						for (const change of plan.changes) {
-							if (change.groupByTaskProp)
-								await this.plugin.taskService.applyPropertyChangeSideEffects(
-									file,
-									originalTask,
-									updatedTask,
-									change.groupByTaskProp as keyof TaskInfo,
-									change.sourceGroupKey,
-									change.normalizedTargetGroupKey
-								);
+						for (const change of changes) {
+							if (!change.groupByTaskProp) continue;
+							// Side effects (status, webhooks, archive) need the real values, not group labels.
+							const property = change.groupByTaskProp as keyof TaskInfo;
+							await this.plugin.taskService.applyPropertyChangeSideEffects(
+								file,
+								originalTask,
+								updatedTask,
+								property,
+								originalTask[property],
+								updatedTask[property]
+							);
 						}
 					}
 					this.showTaskMovementUndo(
@@ -1670,7 +1808,10 @@ export class TaskListView extends BasesViewBase {
 
 	private configureParentDropTarget(card: HTMLElement): void {
 		const path = card.dataset.taskPath;
-		if (!path || card.querySelector(":scope > .task-list-view__parent-target")) return;
+		if (!path) return;
+		// Anchor to the row itself so expanded subtasks keep their own distinct targets.
+		const anchor = card.querySelector<HTMLElement>(":scope > .task-card__main-row") ?? card;
+		if (anchor.querySelector(":scope > .task-list-view__parent-target")) return;
 		const target = createElementInDocument(card.ownerDocument, "div");
 		target.className = "task-list-view__parent-target";
 		target.dataset.parentTaskPath = path;
@@ -1679,7 +1820,7 @@ export class TaskListView extends BasesViewBase {
 		target.createSpan({
 			text: this.plugin.i18n.translate("views.taskList.movement.parentAdd"),
 		});
-		card.appendChild(target);
+		anchor.appendChild(target);
 	}
 
 	private parentAssignmentMessage(state: TaskParentAssignmentState, parentPath: string): string {
@@ -2084,7 +2225,8 @@ export class TaskListView extends BasesViewBase {
 			commit: (x, y) => void this.finishTaskMovement(doc.elementFromPoint(x, y), y),
 			cancel: () => this.cancelTaskMovement(false),
 		});
-		this.registerDomEvent(doc.defaultView ?? window, "blur", () => this.cancelTaskMovement());
+		// No window blur handler: native drags always clean up on dragend, and touch
+		// movement cancels itself on blur. Some platforms blur when a native drag starts.
 
 		this.registerDomEvent(this.containerEl.ownerDocument, "keydown", (event: KeyboardEvent) => {
 			if (event.key === "Escape" && this.draggedTaskPath) {
@@ -2098,11 +2240,12 @@ export class TaskListView extends BasesViewBase {
 		this.itemsContainer.addEventListener("dragenter", (e: DragEvent) => {
 			if (!this.draggedTaskPath) return;
 			e.preventDefault();
-			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
 			// Do not let an older queued dragover overwrite a newly entered target.
 			this.pendingDragTarget = e.target;
 			this.pendingDragClientY = e.clientY;
 			this.updateTaskMovementTarget(e.target, e.clientY);
+			if (e.dataTransfer)
+				e.dataTransfer.dropEffect = this.currentDropAllowed ? "move" : "none";
 			this.edgeScroll?.update(e.clientX, e.clientY);
 		});
 
@@ -2112,7 +2255,9 @@ export class TaskListView extends BasesViewBase {
 			// Always accept – must be unconditional so the browser keeps
 			// the drop zone active even when the cursor is between cards.
 			e.preventDefault();
-			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+			// dropEffect is only honoured during dispatch, so use the last resolved target.
+			if (e.dataTransfer)
+				e.dataTransfer.dropEffect = this.currentDropAllowed ? "move" : "none";
 
 			// Throttle visual updates via rAF
 			this.pendingDragClientY = e.clientY;
@@ -2126,14 +2271,7 @@ export class TaskListView extends BasesViewBase {
 					const clientY = this.pendingDragClientY;
 					this.pendingDragClientY = null;
 					if (clientY === null) return;
-					const plan = this.updateTaskMovementTarget(this.pendingDragTarget, clientY);
-					if (e.dataTransfer)
-						e.dataTransfer.dropEffect =
-							plan?.kind === "move" ||
-							plan?.kind === "reorder" ||
-							(plan?.kind === "parent" && plan.state === "assign")
-								? "move"
-								: "none";
+					this.updateTaskMovementTarget(this.pendingDragTarget, clientY);
 				});
 			}
 		});
@@ -2199,6 +2337,10 @@ export class TaskListView extends BasesViewBase {
 					candidateTaskPaths: this.filterMovementSortScope(
 						this.getCandidateSortScopePaths(targetGroupKey),
 						destination
+					),
+					sortDirection: getSortOrderDirection(
+						this.dataAdapter,
+						this.plugin.settings.fieldMapping.sortOrder
 					),
 				}
 			);
@@ -2840,6 +2982,25 @@ export class TaskListView extends BasesViewBase {
 		return groupHeader;
 	}
 
+	/** Whether a task's grouping values differ from those its rendered destination reflects. */
+	private groupingValuesChanged(path: string): boolean {
+		const properties = [this.getGroupByPropertyId(), this.subGroupPropertyId].filter(
+			(property): property is string =>
+				!!property &&
+				!property.startsWith("formula.") &&
+				(!property.startsWith("file.") || property === "file.tags")
+		);
+		const rendered = this.movementProperties.get(path);
+		const file = this.plugin.app.vault.getAbstractFileByPath(path);
+		if (properties.length === 0 || !rendered || !(file instanceof TFile)) return false;
+		const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
+		return properties.some(
+			(property) =>
+				JSON.stringify(getTaskListPropertyValue(frontmatter, property) ?? null) !==
+				JSON.stringify(getTaskListPropertyValue(rendered, property) ?? null)
+		);
+	}
+
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
 		// Update cache
 		this.taskInfoCache.set(task.path, task);
@@ -2852,7 +3013,10 @@ export class TaskListView extends BasesViewBase {
 		} else {
 			// Normal mode - update the specific card
 			const existingElement = this.currentTaskElements.get(task.path);
-			if (existingElement && existingElement.isConnected) {
+			if (this.groupingValuesChanged(task.path)) {
+				// The card now belongs to another destination; only a full render can place it.
+				this.debouncedRefresh();
+			} else if (existingElement && existingElement.isConnected) {
 				const visibleProperties = this.getVisibleProperties();
 				const replacement = createTaskCard(
 					task,

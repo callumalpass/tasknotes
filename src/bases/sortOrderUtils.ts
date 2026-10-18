@@ -19,6 +19,8 @@ export interface SortOrderComputationOptions {
 	taskInfoCache?: Map<string, TaskInfo>;
 	visibleTaskPaths?: string[];
 	candidateTaskPaths?: string[];
+	/** The view's configured manual-order direction; inferred from neighbours when absent. */
+	sortDirection?: SortDirection;
 }
 
 export interface SortOrderWrite {
@@ -43,13 +45,14 @@ const ALPHA_RANK_BASE = 26;
 const ALPHA_RANK_MAX = Math.pow(ALPHA_RANK_BASE, ALPHA_RANK_WIDTH) - 1;
 const ALPHA_RANK_PATTERN = /^tn[a-z]{10}$/;
 
-type SortDirection = "asc" | "desc";
+export type SortDirection = "asc" | "desc";
 type SortConfigItem = {
 	property?: unknown;
 	column?: unknown;
 	field?: unknown;
 	id?: unknown;
 	name?: unknown;
+	direction?: unknown;
 };
 type SortConfigSource = {
 	getSortConfig(): SortConfigItem | SortConfigItem[] | null | undefined;
@@ -206,6 +209,31 @@ export function isSortOrderInSortConfig(dataAdapter: SortConfigSource, sortOrder
 		});
 	} catch {
 		return false;
+	}
+}
+
+/**
+ * The configured direction of the sort-order field, if the view sorts by it. Inferring the
+ * direction from neighbours fails when a scope holds only one other ranked task.
+ */
+export function getSortOrderDirection(
+	dataAdapter: SortConfigSource,
+	sortOrderField: string
+): SortDirection | undefined {
+	try {
+		const sortConfig = dataAdapter.getSortConfig();
+		if (!sortConfig) return undefined;
+		const configs = Array.isArray(sortConfig) ? sortConfig : [sortConfig];
+		const match = configs.find((s) => {
+			if (!s || typeof s !== "object") return false;
+			const candidate = s.property || s.column || s.field || s.id || s.name || "";
+			const clean = stringifyUnknown(candidate).replace(/^(note\.|file\.|task\.)/, "");
+			return clean === sortOrderField;
+		});
+		const direction = stringifyUnknown(match?.direction ?? "").toLowerCase();
+		return direction === "asc" || direction === "desc" ? direction : undefined;
+	} catch {
+		return undefined;
 	}
 }
 
@@ -579,7 +607,7 @@ export async function prepareSortOrderUpdate(
 		(task) => task.path !== draggedPath
 	);
 	const orderedTasks = getVisibleOrderedTasks(columnTasks, options.visibleTaskPaths, draggedPath);
-	const sortDirection = inferSortDirection(orderedTasks);
+	const sortDirection = options.sortDirection ?? inferSortDirection(orderedTasks);
 
 	if (columnTasks.length === 0) {
 		return {
