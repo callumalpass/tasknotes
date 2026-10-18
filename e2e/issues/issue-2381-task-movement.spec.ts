@@ -604,6 +604,20 @@ test("list moves preview the whole replacement before and after", async () => {
 	await expect.poll(async () => (await frontmatter()).contexts).toEqual(["home", "focus"]);
 });
 
+test("a list move keeps a value added by another edit during the drag", async () => {
+	await openView({ group: "note.contexts", subgroup: null });
+	await beginMouseDrag(card("Low"));
+	await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
+		"work, call → home, focus"
+	);
+	await setFields("Source", { contexts: ["work", "call", "errands"] });
+	await expect.poll(async () => (await frontmatter()).contexts).toHaveLength(3);
+	await instance.page.mouse.up();
+	await expect
+		.poll(async () => (await frontmatter()).contexts)
+		.toEqual(["errands", "home", "focus"]);
+});
+
 test("the keyboard menu reorders within the destination without moving properties", async () => {
 	await openView({ manual: true });
 	const handle = card("Source").getByRole("button", { name: "Move task" });
