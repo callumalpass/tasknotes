@@ -11,6 +11,7 @@ import {
 } from "obsidian";
 import { EditorSelection as CMEditorSelection, Extension, Prec } from "@codemirror/state";
 import { EditorView, keymap, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
+import { acceptCompletion, selectedCompletion } from "@codemirror/autocomplete";
 import { around } from "monkey-around";
 import { resolveMarkdownEditorPrototype } from "./resolveMarkdownEditorPrototype";
 
@@ -581,6 +582,22 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	 */
 	get value(): string {
 		return this.editor.cm.state.doc.toString();
+	}
+
+	/**
+	 * Whether a visible autocomplete suggestion can be selected. A completion query
+	 * that is still pending, with nothing shown, does not count.
+	 */
+	get hasSelectableCompletion(): boolean {
+		return selectedCompletion((this.editor.cm as unknown as EditorView).state) !== null;
+	}
+
+	/**
+	 * Accept the selected autocomplete suggestion. Returns false if none can be
+	 * accepted yet, for example while the popup is within its interaction delay.
+	 */
+	acceptCompletion(): boolean {
+		return acceptCompletion(this.editor.cm as unknown as EditorView);
 	}
 
 	/**

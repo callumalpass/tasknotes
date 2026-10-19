@@ -25,9 +25,8 @@ views:
     listDayCount: 7
     startDateProperty: file.ctime
     titleProperty: file.basename
-    options:
-      showPropertyBasedEvents: false
-      showOverdueOnToday: true
+    showPropertyBasedEvents: false
+    showOverdueOnToday: true
     order:
       - note.status
       - note.priority

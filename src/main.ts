@@ -1411,6 +1411,10 @@ export default class TaskNotesPlugin extends Plugin {
 		return this.taskActionCoordinator.stopTimeTracking(task);
 	}
 
+	async stopActiveTimeTracking(): Promise<void> {
+		await this.taskActionCoordinator.stopActiveTimeTracking();
+	}
+
 	/**
 	 * Gets the active time tracking session for a task
 	 */

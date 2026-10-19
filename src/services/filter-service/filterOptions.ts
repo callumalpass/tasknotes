@@ -6,6 +6,7 @@ import type {
 	StatusConfig,
 } from "../../types";
 import type { TaskNotesSettings } from "../../types/settings";
+import { getUserFieldPropertyAliases } from "./userFieldValues";
 
 type UserFieldDefinition = NonNullable<TaskNotesSettings["userFields"]>[number];
 
@@ -62,6 +63,8 @@ export function buildUserPropertyDefinitions(
 		definitions.push({
 			id: `user:${field.id || field.key}`,
 			label: field.displayName,
+			aliases: getUserFieldPropertyAliases(field),
+			frontmatterKey: field.key,
 			category: getUserFieldCategory(field.type),
 			supportedOperators: getUserFieldSupportedOperators(field.type),
 			valueInputType: getUserFieldValueInputType(field.type),

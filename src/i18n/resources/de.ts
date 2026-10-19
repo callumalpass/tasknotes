@@ -134,6 +134,31 @@ export const de: TranslationTree = {
 			expandAllGroups: "Alle Gruppen ausklappen",
 			collapseAllGroups: "Alle Gruppen einklappen",
 			noTasksFound: "Keine Aufgaben für die gewählten Filter gefunden.",
+			movement: {
+				parentAdd: "Als Unteraufgabe hinzufügen",
+				parentChoose: "Als Unteraufgabe hinzufügen zu…",
+				parentPreview: "Als Unteraufgabe von {parent} hinzufügen. Andere Projekte bleiben unverändert.",
+				parentSelf: "Eine Aufgabe kann nicht ihre eigene übergeordnete Aufgabe sein.",
+				parentCycle: "Eine Aufgabe kann keiner ihrer Unteraufgaben untergeordnet werden.",
+				parentAlready: "Bereits eine Unteraufgabe von {parent}.",
+				parentUnavailable: "Beide Aufgaben müssen noch existieren und TaskNotes-Aufgaben sein.",
+				parentAssigned: "Als Unteraufgabe von {parent} hinzugefügt.",
+				handle: "Aufgabe verschieben",
+				moveTo: "In eine Gruppe verschieben",
+				keepSubgroup: "Aktuelle Untergruppe beibehalten",
+				moveUp: "Nach oben verschieben",
+				moveDown: "Nach unten verschieben",
+				moved: "Aufgabe verschoben.",
+				undo: "Rückgängig",
+				undoConflict: "Rückgängig nicht möglich: Die Aufgabe wurde nach dem Verschieben geändert.",
+				undoFailed: "Das Verschieben konnte nicht rückgängig gemacht werden.",
+				noValue: "Kein Wert",
+				otherDestinations: "Weitere Ziele",
+				readOnly: "{properties} können nicht geändert werden: Diese Gruppen sind schreibgeschützt.",
+				unresolved: "Die Werte für {properties} können für dieses Ziel nicht ermittelt werden.",
+				noChange: "Bereits in dieser Gruppe.",
+				failed: "Die Aufgabe konnte nicht verschoben werden. Prüfe die Aufgabe und versuche es erneut.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "diese ungegliederte Liste",
@@ -320,10 +345,9 @@ export const de: TranslationTree = {
 					minimumEventHeight: "Minimale Ereignishöhe (px)",
 					slotEventOverlap: "Ereignisüberlappung zulassen",
 					enableSearch: "Suchfeld aktivieren",
-					eventMaxStack:
-						"Max. gestapelte Ereignisse (Wochen-/Tagesansicht, 0 = unbegrenzt)",
-					dayMaxEvents: "Max. Ereignisse pro Tag (Monatsansicht, 0 = automatisch)",
-					dayMaxEventRows: "Max. Ereigniszeilen pro Tag (Monatsansicht, 0 = unbegrenzt)",
+					eventMaxStack: "Max. gestapelte Ereignisse (Wochen-/Tagesansicht, 0 = unbegrenzt)",
+					dayMaxEvents: "Max. Ereignisse pro Tag (0 = automatisch)",
+					dayMaxEventRows: "Max. Ereigniszeilen pro Tag (0 = unbegrenzt)",
 					spanScheduledToDue: "Aufgaben zwischen geplantem und Fälligkeitsdatum spannen",
 					heightMode: "Höhenmodus",
 					heightModeFill: "Container füllen",
@@ -673,6 +697,52 @@ export const de: TranslationTree = {
 			features: "Funktionen",
 			integrations: "Integrationen",
 		},
+		modalFields: {
+			header: "Feldkonfiguration des Aufgaben-Modals",
+			description: "Konfigurieren Sie, welche Felder in den Modalen zur Aufgabenerstellung und -bearbeitung angezeigt werden. Ziehen Sie Felder, um sie innerhalb jeder Gruppe neu anzuordnen.",
+			splitLayout: {
+				name: "Geteiltes Layout auf breiten Bildschirmen",
+				description: "Wenn aktiviert, erscheint der Detail-Editor auf Bildschirmen mit 900 px oder mehr in einer rechten Spalte. Wenn deaktiviert, verwendet das Modal ein gestapeltes Layout."
+			},
+			tabMovesFocus: {
+				name: "Tabulator bewegt den Fokus im Detail-Editor",
+				description: "Wenn aktiviert, bewegt Tab den Fokus vom Detail-Editor zum nächsten Modalfeld und Umschalt+Tab zum vorherigen Feld. Wenn deaktiviert, verwenden Tab und Umschalt+Tab das Einrückungsverhalten des Markdown-Editors."
+			},
+			sync: {
+				name: "Benutzerfelder synchronisieren",
+				description: "Klicken Sie, um benutzerdefinierte Felder aus den Aufgabeneigenschaften-Einstellungen in diese Konfiguration zu synchronisieren.",
+				button: "Benutzerfelder synchronisieren",
+				notice: "Benutzerfelder wurden mit der Modalkonfiguration synchronisiert"
+			},
+			reset: {
+				name: "Auf Standardwerte zurücksetzen",
+				description: "Setzt alle Feldkonfigurationen auf ihre Standardwerte zurück. Dadurch werden alle benutzerdefinierten Konfigurationen entfernt.",
+				button: "Auf Standardwerte zurücksetzen",
+				confirmTitle: "Felderkonfiguration zurücksetzen",
+				confirmMessage: "Möchten Sie die Feldkonfiguration wirklich auf die Standardwerte zurücksetzen? Dadurch werden alle benutzerdefinierten Feldkonfigurationen entfernt.",
+				confirmText: "Zurücksetzen",
+				cancelText: "Abbrechen",
+				notice: "Feldkonfiguration auf Standardwerte zurückgesetzt"
+			},
+			initError: "Fehler: Feldkonfiguration konnte nicht initialisiert werden",
+			manager: {
+				invalidConfig: "Fehler: Ungültige Feldkonfiguration. Bitte auf Standardwerte zurücksetzen.",
+				emptyGroup: "Keine Felder in dieser Gruppe",
+				enabled: "Aktiviert:",
+				showInCreation: "Bei der Erstellung anzeigen:",
+				showInEdit: "Bei der Bearbeitung anzeigen:",
+				group: "Gruppe:",
+				fieldId: "ID: {id}",
+				fieldKey: "Schlüssel: {key}",
+				noKey: "Kein Schlüssel festgelegt",
+				fieldTypes: {
+					core: "Kern",
+					user: "Benutzerdefiniert",
+					dependency: "Abhängigkeit",
+					organization: "Organisation",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "Inline-Aufgaben",
@@ -734,6 +804,10 @@ export const de: TranslationTree = {
 					name: "Standardmäßig geplant",
 					description:
 						"Wenn NLP ein Datum ohne Kontext erkennt, behandle es als geplant statt fällig",
+				},
+				enterToSubmit: {
+					name: "Enter speichert Aufgabe",
+					description: "Im Eingabefeld für natürliche Sprache speichert Enter die Aufgabe. Umschalt+Enter fügt einen Zeilenumbruch ein, und Strg/Cmd+Enter speichert weiterhin."
 				},
 				language: {
 					name: "NLP-Sprache",
@@ -1127,6 +1201,9 @@ export const de: TranslationTree = {
 						exactOnly: "Nur exakter Aufgaben-Tag",
 					},
 				},
+				propertyNamePlaceholder: "Eigenschaftsnamen eingeben",
+				propertyValuePlaceholder: "Eigenschaftswert eingeben",
+				incompletePropertyWarning: "Geben Sie einen Eigenschaftsnamen und einen Wert ein. Beispieltext ist keine gespeicherte Konfiguration. TaskNotes kann Aufgaben erst erkennen, wenn beide festgelegt sind. Bestehende .base-Filter müssen diesen Einstellungen entsprechen.",
 				taskProperty: {
 					name: "Aufgabeneigenschaftsname",
 					description: 'Der Frontmatter-Eigenschaftsname (z.B. "category")',
@@ -1517,6 +1594,10 @@ export const de: TranslationTree = {
 				},
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "Gib einen Eigenschaftsschlüssel ein.",
+					duplicateKey: "Eine andere Eigenschaft verwendet diesen Schlüssel bereits.",
+				},
 				header: "Benutzerdefinierte Felder",
 				description:
 					"Definiere benutzerdefinierte Frontmatter-Eigenschaften, die als typisierte Filteroptionen in allen Ansichten erscheinen. Jede Zeile: Anzeigename, Eigenschaftsname, Typ.",
@@ -2224,6 +2305,10 @@ export const de: TranslationTree = {
 					description:
 						"Wenn aktiviert, werden Aufgaben als Ganztagesereignisse erstellt. Wenn deaktiviert, wird die Zeitschätzung für die Dauer verwendet.",
 				},
+				showAllDayAsFree: {
+					name: "Ganztägige Aufgabenereignisse als frei anzeigen",
+					description: "Ganztägige Aufgabenexporte blockieren die Verfügbarkeit nicht, auch bei in ganztägige Ereignisse umgewandelten Aufgaben. Ereignisse mit Uhrzeit bleiben beschäftigt. Nutzen Sie die Synchronisierung aller Aufgaben, um bestehende Ereignisse zu aktualisieren.",
+				},
 				defaultDuration: {
 					name: "Standard-Ereignisdauer",
 					description:
@@ -2649,6 +2734,7 @@ export const de: TranslationTree = {
 		viewReleaseNotes: "Versionshinweise anzeigen",
 		startTimeTrackingCurrentTask: "Zeiterfassung für die aktuelle Aufgabe starten",
 		stopTimeTrackingCurrentTask: "Zeiterfassung für die aktuelle Aufgabe stoppen",
+		stopActiveTimeTracking: "Aktive Zeiterfassung stoppen",
 		startTimeTrackingWithSelector: "Zeiterfassung starten (Aufgabe auswählen)",
 		editTimeEntries: "Zeiteinträge bearbeiten (Aufgabe auswählen)",
 		createOrOpenTask: "Aufgabe erstellen oder öffnen",
@@ -3177,6 +3263,8 @@ export const de: TranslationTree = {
 			},
 		},
 		timeTracking: {
+			noActiveTasks: "Keine aktive Zeiterfassung gefunden",
+			stopFailed: "Aktive Zeiterfassungen konnten nicht geladen werden",
 			noTasksAvailable: "Keine Aufgaben zur Zeiterfassung verfügbar",
 			started: "Zeiterfassung gestartet für: {taskTitle}",
 			startFailed: "Starten der Zeiterfassung fehlgeschlagen",

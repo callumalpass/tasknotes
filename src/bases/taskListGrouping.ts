@@ -76,10 +76,7 @@ export function stringifyTaskListGroupValue(value: unknown): string {
 
 	if (typeof value === "object" && value !== null && typeof value.toString === "function") {
 		const basesValue = value as BasesDisplayValue;
-		if (
-			basesValue.constructor?.name === "NullValue" ||
-			(basesValue.isTruthy && !basesValue.isTruthy())
-		) {
+		if (basesValue.constructor?.name === "NullValue") {
 			return "None";
 		}
 

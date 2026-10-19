@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Menu, Notice, TFile, setIcon } from "obsidian";
+import { Menu, Notice, TFile, setIcon, type MenuItem } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
+import { readBasesViewConfigValue, readBasesViewPropertyId } from "./basesViewConfig";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { getTaskCardPropertyValue } from "../ui/taskCardPropertyAccess";
+import { normalizeTaskSignatureValue } from "./taskSignatureValue";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { DateContextMenu } from "../components/DateContextMenu";
@@ -25,14 +27,18 @@ import { stringifyUnknown } from "../utils/stringUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import {
 	isSortOrderInSortConfig,
+	getSortOrderDirection,
 	prepareSortOrderUpdate,
 	applySortOrderPlan,
 	DropOperationQueue,
 	type SortOrderPlan,
 } from "./sortOrderUtils";
-import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
 import { createElementInDocument } from "../utils/documentDom";
-import { computeBasesFormulas, isObsidianListProperty } from "./basesViewAdapters";
+import {
+	computeBasesFormulas,
+	isObsidianListProperty,
+	populateBasesFormulaProperty,
+} from "./basesViewAdapters";
 import { coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter } from "./propertyValueCoercion";
 import {
 	getTaskListDropSegments,
@@ -49,6 +55,8 @@ import {
 	buildTaskListSubPropertyRenderItems,
 	buildTaskListSubPropertyScopePaths,
 	groupTasksByTaskListSubProperty,
+	getTaskListPropertyValue,
+	stringifyTaskListGroupValue,
 	type TaskListGroup,
 	type TaskListHeaderItem,
 	type TaskListRenderItem,
@@ -58,7 +66,27 @@ import {
 	applyTaskListDropFrontmatterMutation,
 	buildTaskListDropSideEffectTask,
 	buildTaskListGroupDropPlan,
+	type TaskListGroupDropPlan,
 } from "./taskListDropPlanning";
+import {
+	planTaskListMovement,
+	taskListDestinationKey,
+	type TaskListDestination,
+	type TaskListMovementPlan,
+} from "./taskListMovement";
+import {
+	buildTaskMovementUndo,
+	applyTaskMovementUndo,
+	type TaskMovementUndoChange,
+} from "./taskMovementUndo";
+import {
+	getListMembers,
+	getMovedListMembers,
+	isWritableGroupingProperty,
+	moveGroupListValue,
+} from "./groupPropertyMutation";
+import { TaskMovementTouch } from "./taskMovementTouch";
+import { TaskMovementAutoScroll } from "./taskMovementAutoScroll";
 import {
 	applySortOrderUpdatesToItems,
 	applySortOrderUpdatesToTaskCache,
@@ -66,8 +94,14 @@ import {
 	moveItemsRelativeToTarget,
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { attachLongPressTouchDrag, findTouchDragScrollContainer, scrollTouchDragContainer, type TouchDragPoint } from "./longPressTouchDrag";
 import { processVaultFrontMatter } from "../services/VaultMutationService";
+import {
+	assignTaskParent,
+	previewTaskParentAssignment,
+	TaskParentAssignmentError,
+	type TaskParentAssignmentState,
+} from "../services/taskParentAssignment";
+import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -123,6 +157,9 @@ function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "s
 }
 
 type DefaultCollapsedState = "Expanded" | "Collapsed";
+type TaskListDropIntent =
+	| TaskListMovementPlan
+	| { kind: "parent"; parentPath: string; state: TaskParentAssignmentState };
 
 type GroupHierarchySnapshot = {
 	primaryGroupKeys: string[];
@@ -171,17 +208,30 @@ export class TaskListView extends BasesViewBase {
 	private currentInsertionSegmentIndex = -1;
 	private currentInsertionIndex = -1;
 	private pendingDragClientY: number | null = null;
+	private pendingDragTarget: EventTarget | null = null;
 	private pendingRender = false;
 	private taskGroupKeys = new Map<string, string>(); // task path → group key (set during grouped render)
 	private sortScopeTaskPaths = new Map<string, string[]>();
 	private sortScopeCandidateTaskPaths = new Map<string, string[]>();
 	private dragOverRafId = 0; // rAF handle for throttled dragover
-	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
 	private currentDropSlotElement: HTMLElement | null = null;
 	private currentDropSlotPosition: "before" | "after" | null = null;
 	private dragBaselineCards: TaskListDropBaselineCard[] = [];
 	private dropQueue = new DropOperationQueue();
-	private cancelTouchDrag: (() => void) | null = null;
+	private dragSourceDestination: TaskListDestination | null = null;
+	private dropDestination: TaskListDestination | null = null;
+	private dropIsHeader = false;
+	/** Whether the last resolved target accepts a drop; dropEffect must be set synchronously. */
+	private currentDropAllowed = false;
+	private movementProperties = new Map<string, Record<string, unknown>>();
+	private movementSubGroupKeys = new Map<string, string>();
+	private elementDestinations = new WeakMap<HTMLElement, TaskListDestination>();
+	private movementDestinations = new Map<string, TaskListDestination>();
+	private movementFeedback: HTMLElement | null = null;
+	private emptyDestinations: HTMLElement | null = null;
+	private touchMovement: TaskMovementTouch | null = null;
+	private edgeScroll: TaskMovementAutoScroll | null = null;
+	private touchGhost: HTMLElement | null = null;
 
 	/**
 	 * Threshold for enabling virtual scrolling in task list view.
@@ -190,6 +240,8 @@ export class TaskListView extends BasesViewBase {
 	 * Lower than KanbanView (30) because task cards are simpler/smaller.
 	 */
 	private readonly VIRTUAL_SCROLL_THRESHOLD = 100;
+	/** How far from a row edge an insertion line still applies when not over a row. */
+	private readonly NEARBY_SLOT_TOLERANCE_PX = 24;
 	private readonly LARGE_REORDER_WARNING_THRESHOLD = 10;
 	private readonly UNGROUPED_SORT_SCOPE_KEY = "__ungrouped__";
 	private readonly CARD_NO_DRAG_SELECTOR =
@@ -252,9 +304,7 @@ export class TaskListView extends BasesViewBase {
 		const subGroupKeys = this.currentSubGroupKeysByParent.get(groupKey);
 		if (!subGroupKeys || subGroupKeys.length === 0) return;
 
-		const allSubGroupsCollapsed = subGroupKeys.every((key) =>
-			this.collapsedSubGroups.has(key)
-		);
+		const allSubGroupsCollapsed = subGroupKeys.every((key) => this.collapsedSubGroups.has(key));
 		const menu = new Menu();
 
 		menu.addItem((item) => {
@@ -310,23 +360,22 @@ export class TaskListView extends BasesViewBase {
 		}
 
 		try {
-			this.subGroupPropertyId = this.config.getAsPropertyId("subGroup");
+			const get = (key: string): unknown => readBasesViewConfigValue(this.config, key);
+			this.subGroupPropertyId = readBasesViewPropertyId(this.config, "subGroup");
 			// Read enableSearch toggle (default: false for backward compatibility)
-			const enableSearchValue = this.config.get("enableSearch");
+			const enableSearchValue = get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
-			const defaultCollapsedStateValue = this.config.get("defaultCollapsedState");
+			const defaultCollapsedStateValue = get("defaultCollapsedState");
 
 			this.defaultCollapsedState =
 				defaultCollapsedStateValue === "Collapsed" || defaultCollapsedStateValue === "1"
 					? "Collapsed"
 					: "Expanded";
-			const expandedRelationshipFilterModeValue = this.config.get(
-				"expandedRelationshipFilterMode"
-			);
+			const expandedRelationshipFilterModeValue = get("expandedRelationshipFilterMode");
 			this.expandedRelationshipFilterMode = normalizeExpandedRelationshipFilterMode(
 				expandedRelationshipFilterModeValue
 			);
-			this.hideTopLevelSubtasks = this.config.get("hideTopLevelSubtasks") === true;
+			this.hideTopLevelSubtasks = get("hideTopLevelSubtasks") === true;
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 		} catch (e) {
@@ -398,7 +447,7 @@ export class TaskListView extends BasesViewBase {
 			subGroupKeysByParent: new Map<string, string[]>(),
 		};
 		const pathToProps = this.subGroupPropertyId
-			? buildTaskListPathProperties(this.dataAdapter.extractDataItems())
+			? this.getGroupingPathProperties()
 			: new Map<string, Record<string, unknown>>();
 
 		for (const group of groups) {
@@ -498,6 +547,7 @@ export class TaskListView extends BasesViewBase {
 			"tn-static-position-relative-d461c96d"
 		);
 		itemsContainer.classList.add("tn-static-margin-top-12px-91e0f558");
+		this.rootElement?.classList.add("task-list-view__movement-root");
 		this.rootElement?.appendChild(itemsContainer);
 		this.itemsContainer = itemsContainer;
 		this.registerContainerListeners();
@@ -550,7 +600,7 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 
-			const isGrouped = this.dataAdapter.isGrouped();
+			const isGrouped = !!this.getGroupByPropertyId() || this.dataAdapter.isGrouped();
 
 			// Special case: if sub-grouping is configured but primary grouping is not,
 			// treat sub-group property as primary grouping
@@ -828,7 +878,7 @@ export class TaskListView extends BasesViewBase {
 		return cardEl.ownerDocument.body.classList.contains("is-mobile");
 	}
 
-	private setupCardDragHandle(cardEl: HTMLElement): void {
+	private setupCardDragHandle(cardEl: HTMLElement, task: TaskInfo): void {
 		cardEl.classList.add("task-card--reorderable");
 		cardEl.classList.toggle(
 			"task-card--drag-handle-only",
@@ -845,12 +895,26 @@ export class TaskListView extends BasesViewBase {
 		handle.className = "task-card__drag-handle";
 		handle.dataset.tnDragHandle = "true";
 		handle.setAttribute("draggable", "true");
-		handle.setAttribute("aria-label", "Drag to reorder");
-		handle.setAttribute("title", "Drag to reorder");
+		handle.setAttribute("role", "button");
+		handle.setAttribute("aria-haspopup", "menu");
+		handle.tabIndex = 0;
+		handle.setAttribute(
+			"aria-label",
+			this.plugin.i18n.translate("views.taskList.movement.handle")
+		);
+		handle.setAttribute("title", this.plugin.i18n.translate("views.taskList.movement.handle"));
 		setIcon(handle, "grip-vertical");
 		handle.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
+			this.showTaskMovementMenu(task, cardEl);
+		});
+		handle.addEventListener("keydown", (event) => {
+			if (event.key === "Enter" || event.key === " ") {
+				event.preventDefault();
+				event.stopPropagation();
+				this.showTaskMovementMenu(task, cardEl);
+			}
 		});
 		cardEl.insertBefore(handle, cardEl.firstChild);
 	}
@@ -892,16 +956,11 @@ export class TaskListView extends BasesViewBase {
 			event.stopPropagation();
 		};
 
-		this.setupCardDragHandle(cardEl);
-		this.setupCardTouchDrag(cardEl, task, groupKey);
+		this.setupCardDragHandle(cardEl, task);
 		restoreCardDraggable();
 
 		cardEl.addEventListener("pointerdown", captureDragOrigin, { capture: true });
-		cardEl.addEventListener(
-			"mousedown",
-			captureDragOrigin,
-			{ capture: true }
-		);
+		cardEl.addEventListener("mousedown", captureDragOrigin, { capture: true });
 		cardEl.addEventListener("mouseup", (e: MouseEvent) => {
 			if (!dragOriginSuppressed && isPrimaryPress(e)) {
 				e.stopPropagation();
@@ -919,203 +978,945 @@ export class TaskListView extends BasesViewBase {
 			}
 
 			e.stopPropagation();
-			this.draggedTaskPath = task.path;
-			this.dragGroupKey = groupKey;
-			cardEl.classList.add("task-card--dragging");
+			this.beginTaskMovement(cardEl, task, groupKey);
 			if (e.dataTransfer) {
 				e.dataTransfer.effectAllowed = "move";
 				e.dataTransfer.setData("text/plain", task.path);
 			}
-
-			// Add body-level class to suppress hover lift on siblings
-			this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
-
-			// Measure card height before collapse (for gap/slot sizing)
-			const draggedHeight = cardEl.getBoundingClientRect().height;
-			const container = this.itemsContainer;
-
-			// Collapse dragged card on next frame (after browser captures drag image)
-			window.requestAnimationFrame(() => {
-				cardEl.classList.remove(
-					"tn-static-display-flex-4d51fc62",
-					"tn-static-height-100-62264068",
-					"tn-static-height-12px-06c0747e",
-					"tn-static-height-16px-30de4aee",
-					"tn-static-height-24px-29a11d37",
-					"tn-static-min-height-800px-997b4c8c"
-				);
-				cardEl.classList.add("tn-static-height-0-7a31cef0");
-				cardEl.classList.remove("tn-static-flex-1-14e3b769");
-				cardEl.classList.add("tn-static-overflow-hidden-69824400");
-				cardEl.classList.remove(
-					"tn-static-margin-8px-0-0-0-a2eb8382",
-					"tn-static-padding-0-16px-16px-16px-f1aa998c",
-					"tn-static-padding-12px-43bef435",
-					"tn-static-padding-16px-287f770e",
-					"tn-static-padding-20px-769fed37",
-					"tn-static-padding-20px-7a035d95",
-					"tn-static-padding-20px-ebe8e48c",
-					"tn-static-padding-2px-8px-c8eea84a",
-					"tn-static-padding-2rem-42aa6d9c"
-				);
-				cardEl.classList.add("tn-static-padding-0-41d7d7e2");
-				cardEl.classList.remove(
-					"tn-static-margin-0-auto-266e9b04",
-					"tn-static-margin-0-db0d5f36",
-					"tn-static-margin-0-var-size-4-2-77f7dc08",
-					"tn-static-margin-2px-0-edce9b14",
-					"tn-static-margin-8px-0-0-0-a2eb8382",
-					"tn-static-padding-12px-43bef435",
-					"tn-static-padding-20px-ebe8e48c"
-				);
-				cardEl.classList.add("tn-static-margin-0-11696618");
-				cardEl.classList.remove(
-					"tn-static-border-1px-solid-var-background-mo-b65b5121",
-					"tn-static-padding-12px-43bef435"
-				);
-				cardEl.classList.add("tn-static-border-none-2eda1daa");
-				cardEl.classList.remove(
-					"tn-static-opacity-0-6-d95b59ac",
-					"tn-static-opacity-1-c6e7979d"
-				);
-				cardEl.classList.add("tn-static-opacity-0-8d919cb5");
-
-				// Set up gap/slot on siblings
-				if (container) {
-					const gapStr = getComputedStyle(container).gap;
-					const gap = parseFloat(gapStr) || 4;
-					container.style.setProperty("--tn-drag-gap", `${draggedHeight + gap}px`);
-					this.dragContainer = container;
-					this.currentInsertionGroupKey = groupKey;
-					this.currentInsertionSegmentIndex = -1;
-					this.currentInsertionIndex = -1;
-					this.currentDropSlotElement = null;
-					this.currentDropSlotPosition = null;
-					this.captureDropBaseline();
-				}
-			});
 		});
 
 		cardEl.addEventListener("dragend", () => {
 			restoreCardDraggable();
-
-			// Restore collapsed card
-			clearStaticStyleClasses(cardEl);
-			cardEl.classList.remove("task-card--dragging");
-
-			// Clean up gap/slot state
-			this.cleanupDragShift();
-			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
-
-			this.draggedTaskPath = null;
-			this.dragGroupKey = null;
-			this.currentInsertionGroupKey = null;
-			this.currentInsertionSegmentIndex = -1;
-			this.currentInsertionIndex = -1;
-
-			// Cancel any pending rAF
-			if (this.dragOverRafId) {
-				cancelAnimationFrame(this.dragOverRafId);
-				this.dragOverRafId = 0;
-			}
-			this.pendingDragClientY = null;
-
-			// Flush any render that was deferred while dragging
-			if (this.pendingRender) {
-				const win = this.containerEl.ownerDocument.defaultView || window;
-				win.setTimeout(() => {
-					if (this.pendingRender) {
-						this.pendingRender = false;
-						this.debouncedRefresh();
-					}
-				}, 200);
-			}
+			this.cancelTaskMovement();
 		});
 	}
 
-	private setupCardTouchDrag(cardEl: HTMLElement, task: TaskInfo, groupKey: string | null): void {
-		const handle = cardEl.querySelector<HTMLElement>(this.CARD_DRAG_HANDLE_SELECTOR);
-		if (!handle) return;
-		const win = cardEl.ownerDocument.defaultView ?? window;
-		let ghost: HTMLElement | null = null;
-		let scrollFrame = 0;
-		let point: TouchDragPoint = { x: 0, y: 0 };
-		const cleanup = () => {
-			// An earlier queued drop must not clear a newer gesture's view state.
-			if (!ghost && this.cancelTouchDrag !== cancel) return;
-			if (scrollFrame) win.cancelAnimationFrame(scrollFrame);
-			scrollFrame = 0;
-			ghost?.remove();
-			ghost = null;
-			cardEl.classList.remove("task-card--dragging");
-			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
-			this.cleanupDragShift();
-			this.draggedTaskPath = null;
-			this.dragGroupKey = null;
-			this.cancelTouchDrag = null;
-			if (this.pendingRender) {
-				this.pendingRender = false;
-				this.debouncedRefresh();
+	private beginTaskMovement(card: HTMLElement, task: TaskInfo, groupKey: string | null): void {
+		this.draggedTaskPath = task.path;
+		this.rootElement?.classList.add("task-list-view--moving");
+		this.itemsContainer
+			?.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
+			.forEach((element) => this.configureParentDropTarget(element));
+		this.dragGroupKey = groupKey;
+		this.dragSourceDestination = this.elementDestinations.get(card) ?? { groupKey };
+		this.showEmptyMovementDestinations();
+		card.classList.add("task-card--dragging", "task-list-view__drag-source");
+		this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
+		// Keep the source row and target measurements stable throughout the gesture.
+		this.currentInsertionGroupKey = groupKey;
+		this.currentInsertionSegmentIndex = -1;
+		this.currentInsertionIndex = -1;
+		this.captureDropBaseline();
+	}
+
+	private updateTouchGhost(x: number, y: number): void {
+		if (!this.touchGhost) return;
+		const win = this.containerEl.ownerDocument.defaultView ?? window;
+		const bounds = this.rootElement?.getBoundingClientRect();
+		const left = Math.max(
+			8,
+			Math.min(
+				x - (bounds?.left ?? 0) + 12,
+				Math.min(bounds?.right ?? win.innerWidth, win.innerWidth) -
+					(bounds?.left ?? 0) -
+					this.touchGhost.offsetWidth -
+					8
+			)
+		);
+		const top =
+			Math.max(
+				8,
+				Math.min(
+					y - (bounds?.top ?? 0) + 12,
+					Math.min(bounds?.bottom ?? win.innerHeight, win.innerHeight) -
+						(bounds?.top ?? 0) -
+						this.touchGhost.offsetHeight -
+						8
+				)
+			) + (this.rootElement?.scrollTop ?? 0);
+		this.touchGhost?.style.setProperty("--tn-movement-x", `${left}px`);
+		this.touchGhost?.style.setProperty("--tn-movement-y", `${top}px`);
+	}
+
+	private async finishTaskMovement(target: EventTarget | null, clientY: number): Promise<void> {
+		if (!this.draggedTaskPath) return;
+		const plan = this.updateTaskMovementTarget(target, clientY);
+		const path = this.draggedTaskPath;
+		if (plan?.kind === "parent") {
+			this.cancelTaskMovement();
+			if (plan.state === "assign") await this.performParentAssignment(path, plan.parentPath);
+			return;
+		}
+		const source = this.dragSourceDestination;
+		const destination = this.dropDestination;
+		const isHeader = this.dropIsHeader;
+		const insertion = plan?.kind === "reorder" ? this.getCurrentInsertionTarget() : null;
+		this.cancelTaskMovement();
+		if (source && destination && plan && plan.kind !== "blocked" && plan.kind !== "none") {
+			await this.performTaskMovement(path, source, destination, isHeader, insertion);
+		}
+	}
+
+	private filterMovementSortScope(
+		paths: string[] | undefined,
+		destination?: TaskListDestination
+	): string[] | undefined {
+		if (
+			!paths ||
+			!destination ||
+			destination.subGroupKey === undefined ||
+			!this.subGroupPropertyId
+		)
+			return paths;
+		return paths.filter(
+			(path) => this.movementSubGroupKeys.get(path) === destination.subGroupKey
+		);
+	}
+
+	private createMovementDestination(
+		groupKey: string | null,
+		subGroupKey?: string | null
+	): TaskListDestination {
+		const groupProperty = this.getGroupByPropertyId() ?? this.subGroupPropertyId;
+		const isPrimitive = (value: unknown): value is string | number | boolean =>
+			typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+		// Resolve a destination's actual list members from a task already in it. A populated
+		// group whose members record no value (e.g. inline-only tags) cannot be resolved, and
+		// must not fall back to writing its joined display label as a single member.
+		const listValues = (
+			property: string | null,
+			key: string | null | undefined,
+			primary = false
+		): { values?: readonly unknown[]; unresolved?: boolean } => {
+			if (!property || key === undefined) return {};
+			let hasMembers = false;
+			for (const [path, props] of this.movementProperties) {
+				const inDestination = primary
+					? this.taskGroupKeys.get(path) === key
+					: this.taskGroupKeys.get(path) === groupKey &&
+						this.movementSubGroupKeys.get(path) === key;
+				if (!inDestination) continue;
+				hasMembers = true;
+				const value = getTaskListPropertyValue(props, property);
+				if (Array.isArray(value) && value.length > 0 && value.every(isPrimitive))
+					return { values: value };
+				if (isPrimitive(value) && value !== "") return { values: [value] };
 			}
+			return { unresolved: hasMembers && key !== null && key !== "None" };
 		};
-		const cancel = attachLongPressTouchDrag(handle, {
-			onPress: () => {
-				this.cancelTouchDrag?.();
-				this.cancelTouchDrag = cancel;
-			},
-			onStart: (start) => {
-				point = start;
-				this.draggedTaskPath = task.path;
-				this.dragGroupKey = groupKey;
-				this.dragContainer = this.itemsContainer;
-				this.captureDropBaseline();
-				ghost = createElementInDocument(cardEl.ownerDocument, "div");
-				ghost.classList.add("tasknotes-plugin", "task-list-view__touch-ghost");
-				ghost.appendChild(cardEl.cloneNode(true));
-				ghost.setAttribute("aria-hidden", "true");
-				ghost.style.width = `${cardEl.getBoundingClientRect().width}px`;
-				ghost.style.left = `${point.x + win.scrollX}px`;
-				ghost.style.top = `${point.y + win.scrollY}px`;
-				cardEl.ownerDocument.body.appendChild(ghost);
-				cardEl.classList.add("task-card--dragging");
-				this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
-				const scrollContainer = this.itemsContainer ? findTouchDragScrollContainer(this.itemsContainer) : null;
-				const scroll = () => {
-					if (this.itemsContainer && scrollContainer) {
-						scrollTouchDragContainer(scrollContainer, point, "y");
-						this.updateResolvedInsertionSlot(point.y);
-					}
-					scrollFrame = win.requestAnimationFrame(scroll);
-				};
-				scrollFrame = win.requestAnimationFrame(scroll);
-			},
-			onMove: (next) => {
-				point = next;
-				if (ghost) {
-					ghost.style.left = `${point.x + win.scrollX}px`;
-					ghost.style.top = `${point.y + win.scrollY}px`;
-				}
-				this.updateResolvedInsertionSlot(point.y);
-			},
-			onDrop: async ({ x, y }) => {
-				const rect = this.itemsContainer?.getBoundingClientRect();
-				if (!rect || x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return;
-				this.flushPendingInsertionSlot(y);
-				const target = this.getCurrentInsertionTarget();
-				const targetGroup = this.currentInsertionGroupKey;
-				const visiblePaths = this.getVisibleSortScopePathsForDrag(targetGroup);
-				cleanup();
-				if (!target) return;
-				try {
-					await this.handleSortOrderDrop(task.path, target.taskPath, target.above, targetGroup, groupKey, visiblePaths);
-				} catch (error) {
-					tasknotesLogger.error("Failed to reorder task by touch", {
-						category: "persistence", operation: "touch-task-reorder", error,
-					});
-				}
-			},
-			onCancel: cleanup,
+		const group = listValues(groupProperty, groupKey, true);
+		const subGroup = listValues(this.subGroupPropertyId, subGroupKey);
+		return {
+			groupKey,
+			subGroupKey,
+			groupValues: group.values,
+			subGroupValues: subGroup.values,
+			groupValuesUnresolved: group.unresolved,
+			subGroupValuesUnresolved: subGroup.unresolved,
+		};
+	}
+
+	private planMovement(
+		source: TaskListDestination,
+		target: TaskListDestination,
+		isHeader: boolean
+	): TaskListMovementPlan {
+		return planTaskListMovement({
+			groupByPropertyId: this.getGroupByPropertyId(),
+			subGroupPropertyId: this.subGroupPropertyId,
+			source,
+			target,
+			isHeader,
+			canReorder: this.shouldEnableManualReordering(),
+			lookupMappingKey: (property) => this.plugin.fieldMapper.lookupMappingKey(property),
+			isListTypeProperty: (property) => this.isListTypeProperty(property),
 		});
+	}
+
+	private getAvailableMovementDestinations(): TaskListDestination[] {
+		const destinations = new Map(this.movementDestinations);
+		const primaryProperty = this.getGroupByPropertyId();
+		const effectiveProperty = primaryProperty ?? this.subGroupPropertyId;
+		const knownValues = (property: string | null): string[] => {
+			if (!property || !this.isMovableGroupingProperty(property)) return [];
+			const taskProperty = this.plugin.fieldMapper.lookupMappingKey(
+				property.replace(/^(note\.|task\.)/, "")
+			);
+			if (taskProperty === "status")
+				return this.plugin.statusManager.getAllStatuses().map((status) => status.value);
+			if (taskProperty === "priority")
+				return this.plugin.priorityManager
+					.getAllPriorities()
+					.map((priority) => priority.value);
+			return [];
+		};
+		const groupKeys = new Set(
+			[...destinations.values()].map((destination) => destination.groupKey)
+		);
+		for (const key of knownValues(effectiveProperty)) groupKeys.add(key);
+		if (effectiveProperty && this.isMovableGroupingProperty(effectiveProperty))
+			groupKeys.add("None");
+		for (const groupKey of groupKeys) {
+			const primary = this.createMovementDestination(groupKey);
+			destinations.set(taskListDestinationKey(primary), primary);
+			if (primaryProperty && this.subGroupPropertyId) {
+				for (const subGroupKey of [...knownValues(this.subGroupPropertyId), "None"]) {
+					const child = this.createMovementDestination(groupKey, subGroupKey);
+					destinations.set(taskListDestinationKey(child), child);
+				}
+			}
+		}
+		return [...destinations.values()];
+	}
+
+	private movementDestinationLabel(destination: TaskListDestination): string {
+		return [destination.groupKey, destination.subGroupKey]
+			.filter((value) => value !== undefined)
+			.map((value) =>
+				value === null || value === "None"
+					? this.plugin.i18n.translate("views.taskList.movement.noValue")
+					: value
+			)
+			.join(" / ");
+	}
+
+	private showEmptyMovementDestinations(): void {
+		if (!this.itemsContainer || !this.dragSourceDestination) return;
+		this.emptyDestinations?.remove();
+		const missing = this.getAvailableMovementDestinations().filter(
+			(destination) =>
+				(destination.subGroupKey === undefined ||
+					destination.groupKey === this.dragSourceDestination?.groupKey) &&
+				!this.movementDestinations.has(taskListDestinationKey(destination)) &&
+				this.planMovement(this.dragSourceDestination!, destination, true).kind === "move"
+		);
+		if (missing.length === 0) return;
+		const shelf = createElementInDocument(this.containerEl.ownerDocument, "div");
+		shelf.className = "task-list-view__empty-destinations";
+		shelf.createDiv({
+			cls: "task-list-view__destination-label",
+			text: this.plugin.i18n.translate("views.taskList.movement.otherDestinations"),
+		});
+		for (const destination of missing) {
+			const target = shelf.createDiv({
+				cls: "task-list-view__destination",
+				text: this.movementDestinationLabel(destination),
+			});
+			target.dataset.tnMovementDestination = "true";
+			this.elementDestinations.set(target, destination);
+		}
+		const spacer = this.useVirtualScrolling
+			? this.itemsContainer.querySelector<HTMLElement>(":scope > .virtual-scroller__spacer")
+			: null;
+		if (spacer) {
+			// Virtual rows are translated within a spacer, so place the shelf after the last row.
+			shelf.classList.add("task-list-view__empty-destinations--virtual");
+			shelf.style.setProperty("--tn-shelf-top", `${spacer.offsetHeight}px`);
+		}
+		this.itemsContainer.appendChild(shelf);
+		this.emptyDestinations = shelf;
+	}
+
+	private showTaskMovementMenu(task: TaskInfo, card: HTMLElement): void {
+		const source = this.elementDestinations.get(card) ?? {
+			groupKey: this.taskGroupKeys.get(task.path) ?? null,
+		};
+		const menu = new Menu();
+		menu.addItem((item) =>
+			item
+				.setTitle(this.plugin.i18n.translate("views.taskList.movement.handle"))
+				.setIsLabel(true)
+		);
+		menu.addItem((item) =>
+			item
+				.setTitle(this.plugin.i18n.translate("views.taskList.movement.parentChoose"))
+				.setIcon("corner-down-right")
+				.onClick(() => void this.showParentAssignmentSelector(task.path))
+		);
+		this.addReorderMenuItems(menu, task.path, source);
+		menu.addSeparator();
+		menu.addItem((item) =>
+			item
+				.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveTo"))
+				.setIsLabel(true)
+		);
+		const move = (target: TaskListDestination) => () =>
+			void this.performTaskMovement(task.path, source, target, true, null);
+		const destinations = this.getAvailableMovementDestinations();
+		for (const destination of destinations.filter(
+			(target) => target.subGroupKey === undefined
+		)) {
+			const children = destinations.filter(
+				(target) =>
+					target.groupKey === destination.groupKey &&
+					target.subGroupKey !== undefined &&
+					this.planMovement(source, target, true).kind === "move"
+			);
+			const canMove = this.planMovement(source, destination, true).kind === "move";
+			if (!canMove && children.length === 0) continue;
+			const label = this.movementDestinationLabel(destination);
+			// Obsidian's own organization menus use this native submenu API, but it is not
+			// part of the public typings, so fall back to flat items without it.
+			const createSubmenu = (item: MenuItem): { menu: Menu } | undefined => {
+				const setSubmenu = (item as unknown as { setSubmenu?: unknown }).setSubmenu;
+				return typeof setSubmenu === "function"
+					? { menu: (setSubmenu as (this: MenuItem) => Menu).call(item) }
+					: undefined;
+			};
+			if (children.length === 0) {
+				menu.addItem((item) =>
+					item.setTitle(label).setIcon("move-right").onClick(move(destination))
+				);
+				continue;
+			}
+			const created: { submenu?: Menu } = {};
+			menu.addItem((item) => {
+				item.setTitle(label).setIcon("move-right");
+				created.submenu = createSubmenu(item)?.menu;
+				if (!created.submenu && canMove) item.onClick(move(destination));
+			});
+			const parentMenu = created.submenu;
+			if (parentMenu) {
+				if (canMove)
+					parentMenu.addItem((child) =>
+						child
+							.setTitle(
+								this.plugin.i18n.translate("views.taskList.movement.keepSubgroup")
+							)
+							.onClick(move(destination))
+					);
+				for (const target of children) {
+					parentMenu.addItem((child) =>
+						child
+							.setTitle(
+								this.movementDestinationLabel({
+									groupKey: target.subGroupKey ?? null,
+								})
+							)
+							.onClick(move(target))
+					);
+				}
+			} else {
+				for (const target of children) {
+					menu.addItem((item) =>
+						item
+							.setTitle(this.movementDestinationLabel(target))
+							.setIcon("move-right")
+							.onClick(move(target))
+					);
+				}
+			}
+		}
+		const rect =
+			card
+				.querySelector<HTMLElement>(this.CARD_DRAG_HANDLE_SELECTOR)
+				?.getBoundingClientRect() ?? card.getBoundingClientRect();
+		menu.showAtPosition({ x: rect.left, y: rect.bottom }, this.containerEl.ownerDocument);
+	}
+
+	/** Keyboard equivalent of dragging within the current destination. */
+	private addReorderMenuItems(menu: Menu, path: string, source: TaskListDestination): void {
+		if (!this.shouldEnableManualReordering()) return;
+		const scope =
+			this.filterMovementSortScope(this.getVisibleSortScopePaths(source.groupKey), source) ??
+			[];
+		const index = scope.indexOf(path);
+		if (index < 0) return;
+		const reorder = (neighbour: string, above: boolean) => () =>
+			void this.handleSortOrderDrop(
+				path,
+				neighbour,
+				above,
+				source.groupKey,
+				source.groupKey,
+				scope,
+				source
+			).finally(() => this.debouncedRefresh());
+		if (index > 0)
+			menu.addItem((item) =>
+				item
+					.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveUp"))
+					.setIcon("arrow-up")
+					.onClick(reorder(scope[index - 1], true))
+			);
+		if (index < scope.length - 1)
+			menu.addItem((item) =>
+				item
+					.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveDown"))
+					.setIcon("arrow-down")
+					.onClick(reorder(scope[index + 1], false))
+			);
+	}
+
+	private clearMovementPreview(): void {
+		this.itemsContainer
+			?.querySelectorAll(
+				".task-list-view__move-target, .task-list-view__move-target--blocked, .task-list-view__parent-target--active"
+			)
+			.forEach((element) =>
+				element.classList.remove(
+					"task-list-view__move-target",
+					"task-list-view__move-target--blocked",
+					"task-list-view__parent-target--active"
+				)
+			);
+		this.movementFeedback?.remove();
+		this.movementFeedback = null;
+		this.dropDestination = null;
+	}
+
+	private clearMovementFeedback(): void {
+		this.clearMovementPreview();
+		this.emptyDestinations?.remove();
+		this.emptyDestinations = null;
+	}
+
+	private showMovementPreview(
+		plan: TaskListMovementPlan,
+		destination: TaskListDestination,
+		element: HTMLElement
+	): void {
+		this.clearDropIndicators();
+		const names = (properties: readonly string[]) =>
+			properties
+				.map((property) => this.dataAdapter.getPropertyDisplayName(property))
+				.join(", ");
+		const text =
+			plan.kind === "blocked"
+				? plan.readOnlyProperties.length > 0
+					? this.plugin.i18n.translate("views.taskList.movement.readOnly", {
+							properties: names(plan.readOnlyProperties),
+						})
+					: this.plugin.i18n.translate("views.taskList.movement.unresolved", {
+							properties: names(plan.unresolvedProperties),
+						})
+				: plan.kind === "move"
+					? plan.changes.map((change) => this.describeMovementChange(change)).join(" · ")
+					: this.plugin.i18n.translate("views.taskList.movement.noChange");
+		this.setMovementFeedback(text);
+		this.itemsContainer
+			?.querySelectorAll<HTMLElement>(
+				".task-card, .task-group, [data-tn-movement-destination]"
+			)
+			.forEach((candidate) => {
+				const target = this.elementDestinations.get(candidate);
+				const matches =
+					plan.kind === "move" &&
+					target?.groupKey === destination.groupKey &&
+					(destination.subGroupKey === undefined ||
+						target.subGroupKey === destination.subGroupKey);
+				candidate.classList.toggle("task-list-view__move-target", matches);
+				candidate.classList.toggle(
+					"task-list-view__move-target--blocked",
+					candidate === element && plan.kind === "blocked"
+				);
+			});
+	}
+
+	/** Lists are replaced as a whole, so show what the task holds before and after. */
+	private describeMovementChange(change: TaskListGroupDropPlan): string {
+		const name = this.dataAdapter.getPropertyDisplayName(change.groupByPropertyId!);
+		const noValue = this.plugin.i18n.translate("views.taskList.movement.noValue");
+		if (!change.isListGrouping || !change.frontmatterKey || !this.draggedTaskPath)
+			return `${name} → ${change.normalizedTargetGroupKey ?? noValue}`;
+		const current = this.movementProperties.get(this.draggedTaskPath)?.[change.frontmatterKey];
+		const before = getListMembers(current);
+		const after = moveGroupListValue(
+			current,
+			change.sourceGroupKey,
+			change.normalizedTargetGroupKey,
+			before,
+			change.targetValues
+		);
+		const format = (values: unknown[]) =>
+			values.length > 0 ? values.map((value) => String(value)).join(", ") : noValue;
+		return `${name}: ${format(before)} → ${format(after)}`;
+	}
+
+	private setMovementFeedback(text: string): void {
+		if (!this.movementFeedback) {
+			this.movementFeedback = createElementInDocument(this.containerEl.ownerDocument, "div");
+			this.movementFeedback.className = "task-list-view__movement-feedback";
+			this.movementFeedback.setAttribute("role", "status");
+			this.movementFeedback.setAttribute("aria-live", "polite");
+			this.rootElement?.appendChild(this.movementFeedback);
+		}
+		if (this.movementFeedback.textContent !== text) this.movementFeedback.textContent = text;
+	}
+
+	private updateTaskMovementTarget(
+		target: EventTarget | null,
+		clientY: number
+	): TaskListDropIntent | null {
+		const intent = this.resolveTaskMovementTarget(target, clientY);
+		this.currentDropAllowed =
+			intent?.kind === "move" ||
+			intent?.kind === "reorder" ||
+			(intent?.kind === "parent" && intent.state === "assign");
+		return intent;
+	}
+
+	private resolveTaskMovementTarget(
+		target: EventTarget | null,
+		clientY: number
+	): TaskListDropIntent | null {
+		if (!this.dragSourceDestination) return null;
+		const targetElement = this.getEventTargetElement(target);
+		if (!targetElement || !this.itemsContainer?.contains(targetElement)) {
+			this.clearMovementPreview();
+			this.clearDropIndicators();
+			return null;
+		}
+		const parentTarget = targetElement.closest<HTMLElement>(".task-list-view__parent-target");
+		const parentPath = parentTarget?.dataset.parentTaskPath;
+		if (parentTarget && parentPath && this.draggedTaskPath) {
+			const state = previewTaskParentAssignment(
+				this.plugin,
+				this.draggedTaskPath,
+				parentPath
+			);
+			this.clearMovementPreview();
+			this.clearDropIndicators();
+			parentTarget.classList.toggle(
+				"task-list-view__parent-target--active",
+				state === "assign"
+			);
+			parentTarget.classList.toggle(
+				"task-list-view__move-target--blocked",
+				state !== "assign" && state !== "already"
+			);
+			this.setMovementFeedback(this.parentAssignmentMessage(state, parentPath));
+			return { kind: "parent", parentPath, state };
+		}
+		this.itemsContainer
+			?.querySelectorAll(
+				".task-list-view__parent-target--active, .task-list-view__parent-target.task-list-view__move-target--blocked"
+			)
+			.forEach((element) =>
+				element.classList.remove(
+					"task-list-view__parent-target--active",
+					"task-list-view__move-target--blocked"
+				)
+			);
+		const clear = (): null => {
+			this.clearMovementPreview();
+			this.clearDropIndicators();
+			return null;
+		};
+		const header = targetElement.closest<HTMLElement>(
+			".task-group, [data-tn-movement-destination]"
+		);
+		const card = this.getTopLevelDropCard(targetElement);
+		// Releasing on the original row (or its subtasks) cancels rather than guessing a neighbour.
+		if (!header && card?.dataset.taskPath === this.draggedTaskPath) return clear();
+		// The shelf's label and padding are not destinations.
+		if (!header && targetElement.closest(".task-list-view__empty-destinations")) return clear();
+		const visibleCard = card && this.getVisibleDropCards().includes(card) ? card : null;
+		const slot = header || visibleCard ? null : this.resolveNearbyInsertionSlot(clientY);
+		const element =
+			header && this.itemsContainer?.contains(header)
+				? header
+				: (visibleCard ?? slot?.element);
+		if (!element) return clear();
+		const isHeader = !!header && element === header;
+		const destination = this.elementDestinations.get(element) ?? {
+			groupKey:
+				slot?.groupKey ?? this.taskGroupKeys.get(element.dataset.taskPath ?? "") ?? null,
+		};
+		const plan = this.planMovement(this.dragSourceDestination, destination, isHeader);
+		this.dropDestination = destination;
+		this.dropIsHeader = isHeader;
+		if (plan.kind === "reorder") {
+			this.clearMovementPreview();
+			this.dropDestination = destination;
+			this.updateResolvedInsertionSlot(clientY);
+		} else {
+			this.showMovementPreview(plan, destination, element);
+		}
+		return plan;
+	}
+
+	/** Nested subtask cards belong to the visible row that contains them. */
+	private getTopLevelDropCard(element: HTMLElement): HTMLElement | null {
+		let card = element.closest<HTMLElement>(".task-card[data-task-path]");
+		let parent = card?.parentElement?.closest<HTMLElement>(".task-card[data-task-path]");
+		while (card && parent && this.itemsContainer?.contains(parent)) {
+			card = parent;
+			parent = card.parentElement?.closest<HTMLElement>(".task-card[data-task-path]");
+		}
+		return card;
+	}
+
+	/** The nearest insertion line, only when the pointer is actually beside it (between rows). */
+	private resolveNearbyInsertionSlot(clientY: number): TaskListInsertionSlot | null {
+		const slot = this.resolveClosestInsertionSlot(clientY);
+		if (!slot) return null;
+		const rect = slot.element.getBoundingClientRect();
+		const edge = slot.position === "before" ? rect.top : rect.bottom;
+		return Math.abs(clientY - edge) <= this.NEARBY_SLOT_TOLERANCE_PX ? slot : null;
+	}
+
+	private cancelTaskMovement(cancelTouch = true): void {
+		if (cancelTouch) this.touchMovement?.cancel();
+		this.edgeScroll?.stop();
+		this.touchGhost?.remove();
+		this.touchGhost = null;
+		if (this.dragOverRafId) {
+			(this.containerEl.ownerDocument.defaultView ?? window).cancelAnimationFrame(
+				this.dragOverRafId
+			);
+			this.dragOverRafId = 0;
+		}
+		this.itemsContainer
+			?.querySelectorAll<HTMLElement>(".task-card--dragging")
+			.forEach((card) => {
+				card.classList.remove("task-card--dragging", "task-list-view__drag-source");
+				card.setAttribute(
+					"draggable",
+					this.isMobileDragHandleOnlyMode(card) ? "false" : "true"
+				);
+			});
+		this.cleanupDragShift();
+		this.clearDropIndicators();
+		this.clearMovementFeedback();
+		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
+		this.rootElement?.classList.remove("task-list-view--moving");
+		this.draggedTaskPath = null;
+		this.dragGroupKey = null;
+		this.dragSourceDestination = null;
+		this.pendingDragClientY = null;
+		this.pendingDragTarget = null;
+		this.currentDropAllowed = false;
+		if (this.pendingRender) {
+			this.pendingRender = false;
+			this.debouncedRefresh();
+		}
+	}
+
+	private async performTaskMovement(
+		path: string,
+		source: TaskListDestination,
+		destination: TaskListDestination,
+		isHeader: boolean,
+		insertion: { taskPath: string; above: boolean } | null
+	): Promise<void> {
+		const plan = this.planMovement(source, destination, isHeader);
+		// The members the user saw when acting. Values added by another edit before the
+		// queued write lands are not part of the move and must survive it.
+		const shown = this.movementProperties.get(path);
+		try {
+			if (plan.kind === "reorder" && insertion) {
+				await this.handleSortOrderDrop(
+					path,
+					insertion.taskPath,
+					insertion.above,
+					destination.groupKey,
+					source.groupKey,
+					this.getVisibleSortScopePathsForDrag(destination.groupKey),
+					destination
+				);
+			} else if (plan.kind === "move") {
+				await this.dropQueue.enqueue(`move:${path}`, async () => {
+					const file = this.plugin.app.vault.getAbstractFileByPath(path);
+					if (!(file instanceof TFile)) throw new Error("Task file no longer exists");
+					const originalTask =
+						this.taskInfoCache.get(path) ??
+						(await this.plugin.cacheManager.getTaskInfo(path));
+					let undoChanges: TaskMovementUndoChange[] = [];
+					let changes = plan.changes;
+					await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
+						const before = structuredClone(frontmatter);
+						// Lists group by their whole value, so the source membership is what this
+						// task held when the user acted, not another group member's spelling of it.
+						changes = plan.changes.map((change) => {
+							if (!change.isListGrouping || !change.frontmatterKey) return change;
+							const key = change.frontmatterKey;
+							return {
+								...change,
+								sourceValues: getMovedListMembers(shown, key, frontmatter[key]),
+							};
+						});
+						for (const change of changes) {
+							applyTaskListDropFrontmatterMutation({
+								frontmatter,
+								plan: change,
+								sortOrderField: this.plugin.settings.fieldMapping.sortOrder,
+								sortOrder: null,
+								isRecurring: !!originalTask?.recurrence,
+								dateModifiedField:
+									this.plugin.fieldMapper.toUserField("dateModified"),
+								coerceGroupKeyForFrontmatter: (property, value) =>
+									this.coerceGroupKeyForFrontmatter(property, value),
+								updateCompletedDateInFrontmatter: (fm, status, recurring) =>
+									this.plugin.taskService.updateCompletedDateInFrontmatter(
+										fm,
+										status,
+										recurring
+									),
+								getTimestamp: getCurrentTimestamp,
+							});
+						}
+						const modifiedProperty =
+							this.plugin.fieldMapper.toUserField("dateModified");
+						frontmatter[modifiedProperty] = getCurrentTimestamp();
+						undoChanges = buildTaskMovementUndo(before, frontmatter, modifiedProperty);
+					});
+					let updatedTask = originalTask;
+					if (originalTask) {
+						updatedTask = originalTask;
+						for (const change of changes) {
+							updatedTask =
+								buildTaskListDropSideEffectTask(updatedTask, {
+									plan: change,
+									isCompletedStatus: (status) =>
+										this.plugin.statusManager.isCompletedStatus(status),
+									getTimestamp: getCurrentTimestamp,
+									getCompletedDate: () => new Date().toISOString().split("T")[0],
+									coerceGroupKeyForTask: (property, value) =>
+										this.coerceGroupKeyForFrontmatter(property, value),
+									getClearedTaskValue: (property) =>
+										this.getClearedTaskValue(property, file),
+								}) ?? updatedTask;
+						}
+						for (const change of changes) {
+							if (!change.groupByTaskProp) continue;
+							// Side effects (status, webhooks, archive) need the real values, not group labels.
+							const property = change.groupByTaskProp as keyof TaskInfo;
+							await this.plugin.taskService.applyPropertyChangeSideEffects(
+								file,
+								originalTask,
+								updatedTask,
+								property,
+								originalTask[property],
+								updatedTask[property]
+							);
+						}
+					}
+					this.showTaskMovementUndo(
+						file,
+						undoChanges,
+						originalTask ?? null,
+						updatedTask ?? null,
+						plan.changes
+					);
+				});
+			}
+		} catch (error) {
+			tasknotesLogger.error("Task movement failed", {
+				category: "persistence",
+				operation: "task-movement",
+				error,
+			});
+			new Notice(this.plugin.i18n.translate("views.taskList.movement.failed"));
+		} finally {
+			this.debouncedRefresh();
+		}
+	}
+
+	private showTaskMovementUndo(
+		file: TFile,
+		changes: readonly TaskMovementUndoChange[],
+		originalTask: TaskInfo | null,
+		updatedTask: TaskInfo | null,
+		propertyChanges: readonly Pick<TaskListGroupDropPlan, "groupByTaskProp">[],
+		successMessage?: string
+	): void {
+		const t = (key: string) => this.plugin.i18n.translate(`views.taskList.movement.${key}`);
+		// Recurring status changes can write other occurrence notes. Do not offer a
+		// misleading single-note undo until those writes have a transaction ledger.
+		if (
+			changes.length === 0 ||
+			((originalTask?.recurrence || originalTask?.recurrence_parent) &&
+				propertyChanges.some((change) => change.groupByTaskProp === "status"))
+		) {
+			new Notice(successMessage ?? t("moved"));
+			return;
+		}
+		const fragment = (this.containerEl.ownerDocument.defaultView ?? window).createFragment();
+		fragment.append(`${successMessage ?? t("moved")} `);
+		const button = createElementInDocument(this.containerEl.ownerDocument, "button");
+		button.textContent = t("undo");
+		fragment.append(button);
+		const notice = new Notice(fragment, 8000);
+		button.addEventListener("click", () => {
+			button.disabled = true;
+			void this.dropQueue.enqueue(`move:${file.path}`, async () => {
+				try {
+					if (this.plugin.app.vault.getAbstractFileByPath(file.path) !== file)
+						throw new Error("Task file no longer exists");
+					const currentTask = updatedTask
+						? ((await this.plugin.cacheManager.getTaskInfo(file.path)) ?? updatedTask)
+						: null;
+					let restored = false;
+					await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
+						restored = applyTaskMovementUndo(frontmatter, changes);
+						if (restored)
+							frontmatter[this.plugin.fieldMapper.toUserField("dateModified")] =
+								getCurrentTimestamp();
+					});
+					if (!restored) {
+						new Notice(t("undoConflict"));
+						return;
+					}
+					if (originalTask && currentTask) {
+						const revertedTask = {
+							...currentTask,
+							dateModified: getCurrentTimestamp(),
+						};
+						if (
+							changes.some(
+								(change) =>
+									change.property ===
+									this.plugin.fieldMapper.toUserField("completedDate")
+							)
+						)
+							revertedTask.completedDate = originalTask.completedDate;
+						for (const change of propertyChanges) {
+							if (change.groupByTaskProp) {
+								const property = change.groupByTaskProp as keyof TaskInfo;
+								Object.assign(revertedTask, { [property]: originalTask[property] });
+							}
+						}
+						for (const change of propertyChanges) {
+							if (change.groupByTaskProp) {
+								const property = change.groupByTaskProp as keyof TaskInfo;
+								await this.plugin.taskService.applyPropertyChangeSideEffects(
+									file,
+									currentTask,
+									revertedTask,
+									property,
+									currentTask[property],
+									revertedTask[property]
+								);
+							}
+						}
+					}
+				} catch (error) {
+					tasknotesLogger.error("Task movement undo failed", {
+						category: "persistence",
+						operation: "task-movement-undo",
+						error,
+					});
+					new Notice(t("undoFailed"));
+				} finally {
+					notice.hide();
+					this.debouncedRefresh();
+				}
+			});
+		});
+	}
+
+	private configureParentDropTarget(card: HTMLElement): void {
+		const path = card.dataset.taskPath;
+		if (!path) return;
+		// Anchor to the row itself so expanded subtasks keep their own distinct targets.
+		const anchor = card.querySelector<HTMLElement>(":scope > .task-card__main-row") ?? card;
+		if (anchor.querySelector(":scope > .task-list-view__parent-target")) return;
+		const target = createElementInDocument(card.ownerDocument, "div");
+		target.className = "task-list-view__parent-target";
+		target.dataset.parentTaskPath = path;
+		const icon = target.createSpan();
+		setIcon(icon, "corner-down-right");
+		target.createSpan({
+			text: this.plugin.i18n.translate("views.taskList.movement.parentAdd"),
+		});
+		anchor.appendChild(target);
+	}
+
+	private parentAssignmentMessage(state: TaskParentAssignmentState, parentPath: string): string {
+		const key =
+			state === "assign"
+				? "parentPreview"
+				: state === "self"
+					? "parentSelf"
+					: state === "cycle"
+						? "parentCycle"
+						: state === "already"
+							? "parentAlready"
+							: "parentUnavailable";
+		const parent =
+			this.taskInfoCache.get(parentPath)?.title ??
+			this.plugin.app.vault.getAbstractFileByPath(parentPath)?.name.replace(/\.md$/, "") ??
+			parentPath;
+		return this.plugin.i18n.translate(`views.taskList.movement.${key}`, { parent });
+	}
+
+	private async showParentAssignmentSelector(sourcePath: string): Promise<void> {
+		try {
+			const tasks = await this.plugin.cacheManager.getAllTasks();
+			const candidates = tasks.filter(
+				(task) =>
+					previewTaskParentAssignment(this.plugin, sourcePath, task.path) === "assign"
+			);
+			openTaskSelector(
+				this.plugin,
+				candidates,
+				(parent) => {
+					if (parent) void this.performParentAssignment(sourcePath, parent.path);
+				},
+				{
+					allowCreate: false,
+					placeholder: this.plugin.i18n.translate("views.taskList.movement.parentChoose"),
+				}
+			);
+		} catch (error) {
+			tasknotesLogger.error("Parent selector failed", {
+				category: "internal",
+				operation: "parent-selector",
+				error,
+			});
+			new Notice(this.plugin.i18n.translate("views.taskList.movement.failed"));
+		}
+	}
+
+	private async performParentAssignment(sourcePath: string, parentPath: string): Promise<void> {
+		try {
+			await this.dropQueue.enqueue(`move:${sourcePath}`, async () => {
+				const result = await assignTaskParent(this.plugin, sourcePath, parentPath);
+				const parent =
+					this.taskInfoCache.get(parentPath)?.title ??
+					this.plugin.app.vault
+						.getAbstractFileByPath(parentPath)
+						?.name.replace(/\.md$/, "") ??
+					parentPath;
+				this.showTaskMovementUndo(
+					result.file,
+					result.undoChanges,
+					result.originalTask,
+					result.updatedTask,
+					[{ groupByTaskProp: "projects" }],
+					this.plugin.i18n.translate("views.taskList.movement.parentAssigned", { parent })
+				);
+			});
+		} catch (error) {
+			if (error instanceof TaskParentAssignmentError)
+				new Notice(this.parentAssignmentMessage(error.reason, parentPath));
+			else {
+				tasknotesLogger.error("Parent assignment failed", {
+					category: "persistence",
+					operation: "parent-assignment",
+					error,
+				});
+				new Notice(this.plugin.i18n.translate("views.taskList.movement.failed"));
+			}
+		} finally {
+			this.debouncedRefresh();
+		}
+	}
+
+	private isMovableGroupingProperty(property: string): boolean {
+		return isWritableGroupingProperty(
+			property,
+			this.plugin.fieldMapper.lookupMappingKey(property.replace(/^(note\.|task\.)/, ""))
+		);
+	}
+
+	private getClearedTaskValue(property: string, file: TFile): unknown {
+		if (property === "status") return this.plugin.settings.defaultTaskStatus;
+		if (property === "priority") return this.plugin.settings.defaultTaskPriority;
+		if (property === "title") return file.basename;
+		if (property === "archived") return false;
+		return undefined;
 	}
 
 	private shouldEnableManualReordering(): boolean {
@@ -1130,10 +1931,8 @@ export class TaskListView extends BasesViewBase {
 		task: TaskInfo,
 		groupKey: string | null
 	): void {
-		if (!this.shouldEnableManualReordering()) {
-			return;
-		}
-
+		// Parent assignment remains available in ungrouped and read-only-grouped views.
+		this.configureParentDropTarget(cardEl);
 		cardEl.setAttribute("draggable", "true");
 		this.setupCardDragHandlers(cardEl, task, groupKey);
 	}
@@ -1159,9 +1958,6 @@ export class TaskListView extends BasesViewBase {
 	 * Remove all gap/slot shift classes and custom properties.
 	 */
 	private cleanupDragShift(): void {
-		if (this.dragContainer) {
-			this.dragContainer.style.removeProperty("--tn-drag-gap");
-		}
 		// Clean from entire items container (safety net)
 		this.itemsContainer
 			?.querySelectorAll<HTMLElement>(
@@ -1175,7 +1971,6 @@ export class TaskListView extends BasesViewBase {
 					"task-list-view__drop-slot-after"
 				);
 			});
-		this.dragContainer = null;
 		this.currentDropSlotElement = null;
 		this.currentDropSlotPosition = null;
 		this.currentInsertionGroupKey = null;
@@ -1218,8 +2013,53 @@ export class TaskListView extends BasesViewBase {
 		return `manual-sort:${groupByPropertyId}:${this.getSortScopeKey(groupKey)}`;
 	}
 
+	private getGroupingPathProperties(
+		dataItems = this.dataAdapter.extractDataItems()
+	): Map<string, Record<string, unknown>> {
+		const properties = buildTaskListPathProperties(dataItems);
+		if (this.subGroupPropertyId)
+			populateBasesFormulaProperty(dataItems, properties, this.subGroupPropertyId);
+		return properties;
+	}
+
 	private syncGroupedDragMetadata(items: TaskListRenderItem[]): void {
 		this.taskGroupKeys.clear();
+		this.movementSubGroupKeys.clear();
+		this.movementProperties = this.getGroupingPathProperties();
+		if (this.subGroupPropertyId) {
+			for (const [path, properties] of this.movementProperties)
+				this.movementSubGroupKeys.set(
+					path,
+					stringifyTaskListGroupValue(
+						getTaskListPropertyValue(properties, this.subGroupPropertyId)
+					)
+				);
+		}
+		// Populate native group membership before constructing list-valued destinations.
+		for (const item of items) {
+			if (item.type === "primary-header") {
+				for (const entry of item.groupEntries)
+					if (entry.file?.path) this.taskGroupKeys.set(entry.file.path, item.groupKey);
+			} else if (item.type === "task") this.taskGroupKeys.set(item.task.path, item.groupKey);
+		}
+		// Persist canonical YAML values, not Bases display objects or link labels.
+		for (const [path, properties] of this.movementProperties) {
+			const file = this.plugin.app.vault.getAbstractFileByPath(path);
+			if (file instanceof TFile) {
+				Object.assign(
+					properties,
+					this.plugin.app.metadataCache.getFileCache(file)?.frontmatter
+				);
+			}
+		}
+		this.movementDestinations.clear();
+		for (const item of items) {
+			const destination = this.createMovementDestination(
+				item.groupKey,
+				item.type === "primary-header" ? undefined : item.subGroupKey
+			);
+			this.movementDestinations.set(taskListDestinationKey(destination), destination);
+		}
 		const groupedPaths = new Map<string | null, string[]>();
 		for (const item of items) {
 			if (item.type !== "task") continue;
@@ -1291,14 +2131,18 @@ export class TaskListView extends BasesViewBase {
 		const containerRect = this.itemsContainer.getBoundingClientRect();
 		const scrollTop = this.itemsContainer.scrollTop;
 		this.dragBaselineCards = cards
-			.map((card) => {
+			.map((card): TaskListDropBaselineCard | null => {
 				const path = card.dataset.taskPath;
 				if (!path) return null;
 				const rect = card.getBoundingClientRect();
 				const top = rect.top - containerRect.top + scrollTop;
 				return {
 					path,
-					groupKey: this.taskGroupKeys.get(path) ?? null,
+					groupKey:
+						this.elementDestinations.get(card)?.groupKey ??
+						this.taskGroupKeys.get(path) ??
+						null,
+					subGroupKey: this.elementDestinations.get(card)?.subGroupKey,
 					card,
 					top,
 					bottom: top + rect.height,
@@ -1348,13 +2192,61 @@ export class TaskListView extends BasesViewBase {
 	 */
 	private setupContainerDragHandlers(): void {
 		if (!this.itemsContainer) return;
+		const doc = this.containerEl.ownerDocument;
+		this.edgeScroll = new TaskMovementAutoScroll(this.itemsContainer, (x, y) => {
+			this.updateTouchGhost(x, y);
+			this.updateTaskMovementTarget(doc.elementFromPoint(x, y), y);
+		});
+		this.touchMovement = new TaskMovementTouch(this.itemsContainer, {
+			start: (handle, x, y) => {
+				const card = handle.closest<HTMLElement>(".task-card[data-task-path]");
+				const task = card?.dataset.taskPath
+					? this.taskInfoCache.get(card.dataset.taskPath)
+					: null;
+				if (!card || !task) return false;
+				this.beginTaskMovement(
+					card,
+					task,
+					this.elementDestinations.get(card)?.groupKey ?? null
+				);
+				this.touchGhost = createElementInDocument(doc, "div");
+				this.touchGhost.className = "task-list-view__touch-ghost";
+				this.touchGhost.setAttribute("aria-hidden", "true");
+				this.touchGhost.textContent = task.title;
+				this.rootElement?.appendChild(this.touchGhost);
+				this.updateTouchGhost(x, y);
+				return true;
+			},
+			update: (x, y) => {
+				this.updateTouchGhost(x, y);
+				this.updateTaskMovementTarget(doc.elementFromPoint(x, y), y);
+				this.edgeScroll?.update(x, y);
+			},
+			commit: (x, y) => void this.finishTaskMovement(doc.elementFromPoint(x, y), y),
+			cancel: () => this.cancelTaskMovement(false),
+		});
+		// No window blur handler: native drags always clean up on dragend, and touch
+		// movement cancels itself on blur. Some platforms blur when a native drag starts.
+
+		this.registerDomEvent(this.containerEl.ownerDocument, "keydown", (event: KeyboardEvent) => {
+			if (event.key === "Escape" && this.draggedTaskPath) {
+				event.preventDefault();
+				this.cancelTaskMovement();
+			}
+		});
 
 		// dragenter: required by the HTML5 DnD spec alongside dragover to
 		// indicate this container is a valid drop zone.
 		this.itemsContainer.addEventListener("dragenter", (e: DragEvent) => {
 			if (!this.draggedTaskPath) return;
 			e.preventDefault();
-			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+			// Do not let an older queued dragover overwrite a newly entered target.
+			this.pendingDragTarget = e.target;
+			this.pendingDragClientY = e.clientY;
+			this.updateTaskMovementTarget(e.target, e.clientY);
+			if (e.dataTransfer)
+				e.dataTransfer.dropEffect = this.currentDropAllowed ? "move" : "none";
+			this.edgeScroll?.update(e.clientX, e.clientY);
 		});
 
 		this.itemsContainer.addEventListener("dragover", (e: DragEvent) => {
@@ -1363,19 +2255,23 @@ export class TaskListView extends BasesViewBase {
 			// Always accept – must be unconditional so the browser keeps
 			// the drop zone active even when the cursor is between cards.
 			e.preventDefault();
-			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+			// dropEffect is only honoured during dispatch, so use the last resolved target.
+			if (e.dataTransfer)
+				e.dataTransfer.dropEffect = this.currentDropAllowed ? "move" : "none";
 
 			// Throttle visual updates via rAF
 			this.pendingDragClientY = e.clientY;
+			this.pendingDragTarget = e.target;
+			this.edgeScroll?.update(e.clientX, e.clientY);
 			if (!this.dragOverRafId) {
-				this.dragOverRafId = window.requestAnimationFrame(() => {
+				this.dragOverRafId = (
+					this.containerEl.ownerDocument.defaultView ?? window
+				).requestAnimationFrame(() => {
 					this.dragOverRafId = 0;
-
 					const clientY = this.pendingDragClientY;
 					this.pendingDragClientY = null;
 					if (clientY === null) return;
-
-					this.updateResolvedInsertionSlot(clientY);
+					this.updateTaskMovementTarget(this.pendingDragTarget, clientY);
 				});
 			}
 		});
@@ -1385,51 +2281,14 @@ export class TaskListView extends BasesViewBase {
 			const related = e.relatedTarget as HTMLElement | null;
 			if (!related || !this.itemsContainer?.contains(related)) {
 				this.clearDropIndicators();
+				this.clearMovementPreview();
+				this.edgeScroll?.stop();
 			}
 		});
 
 		this.itemsContainer.addEventListener("drop", (e: DragEvent) => {
-			void (async () => {
-				e.preventDefault();
-				if (!this.draggedTaskPath) return;
-
-				if (!this.flushPendingInsertionSlot(e.clientY) && this.currentInsertionIndex < 0)
-					return;
-
-				const draggedPath = this.draggedTaskPath;
-				const sourceGroupKey = this.dragGroupKey;
-				const targetGroupKey = this.currentInsertionGroupKey;
-				const targetVisiblePaths = this.getVisibleSortScopePathsForDrag(targetGroupKey);
-				const insertionSegmentIndex = this.currentInsertionSegmentIndex;
-				const insertionIndex = this.currentInsertionIndex;
-				const dropTarget =
-					insertionSegmentIndex >= 0 && insertionIndex >= 0
-						? this.reconstructDropTargetFromInsertionSlot(
-								insertionSegmentIndex,
-								insertionIndex
-							)
-						: null;
-				if (!draggedPath || !dropTarget) return;
-
-				this.clearDropIndicators();
-				this.cleanupDragShift();
-
-				this.draggedTaskPath = null;
-				this.dragGroupKey = null;
-				this.currentInsertionGroupKey = null;
-				this.currentInsertionSegmentIndex = -1;
-				this.currentInsertionIndex = -1;
-				this.pendingDragClientY = null;
-
-				await this.handleSortOrderDrop(
-					draggedPath,
-					dropTarget.taskPath,
-					dropTarget.above,
-					targetGroupKey,
-					sourceGroupKey,
-					targetVisiblePaths
-				);
-			})();
+			e.preventDefault();
+			void this.finishTaskMovement(e.target, e.clientY);
 		});
 	}
 
@@ -1439,9 +2298,10 @@ export class TaskListView extends BasesViewBase {
 		above: boolean,
 		targetGroupKey: string | null,
 		sourceGroupKey: string | null,
-		targetVisiblePaths?: string[]
+		targetVisiblePaths?: string[],
+		destination?: TaskListDestination
 	): Promise<void> {
-		const groupByPropertyId = this.getGroupByPropertyId();
+		const groupByPropertyId = this.getGroupByPropertyId() ?? this.subGroupPropertyId;
 		const reorderScopeKey = this.getReorderScopeQueueKey(targetGroupKey, groupByPropertyId);
 		await this.dropQueue.enqueue(reorderScopeKey, async () => {
 			const groupDropPlan = buildTaskListGroupDropPlan({
@@ -1453,7 +2313,7 @@ export class TaskListView extends BasesViewBase {
 				isListTypeProperty: (propertyName) => this.isListTypeProperty(propertyName),
 			});
 
-			if (groupDropPlan.isFormulaGrouping) {
+			if (groupDropPlan.isFormulaGrouping && groupDropPlan.needsGroupUpdate) {
 				new Notice(
 					this.plugin.i18n.translate("views.taskList.errors.formulaGroupingReadOnly")
 				);
@@ -1465,14 +2325,23 @@ export class TaskListView extends BasesViewBase {
 				targetPath,
 				above,
 				targetGroupKey,
-				groupDropPlan.cleanGroupBy,
+				destination ? null : groupDropPlan.cleanGroupBy,
 				draggedPath,
 				this.plugin,
 				{
 					taskInfoCache: this.taskInfoCache,
-					visibleTaskPaths:
+					visibleTaskPaths: this.filterMovementSortScope(
 						targetVisiblePaths ?? this.getVisibleSortScopePaths(targetGroupKey),
-					candidateTaskPaths: this.getCandidateSortScopePaths(targetGroupKey),
+						destination
+					),
+					candidateTaskPaths: this.filterMovementSortScope(
+						this.getCandidateSortScopePaths(targetGroupKey),
+						destination
+					),
+					sortDirection: getSortOrderDirection(
+						this.dataAdapter,
+						this.plugin.settings.fieldMapping.sortOrder
+					),
 				}
 			);
 			if (sortOrderPlan.sortOrder === null) return;
@@ -1536,6 +2405,10 @@ export class TaskListView extends BasesViewBase {
 								this.plugin.statusManager.isCompletedStatus(status),
 							getTimestamp: getCurrentTimestamp,
 							getCompletedDate: () => new Date().toISOString().split("T")[0],
+							coerceGroupKeyForTask: (property, value) =>
+								this.coerceGroupKeyForFrontmatter(property, value),
+							getClearedTaskValue: (property) =>
+								this.getClearedTaskValue(property, file),
 						});
 						if (updatedTask) {
 							await this.plugin.taskService.applyPropertyChangeSideEffects(
@@ -1796,7 +2669,7 @@ export class TaskListView extends BasesViewBase {
 		const cardOptions = this.getCardOptions(targetDate);
 
 		// Group tasks by sub-property
-		const pathToProps = buildTaskListPathProperties(this.dataAdapter.extractDataItems());
+		const pathToProps = this.getGroupingPathProperties();
 		const groupedTasks = groupTasksByTaskListSubProperty(
 			renderTasks,
 			this.subGroupPropertyId!,
@@ -1876,7 +2749,7 @@ export class TaskListView extends BasesViewBase {
 
 		// Build flattened list of items using shared method
 		const pathToProps = this.subGroupPropertyId
-			? buildTaskListPathProperties(this.dataAdapter.extractDataItems())
+			? this.getGroupingPathProperties()
 			: new Map<string, Record<string, unknown>>();
 		const items = buildTaskListGroupedRenderItems({
 			groups,
@@ -1955,6 +2828,10 @@ export class TaskListView extends BasesViewBase {
 							cardOptions
 						);
 						// Attach drag handlers for sort_order reordering
+						this.elementDestinations.set(
+							cardEl,
+							this.createMovementDestination(item.groupKey, item.subGroupKey)
+						);
 						this.configureCardForManualReordering(cardEl, item.task, item.groupKey);
 						this.taskInfoCache.set(item.task.path, item.task);
 						this.lastTaskSignatures.set(
@@ -2018,6 +2895,10 @@ export class TaskListView extends BasesViewBase {
 					visibleProperties,
 					cardOptions
 				);
+				this.elementDestinations.set(
+					cardEl,
+					this.createMovementDestination(item.groupKey, item.subGroupKey)
+				);
 				this.configureCardForManualReordering(cardEl, item.task, item.groupKey);
 				this.itemsContainer!.appendChild(cardEl);
 				this.currentTaskElements.set(item.task.path, cardEl);
@@ -2042,6 +2923,13 @@ export class TaskListView extends BasesViewBase {
 		const isSubHeader = headerItem.type === "sub-header";
 		const level = isSubHeader ? "sub" : "primary";
 		groupHeader.dataset.level = level;
+		this.elementDestinations.set(
+			groupHeader,
+			this.createMovementDestination(
+				headerItem.groupKey,
+				isSubHeader ? headerItem.subGroupKey : undefined
+			)
+		);
 		const groupKey = isSubHeader
 			? `${headerItem.groupKey}:${headerItem.subGroupKey}`
 			: headerItem.groupKey;
@@ -2094,6 +2982,25 @@ export class TaskListView extends BasesViewBase {
 		return groupHeader;
 	}
 
+	/** Whether a task's grouping values differ from those its rendered destination reflects. */
+	private groupingValuesChanged(path: string): boolean {
+		const properties = [this.getGroupByPropertyId(), this.subGroupPropertyId].filter(
+			(property): property is string =>
+				!!property &&
+				!property.startsWith("formula.") &&
+				(!property.startsWith("file.") || property === "file.tags")
+		);
+		const rendered = this.movementProperties.get(path);
+		const file = this.plugin.app.vault.getAbstractFileByPath(path);
+		if (properties.length === 0 || !rendered || !(file instanceof TFile)) return false;
+		const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
+		return properties.some(
+			(property) =>
+				JSON.stringify(getTaskListPropertyValue(frontmatter, property) ?? null) !==
+				JSON.stringify(getTaskListPropertyValue(rendered, property) ?? null)
+		);
+	}
+
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
 		// Update cache
 		this.taskInfoCache.set(task.path, task);
@@ -2106,7 +3013,10 @@ export class TaskListView extends BasesViewBase {
 		} else {
 			// Normal mode - update the specific card
 			const existingElement = this.currentTaskElements.get(task.path);
-			if (existingElement && existingElement.isConnected) {
+			if (this.groupingValuesChanged(task.path)) {
+				// The card now belongs to another destination; only a full render can place it.
+				this.debouncedRefresh();
+			} else if (existingElement && existingElement.isConnected) {
 				const visibleProperties = this.getVisibleProperties();
 				const replacement = createTaskCard(
 					task,
@@ -2119,6 +3029,8 @@ export class TaskListView extends BasesViewBase {
 					task,
 					this.taskGroupKeys.get(task.path) ?? null
 				);
+				const destination = this.elementDestinations.get(existingElement);
+				if (destination) this.elementDestinations.set(replacement, destination);
 				existingElement.replaceWith(replacement);
 				replacement.classList.add("task-card--updated");
 				// Use correct window for pop-out window support
@@ -2227,9 +3139,10 @@ export class TaskListView extends BasesViewBase {
 	 * Override from Component base class.
 	 */
 	onunload(): void {
-		this.cancelTouchDrag?.();
 		// Component.register() calls will be automatically cleaned up (including search cleanup)
 		// We just need to clean up view-specific state
+		this.touchMovement?.destroy();
+		this.cancelTaskMovement();
 		this.unregisterContainerListeners();
 		this.destroyVirtualScroller();
 
@@ -2509,7 +3422,11 @@ export class TaskListView extends BasesViewBase {
 
 	private async handleGroupToggle(groupKey: string): Promise<void> {
 		if (this.isSubGroupKey(groupKey)) {
-			this.setSetEntry(this.collapsedSubGroups, groupKey, !this.collapsedSubGroups.has(groupKey));
+			this.setSetEntry(
+				this.collapsedSubGroups,
+				groupKey,
+				!this.collapsedSubGroups.has(groupKey)
+			);
 		} else {
 			this.setSetEntry(this.collapsedGroups, groupKey, !this.collapsedGroups.has(groupKey));
 		}
@@ -2532,11 +3449,15 @@ export class TaskListView extends BasesViewBase {
 		this.setCurrentVisibleTaskPaths(renderTasks);
 
 		const pathToProps = this.subGroupPropertyId
-			? buildTaskListPathProperties(dataItems)
+			? this.getGroupingPathProperties(dataItems)
 			: new Map<string, Record<string, unknown>>();
 		let items: TaskListRenderItem[];
 
-		if (!this.dataAdapter.isGrouped() && this.subGroupPropertyId) {
+		if (
+			!this.getGroupByPropertyId() &&
+			!this.dataAdapter.isGrouped() &&
+			this.subGroupPropertyId
+		) {
 			const groupedTasks = groupTasksByTaskListSubProperty(
 				renderTasks,
 				this.subGroupPropertyId,
@@ -2554,8 +3475,7 @@ export class TaskListView extends BasesViewBase {
 				pathToProps,
 				collapsedGroups: this.collapsedGroups,
 				collapsedSubGroups: this.collapsedSubGroups,
-				convertGroupKeyToString: (key) =>
-					this.dataAdapter.convertGroupKeyToString(key),
+				convertGroupKeyToString: (key) => this.dataAdapter.convertGroupKeyToString(key),
 			});
 		}
 
@@ -2977,13 +3897,16 @@ export class TaskListView extends BasesViewBase {
 		// Snapshot task data, not just a hand-maintained subset: badges and controls
 		// also depend on fields that may not be selected as visible properties.
 		// Raw Bases entries are live objects (and can be circular); resolve only
-		// displayed values through the same accessor used by task cards instead.
-		return JSON.stringify({
-			task: { ...task, basesData: undefined },
-			visibleValues: visibleProperties.map((property) =>
-				getTaskCardPropertyValue(task, property, this.plugin)
-			),
-		});
+		// displayed values through the same accessor used by task cards instead,
+		// then normalize any Bases Values those accessors return.
+		return JSON.stringify(
+			normalizeTaskSignatureValue({
+				task: { ...task, basesData: undefined },
+				visibleValues: visibleProperties.map((property) =>
+					getTaskCardPropertyValue(task, property, this.plugin)
+				),
+			})
+		);
 	}
 
 	private buildCardRenderSignature(

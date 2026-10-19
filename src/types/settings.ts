@@ -139,6 +139,7 @@ export interface TaskNotesSettings {
 	taskModalTabMovesFocus: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
+	nlpEnterToSubmit: boolean; // Enter saves from the NLP input; Shift+Enter inserts a newline
 	nlpLanguage: string; // Language code for natural language processing (e.g., 'en', 'es', 'fr')
 	uiLanguage: string; // 'system' or supported locale code for UI translations
 
@@ -336,6 +337,7 @@ export interface GoogleCalendarExportSettings {
 	eventColorId: string | null; // Optional: Google Calendar color ID for TaskNotes events (null = calendar default)
 	syncTrigger: "scheduled" | "due" | "both"; // Which date triggers event creation
 	createAsAllDay: boolean; // Create as all-day events vs timed
+	showAllDayAsFree: boolean; // All-day task exports do not block Google Calendar availability
 	defaultEventDuration: number; // Duration in minutes if timed (uses timeEstimate if available)
 	includeObsidianLink: boolean; // Include obsidian:// link in event description
 	defaultReminderMinutes: number | number[] | null; // Popup reminder(s) X minutes before event (null = no reminder)

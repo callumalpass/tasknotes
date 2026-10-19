@@ -108,8 +108,25 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain('name: "Kanban Board"');
 		expect(template).toContain("sort:\n      - column: tasknotes_manual_order\n        direction: DESC");
 		expect(template).toContain("groupBy:\n      property: status");
-		expect(template).toContain("config:\n      columnWidth: 280\n      hideEmptyColumns: false");
-		expect(template).not.toContain("    options:\n      columnWidth: 280");
+		const view = parse(template).views[0];
+		expect(view.columnWidth).toBe(280);
+		expect(view.hideEmptyColumns).toBe(false);
+		expect(view.config).toBeUndefined();
+		expect(view.options).toBeUndefined();
+	});
+
+	it.each(commands)("writes custom settings directly on generated %s views", (command) => {
+		const base = parse(generateBasesFileTemplate(command, createMockPlugin() as any));
+		for (const view of base.views) {
+			expect(view.config).toBeUndefined();
+			expect(view.options).toBeUndefined();
+		}
+		if (command === "open-advanced-calendar-view") {
+			expect(base.views[0]).toMatchObject({ calendarView: "timeGridWeek", showDue: true, firstDay: 1 });
+		}
+		if (command === "open-agenda-view") {
+			expect(base.views[0]).toMatchObject({ showPropertyBasedEvents: false, showOverdueOnToday: true });
+		}
 	});
 
 	it("adds a dedicated manual-order task list view while preserving urgency views", () => {
@@ -272,20 +289,18 @@ describe("defaultBasesFiles", () => {
 		expect(template).not.toContain('note["Task Type"] == "true"');
 	});
 
-	it("uses the same quoted property reference for property existence filters", () => {
+	it.each([["Task Type", ""], ["", "task"], ["", ""], [" ", "task"], ["category", " "]])("matches no tasks with incomplete property identification (%s, %s) (#2363)", (name, value) => {
 		const template = generateBasesFileTemplate(
 			"open-tasks-view",
 			createMockPlugin({
 				taskIdentificationMethod: "property",
-				taskPropertyName: "Task Type",
-				taskPropertyValue: "",
+				taskPropertyName: name,
+				taskPropertyValue: value,
 			}) as any
 		);
-
-		expect(template).toContain(
-			'note["Task Type"] && note["Task Type"] != "" && note["Task Type"] != null'
-		);
-		expect(template).not.toContain("note.Task Type");
+		expect(template).toContain('    - "false"');
+		expect(template).not.toContain('file.hasTag("task")');
+		expect(template).not.toContain('note["Task Type"] &&');
 	});
 
 	it("adds excluded folder filters to generated task Bases", () => {

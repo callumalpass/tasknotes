@@ -39,7 +39,13 @@ describe("Issue #1463: HTTP API FilterQuery docs", () => {
 		expect(docs).toContain('"property": "contexts"');
 		expect(docs).toContain('"operator": "contains"');
 		expect(docs).toContain('"value": "@office"');
-		expect(docs).toContain('For user-defined fields, use `property: "user:<fieldId>"`.');
+		expect(docs).toContain(
+			"For user-defined fields, the canonical property is `user:<fieldId>`."
+		);
+		expect(docs).toContain(
+			"`user:<frontmatter-key>`, `user.<fieldId>`, and `user.<frontmatter-key>`"
+		);
+		expect(docs).toContain("Invalid queries return a tool result with `isError: true`");
 	});
 
 	it("exposes FilterQuery schemas and a request body in generated OpenAPI docs", () => {
@@ -59,7 +65,10 @@ describe("Issue #1463: HTTP API FilterQuery docs", () => {
 		expect(schemas.FilterQuery).toBeDefined();
 		expect(schemas.FilterGroup).toBeDefined();
 		expect(schemas.FilterCondition.properties?.property).toMatchObject({
-			enum: expect.arrayContaining(["contexts", "status.isCompleted"]),
+			oneOf: [
+				{ enum: expect.arrayContaining(["contexts", "status.isCompleted"]) },
+				{ pattern: "^user[:.].+$" },
+			],
 		});
 		expect(schemas.FilterCondition.properties?.operator).toMatchObject({
 			enum: expect.arrayContaining(["contains", "is-not-checked"]),

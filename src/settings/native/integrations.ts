@@ -174,6 +174,12 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 				),
 				field(
 					google,
+					"showAllDayAsFree",
+					"googleCalendarExport.showAllDayAsFree",
+					`${googlePrefix}.showAllDayAsFree`
+				),
+				field(
+					google,
 					"defaultEventDuration",
 					"googleCalendarExport.defaultEventDuration",
 					`${googlePrefix}.defaultDuration`,

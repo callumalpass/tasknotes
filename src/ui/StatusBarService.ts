@@ -24,6 +24,7 @@ export class StatusBarService {
 	private pomodoroUpdateTimeout: number | null = null;
 	private elapsedUpdateInterval: number | null = null;
 	private currentTrackedTasks: TaskInfo[] = [];
+	private stopTrackingPending = false;
 	private pomodoroEventRefs: EventRef[] = [];
 
 	constructor(plugin: import("../main").default) {
@@ -209,19 +210,29 @@ export class StatusBarService {
 		);
 		this.statusBarElement.style.removeProperty("display");
 
-		// Clear previous content
-		this.statusBarElement.empty();
-
-		// Create icon
-		const iconEl = this.statusBarElement.createSpan({
-			cls: "tasknotes-status-icon",
-		});
+		// Keep controls mounted during elapsed-time refreshes so keyboard focus survives.
+		const iconEl = this.statusBarElement.querySelector<HTMLElement>(".tasknotes-status-icon")
+			?? this.statusBarElement.createSpan({ cls: "tasknotes-status-icon" });
 		setIcon(iconEl, "timer");
 
 		// Create text content
-		const textEl = this.statusBarElement.createSpan({
-			cls: "tasknotes-status-text",
-		});
+		const textEl = this.statusBarElement.querySelector<HTMLElement>(".tasknotes-status-text")
+			?? this.statusBarElement.createSpan({ cls: "tasknotes-status-text" });
+
+		let stopButton = this.statusBarElement.querySelector<HTMLButtonElement>(".tasknotes-status-stop");
+		if (!stopButton) {
+			stopButton = this.statusBarElement.createEl("button", { cls: "tasknotes-status-stop" });
+			stopButton.type = "button";
+			const label = this.plugin.i18n.translate("commands.stopActiveTimeTracking");
+			stopButton.setAttribute("aria-label", label);
+			setTooltip(stopButton, label);
+			setIcon(stopButton, "square");
+			stopButton.addEventListener("click", (event) => {
+				event.stopPropagation();
+				void this.handleStopTrackingClick();
+			});
+		}
+		stopButton.disabled = this.stopTrackingPending;
 
 		if (count === 1) {
 			const task = trackedTasks[0];
@@ -371,6 +382,26 @@ export class StatusBarService {
 	/**
 	 * Handle click on status bar - open task note(s)
 	 */
+	private async handleStopTrackingClick(): Promise<void> {
+		if (this.stopTrackingPending) return;
+		this.stopTrackingPending = true;
+		const button = this.statusBarElement?.querySelector<HTMLButtonElement>(".tasknotes-status-stop");
+		if (button) button.disabled = true;
+		try {
+			await this.plugin.stopActiveTimeTracking();
+		} catch (error) {
+			tasknotesLogger.error("Failed to stop active time tracking:", {
+				category: "persistence",
+				operation: "status-bar-stop-tracking",
+				error,
+			});
+		} finally {
+			this.stopTrackingPending = false;
+			if (button) button.disabled = false;
+			this.requestUpdate();
+		}
+	}
+
 	private async handleStatusBarClick(): Promise<void> {
 		try {
 			// Get tracked tasks

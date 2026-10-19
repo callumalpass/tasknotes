@@ -134,6 +134,31 @@ export const en: TranslationTree = {
 			expandAllGroups: "Expand all groups",
 			collapseAllGroups: "Collapse all groups",
 			noTasksFound: "No tasks found for the selected filters.",
+			movement: {
+				parentAdd: "Add as subtask",
+				parentChoose: "Add as subtask of…",
+				parentPreview: "Add as subtask of {parent}. Other projects stay unchanged.",
+				parentSelf: "A task cannot be its own parent.",
+				parentCycle: "Cannot add a task under one of its descendants.",
+				parentAlready: "Already a subtask of {parent}.",
+				parentUnavailable: "Both tasks must still exist and be TaskNotes tasks.",
+				parentAssigned: "Added as a subtask of {parent}.",
+				handle: "Move task",
+				moveTo: "Move to a group",
+				keepSubgroup: "Keep current subgroup",
+				moveUp: "Move up",
+				moveDown: "Move down",
+				moved: "Task moved.",
+				undo: "Undo",
+				undoConflict: "Cannot undo: this task changed after the move.",
+				undoFailed: "Could not undo this move.",
+				noValue: "No value",
+				otherDestinations: "Other destinations",
+				readOnly: "Cannot change {properties}: these groups are read-only.",
+				unresolved: "Cannot determine the {properties} values for this destination.",
+				noChange: "Already in this group.",
+				failed: "Could not move the task. Check the task and try again.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "this ungrouped list",
@@ -322,8 +347,8 @@ export const en: TranslationTree = {
 					slotEventOverlap: "Allow events to overlap",
 					enableSearch: "Enable search box",
 					eventMaxStack: "Max stacked events (week/day view, 0 = unlimited)",
-					dayMaxEvents: "Max events per day (month view, 0 = auto)",
-					dayMaxEventRows: "Max event rows per day (month view, 0 = unlimited)",
+					dayMaxEvents: "Max events per day (0 = auto)",
+					dayMaxEventRows: "Max event rows per day (0 = unlimited)",
 					spanScheduledToDue: "Span tasks between scheduled and due dates",
 				},
 				propertyBasedEvents: {
@@ -665,6 +690,58 @@ export const en: TranslationTree = {
 			features: "Features",
 			integrations: "Integrations",
 		},
+		modalFields: {
+			header: "Task modal fields configuration",
+			description:
+				"Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group.",
+			splitLayout: {
+				name: "Split layout on wide screens",
+				description:
+					"When enabled, the details editor appears in a right column on screens 900px or wider. When disabled, the modal uses a stacked layout.",
+			},
+			tabMovesFocus: {
+				name: "Tab moves focus in details editor",
+				description:
+					"When enabled, Tab moves from the details editor to the next modal field and Shift+Tab moves to the previous field. When disabled, Tab and Shift+Tab use the markdown editor's indentation behavior.",
+			},
+			sync: {
+				name: "Sync user fields",
+				description:
+					"Click to sync custom user fields from task properties settings into this configuration.",
+				button: "Sync user fields",
+				notice: "User fields synced to modal configuration",
+			},
+			reset: {
+				name: "Reset to defaults",
+				description:
+					"Reset all field configurations to their default values. This will remove any custom configurations.",
+				button: "Reset to defaults",
+				confirmTitle: "Reset field configuration",
+				confirmMessage:
+					"Are you sure you want to reset field configuration to defaults? This will remove any custom field configurations.",
+				confirmText: "Reset",
+				cancelText: "Cancel",
+				notice: "Field configuration reset to defaults",
+			},
+			initError: "Error: Could not initialize field configuration",
+			manager: {
+				invalidConfig: "Error: Invalid field configuration. Please reset to defaults.",
+				emptyGroup: "No fields in this group",
+				enabled: "Enabled:",
+				showInCreation: "Show in creation:",
+				showInEdit: "Show in edit:",
+				group: "Group:",
+				fieldId: "ID: {id}",
+				fieldKey: "Key: {key}",
+				noKey: "No key set",
+				fieldTypes: {
+					core: "Core",
+					user: "User",
+					dependency: "Dependency",
+					organization: "Organization",
+				},
+			},
+		},
 		features: {
 			inlineTasks: {
 				header: "Inline tasks",
@@ -724,6 +801,11 @@ export const en: TranslationTree = {
 					name: "Default to scheduled",
 					description:
 						"When NLP detects a date without context, treat it as scheduled rather than due",
+				},
+				enterToSubmit: {
+					name: "Enter saves task",
+					description:
+						"In the natural language input, press Enter to save the task. Shift+Enter inserts a newline, and Ctrl/Cmd+Enter still saves.",
 				},
 				language: {
 					name: "NLP language",
@@ -1107,6 +1189,9 @@ export const en: TranslationTree = {
 						exactOnly: "Exact task tag only",
 					},
 				},
+				propertyNamePlaceholder: "Enter property name",
+				propertyValuePlaceholder: "Enter property value",
+				incompletePropertyWarning: "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings.",
 				taskProperty: {
 					name: "Task property name",
 					description: 'The frontmatter property name (e.g., "category")',
@@ -1488,6 +1573,10 @@ export const en: TranslationTree = {
 				},
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "Enter a property key.",
+					duplicateKey: "Another property already uses this key.",
+				},
 				header: "Custom user fields",
 				description:
 					"Define custom frontmatter properties to appear as type-aware filter options across views. Each row: Display name, property name, type.",
@@ -2156,6 +2245,11 @@ export const en: TranslationTree = {
 					description:
 						"When enabled, tasks are created as all-day events. When disabled, uses time estimate for duration.",
 				},
+				showAllDayAsFree: {
+					name: "Show all-day task events as free",
+					description:
+						"All-day task exports do not block availability, including tasks converted to all-day. Timed events stay busy. Run sync all tasks to apply changes to existing events.",
+				},
 				defaultDuration: {
 					name: "Default event duration",
 					description:
@@ -2582,6 +2676,7 @@ export const en: TranslationTree = {
 		viewReleaseNotes: "View release notes",
 		startTimeTrackingCurrentTask: "Start time tracking for current task",
 		stopTimeTrackingCurrentTask: "Stop time tracking for current task",
+		stopActiveTimeTracking: "Stop active time tracking",
 		startTimeTrackingWithSelector: "Start time tracking (select task)",
 		editTimeEntries: "Edit time entries (select task)",
 		createOrOpenTask: "Create or open task",
@@ -3096,6 +3191,8 @@ export const en: TranslationTree = {
 			noTasksAvailable: "No tasks available to track time for",
 			started: "Started tracking time for: {taskTitle}",
 			startFailed: "Failed to start time tracking",
+			noActiveTasks: "No active time tracking session found",
+			stopFailed: "Failed to load active time tracking sessions",
 		},
 		timeEntry: {
 			mustHaveSpecificTime:

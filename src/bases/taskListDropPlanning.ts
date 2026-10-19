@@ -1,5 +1,9 @@
 import type { FieldMapping, TaskInfo } from "../types";
-import { stringifyUnknown } from "../utils/stringUtils";
+import {
+	applyGroupPropertyMutation,
+	moveGroupListValue,
+	normalizeGroupValue,
+} from "./groupPropertyMutation";
 import { stripPropertyPrefix } from "./sortOrderUtils";
 
 export interface TaskListGroupDropPlan {
@@ -12,12 +16,16 @@ export interface TaskListGroupDropPlan {
 	needsGroupUpdate: boolean;
 	normalizedTargetGroupKey: string | null;
 	sourceGroupKey: string | null;
+	sourceValues?: readonly unknown[];
+	targetValues?: readonly unknown[];
 }
 
 export interface BuildTaskListGroupDropPlanOptions {
 	groupByPropertyId: string | null;
 	sourceGroupKey: string | null;
 	targetGroupKey: string | null;
+	sourceValues?: readonly unknown[];
+	targetValues?: readonly unknown[];
 	lookupMappingKey: (frontmatterPropertyName: string) => keyof FieldMapping | null;
 	isListTypeProperty: (propertyName: string) => boolean;
 }
@@ -29,10 +37,7 @@ export interface ApplyTaskListDropFrontmatterMutationOptions {
 	sortOrder: string | null;
 	isRecurring: boolean;
 	dateModifiedField: string;
-	coerceGroupKeyForFrontmatter: (
-		property: string,
-		groupKey: string
-	) => string | number | boolean;
+	coerceGroupKeyForFrontmatter: (property: string, groupKey: string) => string | number | boolean;
 	updateCompletedDateInFrontmatter: (
 		frontmatter: Record<string, unknown>,
 		status: string,
@@ -46,20 +51,25 @@ export interface BuildTaskListDropSideEffectTaskOptions {
 	isCompletedStatus: (status: string) => boolean;
 	getTimestamp: () => string;
 	getCompletedDate: () => string;
+	coerceGroupKeyForTask?: (property: string, groupKey: string) => string | number | boolean;
+	getClearedTaskValue?: (property: keyof FieldMapping) => unknown;
 }
 
 export function buildTaskListGroupDropPlan({
 	groupByPropertyId,
 	sourceGroupKey,
 	targetGroupKey,
+	sourceValues,
+	targetValues,
 	lookupMappingKey,
 	isListTypeProperty,
 }: BuildTaskListGroupDropPlanOptions): TaskListGroupDropPlan {
 	const cleanGroupBy = groupByPropertyId ? stripPropertyPrefix(groupByPropertyId) : null;
 	const isFormulaGrouping = !!groupByPropertyId?.startsWith("formula.");
-	const normalizedTargetGroupKey = targetGroupKey === "None" ? null : targetGroupKey;
+	const normalizedTargetGroupKey = normalizeGroupValue(targetGroupKey);
+	const normalizedSourceGroupKey = normalizeGroupValue(sourceGroupKey);
 	const needsGroupUpdate =
-		!!groupByPropertyId && normalizedTargetGroupKey !== sourceGroupKey;
+		!!groupByPropertyId && normalizedTargetGroupKey !== normalizedSourceGroupKey;
 	const groupByTaskProp = cleanGroupBy ? lookupMappingKey(cleanGroupBy) : null;
 	const isListGrouping = !!cleanGroupBy && isListTypeProperty(cleanGroupBy);
 	const frontmatterKey = groupByPropertyId
@@ -75,7 +85,9 @@ export function buildTaskListGroupDropPlan({
 		isListGrouping,
 		needsGroupUpdate,
 		normalizedTargetGroupKey,
-		sourceGroupKey,
+		sourceGroupKey: normalizedSourceGroupKey,
+		sourceValues,
+		targetValues,
 	};
 }
 
@@ -91,38 +103,21 @@ export function applyTaskListDropFrontmatterMutation({
 	getTimestamp,
 }: ApplyTaskListDropFrontmatterMutationOptions): void {
 	if (plan.needsGroupUpdate && plan.frontmatterKey) {
-		if (plan.isListGrouping) {
-			const currentValue = frontmatter[plan.frontmatterKey];
-			const currentValues = Array.isArray(currentValue)
-				? currentValue
-				: currentValue
-					? [currentValue]
-					: [];
-			const newValue = currentValues.filter((value) => value !== plan.sourceGroupKey);
-			if (
-				plan.normalizedTargetGroupKey !== null &&
-				!newValue.includes(plan.normalizedTargetGroupKey)
-			) {
-				newValue.push(plan.normalizedTargetGroupKey);
-			}
-			if (newValue.length > 0) {
-				frontmatter[plan.frontmatterKey] = newValue;
-			} else {
-				delete frontmatter[plan.frontmatterKey];
-			}
-		} else if (plan.normalizedTargetGroupKey === null) {
-			delete frontmatter[plan.frontmatterKey];
-		} else {
-			frontmatter[plan.frontmatterKey] = coerceGroupKeyForFrontmatter(
-				plan.frontmatterKey,
-				plan.normalizedTargetGroupKey
-			);
-		}
+		applyGroupPropertyMutation({
+			frontmatter,
+			property: plan.frontmatterKey,
+			sourceValue: plan.sourceGroupKey,
+			targetValue: plan.normalizedTargetGroupKey,
+			isList: plan.isListGrouping,
+			sourceValues: plan.sourceValues,
+			targetValues: plan.targetValues,
+			coerceValue: coerceGroupKeyForFrontmatter,
+		});
 
-		if (plan.groupByTaskProp === "status" && plan.normalizedTargetGroupKey !== null) {
+		if (plan.groupByTaskProp === "status") {
 			updateCompletedDateInFrontmatter(
 				frontmatter,
-				plan.normalizedTargetGroupKey,
+				plan.normalizedTargetGroupKey ?? "",
 				isRecurring
 			);
 			frontmatter[dateModifiedField] = getTimestamp();
@@ -141,6 +136,8 @@ export function buildTaskListDropSideEffectTask(
 		isCompletedStatus,
 		getTimestamp,
 		getCompletedDate,
+		coerceGroupKeyForTask,
+		getClearedTaskValue,
 	}: BuildTaskListDropSideEffectTaskOptions
 ): TaskInfo | null {
 	if (!plan.needsGroupUpdate || !plan.groupByTaskProp) {
@@ -153,22 +150,21 @@ export function buildTaskListDropSideEffectTask(
 	const taskProperty = plan.groupByTaskProp;
 
 	if (plan.isListGrouping) {
-		const originalValue = originalRecord[taskProperty];
-		const currentValues = Array.isArray(originalValue)
-			? [...originalValue]
-			: originalValue
-				? [stringifyUnknown(originalValue)]
-				: [];
-		const nextValues = currentValues.filter((value) => value !== plan.sourceGroupKey);
-		if (
-			plan.normalizedTargetGroupKey !== null &&
-			!nextValues.includes(plan.normalizedTargetGroupKey)
-		) {
-			nextValues.push(plan.normalizedTargetGroupKey);
-		}
-		updatedRecord[taskProperty] = nextValues;
+		updatedRecord[taskProperty] = moveGroupListValue(
+			originalRecord[taskProperty],
+			plan.sourceGroupKey,
+			plan.normalizedTargetGroupKey,
+			plan.sourceValues,
+			plan.targetValues
+		);
 	} else {
-		updatedRecord[taskProperty] = plan.normalizedTargetGroupKey;
+		updatedRecord[taskProperty] =
+			plan.normalizedTargetGroupKey === null
+				? getClearedTaskValue?.(taskProperty)
+				: (coerceGroupKeyForTask?.(
+						plan.frontmatterKey ?? taskProperty,
+						plan.normalizedTargetGroupKey
+					) ?? plan.normalizedTargetGroupKey);
 	}
 
 	updatedTask.dateModified = getTimestamp();

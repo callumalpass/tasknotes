@@ -211,6 +211,71 @@ describe("TaskCalendarSyncService", () => {
         );
     });
 
+    describe("all-day task availability (#2375)", () => {
+        const task = { path: "Tasks/Availability.md", title: "Availability", scheduled: "2026-10-01" };
+
+        it.each([false, undefined])("preserves Busy when the option is %s", (enabled) => {
+            mockPlugin.settings.googleCalendarExport.showAllDayAsFree = enabled;
+            expect(syncService.taskToCalendarEvent(task).transparency).toBe("opaque");
+        });
+
+        it.each([false, true])("exports date-only tasks as Free with createAsAllDay=%s", (allDay) => {
+            Object.assign(mockPlugin.settings.googleCalendarExport, { showAllDayAsFree: true, createAsAllDay: allDay });
+            expect(syncService.taskToCalendarEvent(task).transparency).toBe("transparent");
+        });
+
+        it("keeps timed exports Busy but makes forced all-day exports Free", () => {
+            Object.assign(mockPlugin.settings.googleCalendarExport, { showAllDayAsFree: true, createAsAllDay: false });
+            const timed = { ...task, scheduled: "2026-10-01T10:00:00" };
+            expect(syncService.taskToCalendarEvent(timed).transparency).toBe("opaque");
+            mockPlugin.settings.googleCalendarExport.createAsAllDay = true;
+            expect(syncService.taskToCalendarEvent(timed).transparency).toBe("transparent");
+        });
+
+        it("supports due-date exports and switching back to Busy", () => {
+            Object.assign(mockPlugin.settings.googleCalendarExport, { showAllDayAsFree: true, syncTrigger: "due" });
+            const dueTask = { ...task, scheduled: undefined, due: "2026-10-01" };
+            expect(syncService.taskToCalendarEvent(dueTask).transparency).toBe("transparent");
+            mockPlugin.settings.googleCalendarExport.showAllDayAsFree = false;
+            expect(syncService.taskToCalendarEvent(dueTask).transparency).toBe("opaque");
+        });
+
+        it.each([
+            ["DTSTART:20261001\nRRULE:FREQ=DAILY", "2026-10-01T10:00:00", "transparent"],
+            ["DTSTART:20261001T100000\nRRULE:FREQ=DAILY", "2026-10-01", "opaque"],
+        ])("uses the final recurring event shape for %s", (recurrence, scheduled, expected) => {
+            Object.assign(mockPlugin.settings.googleCalendarExport, { showAllDayAsFree: true, createAsAllDay: false });
+            const event = syncService.taskToCalendarEvent({ ...task, scheduled, recurrence });
+            expect(event.transparency).toBe(expected);
+        });
+
+        it("applies the policy to detached recurring exceptions", () => {
+            Object.assign(mockPlugin.settings.googleCalendarExport, { showAllDayAsFree: true, createAsAllDay: false });
+            expect(syncService.buildRecurringExceptionEvent(task).transparency).toBe("transparent");
+            expect(syncService.buildRecurringExceptionEvent({ ...task, scheduled: "2026-10-01T10:00:00" }).transparency).toBe("opaque");
+            mockPlugin.settings.googleCalendarExport.createAsAllDay = true;
+            expect(syncService.buildRecurringExceptionEvent({ ...task, scheduled: "2026-10-01T10:00:00" }).transparency).toBe("transparent");
+        });
+
+        it("updates existing events on a bulk resync even when only the setting changed", async () => {
+            mockPlugin.cacheManager.getAllTasks = jest.fn().mockResolvedValue([
+                { ...task, googleCalendarEventId: "availability-event" },
+            ]);
+            syncService.withGoogleRateLimit = async (operation: () => Promise<unknown>) => operation();
+            syncService.assertConnectionGenerationCurrent = jest.fn().mockResolvedValue(undefined);
+            mockPlugin.settings.googleCalendarExport.showAllDayAsFree = true;
+            await syncService.syncAllTasks();
+            expect(mockGoogleCalendarService.updateEvent).toHaveBeenLastCalledWith(
+                "test-calendar", "availability-event", expect.objectContaining({ transparency: "transparent" }), expect.any(Number)
+            );
+            mockPlugin.settings.googleCalendarExport.showAllDayAsFree = false;
+            await syncService.syncAllTasks();
+            expect(mockGoogleCalendarService.updateEvent).toHaveBeenLastCalledWith(
+                "test-calendar", "availability-event", expect.objectContaining({ transparency: "opaque" }), expect.any(Number)
+            );
+        });
+    });
+
     it("should retry recovery queues without overlapping runs", async () => {
         const startupRecovery = deferred();
         const firstRetry = deferred();

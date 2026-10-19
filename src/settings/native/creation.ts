@@ -498,7 +498,7 @@ export function formDefinitions(ctx: SettingsContext): SettingDefinitionItem[] {
 										? plugin.settings.userFields?.find(
 												(user) => user.id === field.id
 											)?.key || ctx.t("settings.native.noKeySet")
-										: `ID: ${field.id}`,
+										: ctx.t("settings.modalFields.manager.fieldId", { id: field.id }),
 								displayValue: () =>
 									field.enabled
 										? ctx.t(

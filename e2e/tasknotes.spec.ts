@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { launchObsidian, closeObsidian, ObsidianApp, runCommand, openCommandPalette } from './obsidian';
+import { launchObsidian, closeObsidian, ObsidianApp, runCommand, openCommandPalette, openTaskNotesSettings, closeObsidianSettings } from './obsidian';
 
 let app: ObsidianApp;
 let isInitialized = false;
@@ -487,26 +487,13 @@ test.describe('Settings', () => {
   test('should open Obsidian settings and find TaskNotes settings', async () => {
     const page = getPage();
 
-    // Open settings with Ctrl+,
-    await page.keyboard.press('Control+,');
-    await page.waitForTimeout(500);
-
-    const settingsModal = page.locator('.modal.mod-settings').last();
-    await expect(settingsModal).toBeVisible({ timeout: 5000 });
-
-    await page.screenshot({ path: 'test-results/screenshots/obsidian-settings.png' });
-
-    // Look for TaskNotes in the plugin settings
-    const tasknotesSetting = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
-    if (await tasknotesSetting.isVisible()) {
-      await tasknotesSetting.click();
-      await page.waitForTimeout(500);
-      await page.screenshot({ path: 'test-results/screenshots/tasknotes-settings.png' });
+    const settingsPage = await openTaskNotesSettings(page);
+    try {
+      await expect(settingsPage.locator('.tasknotes-settings')).toBeVisible();
+      await settingsPage.screenshot({ path: 'test-results/screenshots/tasknotes-settings.png' });
+    } finally {
+      await closeObsidianSettings(page, settingsPage);
     }
-
-    // Close settings
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
   });
 });
 
@@ -1499,30 +1486,19 @@ test.describe('Year View Details', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    // Switch to year view
-    const yearButton = page.locator('button.fc-multiMonthYear-button');
-    if (await yearButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await yearButton.click();
-      await page.waitForTimeout(1000);
-    }
+    const activeLeaf = page.locator('.workspace-leaf.mod-active');
+    const yearButton = activeLeaf.locator('button.fc-multiMonthYear-button').first();
+    await expect(yearButton).toBeVisible();
+    await yearButton.click();
+    await expect(yearButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(activeLeaf.locator('.fc-multimonth').first()).toBeVisible();
+    await page.screenshot({ path: 'test-results/screenshots/year-view-overflow.png' });
 
-    // Look for "+more" links which indicate overflow
-    const moreLinks = page.locator('.fc-more-link');
-    const count = await moreLinks.count();
-
-    // Only take screenshots if page is still accessible
-    try {
-      await page.screenshot({ path: 'test-results/screenshots/year-view-overflow.png' });
-
-      // Capture any overflow badges for visual review
-      if (count > 0) {
-        // Hover over first more link to see if tooltip appears
-        await moreLinks.first().hover();
-        await page.waitForTimeout(500);
-        await page.screenshot({ path: 'test-results/screenshots/year-view-overflow-hover.png' });
-      }
-    } catch {
-      console.log('Page closed before screenshot could be taken');
+    // Background calendars and overflow measurement clones are not hover targets.
+    const moreLinks = activeLeaf.locator('.fc-more-link:visible');
+    if (await moreLinks.count() > 0) {
+      await moreLinks.first().hover();
+      await page.screenshot({ path: 'test-results/screenshots/year-view-overflow-hover.png' });
     }
   });
 });
@@ -1540,23 +1516,12 @@ test.describe('Kanban View Details', () => {
     // Screenshot the full kanban view
     await page.screenshot({ path: 'test-results/screenshots/kanban-full-view.png' });
 
-    // Check if there's a "View not found" error - this can happen if:
-    // 1. Views aren't registered yet after Obsidian restart
-    // 2. The base file was corrupted by earlier test interactions (Bases plugin rewrites files)
-    const pageContent = await page.content();
-    if (pageContent.includes('not found')) {
-      console.log('Kanban view shows error - base file may have been modified by earlier tests');
-      // This is a known issue with Bases modifying files during test runs
-      // The test will pass when run in isolation
-      return;
-    }
-
-    // Check for kanban container - look for either the Bases integration or columns
-    const kanbanContainer = page.locator('.tn-bases-integration, .tn-bases-kanban, [class*="kanban"]').first();
-    const containerVisible = await kanbanContainer.isVisible({ timeout: 5000 }).catch(() => false);
-
-    // Soft check - the kanban view should render something
-    expect(containerVisible).toBe(true);
+    // Other leaves may contain hidden boards; assert the active board actually renders.
+    const activeLeaf = page.locator('.workspace-leaf.mod-active');
+    // The default fixture can use swimlanes, whose columns have header cells.
+    const headers = activeLeaf.locator('.kanban-view__column-header, .kanban-view__column-header-cell');
+    await expect(headers.first()).toBeVisible({ timeout: 5000 });
+    await expect(activeLeaf.locator('.task-card').first()).toBeVisible();
   });
 
   test('should allow dragging tasks between kanban columns', async () => {
@@ -1693,31 +1658,19 @@ test.describe('Settings Panel Details', () => {
   test('should explore all TaskNotes settings tabs', async () => {
     const page = getPage();
 
-    // Open settings
-    await page.keyboard.press('Control+,');
-    await page.waitForTimeout(500);
-
-    // Navigate to TaskNotes settings
-    const tasknotesSetting = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
-    if (await tasknotesSetting.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await tasknotesSetting.click();
-      await page.waitForTimeout(500);
-
-      // Look for tabs within TaskNotes settings
-      const settingsTabs = page.locator('.tn-settings-tab, [class*="settings-tab"]');
-      const tabCount = await settingsTabs.count();
-
-      // Click through each tab and capture screenshots
-      for (let i = 0; i < Math.min(tabCount, 5); i++) {
+    const settingsPage = await openTaskNotesSettings(page);
+    try {
+      const settingsTabs = settingsPage.locator('.settings-view__tab-button');
+      await expect(settingsTabs).toHaveCount(6);
+      for (let i = 0; i < await settingsTabs.count(); i++) {
         const tab = settingsTabs.nth(i);
-        const tabName = await tab.textContent();
         await tab.click();
-        await page.waitForTimeout(300);
-        await page.screenshot({ path: `test-results/screenshots/settings-tab-${i}.png` });
+        await expect(tab).toHaveAttribute('aria-selected', 'true');
+        await settingsPage.screenshot({ path: `test-results/screenshots/settings-tab-${i}.png` });
       }
+    } finally {
+      await closeObsidianSettings(page, settingsPage);
     }
-
-    await page.keyboard.press('Escape');
   });
 });
 
@@ -2202,18 +2155,13 @@ test.describe('Tag and Project Editing', () => {
     await runCommand(page, 'Open kanban board');
     await page.waitForTimeout(1500);
 
-    // Look for tag elements on task cards
-    const tagElements = page.locator('.task-card .tag, .kanban-card .tag, [class*="tag-pill"], a.tag');
-    const tagCount = await tagElements.count();
-
+    // Bases renders file.tags as native property chips rather than legacy a.tag links.
+    // Assert a known fixture tag in the active board, not a hidden Markdown leaf.
+    const tag = page.locator('.workspace-leaf.mod-active .task-card').getByText('errands', { exact: true }).first();
+    await expect(tag).toBeVisible();
     await page.screenshot({ path: 'test-results/screenshots/kanban-task-tags.png' });
-
-    if (tagCount > 0) {
-      // Hover over a tag to see if there's any interaction
-      await tagElements.first().hover();
-      await page.waitForTimeout(300);
-      await page.screenshot({ path: 'test-results/screenshots/tag-hover.png' });
-    }
+    await tag.hover();
+    await page.screenshot({ path: 'test-results/screenshots/tag-hover.png' });
   });
 
   test('should show project selector in task modal', async () => {
@@ -7570,38 +7518,19 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
     //
     // Related: Also affects custom priorities
 
-    const page = getPage();
+    const workspacePage = getPage();
     const statusTimestamp = Date.now();
     const testStatusValue = `test-status-${statusTimestamp}`;
     const testStatusLabel = `Test Status Label ${statusTimestamp}`;
-
-    // Open settings
-    await page.keyboard.press('Control+,');
-    await page.waitForTimeout(500);
-
-    const settingsModal = page.locator('.modal.mod-settings');
-    await expect(settingsModal).toBeVisible({ timeout: 5000 });
-
-    // Navigate to TaskNotes settings
-    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
-    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
-      await taskNotesTab.click();
-      await page.waitForTimeout(500);
-    }
-
-    // Click Task Properties tab
-    const taskPropertiesTab = settingsModal.locator('button:has-text("Task Properties")').first();
-    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
-      await taskPropertiesTab.click();
-      await page.waitForTimeout(500);
-    }
+    let page = await openTaskNotesSettings(workspacePage, 'Task properties');
+    let settingsModal = page.locator('.tasknotes-settings');
 
     // Expand the Status property card
-    const statusCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-status"]');
+    let statusCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-status"]');
     await expandSettingsCard(statusCard);
 
     // Expand the "Status Values" collapsible section
-    const statusValuesSection = statusCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Status Values' }).first();
+    let statusValuesSection = statusCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Status Values' }).first();
     await expandSettingsSection(statusValuesSection);
 
     // Click "Add New" button to add a new status
@@ -7634,32 +7563,13 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
     // Wait for debounced save (500ms + buffer)
     await page.waitForTimeout(1000);
 
-    // Close settings
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
-
-    // Reopen settings
-    await page.keyboard.press('Control+,');
-    await page.waitForTimeout(500);
-
-    await expect(settingsModal).toBeVisible({ timeout: 5000 });
-
-    // Navigate back to TaskNotes settings
-    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
-      await taskNotesTab.click();
-      await page.waitForTimeout(500);
-    }
-
-    // Click Task Properties tab again
-    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
-      await taskPropertiesTab.click();
-      await page.waitForTimeout(500);
-    }
-
-    // Expand Status card again
+    await closeObsidianSettings(workspacePage, page);
+    page = await openTaskNotesSettings(workspacePage, 'Task properties');
+    // Native Settings recreates its document, so do not reuse closed-window locators.
+    settingsModal = page.locator('.tasknotes-settings');
+    statusCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-status"]');
     await expandSettingsCard(statusCard);
-
-    // Expand Status Values section again
+    statusValuesSection = statusCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Status Values' }).first();
     await expandSettingsSection(statusValuesSection);
 
     // Find the status card with our test value
@@ -7670,19 +7580,18 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
     for (let i = 0; i < statusCount; i++) {
       const card = statusCards.nth(i);
       const headerText = await card.locator('.tasknotes-settings__card-primary-text').textContent().catch(() => '');
-      if (headerText === testStatusValue) {
+      if (headerText === testStatusValue || headerText === testStatusLabel) {
         foundStatus = true;
         // Expand this card to verify label
         await expandSettingsCard(card);
 
-        const labelValue = await card.locator('input[type="text"]').nth(1).inputValue().catch(() => '');
-        expect(labelValue).toBe(testStatusLabel);
+        await expect(card.locator('input[type="text"]').first()).toHaveValue(testStatusValue);
+        await expect(card.locator('input[type="text"]').nth(1)).toHaveValue(testStatusLabel);
         break;
       }
     }
 
-    // Close settings
-    await page.keyboard.press('Escape');
+    await closeObsidianSettings(workspacePage, page);
 
     // EXPECTED: The custom status should be found with correct values
     expect(foundStatus).toBe(true);
@@ -7704,38 +7613,19 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
     // Expected: Values should persist
     // Actual: Values are lost
 
-    const page = getPage();
+    const workspacePage = getPage();
     const priorityTimestamp = Date.now();
     const testPriorityValue = `test-priority-${priorityTimestamp}`;
     const testPriorityLabel = `Test Priority Label ${priorityTimestamp}`;
-
-    // Open settings
-    await page.keyboard.press('Control+,');
-    await page.waitForTimeout(500);
-
-    const settingsModal = page.locator('.modal.mod-settings');
-    await expect(settingsModal).toBeVisible({ timeout: 5000 });
-
-    // Navigate to TaskNotes settings
-    const taskNotesTab = page.locator('.vertical-tab-nav-item:has-text("TaskNotes")');
-    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
-      await taskNotesTab.click();
-      await page.waitForTimeout(500);
-    }
-
-    // Click Task Properties tab
-    const taskPropertiesTab = settingsModal.locator('button:has-text("Task Properties")').first();
-    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
-      await taskPropertiesTab.click();
-      await page.waitForTimeout(500);
-    }
+    let page = await openTaskNotesSettings(workspacePage, 'Task properties');
+    let settingsModal = page.locator('.tasknotes-settings');
 
     // Expand the Priority property card
-    const priorityCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-priority"]');
+    let priorityCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-priority"]');
     await expandSettingsCard(priorityCard);
 
     // Expand the "Priority Values" collapsible section
-    const priorityValuesSection = priorityCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Priority Values' }).first();
+    let priorityValuesSection = priorityCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Priority Values' }).first();
     await expandSettingsSection(priorityValuesSection);
 
     // Click "Add New" button to add a new priority
@@ -7767,32 +7657,12 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
     // Wait for debounced save (500ms + buffer)
     await page.waitForTimeout(1000);
 
-    // Close settings
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
-
-    // Reopen settings
-    await page.keyboard.press('Control+,');
-    await page.waitForTimeout(500);
-
-    await expect(settingsModal).toBeVisible({ timeout: 5000 });
-
-    // Navigate back to TaskNotes settings
-    if (await taskNotesTab.isVisible({ timeout: 2000 })) {
-      await taskNotesTab.click();
-      await page.waitForTimeout(500);
-    }
-
-    // Click Task Properties tab again
-    if (await taskPropertiesTab.isVisible({ timeout: 2000 })) {
-      await taskPropertiesTab.click();
-      await page.waitForTimeout(500);
-    }
-
-    // Expand Priority card again
+    await closeObsidianSettings(workspacePage, page);
+    page = await openTaskNotesSettings(workspacePage, 'Task properties');
+    settingsModal = page.locator('.tasknotes-settings');
+    priorityCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-priority"]');
     await expandSettingsCard(priorityCard);
-
-    // Expand Priority Values section again
+    priorityValuesSection = priorityCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Priority Values' }).first();
     await expandSettingsSection(priorityValuesSection);
 
     // Find the priority card with our test value
@@ -7808,14 +7678,13 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
         // Expand this card to verify values
         await expandSettingsCard(card);
 
-        const savedValue = await card.locator('input[type="text"]').first().inputValue().catch(() => '');
-        expect(savedValue).toBe(testPriorityValue);
+        await expect(card.locator('input[type="text"]').first()).toHaveValue(testPriorityValue);
+        await expect(card.locator('input[type="text"]').nth(1)).toHaveValue(testPriorityLabel);
         break;
       }
     }
 
-    // Close settings
-    await page.keyboard.press('Escape');
+    await closeObsidianSettings(workspacePage, page);
 
     // EXPECTED: The custom priority should be found with correct values
     expect(foundPriority).toBe(true);

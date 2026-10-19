@@ -275,6 +275,18 @@ export function shouldHideCalendarTimeGrid(showTimeGrid: boolean, viewType: stri
 	return !showTimeGrid && isTimeGridCalendarView(viewType);
 }
 
+/**
+ * With the hourly grid hidden, the all-day row is the whole week/day view.
+ * FullCalendar's automatic limit there is a fixed few rows, so show every
+ * event unless the view sets an explicit limit.
+ */
+export function getTimeGridDayMaxEvents(
+	showTimeGrid: boolean,
+	dayMaxEvents: number | boolean
+): number | boolean {
+	return !showTimeGrid && dayMaxEvents === true ? false : dayMaxEvents;
+}
+
 export type CalendarHeightMode = "fill" | "auto";
 
 export type CalendarSizingOptions = {
@@ -1306,6 +1318,13 @@ export class CalendarView extends BasesViewBase {
 			...dateDisplayOptions,
 			views: {
 				...dateDisplayOptions.views,
+				timeGrid: {
+					...dateDisplayOptions.views?.timeGrid,
+					dayMaxEvents: getTimeGridDayMaxEvents(
+						this.viewOptions.showTimeGrid,
+						this.viewOptions.dayMaxEvents
+					),
+				},
 				timeGridCustom: {
 					type: "timeGrid",
 					duration: { days: this.viewOptions.customDayCount },
@@ -1605,12 +1624,6 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private getEffectiveHeightMode(): CalendarHeightMode {
-		if (
-			shouldHideCalendarTimeGrid(this.viewOptions.showTimeGrid, this.viewOptions.calendarView)
-		) {
-			return "auto";
-		}
-
 		return resolveEffectiveCalendarHeightMode(
 			this.viewOptions.heightMode,
 			this.viewOptions.calendarView,

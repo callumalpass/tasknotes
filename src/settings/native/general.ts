@@ -3,6 +3,7 @@ import { TranslationKey } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { hasCompletePropertyTaskIdentification } from "../../utils/taskIdentification";
 import {
 	createVaultFile,
 	createVaultFolder,
@@ -221,7 +222,9 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 						desc: translate(
 							"settings.general.taskIdentification.taskProperty.description"
 						),
-						placeholder: "category",
+						placeholder: translate(
+							"settings.general.taskIdentification.propertyNamePlaceholder"
+						),
 						getValue: () => plugin.settings.taskPropertyName,
 						setValue: async (value: string) => {
 							plugin.settings.taskPropertyName = value;
@@ -239,7 +242,9 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 						desc: translate(
 							"settings.general.taskIdentification.taskPropertyValue.description"
 						),
-						placeholder: "task",
+						placeholder: translate(
+							"settings.general.taskIdentification.propertyValuePlaceholder"
+						),
 						getValue: () => plugin.settings.taskPropertyValue,
 						setValue: async (value: string) => {
 							plugin.settings.taskPropertyValue = value;
@@ -248,6 +253,20 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 					},
 					() => !!(plugin.settings.taskIdentificationMethod === "tag")
 				),
+				{
+					name: "",
+					visible: () =>
+						plugin.settings.taskIdentificationMethod === "property" &&
+						!hasCompletePropertyTaskIdentification(plugin.settings),
+					render: (setting) => {
+						setting.settingEl.addClass("settings-view__identification-warning");
+						setting.setDesc(
+							translate("settings.general.taskIdentification.incompletePropertyWarning")
+						);
+						setting.descEl.addClass("mod-warning");
+						setting.descEl.setAttribute("role", "status");
+					},
+				},
 			],
 		},
 		{

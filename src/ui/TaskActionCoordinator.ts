@@ -14,6 +14,8 @@ import { showNotice } from "../ui/notifications";
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskActionCoordinator" });
 
 export class TaskActionCoordinator {
+	private stoppingActiveTracking = false;
+
 	constructor(private plugin: TaskNotesPlugin) {}
 
 	private async openTaskFile(task: TaskInfo): Promise<void> {
@@ -114,6 +116,51 @@ export class TaskActionCoordinator {
 				showNotice("Failed to stop time tracking");
 			}
 			throw error;
+		}
+	}
+
+	async stopActiveTimeTracking(): Promise<void> {
+		if (this.stoppingActiveTracking) return;
+		this.stoppingActiveTracking = true;
+		try {
+			const tasks = await this.plugin.cacheManager.getAllTasks();
+			const trackedTasks = tasks.filter((task) => this.plugin.getActiveTimeSession(task));
+			if (trackedTasks.length === 0) {
+				showNotice(this.plugin.i18n.translate("modals.timeTracking.noActiveTasks"));
+				return;
+			}
+
+			const selected = trackedTasks.length === 1
+				? trackedTasks[0]
+				: await new Promise<TaskInfo | null>((resolve) => {
+					openTaskSelector(this.plugin, trackedTasks, resolve, {
+						title: this.plugin.i18n.translate("commands.stopActiveTimeTracking"),
+						allowCreate: false,
+						includeArchived: true,
+					});
+				});
+			if (!selected) return;
+
+			// The tracker may have stopped, or the note been removed, while choosing.
+			const freshTask = await this.plugin.cacheManager.getTaskInfo(selected.path);
+			if (!freshTask || !this.plugin.getActiveTimeSession(freshTask)) {
+				showNotice(this.plugin.i18n.translate("modals.timeTracking.noActiveTasks"));
+				return;
+			}
+			try {
+				await this.stopTimeTracking(freshTask);
+			} catch {
+				// stopTimeTracking already logs the error and shows a specific notice.
+			}
+		} catch (error) {
+			tasknotesLogger.error("Failed to resolve active time tracking:", {
+				category: "persistence",
+				operation: "stop-active-time-tracking",
+				error,
+			});
+			showNotice(this.plugin.i18n.translate("modals.timeTracking.stopFailed"));
+		} finally {
+			this.stoppingActiveTracking = false;
 		}
 	}
 

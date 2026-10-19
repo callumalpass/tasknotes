@@ -600,6 +600,77 @@ describe("TaskService materialized occurrences", () => {
 		}
 	});
 
+	describe("parents scheduled with a minute-precision time (#2328)", () => {
+		function timedParentAndOccurrence() {
+			const parent = TaskFactory.createTask({
+				path: "Tasks/Standup.md",
+				recurrence: "FREQ=DAILY",
+				scheduled: "2026-06-01T09:00",
+				complete_instances: [],
+			});
+			const occurrence = TaskFactory.createTask({
+				path: "Tasks/Standup 2026-06-01.md",
+				status: "open",
+				recurrence_parent: "[[Tasks/Standup]]",
+				occurrence_date: "2026-06-01",
+				scheduled: "2026-06-01T09:00",
+			});
+			return { parent, occurrence };
+		}
+
+		function expectParentAdvanced(frontmatter: Record<string, unknown> | undefined) {
+			expect(frontmatter).toMatchObject({
+				complete_instances: ["2026-06-01"],
+				scheduled: "2026-06-02T09:00",
+			});
+			expect(frontmatter?.recurrence).toMatch(/^DTSTART:20260601T\d{6}Z?;FREQ=DAILY$/);
+		}
+
+		it("reconciles a direct status edit", async () => {
+			const { parent, occurrence } = timedParentAndOccurrence();
+			const { plugin, taskService, frontmatterByPath } = createService({
+				[parent.path]: parent,
+				[occurrence.path]: occurrence,
+			});
+			plugin.taskService = taskService;
+			const lifecycle = new TaskFileLifecycleReconciliationService(plugin);
+			await lifecycle.initialize();
+			try {
+				await lifecycle.handleTaskUpdatedEvent({ task: { ...occurrence, status: "done" } });
+				expectParentAdvanced(frontmatterByPath.get(parent.path));
+			} finally {
+				lifecycle.destroy();
+			}
+		});
+
+		it("reconciles completion through the task card", async () => {
+			const { parent, occurrence } = timedParentAndOccurrence();
+			const { taskService, frontmatterByPath } = createService({
+				[parent.path]: parent,
+				[occurrence.path]: occurrence,
+			});
+
+			await taskService.updateProperty(occurrence, "status", "done");
+
+			expectParentAdvanced(frontmatterByPath.get(parent.path));
+		});
+
+		it("records a skipped occurrence", async () => {
+			const { parent, occurrence } = timedParentAndOccurrence();
+			const { taskService, frontmatterByPath } = createService({
+				[parent.path]: parent,
+				[occurrence.path]: occurrence,
+			});
+
+			await taskService.skipMaterializedOccurrence(occurrence, "skipped");
+
+			expect(frontmatterByPath.get(parent.path)).toMatchObject({
+				skipped_instances: ["2026-06-01"],
+				scheduled: "2026-06-02T09:00",
+			});
+		});
+	});
+
 	it("advances completion-anchored parents from the actual completion date", async () => {
 		const dateUtils = jest.requireMock("../../../src/utils/dateUtils");
 		dateUtils.getCurrentDateString.mockReturnValue("2026-07-30");

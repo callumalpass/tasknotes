@@ -20,6 +20,10 @@ export type TaskSelectorWithCreateResult =
 export interface TaskSelectorWithCreateOptions {
 	/** Callback when a task is selected or created */
 	onResult: (result: TaskSelectorWithCreateResult) => void;
+	/** When false, only existing tasks can be selected. */
+	allowCreate?: boolean;
+	/** Include archived tasks when the caller supplies them, such as active trackers. */
+	includeArchived?: boolean;
 	/** Optional placeholder text override */
 	placeholder?: string;
 	/** Optional title override */
@@ -183,10 +187,10 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		this.setInstructions([
 			{ command: "↑↓", purpose: this.translate("modals.taskSelector.instructions.navigate") },
 			{ command: "↵", purpose: this.translate("modals.taskSelector.instructions.select") },
-			{
+			...(options.allowCreate === false ? [] : [{
 				command: "⇧↵",
 				purpose: this.translate("modals.taskSelectorWithCreate.instructions.create"),
-			},
+			}]),
 			{ command: "esc", purpose: this.translate("modals.taskSelector.instructions.dismiss") },
 		]);
 
@@ -207,6 +211,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 	onOpen(): void {
 		super.onOpen();
+		if (this.options.allowCreate === false) return;
 
 		// Add keydown listener for Shift+Enter on the modal container to catch it before Obsidian
 		this.scope.register(["Shift"], "Enter", (e: KeyboardEvent) => {
@@ -492,6 +497,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	}
 
 	private async createNewTask(): Promise<void> {
+		if (this.options.allowCreate === false) return;
 		if (this.isCreatingTask) {
 			return;
 		}
@@ -567,7 +573,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		const hasQuery = lowerQuery.length > 0;
 
 		return this.tasks
-			.filter((task) => !task.archived)
+			.filter((task) => this.options.includeArchived || !task.archived)
 			.filter((task) => {
 				if (!hasQuery) return true;
 				return taskMatchesSelectorQuery(task, lowerQuery);
@@ -711,6 +717,8 @@ export function openTaskSelector(
 	options?: Omit<TaskSelectorWithCreateOptions, "onResult">
 ): void {
 	const modal = new TaskSelectorWithCreateModal(plugin.app, plugin, tasks, {
+		allowCreate: options?.allowCreate,
+		includeArchived: options?.includeArchived,
 		placeholder: options?.placeholder,
 		title: options?.title,
 		targetDate: options?.targetDate,

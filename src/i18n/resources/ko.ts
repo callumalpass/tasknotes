@@ -134,6 +134,31 @@ export const ko: TranslationTree = {
 			expandAllGroups: "모든 그룹 펼치기",
 			collapseAllGroups: "모든 그룹 접기",
 			noTasksFound: "선택한 필터에 해당하는 작업이 없습니다.",
+			movement: {
+				parentAdd: "하위 작업으로 추가",
+				parentChoose: "상위 작업 선택…",
+				parentPreview: "{parent}의 하위 작업으로 추가합니다. 다른 프로젝트는 변경되지 않습니다.",
+				parentSelf: "작업은 자신의 상위 작업이 될 수 없습니다.",
+				parentCycle: "작업을 자신의 하위 작업 아래에 추가할 수 없습니다.",
+				parentAlready: "이미 {parent}의 하위 작업입니다.",
+				parentUnavailable: "두 작업이 모두 존재하며 TaskNotes 작업이어야 합니다.",
+				parentAssigned: "{parent}의 하위 작업으로 추가했습니다.",
+				handle: "작업 이동",
+				moveTo: "그룹으로 이동",
+				keepSubgroup: "현재 하위 그룹 유지",
+				moveUp: "위로 이동",
+				moveDown: "아래로 이동",
+				moved: "작업을 이동했습니다.",
+				undo: "실행 취소",
+				undoConflict: "이동 후 작업이 변경되어 실행 취소할 수 없습니다.",
+				undoFailed: "이동을 실행 취소하지 못했습니다.",
+				noValue: "값 없음",
+				otherDestinations: "다른 이동 대상",
+				readOnly: "{properties}을(를) 변경할 수 없습니다. 이 그룹은 읽기 전용입니다.",
+				unresolved: "이 대상의 {properties} 값을 확인할 수 없습니다.",
+				noChange: "이미 이 그룹에 있습니다.",
+				failed: "작업을 이동하지 못했습니다. 작업을 확인하고 다시 시도하세요.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "이 그룹 없는 목록",
@@ -319,8 +344,8 @@ export const ko: TranslationTree = {
 					slotEventOverlap: "이벤트 겹침 허용",
 					enableSearch: "검색 상자 활성화",
 					eventMaxStack: "최대 이벤트 스택 (주/일 보기, 0 = 무제한)",
-					dayMaxEvents: "일당 최대 이벤트 (월간 보기, 0 = 자동)",
-					dayMaxEventRows: "일당 최대 이벤트 행 (월간 보기, 0 = 무제한)",
+					dayMaxEvents: "일당 최대 이벤트 (0 = 자동)",
+					dayMaxEventRows: "일당 최대 이벤트 행 (0 = 무제한)",
 					spanScheduledToDue: "예정일과 마감일 사이 작업 표시",
 					heightMode: "높이 모드",
 					heightModeFill: "컨테이너 채우기",
@@ -663,6 +688,52 @@ export const ko: TranslationTree = {
 			features: "기능",
 			integrations: "통합",
 		},
+		modalFields: {
+			header: "작업 모달의 필드 구성",
+			description: "작업 생성 및 편집 모달에 표시할 필드를 구성합니다. 필드를 드래그하여 각 그룹 내에서 순서를 변경하세요.",
+			splitLayout: {
+				name: "넓은 화면에서 분할 레이아웃",
+				description: "활성화하면 900px 이상 화면에서 세부사항 편집기가 오른쪽 열에 나타납니다. 비활성화하면 모달이 스택 레이아웃을 사용합니다."
+			},
+			tabMovesFocus: {
+				name: "세부사항 편집기에서 Tab으로 포커스 이동",
+				description: "활성화하면 Tab이 세부사항 편집기에서 다음 모달 필드로, Shift+Tab이 이전 필드로 포커스를 이동합니다. 비활성화하면 Tab과 Shift+Tab은 Markdown 편집기의 들여쓰기 동작을 사용합니다."
+			},
+			sync: {
+				name: "사용자 필드 동기화",
+				description: "클릭하여 작업 속성 설정의 사용자 지정 필드를 이 구성으로 동기화합니다.",
+				button: "사용자 필드 동기화",
+				notice: "사용자 필드가 모달 구성에 동기화되었습니다"
+			},
+			reset: {
+				name: "기본값으로 재설정",
+				description: "모든 필드 구성을 기본값으로 재설정합니다. 사용자 지정 구성이 모두 제거됩니다.",
+				button: "기본값으로 재설정",
+				confirmTitle: "필드 구성을 기본값으로 재설정",
+				confirmMessage: "필드 구성을 기본값으로 재설정하시겠습니까? 모든 사용자 지정 필드 구성이 제거됩니다.",
+				confirmText: "재설정",
+				cancelText: "취소",
+				notice: "필드 구성이 기본값으로 재설정되었습니다"
+			},
+			initError: "오류: 필드 구성을 초기화할 수 없습니다",
+			manager: {
+				invalidConfig: "오류: 필드 구성이 잘못되었습니다. 기본값으로 재설정하세요.",
+				emptyGroup: "이 그룹에 필드가 없습니다",
+				enabled: "사용:",
+				showInCreation: "생성할 때 표시:",
+				showInEdit: "편집할 때 표시:",
+				group: "그룹:",
+				fieldId: "ID: {id}",
+				fieldKey: "키: {key}",
+				noKey: "키가 설정되지 않음",
+				fieldTypes: {
+					core: "기본",
+					user: "사용자",
+					dependency: "의존성",
+					organization: "정리",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "인라인 작업",
@@ -719,6 +790,10 @@ export const ko: TranslationTree = {
 				defaultToScheduled: {
 					name: "예정일로 기본 설정",
 					description: "NLP가 컨텍스트 없이 날짜를 감지하면 마감일 대신 예정일로 처리",
+				},
+				enterToSubmit: {
+					name: "Enter로 작업 저장",
+					description: "자연어 입력에서 Enter를 누르면 작업이 저장됩니다. Shift+Enter는 줄바꿈을 삽입하며, Ctrl/Cmd+Enter로도 계속 저장할 수 있습니다."
 				},
 				language: {
 					name: "NLP 언어",
@@ -1092,6 +1167,9 @@ export const ko: TranslationTree = {
 						exactOnly: "정확한 작업 태그만",
 					},
 				},
+				propertyNamePlaceholder: "속성 이름 입력",
+				propertyValuePlaceholder: "속성 값 입력",
+				incompletePropertyWarning: "속성 이름과 값을 모두 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 둘 다 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다.",
 				taskProperty: {
 					name: "작업 속성 이름",
 					description: '프론트매터 속성 이름 (예: "category")',
@@ -1465,6 +1543,10 @@ export const ko: TranslationTree = {
 				},
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "속성 키를 입력하세요.",
+					duplicateKey: "다른 속성이 이미 이 키를 사용하고 있습니다.",
+				},
 				header: "사용자 지정 필드",
 				description:
 					"뷰 전체에서 유형 인식 필터 옵션으로 나타나는 사용자 지정 프론트매터 속성을 정의합니다. 각 행: 표시 이름, 속성 이름, 유형.",
@@ -2129,6 +2211,10 @@ export const ko: TranslationTree = {
 					description:
 						"활성화하면 작업이 종일 이벤트로 생성됩니다. 비활성화하면 시간 추정을 기간으로 사용합니다.",
 				},
+				showAllDayAsFree: {
+					name: "종일 작업 일정을 '한가함'으로 표시",
+					description: "종일로 변환된 작업을 포함하여 종일로 내보낸 작업은 가용 시간을 차단하지 않습니다. 시간이 지정된 일정은 바쁨으로 유지됩니다. 기존 일정에 변경 사항을 적용하려면 모든 작업 동기화를 실행하세요.",
+				},
 				defaultDuration: {
 					name: "기본 이벤트 기간",
 					description:
@@ -2542,6 +2628,7 @@ export const ko: TranslationTree = {
 		viewReleaseNotes: "릴리스 노트 보기",
 		startTimeTrackingCurrentTask: "현재 작업의 시간 추적 시작",
 		stopTimeTrackingCurrentTask: "현재 작업의 시간 추적 중지",
+		stopActiveTimeTracking: "진행 중인 시간 추적 중지",
 		startTimeTrackingWithSelector: "시간 추적 시작 (작업 선택)",
 		editTimeEntries: "시간 기록 편집 (작업 선택)",
 		createOrOpenTask: "작업 만들기 또는 열기",
@@ -3061,6 +3148,8 @@ export const ko: TranslationTree = {
 			},
 		},
 		timeTracking: {
+			noActiveTasks: "진행 중인 시간 추적 세션을 찾을 수 없습니다",
+			stopFailed: "진행 중인 시간 추적 세션을 불러오지 못했습니다",
 			noTasksAvailable: "시간을 추적할 수 있는 작업이 없습니다",
 			started: "{taskTitle}에 대한 시간 추적이 시작되었습니다",
 			startFailed: "시간 추적 시작 실패",

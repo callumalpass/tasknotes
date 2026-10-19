@@ -2,6 +2,7 @@ import type { BasesAllOptions, BasesOptions, BasesViewConfig } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT } from "./MiniCalendarView";
 import { isNoteFileOrFormulaProperty } from "./propertyFilters";
+import { readBasesViewConfigValue } from "./basesViewConfig";
 
 type CalendarOptionsConfig = Pick<BasesViewConfig, "get">;
 type Translate = (key: string) => string;
@@ -20,7 +21,7 @@ function translateCalendarSetting(plugin: TaskNotesPlugin): Translate {
 }
 
 function readOption<T>(config: CalendarOptionsConfig, key: string, fallback: T): T {
-	const value = config.get(key);
+	const value = readBasesViewConfigValue(config, key);
 	return value === null || value === undefined ? fallback : (value as T);
 }
 
@@ -35,7 +36,7 @@ function readBooleanOption(config: CalendarOptionsConfig, key: string, fallback:
 }
 
 function hasConfiguredValue(config: CalendarOptionsConfig, key: string): boolean {
-	const value = config.get(key);
+	const value = readBasesViewConfigValue(config, key);
 	if (value === null || value === undefined) {
 		return false;
 	}
@@ -466,8 +467,13 @@ function buildCalendarEventLayoutOptions(
 	const defaultView = calendarSettings.defaultView;
 	const shouldHideTimeGridOption = () =>
 		!isCurrentView(config, defaultView, (viewType) => isTimeGridView(viewType));
-	const shouldHideMonthDensityOption = () =>
-		!isCurrentView(config, defaultView, (viewType) => isMonthDensityView(viewType));
+	// Week/day views apply the same limits to their all-day row.
+	const shouldHideDayDensityOption = () =>
+		!isCurrentView(
+			config,
+			defaultView,
+			(viewType) => isMonthDensityView(viewType) || isTimeGridView(viewType)
+		);
 
 	return [
 		{
@@ -508,7 +514,7 @@ function buildCalendarEventLayoutOptions(
 			min: 0,
 			max: 20,
 			step: 1,
-			shouldHide: shouldHideMonthDensityOption,
+			shouldHide: shouldHideDayDensityOption,
 		},
 		{
 			type: "slider",
@@ -521,7 +527,7 @@ function buildCalendarEventLayoutOptions(
 			min: 0,
 			max: 10,
 			step: 1,
-			shouldHide: shouldHideMonthDensityOption,
+			shouldHide: shouldHideDayDensityOption,
 		},
 	];
 }

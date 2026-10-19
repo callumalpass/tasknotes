@@ -545,7 +545,7 @@ function getCommonSchemas(): Record<string, unknown> {
 						sortKey: {
 							type: "string",
 							description:
-								"Optional task sort key, such as due, scheduled, priority, status, title, or a user field key.",
+								"Optional task sort key: due, scheduled, priority, status, title, dateCreated, completedDate, tags, or a configured user field using user:<id-or-key> or user.<id-or-key>.",
 						},
 						sortDirection: {
 							type: "string",
@@ -555,11 +555,11 @@ function getCommonSchemas(): Record<string, unknown> {
 						groupKey: {
 							type: "string",
 							description:
-								"Optional grouping key, such as none, priority, context, project, due, scheduled, status, tags, completedDate, or a user field key.",
+								"Optional grouping key: none, priority, context, project, due, scheduled, status, tags, completedDate, or a configured user field using user:<id-or-key> or user.<id-or-key>.",
 						},
 						subgroupKey: {
 							type: "string",
-							description: "Optional secondary grouping key.",
+							description: "Optional secondary grouping key; configured user fields accept user:<id-or-key> or user.<id-or-key>.",
 						},
 					},
 				},
@@ -610,30 +610,18 @@ function getCommonSchemas(): Record<string, unknown> {
 				},
 				property: {
 					type: "string",
-					enum: [
-						"title",
-						"path",
-						"status",
-						"priority",
-						"tags",
-						"contexts",
-						"projects",
-						"blockedBy",
-						"blocking",
-						"due",
-						"scheduled",
-						"completedDate",
-						"dateCreated",
-						"dateModified",
-						"archived",
-						"hasSubtasks",
-						"dependencies.isBlocked",
-						"dependencies.isBlocking",
-						"timeEstimate",
-						"recurrence",
-						"status.isCompleted",
+					oneOf: [
+						{
+							enum: [
+								"title", "path", "status", "priority", "tags", "contexts", "projects",
+								"blockedBy", "blocking", "due", "scheduled", "completedDate", "dateCreated",
+								"dateModified", "archived", "hasSubtasks", "dependencies.isBlocked",
+								"dependencies.isBlocking", "timeEstimate", "recurrence", "status.isCompleted",
+							],
+						},
+						{ pattern: "^user[:.].+$" },
 					],
-					description: "Task property to filter on. User fields use user:<fieldId>.",
+					description: "Task property to filter on. Configured user fields accept user:<id-or-key> or user.<id-or-key>. Discover canonical IDs and aliases with GET /api/filter-options; unknown properties and bare custom keys return HTTP 400.",
 				},
 				operator: {
 					type: "string",

@@ -110,6 +110,19 @@ export function featuresDefinitions(ctx: SettingsContext): SettingDefinitionGrou
 					},
 					() => !plugin.settings.enableNaturalLanguageInput
 				),
+				ctx.toggle(
+					"nlpEnterToSubmit",
+					{
+						name: translate("settings.features.nlp.enterToSubmit.name"),
+						desc: translate("settings.features.nlp.enterToSubmit.description"),
+						getValue: () => plugin.settings.nlpEnterToSubmit,
+						setValue: async (value: boolean) => {
+							plugin.settings.nlpEnterToSubmit = value;
+							save();
+						},
+					},
+					() => !plugin.settings.enableNaturalLanguageInput
+				),
 				ctx.dropdown(
 					"nlpLanguage",
 					{

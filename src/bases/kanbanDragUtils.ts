@@ -1,5 +1,10 @@
 import type { TaskInfo } from "../types";
 import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
+import {
+	applyGroupPropertyMutation,
+	moveGroupListValue,
+	normalizeGroupValue,
+} from "./groupPropertyMutation";
 
 export type KanbanTaskDragSource = {
 	taskPath: string;
@@ -398,13 +403,16 @@ export function planKanbanTaskDropUpdate({
 	const needsGroupUpdate = sourceColumn !== newGroupValue;
 	const needsSwimlaneUpdate =
 		newSwimLaneValue !== null && !!swimLanePropertyId && sourceSwimlane !== newSwimLaneValue;
-	const changedTaskProp = needsGroupUpdate
+	// The primary change drives property-specific side effects. Prefer the column
+	// axis, but fall back to the swimlane when the column property is not a task field.
+	const useGroupAxis = needsGroupUpdate && !!groupByTaskProp;
+	const changedTaskProp = useGroupAxis
 		? groupByTaskProp
 		: needsSwimlaneUpdate
 			? swimlaneTaskProp
 			: null;
-	const oldPropValue = needsGroupUpdate ? sourceColumn : sourceSwimlane;
-	const newPropValue = needsGroupUpdate ? newGroupValue : newSwimLaneValue;
+	const oldPropValue = useGroupAxis ? sourceColumn : sourceSwimlane;
+	const newPropValue = useGroupAxis ? newGroupValue : newSwimLaneValue;
 
 	return {
 		path,
@@ -435,24 +443,7 @@ export function kanbanDropPlanNeedsWrite(
 	return plan.needsGroupUpdate || plan.needsSwimlaneUpdate || hasSortOrderPlan;
 }
 
-function normalizeListValue(value: unknown): unknown[] {
-	if (Array.isArray(value)) {
-		return value;
-	}
-	return value ? [value] : [];
-}
-
-function updateListDropValue(
-	currentValue: unknown,
-	sourceValue: string | null | undefined,
-	targetValue: string
-): unknown[] {
-	const nextValue = normalizeListValue(currentValue).filter((value) => value !== sourceValue);
-	if (!nextValue.includes(targetValue) && targetValue !== "None") {
-		nextValue.push(targetValue);
-	}
-	return nextValue.length > 0 ? nextValue : [];
-}
+const updateListDropValue = moveGroupListValue;
 
 export function applyKanbanTaskDropFrontmatterPlan(
 	frontmatter: FrontmatterRecord,
@@ -460,33 +451,27 @@ export function applyKanbanTaskDropFrontmatterPlan(
 	options: KanbanFrontmatterDropUpdateOptions
 ): void {
 	if (plan.needsGroupUpdate) {
-		if (plan.isGroupByListProperty && plan.sourceColumn) {
-			frontmatter[plan.groupByFrontmatterKey] = updateListDropValue(
-				frontmatter[plan.groupByFrontmatterKey],
-				plan.sourceColumn,
-				plan.newGroupValue
-			);
-		} else {
-			frontmatter[plan.groupByFrontmatterKey] = options.coerceGroupValue(
-				plan.groupByFrontmatterKey,
-				plan.newGroupValue
-			);
-		}
+		applyGroupPropertyMutation({
+			frontmatter,
+			property: plan.groupByFrontmatterKey,
+			sourceValue: plan.sourceColumn,
+			targetValue: plan.newGroupValue,
+			isList: plan.isGroupByListProperty,
+			preserveEmptyList: true,
+			coerceValue: options.coerceGroupValue,
+		});
 	}
 
 	if (plan.needsSwimlaneUpdate && plan.swimlaneFrontmatterKey && plan.newSwimLaneValue !== null) {
-		if (plan.isSwimlaneListProperty && plan.sourceSwimlane) {
-			frontmatter[plan.swimlaneFrontmatterKey] = updateListDropValue(
-				frontmatter[plan.swimlaneFrontmatterKey],
-				plan.sourceSwimlane,
-				plan.newSwimLaneValue
-			);
-		} else {
-			frontmatter[plan.swimlaneFrontmatterKey] = options.coerceGroupValue(
-				plan.swimlaneFrontmatterKey,
-				plan.newSwimLaneValue
-			);
-		}
+		applyGroupPropertyMutation({
+			frontmatter,
+			property: plan.swimlaneFrontmatterKey,
+			sourceValue: plan.sourceSwimlane,
+			targetValue: plan.newSwimLaneValue,
+			isList: plan.isSwimlaneListProperty,
+			preserveEmptyList: true,
+			coerceValue: options.coerceGroupValue,
+		});
 	}
 }
 
@@ -510,7 +495,8 @@ export function planKanbanStatusDerivativeUpdate({
 	}
 
 	return {
-		statusValue,
+		// The "None" column clears status; never evaluate the label as a status value.
+		statusValue: normalizeGroupValue(statusValue) ?? "",
 		isRecurring: !!task?.recurrence,
 		dateModifiedField,
 		dateModifiedValue,
@@ -527,44 +513,54 @@ export function planKanbanDropSideEffect({
 		return null;
 	}
 
-	const changedTaskProp = plan.changedTaskProp as keyof TaskInfo;
-	const newPropValue = resolveKanbanDropTaskInfoValue(plan, originalTask, changedTaskProp);
-	const updatedTask: TaskInfo = {
-		...originalTask,
-		[changedTaskProp]: newPropValue,
-		dateModified: dateModifiedValue,
-	};
+	// Apply every changed axis so a diagonal drop (column + swimlane) produces a
+	// complete task snapshot for the cache, events, and local card refresh.
+	const updatedTask: TaskInfo = { ...originalTask, dateModified: dateModifiedValue };
+	const changedValues = new Map<keyof TaskInfo, unknown>();
+	if (plan.needsGroupUpdate && plan.groupByTaskProp) {
+		const prop = plan.groupByTaskProp as keyof TaskInfo;
+		changedValues.set(
+			prop,
+			plan.isGroupByListProperty
+				? updateListDropValue(originalTask[prop], plan.sourceColumn, plan.newGroupValue)
+				: toKanbanDropTaskValue(plan.newGroupValue)
+		);
+	}
+	if (plan.needsSwimlaneUpdate && plan.swimlaneTaskProp && plan.newSwimLaneValue !== null) {
+		const prop = plan.swimlaneTaskProp as keyof TaskInfo;
+		changedValues.set(
+			prop,
+			plan.isSwimlaneListProperty
+				? updateListDropValue(
+						changedValues.has(prop) ? changedValues.get(prop) : originalTask[prop],
+						plan.sourceSwimlane,
+						plan.newSwimLaneValue
+					)
+				: toKanbanDropTaskValue(plan.newSwimLaneValue)
+		);
+	}
+	for (const [prop, value] of changedValues) {
+		(updatedTask as unknown as Record<string, unknown>)[prop] = value;
+	}
 
-	if (changedTaskProp === "status" && !originalTask.recurrence) {
+	const statusValue = changedValues.get("status");
+	if (changedValues.has("status") && !originalTask.recurrence) {
 		updatedTask.completedDate =
-			typeof newPropValue === "string" && isCompletedStatus(newPropValue)
+			typeof statusValue === "string" && isCompletedStatus(statusValue)
 				? new Date().toISOString().split("T")[0]
 				: undefined;
 	}
 
+	const changedTaskProp = plan.changedTaskProp as keyof TaskInfo;
 	return {
 		changedTaskProp,
 		oldPropValue: plan.oldPropValue,
-		newPropValue,
+		newPropValue: changedValues.get(changedTaskProp) ?? plan.newPropValue,
 		updatedTask,
 	};
 }
 
-function resolveKanbanDropTaskInfoValue(
-	plan: KanbanTaskDropUpdatePlan,
-	originalTask: TaskInfo,
-	changedTaskProp: keyof TaskInfo
-): unknown {
-	const currentValue = originalTask[changedTaskProp];
-	if (plan.needsGroupUpdate && plan.isGroupByListProperty) {
-		return updateListDropValue(currentValue, plan.sourceColumn, plan.newGroupValue);
-	}
-	if (
-		plan.needsSwimlaneUpdate &&
-		plan.isSwimlaneListProperty &&
-		plan.newSwimLaneValue !== null
-	) {
-		return updateListDropValue(currentValue, plan.sourceSwimlane, plan.newSwimLaneValue);
-	}
-	return plan.newPropValue;
+// Match the frontmatter write: dropping into "None" deletes the property.
+function toKanbanDropTaskValue(value: unknown): unknown {
+	return typeof value === "string" ? (normalizeGroupValue(value) ?? undefined) : value;
 }

@@ -181,6 +181,14 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		}));
 	}
 
+	// Normalize accidental surrounding whitespace in configured frontmatter keys.
+	if (Array.isArray(migratedData.userFields)) {
+		migratedData.userFields = migratedData.userFields.map((field) => ({
+			...field,
+			key: typeof field.key === "string" ? field.key.trim() : field.key,
+		}));
+	}
+
 	// Migration: Initialize modal fields configuration if not present.
 	if (!migratedData.modalFieldsConfig) {
 		migratedData.modalFieldsConfig = initializeFieldConfig(undefined, migratedData.userFields);

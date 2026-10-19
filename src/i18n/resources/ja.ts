@@ -135,6 +135,31 @@ export const ja: TranslationTree = {
 			expandAllGroups: "すべてのグループを展開",
 			collapseAllGroups: "すべてのグループを折りたたみ",
 			noTasksFound: "選択されたフィルターにタスクが見つかりませんでした。",
+			movement: {
+				parentAdd: "サブタスクとして追加",
+				parentChoose: "サブタスクの親を選択…",
+				parentPreview: "{parent} のサブタスクとして追加します。他のプロジェクトは変更されません。",
+				parentSelf: "タスクを自身の親にすることはできません。",
+				parentCycle: "子孫タスクの下にタスクを追加することはできません。",
+				parentAlready: "すでに {parent} のサブタスクです。",
+				parentUnavailable: "両方のタスクが存在し、TaskNotes のタスクである必要があります。",
+				parentAssigned: "{parent} のサブタスクとして追加しました。",
+				handle: "タスクを移動",
+				moveTo: "グループに移動",
+				keepSubgroup: "現在のサブグループを維持",
+				moveUp: "上へ移動",
+				moveDown: "下へ移動",
+				moved: "タスクを移動しました。",
+				undo: "元に戻す",
+				undoConflict: "移動後にタスクが変更されたため、元に戻せません。",
+				undoFailed: "この移動を元に戻せませんでした。",
+				noValue: "値なし",
+				otherDestinations: "その他の移動先",
+				readOnly: "{properties} は変更できません。これらのグループは読み取り専用です。",
+				unresolved: "この移動先の {properties} の値を特定できません。",
+				noChange: "すでにこのグループにあります。",
+				failed: "タスクを移動できませんでした。タスクを確認して、もう一度お試しください。",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "この未グループ化リスト",
@@ -320,8 +345,8 @@ export const ja: TranslationTree = {
 					slotEventOverlap: "イベントの重なりを許可",
 					enableSearch: "検索ボックスを有効化",
 					eventMaxStack: "最大スタックイベント数（週/日表示、0 = 無制限）",
-					dayMaxEvents: "1日あたりの最大イベント数（月表示、0 = 自動）",
-					dayMaxEventRows: "1日あたりの最大イベント行数（月表示、0 = 無制限）",
+					dayMaxEvents: "1日あたりの最大イベント数（0 = 自動）",
+					dayMaxEventRows: "1日あたりの最大イベント行数（0 = 無制限）",
 					spanScheduledToDue: "予定日から期日までタスクを延長表示",
 					heightMode: "高さモード",
 					heightModeFill: "コンテナを埋める",
@@ -667,6 +692,52 @@ export const ja: TranslationTree = {
 			features: "機能",
 			integrations: "統合",
 		},
+		modalFields: {
+			header: "タスクモーダルのフィールド設定",
+			description: "タスク作成モーダルと編集モーダルに表示するフィールドを設定します。フィールドをドラッグして各グループ内で並べ替えできます。",
+			splitLayout: {
+				name: "ワイド画面で分割レイアウト",
+				description: "有効にすると、900px 以上の画面で詳細エディタが右側の列に表示されます。無効にすると、モーダルは積み重ねレイアウトを使用します。"
+			},
+			tabMovesFocus: {
+				name: "詳細エディタで Tab キーがフォーカスを移動",
+				description: "有効にすると、Tab キーで詳細エディタから次のモーダルフィールドへ、Shift+Tab キーで前のフィールドへフォーカスが移動します。無効にすると、Tab キーと Shift+Tab キーは Markdown エディタのインデント動作を使用します。"
+			},
+			sync: {
+				name: "ユーザーフィールドを同期",
+				description: "クリックして、タスクプロパティ設定のカスタムユーザーフィールドをこの設定に同期します。",
+				button: "ユーザーフィールドを同期",
+				notice: "ユーザーフィールドがモーダル設定に同期されました"
+			},
+			reset: {
+				name: "既定値にリセット",
+				description: "すべてのフィールド設定を既定値にリセットします。カスタム設定はすべて削除されます。",
+				button: "既定値にリセット",
+				confirmTitle: "フィールド設定を既定値にリセット",
+				confirmMessage: "フィールド設定を既定値にリセットしますか？カスタムフィールド設定はすべて削除されます。",
+				confirmText: "リセット",
+				cancelText: "キャンセル",
+				notice: "フィールド設定が既定値にリセットされました"
+			},
+			initError: "エラー: フィールド設定を初期化できませんでした",
+			manager: {
+				invalidConfig: "エラー: フィールド設定が無効です。既定値にリセットしてください。",
+				emptyGroup: "このグループにはフィールドがありません",
+				enabled: "有効:",
+				showInCreation: "作成時に表示：",
+				showInEdit: "編集時に表示：",
+				group: "グループ:",
+				fieldId: "ID: {id}",
+				fieldKey: "キー: {key}",
+				noKey: "キーが設定されていません",
+				fieldTypes: {
+					core: "コア",
+					user: "ユーザー",
+					dependency: "依存関係",
+					organization: "整理",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "インラインタスク",
@@ -725,6 +796,10 @@ export const ja: TranslationTree = {
 					name: "デフォルトで予定に設定",
 					description:
 						"NLPがコンテキストなしで日付を検出した場合、期限ではなく予定として扱う",
+				},
+				enterToSubmit: {
+					name: "Enter でタスクを保存",
+					description: "自然言語入力で Enter キーを押すとタスクを保存します。Shift+Enter で改行を挿入し、Ctrl/Cmd+Enter でも引き続き保存できます。"
 				},
 				language: {
 					name: "NLP言語",
@@ -1108,6 +1183,9 @@ export const ja: TranslationTree = {
 						exactOnly: "完全一致のタスクタグのみ",
 					},
 				},
+				propertyNamePlaceholder: "プロパティ名を入力",
+				propertyValuePlaceholder: "プロパティ値を入力",
+				incompletePropertyWarning: "プロパティ名と値の両方を入力してください。例のテキストは保存された設定ではありません。両方を設定するまで、TaskNotes はタスクを識別できません。既存の .base フィルターもこの設定に合わせてください。",
 				taskProperty: {
 					name: "タスクプロパティ名",
 					description: 'フロントマタープロパティ名（例："category"）',
@@ -1493,6 +1571,10 @@ export const ja: TranslationTree = {
 				},
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "プロパティキーを入力してください。",
+					duplicateKey: "別のプロパティがこのキーを使用しています。",
+				},
 				header: "カスタムユーザーフィールド",
 				description:
 					"すべてのビューで型認識フィルターオプションとして表示されるカスタムフロントマタープロパティを定義します。各行：表示名、プロパティ名、タイプ。",
@@ -2175,6 +2257,10 @@ export const ja: TranslationTree = {
 					description:
 						"有効にすると、タスクは終日イベントとして作成されます。無効にすると、時間見積もりを期間として使用します。",
 				},
+				showAllDayAsFree: {
+					name: "終日のタスク予定を予定なしとして表示",
+					description: "終日としてエクスポートされたタスクは、終日に変換されたものも含め、空き時間を妨げません。時刻のある予定は「予定あり」のままです。既存の予定への変更を適用するには、すべてのタスクの同期を実行してください。",
+				},
 				defaultDuration: {
 					name: "デフォルトのイベント期間",
 					description:
@@ -2592,6 +2678,7 @@ export const ja: TranslationTree = {
 		viewReleaseNotes: "リリースノートを表示",
 		startTimeTrackingCurrentTask: "現在のタスクの時間追跡を開始",
 		stopTimeTrackingCurrentTask: "現在のタスクの時間追跡を停止",
+		stopActiveTimeTracking: "実行中の時間追跡を停止",
 		startTimeTrackingWithSelector: "時間追跡を開始（タスクを選択）",
 		editTimeEntries: "時間エントリを編集（タスクを選択）",
 		createOrOpenTask: "タスクを作成または開く",
@@ -3112,6 +3199,8 @@ export const ja: TranslationTree = {
 			},
 		},
 		timeTracking: {
+			noActiveTasks: "実行中の時間追跡セッションが見つかりません",
+			stopFailed: "実行中の時間追跡セッションを読み込めませんでした",
 			noTasksAvailable: "時間を追跡できるタスクがありません",
 			started: "時間追跡を開始しました：{taskTitle}",
 			startFailed: "時間追跡の開始に失敗しました",

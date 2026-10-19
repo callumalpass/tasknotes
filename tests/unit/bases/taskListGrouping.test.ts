@@ -70,6 +70,8 @@ describe("taskListGrouping", () => {
 		expect(stringifyTaskListGroupValue("")).toBe("None");
 		expect(stringifyTaskListGroupValue(3)).toBe("3");
 		expect(stringifyTaskListGroupValue(false)).toBe("False");
+		expect(stringifyTaskListGroupValue({ constructor: { name: "BooleanValue" }, isTruthy: () => false, toString: () => "False" })).toBe("False");
+		expect(stringifyTaskListGroupValue({ constructor: { name: "NumberValue" }, isTruthy: () => false, toString: () => "0" })).toBe("0");
 		expect(stringifyTaskListGroupValue(["alpha", "", true])).toBe("alpha,,true");
 		expect(
 			stringifyTaskListGroupValue({

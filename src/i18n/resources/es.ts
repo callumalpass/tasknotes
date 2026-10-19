@@ -134,6 +134,31 @@ export const es: TranslationTree = {
 			expandAllGroups: "Expandir todos los grupos",
 			collapseAllGroups: "Contraer todos los grupos",
 			noTasksFound: "No se encontraron tareas para los filtros seleccionados.",
+			movement: {
+				parentAdd: "Añadir como subtarea",
+				parentChoose: "Añadir como subtarea de…",
+				parentPreview: "Añadir como subtarea de {parent}. Los demás proyectos no cambian.",
+				parentSelf: "Una tarea no puede ser su propia tarea principal.",
+				parentCycle: "No se puede añadir una tarea bajo una de sus descendientes.",
+				parentAlready: "Ya es una subtarea de {parent}.",
+				parentUnavailable: "Ambas tareas deben seguir existiendo y ser tareas de TaskNotes.",
+				parentAssigned: "Añadida como subtarea de {parent}.",
+				handle: "Mover tarea",
+				moveTo: "Mover a un grupo",
+				keepSubgroup: "Mantener el subgrupo actual",
+				moveUp: "Subir",
+				moveDown: "Bajar",
+				moved: "Tarea movida.",
+				undo: "Deshacer",
+				undoConflict: "No se puede deshacer: la tarea cambió después de moverla.",
+				undoFailed: "No se pudo deshacer el movimiento.",
+				noValue: "Sin valor",
+				otherDestinations: "Otros destinos",
+				readOnly: "No se puede cambiar {properties}: estos grupos son de solo lectura.",
+				unresolved: "No se pueden determinar los valores de {properties} para este destino.",
+				noChange: "Ya está en este grupo.",
+				failed: "No se pudo mover la tarea. Revisa la tarea e inténtalo de nuevo.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "esta lista sin agrupar",
@@ -321,8 +346,8 @@ export const es: TranslationTree = {
 					slotEventOverlap: "Permitir superposición de eventos",
 					enableSearch: "Habilitar cuadro de búsqueda",
 					eventMaxStack: "Máx. eventos apilados (vista semana/día, 0 = ilimitado)",
-					dayMaxEvents: "Máx. eventos por día (vista mes, 0 = automático)",
-					dayMaxEventRows: "Máx. filas de eventos por día (vista mes, 0 = ilimitado)",
+					dayMaxEvents: "Máx. eventos por día (0 = automático)",
+					dayMaxEventRows: "Máx. filas de eventos por día (0 = ilimitado)",
 					spanScheduledToDue: "Expandir tareas entre fecha programada y fecha límite",
 					heightMode: "Modo de altura",
 					heightModeFill: "Rellenar contenedor",
@@ -673,6 +698,52 @@ export const es: TranslationTree = {
 			features: "Características",
 			integrations: "Integraciones",
 		},
+		modalFields: {
+			header: "Configuración de los campos del modal de tareas",
+			description: "Configura qué campos aparecen en los modales de creación y edición de tareas. Arrastra los campos para reordenarlos dentro de cada grupo.",
+			splitLayout: {
+				name: "Diseño dividido en pantallas anchas",
+				description: "Cuando está activado, el editor de detalles aparece en una columna derecha en pantallas de 900px o más. Cuando está desactivado, el modal usa un diseño apilado."
+			},
+			tabMovesFocus: {
+				name: "Tabulador mueve el foco en el editor de detalles",
+				description: "Cuando está activado, Tab mueve del editor de detalles al siguiente campo del modal y Mayús+Tab al campo anterior. Cuando está desactivado, Tab y Mayús+Tab usan el comportamiento de sangría del editor de Markdown."
+			},
+			sync: {
+				name: "Sincronizar campos de usuario",
+				description: "Haz clic para sincronizar los campos de usuario personalizados de los ajustes de propiedades de tareas en esta configuración.",
+				button: "Sincronizar campos de usuario",
+				notice: "Campos de usuario sincronizados con la configuración del modal"
+			},
+			reset: {
+				name: "Restablecer valores predeterminados",
+				description: "Restablece todas las configuraciones de campos a sus valores predeterminados. Esto eliminará cualquier configuración personalizada.",
+				button: "Restablecer valores predeterminados",
+				confirmTitle: "Restablecer la configuración de campos",
+				confirmMessage: "¿Seguro que quieres restablecer la configuración de campos a los valores predeterminados? Esto eliminará todas las configuraciones de campos personalizadas.",
+				confirmText: "Restablecer",
+				cancelText: "Cancelar",
+				notice: "Configuración de campos restablecida a los valores predeterminados"
+			},
+			initError: "Error: No se pudo inicializar la configuración de campos",
+			manager: {
+				invalidConfig: "Error: Configuración de campos no válida. Restablece los valores predeterminados.",
+				emptyGroup: "No hay campos en este grupo",
+				enabled: "Activado:",
+				showInCreation: "Mostrar al crear:",
+				showInEdit: "Mostrar al editar:",
+				group: "Grupo:",
+				fieldId: "ID: {id}",
+				fieldKey: "Clave: {key}",
+				noKey: "Sin clave definida",
+				fieldTypes: {
+					core: "Principal",
+					user: "Usuario",
+					dependency: "Dependencia",
+					organization: "Organización",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "Tareas en línea",
@@ -735,6 +806,10 @@ export const es: TranslationTree = {
 					name: "Predeterminado a programado",
 					description:
 						"Cuando NLP detecta una fecha sin contexto, tratarla como programada en lugar de vencimiento",
+				},
+				enterToSubmit: {
+					name: "Intro guarda la tarea",
+					description: "En la entrada de lenguaje natural, pulsa Intro para guardar la tarea. Mayús+Intro inserta un salto de línea y Ctrl/Cmd+Intro sigue guardando."
 				},
 				language: {
 					name: "Idioma NLP",
@@ -1137,6 +1212,9 @@ export const es: TranslationTree = {
 						exactOnly: "Solo etiqueta exacta",
 					},
 				},
+				propertyNamePlaceholder: "Introduce el nombre de la propiedad",
+				propertyValuePlaceholder: "Introduce el valor de la propiedad",
+				incompletePropertyWarning: "Introduce un nombre de propiedad y un valor. El texto de ejemplo no es una configuración guardada. TaskNotes no puede identificar tareas hasta que ambos estén definidos. Los filtros .base existentes deben coincidir con estos ajustes.",
 				taskProperty: {
 					name: "Nombre de propiedad de tarea",
 					description: 'El nombre de propiedad de frontmatter (ej. "categoría")',
@@ -1527,6 +1605,10 @@ export const es: TranslationTree = {
 				},
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "Introduce una clave de propiedad.",
+					duplicateKey: "Otra propiedad ya utiliza esta clave.",
+				},
 				header: "Campos personalizados de usuario",
 				description:
 					"Definir propiedades de frontmatter personalizadas para aparecer como opciones de filtro con reconocimiento de tipo en todas las vistas. Cada fila: Nombre de visualización, Nombre de propiedad, Tipo.",
@@ -2237,6 +2319,10 @@ export const es: TranslationTree = {
 					description:
 						"Cuando está habilitado, las tareas se crean como eventos de todo el día. Cuando está deshabilitado, usa la estimación de tiempo para la duración.",
 				},
+				showAllDayAsFree: {
+					name: "Mostrar los eventos de tareas de todo el día como libre",
+					description: "Las tareas exportadas como eventos de todo el día no bloquean la disponibilidad, incluidas las convertidas a todo el día. Los eventos con hora siguen como ocupado. Usa la sincronización de todas las tareas para actualizar los eventos existentes.",
+				},
 				defaultDuration: {
 					name: "Duración predeterminada del evento",
 					description:
@@ -2659,6 +2745,7 @@ export const es: TranslationTree = {
 		viewReleaseNotes: "Ver notas de la versión",
 		startTimeTrackingCurrentTask: "Iniciar seguimiento de tiempo para la tarea actual",
 		stopTimeTrackingCurrentTask: "Detener seguimiento de tiempo para la tarea actual",
+		stopActiveTimeTracking: "Detener el seguimiento de tiempo activo",
 		startTimeTrackingWithSelector: "Iniciar seguimiento de tiempo (seleccionar tarea)",
 		editTimeEntries: "Editar entradas de tiempo (seleccionar tarea)",
 		createOrOpenTask: "Crear o abrir tarea",
@@ -3181,6 +3268,8 @@ export const es: TranslationTree = {
 			},
 		},
 		timeTracking: {
+			noActiveTasks: "No se encontró ninguna sesión activa de seguimiento de tiempo",
+			stopFailed: "No se pudieron cargar las sesiones activas de seguimiento de tiempo",
 			noTasksAvailable: "No hay tareas disponibles para rastrear tiempo",
 			started: "Seguimiento de tiempo iniciado para: {taskTitle}",
 			startFailed: "Error al iniciar el seguimiento de tiempo",

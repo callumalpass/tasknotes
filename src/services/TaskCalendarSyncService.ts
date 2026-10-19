@@ -55,6 +55,7 @@ const RECOVERY_QUEUE_RETRY_DELAY_MS = 60000;
 const EVENT_INDEX_RECOVERY_INTERVAL_MS = 15 * 60 * 1000;
 
 type CalendarEventPayload = {
+	transparency?: "opaque" | "transparent";
 	summary: string;
 	description?: string;
 	start: { date?: string; dateTime?: string; timeZone?: string };
@@ -2595,7 +2596,14 @@ export class TaskCalendarSyncService {
 			event.recurrence = [];
 		}
 
+		event.transparency = this.getTaskEventTransparency(event);
 		return event;
+	}
+
+	private getTaskEventTransparency(event: CalendarEventPayload): "opaque" | "transparent" {
+		return event.start.date && this.plugin.settings.googleCalendarExport.showAllDayAsFree
+			? "transparent"
+			: "opaque";
 	}
 
 	private async createCalendarEventForTask(
@@ -2711,6 +2719,7 @@ export class TaskCalendarSyncService {
 			};
 		}
 
+		event.transparency = this.getTaskEventTransparency(event);
 		return event;
 	}
 

@@ -17,6 +17,7 @@ describe("Issue #2196: embedded Task List Live Preview drag", () => {
 		const plugin = {
 			app: new App(),
 			fieldMapper: new FieldMapper(DEFAULT_FIELD_MAPPING),
+			i18n: { translate: (key: string) => key },
 			settings: {
 				fieldMapping: DEFAULT_FIELD_MAPPING,
 			},

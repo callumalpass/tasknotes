@@ -134,6 +134,31 @@ export const pt: TranslationTree = {
 			expandAllGroups: "Expandir Todos os Grupos",
 			collapseAllGroups: "Recolher Todos os Grupos",
 			noTasksFound: "Nenhuma tarefa encontrada para os filtros selecionados.",
+			movement: {
+				parentAdd: "Adicionar como subtarefa",
+				parentChoose: "Adicionar como subtarefa de…",
+				parentPreview: "Adicionar como subtarefa de {parent}. Os outros projetos permanecem inalterados.",
+				parentSelf: "Uma tarefa não pode ser a sua própria tarefa principal.",
+				parentCycle: "Não é possível adicionar uma tarefa sob uma das suas descendentes.",
+				parentAlready: "Já é uma subtarefa de {parent}.",
+				parentUnavailable: "Ambas as tarefas devem continuar a existir e ser tarefas do TaskNotes.",
+				parentAssigned: "Adicionada como subtarefa de {parent}.",
+				handle: "Mover tarefa",
+				moveTo: "Mover para um grupo",
+				keepSubgroup: "Manter o subgrupo atual",
+				moveUp: "Mover para cima",
+				moveDown: "Mover para baixo",
+				moved: "Tarefa movida.",
+				undo: "Desfazer",
+				undoConflict: "Não é possível desfazer: a tarefa foi alterada após ser movida.",
+				undoFailed: "Não foi possível desfazer o movimento.",
+				noValue: "Sem valor",
+				otherDestinations: "Outros destinos",
+				readOnly: "Não é possível alterar {properties}: estes grupos são somente leitura.",
+				unresolved: "Não é possível determinar os valores de {properties} para este destino.",
+				noChange: "Já está neste grupo.",
+				failed: "Não foi possível mover a tarefa. Verifique a tarefa e tente novamente.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "esta lista sem grupos",
@@ -320,8 +345,8 @@ export const pt: TranslationTree = {
 					slotEventOverlap: "Permitir sobreposição de eventos",
 					enableSearch: "Habilitar caixa de pesquisa",
 					eventMaxStack: "Máx. eventos empilhados (vista semana/dia, 0 = ilimitado)",
-					dayMaxEvents: "Máx. eventos por dia (vista mês, 0 = automático)",
-					dayMaxEventRows: "Máx. linhas de eventos por dia (vista mês, 0 = ilimitado)",
+					dayMaxEvents: "Máx. eventos por dia (0 = automático)",
+					dayMaxEventRows: "Máx. linhas de eventos por dia (0 = ilimitado)",
 					spanScheduledToDue: "Estender tarefas entre data agendada e data de vencimento",
 					heightMode: "Modo de altura",
 					heightModeFill: "Preencher contêiner",
@@ -671,6 +696,52 @@ export const pt: TranslationTree = {
 			features: "Recursos",
 			integrations: "Integrações",
 		},
+		modalFields: {
+			header: "Configuração de campos do modal de tarefas",
+			description: "Configure quais campos aparecem nos modais de criação e edição de tarefas. Arraste os campos para reordená-los dentro de cada grupo.",
+			splitLayout: {
+				name: "Layout dividido em telas largas",
+				description: "Quando ativado, o editor de detalhes aparece em uma coluna à direita em telas de 900px ou mais. Quando desativado, o modal usa um layout empilhado."
+			},
+			tabMovesFocus: {
+				name: "Tab move o foco no editor de detalhes",
+				description: "Quando ativado, Tab move do editor de detalhes para o próximo campo do modal e Shift+Tab para o campo anterior. Quando desativado, Tab e Shift+Tab usam o comportamento de indentação do editor Markdown."
+			},
+			sync: {
+				name: "Sincronizar campos de usuário",
+				description: "Clique para sincronizar campos personalizados das configurações de propriedades da tarefa para esta configuração.",
+				button: "Sincronizar campos de usuário",
+				notice: "Campos de usuário sincronizados com a configuração do modal"
+			},
+			reset: {
+				name: "Redefinir para os padrões",
+				description: "Redefine todas as configurações de campos para os valores padrão. Isso removerá todas as configurações personalizadas.",
+				button: "Redefinir para os padrões",
+				confirmTitle: "Redefinir a configuração de campos",
+				confirmMessage: "Tem certeza de que deseja redefinir a configuração de campos para os padrões? Isso removerá todas as configurações de campos personalizadas.",
+				confirmText: "Redefinir",
+				cancelText: "Cancelar",
+				notice: "Configuração de campos redefinida para os padrões"
+			},
+			initError: "Erro: Não foi possível inicializar a configuração de campos",
+			manager: {
+				invalidConfig: "Erro: Configuração de campos inválida. Redefina para os padrões.",
+				emptyGroup: "Nenhum campo neste grupo",
+				enabled: "Ativado:",
+				showInCreation: "Mostrar ao criar:",
+				showInEdit: "Mostrar ao editar:",
+				group: "Grupo:",
+				fieldId: "ID: {id}",
+				fieldKey: "Chave: {key}",
+				noKey: "Nenhuma chave definida",
+				fieldTypes: {
+					core: "Principal",
+					user: "Usuário",
+					dependency: "Dependência",
+					organization: "Organização",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "Tarefas Embutidas",
@@ -732,6 +803,10 @@ export const pt: TranslationTree = {
 					name: "Padrão para agendado",
 					description:
 						"Quando a NLP detectar uma data sem contexto, tratá-la como agendada em vez de vencimento",
+				},
+				enterToSubmit: {
+					name: "Enter salva a tarefa",
+					description: "Na entrada de linguagem natural, pressione Enter para salvar a tarefa. Shift+Enter insere uma quebra de linha, e Ctrl/Cmd+Enter continua salvando."
 				},
 				language: {
 					name: "Idioma da NLP",
@@ -1129,6 +1204,9 @@ export const pt: TranslationTree = {
 						exactOnly: "Somente tag exata",
 					},
 				},
+				propertyNamePlaceholder: "Digite o nome da propriedade",
+				propertyValuePlaceholder: "Digite o valor da propriedade",
+				incompletePropertyWarning: "Digite um nome de propriedade e um valor. O texto de exemplo não é uma configuração salva. O TaskNotes só pode identificar tarefas quando ambos estiverem definidos. Os filtros .base existentes devem corresponder a essas configurações.",
 				taskProperty: {
 					name: "Nome da propriedade da tarefa",
 					description: 'O nome da propriedade do frontmatter (ex: "categoria")',
@@ -1516,6 +1594,10 @@ export const pt: TranslationTree = {
 				},
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "Insira uma chave de propriedade.",
+					duplicateKey: "Outra propriedade já usa esta chave.",
+				},
 				header: "Campos de Usuário Personalizados",
 				description:
 					"Defina propriedades de frontmatter personalizadas para aparecerem como opções de filtro com reconhecimento de tipo nas visualizações. Cada linha: Nome de Exibição, Nome da Propriedade, Tipo.",
@@ -2224,6 +2306,10 @@ export const pt: TranslationTree = {
 					description:
 						"Quando ativado, tarefas são criadas como eventos de dia inteiro. Quando desativado, usa a estimativa de tempo para a duração.",
 				},
+				showAllDayAsFree: {
+					name: "Mostrar eventos de tarefas de dia inteiro como livre",
+					description: "Tarefas exportadas como eventos de dia inteiro não bloqueiam a disponibilidade, incluindo as convertidas para dia inteiro. Eventos com horário continuam como ocupado. Use a sincronização de todas as tarefas para atualizar os eventos existentes.",
+				},
 				defaultDuration: {
 					name: "Duração padrão do evento",
 					description:
@@ -2646,6 +2732,7 @@ export const pt: TranslationTree = {
 		viewReleaseNotes: "Ver notas de lançamento",
 		startTimeTrackingCurrentTask: "Iniciar registro de tempo da tarefa atual",
 		stopTimeTrackingCurrentTask: "Parar registro de tempo da tarefa atual",
+		stopActiveTimeTracking: "Parar registro de tempo ativo",
 		startTimeTrackingWithSelector: "Iniciar registro de tempo (selecionar tarefa)",
 		editTimeEntries: "Editar registros de tempo (selecionar tarefa)",
 		createOrOpenTask: "Criar ou abrir tarefa",
@@ -3169,6 +3256,8 @@ export const pt: TranslationTree = {
 			},
 		},
 		timeTracking: {
+			noActiveTasks: "Nenhuma sessão ativa de registro de tempo encontrada",
+			stopFailed: "Não foi possível carregar as sessões ativas de registro de tempo",
 			noTasksAvailable: "Nenhuma tarefa disponível para registrar o tempo",
 			started: "Iniciado registro de tempo para: {taskTitle}",
 			startFailed: "Falha ao iniciar registro de tempo",

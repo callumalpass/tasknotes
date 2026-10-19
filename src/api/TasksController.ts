@@ -390,7 +390,7 @@ export class TasksController extends BaseController {
 
 	@OpenAPI({
 		summary: "Query tasks",
-		description: "Filter, sort, and group tasks with a TaskNotes FilterQuery payload.",
+		description: "Filter, sort, and group tasks with a complete TaskNotes FilterQuery payload. Custom fields accept user:<id-or-key> or user.<id-or-key>. Invalid queries return HTTP 400.",
 		operationId: "queryTasks",
 		tags: ["Tasks"],
 		requestBody: {
@@ -446,7 +446,7 @@ export class TasksController extends BaseController {
 	async queryTasks(req: HTTPRequestLike, res: HTTPResponseLike): Promise<void> {
 		try {
 			const query = await this.parseRequestBody<FilterQuery>(req);
-			const filteredTasksMap = await this.filterService.getGroupedTasks(query);
+			const filteredTasksMap = await this.filterService.getGroupedTasksStrict(query);
 
 			// Flatten grouped results into a single array
 			const filteredTasks: TaskInfo[] = [];

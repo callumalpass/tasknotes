@@ -257,8 +257,19 @@ export class TaskCreationModal extends TaskModal {
 						// Shift+Enter - allow newline
 						return false;
 					}
-					// Normal Enter - allow new line
-					return false;
+					if (!this.plugin.settings.nlpEnterToSubmit) {
+						// Normal Enter - allow new line
+						return false;
+					}
+					if (editor.hasSelectableCompletion) {
+						// Enter belongs to the visible suggestion. If it opened too recently
+						// to accept, swallow the key so it neither saves nor adds a newline.
+						editor.acceptCompletion();
+						return true;
+					}
+					// Enter saves when enabled; Shift+Enter (above) still inserts a newline
+					void this.handleSubmitShortcut(false);
+					return true;
 				},
 			});
 		} catch (error) {
@@ -287,6 +298,18 @@ export class TaskCreationModal extends TaskModal {
 			};
 			this.addTrackedEventListener(this.nlInput, "input", inputHandler);
 
+			// WebKit fires the Enter that confirms IME text after compositionend, so
+			// stay "composing" until that keydown has been handled.
+			let composing = false;
+			this.addTrackedEventListener(this.nlInput, "compositionstart", () => {
+				composing = true;
+			});
+			this.addTrackedEventListener(this.nlInput, "compositionend", () => {
+				window.setTimeout(() => {
+					composing = false;
+				}, 0);
+			});
+
 			const keydownHandler = (e: Event) => {
 				const input = this.nlInput.value.trim();
 				if (!input) return;
@@ -295,6 +318,15 @@ export class TaskCreationModal extends TaskModal {
 				if (keyEvent.key === "Enter" && (keyEvent.ctrlKey || keyEvent.metaKey)) {
 					keyEvent.preventDefault();
 					void this.handleSubmitShortcut(keyEvent.shiftKey);
+				} else if (
+					keyEvent.key === "Enter" &&
+					!keyEvent.shiftKey &&
+					!keyEvent.isComposing &&
+					!composing &&
+					this.plugin.settings.nlpEnterToSubmit
+				) {
+					keyEvent.preventDefault();
+					void this.handleSubmitShortcut(false);
 				} else if (keyEvent.key === "Tab" && keyEvent.shiftKey) {
 					keyEvent.preventDefault();
 					this.parseAndFillForm(input);

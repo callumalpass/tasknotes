@@ -10,6 +10,12 @@ Use **TaskNotes: Start time tracking for current task** and **TaskNotes: Stop ti
 
 The time tracking interface includes controls to start and stop tracking in task views and task cards. TaskNotes prevents duplicate active sessions on the same task. Active sessions on different tasks can exist at the same time, and total time spent on each task is calculated from completed sessions.
 
+### Stop an Active Tracker Without Opening Its Note
+
+Use **TaskNotes: Stop active time tracking**, or the square stop button beside the tracking timer in the desktop status bar. With one active tracker, the action stops it directly. With several, it opens a selector containing active tasks so you can stop one; cancelling leaves every tracker running. The selector cannot create new tasks. Other trackers keep running.
+
+The command does not depend on the currently open note and can also be assigned a hotkey. The status bar's task title still opens the tracked note, while the stop button only stops tracking. If a task is deleted or its tracker stops before you choose it, no new time entry is created.
+
 ### Auto-Stop Time Tracking
 
 TaskNotes can automatically stop time tracking when a task is marked as completed. This feature ensures that time tracking data accurately reflects work completion without requiring manual timer management.
