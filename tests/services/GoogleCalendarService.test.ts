@@ -116,6 +116,36 @@ describe('GoogleCalendarService', () => {
 			);
 		});
 
+		test.each([
+			['user-set name', 'Running', 'Running'],
+			['missing override', undefined, 'Original Calendar'],
+			['empty override', '', 'Original Calendar'],
+		])('should resolve calendar summary with %s (#2411)', async (_, summaryOverride, expectedSummary) => {
+			const calendar = {
+				id: 'subscribed@example.com',
+				summary: 'Original Calendar',
+				summaryOverride,
+				description: 'Subscribed calendar',
+				backgroundColor: '#f83a22',
+				primary: false,
+			};
+			mockRequestUrl.mockResolvedValueOnce({
+				status: 200,
+				json: { items: [calendar] },
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			expect(await service.listCalendars()).toEqual([{
+				id: calendar.id,
+				summary: expectedSummary,
+				description: calendar.description,
+				backgroundColor: calendar.backgroundColor,
+				primary: false,
+			}]);
+		});
+
 		test('should handle empty calendar list', async () => {
 			mockRequestUrl.mockResolvedValueOnce({
 				status: 200,

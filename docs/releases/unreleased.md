@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2411) Google calendars now display user-set names instead of original titles for subscribed and URL-added calendars. Thanks to @Alireza-RS for reporting.
