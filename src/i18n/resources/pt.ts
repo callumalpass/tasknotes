@@ -2300,6 +2300,16 @@ export const pt: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Idioma alterado para {language}.",
+		recurringCompletion: {
+			completed: "Ocorrência concluída: {date}",
+			incomplete: "Marcada como incompleta: {date}",
+			next: "Próxima: {date}",
+			noNext: "Sem próxima ocorrência",
+			undo: "Desfazer",
+			undone: "Alteração da tarefa recorrente desfeita.",
+			conflict: "Não é possível desfazer: esta ocorrência ou seu agendamento mudou.",
+			failed: "Não foi possível desfazer a alteração da tarefa recorrente.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} está disponível.",
 			action: "Abrir nos plugins da comunidade"

@@ -32,6 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2412) Recurring task checkoffs now show the completed occurrence and next date, including the year, with an Undo action. Undo restores the affected occurrence and schedule without overwriting later changes. Thanks to @PaulSnyder for the suggestion. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
+
 ## Fixed
 
 - (#2411) Google calendars now display user-set names instead of original titles for subscribed and URL-added calendars. Thanks to @Alireza-RS for reporting.

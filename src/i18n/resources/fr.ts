@@ -2298,6 +2298,16 @@ export const fr: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Langue changée pour {language}.",
+		recurringCompletion: {
+			completed: "Occurrence terminée : {date}",
+			incomplete: "Marquée comme non terminée : {date}",
+			next: "Prochaine : {date}",
+			noNext: "Aucune prochaine occurrence",
+			undo: "Annuler",
+			undone: "Modification de la tâche récurrente annulée.",
+			conflict: "Impossible d’annuler : cette occurrence ou sa planification a changé.",
+			failed: "Impossible d’annuler la modification de la tâche récurrente.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} est disponible.",
 			action: "Ouvrir dans les plugins communautaires"

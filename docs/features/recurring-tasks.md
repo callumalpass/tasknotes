@@ -209,6 +209,8 @@ Materialized occurrence notes keep `occurrence_date` as their identity. If you d
 
 Each occurrence can be completed or skipped independently (task cards, calendar menus, task edit modal completion calendar).
 
+Checking off a recurring task shows a notification with the occurrence date and the next scheduled date, both including the year. **Undo** remains available for 15 seconds and reverses that specific checkoff, including its scheduling changes and any checklist reset. Undo refuses to overwrite later changes to the occurrence or schedule. Materialized occurrence notes are retained when undoing their completion, as with manually marking them incomplete. Notifications and Undo apply to interactive recurring checkoffs, not API calls.
+
 When you complete an occurrence from the context menu, you can choose which date it is recorded against — today, the occurrence's scheduled date, its due date, or a date you pick (see [Completing Tasks](task-management.md#completing-tasks)). Completion-anchored recurrences resolve *on schedule* to the newly scheduled date, an explicit re-anchor.
 
 Completed instances are stored in:

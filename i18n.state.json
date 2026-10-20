@@ -5636,6 +5636,38 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "7f26686cfeedf2599568056031748d77186b4775"
     },
+    "notices.recurringCompletion.completed": {
+      "source": "19f3ec95ac92315d10b3d8e987488453aa996996",
+      "translation": "718d902c116fcb3dc58a72c9b4e3afeb0d519a47"
+    },
+    "notices.recurringCompletion.incomplete": {
+      "source": "7d5e54648d738a56a5438b32322ab4578b8ad1e8",
+      "translation": "36babefba5176844dfc6db2018d5943dedb7f123"
+    },
+    "notices.recurringCompletion.next": {
+      "source": "a82149b3495b9bd0742db69411c4bcd9c0d8bb01",
+      "translation": "812146eb997352a91c1bdc39b68958c814196a34"
+    },
+    "notices.recurringCompletion.noNext": {
+      "source": "d10b743e80d87cb31ca72f979e5fb9ddbbf77018",
+      "translation": "6d42e48c9c92e98e012cb34401f6b8ad32561326"
+    },
+    "notices.recurringCompletion.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "b626f2e45925f37541f947c179a1725bfa5b6135"
+    },
+    "notices.recurringCompletion.undone": {
+      "source": "5e2d0731b8421c0321c363ce51a593c7b80bf87a",
+      "translation": "00a289036b3c26b10c14bd525fae4f8e0c0b0e05"
+    },
+    "notices.recurringCompletion.conflict": {
+      "source": "52140feffc493bd689dc187f892d7210d3f86b30",
+      "translation": "df90335db6edfd4dad90d541ac25f48e141320fb"
+    },
+    "notices.recurringCompletion.failed": {
+      "source": "9b34e97e479a3ec1cb411b7cfebc9e280619c5f2",
+      "translation": "5824301167608d32790f28db6698ae5cd8ad8b76"
+    },
     "notices.releaseAvailable.message": {
       "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
       "translation": "18b5a590fecf528dcee80b777cfa6f745e2df944"
@@ -14873,6 +14905,38 @@
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "eadada3d545e2a7410275a34377cee9b196ff8ae"
+    },
+    "notices.recurringCompletion.completed": {
+      "source": "19f3ec95ac92315d10b3d8e987488453aa996996",
+      "translation": "9fa96fb221a006684b081bc11051f33dcc60cbc2"
+    },
+    "notices.recurringCompletion.incomplete": {
+      "source": "7d5e54648d738a56a5438b32322ab4578b8ad1e8",
+      "translation": "65ca0048bfe4e9232bf52b1e3a65b3ce85393fa2"
+    },
+    "notices.recurringCompletion.next": {
+      "source": "a82149b3495b9bd0742db69411c4bcd9c0d8bb01",
+      "translation": "953d90539298446e02b174ce6426b01c2054b29d"
+    },
+    "notices.recurringCompletion.noNext": {
+      "source": "d10b743e80d87cb31ca72f979e5fb9ddbbf77018",
+      "translation": "3e79fdb8533bda3010edad6a19f552b4ce5e9388"
+    },
+    "notices.recurringCompletion.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "26060e2bc3c7dd3ab57a1eb162ff8c52488761f3"
+    },
+    "notices.recurringCompletion.undone": {
+      "source": "5e2d0731b8421c0321c363ce51a593c7b80bf87a",
+      "translation": "ae77af9189a321d82a7fb826b300814eead06e70"
+    },
+    "notices.recurringCompletion.conflict": {
+      "source": "52140feffc493bd689dc187f892d7210d3f86b30",
+      "translation": "1227032e8f2d8f078f242994e5e0b485ba1a2f20"
+    },
+    "notices.recurringCompletion.failed": {
+      "source": "9b34e97e479a3ec1cb411b7cfebc9e280619c5f2",
+      "translation": "3a55c72557c5aa4dffa14e3af8d62fb45259829a"
     },
     "notices.releaseAvailable.message": {
       "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
@@ -24112,6 +24176,38 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "c13447e51fba9156d2fa6a1720e72bf94aecbd75"
     },
+    "notices.recurringCompletion.completed": {
+      "source": "19f3ec95ac92315d10b3d8e987488453aa996996",
+      "translation": "f59f36e139de3ba3fe7711cc1f46a560e7280f09"
+    },
+    "notices.recurringCompletion.incomplete": {
+      "source": "7d5e54648d738a56a5438b32322ab4578b8ad1e8",
+      "translation": "aa18323e6c49f3f952fe66a63959d31d46d6aa6e"
+    },
+    "notices.recurringCompletion.next": {
+      "source": "a82149b3495b9bd0742db69411c4bcd9c0d8bb01",
+      "translation": "a1e28601d0e27802bf476ac016105ed2f0a6aed5"
+    },
+    "notices.recurringCompletion.noNext": {
+      "source": "d10b743e80d87cb31ca72f979e5fb9ddbbf77018",
+      "translation": "80e2b1d74950838ed67d53f5df181a15862e0838"
+    },
+    "notices.recurringCompletion.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "49ba3292420c74828e7892fadc66f3f4ee4c0111"
+    },
+    "notices.recurringCompletion.undone": {
+      "source": "5e2d0731b8421c0321c363ce51a593c7b80bf87a",
+      "translation": "dd089af189c4031e1669a5bad2f33b1f2be31624"
+    },
+    "notices.recurringCompletion.conflict": {
+      "source": "52140feffc493bd689dc187f892d7210d3f86b30",
+      "translation": "0393f49ed0bce09454139a6bd2fe5f28c785a934"
+    },
+    "notices.recurringCompletion.failed": {
+      "source": "9b34e97e479a3ec1cb411b7cfebc9e280619c5f2",
+      "translation": "54065d56033774532d25e66318868582537e2190"
+    },
     "notices.releaseAvailable.message": {
       "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
       "translation": "6a2c9644ea16315eccac34ed79f2e151634bd2aa"
@@ -33349,6 +33445,38 @@
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "179c451a72075375c6a5e7df281cbb3cd06c0183"
+    },
+    "notices.recurringCompletion.completed": {
+      "source": "19f3ec95ac92315d10b3d8e987488453aa996996",
+      "translation": "8fb774d6169e098dde962cf9410fd4bfdbdfe9f9"
+    },
+    "notices.recurringCompletion.incomplete": {
+      "source": "7d5e54648d738a56a5438b32322ab4578b8ad1e8",
+      "translation": "fbd92e3a3b909f9d50c106a30b4d6e82cebef065"
+    },
+    "notices.recurringCompletion.next": {
+      "source": "a82149b3495b9bd0742db69411c4bcd9c0d8bb01",
+      "translation": "80bbb39f379e07f03655247b54148aa4b70fb030"
+    },
+    "notices.recurringCompletion.noNext": {
+      "source": "d10b743e80d87cb31ca72f979e5fb9ddbbf77018",
+      "translation": "974a8d50ec8845bd6d153f3e53cdadfb6523264b"
+    },
+    "notices.recurringCompletion.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "c7f325f13f167d696c1e0c7bcf75325af6262dcb"
+    },
+    "notices.recurringCompletion.undone": {
+      "source": "5e2d0731b8421c0321c363ce51a593c7b80bf87a",
+      "translation": "4b5e4e52118c34e12422627734af662022a8f0ad"
+    },
+    "notices.recurringCompletion.conflict": {
+      "source": "52140feffc493bd689dc187f892d7210d3f86b30",
+      "translation": "f1cd78e1fda1cc51ae07d95dea910506492f3539"
+    },
+    "notices.recurringCompletion.failed": {
+      "source": "9b34e97e479a3ec1cb411b7cfebc9e280619c5f2",
+      "translation": "1f4459b81a16ea1a64efe219bf333cc54bda0ddb"
     },
     "notices.releaseAvailable.message": {
       "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
@@ -42588,6 +42716,38 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "d901211ac95a39b48de80b3ab27533968bcf9578"
     },
+    "notices.recurringCompletion.completed": {
+      "source": "19f3ec95ac92315d10b3d8e987488453aa996996",
+      "translation": "8aeb423f6b3ecfee0b72cb35cf6dac30cf27d02c"
+    },
+    "notices.recurringCompletion.incomplete": {
+      "source": "7d5e54648d738a56a5438b32322ab4578b8ad1e8",
+      "translation": "20c1eee548e38e32ef416644b303811e35b8eb53"
+    },
+    "notices.recurringCompletion.next": {
+      "source": "a82149b3495b9bd0742db69411c4bcd9c0d8bb01",
+      "translation": "bba77c47eae8c986ea2b4128f5868af0f4552135"
+    },
+    "notices.recurringCompletion.noNext": {
+      "source": "d10b743e80d87cb31ca72f979e5fb9ddbbf77018",
+      "translation": "b8d3b932939e0e04f85403867513c56ff60a9d2f"
+    },
+    "notices.recurringCompletion.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "90945122e16c878b8753bf4f91b43f6158656f5f"
+    },
+    "notices.recurringCompletion.undone": {
+      "source": "5e2d0731b8421c0321c363ce51a593c7b80bf87a",
+      "translation": "167a6163a99e3eb01bf6b4c8a44ac7fc80f95bc8"
+    },
+    "notices.recurringCompletion.conflict": {
+      "source": "52140feffc493bd689dc187f892d7210d3f86b30",
+      "translation": "eb53be82b40e7906cf76afbbdbafe3f8d3497aff"
+    },
+    "notices.recurringCompletion.failed": {
+      "source": "9b34e97e479a3ec1cb411b7cfebc9e280619c5f2",
+      "translation": "d63deae2818a15ffb43f0ed9e63d66a998d75242"
+    },
     "notices.releaseAvailable.message": {
       "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
       "translation": "576da6a608a12b528f12aece5809852baf3deca6"
@@ -51825,6 +51985,38 @@
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "8e158d856f5f6df85372f2997d05ba5b0b31da83"
+    },
+    "notices.recurringCompletion.completed": {
+      "source": "19f3ec95ac92315d10b3d8e987488453aa996996",
+      "translation": "23b835e19c08a1050ee74ba21c16fbee3e5d2be0"
+    },
+    "notices.recurringCompletion.incomplete": {
+      "source": "7d5e54648d738a56a5438b32322ab4578b8ad1e8",
+      "translation": "65ca0048bfe4e9232bf52b1e3a65b3ce85393fa2"
+    },
+    "notices.recurringCompletion.next": {
+      "source": "a82149b3495b9bd0742db69411c4bcd9c0d8bb01",
+      "translation": "52f52e4299c1272814c2388a66e2f6f4f1e9e3b2"
+    },
+    "notices.recurringCompletion.noNext": {
+      "source": "d10b743e80d87cb31ca72f979e5fb9ddbbf77018",
+      "translation": "1d8a0c628e4ff5408a6134fafb3ac64b4d36b14d"
+    },
+    "notices.recurringCompletion.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "95d2c5ee416c8998d04725349c6031f6d91dcdaf"
+    },
+    "notices.recurringCompletion.undone": {
+      "source": "5e2d0731b8421c0321c363ce51a593c7b80bf87a",
+      "translation": "c3b6fd29f606ef1eef4f254eaf468f1ca86e93da"
+    },
+    "notices.recurringCompletion.conflict": {
+      "source": "52140feffc493bd689dc187f892d7210d3f86b30",
+      "translation": "b2f18b5f24c0671244eac6b3dbe161231524dae2"
+    },
+    "notices.recurringCompletion.failed": {
+      "source": "9b34e97e479a3ec1cb411b7cfebc9e280619c5f2",
+      "translation": "4ddac27b0376b931d34414bf2291f5a7fb4e4eba"
     },
     "notices.releaseAvailable.message": {
       "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
@@ -61064,6 +61256,38 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "0b6ef1a910125926ea606ed12afb148595f5c167"
     },
+    "notices.recurringCompletion.completed": {
+      "source": "19f3ec95ac92315d10b3d8e987488453aa996996",
+      "translation": "7af3cdfbff31fe42c5bf20d4569bbf7112832eb9"
+    },
+    "notices.recurringCompletion.incomplete": {
+      "source": "7d5e54648d738a56a5438b32322ab4578b8ad1e8",
+      "translation": "a5d7e0ee5e4c8bd8ecb8938b64ab0419e5d83878"
+    },
+    "notices.recurringCompletion.next": {
+      "source": "a82149b3495b9bd0742db69411c4bcd9c0d8bb01",
+      "translation": "db0bd69e9107a08a664faa5363ab6920f6c6523f"
+    },
+    "notices.recurringCompletion.noNext": {
+      "source": "d10b743e80d87cb31ca72f979e5fb9ddbbf77018",
+      "translation": "ff2afb0c18fdeccecbbbfa140742adbc8c538548"
+    },
+    "notices.recurringCompletion.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "555ad1c0c33d26b34b5ca8bb38dfba4e2092df27"
+    },
+    "notices.recurringCompletion.undone": {
+      "source": "5e2d0731b8421c0321c363ce51a593c7b80bf87a",
+      "translation": "f03f265683cf2eb4549b55eecb84b167681419e6"
+    },
+    "notices.recurringCompletion.conflict": {
+      "source": "52140feffc493bd689dc187f892d7210d3f86b30",
+      "translation": "8cf9e66a221cd94a1f5a6f03ecea2384534d2a9d"
+    },
+    "notices.recurringCompletion.failed": {
+      "source": "9b34e97e479a3ec1cb411b7cfebc9e280619c5f2",
+      "translation": "dfd62dbb5746035f47a2cbdbf05bf236d297616b"
+    },
     "notices.releaseAvailable.message": {
       "source": "eef8954cafb95f98069002de07481d6fa1947cd2",
       "translation": "f4e7982d0aae98be6a7898cf6a25c0d278db6c5a"
@@ -70301,6 +70525,38 @@
     "notices.languageChanged": {
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "98970fa5fc92738a2c3bd9e54e91b0ebc6801844"
+    },
+    "notices.recurringCompletion.completed": {
+      "source": "19f3ec95ac92315d10b3d8e987488453aa996996",
+      "translation": "5f543e3be38f94a641596bf73a66c563a4a5337d"
+    },
+    "notices.recurringCompletion.incomplete": {
+      "source": "7d5e54648d738a56a5438b32322ab4578b8ad1e8",
+      "translation": "e47f69de117dd94d10e54b0557522fe3b13beb21"
+    },
+    "notices.recurringCompletion.next": {
+      "source": "a82149b3495b9bd0742db69411c4bcd9c0d8bb01",
+      "translation": "bd240162c3f2b14254607600663dfbf903b12934"
+    },
+    "notices.recurringCompletion.noNext": {
+      "source": "d10b743e80d87cb31ca72f979e5fb9ddbbf77018",
+      "translation": "bbdf81b145ce0241a1937fbb2ddea0fbb2f6eaeb"
+    },
+    "notices.recurringCompletion.undo": {
+      "source": "39fc72124884d6573e4f9f89585f071ed0782696",
+      "translation": "9fcefd8dc81ef205be34ce3148249bcd90120aa6"
+    },
+    "notices.recurringCompletion.undone": {
+      "source": "5e2d0731b8421c0321c363ce51a593c7b80bf87a",
+      "translation": "a58a557701feeda0c8f42caf7e774397086037eb"
+    },
+    "notices.recurringCompletion.conflict": {
+      "source": "52140feffc493bd689dc187f892d7210d3f86b30",
+      "translation": "8c277253cbb23d121df9a22c5764acac4d8e23ff"
+    },
+    "notices.recurringCompletion.failed": {
+      "source": "9b34e97e479a3ec1cb411b7cfebc9e280619c5f2",
+      "translation": "a92bf90ff26807a78a9b9a58ef682e73047a9f8f"
     },
     "notices.releaseAvailable.message": {
       "source": "eef8954cafb95f98069002de07481d6fa1947cd2",

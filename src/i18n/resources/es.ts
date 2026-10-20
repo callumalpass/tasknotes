@@ -2298,6 +2298,16 @@ export const es: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Idioma cambiado a {language}.",
+		recurringCompletion: {
+			completed: "Ocurrencia completada: {date}",
+			incomplete: "Marcada como incompleta: {date}",
+			next: "Siguiente: {date}",
+			noNext: "No hay más ocurrencias",
+			undo: "Deshacer",
+			undone: "Cambio de la tarea recurrente deshecho.",
+			conflict: "No se puede deshacer: esta ocurrencia o su programación ha cambiado.",
+			failed: "No se pudo deshacer el cambio de la tarea recurrente.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} está disponible.",
 			action: "Abrir en plugins de la comunidad"

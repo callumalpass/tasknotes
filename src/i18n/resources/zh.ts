@@ -2298,6 +2298,16 @@ export const zh: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "语言已更改为{language}。",
+		recurringCompletion: {
+			completed: "已完成的重复任务：{date}",
+			incomplete: "已标记为未完成：{date}",
+			next: "下次：{date}",
+			noNext: "没有下次重复任务",
+			undo: "撤销",
+			undone: "已撤销重复任务的更改。",
+			conflict: "无法撤销：此次任务或其安排已更改。",
+			failed: "无法撤销重复任务的更改。",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} 可用。",
 			action: "在社区插件中打开"

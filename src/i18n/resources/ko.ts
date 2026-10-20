@@ -2282,6 +2282,16 @@ export const ko: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "언어가 {language}(으)로 변경되었습니다.",
+		recurringCompletion: {
+			completed: "완료한 반복 일정: {date}",
+			incomplete: "미완료로 변경: {date}",
+			next: "다음: {date}",
+			noNext: "다음 반복 일정 없음",
+			undo: "실행 취소",
+			undone: "반복 작업 변경을 취소했습니다.",
+			conflict: "실행 취소할 수 없습니다. 이 반복 일정이나 예약이 변경되었습니다.",
+			failed: "반복 작업 변경을 취소하지 못했습니다.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} 릴리스를 사용할 수 있습니다.",
 			action: "커뮤니티 플러그인에서 열기"

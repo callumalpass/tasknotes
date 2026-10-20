@@ -2298,6 +2298,16 @@ export const de: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Sprache geändert zu {language}.",
+		recurringCompletion: {
+			completed: "Erledigtes Vorkommen: {date}",
+			incomplete: "Als unerledigt markiert: {date}",
+			next: "Nächstes: {date}",
+			noNext: "Kein weiteres Vorkommen",
+			undo: "Rückgängig",
+			undone: "Änderung der wiederkehrenden Aufgabe rückgängig gemacht.",
+			conflict: "Rückgängig nicht möglich: Dieses Vorkommen oder sein Termin wurde geändert.",
+			failed: "Die Änderung der wiederkehrenden Aufgabe konnte nicht rückgängig gemacht werden.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} ist verfügbar.",
 			action: "In Community-Plugins öffnen"

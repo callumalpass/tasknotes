@@ -2298,6 +2298,16 @@ export const ru: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Язык изменен на {language}.",
+		recurringCompletion: {
+			completed: "Завершённый повтор: {date}",
+			incomplete: "Отмечен как незавершённый: {date}",
+			next: "Следующий: {date}",
+			noNext: "Следующего повтора нет",
+			undo: "Отменить",
+			undone: "Изменение повторяющейся задачи отменено.",
+			conflict: "Нельзя отменить: этот повтор или его расписание изменены.",
+			failed: "Не удалось отменить изменение повторяющейся задачи.",
+		},
 		releaseAvailable: {
 			message: "Доступен TaskNotes {version}.",
 			action: "Открыть в плагинах сообщества"

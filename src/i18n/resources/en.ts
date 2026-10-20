@@ -2457,6 +2457,16 @@ export const en: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Language changed to {language}.",
+		recurringCompletion: {
+			completed: "Completed occurrence: {date}",
+			incomplete: "Marked incomplete: {date}",
+			next: "Next: {date}",
+			noNext: "No next occurrence",
+			undo: "Undo",
+			undone: "Recurring task change undone.",
+			conflict: "Cannot undo: this occurrence or its schedule has changed.",
+			failed: "Could not undo the recurring task change.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} is available.",
 			action: "Open in community plugins",

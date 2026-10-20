@@ -2298,6 +2298,16 @@ export const ja: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "言語を{language}に変更しました。",
+		recurringCompletion: {
+			completed: "完了した繰り返し: {date}",
+			incomplete: "未完了に変更: {date}",
+			next: "次回: {date}",
+			noNext: "次回の繰り返しはありません",
+			undo: "元に戻す",
+			undone: "繰り返しタスクの変更を元に戻しました。",
+			conflict: "元に戻せません。この回または予定が変更されています。",
+			failed: "繰り返しタスクの変更を元に戻せませんでした。",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} が利用可能です。",
 			action: "コミュニティプラグインで開く"
