@@ -847,3 +847,14 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
 .tasknotes-plugin .reminder-defaults-add-text {
     font-weight: 500;
 }
+
+/* Missed reminders summary notice (rendered outside the plugin container) */
+.tasknotes-missed-reminders__title {
+	font-weight: var(--font-semibold);
+	margin-bottom: var(--size-4-1);
+}
+
+.tasknotes-missed-reminders__task {
+	cursor: pointer;
+	text-decoration: underline;
+}

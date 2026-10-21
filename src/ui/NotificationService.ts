@@ -27,7 +27,14 @@ export class NotificationService {
 	private lastBroadScanTime: number = Date.now();
 	private lastQuickCheckTime: number = Date.now();
 	private lastSuccessfulCheck: number = Date.now();
+	private queueCoveredUntil = 0;
 	private readonly CATCH_UP_WINDOW = 24 * 60 * 60 * 1000;
+	// Device- and vault-local, so each device catches up on what it missed.
+	private readonly CURSOR_STORAGE_KEY = "tasknotes-reminder-scan-cursor";
+	// Reminders delivered later than this are worded as missed.
+	private readonly LATE_THRESHOLD = 2 * 60 * 1000;
+	// More missed tasks than this are combined into one summary.
+	private readonly MISSED_SUMMARY_THRESHOLD = 3;
 
 	// Configuration constants
 	private readonly BROAD_SCAN_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -40,8 +47,13 @@ export class NotificationService {
 
 	async initialize(): Promise<void> {
 		if (!this.plugin.settings.enableNotifications) {
+			// Re-enabling should not replay reminders from while notifications were off.
+			this.saveCursor(null);
 			return;
 		}
+
+		// Catch up reminders missed while Obsidian was closed (bounded by the scan window).
+		this.lastSuccessfulCheck = this.loadCursor() ?? Date.now();
 
 		// Request notification permission if using system notifications
 		if (
@@ -138,6 +150,8 @@ export class NotificationService {
 			this.queueRemindersForTask(task.path, task, windowStart);
 		}
 		this.lastSuccessfulCheck = now;
+		this.queueCoveredUntil = now + this.QUEUE_WINDOW;
+		this.saveCursor(now);
 		this.checkNotificationQueue();
 		for (const key of this.processedReminders) {
 			const [, , notifyAt] = JSON.parse(key) as [string, string, number];
@@ -216,41 +230,63 @@ export class NotificationService {
 
 	private checkNotificationQueue(): void {
 		const now = Date.now();
-		const toRemove: number[] = [];
+		// Queue is sorted, so due items are a prefix.
+		const dueCount = this.notificationQueue.findIndex((item) => item.notifyAt > now);
+		const due = this.notificationQueue.splice(
+			0,
+			dueCount === -1 ? this.notificationQueue.length : dueCount
+		);
+		if (due.length === 0) return;
 
-		for (let i = 0; i < this.notificationQueue.length; i++) {
-			const item = this.notificationQueue[i];
-
-			if (item.notifyAt <= now) {
-				// Trigger the notification
-				void this.triggerNotification(item);
-				toRemove.push(i);
-
-				// Mark as processed to avoid duplicates
-				const reminderId = this.reminderKey(item.taskPath, item.reminder, item.notifyAt);
-				this.processedReminders.add(reminderId);
+		const missed: NotificationQueueItem[] = [];
+		for (const item of due) {
+			// Mark as processed to avoid duplicates
+			this.processedReminders.add(this.reminderKey(item.taskPath, item.reminder, item.notifyAt));
+			if (now - item.notifyAt > this.LATE_THRESHOLD) {
+				missed.push(item);
 			} else {
-				// Queue is sorted, so we can break early
-				break;
+				void this.triggerNotification(item);
 			}
 		}
+		if (missed.length > 0) void this.deliverMissedReminders(missed);
 
-		// Remove triggered items from queue
-		for (let i = toRemove.length - 1; i >= 0; i--) {
-			this.notificationQueue.splice(toRemove[i], 1);
+		// The queue covers every reminder up to its horizon, so delivered ones need no replay
+		// after a restart.
+		if (now <= this.queueCoveredUntil && now > this.lastSuccessfulCheck) {
+			this.lastSuccessfulCheck = now;
+			this.saveCursor(now);
 		}
 	}
 
-	private async triggerNotification(item: NotificationQueueItem): Promise<void> {
-		// Get the task info for the notification
+	private loadCursor(): number | null {
+		try {
+			const stored: unknown = this.plugin.app.loadLocalStorage(this.CURSOR_STORAGE_KEY);
+			const cursor = Number(stored);
+			return stored !== null && Number.isFinite(cursor) && cursor <= Date.now()
+				? cursor
+				: null;
+		} catch {
+			return null;
+		}
+	}
+
+	private saveCursor(cursor: number | null): void {
+		try {
+			this.plugin.app.saveLocalStorage(this.CURSOR_STORAGE_KEY, cursor);
+		} catch {
+			// Catch-up across restarts is best effort.
+		}
+	}
+
+	private getEligibleTask(item: NotificationQueueItem): TaskInfo | null {
 		const file = this.plugin.app.vault.getAbstractFileByPath(item.taskPath);
 		if (!(file instanceof TFile)) {
-			return;
+			return null;
 		}
 
 		const metadata = this.plugin.app.metadataCache.getFileCache(file);
 		if (!metadata || !metadata.frontmatter) {
-			return;
+			return null;
 		}
 
 		const task = this.plugin.fieldMapper.mapFromFrontmatter(
@@ -260,13 +296,52 @@ export class NotificationService {
 		) as TaskInfo;
 
 		// Completion/archive state can change between queueing and delivery.
-		if (!this.isReminderEligible(task, item.reminder, item.notifyAt)) return;
+		return this.isReminderEligible(task, item.reminder, item.notifyAt) ? task : null;
+	}
 
-		// Generate notification message
-		const message =
-			item.reminder.description || this.generateDefaultMessage(task, item.reminder);
+	private async triggerNotification(item: NotificationQueueItem): Promise<void> {
+		const task = this.getEligibleTask(item);
+		if (!task) return;
 
 		this.playNotificationSound();
+		await this.deliverNotification(task, item, false);
+	}
+
+	private async deliverMissedReminders(items: NotificationQueueItem[]): Promise<void> {
+		// Keep only the latest missed reminder for each task.
+		const latestByTask = new Map<string, { task: TaskInfo; item: NotificationQueueItem }>();
+		for (const item of items) {
+			const task = this.getEligibleTask(item);
+			const existing = latestByTask.get(item.taskPath);
+			if (task && (!existing || item.notifyAt >= existing.item.notifyAt)) {
+				latestByTask.set(item.taskPath, { task, item });
+			}
+		}
+		const missed = [...latestByTask.values()].sort((a, b) => a.item.notifyAt - b.item.notifyAt);
+		if (missed.length === 0) return;
+
+		this.playNotificationSound();
+		if (missed.length <= this.MISSED_SUMMARY_THRESHOLD) {
+			for (const { task, item } of missed) {
+				await this.deliverNotification(task, item, true);
+			}
+			return;
+		}
+
+		this.showMissedSummary(missed.map(({ task, item }) => ({ task, path: item.taskPath })));
+		for (const { task, item } of missed) {
+			await this.triggerReminderWebhook(task, item, this.generateMissedMessage(task, item), true);
+		}
+	}
+
+	private async deliverNotification(
+		task: TaskInfo,
+		item: NotificationQueueItem,
+		missed: boolean
+	): Promise<void> {
+		const message = missed
+			? this.generateMissedMessage(task, item)
+			: item.reminder.description || this.generateDefaultMessage(task, item.reminder);
 
 		if (this.plugin.settings.notificationType === "system") {
 			// System notification
@@ -290,7 +365,15 @@ export class NotificationService {
 			this.showInAppNotice(message, item.taskPath);
 		}
 
-		// Trigger webhook for reminder
+		await this.triggerReminderWebhook(task, item, message, missed);
+	}
+
+	private async triggerReminderWebhook(
+		task: TaskInfo,
+		item: NotificationQueueItem,
+		message: string,
+		missed: boolean
+	): Promise<void> {
 		if (this.plugin.apiService) {
 			await this.plugin.apiService.triggerWebhook("reminder.triggered", {
 				task,
@@ -298,8 +381,51 @@ export class NotificationService {
 				notificationTime: new Date(item.notifyAt).toISOString(),
 				message,
 				notificationType: this.plugin.settings.notificationType,
+				missed,
 			});
 		}
+	}
+
+	private showMissedSummary(missed: { task: TaskInfo; path: string }[]): void {
+		const title = `${missed.length} missed TaskNotes reminders`;
+
+		if (
+			this.plugin.settings.notificationType === "system" &&
+			"Notification" in window &&
+			Notification.permission === "granted"
+		) {
+			const shown = missed.slice(0, 5).map(({ task }) => task.title);
+			const more = missed.length - shown.length;
+			const notification = new Notification(title, {
+				body: more > 0 ? `${shown.join(", ")} and ${more} more` : shown.join(", "),
+				tag: "tasknotes-missed-reminders",
+			});
+			notification.onclick = () => {
+				window.focus();
+				notification.close();
+				this.showMissedSummaryNotice(title, missed);
+			};
+			return;
+		}
+
+		this.showMissedSummaryNotice(title, missed);
+	}
+
+	private showMissedSummaryNotice(title: string, missed: { task: TaskInfo; path: string }[]): void {
+		const fragment = createFragment();
+		const container = fragment.createDiv({ cls: "tasknotes-missed-reminders" });
+		container.createDiv({ cls: "tasknotes-missed-reminders__title", text: title });
+		const links: HTMLElement[] = missed.map(({ task, path }) =>
+			container.createDiv({ cls: "tasknotes-missed-reminders__task", text: task.title })
+		);
+		const notice = showNotice(fragment, 0); // 0 = persistent until dismissed
+		links.forEach((link, index) => {
+			link.addEventListener("click", (event) => {
+				event.stopPropagation();
+				void this.plugin.app.workspace.openLinkText(missed[index].path, "", false);
+				notice.hide();
+			});
+		});
 	}
 
 	playNotificationSound(): void {
@@ -427,6 +553,40 @@ export class NotificationService {
 				return `${task.title} was ${anchor} ${offset} ago`;
 			}
 		}
+	}
+
+	private generateMissedMessage(task: TaskInfo, item: NotificationQueueItem): string {
+		const missedAt = this.formatDateParts(item.notifyAt);
+		const prefix = `Missed reminder (${missedAt.day ? `${missedAt.day}, ` : ""}${missedAt.time})`;
+		const { reminder } = item;
+		if (reminder.description) return `${prefix}: ${reminder.description}`;
+
+		const anchorStr = reminder.type === "relative"
+			? (reminder.relatedTo === "due" ? task.due : task.scheduled)
+			: undefined;
+		if (!anchorStr) return `${prefix}: ${task.title}`;
+
+		// Say when the anchor is rather than replaying an offset that no longer holds.
+		const anchor = parseDateToLocal(anchorStr).getTime();
+		const { day, time } = this.formatDateParts(anchor);
+		const hasTime = anchorStr.includes("T");
+		const when = hasTime
+			? `${day ? `on ${day} ` : ""}at ${time}`
+			: day ? `on ${day}` : "today";
+		const verb = (hasTime ? anchor : anchor + 24 * 60 * 60 * 1000) <= Date.now() ? "was" : "is";
+		const anchorLabel = reminder.relatedTo === "due" ? "due" : "scheduled";
+		return `${prefix}: ${task.title} ${verb} ${anchorLabel} ${when}`;
+	}
+
+	/** Day is omitted for today. */
+	private formatDateParts(timestamp: number): { day: string | null; time: string } {
+		const date = new Date(timestamp);
+		return {
+			day: date.toDateString() === new Date().toDateString()
+				? null
+				: date.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+			time: date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }),
+		};
 	}
 
 	private formatDurationForDisplay(duration: string): string {
