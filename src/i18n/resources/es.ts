@@ -3195,7 +3195,24 @@ export const es: TranslationTree = {
 			notices: {
 				exportFailed: "Auto exportación de TaskNotes falló: {error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "Recordatorio perdido ({time})",
+				prefixOnDay: "Recordatorio perdido ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "La tarea {title} vencía {when}",
+				dueIs: "La tarea {title} vence {when}",
+				scheduledWas: "La tarea {title} estaba programada {when}",
+				scheduledIs: "La tarea {title} está programada {when}",
+				whenTodayAt: "a las {time}",
+				whenOnDayAt: "el {day} a las {time}",
+				whenOnDay: "el {day}",
+				whenToday: "hoy",
+				summaryTitle: "{count} recordatorios de TaskNotes perdidos",
+				summaryMore: "{titles} y {count} más",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

@@ -3195,7 +3195,24 @@ export const ru: TranslationTree = {
 			notices: {
 				exportFailed: "Автоэкспорт TaskNotes не удался: {error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "Пропущенное напоминание ({time})",
+				prefixOnDay: "Пропущенное напоминание ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "Задачу «{title}» нужно было выполнить {when}",
+				dueIs: "Задачу «{title}» нужно выполнить {when}",
+				scheduledWas: "Задача «{title}» была запланирована {when}",
+				scheduledIs: "Задача «{title}» запланирована {when}",
+				whenTodayAt: "в {time}",
+				whenOnDayAt: "{day} в {time}",
+				whenOnDay: "{day}",
+				whenToday: "сегодня",
+				summaryTitle: "Пропущено напоминаний TaskNotes: {count}",
+				summaryMore: "{titles} и ещё {count}",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

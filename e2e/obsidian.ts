@@ -507,8 +507,11 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
   try {
     if (app.browser) {
       // Quit the owned native app, including Settings popouts, before disconnecting.
-      await app.page.evaluate(() => {
-        (window as any).require?.('electron')?.remote?.app?.quit();
+      await app.page.evaluate(async () => {
+        const remote = (window as any).require?.('electron')?.remote;
+        // localStorage commits lazily; flush it so a forced kill cannot drop recent writes.
+        await remote?.getCurrentWebContents()?.session?.flushStorageData?.();
+        remote?.app?.quit();
       }).catch(() => {});
       await app.browser.close();
     }

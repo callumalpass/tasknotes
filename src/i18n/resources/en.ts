@@ -3381,6 +3381,21 @@ export const en: TranslationTree = {
 				// NotificationService uses Notice for in-app notifications
 				// but the message comes from the reminder content, so no hardcoded strings to translate
 			},
+			missed: {
+				prefixToday: "Missed reminder ({time})",
+				prefixOnDay: "Missed reminder ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "{title} was due {when}",
+				dueIs: "{title} is due {when}",
+				scheduledWas: "{title} was scheduled {when}",
+				scheduledIs: "{title} is scheduled {when}",
+				whenTodayAt: "at {time}",
+				whenOnDayAt: "on {day} at {time}",
+				whenOnDay: "on {day}",
+				whenToday: "today",
+				summaryTitle: "{count} missed TaskNotes reminders",
+				summaryMore: "{titles} and {count} more",
+			},
 		},
 	},
 	ui: {

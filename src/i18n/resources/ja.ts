@@ -3195,7 +3195,24 @@ export const ja: TranslationTree = {
 			notices: {
 				exportFailed: "TaskNotes自動エクスポートに失敗しました：{error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "見逃したリマインダー（{time}）",
+				prefixOnDay: "見逃したリマインダー（{day} {time}）",
+				message: "{prefix}：{text}",
+				dueWas: "{title}の期限は{when}でした",
+				dueIs: "{title}の期限は{when}です",
+				scheduledWas: "{title}は{when}に予定されていました",
+				scheduledIs: "{title}は{when}に予定されています",
+				whenTodayAt: "{time}",
+				whenOnDayAt: "{day} {time}",
+				whenOnDay: "{day}",
+				whenToday: "今日",
+				summaryTitle: "見逃したTaskNotesリマインダー：{count}件",
+				summaryMore: "{titles} ほか{count}件",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

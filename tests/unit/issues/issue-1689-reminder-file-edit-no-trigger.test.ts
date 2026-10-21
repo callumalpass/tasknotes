@@ -47,6 +47,12 @@ const createService = () => {
 		},
 		cacheManager,
 		emitter,
+		app: {
+			loadLocalStorage: () => null,
+			saveLocalStorage: () => {},
+			vault: { getMarkdownFiles: () => [] },
+			metadataCache: {},
+		},
 		statusManager: {
 			getCompletedStatuses: () => ["done"],
 			isCompletedStatus: (status: string) => status === "done",

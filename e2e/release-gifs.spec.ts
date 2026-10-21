@@ -5,7 +5,7 @@ import { execFileSync } from "child_process";
 import { closeObsidian, launchObsidian, ObsidianApp, runCommand } from "./obsidian";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..");
-const E2E_VAULT_DIR = path.join(PROJECT_ROOT, "tasknotes-e2e-vault");
+const E2E_VAULT_DIR = path.resolve(process.env.TASKNOTES_E2E_VAULT_DIR ?? path.join(PROJECT_ROOT, "tasknotes-e2e-vault"));
 const GIF_ROOT = path.join(PROJECT_ROOT, "test-results", "release-gifs");
 const FRAME_ROOT = path.join(PROJECT_ROOT, "test-results", "release-gif-frames");
 const DOC_VIEWPORT = { width: 1400, height: 900 };

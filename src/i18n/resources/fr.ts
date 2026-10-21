@@ -3195,7 +3195,24 @@ export const fr: TranslationTree = {
 			notices: {
 				exportFailed: "Échec de l'export automatique TaskNotes : {error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "Rappel manqué ({time})",
+				prefixOnDay: "Rappel manqué ({day}, {time})",
+				message: "{prefix} : {text}",
+				dueWas: "La tâche « {title} » arrivait à échéance {when}",
+				dueIs: "La tâche « {title} » arrive à échéance {when}",
+				scheduledWas: "La tâche « {title} » était prévue {when}",
+				scheduledIs: "La tâche « {title} » est prévue {when}",
+				whenTodayAt: "à {time}",
+				whenOnDayAt: "le {day} à {time}",
+				whenOnDay: "le {day}",
+				whenToday: "aujourd'hui",
+				summaryTitle: "{count} rappels TaskNotes manqués",
+				summaryMore: "{titles} et {count} autres",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

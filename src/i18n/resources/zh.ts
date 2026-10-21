@@ -3194,7 +3194,24 @@ export const zh: TranslationTree = {
 			notices: {
 				exportFailed: "TaskNotes自动导出失败：{error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "错过的提醒（{time}）",
+				prefixOnDay: "错过的提醒（{day} {time}）",
+				message: "{prefix}：{text}",
+				dueWas: "{title}原定于{when}到期",
+				dueIs: "{title}将于{when}到期",
+				scheduledWas: "{title}原计划于{when}",
+				scheduledIs: "{title}计划于{when}",
+				whenTodayAt: "{time}",
+				whenOnDayAt: "{day} {time}",
+				whenOnDay: "{day}",
+				whenToday: "今天",
+				summaryTitle: "{count} 条错过的 TaskNotes 提醒",
+				summaryMore: "{titles} 及另外 {count} 项",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

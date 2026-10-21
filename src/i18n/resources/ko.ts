@@ -3179,7 +3179,24 @@ export const ko: TranslationTree = {
 			notices: {
 				exportFailed: "TaskNotes 자동 내보내기 실패: {error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "놓친 알림 ({time})",
+				prefixOnDay: "놓친 알림 ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "{title}의 마감 기한({when})이 지났습니다",
+				dueIs: "{title}의 마감 기한은 {when}입니다",
+				scheduledWas: "{title}의 예정 일시({when})가 지났습니다",
+				scheduledIs: "{title}의 예정 일시는 {when}입니다",
+				whenTodayAt: "{time}",
+				whenOnDayAt: "{day} {time}",
+				whenOnDay: "{day}",
+				whenToday: "오늘",
+				summaryTitle: "놓친 TaskNotes 알림 {count}개",
+				summaryMore: "{titles} 외 {count}개",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

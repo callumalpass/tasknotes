@@ -3199,8 +3199,23 @@ export const pt: TranslationTree = {
 			}
 		},
 		notification: {
-			notices: {}
-		}
+			notices: {},
+			missed: {
+				prefixToday: "Lembrete perdido ({time})",
+				prefixOnDay: "Lembrete perdido ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "A tarefa {title} vencia {when}",
+				dueIs: "A tarefa {title} vence {when}",
+				scheduledWas: "A tarefa {title} estava agendada {when}",
+				scheduledIs: "A tarefa {title} está agendada {when}",
+				whenTodayAt: "às {time}",
+				whenOnDayAt: "em {day} às {time}",
+				whenOnDay: "em {day}",
+				whenToday: "hoje",
+				summaryTitle: "{count} lembretes do TaskNotes perdidos",
+				summaryMore: "{titles} e mais {count}",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

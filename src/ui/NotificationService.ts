@@ -1,7 +1,8 @@
-import { TFile, EventRef } from "obsidian";
+import { TFile, EventRef, Events } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from "../types";
 import { parseDateToLocal } from "../utils/dateUtils";
+import type { InterpolationValues } from "../i18n/types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showNotice } from "../ui/notifications";
 import { isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
@@ -22,6 +23,11 @@ export class NotificationService {
 	private processedReminders: Set<string> = new Set(); // Track processed reminders to avoid duplicates
 	private taskUpdateListener?: EventRef;
 	private fileUpdateListener?: EventRef;
+	// Files Obsidian had not indexed at startup; catch-up waits for them.
+	private unindexedAtStartup = new Set<string>();
+	private indexWaitStartedAt = 0;
+	private startupCatchUpBoundary: number | null = null;
+	private indexListeners: { events: Events; ref: EventRef }[] = [];
 	private activeAudioContexts: Set<AudioContext> = new Set();
 	private audioCleanupTimeouts: Set<number> = new Set();
 	private lastBroadScanTime: number = Date.now();
@@ -73,8 +79,52 @@ export class NotificationService {
 		this.startBroadScan();
 		this.startQuickCheck();
 
-		// Do an initial scan
+		// Scans are cache-only, so a scan before Obsidian indexes files changed while closed
+		// would skip their reminders and advance the cursor past them. Track those files
+		// rather than waiting for "resolved", which can fire before indexing finishes.
+		const { vault, metadataCache } = this.plugin.app;
+		for (const file of vault.getMarkdownFiles()) {
+			if (!metadataCache.getFileCache(file)) this.unindexedAtStartup.add(file.path);
+		}
+		if (this.unindexedAtStartup.size > 0) {
+			this.indexWaitStartedAt = Date.now();
+			this.startupCatchUpBoundary = this.lastSuccessfulCheck;
+			const indexed = (path: string) => {
+				this.unindexedAtStartup.delete(path);
+				if (this.unindexedAtStartup.size === 0) void this.scanTasksAndBuildQueue();
+			};
+			this.indexListeners = [
+				{ events: metadataCache, ref: metadataCache.on("changed", (file) => indexed(file.path)) },
+				{ events: vault, ref: vault.on("delete", (file) => {
+					for (const path of this.unindexedAtStartup) {
+						if (path === file.path || path.startsWith(`${file.path}/`)) this.unindexedAtStartup.delete(path);
+					}
+					if (this.unindexedAtStartup.size === 0) void this.scanTasksAndBuildQueue();
+				}) },
+				{ events: vault, ref: vault.on("rename", (file, oldPath) => {
+					for (const path of [...this.unindexedAtStartup]) {
+						if (path !== oldPath && !path.startsWith(`${oldPath}/`)) continue;
+						this.unindexedAtStartup.delete(path);
+						const renamedPath = `${file.path}${path.slice(oldPath.length)}`;
+						const renamed = vault.getAbstractFileByPath(renamedPath);
+						if (renamed instanceof TFile && !metadataCache.getFileCache(renamed)) {
+							this.unindexedAtStartup.add(renamedPath);
+						}
+					}
+					if (this.unindexedAtStartup.size === 0) void this.scanTasksAndBuildQueue();
+				}) },
+			];
+			return;
+		}
+
 		await this.scanTasksAndBuildQueue();
+	}
+
+	private stopWaitingForMetadata(): void {
+		this.unindexedAtStartup.clear();
+		this.startupCatchUpBoundary = null;
+		for (const { events, ref } of this.indexListeners) events.offref(ref);
+		this.indexListeners = [];
 	}
 
 	destroy(): void {
@@ -90,6 +140,7 @@ export class NotificationService {
 		if (this.fileUpdateListener) {
 			this.plugin.emitter.offref(this.fileUpdateListener);
 		}
+		this.stopWaitingForMetadata();
 		for (const timeout of this.audioCleanupTimeouts) {
 			window.clearTimeout(timeout);
 		}
@@ -139,12 +190,22 @@ export class NotificationService {
 	}
 
 	private async scanTasksAndBuildQueue(): Promise<void> {
+		// After one broad interval, resume delivery for indexed tasks without discarding
+		// the original boundary or listeners for files that are still being indexed.
+		if (
+			this.unindexedAtStartup.size > 0 &&
+			Date.now() - this.indexWaitStartedAt < this.BROAD_SCAN_INTERVAL
+		) {
+			return;
+		}
+		const catchUpBoundary = this.startupCatchUpBoundary ?? this.lastSuccessfulCheck;
+		if (this.unindexedAtStartup.size === 0) this.stopWaitingForMetadata();
 		// Deliver queued deadlines before a rescan can discard them.
 		this.checkNotificationQueue();
 		// Scans stay cache-only; move the cursor only after a successful scan.
 		const tasks = this.plugin.cacheManager.getAllCachedTasks();
 		const now = Date.now();
-		const windowStart = Math.max(this.lastSuccessfulCheck, now - this.CATCH_UP_WINDOW);
+		const windowStart = Math.max(catchUpBoundary, now - this.CATCH_UP_WINDOW);
 		this.notificationQueue = [];
 		for (const task of tasks) {
 			this.queueRemindersForTask(task.path, task, windowStart);
@@ -272,7 +333,10 @@ export class NotificationService {
 
 	private saveCursor(cursor: number | null): void {
 		try {
-			this.plugin.app.saveLocalStorage(this.CURSOR_STORAGE_KEY, cursor);
+			// A partial scan must not persist a cursor past still-unindexed reminders.
+			const safeCursor = cursor !== null && this.startupCatchUpBoundary !== null
+				? Math.min(cursor, this.startupCatchUpBoundary) : cursor;
+			this.plugin.app.saveLocalStorage(this.CURSOR_STORAGE_KEY, safeCursor);
 		} catch {
 			// Catch-up across restarts is best effort.
 		}
@@ -387,7 +451,7 @@ export class NotificationService {
 	}
 
 	private showMissedSummary(missed: { task: TaskInfo; path: string }[]): void {
-		const title = `${missed.length} missed TaskNotes reminders`;
+		const title = this.translateMissed("summaryTitle", { count: missed.length });
 
 		if (
 			this.plugin.settings.notificationType === "system" &&
@@ -397,7 +461,10 @@ export class NotificationService {
 			const shown = missed.slice(0, 5).map(({ task }) => task.title);
 			const more = missed.length - shown.length;
 			const notification = new Notification(title, {
-				body: more > 0 ? `${shown.join(", ")} and ${more} more` : shown.join(", "),
+				body:
+					more > 0
+						? this.translateMissed("summaryMore", { titles: shown.join(", "), count: more })
+						: shown.join(", "),
 				tag: "tasknotes-missed-reminders",
 			});
 			notification.onclick = () => {
@@ -557,25 +624,36 @@ export class NotificationService {
 
 	private generateMissedMessage(task: TaskInfo, item: NotificationQueueItem): string {
 		const missedAt = this.formatDateParts(item.notifyAt);
-		const prefix = `Missed reminder (${missedAt.day ? `${missedAt.day}, ` : ""}${missedAt.time})`;
+		const prefix = missedAt.day
+			? this.translateMissed("prefixOnDay", { day: missedAt.day, time: missedAt.time })
+			: this.translateMissed("prefixToday", { time: missedAt.time });
+		const withPrefix = (text: string) => this.translateMissed("message", { prefix, text });
 		const { reminder } = item;
-		if (reminder.description) return `${prefix}: ${reminder.description}`;
+		if (reminder.description) return withPrefix(reminder.description);
 
 		const anchorStr = reminder.type === "relative"
 			? (reminder.relatedTo === "due" ? task.due : task.scheduled)
 			: undefined;
-		if (!anchorStr) return `${prefix}: ${task.title}`;
+		if (!anchorStr) return withPrefix(task.title);
 
 		// Say when the anchor is rather than replaying an offset that no longer holds.
 		const anchor = parseDateToLocal(anchorStr).getTime();
 		const { day, time } = this.formatDateParts(anchor);
 		const hasTime = anchorStr.includes("T");
 		const when = hasTime
-			? `${day ? `on ${day} ` : ""}at ${time}`
-			: day ? `on ${day}` : "today";
-		const verb = (hasTime ? anchor : anchor + 24 * 60 * 60 * 1000) <= Date.now() ? "was" : "is";
+			? day
+				? this.translateMissed("whenOnDayAt", { day, time })
+				: this.translateMissed("whenTodayAt", { time })
+			: day ? this.translateMissed("whenOnDay", { day }) : this.translateMissed("whenToday");
+		const past = (hasTime ? anchor : anchor + 24 * 60 * 60 * 1000) <= Date.now();
 		const anchorLabel = reminder.relatedTo === "due" ? "due" : "scheduled";
-		return `${prefix}: ${task.title} ${verb} ${anchorLabel} ${when}`;
+		return withPrefix(
+			this.translateMissed(`${anchorLabel}${past ? "Was" : "Is"}`, { title: task.title, when })
+		);
+	}
+
+	private translateMissed(key: string, params?: InterpolationValues): string {
+		return this.plugin.i18n.translate(`services.notification.missed.${key}`, params);
 	}
 
 	/** Day is omitted for today. */
