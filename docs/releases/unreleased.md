@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Added
+
+- Added a dedicated "Timeblock Event Title Template" setting so synced timeblock event names can differ from task event names
+- Added a dedicated Google Calendar integration setting to enable or disable timeblock synchronization independently from task synchronization
