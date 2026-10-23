@@ -8,6 +8,7 @@ import { TaskInfo } from "../../../src/types";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 
 jest.mock("obsidian", () => ({
+	...jest.requireActual("obsidian"),
 	Notice: jest.fn(),
 	TFile: class MockTFile {
 		path: string;

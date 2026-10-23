@@ -18,7 +18,8 @@ export function observeTranslation(locale = "en") {
 	const instance = setupI18n({ locale, messages: { en: translationResources.en, [locale]: translationResources[locale] } });
 	bindUIDisplay(instance);
 	const boundary = { translate: (descriptor: MessageDescriptor, values?: Arguments[1]) => uiText(descriptor, values, instance) };
-	return jest.spyOn(boundary, "translate");
+	const observer = jest.spyOn(boundary, "translate");
+	return observer as typeof observer & typeof boundary.translate;
 }
 
 /** Generated migration metadata for legacy-concept assertions, not a runtime key API. */

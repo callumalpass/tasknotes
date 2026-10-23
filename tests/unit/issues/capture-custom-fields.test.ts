@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { renderUserFieldsSection } from "../../../src/settings/tabs/taskProperties/userFieldsCard";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import { buildSettingsDataForSave, buildSettingsFromLoadedData } from "../../../src/settings/settingsPersistence";
@@ -26,8 +27,8 @@ describe("capture custom field keys", () => {
 		plugin.settings.userFields.push({ ...field, id: "other", key: "other" });
 		const container = document.createElement("div");
 		const save = jest.fn();
-		renderUserFieldsSection(container, plugin as never, save, ((key: string) => key) as never);
-		const input = container.querySelector<HTMLInputElement>('input[placeholder="settings.taskProperties.customUserFields.placeholders.propertyKey"]')!;
+		renderUserFieldsSection(container, plugin as never, save, mockObserveTranslation());
+		const input = container.querySelector<HTMLInputElement>("input[placeholder=\"" + mockEnglishText(mockConceptDescriptor("settings.taskProperties.customUserFields.placeholders.propertyKey")) + "\"]")!;
 		const update = (value: string) => {
 			input.value = value;
 			input.dispatchEvent(new Event("input", { bubbles: true }));

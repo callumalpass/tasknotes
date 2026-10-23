@@ -5,7 +5,6 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { getDatePart, parseDateToLocal } from "../utils/dateUtils";
 import { getNextUncompletedOccurrence } from "../core/recurrence";
-import { format } from "date-fns";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionNotice" });

@@ -1,7 +1,7 @@
 import { msg } from "@lingui/core/macro";
 import fs from "fs";
 import path from "path";
-import { en } from "../../../src/i18n/resources/en";
+import { englishText } from "../../helpers/real-i18n";
 import { getProjectedPomodoroEndTimeMs } from "../../../src/utils/pomodoroTime";
 
 const repoRoot = path.resolve(__dirname, "../../..");
@@ -20,11 +20,11 @@ describe("Issue #2006: Pomodoro projected end time", () => {
 	});
 
 	it("renders the running meta with a finish-time placeholder", () => {
-		expect(en.views.pomodoro.meta.running).toBe("{time} left · Ends at {endTime}");
+		expect(englishText(msg({ message: "{time} left · Ends at {endTime}", context: "views.pomodoro.meta.running" }), { time: "1:00", endTime: "12:02" })).toBe("1:00 left · Ends at 12:02");
 
 		const source = readRepoFile("src/views/PomodoroView.ts");
 		expect(source).toContain("getProjectedPomodoroEndTimeMs(state.timeRemaining, nowMs)");
-		expect(source).toContain(msg({ message: "{time} left · Ends at {endTime}", context: "views.pomodoro.meta.running" }));
+		expect(source).toContain('context: "views.pomodoro.meta.running"');
 	});
 
 	it("refreshes session metadata after timer duration adjustments", () => {

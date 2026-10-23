@@ -135,12 +135,12 @@ describe("taskModalActionIconStates", () => {
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			actionBar.querySelector('[data-type="due-date"]'),
-			"modals.task.tooltips.dueValue:value=2026-05-20",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.dueValue"), {"value":"2026-05-20"}),
 			{ placement: "top" }
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			actionBar.querySelector('[data-type="scheduled-date"]'),
-			"modals.task.tooltips.scheduledValue:value=2026-05-19T09:30",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.scheduledValue"), {"value":"2026-05-19T09:30"}),
 			{ placement: "top" }
 		);
 	});
@@ -165,12 +165,12 @@ describe("taskModalActionIconStates", () => {
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			statusIcon,
-			"modals.task.tooltips.statusValue:value=Done",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.statusValue"), {"value":"Done"}),
 			{ placement: "top" }
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			priorityIcon,
-			"modals.task.tooltips.priorityValue:value=High",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.priorityValue"), {"value":"High"}),
 			{ placement: "top" }
 		);
 	});
@@ -245,12 +245,12 @@ describe("taskModalActionIconStates", () => {
 		expect(reminderIcon?.classList.contains("has-value")).toBe(true);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			recurrenceIcon,
-			"modals.task.tooltips.recurrenceValue:value=Weekly",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.recurrenceValue"), {"value":"Weekly"}),
 			{ placement: "top" }
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			reminderIcon,
-			"modals.task.tooltips.remindersPlural:count=2",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.remindersPlural"), {"count":"2"}),
 			{ placement: "top" }
 		);
 	});

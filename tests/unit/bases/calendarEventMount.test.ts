@@ -120,7 +120,7 @@ describe("calendarEventMount", () => {
 		expect(element.querySelector(".fc-event-provider-icon")).not.toBeNull();
 		const indicator = title.querySelector<HTMLElement>(".ics-related-note-indicator");
 		expect(indicator?.dataset.relatedNoteCount).toBe("2");
-		expect(indicator?.getAttribute("aria-label")).toBe("Related notes: 2");
+		expect(indicator?.getAttribute("aria-label")).toBe("Related notes & tasks: 2");
 	});
 
 	it("skips provider icons for list-view provider events", () => {

@@ -1,7 +1,7 @@
 import { formatUIDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
 import { ItemView, WorkspaceLeaf, MarkdownRenderer } from "obsidian";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import TaskNotesPlugin from "../main";
 import type { ReleaseNoteVersion } from "../releaseNotes";
 import { getReleaseNotesAnnouncement } from "../i18n/releaseNotesAnnouncement";

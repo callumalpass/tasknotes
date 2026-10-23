@@ -51,11 +51,11 @@ describe("Issue #1989: default Base file automation", () => {
 
 		expect(showConfirmationModal).toHaveBeenCalledWith(ctx.app, {
 			title:
-				"translated:settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle",
+				mockEnglishText(mockConceptDescriptor("settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle")),
 			message:
-				"translated:settings.integrations.basesIntegration.updateDefaultFiles.confirmMessage",
+				mockEnglishText(mockConceptDescriptor("settings.integrations.basesIntegration.updateDefaultFiles.confirmMessage")),
 			confirmText:
-				"translated:settings.integrations.basesIntegration.updateDefaultFiles.confirmText",
+				mockEnglishText(mockConceptDescriptor("settings.integrations.basesIntegration.updateDefaultFiles.confirmText")),
 			isDestructive: false,
 		});
 		expect(ctx.createDefaultBasesFiles).toHaveBeenCalledWith({ overwriteExisting: true });

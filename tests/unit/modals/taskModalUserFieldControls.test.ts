@@ -277,18 +277,18 @@ describe("taskModalUserFieldControls", () => {
 			onValueChange,
 		});
 
-		expect(container.textContent).toContain("translated:modals.task.customFieldsLabel");
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.customFieldsLabel")));
 		expect(inputRefs.get("assignee")?.placeholder).toBe(
-			"translated:modals.task.userFields.textPlaceholder:Assignee"
+			mockEnglishText(mockConceptDescriptor("modals.task.userFields.textPlaceholder"), {"field":"Assignee"})
 		);
 		expect(inputRefs.get("labels")?.placeholder).toBe(
-			"translated:modals.task.userFields.listPlaceholder"
+			mockEnglishText(mockConceptDescriptor("modals.task.userFields.listPlaceholder"))
 		);
 		expect(inputRefs.get("effort")?.placeholder).toBe(
-			"translated:modals.task.userFields.numberPlaceholder"
+			mockEnglishText(mockConceptDescriptor("modals.task.userFields.numberPlaceholder"))
 		);
 		expect(inputRefs.get("custom_date")?.placeholder).toBe(
-			"translated:modals.task.userFields.datePlaceholder"
+			mockEnglishText(mockConceptDescriptor("modals.task.userFields.datePlaceholder"))
 		);
 		expect(inputRefs.get("labels")?.value).toBe("alpha, beta");
 		expect(mockUserFieldSuggest).toHaveBeenCalledTimes(2);
@@ -297,7 +297,7 @@ describe("taskModalUserFieldControls", () => {
 
 		const dateButton = container.querySelector<HTMLButtonElement>(".user-field-date-picker-btn");
 		expect(dateButton?.getAttribute("aria-label")).toBe(
-			"translated:modals.task.userFields.pickDate:Custom Date"
+			mockEnglishText(mockConceptDescriptor("modals.task.userFields.pickDate"), {"field":"Custom Date"})
 		);
 		expect(dateButton?.parentElement?.classList.contains("tn-date-control")).toBe(true);
 		expect(mockSetIcon).toHaveBeenCalledWith(dateButton, "calendar");

@@ -56,11 +56,11 @@ describe("taskModalOrganizationFields", () => {
 
 		const button = container.querySelector<HTMLButtonElement>("button");
 		expect(list.classList.contains("task-projects-list")).toBe(true);
-		expect(container.textContent).toContain("translated:modals.task.organization.projects");
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.organization.projects")));
 		expect(button?.textContent).toBe(
-			"translated:modals.task.organization.addToProjectButton"
+			mockEnglishText(mockConceptDescriptor("modals.task.organization.addToProjectButton"))
 		);
-		expect(button?.title).toBe("translated:modals.task.projectsTooltip");
+		expect(button?.title).toBe(mockEnglishText(mockConceptDescriptor("modals.task.projectsTooltip")));
 
 		button?.click();
 		expect(onButtonClick).toHaveBeenCalledTimes(1);
@@ -79,11 +79,11 @@ describe("taskModalOrganizationFields", () => {
 
 		const button = container.querySelector<HTMLButtonElement>("button");
 		expect(list).toBe(existingList);
-		expect(container.textContent).toContain("translated:modals.task.organization.subtasks");
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.organization.subtasks")));
 		expect(button?.textContent).toBe(
-			"translated:modals.task.organization.addSubtasksButton"
+			mockEnglishText(mockConceptDescriptor("modals.task.organization.addSubtasksButton"))
 		);
-		expect(button?.title).toBe("translated:modals.task.organization.addSubtasksTooltip");
+		expect(button?.title).toBe(mockEnglishText(mockConceptDescriptor("modals.task.organization.addSubtasksTooltip")));
 
 		button?.click();
 		expect(onButtonClick).toHaveBeenCalledTimes(1);
@@ -100,9 +100,9 @@ describe("taskModalOrganizationFields", () => {
 
 		const button = container.querySelector<HTMLButtonElement>("button");
 		expect(list.classList.contains("task-projects-list")).toBe(true);
-		expect(container.textContent).toContain("translated:modals.task.dependencies.blockedBy");
-		expect(button?.textContent).toBe("translated:modals.task.dependencies.addTaskButton");
-		expect(button?.title).toBe("translated:modals.task.dependencies.selectTaskTooltip");
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.dependencies.blockedBy")));
+		expect(button?.textContent).toBe(mockEnglishText(mockConceptDescriptor("modals.task.dependencies.addTaskButton")));
+		expect(button?.title).toBe(mockEnglishText(mockConceptDescriptor("modals.task.dependencies.selectTaskTooltip")));
 
 		button?.click();
 		expect(onButtonClick).toHaveBeenCalledTimes(1);
@@ -121,9 +121,9 @@ describe("taskModalOrganizationFields", () => {
 
 		const button = container.querySelector<HTMLButtonElement>("button");
 		expect(list).toBe(existingList);
-		expect(container.textContent).toContain("translated:modals.task.dependencies.blocking");
-		expect(button?.textContent).toBe("translated:modals.task.dependencies.addTaskButton");
-		expect(button?.title).toBe("translated:modals.task.dependencies.selectTaskTooltip");
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.dependencies.blocking")));
+		expect(button?.textContent).toBe(mockEnglishText(mockConceptDescriptor("modals.task.dependencies.addTaskButton")));
+		expect(button?.title).toBe(mockEnglishText(mockConceptDescriptor("modals.task.dependencies.selectTaskTooltip")));
 
 		button?.click();
 		expect(onButtonClick).toHaveBeenCalledTimes(1);

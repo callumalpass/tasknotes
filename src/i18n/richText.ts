@@ -33,8 +33,7 @@ export function uiRichText(parent: HTMLElement, descriptor: MessageDescriptor, v
 		if (match[1]) {
 			if (stack.length > 1 && current.id === match[2]) stack.pop();
 		} else {
-			const element = parent.ownerDocument.createElement(tags[match[2]] ?? "span");
-			current.element.append(element);
+			const element = current.element.createEl(tags[match[2]] ?? "span");
 			stack.push({ element, id: match[2] });
 		}
 		offset = match.index + match[0].length;

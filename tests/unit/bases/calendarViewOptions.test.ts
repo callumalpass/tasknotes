@@ -37,7 +37,7 @@ function isGroup(option: BasesAllOptions): option is TestGroup {
 }
 
 function findGroup(options: BasesAllOptions[], groupKey: string): TestGroup {
-	const displayName = `views.basesCalendar.settings.groups.${groupKey}`;
+	const displayName = mockEnglishText(mockConceptDescriptor(`views.basesCalendar.settings.groups.${groupKey}`));
 	const group = options.find((option) => isGroup(option) && option.displayName === displayName);
 	if (!group || !isGroup(group)) {
 		throw new Error(`Missing group ${groupKey}`);
@@ -72,13 +72,13 @@ describe("calendar view options", () => {
 		const options = buildCalendarViewOptions(createPlugin(), createConfig());
 
 		expect(options.filter(isGroup).map((group) => group.displayName)).toEqual([
-			msg({ message: "Events", context: "views.basesCalendar.settings.groups.events" }),
-			msg({ message: "Date navigation", context: "views.basesCalendar.settings.groups.dateNavigation" }),
-			msg({ message: "View", context: "views.basesCalendar.settings.groups.view" }),
-			msg({ message: "Display", context: "views.basesCalendar.settings.groups.display" }),
-			msg({ message: "Time grid", context: "views.basesCalendar.settings.groups.timeGrid" }),
-			msg({ message: "Event layout", context: "views.basesCalendar.settings.groups.eventLayout" }),
-			msg({ message: "Property-based events", context: "views.basesCalendar.settings.groups.propertyBasedEvents" }),
+			mockEnglishText(msg({ message: "Events", context: "views.basesCalendar.settings.groups.events" })),
+			mockEnglishText(msg({ message: "Date navigation", context: "views.basesCalendar.settings.groups.dateNavigation" })),
+			mockEnglishText(msg({ message: "View", context: "views.basesCalendar.settings.groups.view" })),
+			mockEnglishText(msg({ message: "Display", context: "views.basesCalendar.settings.groups.display" })),
+			mockEnglishText(msg({ message: "Time grid", context: "views.basesCalendar.settings.groups.timeGrid" })),
+			mockEnglishText(msg({ message: "Event layout", context: "views.basesCalendar.settings.groups.eventLayout" })),
+			mockEnglishText(msg({ message: "Property-based events", context: "views.basesCalendar.settings.groups.propertyBasedEvents" })),
 		]);
 	});
 

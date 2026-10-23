@@ -163,7 +163,7 @@ describe("defaultBasesFiles", () => {
 		const template = generateBasesFileTemplate("open-agenda-view", createMockPlugin() as any);
 
 		expect(parse(template).formulas.dueIn).toContain('if(due.isEmpty(), "", if(formula.daysUntilDue == 0');
-		expect(template).toContain("formula.dueIn:\n    displayName: Due in");
+		expect(parse(template).properties["formula.dueIn"].displayName).toBe("Due in");
 		expect(template).toContain("      - due\n      - formula.dueIn\n      - file.name");
 		expect(template).toContain('calendarView: "listWeek"');
 		expect(template).toContain("listDayCount: 7");
@@ -203,7 +203,7 @@ describe("defaultBasesFiles", () => {
 		);
 
 		expect(template).not.toContain("      - formula.dueIn");
-		expect(template).not.toContain("formula.dueIn:\n    displayName: Due in");
+		expect(parse(template).properties?.["formula.dueIn"]).toBeUndefined();
 	});
 
 	it("quotes property-based task identifiers so names with spaces work in Bases filters", () => {

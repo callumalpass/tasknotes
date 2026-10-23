@@ -80,7 +80,7 @@ describe("Issue #1835: current note relationship commands", () => {
 		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
 			EVENT_USER_NOTICE,
 			expect.objectContaining({
-				message: "contextMenus.task.organization.notices.addedToProject:Alpha",
+				message: mockEnglishText(mockConceptDescriptor("contextMenus.task.organization.notices.addedToProject"), {"project":"Alpha"}),
 			})
 		);
 	});
@@ -103,7 +103,7 @@ describe("Issue #1835: current note relationship commands", () => {
 		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
 			EVENT_USER_NOTICE,
 			expect.objectContaining({
-				message: "contextMenus.task.organization.notices.addedAsSubtask:Subtask,Alpha",
+				message: mockEnglishText(mockConceptDescriptor("contextMenus.task.organization.notices.addedAsSubtask"), {"subtask":"Subtask","parent":"Alpha"}),
 			})
 		);
 	});
@@ -124,7 +124,7 @@ describe("Issue #1835: current note relationship commands", () => {
 		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
 			EVENT_USER_NOTICE,
 			expect.objectContaining({
-				message: msg({ message: "Task is already in this project", context: "contextMenus.task.organization.notices.alreadyInProject" }),
+				message: mockEnglishText(msg({ message: "Task is already in this project", context: "contextMenus.task.organization.notices.alreadyInProject" })),
 			})
 		);
 	});

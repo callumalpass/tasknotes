@@ -17,8 +17,8 @@ function renderIdentification(name = "", value = "") {
 	renderGeneralTab(container, plugin as never, save);
 	return {
 		plugin, save, container,
-		name: container.querySelector<HTMLInputElement>('input[placeholder="settings.general.taskIdentification.propertyNamePlaceholder"]')!,
-		value: container.querySelector<HTMLInputElement>('input[placeholder="settings.general.taskIdentification.propertyValuePlaceholder"]')!,
+		name: container.querySelector<HTMLInputElement>("input[placeholder=\"" + mockEnglishText(mockConceptDescriptor("settings.general.taskIdentification.propertyNamePlaceholder")) + "\"]")!,
+		value: container.querySelector<HTMLInputElement>("input[placeholder=\"" + mockEnglishText(mockConceptDescriptor("settings.general.taskIdentification.propertyValuePlaceholder")) + "\"]")!,
 		warning: container.querySelector<HTMLElement>("#tasknotes-property-identification-warning")!,
 	};
 }

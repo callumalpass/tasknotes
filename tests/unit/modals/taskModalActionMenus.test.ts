@@ -139,7 +139,7 @@ describe("taskModalActionMenus", () => {
 		expect(mockDateTimePickerModal).toHaveBeenCalledWith(context.app, {
 			currentDate: "2026-05-20",
 			currentTime: "09:30",
-			title: "translated:modals.task.dateMenu.dueTitle",
+			title: mockEnglishText(mockConceptDescriptor("modals.task.dateMenu.dueTitle")),
 			dateRole: "due",
 			plugin,
 			onSelect: expect.any(Function),
@@ -161,7 +161,7 @@ describe("taskModalActionMenus", () => {
 		mockDatePickerOptions.onSelect(null, null);
 
 		expect(mockDatePickerOptions.title).toBe(
-			"translated:modals.task.dateMenu.scheduledTitle"
+			mockEnglishText(mockConceptDescriptor("modals.task.dateMenu.scheduledTitle"))
 		);
 		expect(getState().scheduledDate).toBe("");
 		expect(onChange).toHaveBeenCalledTimes(1);

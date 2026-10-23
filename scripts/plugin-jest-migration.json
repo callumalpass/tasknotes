@@ -73,7 +73,7 @@
   },
   {
     "file": "tests/unit/bases/calendarViewOptions.test.ts",
-    "edits": 1
+    "edits": 7
   },
   {
     "file": "tests/unit/issues/issue-1814-create-or-open-project-suggest.test.ts",
@@ -109,7 +109,7 @@
   },
   {
     "file": "tests/unit/settings/pomodoroStorageMigration.test.ts",
-    "edits": 1
+    "edits": 2
   },
   {
     "file": "tests/unit/issues/issue-google-calendar-external-file-reconciliation.test.ts",
@@ -117,11 +117,11 @@
   },
   {
     "file": "tests/unit/ui/stopActiveTimeTracking.test.ts",
-    "edits": 2
+    "edits": 1
   },
   {
     "file": "tests/unit/issues/issue-1419-user-field-settings-input.test.ts",
-    "edits": 1
+    "edits": 2
   },
   {
     "file": "tests/unit/ui/taskCardRelationshipExpansion.test.ts",
@@ -133,11 +133,11 @@
   },
   {
     "file": "tests/unit/modals/taskModalActionIconStates.test.ts",
-    "edits": 3
+    "edits": 6
   },
   {
     "file": "tests/unit/settings/taskIdentificationValidation.test.ts",
-    "edits": 1
+    "edits": 2
   },
   {
     "file": "tests/unit/issues/issue-1767-timeblock-modal-time-alignment.test.ts",
@@ -153,7 +153,7 @@
   },
   {
     "file": "tests/unit/modals/taskModalOrganizationFields.test.ts",
-    "edits": 1
+    "edits": 12
   },
   {
     "file": "tests/unit/issues/issue-provider-calendar-source-name.test.ts",
@@ -165,7 +165,7 @@
   },
   {
     "file": "tests/unit/issues/issue-1804-inline-task-folder-setting.test.ts",
-    "edits": 1
+    "edits": 3
   },
   {
     "file": "tests/unit/issues/issue-1787-recurrence-tooltip-clutter.test.ts",
@@ -177,7 +177,7 @@
   },
   {
     "file": "tests/unit/modals/taskModalUserFieldControls.test.ts",
-    "edits": 1
+    "edits": 6
   },
   {
     "file": "tests/unit/issues/issue-1732-command-palette-functions.test.ts",
@@ -189,7 +189,7 @@
   },
   {
     "file": "tests/unit/modals/taskModalActionMenus.test.ts",
-    "edits": 1
+    "edits": 2
   },
   {
     "file": "tests/unit/issues/issue-773-ics-export-filter-options.test.ts",
@@ -197,7 +197,7 @@
   },
   {
     "file": "tests/unit/modals/taskModalMetadataFields.test.ts",
-    "edits": 1
+    "edits": 6
   },
   {
     "file": "tests/unit/modals/taskModalActionButtons.test.ts",
@@ -214,5 +214,9 @@
   {
     "file": "tests/unit/issues/issue-922-dependency-display.test.ts",
     "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/capture-custom-fields.test.ts",
+    "edits": 2
   }
 ]

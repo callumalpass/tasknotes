@@ -65,14 +65,14 @@ describe("Issue #1419: custom user field settings save while typing", () => {
 		updateInput(
 			inputByPlaceholder(
 				container,
-				msg({ message: "Display name", context: "settings.taskProperties.customUserFields.placeholders.displayName" })
+				mockEnglishText(msg({ message: "Display name", context: "settings.taskProperties.customUserFields.placeholders.displayName" }))
 			),
 			"CEU Credits"
 		);
 		updateInput(
 			inputByPlaceholder(
 				container,
-				msg({ message: "property-name", context: "settings.taskProperties.customUserFields.placeholders.propertyKey" })
+				mockEnglishText(msg({ message: "property-name", context: "settings.taskProperties.customUserFields.placeholders.propertyKey" }))
 			),
 			"ceu_credits"
 		);
@@ -101,9 +101,9 @@ describe("Issue #1419: custom user field settings save while typing", () => {
 		const defaultInputs = Array.from(container.querySelectorAll<HTMLInputElement>("input")).filter(
 			(input) =>
 				input.placeholder ===
-					msg({ message: "Default value", context: "settings.taskProperties.customUserFields.placeholders.defaultValue" }) ||
+					mockEnglishText(msg({ message: "Default value", context: "settings.taskProperties.customUserFields.placeholders.defaultValue" })) ||
 				input.placeholder ===
-					msg({ message: "Default values (comma-separated)", context: "settings.taskProperties.customUserFields.placeholders.defaultValueList" })
+					mockEnglishText(msg({ message: "Default values (comma-separated)", context: "settings.taskProperties.customUserFields.placeholders.defaultValueList" }))
 		);
 
 		updateInput(defaultInputs[0], "review");

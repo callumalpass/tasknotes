@@ -173,7 +173,7 @@ describe("taskCardSecondaryBadges", () => {
 		const folder = card.querySelector<HTMLElement>(".task-card__project-indicator");
 		expect(folder).not.toBeNull();
 		expect(folder?.getAttribute("role")).toBeNull();
-		expect(folder?.getAttribute("aria-label")).toBe("Used as a project");
+		expect(folder?.getAttribute("aria-label")).toBe("This task is used as a project");
 		expect(card.querySelector(".task-card__chevron")).toBeNull();
 		expect(plugin.expandedProjectsService?.isExpanded).not.toHaveBeenCalled();
 		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
@@ -267,7 +267,7 @@ describe("taskCardSecondaryBadges", () => {
 		const updatedFolder = card.querySelector<HTMLElement>(".task-card__project-indicator");
 		expect(updatedFolder).not.toBe(originalFolder);
 		expect(updatedFolder?.getAttribute("role")).toBeNull();
-		expect(updatedFolder?.getAttribute("aria-label")).toBe("Used as a project");
+		expect(updatedFolder?.getAttribute("aria-label")).toBe("This task is used as a project");
 		expect(card.querySelector(".task-card__chevron")).toBeNull();
 		expect(plugin.expandedProjectsService?.isExpanded).toHaveBeenCalledTimes(1);
 		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();

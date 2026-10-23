@@ -2,7 +2,6 @@ import { uiData } from "../i18n/dataText";
 import { formatUIDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
 import { App, FuzzySuggestModal, FuzzyMatch, setIcon } from "obsidian";
-import { format } from "date-fns";
 import { TaskInfo } from "../types";
 import {
 	isPastDate,

@@ -108,8 +108,8 @@ describe("taskModalMetadataFields", () => {
 		});
 
 		expect(input.value).toBe("home");
-		expect(input.placeholder).toBe("translated:modals.task.contextsPlaceholder");
-		expect(container.textContent).toContain("translated:modals.task.contextsLabel");
+		expect(input.placeholder).toBe(mockEnglishText(mockConceptDescriptor("modals.task.contextsPlaceholder")));
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.contextsLabel")));
 		expect(container.querySelector(".tn-task-modal__wide-text-setting")).not.toBeNull();
 		expect(context.attachMobileKeyboardScrollGuard).toHaveBeenCalledWith(input);
 		expect(mockContextSuggest).toHaveBeenCalledWith(context.app, input, context.plugin);
@@ -130,8 +130,8 @@ describe("taskModalMetadataFields", () => {
 		});
 
 		expect(input.value).toBe("project");
-		expect(input.placeholder).toBe("translated:modals.task.tagsPlaceholder");
-		expect(container.textContent).toContain("translated:modals.task.tagsLabel");
+		expect(input.placeholder).toBe(mockEnglishText(mockConceptDescriptor("modals.task.tagsPlaceholder")));
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.tagsLabel")));
 		expect(context.attachMobileKeyboardScrollGuard).toHaveBeenCalledWith(input);
 		expect(mockTagSuggest).toHaveBeenCalledWith(context.app, input, context.plugin);
 
@@ -152,8 +152,8 @@ describe("taskModalMetadataFields", () => {
 		});
 
 		expect(input.value).toBe("25");
-		expect(input.placeholder).toBe("translated:modals.task.timeEstimatePlaceholder");
-		expect(container.textContent).toContain("translated:modals.task.timeEstimateLabel");
+		expect(input.placeholder).toBe(mockEnglishText(mockConceptDescriptor("modals.task.timeEstimatePlaceholder")));
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.timeEstimateLabel")));
 		expect(context.attachMobileKeyboardScrollGuard).toHaveBeenCalledWith(input);
 
 		mockTextControls[0].onChangeCallback?.("45");

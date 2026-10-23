@@ -16,7 +16,56 @@ for (const file of files) {
   const callable = node => ts.isArrowFunction(node) || ts.isFunctionExpression(node) || ts.isCallExpression(node) && node.expression.getText(ast) === "jest.fn";
   const descriptor = node => ts.isCallExpression(node) && ["msg", "messageForKey"].includes(node.expression.getText(ast));
   const descriptorText = node => node.expression.getText(ast) === "messageForKey" ? `mockConceptDescriptor(${node.arguments.map(arg => arg.getText(ast)).join(", ")})` : node.getText(ast);
+  const expectedBy = node => {
+    for (let parent = node.parent; parent; parent = parent.parent) {
+      if (ts.isCallExpression(parent) && ts.isPropertyAccessExpression(parent.expression) && /^to(?:Be|Equal|Contain|Have)/.test(parent.expression.name.text) && parent.arguments.some(arg => arg.pos <= node.pos && arg.end >= node.end)) return parent;
+    }
+  };
+  const english = (key, values) => `mockEnglishText(mockConceptDescriptor(${JSON.stringify(key)})${values ? `, ${JSON.stringify(values)}` : ""})`;
+  const sentinel = value => {
+    const text = value.replace(/^translated:/, "");
+    if (Object.hasOwn(map, text)) return english(text);
+    const key = Object.keys(map).find(key => text.startsWith(key + ":"));
+    if (!key) return;
+    const suffix = text.slice(key.length + 1), values = {};
+    if (/^[A-Za-z]\w*=/.test(suffix)) for (const part of suffix.split(/,(?=[A-Za-z]\w*=)/)) {
+      const index = part.indexOf("="); values[part.slice(0, index)] = part.slice(index + 1);
+    } else {
+      const names = [...new Set([...map[key].message.matchAll(/\{([A-Za-z]\w*)(?=[,}])/g)].map(match => match[1]))], parts = suffix.split(",");
+      if (names.length !== parts.length) return;
+      names.forEach((name, index) => values[name] = parts[index]);
+    }
+    return english(key, values);
+  };
   function visit(node) {
+    if (ts.isCallExpression(node) && ["mockEnglishText", "mockConceptDescriptor"].includes(node.expression.getText(ast))) return;
+    if (descriptor(node)) {
+      const assertion = expectedBy(node);
+      const metadata = assertion && /(?:nameKey|labelKey|translate)/i.test(assertion.expression.expression.getText(ast));
+      if (assertion && !metadata) add(node, `mockEnglishText(${descriptorText(node)})`);
+      else if (node.expression.getText(ast) === "messageForKey") add(node, descriptorText(node));
+      return; // Never reinterpret a descriptor's semantic context as expected UI text.
+    }
+    if (ts.isStringLiteral(node) && !ts.isImportDeclaration(node.parent)) {
+      const assertion = expectedBy(node), binary = ts.isBinaryExpression(node.parent) && [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(node.parent.operatorToken.kind);
+      if (node.text.startsWith("translated:") || assertion && !/translate/i.test(assertion.expression.expression.getText(ast)) || binary) {
+        const replacement = sentinel(node.text); if (replacement) { add(node, replacement); return; }
+      }
+      const selector = node.text.match(/^(.*\[placeholder=["'])([^"']+)(["']\].*)$/);
+      if (selector && Object.hasOwn(map, selector[2])) { add(node, `${JSON.stringify(selector[1])} + ${english(selector[2])} + ${JSON.stringify(selector[3])}`); return; }
+    }
+    if (ts.isBinaryExpression(node) && [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(node.operatorToken.kind)) {
+      for (const side of [node.left, node.right]) if (descriptor(side)) {
+        const other = side === node.left ? node.right : node.left;
+        if (descriptor(other) || /(?:nameKey|labelKey)\b/.test(other.getText(ast))) add(node, `${descriptor(side) ? descriptorText(side) : side.getText(ast)}.id ${node.operatorToken.getText(ast)} ${descriptor(other) ? descriptorText(other) : other.getText(ast)}.id`);
+        else add(side, `mockEnglishText(${descriptorText(side)})`);
+        return;
+      }
+    }
+    if (ts.isCallExpression(node) && node.expression.getText(ast) === "renderUserFieldsSection") {
+      let last = node.arguments.at(-1); while (last && (ts.isAsExpression(last) || ts.isParenthesizedExpression(last))) last = last.expression;
+      if (last && ts.isArrowFunction(last)) { add(node.arguments.at(-1), "mockObserveTranslation()"); }
+    }
     if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isPropertyAccessExpression(node.left) && node.left.name.text === "translate" && callable(node.right)) {
       add(node.right, "mockObserveTranslation()"); return;
     }

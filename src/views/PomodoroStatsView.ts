@@ -2,7 +2,7 @@ import { formatUIDate, uiNumber, uiPercent, uiDuration } from "../i18n/formatter
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { ItemView, Menu, Notice, WorkspaceLeaf, Setting, setIcon, setTooltip } from "obsidian";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import { startOfWeek, endOfWeek } from "date-fns";
 import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { POMODORO_STATS_VIEW_TYPE, PomodoroHistoryStats, PomodoroSessionHistory } from "../types";

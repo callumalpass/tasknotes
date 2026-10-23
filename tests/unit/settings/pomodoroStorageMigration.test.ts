@@ -19,7 +19,7 @@ jest.mock("../../../src/settings/components/settingHelpers", () => ({
 				}),
 			};
 
-			if (options.heading === msg({ message: "Pomodoro timer", context: "settings.features.pomodoro.header" })) {
+			if (options.heading === mockEnglishText(msg({ message: "Pomodoro timer", context: "settings.features.pomodoro.header" }))) {
 				addSettings(group);
 			}
 
@@ -60,7 +60,7 @@ function createPlugin(pluginHistory: unknown[]) {
 
 function getDataStorageDropdownOptions() {
 	const dataStorageCall = (configureDropdownSetting as jest.Mock).mock.calls.find(
-		([, options]) => options.name === msg({ message: "Pomodoro data storage", context: "settings.features.dataStorage.name" })
+		([, options]) => options.name === mockEnglishText(msg({ message: "Pomodoro data storage", context: "settings.features.dataStorage.name" }))
 	);
 
 	if (!dataStorageCall) {

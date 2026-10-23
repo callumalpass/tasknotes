@@ -4,7 +4,6 @@ import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, NoteInfo } from "../types";
-import { format } from "date-fns";
 import { SafeAsync } from "../utils/safeAsync";
 import { TranslationKey } from "../i18n";
 import { showNotice } from "../ui/notifications";

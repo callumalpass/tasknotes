@@ -52,7 +52,7 @@ describe("Stop active time tracking (#2326)", () => {
 		jest.mocked(openTaskSelector).mockImplementation((_plugin, _tasks, choose) => choose(other));
 		await coordinator.stopActiveTimeTracking();
 		expect(openTaskSelector).toHaveBeenCalledWith(plugin, [task, other], expect.any(Function), {
-			title: msg({ message: "Stop active time tracking", context: "commands.stopActiveTimeTracking" }), allowCreate: false, includeArchived: true,
+			title: mockEnglishText(msg({ message: "Stop active time tracking", context: "commands.stopActiveTimeTracking" })), allowCreate: false, includeArchived: true,
 		});
 		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledTimes(1);
 		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledWith(other);

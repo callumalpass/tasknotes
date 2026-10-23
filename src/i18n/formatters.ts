@@ -24,8 +24,12 @@ export function uiPercent(value: number): string {
 }
 
 export function uiDuration(minutes: number): string {
-	const hours = Math.floor(minutes / 60);
-	const remainder = Math.round(minutes % 60);
+	// Match Intl's display precision before decomposition, avoiding "1 hr 60 min".
+	const rounded = Math.round(minutes * 1000) / 1000;
+	const hours = Math.trunc(rounded / 60);
+	const remainder = rounded % 60;
 	const unit = (value: number, unit: string) => uiNumber(value, { style: "unit", unit, unitDisplay: "short" });
-	return hours > 0 ? `${unit(hours, "hour")} ${unit(remainder, "minute")}` : unit(Math.round(minutes), "minute");
+	const parts = hours === 0 ? [unit(remainder, "minute")] : remainder === 0
+		? [unit(hours, "hour")] : [unit(hours, "hour"), unit(remainder, "minute")];
+	return new Intl.ListFormat(uiLocale(), { style: "narrow", type: "unit" }).format(parts);
 }

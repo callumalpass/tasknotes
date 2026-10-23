@@ -166,8 +166,8 @@ describe("Issue #2356: economical Pomodoro rendering", () => {
 		state.timeRemaining = 55;
 		tick();
 		expect(root.classList.contains("pomodoro-view--rendering-paused")).toBe(true);
-		expect(internals.startButton.textContent).toContain("resume");
-		expect(internals.statusDisplay.textContent).toContain("paused");
+		expect(internals.startButton.textContent).toBe("Resume");
+		expect(internals.statusDisplay.textContent).toBe("Paused");
 		state.isRunning = true;
 		tick();
 		expect(root.classList.contains("pomodoro-view--rendering-paused")).toBe(false);
@@ -178,7 +178,7 @@ describe("Issue #2356: economical Pomodoro rendering", () => {
 		state.currentSession = undefined;
 		state.nextSessionType = "short-break";
 		tick();
-		expect(internals.startButton.textContent).toContain("startShortBreak");
+		expect(internals.startButton.textContent).toBe("Start short break");
 	});
 
 	it("defers hidden countdowns and task cards, then catches up immediately when shown", () => {

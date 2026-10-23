@@ -3,7 +3,9 @@ import { msg } from "@lingui/core/macro";
 import { MarkdownRenderer } from "obsidian";
 import { ReleaseNotesView, transformReleaseNoteIssueLinks } from "../../../src/views/ReleaseNotesView";
 import type { ReleaseNoteVersion } from "../../../src/releaseNotes";
-import releaseNotesAnnouncement from "../../../src/releaseNotesAnnouncement.md";
+import { readFileSync } from "fs";
+import { join } from "path";
+const releaseNotesAnnouncement = readFileSync(join(__dirname, "../../../src/releaseNotesAnnouncement.md"), "utf8");
 
 describe("transformReleaseNoteIssueLinks", () => {
 	it("links a single parenthesized issue reference", () => {

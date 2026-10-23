@@ -25,7 +25,7 @@ describe("Issue #1787: recurrence tooltip clutter", () => {
 	it("does not include the click-to-change helper text", () => {
 		const tooltip = getRecurrenceTooltip(createPlugin(), "FREQ=DAILY");
 
-		expect(tooltip).toBe("Recurring: every day");
+		expect(tooltip).toBe("Recurring: Daily");
 		expect(tooltip).not.toContain("click to change");
 	});
 });
