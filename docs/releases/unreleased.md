@@ -38,7 +38,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @gemx-world for reporting.
 - (#2140) Fixed edits to visible nested task tags being silently discarded by the task edit modal. Hidden identification tags and the exact task tag remain protected. See [Hide Identification Tags](https://tasknotes.dev/settings/general/#hide-identification-tags).
   - Thanks to @3zra47 for reporting and providing follow-up details.
-
+- (#2148) Empty project, context and tag properties no longer appear or save as literal `"null"` list entries when editing tasks. Unchanged empty and null properties are preserved.
+  - Thanks to @minchinweb for reporting this.
 - (#2414) Fixed Kanban mouse drags aborting on touchscreen laptops while preserving long-press touch dragging. See [Kanban drag-and-drop](https://tasknotes.dev/views/kanban-view/#drag-and-drop-tasks).
   - Thanks to @paladinm078 for reporting and isolating the cause.
 - (#2394) Fixed expanded subtasks keeping their previous order after changing a Task List sort when top-level subtasks are hidden. Formula sorts such as `priorityWeight` now refresh already-expanded subtasks. See [Task List](https://tasknotes.dev/views/task-list/). Thanks to @iantierney for reporting this.

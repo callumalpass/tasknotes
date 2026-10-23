@@ -2,7 +2,7 @@ import {
 	coerceStatusFrontmatterValue,
 	DEFAULT_DEPENDENCY_RELTYPE,
 	extractDependencyUid,
-	getFrontmatterTags,
+	getFrontmatterTags as modelGetFrontmatterTags,
 	isRecognizedProperty as modelIsRecognizedProperty,
 	isValidDependencyRelType,
 	lookupMappingKey as modelLookupMappingKey,
@@ -29,12 +29,12 @@ import type {
 } from "../types";
 import type { UserMappedField } from "../types/settings";
 import { DEFAULT_RECURRENCE_ORIGINAL_DATE_PROPERTY } from "./defaultFieldMapping";
+import { normalizeStringArrayValue } from "./nullableListNormalization";
 
 export {
 	coerceStatusFrontmatterValue,
 	DEFAULT_DEPENDENCY_RELTYPE,
 	extractDependencyUid,
-	getFrontmatterTags,
 	isValidDependencyRelType,
 	normalizeDependencyEntry,
 	normalizeDependencyList,
@@ -110,6 +110,34 @@ export function validateFieldMapping(mapping: FieldMapping): { valid: boolean; e
 	return modelValidateFieldMapping(withResolvedMapping(mapping));
 }
 
+// Backport model ea97ac46 (consumed by v5 in 02950c14) without taking
+// rc.16's unrelated model/recurrence changes. Normalize read copies only;
+// absent properties and custom fields must retain their original meaning.
+function normalizeNullableLists(
+	mapping: FieldMapping,
+	frontmatter: Record<string, unknown> | undefined | null
+): Record<string, unknown> | undefined | null {
+	if (!frontmatter) return frontmatter;
+
+	const normalized = { ...frontmatter };
+	for (const property of [
+		mapping.contexts,
+		mapping.projects,
+		mapping.icsEventId,
+		mapping.googleCalendarMovedOriginalDates,
+	]) {
+		if (frontmatter[property] !== undefined) {
+			normalized[property] = normalizeStringArrayValue(frontmatter[property]);
+		}
+	}
+	if (frontmatter.tags !== undefined) normalized.tags = getFrontmatterTags(frontmatter.tags);
+	return normalized;
+}
+
+export function getFrontmatterTags(value: unknown): string[] {
+	return modelGetFrontmatterTags(Array.isArray(value) ? normalizeStringArrayValue(value) : value);
+}
+
 export function mapTaskFromFrontmatter(
 	mapping: FieldMapping,
 	frontmatter: Record<string, unknown> | undefined | null,
@@ -122,7 +150,7 @@ export function mapTaskFromFrontmatter(
 	const resolved = withResolvedMapping(mapping);
 	const mapped: Partial<TaskInfo> = modelMapTaskFromFrontmatter(
 		resolved,
-		frontmatter,
+		normalizeNullableLists(resolved, frontmatter),
 		filePath,
 		storeTitleInFilename,
 		userFields,
@@ -148,7 +176,7 @@ export function mapTaskToFrontmatter(
 	const resolved = withResolvedMapping(mapping);
 	const frontmatter = modelMapTaskToFrontmatter(
 		resolved,
-		taskData,
+		{ ...taskData, tags: getFrontmatterTags(taskData.tags) },
 		taskTag,
 		storeTitleInFilename,
 		userFields
