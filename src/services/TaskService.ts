@@ -558,7 +558,10 @@ export class TaskService {
 	/**
 	 * Toggle the status of a task between completed and open
 	 */
-	async toggleStatus(task: TaskInfo): Promise<TaskInfo> {
+	async toggleStatus(
+		task: TaskInfo,
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
+	): Promise<TaskInfo> {
 		try {
 			// Determine new status
 			const isCurrentlyCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
@@ -566,7 +569,9 @@ export class TaskService {
 				? this.plugin.settings.defaultTaskStatus // Revert to default open status
 				: this.plugin.statusManager.getCompletedStatuses()[0] || "done"; // Set to first completed status
 
-			return await this.updateProperty(task, "status", newStatus);
+			return onRecurringParentUpdated
+				? await this.updateProperty(task, "status", newStatus, { onRecurringParentUpdated })
+				: await this.updateProperty(task, "status", newStatus);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			tasknotesLogger.error("Error toggling task status:", {
@@ -594,6 +599,7 @@ export class TaskService {
 		options: {
 			silent?: boolean;
 			completionDate?: string;
+			onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void;
 			confirmClearInstances?: (cleared: {
 				complete: string[];
 				skipped: string[];
@@ -735,7 +741,8 @@ export class TaskService {
 				updatePlan.updatedTask,
 				property,
 				freshTask[property],
-				updatePlan.normalizedValue
+				updatePlan.normalizedValue,
+				options.onRecurringParentUpdated
 			);
 
 			// Step 4: Return authoritative data
@@ -773,7 +780,8 @@ export class TaskService {
 		updatedTask: TaskInfo,
 		property: keyof TaskInfo,
 		oldValue: unknown,
-		newValue: unknown
+		newValue: unknown,
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
 	): Promise<void> {
 		await runTaskPropertyChangeSideEffects(
 			{
@@ -804,7 +812,8 @@ export class TaskService {
 			updatedTask,
 			property,
 			oldValue,
-			newValue
+			newValue,
+			onRecurringParentUpdated
 		);
 	}
 
@@ -960,7 +969,8 @@ export class TaskService {
 
 	async toggleRecurringTaskCompleteWithOccurrenceNotes(
 		task: TaskInfo,
-		date?: Date
+		date?: Date,
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
 	): Promise<TaskInfo> {
 		const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
 		if (!freshTask.recurrence) {
@@ -971,7 +981,9 @@ export class TaskService {
 		const dateStr = formatDateForStorage(targetDate);
 		const existingOccurrence = await this.findMaterializedOccurrence(freshTask, targetDate);
 		if (existingOccurrence) {
-			return this.toggleStatus(existingOccurrence);
+			return onRecurringParentUpdated
+				? this.toggleStatus(existingOccurrence, onRecurringParentUpdated)
+				: this.toggleStatus(existingOccurrence);
 		}
 
 		const completeInstances = Array.isArray(freshTask.complete_instances)
@@ -984,7 +996,9 @@ export class TaskService {
 			!completeInstances.includes(dateStr)
 		) {
 			const occurrence = await this.materializeOccurrence(freshTask, targetDate);
-			return this.toggleStatus(occurrence);
+			return onRecurringParentUpdated
+				? this.toggleStatus(occurrence, onRecurringParentUpdated)
+				: this.toggleStatus(occurrence);
 		}
 
 		return this.toggleRecurringTaskComplete(freshTask, targetDate);
@@ -1082,7 +1096,8 @@ export class TaskService {
 		updatedOccurrence: TaskInfo,
 		property: keyof TaskInfo,
 		oldValue: unknown,
-		newValue: unknown
+		newValue: unknown,
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
 	): Promise<void> {
 		if (property !== "status" || !isMaterializedOccurrenceTask(updatedOccurrence)) {
 			return;
@@ -1144,6 +1159,9 @@ export class TaskService {
 			plan.parentUpdates,
 			"reconcile-materialized-occurrence-parent"
 		);
+		// Capture the exact transition before asynchronous webhooks/materialization
+		// can allow unrelated parent edits to reach the live cache.
+		onRecurringParentUpdated?.(parentTask, updatedParent);
 
 		if (isCompleted && this.webhookNotifier) {
 			try {

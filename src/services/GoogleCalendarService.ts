@@ -350,7 +350,7 @@ export class GoogleCalendarService extends CalendarProvider {
 					}
 					providerCalendars.push({
 						id: calendar.id,
-						summary: calendar.summary,
+						summary: calendar.summaryOverride || calendar.summary,
 						description: calendar.description,
 						backgroundColor: calendar.backgroundColor,
 						primary: calendar.primary || false,

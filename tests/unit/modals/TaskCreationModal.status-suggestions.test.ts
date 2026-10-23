@@ -139,6 +139,26 @@ describe("TaskCreationModal status autocomplete", () => {
 		});
 	});
 
+	it("filters paired status suggestions before CodeMirror includes the closing trigger", async () => {
+		const plugin = createCompletionPlugin({ settings: { customStatuses } });
+		const doc = "Task *op*";
+		const cursor = doc.length - 1;
+		const state = EditorState.create({ doc, selection: { anchor: cursor } });
+		const result = await createNLPCompletionSource(plugin as never)(
+			new CompletionContext(state, cursor, true)
+		);
+		expect(result).toMatchObject({
+			from: "Task *".length,
+			to: doc.length,
+			filter: false,
+			options: [{ label: "Open", apply: "open ", type: "text", info: "Status" }],
+		});
+		expect(result?.validFor).toBeUndefined();
+		const unpaired = await getCompletionResult(plugin, "Task *op");
+		expect(unpaired?.filter).toBeUndefined();
+		expect(unpaired?.validFor).toBeInstanceOf(RegExp);
+	});
+
 	it("replaces the paired status trigger inserted by the editor", async () => {
 		const plugin = createCompletionPlugin({
 			settings: {

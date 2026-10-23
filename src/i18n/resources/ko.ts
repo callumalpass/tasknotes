@@ -3,39 +3,50 @@ import { TranslationTree } from "../types";
 export const ko: TranslationTree = {
 	migrationRecognition: {
 		review: "TaskNotes가 {path}를 그대로 보존했습니다. 이전 메타데이터가 누락되었거나 수정되었거나 다른 유형을 포함합니다. 동기화를 완료하고 다시 시작하세요. 해결되지 않으면 백업한 사본을 mdbase로 마이그레이션하고 유형을 검토한 후 다시 시도하세요.",
-		waiting: "TaskNotes가 {path}에서 mdbase.yaml이 없는 메타데이터를 발견하여 다른 컬렉션을 만들지 않았습니다. 동기화를 완료하거나 백업에서 해당 설정을 복원하세요. 메타데이터가 도착하면 마이그레이션을 다시 시도합니다.",
-		support: "TaskNotes가 사용자 지정 지원 파일 {path}를 보존했습니다. 백업에서 생성된 버전을 복원하거나 사본을 검토하고 mdbase로 마이그레이션한 다음 다시 시작하세요.",
+		waiting:
+			"TaskNotes가 {path}에서 mdbase.yaml이 없는 메타데이터를 발견하여 다른 컬렉션을 만들지 않았습니다. 동기화를 완료하거나 백업에서 해당 설정을 복원하세요. 메타데이터가 도착하면 마이그레이션을 다시 시도합니다.",
+		support:
+			"TaskNotes가 사용자 지정 지원 파일 {path}를 보존했습니다. 백업에서 생성된 버전을 복원하거나 사본을 검토하고 mdbase로 마이그레이션한 다음 다시 시작하세요.",
 	},
 	collectionCheck: {
-		repairChanged: "작업 유형이나 허용된 상태 값이 변경되었거나 제안된 복구가 더 이상 유효하지 않습니다. 아무것도 복구되지 않았습니다. 컬렉션을 다시 검사하세요.",
-		unresolvedUserField: "관리되는 사용자 정의 필드 {field}의 유형을 확인할 수 없습니다. 설정을 저장하기 전에 스키마와 유지된 필드 유형을 검토하세요. 기존 설정과 메타데이터는 유지되었습니다.",
+		repairChanged:
+			"작업 유형이나 허용된 상태 값이 변경되었거나 제안된 복구가 더 이상 유효하지 않습니다. 아무것도 복구되지 않았습니다. 컬렉션을 다시 검사하세요.",
+		unresolvedUserField:
+			"관리되는 사용자 정의 필드 {field}의 유형을 확인할 수 없습니다. 설정을 저장하기 전에 스키마와 유지된 필드 유형을 검토하세요. 기존 설정과 메타데이터는 유지되었습니다.",
 		membershipChanged: "컬렉션 검사 후 소속 조건이나 레코드가 변경되었습니다. 다시 검사하세요.",
 		title: "컬렉션 확인",
-		invalidType: "{path}에 불일치가 있습니다: {issues}. 다시 시도하기 전에 implements.fields와 binding을 검토하세요. 플러그인 설정은 유지되었습니다.",
+		invalidType:
+			"{path}에 불일치가 있습니다: {issues}. 다시 시도하기 전에 implements.fields와 binding을 검토하세요. 플러그인 설정은 유지되었습니다.",
 		keptConfiguration: "TaskNotes가 마지막 유효한 설정을 유지했습니다.",
-		description: "노트를 변경하지 않고 작업을 검증합니다. 누락된 생성 날짜는 파일 생성 시간으로 채울 수 있습니다. 잘못된 상태는 대체 상태를 선택해야 합니다. 다른 오류는 직접 검토해야 합니다.",
+		description:
+			"노트를 변경하지 않고 작업을 검증합니다. 누락된 생성 날짜는 파일 생성 시간으로 채울 수 있습니다. 잘못된 상태는 대체 상태를 선택해야 합니다. 다른 오류는 직접 검토해야 합니다.",
 		count: "잘못된 레코드: {count}",
 		clean: "잘못된 작업 레코드가 없습니다.",
 		check: "다시 확인",
 		fix: "백업 후 수정",
 		fixAll: "모든 레코드에서 선택한 변경 사항 백업 후 적용",
 		chooseStatus: "대체 상태 선택",
-		confirm: "아래 변경 사항만 적용할까요? 변경 전에 원본 노트를 .tasknotes/migrations에 백업합니다. 선택하지 않은 상태와 다른 오류는 변경하지 않습니다.",
+		confirm:
+			"아래 변경 사항만 적용할까요? 변경 전에 원본 노트를 .tasknotes/migrations에 백업합니다. 선택하지 않은 상태와 다른 오류는 변경하지 않습니다.",
 		fixed: "승인한 변경 사항을 저장했습니다. 백업은 .tasknotes/migrations에 있습니다. 남은 오류를 확인하세요.",
 		error: "컬렉션 확인 또는 수정이 중단되었습니다. 승인하지 않은 변경은 없습니다.",
 	},
 	mdbaseSafety: {
 		settingsSaved: "TaskNotes가 설정을 저장했지만 정식 mdbase 유형을 동기화하지 못했습니다.",
-		blocked: "TaskNotes가 mdbase 메타데이터 업데이트를 중단했습니다. {details} 표시된 파일과 복구 사본을 확인하고 충돌 또는 권한 문제를 해결한 뒤 TaskNotes를 다시 불러오세요. 작업 파일은 변경되지 않았습니다.",
-		multiple: "TaskNotes 유형이 여러 개 있습니다: {paths}. 정식 제공자를 하나만 유지하거나 나머지를 유형 폴더 밖으로 옮긴 뒤 TaskNotes를 다시 불러오세요. TaskNotes는 마지막으로 확인된 유효한 설정을 유지했습니다.",
-		referenced: "TaskNotes가 {typePath}을 유지했습니다. {recordPath}에서 이 유형을 명시적으로 참조합니다. 제공자를 옮기기 전에 유형 소속을 확인하세요. 작업 파일은 변경되지 않았습니다.",
+		blocked:
+			"TaskNotes가 mdbase 메타데이터 업데이트를 중단했습니다. {details} 표시된 파일과 복구 사본을 확인하고 충돌 또는 권한 문제를 해결한 뒤 TaskNotes를 다시 불러오세요. 작업 파일은 변경되지 않았습니다.",
+		multiple:
+			"TaskNotes 유형이 여러 개 있습니다: {paths}. 정식 제공자를 하나만 유지하거나 나머지를 유형 폴더 밖으로 옮긴 뒤 TaskNotes를 다시 불러오세요. TaskNotes는 마지막으로 확인된 유효한 설정을 유지했습니다.",
+		referenced:
+			"TaskNotes가 {typePath}을 유지했습니다. {recordPath}에서 이 유형을 명시적으로 참조합니다. 제공자를 옮기기 전에 유형 소속을 확인하세요. 작업 파일은 변경되지 않았습니다.",
 	},
 	onboarding: {
 		title: "TaskNotes 시작하기",
 		intro: "작업은 보관함의 Markdown 노트입니다. 명령 팔레트에서 다음 세 단계를 따라 해 보세요.",
 		create: "실제 작업을 만들고 오늘로 예정일을 설정하세요.",
 		review: "오늘 보기에서 작업을 찾으세요.",
-		complete: "작업이 완료될 때까지 상태 버튼을 클릭하세요. 오늘 보기에서는 사라지지만 노트는 보관함에 남습니다.",
+		complete:
+			"작업이 완료될 때까지 상태 버튼을 클릭하세요. 오늘 보기에서는 사라지지만 노트는 보관함에 남습니다.",
 		inbox: "날짜 없이 기록하려면 예정일을 지우세요. 수신함은 프로젝트, 예정일, 마감일이 없는 미완료 작업을 보여 줍니다.",
 		settings: "필요할 때 설정하기",
 	},
@@ -137,7 +148,8 @@ export const ko: TranslationTree = {
 			movement: {
 				parentAdd: "하위 작업으로 추가",
 				parentChoose: "상위 작업 선택…",
-				parentPreview: "{parent}의 하위 작업으로 추가합니다. 다른 프로젝트는 변경되지 않습니다.",
+				parentPreview:
+					"{parent}의 하위 작업으로 추가합니다. 다른 프로젝트는 변경되지 않습니다.",
 				parentSelf: "작업은 자신의 상위 작업이 될 수 없습니다.",
 				parentCycle: "작업을 자신의 하위 작업 아래에 추가할 수 없습니다.",
 				parentAlready: "이미 {parent}의 하위 작업입니다.",
@@ -690,30 +702,36 @@ export const ko: TranslationTree = {
 		},
 		modalFields: {
 			header: "작업 모달의 필드 구성",
-			description: "작업 생성 및 편집 모달에 표시할 필드를 구성합니다. 필드를 드래그하여 각 그룹 내에서 순서를 변경하세요.",
+			description:
+				"작업 생성 및 편집 모달에 표시할 필드를 구성합니다. 필드를 드래그하여 각 그룹 내에서 순서를 변경하세요.",
 			splitLayout: {
 				name: "넓은 화면에서 분할 레이아웃",
-				description: "활성화하면 900px 이상 화면에서 세부사항 편집기가 오른쪽 열에 나타납니다. 비활성화하면 모달이 스택 레이아웃을 사용합니다."
+				description:
+					"활성화하면 900px 이상 화면에서 세부사항 편집기가 오른쪽 열에 나타납니다. 비활성화하면 모달이 스택 레이아웃을 사용합니다.",
 			},
 			tabMovesFocus: {
 				name: "세부사항 편집기에서 Tab으로 포커스 이동",
-				description: "활성화하면 Tab이 세부사항 편집기에서 다음 모달 필드로, Shift+Tab이 이전 필드로 포커스를 이동합니다. 비활성화하면 Tab과 Shift+Tab은 Markdown 편집기의 들여쓰기 동작을 사용합니다."
+				description:
+					"활성화하면 Tab이 세부사항 편집기에서 다음 모달 필드로, Shift+Tab이 이전 필드로 포커스를 이동합니다. 비활성화하면 Tab과 Shift+Tab은 Markdown 편집기의 들여쓰기 동작을 사용합니다.",
 			},
 			sync: {
 				name: "사용자 필드 동기화",
-				description: "클릭하여 작업 속성 설정의 사용자 지정 필드를 이 구성으로 동기화합니다.",
+				description:
+					"클릭하여 작업 속성 설정의 사용자 지정 필드를 이 구성으로 동기화합니다.",
 				button: "사용자 필드 동기화",
-				notice: "사용자 필드가 모달 구성에 동기화되었습니다"
+				notice: "사용자 필드가 모달 구성에 동기화되었습니다",
 			},
 			reset: {
 				name: "기본값으로 재설정",
-				description: "모든 필드 구성을 기본값으로 재설정합니다. 사용자 지정 구성이 모두 제거됩니다.",
+				description:
+					"모든 필드 구성을 기본값으로 재설정합니다. 사용자 지정 구성이 모두 제거됩니다.",
 				button: "기본값으로 재설정",
 				confirmTitle: "필드 구성을 기본값으로 재설정",
-				confirmMessage: "필드 구성을 기본값으로 재설정하시겠습니까? 모든 사용자 지정 필드 구성이 제거됩니다.",
+				confirmMessage:
+					"필드 구성을 기본값으로 재설정하시겠습니까? 모든 사용자 지정 필드 구성이 제거됩니다.",
 				confirmText: "재설정",
 				cancelText: "취소",
-				notice: "필드 구성이 기본값으로 재설정되었습니다"
+				notice: "필드 구성이 기본값으로 재설정되었습니다",
 			},
 			initError: "오류: 필드 구성을 초기화할 수 없습니다",
 			manager: {
@@ -732,7 +750,7 @@ export const ko: TranslationTree = {
 					dependency: "의존성",
 					organization: "정리",
 				},
-			}
+			},
 		},
 		features: {
 			inlineTasks: {
@@ -793,7 +811,8 @@ export const ko: TranslationTree = {
 				},
 				enterToSubmit: {
 					name: "Enter로 작업 저장",
-					description: "자연어 입력에서 Enter를 누르면 작업이 저장됩니다. Shift+Enter는 줄바꿈을 삽입하며, Ctrl/Cmd+Enter로도 계속 저장할 수 있습니다."
+					description:
+						"자연어 입력에서 Enter를 누르면 작업이 저장됩니다. Shift+Enter는 줄바꿈을 삽입하며, Ctrl/Cmd+Enter로도 계속 저장할 수 있습니다.",
 				},
 				language: {
 					name: "NLP 언어",
@@ -1169,7 +1188,8 @@ export const ko: TranslationTree = {
 				},
 				propertyNamePlaceholder: "속성 이름 입력",
 				propertyValuePlaceholder: "속성 값 입력",
-				incompletePropertyWarning: "속성 이름과 값을 모두 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 둘 다 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다.",
+				incompletePropertyWarning:
+					"속성 이름과 값을 모두 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 둘 다 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다.",
 				taskProperty: {
 					name: "작업 속성 이름",
 					description: '프론트매터 속성 이름 (예: "category")',
@@ -2213,7 +2233,8 @@ export const ko: TranslationTree = {
 				},
 				showAllDayAsFree: {
 					name: "종일 작업 일정을 '한가함'으로 표시",
-					description: "종일로 변환된 작업을 포함하여 종일로 내보낸 작업은 가용 시간을 차단하지 않습니다. 시간이 지정된 일정은 바쁨으로 유지됩니다. 기존 일정에 변경 사항을 적용하려면 모든 작업 동기화를 실행하세요.",
+					description:
+						"종일로 변환된 작업을 포함하여 종일로 내보낸 작업은 가용 시간을 차단하지 않습니다. 시간이 지정된 일정은 바쁨으로 유지됩니다. 기존 일정에 변경 사항을 적용하려면 모든 작업 동기화를 실행하세요.",
 				},
 				defaultDuration: {
 					name: "기본 이벤트 기간",
@@ -2570,6 +2591,16 @@ export const ko: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "언어가 {language}(으)로 변경되었습니다.",
+		recurringCompletion: {
+			completed: "완료한 반복 일정: {date}",
+			incomplete: "미완료로 변경: {date}",
+			next: "다음: {date}",
+			noNext: "다음 반복 일정 없음",
+			undo: "실행 취소",
+			undone: "반복 작업 변경을 취소했습니다.",
+			conflict: "실행 취소할 수 없습니다. 이 반복 일정이나 예약이 변경되었습니다.",
+			failed: "반복 작업 변경을 취소하지 못했습니다.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} 릴리스를 사용할 수 있습니다.",
 			action: "커뮤니티 플러그인에서 열기",
@@ -3487,6 +3518,23 @@ export const ko: TranslationTree = {
 		autoExport: {
 			notices: {
 				exportFailed: "TaskNotes 자동 내보내기 실패: {error}",
+			},
+		},
+		notification: {
+			missed: {
+				prefixToday: "놓친 알림 ({time})",
+				prefixOnDay: "놓친 알림 ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "{title}의 마감 기한({when})이 지났습니다",
+				dueIs: "{title}의 마감 기한은 {when}입니다",
+				scheduledWas: "{title}의 예정 일시({when})가 지났습니다",
+				scheduledIs: "{title}의 예정 일시는 {when}입니다",
+				whenTodayAt: "{time}",
+				whenOnDayAt: "{day} {time}",
+				whenOnDay: "{day}",
+				whenToday: "오늘",
+				summaryTitle: "놓친 TaskNotes 알림 {count}개",
+				summaryMore: "{titles} 외 {count}개",
 			},
 		},
 	},

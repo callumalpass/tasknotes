@@ -3,39 +3,52 @@ import { TranslationTree } from "../types";
 export const pt: TranslationTree = {
 	migrationRecognition: {
 		review: "O TaskNotes preservou {path}: os metadados antigos estão ausentes, foram editados ou incluem outros tipos. Conclua a sincronização e reinicie; caso não resolva, migre uma cópia de segurança com mdbase e revise o tipo antes de tentar novamente.",
-		waiting: "O TaskNotes encontrou metadados em {path} sem mdbase.yaml e não criou outra coleção. Conclua a sincronização ou restaure a configuração correspondente de um backup; a migração será tentada novamente quando os metadados chegarem.",
-		support: "O TaskNotes preservou o arquivo de suporte personalizado {path}. Restaure a versão gerada de um backup ou revise e migre uma cópia com mdbase; depois, reinicie.",
+		waiting:
+			"O TaskNotes encontrou metadados em {path} sem mdbase.yaml e não criou outra coleção. Conclua a sincronização ou restaure a configuração correspondente de um backup; a migração será tentada novamente quando os metadados chegarem.",
+		support:
+			"O TaskNotes preservou o arquivo de suporte personalizado {path}. Restaure a versão gerada de um backup ou revise e migre uma cópia com mdbase; depois, reinicie.",
 	},
 	collectionCheck: {
-		repairChanged: "O tipo de tarefa ou os estados permitidos mudaram, ou a reparação proposta já não é válida. Nada foi reparado; verifique novamente a coleção.",
-		unresolvedUserField: "Não foi possível determinar o tipo do campo personalizado gerido {field}. Reveja o esquema e o tipo de campo preservado antes de guardar as definições. As definições e os metadados existentes foram preservados.",
-		membershipChanged: "A pertença à coleção ou o registo mudou desde a verificação. Verifique novamente a coleção.",
+		repairChanged:
+			"O tipo de tarefa ou os estados permitidos mudaram, ou a reparação proposta já não é válida. Nada foi reparado; verifique novamente a coleção.",
+		unresolvedUserField:
+			"Não foi possível determinar o tipo do campo personalizado gerido {field}. Reveja o esquema e o tipo de campo preservado antes de guardar as definições. As definições e os metadados existentes foram preservados.",
+		membershipChanged:
+			"A pertença à coleção ou o registo mudou desde a verificação. Verifique novamente a coleção.",
 		title: "Verificar coleção",
-		invalidType: "{path} está inconsistente: {issues}. Revise implements.fields e binding antes de tentar novamente; as configurações do plugin foram mantidas.",
+		invalidType:
+			"{path} está inconsistente: {issues}. Revise implements.fields e binding antes de tentar novamente; as configurações do plugin foram mantidas.",
 		keptConfiguration: "TaskNotes manteve a última configuração válida.",
-		description: "Verifique as tarefas sem alterar as notas. Datas de criação ausentes podem ser preenchidas com a data de criação do arquivo. Estados inválidos exigem sua escolha. Outros erros precisam de revisão manual.",
+		description:
+			"Verifique as tarefas sem alterar as notas. Datas de criação ausentes podem ser preenchidas com a data de criação do arquivo. Estados inválidos exigem sua escolha. Outros erros precisam de revisão manual.",
 		count: "Registros inválidos: {count}",
 		clean: "Nenhuma tarefa inválida encontrada.",
 		check: "Verificar novamente",
 		fix: "Fazer backup e corrigir",
 		fixAll: "Fazer backup e aplicar as alterações escolhidas em todos os registros",
 		chooseStatus: "Escolha um estado substituto",
-		confirm: "Aplicar apenas as alterações abaixo? As notas originais serão copiadas para .tasknotes/migrations antes de cada alteração. Estados não selecionados e outros erros permanecerão inalterados.",
+		confirm:
+			"Aplicar apenas as alterações abaixo? As notas originais serão copiadas para .tasknotes/migrations antes de cada alteração. Estados não selecionados e outros erros permanecerão inalterados.",
 		fixed: "Alterações aprovadas salvas. Os backups estão em .tasknotes/migrations. Verifique os erros restantes.",
 		error: "Verificação ou reparo da coleção interrompido. Nenhuma alteração sem aprovação foi feita.",
 	},
 	mdbaseSafety: {
-		settingsSaved: "O TaskNotes guardou as suas definições, mas não conseguiu sincronizar o tipo canónico do mdbase.",
-		blocked: "O TaskNotes interrompeu a atualização dos metadados do mdbase. {details} Reveja o ficheiro indicado e as cópias de recuperação, resolva o conflito ou as permissões e recarregue o TaskNotes. Os ficheiros de tarefas não foram alterados.",
-		multiple: "Vários tipos do TaskNotes: {paths}. Mantenha um fornecedor canónico ou mova os restantes para fora da pasta de tipos e recarregue o TaskNotes. O TaskNotes manteve a última configuração válida.",
-		referenced: "O TaskNotes manteve {typePath}: {recordPath} faz referência explícita a este tipo. Reveja a sua pertença antes de mover o fornecedor; os ficheiros de tarefas não foram alterados.",
+		settingsSaved:
+			"O TaskNotes guardou as suas definições, mas não conseguiu sincronizar o tipo canónico do mdbase.",
+		blocked:
+			"O TaskNotes interrompeu a atualização dos metadados do mdbase. {details} Reveja o ficheiro indicado e as cópias de recuperação, resolva o conflito ou as permissões e recarregue o TaskNotes. Os ficheiros de tarefas não foram alterados.",
+		multiple:
+			"Vários tipos do TaskNotes: {paths}. Mantenha um fornecedor canónico ou mova os restantes para fora da pasta de tipos e recarregue o TaskNotes. O TaskNotes manteve a última configuração válida.",
+		referenced:
+			"O TaskNotes manteve {typePath}: {recordPath} faz referência explícita a este tipo. Reveja a sua pertença antes de mover o fornecedor; os ficheiros de tarefas não foram alterados.",
 	},
 	onboarding: {
 		title: "Primeiros passos com TaskNotes",
 		intro: "As tarefas são notas Markdown no seu cofre. Use a paleta de comandos para estes três passos.",
 		create: "Crie uma tarefa real e agende-a para hoje.",
 		review: "Encontre sua tarefa em Hoje.",
-		complete: "Clique no status até concluir a tarefa. Ela sai de Hoje, mas a nota permanece no seu cofre.",
+		complete:
+			"Clique no status até concluir a tarefa. Ela sai de Hoje, mas a nota permanece no seu cofre.",
 		inbox: "Para capturar sem data, apague a data agendada. A caixa de entrada mostra tarefas incompletas sem projeto, data agendada ou prazo.",
 		settings: "Configurações, quando precisar",
 	},
@@ -137,11 +150,13 @@ export const pt: TranslationTree = {
 			movement: {
 				parentAdd: "Adicionar como subtarefa",
 				parentChoose: "Adicionar como subtarefa de…",
-				parentPreview: "Adicionar como subtarefa de {parent}. Os outros projetos permanecem inalterados.",
+				parentPreview:
+					"Adicionar como subtarefa de {parent}. Os outros projetos permanecem inalterados.",
 				parentSelf: "Uma tarefa não pode ser a sua própria tarefa principal.",
 				parentCycle: "Não é possível adicionar uma tarefa sob uma das suas descendentes.",
 				parentAlready: "Já é uma subtarefa de {parent}.",
-				parentUnavailable: "Ambas as tarefas devem continuar a existir e ser tarefas do TaskNotes.",
+				parentUnavailable:
+					"Ambas as tarefas devem continuar a existir e ser tarefas do TaskNotes.",
 				parentAssigned: "Adicionada como subtarefa de {parent}.",
 				handle: "Mover tarefa",
 				moveTo: "Mover para um grupo",
@@ -155,7 +170,8 @@ export const pt: TranslationTree = {
 				noValue: "Sem valor",
 				otherDestinations: "Outros destinos",
 				readOnly: "Não é possível alterar {properties}: estes grupos são somente leitura.",
-				unresolved: "Não é possível determinar os valores de {properties} para este destino.",
+				unresolved:
+					"Não é possível determinar os valores de {properties} para este destino.",
 				noChange: "Já está neste grupo.",
 				failed: "Não foi possível mover a tarefa. Verifique a tarefa e tente novamente.",
 			},
@@ -698,30 +714,36 @@ export const pt: TranslationTree = {
 		},
 		modalFields: {
 			header: "Configuração de campos do modal de tarefas",
-			description: "Configure quais campos aparecem nos modais de criação e edição de tarefas. Arraste os campos para reordená-los dentro de cada grupo.",
+			description:
+				"Configure quais campos aparecem nos modais de criação e edição de tarefas. Arraste os campos para reordená-los dentro de cada grupo.",
 			splitLayout: {
 				name: "Layout dividido em telas largas",
-				description: "Quando ativado, o editor de detalhes aparece em uma coluna à direita em telas de 900px ou mais. Quando desativado, o modal usa um layout empilhado."
+				description:
+					"Quando ativado, o editor de detalhes aparece em uma coluna à direita em telas de 900px ou mais. Quando desativado, o modal usa um layout empilhado.",
 			},
 			tabMovesFocus: {
 				name: "Tab move o foco no editor de detalhes",
-				description: "Quando ativado, Tab move do editor de detalhes para o próximo campo do modal e Shift+Tab para o campo anterior. Quando desativado, Tab e Shift+Tab usam o comportamento de indentação do editor Markdown."
+				description:
+					"Quando ativado, Tab move do editor de detalhes para o próximo campo do modal e Shift+Tab para o campo anterior. Quando desativado, Tab e Shift+Tab usam o comportamento de indentação do editor Markdown.",
 			},
 			sync: {
 				name: "Sincronizar campos de usuário",
-				description: "Clique para sincronizar campos personalizados das configurações de propriedades da tarefa para esta configuração.",
+				description:
+					"Clique para sincronizar campos personalizados das configurações de propriedades da tarefa para esta configuração.",
 				button: "Sincronizar campos de usuário",
-				notice: "Campos de usuário sincronizados com a configuração do modal"
+				notice: "Campos de usuário sincronizados com a configuração do modal",
 			},
 			reset: {
 				name: "Redefinir para os padrões",
-				description: "Redefine todas as configurações de campos para os valores padrão. Isso removerá todas as configurações personalizadas.",
+				description:
+					"Redefine todas as configurações de campos para os valores padrão. Isso removerá todas as configurações personalizadas.",
 				button: "Redefinir para os padrões",
 				confirmTitle: "Redefinir a configuração de campos",
-				confirmMessage: "Tem certeza de que deseja redefinir a configuração de campos para os padrões? Isso removerá todas as configurações de campos personalizadas.",
+				confirmMessage:
+					"Tem certeza de que deseja redefinir a configuração de campos para os padrões? Isso removerá todas as configurações de campos personalizadas.",
 				confirmText: "Redefinir",
 				cancelText: "Cancelar",
-				notice: "Configuração de campos redefinida para os padrões"
+				notice: "Configuração de campos redefinida para os padrões",
 			},
 			initError: "Erro: Não foi possível inicializar a configuração de campos",
 			manager: {
@@ -740,7 +762,7 @@ export const pt: TranslationTree = {
 					dependency: "Dependência",
 					organization: "Organização",
 				},
-			}
+			},
 		},
 		features: {
 			inlineTasks: {
@@ -806,7 +828,8 @@ export const pt: TranslationTree = {
 				},
 				enterToSubmit: {
 					name: "Enter salva a tarefa",
-					description: "Na entrada de linguagem natural, pressione Enter para salvar a tarefa. Shift+Enter insere uma quebra de linha, e Ctrl/Cmd+Enter continua salvando."
+					description:
+						"Na entrada de linguagem natural, pressione Enter para salvar a tarefa. Shift+Enter insere uma quebra de linha, e Ctrl/Cmd+Enter continua salvando.",
 				},
 				language: {
 					name: "Idioma da NLP",
@@ -1206,7 +1229,8 @@ export const pt: TranslationTree = {
 				},
 				propertyNamePlaceholder: "Digite o nome da propriedade",
 				propertyValuePlaceholder: "Digite o valor da propriedade",
-				incompletePropertyWarning: "Digite um nome de propriedade e um valor. O texto de exemplo não é uma configuração salva. O TaskNotes só pode identificar tarefas quando ambos estiverem definidos. Os filtros .base existentes devem corresponder a essas configurações.",
+				incompletePropertyWarning:
+					"Digite um nome de propriedade e um valor. O texto de exemplo não é uma configuração salva. O TaskNotes só pode identificar tarefas quando ambos estiverem definidos. Os filtros .base existentes devem corresponder a essas configurações.",
 				taskProperty: {
 					name: "Nome da propriedade da tarefa",
 					description: 'O nome da propriedade do frontmatter (ex: "categoria")',
@@ -2308,7 +2332,8 @@ export const pt: TranslationTree = {
 				},
 				showAllDayAsFree: {
 					name: "Mostrar eventos de tarefas de dia inteiro como livre",
-					description: "Tarefas exportadas como eventos de dia inteiro não bloqueiam a disponibilidade, incluindo as convertidas para dia inteiro. Eventos com horário continuam como ocupado. Use a sincronização de todas as tarefas para atualizar os eventos existentes.",
+					description:
+						"Tarefas exportadas como eventos de dia inteiro não bloqueiam a disponibilidade, incluindo as convertidas para dia inteiro. Eventos com horário continuam como ocupado. Use a sincronização de todas as tarefas para atualizar os eventos existentes.",
 				},
 				defaultDuration: {
 					name: "Duração padrão do evento",
@@ -2672,6 +2697,16 @@ export const pt: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Idioma alterado para {language}.",
+		recurringCompletion: {
+			completed: "Ocorrência concluída: {date}",
+			incomplete: "Marcada como incompleta: {date}",
+			next: "Próxima: {date}",
+			noNext: "Sem próxima ocorrência",
+			undo: "Desfazer",
+			undone: "Alteração da tarefa recorrente desfeita.",
+			conflict: "Não é possível desfazer: esta ocorrência ou seu agendamento mudou.",
+			failed: "Não foi possível desfazer a alteração da tarefa recorrente.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} está disponível.",
 			action: "Abrir nos plugins da comunidade",
@@ -3604,6 +3639,21 @@ export const pt: TranslationTree = {
 		},
 		notification: {
 			notices: {},
+			missed: {
+				prefixToday: "Lembrete perdido ({time})",
+				prefixOnDay: "Lembrete perdido ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "A tarefa {title} vencia {when}",
+				dueIs: "A tarefa {title} vence {when}",
+				scheduledWas: "A tarefa {title} estava agendada {when}",
+				scheduledIs: "A tarefa {title} está agendada {when}",
+				whenTodayAt: "às {time}",
+				whenOnDayAt: "em {day} às {time}",
+				whenOnDay: "em {day}",
+				whenToday: "hoje",
+				summaryTitle: "{count} lembretes do TaskNotes perdidos",
+				summaryMore: "{titles} e mais {count}",
+			},
 		},
 	},
 	ui: {

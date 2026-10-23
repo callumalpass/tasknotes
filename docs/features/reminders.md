@@ -126,7 +126,13 @@ Default reminders are useful for recurring habits, such as pre-deadline checks o
 
 ## Delivery and Sleep
 
-Reminders are delivered while Obsidian is running with notifications enabled. After sleep or a delayed scan, TaskNotes catches up unprocessed reminders from the last successful scan, up to 24 hours back. A reminder is delivered once per task, reminder ID, and effective reminder time during that runtime; changing its time allows a new delivery. This is not background push delivery when Obsidian is closed.
+Reminders are delivered while Obsidian is running with notifications enabled. This is not background push delivery when Obsidian is closed.
+
+When Obsidian starts, wakes from sleep, or runs a delayed scan, TaskNotes catches up reminders that came due since its last scan on this device, up to 24 hours back. Each device keeps its own record, so a reminder delivered on desktop is still caught up on mobile. Reminders from before notifications were enabled, or from before TaskNotes was first set up on the device, are not caught up.
+
+Caught-up reminders are labelled with the time they were missed, for example `Missed reminder (9:00 AM): Weekly review is due at 10:00 AM`. Only the latest missed reminder for each task is shown. When more than three tasks have missed reminders, they are combined into one summary that lists each task; click a task to open it.
+
+A reminder is delivered once per task, reminder ID, and effective reminder time; changing its time allows a new delivery.
 
 Archived tasks and completed tasks do not deliver reminders. For recurring tasks, completion is checked for the reminder's occurrence (the due/scheduled anchor for relative reminders).
 

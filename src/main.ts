@@ -11,6 +11,8 @@ import {
 
 type Nullable<T> = T | null;
 
+import { completeRecurringTaskWithUndo } from "./services/task-service/recurringCompletionUndo";
+import { showRecurringCompletionNotice } from "./ui/recurringCompletionNotice";
 import {
 	createDailyNote,
 	getDailyNote,
@@ -33,7 +35,7 @@ import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { ProjectSelectModal } from "./modals/ProjectSelectModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
-import { formatDateLabel, convertUTCToLocalCalendarDate } from "./utils/dateUtils";
+import { convertUTCToLocalCalendarDate } from "./utils/dateUtils";
 import { TaskManager } from "./utils/TaskManager";
 import { DependencyCache } from "./utils/DependencyCache";
 import { RequestDeduplicator, PredictivePrefetcher } from "./utils/RequestDeduplicator";
@@ -48,7 +50,7 @@ import type { ViewPerformanceService } from "./services/ViewPerformanceService";
 import { AutoArchiveService } from "./services/AutoArchiveService";
 import { ViewStateManager } from "./services/ViewStateManager";
 import { DragDropManager } from "./utils/DragDropManager";
-import { formatDateForStorage, parseDateToLocal, getTodayLocal } from "./utils/dateUtils";
+import { formatDateForStorage, getTodayLocal } from "./utils/dateUtils";
 import { ICSSubscriptionService } from "./services/ICSSubscriptionService";
 import { ICSNoteService } from "./services/ICSNoteService";
 import { StatusBarService } from "./ui/StatusBarService";
@@ -1246,24 +1248,17 @@ export default class TaskNotesPlugin extends Plugin {
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
-			const result = await this.taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
+			const { updatedTask, completed, undo } = await completeRecurringTaskWithUndo(
+				this,
 				task,
 				targetDate
 			);
-			// Task cards still represent the recurring parent, not the occurrence note.
-			const updatedTask =
-				result.path === task.path
-					? result
-					: (await this.cacheManager.getTaskInfo(task.path)) || task;
-
-			const dateStr = formatDateForStorage(targetDate);
-			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);
-			const action = wasCompleted ? "completed" : "marked incomplete";
-
-			// Format date for display: convert UTC-anchored date back to local display
-			const displayDate = parseDateToLocal(dateStr);
-			new Notice(
-				`Recurring task ${action} for ${formatDateLabel(displayDate, this.settings, "MMM d")}`
+			showRecurringCompletionNotice(
+				this,
+				updatedTask,
+				formatDateForStorage(targetDate),
+				completed,
+				undo
 			);
 			return updatedTask;
 		} catch (error) {

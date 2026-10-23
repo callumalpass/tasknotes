@@ -3,39 +3,52 @@ import { TranslationTree } from "../types";
 export const fr: TranslationTree = {
 	migrationRecognition: {
 		review: "TaskNotes a conservé {path} : les anciennes métadonnées sont manquantes, modifiées ou contiennent d’autres types. Terminez la synchronisation et redémarrez ; sinon, migrez une copie sauvegardée avec mdbase et vérifiez le type avant de réessayer.",
-		waiting: "TaskNotes a trouvé des métadonnées dans {path} sans mdbase.yaml et n’a pas créé d’autre collection. Terminez la synchronisation ou restaurez la configuration correspondante depuis une sauvegarde ; la migration sera réessayée à l’arrivée des métadonnées.",
-		support: "TaskNotes a conservé le fichier de support personnalisé {path}. Restaurez la version générée depuis une sauvegarde ou vérifiez et migrez une copie avec mdbase, puis redémarrez.",
+		waiting:
+			"TaskNotes a trouvé des métadonnées dans {path} sans mdbase.yaml et n’a pas créé d’autre collection. Terminez la synchronisation ou restaurez la configuration correspondante depuis une sauvegarde ; la migration sera réessayée à l’arrivée des métadonnées.",
+		support:
+			"TaskNotes a conservé le fichier de support personnalisé {path}. Restaurez la version générée depuis une sauvegarde ou vérifiez et migrez une copie avec mdbase, puis redémarrez.",
 	},
 	collectionCheck: {
-		repairChanged: "Le type de tâche ou les statuts autorisés ont changé, ou la réparation proposée n’est plus valide. Rien n’a été réparé ; vérifiez à nouveau la collection.",
-		unresolvedUserField: "Impossible de déterminer le type du champ personnalisé géré {field}. Vérifiez son schéma et le type de champ conservé avant d’enregistrer les paramètres. Les paramètres et métadonnées existants ont été conservés.",
-		membershipChanged: "L’appartenance à la collection ou l’enregistrement a changé depuis la vérification. Vérifiez à nouveau la collection.",
+		repairChanged:
+			"Le type de tâche ou les statuts autorisés ont changé, ou la réparation proposée n’est plus valide. Rien n’a été réparé ; vérifiez à nouveau la collection.",
+		unresolvedUserField:
+			"Impossible de déterminer le type du champ personnalisé géré {field}. Vérifiez son schéma et le type de champ conservé avant d’enregistrer les paramètres. Les paramètres et métadonnées existants ont été conservés.",
+		membershipChanged:
+			"L’appartenance à la collection ou l’enregistrement a changé depuis la vérification. Vérifiez à nouveau la collection.",
 		title: "Vérifier la collection",
-		invalidType: "{path} est incohérent : {issues}. Vérifiez implements.fields et binding avant de réessayer ; les paramètres du plugin ont été conservés.",
+		invalidType:
+			"{path} est incohérent : {issues}. Vérifiez implements.fields et binding avant de réessayer ; les paramètres du plugin ont été conservés.",
 		keptConfiguration: "TaskNotes a conservé la dernière configuration valide.",
-		description: "Vérifier les tâches sans modifier les notes. Les dates de création manquantes peuvent être complétées à partir de celles des fichiers. Les statuts invalides nécessitent votre choix. Les autres erreurs nécessitent une vérification manuelle.",
+		description:
+			"Vérifier les tâches sans modifier les notes. Les dates de création manquantes peuvent être complétées à partir de celles des fichiers. Les statuts invalides nécessitent votre choix. Les autres erreurs nécessitent une vérification manuelle.",
 		count: "Enregistrements invalides : {count}",
 		clean: "Aucune tâche invalide trouvée.",
 		check: "Vérifier à nouveau",
 		fix: "Sauvegarder et corriger",
 		fixAll: "Sauvegarder et appliquer les modifications choisies à tous les enregistrements",
 		chooseStatus: "Choisir un statut de remplacement",
-		confirm: "Appliquer uniquement les modifications ci-dessous ? Les notes originales seront sauvegardées dans .tasknotes/migrations avant chaque modification. Les statuts non sélectionnés et les autres erreurs resteront inchangés.",
+		confirm:
+			"Appliquer uniquement les modifications ci-dessous ? Les notes originales seront sauvegardées dans .tasknotes/migrations avant chaque modification. Les statuts non sélectionnés et les autres erreurs resteront inchangés.",
 		fixed: "Modifications approuvées enregistrées. Les sauvegardes se trouvent dans .tasknotes/migrations. Vérifiez les erreurs restantes.",
 		error: "Vérification ou correction de la collection interrompue. Aucune modification non approuvée n’a été effectuée.",
 	},
 	mdbaseSafety: {
-		settingsSaved: "TaskNotes a enregistré vos paramètres, mais n’a pas pu synchroniser le type mdbase canonique.",
-		blocked: "TaskNotes a arrêté la mise à jour des métadonnées mdbase. {details} Vérifiez le fichier indiqué et les copies de récupération, résolvez le conflit ou les permissions, puis rechargez TaskNotes. Les fichiers de tâches n’ont pas été modifiés.",
-		multiple: "Plusieurs types TaskNotes : {paths}. Gardez un fournisseur canonique ou déplacez les autres hors du dossier des types, puis rechargez TaskNotes. TaskNotes a conservé la dernière configuration valide.",
-		referenced: "TaskNotes a conservé {typePath} : {recordPath} fait explicitement référence à ce type. Vérifiez son appartenance avant de déplacer le fournisseur ; les fichiers de tâches n’ont pas été modifiés.",
+		settingsSaved:
+			"TaskNotes a enregistré vos paramètres, mais n’a pas pu synchroniser le type mdbase canonique.",
+		blocked:
+			"TaskNotes a arrêté la mise à jour des métadonnées mdbase. {details} Vérifiez le fichier indiqué et les copies de récupération, résolvez le conflit ou les permissions, puis rechargez TaskNotes. Les fichiers de tâches n’ont pas été modifiés.",
+		multiple:
+			"Plusieurs types TaskNotes : {paths}. Gardez un fournisseur canonique ou déplacez les autres hors du dossier des types, puis rechargez TaskNotes. TaskNotes a conservé la dernière configuration valide.",
+		referenced:
+			"TaskNotes a conservé {typePath} : {recordPath} fait explicitement référence à ce type. Vérifiez son appartenance avant de déplacer le fournisseur ; les fichiers de tâches n’ont pas été modifiés.",
 	},
 	onboarding: {
 		title: "Premiers pas avec TaskNotes",
 		intro: "Les tâches sont des notes Markdown dans votre coffre. Suivez ces trois étapes avec la palette de commandes.",
 		create: "Créez une tâche réelle et planifiez-la pour aujourd’hui.",
 		review: "Retrouvez votre tâche dans Aujourd’hui.",
-		complete: "Cliquez sur le statut jusqu’à ce que la tâche soit terminée. Elle quitte Aujourd’hui, mais sa note reste dans votre coffre.",
+		complete:
+			"Cliquez sur le statut jusqu’à ce que la tâche soit terminée. Elle quitte Aujourd’hui, mais sa note reste dans votre coffre.",
 		inbox: "Pour une capture sans date, effacez la date planifiée. La boîte de réception affiche les tâches incomplètes sans projet, date planifiée ni échéance.",
 		settings: "Les réglages, quand vous en avez besoin",
 	},
@@ -137,11 +150,13 @@ export const fr: TranslationTree = {
 			movement: {
 				parentAdd: "Ajouter comme sous-tâche",
 				parentChoose: "Ajouter comme sous-tâche de…",
-				parentPreview: "Ajouter comme sous-tâche de {parent}. Les autres projets restent inchangés.",
+				parentPreview:
+					"Ajouter comme sous-tâche de {parent}. Les autres projets restent inchangés.",
 				parentSelf: "Une tâche ne peut pas être son propre parent.",
 				parentCycle: "Impossible d’ajouter une tâche sous l’une de ses descendantes.",
 				parentAlready: "Déjà une sous-tâche de {parent}.",
-				parentUnavailable: "Les deux tâches doivent encore exister et être des tâches TaskNotes.",
+				parentUnavailable:
+					"Les deux tâches doivent encore exister et être des tâches TaskNotes.",
 				parentAssigned: "Ajoutée comme sous-tâche de {parent}.",
 				handle: "Déplacer la tâche",
 				moveTo: "Déplacer vers un groupe",
@@ -150,12 +165,15 @@ export const fr: TranslationTree = {
 				moveDown: "Descendre",
 				moved: "Tâche déplacée.",
 				undo: "Annuler",
-				undoConflict: "Annulation impossible : la tâche a été modifiée après le déplacement.",
+				undoConflict:
+					"Annulation impossible : la tâche a été modifiée après le déplacement.",
 				undoFailed: "Impossible d’annuler ce déplacement.",
 				noValue: "Aucune valeur",
 				otherDestinations: "Autres destinations",
-				readOnly: "Impossible de modifier {properties} : ces groupes sont en lecture seule.",
-				unresolved: "Impossible de déterminer les valeurs de {properties} pour cette destination.",
+				readOnly:
+					"Impossible de modifier {properties} : ces groupes sont en lecture seule.",
+				unresolved:
+					"Impossible de déterminer les valeurs de {properties} pour cette destination.",
 				noChange: "Déjà dans ce groupe.",
 				failed: "Impossible de déplacer la tâche. Vérifiez la tâche et réessayez.",
 			},
@@ -349,7 +367,8 @@ export const fr: TranslationTree = {
 					eventMaxStack: "Max. événements empilés (vue semaine/jour, 0 = illimité)",
 					dayMaxEvents: "Max. événements par jour (0 = automatique)",
 					dayMaxEventRows: "Max. lignes d'événements par jour (0 = illimité)",
-					spanScheduledToDue: "Étendre les tâches entre la date planifiée et la date d'échéance",
+					spanScheduledToDue:
+						"Étendre les tâches entre la date planifiée et la date d'échéance",
 					heightMode: "Mode de hauteur",
 					heightModeFill: "Remplir le conteneur",
 					heightModeAuto: "Hauteur automatique",
@@ -704,34 +723,41 @@ export const fr: TranslationTree = {
 		},
 		modalFields: {
 			header: "Configuration des champs de la modale de tâches",
-			description: "Configurez les champs affichés dans les modaux de création et de modification de tâches. Glissez les champs pour les réordonner dans chaque groupe.",
+			description:
+				"Configurez les champs affichés dans les modaux de création et de modification de tâches. Glissez les champs pour les réordonner dans chaque groupe.",
 			splitLayout: {
 				name: "Mise en page divisée sur grands écrans",
-				description: "Lorsque cette option est activée, l'éditeur de détails apparaît dans une colonne de droite sur les écrans de 900 px ou plus. Lorsqu'elle est désactivée, le modal utilise une mise en page empilée."
+				description:
+					"Lorsque cette option est activée, l'éditeur de détails apparaît dans une colonne de droite sur les écrans de 900 px ou plus. Lorsqu'elle est désactivée, le modal utilise une mise en page empilée.",
 			},
 			tabMovesFocus: {
 				name: "La tabulation déplace le focus dans l'éditeur de détails",
-				description: "Lorsque cette option est activée, Tab déplace le focus de l'éditeur de détails vers le champ suivant du modal et Maj+Tab vers le champ précédent. Lorsqu'elle est désactivée, Tab et Maj+Tab utilisent le comportement d'indentation de l'éditeur Markdown."
+				description:
+					"Lorsque cette option est activée, Tab déplace le focus de l'éditeur de détails vers le champ suivant du modal et Maj+Tab vers le champ précédent. Lorsqu'elle est désactivée, Tab et Maj+Tab utilisent le comportement d'indentation de l'éditeur Markdown.",
 			},
 			sync: {
 				name: "Synchroniser les champs utilisateur",
-				description: "Cliquez pour synchroniser les champs utilisateur personnalisés des paramètres de propriétés de tâches dans cette configuration.",
+				description:
+					"Cliquez pour synchroniser les champs utilisateur personnalisés des paramètres de propriétés de tâches dans cette configuration.",
 				button: "Synchroniser les champs utilisateur",
-				notice: "Champs utilisateur synchronisés avec la configuration du modal"
+				notice: "Champs utilisateur synchronisés avec la configuration du modal",
 			},
 			reset: {
 				name: "Rétablir les valeurs par défaut",
-				description: "Rétablit toutes les configurations de champs sur leurs valeurs par défaut. Cela supprimera toutes les configurations personnalisées.",
+				description:
+					"Rétablit toutes les configurations de champs sur leurs valeurs par défaut. Cela supprimera toutes les configurations personnalisées.",
 				button: "Rétablir les valeurs par défaut",
 				confirmTitle: "Réinitialisation de la configuration des champs",
-				confirmMessage: "Voulez-vous vraiment rétablir la configuration des champs par défaut ? Cela supprimera toutes les configurations de champs personnalisées.",
+				confirmMessage:
+					"Voulez-vous vraiment rétablir la configuration des champs par défaut ? Cela supprimera toutes les configurations de champs personnalisées.",
 				confirmText: "Réinitialiser",
 				cancelText: "Annuler",
-				notice: "Configuration des champs rétablie aux valeurs par défaut"
+				notice: "Configuration des champs rétablie aux valeurs par défaut",
 			},
 			initError: "Erreur : Impossible d'initialiser la configuration des champs",
 			manager: {
-				invalidConfig: "Erreur : Configuration des champs invalide. Veuillez rétablir les valeurs par défaut.",
+				invalidConfig:
+					"Erreur : Configuration des champs invalide. Veuillez rétablir les valeurs par défaut.",
 				emptyGroup: "Aucun champ dans ce groupe",
 				enabled: "Activé :",
 				showInCreation: "Afficher lors de la création :",
@@ -746,7 +772,7 @@ export const fr: TranslationTree = {
 					dependency: "Dépendance",
 					organization: "Organisation",
 				},
-			}
+			},
 		},
 		features: {
 			inlineTasks: {
@@ -813,7 +839,8 @@ export const fr: TranslationTree = {
 				},
 				enterToSubmit: {
 					name: "Entrée enregistre la tâche",
-					description: "Dans la saisie en langage naturel, appuyez sur Entrée pour enregistrer la tâche. Maj+Entrée insère un saut de ligne, et Ctrl/Cmd+Entrée enregistre toujours."
+					description:
+						"Dans la saisie en langage naturel, appuyez sur Entrée pour enregistrer la tâche. Maj+Entrée insère un saut de ligne, et Ctrl/Cmd+Entrée enregistre toujours.",
 				},
 				language: {
 					name: "Langue du NLP",
@@ -1217,7 +1244,8 @@ export const fr: TranslationTree = {
 				},
 				propertyNamePlaceholder: "Saisissez le nom de la propriété",
 				propertyValuePlaceholder: "Saisissez la valeur de la propriété",
-				incompletePropertyWarning: "Saisissez un nom de propriété et une valeur. Le texte d’exemple n’est pas une configuration enregistrée. TaskNotes ne peut identifier les tâches que lorsque les deux sont définis. Les filtres .base existants doivent correspondre à ces paramètres.",
+				incompletePropertyWarning:
+					"Saisissez un nom de propriété et une valeur. Le texte d’exemple n’est pas une configuration enregistrée. TaskNotes ne peut identifier les tâches que lorsque les deux sont définis. Les filtres .base existants doivent correspondre à ces paramètres.",
 				taskProperty: {
 					name: "Nom de la propriété de tâche",
 					description: 'Le nom de la propriété frontmatter (ex. "category")',
@@ -2323,7 +2351,8 @@ export const fr: TranslationTree = {
 				},
 				showAllDayAsFree: {
 					name: "Afficher les événements de tâches sur toute la journée comme disponible",
-					description: "Les tâches exportées sur toute la journée ne bloquent pas la disponibilité, y compris celles converties en événements sur toute la journée. Les événements avec une heure restent occupés. Utilisez la synchronisation de toutes les tâches pour mettre à jour les événements existants.",
+					description:
+						"Les tâches exportées sur toute la journée ne bloquent pas la disponibilité, y compris celles converties en événements sur toute la journée. Les événements avec une heure restent occupés. Utilisez la synchronisation de toutes les tâches pour mettre à jour les événements existants.",
 				},
 				defaultDuration: {
 					name: "Durée par défaut de l'événement",
@@ -2688,6 +2717,16 @@ export const fr: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Langue changée pour {language}.",
+		recurringCompletion: {
+			completed: "Occurrence terminée : {date}",
+			incomplete: "Marquée comme non terminée : {date}",
+			next: "Prochaine : {date}",
+			noNext: "Aucune prochaine occurrence",
+			undo: "Annuler",
+			undone: "Modification de la tâche récurrente annulée.",
+			conflict: "Impossible d’annuler : cette occurrence ou sa planification a changé.",
+			failed: "Impossible d’annuler la modification de la tâche récurrente.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} est disponible.",
 			action: "Ouvrir dans les plugins communautaires",
@@ -3628,6 +3667,23 @@ export const fr: TranslationTree = {
 		autoExport: {
 			notices: {
 				exportFailed: "Échec de l'export automatique TaskNotes : {error}",
+			},
+		},
+		notification: {
+			missed: {
+				prefixToday: "Rappel manqué ({time})",
+				prefixOnDay: "Rappel manqué ({day}, {time})",
+				message: "{prefix} : {text}",
+				dueWas: "La tâche « {title} » arrivait à échéance {when}",
+				dueIs: "La tâche « {title} » arrive à échéance {when}",
+				scheduledWas: "La tâche « {title} » était prévue {when}",
+				scheduledIs: "La tâche « {title} » est prévue {when}",
+				whenTodayAt: "à {time}",
+				whenOnDayAt: "le {day} à {time}",
+				whenOnDay: "le {day}",
+				whenToday: "aujourd'hui",
+				summaryTitle: "{count} rappels TaskNotes manqués",
+				summaryMore: "{titles} et {count} autres",
 			},
 		},
 	},

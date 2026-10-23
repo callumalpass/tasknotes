@@ -1,0 +1,12 @@
+{
+  "name": "@tasknotes/braces",
+  "version": "3.0.3-tasknotes.1",
+  "private": true,
+  "description": "TaskNotes-maintained braces 3.0.3 with bounded nesting",
+  "license": "MIT",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "main": "index.js",
+  "files": ["index.js", "lib", "LICENSE", "README.md", "PATCHES.md", "UPSTREAM-SHA256.json"],
+  "engines": { "node": ">=8" },
+  "dependencies": { "fill-range": "^7.1.1" }
+}

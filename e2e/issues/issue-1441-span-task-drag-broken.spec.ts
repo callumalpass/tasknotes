@@ -12,7 +12,7 @@ import * as path from 'path';
 import { launchObsidian, closeObsidian, ObsidianApp } from '../obsidian';
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
-const E2E_VAULT_DIR = path.join(PROJECT_ROOT, 'tasknotes-e2e-vault');
+const E2E_VAULT_DIR = path.resolve(process.env.TASKNOTES_E2E_VAULT_DIR ?? path.join(PROJECT_ROOT, 'tasknotes-e2e-vault'));
 const DEFAULT_CALENDAR_BASE = path.join(E2E_VAULT_DIR, 'TaskNotes/Views/calendar-default.base');
 const SPAN_BASE_RELATIVE_PATH = 'TaskNotes/Views/span-drag-e2e.base';
 const NO_SPAN_BASE_RELATIVE_PATH = 'TaskNotes/Views/span-drag-no-span-e2e.base';
@@ -173,20 +173,35 @@ function daysBetween(start: string, end: string): number {
 async function dragEventByOneDay(page: Page, event: Locator): Promise<void> {
   const eventBox = await event.boundingBox();
   expect(eventBox).not.toBeNull();
-  const firstDayBox = await page
-    .locator(`${ACTIVE_LEAF_SELECTOR} .fc-daygrid-day`)
-    .first()
-    .boundingBox();
-  expect(firstDayBox).not.toBeNull();
-
   const startX = eventBox!.x + eventBox!.width / 2;
   const startY = eventBox!.y + eventBox!.height / 2;
-  const targetX = startX + firstDayBox!.width;
+  const sourceDay = await page.locator(`${ACTIVE_LEAF_SELECTOR} .fc-daygrid-day`).evaluateAll(
+    (cells, point) => {
+      const cell = cells.find(candidate => {
+        const box = candidate.getBoundingClientRect();
+        return point.x >= box.left && point.x < box.right && point.y >= box.top && point.y < box.bottom;
+      });
+      if (!cell) return null;
+      const box = cell.getBoundingClientRect();
+      return { date: cell.getAttribute('data-date'), x: box.x, y: box.y };
+    },
+    { x: startX, y: startY }
+  );
+  expect(sourceDay?.date).toBeTruthy();
+  const nextDay = new Date(`${sourceDay!.date}T12:00:00`);
+  nextDay.setDate(nextDay.getDate() + 1);
+  const targetBox = await page.locator(
+    `${ACTIVE_LEAF_SELECTOR} .fc-daygrid-day[data-date="${formatLocalDate(nextDay)}"]`
+  ).boundingBox();
+  expect(targetBox).not.toBeNull();
+  // Saturday -> Sunday changes rows; a horizontal-only drag leaves the calendar.
+  const targetX = targetBox!.x + startX - sourceDay!.x;
+  const targetY = targetBox!.y + startY - sourceDay!.y;
 
   await page.mouse.move(startX, startY);
   await page.mouse.down();
   await page.waitForTimeout(150);
-  await page.mouse.move(targetX, startY, { steps: 12 });
+  await page.mouse.move(targetX, targetY, { steps: 12 });
   await page.waitForTimeout(150);
   await page.mouse.up();
   await page.waitForTimeout(1200);

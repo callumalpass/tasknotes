@@ -56,6 +56,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@callumalpass/mdbase-testbed": "0.1.0-rc.1",
+		"braces": "file:./vendor/braces",
 		"@codemirror/autocomplete": "^6.19.1",
 		"@codemirror/state": "^6.5.0",
 		"@electron/asar": "^3.4.1",
@@ -95,7 +96,7 @@
 		"@fullcalendar/list": "^6.1.17",
 		"@fullcalendar/multimonth": "^6.1.17",
 		"@fullcalendar/timegrid": "^6.1.17",
-		"@modelcontextprotocol/sdk": "1.26.0",
+		"@modelcontextprotocol/sdk": "1.32.1",
 		"@tasknotes/model": "0.3.0-rc.16",
 		"ajv": "8.20.0",
 		"ajv-formats": "3.0.1",
@@ -119,6 +120,9 @@
 		}
 	},
 	"overrides": {
-		"@hono/node-server": "2.1.0"
+		"@hono/node-server": "2.1.0",
+		"moment": "2.31.0",
+		"js-yaml": "4.3.2",
+		"braces": "$braces"
 	}
 }

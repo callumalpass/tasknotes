@@ -7,6 +7,7 @@ import { TasksController } from '../../../src/api/TasksController';
 import { WebhookController } from '../../../src/api/WebhookController';
 import { resolveLocalCORSOrigin } from '../../../src/api/httpUtils';
 import { PluginFactory, TaskFactory } from '../../helpers/mock-factories';
+import { createI18nService } from '../../../src/i18n';
 
 const task = () => TaskFactory.createTask({ path: 'Tasks/my-task-with-hyphens.md', status: 'open' });
 const statuses = { getCompletedStatuses: () => ['done'], isCompletedStatus: (s: string) => s === 'done' };
@@ -19,7 +20,7 @@ describe('reminder reliability', () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-06-01T10:00:00Z'));
     current = { ...task(), reminders: [{ id: 'rem-with-hyphens', type: 'absolute', absoluteTime: '2026-06-01T10:00:05Z' }] };
-    plugin = { settings: { defaultTaskStatus: 'open', notificationType: 'in-app' }, statusManager: statuses,
+    plugin = { settings: { defaultTaskStatus: 'open', notificationType: 'in-app' }, statusManager: statuses, i18n: createI18nService(),
       cacheManager: { getAllCachedTasks: () => [current] },
       app: { vault: { getAbstractFileByPath: () => new TFile(current.path) }, metadataCache: { getFileCache: () => ({ frontmatter: current }) } },
       fieldMapper: { mapFromFrontmatter: (fm: any) => fm } };

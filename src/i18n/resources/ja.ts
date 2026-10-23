@@ -3,40 +3,52 @@ import { TranslationTree } from "../types";
 export const ja: TranslationTree = {
 	migrationRecognition: {
 		review: "TaskNotes は {path} を変更せずに保持しました。旧形式のメタデータが不足しているか、編集されているか、他の型が含まれています。同期を完了して再起動してください。解決しない場合は、バックアップしたコピーを mdbase で移行し、型を確認してから再試行してください。",
-		waiting: "TaskNotes は {path} に mdbase.yaml のないメタデータを検出したため、別のコレクションを作成しませんでした。同期を完了するか、対応する設定をバックアップから復元してください。メタデータの到着時に移行を再試行します。",
-		support: "TaskNotes はカスタマイズされた補助ファイル {path} を保持しました。生成されたバージョンをバックアップから復元するか、コピーを確認して mdbase で移行し、再起動してください。",
+		waiting:
+			"TaskNotes は {path} に mdbase.yaml のないメタデータを検出したため、別のコレクションを作成しませんでした。同期を完了するか、対応する設定をバックアップから復元してください。メタデータの到着時に移行を再試行します。",
+		support:
+			"TaskNotes はカスタマイズされた補助ファイル {path} を保持しました。生成されたバージョンをバックアップから復元するか、コピーを確認して mdbase で移行し、再起動してください。",
 	},
 	collectionCheck: {
-		repairChanged: "タスクの型または使用可能なステータスが変更されたか、提案された修復が無効になりました。修復は行われていません。コレクションをもう一度確認してください。",
-		unresolvedUserField: "管理対象のカスタムフィールド {field} の型を判定できません。設定を保存する前に、スキーマと保持されたフィールドの型を確認してください。既存の設定とメタデータは保持されています。",
-		membershipChanged: "コレクションの確認後に所属条件またはレコードが変更されました。もう一度確認してください。",
+		repairChanged:
+			"タスクの型または使用可能なステータスが変更されたか、提案された修復が無効になりました。修復は行われていません。コレクションをもう一度確認してください。",
+		unresolvedUserField:
+			"管理対象のカスタムフィールド {field} の型を判定できません。設定を保存する前に、スキーマと保持されたフィールドの型を確認してください。既存の設定とメタデータは保持されています。",
+		membershipChanged:
+			"コレクションの確認後に所属条件またはレコードが変更されました。もう一度確認してください。",
 		title: "コレクションを確認",
-		invalidType: "{path} に不整合があります: {issues}。再試行する前に implements.fields と binding を確認してください。プラグイン設定は保持されました。",
+		invalidType:
+			"{path} に不整合があります: {issues}。再試行する前に implements.fields と binding を確認してください。プラグイン設定は保持されました。",
 		keptConfiguration: "TaskNotes は最後の正常な設定を保持しました。",
 
-		description: "ノートを変更せずにタスクを検証します。作成日時がない場合はファイルの作成日時で補えます。無効なステータスは置き換え先を選ぶ必要があります。その他のエラーは手動で確認してください。",
+		description:
+			"ノートを変更せずにタスクを検証します。作成日時がない場合はファイルの作成日時で補えます。無効なステータスは置き換え先を選ぶ必要があります。その他のエラーは手動で確認してください。",
 		count: "無効なレコード: {count}",
 		clean: "無効なタスクレコードはありません。",
 		check: "再確認",
 		fix: "バックアップして修正",
 		fixAll: "すべてのレコードで選択した変更をバックアップして適用",
 		chooseStatus: "置き換え先のステータスを選択",
-		confirm: "以下の変更のみ適用しますか？変更前に元のノートを .tasknotes/migrations にバックアップします。未選択のステータスとその他のエラーは変更しません。",
+		confirm:
+			"以下の変更のみ適用しますか？変更前に元のノートを .tasknotes/migrations にバックアップします。未選択のステータスとその他のエラーは変更しません。",
 		fixed: "承認された変更を保存しました。バックアップは .tasknotes/migrations にあります。残りのエラーを確認してください。",
 		error: "コレクションの確認または修正を停止しました。未承認の変更は行っていません。",
 	},
 	mdbaseSafety: {
 		settingsSaved: "TaskNotesは設定を保存しましたが、正規のmdbase型を同期できませんでした。",
-		blocked: "TaskNotes は mdbase メタデータの更新を停止しました。{details} 表示されたファイルと復旧用コピーを確認し、競合またはアクセス権を解決してから TaskNotes を再読み込みしてください。タスクファイルは変更されていません。",
-		multiple: "TaskNotes の型が複数あります: {paths}。正規のプロバイダーを1つ残すか、他の型を型フォルダーの外へ移動してから TaskNotes を再読み込みしてください。TaskNotes は最後に確認された有効な設定を保持しました。",
-		referenced: "TaskNotes は {typePath} を保持しました。{recordPath} がこの型を明示的に参照しています。プロバイダーを移動する前に型への所属を確認してください。タスクファイルは変更されていません。",
+		blocked:
+			"TaskNotes は mdbase メタデータの更新を停止しました。{details} 表示されたファイルと復旧用コピーを確認し、競合またはアクセス権を解決してから TaskNotes を再読み込みしてください。タスクファイルは変更されていません。",
+		multiple:
+			"TaskNotes の型が複数あります: {paths}。正規のプロバイダーを1つ残すか、他の型を型フォルダーの外へ移動してから TaskNotes を再読み込みしてください。TaskNotes は最後に確認された有効な設定を保持しました。",
+		referenced:
+			"TaskNotes は {typePath} を保持しました。{recordPath} がこの型を明示的に参照しています。プロバイダーを移動する前に型への所属を確認してください。タスクファイルは変更されていません。",
 	},
 	onboarding: {
 		title: "TaskNotes を始める",
 		intro: "タスクは保管庫内の Markdown ノートです。コマンドパレットで次の3つの手順を試してください。",
 		create: "実際のタスクを作成し、今日に予定を設定します。",
 		review: "「今日」ビューでタスクを確認します。",
-		complete: "完了になるまで状態ボタンをクリックします。「今日」からは消えますが、ノートは保管庫に残ります。",
+		complete:
+			"完了になるまで状態ボタンをクリックします。「今日」からは消えますが、ノートは保管庫に残ります。",
 		inbox: "日付を付けずに記録するには予定日を消します。受信トレイにはプロジェクト、予定日、期限のない未完了タスクが表示されます。",
 		settings: "必要になったら設定する",
 	},
@@ -138,7 +150,8 @@ export const ja: TranslationTree = {
 			movement: {
 				parentAdd: "サブタスクとして追加",
 				parentChoose: "サブタスクの親を選択…",
-				parentPreview: "{parent} のサブタスクとして追加します。他のプロジェクトは変更されません。",
+				parentPreview:
+					"{parent} のサブタスクとして追加します。他のプロジェクトは変更されません。",
 				parentSelf: "タスクを自身の親にすることはできません。",
 				parentCycle: "子孫タスクの下にタスクを追加することはできません。",
 				parentAlready: "すでに {parent} のサブタスクです。",
@@ -694,30 +707,36 @@ export const ja: TranslationTree = {
 		},
 		modalFields: {
 			header: "タスクモーダルのフィールド設定",
-			description: "タスク作成モーダルと編集モーダルに表示するフィールドを設定します。フィールドをドラッグして各グループ内で並べ替えできます。",
+			description:
+				"タスク作成モーダルと編集モーダルに表示するフィールドを設定します。フィールドをドラッグして各グループ内で並べ替えできます。",
 			splitLayout: {
 				name: "ワイド画面で分割レイアウト",
-				description: "有効にすると、900px 以上の画面で詳細エディタが右側の列に表示されます。無効にすると、モーダルは積み重ねレイアウトを使用します。"
+				description:
+					"有効にすると、900px 以上の画面で詳細エディタが右側の列に表示されます。無効にすると、モーダルは積み重ねレイアウトを使用します。",
 			},
 			tabMovesFocus: {
 				name: "詳細エディタで Tab キーがフォーカスを移動",
-				description: "有効にすると、Tab キーで詳細エディタから次のモーダルフィールドへ、Shift+Tab キーで前のフィールドへフォーカスが移動します。無効にすると、Tab キーと Shift+Tab キーは Markdown エディタのインデント動作を使用します。"
+				description:
+					"有効にすると、Tab キーで詳細エディタから次のモーダルフィールドへ、Shift+Tab キーで前のフィールドへフォーカスが移動します。無効にすると、Tab キーと Shift+Tab キーは Markdown エディタのインデント動作を使用します。",
 			},
 			sync: {
 				name: "ユーザーフィールドを同期",
-				description: "クリックして、タスクプロパティ設定のカスタムユーザーフィールドをこの設定に同期します。",
+				description:
+					"クリックして、タスクプロパティ設定のカスタムユーザーフィールドをこの設定に同期します。",
 				button: "ユーザーフィールドを同期",
-				notice: "ユーザーフィールドがモーダル設定に同期されました"
+				notice: "ユーザーフィールドがモーダル設定に同期されました",
 			},
 			reset: {
 				name: "既定値にリセット",
-				description: "すべてのフィールド設定を既定値にリセットします。カスタム設定はすべて削除されます。",
+				description:
+					"すべてのフィールド設定を既定値にリセットします。カスタム設定はすべて削除されます。",
 				button: "既定値にリセット",
 				confirmTitle: "フィールド設定を既定値にリセット",
-				confirmMessage: "フィールド設定を既定値にリセットしますか？カスタムフィールド設定はすべて削除されます。",
+				confirmMessage:
+					"フィールド設定を既定値にリセットしますか？カスタムフィールド設定はすべて削除されます。",
 				confirmText: "リセット",
 				cancelText: "キャンセル",
-				notice: "フィールド設定が既定値にリセットされました"
+				notice: "フィールド設定が既定値にリセットされました",
 			},
 			initError: "エラー: フィールド設定を初期化できませんでした",
 			manager: {
@@ -736,7 +755,7 @@ export const ja: TranslationTree = {
 					dependency: "依存関係",
 					organization: "整理",
 				},
-			}
+			},
 		},
 		features: {
 			inlineTasks: {
@@ -799,7 +818,8 @@ export const ja: TranslationTree = {
 				},
 				enterToSubmit: {
 					name: "Enter でタスクを保存",
-					description: "自然言語入力で Enter キーを押すとタスクを保存します。Shift+Enter で改行を挿入し、Ctrl/Cmd+Enter でも引き続き保存できます。"
+					description:
+						"自然言語入力で Enter キーを押すとタスクを保存します。Shift+Enter で改行を挿入し、Ctrl/Cmd+Enter でも引き続き保存できます。",
 				},
 				language: {
 					name: "NLP言語",
@@ -1185,7 +1205,8 @@ export const ja: TranslationTree = {
 				},
 				propertyNamePlaceholder: "プロパティ名を入力",
 				propertyValuePlaceholder: "プロパティ値を入力",
-				incompletePropertyWarning: "プロパティ名と値の両方を入力してください。例のテキストは保存された設定ではありません。両方を設定するまで、TaskNotes はタスクを識別できません。既存の .base フィルターもこの設定に合わせてください。",
+				incompletePropertyWarning:
+					"プロパティ名と値の両方を入力してください。例のテキストは保存された設定ではありません。両方を設定するまで、TaskNotes はタスクを識別できません。既存の .base フィルターもこの設定に合わせてください。",
 				taskProperty: {
 					name: "タスクプロパティ名",
 					description: 'フロントマタープロパティ名（例："category"）',
@@ -2259,7 +2280,8 @@ export const ja: TranslationTree = {
 				},
 				showAllDayAsFree: {
 					name: "終日のタスク予定を予定なしとして表示",
-					description: "終日としてエクスポートされたタスクは、終日に変換されたものも含め、空き時間を妨げません。時刻のある予定は「予定あり」のままです。既存の予定への変更を適用するには、すべてのタスクの同期を実行してください。",
+					description:
+						"終日としてエクスポートされたタスクは、終日に変換されたものも含め、空き時間を妨げません。時刻のある予定は「予定あり」のままです。既存の予定への変更を適用するには、すべてのタスクの同期を実行してください。",
 				},
 				defaultDuration: {
 					name: "デフォルトのイベント期間",
@@ -2618,6 +2640,16 @@ export const ja: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "言語を{language}に変更しました。",
+		recurringCompletion: {
+			completed: "完了した繰り返し: {date}",
+			incomplete: "未完了に変更: {date}",
+			next: "次回: {date}",
+			noNext: "次回の繰り返しはありません",
+			undo: "元に戻す",
+			undone: "繰り返しタスクの変更を元に戻しました。",
+			conflict: "元に戻せません。この回または予定が変更されています。",
+			failed: "繰り返しタスクの変更を元に戻せませんでした。",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} が利用可能です。",
 			action: "コミュニティプラグインで開く",
@@ -3541,6 +3573,23 @@ export const ja: TranslationTree = {
 		autoExport: {
 			notices: {
 				exportFailed: "TaskNotes自動エクスポートに失敗しました：{error}",
+			},
+		},
+		notification: {
+			missed: {
+				prefixToday: "見逃したリマインダー（{time}）",
+				prefixOnDay: "見逃したリマインダー（{day} {time}）",
+				message: "{prefix}：{text}",
+				dueWas: "{title}の期限は{when}でした",
+				dueIs: "{title}の期限は{when}です",
+				scheduledWas: "{title}は{when}に予定されていました",
+				scheduledIs: "{title}は{when}に予定されています",
+				whenTodayAt: "{time}",
+				whenOnDayAt: "{day} {time}",
+				whenOnDay: "{day}",
+				whenToday: "今日",
+				summaryTitle: "見逃したTaskNotesリマインダー：{count}件",
+				summaryMore: "{titles} ほか{count}件",
 			},
 		},
 	},

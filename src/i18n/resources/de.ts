@@ -3,39 +3,52 @@ import { TranslationTree } from "../types";
 export const de: TranslationTree = {
 	migrationRecognition: {
 		review: "TaskNotes hat {path} unverändert gelassen: Ältere Metadaten fehlen, wurden bearbeitet oder enthalten weitere Typen. Schließen Sie die Synchronisierung ab und starten Sie neu. Andernfalls migrieren Sie eine gesicherte Kopie mit mdbase und prüfen Sie den Typ vor einem erneuten Versuch.",
-		waiting: "TaskNotes hat Metadaten in {path} ohne mdbase.yaml gefunden und keine weitere Sammlung erstellt. Schließen Sie die Synchronisierung ab oder stellen Sie die passende Konfiguration aus einer Sicherung wieder her. Die Migration wird beim Eintreffen der Metadaten erneut versucht.",
-		support: "TaskNotes hat die angepasste Hilfsdatei {path} unverändert gelassen. Stellen Sie die generierte Version aus einer Sicherung wieder her oder prüfen und migrieren Sie eine Kopie mit mdbase. Starten Sie danach neu.",
+		waiting:
+			"TaskNotes hat Metadaten in {path} ohne mdbase.yaml gefunden und keine weitere Sammlung erstellt. Schließen Sie die Synchronisierung ab oder stellen Sie die passende Konfiguration aus einer Sicherung wieder her. Die Migration wird beim Eintreffen der Metadaten erneut versucht.",
+		support:
+			"TaskNotes hat die angepasste Hilfsdatei {path} unverändert gelassen. Stellen Sie die generierte Version aus einer Sicherung wieder her oder prüfen und migrieren Sie eine Kopie mit mdbase. Starten Sie danach neu.",
 	},
 	collectionCheck: {
-		repairChanged: "Der Aufgabentyp oder die zulässigen Statuswerte haben sich geändert, oder die vorgeschlagene Reparatur ist nicht mehr gültig. Es wurde nichts repariert; prüfe die Sammlung erneut.",
-		unresolvedUserField: "Der Typ des verwalteten benutzerdefinierten Feldes {field} kann nicht bestimmt werden. Prüfe vor dem Speichern das Schema und den beibehaltenen Feldtyp. Bestehende Einstellungen und Metadaten wurden beibehalten.",
-		membershipChanged: "Die Sammlungszugehörigkeit oder der Datensatz wurde seit der Prüfung geändert. Prüfe die Sammlung erneut.",
+		repairChanged:
+			"Der Aufgabentyp oder die zulässigen Statuswerte haben sich geändert, oder die vorgeschlagene Reparatur ist nicht mehr gültig. Es wurde nichts repariert; prüfe die Sammlung erneut.",
+		unresolvedUserField:
+			"Der Typ des verwalteten benutzerdefinierten Feldes {field} kann nicht bestimmt werden. Prüfe vor dem Speichern das Schema und den beibehaltenen Feldtyp. Bestehende Einstellungen und Metadaten wurden beibehalten.",
+		membershipChanged:
+			"Die Sammlungszugehörigkeit oder der Datensatz wurde seit der Prüfung geändert. Prüfe die Sammlung erneut.",
 		title: "Sammlung prüfen",
-		invalidType: "{path} ist inkonsistent: {issues}. Prüfe implements.fields und binding vor einem erneuten Versuch; die Plugin-Einstellungen wurden beibehalten.",
+		invalidType:
+			"{path} ist inkonsistent: {issues}. Prüfe implements.fields und binding vor einem erneuten Versuch; die Plugin-Einstellungen wurden beibehalten.",
 		keptConfiguration: "TaskNotes hat die letzte gültige Konfiguration beibehalten.",
-		description: "Aufgaben prüfen, ohne Notizen zu ändern. Fehlende Erstellungsdaten können aus der Dateierstellungszeit ergänzt werden. Ungültige Status erfordern deine Auswahl. Andere Fehler müssen manuell geprüft werden.",
+		description:
+			"Aufgaben prüfen, ohne Notizen zu ändern. Fehlende Erstellungsdaten können aus der Dateierstellungszeit ergänzt werden. Ungültige Status erfordern deine Auswahl. Andere Fehler müssen manuell geprüft werden.",
 		count: "Ungültige Datensätze: {count}",
 		clean: "Keine ungültigen Aufgaben gefunden.",
 		check: "Erneut prüfen",
 		fix: "Sichern und korrigieren",
 		fixAll: "Ausgewählte Änderungen in allen Datensätzen sichern und anwenden",
 		chooseStatus: "Einen Ersatzstatus auswählen",
-		confirm: "Nur die unten aufgeführten Änderungen anwenden? Vor jeder Änderung werden die Originalnotizen unter .tasknotes/migrations gesichert. Nicht ausgewählte Status und andere Fehler bleiben unverändert.",
+		confirm:
+			"Nur die unten aufgeführten Änderungen anwenden? Vor jeder Änderung werden die Originalnotizen unter .tasknotes/migrations gesichert. Nicht ausgewählte Status und andere Fehler bleiben unverändert.",
 		fixed: "Genehmigte Änderungen gespeichert. Sicherungen befinden sich unter .tasknotes/migrations. Verbleibende Fehler prüfen.",
 		error: "Prüfung oder Korrektur der Sammlung gestoppt. Es wurden keine ungenehmigten Änderungen vorgenommen.",
 	},
 	mdbaseSafety: {
-		settingsSaved: "TaskNotes hat deine Einstellungen gespeichert, konnte aber den kanonischen mdbase-Typ nicht synchronisieren.",
-		blocked: "TaskNotes hat die Aktualisierung der mdbase-Metadaten gestoppt. {details} Prüfen Sie die angegebene Datei und die Sicherungskopien, beheben Sie den Konflikt oder die Zugriffsrechte und laden Sie TaskNotes neu. Aufgabendateien wurden nicht geändert.",
-		multiple: "Mehrere TaskNotes-Typen: {paths}. Behalten Sie einen kanonischen Anbieter oder verschieben Sie die anderen aus dem Typenordner und laden Sie TaskNotes neu. TaskNotes hat die letzte gültige Konfiguration beibehalten.",
-		referenced: "TaskNotes hat {typePath} beibehalten: {recordPath} verweist ausdrücklich auf diesen Typ. Prüfen Sie die Typzugehörigkeit, bevor Sie den Anbieter verschieben; Aufgabendateien wurden nicht geändert.",
+		settingsSaved:
+			"TaskNotes hat deine Einstellungen gespeichert, konnte aber den kanonischen mdbase-Typ nicht synchronisieren.",
+		blocked:
+			"TaskNotes hat die Aktualisierung der mdbase-Metadaten gestoppt. {details} Prüfen Sie die angegebene Datei und die Sicherungskopien, beheben Sie den Konflikt oder die Zugriffsrechte und laden Sie TaskNotes neu. Aufgabendateien wurden nicht geändert.",
+		multiple:
+			"Mehrere TaskNotes-Typen: {paths}. Behalten Sie einen kanonischen Anbieter oder verschieben Sie die anderen aus dem Typenordner und laden Sie TaskNotes neu. TaskNotes hat die letzte gültige Konfiguration beibehalten.",
+		referenced:
+			"TaskNotes hat {typePath} beibehalten: {recordPath} verweist ausdrücklich auf diesen Typ. Prüfen Sie die Typzugehörigkeit, bevor Sie den Anbieter verschieben; Aufgabendateien wurden nicht geändert.",
 	},
 	onboarding: {
 		title: "Erste Schritte mit TaskNotes",
 		intro: "Aufgaben sind Markdown-Notizen in deinem Vault. Nutze die Befehlspalette für diese drei Schritte.",
 		create: "Erstelle eine echte Aufgabe und plane sie für heute.",
 		review: "Finde deine Aufgabe in Heute.",
-		complete: "Klicke auf den Status, bis die Aufgabe erledigt ist. Sie verschwindet aus Heute, aber ihre Notiz bleibt im Vault.",
+		complete:
+			"Klicke auf den Status, bis die Aufgabe erledigt ist. Sie verschwindet aus Heute, aber ihre Notiz bleibt im Vault.",
 		inbox: "Entferne für eine undatierte Erfassung das geplante Datum. Der Eingang zeigt unerledigte Aufgaben ohne Projekt, geplantes Datum oder Fälligkeitsdatum.",
 		settings: "Einstellungen, wenn du sie brauchst",
 	},
@@ -137,11 +150,13 @@ export const de: TranslationTree = {
 			movement: {
 				parentAdd: "Als Unteraufgabe hinzufügen",
 				parentChoose: "Als Unteraufgabe hinzufügen zu…",
-				parentPreview: "Als Unteraufgabe von {parent} hinzufügen. Andere Projekte bleiben unverändert.",
+				parentPreview:
+					"Als Unteraufgabe von {parent} hinzufügen. Andere Projekte bleiben unverändert.",
 				parentSelf: "Eine Aufgabe kann nicht ihre eigene übergeordnete Aufgabe sein.",
 				parentCycle: "Eine Aufgabe kann keiner ihrer Unteraufgaben untergeordnet werden.",
 				parentAlready: "Bereits eine Unteraufgabe von {parent}.",
-				parentUnavailable: "Beide Aufgaben müssen noch existieren und TaskNotes-Aufgaben sein.",
+				parentUnavailable:
+					"Beide Aufgaben müssen noch existieren und TaskNotes-Aufgaben sein.",
 				parentAssigned: "Als Unteraufgabe von {parent} hinzugefügt.",
 				handle: "Aufgabe verschieben",
 				moveTo: "In eine Gruppe verschieben",
@@ -150,12 +165,15 @@ export const de: TranslationTree = {
 				moveDown: "Nach unten verschieben",
 				moved: "Aufgabe verschoben.",
 				undo: "Rückgängig",
-				undoConflict: "Rückgängig nicht möglich: Die Aufgabe wurde nach dem Verschieben geändert.",
+				undoConflict:
+					"Rückgängig nicht möglich: Die Aufgabe wurde nach dem Verschieben geändert.",
 				undoFailed: "Das Verschieben konnte nicht rückgängig gemacht werden.",
 				noValue: "Kein Wert",
 				otherDestinations: "Weitere Ziele",
-				readOnly: "{properties} können nicht geändert werden: Diese Gruppen sind schreibgeschützt.",
-				unresolved: "Die Werte für {properties} können für dieses Ziel nicht ermittelt werden.",
+				readOnly:
+					"{properties} können nicht geändert werden: Diese Gruppen sind schreibgeschützt.",
+				unresolved:
+					"Die Werte für {properties} können für dieses Ziel nicht ermittelt werden.",
 				noChange: "Bereits in dieser Gruppe.",
 				failed: "Die Aufgabe konnte nicht verschoben werden. Prüfe die Aufgabe und versuche es erneut.",
 			},
@@ -345,7 +363,8 @@ export const de: TranslationTree = {
 					minimumEventHeight: "Minimale Ereignishöhe (px)",
 					slotEventOverlap: "Ereignisüberlappung zulassen",
 					enableSearch: "Suchfeld aktivieren",
-					eventMaxStack: "Max. gestapelte Ereignisse (Wochen-/Tagesansicht, 0 = unbegrenzt)",
+					eventMaxStack:
+						"Max. gestapelte Ereignisse (Wochen-/Tagesansicht, 0 = unbegrenzt)",
 					dayMaxEvents: "Max. Ereignisse pro Tag (0 = automatisch)",
 					dayMaxEventRows: "Max. Ereigniszeilen pro Tag (0 = unbegrenzt)",
 					spanScheduledToDue: "Aufgaben zwischen geplantem und Fälligkeitsdatum spannen",
@@ -699,34 +718,41 @@ export const de: TranslationTree = {
 		},
 		modalFields: {
 			header: "Feldkonfiguration des Aufgaben-Modals",
-			description: "Konfigurieren Sie, welche Felder in den Modalen zur Aufgabenerstellung und -bearbeitung angezeigt werden. Ziehen Sie Felder, um sie innerhalb jeder Gruppe neu anzuordnen.",
+			description:
+				"Konfigurieren Sie, welche Felder in den Modalen zur Aufgabenerstellung und -bearbeitung angezeigt werden. Ziehen Sie Felder, um sie innerhalb jeder Gruppe neu anzuordnen.",
 			splitLayout: {
 				name: "Geteiltes Layout auf breiten Bildschirmen",
-				description: "Wenn aktiviert, erscheint der Detail-Editor auf Bildschirmen mit 900 px oder mehr in einer rechten Spalte. Wenn deaktiviert, verwendet das Modal ein gestapeltes Layout."
+				description:
+					"Wenn aktiviert, erscheint der Detail-Editor auf Bildschirmen mit 900 px oder mehr in einer rechten Spalte. Wenn deaktiviert, verwendet das Modal ein gestapeltes Layout.",
 			},
 			tabMovesFocus: {
 				name: "Tabulator bewegt den Fokus im Detail-Editor",
-				description: "Wenn aktiviert, bewegt Tab den Fokus vom Detail-Editor zum nächsten Modalfeld und Umschalt+Tab zum vorherigen Feld. Wenn deaktiviert, verwenden Tab und Umschalt+Tab das Einrückungsverhalten des Markdown-Editors."
+				description:
+					"Wenn aktiviert, bewegt Tab den Fokus vom Detail-Editor zum nächsten Modalfeld und Umschalt+Tab zum vorherigen Feld. Wenn deaktiviert, verwenden Tab und Umschalt+Tab das Einrückungsverhalten des Markdown-Editors.",
 			},
 			sync: {
 				name: "Benutzerfelder synchronisieren",
-				description: "Klicken Sie, um benutzerdefinierte Felder aus den Aufgabeneigenschaften-Einstellungen in diese Konfiguration zu synchronisieren.",
+				description:
+					"Klicken Sie, um benutzerdefinierte Felder aus den Aufgabeneigenschaften-Einstellungen in diese Konfiguration zu synchronisieren.",
 				button: "Benutzerfelder synchronisieren",
-				notice: "Benutzerfelder wurden mit der Modalkonfiguration synchronisiert"
+				notice: "Benutzerfelder wurden mit der Modalkonfiguration synchronisiert",
 			},
 			reset: {
 				name: "Auf Standardwerte zurücksetzen",
-				description: "Setzt alle Feldkonfigurationen auf ihre Standardwerte zurück. Dadurch werden alle benutzerdefinierten Konfigurationen entfernt.",
+				description:
+					"Setzt alle Feldkonfigurationen auf ihre Standardwerte zurück. Dadurch werden alle benutzerdefinierten Konfigurationen entfernt.",
 				button: "Auf Standardwerte zurücksetzen",
 				confirmTitle: "Felderkonfiguration zurücksetzen",
-				confirmMessage: "Möchten Sie die Feldkonfiguration wirklich auf die Standardwerte zurücksetzen? Dadurch werden alle benutzerdefinierten Feldkonfigurationen entfernt.",
+				confirmMessage:
+					"Möchten Sie die Feldkonfiguration wirklich auf die Standardwerte zurücksetzen? Dadurch werden alle benutzerdefinierten Feldkonfigurationen entfernt.",
 				confirmText: "Zurücksetzen",
 				cancelText: "Abbrechen",
-				notice: "Feldkonfiguration auf Standardwerte zurückgesetzt"
+				notice: "Feldkonfiguration auf Standardwerte zurückgesetzt",
 			},
 			initError: "Fehler: Feldkonfiguration konnte nicht initialisiert werden",
 			manager: {
-				invalidConfig: "Fehler: Ungültige Feldkonfiguration. Bitte auf Standardwerte zurücksetzen.",
+				invalidConfig:
+					"Fehler: Ungültige Feldkonfiguration. Bitte auf Standardwerte zurücksetzen.",
 				emptyGroup: "Keine Felder in dieser Gruppe",
 				enabled: "Aktiviert:",
 				showInCreation: "Bei der Erstellung anzeigen:",
@@ -741,7 +767,7 @@ export const de: TranslationTree = {
 					dependency: "Abhängigkeit",
 					organization: "Organisation",
 				},
-			}
+			},
 		},
 		features: {
 			inlineTasks: {
@@ -807,7 +833,8 @@ export const de: TranslationTree = {
 				},
 				enterToSubmit: {
 					name: "Enter speichert Aufgabe",
-					description: "Im Eingabefeld für natürliche Sprache speichert Enter die Aufgabe. Umschalt+Enter fügt einen Zeilenumbruch ein, und Strg/Cmd+Enter speichert weiterhin."
+					description:
+						"Im Eingabefeld für natürliche Sprache speichert Enter die Aufgabe. Umschalt+Enter fügt einen Zeilenumbruch ein, und Strg/Cmd+Enter speichert weiterhin.",
 				},
 				language: {
 					name: "NLP-Sprache",
@@ -1203,7 +1230,8 @@ export const de: TranslationTree = {
 				},
 				propertyNamePlaceholder: "Eigenschaftsnamen eingeben",
 				propertyValuePlaceholder: "Eigenschaftswert eingeben",
-				incompletePropertyWarning: "Geben Sie einen Eigenschaftsnamen und einen Wert ein. Beispieltext ist keine gespeicherte Konfiguration. TaskNotes kann Aufgaben erst erkennen, wenn beide festgelegt sind. Bestehende .base-Filter müssen diesen Einstellungen entsprechen.",
+				incompletePropertyWarning:
+					"Geben Sie einen Eigenschaftsnamen und einen Wert ein. Beispieltext ist keine gespeicherte Konfiguration. TaskNotes kann Aufgaben erst erkennen, wenn beide festgelegt sind. Bestehende .base-Filter müssen diesen Einstellungen entsprechen.",
 				taskProperty: {
 					name: "Aufgabeneigenschaftsname",
 					description: 'Der Frontmatter-Eigenschaftsname (z.B. "category")',
@@ -2307,7 +2335,8 @@ export const de: TranslationTree = {
 				},
 				showAllDayAsFree: {
 					name: "Ganztägige Aufgabenereignisse als frei anzeigen",
-					description: "Ganztägige Aufgabenexporte blockieren die Verfügbarkeit nicht, auch bei in ganztägige Ereignisse umgewandelten Aufgaben. Ereignisse mit Uhrzeit bleiben beschäftigt. Nutzen Sie die Synchronisierung aller Aufgaben, um bestehende Ereignisse zu aktualisieren.",
+					description:
+						"Ganztägige Aufgabenexporte blockieren die Verfügbarkeit nicht, auch bei in ganztägige Ereignisse umgewandelten Aufgaben. Ereignisse mit Uhrzeit bleiben beschäftigt. Nutzen Sie die Synchronisierung aller Aufgaben, um bestehende Ereignisse zu aktualisieren.",
 				},
 				defaultDuration: {
 					name: "Standard-Ereignisdauer",
@@ -2674,6 +2703,16 @@ export const de: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Sprache geändert zu {language}.",
+		recurringCompletion: {
+			completed: "Erledigtes Vorkommen: {date}",
+			incomplete: "Als unerledigt markiert: {date}",
+			next: "Nächstes: {date}",
+			noNext: "Kein weiteres Vorkommen",
+			undo: "Rückgängig",
+			undone: "Änderung der wiederkehrenden Aufgabe rückgängig gemacht.",
+			conflict: "Rückgängig nicht möglich: Dieses Vorkommen oder sein Termin wurde geändert.",
+			failed: "Die Änderung der wiederkehrenden Aufgabe konnte nicht rückgängig gemacht werden.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} ist verfügbar.",
 			action: "In Community-Plugins öffnen",
@@ -3616,6 +3655,23 @@ export const de: TranslationTree = {
 		autoExport: {
 			notices: {
 				exportFailed: "TaskNotes Auto-Export fehlgeschlagen: {error}",
+			},
+		},
+		notification: {
+			missed: {
+				prefixToday: "Verpasste Erinnerung ({time})",
+				prefixOnDay: "Verpasste Erinnerung ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "{title} war {when} fällig",
+				dueIs: "{title} ist {when} fällig",
+				scheduledWas: "{title} war {when} geplant",
+				scheduledIs: "{title} ist {when} geplant",
+				whenTodayAt: "um {time}",
+				whenOnDayAt: "am {day} um {time}",
+				whenOnDay: "am {day}",
+				whenToday: "heute",
+				summaryTitle: "{count} verpasste TaskNotes-Erinnerungen",
+				summaryMore: "{titles} und {count} weitere",
 			},
 		},
 	},

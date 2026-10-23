@@ -39,7 +39,7 @@ Completing a materialized occurrence note emits `recurring.instance.completed` w
 
 Reminder events:
 
-- `reminder.triggered`
+- `reminder.triggered` (`data.missed` is `true` when the reminder is delivered late, for example after Obsidian was closed)
 
 ## Payload Shape
 
