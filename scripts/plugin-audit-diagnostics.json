@@ -695,34 +695,6 @@
   },
   {
     "context": "services/OAuthService: OAuthService.handleCallback display",
-    "message": "<!doctype html><title>Invalid callback</title>",
-    "source": "\"<!doctype html><title>Invalid callback</title>\"",
-    "values": [],
-    "kind": "wrap"
-  },
-  {
-    "context": "services/OAuthService: OAuthService.handleCallback display",
-    "message": "<!doctype html><title>Invalid callback</title><p>No pending authorization matches this callback.</p>",
-    "source": "\"<!doctype html><title>Invalid callback</title><p>No pending authorization matches this callback.</p>\"",
-    "values": [],
-    "kind": "wrap"
-  },
-  {
-    "context": "services/OAuthService: OAuthService.handleCallback display",
-    "message": "<!doctype html><title>Authorization failed</title><p>Authorization was not completed. Return to Obsidian.</p>",
-    "source": "\"<!doctype html><title>Authorization failed</title><p>Authorization was not completed. Return to Obsidian.</p>\"",
-    "values": [],
-    "kind": "wrap"
-  },
-  {
-    "context": "services/OAuthService: OAuthService.handleCallback display",
-    "message": "<!doctype html><title>Authorization complete</title><p>You can close this window and return to Obsidian.</p>",
-    "source": "\"<!doctype html><title>Authorization complete</title><p>You can close this window and return to Obsidian.</p>\"",
-    "values": [],
-    "kind": "wrap"
-  },
-  {
-    "context": "services/OAuthService: OAuthService.handleCallback display",
     "message": "OAuth authorization failed",
     "source": "\"OAuth authorization failed\"",
     "values": [],
@@ -1168,17 +1140,28 @@
   },
   {
     "context": "services/buildTaskCreationDataFromCli: parseReminderShorthand display",
-    "message": "Reminder shorthand must use due:<offset>, scheduled:<offset>, or at:<datetime>",
+    "message": "Reminder shorthand must use {dueSyntax}, {scheduledSyntax}, or {absoluteSyntax}",
     "source": "\"Reminder shorthand must use due:<offset>, scheduled:<offset>, or at:<datetime>\"",
     "values": [],
-    "kind": "wrap"
+    "kind": "wrap",
+    "literals": {
+      "dueSyntax": "due:<offset>",
+      "scheduledSyntax": "scheduled:<offset>",
+      "absoluteSyntax": "at:<datetime>"
+    }
   },
   {
     "context": "services/buildTaskCreationDataFromCli: parseReminderShorthand display",
-    "message": "Relative reminders must use due:<offset> or scheduled:<offset> with ISO 8601 durations like -PT1H",
+    "message": "Relative reminders must use {dueSyntax} or {scheduledSyntax} with {standard} durations like {example}",
     "source": "\"Relative reminders must use due:<offset> or scheduled:<offset> with ISO 8601 durations like -PT1H\"",
     "values": [],
-    "kind": "wrap"
+    "kind": "wrap",
+    "literals": {
+      "dueSyntax": "due:<offset>",
+      "scheduledSyntax": "scheduled:<offset>",
+      "standard": "ISO 8601",
+      "example": "-PT1H"
+    }
   },
   {
     "context": "services/buildTaskCreationDataFromCli: parseReminders display",

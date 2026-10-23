@@ -23,12 +23,12 @@ export function uiText(descriptor: MessageDescriptor, values?: Record<string, un
 export function displayError(error: unknown, depth = 0, instance = uiI18n): string {
 	const raw = error instanceof Error ? error.message : String(error);
 	if (depth > 8) return raw;
-	for (const { pattern, keys, descriptor } of errorMessages) {
+	for (const { pattern, keys, dataValues, descriptor } of errorMessages) {
 		const match = pattern.exec(raw);
 		if (!match) continue;
 		const values = Object.fromEntries(keys.map((key, index) => [key,
 			/error|message|guidance/i.test(key) ? displayError(match[index + 1], depth + 1, instance) : match[index + 1]]));
-		return instance._({ ...descriptor, values });
+		return instance._({ ...descriptor, values: { ...dataValues, ...values } });
 	}
 	return raw;
 }

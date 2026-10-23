@@ -130,7 +130,7 @@ export class InstantTaskConvertService {
 			}
 
 			publishUserNotice(this.plugin.emitter,
-				this.translate(msg({ message: "{count, plural, one {Converting {count} task...} other {Converting {count} tasks...}}", context: "services.instantTaskConvert.notices.convertingTasks" }), {
+				this.translate(msg({ message: "{count, plural, one {Converting {count, number} task...} other {Converting {count, number} tasks...}}", context: "services.instantTaskConvert.notices.convertingTasks" }), {
 					count: checkboxTasks.length,
 				})
 			);
@@ -141,13 +141,13 @@ export class InstantTaskConvertService {
 			// Show summary
 			if (result.failures.length === 0) {
 				publishUserNotice(this.plugin.emitter,
-					this.translate(msg({ message: "{count, plural, one {✅ Successfully converted {count} task to TaskNotes!} other {✅ Successfully converted {count} tasks to TaskNotes!}}", context: "services.instantTaskConvert.notices.conversionSuccess" }), {
+					this.translate(msg({ message: "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}", context: "services.instantTaskConvert.notices.conversionSuccess" }), {
 						count: result.successCount,
 					})
 				);
 			} else {
 				publishUserNotice(this.plugin.emitter,
-					this.translate(msg({ message: "{successCount, plural, one {Converted {successCount} task. {failureCount} failed.} other {Converted {successCount} tasks. {failureCount} failed.}}", context: "services.instantTaskConvert.notices.partialConversion" }), {
+					this.translate(msg({ message: "{successCount, plural, one {Converted {successCount, number} task. {failureCount, number} failed.} other {Converted {successCount, number} tasks. {failureCount, number} failed.}}", context: "services.instantTaskConvert.notices.partialConversion" }), {
 						successCount: result.successCount,
 						failureCount: result.failures.length,
 					})

@@ -1,3 +1,4 @@
+import { uiData } from "../../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Renderer utilities check created elements before attaching interactions. */
@@ -213,18 +214,18 @@ export function renderTextWithLinks(
 				filePath = fp;
 				displayText = alias;
 			}
-			appendInternalLink(container, filePath, displayText, deps);
+			appendInternalLink(container, filePath, uiData(displayText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps);
 		} else if (mdText && mdHref) {
 			const href = String(mdHref).trim();
 			const disp = String(mdText).trim();
 			if (isExternalHref(href)) {
-				appendExternalLink(container, href, disp);
+				appendExternalLink(container, href, uiData(disp, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"));
 			} else {
-				appendInternalLink(container, href, disp, deps);
+				appendInternalLink(container, href, uiData(disp, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps);
 			}
 		} else if (autolinkHref || bareHref) {
 			const href = String(autolinkHref || bareHref);
-			appendExternalLink(container, href, href);
+			appendExternalLink(container, href, uiData(href, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"));
 		} else {
 			container.appendChild(activeDocument.createTextNode(full));
 		}
@@ -430,7 +431,7 @@ export function renderProjectLinks(
 			}
 
 			const resolvedText = resolveProjectDisplayText(filePath, displayText, deps);
-			appendInternalLink(container, filePath, resolvedText, deps, {
+			appendInternalLink(container, filePath, uiData(resolvedText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps, {
 				cssClass: "task-card__project-link internal-link",
 				hoverSource: "tasknotes-project-link",
 				showErrorNotices: true,
@@ -445,7 +446,7 @@ export function renderProjectLinks(
 					parsed.displayText,
 					deps
 				);
-				appendInternalLink(container, parsed.filePath, resolvedText, deps, {
+				appendInternalLink(container, parsed.filePath, uiData(resolvedText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps, {
 					cssClass: "task-card__project-link internal-link",
 					hoverSource: "tasknotes-project-link",
 					showErrorNotices: true,

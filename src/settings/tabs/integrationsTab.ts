@@ -68,15 +68,15 @@ function getRelativeTime(
 	const diffDays = Math.floor(diffHours / 24);
 
 	if (diffDays > 0) {
-		return translate(msg({ message: "{days, plural, one {{days} day ago} other {{days} days ago}}", context: "settings.integrations.timeFormats.daysAgo" }), {
+		return translate(msg({ message: "{days, plural, one {{days, number} day ago} other {{days, number} days ago}}", context: "settings.integrations.timeFormats.daysAgo" }), {
 			days: diffDays,
 		});
 	} else if (diffHours > 0) {
-		return translate(msg({ message: "{hours, plural, one {{hours} hour ago} other {{hours} hours ago}}", context: "settings.integrations.timeFormats.hoursAgo" }), {
+		return translate(msg({ message: "{hours, plural, one {{hours, number} hour ago} other {{hours, number} hours ago}}", context: "settings.integrations.timeFormats.hoursAgo" }), {
 			hours: diffHours,
 		});
 	} else if (diffMinutes > 0) {
-		return translate(msg({ message: "{minutes, plural, one {{minutes} minute ago} other {{minutes} minutes ago}}", context: "settings.integrations.timeFormats.minutesAgo" }), {
+		return translate(msg({ message: "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}", context: "settings.integrations.timeFormats.minutesAgo" }), {
 			minutes: diffMinutes,
 		});
 	} else {
@@ -424,7 +424,7 @@ export function renderIntegrationsTab(
 										new Notice(
 											translate(
 												msg({ message: "{provider} refreshed successfully", context: "settings.integrations.oauth.refreshSuccess" }),
-												{ provider: "Google Calendar" }
+												{ provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose") }
 											)
 										);
 										void renderGoogleCalendarCard(); // Re-render to update timestamp
@@ -437,7 +437,7 @@ export function renderIntegrationsTab(
 									});
 									new Notice(
 										translate(msg({ message: "Failed to refresh {provider}", context: "settings.integrations.oauth.refreshFailed" }), {
-											provider: "Google Calendar",
+											provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose"),
 										})
 									);
 								}
@@ -454,7 +454,7 @@ export function renderIntegrationsTab(
 									await oauthService.disconnect("google");
 									new Notice(
 										translate(msg({ message: "Disconnected from {provider}", context: "settings.integrations.oauth.disconnectSuccess" }), {
-											provider: "Google Calendar",
+											provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose"),
 										})
 									);
 									void renderGoogleCalendarCard(); // Re-render to show disconnected state
@@ -466,7 +466,7 @@ export function renderIntegrationsTab(
 									});
 									new Notice(
 										translate(msg({ message: "Failed to disconnect from {provider}", context: "settings.integrations.oauth.disconnectFailed" }), {
-											provider: "Google Calendar",
+											provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose"),
 										})
 									);
 								}
@@ -480,7 +480,7 @@ export function renderIntegrationsTab(
 			const helpText = activeWindow.createDiv();
 			helpText.className = "tasknotes-calendar-help";
 			helpText.textContent =
-				translate(msg({ message: "Connect your {provider} account to sync events into TaskNotes.", context: "settings.integrations.oauth.help" }), { provider: "Google Calendar" }) +
+				translate(msg({ message: "Connect your {provider} account to sync events into TaskNotes.", context: "settings.integrations.oauth.help" }), { provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose") }) +
 				" " +
 				translate(msg({ message: "Events refresh automatically every 15 minutes.", context: "settings.integrations.oauth.googleRefreshInterval" }));
 
@@ -507,7 +507,7 @@ export function renderIntegrationsTab(
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
 			credentialNote.textContent = translate(msg({ message: "Enter OAuth app credentials from {portal}. Obsidian Secret Storage encrypts credentials at rest when supported by the operating system.", context: "settings.integrations.oauth.credentialNote" }), {
-				portal: "Google Cloud Console",
+				portal: uiData("Google Cloud Console", "Upstream product or console name; not plugin-authored prose"),
 			});
 
 			sections.push({
@@ -547,7 +547,7 @@ export function renderIntegrationsTab(
 					buttons: [
 						{
 							text: translate(msg({ message: "Connect {provider}", context: "settings.integrations.oauth.connect" }), {
-								provider: "Google Calendar",
+								provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose"),
 							}),
 							icon: "link",
 							variant: "primary",
@@ -559,7 +559,7 @@ export function renderIntegrationsTab(
 									await oauthService.authenticate("google");
 									new Notice(
 										translate(msg({ message: "{provider} connected successfully!", context: "settings.integrations.oauth.connectSuccess" }), {
-											provider: "Google Calendar",
+											provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose"),
 										})
 									);
 									void renderGoogleCalendarCard(); // Re-render to show connected state
@@ -589,7 +589,7 @@ export function renderIntegrationsTab(
 												{
 													title: translate(
 														msg({ message: "Forget OAuth credentials for {provider}?", context: "settings.integrations.oauth.forgetTitle" }),
-														{ provider: "Google Calendar" }
+														{ provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose") }
 													),
 													message: translate(
 														msg({ message: "This removes the saved client ID and client secret from Obsidian secret storage.", context: "settings.integrations.oauth.forgetMessage" })
@@ -604,7 +604,7 @@ export function renderIntegrationsTab(
 											plugin.oauthService.clearCredentials("google");
 											new Notice(
 												translate(msg({ message: "Forgot OAuth credentials for {provider}", context: "settings.integrations.oauth.forgotten" }), {
-													provider: "Google Calendar",
+													provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose"),
 												})
 											);
 											void renderGoogleCalendarCard();
@@ -783,7 +783,7 @@ export function renderIntegrationsTab(
 												translate(
 													msg({ message: "{provider} refresh had errors: {message}", context: "settings.integrations.oauth.refreshErrors" }),
 													{
-														provider: "Microsoft Outlook Calendar",
+														provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose"),
 														message: displayError(latestStatus.lastError),
 													}
 												)
@@ -792,7 +792,7 @@ export function renderIntegrationsTab(
 											new Notice(
 												translate(
 													msg({ message: "{provider} refreshed successfully", context: "settings.integrations.oauth.refreshSuccess" }),
-													{ provider: "Microsoft Outlook Calendar" }
+													{ provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose") }
 												)
 											);
 										}
@@ -806,7 +806,7 @@ export function renderIntegrationsTab(
 									});
 									new Notice(
 										translate(msg({ message: "{provider} refresh had errors: {message}", context: "settings.integrations.oauth.refreshErrors" }), {
-											provider: "Microsoft Outlook Calendar",
+											provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose"),
 											message: displayError(getErrorMessage(error)),
 										})
 									);
@@ -825,7 +825,7 @@ export function renderIntegrationsTab(
 									await plugin.microsoftCalendarService?.disconnect();
 									new Notice(
 										translate(msg({ message: "Disconnected from {provider}", context: "settings.integrations.oauth.disconnectSuccess" }), {
-											provider: "Microsoft Outlook Calendar",
+											provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose"),
 										})
 									);
 									void renderMicrosoftCalendarCard();
@@ -837,7 +837,7 @@ export function renderIntegrationsTab(
 									});
 									new Notice(
 										translate(msg({ message: "Failed to disconnect from {provider}", context: "settings.integrations.oauth.disconnectFailed" }), {
-											provider: "Microsoft Outlook Calendar",
+											provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose"),
 										})
 									);
 								}
@@ -851,7 +851,7 @@ export function renderIntegrationsTab(
 			const helpText = activeWindow.createDiv();
 			helpText.className = "tasknotes-calendar-help";
 			helpText.textContent = translate(msg({ message: "Connect your {provider} account to sync events into TaskNotes.", context: "settings.integrations.oauth.help" }), {
-				provider: "Microsoft Outlook",
+				provider: uiData("Microsoft Outlook", "Upstream product or console name; not plugin-authored prose"),
 			});
 
 			// Build sections and credential inputs
@@ -877,7 +877,7 @@ export function renderIntegrationsTab(
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
 			credentialNote.textContent = translate(msg({ message: "Enter OAuth app credentials from {portal}. Obsidian Secret Storage encrypts credentials at rest when supported by the operating system.", context: "settings.integrations.oauth.credentialNote" }), {
-				portal: "Azure Portal",
+				portal: uiData("Azure Portal", "Upstream product or console name; not plugin-authored prose"),
 			});
 
 			sections.push({
@@ -917,7 +917,7 @@ export function renderIntegrationsTab(
 					buttons: [
 						{
 							text: translate(msg({ message: "Connect {provider}", context: "settings.integrations.oauth.connect" }), {
-								provider: "Microsoft Outlook Calendar",
+								provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose"),
 							}),
 							icon: "link",
 							variant: "primary",
@@ -930,7 +930,7 @@ export function renderIntegrationsTab(
 									await plugin.microsoftCalendarService?.initialize();
 									new Notice(
 										translate(msg({ message: "{provider} connected successfully!", context: "settings.integrations.oauth.connectSuccess" }), {
-											provider: "Microsoft Outlook Calendar",
+											provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose"),
 										})
 									);
 									void renderMicrosoftCalendarCard();
@@ -960,7 +960,7 @@ export function renderIntegrationsTab(
 												{
 													title: translate(
 														msg({ message: "Forget OAuth credentials for {provider}?", context: "settings.integrations.oauth.forgetTitle" }),
-														{ provider: "Microsoft Outlook Calendar" }
+														{ provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose") }
 													),
 													message: translate(
 														msg({ message: "This removes the saved client ID and client secret from Obsidian secret storage.", context: "settings.integrations.oauth.forgetMessage" })
@@ -975,7 +975,7 @@ export function renderIntegrationsTab(
 											plugin.oauthService.clearCredentials("microsoft");
 											new Notice(
 												translate(msg({ message: "Forgot OAuth credentials for {provider}", context: "settings.integrations.oauth.forgotten" }), {
-													provider: "Microsoft Outlook Calendar",
+													provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose"),
 												})
 											);
 											void renderMicrosoftCalendarCard();

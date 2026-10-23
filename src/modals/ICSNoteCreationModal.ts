@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { formatUIDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
@@ -292,7 +293,7 @@ export class ICSNoteCreationModal extends Modal {
 		const variablesList = variablesDiv.createDiv("variables-list");
 		variables.forEach((variable) => {
 			variablesList.createSpan({
-				text: variable,
+				text: uiData(variable, "Immutable template placeholder; preserve native expansion syntax"),
 				cls: "template-variable",
 			});
 		});

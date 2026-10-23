@@ -1483,9 +1483,7 @@ export class CalendarView extends BasesViewBase {
 
 		decorateRefreshCalendarsButton(
 			this.calendarEl,
-			this.plugin.i18n.translate(msg({ message: "Refresh calendar subscriptions", context: "views.basesCalendar.hints.refresh" })) ||
-				this.plugin.i18n.translate(msg({ message: "Refresh", context: "views.basesCalendar.buttonText.refresh" })) ||
-				"Refresh calendar subscriptions"
+			this.plugin.i18n.translate(msg({ message: "Refresh calendar subscriptions", context: "views.basesCalendar.hints.refresh" }))
 		);
 	}
 

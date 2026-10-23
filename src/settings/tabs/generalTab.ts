@@ -571,7 +571,7 @@ export function renderGeneralTab(
 											savedViews
 										);
 									const fileName = "all-saved-views.base";
-									const filePath = `TaskNotes/Views/${fileName}`;
+									const filePath = uiData(`TaskNotes/Views/${fileName}`, "Generated native Bases vault path; preserve saved command/file mapping");
 
 									// Create folder if needed (check on-disk via adapter, not in-memory cache)
 									if (

@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import type { MessageSuffix } from "../i18n/concepts";
 import { uiLocale } from "../i18n/runtime";
 import { uiNumber } from "../i18n/formatters";
@@ -671,7 +672,7 @@ export class NotificationService {
 
 	private formatDurationForDisplay(duration: string): string {
 		const ms = this.parseISO8601Duration(duration);
-		if (ms === null) return duration;
+		if (ms === null) return uiData(duration, "Invalid/unsupported stored ISO duration; preserve user data for diagnosis");
 
 		const absMs = Math.abs(ms);
 		const minutes = Math.floor(absMs / (60 * 1000));

@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { TaskInfo } from "../types";
@@ -294,9 +295,9 @@ export class CalendarExportService {
 			return null;
 		}
 
-		return `obsidian://open?vault=${encodeURIComponent(options.vaultName)}&file=${encodeURIComponent(
+		return uiData(`obsidian://open?vault=${encodeURIComponent(options.vaultName)}&file=${encodeURIComponent(
 			task.path
-		)}`;
+		)}`, "Obsidian deep-link URI; preserve the protocol and encoded vault/file data");
 	}
 
 	/**

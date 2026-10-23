@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../main";
 import type { FieldMapping } from "../types";
@@ -139,6 +140,6 @@ export function getAvailableProperties(
 export function getPropertyLabels(plugin: TaskNotesPlugin, propertyIds: string[]): string[] {
 	const availableProperties = getAvailableProperties(plugin);
 	return propertyIds
-		.map((id) => availableProperties.find((p) => p.id === id)?.label || id)
+		.map((id) => availableProperties.find((p) => p.id === id)?.label || uiData(id, "Unknown/custom property identifier; preserve user schema metadata"))
 		.filter(Boolean);
 }

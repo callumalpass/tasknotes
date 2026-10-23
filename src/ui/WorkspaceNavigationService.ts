@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import { Platform, TFile, WorkspaceLeaf, normalizePath } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -126,7 +127,7 @@ export class WorkspaceNavigationService {
 		if (!filePath) {
 			showNotice(
 				this.plugin.i18n.translate(msg({ message: "No file configured for command: {command}", context: "notices.interface.commandFileMissing" }), {
-					command: commandId,
+					command: uiData(commandId, "Registered Obsidian command identifier; preserve native command mapping"),
 				})
 			);
 			return;

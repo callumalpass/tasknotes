@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { setTooltip, TFile } from "obsidian";
@@ -241,7 +242,7 @@ async function renderResolvedDependency(
 	}
 
 	const nameEl = contentEl.createSpan({ cls: "task-project-name clickable-dependency" });
-	appendInternalLink(nameEl, item.path, item.name, linkServices, {
+	appendInternalLink(nameEl, item.path, uiData(item.name, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), linkServices, {
 		cssClass: "task-dependency-link internal-link",
 		hoverSource: "tasknotes-dependency-link",
 		showErrorNotices: true,

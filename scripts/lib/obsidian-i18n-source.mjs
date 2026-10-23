@@ -3,7 +3,7 @@ import ts from "typescript";
 const methods = new Set(["setText", "setName", "setDesc", "setPlaceholder", "setButtonText", "setTitle", "appendText"]);
 const attributes = new Set(["title", "aria-label", "placeholder", "aria-description"]);
 const translations = /^(?:uiText|uiRichText|msg|translate|translator|t|_)$/;
-const formatters = new Set(["uiNumber", "uiPercent", "uiDuration", "formatUIDate", "formatStableDate", "uiLocale", "getNativeLanguageName"]);
+const formatters = new Set(["uiNumber", "uiPercent", "uiDuration", "formatUIDate", "formatStableDate", "uiLocale", "getNativeLanguageName", "oauthCallbackHtml"]);
 const word = value => /[A-Za-z]{2}/.test(value);
 function invariant(value) {
   return !word(value) || /^(?:https?:\/\/|mailto:)/.test(value) || /^(?:[\w./-]+)?\.(?:md|json|base|ics|yaml|yml)$/.test(value)
@@ -19,7 +19,7 @@ function literalShape(node) {
   return null;
 }
 export function inspectObsidianSource(program, { include = () => true, diagnostics = [] } = {}) {
-  const checker=program.getTypeChecker();const issues=new Map(),summaries=new Map();
+  const checker=program.getTypeChecker();const issues=new Map(),summaries=new Map();let origin;
   const files=program.getSourceFiles().filter(file=>!file.isDeclarationFile&&include(file.fileName));
   const diagnosticShapes=new Set(diagnostics.map(entry=>{
     const ast=ts.createSourceFile("diagnostic.ts","const value = "+entry.source,ts.ScriptTarget.Latest,true);
@@ -28,20 +28,33 @@ export function inspectObsidianSource(program, { include = () => true, diagnosti
   const nodes=[];for(const file of files){function visit(n){nodes.push(n);ts.forEachChild(n,visit);}visit(file);}
   function report(node,kind,text=node.getText()) {
     const file=node.getSourceFile();const line=file.getLineAndCharacterOfPosition(node.getStart()).line+1;
-    issues.set(`${file.fileName}:${node.pos}:${kind}`,{file:file.fileName,line,kind,text});
+    issues.set(`${file.fileName}:${node.pos}:${kind}`,{file:file.fileName,line,kind,text,...(origin?{origin}: {})});
   }
   function declarations(node){let symbol=ts.isShorthandPropertyAssignment(node.parent)&&node.parent.name===node?checker.getShorthandAssignmentValueSymbol(node.parent):checker.getSymbolAtLocation(node);if(symbol?.flags&ts.SymbolFlags.Alias)symbol=checker.getAliasedSymbol(symbol);return symbol?.declarations??[];}
-  let changed=false;
+  const visited=new Set(), pending=[];let visits=0;
   function parameter(declaration,path,diagnostic) {
     if(!ts.isParameter(declaration))return false;
     const fn=declaration.parent;if(!fn.parameters)return true;
     const index=fn.parameters.indexOf(declaration);const key=JSON.stringify([index,path,diagnostic]);
-    const entries=summaries.get(fn)??new Map();if(!entries.has(key)){entries.set(key,{index,path,diagnostic});summaries.set(fn,entries);changed=true;}
+    const entries=summaries.get(fn)??new Map();
+    // A demand for a whole value already inspects all its fields/elements.
+    // Subsumption is essential for recursive coercers (e.g. nested user arrays):
+    // [] covers [*], [*,*], ... without inventing infinitely deep field paths.
+    if([...entries.values()].some(entry=>entry.index===index&&entry.diagnostic===diagnostic&&entry.path.length<=path.length&&entry.path.every((field,i)=>field==="*"||field===path[i])))return true;
+    if(!entries.has(key)) {
+      entries.set(key,{index,path,diagnostic});summaries.set(fn,entries);
+      for(const call of callers.get(fn)??[])pending.push({node:call.arguments?.[index],path,diagnostic,origin:origin&&`${origin.slice(-6000)}\n <- ${fn.getSourceFile().fileName.split("/src/").at(-1)}:${fn.getSourceFile().getLineAndCharacterOfPosition(fn.getStart()).line+1} ${fn.name?.getText()??"callback"} arg${index}.${path.join(".")} @ ${call.getSourceFile().fileName.split("/src/").at(-1)}:${call.getSourceFile().getLineAndCharacterOfPosition(call.getStart()).line+1}`});
+      for(const {call,itemIndex} of callbacks.get(fn)??[])if(index===itemIndex)pending.push({node:call.expression.expression,path:["*",...path],diagnostic,origin});
+    }
     return true;
   }
-  function trace(node, path=[], seen=new Set(), diagnostic=false) {
+  function trace(node, path=[], seen=visited, diagnostic=false) {
     node=unwrap(node);if(!node)return;
-    const token=`${node.getSourceFile().fileName}:${node.pos}:${path.join(".")}:${diagnostic}`;if(seen.has(token))return;seen.add(token);
+    if(path.length>16){report(node,"forwarding-path-too-deep",path.join("."));return;}
+    const token=`${node.getSourceFile().fileName}:${node.pos}:${node.end}:${node.kind}:${path.join(".")}:${diagnostic}`;if(seen.has(token))return;seen.add(token);
+    if(++visits>250000){if(visits===250001)report(node,"forwarding-analysis-budget-exceeded","More than 250000 unique field-flow visits; add an explicit data boundary");return;}
+    const nonText=type=>(type.flags&(ts.TypeFlags.NumberLike|ts.TypeFlags.BooleanLike|ts.TypeFlags.BigIntLike))!==0||type.isUnion()&&type.types.every(nonText);
+    if(!path.length&&nonText(checker.getTypeAtLocation(node)))return; // A count/boolean cannot expose the English in its input data.
     if(!path.length&&(ts.isStringLiteralLike(node)||ts.isTemplateExpression(node))){
       const shape=literalShape(node);if(diagnostic&&diagnosticShapes.has(shape))return;
       const fragments=ts.isTemplateExpression(node)?[node.head.text,...node.templateSpans.map(span=>span.literal.text)]:[node.text];
@@ -91,10 +104,12 @@ export function inspectObsidianSource(program, { include = () => true, diagnosti
       if(diagnostic&&ts.isNewExpression(node)&&/Error$/.test(name)){trace(node.arguments?.[0],path,seen,true);return;}
       if(translations.test(name)||formatters.has(name)||name==="basesMessage")return;
       if(name==="getRecurrenceDisplayTextCore"||name==="toText"){report(node,"english-nlp-in-ui");return;}
+      if(["find","findLast","at","pop","shift"].includes(name)&&ts.isPropertyAccessExpression(node.expression)){trace(node.expression.expression,["*",...path],seen,diagnostic);return;}
       if(["map","flatMap"].includes(name)&&ts.isPropertyAccessExpression(node.expression)) {
-        for(const argument of node.arguments??[])if(ts.isArrowFunction(argument)||ts.isFunctionExpression(argument)) {
-          if(ts.isBlock(argument.body))returns(argument.body,path,seen,diagnostic);else trace(argument.body,path,seen,diagnostic);
-          for(const summary of summaries.get(argument)?.values()??[])if(summary.index===0)trace(node.expression.expression,["*",...summary.path],seen,diagnostic||summary.diagnostic);
+        const callback=node.arguments[0];
+        if(callback)for(const signature of checker.getTypeAtLocation(callback).getCallSignatures()) {
+          const fn=signature.getDeclaration();if(!fn?.body||!include(fn.getSourceFile().fileName)||translations.test(fn.name?.getText()??"")||formatters.has(fn.name?.getText()))continue;
+          if(ts.isBlock(fn.body))returns(fn.body,path,seen,diagnostic);else trace(fn.body,path,seen,diagnostic);
         }
         return;
       }
@@ -102,6 +117,13 @@ export function inspectObsidianSource(program, { include = () => true, diagnosti
         trace(node.expression.expression,path,seen,diagnostic);
         if(name==="join")trace(node.arguments[0],[],seen,diagnostic);
         return;
+      }
+      if(ts.isNewExpression(node)&&path.length) {
+        for(const field of checker.getTypeAtLocation(node).getProperty(path[0])?.declarations??[]) {
+          if(field.initializer)trace(field.initializer,path.slice(1),seen,diagnostic);
+          if(ts.isParameter(field))trace(node.arguments?.[field.parent.parameters.indexOf(field)],path.slice(1),seen,diagnostic);
+          if(ts.isGetAccessorDeclaration(field)&&field.body)returns(field.body,path.slice(1),seen,diagnostic);
+        }
       }
       const declaration=checker.getResolvedSignature(node)?.declaration;
       if(declaration?.body&&include(declaration.getSourceFile().fileName))returns(declaration.body,path,seen,diagnostic);
@@ -124,17 +146,42 @@ export function inspectObsidianSource(program, { include = () => true, diagnosti
         if(declaration.initializer)trace(declaration.initializer,path,seen,diagnostic);
         else if(ts.isGetAccessorDeclaration(declaration)&&declaration.body)returns(declaration.body,path,seen,diagnostic);
       }
-      // A typed property on an instance can have a local initializer/getter.
-      if(path.length){const property=checker.getTypeAtLocation(node).getProperty(path[0]);for(const declaration of property?.declarations??[]){if(declaration.initializer)trace(declaration.initializer,path.slice(1),seen,diagnostic);else if(ts.isGetAccessorDeclaration(declaration)&&declaration.body)returns(declaration.body,path.slice(1),seen,diagnostic);}}
+      // Do not unfold the declared class type of a parameter: its value comes
+      // from callers. New-expression fields/getters are handled explicitly above.
     }
   }
   function returns(body,path,seen,diagnostic){function visit(n){if(ts.isReturnStatement(n)&&n.expression)trace(n.expression,path,seen,diagnostic);else if(n===body||!ts.isFunctionLike(n))ts.forEachChild(n,visit);}visit(body);}
-  function sink(node,path=[],diagnostic=false){trace(node,path,new Set(),diagnostic);}
+  function domReceiver(node){const type=checker.getTypeAtLocation(node);const dom=type=>(type.flags&(ts.TypeFlags.Any|ts.TypeFlags.Unknown))!==0||!!(type.getProperty("nodeType")&&type.getProperty("ownerDocument"));return type.isUnion()?type.types.some(dom):dom(type);}
+  function sink(node,path=[],diagnostic=false){const previous=origin;origin??=node?`${node.getSourceFile().fileName}:${node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line+1} ${node.getText()}`:undefined;trace(node,path,visited,diagnostic);origin=previous;}
   const calls=nodes.filter(n=>ts.isCallExpression(n)||ts.isNewExpression(n));
+  const callers=new Map(),callbacks=new Map();
+  for(const call of calls) {
+    let declaration=checker.getResolvedSignature(call)?.declaration;
+    if(declaration&&!declaration.body&&declaration.name)declaration=declarations(declaration.name).find(node=>node.body)??declaration;
+    if(declaration?.body&&include(declaration.getSourceFile().fileName)){const list=callers.get(declaration)??[];list.push(call);callers.set(declaration,list);}
+    if(ts.isPropertyAccessExpression(call.expression)&&["map","flatMap","forEach","filter","some","every","find","findIndex","reduce"].includes(call.expression.name.text)) {
+      const callback=call.arguments?.[0];
+      if(callback)for(const signature of checker.getTypeAtLocation(callback).getCallSignatures()) {
+        const fn=signature.getDeclaration();if(!fn?.body||!include(fn.getSourceFile().fileName))continue;
+        const list=callbacks.get(fn)??[];list.push({call,itemIndex:call.expression.name.text==="reduce"?1:0});callbacks.set(fn,list);
+      }
+    }
+  }
   for(const node of nodes){
     if(ts.isCallExpression(node)||ts.isNewExpression(node)){
       const name=ts.isPropertyAccessExpression(node.expression)?node.expression.name.text:node.expression.getText();const args=node.arguments??[];
       if(methods.has(name)||name==="Notice"||name==="showNotice")sink(args[0]);
+      if(name==="oauthCallbackHtml"){sink(args[0]);sink(args[1]);}
+      if(name==="end"&&args[0]) {
+        const inlineHtml = value => {
+          value=unwrap(value);if(!value)return false;
+          if(ts.isStringLiteralLike(value))return /<(?:!doctype|html|title|p)\b/i.test(value.text);
+          if(ts.isTemplateExpression(value))return /<(?:!doctype|html|title|p)\b/i.test(value.head.text);
+          if(ts.isConditionalExpression(value))return inlineHtml(value.whenTrue)||inlineHtml(value.whenFalse);
+          return false;
+        };
+        if(inlineHtml(args[0]))sink(args[0]);
+      }
       if(name==="setTooltip")sink(args[1]);
       if(name==="addRibbonIcon")sink(args[1]);
       if(name==="publishUserNotice")trace(args[1],[],new Set(),true);
@@ -153,20 +200,16 @@ export function inspectObsidianSource(program, { include = () => true, diagnosti
       if(name==="registerCliHandler")sink(args[1]);
       if(name==="render"&&node.expression.getText().startsWith("MarkdownRenderer."))sink(args[1]);
     }
-    if(ts.isBinaryExpression(node)&&[ts.SyntaxKind.EqualsToken,ts.SyntaxKind.PlusEqualsToken].includes(node.operatorToken.kind)&&ts.isPropertyAccessExpression(node.left)&&["textContent","innerText","placeholder","title","ariaLabel","ariaDescription"].includes(node.left.name.text))sink(node.right);
+    if(ts.isBinaryExpression(node)&&[ts.SyntaxKind.EqualsToken,ts.SyntaxKind.PlusEqualsToken].includes(node.operatorToken.kind)&&ts.isPropertyAccessExpression(node.left)&&["textContent","innerText","placeholder","title","ariaLabel","ariaDescription"].includes(node.left.name.text)&&domReceiver(node.left.expression))sink(node.right);
     if(ts.isCallExpression(node)&&node.expression.getText()==="uiText"){
       let scope=node.parent;while(scope&&!ts.isFunctionLike(scope)&&!ts.isClassLike(scope))scope=scope.parent;
       if(!scope)report(node,"eager-module-translation");
     }
   }
-  // Propagate actual UI-consumed parameter fields across local forwarding helpers.
-  // This is field-level, so command IDs, URLs, CSS and persisted discriminants stay data.
-  for(let round=0;round<12;round++){
-    changed=false;
-    for(const call of calls){const declaration=checker.getResolvedSignature(call)?.declaration;for(const {index,path,diagnostic}of summaries.get(declaration)?.values()??[])sink(call.arguments?.[index],path,diagnostic);}
-    if(!changed)break;
-    if(round===11)report(files[0],"forwarding-analysis-did-not-converge","UI parameter flow exceeded 12 rounds");
-  }
+  while(pending.length){const demand=pending.pop();origin=demand.origin;sink(demand.node,demand.path,demand.diagnostic);origin=undefined;}
+  // Each newly discovered field demand visits every actual caller
+  // (and array-callback source). Global node/field memoization reaches the fixed
+  // point without repeatedly unfolding the entire call graph in numbered rounds.
   return [...issues.values()].sort((a,b)=>a.file.localeCompare(b.file)||a.line-b.line);
 }
 

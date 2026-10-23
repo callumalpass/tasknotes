@@ -1,3 +1,4 @@
+import { uiData } from "./i18n/dataText";
 import { displayError } from "./i18n/runtime";
 import { uiText } from "./i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -1243,7 +1244,7 @@ export default class TaskNotesPlugin extends Plugin {
 					const statusConfig = this.statusManager.getStatusConfig(statusValue);
 					new Notice(
 						this.i18n.translate(msg({ message: "Task marked as ''{status}''", context: "notices.commands.statusChanged" }), {
-							status: statusConfig?.label || statusValue,
+							status: uiData(statusConfig?.label || statusValue, "User-configured status label/value; never rewrite stored metadata"),
 						})
 					);
 				} else {
@@ -1343,7 +1344,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const statusConfig = this.statusManager.getStatusConfig(updatedTask.status);
 			new Notice(
 				this.i18n.translate(msg({ message: "Task marked as ''{status}''", context: "notices.commands.statusChanged" }), {
-					status: statusConfig?.label || updatedTask.status,
+					status: uiData(statusConfig?.label || updatedTask.status, "User-configured status label/value; never rewrite stored metadata"),
 				})
 			);
 			return updatedTask;

@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { formatUIDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
 import { App, FuzzySuggestModal, FuzzyMatch, setIcon } from "obsidian";
@@ -300,7 +301,7 @@ function renderProjectLinksForSelector(
 		if (isWikilinkProject(project)) {
 			// Extract the note name from [[Note Name]]
 			const noteName = project.slice(2, -2).trim();
-			appendInternalLink(container, noteName, noteName, linkServices, {
+			appendInternalLink(container, noteName, uiData(noteName, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), linkServices, {
 				cssClass: "unscheduled-tasks-selector__project-link internal-link",
 				hoverSource: "tasknotes-project-link",
 				showErrorNotices: true,
@@ -311,7 +312,7 @@ function renderProjectLinksForSelector(
 				const displayText = match[1].trim();
 				const rawPath = match[2].trim();
 				const path = parseLinkToPath(rawPath);
-				appendInternalLink(container, path, displayText, linkServices, {
+				appendInternalLink(container, path, uiData(displayText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), linkServices, {
 					cssClass: "unscheduled-tasks-selector__project-link internal-link",
 					hoverSource: "tasknotes-project-link",
 					showErrorNotices: true,

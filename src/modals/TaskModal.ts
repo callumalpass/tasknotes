@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, TAbstractFile, TFile } from "obsidian";
@@ -325,8 +326,8 @@ export abstract class TaskModal extends Modal {
 	protected originalDetails = "";
 	protected dueDate = "";
 	protected scheduledDate = "";
-	protected priority = "normal";
-	protected status = "open";
+	protected priority: string = uiData("normal", "Persisted priority value; preserve user metadata and matching semantics");
+	protected status: string = uiData("open", "Persisted status value; preserve user metadata and matching semantics");
 	protected contexts = "";
 	protected projects = "";
 	protected tags = "";

@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, setIcon, Notice, setTooltip } from "obsidian";
@@ -676,7 +677,7 @@ export class ReminderModal extends Modal {
 
 	private formatRelativeReminder(anchor: "due" | "scheduled", offset: string): string {
 		const match = /^(-?)P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?$/.exec(offset);
-		if (!match && offset) return offset;
+		if (!match && offset) return uiData(offset, "Invalid/unsupported stored ISO duration; preserve user data for diagnosis");
 		const [, negative, days, hours, minutes] = match ?? [];
 		const locale = this.plugin.i18n.getCurrentLocale();
 		const parts = (

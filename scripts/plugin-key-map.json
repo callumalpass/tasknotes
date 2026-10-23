@@ -7395,18 +7395,18 @@
     "context": "settings.integrations.timeFormats.justNow"
   },
   "settings.integrations.timeFormats.minutesAgo": {
-    "id": "CdwYxR",
-    "message": "{minutes, plural, one {{minutes} minute ago} other {{minutes} minutes ago}}",
+    "id": "ZwH-HO",
+    "message": "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}",
     "context": "settings.integrations.timeFormats.minutesAgo"
   },
   "settings.integrations.timeFormats.hoursAgo": {
-    "id": "0SElTL",
-    "message": "{hours, plural, one {{hours} hour ago} other {{hours} hours ago}}",
+    "id": "tzh-2L",
+    "message": "{hours, plural, one {{hours, number} hour ago} other {{hours, number} hours ago}}",
     "context": "settings.integrations.timeFormats.hoursAgo"
   },
   "settings.integrations.timeFormats.daysAgo": {
-    "id": "ByGAC4",
-    "message": "{days, plural, one {{days} day ago} other {{days} days ago}}",
+    "id": "ZIjHZr",
+    "message": "{days, plural, one {{days, number} day ago} other {{days, number} days ago}}",
     "context": "settings.integrations.timeFormats.daysAgo"
   },
   "notices.audit.progress": {
@@ -9795,8 +9795,8 @@
     "context": "modals.task.recurrence.untilSuffix"
   },
   "modals.task.recurrence.ordinal": {
-    "id": "ERlZ-N",
-    "message": "{number, selectordinal, one {{number}st} two {{number}nd} few {{number}rd} other {{number}th}}",
+    "id": "z36FjW",
+    "message": "{number, selectordinal, one {{number, number}st} two {{number, number}nd} few {{number, number}rd} other {{number, number}th}}",
     "context": "modals.task.recurrence.ordinal"
   },
   "modals.taskSelector.title": {
@@ -11485,8 +11485,8 @@
     "context": "services.calendarExport.notices.noTasksToExport"
   },
   "services.calendarExport.notices.downloadSuccess": {
-    "id": "iGMUfJ",
-    "message": "{count, plural, one {Downloaded {filename} with {count} task} other {Downloaded {filename} with {count} tasks}}",
+    "id": "i3yiX0",
+    "message": "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}",
     "context": "services.calendarExport.notices.downloadSuccess"
   },
   "services.calendarExport.notices.downloadFailed": {
@@ -11590,18 +11590,18 @@
     "context": "services.instantTaskConvert.notices.noCheckboxTasks"
   },
   "services.instantTaskConvert.notices.convertingTasks": {
-    "id": "uxeoiX",
-    "message": "{count, plural, one {Converting {count} task...} other {Converting {count} tasks...}}",
+    "id": "MjXP8h",
+    "message": "{count, plural, one {Converting {count, number} task...} other {Converting {count, number} tasks...}}",
     "context": "services.instantTaskConvert.notices.convertingTasks"
   },
   "services.instantTaskConvert.notices.conversionSuccess": {
-    "id": "m8nFfV",
-    "message": "{count, plural, one {✅ Successfully converted {count} task to TaskNotes!} other {✅ Successfully converted {count} tasks to TaskNotes!}}",
+    "id": "1ume_k",
+    "message": "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}",
     "context": "services.instantTaskConvert.notices.conversionSuccess"
   },
   "services.instantTaskConvert.notices.partialConversion": {
-    "id": "jzqE0Y",
-    "message": "{successCount, plural, one {Converted {successCount} task. {failureCount} failed.} other {Converted {successCount} tasks. {failureCount} failed.}}",
+    "id": "cU-DWO",
+    "message": "{successCount, plural, one {Converted {successCount, number} task. {failureCount, number} failed.} other {Converted {successCount, number} tasks. {failureCount, number} failed.}}",
     "context": "services.instantTaskConvert.notices.partialConversion"
   },
   "services.instantTaskConvert.notices.batchConversionFailed": {
@@ -11955,13 +11955,13 @@
     "context": "ui.taskCard.recurrenceTooltip"
   },
   "ui.taskCard.reminderTooltipOne": {
-    "id": "VKSOVE",
-    "message": "{count, plural, one {{count} reminder set (click to manage)} other {{count} reminders set (click to manage)}}",
+    "id": "2k5d9x",
+    "message": "{count, plural, one {{count, number} reminder set (click to manage)} other {{count, number} reminders set (click to manage)}}",
     "context": "ui.taskCard.reminderTooltip"
   },
   "ui.taskCard.reminderTooltipMany": {
-    "id": "VKSOVE",
-    "message": "{count, plural, one {{count} reminder set (click to manage)} other {{count} reminders set (click to manage)}}",
+    "id": "2k5d9x",
+    "message": "{count, plural, one {{count, number} reminder set (click to manage)} other {{count, number} reminders set (click to manage)}}",
     "context": "ui.taskCard.reminderTooltip"
   },
   "ui.taskCard.detailsTooltip": {

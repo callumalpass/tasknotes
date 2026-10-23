@@ -70,7 +70,7 @@ export function downloadAllTasksICSFile(
 		downloadICSFile(download);
 
 		showNotice(
-			translateOrDefault(translate, msg({ message: "{count, plural, one {Downloaded {filename} with {count} task} other {Downloaded {filename} with {count} tasks}}", context: "services.calendarExport.notices.downloadSuccess" }), {
+			translateOrDefault(translate, msg({ message: "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}", context: "services.calendarExport.notices.downloadSuccess" }), {
 					filename: download.filename,
 					count: download.taskCount,
 				})

@@ -38,6 +38,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Moved interface translations to Lingui catalogues with count-aware messages, locale-aware numbers and dates, and localized generated Bases labels. Ordinary builds retain all nine bundled interface languages.
+
 - Localized command notices, calendar connection and webhook settings, date/reminder/action/file/timeblock dialogs, task-property pickers, recurrence controls and statistics labels in all eight non-English interface languages. User-authored titles, paths, status labels and property names remain unchanged.
 
 ## Removed

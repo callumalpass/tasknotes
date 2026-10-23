@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import type { TaskInfo } from "../types";
@@ -28,7 +29,7 @@ export function buildTaskInfoFromMappedTask({
 		path,
 		title: mappedTask.title || uiText(msg({ message: "Untitled task", context: "utils/taskInfoAssembly: buildTaskInfoFromMappedTask title" })),
 		status: mappedTask.status || defaultTaskStatus,
-		priority: mappedTask.priority || "normal",
+		priority: mappedTask.priority || uiData("normal", "Persisted priority value; preserve user metadata and matching semantics"),
 		archived: mappedTask.archived || false,
 		tags: Array.isArray(mappedTask.tags) ? mappedTask.tags : [],
 		contexts: Array.isArray(mappedTask.contexts) ? mappedTask.contexts : [],

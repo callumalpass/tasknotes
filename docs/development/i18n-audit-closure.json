@@ -1,0 +1,20 @@
+{
+  "base": "e70b7ba65423465628e414511b3436a8121c1809",
+  "originalRows": 1075,
+  "localeFormattingRows": 156,
+  "forwards": 93,
+  "conditionals": 23,
+  "finiteSites": 22,
+  "finiteConcepts": 210,
+  "sourceGuard": "PASS, including forwarding/interpolation/diagnostic/callback/eager-module checks",
+  "acceptance": "Not final acceptance: translations, full tests, strict gates, final budget and native checks are still outstanding",
+  "stateCounts": {
+    "source copy remediated": 585,
+    "excluded": 156,
+    "presentation-only diagnostic localization": 171,
+    "source formatting remediated": 156,
+    "obsolete English plural resolver removed": 1,
+    "deferred translation": 2,
+    "escaped localized callback page": 4
+  }
+}

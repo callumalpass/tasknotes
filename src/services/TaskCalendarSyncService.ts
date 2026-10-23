@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
 import type { MessageSuffix } from "../i18n/concepts";
 import { uiDuration } from "../i18n/formatters";
@@ -93,10 +94,10 @@ function getErrorMessage(error: unknown): string {
 	if (error !== null && typeof error === "object") {
 		const message = (error as { message?: unknown }).message;
 		if (message !== undefined) {
-			return stringifyUnknown(message);
+			return uiData(stringifyUnknown(message), "Non-Error provider/structured message payload; preserve protocol details");
 		}
 	}
-	return stringifyUnknown(error);
+	return uiData(stringifyUnknown(error), "Unknown external error payload; preserve third-party protocol details");
 }
 
 function isAlreadyDeletedError(error: unknown): boolean {

@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import type { MessageSuffix } from "../i18n/concepts";
 import { uiText } from "../i18n/runtime";
 import { uiNumber } from "../i18n/formatters";
@@ -477,7 +478,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 					appendInternalLink(
 						linksContainer,
 						dependencyLink.path,
-						dependencyLink.displayText,
+						uiData(dependencyLink.displayText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"),
 						linkServices
 					);
 				}
@@ -780,14 +781,16 @@ function containsRichTextLink(value: string): boolean {
 
 function formatUserPropertyValue(value: unknown, userField: UserField): string {
 	if (value === null || value === undefined) return "";
+	const userText = (raw: unknown) => uiData(stringifyUnknown(raw), "User-authored custom property content; preserve vault data");
 
 	try {
 		switch (userField.type) {
 			case "text":
+				return userText(value);
 			case "number":
-				return stringifyUnknown(value);
+				return typeof value === "number" ? uiNumber(value, { maximumFractionDigits: 20 }) : userText(value);
 			case "date":
-				return formatDateTimeForDisplay(stringifyUnknown(value), {
+				return formatDateTimeForDisplay(userText(value), {
 					dateFormat: "MMM d, yyyy",
 					timeFormat: "",
 					showTime: false,
@@ -796,11 +799,11 @@ function formatUserPropertyValue(value: unknown, userField: UserField): string {
 				return value ? "✓" : "✗";
 			case "list":
 				if (Array.isArray(value)) {
-					return (value as unknown[]).flat(2).map(stringifyUnknown).join(", ");
+					return (value as unknown[]).flat(2).map(userText).join(", ");
 				}
-				return stringifyUnknown(value);
+				return userText(value);
 			default:
-				return stringifyUnknown(value);
+				return userText(value);
 		}
 	} catch (error) {
 		tasknotesLogger.warn("TaskCard: Error formatting user property value:", {
@@ -808,7 +811,7 @@ function formatUserPropertyValue(value: unknown, userField: UserField): string {
 			operation: "taskcard-formatting-user-property-value",
 			error: error,
 		});
-		return stringifyUnknown(value);
+		return userText(value);
 	}
 }
 

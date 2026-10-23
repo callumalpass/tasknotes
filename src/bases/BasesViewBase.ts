@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { Component, App, Notice } from "obsidian";
@@ -767,7 +768,7 @@ export abstract class BasesViewBase extends Component {
 				operation: "export-bases-table",
 				error,
 			});
-			new Notice(this.plugin.i18n.translate(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), { action: "CSV" }));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), { action: uiData("CSV", "CSV interchange format name; preserve the standard acronym") }));
 		}
 	}
 
