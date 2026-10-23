@@ -24,11 +24,17 @@ A translation is considered:
 - **Missing**: No translation exists for the key
 - **Stale**: Source hash has changed since the translation was created
 
-## Integration with TaskNotes
+## Current TaskNotes translation workflow
 
-TaskNotes uses i18n-state-manager to manage translations across seven languages. The tool runs in continuous integration to prevent deployment of incomplete or outdated translations.
+TaskNotes UI now uses the shared Lingui kit across nine locales. Author `src/i18n/locales/<locale>/messages.po`; generated JSON is ignored and prepared on fresh checkouts by ordinary tests and production builds. Run `npm run i18n:extract` after changing marked English copy, then `npm run i18n:check`. The latter verifies extraction sync, authored completeness before fallback, ICU contracts, reviewed identical-term exceptions and both source guards, then compiles strict JSON. `npm run i18n:compile` uses the same strict gate; it accepts no bypass flags.
 
-Available commands:
+Ordinary `npm test` and CI require complete authored catalogues. `npm run test:dev` and `npm run test:watch` explicitly prepare incomplete development fallback data and are not release/translation acceptance. The old TS resources remain trusted migration inputs to `scripts/convert-lingui.mjs`, not runtime catalogues. Default conversion preserves authored PO ICU; never use `--refresh-reviewed` after integration without reconciliation. NLP configuration in `src/locales/` is separate and unchanged. See [language packs](language-packs.md). The migration handoff and machine-readable audit inventories are internal development evidence, not published user guides.
+
+## Historical TaskNotes integration
+
+The keyed-resource integration below is retained as history of the standalone tool; these are not the current plugin commands.
+
+Historical commands:
 
 - `i18n-state sync` – Update manifest and state files after changing translations
 - `i18n-state verify` – Check for missing or stale translations (fails on issues)

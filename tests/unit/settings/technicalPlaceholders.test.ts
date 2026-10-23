@@ -1,4 +1,5 @@
 import { App } from "obsidian";
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../../../src/main";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import { FieldMapper } from "../../../src/services/FieldMapper";
@@ -17,6 +18,19 @@ function input(container: HTMLElement, placeholder: string): HTMLInputElement {
 }
 
 describe.each(locales)("technical setting examples in %s", locale => {
+	it("keeps semantic single and multiple Bases groups distinct, including Russian 21", () => {
+		const translate = observeTranslation(locale);
+		const classifiers = [
+			msg({ message: "{count, plural, =0 {No contexts} =1 {Single context} other {Multiple contexts}}", context: "generated Bases contexts count" }),
+			msg({ message: "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}", context: "generated Bases projects count" }),
+		];
+		for (const descriptor of classifiers) {
+			const show = (count: number) => translate(descriptor, { count });
+			expect(show(0)).not.toBe(show(1));
+			expect(show(1)).not.toBe(show(2));
+			for (const count of [2, 5, 21]) expect(show(count)).toBe(show(2));
+		}
+	});
 	it("preserves icon IDs, identifier examples and configured template paths", () => {
 		const settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) as typeof DEFAULT_SETTINGS;
 		settings.taskCreationDefaults.useBodyTemplate = true;

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { setupI18n } from "@lingui/core";
 import { createServer, type Server } from "node:http";
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -26,6 +27,10 @@ let server: Server | undefined;
 let savedSettings: Buffer | undefined;
 let mode: "ok" | "offline" | "corrupt-de" | "slow-ru" = "ok";
 const requests: string[] = [];
+const keyMap = JSON.parse(fs.readFileSync(path.join(root, "scripts/plugin-key-map.json"), "utf8"));
+const singletonContracts = JSON.parse(fs.readFileSync(path.join(root, "docs/development/i18n-singleton-contracts.json"), "utf8"));
+const cores = new Map<string, ReturnType<typeof setupI18n>>();
+const expectedText = (locale: string, concept: string, values?: Record<string, number | string>) => cores.get(locale)!._(keyMap[concept].id, values);
 let frenchCreateTaskName: string;
 let frenchRibbonNames: string[];
 let releaseFrench: (() => void) | undefined;
@@ -51,8 +56,11 @@ test.beforeAll(async () => {
 			fs.readFileSync(path.join(directory, file), "utf8"),
 		])
 	);
-	const frenchMessages = JSON.parse(files.get("fr.json")!).messages;
-	frenchCreateTaskName = frenchMessages["commands.createNewTask"];
+	for (const [file, text] of files) {
+		const locale = file.slice(0, -5);
+		cores.set(locale, setupI18n({ locale, messages: { [locale]: JSON.parse(text).messages } }));
+	}
+	frenchCreateTaskName = expectedText("fr", "commands.createNewTask");
 	frenchRibbonNames = [
 		"openCalendarView",
 		"openAdvancedCalendarView",
@@ -62,7 +70,7 @@ test.beforeAll(async () => {
 		"openPomodoroView",
 		"openPomodoroStats",
 		"createNewTask",
-	].map((key) => frenchMessages[`commands.${key}`]);
+	].map((key) => expectedText("fr", `commands.${key}`));
 	const prefix = `${endpoint.pathname.replace(/\/$/, "")}/${manifest.catalogueVersion}/`;
 	server = createServer((request, response) => {
 		const file = request.url?.startsWith(prefix) ? request.url.slice(prefix.length) : "";
@@ -224,4 +232,52 @@ test("downloads through the native picker, survives an offline reload, and retri
 	});
 	expect(superseded).toBe(false);
 	expect(await currentLocale()).toBe("en");
+});
+
+test("native en/ja/de/ru labels, plurals and existing Bases files survive locale switches", async () => {
+	const page = app!.page;
+	mode = "ok";
+	const basesBefore = await page.evaluate(async () => {
+		const vault = (window as any).app.vault;
+		return Object.fromEntries(await Promise.all(vault.getFiles().filter((file: any) => file.extension === "base").map(async (file: any) => [file.path, await vault.read(file)])));
+	});
+	expect(Object.keys(basesBefore).length).toBeGreaterThan(0);
+	const report: Record<string, unknown> = {};
+	for (const locale of ["en", "ja", "de", "ru"]) {
+		await page.evaluate(async locale => { await (window as any).app.plugins.plugins.tasknotes.setUILanguage(locale); }, locale);
+		await expect.poll(() => page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale())).toBe(locale);
+		const commandName = expectedText(locale, "commands.createNewTask");
+		await expect.poll(() => page.evaluate(() => (window as any).app.commands.commands["tasknotes:create-new-task"]?.name)).toContain(commandName);
+		await page.keyboard.press("Control+p");
+		await page.locator(".prompt-input").fill("TaskNotes");
+		await expect(page.locator(".suggestion-title").filter({ hasText: commandName }).first()).toBeVisible();
+		await page.keyboard.press("Escape");
+		const checks = [
+			{ id: keyMap["settings.integrations.timeFormats.minutesAgo"].id, argument: "count" },
+			...singletonContracts.replacements.filter((entry: any) => entry.context === "generated Bases contexts count" || entry.context === "recurrence daily interval").map((entry: any) => ({ id: entry.id, argument: entry.context.startsWith("recurrence") ? "interval" : "count" })),
+		];
+		const rendered = await page.evaluate(({ checks }) => {
+			const service = (window as any).app.plugins.plugins.tasknotes.i18n;
+			return checks.map(({ id, argument }: any) => ({ id, argument, values: [0, 1, 2, 5, 21].map(count => service.translate({ id }, { [argument]: count })) }));
+		}, { checks });
+		for (const row of rendered) {
+			for (const [index, count] of [0, 1, 2, 5, 21].entries()) expect(row.values[index]).toBe(cores.get(locale)!._(row.id, { [row.argument]: count }));
+			if (row.argument === "count" && row.id !== checks[0].id) {
+				expect(row.values[1]).not.toBe(row.values[2]);
+				expect(row.values[4]).toBe(row.values[2]);
+			}
+		}
+		const settingsPage = await openTaskNotesSettings(page);
+		await expect(settingsPage.locator('select:has(option[value="system"]):has(option[value="fr"])')).toHaveValue(locale);
+		await settingsPage.screenshot({ path: `test-results/lingui-native/${locale}-settings.png`, fullPage: true });
+		await closeObsidianSettings(page, settingsPage);
+		report[locale] = { commandName, rendered };
+	}
+	const basesAfter = await page.evaluate(async paths => {
+		const vault = (window as any).app.vault;
+		return Object.fromEntries(await Promise.all(paths.map(async path => [path, await vault.read(vault.getAbstractFileByPath(path))])));
+	}, Object.keys(basesBefore));
+	expect(basesAfter).toEqual(basesBefore);
+	fs.mkdirSync(path.join(root, "test-results/lingui-native"), { recursive: true });
+	fs.writeFileSync(path.join(root, "test-results/lingui-native/report.json"), JSON.stringify({ locales: report, unchangedBases: Object.keys(basesBefore), requests }, null, 2));
 });

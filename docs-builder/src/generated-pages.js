@@ -2,6 +2,9 @@ import fs from "fs/promises";
 import path from "path";
 import { build as bundle } from "esbuild";
 import ts from "typescript";
+import { generateMessageId } from "@lingui/message-utils/generateMessageId";
+import { linguiMacros } from "../../scripts/lib/lingui-build.mjs";
+import catalogueGates from "../../scripts/lib/catalogue-gates.cjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../..");
 
@@ -17,8 +20,36 @@ function frontmatter(title, description, sourceFiles) {
 	].join("\n");
 }
 
-function getTranslation(tree, key) {
-	return key.split(".").reduce((value, segment) => value?.[segment], tree);
+function getTranslation(core, descriptor) {
+	if (!descriptor) return undefined;
+	if (!Object.hasOwn(core.messages, descriptor.id)) throw new Error(`Documentation message missing from English catalogue: ${descriptor.id}`);
+	// Context-dependent values remain placeholders in this static inventory.
+	return (descriptor.unresolved ? descriptor.message : core._(descriptor)).replace(/<\/?\d+>/g, "");
+}
+
+function literalValue(node) {
+	if (!node) return undefined;
+	if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "uiData") return literalValue(node.arguments[0]);
+	if (ts.isNumericLiteral(node)) return Number(node.text);
+	return stringValue(node);
+}
+
+function messageDescriptor(node) {
+	if (!node || !ts.isCallExpression(node) || !ts.isIdentifier(node.expression) || node.expression.text !== "msg" || !ts.isObjectLiteralExpression(node.arguments[0])) return undefined;
+	const properties = new Map(node.arguments[0].properties.filter(ts.isPropertyAssignment).map(property => [propertyName(property.name), property.initializer]));
+	const message = stringValue(properties.get("message"));
+	const context = stringValue(properties.get("context"));
+	if (message === undefined) return undefined;
+	const valuesNode = properties.get("values");
+	const values = {};
+	let unresolved = Boolean(valuesNode && !ts.isObjectLiteralExpression(valuesNode));
+	if (valuesNode && ts.isObjectLiteralExpression(valuesNode)) for (const property of valuesNode.properties) {
+		if (!ts.isPropertyAssignment(property)) { unresolved = true; continue; }
+		const value = literalValue(property.initializer);
+		if (value === undefined) unresolved = true;
+		else values[propertyName(property.name)] = value;
+	}
+	return { id: generateMessageId(message, context), message, context, values, unresolved };
 }
 
 function markdownTableCell(value) {
@@ -36,6 +67,7 @@ function propertyName(node) {
 }
 
 function stringValue(node) {
+	if (!node) return undefined;
 	return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)
 		? node.text
 		: undefined;
@@ -53,8 +85,11 @@ async function sourceFile(relativePath) {
 }
 
 async function loadRuntimeDocumentationData() {
+	catalogueGates.prepareStrictCatalogues(ROOT);
 	const entry = `
-		import { en } from "./src/i18n/resources/en.ts";
+		import { setupI18n } from "@lingui/core";
+		import englishCatalogue from "./src/i18n/locales/en/messages.json";
+		const en = setupI18n({ locale: "en", messages: { en: englishCatalogue.messages } });
 		import { DEFAULT_SETTINGS } from "./src/settings/defaults.ts";
 		import { FieldMapper } from "./src/core/FieldMapper.ts";
 		import { generateBasesFileTemplate } from "./src/templates/defaultBasesFiles.ts";
@@ -88,7 +123,7 @@ async function loadRuntimeDocumentationData() {
 		nodePaths: [path.join(ROOT, "docs-builder", "node_modules")],
 		// Obsidian is a host API, not a Node runtime package. Use a real YAML
 		// serializer when executing the Base template generator outside the host.
-		plugins: [{
+		plugins: [linguiMacros(), {
 			name: "docs-obsidian-yaml",
 			setup(build) {
 				build.onResolve({ filter: /^obsidian$/ }, () => ({
@@ -119,7 +154,7 @@ async function commandCatalog(en) {
 		const values = Object.fromEntries(
 			node.properties
 				.filter(ts.isPropertyAssignment)
-				.map((property) => [propertyName(property.name), stringValue(property.initializer)])
+				.map((property) => [propertyName(property.name), stringValue(property.initializer) ?? messageDescriptor(property.initializer)])
 		);
 		if (values.id && values.nameKey) {
 			const name = getTranslation(en, values.nameKey);
@@ -146,12 +181,12 @@ function translationArgument(call) {
 	}
 	const expression = call.expression;
 	const isTranslate =
-		(ts.isIdentifier(expression) && expression.text === "translate") ||
+		(ts.isIdentifier(expression) && ["translate", "uiText"].includes(expression.text)) ||
 		(ts.isPropertyAccessExpression(expression) && expression.name.text === "translate");
-	return isTranslate ? stringValue(call.arguments[0]) : undefined;
+	return isTranslate ? messageDescriptor(call.arguments[0]) : messageDescriptor(call);
 }
 
-function collectSettingControls(source, en) {
+export function collectSettingControls(source, en) {
 	const controls = new Map();
 
 	function add(nameKey, descriptionKey) {
@@ -160,10 +195,10 @@ function collectSettingControls(source, en) {
 		}
 		const name = getTranslation(en, nameKey);
 		const description = descriptionKey ? getTranslation(en, descriptionKey) : undefined;
-		if (typeof name !== "string" || controls.has(nameKey)) {
+		if (typeof name !== "string" || controls.has(nameKey.id)) {
 			return;
 		}
-		controls.set(nameKey, {
+		controls.set(nameKey.id, {
 			name,
 			description: typeof description === "string" ? description : "",
 		});
@@ -217,9 +252,9 @@ async function settingsCatalog(en) {
 		const values = Object.fromEntries(
 			node.properties
 				.filter(ts.isPropertyAssignment)
-				.map((property) => [propertyName(property.name), stringValue(property.initializer)])
+				.map((property) => [propertyName(property.name), stringValue(property.initializer) ?? messageDescriptor(property.initializer)])
 		);
-		if (values.id && values.nameKey?.startsWith("settings.tabs.")) {
+		if (values.id && values.nameKey?.context?.startsWith("settings.tabs.")) {
 			tabIds.set(values.id, values.nameKey);
 		}
 	});
@@ -304,7 +339,7 @@ function commandsPage(commands) {
 	return `${frontmatter(
 		"Command reference",
 		"Every TaskNotes command registered with Obsidian, generated from the plugin command definitions.",
-		["src/commands/taskNotesCommands.ts", "src/i18n/resources/en.ts"]
+		["src/commands/taskNotesCommands.ts", "src/i18n/locales/en/messages.po"]
 	)}# Command reference
 
 This page is generated from the commands registered by TaskNotes. Command IDs are stable integration identifiers; names are the English labels shown in Obsidian.
@@ -366,7 +401,7 @@ ${rows}`;
 			"src/settings/TaskNotesSettingTab.ts",
 			"src/settings/tabs/*.ts",
 			"src/settings/defaults.ts",
-			"src/i18n/resources/en.ts",
+			"src/i18n/locales/en/messages.po",
 		]
 	)}# Settings source reference
 
@@ -444,6 +479,7 @@ export async function buildGeneratedPages(manifest) {
 		httpRoutes(),
 	]);
 	await verifyHttpGuideParity(routes);
+	if (!commands.length || tabs.length !== 6) throw new Error(`Documentation inventory lost commands/settings: ${commands.length} commands, ${tabs.length} tabs`);
 
 	return new Map([
 		["reference/commands.md", commandsPage(commands)],

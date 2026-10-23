@@ -156,7 +156,7 @@ test("real AWS SDK signs conditional HTTP writes; identical and conflicting conc
 		response.writeHead(200, { etag: '"fixture"' });
 		response.end();
 	});
-	server.listen(0, "127.0.0.1");
+	server.listen(19281, "127.0.0.1");
 	await once(server, "listening");
 	const sdk = new S3Client({
 		region: "auto",

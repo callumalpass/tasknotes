@@ -241,13 +241,13 @@ msgstr "{count, plural, =0 {{title}} other {{title} (첨부파일 #개)}}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases contexts count"
-msgid "{count, plural, =0 {No contexts} one {Single context} other {Multiple contexts}}"
-msgstr "{count, plural, =0 {컨텍스트 없음} other {컨텍스트 있음}}"
+msgid "{count, plural, =0 {No contexts} =1 {Single context} other {Multiple contexts}}"
+msgstr "{count, plural, =0 {컨텍스트 없음} =1 {컨텍스트 있음 (1)} other {컨텍스트 있음 (2+)}}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases projects count"
-msgid "{count, plural, =0 {No projects} one {Single project} other {Multiple projects}}"
-msgstr "{count, plural, =0 {프로젝트 없음} other {프로젝트 있음}}"
+msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
+msgstr "{count, plural, =0 {프로젝트 없음} =1 {프로젝트 있음 (1)} other {프로젝트 있음 (2+)}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"
@@ -451,43 +451,43 @@ msgstr "총 {hours}시간 {minutes}분"
 
 #: src/i18n/recurrence.ts
 msgctxt "monthly weekday recurrence"
-msgid "{interval, plural, one {{weekday, select, MO {{position, select, last {Monthly on the last Monday} every {Monthly on every Monday} other {{index, selectordinal, one {Monthly on the #st Monday} two {Monthly on the #nd Monday} few {Monthly on the #rd Monday} other {Monthly on the #th Monday}}}}} TU {{position, select, last {Monthly on the last Tuesday} every {Monthly on every Tuesday} other {{index, selectordinal, one {Monthly on the #st Tuesday} two {Monthly on the #nd Tuesday} few {Monthly on the #rd Tuesday} other {Monthly on the #th Tuesday}}}}} WE {{position, select, last {Monthly on the last Wednesday} every {Monthly on every Wednesday} other {{index, selectordinal, one {Monthly on the #st Wednesday} two {Monthly on the #nd Wednesday} few {Monthly on the #rd Wednesday} other {Monthly on the #th Wednesday}}}}} TH {{position, select, last {Monthly on the last Thursday} every {Monthly on every Thursday} other {{index, selectordinal, one {Monthly on the #st Thursday} two {Monthly on the #nd Thursday} few {Monthly on the #rd Thursday} other {Monthly on the #th Thursday}}}}} FR {{position, select, last {Monthly on the last Friday} every {Monthly on every Friday} other {{index, selectordinal, one {Monthly on the #st Friday} two {Monthly on the #nd Friday} few {Monthly on the #rd Friday} other {Monthly on the #th Friday}}}}} SA {{position, select, last {Monthly on the last Saturday} every {Monthly on every Saturday} other {{index, selectordinal, one {Monthly on the #st Saturday} two {Monthly on the #nd Saturday} few {Monthly on the #rd Saturday} other {Monthly on the #th Saturday}}}}} SU {{position, select, last {Monthly on the last Sunday} every {Monthly on every Sunday} other {{index, selectordinal, one {Monthly on the #st Sunday} two {Monthly on the #nd Sunday} few {Monthly on the #rd Sunday} other {Monthly on the #th Sunday}}}}} other {Monthly}}} other {{weekday, select, MO {{position, select, last {Every {interval, number} months on the last Monday} every {Every {interval, number} months on every Monday} other {{index, selectordinal, one {Every {interval, number} months on the #st Monday} two {Every {interval, number} months on the #nd Monday} few {Every {interval, number} months on the #rd Monday} other {Every {interval, number} months on the #th Monday}}}}} TU {{position, select, last {Every {interval, number} months on the last Tuesday} every {Every {interval, number} months on every Tuesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Tuesday} two {Every {interval, number} months on the #nd Tuesday} few {Every {interval, number} months on the #rd Tuesday} other {Every {interval, number} months on the #th Tuesday}}}}} WE {{position, select, last {Every {interval, number} months on the last Wednesday} every {Every {interval, number} months on every Wednesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Wednesday} two {Every {interval, number} months on the #nd Wednesday} few {Every {interval, number} months on the #rd Wednesday} other {Every {interval, number} months on the #th Wednesday}}}}} TH {{position, select, last {Every {interval, number} months on the last Thursday} every {Every {interval, number} months on every Thursday} other {{index, selectordinal, one {Every {interval, number} months on the #st Thursday} two {Every {interval, number} months on the #nd Thursday} few {Every {interval, number} months on the #rd Thursday} other {Every {interval, number} months on the #th Thursday}}}}} FR {{position, select, last {Every {interval, number} months on the last Friday} every {Every {interval, number} months on every Friday} other {{index, selectordinal, one {Every {interval, number} months on the #st Friday} two {Every {interval, number} months on the #nd Friday} few {Every {interval, number} months on the #rd Friday} other {Every {interval, number} months on the #th Friday}}}}} SA {{position, select, last {Every {interval, number} months on the last Saturday} every {Every {interval, number} months on every Saturday} other {{index, selectordinal, one {Every {interval, number} months on the #st Saturday} two {Every {interval, number} months on the #nd Saturday} few {Every {interval, number} months on the #rd Saturday} other {Every {interval, number} months on the #th Saturday}}}}} SU {{position, select, last {Every {interval, number} months on the last Sunday} every {Every {interval, number} months on every Sunday} other {{index, selectordinal, one {Every {interval, number} months on the #st Sunday} two {Every {interval, number} months on the #nd Sunday} few {Every {interval, number} months on the #rd Sunday} other {Every {interval, number} months on the #th Sunday}}}}} other {Every {interval, number} months}}}}"
-msgstr "{interval, plural, other {{weekday, select, MO {{position, select, last {{interval, number}개월마다 마지막 월요일} every {{interval, number}개월마다 모든 월요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 월요일}}}}} TU {{position, select, last {{interval, number}개월마다 마지막 화요일} every {{interval, number}개월마다 모든 화요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 화요일}}}}} WE {{position, select, last {{interval, number}개월마다 마지막 수요일} every {{interval, number}개월마다 모든 수요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 수요일}}}}} TH {{position, select, last {{interval, number}개월마다 마지막 목요일} every {{interval, number}개월마다 모든 목요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 목요일}}}}} FR {{position, select, last {{interval, number}개월마다 마지막 금요일} every {{interval, number}개월마다 모든 금요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 금요일}}}}} SA {{position, select, last {{interval, number}개월마다 마지막 토요일} every {{interval, number}개월마다 모든 토요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 토요일}}}}} SU {{position, select, last {{interval, number}개월마다 마지막 일요일} every {{interval, number}개월마다 모든 일요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 일요일}}}}} other {{interval, number}개월마다}}}}"
+msgid "{interval, plural, =1 {{weekday, select, MO {{position, select, last {Monthly on the last Monday} every {Monthly on every Monday} other {{index, selectordinal, one {Monthly on the #st Monday} two {Monthly on the #nd Monday} few {Monthly on the #rd Monday} other {Monthly on the #th Monday}}}}} TU {{position, select, last {Monthly on the last Tuesday} every {Monthly on every Tuesday} other {{index, selectordinal, one {Monthly on the #st Tuesday} two {Monthly on the #nd Tuesday} few {Monthly on the #rd Tuesday} other {Monthly on the #th Tuesday}}}}} WE {{position, select, last {Monthly on the last Wednesday} every {Monthly on every Wednesday} other {{index, selectordinal, one {Monthly on the #st Wednesday} two {Monthly on the #nd Wednesday} few {Monthly on the #rd Wednesday} other {Monthly on the #th Wednesday}}}}} TH {{position, select, last {Monthly on the last Thursday} every {Monthly on every Thursday} other {{index, selectordinal, one {Monthly on the #st Thursday} two {Monthly on the #nd Thursday} few {Monthly on the #rd Thursday} other {Monthly on the #th Thursday}}}}} FR {{position, select, last {Monthly on the last Friday} every {Monthly on every Friday} other {{index, selectordinal, one {Monthly on the #st Friday} two {Monthly on the #nd Friday} few {Monthly on the #rd Friday} other {Monthly on the #th Friday}}}}} SA {{position, select, last {Monthly on the last Saturday} every {Monthly on every Saturday} other {{index, selectordinal, one {Monthly on the #st Saturday} two {Monthly on the #nd Saturday} few {Monthly on the #rd Saturday} other {Monthly on the #th Saturday}}}}} SU {{position, select, last {Monthly on the last Sunday} every {Monthly on every Sunday} other {{index, selectordinal, one {Monthly on the #st Sunday} two {Monthly on the #nd Sunday} few {Monthly on the #rd Sunday} other {Monthly on the #th Sunday}}}}} other {Monthly}}} other {{weekday, select, MO {{position, select, last {Every {interval, number} months on the last Monday} every {Every {interval, number} months on every Monday} other {{index, selectordinal, one {Every {interval, number} months on the #st Monday} two {Every {interval, number} months on the #nd Monday} few {Every {interval, number} months on the #rd Monday} other {Every {interval, number} months on the #th Monday}}}}} TU {{position, select, last {Every {interval, number} months on the last Tuesday} every {Every {interval, number} months on every Tuesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Tuesday} two {Every {interval, number} months on the #nd Tuesday} few {Every {interval, number} months on the #rd Tuesday} other {Every {interval, number} months on the #th Tuesday}}}}} WE {{position, select, last {Every {interval, number} months on the last Wednesday} every {Every {interval, number} months on every Wednesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Wednesday} two {Every {interval, number} months on the #nd Wednesday} few {Every {interval, number} months on the #rd Wednesday} other {Every {interval, number} months on the #th Wednesday}}}}} TH {{position, select, last {Every {interval, number} months on the last Thursday} every {Every {interval, number} months on every Thursday} other {{index, selectordinal, one {Every {interval, number} months on the #st Thursday} two {Every {interval, number} months on the #nd Thursday} few {Every {interval, number} months on the #rd Thursday} other {Every {interval, number} months on the #th Thursday}}}}} FR {{position, select, last {Every {interval, number} months on the last Friday} every {Every {interval, number} months on every Friday} other {{index, selectordinal, one {Every {interval, number} months on the #st Friday} two {Every {interval, number} months on the #nd Friday} few {Every {interval, number} months on the #rd Friday} other {Every {interval, number} months on the #th Friday}}}}} SA {{position, select, last {Every {interval, number} months on the last Saturday} every {Every {interval, number} months on every Saturday} other {{index, selectordinal, one {Every {interval, number} months on the #st Saturday} two {Every {interval, number} months on the #nd Saturday} few {Every {interval, number} months on the #rd Saturday} other {Every {interval, number} months on the #th Saturday}}}}} SU {{position, select, last {Every {interval, number} months on the last Sunday} every {Every {interval, number} months on every Sunday} other {{index, selectordinal, one {Every {interval, number} months on the #st Sunday} two {Every {interval, number} months on the #nd Sunday} few {Every {interval, number} months on the #rd Sunday} other {Every {interval, number} months on the #th Sunday}}}}} other {Every {interval, number} months}}}}"
+msgstr "{interval, plural, =1 {{weekday, select, MO {{position, select, last {1개월마다 마지막 월요일} every {1개월마다 모든 월요일} other {{index, selectordinal, other {1개월마다 #번째 월요일}}}}} TU {{position, select, last {1개월마다 마지막 화요일} every {1개월마다 모든 화요일} other {{index, selectordinal, other {1개월마다 #번째 화요일}}}}} WE {{position, select, last {1개월마다 마지막 수요일} every {1개월마다 모든 수요일} other {{index, selectordinal, other {1개월마다 #번째 수요일}}}}} TH {{position, select, last {1개월마다 마지막 목요일} every {1개월마다 모든 목요일} other {{index, selectordinal, other {1개월마다 #번째 목요일}}}}} FR {{position, select, last {1개월마다 마지막 금요일} every {1개월마다 모든 금요일} other {{index, selectordinal, other {1개월마다 #번째 금요일}}}}} SA {{position, select, last {1개월마다 마지막 토요일} every {1개월마다 모든 토요일} other {{index, selectordinal, other {1개월마다 #번째 토요일}}}}} SU {{position, select, last {1개월마다 마지막 일요일} every {1개월마다 모든 일요일} other {{index, selectordinal, other {1개월마다 #번째 일요일}}}}} other {1개월마다}}} other {{weekday, select, MO {{position, select, last {{interval, number}개월마다 마지막 월요일} every {{interval, number}개월마다 모든 월요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 월요일}}}}} TU {{position, select, last {{interval, number}개월마다 마지막 화요일} every {{interval, number}개월마다 모든 화요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 화요일}}}}} WE {{position, select, last {{interval, number}개월마다 마지막 수요일} every {{interval, number}개월마다 모든 수요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 수요일}}}}} TH {{position, select, last {{interval, number}개월마다 마지막 목요일} every {{interval, number}개월마다 모든 목요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 목요일}}}}} FR {{position, select, last {{interval, number}개월마다 마지막 금요일} every {{interval, number}개월마다 모든 금요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 금요일}}}}} SA {{position, select, last {{interval, number}개월마다 마지막 토요일} every {{interval, number}개월마다 모든 토요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 토요일}}}}} SU {{position, select, last {{interval, number}개월마다 마지막 일요일} every {{interval, number}개월마다 모든 일요일} other {{index, selectordinal, other {{interval, number}개월마다 #번째 일요일}}}}} other {{interval, number}개월마다}}}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence daily interval"
-msgid "{interval, plural, one {Daily} other {Every # days}}"
-msgstr "{interval, plural, other {#일마다}}"
+msgid "{interval, plural, =1 {Daily} other {Every # days}}"
+msgstr "{interval, plural, =1 {1일마다} other {#일마다}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence interval on month day"
-msgid "{interval, plural, one {Monthly on day {day, number}} other {Every # months on day {day, number}}}"
-msgstr "{interval, plural, other {#개월마다 {day, number}일}}"
+msgid "{interval, plural, =1 {Monthly on day {day, number}} other {Every # months on day {day, number}}}"
+msgstr "{interval, plural, =1 {1개월마다 {day, number}일} other {#개월마다 {day, number}일}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence monthly interval"
-msgid "{interval, plural, one {Monthly} other {Every # months}}"
-msgstr "{interval, plural, other {#개월마다}}"
+msgid "{interval, plural, =1 {Monthly} other {Every # months}}"
+msgstr "{interval, plural, =1 {1개월마다} other {#개월마다}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence weekly weekdays"
-msgid "{interval, plural, one {Weekly on {days}} other {Every # weeks on {days}}}"
-msgstr "{interval, plural, other {#주마다 {days}}}"
+msgid "{interval, plural, =1 {Weekly on {days}} other {Every # weeks on {days}}}"
+msgstr "{interval, plural, =1 {1주마다 {days}} other {#주마다 {days}}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence weekly interval"
-msgid "{interval, plural, one {Weekly} other {Every # weeks}}"
-msgstr "{interval, plural, other {#주마다}}"
+msgid "{interval, plural, =1 {Weekly} other {Every # weeks}}"
+msgstr "{interval, plural, =1 {1주마다} other {#주마다}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence yearly interval date"
-msgid "{interval, plural, one {Yearly on {date}} other {Every # years on {date}}}"
-msgstr "{interval, plural, other {#년마다 {date}}}"
+msgid "{interval, plural, =1 {Yearly on {date}} other {Every # years on {date}}}"
+msgstr "{interval, plural, =1 {1년마다 {date}} other {#년마다 {date}}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence yearly interval"
-msgid "{interval, plural, one {Yearly} other {Every # years}}"
-msgstr "{interval, plural, other {#년마다}}"
+msgid "{interval, plural, =1 {Yearly} other {Every # years}}"
+msgstr "{interval, plural, =1 {1년마다} other {#년마다}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.dueLabel"
@@ -1182,7 +1182,6 @@ msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
 "> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
 msgstr "> [!info] 기본 `.base` 파일 안내\n"
-""
 "> 기본으로 생성되는 `.base` 템플릿이 변경되어도 기존 `.base` 파일은 덮어쓰지 않으므로 사용자 설정이 유지됩니다.\n"
 "> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 통합 → 뷰 및 베이스 파일 → 파일 업데이트**에서 베이스 파일을 다시 생성하세요."
 
@@ -2003,7 +2002,6 @@ msgid "Are you sure you want to delete this webhook?\n"
 "\n"
 "This action cannot be undone."
 msgstr "이 웹훅을 삭제하시겠습니까?\n"
-""
 "\n"
 "URL: {url}\n"
 "\n"
@@ -3930,7 +3928,6 @@ msgctxt "notices.commands.basesCreated"
 msgid "Created default Bases files ({count}):\n"
 "{files}"
 msgstr "기본 베이스 파일 생성됨 ({count}개):\n"
-""
 "{files}"
 
 #: src/ui/occurrenceNoteActions.ts
@@ -4353,7 +4350,6 @@ msgctxt "notices.commands.basesExist"
 msgid "Default Bases files already exist:\n"
 "{files}"
 msgstr "기본 베이스 파일이 이미 있습니다:\n"
-""
 "{files}"
 
 #: src/bases/registration.ts
@@ -6842,7 +6838,6 @@ msgid "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in
 "\n"
 "⚠️ Requires the ''obsidian-frontmatter-markdown-links'' plugin to work correctly."
 msgstr "프런트매터 속성에서 위키링크 ([[link]]) 대신 Markdown 링크 ([text](path)) 생성.\n"
-""
 "\n"
 "⚠️ 올바르게 작동하려면 ''obsidian-frontmatter-markdown-links'' 플러그인이 필요합니다."
 
@@ -13890,7 +13885,6 @@ msgctxt "notices.commands.basesUpdated"
 msgid "Updated default Bases files ({count}):\n"
 "{files}"
 msgstr "기본 베이스 파일 업데이트됨 ({count}개):\n"
-""
 "{files}"
 
 #: src/modals/ICSEventInfoModal.ts

@@ -8,6 +8,7 @@ process.env.TZ = process.env.TZ || 'UTC';
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
+  globalSetup: '<rootDir>/scripts/jest-catalogues.cjs',
   roots: ['<rootDir>/tests'],
   testMatch: [
     '**/__tests__/**/*.ts',

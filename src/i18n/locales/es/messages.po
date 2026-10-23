@@ -241,13 +241,13 @@ msgstr "{count, plural, =0 {{title}} one {{title} (# archivo adjunto)} other {{t
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases contexts count"
-msgid "{count, plural, =0 {No contexts} one {Single context} other {Multiple contexts}}"
-msgstr "{count, plural, =0 {Sin contextos} one {Un contexto} other {Varios contextos}}"
+msgid "{count, plural, =0 {No contexts} =1 {Single context} other {Multiple contexts}}"
+msgstr "{count, plural, =0 {Sin contextos} =1 {Un contexto} other {Varios contextos}}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases projects count"
-msgid "{count, plural, =0 {No projects} one {Single project} other {Multiple projects}}"
-msgstr "{count, plural, =0 {Sin proyectos} one {Un proyecto} other {Varios proyectos}}"
+msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
+msgstr "{count, plural, =0 {Sin proyectos} =1 {Un proyecto} other {Varios proyectos}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"
@@ -451,43 +451,43 @@ msgstr "{hours} h {minutes} min en total"
 
 #: src/i18n/recurrence.ts
 msgctxt "monthly weekday recurrence"
-msgid "{interval, plural, one {{weekday, select, MO {{position, select, last {Monthly on the last Monday} every {Monthly on every Monday} other {{index, selectordinal, one {Monthly on the #st Monday} two {Monthly on the #nd Monday} few {Monthly on the #rd Monday} other {Monthly on the #th Monday}}}}} TU {{position, select, last {Monthly on the last Tuesday} every {Monthly on every Tuesday} other {{index, selectordinal, one {Monthly on the #st Tuesday} two {Monthly on the #nd Tuesday} few {Monthly on the #rd Tuesday} other {Monthly on the #th Tuesday}}}}} WE {{position, select, last {Monthly on the last Wednesday} every {Monthly on every Wednesday} other {{index, selectordinal, one {Monthly on the #st Wednesday} two {Monthly on the #nd Wednesday} few {Monthly on the #rd Wednesday} other {Monthly on the #th Wednesday}}}}} TH {{position, select, last {Monthly on the last Thursday} every {Monthly on every Thursday} other {{index, selectordinal, one {Monthly on the #st Thursday} two {Monthly on the #nd Thursday} few {Monthly on the #rd Thursday} other {Monthly on the #th Thursday}}}}} FR {{position, select, last {Monthly on the last Friday} every {Monthly on every Friday} other {{index, selectordinal, one {Monthly on the #st Friday} two {Monthly on the #nd Friday} few {Monthly on the #rd Friday} other {Monthly on the #th Friday}}}}} SA {{position, select, last {Monthly on the last Saturday} every {Monthly on every Saturday} other {{index, selectordinal, one {Monthly on the #st Saturday} two {Monthly on the #nd Saturday} few {Monthly on the #rd Saturday} other {Monthly on the #th Saturday}}}}} SU {{position, select, last {Monthly on the last Sunday} every {Monthly on every Sunday} other {{index, selectordinal, one {Monthly on the #st Sunday} two {Monthly on the #nd Sunday} few {Monthly on the #rd Sunday} other {Monthly on the #th Sunday}}}}} other {Monthly}}} other {{weekday, select, MO {{position, select, last {Every {interval, number} months on the last Monday} every {Every {interval, number} months on every Monday} other {{index, selectordinal, one {Every {interval, number} months on the #st Monday} two {Every {interval, number} months on the #nd Monday} few {Every {interval, number} months on the #rd Monday} other {Every {interval, number} months on the #th Monday}}}}} TU {{position, select, last {Every {interval, number} months on the last Tuesday} every {Every {interval, number} months on every Tuesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Tuesday} two {Every {interval, number} months on the #nd Tuesday} few {Every {interval, number} months on the #rd Tuesday} other {Every {interval, number} months on the #th Tuesday}}}}} WE {{position, select, last {Every {interval, number} months on the last Wednesday} every {Every {interval, number} months on every Wednesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Wednesday} two {Every {interval, number} months on the #nd Wednesday} few {Every {interval, number} months on the #rd Wednesday} other {Every {interval, number} months on the #th Wednesday}}}}} TH {{position, select, last {Every {interval, number} months on the last Thursday} every {Every {interval, number} months on every Thursday} other {{index, selectordinal, one {Every {interval, number} months on the #st Thursday} two {Every {interval, number} months on the #nd Thursday} few {Every {interval, number} months on the #rd Thursday} other {Every {interval, number} months on the #th Thursday}}}}} FR {{position, select, last {Every {interval, number} months on the last Friday} every {Every {interval, number} months on every Friday} other {{index, selectordinal, one {Every {interval, number} months on the #st Friday} two {Every {interval, number} months on the #nd Friday} few {Every {interval, number} months on the #rd Friday} other {Every {interval, number} months on the #th Friday}}}}} SA {{position, select, last {Every {interval, number} months on the last Saturday} every {Every {interval, number} months on every Saturday} other {{index, selectordinal, one {Every {interval, number} months on the #st Saturday} two {Every {interval, number} months on the #nd Saturday} few {Every {interval, number} months on the #rd Saturday} other {Every {interval, number} months on the #th Saturday}}}}} SU {{position, select, last {Every {interval, number} months on the last Sunday} every {Every {interval, number} months on every Sunday} other {{index, selectordinal, one {Every {interval, number} months on the #st Sunday} two {Every {interval, number} months on the #nd Sunday} few {Every {interval, number} months on the #rd Sunday} other {Every {interval, number} months on the #th Sunday}}}}} other {Every {interval, number} months}}}}"
-msgstr "{interval, plural, one {{weekday, select, MO {{position, select, last {Cada mes el último lunes} every {Cada mes todos los lunes} other {{index, selectordinal, other {Cada mes el #.º lunes}}}}} TU {{position, select, last {Cada mes el último martes} every {Cada mes todos los martes} other {{index, selectordinal, other {Cada mes el #.º martes}}}}} WE {{position, select, last {Cada mes el último miércoles} every {Cada mes todos los miércoles} other {{index, selectordinal, other {Cada mes el #.º miércoles}}}}} TH {{position, select, last {Cada mes el último jueves} every {Cada mes todos los jueves} other {{index, selectordinal, other {Cada mes el #.º jueves}}}}} FR {{position, select, last {Cada mes el último viernes} every {Cada mes todos los viernes} other {{index, selectordinal, other {Cada mes el #.º viernes}}}}} SA {{position, select, last {Cada mes el último sábado} every {Cada mes todos los sábados} other {{index, selectordinal, other {Cada mes el #.º sábado}}}}} SU {{position, select, last {Cada mes el último domingo} every {Cada mes todos los domingos} other {{index, selectordinal, other {Cada mes el #.º domingo}}}}} other {Cada mes}}} other {{weekday, select, MO {{position, select, last {Cada {interval, number} meses el último lunes} every {Cada {interval, number} meses todos los lunes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º lunes}}}}} TU {{position, select, last {Cada {interval, number} meses el último martes} every {Cada {interval, number} meses todos los martes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º martes}}}}} WE {{position, select, last {Cada {interval, number} meses el último miércoles} every {Cada {interval, number} meses todos los miércoles} other {{index, selectordinal, other {Cada {interval, number} meses el #.º miércoles}}}}} TH {{position, select, last {Cada {interval, number} meses el último jueves} every {Cada {interval, number} meses todos los jueves} other {{index, selectordinal, other {Cada {interval, number} meses el #.º jueves}}}}} FR {{position, select, last {Cada {interval, number} meses el último viernes} every {Cada {interval, number} meses todos los viernes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º viernes}}}}} SA {{position, select, last {Cada {interval, number} meses el último sábado} every {Cada {interval, number} meses todos los sábados} other {{index, selectordinal, other {Cada {interval, number} meses el #.º sábado}}}}} SU {{position, select, last {Cada {interval, number} meses el último domingo} every {Cada {interval, number} meses todos los domingos} other {{index, selectordinal, other {Cada {interval, number} meses el #.º domingo}}}}} other {Cada {interval, number} meses}}}}"
+msgid "{interval, plural, =1 {{weekday, select, MO {{position, select, last {Monthly on the last Monday} every {Monthly on every Monday} other {{index, selectordinal, one {Monthly on the #st Monday} two {Monthly on the #nd Monday} few {Monthly on the #rd Monday} other {Monthly on the #th Monday}}}}} TU {{position, select, last {Monthly on the last Tuesday} every {Monthly on every Tuesday} other {{index, selectordinal, one {Monthly on the #st Tuesday} two {Monthly on the #nd Tuesday} few {Monthly on the #rd Tuesday} other {Monthly on the #th Tuesday}}}}} WE {{position, select, last {Monthly on the last Wednesday} every {Monthly on every Wednesday} other {{index, selectordinal, one {Monthly on the #st Wednesday} two {Monthly on the #nd Wednesday} few {Monthly on the #rd Wednesday} other {Monthly on the #th Wednesday}}}}} TH {{position, select, last {Monthly on the last Thursday} every {Monthly on every Thursday} other {{index, selectordinal, one {Monthly on the #st Thursday} two {Monthly on the #nd Thursday} few {Monthly on the #rd Thursday} other {Monthly on the #th Thursday}}}}} FR {{position, select, last {Monthly on the last Friday} every {Monthly on every Friday} other {{index, selectordinal, one {Monthly on the #st Friday} two {Monthly on the #nd Friday} few {Monthly on the #rd Friday} other {Monthly on the #th Friday}}}}} SA {{position, select, last {Monthly on the last Saturday} every {Monthly on every Saturday} other {{index, selectordinal, one {Monthly on the #st Saturday} two {Monthly on the #nd Saturday} few {Monthly on the #rd Saturday} other {Monthly on the #th Saturday}}}}} SU {{position, select, last {Monthly on the last Sunday} every {Monthly on every Sunday} other {{index, selectordinal, one {Monthly on the #st Sunday} two {Monthly on the #nd Sunday} few {Monthly on the #rd Sunday} other {Monthly on the #th Sunday}}}}} other {Monthly}}} other {{weekday, select, MO {{position, select, last {Every {interval, number} months on the last Monday} every {Every {interval, number} months on every Monday} other {{index, selectordinal, one {Every {interval, number} months on the #st Monday} two {Every {interval, number} months on the #nd Monday} few {Every {interval, number} months on the #rd Monday} other {Every {interval, number} months on the #th Monday}}}}} TU {{position, select, last {Every {interval, number} months on the last Tuesday} every {Every {interval, number} months on every Tuesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Tuesday} two {Every {interval, number} months on the #nd Tuesday} few {Every {interval, number} months on the #rd Tuesday} other {Every {interval, number} months on the #th Tuesday}}}}} WE {{position, select, last {Every {interval, number} months on the last Wednesday} every {Every {interval, number} months on every Wednesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Wednesday} two {Every {interval, number} months on the #nd Wednesday} few {Every {interval, number} months on the #rd Wednesday} other {Every {interval, number} months on the #th Wednesday}}}}} TH {{position, select, last {Every {interval, number} months on the last Thursday} every {Every {interval, number} months on every Thursday} other {{index, selectordinal, one {Every {interval, number} months on the #st Thursday} two {Every {interval, number} months on the #nd Thursday} few {Every {interval, number} months on the #rd Thursday} other {Every {interval, number} months on the #th Thursday}}}}} FR {{position, select, last {Every {interval, number} months on the last Friday} every {Every {interval, number} months on every Friday} other {{index, selectordinal, one {Every {interval, number} months on the #st Friday} two {Every {interval, number} months on the #nd Friday} few {Every {interval, number} months on the #rd Friday} other {Every {interval, number} months on the #th Friday}}}}} SA {{position, select, last {Every {interval, number} months on the last Saturday} every {Every {interval, number} months on every Saturday} other {{index, selectordinal, one {Every {interval, number} months on the #st Saturday} two {Every {interval, number} months on the #nd Saturday} few {Every {interval, number} months on the #rd Saturday} other {Every {interval, number} months on the #th Saturday}}}}} SU {{position, select, last {Every {interval, number} months on the last Sunday} every {Every {interval, number} months on every Sunday} other {{index, selectordinal, one {Every {interval, number} months on the #st Sunday} two {Every {interval, number} months on the #nd Sunday} few {Every {interval, number} months on the #rd Sunday} other {Every {interval, number} months on the #th Sunday}}}}} other {Every {interval, number} months}}}}"
+msgstr "{interval, plural, =1 {{weekday, select, MO {{position, select, last {Cada mes el último lunes} every {Cada mes todos los lunes} other {{index, selectordinal, other {Cada mes el #.º lunes}}}}} TU {{position, select, last {Cada mes el último martes} every {Cada mes todos los martes} other {{index, selectordinal, other {Cada mes el #.º martes}}}}} WE {{position, select, last {Cada mes el último miércoles} every {Cada mes todos los miércoles} other {{index, selectordinal, other {Cada mes el #.º miércoles}}}}} TH {{position, select, last {Cada mes el último jueves} every {Cada mes todos los jueves} other {{index, selectordinal, other {Cada mes el #.º jueves}}}}} FR {{position, select, last {Cada mes el último viernes} every {Cada mes todos los viernes} other {{index, selectordinal, other {Cada mes el #.º viernes}}}}} SA {{position, select, last {Cada mes el último sábado} every {Cada mes todos los sábados} other {{index, selectordinal, other {Cada mes el #.º sábado}}}}} SU {{position, select, last {Cada mes el último domingo} every {Cada mes todos los domingos} other {{index, selectordinal, other {Cada mes el #.º domingo}}}}} other {Cada mes}}} other {{weekday, select, MO {{position, select, last {Cada {interval, number} meses el último lunes} every {Cada {interval, number} meses todos los lunes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º lunes}}}}} TU {{position, select, last {Cada {interval, number} meses el último martes} every {Cada {interval, number} meses todos los martes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º martes}}}}} WE {{position, select, last {Cada {interval, number} meses el último miércoles} every {Cada {interval, number} meses todos los miércoles} other {{index, selectordinal, other {Cada {interval, number} meses el #.º miércoles}}}}} TH {{position, select, last {Cada {interval, number} meses el último jueves} every {Cada {interval, number} meses todos los jueves} other {{index, selectordinal, other {Cada {interval, number} meses el #.º jueves}}}}} FR {{position, select, last {Cada {interval, number} meses el último viernes} every {Cada {interval, number} meses todos los viernes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º viernes}}}}} SA {{position, select, last {Cada {interval, number} meses el último sábado} every {Cada {interval, number} meses todos los sábados} other {{index, selectordinal, other {Cada {interval, number} meses el #.º sábado}}}}} SU {{position, select, last {Cada {interval, number} meses el último domingo} every {Cada {interval, number} meses todos los domingos} other {{index, selectordinal, other {Cada {interval, number} meses el #.º domingo}}}}} other {Cada {interval, number} meses}}}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence daily interval"
-msgid "{interval, plural, one {Daily} other {Every # days}}"
-msgstr "{interval, plural, one {Diariamente} other {Cada # días}}"
+msgid "{interval, plural, =1 {Daily} other {Every # days}}"
+msgstr "{interval, plural, =1 {Diariamente} other {Cada # días}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence interval on month day"
-msgid "{interval, plural, one {Monthly on day {day, number}} other {Every # months on day {day, number}}}"
-msgstr "{interval, plural, one {El día {day, number} de cada mes} other {El día {day, number} cada # meses}}"
+msgid "{interval, plural, =1 {Monthly on day {day, number}} other {Every # months on day {day, number}}}"
+msgstr "{interval, plural, =1 {El día {day, number} de cada mes} other {El día {day, number} cada # meses}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence monthly interval"
-msgid "{interval, plural, one {Monthly} other {Every # months}}"
-msgstr "{interval, plural, one {Mensualmente} other {Cada # meses}}"
+msgid "{interval, plural, =1 {Monthly} other {Every # months}}"
+msgstr "{interval, plural, =1 {Mensualmente} other {Cada # meses}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence weekly weekdays"
-msgid "{interval, plural, one {Weekly on {days}} other {Every # weeks on {days}}}"
-msgstr "{interval, plural, one {Cada semana; días: {days}} other {Cada # semanas; días: {days}}}"
+msgid "{interval, plural, =1 {Weekly on {days}} other {Every # weeks on {days}}}"
+msgstr "{interval, plural, =1 {Cada semana; días: {days}} other {Cada # semanas; días: {days}}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence weekly interval"
-msgid "{interval, plural, one {Weekly} other {Every # weeks}}"
-msgstr "{interval, plural, one {Semanalmente} other {Cada # semanas}}"
+msgid "{interval, plural, =1 {Weekly} other {Every # weeks}}"
+msgstr "{interval, plural, =1 {Semanalmente} other {Cada # semanas}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence yearly interval date"
-msgid "{interval, plural, one {Yearly on {date}} other {Every # years on {date}}}"
-msgstr "{interval, plural, one {Cada año el {date}} other {Cada # años el {date}}}"
+msgid "{interval, plural, =1 {Yearly on {date}} other {Every # years on {date}}}"
+msgstr "{interval, plural, =1 {Cada año el {date}} other {Cada # años el {date}}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence yearly interval"
-msgid "{interval, plural, one {Yearly} other {Every # years}}"
-msgstr "{interval, plural, one {Anualmente} other {Cada # años}}"
+msgid "{interval, plural, =1 {Yearly} other {Every # years}}"
+msgstr "{interval, plural, =1 {Anualmente} other {Cada # años}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.dueLabel"
@@ -705,8 +705,7 @@ msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
 msgid "{stateLabel}\n"
 "Remaining: {timeRemaining}\n"
 "Click to open Pomodoro"
-msgstr ""
-"{stateLabel}\n"
+msgstr "{stateLabel}\n"
 "Restante: {timeRemaining}\n"
 "Haz clic para abrir Pomodoro"
 
@@ -800,8 +799,7 @@ msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "{value2, plural, one {{taskTitles}\n"
 "... and {value2, number} more} other {{taskTitles}\n"
 "... and {value2, number} more}}"
-msgstr ""
-"{value2, plural, one {{taskTitles}\n"
+msgstr "{value2, plural, one {{taskTitles}\n"
 "... y {value2, number} más} other {{taskTitles}\n"
 "... y {value2, number} más}}"
 
@@ -973,8 +971,7 @@ msgid "# Start Here with TaskNotes\n"
 "\n"
 "Now you know the core idea: tasks are notes, properties make them queryable, and Bases turns them into views.\n"
 ""
-msgstr ""
-"# Empieza aquí con TaskNotes\n"
+msgstr "# Empieza aquí con TaskNotes\n"
 "\n"
 "Esta nota es un breve recorrido por TaskNotes dentro de tu propia bóveda. Sigue los pasos aquí mismo; después, consérvala como referencia o elimínala cuando ya no la necesites.\n"
 "\n"
@@ -1089,6 +1086,7 @@ msgstr ""
 "## Para terminar\n"
 "\n"
 "Ya conoces la idea central: las tareas son notas, sus propiedades permiten consultarlas y Bases las convierte en vistas.\n"
+""
 
 #: src/i18n/releaseNotesAnnouncement.ts
 msgctxt "release announcement Markdown"
@@ -1115,8 +1113,7 @@ msgid "## TaskNotes v5 and the TaskNotes app — join the beta\n"
 "\n"
 "You don’t need to be a developer—using TaskNotes for your everyday tasks and sharing anything confusing or broken is valuable feedback. Your participation will help make the Android release possible.\n"
 ""
-msgstr ""
-"## TaskNotes v5 y la aplicación TaskNotes: únete a la beta\n"
+msgstr "## TaskNotes v5 y la aplicación TaskNotes: únete a la beta\n"
 "\n"
 "**TaskNotes v5** presenta colecciones portátiles que puedes usar tanto en Obsidian como en la nueva **aplicación TaskNotes**. Tus tareas siguen siendo archivos Markdown normales en tu bóveda, con [mdbase Connect]({token1}) para acceder a ellas desde la aplicación.\n"
 "\n"
@@ -1138,6 +1135,7 @@ msgstr ""
 "3. Mantente inscrito durante **al menos 14 días consecutivos**, usa la aplicación con regularidad en ese período y cuéntanos qué tal funciona.\n"
 "\n"
 "No hace falta que seas desarrollador: usar TaskNotes para tus tareas diarias y compartir cualquier aspecto confuso o error es una ayuda valiosa. Tu participación hará posible el lanzamiento para Android.\n"
+""
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.descriptionHeading"
@@ -1783,11 +1781,6 @@ msgstr "Después de la fecha programada: {duration}"
 msgctxt "generated Bases view name"
 msgid "Agenda"
 msgstr "Agenda"
-
-#: src/settings/tabs/taskProperties/priorityPropertyCard.ts
-msgctxt "settings.taskProperties.taskPriorities.placeholders.icon"
-msgid "alert-circle"
-msgstr "alert-circle"
 
 #: src/suggest/FileSuggestHelper.ts
 msgctxt "suggest/FileSuggestHelper: suggest.run display"
@@ -2806,11 +2799,6 @@ msgstr "Consulta GitHub una vez al iniciar TaskNotes y muestra un aviso cuando h
 msgctxt "timeblock Daily Notes setup guidance"
 msgid "Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists."
 msgstr "Revisa los ajustes del plugin principal Notas diarias y comprueba que existe la carpeta configurada para las notas diarias."
-
-#: src/settings/tabs/taskProperties/statusPropertyCard.ts
-msgctxt "settings.taskProperties.taskStatuses.placeholders.icon"
-msgid "check, circle, clock"
-msgstr "check, circle, clock"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.checklistProgress"
@@ -4019,16 +4007,14 @@ msgstr "Mostrando: {properties}"
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "Currently tracking:\n"
 "{tooltipText}"
-msgstr ""
-"Seguimiento en curso:\n"
+msgstr "Seguimiento en curso:\n"
 "{tooltipText}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "Currently tracking: {title}\n"
 "Elapsed: {elapsed}"
-msgstr ""
-"Seguimiento en curso: {title}\n"
+msgstr "Seguimiento en curso: {title}\n"
 "Transcurrido: {elapsed}"
 
 #: src/components/TaskContextMenu.ts
@@ -7049,11 +7035,6 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Hide top-level subtasks"
 msgstr "Ocultar subtareas de nivel superior"
 
-#: src/settings/tabs/taskProperties/priorityPropertyCard.ts
-msgctxt "settings.taskProperties.taskPriorities.placeholders.value"
-msgid "high"
-msgstr "alta"
-
 #: src/settings/defaults.ts
 msgctxt "settings/defaults: defaults label"
 msgid "High"
@@ -7109,11 +7090,6 @@ msgstr "Cómo funcionan los estados:"
 msgctxt "settings.integrations.httpApi.header"
 msgid "HTTP API"
 msgstr "API HTTP"
-
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.webhooks.modals.add.url.placeholder"
-msgid "https://your-service.com/webhook"
-msgstr "https://your-service.com/webhook"
 
 #: src/settings/tabs/taskProperties/priorityPropertyCard.ts
 msgctxt "settings.taskProperties.taskPriorities.fields.icon"
@@ -7199,11 +7175,6 @@ msgstr "en tu navegador"
 msgctxt "settings.features.notifications.inAppLabel"
 msgid "In-app notifications"
 msgstr "Notificaciones en la aplicación"
-
-#: src/settings/tabs/taskProperties/statusPropertyCard.ts
-msgctxt "settings.taskProperties.taskStatuses.placeholders.value"
-msgid "in-progress"
-msgstr "en-progreso"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.webhooks.statusLabels.inactive"
@@ -9885,8 +9856,7 @@ msgctxt "generated Pomodoro Bases documentation"
 msgid "Pomodoro statistics\n"
 "Generated with your TaskNotes settings\n"
 "Requires Pomodoro data storage to be set to Daily notes."
-msgstr ""
-"Estadísticas de Pomodoro\n"
+msgstr "Estadísticas de Pomodoro\n"
 "Generadas con tus ajustes de TaskNotes\n"
 "Requiere configurar el almacenamiento de datos de Pomodoro en Notas diarias."
 
@@ -10153,11 +10123,6 @@ msgstr "Estrategia de navegación por propiedad"
 msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "Eventos basados en propiedades"
-
-#: src/settings/tabs/taskProperties/userFieldsCard.ts
-msgctxt "settings.taskProperties.customUserFields.placeholders.propertyKey"
-msgid "property-name"
-msgstr "nombre-propiedad"
 
 #: src/api/TasksController.ts
 msgctxt "api/TasksController: TasksController.queryTasks summary"
@@ -12623,11 +12588,6 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.description"
 msgid "TaskNotes uses Obsidian Bases files (.base) to power its views. These files are generated automatically on startup if they don''t exist, configured with your current settings (task identification, field mappings, statuses, etc.)."
 msgstr "TaskNotes utiliza archivos de Obsidian Bases (.base) para sus vistas. Estos archivos se generan automáticamente al inicio si no existen, configurados con tus ajustes actuales (identificación de tareas, asignación de campos, estados, etc.)."
 
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.autoExport.filePath.placeholder"
-msgid "tasknotes-calendar.ics"
-msgstr "tasknotes-calendario.ics"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.labels.tasks"
 msgid "Tasks"
@@ -12678,26 +12638,6 @@ msgstr "Variables de plantilla:"
 msgctxt "ui/taskCardProperties: occurrenceTemplate text"
 msgid "Template: "
 msgstr "Plantilla: "
-
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder"
-msgid "Templates/Event Template.md"
-msgstr "Templates/Event Template.md"
-
-#: src/modals/ICSNoteCreationModal.ts
-msgctxt "modals.icsNoteCreation.templatePathPlaceholder"
-msgid "templates/ics-note-template.md"
-msgstr "templates/ics-note-template.md"
-
-#: src/settings/tabs/featuresTab.ts
-msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder"
-msgid "Templates/Occurrence Template.md"
-msgstr "Templates/Occurrence Template.md"
-
-#: src/settings/tabs/featuresTab.ts
-msgctxt "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
-msgid "Templates/Task Template.md"
-msgstr "Templates/Task Template.md"
 
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 msgctxt "settings.taskProperties.customUserFields.types.text"
@@ -14610,11 +14550,6 @@ msgstr "Tu código:"
 msgctxt "settings.integrations.webhooks.secretModal.description"
 msgid "Your webhook secret has been generated. Save this secret as you won''t be able to view it again:"
 msgstr "Tu secreto de webhook ha sido generado. Guarda este secreto ya que no podrás verlo de nuevo:"
-
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.httpApi.authToken.placeholder"
-msgid "your-secret-token"
-msgstr "tu-token-secreto"
 
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.datePlaceholder"

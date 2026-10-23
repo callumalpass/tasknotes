@@ -6,6 +6,7 @@ import { resolve, join } from "path";
 import { homedir } from "os";
 import { createLanguagePackBuildPlugin } from "./scripts/lib/language-pack-build.mjs";
 import { linguiMacros } from "./scripts/lib/lingui-build.mjs";
+import catalogueGates from "./scripts/lib/catalogue-gates.cjs";
 
 const banner =
 `/*
@@ -15,6 +16,9 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+// Standalone esbuild invocations must not ship stale/fallback-filled JSON either.
+if (prod) catalogueGates.prepareStrictCatalogues();
+else catalogueGates.prepareDevelopmentCatalogues();
 const nodeBuiltins = [
 	...builtinModules,
 	...builtinModules.map((moduleName) => `node:${moduleName}`),

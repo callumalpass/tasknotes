@@ -6,6 +6,10 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
+import { packFixtures as fixtures, packFormat as format, saveId, compiledCatalogue } from "../helpers/language-pack-fixtures.mjs";
+import { linguiMacros } from "../../scripts/lib/lingui-build.mjs";
+import { readFileSync } from "node:fs";
+const keyMap = JSON.parse(readFileSync(new URL("../../scripts/plugin-key-map.json", import.meta.url), "utf8"));
 import {
 	createLanguagePackArtifacts,
 	exportLanguagePacks,
@@ -16,11 +20,6 @@ import {
 import { createLanguagePackBuildPlugin } from "../../scripts/lib/language-pack-build.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const format = "tasknotes-ui-v1";
-const fixtures = {
-	en: { save: "Save", hello: "Hello {name}" },
-	fr: { save: "Enregistrer", hello: "Bonjour {name}" },
-};
 
 async function compileLoader() {
 	const result = await build({
@@ -45,10 +44,7 @@ async function compileLoader() {
 test("catalogue exports are deterministic regardless of insertion order", () => {
 	const first = createLanguagePackArtifacts(fixtures, format, 1_000_000);
 	const second = createLanguagePackArtifacts(
-		{
-			fr: { hello: "Bonjour {name}", save: "Enregistrer" },
-			en: { hello: "Hello {name}", save: "Save" },
-		},
+		Object.fromEntries(Object.entries(fixtures).reverse().map(([locale, messages]) => [locale, Object.fromEntries(Object.entries(messages).reverse())])),
 		format,
 		1_000_000
 	);
@@ -64,12 +60,12 @@ test("catalogue exports are deterministic regardless of insertion order", () => 
 test("source changes and target corrections produce distinct immutable versions", () => {
 	const original = createLanguagePackArtifacts(fixtures, format, 1_000_000);
 	const correction = createLanguagePackArtifacts(
-		{ ...fixtures, fr: { ...fixtures.fr, save: "Sauvegarder" } },
+		{ ...fixtures, fr: { ...fixtures.fr, ...compiledCatalogue({ [saveId]: "Sauvegarder" }) } },
 		format,
 		1_000_000
 	);
 	const sourceChange = createLanguagePackArtifacts(
-		{ ...fixtures, en: { ...fixtures.en, save: "Save changes" } },
+		{ ...fixtures, en: { ...fixtures.en, ...compiledCatalogue({ [saveId]: "Save changes" }) } },
 		format,
 		1_000_000
 	);
@@ -79,15 +75,16 @@ test("source changes and target corrections produce distinct immutable versions"
 	assert.notEqual(original.manifest.catalogueVersion, sourceChange.manifest.catalogueVersion);
 });
 
-test("export rejects oversized packs, non-string values, and invalid locale paths", () => {
+test("export rejects oversized packs, non-compiled values, partial locale sets and invalid locale paths", () => {
 	assert.throws(() => createLanguagePackArtifacts(fixtures, format, 1), /exceeds/);
+	assert.throws(() => createLanguagePackArtifacts({ en: fixtures.en }, format, 1_000_000), /all nine/);
 	assert.throws(
-		() => createLanguagePackArtifacts({ en: { save: 3 } }, format, 1_000_000),
-		/Non-string/
+		() => createLanguagePackArtifacts({ ...fixtures, en: { [saveId]: 3 } }, format, 1_000_000),
+		/Non-compiled/
 	);
 	assert.throws(
-		() => createLanguagePackArtifacts({ en: {}, "../fr": {} }, format, 1_000_000),
-		/Invalid locale/
+		() => createLanguagePackArtifacts({ ...fixtures, "../fr": fixtures.fr }, format, 1_000_000),
+		/all nine/
 	);
 });
 
@@ -123,25 +120,30 @@ test("ordinary builds include all resources; opt-in builds include only English 
 		metafile: true,
 		logLevel: "silent",
 	};
-	const bundled = await build(options);
+	const bundled = await build({ ...options, plugins: [linguiMacros()] });
 	const remote = await build({
 		...options,
 		plugins: [
+			linguiMacros(),
 			createLanguagePackBuildPlugin({
 				root,
 				outdir,
-				baseUrl: "http://127.0.0.1:8123/tasknotes",
+				baseUrl: "http://127.0.0.1:19280/tasknotes",
 			}),
 		],
 	});
 	const localeInputs = (result) =>
-		Object.keys(result.metafile.inputs).filter((path) => /^src\/i18n\/resources\//.test(path));
+		Object.keys(result.metafile.inputs).filter((path) => /^src\/i18n\/locales\/[^/]+\/messages\.json$/.test(path));
 	assert.equal(localeInputs(bundled).length, 9);
-	assert.deepEqual(localeInputs(remote), ["src/i18n/resources/en.ts"]);
-	assert.ok(
-		remote.outputFiles[0].contents.length < bundled.outputFiles[0].contents.length - 900_000
-	);
-	assert.match(remote.outputFiles[0].text, /127\.0\.0\.1:8123/);
+	assert.deepEqual(localeInputs(remote), ["src/i18n/locales/en/messages.json"]);
+	// The old 900 KB delta assumed flat TS resources. Compacted ICU catalogues
+	// are checked by exact graph isolation above; production still has the
+	// unchanged strict <5,000,000-byte budget in check:language-pack-builds.
+	const bundledBytes = bundled.outputFiles[0].contents.length;
+	const downloadableBytes = remote.outputFiles[0].contents.length;
+	assert.ok(downloadableBytes < bundledBytes, `No catalogue savings: ${downloadableBytes} >= ${bundledBytes}`);
+	t.diagnostic(JSON.stringify({ bundledBytes, downloadableBytes, savedBytes: bundledBytes - downloadableBytes }));
+	assert.match(remote.outputFiles[0].text, /127\.0\.0\.1:19280/);
 	assert.match(remote.outputFiles[0].text, /catalogueVersion/);
 });
 
@@ -178,7 +180,7 @@ test("real packs load over local HTTP, then work offline from cache across loade
 		response.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
 		response.end(content);
 	});
-	await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+	await new Promise((resolve) => server.listen(19280, "127.0.0.1", resolve));
 	t.after(() => new Promise((resolve) => server.close(resolve)));
 	const address = server.address();
 	const config = {
@@ -223,14 +225,14 @@ test("real packs load over local HTTP, then work offline from cache across loade
 			throw new Error("offline");
 		},
 	});
-	assert.equal(
-		(await offline.load("fr"))["common.systemDefault"],
-		resources.fr["common.systemDefault"]
+	assert.deepEqual(
+		(await offline.load("fr"))[keyMap["common.systemDefault"].id],
+		resources.fr[keyMap["common.systemDefault"].id]
 	);
 	assert.equal(requests, 8);
 
 	const correction = createLanguagePackArtifacts(
-		{ ...resources, de: { ...resources.de, "common.save": "Änderungen speichern" } },
+		{ ...resources, de: { ...resources.de, ...compiledCatalogue({ [keyMap["common.save"].id]: "Änderungen speichern" }) } },
 		LANGUAGE_PACK_FORMAT,
 		MAX_LANGUAGE_PACK_BYTES
 	);
@@ -244,10 +246,10 @@ test("real packs load over local HTTP, then work offline from cache across loade
 			throw new Error("offline during unrelated correction");
 		},
 	});
-	assert.equal((await unchangedFrench.load("fr"))["common.save"], resources.fr["common.save"]);
+	assert.deepEqual((await unchangedFrench.load("fr"))[keyMap["common.save"].id], resources.fr[keyMap["common.save"].id]);
 
 	const changed = createLanguagePackArtifacts(
-		{ ...resources, en: { ...resources.en, "common.save": "Save changes" } },
+		{ ...resources, en: { ...resources.en, ...compiledCatalogue({ [keyMap["common.save"].id]: "Save changes" }) } },
 		LANGUAGE_PACK_FORMAT,
 		MAX_LANGUAGE_PACK_BYTES
 	);

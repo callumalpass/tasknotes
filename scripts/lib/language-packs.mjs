@@ -1,4 +1,6 @@
 import { build } from "esbuild";
+import { locales as supportedLocales } from "@mdbase-dev/i18n/config";
+import catalogueGates from "./catalogue-gates.cjs";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -29,8 +31,8 @@ export function serialize(value) {
 // Compile trusted repository sources for the build process only. Published packs
 // are JSON data; this does not run downloaded code in the plugin.
 export async function loadTranslationResources(root = repositoryRoot) {
-	const locales = (await readdir(resolve(root, "src/i18n/locales"))).filter(locale => /^[a-z]{2}$/.test(locale)).sort();
-	if (!locales.includes("en")) throw new Error("English source catalogue is missing");
+	const locales = (await readdir(resolve(root, "src/i18n/locales"), { withFileTypes: true })).filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
+	if (JSON.stringify(locales) !== JSON.stringify([...supportedLocales].sort())) throw new Error("Language-pack export requires all nine supported catalogues, and no extra locales");
 	const resources = Object.fromEntries(await Promise.all(locales.map(async locale => {
 		const catalogue = JSON.parse(await readFile(resolve(root, `src/i18n/locales/${locale}/messages.json`), "utf8"));
 		return [locale, catalogue.messages];
@@ -63,6 +65,7 @@ export async function loadTranslationResources(root = repositoryRoot) {
 
 export function createLanguagePackArtifacts(resources, format, maxBytes) {
 	if (!resources.en) throw new Error("English source catalogue is missing");
+	if (JSON.stringify(Object.keys(resources).sort()) !== JSON.stringify([...supportedLocales].sort())) throw new Error("Language-pack export requires all nine supported catalogues, and no extra locales");
 	const sourceHash = sha256(serialize(resources.en));
 	const files = new Map();
 	const packs = {};
@@ -101,6 +104,9 @@ export async function exportLanguagePacks({
 	root = repositoryRoot,
 	outdir = resolve(root, "dist/language-packs"),
 } = {}) {
+	// Publication and standalone build-plugin callers cannot bypass authored-PO checks.
+	// Send diagnostics to stderr so the export CLI retains its JSON stdout contract.
+	catalogueGates.prepareStrictCatalogues(root, { diagnosticsToStderr: true });
 	const { resources, LANGUAGE_PACK_FORMAT, MAX_LANGUAGE_PACK_BYTES } =
 		await loadTranslationResources(root);
 	const artifacts = createLanguagePackArtifacts(

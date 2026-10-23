@@ -440,7 +440,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		projectCount: basesMessage(
 			msg({
 				message:
-					"{count, plural, =0 {No projects} one {Single project} other {Multiple projects}}",
+					"{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}",
 				context: "generated Bases projects count",
 			}),
 			{ count: `if(${projectsProperty}, list(${projectsProperty}).length, 0)` }
@@ -450,7 +450,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		contextCount: basesMessage(
 			msg({
 				message:
-					"{count, plural, =0 {No contexts} one {Single context} other {Multiple contexts}}",
+					"{count, plural, =0 {No contexts} =1 {Single context} other {Multiple contexts}}",
 				context: "generated Bases contexts count",
 			}),
 			{ count: `if(${contextsProperty}, list(${contextsProperty}).length, 0)` }

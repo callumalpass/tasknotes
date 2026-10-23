@@ -1,6 +1,6 @@
 # Downloadable language packs
 
-This is an opt-in delivery layer for the existing TaskNotes translation system, not a Lingui migration or a hosted translation-management platform. Translation authoring runs locally; CI validates and exports committed resources without AI calls.
+This opt-in delivery layer serves the shared Lingui UI catalogues. Translation authoring remains in committed PO files; CI validates authored completeness before fallback and exports compiled JSON without AI calls. Normal builds still bundle all nine locales synchronously; the separate NLP configuration in `src/locales/` is unchanged.
 
 ## Build modes
 
@@ -12,7 +12,7 @@ Do not configure this for published releases until their packs are available and
 ## Export
 
 ```bash
-npm run i18n:verify
+npm run i18n:check
 npm run i18n:export
 ```
 
@@ -35,23 +35,23 @@ dist/language-packs/<catalogue-version>/
   manifest.json
 ```
 
-The catalogues are JSON **data**, not remotely executable code. They contain a format identifier, locale, English source hash, and flat message dictionary. The manifest contains the product, format, catalogue version, source hash, and each pack's filename, byte length, and SHA-256 digest.
+The catalogues are JSON **data**, not remotely executable code. `tasknotes-lingui-v1` contains the locale, English source hash and a generated-ID dictionary of compiled ICU arrays, never functions or flat translation strings. It deliberately rejects the obsolete `tasknotes-ui-v1` shape. The manifest contains the product, format, catalogue version, source hash, and each pack's filename, byte length, and SHA-256 digest.
 
 Canonical serialization makes exports reproducible. Changing English or a target translation changes the catalogue version. Re-exporting identical inputs is idempotent. Existing immutable artifacts with different content are rejected. The manifest is written after all locale files.
 
-English defines the authoritative key set. Obsolete keys remaining in old target resources are excluded from exported packs; the original source files are not rewritten. Placeholder validation rejects missing semantic parameters and invented parameters. Explicit legacy exceptions permit languages to omit English grammatical suffixes such as `{plural}` where appropriate. Double-brace template examples in descriptions are not treated as interface interpolation values.
+English defines the authoritative generated-ID set. Export requires exactly all nine supported catalogues and a complete matching ID set in each. Ordinary export/build/test entry points first check extraction sync, authored POs and source guards, then compile; Lingui `--strict` alone is not sufficient because it permits fallback-filled translations. ICU validation preserves argument names/roles, fixed select and exact-number arms, offsets, numeric rich tags and pound bindings while allowing locale-specific plural/ordinal categories. There are no legacy suffix-parameter exemptions. Literal template/path/code examples remain protected data. PO is authoritative; use normal clean extraction after integration, never `--refresh-reviewed` to overwrite authored work.
 
 ## Local fixture
 
 ```bash
 npm run i18n:export
-python -m http.server 8123 --bind 127.0.0.1 --directory dist/language-packs
+python -m http.server 19280 --bind 127.0.0.1 --directory dist/language-packs
 ```
 
 In another terminal:
 
 ```bash
-TASKNOTES_LANGUAGE_PACK_BASE_URL=http://127.0.0.1:8123 npm run build
+TASKNOTES_LANGUAGE_PACK_BASE_URL=http://127.0.0.1:19280 npm run build
 npm run check:bundle-size
 ```
 
@@ -64,7 +64,7 @@ The build automatically exports the exact packs corresponding to its embedded ma
 - Startup has English immediately and does not await language-pack downloads.
 - If a preferred non-English locale is unloaded, its compatible cache is checked first.
 - Cached and downloaded files must match the pinned size, digest, format, locale, source hash, message types, key set, and placeholder contract.
-- Only a successfully validated pack is registered and activated. Missing target messages fall back to bundled English.
+- Only a complete, successfully validated pack is registered and activated. Incomplete or incompatible packs are rejected; failure retains the active language or synchronous English fallback.
 - Invalid or unreadable cache triggers a network attempt; it does not silently activate corrupt data.
 - Network failure preserves the currently active language. The settings picker includes a retry button in experimental builds.
 - Concurrent requests for one locale are deduplicated. A slow result cannot override a newer selection. Unloading the plugin prevents later activation.
@@ -100,13 +100,13 @@ The standalone script suite exercises real locale exports and local HTTP deliver
 For native Obsidian acceptance testing, use only the repository's isolated test vault and user-data directory. Never copy this build into a personal vault or reuse a normal running Obsidian instance. With the isolated Obsidian runtime set up, the following test starts its own local HTTP fixture (do not start another server on that port):
 
 ```bash
-BASE_URL=http://127.0.0.1:18452/tasknotes
+BASE_URL=http://127.0.0.1:19290/tasknotes
 TASKNOTES_LANGUAGE_PACK_BASE_URL="$BASE_URL" \
   OBSIDIAN_PLUGIN_PATH="$PWD/tasknotes-e2e-vault/.obsidian/plugins/tasknotes" \
   npm run build:test
 TASKNOTES_LANGUAGE_PACK_BASE_URL="$BASE_URL" \
   TASKNOTES_E2E_REUSE_OBSIDIAN=0 \
-  TASKNOTES_E2E_REMOTE_DEBUGGING_PORT=18453 \
+  TASKNOTES_E2E_REMOTE_DEBUGGING_PORT=19291 \
   npm run e2e -- e2e/language-packs.spec.ts
 ```
 
@@ -159,7 +159,7 @@ Android 16 / API 36 with Obsidian 1.13.8 passed this acceptance test. This is no
 The public host is `https://i18n.mdbase.dev`, with TaskNotes assets under `/tasknotes/<catalogue-version>/`. The dedicated `product-language-packs` bucket contains public translation data only, never notes or credentials. Target account, bucket, domain, zone and TLS policy are recorded in `infra/language-packs.json`; read-only wildcard CORS is in `infra/language-packs.cors.json`. The exporter also emits English for reference, but the plugin never downloads English.
 
 ```bash
-npm run i18n:verify
+npm run i18n:check
 npm run i18n:publish                 # Local dry run; no cloud writes or authentication
 npm run i18n:publish -- --verify     # Verify public bytes and HTTP metadata; no cloud writes
 npm run i18n:publish -- --apply      # Operator-only Wrangler path; serialize publishers
