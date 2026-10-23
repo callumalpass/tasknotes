@@ -1,7 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
 import { builtinModules } from "node:module";
-import { readFileSync, existsSync, copyFileSync, mkdirSync } from "fs";
+import { readFileSync, existsSync, copyFileSync, mkdirSync, writeFileSync } from "fs";
 import { resolve, join } from "path";
 import { homedir } from "os";
 import { createLanguagePackBuildPlugin } from "./scripts/lib/language-pack-build.mjs";
@@ -69,6 +69,18 @@ const markdownPlugin = {
 	}
 };
 
+const analysisName = process.env.TASKNOTES_BUNDLE_ANALYSIS;
+const analysisPlugin = {
+	name: "bundle-analysis",
+	setup(build) {
+		build.onEnd(result => {
+			if (!result.metafile) return;
+			mkdirSync("dist/bundle-analysis", { recursive: true });
+			writeFileSync(`dist/bundle-analysis/${analysisName}.json`, JSON.stringify(result.metafile, null, 2));
+		});
+	},
+};
+
 const context = await esbuild.context({
 	banner: {
 		js: banner,
@@ -98,11 +110,13 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
+	metafile: !!analysisName,
 	// Avoid bulky Unicode escapes in translations; keep the bundle within Obsidian Sync's limit.
 	charset: "utf8",
 	plugins: [
 		markdownPlugin,
 		linguiMacros(),
+		...(analysisName ? [analysisPlugin] : []),
 		...(process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL
 			? [createLanguagePackBuildPlugin({ baseUrl: process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL })]
 			: []),

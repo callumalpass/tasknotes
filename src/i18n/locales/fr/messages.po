@@ -54,7 +54,6 @@ msgstr ""
 
 #: src/i18n/messages.ts
 #: src/modals/FileSelectorModal.ts
-#: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskSelectorWithCreate.footer.createLabel"
 msgid " to create: "
 msgstr " pour créer : "
@@ -235,6 +234,16 @@ msgctxt "services/task-service/taskPropertyFrontmatterField: assertValidFrontmat
 msgid "{context} resolved to an invalid frontmatter field name: {fieldName}"
 msgstr ""
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases contexts count"
+msgid "{count, plural, =0 {No contexts} one {Single context} other {Multiple contexts}}"
+msgstr ""
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases projects count"
+msgid "{count, plural, =0 {No projects} one {Single project} other {Multiple projects}}"
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"
 msgid "{count, plural, one {{count} reminder set (click to manage)} other {{count} reminders set (click to manage)}}"
@@ -253,6 +262,11 @@ msgstr ""
 #: src/ui/TimeBlockCard.ts
 msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
+msgstr ""
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "task modal reminder count"
+msgid "{count, plural, one {# reminder set} other {# reminders set}}"
 msgstr ""
 
 #: src/i18n/messages.ts
@@ -308,7 +322,6 @@ msgid "{count} more than yesterday"
 msgstr "{count} de plus qu''hier"
 
 #: src/i18n/messages.ts
-#: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.remindersPlural"
 msgid "{count} reminders set"
 msgstr "Rappels définis : {count}"
@@ -386,6 +399,21 @@ msgctxt "ui/NotificationService: NotificationService.formatDurationForDisplay di
 msgid "{days, plural, one {{days} day} other {{days} days}}"
 msgstr ""
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases relative due date"
+msgid "{days, plural, one {# day ago} other {# days ago}}"
+msgstr ""
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases overdue countdown"
+msgid "{days, plural, one {# day overdue} other {# days overdue}}"
+msgstr ""
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases due countdown"
+msgid "{days, plural, one {# day} other {# days}}"
+msgstr ""
+
 #: src/ui/PropertyEventCard.ts
 msgctxt "ui/PropertyEventCard: createPropertyEventCard text"
 msgid "{displayName}: "
@@ -446,6 +474,11 @@ msgstr ""
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: renderUserProperty text"
 msgid "{fieldName}: "
+msgstr ""
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases compact hours and minutes"
+msgid "{hours, number}h {minutes, number}m"
 msgstr ""
 
 #: src/i18n/messages.ts
@@ -585,6 +618,11 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncE
 msgid "{message, plural, one {{message} Microsoft calendars failed to refresh. First error: {label}: {message3}} other {{message} Microsoft calendars failed to refresh. First error: {label}: {message3}}}"
 msgstr ""
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases compact minutes"
+msgid "{minutes, number}m"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.timeFormats.minutesAgo"
@@ -622,6 +660,11 @@ msgstr ""
 msgctxt "modals.task.recurrence.ordinal"
 msgid "{number, selectordinal, one {{number}st} two {{number}nd} few {{number}rd} other {{number}th}}"
 msgstr "{number, selectordinal, one {{number}er} other {{number}e}}"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases completion percentage"
+msgid "{percent, number}%"
+msgstr ""
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: checklistProgress display"
@@ -684,6 +727,11 @@ msgstr "Actualisation de {provider} terminée"
 #: src/i18n/recurrence.ts
 msgctxt "recurrence end date"
 msgid "{recurrence} (until {date})"
+msgstr ""
+
+#: src/settings/tabs/taskProperties/remindersPropertyCard.ts
+msgctxt "default reminder timing summary"
+msgid "{relatedTo, select, due {{direction, select, before {{duration} before due date} after {{duration} after due date} other {{duration} before due date}}} scheduled {{direction, select, before {{duration} before scheduled date} after {{duration} after scheduled date} other {{duration} before scheduled date}}} other {{direction, select, before {{duration} before scheduled date} after {{duration} after scheduled date} other {{duration} before scheduled date}}}}"
 msgstr ""
 
 #: src/i18n/errorMessages.ts
@@ -1231,7 +1279,6 @@ msgid "1 hour before"
 msgstr "1 heure avant"
 
 #: src/i18n/messages.ts
-#: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.remindersSingle"
 msgid "1 reminder set"
 msgstr "1 rappel défini"
@@ -1885,6 +1932,11 @@ msgctxt "modals.reminder.afterScheduled"
 msgid "After scheduled date: {duration}"
 msgstr "Après la date planifiée : {duration}"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Agenda"
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "views.agenda.title"
 msgid "Agenda"
@@ -1958,6 +2010,11 @@ msgstr "Tous les liens de tâches supprimés"
 msgctxt "views.stats.filters.allTasks"
 msgid "All tasks"
 msgstr "Toutes les tâches"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "All Tasks"
+msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "modals.migration.notices.success"
@@ -2261,6 +2318,11 @@ msgstr "Pièces jointes"
 msgctxt "modals.timeblockInfo.attachmentsLabel"
 msgid "Attachments"
 msgstr "Pièces jointes"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Attempted"
+msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "common.months.august"
@@ -2597,6 +2659,11 @@ msgctxt "settings.taskProperties.properties.blockedBy.name"
 msgid "Blocked by"
 msgstr "Bloquée par"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Blocked By"
+msgstr ""
+
 #: src/utils/fieldConfigDefaults.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Blocked By"
@@ -2612,6 +2679,11 @@ msgstr ""
 msgctxt "components.propertyVisibilityDropdown.properties.blocking"
 msgid "Blocking"
 msgstr "Bloquant"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Blocking"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/modals/taskModalOrganizationFields.ts
@@ -2708,6 +2780,11 @@ msgstr "Acheter des courses demain à 15h @maison #courses"
 msgctxt "modals.timeEntryEditor.calculatedDuration"
 msgid "Calculated: {minutes} minutes"
 msgstr "Durée calculée : {minutes} min"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Calendar"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/modals/CalendarEventCreationModal.ts
@@ -3171,6 +3248,11 @@ msgstr "Vérifier les nouvelles versions au démarrage"
 msgctxt "settings.general.releaseNotes.checkForUpdates.description"
 msgid "Check GitHub once when TaskNotes starts and show a notice when a newer compatible release is available"
 msgstr "Vérifie GitHub une fois au démarrage de TaskNotes et affiche une notification lorsqu''une nouvelle version compatible est disponible"
+
+#: src/i18n/errorMessages.ts
+msgctxt "timeblock Daily Notes setup guidance"
+msgid "Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists."
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/settings/tabs/taskProperties/statusPropertyCard.ts
@@ -3651,6 +3733,11 @@ msgctxt "modals.actionPalette.completeOccurrence"
 msgid "Complete this occurrence"
 msgstr "Terminer cette occurrence"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completed"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/settings/tabs/taskProperties/statusPropertyCard.ts
 msgctxt "settings.taskProperties.taskStatuses.badges.completed"
@@ -3767,6 +3854,11 @@ msgstr "Terminé : "
 msgctxt "settings.taskProperties.taskStatuses.howTheyWork.completed"
 msgid "Completed: When checked, tasks with this status are considered finished and may be filtered differently"
 msgstr "Terminé : Quand coché, les tâches avec ce statut sont considérées comme finies et peuvent être filtrées différemment"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completion"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/views/PomodoroStatsView.ts
@@ -4638,6 +4730,21 @@ msgctxt "modals.timeblockCreation.heading"
 msgid "Create timeblock"
 msgstr "Créer un bloc de temps"
 
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector create keyboard hint"
+msgid "Create with {shortcut}"
+msgstr ""
+
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector create action accessible name"
+msgid "Create: {title}"
+msgstr ""
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Created"
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.created"
 msgid "Created"
@@ -4986,6 +5093,11 @@ msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "Quotidien"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Daily"
+msgstr ""
+
 #: src/components/TaskContextMenu.ts
 #: src/i18n/messages.ts
 msgctxt "modals.task.recurrence.daily"
@@ -5082,6 +5194,11 @@ msgstr "Date"
 msgctxt "contextMenus.date.modal.dateLabel"
 msgid "Date"
 msgstr "Date (AAAA-MM-JJ)"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Date"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
@@ -6034,6 +6151,11 @@ msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.descripti
 msgid "Draw a line through completed task card titles. Turn off to keep completed tasks easier to read"
 msgstr "Trace une ligne sur les titres des cartes de tâches terminées. Désactivez cette option pour rendre les tâches terminées plus lisibles"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Due"
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.due"
 msgid "Due"
@@ -6128,6 +6250,11 @@ msgstr "Échéance définie"
 msgctxt "views.advancedCalendar.viewOptions.dueDates"
 msgid "Due dates"
 msgstr "Dates d''échéance"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Due in"
+msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "modals.dueDate.inputs.time.ariaLabel"
@@ -8302,6 +8429,11 @@ msgctxt "views.pomodoro.status.focus"
 msgid "Focus"
 msgstr "Concentration"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus minutes"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.descriptionPlaceholder"
@@ -8313,6 +8445,11 @@ msgstr "Concentrez-vous sur les nouvelles fonctionnalités, sans interruptions"
 msgctxt "modals.timeblockInfo.descriptionPlaceholder"
 msgid "Focus on new features, no interruptions"
 msgstr "Concentrez-vous sur les nouvelles fonctionnalités, sans interruptions"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus time"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/modals/ICSNoteCreationModal.ts
@@ -9085,6 +9222,11 @@ msgctxt "settings.features.uiLanguage.header"
 msgid "Interface language"
 msgstr "Langue de l''interface"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Interrupted"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.recents.status.interrupted"
@@ -9268,6 +9410,11 @@ msgctxt "views.kanban.title"
 msgid "Kanban"
 msgstr "Kanban"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Kanban Board"
+msgstr ""
+
 #: src/bases/KanbanView.ts
 #: src/i18n/messages.ts
 msgctxt "views.kanban.errors.noGroupBy"
@@ -9396,6 +9543,11 @@ msgstr "Dernier export : {time}"
 msgctxt "settings.integrations.oauth.refreshedAt"
 msgid "Last refreshed {time}"
 msgstr "Dernière actualisation {time}"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Later"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/services/filter-service/filterTaskGrouping.ts
@@ -9682,6 +9834,11 @@ msgctxt "views.pomodoro.status.breakLength.long"
 msgid "long"
 msgstr "longue"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Long (>2h)"
+msgstr ""
+
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.getPomodoroSessionLabel display"
 msgid "Long break"
@@ -9710,6 +9867,11 @@ msgstr "Intervalle des pauses longues"
 msgctxt "services.pomodoro.notices.longBreakStarted"
 msgid "Long break started"
 msgstr "Pause longue démarrée"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Long breaks"
+msgstr ""
 
 #: src/settings/defaults.ts
 msgctxt "settings/defaults: defaults label"
@@ -9761,6 +9923,11 @@ msgstr "Ordre manuel"
 msgctxt "settings.taskProperties.properties.sortOrder.name"
 msgid "Manual order"
 msgstr "Ordre manuel"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Manual Order"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/settings/tabs/integrationsTab.ts
@@ -9867,6 +10034,11 @@ msgstr "Mai"
 msgctxt "settings.integrations.mdbaseSpec.header"
 msgid "mdbase type definitions"
 msgstr "Définitions de types mdbase"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Medium (30m-2h)"
+msgstr ""
 
 #: src/utils/fieldConfigDefaults.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
@@ -10013,6 +10185,11 @@ msgctxt "settings.tabs.modalFields"
 msgid "Modal fields"
 msgstr "Champs de la fenêtre de tâche"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Modified"
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.modified"
 msgid "Modified"
@@ -10080,6 +10257,11 @@ msgctxt "bases/calendarViewOptions: defaults dayGridMonth"
 msgid "Month"
 msgstr ""
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Month"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.monthGrid"
@@ -10097,6 +10279,11 @@ msgstr "Vue mensuelle"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
 msgid "Monthly"
 msgstr "Mensuel"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Monthly"
+msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "modals.task.recurrence.monthly"
@@ -10599,6 +10786,11 @@ msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.performIn
 msgid "No data extracted"
 msgstr ""
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "No date"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/ui/completionDateResolver.ts
 msgctxt "contextMenus.task.completion.noPickedDate"
@@ -10650,6 +10842,11 @@ msgctxt "api/loadAPIEndpoints: loadAPIEndpoints summary"
 msgid "No description"
 msgstr ""
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "No due date"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.due.none"
@@ -10679,6 +10876,11 @@ msgstr "Aucune tâche éligible disponible pour être assignée comme sous-tâch
 msgctxt "modals.task.organization.notices.noEligibleSubtasks"
 msgid "No eligible tasks available to assign as subtasks"
 msgstr "Aucune tâche éligible disponible pour être assignée comme sous-tâche"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "No estimate"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/settings/tabs/integrationsTab.ts
@@ -11069,6 +11271,11 @@ msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr ""
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Not Blocked"
+msgstr ""
+
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services/filter-service/filterTaskGrouping: getCompletedDateGroup display"
 msgid "Not completed"
@@ -11080,11 +11287,21 @@ msgctxt "settings.integrations.oauth.disconnected"
 msgid "Not connected"
 msgstr "Non connecté"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Not scheduled"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.status.notScheduled"
 msgid "Not scheduled"
 msgstr "Non programmé"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Not started"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/modals/ICSEventInfoModal.ts
@@ -11349,6 +11566,11 @@ msgctxt "ui/taskCardProperties: occurrenceDate display"
 msgid "Occurrence: {value1}"
 msgstr ""
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Occurrences"
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "common.months.october"
 msgid "October"
@@ -11369,6 +11591,11 @@ msgstr "Décalage :"
 msgctxt "modals.migration.warnings.conversion"
 msgid "Old recurrence patterns will be converted to new format"
 msgstr "Les anciens modèles de récurrence seront convertis au nouveau format"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Older"
+msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.whenOnDay"
@@ -11815,6 +12042,16 @@ msgctxt "contextMenus.task.calendar.outlook"
 msgid "Outlook Calendar"
 msgstr "Calendrier Outlook"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Over estimate"
+msgstr ""
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Overdue"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.due.overdue"
@@ -11831,6 +12068,11 @@ msgstr "En retard"
 msgctxt "modals.unscheduledTasksSelector.overdue"
 msgid "Overdue: {date}"
 msgstr "En retard : {date}"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Overdue/Past"
+msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "modals.timeEntryEditor.durationDesc"
@@ -12216,6 +12458,13 @@ msgctxt "views.pomodoroStats.heading"
 msgid "Pomodoro statistics"
 msgstr "Statistiques Pomodoro"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Pomodoro Bases documentation"
+msgid "Pomodoro statistics\n"
+"Generated with your TaskNotes settings\n"
+"Requires Pomodoro data storage to be set to Daily notes."
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats"
 msgid "Pomodoro statistics base"
@@ -12479,6 +12728,11 @@ msgctxt "contextMenus.task.organization.projects"
 msgid "Projects"
 msgstr "Projets"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Projects"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.projects"
@@ -12587,6 +12841,11 @@ msgstr "nom-propriete"
 #: src/api/TasksController.ts
 msgctxt "api/TasksController: TasksController.queryTasks summary"
 msgid "Query tasks"
+msgstr ""
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Quick (<30m)"
 msgstr ""
 
 #: src/i18n/messages.ts
@@ -13495,6 +13754,11 @@ msgctxt "modals.actionPalette.scheduleFor"
 msgid "Schedule for {date}"
 msgstr "Planifier pour {date}"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Scheduled"
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.scheduled"
 msgid "Scheduled"
@@ -14115,6 +14379,11 @@ msgstr "Durée de la pause courte"
 msgctxt "services.pomodoro.notices.shortBreakStarted"
 msgid "Short break started"
 msgstr "Pause courte démarrée"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Short breaks"
+msgstr ""
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
@@ -14963,6 +15232,11 @@ msgstr "Position du chevron des sous-tâches"
 msgctxt "contextMenus.task.organization.subtasks"
 msgid "Subtasks"
 msgstr "Sous-tâches"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Subtasks"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/modals/taskModalOrganizationFields.ts
@@ -16045,6 +16319,11 @@ msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotificatio
 msgid "This is a test reminder from TaskNotes."
 msgstr ""
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "This month"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/views/StatsView.ts
 msgctxt "views.stats.sections.thisMonth"
@@ -16108,6 +16387,11 @@ msgctxt "views.taskList.reorder.scope.ungrouped"
 msgid "this ungrouped list"
 msgstr "cette liste non groupée"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "This week"
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "views.agenda.periods.thisWeek"
 msgid "This week"
@@ -16124,6 +16408,11 @@ msgstr "Cette semaine"
 msgctxt "views.stats.sections.thisWeek"
 msgid "This week"
 msgstr "Cette semaine"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "This Week"
+msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "components.dateContextMenu.thisWeekend"
@@ -16688,6 +16977,11 @@ msgctxt "contextMenus.date.basic.today"
 msgid "Today"
 msgstr "Aujourd''hui"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Today"
+msgstr ""
+
 #: src/i18n/messages.ts
 msgctxt "modals.dueDate.quickOptions.today"
 msgid "Today"
@@ -16832,6 +17126,11 @@ msgstr "Demain"
 msgctxt "contextMenus.date.basic.tomorrow"
 msgid "Tomorrow"
 msgstr "Demain"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Tomorrow"
+msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "modals.dueDate.quickOptions.tomorrow"
@@ -17150,6 +17449,11 @@ msgctxt "views.kanban.uncategorized"
 msgid "Uncategorized"
 msgstr "Non catégorisé"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Under estimate"
+msgstr ""
+
 #: src/i18n/messages.ts
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undo"
@@ -17277,6 +17581,11 @@ msgstr "Rappel sans nom"
 msgctxt "modals.task.unsavedChanges.title"
 msgid "Unsaved changes"
 msgstr "Modifications non enregistrées"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Unscheduled"
+msgstr ""
 
 #: src/i18n/messages.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
@@ -18279,6 +18588,11 @@ msgstr "Annuel le {month} {ordinal}"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence"
 msgid "Yearly recurrence"
 msgstr "Récurrence annuelle"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases grouping label"
+msgid "Yesterday"
+msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "modals.migration.warnings.normalUsage"

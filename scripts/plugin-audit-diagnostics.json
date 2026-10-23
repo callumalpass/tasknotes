@@ -1710,5 +1710,12 @@
       ]
     ],
     "kind": "ICU plural"
+  },
+  {
+    "context": "timeblock Daily Notes setup guidance",
+    "message": "Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists.",
+    "source": "\"Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists.\"",
+    "values": [],
+    "kind": "wrap"
   }
 ]

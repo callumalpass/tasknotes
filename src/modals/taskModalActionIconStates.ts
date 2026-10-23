@@ -46,12 +46,21 @@ export function updateTaskModalActionIconStates(
 	if (!actionBar) return;
 
 	updateDateIcon(actionBar, context, "due-date", state.dueDate, {
-		activeTooltipKey: msg({ message: "Due: {value}", context: "modals.task.tooltips.dueValue" }),
+		activeTooltipKey: msg({
+			message: "Due: {value}",
+			context: "modals.task.tooltips.dueValue",
+		}),
 		defaultTooltipKey: msg({ message: "Set due date", context: "modals.task.actions.due" }),
 	});
 	updateDateIcon(actionBar, context, "scheduled-date", state.scheduledDate, {
-		activeTooltipKey: msg({ message: "Scheduled: {value}", context: "modals.task.tooltips.scheduledValue" }),
-		defaultTooltipKey: msg({ message: "Set scheduled date", context: "modals.task.actions.scheduled" }),
+		activeTooltipKey: msg({
+			message: "Scheduled: {value}",
+			context: "modals.task.tooltips.scheduledValue",
+		}),
+		defaultTooltipKey: msg({
+			message: "Set scheduled date",
+			context: "modals.task.actions.scheduled",
+		}),
 	});
 	updateStatusIcon(actionBar, context, state);
 	updatePriorityIcon(actionBar, context, state);
@@ -99,7 +108,10 @@ function updateStatusIcon(
 		isActive: Boolean(
 			state.status && statusConfig && statusConfig.value !== state.defaultStatus
 		),
-		activeTooltipKey: msg({ message: "Status: {value}", context: "modals.task.tooltips.statusValue" }),
+		activeTooltipKey: msg({
+			message: "Status: {value}",
+			context: "modals.task.tooltips.statusValue",
+		}),
 		defaultTooltipKey: msg({ message: "Set status", context: "modals.task.actions.status" }),
 		label: statusLabel,
 		color: statusConfig?.color,
@@ -128,16 +140,20 @@ function updatePriorityIcon(
 	const icon = getActionIcon(actionBar, "priority");
 	if (!icon) return;
 
-	const priorityConfig = state.priorityConfigs.find(
-		(config) => config.value === state.priority
-	);
+	const priorityConfig = state.priorityConfigs.find((config) => config.value === state.priority);
 	const priorityLabel = priorityConfig ? priorityConfig.label : state.priority;
 	updateConfiguredValueIcon(icon, context, {
 		isActive: Boolean(
 			state.priority && priorityConfig && priorityConfig.value !== state.defaultPriority
 		),
-		activeTooltipKey: msg({ message: "Priority: {value}", context: "modals.task.tooltips.priorityValue" }),
-		defaultTooltipKey: msg({ message: "Set priority", context: "modals.task.actions.priority" }),
+		activeTooltipKey: msg({
+			message: "Priority: {value}",
+			context: "modals.task.tooltips.priorityValue",
+		}),
+		defaultTooltipKey: msg({
+			message: "Set priority",
+			context: "modals.task.actions.priority",
+		}),
 		label: priorityLabel,
 		color: priorityConfig?.color,
 	});
@@ -188,18 +204,30 @@ function updateRecurrenceIcon(
 		icon.classList.add("has-value");
 		setTooltip(
 			icon,
-			context.translate(msg({ message: "Recurrence: {value}", context: "modals.task.tooltips.recurrenceValue" }), {
-				value: state.recurrenceDisplayText,
-			}),
+			context.translate(
+				msg({
+					message: "Recurrence: {value}",
+					context: "modals.task.tooltips.recurrenceValue",
+				}),
+				{
+					value: state.recurrenceDisplayText,
+				}
+			),
 			{ placement: "top" }
 		);
 		return;
 	}
 
 	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate(msg({ message: "Set recurrence", context: "modals.task.actions.recurrence" })), {
-		placement: "top",
-	});
+	setTooltip(
+		icon,
+		context.translate(
+			msg({ message: "Set recurrence", context: "modals.task.actions.recurrence" })
+		),
+		{
+			placement: "top",
+		}
+	);
 }
 
 function updateReminderIcon(
@@ -212,20 +240,27 @@ function updateReminderIcon(
 
 	if (reminderCount > 0) {
 		icon.classList.add("has-value");
-		const tooltip =
-			reminderCount === 1
-				? context.translate(msg({ message: "1 reminder set", context: "modals.task.tooltips.remindersSingle" }))
-				: context.translate(msg({ message: "{count} reminders set", context: "modals.task.tooltips.remindersPlural" }), {
-						count: reminderCount,
-					});
+		const tooltip = context.translate(
+			msg({
+				message: "{count, plural, one {# reminder set} other {# reminders set}}",
+				context: "task modal reminder count",
+			}),
+			{ count: reminderCount }
+		);
 		setTooltip(icon, tooltip, { placement: "top" });
 		return;
 	}
 
 	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate(msg({ message: "Set reminders", context: "modals.task.actions.reminders" })), {
-		placement: "top",
-	});
+	setTooltip(
+		icon,
+		context.translate(
+			msg({ message: "Set reminders", context: "modals.task.actions.reminders" })
+		),
+		{
+			placement: "top",
+		}
+	);
 }
 
 function getActionIcon(actionBar: HTMLElement, dataType: string): HTMLElement | null {
