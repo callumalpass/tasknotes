@@ -74,7 +74,7 @@ export class TaskActionCoordinator {
 				}
 			}
 
-			showNotice("Time tracking started");
+			showNotice(this.plugin.i18n.translate("modals.actionPalette.trackingStarted"));
 			this.requestStatusBarUpdate();
 			return updatedTask;
 		} catch (error: unknown) {
@@ -87,9 +87,9 @@ export class TaskActionCoordinator {
 				error instanceof Error &&
 				error.message === "Time tracking is already active for this task"
 			) {
-				showNotice("Time tracking is already active for this task");
+				showNotice(this.plugin.i18n.translate("notices.interface.trackingActive"));
 			} else {
-				showNotice("Failed to start time tracking");
+				showNotice(this.plugin.i18n.translate("modals.timeTracking.startFailed"));
 			}
 			throw error;
 		}
@@ -98,7 +98,7 @@ export class TaskActionCoordinator {
 	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
 		try {
 			const updatedTask = await this.plugin.taskService.stopTimeTracking(task);
-			showNotice("Time tracking stopped");
+			showNotice(this.plugin.i18n.translate("modals.actionPalette.trackingStopped"));
 			this.requestStatusBarUpdate();
 			return updatedTask;
 		} catch (error: unknown) {
@@ -111,9 +111,9 @@ export class TaskActionCoordinator {
 				error instanceof Error &&
 				error.message === "No active time tracking session for this task"
 			) {
-				showNotice("No active time tracking session for this task");
+				showNotice(this.plugin.i18n.translate("notices.interface.trackingInactive"));
 			} else {
-				showNotice("Failed to stop time tracking");
+				showNotice(this.plugin.i18n.translate("notices.interface.trackingStopFailed"));
 			}
 			throw error;
 		}
@@ -130,15 +130,18 @@ export class TaskActionCoordinator {
 				return;
 			}
 
-			const selected = trackedTasks.length === 1
-				? trackedTasks[0]
-				: await new Promise<TaskInfo | null>((resolve) => {
-					openTaskSelector(this.plugin, trackedTasks, resolve, {
-						title: this.plugin.i18n.translate("commands.stopActiveTimeTracking"),
-						allowCreate: false,
-						includeArchived: true,
-					});
-				});
+			const selected =
+				trackedTasks.length === 1
+					? trackedTasks[0]
+					: await new Promise<TaskInfo | null>((resolve) => {
+							openTaskSelector(this.plugin, trackedTasks, resolve, {
+								title: this.plugin.i18n.translate(
+									"commands.stopActiveTimeTracking"
+								),
+								allowCreate: false,
+								includeArchived: true,
+							});
+						});
 			if (!selected) return;
 
 			// The tracker may have stopped, or the note been removed, while choosing.
@@ -255,15 +258,17 @@ export class TaskActionCoordinator {
 			);
 
 			if (candidates.length === 0) {
-				showNotice("No overdue scheduled tasks to postpone");
+				showNotice(this.plugin.i18n.translate("notices.interface.noOverdue"));
 				return;
 			}
 
-			const taskLabel = candidates.length === 1 ? "task" : "tasks";
 			const confirmed = await showConfirmationModal(this.plugin.app, {
-				title: "Postpone overdue scheduled tasks",
-				message: `Move ${candidates.length} active overdue scheduled ${taskLabel} to today (${today})?`,
-				confirmText: "Postpone",
+				title: this.plugin.i18n.translate("notices.interface.postponeTitle"),
+				message: this.plugin.i18n.translate("notices.interface.postponeConfirm", {
+					count: candidates.length,
+					today,
+				}),
+				confirmText: this.plugin.i18n.translate("notices.interface.postpone"),
 				cancelText: this.plugin.i18n.translate("common.cancel"),
 			});
 
@@ -271,7 +276,11 @@ export class TaskActionCoordinator {
 				return;
 			}
 
-			showNotice(`Postponing ${candidates.length} ${taskLabel}...`);
+			showNotice(
+				this.plugin.i18n.translate("notices.interface.postponing", {
+					count: candidates.length,
+				})
+			);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -296,11 +305,12 @@ export class TaskActionCoordinator {
 				}
 			}
 
-			if (failCount === 0) {
-				showNotice(`Postponed ${successCount} ${successCount === 1 ? "task" : "tasks"}`);
-			} else {
-				showNotice(`Postponed ${successCount} tasks, ${failCount} failed`);
-			}
+			showNotice(
+				this.plugin.i18n.translate("notices.interface.postponed", {
+					count: successCount,
+					failed: failCount,
+				})
+			);
 
 			this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
 		} catch (error) {
@@ -309,7 +319,7 @@ export class TaskActionCoordinator {
 				operation: "postpone-overdue-scheduled-tasks",
 				error: error,
 			});
-			showNotice("Failed to postpone overdue scheduled tasks");
+			showNotice(this.plugin.i18n.translate("notices.interface.postponeFailed"));
 		}
 	}
 

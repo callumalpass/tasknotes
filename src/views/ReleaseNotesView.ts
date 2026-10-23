@@ -96,13 +96,7 @@ export class ReleaseNotesView extends ItemView {
 		const releaseContent = versionData.isCurrent
 			? `${this.plugin.i18n.translate("views.releaseNotes.baseFilesNotice")}\n\n${transformedNotes}`
 			: transformedNotes;
-		await MarkdownRenderer.render(
-			this.plugin.app,
-			releaseContent,
-			content,
-			"",
-			this
-		);
+		await MarkdownRenderer.render(this.plugin.app, releaseContent, content, "", this);
 	}
 
 	/**
@@ -258,7 +252,7 @@ export class ReleaseNotesView extends ItemView {
 
 		if (versionData.isCurrent) {
 			const currentBadge = headerLeft.createSpan({
-				text: "Current",
+				text: this.plugin.i18n.translate("views.releaseNotes.current"),
 			});
 			currentBadge.classList.remove(
 				"tn-static-font-size-0-8em-19dc7c13",
@@ -547,7 +541,13 @@ export class ReleaseNotesView extends ItemView {
 		const announcement = container.createEl("section", {
 			cls: "release-notes-announcement",
 		});
-		await MarkdownRenderer.render(this.plugin.app, releaseNotesAnnouncement, announcement, "", this);
+		await MarkdownRenderer.render(
+			this.plugin.app,
+			releaseNotesAnnouncement,
+			announcement,
+			"",
+			this
+		);
 
 		// Create all version sections
 		const versionsContainer = container.createDiv({ cls: "release-notes-versions" });

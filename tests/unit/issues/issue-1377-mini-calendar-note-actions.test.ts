@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { Menu, type TFile } from "obsidian";
 import {
 	createDailyNote,
@@ -23,12 +24,7 @@ type TestMiniCalendarView = {
 	config: { get: jest.Mock };
 	data: { data: unknown[] };
 	readViewOptions(): void;
-	renderDay(
-		weekRow: HTMLElement,
-		dayDate: Date,
-		dayNum: number,
-		isOutsideMonth: boolean
-	): void;
+	renderDay(weekRow: HTMLElement, dayDate: Date, dayNum: number, isOutsideMonth: boolean): void;
 	renderWeekRow(calendarGrid: HTMLElement, weekDays: Date[]): void;
 };
 
@@ -48,11 +44,14 @@ function installObsidianElementPolyfills(): void {
 		addClass?: (className: string) => void;
 	};
 
-	proto.createDiv ??= function createDiv(this: HTMLElement, options?: {
-		cls?: string;
-		text?: string;
-		attr?: Record<string, string | null>;
-	}) {
+	proto.createDiv ??= function createDiv(
+		this: HTMLElement,
+		options?: {
+			cls?: string;
+			text?: string;
+			attr?: Record<string, string | null>;
+		}
+	) {
 		const element = document.createElement("div");
 		if (options?.cls) element.className = options.cls;
 		if (options?.text) element.textContent = options.text;
@@ -96,15 +95,7 @@ function createView() {
 				getLeaf: jest.fn(() => ({ openFile })),
 			},
 		},
-		i18n: {
-			translate: jest.fn((key: string) => {
-				const translations: Record<string, string> = {
-					"views.miniCalendar.contextMenu.openDailyNote": "Open daily note",
-					"views.miniCalendar.contextMenu.openWeeklyNote": "Open weekly note",
-				};
-				return translations[key] ?? key;
-			}),
-		},
+		i18n: createI18nService(),
 	});
 
 	const view = new MiniCalendarView(
@@ -170,9 +161,7 @@ describe("Issue #1377: Mini Calendar daily and weekly note actions", () => {
 
 		view.renderWeekRow(calendarGrid, weekDays);
 		const weekCell = calendarGrid.querySelector(".mini-calendar-week-number") as HTMLElement;
-		weekCell.dispatchEvent(
-			new MouseEvent("contextmenu", { bubbles: true, cancelable: true })
-		);
+		weekCell.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 
 		const item = getLatestMenuItem();
 		expect(item.setTitle).toHaveBeenCalledWith("Open weekly note");

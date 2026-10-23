@@ -268,6 +268,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	projects: (element, value, task, plugin) => {
 		if (Array.isArray(value)) {
 			const linkServices: LinkServices = {
+				translate: plugin.i18n.translate.bind(plugin.i18n),
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
 				sourcePath: task.path,
@@ -283,6 +284,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 					await plugin.openTagsPane(`#${searchTag}`);
 				},
 				linkServices: {
+					translate: plugin.i18n.translate.bind(plugin.i18n),
 					metadataCache: plugin.app.metadataCache,
 					workspace: plugin.app.workspace,
 					sourcePath: task.path,
@@ -335,6 +337,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		if (typeof value === "string" && value.trim() !== "") {
 			element.createSpan({ text: "Parent: " });
 			const linkServices: LinkServices = {
+				translate: plugin.i18n.translate.bind(plugin.i18n),
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
 				sourcePath: task.path,
@@ -372,6 +375,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		if (typeof value === "string" && value.trim() !== "") {
 			element.createSpan({ text: "Template: " });
 			const linkServices: LinkServices = {
+				translate: plugin.i18n.translate.bind(plugin.i18n),
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
 				sourcePath: task.path,
@@ -456,6 +460,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			element.createSpan({ text: "Blocked by: " });
 			const linksContainer = element.createSpan();
 			const linkServices: LinkServices = {
+				translate: plugin.i18n.translate.bind(plugin.i18n),
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
 				sourcePath: task.path,
@@ -627,6 +632,7 @@ function renderUserProperty(
 		cls: "task-card__metadata-value",
 	});
 	const linkServices: LinkServices = {
+		translate: plugin.i18n.translate.bind(plugin.i18n),
 		metadataCache: plugin.app.metadataCache,
 		workspace: plugin.app.workspace,
 	};
@@ -706,6 +712,7 @@ function renderPropertyValue(
 
 	if (typeof value === "string" && plugin) {
 		const linkServices: LinkServices = {
+			translate: plugin.i18n.translate.bind(plugin.i18n),
 			metadataCache: plugin.app.metadataCache,
 			workspace: plugin.app.workspace,
 		};

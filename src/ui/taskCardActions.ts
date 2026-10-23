@@ -53,7 +53,7 @@ export function createStatusCycleHandler(
 
 				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
 				if (!freshTask) {
-					new Notice("Task not found");
+					new Notice(plugin.i18n.translate("modals.actionPalette.taskNotFound"));
 					return;
 				}
 
@@ -61,7 +61,11 @@ export function createStatusCycleHandler(
 				const nextStatus = e.shiftKey
 					? plugin.statusManager.getPreviousStatus(currentStatus)
 					: plugin.statusManager.getNextStatus(currentStatus);
-				const updatedTask = await plugin.updateTaskProperty(freshTask, "status", nextStatus);
+				const updatedTask = await plugin.updateTaskProperty(
+					freshTask,
+					"status",
+					nextStatus
+				);
 				const isNowCompleted = plugin.statusManager.isCompletedStatus(nextStatus);
 				updateStatusVisuals(updatedTask, nextStatus, isNowCompleted);
 			} catch (error) {
@@ -72,7 +76,11 @@ export function createStatusCycleHandler(
 					details: { taskPath: task.path, errorMessage },
 					error,
 				});
-				new Notice(`Failed to update task status: ${errorMessage}`);
+				new Notice(
+					plugin.i18n.translate("notices.interface.statusFailed", {
+						message: errorMessage,
+					})
+				);
 			}
 		})();
 	};
@@ -101,7 +109,7 @@ export function createPriorityClickHandler(
 							details: { taskPath: task.path, newPriority },
 							error,
 						});
-						new Notice("Failed to update priority");
+						new Notice(plugin.i18n.translate("notices.interface.priorityFailed"));
 					}
 				})();
 			},
@@ -143,7 +151,7 @@ export function createRecurrenceClickHandler(
 							details: { taskPath: task.path, newRecurrence, anchor },
 							error,
 						});
-						new Notice("Failed to update recurrence");
+						new Notice(plugin.i18n.translate("notices.interface.recurrenceFailed"));
 					}
 				})();
 			},
@@ -175,7 +183,9 @@ export function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlug
 						details: { taskPath: task.path, reminderCount: reminders.length },
 						error,
 					});
-					new Notice("Failed to update reminders");
+					new Notice(
+						plugin.i18n.translate("contextMenus.task.notices.updateRemindersFailure")
+					);
 				}
 			})();
 		});

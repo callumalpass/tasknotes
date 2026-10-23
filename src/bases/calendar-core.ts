@@ -371,7 +371,10 @@ export async function handlePatternInstanceDrop(
 			}
 			updatedRRule = ruleWithDTSTART;
 			new Notice(
-				"Added time information to recurring pattern. All future instances now appear at this time."
+				plugin.i18n.translate(
+					allDay ? "notices.audit.allDay" : "notices.audit.recurringTime",
+					{ time: format(newStart, "HH:mm") }
+				)
 			);
 		} else {
 			// DTSTART exists - update the time component
@@ -392,7 +395,10 @@ export async function handlePatternInstanceDrop(
 			// Update DTSTART in RRULE string
 			updatedRRule = taskInfo.recurrence.replace(/DTSTART:[^;]+/, `DTSTART:${newDTSTART}`);
 			new Notice(
-				"Updated recurring pattern time. All future instances now appear at this time."
+				plugin.i18n.translate(
+					allDay ? "notices.audit.allDay" : "notices.audit.recurringTime",
+					{ time: format(newStart, "HH:mm") }
+				)
 			);
 		}
 
@@ -442,7 +448,7 @@ export async function handleRecurringTaskDrop(
 
 		// Update the scheduled field directly (manual reschedule of next occurrence)
 		await plugin.taskService.updateProperty(taskInfo, "scheduled", newDateString);
-		new Notice("Rescheduled next occurrence. This does not change the recurrence pattern.");
+		new Notice(plugin.i18n.translate("notices.audit.rescheduled"));
 	} else if (isPatternInstance) {
 		// Dragging Pattern Instances: Updates DTSTART in RRULE and recalculates task.scheduled
 		await handlePatternInstanceDrop(taskInfo, newStart, allDay, plugin);
@@ -453,13 +459,11 @@ export async function handleRecurringTaskDrop(
 
 		if (allDay) {
 			updatedScheduled = originalDate;
-			new Notice("Updated recurring task to all-day. This affects all future instances.");
+			new Notice(plugin.i18n.translate("notices.audit.allDay"));
 		} else {
 			const newTime = format(newStart, "HH:mm");
 			updatedScheduled = `${originalDate}T${newTime}`;
-			new Notice(
-				`Updated recurring task time to ${newTime}. This affects all future instances.`
-			);
+			new Notice(plugin.i18n.translate("notices.audit.recurringTime", { time: newTime }));
 		}
 
 		await plugin.taskService.updateProperty(taskInfo, "scheduled", updatedScheduled);
@@ -470,10 +474,7 @@ export async function handleRecurringTaskDrop(
  * Return the recurrence instance addressed by a calendar event. Rendered dates
  * from due events or time entries must not become occurrence identity.
  */
-export function getOccurrenceDateForEvent(
-	taskInfo: TaskInfo,
-	eventArg: unknown
-): Date | undefined {
+export function getOccurrenceDateForEvent(taskInfo: TaskInfo, eventArg: unknown): Date | undefined {
 	if (!taskInfo.recurrence) {
 		return undefined;
 	}
@@ -570,7 +571,7 @@ function getResolvedOccurrenceParentKey(task: TaskInfo, plugin: TaskNotesPlugin)
 	const resolved = metadataCache?.getFirstLinkpathDest?.(linkPath, task.path);
 	const resolvedPath =
 		resolved && typeof (resolved as { path?: unknown }).path === "string"
-			? ((resolved as { path: string }).path)
+			? (resolved as { path: string }).path
 			: undefined;
 
 	return resolvedPath ? normalizeTaskReference(resolvedPath) : normalizedReference;
@@ -608,10 +609,7 @@ function buildMaterializedOccurrenceDateIndex(
 	return index;
 }
 
-function addMaterializedOccurrenceMetadata(
-	event: CalendarEvent,
-	task: TaskInfo
-): CalendarEvent {
+function addMaterializedOccurrenceMetadata(event: CalendarEvent, task: TaskInfo): CalendarEvent {
 	if (!isMaterializedOccurrenceTask(task)) {
 		return event;
 	}
@@ -1215,9 +1213,7 @@ export function generateRecurringTaskInstances(
 		if (typeof task.recurrence === "string" && task.recurrence.includes("FREQ=YEARLY")) {
 			// For yearly tasks, look ahead ~2.2 years to ensure we find at least one occurrence
 			const lookAheadDays = 800;
-			adjustedEndDate = new Date(
-				startDate.getTime() + lookAheadDays * 24 * 60 * 60 * 1000
-			);
+			adjustedEndDate = new Date(startDate.getTime() + lookAheadDays * 24 * 60 * 60 * 1000);
 		}
 		const recurringDates = generateRecurringInstances(
 			task,
@@ -1282,7 +1278,13 @@ export function generateRecurringTaskInstances(
 			}
 
 			const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
-			const event = createRecurringEvent(task, eventStart, instanceDate, templateTime, plugin);
+			const event = createRecurringEvent(
+				task,
+				eventStart,
+				instanceDate,
+				templateTime,
+				plugin
+			);
 			if (event) {
 				instances.push(event);
 				emittedInstanceDates.add(instanceDate);
@@ -1706,8 +1708,10 @@ export async function generateCalendarEvents(
 				}
 			} else if (
 				todayDate &&
-				!((showedScheduledOverdueOnToday || hasGeneratedScheduledLayerOnToday) &&
-					!hasTimeComponent(task.due))
+				!(
+					(showedScheduledOverdueOnToday || hasGeneratedScheduledLayerOnToday) &&
+					!hasTimeComponent(task.due)
+				)
 			) {
 				const dueEvent = createDueEvent(task, plugin);
 				const overdueEvent = dueEvent
@@ -1850,9 +1854,7 @@ export async function handleTimeblockCreation(
 ): Promise<void> {
 	// Don't create timeblocks for all-day selections
 	if (allDay) {
-		new Notice(
-			"Timeblocks must have specific times. Please select a time range in week or day view."
-		);
+		new Notice(plugin.i18n.translate("views.advancedCalendar.notices.timeblockSpecificTime"));
 		return;
 	}
 
@@ -1991,7 +1993,7 @@ export async function handleTimeblockDrop(
 			);
 			dropInfo.revert();
 			plugin.emitter.trigger(EVENT_DATA_CHANGED);
-			new Notice("Timeblock duplicated successfully");
+			new Notice(plugin.i18n.translate("notices.audit.timeblockCopied"));
 			return;
 		}
 
@@ -2005,14 +2007,18 @@ export async function handleTimeblockDrop(
 			newEndTime
 		);
 
-		new Notice("Timeblock moved successfully");
+		new Notice(plugin.i18n.translate("notices.audit.timeblockMoved"));
 	} catch (error: unknown) {
 		tasknotesLogger.error("Error moving timeblock:", {
 			category: "provider",
 			operation: "moving-timeblock",
 			error: error,
 		});
-		new Notice(`Failed to move timeblock: ${getErrorMessage(error)}`);
+		new Notice(
+			plugin.i18n.translate("views.advancedCalendar.notices.timeblockMoveFailed", {
+				message: getErrorMessage(error),
+			})
+		);
 		dropInfo.revert();
 	}
 }
@@ -2049,14 +2055,18 @@ export async function handleTimeblockResize(
 			newEndTime
 		);
 
-		new Notice("Timeblock duration updated");
+		new Notice(plugin.i18n.translate("notices.audit.timeblockResized"));
 	} catch (error: unknown) {
 		tasknotesLogger.error("Error resizing timeblock:", {
 			category: "provider",
 			operation: "resizing-timeblock",
 			error: error,
 		});
-		new Notice(`Failed to resize timeblock: ${getErrorMessage(error)}`);
+		new Notice(
+			plugin.i18n.translate("views.advancedCalendar.notices.timeblockResizeFailed", {
+				message: getErrorMessage(error),
+			})
+		);
 		resizeInfo.revert();
 	}
 }
@@ -2145,9 +2155,7 @@ export async function handleDateTitleClick(
 
 		// Check if Daily Notes plugin is enabled
 		if (!appHasDailyNotesPluginLoaded()) {
-			new Notice(
-				"Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
-			);
+			new Notice(plugin.i18n.translate("notices.commands.dailyNotesDisabled"));
 			return;
 		}
 
@@ -2174,7 +2182,11 @@ export async function handleDateTitleClick(
 					operation: "create-daily-note",
 					error: error,
 				});
-				new Notice(`Failed to create daily note: ${errorMessage}`);
+				new Notice(
+					plugin.i18n.translate("notices.commands.dailyNoteCreateFailed", {
+						message: errorMessage,
+					})
+				);
 				return;
 			}
 		}
@@ -2190,7 +2202,9 @@ export async function handleDateTitleClick(
 			operation: "navigate-daily-note",
 			error: error,
 		});
-		new Notice(`Failed to navigate to daily note: ${errorMessage}`);
+		new Notice(
+			plugin.i18n.translate("notices.commands.dailyNoteOpenFailed", { message: errorMessage })
+		);
 	}
 }
 

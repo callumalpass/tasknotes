@@ -16,6 +16,7 @@ export interface I18nServiceOptions {
 	fallbackLocale?: string;
 	initialLocale?: string;
 	getSystemLocale?: () => string;
+	availableLocales?: string[];
 }
 
 export interface LocaleChangeEvent {
@@ -32,7 +33,11 @@ export interface II18nService {
 	translatePlural(baseKey: string, count: number, params?: InterpolationValues): string;
 	resolveKey(key: string): string | undefined;
 	getSystemLocale(): string;
-	on(event: "locale-changed", callback: (event: LocaleChangeEvent) => void, ctx?: unknown): EventRef;
+	on(
+		event: "locale-changed",
+		callback: (event: LocaleChangeEvent) => void,
+		ctx?: unknown
+	): EventRef;
 }
 
 export type LeafPaths<T, Prefix extends string = ""> = T extends string

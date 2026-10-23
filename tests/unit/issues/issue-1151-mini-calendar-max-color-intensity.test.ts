@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import {
 	DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT,
 	MiniCalendarView,
@@ -11,12 +12,7 @@ type TestMiniCalendarView = {
 	config: { get: jest.Mock };
 	data: { data: unknown[] };
 	readViewOptions(): void;
-	renderDay(
-		weekRow: HTMLElement,
-		dayDate: Date,
-		dayNum: number,
-		isOutsideMonth: boolean
-	): void;
+	renderDay(weekRow: HTMLElement, dayDate: Date, dayNum: number, isOutsideMonth: boolean): void;
 	notesByDate: Map<string, Array<Record<string, unknown>>>;
 	selectedDate: Date;
 	displayedMonth: number;
@@ -33,11 +29,14 @@ function installObsidianElementPolyfills(): void {
 		addClass?: (className: string) => void;
 	};
 
-	proto.createDiv ??= function createDiv(this: HTMLElement, options?: {
-		cls?: string;
-		text?: string;
-		attr?: Record<string, string | null>;
-	}) {
+	proto.createDiv ??= function createDiv(
+		this: HTMLElement,
+		options?: {
+			cls?: string;
+			text?: string;
+			attr?: Record<string, string | null>;
+		}
+	) {
 		const element = document.createElement("div");
 		if (options?.cls) element.className = options.cls;
 		if (options?.text) element.textContent = options.text;
@@ -58,7 +57,7 @@ function installObsidianElementPolyfills(): void {
 }
 
 function createView(configOverrides: Record<string, unknown> = {}): TestMiniCalendarView {
-	const plugin = PluginFactory.createMockPlugin();
+	const plugin = PluginFactory.createMockPlugin({ i18n: createI18nService() });
 	const view = new MiniCalendarView(
 		{},
 		document.createElement("div"),

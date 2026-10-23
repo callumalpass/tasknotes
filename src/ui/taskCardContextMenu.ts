@@ -104,7 +104,9 @@ export async function showTaskContextMenu(
 			details: { taskPath, errorMessage },
 			error,
 		});
-		new Notice(`Failed to create context menu: ${errorMessage}`);
+		new Notice(
+			plugin.i18n.translate("notices.interface.contextMenuFailed", { message: errorMessage })
+		);
 		showFileMenuFallback();
 	}
 }
@@ -122,14 +124,14 @@ function showFileContextMenu(event: MouseEvent, file: TFile, plugin: TaskNotesPl
 
 	if (!populated) {
 		menu.addItem((item) => {
-			item.setTitle("Open");
+			item.setTitle(plugin.i18n.translate("ui.audit.open"));
 			item.setIcon("file-text");
 			item.onClick(() => {
 				void plugin.app.workspace.getLeaf(false).openFile(file);
 			});
 		});
 		menu.addItem((item) => {
-			item.setTitle("Open in new tab");
+			item.setTitle(plugin.i18n.translate("ui.audit.openNewTab"));
 			item.setIcon("external-link");
 			item.onClick(() => {
 				void plugin.app.workspace.openLinkText(file.path, "", true);

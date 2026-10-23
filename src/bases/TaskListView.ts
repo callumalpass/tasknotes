@@ -320,25 +320,25 @@ export class TaskListView extends BasesViewBase {
 		const menu = new Menu();
 
 		menu.addItem((item) => {
-			item.setTitle("Expand all groups")
+			item.setTitle(this.plugin.i18n.translate("views.taskList.expandAllGroups"))
 				.setIcon("chevrons-down")
 				.onClick(() => void this.setAllPrimaryGroupsCollapsed(false));
 		});
 
 		menu.addItem((item) => {
-			item.setTitle("Collapse all groups")
+			item.setTitle(this.plugin.i18n.translate("views.taskList.collapseAllGroups"))
 				.setIcon("chevrons-up")
 				.onClick(() => void this.setAllPrimaryGroupsCollapsed(true));
 		});
 
 		menu.addItem((item) => {
-			item.setTitle("Expand all groups and subgroups")
+			item.setTitle(this.plugin.i18n.translate("ui.audit.expandAll"))
 				.setIcon("list-tree")
 				.onClick(() => void this.setAllGroupsAndSubGroupsCollapsed(false));
 		});
 
 		menu.addItem((item) => {
-			item.setTitle("Collapse all groups and subgroups")
+			item.setTitle(this.plugin.i18n.translate("ui.audit.collapseAll"))
 				.setIcon("list-collapse")
 				.onClick(() => void this.setAllGroupsAndSubGroupsCollapsed(true));
 		});
@@ -3127,6 +3127,7 @@ export class TaskListView extends BasesViewBase {
 		const app = this.app || this.plugin.app;
 
 		const linkServices: LinkServices = {
+			translate: this.plugin.i18n.translate.bind(this.plugin.i18n),
 			metadataCache: app.metadataCache,
 			workspace: app.workspace,
 		};
@@ -3596,7 +3597,7 @@ export class TaskListView extends BasesViewBase {
 				details: { taskPath: task.path },
 				error: message,
 			});
-			new Notice(`Failed to toggle task status: ${message}`);
+			new Notice(this.plugin.i18n.translate("notices.interface.statusFailed", { message }));
 		}
 	}
 
@@ -3625,7 +3626,7 @@ export class TaskListView extends BasesViewBase {
 							"[TaskNotes][TaskListView] Failed to update priority",
 							{ category: "validation", operation: "update-priority", error: error }
 						);
-						new Notice("Failed to update priority");
+						new Notice(this.plugin.i18n.translate("notices.interface.priorityFailed"));
 					}
 				})();
 			},
@@ -3655,7 +3656,9 @@ export class TaskListView extends BasesViewBase {
 							"[TaskNotes][TaskListView] Failed to update recurrence",
 							{ category: "validation", operation: "update-recurrence", error: error }
 						);
-						new Notice("Failed to update recurrence");
+						new Notice(
+							this.plugin.i18n.translate("notices.interface.recurrenceFailed")
+						);
 					}
 				})();
 			},
@@ -3680,7 +3683,11 @@ export class TaskListView extends BasesViewBase {
 						operation: "update-reminders",
 						error: error,
 					});
-					new Notice("Failed to update reminders");
+					new Notice(
+						this.plugin.i18n.translate(
+							"contextMenus.task.notices.updateRemindersFailure"
+						)
+					);
 				}
 			})();
 		});
@@ -3717,7 +3724,14 @@ export class TaskListView extends BasesViewBase {
 							details: { taskPath: task.path, dateType },
 							error: message,
 						});
-						new Notice(`Failed to update ${dateType} date: ${message}`);
+						new Notice(
+							this.plugin.i18n.translate(
+								dateType === "due"
+									? "contextMenus.task.notices.updateDueDateFailure"
+									: "contextMenus.task.notices.updateScheduledFailure",
+								{ message }
+							)
+						);
 					}
 				})();
 			},
@@ -3811,7 +3825,7 @@ export class TaskListView extends BasesViewBase {
 					"[TaskNotes][TaskListView] ExpandedProjectsService not initialized",
 					{ category: "stale-data", operation: "expandedprojectsservice-not-initialized" }
 				);
-				new Notice("Service not available. Please try reloading the plugin.");
+				new Notice(this.plugin.i18n.translate("notices.interface.serviceUnavailable"));
 				return;
 			}
 
@@ -3837,7 +3851,7 @@ export class TaskListView extends BasesViewBase {
 				operation: "toggle-subtasks",
 				error: error,
 			});
-			new Notice("Failed to toggle subtasks");
+			new Notice(this.plugin.i18n.translate("notices.interface.subtasksFailed"));
 		}
 	}
 
@@ -3857,7 +3871,7 @@ export class TaskListView extends BasesViewBase {
 				operation: "toggle-blocking-tasks",
 				error: error,
 			});
-			new Notice("Failed to toggle blocking tasks");
+			new Notice(this.plugin.i18n.translate("ui.taskCard.blockingLoadError"));
 		}
 	}
 

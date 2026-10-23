@@ -89,10 +89,10 @@ export function renderFeaturesTab(
 
 				group.addSetting((setting) => {
 					setting
-						.setName("Inline task card properties")
-						.setDesc("Select which properties to show in inline task cards.")
+						.setName(translate("settings.features.inlineTasks.cardProperties"))
+						.setDesc(translate("settings.features.inlineTasks.cardPropertiesDesc"))
 						.addButton((button) => {
-							button.setButtonText("Configure").onClick(() => {
+							button.setButtonText(translate("common.configure")).onClick(() => {
 								const modal = new PropertySelectorModal(
 									plugin.app,
 									availableProperties,
@@ -100,11 +100,16 @@ export function renderFeaturesTab(
 									async (selected) => {
 										plugin.settings.inlineVisibleProperties = selected;
 										save();
-										new Notice("Inline task card properties updated");
+										new Notice(
+											translate(
+												"settings.features.inlineTasks.cardPropertiesUpdated"
+											)
+										);
 										renderFeaturesTab(container, plugin, save);
 									},
-									"Select Inline Task Card Properties",
-									"Choose which properties to display in inline task cards."
+									translate("modals.propertySelector.inlineTitle"),
+									translate("settings.features.inlineTasks.cardPropertiesDesc"),
+									plugin
 								);
 								modal.open();
 							});
@@ -112,7 +117,11 @@ export function renderFeaturesTab(
 				});
 
 				group.addSetting((setting) => {
-					setting.setDesc(`Currently showing: ${currentInlineLabels.join(", ")}`);
+					setting.setDesc(
+						translate("settings.appearance.taskCards.showing", {
+							properties: currentInlineLabels.join(", "),
+						})
+					);
 					setting.settingEl.addClass("settings-view__group-description");
 				});
 			}
@@ -342,7 +351,8 @@ export function renderFeaturesTab(
 							placeholder: translate(
 								"settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder"
 							),
-							getValue: () => plugin.settings.taskCreationDefaults.occurrenceBodyTemplate,
+							getValue: () =>
+								plugin.settings.taskCreationDefaults.occurrenceBodyTemplate,
 							setValue: async (value: string) => {
 								plugin.settings.taskCreationDefaults.occurrenceBodyTemplate = value;
 								save();
@@ -710,12 +720,8 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate(
-								"settings.features.notifications.soundEnabledName"
-							),
-							desc: translate(
-								"settings.features.notifications.soundEnabledDesc"
-							),
+							name: translate("settings.features.notifications.soundEnabledName"),
+							desc: translate("settings.features.notifications.soundEnabledDesc"),
 							getValue: () => plugin.settings.notificationSoundEnabled,
 							setValue: async (value: boolean) => {
 								plugin.settings.notificationSoundEnabled = value;
@@ -729,12 +735,8 @@ export function renderFeaturesTab(
 					group.addSetting(
 						(setting) =>
 							void configureNumberSetting(setting, {
-								name: translate(
-									"settings.features.notifications.soundVolumeName"
-								),
-								desc: translate(
-									"settings.features.notifications.soundVolumeDesc"
-								),
+								name: translate("settings.features.notifications.soundVolumeName"),
+								desc: translate("settings.features.notifications.soundVolumeDesc"),
 								placeholder: "50",
 								min: 0,
 								max: 100,
@@ -749,12 +751,8 @@ export function renderFeaturesTab(
 					group.addSetting(
 						(setting) =>
 							void configureButtonSetting(setting, {
-								name: translate(
-									"settings.features.notifications.soundPreviewName"
-								),
-								desc: translate(
-									"settings.features.notifications.soundPreviewDesc"
-								),
+								name: translate("settings.features.notifications.soundPreviewName"),
+								desc: translate("settings.features.notifications.soundPreviewDesc"),
 								buttonText: translate(
 									"settings.features.notifications.soundPreviewButton"
 								),
@@ -920,17 +918,49 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureDropdownSetting(setting, {
-							name: "Attachment Search Order",
+							name: translate("settings.features.timeblocking.attachmentOrder"),
 							desc: "Controls how files are ordered in the Add Attachment search window for timeblocks.",
 							options: [
-								{ value: "name-asc", label: "Name (A to Z)" },
-								{ value: "name-desc", label: "Name (Z to A)" },
-								{ value: "path-asc", label: "Path (A to Z)" },
-								{ value: "path-desc", label: "Path (Z to A)" },
-								{ value: "created-recent", label: "Created (Newest first)" },
-								{ value: "created-oldest", label: "Created (Oldest first)" },
-								{ value: "modified-recent", label: "Modified (Newest first)" },
-								{ value: "modified-oldest", label: "Modified (Oldest first)" },
+								{
+									value: "name-asc",
+									label: translate("settings.features.timeblocking.nameAsc"),
+								},
+								{
+									value: "name-desc",
+									label: translate("settings.features.timeblocking.nameDesc"),
+								},
+								{
+									value: "path-asc",
+									label: translate("settings.features.timeblocking.pathAsc"),
+								},
+								{
+									value: "path-desc",
+									label: translate("settings.features.timeblocking.pathDesc"),
+								},
+								{
+									value: "created-recent",
+									label: translate(
+										"settings.features.timeblocking.createdNewest"
+									),
+								},
+								{
+									value: "created-oldest",
+									label: translate(
+										"settings.features.timeblocking.createdOldest"
+									),
+								},
+								{
+									value: "modified-recent",
+									label: translate(
+										"settings.features.timeblocking.modifiedNewest"
+									),
+								},
+								{
+									value: "modified-oldest",
+									label: translate(
+										"settings.features.timeblocking.modifiedOldest"
+									),
+								},
 							],
 							getValue: () =>
 								plugin.settings.calendarViewSettings.timeblockAttachmentSearchOrder,

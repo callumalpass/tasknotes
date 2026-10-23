@@ -3,10 +3,7 @@ import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { DateContextMenu, type DateOption } from "./DateContextMenu";
 import { ContextMenu } from "./ContextMenu";
-import {
-	closeActiveContextMenu,
-	showCoordinatedMenu,
-} from "./ContextMenuCoordinator";
+import { closeActiveContextMenu, showCoordinatedMenu } from "./ContextMenuCoordinator";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { showTextInputModal } from "../modals/TextInputModal";
 import { TagSuggest } from "../modals/taskModalSuggests";
@@ -145,7 +142,7 @@ export class BatchContextMenu {
 
 		// Copy selected tasks
 		this.menu.addItem((item) => {
-			item.setTitle("Copy selected tasks");
+			item.setTitle(this.t("ui.audit.copySelected"));
 			item.setIcon("copy");
 
 			const submenu = getSubmenu(item);
@@ -156,7 +153,7 @@ export class BatchContextMenu {
 
 		// Clear selection
 		this.menu.addItem((item) => {
-			item.setTitle("Clear selection");
+			item.setTitle(this.t("ui.audit.clearSelection"));
 			item.setIcon("x");
 			item.onClick(() => {
 				this.options.plugin.taskSelectionService?.clearSelection();
@@ -168,7 +165,7 @@ export class BatchContextMenu {
 		this.menu.addSeparator();
 
 		this.menu.addItem((item) => {
-			item.setTitle(`Delete ${count} tasks`);
+			item.setTitle(this.t("notices.audit.deleteTitle") + ` (${count})`);
 			item.setIcon("trash");
 			item.onClick(async () => {
 				await this.batchDelete();
@@ -364,7 +361,7 @@ export class BatchContextMenu {
 			this.getMarkdownLinkText(task.path)
 		);
 		await navigator.clipboard.writeText(text);
-		new Notice(`Copied ${tasks.length} tasks`);
+		new Notice(this.t("notices.audit.copiedTasks", { count: tasks.length }));
 	}
 
 	private getMarkdownLinkText(path: string): string {
@@ -382,7 +379,12 @@ export class BatchContextMenu {
 		const count = selectedPaths.length;
 
 		try {
-			new Notice(`Updating tags on ${count} tasks...`);
+			new Notice(
+				this.t("notices.audit.progress", {
+					action: this.t("contextMenus.task.tags"),
+					count,
+				})
+			);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -406,12 +408,13 @@ export class BatchContextMenu {
 				}
 			}
 
-			if (failCount === 0) {
-				new Notice(`Updated tags on ${successCount} tasks`);
-			} else {
-				new Notice(`Updated tags on ${successCount} tasks, ${failCount} failed`);
-			}
-
+			new Notice(
+				this.t("notices.audit.result", {
+					action: this.t("contextMenus.task.tags"),
+					count: successCount,
+					failed: failCount,
+				})
+			);
 			plugin.taskSelectionService?.clearSelection();
 			plugin.taskSelectionService?.exitSelectionMode();
 
@@ -431,7 +434,9 @@ export class BatchContextMenu {
 		const count = selectedPaths.length;
 
 		try {
-			new Notice(`Updating ${count} tasks...`);
+			new Notice(
+				this.t("notices.audit.progress", { action: this.t("notices.audit.update"), count })
+			);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -455,13 +460,13 @@ export class BatchContextMenu {
 				}
 			}
 
-			if (failCount === 0) {
-				new Notice(`Updated ${successCount} tasks`);
-			} else {
-				new Notice(`Updated ${successCount} tasks, ${failCount} failed`);
-			}
-
-			// Clear selection after successful batch operation
+			new Notice(
+				this.t("notices.audit.result", {
+					action: this.t("notices.audit.update"),
+					count: successCount,
+					failed: failCount,
+				})
+			); // Clear selection after successful batch operation
 			plugin.taskSelectionService?.clearSelection();
 			plugin.taskSelectionService?.exitSelectionMode();
 
@@ -472,7 +477,7 @@ export class BatchContextMenu {
 				operation: "batch-update",
 				error: error,
 			});
-			new Notice("Failed to update tasks");
+			new Notice(this.t("notices.audit.failed", { action: this.t("notices.audit.update") }));
 		}
 	}
 
@@ -481,7 +486,14 @@ export class BatchContextMenu {
 		const count = selectedPaths.length;
 
 		try {
-			new Notice(`${archive ? "Archiving" : "Unarchiving"} ${count} tasks...`);
+			new Notice(
+				this.t("notices.audit.progress", {
+					action: this.t(
+						archive ? "contextMenus.task.archive" : "contextMenus.task.unarchive"
+					),
+					count,
+				})
+			);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -508,15 +520,15 @@ export class BatchContextMenu {
 				}
 			}
 
-			if (failCount === 0) {
-				new Notice(`${archive ? "Archived" : "Unarchived"} ${successCount} tasks`);
-			} else {
-				new Notice(
-					`${archive ? "Archived" : "Unarchived"} ${successCount} tasks, ${failCount} failed`
-				);
-			}
-
-			// Clear selection after successful batch operation
+			new Notice(
+				this.t("notices.audit.result", {
+					action: this.t(
+						archive ? "contextMenus.task.archive" : "contextMenus.task.unarchive"
+					),
+					count: successCount,
+					failed: failCount,
+				})
+			); // Clear selection after successful batch operation
 			plugin.taskSelectionService?.clearSelection();
 			plugin.taskSelectionService?.exitSelectionMode();
 
@@ -527,7 +539,9 @@ export class BatchContextMenu {
 				operation: "batch-archive",
 				error: error,
 			});
-			new Notice("Failed to archive tasks");
+			new Notice(
+				this.t("notices.audit.failed", { action: this.t("contextMenus.task.archive") })
+			);
 		}
 	}
 
@@ -537,9 +551,9 @@ export class BatchContextMenu {
 
 		// Show confirmation dialog
 		const confirmed = await showConfirmationModal(plugin.app, {
-			title: "Delete tasks",
-			message: `Are you sure you want to delete ${count} tasks? This action cannot be undone.`,
-			confirmText: "Delete",
+			title: this.t("notices.audit.deleteTitle"),
+			message: this.t("notices.audit.deleteConfirm", { count }),
+			confirmText: this.t("contextMenus.task.deleteConfirm"),
 			cancelText: this.t("common.cancel"),
 			isDestructive: true,
 		});
@@ -547,7 +561,12 @@ export class BatchContextMenu {
 		if (!confirmed) return;
 
 		try {
-			new Notice(`Deleting ${count} tasks...`);
+			new Notice(
+				this.t("notices.audit.progress", {
+					action: this.t("contextMenus.task.delete"),
+					count,
+				})
+			);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -571,13 +590,13 @@ export class BatchContextMenu {
 				}
 			}
 
-			if (failCount === 0) {
-				new Notice(`Deleted ${successCount} tasks`);
-			} else {
-				new Notice(`Deleted ${successCount} tasks, ${failCount} failed`);
-			}
-
-			// Clear selection after successful batch operation
+			new Notice(
+				this.t("notices.audit.result", {
+					action: this.t("contextMenus.task.delete"),
+					count: successCount,
+					failed: failCount,
+				})
+			); // Clear selection after successful batch operation
 			plugin.taskSelectionService?.clearSelection();
 			plugin.taskSelectionService?.exitSelectionMode();
 
@@ -588,7 +607,9 @@ export class BatchContextMenu {
 				operation: "batch-delete",
 				error: error,
 			});
-			new Notice("Failed to delete tasks");
+			new Notice(
+				this.t("notices.audit.failed", { action: this.t("contextMenus.task.delete") })
+			);
 		}
 	}
 

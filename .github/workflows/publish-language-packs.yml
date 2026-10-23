@@ -1,0 +1,76 @@
+name: Publish immutable language packs
+
+# Deliberately separate from plugin releases and ordinary pushes/PRs.
+on:
+    workflow_dispatch:
+        inputs:
+            approve_publication:
+                description: Publish this main commit's immutable JSON catalogues to R2
+                required: true
+                default: false
+                type: boolean
+
+permissions:
+    contents: read
+
+concurrency:
+    group: tasknotes-language-packs-production
+    cancel-in-progress: false
+
+jobs:
+    publish:
+        if: github.ref == 'refs/heads/main' && inputs.approve_publication
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+        # Configure required reviewers and a main-only deployment rule before use.
+        environment: language-packs-production
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.sha }}
+                  submodules: true
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+                  cache: npm
+            - run: npm ci --prefer-offline --no-audit
+            - name: Verify committed translations (no AI authoring)
+              run: npm run i18n:verify
+            - run: node generate-release-notes-import.mjs
+            - run: npm run typecheck
+            - run: npm run lint
+            - run: npm run test:language-packs
+            - run: npm run test:unit -- --runInBand
+            - name: Check target and build pinned experimental candidate before publication
+              run: |
+                  npm run i18n:publish
+                  BASE_URL=$(node -p 'JSON.parse(require("node:fs").readFileSync("infra/language-packs.json", "utf8")).publicBaseUrl')
+                  TASKNOTES_LANGUAGE_PACK_BASE_URL="$BASE_URL" npm run build
+                  npm run check:bundle-size
+            - name: Conditional S3 create, origin verification and manifest-last publication
+              env:
+                  LANGUAGE_PACK_R2_ACCESS_KEY_ID: ${{ secrets.LANGUAGE_PACK_R2_ACCESS_KEY_ID }}
+                  LANGUAGE_PACK_R2_SECRET_ACCESS_KEY: ${{ secrets.LANGUAGE_PACK_R2_SECRET_ACCESS_KEY }}
+              run: npm run i18n:publish -- --apply-s3
+            - name: Record source and pinned public catalogue
+              env:
+                  SOURCE_COMMIT: ${{ github.sha }}
+              run: |
+                  node --input-type=module <<'JS'
+                  import { writeFile, readFile } from 'node:fs/promises';
+                  import { exportLanguagePacks } from './scripts/lib/language-packs.mjs';
+                  const { manifest } = await exportLanguagePacks();
+                  const { publicBaseUrl } = JSON.parse(await readFile('infra/language-packs.json', 'utf8'));
+                  await writeFile('language-pack-publication.json', JSON.stringify({ sourceCommit: process.env.SOURCE_COMMIT, catalogueVersion: manifest.catalogueVersion, manifestUrl: `${publicBaseUrl}/${manifest.catalogueVersion}/manifest.json` }, null, 2) + '\n');
+                  JS
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: pinned-language-pack-candidate-${{ github.sha }}
+                  if-no-files-found: error
+                  path: |
+                      main.js
+                      manifest.json
+                      styles.css
+                      LICENSE
+                      dist/language-packs/
+                      language-pack-publication.json

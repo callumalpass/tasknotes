@@ -30,11 +30,22 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 		super(app);
 		this.plugin = plugin;
 		this.onChoose = onChoose;
-		this.setPlaceholder("Type to search for project notes...");
+		this.setPlaceholder(this.plugin.i18n.translate("modals.projectSelector.placeholder"));
 		this.setInstructions([
-			{ command: "↑↓", purpose: "to navigate" },
-			{ command: "↵", purpose: "to select" },
-			{ command: "esc", purpose: "to cancel" },
+			{
+				command: "↑↓",
+				purpose: this.plugin.i18n.translate(
+					"modals.unscheduledTasksSelector.instructions.navigate"
+				),
+			},
+			{
+				command: "↵",
+				purpose: this.plugin.i18n.translate("modals.taskSelector.instructions.select"),
+			},
+			{
+				command: "esc",
+				purpose: this.plugin.i18n.translate("modals.taskSelector.instructions.dismiss"),
+			},
 		]);
 	}
 

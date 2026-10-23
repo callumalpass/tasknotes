@@ -220,7 +220,7 @@ export class TimeblockCreationModal extends Modal {
 								if (file instanceof TAbstractFile) this.addAttachment(file);
 							},
 							{
-								placeholder: "Search files or type to create new...",
+								placeholder: this.translate("modals.fileSelector.placeholder"),
 								filter: "all",
 								sortOrder:
 									this.plugin.settings.calendarViewSettings
@@ -231,8 +231,8 @@ export class TimeblockCreationModal extends Modal {
 			})
 			.addButton((button) => {
 				button
-					.setButtonText("Add task")
-					.setTooltip("Select task")
+					.setButtonText(this.translate("modals.task.dependencies.addTaskButton"))
+					.setTooltip(this.translate("modals.taskSelector.title"))
 					.onClick(() => {
 						void this.openTaskSelectorForTitle();
 					});
@@ -365,7 +365,7 @@ export class TimeblockCreationModal extends Modal {
 				dailyNote,
 			});
 
-			new Notice(`Timeblock "${title}" created successfully`);
+			new Notice(this.translate("modals.timeblockCreation.created", { title }));
 			this.close();
 		} catch (error) {
 			tasknotesLogger.error("Error creating timeblock:", {
@@ -481,7 +481,7 @@ export class TimeblockCreationModal extends Modal {
 			const candidates = allTasks.filter((task) => !task.archived);
 
 			if (candidates.length === 0) {
-				new Notice("No tasks available to select");
+				new Notice(this.translate("modals.timeblockInfo.noTasks"));
 				return;
 			}
 
@@ -502,7 +502,7 @@ export class TimeblockCreationModal extends Modal {
 					}
 				},
 				{
-					title: "Select task",
+					title: this.translate("modals.taskSelector.title"),
 				}
 			);
 		} catch (error) {
@@ -511,7 +511,7 @@ export class TimeblockCreationModal extends Modal {
 				operation: "open-task-selector-timeblock-creation",
 				error: error,
 			});
-			new Notice("Failed to open task selector");
+			new Notice(this.translate("modals.timeblockInfo.selectorFailed"));
 		}
 	}
 

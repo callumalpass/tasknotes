@@ -7,6 +7,7 @@ import {
 	configureDropdownSetting,
 } from "../components/settingHelpers";
 import { TranslationKey } from "../../i18n";
+import { languagePackConfig } from "../../i18n/languagePackConfig";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
@@ -672,24 +673,37 @@ export function renderGeneralTab(
 		container,
 		{
 			heading: translate("settings.features.uiLanguage.header"),
-			description: translate("settings.features.uiLanguage.description"),
+			description: languagePackConfig
+				? `${translate("settings.features.uiLanguage.description")} ${translate("settings.features.uiLanguage.downloadDescription")}`
+				: translate("settings.features.uiLanguage.description"),
 		},
 		(group) => {
-			group.addSetting(
-				(setting) =>
-					void configureDropdownSetting(setting, {
-						name: translate("settings.features.uiLanguage.dropdown.name"),
-						desc: translate("settings.features.uiLanguage.dropdown.description"),
-						options: uiLanguageOptions,
-						getValue: () => plugin.settings.uiLanguage ?? "system",
-						setValue: async (value: string) => {
-							plugin.settings.uiLanguage = value;
-							plugin.i18n.setLocale(value);
-							save();
-							renderGeneralTab(container, plugin, save);
-						},
-					})
-			);
+			group.addSetting((setting) => {
+				configureDropdownSetting(setting, {
+					name: translate("settings.features.uiLanguage.dropdown.name"),
+					desc: translate("settings.features.uiLanguage.dropdown.description"),
+					options: uiLanguageOptions,
+					getValue: () => plugin.settings.uiLanguage ?? "system",
+					setValue: async (value: string) => {
+						plugin.settings.uiLanguage = value;
+						save();
+						await plugin.setUILanguage(value);
+						renderGeneralTab(container, plugin, save);
+					},
+				});
+				if (languagePackConfig) {
+					setting.addButton(button => button
+						.setButtonText(translate("settings.features.uiLanguage.retryDownload"))
+						.onClick(async () => {
+							button.setDisabled(true);
+							try {
+								await plugin.setUILanguage(plugin.settings.uiLanguage ?? "system");
+							} finally {
+								button.setDisabled(false);
+							}
+						}));
+				}
+			});
 		}
 	);
 
