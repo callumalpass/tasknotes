@@ -3,7 +3,7 @@ import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
 import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenuCoordinator";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
-import { addDaysToDateTime } from "../utils/dateUtils";
+import { addDaysToDateTime, combineDateAndTime } from "../utils/dateUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/DateContextMenu" });
@@ -179,27 +179,32 @@ export class DateContextMenu {
 		const options: DateOption[] = [];
 
 		if (this.options.currentValue) {
+			// Card controls supply date and time separately; task menus supply a datetime.
+			const currentValue = combineDateAndTime(
+				this.options.currentValue,
+				this.options.currentTime || ""
+			);
 			options.push({
 				label: this.t("contextMenus.date.increment.plusOneDay", "+1 day"),
-				value: addDaysToDateTime(this.options.currentValue, 1),
+				value: addDaysToDateTime(currentValue, 1),
 				icon: "plus",
 				category: "increment",
 			});
 			options.push({
 				label: this.t("contextMenus.date.increment.minusOneDay", "-1 day"),
-				value: addDaysToDateTime(this.options.currentValue, -1),
+				value: addDaysToDateTime(currentValue, -1),
 				icon: "minus",
 				category: "increment",
 			});
 			options.push({
 				label: this.t("contextMenus.date.increment.plusOneWeek", "+1 week"),
-				value: addDaysToDateTime(this.options.currentValue, 7),
+				value: addDaysToDateTime(currentValue, 7),
 				icon: "plus-circle",
 				category: "increment",
 			});
 			options.push({
 				label: this.t("contextMenus.date.increment.minusOneWeek", "-1 week"),
-				value: addDaysToDateTime(this.options.currentValue, -7),
+				value: addDaysToDateTime(currentValue, -7),
 				icon: "minus-circle",
 				category: "increment",
 			});
