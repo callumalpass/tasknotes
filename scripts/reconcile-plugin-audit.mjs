@@ -77,7 +77,7 @@ const closure = {
   forwards: 93, conditionals: 23, finiteSites: sites.length,
   finiteConcepts: new Set(sites.flatMap(site => site.concepts)).size,
   sourceGuard: "PASS, including forwarding/interpolation/diagnostic/callback/eager-module checks",
-  acceptance: "Not final acceptance: translations, full tests, strict gates, final budget and native checks are still outstanding",
+  acceptance: "Static-source evidence only. Final authored, test, budget and native acceptance is recorded separately in docs/development/i18n-acceptance.json.",
   stateCounts: rows.reduce((counts, row) => (counts[row.state] = (counts[row.state] ?? 0) + 1, counts), {}),
 };
 await writeFile("scripts/plugin-audit-remediation.json", JSON.stringify(rows, null, 2) + "\n");

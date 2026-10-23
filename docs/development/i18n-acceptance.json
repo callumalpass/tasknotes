@@ -1,0 +1,154 @@
+{
+  "status": "passed",
+  "finalRecheck": "All seven final remote gate commands exited zero; native bundled/downloadable and fresh-generated-file acceptance also passed.",
+  "authoredPreservation": "i18n-authored-preservation.json",
+  "artifactSourceCommit": "4fa335d46919c81530cfa317eddd637d7a472525",
+  "originalTranslationHandoff": "9b6f087e86af81e522d2d16661937a6f1a158ad0",
+  "kitTarball": "vendor/mdbase-dev-i18n-0.1.0-beta.141-a36fa009.tgz",
+  "lingui": "6.9.0",
+  "developmentNode": "22.22.0",
+  "catalogues": {
+    "locales": [
+      "en",
+      "de",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "ru",
+      "zh"
+    ],
+    "activePerLocale": 2797,
+    "missingAuthoredPerLocale": 0,
+    "authoredEntriesValidated": 25173,
+    "retainedTranslationsVerbatimPerTarget": 2787,
+    "changedRetainedTranslationsPerTarget": 0,
+    "normalCleanExtractionByteStable": true,
+    "authoredBeforeFallback": true,
+    "technicalDataRetirements": 12,
+    "singletonContractReplacements": 10
+  },
+  "source": {
+    "modules": 412,
+    "consumerGuard": "PASS",
+    "originalAuditRows": 1075,
+    "formattingRows": 156,
+    "forwardingRows": 93,
+    "conditionalRows": 23,
+    "finiteSites": 22,
+    "finiteConcepts": 210,
+    "sourceFixtures": 43,
+    "nlpSrcLocalesChanged": false
+  },
+  "jest": {
+    "strict": true,
+    "freshGeneratedJsonAbsent": true,
+    "passedSuites": 762,
+    "passedTests": 4962,
+    "skippedSuites": 71,
+    "skippedTests": 1013,
+    "todo": 4,
+    "newSkips": 0
+  },
+  "otherGates": {
+    "translationContracts": "PASS",
+    "packAndPublicationScriptTests": 30,
+    "lint": "PASS",
+    "documentationPublishedPages": 221,
+    "documentationGeneratedReferences": 5,
+    "documentationHtmlFilesChecked": 229,
+    "kitCheck": "PASS"
+  },
+  "builds": {
+    "strictBudgetBytesExclusive": 5000000,
+    "bundledBytes": 4196739,
+    "downloadableBytes": 3601139,
+    "bundledCatalogueInputs": 9,
+    "downloadableCatalogueInputs": [
+      "en"
+    ],
+    "legacyUiResourceInputs": 0,
+    "downloadFormat": "tasknotes-lingui-v1"
+  },
+  "native": {
+    "platform": "isolated Linux/Xvfb",
+    "obsidian": "1.14.2",
+    "remoteDebuggingPort": 19291,
+    "httpFixturePort": 19290,
+    "personalVaultOrProfileUsed": false,
+    "bundled": {
+      "passedTests": 1,
+      "synchronousColdLocale": "ja",
+      "loadedLocales": 9,
+      "checkedLocales": [
+        "en",
+        "ja",
+        "de",
+        "ru"
+      ],
+      "counts": [
+        0,
+        1,
+        2,
+        5,
+        21
+      ],
+      "numericOperandsAsserted": true
+    },
+    "downloadable": {
+      "passedTests": 2,
+      "checkedLocales": [
+        "en",
+        "ja",
+        "de",
+        "ru"
+      ],
+      "counts": [
+        0,
+        1,
+        2,
+        5,
+        21
+      ],
+      "numericOperandsAsserted": true,
+      "synchronousEnglishDuringHeldFrenchDownload": true,
+      "offlineFrenchReload": true,
+      "corruptGermanNetworkRejected": true,
+      "retryGerman": true,
+      "supersededRussianCannotActivate": true,
+      "offlineRussianCacheReuse": true,
+      "corruptRussianCacheFallsBackToEnglish": true,
+      "explicitRetryRepairsPinnedRussianCache": true,
+      "existingBasesUnchanged": 7
+    },
+    "reports": [
+      "test-results/lingui-native/report.json",
+      "test-results/lingui-bundled/report.json"
+    ],
+    "mobile": {
+      "ios": "Unverified; explicitly waived",
+      "android": "Pre-Lingui delivery-layer evidence is historical, not acceptance of this port"
+    }
+  },
+  "notPerformed": [
+    "main writes or merges",
+    "tags or releases",
+    "workflow_dispatch",
+    "R2 publication",
+    "deployment",
+    "production vault/profile interaction",
+    "subagent delegation"
+  ],
+  "reproduce": [
+    "npm run i18n:check",
+    "npm run test:i18n-source",
+    "npm run test:translation-contracts",
+    "npm run test:fresh-catalogues",
+    "npm run test:language-packs",
+    "npm run lint",
+    "npm run docs:check",
+    "npm run check:language-pack-builds http://127.0.0.1:19290/tasknotes",
+    "Isolated native instructions: docs/development/language-packs.md"
+  ]
+}

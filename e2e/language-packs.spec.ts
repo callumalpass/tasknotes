@@ -25,6 +25,7 @@ const hadStatsBase = fs.existsSync(generatedStatsBase);
 let app: ObsidianApp | undefined;
 let server: Server | undefined;
 let savedSettings: Buffer | undefined;
+let russianPack: LanguagePackManifest["packs"]["ru"];
 let mode: "ok" | "offline" | "corrupt-de" | "slow-ru" = "ok";
 const requests: string[] = [];
 const keyMap = JSON.parse(fs.readFileSync(path.join(root, "scripts/plugin-key-map.json"), "utf8"));
@@ -50,6 +51,7 @@ test.beforeAll(async () => {
 			encoding: "utf8",
 		})
 	) as { manifest: LanguagePackManifest; directory: string };
+	russianPack = manifest.packs.ru;
 	const files = new Map(
 		Object.values(manifest.packs).map(({ file }) => [
 			file,
@@ -114,10 +116,16 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
 	releaseFrench?.();
-	if (app) await closeObsidian(app);
-	if (server?.listening) await new Promise<void>((resolve) => server!.close(() => resolve()));
-	if (savedSettings) fs.writeFileSync(settingsPath, savedSettings);
-	if (!hadStatsBase) fs.rmSync(generatedStatsBase, { force: true });
+	try {
+		if (app) await closeObsidian(app);
+	} finally {
+		try {
+			if (server?.listening) await new Promise<void>((resolve) => server!.close(() => resolve()));
+		} finally {
+			if (savedSettings) fs.writeFileSync(settingsPath, savedSettings);
+			if (!hadStatsBase) fs.rmSync(generatedStatsBase, { force: true });
+		}
+	}
 });
 
 test("downloads through the native picker, survives an offline reload, and retries corrupt data", async () => {
@@ -244,8 +252,10 @@ test("native en/ja/de/ru labels, plurals and existing Bases files survive locale
 	expect(Object.keys(basesBefore).length).toBeGreaterThan(0);
 	const report: Record<string, unknown> = {};
 	for (const locale of ["en", "ja", "de", "ru"]) {
-		await page.evaluate(async locale => { await (window as any).app.plugins.plugins.tasknotes.setUILanguage(locale); }, locale);
+		const preferencePage = await openTaskNotesSettings(page);
+		await preferencePage.locator('select:has(option[value="system"]):has(option[value="fr"])').selectOption(locale);
 		await expect.poll(() => page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale())).toBe(locale);
+		await closeObsidianSettings(page, preferencePage);
 		const commandName = expectedText(locale, "commands.createNewTask");
 		await expect.poll(() => page.evaluate(() => (window as any).app.commands.commands["tasknotes:create-new-task"]?.name)).toContain(commandName);
 		await page.keyboard.press("Control+p");
@@ -253,7 +263,7 @@ test("native en/ja/de/ru labels, plurals and existing Bases files survive locale
 		await expect(page.locator(".suggestion-title").filter({ hasText: commandName }).first()).toBeVisible();
 		await page.keyboard.press("Escape");
 		const checks = [
-			{ id: keyMap["settings.integrations.timeFormats.minutesAgo"].id, argument: "count" },
+			{ id: keyMap["settings.integrations.timeFormats.minutesAgo"].id, argument: "minutes" },
 			...singletonContracts.replacements.filter((entry: any) => entry.context === "generated Bases contexts count" || entry.context === "recurrence daily interval").map((entry: any) => ({ id: entry.id, argument: entry.context.startsWith("recurrence") ? "interval" : "count" })),
 		];
 		const rendered = await page.evaluate(({ checks }) => {
@@ -261,7 +271,10 @@ test("native en/ja/de/ru labels, plurals and existing Bases files survive locale
 			return checks.map(({ id, argument }: any) => ({ id, argument, values: [0, 1, 2, 5, 21].map(count => service.translate({ id }, { [argument]: count })) }));
 		}, { checks });
 		for (const row of rendered) {
-			for (const [index, count] of [0, 1, 2, 5, 21].entries()) expect(row.values[index]).toBe(cores.get(locale)!._(row.id, { [row.argument]: count }));
+			for (const [index, count] of [0, 1, 2, 5, 21].entries()) {
+				expect(row.values[index]).toBe(cores.get(locale)!._(row.id, { [row.argument]: count }));
+				if (row.argument === "minutes") expect(row.values[index]).toContain(new Intl.NumberFormat(locale).format(count));
+			}
 			if (row.argument === "count" && row.id !== checks[0].id) {
 				expect(row.values[1]).not.toBe(row.values[2]);
 				expect(row.values[4]).toBe(row.values[2]);
@@ -273,6 +286,30 @@ test("native en/ja/de/ru labels, plurals and existing Bases files survive locale
 		await closeObsidianSettings(page, settingsPage);
 		report[locale] = { commandName, rendered };
 	}
+	await expect.poll(() => JSON.parse(fs.readFileSync(settingsPath, "utf8")).uiLanguage).toBe("ru");
+	// A valid Russian cache boots offline; corrupt content cannot activate,
+	// and an explicit retry repairs the same content-addressed cache.
+	mode = "offline";
+	const beforeOffline = requests.length;
+	await page.reload();
+	const currentLocale = () => page.evaluate(() => (window as any).app?.plugins?.plugins?.tasknotes?.i18n?.getCurrentLocale());
+	await expect.poll(currentLocale).toBe("ru");
+	expect(requests.length).toBe(beforeOffline);
+	const cache = path.join(fixturePlugin, "language-packs", russianPack.sha256, russianPack.file);
+	const validCache = fs.readFileSync(cache);
+	const corruptCache = Buffer.from(validCache);
+	corruptCache[corruptCache.length - 1] ^= 1;
+	fs.writeFileSync(cache, corruptCache);
+	await page.reload();
+	await expect.poll(() => requests.length).toBeGreaterThan(beforeOffline);
+	await expect.poll(currentLocale).toBe("en");
+	mode = "ok";
+	const retryPage = await openTaskNotesSettings(page);
+	await retryPage.getByRole("button", { name: expectedText("en", "settings.features.uiLanguage.retryDownload"), exact: true }).click();
+	await expect.poll(currentLocale).toBe("ru");
+	await closeObsidianSettings(page, retryPage);
+	expect(fs.readFileSync(cache)).toEqual(validCache);
+	report.cache = { offlineRussian: true, corruptFallbackEnglish: true, explicitRetryRepairs: true };
 	const basesAfter = await page.evaluate(async paths => {
 		const vault = (window as any).app.vault;
 		return Object.fromEntries(await Promise.all(paths.map(async path => [path, await vault.read(vault.getAbstractFileByPath(path))])));

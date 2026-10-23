@@ -24,6 +24,7 @@
 		"docs:check": "node scripts/update-release-index.mjs --check && node scripts/sync-privacy.mjs --check && node scripts/check-docs.mjs && npm run docs:build && node scripts/check-built-docs.mjs",
 		"test": "jest",
 		"test:dev": "jest --config jest.dev.config.cjs",
+		"test:fresh-catalogues": "node scripts/check-fresh-catalogues.mjs",
 		"test:watch": "jest --config jest.dev.config.cjs --watch",
 		"test:coverage": "jest --coverage",
 		"test:ci": "jest --ci --coverage --watchAll=false",
@@ -54,7 +55,7 @@
 		"i18n:publish": "node scripts/publish-language-packs.mjs",
 		"test:language-packs": "node --test tests/scripts/language-pack*.test.mjs",
 		"test:translation-contracts": "node --test tests/scripts/plugin-translation-contracts.test.mjs",
-		"test:i18n-source": "node --test tests/scripts/obsidian-i18n-source.test.mjs tests/scripts/lingui-converter.test.mjs tests/scripts/catalogue-gates.test.mjs",
+		"test:i18n-source": "node --test tests/scripts/obsidian-i18n-source.test.mjs tests/scripts/lingui-converter.test.mjs tests/scripts/catalogue-gates.test.mjs tests/scripts/docs-lingui-source.test.mjs",
 		"i18n:sync": "npm run i18n:extract",
 		"i18n:verify": "npm run i18n:check"
 	},

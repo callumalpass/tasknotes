@@ -110,7 +110,20 @@ TASKNOTES_LANGUAGE_PACK_BASE_URL="$BASE_URL" \
   npm run e2e -- e2e/language-packs.spec.ts
 ```
 
-The test exercises native picker switching, French download, offline plugin reload, corrupt German data and retry, and a superseded Russian request. It restores the fixture's settings afterward.
+The tests exercise French download/offline reload, corrupt German delivery/retry and Russian supersession, then native en/ja/de/ru labels, plurals at 0/1/2/5/21 and preservation of existing user-authored Bases files. They also corrupt the Russian cache while offline, require English fallback, and verify explicit retry repairs the pinned cache. Fixture settings are restored even when a test fails.
+
+For minified production acceptance, use the preserved artifacts from `npm run check:language-pack-builds "$BASE_URL"` rather than a development build. Copy `dist/language-pack-builds/downloadable/{main.js,styles.css}` into the isolated plugin directory with `cp --remove-destination` (never follow a symlink into another checkout), then run the pack tests above. Copy the corresponding **bundled** artifacts into that same disposable directory and run:
+
+```bash
+# No remote base URL: all nine synchronously decoded catalogues must be present.
+(unset TASKNOTES_LANGUAGE_PACK_BASE_URL
+ TASKNOTES_E2E_REUSE_OBSIDIAN=0 TASKNOTES_E2E_REMOTE_DEBUGGING_PORT=19291 \
+   npm run e2e -- e2e/lingui-bundled.spec.ts --output=test-results/bundled)
+```
+
+The bundled test cold-starts Japanese, asserts nine loaded locales, and checks native en/ja/de/ru picker/command labels and 0/1/2/5/21 forms. Reports and native screenshots are written under `test-results/lingui-native` and `test-results/lingui-bundled`.
+
+`npm run test:fresh-catalogues` removes only ignored generated JSON, typechecks before regeneration, runs ordinary strict Jest, removes JSON again and builds/checks documentation. Authored POs are never deleted or fallback-filled by that acceptance command. Development requires Node 22.22+ and initialized `docs/spec` (`git submodule update --init --checkout docs/spec`).
 
 ### Actual Android acceptance
 
@@ -152,7 +165,7 @@ Repeat runs must begin with the fixture's English settings and no previously dow
 
 Evidence is written to `.tmp/android-language-packs/`: a structured report and native screenshots. The test verifies real mobile storage and WebCrypto, French picker download from public R2, offline full app force-stop/relaunch and translated commands, an uncached German failure preserving French, recovery through the retry button, every remaining target locale, and rejection/repair of a same-length corrupted French cache. Reconnection waits for real connectivity and tolerates native DNS negative-cache expiry; no transport or platform flag is mocked.
 
-Android 16 / API 36 with Obsidian 1.13.8 passed this acceptance test. This is not iOS validation, physical-device performance testing, or a complete older-Android compatibility matrix.
+Historical evidence: the pre-Lingui keyed-resource delivery layer passed this test on Android 16 / API 36 with Obsidian 1.13.8. This is not current Lingui-port Android acceptance, iOS validation, physical-device performance testing, or a complete older-Android compatibility matrix.
 
 ## R2 hosting and publication
 
@@ -203,5 +216,5 @@ Ordinary CI/release builds remain fully bundled. Integrating the publication ste
 - After merge and separate owner authorization, activate protected-environment S3 publication using the installed bucket-scoped credentials.
 - A Cache Rule scoped only to the language-pack host, enabling edge caching of JSON.
 - Optional cache pruning that preserves the current catalogue.
-- Lingui/generated-ID migration as a separate change, after a representative pilot.
+- Current Lingui-build mobile acceptance before ordinary remote releases; desktop evidence does not establish mobile compatibility.
 - Shared glossary and local agent workflow conventions across the initiative workspace.

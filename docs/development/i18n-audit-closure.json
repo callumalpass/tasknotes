@@ -7,7 +7,7 @@
   "finiteSites": 22,
   "finiteConcepts": 210,
   "sourceGuard": "PASS, including forwarding/interpolation/diagnostic/callback/eager-module checks",
-  "acceptance": "Not final acceptance: translations, full tests, strict gates, final budget and native checks are still outstanding",
+  "acceptance": "Static-source evidence only. Final authored, test, budget and native acceptance is recorded separately in docs/development/i18n-acceptance.json.",
   "stateCounts": {
     "source copy remediated": 585,
     "excluded": 156,
