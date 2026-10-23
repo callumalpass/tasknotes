@@ -273,7 +273,7 @@ export const ko: TranslationTree = {
 				events: {
 					showScheduledTasks: "예정된 작업 표시",
 					showDueTasks: "마감 작업 표시",
-					showOverdueOnToday: "기한 지난 작업을 오늘에 표시",
+					showOverdueOnToday: "기한 지난 작업을 오늘 날짜에 표시",
 					showRecurringTasks: "반복 작업 표시",
 					showTimeEntries: "시간 기록 표시",
 					showTimeblocks: "타임블록 표시",
@@ -376,7 +376,7 @@ export const ko: TranslationTree = {
 					short: "짧은",
 					long: "긴",
 				},
-				breakComplete: "휴식 완료! 다음 뽀모도로를 시작할 준비가 되셨나요?",
+				breakComplete: "휴식이 끝났습니다! 다음 뽀모도로를 시작하시겠습니까?",
 			},
 			buttons: {
 				start: "시작",
@@ -1244,7 +1244,7 @@ export const ko: TranslationTree = {
 				skippedInstances: {
 					name: "건너뛴 회차",
 					description:
-						"반복 작업의 건너뛴 발생. 완료 대신 건너뛴 회차의 날짜를 저장합니다.",
+						"반복 작업에서 건너뛴 회차의 기록입니다. 완료하지 않고 건너뛴 날짜를 저장합니다.",
 				},
 				blockedBy: {
 					name: "선행 작업",
@@ -1858,7 +1858,7 @@ export const ko: TranslationTree = {
 				connectSuccess: "{provider} 연결 완료!",
 				connectFailed: "연결하지 못했습니다: {message}",
 				forget: "저장된 인증 정보 삭제",
-				forgetTitle: "{provider}의 OAuth 인증 정보를 삭제할까요?",
+				forgetTitle: "{provider}의 OAuth 인증 정보를 삭제하시겠습니까?",
 				forgetMessage:
 					"Obsidian 비밀 저장소에서 저장된 클라이언트 ID와 클라이언트 비밀을 삭제합니다.",
 				forgetConfirm: "인증 정보 삭제",
@@ -2542,7 +2542,7 @@ export const ko: TranslationTree = {
 			exportedRows: "내보낸 행: {count}개",
 			noTasksCopy: "복사할 작업이 없습니다",
 			deleteTitle: "작업 삭제",
-			deleteConfirm: "작업({count}개)을 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
+			deleteConfirm: "작업 {count}개를 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.",
 			noNotes: "선택한 날짜에 노트가 없습니다",
 			weeklyDisabled: "주간 노트 플러그인이 비활성화되어 있습니다. 설정에서 활성화하세요.",
 			weeklyFailed: "주간 노트를 만들지 못했습니다: {message}",
@@ -2576,14 +2576,14 @@ export const ko: TranslationTree = {
 			trackingActive: "이 작업의 시간 추적이 이미 진행 중입니다",
 			trackingInactive: "이 작업에 진행 중인 시간 추적 세션이 없습니다",
 			trackingStopFailed: "시간 추적을 중지하지 못했습니다",
-			noOverdue: "연기할 예정일 지난 작업이 없습니다",
-			postponeTitle: "예정일 지난 작업 연기",
+			noOverdue: "예정일이 지난 작업 중 연기할 항목이 없습니다",
+			postponeTitle: "예정일이 지난 작업 연기",
 			postponeConfirm:
 				"예정일이 지난 활성 작업을 오늘({today})로 옮기시겠습니까? 작업 {count}개.",
 			postpone: "연기",
 			postponing: "작업 연기 중: {count}개…",
 			postponed: "연기된 작업: {count}개. 실패: {failed}개.",
-			postponeFailed: "예정일 지난 작업을 연기하지 못했습니다",
+			postponeFailed: "예정일이 지난 작업을 연기하지 못했습니다",
 			commandFileMissing: "명령에 파일이 설정되지 않았습니다: {command}",
 			commandFileInvalid:
 				"파일을 찾을 수 없습니다: {path}. 뷰 명령 설정에서 올바른 파일을 지정하거나 기본 파일을 만드세요.",
@@ -2703,7 +2703,7 @@ export const ko: TranslationTree = {
 		editTimeEntries: "시간 기록 편집 (작업 선택)",
 		createOrOpenTask: "작업 만들기 또는 열기",
 		createOrOpenTaskWithTracking: "작업을 만들거나 열고 시간 추적 시작",
-		rolloverOverdueScheduledTasks: "예정일 지난 작업을 오늘로 연기",
+		rolloverOverdueScheduledTasks: "예정일이 지난 작업을 오늘로 연기",
 		syncAllTasksGoogleCalendar: "모든 작업을 Google 캘린더에 동기화",
 		syncCurrentTaskGoogleCalendar: "현재 작업을 Google 캘린더에 동기화",
 		quickActionsTaskUnderCursor: "커서 아래 작업의 빠른 작업",
@@ -2874,7 +2874,7 @@ export const ko: TranslationTree = {
 		timeblockInfo: {
 			noTasks: "선택할 수 있는 작업이 없습니다",
 			selectorFailed: "작업 선택기를 열지 못했습니다",
-			confirmDelete: '타임블록 "{title}"을(를) 삭제할까요?',
+			confirmDelete: '타임블록 "{title}"을 삭제하시겠습니까?',
 
 			editHeading: "타임블록 편집",
 			dateTimeLabel: "날짜 및 시간: ",
@@ -2988,7 +2988,7 @@ export const ko: TranslationTree = {
 			noMigrationNeeded: "마이그레이션이 필요한 작업이 없습니다",
 			warnings: {
 				title: "진행하기 전에:",
-				backup: "마이그레이션 전에 보관함를 백업하세요",
+				backup: "마이그레이션 전에 보관함을 백업하세요",
 				conversion: "이전 반복 패턴이 새 형식으로 변환됩니다",
 				normalUsage: "마이그레이션 중에도 TaskNotes를 정상적으로 사용할 수 있습니다",
 				permanent: "이 변경은 영구적이며 자동으로 실행 취소할 수 없습니다",
@@ -3027,7 +3027,7 @@ export const ko: TranslationTree = {
 			},
 		},
 		task: {
-			titlePlaceholder: "무엇을 해야 하나요?",
+			titlePlaceholder: "할 작업을 입력하세요",
 			titleLabel: "제목",
 			titleDetailedPlaceholder: "작업 제목...",
 			detailsLabel: "세부정보",
@@ -3330,7 +3330,7 @@ export const ko: TranslationTree = {
 			durationDesc: "계산된 기간 재정의",
 			durationPlaceholder: "기간을 분 단위로 입력",
 			description: "설명",
-			descriptionPlaceholder: "무엇을 작업했나요?",
+			descriptionPlaceholder: "작업 내용을 입력하세요",
 			calculatedDuration: "계산됨: {minutes}분",
 			totalTime: "총 {hours}시간 {minutes}분",
 			totalMinutes: "총 {minutes}분",
@@ -3478,7 +3478,7 @@ export const ko: TranslationTree = {
 				completeFailure: "작업 완료 상태를 업데이트하지 못했습니다: {message}",
 				clearInstancesConfirmTitle: "기록된 회차를 지울까요?",
 				clearInstancesConfirmMessage:
-					"일정을 변경하면 새 날짜 당일 또는 이후에 완료되거나 건너뛴 것으로 기록된 다음 회차가 지워집니다: {dates}. 더 이상 완료 또는 건너뛰기로 표시되지 않습니다. 계속할까요?",
+					"일정을 변경하면 새 날짜 당일 또는 이후에 완료되거나 건너뛴 것으로 기록된 다음 회차가 지워집니다: {dates}. 더 이상 완료 또는 건너뛰기로 표시되지 않습니다. 계속하시겠습니까?",
 				clearInstancesConfirmButton: "일정 변경 및 지우기",
 			},
 			quickReminders: {
@@ -3961,7 +3961,7 @@ export const ko: TranslationTree = {
 				startTime: "시작 시간",
 				startTimeDesc: "반복 회차가 나타나야 하는 시간 (선택사항)",
 				recurFrom: "반복 기준",
-				recurFromDesc: "다음 발생을 언제 계산해야 하나요?",
+				recurFromDesc: "다음 회차 계산 기준을 선택하세요.",
 				scheduledDate: "예정일",
 				completionDate: "완료일",
 				frequency: "빈도",
