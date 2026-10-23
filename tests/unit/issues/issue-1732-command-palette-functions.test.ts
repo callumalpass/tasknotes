@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
 
 describe("Issue #1732: command palette task functions", () => {
@@ -18,9 +19,9 @@ describe("Issue #1732: command palette task functions", () => {
 			addSubtaskToCurrentNote: jest.fn(),
 		};
 
-		expect(editCurrentTask?.nameKey).toBe("commands.editCurrentTask");
-		expect(addProject?.nameKey).toBe("commands.addProjectToCurrentTask");
-		expect(addSubtask?.nameKey).toBe("commands.addSubtaskToCurrentNote");
+		expect(editCurrentTask?.nameKey).toBe(msg({ message: "Edit current task", context: "commands.editCurrentTask" }));
+		expect(addProject?.nameKey).toBe(msg({ message: "Add project to current task", context: "commands.addProjectToCurrentTask" }));
+		expect(addSubtask?.nameKey).toBe(msg({ message: "Add subtask to current note", context: "commands.addSubtaskToCurrentNote" }));
 
 		await editCurrentTask?.callback?.(ctx as any);
 		await addProject?.callback?.(ctx as any);

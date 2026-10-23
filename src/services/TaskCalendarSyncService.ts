@@ -1,3 +1,6 @@
+import { uiDuration } from "../i18n/formatters";
+import { messageForKey } from "../i18n/messages";
+import { msg } from "@lingui/core/macro";
 import { TFile, stringifyYaml } from "obsidian";
 import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
@@ -1922,7 +1925,7 @@ export class TaskCalendarSyncService {
 			: null;
 
 		const untitledTask = this.plugin.i18n.translate(
-			"settings.integrations.googleCalendarExport.eventDescription.untitledTask"
+			msg({ message: "Untitled task", context: "settings.integrations.googleCalendarExport.eventDescription.untitledTask" })
 		);
 		return template
 			.replace(/\{\{title\}\}/g, task.title || untitledTask)
@@ -1945,7 +1948,7 @@ export class TaskCalendarSyncService {
 		const settings = this.plugin.settings.googleCalendarExport;
 		const t = (key: string, params?: Record<string, string | number>) =>
 			this.plugin.i18n.translate(
-				`settings.integrations.googleCalendarExport.eventDescription.${key}`,
+				messageForKey(`settings.integrations.googleCalendarExport.eventDescription.${key}`),
 				params
 			);
 		const parts: string[] = [];
@@ -1971,9 +1974,7 @@ export class TaskCalendarSyncService {
 
 		// Add time estimate
 		if (task.timeEstimate) {
-			const hours = Math.floor(task.timeEstimate / 60);
-			const minutes = task.timeEstimate % 60;
-			const estimateStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+			const estimateStr = uiDuration(task.timeEstimate);
 			parts.push(t("timeEstimate", { value: estimateStr }));
 		}
 
@@ -2892,14 +2893,14 @@ export class TaskCalendarSyncService {
 				publishUserNotice(
 					this.plugin.emitter,
 					this.plugin.i18n.translate(
-						"settings.integrations.googleCalendarExport.notices.connectionExpired"
+						msg({ message: "Google Calendar connection expired. Please reconnect in Settings > Integrations.", context: "settings.integrations.googleCalendarExport.notices.connectionExpired" })
 					)
 				);
 			} else {
 				publishUserNotice(
 					this.plugin.emitter,
 					this.plugin.i18n.translate(
-						"settings.integrations.googleCalendarExport.notices.syncFailed",
+						msg({ message: "Failed to sync task to Google Calendar: {message}", context: "settings.integrations.googleCalendarExport.notices.syncFailed" }),
 						{ message: getErrorMessage(error) }
 					)
 				);
@@ -3315,7 +3316,7 @@ export class TaskCalendarSyncService {
 		if (!this.isEnabled()) {
 			publishUserNotice(this.plugin.emitter,
 				this.plugin.i18n.translate(
-					"settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
+					msg({ message: "Google Calendar export is not enabled or configured", context: "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured" })
 				)
 			);
 			return results;
@@ -3336,7 +3337,7 @@ export class TaskCalendarSyncService {
 		publishUserNotice(
 			this.plugin.emitter,
 			this.plugin.i18n.translate(
-				"settings.integrations.googleCalendarExport.notices.syncingTasks",
+				msg({ message: "Syncing {total} tasks to Google Calendar...", context: "settings.integrations.googleCalendarExport.notices.syncingTasks" }),
 				{ total }
 			)
 		);
@@ -3363,7 +3364,7 @@ export class TaskCalendarSyncService {
 		publishUserNotice(
 			this.plugin.emitter,
 			this.plugin.i18n.translate(
-				"settings.integrations.googleCalendarExport.notices.syncComplete",
+				msg({ message: "Sync complete: {synced} synced, {failed} failed, {skipped} skipped", context: "settings.integrations.googleCalendarExport.notices.syncComplete" }),
 				{
 					synced: results.synced,
 					failed: results.failed,
@@ -3449,11 +3450,11 @@ export class TaskCalendarSyncService {
 			this.plugin.emitter,
 			deleteEvents
 				? this.plugin.i18n.translate(
-						"settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnlinked",
+						msg({ message: "All events deleted and unlinked", context: "settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnlinked" }),
 						{ count: unlinkedCount }
 					)
 				: this.plugin.i18n.translate(
-						"settings.integrations.googleCalendarExport.notices.tasksUnlinked",
+						msg({ message: "All task links removed", context: "settings.integrations.googleCalendarExport.notices.tasksUnlinked" }),
 						{ count: unlinkedCount }
 					)
 		);

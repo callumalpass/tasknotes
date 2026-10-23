@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type { TranslationKey } from "../i18n";
 import {
 	CalendarExportService,
@@ -49,7 +51,7 @@ export function openCalendarURL(options: CalendarURLOptions, translate?: Transla
 		showNotice(
 			translateOrDefault(
 				translate,
-				"services.calendarExport.notices.generateLinkFailed",
+				msg({ message: "Failed to generate calendar link", context: "services.calendarExport.notices.generateLinkFailed" }),
 				"Failed to generate calendar link"
 			)
 		);
@@ -67,7 +69,7 @@ export function downloadAllTasksICSFile(
 			showNotice(
 				translateOrDefault(
 					translate,
-					"services.calendarExport.notices.noTasksToExport",
+					msg({ message: "No tasks found to export", context: "services.calendarExport.notices.noTasksToExport" }),
 					"No tasks found to export"
 				)
 			);
@@ -76,16 +78,14 @@ export function downloadAllTasksICSFile(
 
 		downloadICSFile(download);
 
-		const pluralSuffix = download.taskCount === 1 ? "" : "s";
 		showNotice(
 			translateOrDefault(
 				translate,
-				"services.calendarExport.notices.downloadSuccess",
-				`Downloaded ${download.filename} with ${download.taskCount} task${pluralSuffix}`,
+				msg({ message: "{count, plural, one {Downloaded {filename} with {count} task} other {Downloaded {filename} with {count} tasks}}", context: "services.calendarExport.notices.downloadSuccess" }),
+				uiText(msg({ message: "{count, plural, one {Downloaded {filename} with {count} task} other {Downloaded {filename} with {count} tasks}}", context: "services.calendarExport.notices.downloadSuccess" }), { filename: download.filename, count: download.taskCount }),
 				{
 					filename: download.filename,
 					count: download.taskCount,
-					plural: pluralSuffix,
 				}
 			)
 		);
@@ -98,7 +98,7 @@ export function downloadAllTasksICSFile(
 		showNotice(
 			translateOrDefault(
 				translate,
-				"services.calendarExport.notices.downloadFailed",
+				msg({ message: "Failed to download calendar file", context: "services.calendarExport.notices.downloadFailed" }),
 				"Failed to download calendar file"
 			)
 		);
@@ -117,7 +117,7 @@ export function downloadTaskICSFile(
 		showNotice(
 			translateOrDefault(
 				translate,
-				"services.calendarExport.notices.singleDownloadSuccess",
+				msg({ message: "Downloaded {filename}", context: "services.calendarExport.notices.singleDownloadSuccess" }),
 				`Downloaded ${download.filename}`,
 				{ filename: download.filename }
 			)
@@ -131,7 +131,7 @@ export function downloadTaskICSFile(
 		showNotice(
 			translateOrDefault(
 				translate,
-				"services.calendarExport.notices.downloadFailed",
+				msg({ message: "Failed to download calendar file", context: "services.calendarExport.notices.downloadFailed" }),
 				"Failed to download calendar file"
 			)
 		);

@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 /**
  * Issue #1989: default Base files can be refreshed from automation surfaces.
  *
@@ -43,7 +44,7 @@ describe("Issue #1989: default Base file automation", () => {
 		};
 		(showConfirmationModal as jest.Mock).mockResolvedValue(true);
 
-		expect(command?.nameKey).toBe("commands.updateDefaultBaseFiles");
+		expect(command?.nameKey).toBe(msg({ message: "Update default base files", context: "commands.updateDefaultBaseFiles" }));
 
 		await command?.callback?.(ctx as never);
 

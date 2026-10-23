@@ -1,24 +1,24 @@
+import { compiledMessages } from "./catalogue";
 import type { TranslationResources } from "./types";
-import { en } from "./resources/en";
-import { fr } from "./resources/fr";
-import { ru } from "./resources/ru";
-import { zh } from "./resources/zh";
-import { de } from "./resources/de";
-import { es } from "./resources/es";
-import { ja } from "./resources/ja";
-import { pt } from "./resources/pt";
-import { ko } from "./resources/ko";
+import en from "./locales/en/messages.json";
+import fr from "./locales/fr/messages.json";
+import de from "./locales/de/messages.json";
+import es from "./locales/es/messages.json";
+import ja from "./locales/ja/messages.json";
+import ko from "./locales/ko/messages.json";
+import pt from "./locales/pt/messages.json";
+import ru from "./locales/ru/messages.json";
+import zh from "./locales/zh/messages.json";
 
-// Ordinary builds retain all locales. The opt-in language-pack build replaces
-// this module with an English-only registry through an esbuild plugin.
-export const translationResources = {
-	en,
-	fr,
-	ru,
-	zh,
-	de,
-	es,
-	ja,
-	pt,
-	ko,
-} satisfies TranslationResources;
+// Remote builds replace this module with synchronous English only.
+export const translationResources: TranslationResources = {
+	en: compiledMessages(en.messages),
+	fr: compiledMessages(fr.messages),
+	de: compiledMessages(de.messages),
+	es: compiledMessages(es.messages),
+	ja: compiledMessages(ja.messages),
+	ko: compiledMessages(ko.messages),
+	pt: compiledMessages(pt.messages),
+	ru: compiledMessages(ru.messages),
+	zh: compiledMessages(zh.messages),
+};

@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Calendar sync validates credentials before accessing token fields. */
 import { requestUrl } from "obsidian";
 import { format } from "date-fns";
@@ -528,7 +530,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		return {
 			id: `google-${calendarId}-${googleEvent.id}`,
 			subscriptionId: `google-${calendarId}`,
-			title: googleEvent.summary || "Untitled Event",
+			title: googleEvent.summary || uiText(msg({ message: "Untitled Event", context: "services/GoogleCalendarService: GoogleCalendarService.convertToICSEvent title" })),
 			description: normalizeCalendarDescription(googleEvent.description),
 			start: start,
 			end: end,
@@ -698,7 +700,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 		if (timeSinceLastRefresh < minInterval) {
 			const remainingMs = minInterval - timeSinceLastRefresh;
-			publishUserNotice(this.plugin.emitter, `Please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`);
+			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "Please wait {value1}s before refreshing again", context: "services/GoogleCalendarService: GoogleCalendarService.refresh display" }), { value1: Math.ceil(remainingMs / 1000) }));
 			return;
 		}
 

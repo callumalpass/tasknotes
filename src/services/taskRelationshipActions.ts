@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -7,7 +9,7 @@ import { publishUserNotice } from "../core/userNotices";
 
 function translate(
 	plugin: TaskNotesPlugin,
-	key: string,
+	key: MessageDescriptor,
 	params?: Record<string, string | number>
 ): string {
 	return plugin.i18n.translate(key, params);
@@ -83,7 +85,7 @@ export async function addTaskToProject(
 	if (currentProjects.includes(projectReference) || currentProjects.includes(legacyReference)) {
 		publishUserNotice(
 			plugin.emitter,
-			translate(plugin, "contextMenus.task.organization.notices.alreadyInProject")
+			translate(plugin, msg({ message: "Task is already in this project", context: "contextMenus.task.organization.notices.alreadyInProject" }))
 		);
 		return null;
 	}
@@ -94,7 +96,7 @@ export async function addTaskToProject(
 
 	publishUserNotice(
 		plugin.emitter,
-		translate(plugin, "contextMenus.task.organization.notices.addedToProject", {
+		translate(plugin, msg({ message: "Added to project: {project}", context: "contextMenus.task.organization.notices.addedToProject" }), {
 			project: projectFile.basename,
 		})
 	);
@@ -120,7 +122,7 @@ export async function assignTaskAsSubtask(
 	if (subtaskProjects.includes(projectReference) || subtaskProjects.includes(legacyReference)) {
 		publishUserNotice(
 			plugin.emitter,
-			translate(plugin, "contextMenus.task.organization.notices.alreadySubtask")
+			translate(plugin, msg({ message: "Task is already a subtask of this task", context: "contextMenus.task.organization.notices.alreadySubtask" }))
 		);
 		return null;
 	}
@@ -131,7 +133,7 @@ export async function assignTaskAsSubtask(
 
 	publishUserNotice(
 		plugin.emitter,
-		translate(plugin, "contextMenus.task.organization.notices.addedAsSubtask", {
+		translate(plugin, msg({ message: "Added {subtask} as subtask of {parent}", context: "contextMenus.task.organization.notices.addedAsSubtask" }), {
 			subtask: subtask.title,
 			parent: parentFile.basename,
 		})

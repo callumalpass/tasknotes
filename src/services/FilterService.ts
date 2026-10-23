@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import {
 	FilterQuery,
 	TaskInfo,
@@ -148,7 +150,7 @@ export class FilterService extends EventEmitter {
 	}
 
 	private getNoProjectLabel(): string {
-		return this.translate("services.filter.groupLabels.noProject", "No project");
+		return this.translate(msg({ message: "No project", context: "services.filter.groupLabels.noProject" }), "No project");
 	}
 
 	/**
@@ -269,7 +271,7 @@ export class FilterService extends EventEmitter {
 				const resolver = (task: TaskInfo, fieldIdOrKey: string): string[] => {
 					const userFields = this.runtime?.settings?.userFields || [];
 					const field = findUserFieldByIdOrKey(userFields, fieldIdOrKey);
-					const missingLabel = `No ${field?.displayName || field?.key || fieldIdOrKey}`;
+					const missingLabel = uiText(msg({ message: "No {value1}", context: "services/FilterService: FilterService.getHierarchicalGroupedTasks.resolver display" }), { value1: field?.displayName || field?.key || fieldIdOrKey });
 					const raw = field ? this.getUserFieldRawValue(task, field.key) : undefined;
 					return getHierarchicalUserFieldGroupValues(field, raw, missingLabel);
 				};
@@ -503,7 +505,7 @@ export class FilterService extends EventEmitter {
 			projects: this.cacheManager.getAllProjects(),
 			tags: this.cacheManager.getAllTags(),
 			taskPaths: this.cacheManager.getAllTaskPaths(),
-			rootFolderLabel: this.translate("services.filter.folders.root", "(Root)"),
+			rootFolderLabel: this.translate(msg({ message: "(Root)", context: "services.filter.folders.root" }), "(Root)"),
 			userFields: this.runtime?.settings?.userFields || [],
 		});
 
@@ -656,7 +658,7 @@ export class FilterService extends EventEmitter {
 		if (dates.length === 0)
 			throw new Error(
 				FilterService.translateStatic(
-					"services.filter.errors.noDatesProvided",
+					msg({ message: "No dates provided", context: "services.filter.errors.noDatesProvided" }),
 					"No dates provided"
 				)
 			);

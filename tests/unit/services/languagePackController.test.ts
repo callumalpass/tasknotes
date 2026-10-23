@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { createI18nService } from "../../../src/i18n";
 import { LanguagePackController } from "../../../src/i18n/LanguagePackController";
 import type { LanguagePackLoader } from "../../../src/i18n/LanguagePackLoader";
@@ -28,7 +29,7 @@ describe("LanguagePackController", () => {
 		const { i18n } = setup();
 		expect(i18n.getAvailableLocales()).toEqual(["en", "fr", "de"]);
 		expect(i18n.getCurrentLocale()).toBe("en");
-		expect(i18n.translate("common.save")).toBe("Save");
+		expect(i18n.translate(msg({ message: "Save", context: "common.save" }))).toBe("Save");
 	});
 
 	it("registers downloaded messages, activates the language, and retains English fallback", async () => {
@@ -36,7 +37,7 @@ describe("LanguagePackController", () => {
 		load.mockResolvedValue({ "common.save": "Enregistrer" });
 		await expect(controller.setLocale("fr")).resolves.toBe(true);
 		expect(i18n.getCurrentLocale()).toBe("fr");
-		expect(i18n.translate("common.save")).toBe("Enregistrer");
+		expect(i18n.translate(msg({ message: "Save", context: "common.save" }))).toBe("Enregistrer");
 		expect(i18n.translate("common.missing")).toBe("English fallback");
 		await controller.setLocale("en");
 		await controller.setLocale("fr");
@@ -114,10 +115,10 @@ describe("LanguagePackController", () => {
 		const resources = { en: { common: { save: "Save" } }, fr: { common: { save: "Old" } } };
 		const first = createI18nService({ resources, initialLocale: "fr" });
 		const second = createI18nService({ resources, initialLocale: "fr" });
-		expect(first.translate("common.save")).toBe("Old");
+		expect(first.translate(msg({ message: "Save", context: "common.save" }))).toBe("Old");
 		first.registerLocale("fr", { "common.save": "New" });
-		expect(first.translate("common.save")).toBe("New");
-		expect(second.translate("common.save")).toBe("Old");
+		expect(first.translate(msg({ message: "Save", context: "common.save" }))).toBe("New");
+		expect(second.translate(msg({ message: "Save", context: "common.save" }))).toBe("Old");
 		expect(() => first.registerLocale("en", {})).toThrow("bundled default language");
 	});
 });

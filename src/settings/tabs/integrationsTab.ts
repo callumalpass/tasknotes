@@ -1,3 +1,8 @@
+import { uiLocale } from "../../i18n/runtime";
+import { uiText } from "../../i18n/runtime";
+import { uiRichText } from "../../i18n/richText";
+import { messageForKey } from "../../i18n/messages";
+import { msg } from "@lingui/core/macro";
 import { Notice, Platform, Modal, Setting, setIcon, App } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import type { OAuthProvider, WebhookConfig, WebhookEvent } from "../../types";
@@ -61,22 +66,19 @@ function getRelativeTime(
 	const diffDays = Math.floor(diffHours / 24);
 
 	if (diffDays > 0) {
-		return translate("settings.integrations.timeFormats.daysAgo", {
+		return translate(msg({ message: "{days, plural, one {{days} day ago} other {{days} days ago}}", context: "settings.integrations.timeFormats.daysAgo" }), {
 			days: diffDays,
-			plural: diffDays > 1 ? "s" : "",
 		});
 	} else if (diffHours > 0) {
-		return translate("settings.integrations.timeFormats.hoursAgo", {
+		return translate(msg({ message: "{hours, plural, one {{hours} hour ago} other {{hours} hours ago}}", context: "settings.integrations.timeFormats.hoursAgo" }), {
 			hours: diffHours,
-			plural: diffHours > 1 ? "s" : "",
 		});
 	} else if (diffMinutes > 0) {
-		return translate("settings.integrations.timeFormats.minutesAgo", {
+		return translate(msg({ message: "{minutes, plural, one {{minutes} minute ago} other {{minutes} minutes ago}}", context: "settings.integrations.timeFormats.minutesAgo" }), {
 			minutes: diffMinutes,
-			plural: diffMinutes > 1 ? "s" : "",
 		});
 	} else {
-		return translate("settings.integrations.timeFormats.justNow");
+		return translate(msg({ message: "Just now", context: "settings.integrations.timeFormats.justNow" }));
 	}
 }
 
@@ -153,7 +155,7 @@ function createOAuthCredentialControls(
 	const clientSecretInput = createCardInput(
 		"text",
 		storedCredentials?.clientSecret
-			? plugin.i18n.translate("settings.integrations.oauth.stored")
+			? plugin.i18n.translate(msg({ message: "Stored securely - enter a new value to replace", context: "settings.integrations.oauth.stored" }))
 			: clientSecretPlaceholder,
 		""
 	);
@@ -179,7 +181,7 @@ function createOAuthCredentialControls(
 			clientSecret,
 		});
 		clientSecretInput.value = "";
-		clientSecretInput.placeholder = plugin.i18n.translate("settings.integrations.oauth.stored");
+		clientSecretInput.placeholder = plugin.i18n.translate(msg({ message: "Stored securely - enter a new value to replace", context: "settings.integrations.oauth.stored" }));
 	};
 
 	clientIdInput.addEventListener("blur", persistClientId);
@@ -249,12 +251,12 @@ export function renderIntegrationsTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.integrations.mdbaseSpec.header"),
+			heading: translate(msg({ message: "mdbase type definitions", context: "settings.integrations.mdbaseSpec.header" })),
 		},
 		(group) => {
 			group.addSetting((setting) => {
 				configureToggleSetting(setting, {
-					name: translate("settings.integrations.mdbaseSpec.enable.name"),
+					name: translate(msg({ message: "Generate mdbase type definitions", context: "settings.integrations.mdbaseSpec.enable.name" })),
 					desc: "",
 					getValue: () => plugin.settings.enableMdbaseSpec,
 					setValue: (value: boolean) => {
@@ -264,10 +266,10 @@ export function renderIntegrationsTab(
 				});
 				const descEl = setting.descEl;
 				descEl.createSpan({
-					text: translate("settings.integrations.mdbaseSpec.enable.description") + " ",
+					text: translate(msg({ message: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.", context: "settings.integrations.mdbaseSpec.enable.description" })) + " ",
 				});
 				const link = descEl.createEl("a", {
-					text: translate("settings.integrations.mdbaseSpec.learnMore"),
+					text: translate(msg({ message: "Learn more about mdbase-spec", context: "settings.integrations.mdbaseSpec.learnMore" })),
 					href: "https://mdbase.dev",
 				});
 				link.setAttr("target", "_blank");
@@ -279,17 +281,17 @@ export function renderIntegrationsTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.integrations.oauth.header"),
+			heading: translate(msg({ message: "OAUTH calendar integration", context: "settings.integrations.oauth.header" })),
 		},
 		(group) => {
 			group.addSetting((setting) => {
-				setting.setDesc(translate("settings.integrations.oauth.description"));
+				setting.setDesc(translate(msg({ message: "Connect Google Calendar or Microsoft Outlook to sync events into TaskNotes.", context: "settings.integrations.oauth.description" })));
 				const descEl = setting.descEl;
 				descEl.createSpan({
-					text: " " + translate("settings.integrations.oauth.setup") + " ",
+					text: " " + translate(msg({ message: "Create OAUTH credentials with Google or Microsoft first. Initial setup takes about 15 minutes.", context: "settings.integrations.oauth.setup" })) + " ",
 				});
 				const link = descEl.createEl("a", {
-					text: translate("settings.integrations.oauth.guide"),
+					text: translate(msg({ message: "View calendar setup guide", context: "settings.integrations.oauth.guide" })),
 					href: "https://callumalpass.github.io/tasknotes/calendar-setup",
 				});
 				link.setAttr("target", "_blank");
@@ -298,8 +300,8 @@ export function renderIntegrationsTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.integrations.mobileCalendar.disable.name"),
-						desc: translate("settings.integrations.mobileCalendar.disable.description"),
+						name: translate(msg({ message: "Disable calendar integrations on mobile", context: "settings.integrations.mobileCalendar.disable.name" })),
+						desc: translate(msg({ message: "Skip Google, Microsoft, and ICS calendar loading on Obsidian mobile. Desktop calendar integrations are unchanged.", context: "settings.integrations.mobileCalendar.disable.description" })),
 						getValue: () => plugin.settings.disableCalendarOnMobile,
 						setValue: async (value: boolean) => {
 							plugin.settings.disableCalendarOnMobile = value;
@@ -313,9 +315,9 @@ export function renderIntegrationsTab(
 
 			if (calendarIntegrationDisabledOnMobile) {
 				group.addSetting((setting) => {
-					setting.setName(translate("settings.integrations.mobileCalendar.status.name"));
+					setting.setName(translate(msg({ message: "Calendar integrations are disabled on this mobile device", context: "settings.integrations.mobileCalendar.status.name" })));
 					setting.setDesc(
-						translate("settings.integrations.mobileCalendar.status.description")
+						translate(msg({ message: "Turn this setting off and reload Obsidian mobile to resume calendar loading.", context: "settings.integrations.mobileCalendar.status.description" }))
 					);
 				});
 			}
@@ -332,11 +334,11 @@ export function renderIntegrationsTab(
 		if (!plugin.oauthService) {
 			createCard(googleCalendarContainer, {
 				header: {
-					primaryText: translate("contextMenus.task.calendar.google"),
-					secondaryText: translate("settings.integrations.oauth.unavailable"),
+					primaryText: translate(msg({ message: "Google Calendar", context: "contextMenus.task.calendar.google" })),
+					secondaryText: translate(msg({ message: "OAUTH service not available", context: "settings.integrations.oauth.unavailable" })),
 					meta: [
 						createStatusBadge(
-							translate("settings.integrations.subscriptionsList.statusLabels.error"),
+							translate(msg({ message: "Error", context: "settings.integrations.subscriptionsList.statusLabels.error" })),
 							"inactive"
 						),
 					],
@@ -357,19 +359,19 @@ export function renderIntegrationsTab(
 			const connectedInfo = activeWindow.createDiv();
 			connectedInfo.className = "tasknotes-calendar-info";
 			connectedInfo.textContent = connectedDate
-				? translate("settings.integrations.oauth.connectedAt", { time: timeAgo })
-				: translate("settings.integrations.oauth.connected");
+				? translate(msg({ message: "Connected {time}", context: "settings.integrations.oauth.connectedAt" }), { time: timeAgo })
+				: translate(msg({ message: "Connected", context: "settings.integrations.oauth.connected" }));
 
 			const lastRefreshInfo = activeWindow.createDiv();
 			lastRefreshInfo.className = "tasknotes-calendar-info";
 			if (connection.lastRefreshed) {
 				const lastRefreshDate = new Date(connection.lastRefreshed);
-				lastRefreshInfo.textContent = translate("settings.integrations.oauth.refreshedAt", {
+				lastRefreshInfo.textContent = translate(msg({ message: "Last refreshed {time}", context: "settings.integrations.oauth.refreshedAt" }), {
 					time: getRelativeTime(lastRefreshDate, translate),
 				});
 			} else {
 				lastRefreshInfo.textContent = translate(
-					"settings.integrations.oauth.neverRefreshed"
+					msg({ message: "Never refreshed", context: "settings.integrations.oauth.neverRefreshed" })
 				);
 			}
 
@@ -380,11 +382,11 @@ export function renderIntegrationsTab(
 					color: "#4285F4", // Google blue
 				},
 				header: {
-					primaryText: translate("contextMenus.task.calendar.google"),
-					secondaryText: translate("settings.integrations.oauth.connection"),
+					primaryText: translate(msg({ message: "Google Calendar", context: "contextMenus.task.calendar.google" })),
+					secondaryText: translate(msg({ message: "OAuth 2.0 connection", context: "settings.integrations.oauth.connection" })),
 					meta: [
 						createStatusBadge(
-							translate("settings.integrations.oauth.connected"),
+							translate(msg({ message: "Connected", context: "settings.integrations.oauth.connected" })),
 							"active"
 						),
 					],
@@ -395,12 +397,12 @@ export function renderIntegrationsTab(
 							rows: [
 								{
 									label: translate(
-										"settings.taskProperties.properties.status.name"
+										msg({ message: "Status", context: "settings.taskProperties.properties.status.name" })
 									),
 									input: connectedInfo,
 								},
 								{
-									label: translate("settings.integrations.oauth.syncLabel"),
+									label: translate(msg({ message: "Sync:", context: "settings.integrations.oauth.syncLabel" })),
 									input: lastRefreshInfo,
 								},
 							],
@@ -410,7 +412,7 @@ export function renderIntegrationsTab(
 				actions: {
 					buttons: [
 						{
-							text: translate("settings.integrations.oauth.refresh"),
+							text: translate(msg({ message: "Refresh now", context: "settings.integrations.oauth.refresh" })),
 							icon: "refresh-cw",
 							variant: "primary",
 							onClick: async () => {
@@ -419,7 +421,7 @@ export function renderIntegrationsTab(
 										await plugin.googleCalendarService.refresh();
 										new Notice(
 											translate(
-												"settings.integrations.oauth.refreshSuccess",
+												msg({ message: "{provider} refreshed successfully", context: "settings.integrations.oauth.refreshSuccess" }),
 												{ provider: "Google Calendar" }
 											)
 										);
@@ -432,7 +434,7 @@ export function renderIntegrationsTab(
 										error: error,
 									});
 									new Notice(
-										translate("settings.integrations.oauth.refreshFailed", {
+										translate(msg({ message: "Failed to refresh {provider}", context: "settings.integrations.oauth.refreshFailed" }), {
 											provider: "Google Calendar",
 										})
 									);
@@ -440,7 +442,7 @@ export function renderIntegrationsTab(
 							},
 						},
 						{
-							text: translate("settings.integrations.oauth.disconnect"),
+							text: translate(msg({ message: "Disconnect", context: "settings.integrations.oauth.disconnect" })),
 							icon: "log-out",
 							variant: "warning",
 							onClick: async () => {
@@ -449,7 +451,7 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									await oauthService.disconnect("google");
 									new Notice(
-										translate("settings.integrations.oauth.disconnectSuccess", {
+										translate(msg({ message: "Disconnected from {provider}", context: "settings.integrations.oauth.disconnectSuccess" }), {
 											provider: "Google Calendar",
 										})
 									);
@@ -461,7 +463,7 @@ export function renderIntegrationsTab(
 										error: error,
 									});
 									new Notice(
-										translate("settings.integrations.oauth.disconnectFailed", {
+										translate(msg({ message: "Failed to disconnect from {provider}", context: "settings.integrations.oauth.disconnectFailed" }), {
 											provider: "Google Calendar",
 										})
 									);
@@ -476,16 +478,16 @@ export function renderIntegrationsTab(
 			const helpText = activeWindow.createDiv();
 			helpText.className = "tasknotes-calendar-help";
 			helpText.textContent =
-				translate("settings.integrations.oauth.help", { provider: "Google Calendar" }) +
+				translate(msg({ message: "Connect your {provider} account to sync events into TaskNotes.", context: "settings.integrations.oauth.help" }), { provider: "Google Calendar" }) +
 				" " +
-				translate("settings.integrations.oauth.googleRefreshInterval");
+				translate(msg({ message: "Events refresh automatically every 15 minutes.", context: "settings.integrations.oauth.googleRefreshInterval" }));
 
 			// Build sections and credential inputs
 			const sections: CardSection[] = [
 				{
 					rows: [
 						{
-							label: translate("settings.integrations.oauth.infoLabel"),
+							label: translate(msg({ message: "Info:", context: "settings.integrations.oauth.infoLabel" })),
 							input: helpText,
 							fullWidth: true,
 						},
@@ -502,18 +504,18 @@ export function renderIntegrationsTab(
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
-			credentialNote.textContent = translate("settings.integrations.oauth.credentialNote", {
+			credentialNote.textContent = translate(msg({ message: "Enter OAuth app credentials from {portal}. Obsidian Secret Storage encrypts credentials at rest when supported by the operating system.", context: "settings.integrations.oauth.credentialNote" }), {
 				portal: "Google Cloud Console",
 			});
 
 			sections.push({
 				rows: [
 					{
-						label: translate("settings.integrations.oauth.clientIdLabel"),
+						label: translate(msg({ message: "Client ID:", context: "settings.integrations.oauth.clientIdLabel" })),
 						input: credentialControls.clientIdInput,
 					},
 					{
-						label: translate("settings.integrations.oauth.clientSecretLabel"),
+						label: translate(msg({ message: "Client secret:", context: "settings.integrations.oauth.clientSecretLabel" })),
 						input: credentialControls.clientSecretInput,
 					},
 					{ label: "", input: credentialNote, fullWidth: true },
@@ -527,11 +529,11 @@ export function renderIntegrationsTab(
 					color: "#9AA0A6", // Google gray
 				},
 				header: {
-					primaryText: translate("contextMenus.task.calendar.google"),
-					secondaryText: translate("settings.integrations.oauth.connection"),
+					primaryText: translate(msg({ message: "Google Calendar", context: "contextMenus.task.calendar.google" })),
+					secondaryText: translate(msg({ message: "OAuth 2.0 connection", context: "settings.integrations.oauth.connection" })),
 					meta: [
 						createStatusBadge(
-							translate("settings.integrations.oauth.disconnected"),
+							translate(msg({ message: "Not connected", context: "settings.integrations.oauth.disconnected" })),
 							"inactive"
 						),
 					],
@@ -542,7 +544,7 @@ export function renderIntegrationsTab(
 				actions: {
 					buttons: [
 						{
-							text: translate("settings.integrations.oauth.connect", {
+							text: translate(msg({ message: "Connect {provider}", context: "settings.integrations.oauth.connect" }), {
 								provider: "Google Calendar",
 							}),
 							icon: "link",
@@ -554,7 +556,7 @@ export function renderIntegrationsTab(
 									credentialControls.persistPendingValues();
 									await oauthService.authenticate("google");
 									new Notice(
-										translate("settings.integrations.oauth.connectSuccess", {
+										translate(msg({ message: "{provider} connected successfully!", context: "settings.integrations.oauth.connectSuccess" }), {
 											provider: "Google Calendar",
 										})
 									);
@@ -566,7 +568,7 @@ export function renderIntegrationsTab(
 										error: error,
 									});
 									new Notice(
-										translate("settings.integrations.oauth.connectFailed", {
+										translate(msg({ message: "Failed to connect: {message}", context: "settings.integrations.oauth.connectFailed" }), {
 											message: getErrorMessage(error),
 										})
 									);
@@ -576,7 +578,7 @@ export function renderIntegrationsTab(
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
-										text: translate("settings.integrations.oauth.forget"),
+										text: translate(msg({ message: "Forget saved credentials", context: "settings.integrations.oauth.forget" })),
 										icon: "trash-2",
 										variant: "warning" as const,
 										onClick: async () => {
@@ -584,14 +586,14 @@ export function renderIntegrationsTab(
 												plugin.app,
 												{
 													title: translate(
-														"settings.integrations.oauth.forgetTitle",
+														msg({ message: "Forget OAuth credentials for {provider}?", context: "settings.integrations.oauth.forgetTitle" }),
 														{ provider: "Google Calendar" }
 													),
 													message: translate(
-														"settings.integrations.oauth.forgetMessage"
+														msg({ message: "This removes the saved client ID and client secret from Obsidian secret storage.", context: "settings.integrations.oauth.forgetMessage" })
 													),
 													confirmText: translate(
-														"settings.integrations.oauth.forgetConfirm"
+														msg({ message: "Forget credentials", context: "settings.integrations.oauth.forgetConfirm" })
 													),
 													isDestructive: true,
 												}
@@ -599,7 +601,7 @@ export function renderIntegrationsTab(
 											if (!confirmed) return;
 											plugin.oauthService.clearCredentials("google");
 											new Notice(
-												translate("settings.integrations.oauth.forgotten", {
+												translate(msg({ message: "Forgot OAuth credentials for {provider}", context: "settings.integrations.oauth.forgotten" }), {
 													provider: "Google Calendar",
 												})
 											);
@@ -630,10 +632,10 @@ export function renderIntegrationsTab(
 			createCard(microsoftCalendarContainer, {
 				header: {
 					primaryText: "Microsoft Outlook Calendar",
-					secondaryText: translate("settings.integrations.oauth.unavailable"),
+					secondaryText: translate(msg({ message: "OAUTH service not available", context: "settings.integrations.oauth.unavailable" })),
 					meta: [
 						createStatusBadge(
-							translate("settings.integrations.subscriptionsList.statusLabels.error"),
+							translate(msg({ message: "Error", context: "settings.integrations.subscriptionsList.statusLabels.error" })),
 							"inactive"
 						),
 					],
@@ -656,20 +658,20 @@ export function renderIntegrationsTab(
 			const connectedInfo = activeWindow.createDiv();
 			connectedInfo.className = "tasknotes-calendar-info";
 			connectedInfo.textContent = connectedDate
-				? translate("settings.integrations.oauth.connectedAt", { time: timeAgo })
-				: translate("settings.integrations.oauth.connected");
+				? translate(msg({ message: "Connected {time}", context: "settings.integrations.oauth.connectedAt" }), { time: timeAgo })
+				: translate(msg({ message: "Connected", context: "settings.integrations.oauth.connected" }));
 
 			const tokenRefreshInfo = activeWindow.createDiv();
 			tokenRefreshInfo.className = "tasknotes-calendar-info";
 			if (connection.lastRefreshed) {
 				const lastRefreshDate = new Date(connection.lastRefreshed);
 				tokenRefreshInfo.textContent = translate(
-					"settings.integrations.oauth.tokenRefreshed",
+					msg({ message: "OAuth token refreshed {time}", context: "settings.integrations.oauth.tokenRefreshed" }),
 					{ time: getRelativeTime(lastRefreshDate, translate) }
 				);
 			} else {
 				tokenRefreshInfo.textContent = translate(
-					"settings.integrations.oauth.tokenNotRefreshed"
+					msg({ message: "Token not refreshed yet", context: "settings.integrations.oauth.tokenNotRefreshed" })
 				);
 			}
 
@@ -678,7 +680,7 @@ export function renderIntegrationsTab(
 			syncInfo.className = "tasknotes-calendar-info";
 			if (!plugin.microsoftCalendarService) {
 				syncInfo.addClass("tasknotes-calendar-info--warning");
-				syncInfo.textContent = translate("settings.integrations.oauth.syncUnavailable");
+				syncInfo.textContent = translate(msg({ message: "Calendar sync service not available", context: "settings.integrations.oauth.syncUnavailable" }));
 			} else if (syncStatus?.lastError) {
 				syncInfo.addClass("tasknotes-calendar-info--warning");
 				const attemptedAt = syncStatus.lastAttempt
@@ -687,35 +689,35 @@ export function renderIntegrationsTab(
 				const attemptedText = attemptedAt
 					? ` ${getRelativeTime(attemptedAt, translate)}`
 					: "";
-				syncInfo.textContent = translate("settings.integrations.oauth.syncFailed", {
+				syncInfo.textContent = translate(msg({ message: "Calendar sync failed {time}: {message}", context: "settings.integrations.oauth.syncFailed" }), {
 					time: attemptedText.trim(),
 					message: syncStatus.lastError,
 				});
 			} else if (syncStatus?.lastSuccess) {
 				const lastSyncDate = new Date(syncStatus.lastSuccess);
-				syncInfo.textContent = translate("settings.integrations.oauth.syncSuccess", {
+				syncInfo.textContent = translate(msg({ message: "Calendar sync succeeded {time} (events: {count})", context: "settings.integrations.oauth.syncSuccess" }), {
 					time: getRelativeTime(lastSyncDate, translate),
 					count: syncStatus.eventsLoaded,
 				});
 			} else if (syncStatus?.lastAttempt) {
 				const lastAttemptDate = new Date(syncStatus.lastAttempt);
-				syncInfo.textContent = translate("settings.integrations.oauth.syncChecked", {
+				syncInfo.textContent = translate(msg({ message: "Calendar sync checked {time}", context: "settings.integrations.oauth.syncChecked" }), {
 					time: getRelativeTime(lastAttemptDate, translate),
 				});
 			} else {
-				syncInfo.textContent = translate("settings.integrations.oauth.eventsNotRefreshed");
+				syncInfo.textContent = translate(msg({ message: "Calendar events not refreshed yet", context: "settings.integrations.oauth.eventsNotRefreshed" }));
 			}
 
 			const microsoftRows: CardSection["rows"] = [
 				{
-					label: translate("settings.taskProperties.properties.status.name"),
+					label: translate(msg({ message: "Status", context: "settings.taskProperties.properties.status.name" })),
 					input: connectedInfo,
 				},
 				{
-					label: translate("settings.integrations.oauth.tokenLabel"),
+					label: translate(msg({ message: "Token:", context: "settings.integrations.oauth.tokenLabel" })),
 					input: tokenRefreshInfo,
 				},
-				{ label: translate("settings.integrations.oauth.syncLabel"), input: syncInfo },
+				{ label: translate(msg({ message: "Sync:", context: "settings.integrations.oauth.syncLabel" })), input: syncInfo },
 			];
 
 			if (syncStatus?.calendarErrors.length) {
@@ -723,17 +725,17 @@ export function renderIntegrationsTab(
 				errorInfo.className = "tasknotes-calendar-info tasknotes-calendar-info--warning";
 				const firstError = syncStatus.calendarErrors[0];
 				const calendarLabel =
-					firstError.calendarName || firstError.calendarId || "Microsoft calendar";
+					firstError.calendarName || firstError.calendarId || uiText(msg({ message: "Microsoft calendar", context: "settings/tabs/integrationsTab: renderIntegrationsTab.renderMicrosoftCalendarCard display" }));
 				errorInfo.textContent =
 					syncStatus.calendarErrors.length === 1
 						? `${calendarLabel}: ${firstError.message}`
-						: translate("settings.integrations.oauth.calendarErrors", {
+						: translate(msg({ message: "Calendars with errors: {count}. First error: {calendar}: {message}", context: "settings.integrations.oauth.calendarErrors" }), {
 								count: syncStatus.calendarErrors.length,
 								calendar: calendarLabel,
 								message: firstError.message,
 							});
 				microsoftRows.push({
-					label: translate("settings.integrations.oauth.issueLabel"),
+					label: translate(msg({ message: "Issue:", context: "settings.integrations.oauth.issueLabel" })),
 					input: errorInfo,
 					fullWidth: true,
 				});
@@ -747,10 +749,10 @@ export function renderIntegrationsTab(
 				},
 				header: {
 					primaryText: "Microsoft Outlook Calendar",
-					secondaryText: translate("settings.integrations.oauth.connection"),
+					secondaryText: translate(msg({ message: "OAuth 2.0 connection", context: "settings.integrations.oauth.connection" })),
 					meta: [
 						createStatusBadge(
-							translate("settings.integrations.oauth.connected"),
+							translate(msg({ message: "Connected", context: "settings.integrations.oauth.connected" })),
 							"active"
 						),
 					],
@@ -765,7 +767,7 @@ export function renderIntegrationsTab(
 				actions: {
 					buttons: [
 						{
-							text: translate("settings.integrations.oauth.refresh"),
+							text: translate(msg({ message: "Refresh now", context: "settings.integrations.oauth.refresh" })),
 							icon: "refresh-cw",
 							variant: "primary",
 							onClick: async () => {
@@ -777,7 +779,7 @@ export function renderIntegrationsTab(
 										if (latestStatus.lastError) {
 											new Notice(
 												translate(
-													"settings.integrations.oauth.refreshErrors",
+													msg({ message: "{provider} refresh had errors: {message}", context: "settings.integrations.oauth.refreshErrors" }),
 													{
 														provider: "Microsoft Outlook Calendar",
 														message: latestStatus.lastError,
@@ -787,7 +789,7 @@ export function renderIntegrationsTab(
 										} else {
 											new Notice(
 												translate(
-													"settings.integrations.oauth.refreshSuccess",
+													msg({ message: "{provider} refreshed successfully", context: "settings.integrations.oauth.refreshSuccess" }),
 													{ provider: "Microsoft Outlook Calendar" }
 												)
 											);
@@ -801,7 +803,7 @@ export function renderIntegrationsTab(
 										error: error,
 									});
 									new Notice(
-										translate("settings.integrations.oauth.refreshErrors", {
+										translate(msg({ message: "{provider} refresh had errors: {message}", context: "settings.integrations.oauth.refreshErrors" }), {
 											provider: "Microsoft Outlook Calendar",
 											message: getErrorMessage(error),
 										})
@@ -810,7 +812,7 @@ export function renderIntegrationsTab(
 							},
 						},
 						{
-							text: translate("settings.integrations.oauth.disconnect"),
+							text: translate(msg({ message: "Disconnect", context: "settings.integrations.oauth.disconnect" })),
 							icon: "log-out",
 							variant: "warning",
 							onClick: async () => {
@@ -820,7 +822,7 @@ export function renderIntegrationsTab(
 									await oauthService.disconnect("microsoft");
 									await plugin.microsoftCalendarService?.disconnect();
 									new Notice(
-										translate("settings.integrations.oauth.disconnectSuccess", {
+										translate(msg({ message: "Disconnected from {provider}", context: "settings.integrations.oauth.disconnectSuccess" }), {
 											provider: "Microsoft Outlook Calendar",
 										})
 									);
@@ -832,7 +834,7 @@ export function renderIntegrationsTab(
 										error: error,
 									});
 									new Notice(
-										translate("settings.integrations.oauth.disconnectFailed", {
+										translate(msg({ message: "Failed to disconnect from {provider}", context: "settings.integrations.oauth.disconnectFailed" }), {
 											provider: "Microsoft Outlook Calendar",
 										})
 									);
@@ -846,7 +848,7 @@ export function renderIntegrationsTab(
 			// Disconnected state card
 			const helpText = activeWindow.createDiv();
 			helpText.className = "tasknotes-calendar-help";
-			helpText.textContent = translate("settings.integrations.oauth.help", {
+			helpText.textContent = translate(msg({ message: "Connect your {provider} account to sync events into TaskNotes.", context: "settings.integrations.oauth.help" }), {
 				provider: "Microsoft Outlook",
 			});
 
@@ -855,7 +857,7 @@ export function renderIntegrationsTab(
 				{
 					rows: [
 						{
-							label: translate("settings.integrations.oauth.infoLabel"),
+							label: translate(msg({ message: "Info:", context: "settings.integrations.oauth.infoLabel" })),
 							input: helpText,
 							fullWidth: true,
 						},
@@ -872,18 +874,18 @@ export function renderIntegrationsTab(
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
-			credentialNote.textContent = translate("settings.integrations.oauth.credentialNote", {
+			credentialNote.textContent = translate(msg({ message: "Enter OAuth app credentials from {portal}. Obsidian Secret Storage encrypts credentials at rest when supported by the operating system.", context: "settings.integrations.oauth.credentialNote" }), {
 				portal: "Azure Portal",
 			});
 
 			sections.push({
 				rows: [
 					{
-						label: translate("settings.integrations.oauth.clientIdLabel"),
+						label: translate(msg({ message: "Client ID:", context: "settings.integrations.oauth.clientIdLabel" })),
 						input: credentialControls.clientIdInput,
 					},
 					{
-						label: translate("settings.integrations.oauth.clientSecretLabel"),
+						label: translate(msg({ message: "Client secret:", context: "settings.integrations.oauth.clientSecretLabel" })),
 						input: credentialControls.clientSecretInput,
 					},
 					{ label: "", input: credentialNote, fullWidth: true },
@@ -898,10 +900,10 @@ export function renderIntegrationsTab(
 				},
 				header: {
 					primaryText: "Microsoft Outlook Calendar",
-					secondaryText: translate("settings.integrations.oauth.connection"),
+					secondaryText: translate(msg({ message: "OAuth 2.0 connection", context: "settings.integrations.oauth.connection" })),
 					meta: [
 						createStatusBadge(
-							translate("settings.integrations.oauth.disconnected"),
+							translate(msg({ message: "Not connected", context: "settings.integrations.oauth.disconnected" })),
 							"inactive"
 						),
 					],
@@ -912,7 +914,7 @@ export function renderIntegrationsTab(
 				actions: {
 					buttons: [
 						{
-							text: translate("settings.integrations.oauth.connect", {
+							text: translate(msg({ message: "Connect {provider}", context: "settings.integrations.oauth.connect" }), {
 								provider: "Microsoft Outlook Calendar",
 							}),
 							icon: "link",
@@ -925,7 +927,7 @@ export function renderIntegrationsTab(
 									await oauthService.authenticate("microsoft");
 									await plugin.microsoftCalendarService?.initialize();
 									new Notice(
-										translate("settings.integrations.oauth.connectSuccess", {
+										translate(msg({ message: "{provider} connected successfully!", context: "settings.integrations.oauth.connectSuccess" }), {
 											provider: "Microsoft Outlook Calendar",
 										})
 									);
@@ -937,7 +939,7 @@ export function renderIntegrationsTab(
 										error: error,
 									});
 									new Notice(
-										translate("settings.integrations.oauth.connectFailed", {
+										translate(msg({ message: "Failed to connect: {message}", context: "settings.integrations.oauth.connectFailed" }), {
 											message: getErrorMessage(error),
 										})
 									);
@@ -947,7 +949,7 @@ export function renderIntegrationsTab(
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
-										text: translate("settings.integrations.oauth.forget"),
+										text: translate(msg({ message: "Forget saved credentials", context: "settings.integrations.oauth.forget" })),
 										icon: "trash-2",
 										variant: "warning" as const,
 										onClick: async () => {
@@ -955,14 +957,14 @@ export function renderIntegrationsTab(
 												plugin.app,
 												{
 													title: translate(
-														"settings.integrations.oauth.forgetTitle",
+														msg({ message: "Forget OAuth credentials for {provider}?", context: "settings.integrations.oauth.forgetTitle" }),
 														{ provider: "Microsoft Outlook Calendar" }
 													),
 													message: translate(
-														"settings.integrations.oauth.forgetMessage"
+														msg({ message: "This removes the saved client ID and client secret from Obsidian secret storage.", context: "settings.integrations.oauth.forgetMessage" })
 													),
 													confirmText: translate(
-														"settings.integrations.oauth.forgetConfirm"
+														msg({ message: "Forget credentials", context: "settings.integrations.oauth.forgetConfirm" })
 													),
 													isDestructive: true,
 												}
@@ -970,7 +972,7 @@ export function renderIntegrationsTab(
 											if (!confirmed) return;
 											plugin.oauthService.clearCredentials("microsoft");
 											new Notice(
-												translate("settings.integrations.oauth.forgotten", {
+												translate(msg({ message: "Forgot OAuth credentials for {provider}", context: "settings.integrations.oauth.forgotten" }), {
 													provider: "Microsoft Outlook Calendar",
 												})
 											);
@@ -992,17 +994,17 @@ export function renderIntegrationsTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.integrations.googleCalendarExport.header"),
-			description: translate("settings.integrations.googleCalendarExport.description"),
+			heading: translate(msg({ message: "Export tasks to Google Calendar", context: "settings.integrations.googleCalendarExport.header" })),
+			description: translate(msg({ message: "Automatically sync your tasks to Google Calendar as events. Requires Google Calendar to be connected above.", context: "settings.integrations.googleCalendarExport.description" })),
 		},
 		(group) => {
 			// Master toggle
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.integrations.googleCalendarExport.enable.name"),
+						name: translate(msg({ message: "Enable task export", context: "settings.integrations.googleCalendarExport.enable.name" })),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.enable.description"
+							msg({ message: "When enabled, tasks with dates will be automatically synced to Google Calendar as events.", context: "settings.integrations.googleCalendarExport.enable.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.enabled,
 						setValue: async (value: boolean) => {
@@ -1015,11 +1017,11 @@ export function renderIntegrationsTab(
 			// Target calendar dropdown (populated dynamically)
 			group.addSetting((setting) => {
 				setting.setName(
-					translate("settings.integrations.googleCalendarExport.targetCalendar.name")
+					translate(msg({ message: "Target calendar", context: "settings.integrations.googleCalendarExport.targetCalendar.name" }))
 				);
 				setting.setDesc(
 					translate(
-						"settings.integrations.googleCalendarExport.targetCalendar.description"
+						msg({ message: "Select which calendar to create task events in.", context: "settings.integrations.googleCalendarExport.targetCalendar.description" })
 					)
 				);
 
@@ -1039,7 +1041,7 @@ export function renderIntegrationsTab(
 				// Add placeholder option
 				dropdown.createEl("option", {
 					text: translate(
-						"settings.integrations.googleCalendarExport.targetCalendar.placeholder"
+						msg({ message: "Select a calendar...", context: "settings.integrations.googleCalendarExport.targetCalendar.placeholder" })
 					),
 					value: "",
 				});
@@ -1061,7 +1063,7 @@ export function renderIntegrationsTab(
 									cal.summary +
 									(cal.primary
 										? translate(
-												"settings.integrations.googleCalendarExport.targetCalendar.primarySuffix"
+												msg({ message: " (Primary)", context: "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix" })
 											)
 										: ""),
 								value: cal.id,
@@ -1073,7 +1075,7 @@ export function renderIntegrationsTab(
 					} else {
 						dropdown.createEl("option", {
 							text: translate(
-								"settings.integrations.googleCalendarExport.targetCalendar.connectFirst"
+								msg({ message: "Connect Google Calendar first", context: "settings.integrations.googleCalendarExport.targetCalendar.connectFirst" })
 							),
 							value: "",
 						});
@@ -1129,28 +1131,28 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureDropdownSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.syncTrigger.name"
+							msg({ message: "Sync trigger", context: "settings.integrations.googleCalendarExport.syncTrigger.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.syncTrigger.description"
+							msg({ message: "Which task date should trigger calendar event creation.", context: "settings.integrations.googleCalendarExport.syncTrigger.description" })
 						),
 						options: [
 							{
 								value: "scheduled",
 								label: translate(
-									"settings.integrations.googleCalendarExport.syncTrigger.options.scheduled"
+									msg({ message: "Scheduled date", context: "settings.integrations.googleCalendarExport.syncTrigger.options.scheduled" })
 								),
 							},
 							{
 								value: "due",
 								label: translate(
-									"settings.integrations.googleCalendarExport.syncTrigger.options.due"
+									msg({ message: "Due date", context: "settings.integrations.googleCalendarExport.syncTrigger.options.due" })
 								),
 							},
 							{
 								value: "both",
 								label: translate(
-									"settings.integrations.googleCalendarExport.syncTrigger.options.both"
+									msg({ message: "Both (prefer scheduled)", context: "settings.integrations.googleCalendarExport.syncTrigger.options.both" })
 								),
 							},
 						],
@@ -1170,10 +1172,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.allDayEvents.name"
+							msg({ message: "Create as all-day events", context: "settings.integrations.googleCalendarExport.allDayEvents.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.allDayEvents.description"
+							msg({ message: "When enabled, tasks are created as all-day events. When disabled, uses time estimate for duration.", context: "settings.integrations.googleCalendarExport.allDayEvents.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.createAsAllDay,
 						setValue: async (value: boolean) => {
@@ -1187,10 +1189,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.showAllDayAsFree.name"
+							msg({ message: "Show all-day task events as free", context: "settings.integrations.googleCalendarExport.showAllDayAsFree.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.showAllDayAsFree.description"
+							msg({ message: "All-day task exports do not block availability, including tasks converted to all-day. Timed events stay busy. Run sync all tasks to apply changes to existing events.", context: "settings.integrations.googleCalendarExport.showAllDayAsFree.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.showAllDayAsFree,
 						setValue: async (value: boolean) => {
@@ -1205,10 +1207,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureNumberSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.defaultDuration.name"
+							msg({ message: "Default event duration", context: "settings.integrations.googleCalendarExport.defaultDuration.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.defaultDuration.description"
+							msg({ message: "Duration in minutes for timed events (used when task has no time estimate).", context: "settings.integrations.googleCalendarExport.defaultDuration.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.defaultEventDuration,
 						setValue: async (value: number) => {
@@ -1225,13 +1227,13 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureTextSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.eventTitleTemplate.name"
+							msg({ message: "Event title template", context: "settings.integrations.googleCalendarExport.eventTitleTemplate.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.eventTitleTemplate.description"
+							msg({ message: "Template for event titles. Available variables: '{{title}}', '{{status}}', '{{priority}}'", context: "settings.integrations.googleCalendarExport.eventTitleTemplate.description" })
 						),
 						placeholder: translate(
-							"settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder"
+							msg({ message: "'{{title}}'", context: "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.eventTitleTemplate,
 						setValue: async (value: string) => {
@@ -1247,10 +1249,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.includeDescription.name"
+							msg({ message: "Include task details in description", context: "settings.integrations.googleCalendarExport.includeDescription.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.includeDescription.description"
+							msg({ message: "Add task metadata (priority, status, tags, etc.) to the event description.", context: "settings.integrations.googleCalendarExport.includeDescription.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.includeDescription,
 						setValue: async (value: boolean) => {
@@ -1265,10 +1267,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.includeObsidianLink.name"
+							msg({ message: "Include Obsidian link", context: "settings.integrations.googleCalendarExport.includeObsidianLink.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.includeObsidianLink.description"
+							msg({ message: "Add a link back to the task in Obsidian in the event description.", context: "settings.integrations.googleCalendarExport.includeObsidianLink.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.includeObsidianLink,
 						setValue: async (value: boolean) => {
@@ -1283,10 +1285,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureTextSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.defaultReminder.name"
+							msg({ message: "Default reminder", context: "settings.integrations.googleCalendarExport.defaultReminder.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.defaultReminder.description"
+							msg({ message: "Add popup reminders to timed Google Calendar events. Enter minutes before the event, separated by commas. Leave empty to use calendar defaults. Common values: 15, 30, 60, 1440.", context: "settings.integrations.googleCalendarExport.defaultReminder.description" })
 						),
 						getValue: () =>
 							formatDefaultReminderMinutes(
@@ -1305,7 +1307,7 @@ export function renderIntegrationsTab(
 			group.addSetting((setting) => {
 				setting.setName(
 					translate(
-						"settings.integrations.googleCalendarExport.automaticSyncBehavior.header"
+						msg({ message: "Automatic sync behavior", context: "settings.integrations.googleCalendarExport.automaticSyncBehavior.header" })
 					)
 				);
 				setting.setHeading();
@@ -1315,10 +1317,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.syncOnCreate.name"
+							msg({ message: "Sync on task create", context: "settings.integrations.googleCalendarExport.syncOnCreate.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.syncOnCreate.description"
+							msg({ message: "Automatically create calendar event when a new task is created.", context: "settings.integrations.googleCalendarExport.syncOnCreate.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.syncOnTaskCreate,
 						setValue: async (value: boolean) => {
@@ -1332,10 +1334,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.syncOnUpdate.name"
+							msg({ message: "Sync on task update", context: "settings.integrations.googleCalendarExport.syncOnUpdate.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.syncOnUpdate.description"
+							msg({ message: "Automatically update calendar event when a task is modified.", context: "settings.integrations.googleCalendarExport.syncOnUpdate.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.syncOnTaskUpdate,
 						setValue: async (value: boolean) => {
@@ -1349,10 +1351,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.syncOnComplete.name"
+							msg({ message: "Sync on task complete", context: "settings.integrations.googleCalendarExport.syncOnComplete.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.syncOnComplete.description"
+							msg({ message: "Update calendar event when a task is completed (adds checkmark to title).", context: "settings.integrations.googleCalendarExport.syncOnComplete.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.syncOnTaskComplete,
 						setValue: async (value: boolean) => {
@@ -1366,10 +1368,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.syncOnDelete.name"
+							msg({ message: "Delete event on task delete", context: "settings.integrations.googleCalendarExport.syncOnDelete.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.syncOnDelete.description"
+							msg({ message: "Remove calendar event when the corresponding task is deleted.", context: "settings.integrations.googleCalendarExport.syncOnDelete.description" })
 						),
 						getValue: () => plugin.settings.googleCalendarExport.syncOnTaskDelete,
 						setValue: async (value: boolean) => {
@@ -1382,7 +1384,7 @@ export function renderIntegrationsTab(
 			// Manual sync actions - section header
 			group.addSetting((setting) => {
 				setting.setName(
-					translate("settings.integrations.googleCalendarExport.manualSyncActions.header")
+					translate(msg({ message: "Manual sync actions", context: "settings.integrations.googleCalendarExport.manualSyncActions.header" }))
 				);
 				setting.setHeading();
 			});
@@ -1391,19 +1393,19 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureButtonSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.syncAllTasks.name"
+							msg({ message: "Sync all tasks", context: "settings.integrations.googleCalendarExport.syncAllTasks.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.syncAllTasks.description"
+							msg({ message: "Sync all existing tasks to Google Calendar. This will create events for tasks that haven''t been synced yet.", context: "settings.integrations.googleCalendarExport.syncAllTasks.description" })
 						),
 						buttonText: translate(
-							"settings.integrations.googleCalendarExport.syncAllTasks.buttonText"
+							msg({ message: "Sync all", context: "settings.integrations.googleCalendarExport.syncAllTasks.buttonText" })
 						),
 						onClick: async () => {
 							if (!plugin.taskCalendarSyncService?.isEnabled()) {
 								new Notice(
 									translate(
-										"settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
+										msg({ message: "Google Calendar export is not enabled or configured", context: "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured" })
 									)
 								);
 								return;
@@ -1411,7 +1413,7 @@ export function renderIntegrationsTab(
 							const results = await plugin.taskCalendarSyncService.syncAllTasks();
 							new Notice(
 								translate(
-									"settings.integrations.googleCalendarExport.notices.syncResults",
+									msg({ message: "Synced: {synced}, Failed: {failed}, Skipped: {skipped}", context: "settings.integrations.googleCalendarExport.notices.syncResults" }),
 									{
 										synced: results.synced,
 										failed: results.failed,
@@ -1427,32 +1429,32 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureButtonSetting(setting, {
 						name: translate(
-							"settings.integrations.googleCalendarExport.unlinkAllTasks.name"
+							msg({ message: "Unlink all tasks", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.name" })
 						),
 						desc: translate(
-							"settings.integrations.googleCalendarExport.unlinkAllTasks.description"
+							msg({ message: "Remove all task-event links without deleting calendar events.", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.description" })
 						),
 						buttonText: translate(
-							"settings.integrations.googleCalendarExport.unlinkAllTasks.buttonText"
+							msg({ message: "Unlink all", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.buttonText" })
 						),
 						onClick: async () => {
 							if (!plugin.taskCalendarSyncService) {
 								new Notice(
 									translate(
-										"settings.integrations.googleCalendarExport.notices.serviceNotAvailable"
+										msg({ message: "Task calendar sync service not available", context: "settings.integrations.googleCalendarExport.notices.serviceNotAvailable" })
 									)
 								);
 								return;
 							}
 							const confirmed = await showConfirmationModal(plugin.app, {
 								title: translate(
-									"settings.integrations.googleCalendarExport.unlinkAllTasks.confirmTitle"
+									msg({ message: "Unlink all tasks", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmTitle" })
 								),
 								message: translate(
-									"settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessage"
+									msg({ message: "This will remove all links between tasks and calendar events. The calendar events will remain but will no longer be updated when tasks change. Are you sure?", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessage" })
 								),
 								confirmText: translate(
-									"settings.integrations.googleCalendarExport.unlinkAllTasks.confirmButtonText"
+									msg({ message: "Unlink all", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmButtonText" })
 								),
 								isDestructive: true,
 							});
@@ -1469,8 +1471,8 @@ export function renderIntegrationsTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.integrations.calendarSubscriptions.header"),
-			description: translate("settings.integrations.calendarSubscriptions.description"),
+			heading: translate(msg({ message: "Calendar subscriptions", context: "settings.integrations.calendarSubscriptions.header" })),
+			description: translate(msg({ message: "Subscribe to external calendars via ICS/iCal URLs to view events alongside your tasks.", context: "settings.integrations.calendarSubscriptions.description" })),
 		},
 		(group) => {
 			// Default settings for ICS integration
@@ -1478,13 +1480,13 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureTextSetting(setting, {
 						name: translate(
-							"settings.integrations.calendarSubscriptions.defaultNoteTemplate.name"
+							msg({ message: "Default note template", context: "settings.integrations.calendarSubscriptions.defaultNoteTemplate.name" })
 						),
 						desc: translate(
-							"settings.integrations.calendarSubscriptions.defaultNoteTemplate.description"
+							msg({ message: "Path to template file for notes created from ICS events", context: "settings.integrations.calendarSubscriptions.defaultNoteTemplate.description" })
 						),
 						placeholder: translate(
-							"settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder"
+							msg({ message: "Templates/Event Template.md", context: "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder" })
 						),
 						getValue: () => plugin.settings.icsIntegration.defaultNoteTemplate,
 						setValue: async (value: string) => {
@@ -1498,13 +1500,13 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureTextSetting(setting, {
 						name: translate(
-							"settings.integrations.calendarSubscriptions.defaultNoteFolder.name"
+							msg({ message: "Default note folder", context: "settings.integrations.calendarSubscriptions.defaultNoteFolder.name" })
 						),
 						desc: translate(
-							"settings.integrations.calendarSubscriptions.defaultNoteFolder.description"
+							msg({ message: "Folder for notes created from ICS events", context: "settings.integrations.calendarSubscriptions.defaultNoteFolder.description" })
 						),
 						placeholder: translate(
-							"settings.integrations.calendarSubscriptions.defaultNoteFolder.placeholder"
+							msg({ message: "Calendar/Events", context: "settings.integrations.calendarSubscriptions.defaultNoteFolder.placeholder" })
 						),
 						getValue: () => plugin.settings.icsIntegration.defaultNoteFolder,
 						setValue: async (value: string) => {
@@ -1518,34 +1520,34 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureDropdownSetting(setting, {
 						name: translate(
-							"settings.integrations.calendarSubscriptions.filenameFormat.name"
+							msg({ message: "ICS note filename format", context: "settings.integrations.calendarSubscriptions.filenameFormat.name" })
 						),
 						desc: translate(
-							"settings.integrations.calendarSubscriptions.filenameFormat.description"
+							msg({ message: "How filenames are generated for notes created from ICS events", context: "settings.integrations.calendarSubscriptions.filenameFormat.description" })
 						),
 						options: [
 							{
 								value: "title",
 								label: translate(
-									"settings.integrations.calendarSubscriptions.filenameFormat.options.title"
+									msg({ message: "Event title", context: "settings.integrations.calendarSubscriptions.filenameFormat.options.title" })
 								),
 							},
 							{
 								value: "zettel",
 								label: translate(
-									"settings.integrations.calendarSubscriptions.filenameFormat.options.zettel"
+									msg({ message: "Zettelkasten format", context: "settings.integrations.calendarSubscriptions.filenameFormat.options.zettel" })
 								),
 							},
 							{
 								value: "timestamp",
 								label: translate(
-									"settings.integrations.calendarSubscriptions.filenameFormat.options.timestamp"
+									msg({ message: "Timestamp", context: "settings.integrations.calendarSubscriptions.filenameFormat.options.timestamp" })
 								),
 							},
 							{
 								value: "custom",
 								label: translate(
-									"settings.integrations.calendarSubscriptions.filenameFormat.options.custom"
+									msg({ message: "Custom template", context: "settings.integrations.calendarSubscriptions.filenameFormat.options.custom" })
 								),
 							},
 						],
@@ -1567,13 +1569,13 @@ export function renderIntegrationsTab(
 					(setting) =>
 						void configureTextSetting(setting, {
 							name: translate(
-								"settings.integrations.calendarSubscriptions.customTemplate.name"
+								msg({ message: "Custom ICS filename template", context: "settings.integrations.calendarSubscriptions.customTemplate.name" })
 							),
 							desc: translate(
-								"settings.integrations.calendarSubscriptions.customTemplate.description"
+								msg({ message: "Template for custom ICS event filenames", context: "settings.integrations.calendarSubscriptions.customTemplate.description" })
 							),
 							placeholder: translate(
-								"settings.integrations.calendarSubscriptions.customTemplate.placeholder"
+								msg({ message: "{date}-{title}", context: "settings.integrations.calendarSubscriptions.customTemplate.placeholder" })
 							),
 							getValue: () =>
 								plugin.settings.icsIntegration.customICSNoteFilenameTemplate,
@@ -1591,10 +1593,10 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
+							msg({ message: "Use ICS event end time as task due date", context: "settings.integrations.calendarSubscriptions.useICSEndAsDue.name" })
 						),
 						desc: translate(
-							"settings.integrations.calendarSubscriptions.useICSEndAsDue.description"
+							msg({ message: "When enabled, tasks created from calendar events will have their due date set to the event''s end time. For all-day events, the due date will be set to the event date. For timed events, the due date will include the end time.", context: "settings.integrations.calendarSubscriptions.useICSEndAsDue.description" })
 						),
 						getValue: () => plugin.settings.icsIntegration.useICSEndAsDue ?? false,
 						setValue: async (value: boolean) => {
@@ -1608,22 +1610,22 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureDropdownSetting(setting, {
 						name: translate(
-							"settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name"
+							msg({ message: "Recurring event related notes", context: "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name" })
 						),
 						desc: translate(
-							"settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description"
+							msg({ message: "Choose whether notes linked to one recurrence of an external calendar event appear across the loaded series or only on the selected instance.", context: "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description" })
 						),
 						options: [
 							{
 								value: "series",
 								label: translate(
-									"settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
+									msg({ message: "Series-wide", context: "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series" })
 								),
 							},
 							{
 								value: "instance",
 								label: translate(
-									"settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance"
+									msg({ message: "Selected instance only", context: "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance" })
 								),
 							},
 						],
@@ -1646,7 +1648,7 @@ export function renderIntegrationsTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.integrations.subscriptionsList.header"),
+			heading: translate(msg({ message: "Calendar subscriptions list", context: "settings.integrations.subscriptionsList.header" })),
 		},
 		(group) => {
 			// Add subscription button
@@ -1654,19 +1656,19 @@ export function renderIntegrationsTab(
 				(setting) =>
 					void configureButtonSetting(setting, {
 						name: translate(
-							"settings.integrations.subscriptionsList.addSubscription.name"
+							msg({ message: "Add calendar subscription", context: "settings.integrations.subscriptionsList.addSubscription.name" })
 						),
 						desc: translate(
-							"settings.integrations.subscriptionsList.addSubscription.description"
+							msg({ message: "Add a new calendar subscription from ICS/iCal URL or local file", context: "settings.integrations.subscriptionsList.addSubscription.description" })
 						),
 						buttonText: translate(
-							"settings.integrations.subscriptionsList.addSubscription.buttonText"
+							msg({ message: "Add subscription", context: "settings.integrations.subscriptionsList.addSubscription.buttonText" })
 						),
 						onClick: async () => {
 							// Create a new subscription with temporary values
 							const newSubscription = {
 								name: translate(
-									"settings.integrations.subscriptionsList.newCalendarName"
+									msg({ message: "New calendar", context: "settings.integrations.subscriptionsList.newCalendarName" })
 								),
 								url: "",
 								color: "#6366f1",
@@ -1678,7 +1680,7 @@ export function renderIntegrationsTab(
 							if (!plugin.icsSubscriptionService) {
 								new Notice(
 									translate(
-										"settings.integrations.subscriptionsList.notices.serviceUnavailable"
+										msg({ message: "ICS subscription service not available", context: "settings.integrations.subscriptionsList.notices.serviceUnavailable" })
 									)
 								);
 								return;
@@ -1690,7 +1692,7 @@ export function renderIntegrationsTab(
 								);
 								new Notice(
 									translate(
-										"settings.integrations.subscriptionsList.notices.addSuccess"
+										msg({ message: "New calendar subscription added - please configure the details", context: "settings.integrations.subscriptionsList.notices.addSuccess" })
 									)
 								);
 								// Re-render to show the new subscription card
@@ -1703,7 +1705,7 @@ export function renderIntegrationsTab(
 								});
 								new Notice(
 									translate(
-										"settings.integrations.subscriptionsList.notices.addFailure"
+										msg({ message: "Failed to add subscription", context: "settings.integrations.subscriptionsList.notices.addFailure" })
 									)
 								);
 							}
@@ -1715,12 +1717,12 @@ export function renderIntegrationsTab(
 			group.addSetting(
 				(setting) =>
 					void configureButtonSetting(setting, {
-						name: translate("settings.integrations.subscriptionsList.refreshAll.name"),
+						name: translate(msg({ message: "Refresh all subscriptions", context: "settings.integrations.subscriptionsList.refreshAll.name" })),
 						desc: translate(
-							"settings.integrations.subscriptionsList.refreshAll.description"
+							msg({ message: "Manually refresh all enabled calendar subscriptions", context: "settings.integrations.subscriptionsList.refreshAll.description" })
 						),
 						buttonText: translate(
-							"settings.integrations.subscriptionsList.refreshAll.buttonText"
+							msg({ message: "Refresh all", context: "settings.integrations.subscriptionsList.refreshAll.buttonText" })
 						),
 						onClick: async () => {
 							if (plugin.icsSubscriptionService) {
@@ -1728,7 +1730,7 @@ export function renderIntegrationsTab(
 									await plugin.icsSubscriptionService.refreshAllSubscriptions();
 									new Notice(
 										translate(
-											"settings.integrations.subscriptionsList.notices.refreshSuccess"
+											msg({ message: "All calendar subscriptions refreshed successfully", context: "settings.integrations.subscriptionsList.notices.refreshSuccess" })
 										)
 									);
 								} catch (error) {
@@ -1739,7 +1741,7 @@ export function renderIntegrationsTab(
 									});
 									new Notice(
 										translate(
-											"settings.integrations.subscriptionsList.notices.refreshFailure"
+											msg({ message: "Failed to refresh some calendar subscriptions", context: "settings.integrations.subscriptionsList.notices.refreshFailure" })
 										)
 									);
 								}
@@ -1757,21 +1759,21 @@ export function renderIntegrationsTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.integrations.autoExport.header"),
-			description: translate("settings.integrations.autoExport.description"),
+			heading: translate(msg({ message: "Automatic ICS export", context: "settings.integrations.autoExport.header" })),
+			description: translate(msg({ message: "Automatically export all your tasks to an ICS file.", context: "settings.integrations.autoExport.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.integrations.autoExport.enable.name"),
-						desc: translate("settings.integrations.autoExport.enable.description"),
+						name: translate(msg({ message: "Enable automatic export", context: "settings.integrations.autoExport.enable.name" })),
+						desc: translate(msg({ message: "Automatically keep an ICS file updated with all your tasks", context: "settings.integrations.autoExport.enable.description" })),
 						getValue: () => plugin.settings.icsIntegration.enableAutoExport,
 						setValue: async (value: boolean) => {
 							plugin.settings.icsIntegration.enableAutoExport = value;
 							save();
 							new Notice(
-								translate("settings.integrations.autoExport.notices.reloadRequired")
+								translate(msg({ message: "Please reload Obsidian for the automatic export changes to take effect.", context: "settings.integrations.autoExport.notices.reloadRequired" }))
 							);
 							// Re-render to show/hide export settings
 							renderIntegrationsTab(container, plugin, save);
@@ -1783,12 +1785,12 @@ export function renderIntegrationsTab(
 				group.addSetting(
 					(setting) =>
 						void configureTextSetting(setting, {
-							name: translate("settings.integrations.autoExport.filePath.name"),
+							name: translate(msg({ message: "Export file path", context: "settings.integrations.autoExport.filePath.name" })),
 							desc: translate(
-								"settings.integrations.autoExport.filePath.description"
+								msg({ message: "Path where the ICS file will be saved (relative to vault root)", context: "settings.integrations.autoExport.filePath.description" })
 							),
 							placeholder: translate(
-								"settings.integrations.autoExport.filePath.placeholder"
+								msg({ message: "tasknotes-calendar.ics", context: "settings.integrations.autoExport.filePath.placeholder" })
 							),
 							getValue: () => plugin.settings.icsIntegration.autoExportPath,
 							setValue: async (value: string) => {
@@ -1802,12 +1804,12 @@ export function renderIntegrationsTab(
 				group.addSetting(
 					(setting) =>
 						void configureNumberSetting(setting, {
-							name: translate("settings.integrations.autoExport.interval.name"),
+							name: translate(msg({ message: "Update interval (between 5 and 1440 minutes)", context: "settings.integrations.autoExport.interval.name" })),
 							desc: translate(
-								"settings.integrations.autoExport.interval.description"
+								msg({ message: "How often to update the export file", context: "settings.integrations.autoExport.interval.description" })
 							),
 							placeholder: translate(
-								"settings.integrations.autoExport.interval.placeholder"
+								msg({ message: "60", context: "settings.integrations.autoExport.interval.placeholder" })
 							),
 							min: 5,
 							max: 1440, // 24 hours max
@@ -1831,9 +1833,9 @@ export function renderIntegrationsTab(
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate("settings.integrations.autoExport.useDuration.name"),
+							name: translate(msg({ message: "Use task duration for event length", context: "settings.integrations.autoExport.useDuration.name" })),
 							desc: translate(
-								"settings.integrations.autoExport.useDuration.description"
+								msg({ message: "When enabled, uses the task''s time estimate (duration) instead of due date for the calendar event end time. This is useful for GTD workflows where scheduled + duration represents work planning, while due date represents deadlines.", context: "settings.integrations.autoExport.useDuration.description" })
 							),
 							getValue: () =>
 								plugin.settings.icsIntegration.useDurationForExport ?? false,
@@ -1848,10 +1850,10 @@ export function renderIntegrationsTab(
 					(setting) =>
 						void configureToggleSetting(setting, {
 							name: translate(
-								"settings.integrations.autoExport.excludeCompleted.name"
+								msg({ message: "Exclude completed tasks", context: "settings.integrations.autoExport.excludeCompleted.name" })
 							),
 							desc: translate(
-								"settings.integrations.autoExport.excludeCompleted.description"
+								msg({ message: "When enabled, completed tasks are omitted from ICS exports. Completed statuses are taken from your task statuses settings.", context: "settings.integrations.autoExport.excludeCompleted.description" })
 							),
 							getValue: () =>
 								plugin.settings.icsIntegration.excludeCompletedFromExport ?? false,
@@ -1866,10 +1868,10 @@ export function renderIntegrationsTab(
 					(setting) =>
 						void configureToggleSetting(setting, {
 							name: translate(
-								"settings.integrations.autoExport.excludeArchived.name"
+								msg({ message: "Exclude archived tasks", context: "settings.integrations.autoExport.excludeArchived.name" })
 							),
 							desc: translate(
-								"settings.integrations.autoExport.excludeArchived.description"
+								msg({ message: "When enabled, archived tasks are omitted from ICS exports.", context: "settings.integrations.autoExport.excludeArchived.description" })
 							),
 							getValue: () =>
 								plugin.settings.icsIntegration.excludeArchivedFromExport ?? false,
@@ -1883,9 +1885,9 @@ export function renderIntegrationsTab(
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate("settings.integrations.autoExport.requireDueDate.name"),
+							name: translate(msg({ message: "Require due date", context: "settings.integrations.autoExport.requireDueDate.name" })),
 							desc: translate(
-								"settings.integrations.autoExport.requireDueDate.description"
+								msg({ message: "When enabled, only tasks with a due date are included in ICS exports.", context: "settings.integrations.autoExport.requireDueDate.description" })
 							),
 							getValue: () =>
 								plugin.settings.icsIntegration.requireDueDateForExport ?? false,
@@ -1900,10 +1902,10 @@ export function renderIntegrationsTab(
 					(setting) =>
 						void configureToggleSetting(setting, {
 							name: translate(
-								"settings.integrations.autoExport.requireScheduledDate.name"
+								msg({ message: "Require scheduled date", context: "settings.integrations.autoExport.requireScheduledDate.name" })
 							),
 							desc: translate(
-								"settings.integrations.autoExport.requireScheduledDate.description"
+								msg({ message: "When enabled, only tasks with a scheduled date are included in ICS exports.", context: "settings.integrations.autoExport.requireScheduledDate.description" })
 							),
 							getValue: () =>
 								plugin.settings.icsIntegration.requireScheduledDateForExport ??
@@ -1920,12 +1922,12 @@ export function renderIntegrationsTab(
 				group.addSetting(
 					(setting) =>
 						void configureButtonSetting(setting, {
-							name: translate("settings.integrations.autoExport.exportNow.name"),
+							name: translate(msg({ message: "Export now", context: "settings.integrations.autoExport.exportNow.name" })),
 							desc: translate(
-								"settings.integrations.autoExport.exportNow.description"
+								msg({ message: "Manually trigger an immediate export", context: "settings.integrations.autoExport.exportNow.description" })
 							),
 							buttonText: translate(
-								"settings.integrations.autoExport.exportNow.buttonText"
+								msg({ message: "Export now", context: "settings.integrations.autoExport.exportNow.buttonText" })
 							),
 							onClick: async () => {
 								if (plugin.autoExportService) {
@@ -1933,7 +1935,7 @@ export function renderIntegrationsTab(
 										await plugin.autoExportService.exportNow();
 										new Notice(
 											translate(
-												"settings.integrations.autoExport.notices.exportSuccess"
+												msg({ message: "Tasks exported successfully", context: "settings.integrations.autoExport.notices.exportSuccess" })
 											)
 										);
 										// Re-render to update status
@@ -1946,14 +1948,14 @@ export function renderIntegrationsTab(
 										});
 										new Notice(
 											translate(
-												"settings.integrations.autoExport.notices.exportFailure"
+												msg({ message: "Export failed - check console for details", context: "settings.integrations.autoExport.notices.exportFailure" })
 											)
 										);
 									}
 								} else {
 									new Notice(
 										translate(
-											"settings.integrations.autoExport.notices.serviceUnavailable"
+											msg({ message: "Auto export service not available", context: "settings.integrations.autoExport.notices.serviceUnavailable" })
 										)
 									);
 								}
@@ -1963,7 +1965,7 @@ export function renderIntegrationsTab(
 
 				// Export status display
 				group.addSetting((setting) => {
-					setting.setName(translate("settings.integrations.autoExport.status.title"));
+					setting.setName(translate(msg({ message: "Export status:", context: "settings.integrations.autoExport.status.title" })));
 					const descEl = setting.descEl;
 
 					if (plugin.autoExportService) {
@@ -1971,20 +1973,20 @@ export function renderIntegrationsTab(
 						const nextExport = plugin.autoExportService.getNextExportTime();
 
 						const lastExportText = lastExport
-							? translate("settings.integrations.autoExport.status.lastExport", {
-									time: lastExport.toLocaleString(),
+							? translate(msg({ message: "Last export: {time}", context: "settings.integrations.autoExport.status.lastExport" }), {
+									time: lastExport.toLocaleString(uiLocale()),
 								})
-							: translate("settings.integrations.autoExport.status.noExports");
+							: translate(msg({ message: "No exports yet", context: "settings.integrations.autoExport.status.noExports" }));
 						const nextExportText = nextExport
-							? translate("settings.integrations.autoExport.status.nextExport", {
-									time: nextExport.toLocaleString(),
+							? translate(msg({ message: "Next export: {time}", context: "settings.integrations.autoExport.status.nextExport" }), {
+									time: nextExport.toLocaleString(uiLocale()),
 								})
-							: translate("settings.integrations.autoExport.status.notScheduled");
+							: translate(msg({ message: "Not scheduled", context: "settings.integrations.autoExport.status.notScheduled" }));
 
 						descEl.textContent = lastExportText + "\n" + nextExportText;
 					} else {
 						descEl.textContent = translate(
-							"settings.integrations.autoExport.status.serviceNotInitialized"
+							msg({ message: "Service not initialized - please restart Obsidian", context: "settings.integrations.autoExport.status.serviceNotInitialized" })
 						);
 						descEl.addClass("tasknotes-auto-export-status__error");
 					}
@@ -1998,15 +2000,15 @@ export function renderIntegrationsTab(
 		createSettingGroup(
 			container,
 			{
-				heading: translate("settings.integrations.httpApi.header"),
-				description: translate("settings.integrations.httpApi.description"),
+				heading: translate(msg({ message: "HTTP API", context: "settings.integrations.httpApi.header" })),
+				description: translate(msg({ message: "Enable HTTP API for external integrations and automations.", context: "settings.integrations.httpApi.description" })),
 			},
 			(group) => {
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate("settings.integrations.httpApi.enable.name"),
-							desc: translate("settings.integrations.httpApi.enable.description"),
+							name: translate(msg({ message: "Enable HTTP API", context: "settings.integrations.httpApi.enable.name" })),
+							desc: translate(msg({ message: "Start local HTTP server for API access", context: "settings.integrations.httpApi.enable.description" })),
 							getValue: () => plugin.settings.enableAPI,
 							setValue: async (value: boolean) => {
 								plugin.settings.enableAPI = value;
@@ -2021,10 +2023,10 @@ export function renderIntegrationsTab(
 					group.addSetting(
 						(setting) =>
 							void configureNumberSetting(setting, {
-								name: translate("settings.integrations.httpApi.port.name"),
-								desc: translate("settings.integrations.httpApi.port.description"),
+								name: translate(msg({ message: "API port", context: "settings.integrations.httpApi.port.name" })),
+								desc: translate(msg({ message: "Port number for the HTTP API server", context: "settings.integrations.httpApi.port.description" })),
 								placeholder: translate(
-									"settings.integrations.httpApi.port.placeholder"
+									msg({ message: "3000", context: "settings.integrations.httpApi.port.placeholder" })
 								),
 								min: 1024,
 								max: 65535,
@@ -2039,12 +2041,12 @@ export function renderIntegrationsTab(
 					group.addSetting(
 						(setting) =>
 							void configureTextSetting(setting, {
-								name: translate("settings.integrations.httpApi.authToken.name"),
+								name: translate(msg({ message: "API authentication token", context: "settings.integrations.httpApi.authToken.name" })),
 								desc: translate(
-									"settings.integrations.httpApi.authToken.description"
+									msg({ message: "TaskNotes token, not your AI provider''s API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client''s bearer authentication settings. Update clients whenever this token changes.", context: "settings.integrations.httpApi.authToken.description" })
 								),
 								placeholder: translate(
-									"settings.integrations.httpApi.authToken.placeholder"
+									msg({ message: "your-secret-token", context: "settings.integrations.httpApi.authToken.placeholder" })
 								),
 								getValue: () => plugin.settings.apiAuthToken,
 								setValue: async (value: string) => {
@@ -2057,9 +2059,9 @@ export function renderIntegrationsTab(
 					group.addSetting(
 						(setting) =>
 							void configureToggleSetting(setting, {
-								name: translate("settings.integrations.httpApi.mcp.enable.name"),
+								name: translate(msg({ message: "Enable MCP server", context: "settings.integrations.httpApi.mcp.enable.name" })),
 								desc: translate(
-									"settings.integrations.httpApi.mcp.enable.description"
+									msg({ message: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.", context: "settings.integrations.httpApi.mcp.enable.description" })
 								),
 								getValue: () => plugin.settings.enableMCP,
 								setValue: async (value: boolean) => {
@@ -2083,10 +2085,10 @@ export function renderIntegrationsTab(
 				"tasknotes-settings__collapsible-icon"
 			);
 			apiToggleIcon.textContent = translate(
-				"settings.integrations.httpApi.endpoints.expandIcon"
+				msg({ message: "▶", context: "settings.integrations.httpApi.endpoints.expandIcon" })
 			);
 			apiHeaderContent.createSpan({
-				text: translate("settings.integrations.httpApi.endpoints.header"),
+				text: translate(msg({ message: "Available API endpoints", context: "settings.integrations.httpApi.endpoints.header" })),
 				cls: "tasknotes-settings__collapsible-title",
 			});
 
@@ -2111,8 +2113,8 @@ export function renderIntegrationsTab(
 				const isExpanded = apiEndpointsContent.style.display !== "none";
 				apiEndpointsContent.style.display = isExpanded ? "none" : "block";
 				apiToggleIcon.textContent = isExpanded
-					? translate("settings.integrations.httpApi.endpoints.expandIcon")
-					: translate("settings.integrations.httpApi.endpoints.collapseIcon");
+					? translate(msg({ message: "▶", context: "settings.integrations.httpApi.endpoints.expandIcon" }))
+					: translate(msg({ message: "▼", context: "settings.integrations.httpApi.endpoints.collapseIcon" }));
 			});
 
 			// Fetch live API documentation
@@ -2125,23 +2127,23 @@ export function renderIntegrationsTab(
 		createSettingGroup(
 			container,
 			{
-				heading: translate("settings.integrations.webhooks.header"),
+				heading: translate(msg({ message: "Webhooks", context: "settings.integrations.webhooks.header" })),
 				description:
-					translate("settings.integrations.webhooks.description.overview") +
+					translate(msg({ message: "Webhooks send real-time notifications to external services when TaskNotes events occur.", context: "settings.integrations.webhooks.description.overview" })) +
 					" " +
-					translate("settings.integrations.webhooks.description.usage"),
+					translate(msg({ message: "Configure webhooks to integrate with automation tools, sync services, or custom applications.", context: "settings.integrations.webhooks.description.usage" })),
 			},
 			(group) => {
 				// Add webhook button
 				group.addSetting(
 					(setting) =>
 						void configureButtonSetting(setting, {
-							name: translate("settings.integrations.webhooks.addWebhook.name"),
+							name: translate(msg({ message: "Add webhook", context: "settings.integrations.webhooks.addWebhook.name" })),
 							desc: translate(
-								"settings.integrations.webhooks.addWebhook.description"
+								msg({ message: "Register a new webhook endpoint", context: "settings.integrations.webhooks.addWebhook.description" })
 							),
 							buttonText: translate(
-								"settings.integrations.webhooks.addWebhook.buttonText"
+								msg({ message: "Add webhook", context: "settings.integrations.webhooks.addWebhook.buttonText" })
 							),
 							onClick: async () => {
 								const modal = new WebhookModal(
@@ -2185,7 +2187,7 @@ export function renderIntegrationsTab(
 										).open();
 										new Notice(
 											translate(
-												"settings.integrations.webhooks.notices.created"
+												msg({ message: "Webhook created successfully", context: "settings.integrations.webhooks.notices.created" })
 											)
 										);
 									}
@@ -2215,7 +2217,7 @@ function renderICSSubscriptionsList(
 	if (!plugin.icsSubscriptionService) {
 		createHelpText(
 			container,
-			translate("settings.integrations.subscriptionsList.notices.serviceUnavailable")
+			translate(msg({ message: "ICS subscription service not available", context: "settings.integrations.subscriptionsList.notices.serviceUnavailable" }))
 		);
 		return;
 	}
@@ -2226,7 +2228,7 @@ function renderICSSubscriptionsList(
 		const emptyState = container.createDiv("tasknotes-webhooks-empty-state");
 		emptyState.createSpan("tasknotes-webhooks-empty-icon");
 		emptyState.createSpan({
-			text: translate("settings.integrations.subscriptionsList.emptyState"),
+			text: translate(msg({ message: "No calendar subscriptions configured. Add a subscription to sync external calendars.", context: "settings.integrations.subscriptionsList.emptyState" })),
 			cls: "tasknotes-webhooks-empty-text",
 		});
 		return;
@@ -2239,7 +2241,7 @@ function renderICSSubscriptionsList(
 			save();
 		});
 
-		const nameInput = createCardInput("text", "Calendar name", subscription.name);
+		const nameInput = createCardInput("text", uiText(msg({ message: "Calendar name", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" })), subscription.name);
 
 		// Create type dropdown
 		const typeSelect = activeWindow.createEl("select");
@@ -2248,7 +2250,7 @@ function renderICSSubscriptionsList(
 		const remoteOption = activeWindow.createEl("option");
 		remoteOption.value = "remote";
 		remoteOption.textContent = translate(
-			"settings.integrations.subscriptionsList.typeOptions.remote"
+			msg({ message: "Remote URL", context: "settings.integrations.subscriptionsList.typeOptions.remote" })
 		);
 		remoteOption.selected = subscription.type === "remote";
 		typeSelect.appendChild(remoteOption);
@@ -2256,7 +2258,7 @@ function renderICSSubscriptionsList(
 		const localOption = activeWindow.createEl("option");
 		localOption.value = "local";
 		localOption.textContent = translate(
-			"settings.integrations.subscriptionsList.typeOptions.local"
+			msg({ message: "Local file", context: "settings.integrations.subscriptionsList.typeOptions.local" })
 		);
 		localOption.selected = subscription.type === "local";
 		typeSelect.appendChild(localOption);
@@ -2264,11 +2266,11 @@ function renderICSSubscriptionsList(
 		// Create input based on type
 		let sourceInput: HTMLElement;
 		if (subscription.type === "remote") {
-			sourceInput = createCardUrlInput("ICS/iCal URL", subscription.url);
+			sourceInput = createCardUrlInput(uiText(msg({ message: "ICS/iCal URL", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" })), subscription.url);
 		} else {
 			const fileInput = createCardInput(
 				"text",
-				"Local file path (e.g., Calendar.ics)",
+				uiText(msg({ message: "Local file path (e.g., Calendar.ics)", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" })),
 				subscription.filePath || ""
 			);
 			fileInput.setAttribute("placeholder", "Calendar.ics");
@@ -2293,7 +2295,7 @@ function renderICSSubscriptionsList(
 					error: error,
 				});
 				new Notice(
-					translate("settings.integrations.subscriptionsList.notices.updateFailure")
+					translate(msg({ message: "Failed to update subscription", context: "settings.integrations.subscriptionsList.notices.updateFailure" }))
 				);
 				// Revert changes if needed
 				renderICSSubscriptionsList(container, plugin, save);
@@ -2344,11 +2346,11 @@ function renderICSSubscriptionsList(
 
 						let newSourceInput: HTMLElement;
 						if (newType === "remote") {
-							newSourceInput = createCardUrlInput("ICS/iCal URL", subscription.url);
+							newSourceInput = createCardUrlInput(uiText(msg({ message: "ICS/iCal URL", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" })), subscription.url);
 						} else {
 							const fileInput = createCardInput(
 								"text",
-								"Local file path (e.g., Calendar.ics)",
+								uiText(msg({ message: "Local file path (e.g., Calendar.ics)", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" })),
 								subscription.filePath || ""
 							);
 							fileInput.setAttribute("placeholder", "Calendar.ics");
@@ -2375,15 +2377,12 @@ function renderICSSubscriptionsList(
 						);
 						if (labelElement) {
 							labelElement.textContent =
-								newType ===
-								translate(
-									"settings.integrations.subscriptionsList.statusLabels.remote"
-								)
+								newType === "remote"
 									? translate(
-											"settings.integrations.subscriptionsList.labels.url"
+											msg({ message: "URL:", context: "settings.integrations.subscriptionsList.labels.url" })
 										)
 									: translate(
-											"settings.integrations.subscriptionsList.labels.filePath"
+											msg({ message: "File path:", context: "settings.integrations.subscriptionsList.labels.filePath" })
 										);
 						}
 
@@ -2393,15 +2392,12 @@ function renderICSSubscriptionsList(
 						);
 						if (secondaryText) {
 							secondaryText.textContent =
-								newType ===
-								translate(
-									"settings.integrations.subscriptionsList.statusLabels.remote"
-								)
+								newType === "remote"
 									? translate(
-											"settings.integrations.subscriptionsList.statusLabels.remoteCalendar"
+											msg({ message: "Remote calendar", context: "settings.integrations.subscriptionsList.statusLabels.remoteCalendar" })
 										)
 									: translate(
-											"settings.integrations.subscriptionsList.typeOptions.local"
+											msg({ message: "Local file", context: "settings.integrations.subscriptionsList.typeOptions.local" })
 										);
 						}
 
@@ -2411,15 +2407,12 @@ function renderICSSubscriptionsList(
 						); // Assuming info-badge is the class for type badge
 						if (typeBadge) {
 							typeBadge.textContent =
-								newType ===
-								translate(
-									"settings.integrations.subscriptionsList.statusLabels.remote"
-								)
+								newType === "remote"
 									? translate(
-											"settings.integrations.subscriptionsList.statusLabels.remote"
+											msg({ message: "Remote", context: "settings.integrations.subscriptionsList.statusLabels.remote" })
 										)
 									: translate(
-											"settings.integrations.subscriptionsList.typeOptions.local"
+											msg({ message: "Local file", context: "settings.integrations.subscriptionsList.typeOptions.local" })
 										);
 						}
 					}
@@ -2442,12 +2435,12 @@ function renderICSSubscriptionsList(
 		// Create meta badges
 		const statusBadge = createStatusBadge(
 			subscription.enabled
-				? translate("settings.modalFields.manager.enabled")
-				: translate("settings.integrations.subscriptionsList.statusLabels.disabled"),
+				? translate(msg({ message: "Enabled:", context: "settings.modalFields.manager.enabled" }))
+				: translate(msg({ message: "Disabled", context: "settings.integrations.subscriptionsList.statusLabels.disabled" })),
 			subscription.enabled ? "active" : "inactive"
 		);
 
-		const typeBadge = createInfoBadge(subscription.type === "remote" ? "Remote" : "Local File");
+		const typeBadge = createInfoBadge(subscription.type === "remote" ? uiText(msg({ message: "Remote", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" })) : uiText(msg({ message: "Local File", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" })));
 
 		const metaBadges = [statusBadge, typeBadge];
 
@@ -2456,7 +2449,7 @@ function renderICSSubscriptionsList(
 		if (lastFetched) {
 			const lastSyncDate = new Date(lastFetched);
 			const timeAgo = getRelativeTime(lastSyncDate, translate);
-			const syncBadge = createInfoBadge(`Synced ${timeAgo}`);
+			const syncBadge = createInfoBadge(uiText(msg({ message: "Synced {timeAgo}", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" }), { timeAgo: timeAgo }));
 			metaBadges.push(syncBadge);
 		}
 
@@ -2464,7 +2457,7 @@ function renderICSSubscriptionsList(
 		const lastError = plugin.icsSubscriptionService.getLastError(subscription.id);
 		if (lastError) {
 			const errorBadge = createStatusBadge(
-				translate("settings.integrations.subscriptionsList.statusLabels.error"),
+				translate(msg({ message: "Error", context: "settings.integrations.subscriptionsList.statusLabels.error" })),
 				"inactive"
 			);
 			errorBadge.title = lastError; // Show error on hover
@@ -2473,26 +2466,25 @@ function renderICSSubscriptionsList(
 
 		// Build content rows
 		const contentRows: { label: string; input: HTMLElement; fullWidth?: boolean }[] = [
-			{ label: translate("settings.modalFields.manager.enabled"), input: enabledToggle },
+			{ label: translate(msg({ message: "Enabled:", context: "settings.modalFields.manager.enabled" })), input: enabledToggle },
 			{
-				label: translate("settings.integrations.subscriptionsList.labels.name"),
+				label: translate(msg({ message: "Name:", context: "settings.integrations.subscriptionsList.labels.name" })),
 				input: nameInput,
 			},
-			{ label: translate("settings.defaults.reminders.fields.type"), input: typeSelect },
+			{ label: translate(msg({ message: "Type:", context: "settings.defaults.reminders.fields.type" })), input: typeSelect },
 			{
 				label:
-					subscription.type ===
-					translate("settings.integrations.subscriptionsList.statusLabels.remote")
-						? translate("settings.integrations.subscriptionsList.labels.url")
-						: translate("settings.integrations.subscriptionsList.labels.filePath"),
+					subscription.type === "remote"
+						? translate(msg({ message: "URL:", context: "settings.integrations.subscriptionsList.labels.url" }))
+						: translate(msg({ message: "File path:", context: "settings.integrations.subscriptionsList.labels.filePath" })),
 				input: sourceInput,
 			},
 			{
-				label: translate("settings.taskProperties.taskStatuses.fields.color"),
+				label: translate(msg({ message: "Color:", context: "settings.taskProperties.taskStatuses.fields.color" })),
 				input: colorInput,
 			},
 			{
-				label: translate("settings.integrations.subscriptionsList.labels.refreshMinutes"),
+				label: translate(msg({ message: "Refresh (min):", context: "settings.integrations.subscriptionsList.labels.refreshMinutes" })),
 				input: refreshInput,
 			},
 		];
@@ -2507,27 +2499,26 @@ function renderICSSubscriptionsList(
 			header: {
 				primaryText: subscription.name,
 				secondaryText:
-					subscription.type ===
-					translate("settings.integrations.subscriptionsList.statusLabels.remote")
+					subscription.type === "remote"
 						? translate(
-								"settings.integrations.subscriptionsList.statusLabels.remoteCalendar"
+								msg({ message: "Remote calendar", context: "settings.integrations.subscriptionsList.statusLabels.remoteCalendar" })
 							)
-						: translate("settings.integrations.subscriptionsList.typeOptions.local"),
+						: translate(msg({ message: "Local file", context: "settings.integrations.subscriptionsList.typeOptions.local" })),
 				meta: metaBadges,
 				actions: [
 					createDeleteHeaderButton(async () => {
 						const confirmed = await showConfirmationModal(plugin.app, {
 							title: translate(
-								"settings.integrations.subscriptionsList.confirmDelete.title"
+								msg({ message: "Delete subscription", context: "settings.integrations.subscriptionsList.confirmDelete.title" })
 							),
 							message: translate(
-								"settings.integrations.subscriptionsList.confirmDelete.message",
+								msg({ message: "Are you sure you want to delete the subscription \"{name}\"? This action cannot be undone.", context: "settings.integrations.subscriptionsList.confirmDelete.message" }),
 								{ name: subscription.name }
 							),
 							confirmText: translate(
-								"settings.integrations.subscriptionsList.confirmDelete.confirmText"
+								msg({ message: "Delete", context: "settings.integrations.subscriptionsList.confirmDelete.confirmText" })
 							),
-							cancelText: translate("common.cancel"),
+							cancelText: translate(msg({ message: "Cancel", context: "common.cancel" })),
 							isDestructive: true,
 						});
 
@@ -2538,7 +2529,7 @@ function renderICSSubscriptionsList(
 								await subscriptionService.removeSubscription(subscription.id);
 								new Notice(
 									translate(
-										"settings.integrations.subscriptionsList.notices.deleteSuccess",
+										msg({ message: "Deleted subscription \"{name}\"", context: "settings.integrations.subscriptionsList.notices.deleteSuccess" }),
 										{ name: subscription.name }
 									)
 								);
@@ -2552,12 +2543,12 @@ function renderICSSubscriptionsList(
 								});
 								new Notice(
 									translate(
-										"settings.integrations.subscriptionsList.notices.deleteFailure"
+										msg({ message: "Failed to delete subscription", context: "settings.integrations.subscriptionsList.notices.deleteFailure" })
 									)
 								);
 							}
 						}
-					}, "Delete subscription"),
+					}, uiText(msg({ message: "Delete subscription", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList actions" }))),
 				],
 			},
 			content: {
@@ -2566,7 +2557,7 @@ function renderICSSubscriptionsList(
 			actions: {
 				buttons: [
 					{
-						text: translate("settings.integrations.subscriptionsList.refreshNow"),
+						text: translate(msg({ message: "Refresh now", context: "settings.integrations.subscriptionsList.refreshNow" })),
 						icon: "refresh-cw",
 						variant: subscription.enabled ? "primary" : "secondary",
 						disabled: !subscription.enabled,
@@ -2574,7 +2565,7 @@ function renderICSSubscriptionsList(
 							if (!subscription.enabled) {
 								new Notice(
 									translate(
-										"settings.integrations.subscriptionsList.notices.enableFirst"
+										msg({ message: "Enable the subscription first", context: "settings.integrations.subscriptionsList.notices.enableFirst" })
 									)
 								);
 								return;
@@ -2586,7 +2577,7 @@ function renderICSSubscriptionsList(
 								await subscriptionService.refreshSubscription(subscription.id);
 								new Notice(
 									translate(
-										"settings.integrations.subscriptionsList.notices.refreshSuccess",
+										msg({ message: "All calendar subscriptions refreshed successfully", context: "settings.integrations.subscriptionsList.notices.refreshSuccess" }),
 										{ name: subscription.name }
 									)
 								);
@@ -2600,7 +2591,7 @@ function renderICSSubscriptionsList(
 								});
 								new Notice(
 									translate(
-										"settings.integrations.subscriptionsList.notices.refreshFailure"
+										msg({ message: "Failed to refresh some calendar subscriptions", context: "settings.integrations.subscriptionsList.notices.refreshFailure" })
 									)
 								);
 							}
@@ -2631,8 +2622,8 @@ function renderWebhookList(
 	if (!plugin.settings.webhooks || plugin.settings.webhooks.length === 0) {
 		showCardEmptyState(
 			webhooksContainer,
-			translate("settings.integrations.webhooks.emptyState.message"),
-			translate("settings.integrations.webhooks.emptyState.buttonText"),
+			translate(msg({ message: "No webhooks configured. Add a webhook to receive real-time notifications.", context: "settings.integrations.webhooks.emptyState.message" })),
+			translate(msg({ message: "Add webhook", context: "settings.integrations.webhooks.emptyState.buttonText" })),
 			() => {
 				// This is a bit of a hack, but it's the easiest way to trigger the add webhook modal
 				const addWebhookButton = container
@@ -2649,16 +2640,16 @@ function renderWebhookList(
 	plugin.settings.webhooks.forEach((webhook, index) => {
 		const statusBadge = createStatusBadge(
 			webhook.active
-				? translate("settings.integrations.webhooks.labels.active")
-				: translate("settings.integrations.webhooks.statusLabels.inactive"),
+				? translate(msg({ message: "Active:", context: "settings.integrations.webhooks.labels.active" }))
+				: translate(msg({ message: "Inactive", context: "settings.integrations.webhooks.statusLabels.inactive" })),
 			webhook.active ? "active" : "inactive"
 		);
 
-		const successBadge = createInfoBadge(`Success: ${webhook.successCount || 0}`);
-		const failureBadge = createInfoBadge(`Failed: ${webhook.failureCount || 0}`);
+		const successBadge = createInfoBadge(uiText(msg({ message: "Success: {value1}", context: "settings/tabs/integrationsTab: renderWebhookList display" }), { value1: webhook.successCount || 0 }));
+		const failureBadge = createInfoBadge(uiText(msg({ message: "Failed: {value1}", context: "settings/tabs/integrationsTab: renderWebhookList display" }), { value1: webhook.failureCount || 0 }));
 
 		// Create inputs for inline editing
-		const urlInput = createCardUrlInput("Webhook URL", webhook.url);
+		const urlInput = createCardUrlInput(uiText(msg({ message: "Webhook URL", context: "settings/tabs/integrationsTab: renderWebhookList display" })), webhook.url);
 		const activeToggle = createCardToggle(webhook.active, (value) => {
 			webhook.active = value;
 			save();
@@ -2671,8 +2662,8 @@ function renderWebhookList(
 				);
 				if (statusBadge) {
 					statusBadge.textContent = webhook.active
-						? translate("settings.integrations.webhooks.labels.active")
-						: translate("settings.integrations.webhooks.statusLabels.inactive");
+						? translate(msg({ message: "Active:", context: "settings.integrations.webhooks.labels.active" }))
+						: translate(msg({ message: "Inactive", context: "settings.integrations.webhooks.statusLabels.inactive" }));
 					statusBadge.className = webhook.active
 						? "tasknotes-settings__card-status-badge tasknotes-settings__card-status-badge--active"
 						: "tasknotes-settings__card-status-badge tasknotes-settings__card-status-badge--inactive";
@@ -2687,8 +2678,8 @@ function renderWebhookList(
 
 			new Notice(
 				webhook.active
-					? translate("settings.integrations.webhooks.notices.enabled")
-					: translate("settings.integrations.webhooks.notices.disabled")
+					? translate(msg({ message: "Webhook enabled", context: "settings.integrations.webhooks.notices.enabled" }))
+					: translate(msg({ message: "Webhook disabled", context: "settings.integrations.webhooks.notices.disabled" }))
 			);
 		});
 
@@ -2697,17 +2688,17 @@ function renderWebhookList(
 			if (urlInput.value.trim() !== webhook.url) {
 				webhook.url = urlInput.value.trim();
 				save();
-				new Notice(translate("settings.integrations.webhooks.notices.urlUpdated"));
+				new Notice(translate(msg({ message: "Webhook URL updated", context: "settings.integrations.webhooks.notices.urlUpdated" })));
 			}
 		});
 
 		// Format webhook creation date
 		const createdDate = webhook.createdAt ? new Date(webhook.createdAt) : null;
 		const createdText = createdDate
-			? translate("settings.integrations.webhooks.statusLabels.created", {
+			? translate(msg({ message: "Created {timeAgo}", context: "settings.integrations.webhooks.statusLabels.created" }), {
 					timeAgo: getRelativeTime(createdDate, translate),
 				})
-			: "Creation date unknown";
+			: uiText(msg({ message: "Creation date unknown", context: "settings/tabs/integrationsTab: renderWebhookList display" }));
 
 		// Create events display as a formatted string
 		const eventsDisplay = activeWindow.createDiv();
@@ -2717,7 +2708,7 @@ function renderWebhookList(
 			const noEventsSpan = activeWindow.createSpan();
 			noEventsSpan.className = "tasknotes-webhook-events--empty";
 			noEventsSpan.textContent = translate(
-				"settings.integrations.webhooks.eventsDisplay.noEvents"
+				msg({ message: "No events selected", context: "settings.integrations.webhooks.eventsDisplay.noEvents" })
 			);
 			eventsDisplay.appendChild(noEventsSpan);
 		} else {
@@ -2734,7 +2725,7 @@ function renderWebhookList(
 		} else {
 			transformDisplay.className = "tasknotes-transform-file--empty";
 			transformDisplay.textContent = translate(
-				"settings.integrations.webhooks.transformDisplay.noTransform"
+				msg({ message: "Raw payload (no transform)", context: "settings.integrations.webhooks.transformDisplay.noTransform" })
 			);
 		}
 
@@ -2743,21 +2734,21 @@ function renderWebhookList(
 			collapsible: true,
 			defaultCollapsed: true,
 			header: {
-				primaryText: translate("settings.integrations.webhooks.cardHeader"),
+				primaryText: translate(msg({ message: "Webhook", context: "settings.integrations.webhooks.cardHeader" })),
 				secondaryText: createdText,
 				meta: [statusBadge, successBadge, failureBadge],
 				actions: [
 					createDeleteHeaderButton(async () => {
 						const confirmed = await showConfirmationModal(plugin.app, {
-							title: translate("settings.integrations.webhooks.confirmDelete.title"),
+							title: translate(msg({ message: "Delete webhook", context: "settings.integrations.webhooks.confirmDelete.title" })),
 							message: translate(
-								"settings.integrations.webhooks.confirmDelete.message",
+								msg({ message: "Are you sure you want to delete this webhook?\n\nURL: {url}\n\nThis action cannot be undone.", context: "settings.integrations.webhooks.confirmDelete.message" }),
 								{ url: webhook.url }
 							),
 							confirmText: translate(
-								"settings.integrations.webhooks.confirmDelete.confirmText"
+								msg({ message: "Delete", context: "settings.integrations.webhooks.confirmDelete.confirmText" })
 							),
-							cancelText: translate("common.cancel"),
+							cancelText: translate(msg({ message: "Cancel", context: "common.cancel" })),
 							isDestructive: true,
 						});
 
@@ -2765,7 +2756,7 @@ function renderWebhookList(
 							plugin.settings.webhooks.splice(index, 1);
 							save();
 							renderWebhookList(container, plugin, save);
-							new Notice(translate("settings.integrations.webhooks.notices.deleted"));
+							new Notice(translate(msg({ message: "Webhook deleted", context: "settings.integrations.webhooks.notices.deleted" })));
 						}
 					}),
 				],
@@ -2776,23 +2767,23 @@ function renderWebhookList(
 						rows: [
 							{
 								label: translate(
-									"settings.integrations.webhooks.cardFields.active"
+									msg({ message: "Active:", context: "settings.integrations.webhooks.cardFields.active" })
 								),
 								input: activeToggle,
 							},
 							{
-								label: translate("settings.integrations.webhooks.cardFields.url"),
+								label: translate(msg({ message: "URL:", context: "settings.integrations.webhooks.cardFields.url" })),
 								input: urlInput,
 							},
 							{
 								label: translate(
-									"settings.integrations.webhooks.cardFields.events"
+									msg({ message: "Events:", context: "settings.integrations.webhooks.cardFields.events" })
 								),
 								input: eventsDisplay,
 							},
 							{
 								label: translate(
-									"settings.integrations.webhooks.cardFields.transform"
+									msg({ message: "Transform:", context: "settings.integrations.webhooks.cardFields.transform" })
 								),
 								input: transformDisplay,
 							},
@@ -2803,7 +2794,7 @@ function renderWebhookList(
 			actions: {
 				buttons: [
 					{
-						text: translate("settings.integrations.webhooks.editEvents"),
+						text: translate(msg({ message: "Edit events", context: "settings.integrations.webhooks.editEvents" })),
 						icon: "settings",
 						variant: "secondary",
 						onClick: async () => {
@@ -2816,7 +2807,7 @@ function renderWebhookList(
 									save();
 									renderWebhookList(container, plugin, save);
 									new Notice(
-										translate("settings.integrations.webhooks.notices.updated")
+										translate(msg({ message: "Webhook updated", context: "settings.integrations.webhooks.notices.updated" }))
 									);
 								}
 							);
@@ -2864,21 +2855,21 @@ class SecretNoticeModal extends Modal {
 		const titleIcon = title.createSpan();
 		setIcon(titleIcon, "shield-check");
 		title.createSpan({
-			text: this.translate("settings.integrations.webhooks.secretModal.title"),
+			text: this.translate(msg({ message: "Webhook secret generated", context: "settings.integrations.webhooks.secretModal.title" })),
 		});
 
 		const content = notice.createDiv({ cls: "tasknotes-webhook-secret-content" });
 		content.createEl("p", {
-			text: this.translate("settings.integrations.webhooks.secretModal.description"),
+			text: this.translate(msg({ message: "Your webhook secret has been generated. Save this secret as you won''t be able to view it again:", context: "settings.integrations.webhooks.secretModal.description" })),
 		});
 		content.createEl("code", { text: this.secret, cls: "tasknotes-webhook-secret-code" });
 		content.createEl("p", {
-			text: this.translate("settings.integrations.webhooks.secretModal.usage"),
+			text: this.translate(msg({ message: "Use this secret to verify webhook payloads in your receiving application.", context: "settings.integrations.webhooks.secretModal.usage" })),
 		});
 
 		const buttonContainer = contentEl.createDiv({ cls: "tasknotes-webhook-modal-buttons" });
 		const closeBtn = buttonContainer.createEl("button", {
-			text: this.translate("settings.integrations.webhooks.secretModal.gotIt"),
+			text: this.translate(msg({ message: "Got it", context: "settings.integrations.webhooks.secretModal.gotIt" })),
 			cls: "tasknotes-webhook-modal-btn save",
 		});
 		closeBtn.onclick = () => this.close();
@@ -2922,7 +2913,7 @@ class WebhookEditModal extends Modal {
 		const headerIcon = header.createSpan({ cls: "tasknotes-webhook-modal-icon" });
 		setIcon(headerIcon, "webhook");
 		header.createEl("h2", {
-			text: this.translate("settings.integrations.webhooks.modals.edit.title"),
+			text: this.translate(msg({ message: "Edit webhook", context: "settings.integrations.webhooks.modals.edit.title" })),
 			cls: "tasknotes-webhook-modal-title",
 		});
 
@@ -2934,18 +2925,18 @@ class WebhookEditModal extends Modal {
 		const eventsIcon = eventsHeader.createSpan();
 		setIcon(eventsIcon, "zap");
 		eventsHeader.createEl("h3", {
-			text: this.translate("settings.integrations.webhooks.modals.edit.eventsSection"),
+			text: this.translate(msg({ message: "Events to subscribe to", context: "settings.integrations.webhooks.modals.edit.eventsSection" })),
 		});
 
 		const eventsGrid = eventsSection.createDiv({ cls: "tasknotes-webhook-events-list" });
 		WEBHOOK_EVENT_OPTIONS.forEach((event) => {
 			new Setting(eventsGrid)
-				.setName(this.translate(`${event.translation}.label`))
-				.setDesc(this.translate(`${event.translation}.description`))
+				.setName(this.translate(messageForKey(`${event.translation}.label`)))
+				.setDesc(this.translate(messageForKey(`${event.translation}.description`)))
 				.addToggle((toggle) => {
 					toggle.toggleEl.setAttribute(
 						"aria-label",
-						this.translate(`${event.translation}.label`)
+						this.translate(messageForKey(`${event.translation}.label`))
 					);
 					return toggle
 						.setValue(this.selectedEvents.includes(event.id))
@@ -2970,20 +2961,20 @@ class WebhookEditModal extends Modal {
 		const transformIcon = transformHeader.createSpan();
 		setIcon(transformIcon, "file-code");
 		transformHeader.createEl("h3", {
-			text: this.translate("settings.integrations.webhooks.modals.edit.transformSection"),
+			text: this.translate(msg({ message: "Transform configuration (optional)", context: "settings.integrations.webhooks.modals.edit.transformSection" })),
 		});
 
 		new Setting(transformSection)
 			.setName(
-				this.translate("settings.integrations.webhooks.modals.edit.transformFile.name")
+				this.translate(msg({ message: "Transform file", context: "settings.integrations.webhooks.modals.edit.transformFile.name" }))
 			)
 			.setDesc(
 				this.translate(
-					"settings.integrations.webhooks.modals.edit.transformFile.description"
+					msg({ message: "Path to a .json template file in your vault that transforms webhook payloads", context: "settings.integrations.webhooks.modals.edit.transformFile.description" })
 				)
 			)
 			.addText((text) => {
-				text.inputEl.setAttribute("aria-label", "Transform file path");
+				text.inputEl.setAttribute("aria-label", uiText(msg({ message: "Transform file path", context: "settings/tabs/integrationsTab: WebhookEditModal.onOpen display" })));
 				return text
 					.setPlaceholder("simple-template.json")
 					.setValue(this.transformFile)
@@ -3000,22 +2991,22 @@ class WebhookEditModal extends Modal {
 		const corsIcon = corsHeader.createSpan();
 		setIcon(corsIcon, "settings");
 		corsHeader.createEl("h3", {
-			text: this.translate("settings.integrations.webhooks.modals.edit.headersSection"),
+			text: this.translate(msg({ message: "Headers configuration", context: "settings.integrations.webhooks.modals.edit.headersSection" })),
 		});
 
 		new Setting(corsSection)
 			.setName(
-				this.translate("settings.integrations.webhooks.modals.edit.customHeaders.name")
+				this.translate(msg({ message: "Include custom headers", context: "settings.integrations.webhooks.modals.edit.customHeaders.name" }))
 			)
 			.setDesc(
 				this.translate(
-					"settings.integrations.webhooks.modals.edit.customHeaders.description"
+					msg({ message: "Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies.", context: "settings.integrations.webhooks.modals.edit.customHeaders.description" })
 				)
 			)
 			.addToggle((toggle) => {
 				toggle.toggleEl.setAttribute(
 					"aria-label",
-					this.translate("settings.integrations.webhooks.modals.edit.customHeaders.name")
+					this.translate(msg({ message: "Include custom headers", context: "settings.integrations.webhooks.modals.edit.customHeaders.name" }))
 				);
 				return toggle.setValue(this.corsHeaders).onChange((value) => {
 					this.corsHeaders = value;
@@ -3026,20 +3017,20 @@ class WebhookEditModal extends Modal {
 		const buttonContainer = contentEl.createDiv({ cls: "tasknotes-webhook-modal-buttons" });
 
 		const cancelBtn = buttonContainer.createEl("button", {
-			text: this.translate("settings.integrations.webhooks.modals.edit.buttons.cancel"),
+			text: this.translate(msg({ message: "Cancel", context: "settings.integrations.webhooks.modals.edit.buttons.cancel" })),
 			cls: "tasknotes-webhook-modal-btn cancel",
-			attr: { "aria-label": this.translate("common.cancel") },
+			attr: { "aria-label": this.translate(msg({ message: "Cancel", context: "common.cancel" })) },
 		});
 		const cancelIcon = cancelBtn.createSpan({ cls: "tasknotes-webhook-modal-btn-icon" });
 		setIcon(cancelIcon, "x");
 		cancelBtn.onclick = () => this.close();
 
 		const saveBtn = buttonContainer.createEl("button", {
-			text: this.translate("settings.integrations.webhooks.modals.edit.buttons.save"),
+			text: this.translate(msg({ message: "Save changes", context: "settings.integrations.webhooks.modals.edit.buttons.save" })),
 			cls: "tasknotes-webhook-modal-btn save mod-cta",
 			attr: {
 				"aria-label": this.translate(
-					"settings.integrations.webhooks.modals.edit.buttons.save"
+					msg({ message: "Save changes", context: "settings.integrations.webhooks.modals.edit.buttons.save" })
 				),
 			},
 		});
@@ -3050,7 +3041,7 @@ class WebhookEditModal extends Modal {
 			if (this.selectedEvents.length === 0) {
 				new Notice(
 					this.translate(
-						"settings.integrations.webhooks.modals.edit.notices.selectAtLeastOneEvent"
+						msg({ message: "Please select at least one event", context: "settings.integrations.webhooks.modals.edit.notices.selectAtLeastOneEvent" })
 					)
 				);
 				return;
@@ -3103,23 +3094,23 @@ class WebhookModal extends Modal {
 		const headerIcon = header.createSpan({ cls: "tasknotes-webhook-modal-icon" });
 		setIcon(headerIcon, "webhook");
 		header.createEl("h2", {
-			text: this.translate("settings.integrations.webhooks.modals.add.title"),
+			text: this.translate(msg({ message: "Add webhook", context: "settings.integrations.webhooks.modals.add.title" })),
 			cls: "tasknotes-webhook-modal-title",
 		});
 
 		// URL input section
 		const urlSection = contentEl.createDiv({ cls: "tasknotes-webhook-modal-section" });
 		new Setting(urlSection)
-			.setName(this.translate("settings.integrations.webhooks.modals.add.url.name"))
-			.setDesc(this.translate("settings.integrations.webhooks.modals.add.url.description"))
+			.setName(this.translate(msg({ message: "Webhook URL", context: "settings.integrations.webhooks.modals.add.url.name" })))
+			.setDesc(this.translate(msg({ message: "The endpoint where webhook payloads will be sent", context: "settings.integrations.webhooks.modals.add.url.description" })))
 			.addText((text) => {
 				text.inputEl.setAttribute(
 					"aria-label",
-					this.translate("settings.integrations.webhooks.modals.add.url.name")
+					this.translate(msg({ message: "Webhook URL", context: "settings.integrations.webhooks.modals.add.url.name" }))
 				);
 				return text
 					.setPlaceholder(
-						this.translate("settings.integrations.webhooks.modals.add.url.placeholder")
+						this.translate(msg({ message: "https://your-service.com/webhook", context: "settings.integrations.webhooks.modals.add.url.placeholder" }))
 					)
 					.setValue(this.url)
 					.onChange((value) => {
@@ -3135,19 +3126,19 @@ class WebhookModal extends Modal {
 		const eventsIcon = eventsHeader.createSpan();
 		setIcon(eventsIcon, "zap");
 		eventsHeader.createEl("h3", {
-			text: this.translate("settings.integrations.webhooks.modals.add.eventsSection"),
+			text: this.translate(msg({ message: "Events to subscribe to", context: "settings.integrations.webhooks.modals.add.eventsSection" })),
 		});
 
 		const eventsGrid = eventsSection.createDiv({ cls: "tasknotes-webhook-events-list" });
 
 		WEBHOOK_EVENT_OPTIONS.forEach((event) => {
 			new Setting(eventsGrid)
-				.setName(this.translate(`${event.translation}.label`))
-				.setDesc(this.translate(`${event.translation}.description`))
+				.setName(this.translate(messageForKey(`${event.translation}.label`)))
+				.setDesc(this.translate(messageForKey(`${event.translation}.description`)))
 				.addToggle((toggle) => {
 					toggle.toggleEl.setAttribute(
 						"aria-label",
-						this.translate(`${event.translation}.label`)
+						this.translate(messageForKey(`${event.translation}.label`))
 					);
 					return toggle
 						.setValue(this.selectedEvents.includes(event.id))
@@ -3172,18 +3163,18 @@ class WebhookModal extends Modal {
 		const transformIcon = transformHeader.createSpan();
 		setIcon(transformIcon, "file-code");
 		transformHeader.createEl("h3", {
-			text: this.translate("settings.integrations.webhooks.modals.add.transformSection"),
+			text: this.translate(msg({ message: "Transform configuration (optional)", context: "settings.integrations.webhooks.modals.add.transformSection" })),
 		});
 
 		new Setting(transformSection)
-			.setName(this.translate("settings.integrations.webhooks.modals.add.transformFile.name"))
+			.setName(this.translate(msg({ message: "Transform file", context: "settings.integrations.webhooks.modals.add.transformFile.name" })))
 			.setDesc(
 				this.translate(
-					"settings.integrations.webhooks.modals.add.transformFile.description"
+					msg({ message: "Path to a .json template file in your vault that transforms webhook payloads", context: "settings.integrations.webhooks.modals.add.transformFile.description" })
 				)
 			)
 			.addText((text) => {
-				text.inputEl.setAttribute("aria-label", "Transform file path");
+				text.inputEl.setAttribute("aria-label", uiText(msg({ message: "Transform file path", context: "settings/tabs/integrationsTab: WebhookModal.onOpen display" })));
 				return text
 					.setPlaceholder("simple-template.json")
 					.setValue(this.transformFile)
@@ -3200,38 +3191,23 @@ class WebhookModal extends Modal {
 		const helpIcon = helpHeader.createSpan();
 		setIcon(helpIcon, "info");
 		helpHeader.createSpan({
-			text: this.translate("settings.integrations.webhooks.modals.add.transformHelp.title"),
+			text: this.translate(msg({ message: "JSON transform templates customize webhook payloads:", context: "settings.integrations.webhooks.modals.add.transformHelp.title" })),
 		});
 
 		const helpList = transformHelp.createEl("ul", { cls: "tasknotes-webhook-help-list" });
 		const jsonLi = helpList.createEl("li");
-		jsonLi.createEl("strong", {
-			text: this.translate(
-				"settings.integrations.webhooks.modals.add.transformHelp.jsonFiles"
-			),
-		});
-		jsonLi.appendText(
-			this.translate(
-				"settings.integrations.webhooks.modals.add.transformHelp.jsonDescription"
-			)
-		);
-		jsonLi.createEl("code", { text: "${data.task.title}" });
+		uiRichText(jsonLi,
+			msg({ message: "<0>.json files:</0> Templates with <1>{example}</1>", context: "webhook JSON template help" }),
+			{ example: "${data.task.title}" }, { "0": "strong", "1": "code" });
 
 		const emptyLi = helpList.createEl("li");
-		emptyLi.createEl("strong", {
-			text: this.translate(
-				"settings.integrations.webhooks.modals.add.transformHelp.leaveEmpty"
-			),
-		});
-		emptyLi.appendText(
-			this.translate(
-				"settings.integrations.webhooks.modals.add.transformHelp.leaveEmptyDescription"
-			)
-		);
+		uiRichText(emptyLi,
+			msg({ message: "<0>Leave empty:</0> Send raw data", context: "webhook untransformed payload help" }),
+			{}, { "0": "strong" });
 
 		const helpExample = transformHelp.createDiv({ cls: "tasknotes-webhook-help-example" });
 		helpExample.createEl("strong", {
-			text: this.translate("settings.integrations.webhooks.modals.add.transformHelp.example"),
+			text: this.translate(msg({ message: "Example:", context: "settings.integrations.webhooks.modals.add.transformHelp.example" })),
 		});
 		helpExample.appendText(" ");
 		helpExample.createEl("code", { text: "simple-template.json" });
@@ -3244,20 +3220,20 @@ class WebhookModal extends Modal {
 		const corsIcon = corsHeader.createSpan();
 		setIcon(corsIcon, "settings");
 		corsHeader.createEl("h3", {
-			text: this.translate("settings.integrations.webhooks.modals.add.headersSection"),
+			text: this.translate(msg({ message: "Headers configuration", context: "settings.integrations.webhooks.modals.add.headersSection" })),
 		});
 
 		new Setting(corsSection)
-			.setName(this.translate("settings.integrations.webhooks.modals.add.customHeaders.name"))
+			.setName(this.translate(msg({ message: "Include custom headers", context: "settings.integrations.webhooks.modals.add.customHeaders.name" })))
 			.setDesc(
 				this.translate(
-					"settings.integrations.webhooks.modals.add.customHeaders.description"
+					msg({ message: "Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies.", context: "settings.integrations.webhooks.modals.add.customHeaders.description" })
 				)
 			)
 			.addToggle((toggle) => {
 				toggle.toggleEl.setAttribute(
 					"aria-label",
-					this.translate("settings.integrations.webhooks.modals.add.customHeaders.name")
+					this.translate(msg({ message: "Include custom headers", context: "settings.integrations.webhooks.modals.add.customHeaders.name" }))
 				);
 				return toggle.setValue(this.corsHeaders).onChange((value) => {
 					this.corsHeaders = value;
@@ -3268,20 +3244,20 @@ class WebhookModal extends Modal {
 		const buttonContainer = contentEl.createDiv({ cls: "tasknotes-webhook-modal-buttons" });
 
 		const cancelBtn = buttonContainer.createEl("button", {
-			text: this.translate("settings.integrations.webhooks.modals.add.buttons.cancel"),
+			text: this.translate(msg({ message: "Cancel", context: "settings.integrations.webhooks.modals.add.buttons.cancel" })),
 			cls: "tasknotes-webhook-modal-btn cancel",
-			attr: { "aria-label": this.translate("common.cancel") },
+			attr: { "aria-label": this.translate(msg({ message: "Cancel", context: "common.cancel" })) },
 		});
 		const cancelIcon = cancelBtn.createSpan({ cls: "tasknotes-webhook-modal-btn-icon" });
 		setIcon(cancelIcon, "x");
 		cancelBtn.onclick = () => this.close();
 
 		const saveBtn = buttonContainer.createEl("button", {
-			text: this.translate("settings.integrations.webhooks.modals.add.title"),
+			text: this.translate(msg({ message: "Add webhook", context: "settings.integrations.webhooks.modals.add.title" })),
 			cls: "tasknotes-webhook-modal-btn save mod-cta",
 			attr: {
 				"aria-label": this.translate(
-					"settings.integrations.webhooks.modals.add.buttons.add"
+					msg({ message: "Add webhook", context: "settings.integrations.webhooks.modals.add.buttons.add" })
 				),
 			},
 		});
@@ -3291,7 +3267,7 @@ class WebhookModal extends Modal {
 		saveBtn.onclick = () => {
 			if (!this.url.trim()) {
 				new Notice(
-					this.translate("settings.integrations.webhooks.modals.add.notices.urlRequired")
+					this.translate(msg({ message: "Webhook URL is required", context: "settings.integrations.webhooks.modals.add.notices.urlRequired" }))
 				);
 				return;
 			}
@@ -3299,7 +3275,7 @@ class WebhookModal extends Modal {
 			if (this.selectedEvents.length === 0) {
 				new Notice(
 					this.translate(
-						"settings.integrations.webhooks.modals.add.notices.selectAtLeastOneEvent"
+						msg({ message: "Please select at least one event", context: "settings.integrations.webhooks.modals.add.notices.selectAtLeastOneEvent" })
 					)
 				);
 				return;

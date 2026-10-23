@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting } from "obsidian";
 
 export interface ConfirmationModalOptions {
@@ -23,8 +25,8 @@ export class ConfirmationModal extends Modal {
 	constructor(app: App, options: ConfirmationModalOptions) {
 		super(app);
 		this.options = {
-			confirmText: "Confirm",
-			cancelText: "Cancel",
+			confirmText: uiText(msg({ message: "Confirm", context: "modals/ConfirmationModal: ConfirmationModal confirmText" })),
+			cancelText: uiText(msg({ message: "Cancel", context: "modals/ConfirmationModal: ConfirmationModal cancelText" })),
 			isDestructive: false,
 			...options,
 		};

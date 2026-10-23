@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { CalendarExportService } from "../../../src/services/CalendarExportService";
 import { downloadAllTasksICSFile } from "../../../src/ui/calendarExportActions";
 import type { TaskInfo } from "../../../src/types";
@@ -176,7 +177,7 @@ describe("Issue #773: ICS export filter options", () => {
 		URL.createObjectURL = jest.fn(() => "blob:tasknotes");
 		URL.revokeObjectURL = jest.fn();
 		const translate = jest.fn((key: string, vars?: Record<string, unknown>) => {
-			if (key === "services.calendarExport.notices.downloadSuccess") {
+			if (key === msg({ message: "{count, plural, one {Downloaded {filename} with {count} task} other {Downloaded {filename} with {count} tasks}}", context: "services.calendarExport.notices.downloadSuccess" })) {
 				return `Downloaded ${vars?.filename} with ${vars?.count} task${vars?.plural}`;
 			}
 			return key;

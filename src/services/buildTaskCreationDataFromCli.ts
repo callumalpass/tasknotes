@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type { CliData } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { Reminder, TaskCreationData } from "../types";
@@ -61,7 +63,7 @@ function parseReminderShorthand(value: string, index: number): Reminder {
 		return {
 			id: buildReminderId(index),
 			type: "absolute",
-			description: "Reminder",
+			description: uiText(msg({ message: "Reminder", context: "services/buildTaskCreationDataFromCli: parseReminderShorthand description" })),
 			absoluteTime,
 		};
 	}
@@ -84,7 +86,7 @@ function parseReminderShorthand(value: string, index: number): Reminder {
 	return {
 		id: buildReminderId(index),
 		type: "relative",
-		description: "Reminder",
+		description: uiText(msg({ message: "Reminder", context: "services/buildTaskCreationDataFromCli: parseReminderShorthand description" })),
 		relatedTo,
 		offset,
 	};

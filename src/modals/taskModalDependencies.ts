@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { setTooltip, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
@@ -28,7 +30,7 @@ export interface RenderDependencyListOptions {
 	listEl: HTMLElement | undefined;
 	items: DependencyItem[];
 	linkServices: LinkServices;
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	onRemove: (index: number) => void;
 }
 
@@ -178,7 +180,7 @@ export async function renderDependencyList({
 			itemEl.addClass("task-project-item--unresolved");
 			setTooltip(
 				itemEl,
-				translate("contextMenus.task.dependencies.notices.unresolved", {
+				translate(msg({ message: "Could not resolve: {entries}", context: "contextMenus.task.dependencies.notices.unresolved" }), {
 					entries: item.dependency.uid,
 				}),
 				{ placement: "top" }
@@ -200,7 +202,7 @@ export async function renderDependencyList({
 			cls: "task-project-remove",
 			text: "×",
 		});
-		setTooltip(removeBtn, translate("modals.task.dependencies.removeTaskTooltip"), {
+		setTooltip(removeBtn, translate(msg({ message: "Remove task", context: "modals.task.dependencies.removeTaskTooltip" })), {
 			placement: "top",
 		});
 		removeBtn.addEventListener("click", (event) => {

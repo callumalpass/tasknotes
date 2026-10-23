@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type { TaskInfo } from "../types";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { buildBasesPathProperties } from "./basesViewAdapters";
@@ -71,27 +73,27 @@ export function getTaskListPropertyValue(
 
 export function stringifyTaskListGroupValue(value: unknown): string {
 	if (value === null || value === undefined) {
-		return "None";
+		return uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
 	}
 
 	if (typeof value === "object" && value !== null && typeof value.toString === "function") {
 		const basesValue = value as BasesDisplayValue;
 		if (basesValue.constructor?.name === "NullValue") {
-			return "None";
+			return uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
 		}
 
 		if (basesValue.constructor?.name === "ListValue" || Array.isArray(basesValue.value)) {
 			const arr = basesValue.value || [];
 			return arr.length > 0
 				? arr.map((item) => stringifyTaskListGroupValue(item)).join(", ")
-				: "None";
+				: uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
 		}
 
-		return basesValue.toString() || "None";
+		return basesValue.toString() || uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
 	}
 
 	if (typeof value === "string") {
-		return value || "None";
+		return value || uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
 	}
 
 	if (typeof value === "number") {
@@ -99,16 +101,16 @@ export function stringifyTaskListGroupValue(value: unknown): string {
 	}
 
 	if (typeof value === "boolean") {
-		return value ? "True" : "False";
+		return value ? uiText(msg({ message: "True", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" })) : uiText(msg({ message: "False", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
 	}
 
 	if (Array.isArray(value)) {
 		return value.length > 0
 			? value.map((item) => stringifyTaskListGroupValue(item)).join(", ")
-			: "None";
+			: uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
 	}
 
-	return stringifyUnknown(value) || "None";
+	return stringifyUnknown(value) || uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
 }
 
 export function groupTasksByTaskListSubProperty(

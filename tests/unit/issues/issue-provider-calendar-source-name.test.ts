@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { describe, expect, it, jest } from "@jest/globals";
 import { createICSEventCard, updateICSEventCard } from "../../../src/ui/ICSCard";
 import type { ICSEvent } from "../../../src/types";
@@ -33,7 +34,7 @@ function createPlugin() {
 	return {
 		app: {},
 		i18n: {
-			translate: (key: string) => (key === "ui.icsCard.calendarFallback" ? "Calendar" : key),
+			translate: (key: string) => (key === msg({ message: "Calendar", context: "ui.icsCard.calendarFallback" }) ? "Calendar" : key),
 		},
 		settings: {
 			calendarViewSettings: {

@@ -1,0 +1,1406 @@
+[
+  {
+    "file": "src/bases/MiniCalendarView.ts",
+    "line": 913,
+    "code": "text: dayNum.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/bases/TaskListView.ts",
+    "line": 2978,
+    "code": "` (${headerItem.taskCount})`",
+    "sink": "group item count",
+    "kind": "locale formatting",
+    "note": "Format counts with Intl.NumberFormat; keep canonical grouping keys and numeric sort values unchanged.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/bases/calendar-core.ts",
+    "line": 250,
+    "code": "`\\nEstimate: ${hours > 0 ? `${hours}h ` : \"\"}${minutes}m`",
+    "sink": "calendar task tooltip",
+    "kind": "locale formatting",
+    "note": "Use localized duration units as a parameter of a translated Estimate message.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/bases/calendar-core.ts",
+    "line": 2232,
+    "code": "format(date, \"d MMMM yyyy\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/bases/kanbanGrouping.ts",
+    "line": 173,
+    "code": "` (${taskCount})`",
+    "sink": "group item count",
+    "kind": "locale formatting",
+    "note": "Format counts with Intl.NumberFormat; keep canonical grouping keys and numeric sort values unchanged.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/bases/kanbanGrouping.ts",
+    "line": 179,
+    "code": "` (${taskCount}/${normalizedLimit})`",
+    "sink": "group item count",
+    "kind": "locale formatting",
+    "note": "Format counts with Intl.NumberFormat; keep canonical grouping keys and numeric sort values unchanged.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 234,
+    "code": "[\"th\", \"st\", \"nd\", \"rd\"]",
+    "sink": "recurrence English ordinal suffixes",
+    "kind": "locale formatting",
+    "note": "Use ICU selectordinal (or translated recurrence patterns); English suffixes passed into translated presets are still English.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 246,
+    "code": "January",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 247,
+    "code": "February",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 248,
+    "code": "March",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 249,
+    "code": "April",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 250,
+    "code": "May",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 251,
+    "code": "June",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 252,
+    "code": "July",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 253,
+    "code": "August",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 254,
+    "code": "September",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 255,
+    "code": "October",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 256,
+    "code": "November",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 257,
+    "code": "December",
+    "sink": "recurrence preset month parameter",
+    "kind": "locale formatting",
+    "note": "currentMonthName is passed into translated yearly presets; generate it in the selected locale rather than an English array.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/components/RecurrenceContextMenu.ts",
+    "line": 484,
+    "code": "text: day.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/components/TaskContextMenu.ts",
+    "line": 2234,
+    "code": "[\"th\", \"st\", \"nd\", \"rd\"]",
+    "sink": "recurrence English ordinal suffixes",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/core/createCompat.ts",
+    "line": 284,
+    "code": "format(now, \"MMMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/core/createCompat.ts",
+    "line": 285,
+    "code": "format(now, \"MMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/modals/CalendarEventCreationModal.ts",
+    "line": 103,
+    "code": "format(this.options.start, \"PPP\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/modals/CalendarEventCreationModal.ts",
+    "line": 104,
+    "code": "format(this.options.end, \"p\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/modals/CalendarEventCreationModal.ts",
+    "line": 104,
+    "code": "format(this.options.start, \"PPP p\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/modals/ICSEventInfoModal.ts",
+    "line": 66,
+    "code": "startDate.toLocaleDateString(\"en-US\", { weekday: \"long\", year: \"numeric\", month: \"long\", day: \"numeric\", })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/modals/ICSEventInfoModal.ts",
+    "line": 74,
+    "code": "startDate.toLocaleTimeString()",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/modals/ICSEventInfoModal.ts",
+    "line": 81,
+    "code": "endDate.toLocaleTimeString()",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/modals/ICSNoteCreationModal.ts",
+    "line": 161,
+    "code": "format(startDate, \"PPPp\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/modals/ICSNoteCreationModal.ts",
+    "line": 171,
+    "code": "format(endDate, \"PPPp\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/modals/ICSNoteCreationModal.ts",
+    "line": 307,
+    "code": "format(startDate, \"PPP\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/modals/TaskSelectorWithCreateModal.ts",
+    "line": 468,
+    "code": "`${hours}h ${mins}m`",
+    "sink": "task-selector estimate preview",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/modals/TimeEntryEditorModal.ts",
+    "line": 127,
+    "code": "new Date(entry.startTime).toLocaleDateString()",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/modals/TimeblockCreationModal.ts",
+    "line": 140,
+    "code": "dateObj.toLocaleDateString()",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/modals/TimeblockInfoModal.ts",
+    "line": 122,
+    "code": "this.eventDate.toLocaleDateString()",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/modals/UnscheduledTasksSelectorModal.ts",
+    "line": 164,
+    "code": "format( parseDateToLocal(task.due), userTimeFormat === \"12\" ? \"MMM d, h:mm a\" : \"MMM d, HH:mm\" )",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/modals/UnscheduledTasksSelectorModal.ts",
+    "line": 168,
+    "code": "format(parseDateToLocal(task.due), \"MMM d\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/modals/taskEditCompletions.ts",
+    "line": 128,
+    "code": "dayElement.textContent = String(day.getUTCDate());",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 4,
+    "code": "Sunday",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 5,
+    "code": "Monday",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 6,
+    "code": "Tuesday",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 7,
+    "code": "Wednesday",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 8,
+    "code": "Thursday",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 9,
+    "code": "Friday",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 10,
+    "code": "Saturday",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 15,
+    "code": "January",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 16,
+    "code": "February",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 17,
+    "code": "March",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 18,
+    "code": "April",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 19,
+    "code": "May",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 20,
+    "code": "June",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 21,
+    "code": "July",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 22,
+    "code": "August",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 23,
+    "code": "September",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 24,
+    "code": "October",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 25,
+    "code": "November",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 26,
+    "code": "December",
+    "sink": "recurrence summary weekday / month names",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/modals/taskModalActionValues.ts",
+    "line": 71,
+    "code": "[\"th\", \"st\", \"nd\", \"rd\"]",
+    "sink": "recurrence English ordinal suffixes",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/services/ICSNoteService.ts",
+    "line": 381,
+    "code": "format(eventStartDate, \"PPP\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/services/ICSNoteService.ts",
+    "line": 664,
+    "code": "format(startDate, \"PPPp\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/services/ICSNoteService.ts",
+    "line": 672,
+    "code": "format(endDate, \"PPPp\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/services/TaskCalendarSyncService.ts",
+    "line": 1976,
+    "code": "`${hours}h ${minutes}m`",
+    "sink": "exported calendar estimate duration",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 1975,
+    "code": "lastExport.toLocaleString()",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 1980,
+    "code": "nextExport.toLocaleString()",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/templates/defaultBasesFiles.ts",
+    "line": 473,
+    "code": "h  / m / 0m",
+    "sink": "generated Bases formula display text",
+    "kind": "locale formatting",
+    "note": "Localize display output at template generation or in a renderer (ICU cannot execute inside a Bases formula). Preserve expression grammar, schema IDs and canonical grouping identities; never rewrite user-owned .base files just on locale change. Replace English unit/suffix arithmetic with locale-aware duration/relative-time presentation.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/templates/defaultBasesFiles.ts",
+    "line": 538,
+    "code": "h / m / % (focusTime and completionRate formulas)",
+    "sink": "generated Pomodoro statistics",
+    "kind": "locale formatting",
+    "note": "Use locale-aware duration/percentage output; expressions and numeric data remain stable. Requires template/rendering design, not blindly wrapping the entire YAML.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/ui/NoteCard.ts",
+    "line": 106,
+    "code": "formatDateForDisplay(note.createdDate, dateFormat)",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/NoteCard.ts",
+    "line": 229,
+    "code": "formatDateForDisplay(note.createdDate, dateFormat)",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/NotificationService.ts",
+    "line": 665,
+    "code": "date.toLocaleDateString(undefined, { month: \"short\", day: \"numeric\" })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/ui/NotificationService.ts",
+    "line": 666,
+    "code": "date.toLocaleTimeString(undefined, { hour: \"numeric\", minute: \"2-digit\" })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "explicit active UI locale"
+  },
+  {
+    "file": "src/ui/recurringCompletionNotice.ts",
+    "line": 25,
+    "code": "format(parseDateToLocal(date), \"d MMM yyyy\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/ui/recurringCompletionNotice.ts",
+    "line": 32,
+    "code": "format(parseDateToLocal(getDatePart(task.scheduled)), \"d MMM yyyy\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/ui/taskCardMetadata.ts",
+    "line": 130,
+    "code": "formatDateTimeForDisplay(task.occurrence_date, { dateFormat: \"MMM d\", showTime: false, userTimeFormat: plugin.settings.calendarViewSettings?.timeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 86,
+    "code": "formatDateTimeForDisplay(icsEvent.start, { userTimeFormat: plugin.settings.calendarViewSettings.timeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 350,
+    "code": "formatDateTimeForDisplay(value, { dateFormat: \"MMM d\", showTime: false, userTimeFormat: plugin.settings.calendarViewSettings?.timeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 415,
+    "code": "formatDateTimeForDisplay(value, { dateFormat: \"MMM d\", showTime: false, userTimeFormat: plugin.settings.calendarViewSettings.timeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 425,
+    "code": "formatDateTimeForDisplay(value, { dateFormat: \"MMM d\", showTime: false, userTimeFormat: plugin.settings.calendarViewSettings.timeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 435,
+    "code": "formatDateTimeForDisplay(value, { dateFormat: \"MMM d\", showTime: false, userTimeFormat: plugin.settings.calendarViewSettings.timeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 738,
+    "code": "formatDateTimeForDisplay(value.toISOString(), { dateFormat: \"MMM d, yyyy\", timeFormat: \"\", showTime: false, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 753,
+    "code": "Number.isInteger(value) ? String(value) : value.toFixed(2)",
+    "sink": "numeric property rendering",
+    "kind": "locale formatting",
+    "note": "toFixed forces an ASCII decimal point and digits; format the displayed number with the selected locale, preserving the underlying numeric value.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 785,
+    "code": "formatDateTimeForDisplay(stringifyUnknown(value), { dateFormat: \"MMM d, yyyy\", timeFormat: \"\", showTime: false, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 831,
+    "code": "formatDateTimeForDisplay(due, { dateFormat: \"\", showTime: true, userTimeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 841,
+    "code": "formatDateTimeForDisplay(due, { dateFormat: getTaskCardDateFormat(due), showTime: true, userTimeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 848,
+    "code": "formatDateTimeForDisplay(due, { dateFormat: getTaskCardDateFormat(due), showTime: true, userTimeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 889,
+    "code": "formatDateTimeForDisplay(scheduled, { dateFormat: \"\", showTime: true, userTimeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 902,
+    "code": "formatDateTimeForDisplay(scheduled, { dateFormat: getTaskCardDateFormat(scheduled), showTime: true, userTimeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 909,
+    "code": "formatDateTimeForDisplay(scheduled, { dateFormat: getTaskCardDateFormat(scheduled), showTime: true, userTimeFormat, })",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "localized through dateUtils display wrapper"
+  },
+  {
+    "file": "src/utils/dateUtils.ts",
+    "line": 747,
+    "code": "format(parsed, formatString)",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/utils/dateUtils.ts",
+    "line": 843,
+    "code": "format(parsed, finalFormat)",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/utils/dateUtils.ts",
+    "line": 940,
+    "code": "format(date, timeFormat === \"12\" ? \"h:mm a\" : \"HH:mm\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/utils/dateUtils.ts",
+    "line": 959,
+    "code": "format(date, timeFormat === \"12\" ? \"MMM d, yyyy h:mm a\" : \"MMM d, yyyy HH:mm\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/utils/dateUtils.ts",
+    "line": 1101,
+    "code": "format(parsed, finalTimeFormat)",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/utils/dateUtils.ts",
+    "line": 1103,
+    "code": "format(parsed, `${dateFormat} ${finalTimeFormat}`)",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/utils/dateUtils.ts",
+    "line": 1110,
+    "code": "format(parsed, dateFormat)",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/utils/filenameGenerator.ts",
+    "line": 108,
+    "code": "format(now, \"PPP\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/filenameGenerator.ts",
+    "line": 366,
+    "code": "format(date, \"MMMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/filenameGenerator.ts",
+    "line": 367,
+    "code": "format(date, \"MMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/filenameGenerator.ts",
+    "line": 368,
+    "code": "format(date, \"EEEE\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/filenameGenerator.ts",
+    "line": 369,
+    "code": "format(date, \"EEE\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/filenameGenerator.ts",
+    "line": 373,
+    "code": "format(date, \"hh:mm a\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/filenameGenerator.ts",
+    "line": 377,
+    "code": "format(date, \"a\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/filenameGenerator.ts",
+    "line": 659,
+    "code": "format(date, \"MMMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/folderTemplateProcessor.ts",
+    "line": 79,
+    "code": "format(date, DAILY_NOTES_DATE_TOKEN_FORMATS[token])",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/folderTemplateProcessor.ts",
+    "line": 457,
+    "code": "format(date, \"MMMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/folderTemplateProcessor.ts",
+    "line": 458,
+    "code": "format(date, \"MMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/folderTemplateProcessor.ts",
+    "line": 459,
+    "code": "format(date, \"EEEE\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/folderTemplateProcessor.ts",
+    "line": 460,
+    "code": "format(date, \"EEE\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/folderTemplateProcessor.ts",
+    "line": 465,
+    "code": "format(date, \"hh:mm a\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/folderTemplateProcessor.ts",
+    "line": 469,
+    "code": "format(date, \"a\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/helpers.ts",
+    "line": 207,
+    "code": "`${hours}h ${mins}m`",
+    "sink": "shared formatTime duration",
+    "kind": "locale formatting",
+    "note": "The helper supplies 0m / Xm / Xh / Xh Ym across cards, notices and views; use locale-aware duration/number formatting.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 220,
+    "code": "format(now, \"MMMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 221,
+    "code": "format(now, \"MMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 222,
+    "code": "format(now, \"EEEE\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 223,
+    "code": "format(now, \"EEE\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 226,
+    "code": "format(now, \"hh:mm a\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 230,
+    "code": "format(now, \"a\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 455,
+    "code": "format(now, \"MMMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 456,
+    "code": "format(now, \"MMM\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 457,
+    "code": "format(now, \"EEEE\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 458,
+    "code": "format(now, \"EEE\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 461,
+    "code": "format(now, \"hh:mm a\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/utils/templateProcessor.ts",
+    "line": 465,
+    "code": "format(now, \"a\")",
+    "sink": "generated filename / template date",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "stable filename/template tokens; explicit English locale"
+  },
+  {
+    "file": "src/views/PomodoroStatsView.ts",
+    "line": 255,
+    "code": "format( new Date(session.startTime), timeFormat === \"12\" ? \"MMM d, h:mm a\" : \"MMM d, HH:mm\" )",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/views/PomodoroStatsView.ts",
+    "line": 362,
+    "code": "`${hours}h${mins}m`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/views/PomodoroStatsView.ts",
+    "line": 376,
+    "code": "todayPomosValue.textContent = todayStats.pomodorosCompleted.toString();",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/PomodoroStatsView.ts",
+    "line": 403,
+    "code": "totalPomosValue.textContent = overallStats.pomodorosCompleted.toString();",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/PomodoroStatsView.ts",
+    "line": 459,
+    "code": "text: stats.pomodorosCompleted.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/PomodoroStatsView.ts",
+    "line": 472,
+    "code": "text: stats.currentStreak.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/PomodoroStatsView.ts",
+    "line": 485,
+    "code": "text: stats.totalMinutes.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/PomodoroStatsView.ts",
+    "line": 498,
+    "code": "text: stats.averageSessionLength.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/PomodoroStatsView.ts",
+    "line": 511,
+    "code": "`${stats.completionRate}%`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/views/PomodoroView.ts",
+    "line": 403,
+    "code": "-1m",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/views/PomodoroView.ts",
+    "line": 413,
+    "code": "+1m",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/views/PomodoroView.ts",
+    "line": 989,
+    "code": "this.statElements.pomodoros.textContent = this.todaysPomodoros.toString();",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/PomodoroView.ts",
+    "line": 1320,
+    "code": "this.statElements.pomodoros.textContent = stats.pomodorosCompleted.toString();",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/ReleaseNotesView.ts",
+    "line": 78,
+    "code": "format(date, \"MMMM d, yyyy\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1055,
+    "code": "`${Math.round(minutes)}m`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1058,
+    "code": "`${hours}h ${mins}m`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1081,
+    "code": "totalTasksValue.textContent = stats.totalTasks.toString();",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1094,
+    "code": "`${Math.round(stats.completionRate)}%`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1107,
+    "code": "projectsValue.textContent = stats.activeProjects.toString();",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1131,
+    "code": "`${Math.round(minutes)}m`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1134,
+    "code": "`${hours}h ${mins}m`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1152,
+    "code": "text: stats.overall.totalTasks.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1163,
+    "code": "text: stats.overall.completedTasks.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1174,
+    "code": "text: stats.overall.activeProjects.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1194,
+    "code": "`${Math.round(minutes)}m`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1197,
+    "code": "`${hours}h ${mins}m`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1204,
+    "code": "format(date, \"MMM d, yyyy\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1376,
+    "code": "`${Math.round(percentage)}%`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1720,
+    "code": "`${Math.round(minutes)}m`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1723,
+    "code": "`${hours}h ${mins}m`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "manual formatting cluster"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1744,
+    "code": "text: data.tasks.length.toString(),",
+    "sink": "visible count / calendar numeral",
+    "kind": "locale formatting",
+    "note": "String/toString produces ASCII digits; use Intl.NumberFormat for presentation, not for option values, stored counts or ISO date keys.",
+    "state": "locale-aware display number"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1754,
+    "code": "`${Math.round(data.completionRate)}%`",
+    "sink": "duration / percentage display",
+    "kind": "locale formatting",
+    "note": "Use the selected UI/calendar locale with Intl (or an explicit date-fns locale); localize units, digits and date order, not storage formats.",
+    "state": "localized numeric/duration/percentage output"
+  },
+  {
+    "file": "src/views/StatsView.ts",
+    "line": 1909,
+    "code": "format(new Date(day.date), \"MMM d\")",
+    "sink": "date / time display",
+    "kind": "locale formatting",
+    "note": "Date-fns defaults to English without locale, and browser-default toLocale* may disagree with selected UI language. Use an explicit locale. For generated filenames/template tokens, make the locale policy opt-in/stable to avoid changing paths unexpectedly.",
+    "state": "locale-aware display date"
+  }
+]

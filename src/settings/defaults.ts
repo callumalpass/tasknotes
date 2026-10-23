@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { FieldMapping, StatusConfig, PriorityConfig } from "../types";
 import {
 	TaskNotesSettings,
@@ -29,7 +31,7 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 	{
 		id: "none",
 		value: "none",
-		label: "None",
+		get label() { return uiText(msg({ message: "None", context: "settings/defaults: defaults label" })); },
 		color: "#cccccc",
 		isCompleted: false,
 		excludeFromCycle: false,
@@ -40,7 +42,7 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 	{
 		id: "open",
 		value: "open",
-		label: "Open",
+		get label() { return uiText(msg({ message: "Open", context: "settings/defaults: defaults label" })); },
 		color: "#808080",
 		isCompleted: false,
 		excludeFromCycle: false,
@@ -51,7 +53,7 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 	{
 		id: "in-progress",
 		value: "in-progress",
-		label: "In progress",
+		get label() { return uiText(msg({ message: "In progress", context: "settings/defaults: defaults label" })); },
 		color: "#0066cc",
 		isCompleted: false,
 		excludeFromCycle: false,
@@ -62,7 +64,7 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 	{
 		id: "done",
 		value: "done",
-		label: "Done",
+		get label() { return uiText(msg({ message: "Done", context: "settings/defaults: defaults label" })); },
 		color: "#00aa00",
 		isCompleted: true,
 		excludeFromCycle: false,
@@ -77,28 +79,28 @@ export const DEFAULT_PRIORITIES: PriorityConfig[] = [
 	{
 		id: "none",
 		value: "none",
-		label: "None",
+		get label() { return uiText(msg({ message: "None", context: "settings/defaults: defaults label" })); },
 		color: "#cccccc",
 		weight: 0,
 	},
 	{
 		id: "low",
 		value: "low",
-		label: "Low",
+		get label() { return uiText(msg({ message: "Low", context: "settings/defaults: defaults label" })); },
 		color: "#00aa00",
 		weight: 1,
 	},
 	{
 		id: "normal",
 		value: "normal",
-		label: "Normal",
+		get label() { return uiText(msg({ message: "Normal", context: "settings/defaults: defaults label" })); },
 		color: "#ffaa00",
 		weight: 2,
 	},
 	{
 		id: "high",
 		value: "high",
-		label: "High",
+		get label() { return uiText(msg({ message: "High", context: "settings/defaults: defaults label" })); },
 		color: "#ff0000",
 		weight: 3,
 	},

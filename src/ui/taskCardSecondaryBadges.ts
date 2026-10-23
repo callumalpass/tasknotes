@@ -1,3 +1,5 @@
+import { messageForKey } from "../i18n/messages";
+import { msg } from "@lingui/core/macro";
 import { Notice, setTooltip } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -69,7 +71,7 @@ function tTaskCard(
 	key: string,
 	vars?: Record<string, string | number>
 ): string {
-	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
+	return plugin.i18n.translate(messageForKey(`ui.taskCard.${key}`), vars);
 }
 
 function canToggleProjectSubtasks(plugin: TaskNotesPlugin): boolean {
@@ -127,7 +129,7 @@ function createChevronClickHandler(
 			const logger = getTaskCardBadgeLogger(plugin);
 			try {
 				if (!plugin.expandedProjectsService) {
-					new Notice(plugin.i18n.translate("notices.interface.serviceUnavailable"));
+					new Notice(plugin.i18n.translate(msg({ message: "Service not available. Please try reloading the plugin.", context: "notices.interface.serviceUnavailable" })));
 					return;
 				}
 
@@ -149,7 +151,7 @@ function createChevronClickHandler(
 					details: { taskPath: task.path },
 					error,
 				});
-				new Notice(plugin.i18n.translate("notices.interface.subtasksFailed"));
+				new Notice(plugin.i18n.translate(msg({ message: "Failed to toggle subtasks", context: "notices.interface.subtasksFailed" })));
 			}
 		})();
 	};
@@ -172,7 +174,7 @@ function createProjectSubtasksToggleHandler(
 			const logger = getTaskCardBadgeLogger(plugin);
 			try {
 				if (!plugin.expandedProjectsService) {
-					new Notice(plugin.i18n.translate("notices.interface.serviceUnavailable"));
+					new Notice(plugin.i18n.translate(msg({ message: "Service not available. Please try reloading the plugin.", context: "notices.interface.serviceUnavailable" })));
 					return;
 				}
 
@@ -194,7 +196,7 @@ function createProjectSubtasksToggleHandler(
 					details: { taskPath: task.path },
 					error,
 				});
-				new Notice(plugin.i18n.translate("notices.interface.subtasksFailed"));
+				new Notice(plugin.i18n.translate(msg({ message: "Failed to toggle subtasks", context: "notices.interface.subtasksFailed" })));
 			}
 		})();
 	};
@@ -311,7 +313,7 @@ function renderDependencyToggles(
 
 	if (task.blocking && task.blocking.length > 0) {
 		const blockingCount = task.blocking.length;
-		const toggleLabel = plugin.i18n.translate("ui.taskCard.blockingToggle", {
+		const toggleLabel = plugin.i18n.translate(msg({ message: "Blocking {count} tasks", context: "ui.taskCard.blockingToggle" }), {
 			count: blockingCount,
 		});
 		const toggle = createBadgeIndicator({
@@ -469,7 +471,7 @@ function updateBlockingToggle(options: UpdateTaskCardSecondaryBadgesOptions): vo
 	const { card, task, plugin, handlers } = options;
 	const blockingCount = task.blocking?.length ?? 0;
 	const shouldExist = blockingCount > 0;
-	const toggleLabel = plugin.i18n.translate("ui.taskCard.blockingToggle", {
+	const toggleLabel = plugin.i18n.translate(msg({ message: "Blocking {count} tasks", context: "ui.taskCard.blockingToggle" }), {
 		count: blockingCount,
 	});
 

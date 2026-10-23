@@ -14,14 +14,10 @@ module.exports = {
     '**/?(*.)+(spec|test).ts'
   ],
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      tsconfig: {
-        paths: {
-          obsidian: ['node_modules/obsidian-test-mocks/dist/lib/cjs/obsidian/index.cjs']
-        }
-      }
-    }],
+    '^.+\\.ts$': '<rootDir>/scripts/jest-lingui.cjs',
+    '^.+\\.m?js$': ['babel-jest', { configFile: false, babelrc: false, plugins: ['@babel/plugin-transform-modules-commonjs'] }],
   },
+  transformIgnorePatterns: ['/node_modules/(?!.*(?:@lingui|@messageformat)/)'],
   setupFiles: ['obsidian-test-mocks/jest-setup'],
   setupFilesAfterEnv: ['<rootDir>/tests/test-setup.ts'],
   moduleNameMapper: {

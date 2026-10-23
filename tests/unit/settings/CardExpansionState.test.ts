@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { App } from 'obsidian';
 import type TaskNotesPlugin from '../../../src/main';
 import { TaskNotesSettingTab } from '../../../src/settings/TaskNotesSettingTab';
@@ -44,8 +45,8 @@ describe('Settings card expansion across rebuilds', () => {
       });
     };
     jest.spyOn(tab as any, 'getTabConfigurations').mockReturnValue([
-      { id: 'general', nameKey: 'settings.tabs.general', renderFn: render },
-      { id: 'task-properties', nameKey: 'settings.tabs.taskProperties', renderFn: render },
+      { id: 'general', nameKey: msg({ message: "General", context: "settings.tabs.general" }), renderFn: render },
+      { id: 'task-properties', nameKey: msg({ message: "Task properties", context: "settings.tabs.taskProperties" }), renderFn: render },
     ]);
     tab.display();
   });

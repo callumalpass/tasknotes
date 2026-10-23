@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { createElementInDocument } from "../utils/documentDom";
 
 export type BasesSelectionVisualState = {
@@ -144,8 +146,8 @@ export function updateBasesSelectionIndicator({
 		event.preventDefault();
 		onClearSelection();
 	};
-	indicator.textContent = `${count} selected`;
-	indicator.setAttribute("aria-label", `${count} selected. Activate to clear selection.`);
+	indicator.textContent = uiText(msg({ message: "{count} selected", context: "bases/basesSelectionUi: updateBasesSelectionIndicator display" }), { count: count });
+	indicator.setAttribute("aria-label", uiText(msg({ message: "{count} selected. Activate to clear selection.", context: "bases/basesSelectionUi: updateBasesSelectionIndicator display" }), { count: count }));
 	setDisplayUtility(indicator, "tn-static-display-block-2a1b75c9");
 	return indicator;
 }

@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import {
 	EVENT_POMODORO_COMPLETE,
 	EVENT_POMODORO_INTERRUPT,
@@ -223,7 +225,7 @@ export class StatusBarService {
 		if (!stopButton) {
 			stopButton = this.statusBarElement.createEl("button", { cls: "tasknotes-status-stop" });
 			stopButton.type = "button";
-			const label = this.plugin.i18n.translate("commands.stopActiveTimeTracking");
+			const label = this.plugin.i18n.translate(msg({ message: "Stop active time tracking", context: "commands.stopActiveTimeTracking" }));
 			stopButton.setAttribute("aria-label", label);
 			setTooltip(stopButton, label);
 			setIcon(stopButton, "square");
@@ -239,12 +241,12 @@ export class StatusBarService {
 			const truncatedTitle =
 				task.title.length > 30 ? task.title.substring(0, 30) + "..." : task.title;
 			const elapsed = this.formatElapsedDuration(this.getActiveElapsedMs(task));
-			textEl.setText(`Tracking: ${truncatedTitle} (${elapsed})`);
+			textEl.setText(uiText(msg({ message: "Tracking: {truncatedTitle} ({elapsed})", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { truncatedTitle: truncatedTitle, elapsed: elapsed }));
 
 			// Add tooltip with full title
 			setTooltip(
 				this.statusBarElement,
-				`Currently tracking: ${task.title}\nElapsed: ${elapsed}`,
+				uiText(msg({ message: "Currently tracking: {title}\nElapsed: {elapsed}", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { title: task.title, elapsed: elapsed }),
 				{
 					placement: "top",
 				}
@@ -253,7 +255,7 @@ export class StatusBarService {
 			const totalElapsed = this.formatElapsedDuration(
 				trackedTasks.reduce((sum, task) => sum + this.getActiveElapsedMs(task), 0)
 			);
-			textEl.setText(`Tracking ${count} tasks (${totalElapsed} total)`);
+			textEl.setText(uiText(msg({ message: "{count, plural, one {Tracking {count} tasks ({totalElapsed} total)} other {Tracking {count} tasks ({totalElapsed} total)}}", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { count: count, totalElapsed: totalElapsed }));
 
 			// Add tooltip with task titles
 			const taskTitles = trackedTasks
@@ -263,8 +265,8 @@ export class StatusBarService {
 						`${task.title} - ${this.formatElapsedDuration(this.getActiveElapsedMs(task))}`
 				)
 				.join("\n");
-			const tooltipText = count > 5 ? `${taskTitles}\n... and ${count - 5} more` : taskTitles;
-			setTooltip(this.statusBarElement, `Currently tracking:\n${tooltipText}`, {
+			const tooltipText = count > 5 ? uiText(msg({ message: "{value2, plural, one {{taskTitles}\n... and {value2} more} other {{taskTitles}\n... and {value2} more}}", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { taskTitles: taskTitles, value2: count - 5 }) : taskTitles;
+			setTooltip(this.statusBarElement, uiText(msg({ message: "Currently tracking:\n{tooltipText}", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { tooltipText: tooltipText }), {
 				placement: "top",
 			});
 		}
@@ -287,12 +289,12 @@ export class StatusBarService {
 		});
 		const timeRemaining = formatPomodoroTime(state.timeRemaining);
 		const sessionLabel = this.getPomodoroSessionLabel(state.currentSession.type);
-		const stateLabel = state.isRunning ? sessionLabel : `${sessionLabel} paused`;
-		textEl.setText(`${stateLabel}: ${timeRemaining}`);
+		const stateLabel = state.isRunning ? sessionLabel : uiText(msg({ message: "{sessionLabel} paused", context: "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display" }), { sessionLabel: sessionLabel });
+		textEl.setText(uiText(msg({ message: "{stateLabel}: {timeRemaining}", context: "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display" }), { stateLabel: stateLabel, timeRemaining: timeRemaining }));
 
 		setTooltip(
 			this.pomodoroStatusBarElement,
-			`${stateLabel}\nRemaining: ${timeRemaining}\nClick to open Pomodoro`,
+			uiText(msg({ message: "{stateLabel}\nRemaining: {timeRemaining}\nClick to open Pomodoro", context: "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display" }), { stateLabel: stateLabel, timeRemaining: timeRemaining }),
 			{
 				placement: "top",
 			}
@@ -301,14 +303,14 @@ export class StatusBarService {
 
 	private getPomodoroSessionLabel(type: PomodoroSession["type"]): string {
 		if (type === "work") {
-			return "Focus";
+			return uiText(msg({ message: "Focus", context: "ui/StatusBarService: StatusBarService.getPomodoroSessionLabel display" }));
 		}
 
 		if (type === "short-break") {
-			return "Short break";
+			return uiText(msg({ message: "Short break", context: "ui/StatusBarService: StatusBarService.getPomodoroSessionLabel display" }));
 		}
 
-		return "Long break";
+		return uiText(msg({ message: "Long break", context: "ui/StatusBarService: StatusBarService.getPomodoroSessionLabel display" }));
 	}
 
 	private showElement(element: HTMLElement): void {

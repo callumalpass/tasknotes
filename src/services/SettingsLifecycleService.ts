@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type { EventRef } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -194,7 +196,7 @@ export class SettingsLifecycleService {
 		try {
 			await this.plugin.stopTimeTracking(updatedTask);
 			if (this.plugin.settings.autoStopTimeTrackingNotification) {
-				publishUserNotice(this.plugin.emitter, `Auto-stopped time tracking for: ${updatedTask.title}`);
+				publishUserNotice(this.plugin.emitter, uiText(msg({ message: "Auto-stopped time tracking for: {title}", context: "services/SettingsLifecycleService: SettingsLifecycleService.handleAutoStopTimeTracking display" }), { title: updatedTask.title }));
 			}
 		} catch (error) {
 			tasknotesLogger.error("Error auto-stopping time tracking:", {

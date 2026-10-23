@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 const mockSetTooltip = jest.fn();
 const mockSetIcon = jest.fn();
 
@@ -202,12 +203,12 @@ describe("taskModalActionIconStates", () => {
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			statusIcon,
-			"modals.task.actions.status",
+			msg({ message: "Set status", context: "modals.task.actions.status" }),
 			{ placement: "top" }
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			priorityIcon,
-			"modals.task.actions.priority",
+			msg({ message: "Set priority", context: "modals.task.actions.priority" }),
 			{ placement: "top" }
 		);
 	});
@@ -272,7 +273,7 @@ describe("taskModalActionIconStates", () => {
 
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			actionBar.querySelector('[data-type="reminders"]'),
-			"modals.task.tooltips.remindersSingle",
+			msg({ message: "1 reminder set", context: "modals.task.tooltips.remindersSingle" }),
 			{ placement: "top" }
 		);
 	});

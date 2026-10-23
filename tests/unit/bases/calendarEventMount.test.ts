@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import {
 	decorateCalendarIcsEventElement,
 	enrichCalendarListTaskInfo,
@@ -20,7 +21,7 @@ function createPlugin(overrides: Record<string, unknown> = {}) {
 	return {
 		i18n: {
 			translate: (key: string) =>
-				key === "modals.icsEventInfo.relatedNotesHeading" ? "Related notes" : key,
+				key === msg({ message: "Related notes & tasks", context: "modals.icsEventInfo.relatedNotesHeading" }) ? "Related notes" : key,
 		},
 		calendarProviderRegistry: {
 			findProviderForEvent: jest.fn(() => ({ providerName: "google" })),

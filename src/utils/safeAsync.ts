@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/SafeAsync" });
@@ -37,7 +39,7 @@ export class SafeAsync {
 	): Promise<T | undefined> {
 		const {
 			fallback,
-			errorMessage = "An error occurred",
+			errorMessage = uiText(msg({ message: "An error occurred", context: "utils/safeAsync: SafeAsync.execute display" })),
 			showNotice = true,
 			noticeHandler,
 			logError = true,
@@ -82,7 +84,7 @@ export class SafeAsync {
 		const {
 			maxRetries = 3,
 			retryDelay = 1000,
-			errorMessage = "Operation failed",
+			errorMessage = uiText(msg({ message: "Operation failed", context: "utils/safeAsync: SafeAsync.executeWithRetry display" })),
 			showNotice = true,
 			noticeHandler,
 		} = options;
@@ -109,7 +111,7 @@ export class SafeAsync {
 				});
 
 				if (showNotice) {
-					notifyIfRequested(`${errorMessage}: ${lastError.message}`, {
+					notifyIfRequested(uiText(msg({ message: "{errorMessage}: {message}", context: "utils/safeAsync: SafeAsync.executeWithRetry display" }), { errorMessage: errorMessage, message: lastError.message }), {
 						showNotice,
 						noticeHandler,
 					});

@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Platform, TFile, WorkspaceLeaf, normalizePath } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import {
@@ -124,7 +125,7 @@ export class WorkspaceNavigationService {
 		const filePath = this.plugin.settings.commandFileMapping[commandId];
 		if (!filePath) {
 			showNotice(
-				this.plugin.i18n.translate("notices.interface.commandFileMissing", {
+				this.plugin.i18n.translate(msg({ message: "No file configured for command: {command}", context: "notices.interface.commandFileMissing" }), {
 					command: commandId,
 				})
 			);
@@ -135,7 +136,7 @@ export class WorkspaceNavigationService {
 		const fileExists = await this.plugin.app.vault.adapter.exists(normalizedPath);
 		if (!fileExists) {
 			showNotice(
-				this.plugin.i18n.translate("notices.interface.commandFileInvalid", {
+				this.plugin.i18n.translate(msg({ message: "File not found: {path}. Configure a valid file in the View Commands settings or create the default files.", context: "notices.interface.commandFileInvalid" }), {
 					path: normalizedPath,
 				}),
 				10000
@@ -146,7 +147,7 @@ export class WorkspaceNavigationService {
 		const file = this.plugin.app.vault.getAbstractFileByPath(normalizedPath);
 		if (!file) {
 			showNotice(
-				this.plugin.i18n.translate("notices.interface.commandFileUnindexed", {
+				this.plugin.i18n.translate(msg({ message: "File not found in vault: {path}. The file exists but Obsidian cannot find it. Try reloading the vault.", context: "notices.interface.commandFileUnindexed" }), {
 					path: normalizedPath,
 				})
 			);
@@ -154,7 +155,7 @@ export class WorkspaceNavigationService {
 		}
 		if (!(file instanceof TFile)) {
 			showNotice(
-				this.plugin.i18n.translate("notices.interface.notAFile", { path: normalizedPath })
+				this.plugin.i18n.translate(msg({ message: "Path is not a file: {path}", context: "notices.interface.notAFile" }), { path: normalizedPath })
 			);
 			return;
 		}

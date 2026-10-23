@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, ICSSubscription } from "../types";
@@ -16,7 +17,7 @@ export const DEFAULT_ICS_CARD_OPTIONS: ICSCardOptions = {
 };
 
 function getRelatedNoteTooltip(plugin: TaskNotesPlugin, relatedNoteCount: number): string {
-	const label = plugin.i18n.translate("modals.icsEventInfo.relatedNotesHeading");
+	const label = plugin.i18n.translate(msg({ message: "Related notes & tasks", context: "modals.icsEventInfo.relatedNotesHeading" }));
 	return `${label}: ${relatedNoteCount}`;
 }
 
@@ -63,7 +64,7 @@ function getEventSourceName(
 		return calendar?.summary || provider.providerName;
 	}
 
-	return plugin.i18n.translate("ui.icsCard.calendarFallback");
+	return plugin.i18n.translate(msg({ message: "Calendar", context: "ui.icsCard.calendarFallback" }));
 }
 
 function formatTimeRange(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
@@ -71,7 +72,7 @@ function formatTimeRange(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
 		if (!icsEvent.start) return "";
 		const start = new Date(icsEvent.start);
 		if (icsEvent.allDay) {
-			return plugin.i18n.translate("ui.icsCard.allDay");
+			return plugin.i18n.translate(msg({ message: "All day", context: "ui.icsCard.allDay" }));
 		}
 		const timeFormat = plugin.settings.calendarViewSettings.timeFormat;
 		const startText = formatTime(start, timeFormat);
@@ -118,7 +119,7 @@ export function createICSEventCard(
 	// Left indicator area: calendar icon (no ring/checkbox)
 	const leftIconWrap = mainRow.createSpan({ cls: "ics-card__icon" });
 	const leftIcon = leftIconWrap.createDiv({
-		attr: { "aria-label": plugin.i18n.translate("ui.icsCard.calendarEvent") },
+		attr: { "aria-label": plugin.i18n.translate(msg({ message: "Calendar event", context: "ui.icsCard.calendarEvent" })) },
 	});
 	setIcon(leftIcon, "calendar");
 	// Inline layout styling to mimic status area spacing without the ring
@@ -190,7 +191,7 @@ export function createICSEventCard(
 	const content = mainRow.createDiv({ cls: "task-card__content" });
 	const titleEl = content.createDiv({
 		cls: "task-card__title",
-		text: icsEvent.title || plugin.i18n.translate("ui.icsCard.untitledEvent"),
+		text: icsEvent.title || plugin.i18n.translate(msg({ message: "Untitled event", context: "ui.icsCard.untitledEvent" })),
 	});
 	renderRelatedNoteIndicator(titleEl, plugin, opts.relatedNoteCount);
 
@@ -270,7 +271,7 @@ export function updateICSEventCard(
 
 	const titleEl = element.querySelector(".task-card__title");
 	if (titleEl) {
-		titleEl.textContent = icsEvent.title || plugin.i18n.translate("ui.icsCard.untitledEvent");
+		titleEl.textContent = icsEvent.title || plugin.i18n.translate(msg({ message: "Untitled event", context: "ui.icsCard.untitledEvent" }));
 		renderRelatedNoteIndicator(titleEl as HTMLElement, plugin, opts.relatedNoteCount);
 	}
 

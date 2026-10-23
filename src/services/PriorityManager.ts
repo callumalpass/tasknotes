@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { PriorityConfig } from "../types";
 import { normalizePriorityConfigValue } from "../core/fieldMapping";
 import { isSupportedColorValue, normalizeThemeColor } from "../utils/themeColors";
@@ -216,7 +218,7 @@ export class PriorityManager {
 		return {
 			id,
 			value: "new-priority",
-			label: "New priority",
+			label: uiText(msg({ message: "New priority", context: "services/PriorityManager: PriorityManager.createDefaultPriority label" })),
 			color: "#808080",
 			weight,
 		};

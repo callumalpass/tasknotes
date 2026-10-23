@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../main";
 import type { FieldMapping } from "../types";
 import type { TranslationKey } from "../i18n";
@@ -27,97 +28,97 @@ export function getAvailableProperties(
 	const coreProperties = [
 		{
 			id: "status",
-			label: makeLabel("settings.taskProperties.fieldMapping.fields.status", "status"),
+			label: makeLabel(msg({ message: "Status", context: "settings.taskProperties.fieldMapping.fields.status" }), "status"),
 		},
 		{
 			id: "priority",
-			label: makeLabel("settings.taskProperties.fieldMapping.fields.priority", "priority"),
+			label: makeLabel(msg({ message: "Priority", context: "settings.taskProperties.fieldMapping.fields.priority" }), "priority"),
 		},
 		{
 			id: "blocked",
-			label: plugin.i18n.translate("settings.appearance.taskCards.properties.blocked"),
+			label: plugin.i18n.translate(msg({ message: "Blocked", context: "settings.appearance.taskCards.properties.blocked" })),
 		},
 		{
 			id: "blocking",
-			label: plugin.i18n.translate("settings.appearance.taskCards.properties.blocking"),
+			label: plugin.i18n.translate(msg({ message: "Blocking", context: "settings.appearance.taskCards.properties.blocking" })),
 		},
-		{ id: "due", label: makeLabel("settings.taskProperties.fieldMapping.fields.due", "due") },
+		{ id: "due", label: makeLabel(msg({ message: "Due date", context: "settings.taskProperties.fieldMapping.fields.due" }), "due") },
 		{
 			id: "scheduled",
-			label: makeLabel("settings.taskProperties.fieldMapping.fields.scheduled", "scheduled"),
+			label: makeLabel(msg({ message: "Scheduled date", context: "settings.taskProperties.fieldMapping.fields.scheduled" }), "scheduled"),
 		},
 		{
 			id: "timeEstimate",
 			label: makeLabel(
-				"settings.taskProperties.fieldMapping.fields.timeEstimate",
+				msg({ message: "Time estimate", context: "settings.taskProperties.fieldMapping.fields.timeEstimate" }),
 				"timeEstimate"
 			),
 		},
 		{
 			id: "totalTrackedTime",
 			label: plugin.i18n.translate(
-				"settings.appearance.taskCards.properties.totalTrackedTime"
+				msg({ message: "Total tracked time", context: "settings.appearance.taskCards.properties.totalTrackedTime" })
 			),
 		},
 		{
 			id: "checklistProgress",
 			label: plugin.i18n.translate(
-				"settings.appearance.taskCards.properties.checklistProgress"
+				msg({ message: "Checklist progress", context: "settings.appearance.taskCards.properties.checklistProgress" })
 			),
 		},
 		{
 			id: "recurrence",
 			label: makeLabel(
-				"settings.taskProperties.fieldMapping.fields.recurrence",
+				msg({ message: "Recurrence", context: "settings.taskProperties.fieldMapping.fields.recurrence" }),
 				"recurrence"
 			),
 		},
 		{
 			id: "completeInstances",
 			label: makeLabel(
-				"settings.taskProperties.fieldMapping.fields.completeInstances",
+				msg({ message: "Complete instances", context: "settings.taskProperties.fieldMapping.fields.completeInstances" }),
 				"completeInstances"
 			),
 		},
 		{
 			id: "skippedInstances",
 			label: makeLabel(
-				"settings.taskProperties.fieldMapping.fields.skippedInstances",
+				msg({ message: "Skipped instances", context: "settings.taskProperties.fieldMapping.fields.skippedInstances" }),
 				"skippedInstances"
 			),
 		},
 		{
 			id: "completedDate",
 			label: makeLabel(
-				"settings.taskProperties.fieldMapping.fields.completedDate",
+				msg({ message: "Completed date", context: "settings.taskProperties.fieldMapping.fields.completedDate" }),
 				"completedDate"
 			),
 		},
 		{
 			id: "dateCreated",
 			label: makeLabel(
-				"settings.taskProperties.fieldMapping.fields.dateCreated",
+				msg({ message: "Created date", context: "settings.taskProperties.fieldMapping.fields.dateCreated" }),
 				"dateCreated"
 			),
 		},
 		{
 			id: "dateModified",
 			label: makeLabel(
-				"settings.taskProperties.fieldMapping.fields.dateModified",
+				msg({ message: "Modified date", context: "settings.taskProperties.fieldMapping.fields.dateModified" }),
 				"dateModified"
 			),
 		},
 		{
 			id: "projects",
-			label: makeLabel("settings.taskProperties.fieldMapping.fields.projects", "projects"),
+			label: makeLabel(msg({ message: "Projects", context: "settings.taskProperties.fieldMapping.fields.projects" }), "projects"),
 		},
 		{
 			id: "contexts",
-			label: makeLabel("settings.taskProperties.fieldMapping.fields.contexts", "contexts"),
+			label: makeLabel(msg({ message: "Contexts", context: "settings.taskProperties.fieldMapping.fields.contexts" }), "contexts"),
 		},
 		{
 			id: "tags",
-			label: plugin.i18n.translate("settings.appearance.taskCards.properties.tags"),
+			label: plugin.i18n.translate(msg({ message: "Tags", context: "settings.appearance.taskCards.properties.tags" })),
 		},
 	];
 

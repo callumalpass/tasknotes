@@ -22,7 +22,7 @@ export function createLanguagePackBuildPlugin({ baseUrl, root = process.cwd(), o
 			});
 			build.onLoad({ filter: /\/src\/i18n\/bundledResources\.ts$/ }, () => ({
 				contents:
-					'import { en } from "./resources/en"; export const translationResources = { en };',
+					'import en from "./locales/en/messages.json"; import { compiledMessages } from "./catalogue"; export const translationResources = { en: compiledMessages(en.messages) };',
 				loader: "ts",
 				resolveDir: resolve(root, "src/i18n"),
 			}));
@@ -32,7 +32,7 @@ export function createLanguagePackBuildPlugin({ baseUrl, root = process.cwd(), o
 				watchFiles: [
 					args.path,
 					...Object.keys(exported.manifest.packs).map((locale) =>
-						resolve(root, `src/i18n/resources/${locale}.ts`)
+						resolve(root, `src/i18n/locales/${locale}/messages.json`)
 					),
 				],
 			}));

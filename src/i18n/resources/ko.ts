@@ -61,7 +61,7 @@ export const ko: TranslationTree = {
 		agenda: {
 			title: "일정",
 			today: "오늘",
-			overdue: "지연됨",
+			overdue: "기한 지남",
 			refreshCalendars: "캘린더 새로고침",
 			actions: {
 				previousPeriod: "이전 기간",
@@ -70,8 +70,8 @@ export const ko: TranslationTree = {
 				refreshCalendars: "캘린더 구독 새로고침",
 			},
 			loading: "일정 로딩 중...",
-			dayToggle: "날짜 토글",
-			overdueToggle: "지연 항목 토글",
+			dayToggle: "날짜 펼치기/접기",
+			overdueToggle: "기한 지난 항목 펼치기/접기",
 			expandAllDays: "모든 날짜 펼치기",
 			collapseAllDays: "모든 날짜 접기",
 			notices: {
@@ -86,7 +86,7 @@ export const ko: TranslationTree = {
 					"마감일이나 예정일이 있는 작업을 만들거나, 노트를 추가하여 여기에 표시하세요.",
 			},
 			contextMenu: {
-				showOverdueSection: "지연 항목 표시",
+				showOverdueSection: "기한 지난 항목 표시",
 				showNotes: "노트 표시",
 				calendarSubscriptions: "캘린더 구독",
 			},
@@ -121,14 +121,14 @@ export const ko: TranslationTree = {
 				undoFailed: "이동을 실행 취소하지 못했습니다.",
 				noValue: "값 없음",
 				otherDestinations: "다른 이동 대상",
-				readOnly: "{properties}을(를) 변경할 수 없습니다. 이 그룹은 읽기 전용입니다.",
+				readOnly: "읽기 전용 그룹이므로 다음 속성을 변경할 수 없습니다: {properties}.",
 				unresolved: "이 대상의 {properties} 값을 확인할 수 없습니다.",
 				noChange: "이미 이 그룹에 있습니다.",
 				failed: "작업을 이동하지 못했습니다. 작업을 확인하고 다시 시도하세요.",
 			},
 			reorder: {
 				scope: {
-					ungrouped: "이 그룹 없는 목록",
+					ungrouped: "그룹화되지 않은 이 목록",
 					group: '"{group}" 그룹',
 				},
 			},
@@ -185,12 +185,12 @@ export const ko: TranslationTree = {
 				refreshFailed: "일부 캘린더 구독 새로고침에 실패했습니다",
 				timeblockSpecificTime:
 					"타임블록에는 특정 시간이 필요합니다. 주간 또는 일간 뷰에서 시간 범위를 선택하세요.",
-				timeblockMoved: '타임블록 "{title}"을(를) {date}(으)로 이동했습니다',
-				timeblockUpdated: '타임블록 "{title}" 시간이 업데이트되었습니다',
+				timeblockMoved: '타임블록 "{title}"의 날짜를 {date}로 변경했습니다',
+				timeblockUpdated: '타임블록 "{title}"의 시간을 변경했습니다',
 				timeblockMoveFailed: "타임블록 이동 실패: {message}",
-				timeblockResized: '타임블록 "{title}" 기간이 업데이트되었습니다',
+				timeblockResized: '타임블록 "{title}"의 길이를 변경했습니다',
 				timeblockResizeFailed: "타임블록 크기 조정 실패: {message}",
-				taskScheduled: '작업 "{title}"이(가) {date}에 예정되었습니다',
+				taskScheduled: '작업 "{title}"의 예정일을 {date}로 설정했습니다',
 				scheduleTaskFailed: "작업 예정 실패",
 				endTimeAfterStart: "종료 시간은 시작 시간 이후여야 합니다",
 				timeEntryNotFound: "시간 기록을 찾을 수 없습니다",
@@ -212,7 +212,7 @@ export const ko: TranslationTree = {
 				deleteTimeEntry: "시간 기록 삭제",
 				deleteTimeEntryTitle: "시간 기록 삭제",
 				deleteTimeEntryConfirm:
-					"이 시간 기록{duration}을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+					"이 시간 기록{duration}을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.",
 				deleteButton: "삭제",
 				cancelButton: "취소",
 			},
@@ -273,13 +273,13 @@ export const ko: TranslationTree = {
 				events: {
 					showScheduledTasks: "예정된 작업 표시",
 					showDueTasks: "마감 작업 표시",
-					showOverdueOnToday: "기한이 지난 작업을 오늘에 표시",
+					showOverdueOnToday: "기한 지난 작업을 오늘 날짜에 표시",
 					showRecurringTasks: "반복 작업 표시",
 					showTimeEntries: "시간 기록 표시",
 					showTimeblocks: "타임블록 표시",
 					showPropertyBasedEvents: "속성 기반 이벤트 표시",
-					showCompletedRecurringInstances: "완료된 반복 인스턴스 표시",
-					showSkippedRecurringInstances: "건너뛴 반복 인스턴스 표시",
+					showCompletedRecurringInstances: "완료된 반복 회차 표시",
+					showSkippedRecurringInstances: "건너뛴 반복 회차 표시",
 				},
 				layout: {
 					calendarView: "캘린더 뷰",
@@ -311,9 +311,9 @@ export const ko: TranslationTree = {
 					slotEventOverlap: "이벤트 겹침 허용",
 					enableSearch: "검색 상자 활성화",
 					eventMaxStack: "최대 이벤트 스택 (주/일 보기, 0 = 무제한)",
-					dayMaxEvents: "일당 최대 이벤트 (0 = 자동)",
-					dayMaxEventRows: "일당 최대 이벤트 행 (0 = 무제한)",
-					spanScheduledToDue: "예정일과 마감일 사이 작업 표시",
+					dayMaxEvents: "하루 최대 이벤트 수 (0 = 자동)",
+					dayMaxEventRows: "하루 최대 이벤트 행 수 (0 = 무제한)",
+					spanScheduledToDue: "예정일부터 마감일까지 작업을 이어서 표시",
 					heightMode: "높이 모드",
 					heightModeFill: "컨테이너 채우기",
 					heightModeAuto: "자동 높이",
@@ -349,7 +349,7 @@ export const ko: TranslationTree = {
 			},
 			notices: {
 				loadFailed: "칸반 보드 로드 실패",
-				movedTask: '작업이 "{0}"(으)로 이동되었습니다',
+				movedTask: '작업 이동 완료: "{0}"',
 			},
 			errors: {
 				loadingBoard: "보드 로딩 중 오류가 발생했습니다.",
@@ -371,12 +371,12 @@ export const ko: TranslationTree = {
 				working: "작업 중",
 				shortBreak: "짧은 휴식",
 				longBreak: "긴 휴식",
-				breakPrompt: "잘하셨습니다! {length} 휴식 시간입니다",
+				breakPrompt: "수고하셨습니다! {length} 휴식을 취할 시간입니다",
 				breakLength: {
 					short: "짧은",
 					long: "긴",
 				},
-				breakComplete: "휴식 완료! 다음 뽀모도로를 시작할 준비가 되셨나요?",
+				breakComplete: "휴식이 끝났습니다! 다음 뽀모도로를 시작하시겠습니까?",
 			},
 			buttons: {
 				start: "시작",
@@ -436,8 +436,8 @@ export const ko: TranslationTree = {
 				todayFocus: {
 					label: "오늘의 집중 시간",
 					change: {
-						more: "어제보다 {duration} 더 많음",
-						less: "어제보다 {duration} 더 적음",
+						more: "어제보다 {duration} 더 김",
+						less: "어제보다 {duration} 더 짧음",
 					},
 				},
 				totalFocus: {
@@ -446,9 +446,9 @@ export const ko: TranslationTree = {
 			},
 			stats: {
 				pomodoros: "뽀모도로",
-				streak: "연속",
+				streak: "연속 기록",
 				minutes: "분",
-				average: "평균 길이",
+				average: "평균 시간",
 				completion: "완료율",
 			},
 			recents: {
@@ -459,18 +459,18 @@ export const ko: TranslationTree = {
 					interrupted: "중단됨",
 				},
 				delete: "세션 삭제",
-				deleteAria: "Pomodoro 세션 삭제",
-				deleteConfirmTitle: "Pomodoro 세션을 삭제할까요?",
+				deleteAria: "뽀모도로 세션 삭제",
+				deleteConfirmTitle: "뽀모도로 세션을 삭제하시겠습니까?",
 				deleteConfirmMessage:
-					"Pomodoro 기록에서 이 세션을 제거합니다. 기존 작업 시간 항목은 변경되지 않습니다.",
+					"뽀모도로 기록에서 이 세션을 삭제합니다. 기존 작업의 시간 기록은 변경되지 않습니다.",
 				deleteConfirmButton: "삭제",
-				deleteSuccess: "Pomodoro 세션이 삭제되었습니다",
-				deleteNotFound: "Pomodoro 세션을 찾을 수 없습니다",
+				deleteSuccess: "뽀모도로 세션이 삭제되었습니다",
+				deleteNotFound: "뽀모도로 세션을 찾을 수 없습니다",
 			},
 			basesMigration: {
-				title: "Base 보기 원하시나요?",
+				title: "베이스 뷰를 사용하시겠습니까?",
 				description:
-					"Pomodoro Base 보기는 데일리 노트 frontmatter를 사용합니다. 생성된 Pomodoro 통계 Base에서 이 기록을 보려면 설정에서 Pomodoro 데이터를 마이그레이션한 다음 저장 위치를 데일리 노트로 설정하세요.",
+					"뽀모도로 베이스 뷰는 데일리 노트의 프런트매터를 사용합니다. 생성된 뽀모도로 통계 베이스에서 기록을 보려면 설정에서 뽀모도로 데이터를 이전한 뒤 저장 위치를 데일리 노트로 설정하세요.",
 			},
 		},
 		stats: {
@@ -536,9 +536,9 @@ export const ko: TranslationTree = {
 			header: "TaskNotes {version}의 새로운 기능",
 			viewAllLink: "GitHub에서 모든 릴리스 노트 보기 →",
 			starMessage:
-				"모든 피드백을 정말 감사하게 생각합니다. 뭔가 맞지 않는 느낌이 들면 GitHub에서 알려 주세요. TaskNotes가 유용하다면 별표도 고려해 주세요.",
+				"의견을 보내 주셔서 감사합니다. 불편한 점이 있다면 GitHub에 알려 주세요. TaskNotes가 유용하다면 GitHub에서 별을 눌러 주세요.",
 			baseFilesNotice:
-				"> [!info] 기본 `.base` 파일 안내\n> 기본으로 생성되는 `.base` 템플릿이 변경되어도 기존 `.base` 파일은 덮어쓰지 않으므로 사용자 설정이 유지됩니다.\n> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 일반 → 보기 및 base 파일 → 파일 업데이트**에서 베이스 파일을 다시 생성하세요.",
+				"> [!info] 기본 `.base` 파일 안내\n> 기본으로 생성되는 `.base` 템플릿이 변경되어도 기존 `.base` 파일은 덮어쓰지 않으므로 사용자 설정이 유지됩니다.\n> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 통합 → 뷰 및 베이스 파일 → 파일 업데이트**에서 베이스 파일을 다시 생성하세요.",
 		},
 	},
 	settings: {
@@ -622,7 +622,7 @@ export const ko: TranslationTree = {
 				openAfterCreate: {
 					name: "생성 후 작업 열기",
 					description:
-						"일반 새 작업 만들기 모달에서 저장 후 새 작업 노트를 열지 선택합니다.",
+						"작업 생성 창에서 저장한 뒤 새 작업 노트를 열지 선택합니다.",
 					options: {
 						none: "열지 않음",
 						sameTab: "같은 탭에서 열기",
@@ -644,12 +644,12 @@ export const ko: TranslationTree = {
 			instantConvert: {
 				toggle: {
 					name: "체크박스 옆에 변환 버튼 표시",
-					description: "마크다운 체크박스 옆에 TaskNotes로 변환하는 인라인 버튼 표시",
+					description: "Markdown 체크박스 옆에 작업으로 변환하는 인라인 버튼 표시",
 				},
 				preserveCheckbox: {
 					name: "변환 시 체크박스 유지",
 					description:
-						"체크박스를 TaskNote 링크로 변환할 때 원래 마크다운 체크박스 표시를 남깁니다",
+						"체크박스를 TaskNote 링크로 변환할 때 원래 Markdown 체크박스 표시를 유지합니다",
 				},
 				folder: {
 					name: "인라인 생성 작업 폴더",
@@ -666,7 +666,7 @@ export const ko: TranslationTree = {
 				},
 				defaultToScheduled: {
 					name: "예정일로 기본 설정",
-					description: "NLP가 컨텍스트 없이 날짜를 감지하면 마감일 대신 예정일로 처리",
+					description: "NLP가 별도 맥락 없이 날짜를 감지하면 마감일 대신 예정일로 처리",
 				},
 				enterToSubmit: {
 					name: "Enter로 작업 저장",
@@ -721,8 +721,8 @@ export const ko: TranslationTree = {
 					right: "오른쪽 사이드바",
 				},
 				statusBar: {
-					name: "상태 표시줄에 Pomodoro 표시",
-					description: "Obsidian 상태 표시줄에 활성 Pomodoro 카운트다운 표시",
+					name: "상태 표시줄에 뽀모도로 표시",
+					description: "Obsidian 상태 표시줄에 진행 중인 뽀모도로의 남은 시간 표시",
 				},
 			},
 			uiLanguage: {
@@ -748,7 +748,7 @@ export const ko: TranslationTree = {
 				dailyNotes: "데일리 노트",
 				pluginData: "플러그인 데이터",
 				notices: {
-					locationChanged: "뽀모도로 저장 위치가 {location}(으)로 변경되었습니다",
+					locationChanged: "뽀모도로 저장 위치 변경 완료: {location}",
 				},
 			},
 			notifications: {
@@ -772,8 +772,8 @@ export const ko: TranslationTree = {
 				testReminderButton: "테스트 보내기",
 			},
 			overdue: {
-				hideCompletedName: "완료된 작업을 지연 목록에서 숨기기",
-				hideCompletedDesc: "완료된 작업을 지연 작업 계산에서 제외",
+				hideCompletedName: "기한 지난 항목에서 완료된 작업 숨기기",
+				hideCompletedDesc: "기한 지난 작업 계산에서 완료된 작업 제외",
 			},
 			indexing: {
 				disableName: "노트 인덱싱 비활성화",
@@ -794,7 +794,7 @@ export const ko: TranslationTree = {
 				maintainOffsetDesc: "반복 작업 완료 시 마감일과 예정일 간의 오프셋 유지",
 				resetCheckboxesName: "반복 시 체크박스 초기화",
 				resetCheckboxesDesc:
-					"반복 작업이 완료되고 다시 예약될 때 작업 본문의 모든 마크다운 체크박스를 초기화",
+					"반복 작업이 완료되고 다음 일정으로 넘어갈 때 작업 본문의 모든 Markdown 체크박스를 초기화",
 			},
 			timeblocking: {
 				attachmentOrder: "첨부 파일 검색 순서",
@@ -841,7 +841,7 @@ export const ko: TranslationTree = {
 		},
 		defaults: {
 			header: {
-				basicDefaults: "기본 기본값",
+				basicDefaults: "기본 설정값",
 				dateDefaults: "날짜 기본값",
 				defaultReminders: "기본 리마인더",
 				bodyTemplate: "본문 템플릿",
@@ -866,7 +866,7 @@ export const ko: TranslationTree = {
 				defaultContexts: {
 					name: "기본 컨텍스트",
 					description: "쉼표로 구분된 기본 컨텍스트 목록 (예: @home, @work)",
-					placeholder: "@집, @직장",
+					placeholder: "@home, @work",
 				},
 				defaultTags: {
 					name: "기본 태그",
@@ -896,8 +896,8 @@ export const ko: TranslationTree = {
 						"즉시 작업 변환 사용 시 변환된 줄 위의 가장 가까운 제목을 프로젝트로 자동 연결",
 				},
 				defaultTimeEstimate: {
-					name: "기본 시간 예상",
-					description: "기본 시간 예상 (분 단위, 0 = 기본값 없음)",
+					name: "기본 예상 시간",
+					description: "기본 예상 시간 (분, 0 = 기본값 없음)",
 					placeholder: "60",
 				},
 				defaultRecurrence: {
@@ -916,7 +916,7 @@ export const ko: TranslationTree = {
 				},
 			},
 			reminders: {
-				defaultDescription: "알림",
+				defaultDescription: "리마인더",
 
 				addReminder: {
 					name: "기본 리마인더 추가",
@@ -970,16 +970,16 @@ export const ko: TranslationTree = {
 					ariaLabel: "본문 템플릿 파일 경로",
 				},
 				useOccurrenceBodyTemplate: {
-					name: "발생 노트 템플릿 사용",
+					name: "회차 노트 템플릿 사용",
 					description:
-						"반복 작업에 occurrence_template이 없을 때 구체화된 발생 노트용 별도 대체 템플릿을 사용합니다",
+						"반복 작업에 occurrence_template이 없을 때 구체화된 회차 노트용 별도 대체 템플릿을 사용합니다",
 				},
 				occurrenceBodyTemplateFile: {
-					name: "발생 노트 템플릿 파일",
+					name: "회차 노트 템플릿 파일",
 					description:
-						"구체화된 발생 노트용 템플릿 파일 경로. 반복 작업의 occurrence_template 필드가 이 대체 템플릿보다 우선합니다.",
-					placeholder: "템플릿/발생 템플릿.md",
-					ariaLabel: "발생 노트 템플릿 파일 경로",
+						"구체화된 회차 노트용 템플릿 파일 경로. 반복 작업의 occurrence_template 필드가 이 대체 템플릿보다 우선합니다.",
+					placeholder: "템플릿/회차 템플릿.md",
+					ariaLabel: "회차 노트 템플릿 파일 경로",
 				},
 				variablesHeader: "템플릿 변수:",
 				variables: {
@@ -1036,7 +1036,7 @@ export const ko: TranslationTree = {
 				description: "TaskNotes가 노트를 작업으로 식별하는 방법을 선택합니다.",
 				identifyBy: {
 					name: "작업 식별 기준",
-					description: "태그 또는 프론트매터 속성으로 작업을 식별할지 선택",
+					description: "태그 또는 프런트매터 속성으로 작업을 식별할지 선택",
 					options: {
 						tag: "태그",
 						property: "속성",
@@ -1045,7 +1045,7 @@ export const ko: TranslationTree = {
 				taskTag: {
 					name: "작업 태그",
 					description:
-						"노트를 작업으로 식별하는 태그 (# 제외). 이 값을 변경해도 기존 .base 보기 필터는 이전 태그를 유지합니다. 기본 Base 파일을 업데이트하거나 해당 필터를 직접 편집하세요.",
+						"노트를 작업으로 식별하는 태그 (# 제외). 이 값을 변경해도 기존 .base 보기 필터는 이전 태그를 유지합니다. 기본 베이스 파일을 업데이트하거나 해당 필터를 직접 편집하세요.",
 				},
 				hideIdentifyingTags: {
 					name: "작업 카드에서 식별 태그 숨기기",
@@ -1066,7 +1066,7 @@ export const ko: TranslationTree = {
 					"속성 이름과 값을 모두 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 둘 다 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다.",
 				taskProperty: {
 					name: "작업 속성 이름",
-					description: '프론트매터 속성 이름 (예: "category")',
+					description: '프런트매터 속성 이름 (예: "category")',
 				},
 				taskPropertyValue: {
 					name: "작업 속성 값",
@@ -1081,12 +1081,12 @@ export const ko: TranslationTree = {
 				},
 			},
 			frontmatter: {
-				header: "프론트매터",
-				description: "프론트매터 속성에서 링크 형식을 설정합니다.",
+				header: "프런트매터",
+				description: "프런트매터 속성에서 링크 형식을 설정합니다.",
 				useMarkdownLinks: {
-					name: "프론트매터에서 마크다운 링크 사용",
+					name: "프런트매터에서 Markdown 링크 사용",
 					description:
-						"프론트매터 속성에서 위키링크 ([[link]]) 대신 마크다운 링크 ([text](path)) 생성.\n\n⚠️ 올바르게 작동하려면 'obsidian-frontmatter-markdown-links' 플러그인이 필요합니다.",
+						"프런트매터 속성에서 위키링크 ([[link]]) 대신 Markdown 링크 ([text](path)) 생성.\n\n⚠️ 올바르게 작동하려면 'obsidian-frontmatter-markdown-links' 플러그인이 필요합니다.",
 				},
 			},
 			taskInteraction: {
@@ -1135,7 +1135,7 @@ export const ko: TranslationTree = {
 				organizationProperties: "조직 속성",
 				organizationPropertiesDesc: "컨텍스트, 프로젝트, 태그로 작업을 정리합니다.",
 				taskDetails: "작업 세부정보",
-				taskDetailsDesc: "시간 예상, 반복, 리마인더 등 추가 세부정보.",
+				taskDetailsDesc: "예상 시간, 반복, 리마인더 등 추가 세부정보.",
 				metadataProperties: "메타데이터 속성",
 				metadataPropertiesDesc: "작업 기록을 추적하기 위한 시스템 관리 속성.",
 				featureProperties: "기능 속성",
@@ -1154,7 +1154,7 @@ export const ko: TranslationTree = {
 				status: {
 					name: "상태",
 					description:
-						"작업의 현재 상태를 추적합니다 (예: 할 일, 진행 중, 완료). 상태는 작업이 완료로 표시되는지 여부를 결정하고 자동 보관을 트리거할 수 있습니다.",
+						"작업의 현재 상태를 추적합니다 (예: 할 일, 진행 중, 완료). 상태에 따라 작업의 완료 여부가 결정되며 자동 보관이 시작될 수 있습니다.",
 				},
 				priority: {
 					name: "우선순위",
@@ -1164,7 +1164,7 @@ export const ko: TranslationTree = {
 				due: {
 					name: "마감일",
 					description:
-						"작업을 완료해야 하는 기한. 마감일이 지난 작업은 지연으로 표시됩니다. 프론트매터에 날짜로 저장됩니다.",
+						"작업을 완료해야 하는 기한입니다. 마감일이 지난 작업은 기한이 지난 것으로 표시됩니다. 프런트매터에 날짜로 저장됩니다.",
 				},
 				scheduled: {
 					name: "예정일",
@@ -1184,10 +1184,10 @@ export const ko: TranslationTree = {
 				tags: {
 					name: "태그",
 					description:
-						"작업 분류를 위한 기본 Obsidian 태그. tags 프론트매터 속성에 저장되며 Obsidian의 태그 기능과 함께 작동합니다.",
+						"작업 분류를 위한 기본 Obsidian 태그. tags 프런트매터 속성에 저장되며 Obsidian의 태그 기능과 함께 작동합니다.",
 				},
 				timeEstimate: {
-					name: "시간 예상",
+					name: "예상 시간",
 					description:
 						"작업을 완료하는 데 예상되는 시간 (분). 타임블로킹 및 작업량 계획에 사용됩니다. 작업 카드와 캘린더 이벤트에 표시됩니다.",
 				},
@@ -1209,7 +1209,7 @@ export const ko: TranslationTree = {
 				title: {
 					name: "제목",
 					description:
-						"작업 이름. 프론트매터 또는 파일명에 저장될 수 있습니다 ('파일명에 제목 저장'이 활성화된 경우).",
+						"작업 이름. 프런트매터 또는 파일명에 저장될 수 있습니다 ('파일명에 제목 저장'이 활성화된 경우).",
 				},
 				dateCreated: {
 					name: "생성일",
@@ -1237,24 +1237,24 @@ export const ko: TranslationTree = {
 						"이 작업에 대한 시간 추적 세션 기록. 각 기록은 시작 및 종료 타임스탬프를 저장합니다. 총 소요 시간을 계산하는 데 사용됩니다.",
 				},
 				completeInstances: {
-					name: "완료 인스턴스",
+					name: "완료 회차",
 					description:
-						"반복 작업의 완료 기록. 각 인스턴스가 완료된 날짜를 저장하여 중복 완료를 방지합니다.",
+						"반복 작업의 완료 기록. 각 회차가 완료된 날짜를 저장하여 중복 완료를 방지합니다.",
 				},
 				skippedInstances: {
-					name: "건너뛴 인스턴스",
+					name: "건너뛴 회차",
 					description:
-						"반복 작업의 건너뛴 발생. 완료 대신 건너뛴 인스턴스의 날짜를 저장합니다.",
+						"반복 작업에서 건너뛴 회차의 기록입니다. 완료하지 않고 건너뛴 날짜를 저장합니다.",
 				},
 				blockedBy: {
-					name: "차단 원인",
+					name: "선행 작업",
 					description:
-						"이 작업 전에 완료해야 하는 작업 링크. 위키링크로 저장됩니다. 차단된 작업은 시각적 표시기를 표시합니다.",
+						"이 작업보다 먼저 완료해야 하는 작업의 링크입니다. 위키링크로 저장되며, 대기 중인 작업에는 표시가 나타납니다.",
 				},
 				sortOrder: {
 					name: "수동 순서",
 					description:
-						"드래그 앤 드롭으로 재정렬할 때 사용되는 frontmatter 속성입니다. 뷰는 이 속성으로 정렬되어 있어야 재정렬이 작동합니다.",
+						"드래그 앤 드롭으로 재정렬할 때 사용되는 프런트매터 속성입니다. 뷰는 이 속성으로 정렬되어 있어야 재정렬이 작동합니다.",
 				},
 				pomodoros: {
 					name: "뽀모도로",
@@ -1297,12 +1297,12 @@ export const ko: TranslationTree = {
 				customTemplate: "사용자 지정 템플릿:",
 				legacySyntaxWarning:
 					"{title}과 같은 단일 중괄호 구문은 더 이상 사용되지 않습니다. 본문 템플릿과의 일관성을 위해 {{title}}과 같은 이중 중괄호 구문을 사용하세요.",
-				occurrenceFilenameTemplate: "발생 항목 파일명 템플릿",
+				occurrenceFilenameTemplate: "회차 파일명 템플릿",
 				occurrenceFilenameTemplateHelp:
-					"반복 작업에서 구체화된 발생 항목의 파일명 템플릿입니다. 비워 두면 기존 이름(상위 작업 제목과 숫자 접미사)을 유지합니다. {{occurrenceDate}}, {{occurrenceWeek}}, {{occurrenceMonth}}, {{occurrenceYear}}, {{occurrenceMonthName}} 중 하나로 파일명 단위를 명시적으로 선택하세요. 일반 파일명 변수도 모두 사용할 수 있습니다. 상위 작업은 아래에서 설정한 프론트매터 속성으로 이 템플릿을 재정의할 수 있습니다.",
-				occurrenceFilenameProperty: "발생 항목 템플릿 재정의 속성",
+					"반복 작업에서 구체화된 회차의 파일명 템플릿입니다. 비워 두면 기존 이름(상위 작업 제목과 숫자 접미사)을 유지합니다. {{occurrenceDate}}, {{occurrenceWeek}}, {{occurrenceMonth}}, {{occurrenceYear}}, {{occurrenceMonthName}} 중 하나로 파일명 단위를 명시적으로 선택하세요. 일반 파일명 변수도 모두 사용할 수 있습니다. 상위 작업은 아래에서 설정한 프런트매터 속성으로 이 템플릿을 재정의할 수 있습니다.",
+				occurrenceFilenameProperty: "회차 템플릿 재정의 속성",
 				occurrenceFilenamePropertyHelp:
-					"반복 상위 작업에서 발생 항목 파일명 템플릿을 재정의하는 프론트매터 속성의 이름입니다.",
+					"반복 상위 작업에서 회차 파일명 템플릿을 재정의하는 프런트매터 속성의 이름입니다.",
 			},
 			tagsCard: {
 				nativeObsidianTags: "기본 Obsidian 태그 사용",
@@ -1348,7 +1348,7 @@ export const ko: TranslationTree = {
 					delayMinutes: "지연 (분):",
 				},
 				placeholders: {
-					value: "진행중",
+					value: "in-progress",
 					label: "진행 중",
 					icon: "check, circle, clock",
 					nextStatusDefault: "상태 순서 사용",
@@ -1386,7 +1386,7 @@ export const ko: TranslationTree = {
 					icon: "아이콘:",
 				},
 				placeholders: {
-					value: "높음",
+					value: "high",
 					label: "높은 우선순위",
 					icon: "alert-circle",
 				},
@@ -1397,7 +1397,7 @@ export const ko: TranslationTree = {
 				header: "필드 매핑",
 				warning:
 					"⚠️ 경고: TaskNotes는 이러한 속성 이름을 사용하여 읽고 씁니다. 작업을 만든 후 이를 변경하면 불일치가 발생할 수 있습니다.",
-				description: "TaskNotes가 각 필드에 사용해야 하는 프론트매터 속성을 설정합니다.",
+				description: "TaskNotes가 각 필드에 사용해야 하는 프런트매터 속성을 설정합니다.",
 				resetButton: {
 					name: "필드 매핑 초기화",
 					description: "모든 필드 매핑을 기본값으로 초기화",
@@ -1406,7 +1406,7 @@ export const ko: TranslationTree = {
 				notices: {
 					resetSuccess: "필드 매핑이 기본값으로 초기화되었습니다",
 					resetFailure: "필드 매핑 초기화 실패",
-					updateFailure: "{label}의 필드 매핑 업데이트 실패. 다시 시도하세요.",
+					updateFailure: "필드 매핑 업데이트 실패 ({label}). 다시 시도하세요.",
 				},
 				table: {
 					fieldHeader: "TaskNotes 필드",
@@ -1422,14 +1422,14 @@ export const ko: TranslationTree = {
 					scheduled: "예정일",
 					contexts: "컨텍스트",
 					projects: "프로젝트",
-					timeEstimate: "시간 예상",
+					timeEstimate: "예상 시간",
 					recurrence: "반복",
 					dateCreated: "생성일",
 					completedDate: "완료일",
 					dateModified: "수정일",
 					archiveTag: "보관 태그",
 					timeEntries: "시간 기록",
-					completeInstances: "완료 인스턴스",
+					completeInstances: "완료 회차",
 					blockedBy: "차단 원인",
 					sortOrder: "수동 순서",
 					pomodoros: "뽀모도로",
@@ -1445,7 +1445,7 @@ export const ko: TranslationTree = {
 				},
 				header: "사용자 지정 필드",
 				description:
-					"뷰 전체에서 유형 인식 필터 옵션으로 나타나는 사용자 지정 프론트매터 속성을 정의합니다. 각 행: 표시 이름, 속성 이름, 유형.",
+					"뷰 전체에서 유형 인식 필터 옵션으로 나타나는 사용자 지정 프런트매터 속성을 정의합니다. 각 행: 표시 이름, 속성 이름, 유형.",
 				addNew: {
 					name: "새 사용자 필드 추가",
 					description: "필터와 뷰에 나타날 새 사용자 지정 필드 만들기",
@@ -1510,7 +1510,7 @@ export const ko: TranslationTree = {
 					priority: "우선순위 점",
 					due: "마감일",
 					scheduled: "예정일",
-					timeEstimate: "시간 예상",
+					timeEstimate: "예상 시간",
 					totalTrackedTime: "총 기록 시간",
 					checklistProgress: "체크리스트 진행률",
 					recurrence: "반복",
@@ -1639,7 +1639,7 @@ export const ko: TranslationTree = {
 				},
 				showRecurringTasks: {
 					name: "반복 작업 표시",
-					description: "기본으로 반복 작업 인스턴스 표시",
+					description: "기본으로 반복 작업 회차 표시",
 				},
 				showICSEvents: {
 					name: "ICS 이벤트 표시",
@@ -1743,7 +1743,7 @@ export const ko: TranslationTree = {
 			},
 			projectAutosuggest: {
 				header: "프로젝트 자동 제안",
-				description: "작업 생성 시 프로젝트 제안이 표시되는 방식을 사용자 지정합니다.",
+				description: "작업 생성 시 프로젝트 제안의 표시 방식을 설정합니다.",
 				requiredTags: {
 					name: "필수 태그",
 					description:
@@ -1759,7 +1759,7 @@ export const ko: TranslationTree = {
 				requiredPropertyKey: {
 					name: "필수 속성 키",
 					description:
-						"이 프론트매터 속성이 아래 값과 일치하는 노트만 표시. 무시하려면 비워두세요.",
+						"이 프런트매터 속성이 아래 값과 일치하는 노트만 표시. 무시하려면 비워두세요.",
 					placeholder: "유형",
 				},
 				requiredPropertyValue: {
@@ -1776,7 +1776,7 @@ export const ko: TranslationTree = {
 				enableFuzzyMatching: {
 					name: "퍼지 매칭 활성화",
 					description:
-						"프로젝트 검색에서 오타와 부분 일치 허용. 큰 보관소에서는 느려질 수 있습니다.",
+						"프로젝트 검색에서 오타와 부분 일치 허용. 큰 보관함에서는 느려질 수 있습니다.",
 				},
 				displayRowsHelp: "각 프로젝트 제안에 표시할 최대 3줄의 정보를 구성합니다.",
 				displayRows: {
@@ -1784,25 +1784,25 @@ export const ko: TranslationTree = {
 						name: "행 1",
 						description:
 							"형식: {property|flags}. 속성: title, aliases, file.path, file.parent. 플래그: n(Label)은 레이블 표시, s는 검색 가능. 예: {title|n(Title)|s}",
-						placeholder: "{title|n(제목)}",
+						placeholder: "{title|n(Title)}",
 					},
 					row2: {
 						name: "행 2 (선택사항)",
 						description:
 							"일반적인 패턴: {aliases|n(Aliases)}, {file.parent|n(Folder)}, literal:Custom Text",
-						placeholder: "{aliases|n(별칭)}",
+						placeholder: "{aliases|n(Aliases)}",
 					},
 					row3: {
 						name: "행 3 (선택사항)",
 						description:
-							"{file.path|n(Path)} 또는 사용자 지정 프론트매터 필드 같은 추가 정보",
-						placeholder: "{file.path|n(경로)}",
+							"{file.path|n(Path)} 또는 사용자 지정 프런트매터 필드 같은 추가 정보",
+						placeholder: "{file.path|n(Path)}",
 					},
 				},
 				quickReference: {
 					header: "빠른 참조",
 					properties:
-						"사용 가능한 속성: title, aliases, file.path, file.parent 또는 모든 프론트매터 필드",
+						"사용 가능한 속성: title, aliases, file.path, file.parent 또는 모든 프런트매터 필드",
 					labels: '레이블 추가: {title|n(Title)} → "Title: My Project"',
 					searchable: "검색 가능하게 만들기: {description|s}는 + 검색에 설명 포함",
 					staticText: "정적 텍스트: literal:My Custom Label",
@@ -1815,7 +1815,7 @@ export const ko: TranslationTree = {
 				pluginData: "플러그인 데이터 (권장)",
 				dailyNotes: "데일리 노트",
 				notices: {
-					locationChanged: "뽀모도로 저장 위치가 {location}(으)로 변경되었습니다",
+					locationChanged: "뽀모도로 저장 위치 변경 완료: {location}",
 				},
 			},
 			notifications: {
@@ -1846,19 +1846,19 @@ export const ko: TranslationTree = {
 				connected: "연결됨",
 				disconnected: "연결되지 않음",
 				connectedAt: "연결됨: {time}",
-				refreshedAt: "마지막 새로 고침: {time}",
+				refreshedAt: "마지막 새로고침: {time}",
 				neverRefreshed: "새로 고친 적 없음",
-				refresh: "지금 새로 고침",
+				refresh: "지금 새로고침",
 				disconnect: "연결 해제",
-				refreshSuccess: "{provider} 새로 고침 완료",
-				refreshFailed: "{provider}을(를) 새로 고치지 못했습니다",
+				refreshSuccess: "{provider} 새로고침 완료",
+				refreshFailed: "새로고침에 실패했습니다: {provider}",
 				disconnectSuccess: "{provider} 연결 해제 완료",
 				disconnectFailed: "{provider} 연결을 해제하지 못했습니다",
 				connect: "{provider} 연결",
 				connectSuccess: "{provider} 연결 완료!",
 				connectFailed: "연결하지 못했습니다: {message}",
 				forget: "저장된 인증 정보 삭제",
-				forgetTitle: "{provider}의 OAuth 인증 정보를 삭제할까요?",
+				forgetTitle: "{provider}의 OAuth 인증 정보를 삭제하시겠습니까?",
 				forgetMessage:
 					"Obsidian 비밀 저장소에서 저장된 클라이언트 ID와 클라이언트 비밀을 삭제합니다.",
 				forgetConfirm: "인증 정보 삭제",
@@ -1867,7 +1867,7 @@ export const ko: TranslationTree = {
 				googleRefreshInterval: "일정은 15분마다 자동으로 새로 고쳐집니다.",
 				credentialNote:
 					"{portal}의 OAuth 앱 인증 정보를 입력하세요. 운영체제가 지원하는 경우 Obsidian 비밀 저장소가 저장된 인증 정보를 암호화합니다.",
-				tokenRefreshed: "OAuth 토큰 새로 고침: {time}",
+				tokenRefreshed: "OAuth 토큰 새로고침: {time}",
 				tokenNotRefreshed: "토큰이 아직 새로 고쳐지지 않았습니다",
 				syncUnavailable: "캘린더 동기화 서비스를 사용할 수 없습니다",
 				syncFailed: "캘린더 동기화 실패 ({time}): {message}",
@@ -1876,7 +1876,7 @@ export const ko: TranslationTree = {
 				eventsNotRefreshed: "캘린더 일정이 아직 새로 고쳐지지 않았습니다",
 				calendarErrors:
 					"오류가 있는 캘린더: {count}개. 첫 번째 오류: {calendar}: {message}",
-				refreshErrors: "{provider} 새로 고침 중 오류 발생: {message}",
+				refreshErrors: "{provider} 새로고침 중 오류 발생: {message}",
 				tokenLabel: "토큰:",
 				syncLabel: "동기화:",
 				issueLabel: "문제:",
@@ -1897,11 +1897,11 @@ export const ko: TranslationTree = {
 				},
 			},
 			basesIntegration: {
-				header: "베이스 통합",
+				header: "Bases 연동",
 				description:
-					"Obsidian 베이스 플러그인과의 통합을 설정합니다. 이것은 실험적 기능이며 현재 문서화되지 않은 Obsidian API에 의존합니다. 동작이 변경되거나 중단될 수 있습니다.",
+					"Obsidian Bases 플러그인과의 연동을 설정합니다. 실험적 기능으로, 문서화되지 않은 Obsidian API에 의존하므로 동작이 변경되거나 작동하지 않을 수 있습니다.",
 				enable: {
-					name: "베이스 통합 활성화",
+					name: "Bases 연동 활성화",
 					description:
 						"TaskNotes 뷰를 Obsidian 베이스 플러그인 내에서 사용할 수 있도록 활성화. 이 기능이 작동하려면 베이스 플러그인이 활성화되어 있어야 합니다.",
 				},
@@ -1910,7 +1910,7 @@ export const ko: TranslationTree = {
 					description:
 						"TaskNotes는 Obsidian 베이스 파일 (.base)을 사용하여 뷰를 구동합니다. 이 파일들은 시작 시 존재하지 않으면 현재 설정 (작업 식별, 필드 매핑, 상태 등)으로 자동 생성됩니다.",
 					descriptionRegen:
-						'설정을 변경해도 Base 파일은 자동으로 업데이트되지 않습니다. 새 설정을 적용하려면 아래의 "파일 업데이트"를 사용하거나, 기존 .base 파일을 삭제하고 Obsidian을 다시 시작하거나, 수동으로 편집하세요.',
+						'설정을 변경해도 베이스 파일은 자동으로 업데이트되지 않습니다. 새 설정을 적용하려면 아래의 "파일 업데이트"를 사용하거나, 기존 .base 파일을 삭제하고 Obsidian을 다시 시작하거나, 수동으로 편집하세요.',
 					docsLink: "사용 가능한 수식 및 사용자 지정 옵션에 대한 문서 보기",
 					docsLinkUrl: "https://tasknotes.dev/views/default-base-templates",
 					commands: {
@@ -1920,13 +1920,13 @@ export const ko: TranslationTree = {
 						advancedCalendar: "고급 캘린더 뷰 열기",
 						agenda: "일정 뷰 열기",
 						relationships: "관계 위젯",
-						pomodoroStats: "Pomodoro 통계 Base",
+						pomodoroStats: "뽀모도로 통계 베이스",
 					},
 					fileLabel: "파일: {path}",
 					resetButton: "초기화",
 					resetTooltip: "기본 경로로 초기화",
 					pomodoroDailyNotesHint:
-						"생성된 Pomodoro 통계 Base는 데일리 노트에서 Pomodoro 기록을 읽습니다. 기록이 아직 플러그인 데이터에 저장되어 있다면 이 Base 파일을 사용하기 전에 설정에서 마이그레이션하세요.",
+						"생성된 뽀모도로 통계 베이스는 데일리 노트에서 뽀모도로 기록을 읽습니다. 기록이 아직 플러그인 데이터에 저장되어 있다면 이 베이스 파일을 사용하기 전에 설정에서 마이그레이션하세요.",
 				},
 				autoCreateDefaultFiles: {
 					name: "기본 파일 자동 생성",
@@ -1948,21 +1948,21 @@ export const ko: TranslationTree = {
 					fileExists: "파일이 이미 존재합니다",
 					confirmOverwrite:
 						'"{fileName}"이라는 파일이 이미 존재합니다. 덮어쓰시겠습니까?',
-					success: "{count}개의 저장된 뷰를 {filePath}(으)로 내보냈습니다",
+					success: "저장된 뷰 {count}개를 내보냈습니다. 파일: {filePath}",
 					error: "뷰 내보내기 실패: {message}",
 				},
 				notices: {
 					enabled:
-						"베이스 통합이 활성화되었습니다. 설정을 완료하려면 Obsidian을 다시 시작하세요.",
+						"Bases 연동이 활성화되었습니다. 설정을 완료하려면 Obsidian을 다시 시작하세요.",
 					disabled:
-						"베이스 통합이 비활성화되었습니다. 제거를 완료하려면 Obsidian을 다시 시작하세요.",
+						"Bases 연동이 비활성화되었습니다. 제거를 완료하려면 Obsidian을 다시 시작하세요.",
 				},
 				updateDefaultFiles: {
 					name: "기본 파일 업데이트",
 					description:
 						"현재 TaskNotes 설정에서 생성된 템플릿으로 구성된 기본 .base 파일을 덮어씁니다.",
 					buttonText: "파일 업데이트",
-					confirmTitle: "기본 Base 파일 업데이트",
+					confirmTitle: "기본 베이스 파일 업데이트",
 					confirmMessage:
 						"구성된 기본 .base 파일을 새로 생성된 템플릿으로 덮어씁니다. 해당 파일의 수동 편집 내용은 대체됩니다.",
 					confirmText: "파일 업데이트",
@@ -2005,10 +2005,10 @@ export const ko: TranslationTree = {
 				recurringEventRelatedNotesMode: {
 					name: "반복 이벤트 관련 노트",
 					description:
-						"외부 캘린더 이벤트의 한 반복 항목에 연결된 노트를 불러온 전체 시리즈에 표시할지, 선택한 인스턴스에만 표시할지 선택합니다.",
+						"외부 캘린더 이벤트의 한 반복 항목에 연결된 노트를 불러온 전체 시리즈에 표시할지, 선택한 회차에만 표시할지 선택합니다.",
 					options: {
 						series: "전체 시리즈",
-						instance: "선택한 인스턴스만",
+						instance: "선택한 회차만",
 					},
 				},
 			},
@@ -2066,7 +2066,7 @@ export const ko: TranslationTree = {
 					localFile: "로컬 파일",
 					remoteCalendar: "원격 캘린더",
 					localFileCalendar: "로컬 파일",
-					synced: "{timeAgo} 전 동기화됨",
+					synced: "{timeAgo} 동기화됨",
 					error: "오류",
 				},
 				actions: {
@@ -2089,7 +2089,7 @@ export const ko: TranslationTree = {
 				},
 				filePath: {
 					name: "내보내기 파일 경로",
-					description: "ICS 파일이 저장될 경로 (보관소 루트 기준)",
+					description: "ICS 파일이 저장될 경로 (보관함 루트 기준)",
 					placeholder: "tasknotes-캘린더.ics",
 				},
 				interval: {
@@ -2139,8 +2139,8 @@ export const ko: TranslationTree = {
 					description: "활성화하면 마감일이 있는 작업만 ICS 내보내기에 포함됩니다.",
 				},
 				requireScheduledDate: {
-					name: "예약일 필요",
-					description: "활성화하면 예약일이 있는 작업만 ICS 내보내기에 포함됩니다.",
+					name: "예정일 필요",
+					description: "활성화하면 예정일이 있는 작업만 ICS 내보내기에 포함됩니다.",
 				},
 			},
 			googleCalendarExport: {
@@ -2160,18 +2160,18 @@ export const ko: TranslationTree = {
 					primarySuffix: " (기본)",
 				},
 				syncTrigger: {
-					name: "동기화 트리거",
+					name: "동기화 기준",
 					description: "어떤 작업 날짜가 캘린더 이벤트 생성을 트리거할지 설정합니다.",
 					options: {
-						scheduled: "예정 날짜",
-						due: "마감 날짜",
-						both: "둘 다 (예정 날짜 우선)",
+						scheduled: "예정일",
+						due: "마감일",
+						both: "둘 다 (예정일 우선)",
 					},
 				},
 				allDayEvents: {
 					name: "종일 이벤트로 생성",
 					description:
-						"활성화하면 작업이 종일 이벤트로 생성됩니다. 비활성화하면 시간 추정을 기간으로 사용합니다.",
+						"활성화하면 작업이 종일 이벤트로 생성됩니다. 비활성화하면 예상 시간을 기간으로 사용합니다.",
 				},
 				showAllDayAsFree: {
 					name: "종일 작업 일정을 '한가함'으로 표시",
@@ -2181,7 +2181,7 @@ export const ko: TranslationTree = {
 				defaultDuration: {
 					name: "기본 이벤트 기간",
 					description:
-						"시간이 지정된 이벤트의 기간(분) (작업에 시간 추정이 없을 때 사용).",
+						"시간이 지정된 이벤트의 기간(분) (작업에 예상 시간이 없을 때 사용).",
 				},
 				eventTitleTemplate: {
 					name: "이벤트 제목 템플릿",
@@ -2199,7 +2199,7 @@ export const ko: TranslationTree = {
 					description: "이벤트 설명에 Obsidian의 작업으로 돌아가는 링크를 추가합니다.",
 				},
 				defaultReminder: {
-					name: "기본 알림",
+					name: "기본 리마인더",
 					description:
 						"시간이 지정된 Google Calendar 이벤트에 팝업 리마인더를 추가합니다. 이벤트 전 분 수를 쉼표로 구분해 입력하세요. 비워 두면 캘린더 기본값을 사용합니다. 일반적인 값: 15, 30, 60, 1440.",
 				},
@@ -2252,7 +2252,7 @@ export const ko: TranslationTree = {
 					taskSynced: "작업이 Google 캘린더에 동기화되었습니다",
 					noActiveFile: "현재 활성 파일이 없습니다",
 					notATask: "현재 파일은 작업이 아닙니다",
-					noDateToSync: "동기화할 예정 날짜 또는 마감 날짜가 없습니다",
+					noDateToSync: "동기화할 예정일 또는 마감일이 없습니다",
 					syncFailed: "Google 캘린더에 작업 동기화 실패: {message}",
 					connectionExpired:
 						"Google 캘린더 연결이 만료되었습니다. 설정 > 통합에서 다시 연결하세요.",
@@ -2268,7 +2268,7 @@ export const ko: TranslationTree = {
 					status: "상태: {value}",
 					due: "마감: {value}",
 					scheduled: "예정: {value}",
-					timeEstimate: "시간 추정: {value}",
+					timeEstimate: "예상 시간: {value}",
 					tags: "태그: {value}",
 					contexts: "컨텍스트: {value}",
 					projects: "프로젝트: {value}",
@@ -2337,7 +2337,7 @@ export const ko: TranslationTree = {
 				statusLabels: {
 					active: "활성",
 					inactive: "비활성",
-					created: "{timeAgo} 전 생성됨",
+					created: "{timeAgo} 생성됨",
 				},
 				actions: {
 					editEvents: "이벤트 편집",
@@ -2428,8 +2428,8 @@ export const ko: TranslationTree = {
 						description: "뽀모도로 세션이 중지될 때",
 					},
 					recurringCompleted: {
-						label: "반복 인스턴스 완료됨",
-						description: "반복 작업 인스턴스가 완료될 때",
+						label: "반복 회차 완료됨",
+						description: "반복 작업 회차가 완료될 때",
 					},
 					reminderTriggered: {
 						label: "리마인더 트리거됨",
@@ -2451,7 +2451,7 @@ export const ko: TranslationTree = {
 						headersSection: "헤더 구성",
 						transformFile: {
 							name: "변환 파일",
-							description: "웹훅 페이로드를 변환하는 보관소의 .json 템플릿 파일 경로",
+							description: "웹훅 페이로드를 변환하는 보관함의 .json 템플릿 파일 경로",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2479,7 +2479,7 @@ export const ko: TranslationTree = {
 						},
 						transformFile: {
 							name: "변환 파일",
-							description: "웹훅 페이로드를 변환하는 보관소의 .json 템플릿 파일 경로",
+							description: "웹훅 페이로드를 변환하는 보관함의 .json 템플릿 파일 경로",
 							placeholder: "simple-template.json",
 						},
 						customHeaders: {
@@ -2520,14 +2520,14 @@ export const ko: TranslationTree = {
 				enable: {
 					name: "mdbase 타입 정의 생성",
 					description:
-						"설정이 변경될 때 보관소 루트에 mdbase 타입 파일(mdbase.yaml 및 _types/task.md)을 생성하고 유지합니다.",
+						"설정이 변경될 때 보관함 루트에 mdbase 타입 파일(mdbase.yaml 및 _types/task.md)을 생성하고 유지합니다.",
 				},
 			},
 			timeFormats: {
 				justNow: "방금",
-				minutesAgo: "{minutes}분 전",
-				hoursAgo: "{hours}시간 전",
-				daysAgo: "{days}일 전",
+				minutesAgo: "{minutes}분{plural} 전",
+				hoursAgo: "{hours}시간{plural} 전",
+				daysAgo: "{days}일{plural} 전",
 			},
 		},
 	},
@@ -2542,14 +2542,14 @@ export const ko: TranslationTree = {
 			exportedRows: "내보낸 행: {count}개",
 			noTasksCopy: "복사할 작업이 없습니다",
 			deleteTitle: "작업 삭제",
-			deleteConfirm: "작업({count}개)을 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
+			deleteConfirm: "작업 {count}개를 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.",
 			noNotes: "선택한 날짜에 노트가 없습니다",
 			weeklyDisabled: "주간 노트 플러그인이 비활성화되어 있습니다. 설정에서 활성화하세요.",
 			weeklyFailed: "주간 노트를 만들지 못했습니다: {message}",
 			rescheduled: "다음 반복 항목의 일정을 변경했습니다. 반복 규칙은 바뀌지 않습니다.",
 			allDay: "반복 작업을 종일로 변경했습니다. 이후 모든 반복 항목에 적용됩니다.",
 			recurringTime:
-				"반복 작업 시간을 {time}(으)로 변경했습니다. 이후 모든 반복 항목에 적용됩니다.",
+				"반복 작업의 시간이 {time}에 설정되었습니다. 이후 모든 반복 항목에 적용됩니다.",
 			timeblockCopied: "타임블록이 복제되었습니다",
 			timeblockMoved: "타임블록이 이동되었습니다",
 			timeblockResized: "타임블록 길이가 업데이트되었습니다",
@@ -2576,10 +2576,10 @@ export const ko: TranslationTree = {
 			trackingActive: "이 작업의 시간 추적이 이미 진행 중입니다",
 			trackingInactive: "이 작업에 진행 중인 시간 추적 세션이 없습니다",
 			trackingStopFailed: "시간 추적을 중지하지 못했습니다",
-			noOverdue: "연기할 예정일이 지난 작업이 없습니다",
+			noOverdue: "예정일이 지난 작업 중 연기할 항목이 없습니다",
 			postponeTitle: "예정일이 지난 작업 연기",
 			postponeConfirm:
-				"예정일이 지난 진행 중 작업을 오늘({today})로 옮길까요? 작업 수: {count}.",
+				"예정일이 지난 활성 작업을 오늘({today})로 옮기시겠습니까? 작업 {count}개.",
 			postpone: "연기",
 			postponing: "작업 연기 중: {count}개…",
 			postponed: "연기된 작업: {count}개. 실패: {failed}개.",
@@ -2593,15 +2593,15 @@ export const ko: TranslationTree = {
 		},
 
 		commands: {
-			basesCreated: "기본 Bases 파일 생성됨 ({count}개):\n{files}",
-			basesUpdated: "기본 Bases 파일 업데이트됨 ({count}개):\n{files}",
-			basesExist: "기본 Bases 파일이 이미 있습니다:\n{files}",
+			basesCreated: "기본 베이스 파일 생성됨 ({count}개):\n{files}",
+			basesUpdated: "기본 베이스 파일 업데이트됨 ({count}개):\n{files}",
+			basesExist: "기본 베이스 파일이 이미 있습니다:\n{files}",
 			tagQueryFailed: "검색 창은 열렸지만 태그 검색어를 설정하지 못했습니다",
 			tagSearchFailed: "태그 검색 창을 열지 못했습니다: {tag}",
 			dailyNotesDisabled:
-				"일일 노트 코어 플러그인이 비활성화되어 있습니다. 설정 > 코어 플러그인에서 활성화하세요.",
-			dailyNoteCreateFailed: "일일 노트를 만들지 못했습니다: {message}",
-			dailyNoteOpenFailed: "일일 노트로 이동하지 못했습니다: {message}",
+				"데일리 노트 코어 플러그인이 비활성화되어 있습니다. 설정 > 코어 플러그인에서 활성화하세요.",
+			dailyNoteCreateFailed: "데일리 노트를 만들지 못했습니다: {message}",
+			dailyNoteOpenFailed: "데일리 노트로 이동하지 못했습니다: {message}",
 			statusChanged: "작업을 '{status}' 상태로 변경했습니다",
 			taskUpdated: "작업이 업데이트되었습니다",
 			taskUpdateFailed: "작업을 업데이트하지 못했습니다",
@@ -2610,7 +2610,7 @@ export const ko: TranslationTree = {
 			unarchived: "작업의 보관이 해제되었습니다",
 			archiveFailed: "작업의 보관 상태를 업데이트하지 못했습니다",
 			statusFailed: "작업 상태를 업데이트하지 못했습니다",
-			cacheRefreshing: "TaskNotes 캐시 새로 고침 중…",
+			cacheRefreshing: "TaskNotes 캐시 새로고침 중…",
 			cacheRefreshed: "TaskNotes 캐시가 새로 고쳐졌습니다",
 			cacheFailed: "캐시를 새로 고치지 못했습니다. 다시 시도하세요.",
 			conversionUnavailable: "작업 변환 서비스를 사용할 수 없습니다. 다시 시도하세요.",
@@ -2629,15 +2629,15 @@ export const ko: TranslationTree = {
 
 		languagePackDownloadFailed:
 			"{language} 언어를 불러오지 못했습니다. 현재 언어는 변경되지 않았습니다. 인터페이스 언어 설정에서 다시 시도하세요.",
-		languageChanged: "언어가 {language}(으)로 변경되었습니다.",
+		languageChanged: "인터페이스 언어 변경 완료: {language}.",
 		recurringCompletion: {
-			completed: "완료한 반복 일정: {date}",
+			completed: "완료한 반복 회차: {date}",
 			incomplete: "미완료로 변경: {date}",
 			next: "다음: {date}",
 			noNext: "다음 반복 일정 없음",
 			undo: "실행 취소",
 			undone: "반복 작업 변경을 취소했습니다.",
-			conflict: "실행 취소할 수 없습니다. 이 반복 일정이나 예약이 변경되었습니다.",
+			conflict: "실행 취소할 수 없습니다. 이 반복 회차나 일정이 변경되었습니다.",
 			failed: "반복 작업 변경을 취소하지 못했습니다.",
 		},
 		releaseAvailable: {
@@ -2674,7 +2674,7 @@ export const ko: TranslationTree = {
 		openAgendaView: "일정 뷰 열기",
 		openPomodoroView: "뽀모도로 타이머 열기",
 		openKanbanView: "칸반 보드 열기",
-		updateDefaultBaseFiles: "기본 Base 파일 업데이트",
+		updateDefaultBaseFiles: "기본 베이스 파일 업데이트",
 		openPomodoroStats: "뽀모도로 통계 열기",
 		openStatisticsView: "작업 및 프로젝트 통계 열기",
 		createNewTask: "새 작업 만들기",
@@ -2703,7 +2703,7 @@ export const ko: TranslationTree = {
 		editTimeEntries: "시간 기록 편집 (작업 선택)",
 		createOrOpenTask: "작업 만들기 또는 열기",
 		createOrOpenTaskWithTracking: "작업을 만들거나 열고 시간 추적 시작",
-		rolloverOverdueScheduledTasks: "기한이 지난 예약 작업을 오늘로 연기",
+		rolloverOverdueScheduledTasks: "예정일이 지난 작업을 오늘로 연기",
 		syncAllTasksGoogleCalendar: "모든 작업을 Google 캘린더에 동기화",
 		syncCurrentTaskGoogleCalendar: "현재 작업을 Google 캘린더에 동기화",
 		quickActionsTaskUnderCursor: "커서 아래 작업의 빠른 작업",
@@ -2722,13 +2722,13 @@ export const ko: TranslationTree = {
 		},
 
 		reminder: {
-			loading: "알림 불러오는 중…",
+			loading: "리마인더 불러오는 중…",
 			loadFailed: "작업 데이터를 불러오지 못했습니다. 다시 시도하세요.",
-			title: "작업 알림",
+			title: "작업 리마인더",
 			noChanges: "변경 사항 없음",
-			current: "현재 알림",
-			empty: "설정된 알림이 없습니다",
-			addNew: "새 알림 추가",
+			current: "현재 리마인더",
+			empty: "설정된 리마인더가 없습니다",
+			addNew: "새 리마인더 추가",
 			relative: "상대 시간",
 			absolute: "지정 시간",
 			relativeTo: "기준 날짜",
@@ -2736,13 +2736,13 @@ export const ko: TranslationTree = {
 			dueContext: "마감: {date}",
 			scheduledContext: "예정: {date}",
 			description: "설명 (선택 사항)",
-			descriptionPlaceholder: "사용자 지정 알림 메시지",
-			addFailed: "알림을 추가하지 못했습니다. 입력 내용을 확인하세요.",
-			missingDue: "알림을 만들 수 없습니다. 작업에 마감일이 없습니다",
-			missingScheduled: "알림을 만들 수 없습니다. 작업에 예정일이 없습니다",
-			missingDateTime: "지정 시간 알림의 날짜와 시간을 모두 입력하세요",
-			saveFailed: "알림을 저장하지 못했습니다. 다시 시도하세요.",
-			added: "알림 추가됨: {description}",
+			descriptionPlaceholder: "사용자 지정 리마인더 메시지",
+			addFailed: "리마인더를 추가하지 못했습니다. 입력 내용을 확인하세요.",
+			missingDue: "리마인더를 만들 수 없습니다. 작업에 마감일이 없습니다",
+			missingScheduled: "리마인더를 만들 수 없습니다. 작업에 예정일이 없습니다",
+			missingDateTime: "지정 시간 리마인더의 날짜와 시간을 모두 입력하세요",
+			saveFailed: "리마인더를 저장하지 못했습니다. 다시 시도하세요.",
+			added: "리마인더 추가 완료: {description}",
 			at: "{date}에",
 			beforeDue: "마감일 {duration} 전",
 			afterDue: "마감일 {duration} 후",
@@ -2750,7 +2750,7 @@ export const ko: TranslationTree = {
 			afterScheduled: "예정일 {duration} 후",
 			atDue: "마감일에",
 			atScheduled: "예정일에",
-			quickTooltip: "알림 추가: {timing}",
+			quickTooltip: "리마인더 추가: {timing}",
 		},
 		actionPalette: {
 			presets: {
@@ -2761,15 +2761,15 @@ export const ko: TranslationTree = {
 				nextMonth: "다음 달",
 			},
 
-			placeholder: "작업 검색…",
+			placeholder: "동작 검색…",
 			title: "빠른 작업: {title}",
 			execute: "실행",
 			statusAction: '상태를 "{label}"(으)로 변경',
-			statusDesc: "작업 상태를 {label}(으)로 설정",
-			statusChanged: "상태가 {label}(으)로 변경되었습니다",
+			statusDesc: "작업 상태 설정: {label}",
+			statusChanged: "작업 상태 변경 완료: {label}",
 			priorityAction: '우선순위를 "{label}"(으)로 설정',
-			priorityDesc: "작업 우선순위를 {label}(으)로 변경",
-			priorityChanged: "우선순위가 {label}(으)로 변경되었습니다",
+			priorityDesc: "작업 우선순위 변경: {label}",
+			priorityChanged: "작업 우선순위 변경 완료: {label}",
 			clearDueDesc: "이 작업의 마감일 제거",
 			clearScheduledDesc: "이 작업의 예정일 제거",
 			dueCleared: "마감일이 제거되었습니다",
@@ -2798,10 +2798,10 @@ export const ko: TranslationTree = {
 			copyLinkDesc: "이 작업의 위키링크 복사",
 			linkCopied: "작업 링크가 클립보드에 복사되었습니다",
 			deleteDesc: "이 작업 영구 삭제",
-			scheduleFor: "{date}(으)로 예약",
-			dueFor: "마감일을 {date}(으)로 설정",
-			scheduleDesc: "예정일을 {date}(으)로 설정",
-			dueDesc: "마감일을 {date}(으)로 설정",
+			scheduleFor: "예정일을 {date}로 설정",
+			dueFor: "마감일을 {date}로 설정",
+			scheduleDesc: "예정일 설정: {date}",
+			dueDesc: "마감일 설정: {date}",
 			scheduledSet: "예정일이 설정되었습니다",
 			dueSet: "마감일이 설정되었습니다",
 			taskNotFound: "작업을 찾을 수 없습니다",
@@ -2865,7 +2865,7 @@ export const ko: TranslationTree = {
 			noRelatedItems: "이 이벤트에 대한 관련 노트나 작업이 없습니다.",
 			typeTask: "작업",
 			typeNote: "노트",
-			actionsHeading: "작업",
+			actionsHeading: "동작",
 			createFromEventLabel: "이벤트에서 생성",
 			createFromEventDesc: "이 캘린더 이벤트에서 새 노트나 작업 생성",
 			linkExistingLabel: "기존 항목 연결",
@@ -2874,7 +2874,7 @@ export const ko: TranslationTree = {
 		timeblockInfo: {
 			noTasks: "선택할 수 있는 작업이 없습니다",
 			selectorFailed: "작업 선택기를 열지 못했습니다",
-			confirmDelete: '타임블록 "{title}"을(를) 삭제할까요?',
+			confirmDelete: '타임블록 "{title}"을 삭제하시겠습니까?',
 
 			editHeading: "타임블록 편집",
 			dateTimeLabel: "날짜 및 시간: ",
@@ -2954,7 +2954,7 @@ export const ko: TranslationTree = {
 			titleLabel: "제목",
 			titleDesc: "새 콘텐츠의 제목",
 			folderLabel: "폴더",
-			folderDesc: "대상 폴더 (보관소 루트를 사용하려면 비워두세요)",
+			folderDesc: "대상 폴더 (보관함 루트를 사용하려면 비워두세요)",
 			folderPlaceholder: "폴더/하위폴더",
 			createButton: "생성",
 			startLabel: "시작: ",
@@ -2988,7 +2988,7 @@ export const ko: TranslationTree = {
 			noMigrationNeeded: "마이그레이션이 필요한 작업이 없습니다",
 			warnings: {
 				title: "진행하기 전에:",
-				backup: "마이그레이션 전에 보관소를 백업하세요",
+				backup: "마이그레이션 전에 보관함을 백업하세요",
 				conversion: "이전 반복 패턴이 새 형식으로 변환됩니다",
 				normalUsage: "마이그레이션 중에도 TaskNotes를 정상적으로 사용할 수 있습니다",
 				permanent: "이 변경은 영구적이며 자동으로 실행 취소할 수 없습니다",
@@ -3027,7 +3027,7 @@ export const ko: TranslationTree = {
 			},
 		},
 		task: {
-			titlePlaceholder: "무엇을 해야 하나요?",
+			titlePlaceholder: "할 작업을 입력하세요",
 			titleLabel: "제목",
 			titleDetailedPlaceholder: "작업 제목...",
 			detailsLabel: "세부정보",
@@ -3040,7 +3040,7 @@ export const ko: TranslationTree = {
 			contextsPlaceholder: "컨텍스트1, 컨텍스트2",
 			tagsLabel: "태그",
 			tagsPlaceholder: "태그1, 태그2",
-			timeEstimateLabel: "시간 예상 (분)",
+			timeEstimateLabel: "예상 시간 (분)",
 			timeEstimatePlaceholder: "30",
 			unsavedChanges: {
 				title: "저장되지 않은 변경 사항",
@@ -3109,7 +3109,7 @@ export const ko: TranslationTree = {
 				weekly: "매주",
 				everyTwoWeeks: "2주마다",
 				weekdays: "평일",
-				weeklyOn: "{days}마다",
+				weeklyOn: "매주 {days}",
 				monthly: "매월",
 				everyThreeMonths: "3개월마다",
 				monthlyOnOrdinal: "매월 {ordinal}",
@@ -3134,7 +3134,7 @@ export const ko: TranslationTree = {
 				noteNotFound: '"{name}" 노트를 찾을 수 없습니다',
 			},
 			dueDate: {
-				overdue: "마감: {date} (지연됨)",
+				overdue: "마감: {date} (기한 지남)",
 				today: "마감: 오늘",
 			},
 		},
@@ -3200,7 +3200,7 @@ export const ko: TranslationTree = {
 				blockingUnresolved: "해결할 수 없음: {entries}",
 				fileMissing: "작업 파일을 찾을 수 없습니다: {path}",
 				openNoteFailure: "작업 노트 열기 실패",
-				archiveSuccess: "작업이 성공적으로 {action}되었습니다",
+				archiveSuccess: "작업 처리 완료: {action}",
 				archiveFailure: "작업 보관 실패",
 				deleteSuccess: '작업 "{title}"이 삭제되었습니다',
 				deleteFailure: "작업 삭제 실패: {message}",
@@ -3223,14 +3223,14 @@ export const ko: TranslationTree = {
 			},
 			message: {
 				migrate:
-					"이 작업은 기존 뽀모도로 세션 데이터를 데일리 노트 프론트매터로 마이그레이션합니다. 데이터는 날짜별로 그룹화되어 각 데일리 노트에 저장됩니다.",
-				switch: "뽀모도로 세션 데이터가 플러그인 데이터 파일 대신 데일리 노트 프론트매터에 저장됩니다.",
+					"이 작업은 기존 뽀모도로 세션 데이터를 데일리 노트 프런트매터로 마이그레이션합니다. 데이터는 날짜별로 그룹화되어 각 데일리 노트에 저장됩니다.",
+				switch: "뽀모도로 세션 데이터가 플러그인 데이터 파일 대신 데일리 노트 프런트매터에 저장됩니다.",
 			},
 			whatThisMeans: "이것이 의미하는 것:",
 			bullets: {
 				dailyNotesRequired:
 					"데일리 노트는 코어 데일리 노트 플러그인이나 Periodic Notes에서 활성화되어 있어야 합니다",
-				storedInNotes: "데이터가 데일리 노트 프론트매터에 저장됩니다",
+				storedInNotes: "데이터가 데일리 노트 프런트매터에 저장됩니다",
 				migrateData: "기존 플러그인 데이터가 마이그레이션된 후 지워집니다",
 				futureSessions: "향후 세션은 데일리 노트에 저장됩니다",
 				dataLongevity: "노트와 함께 더 나은 데이터 수명을 제공합니다",
@@ -3330,7 +3330,7 @@ export const ko: TranslationTree = {
 			durationDesc: "계산된 기간 재정의",
 			durationPlaceholder: "기간을 분 단위로 입력",
 			description: "설명",
-			descriptionPlaceholder: "무엇을 작업했나요?",
+			descriptionPlaceholder: "작업 내용을 입력하세요",
 			calculatedDuration: "계산됨: {minutes}분",
 			totalTime: "총 {hours}시간 {minutes}분",
 			totalMinutes: "총 {minutes}분",
@@ -3368,8 +3368,8 @@ export const ko: TranslationTree = {
 			scheduledDate: "예정일",
 			customDates: "사용자 지정 날짜",
 			reminders: "리마인더",
-			remindBeforeDue: "마감 전 알림...",
-			remindBeforeScheduled: "예정 전 알림...",
+			remindBeforeDue: "마감 전 리마인더...",
+			remindBeforeScheduled: "예정 전 리마인더...",
 			manageReminders: "모든 리마인더 관리...",
 			clearReminders: "모든 리마인더 지우기",
 			startTimeTracking: "시간 추적 시작",
@@ -3438,7 +3438,7 @@ export const ko: TranslationTree = {
 					alreadyInProject: "작업이 이미 이 프로젝트에 있습니다",
 					alreadySubtask: "작업이 이미 이 작업의 하위 작업입니다",
 					addedToProject: "프로젝트에 추가됨: {project}",
-					addedAsSubtask: "{subtask}이(가) {parent}의 하위 작업으로 추가되었습니다",
+					addedAsSubtask: "하위 작업 추가 완료: {subtask} → {parent}",
 					addToProjectFailed: "프로젝트에 작업 추가 실패",
 					addAsSubtaskFailed: "하위 작업으로 작업 추가 실패",
 					projectSelectFailed: "프로젝트 선택기 열기 실패",
@@ -3460,8 +3460,8 @@ export const ko: TranslationTree = {
 			},
 			markComplete: "이 날짜에 완료로 표시",
 			markIncomplete: "이 날짜에 미완료로 표시",
-			skipInstance: "인스턴스 건너뛰기",
-			unskipInstance: "인스턴스 건너뛰기 취소",
+			skipInstance: "회차 건너뛰기",
+			unskipInstance: "회차 건너뛰기 취소",
 			completion: {
 				submenu: "완료로 표시 또는 건너뛰기",
 				submenuCompleteOnly: "완료로 표시",
@@ -3476,9 +3476,9 @@ export const ko: TranslationTree = {
 				noCompletedStatus: "완료 상태가 설정되어 있지 않습니다",
 				pickDateTitle: "완료 날짜 선택",
 				completeFailure: "작업 완료 상태를 업데이트하지 못했습니다: {message}",
-				clearInstancesConfirmTitle: "기록된 인스턴스를 지울까요?",
+				clearInstancesConfirmTitle: "기록된 회차를 지울까요?",
 				clearInstancesConfirmMessage:
-					"일정을 변경하면 새 날짜 당일 또는 이후에 완료되거나 건너뛴 것으로 기록된 다음 인스턴스가 지워집니다: {dates}. 더 이상 완료 또는 건너뛰기로 표시되지 않습니다. 계속할까요?",
+					"일정을 변경하면 새 날짜 당일 또는 이후에 완료되거나 건너뛴 것으로 기록된 다음 회차가 지워집니다: {dates}. 더 이상 완료 또는 건너뛰기로 표시되지 않습니다. 계속하시겠습니까?",
 				clearInstancesConfirmButton: "일정 변경 및 지우기",
 			},
 			quickReminders: {
@@ -3489,15 +3489,15 @@ export const ko: TranslationTree = {
 				oneDay: "1일 전",
 			},
 			notices: {
-				toggleCompletionFailure: "반복 작업 완료 토글 실패: {message}",
-				toggleSkipFailure: "반복 작업 건너뛰기 토글 실패: {message}",
+				toggleCompletionFailure: "반복 회차 완료 상태 전환 실패: {message}",
+				toggleSkipFailure: "반복 회차 건너뛰기 상태 전환 실패: {message}",
 				updateDueDateFailure: "작업 마감일 업데이트 실패: {message}",
 				updateScheduledFailure: "작업 예정일 업데이트 실패: {message}",
 				updateCustomDateFailure: "{field} 업데이트 실패: {message}",
 				updateRemindersFailure: "리마인더 업데이트 실패",
 				clearRemindersFailure: "리마인더 지우기 실패",
 				addReminderFailure: "리마인더 추가 실패",
-				archiveFailure: "작업 보관 토글 실패: {message}",
+				archiveFailure: "작업 보관 상태 전환 실패: {message}",
 				copyTitleSuccess: "작업 제목이 클립보드에 복사되었습니다",
 				copyFailure: "클립보드에 복사 실패",
 				renameSuccess: '"{name}"(으)로 이름이 변경되었습니다',
@@ -3525,13 +3525,13 @@ export const ko: TranslationTree = {
 			copyTitle: "제목 복사",
 			copyLocation: "위치 복사",
 			copyUrl: "URL 복사",
-			copyMarkdown: "마크다운으로 복사",
+			copyMarkdown: "Markdown으로 복사",
 			subscriptionUnknown: "알 수 없는 캘린더",
 			notices: {
 				copyTitleSuccess: "이벤트 제목이 클립보드에 복사되었습니다",
 				copyLocationSuccess: "위치가 클립보드에 복사되었습니다",
 				copyUrlSuccess: "이벤트 URL이 클립보드에 복사되었습니다",
-				copyMarkdownSuccess: "이벤트 세부정보가 마크다운으로 복사되었습니다",
+				copyMarkdownSuccess: "이벤트 세부정보가 Markdown으로 복사되었습니다",
 				copyFailure: "클립보드에 복사 실패",
 				taskCreated: "작업 생성됨: {title}",
 				taskCreateFailure: "이벤트에서 작업 생성 실패",
@@ -3609,9 +3609,9 @@ export const ko: TranslationTree = {
 			notices: {
 				generateLinkFailed: "캘린더 링크 생성 실패",
 				noTasksToExport: "내보낼 작업을 찾을 수 없습니다",
-				downloadSuccess: "{count}개의 작업이 포함된 {filename}이(가) 다운로드되었습니다",
+				downloadSuccess: "{count}개 작업{plural}을 포함한 파일 다운로드 완료: {filename}",
 				downloadFailed: "캘린더 파일 다운로드 실패",
-				singleDownloadSuccess: "{filename}이(가) 다운로드되었습니다",
+				singleDownloadSuccess: "파일 다운로드 완료: {filename}",
 			},
 		},
 		filter: {
@@ -3620,7 +3620,7 @@ export const ko: TranslationTree = {
 				noTags: "태그 없음",
 				invalidDate: "잘못된 날짜",
 				due: {
-					overdue: "지연됨",
+					overdue: "기한 지남",
 					today: "오늘",
 					tomorrow: "내일",
 					nextSevenDays: "다음 7일",
@@ -3646,10 +3646,10 @@ export const ko: TranslationTree = {
 		instantTaskConvert: {
 			notices: {
 				noCheckboxTasks: "현재 노트에서 체크박스 작업을 찾을 수 없습니다.",
-				convertingTasks: "{count}개의 작업을 변환 중...",
-				conversionSuccess: "✅ {count}개의 작업이 TaskNotes로 성공적으로 변환되었습니다!",
+				convertingTasks: "작업{plural} {count}개 변환 중...",
+				conversionSuccess: "✅ 작업{plural} {count}개를 TaskNotes로 변환했습니다!",
 				partialConversion:
-					"{successCount}개의 작업이 변환되었습니다. {failureCount}개 실패.",
+					"작업{successPlural} {successCount}개 변환, {failureCount}개 실패.",
 				batchConversionFailed: "일괄 변환 수행 실패. 다시 시도하세요.",
 				invalidParameters: "잘못된 입력 매개변수.",
 				emptyLine: "현재 줄이 비어 있거나 유효한 콘텐츠가 없습니다.",
@@ -3674,8 +3674,8 @@ export const ko: TranslationTree = {
 			notices: {
 				templateNotFound: "작업 본문 템플릿을 찾을 수 없습니다: {path}",
 				templateReadError: "작업 본문 템플릿 읽기 오류: {template}",
-				occurrenceTemplateNotFound: "발생 노트 템플릿을 찾을 수 없습니다: {path}",
-				occurrenceTemplateReadError: "발생 노트 템플릿 읽기 오류: {template}",
+				occurrenceTemplateNotFound: "회차 노트 템플릿을 찾을 수 없습니다: {path}",
+				occurrenceTemplateReadError: "회차 노트 템플릿 읽기 오류: {template}",
 				moveTaskFailed: "{operation} 작업 이동 실패: {error}",
 			},
 		},
@@ -3752,8 +3752,8 @@ export const ko: TranslationTree = {
 			priorityAriaLabel: "우선순위: {label}",
 			taskOptions: "작업 옵션",
 			recurrenceTooltip: "{label}: {value}",
-			reminderTooltipOne: "알림 1개 설정됨 (관리하려면 클릭)",
-			reminderTooltipMany: "{count}개 알림 설정됨 (관리하려면 클릭)",
+			reminderTooltipOne: "리마인더 1개 설정됨 (관리하려면 클릭)",
+			reminderTooltipMany: "리마인더 {count}개 설정됨 (관리하려면 클릭)",
 			projectTooltip: "이 작업은 프로젝트로 사용됩니다 (클릭하여 하위 작업 표시/숨기기)",
 			projectIndicatorTooltip: "이 작업은 프로젝트로 사용됩니다",
 			expandSubtasks: "하위 작업 펼치기",
@@ -3793,7 +3793,7 @@ export const ko: TranslationTree = {
 			searchTasksPlaceholder: "작업 검색...",
 			searchTasksTooltip: "작업 제목 검색",
 			filterUnavailable: "필터 바를 일시적으로 사용할 수 없습니다",
-			toggleFilter: "필터 토글",
+			toggleFilter: "필터 켜기/끄기",
 			activeFiltersTooltip: "활성 필터 – 수정하려면 클릭, 지우려면 우클릭",
 			configureVisibleProperties: "표시 속성 설정",
 			sortAndGroupOptions: "정렬 및 그룹 옵션",
@@ -3813,9 +3813,9 @@ export const ko: TranslationTree = {
 			closeFilterModal: "필터 모달 닫기",
 			deleteFilterGroup: "필터 그룹 삭제",
 			deleteCondition: "조건 삭제",
-			all: "모두",
-			any: "일부",
-			followingAreTrue: "다음 조건이 참:",
+			all: "모든 조건",
+			any: "하나 이상의 조건",
+			followingAreTrue: "을 충족:",
 			where: "조건",
 			selectProperty: "선택...",
 			chooseProperty: "필터링할 작업 속성 선택",
@@ -3823,11 +3823,11 @@ export const ko: TranslationTree = {
 			enterValue: "필터링할 값 입력",
 			selectValue: "필터링할 {property} 선택",
 			sortBy: "정렬 기준:",
-			toggleSortDirection: "정렬 방향 토글",
+			toggleSortDirection: "정렬 방향 바꾸기",
 			chooseSortMethod: "작업 정렬 방법 선택",
 			groupBy: "그룹 기준:",
 			chooseGroupMethod: "공통 속성으로 작업 그룹화",
-			toggleViewOption: "{option} 토글",
+			toggleViewOption: "{option} 켜기/끄기",
 			expandCollapseFilters: "필터 조건 펼치기/접기",
 			expandCollapseSort: "정렬 및 그룹 옵션 펼치기/접기",
 			expandCollapseViewOptions: "뷰별 옵션 펼치기/접기",
@@ -3911,7 +3911,7 @@ export const ko: TranslationTree = {
 				priorityDot: "우선순위 점",
 				dueDate: "마감일",
 				scheduledDate: "예정일",
-				timeEstimate: "시간 예상",
+				timeEstimate: "예상 시간",
 				totalTrackedTime: "총 기록 시간",
 				checklistProgress: "체크리스트 진행률",
 				recurrence: "반복",
@@ -3926,8 +3926,8 @@ export const ko: TranslationTree = {
 			},
 		},
 		reminderContextMenu: {
-			remindBeforeDue: "마감 전 알림...",
-			remindBeforeScheduled: "예정 전 알림...",
+			remindBeforeDue: "마감 전 리마인더...",
+			remindBeforeScheduled: "예정 전 리마인더...",
 			manageAllReminders: "모든 리마인더 관리...",
 			clearAllReminders: "모든 리마인더 지우기",
 			quickReminders: {
@@ -3940,7 +3940,7 @@ export const ko: TranslationTree = {
 		},
 		recurrenceContextMenu: {
 			daily: "매일",
-			weeklyOn: "{day}마다",
+			weeklyOn: "매주 {day}",
 			everyTwoWeeksOn: "2주마다 {day}",
 			monthlyOnThe: "매월 {ordinal}",
 			everyThreeMonthsOnThe: "3개월마다 {ordinal}",
@@ -3953,20 +3953,20 @@ export const ko: TranslationTree = {
 			customRecurrence: "사용자 지정 반복...",
 			clearRecurrence: "반복 지우기",
 			customRecurrenceModal: {
-				lastDay: "마지막 날",
+				lastDay: "말일",
 
 				title: "사용자 지정 반복",
-				startDate: "시작 날짜",
+				startDate: "시작일",
 				startDateDesc: "반복 패턴이 시작되는 날짜",
 				startTime: "시작 시간",
-				startTimeDesc: "반복 인스턴스가 나타나야 하는 시간 (선택사항)",
+				startTimeDesc: "반복 회차가 나타나야 하는 시간 (선택사항)",
 				recurFrom: "반복 기준",
-				recurFromDesc: "다음 발생을 언제 계산해야 하나요?",
+				recurFromDesc: "다음 회차 계산 기준을 선택하세요.",
 				scheduledDate: "예정일",
 				completionDate: "완료일",
 				frequency: "빈도",
 				interval: "간격",
-				intervalDesc: "X일/주/월/년마다",
+				intervalDesc: "지정한 일/주/월/년 간격마다",
 				daysOfWeek: "요일",
 				daysOfWeekDesc: "특정 요일 선택 (주간 반복용)",
 				monthlyRecurrence: "월간 반복",

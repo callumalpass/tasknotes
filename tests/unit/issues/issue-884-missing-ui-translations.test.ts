@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 /**
  * Test for issue #884: Missing translations - not all UI strings are localized
  *
@@ -97,7 +98,7 @@ describe('Issue #884: Missing UI translations', () => {
 		it.skip('reproduces issue #884 - should have translation keys for ReminderModal section headers', () => {
 			// Section headers are hardcoded in ReminderModal.ts
 			const requiredKeys = [
-				'modals.reminder.title', // "Task Reminders"
+				msg({ message: "Task reminders", context: "modals.reminder.title" }), // "Task Reminders"
 				'modals.reminder.currentReminders', // "Current Reminders"
 				'modals.reminder.addNewReminder', // "Add New Reminder"
 				'modals.reminder.emptyState', // "No reminders set"

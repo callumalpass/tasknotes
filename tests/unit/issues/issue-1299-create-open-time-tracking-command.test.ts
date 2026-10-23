@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
 
 describe("Issue #1299: create or open task with time tracking command", () => {
@@ -10,7 +11,7 @@ describe("Issue #1299: create or open task with time tracking command", () => {
 			openTaskSelectorWithCreateAndStartTracking: jest.fn(),
 		};
 
-		expect(command?.nameKey).toBe("commands.createOrOpenTaskWithTracking");
+		expect(command?.nameKey).toBe(msg({ message: "Create or open task and start time tracking", context: "commands.createOrOpenTaskWithTracking" }));
 
 		await command?.callback?.(ctx as any);
 

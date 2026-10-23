@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { stringifyUnknown } from "../utils/stringUtils";
 
 type BasesFileLike = {
@@ -74,16 +76,16 @@ export function convertBasesValueToNative(value: unknown): unknown {
 
 export function convertBasesGroupKeyToString(key: unknown): string {
 	if (key === null || key === undefined) {
-		return "Unknown";
+		return uiText(msg({ message: "Unknown", context: "bases/basesValueConversion: convertBasesGroupKeyToString display" }));
 	}
 
 	const basesKey = key as BasesValueInternals;
 	if (basesKey.constructor?.name === "NullValue") {
-		return "Unknown";
+		return uiText(msg({ message: "Unknown", context: "bases/basesValueConversion: convertBasesGroupKeyToString display" }));
 	}
 
 	if (isBasesEmptyPlaceholderValue(basesKey)) {
-		return "None";
+		return uiText(msg({ message: "None", context: "bases/basesValueConversion: convertBasesGroupKeyToString display" }));
 	}
 
 	const actualValue = extractBasesGroupKeyValue(basesKey);
@@ -148,7 +150,7 @@ function extractBasesScalarValue(value: BasesValueInternals): string | number | 
 
 function formatBasesGroupKeyValue(actualValue: unknown): string {
 	if (actualValue === null || actualValue === undefined) {
-		return "None";
+		return uiText(msg({ message: "None", context: "bases/basesValueConversion: formatBasesGroupKeyValue display" }));
 	}
 
 	if (actualValue instanceof Date) {
@@ -159,17 +161,17 @@ function formatBasesGroupKeyValue(actualValue: unknown): string {
 	}
 
 	if (typeof actualValue === "string") {
-		return actualValue || "None";
+		return actualValue || uiText(msg({ message: "None", context: "bases/basesValueConversion: formatBasesGroupKeyValue display" }));
 	}
 	if (typeof actualValue === "number") return String(actualValue);
-	if (typeof actualValue === "boolean") return actualValue ? "True" : "False";
+	if (typeof actualValue === "boolean") return actualValue ? uiText(msg({ message: "True", context: "bases/basesValueConversion: formatBasesGroupKeyValue display" })) : uiText(msg({ message: "False", context: "bases/basesValueConversion: formatBasesGroupKeyValue display" }));
 	if (Array.isArray(actualValue)) {
 		return actualValue.length > 0
 			? actualValue.map(stringifyUnknown).join(", ")
-			: "None";
+			: uiText(msg({ message: "None", context: "bases/basesValueConversion: formatBasesGroupKeyValue display" }));
 	}
 
-	return stringifyUnknown(actualValue) || "None";
+	return stringifyUnknown(actualValue) || uiText(msg({ message: "None", context: "bases/basesValueConversion: formatBasesGroupKeyValue display" }));
 }
 
 function convertBasesListValueToNative(basesValue: BasesValueInternals): unknown[] | null {

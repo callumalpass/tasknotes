@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../main";
 import { StatusConfig, PriorityConfig } from "../types";
 import { NLPTriggersConfig, UserMappedField } from "../types/settings";
@@ -93,7 +95,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			title = this.removeTokenFragment(title, residue);
 		}
 
-		parsed.title = title || "Untitled Task";
+		parsed.title = title || uiText(msg({ message: "Untitled Task", context: "services/NaturalLanguageParser: NaturalLanguageParser.applyTriggeredStatusMatch display" }));
 		return parsed;
 	}
 
@@ -182,7 +184,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			title = this.removeTokenFragment(title, residue);
 		}
 
-		parsed.title = title || "Untitled Task";
+		parsed.title = title || uiText(msg({ message: "Untitled Task", context: "services/NaturalLanguageParser: NaturalLanguageParser.removePriorityShortcutResidue display" }));
 		return parsed;
 	}
 

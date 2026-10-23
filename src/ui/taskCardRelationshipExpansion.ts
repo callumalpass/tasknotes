@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { TFile, parseLinktext } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -163,7 +164,7 @@ export async function toggleSubtasksExpansion(
 
 		const loadingEl = container.createDiv({
 			cls: "task-card__subtasks-loading",
-			text: plugin.i18n.translate("contextMenus.task.subtasks.loading"),
+			text: plugin.i18n.translate(msg({ message: "Loading subtasks...", context: "contextMenus.task.subtasks.loading" })),
 		});
 
 		try {
@@ -187,7 +188,7 @@ export async function toggleSubtasksExpansion(
 			if (subtasks.length === 0) {
 				container.createDiv({
 					cls: "task-card__subtasks-loading",
-					text: plugin.i18n.translate("contextMenus.task.subtasks.noSubtasks"),
+					text: plugin.i18n.translate(msg({ message: "No subtasks found", context: "contextMenus.task.subtasks.noSubtasks" })),
 				});
 				return;
 			}
@@ -224,7 +225,7 @@ export async function toggleSubtasksExpansion(
 				details: { taskPath: task.path },
 				error,
 			});
-			loadingEl.textContent = plugin.i18n.translate("contextMenus.task.subtasks.loadFailed");
+			loadingEl.textContent = plugin.i18n.translate(msg({ message: "Failed to load subtasks", context: "contextMenus.task.subtasks.loadFailed" }));
 		}
 	} catch (error) {
 		logger.error("Error toggling subtasks", {
@@ -261,7 +262,7 @@ export async function toggleBlockingTasksExpansion(
 
 	const loadingEl = container.createDiv({
 		cls: "task-card__blocking-loading",
-		text: plugin.i18n.translate("ui.taskCard.loadingDependencies"),
+		text: plugin.i18n.translate(msg({ message: "Loading dependencies...", context: "ui.taskCard.loadingDependencies" })),
 	});
 
 	try {
@@ -279,7 +280,7 @@ export async function toggleBlockingTasksExpansion(
 		if (dependents.length === 0) {
 			container.createDiv({
 				cls: "task-card__blocking-empty",
-				text: plugin.i18n.translate("ui.taskCard.blockingEmpty"),
+				text: plugin.i18n.translate(msg({ message: "No dependent tasks", context: "ui.taskCard.blockingEmpty" })),
 			});
 			return;
 		}
@@ -298,7 +299,7 @@ export async function toggleBlockingTasksExpansion(
 			details: { taskPath: task.path },
 			error,
 		});
-		loadingEl.textContent = plugin.i18n.translate("ui.taskCard.blockingLoadError");
+		loadingEl.textContent = plugin.i18n.translate(msg({ message: "Failed to load dependencies", context: "ui.taskCard.blockingLoadError" }));
 	}
 }
 
@@ -326,7 +327,7 @@ export async function toggleBlockedByTasksExpansion(
 
 	const loadingEl = container.createDiv({
 		cls: "task-card__blocked-by-loading",
-		text: plugin.i18n.translate("ui.taskCard.loadingDependencies"),
+		text: plugin.i18n.translate(msg({ message: "Loading dependencies...", context: "ui.taskCard.loadingDependencies" })),
 	});
 
 	try {
@@ -345,7 +346,7 @@ export async function toggleBlockedByTasksExpansion(
 		if (blockers.length === 0) {
 			container.createDiv({
 				cls: "task-card__blocked-by-empty",
-				text: plugin.i18n.translate("ui.taskCard.blockedBadge"),
+				text: plugin.i18n.translate(msg({ message: "Blocked", context: "ui.taskCard.blockedBadge" })),
 			});
 			return;
 		}
@@ -364,7 +365,7 @@ export async function toggleBlockedByTasksExpansion(
 			details: { taskPath: task.path },
 			error,
 		});
-		loadingEl.textContent = plugin.i18n.translate("ui.taskCard.blockingLoadError");
+		loadingEl.textContent = plugin.i18n.translate(msg({ message: "Failed to load dependencies", context: "ui.taskCard.blockingLoadError" }));
 	}
 }
 

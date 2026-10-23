@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Group tree traversal checks parent nodes before dereferencing. */
 import { TaskGroupKey, TaskInfo } from "../types";
 import type { UserMappedField } from "../types/settings";
@@ -40,30 +42,30 @@ export class HierarchicalGroupingService {
 				if (this.resolveUserFieldValues) {
 					const resolved = this.resolveUserFieldValues(task, fieldIdOrKey) || [];
 					const cleaned = normalizeArray(resolved);
-					return cleaned.length ? cleaned : [`No ${fieldIdOrKey}`];
+					return cleaned.length ? cleaned : [uiText(msg({ message: "No {fieldIdOrKey}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { fieldIdOrKey: fieldIdOrKey })];
 					}
 					// Fallback to customProperties if resolver not provided
 					const value = task.customProperties?.[fieldIdOrKey];
 					if (Array.isArray(value)) {
 						const cleaned = normalizeArray(value);
-						return cleaned.length ? cleaned : [`No ${fieldIdOrKey}`];
+						return cleaned.length ? cleaned : [uiText(msg({ message: "No {fieldIdOrKey}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { fieldIdOrKey: fieldIdOrKey })];
 					}
 					const str = valueToGroupString(value);
-				return str !== "" ? [str] : [`No ${fieldIdOrKey}`];
+				return str !== "" ? [str] : [uiText(msg({ message: "No {fieldIdOrKey}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { fieldIdOrKey: fieldIdOrKey })];
 			}
 
 			switch (key) {
 				case "status": {
-					const v = (task.status ?? "").trim() || "No Status";
+					const v = (task.status ?? "").trim() || uiText(msg({ message: "No Status", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }));
 					return [v];
 				}
 				case "priority": {
-					const v = (task.priority ?? "").trim() || "No Priority";
+					const v = (task.priority ?? "").trim() || uiText(msg({ message: "No Priority", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }));
 					return [v];
 				}
 				case "context": {
 					const arr = normalizeArray(task.contexts ?? []);
-					return arr.length ? arr : ["No Context"];
+					return arr.length ? arr : [uiText(msg({ message: "No Context", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
 				}
 				case "project": {
 					const arr = normalizeArray(task.projects ?? []).map((s) => {
@@ -85,19 +87,19 @@ export class HierarchicalGroupingService {
 							uniq.push(v);
 						}
 					}
-					return uniq.length ? uniq : ["No Project"];
+					return uniq.length ? uniq : [uiText(msg({ message: "No Project", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
 				}
 				case "tags": {
 					const arr = normalizeArray(task.tags ?? []);
-					return arr.length ? arr : ["No Tag"];
+					return arr.length ? arr : [uiText(msg({ message: "No Tag", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
 				}
 				case "due": {
 					const d = (task.due ?? "").trim();
-					return d ? [d.split("T")[0]] : ["No Due Date"];
+					return d ? [d.split("T")[0]] : [uiText(msg({ message: "No Due Date", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
 				}
 				case "scheduled": {
 					const s = (task.scheduled ?? "").trim();
-					return s ? [s.split("T")[0]] : ["No Scheduled Date"];
+					return s ? [s.split("T")[0]] : [uiText(msg({ message: "No Scheduled Date", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
 				}
 					default: {
 						// Fallback to a direct property if present
@@ -105,10 +107,10 @@ export class HierarchicalGroupingService {
 						const v = anyTask[key];
 						if (Array.isArray(v)) {
 							const arr = normalizeArray(v);
-							return arr.length ? arr : [`No ${key}`];
+							return arr.length ? arr : [uiText(msg({ message: "No {key}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { key: key })];
 						}
 						const str = valueToGroupString(v);
-					return str !== "" ? [str] : [`No ${key}`];
+					return str !== "" ? [str] : [uiText(msg({ message: "No {key}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { key: key })];
 				}
 			}
 		};

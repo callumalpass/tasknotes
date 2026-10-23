@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Notice, type TFile } from "obsidian";
 import {
 	appHasDailyNotesPluginLoaded,
@@ -48,7 +49,7 @@ function createPlugin(openFile = jest.fn().mockResolvedValue(undefined)): MockPl
 		},
 		i18n: {
 			translate: jest.fn((key: string) => {
-				if (key === "views.basesCalendar.notices.noDailyNoteForDate") {
+				if (key === msg({ message: "No daily note exists for this date.", context: "views.basesCalendar.notices.noDailyNoteForDate" })) {
 					return "No daily note exists for this date.";
 				}
 				return key;

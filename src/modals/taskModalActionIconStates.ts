@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { setIcon, setTooltip } from "obsidian";
 import type { PriorityConfig, StatusConfig } from "../types";
 
@@ -19,7 +21,7 @@ const STATIC_COLOR_CLASSES = [
 ];
 
 export interface TaskModalActionIconStateContext {
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 }
 
 export interface TaskModalActionIconState {
@@ -44,12 +46,12 @@ export function updateTaskModalActionIconStates(
 	if (!actionBar) return;
 
 	updateDateIcon(actionBar, context, "due-date", state.dueDate, {
-		activeTooltipKey: "modals.task.tooltips.dueValue",
-		defaultTooltipKey: "modals.task.actions.due",
+		activeTooltipKey: msg({ message: "Due: {value}", context: "modals.task.tooltips.dueValue" }),
+		defaultTooltipKey: msg({ message: "Set due date", context: "modals.task.actions.due" }),
 	});
 	updateDateIcon(actionBar, context, "scheduled-date", state.scheduledDate, {
-		activeTooltipKey: "modals.task.tooltips.scheduledValue",
-		defaultTooltipKey: "modals.task.actions.scheduled",
+		activeTooltipKey: msg({ message: "Scheduled: {value}", context: "modals.task.tooltips.scheduledValue" }),
+		defaultTooltipKey: msg({ message: "Set scheduled date", context: "modals.task.actions.scheduled" }),
 	});
 	updateStatusIcon(actionBar, context, state);
 	updatePriorityIcon(actionBar, context, state);
@@ -63,8 +65,8 @@ function updateDateIcon(
 	dataType: string,
 	value: string,
 	tooltipKeys: {
-		activeTooltipKey: string;
-		defaultTooltipKey: string;
+		activeTooltipKey: MessageDescriptor;
+		defaultTooltipKey: MessageDescriptor;
 	}
 ): void {
 	const icon = getActionIcon(actionBar, dataType);
@@ -97,8 +99,8 @@ function updateStatusIcon(
 		isActive: Boolean(
 			state.status && statusConfig && statusConfig.value !== state.defaultStatus
 		),
-		activeTooltipKey: "modals.task.tooltips.statusValue",
-		defaultTooltipKey: "modals.task.actions.status",
+		activeTooltipKey: msg({ message: "Status: {value}", context: "modals.task.tooltips.statusValue" }),
+		defaultTooltipKey: msg({ message: "Set status", context: "modals.task.actions.status" }),
 		label: statusLabel,
 		color: statusConfig?.color,
 	});
@@ -134,8 +136,8 @@ function updatePriorityIcon(
 		isActive: Boolean(
 			state.priority && priorityConfig && priorityConfig.value !== state.defaultPriority
 		),
-		activeTooltipKey: "modals.task.tooltips.priorityValue",
-		defaultTooltipKey: "modals.task.actions.priority",
+		activeTooltipKey: msg({ message: "Priority: {value}", context: "modals.task.tooltips.priorityValue" }),
+		defaultTooltipKey: msg({ message: "Set priority", context: "modals.task.actions.priority" }),
 		label: priorityLabel,
 		color: priorityConfig?.color,
 	});
@@ -146,8 +148,8 @@ function updateConfiguredValueIcon(
 	context: TaskModalActionIconStateContext,
 	options: {
 		isActive: boolean;
-		activeTooltipKey: string;
-		defaultTooltipKey: string;
+		activeTooltipKey: MessageDescriptor;
+		defaultTooltipKey: MessageDescriptor;
 		label: string;
 		color?: string;
 	}
@@ -186,7 +188,7 @@ function updateRecurrenceIcon(
 		icon.classList.add("has-value");
 		setTooltip(
 			icon,
-			context.translate("modals.task.tooltips.recurrenceValue", {
+			context.translate(msg({ message: "Recurrence: {value}", context: "modals.task.tooltips.recurrenceValue" }), {
 				value: state.recurrenceDisplayText,
 			}),
 			{ placement: "top" }
@@ -195,7 +197,7 @@ function updateRecurrenceIcon(
 	}
 
 	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate("modals.task.actions.recurrence"), {
+	setTooltip(icon, context.translate(msg({ message: "Set recurrence", context: "modals.task.actions.recurrence" })), {
 		placement: "top",
 	});
 }
@@ -212,8 +214,8 @@ function updateReminderIcon(
 		icon.classList.add("has-value");
 		const tooltip =
 			reminderCount === 1
-				? context.translate("modals.task.tooltips.remindersSingle")
-				: context.translate("modals.task.tooltips.remindersPlural", {
+				? context.translate(msg({ message: "1 reminder set", context: "modals.task.tooltips.remindersSingle" }))
+				: context.translate(msg({ message: "{count} reminders set", context: "modals.task.tooltips.remindersPlural" }), {
 						count: reminderCount,
 					});
 		setTooltip(icon, tooltip, { placement: "top" });
@@ -221,7 +223,7 @@ function updateReminderIcon(
 	}
 
 	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate("modals.task.actions.reminders"), {
+	setTooltip(icon, context.translate(msg({ message: "Set reminders", context: "modals.task.actions.reminders" })), {
 		placement: "top",
 	});
 }

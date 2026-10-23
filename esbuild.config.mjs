@@ -5,6 +5,7 @@ import { readFileSync, existsSync, copyFileSync, mkdirSync } from "fs";
 import { resolve, join } from "path";
 import { homedir } from "os";
 import { createLanguagePackBuildPlugin } from "./scripts/lib/language-pack-build.mjs";
+import { linguiMacros } from "./scripts/lib/lingui-build.mjs";
 
 const banner =
 `/*
@@ -101,6 +102,7 @@ const context = await esbuild.context({
 	charset: "utf8",
 	plugins: [
 		markdownPlugin,
+		linguiMacros(),
 		...(process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL
 			? [createLanguagePackBuildPlugin({ baseUrl: process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL })]
 			: []),

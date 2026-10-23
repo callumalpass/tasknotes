@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { App, SuggestModal, TAbstractFile, TFile, parseFrontMatterAliases, Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -52,7 +53,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 		// Set placeholder
 		this.setPlaceholder(
-			options.placeholder || this.plugin.i18n.translate("modals.fileSelector.placeholder")
+			options.placeholder || this.plugin.i18n.translate(msg({ message: "Search files or type to create new...", context: "modals.fileSelector.placeholder" }))
 		);
 
 		// Set instructions
@@ -60,22 +61,22 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 			{
 				command: "↑↓",
 				purpose: this.plugin.i18n.translate(
-					"modals.unscheduledTasksSelector.instructions.navigate"
+					msg({ message: "to navigate", context: "modals.unscheduledTasksSelector.instructions.navigate" })
 				),
 			},
 			{
 				command: "↵",
-				purpose: this.plugin.i18n.translate("modals.taskSelector.instructions.select"),
+				purpose: this.plugin.i18n.translate(msg({ message: "to select", context: "modals.taskSelector.instructions.select" })),
 			},
 			{
 				command: "⇧↵",
 				purpose: this.plugin.i18n.translate(
-					"modals.taskSelectorWithCreate.instructions.create"
+					msg({ message: "to create new task", context: "modals.taskSelectorWithCreate.instructions.create" })
 				),
 			},
 			{
 				command: "esc",
-				purpose: this.plugin.i18n.translate("modals.taskSelector.instructions.dismiss"),
+				purpose: this.plugin.i18n.translate(msg({ message: "to cancel", context: "modals.taskSelector.instructions.dismiss" })),
 			},
 		]);
 
@@ -185,7 +186,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 		titleLine.createSpan({
 			cls: "file-selector-create-footer__hint-text",
-			text: this.plugin.i18n.translate("modals.taskSelectorWithCreate.footer.createLabel"),
+			text: this.plugin.i18n.translate(msg({ message: " to create: ", context: "modals.taskSelectorWithCreate.footer.createLabel" })),
 		});
 
 		titleLine.createSpan({
@@ -205,7 +206,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 	private async createNewFile(): Promise<void> {
 		if (!this.currentQuery) {
-			new Notice(this.plugin.i18n.translate("modals.fileSelector.nameRequired"));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Please enter a file name", context: "modals.fileSelector.nameRequired" })));
 			return;
 		}
 
@@ -224,7 +225,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 			const existingFile = this.app.vault.getAbstractFileByPath(filePath);
 			if (existingFile) {
 				new Notice(
-					this.plugin.i18n.translate("modals.fileSelector.exists", { path: filePath })
+					this.plugin.i18n.translate(msg({ message: "File \"{path}\" already exists", context: "modals.fileSelector.exists" }), { path: filePath })
 				);
 				return;
 			}
@@ -246,7 +247,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 				operation: "creating-file",
 				error: error,
 			});
-			new Notice(this.plugin.i18n.translate("modals.fileSelector.createFailed"));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to create file", context: "modals.fileSelector.createFailed" })));
 		}
 	}
 

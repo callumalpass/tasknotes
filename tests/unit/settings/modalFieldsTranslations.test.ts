@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { translationResources } from "../../../src/i18n";
 import { flattenTranslationTree } from "../../../src/i18n/I18nService";
 import type { TranslationTree } from "../../../src/i18n/types";
@@ -13,7 +14,7 @@ function modalFieldsStrings(tree: TranslationTree): Record<string, string> {
 const source = modalFieldsStrings(translationResources.en);
 const placeholders = (text: string) => (text.match(/\{[^{}]+\}/g) ?? []).sort();
 // "ID:" is also the conventional prefix in several other languages.
-const allowSameAsSource = new Set(["settings.modalFields.manager.fieldId"]);
+const allowSameAsSource = new Set([msg({ message: "ID: {id}", context: "settings.modalFields.manager.fieldId" })]);
 
 describe("Modal fields settings translations", () => {
 	it.each(Object.entries(translationResources).filter(([name]) => name !== "en"))(

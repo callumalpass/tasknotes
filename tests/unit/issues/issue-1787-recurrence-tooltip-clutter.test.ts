@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 /**
  * Issue #1787: Remove "(click to change)" from recurrence display on task cards.
  *
@@ -15,11 +16,11 @@ function createPlugin(): any {
 		},
 		i18n: {
 			translate: (key: string, vars?: Record<string, string | number>) => {
-				if (key === "ui.taskCard.labels.recurrence") {
+				if (key === msg({ message: "Recurring", context: "ui.taskCard.labels.recurrence" })) {
 					return en.ui.taskCard.labels.recurrence;
 				}
 
-				if (key === "ui.taskCard.recurrenceTooltip") {
+				if (key === msg({ message: "{label}: {value}", context: "ui.taskCard.recurrenceTooltip" })) {
 					return en.ui.taskCard.recurrenceTooltip
 						.replace("{label}", String(vars?.label ?? ""))
 						.replace("{value}", String(vars?.value ?? ""));

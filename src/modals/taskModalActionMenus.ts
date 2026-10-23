@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import type { App } from "obsidian";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
@@ -25,7 +27,7 @@ export interface TaskModalActionMenuState {
 export interface TaskModalActionMenuContext {
 	app: App;
 	plugin: TaskNotesPlugin;
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	getState: () => TaskModalActionMenuState;
 	setDate: (type: TaskModalDateMenuType, value: string) => void;
 	setStatus: (value: string) => void;
@@ -159,6 +161,6 @@ function getDateMenuTitle(
 	type: TaskModalDateMenuType
 ): string {
 	return type === "due"
-		? context.translate("modals.task.dateMenu.dueTitle")
-		: context.translate("modals.task.dateMenu.scheduledTitle");
+		? context.translate(msg({ message: "Set due date", context: "modals.task.dateMenu.dueTitle" }))
+		: context.translate(msg({ message: "Set scheduled date", context: "modals.task.dateMenu.scheduledTitle" }));
 }

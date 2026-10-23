@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { createHash } from "node:crypto";
 import { LanguagePackLoader } from "../../../src/i18n/LanguagePackLoader";
 import {
@@ -65,7 +66,7 @@ describe("LanguagePackLoader", () => {
 		const { loader, cache, download, text } = fixture();
 		cache.read.mockResolvedValue(text);
 		download.mockRejectedValue(new Error("offline"));
-		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect((await loader.load("fr"))[msg({ message: "Save", context: "common.save" })]).toBe("Enregistrer");
 		expect(download).not.toHaveBeenCalled();
 	});
 
@@ -92,13 +93,13 @@ describe("LanguagePackLoader", () => {
 		await expect(loader.load("fr")).rejects.toThrow("offline");
 		expect(cache.write).not.toHaveBeenCalled();
 		download.mockResolvedValue(bytes);
-		await expect(loader.load("fr")).resolves.toHaveProperty(["common.save"]);
+		await expect(loader.load("fr")).resolves.toHaveProperty([msg({ message: "Save", context: "common.save" })]);
 	});
 
 	it("keeps a downloaded translation usable when cache writing fails", async () => {
 		const { loader, cache } = fixture();
 		cache.write.mockRejectedValue(new Error("disk full"));
-		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect((await loader.load("fr"))[msg({ message: "Save", context: "common.save" })]).toBe("Enregistrer");
 	});
 
 	it("rejects truncated data before hashing or caching", async () => {
@@ -206,7 +207,7 @@ describe("LanguagePackLoader", () => {
 			download,
 			sha256: async (bytes) => hash(bytes),
 		});
-		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect((await loader.load("fr"))[msg({ message: "Save", context: "common.save" })]).toBe("Enregistrer");
 		expect(download).not.toHaveBeenCalled();
 	});
 
@@ -256,7 +257,7 @@ describe("LanguagePackLoader", () => {
 		download.mockRejectedValueOnce(new Error("connection interrupted"));
 		await expect(loader.load("fr")).rejects.toThrow("connection interrupted");
 		expect(cache.write).not.toHaveBeenCalled();
-		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect((await loader.load("fr"))[msg({ message: "Save", context: "common.save" })]).toBe("Enregistrer");
 		expect(cache.write).toHaveBeenCalledWith(expect.any(String), text);
 		expect(download).toHaveBeenCalledTimes(2);
 		expect(bytes.length).toBeGreaterThan(0);
@@ -307,6 +308,6 @@ describe("LanguagePackLoader", () => {
 			sha256: async (bytes) => hash(bytes),
 		});
 		await expect(loader.load("fr")).rejects.toThrow("timed out");
-		await expect(loader.load("fr")).resolves.toHaveProperty(["common.save"]);
+		await expect(loader.load("fr")).resolves.toHaveProperty([msg({ message: "Save", context: "common.save" })]);
 	});
 });

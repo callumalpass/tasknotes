@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { renderGeneralTab } from "../../../src/settings/tabs/generalTab";
 import { configureTextSetting } from "../../../src/settings/components/settingHelpers";
 import type TaskNotesPlugin from "../../../src/main";
@@ -16,7 +17,7 @@ jest.mock("../../../src/settings/components/settingHelpers", () => ({
 				}),
 			};
 
-			if (options.heading === "settings.general.taskStorage.header") {
+			if (options.heading === msg({ message: "Task storage", context: "settings.general.taskStorage.header" })) {
 				addSettings(group);
 			}
 
@@ -69,7 +70,7 @@ describe("issue #1804 inline task folder setting", () => {
 		renderGeneralTab(container, createPlugin(false), jest.fn());
 
 		const inlineFolderCall = (configureTextSetting as jest.Mock).mock.calls.find(
-			([, options]) => options.name === "settings.features.instantConvert.folder.name"
+			([, options]) => options.name === msg({ message: "Folder for inline-created tasks", context: "settings.features.instantConvert.folder.name" })
 		);
 
 		expect(inlineFolderCall).toBeDefined();
@@ -82,7 +83,7 @@ describe("issue #1804 inline task folder setting", () => {
 		renderGeneralTab(container, createPlugin(true), jest.fn());
 
 		const inlineFolderCalls = (configureTextSetting as jest.Mock).mock.calls.filter(
-			([, options]) => options.name === "settings.features.instantConvert.folder.name"
+			([, options]) => options.name === msg({ message: "Folder for inline-created tasks", context: "settings.features.instantConvert.folder.name" })
 		);
 
 		expect(inlineFolderCalls).toHaveLength(1);

@@ -1,9 +1,10 @@
+import { msg } from "@lingui/core/macro";
 import { flattenTranslations, validateTranslationMessage } from "../../../src/i18n/catalogue";
 
 describe("language-pack catalogue validation", () => {
 	it("flattens nested resources into a prototype-free dictionary", () => {
 		const messages = flattenTranslations({ common: { save: "Save" } });
-		expect(messages["common.save"]).toBe("Save");
+		expect(messages[msg({ message: "Save", context: "common.save" })]).toBe("Save");
 		expect(Object.getPrototypeOf(messages)).toBeNull();
 	});
 
@@ -27,7 +28,7 @@ describe("language-pack catalogue validation", () => {
 	it("allows omission of legacy English grammatical suffixes only on known messages", () => {
 		expect(() =>
 			validateTranslationMessage(
-				"settings.integrations.timeFormats.minutesAgo",
+				msg({ message: "{minutes, plural, one {{minutes} minute ago} other {{minutes} minutes ago}}", context: "settings.integrations.timeFormats.minutesAgo" }),
 				"{minutes} minute{plural} ago",
 				"{minutes}分前"
 			)
@@ -37,7 +38,7 @@ describe("language-pack catalogue validation", () => {
 		).toThrow();
 		expect(() =>
 			validateTranslationMessage(
-				"settings.integrations.timeFormats.minutesAgo",
+				msg({ message: "{minutes, plural, one {{minutes} minute ago} other {{minutes} minutes ago}}", context: "settings.integrations.timeFormats.minutesAgo" }),
 				"{minutes} minute{plural} ago",
 				"数分前"
 			)

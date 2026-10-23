@@ -1,3 +1,4 @@
+import { formatUIDate } from "../i18n/formatters";
 import {
 	format,
 	parseISO,
@@ -744,7 +745,7 @@ export function isPastDate(dateString: string): boolean {
 export function formatDateForDisplay(dateString: string, formatString = "MMM d, yyyy"): string {
 	try {
 		const parsed = parseDateToLocalInternal(dateString);
-		return format(parsed, formatString);
+		return formatUIDate(parsed, formatString);
 	} catch (error) {
 		tasknotesLogger.error("Error formatting date for display:", {
 			category: "validation",
@@ -840,7 +841,7 @@ export function formatTimestampForDisplay(
 			// Use custom format if provided, otherwise use time format preference
 			const finalFormat =
 				formatString || (timeFormat === "12" ? "MMM d, yyyy h:mm a" : "MMM d, yyyy HH:mm");
-			return format(parsed, finalFormat);
+			return formatUIDate(parsed, finalFormat);
 		}
 		return timestampString;
 	} catch (error) {
@@ -937,7 +938,7 @@ export function formatTime(date: Date, timeFormat: "12" | "24" = "24"): string {
 		return "";
 	}
 
-	return format(date, timeFormat === "12" ? "h:mm a" : "HH:mm");
+	return formatUIDate(date, timeFormat === "12" ? "h:mm a" : "HH:mm");
 }
 
 /**
@@ -956,7 +957,7 @@ export function formatDateTime(date: Date, timeFormat: "12" | "24" = "24"): stri
 		return "";
 	}
 
-	return format(date, timeFormat === "12" ? "MMM d, yyyy h:mm a" : "MMM d, yyyy HH:mm");
+	return formatUIDate(date, timeFormat === "12" ? "MMM d, yyyy h:mm a" : "MMM d, yyyy HH:mm");
 }
 
 /**
@@ -1098,16 +1099,16 @@ export function formatDateTimeForDisplay(
 		if (hasTime && showTime) {
 			// Handle empty dateFormat case (e.g., for "Today at" scenarios)
 			if (!dateFormat || dateFormat.trim() === "") {
-				return format(parsed, finalTimeFormat);
+				return formatUIDate(parsed, finalTimeFormat);
 			} else {
-				return format(parsed, `${dateFormat} ${finalTimeFormat}`);
+				return formatUIDate(parsed, `${dateFormat} ${finalTimeFormat}`);
 			}
 		} else {
 			// For date-only, return the dateFormat or fallback
 			if (!dateFormat || dateFormat.trim() === "") {
 				return ""; // Return empty for time-only requests when no time available
 			} else {
-				return format(parsed, dateFormat);
+				return formatUIDate(parsed, dateFormat);
 			}
 		}
 	} catch (error) {

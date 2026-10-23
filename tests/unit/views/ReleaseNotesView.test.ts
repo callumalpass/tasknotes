@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { MarkdownRenderer } from "obsidian";
 import { ReleaseNotesView, transformReleaseNoteIssueLinks } from "../../../src/views/ReleaseNotesView";
 import type { ReleaseNoteVersion } from "../../../src/releaseNotes";
@@ -38,7 +39,7 @@ describe("ReleaseNotesView", () => {
 				app: {},
 				i18n: {
 					translate: (key: string) =>
-						key === "views.releaseNotes.baseFilesNotice" ? "Base files notice" : key,
+						key === msg({ message: "> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**.", context: "views.releaseNotes.baseFilesNotice" }) ? "Base files notice" : key,
 				},
 			} as never,
 			[],

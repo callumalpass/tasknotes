@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import {
@@ -52,7 +53,7 @@ function createPlugin(): TaskNotesPlugin {
 		},
 		i18n: {
 			translate: jest.fn((key: string, vars?: Record<string, string>) => {
-				if (key === "ui.taskCard.priorityAriaLabel") {
+				if (key === msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" })) {
 					return `Priority: ${vars?.label ?? ""}`;
 				}
 				return key;

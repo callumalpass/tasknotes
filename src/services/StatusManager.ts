@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { StatusConfig } from "../types";
 import { normalizeStatusConfigValue } from "../core/fieldMapping";
 import { isSupportedColorValue, normalizeThemeColor } from "../utils/themeColors";
@@ -254,7 +256,7 @@ export class StatusManager {
 		return {
 			id,
 			value: "new-status",
-			label: "New status",
+			label: uiText(msg({ message: "New status", context: "services/StatusManager: StatusManager.createDefaultStatus label" })),
 			color: "#808080",
 			isCompleted: false,
 			excludeFromCycle: false,

@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type { TaskInfo } from "../types";
 import { calculateTotalTimeSpent } from "./helpers";
 
@@ -24,7 +26,7 @@ export function buildTaskInfoFromMappedTask({
 		...mappedTask,
 		id: path,
 		path,
-		title: mappedTask.title || "Untitled task",
+		title: mappedTask.title || uiText(msg({ message: "Untitled task", context: "utils/taskInfoAssembly: buildTaskInfoFromMappedTask title" })),
 		status: mappedTask.status || defaultTaskStatus,
 		priority: mappedTask.priority || "normal",
 		archived: mappedTask.archived || false,

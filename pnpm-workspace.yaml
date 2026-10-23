@@ -1,0 +1,16 @@
+# Local-only bridge for remote checks of this npm-managed repository.
+packages:
+  - docs-builder
+nodeLinker: isolated
+publicHoistPattern:
+  - '*'
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+  workerd: true
+blockExoticSubdeps: false
+overrides:
+  '@hono/node-server': 2.1.0
+  moment: 2.31.0
+  js-yaml: 4.3.2
+  braces: file:./vendor/braces

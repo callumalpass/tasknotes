@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import { FieldMapping } from "../../../types";
@@ -106,7 +107,7 @@ export function createNLPTriggerRows(
 
 	const rows: CardRow[] = [
 		{
-			label: translate("settings.taskProperties.propertyCard.nlpTrigger"),
+			label: translate(msg({ message: "NLP trigger:", context: "settings.taskProperties.propertyCard.nlpTrigger" })),
 			input: triggerToggle,
 		},
 	];
@@ -124,17 +125,17 @@ export function createNLPTriggerRows(
 	triggerInput.addEventListener("change", () => {
 		const value = triggerInput.value;
 		if (value.trim().length === 0) {
-			new Notice(translate("settings.taskProperties.propertyCard.triggerEmpty"));
+			new Notice(translate(msg({ message: "Trigger cannot be empty", context: "settings.taskProperties.propertyCard.triggerEmpty" })));
 			return;
 		}
 		if (value.length > 10) {
-			new Notice(translate("settings.taskProperties.propertyCard.triggerTooLong"));
+			new Notice(translate(msg({ message: "Trigger is too long (max 10 characters)", context: "settings.taskProperties.propertyCard.triggerTooLong" })));
 			return;
 		}
 		updateNLPTrigger(plugin, propertyId, { trigger: value }, defaultTrigger, save);
 	});
 	rows.push({
-		label: translate("settings.taskProperties.propertyCard.triggerChar"),
+		label: translate(msg({ message: "Trigger character:", context: "settings.taskProperties.propertyCard.triggerChar" })),
 		input: triggerInput,
 	});
 
@@ -201,7 +202,7 @@ export function renderSimplePropertyCard(
 	const rows: CardRow[] = [
 		{ label: "", input: descriptionEl, fullWidth: true },
 		{
-			label: translate("settings.taskProperties.propertyCard.propertyKey"),
+			label: translate(msg({ message: "Property key:", context: "settings.taskProperties.propertyCard.propertyKey" })),
 			input: propertyKeyInput,
 		},
 	];
@@ -238,7 +239,7 @@ export function renderSimplePropertyCard(
 		}
 
 		rows.push({
-			label: translate("settings.taskProperties.propertyCard.default"),
+			label: translate(msg({ message: "Default:", context: "settings.taskProperties.propertyCard.default" })),
 			input: defaultInput,
 		});
 	}
@@ -315,7 +316,7 @@ export function renderMetadataPropertyCard(
 					rows: [
 						{ label: "", input: descriptionEl, fullWidth: true },
 						{
-							label: translate("settings.taskProperties.propertyCard.propertyKey"),
+							label: translate(msg({ message: "Property key:", context: "settings.taskProperties.propertyCard.propertyKey" })),
 							input: propertyKeyInput,
 						},
 					],

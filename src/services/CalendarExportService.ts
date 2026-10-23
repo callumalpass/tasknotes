@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { TaskInfo } from "../types";
 import { format, parseISO } from "date-fns";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -248,27 +250,27 @@ export class CalendarExportService {
 		const metadata: string[] = [];
 
 		if (task.priority) {
-			metadata.push(`Priority: ${task.priority}`);
+			metadata.push(uiText(msg({ message: "Priority: {priority}", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { priority: task.priority }));
 		}
 
 		if (task.status) {
-			metadata.push(`Status: ${task.status}`);
+			metadata.push(uiText(msg({ message: "Status: {status}", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { status: task.status }));
 		}
 
 		if (task.projects && task.projects.length > 0) {
-			metadata.push(`Projects: ${task.projects.join(", ")}`);
+			metadata.push(uiText(msg({ message: "Projects: {value1}", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { value1: task.projects.join(", ") }));
 		}
 
 		if (task.tags && task.tags.length > 0) {
-			metadata.push(`Tags: ${task.tags.join(", ")}`);
+			metadata.push(uiText(msg({ message: "Tags: {value1}", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { value1: task.tags.join(", ") }));
 		}
 
 		if (task.contexts && task.contexts.length > 0) {
-			metadata.push(`Contexts: ${task.contexts.join(", ")}`);
+			metadata.push(uiText(msg({ message: "Contexts: {value1}", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { value1: task.contexts.join(", ") }));
 		}
 
 		if (task.timeEstimate) {
-			metadata.push(`Estimated time: ${task.timeEstimate} minutes`);
+			metadata.push(uiText(msg({ message: "Estimated time: {timeEstimate} minutes", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { timeEstimate: task.timeEstimate }));
 		}
 
 		if (metadata.length > 0) {
@@ -277,11 +279,11 @@ export class CalendarExportService {
 
 		// Add note about source
 		if (parts.length > 0) parts.push("");
-		parts.push(`Exported from TaskNotes: ${task.path}`);
+		parts.push(uiText(msg({ message: "Exported from TaskNotes: {path}", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { path: task.path }));
 
 		const obsidianUri = this.buildObsidianOpenUri(task, options);
 		if (obsidianUri) {
-			parts.push(`Open in Obsidian: ${obsidianUri}`);
+			parts.push(uiText(msg({ message: "Open in Obsidian: {obsidianUri}", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { obsidianUri: obsidianUri }));
 		}
 
 		return parts.join("\n");

@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import type { TranslationKey } from "../../i18n";
@@ -33,15 +34,15 @@ export function renderModalFieldsTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.modalFields.header"),
-			description: translate("settings.modalFields.description"),
+			heading: translate(msg({ message: "Task modal fields configuration", context: "settings.modalFields.header" })),
+			description: translate(msg({ message: "Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group.", context: "settings.modalFields.description" })),
 		},
 		(group) => {
 			// Split layout toggle
 			group.addSetting((setting) => {
 				configureToggleSetting(setting, {
-					name: translate("settings.modalFields.splitLayout.name"),
-					desc: translate("settings.modalFields.splitLayout.description"),
+					name: translate(msg({ message: "Split layout on wide screens", context: "settings.modalFields.splitLayout.name" })),
+					desc: translate(msg({ message: "When enabled, the details editor appears in a right column on screens 900px or wider. When disabled, the modal uses a stacked layout.", context: "settings.modalFields.splitLayout.description" })),
 					getValue: () => plugin.settings.enableModalSplitLayout,
 					setValue: (value) => {
 						plugin.settings.enableModalSplitLayout = value;
@@ -52,8 +53,8 @@ export function renderModalFieldsTab(
 
 			group.addSetting((setting) => {
 				configureToggleSetting(setting, {
-					name: translate("settings.modalFields.tabMovesFocus.name"),
-					desc: translate("settings.modalFields.tabMovesFocus.description"),
+					name: translate(msg({ message: "Tab moves focus in details editor", context: "settings.modalFields.tabMovesFocus.name" })),
+					desc: translate(msg({ message: "When enabled, Tab moves from the details editor to the next modal field and Shift+Tab moves to the previous field. When disabled, Tab and Shift+Tab use the markdown editor''s indentation behavior.", context: "settings.modalFields.tabMovesFocus.description" })),
 					getValue: () => plugin.settings.taskModalTabMovesFocus,
 					setValue: (value) => {
 						plugin.settings.taskModalTabMovesFocus = value;
@@ -65,16 +66,16 @@ export function renderModalFieldsTab(
 			// Sync button
 			group.addSetting((setting) => {
 				setting
-					.setName(translate("settings.modalFields.sync.name"))
-					.setDesc(translate("settings.modalFields.sync.description"))
+					.setName(translate(msg({ message: "Sync user fields", context: "settings.modalFields.sync.name" })))
+					.setDesc(translate(msg({ message: "Click to sync custom user fields from task properties settings into this configuration.", context: "settings.modalFields.sync.description" })))
 					.addButton((button) => {
 						button
-							.setButtonText(translate("settings.modalFields.sync.button"))
+							.setButtonText(translate(msg({ message: "Sync user fields", context: "settings.modalFields.sync.button" })))
 							.setCta()
 							.onClick(() => {
 								syncUserFieldsToConfig(plugin);
 								save();
-								new Notice(translate("settings.modalFields.sync.notice"));
+								new Notice(translate(msg({ message: "User fields synced to modal configuration", context: "settings.modalFields.sync.notice" })));
 								// Re-render the tab
 								renderModalFieldsTab(container, plugin, save);
 							});
@@ -84,19 +85,19 @@ export function renderModalFieldsTab(
 			// Reset button
 			group.addSetting((setting) => {
 				setting
-					.setName(translate("settings.modalFields.reset.name"))
-					.setDesc(translate("settings.modalFields.reset.description"))
+					.setName(translate(msg({ message: "Reset to defaults", context: "settings.modalFields.reset.name" })))
+					.setDesc(translate(msg({ message: "Reset all field configurations to their default values. This will remove any custom configurations.", context: "settings.modalFields.reset.description" })))
 					.addButton((button) => {
 						button
-							.setButtonText(translate("settings.modalFields.reset.button"))
+							.setButtonText(translate(msg({ message: "Reset to defaults", context: "settings.modalFields.reset.button" })))
 							// Keep destructive styling compatible with Obsidian 1.12.
 							.setClass("mod-warning")
 							.onClick(async () => {
 								const confirmed = await showConfirmationModal(plugin.app, {
-									title: translate("settings.modalFields.reset.confirmTitle"),
-									message: translate("settings.modalFields.reset.confirmMessage"),
-									confirmText: translate("settings.modalFields.reset.confirmText"),
-									cancelText: translate("settings.modalFields.reset.cancelText"),
+									title: translate(msg({ message: "Reset field configuration", context: "settings.modalFields.reset.confirmTitle" })),
+									message: translate(msg({ message: "Are you sure you want to reset field configuration to defaults? This will remove any custom field configurations.", context: "settings.modalFields.reset.confirmMessage" })),
+									confirmText: translate(msg({ message: "Reset", context: "settings.modalFields.reset.confirmText" })),
+									cancelText: translate(msg({ message: "Cancel", context: "settings.modalFields.reset.cancelText" })),
 									isDestructive: true,
 								});
 
@@ -106,7 +107,7 @@ export function renderModalFieldsTab(
 										plugin.settings.userFields
 									);
 									save();
-									new Notice(translate("settings.modalFields.reset.notice"));
+									new Notice(translate(msg({ message: "Field configuration reset to defaults", context: "settings.modalFields.reset.notice" })));
 									// Re-render the tab
 									renderModalFieldsTab(container, plugin, save);
 								}
@@ -121,7 +122,7 @@ export function renderModalFieldsTab(
 
 	// Double-check config exists before creating field manager
 	if (!plugin.settings.modalFieldsConfig) {
-		managerContainer.createDiv({ text: translate("settings.modalFields.initError") });
+		managerContainer.createDiv({ text: translate(msg({ message: "Error: Could not initialize field configuration", context: "settings.modalFields.initError" })) });
 		return;
 	}
 

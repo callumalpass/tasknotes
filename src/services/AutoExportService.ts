@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../main";
 import { CalendarExportService } from "./CalendarExportService";
 import type { InterpolationValues, TranslationKey } from "../i18n";
@@ -161,7 +162,7 @@ export class AutoExportService {
 				Date.now() - this.lastExportTime.getTime() > 6 * 60 * 60 * 1000
 			) {
 				publishUserNotice(this.plugin.emitter,
-					this.translate("services.autoExport.notices.exportFailed", {
+					this.translate(msg({ message: "TaskNotes auto export failed: {error}", context: "services.autoExport.notices.exportFailed" }), {
 						error: error instanceof Error ? error.message : String(error),
 					})
 				);

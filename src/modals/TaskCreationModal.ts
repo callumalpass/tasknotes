@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { App, Notice, setIcon, setTooltip, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
@@ -124,7 +126,7 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	getModalTitle(): string {
-		return this.t("modals.taskCreation.title");
+		return this.t(msg({ message: "Create task", context: "modals.taskCreation.title" }));
 	}
 
 	protected isCreationMode(): boolean {
@@ -189,14 +191,14 @@ export class TaskCreationModal extends TaskModal {
 			"tn-task-modal__markdown-editor tn-task-modal__markdown-editor--nlp"
 		);
 		editorContainer.setAttribute("role", "textbox");
-		editorContainer.setAttribute("aria-label", this.t("modals.taskCreation.nlPlaceholder"));
+		editorContainer.setAttribute("aria-label", this.t(msg({ message: "Buy groceries tomorrow at 3pm @home #errands", context: "modals.taskCreation.nlPlaceholder" })));
 		editorContainer.setAttribute("aria-multiline", "true");
 
 		// Preview container
 		this.nlPreviewContainer = nlContainer.createDiv("nl-preview-container");
 		this.nlPreviewContainer.setAttribute("role", "status");
 		this.nlPreviewContainer.setAttribute("aria-live", "polite");
-		this.nlPreviewContainer.setAttribute("aria-label", "Task preview");
+		this.nlPreviewContainer.setAttribute("aria-label", uiText(msg({ message: "Task preview", context: "modals/TaskCreationModal: TaskCreationModal.createNaturalLanguageInput display" })));
 
 		try {
 			// Create NLP autocomplete extension for @, #, +, status triggers
@@ -206,7 +208,7 @@ export class TaskCreationModal extends TaskModal {
 			// Create embeddable markdown editor with autocomplete
 			this.nlMarkdownEditor = createEmbeddableMarkdownEditor(this.app, editorContainer, {
 				value: "",
-				placeholder: this.t("modals.taskCreation.nlPlaceholder"),
+				placeholder: this.t(msg({ message: "Buy groceries tomorrow at 3pm @home #errands", context: "modals.taskCreation.nlPlaceholder" })),
 				cls: "nlp-editor",
 				extensions: nlpAutocomplete, // Add autocomplete extensions (array)
 				enterVimInsertMode: true, // Auto-enter insert mode when vim is enabled (#1410)
@@ -280,7 +282,7 @@ export class TaskCreationModal extends TaskModal {
 			this.nlInput = editorContainer.createEl("textarea", {
 				cls: "nl-input",
 				attr: {
-					placeholder: this.t("modals.taskCreation.nlPlaceholder"),
+					placeholder: this.t(msg({ message: "Buy groceries tomorrow at 3pm @home #errands", context: "modals.taskCreation.nlPlaceholder" })),
 					rows: "3",
 				},
 			});
@@ -452,7 +454,7 @@ export class TaskCreationModal extends TaskModal {
 			this.createActionIcon(
 				this.actionBar,
 				"wand",
-				this.t("modals.taskCreation.actions.fillFromNaturalLanguage"),
+				this.t(msg({ message: "Fill form from natural language", context: "modals.taskCreation.actions.fillFromNaturalLanguage" })),
 				(icon, event) => {
 					const input = this.getNLPInputValue().trim();
 					if (input) {
@@ -466,8 +468,8 @@ export class TaskCreationModal extends TaskModal {
 				this.actionBar,
 				this.isExpanded ? "chevron-up" : "chevron-down",
 				this.isExpanded
-					? this.t("modals.taskCreation.actions.hideDetailedOptions")
-					: this.t("modals.taskCreation.actions.showDetailedOptions"),
+					? this.t(msg({ message: "Hide detailed options", context: "modals.taskCreation.actions.hideDetailedOptions" }))
+					: this.t(msg({ message: "Show detailed options", context: "modals.taskCreation.actions.showDetailedOptions" })),
 				(icon, event) => {
 					this.toggleDetailedForm();
 					// Update icon and tooltip
@@ -481,8 +483,8 @@ export class TaskCreationModal extends TaskModal {
 					setTooltip(
 						icon,
 						this.isExpanded
-							? this.t("modals.taskCreation.actions.hideDetailedOptions")
-							: this.t("modals.taskCreation.actions.showDetailedOptions"),
+							? this.t(msg({ message: "Hide detailed options", context: "modals.taskCreation.actions.hideDetailedOptions" }))
+							: this.t(msg({ message: "Show detailed options", context: "modals.taskCreation.actions.showDetailedOptions" })),
 						{ placement: "top" }
 					);
 				}
@@ -664,7 +666,7 @@ export class TaskCreationModal extends TaskModal {
 		}
 
 		if (!this.validateForm()) {
-			new Notice(this.t("modals.taskCreation.notices.titleRequired"));
+			new Notice(this.t(msg({ message: "Please enter a task title", context: "modals.taskCreation.notices.titleRequired" })));
 			return;
 		}
 
@@ -684,13 +686,13 @@ export class TaskCreationModal extends TaskModal {
 				)
 			) {
 				new Notice(
-					this.t("modals.taskCreation.notices.successShortened", {
+					this.t(msg({ message: "Task \"{title}\" created successfully (filename shortened due to length)", context: "modals.taskCreation.notices.successShortened" }), {
 						title: createdTask.title,
 					})
 				);
 			} else {
 				new Notice(
-					this.t("modals.taskCreation.notices.success", { title: createdTask.title })
+					this.t(msg({ message: "Task \"{title}\" created successfully", context: "modals.taskCreation.notices.success" }), { title: createdTask.title })
 				);
 			}
 
@@ -712,7 +714,7 @@ export class TaskCreationModal extends TaskModal {
 
 				if (blockingUpdates.unresolved.length > 0) {
 					new Notice(
-						this.t("modals.taskCreation.notices.blockingUnresolved", {
+						this.t(msg({ message: "Could not resolve: {entries}", context: "modals.taskCreation.notices.blockingUnresolved" }), {
 							entries: blockingUpdates.unresolved.join(", "),
 						})
 					);
@@ -746,7 +748,7 @@ export class TaskCreationModal extends TaskModal {
 				error: error,
 			});
 			const message = getTaskCreationFailureNoticeMessage(error);
-			new Notice(this.t("modals.taskCreation.notices.failure", { message }));
+			new Notice(this.t(msg({ message: "Failed to create task: {message}", context: "modals.taskCreation.notices.failure" }), { message }));
 		}
 	}
 
@@ -767,7 +769,7 @@ export class TaskCreationModal extends TaskModal {
 				operation: "open-created-task-note",
 				error: error,
 			});
-			new Notice(this.t("modals.taskCreation.notices.openCreatedTaskFailure"));
+			new Notice(this.t(msg({ message: "Task created, but the task note could not be opened.", context: "modals.taskCreation.notices.openCreatedTaskFailure" })));
 		}
 	}
 

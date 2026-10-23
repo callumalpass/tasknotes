@@ -1,3 +1,5 @@
+import { uiText } from "../../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import {
@@ -53,15 +55,15 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.inlineTasks.header"),
-			description: translate("settings.features.inlineTasks.description"),
+			heading: translate(msg({ message: "Inline tasks", context: "settings.features.inlineTasks.header" })),
+			description: translate(msg({ message: "Settings for task links and checkbox-to-task conversion in notes.", context: "settings.features.inlineTasks.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.overlays.taskLinkToggle.name"),
-						desc: translate("settings.features.overlays.taskLinkToggle.description"),
+						name: translate(msg({ message: "Task link overlay", context: "settings.features.overlays.taskLinkToggle.name" })),
+						desc: translate(msg({ message: "Show interactive overlays when hovering over task links", context: "settings.features.overlays.taskLinkToggle.description" })),
 						getValue: () => plugin.settings.enableTaskLinkOverlay,
 						setValue: async (value: boolean) => {
 							plugin.settings.enableTaskLinkOverlay = value;
@@ -75,9 +77,9 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate("settings.features.overlays.aliasExclusion.name"),
+							name: translate(msg({ message: "Disable overlay for aliased links", context: "settings.features.overlays.aliasExclusion.name" })),
 							desc: translate(
-								"settings.features.overlays.aliasExclusion.description"
+								msg({ message: "Do not show the task widget if the link contains an alias (e.g. [[Task|Alias]]).", context: "settings.features.overlays.aliasExclusion.description" })
 							),
 							getValue: () => plugin.settings.disableOverlayOnAlias,
 							setValue: async (value: boolean) => {
@@ -89,10 +91,10 @@ export function renderFeaturesTab(
 
 				group.addSetting((setting) => {
 					setting
-						.setName(translate("settings.features.inlineTasks.cardProperties"))
-						.setDesc(translate("settings.features.inlineTasks.cardPropertiesDesc"))
+						.setName(translate(msg({ message: "Inline task card properties", context: "settings.features.inlineTasks.cardProperties" })))
+						.setDesc(translate(msg({ message: "Select which properties to show in inline task cards.", context: "settings.features.inlineTasks.cardPropertiesDesc" })))
 						.addButton((button) => {
-							button.setButtonText(translate("common.configure")).onClick(() => {
+							button.setButtonText(translate(msg({ message: "Configure", context: "common.configure" }))).onClick(() => {
 								const modal = new PropertySelectorModal(
 									plugin.app,
 									availableProperties,
@@ -102,13 +104,13 @@ export function renderFeaturesTab(
 										save();
 										new Notice(
 											translate(
-												"settings.features.inlineTasks.cardPropertiesUpdated"
+												msg({ message: "Inline task card properties updated", context: "settings.features.inlineTasks.cardPropertiesUpdated" })
 											)
 										);
 										renderFeaturesTab(container, plugin, save);
 									},
-									translate("modals.propertySelector.inlineTitle"),
-									translate("settings.features.inlineTasks.cardPropertiesDesc"),
+									translate(msg({ message: "Select inline task card properties", context: "modals.propertySelector.inlineTitle" })),
+									translate(msg({ message: "Select which properties to show in inline task cards.", context: "settings.features.inlineTasks.cardPropertiesDesc" })),
 									plugin
 								);
 								modal.open();
@@ -118,7 +120,7 @@ export function renderFeaturesTab(
 
 				group.addSetting((setting) => {
 					setting.setDesc(
-						translate("settings.appearance.taskCards.showing", {
+						translate(msg({ message: "Currently showing: {properties}", context: "settings.appearance.taskCards.showing" }), {
 							properties: currentInlineLabels.join(", "),
 						})
 					);
@@ -129,8 +131,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.instantConvert.toggle.name"),
-						desc: translate("settings.features.instantConvert.toggle.description"),
+						name: translate(msg({ message: "Show convert button next to checkboxes", context: "settings.features.instantConvert.toggle.name" })),
+						desc: translate(msg({ message: "Display an inline button next to Markdown checkboxes that converts them to TaskNotes", context: "settings.features.instantConvert.toggle.description" })),
 						getValue: () => plugin.settings.enableInstantTaskConvert,
 						setValue: async (value: boolean) => {
 							plugin.settings.enableInstantTaskConvert = value;
@@ -145,10 +147,10 @@ export function renderFeaturesTab(
 					(setting) =>
 						void configureToggleSetting(setting, {
 							name: translate(
-								"settings.features.instantConvert.preserveCheckbox.name"
+								msg({ message: "Keep checkbox when converting", context: "settings.features.instantConvert.preserveCheckbox.name" })
 							),
 							desc: translate(
-								"settings.features.instantConvert.preserveCheckbox.description"
+								msg({ message: "Leave the original Markdown checkbox marker in place when converting a checkbox to a TaskNote link", context: "settings.features.instantConvert.preserveCheckbox.description" })
 							),
 							getValue: () => plugin.settings.preserveCheckboxOnConvert,
 							setValue: async (value: boolean) => {
@@ -165,15 +167,15 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.nlp.header"),
-			description: translate("settings.features.nlp.description"),
+			heading: translate(msg({ message: "Natural language processing", context: "settings.features.nlp.header" })),
+			description: translate(msg({ message: "Parse dates, priorities, and other properties from text input.", context: "settings.features.nlp.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.nlp.enable.name"),
-						desc: translate("settings.features.nlp.enable.description"),
+						name: translate(msg({ message: "Enable natural language task input", context: "settings.features.nlp.enable.name" })),
+						desc: translate(msg({ message: "Parse due dates, priorities, and contexts from natural language when creating tasks", context: "settings.features.nlp.enable.description" })),
 						getValue: () => plugin.settings.enableNaturalLanguageInput,
 						setValue: async (value: boolean) => {
 							plugin.settings.enableNaturalLanguageInput = value;
@@ -187,8 +189,8 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate("settings.features.nlp.defaultToScheduled.name"),
-							desc: translate("settings.features.nlp.defaultToScheduled.description"),
+							name: translate(msg({ message: "Default to scheduled", context: "settings.features.nlp.defaultToScheduled.name" })),
+							desc: translate(msg({ message: "When NLP detects a date without context, treat it as scheduled rather than due", context: "settings.features.nlp.defaultToScheduled.description" })),
 							getValue: () => plugin.settings.nlpDefaultToScheduled,
 							setValue: async (value: boolean) => {
 								plugin.settings.nlpDefaultToScheduled = value;
@@ -200,8 +202,8 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate("settings.features.nlp.enterToSubmit.name"),
-							desc: translate("settings.features.nlp.enterToSubmit.description"),
+							name: translate(msg({ message: "Enter saves task", context: "settings.features.nlp.enterToSubmit.name" })),
+							desc: translate(msg({ message: "In the natural language input, press Enter to save the task. Shift+Enter inserts a newline, and Ctrl/Cmd+Enter still saves.", context: "settings.features.nlp.enterToSubmit.description" })),
 							getValue: () => plugin.settings.nlpEnterToSubmit,
 							setValue: async (value: boolean) => {
 								plugin.settings.nlpEnterToSubmit = value;
@@ -213,8 +215,8 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureDropdownSetting(setting, {
-							name: translate("settings.features.nlp.language.name"),
-							desc: translate("settings.features.nlp.language.description"),
+							name: translate(msg({ message: "NLP language", context: "settings.features.nlp.language.name" })),
+							desc: translate(msg({ message: "Language for natural language processing patterns and date parsing", context: "settings.features.nlp.language.description" })),
 							options: getAvailableLanguages(),
 							getValue: () => plugin.settings.nlpLanguage,
 							setValue: async (value: string) => {
@@ -231,34 +233,34 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.taskCreation.header"),
-			description: translate("settings.features.taskCreation.description"),
+			heading: translate(msg({ message: "Task creation", context: "settings.features.taskCreation.header" })),
+			description: translate(msg({ message: "Configure what happens after tasks are created.", context: "settings.features.taskCreation.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.features.taskCreation.openAfterCreate.name"),
+						name: translate(msg({ message: "Open task after creation", context: "settings.features.taskCreation.openAfterCreate.name" })),
 						desc: translate(
-							"settings.features.taskCreation.openAfterCreate.description"
+							msg({ message: "Choose whether the task creation modal opens the new task note after saving.", context: "settings.features.taskCreation.openAfterCreate.description" })
 						),
 						options: [
 							{
 								value: "none",
 								label: translate(
-									"settings.features.taskCreation.openAfterCreate.options.none"
+									msg({ message: "Do not open", context: "settings.features.taskCreation.openAfterCreate.options.none" })
 								),
 							},
 							{
 								value: "same-tab",
 								label: translate(
-									"settings.features.taskCreation.openAfterCreate.options.sameTab"
+									msg({ message: "Open in the same tab", context: "settings.features.taskCreation.openAfterCreate.options.sameTab" })
 								),
 							},
 							{
 								value: "new-tab",
 								label: translate(
-									"settings.features.taskCreation.openAfterCreate.options.newTab"
+									msg({ message: "Open in a new tab", context: "settings.features.taskCreation.openAfterCreate.options.newTab" })
 								),
 							},
 						],
@@ -279,16 +281,16 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.defaults.header.bodyTemplate"),
-			description: translate("settings.defaults.description.bodyTemplate"),
+			heading: translate(msg({ message: "Body template", context: "settings.defaults.header.bodyTemplate" })),
+			description: translate(msg({ message: "Configure a template file to use for new task content.", context: "settings.defaults.description.bodyTemplate" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.defaults.bodyTemplate.useBodyTemplate.name"),
+						name: translate(msg({ message: "Use body template", context: "settings.defaults.bodyTemplate.useBodyTemplate.name" })),
 						desc: translate(
-							"settings.defaults.bodyTemplate.useBodyTemplate.description"
+							msg({ message: "Use a template file for task body content", context: "settings.defaults.bodyTemplate.useBodyTemplate.description" })
 						),
 						getValue: () => plugin.settings.taskCreationDefaults.useBodyTemplate,
 						setValue: async (value: boolean) => {
@@ -303,12 +305,12 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureTextSetting(setting, {
-							name: translate("settings.defaults.bodyTemplate.bodyTemplateFile.name"),
+							name: translate(msg({ message: "Body template file", context: "settings.defaults.bodyTemplate.bodyTemplateFile.name" })),
 							desc: translate(
-								"settings.defaults.bodyTemplate.bodyTemplateFile.description"
+								msg({ message: "Path to template file for task body content. Supports template variables like '{{title}}', '{{date}}', '{{time}}', '{{priority}}', '{{status}}', etc.", context: "settings.defaults.bodyTemplate.bodyTemplateFile.description" })
 							),
 							placeholder: translate(
-								"settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
+								msg({ message: "Templates/Task Template.md", context: "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder" })
 							),
 							getValue: () => plugin.settings.taskCreationDefaults.bodyTemplate,
 							setValue: async (value: string) => {
@@ -323,10 +325,10 @@ export function renderFeaturesTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name"
+							msg({ message: "Use occurrence note template", context: "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name" })
 						),
 						desc: translate(
-							"settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description"
+							msg({ message: "Use a separate fallback template for materialized occurrence notes when the recurring task has no occurrence_template", context: "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description" })
 						),
 						getValue: () =>
 							plugin.settings.taskCreationDefaults.useOccurrenceBodyTemplate,
@@ -343,13 +345,13 @@ export function renderFeaturesTab(
 					(setting) =>
 						void configureTextSetting(setting, {
 							name: translate(
-								"settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name"
+								msg({ message: "Occurrence note template file", context: "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name" })
 							),
 							desc: translate(
-								"settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description"
+								msg({ message: "Path to template file for materialized occurrence notes. A recurring task''s occurrence_template field takes priority over this fallback.", context: "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description" })
 							),
 							placeholder: translate(
-								"settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder"
+								msg({ message: "Templates/Occurrence Template.md", context: "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder" })
 							),
 							getValue: () =>
 								plugin.settings.taskCreationDefaults.occurrenceBodyTemplate,
@@ -367,17 +369,17 @@ export function renderFeaturesTab(
 			) {
 				group.addSetting((setting) => {
 					const variables = [
-						translate("settings.defaults.bodyTemplate.variables.title"),
-						translate("settings.defaults.bodyTemplate.variables.details"),
-						translate("settings.defaults.bodyTemplate.variables.date"),
-						translate("settings.defaults.bodyTemplate.variables.time"),
-						translate("settings.defaults.bodyTemplate.variables.priority"),
-						translate("settings.defaults.bodyTemplate.variables.status"),
-						translate("settings.defaults.bodyTemplate.variables.contexts"),
-						translate("settings.defaults.bodyTemplate.variables.tags"),
-						translate("settings.defaults.bodyTemplate.variables.projects"),
+						translate(msg({ message: "'{{title}}' - Task title", context: "settings.defaults.bodyTemplate.variables.title" })),
+						translate(msg({ message: "'{{details}}' - User-provided details from modal", context: "settings.defaults.bodyTemplate.variables.details" })),
+						translate(msg({ message: "'{{date}}' - Current date (YYYY-MM-DD)", context: "settings.defaults.bodyTemplate.variables.date" })),
+						translate(msg({ message: "'{{time}}' - Current time (HH:MM)", context: "settings.defaults.bodyTemplate.variables.time" })),
+						translate(msg({ message: "'{{priority}}' - Task priority", context: "settings.defaults.bodyTemplate.variables.priority" })),
+						translate(msg({ message: "'{{status}}' - Task status", context: "settings.defaults.bodyTemplate.variables.status" })),
+						translate(msg({ message: "'{{contexts}}' - Task contexts", context: "settings.defaults.bodyTemplate.variables.contexts" })),
+						translate(msg({ message: "'{{tags}}' - Task tags", context: "settings.defaults.bodyTemplate.variables.tags" })),
+						translate(msg({ message: "'{{projects}}' - Task projects", context: "settings.defaults.bodyTemplate.variables.projects" })),
 					];
-					setting.setName(translate("settings.defaults.bodyTemplate.variablesHeader"));
+					setting.setName(translate(msg({ message: "Template variables:", context: "settings.defaults.bodyTemplate.variablesHeader" })));
 					setting.setDesc(variables.join(" • "));
 				});
 			}
@@ -386,10 +388,10 @@ export function renderFeaturesTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
+							msg({ message: "Use task defaults on instant convert", context: "settings.defaults.instantConversion.useDefaultsOnInstantConvert.name" })
 						),
 						desc: translate(
-							"settings.defaults.instantConversion.useDefaultsOnInstantConvert.description"
+							msg({ message: "Apply default task settings when converting text to tasks instantly", context: "settings.defaults.instantConversion.useDefaultsOnInstantConvert.description" })
 						),
 						getValue: () => plugin.settings.useDefaultsOnInstantConvert,
 						setValue: async (value: boolean) => {
@@ -405,15 +407,15 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.pomodoro.header"),
-			description: translate("settings.features.pomodoro.description"),
+			heading: translate(msg({ message: "Pomodoro timer", context: "settings.features.pomodoro.header" })),
+			description: translate(msg({ message: "Configure work/break intervals for the Pomodoro timer.", context: "settings.features.pomodoro.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureNumberSetting(setting, {
-						name: translate("settings.features.pomodoro.workDuration.name"),
-						desc: translate("settings.features.pomodoro.workDuration.description"),
+						name: translate(msg({ message: "Work duration", context: "settings.features.pomodoro.workDuration.name" })),
+						desc: translate(msg({ message: "Duration of work intervals in minutes", context: "settings.features.pomodoro.workDuration.description" })),
 						placeholder: "25",
 						min: 1,
 						max: 120,
@@ -428,8 +430,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureNumberSetting(setting, {
-						name: translate("settings.features.pomodoro.shortBreak.name"),
-						desc: translate("settings.features.pomodoro.shortBreak.description"),
+						name: translate(msg({ message: "Short break duration", context: "settings.features.pomodoro.shortBreak.name" })),
+						desc: translate(msg({ message: "Duration of short breaks in minutes", context: "settings.features.pomodoro.shortBreak.description" })),
 						placeholder: "5",
 						min: 1,
 						max: 60,
@@ -444,8 +446,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureNumberSetting(setting, {
-						name: translate("settings.features.pomodoro.longBreak.name"),
-						desc: translate("settings.features.pomodoro.longBreak.description"),
+						name: translate(msg({ message: "Long break duration", context: "settings.features.pomodoro.longBreak.name" })),
+						desc: translate(msg({ message: "Duration of long breaks in minutes", context: "settings.features.pomodoro.longBreak.description" })),
 						placeholder: "15",
 						min: 1,
 						max: 120,
@@ -460,8 +462,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureNumberSetting(setting, {
-						name: translate("settings.features.pomodoro.longBreakInterval.name"),
-						desc: translate("settings.features.pomodoro.longBreakInterval.description"),
+						name: translate(msg({ message: "Long break interval", context: "settings.features.pomodoro.longBreakInterval.name" })),
+						desc: translate(msg({ message: "Number of work sessions before a long break", context: "settings.features.pomodoro.longBreakInterval.description" })),
 						placeholder: "4",
 						min: 1,
 						max: 10,
@@ -476,8 +478,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.pomodoro.autoStartBreaks.name"),
-						desc: translate("settings.features.pomodoro.autoStartBreaks.description"),
+						name: translate(msg({ message: "Auto-start breaks", context: "settings.features.pomodoro.autoStartBreaks.name" })),
+						desc: translate(msg({ message: "Automatically start break timers after work sessions", context: "settings.features.pomodoro.autoStartBreaks.description" })),
 						getValue: () => plugin.settings.pomodoroAutoStartBreaks,
 						setValue: async (value: boolean) => {
 							plugin.settings.pomodoroAutoStartBreaks = value;
@@ -489,8 +491,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.pomodoro.autoStartWork.name"),
-						desc: translate("settings.features.pomodoro.autoStartWork.description"),
+						name: translate(msg({ message: "Auto-start work", context: "settings.features.pomodoro.autoStartWork.name" })),
+						desc: translate(msg({ message: "Automatically start work sessions after breaks", context: "settings.features.pomodoro.autoStartWork.description" })),
 						getValue: () => plugin.settings.pomodoroAutoStartWork,
 						setValue: async (value: boolean) => {
 							plugin.settings.pomodoroAutoStartWork = value;
@@ -502,8 +504,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.pomodoro.notifications.name"),
-						desc: translate("settings.features.pomodoro.notifications.description"),
+						name: translate(msg({ message: "Pomodoro notifications", context: "settings.features.pomodoro.notifications.name" })),
+						desc: translate(msg({ message: "Show notifications when Pomodoro sessions end", context: "settings.features.pomodoro.notifications.description" })),
 						getValue: () => plugin.settings.pomodoroNotifications,
 						setValue: async (value: boolean) => {
 							plugin.settings.pomodoroNotifications = value;
@@ -515,8 +517,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.pomodoro.statusBar.name"),
-						desc: translate("settings.features.pomodoro.statusBar.description"),
+						name: translate(msg({ message: "Show Pomodoro in status bar", context: "settings.features.pomodoro.statusBar.name" })),
+						desc: translate(msg({ message: "Display the active Pomodoro countdown in Obsidian''s status bar", context: "settings.features.pomodoro.statusBar.description" })),
 						getValue: () => plugin.settings.showPomodoroInStatusBar,
 						setValue: async (value: boolean) => {
 							plugin.settings.showPomodoroInStatusBar = value;
@@ -529,8 +531,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.pomodoroSound.enabledName"),
-						desc: translate("settings.features.pomodoroSound.enabledDesc"),
+						name: translate(msg({ message: "Sound enabled", context: "settings.features.pomodoroSound.enabledName" })),
+						desc: translate(msg({ message: "Play sound when Pomodoro sessions end", context: "settings.features.pomodoroSound.enabledDesc" })),
 						getValue: () => plugin.settings.pomodoroSoundEnabled,
 						setValue: async (value: boolean) => {
 							plugin.settings.pomodoroSoundEnabled = value;
@@ -544,8 +546,8 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureNumberSetting(setting, {
-							name: translate("settings.features.pomodoroSound.volumeName"),
-							desc: translate("settings.features.pomodoroSound.volumeDesc"),
+							name: translate(msg({ message: "Sound volume", context: "settings.features.pomodoroSound.volumeName" })),
+							desc: translate(msg({ message: "Volume for Pomodoro sounds (0-100)", context: "settings.features.pomodoroSound.volumeDesc" })),
 							placeholder: "50",
 							min: 0,
 							max: 100,
@@ -561,16 +563,16 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.features.dataStorage.name"),
-						desc: translate("settings.features.dataStorage.description"),
+						name: translate(msg({ message: "Pomodoro data storage", context: "settings.features.dataStorage.name" })),
+						desc: translate(msg({ message: "Configure where Pomodoro session data is stored and how it''s managed.", context: "settings.features.dataStorage.description" })),
 						options: [
 							{
 								value: "plugin",
-								label: translate("settings.features.dataStorage.pluginData"),
+								label: translate(msg({ message: "Plugin data", context: "settings.features.dataStorage.pluginData" })),
 							},
 							{
 								value: "daily-notes",
-								label: translate("settings.features.dataStorage.dailyNotes"),
+								label: translate(msg({ message: "Daily notes", context: "settings.features.dataStorage.dailyNotes" })),
 							},
 						],
 						getValue: () => plugin.settings.pomodoroStorageLocation,
@@ -601,15 +603,15 @@ export function renderFeaturesTab(
 										save();
 										new Notice(
 											translate(
-												"settings.features.dataStorage.notices.locationChanged",
+												msg({ message: "Pomodoro storage location changed to {location}", context: "settings.features.dataStorage.notices.locationChanged" }),
 												{
 													location:
 														newLocation === "plugin"
 															? translate(
-																	"settings.features.dataStorage.pluginData"
+																	msg({ message: "Plugin data", context: "settings.features.dataStorage.pluginData" })
 																)
 															: translate(
-																	"settings.features.dataStorage.dailyNotes"
+																	msg({ message: "Daily notes", context: "settings.features.dataStorage.dailyNotes" })
 																),
 												}
 											)
@@ -628,20 +630,20 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.features.pomodoro.mobileSidebar.name"),
-						desc: translate("settings.features.pomodoro.mobileSidebar.description"),
+						name: translate(msg({ message: "Mobile sidebar", context: "settings.features.pomodoro.mobileSidebar.name" })),
+						desc: translate(msg({ message: "Where to open the Pomodoro timer on mobile devices", context: "settings.features.pomodoro.mobileSidebar.description" })),
 						options: [
 							{
 								value: "tab",
-								label: translate("settings.features.pomodoro.mobileSidebar.tab"),
+								label: translate(msg({ message: "Note panel", context: "settings.features.pomodoro.mobileSidebar.tab" })),
 							},
 							{
 								value: "left",
-								label: translate("settings.features.pomodoro.mobileSidebar.left"),
+								label: translate(msg({ message: "Left sidebar", context: "settings.features.pomodoro.mobileSidebar.left" })),
 							},
 							{
 								value: "right",
-								label: translate("settings.features.pomodoro.mobileSidebar.right"),
+								label: translate(msg({ message: "Right sidebar", context: "settings.features.pomodoro.mobileSidebar.right" })),
 							},
 						],
 						getValue: () => plugin.settings.pomodoroMobileSidebar,
@@ -661,15 +663,15 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.notifications.header"),
-			description: translate("settings.features.notifications.description"),
+			heading: translate(msg({ message: "Notifications", context: "settings.features.notifications.header" })),
+			description: translate(msg({ message: "Configure task reminder notifications and alerts.", context: "settings.features.notifications.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.notifications.enableName"),
-						desc: translate("settings.features.notifications.enableDesc"),
+						name: translate(msg({ message: "Enable notifications", context: "settings.features.notifications.enableName" })),
+						desc: translate(msg({ message: "Enable task reminder notifications", context: "settings.features.notifications.enableDesc" })),
 						getValue: () => plugin.settings.enableNotifications,
 						setValue: async (value: boolean) => {
 							plugin.settings.enableNotifications = value;
@@ -683,16 +685,16 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureDropdownSetting(setting, {
-							name: translate("settings.features.notifications.typeName"),
-							desc: translate("settings.features.notifications.typeDesc"),
+							name: translate(msg({ message: "Notification type", context: "settings.features.notifications.typeName" })),
+							desc: translate(msg({ message: "Type of notifications to show", context: "settings.features.notifications.typeDesc" })),
 							options: [
 								{
 									value: "in-app",
-									label: translate("settings.features.notifications.inAppLabel"),
+									label: translate(msg({ message: "In-app notifications", context: "settings.features.notifications.inAppLabel" })),
 								},
 								{
 									value: "system",
-									label: translate("settings.features.notifications.systemLabel"),
+									label: translate(msg({ message: "System notifications", context: "settings.features.notifications.systemLabel" })),
 								},
 							],
 							getValue: () => plugin.settings.notificationType,
@@ -706,10 +708,10 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureButtonSetting(setting, {
-							name: translate("settings.features.notifications.testReminderName"),
-							desc: translate("settings.features.notifications.testReminderDesc"),
+							name: translate(msg({ message: "Send test reminder", context: "settings.features.notifications.testReminderName" })),
+							desc: translate(msg({ message: "Send a test reminder using the current notification type and sound settings.", context: "settings.features.notifications.testReminderDesc" })),
 							buttonText: translate(
-								"settings.features.notifications.testReminderButton"
+								msg({ message: "Send test", context: "settings.features.notifications.testReminderButton" })
 							),
 							onClick: async () => {
 								await plugin.notificationService?.sendTestReminderNotification();
@@ -720,8 +722,8 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate("settings.features.notifications.soundEnabledName"),
-							desc: translate("settings.features.notifications.soundEnabledDesc"),
+							name: translate(msg({ message: "Notification sound", context: "settings.features.notifications.soundEnabledName" })),
+							desc: translate(msg({ message: "Play a sound when task reminders trigger", context: "settings.features.notifications.soundEnabledDesc" })),
 							getValue: () => plugin.settings.notificationSoundEnabled,
 							setValue: async (value: boolean) => {
 								plugin.settings.notificationSoundEnabled = value;
@@ -735,8 +737,8 @@ export function renderFeaturesTab(
 					group.addSetting(
 						(setting) =>
 							void configureNumberSetting(setting, {
-								name: translate("settings.features.notifications.soundVolumeName"),
-								desc: translate("settings.features.notifications.soundVolumeDesc"),
+								name: translate(msg({ message: "Sound volume", context: "settings.features.notifications.soundVolumeName" })),
+								desc: translate(msg({ message: "Volume for task reminder sounds (0-100)", context: "settings.features.notifications.soundVolumeDesc" })),
 								placeholder: "50",
 								min: 0,
 								max: 100,
@@ -751,10 +753,10 @@ export function renderFeaturesTab(
 					group.addSetting(
 						(setting) =>
 							void configureButtonSetting(setting, {
-								name: translate("settings.features.notifications.soundPreviewName"),
-								desc: translate("settings.features.notifications.soundPreviewDesc"),
+								name: translate(msg({ message: "Preview notification sound", context: "settings.features.notifications.soundPreviewName" })),
+								desc: translate(msg({ message: "Play the configured task reminder sound", context: "settings.features.notifications.soundPreviewDesc" })),
 								buttonText: translate(
-									"settings.features.notifications.soundPreviewButton"
+									msg({ message: "Preview", context: "settings.features.notifications.soundPreviewButton" })
 								),
 								onClick: () => {
 									plugin.notificationService?.playNotificationSound();
@@ -770,15 +772,15 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.performance.header"),
-			description: translate("settings.features.performance.description"),
+			heading: translate(msg({ message: "Performance & behavior", context: "settings.features.performance.header" })),
+			description: translate(msg({ message: "Configure plugin performance and behavioral options.", context: "settings.features.performance.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.overdue.hideCompletedName"),
-						desc: translate("settings.features.overdue.hideCompletedDesc"),
+						name: translate(msg({ message: "Hide completed tasks from overdue", context: "settings.features.overdue.hideCompletedName" })),
+						desc: translate(msg({ message: "Exclude completed tasks from overdue task calculations", context: "settings.features.overdue.hideCompletedDesc" })),
 						getValue: () => plugin.settings.hideCompletedFromOverdue,
 						setValue: async (value: boolean) => {
 							plugin.settings.hideCompletedFromOverdue = value;
@@ -790,8 +792,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.indexing.disableName"),
-						desc: translate("settings.features.indexing.disableDesc"),
+						name: translate(msg({ message: "Disable note indexing", context: "settings.features.indexing.disableName" })),
+						desc: translate(msg({ message: "Disable automatic indexing of note content for better performance", context: "settings.features.indexing.disableDesc" })),
 						getValue: () => plugin.settings.disableNoteIndexing,
 						setValue: async (value: boolean) => {
 							plugin.settings.disableNoteIndexing = value;
@@ -804,8 +806,8 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureNumberSetting(setting, {
-							name: translate("settings.features.suggestions.debounceName"),
-							desc: translate("settings.features.suggestions.debounceDesc"),
+							name: translate(msg({ message: "Suggestion debounce", context: "settings.features.suggestions.debounceName" })),
+							desc: translate(msg({ message: "Delay in milliseconds before showing suggestions", context: "settings.features.suggestions.debounceDesc" })),
 							placeholder: "300",
 							min: 0,
 							max: 2000,
@@ -825,15 +827,15 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.timeTrackingSection.header"),
-			description: translate("settings.features.timeTrackingSection.description"),
+			heading: translate(msg({ message: "Time tracking", context: "settings.features.timeTrackingSection.header" })),
+			description: translate(msg({ message: "Configure automatic time tracking behaviors.", context: "settings.features.timeTrackingSection.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.timeTracking.autoStopName"),
-						desc: translate("settings.features.timeTracking.autoStopDesc"),
+						name: translate(msg({ message: "Auto-stop time tracking", context: "settings.features.timeTracking.autoStopName" })),
+						desc: translate(msg({ message: "Automatically stop time tracking when a task is marked complete", context: "settings.features.timeTracking.autoStopDesc" })),
 						getValue: () => plugin.settings.autoStopTimeTrackingOnComplete,
 						setValue: async (value: boolean) => {
 							plugin.settings.autoStopTimeTrackingOnComplete = value;
@@ -845,8 +847,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.timeTracking.stopNotificationName"),
-						desc: translate("settings.features.timeTracking.stopNotificationDesc"),
+						name: translate(msg({ message: "Time tracking stop notification", context: "settings.features.timeTracking.stopNotificationName" })),
+						desc: translate(msg({ message: "Show notification when time tracking is automatically stopped", context: "settings.features.timeTracking.stopNotificationDesc" })),
 						getValue: () => plugin.settings.autoStopTimeTrackingNotification,
 						setValue: async (value: boolean) => {
 							plugin.settings.autoStopTimeTrackingNotification = value;
@@ -861,15 +863,15 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.recurringSection.header"),
-			description: translate("settings.features.recurringSection.description"),
+			heading: translate(msg({ message: "Recurring tasks", context: "settings.features.recurringSection.header" })),
+			description: translate(msg({ message: "Configure behavior for recurring task management.", context: "settings.features.recurringSection.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.recurring.maintainOffsetName"),
-						desc: translate("settings.features.recurring.maintainOffsetDesc"),
+						name: translate(msg({ message: "Maintain due date offset in recurring tasks", context: "settings.features.recurring.maintainOffsetName" })),
+						desc: translate(msg({ message: "Keep the offset between due date and scheduled date when recurring tasks are completed", context: "settings.features.recurring.maintainOffsetDesc" })),
 						getValue: () => plugin.settings.maintainDueDateOffsetInRecurring,
 						setValue: async (value: boolean) => {
 							plugin.settings.maintainDueDateOffsetInRecurring = value;
@@ -880,8 +882,8 @@ export function renderFeaturesTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.recurring.resetCheckboxesName"),
-						desc: translate("settings.features.recurring.resetCheckboxesDesc"),
+						name: translate(msg({ message: "Reset checkboxes on recurrence", context: "settings.features.recurring.resetCheckboxesName" })),
+						desc: translate(msg({ message: "Reset all Markdown checkboxes in the task body when a recurring task is completed and rescheduled", context: "settings.features.recurring.resetCheckboxesDesc" })),
 						getValue: () => plugin.settings.resetCheckboxesOnRecurrence,
 						setValue: async (value: boolean) => {
 							plugin.settings.resetCheckboxesOnRecurrence = value;
@@ -896,15 +898,15 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.timeblocking.header"),
-			description: translate("settings.features.timeblocking.description"),
+			heading: translate(msg({ message: "Timeblocking", context: "settings.features.timeblocking.header" })),
+			description: translate(msg({ message: "Configure timeblock functionality for lightweight scheduling in daily notes. Drag on calendar views to create events - select ''Timeblock'' from the context menu.", context: "settings.features.timeblocking.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.timeblocking.enableName"),
-						desc: translate("settings.features.timeblocking.enableDesc"),
+						name: translate(msg({ message: "Enable timeblocking", context: "settings.features.timeblocking.enableName" })),
+						desc: translate(msg({ message: "Enable timeblocking feature for lightweight scheduling in daily notes. When enabled, ''Timeblock'' option appears in the calendar drag context menu.", context: "settings.features.timeblocking.enableDesc" })),
 						getValue: () => plugin.settings.calendarViewSettings.enableTimeblocking,
 						setValue: async (value: boolean) => {
 							plugin.settings.calendarViewSettings.enableTimeblocking = value;
@@ -918,47 +920,47 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureDropdownSetting(setting, {
-							name: translate("settings.features.timeblocking.attachmentOrder"),
-							desc: "Controls how files are ordered in the Add Attachment search window for timeblocks.",
+							name: translate(msg({ message: "Attachment search order", context: "settings.features.timeblocking.attachmentOrder" })),
+							desc: uiText(msg({ message: "Controls how files are ordered in the Add Attachment search window for timeblocks.", context: "settings/tabs/featuresTab: renderFeaturesTab desc" })),
 							options: [
 								{
 									value: "name-asc",
-									label: translate("settings.features.timeblocking.nameAsc"),
+									label: translate(msg({ message: "Name (a to z)", context: "settings.features.timeblocking.nameAsc" })),
 								},
 								{
 									value: "name-desc",
-									label: translate("settings.features.timeblocking.nameDesc"),
+									label: translate(msg({ message: "Name (z to a)", context: "settings.features.timeblocking.nameDesc" })),
 								},
 								{
 									value: "path-asc",
-									label: translate("settings.features.timeblocking.pathAsc"),
+									label: translate(msg({ message: "Path (a to z)", context: "settings.features.timeblocking.pathAsc" })),
 								},
 								{
 									value: "path-desc",
-									label: translate("settings.features.timeblocking.pathDesc"),
+									label: translate(msg({ message: "Path (z to a)", context: "settings.features.timeblocking.pathDesc" })),
 								},
 								{
 									value: "created-recent",
 									label: translate(
-										"settings.features.timeblocking.createdNewest"
+										msg({ message: "Created (newest first)", context: "settings.features.timeblocking.createdNewest" })
 									),
 								},
 								{
 									value: "created-oldest",
 									label: translate(
-										"settings.features.timeblocking.createdOldest"
+										msg({ message: "Created (oldest first)", context: "settings.features.timeblocking.createdOldest" })
 									),
 								},
 								{
 									value: "modified-recent",
 									label: translate(
-										"settings.features.timeblocking.modifiedNewest"
+										msg({ message: "Modified (newest first)", context: "settings.features.timeblocking.modifiedNewest" })
 									),
 								},
 								{
 									value: "modified-oldest",
 									label: translate(
-										"settings.features.timeblocking.modifiedOldest"
+										msg({ message: "Modified (oldest first)", context: "settings.features.timeblocking.modifiedOldest" })
 									),
 								},
 							],
@@ -983,8 +985,8 @@ export function renderFeaturesTab(
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate("settings.features.timeblocking.showBlocksName"),
-							desc: translate("settings.features.timeblocking.showBlocksDesc"),
+							name: translate(msg({ message: "Show timeblocks", context: "settings.features.timeblocking.showBlocksName" })),
+							desc: translate(msg({ message: "Display timeblocks from daily notes by default", context: "settings.features.timeblocking.showBlocksDesc" })),
 							getValue: () =>
 								plugin.settings.calendarViewSettings.defaultShowTimeblocks,
 							setValue: async (value: boolean) => {
@@ -996,8 +998,8 @@ export function renderFeaturesTab(
 
 				group.addSetting((setting) => {
 					setting
-						.setName(translate("settings.features.timeblocking.defaultColorName"))
-						.setDesc(translate("settings.features.timeblocking.defaultColorDesc"))
+						.setName(translate(msg({ message: "Default timeblock color", context: "settings.features.timeblocking.defaultColorName" })))
+						.setDesc(translate(msg({ message: "The default color used when creating new timeblocks", context: "settings.features.timeblocking.defaultColorDesc" })))
 						.addText((text) => {
 							configureThemeColorInput(text.inputEl);
 							text.setValue(
@@ -1017,7 +1019,7 @@ export function renderFeaturesTab(
 				});
 
 				group.addSetting((setting) => {
-					setting.setDesc(translate("settings.features.timeblocking.usage"));
+					setting.setDesc(translate(msg({ message: "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration.", context: "settings.features.timeblocking.usage" })));
 					setting.settingEl.addClass("settings-view__group-description");
 				});
 			}
@@ -1028,15 +1030,15 @@ export function renderFeaturesTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.debugLogging.header"),
-			description: translate("settings.features.debugLogging.description"),
+			heading: translate(msg({ message: "Debug logging", context: "settings.features.debugLogging.header" })),
+			description: translate(msg({ message: "Configure debug log output for troubleshooting.", context: "settings.features.debugLogging.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.features.debugLogging.enableName"),
-						desc: translate("settings.features.debugLogging.enableDesc"),
+						name: translate(msg({ message: "Enable debug logging", context: "settings.features.debugLogging.enableName" })),
+						desc: translate(msg({ message: "Log detailed drag-and-drop and view diagnostics to the developer console. Useful for troubleshooting.", context: "settings.features.debugLogging.enableDesc" })),
 						getValue: () => plugin.settings.enableDebugLogging,
 						setValue: async (value: boolean) => {
 							plugin.settings.enableDebugLogging = value;

@@ -1,3 +1,6 @@
+import { uiText } from "../../i18n/runtime";
+import { messageForKey } from "../../i18n/messages";
+import { msg } from "@lingui/core/macro";
 import { Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import {
@@ -37,45 +40,45 @@ export function renderGeneralTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.general.taskStorage.header"),
-			description: translate("settings.general.taskStorage.description"),
+			heading: translate(msg({ message: "Task storage", context: "settings.general.taskStorage.header" })),
+			description: translate(msg({ message: "Configure where tasks are stored and how they are identified.", context: "settings.general.taskStorage.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureTextSetting(setting, {
-						name: translate("settings.general.taskStorage.defaultFolder.name"),
-						desc: translate("settings.general.taskStorage.defaultFolder.description"),
+						name: translate(msg({ message: "Default tasks folder", context: "settings.general.taskStorage.defaultFolder.name" })),
+						desc: translate(msg({ message: "Default location for new tasks. Supports folder template variables like '{{currentNotePath}}', '{{currentNoteTitle}}', and '{{projectFilePath}}', plus Daily Notes-style date tokens like YYYY/MM/DD.", context: "settings.general.taskStorage.defaultFolder.description" })),
 						placeholder: "TaskNotes",
 						getValue: () => plugin.settings.tasksFolder,
 						setValue: async (value: string) => {
 							plugin.settings.tasksFolder = value;
 							save();
 						},
-						ariaLabel: "Default folder path for new tasks",
+						ariaLabel: uiText(msg({ message: "Default folder path for new tasks", context: "settings/tabs/generalTab: renderGeneralTab ariaLabel" })),
 					})
 			);
 
 			group.addSetting(
 				(setting) =>
 					void configureTextSetting(setting, {
-						name: translate("settings.features.instantConvert.folder.name"),
-						desc: translate("settings.features.instantConvert.folder.description"),
+						name: translate(msg({ message: "Folder for inline-created tasks", context: "settings.features.instantConvert.folder.name" })),
+						desc: translate(msg({ message: "Folder where tasks created from inline commands or checkbox conversion will be created. Leave empty to use the default tasks folder. Use '{{currentNotePath}}' for the current note''s folder, or '{{currentNoteTitle}}' for a subfolder named after the current note.", context: "settings.features.instantConvert.folder.description" })),
 						placeholder: "{{currentNotePath}}",
 						getValue: () => plugin.settings.inlineTaskConvertFolder,
 						setValue: async (value: string) => {
 							plugin.settings.inlineTaskConvertFolder = value;
 							save();
 						},
-						ariaLabel: "Folder for inline-created tasks",
+						ariaLabel: uiText(msg({ message: "Folder for inline-created tasks", context: "settings/tabs/generalTab: renderGeneralTab ariaLabel" })),
 					})
 			);
 
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.general.taskStorage.moveArchived.name"),
-						desc: translate("settings.general.taskStorage.moveArchived.description"),
+						name: translate(msg({ message: "Move archived tasks to folder", context: "settings.general.taskStorage.moveArchived.name" })),
+						desc: translate(msg({ message: "Automatically move archived tasks to an archive folder", context: "settings.general.taskStorage.moveArchived.description" })),
 						getValue: () => plugin.settings.moveArchivedTasks,
 						setValue: async (value: boolean) => {
 							plugin.settings.moveArchivedTasks = value;
@@ -90,9 +93,9 @@ export function renderGeneralTab(
 				group.addSetting(
 					(setting) =>
 						void configureTextSetting(setting, {
-							name: translate("settings.general.taskStorage.archiveFolder.name"),
+							name: translate(msg({ message: "Archive folder", context: "settings.general.taskStorage.archiveFolder.name" })),
 							desc: translate(
-								"settings.general.taskStorage.archiveFolder.description"
+								msg({ message: "Folder to move tasks to when archived. Supports template variables like '{{year}}', '{{month}}', '{{priority}}', etc.", context: "settings.general.taskStorage.archiveFolder.description" })
 							),
 							placeholder: "TaskNotes/Archive",
 							getValue: () => plugin.settings.archiveFolder,
@@ -100,7 +103,7 @@ export function renderGeneralTab(
 								plugin.settings.archiveFolder = value;
 								save();
 							},
-							ariaLabel: "Archive folder path",
+							ariaLabel: uiText(msg({ message: "Archive folder path", context: "settings/tabs/generalTab: renderGeneralTab ariaLabel" })),
 						})
 				);
 			}
@@ -111,28 +114,28 @@ export function renderGeneralTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.general.taskIdentification.header"),
-			description: translate("settings.general.taskIdentification.description"),
+			heading: translate(msg({ message: "Task identification", context: "settings.general.taskIdentification.header" })),
+			description: translate(msg({ message: "Choose how TaskNotes identifies notes as tasks.", context: "settings.general.taskIdentification.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.general.taskIdentification.identifyBy.name"),
+						name: translate(msg({ message: "Identify tasks by", context: "settings.general.taskIdentification.identifyBy.name" })),
 						desc: translate(
-							"settings.general.taskIdentification.identifyBy.description"
+							msg({ message: "Choose whether to identify tasks by tag or by a frontmatter property", context: "settings.general.taskIdentification.identifyBy.description" })
 						),
 						options: [
 							{
 								value: "tag",
 								label: translate(
-									"settings.general.taskIdentification.identifyBy.options.tag"
+									msg({ message: "Tag", context: "settings.general.taskIdentification.identifyBy.options.tag" })
 								),
 							},
 							{
 								value: "property",
 								label: translate(
-									"settings.general.taskIdentification.identifyBy.options.property"
+									msg({ message: "Property", context: "settings.general.taskIdentification.identifyBy.options.property" })
 								),
 							},
 						],
@@ -143,7 +146,7 @@ export function renderGeneralTab(
 							// Re-render to show/hide conditional fields
 							renderGeneralTab(container, plugin, save);
 						},
-						ariaLabel: "Task identification method",
+						ariaLabel: uiText(msg({ message: "Task identification method", context: "settings/tabs/generalTab: renderGeneralTab ariaLabel" })),
 					})
 			);
 
@@ -151,9 +154,9 @@ export function renderGeneralTab(
 				group.addSetting(
 					(setting) =>
 						void configureTextSetting(setting, {
-							name: translate("settings.general.taskIdentification.taskTag.name"),
+							name: translate(msg({ message: "Task tag", context: "settings.general.taskIdentification.taskTag.name" })),
 							desc: translate(
-								"settings.general.taskIdentification.taskTag.description"
+								msg({ message: "Tag that identifies notes as tasks (without #). Existing .base view filters keep their old tag when this changes; update default Base files or edit those filters.", context: "settings.general.taskIdentification.taskTag.description" })
 							),
 							placeholder: "task",
 							getValue: () => plugin.settings.taskTag,
@@ -161,7 +164,7 @@ export function renderGeneralTab(
 								plugin.settings.taskTag = value;
 								save();
 							},
-							ariaLabel: "Task identification tag",
+							ariaLabel: uiText(msg({ message: "Task identification tag", context: "settings/tabs/generalTab: renderGeneralTab ariaLabel" })),
 						})
 				);
 
@@ -169,10 +172,10 @@ export function renderGeneralTab(
 					(setting) =>
 						void configureToggleSetting(setting, {
 							name: translate(
-								"settings.general.taskIdentification.hideIdentifyingTags.name"
+								msg({ message: "Hide identification tags in task cards", context: "settings.general.taskIdentification.hideIdentifyingTags.name" })
 							),
 							desc: translate(
-								"settings.general.taskIdentification.hideIdentifyingTags.description"
+								msg({ message: "When enabled, tags matching the task identification tag (including hierarchical matches like ''task/project'') will be hidden from task card displays", context: "settings.general.taskIdentification.hideIdentifyingTags.description" })
 							),
 							getValue: () => plugin.settings.hideIdentifyingTagsInCards,
 							setValue: async (value: boolean) => {
@@ -188,22 +191,22 @@ export function renderGeneralTab(
 						(setting) =>
 							void configureDropdownSetting(setting, {
 								name: translate(
-									"settings.general.taskIdentification.hideIdentifyingTagsMode.name"
+									msg({ message: "Hidden tag scope", context: "settings.general.taskIdentification.hideIdentifyingTagsMode.name" })
 								),
 								desc: translate(
-									"settings.general.taskIdentification.hideIdentifyingTagsMode.description"
+									msg({ message: "Choose whether hiding identification tags also hides nested tags.", context: "settings.general.taskIdentification.hideIdentifyingTagsMode.description" })
 								),
 								options: [
 									{
 										value: "all",
 										label: translate(
-											"settings.general.taskIdentification.hideIdentifyingTagsMode.options.all"
+											msg({ message: "Task tag and nested tags", context: "settings.general.taskIdentification.hideIdentifyingTagsMode.options.all" })
 										),
 									},
 									{
 										value: "exact-only",
 										label: translate(
-											"settings.general.taskIdentification.hideIdentifyingTagsMode.options.exactOnly"
+											msg({ message: "Exact task tag only", context: "settings.general.taskIdentification.hideIdentifyingTagsMode.options.exactOnly" })
 										),
 									},
 								],
@@ -213,7 +216,7 @@ export function renderGeneralTab(
 										value as HideIdentifyingTagsMode;
 									save();
 								},
-								ariaLabel: "Hidden identification tag scope",
+								ariaLabel: uiText(msg({ message: "Hidden identification tag scope", context: "settings/tabs/generalTab: renderGeneralTab ariaLabel" })),
 							})
 					);
 				}
@@ -242,12 +245,12 @@ export function renderGeneralTab(
 						nameSetting = setting;
 						configureTextSetting(setting, {
 							name: translate(
-								"settings.general.taskIdentification.taskProperty.name"
+								msg({ message: "Task property name", context: "settings.general.taskIdentification.taskProperty.name" })
 							),
 							desc: translate(
-								"settings.general.taskIdentification.taskProperty.description"
+								msg({ message: "The frontmatter property name (e.g., \"category\")", context: "settings.general.taskIdentification.taskProperty.description" })
 							),
-							placeholder: translate("settings.general.taskIdentification.propertyNamePlaceholder"),
+							placeholder: translate(msg({ message: "Enter property name", context: "settings.general.taskIdentification.propertyNamePlaceholder" })),
 							getValue: () => plugin.settings.taskPropertyName,
 							setValue: async (value: string) => {
 								plugin.settings.taskPropertyName = value;
@@ -263,12 +266,12 @@ export function renderGeneralTab(
 						valueSetting = setting;
 						configureTextSetting(setting, {
 							name: translate(
-								"settings.general.taskIdentification.taskPropertyValue.name"
+								msg({ message: "Task property value", context: "settings.general.taskIdentification.taskPropertyValue.name" })
 							),
 							desc: translate(
-								"settings.general.taskIdentification.taskPropertyValue.description"
+								msg({ message: "The value that identifies a note as a task (e.g., \"task\")", context: "settings.general.taskIdentification.taskPropertyValue.description" })
 							),
-							placeholder: translate("settings.general.taskIdentification.propertyValuePlaceholder"),
+							placeholder: translate(msg({ message: "Enter property value", context: "settings.general.taskIdentification.propertyValuePlaceholder" })),
 							getValue: () => plugin.settings.taskPropertyValue,
 							setValue: async (value: string) => {
 								plugin.settings.taskPropertyValue = value;
@@ -281,7 +284,7 @@ export function renderGeneralTab(
 				group.addSetting((setting) => {
 					warningSetting = setting;
 					setting.settingEl.addClass("settings-view__identification-warning");
-					setting.setDesc(translate("settings.general.taskIdentification.incompletePropertyWarning"));
+					setting.setDesc(translate(msg({ message: "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings.", context: "settings.general.taskIdentification.incompletePropertyWarning" })));
 					setting.descEl.addClass("mod-warning");
 					setting.descEl.setAttribute("role", "status");
 					setting.descEl.id = "tasknotes-property-identification-warning";
@@ -337,9 +340,9 @@ export function renderGeneralTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.integrations.basesIntegration.viewCommands.header"),
+			heading: translate(msg({ message: "Views & base files", context: "settings.integrations.basesIntegration.viewCommands.header" })),
 			description: translate(
-				"settings.integrations.basesIntegration.viewCommands.description"
+				msg({ message: "TaskNotes uses Obsidian Bases files (.base) to power its views. These files are generated automatically on startup if they don''t exist, configured with your current settings (task identification, field mappings, statuses, etc.).", context: "settings.integrations.basesIntegration.viewCommands.description" })
 			),
 		},
 		(group) => {
@@ -347,7 +350,7 @@ export function renderGeneralTab(
 			group.addSetting((setting) => {
 				setting.setDesc(
 					translate(
-						"settings.integrations.basesIntegration.viewCommands.descriptionRegen"
+						msg({ message: "Base files are not automatically updated when you change settings. To apply new settings, use \"Update files\" below, delete the existing .base files and restart Obsidian, or edit them manually.", context: "settings.integrations.basesIntegration.viewCommands.descriptionRegen" })
 					)
 				);
 				setting.settingEl.addClass("settings-view__group-description");
@@ -356,7 +359,7 @@ export function renderGeneralTab(
 			group.addSetting((setting) => {
 				setting.setDesc(
 					translate(
-						"settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint"
+						msg({ message: "The generated Pomodoro statistics base reads Pomodoro history from daily notes; if your history is still stored in plugin data, migrate it in settings before using that base file.", context: "settings.integrations.basesIntegration.viewCommands.pomodoroDailyNotesHint" })
 					)
 				);
 				setting.settingEl.addClass("settings-view__group-description");
@@ -366,10 +369,8 @@ export function renderGeneralTab(
 			group.addSetting((setting) => {
 				const descEl = setting.descEl;
 				const docsLink = descEl.createEl("a", {
-					text: translate("settings.integrations.basesIntegration.viewCommands.docsLink"),
-					href: translate(
-						"settings.integrations.basesIntegration.viewCommands.docsLinkUrl"
-					),
+					text: translate(msg({ message: "View documentation for available formulas and customization options", context: "settings.integrations.basesIntegration.viewCommands.docsLink" })),
+					href: "https://tasknotes.dev/views/default-base-templates",
 				});
 				docsLink.setAttr("target", "_blank");
 				setting.settingEl.addClass("settings-view__group-description");
@@ -379,11 +380,11 @@ export function renderGeneralTab(
 			commandMappings.forEach(({ id, nameKey, defaultPath }) => {
 				group.addSetting((setting) => {
 					const commandName = translate(
-						`settings.integrations.basesIntegration.viewCommands.commands.${nameKey}`
+						messageForKey(`settings.integrations.basesIntegration.viewCommands.commands.${nameKey}`)
 					);
 					setting.setName(commandName);
 					setting.setDesc(
-						translate("settings.integrations.basesIntegration.viewCommands.fileLabel", {
+						translate(msg({ message: "File: {path}", context: "settings.integrations.basesIntegration.viewCommands.fileLabel" }), {
 							path: plugin.settings.commandFileMapping[id],
 						})
 					);
@@ -398,7 +399,7 @@ export function renderGeneralTab(
 								// Update description
 								setting.setDesc(
 									translate(
-										"settings.integrations.basesIntegration.viewCommands.fileLabel",
+										msg({ message: "File: {path}", context: "settings.integrations.basesIntegration.viewCommands.fileLabel" }),
 										{
 											path: value,
 										}
@@ -422,12 +423,12 @@ export function renderGeneralTab(
 						button
 							.setButtonText(
 								translate(
-									"settings.integrations.basesIntegration.viewCommands.resetButton"
+									msg({ message: "Reset", context: "settings.integrations.basesIntegration.viewCommands.resetButton" })
 								)
 							)
 							.setTooltip(
 								translate(
-									"settings.integrations.basesIntegration.viewCommands.resetTooltip"
+									msg({ message: "Reset to default path", context: "settings.integrations.basesIntegration.viewCommands.resetTooltip" })
 								)
 							)
 							.onClick(() => {
@@ -448,12 +449,12 @@ export function renderGeneralTab(
 				setting
 					.setName(
 						translate(
-							"settings.integrations.basesIntegration.autoCreateDefaultFiles.name"
+							msg({ message: "Auto-create default files", context: "settings.integrations.basesIntegration.autoCreateDefaultFiles.name" })
 						)
 					)
 					.setDesc(
 						translate(
-							"settings.integrations.basesIntegration.autoCreateDefaultFiles.description"
+							msg({ message: "Automatically create missing default base view files on startup. Disable to prevent deleted sample files from being recreated.", context: "settings.integrations.basesIntegration.autoCreateDefaultFiles.description" })
 						)
 					)
 					.addToggle((toggle) => {
@@ -471,18 +472,18 @@ export function renderGeneralTab(
 			group.addSetting((setting) => {
 				setting
 					.setName(
-						translate("settings.integrations.basesIntegration.createDefaultFiles.name")
+						translate(msg({ message: "Create default files", context: "settings.integrations.basesIntegration.createDefaultFiles.name" }))
 					)
 					.setDesc(
 						translate(
-							"settings.integrations.basesIntegration.createDefaultFiles.description"
+							msg({ message: "Create the default .base files in TaskNotes/Views/ directory. Existing files will not be overwritten.", context: "settings.integrations.basesIntegration.createDefaultFiles.description" })
 						)
 					)
 					.addButton((button) => {
 						button
 							.setButtonText(
 								translate(
-									"settings.integrations.basesIntegration.createDefaultFiles.buttonText"
+									msg({ message: "Create files", context: "settings.integrations.basesIntegration.createDefaultFiles.buttonText" })
 								)
 							)
 							.setCta()
@@ -497,30 +498,30 @@ export function renderGeneralTab(
 			group.addSetting((setting) => {
 				setting
 					.setName(
-						translate("settings.integrations.basesIntegration.updateDefaultFiles.name")
+						translate(msg({ message: "Update default files", context: "settings.integrations.basesIntegration.updateDefaultFiles.name" }))
 					)
 					.setDesc(
 						translate(
-							"settings.integrations.basesIntegration.updateDefaultFiles.description"
+							msg({ message: "Overwrite the configured default .base files with templates generated from your current TaskNotes settings.", context: "settings.integrations.basesIntegration.updateDefaultFiles.description" })
 						)
 					)
 					.addButton((button) => {
 						button
 							.setButtonText(
 								translate(
-									"settings.integrations.basesIntegration.updateDefaultFiles.buttonText"
+									msg({ message: "Update files", context: "settings.integrations.basesIntegration.updateDefaultFiles.buttonText" })
 								)
 							)
 							.onClick(async () => {
 								const confirmed = await showConfirmationModal(plugin.app, {
 									title: translate(
-										"settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle"
+										msg({ message: "Update default base files", context: "settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle" })
 									),
 									message: translate(
-										"settings.integrations.basesIntegration.updateDefaultFiles.confirmMessage"
+										msg({ message: "This will overwrite the configured default .base files with freshly generated templates. Any manual edits in those files will be replaced.", context: "settings.integrations.basesIntegration.updateDefaultFiles.confirmMessage" })
 									),
 									confirmText: translate(
-										"settings.integrations.basesIntegration.updateDefaultFiles.confirmText"
+										msg({ message: "Update files", context: "settings.integrations.basesIntegration.updateDefaultFiles.confirmText" })
 									),
 									isDestructive: false,
 								});
@@ -537,17 +538,17 @@ export function renderGeneralTab(
 			// Export All Saved Views button
 			group.addSetting((setting) => {
 				setting
-					.setName(translate("settings.integrations.basesIntegration.exportV3Views.name"))
+					.setName(translate(msg({ message: "Export v3 saved views to Bases", context: "settings.integrations.basesIntegration.exportV3Views.name" })))
 					.setDesc(
 						translate(
-							"settings.integrations.basesIntegration.exportV3Views.description"
+							msg({ message: "Convert all your saved views from TaskNotes v3 into a single .base file with multiple views. This helps migrate your v3 filter configurations to the new Bases system.", context: "settings.integrations.basesIntegration.exportV3Views.description" })
 						)
 					)
 					.addButton((button) => {
 						button
 							.setButtonText(
 								translate(
-									"settings.integrations.basesIntegration.exportV3Views.buttonText"
+									msg({ message: "Export v3 views", context: "settings.integrations.basesIntegration.exportV3Views.buttonText" })
 								)
 							)
 							.onClick(async () => {
@@ -557,7 +558,7 @@ export function renderGeneralTab(
 									if (savedViews.length === 0) {
 										new Notice(
 											translate(
-												"settings.integrations.basesIntegration.exportV3Views.noViews"
+												msg({ message: "No saved views to export", context: "settings.integrations.basesIntegration.exportV3Views.noViews" })
 											)
 										);
 										return;
@@ -586,10 +587,10 @@ export function renderGeneralTab(
 										}
 										const confirmed = await showConfirmationModal(plugin.app, {
 											title: translate(
-												"settings.integrations.basesIntegration.exportV3Views.fileExists"
+												msg({ message: "File already exists", context: "settings.integrations.basesIntegration.exportV3Views.fileExists" })
 											),
 											message: translate(
-												"settings.integrations.basesIntegration.exportV3Views.confirmOverwrite",
+												msg({ message: "A file named \"{fileName}\" already exists. Overwrite it?", context: "settings.integrations.basesIntegration.exportV3Views.confirmOverwrite" }),
 												{ fileName }
 											),
 											isDestructive: false,
@@ -602,7 +603,7 @@ export function renderGeneralTab(
 
 									new Notice(
 										translate(
-											"settings.integrations.basesIntegration.exportV3Views.success",
+											msg({ message: "Exported {count} saved views to {filePath}", context: "settings.integrations.basesIntegration.exportV3Views.success" }),
 											{
 												count: savedViews.length.toString(),
 												filePath,
@@ -618,7 +619,7 @@ export function renderGeneralTab(
 									});
 									new Notice(
 										translate(
-											"settings.integrations.basesIntegration.exportV3Views.error",
+											msg({ message: "Failed to export views: {message}", context: "settings.integrations.basesIntegration.exportV3Views.error" }),
 											{
 												message: error.message,
 											}
@@ -635,14 +636,14 @@ export function renderGeneralTab(
 	// Folder Management Section
 	createSettingGroup(
 		container,
-		{ heading: translate("settings.general.folderManagement.header") },
+		{ heading: translate(msg({ message: "Folder management", context: "settings.general.folderManagement.header" })) },
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureTextSetting(setting, {
-						name: translate("settings.general.folderManagement.excludedFolders.name"),
+						name: translate(msg({ message: "Excluded folders", context: "settings.general.folderManagement.excludedFolders.name" })),
 						desc: translate(
-							"settings.general.folderManagement.excludedFolders.description"
+							msg({ message: "Comma-separated list of folders to exclude from task indexing and project suggestions", context: "settings.general.folderManagement.excludedFolders.description" })
 						),
 						placeholder: "Templates, Archive",
 						getValue: () => plugin.settings.excludedFolders,
@@ -650,7 +651,7 @@ export function renderGeneralTab(
 							plugin.settings.excludedFolders = value;
 							save();
 						},
-						ariaLabel: "Excluded folder paths",
+						ariaLabel: uiText(msg({ message: "Excluded folder paths", context: "settings/tabs/generalTab: renderGeneralTab ariaLabel" })),
 					})
 			);
 		}
@@ -659,7 +660,7 @@ export function renderGeneralTab(
 	// UI Language Section
 	const uiLanguageOptions = (() => {
 		const options: Array<{ value: string; label: string }> = [
-			{ value: "system", label: translate("common.systemDefault") },
+			{ value: "system", label: translate(msg({ message: "System default", context: "common.systemDefault" })) },
 		];
 		for (const code of plugin.i18n.getAvailableLocales()) {
 			// Use native language names (endonyms) for better UX
@@ -672,16 +673,16 @@ export function renderGeneralTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.features.uiLanguage.header"),
+			heading: translate(msg({ message: "Interface language", context: "settings.features.uiLanguage.header" })),
 			description: languagePackConfig
-				? `${translate("settings.features.uiLanguage.description")} ${translate("settings.features.uiLanguage.downloadDescription")}`
-				: translate("settings.features.uiLanguage.description"),
+				? `${translate(msg({ message: "Change the language of TaskNotes menus, notices, and views.", context: "settings.features.uiLanguage.description" }))} ${translate(msg({ message: "Other interface languages are downloaded and cached locally for offline use. No vault content is sent.", context: "settings.features.uiLanguage.downloadDescription" }))}`
+				: translate(msg({ message: "Change the language of TaskNotes menus, notices, and views.", context: "settings.features.uiLanguage.description" })),
 		},
 		(group) => {
 			group.addSetting((setting) => {
 				configureDropdownSetting(setting, {
-					name: translate("settings.features.uiLanguage.dropdown.name"),
-					desc: translate("settings.features.uiLanguage.dropdown.description"),
+					name: translate(msg({ message: "UI language", context: "settings.features.uiLanguage.dropdown.name" })),
+					desc: translate(msg({ message: "Select the language used for TaskNotes interface text", context: "settings.features.uiLanguage.dropdown.description" })),
 					options: uiLanguageOptions,
 					getValue: () => plugin.settings.uiLanguage ?? "system",
 					setValue: async (value: string) => {
@@ -693,7 +694,7 @@ export function renderGeneralTab(
 				});
 				if (languagePackConfig) {
 					setting.addButton(button => button
-						.setButtonText(translate("settings.features.uiLanguage.retryDownload"))
+						.setButtonText(translate(msg({ message: "Retry language download", context: "settings.features.uiLanguage.retryDownload" })))
 						.onClick(async () => {
 							button.setDisabled(true);
 							try {
@@ -713,16 +714,16 @@ export function renderGeneralTab(
 		createSettingGroup(
 			container,
 			{
-				heading: translate("settings.general.frontmatter.header"),
-				description: translate("settings.general.frontmatter.description"),
+				heading: translate(msg({ message: "Frontmatter", context: "settings.general.frontmatter.header" })),
+				description: translate(msg({ message: "Configure how links are formatted in frontmatter properties.", context: "settings.general.frontmatter.description" })),
 			},
 			(group) => {
 				group.addSetting(
 					(setting) =>
 						void configureToggleSetting(setting, {
-							name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
+							name: translate(msg({ message: "Use Markdown links in frontmatter", context: "settings.general.frontmatter.useMarkdownLinks.name" })),
 							desc: translate(
-								"settings.general.frontmatter.useMarkdownLinks.description"
+								msg({ message: "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties.\n\n⚠️ Requires the ''obsidian-frontmatter-markdown-links'' plugin to work correctly.", context: "settings.general.frontmatter.useMarkdownLinks.description" })
 							),
 							getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
 							setValue: async (value: boolean) => {
@@ -739,8 +740,8 @@ export function renderGeneralTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.general.releaseNotes.header"),
-			description: translate("settings.general.releaseNotes.description", {
+			heading: translate(msg({ message: "Release notes", context: "settings.general.releaseNotes.header" })),
+			description: translate(msg({ message: "Current version: {version}", context: "settings.general.releaseNotes.description" }), {
 				version: plugin.manifest.version,
 			}),
 		},
@@ -748,8 +749,8 @@ export function renderGeneralTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.general.releaseNotes.showOnUpdate.name"),
-						desc: translate("settings.general.releaseNotes.showOnUpdate.description"),
+						name: translate(msg({ message: "Show release notes after update", context: "settings.general.releaseNotes.showOnUpdate.name" })),
+						desc: translate(msg({ message: "Automatically open release notes when TaskNotes is updated to a new version", context: "settings.general.releaseNotes.showOnUpdate.description" })),
 						getValue: () => plugin.settings.showReleaseNotesOnUpdate ?? true,
 						setValue: async (value: boolean) => {
 							plugin.settings.showReleaseNotesOnUpdate = value;
@@ -761,9 +762,9 @@ export function renderGeneralTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.general.releaseNotes.checkForUpdates.name"),
+						name: translate(msg({ message: "Check for new releases on startup", context: "settings.general.releaseNotes.checkForUpdates.name" })),
 						desc: translate(
-							"settings.general.releaseNotes.checkForUpdates.description"
+							msg({ message: "Check GitHub once when TaskNotes starts and show a notice when a newer compatible release is available", context: "settings.general.releaseNotes.checkForUpdates.description" })
 						),
 						getValue: () => plugin.settings.checkForUpdatesOnStartup ?? true,
 						setValue: async (value: boolean) => {
@@ -775,12 +776,12 @@ export function renderGeneralTab(
 
 			group.addSetting((setting) => {
 				setting
-					.setName(translate("settings.general.releaseNotes.viewButton.name"))
-					.setDesc(translate("settings.general.releaseNotes.viewButton.description"))
+					.setName(translate(msg({ message: "View release notes", context: "settings.general.releaseNotes.viewButton.name" })))
+					.setDesc(translate(msg({ message: "See what''s new in the latest version of TaskNotes", context: "settings.general.releaseNotes.viewButton.description" })))
 					.addButton((button) =>
 						button
 							.setButtonText(
-								translate("settings.general.releaseNotes.viewButton.buttonText")
+								translate(msg({ message: "View release notes", context: "settings.general.releaseNotes.viewButton.buttonText" }))
 							)
 							.setCta()
 							.onClick(async () => {

@@ -1,3 +1,7 @@
+import { uiDuration } from "../i18n/formatters";
+import { uiText } from "../i18n/runtime";
+import { recurrenceDisplayText } from "../i18n/recurrence";
+import { msg } from "@lingui/core/macro";
 import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from "obsidian";
 import { format } from "date-fns";
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from "../types";
@@ -10,7 +14,6 @@ import {
 	getEffectiveTaskStatus as getEffectiveTaskStatusCore,
 	getFiniteRecurringInstanceCount as getFiniteRecurringInstanceCountCore,
 	getNextUncompletedOccurrence as getNextUncompletedOccurrenceCore,
-	getRecurrenceDisplayText as getRecurrenceDisplayTextCore,
 	getRecurringTaskCompletionText as getRecurringTaskCompletionTextCore,
 	isDueByRRule as isDueByRRuleCore,
 	shouldShowRecurringTaskOnDate as shouldShowRecurringTaskOnDateCore,
@@ -195,16 +198,7 @@ export function getActiveTimeEntry(timeEntries: TimeEntry[]): TimeEntry | null {
  * Format time in minutes to a readable string (e.g., "1h 30m", "45m")
  */
 export function formatTime(minutes: number): string {
-	if (!minutes || minutes === 0 || isNaN(minutes)) {
-		return "0m";
-	}
-
-	const hours = Math.floor(minutes / 60);
-	const mins = minutes % 60;
-
-	if (hours === 0) return `${mins}m`;
-	if (mins === 0) return `${hours}h`;
-	return `${hours}h ${mins}m`;
+	return uiDuration(Number.isFinite(minutes) ? minutes : 0);
 }
 
 /**
@@ -316,7 +310,7 @@ export function extractTaskInfo(
 
 			// Ensure required fields have defaults
 			const taskInfo: TaskInfo = {
-				title: mappedTask.title || "Untitled task",
+				title: mappedTask.title || uiText(msg({ message: "Untitled task", context: "utils/helpers: extractTaskInfo title" })),
 				status: mappedTask.status || defaultStatus || "open",
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
@@ -344,7 +338,7 @@ export function extractTaskInfo(
 			const mappedTask = defaultMapper.mapFromFrontmatter(yaml, path, storeTitleInFilename);
 
 			return {
-				title: mappedTask.title || "Untitled task",
+				title: mappedTask.title || uiText(msg({ message: "Untitled task", context: "utils/helpers: extractTaskInfo title" })),
 				status: mappedTask.status || defaultStatus || "open",
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
@@ -368,7 +362,7 @@ export function extractTaskInfo(
 	}
 
 	// Fallback to basic info from filename
-	const filename = path.split("/").pop()?.replace(".md", "") || "Untitled";
+	const filename = path.split("/").pop()?.replace(".md", "") || uiText(msg({ message: "Untitled", context: "utils/helpers: extractTaskInfo display" }));
 	return {
 		title: filename,
 		status: defaultStatus || "open",
@@ -507,7 +501,7 @@ export function updateToNextScheduledOccurrence(
  * Converts rrule string to human-readable text
  */
 export function getRecurrenceDisplayText(recurrence: string): string {
-	return getRecurrenceDisplayTextCore(recurrence);
+	return recurrenceDisplayText(recurrence);
 }
 
 /**
@@ -526,7 +520,7 @@ export function extractNoteInfo(
 	createdDate?: string;
 	lastModified?: number;
 } | null {
-	let title = path.split("/").pop()?.replace(".md", "") || "Untitled";
+	let title = path.split("/").pop()?.replace(".md", "") || uiText(msg({ message: "Untitled", context: "utils/helpers: extractNoteInfo display" }));
 	let tags: string[] = [];
 	let createdDate: string | undefined = undefined;
 	let lastModified: number | undefined = file?.stat.mtime;

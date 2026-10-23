@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Pomodoro state transitions guard active sessions before dereferencing. */
 import { TFile, moment as obsidianMoment } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -335,13 +337,13 @@ export class PomodoroService {
 
 	async startPomodoro(task?: TaskInfo, durationMinutes?: number) {
 		if (this.state.isRunning) {
-			publishUserNotice(this.plugin.emitter, this.translate("services.pomodoro.notices.alreadyRunning"));
+			publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "A Pomodoro is already running", context: "services.pomodoro.notices.alreadyRunning" })));
 			return;
 		}
 
 		// Check if there's a paused session that should be resumed instead
 		if (this.state.currentSession && !this.state.isRunning) {
-			publishUserNotice(this.plugin.emitter, this.translate("services.pomodoro.notices.resumeCurrentSession"));
+			publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "Resume the current session instead of starting a new one", context: "services.pomodoro.notices.resumeCurrentSession" })));
 			return;
 		}
 
@@ -428,7 +430,7 @@ export class PomodoroService {
 			}
 		}
 
-		this.showPomodoroNotification(`Pomodoro started${task ? ` for: ${task.title}` : ""}`);
+		this.showPomodoroNotification(uiText(msg({ message: "Pomodoro started{value1}", context: "services/PomodoroService: PomodoroService.startPomodoro display" }), { value1: task ? ` for: ${task.title}` : "" }));
 	}
 
 	async startPomodoroWithLastSelectedTask(durationMinutes?: number): Promise<void> {
@@ -438,13 +440,13 @@ export class PomodoroService {
 
 	async startBreak(isLongBreak = false) {
 		if (this.state.isRunning) {
-			publishUserNotice(this.plugin.emitter, this.translate("services.pomodoro.notices.timerAlreadyRunning"));
+			publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "A timer is already running", context: "services.pomodoro.notices.timerAlreadyRunning" })));
 			return;
 		}
 
 		// Check if there's a paused session
 		if (this.state.currentSession && !this.state.isRunning) {
-			publishUserNotice(this.plugin.emitter, this.translate("services.pomodoro.notices.resumeSessionInstead"));
+			publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "Resume the current session instead of starting a new one", context: "services.pomodoro.notices.resumeSessionInstead" })));
 			return;
 		}
 
@@ -479,8 +481,8 @@ export class PomodoroService {
 		publishUserNotice(this.plugin.emitter,
 			this.translate(
 				isLongBreak
-					? "services.pomodoro.notices.longBreakStarted"
-					: "services.pomodoro.notices.shortBreakStarted"
+					? msg({ message: "Long break started", context: "services.pomodoro.notices.longBreakStarted" })
+					: msg({ message: "Short break started", context: "services.pomodoro.notices.shortBreakStarted" })
 			)
 		);
 	}
@@ -532,7 +534,7 @@ export class PomodoroService {
 			session: this.state.currentSession,
 		});
 
-		publishUserNotice(this.plugin.emitter, this.translate("services.pomodoro.notices.paused"));
+		publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "Pomodoro paused", context: "services.pomodoro.notices.paused" })));
 	}
 
 	async resumePomodoro() {
@@ -580,7 +582,7 @@ export class PomodoroService {
 			session: this.state.currentSession,
 		});
 
-		publishUserNotice(this.plugin.emitter, this.translate("services.pomodoro.notices.resumed"));
+		publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "Pomodoro resumed", context: "services.pomodoro.notices.resumed" })));
 	}
 
 	async stopPomodoro() {
@@ -670,7 +672,7 @@ export class PomodoroService {
 		});
 
 		if (wasRunning) {
-			publishUserNotice(this.plugin.emitter, this.translate("services.pomodoro.notices.stoppedAndReset"));
+			publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "Pomodoro stopped and reset", context: "services.pomodoro.notices.stoppedAndReset" })));
 		}
 	}
 
@@ -955,11 +957,11 @@ export class PomodoroService {
 			}
 		}
 
-		const message = session.type === "work" ? `🍅 Pomodoro completed!` : "☕ Break completed!";
+		const message = session.type === "work" ? uiText(msg({ message: "🍅 Pomodoro completed!", context: "services/PomodoroService: PomodoroService.completePomodoro display" })) : uiText(msg({ message: "☕ Break completed!", context: "services/PomodoroService: PomodoroService.completePomodoro display" }));
 		const body =
 			session.type === "work"
-				? `Time for a ${shouldTakeLongBreak ? "long break 💤" : "short break ☕"}`
-				: "Ready for the next pomodoro?";
+				? uiText(msg({ message: "Time for a {value1}", context: "services/PomodoroService: PomodoroService.completePomodoro display" }), { value1: shouldTakeLongBreak ? "long break 💤" : "short break ☕" })
+				: uiText(msg({ message: "Ready for the next pomodoro?", context: "services/PomodoroService: PomodoroService.completePomodoro display" }));
 		this.showPomodoroNotification(message, { body });
 
 		// Play sound if enabled
@@ -1846,7 +1848,7 @@ export class PomodoroService {
 
 			publishUserNotice(
 				this.plugin.emitter,
-				this.translate("services.pomodoro.notices.migrationSuccess", {
+				this.translate(msg({ message: "Successfully migrated {count} pomodoro sessions to daily notes.", context: "services.pomodoro.notices.migrationSuccess" }), {
 					count: pluginHistory.length,
 				})
 			);
@@ -1856,7 +1858,7 @@ export class PomodoroService {
 				operation: "migrate-pomodoro-data-daily-notes",
 				error: error,
 			});
-			publishUserNotice(this.plugin.emitter, this.translate("services.pomodoro.notices.migrationFailure"));
+			publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "Failed to migrate Pomodoro data. Please try again or check the console for details.", context: "services.pomodoro.notices.migrationFailure" })));
 			throw error;
 		}
 	}

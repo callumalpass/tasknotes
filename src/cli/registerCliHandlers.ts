@@ -1,4 +1,5 @@
 import { requireApiVersion } from "obsidian";
+import { displayError } from "../i18n/runtime";
 import type TaskNotesPlugin from "../main";
 import { captureCliCommand } from "./commands/captureCommand";
 import { pomodoroCliCommand } from "./commands/pomodoroCommand";
@@ -31,7 +32,13 @@ export function registerCliHandlers(plugin: TaskNotesPlugin): void {
 			`${plugin.manifest.id}:${definition.command}`,
 			definition.description,
 			definition.flags ?? null,
-			(params) => definition.handler(plugin, params)
+			async (params) => {
+				try {
+					return await definition.handler(plugin, params);
+				} catch (error) {
+					throw new Error(displayError(error));
+				}
+			}
 		);
 	}
 }

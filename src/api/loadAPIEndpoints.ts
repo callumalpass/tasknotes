@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { requestUrl, type RequestUrlParam } from "obsidian";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -53,7 +55,7 @@ async function loadAPIEndpoints(
 ): Promise<void> {
 	// Show loading message first
 	const loadingEl = container.createEl("p", {
-		text: "Loading API endpoints...",
+		text: uiText(msg({ message: "Loading API endpoints...", context: "api/loadAPIEndpoints: loadAPIEndpoints text" })),
 		attr: { style: "color: var(--text-muted); font-style: italic; margin: 16px 0;" },
 	});
 
@@ -75,7 +77,7 @@ async function loadAPIEndpoints(
 		if (openApiSpec.paths) {
 			for (const [path, methods] of Object.entries(openApiSpec.paths)) {
 				for (const [method, operation] of Object.entries(methods)) {
-					const tags = operation.tags || ["General"];
+					const tags = operation.tags || [uiText(msg({ message: "General", context: "api/loadAPIEndpoints: loadAPIEndpoints display" }))];
 					const tag = tags[0];
 
 					if (!endpointsByTag[tag]) {
@@ -85,7 +87,7 @@ async function loadAPIEndpoints(
 					endpointsByTag[tag].push({
 						method: method.toUpperCase(),
 						path,
-						summary: operation.summary || operation.description || "No description",
+						summary: operation.summary || operation.description || uiText(msg({ message: "No description", context: "api/loadAPIEndpoints: loadAPIEndpoints summary" })),
 					});
 				}
 			}
@@ -109,7 +111,7 @@ async function loadAPIEndpoints(
 			});
 		} else {
 			container.createEl("p", {
-				text: "No API endpoints found in specification.",
+				text: uiText(msg({ message: "No API endpoints found in specification.", context: "api/loadAPIEndpoints: loadAPIEndpoints text" })),
 				attr: { style: "color: var(--text-muted); margin: 16px 0;" },
 			});
 		}
@@ -125,7 +127,7 @@ async function loadAPIEndpoints(
 
 		// Show error message with more details
 		container.createEl("p", {
-			text: `API server not accessible (${getErrorMessage(error)}). Ensure the TaskNotes API server is running on port ${apiPort}.`,
+			text: uiText(msg({ message: "API server not accessible ({message}). Ensure the TaskNotes API server is running on port {apiPort}.", context: "api/loadAPIEndpoints: loadAPIEndpoints text" }), { message: getErrorMessage(error), apiPort: apiPort }),
 			attr: { style: "color: var(--text-muted); font-style: italic; margin: 16px 0;" },
 		});
 	}

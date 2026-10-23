@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { createI18nService } from "../../../src/i18n";
 import { Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
@@ -47,7 +48,7 @@ describe("Issue #819: quick actions for inline task links", () => {
 			openQuickActionsForTaskUnderCursor: jest.fn(),
 		};
 
-		expect(command?.nameKey).toBe("commands.quickActionsTaskUnderCursor");
+		expect(command?.nameKey).toBe(msg({ message: "Quick actions for task under cursor", context: "commands.quickActionsTaskUnderCursor" }));
 
 		await command?.editorCallback?.(ctx as never, editor as never, { file } as never);
 

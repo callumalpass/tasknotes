@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Renderer utilities check created elements before attaching interactions. */
 // Link and tag rendering utilities for UI components
 
@@ -14,7 +16,7 @@ export type LinkNavigateHandler = (
 
 /** Minimal services required to render internal links (DI-friendly) */
 export interface LinkServices {
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	metadataCache: App["metadataCache"];
 	workspace: App["workspace"];
 	/**
@@ -109,7 +111,7 @@ export function appendInternalLink(
 					await deps.workspace.getLeaf(false).openFile(file);
 				} else if (showErrorNotices) {
 					new Notice(
-						deps.translate("notices.interface.noteMissing", { title: displayText })
+						deps.translate(msg({ message: "Note “{title}” not found", context: "notices.interface.noteMissing" }), { title: displayText })
 					);
 				}
 			} catch (error) {
@@ -121,7 +123,7 @@ export function appendInternalLink(
 				});
 				if (showErrorNotices) {
 					new Notice(
-						deps.translate("notices.interface.noteOpenFailed", { title: displayText })
+						deps.translate(msg({ message: "Failed to open note “{title}”", context: "notices.interface.noteOpenFailed" }), { title: displayText })
 					);
 				}
 			}

@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { App, setTooltip, TFile } from "obsidian";
 import { renderProjectLinks, type LinkServices } from "../ui/renderers/linkRenderer";
 import { generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
@@ -20,7 +22,7 @@ export interface RenderTaskModalProjectsListOptions {
 	listEl: HTMLElement | undefined;
 	items: readonly TaskModalProjectItem[];
 	sourcePath: string;
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	onRemove: (item: TaskModalProjectItem) => void;
 }
 
@@ -166,7 +168,7 @@ export function renderTaskModalProjectsList({
 			nameEl.textContent = item.name;
 			setTooltip(
 				nameEl,
-				translate("contextMenus.task.dependencies.notices.unresolved", {
+				translate(msg({ message: "Could not resolve: {entries}", context: "contextMenus.task.dependencies.notices.unresolved" }), {
 					name: item.name,
 				}),
 				{ placement: "top" }
@@ -177,7 +179,7 @@ export function renderTaskModalProjectsList({
 			cls: "task-project-remove",
 			text: "×",
 		});
-		setTooltip(removeBtn, translate("modals.task.projectsRemoveTooltip"), {
+		setTooltip(removeBtn, translate(msg({ message: "Remove project", context: "modals.task.projectsRemoveTooltip" })), {
 			placement: "top",
 		});
 		removeBtn.addEventListener("click", () => {

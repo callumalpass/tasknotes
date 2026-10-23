@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { KanbanView } from "../../../src/bases/KanbanView";
 import { StatusManager } from "../../../src/services/StatusManager";
 import type { StatusConfig } from "../../../src/types";
@@ -52,7 +53,7 @@ function makePlugin() {
 			normalizePriorityValue: (value: string) => value,
 		},
 		i18n: {
-			translate: (key: string) => (key === "views.kanban.noTasks" ? "No tasks" : key),
+			translate: (key: string) => (key === msg({ message: "No tasks", context: "views.kanban.noTasks" }) ? "No tasks" : key),
 		},
 		settings: {
 			customStatuses,

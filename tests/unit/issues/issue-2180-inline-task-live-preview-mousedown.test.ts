@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { EditorView } from "@codemirror/view";
 import { TaskLinkWidget } from "../../../src/editor/TaskLinkWidget";
 import type TaskNotesPlugin from "../../../src/main";
@@ -47,10 +48,10 @@ describe("Issue #2180: inline task Live Preview mouse press", () => {
 			openTaskEditModal,
 			i18n: {
 				translate: jest.fn((key: string, vars?: Record<string, unknown>) => {
-					if (key === "ui.taskCard.priorityAriaLabel") {
+					if (key === msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" })) {
 						return `Priority: ${String(vars?.label ?? "")}`;
 					}
-					if (key === "ui.taskCard.taskOptions") {
+					if (key === msg({ message: "Task options", context: "ui.taskCard.taskOptions" })) {
 						return "Task options";
 					}
 					return key;

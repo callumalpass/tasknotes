@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { App, Setting } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { sanitizeTags } from "../utils/helpers";
@@ -6,7 +8,7 @@ import { ContextSuggest, TagSuggest } from "./taskModalSuggests";
 export interface TaskModalMetadataFieldContext {
 	app: App;
 	plugin: TaskNotesPlugin;
-	translate: (key: string) => string;
+	translate: (key: MessageDescriptor) => string;
 	attachMobileKeyboardScrollGuard: (input: HTMLInputElement) => void;
 }
 
@@ -33,8 +35,8 @@ export function createTaskModalContextsField(
 	let inputEl: HTMLInputElement | null = null;
 	const setting = new Setting(options.container);
 	setting.settingEl.addClass("tn-task-modal__wide-text-setting");
-	setting.setName(context.translate("modals.task.contextsLabel")).addText((text) => {
-		text.setPlaceholder(context.translate("modals.task.contextsPlaceholder"))
+	setting.setName(context.translate(msg({ message: "Contexts", context: "modals.task.contextsLabel" }))).addText((text) => {
+		text.setPlaceholder(context.translate(msg({ message: "context1, context2", context: "modals.task.contextsPlaceholder" })))
 			.setValue(options.value)
 			.onChange(options.onChange);
 
@@ -56,8 +58,8 @@ export function createTaskModalTagsField(
 	let inputEl: HTMLInputElement | null = null;
 	const setting = new Setting(options.container);
 	setting.settingEl.addClass("tn-task-modal__wide-text-setting");
-	setting.setName(context.translate("modals.task.tagsLabel")).addText((text) => {
-		text.setPlaceholder(context.translate("modals.task.tagsPlaceholder"))
+	setting.setName(context.translate(msg({ message: "Tags", context: "modals.task.tagsLabel" }))).addText((text) => {
+		text.setPlaceholder(context.translate(msg({ message: "tag1, tag2", context: "modals.task.tagsPlaceholder" })))
 			.setValue(options.value)
 			.onChange((value) => {
 				options.onChange(sanitizeTags(value));
@@ -80,9 +82,9 @@ export function createTaskModalTimeEstimateField(
 ): HTMLInputElement {
 	let inputEl: HTMLInputElement | null = null;
 	new Setting(options.container)
-		.setName(context.translate("modals.task.timeEstimateLabel"))
+		.setName(context.translate(msg({ message: "Time estimate (minutes)", context: "modals.task.timeEstimateLabel" })))
 		.addText((text) => {
-			text.setPlaceholder(context.translate("modals.task.timeEstimatePlaceholder"))
+			text.setPlaceholder(context.translate(msg({ message: "30", context: "modals.task.timeEstimatePlaceholder" })))
 				.setValue(options.value.toString())
 				.onChange((value) => {
 					options.onChange(parseTaskModalTimeEstimate(value));

@@ -1,3 +1,7 @@
+import { uiLocale } from "../i18n/runtime";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
+import { messageForKey } from "../i18n/messages";
 import { TFile, EventRef, Events } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from "../types";
@@ -410,7 +414,7 @@ export class NotificationService {
 		if (this.plugin.settings.notificationType === "system") {
 			// System notification
 			if ("Notification" in window && Notification.permission === "granted") {
-				const notification = new Notification(task.title || "TaskNotes Reminder", {
+				const notification = new Notification(task.title || uiText(msg({ message: "TaskNotes Reminder", context: "ui/NotificationService: NotificationService.deliverNotification display" })), {
 					body: message,
 					tag: `tasknotes-${item.taskPath}-${item.reminder.id}`,
 				});
@@ -562,8 +566,8 @@ export class NotificationService {
 	}
 
 	async sendTestReminderNotification(): Promise<void> {
-		const title = "TaskNotes Reminder";
-		const message = "This is a test reminder from TaskNotes.";
+		const title = uiText(msg({ message: "TaskNotes Reminder", context: "ui/NotificationService: NotificationService.sendTestReminderNotification display" }));
+		const message = uiText(msg({ message: "This is a test reminder from TaskNotes.", context: "ui/NotificationService: NotificationService.sendTestReminderNotification display" }));
 
 		this.playNotificationSound();
 
@@ -607,17 +611,17 @@ export class NotificationService {
 
 	private generateDefaultMessage(task: TaskInfo, reminder: Reminder): string {
 		if (reminder.type === "absolute") {
-			return `Reminder: ${task.title}`;
+			return uiText(msg({ message: "Reminder: {title}", context: "ui/NotificationService: NotificationService.generateDefaultMessage display" }), { title: task.title });
 		} else {
 			const anchor = reminder.relatedTo === "due" ? "due" : "scheduled";
 			const offset = this.formatDurationForDisplay(reminder.offset || "");
 
 			if (offset.startsWith("-")) {
-				return `${task.title} is ${anchor} in ${offset.substring(1)}`;
+				return uiText(msg({ message: "{title} is {anchor} in {value3}", context: "ui/NotificationService: NotificationService.generateDefaultMessage display" }), { title: task.title, anchor: anchor, value3: offset.substring(1) });
 			} else if (offset === "PT0S" || offset === "PT0M") {
-				return `${task.title} is ${anchor} now`;
+				return uiText(msg({ message: "{title} is {anchor} now", context: "ui/NotificationService: NotificationService.generateDefaultMessage display" }), { title: task.title, anchor: anchor });
 			} else {
-				return `${task.title} was ${anchor} ${offset} ago`;
+				return uiText(msg({ message: "{title} was {anchor} {offset} ago", context: "ui/NotificationService: NotificationService.generateDefaultMessage display" }), { title: task.title, anchor: anchor, offset: offset });
 			}
 		}
 	}
@@ -653,7 +657,7 @@ export class NotificationService {
 	}
 
 	private translateMissed(key: string, params?: InterpolationValues): string {
-		return this.plugin.i18n.translate(`services.notification.missed.${key}`, params);
+		return this.plugin.i18n.translate(messageForKey(`services.notification.missed.${key}`), params);
 	}
 
 	/** Day is omitted for today. */
@@ -662,8 +666,8 @@ export class NotificationService {
 		return {
 			day: date.toDateString() === new Date().toDateString()
 				? null
-				: date.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-			time: date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }),
+				: date.toLocaleDateString(uiLocale(), { month: "short", day: "numeric" }),
+			time: date.toLocaleTimeString(uiLocale(), { hour: "numeric", minute: "2-digit" }),
 		};
 	}
 
@@ -678,11 +682,11 @@ export class NotificationService {
 
 		let result = "";
 		if (days > 0) {
-			result = `${days} day${days > 1 ? "s" : ""}`;
+			result = uiText(msg({ message: "{days, plural, one {{days} day} other {{days} days}}", context: "ui/NotificationService: NotificationService.formatDurationForDisplay display" }), { days: days });
 		} else if (hours > 0) {
-			result = `${hours} hour${hours > 1 ? "s" : ""}`;
+			result = uiText(msg({ message: "{hours, plural, one {{hours} hour} other {{hours} hours}}", context: "ui/NotificationService: NotificationService.formatDurationForDisplay display" }), { hours: hours });
 		} else if (minutes > 0) {
-			result = `${minutes} minute${minutes > 1 ? "s" : ""}`;
+			result = uiText(msg({ message: "{minutes, plural, one {{minutes} minute} other {{minutes} minutes}}", context: "ui/NotificationService: NotificationService.formatDurationForDisplay display" }), { minutes: minutes });
 		} else {
 			result = "now";
 		}

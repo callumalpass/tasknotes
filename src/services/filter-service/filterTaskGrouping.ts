@@ -1,3 +1,5 @@
+import { uiText } from "../../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { format, parseISO } from "date-fns";
 import { TranslationKey } from "../../i18n";
 import { TaskGroupKey, TaskInfo, TaskSortKey, SortDirection } from "../../types";
@@ -379,7 +381,7 @@ function getScheduledDateGroupFromDateString(
 }
 
 function getCompletedDateGroup(task: TaskInfo, context: FilterTaskGroupingContext): string {
-	if (!task.completedDate) return "Not completed";
+	if (!task.completedDate) return uiText(msg({ message: "Not completed", context: "services/filter-service/filterTaskGrouping: getCompletedDateGroup display" }));
 
 	try {
 		return format(parseISO(task.completedDate), "yyyy-MM-dd");
@@ -419,20 +421,20 @@ function sortAlphaWithTrailingFallback(
 function getDueGroupLabel(code: DueGroupCode, context: FilterTaskGroupingContext): string {
 	switch (code) {
 		case "overdue":
-			return context.translate("services.filter.groupLabels.due.overdue", "Overdue");
+			return context.translate(msg({ message: "Overdue", context: "services.filter.groupLabels.due.overdue" }), "Overdue");
 		case "today":
-			return context.translate("services.filter.groupLabels.due.today", "Today");
+			return context.translate(msg({ message: "Today", context: "services.filter.groupLabels.due.today" }), "Today");
 		case "tomorrow":
-			return context.translate("services.filter.groupLabels.due.tomorrow", "Tomorrow");
+			return context.translate(msg({ message: "Tomorrow", context: "services.filter.groupLabels.due.tomorrow" }), "Tomorrow");
 		case "nextSevenDays":
 			return context.translate(
-				"services.filter.groupLabels.due.nextSevenDays",
+				msg({ message: "Next seven days", context: "services.filter.groupLabels.due.nextSevenDays" }),
 				"Next seven days"
 			);
 		case "later":
-			return context.translate("services.filter.groupLabels.due.later", "Later");
+			return context.translate(msg({ message: "Later", context: "services.filter.groupLabels.due.later" }), "Later");
 		case "none":
-			return context.translate("services.filter.groupLabels.due.none", "No due date");
+			return context.translate(msg({ message: "No due date", context: "services.filter.groupLabels.due.none" }), "No due date");
 		case "invalid":
 		default:
 			return getInvalidDateLabel(context);
@@ -446,23 +448,23 @@ function getScheduledGroupLabel(
 	switch (code) {
 		case "past":
 			return context.translate(
-				"services.filter.groupLabels.scheduled.past",
+				msg({ message: "Past scheduled", context: "services.filter.groupLabels.scheduled.past" }),
 				"Past scheduled"
 			);
 		case "today":
-			return context.translate("services.filter.groupLabels.scheduled.today", "Today");
+			return context.translate(msg({ message: "Today", context: "services.filter.groupLabels.scheduled.today" }), "Today");
 		case "tomorrow":
-			return context.translate("services.filter.groupLabels.scheduled.tomorrow", "Tomorrow");
+			return context.translate(msg({ message: "Tomorrow", context: "services.filter.groupLabels.scheduled.tomorrow" }), "Tomorrow");
 		case "nextSevenDays":
 			return context.translate(
-				"services.filter.groupLabels.scheduled.nextSevenDays",
+				msg({ message: "Next seven days", context: "services.filter.groupLabels.scheduled.nextSevenDays" }),
 				"Next seven days"
 			);
 		case "later":
-			return context.translate("services.filter.groupLabels.scheduled.later", "Later");
+			return context.translate(msg({ message: "Later", context: "services.filter.groupLabels.scheduled.later" }), "Later");
 		case "none":
 			return context.translate(
-				"services.filter.groupLabels.scheduled.none",
+				msg({ message: "No scheduled date", context: "services.filter.groupLabels.scheduled.none" }),
 				"No scheduled date"
 			);
 		case "invalid":
@@ -472,13 +474,13 @@ function getScheduledGroupLabel(
 }
 
 function getNoProjectLabel(context: FilterTaskGroupingContext): string {
-	return context.translate("services.filter.groupLabels.noProject", "No project");
+	return context.translate(msg({ message: "No project", context: "services.filter.groupLabels.noProject" }), "No project");
 }
 
 function getNoTagsLabel(context: FilterTaskGroupingContext): string {
-	return context.translate("services.filter.groupLabels.noTags", "No tags");
+	return context.translate(msg({ message: "No tags", context: "services.filter.groupLabels.noTags" }), "No tags");
 }
 
 function getInvalidDateLabel(context: FilterTaskGroupingContext): string {
-	return context.translate("services.filter.groupLabels.invalidDate", "Invalid date");
+	return context.translate(msg({ message: "Invalid date", context: "services.filter.groupLabels.invalidDate" }), "Invalid date");
 }

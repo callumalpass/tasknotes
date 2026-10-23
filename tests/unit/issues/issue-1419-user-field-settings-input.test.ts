@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { renderUserFieldsSection } from "../../../src/settings/tabs/taskProperties/userFieldsCard";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import type { TaskNotesSettings } from "../../../src/types/settings";
@@ -63,14 +64,14 @@ describe("Issue #1419: custom user field settings save while typing", () => {
 		updateInput(
 			inputByPlaceholder(
 				container,
-				"settings.taskProperties.customUserFields.placeholders.displayName"
+				msg({ message: "Display name", context: "settings.taskProperties.customUserFields.placeholders.displayName" })
 			),
 			"CEU Credits"
 		);
 		updateInput(
 			inputByPlaceholder(
 				container,
-				"settings.taskProperties.customUserFields.placeholders.propertyKey"
+				msg({ message: "property-name", context: "settings.taskProperties.customUserFields.placeholders.propertyKey" })
 			),
 			"ceu_credits"
 		);
@@ -99,9 +100,9 @@ describe("Issue #1419: custom user field settings save while typing", () => {
 		const defaultInputs = Array.from(container.querySelectorAll<HTMLInputElement>("input")).filter(
 			(input) =>
 				input.placeholder ===
-					"settings.taskProperties.customUserFields.placeholders.defaultValue" ||
+					msg({ message: "Default value", context: "settings.taskProperties.customUserFields.placeholders.defaultValue" }) ||
 				input.placeholder ===
-					"settings.taskProperties.customUserFields.placeholders.defaultValueList"
+					msg({ message: "Default values (comma-separated)", context: "settings.taskProperties.customUserFields.placeholders.defaultValueList" })
 		);
 
 		updateInput(defaultInputs[0], "review");

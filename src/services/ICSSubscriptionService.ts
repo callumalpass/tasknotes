@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- ICS parsing normalizes optional event fields before use. */
 import { requestUrl, TFile } from "obsidian";
 import ICAL from "ical.js";
@@ -468,7 +470,7 @@ export class ICSSubscriptionService extends EventEmitter {
 			if (subscription.type === "remote") {
 				if (errorMessage.includes("404")) {
 					publishUserNotice(this.plugin.emitter,
-						this.translate("services.icsSubscription.notices.calendarNotFound", {
+						this.translate(msg({ message: "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible.", context: "services.icsSubscription.notices.calendarNotFound" }), {
 							name: subscription.name,
 						})
 					);
@@ -477,13 +479,13 @@ export class ICSSubscriptionService extends EventEmitter {
 					errorMessage.includes("OwaBasicUnsupportedException")
 				) {
 					publishUserNotice(this.plugin.emitter,
-						this.translate("services.icsSubscription.notices.calendarAccessDenied", {
+						this.translate(msg({ message: "Calendar \"{name}\" access denied (500). This may be due to Microsoft Outlook server restrictions. Try regenerating the ICS URL from your calendar settings.", context: "services.icsSubscription.notices.calendarAccessDenied" }), {
 							name: subscription.name,
 						})
 					);
 				} else {
 					publishUserNotice(this.plugin.emitter,
-						this.translate("services.icsSubscription.notices.fetchRemoteFailed", {
+						this.translate(msg({ message: "Failed to fetch remote calendar \"{name}\": {error}", context: "services.icsSubscription.notices.fetchRemoteFailed" }), {
 							name: subscription.name,
 							error: errorMessage,
 						})
@@ -491,7 +493,7 @@ export class ICSSubscriptionService extends EventEmitter {
 				}
 			} else {
 				publishUserNotice(this.plugin.emitter,
-					this.translate("services.icsSubscription.notices.readLocalFailed", {
+					this.translate(msg({ message: "Failed to read local calendar \"{name}\": {error}", context: "services.icsSubscription.notices.readLocalFailed" }), {
 						name: subscription.name,
 						error: errorMessage,
 					})
@@ -560,7 +562,7 @@ export class ICSSubscriptionService extends EventEmitter {
 					}
 
 					// Extract basic properties
-					const summary = event.summary || "Untitled Event";
+					const summary = event.summary || uiText(msg({ message: "Untitled Event", context: "services/ICSSubscriptionService: ICSSubscriptionService.parseICS display" }));
 					const description = event.description || undefined;
 					const location = event.location || undefined;
 

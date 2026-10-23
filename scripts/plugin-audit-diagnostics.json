@@ -1,0 +1,1714 @@
+[
+  {
+    "context": "api/loadAPIEndpoints: loadAPIEndpoints display",
+    "message": "API unavailable ({status})",
+    "source": "`API unavailable (${response.status})`",
+    "values": [
+      [
+        "status",
+        "response.status"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "cli/commands/pomodoroCommand: parseAction display",
+    "message": "--action must be one of: status, start, pause, resume, stop, short-break, long-break",
+    "source": "\"--action must be one of: status, start, pause, resume, stop, short-break, long-break\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/commands/pomodoroCommand: parseDuration display",
+    "message": "--duration must be a positive number of minutes",
+    "source": "\"--duration must be a positive number of minutes\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/commands/pomodoroCommand: resolvePomodoroTask display",
+    "message": "A task reference is required: pass path, title, or query",
+    "source": "\"A task reference is required: pass path, title, or query\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/helpers/taskResolution: resolveTaskForCli display",
+    "message": "Task not found for path: {path}",
+    "source": "`Task not found for path: ${path}`",
+    "values": [
+      [
+        "path",
+        "path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/helpers/taskResolution: resolveTaskForCli display",
+    "message": "Multiple tasks matched title \"{title}\": {value2}",
+    "source": "`Multiple tasks matched title \"${title}\": ${formatAmbiguousTaskMatches(exactMatches)}`",
+    "values": [
+      [
+        "title",
+        "title"
+      ],
+      [
+        "value2",
+        "formatAmbiguousTaskMatches(exactMatches)"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/helpers/taskResolution: resolveTaskForCli display",
+    "message": "Task not found for title: {title}",
+    "source": "`Task not found for title: ${title}`",
+    "values": [
+      [
+        "title",
+        "title"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/helpers/taskResolution: resolveTaskForCli display",
+    "message": "Multiple tasks matched query \"{query}\": {value2}",
+    "source": "`Multiple tasks matched query \"${query}\": ${formatAmbiguousTaskMatches(matches)}`",
+    "values": [
+      [
+        "query",
+        "query"
+      ],
+      [
+        "value2",
+        "formatAmbiguousTaskMatches(matches)"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/helpers/taskResolution: resolveTaskForCli display",
+    "message": "Task not found for query: {query}",
+    "source": "`Task not found for query: ${query}`",
+    "values": [
+      [
+        "query",
+        "query"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/helpers/taskResolution: resolveTaskForCli display",
+    "message": "A task reference is required: pass path, title, or query",
+    "source": "\"A task reference is required: pass path, title, or query\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/helpers/timeTracking: resolveTaskForStopTimeTracking display",
+    "message": "Multiple tasks have active time tracking; pass path, title, or query",
+    "source": "\"Multiple tasks have active time tracking; pass path, title, or query\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "cli/helpers/timeTracking: resolveTaskForStopTimeTracking display",
+    "message": "No active time tracking session found",
+    "source": "\"No active time tracking session found\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "modals/TimeblockCreationModal: readDailyNotesForTimeblockCreation display",
+    "message": "Failed to read daily notes{detail}. {TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}",
+    "source": "`Failed to read daily notes${detail}. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`",
+    "values": [
+      [
+        "detail",
+        "detail"
+      ],
+      [
+        "TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE",
+        "TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "modals/TimeblockCreationModal: TimeblockCreationModal.saveTimeblockToDailyNote display",
+    "message": "Daily Notes core plugin is not enabled. {TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}",
+    "source": "`Daily Notes core plugin is not enabled. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`",
+    "values": [
+      [
+        "TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE",
+        "TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "modals/TimeblockCreationModal: TimeblockCreationModal.saveTimeblockToDailyNote display",
+    "message": "Failed to create daily note{detail}. {TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}",
+    "source": "`Failed to create daily note${detail}. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`",
+    "values": [
+      [
+        "detail",
+        "detail"
+      ],
+      [
+        "TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE",
+        "TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "modals/TimeblockCreationModal: TimeblockCreationModal.saveTimeblockToDailyNote display",
+    "message": "Failed to create daily note. {TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}",
+    "source": "`Failed to create daily note. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`",
+    "values": [
+      [
+        "TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE",
+        "TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/GoogleCalendarService: GoogleCalendarService.listCalendars display",
+    "message": "Failed to fetch calendar list: {message}",
+    "source": "`Failed to fetch calendar list: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/GoogleCalendarService: GoogleCalendarService.fetchCalendarEvents display",
+    "message": "Failed to fetch calendar events: {message}",
+    "source": "`Failed to fetch calendar events: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/GoogleCalendarService: GoogleCalendarService.updateEvent display",
+    "message": "Failed to update event: {message}",
+    "source": "`Failed to update event: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/GoogleCalendarService: GoogleCalendarService.createEvent display",
+    "message": "Failed to create event: {message}",
+    "source": "`Failed to create event: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/GoogleCalendarService: GoogleCalendarService.deleteEvent display",
+    "message": "Failed to delete event: {message}",
+    "source": "`Failed to delete event: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/GoogleCalendarService: GoogleCalendarService.createCalendar display",
+    "message": "Failed to create calendar: {message}",
+    "source": "`Failed to create calendar: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/ICSNoteService: ICSNoteService.createTaskFromICS display",
+    "message": "Failed to create task from ICS event: {errorMessage}",
+    "source": "`Failed to create task from ICS event: ${errorMessage}`",
+    "values": [
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/ICSNoteService: ICSNoteService.createNoteFromICS display",
+    "message": "Failed to create note from ICS event: {errorMessage}",
+    "source": "`Failed to create note from ICS event: ${errorMessage}`",
+    "values": [
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/ICSNoteService: ICSNoteService.linkNoteToICS display",
+    "message": "Cannot find note file: {notePath}",
+    "source": "`Cannot find note file: ${notePath}`",
+    "values": [
+      [
+        "notePath",
+        "notePath"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/ICSNoteService: ICSNoteService.linkNoteToICS display",
+    "message": "Failed to link note to ICS event: {errorMessage}",
+    "source": "`Failed to link note to ICS event: ${errorMessage}`",
+    "values": [
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.updateSubscription display",
+    "message": "Subscription not found",
+    "source": "\"Subscription not found\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.removeSubscription display",
+    "message": "Subscription not found",
+    "source": "\"Subscription not found\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.fetchSubscription display",
+    "message": "Remote subscription missing URL",
+    "source": "\"Remote subscription missing URL\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.fetchSubscription display",
+    "message": "Local subscription missing file path",
+    "source": "\"Local subscription missing file path\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.fetchSubscription display",
+    "message": "Unknown subscription type",
+    "source": "\"Unknown subscription type\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.parseICS display",
+    "message": "Invalid ICS format",
+    "source": "\"Invalid ICS format\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.normalizeLocalICSFilePath display",
+    "message": "Local ICS files must be inside the current Obsidian vault. Move the file into the vault or use a vault-relative path such as \"Calendar.ics\".",
+    "source": "'Local ICS files must be inside the current Obsidian vault. Move the file into the vault or use a vault-relative path such as \"Calendar.ics\".'",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFile display",
+    "message": "File not found: {normalizedFilePath}",
+    "source": "`File not found: ${normalizedFilePath}`",
+    "values": [
+      [
+        "normalizedFilePath",
+        "normalizedFilePath"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFile display",
+    "message": "File is not an ICS file: {normalizedFilePath}",
+    "source": "`File is not an ICS file: ${normalizedFilePath}`",
+    "values": [
+      [
+        "normalizedFilePath",
+        "normalizedFilePath"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFile display",
+    "message": "Failed to read local ICS file \"{filePath}\": {message}",
+    "source": "`Failed to read local ICS file \"${filePath}\": ${error instanceof Error ? error.message : String(error)}`",
+    "values": [
+      [
+        "filePath",
+        "filePath"
+      ],
+      [
+        "message",
+        "error instanceof Error ? error.message : String(error)"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/ICSSubscriptionService: ICSSubscriptionService.startFileWatcher display",
+    "message": "Local ICS file was deleted",
+    "source": "\"Local ICS file was deleted\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.batchConvertTasksOptimized display",
+    "message": "Failed to parse task",
+    "source": "\"Failed to parse task\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.performInstantConversion error",
+    "message": "No data extracted",
+    "source": "\"No data extracted\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.validateInputParameters error",
+    "message": "Editor is not available.",
+    "source": "\"Editor is not available.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.validateInputParameters error",
+    "message": "Line number {lineNumber} is out of bounds (0-{value2}).",
+    "source": "`Line number ${lineNumber} is out of bounds (0-${totalLines - 1}).`",
+    "values": [
+      [
+        "lineNumber",
+        "lineNumber"
+      ],
+      [
+        "value2",
+        "totalLines - 1"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.validateInputParameters error",
+    "message": "Cannot read line {lineNumber}.",
+    "source": "`Cannot read line ${lineNumber}.`",
+    "values": [
+      [
+        "lineNumber",
+        "lineNumber"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.validateTaskData error",
+    "message": "Task title cannot be empty.",
+    "source": "\"Task title cannot be empty.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.validateTaskData error",
+    "message": "Invalid date format in {field}: {dateValue}",
+    "source": "`Invalid date format in ${field}: ${dateValue}`",
+    "values": [
+      [
+        "field",
+        "field"
+      ],
+      [
+        "dateValue",
+        "dateValue"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error",
+    "message": "Invalid editor or file reference.",
+    "source": "\"Invalid editor or file reference.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error",
+    "message": "Line range {startLine}-{endLine} is no longer valid (current line count: {currentLineCount}).",
+    "source": "`Line range ${startLine}-${endLine} is no longer valid (current line count: ${currentLineCount}).`",
+    "values": [
+      [
+        "startLine",
+        "startLine"
+      ],
+      [
+        "endLine",
+        "endLine"
+      ],
+      [
+        "currentLineCount",
+        "currentLineCount"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error",
+    "message": "Content has changed since parsing. Please try again.",
+    "source": "\"Content has changed since parsing. Please try again.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error",
+    "message": "First line is no longer a valid task.",
+    "source": "\"First line is no longer a valid task.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error",
+    "message": "First line no longer contains valid content.",
+    "source": "\"First line no longer contains valid content.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error",
+    "message": "Generated link text is too long.",
+    "source": "\"Generated link text is too long.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error",
+    "message": "Failed to replace lines: {message}",
+    "source": "`Failed to replace lines: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.listCalendars display",
+    "message": "Failed to fetch calendar list: {message}",
+    "source": "`Failed to fetch calendar list: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.fetchCalendarEvents display",
+    "message": "Failed to fetch calendar events: {message}",
+    "source": "`Failed to fetch calendar events: ${this.getErrorMessage(error)}`",
+    "values": [
+      [
+        "message",
+        "this.getErrorMessage(error)"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.updateEvent display",
+    "message": "Failed to update event: {message}",
+    "source": "`Failed to update event: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.createEvent display",
+    "message": "Failed to create event: {message}",
+    "source": "`Failed to create event: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.deleteEvent display",
+    "message": "Failed to delete event: {message}",
+    "source": "`Failed to delete event: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.createCalendar display",
+    "message": "Failed to create calendar: {message}",
+    "source": "`Failed to create calendar: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.authenticateStandard display",
+    "message": "An OAuth authorization is already in progress",
+    "source": "\"An OAuth authorization is already in progress\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.authenticateStandard display",
+    "message": "OAUTH authentication requires the desktop app.",
+    "source": "\"OAUTH authentication requires the desktop app.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.authenticateStandard display",
+    "message": "OAuth authentication requires the desktop app.",
+    "source": "\"OAuth authentication requires the desktop app.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.authenticateStandard display",
+    "message": "Opening browser for {provider} authorization...",
+    "source": "`Opening browser for ${provider} authorization...`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.authenticateStandard display",
+    "message": "Could not open OAuth browser",
+    "source": "\"Could not open OAuth browser\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.authenticateStandard display",
+    "message": "Successfully connected to {provider} Calendar!",
+    "source": "`Successfully connected to ${provider} Calendar!`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.authenticateStandard display",
+    "message": "OAuth flow ended before authorization",
+    "source": "\"OAuth flow ended before authorization\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.authenticateStandard display",
+    "message": "Failed to connect to {provider}: {message}",
+    "source": "`Failed to connect to ${provider}: ${error.message}`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ],
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.startCallbackServer display",
+    "message": "An OAuth callback is already pending",
+    "source": "\"An OAuth callback is already pending\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.startCallbackServer display",
+    "message": "OAuth listener did not expose its bound port",
+    "source": "\"OAuth listener did not expose its bound port\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.handleCallback display",
+    "message": "<!doctype html><title>Invalid callback</title>",
+    "source": "\"<!doctype html><title>Invalid callback</title>\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.handleCallback display",
+    "message": "<!doctype html><title>Invalid callback</title><p>No pending authorization matches this callback.</p>",
+    "source": "\"<!doctype html><title>Invalid callback</title><p>No pending authorization matches this callback.</p>\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.handleCallback display",
+    "message": "<!doctype html><title>Authorization failed</title><p>Authorization was not completed. Return to Obsidian.</p>",
+    "source": "\"<!doctype html><title>Authorization failed</title><p>Authorization was not completed. Return to Obsidian.</p>\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.handleCallback display",
+    "message": "<!doctype html><title>Authorization complete</title><p>You can close this window and return to Obsidian.</p>",
+    "source": "\"<!doctype html><title>Authorization complete</title><p>You can close this window and return to Obsidian.</p>\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.handleCallback display",
+    "message": "OAuth authorization failed",
+    "source": "\"OAuth authorization failed\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.waitForCallback display",
+    "message": "Invalid OAuth state",
+    "source": "\"Invalid OAuth state\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.waitForCallback display",
+    "message": "OAuth timeout - authorization took too long",
+    "source": "\"OAuth timeout - authorization took too long\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.exchangeCodeForTokens display",
+    "message": "Token exchange failed with status {status}: {value2}",
+    "source": "`Token exchange failed with status ${response.status}: ${response.text || JSON.stringify(response.json)}`",
+    "values": [
+      [
+        "status",
+        "response.status"
+      ],
+      [
+        "value2",
+        "response.text || JSON.stringify(response.json)"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.exchangeCodeForTokens display",
+    "message": "No access token in response",
+    "source": "\"No access token in response\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.exchangeCodeForTokens display",
+    "message": "Failed to exchange code for tokens: {message}",
+    "source": "`Failed to exchange code for tokens: ${error.message}`",
+    "values": [
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.refreshToken display",
+    "message": "No {provider} connection found",
+    "source": "`No ${provider} connection found`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.refreshToken display",
+    "message": "No refresh token available for {provider}",
+    "source": "`No refresh token available for ${provider}`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.refreshToken display",
+    "message": "{provider} connection expired. Please reconnect in Settings > Integrations.",
+    "source": "`${provider} connection expired. Please reconnect in Settings > Integrations.`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.refreshToken display",
+    "message": "Unknown error",
+    "source": "\"Unknown error\"",
+    "values": [],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.refreshToken display",
+    "message": "Token refresh failed with status {status}: {message}",
+    "source": "`Token refresh failed with status ${response.status}: ${oauthError || response.text || \"Unknown error\"}`",
+    "values": [
+      [
+        "status",
+        "response.status"
+      ],
+      [
+        "message",
+        "oauthError || response.text || \"Unknown error\""
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.refreshToken display",
+    "message": "No access token in refresh response",
+    "source": "\"No access token in refresh response\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.refreshToken display",
+    "message": "Failed to refresh {provider} token: {message}",
+    "source": "`Failed to refresh ${provider} token: ${error.message}`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ],
+      [
+        "message",
+        "error.message"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.disconnect display",
+    "message": "Disconnected from {provider} Calendar",
+    "source": "`Disconnected from ${provider} Calendar`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ]
+    ],
+    "kind": "ICU message"
+  },
+  {
+    "context": "services/OAuthService: OAuthService.destroy display",
+    "message": "OAuth authorization cancelled",
+    "source": "\"OAuth authorization cancelled\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/PomodoroService: PomodoroService.saveHistoryToDailyNotes display",
+    "message": "Daily notes must be enabled in the core Daily Notes plugin or Periodic Notes",
+    "source": "\"Daily notes must be enabled in the core Daily Notes plugin or Periodic Notes\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/PomodoroService: PomodoroService.addSingleSessionToDailyNote display",
+    "message": "Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.",
+    "source": "\"Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/PomodoroService: PomodoroService.updateDailyNotePomodoros display",
+    "message": "Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.",
+    "source": "\"Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/PomodoroService: PomodoroService.migrateTodailyNotes display",
+    "message": "Daily notes must be enabled in the core Daily Notes plugin or Periodic Notes for migration",
+    "source": "\"Daily notes must be enabled in the core Daily Notes plugin or Periodic Notes for migration\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.toggleStatus display",
+    "message": "Failed to toggle task status: {errorMessage}",
+    "source": "`Failed to toggle task status: ${errorMessage}`",
+    "values": [
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.updateProperty display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${task.path}`",
+    "values": [
+      [
+        "path",
+        "task.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.updateProperty display",
+    "message": "Failed to update task property: {errorMessage}",
+    "source": "`Failed to update task property: ${errorMessage}`",
+    "values": [
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.materializeOccurrenceUnlocked display",
+    "message": "Task is not recurring",
+    "source": "\"Task is not recurring\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.toggleRecurringTaskCompleteWithOccurrenceNotes display",
+    "message": "Task is not recurring",
+    "source": "\"Task is not recurring\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.skipMaterializedOccurrence display",
+    "message": "Cannot resolve occurrence parent",
+    "source": "\"Cannot resolve occurrence parent\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.unskipMaterializedOccurrence display",
+    "message": "Cannot resolve occurrence parent",
+    "source": "\"Cannot resolve occurrence parent\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.persistTaskInfoUpdates display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${task.path}`",
+    "values": [
+      [
+        "path",
+        "task.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.toggleArchive display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${task.path}`",
+    "values": [
+      [
+        "path",
+        "task.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.toggleArchive display",
+    "message": "A file named \"{name}\" already exists in the {destinationKind} folder \"{destinationFolder}\". Cannot move task to avoid overwriting existing file.",
+    "source": "`A file named \"${file.name}\" already exists in the ${movePlan.destinationKind} folder \"${movePlan.destinationFolder}\". Cannot move task to avoid overwriting existing file.`",
+    "values": [
+      [
+        "name",
+        "file.name"
+      ],
+      [
+        "destinationKind",
+        "movePlan.destinationKind"
+      ],
+      [
+        "destinationFolder",
+        "movePlan.destinationFolder"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.toggleArchive display",
+    "message": "Failed to resolve moved task file: {newPath}",
+    "source": "`Failed to resolve moved task file: ${movePlan.newPath}`",
+    "values": [
+      [
+        "newPath",
+        "movePlan.newPath"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.startTimeTrackingLocked display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${task.path}`",
+    "values": [
+      [
+        "path",
+        "task.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.startTimeTrackingLocked display",
+    "message": "Time tracking is already active for this task",
+    "source": "\"Time tracking is already active for this task\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.stopTimeTrackingLocked display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${task.path}`",
+    "values": [
+      [
+        "path",
+        "task.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.stopTimeTrackingLocked display",
+    "message": "No active time tracking session for this task",
+    "source": "\"No active time tracking session for this task\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.stopTimeTrackingLocked display",
+    "message": "Active time tracking session has changed",
+    "source": "\"Active time tracking session has changed\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.stopTimeTrackingLocked display",
+    "message": "Invalid time tracking stop timestamp",
+    "source": "\"Invalid time tracking stop timestamp\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.deleteTask display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${task.path}`",
+    "values": [
+      [
+        "path",
+        "task.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.deleteTask display",
+    "message": "Failed to delete task: {errorMessage}",
+    "source": "`Failed to delete task: ${errorMessage}`",
+    "values": [
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.toggleRecurringTaskComplete display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${task.path}`",
+    "values": [
+      [
+        "path",
+        "task.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.toggleRecurringTaskComplete display",
+    "message": "Task is not recurring",
+    "source": "\"Task is not recurring\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.toggleRecurringTaskSkipped display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${task.path}`",
+    "values": [
+      [
+        "path",
+        "task.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.toggleRecurringTaskSkipped display",
+    "message": "Task is not recurring",
+    "source": "\"Task is not recurring\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskService: TaskService.deleteTimeEntry display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${task.path}`",
+    "values": [
+      [
+        "path",
+        "task.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/buildTaskCreationDataFromCli: parseEstimate display",
+    "message": "--estimate must be a non-negative number of minutes",
+    "source": "\"--estimate must be a non-negative number of minutes\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/buildTaskCreationDataFromCli: parseReminderShorthand display",
+    "message": "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime",
+    "source": "\"Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/buildTaskCreationDataFromCli: parseReminderShorthand display",
+    "message": "Reminder shorthand must use due:<offset>, scheduled:<offset>, or at:<datetime>",
+    "source": "\"Reminder shorthand must use due:<offset>, scheduled:<offset>, or at:<datetime>\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/buildTaskCreationDataFromCli: parseReminderShorthand display",
+    "message": "Relative reminders must use due:<offset> or scheduled:<offset> with ISO 8601 durations like -PT1H",
+    "source": "\"Relative reminders must use due:<offset> or scheduled:<offset> with ISO 8601 durations like -PT1H\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/buildTaskCreationDataFromCli: parseReminders display",
+    "message": "--reminders JSON must be an array",
+    "source": "\"--reminders JSON must be an array\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/buildTaskCreationDataFromCli: parseRecurrenceAnchor display",
+    "message": "--recurrence-anchor must be either ''scheduled'' or ''completion''",
+    "source": "\"--recurrence-anchor must be either 'scheduled' or 'completion'\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/buildTaskCreationDataFromCli: buildTaskCreationDataFromCli display",
+    "message": "Either --text or --title is required",
+    "source": "\"Either --text or --title is required\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/buildTaskCreationDataFromCli: buildTaskCreationDataFromCli display",
+    "message": "Could not derive a task title from --text; pass --title to override",
+    "source": "\"Could not derive a task title from --text; pass --title to override\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/errors: TokenExpiredError display",
+    "message": "{provider} authentication expired. Please reconnect.",
+    "source": "`${provider} authentication expired. Please reconnect.`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/errors: TokenRefreshError display",
+    "message": "{provider} connection expired. Please reconnect in Settings > Integrations.",
+    "source": "`${provider} connection expired. Please reconnect in Settings > Integrations.`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/errors: OAuthNotConfiguredError display",
+    "message": "{provider} OAuth is not configured. Please provide OAuth credentials in settings.",
+    "source": "`${provider} OAuth is not configured. Please provide OAuth credentials in settings.`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/errors: EventNotFoundError display",
+    "message": "Calendar event not found: {eventId}",
+    "source": "`Calendar event not found: ${eventId}`",
+    "values": [
+      [
+        "eventId",
+        "eventId"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/errors: CalendarNotFoundError display",
+    "message": "Calendar not found: {calendarId}",
+    "source": "`Calendar not found: ${calendarId}`",
+    "values": [
+      [
+        "calendarId",
+        "calendarId"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/errors: RateLimitError display",
+    "message": "Rate limit exceeded. Please try again later.",
+    "source": "'Rate limit exceeded. Please try again later.'",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/task-service/TaskCreationService: TaskCreationService.createTask display",
+    "message": "Title is required",
+    "source": "\"Title is required\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/task-service/TaskCreationService: TaskCreationService.createTask display",
+    "message": "Failed to create task: {errorMessage}",
+    "source": "`Failed to create task: ${errorMessage}`",
+    "values": [
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/task-service/TaskUpdateService: TaskUpdateService.updateTask display",
+    "message": "Cannot find task file: {path}",
+    "source": "`Cannot find task file: ${originalTask.path}`",
+    "values": [
+      [
+        "path",
+        "originalTask.path"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/task-service/TaskUpdateService: TaskUpdateService.updateTask display",
+    "message": "Failed to update task: {errorMessage}",
+    "source": "`Failed to update task: ${errorMessage}`",
+    "values": [
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/task-service/taskPropertyFrontmatterField: assertValidFrontmatterFieldName display",
+    "message": "{context} resolved to a non-string frontmatter field name",
+    "source": "`${context} resolved to a non-string frontmatter field name`",
+    "values": [
+      [
+        "context",
+        "context"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/task-service/taskPropertyFrontmatterField: assertValidFrontmatterFieldName display",
+    "message": "{context} resolved to an invalid frontmatter field name: {fieldName}",
+    "source": "`${context} resolved to an invalid frontmatter field name: ${fieldName}`",
+    "values": [
+      [
+        "context",
+        "context"
+      ],
+      [
+        "fieldName",
+        "fieldName"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/task-service/taskRecurringPlanning: buildRecurringTaskCompletePlan display",
+    "message": "Task is not recurring",
+    "source": "\"Task is not recurring\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/task-service/taskRecurringPlanning: buildRecurringTaskSkippedPlan display",
+    "message": "Task is not recurring",
+    "source": "\"Task is not recurring\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateNotEmpty display",
+    "message": "{fieldName} cannot be empty",
+    "source": "`${fieldName} cannot be empty`",
+    "values": [
+      [
+        "fieldName",
+        "fieldName"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateRequired display",
+    "message": "{fieldName} is required",
+    "source": "`${fieldName} is required`",
+    "values": [
+      [
+        "fieldName",
+        "fieldName"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateCalendarId display",
+    "message": "Calendar ID",
+    "source": "\"Calendar ID\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateCalendarId display",
+    "message": "Invalid calendar ID format. Expected email-like, alphanumeric, or Base64 format.",
+    "source": "\"Invalid calendar ID format. Expected email-like, alphanumeric, or Base64 format.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateMicrosoftCalendarId display",
+    "message": "Calendar ID",
+    "source": "\"Calendar ID\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateMicrosoftCalendarId display",
+    "message": "Invalid calendar ID format. Microsoft calendar IDs cannot contain control characters.",
+    "source": "\"Invalid calendar ID format. Microsoft calendar IDs cannot contain control characters.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateEventId display",
+    "message": "Event ID",
+    "source": "\"Event ID\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateEventId display",
+    "message": "Invalid event ID format. Expected alphanumeric or Base64 format.",
+    "source": "\"Invalid event ID format. Expected alphanumeric or Base64 format.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateFutureDate display",
+    "message": "{fieldName} cannot be in the past",
+    "source": "`${fieldName} cannot be in the past`",
+    "values": [
+      [
+        "fieldName",
+        "fieldName"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateDateRange display",
+    "message": "Start date",
+    "source": "\"Start date\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateDateRange display",
+    "message": "End date",
+    "source": "\"End date\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateDateRange display",
+    "message": "End date must be after start date",
+    "source": "\"End date must be after start date\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateOAuthProvider display",
+    "message": "Unsupported OAuth provider: {provider}. Supported: {value2}",
+    "source": "`Unsupported OAuth provider: ${provider}. Supported: ${supportedProviders.join(\", \")}`",
+    "values": [
+      [
+        "provider",
+        "provider"
+      ],
+      [
+        "value2",
+        "supportedProviders.join(\", \")"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/validation: validateUrl display",
+    "message": "Invalid URL format for {fieldName}",
+    "source": "`Invalid URL format for ${fieldName}`",
+    "values": [
+      [
+        "fieldName",
+        "fieldName"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskLine error",
+    "message": "Invalid input: line must be a string",
+    "source": "\"Invalid input: line must be a string\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskLine error",
+    "message": "Line too long to process safely",
+    "source": "\"Line too long to process safely\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskLine error",
+    "message": "Invalid checkbox format",
+    "source": "\"Invalid checkbox format\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskLine error",
+    "message": "Task must have a title",
+    "source": "\"Task must have a title\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskLine error",
+    "message": "Unknown error",
+    "source": "\"Unknown error\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskLine error",
+    "message": "Failed to parse task: {message}",
+    "source": "`Failed to parse task: ${error instanceof Error ? error.message : \"Unknown error\"}`",
+    "values": [
+      [
+        "message",
+        "error instanceof Error ? error.message : \"Unknown error\""
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskContent display",
+    "message": "Content must be a string",
+    "source": "\"Content must be a string\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskContent display",
+    "message": "Content too long to process safely",
+    "source": "\"Content too long to process safely\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskContent title",
+    "message": "Untitled Task",
+    "source": "\"Untitled Task\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskContent display",
+    "message": "Unknown error",
+    "source": "\"Unknown error\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.parseTaskContent display",
+    "message": "Failed to parse task content: {message}",
+    "source": "`Failed to parse task content: ${error instanceof Error ? error.message : \"Unknown error\"}`",
+    "values": [
+      [
+        "message",
+        "error instanceof Error ? error.message : \"Unknown error\""
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/TasksPluginParser: TasksPluginParser.extractCleanTitle display",
+    "message": "Untitled Task",
+    "source": "\"Untitled Task\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/filenameGenerator: validateFilename error",
+    "message": "Filename cannot be empty",
+    "source": "\"Filename cannot be empty\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/filenameGenerator: validateFilename error",
+    "message": "Filename contains only invalid characters",
+    "source": "\"Filename contains only invalid characters\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/filenameGenerator: validateFilename error",
+    "message": "Filename is too long (max 255 characters)",
+    "source": "\"Filename is too long (max 255 characters)\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/helpers: ensureFolderExists display",
+    "message": "Failed to create folder \"{currentPath}\"",
+    "source": "`Failed to create folder \"${currentPath}\"`",
+    "values": [
+      [
+        "currentPath",
+        "currentPath"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/helpers: ensureFolderExists display",
+    "message": "Failed to create folder \"{folderPath}\": {errorMessage}",
+    "source": "`Failed to create folder \"${folderPath}\": ${errorMessage}`",
+    "values": [
+      [
+        "folderPath",
+        "folderPath"
+      ],
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/helpers: updateTimeblockInDailyNote display",
+    "message": "Daily Notes plugin is not enabled",
+    "source": "\"Daily Notes plugin is not enabled\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/helpers: updateTimeblockInDailyNote display",
+    "message": "Daily note for {oldDate} not found",
+    "source": "`Daily note for ${oldDate} not found`",
+    "values": [
+      [
+        "oldDate",
+        "oldDate"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/helpers: updateTimeblockInDailyNote display",
+    "message": "Timeblock {timeblockId} not found",
+    "source": "`Timeblock ${timeblockId} not found`",
+    "values": [
+      [
+        "timeblockId",
+        "timeblockId"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/helpers: updateTimeblockTimes display",
+    "message": "No timeblocks found in frontmatter",
+    "source": "\"No timeblocks found in frontmatter\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/helpers: updateTimeblockTimes display",
+    "message": "Timeblock {timeblockId} not found",
+    "source": "`Timeblock ${timeblockId} not found`",
+    "values": [
+      [
+        "timeblockId",
+        "timeblockId"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/helpers: addTimeblockToDailyNote display",
+    "message": "Failed to create daily note: {errorMessage}. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.",
+    "source": "`Failed to create daily note: ${errorMessage}. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.`",
+    "values": [
+      [
+        "errorMessage",
+        "errorMessage"
+      ]
+    ],
+    "kind": "wrap"
+  },
+  {
+    "context": "utils/helpers: addTimeblockToDailyNote display",
+    "message": "Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.",
+    "source": "\"Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/errors: RateLimitError display",
+    "message": "{seconds, plural, one {Rate limit exceeded. Retry after # second.} other {Rate limit exceeded. Retry after # seconds.}}",
+    "source": "`Rate limit exceeded. Retry after ${retryAfter} seconds.`",
+    "values": [
+      [
+        "seconds",
+        "retryAfter"
+      ]
+    ],
+    "kind": "ICU plural"
+  }
+]

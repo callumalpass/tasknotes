@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
 import { Notice, Platform, setIcon, setTooltip, TFile } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
@@ -1221,23 +1223,23 @@ export class KanbanView extends BasesViewBase {
 		const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 		const scopeLabel =
 			swimLaneKey === null
-				? this.plugin.i18n.translate("views.kanban.reorder.scope.column", {
+				? this.plugin.i18n.translate(msg({ message: "column \"{group}\"", context: "views.kanban.reorder.scope.column" }), {
 						group: groupKey,
 					})
-				: this.plugin.i18n.translate("views.kanban.reorder.scope.columnInSwimlane", {
+				: this.plugin.i18n.translate(msg({ message: "column \"{group}\" in swimlane \"{swimlane}\"", context: "views.kanban.reorder.scope.columnInSwimlane" }), {
 						group: groupKey,
 						swimlane: swimLaneKey,
 					});
 
 		return showConfirmationModal(this.plugin.app, {
-			title: this.plugin.i18n.translate("common.reorder.confirmLargeTitle"),
-			message: this.plugin.i18n.translate("common.reorder.confirmLargeMessage", {
+			title: this.plugin.i18n.translate(msg({ message: "Confirm large reorder", context: "common.reorder.confirmLargeTitle" })),
+			message: this.plugin.i18n.translate(msg({ message: "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?", context: "common.reorder.confirmLargeMessage" }), {
 				field: sortOrderField,
 				count: editCount,
 				scope: scopeLabel,
 			}),
-			confirmText: this.plugin.i18n.translate("common.reorder.confirmButton"),
-			cancelText: this.plugin.i18n.translate("common.cancel"),
+			confirmText: this.plugin.i18n.translate(msg({ message: "Reorder notes", context: "common.reorder.confirmButton" })),
+			cancelText: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
 		});
 	}
 
@@ -1408,13 +1410,13 @@ export class KanbanView extends BasesViewBase {
 	private markUnknownStatusColumn(element: HTMLElement, groupKey: string): void {
 		element.addClass("kanban-view__column--unknown-status");
 		element.setAttribute("data-unknown-status", groupKey);
-		setTooltip(element, "Status is not defined in TaskNotes settings");
+		setTooltip(element, uiText(msg({ message: "Status is not defined in TaskNotes settings", context: "bases/KanbanView: KanbanView.markUnknownStatusColumn display" })));
 	}
 
 	private markUnknownStatusColumnHeader(element: HTMLElement, groupKey: string): void {
 		element.addClass("kanban-view__column-header--unknown-status");
 		element.setAttribute("data-unknown-status", groupKey);
-		setTooltip(element, "Status is not defined in TaskNotes settings");
+		setTooltip(element, uiText(msg({ message: "Status is not defined in TaskNotes settings", context: "bases/KanbanView: KanbanView.markUnknownStatusColumnHeader display" })));
 	}
 
 	private async renderFlat(
@@ -1818,10 +1820,10 @@ export class KanbanView extends BasesViewBase {
 
 	private getAddTaskLabel(groupKey: string, swimLaneKey: string | null): string {
 		if (swimLaneKey) {
-			return `Add task to ${groupKey} / ${swimLaneKey}`;
+			return uiText(msg({ message: "Add task to {groupKey} / {swimLaneKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: groupKey, swimLaneKey: swimLaneKey });
 		}
 
-		return `Add task to ${groupKey}`;
+		return uiText(msg({ message: "Add task to {groupKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: groupKey });
 	}
 
 	private renderEmptyCellHint(
@@ -1829,7 +1831,7 @@ export class KanbanView extends BasesViewBase {
 		groupKey: string,
 		swimLaneKey: string | null = null
 	): void {
-		const noTasksLabel = this.plugin.i18n.translate("views.kanban.noTasks");
+		const noTasksLabel = this.plugin.i18n.translate(msg({ message: "No tasks", context: "views.kanban.noTasks" }));
 		const label = swimLaneKey
 			? `${noTasksLabel}: ${groupKey} / ${swimLaneKey}`
 			: `${noTasksLabel}: ${groupKey}`;
@@ -3330,7 +3332,7 @@ export class KanbanView extends BasesViewBase {
 			sourceElement.querySelector<HTMLElement>(".task-card__title-text")?.textContent ||
 			sourceElement.querySelector<HTMLElement>(".task-card__title")?.textContent ||
 			sourceElement.dataset.taskPath?.split("/").pop()?.replace(/\.md$/i, "") ||
-			"Task";
+			uiText(msg({ message: "Task", context: "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display" }));
 		const normalized = title.trim().replace(/\s+/g, " ");
 		return normalized.length > 80 ? `${normalized.slice(0, 77).trimEnd()}...` : normalized;
 	}
@@ -3565,7 +3567,7 @@ export class KanbanView extends BasesViewBase {
 				// Check if groupBy is a formula - formulas are read-only
 				if (groupByPropertyId.startsWith("formula.")) {
 					new Notice(
-						this.plugin.i18n.translate("views.kanban.errors.formulaGroupingReadOnly")
+						this.plugin.i18n.translate(msg({ message: "Cannot move tasks between formula-based columns. Formula values are computed and cannot be directly modified.", context: "views.kanban.errors.formulaGroupingReadOnly" }))
 					);
 					return;
 				}
@@ -3573,7 +3575,7 @@ export class KanbanView extends BasesViewBase {
 				// Check if swimlane is a formula - formulas are read-only
 				if (newSwimLaneValue !== null && this.swimLanePropertyId?.startsWith("formula.")) {
 					new Notice(
-						this.plugin.i18n.translate("views.kanban.errors.formulaSwimlaneReadOnly")
+						this.plugin.i18n.translate(msg({ message: "Cannot move tasks between formula-based swimlanes. Formula values are computed and cannot be directly modified.", context: "views.kanban.errors.formulaSwimlaneReadOnly" }))
 					);
 					return;
 				}
@@ -4015,7 +4017,7 @@ export class KanbanView extends BasesViewBase {
 		const doc = this.containerEl.ownerDocument;
 		const empty = createElementInDocument(doc, "div");
 		empty.className = "tn-bases-empty";
-		empty.textContent = "No tasknotes tasks found for this base.";
+		empty.textContent = uiText(msg({ message: "No tasknotes tasks found for this base.", context: "bases/KanbanView: KanbanView.renderEmptyState display" }));
 		this.boardEl.appendChild(empty);
 	}
 
@@ -4025,7 +4027,7 @@ export class KanbanView extends BasesViewBase {
 		const doc = this.containerEl.ownerDocument;
 		const error = createElementInDocument(doc, "div");
 		error.className = "tn-bases-error";
-		error.textContent = this.plugin.i18n.translate("views.kanban.errors.noGroupBy");
+		error.textContent = this.plugin.i18n.translate(msg({ message: "Kanban view requires a ''group by'' property to be configured. Click the ''sort'' button and select a property under ''group by''.", context: "views.kanban.errors.noGroupBy" }));
 		this.boardEl.appendChild(error);
 	}
 
@@ -4035,7 +4037,7 @@ export class KanbanView extends BasesViewBase {
 		const doc = this.containerEl.ownerDocument;
 		const errorEl = createElementInDocument(doc, "div");
 		errorEl.className = "tn-bases-error";
-		errorEl.textContent = `Error loading kanban: ${error.message || "Unknown error"}`;
+		errorEl.textContent = uiText(msg({ message: "Error loading kanban: {message}", context: "bases/KanbanView: KanbanView.renderError display" }), { message: error.message || "Unknown error" });
 		this.boardEl.appendChild(errorEl);
 	}
 

@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
@@ -41,7 +42,7 @@ describe("Issue #798: command for Edit task details", () => {
 			openTaskEditModalForCurrentTask: jest.fn(),
 		};
 
-		expect(command?.nameKey).toBe("commands.editCurrentTask");
+		expect(command?.nameKey).toBe(msg({ message: "Edit current task", context: "commands.editCurrentTask" }));
 
 		await command?.callback?.(ctx as never);
 

@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Modal, App, Setting } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { createI18nService, type TranslationKey } from "../i18n";
@@ -35,9 +36,9 @@ export class PropertySelectorModal extends Modal {
 		this.onSubmit = onSubmit;
 		const i18n = plugin?.i18n ?? createI18nService();
 		this.translate = i18n.translate.bind(i18n);
-		this.modalTitle = modalTitle ?? this.translate("modals.propertySelector.title");
+		this.modalTitle = modalTitle ?? this.translate(msg({ message: "Select task card properties", context: "modals.propertySelector.title" }));
 		this.modalDescription =
-			modalDescription ?? this.translate("modals.propertySelector.description");
+			modalDescription ?? this.translate(msg({ message: "Choose which properties to display in task cards. Selected properties appear in the order below.", context: "modals.propertySelector.description" }));
 	}
 
 	onOpen() {
@@ -126,14 +127,14 @@ export class PropertySelectorModal extends Modal {
 		buttonContainer.classList.add("tn-static-justify-content-flex-end-455f8cca");
 
 		const cancelButton = buttonContainer.createEl("button", {
-			text: this.translate("common.cancel"),
+			text: this.translate(msg({ message: "Cancel", context: "common.cancel" })),
 		});
 		cancelButton.addEventListener("click", () => {
 			this.close();
 		});
 
 		const saveButton = buttonContainer.createEl("button", {
-			text: this.translate("common.save"),
+			text: this.translate(msg({ message: "Save", context: "common.save" })),
 			cls: "mod-cta",
 		});
 		saveButton.addEventListener("click", () => {

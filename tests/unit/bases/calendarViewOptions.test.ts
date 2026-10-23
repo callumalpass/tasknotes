@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import type { BasesAllOptions, BasesOptions } from "obsidian";
 import { buildCalendarViewOptions } from "../../../src/bases/calendarViewOptions";
 import type TaskNotesPlugin from "../../../src/main";
@@ -70,13 +71,13 @@ describe("calendar view options", () => {
 		const options = buildCalendarViewOptions(createPlugin(), createConfig());
 
 		expect(options.filter(isGroup).map((group) => group.displayName)).toEqual([
-			"views.basesCalendar.settings.groups.events",
-			"views.basesCalendar.settings.groups.dateNavigation",
-			"views.basesCalendar.settings.groups.view",
-			"views.basesCalendar.settings.groups.display",
-			"views.basesCalendar.settings.groups.timeGrid",
-			"views.basesCalendar.settings.groups.eventLayout",
-			"views.basesCalendar.settings.groups.propertyBasedEvents",
+			msg({ message: "Events", context: "views.basesCalendar.settings.groups.events" }),
+			msg({ message: "Date navigation", context: "views.basesCalendar.settings.groups.dateNavigation" }),
+			msg({ message: "View", context: "views.basesCalendar.settings.groups.view" }),
+			msg({ message: "Display", context: "views.basesCalendar.settings.groups.display" }),
+			msg({ message: "Time grid", context: "views.basesCalendar.settings.groups.timeGrid" }),
+			msg({ message: "Event layout", context: "views.basesCalendar.settings.groups.eventLayout" }),
+			msg({ message: "Property-based events", context: "views.basesCalendar.settings.groups.propertyBasedEvents" }),
 		]);
 	});
 

@@ -14,7 +14,7 @@ export const es: TranslationTree = {
 		close: "Cerrar",
 		save: "Guardar",
 		reorder: {
-			confirmLargeTitle: "Confirmar reordenación grande",
+			confirmLargeTitle: "Confirmar reordenación masiva",
 			confirmButton: "Reordenar notas",
 			confirmLargeMessage:
 				'Reordenar aquí actualizará "{field}" en {count} notas para crear un orden manual persistente para {scope}. Las notas ocultas o filtradas dentro del mismo alcance también pueden actualizarse. ¿Continuar?',
@@ -83,7 +83,7 @@ export const es: TranslationTree = {
 				noItemsScheduled: "No hay elementos programados",
 				noItemsFound: "No se encontraron elementos",
 				helpText:
-					"Cree tareas con fechas de vencimiento o programadas, o agregue notas para verlas aquí.",
+					"Crea tareas con fechas de vencimiento o programadas, o añade notas para verlas aquí.",
 			},
 			contextMenu: {
 				showOverdueSection: "Mostrar sección de vencidos",
@@ -105,7 +105,8 @@ export const es: TranslationTree = {
 				parentChoose: "Añadir como subtarea de…",
 				parentPreview: "Añadir como subtarea de {parent}. Los demás proyectos no cambian.",
 				parentSelf: "Una tarea no puede ser su propia tarea principal.",
-				parentCycle: "No se puede añadir una tarea bajo una de sus descendientes.",
+				parentCycle:
+					"No se puede añadir una tarea como subtarea de una de sus descendientes.",
 				parentAlready: "Ya es una subtarea de {parent}.",
 				parentUnavailable:
 					"Ambas tareas deben seguir existiendo y ser tareas de TaskNotes.",
@@ -148,13 +149,13 @@ export const es: TranslationTree = {
 			empty: {
 				noNotesFound: "No se encontraron notas",
 				helpText:
-					"No se encontraron notas para la fecha seleccionada. Intente seleccionar una fecha diferente en la vista de Mini Calendario o cree algunas notas.",
+					"No se encontraron notas para la fecha seleccionada. Prueba otra fecha en el minicalendario o crea algunas notas.",
 			},
 			loading: "Cargando notas...",
 			refreshButtonAriaLabel: "Actualizar lista de notas",
 		},
 		miniCalendar: {
-			title: "Mini Calendario",
+			title: "Minicalendario",
 			contextMenu: {
 				openDailyNote: "Abrir nota diaria",
 				openWeeklyNote: "Abrir nota semanal",
@@ -172,7 +173,7 @@ export const es: TranslationTree = {
 				timeblocks: "Bloques de tiempo",
 				scheduledDates: "Fechas programadas",
 				dueDates: "Fechas de vencimiento",
-				allDaySlot: "Espacio de día completo",
+				allDaySlot: "Franja de todo el día",
 				scheduledTasks: "Tareas programadas",
 				recurringTasks: "Tareas recurrentes",
 			},
@@ -186,7 +187,7 @@ export const es: TranslationTree = {
 					"Todas las suscripciones de calendario se actualizaron correctamente",
 				refreshFailed: "Error al actualizar algunas suscripciones de calendario",
 				timeblockSpecificTime:
-					"Los bloques de tiempo deben tener horas específicas. Seleccione un rango de tiempo en la vista de semana o día.",
+					"Los bloques de tiempo necesitan horas concretas. Selecciona un intervalo en la vista semanal o diaria.",
 				timeblockMoved: 'Bloque de tiempo "{title}" movido a {date}',
 				timeblockUpdated: 'Hora del bloque de tiempo "{title}" actualizada',
 				timeblockMoveFailed: "Error al mover el bloque de tiempo: {message}",
@@ -212,7 +213,7 @@ export const es: TranslationTree = {
 			contextMenus: {
 				openTask: "Abrir tarea",
 				deleteTimeEntry: "Eliminar entrada de tiempo",
-				deleteTimeEntryTitle: "Eliminar Entrada de Tiempo",
+				deleteTimeEntryTitle: "Eliminar entrada de tiempo",
 				deleteTimeEntryConfirm:
 					"¿Estás seguro de que deseas eliminar esta entrada de tiempo{duration}? Esta acción no se puede deshacer.",
 				deleteButton: "Eliminar",
@@ -220,7 +221,7 @@ export const es: TranslationTree = {
 			},
 		},
 		basesCalendar: {
-			title: "Calendario Bases",
+			title: "Calendario de Bases",
 			today: "Hoy",
 			buttonText: {
 				month: "M",
@@ -229,7 +230,7 @@ export const es: TranslationTree = {
 				year: "A",
 				list: "L",
 				customDays: "{count}D",
-				listDays: "{count}d Lista",
+				listDays: "Lista de {count} días",
 				refresh: "Actualizar",
 			},
 			hints: {
@@ -275,14 +276,14 @@ export const es: TranslationTree = {
 				},
 				events: {
 					showScheduledTasks: "Mostrar tareas programadas",
-					showDueTasks: "Mostrar tareas vencidas",
-					showOverdueOnToday: "Mostrar tareas atrasadas en la fecha de hoy",
+					showDueTasks: "Mostrar tareas con fecha de vencimiento",
+					showOverdueOnToday: "Mostrar las tareas vencidas en el día de hoy",
 					showRecurringTasks: "Mostrar tareas recurrentes",
 					showTimeEntries: "Mostrar entradas de tiempo",
 					showTimeblocks: "Mostrar bloques de tiempo",
 					showPropertyBasedEvents: "Mostrar eventos basados en propiedades",
-					showCompletedRecurringInstances: "Mostrar instancias recurrentes completadas",
-					showSkippedRecurringInstances: "Mostrar instancias recurrentes omitidas",
+					showCompletedRecurringInstances: "Mostrar repeticiones completadas",
+					showSkippedRecurringInstances: "Mostrar repeticiones omitidas",
 				},
 				layout: {
 					calendarView: "Vista del calendario",
@@ -298,7 +299,7 @@ export const es: TranslationTree = {
 					dragDropResolutionPlaceholder: "HH:mm:ss (ej. 00:05:00)",
 					weekStartsOn: "La semana comienza el",
 					showWeekNumbers: "Mostrar números de semana",
-					showNowIndicator: "Mostrar indicador actual",
+					showNowIndicator: "Mostrar indicador de hora actual",
 					showWeekends: "Mostrar fines de semana",
 					showAllDaySlot: "Mostrar franja de todo el día",
 					showTimeGrid: "Mostrar desglose por horas",
@@ -316,7 +317,8 @@ export const es: TranslationTree = {
 					eventMaxStack: "Máx. eventos apilados (vista semana/día, 0 = ilimitado)",
 					dayMaxEvents: "Máx. eventos por día (0 = automático)",
 					dayMaxEventRows: "Máx. filas de eventos por día (0 = ilimitado)",
-					spanScheduledToDue: "Expandir tareas entre fecha programada y fecha límite",
+					spanScheduledToDue:
+						"Extender tareas entre la fecha programada y la de vencimiento",
 					heightMode: "Modo de altura",
 					heightModeFill: "Rellenar contenedor",
 					heightModeAuto: "Altura automática",
@@ -347,7 +349,7 @@ export const es: TranslationTree = {
 			reorder: {
 				scope: {
 					column: 'columna "{group}"',
-					columnInSwimlane: 'columna "{group}" en swimlane "{swimlane}"',
+					columnInSwimlane: 'columna "{group}" en el carril "{swimlane}"',
 				},
 			},
 			notices: {
@@ -357,7 +359,7 @@ export const es: TranslationTree = {
 			errors: {
 				loadingBoard: "Error al cargar el tablero.",
 				noGroupBy:
-					"La vista Kanban requiere que se configure una propiedad 'Agrupar por'. Haga clic en el botón 'Ordenar' y seleccione una propiedad en 'Agrupar por'.",
+					"La vista Kanban necesita una propiedad «Agrupar por». Haz clic en «Ordenar» y selecciona una propiedad en «Agrupar por».",
 				formulaGroupingReadOnly:
 					"No se pueden mover tareas entre columnas basadas en fórmulas. Los valores de fórmula se calculan y no se pueden modificar directamente.",
 				formulaSwimlaneReadOnly:
@@ -374,7 +376,7 @@ export const es: TranslationTree = {
 				working: "Trabajando",
 				shortBreak: "Descanso corto",
 				longBreak: "Descanso largo",
-				breakPrompt: "¡Excelente trabajo! Tiempo para un descanso {length}",
+				breakPrompt: "¡Buen trabajo! Hora de un descanso {length}",
 				breakLength: {
 					short: "corto",
 					long: "largo",
@@ -402,12 +404,12 @@ export const es: TranslationTree = {
 				loadFailed: "Error al cargar las tareas",
 				invalidDuration: "Introduce una duración como 10, 10:30 o 1:30:00.",
 			},
-			statsLabel: "completadas hoy",
+			statsLabel: "completados hoy",
 			meta: {
-				ready: "{time} planificado · {count} completados hoy",
+				ready: "Tiempo previsto: {time} · pomodoros completados hoy: {count}",
 				running: "Quedan {time} · Termina a las {endTime}",
 				paused: "{type} en pausa · quedan {time}",
-				breakReady: "{type} listo · {time} planificado",
+				breakReady: "{type} listo · tiempo previsto: {time}",
 			},
 			timer: {
 				editLabel: "Editar duración del temporizador",
@@ -471,7 +473,7 @@ export const es: TranslationTree = {
 				deleteNotFound: "No se encontró la sesión Pomodoro",
 			},
 			basesMigration: {
-				title: "¿Quieres una vista Base?",
+				title: "¿Quieres una vista de Bases?",
 				description:
 					"Las vistas Base de Pomodoro usan el frontmatter de las notas diarias. Para ver este historial en la Base de estadísticas de Pomodoro generada, migra los datos de Pomodoro en ajustes y luego establece el almacenamiento en notas diarias.",
 			},
@@ -628,7 +630,7 @@ export const es: TranslationTree = {
 				openAfterCreate: {
 					name: "Abrir tarea después de crearla",
 					description:
-						"Elige si el modal normal Crear nueva tarea abre la nueva nota de tarea después de guardar.",
+						"Elige si el modal de creación de tareas abre la nueva nota de tarea después de guardarla.",
 					options: {
 						none: "No abrir",
 						sameTab: "Abrir en la misma pestaña",
@@ -682,7 +684,7 @@ export const es: TranslationTree = {
 				enterToSubmit: {
 					name: "Intro guarda la tarea",
 					description:
-						"En la entrada de lenguaje natural, pulsa Intro para guardar la tarea. Mayús+Intro inserta un salto de línea y Ctrl/Cmd+Intro sigue guardando.",
+						"En la entrada de lenguaje natural, pulsa Intro para guardar la tarea. Mayús+Intro inserta un salto de línea y Ctrl/Cmd+Intro también guarda la tarea.",
 				},
 				language: {
 					name: "Idioma NLP",
@@ -716,12 +718,12 @@ export const es: TranslationTree = {
 					description: "Número de sesiones de trabajo antes de un descanso largo",
 				},
 				autoStartBreaks: {
-					name: "Auto-iniciar descansos",
+					name: "Iniciar descansos automáticamente",
 					description:
 						"Iniciar automáticamente temporizadores de descanso después de sesiones de trabajo",
 				},
 				autoStartWork: {
-					name: "Auto-iniciar trabajo",
+					name: "Iniciar trabajo automáticamente",
 					description: "Iniciar automáticamente sesiones de trabajo después de descansos",
 				},
 				notifications: {
@@ -802,11 +804,11 @@ export const es: TranslationTree = {
 					"Deshabilitar indexación automática de contenido de notas para mejor rendimiento",
 			},
 			suggestions: {
-				debounceName: "Rebote de sugerencias",
+				debounceName: "Retraso de las sugerencias",
 				debounceDesc: "Retraso en milisegundos antes de mostrar sugerencias",
 			},
 			timeTracking: {
-				autoStopName: "Auto-detener seguimiento de tiempo",
+				autoStopName: "Detener el seguimiento de tiempo automáticamente",
 				autoStopDesc:
 					"Detener automáticamente el seguimiento de tiempo cuando una tarea se marca como completa",
 				stopNotificationName: "Notificación de detención de seguimiento de tiempo",
@@ -833,18 +835,18 @@ export const es: TranslationTree = {
 				modifiedNewest: "Modificación (más reciente primero)",
 				modifiedOldest: "Modificación (más antiguo primero)",
 
-				header: "Bloqueo de tiempo",
+				header: "Planificación por bloques de tiempo",
 				description:
-					"Configura la funcionalidad de bloqueo de tiempo para programación ligera en notas diarias. Arrastra en las vistas de calendario para crear eventos - selecciona 'Timeblock' del menú contextual.",
-				enableName: "Habilitar bloqueo de tiempo",
+					"Configura los bloques de tiempo para planificar en notas diarias. Arrastra en el calendario para crear eventos y selecciona «Bloque de tiempo» en el menú contextual.",
+				enableName: "Activar la planificación por bloques de tiempo",
 				enableDesc:
-					"Habilitar funcionalidad de bloque de tiempo para programación ligera en notas diarias. Cuando está habilitado, la opción 'Timeblock' aparece en el menú contextual de arrastrar del calendario.",
+					"Permite planificar con bloques de tiempo en las notas diarias. Al activarlo, aparece «Bloque de tiempo» en el menú contextual al arrastrar en el calendario.",
 				showBlocksName: "Mostrar bloques de tiempo",
 				showBlocksDesc: "Mostrar bloques de tiempo de notas diarias por defecto",
 				defaultColorName: "Color predeterminado de bloque de tiempo",
 				defaultColorDesc:
 					"El color predeterminado utilizado al crear nuevos bloques de tiempo",
-				usage: "Uso: Arrastra en el calendario para crear eventos. Selecciona 'Timeblock' del menú contextual (solo visible cuando el bloqueo de tiempo está habilitado). Arrastra para mover bloques de tiempo existentes. Ajusta los bordes para ajustar la duración.",
+				usage: "Uso: arrastra en el calendario para crear eventos. Selecciona «Bloque de tiempo» en el menú contextual (solo aparece si la función está activada). Arrastra un bloque existente para moverlo o sus bordes para cambiar su duración.",
 			},
 			performance: {
 				header: "Rendimiento y comportamiento",
@@ -1007,16 +1009,16 @@ export const es: TranslationTree = {
 					ariaLabel: "Ruta al archivo de plantilla del cuerpo",
 				},
 				useOccurrenceBodyTemplate: {
-					name: "Usar plantilla de nota de ocurrencia",
+					name: "Usar plantilla de nota de repetición",
 					description:
-						"Usar una plantilla alternativa separada para notas de ocurrencia materializadas cuando la tarea recurrente no tenga occurrence_template",
+						"Usar otra plantilla para las notas de repetición creadas cuando la tarea recurrente no tenga occurrence_template",
 				},
 				occurrenceBodyTemplateFile: {
-					name: "Archivo de plantilla de nota de ocurrencia",
+					name: "Archivo de plantilla de nota de repetición",
 					description:
-						"Ruta al archivo de plantilla para notas de ocurrencia materializadas. El campo occurrence_template de una tarea recurrente tiene prioridad sobre esta alternativa.",
-					placeholder: "Plantillas/Plantilla de ocurrencia.md",
-					ariaLabel: "Ruta al archivo de plantilla de nota de ocurrencia",
+						"Ruta al archivo de plantilla para las notas de repetición creadas. El campo occurrence_template de la tarea recurrente tiene prioridad sobre esta plantilla alternativa.",
+					placeholder: "Plantillas/Plantilla de repetición.md",
+					ariaLabel: "Ruta al archivo de plantilla de nota de repetición",
 				},
 				variablesHeader: "Variables de plantilla:",
 				variables: {
@@ -1124,7 +1126,7 @@ export const es: TranslationTree = {
 			frontmatter: {
 				header: "Frontmatter",
 				description:
-					"Configure cómo se formatean los enlaces en las propiedades frontmatter.",
+					"Configura cómo se formatean los enlaces en las propiedades frontmatter.",
 				useMarkdownLinks: {
 					name: "Usar enlaces markdown en frontmatter",
 					description:
@@ -1163,7 +1165,7 @@ export const es: TranslationTree = {
 				},
 				viewButton: {
 					name: "Ver notas de la versión",
-					description: "Vea las novedades en la última versión de TaskNotes",
+					description: "Consulta las novedades de la última versión de TaskNotes",
 					buttonText: "Ver notas de la versión",
 				},
 			},
@@ -1224,7 +1226,7 @@ export const es: TranslationTree = {
 				projects: {
 					name: "Proyectos",
 					description:
-						"Enlaces a notas de proyecto a las que pertenece esta tarea. Se almacena como wikilinks (ej. [[Nombre del proyecto]]). Las tareas pueden pertenecer a múltiples proyectos.",
+						"Enlaces a notas de proyecto a las que pertenece esta tarea. Se almacenan como enlaces wiki (p. ej., [[Nombre del proyecto]]). Las tareas pueden pertenecer a varios proyectos.",
 				},
 				tags: {
 					name: "Etiquetas",
@@ -1239,12 +1241,12 @@ export const es: TranslationTree = {
 				recurrence: {
 					name: "Recurrencia",
 					description:
-						"Patrón para tareas repetitivas (diario, semanal, mensual, anual o RRULE personalizada). Cuando se completa una tarea recurrente, su fecha programada se actualiza automáticamente a la siguiente ocurrencia.",
+						"Patrón para tareas recurrentes (diario, semanal, mensual, anual o RRULE personalizada). Al completar una tarea recurrente, su fecha programada se actualiza automáticamente a la siguiente repetición.",
 				},
 				recurrenceAnchor: {
 					name: "Ancla de recurrencia",
 					description:
-						"Controla cómo se calcula la siguiente ocurrencia: 'scheduled' usa la fecha programada, 'completion' usa la fecha de finalización real.",
+						"Controla cómo se calcula la siguiente repetición: 'scheduled' usa la fecha programada y 'completion' la fecha real de finalización.",
 				},
 				reminders: {
 					name: "Recordatorios",
@@ -1282,19 +1284,19 @@ export const es: TranslationTree = {
 						"Registros de sesiones de seguimiento de tiempo para esta tarea. Cada entrada almacena marcas de tiempo de inicio y fin. Se usa para calcular el tiempo total invertido.",
 				},
 				completeInstances: {
-					name: "Instancias completadas",
+					name: "Repeticiones completadas",
 					description:
-						"Historial de completado para tareas recurrentes. Almacena fechas cuando cada instancia fue completada para prevenir completados duplicados.",
+						"Historial de finalización de tareas recurrentes. Guarda la fecha de cada repetición completada para evitar duplicados.",
 				},
 				skippedInstances: {
-					name: "Instancias omitidas",
+					name: "Repeticiones omitidas",
 					description:
-						"Ocurrencias omitidas para tareas recurrentes. Almacena fechas de instancias que fueron omitidas en lugar de completadas.",
+						"Repeticiones omitidas de tareas recurrentes. Almacena las fechas de las repeticiones omitidas en lugar de completadas.",
 				},
 				blockedBy: {
 					name: "Bloqueada por",
 					description:
-						"Enlaces a tareas que deben completarse antes de esta. Se almacena como wikilinks. Las tareas bloqueadas muestran un indicador visual.",
+						"Enlaces a tareas que deben completarse antes de esta. Se almacenan como enlaces wiki. Las tareas bloqueadas muestran un indicador visual.",
 				},
 				sortOrder: {
 					name: "Orden manual",
@@ -1344,14 +1346,13 @@ export const es: TranslationTree = {
 				filenameFormat: "Formato de nombre de archivo:",
 				customTemplate: "Plantilla personalizada:",
 				legacySyntaxWarning:
-					"La sintaxis de llaves simples como {title} está obsoleta. Por favor, use la sintaxis de llaves dobles {{title}} para consistencia con las plantillas de cuerpo.",
-				occurrenceFilenameTemplate: "Plantilla de nombre de archivo para ocurrencias",
+					"La sintaxis de llaves simples, como {title}, está obsoleta. Usa llaves dobles, como {{title}}, para mantener la coherencia con las plantillas del cuerpo.",
+				occurrenceFilenameTemplate: "Plantilla de nombre de archivo para repeticiones",
 				occurrenceFilenameTemplateHelp:
-					"Plantilla de nombre de archivo para ocurrencias materializadas de tareas recurrentes. Déjala vacía para conservar el nombre existente (título de la tarea principal más un sufijo numérico). Elige explícitamente la granularidad con {{occurrenceDate}}, {{occurrenceWeek}}, {{occurrenceMonth}}, {{occurrenceYear}} o {{occurrenceMonthName}}. También funcionan todas las variables normales de nombres de archivo. Una tarea principal puede sobrescribir esta plantilla mediante la propiedad de frontmatter configurada abajo.",
-				occurrenceFilenameProperty:
-					"Propiedad para sobrescribir la plantilla de ocurrencias",
+					"Plantilla de nombre de archivo para las repeticiones creadas de tareas recurrentes. Déjala vacía para conservar el nombre actual (título de la tarea principal más un sufijo numérico). Elige la granularidad con {{occurrenceDate}}, {{occurrenceWeek}}, {{occurrenceMonth}}, {{occurrenceYear}} o {{occurrenceMonthName}}. También funcionan todas las variables habituales de nombres de archivo. La tarea principal puede sustituir esta plantilla mediante la propiedad de frontmatter configurada abajo.",
+				occurrenceFilenameProperty: "Propiedad para sustituir la plantilla de repeticiones",
 				occurrenceFilenamePropertyHelp:
-					"Nombre de la propiedad de frontmatter de una tarea recurrente principal que sobrescribe la plantilla de nombre de archivo de sus ocurrencias.",
+					"Nombre de la propiedad de frontmatter de la tarea recurrente principal que sustituye la plantilla de nombre de archivo de sus repeticiones.",
 			},
 			tagsCard: {
 				nativeObsidianTags: "Usa etiquetas nativas de Obsidian",
@@ -1418,9 +1419,6 @@ export const es: TranslationTree = {
 					label: 'Etiqueta de visualización: El nombre mostrado en la interfaz (ej. "Alta prioridad")',
 					color: "Color: Color indicador visual para el punto de prioridad y distintivos",
 					icon: "Icono: Icono Lucide opcional para mostrar en las tarjetas de tareas en lugar del punto de prioridad",
-					weight: "Peso: Valor numérico para clasificación (pesos más altos aparecen primero en listas)",
-					weightNote:
-						"Las tareas se clasifican automáticamente por peso de prioridad en orden descendente (peso más alto primero). Los pesos pueden ser cualquier número positivo.",
 				},
 				addNew: {
 					name: "Agregar nueva prioridad",
@@ -1437,40 +1435,39 @@ export const es: TranslationTree = {
 					label: "Etiqueta:",
 					color: "Color:",
 					icon: "Icono:",
-					weight: "Peso:",
 				},
 				placeholders: {
 					value: "alta",
 					label: "Alta prioridad",
 					icon: "alert-circle",
 				},
-				weightLabel: "Peso: {weight}",
 				deleteConfirm: "Debes tener al menos una prioridad",
 				deleteTooltip: "Eliminar prioridad",
 			},
 			fieldMapping: {
-				header: "Mapeo de campos",
+				header: "Asignación de campos",
 				warning:
-					"⚠️ Advertencia: TaskNotes LEERÁ Y ESCRIBIRÁ usando estos nombres de propiedad. Cambiar estos después de crear tareas puede causar inconsistencias.",
+					"⚠️ Atención: TaskNotes lee Y escribe usando estos nombres de propiedad. Si los cambias después de crear tareas, pueden producirse inconsistencias.",
 				description:
 					"Configurar qué propiedades de frontmatter debe usar TaskNotes para cada campo.",
 				resetButton: {
-					name: "Restablecer mapeos de campos",
-					description: "Restablecer todos los mapeos de campos a valores predeterminados",
+					name: "Restablecer asignaciones de campos",
+					description:
+						"Restablecer todas las asignaciones de campos a sus valores predeterminados",
 					buttonText: "Restablecer a predeterminados",
 				},
 				notices: {
-					resetSuccess: "Mapeos de campos restablecidos a predeterminados",
-					resetFailure: "Error al restablecer mapeos de campos",
+					resetSuccess: "Asignaciones de campos restablecidas",
+					resetFailure: "Error al restablecer las asignaciones de campos",
 					updateFailure:
-						"Error al actualizar mapeo de campo para {label}. Por favor intenta de nuevo.",
+						"No se pudo actualizar la asignación del campo {label}. Inténtalo de nuevo.",
 				},
 				table: {
 					fieldHeader: "Campo de TaskNotes",
 					propertyHeader: "Tu nombre de propiedad",
 				},
 				fields: {
-					skippedInstances: "Ocurrencias omitidas",
+					skippedInstances: "Repeticiones omitidas",
 
 					title: "Título",
 					status: "Estado",
@@ -1486,7 +1483,7 @@ export const es: TranslationTree = {
 					dateModified: "Fecha de modificación",
 					archiveTag: "Etiqueta de archivo",
 					timeEntries: "Entradas de tiempo",
-					completeInstances: "Instancias completas",
+					completeInstances: "Repeticiones completadas",
 					blockedBy: "Bloqueado por",
 					sortOrder: "Orden manual",
 					pomodoros: "Pomodoros",
@@ -1572,7 +1569,7 @@ export const es: TranslationTree = {
 					due: "Fecha de vencimiento",
 					scheduled: "Fecha programada",
 					timeEstimate: "Estimación de tiempo",
-					totalTrackedTime: "Tiempo total rastreado",
+					totalTrackedTime: "Tiempo total registrado",
 					checklistProgress: "Progreso de la lista de verificación",
 					recurrence: "Recurrencia",
 					completedDate: "Fecha de finalización",
@@ -1669,7 +1666,7 @@ export const es: TranslationTree = {
 						"Mostrar una línea que muestra la hora actual en vistas de línea de tiempo",
 				},
 				selectionMirror: {
-					name: "Espejo de selección",
+					name: "Vista previa de selección",
 					description:
 						"Mostrar una vista previa visual mientras se arrastra para seleccionar rangos de tiempo",
 				},
@@ -1679,7 +1676,7 @@ export const es: TranslationTree = {
 						'Configuración regional del calendario para formato de fecha y sistema de calendario (ej. "en", "fa" para Farsi/Persa, "de" para Alemán). Dejar vacío para auto-detectar desde el navegador.',
 					placeholder: "Auto-detectar",
 					invalidLocale:
-						"Configuración regional inválida. Por favor, introduzca un código de idioma válido (ej. 'es', 'en', 'fr-FR').",
+						"Configuración regional no válida. Introduce una etiqueta de idioma válida (p. ej., 'es', 'en', 'fr-FR').",
 				},
 			},
 			defaultEventVisibility: {
@@ -1706,7 +1703,8 @@ export const es: TranslationTree = {
 				},
 				showRecurringTasks: {
 					name: "Mostrar tareas recurrentes",
-					description: "Mostrar instancias de tareas recurrentes por defecto",
+					description:
+						"Mostrar las repeticiones de tareas recurrentes de forma predeterminada",
 				},
 				showICSEvents: {
 					name: "Mostrar eventos ICS",
@@ -1720,7 +1718,7 @@ export const es: TranslationTree = {
 				invalidEndTime:
 					"Hora no válida. Usa 00:00–48:00; después de medianoche, usa 24:00–48:00, como 26:00 para las 2 de la mañana del día siguiente",
 
-				header: "Configuraciones de tiempo",
+				header: "Ajustes de tiempo",
 				description:
 					"Configurar ajustes de visualización relacionados con el tiempo para vistas de línea de tiempo.",
 				timeSlotDuration: {
@@ -1762,22 +1760,9 @@ export const es: TranslationTree = {
 				header: "Elementos de interfaz",
 				description: "Configurar la visualización de varios elementos de interfaz.",
 				showTrackedTasksInStatusBar: {
-					name: "Mostrar tareas rastreadas en barra de estado",
+					name: "Mostrar tareas con seguimiento de tiempo en la barra de estado",
 					description:
-						"Mostrar tareas actualmente rastreadas en la barra de estado de Obsidian",
-				},
-				showProjectSubtasksWidget: {
-					name: "Mostrar widget de subtareas de proyecto",
-					description:
-						"Mostrar un widget que muestra subtareas para la nota de proyecto actual",
-				},
-				projectSubtasksPosition: {
-					name: "Posición de subtareas de proyecto",
-					description: "Dónde posicionar el widget de subtareas de proyecto",
-					options: {
-						top: "Parte superior de la nota",
-						bottom: "Parte inferior de la nota",
-					},
+						"Mostrar las tareas cuyo tiempo se está registrando en la barra de estado de Obsidian",
 				},
 				showRelationshipsWidget: {
 					name: "Mostrar widget de relaciones",
@@ -1813,8 +1798,9 @@ export const es: TranslationTree = {
 						"Mostrar las subtareas de proyecto expandidas cuando se renderizan las tarjetas de tareas",
 				},
 				subtaskChevronPosition: {
-					name: "Posición de chevron de subtarea",
-					description: "Posición de chevrons de expandir/contraer en tarjetas de tareas",
+					name: "Posición de la flecha de subtareas",
+					description:
+						"Posición de las flechas para expandir o contraer subtareas en las tarjetas de tareas",
 					options: {
 						left: "Lado izquierdo",
 						right: "Lado derecho",
@@ -1854,7 +1840,7 @@ export const es: TranslationTree = {
 				requiredPropertyValue: {
 					name: "Valor de propiedad requerido",
 					description:
-						"Solo las notas donde la propiedad igual a este valor son sugeridas. Dejar vacío para requerir que la propiedad exista.",
+						"Solo se sugieren notas cuya propiedad tenga este valor. Déjalo vacío para exigir únicamente que exista la propiedad.",
 					placeholder: "proyecto",
 				},
 				customizeDisplay: {
@@ -1873,31 +1859,32 @@ export const es: TranslationTree = {
 					row1: {
 						name: "Fila 1",
 						description:
-							"Formato: {propiedad|banderas}. Propiedades: title, aliases, file.path, file.parent. Banderas: n(Etiqueta) muestra etiqueta, s hace búsqueda. Ejemplo: {title|n(Título)|s}",
-						placeholder: "{title|n(Título)}",
+							"Formato: {property|flags}. Propiedades: title, aliases, file.path, file.parent. Opciones: n(Etiqueta) muestra una etiqueta y s permite buscar. Ejemplo: {title|n(Title)|s}",
+						placeholder: "{title|n(Title)}",
 					},
 					row2: {
 						name: "Fila 2 (opcional)",
 						description:
-							"Patrones comunes: {aliases|n(Alias)}, {file.parent|n(Carpeta)}, literal:Texto personalizado",
-						placeholder: "{aliases|n(Alias)}",
+							"Patrones comunes: {aliases|n(Aliases)}, {file.parent|n(Folder)}, literal:Texto personalizado",
+						placeholder: "{aliases|n(Aliases)}",
 					},
 					row3: {
 						name: "Fila 3 (opcional)",
 						description:
-							"Información adicional como {file.path|n(Ruta)} o campos de frontmatter personalizados",
-						placeholder: "{file.path|n(Ruta)}",
+							"Información adicional como {file.path|n(Path)} o campos de frontmatter personalizados",
+						placeholder: "{file.path|n(Path)}",
 					},
 				},
 				quickReference: {
 					header: "Referencia rápida",
 					properties:
 						"Propiedades disponibles: title, aliases, file.path, file.parent, o cualquier campo de frontmatter",
-					labels: 'Agregar etiquetas: {title|n(Título)} → "Título: Mi proyecto"',
-					searchable: "Hacer búsqueda: {description|s} incluye descripción en búsqueda +",
+					labels: 'Añadir etiquetas: {title|n(Title)} → "Title: Mi proyecto"',
+					searchable:
+						"Incluir en la búsqueda: {description|s} permite buscar por descripción con +",
 					staticText: "Texto estático: literal:Mi etiqueta personalizada",
 					alwaysSearchable:
-						"Nombre de archivo, título y alias siempre son búsqueda por defecto.",
+						"El nombre de archivo, el título y los alias siempre se pueden buscar.",
 				},
 			},
 			dataStorage: {
@@ -1936,7 +1923,7 @@ export const es: TranslationTree = {
 				unavailable: "Servicio OAuth no disponible",
 				connection: "Conexión OAuth 2.0",
 				connected: "Conectado",
-				disconnected: "Sin conexión",
+				disconnected: "No conectado",
 				connectedAt: "Conectado {time}",
 				refreshedAt: "Última actualización {time}",
 				neverRefreshed: "Nunca actualizado",
@@ -1980,12 +1967,12 @@ export const es: TranslationTree = {
 				disable: {
 					name: "Desactivar integraciones de calendario en móvil",
 					description:
-						"No cargar calendarios de Google, Microsoft e ICS en Obsidian Mobile. Las integraciones de calendario de escritorio no cambian.",
+						"No cargar los calendarios de Google, Microsoft e ICS en Obsidian para móviles. Las integraciones de escritorio no cambian.",
 				},
 				status: {
 					name: "Las integraciones de calendario están desactivadas en este dispositivo móvil",
 					description:
-						"Desactiva este ajuste y recarga Obsidian Mobile para volver a cargar calendarios.",
+						"Desactiva este ajuste y recarga Obsidian para móviles para volver a cargar los calendarios.",
 				},
 			},
 			basesIntegration: {
@@ -2000,7 +1987,7 @@ export const es: TranslationTree = {
 				viewCommands: {
 					header: "Vistas y archivos base",
 					description:
-						"TaskNotes utiliza archivos de Obsidian Bases (.base) para sus vistas. Estos archivos se generan automáticamente al inicio si no existen, configurados con tus ajustes actuales (identificación de tareas, mapeo de campos, estados, etc.).",
+						"TaskNotes utiliza archivos de Obsidian Bases (.base) para sus vistas. Estos archivos se generan automáticamente al inicio si no existen, configurados con tus ajustes actuales (identificación de tareas, asignación de campos, estados, etc.).",
 					descriptionRegen:
 						'Los archivos Base no se actualizan automáticamente cuando cambias la configuración. Para aplicar nuevos ajustes, usa "Actualizar archivos" abajo, elimina los archivos .base existentes y reinicia Obsidian, o edítalos manualmente.',
 					docsLink:
@@ -2099,10 +2086,10 @@ export const es: TranslationTree = {
 				recurringEventRelatedNotesMode: {
 					name: "Notas relacionadas de eventos recurrentes",
 					description:
-						"Elige si las notas vinculadas a una repetición de un evento de calendario externo aparecen en toda la serie cargada o solo en la instancia seleccionada.",
+						"Elige si las notas vinculadas a una repetición de un evento de calendario externo aparecen en toda la serie cargada o solo en la repetición seleccionada.",
 					options: {
 						series: "Toda la serie",
-						instance: "Solo la instancia seleccionada",
+						instance: "Solo la repetición seleccionada",
 					},
 				},
 			},
@@ -2277,9 +2264,9 @@ export const es: TranslationTree = {
 						"Cuando está habilitado, las tareas se crean como eventos de todo el día. Cuando está deshabilitado, usa la estimación de tiempo para la duración.",
 				},
 				showAllDayAsFree: {
-					name: "Mostrar los eventos de tareas de todo el día como libre",
+					name: "Mostrar como disponibles los eventos de tareas de todo el día",
 					description:
-						"Las tareas exportadas como eventos de todo el día no bloquean la disponibilidad, incluidas las convertidas a todo el día. Los eventos con hora siguen como ocupado. Usa la sincronización de todas las tareas para actualizar los eventos existentes.",
+						"Las tareas exportadas como eventos de todo el día no bloquean la disponibilidad, incluidas las convertidas a todo el día. Los eventos con hora siguen marcados como ocupados. Sincroniza todas las tareas para actualizar los eventos existentes.",
 				},
 				defaultDuration: {
 					name: "Duración predeterminada del evento",
@@ -2440,7 +2427,7 @@ export const es: TranslationTree = {
 				placeholders: {
 					url: "URL del webhook",
 					noEventsSelected: "No hay eventos seleccionados",
-					rawPayload: "Carga cruda (sin transformación)",
+					rawPayload: "Datos sin procesar (sin transformación)",
 				},
 				statusLabels: {
 					active: "Activo",
@@ -2477,7 +2464,7 @@ export const es: TranslationTree = {
 					noEvents: "No hay eventos seleccionados",
 				},
 				transformDisplay: {
-					noTransform: "Carga cruda (sin transformación)",
+					noTransform: "Datos sin procesar (sin transformación)",
 				},
 				secretModal: {
 					title: "Secreto de webhook generado",
@@ -2513,7 +2500,7 @@ export const es: TranslationTree = {
 					},
 					taskUnarchived: {
 						label: "Tarea desarchivada",
-						description: "Cuando se desarchivar las tareas",
+						description: "Cuando se desarchivan las tareas",
 					},
 					timeStarted: {
 						label: "Tiempo iniciado",
@@ -2536,8 +2523,8 @@ export const es: TranslationTree = {
 						description: "Cuando se detienen las sesiones de pomodoro",
 					},
 					recurringCompleted: {
-						label: "Instancia recurrente completada",
-						description: "Cuando se completan instancias de tareas recurrentes",
+						label: "Repetición completada",
+						description: "Cuando se completan repeticiones de tareas recurrentes",
 					},
 					reminderTriggered: {
 						label: "Recordatorio activado",
@@ -2605,7 +2592,7 @@ export const es: TranslationTree = {
 							jsonDescription: " Plantillas con ",
 							jsonVariable: "${data.task.title}",
 							leaveEmpty: "Dejar vacío:",
-							leaveEmptyDescription: " Enviar datos crudos",
+							leaveEmptyDescription: " Enviar datos sin procesar",
 							example: "Ejemplo:",
 							exampleFile: "simple-template.json",
 						},
@@ -2614,7 +2601,7 @@ export const es: TranslationTree = {
 							add: "Agregar webhook",
 						},
 						notices: {
-							urlRequired: "URL del webhook es requerida",
+							urlRequired: "La URL del webhook es obligatoria",
 							selectAtLeastOneEvent: "Por favor selecciona al menos un evento",
 						},
 					},
@@ -2688,7 +2675,7 @@ export const es: TranslationTree = {
 			trackingActive: "El seguimiento de tiempo ya está activo para esta tarea",
 			trackingInactive: "No hay ninguna sesión de tiempo activa para esta tarea",
 			trackingStopFailed: "No se pudo detener el seguimiento de tiempo",
-			noOverdue: "No hay tareas programadas atrasadas que posponer",
+			noOverdue: "No hay tareas con fechas programadas pasadas que posponer",
 			postponeTitle: "Posponer tareas programadas atrasadas",
 			postponeConfirm:
 				"¿Mover las tareas activas programadas atrasadas a hoy ({today})? Cantidad: {count}.",
@@ -2746,13 +2733,13 @@ export const es: TranslationTree = {
 			"No se pudo cargar {language}. El idioma actual no ha cambiado. Vuelve a intentarlo en los ajustes de idioma de la interfaz.",
 		languageChanged: "Idioma cambiado a {language}.",
 		recurringCompletion: {
-			completed: "Ocurrencia completada: {date}",
+			completed: "Repetición completada: {date}",
 			incomplete: "Marcada como incompleta: {date}",
 			next: "Siguiente: {date}",
-			noNext: "No hay más ocurrencias",
+			noNext: "No hay más repeticiones",
 			undo: "Deshacer",
 			undone: "Cambio de la tarea recurrente deshecho.",
-			conflict: "No se puede deshacer: esta ocurrencia o su programación ha cambiado.",
+			conflict: "No se puede deshacer: esta repetición o su programación ha cambiado.",
 			failed: "No se pudo deshacer el cambio de la tarea recurrente.",
 		},
 		releaseAvailable: {
@@ -2772,15 +2759,15 @@ export const es: TranslationTree = {
 		timeblockAttachmentRemoved: '"{fileName}" eliminado de los adjuntos',
 		timeblockFileTypeNotSupported:
 			'No se puede abrir "{fileName}" - tipo de archivo no compatible',
-		timeblockTitleRequired: "Por favor ingrese un título para el bloque de tiempo",
+		timeblockTitleRequired: "Introduce un título para el bloque de tiempo",
 		timeblockUpdatedSuccess: 'Bloque de tiempo "{title}" actualizado exitosamente',
 		timeblockUpdateFailed:
-			"Error al actualizar el bloque de tiempo. Consulte la consola para más detalles.",
+			"No se pudo actualizar el bloque de tiempo. Consulta la consola para ver los detalles.",
 		timeblockDeletedSuccess: 'Bloque de tiempo "{title}" eliminado exitosamente',
 		timeblockDeleteFailed:
-			"Error al eliminar el bloque de tiempo. Consulte la consola para más detalles.",
-		timeblockRequiredFieldsMissing: "Por favor complete todos los campos obligatorios",
-		agendaLoadingFailed: "Error al cargar la agenda. Por favor intente actualizar.",
+			"No se pudo eliminar el bloque de tiempo. Consulta la consola para ver los detalles.",
+		timeblockRequiredFieldsMissing: "Completa todos los campos obligatorios",
+		agendaLoadingFailed: "No se pudo cargar la agenda. Intenta actualizarla.",
 		statsLoadingFailed: "Error al cargar los detalles del proyecto.",
 	},
 	commands: {
@@ -2900,13 +2887,13 @@ export const es: TranslationTree = {
 			addProjectDesc: "Seleccionar una nota de proyecto y añadirla a esta tarea",
 			archiveDesc: "Archivar esta tarea",
 			unarchiveDesc: "Devolver la tarea a las tareas activas",
-			completeOccurrence: "Completar esta ocurrencia",
-			completeOccurrenceDesc: "Marcar esta ocurrencia de la tarea recurrente como completada",
-			occurrenceCompleted: "Ocurrencia de la tarea recurrente completada",
-			openOccurrence: "Abrir o crear la nota de la ocurrencia",
-			openOccurrenceDesc: "Abrir la nota de esta ocurrencia y crearla si es necesario",
+			completeOccurrence: "Completar esta repetición",
+			completeOccurrenceDesc: "Marcar esta repetición de la tarea recurrente como completada",
+			occurrenceCompleted: "Repetición de la tarea recurrente completada",
+			openOccurrence: "Abrir o crear la nota de la repetición",
+			openOccurrenceDesc: "Abrir la nota de esta repetición y crearla si es necesario",
 			openParent: "Abrir la tarea recurrente principal",
-			openParentDesc: "Abrir la tarea recurrente que generó esta ocurrencia",
+			openParentDesc: "Abrir la tarea recurrente que generó esta repetición",
 			editTask: "Editar detalles de la tarea",
 			editTaskDesc: "Abrir el editor completo de la tarea",
 			openFile: "Abrir archivo de la tarea",
@@ -2951,22 +2938,22 @@ export const es: TranslationTree = {
 		deviceCode: {
 			title: "Autorización del Calendario de Google",
 			instructions: {
-				intro: "Para conectar su Calendario de Google, siga estos pasos:",
+				intro: "Para conectar tu Calendario de Google, sigue estos pasos:",
 			},
 			steps: {
 				open: "Abrir",
-				inBrowser: "en su navegador",
-				enterCode: "Ingrese este código cuando se le solicite:",
-				signIn: "Inicie sesión con su cuenta de Google y otorgue acceso",
-				returnToObsidian: "Vuelva a Obsidian (esta ventana se cerrará automáticamente)",
+				inBrowser: "en tu navegador",
+				enterCode: "Introduce este código cuando se te pida:",
+				signIn: "Inicia sesión con tu cuenta de Google y concede acceso",
+				returnToObsidian: "Vuelve a Obsidian (esta ventana se cerrará automáticamente)",
 			},
-			codeLabel: "Su código:",
+			codeLabel: "Tu código:",
 			copyCodeAriaLabel: "Copiar código",
 			waitingForAuthorization: "Esperando autorización...",
 			openBrowserButton: "Abrir navegador",
 			cancelButton: "Cancelar",
-			expiresMinutesSeconds: "El código expira en {minutes}m {seconds}s",
-			expiresSeconds: "El código expira en {seconds}s",
+			expiresMinutesSeconds: "El código caduca en {minutes} min {seconds} s",
+			expiresSeconds: "El código caduca en {seconds} s",
 		},
 		icsEventInfo: {
 			typeValue: "Tipo: {type}",
@@ -2997,7 +2984,7 @@ export const es: TranslationTree = {
 			editHeading: "Editar bloque de tiempo",
 			dateTimeLabel: "Fecha y hora: ",
 			titleLabel: "Título",
-			titleDesc: "Título para su bloque de tiempo",
+			titleDesc: "Título del bloque de tiempo",
 			titlePlaceholder: "ej. Sesión de trabajo profundo",
 			descriptionLabel: "Descripción",
 			descriptionDesc: "Descripción opcional para el bloque de tiempo",
@@ -3019,7 +3006,7 @@ export const es: TranslationTree = {
 			heading: "Crear bloque de tiempo",
 			dateLabel: "Fecha: ",
 			titleLabel: "Título",
-			titleDesc: "Título para su bloque de tiempo",
+			titleDesc: "Título del bloque de tiempo",
 			titlePlaceholder: "ej. Sesión de trabajo profundo",
 			startTimeLabel: "Hora de inicio",
 			startTimeDesc: "Cuándo comienza el bloque de tiempo",
@@ -3072,7 +3059,7 @@ export const es: TranslationTree = {
 			titleLabel: "Título",
 			titleDesc: "Título para el nuevo contenido",
 			folderLabel: "Carpeta",
-			folderDesc: "Carpeta de destino (dejar vacío para la raíz del vault)",
+			folderDesc: "Carpeta de destino (déjala vacía para usar la raíz de la bóveda)",
 			folderPlaceholder: "carpeta/subcarpeta",
 			createButton: "Crear",
 			startLabel: "Inicio: ",
@@ -3102,7 +3089,7 @@ export const es: TranslationTree = {
 			title: "Migrar al nuevo sistema de recurrencia",
 			description:
 				"TaskNotes ahora usa patrones RRULE estándar de la industria para recurrencia, lo que permite horarios más complejos y mejor compatibilidad con otras aplicaciones.",
-			tasksFound: "{count} tarea(s) con patrones de recurrencia antiguos detectados",
+			tasksFound: "Tareas con patrones de recurrencia antiguos: {count}",
 			noMigrationNeeded: "No se requiere migración de tareas",
 			warnings: {
 				title: "Antes de proceder:",
@@ -3162,7 +3149,7 @@ export const es: TranslationTree = {
 			timeEstimatePlaceholder: "30",
 			unsavedChanges: {
 				title: "Cambios sin guardar",
-				message: "Tiene cambios sin guardar. ¿Desea guardarlos?",
+				message: "Tienes cambios sin guardar. ¿Quieres guardarlos?",
 				save: "Guardar cambios",
 				discard: "Descartar cambios",
 				cancel: "Seguir editando",
@@ -3228,14 +3215,14 @@ export const es: TranslationTree = {
 				daily: "Diario",
 				weekly: "Semanal",
 				everyTwoWeeks: "Cada 2 semanas",
-				weekdays: "Días de semana",
-				weeklyOn: "Semanal en {days}",
+				weekdays: "De lunes a viernes",
+				weeklyOn: "Cada semana: {days}",
 				monthly: "Mensual",
 				everyThreeMonths: "Cada 3 meses",
-				monthlyOnOrdinal: "Mensual en el {ordinal}",
+				monthlyOnOrdinal: "Cada mes, el día {ordinal}",
 				monthlyByWeekday: "Mensual (por día de semana)",
 				yearly: "Anual",
-				yearlyOn: "Anual en {month} {day}",
+				yearlyOn: "Cada año, el {day} de {month}",
 				custom: "Personalizado",
 				countSuffix: "{count} veces",
 				untilSuffix: "hasta {date}",
@@ -3268,7 +3255,7 @@ export const es: TranslationTree = {
 				createLabel: " para crear: ",
 			},
 			notices: {
-				emptyQuery: "Por favor ingrese una descripción de tarea",
+				emptyQuery: "Introduce una descripción de la tarea",
 				invalidTitle: "No se pudo reconocer un título de tarea válido",
 			},
 		},
@@ -3292,7 +3279,7 @@ export const es: TranslationTree = {
 		},
 		taskEdit: {
 			previousMonth: "Mes anterior",
-			occurrenceDate: "Ocurrencia del {date}",
+			occurrenceDate: "Repetición del {date}",
 
 			title: "Editar tarea",
 			sections: {
@@ -3300,7 +3287,7 @@ export const es: TranslationTree = {
 				taskInfo: "Información de la tarea",
 			},
 			metadata: {
-				totalTrackedTime: "Tiempo total rastreado:",
+				totalTrackedTime: "Tiempo total registrado:",
 				due: "Vencimiento:",
 				scheduled: "Programada:",
 				created: "Creado:",
@@ -3473,7 +3460,7 @@ export const es: TranslationTree = {
 		},
 		timeEntry: {
 			mustHaveSpecificTime:
-				"Las entradas de tiempo deben tener horas específicas. Seleccione un rango de tiempo en la vista semanal o diaria.",
+				"Las entradas de tiempo necesitan horas concretas. Selecciona un intervalo en la vista semanal o diaria.",
 			noTasksAvailable: "No hay tareas disponibles para crear entradas de tiempo",
 			created: "Entrada de tiempo creada para {taskTitle} ({duration} minutos)",
 			createFailed: "Error al crear entrada de tiempo",
@@ -3540,10 +3527,10 @@ export const es: TranslationTree = {
 				unknownDependency: "Desconocido",
 				inputPlaceholder: "[[Nota de tarea]]",
 				notices: {
-					noEntries: "Por favor ingrese al menos una tarea",
-					blockedByAdded: "{count} dependencia agregada",
+					noEntries: "Introduce al menos una tarea",
+					blockedByAdded: "Dependencias añadidas: {count}",
 					blockedByRemoved: "Dependencia eliminada",
-					blockingAdded: "{count} tarea dependiente agregada",
+					blockingAdded: "Tareas dependientes añadidas: {count}",
 					blockingRemoved: "Tarea dependiente eliminada",
 					unresolved: "No se pudo resolver: {entries}",
 					noEligibleTasks: "No hay tareas coincidentes disponibles",
@@ -3581,10 +3568,10 @@ export const es: TranslationTree = {
 				noSubtasks: "No se encontraron subtareas",
 				loadFailed: "Error al cargar subtareas",
 			},
-			markComplete: "Marcar como completo para esta fecha",
-			markIncomplete: "Marcar como incompleto para esta fecha",
-			skipInstance: "Omitir instancia",
-			unskipInstance: "Deshacer omisión de instancia",
+			markComplete: "Marcar como completada en esta fecha",
+			markIncomplete: "Marcar como incompleta en esta fecha",
+			skipInstance: "Omitir repetición",
+			unskipInstance: "Deshacer omisión de repetición",
 			completion: {
 				submenu: "Marcar como completada u omitir",
 				submenuCompleteOnly: "Marcar como completada",
@@ -3599,9 +3586,9 @@ export const es: TranslationTree = {
 				noCompletedStatus: "No hay ningún estado de finalización configurado",
 				pickDateTitle: "Elegir fecha de finalización",
 				completeFailure: "No se pudo actualizar la finalización de la tarea: {message}",
-				clearInstancesConfirmTitle: "¿Borrar las instancias registradas?",
+				clearInstancesConfirmTitle: "¿Borrar las repeticiones registradas?",
 				clearInstancesConfirmMessage:
-					"Al reprogramar se borrarán estas instancias registradas como completadas u omitidas en la nueva fecha o después de ella: {dates}. Dejarán de estar marcadas como completadas u omitidas. ¿Continuar?",
+					"Al reprogramar se borrarán las repeticiones completadas u omitidas en la nueva fecha o después de ella: {dates}. Dejarán de figurar como completadas u omitidas. ¿Continuar?",
 				clearInstancesConfirmButton: "Reprogramar y borrar",
 			},
 			quickReminders: {
@@ -3734,7 +3721,7 @@ export const es: TranslationTree = {
 			notices: {
 				generateLinkFailed: "Error al generar enlace de calendario",
 				noTasksToExport: "No se encontraron tareas para exportar",
-				downloadSuccess: "Descargado {filename} con {count} tarea{plural}",
+				downloadSuccess: "Archivo {filename} descargado ({count} tarea{plural})",
 				downloadFailed: "Error al descargar archivo de calendario",
 				singleDownloadSuccess: "Descargado {filename}",
 			},
@@ -3772,10 +3759,10 @@ export const es: TranslationTree = {
 			notices: {
 				noCheckboxTasks:
 					"No se encontraron tareas de casilla de verificación en la nota actual.",
-				convertingTasks: "Convirtiendo {count} tarea{plural}...",
-				conversionSuccess: "✅ ¡{count} tarea{plural} convertida exitosamente a TaskNotes!",
+				convertingTasks: "Convirtiendo {count} tarea{plural}…",
+				conversionSuccess: "✅ Conversión a TaskNotes: {count} tarea{plural}",
 				partialConversion:
-					"{successCount} tarea{successPlural} convertida. {failureCount} fallaron.",
+					"Conversión: {successCount} tarea{successPlural}. Fallos: {failureCount}.",
 				batchConversionFailed:
 					"Error al realizar conversión por lotes. Por favor intenta de nuevo.",
 				invalidParameters: "Parámetros de entrada inválidos.",
@@ -3802,9 +3789,10 @@ export const es: TranslationTree = {
 			notices: {
 				templateNotFound: "Plantilla del cuerpo de tarea no encontrada: {path}",
 				templateReadError: "Error al leer plantilla del cuerpo de tarea: {template}",
-				occurrenceTemplateNotFound: "Plantilla de nota de ocurrencia no encontrada: {path}",
+				occurrenceTemplateNotFound:
+					"No se encontró la plantilla de nota de repetición: {path}",
 				occurrenceTemplateReadError:
-					"Error al leer plantilla de nota de ocurrencia: {template}",
+					"Error al leer la plantilla de nota de repetición: {template}",
 				moveTaskFailed: "Error al mover tarea {operation}: {error}",
 			},
 		},
@@ -3815,18 +3803,18 @@ export const es: TranslationTree = {
 		},
 		notification: {
 			missed: {
-				prefixToday: "Recordatorio perdido ({time})",
-				prefixOnDay: "Recordatorio perdido ({day}, {time})",
+				prefixToday: "Recordatorio no atendido ({time})",
+				prefixOnDay: "Recordatorio no atendido ({day}, {time})",
 				message: "{prefix}: {text}",
 				dueWas: "La tarea {title} vencía {when}",
 				dueIs: "La tarea {title} vence {when}",
-				scheduledWas: "La tarea {title} estaba programada {when}",
-				scheduledIs: "La tarea {title} está programada {when}",
+				scheduledWas: "La tarea {title} estaba programada para {when}",
+				scheduledIs: "La tarea {title} está programada para {when}",
 				whenTodayAt: "a las {time}",
 				whenOnDayAt: "el {day} a las {time}",
 				whenOnDay: "el {day}",
 				whenToday: "hoy",
-				summaryTitle: "{count} recordatorios de TaskNotes perdidos",
+				summaryTitle: "Recordatorios de TaskNotes no atendidos: {count}",
 				summaryMore: "{titles} y {count} más",
 			},
 		},
@@ -3838,7 +3826,7 @@ export const es: TranslationTree = {
 
 			copySelected: "Copiar tareas seleccionadas",
 			clearSelection: "Borrar selección",
-			createEntry: "Crear registro de tiempo",
+			createEntry: "Crear entrada de tiempo",
 			createExternal: "Crear evento de calendario externo",
 			expandAll: "Expandir todos los grupos y subgrupos",
 			collapseAll: "Contraer todos los grupos y subgrupos",
@@ -3943,15 +3931,15 @@ export const es: TranslationTree = {
 			closeFilterModal: "Cerrar modal de filtro",
 			deleteFilterGroup: "Eliminar grupo de filtros",
 			deleteCondition: "Eliminar condición",
-			all: "Todos",
-			any: "Cualquiera",
-			followingAreTrue: "de los siguientes son verdaderos:",
+			all: "Todas las",
+			any: "Al menos una de las",
+			followingAreTrue: "siguientes condiciones:",
 			where: "donde",
 			selectProperty: "Seleccionar...",
 			chooseProperty: "Elegir por qué propiedad de tarea filtrar",
 			chooseOperator: "Elegir cómo comparar el valor de la propiedad",
 			enterValue: "Ingresar el valor por el cual filtrar",
-			selectValue: "Seleccionar un {property} por el cual filtrar",
+			selectValue: "Seleccionar un valor de {property} para filtrar",
 			sortBy: "Ordenar por:",
 			toggleSortDirection: "Alternar dirección de ordenamiento",
 			chooseSortMethod: "Elegir cómo ordenar tareas",
@@ -4008,7 +3996,7 @@ export const es: TranslationTree = {
 	},
 	components: {
 		dateContextMenu: {
-			weekdays: "Días laborables",
+			weekdays: "Días de lunes a viernes",
 			clearDate: "Borrar fecha",
 			today: "Hoy",
 			tomorrow: "Mañana",
@@ -4042,7 +4030,7 @@ export const es: TranslationTree = {
 				dueDate: "Fecha de vencimiento",
 				scheduledDate: "Fecha programada",
 				timeEstimate: "Estimación de tiempo",
-				totalTrackedTime: "Tiempo total rastreado",
+				totalTrackedTime: "Tiempo total registrado",
 				checklistProgress: "Progreso de la lista de verificación",
 				recurrence: "Recurrencia",
 				completedDate: "Fecha de finalización",
@@ -4070,12 +4058,12 @@ export const es: TranslationTree = {
 		},
 		recurrenceContextMenu: {
 			daily: "Diario",
-			weeklyOn: "Semanal en {day}",
-			everyTwoWeeksOn: "Cada 2 semanas en {day}",
-			monthlyOnThe: "Mensual en el {ordinal}",
-			everyThreeMonthsOnThe: "Cada 3 meses en el {ordinal}",
-			yearlyOn: "Anual en {month} {ordinal}",
-			weekdaysOnly: "Solo días de semana",
+			weeklyOn: "Cada semana: {day}",
+			everyTwoWeeksOn: "Cada 2 semanas: {day}",
+			monthlyOnThe: "Cada mes, el {ordinal}",
+			everyThreeMonthsOnThe: "Cada 3 meses, el {ordinal}",
+			yearlyOn: "Cada año, el {ordinal} de {month}",
+			weekdaysOnly: "Solo de lunes a viernes",
 			dailyAfterCompletion: "Diario (después de completar)",
 			every3DaysAfterCompletion: "Cada 3 días (después de completar)",
 			weeklyAfterCompletion: "Semanal (después de completar)",
@@ -4089,10 +4077,9 @@ export const es: TranslationTree = {
 				startDate: "Fecha de inicio",
 				startDateDesc: "La fecha cuando comienza el patrón de recurrencia",
 				startTime: "Hora de inicio",
-				startTimeDesc:
-					"La hora cuando deben aparecer las instancias recurrentes (opcional)",
-				recurFrom: "Recurrir desde",
-				recurFromDesc: "¿Cuándo debe calcularse la siguiente ocurrencia?",
+				startTimeDesc: "La hora a la que deben aparecer las repeticiones (opcional)",
+				recurFrom: "Calcular la siguiente repetición desde",
+				recurFromDesc: "¿Cuándo debe calcularse la siguiente repetición?",
 				scheduledDate: "Fecha programada",
 				completionDate: "Fecha de finalización",
 				frequency: "Frecuencia",
@@ -4107,12 +4094,12 @@ export const es: TranslationTree = {
 				endCondition: "Condición de fin",
 				endConditionDesc: "Elegir cuándo debe terminar la recurrencia",
 				neverEnds: "Nunca termina",
-				endAfterOccurrences: "Terminar después de {count} ocurrencias",
+				endAfterOccurrences: "Terminar tras {count} repeticiones",
 				endOnDate: "Terminar en {date}",
-				onDayOfMonth: "En el día {day} de cada mes",
-				onTheWeekOfMonth: "En el {week} {day} de cada mes",
-				onDateOfYear: "En {month} {day} cada año",
-				onTheWeekOfYear: "En el {week} {day} de {month} cada año",
+				onDayOfMonth: "El día {day} de cada mes",
+				onTheWeekOfMonth: "El {week} {day} de cada mes",
+				onDateOfYear: "El {day} de {month} de cada año",
+				onTheWeekOfYear: "El {week} {day} de {month} de cada año",
 				frequencies: {
 					daily: "Diario",
 					weekly: "Semanal",
@@ -4127,13 +4114,13 @@ export const es: TranslationTree = {
 					last: "último",
 				},
 				weekdays: {
-					monday: "Lunes",
-					tuesday: "Martes",
-					wednesday: "Miércoles",
-					thursday: "Jueves",
-					friday: "Viernes",
-					saturday: "Sábado",
-					sunday: "Domingo",
+					monday: "lunes",
+					tuesday: "martes",
+					wednesday: "miércoles",
+					thursday: "jueves",
+					friday: "viernes",
+					saturday: "sábado",
+					sunday: "domingo",
 				},
 				weekdaysShort: {
 					mon: "Lun",

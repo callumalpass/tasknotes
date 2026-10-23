@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import {
 	autocompletion,
 	CompletionContext,
@@ -277,12 +279,12 @@ function getListSuggestions(
 	switch (propertyId) {
 		case "tags":
 			items = plugin.cacheManager.getAllTags();
-			label = "Tag";
+			label = uiText(msg({ message: "Tag", context: "editor/NLPCodeMirrorAutocomplete: getListSuggestions display" }));
 			break;
 
 		case "contexts":
 			items = plugin.cacheManager.getAllContexts();
-			label = "Context";
+			label = uiText(msg({ message: "Context", context: "editor/NLPCodeMirrorAutocomplete: getListSuggestions display" }));
 			break;
 
 		default:
@@ -376,7 +378,7 @@ async function getFileSuggestions(
 					label: displayText,
 					apply: `[[${insertText}]] `,
 					type: "text",
-					info: "Project",
+					info: uiText(msg({ message: "Project", context: "editor/NLPCodeMirrorAutocomplete: getFileSuggestions info" })),
 					// Add metadata as a custom property for the render function
 					projectMetadata: metadataRows.length > 0 ? metadataRows : undefined,
 					projectQuery: query,
@@ -393,7 +395,7 @@ async function getFileSuggestions(
 				label: displayText,
 				apply: `[[${insertText}]] `,
 				type: "text",
-				info: propertyId === "projects" ? "Project" : propertyId,
+				info: propertyId === "projects" ? uiText(msg({ message: "Project", context: "editor/NLPCodeMirrorAutocomplete: getFileSuggestions info" })) : propertyId,
 			};
 		});
 	} catch (error) {
@@ -522,7 +524,7 @@ function getStatusSuggestions(query: string, plugin: TaskNotesPlugin): Completio
 		label: s.display,
 		apply: s.value + " ",
 		type: "text",
-		info: "Status",
+		info: uiText(msg({ message: "Status", context: "editor/NLPCodeMirrorAutocomplete: getStatusSuggestions info" })),
 	}));
 }
 
@@ -539,7 +541,7 @@ function getPrioritySuggestions(query: string, plugin: TaskNotesPlugin): Complet
 			label: p.label,
 			apply: p.value + " ",
 			type: "text",
-			info: "Priority",
+			info: uiText(msg({ message: "Priority", context: "editor/NLPCodeMirrorAutocomplete: getPrioritySuggestions info" })),
 		}));
 }
 
@@ -555,6 +557,6 @@ function getBooleanSuggestions(query: string): Completion[] {
 			label: opt,
 			apply: opt + " ",
 			type: "text",
-			info: "Boolean",
+			info: uiText(msg({ message: "Boolean", context: "editor/NLPCodeMirrorAutocomplete: getBooleanSuggestions info" })),
 		}));
 }

@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../main";
 import { Reminder, TaskDependency, TaskInfo, TimeEntry } from "../types";
 import type { OccurrenceMaterializationMode, OccurrenceNextTrigger } from "@tasknotes/model";
@@ -238,7 +240,7 @@ function createTaskInfoFromProperties(
 			toOptionalString(props.title) ||
 			basesItem.name ||
 			basesItem.path?.split("/").pop()?.replace(".md", "") ||
-			"Untitled",
+			uiText(msg({ message: "Untitled", context: "bases/helpers: createTaskInfoFromProperties title" })),
 		status: toOptionalString(props.status) || plugin?.settings?.defaultTaskStatus || "open",
 		priority: toOptionalString(props.priority) || "normal",
 		path: basesItem.path || "",
@@ -739,7 +741,7 @@ export async function renderGroupedTasksInBasesView(
 			groupKey = keyObj.data;
 		} else {
 			// Fallback for unknown structures
-			groupKey = keyObj || "Unknown";
+			groupKey = keyObj || uiText(msg({ message: "Unknown", context: "bases/helpers: renderGroupedTasksInBasesView display" }));
 		}
 
 		// Format group name properly - handle Date objects for date-based grouping
@@ -751,9 +753,9 @@ export async function renderGroupedTasksInBasesView(
 			// the date as the user perceives it (e.g., "2025-06-10" for June 10th in their timezone)
 			groupName = format(groupKey, "yyyy-MM-dd");
 		} else if (groupKey === null || groupKey === undefined || groupKey === "") {
-			groupName = "None";
+			groupName = uiText(msg({ message: "None", context: "bases/helpers: renderGroupedTasksInBasesView display" }));
 		} else {
-			groupName = stringifyUnknown(groupKey) || "None";
+			groupName = stringifyUnknown(groupKey) || uiText(msg({ message: "None", context: "bases/helpers: renderGroupedTasksInBasesView display" }));
 		}
 		const groupEntries = group.entries || [];
 
@@ -774,7 +776,7 @@ export async function renderGroupedTasksInBasesView(
 		const toggleBtn = createElementInDocument(doc, "button");
 		toggleBtn.className = "task-group-toggle";
 		toggleBtn.type = "button";
-		toggleBtn.setAttribute("aria-label", "Toggle group");
+		toggleBtn.setAttribute("aria-label", uiText(msg({ message: "Toggle group", context: "bases/helpers: renderGroupedTasksInBasesView display" })));
 		toggleBtn.setAttribute("aria-expanded", "true");
 		headerElement.appendChild(toggleBtn);
 
@@ -789,7 +791,7 @@ export async function renderGroupedTasksInBasesView(
 		}
 
 		// Format group name and add count
-		const displayName = groupName === "null" || groupName === "undefined" ? "None" : groupName;
+		const displayName = groupName === "null" || groupName === "undefined" ? uiText(msg({ message: "None", context: "bases/helpers: renderGroupedTasksInBasesView display" })) : groupName;
 		headerElement.createSpan({ text: displayName });
 
 		// Add count
