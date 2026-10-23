@@ -37,3 +37,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2414) Fixed Kanban mouse drags aborting on touchscreen laptops while preserving long-press touch dragging. See [Kanban drag-and-drop](https://tasknotes.dev/views/kanban-view/#drag-and-drop-tasks).
   - Thanks to @paladinm078 for reporting and isolating the cause.
 - (#2394) Fixed expanded subtasks keeping their previous order after changing a Task List sort when top-level subtasks are hidden. Formula sorts such as `priorityWeight` now refresh already-expanded subtasks. See [Task List](https://tasknotes.dev/views/task-list/). Thanks to @iantierney for reporting this.
+- (#2396) Rescheduling a native virtual recurring task now replaces its original calendar placement without changing later recurrence dates. Completion, skip and Undo retain the original occurrence identity. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-a-virtual-occurrence).
+  - Thanks to @martin-forge for reporting and providing a fresh-vault reproduction.

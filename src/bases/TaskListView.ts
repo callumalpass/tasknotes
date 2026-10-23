@@ -8,6 +8,7 @@ import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { getTaskCardPropertyValue } from "../ui/taskCardPropertyAccess";
+import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 import { normalizeTaskSignatureValue } from "./taskSignatureValue";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
@@ -3266,6 +3267,7 @@ export class TaskListView extends BasesViewBase {
 	private getCardOptions(targetDate: Date): TaskCardOptions {
 		return this.buildTaskCardOptions({
 			targetDate,
+			usePendingOccurrenceIdentity: true,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
 			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>
 				normalizeExpandedRelationshipFilterMode(
@@ -3609,7 +3611,7 @@ export class TaskListView extends BasesViewBase {
 	 * Prefers the task's scheduled (or due) date to avoid marking the wrong instance.
 	 */
 	private getTaskActionDate(task: TaskInfo): Date {
-		const dateStr = getDatePart(task.scheduled || task.due || "");
+		const dateStr = getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || task.due || "");
 		if (dateStr) {
 			return parseDateToUTC(dateStr);
 		}

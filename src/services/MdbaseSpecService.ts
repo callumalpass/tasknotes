@@ -281,6 +281,10 @@ export class MdbaseSpecService {
 			type: "date",
 			description: "Target recurrence date for a materialized occurrence note.",
 		});
+		this.addRoleField(lines, "recurrenceOriginalDate", {
+			type: "date",
+			description: "Original rule date of a pending moved virtual recurring occurrence.",
+		});
 		this.addField(lines, "tags", { type: "list", items: { type: "string" }, tn_role: "tags" });
 
 		// Complex nested fields

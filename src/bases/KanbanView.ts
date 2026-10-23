@@ -4207,6 +4207,7 @@ export class KanbanView extends BasesViewBase {
 		return this.buildTaskCardOptions({
 			layout: this.cardLayout,
 			targetDate,
+			usePendingOccurrenceIdentity: true,
 			hideStatusIndicator,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
 			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>

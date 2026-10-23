@@ -53,6 +53,7 @@ import {
 	type CalendarTaskEventContext,
 } from "./calendarTaskEvents";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarCore" });
 
@@ -902,7 +903,8 @@ function createRecurringScheduledToDueSpanEvents(
 	spanDayOffset: number,
 	plugin: TaskNotesPlugin,
 	visibleStart?: Date,
-	visibleEnd?: Date
+	visibleEnd?: Date,
+	occurrenceIdentity = instanceDate
 ): CalendarEvent[] {
 	if (!task.scheduled || !task.due) {
 		return [];
@@ -916,15 +918,15 @@ function createRecurringScheduledToDueSpanEvents(
 		scheduled: scheduledTime ? `${instanceDate}T${scheduledTime}` : instanceDate,
 		due: replaceDatePartPreservingTime(task.due, dueDatePart),
 	};
-	const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
-	const isInstanceSkipped = task.skipped_instances?.includes(instanceDate) || false;
+	const isInstanceCompleted = task.complete_instances?.includes(occurrenceIdentity) || false;
+	const isInstanceSkipped = task.skipped_instances?.includes(occurrenceIdentity) || false;
 	const recurringProps = {
 		isCompleted: isInstanceCompleted,
 		isSkipped: isInstanceSkipped,
 		isNextScheduledOccurrence: instanceKind === "next-scheduled",
 		isPatternInstance: instanceKind === "pattern",
 		isRecurringInstance: instanceKind === "recorded",
-		instanceDate,
+		instanceDate: occurrenceIdentity,
 		recurringTemplateTime: templateTime,
 	};
 
@@ -933,7 +935,7 @@ function createRecurringScheduledToDueSpanEvents(
 			const eventDate = getDatePart(event.start);
 			return {
 				...event,
-				id: `span-${instanceKind}-${task.path}-${instanceDate}-${eventDate}`,
+				id: `span-${instanceKind}-${task.path}-${occurrenceIdentity}-${eventDate}`,
 				editable: false,
 				extendedProps: {
 					...event.extendedProps,
@@ -1151,10 +1153,12 @@ export function generateRecurringTaskInstances(
 	const hasOriginalTime = hasTimeComponent(task.scheduled);
 	const templateTime = getRecurringTime(task);
 	const nextScheduledDate = getDatePart(task.scheduled);
+	const nextScheduledIdentity = getRecurringMoveOriginalDate(task) || nextScheduledDate;
 	// A moved occurrence is represented at its current scheduled placement.
 	// Its original rule date must not also become a projected task. Recorded
 	// completions/skips are handled separately below and remain available.
 	const movedOriginalDates = new Set(task.googleCalendarMovedOriginalDates || []);
+	if (nextScheduledIdentity !== nextScheduledDate) movedOriginalDates.add(nextScheduledIdentity);
 	if (task.googleCalendarExceptionOriginalScheduled) {
 		movedOriginalDates.add(getDatePart(task.googleCalendarExceptionOriginalScheduled));
 	}
@@ -1173,16 +1177,16 @@ export function generateRecurringTaskInstances(
 		const nextScheduledEvent = createNextScheduledEvent(
 			task,
 			scheduledEventStart,
-			nextScheduledDate,
+			nextScheduledIdentity,
 			scheduledTime || "09:00",
 			plugin
 		);
 		if (
 			nextScheduledEvent &&
-			!materializedDates.has(nextScheduledDate) &&
+			!materializedDates.has(nextScheduledIdentity) &&
 			shouldShowRecurringInstance(
 				task,
-				nextScheduledDate,
+				nextScheduledIdentity,
 				showCompletedRecurringInstances,
 				showSkippedRecurringInstances
 			)
@@ -1196,15 +1200,16 @@ export function generateRecurringTaskInstances(
 					spanDayOffset,
 					plugin,
 					startDate,
-					endDate
+					endDate,
+					nextScheduledIdentity
 				);
 				if (spanEvents.length > 0) {
 					instances.push(...spanEvents);
-					emittedInstanceDates.add(nextScheduledDate);
+					emittedInstanceDates.add(nextScheduledIdentity);
 				}
 			} else {
 				instances.push(nextScheduledEvent);
-				emittedInstanceDates.add(nextScheduledDate);
+				emittedInstanceDates.add(nextScheduledIdentity);
 			}
 		}
 
@@ -1244,7 +1249,7 @@ export function generateRecurringTaskInstances(
 			}
 
 			// Skip if conflicts with next scheduled occurrence
-			if (instanceDate === nextScheduledDate || movedOriginalDates.has(instanceDate)) {
+			if (instanceDate === nextScheduledIdentity || movedOriginalDates.has(instanceDate)) {
 				continue;
 			}
 

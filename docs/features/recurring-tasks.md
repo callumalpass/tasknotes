@@ -191,6 +191,24 @@ scheduled: "2025-08-05T14:30"
 complete_instances: ["2025-08-04"]
 ```
 
+### Rescheduling a virtual occurrence
+
+Moving the next occurrence of a **scheduled-anchored** native recurring task replaces its original calendar placement; it does not create an extra occurrence or change the series cadence. TaskNotes retains the original rule date as the occurrence's identity:
+
+```yaml
+scheduled: 2026-10-12
+recurrence: DTSTART:20261018;FREQ=YEARLY
+recurrence_original_date: 2026-10-18
+```
+
+This occurrence appears on 12 October, not again on 18 October. Completing or skipping it records **18 October** in `complete_instances` or `skipped_instances`, and advances to the next unprocessed rule occurrence. Completed/skipped history remains keyed to the original rule dates, not to the day the work was performed. The completion notice and **Undo** refer to that same identity; Undo restores the moved schedule and its identity together.
+
+If a move lands on another actual rule date, the two commitments remain distinct even though they share a placement. The ordinary task checkbox acts on the pending moved occurrence; an explicitly selected calendar pattern instance acts on its own rule date. API callers can omit the action date to select the pending occurrence, or pass its original identity. An off-pattern moved execution date also resolves to that known identity; an explicit pattern date is never reassigned to another occurrence.
+
+`recurrence_original_date` is an optional, provider-independent `YYYY-MM-DD` system property. Moving the pending occurrence again retains its first original date. Returning it to its original day removes the property. A time-only edit does not change its day identity. TaskNotes removes the property when a next occurrence is selected (even if it shares the moved placement date) or the recurrence rule/anchor changes; an exhausted series whose schedule cannot advance keeps it so the last occurrence does not reappear as incomplete. Materializing a moved occurrence gives its note the original `occurrence_date` and the moved `scheduled` placement.
+
+TaskNotes captures this identity when rescheduling through its controls or task service/API. Existing off-pattern notes without an original-date marker are not assigned a guessed identity. When editing YAML directly, retain/set `recurrence_original_date` explicitly if you know which original rule occurrence is being moved; remove it when intentionally replacing the series. Existing Google Calendar exception fields retain their legacy behavior and are not rewritten into the new format. Completion-anchored recurrences keep their existing re-anchoring behavior.
+
 ## Calendar Drag and Drop
 
 Calendar interactions follow the same model distinction: drag the concrete next item to reschedule execution, or drag a pattern instance to redefine the recurrence anchor.
@@ -242,7 +260,7 @@ The next occurrence can be:
 - Before `DTSTART`
 - Outside the pattern day
 - At a different time than pattern instances
-- Far ahead while pattern continues unchanged
+- Far ahead while the other pattern occurrences continue unchanged
 
 ### Examples
 

@@ -6,6 +6,12 @@ import {
 	resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction,
 } from "./googleCalendarRecurringExceptions";
 import {
+	applyRecurringMoveForScheduledChange,
+	clearRecurringMoveAfterSeriesChange,
+	getRecurringMoveOriginalDate,
+	resolveRecurringMoveAfterAction,
+} from "./recurringMoveIdentity";
+import {
 	applyPropertyTaskIdentifier,
 	getFrontmatterTags,
 } from "../../utils/taskIdentificationFrontmatter";
@@ -206,12 +212,13 @@ export function buildTaskUpdateRecurrenceUpdates({
 	if (
 		updates.scheduled !== undefined &&
 		updates.scheduled !== originalTask.scheduled &&
+		(!Object.prototype.hasOwnProperty.call(updates, "recurrence") ||
+			updates.recurrence === originalTask.recurrence) &&
 		originalTask.recurrence &&
 		typeof originalTask.recurrence === "string" &&
 		!originalTask.recurrence.includes("DTSTART:")
 	) {
-		const tempTask: TaskInfo = { ...originalTask, ...updates };
-		const updatedRecurrence = addDTSTARTToRecurrenceRuleFn(tempTask);
+		const updatedRecurrence = addDTSTARTToRecurrenceRuleFn(originalTask);
 		if (updatedRecurrence) {
 			recurrenceUpdates.recurrence = updatedRecurrence;
 		}
@@ -231,18 +238,32 @@ export function buildTaskUpdateRecurrenceUpdates({
 				skipped_instances: updates.skipped_instances ?? originalTask.skipped_instances,
 			}, maintainDueDateOffsetInRecurring)
 			: undefined;
-		const isAutomaticAdvance = completionActionDate &&
-			updates.scheduled !== originalTask.scheduled &&
+		const isAutomaticAdvance =
+			completionActionDate &&
 			updates.scheduled === expectedAdvance?.scheduled &&
 			(updates.recurrence === undefined || updates.recurrence === originalTask.recurrence);
 
 		if (isAutomaticAdvance) {
+			const pendingOriginal = getRecurringMoveOriginalDate(originalTask);
+			const processed =
+				pendingOriginal &&
+				(nextTask.complete_instances?.includes(pendingOriginal) ||
+					nextTask.skipped_instances?.includes(pendingOriginal));
+			if (pendingOriginal && !processed) {
+				nextTask.scheduled = originalTask.scheduled;
+				nextTask.due = originalTask.due;
+				recurrenceUpdates.scheduled = originalTask.scheduled;
+				recurrenceUpdates.due = originalTask.due;
+			} else {
+				resolveRecurringMoveAfterAction(originalTask, nextTask, true);
+			}
 			resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
 				originalTask,
 				completionActionDate,
 				nextTask
 			);
 		} else {
+			applyRecurringMoveForScheduledChange(originalTask, nextTask);
 			applyGoogleCalendarRecurringExceptionForScheduledChange(
 				originalTask,
 				updates.scheduled,
@@ -252,10 +273,23 @@ export function buildTaskUpdateRecurrenceUpdates({
 
 		recurrenceUpdates.googleCalendarExceptionOriginalScheduled =
 			nextTask.googleCalendarExceptionOriginalScheduled;
-		recurrenceUpdates.googleCalendarMovedOriginalDates = nextTask.googleCalendarMovedOriginalDates;
+		recurrenceUpdates.googleCalendarMovedOriginalDates =
+			nextTask.googleCalendarMovedOriginalDates;
+		if (originalTask.recurrence_original_date || nextTask.recurrence_original_date) {
+			recurrenceUpdates.recurrence_original_date = nextTask.recurrence_original_date;
+		}
 	}
 
 	const nextTask: TaskInfo = { ...originalTask, ...updates, ...recurrenceUpdates };
+	if (
+		Object.prototype.hasOwnProperty.call(updates, "recurrence") ||
+		Object.prototype.hasOwnProperty.call(updates, "recurrence_anchor")
+	) {
+		clearRecurringMoveAfterSeriesChange(originalTask, nextTask);
+		if (originalTask.recurrence_original_date || nextTask.recurrence_original_date) {
+			recurrenceUpdates.recurrence_original_date = nextTask.recurrence_original_date;
+		}
+	}
 	applyGoogleCalendarRecurringExceptionCleanup(nextTask);
 	recurrenceUpdates.googleCalendarExceptionOriginalScheduled =
 		nextTask.googleCalendarExceptionOriginalScheduled;
@@ -431,10 +465,13 @@ function removeUnsetMappedFields(
 		delete frontmatter[fieldMapper.toUserField("recurrence")];
 	}
 	if (
-		Object.prototype.hasOwnProperty.call(
-			updates,
-			"googleCalendarExceptionOriginalScheduled"
-		) &&
+		Object.prototype.hasOwnProperty.call(updates, "recurrence_original_date") &&
+		updates.recurrence_original_date === undefined
+	) {
+		delete frontmatter[fieldMapper.toUserField("recurrenceOriginalDate")];
+	}
+	if (
+		Object.prototype.hasOwnProperty.call(updates, "googleCalendarExceptionOriginalScheduled") &&
 		updates.googleCalendarExceptionOriginalScheduled === undefined
 	) {
 		delete frontmatter[fieldMapper.toUserField("googleCalendarExceptionOriginalScheduled")];
