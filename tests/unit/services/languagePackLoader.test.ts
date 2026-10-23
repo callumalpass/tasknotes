@@ -282,13 +282,14 @@ describe("LanguagePackLoader", () => {
 			},
 		});
 		const pending = loader.load("fr");
-		await Promise.resolve();
+		// Let the bounded cache read finish and the download deadline start.
+		for (let tick = 0; tick < 10; tick++) await Promise.resolve();
 		expire();
 		await expect(pending).rejects.toThrow("timed out");
 		finish(bytes);
 		await Promise.resolve();
 		expect(cache.write).not.toHaveBeenCalled();
-		expect(cancel).toHaveBeenCalledTimes(1);
+		expect(cancel).toHaveBeenCalledTimes(2);
 	});
 
 	it("times out and permits a subsequent retry", async () => {

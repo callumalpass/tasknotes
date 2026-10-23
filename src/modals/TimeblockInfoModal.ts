@@ -177,7 +177,7 @@ export class TimeblockInfoModal extends Modal {
 								if (file instanceof TAbstractFile) this.addAttachment(file);
 							},
 							{
-								placeholder: "Search files or type to create new...",
+								placeholder: this.translate("modals.fileSelector.placeholder"),
 								filter: "all",
 								sortOrder:
 									this.plugin.settings.calendarViewSettings
@@ -188,8 +188,8 @@ export class TimeblockInfoModal extends Modal {
 			})
 			.addButton((button) => {
 				button
-					.setButtonText("Add task")
-					.setTooltip("Select task")
+					.setButtonText(this.translate("modals.task.dependencies.addTaskButton"))
+					.setTooltip(this.translate("modals.taskSelector.title"))
 					.onClick(() => {
 						void this.openTaskSelectorForTitle();
 					});
@@ -345,7 +345,7 @@ export class TimeblockInfoModal extends Modal {
 			const candidates = allTasks.filter((task) => !task.archived);
 
 			if (candidates.length === 0) {
-				new Notice("No tasks available to select");
+				new Notice(this.translate("modals.timeblockInfo.noTasks"));
 				return;
 			}
 
@@ -367,7 +367,7 @@ export class TimeblockInfoModal extends Modal {
 					}
 				},
 				{
-					title: "Select task",
+					title: this.translate("modals.taskSelector.title"),
 				}
 			);
 		} catch (error) {
@@ -376,7 +376,7 @@ export class TimeblockInfoModal extends Modal {
 				operation: "open-task-selector-timeblock-edit",
 				error: error,
 			});
-			new Notice("Failed to open task selector");
+			new Notice(this.translate("modals.timeblockInfo.selectorFailed"));
 		}
 	}
 
@@ -594,10 +594,12 @@ export class TimeblockInfoModal extends Modal {
 
 			const content = modal.contentEl;
 			content.createEl("p", {
-				text: `Are you sure you want to delete the timeblock "${this.timeblock.title}"?`,
+				text: this.translate("modals.timeblockInfo.confirmDelete", {
+					title: this.timeblock.title,
+				}),
 			});
 			content.createEl("p", {
-				text: "This action cannot be undone.",
+				text: this.translate("common.cannotUndo"),
 				cls: "mod-warning",
 			});
 
@@ -649,7 +651,7 @@ export class TimeblockInfoModal extends Modal {
 			});
 
 			const deleteBtn = buttonContainer.createEl("button", {
-				text: "Delete",
+				text: this.translate("views.advancedCalendar.contextMenus.deleteButton"),
 				cls: "mod-warning",
 			});
 			deleteBtn.addEventListener("click", () => {

@@ -87,6 +87,29 @@ export class LanguagePackLoader {
 		return messages;
 	}
 
+	/** Racing the operation itself ensures late storage/transport results have no side effects here. */
+	private async withDeadline<T>(
+		operation: () => Promise<T>,
+		milliseconds: number,
+		message: string
+	): Promise<T> {
+		const scheduleTimeout =
+			this.options.scheduleTimeout ??
+			((callback, delay) => {
+				const timer = window.setTimeout(callback, delay);
+				return () => window.clearTimeout(timer);
+			});
+		let cancelTimeout: (() => void) | undefined;
+		try {
+			const timeout = new Promise<never>((_, reject) => {
+				cancelTimeout = scheduleTimeout(() => reject(new Error(message)), milliseconds);
+			});
+			return await Promise.race([operation(), timeout]);
+		} finally {
+			cancelTimeout?.();
+		}
+	}
+
 	private async loadPack(locale: string): Promise<Record<string, string>> {
 		const { manifest } = this.options.config;
 		const descriptor = Object.prototype.hasOwnProperty.call(manifest.packs, locale)
@@ -107,7 +130,11 @@ export class LanguagePackLoader {
 		// Reuse identical packs across releases without accepting incompatible data.
 		const cacheKey = `${descriptor.sha256}/${descriptor.file}`;
 		try {
-			const cached = await this.options.cache.read(cacheKey);
+			const cached = await this.withDeadline(
+				() => this.options.cache.read(cacheKey),
+				this.options.cacheTimeoutMs ?? 1_000,
+				"Language-pack cache read timed out"
+			);
 			if (cached !== null && cached.length <= MAX_LANGUAGE_PACK_BYTES) {
 				return await this.validate(locale, new TextEncoder().encode(cached));
 			}
@@ -115,36 +142,26 @@ export class LanguagePackLoader {
 			// Missing/corrupt/unreadable cache: try the pinned network artifact.
 		}
 
-		const scheduleTimeout =
-			this.options.scheduleTimeout ??
-			((callback, milliseconds) => {
-				const timer = window.setTimeout(callback, milliseconds);
-				return () => window.clearTimeout(timer);
-			});
-		let cancelTimeout: (() => void) | undefined;
+		const bytes = await this.withDeadline(
+			() => this.options.download(`${this.baseUrl}/${key}`),
+			this.options.timeoutMs ?? 15_000,
+			"Language-pack download timed out"
+		);
+		const messages = await this.validate(locale, bytes);
 		try {
-			const timeout = new Promise<never>((_, reject) => {
-				cancelTimeout = scheduleTimeout(
-					() => reject(new Error("Language-pack download timed out")),
-					this.options.timeoutMs ?? 15_000
-				);
-			});
-			const bytes = await Promise.race([
-				this.options.download(`${this.baseUrl}/${key}`),
-				timeout,
-			]);
-			const messages = await this.validate(locale, bytes);
-			try {
-				await this.options.cache.write(
-					cacheKey,
-					new TextDecoder("utf-8", { fatal: true }).decode(bytes)
-				);
-			} catch {
-				// Cache failure must not discard a successfully validated translation.
-			}
-			return messages;
-		} finally {
-			cancelTimeout?.();
+			await this.withDeadline(
+				() =>
+					this.options.cache.write(
+						cacheKey,
+						new TextDecoder("utf-8", { fatal: true }).decode(bytes)
+					),
+				this.options.cacheTimeoutMs ?? 1_000,
+				"Language-pack cache write timed out"
+			);
+		} catch {
+			// A failed/stalled cache must not discard a validated translation.
+			// A late write can only persist these same content-addressed validated bytes.
 		}
+		return messages;
 	}
 }

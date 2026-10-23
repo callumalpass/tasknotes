@@ -67,7 +67,7 @@ function renderCompletionsCalendar(
 		plugin,
 		completedInstancesChanges,
 		skippedInstancesChanges,
-		translate: (key) => key,
+		translate: plugin.i18n.translate.bind(plugin.i18n),
 	});
 	return container;
 }
@@ -76,23 +76,40 @@ describe("Completion calendar month consistency (issue #2306)", () => {
 	it.each([0, 1])("shows September dates beneath September with firstDay=%s", (firstDay) => {
 		const plugin = createPlugin();
 		plugin.settings.calendarViewSettings.firstDay = firstDay;
-		const container = renderCompletionsCalendar(createRecurringTask({
-			complete_instances: ["2026-08-27", "2026-09-01"],
-		}), plugin);
+		const container = renderCompletionsCalendar(
+			createRecurringTask({
+				complete_instances: ["2026-08-27", "2026-09-01"],
+			}),
+			plugin
+		);
 		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe("Sep 2026");
-		const days = Array.from(container.querySelectorAll<HTMLElement>(".recurring-calendar__day"));
-		const currentDays = days.filter((day) => !day.classList.contains("recurring-calendar__day--faded"));
+		const days = Array.from(
+			container.querySelectorAll<HTMLElement>(".recurring-calendar__day")
+		);
+		const currentDays = days.filter(
+			(day) => !day.classList.contains("recurring-calendar__day--faded")
+		);
 		expect(currentDays).toHaveLength(30);
 		expect(currentDays[0].dataset.occurrenceDate).toBe("2026-09-01");
-		expect(days.findIndex((day) => day.dataset.occurrenceDate === "2026-09-09") % 7).toBe((3 - firstDay + 7) % 7);
+		expect(days.findIndex((day) => day.dataset.occurrenceDate === "2026-09-09") % 7).toBe(
+			(3 - firstDay + 7) % 7
+		);
 	});
 
 	it("uses the current local month on its first day without completions", () => {
 		jest.useFakeTimers().setSystemTime(new Date(2026, 8, 1, 0, 30));
 		try {
-			const container = renderCompletionsCalendar(createRecurringTask({ complete_instances: [] }));
-			expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe("Sep 2026");
-			expect(container.querySelector('.recurring-calendar__day:not(.recurring-calendar__day--faded)')?.getAttribute("data-occurrence-date")).toBe("2026-09-01");
+			const container = renderCompletionsCalendar(
+				createRecurringTask({ complete_instances: [] })
+			);
+			expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe(
+				"Sep 2026"
+			);
+			expect(
+				container
+					.querySelector(".recurring-calendar__day:not(.recurring-calendar__day--faded)")
+					?.getAttribute("data-occurrence-date")
+			).toBe("2026-09-01");
 		} finally {
 			jest.useRealTimers();
 		}
@@ -104,17 +121,29 @@ describe("Completion calendar month consistency (issue #2306)", () => {
 		["2028-01-31", "Next month", "Feb 2028", 29],
 		["2026-10-31", "Previous month", "Sep 2026", 30],
 	])("navigates %s via %s to %s", (date, direction, heading, count) => {
-		const container = renderCompletionsCalendar(createRecurringTask({ complete_instances: [date as string] }));
+		const container = renderCompletionsCalendar(
+			createRecurringTask({ complete_instances: [date as string] })
+		);
 		container.querySelector<HTMLButtonElement>(`[aria-label="${direction}"]`)?.click();
 		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe(heading);
-		expect(container.querySelectorAll(".recurring-calendar__day:not(.recurring-calendar__day--faded)")).toHaveLength(count as number);
+		expect(
+			container.querySelectorAll(
+				".recurring-calendar__day:not(.recurring-calendar__day--faded)"
+			)
+		).toHaveLength(count as number);
 	});
 
 	it("navigates from a month-end completion without skipping February", () => {
-		const container = renderCompletionsCalendar(createRecurringTask({ complete_instances: ["2026-01-31"] }));
+		const container = renderCompletionsCalendar(
+			createRecurringTask({ complete_instances: ["2026-01-31"] })
+		);
 		container.querySelector<HTMLButtonElement>('[aria-label="Next month"]')?.click();
 		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe("Feb 2026");
-		expect(container.querySelectorAll(".recurring-calendar__day:not(.recurring-calendar__day--faded)")).toHaveLength(28);
+		expect(
+			container.querySelectorAll(
+				".recurring-calendar__day:not(.recurring-calendar__day--faded)"
+			)
+		).toHaveLength(28);
 		container.querySelector<HTMLButtonElement>('[aria-label="Previous month"]')?.click();
 		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe("Jan 2026");
 	});
@@ -132,9 +161,7 @@ describe("Task edit completions calendar occurrence context menu", () => {
 
 	it("opens an occurrence-specific menu from a recurring completion date", () => {
 		const container = renderCompletionsCalendar();
-		const day = container.querySelector<HTMLElement>(
-			'[data-occurrence-date="2026-05-17"]'
-		);
+		const day = container.querySelector<HTMLElement>('[data-occurrence-date="2026-05-17"]');
 		expect(day).not.toBeNull();
 
 		const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
@@ -161,9 +188,7 @@ describe("Task edit completions calendar occurrence context menu", () => {
 			createPlugin(),
 			completedInstancesChanges
 		);
-		const day = container.querySelector<HTMLElement>(
-			'[data-occurrence-date="2026-05-17"]'
-		);
+		const day = container.querySelector<HTMLElement>('[data-occurrence-date="2026-05-17"]');
 
 		day?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 		const item = findMenuItem(getLatestMenu(), "Mark complete for this date");
@@ -174,7 +199,7 @@ describe("Task edit completions calendar occurrence context menu", () => {
 			container
 				.querySelector<HTMLElement>('[data-occurrence-date="2026-05-17"]')
 				?.classList.contains("recurring-calendar__day--completed")
-			).toBe(true);
+		).toBe(true);
 	});
 
 	it("marks the clicked occurrence skipped through the context menu without saving immediately", () => {
@@ -186,9 +211,7 @@ describe("Task edit completions calendar occurrence context menu", () => {
 			completedInstancesChanges,
 			skippedInstancesChanges
 		);
-		const day = container.querySelector<HTMLElement>(
-			'[data-occurrence-date="2026-05-17"]'
-		);
+		const day = container.querySelector<HTMLElement>('[data-occurrence-date="2026-05-17"]');
 
 		day?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 		const item = findMenuItem(getLatestMenu(), "Skip instance");
@@ -212,9 +235,7 @@ describe("Task edit completions calendar occurrence context menu", () => {
 			completedInstancesChanges,
 			skippedInstancesChanges
 		);
-		const day = container.querySelector<HTMLElement>(
-			'[data-occurrence-date="2026-05-17"]'
-		);
+		const day = container.querySelector<HTMLElement>('[data-occurrence-date="2026-05-17"]');
 
 		day?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 		const item = findMenuItem(getLatestMenu(), "Mark complete for this date");
@@ -246,9 +267,7 @@ describe("Task edit completions calendar occurrence context menu", () => {
 		plugin.app.workspace.getLeaf = jest.fn(() => ({ openFile }));
 
 		const container = renderCompletionsCalendar(task, plugin);
-		const day = container.querySelector<HTMLElement>(
-			'[data-occurrence-date="2026-05-17"]'
-		);
+		const day = container.querySelector<HTMLElement>('[data-occurrence-date="2026-05-17"]');
 		day?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
 
 		const item = findMenuItem(getLatestMenu(), "Open or create occurrence note");

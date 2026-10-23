@@ -235,33 +235,43 @@ export class ICSNoteCreationModal extends Modal {
 		if (!this.previewContainer) return;
 
 		this.previewContainer.empty();
-		this.previewContainer.createEl("h4", { text: "Summary" });
+		this.previewContainer.createEl("h4", {
+			text: this.translate("modals.icsNoteCreation.summary"),
+		});
 
 		const previewDetails = this.previewContainer.createDiv("preview-details");
 
 		const typeDiv = previewDetails.createDiv();
-		typeDiv.createEl("strong", { text: "Type: " });
-		typeDiv.appendText("Note");
+		typeDiv.createEl("strong", {
+			text: this.translate("settings.integrations.subscriptionsList.labels.type"),
+		});
+		typeDiv.appendText(this.translate("modals.icsEventInfo.typeNote"));
 		const titleDiv = previewDetails.createDiv();
-		titleDiv.createEl("strong", { text: "Title: " });
-		titleDiv.appendText(this.title || "Untitled");
+		titleDiv.createEl("strong", { text: this.translate("modals.icsNoteCreation.titleLabel") });
+		titleDiv.appendText(this.title || this.translate("common.untitled"));
 		const folderDiv = previewDetails.createDiv();
-		folderDiv.createEl("strong", { text: "Folder: " });
-		folderDiv.appendText(this.folder || "Vault root");
+		folderDiv.createEl("strong", {
+			text: this.translate("modals.icsNoteCreation.folderLabel"),
+		});
+		folderDiv.appendText(this.folder || this.translate("modals.icsNoteCreation.vaultRoot"));
 
 		if (this.useTemplate && this.template) {
 			const templateDiv = previewDetails.createDiv();
-			templateDiv.createEl("strong", { text: "Template: " });
+			templateDiv.createEl("strong", {
+				text: this.translate("modals.icsNoteCreation.templatePathLabel"),
+			});
 			templateDiv.appendText(this.template);
 		} else {
 			const templateDiv = previewDetails.createDiv();
-			templateDiv.createEl("strong", { text: "Template: " });
-			templateDiv.appendText("Default format");
+			templateDiv.createEl("strong", {
+				text: this.translate("modals.icsNoteCreation.templatePathLabel"),
+			});
+			templateDiv.appendText(this.translate("modals.icsNoteCreation.defaultFormat"));
 		}
 
 		// Show available template variables
 		const variablesDiv = this.previewContainer.createDiv("template-variables");
-		variablesDiv.createEl("h5", { text: "Available template variables" });
+		variablesDiv.createEl("h5", { text: this.translate("modals.icsNoteCreation.variables") });
 
 		const variables = [
 			"{{title}}",
@@ -316,7 +326,9 @@ export class ICSNoteCreationModal extends Modal {
 					template: this.useTemplate && this.template ? this.template : undefined,
 				});
 
-				new Notice(`Note created: ${this.title}`);
+				new Notice(
+					this.translate("modals.icsNoteCreation.noteCreated", { title: this.title })
+				);
 				this.options.onContentCreated?.(result.file, result.noteInfo);
 
 				this.close();
@@ -324,11 +336,11 @@ export class ICSNoteCreationModal extends Modal {
 			[
 				{
 					condition: !!this.title.trim(),
-					message: "Title is required",
+					message: this.translate("modals.icsNoteCreation.titleRequired"),
 				},
 			],
 			{
-				errorMessage: "Failed to create note from ICS event",
+				errorMessage: this.translate("modals.icsNoteCreation.createFailed"),
 				noticeHandler: showNotice,
 			}
 		);

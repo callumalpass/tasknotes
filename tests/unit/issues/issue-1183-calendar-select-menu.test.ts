@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 /**
  * Issue #1183: drag-selecting a time range in Calendar should keep the creation
  * menu open until the user dismisses it.
@@ -27,6 +28,7 @@ function createCalendarView(calendar: { unselect: jest.Mock }): CalendarView {
 	Object.assign(view, {
 		calendar,
 		plugin: {
+			i18n: createI18nService(),
 			app: {},
 			calendarProviderRegistry: null,
 			settings: {

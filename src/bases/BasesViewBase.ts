@@ -23,14 +23,8 @@ import {
 	formatBasesExportAsTsv,
 	type BasesExportTable,
 } from "./basesExport";
-import {
-	getRenderedTaskPaths,
-	planBasesTaskDeletedEvent,
-} from "./basesUpdateEvents";
-import {
-	cleanupBasesNewTaskButton,
-	injectBasesNewTaskButton,
-} from "./basesToolbar";
+import { getRenderedTaskPaths, planBasesTaskDeletedEvent } from "./basesUpdateEvents";
+import { cleanupBasesNewTaskButton, injectBasesNewTaskButton } from "./basesToolbar";
 import {
 	buildBasesVisibleProperties,
 	buildBasesVisiblePropertyLabels,
@@ -702,18 +696,20 @@ export abstract class BasesViewBase extends Component {
 			});
 
 			if (result.status === "empty") {
-				new Notice("No tasks to copy");
+				new Notice(this.plugin.i18n.translate("notices.audit.noTasksCopy"));
 				return;
 			}
 
-			new Notice(`Copied ${result.count} tasks`);
+			new Notice(
+				this.plugin.i18n.translate("notices.audit.copiedTasks", { count: result.count })
+			);
 		} catch (error) {
 			this.logger.error("Failed to copy current view tasks", {
 				category: "provider",
 				operation: "copy-current-view-tasks",
 				error,
 			});
-			new Notice("Failed to copy tasks");
+			new Notice(this.plugin.i18n.translate("contextMenus.task.notices.copyFailure"));
 		}
 	}
 
@@ -722,8 +718,7 @@ export abstract class BasesViewBase extends Component {
 	}
 
 	private getBasesExportFileName(): string {
-		const configName =
-			typeof this.config?.get === "function" ? this.config.get("name") : "";
+		const configName = typeof this.config?.get === "function" ? this.config.get("name") : "";
 		return buildBasesExportFileName(configName, this.type);
 	}
 
@@ -733,14 +728,16 @@ export abstract class BasesViewBase extends Component {
 			const text = formatBasesExportAsTsv(table);
 
 			await navigator.clipboard.writeText(text);
-			new Notice(`Copied ${table.rows.length} rows`);
+			new Notice(
+				this.plugin.i18n.translate("notices.audit.copiedRows", { count: table.rows.length })
+			);
 		} catch (error) {
 			this.logger.error("Failed to copy Bases table", {
 				category: "provider",
 				operation: "copy-bases-table",
 				error,
 			});
-			new Notice("Failed to copy table");
+			new Notice(this.plugin.i18n.translate("contextMenus.task.notices.copyFailure"));
 		}
 	}
 
@@ -757,14 +754,18 @@ export abstract class BasesViewBase extends Component {
 			link.download = this.getBasesExportFileName();
 			link.click();
 			win.URL.revokeObjectURL(url);
-			new Notice(`Exported ${table.rows.length} rows`);
+			new Notice(
+				this.plugin.i18n.translate("notices.audit.exportedRows", {
+					count: table.rows.length,
+				})
+			);
 		} catch (error) {
 			this.logger.error("Failed to export Bases table", {
 				category: "provider",
 				operation: "export-bases-table",
 				error,
 			});
-			new Notice("Failed to export table");
+			new Notice(this.plugin.i18n.translate("notices.audit.failed", { action: "CSV" }));
 		}
 	}
 

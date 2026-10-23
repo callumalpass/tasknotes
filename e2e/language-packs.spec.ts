@@ -27,6 +27,9 @@ let savedSettings: Buffer | undefined;
 let mode: "ok" | "offline" | "corrupt-de" | "slow-ru" = "ok";
 const requests: string[] = [];
 let frenchCreateTaskName: string;
+let frenchRibbonNames: string[];
+let releaseFrench: (() => void) | undefined;
+let delayFrench = true;
 
 test.describe.configure({ mode: "serial" });
 test.skip(!baseUrl, "Requires an explicitly configured downloadable-language build");
@@ -48,7 +51,18 @@ test.beforeAll(async () => {
 			fs.readFileSync(path.join(directory, file), "utf8"),
 		])
 	);
-	frenchCreateTaskName = JSON.parse(files.get("fr.json")!).messages["commands.createNewTask"];
+	const frenchMessages = JSON.parse(files.get("fr.json")!).messages;
+	frenchCreateTaskName = frenchMessages["commands.createNewTask"];
+	frenchRibbonNames = [
+		"openCalendarView",
+		"openAdvancedCalendarView",
+		"openTasksView",
+		"openAgendaView",
+		"openKanbanView",
+		"openPomodoroView",
+		"openPomodoroStats",
+		"createNewTask",
+	].map((key) => frenchMessages[`commands.${key}`]);
 	const prefix = `${endpoint.pathname.replace(/\/$/, "")}/${manifest.catalogueVersion}/`;
 	server = createServer((request, response) => {
 		const file = request.url?.startsWith(prefix) ? request.url.slice(prefix.length) : "";
@@ -67,6 +81,10 @@ test.beforeAll(async () => {
 					: content
 			);
 		};
+		if (delayFrench && file === "fr.json") {
+			releaseFrench = respond;
+			return;
+		}
 		if (mode === "slow-ru" && file === "ru.json") setTimeout(respond, 300);
 		else respond();
 	});
@@ -76,7 +94,8 @@ test.beforeAll(async () => {
 	});
 	savedSettings = fs.readFileSync(settingsPath);
 	const settings = JSON.parse(savedSettings.toString());
-	settings.uiLanguage = "en";
+	// Cold start with an uncached saved preference; hold the response until ribbons exist.
+	settings.uiLanguage = "fr";
 	settings.checkForUpdatesOnStartup = false;
 	settings.showReleaseNotesOnUpdate = false;
 	fs.writeFileSync(settingsPath, JSON.stringify(settings));
@@ -86,6 +105,7 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
+	releaseFrench?.();
 	if (app) await closeObsidian(app);
 	if (server?.listening) await new Promise<void>((resolve) => server!.close(() => resolve()));
 	if (savedSettings) fs.writeFileSync(settingsPath, savedSettings);
@@ -97,7 +117,31 @@ test("downloads through the native picker, survives an offline reload, and retri
 	const currentLocale = () =>
 		page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale());
 	expect(await currentLocale()).toBe("en");
-	expect(requests).toEqual([]);
+	await expect.poll(() => requests.filter((file) => file === "fr.json").length).toBe(1);
+	const ribbonLabels = () =>
+		page
+			.locator(".workspace-ribbon .side-dock-ribbon-action[aria-label]")
+			.evaluateAll((elements) =>
+				elements.map((element) => element.getAttribute("aria-label"))
+			);
+	await expect.poll(ribbonLabels).toContain("Create new task");
+	delayFrench = false;
+	releaseFrench!();
+	releaseFrench = undefined;
+	await expect.poll(currentLocale).toBe("fr");
+	await expect.poll(ribbonLabels).toEqual(expect.arrayContaining(frenchRibbonNames));
+	await expect
+		.poll(() =>
+			page.evaluate(() => {
+				const application = (window as any).app;
+				return application.commands.commands["tasknotes:create-new-task"]?.name;
+			})
+		)
+		.toContain(frenchCreateTaskName);
+	// Labels update in place: no duplicate ribbons on activation or later switches.
+	const ribbonCount = (await ribbonLabels()).length;
+	await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.setUILanguage("en"));
+	expect((await ribbonLabels()).length).toBe(ribbonCount);
 
 	let settingsPage = await openTaskNotesSettings(page);
 	const languagePicker = () =>

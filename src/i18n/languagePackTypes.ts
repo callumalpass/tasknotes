@@ -41,5 +41,6 @@ export interface LanguagePackLoaderOptions {
 	download(url: string): Promise<Uint8Array>;
 	sha256?: (bytes: Uint8Array) => Promise<string>;
 	timeoutMs?: number;
+	cacheTimeoutMs?: number;
 	scheduleTimeout?: (callback: () => void, milliseconds: number) => () => void;
 }

@@ -68,8 +68,9 @@ The build automatically exports the exact packs corresponding to its embedded ma
 - Invalid or unreadable cache triggers a network attempt; it does not silently activate corrupt data.
 - Network failure preserves the currently active language. The settings picker includes a retry button in experimental builds.
 - Concurrent requests for one locale are deduplicated. A slow result cannot override a newer selection. Unloading the plugin prevents later activation.
-- A failed cache write does not prevent using a validated pack in the current session.
+- Cache reads and writes each have a one-second best-effort deadline. A failed/stalled read falls through to the network; a failed/stalled write does not prevent activation. Late reads are ignored; late writes persist only the same validated content-addressed bytes.
 - No background refresh is scheduled. The download has a 15-second deadline; Obsidian's `requestUrl` transport may finish later, but the timed-out result is not used.
+- The 1 MB limit bounds accepted catalogue data, **not transport memory**: `requestUrl` buffers the entire response and does not expose streaming byte limits or cancellation. A broken endpoint may consume excess memory; timed-out retries may leave multiple transfers outstanding. This residual availability risk must be reassessed (with mobile acceptance) before enabling ordinary remote releases.
 
 Cache files live under the installed plugin directory:
 
