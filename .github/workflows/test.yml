@@ -108,7 +108,7 @@ jobs:
       timeout-minutes: 3
       
     - name: Run linter
-      run: npm run lint || echo "Linting completed with warnings"
+      run: npm run lint
       timeout-minutes: 10
 
     - name: Test language-pack export, build isolation, and local delivery

@@ -86,6 +86,7 @@ English selection causes no download. System selection may download the detected
 ```bash
 node generate-release-notes-import.mjs
 npm run typecheck
+npm run check:language-pack-builds # Both production modes and size budgets; restores the bundled build
 npm run test:language-packs
 npm run test:unit -- --runInBand --runTestsByPath \
   tests/unit/services/i18nService.test.ts \
@@ -187,18 +188,18 @@ Every PUT includes `If-None-Match: *`. Identical concurrent creates are reconcil
     gh secret set LANGUAGE_PACK_R2_SECRET_ACCESS_KEY --repo callumalpass/tasknotes --env language-packs-production
     ```
 
-    The named GitHub environment has been configured with a required `callumalpass` review and an exact `main` **branch** deployment rule. Self-review is allowed for the sole maintainer; this is an explicit owner-approval gate, not an independent second-reviewer guarantee. The keys are not installed yet.
+    The named GitHub environment has been configured with a required `callumalpass` review and an exact `main` **branch** deployment rule. Self-review is allowed for the sole maintainer; this is an explicit owner-approval gate, not an independent second-reviewer guarantee. Bucket-scoped keys were installed on October 6, 2026; rotate them before their October 6, 2027 expiry.
 
 4. Dispatch at the exact reviewed main commit, approve the environment, and verify the source/catalogue receipt and candidate artifact.
 
-The workflow checks committed translations without AI calls, runs strict lint/typecheck/unit/export tests, builds and size-checks an explicitly remote candidate before cloud writes, conditionally publishes and verifies, and records the pinned public manifest URL. Its experimental candidate is an artifact, **not a plugin release**. Credentials are present only in the publish step. The protected GitHub environment is now configured and read back. The workflow is still local (not on remote main), S3 credentials have not been installed, and no CI publication has run.
+The workflow checks committed translations without AI calls, runs strict lint/typecheck/unit/export tests, builds and size-checks an explicitly remote candidate before cloud writes, conditionally publishes and verifies, and records the pinned public manifest URL. Its experimental candidate is an artifact, **not a plugin release**. Credentials are present only in the publish step. The protected GitHub environment is now configured and read back. The workflow is not on remote main and no CI publication has run. Bucket-scoped S3 credentials were installed on October 6, 2026, and live conditional-create/reuse acceptance passed; this does not authorize dispatching the workflow.
 
 Ordinary CI/release builds remain fully bundled. Integrating the publication step into a normal plugin release and enabling the remote URL remain separate release decisions.
 
 ## Follow-up
 
 - Older/physical Android and additional desktop upgrade/failure scenarios. iOS testing was explicitly waived by the user; iOS compatibility remains an unverified assumption, not a passed check.
-- Activate protected-environment S3 publication with bucket-scoped credentials after review.
+- After merge and separate owner authorization, activate protected-environment S3 publication using the installed bucket-scoped credentials.
 - A Cache Rule scoped only to the language-pack host, enabling edge caching of JSON.
 - Optional cache pruning that preserves the current catalogue.
 - Lingui/generated-ID migration as a separate change, after a representative pilot.

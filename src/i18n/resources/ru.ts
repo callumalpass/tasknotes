@@ -2325,7 +2325,7 @@ export const ru: TranslationTree = {
 		icsFileOpenFailed: "Не удалось открыть файл",
 		timeblockAttachmentExists: "\"{fileName}\" уже прикреплен",
 		timeblockAttachmentAdded: "\"{fileName}\" добавлен как вложение",
-		timeblockAttachmentRemoved: "Удалитьd \"{fileName}\" from attachments",
+		timeblockAttachmentRemoved: "Файл \"{fileName}\" удалён из вложений",
 		timeblockFileTypeNotSupported: "Невозможно открыть \"{fileName}\" - тип файла не поддерживается",
 		timeblockTitleRequired: "Пожалуйста, введите название для временного блока",
 		timeblockUpdatedSuccess: "Временной блок \"{title}\" успешно обновлен",
@@ -2417,8 +2417,8 @@ export const ru: TranslationTree = {
 			typeTask: "Задача",
 			typeNote: "Заметка",
 			actionsHeading: "Действия",
-			createFromEventLabel: "Создать from Event",
-			createFromEventDesc: "Создать a new note or task from this calendar event",
+			createFromEventLabel: "Создать из события",
+			createFromEventDesc: "Создать новую заметку или задачу из этого события календаря",
 			linkExistingLabel: "Связать существующую",
 			linkExistingDesc: "Связать существующую заметку с этим событием календаря"
 		},
@@ -2548,10 +2548,10 @@ export const ru: TranslationTree = {
 			notices: {
 				completedWithErrors: "Миграция завершена с некоторыми ошибками. Проверьте список ошибок выше.",
 				success: "Все задачи успешно мигрированы!",
-				failed: "Миграция не удалась. Please check the console for details."
+				failed: "Не удалось выполнить миграцию. Подробности смотрите в консоли."
 			},
 			prompt: {
-				message: "ЗадачаNotes detected tasks using the old recurrence format. Would you like to migrate them to the new system now?",
+				message: "TaskNotes обнаружил задачи со старым форматом повторения. Перенести их в новую систему сейчас?",
 				migrateNow: "Мигрировать сейчас",
 				remindLater: "Напомнить позже"
 			}

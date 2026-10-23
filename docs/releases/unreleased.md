@@ -41,3 +41,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Removed
 
 ## Fixed
+
+- Completed Russian and Simplified Chinese calendar attachment and migration messages that still contained English fragments.
