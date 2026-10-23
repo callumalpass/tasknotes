@@ -4,6 +4,7 @@ import { EVENT_TASK_UPDATED, type TaskInfo, type FieldMapping } from "../../type
 import { getCurrentTimestamp, formatDateForStorage } from "../../utils/dateUtils";
 import { splitFrontmatterAndBody, resetMarkdownCheckboxes } from "../../utils/helpers";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { buildTaskInfoFromMappedTask } from "../../utils/taskInfoAssembly";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionUndo" });
 import { applyTaskMovementUndo, type TaskMovementUndoChange } from "../../bases/taskMovementUndo";
@@ -152,10 +153,18 @@ export async function completeRecurringTaskWithUndo(
 			// A receipt must match the operation's authoritative task state, not any
 			// edits arriving while it awaited metadata/webhooks. Otherwise fail closed.
 			const matchesTask = (content: string, expected: TaskInfo): boolean => {
-				const actual = plugin.fieldMapper.mapFromFrontmatter(
-					readCompletionContent(content).frontmatter,
-					previous.file.path
-				);
+				// Receipts must use the same defaults as TaskManager. A missing YAML
+				// status is a valid open task, not a concurrent change.
+				const actual = buildTaskInfoFromMappedTask({
+					path: previous.file.path,
+					mappedTask: plugin.fieldMapper.mapFromFrontmatter(
+						readCompletionContent(content).frontmatter,
+						previous.file.path
+					),
+					defaultTaskStatus: plugin.settings.defaultTaskStatus,
+					isBlocked: false,
+					blockingTasks: [],
+				});
 				return completionFields.every((field) => {
 					const normalize = (value: unknown) =>
 						value == null || (Array.isArray(value) && value.length === 0)
@@ -292,8 +301,15 @@ export async function completeRecurringTaskWithUndo(
 							Object.assign(restoredTask, { [field]: undefined });
 						}
 					}
-					plugin.cacheManager.updateTaskInfoInCache(entry.file.path, restoredTask);
-					syncUpdates.push({ current, restored: restoredTask });
+					const assembledTask = buildTaskInfoFromMappedTask({
+						path: entry.file.path,
+						mappedTask: restoredTask,
+						defaultTaskStatus: plugin.settings.defaultTaskStatus,
+						isBlocked: current.isBlocked ?? false,
+						blockingTasks: current.blocking ?? [],
+					});
+					plugin.cacheManager.updateTaskInfoInCache(entry.file.path, assembledTask);
+					syncUpdates.push({ current, restored: assembledTask });
 				}
 				return true;
 			};

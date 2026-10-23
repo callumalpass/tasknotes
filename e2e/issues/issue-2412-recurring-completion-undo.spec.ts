@@ -227,6 +227,28 @@ test('a failed occurrence write rolls back the parent Undo rather than leaving p
   expect((await state(occurrencePath)).content).toContain('status: done');
 });
 
+test('Undo accepts an omitted YAML status and retains the runtime default', async () => {
+  const title = 'Issue 2412 default-status Undo';
+  const path = await createTask(title);
+  const statusProperty = await instance.page.evaluate(async path => {
+    const app = (window as any).app;
+    const plugin = app.plugins.plugins.tasknotes;
+    const property = plugin.fieldMapper.toUserField('status');
+    await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (fm: any) => {
+      delete fm[property];
+    });
+    await plugin.cacheManager.waitForFreshTaskData(app.vault.getAbstractFileByPath(path));
+    return property as string;
+  }, path);
+  await complete(path);
+  await expect(notice(title)).toContainText('Next: 21 Oct 2036');
+  await notice(title).getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect.poll(async () => (await state(path)).task.scheduled).toBe('2035-10-21');
+  expect((await state(path)).task.status).toBe('open');
+  expect((await state(path)).task.complete_instances ?? []).toEqual([]);
+  expect((await state(path)).content).not.toMatch(new RegExp(`^${statusProperty}:`, 'm'));
+});
+
 test('note-backed occurrence Undo restores parent and occurrence without deleting notes', async () => {
   const title = 'Issue 2412 materialized';
   const path = await createTask(title, { occurrence_materialization: 'on_completion' });
