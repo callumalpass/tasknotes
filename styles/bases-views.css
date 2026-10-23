@@ -527,6 +527,11 @@ body.is-mobile .tn-bases-kanban-column {
     border-right: 1px solid var(--tn-border-color);
 }
 
+.kanban-view__column-header-cell--status-colored {
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 12%, var(--tn-bg-secondary));
+    border-right-color: color-mix(in srgb, var(--tn-kanban-status-color) 38%, var(--tn-border-color));
+}
+
 .kanban-view__column-header-cell:active {
     cursor: grabbing;
 }
@@ -567,6 +572,11 @@ body.is-mobile .tn-bases-kanban-column {
     flex-direction: column;
     border-right: 1px solid var(--tn-border-color);
     overflow: hidden;
+}
+
+.kanban-view__swimlane-column--status-colored {
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 6%, var(--tn-bg-primary));
+    border-right-color: color-mix(in srgb, var(--tn-kanban-status-color) 38%, var(--tn-border-color));
 }
 
 .kanban-view__swimlane-column.kanban-view__column--unknown-status {
