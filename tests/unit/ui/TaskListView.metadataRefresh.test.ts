@@ -6,6 +6,7 @@ import { TaskFactory } from "../../helpers/mock-factories";
 import { createTaskCard } from "../../../src/ui/TaskCard";
 import { getTaskCardPropertyValue } from "../../../src/ui/taskCardPropertyAccess";
 import type { TaskInfo } from "../../../src/types";
+import { sortExpandedRelationshipTasks } from "../../../src/ui/taskCardRelationships";
 
 jest.mock("tasknotes-nlp-core", () => ({ NaturalLanguageParserCore: class {} }), { virtual: true });
 jest.mock("../../../src/ui/TaskCard", () => ({
@@ -80,6 +81,53 @@ describe("TaskListView metadata refresh", () => {
 			value = "after";
 			await view.renderFlatNormal([task], [property], {});
 			expect(container.textContent).toBe('["after"]');
+		}
+	);
+
+	it.each(["renderFlatNormal", "renderFlatVirtual"])(
+		"#2394: %s refreshes expanded children when only their view order or scope changes",
+		async (renderMethod) => {
+			const parent = TaskFactory.createTask({ path: "Tasks/parent.md" });
+			const low = TaskFactory.createTask({ path: "Tasks/low.md", priority: "low" });
+			const high = TaskFactory.createTask({ path: "Tasks/high.md", priority: "high" });
+			const order = new Map([[high.path, 0], [parent.path, 1], [low.path, 2]]);
+			const options = { expandedRelationshipTaskOrder: order };
+			jest.mocked(createTaskCard).mockImplementation((_task, _plugin, _properties, cardOptions) => {
+				const card = document.createElement("div");
+				card.className = "task-card";
+				card.textContent = sortExpandedRelationshipTasks(
+					[low, high].filter((child) => order.has(child.path)),
+					cardOptions,
+					(tasks) => tasks
+				).map((child) => child.priority).join(",");
+				return card;
+			});
+
+			// hideTopLevelSubtasks leaves the same parent row in place across sorts.
+			await view[renderMethod]([parent], [], options);
+			expect(container.querySelector(".task-card")?.textContent).toBe("high,low");
+			const original = container.querySelector(".task-card");
+			const scroller = view.virtualScroller;
+			await view[renderMethod]([parent], [], options);
+			if (renderMethod === "renderFlatNormal") {
+				expect(container.querySelector(".task-card")).toBe(original);
+			}
+
+			// The view mutates the existing order map, rather than replacing it.
+			order.clear();
+			order.set(low.path, 0);
+			order.set(parent.path, 1);
+			order.set(high.path, 2);
+			await view[renderMethod]([parent], [], options);
+			expect(container.querySelector(".task-card")?.textContent).toBe("low,high");
+
+			// Filtering a child out must also invalidate the cached expansion.
+			order.delete(low.path);
+			await view[renderMethod]([parent], [], options);
+			expect(container.querySelector(".task-card")?.textContent).toBe("high");
+			if (renderMethod === "renderFlatVirtual") {
+				expect(view.virtualScroller).toBe(scroller);
+			}
 		}
 	);
 
