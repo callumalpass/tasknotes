@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Added
+
+- (#1341) Added controls to collapse individual columns in Kanban Bases views. Each view keeps its own collapsed columns when Obsidian refreshes or recreates it.
+  - Thanks to @meew0 for the suggestion
