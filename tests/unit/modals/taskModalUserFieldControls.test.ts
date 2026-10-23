@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 const mockTextControls: Array<{
 	inputEl: HTMLInputElement;
 	placeholder?: string;
@@ -136,8 +137,7 @@ function createContext(): TaskModalUserFieldContext {
 	return {
 		app: {} as never,
 		plugin: {} as TaskNotesPlugin,
-		translate: (key, params) =>
-			params?.field ? `translated:${key}:${params.field}` : `translated:${key}`,
+		translate: mockObserveTranslation(),
 		attachMobileKeyboardScrollGuard: jest.fn(),
 	};
 }

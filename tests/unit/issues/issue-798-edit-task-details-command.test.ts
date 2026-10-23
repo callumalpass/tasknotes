@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
@@ -42,7 +43,7 @@ describe("Issue #798: command for Edit task details", () => {
 			openTaskEditModalForCurrentTask: jest.fn(),
 		};
 
-		expect(command?.nameKey).toBe(msg({ message: "Edit current task", context: "commands.editCurrentTask" }));
+		expect(command?.nameKey).toEqual(msg({ message: "Edit current task", context: "commands.editCurrentTask" }));
 
 		await command?.callback?.(ctx as never);
 

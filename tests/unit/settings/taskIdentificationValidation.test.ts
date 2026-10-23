@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { TextComponent } from "obsidian";
 import { renderGeneralTab } from "../../../src/settings/tabs/generalTab";
 import { SettingsLifecycleService } from "../../../src/services/SettingsLifecycleService";
@@ -10,7 +11,7 @@ function renderIdentification(name = "", value = "") {
 		app: { vault: { getConfig: () => false } },
 		manifest: { version: "4.13.6" },
 		settings: { ...DEFAULT_SETTINGS, commandFileMapping: { ...DEFAULT_SETTINGS.commandFileMapping }, taskIdentificationMethod: "property", taskPropertyName: name, taskPropertyValue: value },
-		i18n: { translate: (key: string) => key, getAvailableLocales: () => [], getNativeLanguageName: (locale: string) => locale },
+		i18n: { translate: mockObserveTranslation(), getAvailableLocales: () => [], getNativeLanguageName: (locale: string) => locale },
 	};
 	const save = jest.fn();
 	renderGeneralTab(container, plugin as never, save);

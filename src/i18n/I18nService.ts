@@ -45,6 +45,8 @@ export class I18nService extends Events {
 		const normalized = normalizeLocale(locale);
 		if (normalized === this.defaultLocale) throw new Error("Cannot replace the bundled default language");
 		this.resources[normalized] = resources;
+		// Refresh this core immediately, without stealing another service's UI binding.
+		if (normalized === this.currentLocale) this.activate(false);
 	}
 
 	/** Endonyms are intentional native-script data, not English UI copy. */
@@ -86,13 +88,13 @@ export class I18nService extends Events {
 		return this.defaultLocale;
 	}
 
-	private activate(): void {
+	private activate(bindDisplay = true): void {
 		this.lingui.loadAndActivate({
 			locale: this.currentLocale,
 			locales: this.currentLocale === "pt" ? "pt-BR" : this.currentLocale === "zh" ? "zh-CN" : this.currentLocale,
 			messages: { ...this.resources[this.defaultLocale], ...this.resources[this.fallbackLocale], ...this.resources[this.currentLocale] },
 		});
-		bindUIDisplay(this.lingui);
+		if (bindDisplay) bindUIDisplay(this.lingui);
 	}
 
 	private resolveLocale(locale: string): string {

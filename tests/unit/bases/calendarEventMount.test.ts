@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import {
 	decorateCalendarIcsEventElement,
@@ -20,8 +21,7 @@ function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 function createPlugin(overrides: Record<string, unknown> = {}) {
 	return {
 		i18n: {
-			translate: (key: string) =>
-				key === msg({ message: "Related notes & tasks", context: "modals.icsEventInfo.relatedNotesHeading" }) ? "Related notes" : key,
+			translate: mockObserveTranslation(),
 		},
 		calendarProviderRegistry: {
 			findProviderForEvent: jest.fn(() => ({ providerName: "google" })),

@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import { renderFeaturesTab } from "../../../src/settings/tabs/featuresTab";
 import { configureDropdownSetting } from "../../../src/settings/components/settingHelpers";
@@ -45,7 +46,7 @@ function createPlugin(pluginHistory: unknown[]) {
 			userFields: [],
 		},
 		i18n: {
-			translate: jest.fn((key: string) => key),
+			translate: mockObserveTranslation(),
 		},
 		loadData: jest.fn(async () => ({ pomodoroHistory: pluginHistory })),
 		pomodoroService: {

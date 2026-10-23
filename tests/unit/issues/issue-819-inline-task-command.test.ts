@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import { createI18nService } from "../../../src/i18n";
 import { Notice, TFile } from "obsidian";
@@ -48,7 +49,7 @@ describe("Issue #819: quick actions for inline task links", () => {
 			openQuickActionsForTaskUnderCursor: jest.fn(),
 		};
 
-		expect(command?.nameKey).toBe(msg({ message: "Quick actions for task under cursor", context: "commands.quickActionsTaskUnderCursor" }));
+		expect(command?.nameKey).toEqual(msg({ message: "Quick actions for task under cursor", context: "commands.quickActionsTaskUnderCursor" }));
 
 		await command?.editorCallback?.(ctx as never, editor as never, { file } as never);
 

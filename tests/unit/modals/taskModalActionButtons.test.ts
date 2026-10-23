@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import {
 	createTaskModalActionButtons,
 	runTaskModalSaveAction,
@@ -6,11 +7,7 @@ import {
 
 function createContext(): TaskModalActionButtonContext {
 	return {
-		translate: (key) =>
-			({
-				"modals.task.buttons.save": "Save",
-				"common.cancel": "Cancel",
-			})[key] || key,
+		translate: mockObserveTranslation(),
 	};
 }
 

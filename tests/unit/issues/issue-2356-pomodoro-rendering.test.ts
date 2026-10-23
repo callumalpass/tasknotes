@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { PomodoroView } from "../../../src/views/PomodoroView";
 import { EVENT_POMODORO_TICK, PomodoroState } from "../../../src/types";
 import type { WorkspaceLeaf } from "obsidian";
@@ -57,7 +58,7 @@ function fixture() {
 		onReady: jest.fn(async () => undefined),
 		settings: { calendarViewSettings: { timeFormat: "24" } },
 		i18n: {
-			translate: (key: string, params?: object) => `${key}:${JSON.stringify(params ?? {})}`,
+			translate: mockObserveTranslation(),
 		},
 		pomodoroService: { getState: () => ({ ...state }) },
 	};

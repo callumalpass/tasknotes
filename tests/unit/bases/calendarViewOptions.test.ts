@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import type { BasesAllOptions, BasesOptions } from "obsidian";
 import { buildCalendarViewOptions } from "../../../src/bases/calendarViewOptions";
@@ -26,7 +27,7 @@ function createPlugin(): TaskNotesPlugin {
 			},
 		},
 		i18n: {
-			translate: (key: string) => key,
+			translate: mockObserveTranslation(),
 		},
 	} as unknown as TaskNotesPlugin;
 }

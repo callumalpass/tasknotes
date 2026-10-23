@@ -1,0 +1,218 @@
+[
+  {
+    "file": "tests/unit/ui/TaskListView.dragControls.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/modals/TaskEditModal.unsaved-changes.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/modals/TaskCreationModal.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/ui/taskCardSecondaryBadges.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1308-calendar-date-links-create-notes.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-2356-pomodoro-rendering.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-269-kanban-unknown-status-columns.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-296-time-tracking-commands.test.ts",
+    "edits": 3
+  },
+  {
+    "file": "tests/unit/issues/issue-932-current-task-cycle-commands.test.ts",
+    "edits": 2
+  },
+  {
+    "file": "tests/unit/ui/TaskCard.yearDisplay.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/services/TaskCalendarSyncService.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-819-inline-task-command.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1297-task-selector-create-footer.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-798-edit-task-details-command.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/ui/taskCardMetadata.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1952-pomodoro-selector-search.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1469-convert-current-note-save.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/settings/CardExpansionState.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/bases/calendarViewOptions.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1814-create-or-open-project-suggest.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/bases/calendarEventMount.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1989-default-bases-automation.test.ts",
+    "edits": 3
+  },
+  {
+    "file": "tests/unit/issues/issue-1594-task-card-recurring-target-date.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1502-ics-related-note-indicators.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1009-task-edit-modal-delete-button.test.ts",
+    "edits": 2
+  },
+  {
+    "file": "tests/unit/issues/issue-2048-edit-modal-date-metadata.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-2367-timeblock-task-title.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/settings/pomodoroStorageMigration.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-google-calendar-external-file-reconciliation.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/ui/stopActiveTimeTracking.test.ts",
+    "edits": 2
+  },
+  {
+    "file": "tests/unit/issues/issue-1419-user-field-settings-input.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/ui/taskCardRelationshipExpansion.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/views/ReleaseNotesView.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/modals/taskModalActionIconStates.test.ts",
+    "edits": 3
+  },
+  {
+    "file": "tests/unit/settings/taskIdentificationValidation.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1767-timeblock-modal-time-alignment.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/ui/taskCardPrimaryIndicators.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1956-google-calendar-recurring-completion-title.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/modals/taskModalOrganizationFields.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-provider-calendar-source-name.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1835-current-note-relationship-commands.test.ts",
+    "edits": 3
+  },
+  {
+    "file": "tests/unit/issues/issue-1804-inline-task-folder-setting.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1787-recurrence-tooltip-clutter.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1299-create-open-time-tracking-command.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/modals/taskModalUserFieldControls.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1732-command-palette-functions.test.ts",
+    "edits": 3
+  },
+  {
+    "file": "tests/unit/issues/issue-1815-priority-nlp-trigger-setting.test.ts",
+    "edits": 3
+  },
+  {
+    "file": "tests/unit/modals/taskModalActionMenus.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-773-ics-export-filter-options.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/modals/taskModalMetadataFields.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/modals/taskModalActionButtons.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-google-calendar-archive-reliability.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-1235-blocked-tasks-toggle-arrow.test.ts",
+    "edits": 1
+  },
+  {
+    "file": "tests/unit/issues/issue-922-dependency-display.test.ts",
+    "edits": 1
+  }
+]

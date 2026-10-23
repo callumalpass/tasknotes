@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 const mockSetTooltip = jest.fn();
 const mockSetIcon = jest.fn();
@@ -83,15 +84,7 @@ function createState(overrides: Partial<TaskModalActionIconState> = {}): TaskMod
 	};
 }
 
-function translate(key: string, params?: Record<string, string | number>): string {
-	const suffix =
-		params && Object.keys(params).length > 0
-			? `:${Object.entries(params)
-					.map(([name, value]) => `${name}=${value}`)
-					.join(",")}`
-			: "";
-	return `${key}${suffix}`;
-}
+function translate(...args: Parameters<typeof mockEnglishText>): string { return mockEnglishText(...args); }
 
 describe("taskModalActionIconStates", () => {
 	beforeEach(() => {
@@ -203,12 +196,12 @@ describe("taskModalActionIconStates", () => {
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			statusIcon,
-			msg({ message: "Set status", context: "modals.task.actions.status" }),
+			mockEnglishText(msg({ message: "Set status", context: "modals.task.actions.status" })),
 			{ placement: "top" }
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			priorityIcon,
-			msg({ message: "Set priority", context: "modals.task.actions.priority" }),
+			mockEnglishText(msg({ message: "Set priority", context: "modals.task.actions.priority" })),
 			{ placement: "top" }
 		);
 	});
@@ -273,7 +266,7 @@ describe("taskModalActionIconStates", () => {
 
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			actionBar.querySelector('[data-type="reminders"]'),
-			msg({ message: "1 reminder set", context: "modals.task.tooltips.remindersSingle" }),
+			mockEnglishText(msg({ message: "1 reminder set", context: "modals.task.tooltips.remindersSingle" })),
 			{ placement: "top" }
 		);
 	});

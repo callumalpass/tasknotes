@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 import type { App } from "obsidian";
@@ -57,7 +58,7 @@ describe("Issue #1469: convert current note to task save", () => {
 				getTaskInfo: jest.fn(),
 			},
 			i18n: {
-				translate: jest.fn((key: string) => key),
+				translate: mockObserveTranslation(),
 			},
 		};
 	});

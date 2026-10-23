@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 /**
  * TaskEditModal Unsaved Changes Tests
  *
@@ -63,19 +64,7 @@ describe('TaskEditModal - Unsaved Changes Detection', () => {
         getTaskInfo: jest.fn(),
       },
       i18n: {
-        translate: jest.fn((key: string, _vars?: any) => {
-          const translations: Record<string, string> = {
-            'modals.taskEdit.title': 'Edit Task',
-            'modals.taskEdit.notices.titleRequired': 'Title is required',
-            'modals.task.unsavedChanges.title': 'Unsaved Changes',
-            'modals.task.unsavedChanges.message': 'You have unsaved changes. Do you want to save them?',
-            'modals.task.unsavedChanges.save': 'Save Changes',
-            'modals.task.unsavedChanges.discard': 'Discard Changes',
-            'modals.task.unsavedChanges.cancel': 'Keep Editing',
-            'common.cancel': 'Cancel',
-          };
-          return translations[key] || key;
-        }),
+        translate: mockObserveTranslation(),
       },
       t: jest.fn((key: string, _vars?: any) => {
         const translations: Record<string, string> = {

@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { App, MockObsidian } from "../../helpers/obsidian-runtime";
 import { TaskListView } from "../../../src/bases/TaskListView";
 import { FieldMapper } from "../../../src/services/FieldMapper";
@@ -14,8 +15,7 @@ describe("TaskListView drag controls", () => {
 			app: new App(),
 			fieldMapper: new FieldMapper(DEFAULT_FIELD_MAPPING),
 			i18n: {
-				translate: (key: string) =>
-					key.split(".").reduce((value: any, part) => value?.[part], en) ?? key,
+				translate: mockObserveTranslation(),
 			},
 			statusManager: { getAllStatuses: () => [] },
 			priorityManager: { getAllPriorities: () => [] },

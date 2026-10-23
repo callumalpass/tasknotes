@@ -1,9 +1,10 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import { renderUserFieldsSection } from "../../../src/settings/tabs/taskProperties/userFieldsCard";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import type { TaskNotesSettings } from "../../../src/types/settings";
 
-const translate = (key: string) => key;
+const translate = mockObserveTranslation();
 
 function createPlugin(settings: Partial<TaskNotesSettings> = {}): any {
 	const baseSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) as TaskNotesSettings;

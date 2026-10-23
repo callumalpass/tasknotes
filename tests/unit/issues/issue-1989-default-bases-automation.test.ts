@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 /**
  * Issue #1989: default Base files can be refreshed from automation surfaces.
@@ -39,12 +40,12 @@ describe("Issue #1989: default Base file automation", () => {
 		);
 		const ctx = {
 			app: {},
-			i18n: { translate: jest.fn((key: string) => `translated:${key}`) },
+			i18n: { translate: mockObserveTranslation() },
 			createDefaultBasesFiles: jest.fn(async () => undefined),
 		};
 		(showConfirmationModal as jest.Mock).mockResolvedValue(true);
 
-		expect(command?.nameKey).toBe(msg({ message: "Update default base files", context: "commands.updateDefaultBaseFiles" }));
+		expect(command?.nameKey).toEqual(msg({ message: "Update default base files", context: "commands.updateDefaultBaseFiles" }));
 
 		await command?.callback?.(ctx as never);
 
@@ -66,7 +67,7 @@ describe("Issue #1989: default Base file automation", () => {
 		);
 		const ctx = {
 			app: {},
-			i18n: { translate: jest.fn((key: string) => key) },
+			i18n: { translate: mockObserveTranslation() },
 			createDefaultBasesFiles: jest.fn(async () => undefined),
 		};
 		(showConfirmationModal as jest.Mock).mockResolvedValue(false);

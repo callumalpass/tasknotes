@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import { renderGeneralTab } from "../../../src/settings/tabs/generalTab";
 import { configureTextSetting } from "../../../src/settings/components/settingHelpers";
@@ -44,7 +45,7 @@ function createPlugin(enableInstantTaskConvert: boolean): TaskNotesPlugin {
 			showReleaseNotesOnUpdate: true,
 		},
 		i18n: {
-			translate: jest.fn((key: string) => key),
+			translate: mockObserveTranslation(),
 			getAvailableLocales: jest.fn(() => []),
 			getNativeLanguageName: jest.fn((code: string) => code),
 		},

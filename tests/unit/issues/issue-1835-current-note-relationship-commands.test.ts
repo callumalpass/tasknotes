@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import { TFile } from "obsidian";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
@@ -19,8 +20,7 @@ function makePlugin() {
 			useFrontmatterMarkdownLinks: false,
 		},
 		i18n: {
-			translate: (key: string, params?: Record<string, string | number>) =>
-				params ? `${key}:${Object.values(params).join(",")}` : key,
+			translate: mockObserveTranslation(),
 		},
 		emitter: {
 			trigger: jest.fn(),
@@ -52,8 +52,8 @@ describe("Issue #1835: current note relationship commands", () => {
 			addSubtaskToCurrentNote: jest.fn(),
 		};
 
-		expect(addProject?.nameKey).toBe(msg({ message: "Add project to current task", context: "commands.addProjectToCurrentTask" }));
-		expect(addSubtask?.nameKey).toBe(msg({ message: "Add subtask to current note", context: "commands.addSubtaskToCurrentNote" }));
+		expect(addProject?.nameKey).toEqual(msg({ message: "Add project to current task", context: "commands.addProjectToCurrentTask" }));
+		expect(addSubtask?.nameKey).toEqual(msg({ message: "Add subtask to current note", context: "commands.addSubtaskToCurrentNote" }));
 
 		await addProject?.callback?.(ctx as any);
 		await addSubtask?.callback?.(ctx as any);

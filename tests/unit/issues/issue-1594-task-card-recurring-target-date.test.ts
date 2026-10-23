@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { createTaskCard } from "../../../src/ui/TaskCard";
 import { TaskFactory } from "../../helpers/mock-factories";
 
@@ -58,7 +59,7 @@ function createMockPlugin() {
 		},
 		getActiveTimeSession: jest.fn(() => null),
 		i18n: {
-			translate: jest.fn((key: string) => key),
+			translate: mockObserveTranslation(),
 		},
 		openTaskEditModal: jest.fn(),
 		priorityManager: {

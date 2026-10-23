@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import {
@@ -35,22 +36,7 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 			},
 		},
 		i18n: {
-			translate: jest.fn((key: string, vars?: Record<string, string | number>) => {
-				const translations: Record<string, string> = {
-					"ui.taskCard.labels.recurrence": "Recurrence",
-					"ui.taskCard.recurrenceTooltip": `Recurrence: ${vars?.value ?? ""}`,
-					"ui.taskCard.reminderTooltipOne": "1 reminder",
-					"ui.taskCard.reminderTooltipMany": `${vars?.count ?? 0} reminders`,
-					"ui.taskCard.detailsTooltip": "Has details",
-					"ui.taskCard.projectTooltip": "Project",
-					"ui.taskCard.projectIndicatorTooltip": "Used as a project",
-					"ui.taskCard.expandSubtasks": "Expand subtasks",
-					"ui.taskCard.collapseSubtasks": "Collapse subtasks",
-					"ui.taskCard.blockingToggle": `Blocking ${vars?.count ?? 0} tasks`,
-					"ui.taskCard.blockedBadge": "Blocked",
-				};
-				return translations[key] ?? key;
-			}),
+			translate: mockObserveTranslation(),
 		},
 		projectSubtasksService: {
 			isTaskUsedAsProjectSync: jest.fn(() => false),

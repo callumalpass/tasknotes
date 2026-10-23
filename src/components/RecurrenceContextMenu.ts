@@ -1,5 +1,6 @@
 import { uiNumber } from "../i18n/formatters";
 import { uiLocale } from "../i18n/runtime";
+import { uiData } from "../i18n/dataText";
 import { recurrenceMonthlyOn, recurrenceYearlyOn } from "../i18n/recurrence";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
@@ -717,7 +718,10 @@ export class CustomRecurrenceModal extends Modal {
 			key: TranslationKey,
 			controls: Record<string, HTMLElement>
 		) => {
-			const template = this.translate(key);
+			const markers = Object.fromEntries(Object.keys(controls).map(name => [name,
+				uiData(`{${name}}`, "Structural marker for an existing recurrence input; never displayed as copy"),
+			]));
+			const template = this.translate(key, markers);
 			for (const part of template.split(/(\{\w+\})/g)) {
 				const control = controls[part.slice(1, -1)];
 				container.append(control ?? document.createTextNode(part));

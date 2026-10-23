@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 const mockDatePickerOpen = jest.fn();
 let mockDatePickerOptions: any;
 const mockDateTimePickerModal = jest.fn().mockImplementation((_app, options) => {
@@ -88,7 +89,7 @@ function createHarness(overrides: Partial<TaskModalActionMenuState> = {}): {
 	const context: TaskModalActionMenuContext = {
 		app: {} as TaskModalActionMenuContext["app"],
 		plugin,
-		translate: (key) => `translated:${key}`,
+		translate: mockObserveTranslation(),
 		getState: () => state,
 		setDate: (type, value) => {
 			state = {

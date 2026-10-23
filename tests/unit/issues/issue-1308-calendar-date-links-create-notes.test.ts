@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import { Notice, type TFile } from "obsidian";
 import {
@@ -48,12 +49,7 @@ function createPlugin(openFile = jest.fn().mockResolvedValue(undefined)): MockPl
 			},
 		},
 		i18n: {
-			translate: jest.fn((key: string) => {
-				if (key === msg({ message: "No daily note exists for this date.", context: "views.basesCalendar.notices.noDailyNoteForDate" })) {
-					return "No daily note exists for this date.";
-				}
-				return key;
-			}),
+			translate: mockObserveTranslation(),
 		},
 	};
 }

@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import { App } from 'obsidian';
 import type TaskNotesPlugin from '../../../src/main';
@@ -22,7 +23,7 @@ describe('Settings card expansion across rebuilds', () => {
     const plugin = {
       saveSettings: save,
       registerEvent: jest.fn(),
-      i18n: { on: jest.fn(), translate: (key: string) => key },
+      i18n: { on: jest.fn(), translate: mockObserveTranslation() },
     } as unknown as TaskNotesPlugin;
     tab = new TaskNotesSettingTab({} as App, plugin);
     const render = (container: HTMLElement) => {

@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import {
 	createTaskModalBlockedByField,
 	createTaskModalBlockingField,
@@ -9,7 +10,7 @@ import {
 
 function createContext(): TaskModalOrganizationFieldContext {
 	return {
-		translate: (key) => `translated:${key}`,
+		translate: mockObserveTranslation(),
 	};
 }
 
