@@ -1,4 +1,4 @@
-import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText } from "../../helpers/real-i18n";
 import { msg } from "@lingui/core/macro";
 import { renderUserFieldsSection } from "../../../src/settings/tabs/taskProperties/userFieldsCard";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
@@ -72,7 +72,7 @@ describe("Issue #1419: custom user field settings save while typing", () => {
 		updateInput(
 			inputByPlaceholder(
 				container,
-				mockEnglishText(msg({ message: "property-name", context: "settings.taskProperties.customUserFields.placeholders.propertyKey" }))
+				"property-name"
 			),
 			"ceu_credits"
 		);

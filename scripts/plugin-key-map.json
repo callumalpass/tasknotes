@@ -3084,11 +3084,6 @@
     "message": "Path to template file for task body content. Supports template variables like '{{title}}', '{{date}}', '{{time}}', '{{priority}}', '{{status}}', etc.",
     "context": "settings.defaults.bodyTemplate.bodyTemplateFile.description"
   },
-  "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder": {
-    "id": "UUUc0G",
-    "message": "Templates/Task Template.md",
-    "context": "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
-  },
   "settings.defaults.bodyTemplate.bodyTemplateFile.ariaLabel": {
     "id": "yW29Mj",
     "message": "Path to body template file",
@@ -3113,11 +3108,6 @@
     "id": "XYeG5J",
     "message": "Path to template file for materialized occurrence notes. A recurring task''s occurrence_template field takes priority over this fallback.",
     "context": "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description"
-  },
-  "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder": {
-    "id": "57AIRF",
-    "message": "Templates/Occurrence Template.md",
-    "context": "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder"
   },
   "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.ariaLabel": {
     "id": "hfrAza",
@@ -4069,20 +4059,10 @@
     "message": "Delay (minutes):",
     "context": "settings.taskProperties.taskStatuses.fields.delayMinutes"
   },
-  "settings.taskProperties.taskStatuses.placeholders.value": {
-    "id": "AGkeCz",
-    "message": "in-progress",
-    "context": "settings.taskProperties.taskStatuses.placeholders.value"
-  },
   "settings.taskProperties.taskStatuses.placeholders.label": {
     "id": "MhiJEA",
     "message": "In progress",
     "context": "settings.taskProperties.taskStatuses.placeholders.label"
-  },
-  "settings.taskProperties.taskStatuses.placeholders.icon": {
-    "id": "mKibSm",
-    "message": "check, circle, clock",
-    "context": "settings.taskProperties.taskStatuses.placeholders.icon"
   },
   "settings.taskProperties.taskStatuses.placeholders.nextStatusDefault": {
     "id": "yC5iiP",
@@ -4184,20 +4164,10 @@
     "message": "Icon:",
     "context": "settings.taskProperties.taskPriorities.fields.icon"
   },
-  "settings.taskProperties.taskPriorities.placeholders.value": {
-    "id": "MdKe1M",
-    "message": "high",
-    "context": "settings.taskProperties.taskPriorities.placeholders.value"
-  },
   "settings.taskProperties.taskPriorities.placeholders.label": {
     "id": "DOK-vB",
     "message": "High priority",
     "context": "settings.taskProperties.taskPriorities.placeholders.label"
-  },
-  "settings.taskProperties.taskPriorities.placeholders.icon": {
-    "id": "8YN_Kp",
-    "message": "alert-circle",
-    "context": "settings.taskProperties.taskPriorities.placeholders.icon"
   },
   "settings.taskProperties.taskPriorities.deleteConfirm": {
     "id": "4KL9wZ",
@@ -4443,11 +4413,6 @@
     "id": "9eis5r",
     "message": "Display name",
     "context": "settings.taskProperties.customUserFields.placeholders.displayName"
-  },
-  "settings.taskProperties.customUserFields.placeholders.propertyKey": {
-    "id": "ACjzN0",
-    "message": "property-name",
-    "context": "settings.taskProperties.customUserFields.placeholders.propertyKey"
   },
   "settings.taskProperties.customUserFields.placeholders.defaultValue": {
     "id": "oki1lA",
@@ -5879,11 +5844,6 @@
     "message": "Path to template file for notes created from ICS events",
     "context": "settings.integrations.calendarSubscriptions.defaultNoteTemplate.description"
   },
-  "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder": {
-    "id": "NO8n8x",
-    "message": "Templates/Event Template.md",
-    "context": "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder"
-  },
   "settings.integrations.calendarSubscriptions.defaultNoteFolder.name": {
     "id": "TipKGX",
     "message": "Default note folder",
@@ -6238,11 +6198,6 @@
     "id": "cpvXhr",
     "message": "Path where the ICS file will be saved (relative to vault root)",
     "context": "settings.integrations.autoExport.filePath.description"
-  },
-  "settings.integrations.autoExport.filePath.placeholder": {
-    "id": "bpXa4t",
-    "message": "tasknotes-calendar.ics",
-    "context": "settings.integrations.autoExport.filePath.placeholder"
   },
   "settings.integrations.autoExport.interval.name": {
     "id": "36KS7C",
@@ -6784,11 +6739,6 @@
     "message": "TaskNotes token, not your AI provider''s API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client''s bearer authentication settings. Update clients whenever this token changes.",
     "context": "settings.integrations.httpApi.authToken.description"
   },
-  "settings.integrations.httpApi.authToken.placeholder": {
-    "id": "FKuhK7",
-    "message": "your-secret-token",
-    "context": "settings.integrations.httpApi.authToken.placeholder"
-  },
   "settings.integrations.httpApi.mcp.enable.name": {
     "id": "n0w26u",
     "message": "Enable MCP server",
@@ -7268,11 +7218,6 @@
     "id": "ijTrTr",
     "message": "The endpoint where webhook payloads will be sent",
     "context": "settings.integrations.webhooks.modals.add.url.description"
-  },
-  "settings.integrations.webhooks.modals.add.url.placeholder": {
-    "id": "ZL1zSY",
-    "message": "https://your-service.com/webhook",
-    "context": "settings.integrations.webhooks.modals.add.url.placeholder"
   },
   "settings.integrations.webhooks.modals.add.transformFile.name": {
     "id": "12yt3h",
@@ -9248,11 +9193,6 @@
     "id": "DsGNXP",
     "message": "Path to the template file",
     "context": "modals.icsNoteCreation.templatePathDesc"
-  },
-  "modals.icsNoteCreation.templatePathPlaceholder": {
-    "id": "2ZoFeM",
-    "message": "templates/ics-note-template.md",
-    "context": "modals.icsNoteCreation.templatePathPlaceholder"
   },
   "modals.unscheduledTasksSelector.overdue": {
     "id": "-L-wp_",

@@ -1,4 +1,5 @@
 import { uiText } from "../../i18n/runtime";
+import { uiData } from "../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
@@ -309,9 +310,7 @@ export function renderFeaturesTab(
 							desc: translate(
 								msg({ message: "Path to template file for task body content. Supports template variables like '{{title}}', '{{date}}', '{{time}}', '{{priority}}', '{{status}}', etc.", context: "settings.defaults.bodyTemplate.bodyTemplateFile.description" })
 							),
-							placeholder: translate(
-								msg({ message: "Templates/Task Template.md", context: "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder" })
-							),
+							placeholder: uiData("Templates/Task Template.md", "Literal vault-path example, not a translated default or a different template lookup location"),
 							getValue: () => plugin.settings.taskCreationDefaults.bodyTemplate,
 							setValue: async (value: string) => {
 								plugin.settings.taskCreationDefaults.bodyTemplate = value;
@@ -350,9 +349,7 @@ export function renderFeaturesTab(
 							desc: translate(
 								msg({ message: "Path to template file for materialized occurrence notes. A recurring task''s occurrence_template field takes priority over this fallback.", context: "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description" })
 							),
-							placeholder: translate(
-								msg({ message: "Templates/Occurrence Template.md", context: "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder" })
-							),
+							placeholder: uiData("Templates/Occurrence Template.md", "Literal vault-path example; persisted occurrence-template locations remain unchanged across locales"),
 							getValue: () =>
 								plugin.settings.taskCreationDefaults.occurrenceBodyTemplate,
 							setValue: async (value: string) => {

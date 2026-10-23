@@ -1782,11 +1782,6 @@ msgctxt "generated Bases view name"
 msgid "Agenda"
 msgstr "Agenda"
 
-#: src/settings/tabs/taskProperties/priorityPropertyCard.ts
-msgctxt "settings.taskProperties.taskPriorities.placeholders.icon"
-msgid "alert-circle"
-msgstr "alert-circle"
-
 #: src/suggest/FileSuggestHelper.ts
 msgctxt "suggest/FileSuggestHelper: suggest.run display"
 msgid "aliases: {value1}"
@@ -2804,11 +2799,6 @@ msgstr "Check GitHub once when TaskNotes starts and show a notice when a newer c
 msgctxt "timeblock Daily Notes setup guidance"
 msgid "Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists."
 msgstr "Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists."
-
-#: src/settings/tabs/taskProperties/statusPropertyCard.ts
-msgctxt "settings.taskProperties.taskStatuses.placeholders.icon"
-msgid "check, circle, clock"
-msgstr "check, circle, clock"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.checklistProgress"
@@ -7045,11 +7035,6 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Hide top-level subtasks"
 msgstr "Hide top-level subtasks"
 
-#: src/settings/tabs/taskProperties/priorityPropertyCard.ts
-msgctxt "settings.taskProperties.taskPriorities.placeholders.value"
-msgid "high"
-msgstr "high"
-
 #: src/settings/defaults.ts
 msgctxt "settings/defaults: defaults label"
 msgid "High"
@@ -7105,11 +7090,6 @@ msgstr "How statuses work:"
 msgctxt "settings.integrations.httpApi.header"
 msgid "HTTP API"
 msgstr "HTTP API"
-
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.webhooks.modals.add.url.placeholder"
-msgid "https://your-service.com/webhook"
-msgstr "https://your-service.com/webhook"
 
 #: src/settings/tabs/taskProperties/priorityPropertyCard.ts
 msgctxt "settings.taskProperties.taskPriorities.fields.icon"
@@ -7195,11 +7175,6 @@ msgstr "in your browser"
 msgctxt "settings.features.notifications.inAppLabel"
 msgid "In-app notifications"
 msgstr "In-app notifications"
-
-#: src/settings/tabs/taskProperties/statusPropertyCard.ts
-msgctxt "settings.taskProperties.taskStatuses.placeholders.value"
-msgid "in-progress"
-msgstr "in-progress"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.webhooks.statusLabels.inactive"
@@ -10149,11 +10124,6 @@ msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "Property-based events"
 
-#: src/settings/tabs/taskProperties/userFieldsCard.ts
-msgctxt "settings.taskProperties.customUserFields.placeholders.propertyKey"
-msgid "property-name"
-msgstr "property-name"
-
 #: src/api/TasksController.ts
 msgctxt "api/TasksController: TasksController.queryTasks summary"
 msgid "Query tasks"
@@ -12618,11 +12588,6 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.description"
 msgid "TaskNotes uses Obsidian Bases files (.base) to power its views. These files are generated automatically on startup if they don''t exist, configured with your current settings (task identification, field mappings, statuses, etc.)."
 msgstr "TaskNotes uses Obsidian Bases files (.base) to power its views. These files are generated automatically on startup if they don''t exist, configured with your current settings (task identification, field mappings, statuses, etc.)."
 
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.autoExport.filePath.placeholder"
-msgid "tasknotes-calendar.ics"
-msgstr "tasknotes-calendar.ics"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.labels.tasks"
 msgid "Tasks"
@@ -12673,26 +12638,6 @@ msgstr "Template variables:"
 msgctxt "ui/taskCardProperties: occurrenceTemplate text"
 msgid "Template: "
 msgstr "Template: "
-
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder"
-msgid "Templates/Event Template.md"
-msgstr "Templates/Event Template.md"
-
-#: src/modals/ICSNoteCreationModal.ts
-msgctxt "modals.icsNoteCreation.templatePathPlaceholder"
-msgid "templates/ics-note-template.md"
-msgstr "templates/ics-note-template.md"
-
-#: src/settings/tabs/featuresTab.ts
-msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder"
-msgid "Templates/Occurrence Template.md"
-msgstr "Templates/Occurrence Template.md"
-
-#: src/settings/tabs/featuresTab.ts
-msgctxt "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
-msgid "Templates/Task Template.md"
-msgstr "Templates/Task Template.md"
 
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 msgctxt "settings.taskProperties.customUserFields.types.text"
@@ -14605,11 +14550,6 @@ msgstr "Your code:"
 msgctxt "settings.integrations.webhooks.secretModal.description"
 msgid "Your webhook secret has been generated. Save this secret as you won''t be able to view it again:"
 msgstr "Your webhook secret has been generated. Save this secret as you won''t be able to view it again:"
-
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.httpApi.authToken.placeholder"
-msgid "your-secret-token"
-msgstr "your-secret-token"
 
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.datePlaceholder"

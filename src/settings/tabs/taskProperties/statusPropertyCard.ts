@@ -243,7 +243,7 @@ function renderStatusList(
 		let previousStatusValue = status.value;
 		const valueInput = createCardInput(
 			"text",
-			translate(msg({ message: "in-progress", context: "settings.taskProperties.taskStatuses.placeholders.value" })),
+			uiData("in-progress", "Example persisted status identifier; translating it must not change YAML/NLP values"),
 			status.value
 		);
 		const labelInput = createCardInput(
@@ -254,7 +254,7 @@ function renderStatusList(
 		const colorInput = createThemeColorInput(status.color);
 		const { container: iconInputContainer, input: iconInput } = createIconInput(
 			plugin.app,
-			translate(msg({ message: "check, circle, clock", context: "settings.taskProperties.taskStatuses.placeholders.icon" })),
+			uiData("check, circle, clock", "Literal Lucide icon identifiers, not translated display labels"),
 			status.icon || ""
 		);
 

@@ -2,7 +2,11 @@
 
 Branch: `feat/lingui-port`, draft PR #2418, stacked on `feat/downloadable-language-packs`.
 
-## Frozen source
+## Integration amendment
+
+The frozen handoff below remains the translator baseline. Twelve technical examples have since been retired from translation: Lucide IDs, persisted identifier examples, concrete template/file paths, a URL and a dummy token. Their exact IDs and reasons are in [the retirement inventory](i18n-retired-data-messages.json). Current English has **2,797 active messages**, with no new messages to author. Drop only those retired IDs when integrating a translator branch; normal clean extraction canonicalizes PO formatting without altering authored translations. Placeholder changes do not alter stored defaults, configured paths or template lookup behavior. The `no-key` missing-state caption remains translatable because it is a UI fallback, not a persisted key.
+
+## Historical frozen source
 
 Two consecutive clean extractions are byte-identical across all nine POs. There are **2,809 active messages**: English has zero empty entries; **de, es, fr, ja, ko, pt, ru and zh each have 669 empty entries** (5,352 target entries). New target copy is deliberately empty, not English padding.
 

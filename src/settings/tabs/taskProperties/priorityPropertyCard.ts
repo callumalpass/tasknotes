@@ -255,7 +255,7 @@ function renderPriorityList(
 	sortedPriorities.forEach((priority) => {
 		const valueInput = createCardInput(
 			"text",
-			translate(msg({ message: "high", context: "settings.taskProperties.taskPriorities.placeholders.value" })),
+			uiData("high", "Example persisted priority identifier; translating it must not change YAML/NLP values"),
 			priority.value
 		);
 		const labelInput = createCardInput(
@@ -266,7 +266,7 @@ function renderPriorityList(
 		const colorInput = createThemeColorInput(priority.color);
 		const { container: iconInputContainer, input: iconInput } = createIconInput(
 			plugin.app,
-			translate(msg({ message: "alert-circle", context: "settings.taskProperties.taskPriorities.placeholders.icon" })),
+			uiData("alert-circle", "Lucide icon identifier; must remain an exact icon lookup key in every locale"),
 			priority.icon || ""
 		);
 

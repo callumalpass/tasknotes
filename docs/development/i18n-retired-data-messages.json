@@ -1,0 +1,90 @@
+{
+  "sourceFreeze": "9b6f087e86af81e522d2d16661937a6f1a158ad0",
+  "note": "Source correction only: these twelve examples are data, not translatable copy. Drop these IDs when integrating frozen-handoff translations. No new messages or replacement translations are required. Existing configured paths, filename fallbacks, YAML values and icon lookup behavior remain unchanged.",
+  "retirements": [
+    {
+      "concept": "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder",
+      "id": "UUUc0G",
+      "message": "Templates/Task Template.md",
+      "context": "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder",
+      "reason": "Literal vault path or filename example"
+    },
+    {
+      "concept": "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder",
+      "id": "57AIRF",
+      "message": "Templates/Occurrence Template.md",
+      "context": "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder",
+      "reason": "Literal vault path or filename example"
+    },
+    {
+      "concept": "settings.taskProperties.taskStatuses.placeholders.value",
+      "id": "AGkeCz",
+      "message": "in-progress",
+      "context": "settings.taskProperties.taskStatuses.placeholders.value",
+      "reason": "Example persisted frontmatter identifier"
+    },
+    {
+      "concept": "settings.taskProperties.taskStatuses.placeholders.icon",
+      "id": "mKibSm",
+      "message": "check, circle, clock",
+      "context": "settings.taskProperties.taskStatuses.placeholders.icon",
+      "reason": "Literal Lucide lookup identifiers"
+    },
+    {
+      "concept": "settings.taskProperties.taskPriorities.placeholders.value",
+      "id": "MdKe1M",
+      "message": "high",
+      "context": "settings.taskProperties.taskPriorities.placeholders.value",
+      "reason": "Example persisted frontmatter identifier"
+    },
+    {
+      "concept": "settings.taskProperties.taskPriorities.placeholders.icon",
+      "id": "8YN_Kp",
+      "message": "alert-circle",
+      "context": "settings.taskProperties.taskPriorities.placeholders.icon",
+      "reason": "Literal Lucide lookup identifiers"
+    },
+    {
+      "concept": "settings.taskProperties.customUserFields.placeholders.propertyKey",
+      "id": "ACjzN0",
+      "message": "property-name",
+      "context": "settings.taskProperties.customUserFields.placeholders.propertyKey",
+      "reason": "Example persisted frontmatter identifier"
+    },
+    {
+      "concept": "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder",
+      "id": "NO8n8x",
+      "message": "Templates/Event Template.md",
+      "context": "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder",
+      "reason": "Literal vault path or filename example"
+    },
+    {
+      "concept": "settings.integrations.autoExport.filePath.placeholder",
+      "id": "bpXa4t",
+      "message": "tasknotes-calendar.ics",
+      "context": "settings.integrations.autoExport.filePath.placeholder",
+      "reason": "Literal vault path or filename example"
+    },
+    {
+      "concept": "settings.integrations.httpApi.authToken.placeholder",
+      "id": "FKuhK7",
+      "message": "your-secret-token",
+      "context": "settings.integrations.httpApi.authToken.placeholder",
+      "reason": "Dummy credential-shape example"
+    },
+    {
+      "concept": "settings.integrations.webhooks.modals.add.url.placeholder",
+      "id": "ZL1zSY",
+      "message": "https://your-service.com/webhook",
+      "context": "settings.integrations.webhooks.modals.add.url.placeholder",
+      "reason": "Literal endpoint URL example"
+    },
+    {
+      "concept": "modals.icsNoteCreation.templatePathPlaceholder",
+      "id": "2ZoFeM",
+      "message": "templates/ics-note-template.md",
+      "context": "modals.icsNoteCreation.templatePathPlaceholder",
+      "reason": "Literal vault path or filename example"
+    }
+  ]
+}

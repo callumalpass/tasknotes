@@ -210,7 +210,7 @@ export class ICSNoteCreationModal extends Modal {
 					this.templateInput = text.inputEl;
 					text.setValue(this.template)
 						.setPlaceholder(
-							this.translate(msg({ message: "templates/ics-note-template.md", context: "modals.icsNoteCreation.templatePathPlaceholder" }))
+							uiData("templates/ics-note-template.md", "Literal vault-path example; preserve the template filename and lookup syntax across locales")
 						)
 						.onChange((value) => {
 							this.template = value;

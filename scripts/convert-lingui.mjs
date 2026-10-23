@@ -8,7 +8,7 @@ import { resolve } from "node:path";
 import ts from "typescript";
 import { readdir } from "node:fs/promises";
 import { migratePlurals, pluralKeys } from "./lib/lingui-plurals.mjs";
-import { legacyConceptReplacements } from "./lib/lingui-retired.mjs";
+import { legacyConceptReplacements, technicalDataConcepts } from "./lib/lingui-retired.mjs";
 
 export const locales = ["en", "fr", "de", "es", "ja", "ko", "pt", "ru", "zh"];
 export function flatten(tree, prefix = "") {
@@ -37,7 +37,7 @@ export async function loadLegacy(root = process.cwd(), revisions = {}) {
   return result;
 }
 export function mapping(english) {
-  return Object.fromEntries(Object.entries(english).filter(([, value]) => value !== "").map(([key, value]) => {
+  return Object.fromEntries(Object.entries(english).filter(([key, value]) => value !== "" && !technicalDataConcepts.has(key)).map(([key, value]) => {
     const replacement = legacyConceptReplacements[key];
     const message = replacement?.message ?? (pluralKeys.has(key) ? value : toICU(value));
     const context = replacement?.context ?? (/^ui\.taskCard\.reminderTooltip(One|Many)$/.test(key) ? "ui.taskCard.reminderTooltip" : key);

@@ -1487,9 +1487,7 @@ export function renderIntegrationsTab(
 						desc: translate(
 							msg({ message: "Path to template file for notes created from ICS events", context: "settings.integrations.calendarSubscriptions.defaultNoteTemplate.description" })
 						),
-						placeholder: translate(
-							msg({ message: "Templates/Event Template.md", context: "settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder" })
-						),
+						placeholder: uiData("Templates/Event Template.md", "Literal vault template-path example; existing configured ICS template locations are not translated"),
 						getValue: () => plugin.settings.icsIntegration.defaultNoteTemplate,
 						setValue: async (value: string) => {
 							plugin.settings.icsIntegration.defaultNoteTemplate = value;
@@ -1791,9 +1789,7 @@ export function renderIntegrationsTab(
 							desc: translate(
 								msg({ message: "Path where the ICS file will be saved (relative to vault root)", context: "settings.integrations.autoExport.filePath.description" })
 							),
-							placeholder: translate(
-								msg({ message: "tasknotes-calendar.ics", context: "settings.integrations.autoExport.filePath.placeholder" })
-							),
+							placeholder: uiData("tasknotes-calendar.ics", "Literal export filename, also the unchanged empty-input fallback used by the file writer"),
 							getValue: () => plugin.settings.icsIntegration.autoExportPath,
 							setValue: async (value: string) => {
 								plugin.settings.icsIntegration.autoExportPath =
@@ -2047,9 +2043,7 @@ export function renderIntegrationsTab(
 								desc: translate(
 									msg({ message: "TaskNotes token, not your AI provider''s API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client''s bearer authentication settings. Update clients whenever this token changes.", context: "settings.integrations.httpApi.authToken.description" })
 								),
-								placeholder: translate(
-									msg({ message: "your-secret-token", context: "settings.integrations.httpApi.authToken.placeholder" })
-								),
+								placeholder: uiData("your-secret-token", "Dummy credential-shape example, not a translated token or an actual credential"),
 								getValue: () => plugin.settings.apiAuthToken,
 								setValue: async (value: string) => {
 									plugin.settings.apiAuthToken = value;
@@ -3112,7 +3106,7 @@ class WebhookModal extends Modal {
 				);
 				return text
 					.setPlaceholder(
-						this.translate(msg({ message: "https://your-service.com/webhook", context: "settings.integrations.webhooks.modals.add.url.placeholder" }))
+						uiData("https://your-service.com/webhook", "Literal endpoint URL example; host/path syntax must not be translated")
 					)
 					.setValue(this.url)
 					.onChange((value) => {

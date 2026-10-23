@@ -1,4 +1,5 @@
 import { msg } from "@lingui/core/macro";
+import { uiData } from "../../../i18n/dataText";
 import { Setting, setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import {
@@ -261,7 +262,7 @@ function renderUserFieldsList(
 		);
 		const keyInput = createCardInput(
 			"text",
-			translate(msg({ message: "property-name", context: "settings.taskProperties.customUserFields.placeholders.propertyKey" })),
+			uiData("property-name", "Example persisted frontmatter property identifier, not the user-facing field label"),
 			field.key
 		);
 		const typeSelect = createCardSelect(
