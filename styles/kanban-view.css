@@ -289,10 +289,10 @@
     box-shadow: var(--tn-shadow-medium);
 }
 
-@media (pointer: coarse) {
-    .tasknotes-plugin .kanban-view__column-header--dragging {
-        pointer-events: none;
-    }
+/* Only active long-press touch drags opt out of hit-testing.
+   Shared --dragging classes must stay visual-only for native mouse dragging. */
+.tasknotes-plugin .kanban-view__touch-drag-source {
+    pointer-events: none;
 }
 
 /* Drag Handle */
@@ -714,12 +714,6 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
 @media (prefers-reduced-motion: reduce) {
     .tasknotes-plugin .kanban-view__card-wrapper--drag-shift {
         transition: none;
-    }
-}
-
-@media (pointer: coarse) {
-    .tasknotes-plugin .kanban-view__card--dragging {
-        pointer-events: none;
     }
 }
 
