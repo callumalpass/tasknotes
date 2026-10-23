@@ -49,4 +49,70 @@ describe('projectFilterUtils', () => {
       expect(matchesProjectProperty(undefined, { key: '', value: '', enabled: false })).toBe(true);
     });
   });
+
+  describe('matchesProjectProperty - expression syntax', () => {
+    it('supports containsAny(...) as an allow-list', () => {
+      const filter = { key: 'status', value: 'containsAny("active", "planned")', enabled: true };
+      expect(matchesProjectProperty({ status: 'active' }, filter)).toBe(true);
+      expect(matchesProjectProperty({ status: 'Planned' }, filter)).toBe(true);
+      expect(matchesProjectProperty({ status: 'completed' }, filter)).toBe(false);
+    });
+
+    it('negates with !containsAny(...) to exclude values', () => {
+      const filter = {
+        key: 'status',
+        value: '!containsAny("completed", "archived", "cancelled", "done")',
+        enabled: true,
+      };
+      expect(matchesProjectProperty({ status: 'active' }, filter)).toBe(true);
+      expect(matchesProjectProperty({ status: 'Completed' }, filter)).toBe(false);
+      expect(matchesProjectProperty({ status: 'archived' }, filter)).toBe(false);
+    });
+
+    it('hides notes with a missing or empty property even under a negation filter', () => {
+      const filter = {
+        key: 'status',
+        value: '!containsAny("completed", "archived")',
+        enabled: true,
+      };
+      expect(matchesProjectProperty({}, filter)).toBe(false);
+      expect(matchesProjectProperty({ status: '' }, filter)).toBe(false);
+      expect(matchesProjectProperty({ status: '   ' }, filter)).toBe(false);
+      expect(matchesProjectProperty({ status: null }, filter)).toBe(false);
+      expect(matchesProjectProperty({ status: [] }, filter)).toBe(false);
+      expect(matchesProjectProperty(undefined, filter)).toBe(false);
+      // ...but a note that has a non-excluded status is still shown.
+      expect(matchesProjectProperty({ status: 'active' }, filter)).toBe(true);
+    });
+
+    it('negation applies to list-valued properties', () => {
+      const filter = { key: 'tags', value: '!containsAny("archived")', enabled: true };
+      expect(matchesProjectProperty({ tags: ['active', 'work'] }, filter)).toBe(true);
+      expect(matchesProjectProperty({ tags: ['work', 'archived'] }, filter)).toBe(false);
+    });
+
+    it('accepts the "not " prefix as a negation', () => {
+      const filter = { key: 'status', value: 'not containsAny("done")', enabled: true };
+      expect(matchesProjectProperty({ status: 'done' }, filter)).toBe(false);
+      expect(matchesProjectProperty({ status: 'todo' }, filter)).toBe(true);
+    });
+
+    it('supports a bare negated comma-separated list', () => {
+      const filter = { key: 'status', value: '!completed, archived', enabled: true };
+      expect(matchesProjectProperty({ status: 'completed' }, filter)).toBe(false);
+      expect(matchesProjectProperty({ status: 'active' }, filter)).toBe(true);
+    });
+
+    it('is case-insensitive for the function name and strips quotes', () => {
+      const filter = { key: 'status', value: "CONTAINSANY('active')", enabled: true };
+      expect(matchesProjectProperty({ status: 'active' }, filter)).toBe(true);
+      expect(matchesProjectProperty({ status: 'active-extra' }, filter)).toBe(false);
+    });
+
+    it('treats a bare "!" as a pure existence check', () => {
+      const filter = { key: 'status', value: '!', enabled: true };
+      expect(matchesProjectProperty({ status: 'completed' }, filter)).toBe(true);
+      expect(matchesProjectProperty({}, filter)).toBe(false);
+    });
+  });
 });
