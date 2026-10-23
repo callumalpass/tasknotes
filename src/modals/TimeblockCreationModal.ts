@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiLocale } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -69,7 +70,7 @@ export function getTimeblockCreationErrorMessage(error: unknown): string {
 		return uiText(msg({ message: "Failed to create timeblock. Check console for details.", context: "modals/TimeblockCreationModal: getTimeblockCreationErrorMessage display" }));
 	}
 
-	return uiText(msg({ message: "Failed to create timeblock: {errorMessage}", context: "modals/TimeblockCreationModal: getTimeblockCreationErrorMessage display" }), { errorMessage: errorMessage });
+	return uiText(msg({ message: "Failed to create timeblock: {errorMessage}", context: "modals/TimeblockCreationModal: getTimeblockCreationErrorMessage display" }), { errorMessage: displayError(errorMessage) });
 }
 
 function getDailyNoteMoment(input: string): DailyNoteMoment {

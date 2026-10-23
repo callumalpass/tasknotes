@@ -1370,7 +1370,7 @@ export class StatsView extends ItemView {
 		container.appendChild(svg);
 
 		const label = container.createDiv({ cls: "stats-view__progress-label" });
-		label.textContent = uiText(msg({ message: "{total, plural, one {{completed}/{total} tasks} other {{completed}/{total} tasks}}", context: "views/StatsView: StatsView.renderProgressCircle display" }), { completed: completed, total: total });
+		label.textContent = uiText(msg({ message: "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}", context: "views/StatsView: StatsView.renderProgressCircle display" }), { completed: completed, total: total });
 	}
 
 	/**
@@ -1837,7 +1837,7 @@ export class StatsView extends ItemView {
 
 			// Show task count
 			const countEl = taskList.createDiv({ cls: "stats-view__task-count" });
-			countEl.textContent = uiText(msg({ message: "{length, plural, one {Showing {length} task} other {Showing {length} tasks}}", context: "views/StatsView: StatsView.renderDrilldownContent.renderTasks display" }), { length: filteredTasks.length });
+			countEl.textContent = uiText(msg({ message: "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}", context: "views/StatsView: StatsView.renderDrilldownContent.renderTasks display" }), { length: filteredTasks.length });
 
 			for (const task of filteredTasks) {
 				// Create TaskCard with checkbox disabled as requested
@@ -1889,7 +1889,7 @@ export class StatsView extends ItemView {
 			bar.style.height = `${height}px`;
 
 			// Tooltip
-			const tooltip = `${formatUIDate(new Date(day.date), "MMM d")}: ${Math.round(day.timeSpent)}m`;
+			const tooltip = uiText(msg({ message: "{date}: {duration}", context: "statistics daily time tooltip" }), { date: formatUIDate(new Date(day.date), "MMM d"), duration: uiDuration(day.timeSpent) });
 			bar.setAttribute("title", tooltip);
 		}
 	}

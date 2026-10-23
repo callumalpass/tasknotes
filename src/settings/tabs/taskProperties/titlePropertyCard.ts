@@ -1,3 +1,4 @@
+import { uiData } from "../../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
@@ -29,7 +30,7 @@ export function renderTitlePropertyCard(
 
 		const propertyKeyInput = createCardInput(
 			"text",
-			"title",
+			uiData("title", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 			plugin.settings.fieldMapping.title
 		);
 
@@ -116,7 +117,7 @@ function renderFilenameSettingsContent(
 	});
 	const occurrenceTemplateInput = createCardInput(
 		"text",
-		"{{title}} — {{occurrenceDate}}",
+		uiData("{{title}} — {{occurrenceDate}}", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		plugin.settings.occurrenceFilenameTemplate
 	);
 	occurrenceTemplateInput.addEventListener("change", () => {
@@ -136,7 +137,7 @@ function renderFilenameSettingsContent(
 	});
 	const occurrencePropertyInput = createCardInput(
 		"text",
-		"occurrenceFilenameTemplate",
+		uiData("occurrenceFilenameTemplate", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		plugin.settings.occurrenceFilenameTemplateProperty
 	);
 	occurrencePropertyInput.addEventListener("change", () => {

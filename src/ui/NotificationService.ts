@@ -1,4 +1,6 @@
+import type { MessageSuffix } from "../i18n/concepts";
 import { uiLocale } from "../i18n/runtime";
+import { uiNumber } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { messageForKey } from "../i18n/messages";
@@ -612,18 +614,14 @@ export class NotificationService {
 	private generateDefaultMessage(task: TaskInfo, reminder: Reminder): string {
 		if (reminder.type === "absolute") {
 			return uiText(msg({ message: "Reminder: {title}", context: "ui/NotificationService: NotificationService.generateDefaultMessage display" }), { title: task.title });
-		} else {
-			const anchor = reminder.relatedTo === "due" ? "due" : "scheduled";
-			const offset = this.formatDurationForDisplay(reminder.offset || "");
-
-			if (offset.startsWith("-")) {
-				return uiText(msg({ message: "{title} is {anchor} in {value3}", context: "ui/NotificationService: NotificationService.generateDefaultMessage display" }), { title: task.title, anchor: anchor, value3: offset.substring(1) });
-			} else if (offset === "PT0S" || offset === "PT0M") {
-				return uiText(msg({ message: "{title} is {anchor} now", context: "ui/NotificationService: NotificationService.generateDefaultMessage display" }), { title: task.title, anchor: anchor });
-			} else {
-				return uiText(msg({ message: "{title} was {anchor} {offset} ago", context: "ui/NotificationService: NotificationService.generateDefaultMessage display" }), { title: task.title, anchor: anchor, offset: offset });
-			}
 		}
+		const offset = this.parseISO8601Duration(reminder.offset || "PT0S") ?? 0;
+		return uiText(msg({ message: "{anchor, select, due {{timing, select, before {{title} is due in {duration}} after {{title} was due {duration} ago} other {{title} is due now}}} other {{timing, select, before {{title} is scheduled in {duration}} after {{title} was scheduled {duration} ago} other {{title} is scheduled now}}}}", context: "relative reminder notification" }), {
+			title: task.title,
+			anchor: reminder.relatedTo,
+			timing: offset < 0 ? "before" : offset > 0 ? "after" : "now",
+			duration: this.formatDurationForDisplay(reminder.offset || "PT0S"),
+		});
 	}
 
 	private generateMissedMessage(task: TaskInfo, item: NotificationQueueItem): string {
@@ -656,7 +654,7 @@ export class NotificationService {
 		);
 	}
 
-	private translateMissed(key: string, params?: InterpolationValues): string {
+	private translateMissed(key: MessageSuffix<"services.notification.missed.">, params?: InterpolationValues): string {
 		return this.plugin.i18n.translate(messageForKey(`services.notification.missed.${key}`), params);
 	}
 
@@ -680,18 +678,9 @@ export class NotificationService {
 		const hours = Math.floor(absMs / (60 * 60 * 1000));
 		const days = Math.floor(absMs / (24 * 60 * 60 * 1000));
 
-		let result = "";
-		if (days > 0) {
-			result = uiText(msg({ message: "{days, plural, one {{days} day} other {{days} days}}", context: "ui/NotificationService: NotificationService.formatDurationForDisplay display" }), { days: days });
-		} else if (hours > 0) {
-			result = uiText(msg({ message: "{hours, plural, one {{hours} hour} other {{hours} hours}}", context: "ui/NotificationService: NotificationService.formatDurationForDisplay display" }), { hours: hours });
-		} else if (minutes > 0) {
-			result = uiText(msg({ message: "{minutes, plural, one {{minutes} minute} other {{minutes} minutes}}", context: "ui/NotificationService: NotificationService.formatDurationForDisplay display" }), { minutes: minutes });
-		} else {
-			result = "now";
-		}
-
-		return ms < 0 ? `-${result}` : result;
+		const unit = days > 0 ? "day" : hours > 0 ? "hour" : minutes > 0 ? "minute" : "second";
+		const value = days || hours || minutes || absMs / 1000;
+		return uiNumber(value, { style: "unit", unit, unitDisplay: "long" });
 	}
 
 	// Public method to manually refresh reminders (useful for testing)

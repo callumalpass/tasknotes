@@ -1,3 +1,5 @@
+import { displayError } from "../i18n/runtime";
+import type { MessageSuffix } from "../i18n/concepts";
 import { uiNumber } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
@@ -1725,7 +1727,7 @@ export class TaskListView extends BasesViewBase {
 		propertyChanges: readonly Pick<TaskListGroupDropPlan, "groupByTaskProp">[],
 		successMessage?: string
 	): void {
-		const t = (key: string) => this.plugin.i18n.translate(messageForKey(`views.taskList.movement.${key}`));
+		const t = (key: MessageSuffix<"views.taskList.movement.">) => this.plugin.i18n.translate(messageForKey(`views.taskList.movement.${key}`));
 		// Recurring status changes can write other occurrence notes. Do not offer a
 		// misleading single-note undo until those writes have a transaction ledger.
 		if (
@@ -3118,7 +3120,7 @@ export class TaskListView extends BasesViewBase {
 			"tn-static-padding-2rem-42aa6d9c"
 		);
 		errorEl.classList.add("tn-static-padding-20px-ebe8e48c");
-		errorEl.textContent = uiText(msg({ message: "Error loading tasks: {message}", context: "bases/TaskListView: TaskListView.renderError display" }), { message: error.message || "Unknown error" });
+		errorEl.textContent = uiText(msg({ message: "Error loading tasks: {message}", context: "bases/TaskListView: TaskListView.renderError display" }), { message: displayError(error.message || "Unknown error") });
 		this.itemsContainer!.appendChild(errorEl);
 	}
 
@@ -3601,7 +3603,7 @@ export class TaskListView extends BasesViewBase {
 				details: { taskPath: task.path },
 				error: message,
 			});
-			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), { message }));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), { message: displayError(message) }));
 		}
 	}
 

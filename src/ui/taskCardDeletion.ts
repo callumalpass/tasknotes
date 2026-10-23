@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -118,7 +119,7 @@ class DeleteTaskConfirmationModal extends Modal {
 					const errorMessage = error instanceof Error ? error.message : String(error);
 					new Notice(
 						this.plugin.i18n.translate(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), {
-							message: errorMessage,
+							message: displayError(errorMessage),
 						})
 					);
 					tasknotesLogger.error("Error in delete confirmation:", {

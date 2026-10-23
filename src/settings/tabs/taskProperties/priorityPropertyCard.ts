@@ -1,3 +1,5 @@
+import { uiText } from "../../../i18n/runtime";
+import { uiData } from "../../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
 import { Notice, setIcon } from "obsidian";
@@ -27,7 +29,7 @@ export function renderPriorityPropertyCard(
 ): void {
 	const propertyKeyInput = createCardInput(
 		"text",
-		"priority",
+		uiData("priority", "Editable frontmatter property identifier; must remain compatible with existing YAML"),
 		plugin.settings.fieldMapping.priority
 	);
 
@@ -275,7 +277,7 @@ function renderPriorityList(
 			defaultCollapsed: true,
 			colorIndicator: { color: priority.color },
 			header: {
-				primaryText: priority.label || priority.value || "untitled",
+				primaryText: priority.label || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" })),
 				actions: [
 					createDeleteHeaderButton(() => {
 						if (plugin.settings.customPriorities.length <= 1) {
@@ -363,7 +365,7 @@ function renderPriorityList(
 		labelInput.addEventListener("input", () => {
 			priority.label = labelInput.value;
 			card.querySelector(".tasknotes-settings__card-primary-text")!.textContent =
-				priority.label || priority.value || "untitled";
+				priority.label || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }));
 			save();
 			if (onPrioritiesChanged) onPrioritiesChanged();
 		});

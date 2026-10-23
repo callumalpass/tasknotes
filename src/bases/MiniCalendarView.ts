@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiNumber } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -1102,7 +1103,7 @@ export class MiniCalendarView extends BasesViewBase {
 				});
 				new Notice(
 					this.plugin.i18n.translate(msg({ message: "Failed to create daily note: {message}", context: "notices.commands.dailyNoteCreateFailed" }), {
-						message: errorMessage,
+						message: displayError(errorMessage),
 					})
 				);
 				return;
@@ -1148,7 +1149,7 @@ export class MiniCalendarView extends BasesViewBase {
 				});
 				new Notice(
 					this.plugin.i18n.translate(msg({ message: "Failed to create weekly note: {message}", context: "notices.audit.weeklyFailed" }), {
-						message: errorMessage,
+						message: displayError(errorMessage),
 					})
 				);
 				return;
@@ -1493,12 +1494,12 @@ export class MiniCalendarView extends BasesViewBase {
 		// Header
 		if (noteCount > 0 && eventCount > 0) {
 			lines.push(
-				uiText(msg({ message: "{noteCount, plural, one {{eventCount, plural, one {{noteCount} note, {eventCount} event} other {{noteCount} note, {eventCount} events}}} other {{eventCount, plural, one {{noteCount} notes, {eventCount} event} other {{noteCount} notes, {eventCount} events}}}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { noteCount: noteCount, eventCount: eventCount })
+				uiText(msg({ message: "{noteCount, plural, one {{eventCount, plural, one {{noteCount, number} note, {eventCount, number} event} other {{noteCount, number} note, {eventCount, number} events}}} other {{eventCount, plural, one {{noteCount, number} notes, {eventCount, number} event} other {{noteCount, number} notes, {eventCount, number} events}}}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { noteCount: noteCount, eventCount: eventCount })
 			);
 		} else if (eventCount > 0) {
-			lines.push(uiText(msg({ message: "{eventCount, plural, one {{eventCount} event} other {{eventCount} events}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { eventCount: eventCount }));
+			lines.push(uiText(msg({ message: "{eventCount, plural, one {{eventCount, number} event} other {{eventCount, number} events}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { eventCount: eventCount }));
 		} else {
-			lines.push(uiText(msg({ message: "{noteCount, plural, one {{noteCount} note} other {{noteCount} notes}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { noteCount: noteCount }));
+			lines.push(uiText(msg({ message: "{noteCount, plural, one {{noteCount, number} note} other {{noteCount, number} notes}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { noteCount: noteCount }));
 		}
 		lines.push(""); // Empty line for spacing
 
@@ -1537,7 +1538,7 @@ export class MiniCalendarView extends BasesViewBase {
 
 		// Add "more" indicator if needed
 		if (notes.length > 5) {
-			lines.push(uiText(msg({ message: "{value1, plural, one {+ {value1} more...} other {+ {value1} more...}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { value1: notes.length - 5 }));
+			lines.push(uiText(msg({ message: "{value1, plural, one {+ {value1, number} more...} other {+ {value1, number} more...}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { value1: notes.length - 5 }));
 		}
 
 		return lines.join("\n");
@@ -1600,7 +1601,7 @@ export class MiniCalendarView extends BasesViewBase {
 			"tn-static-padding-2rem-42aa6d9c"
 		);
 		errorEl.classList.add("tn-static-padding-20px-ebe8e48c");
-		errorEl.textContent = uiText(msg({ message: "Error loading mini calendar: {message}", context: "bases/MiniCalendarView: MiniCalendarView.renderError display" }), { message: error.message || "Unknown error" });
+		errorEl.textContent = uiText(msg({ message: "Error loading mini calendar: {message}", context: "bases/MiniCalendarView: MiniCalendarView.renderError display" }), { message: displayError(error.message || "Unknown error") });
 		this.calendarEl.appendChild(errorEl);
 	}
 

@@ -1,3 +1,5 @@
+import { displayError } from "../../i18n/runtime";
+import { uiData } from "../../i18n/dataText";
 import { uiText } from "../../i18n/runtime";
 import { messageForKey } from "../../i18n/messages";
 import { msg } from "@lingui/core/macro";
@@ -49,7 +51,7 @@ export function renderGeneralTab(
 					void configureTextSetting(setting, {
 						name: translate(msg({ message: "Default tasks folder", context: "settings.general.taskStorage.defaultFolder.name" })),
 						desc: translate(msg({ message: "Default location for new tasks. Supports folder template variables like '{{currentNotePath}}', '{{currentNoteTitle}}', and '{{projectFilePath}}', plus Daily Notes-style date tokens like YYYY/MM/DD.", context: "settings.general.taskStorage.defaultFolder.description" })),
-						placeholder: "TaskNotes",
+						placeholder: uiData("TaskNotes", "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"),
 						getValue: () => plugin.settings.tasksFolder,
 						setValue: async (value: string) => {
 							plugin.settings.tasksFolder = value;
@@ -64,7 +66,7 @@ export function renderGeneralTab(
 					void configureTextSetting(setting, {
 						name: translate(msg({ message: "Folder for inline-created tasks", context: "settings.features.instantConvert.folder.name" })),
 						desc: translate(msg({ message: "Folder where tasks created from inline commands or checkbox conversion will be created. Leave empty to use the default tasks folder. Use '{{currentNotePath}}' for the current note''s folder, or '{{currentNoteTitle}}' for a subfolder named after the current note.", context: "settings.features.instantConvert.folder.description" })),
-						placeholder: "{{currentNotePath}}",
+						placeholder: uiData("{{currentNotePath}}", "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"),
 						getValue: () => plugin.settings.inlineTaskConvertFolder,
 						setValue: async (value: string) => {
 							plugin.settings.inlineTaskConvertFolder = value;
@@ -97,7 +99,7 @@ export function renderGeneralTab(
 							desc: translate(
 								msg({ message: "Folder to move tasks to when archived. Supports template variables like '{{year}}', '{{month}}', '{{priority}}', etc.", context: "settings.general.taskStorage.archiveFolder.description" })
 							),
-							placeholder: "TaskNotes/Archive",
+							placeholder: uiData("TaskNotes/Archive", "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"),
 							getValue: () => plugin.settings.archiveFolder,
 							setValue: async (value: string) => {
 								plugin.settings.archiveFolder = value;
@@ -158,7 +160,7 @@ export function renderGeneralTab(
 							desc: translate(
 								msg({ message: "Tag that identifies notes as tasks (without #). Existing .base view filters keep their old tag when this changes; update default Base files or edit those filters.", context: "settings.general.taskIdentification.taskTag.description" })
 							),
-							placeholder: "task",
+							placeholder: uiData("task", "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"),
 							getValue: () => plugin.settings.taskTag,
 							setValue: async (value: string) => {
 								plugin.settings.taskTag = value;
@@ -621,7 +623,7 @@ export function renderGeneralTab(
 										translate(
 											msg({ message: "Failed to export views: {message}", context: "settings.integrations.basesIntegration.exportV3Views.error" }),
 											{
-												message: error.message,
+												message: displayError(error.message),
 											}
 										)
 									);
@@ -645,7 +647,7 @@ export function renderGeneralTab(
 						desc: translate(
 							msg({ message: "Comma-separated list of folders to exclude from task indexing and project suggestions", context: "settings.general.folderManagement.excludedFolders.description" })
 						),
-						placeholder: "Templates, Archive",
+						placeholder: uiData("Templates, Archive", "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"),
 						getValue: () => plugin.settings.excludedFolders,
 						setValue: async (value: string) => {
 							plugin.settings.excludedFolders = value;

@@ -46,21 +46,12 @@ export function updateTaskModalActionIconStates(
 	if (!actionBar) return;
 
 	updateDateIcon(actionBar, context, "due-date", state.dueDate, {
-		activeTooltipKey: msg({
-			message: "Due: {value}",
-			context: "modals.task.tooltips.dueValue",
-		}),
+		activeTooltipKey: msg({ message: "Due: {value}", context: "modals.task.tooltips.dueValue" }),
 		defaultTooltipKey: msg({ message: "Set due date", context: "modals.task.actions.due" }),
 	});
 	updateDateIcon(actionBar, context, "scheduled-date", state.scheduledDate, {
-		activeTooltipKey: msg({
-			message: "Scheduled: {value}",
-			context: "modals.task.tooltips.scheduledValue",
-		}),
-		defaultTooltipKey: msg({
-			message: "Set scheduled date",
-			context: "modals.task.actions.scheduled",
-		}),
+		activeTooltipKey: msg({ message: "Scheduled: {value}", context: "modals.task.tooltips.scheduledValue" }),
+		defaultTooltipKey: msg({ message: "Set scheduled date", context: "modals.task.actions.scheduled" }),
 	});
 	updateStatusIcon(actionBar, context, state);
 	updatePriorityIcon(actionBar, context, state);
@@ -108,10 +99,7 @@ function updateStatusIcon(
 		isActive: Boolean(
 			state.status && statusConfig && statusConfig.value !== state.defaultStatus
 		),
-		activeTooltipKey: msg({
-			message: "Status: {value}",
-			context: "modals.task.tooltips.statusValue",
-		}),
+		activeTooltipKey: msg({ message: "Status: {value}", context: "modals.task.tooltips.statusValue" }),
 		defaultTooltipKey: msg({ message: "Set status", context: "modals.task.actions.status" }),
 		label: statusLabel,
 		color: statusConfig?.color,
@@ -146,14 +134,8 @@ function updatePriorityIcon(
 		isActive: Boolean(
 			state.priority && priorityConfig && priorityConfig.value !== state.defaultPriority
 		),
-		activeTooltipKey: msg({
-			message: "Priority: {value}",
-			context: "modals.task.tooltips.priorityValue",
-		}),
-		defaultTooltipKey: msg({
-			message: "Set priority",
-			context: "modals.task.actions.priority",
-		}),
+		activeTooltipKey: msg({ message: "Priority: {value}", context: "modals.task.tooltips.priorityValue" }),
+		defaultTooltipKey: msg({ message: "Set priority", context: "modals.task.actions.priority" }),
 		label: priorityLabel,
 		color: priorityConfig?.color,
 	});
@@ -205,10 +187,7 @@ function updateRecurrenceIcon(
 		setTooltip(
 			icon,
 			context.translate(
-				msg({
-					message: "Recurrence: {value}",
-					context: "modals.task.tooltips.recurrenceValue",
-				}),
+				msg({ message: "Recurrence: {value}", context: "modals.task.tooltips.recurrenceValue" }),
 				{
 					value: state.recurrenceDisplayText,
 				}

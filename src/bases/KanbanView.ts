@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
@@ -4037,7 +4038,7 @@ export class KanbanView extends BasesViewBase {
 		const doc = this.containerEl.ownerDocument;
 		const errorEl = createElementInDocument(doc, "div");
 		errorEl.className = "tn-bases-error";
-		errorEl.textContent = uiText(msg({ message: "Error loading kanban: {message}", context: "bases/KanbanView: KanbanView.renderError display" }), { message: error.message || "Unknown error" });
+		errorEl.textContent = uiText(msg({ message: "Error loading kanban: {message}", context: "bases/KanbanView: KanbanView.renderError display" }), { message: displayError(error.message || "Unknown error") });
 		this.boardEl.appendChild(errorEl);
 	}
 

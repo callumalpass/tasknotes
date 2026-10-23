@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../main";
 import { CalendarExportService } from "./CalendarExportService";
@@ -163,7 +164,7 @@ export class AutoExportService {
 			) {
 				publishUserNotice(this.plugin.emitter,
 					this.translate(msg({ message: "TaskNotes auto export failed: {error}", context: "services.autoExport.notices.exportFailed" }), {
-						error: error instanceof Error ? error.message : String(error),
+						error: displayError(error instanceof Error ? error.message : String(error)),
 					})
 				);
 			}

@@ -270,7 +270,7 @@ export class CalendarExportService {
 		}
 
 		if (task.timeEstimate) {
-			metadata.push(uiText(msg({ message: "Estimated time: {timeEstimate} minutes", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { timeEstimate: task.timeEstimate }));
+			metadata.push(uiText(msg({ message: "{timeEstimate, plural, one {Estimated time: # minute} other {Estimated time: # minutes}}", context: "services/CalendarExportService: CalendarExportService.buildDescription display" }), { timeEstimate: task.timeEstimate }));
 		}
 
 		if (metadata.length > 0) {

@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { uiLocale } from "../i18n/runtime";
 import { recurrenceMonthlyOn, recurrenceYearlyOn } from "../i18n/recurrence";
@@ -244,7 +245,7 @@ export class TaskContextMenu {
 						});
 						new Notice(
 							this.t(msg({ message: "Failed to update task due date: {message}", context: "contextMenus.task.notices.updateDueDateFailure" }), {
-								message: errorMessage,
+								message: displayError(errorMessage),
 							})
 						);
 					}
@@ -278,7 +279,7 @@ export class TaskContextMenu {
 						});
 						new Notice(
 							this.t(msg({ message: "Failed to update task scheduled date: {message}", context: "contextMenus.task.notices.updateScheduledFailure" }), {
-								message: errorMessage,
+								message: displayError(errorMessage),
 							})
 						);
 					}
@@ -472,7 +473,7 @@ export class TaskContextMenu {
 					});
 					new Notice(
 						this.t(msg({ message: "Failed to toggle task archive: {message}", context: "contextMenus.task.notices.archiveFailure" }), {
-							message: errorMessage,
+							message: displayError(errorMessage),
 						})
 					);
 				}
@@ -632,7 +633,7 @@ export class TaskContextMenu {
 									error: error,
 								});
 								new Notice(
-									this.t(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), { message })
+									this.t(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), { message: displayError(message) })
 								);
 							}
 						}
@@ -830,7 +831,7 @@ export class TaskContextMenu {
 						});
 						new Notice(
 							this.t(msg({ message: "Failed to update task recurrence: {message}", context: "contextMenus.task.notices.updateRecurrenceFailure" }), {
-								message: errorMessage,
+								message: displayError(errorMessage),
 							})
 						);
 					}
@@ -1062,7 +1063,7 @@ export class TaskContextMenu {
 			});
 			new Notice(
 				this.t(msg({ message: "Failed to update task completion: {message}", context: "contextMenus.task.completion.completeFailure" }), {
-					message: errorMessage,
+					message: displayError(errorMessage),
 				})
 			);
 		}
@@ -1088,7 +1089,7 @@ export class TaskContextMenu {
 			});
 			new Notice(
 				this.t(msg({ message: "Failed to update task completion: {message}", context: "contextMenus.task.completion.completeFailure" }), {
-					message: errorMessage,
+					message: displayError(errorMessage),
 				})
 			);
 		}
@@ -1122,7 +1123,7 @@ export class TaskContextMenu {
 					});
 					new Notice(
 						this.t(msg({ message: "Failed to toggle recurring task skip: {message}", context: "contextMenus.task.notices.toggleSkipFailure" }), {
-							message: errorMessage,
+							message: displayError(errorMessage),
 						})
 					);
 				}
@@ -1222,7 +1223,7 @@ export class TaskContextMenu {
 						error: errorMessage,
 					});
 					new Notice(
-						this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: errorMessage })
+						this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(errorMessage) })
 					);
 				}
 			});
@@ -1921,7 +1922,7 @@ export class TaskContextMenu {
 						});
 						new Notice(
 							this.t(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), {
-								message: errorMessage,
+								message: displayError(errorMessage),
 							})
 						);
 					}
@@ -1979,7 +1980,7 @@ export class TaskContextMenu {
 						});
 						new Notice(
 							this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), {
-								message: errorMessage,
+								message: displayError(errorMessage),
 							})
 						);
 					}
@@ -2192,7 +2193,7 @@ export class TaskContextMenu {
 			new Notice(
 				this.t(msg({ message: "Failed to update {field}: {message}", context: "contextMenus.task.notices.updateCustomDateFailure" }), {
 					field: fieldLabel,
-					message: errorMessage,
+					message: displayError(errorMessage),
 				})
 			);
 		}
@@ -2418,7 +2419,7 @@ export class TaskContextMenu {
 				details: { taskPath: task.path, mode },
 				error: errorMessage,
 			});
-			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: errorMessage }));
+			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(errorMessage) }));
 		}
 	}
 
@@ -2452,7 +2453,7 @@ export class TaskContextMenu {
 				details: { taskPath: task.path, trigger },
 				error: errorMessage,
 			});
-			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: errorMessage }));
+			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(errorMessage) }));
 		}
 	}
 

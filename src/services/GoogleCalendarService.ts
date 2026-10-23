@@ -700,7 +700,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 		if (timeSinceLastRefresh < minInterval) {
 			const remainingMs = minInterval - timeSinceLastRefresh;
-			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "Please wait {value1}s before refreshing again", context: "services/GoogleCalendarService: GoogleCalendarService.refresh display" }), { value1: Math.ceil(remainingMs / 1000) }));
+			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "{seconds, plural, one {Please wait # second before refreshing again} other {Please wait # seconds before refreshing again}}", context: "calendar refresh throttling" }), { seconds: Math.ceil(remainingMs / 1000) }));
 			return;
 		}
 

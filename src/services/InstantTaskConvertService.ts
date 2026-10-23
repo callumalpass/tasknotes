@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { Editor, TFile, EditorPosition } from "obsidian";
@@ -317,7 +318,7 @@ export class InstantTaskConvertService {
 				if (taskLineInfo.error || !taskLineInfo.parsedData) {
 					publishUserNotice(this.plugin.emitter,
 						this.translate(msg({ message: "Error parsing task: {error}", context: "services.instantTaskConvert.notices.parseError" }), {
-							error: taskLineInfo.error || "No data extracted",
+							error: displayError(taskLineInfo.error || uiText(msg({ message: "No task data was extracted", context: "instant task parsing failure" }))),
 						})
 					);
 					return;

@@ -67,6 +67,13 @@ export function migratePlurals(resources) {
     } : ["ja", "ko", "zh"].includes(locale) ? { other } : { one, other };
     messages[oneKey] = messages[manyKey] = plural("count", arms);
   }
+  // Numeric interpolation is a mechanical ICU-format change, not new target copy.
+  // Apply it to English and reviewed targets together so packs retain one contract.
+  for (const messages of Object.values(migrated)) {
+    for (const key of [...suffixKeys.map(([key]) => key), "modals.task.recurrence.ordinal", "ui.taskCard.reminderTooltipOne", "ui.taskCard.reminderTooltipMany"]) {
+      messages[key] = messages[key].replace(/\{(minutes|hours|days|count|successCount|failureCount|number)\}/g, "{$1, number}");
+    }
+  }
   return migrated;
 }
 export const pluralKeys = new Set([...suffixKeys.map(([key]) => key), "modals.task.recurrence.ordinal", "ui.taskCard.reminderTooltipOne", "ui.taskCard.reminderTooltipMany"]);

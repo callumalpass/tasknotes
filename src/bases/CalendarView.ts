@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../main";
@@ -134,7 +135,7 @@ export function decorateRefreshCalendarsButton(container: HTMLElement, label: st
 	const button = container.querySelector<HTMLButtonElement>(".fc-refreshCalendars-button");
 	if (!button) return;
 
-	const normalizedLabel = label.trim() || "Refresh calendar subscriptions";
+	const normalizedLabel = label.trim() || uiText(msg({ message: "Refresh calendar subscriptions", context: "calendar refresh subscriptions button" }));
 	button.replaceChildren();
 	setIcon(button, "refresh-cw");
 	button.classList.add("tasknotes-calendar-refresh-button--icon");
@@ -3042,7 +3043,7 @@ export class CalendarView extends BasesViewBase {
 			"tn-static-padding-2rem-42aa6d9c"
 		);
 		errorEl.classList.add("tn-static-padding-20px-ebe8e48c");
-		errorEl.textContent = uiText(msg({ message: "Error loading calendar: {message}", context: "bases/CalendarView: CalendarView.renderError display" }), { message: error.message || "Unknown error" });
+		errorEl.textContent = uiText(msg({ message: "Error loading calendar: {message}", context: "bases/CalendarView: CalendarView.renderError display" }), { message: displayError(error.message || "Unknown error") });
 		this.calendarEl.appendChild(errorEl);
 	}
 

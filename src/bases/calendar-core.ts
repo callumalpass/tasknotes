@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { formatUIDate, uiDuration } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -2017,7 +2018,7 @@ export async function handleTimeblockDrop(
 		});
 		new Notice(
 			plugin.i18n.translate(msg({ message: "Failed to move timeblock: {message}", context: "views.advancedCalendar.notices.timeblockMoveFailed" }), {
-				message: getErrorMessage(error),
+				message: displayError(getErrorMessage(error)),
 			})
 		);
 		dropInfo.revert();
@@ -2065,7 +2066,7 @@ export async function handleTimeblockResize(
 		});
 		new Notice(
 			plugin.i18n.translate(msg({ message: "Failed to resize timeblock: {message}", context: "views.advancedCalendar.notices.timeblockResizeFailed" }), {
-				message: getErrorMessage(error),
+				message: displayError(getErrorMessage(error)),
 			})
 		);
 		resizeInfo.revert();
@@ -2112,7 +2113,11 @@ export function applyTimeblockStyling(element: HTMLElement, timeblock: TimeBlock
  */
 export function generateTimeblockTooltip(timeblock: TimeBlock): string {
 	const attachmentCount = timeblock.attachments?.length || 0;
-	return uiText(msg({ message: "{value3, plural, one {{value1}{value2}{value3}} other {{value1}{value2}{value3}}}", context: "bases/calendar-core: generateTimeblockTooltip display" }), { value1: timeblock.title || "Timeblock", value2: timeblock.description ? ` - ${timeblock.description}` : "", value3: attachmentCount > 0 ? ` (${attachmentCount} attachment${attachmentCount > 1 ? "s" : ""})` : "" });
+	const title = timeblock.title || uiText(msg({ message: "Timeblock", context: "unnamed timeblock tooltip" }));
+	if (timeblock.description) {
+		return uiText(msg({ message: "{count, plural, =0 {{title} - {description}} one {{title} - {description} (# attachment)} other {{title} - {description} (# attachments)}}", context: "timeblock tooltip with description" }), { count: attachmentCount, title, description: timeblock.description });
+	}
+	return uiText(msg({ message: "{count, plural, =0 {{title}} one {{title} (# attachment)} other {{title} (# attachments)}}", context: "timeblock tooltip" }), { count: attachmentCount, title });
 }
 
 /**
@@ -2185,7 +2190,7 @@ export async function handleDateTitleClick(
 				});
 				new Notice(
 					plugin.i18n.translate(msg({ message: "Failed to create daily note: {message}", context: "notices.commands.dailyNoteCreateFailed" }), {
-						message: errorMessage,
+						message: displayError(errorMessage),
 					})
 				);
 				return;
@@ -2204,7 +2209,7 @@ export async function handleDateTitleClick(
 			error: error,
 		});
 		new Notice(
-			plugin.i18n.translate(msg({ message: "Failed to navigate to daily note: {message}", context: "notices.commands.dailyNoteOpenFailed" }), { message: errorMessage })
+			plugin.i18n.translate(msg({ message: "Failed to navigate to daily note: {message}", context: "notices.commands.dailyNoteOpenFailed" }), { message: displayError(errorMessage) })
 		);
 	}
 }

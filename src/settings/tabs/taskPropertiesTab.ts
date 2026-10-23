@@ -1,3 +1,4 @@
+import { uiData } from "../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../../main";
 import type { TranslationKey } from "../../i18n";
@@ -65,7 +66,7 @@ export function renderTaskPropertiesTab(
 
 	// Due Date Property Card
 	renderSimplePropertyCard(container, plugin, save, translate, {
-		propertyId: "due",
+		propertyId: uiData("due", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		displayName: translate(msg({ message: "Due date", context: "settings.taskProperties.properties.due.name" })),
 		description: translate(msg({ message: "The deadline by which a task must be completed. Tasks past their due date appear as overdue. Stored as a date in frontmatter.", context: "settings.taskProperties.properties.due.description" })),
 		hasDefault: true,
@@ -96,7 +97,7 @@ export function renderTaskPropertiesTab(
 
 	// Scheduled Date Property Card
 	renderSimplePropertyCard(container, plugin, save, translate, {
-		propertyId: "scheduled",
+		propertyId: uiData("scheduled", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		displayName: translate(msg({ message: "Scheduled date", context: "settings.taskProperties.properties.scheduled.name" })),
 		description: translate(msg({ message: "When you plan to work on a task. Unlike due date, this represents your intended start time. Tasks appear on the calendar at their scheduled date/time.", context: "settings.taskProperties.properties.scheduled.description" })),
 		hasDefault: true,
@@ -131,7 +132,7 @@ export function renderTaskPropertiesTab(
 
 	// Contexts Property Card
 	renderSimplePropertyCard(container, plugin, save, translate, {
-		propertyId: "contexts",
+		propertyId: uiData("contexts", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		displayName: translate(msg({ message: "Contexts", context: "settings.taskProperties.properties.contexts.name" })),
 		description: translate(msg({ message: "Locations or conditions where a task can be done (e.g., @home, @office, @phone). Useful for filtering tasks by your current situation. Stored as a list.", context: "settings.taskProperties.properties.contexts.description" })),
 		hasDefault: true,
@@ -158,7 +159,7 @@ export function renderTaskPropertiesTab(
 
 	// Time Estimate Property Card
 	renderSimplePropertyCard(container, plugin, save, translate, {
-		propertyId: "timeEstimate",
+		propertyId: uiData("timeEstimate", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		displayName: translate(msg({ message: "Time estimate", context: "settings.taskProperties.properties.timeEstimate.name" })),
 		description: translate(msg({ message: "Estimated minutes to complete the task. Used for time-blocking and workload planning. Displayed on task cards and calendar events.", context: "settings.taskProperties.properties.timeEstimate.description" })),
 		hasDefault: true,
@@ -173,7 +174,7 @@ export function renderTaskPropertiesTab(
 
 	// Recurrence Property Card
 	renderSimplePropertyCard(container, plugin, save, translate, {
-		propertyId: "recurrence",
+		propertyId: uiData("recurrence", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		displayName: translate(msg({ message: "Recurrence", context: "settings.taskProperties.properties.recurrence.name" })),
 		description: translate(msg({ message: "Pattern for repeating tasks (daily, weekly, monthly, yearly, or custom RRULE). When a recurring task is completed, its scheduled date is automatically updated to the next occurrence.", context: "settings.taskProperties.properties.recurrence.description" })),
 		hasDefault: true,
@@ -193,7 +194,7 @@ export function renderTaskPropertiesTab(
 	});
 
 	// Recurrence Anchor Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "recurrenceAnchor",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("recurrenceAnchor", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Recurrence anchor", context: "settings.taskProperties.properties.recurrenceAnchor.name" })),
 		translate(msg({ message: "Controls how the next occurrence is calculated: ''scheduled'' uses the scheduled date, ''completion'' uses the actual completion date.", context: "settings.taskProperties.properties.recurrenceAnchor.description" })));
 
@@ -205,47 +206,47 @@ export function renderTaskPropertiesTab(
 	createHelpText(container, translate(msg({ message: "System-managed properties for tracking task history.", context: "settings.taskProperties.sections.metadataPropertiesDesc" })));
 
 	// Date Created Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "dateCreated",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("dateCreated", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Date created", context: "settings.taskProperties.properties.dateCreated.name" })),
 		translate(msg({ message: "Timestamp when the task was first created. Automatically set and used for sorting by creation order.", context: "settings.taskProperties.properties.dateCreated.description" })));
 
 	// Date Modified Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "dateModified",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("dateModified", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Date modified", context: "settings.taskProperties.properties.dateModified.name" })),
 		translate(msg({ message: "Timestamp of the last change to the task. Automatically updated when any task property changes.", context: "settings.taskProperties.properties.dateModified.description" })));
 
 	// Completed Date Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "completedDate",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("completedDate", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Completed date", context: "settings.taskProperties.properties.completedDate.name" })),
 		translate(msg({ message: "Timestamp when the task was marked complete. Set automatically when status changes to a completed state.", context: "settings.taskProperties.properties.completedDate.description" })));
 
 	// Archive Tag Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "archiveTag",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("archiveTag", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Archive tag", context: "settings.taskProperties.properties.archiveTag.name" })),
 		translate(msg({ message: "Tag added to tasks when archived. Used to identify archived tasks and can trigger file movement to archive folder.", context: "settings.taskProperties.properties.archiveTag.description" })));
 
 	// Time Entries Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "timeEntries",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("timeEntries", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Time entries", context: "settings.taskProperties.properties.timeEntries.name" })),
 		translate(msg({ message: "Records of time tracking sessions for this task. Each entry stores start and end timestamps. Used to calculate total time spent.", context: "settings.taskProperties.properties.timeEntries.description" })));
 
 	// Complete Instances Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "completeInstances",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("completeInstances", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Complete instances", context: "settings.taskProperties.properties.completeInstances.name" })),
 		translate(msg({ message: "Completion history for recurring tasks. Stores dates when each instance was completed to prevent duplicate completions.", context: "settings.taskProperties.properties.completeInstances.description" })));
 
 	// Skipped Instances Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "skippedInstances",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("skippedInstances", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Skipped instances", context: "settings.taskProperties.properties.skippedInstances.name" })),
 		translate(msg({ message: "Skipped occurrences for recurring tasks. Stores dates of instances that were skipped rather than completed.", context: "settings.taskProperties.properties.skippedInstances.description" })));
 
 	// Blocked By Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "blockedBy",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("blockedBy", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Blocked by", context: "settings.taskProperties.properties.blockedBy.name" })),
 		translate(msg({ message: "Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator.", context: "settings.taskProperties.properties.blockedBy.description" })));
 
 	// Manual Order Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "sortOrder",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("sortOrder", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Manual order", context: "settings.taskProperties.properties.sortOrder.name" })),
 		translate(msg({ message: "Frontmatter property used for drag-to-reorder manual ordering. A view must be sorted by this property for drag-and-drop reordering to work.", context: "settings.taskProperties.properties.sortOrder.description" })));
 
@@ -254,17 +255,17 @@ export function renderTaskPropertiesTab(
 	createHelpText(container, translate(msg({ message: "Properties used by specific TaskNotes features like Pomodoro timer and calendar sync.", context: "settings.taskProperties.sections.featurePropertiesDesc" })));
 
 	// Pomodoros Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "pomodoros",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("pomodoros", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "Pomodoros", context: "settings.taskProperties.properties.pomodoros.name" })),
 		translate(msg({ message: "Count of completed Pomodoro sessions. When data storage is set to ''daily notes'', this is written to daily notes instead of task files.", context: "settings.taskProperties.properties.pomodoros.description" })));
 
 	// ICS Event ID Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "icsEventId",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("icsEventId", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "ICS event ID", context: "settings.taskProperties.properties.icsEventId.name" })),
 		translate(msg({ message: "Unique identifier linking a note to an ICS calendar event. Added automatically when creating notes from calendar events.", context: "settings.taskProperties.properties.icsEventId.description" })));
 
 	// ICS Event Tag Property Card
-	renderMetadataPropertyCard(container, plugin, save, translate, "icsEventTag",
+	renderMetadataPropertyCard(container, plugin, save, translate, uiData("icsEventTag", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		translate(msg({ message: "ICS event tag", context: "settings.taskProperties.properties.icsEventTag.name" })),
 		translate(msg({ message: "Tag identifying notes created from ICS calendar events. Used to distinguish calendar-generated notes from regular tasks.", context: "settings.taskProperties.properties.icsEventTag.description" })));
 

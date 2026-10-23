@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -79,7 +80,7 @@ export function createStatusCycleHandler(
 				});
 				new Notice(
 					plugin.i18n.translate(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), {
-						message: errorMessage,
+						message: displayError(errorMessage),
 					})
 				);
 			}

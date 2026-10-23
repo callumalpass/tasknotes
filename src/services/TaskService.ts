@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import {
@@ -1483,9 +1484,9 @@ export class TaskService {
 				});
 				publishUserNotice(
 					this.plugin.emitter,
-					this.translate(msg({ message: "Failed to move {operation} task: {error}", context: "services.task.notices.moveTaskFailed" }), {
+					this.translate(msg({ message: "{operation, select, archiving {Failed to move archived task: {error}} unarchiving {Failed to move restored task: {error}} other {Failed to move task: {error}}}", context: "task archive move failure" }), {
 						operation,
-						error: errorMessage,
+						error: displayError(errorMessage),
 					})
 				);
 				// Continue with archive operation without moving the file

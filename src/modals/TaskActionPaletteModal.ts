@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
@@ -703,7 +704,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 			});
 			new Notice(
 				this.plugin.i18n.translate(msg({ message: "Failed to execute action: {message}", context: "modals.actionPalette.actionFailed" }), {
-					message: errorMessage,
+					message: displayError(errorMessage),
 				})
 			);
 		}

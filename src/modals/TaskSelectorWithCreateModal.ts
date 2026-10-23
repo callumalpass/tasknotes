@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiDuration } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -185,10 +186,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		this.setPlaceholder(
 			options.placeholder ||
 				this.translate(
-					msg({
-						message: "Search tasks or type to create new...",
-						context: "modals.taskSelectorWithCreate.placeholder",
-					})
+					msg({ message: "Search tasks or type to create new...", context: "modals.taskSelectorWithCreate.placeholder" })
 				)
 		);
 
@@ -197,19 +195,13 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			{
 				command: "↑↓",
 				purpose: this.translate(
-					msg({
-						message: "to navigate",
-						context: "modals.taskSelector.instructions.navigate",
-					})
+					msg({ message: "to navigate", context: "modals.taskSelector.instructions.navigate" })
 				),
 			},
 			{
 				command: "↵",
 				purpose: this.translate(
-					msg({
-						message: "to select",
-						context: "modals.taskSelector.instructions.select",
-					})
+					msg({ message: "to select", context: "modals.taskSelector.instructions.select" })
 				),
 			},
 			...(options.allowCreate === false
@@ -218,20 +210,14 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 						{
 							command: "⇧↵",
 							purpose: this.translate(
-								msg({
-									message: "to create new task",
-									context: "modals.taskSelectorWithCreate.instructions.create",
-								})
+								msg({ message: "to create new task", context: "modals.taskSelectorWithCreate.instructions.create" })
 							),
 						},
 					]),
 			{
 				command: "esc",
 				purpose: this.translate(
-					msg({
-						message: "to cancel",
-						context: "modals.taskSelector.instructions.dismiss",
-					})
+					msg({ message: "to cancel", context: "modals.taskSelector.instructions.dismiss" })
 				),
 			},
 		]);
@@ -240,10 +226,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		this.titleEl.setText(
 			options.title ||
 				this.translate(
-					msg({
-						message: "Create or open task",
-						context: "modals.taskSelectorWithCreate.title",
-					})
+					msg({ message: "Create or open task", context: "modals.taskSelectorWithCreate.title" })
 				)
 		);
 		this.titleEl.setAttribute("id", "task-selector-with-create-title");
@@ -567,10 +550,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		if (!query) {
 			new Notice(
 				this.translate(
-					msg({
-						message: "Please enter a task description",
-						context: "modals.taskSelectorWithCreate.notices.emptyQuery",
-					})
+					msg({ message: "Please enter a task description", context: "modals.taskSelectorWithCreate.notices.emptyQuery" })
 				)
 			);
 			return;
@@ -585,10 +565,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			if (!parsed.title || parsed.title === "Untitled Task") {
 				new Notice(
 					this.translate(
-						msg({
-							message: "Could not parse a valid task title",
-							context: "modals.taskSelectorWithCreate.notices.invalidTitle",
-						})
+						msg({ message: "Could not parse a valid task title", context: "modals.taskSelectorWithCreate.notices.invalidTitle" })
 					)
 				);
 				return;
@@ -602,10 +579,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 			new Notice(
 				this.translate(
-					msg({
-						message: 'Task "{title}" created successfully',
-						context: "modals.taskCreation.notices.success",
-					}),
+					msg({ message: "Task \"{title}\" created successfully", context: "modals.taskCreation.notices.success" }),
 					{
 						title: result.taskInfo.title,
 					}
@@ -625,11 +599,8 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			const message = error instanceof Error ? error.message : String(error);
 			new Notice(
 				this.translate(
-					msg({
-						message: "Failed to create task: {message}",
-						context: "modals.taskCreation.notices.failure",
-					}),
-					{ message }
+					msg({ message: "Failed to create task: {message}", context: "modals.taskCreation.notices.failure" }),
+					{ message: displayError(message) }
 				)
 			);
 		} finally {

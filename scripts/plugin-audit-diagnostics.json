@@ -1717,5 +1717,33 @@
     "source": "\"Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists.\"",
     "values": [],
     "kind": "wrap"
+  },
+  {
+    "context": "services/TaskCalendarSyncService: calendar sync diagnostic",
+    "message": "Google Calendar sync is not ready",
+    "source": "\"Google Calendar sync is not ready\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskCalendarSyncService: calendar sync diagnostic",
+    "message": "Indexed task no longer meets calendar sync criteria",
+    "source": "\"Indexed task no longer meets calendar sync criteria\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskCalendarSyncService: calendar sync diagnostic",
+    "message": "Indexed task file no longer exists",
+    "source": "\"Indexed task file no longer exists\"",
+    "values": [],
+    "kind": "wrap"
+  },
+  {
+    "context": "services/TaskCalendarSyncService: calendar sync diagnostic",
+    "message": "Google Calendar target calendar is not configured",
+    "source": "\"Google Calendar target calendar is not configured\"",
+    "values": [],
+    "kind": "wrap"
   }
 ]

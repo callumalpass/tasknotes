@@ -1,3 +1,4 @@
+import type { MessageSuffix } from "../i18n/concepts";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 import { Notice, setTooltip } from "obsidian";
@@ -68,7 +69,7 @@ function getTaskCardBadgeLogger(plugin: TaskNotesPlugin) {
 
 function tTaskCard(
 	plugin: TaskNotesPlugin,
-	key: string,
+	key: MessageSuffix<"ui.taskCard.">,
 	vars?: Record<string, string | number>
 ): string {
 	return plugin.i18n.translate(messageForKey(`ui.taskCard.${key}`), vars);

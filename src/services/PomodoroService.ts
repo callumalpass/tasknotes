@@ -430,7 +430,9 @@ export class PomodoroService {
 			}
 		}
 
-		this.showPomodoroNotification(uiText(msg({ message: "Pomodoro started{value1}", context: "services/PomodoroService: PomodoroService.startPomodoro display" }), { value1: task ? ` for: ${task.title}` : "" }));
+		this.showPomodoroNotification(task
+			? uiText(msg({ message: "Pomodoro started for {title}", context: "pomodoro start notification" }), { title: task.title })
+			: uiText(msg({ message: "Pomodoro started", context: "pomodoro start notification" })));
 	}
 
 	async startPomodoroWithLastSelectedTask(durationMinutes?: number): Promise<void> {
@@ -960,7 +962,7 @@ export class PomodoroService {
 		const message = session.type === "work" ? uiText(msg({ message: "🍅 Pomodoro completed!", context: "services/PomodoroService: PomodoroService.completePomodoro display" })) : uiText(msg({ message: "☕ Break completed!", context: "services/PomodoroService: PomodoroService.completePomodoro display" }));
 		const body =
 			session.type === "work"
-				? uiText(msg({ message: "Time for a {value1}", context: "services/PomodoroService: PomodoroService.completePomodoro display" }), { value1: shouldTakeLongBreak ? "long break 💤" : "short break ☕" })
+				? uiText(msg({ message: "{length, select, long {Time for a long break 💤} other {Time for a short break ☕}}", context: "pomodoro break notification" }), { length: shouldTakeLongBreak ? "long" : "short" })
 				: uiText(msg({ message: "Ready for the next pomodoro?", context: "services/PomodoroService: PomodoroService.completePomodoro display" }));
 		this.showPomodoroNotification(message, { body });
 

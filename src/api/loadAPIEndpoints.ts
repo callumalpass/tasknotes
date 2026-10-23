@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { requestUrl, type RequestUrlParam } from "obsidian";
@@ -127,7 +128,7 @@ async function loadAPIEndpoints(
 
 		// Show error message with more details
 		container.createEl("p", {
-			text: uiText(msg({ message: "API server not accessible ({message}). Ensure the TaskNotes API server is running on port {apiPort}.", context: "api/loadAPIEndpoints: loadAPIEndpoints text" }), { message: getErrorMessage(error), apiPort: apiPort }),
+			text: uiText(msg({ message: "API server not accessible ({message}). Ensure the TaskNotes API server is running on port {apiPort, number}.", context: "api/loadAPIEndpoints: loadAPIEndpoints text" }), { message: displayError(getErrorMessage(error)), apiPort: apiPort }),
 			attr: { style: "color: var(--text-muted); font-style: italic; margin: 16px 0;" },
 		});
 	}

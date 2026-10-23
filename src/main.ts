@@ -1,3 +1,4 @@
+import { displayError } from "./i18n/runtime";
 import { uiText } from "./i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import {
@@ -1146,7 +1147,7 @@ export default class TaskNotesPlugin extends Plugin {
 					});
 					new Notice(
 						this.i18n.translate(msg({ message: "Failed to create daily note: {message}", context: "notices.commands.dailyNoteCreateFailed" }), {
-							message: errorMessage,
+							message: displayError(errorMessage),
 						})
 					);
 					return;
@@ -1174,7 +1175,7 @@ export default class TaskNotesPlugin extends Plugin {
 			});
 			new Notice(
 				this.i18n.translate(msg({ message: "Failed to navigate to daily note: {message}", context: "notices.commands.dailyNoteOpenFailed" }), {
-					message: errorMessage,
+					message: displayError(errorMessage),
 				})
 			);
 		}

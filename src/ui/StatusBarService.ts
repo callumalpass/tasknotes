@@ -255,7 +255,7 @@ export class StatusBarService {
 			const totalElapsed = this.formatElapsedDuration(
 				trackedTasks.reduce((sum, task) => sum + this.getActiveElapsedMs(task), 0)
 			);
-			textEl.setText(uiText(msg({ message: "{count, plural, one {Tracking {count} tasks ({totalElapsed} total)} other {Tracking {count} tasks ({totalElapsed} total)}}", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { count: count, totalElapsed: totalElapsed }));
+			textEl.setText(uiText(msg({ message: "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { count: count, totalElapsed: totalElapsed }));
 
 			// Add tooltip with task titles
 			const taskTitles = trackedTasks
@@ -265,7 +265,7 @@ export class StatusBarService {
 						`${task.title} - ${this.formatElapsedDuration(this.getActiveElapsedMs(task))}`
 				)
 				.join("\n");
-			const tooltipText = count > 5 ? uiText(msg({ message: "{value2, plural, one {{taskTitles}\n... and {value2} more} other {{taskTitles}\n... and {value2} more}}", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { taskTitles: taskTitles, value2: count - 5 }) : taskTitles;
+			const tooltipText = count > 5 ? uiText(msg({ message: "{value2, plural, one {{taskTitles}\n... and {value2, number} more} other {{taskTitles}\n... and {value2, number} more}}", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { taskTitles: taskTitles, value2: count - 5 }) : taskTitles;
 			setTooltip(this.statusBarElement, uiText(msg({ message: "Currently tracking:\n{tooltipText}", context: "ui/StatusBarService: StatusBarService.renderStatusBar display" }), { tooltipText: tooltipText }), {
 				placement: "top",
 			});

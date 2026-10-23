@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { requestUrl } from "obsidian";
@@ -343,10 +344,10 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		const firstError = errors[0];
 		const label = firstError.calendarName || firstError.calendarId || uiText(msg({ message: "Microsoft calendar", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display" }));
 		if (errors.length === 1) {
-			return uiText(msg({ message: "{label}: {message}", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display" }), { label: label, message: firstError.message });
+			return uiText(msg({ message: "{label}: {message}", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display" }), { label: label, message: displayError(firstError.message) });
 		}
 
-		return uiText(msg({ message: "{message, plural, one {{message} Microsoft calendars failed to refresh. First error: {label}: {message3}} other {{message} Microsoft calendars failed to refresh. First error: {label}: {message3}}}", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display" }), { message: errors.length, label: label, message3: firstError.message });
+		return uiText(msg({ message: "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display" }), { count: errors.length, label, message: displayError(firstError.message) });
 	}
 
 	async initialize(): Promise<void> {
@@ -876,7 +877,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 
 		if (timeSinceLastRefresh < minInterval) {
 			const remainingMs = minInterval - timeSinceLastRefresh;
-			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "Please wait {value1}s before refreshing again", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.refresh display" }), { value1: Math.ceil(remainingMs / 1000) }));
+			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "{seconds, plural, one {Please wait # second before refreshing again} other {Please wait # seconds before refreshing again}}", context: "calendar refresh throttling" }), { seconds: Math.ceil(remainingMs / 1000) }));
 			return;
 		}
 

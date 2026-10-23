@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { Notice, TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -68,7 +69,7 @@ export async function openOrCreateOccurrenceNote(
 		});
 		new Notice(
 			plugin.i18n.translate(msg({ message: "Failed to open occurrence note: {message}", context: "notices.interface.occurrenceOpenFailed" }), {
-				message: errorMessage,
+				message: displayError(errorMessage),
 			})
 		);
 		return null;
@@ -101,7 +102,7 @@ export async function openMaterializedOccurrenceParent(
 			error: errorMessage,
 		});
 		new Notice(
-			plugin.i18n.translate(msg({ message: "Failed to open recurring parent: {message}", context: "notices.interface.parentOpenFailed" }), { message: errorMessage })
+			plugin.i18n.translate(msg({ message: "Failed to open recurring parent: {message}", context: "notices.interface.parentOpenFailed" }), { message: displayError(errorMessage) })
 		);
 		return null;
 	}

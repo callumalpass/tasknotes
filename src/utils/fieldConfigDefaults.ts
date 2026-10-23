@@ -222,7 +222,7 @@ export function migrateUserFieldsToFieldConfig(
 		id: userField.id || `user-${index}`,
 		fieldType: "user" as const,
 		group: "custom" as const,
-		displayName: userField.displayName || uiText(msg({ message: "Field {value1}", context: "utils/fieldConfigDefaults: migrateUserFieldsToFieldConfig displayName" }), { value1: index + 1 }),
+		displayName: userField.displayName || uiText(msg({ message: "Field {value1, number}", context: "utils/fieldConfigDefaults: migrateUserFieldsToFieldConfig displayName" }), { value1: index + 1 }),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: index,

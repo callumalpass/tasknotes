@@ -1,3 +1,4 @@
+import { uiData } from "../../../i18n/dataText";
 import { uiText } from "../../../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
@@ -31,7 +32,7 @@ export function renderStatusPropertyCard(
 	save: () => void,
 	translate: TranslateFn
 ): void {
-	const propertyKeyInput = createCardInput("text", "status", plugin.settings.fieldMapping.status);
+	const propertyKeyInput = createCardInput("text", uiData("status", "Editable frontmatter property identifier or filename-template syntax, not a display label"), plugin.settings.fieldMapping.status);
 
 	// Validate defaultTaskStatus - if it doesn't exist in customStatuses, reset to first available
 	const validStatusValues = plugin.settings.customStatuses.map((s) => s.value);
@@ -384,7 +385,7 @@ function renderStatusList(
 			defaultCollapsed: true,
 			colorIndicator: { color: status.color, cssVar: "--status-color" },
 			header: {
-				primaryText: status.value || "untitled",
+				primaryText: status.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" })),
 				secondaryText: status.label || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList secondaryText" })),
 				meta: metaElements,
 				actions: [createDeleteHeaderButton(deleteStatus)],
@@ -459,7 +460,7 @@ function renderStatusList(
 		valueInput.addEventListener("input", () => {
 			status.value = valueInput.value;
 			statusCard.querySelector(".tasknotes-settings__card-primary-text")!.textContent =
-				status.value || "untitled";
+				status.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }));
 			save();
 			if (onStatusesChanged) onStatusesChanged();
 		});

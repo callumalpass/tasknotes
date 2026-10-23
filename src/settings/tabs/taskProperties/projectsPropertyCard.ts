@@ -1,3 +1,4 @@
+import { uiData } from "../../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import { setIcon, TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../../../main";
@@ -30,7 +31,7 @@ export function renderProjectsPropertyCard(
 
 		const propertyKeyInput = createCardInput(
 			"text",
-			"projects",
+			uiData("projects", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 			plugin.settings.fieldMapping.projects
 		);
 

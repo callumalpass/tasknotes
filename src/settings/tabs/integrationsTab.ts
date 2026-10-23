@@ -1,3 +1,5 @@
+import { displayError } from "../../i18n/runtime";
+import { uiData } from "../../i18n/dataText";
 import { uiLocale } from "../../i18n/runtime";
 import { uiText } from "../../i18n/runtime";
 import { uiRichText } from "../../i18n/richText";
@@ -200,7 +202,7 @@ function createOAuthCredentialControls(
 
 type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
-const WEBHOOK_EVENT_OPTIONS: ReadonlyArray<{ id: WebhookEvent; translation: string }> = [
+const WEBHOOK_EVENT_OPTIONS = [
 	{ id: "task.created", translation: "settings.integrations.webhooks.events.taskCreated" },
 	{ id: "task.updated", translation: "settings.integrations.webhooks.events.taskUpdated" },
 	{ id: "task.completed", translation: "settings.integrations.webhooks.events.taskCompleted" },
@@ -229,7 +231,7 @@ const WEBHOOK_EVENT_OPTIONS: ReadonlyArray<{ id: WebhookEvent; translation: stri
 		id: "reminder.triggered",
 		translation: "settings.integrations.webhooks.events.reminderTriggered",
 	},
-];
+] as const satisfies ReadonlyArray<{ id: WebhookEvent; translation: string }>;
 
 /**
  * Renders the Integrations tab - external connections and API settings
@@ -498,8 +500,8 @@ export function renderIntegrationsTab(
 			const credentialControls = createOAuthCredentialControls(
 				plugin,
 				"google",
-				"your-client-id.apps.googleusercontent.com",
-				"your-client-secret"
+				uiData("your-client-id.apps.googleusercontent.com", "Example OAuth credential syntax; credential identifiers must not be translated"),
+				uiData("your-client-secret", "Example OAuth credential syntax; credential identifiers must not be translated")
 			);
 
 			const credentialNote = activeWindow.createDiv();
@@ -569,7 +571,7 @@ export function renderIntegrationsTab(
 									});
 									new Notice(
 										translate(msg({ message: "Failed to connect: {message}", context: "settings.integrations.oauth.connectFailed" }), {
-											message: getErrorMessage(error),
+											message: displayError(getErrorMessage(error)),
 										})
 									);
 								}
@@ -631,7 +633,7 @@ export function renderIntegrationsTab(
 		if (!plugin.oauthService) {
 			createCard(microsoftCalendarContainer, {
 				header: {
-					primaryText: "Microsoft Outlook Calendar",
+					primaryText: uiData("Microsoft Outlook Calendar", "Proper Microsoft product name, not translatable UI copy"),
 					secondaryText: translate(msg({ message: "OAUTH service not available", context: "settings.integrations.oauth.unavailable" })),
 					meta: [
 						createStatusBadge(
@@ -691,7 +693,7 @@ export function renderIntegrationsTab(
 					: "";
 				syncInfo.textContent = translate(msg({ message: "Calendar sync failed {time}: {message}", context: "settings.integrations.oauth.syncFailed" }), {
 					time: attemptedText.trim(),
-					message: syncStatus.lastError,
+					message: displayError(syncStatus.lastError),
 				});
 			} else if (syncStatus?.lastSuccess) {
 				const lastSyncDate = new Date(syncStatus.lastSuccess);
@@ -728,11 +730,11 @@ export function renderIntegrationsTab(
 					firstError.calendarName || firstError.calendarId || uiText(msg({ message: "Microsoft calendar", context: "settings/tabs/integrationsTab: renderIntegrationsTab.renderMicrosoftCalendarCard display" }));
 				errorInfo.textContent =
 					syncStatus.calendarErrors.length === 1
-						? `${calendarLabel}: ${firstError.message}`
+						? uiText(msg({ message: "{calendar}: {message}", context: "calendar sync single error" }), { calendar: calendarLabel, message: displayError(firstError.message) })
 						: translate(msg({ message: "Calendars with errors: {count}. First error: {calendar}: {message}", context: "settings.integrations.oauth.calendarErrors" }), {
 								count: syncStatus.calendarErrors.length,
 								calendar: calendarLabel,
-								message: firstError.message,
+								message: displayError(firstError.message),
 							});
 				microsoftRows.push({
 					label: translate(msg({ message: "Issue:", context: "settings.integrations.oauth.issueLabel" })),
@@ -748,7 +750,7 @@ export function renderIntegrationsTab(
 					color: "#0078D4", // Microsoft blue
 				},
 				header: {
-					primaryText: "Microsoft Outlook Calendar",
+					primaryText: uiData("Microsoft Outlook Calendar", "Proper Microsoft product name, not translatable UI copy"),
 					secondaryText: translate(msg({ message: "OAuth 2.0 connection", context: "settings.integrations.oauth.connection" })),
 					meta: [
 						createStatusBadge(
@@ -782,7 +784,7 @@ export function renderIntegrationsTab(
 													msg({ message: "{provider} refresh had errors: {message}", context: "settings.integrations.oauth.refreshErrors" }),
 													{
 														provider: "Microsoft Outlook Calendar",
-														message: latestStatus.lastError,
+														message: displayError(latestStatus.lastError),
 													}
 												)
 											);
@@ -805,7 +807,7 @@ export function renderIntegrationsTab(
 									new Notice(
 										translate(msg({ message: "{provider} refresh had errors: {message}", context: "settings.integrations.oauth.refreshErrors" }), {
 											provider: "Microsoft Outlook Calendar",
-											message: getErrorMessage(error),
+											message: displayError(getErrorMessage(error)),
 										})
 									);
 								}
@@ -868,8 +870,8 @@ export function renderIntegrationsTab(
 			const credentialControls = createOAuthCredentialControls(
 				plugin,
 				"microsoft",
-				"your-microsoft-client-id",
-				"your-microsoft-client-secret"
+				uiData("your-microsoft-client-id", "Example OAuth credential syntax; credential identifiers must not be translated"),
+				uiData("your-microsoft-client-secret", "Example OAuth credential syntax; credential identifiers must not be translated")
 			);
 
 			const credentialNote = activeWindow.createDiv();
@@ -899,7 +901,7 @@ export function renderIntegrationsTab(
 					color: "#737373", // Microsoft gray
 				},
 				header: {
-					primaryText: "Microsoft Outlook Calendar",
+					primaryText: uiData("Microsoft Outlook Calendar", "Proper Microsoft product name, not translatable UI copy"),
 					secondaryText: translate(msg({ message: "OAuth 2.0 connection", context: "settings.integrations.oauth.connection" })),
 					meta: [
 						createStatusBadge(
@@ -940,7 +942,7 @@ export function renderIntegrationsTab(
 									});
 									new Notice(
 										translate(msg({ message: "Failed to connect: {message}", context: "settings.integrations.oauth.connectFailed" }), {
-											message: getErrorMessage(error),
+											message: displayError(getErrorMessage(error)),
 										})
 									);
 								}
@@ -2645,8 +2647,8 @@ function renderWebhookList(
 			webhook.active ? "active" : "inactive"
 		);
 
-		const successBadge = createInfoBadge(uiText(msg({ message: "Success: {value1}", context: "settings/tabs/integrationsTab: renderWebhookList display" }), { value1: webhook.successCount || 0 }));
-		const failureBadge = createInfoBadge(uiText(msg({ message: "Failed: {value1}", context: "settings/tabs/integrationsTab: renderWebhookList display" }), { value1: webhook.failureCount || 0 }));
+		const successBadge = createInfoBadge(uiText(msg({ message: "Success: {value1, number}", context: "settings/tabs/integrationsTab: renderWebhookList display" }), { value1: webhook.successCount || 0 }));
+		const failureBadge = createInfoBadge(uiText(msg({ message: "Failed: {value1, number}", context: "settings/tabs/integrationsTab: renderWebhookList display" }), { value1: webhook.failureCount || 0 }));
 
 		// Create inputs for inline editing
 		const urlInput = createCardUrlInput(uiText(msg({ message: "Webhook URL", context: "settings/tabs/integrationsTab: renderWebhookList display" })), webhook.url);

@@ -1,3 +1,5 @@
+import { displayError } from "../i18n/runtime";
+import type { MessageSuffix } from "../i18n/concepts";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 import { Menu, Notice, TFile, setIcon, setTooltip } from "obsidian";
@@ -20,7 +22,7 @@ export interface TaskCardContextMenuButtonOptions {
 
 function tTaskCard(
 	plugin: TaskNotesPlugin,
-	key: string,
+	key: MessageSuffix<"ui.taskCard.">,
 	vars?: Record<string, string | number>
 ): string {
 	return plugin.i18n.translate(messageForKey(`ui.taskCard.${key}`), vars);
@@ -107,7 +109,7 @@ export async function showTaskContextMenu(
 			error,
 		});
 		new Notice(
-			plugin.i18n.translate(msg({ message: "Failed to create context menu: {message}", context: "notices.interface.contextMenuFailed" }), { message: errorMessage })
+			plugin.i18n.translate(msg({ message: "Failed to create context menu: {message}", context: "notices.interface.contextMenuFailed" }), { message: displayError(errorMessage) })
 		);
 		showFileMenuFallback();
 	}

@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- ICS parsing normalizes optional event fields before use. */
@@ -487,7 +488,7 @@ export class ICSSubscriptionService extends EventEmitter {
 					publishUserNotice(this.plugin.emitter,
 						this.translate(msg({ message: "Failed to fetch remote calendar \"{name}\": {error}", context: "services.icsSubscription.notices.fetchRemoteFailed" }), {
 							name: subscription.name,
-							error: errorMessage,
+							error: displayError(errorMessage),
 						})
 					);
 				}
@@ -495,7 +496,7 @@ export class ICSSubscriptionService extends EventEmitter {
 				publishUserNotice(this.plugin.emitter,
 					this.translate(msg({ message: "Failed to read local calendar \"{name}\": {error}", context: "services.icsSubscription.notices.readLocalFailed" }), {
 						name: subscription.name,
-						error: errorMessage,
+						error: displayError(errorMessage),
 					})
 				);
 			}

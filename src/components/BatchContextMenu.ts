@@ -69,7 +69,7 @@ export class BatchContextMenu {
 
 		// Header showing selection count
 		this.menu.addItem((item) => {
-			item.setTitle(uiText(msg({ message: "{count, plural, one {{count} tasks selected} other {{count} tasks selected}}", context: "components/BatchContextMenu: BatchContextMenu.buildMenu display" }), { count: count }));
+			item.setTitle(uiText(msg({ message: "{count, plural, one {# task selected} other {# tasks selected}}", context: "components/BatchContextMenu: BatchContextMenu.buildMenu display" }), { count: count }));
 			item.setIcon("check-square");
 			item.setDisabled(true);
 		});

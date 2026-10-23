@@ -1,3 +1,4 @@
+import type { MessageSuffix } from "../i18n/concepts";
 import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
@@ -8,7 +9,7 @@ import { isNoteFileOrFormulaProperty } from "./propertyFilters";
 import { readBasesViewConfigValue } from "./basesViewConfig";
 
 type CalendarOptionsConfig = Pick<BasesViewConfig, "get">;
-type Translate = (key: string) => string;
+type Translate = (key: MessageSuffix<"views.basesCalendar.settings.">) => string;
 
 const CALENDAR_VIEW_OPTIONS: Record<string, string> = {
 	get dayGridMonth() { return uiText(msg({ message: "Month", context: "bases/calendarViewOptions: defaults dayGridMonth" })); },
@@ -20,7 +21,7 @@ const CALENDAR_VIEW_OPTIONS: Record<string, string> = {
 };
 
 function translateCalendarSetting(plugin: TaskNotesPlugin): Translate {
-	return (key: string) => plugin.i18n.translate(messageForKey(`views.basesCalendar.settings.${key}`));
+	return (key: MessageSuffix<"views.basesCalendar.settings.">) => plugin.i18n.translate(messageForKey(`views.basesCalendar.settings.${key}`));
 }
 
 function readOption<T>(config: CalendarOptionsConfig, key: string, fallback: T): T {

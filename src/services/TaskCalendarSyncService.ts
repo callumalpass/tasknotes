@@ -1,3 +1,5 @@
+import { displayError } from "../i18n/runtime";
+import type { MessageSuffix } from "../i18n/concepts";
 import { uiDuration } from "../i18n/formatters";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
@@ -1946,7 +1948,7 @@ export class TaskCalendarSyncService {
 	 */
 	private buildEventDescription(task: TaskInfo): string {
 		const settings = this.plugin.settings.googleCalendarExport;
-		const t = (key: string, params?: Record<string, string | number>) =>
+		const t = (key: MessageSuffix<"settings.integrations.googleCalendarExport.eventDescription.">, params?: Record<string, string | number>) =>
 			this.plugin.i18n.translate(
 				messageForKey(`settings.integrations.googleCalendarExport.eventDescription.${key}`),
 				params
@@ -2901,7 +2903,7 @@ export class TaskCalendarSyncService {
 					this.plugin.emitter,
 					this.plugin.i18n.translate(
 						msg({ message: "Failed to sync task to Google Calendar: {message}", context: "settings.integrations.googleCalendarExport.notices.syncFailed" }),
-						{ message: getErrorMessage(error) }
+						{ message: displayError(getErrorMessage(error)) }
 					)
 				);
 			}

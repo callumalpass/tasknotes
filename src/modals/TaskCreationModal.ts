@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { App, Notice, setIcon, setTooltip, TFile } from "obsidian";
@@ -748,7 +749,7 @@ export class TaskCreationModal extends TaskModal {
 				error: error,
 			});
 			const message = getTaskCreationFailureNoticeMessage(error);
-			new Notice(this.t(msg({ message: "Failed to create task: {message}", context: "modals.taskCreation.notices.failure" }), { message }));
+			new Notice(this.t(msg({ message: "Failed to create task: {message}", context: "modals.taskCreation.notices.failure" }), { message: displayError(message) }));
 		}
 	}
 

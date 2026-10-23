@@ -938,7 +938,7 @@ export function renderBasesDataItem(
 		"tn-static-padding-20px-ebe8e48c"
 	);
 	header.classList.add("tn-static-font-weight-bold-e0b452bd");
-	header.textContent = `Item ${index + 1}`;
+	header.textContent = uiText(msg({ message: "Item {value1, number}", context: "Bases data inspector" }), { value1: index + 1 });
 	itemEl.appendChild(header);
 
 	if (item.path) {
@@ -970,7 +970,7 @@ export function renderBasesDataItem(
 			"tn-static-padding-20px-ebe8e48c"
 		);
 		pathEl.classList.add("tn-static-font-size-12px-65574819");
-		pathEl.textContent = `Path: ${item.path}`;
+		pathEl.textContent = uiText(msg({ message: "Path: {path}", context: "Bases data inspector" }), { path: item.path });
 		itemEl.appendChild(pathEl);
 	}
 
@@ -1020,7 +1020,7 @@ export function renderBasesDataItem(
 			"tn-static-padding-20px-ebe8e48c"
 		);
 		propsHeader.classList.add("tn-static-font-weight-bold-0fe8c30d");
-		propsHeader.textContent = "Properties:";
+		propsHeader.textContent = uiText(msg({ message: "Properties:", context: "Bases data inspector" }));
 		propsEl.appendChild(propsHeader);
 
 		const propsList = createElementInDocument(doc, "ul");
@@ -1110,7 +1110,7 @@ export function renderBasesDataItem(
 		"tn-static-padding-20px-ebe8e48c"
 	);
 	summary.classList.add("tn-static-cursor-pointer-2723efcc");
-	summary.textContent = "Raw data structure";
+	summary.textContent = uiText(msg({ message: "Raw data structure", context: "Bases data inspector" }));
 	rawDataEl.appendChild(summary);
 
 	const pre = createElementInDocument(doc, "pre");

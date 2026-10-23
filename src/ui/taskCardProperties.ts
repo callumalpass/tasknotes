@@ -1,3 +1,4 @@
+import type { MessageSuffix } from "../i18n/concepts";
 import { uiText } from "../i18n/runtime";
 import { uiNumber } from "../i18n/formatters";
 import { messageForKey } from "../i18n/messages";
@@ -48,7 +49,7 @@ export interface TaskCardPropertyOptions {
 
 function tTaskCard(
 	plugin: TaskNotesPlugin,
-	key: string,
+	key: MessageSuffix<"ui.taskCard.">,
 	vars?: Record<string, string | number>
 ): string {
 	return plugin.i18n.translate(messageForKey(`ui.taskCard.${key}`), vars);
@@ -396,16 +397,16 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			if (finiteTotal) {
 				const total = Math.max(finiteTotal, count + skippedCount);
 				const completionRate = Math.round((count / total) * 100);
-				element.textContent = uiText(msg({ message: "✓ {count}/{total} completed ({completionRate}%)", context: "ui/taskCardProperties: completeInstances display" }), { count: count, total: total, completionRate: completionRate });
+				element.textContent = uiText(msg({ message: "✓ {count, number}/{total, number} completed ({completionRate, number}%)", context: "ui/taskCardProperties: completeInstances display" }), { count: count, total: total, completionRate: completionRate });
 			} else {
-				element.textContent = uiText(msg({ message: "✓ {count} completed", context: "ui/taskCardProperties: completeInstances display" }), { count: count });
+				element.textContent = uiText(msg({ message: "✓ {count, number} completed", context: "ui/taskCardProperties: completeInstances display" }), { count: count });
 			}
 			element.classList.add("task-card__metadata-pill--completed-instances");
 		}
 	},
 	skippedInstances: (element, value) => {
 		if (Array.isArray(value) && value.length > 0) {
-			element.textContent = uiText(msg({ message: "⊘ {length} skipped", context: "ui/taskCardProperties: skippedInstances display" }), { length: value.length });
+			element.textContent = uiText(msg({ message: "⊘ {length, number} skipped", context: "ui/taskCardProperties: skippedInstances display" }), { length: value.length });
 			element.classList.add("task-card__metadata-pill--skipped-instances");
 		}
 	},
@@ -506,13 +507,13 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		if (Array.isArray(value) && value.length > 0) {
 			const totalTime = calculateTotalTimeSpent(value);
 			if (totalTime > 0) {
-				element.textContent = uiText(msg({ message: "{length, plural, one {{value1} tracked ({length} entry)} other {{value1} tracked ({length} entries)}}", context: "ui/taskCardProperties: timeEntries display" }), { value1: plugin.formatTime(totalTime), length: value.length });
+				element.textContent = uiText(msg({ message: "{length, plural, one {{value1} tracked ({length, number} entry)} other {{value1} tracked ({length, number} entries)}}", context: "ui/taskCardProperties: timeEntries display" }), { value1: plugin.formatTime(totalTime), length: value.length });
 			}
 		}
 	},
 	reminders: (element, value) => {
 		if (Array.isArray(value) && value.length > 0) {
-			element.textContent = uiText(msg({ message: "{length, plural, one {{length} reminder} other {{length} reminders}}", context: "ui/taskCardProperties: reminders display" }), { length: value.length });
+			element.textContent = uiText(msg({ message: "{length, plural, one {{length, number} reminder} other {{length, number} reminders}}", context: "ui/taskCardProperties: reminders display" }), { length: value.length });
 		}
 	},
 	icsEventId: (element, value, _task, plugin) => {
@@ -527,7 +528,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		if (eventSummaries.length > 0) {
 			element.textContent = uiText(msg({ message: "Calendar: {value1}", context: "ui/taskCardProperties: icsEventId display" }), { value1: eventSummaries.join(", ") });
 		} else {
-			element.textContent = uiText(msg({ message: "{length, plural, one {Linked to {length} calendar event} other {Linked to {length} calendar events}}", context: "ui/taskCardProperties: icsEventId display" }), { length: eventIds.length });
+			element.textContent = uiText(msg({ message: "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}", context: "ui/taskCardProperties: icsEventId display" }), { length: eventIds.length });
 		}
 	},
 	checklistProgress: (element, _value, task, plugin) => {
@@ -552,7 +553,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 
 		setTooltip(
 			progressEl,
-			uiText(msg({ message: "{percent}% complete ({completed}/{total})", context: "ui/taskCardProperties: checklistProgress display" }), { percent: progress.percent, completed: progress.completed, total: progress.total }),
+			uiText(msg({ message: "{percent, number}% complete ({completed, number}/{total, number})", context: "ui/taskCardProperties: checklistProgress display" }), { percent: progress.percent, completed: progress.completed, total: progress.total }),
 			{
 				placement: "top",
 			}
@@ -666,7 +667,7 @@ function renderUserProperty(
 		});
 	} else {
 		const displayValue = formatUserPropertyValue(value, userField);
-		valueContainer.textContent = displayValue.trim() !== "" ? displayValue : "(empty)";
+		valueContainer.textContent = displayValue.trim() !== "" ? displayValue : uiText(msg({ message: "(empty)", context: "empty task property display" }));
 	}
 }
 

@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { formatUIDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, Notice } from "obsidian";
@@ -239,7 +240,7 @@ export class CalendarEventCreationModal extends Modal {
 			});
 			new Notice(
 				this.translate(msg({ message: "Failed to create calendar event: {message}", context: "modals.calendarEventCreation.error" }), {
-					message: error instanceof Error ? error.message : String(error),
+					message: displayError(error instanceof Error ? error.message : String(error)),
 				})
 			);
 		}

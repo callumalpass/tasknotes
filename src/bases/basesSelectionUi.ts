@@ -146,8 +146,8 @@ export function updateBasesSelectionIndicator({
 		event.preventDefault();
 		onClearSelection();
 	};
-	indicator.textContent = uiText(msg({ message: "{count} selected", context: "bases/basesSelectionUi: updateBasesSelectionIndicator display" }), { count: count });
-	indicator.setAttribute("aria-label", uiText(msg({ message: "{count} selected. Activate to clear selection.", context: "bases/basesSelectionUi: updateBasesSelectionIndicator display" }), { count: count }));
+	indicator.textContent = uiText(msg({ message: "{count, number} selected", context: "bases/basesSelectionUi: updateBasesSelectionIndicator display" }), { count: count });
+	indicator.setAttribute("aria-label", uiText(msg({ message: "{count, number} selected. Activate to clear selection.", context: "bases/basesSelectionUi: updateBasesSelectionIndicator display" }), { count: count }));
 	setDisplayUtility(indicator, "tn-static-display-block-2a1b75c9");
 	return indicator;
 }

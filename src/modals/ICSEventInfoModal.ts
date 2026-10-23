@@ -66,23 +66,15 @@ export class ICSEventInfoModal extends Modal {
 				? this.icsEvent.start + "T00:00:00"
 				: this.icsEvent.start;
 		const startDate = new Date(startDateStr);
-		let dateText = startDate.toLocaleDateString(uiLocale(), {
-			weekday: "long",
-			year: "numeric",
-			month: "long",
-			day: "numeric",
+		const dateFormatter = new Intl.DateTimeFormat(uiLocale(), {
+			dateStyle: "full",
+			...(this.icsEvent.allDay ? {} : { timeStyle: "short" as const, hour12: this.plugin.settings.calendarViewSettings.timeFormat === "12" }),
 		});
-
-		if (!this.icsEvent.allDay) {
-			dateText += uiText(msg({ message: " at {value1}", context: "modals/ICSEventInfoModal: ICSEventInfoModal.renderContent display" }), { value1: startDate.toLocaleTimeString(uiLocale()) });
-
-			if (this.icsEvent.end) {
-				const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(this.icsEvent.end)
-					? this.icsEvent.end + "T00:00:00"
-					: this.icsEvent.end;
-				const endDate = new Date(endDateStr);
-				dateText += ` - ${endDate.toLocaleTimeString(uiLocale())}`;
-			}
+		let dateText = dateFormatter.format(startDate);
+		if (!this.icsEvent.allDay && this.icsEvent.end) {
+			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(this.icsEvent.end) ? this.icsEvent.end + "T00:00:00" : this.icsEvent.end;
+			const endDate = new Date(endDateStr);
+			if (Number.isFinite(endDate.getTime()) && endDate >= startDate) dateText = dateFormatter.formatRange(startDate, endDate);
 		}
 
 		new Setting(contentEl)

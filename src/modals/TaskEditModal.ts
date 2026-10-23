@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Modal lifecycle initializes required controls before event handlers run. */
 import { App, Notice, TFile } from "obsidian";
@@ -535,7 +536,7 @@ export class TaskEditModal extends TaskModal {
 				error: error,
 			});
 			const message = error instanceof Error && error.message ? error.message : String(error);
-			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message }));
+			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(message) }));
 		}
 	}
 
@@ -673,7 +674,7 @@ export class TaskEditModal extends TaskModal {
 				operation: "delete-task",
 				error: error,
 			});
-			new Notice(this.t(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), { message }));
+			new Notice(this.t(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), { message: displayError(message) }));
 		}
 	}
 

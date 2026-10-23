@@ -1,3 +1,4 @@
+import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { createTaskNotesLogger } from "./tasknotesLogger";
@@ -111,7 +112,7 @@ export class SafeAsync {
 				});
 
 				if (showNotice) {
-					notifyIfRequested(uiText(msg({ message: "{errorMessage}: {message}", context: "utils/safeAsync: SafeAsync.executeWithRetry display" }), { errorMessage: errorMessage, message: lastError.message }), {
+					notifyIfRequested(uiText(msg({ message: "{errorMessage}: {message}", context: "utils/safeAsync: SafeAsync.executeWithRetry display" }), { errorMessage: displayError(errorMessage), message: displayError(lastError.message) }), {
 						showNotice,
 						noticeHandler,
 					});
