@@ -431,7 +431,8 @@ export abstract class TaskModal extends Modal {
 	}
 
 	abstract initializeFormData(): Promise<void>;
-	abstract handleSave(): Promise<void>;
+	/** Returns false when validation failed and the modal stays open. */
+	abstract handleSave(): Promise<boolean | void>;
 	abstract getModalTitle(): string;
 
 	protected async handleSubmitShortcut(_shift: boolean): Promise<void> {
