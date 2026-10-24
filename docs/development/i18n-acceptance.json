@@ -1,9 +1,8 @@
 {
-  "status": "in_progress",
-  "historicalBaseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
-  "finalRecheck": "Historical measurements below are superseded by the independent review; current review-fix workflow and native acceptance are pending. See i18n-review-followup.json for authored-change proof.",
+  "status": "passed-assigned-desktop-review-scope",
+  "finalRecheck": "Review fixes pass all 20 checked-in workflow shell steps through rpnpm, fresh-generated-file validation, real rendered catalogue matrix, both strict production budgets/graphs, and both minified native modes including en/de/ru drag/creation/non-default saved-order regressions. This is not hosted Actions or mobile acceptance.",
   "authoredPreservation": "i18n-authored-preservation.json",
-  "artifactSourceCommit": "4fa335d46919c81530cfa317eddd637d7a472525",
+  "artifactSourceCommit": "febb5f8905439a92196da119d901ead204755fb1",
   "originalTranslationHandoff": "9b6f087e86af81e522d2d16661937a6f1a158ad0",
   "kitTarball": "vendor/mdbase-dev-i18n-0.1.0-beta.141-a36fa009.tgz",
   "lingui": "6.9.0",
@@ -20,18 +19,112 @@
       "ru",
       "zh"
     ],
-    "activePerLocale": 2797,
+    "activePerLocale": 2738,
     "missingAuthoredPerLocale": 0,
-    "authoredEntriesValidated": 25173,
-    "retainedTranslationsVerbatimPerTarget": 2787,
-    "changedRetainedTranslationsPerTarget": 0,
+    "authoredEntriesValidated": 24642,
+    "renderedOperandCases": 172494,
+    "operands": [
+      0,
+      1,
+      2,
+      5,
+      21,
+      1.5,
+      1000000
+    ],
     "normalCleanExtractionByteStable": true,
     "authoredBeforeFallback": true,
     "technicalDataRetirements": 12,
-    "singletonContractReplacements": 10
+    "additionalReviewDataRetirements": 59,
+    "singletonContractReplacements": 10,
+    "literalBraceIdReplacements": 2,
+    "addedAuthoredPluralArms": 112,
+    "pluralRepairOperations": 102,
+    "retainedAuthoredPreservation": {
+      "de": {
+        "translatorCommit": "20b7eb21211611110951e1fb27f92ddfefa407c0",
+        "retainedTranslations": 2726,
+        "unchangedRetainedTranslations": 2726,
+        "changedRetainedTranslations": 0,
+        "technicalIdsRetired": 12,
+        "reviewDataIdsRetired": 59,
+        "singletonIdsReplaced": 10,
+        "literalBraceIdsReplaced": 2
+      },
+      "es": {
+        "translatorCommit": "7632fbce55cd3cc90c7b1192701120d391268490",
+        "retainedTranslations": 2726,
+        "unchangedRetainedTranslations": 2694,
+        "changedRetainedTranslations": 32,
+        "technicalIdsRetired": 12,
+        "reviewDataIdsRetired": 59,
+        "singletonIdsReplaced": 10,
+        "literalBraceIdsReplaced": 2
+      },
+      "fr": {
+        "translatorCommit": "791a2e45f3eddf46bc23b6c8d7b5ba08a55d0bb5",
+        "retainedTranslations": 2726,
+        "unchangedRetainedTranslations": 2694,
+        "changedRetainedTranslations": 32,
+        "technicalIdsRetired": 12,
+        "reviewDataIdsRetired": 59,
+        "singletonIdsReplaced": 10,
+        "literalBraceIdsReplaced": 2
+      },
+      "ja": {
+        "translatorCommit": "e0db2e3ebba160d784b87be401cb6a5ea226ae52",
+        "retainedTranslations": 2726,
+        "unchangedRetainedTranslations": 2726,
+        "changedRetainedTranslations": 0,
+        "technicalIdsRetired": 12,
+        "reviewDataIdsRetired": 59,
+        "singletonIdsReplaced": 10,
+        "literalBraceIdsReplaced": 2
+      },
+      "ko": {
+        "translatorCommit": "24b477682e05973ceb67d25f9b292839301be771",
+        "retainedTranslations": 2726,
+        "unchangedRetainedTranslations": 2726,
+        "changedRetainedTranslations": 0,
+        "technicalIdsRetired": 12,
+        "reviewDataIdsRetired": 59,
+        "singletonIdsReplaced": 10,
+        "literalBraceIdsReplaced": 2
+      },
+      "pt": {
+        "translatorCommit": "65844af337a4834780baa6ce01e133fe8b2be1bd",
+        "retainedTranslations": 2726,
+        "unchangedRetainedTranslations": 2726,
+        "changedRetainedTranslations": 0,
+        "technicalIdsRetired": 12,
+        "reviewDataIdsRetired": 59,
+        "singletonIdsReplaced": 10,
+        "literalBraceIdsReplaced": 2
+      },
+      "ru": {
+        "translatorCommit": "f4c6b0a3d7da7ed07133b62e8bfe7f9afa63760a",
+        "retainedTranslations": 2726,
+        "unchangedRetainedTranslations": 2726,
+        "changedRetainedTranslations": 0,
+        "technicalIdsRetired": 12,
+        "reviewDataIdsRetired": 59,
+        "singletonIdsReplaced": 10,
+        "literalBraceIdsReplaced": 2
+      },
+      "zh": {
+        "translatorCommit": "e1e430e71ac39da0db390747132de099bdb1ed3c",
+        "retainedTranslations": 2726,
+        "unchangedRetainedTranslations": 2726,
+        "changedRetainedTranslations": 0,
+        "technicalIdsRetired": 12,
+        "reviewDataIdsRetired": 59,
+        "singletonIdsReplaced": 10,
+        "literalBraceIdsReplaced": 2
+      }
+    }
   },
   "source": {
-    "modules": 412,
+    "modules": 414,
     "consumerGuard": "PASS",
     "originalAuditRows": 1075,
     "formattingRows": 156,
@@ -39,38 +132,59 @@
     "conditionalRows": 23,
     "finiteSites": 22,
     "finiteConcepts": 210,
-    "sourceFixtures": 43,
-    "nlpSrcLocalesChanged": false
+    "sourceFixtures": 54,
+    "nlpSrcLocalesChanged": false,
+    "staticCallSiteValues": "PASS (direct static macro calls; computed/forwarded objects require adapter/runtime tests)",
+    "consumerPluralGate": "PASS: CLDR cardinal/ordinal categories, exact English-arm detection, scoped reasoned exceptions, read-only obsolete-PO rejection before kit pruning"
   },
   "jest": {
     "strict": true,
     "freshGeneratedJsonAbsent": true,
-    "passedSuites": 762,
-    "passedTests": 4962,
-    "skippedSuites": 71,
-    "skippedTests": 1013,
+    "passedSuites": 768,
+    "passedTests": 5020,
+    "skippedSuites": 70,
+    "skippedTests": 1005,
     "todo": 4,
-    "newSkips": 0
+    "newSkips": 0,
+    "integration": {
+      "passedSuites": 5,
+      "passedTests": 77,
+      "skippedTests": 12
+    }
   },
   "otherGates": {
-    "translationContracts": "PASS",
+    "translationContracts": "PASS: all 24,642 authored entries compiled; 172,494 real operand renders",
     "packAndPublicationScriptTests": 30,
     "lint": "PASS",
     "documentationPublishedPages": 221,
     "documentationGeneratedReferences": 5,
     "documentationHtmlFilesChecked": 229,
-    "kitCheck": "PASS"
+    "kitCheck": "PASS",
+    "workflowParity": {
+      "report": "i18n-ci-workflow-parity.json",
+      "sha256": "9587bdf752e8b654fe6425e42eefd5b287ca835a89c8035ff238797b8fdf043c",
+      "node": "v22.22.0",
+      "passedShellSteps": 20,
+      "performance": "Skipped by the unchanged Node-20-only condition under the sole Node-22 matrix",
+      "hostedCI": false,
+      "actions": "Checkout/setup/coverage upload/artifact actions not reproduced",
+      "oauthSecretsSupplied": false
+    }
   },
   "builds": {
     "strictBudgetBytesExclusive": 5000000,
-    "bundledBytes": 4196739,
-    "downloadableBytes": 3601139,
+    "bundledBytes": 4190040,
+    "downloadableBytes": 3605792,
     "bundledCatalogueInputs": 9,
     "downloadableCatalogueInputs": [
       "en"
     ],
     "legacyUiResourceInputs": 0,
-    "downloadFormat": "tasknotes-lingui-v1"
+    "downloadFormat": "tasknotes-lingui-v1",
+    "mainSha256": {
+      "bundled": "e988c99c8ca89a2425fc9327981297a594f97869f96215e20c221f2c9f2e2b84",
+      "downloadable": "eb08344d9361a29886c069ac227da8112fc7c173416906981860dfe95c20fdc2"
+    }
   },
   "native": {
     "platform": "isolated Linux/Xvfb",
@@ -79,7 +193,7 @@
     "httpFixturePort": 19290,
     "personalVaultOrProfileUsed": false,
     "bundled": {
-      "passedTests": 1,
+      "passedTests": 2,
       "synchronousColdLocale": "ja",
       "loadedLocales": 9,
       "checkedLocales": [
@@ -98,7 +212,7 @@
       "numericOperandsAsserted": true
     },
     "downloadable": {
-      "passedTests": 2,
+      "passedTests": 3,
       "checkedLocales": [
         "en",
         "ja",
@@ -125,11 +239,149 @@
     },
     "reports": [
       "test-results/lingui-native/report.json",
-      "test-results/lingui-bundled/report.json"
+      "test-results/lingui-bundled/report.json",
+      "test-results/lingui-native/review/review-report.json",
+      "test-results/lingui-bundled/review/review-report.json"
     ],
     "mobile": {
       "ios": "Unverified; explicitly waived",
       "android": "Pre-Lingui delivery-layer evidence is historical, not acceptance of this port"
+    },
+    "groupIdentityReview": {
+      "locales": [
+        "en",
+        "de",
+        "ru"
+      ],
+      "actualPointerDrag": true,
+      "actualCreationModal": true,
+      "nonDefaultRenderedAndSavedColumnOrder": true,
+      "results": {
+        "bundled": {
+          "en": {
+            "emptyLabel": "None",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          },
+          "de": {
+            "emptyLabel": "Keine",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          },
+          "ru": {
+            "emptyLabel": "Нет",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          }
+        },
+        "native": {
+          "en": {
+            "emptyLabel": "None",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          },
+          "de": {
+            "emptyLabel": "Keine",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          },
+          "ru": {
+            "emptyLabel": "Нет",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          }
+        }
+      }
     }
   },
   "notPerformed": [
@@ -142,14 +394,20 @@
     "subagent delegation"
   ],
   "reproduce": [
-    "npm run i18n:check",
-    "npm run test:i18n-source",
-    "npm run test:translation-contracts",
-    "npm run test:fresh-catalogues",
-    "npm run test:language-packs",
-    "npm run lint",
-    "npm run docs:check",
-    "npm run check:language-pack-builds http://127.0.0.1:19290/tasknotes",
-    "Isolated native instructions: docs/development/language-packs.md"
-  ]
+    "rpnpm --pull dist --pull coverage run check:ci-workflow",
+    "rpnpm --pull dist run test:translation-contracts",
+    "rpnpm --pull dist --pull coverage run test:fresh-catalogues",
+    "rpnpm --pull dist run check:language-pack-builds http://127.0.0.1:19290/tasknotes",
+    "Isolated minified native instructions: docs/development/language-packs.md"
+  ],
+  "historicalBaseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
+  "nativeHarnessCommit": "3e863f79a06e431008f0c1fcc352eb3037c5dd21",
+  "reviewChangeInventory": "i18n-review-followup.json",
+  "deferredMinorFindings": {
+    "1": "Generated Bases labels remain snapshots; owner decision needed before changing saved files.",
+    "3": "ICS generated-note dates stabilized, but remaining translated exported calendar/note prose needs an owner policy decision.",
+    "8": "Generic numeric formatting policy unchanged; grouped year-like user numbers remain a follow-up.",
+    "11": "Not all already-open views/modals/live text hot-refresh; registration-only command labels may require reload.",
+    "13": "Broader noun/count ICU cleanup would require new authored target wording; not padded with English."
+  }
 }

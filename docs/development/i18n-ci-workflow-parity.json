@@ -1,0 +1,270 @@
+{
+  "workflow": ".github/workflows/test.yml",
+  "sha256": "9587bdf752e8b654fe6425e42eefd5b287ca835a89c8035ff238797b8fdf043c",
+  "node": "v22.22.0",
+  "hostedCI": false,
+  "environment": "rpnpm remote builder; Node 22; no OAuth secrets supplied",
+  "steps": [
+    {
+      "job": "bundle-size",
+      "name": "Checkout code",
+      "uses": "actions/checkout@v4",
+      "status": "not-reproduced-action"
+    },
+    {
+      "job": "bundle-size",
+      "name": "Setup Node.js",
+      "uses": "actions/setup-node@v4",
+      "status": "not-reproduced-action"
+    },
+    {
+      "job": "bundle-size",
+      "name": "Install dependencies",
+      "command": "npm ci --prefer-offline --no-audit",
+      "started": "2026-10-24T00:27:52.658Z",
+      "finished": "2026-10-24T00:28:00.754Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "bundle-size",
+      "name": "Test bundle size guard and dependency deduplication",
+      "command": "node --test scripts/check-bundle-size.test.mjs scripts/bundle-dependencies.test.mjs",
+      "started": "2026-10-24T00:28:00.754Z",
+      "finished": "2026-10-24T00:28:01.186Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "bundle-size",
+      "name": "Build production plugin",
+      "command": "npm run build",
+      "started": "2026-10-24T00:28:01.186Z",
+      "finished": "2026-10-24T00:28:24.939Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "bundle-size",
+      "name": "Check Obsidian Sync bundle size budget",
+      "command": "npm run check:bundle-size",
+      "started": "2026-10-24T00:28:24.939Z",
+      "finished": "2026-10-24T00:28:25.074Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Checkout code",
+      "uses": "actions/checkout@v4",
+      "status": "not-reproduced-action"
+    },
+    {
+      "job": "test",
+      "name": "Setup Node.js ${{ matrix.node-version }}",
+      "uses": "actions/setup-node@v4",
+      "status": "not-reproduced-action"
+    },
+    {
+      "job": "test",
+      "name": "Install dependencies",
+      "command": "npm ci --prefer-offline --no-audit",
+      "started": "2026-10-24T00:28:25.074Z",
+      "finished": "2026-10-24T00:28:32.558Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Check authored Lingui catalogues and Obsidian UI source",
+      "command": "npm run i18n:check",
+      "started": "2026-10-24T00:28:32.558Z",
+      "finished": "2026-10-24T00:28:46.652Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Test catalogue and source contract fixtures",
+      "command": "npm run test:i18n-source && npm run test:translation-contracts",
+      "started": "2026-10-24T00:28:46.652Z",
+      "finished": "2026-10-24T00:28:49.902Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Debug environment",
+      "command": "echo \"Node version: $(node --version)\"\necho \"NPM version: $(npm --version)\"\necho \"Timezone: $(date)\"\necho \"Jest version: $(npx jest --version)\"\n",
+      "started": "2026-10-24T00:28:49.902Z",
+      "finished": "2026-10-24T00:28:50.261Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Install documentation dependencies",
+      "command": "npm ci",
+      "started": "2026-10-24T00:28:50.261Z",
+      "finished": "2026-10-24T00:28:51.886Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Run docs quality checks",
+      "command": "npm run docs:check",
+      "started": "2026-10-24T00:28:51.886Z",
+      "finished": "2026-10-24T00:29:08.247Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Run linter",
+      "command": "npm run lint",
+      "started": "2026-10-24T00:29:08.247Z",
+      "finished": "2026-10-24T00:29:52.056Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Test language-pack export, build isolation, and local delivery",
+      "command": "npm run test:language-packs",
+      "started": "2026-10-24T00:29:52.056Z",
+      "finished": "2026-10-24T00:30:49.863Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Generate release notes import",
+      "command": "node generate-release-notes-import.mjs",
+      "started": "2026-10-24T00:30:49.863Z",
+      "finished": "2026-10-24T00:30:50.036Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Run type check",
+      "command": "npm run typecheck",
+      "started": "2026-10-24T00:30:50.036Z",
+      "finished": "2026-10-24T00:30:56.786Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Run unit tests with coverage",
+      "command": "npm run test:ci -- --verbose",
+      "started": "2026-10-24T00:30:56.786Z",
+      "finished": "2026-10-24T00:31:33.382Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Run integration tests",
+      "command": "npm run test:integration",
+      "started": "2026-10-24T00:31:33.383Z",
+      "finished": "2026-10-24T00:31:51.919Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "test",
+      "name": "Upload coverage reports",
+      "uses": "codecov/codecov-action@v3",
+      "status": "not-reproduced-action"
+    },
+    {
+      "job": "test",
+      "name": "Performance benchmarks",
+      "command": "npm run test:performance",
+      "status": "skipped-workflow-condition"
+    },
+    {
+      "job": "test",
+      "name": "Archive test results",
+      "uses": "actions/upload-artifact@v4",
+      "status": "not-reproduced-action"
+    },
+    {
+      "job": "build-test",
+      "name": "Checkout code",
+      "uses": "actions/checkout@v4",
+      "status": "not-reproduced-action"
+    },
+    {
+      "job": "build-test",
+      "name": "Setup Node.js",
+      "uses": "actions/setup-node@v4",
+      "status": "not-reproduced-action"
+    },
+    {
+      "job": "build-test",
+      "name": "Install dependencies",
+      "command": "npm ci --prefer-offline --no-audit",
+      "started": "2026-10-24T00:31:51.919Z",
+      "finished": "2026-10-24T00:31:59.311Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "build-test",
+      "name": "Build plugin",
+      "command": "cat <<EOF > .env\nGOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}\nMICROSOFT_OAUTH_CLIENT_ID=${MICROSOFT_OAUTH_CLIENT_ID}\nEOF\nnpm run build\n",
+      "started": "2026-10-24T00:31:59.312Z",
+      "finished": "2026-10-24T00:32:23.126Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "build-test",
+      "name": "Export versioned language packs",
+      "command": "npm run i18n:export",
+      "started": "2026-10-24T00:32:23.126Z",
+      "finished": "2026-10-24T00:32:37.704Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "build-test",
+      "name": "Test built plugin",
+      "command": "npm run test:build",
+      "started": "2026-10-24T00:32:37.704Z",
+      "finished": "2026-10-24T00:32:37.820Z",
+      "status": "passed",
+      "exit": 0,
+      "signal": null
+    },
+    {
+      "job": "build-test",
+      "name": "Upload build artifacts",
+      "uses": "actions/upload-artifact@v4",
+      "status": "not-reproduced-action"
+    }
+  ],
+  "status": "passed"
+}

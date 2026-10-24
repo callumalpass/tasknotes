@@ -16,5 +16,7 @@
     "obsolete English plural resolver removed": 1,
     "deferred translation": 2,
     "escaped localized callback page": 4
-  }
+  },
+  "historicalCheckpoint": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
+  "reviewFollowup": "Counts above describe the original static audit closure. Review-driven data retirements, strict contracts and current acceptance are inventoried in i18n-review-followup.json and i18n-acceptance.json; historical ledgers moved from scripts/ to docs/development/i18n-migration/."
 }
