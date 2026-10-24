@@ -1,8 +1,8 @@
 import { format, type FormatOptions } from "date-fns";
-import { enUS, fr, de, es, ja, ko, ptBR, ru, zhCN } from "date-fns/locale";
+import { enUS, fr, de, es, it, ja, ko, ptBR, ru, zhCN } from "date-fns/locale";
 import { uiLocale } from "./runtime";
 
-const dateLocales = { en: enUS, fr, de, es, ja, ko, pt: ptBR, ru, zh: zhCN };
+const dateLocales = { en: enUS, fr, de, es, it, ja, ko, pt: ptBR, ru, zh: zhCN };
 
 /** Presentation only. ISO keys, RRULEs, filenames and configured template tokens stay stable. */
 export function formatUIDate(date: Date | number | string, pattern: string, options?: FormatOptions): string {

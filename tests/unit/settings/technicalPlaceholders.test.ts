@@ -9,7 +9,7 @@ import { renderPriorityPropertyCard } from "../../../src/settings/tabs/taskPrope
 import { renderStatusPropertyCard } from "../../../src/settings/tabs/taskProperties/statusPropertyCard";
 import { observeTranslation } from "../../helpers/real-i18n";
 
-const locales = ["en", "fr", "de", "es", "ja", "ko", "pt", "ru", "zh"];
+const locales = ["en", "fr", "de", "es", "it", "ja", "ko", "pt", "ru", "zh"];
 
 function input(container: HTMLElement, placeholder: string): HTMLInputElement {
 	const result = Array.from(container.querySelectorAll<HTMLInputElement>("input"))

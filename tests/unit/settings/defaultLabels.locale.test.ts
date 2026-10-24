@@ -6,7 +6,7 @@ import { createDefaultFieldConfig } from "../../../src/utils/fieldConfigDefaults
 
 afterEach(() => observeTranslation("en"));
 
-it.each(["de", "ru"])("keeps writable English seeds, display translations and saved user labels separate in %s", locale => {
+it.each(["it", "de", "ru"])("keeps writable English seeds, display translations and saved user labels separate in %s", locale => {
   const baseline = JSON.stringify(DEFAULT_SETTINGS);
   observeTranslation(locale);
   const { settings } = buildSettingsFromLoadedData(null);

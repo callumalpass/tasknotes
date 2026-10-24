@@ -27,6 +27,7 @@ export function basesMessage(
 		const integer = `${value} % 1 == 0`;
 		if (ordinal) {
 			if (locale === "fr" && name === "one") return `${value} == 1`;
+			if (locale === "it" && name === "many") return `(${value} == 8 || ${value} == 11 || ${value} == 80 || ${value} == 800)`;
 			if (locale === "en") {
 				const ending = { one: 1, two: 2, few: 3 }[name as "one" | "two" | "few"];
 				if (ending)
@@ -43,9 +44,9 @@ export function basesMessage(
 				return `${integer} && (${value} % 10 == 0 || ${value} % 10 >= 5 || (${value} % 100 >= 11 && ${value} % 100 <= 14))`;
 		}
 		if (["fr", "pt"].includes(locale) && name === "one") return `${value} >= 0 && ${value} < 2`;
-		if (["fr", "pt", "es"].includes(locale) && name === "many")
+		if (["fr", "pt", "es", "it"].includes(locale) && name === "many")
 			return `${value} != 0 && ${value} % 1000000 == 0`;
-		if (["en", "de", "es"].includes(locale) && name === "one") return `${value} == 1`;
+		if (["en", "de", "es", "it"].includes(locale) && name === "one") return `${value} == 1`;
 		return "false";
 	}
 	function render(tokens: unknown, pound?: string): string {

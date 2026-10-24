@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { createRequire } from "node:module";
 import gates from "../../scripts/lib/catalogue-gates.cjs";
+import { locales } from "@mdbase-dev/i18n/config";
 import ts from "typescript";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -54,14 +55,20 @@ test("consumer plural rejection happens before the shared kit can compile", asyn
 test("obsolete PO entries fail read-only before the pinned kit can prune them", async t => {
   const root = await mkdtemp(resolve(tmpdir(), "tasknotes-obsolete-po-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  const dir = resolve(root, "src/i18n/locales/en");
-  await mkdir(dir, { recursive: true });
-  const filename = resolve(dir, "messages.po");
-  for (const prefix of ["", "\t ", "\uFEFF"]) {
-    const source = `msgid "Current"\nmsgstr "Current"\n\n${prefix}#~ msgid "Obsolete"\n${prefix}#~ msgstr "Obsolete"\n`;
-    await writeFile(filename, source);
-    assert.throws(() => execFileSync(process.execPath, [fileURLToPath(new URL("../../scripts/check-plural-contracts.mjs", import.meta.url))], { cwd: root, stdio: "pipe" }), /obsolete PO entries/);
-    assert.equal(await readFile(filename, "utf8"), source);
+  const current = 'msgid "Current"\nmsgstr "Current"\n';
+  for (const locale of locales) {
+    await mkdir(resolve(root, "src/i18n/locales", locale), { recursive: true });
+    await writeFile(resolve(root, "src/i18n/locales", locale, "messages.po"), current);
+  }
+  for (const locale of ["en", "it"]) {
+    const filename = resolve(root, "src/i18n/locales", locale, "messages.po");
+    for (const prefix of ["", "\t ", "\uFEFF"]) {
+      const source = `${current}\n${prefix}#~ msgid "Obsolete"\n${prefix}#~ msgstr "Obsolete"\n`;
+      await writeFile(filename, source);
+      assert.throws(() => execFileSync(process.execPath, [fileURLToPath(new URL("../../scripts/check-plural-contracts.mjs", import.meta.url))], { cwd: root, stdio: "pipe" }), new RegExp(`${locale}: obsolete PO entries`));
+      assert.equal(await readFile(filename, "utf8"), source);
+    }
+    await writeFile(filename, current);
   }
 });
 

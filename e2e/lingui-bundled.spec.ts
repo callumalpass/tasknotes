@@ -2,6 +2,8 @@ import { test, expect } from "@playwright/test";
 import { runLinguiReview } from "./helpers/lingui-review";
 import { runLinguiRereview } from "./helpers/lingui-rereview";
 import { setupI18n } from "@lingui/core";
+import { format } from "date-fns";
+import { it as italianDateLocale, de as germanDateLocale } from "date-fns/locale";
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -20,13 +22,13 @@ test.skip(Boolean(process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL), "Requires the o
 
 test.beforeAll(async () => {
 	execFileSync(process.execPath, ["scripts/compile-lingui.mjs"], { cwd: root, stdio: "inherit" });
-	for (const locale of ["en", "ja", "de", "ru"]) {
+	for (const locale of ["en", "it", "ja", "de", "ru"]) {
 		const { messages } = JSON.parse(fs.readFileSync(path.join(root, "src/i18n/locales", locale, "messages.json"), "utf8"));
 		cores.set(locale, setupI18n({ locale, messages: { [locale]: messages } }));
 	}
 	savedSettings = fs.readFileSync(settingsPath);
 	const settings = JSON.parse(savedSettings.toString());
-	settings.uiLanguage = "ja";
+	settings.uiLanguage = "it";
 	settings.checkForUpdatesOnStartup = false;
 	settings.showReleaseNotesOnUpdate = false;
 	fs.writeFileSync(settingsPath, JSON.stringify(settings));
@@ -41,15 +43,16 @@ test.afterAll(async () => {
 	}
 });
 
-test("ordinary native build decodes all nine catalogues synchronously and renders en/ja/de/ru", async () => {
+test("ordinary native build decodes all ten catalogues synchronously and renders en/it/ja/de/ru", async () => {
 	const page = app!.page;
 	const currentLocale = () => page.evaluate(() => (window as any).app?.plugins?.plugins?.tasknotes?.i18n?.getCurrentLocale());
-	await expect.poll(currentLocale).toBe("ja");
-	expect(await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getAvailableLocales().sort())).toEqual(["de", "en", "es", "fr", "ja", "ko", "pt", "ru", "zh"]);
+	await expect.poll(currentLocale).toBe("it");
+	expect(await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getAvailableLocales().sort())).toEqual(["de", "en", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"]);
 	const report: Record<string, unknown> = {};
-	for (const locale of ["en", "ja", "de", "ru"]) {
+	for (const locale of ["en", "it", "ja", "de", "ru"]) {
 		const settingsPage = await openTaskNotesSettings(page);
 		const picker = settingsPage.locator('select:has(option[value="system"]):has(option[value="fr"])');
+		await expect(picker.locator('option[value="it"]')).toHaveText("Italiano");
 		await picker.selectOption(locale);
 		await expect.poll(currentLocale).toBe(locale);
 		await expect(settingsPage.getByRole("button", { name: cores.get(locale)!._(keyMap["settings.features.uiLanguage.retryDownload"].id), exact: true })).toHaveCount(0);
@@ -69,16 +72,73 @@ test("ordinary native build decodes all nine catalogues synchronously and render
 		report[locale] = { commandName: expectedName, counts };
 	}
 	fs.mkdirSync(path.join(root, "test-results/lingui-bundled"), { recursive: true });
-	fs.writeFileSync(path.join(root, "test-results/lingui-bundled/report.json"), JSON.stringify({ synchronousColdLocale: "ja", availableLocales: 9, locales: report }, null, 2));
+	fs.writeFileSync(path.join(root, "test-results/lingui-bundled/report.json"), JSON.stringify({ synchronousColdLocale: "it", availableLocales: 10, locales: report }, null, 2));
 });
 
 
-test("native en/de/ru group identities survive drag, creation and saved ordering", async () => {
+test("Italian and German native dates, persisted pickers and Italian NLP remain independent", async () => {
+	test.setTimeout(120000);
+	const page = app!.page;
+	const original = await page.evaluate(() => JSON.parse(JSON.stringify((window as any).app.plugins.plugins.tasknotes.settings)));
+	const report: Record<string, unknown> = {};
+	try {
+		for (const locale of ["it", "de"]) {
+			let settings = await openTaskNotesSettings(page);
+			await settings.locator('select:has(option[value="system"]):has(option[value="it"])').selectOption(locale);
+			await expect.poll(() => page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale())).toBe(locale);
+			await settings.getByRole("tab", { name: cores.get(locale)!._(keyMap["settings.tabs.features"].id), exact: true }).click();
+			const nlpName = cores.get(locale)!._(keyMap["settings.features.nlp.language.name"].id);
+			const nlp = settings.locator(".setting-item").filter({ has: settings.getByText(nlpName, { exact: true }) }).locator("select");
+			await expect(nlp.locator('option[value="it"]')).toHaveText("Italiano");
+			await nlp.selectOption("it");
+			await closeObsidianSettings(page, settings);
+			await expect.poll(() => JSON.parse(fs.readFileSync(settingsPath, "utf8")).nlpLanguage).toBe("it");
+			await expect.poll(() => JSON.parse(fs.readFileSync(settingsPath, "utf8")).uiLanguage).toBe(locale);
+			await page.evaluate(async () => {
+				const app = (window as any).app;
+				for (const leaf of app.workspace.getLeavesOfType("tasknotes-release-notes")) leaf.detach();
+				await app.commands.executeCommandById("tasknotes:view-release-notes");
+			});
+			const dates = await page.evaluate(() => (window as any).app.workspace.getLeavesOfType("tasknotes-release-notes")[0].view.releaseNotesBundle.filter(item => item.date).slice(0, 2).map(item => item.date));
+			expect(dates).toHaveLength(2);
+			const formattedDates = dates.map(date => format(new Date(`${date}T12:00:00`), "MMMM d, yyyy", { locale: locale === "it" ? italianDateLocale : germanDateLocale }));
+			for (const date of formattedDates) await expect(page.locator(".release-notes-version-header").filter({ hasText: date }).first()).toBeVisible();
+			await page.screenshot({ path: `test-results/lingui-bundled/${locale}-dates.png` });
+			await page.evaluate(() => (window as any).app.commands.executeCommandById("tasknotes:create-new-task"));
+			const modal = page.locator(".modal").filter({ has: page.locator(".title-input, .title-input-detailed") }).last();
+			await expect(modal).toBeVisible();
+			const editor = modal.locator('.cm-content[contenteditable="true"]:visible').first();
+			// ISO input keeps this language-selection regression independent of
+			// the host's separate numeric date-order setting.
+			await editor.fill("Comprare latte entro 2026-12-25");
+			const fill = cores.get(locale)!._(keyMap["modals.taskCreation.actions.fillFromNaturalLanguage"].id);
+			await modal.getByLabel(fill, { exact: true }).click();
+			await expect(modal.locator(".title-input-detailed")).toHaveValue("Comprare latte");
+			const due = modal.locator('[data-type="due-date"]');
+			await expect(due).toHaveClass(/has-value/);
+			await expect(due).toHaveAttribute("aria-label", /2026-12-25/);
+			await page.screenshot({ path: `test-results/lingui-bundled/${locale}-italian-nlp.png` });
+			await page.keyboard.press("Escape");
+			report[locale] = { dates: formattedDates, nlpLanguage: "it", parsedTitle: "Comprare latte", due: "2026-12-25", pickersPersisted: true };
+		}
+		fs.writeFileSync(path.join(root, "test-results/lingui-bundled/italian-report.json"), JSON.stringify(report, null, 2));
+	} finally {
+		await page.keyboard.press("Escape").catch(() => {});
+		await page.evaluate(async original => {
+			const plugin = (window as any).app.plugins.plugins.tasknotes;
+			Object.assign(plugin.settings, original);
+			await plugin.setUILanguage(original.uiLanguage);
+			await plugin.saveSettings();
+		}, original);
+	}
+});
+
+test("native en/it/de/ru group identities survive drag, creation and saved ordering", async () => {
 	test.setTimeout(180000);
 	await runLinguiReview(app!.page, "test-results/lingui-bundled/review");
 });
 
-test("native en/de restores field labels, preserves completed-date sort and separates interactive validation from programmatic fallbacks", async () => {
+test("native en/it/de restores field labels, preserves completed-date sort and separates interactive validation from programmatic fallbacks", async () => {
 	test.setTimeout(180000);
 	await runLinguiRereview(app!.page, "test-results/lingui-bundled/rereview");
 });

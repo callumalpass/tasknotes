@@ -13,7 +13,7 @@ const descriptors = [
 ];
 afterEach(() => observeTranslation("en"));
 describe("Issue #884: missing UI translations", () => {
-  it.each(["de", "es", "fr", "ja", "ko", "pt", "ru", "zh"])("%s contains the real picker/reminder descriptors", locale => {
+  it.each(["de", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"])("%s contains the real picker/reminder descriptors", locale => {
     const translate = observeTranslation(locale);
     for (const descriptor of descriptors) {
       expect(Object.hasOwn(translationResources.en, descriptor.id!)).toBe(true);
