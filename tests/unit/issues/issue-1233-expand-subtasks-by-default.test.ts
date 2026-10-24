@@ -349,7 +349,7 @@ describe('Issue #1233: Settings UI implementation', () => {
             description: msg({ message: "Show project subtasks expanded when task cards are rendered", context: "settings.appearance.uiElements.expandSubtasksByDefault.description" }),
         };
 
-        // These keys should be added to src/i18n/resources/en.ts and other language files
+        // These keys should be added to src/i18n/locales/en/messages.po and other language files
         expect(expectedTranslationKeys.name).toBeDefined();
         expect(expectedTranslationKeys.description).toBeDefined();
     });

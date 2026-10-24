@@ -29,7 +29,7 @@ import {
 	getAllDailyNotes,
 	appHasDailyNotesPluginLoaded,
 } from "obsidian-daily-notes-interface";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TimeblockCreationModal" });
@@ -95,7 +95,7 @@ export interface TimeblockCreationResult {
 export class TimeblockCreationModal extends Modal {
 	plugin: TaskNotesPlugin;
 	options: TimeblockCreationOptions;
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 
 	// Form fields
 	private titleInput: HTMLInputElement;

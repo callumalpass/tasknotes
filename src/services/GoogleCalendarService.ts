@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Calendar sync validates credentials before accessing token fields. */
@@ -530,7 +531,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		return {
 			id: `google-${calendarId}-${googleEvent.id}`,
 			subscriptionId: `google-${calendarId}`,
-			title: googleEvent.summary || uiText(msg({ message: "Untitled Event", context: "services/GoogleCalendarService: GoogleCalendarService.convertToICSEvent title" })),
+			title: googleEvent.summary || uiData("Untitled Event", "Persisted/cache provider fallback title; preserve English data seed"),
 			description: normalizeCalendarDescription(googleEvent.description),
 			start: start,
 			end: end,

@@ -1,7 +1,8 @@
 import type { HTTPRequestLike, HTTPResponseLike } from "../../../src/api/httpTypes";
 import { SystemController } from "../../../src/api/SystemController";
 import type TaskNotesPlugin from "../../../src/main";
-import type { NaturalLanguageParser } from "../../../src/services/NaturalLanguageParser";
+import { observeTranslation } from "../../helpers/real-i18n";
+import { NaturalLanguageParser } from "../../../src/services/NaturalLanguageParser";
 import type { TaskService } from "../../../src/services/TaskService";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 
@@ -160,4 +161,29 @@ describe("SystemController NLP task data", () => {
 			path: "Tasks/review-pr.md",
 		});
 	});
+});
+
+it.each(["en", "de"])("keeps pre-port empty-title HTTP parse/create behaviour in %s", async locale => {
+	observeTranslation(locale);
+	try {
+		const plugin = createPlugin();
+		const parser = NaturalLanguageParser.fromPlugin(plugin);
+		const createTask = jest.fn(async taskData => {
+			if (!taskData.title) throw new Error("Title is required");
+			return { taskInfo: { ...taskData, path: "Untitled Task.md" } };
+		});
+		const controller = new SystemController(plugin, { createTask } as unknown as TaskService, parser);
+		const parsed = createResponse();
+		await controller.handleNLPParse(createRequest({ text: "!high" }), parsed);
+		expect(parsed.statusCode).toBe(200);
+		expect(parsed.json().data.parsed.title).toBe("Untitled Task");
+		expect(parsed.json().data.taskData.title).toBe("Untitled Task");
+		const created = createResponse();
+		await controller.handleNLPCreate(createRequest({ text: "!high" }), created);
+		expect(created.statusCode).toBe(201);
+		expect(createTask).toHaveBeenCalledWith(expect.objectContaining({ title: "Untitled Task", priority: "high" }));
+		const empty = createResponse();
+		await controller.handleNLPParse(createRequest({ text: "" }), empty);
+		expect(empty.statusCode).toBe(400); // The baseline HTTP empty-request validation is unchanged.
+	} finally { observeTranslation("en"); }
 });

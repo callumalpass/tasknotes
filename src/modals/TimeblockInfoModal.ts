@@ -24,7 +24,7 @@ import {
 import { formatDateForStorage } from "../utils/dateUtils";
 import { colorValueToInputValue, normalizeThemeColor } from "../utils/themeColors";
 import { configureThemeColorInput } from "../settings/components/CardComponent";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { modifyVaultFile } from "../services/VaultMutationService";
 import { TaskInfo } from "../types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -66,7 +66,7 @@ export class TimeblockInfoModal extends Modal {
 	private timeblockDate: string;
 	private plugin: TaskNotesPlugin;
 	private originalTimeblock: TimeBlock;
-	private translate: (key: TranslationKey, variables?: InterpolationValues) => string;
+	private translate: (key: MessageDescriptor, variables?: InterpolationValues) => string;
 
 	// Form fields
 	private titleInput: HTMLInputElement;

@@ -1,4 +1,5 @@
 import { NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY } from "./groupKeys";
+import { isBasesEmptyPlaceholderValue } from "./basesValueKinds";
 import { stringifyUnknown } from "../utils/stringUtils";
 
 type BasesFileLike = {
@@ -115,22 +116,6 @@ function extractBasesGroupKeyValue(basesKey: BasesValueInternals): unknown {
 	}
 
 	return basesKey;
-}
-
-function isBasesEmptyPlaceholderValue(value: BasesValueInternals): boolean {
-	return (
-		value.icon === "lucide-file-question" &&
-		typeof value.data === "undefined" &&
-		typeof value.display === "undefined" &&
-		typeof value.label === "undefined" &&
-		!(value.date instanceof Date) &&
-		!value.file &&
-		!Array.isArray(value.value) &&
-		typeof value.get !== "function" &&
-		typeof value.at !== "function" &&
-		typeof value.length !== "function" &&
-		typeof value.toISOString !== "function"
-	);
 }
 
 function extractBasesScalarValue(value: BasesValueInternals): string | number | boolean | undefined {

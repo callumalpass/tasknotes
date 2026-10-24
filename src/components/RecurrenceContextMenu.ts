@@ -5,7 +5,7 @@ import { recurrenceMonthlyOn, recurrenceYearlyOn } from "../i18n/recurrence";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting } from "obsidian";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
 import { showCoordinatedMenu } from "./ContextMenuCoordinator";
@@ -71,7 +71,7 @@ export interface BuildRecurrenceOptionsInput {
 	currentValue?: string;
 	scheduledDate?: string;
 	calendarLocale?: string;
-	translate: (key: TranslationKey, vars?: Record<string, string>) => string;
+	translate: (key: MessageDescriptor, vars?: Record<string, string>) => string;
 }
 
 const RECURRENCE_WEEKDAYS: RecurrenceWeekdayDefinition[] = [
@@ -472,7 +472,7 @@ export function getMonthDayOptions(lastDayLabel = "Last day"): MonthDayOption[] 
 export class RecurrenceContextMenu {
 	private menu: ContextMenu;
 	private options: RecurrenceContextMenuOptions;
-	private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
+	private translate: (key: MessageDescriptor, vars?: Record<string, string>) => string;
 
 	constructor(options: RecurrenceContextMenuOptions) {
 		this.menu = new ContextMenu();
@@ -571,7 +571,7 @@ export class CustomRecurrenceModal extends Modal {
 	private scheduledDate?: string;
 	private plugin: TaskNotesPlugin;
 	private onSubmit: (result: string | null, anchor?: "scheduled" | "completion") => void;
-	private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
+	private translate: (key: MessageDescriptor, vars?: Record<string, string>) => string;
 	private frequency = "DAILY";
 	private interval = 1;
 	private byDay: string[] = [];
@@ -715,7 +715,7 @@ export class CustomRecurrenceModal extends Modal {
 		// Place existing controls in the catalogue's word order without HTML interpolation.
 		const controlLabel = (
 			container: HTMLElement,
-			key: TranslationKey,
+			key: MessageDescriptor,
 			controls: Record<string, HTMLElement>
 		) => {
 			const markers = Object.fromEntries(Object.keys(controls).map(name => [name,

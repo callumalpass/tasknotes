@@ -1,3 +1,4 @@
+import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import {
@@ -535,10 +536,10 @@ function getPrioritySuggestions(query: string, plugin: TaskNotesPlugin): Complet
 	const priorities = plugin.settings.customPriorities || [];
 
 	return priorities
-		.filter((p) => p.label.toLowerCase().includes(query.toLowerCase()))
+		.filter((p) => [p.value, p.label, configLabel(p)].some(label => label.toLowerCase().includes(query.toLowerCase())))
 		.slice(0, 10)
 		.map((p) => ({
-			label: p.label,
+			label: configLabel(p),
 			apply: p.value + " ",
 			type: "text",
 			info: uiText(msg({ message: "Priority", context: "editor/NLPCodeMirrorAutocomplete: getPrioritySuggestions info" })),

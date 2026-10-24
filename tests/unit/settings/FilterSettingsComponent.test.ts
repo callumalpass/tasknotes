@@ -1,7 +1,7 @@
 import { msg } from "@lingui/core/macro";
 import { createFilterSettingsInputs } from '../../../src/settings/components/FilterSettingsComponent';
 import type { FileFilterConfig } from '../../../src/suggest/FileSuggestHelper';
-import type { TranslationKey } from '../../../src/i18n';
+import type { MessageDescriptor } from '../../../src/i18n';
 
 // Mock createCardInput
 jest.mock('../../../src/settings/components/CardComponent', () => ({
@@ -22,7 +22,7 @@ describe('FilterSettingsComponent', () => {
 	beforeEach(() => {
 		container = document.createElement('div');
 		mockOnChange = jest.fn();
-		mockTranslate = jest.fn((key: TranslationKey) => {
+		mockTranslate = jest.fn((key: MessageDescriptor) => {
 			// Return simplified translations for testing
 			const translations: Record<string, string> = {
 				'settings.appearance.projectAutosuggest.requiredTags.name': 'Required tags',

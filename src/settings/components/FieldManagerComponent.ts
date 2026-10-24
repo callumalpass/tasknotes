@@ -1,9 +1,10 @@
+import { fieldLabel, fieldGroupLabel } from "../../i18n/fieldLabels";
 import { uiData } from "../../i18n/dataText";
 import { messages, messageForKey } from "../../i18n/messages";
 import { msg } from "@lingui/core/macro";
 import { App } from "obsidian";
 import type TaskNotesPlugin from "../../main";
-import type { TranslationKey } from "../../i18n";
+import type { MessageDescriptor } from "../../i18n";
 import type {
 	ModalFieldConfig,
 	FieldGroup,
@@ -17,7 +18,7 @@ import {
 	createCardToggle,
 } from "./CardComponent";
 
-type TranslateFn = (key: TranslationKey, params?: Record<string, string | number>) => string;
+type TranslateFn = (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 
 /**
  * Creates the field manager UI component for configuring modal fields
@@ -55,7 +56,7 @@ export function createFieldManager(
 		if (index === 0) {
 			tab.addClass("field-manager__tab--active");
 		}
-		tab.setText(group.displayName);
+		tab.setText(fieldGroupLabel(group));
 		tab.onclick = () => {
 			// Update active tab
 			tabsContainer.querySelectorAll(".field-manager__tab").forEach((t) => {
@@ -184,7 +185,7 @@ function createFieldCard(
 
 	// Create group selector
 	const groupSelect = createCardSelect(
-		config.groups.map((g) => ({ value: g.id, label: g.displayName })),
+		config.groups.map((g) => ({ value: g.id, label: fieldGroupLabel(g) })),
 		field.group
 	);
 	groupSelect.onchange = () => {
@@ -211,7 +212,7 @@ function createFieldCard(
 		id: field.id,
 		draggable: canReorder,
 		header: {
-			primaryText: field.displayName,
+			primaryText: fieldLabel(field),
 			secondaryText: getFieldSecondaryText(field, plugin.settings.userFields, translate),
 			meta: [typeBadge],
 		},

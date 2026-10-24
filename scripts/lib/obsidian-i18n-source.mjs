@@ -201,9 +201,25 @@ export function inspectObsidianSource(program, { include = () => true, diagnosti
       if(name==="render"&&node.expression.getText().startsWith("MarkdownRenderer."))sink(args[1]);
     }
     if(ts.isBinaryExpression(node)&&[ts.SyntaxKind.EqualsToken,ts.SyntaxKind.PlusEqualsToken].includes(node.operatorToken.kind)&&ts.isPropertyAccessExpression(node.left)&&["textContent","innerText","placeholder","title","ariaLabel","ariaDescription"].includes(node.left.name.text)&&domReceiver(node.left.expression))sink(node.right);
-    if(ts.isCallExpression(node)&&node.expression.getText()==="uiText"){
-      let scope=node.parent;while(scope&&!ts.isFunctionLike(scope)&&!ts.isClassLike(scope))scope=scope.parent;
-      if(!scope)report(node,"eager-module-translation");
+    if(ts.isCallExpression(node)){
+      const name=ts.isPropertyAccessExpression(node.expression)?node.expression.name.text:node.expression.getText();
+      // Descriptors are inert; translating inside a decorator is not. Decorator
+      // expressions run when the class is defined, even on instance methods.
+      if(translations.test(name)&&name!=="msg") {
+        const inDecorator=(()=>{for(let parent=node.parent;parent;parent=parent.parent)if(ts.isDecorator(parent))return true;return false;})();
+        let parent=node.parent, eager=true;
+        while(parent&&!inDecorator) {
+          if(ts.isFunctionLike(parent)) {
+            let expression=parent;
+            while(ts.isParenthesizedExpression(expression.parent))expression=expression.parent;
+            if(ts.isCallExpression(expression.parent)&&expression.parent.expression===expression){parent=expression.parent.parent;continue;}
+            eager=false;break;
+          }
+          if(ts.isPropertyDeclaration(parent)&&!parent.modifiers?.some(mod=>mod.kind===ts.SyntaxKind.StaticKeyword)){eager=false;break;}
+          parent=parent.parent;
+        }
+        if(eager)report(node,"eager-module-translation");
+      }
     }
   }
   while(pending.length){const demand=pending.pop();origin=demand.origin;sink(demand.node,demand.path,demand.diagnostic);origin=undefined;}

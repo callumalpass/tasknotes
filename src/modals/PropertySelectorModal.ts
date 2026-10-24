@@ -1,7 +1,7 @@
 import { msg } from "@lingui/core/macro";
 import { Modal, App, Setting } from "obsidian";
 import type TaskNotesPlugin from "../main";
-import { createI18nService, type TranslationKey } from "../i18n";
+import { createI18nService, type MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/PropertySelectorModal" });
@@ -11,7 +11,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/PropertySelectorMod
  * Used for both inline and default task card property selection
  */
 export class PropertySelectorModal extends Modal {
-	private readonly translate: (key: TranslationKey) => string;
+	private readonly translate: (key: MessageDescriptor) => string;
 	private availableProperties: Array<{ id: string; label: string }>;
 	private currentSelection: string[];
 	private onSubmit: (selected: string[]) => unknown;

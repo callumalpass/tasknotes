@@ -30,7 +30,7 @@ A translation is considered:
 
 TaskNotes UI now uses the shared Lingui kit across nine locales. Author `src/i18n/locales/<locale>/messages.po`; generated JSON is ignored and prepared on fresh checkouts by ordinary tests and production builds. Run `npm run i18n:extract` after changing marked English copy, then `npm run i18n:check`. The latter verifies extraction sync, authored completeness before fallback, ICU contracts, reviewed identical-term exceptions and both source guards, then compiles strict JSON. `npm run i18n:compile` uses the same strict gate; it accepts no bypass flags.
 
-Ordinary `npm test` and CI require complete authored catalogues. `npm run test:dev` and `npm run test:watch` explicitly prepare incomplete development fallback data and are not release/translation acceptance. The old TS resources remain trusted migration inputs to `scripts/convert-lingui.mjs`, not runtime catalogues. Default conversion preserves authored PO ICU; never use `--refresh-reviewed` after integration without reconciliation. NLP configuration in `src/locales/` is separate and unchanged. See [language packs](language-packs.md). The migration handoff and machine-readable audit inventories are internal development evidence, not published user guides.
+Ordinary `npm test` and CI require complete authored catalogues. `npm run test:dev` and `npm run test:watch` explicitly prepare incomplete development fallback data and are not release/translation acceptance. The old TS resources and converter are retired; PO catalogues are the only authored translation source. Historical migration ledgers are immutable evidence and must not be regenerated. NLP configuration in `src/locales/` is separate and unchanged. See [language packs](language-packs.md). The migration handoff and machine-readable audit inventories are internal development evidence, not published user guides.
 
 ## Historical TaskNotes integration
 
@@ -46,7 +46,7 @@ Historical commands:
 - `i18n-state check-duplicates` – Detect duplicate translation keys
 - `i18n-state generate-template` – Create translation file templates with markers for missing or stale entries
 
-Configuration is stored in `i18n-state.config.json`, which defines the source locale, file locations, and patterns for detecting translation function calls in code.
+Historically, configuration was stored in `i18n-state.config.json` (now removed), which defines the source locale, file locations, and patterns for detecting translation function calls in code.
 
 ## Requirements
 

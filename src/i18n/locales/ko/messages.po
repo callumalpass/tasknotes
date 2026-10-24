@@ -724,11 +724,6 @@ msgctxt "views.pomodoro.meta.ready"
 msgid "{time} planned · {count} completed today"
 msgstr "{time} 예정 · 오늘 {count}개 완료"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "{timeEstimate, plural, one {Estimated time: # minute} other {Estimated time: # minutes}}"
-msgstr "{timeEstimate, plural, other {예상 시간: #분}}"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
 msgid "{title} is due {when}"
@@ -2237,6 +2232,11 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.descriptionRegen"
 msgid "Base files are not automatically updated when you change settings. To apply new settings, use \"Update files\" below, delete the existing .base files and restart Obsidian, or edit them manually."
 msgstr "설정을 변경해도 베이스 파일은 자동으로 업데이트되지 않습니다. 새 설정을 적용하려면 아래의 \"파일 업데이트\"를 사용하거나, 기존 .base 파일을 삭제하고 Obsidian을 다시 시작하거나, 수동으로 편집하세요."
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Basic Information"
+msgstr "기본 정보"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings.defaults.reminders.directions.before"
@@ -2290,6 +2290,11 @@ msgctxt "generated Bases view name"
 msgid "Blocked By"
 msgstr "차단하는 작업"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Blocked By"
+msgstr "차단하는 작업"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: blockedBy text"
 msgid "Blocked by: "
@@ -2325,6 +2330,11 @@ msgstr "차단 중"
 msgctxt "ui.taskCard.labels.blocking"
 msgid "Blocking"
 msgstr "차단 중"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Blocking"
+msgstr "차단 대상"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardSecondaryBadges.ts
@@ -3454,15 +3464,10 @@ msgctxt "settings.taskProperties.properties.contexts.name"
 msgid "Contexts"
 msgstr "컨텍스트"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.contexts"
-msgid "Contexts: {value}"
-msgstr "컨텍스트: {value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Contexts: {value1}"
-msgstr "컨텍스트: {value1}"
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Contexts"
+msgstr "컨텍스트"
 
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
@@ -4004,6 +4009,11 @@ msgstr "사용자 지정 일수"
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.customFieldsLabel"
 msgid "Custom fields"
+msgstr "사용자 지정 필드"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Custom Fields"
 msgstr "사용자 지정 필드"
 
 #: src/settings/tabs/integrationsTab.ts
@@ -4582,6 +4592,11 @@ msgctxt "contextMenus.task.dependencies.title"
 msgid "Dependencies"
 msgstr "종속성"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Dependencies"
+msgstr "종속성"
+
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
 msgid "Dependencies updated"
@@ -4644,6 +4659,11 @@ msgstr "대상 폴더 (보관함 루트를 사용하려면 비워두세요)"
 
 #: src/modals/TaskModal.ts
 msgctxt "modals.task.detailsLabel"
+msgid "Details"
+msgstr "세부정보"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Details"
 msgstr "세부정보"
 
@@ -4947,11 +4967,6 @@ msgstr "마감: {date}"
 
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.dueValue"
-msgid "Due: {value}"
-msgstr "마감: {value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.due"
 msgid "Due: {value}"
 msgstr "마감: {value}"
 
@@ -5633,11 +5648,6 @@ msgstr "V3 뷰 내보내기"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "저장된 뷰 {count}개를 내보냈습니다. 파일: {filePath}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Exported from TaskNotes: {path}"
-msgstr "TaskNotes에서 내보냄: {path}"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
@@ -7817,6 +7827,11 @@ msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
 msgstr "보통(30분~2시간)"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Metadata"
+msgstr "메타데이터"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.sections.metadataProperties"
 msgid "Metadata properties"
@@ -8139,7 +8154,7 @@ msgctxt "common.new"
 msgid "New"
 msgstr "새로 만들기"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/i18n/dataSeedLabels.ts
 msgctxt "settings.integrations.subscriptionsList.newCalendarName"
 msgid "New calendar"
 msgstr "새 캘린더"
@@ -8148,6 +8163,16 @@ msgstr "새 캘린더"
 msgctxt "settings.integrations.subscriptionsList.notices.addSuccess"
 msgid "New calendar subscription added - please configure the details"
 msgstr "새 캘린더 구독이 추가되었습니다 - 세부 정보를 설정하세요"
+
+#: src/i18n/dataSeedLabels.ts
+msgctxt "services/PriorityManager: PriorityManager.createDefaultPriority label"
+msgid "New priority"
+msgstr "새 우선순위"
+
+#: src/i18n/dataSeedLabels.ts
+msgctxt "services/StatusManager: StatusManager.createDefaultStatus label"
+msgid "New status"
+msgstr "새 상태"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
@@ -8242,16 +8267,6 @@ msgctxt "settings.taskProperties.propertyCard.nlpTrigger"
 msgid "NLP trigger:"
 msgstr "NLP 트리거:"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No {fieldIdOrKey}"
-msgstr "{fieldIdOrKey} 없음"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No {key}"
-msgstr "{key} 없음"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
 msgid "No {provider} connection found"
@@ -8342,11 +8357,6 @@ msgctxt "contextMenus.task.completion.noCompletedStatus"
 msgid "No completed status configured"
 msgstr "완료 상태가 설정되어 있지 않습니다"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Context"
-msgstr "컨텍스트 없음"
-
 #: src/settings/tabs/taskProperties/priorityPropertyCard.ts
 msgctxt "settings.taskProperties.taskPriorities.emptyState"
 msgid "No custom priorities configured. Add a priority to get started."
@@ -8426,11 +8436,6 @@ msgstr "마감일 없음"
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.due.none"
 msgid "No due date"
-msgstr "마감일 없음"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Due Date"
 msgstr "마감일 없음"
 
 #: src/ui/completionDateResolver.ts
@@ -8525,13 +8530,7 @@ msgctxt "OAuth callback description"
 msgid "No pending authorization matches this callback."
 msgstr "이 콜백에 일치하는 대기 중인 인증이 없습니다."
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Priority"
-msgstr "우선순위 없음"
-
 #: src/services/filter-service/filterTaskGrouping.ts
-#: src/services/FilterService.ts
 msgctxt "services.filter.groupLabels.noProject"
 msgid "No project"
 msgstr "프로젝트 없음"
@@ -8539,11 +8538,6 @@ msgstr "프로젝트 없음"
 #: src/views/StatsView.ts
 msgctxt "views.stats.noProject"
 msgid "No project"
-msgstr "프로젝트 없음"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Project"
 msgstr "프로젝트 없음"
 
 #: src/views/StatsView.ts
@@ -8576,11 +8570,6 @@ msgctxt "services.filter.groupLabels.scheduled.none"
 msgid "No scheduled date"
 msgstr "예정일 없음"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Scheduled Date"
-msgstr "예정일 없음"
-
 #: src/ui/completionDateResolver.ts
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
@@ -8591,20 +8580,10 @@ msgctxt "views.pomodoroStats.recents.empty"
 msgid "No sessions recorded yet"
 msgstr "아직 기록된 세션이 없습니다"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Status"
-msgstr "상태 없음"
-
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "contextMenus.task.subtasks.noSubtasks"
 msgid "No subtasks found"
 msgstr "하위 작업을 찾을 수 없습니다"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Tag"
-msgstr "태그 없음"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.noTags"
@@ -8720,11 +8699,6 @@ msgstr "키-없음"
 
 #: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "None"
-msgstr "없음"
-
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "None"
 msgstr "없음"
 
@@ -9093,16 +9067,6 @@ msgctxt "ui.audit.openNewTab"
 msgid "Open in new tab"
 msgstr "새 탭에서 열기"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.openInObsidian"
-msgid "Open in Obsidian"
-msgstr "Obsidian에서 열기"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Open in Obsidian: {obsidianUri}"
-msgstr "Obsidian에서 열기: {obsidianUri}"
-
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.options.sameTab"
 msgid "Open in the same tab"
@@ -9316,6 +9280,11 @@ msgstr "정리"
 msgctxt "settings.modalFields.manager.fieldTypes.organization"
 msgid "Organization"
 msgstr "정리"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Organization"
+msgstr "조직"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.organization"
@@ -9813,18 +9782,8 @@ msgctxt "ui.taskCard.priorityAriaLabel"
 msgid "Priority: {label}"
 msgstr "우선순위: {label}"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Priority: {priority}"
-msgstr "우선순위: {priority}"
-
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.priorityValue"
-msgid "Priority: {value}"
-msgstr "우선순위: {value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.priority"
 msgid "Priority: {value}"
 msgstr "우선순위: {value}"
 
@@ -9878,20 +9837,15 @@ msgctxt "settings.taskProperties.properties.projects.name"
 msgid "Projects"
 msgstr "프로젝트"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Projects"
+msgstr "프로젝트"
+
 #: src/views/StatsView.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "프로젝트"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.projects"
-msgid "Projects: {value}"
-msgstr "프로젝트: {value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Projects: {value1}"
-msgstr "프로젝트: {value1}"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
@@ -9937,11 +9891,6 @@ msgstr "속성 탐색 전략"
 msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "속성 기반 이벤트"
-
-#: src/api/TasksController.ts
-msgctxt "api/TasksController: TasksController.queryTasks summary"
-msgid "Query tasks"
-msgstr "작업 조회"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -10230,12 +10179,7 @@ msgctxt "contextMenus.task.remindBeforeScheduled"
 msgid "Remind before scheduled…"
 msgstr "예정 전 리마인더..."
 
-#: src/services/buildTaskCreationDataFromCli.ts
-msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand description"
-msgid "Reminder"
-msgstr "리마인더"
-
-#: src/settings/tabs/taskProperties/remindersPropertyCard.ts
+#: src/i18n/dataSeedLabels.ts
 msgctxt "settings.defaults.reminders.defaultDescription"
 msgid "Reminder"
 msgstr "리마인더"
@@ -10696,11 +10640,6 @@ msgstr "예정: {date}"
 
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.scheduledValue"
-msgid "Scheduled: {value}"
-msgstr "예정: {value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.scheduled"
 msgid "Scheduled: {value}"
 msgstr "예정: {value}"
 
@@ -11359,11 +11298,6 @@ msgctxt "settings.features.pomodoroSound.volumeName"
 msgid "Sound volume"
 msgstr "사운드 볼륨"
 
-#: src/services/InstantTaskConvertService.ts
-msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.appendPreservedTitleLinks display"
-msgid "Source links:"
-msgstr "원본 링크:"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
 msgid "Span tasks between scheduled and due dates"
@@ -11543,18 +11477,8 @@ msgctxt "settings.taskProperties.statusCard.valuesHeader"
 msgid "Status values"
 msgstr "상태 값"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Status: {status}"
-msgstr "상태: {status}"
-
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.statusValue"
-msgid "Status: {value}"
-msgstr "상태: {value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.status"
 msgid "Status: {value}"
 msgstr "상태: {value}"
 
@@ -11678,6 +11602,11 @@ msgstr "하위 작업"
 
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.subtasks"
+msgid "Subtasks"
+msgstr "하위 작업"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Subtasks"
 msgstr "하위 작업"
 
@@ -11926,15 +11855,10 @@ msgctxt "ui.filterBar.group.tags"
 msgid "Tags"
 msgstr "태그"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.tags"
-msgid "Tags: {value}"
-msgstr "태그: {value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Tags: {value1}"
-msgstr "태그: {value1}"
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Tags"
+msgstr "태그"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
@@ -12663,6 +12587,11 @@ msgctxt "settings.taskProperties.properties.timeEstimate.name"
 msgid "Time estimate"
 msgstr "예상 시간"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Time Estimate"
+msgstr "예상 시간"
+
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.timeEstimateLabel"
 msgid "Time estimate (minutes)"
@@ -12672,11 +12601,6 @@ msgstr "예상 시간 (분)"
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Time estimate in minutes"
 msgstr "분 단위 예상 시간"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.timeEstimate"
-msgid "Time Estimate: {value}"
-msgstr "예상 시간: {value}"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.name"
@@ -12887,6 +12811,11 @@ msgctxt "settings.taskProperties.properties.title.name"
 msgid "Title"
 msgstr "제목"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Title"
+msgstr "제목"
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleDesc"
 msgid "Title for the calendar event"
@@ -13062,11 +12991,6 @@ msgstr "오늘의 집중 시간"
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
 msgid "Today''s pomos"
 msgstr "오늘의 뽀모도로"
-
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
-msgid "Toggle group"
-msgstr "그룹 펼치기/접기"
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
@@ -13374,11 +13298,6 @@ msgctxt "settings.defaults.reminders.fields.unit"
 msgid "Unit:"
 msgstr "단위:"
 
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
-msgid "Unknown"
-msgstr "알 수 없음"
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.dependencies.unknownDependency"
 msgid "Unknown"
@@ -13512,35 +13431,9 @@ msgctxt "ui.icsCard.untitledEvent"
 msgid "Untitled event"
 msgstr "제목 없는 이벤트"
 
-#: src/services/GoogleCalendarService.ts
-msgctxt "services/GoogleCalendarService: GoogleCalendarService.convertToICSEvent title"
-msgid "Untitled Event"
-msgstr "제목 없는 이벤트"
-
-#: src/services/ICSSubscriptionService.ts
-msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.parseICS display"
-msgid "Untitled Event"
-msgstr "제목 없는 이벤트"
-
-#: src/services/MicrosoftCalendarService.ts
-msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.convertToICSEvent title"
-msgid "Untitled Event"
-msgstr "제목 없는 이벤트"
-
-#: src/i18n/messages.ts
-#: src/services/TaskCalendarSyncService.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.untitledTask"
-msgid "Untitled task"
-msgstr "제목 없는 작업"
-
-#: src/utils/taskInfoAssembly.ts
+#: src/i18n/taskInfoTitle.ts
 msgctxt "utils/taskInfoAssembly: buildTaskInfoFromMappedTask title"
 msgid "Untitled task"
-msgstr "제목 없는 작업"
-
-#: src/services/InstantTaskConvertService.ts
-msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.createTaskFile display"
-msgid "Untitled Task"
 msgstr "제목 없는 작업"
 
 #: src/i18n/errorMessages.ts
@@ -13567,11 +13460,6 @@ msgstr "기본 베이스 파일 업데이트"
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle"
 msgid "Update default base files"
-msgstr "기본 베이스 파일 업데이트"
-
-#: src/api/BasesController.ts
-msgctxt "api/BasesController: BasesController.updateDefaultFiles summary"
-msgid "Update default Base files"
 msgstr "기본 베이스 파일 업데이트"
 
 #: src/settings/tabs/generalTab.ts

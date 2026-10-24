@@ -1,4 +1,5 @@
 import { displayError } from "../../i18n/runtime";
+import { calendarNameLabel } from "../../i18n/dataSeedLabels";
 import { uiData } from "../../i18n/dataText";
 import { uiLocale } from "../../i18n/runtime";
 import { uiText } from "../../i18n/runtime";
@@ -9,7 +10,7 @@ import { Notice, Platform, Modal, Setting, setIcon, App } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import type { OAuthProvider, WebhookConfig, WebhookEvent } from "../../types";
 import type { ICSIntegrationSettings } from "../../types/settings";
-import { TranslationKey } from "../../i18n";
+import { MessageDescriptor } from "../../i18n";
 import { loadAPIEndpoints } from "../../api/loadAPIEndpoints";
 import { GOOGLE_CALENDAR_CONSTANTS } from "../../services/constants";
 import {
@@ -58,7 +59,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/Tabs/Integrations
  */
 function getRelativeTime(
 	date: Date,
-	translate: (key: TranslationKey, params?: Record<string, string | number>) => string
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string
 ): string {
 	const now = new Date();
 	const diffMs = now.getTime() - date.getTime();
@@ -200,7 +201,7 @@ function createOAuthCredentialControls(
 	};
 }
 
-type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
+type Translate = (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 
 const WEBHOOK_EVENT_OPTIONS = [
 	{ id: "task.created", translation: "settings.integrations.webhooks.events.taskCreated" },
@@ -243,7 +244,7 @@ export function renderIntegrationsTab(
 ): void {
 	container.empty();
 
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 	const calendarIntegrationDisabledOnMobile = isCalendarIntegrationDisabledOnMobile(
 		plugin.settings
@@ -1667,9 +1668,7 @@ export function renderIntegrationsTab(
 						onClick: async () => {
 							// Create a new subscription with temporary values
 							const newSubscription = {
-								name: translate(
-									msg({ message: "New calendar", context: "settings.integrations.subscriptionsList.newCalendarName" })
-								),
+								name: uiData("New calendar", "Persisted calendar subscription seed; display-only translation"),
 								url: "",
 								color: "#6366f1",
 								enabled: false, // Start disabled until user fills in details
@@ -2207,7 +2206,7 @@ function renderICSSubscriptionsList(
 ): void {
 	container.empty();
 
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 
 	if (!plugin.icsSubscriptionService) {
@@ -2237,7 +2236,7 @@ function renderICSSubscriptionsList(
 			save();
 		});
 
-		const nameInput = createCardInput("text", uiText(msg({ message: "Calendar name", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" })), subscription.name);
+		const nameInput = createCardInput("text", uiText(msg({ message: "Calendar name", context: "settings/tabs/integrationsTab: renderICSSubscriptionsList display" })), calendarNameLabel(subscription.name));
 
 		// Create type dropdown
 		const typeSelect = activeWindow.createEl("select");
@@ -2493,7 +2492,7 @@ function renderICSSubscriptionsList(
 				color: subscription.color,
 			},
 			header: {
-				primaryText: subscription.name,
+				primaryText: calendarNameLabel(subscription.name),
 				secondaryText:
 					subscription.type === "remote"
 						? translate(
@@ -2604,7 +2603,7 @@ function renderWebhookList(
 	plugin: TaskNotesPlugin,
 	save: () => void
 ): void {
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 
 	// Clear existing webhook content

@@ -1,4 +1,5 @@
 import { msg } from "@lingui/core/macro";
+import { newConfigLabel } from "./dataSeedLabels";
 import { uiText } from "./runtime";
 import type { StatusConfig, PriorityConfig } from "../types";
 
@@ -16,6 +17,8 @@ const seeds = {
 };
 export function configLabel(config: StatusConfig | PriorityConfig | undefined): string {
 	if (!config) return "";
+	if (config.value === "new-status" && /^status-\d+$/.test(config.id) && config.label === "New status") return newConfigLabel(config.label, "status");
+	if (config.value === "new-priority" && /^priority-\d+$/.test(config.id) && config.label === "New priority") return newConfigLabel(config.label, "priority");
 	if (config.id === config.value && Object.prototype.hasOwnProperty.call(seeds, config.id)) {
 		const seed = seeds[config.id as keyof typeof seeds];
 		if (config.label === seed.english) return uiText(seed.descriptor);

@@ -1,3 +1,4 @@
+import { reminderDescriptionLabel } from "../../../i18n/dataSeedLabels";
 import { uiData } from "../../../i18n/dataText";
 import { uiText } from "../../../i18n/runtime";
 import { uiNumber } from "../../../i18n/formatters";
@@ -92,9 +93,7 @@ export function renderRemindersPropertyCard(
 			offset: 1,
 			unit: "hours" as const,
 			direction: "before" as const,
-			description: translate(
-				msg({ message: "Reminder", context: "settings.defaults.reminders.defaultDescription" })
-			),
+			description: uiData("Reminder", "Persisted default reminder seed; translate only in the editor/notification"),
 		};
 		plugin.settings.taskCreationDefaults.defaultReminders =
 			plugin.settings.taskCreationDefaults.defaultReminders || [];
@@ -177,7 +176,7 @@ function renderRemindersList(
 			translate(
 				msg({ message: "Reminder description", context: "settings.defaults.reminders.reminderDescription" })
 			),
-			reminder.description
+			reminderDescriptionLabel(reminder.description)
 		);
 
 		const typeSelect = createCardSelect(

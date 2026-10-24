@@ -1,9 +1,8 @@
-import { uiText } from "../i18n/runtime";
-import { msg } from "@lingui/core/macro";
+import { uiData } from "../i18n/dataText";
 import type { CliData } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { Reminder, TaskCreationData } from "../types";
-import { NaturalLanguageParser } from "./NaturalLanguageParser";
+import { NaturalLanguageParser, hasMissingNlpTitle } from "./NaturalLanguageParser";
 import { getCurrentTimestamp } from "../utils/dateUtils";
 import { sanitizeTags } from "../utils/helpers";
 import { buildTaskCreationDataFromParsed } from "./buildTaskCreationDataFromParsed";
@@ -63,7 +62,7 @@ function parseReminderShorthand(value: string, index: number): Reminder {
 		return {
 			id: buildReminderId(index),
 			type: "absolute",
-			description: uiText(msg({ message: "Reminder", context: "services/buildTaskCreationDataFromCli: parseReminderShorthand description" })),
+			description: uiData("Reminder", "Persisted CLI reminder description; locale-stable English seed"),
 			absoluteTime,
 		};
 	}
@@ -86,7 +85,7 @@ function parseReminderShorthand(value: string, index: number): Reminder {
 	return {
 		id: buildReminderId(index),
 		type: "relative",
-		description: uiText(msg({ message: "Reminder", context: "services/buildTaskCreationDataFromCli: parseReminderShorthand description" })),
+		description: uiData("Reminder", "Persisted CLI reminder description; locale-stable English seed"),
 		relatedTo,
 		offset,
 	};
@@ -144,9 +143,11 @@ export function buildTaskCreationDataFromCli(
 
 	let taskData: TaskCreationData;
 	let usedNlp = false;
+	let missingNlpTitle = false;
 
 	if (text && !literal) {
 		const parsed = NaturalLanguageParser.fromPlugin(plugin).parseInput(text);
+		missingNlpTitle = hasMissingNlpTitle(parsed);
 		taskData = buildTaskCreationDataFromParsed(plugin, parsed, {
 			creationContext: "api",
 		});
@@ -168,7 +169,7 @@ export function buildTaskCreationDataFromCli(
 		};
 	}
 
-	if (!taskData.title || taskData.title.trim() === "") {
+	if (!taskData.title || taskData.title.trim() === "" || missingNlpTitle) {
 		if (!titleOverride) {
 			throw new Error("Could not derive a task title from --text; pass --title to override");
 		}

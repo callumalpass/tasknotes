@@ -1,0 +1,292 @@
+{
+  "review": "burst/reviews/plugin-2418-rereview.md",
+  "baseline": "dcb217413fdeaf4b2b244dc37d2be85407a6b1f7",
+  "state": "implementation; validation pending",
+  "activeMessagesPerLocale": 2716,
+  "recoveredAuthored": {
+    "source": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
+    "sha256ByLocale": {
+      "de": "47ce935696511f47c767c6560587d7cbe50f145c1f3214d34913084990d59ccb",
+      "es": "0e2353879c68547f8c0127b467417d28747733ea437e7b4d9c3fb1fe51ea31d6",
+      "fr": "8351fa6f869f651a6ca5a24b03ff46dd75ccd48977bae84f6bdac6b7d680e6c4",
+      "ja": "1eaf5f9c6506fa79e8c555e168e6bb6ee3387cfe4883c016c8029cf33f11cb9c",
+      "ko": "e893b0fcfc881654c3341f53a6ac1522aa9255105948e7fc4c0b514dc78c8b71",
+      "pt": "c134a848e3de0fe5d24004ef509de839b2133195c1875eae4ec0f0128986b3ef",
+      "ru": "da3dd29104ede7b4298f0bb8da81d4007800c125190380bbcf02ee657c4b56b6",
+      "zh": "cc8ba8d1b0980934cfa34d9b976fefe94e7ee7c8482547ceef822c047ba80672"
+    },
+    "descriptors": 16,
+    "fieldAndGroupDescriptors": 14,
+    "newStatusAndPriorityDescriptors": 2,
+    "translations": 128,
+    "ids": [
+      "R1BXGm",
+      "cgOCq-",
+      "ZuIGIZ",
+      "CJ3_xl",
+      "lKrWke",
+      "lxh4Yk",
+      "jJ6HeJ",
+      "UARLRE",
+      "0FT36T",
+      "SgdYRL",
+      "6Zb7-F",
+      "Gbmmo1",
+      "k6Iejs",
+      "_BichM",
+      "f80F7h",
+      "OSRkY-"
+    ],
+    "policyExceptions": {
+      "de": {
+        "jJ6HeJ": "Details: standard German loanword, exact recovered authored translation",
+        "_BichM": "Tags: standard German loanword, exact recovered authored translation"
+      }
+    }
+  },
+  "retiredDescriptors": [
+    {
+      "id": "S3yJwA",
+      "message": "{timeEstimate, plural, one {Estimated time: # minute} other {Estimated time: # minutes}}",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "finding": "N8"
+    },
+    {
+      "id": "_k0mz1",
+      "message": "Contexts: {value}",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.contexts",
+      "finding": "N7"
+    },
+    {
+      "id": "-4H4b0",
+      "message": "Contexts: {value1}",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "finding": "N8"
+    },
+    {
+      "id": "wVOhK0",
+      "message": "Due: {value}",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.due",
+      "finding": "N7"
+    },
+    {
+      "id": "QokYTS",
+      "message": "Exported from TaskNotes: {path}",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "finding": "N8"
+    },
+    {
+      "id": "MJi2cM",
+      "message": "No {fieldIdOrKey}",
+      "context": "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display",
+      "finding": "N9"
+    },
+    {
+      "id": "JVB-J3",
+      "message": "No {key}",
+      "context": "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display",
+      "finding": "N9"
+    },
+    {
+      "id": "OZI1N1",
+      "message": "No Context",
+      "context": "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display",
+      "finding": "N9"
+    },
+    {
+      "id": "eEkZ4d",
+      "message": "No Due Date",
+      "context": "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display",
+      "finding": "N9"
+    },
+    {
+      "id": "vLOsIv",
+      "message": "No Priority",
+      "context": "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display",
+      "finding": "N9"
+    },
+    {
+      "id": "akeNCM",
+      "message": "No Project",
+      "context": "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display",
+      "finding": "N9"
+    },
+    {
+      "id": "_jHa-Q",
+      "message": "No Scheduled Date",
+      "context": "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display",
+      "finding": "N9"
+    },
+    {
+      "id": "gGMynB",
+      "message": "No Status",
+      "context": "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display",
+      "finding": "N9"
+    },
+    {
+      "id": "fCeipc",
+      "message": "No Tag",
+      "context": "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display",
+      "finding": "N9"
+    },
+    {
+      "id": "8KKAhx",
+      "message": "None",
+      "context": "bases/helpers: renderGroupedTasksInBasesView display",
+      "finding": "N9"
+    },
+    {
+      "id": "EMY0d-",
+      "message": "Open in Obsidian",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.openInObsidian",
+      "finding": "N7"
+    },
+    {
+      "id": "d5_hfL",
+      "message": "Open in Obsidian: {obsidianUri}",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "finding": "N8"
+    },
+    {
+      "id": "AIuOE6",
+      "message": "Priority: {priority}",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "finding": "N8"
+    },
+    {
+      "id": "JOo5L7",
+      "message": "Priority: {value}",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.priority",
+      "finding": "N7"
+    },
+    {
+      "id": "EYve8t",
+      "message": "Projects: {value}",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.projects",
+      "finding": "N7"
+    },
+    {
+      "id": "EGjXBl",
+      "message": "Projects: {value1}",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "finding": "N8"
+    },
+    {
+      "id": "3_K5Zh",
+      "message": "Query tasks",
+      "context": "api/TasksController: TasksController.queryTasks summary",
+      "finding": "N3"
+    },
+    {
+      "id": "npznzr",
+      "message": "Reminder",
+      "context": "services/buildTaskCreationDataFromCli: parseReminderShorthand description",
+      "finding": "N6"
+    },
+    {
+      "id": "ACz79V",
+      "message": "Scheduled: {value}",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.scheduled",
+      "finding": "N7"
+    },
+    {
+      "id": "30Q-u4",
+      "message": "Source links:",
+      "context": "services/InstantTaskConvertService: InstantTaskConvertService.appendPreservedTitleLinks display",
+      "finding": "N4"
+    },
+    {
+      "id": "8gK8og",
+      "message": "Status: {status}",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "finding": "N8"
+    },
+    {
+      "id": "COtnZP",
+      "message": "Status: {value}",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.status",
+      "finding": "N7"
+    },
+    {
+      "id": "5Euhmg",
+      "message": "Tags: {value}",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.tags",
+      "finding": "N7"
+    },
+    {
+      "id": "drtjvz",
+      "message": "Tags: {value1}",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "finding": "N8"
+    },
+    {
+      "id": "MegHMs",
+      "message": "Time Estimate: {value}",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.timeEstimate",
+      "finding": "N7"
+    },
+    {
+      "id": "r62PnA",
+      "message": "Toggle group",
+      "context": "bases/helpers: renderGroupedTasksInBasesView display",
+      "finding": "N9"
+    },
+    {
+      "id": "juX8ar",
+      "message": "Unknown",
+      "context": "bases/helpers: renderGroupedTasksInBasesView display",
+      "finding": "N9"
+    },
+    {
+      "id": "GyQPgR",
+      "message": "Untitled Event",
+      "context": "services/GoogleCalendarService: GoogleCalendarService.convertToICSEvent title",
+      "finding": "N6"
+    },
+    {
+      "id": "wEG7-n",
+      "message": "Untitled Event",
+      "context": "services/ICSSubscriptionService: ICSSubscriptionService.parseICS display",
+      "finding": "N6"
+    },
+    {
+      "id": "43b02B",
+      "message": "Untitled Event",
+      "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.convertToICSEvent title",
+      "finding": "N6"
+    },
+    {
+      "id": "wT7lUj",
+      "message": "Untitled task",
+      "context": "settings.integrations.googleCalendarExport.eventDescription.untitledTask",
+      "finding": "N7"
+    },
+    {
+      "id": "t-eOal",
+      "message": "Untitled Task",
+      "context": "services/InstantTaskConvertService: InstantTaskConvertService.createTaskFile display",
+      "finding": "N4"
+    },
+    {
+      "id": "fRVFaW",
+      "message": "Update default Base files",
+      "context": "api/BasesController: BasesController.updateDefaultFiles summary",
+      "finding": "N3"
+    }
+  ],
+  "policy": {
+    "seeds": "Persist English status/priority/calendar/reminder/provider fallback seeds. Translate unchanged known seeds only at display boundaries; custom labels pass through. Rendering and untouched inputs never save translations.",
+    "nlp": "Public parser/API/MCP/instant conversion retain pre-port English fallback/empty-title behaviour. Non-enumerable internal missing-title identity supports interactive validation and pre-port CLI rejection.",
+    "grouping": "HTTP/MCP group maps and comparisons use English identities. UI adapters translate labels, with raw-value/schema provenance for ambiguous None/True/False strings.",
+    "taskInfo": "Both TaskInfo builders use the same localized read-only fallback; updates persist only explicit patches.",
+    "exports": "ICS DESCRIPTION returns exactly the pre-port English payload. Google Calendar metadata/title fallbacks and generated Bases configured status/priority labels are persisted English/user-owned data, not localized UI; generated Bases instructional labels/count formulas remain deliberately localized.",
+    "obsoleteEvidence": "Historical migration ledgers remain immutable. This record supersedes their classification of the 16 recovered descriptors. Prior native and CI evidence remains source-bound until rerun."
+  },
+  "validation": {},
+  "native": {
+    "state": "pending"
+  },
+  "hostedCI": {
+    "state": "not claimed; no workflow dispatch or trigger/base changes"
+  }
+}

@@ -391,7 +391,7 @@ export class TaskCreationModal extends TaskModal {
 	private updateNaturalLanguagePreview(input: string): void {
 		if (!this.nlPreviewContainer) return;
 
-		const parsed = this.nlParser.parseInput(input);
+		const parsed = this.nlParser.parseInputForModal(input);
 		const previewData = this.nlParser.getPreviewData(parsed);
 
 		if (previewData.length > 0 && parsed.title) {
@@ -535,7 +535,7 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	private parseAndFillForm(input: string): void {
-		const parsed = this.nlParser.parseInput(input);
+		const parsed = this.nlParser.parseInputForModal(input);
 		this.applyParsedData(parsed);
 
 		// Expand the form to show filled fields
@@ -661,7 +661,7 @@ export class TaskCreationModal extends TaskModal {
 			const nlContent = this.getNLPInputValue().trim();
 			if (nlContent && !this.title.trim()) {
 				// Only auto-parse if no title has been manually entered
-				const parsed = this.nlParser.parseInput(nlContent);
+				const parsed = this.nlParser.parseInputForModal(nlContent);
 				this.applyParsedData(parsed);
 			}
 		}

@@ -1,6 +1,6 @@
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
-import type { TranslationKey } from "../i18n";
+import type { MessageDescriptor } from "../i18n";
 import {
 	CalendarExportService,
 	type CalendarURLOptions,
@@ -13,11 +13,11 @@ import { showNotice } from "./notifications";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "UI/CalendarExportActions" });
 
-type TranslateFn = (key: TranslationKey, variables?: Record<string, unknown>) => string;
+type TranslateFn = (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 
 function translateOrDefault(
 	translate: TranslateFn | undefined,
-	key: TranslationKey,
+	key: MessageDescriptor,
 	variables?: Record<string, unknown>
 ): string {
 	return translate ? translate(key, variables) : uiText(key, variables);

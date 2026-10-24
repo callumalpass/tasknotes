@@ -1,11 +1,13 @@
 import { test, expect } from "@playwright/test";
 import { runLinguiReview } from "./helpers/lingui-review";
+import { runLinguiRereview } from "./helpers/lingui-rereview";
 import { setupI18n } from "@lingui/core";
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { launchObsidian, closeObsidian, openTaskNotesSettings, closeObsidianSettings, type ObsidianApp } from "./obsidian";
 
+test.use({ trace: "on" });
 const root = path.resolve(__dirname, "..");
 const settingsPath = path.join(root, "tasknotes-e2e-vault/.obsidian/plugins/tasknotes/data.json");
 const statsPath = path.join(root, "tasknotes-e2e-vault/TaskNotes/Views/pomodoro-stats.base");
@@ -74,4 +76,9 @@ test("ordinary native build decodes all nine catalogues synchronously and render
 test("native en/de/ru group identities survive drag, creation and saved ordering", async () => {
 	test.setTimeout(180000);
 	await runLinguiReview(app!.page, "test-results/lingui-bundled/review");
+});
+
+test("native en/de restores field labels, preserves completed-date sort and separates interactive validation from programmatic fallbacks", async () => {
+	test.setTimeout(180000);
+	await runLinguiRereview(app!.page, "test-results/lingui-bundled/rereview");
 });

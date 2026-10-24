@@ -11,7 +11,7 @@ import {
 	configureToggleSetting,
 	configureDropdownSetting,
 } from "../components/settingHelpers";
-import { TranslationKey } from "../../i18n";
+import { MessageDescriptor } from "../../i18n";
 import { languagePackConfig } from "../../i18n/languagePackConfig";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
@@ -35,7 +35,7 @@ export function renderGeneralTab(
 ): void {
 	container.empty();
 
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 
 	// Tasks Storage Section

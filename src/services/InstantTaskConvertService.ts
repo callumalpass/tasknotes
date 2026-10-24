@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -20,7 +21,7 @@ import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { sanitizeGeneratedLinkAlias, sanitizeLinkAliasText } from "../utils/linkAliasUtils";
 import { publishUserNotice } from "../core/userNotices";
@@ -101,7 +102,7 @@ export class InstantTaskConvertService {
 	private nlParser: NaturalLanguageParser;
 	private inFlightConversions = new WeakMap<Editor, Map<number, Promise<void>>>();
 
-	private translate(key: TranslationKey, variables?: InterpolationValues): string {
+	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -592,7 +593,7 @@ export class InstantTaskConvertService {
 		const originalTitle = parsedData.title?.trim() || "";
 		const titleLinkPreservation = this.extractTitleLinks(originalTitle);
 		const titleSource = titleLinkPreservation.cleanTitle || originalTitle;
-		const title = this.sanitizeTitle(titleSource) || uiText(msg({ message: "Untitled Task", context: "services/InstantTaskConvertService: InstantTaskConvertService.createTaskFile display" }));
+		const title = this.sanitizeTitle(titleSource) || uiData("Untitled Task", "Pre-port persisted instant-conversion fallback title; never localize stored titles");
 
 		// If title was truncated, preserve the overflow in details
 		const parsedDetails = parsedData.details?.trim();
@@ -924,7 +925,7 @@ export class InstantTaskConvertService {
 			return details;
 		}
 
-		const linkBlock = [uiText(msg({ message: "Source links:", context: "services/InstantTaskConvertService: InstantTaskConvertService.appendPreservedTitleLinks display" })), ...linksToAppend.map((link) => `- ${link}`)].join("\n");
+		const linkBlock = [uiData("Source links:", "Pre-port persisted task body heading; preserve English across locales"), ...linksToAppend.map((link) => `- ${link}`)].join("\n");
 		return details.trimEnd() ? `${details.trimEnd()}\n\n${linkBlock}` : linkBlock;
 	}
 

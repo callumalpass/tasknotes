@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import test from "node:test";
 import { formatter } from "@lingui/format-po";
@@ -27,6 +28,16 @@ function operands(tokens, count, result = {}) {
 const { assertCompleteCatalogue } = await import(new URL("../../node_modules/@mdbase-dev/i18n/scripts/checks.mjs", import.meta.url));
 const root = new URL("../../", import.meta.url);
 
+test("all 128 restored field/seed translations match the independently recovered historical authorship", async () => {
+  const { recoveredAuthored: proof } = JSON.parse(await readFile(new URL("docs/development/i18n-rereview.json", root), "utf8"));
+  assert.equal(proof.ids.length, 16);
+  for (const [locale, expectedHash] of Object.entries(proof.sha256ByLocale)) {
+    const catalogue = await formatter().parse(await readFile(new URL(`src/i18n/locales/${locale}/messages.po`, root), "utf8"), { locale });
+    const rows = [...proof.ids].sort((a, b) => a.localeCompare(b, "en")).map(id => [id, catalogue[id].translation]);
+    assert.equal(createHash("sha256").update(JSON.stringify(rows)).digest("hex"), expectedHash, locale);
+  }
+});
+
 test("all nine authored catalogues preserve generated IDs, completeness and ICU contracts before fallback", async () => {
   const policy = JSON.parse(await readFile(new URL("i18n-policy.json", root), "utf8"));
   const catalogues = Object.fromEntries(await Promise.all(locales.map(async locale => [locale,
@@ -49,6 +60,7 @@ test("all nine authored catalogues preserve generated IDs, completeness and ICU 
 
 test("the 22 rewritten one arms have contextual singular wording; all 90 copied es/fr many arms are absent", async () => {
   const ledger = JSON.parse(await readFile(new URL("docs/development/i18n-review-followup.json", root), "utf8"));
+  const rereview = JSON.parse(await readFile(new URL("docs/development/i18n-rereview.json", root), "utf8"));
   const expected = {
     fr: {
       fuX_1m: "Contexte", "fJ_I-J": "Projet",
@@ -66,7 +78,7 @@ test("the 22 rewritten one arms have contextual singular wording; all 90 copied 
     },
     ru: { fuX_1m: "Не один контекст", "fJ_I-J": "Не один проект" },
   };
-  const report = { operands: [0, 1, 2, 5, 21, 1000000], rewrittenOneArms: 0, alignedRussianClassifierSiblingArms: 0, removedManyArms: 0, rows: [] };
+  const report = { operands: [0, 1, 2, 5, 21, 1000000], rewrittenOneArms: 0, alignedRussianClassifierSiblingArms: 0, removedManyArms: 0, retiredByRereview: [], rows: [] };
   function choices(tokens) {
     return tokens.flatMap(token => token.cases ? [token, ...token.cases.flatMap(arm => choices(arm.tokens))] : []);
   }
@@ -74,7 +86,15 @@ test("the 22 rewritten one arms have contextual singular wording; all 90 copied 
     const catalogue = await formatter({}).parse(await readFile(new URL(`src/i18n/locales/${locale}/messages.po`, root), "utf8"), { locale });
     const core = setupI18n({ locale, messages: { [locale]: compiledCatalogue(Object.fromEntries(Object.entries(catalogue).map(([id, entry]) => [id, entry.translation]))) } });
     for (const item of ledger.retainedAuthoredChanges.filter(item => item.locale === locale && (item.addedArms || item.removedArms))) {
-      const entry = catalogue[item.id], ast = parse(entry.translation), selectors = choices(ast);
+      const entry = catalogue[item.id];
+      if (!entry) {
+        assert.ok(rereview.retiredDescriptors.some(row => row.id === item.id && row.finding === "N8"), `Unreviewed missing plural: ${locale} ${item.id}`);
+        assert.equal((item.addedArms ?? []).length, 0, "None of the 22 corrected one arms may disappear");
+        report.removedManyArms += (item.removedArms ?? []).length;
+        report.retiredByRereview.push({ locale, id: item.id, reason: "N8: exact pre-port English ICS export restored; message is data, not UI" });
+        continue;
+      }
+      const ast = parse(entry.translation), selectors = choices(ast);
       for (const arm of item.removedArms ?? []) {
         assert.ok(!selectors.some(token => token.arg === arm.arg && token.cases.some(candidate => candidate.key === arm.category)), `${locale} ${item.id}: optional many retained`);
         report.removedManyArms++;

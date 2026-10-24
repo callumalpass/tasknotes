@@ -2,6 +2,7 @@ import { App } from "obsidian";
 import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../../../src/main";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
+import { configLabel } from "../../../src/i18n/configLabels";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { renderFeaturesTab } from "../../../src/settings/tabs/featuresTab";
 import { renderPriorityPropertyCard } from "../../../src/settings/tabs/taskProperties/priorityPropertyCard";
@@ -44,6 +45,8 @@ describe.each(locales)("technical setting examples in %s", locale => {
 		const container = document.createElement("div");
 		renderPriorityPropertyCard(container, plugin, save, translate);
 		renderStatusPropertyCard(container, plugin, save, translate);
+		const displayed = Array.from(container.querySelectorAll<HTMLInputElement>("input")).map(element => element.value);
+		expect(displayed).toEqual(expect.arrayContaining([...settings.customStatuses.map(configLabel), ...settings.customPriorities.map(configLabel)]));
 		input(container, "alert-circle");
 		input(container, "check, circle, clock");
 		input(container, "high");

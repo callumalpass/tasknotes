@@ -1,7 +1,7 @@
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Notice, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
-import { createI18nService, type TranslationKey, type InterpolationValues } from "../i18n";
+import { createI18nService, type MessageDescriptor, type InterpolationValues } from "../i18n";
 import { NaturalLanguageParser, type ParsedTaskData } from "../services/NaturalLanguageParser";
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 
@@ -86,7 +86,7 @@ function nextMonday(from: Date): Date {
  */
 export class DateTimePickerModal extends Modal {
 	private readonly options: DateTimePickerOptions;
-	private readonly translate: (key: TranslationKey, values?: InterpolationValues) => string;
+	private readonly translate: (key: MessageDescriptor, values?: InterpolationValues) => string;
 	private selectedDate: string | null;
 	private naturalLanguageInput: HTMLInputElement | null = null;
 	private dateInput: HTMLInputElement | null = null;

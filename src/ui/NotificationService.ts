@@ -2,6 +2,7 @@ import { uiData } from "../i18n/dataText";
 import type { MessageSuffix } from "../i18n/concepts";
 import { uiLocale } from "../i18n/runtime";
 import { uiNumber } from "../i18n/formatters";
+import { reminderDescriptionLabel } from "../i18n/dataSeedLabels";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { messageForKey } from "../i18n/messages";
@@ -412,7 +413,7 @@ export class NotificationService {
 	): Promise<void> {
 		const message = missed
 			? this.generateMissedMessage(task, item)
-			: item.reminder.description || this.generateDefaultMessage(task, item.reminder);
+			: reminderDescriptionLabel(item.reminder.description || "") || this.generateDefaultMessage(task, item.reminder);
 
 		if (this.plugin.settings.notificationType === "system") {
 			// System notification
@@ -632,7 +633,7 @@ export class NotificationService {
 			: this.translateMissed("prefixToday", { time: missedAt.time });
 		const withPrefix = (text: string) => this.translateMissed("message", { prefix, text });
 		const { reminder } = item;
-		if (reminder.description) return withPrefix(reminder.description);
+		if (reminder.description) return withPrefix(reminderDescriptionLabel(reminder.description));
 
 		const anchorStr = reminder.type === "relative"
 			? (reminder.relatedTo === "due" ? task.due : task.scheduled)

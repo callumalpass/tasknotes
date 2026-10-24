@@ -1,5 +1,3 @@
-import { uiText } from "../i18n/runtime";
-import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../main";
 import { BaseController } from "./BaseController";
 import type { HTTPRequestLike, HTTPResponseLike } from "./httpTypes";
@@ -11,7 +9,7 @@ export class BasesController extends BaseController {
 	}
 
 	@OpenAPI({
-		summary: uiText(msg({ message: "Update default Base files", context: "api/BasesController: BasesController.updateDefaultFiles summary" })),
+		summary: "Update default Base files",
 		description:
 			"Overwrite the configured default TaskNotes .base files with templates generated from current settings.",
 		operationId: "updateDefaultBaseFiles",

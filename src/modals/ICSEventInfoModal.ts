@@ -7,7 +7,7 @@ import { ICSEvent, TaskInfo, NoteInfo } from "../types";
 import { ICSNoteCreationModal } from "./ICSNoteCreationModal";
 import { openFileSelector } from "./FileSelectorModal";
 import { SafeAsync } from "../utils/safeAsync";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showNotice } from "../ui/notifications";
 
@@ -21,7 +21,7 @@ export class ICSEventInfoModal extends Modal {
 	private icsEvent: ICSEvent;
 	private subscriptionName?: string;
 	private relatedNotes: (TaskInfo | NoteInfo)[] = [];
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 
 	constructor(app: App, plugin: TaskNotesPlugin, icsEvent: ICSEvent, subscriptionName?: string) {
 		super(app);

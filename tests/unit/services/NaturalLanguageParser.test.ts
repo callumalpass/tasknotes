@@ -74,7 +74,7 @@ describe('NaturalLanguageParser', () => {
     it('should handle empty input', () => {
       const result = parser.parseInput('');
 
-      expect(result.title).toBe('');
+      expect(result.title).toBe('Untitled Task');
       expect(result.tags).toEqual([]);
       expect(result.contexts).toEqual([]);
     });
@@ -82,7 +82,7 @@ describe('NaturalLanguageParser', () => {
     it('should handle whitespace-only input', () => {
       const result = parser.parseInput('   \n  \t  ');
 
-      expect(result.title).toBe('');
+      expect(result.title).toBe('Untitled Task');
     });
 
     it('should separate title from details', () => {
@@ -669,7 +669,7 @@ describe('NaturalLanguageParser', () => {
     it('should handle edge case with only special characters', () => {
       const result = parser.parseInput('#tag @context');
 
-      expect(result.title).toBe('');
+      expect(result.title).toBe('Untitled Task');
       expect(result.tags).toEqual(['tag']);
       expect(result.contexts).toEqual(['context']);
     });
@@ -712,7 +712,7 @@ describe('NaturalLanguageParser', () => {
     it('should provide fallback title for empty results', () => {
       const result = parser.parseInput('   ');
 
-      expect(result.title).toBe('');
+      expect(result.title).toBe('Untitled Task');
     });
   });
 

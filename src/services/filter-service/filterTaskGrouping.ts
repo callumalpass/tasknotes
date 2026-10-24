@@ -1,7 +1,6 @@
-import { uiText } from "../../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { format, parseISO } from "date-fns";
-import { TranslationKey } from "../../i18n";
+import { MessageDescriptor } from "../../i18n";
 import { TaskGroupKey, TaskInfo, TaskSortKey, SortDirection } from "../../types";
 import type { TaskNotesSettings } from "../../types/settings";
 import {
@@ -50,12 +49,40 @@ export type FilterTaskGroupingContext = {
 	getUserFieldRawValue(task: TaskInfo, fieldKey: string): unknown;
 	resolveProjectToAbsolutePath(projectValue: string): string;
 	translate(
-		key: TranslationKey,
+		key: MessageDescriptor,
 		fallback: string,
 		vars?: Record<string, string | number>
 	): string;
 	getLocale(): string;
 };
+
+// Group maps cross HTTP/MCP boundaries. English identities are never localized.
+function groupIdentityContext(context: FilterTaskGroupingContext): FilterTaskGroupingContext {
+	return { ...context, translate: (_key, fallback) => fallback };
+}
+
+/** Localize a known group identity only at a UI boundary, never in API JSON. */
+export function filterTaskGroupLabel(key: string, groupKey: TaskGroupKey, context: FilterTaskGroupingContext): string {
+	const identities = groupIdentityContext(context);
+	if (groupKey === "due") {
+		for (const code of ["overdue", "today", "tomorrow", "nextSevenDays", "later", "none", "invalid"] as const)
+			if (key === getDueGroupLabel(code, identities)) return getDueGroupLabel(code, context);
+	}
+	if (groupKey === "scheduled") {
+		for (const code of ["past", "today", "tomorrow", "nextSevenDays", "later", "none", "invalid"] as const)
+			if (key === getScheduledGroupLabel(code, identities)) return getScheduledGroupLabel(code, context);
+	}
+	if (groupKey === "project" && key === getNoProjectLabel(identities)) return getNoProjectLabel(context);
+	if (groupKey === "tags" && key === getNoTagsLabel(identities)) return getNoTagsLabel(context);
+	if (groupKey === "completedDate") {
+		if (key === getNotCompletedLabel(identities)) return getNotCompletedLabel(context);
+		if (key === getInvalidDateLabel(identities)) return getInvalidDateLabel(context);
+	}
+	return key;
+}
+function getNotCompletedLabel(context: FilterTaskGroupingContext): string {
+	return context.translate(msg({ message: "Not completed", context: "services/filter-service/filterTaskGrouping: getCompletedDateGroup display" }), "Not completed");
+}
 
 export function groupFilterTasks(
 	tasks: TaskInfo[],
@@ -68,9 +95,10 @@ export function groupFilterTasks(
 	}
 
 	const groups = new Map<string, TaskInfo[]>();
+	const identities = groupIdentityContext(context);
 
 	for (const task of tasks) {
-		const groupValues = getGroupValuesForTask(task, groupKey, context, targetDate);
+		const groupValues = getGroupValuesForTask(task, groupKey, identities, targetDate);
 		for (const groupValue of groupValues) {
 			if (!groups.has(groupValue)) {
 				groups.set(groupValue, []);
@@ -88,7 +116,7 @@ export function sortFilterTaskGroups(
 	context: FilterTaskGroupingContext
 ): Map<string, TaskInfo[]> {
 	const sortedGroups = new Map<string, TaskInfo[]>();
-	const sortedKeys = getSortedGroupKeys(groups, groupKey, context);
+	const sortedKeys = getSortedGroupKeys(groups, groupKey, groupIdentityContext(context));
 
 	for (const key of sortedKeys) {
 		const group = groups.get(key);
@@ -269,10 +297,9 @@ function getSortedGroupKeys(
 
 		case "completedDate":
 			return Array.from(groups.keys()).sort((a, b) => {
-				if (a === "Not completed") return 1;
-				if (b === "Not completed") return -1;
-				if (a === "Invalid date") return 1;
-				if (b === "Invalid date") return -1;
+				if (a === b) return 0;
+				const rank = (key: string) => key === "Not completed" ? 2 : key === "Invalid date" ? 1 : 0;
+				if (rank(a) !== rank(b)) return rank(a) - rank(b);
 				if (a == null || b == null) {
 					if (a == null) return 1;
 					if (b == null) return -1;
@@ -381,7 +408,7 @@ function getScheduledDateGroupFromDateString(
 }
 
 function getCompletedDateGroup(task: TaskInfo, context: FilterTaskGroupingContext): string {
-	if (!task.completedDate) return uiText(msg({ message: "Not completed", context: "services/filter-service/filterTaskGrouping: getCompletedDateGroup display" }));
+	if (!task.completedDate) return getNotCompletedLabel(context);
 
 	try {
 		return format(parseISO(task.completedDate), "yyyy-MM-dd");

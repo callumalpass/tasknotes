@@ -1,7 +1,7 @@
 import { msg } from "@lingui/core/macro";
 import { Modal, App, setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 
 interface DeviceCodeInfo {
 	userCode: string;
@@ -19,7 +19,7 @@ export class DeviceCodeModal extends Modal {
 	private onCancel: () => void;
 	private countdownInterval?: number;
 	private expiresAt: number;
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 
 	constructor(
 		app: App,

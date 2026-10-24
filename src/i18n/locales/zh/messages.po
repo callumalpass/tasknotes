@@ -724,11 +724,6 @@ msgctxt "views.pomodoro.meta.ready"
 msgid "{time} planned · {count} completed today"
 msgstr "已计划 {time} · 今天已完成 {count} 个"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "{timeEstimate, plural, one {Estimated time: # minute} other {Estimated time: # minutes}}"
-msgstr "{timeEstimate, plural, other {预估时长：# 分钟}}"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
 msgid "{title} is due {when}"
@@ -2237,6 +2232,11 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.descriptionRegen"
 msgid "Base files are not automatically updated when you change settings. To apply new settings, use \"Update files\" below, delete the existing .base files and restart Obsidian, or edit them manually."
 msgstr "更改设置后，Base 文件不会自动更新。要应用新设置，可点击下方的“更新文件”；也可删除现有 .base 文件并重启 Obsidian，或手动编辑文件。"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Basic Information"
+msgstr "基本信息"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings.defaults.reminders.directions.before"
@@ -2290,6 +2290,11 @@ msgctxt "generated Bases view name"
 msgid "Blocked By"
 msgstr "受阻于"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Blocked By"
+msgstr "受阻于"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: blockedBy text"
 msgid "Blocked by: "
@@ -2323,6 +2328,11 @@ msgstr "阻塞其他任务"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.blocking"
+msgid "Blocking"
+msgstr "阻塞其他任务"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Blocking"
 msgstr "阻塞其他任务"
 
@@ -3454,15 +3464,10 @@ msgctxt "settings.taskProperties.properties.contexts.name"
 msgid "Contexts"
 msgstr "上下文"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.contexts"
-msgid "Contexts: {value}"
-msgstr "上下文：{value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Contexts: {value1}"
-msgstr "上下文：{value1}"
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Contexts"
+msgstr "上下文"
 
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
@@ -4004,6 +4009,11 @@ msgstr "自定义天数"
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.customFieldsLabel"
 msgid "Custom fields"
+msgstr "自定义字段"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Custom Fields"
 msgstr "自定义字段"
 
 #: src/settings/tabs/integrationsTab.ts
@@ -4582,6 +4592,11 @@ msgctxt "contextMenus.task.dependencies.title"
 msgid "Dependencies"
 msgstr "依赖关系"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Dependencies"
+msgstr "依赖关系"
+
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
 msgid "Dependencies updated"
@@ -4644,6 +4659,11 @@ msgstr "目标文件夹（留空以使用库根目录）"
 
 #: src/modals/TaskModal.ts
 msgctxt "modals.task.detailsLabel"
+msgid "Details"
+msgstr "详情"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Details"
 msgstr "详情"
 
@@ -4947,11 +4967,6 @@ msgstr "截止日期：{date}"
 
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.dueValue"
-msgid "Due: {value}"
-msgstr "截止：{value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.due"
 msgid "Due: {value}"
 msgstr "截止：{value}"
 
@@ -5633,11 +5648,6 @@ msgstr "导出 v3 视图"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "已将 {count} 个已保存视图导出到 {filePath}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Exported from TaskNotes: {path}"
-msgstr "由 TaskNotes 导出：{path}"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
@@ -7817,6 +7827,11 @@ msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
 msgstr "中等（30 分钟–2 小时）"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Metadata"
+msgstr "元数据"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.sections.metadataProperties"
 msgid "Metadata properties"
@@ -8139,7 +8154,7 @@ msgctxt "common.new"
 msgid "New"
 msgstr "新建"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/i18n/dataSeedLabels.ts
 msgctxt "settings.integrations.subscriptionsList.newCalendarName"
 msgid "New calendar"
 msgstr "新日历"
@@ -8148,6 +8163,16 @@ msgstr "新日历"
 msgctxt "settings.integrations.subscriptionsList.notices.addSuccess"
 msgid "New calendar subscription added - please configure the details"
 msgstr "新日历订阅已添加 - 请配置详细信息"
+
+#: src/i18n/dataSeedLabels.ts
+msgctxt "services/PriorityManager: PriorityManager.createDefaultPriority label"
+msgid "New priority"
+msgstr "新优先级"
+
+#: src/i18n/dataSeedLabels.ts
+msgctxt "services/StatusManager: StatusManager.createDefaultStatus label"
+msgid "New status"
+msgstr "新状态"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
@@ -8242,16 +8267,6 @@ msgctxt "settings.taskProperties.propertyCard.nlpTrigger"
 msgid "NLP trigger:"
 msgstr "NLP触发器："
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No {fieldIdOrKey}"
-msgstr "无 {fieldIdOrKey}"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No {key}"
-msgstr "无 {key}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
 msgid "No {provider} connection found"
@@ -8342,11 +8357,6 @@ msgctxt "contextMenus.task.completion.noCompletedStatus"
 msgid "No completed status configured"
 msgstr "未配置已完成状态"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Context"
-msgstr "无上下文"
-
 #: src/settings/tabs/taskProperties/priorityPropertyCard.ts
 msgctxt "settings.taskProperties.taskPriorities.emptyState"
 msgid "No custom priorities configured. Add a priority to get started."
@@ -8426,11 +8436,6 @@ msgstr "无截止日期"
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.due.none"
 msgid "No due date"
-msgstr "无截止日期"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Due Date"
 msgstr "无截止日期"
 
 #: src/ui/completionDateResolver.ts
@@ -8525,13 +8530,7 @@ msgctxt "OAuth callback description"
 msgid "No pending authorization matches this callback."
 msgstr "没有待处理的授权与此回调匹配。"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Priority"
-msgstr "无优先级"
-
 #: src/services/filter-service/filterTaskGrouping.ts
-#: src/services/FilterService.ts
 msgctxt "services.filter.groupLabels.noProject"
 msgid "No project"
 msgstr "无项目"
@@ -8539,11 +8538,6 @@ msgstr "无项目"
 #: src/views/StatsView.ts
 msgctxt "views.stats.noProject"
 msgid "No project"
-msgstr "无项目"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Project"
 msgstr "无项目"
 
 #: src/views/StatsView.ts
@@ -8576,11 +8570,6 @@ msgctxt "services.filter.groupLabels.scheduled.none"
 msgid "No scheduled date"
 msgstr "无计划日期"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Scheduled Date"
-msgstr "无计划日期"
-
 #: src/ui/completionDateResolver.ts
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
@@ -8591,20 +8580,10 @@ msgctxt "views.pomodoroStats.recents.empty"
 msgid "No sessions recorded yet"
 msgstr "尚未记录会话"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Status"
-msgstr "无状态"
-
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "contextMenus.task.subtasks.noSubtasks"
 msgid "No subtasks found"
 msgstr "未找到子任务"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Tag"
-msgstr "无标签"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.noTags"
@@ -8720,11 +8699,6 @@ msgstr "无键"
 
 #: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "None"
-msgstr "无"
-
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "None"
 msgstr "无"
 
@@ -9093,16 +9067,6 @@ msgctxt "ui.audit.openNewTab"
 msgid "Open in new tab"
 msgstr "在新标签页中打开"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.openInObsidian"
-msgid "Open in Obsidian"
-msgstr "在Obsidian中打开"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Open in Obsidian: {obsidianUri}"
-msgstr "在 Obsidian 中打开：{obsidianUri}"
-
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.options.sameTab"
 msgid "Open in the same tab"
@@ -9314,6 +9278,11 @@ msgstr "组织"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.organization"
+msgid "Organization"
+msgstr "组织"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Organization"
 msgstr "组织"
 
@@ -9813,18 +9782,8 @@ msgctxt "ui.taskCard.priorityAriaLabel"
 msgid "Priority: {label}"
 msgstr "优先级: {label}"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Priority: {priority}"
-msgstr "优先级：{priority}"
-
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.priorityValue"
-msgid "Priority: {value}"
-msgstr "优先级：{value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.priority"
 msgid "Priority: {value}"
 msgstr "优先级：{value}"
 
@@ -9878,20 +9837,15 @@ msgctxt "settings.taskProperties.properties.projects.name"
 msgid "Projects"
 msgstr "项目"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Projects"
+msgstr "项目"
+
 #: src/views/StatsView.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "项目"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.projects"
-msgid "Projects: {value}"
-msgstr "项目：{value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Projects: {value1}"
-msgstr "项目：{value1}"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
@@ -9937,11 +9891,6 @@ msgstr "属性导航策略"
 msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "基于属性的事件"
-
-#: src/api/TasksController.ts
-msgctxt "api/TasksController: TasksController.queryTasks summary"
-msgid "Query tasks"
-msgstr "查询任务"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -10230,12 +10179,7 @@ msgctxt "contextMenus.task.remindBeforeScheduled"
 msgid "Remind before scheduled…"
 msgstr "计划日期前提醒…"
 
-#: src/services/buildTaskCreationDataFromCli.ts
-msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand description"
-msgid "Reminder"
-msgstr "提醒"
-
-#: src/settings/tabs/taskProperties/remindersPropertyCard.ts
+#: src/i18n/dataSeedLabels.ts
 msgctxt "settings.defaults.reminders.defaultDescription"
 msgid "Reminder"
 msgstr "提醒"
@@ -10696,11 +10640,6 @@ msgstr "计划日期：{date}"
 
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.scheduledValue"
-msgid "Scheduled: {value}"
-msgstr "计划：{value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.scheduled"
 msgid "Scheduled: {value}"
 msgstr "计划：{value}"
 
@@ -11359,11 +11298,6 @@ msgctxt "settings.features.pomodoroSound.volumeName"
 msgid "Sound volume"
 msgstr "声音音量"
 
-#: src/services/InstantTaskConvertService.ts
-msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.appendPreservedTitleLinks display"
-msgid "Source links:"
-msgstr "来源链接："
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
 msgid "Span tasks between scheduled and due dates"
@@ -11543,18 +11477,8 @@ msgctxt "settings.taskProperties.statusCard.valuesHeader"
 msgid "Status values"
 msgstr "状态值"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Status: {status}"
-msgstr "状态：{status}"
-
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.statusValue"
-msgid "Status: {value}"
-msgstr "状态：{value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.status"
 msgid "Status: {value}"
 msgstr "状态：{value}"
 
@@ -11678,6 +11602,11 @@ msgstr "子任务"
 
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.subtasks"
+msgid "Subtasks"
+msgstr "子任务"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Subtasks"
 msgstr "子任务"
 
@@ -11926,15 +11855,10 @@ msgctxt "ui.filterBar.group.tags"
 msgid "Tags"
 msgstr "标签"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.tags"
-msgid "Tags: {value}"
-msgstr "标签：{value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Tags: {value1}"
-msgstr "标签：{value1}"
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Tags"
+msgstr "标签"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
@@ -12663,6 +12587,11 @@ msgctxt "settings.taskProperties.properties.timeEstimate.name"
 msgid "Time estimate"
 msgstr "预估时长"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Time Estimate"
+msgstr "预估时长"
+
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.timeEstimateLabel"
 msgid "Time estimate (minutes)"
@@ -12672,11 +12601,6 @@ msgstr "预估时长（分钟）"
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Time estimate in minutes"
 msgstr "预估时长（分钟）"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.timeEstimate"
-msgid "Time Estimate: {value}"
-msgstr "预估时长：{value}"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.name"
@@ -12887,6 +12811,11 @@ msgctxt "settings.taskProperties.properties.title.name"
 msgid "Title"
 msgstr "标题"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Title"
+msgstr "标题"
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleDesc"
 msgid "Title for the calendar event"
@@ -13062,11 +12991,6 @@ msgstr "今日专注时间"
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
 msgid "Today''s pomos"
 msgstr "今日番茄钟"
-
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
-msgid "Toggle group"
-msgstr "切换分组展开状态"
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
@@ -13374,11 +13298,6 @@ msgctxt "settings.defaults.reminders.fields.unit"
 msgid "Unit:"
 msgstr "单位："
 
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
-msgid "Unknown"
-msgstr "未知"
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.dependencies.unknownDependency"
 msgid "Unknown"
@@ -13512,35 +13431,9 @@ msgctxt "ui.icsCard.untitledEvent"
 msgid "Untitled event"
 msgstr "无标题事件"
 
-#: src/services/GoogleCalendarService.ts
-msgctxt "services/GoogleCalendarService: GoogleCalendarService.convertToICSEvent title"
-msgid "Untitled Event"
-msgstr "无标题事件"
-
-#: src/services/ICSSubscriptionService.ts
-msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.parseICS display"
-msgid "Untitled Event"
-msgstr "无标题事件"
-
-#: src/services/MicrosoftCalendarService.ts
-msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.convertToICSEvent title"
-msgid "Untitled Event"
-msgstr "无标题事件"
-
-#: src/i18n/messages.ts
-#: src/services/TaskCalendarSyncService.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.untitledTask"
-msgid "Untitled task"
-msgstr "无标题任务"
-
-#: src/utils/taskInfoAssembly.ts
+#: src/i18n/taskInfoTitle.ts
 msgctxt "utils/taskInfoAssembly: buildTaskInfoFromMappedTask title"
 msgid "Untitled task"
-msgstr "无标题任务"
-
-#: src/services/InstantTaskConvertService.ts
-msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.createTaskFile display"
-msgid "Untitled Task"
 msgstr "无标题任务"
 
 #: src/i18n/errorMessages.ts
@@ -13567,11 +13460,6 @@ msgstr "更新默认 Base 文件"
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle"
 msgid "Update default base files"
-msgstr "更新默认 Base 文件"
-
-#: src/api/BasesController.ts
-msgctxt "api/BasesController: BasesController.updateDefaultFiles summary"
-msgid "Update default Base files"
 msgstr "更新默认 Base 文件"
 
 #: src/settings/tabs/generalTab.ts

@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -623,7 +624,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		return {
 			id: `microsoft-${calendarId}-${msEvent.id}`,
 			subscriptionId: `microsoft-${calendarId}`,
-			title: msEvent.subject || uiText(msg({ message: "Untitled Event", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.convertToICSEvent title" })),
+			title: msEvent.subject || uiData("Untitled Event", "Persisted/cache provider fallback title; preserve English data seed"),
 			description: msEvent.bodyPreview || msEvent.body?.content,
 			start: start,
 			end: end,

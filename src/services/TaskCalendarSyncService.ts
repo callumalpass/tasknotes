@@ -1,8 +1,5 @@
 import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
-import type { MessageSuffix } from "../i18n/concepts";
-import { uiDuration } from "../i18n/formatters";
-import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 import { TFile, stringifyYaml } from "obsidian";
 import { format } from "date-fns";
@@ -1927,9 +1924,7 @@ export class TaskCalendarSyncService {
 			? this.plugin.priorityManager.getPriorityConfig(task.priority)
 			: null;
 
-		const untitledTask = this.plugin.i18n.translate(
-			msg({ message: "Untitled task", context: "settings.integrations.googleCalendarExport.eventDescription.untitledTask" })
-		);
+		const untitledTask = uiData("Untitled task", "Persisted Google Calendar fallback title; locale-stable English data");
 		return template
 			.replace(/\{\{title\}\}/g, task.title || untitledTask)
 			.replace(/\{\{status\}\}/g, statusConfig?.label || task.status || "")
@@ -1949,11 +1944,9 @@ export class TaskCalendarSyncService {
 	 */
 	private buildEventDescription(task: TaskInfo): string {
 		const settings = this.plugin.settings.googleCalendarExport;
-		const t = (key: MessageSuffix<"settings.integrations.googleCalendarExport.eventDescription.">, params?: Record<string, string | number>) =>
-			this.plugin.i18n.translate(
-				messageForKey(`settings.integrations.googleCalendarExport.eventDescription.${key}`),
-				params
-			);
+		// Remote event descriptions are persisted external data, not a UI label.
+		const labels = { priority: "Priority", status: "Status", due: "Due", scheduled: "Scheduled", timeEstimate: "Time Estimate", tags: "Tags", contexts: "Contexts", projects: "Projects", openInObsidian: "Open in Obsidian" };
+		const t = (key: keyof typeof labels, params?: { value: string }) => params ? `${labels[key]}: ${params.value}` : labels[key];
 		const parts: string[] = [];
 
 		// Add task metadata
@@ -1977,7 +1970,9 @@ export class TaskCalendarSyncService {
 
 		// Add time estimate
 		if (task.timeEstimate) {
-			const estimateStr = uiDuration(task.timeEstimate);
+			const hours = Math.floor(task.timeEstimate / 60);
+			const minutes = task.timeEstimate % 60;
+			const estimateStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 			parts.push(t("timeEstimate", { value: estimateStr }));
 		}
 
@@ -2021,7 +2016,7 @@ export class TaskCalendarSyncService {
 			parts.push(`${linkText}: ${obsidianUri}`);
 		}
 
-		return parts.join("\n");
+		return uiData(parts.join("\n"), "Persisted Google Calendar description: English metadata, untouched configured labels and user data");
 	}
 
 	private toCalendarDescriptionLabel(value: string): string {

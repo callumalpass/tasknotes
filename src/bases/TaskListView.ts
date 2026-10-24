@@ -44,6 +44,7 @@ import { createElementInDocument } from "../utils/documentDom";
 import {
 	computeBasesFormulas,
 	isObsidianListProperty,
+	getObsidianPropertyType,
 	populateBasesFormulaProperty,
 } from "./basesViewAdapters";
 import { coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter } from "./propertyValueCoercion";
@@ -1176,13 +1177,18 @@ export class TaskListView extends BasesViewBase {
 		return [...destinations.values()];
 	}
 
+	private groupDisplayLabel(key: string, propertyId: string | null): string {
+		const sources = propertyId === this.getGroupByPropertyId() ? this.dataAdapter?.getGroupedData().filter(group => this.dataAdapter.convertGroupKeyToString(group.key) === key).map(group => group.key) : [];
+		return groupKeyLabel(key, { values: sources, propertyType: propertyId && this.plugin.app ? getObsidianPropertyType(this.plugin.app, propertyId.replace(/^(note\\.|task\\.)/, "")) : undefined });
+	}
+
 	private movementDestinationLabel(destination: TaskListDestination): string {
 		return [destination.groupKey, destination.subGroupKey]
 			.filter((value) => value !== undefined)
-			.map((value) =>
+			.map((value, index) =>
 				value === null || value === NONE_GROUP_KEY
 					? this.plugin.i18n.translate(msg({ message: "No value", context: "views.taskList.movement.noValue" }))
-					: groupKeyLabel(value ?? "")
+					: this.groupDisplayLabel(value ?? "", index === 0 ? this.getGroupByPropertyId() ?? this.subGroupPropertyId : this.subGroupPropertyId)
 			)
 			.join(" / ");
 	}
@@ -2978,7 +2984,7 @@ export class TaskListView extends BasesViewBase {
 		// Add group title
 		const titleContainer = headerElement.createSpan({ cls: "task-group-title" });
 		const displayTitle = isSubHeader ? headerItem.subGroupTitle : headerItem.groupTitle;
-		this.renderGroupTitle(titleContainer, groupKeyLabel(displayTitle));
+		this.renderGroupTitle(titleContainer, this.groupDisplayLabel(displayTitle, isSubHeader ? this.subGroupPropertyId : this.getGroupByPropertyId() ?? this.subGroupPropertyId));
 
 		// Add count
 		headerElement.createSpan({

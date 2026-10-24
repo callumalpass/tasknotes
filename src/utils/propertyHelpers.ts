@@ -2,7 +2,7 @@ import { uiData } from "../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../main";
 import type { FieldMapping } from "../types";
-import type { TranslationKey } from "../i18n";
+import type { MessageDescriptor } from "../i18n";
 
 /**
  * Get all available properties for property selection modals.
@@ -15,7 +15,7 @@ export function getAvailableProperties(
 	plugin: TaskNotesPlugin
 ): Array<{ id: string; label: string }> {
 	// Helper to create label showing user's configured property name
-	const makeLabel = (labelKey: TranslationKey, mappingKey: keyof FieldMapping): string => {
+	const makeLabel = (labelKey: MessageDescriptor, mappingKey: keyof FieldMapping): string => {
 		const displayName = plugin.i18n.translate(labelKey);
 		const userPropertyName = plugin.fieldMapper.toUserField(mappingKey);
 		// Compare identifiers, never localized text. User-defined names stay untouched.

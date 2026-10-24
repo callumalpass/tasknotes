@@ -724,11 +724,6 @@ msgctxt "views.pomodoro.meta.ready"
 msgid "{time} planned · {count} completed today"
 msgstr "{time} запланировано · {count} завершено сегодня"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "{timeEstimate, plural, one {Estimated time: # minute} other {Estimated time: # minutes}}"
-msgstr "{timeEstimate, plural, one {Оценка времени: # минута} few {Оценка времени: # минуты} many {Оценка времени: # минут} other {Оценка времени: # минуты}}"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
 msgid "{title} is due {when}"
@@ -2240,6 +2235,11 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.descriptionRegen"
 msgid "Base files are not automatically updated when you change settings. To apply new settings, use \"Update files\" below, delete the existing .base files and restart Obsidian, or edit them manually."
 msgstr "Base-файлы не обновляются автоматически при изменении настроек. Чтобы применить новые настройки, используйте «Обновить файлы» ниже, удалите существующие .base-файлы и перезапустите Obsidian или отредактируйте их вручную."
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Basic Information"
+msgstr "Основные сведения"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings.defaults.reminders.directions.before"
@@ -2293,6 +2293,11 @@ msgctxt "generated Bases view name"
 msgid "Blocked By"
 msgstr "Заблокировано другими"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Blocked By"
+msgstr "Заблокировано другими"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: blockedBy text"
 msgid "Blocked by: "
@@ -2326,6 +2331,11 @@ msgstr "Блокирует"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.blocking"
+msgid "Blocking"
+msgstr "Блокирует"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Blocking"
 msgstr "Блокирует"
 
@@ -3457,15 +3467,10 @@ msgctxt "settings.taskProperties.properties.contexts.name"
 msgid "Contexts"
 msgstr "Контексты"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.contexts"
-msgid "Contexts: {value}"
-msgstr "Контексты: {value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Contexts: {value1}"
-msgstr "Контексты: {value1}"
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Contexts"
+msgstr "Контексты"
 
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
@@ -4007,6 +4012,11 @@ msgstr "Произвольное число дней"
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.customFieldsLabel"
 msgid "Custom fields"
+msgstr "Пользовательские поля"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Custom Fields"
 msgstr "Пользовательские поля"
 
 #: src/settings/tabs/integrationsTab.ts
@@ -4585,6 +4595,11 @@ msgctxt "contextMenus.task.dependencies.title"
 msgid "Dependencies"
 msgstr "Зависимости"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Dependencies"
+msgstr "Зависимости"
+
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
 msgid "Dependencies updated"
@@ -4647,6 +4662,11 @@ msgstr "Папка назначения (оставьте пустым для к
 
 #: src/modals/TaskModal.ts
 msgctxt "modals.task.detailsLabel"
+msgid "Details"
+msgstr "Детали"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Details"
 msgstr "Детали"
 
@@ -4950,11 +4970,6 @@ msgstr "Срок: {date}"
 
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.dueValue"
-msgid "Due: {value}"
-msgstr "Срок: {value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.due"
 msgid "Due: {value}"
 msgstr "Срок: {value}"
 
@@ -5636,11 +5651,6 @@ msgstr "Экспортировать представления V3"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "Экспортировано {count} сохранённых представлений в {filePath}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Exported from TaskNotes: {path}"
-msgstr "Экспортировано из TaskNotes: {path}"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
@@ -7818,6 +7828,11 @@ msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
 msgstr "Средние (30 мин – 2 ч)"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Metadata"
+msgstr "Метаданные"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.sections.metadataProperties"
 msgid "Metadata properties"
@@ -8140,7 +8155,7 @@ msgctxt "common.new"
 msgid "New"
 msgstr "Новый"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/i18n/dataSeedLabels.ts
 msgctxt "settings.integrations.subscriptionsList.newCalendarName"
 msgid "New calendar"
 msgstr "Новый календарь"
@@ -8149,6 +8164,16 @@ msgstr "Новый календарь"
 msgctxt "settings.integrations.subscriptionsList.notices.addSuccess"
 msgid "New calendar subscription added - please configure the details"
 msgstr "Новая подписка на календарь добавлена - пожалуйста, настройте детали"
+
+#: src/i18n/dataSeedLabels.ts
+msgctxt "services/PriorityManager: PriorityManager.createDefaultPriority label"
+msgid "New priority"
+msgstr "Новый приоритет"
+
+#: src/i18n/dataSeedLabels.ts
+msgctxt "services/StatusManager: StatusManager.createDefaultStatus label"
+msgid "New status"
+msgstr "Новый статус"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
@@ -8243,16 +8268,6 @@ msgctxt "settings.taskProperties.propertyCard.nlpTrigger"
 msgid "NLP trigger:"
 msgstr "NLP-триггер:"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No {fieldIdOrKey}"
-msgstr "Без {fieldIdOrKey}"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No {key}"
-msgstr "Без {key}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
 msgid "No {provider} connection found"
@@ -8343,11 +8358,6 @@ msgctxt "contextMenus.task.completion.noCompletedStatus"
 msgid "No completed status configured"
 msgstr "Статус выполненной задачи не настроен"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Context"
-msgstr "Без контекста"
-
 #: src/settings/tabs/taskProperties/priorityPropertyCard.ts
 msgctxt "settings.taskProperties.taskPriorities.emptyState"
 msgid "No custom priorities configured. Add a priority to get started."
@@ -8427,11 +8437,6 @@ msgstr "Без срока выполнения"
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.due.none"
 msgid "No due date"
-msgstr "Без срока выполнения"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Due Date"
 msgstr "Без срока выполнения"
 
 #: src/ui/completionDateResolver.ts
@@ -8526,13 +8531,7 @@ msgctxt "OAuth callback description"
 msgid "No pending authorization matches this callback."
 msgstr "Этому обратному вызову не соответствует ни одна ожидаемая авторизация."
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Priority"
-msgstr "Без приоритета"
-
 #: src/services/filter-service/filterTaskGrouping.ts
-#: src/services/FilterService.ts
 msgctxt "services.filter.groupLabels.noProject"
 msgid "No project"
 msgstr "Без проекта"
@@ -8540,11 +8539,6 @@ msgstr "Без проекта"
 #: src/views/StatsView.ts
 msgctxt "views.stats.noProject"
 msgid "No project"
-msgstr "Без проекта"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Project"
 msgstr "Без проекта"
 
 #: src/views/StatsView.ts
@@ -8577,11 +8571,6 @@ msgctxt "services.filter.groupLabels.scheduled.none"
 msgid "No scheduled date"
 msgstr "Без запланированной даты"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Scheduled Date"
-msgstr "Без запланированной даты"
-
 #: src/ui/completionDateResolver.ts
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
@@ -8592,20 +8581,10 @@ msgctxt "views.pomodoroStats.recents.empty"
 msgid "No sessions recorded yet"
 msgstr "Сессии еще не записаны"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Status"
-msgstr "Без статуса"
-
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "contextMenus.task.subtasks.noSubtasks"
 msgid "No subtasks found"
 msgstr "Подзадачи не найдены"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Tag"
-msgstr "Без тега"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.noTags"
@@ -8721,11 +8700,6 @@ msgstr "без-ключа"
 
 #: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "None"
-msgstr "Нет"
-
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "None"
 msgstr "Нет"
 
@@ -9094,16 +9068,6 @@ msgctxt "ui.audit.openNewTab"
 msgid "Open in new tab"
 msgstr "Открыть в новой вкладке"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.openInObsidian"
-msgid "Open in Obsidian"
-msgstr "Открыть в Obsidian"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Open in Obsidian: {obsidianUri}"
-msgstr "Открыть в Obsidian: {obsidianUri}"
-
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.options.sameTab"
 msgid "Open in the same tab"
@@ -9315,6 +9279,11 @@ msgstr "Организация"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.organization"
+msgid "Organization"
+msgstr "Организация"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Organization"
 msgstr "Организация"
 
@@ -9814,18 +9783,8 @@ msgctxt "ui.taskCard.priorityAriaLabel"
 msgid "Priority: {label}"
 msgstr "Приоритет: {label}"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Priority: {priority}"
-msgstr "Приоритет: {priority}"
-
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.priorityValue"
-msgid "Priority: {value}"
-msgstr "Приоритет: {value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.priority"
 msgid "Priority: {value}"
 msgstr "Приоритет: {value}"
 
@@ -9879,20 +9838,15 @@ msgctxt "settings.taskProperties.properties.projects.name"
 msgid "Projects"
 msgstr "Проекты"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Projects"
+msgstr "Проекты"
+
 #: src/views/StatsView.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "Проекты"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.projects"
-msgid "Projects: {value}"
-msgstr "Проекты: {value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Projects: {value1}"
-msgstr "Проекты: {value1}"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
@@ -9938,11 +9892,6 @@ msgstr "Выбор даты из свойства"
 msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "События на основе свойств"
-
-#: src/api/TasksController.ts
-msgctxt "api/TasksController: TasksController.queryTasks summary"
-msgid "Query tasks"
-msgstr "Поиск задач"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -10231,12 +10180,7 @@ msgctxt "contextMenus.task.remindBeforeScheduled"
 msgid "Remind before scheduled…"
 msgstr "Напомнить до запланированной даты…"
 
-#: src/services/buildTaskCreationDataFromCli.ts
-msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand description"
-msgid "Reminder"
-msgstr "Напоминание"
-
-#: src/settings/tabs/taskProperties/remindersPropertyCard.ts
+#: src/i18n/dataSeedLabels.ts
 msgctxt "settings.defaults.reminders.defaultDescription"
 msgid "Reminder"
 msgstr "Напоминание"
@@ -10697,11 +10641,6 @@ msgstr "Запланировано: {date}"
 
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.scheduledValue"
-msgid "Scheduled: {value}"
-msgstr "Запланировано: {value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.scheduled"
 msgid "Scheduled: {value}"
 msgstr "Запланировано: {value}"
 
@@ -11360,11 +11299,6 @@ msgctxt "settings.features.pomodoroSound.volumeName"
 msgid "Sound volume"
 msgstr "Громкость звука"
 
-#: src/services/InstantTaskConvertService.ts
-msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.appendPreservedTitleLinks display"
-msgid "Source links:"
-msgstr "Исходные ссылки:"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
 msgid "Span tasks between scheduled and due dates"
@@ -11544,18 +11478,8 @@ msgctxt "settings.taskProperties.statusCard.valuesHeader"
 msgid "Status values"
 msgstr "Значения статуса"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Status: {status}"
-msgstr "Статус: {status}"
-
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.statusValue"
-msgid "Status: {value}"
-msgstr "Статус: {value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.status"
 msgid "Status: {value}"
 msgstr "Статус: {value}"
 
@@ -11679,6 +11603,11 @@ msgstr "Подзадачи"
 
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.subtasks"
+msgid "Subtasks"
+msgstr "Подзадачи"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Subtasks"
 msgstr "Подзадачи"
 
@@ -11927,15 +11856,10 @@ msgctxt "ui.filterBar.group.tags"
 msgid "Tags"
 msgstr "Теги"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.tags"
-msgid "Tags: {value}"
-msgstr "Теги: {value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Tags: {value1}"
-msgstr "Теги: {value1}"
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Tags"
+msgstr "Теги"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
@@ -12664,6 +12588,11 @@ msgctxt "settings.taskProperties.properties.timeEstimate.name"
 msgid "Time estimate"
 msgstr "Оценка времени"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Time Estimate"
+msgstr "Оценка времени"
+
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.timeEstimateLabel"
 msgid "Time estimate (minutes)"
@@ -12673,11 +12602,6 @@ msgstr "Оценка времени (минуты)"
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Time estimate in minutes"
 msgstr "Оценка времени в минутах"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.timeEstimate"
-msgid "Time Estimate: {value}"
-msgstr "Оценка времени: {value}"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.name"
@@ -12888,6 +12812,11 @@ msgctxt "settings.taskProperties.properties.title.name"
 msgid "Title"
 msgstr "Заголовок"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Title"
+msgstr "Название"
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleDesc"
 msgid "Title for the calendar event"
@@ -13063,11 +12992,6 @@ msgstr "Фокус сегодня"
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
 msgid "Today''s pomos"
 msgstr "Помодоро сегодня"
-
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
-msgid "Toggle group"
-msgstr "Свернуть или развернуть группу"
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
@@ -13375,11 +13299,6 @@ msgctxt "settings.defaults.reminders.fields.unit"
 msgid "Unit:"
 msgstr "Единица:"
 
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
-msgid "Unknown"
-msgstr "Неизвестно"
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.dependencies.unknownDependency"
 msgid "Unknown"
@@ -13513,35 +13432,9 @@ msgctxt "ui.icsCard.untitledEvent"
 msgid "Untitled event"
 msgstr "Событие без названия"
 
-#: src/services/GoogleCalendarService.ts
-msgctxt "services/GoogleCalendarService: GoogleCalendarService.convertToICSEvent title"
-msgid "Untitled Event"
-msgstr "Событие без названия"
-
-#: src/services/ICSSubscriptionService.ts
-msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.parseICS display"
-msgid "Untitled Event"
-msgstr "Событие без названия"
-
-#: src/services/MicrosoftCalendarService.ts
-msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.convertToICSEvent title"
-msgid "Untitled Event"
-msgstr "Событие без названия"
-
-#: src/i18n/messages.ts
-#: src/services/TaskCalendarSyncService.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.untitledTask"
-msgid "Untitled task"
-msgstr "Безымянная задача"
-
-#: src/utils/taskInfoAssembly.ts
+#: src/i18n/taskInfoTitle.ts
 msgctxt "utils/taskInfoAssembly: buildTaskInfoFromMappedTask title"
 msgid "Untitled task"
-msgstr "Безымянная задача"
-
-#: src/services/InstantTaskConvertService.ts
-msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.createTaskFile display"
-msgid "Untitled Task"
 msgstr "Безымянная задача"
 
 #: src/i18n/errorMessages.ts
@@ -13569,11 +13462,6 @@ msgstr "Обновить файлы Base по умолчанию"
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle"
 msgid "Update default base files"
 msgstr "Обновить Base-файлы по умолчанию"
-
-#: src/api/BasesController.ts
-msgctxt "api/BasesController: BasesController.updateDefaultFiles summary"
-msgid "Update default Base files"
-msgstr "Обновить файлы Bases по умолчанию"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.name"

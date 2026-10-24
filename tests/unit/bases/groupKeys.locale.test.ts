@@ -27,8 +27,19 @@ describe.each(["en", "de", "ru"])("locale-stable group data in %s", locale => {
       expect(coerceGroupKeyToPropertyType(produce(true), "boolean")).toBe(true);
       expect(coerceGroupKeyToPropertyType(produce(false), "boolean")).toBe(false);
     }
-    if (locale !== "en") expect(groupKeyLabel("None")).not.toBe("None");
+    if (locale !== "en") expect(groupKeyLabel("None", { values: [null] })).not.toBe("None");
     expect(groupKeyLabel("user-authored")).toBe("user-authored");
+    for (const text of ["None", "True", "False"]) {
+      expect(groupKeyLabel(text)).toBe(text);
+      expect(groupKeyLabel(text, { propertyType: "text", values: [text] })).toBe(text);
+    }
+    if (locale !== "en") {
+      expect(groupKeyLabel("True", { propertyType: "checkbox" })).not.toBe("True");
+      expect(groupKeyLabel("False", { values: [false] })).not.toBe("False");
+    }
+    expect(groupKeyLabel("None", { values: [null, "None"] })).toBe("None");
+    if (locale !== "en") expect(groupKeyLabel("None", { values: [{ icon: "lucide-file-question" }] })).not.toBe("None");
+    expect(groupKeyLabel("None", { values: [{ icon: "lucide-file-question", data: "None" }] })).toBe("None");
     expect(findKanbanStatusConfigForGroupKey("None", DEFAULT_STATUSES, value => value)).toBeUndefined();
   });
   it("clears scalar/list frontmatter on drop and never writes translated labels", () => {

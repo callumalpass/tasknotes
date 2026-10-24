@@ -2,7 +2,7 @@ import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import { FieldMapping } from "../../../types";
-import type { TranslationKey } from "../../../i18n";
+import type { MessageDescriptor } from "../../../i18n";
 import {
 	createCard,
 	createCardInput,
@@ -14,7 +14,7 @@ import {
 
 // ===== TYPES =====
 
-export type TranslateFn = (key: TranslationKey, params?: Record<string, string | number>) => string;
+export type TranslateFn = (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 
 export interface NLPTriggerConfig {
 	propertyId: string;

@@ -46,7 +46,7 @@ import {
 import { processFolderTemplate, TaskTemplateData, FolderTemplateOptions } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { TaskCreationService } from "./task-service/TaskCreationService";
 import { publishUserNotice } from "../core/userNotices";
 import { TaskUpdateService } from "./task-service/TaskUpdateService";
@@ -195,7 +195,7 @@ export class TaskService {
 		return false;
 	}
 
-	private translate(key: TranslationKey, variables?: InterpolationValues): string {
+	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 

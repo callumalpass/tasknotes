@@ -1,7 +1,7 @@
 import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
-import type { TranslationKey } from "../../i18n";
+import type { MessageDescriptor } from "../../i18n";
 import {
 	createSettingGroup,
 	configureTextSetting,
@@ -57,7 +57,7 @@ export function renderAppearanceTab(
 ): void {
 	container.empty();
 
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 
 	// Task Cards Section

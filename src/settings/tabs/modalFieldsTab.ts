@@ -1,7 +1,7 @@
 import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
-import type { TranslationKey } from "../../i18n";
+import type { MessageDescriptor } from "../../i18n";
 import { createSettingGroup, configureToggleSetting } from "../components/settingHelpers";
 import { createFieldManager } from "../components/FieldManagerComponent";
 import { initializeFieldConfig } from "../../utils/fieldConfigDefaults";
@@ -18,7 +18,7 @@ export function renderModalFieldsTab(
 ): void {
 	container.empty();
 
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 
 	// Ensure modal fields config exists

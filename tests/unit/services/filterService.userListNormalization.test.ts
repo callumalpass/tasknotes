@@ -4,7 +4,6 @@ import {
   compareUserFieldValues,
   findUserFieldById,
   findUserFieldByIdOrKey,
-  getHierarchicalUserFieldGroupValues,
   getUserFieldGroupValue,
   normalizeUserListValue,
   sortUserFieldGroupKeys,
@@ -83,15 +82,6 @@ describe('user field value helpers', () => {
     expect(getUserFieldGroupValue(createUserField({ type: 'number' }), 'High')).toBe('non-numeric');
     expect(getUserFieldGroupValue(createUserField({ type: 'date' }), undefined)).toBe('no-date');
     expect(getUserFieldGroupValue(createUserField({ type: 'list' }), '[[People/Ada]], Bob')).toBe('Ada');
-  });
-
-  test('uses display tokens for hierarchical list grouping and a caller-provided missing label', () => {
-    const field = createUserField({ type: 'list', displayName: 'Reviewers' });
-
-    expect(
-      getHierarchicalUserFieldGroupValues(field, '[[People/Ada]], [[People/Bob|Bobby]]', 'No Reviewers')
-    ).toEqual(['Ada', 'Bobby']);
-    expect(getHierarchicalUserFieldGroupValues(field, '', 'No Reviewers')).toEqual(['No Reviewers']);
   });
 
   test('sorts user-field group headings by field semantics', () => {

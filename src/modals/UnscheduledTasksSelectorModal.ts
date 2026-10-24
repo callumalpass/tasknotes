@@ -12,7 +12,7 @@ import {
 } from "../utils/dateUtils";
 import { filterEmptyProjects } from "../utils/helpers";
 import TaskNotesPlugin from "../main";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { appendInternalLink, LinkServices } from "../ui/renderers/linkRenderer";
 import { parseLinkToPath } from "../utils/linkUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -30,7 +30,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 	private tasks: TaskInfo[];
 	private onScheduleTask: (task: TaskInfo | null, options?: ScheduleTaskOptions) => void;
 	private defaultScheduleOptions?: ScheduleTaskOptions;
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 
 	constructor(
 		app: App,

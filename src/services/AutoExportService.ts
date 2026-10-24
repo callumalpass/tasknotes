@@ -2,7 +2,7 @@ import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../main";
 import { CalendarExportService } from "./CalendarExportService";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { createVaultFile } from "./VaultMutationService";
@@ -20,7 +20,7 @@ export class AutoExportService {
 		this.plugin = plugin;
 	}
 
-	private translate(key: TranslationKey, variables?: InterpolationValues): string {
+	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 

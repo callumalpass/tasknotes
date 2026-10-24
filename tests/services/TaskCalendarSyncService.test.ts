@@ -132,7 +132,7 @@ describe("TaskCalendarSyncService", () => {
         expect(description).toContain("Priority: High");
         expect(description).toContain("Status: Ready");
         expect(description).toContain("Scheduled: 2026-04-29");
-        expect(description).toContain("Time Estimate: 3 hr");
+        expect(description).toContain("Time Estimate: 3h 0m");
         expect(description).toContain("Contexts: @Alex Example, @admin");
         expect(description).toContain(
             "Projects: Quarterly Planning, Nested Project, Markdown Project"

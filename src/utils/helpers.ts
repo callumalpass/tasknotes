@@ -1,3 +1,4 @@
+import { taskInfoTitle } from "../i18n/taskInfoTitle";
 import { uiDuration } from "../i18n/formatters";
 import { uiData } from "../i18n/dataText";
 import { recurrenceDisplayText } from "../i18n/recurrence";
@@ -309,7 +310,7 @@ export function extractTaskInfo(
 
 			// Ensure required fields have defaults
 			const taskInfo: TaskInfo = {
-				title: mappedTask.title || "",
+				title: taskInfoTitle(mappedTask.title),
 				status: mappedTask.status || defaultStatus || "open",
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
@@ -337,7 +338,7 @@ export function extractTaskInfo(
 			const mappedTask = defaultMapper.mapFromFrontmatter(yaml, path, storeTitleInFilename);
 
 			return {
-				title: mappedTask.title || "",
+				title: taskInfoTitle(mappedTask.title),
 				status: mappedTask.status || defaultStatus || "open",
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
@@ -361,7 +362,7 @@ export function extractTaskInfo(
 	}
 
 	// Fallback to basic info from filename
-	const filename = path.split("/").pop()?.replace(".md", "") || "";
+	const filename = taskInfoTitle(path.split("/").pop()?.replace(".md", ""));
 	return {
 		title: filename,
 		status: defaultStatus || "open",

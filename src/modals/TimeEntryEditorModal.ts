@@ -4,7 +4,7 @@ import { App, Modal, Notice, Setting, setIcon } from "obsidian";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { TimeEntry, TaskInfo } from "../types";
 import type TaskNotesPlugin from "../main";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
 
 export class TimeEntryEditorModal extends Modal {
@@ -12,7 +12,7 @@ export class TimeEntryEditorModal extends Modal {
 	private task: TaskInfo;
 	private timeEntries: TimeEntry[];
 	private onSave: (timeEntries: TimeEntry[]) => void;
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 	private entriesContainerEl: HTMLElement;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 	private totalEl: HTMLElement | null = null;

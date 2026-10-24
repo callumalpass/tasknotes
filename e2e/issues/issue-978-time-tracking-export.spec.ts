@@ -837,7 +837,7 @@ test.describe('Issue #978: Time Tracking export', () => {
             '- Format options\n' +
             '- Filter labels\n' +
             '- Success/error messages\n' +
-            'Files: src/i18n/resources/en.ts, de.ts, etc.'
+            'Files: src/i18n/locales/en/messages.po, de.ts, etc.'
         );
 
         expect(true).toBe(false); // Document translation work needed

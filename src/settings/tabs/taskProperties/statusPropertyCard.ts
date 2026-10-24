@@ -250,7 +250,7 @@ function renderStatusList(
 		const labelInput = createCardInput(
 			"text",
 			translate(msg({ message: "In progress", context: "settings.taskProperties.taskStatuses.placeholders.label" })),
-			status.label
+			configLabel(status)
 		);
 		const colorInput = createThemeColorInput(status.color);
 		const { container: iconInputContainer, input: iconInput } = createIconInput(

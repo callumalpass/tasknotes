@@ -14,12 +14,12 @@ import { renderModalFieldsTab } from "./tabs/modalFieldsTab";
 import { renderAppearanceTab } from "./tabs/appearanceTab";
 import { renderFeaturesTab } from "./tabs/featuresTab";
 import { renderIntegrationsTab } from "./tabs/integrationsTab";
-import type { TranslationKey } from "../i18n";
+import type { MessageDescriptor } from "../i18n";
 import { CardExpansionState } from "./components/CardExpansionState";
 
 interface TabConfig {
 	id: string;
-	nameKey: TranslationKey;
+	nameKey: MessageDescriptor;
 	renderFn: (container: HTMLElement, plugin: TaskNotesPlugin, save: () => void) => void;
 }
 
@@ -81,7 +81,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		containerEl.addClass("tasknotes-plugin");
 		containerEl.addClass("settings-view");
 
-		const translate = (key: TranslationKey) => this.plugin.i18n.translate(key);
+		const translate = (key: MessageDescriptor) => this.plugin.i18n.translate(key);
 
 		const settingsToolbar = containerEl.createDiv("settings-view__toolbar");
 		const tabNav = settingsToolbar.createDiv("settings-tab-nav settings-view__tab-nav");

@@ -14,7 +14,7 @@ import {
 } from "../utils/filenameGenerator";
 import { ensureFolderExists } from "../utils/helpers";
 import { processTemplate, ICSTemplateData } from "../utils/templateProcessor";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { processVaultFrontMatter } from "./VaultMutationService";
@@ -38,7 +38,7 @@ interface EventSeriesIndex {
 export class ICSNoteService {
 	constructor(private plugin: TaskNotesPlugin) {}
 
-	private translate(key: TranslationKey, variables?: InterpolationValues): string {
+	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 

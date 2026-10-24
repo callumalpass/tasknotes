@@ -86,6 +86,19 @@ test("permits real descriptors and deferred getters but rejects eager module tra
  assert.equal(inspect('const labels={get value(){return uiText(msg({message:"Source"}));}};el.setText(labels.value);').issues.length,0);
  assert.ok(inspect('const label=uiText(msg({message:"Source"}));').issues.some(issue=>issue.kind==="eager-module-translation"));
 });
+test("decorator metadata stays English; every translator primitive is rejected even on instance methods",()=>{
+ for(const call of ['uiText(msg({message:"Query tasks"}))', 'i18n.translate(msg({message:"Query tasks"}))', 'i18n._(msg({message:"Query tasks"}))', 't(msg({message:"Query tasks"}))', '(() => uiText(msg({message:"Query tasks"})))()']) {
+  assert.ok(inspect(`class Controller { @ApiOperation({summary:${call}}) query() {} }`).issues.some(issue=>issue.kind==="eager-module-translation"),call);
+ }
+ assert.equal(inspect('class Controller { @ApiOperation({summary:"Query tasks"}) query() {} }').issues.length,0);
+ assert.equal(inspect('const descriptor=msg({message:"Query tasks"});').issues.length,0);
+});
+test("guards module calls, static fields, static blocks and IIFEs without banning deferred instance rendering",()=>{
+ for(const source of ['const value=i18n.translate(msg({message:"Label"}));', 'class Labels { static label=uiText(msg({message:"Label"})); }', 'class Labels { static { uiText(msg({message:"Label"})); } }', 'const value=(() => uiText(msg({message:"Label"})))();'])
+  assert.ok(inspect(source).issues.some(issue=>issue.kind==="eager-module-translation"),source);
+ for(const source of ['class Labels { label=uiText(msg({message:"Label"})); }', 'function render(){return i18n.translate(msg({message:"Label"}));}', 'const render=()=>uiText(msg({message:"Label"}));'])
+  assert.equal(inspect(source).issues.length,0,source);
+});
 test("does not translate user data, CSS, protocol fields or valid filename syntax",()=>{
  assert.equal(inspect('declare const task:{title:string};el.setText(task.title);const request={method:"POST",body:"wire-value"};el.createEl("input",{attr:{class:"stable-css",type:"text"}});el.setPlaceholder("sample.json");').issues.length,0);
 });

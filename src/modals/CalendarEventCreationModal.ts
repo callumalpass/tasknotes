@@ -8,7 +8,7 @@ import {
 	ProviderCalendar,
 	type CalendarEventData,
 } from "../services/CalendarProvider";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { format } from "date-fns";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -48,7 +48,7 @@ export function getDefaultWritableCalendarIndex(
 export class CalendarEventCreationModal extends Modal {
 	plugin: TaskNotesPlugin;
 	options: CalendarEventCreationOptions;
-	private translate: (key: TranslationKey, variables?: InterpolationValues) => string;
+	private translate: (key: MessageDescriptor, variables?: InterpolationValues) => string;
 
 	private titleInput: HTMLInputElement;
 	private descriptionInput: HTMLTextAreaElement;

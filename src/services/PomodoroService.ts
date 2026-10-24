@@ -21,7 +21,7 @@ import {
 	TaskInfo,
 	IWebhookNotifier,
 } from "../types";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { publishUserNotice } from "../core/userNotices";
 import { processVaultFrontMatter } from "./VaultMutationService";
 import {
@@ -80,7 +80,7 @@ export class PomodoroService {
 	private completionInProgress = false;
 	private taskFileRenameUnsubscribe?: () => void;
 
-	private translate(key: TranslationKey, variables?: InterpolationValues): string {
+	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 

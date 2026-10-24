@@ -310,7 +310,7 @@ describe('NaturalLanguageParser Multi-Language', () => {
 
             result = parser.parseInput('каждый 2 месяц');
             expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
-            expect(result.title).toBe('');
+            expect(result.title).toBe('Untitled Task');
         });
     });
 

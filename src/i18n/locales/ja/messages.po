@@ -724,11 +724,6 @@ msgctxt "views.pomodoro.meta.ready"
 msgid "{time} planned · {count} completed today"
 msgstr "{time} 予定 · 今日 {count} 完了"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "{timeEstimate, plural, one {Estimated time: # minute} other {Estimated time: # minutes}}"
-msgstr "{timeEstimate, plural, other {見積もり時間: #分}}"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
 msgid "{title} is due {when}"
@@ -2237,6 +2232,11 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.descriptionRegen"
 msgid "Base files are not automatically updated when you change settings. To apply new settings, use \"Update files\" below, delete the existing .base files and restart Obsidian, or edit them manually."
 msgstr "設定を変更しても Bases ファイルは自動更新されません。新しい設定を適用するには、下の「ファイルを更新」を使うか、既存の .base ファイルを削除して Obsidian を再起動するか、手動で編集してください。"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Basic Information"
+msgstr "基本情報"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings.defaults.reminders.directions.before"
@@ -2290,6 +2290,11 @@ msgctxt "generated Bases view name"
 msgid "Blocked By"
 msgstr "ブロック元"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Blocked By"
+msgstr "ブロック元"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: blockedBy text"
 msgid "Blocked by: "
@@ -2325,6 +2330,11 @@ msgstr "他のタスクをブロック中"
 msgctxt "ui.taskCard.labels.blocking"
 msgid "Blocking"
 msgstr "ブロック中"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Blocking"
+msgstr "ブロック先"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardSecondaryBadges.ts
@@ -3454,15 +3464,10 @@ msgctxt "settings.taskProperties.properties.contexts.name"
 msgid "Contexts"
 msgstr "コンテキスト"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.contexts"
-msgid "Contexts: {value}"
-msgstr "コンテキスト：{value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Contexts: {value1}"
-msgstr "コンテキスト: {value1}"
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Contexts"
+msgstr "コンテキスト"
 
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
@@ -4004,6 +4009,11 @@ msgstr "カスタム日数"
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.customFieldsLabel"
 msgid "Custom fields"
+msgstr "カスタムフィールド"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Custom Fields"
 msgstr "カスタムフィールド"
 
 #: src/settings/tabs/integrationsTab.ts
@@ -4582,6 +4592,11 @@ msgctxt "contextMenus.task.dependencies.title"
 msgid "Dependencies"
 msgstr "依存関係"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Dependencies"
+msgstr "依存関係"
+
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
 msgid "Dependencies updated"
@@ -4644,6 +4659,11 @@ msgstr "保存先フォルダー（保管庫のルートの場合は空欄）"
 
 #: src/modals/TaskModal.ts
 msgctxt "modals.task.detailsLabel"
+msgid "Details"
+msgstr "詳細"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Details"
 msgstr "詳細"
 
@@ -4947,11 +4967,6 @@ msgstr "期限：{date}"
 
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.dueValue"
-msgid "Due: {value}"
-msgstr "期限：{value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.due"
 msgid "Due: {value}"
 msgstr "期限：{value}"
 
@@ -5633,11 +5648,6 @@ msgstr "V3ビューをエクスポート"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "{count}個の保存ビューを{filePath}にエクスポートしました"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Exported from TaskNotes: {path}"
-msgstr "TaskNotes からエクスポート: {path}"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
@@ -7817,6 +7827,11 @@ msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
 msgstr "中程度 (30分～2時間)"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Metadata"
+msgstr "メタデータ"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.sections.metadataProperties"
 msgid "Metadata properties"
@@ -8139,7 +8154,7 @@ msgctxt "common.new"
 msgid "New"
 msgstr "新規"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/i18n/dataSeedLabels.ts
 msgctxt "settings.integrations.subscriptionsList.newCalendarName"
 msgid "New calendar"
 msgstr "新しいカレンダー"
@@ -8148,6 +8163,16 @@ msgstr "新しいカレンダー"
 msgctxt "settings.integrations.subscriptionsList.notices.addSuccess"
 msgid "New calendar subscription added - please configure the details"
 msgstr "新しいカレンダー購読が追加されました - 詳細を設定してください"
+
+#: src/i18n/dataSeedLabels.ts
+msgctxt "services/PriorityManager: PriorityManager.createDefaultPriority label"
+msgid "New priority"
+msgstr "新しい優先度"
+
+#: src/i18n/dataSeedLabels.ts
+msgctxt "services/StatusManager: StatusManager.createDefaultStatus label"
+msgid "New status"
+msgstr "新しいステータス"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
@@ -8242,16 +8267,6 @@ msgctxt "settings.taskProperties.propertyCard.nlpTrigger"
 msgid "NLP trigger:"
 msgstr "NLPトリガー:"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No {fieldIdOrKey}"
-msgstr "{fieldIdOrKey}なし"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No {key}"
-msgstr "{key}なし"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
 msgid "No {provider} connection found"
@@ -8342,11 +8357,6 @@ msgctxt "contextMenus.task.completion.noCompletedStatus"
 msgid "No completed status configured"
 msgstr "完了ステータスが設定されていません"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Context"
-msgstr "コンテキストなし"
-
 #: src/settings/tabs/taskProperties/priorityPropertyCard.ts
 msgctxt "settings.taskProperties.taskPriorities.emptyState"
 msgid "No custom priorities configured. Add a priority to get started."
@@ -8426,11 +8436,6 @@ msgstr "期限日なし"
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.due.none"
 msgid "No due date"
-msgstr "期限日なし"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Due Date"
 msgstr "期限日なし"
 
 #: src/ui/completionDateResolver.ts
@@ -8525,13 +8530,7 @@ msgctxt "OAuth callback description"
 msgid "No pending authorization matches this callback."
 msgstr "このコールバックに対応する認証要求はありません。"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Priority"
-msgstr "優先度なし"
-
 #: src/services/filter-service/filterTaskGrouping.ts
-#: src/services/FilterService.ts
 msgctxt "services.filter.groupLabels.noProject"
 msgid "No project"
 msgstr "プロジェクトなし"
@@ -8539,11 +8538,6 @@ msgstr "プロジェクトなし"
 #: src/views/StatsView.ts
 msgctxt "views.stats.noProject"
 msgid "No project"
-msgstr "プロジェクトなし"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Project"
 msgstr "プロジェクトなし"
 
 #: src/views/StatsView.ts
@@ -8576,11 +8570,6 @@ msgctxt "services.filter.groupLabels.scheduled.none"
 msgid "No scheduled date"
 msgstr "予定日なし"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Scheduled Date"
-msgstr "予定日なし"
-
 #: src/ui/completionDateResolver.ts
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
@@ -8591,20 +8580,10 @@ msgctxt "views.pomodoroStats.recents.empty"
 msgid "No sessions recorded yet"
 msgstr "まだセッションが記録されていません"
 
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Status"
-msgstr "ステータスなし"
-
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "contextMenus.task.subtasks.noSubtasks"
 msgid "No subtasks found"
 msgstr "サブタスクが見つかりません"
-
-#: src/services/HierarchicalGroupingService.ts
-msgctxt "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display"
-msgid "No Tag"
-msgstr "タグなし"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.noTags"
@@ -8720,11 +8699,6 @@ msgstr "キーなし"
 
 #: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "None"
-msgstr "なし"
-
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "None"
 msgstr "なし"
 
@@ -9093,16 +9067,6 @@ msgctxt "ui.audit.openNewTab"
 msgid "Open in new tab"
 msgstr "新しいタブで開く"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.openInObsidian"
-msgid "Open in Obsidian"
-msgstr "Obsidianで開く"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Open in Obsidian: {obsidianUri}"
-msgstr "Obsidian で開く: {obsidianUri}"
-
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.options.sameTab"
 msgid "Open in the same tab"
@@ -9314,6 +9278,11 @@ msgstr "整理"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.organization"
+msgid "Organization"
+msgstr "整理"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Organization"
 msgstr "整理"
 
@@ -9813,18 +9782,8 @@ msgctxt "ui.taskCard.priorityAriaLabel"
 msgid "Priority: {label}"
 msgstr "優先度: {label}"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Priority: {priority}"
-msgstr "優先度: {priority}"
-
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.priorityValue"
-msgid "Priority: {value}"
-msgstr "優先度：{value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.priority"
 msgid "Priority: {value}"
 msgstr "優先度：{value}"
 
@@ -9878,20 +9837,15 @@ msgctxt "settings.taskProperties.properties.projects.name"
 msgid "Projects"
 msgstr "プロジェクト"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Projects"
+msgstr "プロジェクト"
+
 #: src/views/StatsView.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "プロジェクト"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.projects"
-msgid "Projects: {value}"
-msgstr "プロジェクト：{value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Projects: {value1}"
-msgstr "プロジェクト: {value1}"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
@@ -9937,11 +9891,6 @@ msgstr "プロパティでの移動方法"
 msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "プロパティベースのイベント"
-
-#: src/api/TasksController.ts
-msgctxt "api/TasksController: TasksController.queryTasks summary"
-msgid "Query tasks"
-msgstr "タスクを照会"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -10230,12 +10179,7 @@ msgctxt "contextMenus.task.remindBeforeScheduled"
 msgid "Remind before scheduled…"
 msgstr "予定前にリマインド…"
 
-#: src/services/buildTaskCreationDataFromCli.ts
-msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand description"
-msgid "Reminder"
-msgstr "リマインダー"
-
-#: src/settings/tabs/taskProperties/remindersPropertyCard.ts
+#: src/i18n/dataSeedLabels.ts
 msgctxt "settings.defaults.reminders.defaultDescription"
 msgid "Reminder"
 msgstr "リマインダー"
@@ -10696,11 +10640,6 @@ msgstr "予定：{date}"
 
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.scheduledValue"
-msgid "Scheduled: {value}"
-msgstr "予定：{value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.scheduled"
 msgid "Scheduled: {value}"
 msgstr "予定：{value}"
 
@@ -11359,11 +11298,6 @@ msgctxt "settings.features.pomodoroSound.volumeName"
 msgid "Sound volume"
 msgstr "サウンド音量"
 
-#: src/services/InstantTaskConvertService.ts
-msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.appendPreservedTitleLinks display"
-msgid "Source links:"
-msgstr "元のリンク:"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
 msgid "Span tasks between scheduled and due dates"
@@ -11543,18 +11477,8 @@ msgctxt "settings.taskProperties.statusCard.valuesHeader"
 msgid "Status values"
 msgstr "ステータス値"
 
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Status: {status}"
-msgstr "ステータス: {status}"
-
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.tooltips.statusValue"
-msgid "Status: {value}"
-msgstr "ステータス：{value}"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.status"
 msgid "Status: {value}"
 msgstr "ステータス：{value}"
 
@@ -11678,6 +11602,11 @@ msgstr "サブタスク"
 
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.subtasks"
+msgid "Subtasks"
+msgstr "サブタスク"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Subtasks"
 msgstr "サブタスク"
 
@@ -11926,15 +11855,10 @@ msgctxt "ui.filterBar.group.tags"
 msgid "Tags"
 msgstr "タグ"
 
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.tags"
-msgid "Tags: {value}"
-msgstr "タグ：{value}"
-
-#: src/services/CalendarExportService.ts
-msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
-msgid "Tags: {value1}"
-msgstr "タグ: {value1}"
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Tags"
+msgstr "タグ"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
@@ -12663,6 +12587,11 @@ msgctxt "settings.taskProperties.properties.timeEstimate.name"
 msgid "Time estimate"
 msgstr "時間見積もり"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Time Estimate"
+msgstr "見積もり時間"
+
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.timeEstimateLabel"
 msgid "Time estimate (minutes)"
@@ -12672,11 +12601,6 @@ msgstr "見積時間（分）"
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Time estimate in minutes"
 msgstr "見積もり時間 (分)"
-
-#: src/i18n/messages.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.timeEstimate"
-msgid "Time Estimate: {value}"
-msgstr "時間見積もり：{value}"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.name"
@@ -12887,6 +12811,11 @@ msgctxt "settings.taskProperties.properties.title.name"
 msgid "Title"
 msgstr "タイトル"
 
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Title"
+msgstr "タイトル"
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleDesc"
 msgid "Title for the calendar event"
@@ -13062,11 +12991,6 @@ msgstr "今日の集中時間"
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
 msgid "Today''s pomos"
 msgstr "今日のポモドーロ数"
-
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
-msgid "Toggle group"
-msgstr "グループの表示を切り替え"
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
@@ -13374,11 +13298,6 @@ msgctxt "settings.defaults.reminders.fields.unit"
 msgid "Unit:"
 msgstr "単位："
 
-#: src/bases/helpers.ts
-msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
-msgid "Unknown"
-msgstr "不明"
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.dependencies.unknownDependency"
 msgid "Unknown"
@@ -13512,35 +13431,9 @@ msgctxt "ui.icsCard.untitledEvent"
 msgid "Untitled event"
 msgstr "無題のイベント"
 
-#: src/services/GoogleCalendarService.ts
-msgctxt "services/GoogleCalendarService: GoogleCalendarService.convertToICSEvent title"
-msgid "Untitled Event"
-msgstr "無題のイベント"
-
-#: src/services/ICSSubscriptionService.ts
-msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.parseICS display"
-msgid "Untitled Event"
-msgstr "無題のイベント"
-
-#: src/services/MicrosoftCalendarService.ts
-msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.convertToICSEvent title"
-msgid "Untitled Event"
-msgstr "無題のイベント"
-
-#: src/i18n/messages.ts
-#: src/services/TaskCalendarSyncService.ts
-msgctxt "settings.integrations.googleCalendarExport.eventDescription.untitledTask"
-msgid "Untitled task"
-msgstr "無題のタスク"
-
-#: src/utils/taskInfoAssembly.ts
+#: src/i18n/taskInfoTitle.ts
 msgctxt "utils/taskInfoAssembly: buildTaskInfoFromMappedTask title"
 msgid "Untitled task"
-msgstr "無題のタスク"
-
-#: src/services/InstantTaskConvertService.ts
-msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.createTaskFile display"
-msgid "Untitled Task"
 msgstr "無題のタスク"
 
 #: src/i18n/errorMessages.ts
@@ -13568,11 +13461,6 @@ msgstr "既定の Base ファイルを更新"
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.confirmTitle"
 msgid "Update default base files"
 msgstr "既定の Bases ファイルを更新"
-
-#: src/api/BasesController.ts
-msgctxt "api/BasesController: BasesController.updateDefaultFiles summary"
-msgid "Update default Base files"
-msgstr "デフォルトの Base ファイルを更新"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.name"

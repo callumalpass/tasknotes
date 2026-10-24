@@ -62,6 +62,7 @@ import {
 	computeBasesFormulas,
 	populateBasesFormulaProperty,
 	isObsidianListProperty,
+	getObsidianPropertyType,
 } from "./basesViewAdapters";
 import { applyKanbanCreationDefault } from "./kanbanCreationDefaults";
 import { coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter } from "./propertyValueCoercion";
@@ -1823,10 +1824,10 @@ export class KanbanView extends BasesViewBase {
 
 	private getAddTaskLabel(groupKey: string, swimLaneKey: string | null): string {
 		if (swimLaneKey) {
-			return uiText(msg({ message: "Add task to {groupKey} / {swimLaneKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: groupKeyLabel(groupKey), swimLaneKey: groupKeyLabel(swimLaneKey) });
+			return uiText(msg({ message: "Add task to {groupKey} / {swimLaneKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: this.getGroupDisplayTitle(groupKey, this.getGroupByPropertyId()), swimLaneKey: this.getGroupDisplayTitle(swimLaneKey, this.swimLanePropertyId) });
 		}
 
-		return uiText(msg({ message: "Add task to {groupKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: groupKeyLabel(groupKey) });
+		return uiText(msg({ message: "Add task to {groupKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: this.getGroupDisplayTitle(groupKey, this.getGroupByPropertyId()) });
 	}
 
 	private renderEmptyCellHint(
@@ -1836,8 +1837,8 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		const noTasksLabel = this.plugin.i18n.translate(msg({ message: "No tasks", context: "views.kanban.noTasks" }));
 		const label = swimLaneKey
-			? `${noTasksLabel}: ${groupKeyLabel(groupKey)} / ${groupKeyLabel(swimLaneKey)}`
-			: `${noTasksLabel}: ${groupKeyLabel(groupKey)}`;
+			? `${noTasksLabel}: ${this.getGroupDisplayTitle(groupKey, this.getGroupByPropertyId())} / ${this.getGroupDisplayTitle(swimLaneKey, this.swimLanePropertyId)}`
+			: `${noTasksLabel}: ${this.getGroupDisplayTitle(groupKey, this.getGroupByPropertyId())}`;
 		const empty = container.createDiv({
 			cls: "kanban-view__empty-cell",
 			attr: {
@@ -4045,8 +4046,11 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private getGroupDisplayTitle(title: string, propertyId?: string | null): string {
-		const label = groupKeyLabel(title);
-		if ([NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY].some((key) => key === title)) return label;
+		if ([NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY].some(key => key === title)) {
+			const sources = title === NONE_GROUP_KEY && propertyId === this.getGroupByPropertyId() ? this.dataAdapter?.getGroupedData().filter(group => this.dataAdapter.convertGroupKeyToString(group.key) === title).map(group => group.key) : [];
+			const label = groupKeyLabel(title, { values: sources, propertyType: propertyId && this.plugin.app ? getObsidianPropertyType(this.plugin.app, stripPropertyPrefix(propertyId)) : undefined });
+			if (label !== title) return label;
+		}
 		if (!propertyId) {
 			return title;
 		}
@@ -4069,7 +4073,7 @@ export class KanbanView extends BasesViewBase {
 			}
 		}
 
-		return groupKeyLabel(title);
+		return title;
 	}
 
 	private renderGroupTitleWrapper(

@@ -2,6 +2,7 @@ import { msg } from "@lingui/core/macro";
 import {
 	FilterQuery,
 	TaskInfo,
+	TaskGroupKey,
 	TaskSortKey,
 	SortDirection,
 	FilterCondition,
@@ -17,12 +18,8 @@ import { EventEmitter } from "../utils/EventEmitter";
 import { FilterUtils, FilterValidationError, FilterEvaluationError } from "../utils/FilterUtils";
 import { format } from "date-fns";
 import { isToday as isTodayUtil, formatDateForStorage, isTodayUTC } from "../utils/dateUtils";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { FilterQueryPlanner } from "./filter-service/FilterQueryPlanner";
-import {
-	findUserFieldByIdOrKey,
-	getHierarchicalUserFieldGroupValues,
-} from "./filter-service/userFieldValues";
 import { isTaskForAgendaDate, isTaskOverdueForAgenda } from "./filter-service/agendaTaskSelection";
 import {
 	evaluateFilterNode,
@@ -30,6 +27,7 @@ import {
 } from "./filter-service/filterPredicateEvaluation";
 import {
 	groupFilterTasks,
+	filterTaskGroupLabel,
 	type FilterTaskGroupingContext,
 } from "./filter-service/filterTaskGrouping";
 import { sortFilterTasks, type FilterTaskSortingContext } from "./filter-service/filterTaskSorting";
@@ -49,7 +47,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Services/FilterService" })
 type FilterServiceSettings = Pick<TaskNotesSettings, "userFields" | "hideCompletedFromOverdue">;
 
 interface FilterServiceI18n {
-	translate(key: TranslationKey, vars?: Record<string, string | number>): string;
+	translate(key: MessageDescriptor, vars?: Record<string, string | number>): string;
 	getCurrentLocale?(): string;
 }
 
@@ -106,7 +104,7 @@ export class FilterService extends EventEmitter {
 	}
 
 	private translate(
-		key: TranslationKey,
+		key: MessageDescriptor,
 		fallback: string,
 		vars?: Record<string, string | number>
 	): string {
@@ -124,7 +122,7 @@ export class FilterService extends EventEmitter {
 		return fallback;
 	}
 
-	private static translateStatic(key: TranslationKey, fallback: string): string {
+	private static translateStatic(key: MessageDescriptor, fallback: string): string {
 		const instance = FilterService.lastInstance;
 		if (instance) {
 			return instance.translate(key, fallback);
@@ -148,15 +146,15 @@ export class FilterService extends EventEmitter {
 		return "en";
 	}
 
-	private getNoProjectLabel(): string {
-		return this.translate(msg({ message: "No project", context: "services.filter.groupLabels.noProject" }), "No project");
-	}
-
 	/**
 	 * Main method to get filtered, sorted, and grouped tasks
 	 * Handles the new advanced FilterQuery structure with nested conditions and groups
 	 * Uses query-first approach with index optimization for better performance
 	 */
+	getGroupLabel(key: string, groupKey: TaskGroupKey): string {
+		return filterTaskGroupLabel(key, groupKey, this.createTaskGroupingContext());
+	}
+
 	async getGroupedTasks(query: FilterQuery, targetDate?: Date): Promise<Map<string, TaskInfo[]>> {
 		try {
 			// Use non-strict validation to allow incomplete filters during building
@@ -213,105 +211,6 @@ export class FilterService extends EventEmitter {
 			this.createTaskGroupingContext(),
 			targetDate
 		);
-	}
-
-	/**
-	 * Additive API: returns standard groups and optional hierarchicalGroups when subgroupKey is set
-	 */
-	async getHierarchicalGroupedTasks(
-		query: FilterQuery,
-		targetDate?: Date
-	): Promise<{
-		groups: Map<string, TaskInfo[]>;
-		hierarchicalGroups?: Map<string, Map<string, TaskInfo[]>>;
-	}> {
-		try {
-			// Allow incomplete filters while building
-			FilterUtils.validateFilterNode(query, false);
-
-			// Reuse the same pipeline as getGroupedTasks to avoid behavior drift
-			let candidateTaskPaths = this.queryPlanner.getIndexOptimizedTaskPaths(query);
-			const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
-			const filteredTasks = candidateTasks.filter((task) =>
-				this.evaluateFilterNode(query, task, targetDate)
-			);
-
-			const sortedTasks = this.sortTasks(
-				filteredTasks,
-				query.sortKey || "due",
-				query.sortDirection || "asc"
-			);
-
-			// Preserve current sort for group ordering
-			this.currentSortKey = query.sortKey || "due";
-			this.currentSortDirection = query.sortDirection || "asc";
-
-			const groups = groupFilterTasks(
-				sortedTasks,
-				query.groupKey || "none",
-				this.createTaskGroupingContext(),
-				targetDate
-			);
-
-			// Compute hierarchical grouping only when both keys are active
-			const subgroupKey = query.subgroupKey;
-			if (
-				subgroupKey &&
-				subgroupKey !== "none" &&
-				query.groupKey &&
-				query.groupKey !== "none"
-			) {
-				// Lazy import to avoid circular deps at module load
-				const { HierarchicalGroupingService } = await import(
-					"./HierarchicalGroupingService"
-				);
-
-				// Resolver that mirrors user-field extraction logic used elsewhere in this service
-				const resolver = (task: TaskInfo, fieldIdOrKey: string): string[] => {
-					const userFields = this.runtime?.settings?.userFields || [];
-					const field = findUserFieldByIdOrKey(userFields, fieldIdOrKey);
-					// The grouping service owns missing-value identity and display; return no value here.
-					const raw = field ? this.getUserFieldRawValue(task, field.key) : undefined;
-					return getHierarchicalUserFieldGroupValues(field, raw, "");
-				};
-
-				const svc = new HierarchicalGroupingService(resolver);
-				const hierarchicalGroups = svc.group(
-					sortedTasks,
-					query.groupKey,
-					subgroupKey,
-					this.currentSortDirection,
-					this.runtime?.settings?.userFields || []
-				);
-
-				// Ensure primary group order matches the same order used for flat groups
-				// (e.g., status order) instead of insertion order influenced by the current task sort.
-				const orderedPrimaryKeys = Array.from(groups.keys()); // already sorted via sortGroups()
-				const orderedHierarchical = new Map<string, Map<string, TaskInfo[]>>();
-				for (const key of orderedPrimaryKeys) {
-					const sub = hierarchicalGroups.get(key);
-					if (sub) orderedHierarchical.set(key, sub);
-				}
-				// Safety: include any primaries that might exist only in hierarchicalGroups
-				for (const [key, sub] of hierarchicalGroups) {
-					if (!orderedHierarchical.has(key)) orderedHierarchical.set(key, sub);
-				}
-
-				return { groups, hierarchicalGroups: orderedHierarchical };
-			}
-
-			return { groups };
-		} catch (error) {
-			if (error instanceof FilterValidationError || error instanceof FilterEvaluationError) {
-				tasknotesLogger.error("Filter error (hierarchical):", {
-					category: "internal",
-					operation: "filter-hierarchical",
-					details: { values: [error.message, { nodeId: error.nodeId }] },
-				});
-				return { groups: new Map<string, TaskInfo[]>() };
-			}
-			throw error;
-		}
 	}
 
 	getCacheStats(): { entryCount: number; cacheKeys: string[]; timeoutMs: number } {
@@ -407,7 +306,7 @@ export class FilterService extends EventEmitter {
 	 * Converts an absolute path back to a proper wikilink format.
 	 */
 	getPreferredProjectFormat(absolutePathOrName: string): string {
-		const noProjectLabel = this.getNoProjectLabel();
+		const noProjectLabel = "No project";
 		if (!absolutePathOrName || absolutePathOrName === noProjectLabel) {
 			return absolutePathOrName;
 		}

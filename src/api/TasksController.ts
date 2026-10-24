@@ -1,5 +1,3 @@
-import { uiText } from "../i18n/runtime";
-import { msg } from "@lingui/core/macro";
 import { parseRequestUrl, type HTTPRequestLike, type HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
 import { TaskInfo, TaskCreationData, FilterQuery } from "../types";
@@ -391,7 +389,7 @@ export class TasksController extends BaseController {
 	}
 
 	@OpenAPI({
-		summary: uiText(msg({ message: "Query tasks", context: "api/TasksController: TasksController.queryTasks summary" })),
+		summary: "Query tasks",
 		description: "Filter, sort, and group tasks with a complete TaskNotes FilterQuery payload. Custom fields accept user:<id-or-key> or user.<id-or-key>. Invalid queries return HTTP 400.",
 		operationId: "queryTasks",
 		tags: ["Tasks"],

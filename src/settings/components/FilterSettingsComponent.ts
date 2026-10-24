@@ -1,5 +1,5 @@
 import { msg } from "@lingui/core/macro";
-import type { TranslationKey } from "../../i18n";
+import type { MessageDescriptor } from "../../i18n";
 import type { FileFilterConfig } from "../../suggest/FileSuggestHelper";
 import { createCardInput } from "./CardComponent";
 
@@ -11,7 +11,7 @@ export function createFilterSettingsInputs(
 	container: HTMLElement,
 	currentConfig: FileFilterConfig | undefined,
 	onChange: (updated: FileFilterConfig) => void,
-	translate: (key: TranslationKey) => string
+	translate: (key: MessageDescriptor) => string
 ): void {
 	// Track current config state to preserve values across sequential updates
 	let config = currentConfig || {

@@ -1,5 +1,4 @@
-
-
+import { configLabel } from "../i18n/configLabels";
 import type TaskNotesPlugin from "../main";
 import { StatusConfig, PriorityConfig } from "../types";
 import { NLPTriggersConfig, UserMappedField } from "../types/settings";
@@ -10,6 +9,13 @@ import {
 } from "tasknotes-nlp-core";
 
 export type { ParsedTaskData };
+
+// A non-enumerable identity: API JSON remains exactly the pre-port payload.
+const EMPTY_NLP_TITLE = Symbol("empty-nlp-title");
+const LEGACY_UNTITLED_TITLE = "Untitled Task";
+export function hasMissingNlpTitle(parsed: ParsedTaskData): boolean {
+	return (parsed as ParsedTaskData & { [EMPTY_NLP_TITLE]?: boolean })[EMPTY_NLP_TITLE] === true;
+}
 
 function getBrowserLocale(): string | undefined {
 	return typeof navigator !== "undefined" && navigator.language ? navigator.language : undefined;
@@ -71,10 +77,25 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		this.taskNotesPriorityConfigs = priorityConfigs;
 	}
 
+	getStatusSuggestions(query: string, limit = 10): Array<{ value: string; label: string; display: string }> {
+		const q = query.toLowerCase();
+		return this.taskNotesStatusConfigs.filter(config => [config.value, config.label, configLabel(config)].some(value => value.toLowerCase().includes(q)))
+			.slice(0, limit).map(config => ({ value: config.value, label: configLabel(config), display: configLabel(config) }));
+	}
+
 	parseInput(input: string): ParsedTaskData {
-		const parsed = super.parseInput(input);
-		// The shared parser uses this legacy sentinel; normalize it once at the adapter.
-		if (parsed.title === "Untitled Task") parsed.title = "";
+		// Locale may change after construction (including lazy language-pack load).
+		let coreInput = input;
+		for (const [configs, trigger] of [[this.taskNotesStatusConfigs, this.getStatusTrigger()], [this.taskNotesPriorityConfigs, this.getPriorityTrigger()]] as const) {
+			if (!trigger) continue;
+			for (const config of [...configs].sort((a, b) => configLabel(b).length - configLabel(a).length)) {
+				const label = configLabel(config);
+				if (label === config.label) continue;
+				const pattern = new RegExp(`(^|\\s)${this.escapeRegexLiteral(trigger + label)}(?=${this.escapeRegexLiteral(trigger)}?(?:\\s|$))`, "giu");
+				coreInput = coreInput.replace(pattern, (_match, prefix: string) => prefix + trigger + config.value);
+			}
+		}
+		const parsed = super.parseInput(coreInput);
 		const withStatusShortcutResidueRemoved = this.applyTriggeredStatusMatch(input, parsed);
 		const withPriorityShortcutResidueRemoved = this.removePriorityShortcutResidue(
 			input,
@@ -82,8 +103,14 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		);
 		const withLinkedFields = this.extractLinkedUserFields(input, withPriorityShortcutResidueRemoved);
 		const result = this.normalizeUserFieldValues(withLinkedFields);
-		if (result.title === "Untitled Task") result.title = "";
+		Object.defineProperty(result, EMPTY_NLP_TITLE, { value: !result.title.trim() || result.title === LEGACY_UNTITLED_TITLE });
 		return result;
+	}
+
+	/** Interactive entry rejects missing titles; programmatic paths keep legacy behaviour. */
+	parseInputForModal(input: string): ParsedTaskData {
+		const parsed = this.parseInput(input);
+		return hasMissingNlpTitle(parsed) ? { ...parsed, title: "" } : parsed;
 	}
 
 	private applyTriggeredStatusMatch(input: string, parsed: ParsedTaskData): ParsedTaskData {
@@ -99,7 +126,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			title = this.removeTokenFragment(title, residue);
 		}
 
-		parsed.title = title;
+		parsed.title = title || LEGACY_UNTITLED_TITLE;
 		return parsed;
 	}
 
@@ -146,7 +173,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 	}
 
 	private getStatusPhrases(config: StatusConfig): string[] {
-		return [config.value, config.label]
+		return [config.value, config.label, configLabel(config)]
 			.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
 			.map((value) => value.trim());
 	}
@@ -164,10 +191,10 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		}
 
 		const trigger = this.getPriorityTrigger();
-		const tokenCandidates = [priorityConfig.value, priorityConfig.label]
+		const tokenCandidates = [priorityConfig.value, priorityConfig.label, configLabel(priorityConfig)]
 			.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
 			.flatMap((value) => (trigger ? [`${trigger}${value}`, value] : [value]));
-		const matchCandidates = [priorityConfig.label, priorityConfig.value].filter(
+		const matchCandidates = [priorityConfig.label, priorityConfig.value, configLabel(priorityConfig)].filter(
 			(value): value is string => typeof value === "string" && value.trim().length > 0
 		);
 		const residues = new Set<string>();
@@ -188,7 +215,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			title = this.removeTokenFragment(title, residue);
 		}
 
-		parsed.title = title;
+		parsed.title = title || LEGACY_UNTITLED_TITLE;
 		return parsed;
 	}
 

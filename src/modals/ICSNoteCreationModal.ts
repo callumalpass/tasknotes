@@ -5,7 +5,7 @@ import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, NoteInfo } from "../types";
 import { SafeAsync } from "../utils/safeAsync";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { showNotice } from "../ui/notifications";
 
 export interface ICSNoteCreationOptions {
@@ -21,7 +21,7 @@ export class ICSNoteCreationModal extends Modal {
 	private folder = "";
 	private template = "";
 	private useTemplate = false;
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 
 	// UI elements
 	private titleInput: HTMLInputElement;

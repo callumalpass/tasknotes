@@ -7,7 +7,7 @@ import { App, SuggestModal, Notice, setIcon } from "obsidian";
 import { TaskInfo, TaskCreationData } from "../types";
 import { filterEmptyProjects } from "../utils/helpers";
 import type TaskNotesPlugin from "../main";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { NaturalLanguageParser, ParsedTaskData } from "../services/NaturalLanguageParser";
 import { createTaskCard } from "../ui/TaskCard";
 import { buildTaskCreationDataFromParsed } from "../services/buildTaskCreationDataFromParsed";
@@ -160,7 +160,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	private tasks: TaskInfo[];
 	private options: TaskSelectorWithCreateOptions;
 	private plugin: TaskNotesPlugin;
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 	private nlParser: NaturalLanguageParser;
 	private nlpSuggest: NLPSuggest | null = null;
 	private createFooterEl: HTMLElement | null = null;
@@ -339,7 +339,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			return;
 		}
 
-		const parsed = this.nlParser.parseInput(query);
+		const parsed = this.nlParser.parseInputForModal(query);
 
 		if (parsed.title.trim()) {
 			this.createFooterEl.empty();
@@ -561,7 +561,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		try {
 			// Parse the query using NLP
-			const parsed = this.nlParser.parseInput(query);
+			const parsed = this.nlParser.parseInputForModal(query);
 
 			if (!parsed.title.trim()) {
 				new Notice(

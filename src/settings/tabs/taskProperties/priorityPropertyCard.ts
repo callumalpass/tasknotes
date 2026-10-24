@@ -262,7 +262,7 @@ function renderPriorityList(
 		const labelInput = createCardInput(
 			"text",
 			translate(msg({ message: "High priority", context: "settings.taskProperties.taskPriorities.placeholders.label" })),
-			priority.label
+			configLabel(priority)
 		);
 		const colorInput = createThemeColorInput(priority.color);
 		const { container: iconInputContainer, input: iconInput } = createIconInput(

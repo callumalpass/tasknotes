@@ -1,5 +1,5 @@
+import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
-import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- ICS parsing normalizes optional event fields before use. */
 import { requestUrl, TFile } from "obsidian";
@@ -8,7 +8,7 @@ import { getICSCalendarOwnerEmail, getICSOwnerDeclined } from "../utils/icsAtten
 import { ICSSubscription, ICSEvent, ICSCache } from "../types";
 import { EventEmitter } from "../utils/EventEmitter";
 import TaskNotesPlugin from "../main";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { resolveTzidToIANA, wallTimeInZoneToUtcIso } from "../utils/icsTimezoneFallback";
@@ -132,7 +132,7 @@ export class ICSSubscriptionService extends EventEmitter {
 	// Grace period after cache expiration to show stale data while refreshing (5 minutes)
 	private readonly CACHE_GRACE_PERIOD = 5 * 60 * 1000;
 
-	private translate(key: TranslationKey, variables?: InterpolationValues): string {
+	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -563,7 +563,7 @@ export class ICSSubscriptionService extends EventEmitter {
 					}
 
 					// Extract basic properties
-					const summary = event.summary || uiText(msg({ message: "Untitled Event", context: "services/ICSSubscriptionService: ICSSubscriptionService.parseICS display" }));
+					const summary = event.summary || uiData("Untitled Event", "Persisted/cache provider fallback title; preserve English data seed");
 					const description = event.description || undefined;
 					const location = event.location || undefined;
 

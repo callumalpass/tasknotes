@@ -1,7 +1,7 @@
 import { uiData } from "../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../../main";
-import type { TranslationKey } from "../../i18n";
+import type { MessageDescriptor } from "../../i18n";
 import type { DefaultTaskTime } from "../../types/settings";
 import {
 	createSectionHeader,
@@ -32,7 +32,7 @@ export function renderTaskPropertiesTab(
 ): void {
 	container.empty();
 
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 
 	const createDefaultTimeInput = (

@@ -5,8 +5,7 @@ import { languagePackConfig } from "./languagePackConfig";
 
 export { translationResources };
 
-/** @deprecated Name retained for injected translator signatures; values are Lingui descriptors. */
-export type { MessageDescriptor as TranslationKey } from "@lingui/core";
+export type { MessageDescriptor } from "@lingui/core";
 export type { InterpolationValues } from "./types";
 
 export function createI18nService(options?: Partial<I18nServiceOptions>): I18nService {
