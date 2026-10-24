@@ -13,6 +13,12 @@ function choices(tokens) {
 }
 
 /** Consumer guard for the pinned kit's CLDR/partly-English validation gap.
+ * Coverage mirrors mdbase-connect e61ab062 packages/i18n/scripts/checks.mjs:
+ * require only categories reached by integer counts 0..999, after offset;
+ * exact arms match the original count and may exhaust a category's domain.
+ * The kit does not export coverage separately. Keep its existing tarball pin
+ * and mirror this small rule here, retaining strict English-source coverage
+ * and the plugin's scoped English-arm rejection (the newer kit only warns).
  * This is deliberately conservative: it catches exact English branches, not every
  * possible untranslated sentence. No heuristic can establish translation quality.
  */
@@ -20,17 +26,13 @@ export function assertPluralContract(source, target, locale, id = "fixture", exc
   const english = choices(parse(source));
   for (const choice of choices(parse(target))) {
     if (choice.type !== "plural" && choice.type !== "selectordinal") continue;
-    const categories = new Intl.PluralRules(locale === "pt" ? "pt-BR" : locale, {
+    const rules = new Intl.PluralRules(locale === "pt" ? "pt-BR" : locale, {
       type: choice.type === "selectordinal" ? "ordinal" : "cardinal",
-    }).resolvedOptions().pluralCategories;
+    });
     const keys = new Set(choice.cases.map(arm => arm.key));
-    for (const category of categories) {
-      // In these shipped locales cardinal `one` contains exactly numeric 1.
-      // An explicit singleton arm covers it. This is NOT true for ru (21),
-      // fr/pt (0 and fractions), or ordinal `one` (21st).
-      const exactSingleton = choice.type === "plural" && !choice.pluralOffset &&
-        ["en", "de", "es"].includes(locale) && category === "one" && keys.has("=1");
-      if (!keys.has(category) && !exactSingleton) throw new Error(`${locale} ${id}: ${choice.arg} missing CLDR ${choice.type} category ${category}`);
+    for (const count of Array.from({ length: 1000 }, (_, count) => count)) {
+      const category = rules.select(count - (choice.pluralOffset ?? 0));
+      if (!keys.has(category) && !keys.has(`=${count}`)) throw new Error(`${locale} ${id}: ${choice.arg} missing CLDR ${choice.type} category ${category}`);
     }
     if (locale === "en") continue;
     const peers = english.filter(candidate => candidate.type === choice.type && candidate.arg === choice.arg);

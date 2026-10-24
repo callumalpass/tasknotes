@@ -460,11 +460,11 @@
       "locale": "es",
       "id": "2_6ZSE",
       "context": "timeblock tooltip with description",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -472,11 +472,11 @@
       "locale": "es",
       "id": "0XZFmM",
       "context": "timeblock tooltip",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -484,11 +484,11 @@
       "locale": "es",
       "id": "fuX_1m",
       "context": "generated Bases contexts count",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -496,11 +496,11 @@
       "locale": "es",
       "id": "fJ_I-J",
       "context": "generated Bases projects count",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -508,11 +508,11 @@
       "locale": "es",
       "id": "2k5d9x",
       "context": "ui.taskCard.reminderTooltip",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -520,11 +520,11 @@
       "locale": "es",
       "id": "N7nPbd",
       "context": "recurrence occurrence limit",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -532,11 +532,11 @@
       "locale": "es",
       "id": "d6khkJ",
       "context": "timeblock attachment count",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -544,11 +544,11 @@
       "locale": "es",
       "id": "nzXbbQ",
       "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -556,11 +556,11 @@
       "locale": "es",
       "id": "KSdZHP",
       "context": "task modal reminder count",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -568,11 +568,11 @@
       "locale": "es",
       "id": "CJ9trM",
       "context": "components/BatchContextMenu: BatchContextMenu.buildMenu display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -580,11 +580,11 @@
       "locale": "es",
       "id": "1ume_k",
       "context": "services.instantTaskConvert.notices.conversionSuccess",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -592,11 +592,11 @@
       "locale": "es",
       "id": "MjXP8h",
       "context": "services.instantTaskConvert.notices.convertingTasks",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -604,11 +604,11 @@
       "locale": "es",
       "id": "i3yiX0",
       "context": "services.calendarExport.notices.downloadSuccess",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -616,11 +616,11 @@
       "locale": "es",
       "id": "AwxHGd",
       "context": "ui/StatusBarService: StatusBarService.renderStatusBar display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -628,11 +628,11 @@
       "locale": "es",
       "id": "ZIjHZr",
       "context": "settings.integrations.timeFormats.daysAgo",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "days",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -640,11 +640,11 @@
       "locale": "es",
       "id": "azgCj3",
       "context": "generated Bases relative due date",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "days",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -652,11 +652,11 @@
       "locale": "es",
       "id": "6IoJgZ",
       "context": "generated Bases overdue countdown",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "days",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -664,11 +664,11 @@
       "locale": "es",
       "id": "XcO76v",
       "context": "generated Bases due countdown",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "days",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -676,11 +676,11 @@
       "locale": "es",
       "id": "ObW9eM",
       "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "eventCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -688,11 +688,11 @@
       "locale": "es",
       "id": "tzh-2L",
       "context": "settings.integrations.timeFormats.hoursAgo",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "hours",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -700,11 +700,11 @@
       "locale": "es",
       "id": "7PuX6r",
       "context": "monthly weekday recurrence",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "interval",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -712,11 +712,11 @@
       "locale": "es",
       "id": "Y071tE",
       "context": "recurrence daily interval",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "interval",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -724,11 +724,11 @@
       "locale": "es",
       "id": "01y_eC",
       "context": "recurrence interval on month day",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "interval",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -736,11 +736,11 @@
       "locale": "es",
       "id": "ciO00S",
       "context": "recurrence monthly interval",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "interval",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -748,11 +748,11 @@
       "locale": "es",
       "id": "f3a3-d",
       "context": "recurrence weekly weekdays",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "interval",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -760,11 +760,11 @@
       "locale": "es",
       "id": "HI4G2n",
       "context": "recurrence weekly interval",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "interval",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -772,11 +772,11 @@
       "locale": "es",
       "id": "qqgQnq",
       "context": "recurrence yearly interval date",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "interval",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -784,11 +784,11 @@
       "locale": "es",
       "id": "m2FqzW",
       "context": "recurrence yearly interval",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "interval",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -796,11 +796,11 @@
       "locale": "es",
       "id": "oFGKRL",
       "context": "ui/taskCardProperties: reminders display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "length",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -808,11 +808,11 @@
       "locale": "es",
       "id": "8nLU70",
       "context": "ui/taskCardProperties: timeEntries display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "length",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -820,11 +820,11 @@
       "locale": "es",
       "id": "PII1tA",
       "context": "ui/taskCardProperties: icsEventId display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "length",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -832,11 +832,11 @@
       "locale": "es",
       "id": "gJcV8t",
       "context": "views/StatsView: StatsView.renderDrilldownContent.renderTasks display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "length",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -844,11 +844,11 @@
       "locale": "es",
       "id": "ZwH-HO",
       "context": "settings.integrations.timeFormats.minutesAgo",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "minutes",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -856,26 +856,26 @@
       "locale": "es",
       "id": "ZQ6Ulc",
       "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
-      "addedArms": [
-        {
-          "arg": "eventCount",
-          "category": "many",
-          "copiedFrom": "other"
-        },
-        {
-          "arg": "eventCount",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+      "removedArms": [
         {
           "arg": "noteCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         },
         {
           "arg": "eventCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
+        },
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
+        },
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -883,11 +883,11 @@
       "locale": "es",
       "id": "FBlWXu",
       "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "noteCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -895,11 +895,11 @@
       "locale": "es",
       "id": "uDkPXD",
       "context": "calendar refresh throttling",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "seconds",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -907,11 +907,11 @@
       "locale": "es",
       "id": "i7nzi-",
       "context": "services/errors: RateLimitError display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "seconds",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -919,11 +919,11 @@
       "locale": "es",
       "id": "cU-DWO",
       "context": "services.instantTaskConvert.notices.partialConversion",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "successCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -931,11 +931,11 @@
       "locale": "es",
       "id": "S3yJwA",
       "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "timeEstimate",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -943,11 +943,11 @@
       "locale": "es",
       "id": "9jhhqk",
       "context": "views/StatsView: StatsView.renderProgressCircle display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "total",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -955,11 +955,11 @@
       "locale": "es",
       "id": "Yr6CWP",
       "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "value1",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -967,11 +967,11 @@
       "locale": "es",
       "id": "ZyQSBW",
       "context": "ui/StatusBarService: StatusBarService.renderStatusBar display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "value2",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -979,11 +979,11 @@
       "locale": "fr",
       "id": "2_6ZSE",
       "context": "timeblock tooltip with description",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -991,11 +991,11 @@
       "locale": "fr",
       "id": "0XZFmM",
       "context": "timeblock tooltip",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1006,13 +1006,15 @@
       "addedArms": [
         {
           "arg": "count",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "Contexte"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "count",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1023,13 +1025,15 @@
       "addedArms": [
         {
           "arg": "count",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "Projet"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "count",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1037,11 +1041,11 @@
       "locale": "fr",
       "id": "2k5d9x",
       "context": "ui.taskCard.reminderTooltip",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1049,11 +1053,11 @@
       "locale": "fr",
       "id": "N7nPbd",
       "context": "recurrence occurrence limit",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1061,11 +1065,11 @@
       "locale": "fr",
       "id": "d6khkJ",
       "context": "timeblock attachment count",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1073,11 +1077,11 @@
       "locale": "fr",
       "id": "nzXbbQ",
       "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1085,11 +1089,11 @@
       "locale": "fr",
       "id": "KSdZHP",
       "context": "task modal reminder count",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1097,11 +1101,11 @@
       "locale": "fr",
       "id": "CJ9trM",
       "context": "components/BatchContextMenu: BatchContextMenu.buildMenu display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1109,11 +1113,11 @@
       "locale": "fr",
       "id": "1ume_k",
       "context": "services.instantTaskConvert.notices.conversionSuccess",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1121,11 +1125,11 @@
       "locale": "fr",
       "id": "MjXP8h",
       "context": "services.instantTaskConvert.notices.convertingTasks",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1133,11 +1137,11 @@
       "locale": "fr",
       "id": "i3yiX0",
       "context": "services.calendarExport.notices.downloadSuccess",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1145,11 +1149,11 @@
       "locale": "fr",
       "id": "AwxHGd",
       "context": "ui/StatusBarService: StatusBarService.renderStatusBar display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "count",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1157,11 +1161,11 @@
       "locale": "fr",
       "id": "ZIjHZr",
       "context": "settings.integrations.timeFormats.daysAgo",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "days",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1169,11 +1173,11 @@
       "locale": "fr",
       "id": "azgCj3",
       "context": "generated Bases relative due date",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "days",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1181,11 +1185,11 @@
       "locale": "fr",
       "id": "6IoJgZ",
       "context": "generated Bases overdue countdown",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "days",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1193,11 +1197,11 @@
       "locale": "fr",
       "id": "XcO76v",
       "context": "generated Bases due countdown",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "days",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1205,11 +1209,11 @@
       "locale": "fr",
       "id": "ObW9eM",
       "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "eventCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1217,11 +1221,11 @@
       "locale": "fr",
       "id": "tzh-2L",
       "context": "settings.integrations.timeFormats.hoursAgo",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "hours",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1232,13 +1236,15 @@
       "addedArms": [
         {
           "arg": "interval",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "{weekday, select, MO {{position, select, last {Avec un intervalle de {interval, number} mois, le dernier lundi} every {Avec un intervalle de {interval, number} mois, tous les lundis} other {{index, selectordinal, one {Avec un intervalle de {interval, number} mois, le #er lundi} other {Avec un intervalle de {interval, number} mois, le #e lundi}}}}} TU {{position, select, last {Avec un intervalle de {interval, number} mois, le dernier mardi} every {Avec un intervalle de {interval, number} mois, tous les mardis} other {{index, selectordinal, one {Avec un intervalle de {interval, number} mois, le #er mardi} other {Avec un intervalle de {interval, number} mois, le #e mardi}}}}} WE {{position, select, last {Avec un intervalle de {interval, number} mois, le dernier mercredi} every {Avec un intervalle de {interval, number} mois, tous les mercredis} other {{index, selectordinal, one {Avec un intervalle de {interval, number} mois, le #er mercredi} other {Avec un intervalle de {interval, number} mois, le #e mercredi}}}}} TH {{position, select, last {Avec un intervalle de {interval, number} mois, le dernier jeudi} every {Avec un intervalle de {interval, number} mois, tous les jeudis} other {{index, selectordinal, one {Avec un intervalle de {interval, number} mois, le #er jeudi} other {Avec un intervalle de {interval, number} mois, le #e jeudi}}}}} FR {{position, select, last {Avec un intervalle de {interval, number} mois, le dernier vendredi} every {Avec un intervalle de {interval, number} mois, tous les vendredis} other {{index, selectordinal, one {Avec un intervalle de {interval, number} mois, le #er vendredi} other {Avec un intervalle de {interval, number} mois, le #e vendredi}}}}} SA {{position, select, last {Avec un intervalle de {interval, number} mois, le dernier samedi} every {Avec un intervalle de {interval, number} mois, tous les samedis} other {{index, selectordinal, one {Avec un intervalle de {interval, number} mois, le #er samedi} other {Avec un intervalle de {interval, number} mois, le #e samedi}}}}} SU {{position, select, last {Avec un intervalle de {interval, number} mois, le dernier dimanche} every {Avec un intervalle de {interval, number} mois, tous les dimanches} other {{index, selectordinal, one {Avec un intervalle de {interval, number} mois, le #er dimanche} other {Avec un intervalle de {interval, number} mois, le #e dimanche}}}}} other {Avec un intervalle de {interval, number} mois}}"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "interval",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1249,13 +1255,15 @@
       "addedArms": [
         {
           "arg": "interval",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "Intervalle de # jour"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "interval",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1266,13 +1274,15 @@
       "addedArms": [
         {
           "arg": "interval",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "Intervalle de # mois, le {day, number}"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "interval",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1283,13 +1293,15 @@
       "addedArms": [
         {
           "arg": "interval",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "Intervalle de # mois"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "interval",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1300,13 +1312,15 @@
       "addedArms": [
         {
           "arg": "interval",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "Intervalle de # semaine, les jours suivants : {days}"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "interval",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1317,13 +1331,15 @@
       "addedArms": [
         {
           "arg": "interval",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "Intervalle de # semaine"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "interval",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1334,13 +1350,15 @@
       "addedArms": [
         {
           "arg": "interval",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "Intervalle de # an, le {date}"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "interval",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1351,13 +1369,15 @@
       "addedArms": [
         {
           "arg": "interval",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+          "category": "one",
+          "authoredText": "Intervalle de # an"
+        }
+      ],
+      "removedArms": [
         {
           "arg": "interval",
-          "category": "one",
-          "copiedFrom": "other"
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1365,11 +1385,11 @@
       "locale": "fr",
       "id": "oFGKRL",
       "context": "ui/taskCardProperties: reminders display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "length",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1377,11 +1397,11 @@
       "locale": "fr",
       "id": "8nLU70",
       "context": "ui/taskCardProperties: timeEntries display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "length",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1389,11 +1409,11 @@
       "locale": "fr",
       "id": "PII1tA",
       "context": "ui/taskCardProperties: icsEventId display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "length",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1401,11 +1421,11 @@
       "locale": "fr",
       "id": "gJcV8t",
       "context": "views/StatsView: StatsView.renderDrilldownContent.renderTasks display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "length",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1413,11 +1433,11 @@
       "locale": "fr",
       "id": "ZwH-HO",
       "context": "settings.integrations.timeFormats.minutesAgo",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "minutes",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1425,26 +1445,26 @@
       "locale": "fr",
       "id": "ZQ6Ulc",
       "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
-      "addedArms": [
-        {
-          "arg": "eventCount",
-          "category": "many",
-          "copiedFrom": "other"
-        },
-        {
-          "arg": "eventCount",
-          "category": "many",
-          "copiedFrom": "other"
-        },
+      "removedArms": [
         {
           "arg": "noteCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         },
         {
           "arg": "eventCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
+        },
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
+        },
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1452,11 +1472,11 @@
       "locale": "fr",
       "id": "FBlWXu",
       "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "noteCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1464,11 +1484,11 @@
       "locale": "fr",
       "id": "uDkPXD",
       "context": "calendar refresh throttling",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "seconds",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1476,11 +1496,11 @@
       "locale": "fr",
       "id": "i7nzi-",
       "context": "services/errors: RateLimitError display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "seconds",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1488,11 +1508,11 @@
       "locale": "fr",
       "id": "cU-DWO",
       "context": "services.instantTaskConvert.notices.partialConversion",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "successCount",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1500,11 +1520,11 @@
       "locale": "fr",
       "id": "S3yJwA",
       "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "timeEstimate",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1512,11 +1532,11 @@
       "locale": "fr",
       "id": "9jhhqk",
       "context": "views/StatsView: StatsView.renderProgressCircle display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "total",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1524,11 +1544,11 @@
       "locale": "fr",
       "id": "Yr6CWP",
       "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "value1",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1536,11 +1556,11 @@
       "locale": "fr",
       "id": "ZyQSBW",
       "context": "ui/StatusBarService: StatusBarService.renderStatusBar display",
-      "addedArms": [
+      "removedArms": [
         {
           "arg": "value2",
           "category": "many",
-          "copiedFrom": "other"
+          "reason": "Optional outside integer counts 0..999; removed rather than retaining copied other text"
         }
       ]
     },
@@ -1552,7 +1572,7 @@
         {
           "arg": "count",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "Contexto"
         }
       ]
     },
@@ -1564,7 +1584,7 @@
         {
           "arg": "count",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "Projeto"
         }
       ]
     },
@@ -1576,7 +1596,7 @@
         {
           "arg": "interval",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "{weekday, select, MO {{position, select, last {A cada {interval, number} mês na última segunda-feira} every {A cada {interval, number} mês em todas as segundas-feiras} other {{index, selectordinal, other {A cada {interval, number} mês na #ª segunda-feira}}}}} TU {{position, select, last {A cada {interval, number} mês na última terça-feira} every {A cada {interval, number} mês em todas as terças-feiras} other {{index, selectordinal, other {A cada {interval, number} mês na #ª terça-feira}}}}} WE {{position, select, last {A cada {interval, number} mês na última quarta-feira} every {A cada {interval, number} mês em todas as quartas-feiras} other {{index, selectordinal, other {A cada {interval, number} mês na #ª quarta-feira}}}}} TH {{position, select, last {A cada {interval, number} mês na última quinta-feira} every {A cada {interval, number} mês em todas as quintas-feiras} other {{index, selectordinal, other {A cada {interval, number} mês na #ª quinta-feira}}}}} FR {{position, select, last {A cada {interval, number} mês na última sexta-feira} every {A cada {interval, number} mês em todas as sextas-feiras} other {{index, selectordinal, other {A cada {interval, number} mês na #ª sexta-feira}}}}} SA {{position, select, last {A cada {interval, number} mês no último sábado} every {A cada {interval, number} mês em todos os sábados} other {{index, selectordinal, other {A cada {interval, number} mês no #º sábado}}}}} SU {{position, select, last {A cada {interval, number} mês no último domingo} every {A cada {interval, number} mês em todos os domingos} other {{index, selectordinal, other {A cada {interval, number} mês no #º domingo}}}}} other {A cada {interval, number} mês}}"
         }
       ]
     },
@@ -1588,7 +1608,7 @@
         {
           "arg": "interval",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "A cada # dia"
         }
       ]
     },
@@ -1600,7 +1620,7 @@
         {
           "arg": "interval",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "A cada # mês, no dia {day, number}"
         }
       ]
     },
@@ -1612,7 +1632,7 @@
         {
           "arg": "interval",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "A cada # mês"
         }
       ]
     },
@@ -1624,7 +1644,7 @@
         {
           "arg": "interval",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "A cada # semana: {days}"
         }
       ]
     },
@@ -1636,7 +1656,7 @@
         {
           "arg": "interval",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "A cada # semana"
         }
       ]
     },
@@ -1648,7 +1668,7 @@
         {
           "arg": "interval",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "A cada # ano, em {date}"
         }
       ]
     },
@@ -1660,7 +1680,7 @@
         {
           "arg": "interval",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "A cada # ano"
         }
       ]
     },
@@ -1672,7 +1692,7 @@
         {
           "arg": "count",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "Контекст"
         }
       ]
     },
@@ -1684,14 +1704,14 @@
         {
           "arg": "count",
           "category": "one",
-          "copiedFrom": "other"
+          "authoredText": "Проект"
         }
       ]
     }
   ],
-  "addedAuthoredPluralArms": 112,
-  "authoredChangeProof": "ICU token structures verified against baseline: existing arms/text unchanged; each added CLDR arm equals its original authored other arm. The Russian reminder correction is separately normalized and checked. Original translator commits compared directly for all retained IDs.",
-  "linguisticLimitation": "Mechanical reuse of authored category wording is not independent native-speaker retranslation/review.",
+  "addedAuthoredPluralArms": 22,
+  "authoredChangeProof": "Follow-up to 2a992dfb: all 22 added one arms rewritten after reading defaultBasesFiles.ts and recurrence.ts. All 90 added es/fr many arms removed consistently; existing other/exact arms unchanged. One-arm wording is inventoried per ID; no copiedFrom other claim remains. Russian context/project categorical labels use nominative singular without adding numeric output absent from the source contract.",
+  "linguisticLimitation": "Agent-authored contextual corrections, not independent native-speaker certification. fr/pt-BR one covers 0/1 (exact =0/=1 still take precedence); ru one covers 1/21/31… . Recurrence input rejects interval 0, but its ICU one wording remains singular for zero render proofs.",
   "deferredMinorFindings": {
     "1": "Generated Bases labels remain snapshots; owner decision needed before changing saved files.",
     "3": "ICS generated-note dates stabilized, but remaining translated exported calendar/note prose needs an owner policy decision.",
@@ -1699,5 +1719,17 @@
     "11": "Not all already-open views/modals/live text hot-refresh; registration-only command labels may require reload.",
     "13": "Broader noun/count ICU cleanup would require new authored target wording; not padded with English."
   },
-  "pluralRepairOperations": 102
+  "pluralRepairOperations": 102,
+  "removedOptionalPluralArms": 90,
+  "pluralFollowup": {
+    "baseline": "2a992dfbd67e6a0ef00c233c6cb7009cc290fc2c",
+    "oneArms": {
+      "fr": 10,
+      "pt": 10,
+      "ru": 2
+    },
+    "manyStrategy": "remove all 90 added es/fr many arms",
+    "gate": "Mirrors mdbase-connect e61ab062 packages/i18n/scripts/checks.mjs: integer counts 0..999 after offset, exact arms match original count; many outside range optional. Existing kit tarball retained: no separately exported coverage helper, keep stricter plugin English-source/English-arm checks.",
+    "categoricalLabels": "The contexts/projects source says No/Single/Multiple, without a number. Preserve that output contract with singular Contexte/Projet, Contexto/Projeto, Контекст/Проект; do not insert an unsupported # or claim Один at 21."
+  }
 }
