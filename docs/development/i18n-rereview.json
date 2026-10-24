@@ -1,7 +1,7 @@
 {
   "review": "burst/reviews/plugin-2418-rereview.md",
   "baseline": "dcb217413fdeaf4b2b244dc37d2be85407a6b1f7",
-  "state": "implementation; validation pending",
+  "state": "passed-desktop-rereview-scope",
   "activeMessagesPerLocale": 2716,
   "recoveredAuthored": {
     "source": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
@@ -280,13 +280,393 @@
     "grouping": "HTTP/MCP group maps and comparisons use English identities. UI adapters translate labels, with raw-value/schema provenance for ambiguous None/True/False strings.",
     "taskInfo": "Both TaskInfo builders use the same localized read-only fallback; updates persist only explicit patches.",
     "exports": "ICS DESCRIPTION returns exactly the pre-port English payload. Google Calendar metadata/title fallbacks and generated Bases configured status/priority labels are persisted English/user-owned data, not localized UI; generated Bases instructional labels/count formulas remain deliberately localized.",
-    "obsoleteEvidence": "Historical migration ledgers remain immutable. This record supersedes their classification of the 16 recovered descriptors. Prior native and CI evidence remains source-bound until rerun."
+    "obsoleteEvidence": "Historical migration ledgers remain immutable; this record supersedes their classification of sixteen recovered descriptors and scopes current validation/native evidence to the source commit."
   },
-  "validation": {},
+  "validation": {
+    "sourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "sourceBinding": "Validated working-tree content committed unchanged; subsequent commit records evidence only.",
+    "strictCatalogueCheckAndCompile": "passed",
+    "sourceModules": 416,
+    "activePerLocale": 2716,
+    "missingAuthored": 0,
+    "authoredContracts": 24444,
+    "realOperandRenders": 171108,
+    "operands": [
+      0,
+      1,
+      2,
+      5,
+      21,
+      1.5,
+      1000000
+    ],
+    "focusedPluralMessages": 94,
+    "focusedPluralRenders": 564,
+    "correctedOneArms": 22,
+    "removedOptionalManyArms": 90,
+    "retiredFocusedRows": [
+      {
+        "locale": "es",
+        "id": "S3yJwA",
+        "reason": "N8: exact pre-port English ICS export restored; message is data, not UI"
+      },
+      {
+        "locale": "fr",
+        "id": "S3yJwA",
+        "reason": "N8: exact pre-port English ICS export restored; message is data, not UI"
+      }
+    ],
+    "jest": {
+      "passedSuites": 766,
+      "passedTests": 5026,
+      "skippedSuites": 70,
+      "skippedTests": 1005,
+      "todo": 4,
+      "newSkips": 0,
+      "freshGeneratedJsonAbsent": true,
+      "integration": {
+        "passedSuites": 5,
+        "passedTests": 77,
+        "skippedTests": 12
+      }
+    },
+    "sourceGateFixtures": 58,
+    "packFixtures": 30,
+    "bundleDependencyFixtures": 7,
+    "typecheck": "passed",
+    "lint": "passed",
+    "documentation": {
+      "publishedPages": 221,
+      "generatedReferences": 5,
+      "htmlFilesChecked": 229
+    },
+    "workflow": {
+      "status": "passed",
+      "shellSteps": 20,
+      "workflowSha256": "9587bdf752e8b654fe6425e42eefd5b287ca835a89c8035ff238797b8fdf043c",
+      "report": "i18n-ci-workflow-parity.json",
+      "hostedCI": false,
+      "oauthSecretsSupplied": false,
+      "notReproduced": "Hosted checkout/setup/upload actions; existing Node-20-only performance condition remains skipped under Node 22."
+    },
+    "builds": {
+      "strictBudgetBytesExclusive": 5000000,
+      "bundledBytes": 4185491,
+      "downloadableBytes": 3605436,
+      "bundledCatalogueInputs": 9,
+      "downloadableCatalogueInputs": [
+        "en"
+      ],
+      "legacyUiResourceInputs": 0,
+      "downloadFormat": "tasknotes-lingui-v1",
+      "mainSha256": {
+        "bundled": "b15f1c49d00632a2b23e7a130ce68eb7824313ff608400b6d47a0fcf0c2182fa",
+        "downloadable": "39aa5c81567fad8cdbbe4016db8e98d732ba43b79fc315c516b5b24988d65fa6"
+      }
+    },
+    "logs": [
+      "/tmp/tn-rereview-workflow-final.log",
+      "/tmp/tn-rereview-builds-final.log",
+      "/tmp/tn-rereview-fresh-final.log",
+      "/tmp/tn-rereview-native-final.log"
+    ]
+  },
   "native": {
-    "state": "pending"
+    "state": "passed",
+    "artifactSourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "harnessSourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "mainSha256": "b15f1c49d00632a2b23e7a130ce68eb7824313ff608400b6d47a0fcf0c2182fa",
+    "platform": "Linux/Xvfb",
+    "obsidian": "1.14.2",
+    "remoteDebuggingPort": 19293,
+    "personalVaultOrProfileUsed": false,
+    "isolatedVault": "tasknotes-e2e-vault",
+    "isolatedProfile": ".obsidian-config-e2e/rereview",
+    "bundledTests": 3,
+    "reports": [
+      "test-results/lingui-bundled/report.json",
+      "test-results/lingui-bundled/review/review-report.json",
+      "test-results/lingui-bundled/rereview/report.json"
+    ],
+    "recording": "All three successful tests retain Playwright traces with screenshots; paths and hashes below.",
+    "traceAndReportArtifacts": {
+      "test-results/lingui-bundled/rereview/report.json": {
+        "bytes": 1636,
+        "sha256": "43c096839f3fcac2b837f1417e14bcca96f402760f4d48efa7b816835d6260a3"
+      },
+      "test-results/lingui-bundled-native-en-d-16bac-creation-and-saved-ordering-obsidian/trace.zip": {
+        "bytes": 9963181,
+        "sha256": "af6633435611e044e5f8a74e39aa811e6e19c7e72a933978ada9859217e6b4b4"
+      },
+      "test-results/lingui-bundled-native-en-d-cc4d5-from-programmatic-fallbacks-obsidian/trace.zip": {
+        "bytes": 10600578,
+        "sha256": "7508622645cfb8c4a3ce76b374bb539e7f5ad8337cce0af4906175d99d029c17"
+      },
+      "test-results/lingui-bundled-ordinary-na-94814-sly-and-renders-en-ja-de-ru-obsidian/trace.zip": {
+        "bytes": 6104441,
+        "sha256": "ac76150d342fbcb2ec66b00309838e88c4b50637f57a7123a438f51890d0442e"
+      }
+    },
+    "enDeRereview": {
+      "en": {
+        "fieldAndGroupLabels": [
+          "Basic Information",
+          "Title",
+          "Details",
+          "Metadata",
+          "Contexts",
+          "Tags",
+          "Time Estimate",
+          "Organization",
+          "Projects",
+          "Subtasks",
+          "Dependencies",
+          "Blocked By",
+          "Blocking",
+          "Custom Fields"
+        ],
+        "settingsUnchangedByRendering": true,
+        "completedDateGroups": {
+          "keys": [
+            "2026-10-23",
+            "2026-10-20",
+            "Invalid date",
+            "Not completed"
+          ],
+          "titles": [
+            "Rereview-1792808336976-new",
+            "Rereview-1792808336976-old",
+            "Rereview-1792808336976-invalid",
+            "Rereview-1792808336976-not-completed"
+          ]
+        },
+        "programmaticFallback": "Untitled Task",
+        "interactiveMissingTitleRejected": true
+      },
+      "de": {
+        "fieldAndGroupLabels": [
+          "Grundlegende Informationen",
+          "Titel",
+          "Details",
+          "Metadaten",
+          "Kontexte",
+          "Tags",
+          "Zeitschätzung",
+          "Organisation",
+          "Projekte",
+          "Unteraufgaben",
+          "Abhängigkeiten",
+          "Blockiert durch",
+          "Blockiert",
+          "Benutzerdefinierte Felder"
+        ],
+        "settingsUnchangedByRendering": true,
+        "completedDateGroups": {
+          "keys": [
+            "2026-10-23",
+            "2026-10-20",
+            "Invalid date",
+            "Not completed"
+          ],
+          "titles": [
+            "Rereview-1792808336976-new",
+            "Rereview-1792808336976-old",
+            "Rereview-1792808336976-invalid",
+            "Rereview-1792808336976-not-completed"
+          ]
+        },
+        "programmaticFallback": "Untitled Task",
+        "interactiveMissingTitleRejected": true
+      }
+    },
+    "coverage": [
+      "Synchronous nine-catalogue decode; en/ja/de/ru labels, commands and count renders",
+      "Native en/de/ru pointer drags, empty/boolean creation, saved ordering",
+      "All fourteen built-in field/group labels in en/de; default-label inputs never write on render",
+      "Real completed-date descending sort followed by Invalid date and Not completed",
+      "Programmatic Untitled Task fallback; interactive title-less input rejected"
+    ],
+    "pilotFindings": "Native run exposed the Obsidian icon-only empty placeholder; share its existing classifier with group-label provenance and regress it in units. Harness fixes use Ctrl/Cmd+Enter, reopen General, and exact field-label matching.",
+    "downloadable": {
+      "state": "not rerun in this round",
+      "historicalSource": "febb5f8905439a92196da119d901ead204755fb1",
+      "scope": "Historical offline/corrupt/retry/supersession evidence is retained separately; both current builds/graphs pass."
+    },
+    "mobile": "Not rerun; iOS remains explicitly unverified/waived."
   },
   "hostedCI": {
-    "state": "not claimed; no workflow dispatch or trigger/base changes"
+    "state": "unverified; not claimed",
+    "checkedHead": "46c0752b833e761002d5cb8e1794387447660856",
+    "prStatusCheckRollup": [],
+    "workflowDispatch": false,
+    "triggerOrBaseChanges": false,
+    "reason": "Draft remains stacked on feat/downloadable-language-packs; hosted Actions acceptance is distinct from the passing shell replay."
+  },
+  "sourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+  "findings": {
+    "N1": {
+      "status": "passed",
+      "result": "Recovered fourteen built-in field/group display descriptors, preserving custom names and English storage.",
+      "tests": [
+        "tests/unit/services/i18nRereview.locale.test.ts",
+        "e2e/helpers/lingui-rereview.ts"
+      ]
+    },
+    "N2": {
+      "status": "passed",
+      "result": "English grouping/sorting/API/MCP identities, corrected completed-date comparator; provenance-gated ambiguous labels including native empty placeholders.",
+      "tests": [
+        "tests/unit/services/i18nRereview.locale.test.ts",
+        "tests/unit/services/mcpI18nRereview.locale.test.ts",
+        "tests/unit/bases/groupKeys.locale.test.ts",
+        "e2e/helpers/lingui-rereview.ts",
+        "e2e/helpers/lingui-review.ts"
+      ]
+    },
+    "N3": {
+      "status": "passed",
+      "result": "English OpenAPI summaries; eager module/decorator/static/IIFE translation rejected by source guard.",
+      "tests": [
+        "tests/scripts/obsidian-i18n-source.test.mjs"
+      ]
+    },
+    "N4": {
+      "status": "passed",
+      "result": "Restored public NLP/API/MCP/instant-conversion baseline; CLI rejects missing title, explicit override retained; interactive adapter rejects missing titles.",
+      "tests": [
+        "tests/unit/api/SystemController.nlp-task-data.test.ts",
+        "tests/unit/services/mcpI18nRereview.locale.test.ts",
+        "tests/unit/services/nlpEmptyTitle.locale.test.ts",
+        "tests/unit/services/i18nRereview.locale.test.ts",
+        "e2e/helpers/lingui-rereview.ts"
+      ]
+    },
+    "N5": {
+      "status": "passed",
+      "result": "Both TaskInfo read paths share localized fallback; unrelated update patches never persist it.",
+      "tests": [
+        "tests/unit/services/i18nRereview.locale.test.ts"
+      ]
+    },
+    "N6": {
+      "status": "passed",
+      "result": "English persisted reminder/calendar/provider seeds; unchanged defaults translate only for display.",
+      "tests": [
+        "tests/unit/services/i18nRereview.locale.test.ts",
+        "tests/unit/settings/technicalPlaceholders.test.ts"
+      ]
+    },
+    "N7": {
+      "status": "passed",
+      "result": "Translated unchanged default-label inputs and NLP suggestions/shortcuts; stable inserted values, no writes on render; persisted Google Calendar metadata stays English.",
+      "tests": [
+        "tests/unit/services/i18nRereview.locale.test.ts",
+        "tests/unit/settings/technicalPlaceholders.test.ts",
+        "e2e/helpers/lingui-rereview.ts"
+      ]
+    },
+    "N8": {
+      "status": "passed",
+      "result": "Exact pre-port English ICS DESCRIPTION restored, including legacy duration wording; policy documented.",
+      "tests": [
+        "tests/unit/services/i18nRereview.locale.test.ts"
+      ]
+    },
+    "N9": {
+      "status": "passed",
+      "result": "Retired converter/archive rewriters, unused grouping service/utilities/hierarchical API/helper/tests and stale active references removed. Historical migration ledgers unchanged.",
+      "tests": [
+        "tests/scripts/retired-i18n-source.test.mjs"
+      ]
+    },
+    "M6": {
+      "status": "passed-shell-parity; hosted unverified",
+      "result": "All twenty unchanged workflow shell gates replayed via rpnpm on Node 22. Draft/base/triggers unchanged; no workflow dispatch or hosted Actions claim."
+    }
+  },
+  "authoredPreservation": {
+    "baseline": "dcb217413fdeaf4b2b244dc37d2be85407a6b1f7",
+    "sourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "restoredDescriptors": 16,
+    "retiredDescriptors": 38,
+    "locales": {
+      "en": {
+        "active": 2716,
+        "unchangedSinceBaseline": 2700,
+        "changedRetained": 0
+      },
+      "de": {
+        "active": 2716,
+        "unchangedSinceBaseline": 2700,
+        "changedRetained": 0,
+        "translatorCommit": "20b7eb21211611110951e1fb27f92ddfefa407c0",
+        "originalUnchanged": 2704,
+        "originalChanged": 0,
+        "recoveredVerbatim": 16
+      },
+      "es": {
+        "active": 2716,
+        "unchangedSinceBaseline": 2700,
+        "changedRetained": 0,
+        "translatorCommit": "7632fbce55cd3cc90c7b1192701120d391268490",
+        "originalUnchanged": 2704,
+        "originalChanged": 0,
+        "recoveredVerbatim": 16
+      },
+      "fr": {
+        "active": 2716,
+        "unchangedSinceBaseline": 2700,
+        "changedRetained": 0,
+        "translatorCommit": "791a2e45f3eddf46bc23b6c8d7b5ba08a55d0bb5",
+        "originalUnchanged": 2704,
+        "originalChanged": 0,
+        "recoveredVerbatim": 16
+      },
+      "ja": {
+        "active": 2716,
+        "unchangedSinceBaseline": 2700,
+        "changedRetained": 0,
+        "translatorCommit": "e0db2e3ebba160d784b87be401cb6a5ea226ae52",
+        "originalUnchanged": 2704,
+        "originalChanged": 0,
+        "recoveredVerbatim": 16
+      },
+      "ko": {
+        "active": 2716,
+        "unchangedSinceBaseline": 2700,
+        "changedRetained": 0,
+        "translatorCommit": "24b477682e05973ceb67d25f9b292839301be771",
+        "originalUnchanged": 2704,
+        "originalChanged": 0,
+        "recoveredVerbatim": 16
+      },
+      "pt": {
+        "active": 2716,
+        "unchangedSinceBaseline": 2700,
+        "changedRetained": 0,
+        "translatorCommit": "65844af337a4834780baa6ce01e133fe8b2be1bd",
+        "originalUnchanged": 2704,
+        "originalChanged": 0,
+        "recoveredVerbatim": 16
+      },
+      "ru": {
+        "active": 2716,
+        "unchangedSinceBaseline": 2700,
+        "changedRetained": 0,
+        "translatorCommit": "f4c6b0a3d7da7ed07133b62e8bfe7f9afa63760a",
+        "originalUnchanged": 2704,
+        "originalChanged": 0,
+        "recoveredVerbatim": 16
+      },
+      "zh": {
+        "active": 2716,
+        "unchangedSinceBaseline": 2700,
+        "changedRetained": 0,
+        "translatorCommit": "e1e430e71ac39da0db390747132de099bdb1ed3c",
+        "originalUnchanged": 2704,
+        "originalChanged": 0,
+        "recoveredVerbatim": 16
+      }
+    }
   }
 }

@@ -83,5 +83,15 @@
       "singletonIdsReplaced": 10,
       "literalBraceIdsReplaced": 2
     }
+  },
+  "scope": "Historical plural-follow-up record retained verbatim. Current re-review counts, recovered/retired IDs and source-bound validation are in i18n-rereview.json.",
+  "rereview": {
+    "sourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "evidence": "i18n-rereview.json",
+    "unchangedSinceDcbPerLocale": 2700,
+    "restoredAuthoredDescriptors": 16,
+    "retiredDescriptors": 38,
+    "originalTranslatorUnchangedPerTargetLocale": 2704,
+    "originalTranslatorChanged": 0
   }
 }

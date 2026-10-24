@@ -726,5 +726,30 @@
     ],
     "stableRussianMultipleGroupCases": 12
   },
-  "scope": "Real compiled Lingui/core renders, including exact-arm-shadowed one-branch assertions. No native Obsidian rerun or independent native-speaker certification. Removed many categories intentionally fall back to authored other wording at exact millions."
+  "scope": "Real compiled Lingui/core renders, including exact-arm-shadowed one-branch assertions. No native Obsidian rerun or independent native-speaker certification. Removed many categories intentionally fall back to authored other wording at exact millions.",
+  "scope": "Historical plural-follow-up record retained verbatim. Current re-review counts, recovered/retired IDs and source-bound validation are in i18n-rereview.json.",
+  "rereview": {
+    "sourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "evidence": "i18n-rereview.json",
+    "unchangedSinceDcbPerLocale": 2700,
+    "restoredAuthoredDescriptors": 16,
+    "retiredDescriptors": 38,
+    "authoredContracts": 24444,
+    "allCatalogueOperandCases": 171108,
+    "focusedRenderedCases": 564,
+    "focusedMessages": 94,
+    "retiredByRereview": [
+      {
+        "locale": "es",
+        "id": "S3yJwA",
+        "reason": "N8: exact pre-port English ICS export restored; message is data, not UI"
+      },
+      {
+        "locale": "fr",
+        "id": "S3yJwA",
+        "reason": "N8: exact pre-port English ICS export restored; message is data, not UI"
+      }
+    ],
+    "fullReportSha256": "ff0320ff4d79e67ca16959dea9b604ef84728c0e1d454bca0e523087ede8060e"
+  }
 }
