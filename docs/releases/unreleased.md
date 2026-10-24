@@ -41,6 +41,19 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- The Calendar view now uses TaskNotes' own calendar engine instead of FullCalendar. Existing calendar view settings in `.base` files keep working, including the saved view, custom day count, first day of week, time format, slot range and size, height mode, week numbers, weekends, all-day row, today column width, and event limits.
+  - Events update in place when tasks change, and changing a view setting no longer rebuilds the calendar.
+  - Long-press drag on touch screens no longer competes with scrolling.
+  - Calendar views now work in popout windows.
+  - CSS snippets that target FullCalendar's internal classes (such as `.fc-timegrid-slot` or `.fc-daygrid-event`) no longer apply. TaskNotes' own event classes, such as `fc-task-event`, `fc-recurring-event`, `fc-timeblock-event`, `fc-ics-event` and the tag and project classes, are unchanged.
+  - The plugin download is about 270 KB smaller.
+
+## Fixed
+
+- (#2414) Fixed Kanban mouse drags aborting on touchscreen laptops while preserving long-press touch dragging. See [Kanban drag-and-drop](https://tasknotes.dev/views/kanban-view/#drag-and-drop-tasks).
+  - Thanks to @paladinm078 for reporting and isolating the cause.
+- (#2394) Fixed expanded subtasks keeping their previous order after changing a Task List sort when top-level subtasks are hidden. Formula sorts such as `priorityWeight` now refresh already-expanded subtasks. See [Task List](https://tasknotes.dev/views/task-list/). Thanks to @iantierney for reporting this.
+
 - Moved interface translations to Lingui catalogues with count-aware messages, locale-aware numbers and dates, and localized generated Bases labels. Ordinary builds retain all ten bundled interface languages.
 
 - Kept stored default names and reminder descriptions in English, translating unchanged defaults only for display. Restored English `.ics` descriptions and kept persisted Google Calendar metadata in English so exports do not vary with the exporting device’s interface language; user-authored labels are preserved.

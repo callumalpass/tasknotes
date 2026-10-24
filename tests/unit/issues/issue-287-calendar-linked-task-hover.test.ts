@@ -4,35 +4,64 @@
  * @see https://github.com/callumalpass/tasknotes/issues/287
  */
 
-import fs from "fs";
-import path from "path";
+import { CalendarView } from "../../../src/bases/CalendarView";
+import * as calendarCore from "../../../src/bases/calendar-core";
+import { TaskFactory } from "../../helpers/mock-factories";
 
-function readRepoFile(relativePath: string): string {
-	return fs.readFileSync(path.resolve(__dirname, "../../../", relativePath), "utf8");
+function mountEvent(view: CalendarView, root: HTMLElement, path: string, viewType = "week") {
+	const el = root.createDiv();
+	const taskInfo = TaskFactory.createTask({ path, tags: [] });
+	(view as any).handleEventDidMount({
+		el,
+		view: { type: viewType },
+		item: { id: `${path}-${root.childElementCount}`, title: "Task", start: "2026-05-19", data: { eventType: "scheduled", taskInfo } },
+	});
+	return el;
 }
 
 describe("Issue #287: linked calendar task hover states", () => {
-	it("marks task calendar events by path and toggles related hover classes", () => {
-		const source = readRepoFile("src/bases/CalendarView.ts");
-
-		expect(source).toContain('arg.el.setAttribute("data-task-path", taskInfo.path)');
-		expect(source).toContain("this.attachTaskEventHoverLink(arg.el, taskInfo.path)");
-		expect(source).toContain('.fc-task-event[data-task-path="${CSS.escape(taskPath)}"]');
-		expect(source).toContain("fc-task-event--hover-source");
-		expect(source).toContain("fc-task-event--related-hover");
-		expect(source).toContain("CSS.escape(taskPath)");
+	beforeAll(() => {
+		// jsdom has no CSS.escape; Obsidian's Electron runtime does.
+		if (typeof globalThis.CSS?.escape !== "function") {
+			Object.assign(globalThis, {
+				CSS: { escape: (value: string) => value.replace(/["\\]/g, "\\$&") },
+			});
+		}
 	});
 
-	it("keeps linked hover styling out of List view", () => {
-		const css = readRepoFile("styles/advanced-calendar-view.css");
+	beforeEach(() => {
+		jest.spyOn(calendarCore, "generateTaskTooltip").mockReturnValue("");
+		jest.spyOn(calendarCore, "addTaskHoverPreview").mockImplementation(() => undefined);
+	});
 
-		expect(css).toContain(".advanced-calendar-view .fc-event.fc-task-event--hover-source");
-		expect(css).toContain(".advanced-calendar-view .fc-event.fc-task-event--related-hover");
-		expect(css).toContain("box-shadow: inset 0 0 0 1px var(--interactive-accent)");
-		expect(css).not.toMatch(
-			/\.advanced-calendar-view \.fc-event\.fc-task-event--(?:hover-source|related-hover)[^{]*\{[^}]*position:\s*relative/
-		);
-		expect(css).not.toContain("advanced-calendar-view--list .fc-task-event--related-hover");
-		expect(css).not.toContain("advanced-calendar-view--list .fc-task-event--hover-source");
+	it("highlights other events of the hovered task only", () => {
+		const root = document.createElement("div");
+		const view = Object.create(CalendarView.prototype) as CalendarView;
+		Object.assign(view, { rootElement: root, plugin: {} });
+
+		const source = mountEvent(view, root, "Tasks/A \"quoted\".md");
+		const sibling = mountEvent(view, root, "Tasks/A \"quoted\".md");
+		const other = mountEvent(view, root, "Tasks/B.md");
+
+		source.dispatchEvent(new MouseEvent("mouseenter"));
+		expect(source.classList.contains("fc-task-event--hover-source")).toBe(true);
+		expect(sibling.classList.contains("fc-task-event--related-hover")).toBe(true);
+		expect(other.classList.contains("fc-task-event--related-hover")).toBe(false);
+
+		source.dispatchEvent(new MouseEvent("mouseleave"));
+		expect(source.classList.contains("fc-task-event--hover-source")).toBe(false);
+		expect(sibling.classList.contains("fc-task-event--related-hover")).toBe(false);
+	});
+
+	it("does not link task cards in List view", () => {
+		const root = document.createElement("div");
+		const view = Object.create(CalendarView.prototype) as CalendarView;
+		Object.assign(view, { rootElement: root, plugin: {} });
+
+		const source = mountEvent(view, root, "Tasks/A.md", "list");
+		const sibling = mountEvent(view, root, "Tasks/A.md", "list");
+
+		source.dispatchEvent(new MouseEvent("mouseenter"));
+		expect(sibling.classList.contains("fc-task-event--related-hover")).toBe(false);
 	});
 });

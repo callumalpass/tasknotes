@@ -23,7 +23,6 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/tests/test-setup.ts'],
   moduleNameMapper: {
     '^obsidian$': '<rootDir>/tests/helpers/obsidian-bridge.ts',
-    '^@fullcalendar/(.*)$': '<rootDir>/tests/__mocks__/fullcalendar.ts',
     // Keep mocks for complex/large libraries that benefit from controlled testing
     '^chrono-node$': '<rootDir>/tests/__mocks__/chrono-node.ts',
     '^ical.js$': '<rootDir>/tests/__mocks__/ical.ts',

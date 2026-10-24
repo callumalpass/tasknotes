@@ -328,7 +328,7 @@ export function applyRecurringTaskStyling(
 
 	// Apply strikethrough styling for completed tasks
 	if (isCompleted) {
-		const titleElement = element.querySelector(".fc-event-title, .fc-event-title-container");
+		const titleElement = element.querySelector(".tnc-item-title");
 		if (titleElement) {
 			(titleElement as HTMLElement).classList.remove(
 				"tn-static-text-decoration-none-80d654f9"
@@ -2220,54 +2220,7 @@ export async function handleDateTitleClick(
 	}
 }
 
-type DateTitleClickHandler = (date: Date, plugin: TaskNotesPlugin) => Promise<void> | void;
 
-/**
- * FullCalendar does not always decorate the single-day time grid header as a
- * nav link, because clicking it would normally navigate to the same view/date.
- * TaskNotes uses date-header clicks for daily-note navigation, so wire that
- * header explicitly while leaving the built-in navLink behavior alone elsewhere.
- */
-export function attachDailyNoteHeaderLink(
-	headerCell: HTMLElement,
-	date: Date,
-	viewType: string,
-	plugin: TaskNotesPlugin,
-	handleClick: DateTitleClickHandler = handleDateTitleClick
-): void {
-	if (viewType !== "timeGridDay") {
-		return;
-	}
-
-	const linkEl =
-		headerCell.querySelector<HTMLElement>(".fc-col-header-cell-cushion") || headerCell;
-	const title = uiText(msg({ message: "Go to {value1}", context: "bases/calendar-core: attachDailyNoteHeaderLink display" }), { value1: formatUIDate(date, "d MMMM yyyy") });
-
-	linkEl.setAttribute("data-navlink", "");
-	linkEl.setAttribute("title", title);
-	linkEl.setAttribute("aria-label", title);
-	linkEl.classList.add("tasknotes-calendar-daily-note-link");
-	linkEl.dataset.tasknotesDailyNoteDate = date.toISOString();
-
-	if (linkEl.matches("a") && !linkEl.getAttribute("href")) {
-		linkEl.setAttribute("href", "#");
-	}
-
-	if (linkEl.dataset.tasknotesDailyNoteLinkAttached === "true") {
-		return;
-	}
-
-	linkEl.dataset.tasknotesDailyNoteLinkAttached = "true";
-	linkEl.addEventListener("click", (event) => {
-		event.preventDefault();
-		event.stopPropagation();
-		const target = event.currentTarget as HTMLElement | null;
-		const targetDate = target?.dataset.tasknotesDailyNoteDate
-			? new Date(target.dataset.tasknotesDailyNoteDate)
-			: date;
-		void handleClick(targetDate, plugin);
-	});
-}
 
 /**
  * Calculate pre-populated values for task creation from calendar date selection

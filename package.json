@@ -105,12 +105,6 @@
 	},
 	"dependencies": {
 		"@codemirror/view": "^6.38.6",
-		"@fullcalendar/core": "^6.1.17",
-		"@fullcalendar/daygrid": "^6.1.17",
-		"@fullcalendar/interaction": "^6.1.17",
-		"@fullcalendar/list": "^6.1.17",
-		"@fullcalendar/multimonth": "^6.1.17",
-		"@fullcalendar/timegrid": "^6.1.17",
 		"@lingui/core": "6.9.0",
 		"@modelcontextprotocol/sdk": "1.32.1",
 		"@tasknotes/model": "0.3.0-rc.9",
@@ -125,7 +119,8 @@
 		"rrule": "^2.8.1",
 		"tasknotes-nlp-core": "git+https://github.com/callumalpass/tasknotes-nlp-core.git#c148eed995f8de0f9fa7a8bf4d7177ddb69c145a",
 		"yaml": "^2.3.1",
-		"zod": "^3.24.0"
+		"zod": "^3.24.0",
+		"@tasknotes/calendar": "file:vendor/tasknotes-calendar-0.1.0-dev.0.tgz"
 	},
 	"peerDependencies": {
 		"electron": "*"

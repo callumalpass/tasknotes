@@ -2,7 +2,7 @@ import { CalendarView } from "../../../src/bases/CalendarView";
 import { TaskFactory } from "../../helpers/mock-factories";
 
 describe("Calendar immediate task refresh", () => {
-	it("refreshes FullCalendar immediately for expected task updates", async () => {
+	it("refreshes the calendar immediately for expected task updates", async () => {
 		const originalTask = TaskFactory.createTask({
 			path: "TaskNotes/Event.md",
 			due: "2026-05-19",
@@ -12,9 +12,8 @@ describe("Calendar immediate task refresh", () => {
 			...originalTask,
 			due: "2026-05-20",
 		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
+		const calendar = {};
+		const refetchEvents = jest.fn().mockResolvedValue(undefined);
 		const view = Object.create(CalendarView.prototype) as CalendarView & {
 			_expectingImmediateUpdate: boolean;
 			currentTasks: typeof originalTask[];
@@ -27,6 +26,7 @@ describe("Calendar immediate task refresh", () => {
 			handleTaskUpdate(task: typeof originalTask): Promise<void>;
 		};
 		Object.assign(view, {
+			refetchEvents,
 			_expectingImmediateUpdate: true,
 			calendar,
 			currentTasks: [originalTask],
@@ -45,16 +45,15 @@ describe("Calendar immediate task refresh", () => {
 			path: updatedTask.path,
 			due: "2026-05-20",
 		});
-		expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
+		expect(refetchEvents).toHaveBeenCalledTimes(1);
 	});
 
 	it("keeps ordinary task updates on the debounced refresh path", async () => {
 		const task = TaskFactory.createTask({
 			path: "TaskNotes/Event.md",
 		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
+		const calendar = {};
+		const refetchEvents = jest.fn().mockResolvedValue(undefined);
 		const view = Object.create(CalendarView.prototype) as CalendarView & {
 			_expectingImmediateUpdate: boolean;
 			calendar: typeof calendar;
@@ -62,6 +61,7 @@ describe("Calendar immediate task refresh", () => {
 			handleTaskUpdate(task: typeof task, source?: "metadata-cache"): Promise<void>;
 		};
 		Object.assign(view, {
+			refetchEvents,
 			_expectingImmediateUpdate: false,
 			calendar,
 			debouncedRefresh: jest.fn(),
@@ -70,7 +70,7 @@ describe("Calendar immediate task refresh", () => {
 		await view.handleTaskUpdate(task, "metadata-cache");
 
 		expect(view.debouncedRefresh).toHaveBeenCalledTimes(1);
-		expect(calendar.refetchEvents).not.toHaveBeenCalled();
+		expect(refetchEvents).not.toHaveBeenCalled();
 	});
 
 	it("refreshes TaskNotes service updates without rendering from stale Bases data", async () => {
@@ -84,9 +84,8 @@ describe("Calendar immediate task refresh", () => {
 			scheduled: "2026-05-19T10:00",
 			priority: "high",
 		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
+		const calendar = {};
+		const refetchEvents = jest.fn().mockResolvedValue(undefined);
 		const view = Object.create(CalendarView.prototype) as CalendarView & {
 			_expectingImmediateUpdate: boolean;
 			currentTasks: typeof originalTask[];
@@ -100,6 +99,7 @@ describe("Calendar immediate task refresh", () => {
 			handleTaskUpdate(task: typeof updatedTask, source: "tasknotes-service"): Promise<void>;
 		};
 		Object.assign(view, {
+			refetchEvents,
 			_expectingImmediateUpdate: false,
 			calendar,
 			currentTasks: [originalTask],
@@ -119,7 +119,7 @@ describe("Calendar immediate task refresh", () => {
 			scheduled: "2026-05-19T10:00",
 			priority: "high",
 		});
-		expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
+		expect(refetchEvents).toHaveBeenCalledTimes(1);
 	});
 
 	it("refreshes direct calendar writes without the expected-update flag", async () => {
@@ -132,9 +132,8 @@ describe("Calendar immediate task refresh", () => {
 			...originalTask,
 			due: "2026-05-20",
 		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
+		const calendar = {};
+		const refetchEvents = jest.fn().mockResolvedValue(undefined);
 		const view = Object.create(CalendarView.prototype) as CalendarView & {
 			_expectingImmediateUpdate: boolean;
 			currentTasks: typeof originalTask[];
@@ -147,6 +146,7 @@ describe("Calendar immediate task refresh", () => {
 			refreshAfterDirectCalendarTaskWrite(task: typeof updatedTask): Promise<void>;
 		};
 		Object.assign(view, {
+			refetchEvents,
 			_expectingImmediateUpdate: false,
 			calendar,
 			currentTasks: [originalTask],
@@ -166,7 +166,7 @@ describe("Calendar immediate task refresh", () => {
 			path: updatedTask.path,
 			due: "2026-05-20",
 		});
-		expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
+		expect(refetchEvents).toHaveBeenCalledTimes(1);
 	});
 
 	it("clears stale pending renders after direct calendar writes", async () => {
@@ -180,9 +180,8 @@ describe("Calendar immediate task refresh", () => {
 				...originalTask,
 				due: "2026-05-20",
 			});
-			const calendar = {
-				refetchEvents: jest.fn(),
-			};
+			const calendar = {};
+			const refetchEvents = jest.fn().mockResolvedValue(undefined);
 			const view = Object.create(CalendarView.prototype) as CalendarView & {
 				currentTasks: typeof originalTask[];
 				calendar: typeof calendar;
@@ -196,6 +195,7 @@ describe("Calendar immediate task refresh", () => {
 				refreshAfterDirectCalendarTaskWrite(task: typeof updatedTask): Promise<void>;
 			};
 			Object.assign(view, {
+				refetchEvents,
 				calendar,
 				currentTasks: [originalTask],
 				updateDebounceTimer: window.setTimeout(jest.fn(), 300),
@@ -211,7 +211,7 @@ describe("Calendar immediate task refresh", () => {
 
 			expect(view.updateDebounceTimer).toBeNull();
 			expect(view.dataUpdateDebounceTimer).toBeNull();
-			expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
+			expect(refetchEvents).toHaveBeenCalledTimes(1);
 		} finally {
 			jest.useRealTimers();
 		}
@@ -226,9 +226,8 @@ describe("Calendar immediate task refresh", () => {
 			path: "TaskNotes/New.md",
 			due: "2026-05-19",
 		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
+		const calendar = {};
+		const refetchEvents = jest.fn().mockResolvedValue(undefined);
 		const view = Object.create(CalendarView.prototype) as CalendarView & {
 			currentTasks: typeof existingTask[];
 			calendar: typeof calendar;
@@ -240,6 +239,7 @@ describe("Calendar immediate task refresh", () => {
 			refreshCalendarWithFreshData(task?: typeof createdTask): Promise<void>;
 		};
 		Object.assign(view, {
+			refetchEvents,
 			calendar,
 			currentTasks: [existingTask],
 			plugin: {
@@ -254,6 +254,6 @@ describe("Calendar immediate task refresh", () => {
 		await view.refreshCalendarWithFreshData(createdTask);
 
 		expect(view.currentTasks).toEqual([existingTask, createdTask]);
-		expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
+		expect(refetchEvents).toHaveBeenCalledTimes(1);
 	});
 });

@@ -4,9 +4,6 @@
  * @see https://github.com/callumalpass/tasknotes/issues/1487
  */
 
-import fs from "fs";
-import path from "path";
-
 import {
 	createDueEvent,
 	generateCalendarEvents,
@@ -24,16 +21,6 @@ function createPlugin(): TaskNotesPlugin {
 			isCompletedStatus: jest.fn().mockReturnValue(false),
 		},
 	} as unknown as TaskNotesPlugin;
-}
-
-function readRepoFile(relativePath: string): string {
-	return fs.readFileSync(path.resolve(__dirname, "../../../", relativePath), "utf8");
-}
-
-function extractCssBlock(css: string, selector: string): string {
-	const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	const match = css.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`));
-	return match?.[1] ?? "";
 }
 
 describe("Issue #1487: calendar title wrapping and due titles", () => {
@@ -58,16 +45,5 @@ describe("Issue #1487: calendar title wrapping and due titles", () => {
 			(event: CalendarEvent) => event.extendedProps.eventType === "due"
 		);
 		expect(generatedDueEvent?.title).toBe(task.title);
-	});
-
-	it("allows FullCalendar event titles to wrap instead of clipping to one line", () => {
-		const css = readRepoFile("styles/advanced-calendar-view.css");
-		const eventTitleBlock = extractCssBlock(css, ".advanced-calendar-view .fc-event-title");
-
-		expect(css).toContain(".advanced-calendar-view .fc-daygrid-event");
-		expect(css).toContain(".advanced-calendar-view .fc-timegrid-event");
-		expect(eventTitleBlock).toContain("white-space: normal;");
-		expect(eventTitleBlock).toContain("overflow-wrap: anywhere;");
-		expect(eventTitleBlock).toContain("overflow: visible;");
 	});
 });
