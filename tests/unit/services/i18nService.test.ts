@@ -12,7 +12,7 @@ describe("I18nService", () => {
 		expect(service.translate(msg({ message: "Please enter a task title", context: "modals.taskCreation.notices.titleRequired" }))).toBe("Please enter a task title");
 	});
 
-	it("switches locales and uses English source for an uncatalogued descriptor", () => {
+	it("switches locales and preserves bundled English fallback with production ID-only descriptors", () => {
 		const service = createI18nService();
 		service.setLocale("fr");
 		expect(service.getCurrentLocale()).toBe("fr");
@@ -20,7 +20,8 @@ describe("I18nService", () => {
 		expect(service.translate(msg({ message: "This week", context: "views.pomodoroStats.sections.week" }))).toBe("Cette semaine");
 		expect(service.translate(msg({ message: "Start focus", context: "views.pomodoro.buttons.startFocus" }))).toBe("Démarrer la concentration");
 		expect(service.translate(msg({ message: "Please enter a task title", context: "modals.taskCreation.notices.titleRequired" }))).toBe("Veuillez saisir un titre de tâche");
-		expect(service.translate(msg({ message: "Uncatalogued source fallback", context: "test fallback" }))).toBe("Uncatalogued source fallback");
+		const idOnly = { id: "uncatalogued-id" };
+    expect(service.translate(idOnly)).toBe(idOnly.id);
 	});
 
 	it("honours an injected system locale", () => {

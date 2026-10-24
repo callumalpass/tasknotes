@@ -163,6 +163,11 @@ msgctxt "settings.defaults.bodyTemplate.variables.title"
 msgid "'{{title}}' - Task title"
 msgstr "'{{title}}' - 작업 제목"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.calendarSubscriptions.customTemplate.placeholder"
+msgid "'{date}'-'{title}'"
+msgstr "'{date}'-'{title}'"
+
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "notices.timeblockAttachmentExists"
@@ -183,11 +188,6 @@ msgstr "(루트)"
 msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[수식 오류]"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "[TaskNotes](https://github.com/callumalpass/tasknotes), an Obsidian plugin"
-msgstr "노트 기반 작업 관리용 Obsidian 플러그인 [TaskNotes](https://github.com/callumalpass/tasknotes)"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
@@ -333,11 +333,6 @@ msgstr "{count}일"
 msgctxt "settings/tabs/taskProperties/remindersPropertyCard: formatReminderTiming display"
 msgid "{date} at {time}"
 msgstr "{date} {time}"
-
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.calendarSubscriptions.customTemplate.placeholder"
-msgid "{date}-{title}"
-msgstr "{date}-{title}"
 
 #: src/views/StatsView.ts
 msgctxt "statistics daily time tooltip"
@@ -1406,11 +1401,6 @@ msgctxt "services.pomodoro.notices.alreadyRunning"
 msgid "A Pomodoro is already running"
 msgstr "뽀모도로가 이미 실행 중입니다"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "a specification for typed markdown collections."
-msgstr "유형이 지정된 Markdown 컬렉션의 명세입니다."
-
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentSelf"
 msgid "A task cannot be its own parent."
@@ -2247,11 +2237,6 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.descriptionRegen"
 msgid "Base files are not automatically updated when you change settings. To apply new settings, use \"Update files\" below, delete the existing .base files and restart Obsidian, or edit them manually."
 msgstr "설정을 변경해도 베이스 파일은 자동으로 업데이트되지 않습니다. 새 설정을 적용하려면 아래의 \"파일 업데이트\"를 사용하거나, 기존 .base 파일을 삭제하고 Obsidian을 다시 시작하거나, 수동으로 편집하세요."
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Basic Information"
-msgstr "기본 정보"
-
 #: src/modals/ReminderModal.ts
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings.defaults.reminders.directions.before"
@@ -2305,11 +2290,6 @@ msgctxt "generated Bases view name"
 msgid "Blocked By"
 msgstr "차단하는 작업"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Blocked By"
-msgstr "차단하는 작업"
-
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: blockedBy text"
 msgid "Blocked by: "
@@ -2345,11 +2325,6 @@ msgstr "차단 중"
 msgctxt "ui.taskCard.labels.blocking"
 msgid "Blocking"
 msgstr "차단 중"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Blocking"
-msgstr "차단 대상"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardSecondaryBadges.ts
@@ -3479,11 +3454,6 @@ msgctxt "settings.taskProperties.properties.contexts.name"
 msgid "Contexts"
 msgstr "컨텍스트"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Contexts"
-msgstr "컨텍스트"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.googleCalendarExport.eventDescription.contexts"
 msgid "Contexts: {value}"
@@ -4034,11 +4004,6 @@ msgstr "사용자 지정 일수"
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.customFieldsLabel"
 msgid "Custom fields"
-msgstr "사용자 지정 필드"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Custom Fields"
 msgstr "사용자 지정 필드"
 
 #: src/settings/tabs/integrationsTab.ts
@@ -4617,11 +4582,6 @@ msgctxt "contextMenus.task.dependencies.title"
 msgid "Dependencies"
 msgstr "종속성"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Dependencies"
-msgstr "종속성"
-
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
 msgid "Dependencies updated"
@@ -4677,16 +4637,6 @@ msgctxt "settings.defaults.reminders.fields.description"
 msgid "Description:"
 msgstr "설명:"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildMdbaseYaml display"
-msgid "description: \"Task collection managed by TaskNotes for Obsidian\""
-msgstr "description: \"Obsidian용 TaskNotes에서 관리하는 작업 컬렉션\""
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "description: A task managed by the TaskNotes plugin for Obsidian."
-msgstr "description: Obsidian용 TaskNotes 플러그인에서 관리하는 작업입니다."
-
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderDesc"
 msgid "Destination folder (leave empty for vault root)"
@@ -4694,11 +4644,6 @@ msgstr "대상 폴더 (보관함 루트를 사용하려면 비워두세요)"
 
 #: src/modals/TaskModal.ts
 msgctxt "modals.task.detailsLabel"
-msgid "Details"
-msgstr "세부정보"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Details"
 msgstr "세부정보"
 
@@ -4878,7 +4823,7 @@ msgctxt "settings.header.documentation"
 msgid "Documentation"
 msgstr "문서"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Done"
 msgstr "완료"
@@ -5122,11 +5067,6 @@ msgstr "타이머 시간 편집"
 msgctxt "settings.integrations.webhooks.modals.edit.title"
 msgid "Edit webhook"
 msgstr "웹훅 편집"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "edited manually. Changes to TaskNotes settings (statuses, priorities, field"
-msgstr "편집하지 마세요. TaskNotes 설정(상태, 우선순위, 필드"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.validateInputParameters error"
@@ -5398,11 +5338,6 @@ msgstr "오류: 필드 구성이 잘못되었습니다. 기본값으로 재설�
 msgctxt "settings.taskProperties.properties.timeEstimate.description"
 msgid "Estimated minutes to complete the task. Used for time-blocking and workload planning. Displayed on task cards and calendar events."
 msgstr "작업을 완료하는 데 예상되는 시간 (분). 타임블로킹 및 작업량 계획에 사용됩니다. 작업 카드와 캘린더 이벤트에 표시됩니다."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Estimated time in minutes."
-msgstr "분 단위 예상 시간입니다."
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyMarkdownSuccess"
@@ -6469,18 +6404,8 @@ msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Failed: {value1, number}"
 msgstr "실패: {value1, number}"
 
-#: src/bases/basesValueConversion.ts
+#: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "False"
-msgstr "거짓"
-
-#: src/bases/kanbanGrouping.ts
-msgctxt "bases/kanbanGrouping: valueToKanbanGroupString display"
-msgid "False"
-msgstr "거짓"
-
-#: src/bases/taskListGrouping.ts
-msgctxt "bases/taskListGrouping: stringifyTaskListGroupValue display"
 msgid "False"
 msgstr "거짓"
 
@@ -6494,25 +6419,10 @@ msgctxt "settings.tabs.features"
 msgid "Features"
 msgstr "기능"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: migrateUserFieldsToFieldConfig displayName"
-msgid "Field {value1, number}"
-msgstr "필드 {value1, number}"
-
 #: src/settings/tabs/modalFieldsTab.ts
 msgctxt "settings.modalFields.reset.notice"
 msgid "Field configuration reset to defaults"
 msgstr "필드 구성이 기본값으로 재설정되었습니다"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Field the reminder is relative to (e.g. ''due'')."
-msgstr "리마인더의 기준 필드(예: ''due'')입니다."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "fields. This maps each field to its TaskNotes semantic role so custom"
-msgstr "이 주석은 각 필드를 TaskNotes의 의미상 역할에 매핑하므로 사용자 지정"
 
 #: src/bases/basesExport.ts
 msgctxt "bases/basesExport: buildBasesExportColumns label"
@@ -6735,11 +6645,6 @@ msgctxt "modals.icsNoteCreation.folderPlaceholder"
 msgid "folder/subfolder"
 msgstr "폴더/하위폴더"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "for note-based task management."
-msgstr "에서 관리하는 작업의 데이터 스키마를 설명합니다."
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.forgetConfirm"
 msgid "Forget credentials"
@@ -6796,11 +6701,6 @@ msgstr "시작"
 msgctxt "settings.general.frontmatter.header"
 msgid "Frontmatter"
 msgstr "프런트매터"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "frontmatter field names can still be interpreted consistently."
-msgstr "프런트매터 필드 이름도 일관되게 해석할 수 있습니다."
 
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.sortOrder.description"
@@ -7034,7 +6934,7 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Hide top-level subtasks"
 msgstr "최상위 하위 작업 숨기기"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "High"
 msgstr "높음"
@@ -7059,11 +6959,6 @@ msgstr "시간"
 msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.description"
 msgid "How filenames are generated for notes created from ICS events"
 msgstr "ICS 이벤트에서 생성된 노트의 파일명 생성 방법"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "How occurrence task notes are materialized for a recurring parent task."
-msgstr "반복 상위 작업의 회차 노트 생성 방식입니다."
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.interval.description"
@@ -7155,7 +7050,7 @@ msgctxt "settings.taskProperties.taskStatuses.placeholders.label"
 msgid "In progress"
 msgstr "진행 중"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "In progress"
 msgstr "진행 중"
@@ -7400,30 +7295,10 @@ msgctxt "services/validation: validateUrl display"
 msgid "Invalid URL format for {fieldName}"
 msgstr "{fieldName}의 URL 형식이 잘못되었습니다"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "ISO 8601 duration controlling rolling materialization after today."
-msgstr "오늘 이후의 순차적 회차 생성을 제어하는 ISO 8601 기간입니다."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "ISO 8601 duration controlling rolling materialization before today."
-msgstr "오늘 이전의 순차적 회차 생성을 제어하는 ISO 8601 기간입니다."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "ISO 8601 duration offset (e.g. ''-PT1H'')."
-msgstr "ISO 8601 기간 오프셋(예: ''-PT1H'')입니다."
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.issueLabel"
 msgid "Issue:"
 msgstr "문제:"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "It conforms to [mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0,"
-msgstr "[mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0을 준수하며,"
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
@@ -7817,7 +7692,7 @@ msgctxt "generated Bases column name"
 msgid "Long breaks"
 msgstr "긴 휴식"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
 msgstr "낮음"
@@ -7871,11 +7746,6 @@ msgstr "활성화된 모든 캘린더 구독을 수동으로 새로고침"
 msgctxt "settings.integrations.autoExport.exportNow.description"
 msgid "Manually trigger an immediate export"
 msgstr "즉시 내보내기를 수동으로 트리거"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "mappings, user fields) will cause this file to be regenerated."
-msgstr "매핑, 사용자 필드)을 변경하면 이 파일이 다시 생성됩니다."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.completion.submenuCompleteOnly"
@@ -7946,11 +7816,6 @@ msgstr "mdbase 타입 정의"
 msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
 msgstr "보통(30분~2시간)"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Metadata"
-msgstr "메타데이터"
 
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.sections.metadataProperties"
@@ -8284,16 +8149,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.addSuccess"
 msgid "New calendar subscription added - please configure the details"
 msgstr "새 캘린더 구독이 추가되었습니다 - 세부 정보를 설정하세요"
 
-#: src/services/PriorityManager.ts
-msgctxt "services/PriorityManager: PriorityManager.createDefaultPriority label"
-msgid "New priority"
-msgstr "새 우선순위"
-
-#: src/services/StatusManager.ts
-msgctxt "services/StatusManager: StatusManager.createDefaultStatus label"
-msgid "New status"
-msgstr "새 상태"
-
 #: src/bases/BasesViewBase.ts
 msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
 msgid "New Task"
@@ -8401,11 +8256,6 @@ msgstr "{key} 없음"
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
 msgid "No {provider} connection found"
 msgstr "{provider} 연결을 찾을 수 없습니다"
-
-#: src/services/FilterService.ts
-msgctxt "services/FilterService: FilterService.getHierarchicalGroupedTasks.resolver display"
-msgid "No {value1}"
-msgstr "{value1} 없음"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
@@ -8868,12 +8718,7 @@ msgctxt "settings.taskProperties.customUserFields.defaultNames.noKey"
 msgid "no-key"
 msgstr "키-없음"
 
-#: src/bases/basesValueConversion.ts
-msgctxt "bases/basesValueConversion: convertBasesGroupKeyToString display"
-msgid "None"
-msgstr "없음"
-
-#: src/bases/basesValueConversion.ts
+#: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
 msgid "None"
 msgstr "없음"
@@ -8883,23 +8728,13 @@ msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "None"
 msgstr "없음"
 
-#: src/bases/kanbanGrouping.ts
-msgctxt "bases/kanbanGrouping: valueToKanbanGroupString display"
-msgid "None"
-msgstr "없음"
-
-#: src/bases/taskListGrouping.ts
-msgctxt "bases/taskListGrouping: stringifyTaskListGroupValue display"
-msgid "None"
-msgstr "없음"
-
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "없음"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
 msgstr "없음"
@@ -8909,7 +8744,7 @@ msgctxt "ui.filterBar.group.none"
 msgid "None"
 msgstr "없음"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "보통"
@@ -9196,7 +9031,7 @@ msgctxt "modals.deviceCode.steps.open"
 msgid "Open"
 msgstr "열기"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "미완료"
@@ -9462,11 +9297,6 @@ msgctxt "modals.calendarEventCreation.locationDesc"
 msgid "Optional location for the event"
 msgstr "이벤트의 선택적 위치"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Optional template note used when materializing occurrences."
-msgstr "회차를 생성할 때 사용할 템플릿 노트(선택 사항)입니다."
-
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Optional work-session duration override for action=start"
@@ -9486,11 +9316,6 @@ msgstr "정리"
 msgctxt "settings.modalFields.manager.fieldTypes.organization"
 msgid "Organization"
 msgstr "정리"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Organization"
-msgstr "조직"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.organization"
@@ -9567,11 +9392,6 @@ msgstr "개요"
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.description"
 msgid "Overwrite the configured default .base files with templates generated from your current TaskNotes settings."
 msgstr "현재 TaskNotes 설정에서 생성된 템플릿으로 구성된 기본 .base 파일을 덮어씁니다."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Parent recurring task for a materialized occurrence note."
-msgstr "생성된 회차 노트의 반복 상위 작업입니다."
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: recurrenceParent text"
@@ -10058,11 +9878,6 @@ msgctxt "settings.taskProperties.properties.projects.name"
 msgid "Projects"
 msgstr "프로젝트"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Projects"
-msgstr "프로젝트"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
@@ -10429,11 +10244,6 @@ msgstr "리마인더"
 msgctxt "settings.defaults.reminders.reminderDescription"
 msgid "Reminder description"
 msgstr "리마인더 설명"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Reminder objects with id, type, offset, etc."
-msgstr "id, type, offset 등의 속성을 가진 리마인더 객체입니다."
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand display"
@@ -11238,11 +11048,6 @@ msgctxt "generated Bases column name"
 msgid "Short breaks"
 msgstr "짧은 휴식"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Short summary of the task."
-msgstr "작업의 간단한 요약입니다."
-
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
 msgid "Show a visual preview while dragging to select time ranges"
@@ -11495,8 +11300,8 @@ msgstr "Google 계정으로 로그인하고 액세스 권한을 부여하세요"
 
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.titleCard.legacySyntaxWarning"
-msgid "Single-brace syntax like {title} is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates."
-msgstr "{title}과 같은 단일 중괄호 구문은 더 이상 사용되지 않습니다. 본문 템플릿과의 일관성을 위해 '{{title}}'과 같은 이중 중괄호 구문을 사용하세요."
+msgid "Single-brace syntax like '{title}' is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates."
+msgstr "'{title}'과 같은 단일 중괄호 구문은 더 이상 사용되지 않습니다. 본문 템플릿과의 일관성을 위해 '{{title}}'과 같은 이중 중괄호 구문을 사용하세요."
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.general.taskInteraction.singleClick.name"
@@ -11876,11 +11681,6 @@ msgctxt "modals.task.organization.subtasks"
 msgid "Subtasks"
 msgstr "하위 작업"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Subtasks"
-msgstr "하위 작업"
-
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.subtractMinute"
 msgid "Subtract one minute"
@@ -12126,11 +11926,6 @@ msgctxt "ui.filterBar.group.tags"
 msgid "Tags"
 msgstr "태그"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Tags"
-msgstr "태그"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.googleCalendarExport.eventDescription.tags"
 msgid "Tags: {value}"
@@ -12145,11 +11940,6 @@ msgstr "태그: {value1}"
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
 msgid "Target calendar"
 msgstr "대상 캘린더"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Target recurrence date for a materialized occurrence note."
-msgstr "생성된 회차 노트의 대상 반복 날짜입니다."
 
 #: src/bases/KanbanView.ts
 msgctxt "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display"
@@ -12527,11 +12317,6 @@ msgctxt "notices.releaseAvailable.message"
 msgid "TaskNotes {version} is available."
 msgstr "TaskNotes {version} 릴리스를 사용할 수 있습니다."
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "TaskNotes also adds a non-standard `tn_role` field annotation on schema"
-msgstr "TaskNotes는 스키마 필드에 비표준 `tn_role` 주석을 추가합니다."
-
 #: src/bootstrap/pluginBootstrap.ts
 msgctxt "notices.interface.apiStarted"
 msgid "TaskNotes API started on port {port}"
@@ -12683,11 +12468,6 @@ msgctxt "settings.taskProperties.taskStatuses.howTheyWork.orderNote"
 msgid "The order below determines the sequence when cycling through statuses by clicking on task status badges."
 msgstr "아래 순서는 작업 상태 배지를 클릭하여 상태를 순환할 때의 순서를 결정합니다."
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "The status field also includes `tn_completed_values`, listing"
-msgstr "상태 필드의 `tn_completed_values`에는"
-
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.properties.title.description"
 msgid "The task name. Can be stored in frontmatter or in the filename (when ''store title in filename'' is enabled)."
@@ -12712,11 +12492,6 @@ msgstr "셋째"
 msgctxt "common.cannotUndo"
 msgid "This action cannot be undone."
 msgstr "이 작업은 실행 취소할 수 없습니다."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "This file is automatically generated from TaskNotes settings and should not be"
-msgstr "이 파일은 TaskNotes 설정에서 자동으로 생성되므로 직접"
 
 #: src/ui/NotificationService.ts
 msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotification display"
@@ -12774,11 +12549,6 @@ msgstr "이 작업은 프로젝트로 사용됩니다 (클릭하여 하위 작�
 msgctxt "ui.taskCard.blockedBadgeTooltip"
 msgid "This task is waiting on another task"
 msgstr "이 작업은 다른 작업을 기다리고 있습니다"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "This type definition describes the data schema for tasks managed by"
-msgstr "이 유형 정의는"
 
 #: src/bases/TaskListView.ts
 msgctxt "views.taskList.reorder.scope.ungrouped"
@@ -12891,11 +12661,6 @@ msgstr "예상 시간"
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.timeEstimate.name"
 msgid "Time estimate"
-msgstr "예상 시간"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Time Estimate"
 msgstr "예상 시간"
 
 #: src/modals/taskModalMetadataFields.ts
@@ -13119,11 +12884,6 @@ msgstr "제목"
 
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.properties.title.name"
-msgid "Title"
-msgstr "제목"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "제목"
 
@@ -13480,18 +13240,8 @@ msgctxt "settings.taskProperties.propertyCard.triggerTooLong"
 msgid "Trigger is too long (max 10 characters)"
 msgstr "트리거가 너무 깁니다 (최대 10자)"
 
-#: src/bases/basesValueConversion.ts
+#: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "True"
-msgstr "참"
-
-#: src/bases/kanbanGrouping.ts
-msgctxt "bases/kanbanGrouping: valueToKanbanGroupString display"
-msgid "True"
-msgstr "참"
-
-#: src/bases/taskListGrouping.ts
-msgctxt "bases/taskListGrouping: stringifyTaskListGroupValue display"
 msgid "True"
 msgstr "참"
 
@@ -13624,11 +13374,6 @@ msgctxt "settings.defaults.reminders.fields.unit"
 msgid "Unit:"
 msgstr "단위:"
 
-#: src/bases/basesValueConversion.ts
-msgctxt "bases/basesValueConversion: convertBasesGroupKeyToString display"
-msgid "Unknown"
-msgstr "알 수 없음"
-
 #: src/bases/helpers.ts
 msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "Unknown"
@@ -13756,16 +13501,6 @@ msgctxt "untitled custom status or priority heading"
 msgid "Untitled"
 msgstr "제목 없음"
 
-#: src/utils/helpers.ts
-msgctxt "utils/helpers: extractNoteInfo display"
-msgid "Untitled"
-msgstr "제목 없음"
-
-#: src/utils/helpers.ts
-msgctxt "utils/helpers: extractTaskInfo display"
-msgid "Untitled"
-msgstr "제목 없음"
-
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.titleFallback"
 msgid "Untitled event"
@@ -13798,11 +13533,6 @@ msgctxt "settings.integrations.googleCalendarExport.eventDescription.untitledTas
 msgid "Untitled task"
 msgstr "제목 없는 작업"
 
-#: src/utils/helpers.ts
-msgctxt "utils/helpers: extractTaskInfo title"
-msgid "Untitled task"
-msgstr "제목 없는 작업"
-
 #: src/utils/taskInfoAssembly.ts
 msgctxt "utils/taskInfoAssembly: buildTaskInfoFromMappedTask title"
 msgid "Untitled task"
@@ -13810,16 +13540,6 @@ msgstr "제목 없는 작업"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.createTaskFile display"
-msgid "Untitled Task"
-msgstr "제목 없는 작업"
-
-#: src/services/NaturalLanguageParser.ts
-msgctxt "services/NaturalLanguageParser: NaturalLanguageParser.applyTriggeredStatusMatch display"
-msgid "Untitled Task"
-msgstr "제목 없는 작업"
-
-#: src/services/NaturalLanguageParser.ts
-msgctxt "services/NaturalLanguageParser: NaturalLanguageParser.removePriorityShortcutResidue display"
 msgid "Untitled Task"
 msgstr "제목 없는 작업"
 
@@ -14445,25 +14165,10 @@ msgctxt "settings.appearance.calendarView.firstDayOfWeek.description"
 msgid "Which day should be the first column in week views"
 msgstr "주간 뷰에서 첫 번째 열이 될 요일"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Which occurrence state changes should materialize the next occurrence."
-msgstr "어떤 회차 상태 변경 시 다음 회차를 생성할지 지정합니다."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "which status values count as completed."
-msgstr "완료로 간주할 상태 값이 나열됩니다."
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.description"
 msgid "Which task date should trigger calendar event creation."
 msgstr "어떤 작업 날짜가 캘린더 이벤트 생성을 트리거할지 설정합니다."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Wikilinks to related project notes."
-msgstr "관련 프로젝트 노트에 대한 위키링크입니다."
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.pomodoro.workDuration.name"

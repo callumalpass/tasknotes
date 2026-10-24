@@ -1,5 +1,5 @@
-import { uiText } from "../i18n/runtime";
-import { msg } from "@lingui/core/macro";
+import { uiData } from "../i18n/dataText";
+
 import { PriorityConfig } from "../types";
 import { normalizePriorityConfigValue } from "../core/fieldMapping";
 import { isSupportedColorValue, normalizeThemeColor } from "../utils/themeColors";
@@ -218,7 +218,7 @@ export class PriorityManager {
 		return {
 			id,
 			value: "new-priority",
-			label: uiText(msg({ message: "New priority", context: "services/PriorityManager: PriorityManager.createDefaultPriority label" })),
+			label: uiData("New priority", "Writable persisted seed for a new user-configured label; not a display getter"),
 			color: "#808080",
 			weight,
 		};

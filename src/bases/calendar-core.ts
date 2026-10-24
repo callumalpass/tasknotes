@@ -1,5 +1,6 @@
 import { displayError } from "../i18n/runtime";
 import { formatUIDate, uiDuration } from "../i18n/formatters";
+import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- FullCalendar callbacks provide checked DOM references after mount. */
@@ -240,12 +241,12 @@ export function generateTaskTooltip(task: TaskInfo, plugin: TaskNotesPlugin): st
 
 	if (task.priority) {
 		const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-		tooltipText += uiText(msg({ message: "\nPriority: {value1}", context: "bases/calendar-core: generateTaskTooltip display" }), { value1: priorityConfig?.label || task.priority });
+		tooltipText += uiText(msg({ message: "\nPriority: {value1}", context: "bases/calendar-core: generateTaskTooltip display" }), { value1: configLabel(priorityConfig) || task.priority });
 	}
 
 	if (task.status) {
 		const statusConfig = plugin.statusManager.getStatusConfig(task.status);
-		tooltipText += uiText(msg({ message: "\nStatus: {value1}", context: "bases/calendar-core: generateTaskTooltip display" }), { value1: statusConfig?.label || task.status });
+		tooltipText += uiText(msg({ message: "\nStatus: {value1}", context: "bases/calendar-core: generateTaskTooltip display" }), { value1: configLabel(statusConfig) || task.status });
 	}
 
 	if (task.timeEstimate) {

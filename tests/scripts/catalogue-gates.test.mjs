@@ -6,6 +6,8 @@ import { resolve } from "node:path";
 import { createRequire } from "node:module";
 import gates from "../../scripts/lib/catalogue-gates.cjs";
 import ts from "typescript";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 async function fixture(t) {
   const root = await mkdtemp(resolve(tmpdir(), "tasknotes-catalogue-gates-"));
@@ -13,6 +15,8 @@ async function fixture(t) {
   await mkdir(resolve(root, "node_modules/@mdbase-dev/i18n"), { recursive: true });
   await mkdir(resolve(root, "node_modules/@lingui/cli"), { recursive: true });
   await mkdir(resolve(root, "scripts"), { recursive: true });
+  await writeFile(resolve(root, "scripts/check-message-values.mjs"), 'import fs from "node:fs"; fs.appendFileSync("calls", JSON.stringify(["message-values"]) + "\\n"); if (fs.existsSync("bad-values")) process.exit(1);');
+  await writeFile(resolve(root, "scripts/check-plural-contracts.mjs"), 'import fs from "node:fs"; fs.appendFileSync("calls", JSON.stringify(["plural-contracts"]) + "\\n"); if (fs.existsSync("bad-plurals")) process.exit(1);');
   await writeFile(resolve(root, "node_modules/@mdbase-dev/i18n/package.json"), JSON.stringify({ bin: { "mdbase-i18n": "cli.cjs" } }));
   await writeFile(resolve(root, "node_modules/@lingui/cli/package.json"), JSON.stringify({ main: "api.cjs" }));
   await writeFile(resolve(root, "node_modules/@lingui/cli/api.cjs"), "module.exports = {};");
@@ -28,17 +32,39 @@ test("strict preparation checks authored completeness before generating fallback
   const { root, calls } = await fixture(t);
   await writeFile(resolve(root, "incomplete"), "yes");
   assert.throws(() => gates.prepareStrictCatalogues(root));
-  assert.deepEqual(await calls(), [["check"]]);
+  assert.deepEqual(await calls(), [["plural-contracts"], ["message-values"], ["check"]]);
   await assert.rejects(readFile(resolve(root, "compiled")), { code: "ENOENT" });
 });
 test("strict preparation also requires the consumer-specific UI source guard", async t => {
   const { root, calls } = await fixture(t);
   gates.prepareStrictCatalogues(root);
-  assert.deepEqual(await calls(), [["check"], ["obsidian-source"]]);
+  assert.deepEqual(await calls(), [["plural-contracts"], ["message-values"], ["check"], ["obsidian-source"]]);
   assert.equal(await readFile(resolve(root, "compiled"), "utf8"), "strict");
   await writeFile(resolve(root, "bad-ui"), "yes");
   assert.throws(() => gates.prepareStrictCatalogues(root));
 });
+test("consumer plural rejection happens before the shared kit can compile", async t => {
+  const { root, calls } = await fixture(t);
+  await writeFile(resolve(root, "bad-plurals"), "yes");
+  assert.throws(() => gates.prepareStrictCatalogues(root));
+  assert.deepEqual(await calls(), [["plural-contracts"]]);
+  await assert.rejects(readFile(resolve(root, "compiled")), { code: "ENOENT" });
+});
+
+test("obsolete PO entries fail read-only before the pinned kit can prune them", async t => {
+  const root = await mkdtemp(resolve(tmpdir(), "tasknotes-obsolete-po-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const dir = resolve(root, "src/i18n/locales/en");
+  await mkdir(dir, { recursive: true });
+  const filename = resolve(dir, "messages.po");
+  for (const prefix of ["", "\t ", "\uFEFF"]) {
+    const source = `msgid "Current"\nmsgstr "Current"\n\n${prefix}#~ msgid "Obsolete"\n${prefix}#~ msgstr "Obsolete"\n`;
+    await writeFile(filename, source);
+    assert.throws(() => execFileSync(process.execPath, [fileURLToPath(new URL("../../scripts/check-plural-contracts.mjs", import.meta.url))], { cwd: root, stdio: "pipe" }), /obsolete PO entries/);
+    assert.equal(await readFile(filename, "utf8"), source);
+  }
+});
+
 test("only explicit development preparation permits incomplete fallback catalogues", async t => {
   const { root, calls } = await fixture(t);
   await writeFile(resolve(root, "incomplete"), "yes");

@@ -17,6 +17,8 @@ function run(root, cli, args = [], diagnosticsToStderr = false) {
 exports.prepareStrictCatalogues = (root = process.cwd(), { diagnosticsToStderr = false } = {}) => {
   // Lingui --strict alone permits fallback-filled entries. The shared check
   // rejects missing authored translations BEFORE fallback and compiles strictly.
+  run(root, join(root, "scripts/check-plural-contracts.mjs"), [], diagnosticsToStderr);
+  run(root, join(root, "scripts/check-message-values.mjs"), [], diagnosticsToStderr);
   run(root, tools(root).shared, ["check"], diagnosticsToStderr);
   run(root, join(root, "scripts/check-obsidian-i18n.mjs"), [], diagnosticsToStderr);
 };

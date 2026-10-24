@@ -1,4 +1,5 @@
 import { TaskInfo } from '../../src/types';
+import { observeTranslation } from '../helpers/real-i18n';
 import { HierarchicalGroupingService } from '../../src/services/HierarchicalGroupingService';
 
 const t = (overrides: Partial<TaskInfo>): TaskInfo => ({
@@ -6,6 +7,17 @@ const t = (overrides: Partial<TaskInfo>): TaskInfo => ({
 });
 
 describe('HierarchicalGroupingService', () => {
+  afterEach(() => observeTranslation("en"));
+  test.each(["de", "ru"])("sorts generated missing labels without English-prefix detection in %s", locale => {
+    observeTranslation(locale);
+    const empty = t({ path: "empty.md", contexts: [] });
+    const named = t({ path: "named.md", contexts: ["AAA"] });
+    const service = new HierarchicalGroupingService();
+    const asc = [...service.group([named, empty], "status", "context", "asc").get("open")!.values()];
+    expect(asc[0]).toEqual([empty]);
+    const desc = [...service.group([named, empty], "status", "context", "desc").get("open")!.values()];
+    expect(desc[desc.length - 1]).toEqual([empty]);
+  });
   test('groups by primary then subgroups (status → priority)', () => {
     const tasks: TaskInfo[] = [
       t({ title: 'A', status: 'open', priority: 'high' }),
@@ -49,7 +61,7 @@ describe('HierarchicalGroupingService', () => {
     const resolver = (task: TaskInfo, fieldId: string) => {
       if (fieldId === 'assignee') {
         const assignee = (task as any).assignee;
-        return assignee ? [assignee] : ['No Assignee'];
+        return assignee ? [assignee] : [];
       }
       return ['Unknown'];
     };
@@ -67,15 +79,15 @@ describe('HierarchicalGroupingService', () => {
     const openSub = result.get('open');
     const subgroupKeys = Array.from(openSub!.keys());
 
-    // "No Assignee" should be first in ascending order
-    expect(subgroupKeys).toEqual(['No Assignee', 'Alice', 'Bob']);
+    // "No assignee" should be first in ascending order
+    expect(subgroupKeys).toEqual(['No assignee', 'Alice', 'Bob']);
   });
 
   test('sorts subgroups with "No <field>" positioning for descending order', () => {
     const resolver = (task: TaskInfo, fieldId: string) => {
       if (fieldId === 'assignee') {
         const assignee = (task as any).assignee;
-        return assignee ? [assignee] : ['No Assignee'];
+        return assignee ? [assignee] : [];
       }
       return ['Unknown'];
     };
@@ -93,8 +105,8 @@ describe('HierarchicalGroupingService', () => {
     const openSub = result.get('open');
     const subgroupKeys = Array.from(openSub!.keys());
 
-    // "No Assignee" should be last in descending order
-    expect(subgroupKeys).toEqual(['Bob', 'Alice', 'No Assignee']);
+    // "No assignee" should be last in descending order
+    expect(subgroupKeys).toEqual(['Bob', 'Alice', 'No assignee']);
   });
 });
 

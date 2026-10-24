@@ -46,5 +46,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2418) Kept Kanban and Task List group keys stable across interface languages so moving or creating tasks in empty and boolean columns does not write translated labels into task properties. Default status and priority labels remain editable and survive saving and reloading.
+- (#2418) Rejected title-less natural-language input consistently across interface languages, kept generated MDBASE schemas in stable English, and corrected literal template braces and missing values in task-created and unresolved-project messages.
+
 - Prevented stalled language-pack cache reads/writes from leaving language selection and retry stuck, and refreshed ribbon tooltips and accessible names when a preferred language finishes loading after startup.
 - Completed Russian and Simplified Chinese calendar attachment and migration messages that still contained English fragments.

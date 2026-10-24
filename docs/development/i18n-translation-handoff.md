@@ -12,6 +12,8 @@ Ten semantic-one contracts were also corrected without inventing foreign prose: 
 
 Two consecutive clean extractions are byte-identical across all nine POs. There are **2,809 active messages**: English has zero empty entries; **de, es, fr, ja, ko, pt, ru and zh each have 669 empty entries** (5,352 target entries). New target copy is deliberately empty, not English padding.
 
+Historical note: the converter and old TS inputs mentioned in this frozen handoff have since been removed after integration and independent review. Current authoring uses normal extraction and the [translation workflow](translations.md); migration ledgers are archived under `i18n-migration/`.
+
 Author only `src/i18n/locales/<locale>/messages.po`, using the initiative glossary and `burst/reviews/plugin-<locale>.md`. Do not edit compiled JSON, generated IDs, English copy, the old TS inputs, or policy exceptions to conceal missing translations. PO is now authoritative. The default converter preserves authored ICU; `--refresh-reviewed` deliberately reimports legacy reviewer inputs and must not be run after integration without reconciling authored fixes.
 
 The machine-readable [handoff](i18n-translation-handoff.json) contains catalogue SHA-256 values, all 669 empty IDs, and the **44 active plural/ordinal IDs** with complete English text, context, legacy concepts and missing locales. Review those 44 even when their translations are already nonempty. Runtime selection is restricted to 22 proven finite sites / 210 legacy concepts; 471 unused legacy catalogue entries were removed rather than sent for needless translation.

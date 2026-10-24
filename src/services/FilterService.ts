@@ -1,4 +1,3 @@
-import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import {
 	FilterQuery,
@@ -271,9 +270,9 @@ export class FilterService extends EventEmitter {
 				const resolver = (task: TaskInfo, fieldIdOrKey: string): string[] => {
 					const userFields = this.runtime?.settings?.userFields || [];
 					const field = findUserFieldByIdOrKey(userFields, fieldIdOrKey);
-					const missingLabel = uiText(msg({ message: "No {value1}", context: "services/FilterService: FilterService.getHierarchicalGroupedTasks.resolver display" }), { value1: field?.displayName || field?.key || fieldIdOrKey });
+					// The grouping service owns missing-value identity and display; return no value here.
 					const raw = field ? this.getUserFieldRawValue(task, field.key) : undefined;
-					return getHierarchicalUserFieldGroupValues(field, raw, missingLabel);
+					return getHierarchicalUserFieldGroupValues(field, raw, "");
 				};
 
 				const svc = new HierarchicalGroupingService(resolver);

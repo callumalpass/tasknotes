@@ -1,6 +1,7 @@
+import { NONE_GROUP_KEY } from "./groupKeys";
 /** Shared metadata semantics for moving between List groups and Kanban cells. */
 export function normalizeGroupValue(value: string | null | undefined): string | null {
-	return value === undefined || value === "None" ? null : value;
+	return value === undefined || value === NONE_GROUP_KEY ? null : value;
 }
 
 export function isWritableGroupingProperty(

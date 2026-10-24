@@ -1,4 +1,5 @@
 import TaskNotesPlugin from "../main";
+import { configLabel } from "../i18n/configLabels";
 
 type CollapsedGroups = Record<string, Record<string, boolean>>;
 type CollapsedSubgroups = Record<string, Record<string, Record<string, boolean>>>;
@@ -20,13 +21,13 @@ export class GroupingUtils {
 		// Check if it's a priority value
 		const priorityConfig = plugin.priorityManager.getPriorityConfig(groupName);
 		if (priorityConfig) {
-			return `${priorityConfig.label} priority`;
+			return `${configLabel(priorityConfig)} priority`;
 		}
 
 		// Check if it's a status value
 		const statusConfig = plugin.statusManager.getStatusConfig(groupName);
 		if (statusConfig) {
-			return statusConfig.label;
+			return configLabel(statusConfig);
 		}
 
 		switch (groupName) {

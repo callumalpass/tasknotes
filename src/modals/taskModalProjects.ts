@@ -169,7 +169,7 @@ export function renderTaskModalProjectsList({
 			setTooltip(
 				nameEl,
 				translate(msg({ message: "Could not resolve: {entries}", context: "contextMenus.task.dependencies.notices.unresolved" }), {
-					name: item.name,
+					entries: item.name,
 				}),
 				{ placement: "top" }
 			);

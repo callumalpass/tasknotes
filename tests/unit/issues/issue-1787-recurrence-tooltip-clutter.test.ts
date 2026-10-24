@@ -7,7 +7,7 @@ import { msg } from "@lingui/core/macro";
  */
 
 import { describe, expect, it } from "@jest/globals";
-import { en } from "../../../src/i18n/resources/en";
+
 import { getRecurrenceTooltip } from "../../../src/ui/taskCardHelpers";
 
 function createPlugin(): any {

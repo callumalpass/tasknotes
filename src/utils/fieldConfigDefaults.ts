@@ -1,5 +1,6 @@
-import { uiText } from "../i18n/runtime";
-import { msg } from "@lingui/core/macro";
+import { uiData } from "../i18n/dataText";
+
+
 import type {
 	ModalFieldConfig,
 	TaskModalFieldsConfig,
@@ -14,35 +15,35 @@ import type {
 export const DEFAULT_FIELD_GROUPS: FieldGroupConfig[] = [
 	{
 		id: "basic",
-		get displayName() { return uiText(msg({ message: "Basic Information", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Basic Information", "Writable persisted field/group name; preserve configured settings across locales"),
 		order: 0,
 		collapsible: false,
 		defaultCollapsed: false,
 	},
 	{
 		id: "metadata",
-		get displayName() { return uiText(msg({ message: "Metadata", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Metadata", "Writable persisted field/group name; preserve configured settings across locales"),
 		order: 1,
 		collapsible: true,
 		defaultCollapsed: false,
 	},
 	{
 		id: "organization",
-		get displayName() { return uiText(msg({ message: "Organization", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Organization", "Writable persisted field/group name; preserve configured settings across locales"),
 		order: 2,
 		collapsible: true,
 		defaultCollapsed: false,
 	},
 	{
 		id: "dependencies",
-		get displayName() { return uiText(msg({ message: "Dependencies", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Dependencies", "Writable persisted field/group name; preserve configured settings across locales"),
 		order: 3,
 		collapsible: true,
 		defaultCollapsed: false,
 	},
 	{
 		id: "custom",
-		get displayName() { return uiText(msg({ message: "Custom Fields", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Custom Fields", "Writable persisted field/group name; preserve configured settings across locales"),
 		order: 4,
 		collapsible: true,
 		defaultCollapsed: false,
@@ -59,7 +60,7 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		id: "title",
 		fieldType: "core",
 		group: "basic",
-		get displayName() { return uiText(msg({ message: "Title", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Title", "Writable persisted field/group name; preserve configured settings across locales"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: 0,
@@ -70,7 +71,7 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		id: "details",
 		fieldType: "core",
 		group: "basic",
-		get displayName() { return uiText(msg({ message: "Details", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Details", "Writable persisted field/group name; preserve configured settings across locales"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: 1,
@@ -82,7 +83,7 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		id: "contexts",
 		fieldType: "core",
 		group: "metadata",
-		get displayName() { return uiText(msg({ message: "Contexts", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Contexts", "Writable persisted field/group name; preserve configured settings across locales"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: 0,
@@ -92,7 +93,7 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		id: "tags",
 		fieldType: "core",
 		group: "metadata",
-		get displayName() { return uiText(msg({ message: "Tags", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Tags", "Writable persisted field/group name; preserve configured settings across locales"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: 1,
@@ -102,7 +103,7 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		id: "time-estimate",
 		fieldType: "core",
 		group: "metadata",
-		get displayName() { return uiText(msg({ message: "Time Estimate", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Time Estimate", "Writable persisted field/group name; preserve configured settings across locales"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: 2,
@@ -114,7 +115,7 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		id: "projects",
 		fieldType: "organization",
 		group: "organization",
-		get displayName() { return uiText(msg({ message: "Projects", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Projects", "Writable persisted field/group name; preserve configured settings across locales"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: 0,
@@ -124,7 +125,7 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		id: "subtasks",
 		fieldType: "organization",
 		group: "organization",
-		get displayName() { return uiText(msg({ message: "Subtasks", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Subtasks", "Writable persisted field/group name; preserve configured settings across locales"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: 1,
@@ -136,7 +137,7 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		id: "blocked-by",
 		fieldType: "dependency",
 		group: "dependencies",
-		get displayName() { return uiText(msg({ message: "Blocked By", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Blocked By", "Writable persisted field/group name; preserve configured settings across locales"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: 0,
@@ -146,7 +147,7 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		id: "blocking",
 		fieldType: "dependency",
 		group: "dependencies",
-		get displayName() { return uiText(msg({ message: "Blocking", context: "utils/fieldConfigDefaults: defaults displayName" })); },
+		displayName: uiData("Blocking", "Writable persisted field/group name; preserve configured settings across locales"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: 1,
@@ -160,8 +161,8 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 export function createDefaultFieldConfig(): TaskModalFieldsConfig {
 	return {
 		version: 1,
-		fields: [...DEFAULT_CORE_FIELDS],
-		groups: [...DEFAULT_FIELD_GROUPS],
+		fields: DEFAULT_CORE_FIELDS.map((field) => ({ ...field })),
+		groups: DEFAULT_FIELD_GROUPS.map((group) => ({ ...group })),
 	};
 }
 
@@ -222,7 +223,7 @@ export function migrateUserFieldsToFieldConfig(
 		id: userField.id || `user-${index}`,
 		fieldType: "user" as const,
 		group: "custom" as const,
-		displayName: userField.displayName || uiText(msg({ message: "Field {value1, number}", context: "utils/fieldConfigDefaults: migrateUserFieldsToFieldConfig displayName" }), { value1: index + 1 }),
+		displayName: userField.displayName || uiData(`Field ${index + 1}`, "Stable persisted seed for an unnamed migrated user field; never snapshot the active UI language"),
 		visibleInCreation: true,
 		visibleInEdit: true,
 		order: index,

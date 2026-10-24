@@ -256,7 +256,7 @@ export class ICSEventInfoModal extends Modal {
 				const result = await this.plugin.icsNoteService.createTaskFromICS(this.icsEvent);
 				new Notice(
 					this.translate(msg({ message: "Task created: {title}", context: "notices.icsTaskCreatedSuccess" }), {
-						taskTitle: result.taskInfo.title,
+						title: result.taskInfo.title,
 					})
 				);
 

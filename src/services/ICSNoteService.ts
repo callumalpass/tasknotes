@@ -1,4 +1,4 @@
-import { formatUIDate } from "../i18n/formatters";
+import { formatUIDate, formatStableDate } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { TFile, normalizePath } from "obsidian";
@@ -381,7 +381,7 @@ export class ICSNoteService {
 
 			// Determine note title
 			const noteTitle =
-				overrides?.title || `${icsEvent.title} - ${formatUIDate(eventStartDate, "PPP")}`;
+				overrides?.title || `${icsEvent.title} - ${formatStableDate(eventStartDate, "PPP")}`;
 
 			// Determine folder (safely handle missing icsIntegration settings)
 			const rawFolder =

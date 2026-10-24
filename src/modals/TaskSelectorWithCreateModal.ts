@@ -1,5 +1,6 @@
 import { displayError } from "../i18n/runtime";
 import { uiDuration } from "../i18n/formatters";
+import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { App, SuggestModal, Notice, setIcon } from "obsidian";
@@ -340,7 +341,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		const parsed = this.nlParser.parseInput(query);
 
-		if (parsed.title && parsed.title !== "Untitled Task") {
+		if (parsed.title.trim()) {
 			this.createFooterEl.empty();
 			this.createFooterEl.classList.remove(
 				"tn-static-display-block-2a1b75c9",
@@ -465,7 +466,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			const statusConfig = this.plugin.statusManager.getStatusConfig(parsed.status);
 			parts.push({
 				icon: "circle-dot",
-				text: statusConfig?.label || parsed.status,
+				text: configLabel(statusConfig) || parsed.status,
 				type: "status",
 			});
 		}
@@ -562,7 +563,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			// Parse the query using NLP
 			const parsed = this.nlParser.parseInput(query);
 
-			if (!parsed.title || parsed.title === "Untitled Task") {
+			if (!parsed.title.trim()) {
 				new Notice(
 					this.translate(
 						msg({ message: "Could not parse a valid task title", context: "modals.taskSelectorWithCreate.notices.invalidTitle" })

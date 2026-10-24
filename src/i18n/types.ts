@@ -1,11 +1,8 @@
 import { EventRef } from "obsidian";
 import type { MessageDescriptor, Messages } from "@lingui/core";
 
-export type TranslationValue = string | TranslationTree;
 
-export interface TranslationTree {
-	[key: string]: TranslationValue;
-}
+
 
 export type TranslationResources = Record<string, Messages>;
 
@@ -38,15 +35,3 @@ export interface II18nService {
 		ctx?: unknown
 	): EventRef;
 }
-
-export type LeafPaths<T, Prefix extends string = ""> = T extends string
-	? Prefix extends ""
-		? never
-		: Prefix
-	: T extends Record<string, unknown>
-		? {
-				[K in keyof T & string]: LeafPaths<T[K], Prefix extends "" ? K : `${Prefix}.${K}`>;
-			}[keyof T & string]
-		: never;
-
-export type TranslationSchema = TranslationTree;

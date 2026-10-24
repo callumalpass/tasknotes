@@ -3900,8 +3900,8 @@
     "context": "settings.taskProperties.titleCard.customTemplate"
   },
   "settings.taskProperties.titleCard.legacySyntaxWarning": {
-    "id": "oP2e0d",
-    "message": "Single-brace syntax like {title} is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates.",
+    "id": "aAQxU5",
+    "message": "Single-brace syntax like '{title}' is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates.",
     "context": "settings.taskProperties.titleCard.legacySyntaxWarning"
   },
   "settings.taskProperties.titleCard.occurrenceFilenameTemplate": {
@@ -5900,8 +5900,8 @@
     "context": "settings.integrations.calendarSubscriptions.customTemplate.description"
   },
   "settings.integrations.calendarSubscriptions.customTemplate.placeholder": {
-    "id": "GESioF",
-    "message": "{date}-{title}",
+    "id": "3TeIeB",
+    "message": "'{date}'-'{title}'",
     "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder"
   },
   "settings.integrations.calendarSubscriptions.useICSEndAsDue.name": {

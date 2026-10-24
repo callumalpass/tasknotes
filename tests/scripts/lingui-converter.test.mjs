@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { importTranslation, toICU, mapping } from "../../scripts/convert-lingui.mjs";
+import { importTranslation, toICU, mapping } from "../../scripts/lib/legacy-catalogue-import.mjs";
 import { technicalDataConcepts } from "../../scripts/lib/lingui-retired.mjs";
 
 test("technical identifier/path examples never re-enter the message mapping", () => {

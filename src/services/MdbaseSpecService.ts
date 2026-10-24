@@ -1,5 +1,5 @@
-import { uiText } from "../i18n/runtime";
-import { msg } from "@lingui/core/macro";
+import { uiData } from "../i18n/dataText";
+
 import { normalizePath } from "obsidian";
 import YAML from "yaml";
 
@@ -162,7 +162,7 @@ export class MdbaseSpecService {
 		return [
 			'spec_version: "0.2.0"',
 			'name: "TaskNotes"',
-			uiText(msg({ message: "description: \"Task collection managed by TaskNotes for Obsidian\"", context: "services/MdbaseSpecService: MdbaseSpecService.buildMdbaseYaml display" })),
+			uiData("description: \"Task collection managed by TaskNotes for Obsidian\"", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 			"settings:",
 			`  types_folder: ${yamlQuote(normalizedTypesFolder)}`,
 			"  default_strict: false",
@@ -182,7 +182,7 @@ export class MdbaseSpecService {
 		const lines: string[] = [];
 		lines.push("---");
 		lines.push("name: task");
-		lines.push(uiText(msg({ message: "description: A task managed by the TaskNotes plugin for Obsidian.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
+		lines.push(uiData("description: A task managed by the TaskNotes plugin for Obsidian.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push(`display_name_key: ${fm.toUserField("title")}`);
 		lines.push("strict: false");
 		lines.push(`path_pattern: ${yamlQuote(this.buildPathPattern())}`);
@@ -200,7 +200,7 @@ export class MdbaseSpecService {
 		this.addRoleField(lines, "title", {
 			type: "string",
 			required: true,
-			description: uiText(msg({ message: "Short summary of the task.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("Short summary of the task.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 
 		this.addRoleField(lines, "status", {
@@ -228,12 +228,12 @@ export class MdbaseSpecService {
 		this.addRoleField(lines, "projects", {
 			type: "list",
 			items: { type: "link" },
-			description: uiText(msg({ message: "Wikilinks to related project notes.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("Wikilinks to related project notes.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "timeEstimate", {
 			type: "integer",
 			min: 0,
-			description: uiText(msg({ message: "Estimated time in minutes.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("Estimated time in minutes.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "completedDate", { type: "date" });
 		this.addRoleField(lines, "dateCreated", {
@@ -255,33 +255,33 @@ export class MdbaseSpecService {
 			type: "enum",
 			values: ["manual", "on_completion", "rolling"],
 			default: "manual",
-			description: uiText(msg({ message: "How occurrence task notes are materialized for a recurring parent task.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("How occurrence task notes are materialized for a recurring parent task.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrenceNextTrigger", {
 			type: "enum",
 			values: ["completion", "completion_or_skip"],
 			default: "completion",
-			description: uiText(msg({ message: "Which occurrence state changes should materialize the next occurrence.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("Which occurrence state changes should materialize the next occurrence.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrenceTemplate", {
 			type: "link",
-			description: uiText(msg({ message: "Optional template note used when materializing occurrences.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("Optional template note used when materializing occurrences.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrencePastHorizon", {
 			type: "string",
-			description: uiText(msg({ message: "ISO 8601 duration controlling rolling materialization before today.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("ISO 8601 duration controlling rolling materialization before today.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrenceFutureHorizon", {
 			type: "string",
-			description: uiText(msg({ message: "ISO 8601 duration controlling rolling materialization after today.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("ISO 8601 duration controlling rolling materialization after today.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "recurrenceParent", {
 			type: "link",
-			description: uiText(msg({ message: "Parent recurring task for a materialized occurrence note.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("Parent recurring task for a materialized occurrence note.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrenceDate", {
 			type: "date",
-			description: uiText(msg({ message: "Target recurrence date for a materialized occurrence note.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("Target recurrence date for a materialized occurrence note.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addField(lines, "tags", { type: "list", items: { type: "string" }, tn_role: "tags" });
 
@@ -310,16 +310,16 @@ export class MdbaseSpecService {
 					relatedTo: {
 						type: "enum",
 						values: ["due", "scheduled"],
-						description: uiText(msg({ message: "Field the reminder is relative to (e.g. ''due'').", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+						description: uiData("Field the reminder is relative to (e.g. 'due').", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 					},
 					offset: {
 						type: "string",
-						description: uiText(msg({ message: "ISO 8601 duration offset (e.g. ''-PT1H'').", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+						description: uiData("ISO 8601 duration offset (e.g. '-PT1H').", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 					},
 					absoluteTime: { type: "datetime" },
 				},
 			},
-			description: uiText(msg({ message: "Reminder objects with id, type, offset, etc.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description" })),
+			description: uiData("Reminder objects with id, type, offset, etc.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 
 		this.addRoleField(lines, "blockedBy", {
@@ -382,26 +382,26 @@ export class MdbaseSpecService {
 		lines.push("");
 		lines.push("# Task");
 		lines.push("");
-		lines.push(uiText(msg({ message: "This type definition describes the data schema for tasks managed by", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
-		lines.push(uiText(msg({ message: "[TaskNotes](https://github.com/callumalpass/tasknotes), an Obsidian plugin", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
-		lines.push(uiText(msg({ message: "for note-based task management.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
+		lines.push(uiData("This type definition describes the data schema for tasks managed by", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("[TaskNotes](https://github.com/callumalpass/tasknotes), an Obsidian plugin", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("for note-based task management.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push("");
 		lines.push(
-			uiText(msg({ message: "It conforms to [mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0,", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" }))
+			uiData("It conforms to [mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0,", "Stable English MDBASE schema/documentation data; never depend on UI locale")
 		);
-		lines.push(uiText(msg({ message: "a specification for typed markdown collections.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
+		lines.push(uiData("a specification for typed markdown collections.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push("");
-		lines.push(uiText(msg({ message: "TaskNotes also adds a non-standard `tn_role` field annotation on schema", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
-		lines.push(uiText(msg({ message: "fields. This maps each field to its TaskNotes semantic role so custom", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
-		lines.push(uiText(msg({ message: "frontmatter field names can still be interpreted consistently.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
-		lines.push(uiText(msg({ message: "The status field also includes `tn_completed_values`, listing", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
-		lines.push(uiText(msg({ message: "which status values count as completed.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
+		lines.push(uiData("TaskNotes also adds a non-standard `tn_role` field annotation on schema", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("fields. This maps each field to its TaskNotes semantic role so custom", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("frontmatter field names can still be interpreted consistently.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("The status field also includes `tn_completed_values`, listing", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("which status values count as completed.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push("");
 		lines.push(
-			uiText(msg({ message: "This file is automatically generated from TaskNotes settings and should not be", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" }))
+			uiData("This file is automatically generated from TaskNotes settings and should not be", "Stable English MDBASE schema/documentation data; never depend on UI locale")
 		);
-		lines.push(uiText(msg({ message: "edited manually. Changes to TaskNotes settings (statuses, priorities, field", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
-		lines.push(uiText(msg({ message: "mappings, user fields) will cause this file to be regenerated.", context: "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display" })));
+		lines.push(uiData("edited manually. Changes to TaskNotes settings (statuses, priorities, field", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("mappings, user fields) will cause this file to be regenerated.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push("");
 
 		return lines.join("\n");

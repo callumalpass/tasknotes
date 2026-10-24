@@ -1,5 +1,5 @@
-import { uiText } from "../i18n/runtime";
-import { msg } from "@lingui/core/macro";
+
+
 import type TaskNotesPlugin from "../main";
 import { StatusConfig, PriorityConfig } from "../types";
 import { NLPTriggersConfig, UserMappedField } from "../types/settings";
@@ -73,13 +73,17 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 
 	parseInput(input: string): ParsedTaskData {
 		const parsed = super.parseInput(input);
+		// The shared parser uses this legacy sentinel; normalize it once at the adapter.
+		if (parsed.title === "Untitled Task") parsed.title = "";
 		const withStatusShortcutResidueRemoved = this.applyTriggeredStatusMatch(input, parsed);
 		const withPriorityShortcutResidueRemoved = this.removePriorityShortcutResidue(
 			input,
 			withStatusShortcutResidueRemoved
 		);
 		const withLinkedFields = this.extractLinkedUserFields(input, withPriorityShortcutResidueRemoved);
-		return this.normalizeUserFieldValues(withLinkedFields);
+		const result = this.normalizeUserFieldValues(withLinkedFields);
+		if (result.title === "Untitled Task") result.title = "";
+		return result;
 	}
 
 	private applyTriggeredStatusMatch(input: string, parsed: ParsedTaskData): ParsedTaskData {
@@ -95,7 +99,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			title = this.removeTokenFragment(title, residue);
 		}
 
-		parsed.title = title || uiText(msg({ message: "Untitled Task", context: "services/NaturalLanguageParser: NaturalLanguageParser.applyTriggeredStatusMatch display" }));
+		parsed.title = title;
 		return parsed;
 	}
 
@@ -184,7 +188,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			title = this.removeTokenFragment(title, residue);
 		}
 
-		parsed.title = title || uiText(msg({ message: "Untitled Task", context: "services/NaturalLanguageParser: NaturalLanguageParser.removePriorityShortcutResidue display" }));
+		parsed.title = title;
 		return parsed;
 	}
 

@@ -163,6 +163,11 @@ msgctxt "settings.defaults.bodyTemplate.variables.title"
 msgid "'{{title}}' - Task title"
 msgstr "'{{title}}' - Título de la tarea"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.calendarSubscriptions.customTemplate.placeholder"
+msgid "'{date}'-'{title}'"
+msgstr "'{date}'-'{title}'"
+
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "notices.timeblockAttachmentExists"
@@ -183,11 +188,6 @@ msgstr "(Raíz)"
 msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[Error de fórmula]"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "[TaskNotes](https://github.com/callumalpass/tasknotes), an Obsidian plugin"
-msgstr "[TaskNotes](https://github.com/callumalpass/tasknotes), un plugin de Obsidian"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
@@ -232,72 +232,72 @@ msgstr "{count, number} seleccionados. Activa para borrar la selección."
 #: src/bases/calendar-core.ts
 msgctxt "timeblock tooltip with description"
 msgid "{count, plural, =0 {{title} - {description}} one {{title} - {description} (# attachment)} other {{title} - {description} (# attachments)}}"
-msgstr "{count, plural, =0 {{title} - {description}} one {{title} - {description} (# archivo adjunto)} other {{title} - {description} (# archivos adjuntos)}}"
+msgstr "{count, plural, =0 {{title} - {description}} one {{title} - {description} (# archivo adjunto)} other {{title} - {description} (# archivos adjuntos)} many {{title} - {description} (# archivos adjuntos)}}"
 
 #: src/bases/calendar-core.ts
 msgctxt "timeblock tooltip"
 msgid "{count, plural, =0 {{title}} one {{title} (# attachment)} other {{title} (# attachments)}}"
-msgstr "{count, plural, =0 {{title}} one {{title} (# archivo adjunto)} other {{title} (# archivos adjuntos)}}"
+msgstr "{count, plural, =0 {{title}} one {{title} (# archivo adjunto)} other {{title} (# archivos adjuntos)} many {{title} (# archivos adjuntos)}}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases contexts count"
 msgid "{count, plural, =0 {No contexts} =1 {Single context} other {Multiple contexts}}"
-msgstr "{count, plural, =0 {Sin contextos} =1 {Un contexto} other {Varios contextos}}"
+msgstr "{count, plural, =0 {Sin contextos} =1 {Un contexto} other {Varios contextos} many {Varios contextos}}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases projects count"
 msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
-msgstr "{count, plural, =0 {Sin proyectos} =1 {Un proyecto} other {Varios proyectos}}"
+msgstr "{count, plural, =0 {Sin proyectos} =1 {Un proyecto} other {Varios proyectos} many {Varios proyectos}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"
 msgid "{count, plural, one {{count, number} reminder set (click to manage)} other {{count, number} reminders set (click to manage)}}"
-msgstr "{count, plural, one {{count, number} recordatorio configurado (clic para gestionar)} other {{count, number} recordatorios configurados (clic para gestionar)}}"
+msgstr "{count, plural, one {{count, number} recordatorio configurado (clic para gestionar)} other {{count, number} recordatorios configurados (clic para gestionar)} many {{count, number} recordatorios configurados (clic para gestionar)}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence occurrence limit"
 msgid "{count, plural, one {{recurrence} (# time)} other {{recurrence} (# times)}}"
-msgstr "{count, plural, one {{recurrence} (# vez)} other {{recurrence} (# veces)}}"
+msgstr "{count, plural, one {{recurrence} (# vez)} other {{recurrence} (# veces)} many {{recurrence} (# veces)}}"
 
 #: src/ui/TimeBlockCard.ts
 msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
-msgstr "{count, plural, one {# archivo adjunto} other {# archivos adjuntos}}"
+msgstr "{count, plural, one {# archivo adjunto} other {# archivos adjuntos} many {# archivos adjuntos}}"
 
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
-msgstr "{count, plural, one {No se pudo actualizar # calendario de Microsoft. Primer error: {label}: {message}} other {No se pudieron actualizar # calendarios de Microsoft. Primer error: {label}: {message}}}"
+msgstr "{count, plural, one {No se pudo actualizar # calendario de Microsoft. Primer error: {label}: {message}} other {No se pudieron actualizar # calendarios de Microsoft. Primer error: {label}: {message}} many {No se pudieron actualizar # calendarios de Microsoft. Primer error: {label}: {message}}}"
 
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
-msgstr "{count, plural, one {# recordatorio configurado} other {# recordatorios configurados}}"
+msgstr "{count, plural, one {# recordatorio configurado} other {# recordatorios configurados} many {# recordatorios configurados}}"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
-msgstr "{count, plural, one {# tarea seleccionada} other {# tareas seleccionadas}}"
+msgstr "{count, plural, one {# tarea seleccionada} other {# tareas seleccionadas} many {# tareas seleccionadas}}"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionSuccess"
 msgid "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
-msgstr "{count, plural, one {✅ Conversión a TaskNotes: {count, number} tarea} other {✅ Conversión a TaskNotes: {count, number} tareas}}"
+msgstr "{count, plural, one {✅ Conversión a TaskNotes: {count, number} tarea} other {✅ Conversión a TaskNotes: {count, number} tareas} many {✅ Conversión a TaskNotes: {count, number} tareas}}"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.convertingTasks"
 msgid "{count, plural, one {Converting {count, number} task...} other {Converting {count, number} tasks...}}"
-msgstr "{count, plural, one {Convirtiendo {count, number} tarea…} other {Convirtiendo {count, number} tareas…}}"
+msgstr "{count, plural, one {Convirtiendo {count, number} tarea…} other {Convirtiendo {count, number} tareas…} many {Convirtiendo {count, number} tareas…}}"
 
 #: src/ui/calendarExportActions.ts
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
-msgstr "{count, plural, one {Archivo {filename} descargado ({count, number} tarea)} other {Archivo {filename} descargado ({count, number} tareas)}}"
+msgstr "{count, plural, one {Archivo {filename} descargado ({count, number} tarea)} other {Archivo {filename} descargado ({count, number} tareas)} many {Archivo {filename} descargado ({count, number} tareas)}}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}"
-msgstr "{count, plural, one {Seguimiento de # tarea ({totalElapsed} en total)} other {Seguimiento de # tareas ({totalElapsed} en total)}}"
+msgstr "{count, plural, one {Seguimiento de # tarea ({totalElapsed} en total)} other {Seguimiento de # tareas ({totalElapsed} en total)} many {Seguimiento de # tareas ({totalElapsed} en total)}}"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.dependencies.notices.blockedByAdded"
@@ -334,11 +334,6 @@ msgctxt "settings/tabs/taskProperties/remindersPropertyCard: formatReminderTimin
 msgid "{date} at {time}"
 msgstr "{date} a las {time}"
 
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.calendarSubscriptions.customTemplate.placeholder"
-msgid "{date}-{title}"
-msgstr "{date}-{title}"
-
 #: src/views/StatsView.ts
 msgctxt "statistics daily time tooltip"
 msgid "{date}: {duration}"
@@ -357,22 +352,22 @@ msgstr "{day, selectordinal, other {El día # de cada mes}}"
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.timeFormats.daysAgo"
 msgid "{days, plural, one {{days, number} day ago} other {{days, number} days ago}}"
-msgstr "{days, plural, one {hace {days, number} día} other {hace {days, number} días}}"
+msgstr "{days, plural, one {hace {days, number} día} other {hace {days, number} días} many {hace {days, number} días}}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases relative due date"
 msgid "{days, plural, one {# day ago} other {# days ago}}"
-msgstr "{days, plural, one {hace # día} other {hace # días}}"
+msgstr "{days, plural, one {hace # día} other {hace # días} many {hace # días}}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases overdue countdown"
 msgid "{days, plural, one {# day overdue} other {# days overdue}}"
-msgstr "{days, plural, one {# día de retraso} other {# días de retraso}}"
+msgstr "{days, plural, one {# día de retraso} other {# días de retraso} many {# días de retraso}}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases due countdown"
 msgid "{days, plural, one {# day} other {# days}}"
-msgstr "{days, plural, one {# día} other {# días}}"
+msgstr "{days, plural, one {# día} other {# días} many {# días}}"
 
 #: src/ui/PropertyEventCard.ts
 msgctxt "ui/PropertyEventCard: createPropertyEventCard text"
@@ -407,7 +402,7 @@ msgstr "{errorMessage}: {message}"
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{eventCount, plural, one {{eventCount, number} event} other {{eventCount, number} events}}"
-msgstr "{eventCount, plural, one {{eventCount, number} evento} other {{eventCount, number} eventos}}"
+msgstr "{eventCount, plural, one {{eventCount, number} evento} other {{eventCount, number} eventos} many {{eventCount, number} eventos}}"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: renderUserProperty display"
@@ -442,7 +437,7 @@ msgstr "{hours, number} h {minutes, number} min"
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.timeFormats.hoursAgo"
 msgid "{hours, plural, one {{hours, number} hour ago} other {{hours, number} hours ago}}"
-msgstr "{hours, plural, one {hace {hours, number} hora} other {hace {hours, number} horas}}"
+msgstr "{hours, plural, one {hace {hours, number} hora} other {hace {hours, number} horas} many {hace {hours, number} horas}}"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalTime"
@@ -452,42 +447,42 @@ msgstr "{hours} h {minutes} min en total"
 #: src/i18n/recurrence.ts
 msgctxt "monthly weekday recurrence"
 msgid "{interval, plural, =1 {{weekday, select, MO {{position, select, last {Monthly on the last Monday} every {Monthly on every Monday} other {{index, selectordinal, one {Monthly on the #st Monday} two {Monthly on the #nd Monday} few {Monthly on the #rd Monday} other {Monthly on the #th Monday}}}}} TU {{position, select, last {Monthly on the last Tuesday} every {Monthly on every Tuesday} other {{index, selectordinal, one {Monthly on the #st Tuesday} two {Monthly on the #nd Tuesday} few {Monthly on the #rd Tuesday} other {Monthly on the #th Tuesday}}}}} WE {{position, select, last {Monthly on the last Wednesday} every {Monthly on every Wednesday} other {{index, selectordinal, one {Monthly on the #st Wednesday} two {Monthly on the #nd Wednesday} few {Monthly on the #rd Wednesday} other {Monthly on the #th Wednesday}}}}} TH {{position, select, last {Monthly on the last Thursday} every {Monthly on every Thursday} other {{index, selectordinal, one {Monthly on the #st Thursday} two {Monthly on the #nd Thursday} few {Monthly on the #rd Thursday} other {Monthly on the #th Thursday}}}}} FR {{position, select, last {Monthly on the last Friday} every {Monthly on every Friday} other {{index, selectordinal, one {Monthly on the #st Friday} two {Monthly on the #nd Friday} few {Monthly on the #rd Friday} other {Monthly on the #th Friday}}}}} SA {{position, select, last {Monthly on the last Saturday} every {Monthly on every Saturday} other {{index, selectordinal, one {Monthly on the #st Saturday} two {Monthly on the #nd Saturday} few {Monthly on the #rd Saturday} other {Monthly on the #th Saturday}}}}} SU {{position, select, last {Monthly on the last Sunday} every {Monthly on every Sunday} other {{index, selectordinal, one {Monthly on the #st Sunday} two {Monthly on the #nd Sunday} few {Monthly on the #rd Sunday} other {Monthly on the #th Sunday}}}}} other {Monthly}}} other {{weekday, select, MO {{position, select, last {Every {interval, number} months on the last Monday} every {Every {interval, number} months on every Monday} other {{index, selectordinal, one {Every {interval, number} months on the #st Monday} two {Every {interval, number} months on the #nd Monday} few {Every {interval, number} months on the #rd Monday} other {Every {interval, number} months on the #th Monday}}}}} TU {{position, select, last {Every {interval, number} months on the last Tuesday} every {Every {interval, number} months on every Tuesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Tuesday} two {Every {interval, number} months on the #nd Tuesday} few {Every {interval, number} months on the #rd Tuesday} other {Every {interval, number} months on the #th Tuesday}}}}} WE {{position, select, last {Every {interval, number} months on the last Wednesday} every {Every {interval, number} months on every Wednesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Wednesday} two {Every {interval, number} months on the #nd Wednesday} few {Every {interval, number} months on the #rd Wednesday} other {Every {interval, number} months on the #th Wednesday}}}}} TH {{position, select, last {Every {interval, number} months on the last Thursday} every {Every {interval, number} months on every Thursday} other {{index, selectordinal, one {Every {interval, number} months on the #st Thursday} two {Every {interval, number} months on the #nd Thursday} few {Every {interval, number} months on the #rd Thursday} other {Every {interval, number} months on the #th Thursday}}}}} FR {{position, select, last {Every {interval, number} months on the last Friday} every {Every {interval, number} months on every Friday} other {{index, selectordinal, one {Every {interval, number} months on the #st Friday} two {Every {interval, number} months on the #nd Friday} few {Every {interval, number} months on the #rd Friday} other {Every {interval, number} months on the #th Friday}}}}} SA {{position, select, last {Every {interval, number} months on the last Saturday} every {Every {interval, number} months on every Saturday} other {{index, selectordinal, one {Every {interval, number} months on the #st Saturday} two {Every {interval, number} months on the #nd Saturday} few {Every {interval, number} months on the #rd Saturday} other {Every {interval, number} months on the #th Saturday}}}}} SU {{position, select, last {Every {interval, number} months on the last Sunday} every {Every {interval, number} months on every Sunday} other {{index, selectordinal, one {Every {interval, number} months on the #st Sunday} two {Every {interval, number} months on the #nd Sunday} few {Every {interval, number} months on the #rd Sunday} other {Every {interval, number} months on the #th Sunday}}}}} other {Every {interval, number} months}}}}"
-msgstr "{interval, plural, =1 {{weekday, select, MO {{position, select, last {Cada mes el último lunes} every {Cada mes todos los lunes} other {{index, selectordinal, other {Cada mes el #.º lunes}}}}} TU {{position, select, last {Cada mes el último martes} every {Cada mes todos los martes} other {{index, selectordinal, other {Cada mes el #.º martes}}}}} WE {{position, select, last {Cada mes el último miércoles} every {Cada mes todos los miércoles} other {{index, selectordinal, other {Cada mes el #.º miércoles}}}}} TH {{position, select, last {Cada mes el último jueves} every {Cada mes todos los jueves} other {{index, selectordinal, other {Cada mes el #.º jueves}}}}} FR {{position, select, last {Cada mes el último viernes} every {Cada mes todos los viernes} other {{index, selectordinal, other {Cada mes el #.º viernes}}}}} SA {{position, select, last {Cada mes el último sábado} every {Cada mes todos los sábados} other {{index, selectordinal, other {Cada mes el #.º sábado}}}}} SU {{position, select, last {Cada mes el último domingo} every {Cada mes todos los domingos} other {{index, selectordinal, other {Cada mes el #.º domingo}}}}} other {Cada mes}}} other {{weekday, select, MO {{position, select, last {Cada {interval, number} meses el último lunes} every {Cada {interval, number} meses todos los lunes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º lunes}}}}} TU {{position, select, last {Cada {interval, number} meses el último martes} every {Cada {interval, number} meses todos los martes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º martes}}}}} WE {{position, select, last {Cada {interval, number} meses el último miércoles} every {Cada {interval, number} meses todos los miércoles} other {{index, selectordinal, other {Cada {interval, number} meses el #.º miércoles}}}}} TH {{position, select, last {Cada {interval, number} meses el último jueves} every {Cada {interval, number} meses todos los jueves} other {{index, selectordinal, other {Cada {interval, number} meses el #.º jueves}}}}} FR {{position, select, last {Cada {interval, number} meses el último viernes} every {Cada {interval, number} meses todos los viernes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º viernes}}}}} SA {{position, select, last {Cada {interval, number} meses el último sábado} every {Cada {interval, number} meses todos los sábados} other {{index, selectordinal, other {Cada {interval, number} meses el #.º sábado}}}}} SU {{position, select, last {Cada {interval, number} meses el último domingo} every {Cada {interval, number} meses todos los domingos} other {{index, selectordinal, other {Cada {interval, number} meses el #.º domingo}}}}} other {Cada {interval, number} meses}}}}"
+msgstr "{interval, plural, =1 {{weekday, select, MO {{position, select, last {Cada mes el último lunes} every {Cada mes todos los lunes} other {{index, selectordinal, other {Cada mes el #.º lunes}}}}} TU {{position, select, last {Cada mes el último martes} every {Cada mes todos los martes} other {{index, selectordinal, other {Cada mes el #.º martes}}}}} WE {{position, select, last {Cada mes el último miércoles} every {Cada mes todos los miércoles} other {{index, selectordinal, other {Cada mes el #.º miércoles}}}}} TH {{position, select, last {Cada mes el último jueves} every {Cada mes todos los jueves} other {{index, selectordinal, other {Cada mes el #.º jueves}}}}} FR {{position, select, last {Cada mes el último viernes} every {Cada mes todos los viernes} other {{index, selectordinal, other {Cada mes el #.º viernes}}}}} SA {{position, select, last {Cada mes el último sábado} every {Cada mes todos los sábados} other {{index, selectordinal, other {Cada mes el #.º sábado}}}}} SU {{position, select, last {Cada mes el último domingo} every {Cada mes todos los domingos} other {{index, selectordinal, other {Cada mes el #.º domingo}}}}} other {Cada mes}}} other {{weekday, select, MO {{position, select, last {Cada {interval, number} meses el último lunes} every {Cada {interval, number} meses todos los lunes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º lunes}}}}} TU {{position, select, last {Cada {interval, number} meses el último martes} every {Cada {interval, number} meses todos los martes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º martes}}}}} WE {{position, select, last {Cada {interval, number} meses el último miércoles} every {Cada {interval, number} meses todos los miércoles} other {{index, selectordinal, other {Cada {interval, number} meses el #.º miércoles}}}}} TH {{position, select, last {Cada {interval, number} meses el último jueves} every {Cada {interval, number} meses todos los jueves} other {{index, selectordinal, other {Cada {interval, number} meses el #.º jueves}}}}} FR {{position, select, last {Cada {interval, number} meses el último viernes} every {Cada {interval, number} meses todos los viernes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º viernes}}}}} SA {{position, select, last {Cada {interval, number} meses el último sábado} every {Cada {interval, number} meses todos los sábados} other {{index, selectordinal, other {Cada {interval, number} meses el #.º sábado}}}}} SU {{position, select, last {Cada {interval, number} meses el último domingo} every {Cada {interval, number} meses todos los domingos} other {{index, selectordinal, other {Cada {interval, number} meses el #.º domingo}}}}} other {Cada {interval, number} meses}}} many {{weekday, select, MO {{position, select, last {Cada {interval, number} meses el último lunes} every {Cada {interval, number} meses todos los lunes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º lunes}}}}} TU {{position, select, last {Cada {interval, number} meses el último martes} every {Cada {interval, number} meses todos los martes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º martes}}}}} WE {{position, select, last {Cada {interval, number} meses el último miércoles} every {Cada {interval, number} meses todos los miércoles} other {{index, selectordinal, other {Cada {interval, number} meses el #.º miércoles}}}}} TH {{position, select, last {Cada {interval, number} meses el último jueves} every {Cada {interval, number} meses todos los jueves} other {{index, selectordinal, other {Cada {interval, number} meses el #.º jueves}}}}} FR {{position, select, last {Cada {interval, number} meses el último viernes} every {Cada {interval, number} meses todos los viernes} other {{index, selectordinal, other {Cada {interval, number} meses el #.º viernes}}}}} SA {{position, select, last {Cada {interval, number} meses el último sábado} every {Cada {interval, number} meses todos los sábados} other {{index, selectordinal, other {Cada {interval, number} meses el #.º sábado}}}}} SU {{position, select, last {Cada {interval, number} meses el último domingo} every {Cada {interval, number} meses todos los domingos} other {{index, selectordinal, other {Cada {interval, number} meses el #.º domingo}}}}} other {Cada {interval, number} meses}}}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence daily interval"
 msgid "{interval, plural, =1 {Daily} other {Every # days}}"
-msgstr "{interval, plural, =1 {Diariamente} other {Cada # días}}"
+msgstr "{interval, plural, =1 {Diariamente} other {Cada # días} many {Cada # días}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence interval on month day"
 msgid "{interval, plural, =1 {Monthly on day {day, number}} other {Every # months on day {day, number}}}"
-msgstr "{interval, plural, =1 {El día {day, number} de cada mes} other {El día {day, number} cada # meses}}"
+msgstr "{interval, plural, =1 {El día {day, number} de cada mes} other {El día {day, number} cada # meses} many {El día {day, number} cada # meses}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence monthly interval"
 msgid "{interval, plural, =1 {Monthly} other {Every # months}}"
-msgstr "{interval, plural, =1 {Mensualmente} other {Cada # meses}}"
+msgstr "{interval, plural, =1 {Mensualmente} other {Cada # meses} many {Cada # meses}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence weekly weekdays"
 msgid "{interval, plural, =1 {Weekly on {days}} other {Every # weeks on {days}}}"
-msgstr "{interval, plural, =1 {Cada semana; días: {days}} other {Cada # semanas; días: {days}}}"
+msgstr "{interval, plural, =1 {Cada semana; días: {days}} other {Cada # semanas; días: {days}} many {Cada # semanas; días: {days}}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence weekly interval"
 msgid "{interval, plural, =1 {Weekly} other {Every # weeks}}"
-msgstr "{interval, plural, =1 {Semanalmente} other {Cada # semanas}}"
+msgstr "{interval, plural, =1 {Semanalmente} other {Cada # semanas} many {Cada # semanas}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence yearly interval date"
 msgid "{interval, plural, =1 {Yearly on {date}} other {Every # years on {date}}}"
-msgstr "{interval, plural, =1 {Cada año el {date}} other {Cada # años el {date}}}"
+msgstr "{interval, plural, =1 {Cada año el {date}} other {Cada # años el {date}} many {Cada # años el {date}}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence yearly interval"
 msgid "{interval, plural, =1 {Yearly} other {Every # years}}"
-msgstr "{interval, plural, =1 {Anualmente} other {Cada # años}}"
+msgstr "{interval, plural, =1 {Anualmente} other {Cada # años} many {Cada # años}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.dueLabel"
@@ -557,22 +552,22 @@ msgstr "{label}: Hoy a las {time}"
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: reminders display"
 msgid "{length, plural, one {{length, number} reminder} other {{length, number} reminders}}"
-msgstr "{length, plural, one {{length, number} recordatorio} other {{length, number} recordatorios}}"
+msgstr "{length, plural, one {{length, number} recordatorio} other {{length, number} recordatorios} many {{length, number} recordatorios}}"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: timeEntries display"
 msgid "{length, plural, one {{value1} tracked ({length, number} entry)} other {{value1} tracked ({length, number} entries)}}"
-msgstr "{length, plural, one {{value1} registrados ({length, number} entrada)} other {{value1} registrados ({length, number} entradas)}}"
+msgstr "{length, plural, one {{value1} registrados ({length, number} entrada)} other {{value1} registrados ({length, number} entradas)} many {{value1} registrados ({length, number} entradas)}}"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: icsEventId display"
 msgid "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}"
-msgstr "{length, plural, one {Vinculado a {length, number} evento del calendario} other {Vinculado a {length, number} eventos del calendario}}"
+msgstr "{length, plural, one {Vinculado a {length, number} evento del calendario} other {Vinculado a {length, number} eventos del calendario} many {Vinculado a {length, number} eventos del calendario}}"
 
 #: src/views/StatsView.ts
 msgctxt "views/StatsView: StatsView.renderDrilldownContent.renderTasks display"
 msgid "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}"
-msgstr "{length, plural, one {Se muestra {length, number} tarea} other {Se muestran {length, number} tareas}}"
+msgstr "{length, plural, one {Se muestra {length, number} tarea} other {Se muestran {length, number} tareas} many {Se muestran {length, number} tareas}}"
 
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro break notification"
@@ -587,7 +582,7 @@ msgstr "{minutes, number} min"
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.timeFormats.minutesAgo"
 msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
-msgstr "{minutes, plural, one {hace {minutes, number} minuto} other {hace {minutes, number} minutos}}"
+msgstr "{minutes, plural, one {hace {minutes, number} minuto} other {hace {minutes, number} minutos} many {hace {minutes, number} minutos}}"
 
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.recents.duration"
@@ -602,12 +597,12 @@ msgstr "{minutes} min en total"
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{noteCount, plural, one {{eventCount, plural, one {{noteCount, number} note, {eventCount, number} event} other {{noteCount, number} note, {eventCount, number} events}}} other {{eventCount, plural, one {{noteCount, number} notes, {eventCount, number} event} other {{noteCount, number} notes, {eventCount, number} events}}}}"
-msgstr "{noteCount, plural, one {{eventCount, plural, one {{noteCount, number} nota, {eventCount, number} evento} other {{noteCount, number} nota, {eventCount, number} eventos}}} other {{eventCount, plural, one {{noteCount, number} notas, {eventCount, number} evento} other {{noteCount, number} notas, {eventCount, number} eventos}}}}"
+msgstr "{noteCount, plural, one {{eventCount, plural, one {{noteCount, number} nota, {eventCount, number} evento} other {{noteCount, number} nota, {eventCount, number} eventos} many {{noteCount, number} nota, {eventCount, number} eventos}}} other {{eventCount, plural, one {{noteCount, number} notas, {eventCount, number} evento} other {{noteCount, number} notas, {eventCount, number} eventos} many {{noteCount, number} notas, {eventCount, number} eventos}}} many {{eventCount, plural, one {{noteCount, number} notas, {eventCount, number} evento} other {{noteCount, number} notas, {eventCount, number} eventos} many {{noteCount, number} notas, {eventCount, number} eventos}}}}"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{noteCount, plural, one {{noteCount, number} note} other {{noteCount, number} notes}}"
-msgstr "{noteCount, plural, one {{noteCount, number} nota} other {{noteCount, number} notas}}"
+msgstr "{noteCount, plural, one {{noteCount, number} nota} other {{noteCount, number} notas} many {{noteCount, number} notas}}"
 
 #: src/services/TaskService.ts
 msgctxt "task archive move failure"
@@ -688,12 +683,12 @@ msgstr "{relatedTo, select, due {{direction, select, before {{duration} antes de
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "calendar refresh throttling"
 msgid "{seconds, plural, one {Please wait # second before refreshing again} other {Please wait # seconds before refreshing again}}"
-msgstr "{seconds, plural, one {Espera # segundo antes de volver a actualizar} other {Espera # segundos antes de volver a actualizar}}"
+msgstr "{seconds, plural, one {Espera # segundo antes de volver a actualizar} other {Espera # segundos antes de volver a actualizar} many {Espera # segundos antes de volver a actualizar}}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/errors: RateLimitError display"
 msgid "{seconds, plural, one {Rate limit exceeded. Retry after # second.} other {Rate limit exceeded. Retry after # seconds.}}"
-msgstr "{seconds, plural, one {Se excedió el límite de solicitudes. Reinténtalo después de # segundo.} other {Se excedió el límite de solicitudes. Reinténtalo después de # segundos.}}"
+msgstr "{seconds, plural, one {Se excedió el límite de solicitudes. Reinténtalo después de # segundo.} other {Se excedió el límite de solicitudes. Reinténtalo después de # segundos.} many {Se excedió el límite de solicitudes. Reinténtalo después de # segundos.}}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
@@ -717,7 +712,7 @@ msgstr "{stateLabel}: {timeRemaining}"
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.partialConversion"
 msgid "{successCount, plural, one {Converted {successCount, number} task. {failureCount, number} failed.} other {Converted {successCount, number} tasks. {failureCount, number} failed.}}"
-msgstr "{successCount, plural, one {Conversión: {successCount, number} tarea. Fallos: {failureCount, number}.} other {Conversión: {successCount, number} tareas. Fallos: {failureCount, number}.}}"
+msgstr "{successCount, plural, one {Conversión: {successCount, number} tarea. Fallos: {failureCount, number}.} other {Conversión: {successCount, number} tareas. Fallos: {failureCount, number}.} many {Conversión: {successCount, number} tareas. Fallos: {failureCount, number}.}}"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.meta.running"
@@ -732,7 +727,7 @@ msgstr "Tiempo previsto: {time} · pomodoros completados hoy: {count}"
 #: src/services/CalendarExportService.ts
 msgctxt "services/CalendarExportService: CalendarExportService.buildDescription display"
 msgid "{timeEstimate, plural, one {Estimated time: # minute} other {Estimated time: # minutes}}"
-msgstr "{timeEstimate, plural, one {Tiempo estimado: # minuto} other {Tiempo estimado: # minutos}}"
+msgstr "{timeEstimate, plural, one {Tiempo estimado: # minuto} other {Tiempo estimado: # minutos} many {Tiempo estimado: # minutos}}"
 
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
@@ -762,7 +757,7 @@ msgstr "{titles} y {count} más"
 #: src/views/StatsView.ts
 msgctxt "views/StatsView: StatsView.renderProgressCircle display"
 msgid "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}"
-msgstr "{total, plural, one {{completed, number}/{total, number} tarea} other {{completed, number}/{total, number} tareas}}"
+msgstr "{total, plural, one {{completed, number}/{total, number} tarea} other {{completed, number}/{total, number} tareas} many {{completed, number}/{total, number} tareas}}"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.meta.paused"
@@ -777,7 +772,7 @@ msgstr "{type} listo · tiempo previsto: {time}"
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{value1, plural, one {+ {value1, number} more...} other {+ {value1, number} more...}}"
-msgstr "{value1, plural, one {+ {value1, number} más...} other {+ {value1, number} más...}}"
+msgstr "{value1, plural, one {+ {value1, number} más...} other {+ {value1, number} más...} many {+ {value1, number} más...}}"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: timeEstimate display"
@@ -801,6 +796,7 @@ msgid "{value2, plural, one {{taskTitles}\n"
 "... and {value2, number} more}}"
 msgstr "{value2, plural, one {{taskTitles}\n"
 "... y {value2, number} más} other {{taskTitles}\n"
+"... y {value2, number} más} many {{taskTitles}\n"
 "... y {value2, number} más}}"
 
 #: src/settings/tabs/taskPropertiesTab.ts
@@ -1406,11 +1402,6 @@ msgstr "Ya existe un archivo con este nombre. Por favor intenta de nuevo o renom
 msgctxt "services.pomodoro.notices.alreadyRunning"
 msgid "A Pomodoro is already running"
 msgstr "Un pomodoro ya está ejecutándose"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "a specification for typed markdown collections."
-msgstr "una especificación para colecciones Markdown tipadas."
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentSelf"
@@ -2248,11 +2239,6 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.descriptionRegen"
 msgid "Base files are not automatically updated when you change settings. To apply new settings, use \"Update files\" below, delete the existing .base files and restart Obsidian, or edit them manually."
 msgstr "Los archivos Base no se actualizan automáticamente cuando cambias la configuración. Para aplicar nuevos ajustes, usa \"Actualizar archivos\" abajo, elimina los archivos .base existentes y reinicia Obsidian, o edítalos manualmente."
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Basic Information"
-msgstr "Información básica"
-
 #: src/modals/ReminderModal.ts
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings.defaults.reminders.directions.before"
@@ -2306,11 +2292,6 @@ msgctxt "generated Bases view name"
 msgid "Blocked By"
 msgstr "Bloqueadas por"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Blocked By"
-msgstr "Bloqueadas por"
-
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: blockedBy text"
 msgid "Blocked by: "
@@ -2346,11 +2327,6 @@ msgstr "Bloqueando"
 msgctxt "ui.taskCard.labels.blocking"
 msgid "Blocking"
 msgstr "Bloqueando"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Blocking"
-msgstr "Bloquea"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardSecondaryBadges.ts
@@ -3480,11 +3456,6 @@ msgctxt "settings.taskProperties.properties.contexts.name"
 msgid "Contexts"
 msgstr "Contextos"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Contexts"
-msgstr "Contextos"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.googleCalendarExport.eventDescription.contexts"
 msgid "Contexts: {value}"
@@ -4035,11 +4006,6 @@ msgstr "Días personalizados"
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.customFieldsLabel"
 msgid "Custom fields"
-msgstr "Campos personalizados"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Custom Fields"
 msgstr "Campos personalizados"
 
 #: src/settings/tabs/integrationsTab.ts
@@ -4618,11 +4584,6 @@ msgctxt "contextMenus.task.dependencies.title"
 msgid "Dependencies"
 msgstr "Dependencias"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Dependencies"
-msgstr "Dependencias"
-
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
 msgid "Dependencies updated"
@@ -4678,16 +4639,6 @@ msgctxt "settings.defaults.reminders.fields.description"
 msgid "Description:"
 msgstr "Descripción:"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildMdbaseYaml display"
-msgid "description: \"Task collection managed by TaskNotes for Obsidian\""
-msgstr "description: \"Colección de tareas gestionada por TaskNotes para Obsidian\""
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "description: A task managed by the TaskNotes plugin for Obsidian."
-msgstr "description: Una tarea gestionada por el plugin TaskNotes para Obsidian."
-
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderDesc"
 msgid "Destination folder (leave empty for vault root)"
@@ -4695,11 +4646,6 @@ msgstr "Carpeta de destino (déjala vacía para usar la raíz de la bóveda)"
 
 #: src/modals/TaskModal.ts
 msgctxt "modals.task.detailsLabel"
-msgid "Details"
-msgstr "Detalles"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Details"
 msgstr "Detalles"
 
@@ -4879,7 +4825,7 @@ msgctxt "settings.header.documentation"
 msgid "Documentation"
 msgstr "Documentación"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Done"
 msgstr "Hecho"
@@ -5123,11 +5069,6 @@ msgstr "Editar duración del temporizador"
 msgctxt "settings.integrations.webhooks.modals.edit.title"
 msgid "Edit webhook"
 msgstr "Editar webhook"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "edited manually. Changes to TaskNotes settings (statuses, priorities, field"
-msgstr "editado manualmente. Los cambios en los ajustes de TaskNotes (estados, prioridades, campos"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.validateInputParameters error"
@@ -5399,11 +5340,6 @@ msgstr "Error: Configuración de campos no válida. Restablece los valores prede
 msgctxt "settings.taskProperties.properties.timeEstimate.description"
 msgid "Estimated minutes to complete the task. Used for time-blocking and workload planning. Displayed on task cards and calendar events."
 msgstr "Minutos estimados para completar la tarea. Se usa para planificación de tiempo y carga de trabajo. Se muestra en tarjetas de tareas y eventos de calendario."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Estimated time in minutes."
-msgstr "Tiempo estimado en minutos."
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyMarkdownSuccess"
@@ -6470,18 +6406,8 @@ msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Failed: {value1, number}"
 msgstr "Fallidos: {value1, number}"
 
-#: src/bases/basesValueConversion.ts
+#: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "False"
-msgstr "Falso"
-
-#: src/bases/kanbanGrouping.ts
-msgctxt "bases/kanbanGrouping: valueToKanbanGroupString display"
-msgid "False"
-msgstr "Falso"
-
-#: src/bases/taskListGrouping.ts
-msgctxt "bases/taskListGrouping: stringifyTaskListGroupValue display"
 msgid "False"
 msgstr "Falso"
 
@@ -6495,25 +6421,10 @@ msgctxt "settings.tabs.features"
 msgid "Features"
 msgstr "Características"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: migrateUserFieldsToFieldConfig displayName"
-msgid "Field {value1, number}"
-msgstr "Campo {value1, number}"
-
 #: src/settings/tabs/modalFieldsTab.ts
 msgctxt "settings.modalFields.reset.notice"
 msgid "Field configuration reset to defaults"
 msgstr "Configuración de campos restablecida a los valores predeterminados"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Field the reminder is relative to (e.g. ''due'')."
-msgstr "Campo al que se refiere el recordatorio (p. ej., 'due')."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "fields. This maps each field to its TaskNotes semantic role so custom"
-msgstr "campos. Esto asigna a cada campo su función semántica de TaskNotes para que los"
 
 #: src/bases/basesExport.ts
 msgctxt "bases/basesExport: buildBasesExportColumns label"
@@ -6736,11 +6647,6 @@ msgctxt "modals.icsNoteCreation.folderPlaceholder"
 msgid "folder/subfolder"
 msgstr "carpeta/subcarpeta"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "for note-based task management."
-msgstr "para gestionar tareas basadas en notas."
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.forgetConfirm"
 msgid "Forget credentials"
@@ -6797,11 +6703,6 @@ msgstr "Desde"
 msgctxt "settings.general.frontmatter.header"
 msgid "Frontmatter"
 msgstr "Frontmatter"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "frontmatter field names can still be interpreted consistently."
-msgstr "nombres de campos de frontmatter personalizados se interpreten de forma coherente."
 
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.sortOrder.description"
@@ -7035,7 +6936,7 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Hide top-level subtasks"
 msgstr "Ocultar subtareas de nivel superior"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "High"
 msgstr "Alta"
@@ -7060,11 +6961,6 @@ msgstr "horas"
 msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.description"
 msgid "How filenames are generated for notes created from ICS events"
 msgstr "Cómo se generan los nombres de archivo para notas creadas desde eventos ICS"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "How occurrence task notes are materialized for a recurring parent task."
-msgstr "Cómo se materializan las notas de repetición de una tarea recurrente original."
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.interval.description"
@@ -7156,7 +7052,7 @@ msgctxt "settings.taskProperties.taskStatuses.placeholders.label"
 msgid "In progress"
 msgstr "En progreso"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "In progress"
 msgstr "En curso"
@@ -7401,30 +7297,10 @@ msgctxt "services/validation: validateUrl display"
 msgid "Invalid URL format for {fieldName}"
 msgstr "Formato de URL no válido para {fieldName}"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "ISO 8601 duration controlling rolling materialization after today."
-msgstr "Duración ISO 8601 que controla la materialización progresiva después de hoy."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "ISO 8601 duration controlling rolling materialization before today."
-msgstr "Duración ISO 8601 que controla la materialización progresiva antes de hoy."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "ISO 8601 duration offset (e.g. ''-PT1H'')."
-msgstr "Desplazamiento de duración ISO 8601 (p. ej., '-PT1H')."
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.issueLabel"
 msgid "Issue:"
 msgstr "Problema:"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "It conforms to [mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0,"
-msgstr "Cumple [mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0,"
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
@@ -7818,7 +7694,7 @@ msgctxt "generated Bases column name"
 msgid "Long breaks"
 msgstr "Descansos largos"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
 msgstr "Baja"
@@ -7872,11 +7748,6 @@ msgstr "Actualizar manualmente todas las suscripciones de calendario habilitadas
 msgctxt "settings.integrations.autoExport.exportNow.description"
 msgid "Manually trigger an immediate export"
 msgstr "Activar manualmente una exportación inmediata"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "mappings, user fields) will cause this file to be regenerated."
-msgstr "asignaciones, campos de usuario) regenerarán este archivo."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.completion.submenuCompleteOnly"
@@ -7947,11 +7818,6 @@ msgstr "Definiciones de tipos mdbase"
 msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
 msgstr "Media (30 min-2 h)"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Metadata"
-msgstr "Metadatos"
 
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.sections.metadataProperties"
@@ -8285,16 +8151,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.addSuccess"
 msgid "New calendar subscription added - please configure the details"
 msgstr "Nueva suscripción de calendario agregada - por favor configura los detalles"
 
-#: src/services/PriorityManager.ts
-msgctxt "services/PriorityManager: PriorityManager.createDefaultPriority label"
-msgid "New priority"
-msgstr "Nueva prioridad"
-
-#: src/services/StatusManager.ts
-msgctxt "services/StatusManager: StatusManager.createDefaultStatus label"
-msgid "New status"
-msgstr "Nuevo estado"
-
 #: src/bases/BasesViewBase.ts
 msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
 msgid "New Task"
@@ -8402,11 +8258,6 @@ msgstr "Sin {key}"
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
 msgid "No {provider} connection found"
 msgstr "No se encontró ninguna conexión con {provider}"
-
-#: src/services/FilterService.ts
-msgctxt "services/FilterService: FilterService.getHierarchicalGroupedTasks.resolver display"
-msgid "No {value1}"
-msgstr "Sin {value1}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
@@ -8869,12 +8720,7 @@ msgctxt "settings.taskProperties.customUserFields.defaultNames.noKey"
 msgid "no-key"
 msgstr "sin-clave"
 
-#: src/bases/basesValueConversion.ts
-msgctxt "bases/basesValueConversion: convertBasesGroupKeyToString display"
-msgid "None"
-msgstr "Ninguno"
-
-#: src/bases/basesValueConversion.ts
+#: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
 msgid "None"
 msgstr "Ninguno"
@@ -8884,23 +8730,13 @@ msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "None"
 msgstr "Ninguno"
 
-#: src/bases/kanbanGrouping.ts
-msgctxt "bases/kanbanGrouping: valueToKanbanGroupString display"
-msgid "None"
-msgstr "Ninguno"
-
-#: src/bases/taskListGrouping.ts
-msgctxt "bases/taskListGrouping: stringifyTaskListGroupValue display"
-msgid "None"
-msgstr "Ninguno"
-
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "Ninguno"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
 msgstr "Ninguna"
@@ -8910,7 +8746,7 @@ msgctxt "ui.filterBar.group.none"
 msgid "None"
 msgstr "Ninguno"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "Normal"
@@ -9197,7 +9033,7 @@ msgctxt "modals.deviceCode.steps.open"
 msgid "Open"
 msgstr "Abrir"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "Abiertas"
@@ -9463,11 +9299,6 @@ msgctxt "modals.calendarEventCreation.locationDesc"
 msgid "Optional location for the event"
 msgstr "Ubicación opcional para el evento"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Optional template note used when materializing occurrences."
-msgstr "Nota de plantilla opcional para materializar repeticiones."
-
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Optional work-session duration override for action=start"
@@ -9485,11 +9316,6 @@ msgstr "Organización"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.organization"
-msgid "Organization"
-msgstr "Organización"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Organization"
 msgstr "Organización"
 
@@ -9568,11 +9394,6 @@ msgstr "Resumen"
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.description"
 msgid "Overwrite the configured default .base files with templates generated from your current TaskNotes settings."
 msgstr "Sobrescribe los archivos .base predeterminados configurados con plantillas generadas desde tus ajustes actuales de TaskNotes."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Parent recurring task for a materialized occurrence note."
-msgstr "Tarea recurrente original de una nota de repetición materializada."
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: recurrenceParent text"
@@ -10059,11 +9880,6 @@ msgctxt "settings.taskProperties.properties.projects.name"
 msgid "Projects"
 msgstr "Proyectos"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Projects"
-msgstr "Proyectos"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
@@ -10430,11 +10246,6 @@ msgstr "Recordatorio"
 msgctxt "settings.defaults.reminders.reminderDescription"
 msgid "Reminder description"
 msgstr "Descripción del recordatorio"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Reminder objects with id, type, offset, etc."
-msgstr "Objetos de recordatorio con id, type, offset, etc."
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand display"
@@ -11239,11 +11050,6 @@ msgctxt "generated Bases column name"
 msgid "Short breaks"
 msgstr "Descansos cortos"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Short summary of the task."
-msgstr "Resumen breve de la tarea."
-
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
 msgid "Show a visual preview while dragging to select time ranges"
@@ -11496,8 +11302,8 @@ msgstr "Inicia sesión con tu cuenta de Google y concede acceso"
 
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.titleCard.legacySyntaxWarning"
-msgid "Single-brace syntax like {title} is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates."
-msgstr "La sintaxis de llaves simples, como {title}, está obsoleta. Usa llaves dobles, como '{{title}}', para mantener la coherencia con las plantillas del cuerpo."
+msgid "Single-brace syntax like '{title}' is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates."
+msgstr "La sintaxis de llaves simples, como '{title}', está obsoleta. Usa llaves dobles, como '{{title}}', para mantener la coherencia con las plantillas del cuerpo."
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.general.taskInteraction.singleClick.name"
@@ -11877,11 +11683,6 @@ msgctxt "modals.task.organization.subtasks"
 msgid "Subtasks"
 msgstr "Subtareas"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Subtasks"
-msgstr "Subtareas"
-
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.subtractMinute"
 msgid "Subtract one minute"
@@ -12127,11 +11928,6 @@ msgctxt "ui.filterBar.group.tags"
 msgid "Tags"
 msgstr "Etiquetas"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Tags"
-msgstr "Etiquetas"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.googleCalendarExport.eventDescription.tags"
 msgid "Tags: {value}"
@@ -12146,11 +11942,6 @@ msgstr "Etiquetas: {value1}"
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
 msgid "Target calendar"
 msgstr "Calendario destino"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Target recurrence date for a materialized occurrence note."
-msgstr "Fecha de recurrencia prevista para una nota de repetición materializada."
 
 #: src/bases/KanbanView.ts
 msgctxt "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display"
@@ -12528,11 +12319,6 @@ msgctxt "notices.releaseAvailable.message"
 msgid "TaskNotes {version} is available."
 msgstr "TaskNotes {version} está disponible."
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "TaskNotes also adds a non-standard `tn_role` field annotation on schema"
-msgstr "TaskNotes también añade una anotación de campo `tn_role` no estándar al esquema"
-
 #: src/bootstrap/pluginBootstrap.ts
 msgctxt "notices.interface.apiStarted"
 msgid "TaskNotes API started on port {port}"
@@ -12684,11 +12470,6 @@ msgctxt "settings.taskProperties.taskStatuses.howTheyWork.orderNote"
 msgid "The order below determines the sequence when cycling through statuses by clicking on task status badges."
 msgstr "El orden de abajo determina la secuencia al alternar entre estados haciendo clic en distintivos de estado de tarea."
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "The status field also includes `tn_completed_values`, listing"
-msgstr "El campo de estado también incluye `tn_completed_values`, que enumera"
-
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.properties.title.description"
 msgid "The task name. Can be stored in frontmatter or in the filename (when ''store title in filename'' is enabled)."
@@ -12713,11 +12494,6 @@ msgstr "tercer"
 msgctxt "common.cannotUndo"
 msgid "This action cannot be undone."
 msgstr "Esta acción no se puede deshacer."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "This file is automatically generated from TaskNotes settings and should not be"
-msgstr "Este archivo se genera automáticamente a partir de los ajustes de TaskNotes y no debe ser"
 
 #: src/ui/NotificationService.ts
 msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotification display"
@@ -12775,11 +12551,6 @@ msgstr "Esta tarea se usa como proyecto (clic para mostrar/ocultar subtareas)"
 msgctxt "ui.taskCard.blockedBadgeTooltip"
 msgid "This task is waiting on another task"
 msgstr "Esta tarea está esperando otra tarea"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "This type definition describes the data schema for tasks managed by"
-msgstr "Esta definición de tipo describe el esquema de datos de las tareas gestionadas por"
 
 #: src/bases/TaskListView.ts
 msgctxt "views.taskList.reorder.scope.ungrouped"
@@ -12892,11 +12663,6 @@ msgstr "Estimación de tiempo"
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.timeEstimate.name"
 msgid "Time estimate"
-msgstr "Estimación de tiempo"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Time Estimate"
 msgstr "Estimación de tiempo"
 
 #: src/modals/taskModalMetadataFields.ts
@@ -13120,11 +12886,6 @@ msgstr "Título"
 
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.properties.title.name"
-msgid "Title"
-msgstr "Título"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "Título"
 
@@ -13481,18 +13242,8 @@ msgctxt "settings.taskProperties.propertyCard.triggerTooLong"
 msgid "Trigger is too long (max 10 characters)"
 msgstr "El activador es demasiado largo (máx. 10 caracteres)"
 
-#: src/bases/basesValueConversion.ts
+#: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "True"
-msgstr "Verdadero"
-
-#: src/bases/kanbanGrouping.ts
-msgctxt "bases/kanbanGrouping: valueToKanbanGroupString display"
-msgid "True"
-msgstr "Verdadero"
-
-#: src/bases/taskListGrouping.ts
-msgctxt "bases/taskListGrouping: stringifyTaskListGroupValue display"
 msgid "True"
 msgstr "Verdadero"
 
@@ -13625,11 +13376,6 @@ msgctxt "settings.defaults.reminders.fields.unit"
 msgid "Unit:"
 msgstr "Unidad:"
 
-#: src/bases/basesValueConversion.ts
-msgctxt "bases/basesValueConversion: convertBasesGroupKeyToString display"
-msgid "Unknown"
-msgstr "Desconocido"
-
 #: src/bases/helpers.ts
 msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "Unknown"
@@ -13757,16 +13503,6 @@ msgctxt "untitled custom status or priority heading"
 msgid "Untitled"
 msgstr "Sin título"
 
-#: src/utils/helpers.ts
-msgctxt "utils/helpers: extractNoteInfo display"
-msgid "Untitled"
-msgstr "Sin título"
-
-#: src/utils/helpers.ts
-msgctxt "utils/helpers: extractTaskInfo display"
-msgid "Untitled"
-msgstr "Sin título"
-
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.titleFallback"
 msgid "Untitled event"
@@ -13799,11 +13535,6 @@ msgctxt "settings.integrations.googleCalendarExport.eventDescription.untitledTas
 msgid "Untitled task"
 msgstr "Tarea sin título"
 
-#: src/utils/helpers.ts
-msgctxt "utils/helpers: extractTaskInfo title"
-msgid "Untitled task"
-msgstr "Tarea sin título"
-
 #: src/utils/taskInfoAssembly.ts
 msgctxt "utils/taskInfoAssembly: buildTaskInfoFromMappedTask title"
 msgid "Untitled task"
@@ -13811,16 +13542,6 @@ msgstr "Tarea sin título"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.createTaskFile display"
-msgid "Untitled Task"
-msgstr "Tarea sin título"
-
-#: src/services/NaturalLanguageParser.ts
-msgctxt "services/NaturalLanguageParser: NaturalLanguageParser.applyTriggeredStatusMatch display"
-msgid "Untitled Task"
-msgstr "Tarea sin título"
-
-#: src/services/NaturalLanguageParser.ts
-msgctxt "services/NaturalLanguageParser: NaturalLanguageParser.removePriorityShortcutResidue display"
 msgid "Untitled Task"
 msgstr "Tarea sin título"
 
@@ -14446,25 +14167,10 @@ msgctxt "settings.appearance.calendarView.firstDayOfWeek.description"
 msgid "Which day should be the first column in week views"
 msgstr "Qué día debe ser la primera columna en vistas semanales"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Which occurrence state changes should materialize the next occurrence."
-msgstr "Qué cambios de estado de una repetición deben materializar la siguiente."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "which status values count as completed."
-msgstr "qué valores de estado cuentan como completados."
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.description"
 msgid "Which task date should trigger calendar event creation."
 msgstr "Qué fecha de tarea debe disparar la creación del evento."
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Wikilinks to related project notes."
-msgstr "Enlaces wiki a notas de proyectos relacionados."
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.pomodoro.workDuration.name"

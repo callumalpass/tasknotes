@@ -89,6 +89,13 @@ describe("Modal fields settings rendering", () => {
 		expect(JSON.stringify(config)).toBe(originalConfig);
 	});
 
+	it("shows unknown persisted field types as data instead of crashing the tab", () => {
+		const config = plugin.settings.modalFieldsConfig!;
+		Object.assign(config.fields[0], { fieldType: "old-extension" });
+		expect(() => renderModalFieldsTab(container, plugin, jest.fn())).not.toThrow();
+		expect(container.textContent).toContain("old-extension");
+	});
+
 	it("translates the missing-property-key fallback", () => {
 		plugin.settings.userFields[0].key = "";
 		renderModalFieldsTab(container, plugin, jest.fn());

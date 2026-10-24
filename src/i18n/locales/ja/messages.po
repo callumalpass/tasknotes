@@ -163,6 +163,11 @@ msgctxt "settings.defaults.bodyTemplate.variables.title"
 msgid "'{{title}}' - Task title"
 msgstr "'{{title}}' - タスクタイトル"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.calendarSubscriptions.customTemplate.placeholder"
+msgid "'{date}'-'{title}'"
+msgstr "'{date}'-'{title}'"
+
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "notices.timeblockAttachmentExists"
@@ -183,11 +188,6 @@ msgstr "（ルート）"
 msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[数式エラー]"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "[TaskNotes](https://github.com/callumalpass/tasknotes), an Obsidian plugin"
-msgstr "[TaskNotes](https://github.com/callumalpass/tasknotes)、Obsidian プラグイン"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
@@ -333,11 +333,6 @@ msgstr "{count}日"
 msgctxt "settings/tabs/taskProperties/remindersPropertyCard: formatReminderTiming display"
 msgid "{date} at {time}"
 msgstr "{date} {time}"
-
-#: src/settings/tabs/integrationsTab.ts
-msgctxt "settings.integrations.calendarSubscriptions.customTemplate.placeholder"
-msgid "{date}-{title}"
-msgstr "{date}-{title}"
 
 #: src/views/StatsView.ts
 msgctxt "statistics daily time tooltip"
@@ -1406,11 +1401,6 @@ msgctxt "services.pomodoro.notices.alreadyRunning"
 msgid "A Pomodoro is already running"
 msgstr "ポモドーロが既に実行中です"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "a specification for typed markdown collections."
-msgstr "型付き Markdown コレクションの仕様。"
-
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentSelf"
 msgid "A task cannot be its own parent."
@@ -2247,11 +2237,6 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.descriptionRegen"
 msgid "Base files are not automatically updated when you change settings. To apply new settings, use \"Update files\" below, delete the existing .base files and restart Obsidian, or edit them manually."
 msgstr "設定を変更しても Bases ファイルは自動更新されません。新しい設定を適用するには、下の「ファイルを更新」を使うか、既存の .base ファイルを削除して Obsidian を再起動するか、手動で編集してください。"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Basic Information"
-msgstr "基本情報"
-
 #: src/modals/ReminderModal.ts
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings.defaults.reminders.directions.before"
@@ -2305,11 +2290,6 @@ msgctxt "generated Bases view name"
 msgid "Blocked By"
 msgstr "ブロック元"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Blocked By"
-msgstr "ブロック元"
-
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: blockedBy text"
 msgid "Blocked by: "
@@ -2345,11 +2325,6 @@ msgstr "他のタスクをブロック中"
 msgctxt "ui.taskCard.labels.blocking"
 msgid "Blocking"
 msgstr "ブロック中"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Blocking"
-msgstr "ブロック先"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardSecondaryBadges.ts
@@ -3479,11 +3454,6 @@ msgctxt "settings.taskProperties.properties.contexts.name"
 msgid "Contexts"
 msgstr "コンテキスト"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Contexts"
-msgstr "コンテキスト"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.googleCalendarExport.eventDescription.contexts"
 msgid "Contexts: {value}"
@@ -4034,11 +4004,6 @@ msgstr "カスタム日数"
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.customFieldsLabel"
 msgid "Custom fields"
-msgstr "カスタムフィールド"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Custom Fields"
 msgstr "カスタムフィールド"
 
 #: src/settings/tabs/integrationsTab.ts
@@ -4617,11 +4582,6 @@ msgctxt "contextMenus.task.dependencies.title"
 msgid "Dependencies"
 msgstr "依存関係"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Dependencies"
-msgstr "依存関係"
-
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
 msgid "Dependencies updated"
@@ -4677,16 +4637,6 @@ msgctxt "settings.defaults.reminders.fields.description"
 msgid "Description:"
 msgstr "説明："
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildMdbaseYaml display"
-msgid "description: \"Task collection managed by TaskNotes for Obsidian\""
-msgstr "description: \"Obsidian 用 TaskNotes が管理するタスクコレクション\""
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "description: A task managed by the TaskNotes plugin for Obsidian."
-msgstr "description: Obsidian 用 TaskNotes プラグインが管理するタスク。"
-
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderDesc"
 msgid "Destination folder (leave empty for vault root)"
@@ -4694,11 +4644,6 @@ msgstr "保存先フォルダー（保管庫のルートの場合は空欄）"
 
 #: src/modals/TaskModal.ts
 msgctxt "modals.task.detailsLabel"
-msgid "Details"
-msgstr "詳細"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Details"
 msgstr "詳細"
 
@@ -4878,7 +4823,7 @@ msgctxt "settings.header.documentation"
 msgid "Documentation"
 msgstr "ドキュメント"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Done"
 msgstr "完了"
@@ -5122,11 +5067,6 @@ msgstr "タイマー時間を編集"
 msgctxt "settings.integrations.webhooks.modals.edit.title"
 msgid "Edit webhook"
 msgstr "Webhookを編集"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "edited manually. Changes to TaskNotes settings (statuses, priorities, field"
-msgstr "手動で編集しないでください。TaskNotes の設定のステータス、優先度、フィールドの"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.validateInputParameters error"
@@ -5398,11 +5338,6 @@ msgstr "エラー: フィールド設定が無効です。既定値にリセッ�
 msgctxt "settings.taskProperties.properties.timeEstimate.description"
 msgid "Estimated minutes to complete the task. Used for time-blocking and workload planning. Displayed on task cards and calendar events."
 msgstr "タスク完了までの推定分数。タイムブロッキングとワークロード計画に使用されます。タスクカードとカレンダーイベントに表示されます。"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Estimated time in minutes."
-msgstr "分単位の見積もり時間。"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyMarkdownSuccess"
@@ -6469,18 +6404,8 @@ msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Failed: {value1, number}"
 msgstr "失敗: {value1, number}件"
 
-#: src/bases/basesValueConversion.ts
+#: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "False"
-msgstr "偽"
-
-#: src/bases/kanbanGrouping.ts
-msgctxt "bases/kanbanGrouping: valueToKanbanGroupString display"
-msgid "False"
-msgstr "偽"
-
-#: src/bases/taskListGrouping.ts
-msgctxt "bases/taskListGrouping: stringifyTaskListGroupValue display"
 msgid "False"
 msgstr "偽"
 
@@ -6494,25 +6419,10 @@ msgctxt "settings.tabs.features"
 msgid "Features"
 msgstr "機能"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: migrateUserFieldsToFieldConfig displayName"
-msgid "Field {value1, number}"
-msgstr "フィールド {value1, number}"
-
 #: src/settings/tabs/modalFieldsTab.ts
 msgctxt "settings.modalFields.reset.notice"
 msgid "Field configuration reset to defaults"
 msgstr "フィールド設定が既定値にリセットされました"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Field the reminder is relative to (e.g. ''due'')."
-msgstr "リマインダーの基準となるフィールド (例: ''due'')。"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "fields. This maps each field to its TaskNotes semantic role so custom"
-msgstr "各フィールドの意味上の役割を明示することで、カスタムの"
 
 #: src/bases/basesExport.ts
 msgctxt "bases/basesExport: buildBasesExportColumns label"
@@ -6735,11 +6645,6 @@ msgctxt "modals.icsNoteCreation.folderPlaceholder"
 msgid "folder/subfolder"
 msgstr "フォルダー/サブフォルダー"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "for note-based task management."
-msgstr "ノートを使ったタスク管理向けです。"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.forgetConfirm"
 msgid "Forget credentials"
@@ -6796,11 +6701,6 @@ msgstr "開始"
 msgctxt "settings.general.frontmatter.header"
 msgid "Frontmatter"
 msgstr "フロントマター"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "frontmatter field names can still be interpreted consistently."
-msgstr "フロントマターのフィールド名も一貫して解釈できます。"
 
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.sortOrder.description"
@@ -7034,7 +6934,7 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Hide top-level subtasks"
 msgstr "最上位のサブタスクを非表示"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "High"
 msgstr "高"
@@ -7059,11 +6959,6 @@ msgstr "時間"
 msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.description"
 msgid "How filenames are generated for notes created from ICS events"
 msgstr "ICSイベントから作成されるノートのファイル名生成方法"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "How occurrence task notes are materialized for a recurring parent task."
-msgstr "繰り返しタスクの親から、各回のタスクノートを作成する方法。"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.interval.description"
@@ -7155,7 +7050,7 @@ msgctxt "settings.taskProperties.taskStatuses.placeholders.label"
 msgid "In progress"
 msgstr "進行中"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "In progress"
 msgstr "進行中"
@@ -7400,30 +7295,10 @@ msgctxt "services/validation: validateUrl display"
 msgid "Invalid URL format for {fieldName}"
 msgstr "{fieldName}の URL 形式が無効です"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "ISO 8601 duration controlling rolling materialization after today."
-msgstr "今日より後に作成する繰り返し回の範囲を指定する ISO 8601 の期間。"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "ISO 8601 duration controlling rolling materialization before today."
-msgstr "今日より前に作成する繰り返し回の範囲を指定する ISO 8601 の期間。"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "ISO 8601 duration offset (e.g. ''-PT1H'')."
-msgstr "ISO 8601 の期間オフセット (例: ''-PT1H'')。"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.issueLabel"
 msgid "Issue:"
 msgstr "問題："
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "It conforms to [mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0,"
-msgstr "[mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0 に準拠しており、"
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
@@ -7817,7 +7692,7 @@ msgctxt "generated Bases column name"
 msgid "Long breaks"
 msgstr "長い休憩"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
 msgstr "低"
@@ -7871,11 +7746,6 @@ msgstr "有効なすべてのカレンダー購読を手動で更新"
 msgctxt "settings.integrations.autoExport.exportNow.description"
 msgid "Manually trigger an immediate export"
 msgstr "即座にエクスポートを手動でトリガー"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "mappings, user fields) will cause this file to be regenerated."
-msgstr "対応付け、ユーザーフィールドを変更すると、このファイルは再生成されます。"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.completion.submenuCompleteOnly"
@@ -7946,11 +7816,6 @@ msgstr "mdbase型定義"
 msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
 msgstr "中程度 (30分～2時間)"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Metadata"
-msgstr "メタデータ"
 
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.sections.metadataProperties"
@@ -8284,16 +8149,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.addSuccess"
 msgid "New calendar subscription added - please configure the details"
 msgstr "新しいカレンダー購読が追加されました - 詳細を設定してください"
 
-#: src/services/PriorityManager.ts
-msgctxt "services/PriorityManager: PriorityManager.createDefaultPriority label"
-msgid "New priority"
-msgstr "新しい優先度"
-
-#: src/services/StatusManager.ts
-msgctxt "services/StatusManager: StatusManager.createDefaultStatus label"
-msgid "New status"
-msgstr "新しいステータス"
-
 #: src/bases/BasesViewBase.ts
 msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
 msgid "New Task"
@@ -8401,11 +8256,6 @@ msgstr "{key}なし"
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
 msgid "No {provider} connection found"
 msgstr "{provider}への接続が見つかりません"
-
-#: src/services/FilterService.ts
-msgctxt "services/FilterService: FilterService.getHierarchicalGroupedTasks.resolver display"
-msgid "No {value1}"
-msgstr "{value1}なし"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
@@ -8868,12 +8718,7 @@ msgctxt "settings.taskProperties.customUserFields.defaultNames.noKey"
 msgid "no-key"
 msgstr "キーなし"
 
-#: src/bases/basesValueConversion.ts
-msgctxt "bases/basesValueConversion: convertBasesGroupKeyToString display"
-msgid "None"
-msgstr "なし"
-
-#: src/bases/basesValueConversion.ts
+#: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
 msgid "None"
 msgstr "なし"
@@ -8883,23 +8728,13 @@ msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "None"
 msgstr "なし"
 
-#: src/bases/kanbanGrouping.ts
-msgctxt "bases/kanbanGrouping: valueToKanbanGroupString display"
-msgid "None"
-msgstr "なし"
-
-#: src/bases/taskListGrouping.ts
-msgctxt "bases/taskListGrouping: stringifyTaskListGroupValue display"
-msgid "None"
-msgstr "なし"
-
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "なし"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
 msgstr "なし"
@@ -8909,7 +8744,7 @@ msgctxt "ui.filterBar.group.none"
 msgid "None"
 msgstr "なし"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "標準"
@@ -9196,7 +9031,7 @@ msgctxt "modals.deviceCode.steps.open"
 msgid "Open"
 msgstr "開く"
 
-#: src/settings/defaults.ts
+#: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "未着手"
@@ -9462,11 +9297,6 @@ msgctxt "modals.calendarEventCreation.locationDesc"
 msgid "Optional location for the event"
 msgstr "イベントの場所（任意）"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Optional template note used when materializing occurrences."
-msgstr "繰り返し回の作成時に使用するノートのテンプレート (任意)。"
-
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Optional work-session duration override for action=start"
@@ -9484,11 +9314,6 @@ msgstr "整理"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.organization"
-msgid "Organization"
-msgstr "整理"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Organization"
 msgstr "整理"
 
@@ -9567,11 +9392,6 @@ msgstr "概要"
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.description"
 msgid "Overwrite the configured default .base files with templates generated from your current TaskNotes settings."
 msgstr "現在の TaskNotes 設定から生成したテンプレートで、設定済みの既定の .base ファイルを上書きします。"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Parent recurring task for a materialized occurrence note."
-msgstr "作成済みの繰り返し回のノートに対する親の繰り返しタスク。"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: recurrenceParent text"
@@ -10058,11 +9878,6 @@ msgctxt "settings.taskProperties.properties.projects.name"
 msgid "Projects"
 msgstr "プロジェクト"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Projects"
-msgstr "プロジェクト"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
@@ -10429,11 +10244,6 @@ msgstr "リマインダー"
 msgctxt "settings.defaults.reminders.reminderDescription"
 msgid "Reminder description"
 msgstr "リマインダーの説明"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Reminder objects with id, type, offset, etc."
-msgstr "ID、種類、オフセットなどを含むリマインダーオブジェクト。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand display"
@@ -11238,11 +11048,6 @@ msgctxt "generated Bases column name"
 msgid "Short breaks"
 msgstr "短い休憩"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Short summary of the task."
-msgstr "タスクの簡単な概要。"
-
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
 msgid "Show a visual preview while dragging to select time ranges"
@@ -11495,8 +11300,8 @@ msgstr "Googleアカウントでサインインしてアクセスを許可"
 
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.titleCard.legacySyntaxWarning"
-msgid "Single-brace syntax like {title} is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates."
-msgstr "{title}のような単一波括弧構文は非推奨です。本文テンプレートとの一貫性のために、'{{title}}'のような二重波括弧構文を使用してください。"
+msgid "Single-brace syntax like '{title}' is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates."
+msgstr "'{title}'のような単一波括弧構文は非推奨です。本文テンプレートとの一貫性のために、'{{title}}'のような二重波括弧構文を使用してください。"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.general.taskInteraction.singleClick.name"
@@ -11876,11 +11681,6 @@ msgctxt "modals.task.organization.subtasks"
 msgid "Subtasks"
 msgstr "サブタスク"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Subtasks"
-msgstr "サブタスク"
-
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.subtractMinute"
 msgid "Subtract one minute"
@@ -12126,11 +11926,6 @@ msgctxt "ui.filterBar.group.tags"
 msgid "Tags"
 msgstr "タグ"
 
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Tags"
-msgstr "タグ"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.googleCalendarExport.eventDescription.tags"
 msgid "Tags: {value}"
@@ -12145,11 +11940,6 @@ msgstr "タグ: {value1}"
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
 msgid "Target calendar"
 msgstr "ターゲットカレンダー"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Target recurrence date for a materialized occurrence note."
-msgstr "作成された繰り返し回のノートの対象日。"
 
 #: src/bases/KanbanView.ts
 msgctxt "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display"
@@ -12527,11 +12317,6 @@ msgctxt "notices.releaseAvailable.message"
 msgid "TaskNotes {version} is available."
 msgstr "TaskNotes {version} が利用可能です。"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "TaskNotes also adds a non-standard `tn_role` field annotation on schema"
-msgstr "TaskNotes はスキーマのフィールド注釈に標準外の `tn_role` を追加します。"
-
 #: src/bootstrap/pluginBootstrap.ts
 msgctxt "notices.interface.apiStarted"
 msgid "TaskNotes API started on port {port}"
@@ -12683,11 +12468,6 @@ msgctxt "settings.taskProperties.taskStatuses.howTheyWork.orderNote"
 msgid "The order below determines the sequence when cycling through statuses by clicking on task status badges."
 msgstr "以下の順序は、タスクステータスバッジをクリックしてステータスを切り替える際のシーケンスを決定します。"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "The status field also includes `tn_completed_values`, listing"
-msgstr "ステータスフィールドには `tn_completed_values` も含まれます。"
-
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.properties.title.description"
 msgid "The task name. Can be stored in frontmatter or in the filename (when ''store title in filename'' is enabled)."
@@ -12712,11 +12492,6 @@ msgstr "第3"
 msgctxt "common.cannotUndo"
 msgid "This action cannot be undone."
 msgstr "この操作は取り消せません。"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "This file is automatically generated from TaskNotes settings and should not be"
-msgstr "このファイルは TaskNotes の設定から自動生成されます。"
 
 #: src/ui/NotificationService.ts
 msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotification display"
@@ -12774,11 +12549,6 @@ msgstr "このタスクはプロジェクトとして使用されています（
 msgctxt "ui.taskCard.blockedBadgeTooltip"
 msgid "This task is waiting on another task"
 msgstr "先に完了する必要があるタスクがあります"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "This type definition describes the data schema for tasks managed by"
-msgstr "この型定義は、以下のプラグインが管理するタスクのデータスキーマを記述します。"
 
 #: src/bases/TaskListView.ts
 msgctxt "views.taskList.reorder.scope.ungrouped"
@@ -12892,11 +12662,6 @@ msgstr "時間見積もり"
 msgctxt "settings.taskProperties.properties.timeEstimate.name"
 msgid "Time estimate"
 msgstr "時間見積もり"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Time Estimate"
-msgstr "見積もり時間"
 
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.timeEstimateLabel"
@@ -13119,11 +12884,6 @@ msgstr "タイトル"
 
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.properties.title.name"
-msgid "Title"
-msgstr "タイトル"
-
-#: src/utils/fieldConfigDefaults.ts
-msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "タイトル"
 
@@ -13480,18 +13240,8 @@ msgctxt "settings.taskProperties.propertyCard.triggerTooLong"
 msgid "Trigger is too long (max 10 characters)"
 msgstr "トリガーが長すぎます（最大10文字）"
 
-#: src/bases/basesValueConversion.ts
+#: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
-msgid "True"
-msgstr "真"
-
-#: src/bases/kanbanGrouping.ts
-msgctxt "bases/kanbanGrouping: valueToKanbanGroupString display"
-msgid "True"
-msgstr "真"
-
-#: src/bases/taskListGrouping.ts
-msgctxt "bases/taskListGrouping: stringifyTaskListGroupValue display"
 msgid "True"
 msgstr "真"
 
@@ -13624,11 +13374,6 @@ msgctxt "settings.defaults.reminders.fields.unit"
 msgid "Unit:"
 msgstr "単位："
 
-#: src/bases/basesValueConversion.ts
-msgctxt "bases/basesValueConversion: convertBasesGroupKeyToString display"
-msgid "Unknown"
-msgstr "不明"
-
 #: src/bases/helpers.ts
 msgctxt "bases/helpers: renderGroupedTasksInBasesView display"
 msgid "Unknown"
@@ -13756,16 +13501,6 @@ msgctxt "untitled custom status or priority heading"
 msgid "Untitled"
 msgstr "無題"
 
-#: src/utils/helpers.ts
-msgctxt "utils/helpers: extractNoteInfo display"
-msgid "Untitled"
-msgstr "無題"
-
-#: src/utils/helpers.ts
-msgctxt "utils/helpers: extractTaskInfo display"
-msgid "Untitled"
-msgstr "無題"
-
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.titleFallback"
 msgid "Untitled event"
@@ -13798,11 +13533,6 @@ msgctxt "settings.integrations.googleCalendarExport.eventDescription.untitledTas
 msgid "Untitled task"
 msgstr "無題のタスク"
 
-#: src/utils/helpers.ts
-msgctxt "utils/helpers: extractTaskInfo title"
-msgid "Untitled task"
-msgstr "無題のタスク"
-
 #: src/utils/taskInfoAssembly.ts
 msgctxt "utils/taskInfoAssembly: buildTaskInfoFromMappedTask title"
 msgid "Untitled task"
@@ -13810,16 +13540,6 @@ msgstr "無題のタスク"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.createTaskFile display"
-msgid "Untitled Task"
-msgstr "無題のタスク"
-
-#: src/services/NaturalLanguageParser.ts
-msgctxt "services/NaturalLanguageParser: NaturalLanguageParser.applyTriggeredStatusMatch display"
-msgid "Untitled Task"
-msgstr "無題のタスク"
-
-#: src/services/NaturalLanguageParser.ts
-msgctxt "services/NaturalLanguageParser: NaturalLanguageParser.removePriorityShortcutResidue display"
 msgid "Untitled Task"
 msgstr "無題のタスク"
 
@@ -14445,25 +14165,10 @@ msgctxt "settings.appearance.calendarView.firstDayOfWeek.description"
 msgid "Which day should be the first column in week views"
 msgstr "週ビューで最初の列にする曜日"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Which occurrence state changes should materialize the next occurrence."
-msgstr "どの繰り返し回の状態変更時に次の繰り返し回を作成するか。"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
-msgid "which status values count as completed."
-msgstr "この値は、完了として扱うステータスを列挙します。"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.description"
 msgid "Which task date should trigger calendar event creation."
 msgstr "どのタスク日付でカレンダーイベントを作成するか。"
-
-#: src/services/MdbaseSpecService.ts
-msgctxt "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
-msgid "Wikilinks to related project notes."
-msgstr "関連するプロジェクトノートへの Wiki リンク。"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.pomodoro.workDuration.name"

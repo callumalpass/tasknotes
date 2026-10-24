@@ -1,5 +1,7 @@
 # i18n-state-manager
 
+This page describes the historical keyed translation tool. TaskNotes now uses Lingui PO catalogues; its old resources, state files and command wrappers have been removed. Use the [current translation workflow](translations.md), not the commands below.
+
 i18n-state-manager is a translation management tool developed for TaskNotes and published as an open-source npm package. It addresses a limitation common to most translation tools: the inability to detect when translations become outdated after source text changes.
 
 ## Purpose

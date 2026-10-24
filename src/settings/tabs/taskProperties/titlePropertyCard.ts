@@ -309,7 +309,7 @@ function renderFilenameSettingsContent(
 
 				const textEl = warningEl.createSpan();
 				textEl.textContent = translate(
-					msg({ message: "Single-brace syntax like {title} is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates.", context: "settings.taskProperties.titleCard.legacySyntaxWarning" })
+					msg({ message: "Single-brace syntax like '{title}' is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates.", context: "settings.taskProperties.titleCard.legacySyntaxWarning" })
 				);
 			}
 		};

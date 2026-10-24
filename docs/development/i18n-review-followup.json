@@ -1,0 +1,1703 @@
+{
+  "reviewedBaseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
+  "review": "burst/reviews/plugin-2418.md",
+  "activeMessagesPerLocale": {
+    "en": 2738,
+    "de": 2738,
+    "es": 2738,
+    "fr": 2738,
+    "ja": 2738,
+    "ko": 2738,
+    "pt": 2738,
+    "ru": 2738,
+    "zh": 2738
+  },
+  "reviewDataRetirements": [
+    {
+      "id": "Y8ZPjc",
+      "message": "[TaskNotes](https://github.com/callumalpass/tasknotes), an Obsidian plugin",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "Aw_Jmc",
+      "message": "a specification for typed markdown collections.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "R1BXGm",
+      "message": "Basic Information",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "cgOCq-",
+      "message": "Blocked By",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "ZuIGIZ",
+      "message": "Blocking",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "CJ3_xl",
+      "message": "Contexts",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "lKrWke",
+      "message": "Custom Fields",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "lxh4Yk",
+      "message": "Dependencies",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "C2M9_G",
+      "message": "description: \"Task collection managed by TaskNotes for Obsidian\"",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildMdbaseYaml display"
+    },
+    {
+      "id": "5dIdHr",
+      "message": "description: A task managed by the TaskNotes plugin for Obsidian.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "jJ6HeJ",
+      "message": "Details",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "lkTy0j",
+      "message": "edited manually. Changes to TaskNotes settings (statuses, priorities, field",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "xY76OO",
+      "message": "Estimated time in minutes.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "4YVWMa",
+      "message": "False",
+      "context": "bases/kanbanGrouping: valueToKanbanGroupString display"
+    },
+    {
+      "id": "iBoJn6",
+      "message": "False",
+      "context": "bases/taskListGrouping: stringifyTaskListGroupValue display"
+    },
+    {
+      "id": "hmLOXN",
+      "message": "Field {value1, number}",
+      "context": "utils/fieldConfigDefaults: migrateUserFieldsToFieldConfig displayName"
+    },
+    {
+      "id": "kt-u6w",
+      "message": "Field the reminder is relative to (e.g. ''due'').",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "-LZTF4",
+      "message": "fields. This maps each field to its TaskNotes semantic role so custom",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "Uzkz5N",
+      "message": "for note-based task management.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "5VYJke",
+      "message": "frontmatter field names can still be interpreted consistently.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "rRw8sH",
+      "message": "How occurrence task notes are materialized for a recurring parent task.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "MDmuau",
+      "message": "ISO 8601 duration controlling rolling materialization after today.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "UGnpZh",
+      "message": "ISO 8601 duration controlling rolling materialization before today.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "SSlro1",
+      "message": "ISO 8601 duration offset (e.g. ''-PT1H'').",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "0QEBE9",
+      "message": "It conforms to [mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0,",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "RVSlUZ",
+      "message": "mappings, user fields) will cause this file to be regenerated.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "UARLRE",
+      "message": "Metadata",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "0FT36T",
+      "message": "New priority",
+      "context": "services/PriorityManager: PriorityManager.createDefaultPriority label"
+    },
+    {
+      "id": "SgdYRL",
+      "message": "New status",
+      "context": "services/StatusManager: StatusManager.createDefaultStatus label"
+    },
+    {
+      "id": "KnGChS",
+      "message": "No {value1}",
+      "context": "services/FilterService: FilterService.getHierarchicalGroupedTasks.resolver display"
+    },
+    {
+      "id": "PX0Kox",
+      "message": "None",
+      "context": "bases/basesValueConversion: convertBasesGroupKeyToString display"
+    },
+    {
+      "id": "u0gMgp",
+      "message": "None",
+      "context": "bases/kanbanGrouping: valueToKanbanGroupString display"
+    },
+    {
+      "id": "2zMRG4",
+      "message": "None",
+      "context": "bases/taskListGrouping: stringifyTaskListGroupValue display"
+    },
+    {
+      "id": "3wvGFE",
+      "message": "Optional template note used when materializing occurrences.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "6Zb7-F",
+      "message": "Organization",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "fYYZ0d",
+      "message": "Parent recurring task for a materialized occurrence note.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "Gbmmo1",
+      "message": "Projects",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "6QKmsp",
+      "message": "Reminder objects with id, type, offset, etc.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "N77nOq",
+      "message": "Short summary of the task.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "k6Iejs",
+      "message": "Subtasks",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "_BichM",
+      "message": "Tags",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "eDIWmz",
+      "message": "Target recurrence date for a materialized occurrence note.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "J3CRGQ",
+      "message": "TaskNotes also adds a non-standard `tn_role` field annotation on schema",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "o1OhBA",
+      "message": "The status field also includes `tn_completed_values`, listing",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "dDzFEz",
+      "message": "This file is automatically generated from TaskNotes settings and should not be",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "3vEST8",
+      "message": "This type definition describes the data schema for tasks managed by",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "f80F7h",
+      "message": "Time Estimate",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "OSRkY-",
+      "message": "Title",
+      "context": "utils/fieldConfigDefaults: defaults displayName"
+    },
+    {
+      "id": "CvtR_6",
+      "message": "True",
+      "context": "bases/kanbanGrouping: valueToKanbanGroupString display"
+    },
+    {
+      "id": "YrcPky",
+      "message": "True",
+      "context": "bases/taskListGrouping: stringifyTaskListGroupValue display"
+    },
+    {
+      "id": "gRod9m",
+      "message": "Unknown",
+      "context": "bases/basesValueConversion: convertBasesGroupKeyToString display"
+    },
+    {
+      "id": "zx4KDR",
+      "message": "Untitled",
+      "context": "utils/helpers: extractNoteInfo display"
+    },
+    {
+      "id": "V072vx",
+      "message": "Untitled",
+      "context": "utils/helpers: extractTaskInfo display"
+    },
+    {
+      "id": "32mXtd",
+      "message": "Untitled task",
+      "context": "utils/helpers: extractTaskInfo title"
+    },
+    {
+      "id": "WQr9I6",
+      "message": "Untitled Task",
+      "context": "services/NaturalLanguageParser: NaturalLanguageParser.applyTriggeredStatusMatch display"
+    },
+    {
+      "id": "vFaL8g",
+      "message": "Untitled Task",
+      "context": "services/NaturalLanguageParser: NaturalLanguageParser.removePriorityShortcutResidue display"
+    },
+    {
+      "id": "FByCWl",
+      "message": "Which occurrence state changes should materialize the next occurrence.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    },
+    {
+      "id": "pXlimC",
+      "message": "which status values count as completed.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef display"
+    },
+    {
+      "id": "gfvArc",
+      "message": "Wikilinks to related project notes.",
+      "context": "services/MdbaseSpecService: MdbaseSpecService.buildTaskTypeDef description"
+    }
+  ],
+  "literalBraceMigrations": [
+    {
+      "locale": "en",
+      "oldId": "GESioF",
+      "id": "3TeIeB",
+      "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+      "before": "{date}-{title}",
+      "after": "'{date}'-'{title}'"
+    },
+    {
+      "locale": "en",
+      "oldId": "oP2e0d",
+      "id": "aAQxU5",
+      "context": "settings.taskProperties.titleCard.legacySyntaxWarning",
+      "before": "Single-brace syntax like {title} is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates.",
+      "after": "Single-brace syntax like '{title}' is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates."
+    },
+    {
+      "locale": "de",
+      "oldId": "GESioF",
+      "id": "3TeIeB",
+      "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+      "before": "{date}-{title}",
+      "after": "'{date}'-'{title}'"
+    },
+    {
+      "locale": "de",
+      "oldId": "oP2e0d",
+      "id": "aAQxU5",
+      "context": "settings.taskProperties.titleCard.legacySyntaxWarning",
+      "before": "Die Syntax mit einfachen geschweiften Klammern wie {title} ist veraltet. Verwenden Sie stattdessen '{{title}}', wie bei Inhaltsvorlagen.",
+      "after": "Die Syntax mit einfachen geschweiften Klammern wie '{title}' ist veraltet. Verwenden Sie stattdessen '{{title}}', wie bei Inhaltsvorlagen."
+    },
+    {
+      "locale": "es",
+      "oldId": "GESioF",
+      "id": "3TeIeB",
+      "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+      "before": "{date}-{title}",
+      "after": "'{date}'-'{title}'"
+    },
+    {
+      "locale": "es",
+      "oldId": "oP2e0d",
+      "id": "aAQxU5",
+      "context": "settings.taskProperties.titleCard.legacySyntaxWarning",
+      "before": "La sintaxis de llaves simples, como {title}, está obsoleta. Usa llaves dobles, como '{{title}}', para mantener la coherencia con las plantillas del cuerpo.",
+      "after": "La sintaxis de llaves simples, como '{title}', está obsoleta. Usa llaves dobles, como '{{title}}', para mantener la coherencia con las plantillas del cuerpo."
+    },
+    {
+      "locale": "fr",
+      "oldId": "GESioF",
+      "id": "3TeIeB",
+      "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+      "before": "{date}-{title}",
+      "after": "'{date}'-'{title}'"
+    },
+    {
+      "locale": "fr",
+      "oldId": "oP2e0d",
+      "id": "aAQxU5",
+      "context": "settings.taskProperties.titleCard.legacySyntaxWarning",
+      "before": "La syntaxe à accolades simples comme {title} est obsolète. Veuillez utiliser la syntaxe à accolades doubles '{{title}}' pour la cohérence avec les modèles de corps.",
+      "after": "La syntaxe à accolades simples comme '{title}' est obsolète. Veuillez utiliser la syntaxe à accolades doubles '{{title}}' pour la cohérence avec les modèles de corps."
+    },
+    {
+      "locale": "ja",
+      "oldId": "GESioF",
+      "id": "3TeIeB",
+      "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+      "before": "{date}-{title}",
+      "after": "'{date}'-'{title}'"
+    },
+    {
+      "locale": "ja",
+      "oldId": "oP2e0d",
+      "id": "aAQxU5",
+      "context": "settings.taskProperties.titleCard.legacySyntaxWarning",
+      "before": "{title}のような単一波括弧構文は非推奨です。本文テンプレートとの一貫性のために、'{{title}}'のような二重波括弧構文を使用してください。",
+      "after": "'{title}'のような単一波括弧構文は非推奨です。本文テンプレートとの一貫性のために、'{{title}}'のような二重波括弧構文を使用してください。"
+    },
+    {
+      "locale": "ko",
+      "oldId": "GESioF",
+      "id": "3TeIeB",
+      "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+      "before": "{date}-{title}",
+      "after": "'{date}'-'{title}'"
+    },
+    {
+      "locale": "ko",
+      "oldId": "oP2e0d",
+      "id": "aAQxU5",
+      "context": "settings.taskProperties.titleCard.legacySyntaxWarning",
+      "before": "{title}과 같은 단일 중괄호 구문은 더 이상 사용되지 않습니다. 본문 템플릿과의 일관성을 위해 '{{title}}'과 같은 이중 중괄호 구문을 사용하세요.",
+      "after": "'{title}'과 같은 단일 중괄호 구문은 더 이상 사용되지 않습니다. 본문 템플릿과의 일관성을 위해 '{{title}}'과 같은 이중 중괄호 구문을 사용하세요."
+    },
+    {
+      "locale": "pt",
+      "oldId": "GESioF",
+      "id": "3TeIeB",
+      "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+      "before": "{date}-{title}",
+      "after": "'{date}'-'{title}'"
+    },
+    {
+      "locale": "pt",
+      "oldId": "oP2e0d",
+      "id": "aAQxU5",
+      "context": "settings.taskProperties.titleCard.legacySyntaxWarning",
+      "before": "A sintaxe de chaves simples como {title} está obsoleta. Por favor, use a sintaxe de chaves duplas '{{title}}' para consistência com os modelos de corpo.",
+      "after": "A sintaxe de chaves simples como '{title}' está obsoleta. Por favor, use a sintaxe de chaves duplas '{{title}}' para consistência com os modelos de corpo."
+    },
+    {
+      "locale": "ru",
+      "oldId": "GESioF",
+      "id": "3TeIeB",
+      "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+      "before": "{date}-{title}",
+      "after": "'{date}'-'{title}'"
+    },
+    {
+      "locale": "ru",
+      "oldId": "oP2e0d",
+      "id": "aAQxU5",
+      "context": "settings.taskProperties.titleCard.legacySyntaxWarning",
+      "before": "Синтаксис с одинарными фигурными скобками, такой как {title}, устарел. Пожалуйста, используйте синтаксис с двойными фигурными скобками '{{title}}' для согласованности с шаблонами тела.",
+      "after": "Синтаксис с одинарными фигурными скобками, такой как '{title}', устарел. Пожалуйста, используйте синтаксис с двойными фигурными скобками '{{title}}' для согласованности с шаблонами тела."
+    },
+    {
+      "locale": "zh",
+      "oldId": "GESioF",
+      "id": "3TeIeB",
+      "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+      "before": "{date}-{title}",
+      "after": "'{date}'-'{title}'"
+    },
+    {
+      "locale": "zh",
+      "oldId": "oP2e0d",
+      "id": "aAQxU5",
+      "context": "settings.taskProperties.titleCard.legacySyntaxWarning",
+      "before": "像 {title} 这样的单花括号语法已弃用。请使用双花括号语法 '{{title}}' 以与正文模板保持一致。",
+      "after": "像 '{title}' 这样的单花括号语法已弃用。请使用双花括号语法 '{{title}}' 以与正文模板保持一致。"
+    }
+  ],
+  "retainedAuthoredChanges": [
+    {
+      "locale": "es",
+      "id": "2_6ZSE",
+      "context": "timeblock tooltip with description",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "0XZFmM",
+      "context": "timeblock tooltip",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "fuX_1m",
+      "context": "generated Bases contexts count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "fJ_I-J",
+      "context": "generated Bases projects count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "2k5d9x",
+      "context": "ui.taskCard.reminderTooltip",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "N7nPbd",
+      "context": "recurrence occurrence limit",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "d6khkJ",
+      "context": "timeblock attachment count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "nzXbbQ",
+      "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "KSdZHP",
+      "context": "task modal reminder count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "CJ9trM",
+      "context": "components/BatchContextMenu: BatchContextMenu.buildMenu display",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "1ume_k",
+      "context": "services.instantTaskConvert.notices.conversionSuccess",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "MjXP8h",
+      "context": "services.instantTaskConvert.notices.convertingTasks",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "i3yiX0",
+      "context": "services.calendarExport.notices.downloadSuccess",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "AwxHGd",
+      "context": "ui/StatusBarService: StatusBarService.renderStatusBar display",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "ZIjHZr",
+      "context": "settings.integrations.timeFormats.daysAgo",
+      "addedArms": [
+        {
+          "arg": "days",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "azgCj3",
+      "context": "generated Bases relative due date",
+      "addedArms": [
+        {
+          "arg": "days",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "6IoJgZ",
+      "context": "generated Bases overdue countdown",
+      "addedArms": [
+        {
+          "arg": "days",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "XcO76v",
+      "context": "generated Bases due countdown",
+      "addedArms": [
+        {
+          "arg": "days",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "ObW9eM",
+      "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
+      "addedArms": [
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "tzh-2L",
+      "context": "settings.integrations.timeFormats.hoursAgo",
+      "addedArms": [
+        {
+          "arg": "hours",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "7PuX6r",
+      "context": "monthly weekday recurrence",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "Y071tE",
+      "context": "recurrence daily interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "01y_eC",
+      "context": "recurrence interval on month day",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "ciO00S",
+      "context": "recurrence monthly interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "f3a3-d",
+      "context": "recurrence weekly weekdays",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "HI4G2n",
+      "context": "recurrence weekly interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "qqgQnq",
+      "context": "recurrence yearly interval date",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "m2FqzW",
+      "context": "recurrence yearly interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "oFGKRL",
+      "context": "ui/taskCardProperties: reminders display",
+      "addedArms": [
+        {
+          "arg": "length",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "8nLU70",
+      "context": "ui/taskCardProperties: timeEntries display",
+      "addedArms": [
+        {
+          "arg": "length",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "PII1tA",
+      "context": "ui/taskCardProperties: icsEventId display",
+      "addedArms": [
+        {
+          "arg": "length",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "gJcV8t",
+      "context": "views/StatsView: StatsView.renderDrilldownContent.renderTasks display",
+      "addedArms": [
+        {
+          "arg": "length",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "ZwH-HO",
+      "context": "settings.integrations.timeFormats.minutesAgo",
+      "addedArms": [
+        {
+          "arg": "minutes",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "ZQ6Ulc",
+      "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
+      "addedArms": [
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "noteCount",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "FBlWXu",
+      "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
+      "addedArms": [
+        {
+          "arg": "noteCount",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "uDkPXD",
+      "context": "calendar refresh throttling",
+      "addedArms": [
+        {
+          "arg": "seconds",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "i7nzi-",
+      "context": "services/errors: RateLimitError display",
+      "addedArms": [
+        {
+          "arg": "seconds",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "cU-DWO",
+      "context": "services.instantTaskConvert.notices.partialConversion",
+      "addedArms": [
+        {
+          "arg": "successCount",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "S3yJwA",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "addedArms": [
+        {
+          "arg": "timeEstimate",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "9jhhqk",
+      "context": "views/StatsView: StatsView.renderProgressCircle display",
+      "addedArms": [
+        {
+          "arg": "total",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "Yr6CWP",
+      "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
+      "addedArms": [
+        {
+          "arg": "value1",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "es",
+      "id": "ZyQSBW",
+      "context": "ui/StatusBarService: StatusBarService.renderStatusBar display",
+      "addedArms": [
+        {
+          "arg": "value2",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "2_6ZSE",
+      "context": "timeblock tooltip with description",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "0XZFmM",
+      "context": "timeblock tooltip",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "fuX_1m",
+      "context": "generated Bases contexts count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "count",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "fJ_I-J",
+      "context": "generated Bases projects count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "count",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "2k5d9x",
+      "context": "ui.taskCard.reminderTooltip",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "N7nPbd",
+      "context": "recurrence occurrence limit",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "d6khkJ",
+      "context": "timeblock attachment count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "nzXbbQ",
+      "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "KSdZHP",
+      "context": "task modal reminder count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "CJ9trM",
+      "context": "components/BatchContextMenu: BatchContextMenu.buildMenu display",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "1ume_k",
+      "context": "services.instantTaskConvert.notices.conversionSuccess",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "MjXP8h",
+      "context": "services.instantTaskConvert.notices.convertingTasks",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "i3yiX0",
+      "context": "services.calendarExport.notices.downloadSuccess",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "AwxHGd",
+      "context": "ui/StatusBarService: StatusBarService.renderStatusBar display",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "ZIjHZr",
+      "context": "settings.integrations.timeFormats.daysAgo",
+      "addedArms": [
+        {
+          "arg": "days",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "azgCj3",
+      "context": "generated Bases relative due date",
+      "addedArms": [
+        {
+          "arg": "days",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "6IoJgZ",
+      "context": "generated Bases overdue countdown",
+      "addedArms": [
+        {
+          "arg": "days",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "XcO76v",
+      "context": "generated Bases due countdown",
+      "addedArms": [
+        {
+          "arg": "days",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "ObW9eM",
+      "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
+      "addedArms": [
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "tzh-2L",
+      "context": "settings.integrations.timeFormats.hoursAgo",
+      "addedArms": [
+        {
+          "arg": "hours",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "7PuX6r",
+      "context": "monthly weekday recurrence",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "Y071tE",
+      "context": "recurrence daily interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "01y_eC",
+      "context": "recurrence interval on month day",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "ciO00S",
+      "context": "recurrence monthly interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "f3a3-d",
+      "context": "recurrence weekly weekdays",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "HI4G2n",
+      "context": "recurrence weekly interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "qqgQnq",
+      "context": "recurrence yearly interval date",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "m2FqzW",
+      "context": "recurrence yearly interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "oFGKRL",
+      "context": "ui/taskCardProperties: reminders display",
+      "addedArms": [
+        {
+          "arg": "length",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "8nLU70",
+      "context": "ui/taskCardProperties: timeEntries display",
+      "addedArms": [
+        {
+          "arg": "length",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "PII1tA",
+      "context": "ui/taskCardProperties: icsEventId display",
+      "addedArms": [
+        {
+          "arg": "length",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "gJcV8t",
+      "context": "views/StatsView: StatsView.renderDrilldownContent.renderTasks display",
+      "addedArms": [
+        {
+          "arg": "length",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "ZwH-HO",
+      "context": "settings.integrations.timeFormats.minutesAgo",
+      "addedArms": [
+        {
+          "arg": "minutes",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "ZQ6Ulc",
+      "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
+      "addedArms": [
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "noteCount",
+          "category": "many",
+          "copiedFrom": "other"
+        },
+        {
+          "arg": "eventCount",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "FBlWXu",
+      "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
+      "addedArms": [
+        {
+          "arg": "noteCount",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "uDkPXD",
+      "context": "calendar refresh throttling",
+      "addedArms": [
+        {
+          "arg": "seconds",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "i7nzi-",
+      "context": "services/errors: RateLimitError display",
+      "addedArms": [
+        {
+          "arg": "seconds",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "cU-DWO",
+      "context": "services.instantTaskConvert.notices.partialConversion",
+      "addedArms": [
+        {
+          "arg": "successCount",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "S3yJwA",
+      "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+      "addedArms": [
+        {
+          "arg": "timeEstimate",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "9jhhqk",
+      "context": "views/StatsView: StatsView.renderProgressCircle display",
+      "addedArms": [
+        {
+          "arg": "total",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "Yr6CWP",
+      "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
+      "addedArms": [
+        {
+          "arg": "value1",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "fr",
+      "id": "ZyQSBW",
+      "context": "ui/StatusBarService: StatusBarService.renderStatusBar display",
+      "addedArms": [
+        {
+          "arg": "value2",
+          "category": "many",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "fuX_1m",
+      "context": "generated Bases contexts count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "fJ_I-J",
+      "context": "generated Bases projects count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "7PuX6r",
+      "context": "monthly weekday recurrence",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "Y071tE",
+      "context": "recurrence daily interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "01y_eC",
+      "context": "recurrence interval on month day",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "ciO00S",
+      "context": "recurrence monthly interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "f3a3-d",
+      "context": "recurrence weekly weekdays",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "HI4G2n",
+      "context": "recurrence weekly interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "qqgQnq",
+      "context": "recurrence yearly interval date",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "pt",
+      "id": "m2FqzW",
+      "context": "recurrence yearly interval",
+      "addedArms": [
+        {
+          "arg": "interval",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "ru",
+      "id": "fuX_1m",
+      "context": "generated Bases contexts count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    },
+    {
+      "locale": "ru",
+      "id": "fJ_I-J",
+      "context": "generated Bases projects count",
+      "addedArms": [
+        {
+          "arg": "count",
+          "category": "one",
+          "copiedFrom": "other"
+        }
+      ]
+    }
+  ],
+  "addedAuthoredPluralArms": 112,
+  "authoredChangeProof": "ICU token structures verified against baseline: existing arms/text unchanged; each added CLDR arm equals its original authored other arm. The Russian reminder correction is separately normalized and checked. Original translator commits compared directly for all retained IDs.",
+  "linguisticLimitation": "Mechanical reuse of authored category wording is not independent native-speaker retranslation/review.",
+  "deferredMinorFindings": {
+    "1": "Generated Bases labels remain snapshots; owner decision needed before changing saved files.",
+    "3": "ICS generated-note dates stabilized, but remaining translated exported calendar/note prose needs an owner policy decision.",
+    "8": "Generic numeric formatting policy unchanged; grouped year-like user numbers remain a follow-up.",
+    "11": "Not all already-open views/modals/live text hot-refresh; registration-only command labels may require reload.",
+    "13": "Broader noun/count ICU cleanup would require new authored target wording; not padded with English."
+  },
+  "pluralRepairOperations": 102
+}

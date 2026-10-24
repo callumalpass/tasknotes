@@ -1,6 +1,7 @@
 {
-  "status": "passed",
-  "finalRecheck": "All seven final remote gate commands exited zero; native bundled/downloadable and fresh-generated-file acceptance also passed.",
+  "status": "in_progress",
+  "historicalBaseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
+  "finalRecheck": "Historical measurements below are superseded by the independent review; current review-fix workflow and native acceptance are pending. See i18n-review-followup.json for authored-change proof.",
   "authoredPreservation": "i18n-authored-preservation.json",
   "artifactSourceCommit": "4fa335d46919c81530cfa317eddd637d7a472525",
   "originalTranslationHandoff": "9b6f087e86af81e522d2d16661937a6f1a158ad0",

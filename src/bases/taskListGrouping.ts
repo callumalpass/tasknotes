@@ -1,7 +1,7 @@
-import { uiText } from "../i18n/runtime";
-import { msg } from "@lingui/core/macro";
-import type { TaskInfo } from "../types";
+import { NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY } from "./groupKeys";
 import { stringifyUnknown } from "../utils/stringUtils";
+import type { TaskInfo } from "../types";
+
 import { buildBasesPathProperties } from "./basesViewAdapters";
 import type { BasesDataItem } from "./helpers";
 
@@ -44,9 +44,9 @@ export type TaskListHeaderItem = TaskListPrimaryHeaderItem | TaskListSubHeaderIt
 export type TaskListRenderItem = TaskListHeaderItem | TaskListTaskItem;
 export type TaskListVirtualItem = TaskInfo | TaskListRenderItem;
 
+
 type BasesDisplayValue = {
 	constructor?: { name?: string };
-	isTruthy?: () => boolean;
 	value?: unknown[];
 	toString(): string;
 };
@@ -73,27 +73,27 @@ export function getTaskListPropertyValue(
 
 export function stringifyTaskListGroupValue(value: unknown): string {
 	if (value === null || value === undefined) {
-		return uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
+		return NONE_GROUP_KEY;
 	}
 
 	if (typeof value === "object" && value !== null && typeof value.toString === "function") {
 		const basesValue = value as BasesDisplayValue;
 		if (basesValue.constructor?.name === "NullValue") {
-			return uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
+			return NONE_GROUP_KEY;
 		}
 
 		if (basesValue.constructor?.name === "ListValue" || Array.isArray(basesValue.value)) {
 			const arr = basesValue.value || [];
 			return arr.length > 0
 				? arr.map((item) => stringifyTaskListGroupValue(item)).join(", ")
-				: uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
+				: NONE_GROUP_KEY;
 		}
 
-		return basesValue.toString() || uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
+		return basesValue.toString() || NONE_GROUP_KEY;
 	}
 
 	if (typeof value === "string") {
-		return value || uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
+		return value || NONE_GROUP_KEY;
 	}
 
 	if (typeof value === "number") {
@@ -101,16 +101,16 @@ export function stringifyTaskListGroupValue(value: unknown): string {
 	}
 
 	if (typeof value === "boolean") {
-		return value ? uiText(msg({ message: "True", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" })) : uiText(msg({ message: "False", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
+		return value ? TRUE_GROUP_KEY : FALSE_GROUP_KEY;
 	}
 
 	if (Array.isArray(value)) {
 		return value.length > 0
 			? value.map((item) => stringifyTaskListGroupValue(item)).join(", ")
-			: uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
+			: NONE_GROUP_KEY;
 	}
 
-	return stringifyUnknown(value) || uiText(msg({ message: "None", context: "bases/taskListGrouping: stringifyTaskListGroupValue display" }));
+	return stringifyUnknown(value) || NONE_GROUP_KEY;
 }
 
 export function groupTasksByTaskListSubProperty(

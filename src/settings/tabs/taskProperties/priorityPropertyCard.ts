@@ -1,4 +1,5 @@
 import { uiText } from "../../../i18n/runtime";
+import { configLabel } from "../../../i18n/configLabels";
 import { uiData } from "../../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
@@ -49,7 +50,7 @@ export function renderPriorityPropertyCard(
 			{ value: "", label: translate(msg({ message: "No default", context: "settings.defaults.options.noDefault" })) },
 			...plugin.settings.customPriorities.map((priority) => ({
 				value: priority.value,
-				label: priority.label || priority.value,
+				label: configLabel(priority) || priority.value,
 			})),
 		],
 		plugin.settings.defaultTaskPriority
@@ -126,7 +127,7 @@ export function renderPriorityPropertyCard(
 		plugin.settings.customPriorities.forEach((priority) => {
 			const option = defaultSelect.createEl("option", {
 				value: priority.value,
-				text: priority.label || priority.value,
+				text: configLabel(priority) || priority.value,
 			});
 			if (priority.value === plugin.settings.defaultTaskPriority) {
 				option.selected = true;
@@ -179,7 +180,7 @@ export function renderPriorityPropertyCard(
 			plugin.settings.customPriorities.forEach((priority) => {
 				const option = defaultSelect.createEl("option", {
 					value: priority.value,
-					text: priority.label || priority.value,
+					text: configLabel(priority) || priority.value,
 				});
 				if (priority.value === plugin.settings.defaultTaskPriority) {
 					option.selected = true;
@@ -277,7 +278,7 @@ function renderPriorityList(
 			defaultCollapsed: true,
 			colorIndicator: { color: priority.color },
 			header: {
-				primaryText: priority.label || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" })),
+				primaryText: configLabel(priority) || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" })),
 				actions: [
 					createDeleteHeaderButton(() => {
 						if (plugin.settings.customPriorities.length <= 1) {
@@ -365,7 +366,7 @@ function renderPriorityList(
 		labelInput.addEventListener("input", () => {
 			priority.label = labelInput.value;
 			card.querySelector(".tasknotes-settings__card-primary-text")!.textContent =
-				priority.label || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }));
+				configLabel(priority) || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }));
 			save();
 			if (onPrioritiesChanged) onPrioritiesChanged();
 		});

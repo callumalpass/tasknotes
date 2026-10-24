@@ -104,7 +104,7 @@ export class CalendarEventCreationModal extends Modal {
 		});
 		const dateText = this.options.allDay
 			? formatUIDate(this.options.start, "PPP")
-			: `${format(this.options.start, "PPP p")} – ${formatUIDate(this.options.end, "p")}`;
+			: `${formatUIDate(this.options.start, "PPP p")} – ${formatUIDate(this.options.end, "p")}`;
 		dateDisplay.createSpan({ text: dateText });
 
 		// Title

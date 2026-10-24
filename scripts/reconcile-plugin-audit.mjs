@@ -1,9 +1,9 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { formatter } from "@lingui/format-po";
 const readJSON = async path => JSON.parse(await readFile(path, "utf8"));
-const rows = await readJSON("scripts/plugin-audit-remediation.json");
-const formats = await readJSON("scripts/plugin-format-remediation.json");
-const dynamic = await readJSON("scripts/plugin-dynamic-audit.json");
+const rows = await readJSON("docs/development/i18n-migration/plugin-audit-remediation.json");
+const formats = await readJSON("docs/development/i18n-migration/plugin-format-remediation.json");
+const dynamic = await readJSON("docs/development/i18n-migration/plugin-dynamic-audit.json");
 // Run after rpnpm --pull dist run i18n:source on the same source revision.
 const issues = await readJSON("dist/obsidian-i18n-source.json");
 if (issues.length) throw new Error("Cannot reconcile against a failing source report");
@@ -80,8 +80,8 @@ const closure = {
   acceptance: "Static-source evidence only. Final authored, test, budget and native acceptance is recorded separately in docs/development/i18n-acceptance.json.",
   stateCounts: rows.reduce((counts, row) => (counts[row.state] = (counts[row.state] ?? 0) + 1, counts), {}),
 };
-await writeFile("scripts/plugin-audit-remediation.json", JSON.stringify(rows, null, 2) + "\n");
-await writeFile("scripts/plugin-format-remediation.json", JSON.stringify(formats, null, 2) + "\n");
-await writeFile("scripts/plugin-dynamic-audit.json", JSON.stringify(dynamic, null, 2) + "\n");
+await writeFile("docs/development/i18n-migration/plugin-audit-remediation.json", JSON.stringify(rows, null, 2) + "\n");
+await writeFile("docs/development/i18n-migration/plugin-format-remediation.json", JSON.stringify(formats, null, 2) + "\n");
+await writeFile("docs/development/i18n-migration/plugin-dynamic-audit.json", JSON.stringify(dynamic, null, 2) + "\n");
 await writeFile("docs/development/i18n-audit-closure.json", JSON.stringify(closure, null, 2) + "\n");
 console.log(JSON.stringify(closure, null, 2));

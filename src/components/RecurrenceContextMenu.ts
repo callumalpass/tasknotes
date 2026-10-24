@@ -458,8 +458,8 @@ export function getMonthDayOptions(lastDayLabel = "Last day"): MonthDayOption[] 
 		...Array.from({ length: 31 }, (_, index) => {
 			const day = index + 1;
 			return {
-				value: uiNumber(day),
-				text: day.toString(),
+				value: day.toString(),
+				text: uiNumber(day),
 			};
 		}),
 		{

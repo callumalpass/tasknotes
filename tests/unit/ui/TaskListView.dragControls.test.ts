@@ -4,7 +4,7 @@ import { TaskListView } from "../../../src/bases/TaskListView";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING } from "../../../src/settings/defaults";
 import { TaskFactory } from "../../helpers/mock-factories";
-import { en } from "../../../src/i18n/resources/en";
+
 jest.mock("tasknotes-nlp-core", () => ({
 	NaturalLanguageParserCore: class {},
 }), { virtual: true });

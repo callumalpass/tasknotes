@@ -28,6 +28,8 @@ export class HierarchicalGroupingService {
 			userFields: UserMappedField[] = []
 	): Map<string, Map<string, TaskInfo[]>> {
 		const hierarchical = new Map<string, Map<string, TaskInfo[]>>();
+		const missingLabels = new Set<string>();
+		const missing = (label: string): string => { missingLabels.add(label); return label; };
 
 		const getValues = (task: TaskInfo, key: TaskGroupKey): string[] => {
 			if (!key || key === "none") return ["all"];
@@ -39,33 +41,34 @@ export class HierarchicalGroupingService {
 
 			if (key.startsWith("user:")) {
 				const fieldIdOrKey = key.slice("user:".length);
+				const fieldLabel = userFields.find((field) => (field.id || field.key) === fieldIdOrKey)?.displayName || fieldIdOrKey;
 				if (this.resolveUserFieldValues) {
 					const resolved = this.resolveUserFieldValues(task, fieldIdOrKey) || [];
 					const cleaned = normalizeArray(resolved);
-					return cleaned.length ? cleaned : [uiText(msg({ message: "No {fieldIdOrKey}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { fieldIdOrKey: fieldIdOrKey })];
+					return cleaned.length ? cleaned : [missing(uiText(msg({ message: "No {fieldIdOrKey}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { fieldIdOrKey: fieldLabel }))];
 					}
 					// Fallback to customProperties if resolver not provided
 					const value = task.customProperties?.[fieldIdOrKey];
 					if (Array.isArray(value)) {
 						const cleaned = normalizeArray(value);
-						return cleaned.length ? cleaned : [uiText(msg({ message: "No {fieldIdOrKey}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { fieldIdOrKey: fieldIdOrKey })];
+						return cleaned.length ? cleaned : [missing(uiText(msg({ message: "No {fieldIdOrKey}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { fieldIdOrKey: fieldLabel }))];
 					}
 					const str = valueToGroupString(value);
-				return str !== "" ? [str] : [uiText(msg({ message: "No {fieldIdOrKey}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { fieldIdOrKey: fieldIdOrKey })];
+				return str !== "" ? [str] : [missing(uiText(msg({ message: "No {fieldIdOrKey}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { fieldIdOrKey: fieldLabel }))];
 			}
 
 			switch (key) {
 				case "status": {
-					const v = (task.status ?? "").trim() || uiText(msg({ message: "No Status", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }));
+					const v = (task.status ?? "").trim() || missing(uiText(msg({ message: "No Status", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" })));
 					return [v];
 				}
 				case "priority": {
-					const v = (task.priority ?? "").trim() || uiText(msg({ message: "No Priority", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }));
+					const v = (task.priority ?? "").trim() || missing(uiText(msg({ message: "No Priority", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" })));
 					return [v];
 				}
 				case "context": {
 					const arr = normalizeArray(task.contexts ?? []);
-					return arr.length ? arr : [uiText(msg({ message: "No Context", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
+					return arr.length ? arr : [missing(uiText(msg({ message: "No Context", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" })))];
 				}
 				case "project": {
 					const arr = normalizeArray(task.projects ?? []).map((s) => {
@@ -87,19 +90,19 @@ export class HierarchicalGroupingService {
 							uniq.push(v);
 						}
 					}
-					return uniq.length ? uniq : [uiText(msg({ message: "No Project", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
+					return uniq.length ? uniq : [missing(uiText(msg({ message: "No Project", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" })))];
 				}
 				case "tags": {
 					const arr = normalizeArray(task.tags ?? []);
-					return arr.length ? arr : [uiText(msg({ message: "No Tag", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
+					return arr.length ? arr : [missing(uiText(msg({ message: "No Tag", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" })))];
 				}
 				case "due": {
 					const d = (task.due ?? "").trim();
-					return d ? [d.split("T")[0]] : [uiText(msg({ message: "No Due Date", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
+					return d ? [d.split("T")[0]] : [missing(uiText(msg({ message: "No Due Date", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" })))];
 				}
 				case "scheduled": {
 					const s = (task.scheduled ?? "").trim();
-					return s ? [s.split("T")[0]] : [uiText(msg({ message: "No Scheduled Date", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }))];
+					return s ? [s.split("T")[0]] : [missing(uiText(msg({ message: "No Scheduled Date", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" })))];
 				}
 					default: {
 						// Fallback to a direct property if present
@@ -107,10 +110,10 @@ export class HierarchicalGroupingService {
 						const v = anyTask[key];
 						if (Array.isArray(v)) {
 							const arr = normalizeArray(v);
-							return arr.length ? arr : [uiText(msg({ message: "No {key}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { key: key })];
+							return arr.length ? arr : [missing(uiText(msg({ message: "No {key}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { key: key }))];
 						}
 						const str = valueToGroupString(v);
-					return str !== "" ? [str] : [uiText(msg({ message: "No {key}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { key: key })];
+					return str !== "" ? [str] : [missing(uiText(msg({ message: "No {key}", context: "services/HierarchicalGroupingService: HierarchicalGroupingService.group.getValues display" }), { key: key }))];
 				}
 			}
 		};
@@ -136,7 +139,8 @@ export class HierarchicalGroupingService {
 				subgroups,
 				subgroupKey,
 				sortDirection,
-				userFields
+				userFields,
+				missingLabels
 			);
 			sortedHierarchical.set(primaryName, sortedSubgroups);
 		}
@@ -151,10 +155,11 @@ export class HierarchicalGroupingService {
 		subgroups: Map<string, TaskInfo[]>,
 		subgroupKey: TaskGroupKey,
 		sortDirection: "asc" | "desc",
-		userFields: UserMappedField[]
+		userFields: UserMappedField[],
+		missingLabels: ReadonlySet<string>
 	): Map<string, TaskInfo[]> {
 		const keys = Array.from(subgroups.keys());
-		const sortedKeys = this.sortSubgroupKeys(keys, subgroupKey, sortDirection, userFields);
+		const sortedKeys = this.sortSubgroupKeys(keys, subgroupKey, sortDirection, userFields, missingLabels);
 
 		const sorted = new Map<string, TaskInfo[]>();
 		for (const key of sortedKeys) {
@@ -170,9 +175,10 @@ export class HierarchicalGroupingService {
 			keys: string[],
 			subgroupKey: TaskGroupKey,
 			sortDirection: "asc" | "desc",
-			userFields: UserMappedField[]
+			userFields: UserMappedField[],
+			missingLabels: ReadonlySet<string>
 		): string[] {
-		const isMissing = (k: string) => /^No\s/i.test(k);
+		const isMissing = (key: string) => missingLabels.has(key);
 
 		// Handle dynamic user fields with type-aware sorting
 			if (typeof subgroupKey === "string" && subgroupKey.startsWith("user:")) {

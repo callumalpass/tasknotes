@@ -16,6 +16,7 @@ import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui
 import { getTaskCardPropertyValue } from "../ui/taskCardPropertyAccess";
 import { normalizeTaskSignatureValue } from "./taskSignatureValue";
 import { renderGroupTitle } from "./groupTitleRenderer";
+import { groupKeyLabel, NONE_GROUP_KEY } from "./groupKeys";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
@@ -1108,7 +1109,7 @@ export class TaskListView extends BasesViewBase {
 					return { values: value };
 				if (isPrimitive(value) && value !== "") return { values: [value] };
 			}
-			return { unresolved: hasMembers && key !== null && key !== "None" };
+			return { unresolved: hasMembers && key !== null && key !== NONE_GROUP_KEY };
 		};
 		const group = listValues(groupProperty, groupKey, true);
 		const subGroup = listValues(this.subGroupPropertyId, subGroupKey);
@@ -1161,12 +1162,12 @@ export class TaskListView extends BasesViewBase {
 		);
 		for (const key of knownValues(effectiveProperty)) groupKeys.add(key);
 		if (effectiveProperty && this.isMovableGroupingProperty(effectiveProperty))
-			groupKeys.add("None");
+			groupKeys.add(NONE_GROUP_KEY);
 		for (const groupKey of groupKeys) {
 			const primary = this.createMovementDestination(groupKey);
 			destinations.set(taskListDestinationKey(primary), primary);
 			if (primaryProperty && this.subGroupPropertyId) {
-				for (const subGroupKey of [...knownValues(this.subGroupPropertyId), "None"]) {
+				for (const subGroupKey of [...knownValues(this.subGroupPropertyId), NONE_GROUP_KEY]) {
 					const child = this.createMovementDestination(groupKey, subGroupKey);
 					destinations.set(taskListDestinationKey(child), child);
 				}
@@ -1179,9 +1180,9 @@ export class TaskListView extends BasesViewBase {
 		return [destination.groupKey, destination.subGroupKey]
 			.filter((value) => value !== undefined)
 			.map((value) =>
-				value === null || value === "None"
+				value === null || value === NONE_GROUP_KEY
 					? this.plugin.i18n.translate(msg({ message: "No value", context: "views.taskList.movement.noValue" }))
-					: value
+					: groupKeyLabel(value ?? "")
 			)
 			.join(" / ");
 	}
@@ -2977,7 +2978,7 @@ export class TaskListView extends BasesViewBase {
 		// Add group title
 		const titleContainer = headerElement.createSpan({ cls: "task-group-title" });
 		const displayTitle = isSubHeader ? headerItem.subGroupTitle : headerItem.groupTitle;
-		this.renderGroupTitle(titleContainer, displayTitle);
+		this.renderGroupTitle(titleContainer, groupKeyLabel(displayTitle));
 
 		// Add count
 		headerElement.createSpan({

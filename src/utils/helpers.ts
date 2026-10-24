@@ -1,7 +1,6 @@
 import { uiDuration } from "../i18n/formatters";
-import { uiText } from "../i18n/runtime";
+import { uiData } from "../i18n/dataText";
 import { recurrenceDisplayText } from "../i18n/recurrence";
-import { msg } from "@lingui/core/macro";
 import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from "obsidian";
 import { format } from "date-fns";
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from "../types";
@@ -310,7 +309,7 @@ export function extractTaskInfo(
 
 			// Ensure required fields have defaults
 			const taskInfo: TaskInfo = {
-				title: mappedTask.title || uiText(msg({ message: "Untitled task", context: "utils/helpers: extractTaskInfo title" })),
+				title: mappedTask.title || "",
 				status: mappedTask.status || defaultStatus || "open",
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
@@ -338,7 +337,7 @@ export function extractTaskInfo(
 			const mappedTask = defaultMapper.mapFromFrontmatter(yaml, path, storeTitleInFilename);
 
 			return {
-				title: mappedTask.title || uiText(msg({ message: "Untitled task", context: "utils/helpers: extractTaskInfo title" })),
+				title: mappedTask.title || "",
 				status: mappedTask.status || defaultStatus || "open",
 				priority: mappedTask.priority || "normal",
 				due: mappedTask.due,
@@ -362,7 +361,7 @@ export function extractTaskInfo(
 	}
 
 	// Fallback to basic info from filename
-	const filename = path.split("/").pop()?.replace(".md", "") || uiText(msg({ message: "Untitled", context: "utils/helpers: extractTaskInfo display" }));
+	const filename = path.split("/").pop()?.replace(".md", "") || "";
 	return {
 		title: filename,
 		status: defaultStatus || "open",
@@ -520,7 +519,7 @@ export function extractNoteInfo(
 	createdDate?: string;
 	lastModified?: number;
 } | null {
-	let title = path.split("/").pop()?.replace(".md", "") || uiText(msg({ message: "Untitled", context: "utils/helpers: extractNoteInfo display" }));
+	let title = path.split("/").pop()?.replace(".md", "") || "";
 	let tags: string[] = [];
 	let createdDate: string | undefined = undefined;
 	let lastModified: number | undefined = file?.stat.mtime;
@@ -557,7 +556,7 @@ export function extractNoteInfo(
 	}
 
 	// Look for first heading in the content as a fallback title
-	if (title === "Untitled") {
+	if (!title || title === uiData("Untitled", "Canonical Obsidian filename seed, never a translated display sentinel")) {
 		const headingMatch = content.match(/^#\s+(.+)$/m);
 		if (headingMatch && headingMatch[1]) {
 			title = headingMatch[1].trim();

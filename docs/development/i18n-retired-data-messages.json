@@ -86,5 +86,11 @@
       "context": "modals.icsNoteCreation.templatePathPlaceholder",
       "reason": "Literal vault path or filename example"
     }
-  ]
+  ],
+  "reviewFollowup": {
+    "baseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
+    "additionalRetirements": 59,
+    "inventory": "i18n-review-followup.json",
+    "reason": "Stable grouping identities, writable English configuration seeds, explicit empty NLP titles, and English generated MDBASE data must not be locale snapshots."
+  }
 }

@@ -11,12 +11,21 @@ export function bindUIDisplay(instance: I18n): void {
 	uiI18n = instance;
 }
 
+// Lingui 6.9 decodes JS escape sequences after interpolation. Encode each user
+// backslash as a single-pass escape so C:\\x41 remains data, not the letter A.
+function renderText(descriptor: MessageDescriptor, values: Record<string, unknown>, instance: I18n): string {
+	const protectedValues = Object.fromEntries(Object.entries(values).map(([key, value]) => [
+		key, typeof value === "string" ? value.replace(/\\/g, "\\u005c") : value,
+	]));
+	return instance._({ ...descriptor, values: protectedValues });
+}
+
 export function uiText(descriptor: MessageDescriptor, values?: Record<string, unknown>, instance = uiI18n): string {
 	const parameters = { ...descriptor.values, ...values };
 	for (const [key, value] of Object.entries(parameters)) {
 		if (/error|message|guidance/i.test(key) && typeof value === "string") parameters[key] = displayError(value, 0, instance);
 	}
-	return instance._({ ...descriptor, values: parameters });
+	return renderText(descriptor, parameters, instance);
 }
 
 /** Localize only recognized plugin-owned diagnostics at a UI boundary, never user data or wire contracts. */
@@ -28,7 +37,7 @@ export function displayError(error: unknown, depth = 0, instance = uiI18n): stri
 		if (!match) continue;
 		const values = Object.fromEntries(keys.map((key, index) => [key,
 			/error|message|guidance/i.test(key) ? displayError(match[index + 1], depth + 1, instance) : match[index + 1]]));
-		return instance._({ ...descriptor, values: { ...dataValues, ...values } });
+		return renderText(descriptor, { ...dataValues, ...values }, instance);
 	}
 	return raw;
 }

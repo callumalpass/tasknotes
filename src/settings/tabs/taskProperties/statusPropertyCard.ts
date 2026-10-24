@@ -1,5 +1,6 @@
 import { uiData } from "../../../i18n/dataText";
 import { uiText } from "../../../i18n/runtime";
+import { configLabel } from "../../../i18n/configLabels";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
 import { setIcon } from "obsidian";
@@ -47,7 +48,7 @@ export function renderStatusPropertyCard(
 	const defaultSelect = createCardSelect(
 		plugin.settings.customStatuses.map((status) => ({
 			value: status.value,
-			label: status.label || status.value,
+			label: configLabel(status) || status.value,
 		})),
 		plugin.settings.defaultTaskStatus
 	);
@@ -124,7 +125,7 @@ export function renderStatusPropertyCard(
 		plugin.settings.customStatuses.forEach((status) => {
 			const option = defaultSelect.createEl("option", {
 				value: status.value,
-				text: status.label || status.value,
+				text: configLabel(status) || status.value,
 			});
 			if (status.value === plugin.settings.defaultTaskStatus) {
 				option.selected = true;
@@ -171,7 +172,7 @@ export function renderStatusPropertyCard(
 			plugin.settings.customStatuses.forEach((status) => {
 				const option = defaultSelect.createEl("option", {
 					value: status.value,
-					text: status.label || status.value,
+					text: configLabel(status) || status.value,
 				});
 				if (status.value === plugin.settings.defaultTaskStatus) {
 					option.selected = true;
@@ -295,7 +296,7 @@ function renderStatusList(
 					.filter((statusOption) => statusOption.id !== status.id)
 					.map((statusOption) => ({
 						value: statusOption.value,
-						label: statusOption.label || statusOption.value,
+						label: configLabel(statusOption) || statusOption.value,
 					})),
 			],
 			status.nextStatus === status.value ? "" : status.nextStatus || ""
@@ -337,7 +338,7 @@ function renderStatusList(
 		const deleteStatus = () => {
 			void (async () => {
 				const message = translate(msg({ message: "Are you sure you want to delete the status \"{label}\"?", context: "settings.taskProperties.taskStatuses.deleteConfirm" }), {
-					label: status.label || status.value,
+					label: configLabel(status) || status.value,
 				});
 				const confirmDelete = await showConfirmationModal(plugin.app, {
 					title: translate(msg({ message: "Confirm", context: "common.confirm" })),
@@ -386,7 +387,7 @@ function renderStatusList(
 			colorIndicator: { color: status.color, cssVar: "--status-color" },
 			header: {
 				primaryText: status.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" })),
-				secondaryText: status.label || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList secondaryText" })),
+				secondaryText: configLabel(status) || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList secondaryText" })),
 				meta: metaElements,
 				actions: [createDeleteHeaderButton(deleteStatus)],
 			},
@@ -484,7 +485,7 @@ function renderStatusList(
 		labelInput.addEventListener("input", () => {
 			status.label = labelInput.value;
 			statusCard.querySelector(".tasknotes-settings__card-secondary-text")!.textContent =
-				status.label || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList display" }));
+				configLabel(status) || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList display" }));
 			save();
 			if (onStatusesChanged) onStatusesChanged();
 		});

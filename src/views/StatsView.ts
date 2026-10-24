@@ -1054,7 +1054,7 @@ export class StatsView extends ItemView {
 		container.empty();
 
 		// Format time duration in hours and minutes
-		const formatTime = (minutes: number): string => uiDuration(minutes);
+		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
 
 		// Total Time
 		const totalTimeCard = container.createDiv({
@@ -1125,7 +1125,7 @@ export class StatsView extends ItemView {
 	private renderTimeRangeStats(container: HTMLElement, stats: TimeRangeStats) {
 		container.empty();
 
-		const formatTime = (minutes: number): string => uiDuration(minutes);
+		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
 
 		// Time Tracked
 		const timeCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
@@ -1183,7 +1183,7 @@ export class StatsView extends ItemView {
 			return;
 		}
 
-		const formatTime = (minutes: number): string => uiDuration(minutes);
+		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
 
 		const formatDate = (dateString?: string): string => {
 			if (!dateString) return this.plugin.i18n.translate(msg({ message: "N/A", context: "views.stats.notAvailable" }));
@@ -1704,7 +1704,7 @@ export class StatsView extends ItemView {
 	private renderDrilldownContent(container: HTMLElement, data: ProjectDrilldownData) {
 		container.empty();
 
-		const formatTime = (minutes: number): string => uiDuration(minutes);
+		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
 
 		// Overview stats with enhanced metrics
 		const overviewEl = container.createDiv({ cls: "stats-view__drilldown-overview" });
@@ -1889,7 +1889,7 @@ export class StatsView extends ItemView {
 			bar.style.height = `${height}px`;
 
 			// Tooltip
-			const tooltip = uiText(msg({ message: "{date}: {duration}", context: "statistics daily time tooltip" }), { date: formatUIDate(new Date(day.date), "MMM d"), duration: uiDuration(day.timeSpent) });
+			const tooltip = uiText(msg({ message: "{date}: {duration}", context: "statistics daily time tooltip" }), { date: formatUIDate(new Date(day.date), "MMM d"), duration: uiDuration(Math.round(day.timeSpent)) });
 			bar.setAttribute("title", tooltip);
 		}
 	}

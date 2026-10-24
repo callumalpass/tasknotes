@@ -1,4 +1,5 @@
 import { displayError } from "../i18n/runtime";
+import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
@@ -116,20 +117,20 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 			actions.push({
 				id: `status-${statusConfig.value}`,
 				title: this.plugin.i18n.translate(msg({ message: "Change status to \"{label}\"", context: "modals.actionPalette.statusAction" }), {
-					label: statusConfig.label,
+					label: configLabel(statusConfig),
 				}),
 				description: this.plugin.i18n.translate(msg({ message: "Set task status to {label}", context: "modals.actionPalette.statusDesc" }), {
-					label: statusConfig.label,
+					label: configLabel(statusConfig),
 				}),
 				icon: isCurrentStatus ? "check" : "circle",
 				category: "status",
-				keywords: ["status", statusConfig.value, statusConfig.label, "change", "set"],
+				keywords: ["status", statusConfig.value, configLabel(statusConfig), "change", "set"],
 				isApplicable: () => !isCurrentStatus,
 				execute: async (task) => {
 					await this.plugin.updateTaskProperty(task, "status", statusConfig.value);
 					new Notice(
 						this.plugin.i18n.translate(msg({ message: "Status changed to {label}", context: "modals.actionPalette.statusChanged" }), {
-							label: statusConfig.label,
+							label: configLabel(statusConfig),
 						})
 					);
 				},
@@ -142,20 +143,20 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 			actions.push({
 				id: `priority-${priorityConfig.value}`,
 				title: this.plugin.i18n.translate(msg({ message: "Set priority to \"{label}\"", context: "modals.actionPalette.priorityAction" }), {
-					label: priorityConfig.label,
+					label: configLabel(priorityConfig),
 				}),
 				description: this.plugin.i18n.translate(msg({ message: "Change task priority to {label}", context: "modals.actionPalette.priorityDesc" }), {
-					label: priorityConfig.label,
+					label: configLabel(priorityConfig),
 				}),
 				icon: isCurrentPriority ? "check" : "flag",
 				category: "priority",
-				keywords: ["priority", priorityConfig.value, priorityConfig.label, "change", "set"],
+				keywords: ["priority", priorityConfig.value, configLabel(priorityConfig), "change", "set"],
 				isApplicable: () => !isCurrentPriority,
 				execute: async (task) => {
 					await this.plugin.updateTaskProperty(task, "priority", priorityConfig.value);
 					new Notice(
 						this.plugin.i18n.translate(msg({ message: "Priority changed to {label}", context: "modals.actionPalette.priorityChanged" }), {
-							label: priorityConfig.label,
+							label: configLabel(priorityConfig),
 						})
 					);
 				},

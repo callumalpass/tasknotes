@@ -1,61 +1,87 @@
 {
-  "method": "Parsed authored translation values compared verbatim with the original translator commit; removed/new ID sets must exactly match the documented inventories.",
+  "method": "Parsed targets compared directly with each original translator commit. Retained changes are explicitly inventoried against the reviewed baseline: CLDR arms reuse existing authored other wording, plus one reviewed Russian grammar fix. No new English target padding.",
+  "reviewedBaseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
+  "changeInventory": "i18n-review-followup.json",
   "locales": {
     "de": {
       "translatorCommit": "20b7eb21211611110951e1fb27f92ddfefa407c0",
-      "retainedTranslations": 2787,
+      "retainedTranslations": 2726,
+      "unchangedRetainedTranslations": 2726,
       "changedRetainedTranslations": 0,
       "technicalIdsRetired": 12,
-      "singletonIdsReplaced": 10
+      "reviewDataIdsRetired": 59,
+      "singletonIdsReplaced": 10,
+      "literalBraceIdsReplaced": 2
     },
     "es": {
       "translatorCommit": "7632fbce55cd3cc90c7b1192701120d391268490",
-      "retainedTranslations": 2787,
-      "changedRetainedTranslations": 0,
+      "retainedTranslations": 2726,
+      "unchangedRetainedTranslations": 2694,
+      "changedRetainedTranslations": 32,
       "technicalIdsRetired": 12,
-      "singletonIdsReplaced": 10
+      "reviewDataIdsRetired": 59,
+      "singletonIdsReplaced": 10,
+      "literalBraceIdsReplaced": 2
     },
     "fr": {
       "translatorCommit": "791a2e45f3eddf46bc23b6c8d7b5ba08a55d0bb5",
-      "retainedTranslations": 2787,
-      "changedRetainedTranslations": 0,
+      "retainedTranslations": 2726,
+      "unchangedRetainedTranslations": 2694,
+      "changedRetainedTranslations": 32,
       "technicalIdsRetired": 12,
-      "singletonIdsReplaced": 10
+      "reviewDataIdsRetired": 59,
+      "singletonIdsReplaced": 10,
+      "literalBraceIdsReplaced": 2
     },
     "ja": {
       "translatorCommit": "e0db2e3ebba160d784b87be401cb6a5ea226ae52",
-      "retainedTranslations": 2787,
+      "retainedTranslations": 2726,
+      "unchangedRetainedTranslations": 2726,
       "changedRetainedTranslations": 0,
       "technicalIdsRetired": 12,
-      "singletonIdsReplaced": 10
+      "reviewDataIdsRetired": 59,
+      "singletonIdsReplaced": 10,
+      "literalBraceIdsReplaced": 2
     },
     "ko": {
       "translatorCommit": "24b477682e05973ceb67d25f9b292839301be771",
-      "retainedTranslations": 2787,
+      "retainedTranslations": 2726,
+      "unchangedRetainedTranslations": 2726,
       "changedRetainedTranslations": 0,
       "technicalIdsRetired": 12,
-      "singletonIdsReplaced": 10
+      "reviewDataIdsRetired": 59,
+      "singletonIdsReplaced": 10,
+      "literalBraceIdsReplaced": 2
     },
     "pt": {
       "translatorCommit": "65844af337a4834780baa6ce01e133fe8b2be1bd",
-      "retainedTranslations": 2787,
+      "retainedTranslations": 2726,
+      "unchangedRetainedTranslations": 2726,
       "changedRetainedTranslations": 0,
       "technicalIdsRetired": 12,
-      "singletonIdsReplaced": 10
+      "reviewDataIdsRetired": 59,
+      "singletonIdsReplaced": 10,
+      "literalBraceIdsReplaced": 2
     },
     "ru": {
       "translatorCommit": "f4c6b0a3d7da7ed07133b62e8bfe7f9afa63760a",
-      "retainedTranslations": 2787,
+      "retainedTranslations": 2726,
+      "unchangedRetainedTranslations": 2726,
       "changedRetainedTranslations": 0,
       "technicalIdsRetired": 12,
-      "singletonIdsReplaced": 10
+      "reviewDataIdsRetired": 59,
+      "singletonIdsReplaced": 10,
+      "literalBraceIdsReplaced": 2
     },
     "zh": {
       "translatorCommit": "e1e430e71ac39da0db390747132de099bdb1ed3c",
-      "retainedTranslations": 2787,
+      "retainedTranslations": 2726,
+      "unchangedRetainedTranslations": 2726,
       "changedRetainedTranslations": 0,
       "technicalIdsRetired": 12,
-      "singletonIdsReplaced": 10
+      "reviewDataIdsRetired": 59,
+      "singletonIdsReplaced": 10,
+      "literalBraceIdsReplaced": 2
     }
   }
 }

@@ -1,4 +1,5 @@
 import { displayError } from "../i18n/runtime";
+import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
@@ -11,6 +12,7 @@ import type { StatusConfig, TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
+import { groupKeyLabel, NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY } from "./groupKeys";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { VirtualScroller } from "../utils/VirtualScroller";
@@ -1053,7 +1055,7 @@ export class KanbanView extends BasesViewBase {
 		frontmatterKey: string,
 		value: string
 	): void {
-		const localValue = value === "None" ? null : value;
+		const localValue = value === NONE_GROUP_KEY ? null : value;
 		if (taskProp) {
 			(task as unknown as Record<string, unknown>)[taskProp] = localValue;
 		}
@@ -1401,7 +1403,7 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		const normalizedGroupKey = groupKey.trim();
-		if (!normalizedGroupKey || normalizedGroupKey === "None") {
+		if (!normalizedGroupKey || normalizedGroupKey === NONE_GROUP_KEY) {
 			return false;
 		}
 
@@ -1821,10 +1823,10 @@ export class KanbanView extends BasesViewBase {
 
 	private getAddTaskLabel(groupKey: string, swimLaneKey: string | null): string {
 		if (swimLaneKey) {
-			return uiText(msg({ message: "Add task to {groupKey} / {swimLaneKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: groupKey, swimLaneKey: swimLaneKey });
+			return uiText(msg({ message: "Add task to {groupKey} / {swimLaneKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: groupKeyLabel(groupKey), swimLaneKey: groupKeyLabel(swimLaneKey) });
 		}
 
-		return uiText(msg({ message: "Add task to {groupKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: groupKey });
+		return uiText(msg({ message: "Add task to {groupKey}", context: "bases/KanbanView: KanbanView.getAddTaskLabel display" }), { groupKey: groupKeyLabel(groupKey) });
 	}
 
 	private renderEmptyCellHint(
@@ -1834,8 +1836,8 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		const noTasksLabel = this.plugin.i18n.translate(msg({ message: "No tasks", context: "views.kanban.noTasks" }));
 		const label = swimLaneKey
-			? `${noTasksLabel}: ${groupKey} / ${swimLaneKey}`
-			: `${noTasksLabel}: ${groupKey}`;
+			? `${noTasksLabel}: ${groupKeyLabel(groupKey)} / ${groupKeyLabel(swimLaneKey)}`
+			: `${noTasksLabel}: ${groupKeyLabel(groupKey)}`;
 		const empty = container.createDiv({
 			cls: "kanban-view__empty-cell",
 			attr: {
@@ -4043,6 +4045,8 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private getGroupDisplayTitle(title: string, propertyId?: string | null): string {
+		const label = groupKeyLabel(title);
+		if ([NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY].some((key) => key === title)) return label;
 		if (!propertyId) {
 			return title;
 		}
@@ -4052,20 +4056,20 @@ export class KanbanView extends BasesViewBase {
 		const statusField = this.plugin.fieldMapper.toUserField("status");
 		if (cleanProperty === statusField) {
 			const statusConfig = this.plugin.statusManager.getStatusConfig(title);
-			if (statusConfig?.label) {
-				return statusConfig.label;
+			if (configLabel(statusConfig)) {
+				return configLabel(statusConfig);
 			}
 		}
 
 		const priorityField = this.plugin.fieldMapper.toUserField("priority");
 		if (cleanProperty === priorityField) {
 			const priorityConfig = this.plugin.priorityManager.getPriorityConfig(title);
-			if (priorityConfig?.label) {
-				return priorityConfig.label;
+			if (configLabel(priorityConfig)) {
+				return configLabel(priorityConfig);
 			}
 		}
 
-		return title;
+		return groupKeyLabel(title);
 	}
 
 	private renderGroupTitleWrapper(
@@ -4076,7 +4080,7 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		// When grouped by status (column or swimlane), show label instead of raw value
 		const isStatusGrouping = isSwimLane ? this.isSwimLaneByStatus() : this.isGroupedByStatus();
-		if (isStatusGrouping) {
+		if (isStatusGrouping && title !== NONE_GROUP_KEY) {
 			const statusConfig = this.plugin.statusManager.getStatusConfig(title);
 			if (statusConfig) {
 				// Only show icon in title when consolidation is enabled
@@ -4085,7 +4089,7 @@ export class KanbanView extends BasesViewBase {
 					iconEl.style.color = statusConfig.color;
 					setIcon(iconEl, statusConfig.icon);
 				}
-				this.renderLinkAwareGroupTitle(container, statusConfig.label);
+				this.renderLinkAwareGroupTitle(container, configLabel(statusConfig));
 				return;
 			}
 		}

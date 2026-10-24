@@ -1,3 +1,4 @@
+import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
@@ -230,7 +231,7 @@ export class BatchContextMenu {
 
 		for (const status of sortedStatuses) {
 			submenu.addItem((item) => {
-				item.setTitle(status.label);
+				item.setTitle(configLabel(status));
 				// Use custom icon if configured, otherwise default to circle
 				item.setIcon(status.icon || "circle");
 				item.onClick(async () => {
@@ -258,7 +259,7 @@ export class BatchContextMenu {
 
 		for (const priority of priorityOptions) {
 			submenu.addItem((item) => {
-				item.setTitle(priority.label);
+				item.setTitle(configLabel(priority));
 				item.setIcon("star");
 				item.onClick(async () => {
 					await this.batchUpdateProperty("priority", priority.value);

@@ -1,3 +1,4 @@
+import { configLabel } from "../i18n/configLabels";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { setIcon, setTooltip } from "obsidian";
@@ -93,7 +94,7 @@ function updateStatusIcon(
 	if (!icon) return;
 
 	const statusConfig = state.statusConfigs.find((config) => config.value === state.status);
-	const statusLabel = statusConfig ? statusConfig.label : state.status;
+	const statusLabel = statusConfig ? configLabel(statusConfig) : state.status;
 	setStatusIconSymbol(icon, getTaskModalStatusIconName(statusConfig));
 	updateConfiguredValueIcon(icon, context, {
 		isActive: Boolean(
@@ -129,7 +130,7 @@ function updatePriorityIcon(
 	if (!icon) return;
 
 	const priorityConfig = state.priorityConfigs.find((config) => config.value === state.priority);
-	const priorityLabel = priorityConfig ? priorityConfig.label : state.priority;
+	const priorityLabel = priorityConfig ? configLabel(priorityConfig) : state.priority;
 	updateConfiguredValueIcon(icon, context, {
 		isActive: Boolean(
 			state.priority && priorityConfig && priorityConfig.value !== state.defaultPriority

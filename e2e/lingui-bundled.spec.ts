@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { runLinguiReview } from "./helpers/lingui-review";
 import { setupI18n } from "@lingui/core";
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -67,4 +68,10 @@ test("ordinary native build decodes all nine catalogues synchronously and render
 	}
 	fs.mkdirSync(path.join(root, "test-results/lingui-bundled"), { recursive: true });
 	fs.writeFileSync(path.join(root, "test-results/lingui-bundled/report.json"), JSON.stringify({ synchronousColdLocale: "ja", availableLocales: 9, locales: report }, null, 2));
+});
+
+
+test("native en/de/ru group identities survive drag, creation and saved ordering", async () => {
+	test.setTimeout(180000);
+	await runLinguiReview(app!.page, "test-results/lingui-bundled/review");
 });

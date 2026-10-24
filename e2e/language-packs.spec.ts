@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { runLinguiReview } from "./helpers/lingui-review";
 import { setupI18n } from "@lingui/core";
 import { createServer, type Server } from "node:http";
 import { execFileSync } from "node:child_process";
@@ -317,4 +318,11 @@ test("native en/ja/de/ru labels, plurals and existing Bases files survive locale
 	expect(basesAfter).toEqual(basesBefore);
 	fs.mkdirSync(path.join(root, "test-results/lingui-native"), { recursive: true });
 	fs.writeFileSync(path.join(root, "test-results/lingui-native/report.json"), JSON.stringify({ locales: report, unchangedBases: Object.keys(basesBefore), requests }, null, 2));
+});
+
+
+test("native en/de/ru group identities survive drag, creation and saved ordering", async () => {
+	test.setTimeout(180000);
+	mode = "ok";
+	await runLinguiReview(app!.page, "test-results/lingui-native/review");
 });

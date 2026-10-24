@@ -1,5 +1,5 @@
 import { uiData } from "../i18n/dataText";
-import { formatUIDate } from "../i18n/formatters";
+import { formatUIDate, formatStableDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -306,7 +306,7 @@ export class ICSNoteCreationModal extends Modal {
 				? icsEvent.start + "T00:00:00"
 				: icsEvent.start;
 		const startDate = new Date(startDateStr);
-		return `${icsEvent.title} - ${formatUIDate(startDate, "PPP")}`;
+		return `${icsEvent.title} - ${formatStableDate(startDate, "PPP")}`;
 	}
 
 	private getDefaultFolder(): string {

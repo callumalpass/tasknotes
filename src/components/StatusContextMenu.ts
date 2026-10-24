@@ -1,3 +1,4 @@
+import { configLabel } from "../i18n/configLabels";
 import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
 import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenuCoordinator";
@@ -61,7 +62,7 @@ export class StatusContextMenu {
 
 			sortedStatuses.forEach((status) => {
 				statusOptions.push({
-					label: status.label,
+					label: configLabel(status),
 					value: status.value,
 					color: status.color,
 					icon: status.icon,

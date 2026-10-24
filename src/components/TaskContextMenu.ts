@@ -1,3 +1,4 @@
+import { configLabel } from "../i18n/configLabels";
 import { displayError } from "../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { uiLocale } from "../i18n/runtime";
@@ -1951,7 +1952,7 @@ export class TaskContextMenu {
 		priorityOptions.forEach((priority) => {
 			const value = toMenuTitle(priority.value);
 			if (!value) return;
-			const label = toMenuTitle(priority.label, value);
+			const label = toMenuTitle(configLabel(priority), value);
 
 			submenu.addItem((item) => {
 				let title = label;
@@ -2471,7 +2472,7 @@ export class TaskContextMenu {
 				const value = toMenuTitle(status.value);
 				if (!value) return;
 				statusOptions.push({
-					label: toMenuTitle(status.label, value),
+					label: toMenuTitle(configLabel(status), value),
 					value,
 					color: typeof status.color === "string" ? status.color : undefined,
 					icon: typeof status.icon === "string" ? status.icon : undefined,

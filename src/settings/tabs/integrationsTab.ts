@@ -1575,7 +1575,7 @@ export function renderIntegrationsTab(
 								msg({ message: "Template for custom ICS event filenames", context: "settings.integrations.calendarSubscriptions.customTemplate.description" })
 							),
 							placeholder: translate(
-								msg({ message: "{date}-{title}", context: "settings.integrations.calendarSubscriptions.customTemplate.placeholder" })
+								msg({ message: "'{date}'-'{title}'", context: "settings.integrations.calendarSubscriptions.customTemplate.placeholder" })
 							),
 							getValue: () =>
 								plugin.settings.icsIntegration.customICSNoteFilenameTemplate,

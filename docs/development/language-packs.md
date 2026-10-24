@@ -84,6 +84,8 @@ English selection causes no download. System selection may download the detected
 
 ## Validation
 
+`npm run check:ci-workflow` replays the checked-in `.github/workflows/test.yml` shell commands verbatim under Node 22. Run it through `rpnpm --pull dist --pull coverage run check:ci-workflow`. It includes npm installs, coverage, integration, docs, lint, both workflow build jobs and export. It does not dispatch Actions, change workflow triggers/base, provide OAuth secrets, or claim acceptance of checkout/setup/upload actions. The Node-20-only performance step remains skipped under the existing Node-22 matrix. Evidence is `dist/ci-workflow-parity.json`.
+
 ```bash
 node generate-release-notes-import.mjs
 npm run typecheck
@@ -110,7 +112,7 @@ TASKNOTES_LANGUAGE_PACK_BASE_URL="$BASE_URL" \
   npm run e2e -- e2e/language-packs.spec.ts
 ```
 
-The tests exercise French download/offline reload, corrupt German delivery/retry and Russian supersession, then native en/ja/de/ru labels, plurals at 0/1/2/5/21 and preservation of existing user-authored Bases files. They also corrupt the Russian cache while offline, require English fallback, and verify explicit retry repairs the pinned cache. Fixture settings are restored even when a test fails.
+The tests exercise French download/offline reload, corrupt German delivery/retry and Russian supersession, then native en/ja/de/ru labels, plurals at 0/1/2/5/21 and preservation of existing user-authored Bases files. They also corrupt the Russian cache while offline, require English fallback, and verify explicit retry repairs the pinned cache. Fixture settings are restored even when a test fails. A further en/de/ru regression uses real native Kanban pointer drags and creation modals: empty drops remove properties, boolean drops/creation write booleans, empty-column creation does not seed a translated status, and stable saved ordering survives language switches. Its disposable fixture folder is removed in `finally`.
 
 For minified production acceptance, use the preserved artifacts from `npm run check:language-pack-builds "$BASE_URL"` rather than a development build. Copy `dist/language-pack-builds/downloadable/{main.js,styles.css}` into the isolated plugin directory with `cp --remove-destination` (never follow a symlink into another checkout), then run the pack tests above. Copy the corresponding **bundled** artifacts into that same disposable directory and run:
 
@@ -121,7 +123,7 @@ For minified production acceptance, use the preserved artifacts from `npm run ch
    npm run e2e -- e2e/lingui-bundled.spec.ts --output=test-results/bundled)
 ```
 
-The bundled test cold-starts Japanese, asserts nine loaded locales, and checks native en/ja/de/ru picker/command labels and 0/1/2/5/21 forms. Reports and native screenshots are written under `test-results/lingui-native` and `test-results/lingui-bundled`.
+The bundled test cold-starts Japanese, asserts nine loaded locales, and checks native en/ja/de/ru picker/command labels and 0/1/2/5/21 forms. Both modes also run the same en/de/ru group-identity regression. Reports and native screenshots are written under `test-results/lingui-native` and `test-results/lingui-bundled`; each mode's `review/review-report.json` records the actual frontmatter and saved order.
 
 `npm run test:fresh-catalogues` removes only ignored generated JSON, typechecks before regeneration, runs ordinary strict Jest, removes JSON again and builds/checks documentation. Authored POs are never deleted or fallback-filled by that acceptance command. Development requires Node 22.22+ and initialized `docs/spec` (`git submodule update --init --checkout docs/spec`).
 

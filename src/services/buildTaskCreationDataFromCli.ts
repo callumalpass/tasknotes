@@ -168,7 +168,7 @@ export function buildTaskCreationDataFromCli(
 		};
 	}
 
-	if (!taskData.title || taskData.title.trim() === "" || taskData.title === "Untitled Task") {
+	if (!taskData.title || taskData.title.trim() === "") {
 		if (!titleOverride) {
 			throw new Error("Could not derive a task title from --text; pass --title to override");
 		}

@@ -204,7 +204,7 @@ describe('NaturalLanguageParser - Issue #1243: User field quoted values with spa
             expect(result.userFields).toBeDefined();
             expect(result.userFields!['description']).toBe('Some Description');
             // Title should be the default when nothing remains
-            expect(result.title).toBe('Untitled Task');
+            expect(result.title).toBe('');
         });
     });
 

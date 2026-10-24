@@ -1,4 +1,5 @@
-import { messageForKey } from "../../i18n/messages";
+import { uiData } from "../../i18n/dataText";
+import { messages, messageForKey } from "../../i18n/messages";
 import { msg } from "@lingui/core/macro";
 import { App } from "obsidian";
 import type TaskNotesPlugin from "../../main";
@@ -127,7 +128,10 @@ function createFieldCard(
 	const typeBadge = activeWindow.createSpan();
 	typeBadge.classList.add("field-card__type");
 	typeBadge.classList.add(`field-card__type--${field.fieldType}`);
-	typeBadge.textContent = translate(messageForKey(`settings.modalFields.manager.fieldTypes.${field.fieldType}`));
+	const typeConcept = `settings.modalFields.manager.fieldTypes.${field.fieldType}` as const;
+	typeBadge.textContent = Object.prototype.hasOwnProperty.call(messages, typeConcept)
+		? translate(messageForKey(typeConcept))
+		: uiData(String(field.fieldType), "Unknown persisted field type; show raw user data rather than throwing");
 
 	// Create toggle switches with callbacks
 	const enabledToggle = createCardToggle(field.enabled, (value) => {
