@@ -559,6 +559,7 @@ export const es: TranslationTree = {
 				enabled: "Activado:",
 				showInCreation: "Mostrar al crear:",
 				showInEdit: "Mostrar al editar:",
+				required: "Obligatorio:",
 				group: "Grupo:",
 				fieldId: "ID: {id}",
 				fieldKey: "Clave: {key}",
@@ -2569,6 +2570,7 @@ export const es: TranslationTree = {
 			tagsPlaceholder: "etiqueta1, etiqueta2",
 			timeEstimateLabel: "Estimación de tiempo (minutos)",
 			timeEstimatePlaceholder: "30",
+			requiredFieldsMissing: "Completa los campos obligatorios: {fields}",
 			unsavedChanges: {
 				title: "Cambios sin guardar",
 				message: "Tiene cambios sin guardar. ¿Desea guardarlos?",

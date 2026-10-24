@@ -1584,6 +1584,10 @@
       "source": "1933e97174ad50029164292cdf98e28d9f951a76",
       "translation": "8afbf33982d23d7ab63b7d4cd58a5bac5f1402f4"
     },
+    "settings.modalFields.manager.required": {
+      "source": "d57939886670518e4b294d434d70c22a2be76ad9",
+      "translation": "40243f7f29f8d27dcec597d4315be12e45ebeb07"
+    },
     "settings.modalFields.manager.group": {
       "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
       "translation": "1f5a2cef6105d11689329ef2b18cd5fb774cf5e6"
@@ -6532,6 +6536,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.requiredFieldsMissing": {
+      "source": "09d354a1ae0d2b960b082496e1b4b3b25c8dca81",
+      "translation": "542788955f14f3580748b5dab7d45291999d5326"
+    },
     "modals.task.unsavedChanges.title": {
       "source": "29267269c048b5a9f836a97c23d40ba065c4b454",
       "translation": "e50663338266e1575304ce9dc1ed034e7b43a0c4"
@@ -10905,6 +10913,10 @@
     "settings.modalFields.manager.showInEdit": {
       "source": "1933e97174ad50029164292cdf98e28d9f951a76",
       "translation": "da1d2bcd01b3a70b97308e8b2303681f9f02f3c7"
+    },
+    "settings.modalFields.manager.required": {
+      "source": "d57939886670518e4b294d434d70c22a2be76ad9",
+      "translation": "02b1ed71156b307b720a25efabe349a7dbbf789f"
     },
     "settings.modalFields.manager.group": {
       "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
@@ -15854,6 +15866,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.requiredFieldsMissing": {
+      "source": "09d354a1ae0d2b960b082496e1b4b3b25c8dca81",
+      "translation": "c37482b56713603d2cca1a6055fb2c3ec1e7ee84"
+    },
     "modals.task.unsavedChanges.title": {
       "source": "29267269c048b5a9f836a97c23d40ba065c4b454",
       "translation": "ebc06692e03e45d145d87ac1ef4be373b3d99bc6"
@@ -20227,6 +20243,10 @@
     "settings.modalFields.manager.showInEdit": {
       "source": "1933e97174ad50029164292cdf98e28d9f951a76",
       "translation": "869d918b73d07572edf7258b7891deaa166cc7fc"
+    },
+    "settings.modalFields.manager.required": {
+      "source": "d57939886670518e4b294d434d70c22a2be76ad9",
+      "translation": "e4d744eca8fd1facf4e3fe6a59fe462c4ed62b56"
     },
     "settings.modalFields.manager.group": {
       "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
@@ -25176,6 +25196,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.requiredFieldsMissing": {
+      "source": "09d354a1ae0d2b960b082496e1b4b3b25c8dca81",
+      "translation": "2db57e6e2fdf22c673c23d938121a7a44f57d85d"
+    },
     "modals.task.unsavedChanges.title": {
       "source": "29267269c048b5a9f836a97c23d40ba065c4b454",
       "translation": "ca4fbcca7935171240662a9f5e72455246c7ff13"
@@ -29549,6 +29573,10 @@
     "settings.modalFields.manager.showInEdit": {
       "source": "1933e97174ad50029164292cdf98e28d9f951a76",
       "translation": "ba085fa30c50bdba77f18456a7bf0a991185ff8e"
+    },
+    "settings.modalFields.manager.required": {
+      "source": "d57939886670518e4b294d434d70c22a2be76ad9",
+      "translation": "f2ec185de5626059ba65db85680290f75ef91112"
     },
     "settings.modalFields.manager.group": {
       "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
@@ -34498,6 +34526,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.requiredFieldsMissing": {
+      "source": "09d354a1ae0d2b960b082496e1b4b3b25c8dca81",
+      "translation": "2e834e6d8cd2e427ba3c39cc5e50bd8a17d38fc7"
+    },
     "modals.task.unsavedChanges.title": {
       "source": "29267269c048b5a9f836a97c23d40ba065c4b454",
       "translation": "0a79b9ff685d4f2c176b92038dfc577acef0e2a7"
@@ -38871,6 +38903,10 @@
     "settings.modalFields.manager.showInEdit": {
       "source": "1933e97174ad50029164292cdf98e28d9f951a76",
       "translation": "83bde2c056d25706c02f23cf81a138d55799b8dd"
+    },
+    "settings.modalFields.manager.required": {
+      "source": "d57939886670518e4b294d434d70c22a2be76ad9",
+      "translation": "7c361dfd2518c907b3e6e67dedde4913f0080242"
     },
     "settings.modalFields.manager.group": {
       "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
@@ -43820,6 +43856,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.requiredFieldsMissing": {
+      "source": "09d354a1ae0d2b960b082496e1b4b3b25c8dca81",
+      "translation": "accf37d98d139ba4832d37057b53f00d5ee8f9b0"
+    },
     "modals.task.unsavedChanges.title": {
       "source": "29267269c048b5a9f836a97c23d40ba065c4b454",
       "translation": "bc3f4b2da6d55a970eb6f6ac06e0f6b36f2d4ce8"
@@ -48193,6 +48233,10 @@
     "settings.modalFields.manager.showInEdit": {
       "source": "1933e97174ad50029164292cdf98e28d9f951a76",
       "translation": "9f06be98abd2e204424ced110372e58af32ad477"
+    },
+    "settings.modalFields.manager.required": {
+      "source": "d57939886670518e4b294d434d70c22a2be76ad9",
+      "translation": "08e19d587b1183dc13bb498fa4cd759135378c63"
     },
     "settings.modalFields.manager.group": {
       "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
@@ -53142,6 +53186,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.requiredFieldsMissing": {
+      "source": "09d354a1ae0d2b960b082496e1b4b3b25c8dca81",
+      "translation": "ddf1f82d08d096fd51b9211af40c79e004052087"
+    },
     "modals.task.unsavedChanges.title": {
       "source": "29267269c048b5a9f836a97c23d40ba065c4b454",
       "translation": "2dc981a4e9b1298fada6de3678bd0c91fa9bc276"
@@ -57515,6 +57563,10 @@
     "settings.modalFields.manager.showInEdit": {
       "source": "1933e97174ad50029164292cdf98e28d9f951a76",
       "translation": "b28553b7dbd65ac5c3ed719c4d58a44a419c0a27"
+    },
+    "settings.modalFields.manager.required": {
+      "source": "d57939886670518e4b294d434d70c22a2be76ad9",
+      "translation": "184b1b39d6db56c029e05be14de3c98ff327d192"
     },
     "settings.modalFields.manager.group": {
       "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
@@ -62464,6 +62516,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.requiredFieldsMissing": {
+      "source": "09d354a1ae0d2b960b082496e1b4b3b25c8dca81",
+      "translation": "12a9cc7c110b7999d2603728ca40ac1b3523d824"
+    },
     "modals.task.unsavedChanges.title": {
       "source": "29267269c048b5a9f836a97c23d40ba065c4b454",
       "translation": "70d744f7368ad3bb20acba45f05c2e87934fa875"
@@ -66837,6 +66893,10 @@
     "settings.modalFields.manager.showInEdit": {
       "source": "1933e97174ad50029164292cdf98e28d9f951a76",
       "translation": "90b0ac79e0959dc3774eec09f2e2e12f442464c0"
+    },
+    "settings.modalFields.manager.required": {
+      "source": "d57939886670518e4b294d434d70c22a2be76ad9",
+      "translation": "e3289ddb46f3820f6b5853eceb8023b889669bac"
     },
     "settings.modalFields.manager.group": {
       "source": "c04773b71e46b5ce75774be4f01e3902119b03f8",
@@ -71785,6 +71845,10 @@
     "modals.task.timeEstimatePlaceholder": {
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
+    },
+    "modals.task.requiredFieldsMissing": {
+      "source": "09d354a1ae0d2b960b082496e1b4b3b25c8dca81",
+      "translation": "688c5455c67994d6b779f5353d79bd1f82e085ef"
     },
     "modals.task.unsavedChanges.title": {
       "source": "29267269c048b5a9f836a97c23d40ba065c4b454",

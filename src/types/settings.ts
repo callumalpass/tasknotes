@@ -40,7 +40,7 @@ export interface ModalFieldConfig {
 	visibleInEdit: boolean; // Show in edit modal
 	order: number; // Display order within group
 	enabled: boolean; // Whether field is enabled at all
-	required?: boolean; // Whether field is required (future use)
+	required?: boolean; // Whether the modal blocks saving while this field is empty
 }
 
 /**

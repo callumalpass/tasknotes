@@ -23,7 +23,7 @@ Every field entry includes:
 - **Visibility toggles** for creation and edit modals
 - **Enable/disable** checkbox
 - **Drag handle** for ordering within its group
-- **Required** toggle (where applicable, e.g., Title)
+- **Required** toggle: the creation and edit modals refuse to save while a required field shown in that modal is empty, and a notice lists the empty fields. Title is always required. Hidden or disabled fields are never enforced, and tasks created outside the modal (inline conversion, API, editing frontmatter) are not checked.
 
 Changes are saved automatically. Use this to hide fields you never touch, ensure required metadata appears up front, or reorder fields to match your workflow.
 

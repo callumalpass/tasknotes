@@ -559,6 +559,7 @@ export const fr: TranslationTree = {
 				enabled: "Activé :",
 				showInCreation: "Afficher lors de la création :",
 				showInEdit: "Afficher lors de la modification :",
+				required: "Obligatoire :",
 				group: "Groupe :",
 				fieldId: "ID : {id}",
 				fieldKey: "Clé : {key}",
@@ -2569,6 +2570,7 @@ export const fr: TranslationTree = {
 			tagsPlaceholder: "etiquette1, etiquette2",
 			timeEstimateLabel: "Estimation (minutes)",
 			timeEstimatePlaceholder: "30",
+			requiredFieldsMissing: "Remplissez les champs obligatoires : {fields}",
 			unsavedChanges: {
 				title: "Modifications non enregistrées",
 				message: "Vous avez des modifications non enregistrées. Voulez-vous les enregistrer ?",

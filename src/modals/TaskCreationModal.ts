@@ -667,6 +667,9 @@ export class TaskCreationModal extends TaskModal {
 			new Notice(this.t("modals.taskCreation.notices.titleRequired"));
 			return false;
 		}
+		if (!this.validateRequiredFields()) {
+			return false;
+		}
 
 		try {
 			const taskData = this.buildTaskData();

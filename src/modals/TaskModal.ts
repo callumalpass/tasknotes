@@ -1,9 +1,9 @@
-import { App, Modal, TAbstractFile, TFile } from "obsidian";
+import { App, Modal, Notice, TAbstractFile, TFile } from "obsidian";
 
 type Nullable<T> = T | null;
 
 import TaskNotesPlugin from "../main";
-import { shouldShowFieldForModal } from "./taskModalFieldConfig";
+import { getMissingRequiredModalFields, shouldShowFieldForModal } from "./taskModalFieldConfig";
 import type { ModalFieldConfigLike, ModalFieldsConfigLike } from "./taskModalFieldConfig";
 import {
 	renderTaskModalField,
@@ -1236,6 +1236,59 @@ export abstract class TaskModal extends Modal {
 
 	protected validateForm(): boolean {
 		return this.title.trim().length > 0;
+	}
+
+	/**
+	 * Shows a notice and returns false when a field marked required in
+	 * Modal Fields settings is empty.
+	 */
+	protected validateRequiredFields(): boolean {
+		const missing = getMissingRequiredModalFields(
+			this.plugin.settings.modalFieldsConfig,
+			this.isCreationMode(),
+			(field) => this.isModalFieldEmpty(field)
+		);
+		if (missing.length === 0) {
+			return true;
+		}
+
+		new Notice(
+			this.t("modals.task.requiredFieldsMissing", {
+				fields: missing.map((field) => field.displayName || field.id).join(", "),
+			})
+		);
+		return false;
+	}
+
+	protected isModalFieldEmpty(field: ModalFieldConfigLike): boolean {
+		switch (field.id) {
+			case "details":
+				return !this.details.trim();
+			case "contexts":
+				return !this.contexts.trim();
+			case "tags":
+				return !this.tags.trim();
+			case "projects":
+				return !this.projects.trim();
+			case "time-estimate":
+				return !this.timeEstimate;
+			case "subtasks":
+				return this.selectedSubtaskFiles.length === 0;
+			case "blocked-by":
+				return this.blockedByItems.length === 0;
+			case "blocking":
+				return this.blockingItems.length === 0;
+		}
+
+		const userField = this.plugin.settings.userFields?.find((f) => f.id === field.id);
+		if (!userField) {
+			return false;
+		}
+		const value = this.userFields[userField.key];
+		if (value === undefined || value === null) return true;
+		if (typeof value === "string") return !value.trim();
+		if (Array.isArray(value)) return value.length === 0;
+		return false;
 	}
 
 	protected focusNextField(): boolean {

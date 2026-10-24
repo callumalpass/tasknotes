@@ -5,6 +5,8 @@ export interface ModalFieldConfigLike {
 	visibleInCreation?: boolean;
 	visibleInEdit?: boolean;
 	order?: number;
+	required?: boolean;
+	displayName?: string;
 }
 
 export interface ModalFieldGroupConfigLike {
@@ -33,6 +35,28 @@ export function shouldShowFieldForModal(
 
 	const isVisible = isCreationMode ? field.visibleInCreation : field.visibleInEdit;
 	return !!field.enabled && !!isVisible;
+}
+
+/**
+ * Required fields shown in the current modal whose value is empty.
+ * Title is excluded: it is always required and validated separately.
+ */
+export function getMissingRequiredModalFields(
+	config: ModalFieldsConfigLike | undefined,
+	isCreationMode: boolean,
+	isEmpty: (field: ModalFieldConfigLike) => boolean
+): ModalFieldConfigLike[] {
+	if (!config?.fields) {
+		return [];
+	}
+
+	return config.fields.filter(
+		(field) =>
+			field.required &&
+			field.id !== "title" &&
+			shouldShowFieldForModal(field.id, config, isCreationMode) &&
+			isEmpty(field)
+	);
 }
 
 export function getOrderedModalGroups(

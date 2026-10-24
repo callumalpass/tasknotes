@@ -559,6 +559,7 @@ export const ja: TranslationTree = {
 				enabled: "有効:",
 				showInCreation: "作成時に表示：",
 				showInEdit: "編集時に表示：",
+				required: "必須：",
 				group: "グループ:",
 				fieldId: "ID: {id}",
 				fieldKey: "キー: {key}",
@@ -2569,6 +2570,7 @@ export const ja: TranslationTree = {
 			tagsPlaceholder: "タグ1, タグ2",
 			timeEstimateLabel: "時間見積もり（分）",
 			timeEstimatePlaceholder: "30",
+			requiredFieldsMissing: "必須項目を入力してください：{fields}",
 			unsavedChanges: {
 				title: "未保存の変更",
 				message: "未保存の変更があります。保存しますか？",

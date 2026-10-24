@@ -182,6 +182,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 							'Task "{title}" created successfully',
 						"modals.taskCreation.notices.failure": "Failed to create task: {message}",
 						"modals.taskCreation.notices.titleRequired": "Please enter a task title",
+						"modals.task.requiredFieldsMissing": "Fill in required fields: {fields}",
 					};
 
 					let result = translations[key] || key;
@@ -371,6 +372,72 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 
 			const result = await (modal as any).validateAndPrepareTask();
 			expect(result).toBe(true);
+		});
+	});
+
+	describe("Required modal fields (#2420)", () => {
+		const field = (id: string, displayName: string, overrides: Record<string, unknown> = {}) => ({
+			id,
+			displayName,
+			fieldType: "core",
+			group: "metadata",
+			order: 0,
+			enabled: true,
+			visibleInCreation: true,
+			visibleInEdit: true,
+			required: true,
+			...overrides,
+		});
+
+		beforeEach(() => {
+			mockPlugin.settings.modalFieldsConfig = {
+				version: 1,
+				groups: [{ id: "metadata", displayName: "Metadata", order: 0, collapsible: false, defaultCollapsed: false }],
+				fields: [field("contexts", "Contexts")],
+			};
+			modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
+			(modal as any).title = "Test Task";
+			(modal as any).frequencyMode = "NONE";
+		});
+
+		it("blocks saving while a required field is empty", async () => {
+			await expect(modal.handleSave()).resolves.toBe(false);
+
+			expect(mockPlugin.taskService.createTask).not.toHaveBeenCalled();
+			expect(Notice).toHaveBeenCalledWith("Fill in required fields: Contexts");
+		});
+
+		it("saves once the required field is filled", async () => {
+			(modal as any).contexts = "home";
+
+			await modal.handleSave();
+
+			expect(mockPlugin.taskService.createTask).toHaveBeenCalled();
+		});
+
+		it("does not enforce a required field hidden in the creation modal", async () => {
+			mockPlugin.settings.modalFieldsConfig.fields = [
+				field("contexts", "Contexts", { visibleInCreation: false }),
+			];
+
+			await modal.handleSave();
+
+			expect(mockPlugin.taskService.createTask).toHaveBeenCalled();
+		});
+
+		it("blocks saving while a required user field is empty", async () => {
+			mockPlugin.settings.userFields = [
+				{ id: "field_area", displayName: "Area", key: "area", type: "list" },
+			];
+			mockPlugin.settings.modalFieldsConfig.fields = [
+				field("field_area", "Area", { fieldType: "user", group: "custom" }),
+			];
+			(modal as any).userFields = { area: [] };
+
+			await expect(modal.handleSave()).resolves.toBe(false);
+
+			expect(mockPlugin.taskService.createTask).not.toHaveBeenCalled();
+			expect(Notice).toHaveBeenCalledWith("Fill in required fields: Area");
 		});
 	});
 

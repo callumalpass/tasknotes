@@ -448,6 +448,9 @@ export class TaskEditModal extends TaskModal {
 			new Notice(this.t("modals.taskEdit.notices.titleRequired"));
 			return false;
 		}
+		if (!this.validateRequiredFields()) {
+			return false;
+		}
 
 		try {
 			const changes = this.getChanges({ includeConversionWrite: true });

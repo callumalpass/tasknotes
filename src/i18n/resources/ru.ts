@@ -559,6 +559,7 @@ export const ru: TranslationTree = {
 				enabled: "Включено:",
 				showInCreation: "Отображать при создании:",
 				showInEdit: "Отображать при редактировании:",
+				required: "Обязательное:",
 				group: "Группа:",
 				fieldId: "ID: {id}",
 				fieldKey: "Ключ: {key}",
@@ -2569,6 +2570,7 @@ export const ru: TranslationTree = {
 			tagsPlaceholder: "тег1, тег2",
 			timeEstimateLabel: "Оценка времени (минуты)",
 			timeEstimatePlaceholder: "30",
+			requiredFieldsMissing: "Заполните обязательные поля: {fields}",
 			unsavedChanges: {
 				title: "Несохранённые изменения",
 				message: "У вас есть несохранённые изменения. Хотите сохранить их?",
