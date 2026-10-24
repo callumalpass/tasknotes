@@ -36,19 +36,29 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
     const config = { filters: { and: [`file.folder == "${folder}"`, 'file.ext == "md"'] }, views: [{ type: "tasknotesKanban", name: "Locale review", groupBy: { property, direction: "ASC" }, hideEmptyColumns: false, columnWidth: 280, columnOrder: JSON.stringify({ [property]: keys }), order: ["note.status", "note.priority"] }] };
     await page.evaluate(async ({ folder, name, content }) => {
       const app = (window as any).app;
-      for (const leaf of app.workspace.getLeavesOfType("bases")) leaf.detach();
       const filePath = `${folder}/${name}.base`;
       const file = app.vault.getAbstractFileByPath(filePath) ?? await app.vault.create(filePath, content);
-      await app.workspace.getLeaf("tab").openFile(file);
+      await app.workspace.getLeaf(false).openFile(file);
     }, { folder, name, content: stringify(config) });
     await expect(source()).toBeVisible();
     await expect(column("None")).toHaveCount(1);
+    await expect.poll(() => page.locator(".workspace-leaf.mod-active .kanban-view__column").evaluateAll(columns => columns.map(column => column.getAttribute("data-group")))).toEqual(keys);
   }
   async function createInColumn(key: string, title: string) {
     await column(key).locator(".kanban-view__add-task-button").click();
     const modal = page.locator(".modal").filter({ has: page.locator(".title-input, .title-input-detailed") }).last();
     await expect(modal).toBeVisible();
-    await modal.locator(".title-input:visible, .title-input-detailed:visible").first().fill(title);
+    // Native quick entry is CodeMirror; parsed values reach detailed inputs
+    // only through the real fill-form action (or save), not on each keystroke.
+    const editor = modal.locator('.title-input:visible, .title-input-detailed:visible, .cm-content[contenteditable="true"]:visible').first();
+    if (await editor.getAttribute("contenteditable") === "true") {
+      await editor.click();
+      await editor.press("ControlOrMeta+A");
+      await editor.pressSequentially(title);
+      const label = await page.evaluate(id => (window as any).app.plugins.plugins.tasknotes.i18n.translate({ id }), generateMessageId("Fill form from natural language", "modals.taskCreation.actions.fillFromNaturalLanguage"));
+      await modal.getByLabel(label, { exact: true }).click();
+    } else await editor.fill(title);
+    await expect(modal.locator(".title-input-detailed")).toHaveValue(title);
     await modal.locator(".modal-button-container .mod-cta").click();
     await expect(modal).toHaveCount(0);
     await expect.poll(() => frontmatter(title)).not.toBeNull();
@@ -65,24 +75,24 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
         const app = (window as any).app;
         await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(`${folder}/Source.md`), (fm: any) => { fm.review_group = "work"; fm.review_flag = false; });
       }, folder);
-      await openBase("note.review_group", "Groups", ["None", "work"]);
+      await openBase("note.review_group", "Groups", ["work", "None"]);
       const label = await page.evaluate(id => (window as any).app.plugins.plugins.tasknotes.i18n.translate({ id }), noneId);
       await expect(column("None").locator(".kanban-view__column-title")).toContainText(label);
       if (locale !== "en") expect(label).not.toBe("None");
-      await source().dragTo(column("None").locator(".kanban-view__tasks-container"), { targetPosition: { x: 30, y: 5 } });
+      await source().dragTo(column("None").locator(".kanban-view__cards"), { targetPosition: { x: 30, y: 5 } });
       await expect.poll(async () => Object.hasOwn((await frontmatter()) ?? {}, "review_group")).toBe(false);
       const createdEmpty = await createInColumn("None", `Created empty ${locale}`);
       expect(createdEmpty.review_group == null).toBe(true);
       expect(createdEmpty.status).toBe("open");
       const groupOrder = JSON.parse(parse(await readBase("Groups")).views[0].columnOrder);
-      expect(groupOrder["note.review_group"]).toEqual(["None", "work"]);
-      await openBase("note.review_flag", "Flags", ["False", "None", "True"]);
-      await source().dragTo(column("True").locator(".kanban-view__tasks-container"), { targetPosition: { x: 30, y: 5 } });
+      expect(groupOrder["note.review_group"]).toEqual(["work", "None"]);
+      await openBase("note.review_flag", "Flags", ["True", "None", "False"]);
+      await source().dragTo(column("True").locator(".kanban-view__cards"), { targetPosition: { x: 30, y: 5 } });
       await expect.poll(async () => (await frontmatter())?.review_flag).toBe(true);
       const createdTrue = await createInColumn("True", `Created true ${locale}`);
       expect(createdTrue.review_flag).toBe(true);
       const flagOrder = JSON.parse(parse(await readBase("Flags")).views[0].columnOrder);
-      expect(flagOrder["note.review_flag"]).toEqual(["False", "None", "True"]);
+      expect(flagOrder["note.review_flag"]).toEqual(["True", "None", "False"]);
       mkdirSync(output, { recursive: true });
       await page.screenshot({ path: `${output}/${locale}-boolean-kanban.png` });
       report[locale] = { emptyLabel: label, emptyDropRemovedProperty: true, createdEmpty, booleanDrop: true, createdTrue, groupOrder, flagOrder };
@@ -95,7 +105,7 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
       Object.assign(plugin.settings, original);
       plugin.i18n.setLocale(original.uiLanguage);
       await plugin.saveSettings();
-      for (const leaf of app.workspace.getLeavesOfType("bases")) if (leaf.view.file?.path.startsWith(folder + "/")) leaf.detach();
+      for (const leaf of app.workspace.getLeavesOfType("bases")) if (leaf.view.file?.path.startsWith(folder + "/")) await leaf.setViewState({ type: "empty" });
       const fixture = app.vault.getAbstractFileByPath(folder);
       if (fixture) await app.vault.delete(fixture, true);
     }, { original, folder });
