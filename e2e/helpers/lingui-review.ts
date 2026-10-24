@@ -66,7 +66,7 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
   }
   try {
     await setObsidianViewport(page, { width: 1450, height: 1000 });
-    for (const locale of ["en", "de", "ru"]) {
+    for (const locale of ["en", "it", "de", "ru"]) {
       const settingsPage = await openTaskNotesSettings(page);
       await settingsPage.locator('select:has(option[value="system"]):has(option[value="fr"])').selectOption(locale);
       await expect.poll(() => page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale())).toBe(locale);

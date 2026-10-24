@@ -11,7 +11,7 @@ import type { TaskInfo } from "../../../src/types";
 
 afterEach(() => observeTranslation("en"));
 
-describe.each(["en", "de", "ru"])("locale-stable group data in %s", locale => {
+describe.each(["en", "it", "de", "ru"])("locale-stable group data in %s", locale => {
   beforeEach(() => observeTranslation(locale));
   it.each([null, undefined, "", [], { constructor: { name: "NullValue" }, toString: () => "" }])("uses one empty identity for %p in every producer", value => {
     expect(convertBasesGroupKeyToString(value)).toBe("None");

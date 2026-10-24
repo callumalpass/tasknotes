@@ -5,7 +5,7 @@ import { getMonthDayOptions } from "../../../src/components/RecurrenceContextMen
 import { observeTranslation } from "../../helpers/real-i18n";
 import { uiText } from "../../../src/i18n/runtime";
 
-const locales = ["en", "de", "es", "fr", "ja", "ko", "pt", "ru", "zh"];
+const locales = ["en", "de", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"];
 afterEach(() => observeTranslation("en"));
 it.each(locales)("renders literal braces and both corrected parameter contracts in %s", locale => {
   observeTranslation(locale);

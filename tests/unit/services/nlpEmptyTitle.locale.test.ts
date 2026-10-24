@@ -5,7 +5,7 @@ import { buildSettingsFromLoadedData } from "../../../src/settings/settingsPersi
 import type TaskNotesPlugin from "../../../src/main";
 
 afterEach(() => observeTranslation("en"));
-it.each(["en", "de", "ru"])("preserves the pre-port programmatic fallback and rejects only interactive/CLI missing titles in %s", locale => {
+it.each(["en", "it", "de", "ru"])("preserves the pre-port programmatic fallback and rejects only interactive/CLI missing titles in %s", locale => {
   observeTranslation(locale);
   const settings = buildSettingsFromLoadedData(null).settings;
   settings.nlpTriggers = { ...settings.nlpTriggers, triggers: [

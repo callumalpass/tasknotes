@@ -8,7 +8,7 @@ const completion = Object.entries(concepts).filter(([concept]) =>
 );
 afterEach(() => observeTranslation("en"));
 describe("Issue #2147: live PO completion-date translations", () => {
-  it.each(["de", "es", "fr", "ja", "ko", "pt", "ru", "zh"])("%s renders every completion action from its real compiled PO catalogue", locale => {
+  it.each(["de", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"])("%s renders every completion action from its real compiled PO catalogue", locale => {
     const translate = observeTranslation(locale);
     expect(completion.length).toBeGreaterThan(0);
     for (const [, descriptor] of completion) {

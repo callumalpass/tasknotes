@@ -38,7 +38,7 @@ test("all 128 restored field/seed translations match the independently recovered
   }
 });
 
-test("all nine authored catalogues preserve generated IDs, completeness and ICU contracts before fallback", async () => {
+test("all ten authored catalogues preserve generated IDs, completeness and ICU contracts before fallback", async () => {
   const policy = JSON.parse(await readFile(new URL("i18n-policy.json", root), "utf8"));
   const catalogues = Object.fromEntries(await Promise.all(locales.map(async locale => [locale,
     await formatter({}).parse(await readFile(new URL(`src/i18n/locales/${locale}/messages.po`, root), "utf8"), { locale }),

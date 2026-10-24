@@ -11,7 +11,7 @@ import { ReminderModal } from "../../../src/modals/ReminderModal";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import { getAvailableProperties } from "../../../src/utils/propertyHelpers";
 
-const locales = ["en", "fr", "de", "es", "ja", "ko", "pt", "ru", "zh"];
+const locales = ["en", "fr", "de", "es", "it", "ja", "ko", "pt", "ru", "zh"];
 
 function fixture(locale: string) {
 	const i18n = createI18nService({ initialLocale: locale });
