@@ -1,5 +1,5 @@
 {
-  "method": "Parsed targets compared directly with each original translator commit. Retained changes are explicitly inventoried against the reviewed baseline: CLDR arms reuse existing authored other wording, plus one reviewed Russian grammar fix. No new English target padding.",
+  "method": "Parsed targets compared directly with each original translator commit after the plural follow-up. All 2,726 retained IDs per target locale are now unchanged. Newly sourced count/recurrence IDs are reviewed separately against 2a992dfb: 22 contextually authored one arms and removal of 90 optional es/fr many arms, with all other ICU structure/wording preserved in 96 changed messages. No new English target padding.",
   "reviewedBaseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
   "changeInventory": "i18n-review-followup.json",
   "locales": {
@@ -16,8 +16,8 @@
     "es": {
       "translatorCommit": "7632fbce55cd3cc90c7b1192701120d391268490",
       "retainedTranslations": 2726,
-      "unchangedRetainedTranslations": 2694,
-      "changedRetainedTranslations": 32,
+      "unchangedRetainedTranslations": 2726,
+      "changedRetainedTranslations": 0,
       "technicalIdsRetired": 12,
       "reviewDataIdsRetired": 59,
       "singletonIdsReplaced": 10,
@@ -26,8 +26,8 @@
     "fr": {
       "translatorCommit": "791a2e45f3eddf46bc23b6c8d7b5ba08a55d0bb5",
       "retainedTranslations": 2726,
-      "unchangedRetainedTranslations": 2694,
-      "changedRetainedTranslations": 32,
+      "unchangedRetainedTranslations": 2726,
+      "changedRetainedTranslations": 0,
       "technicalIdsRetired": 12,
       "reviewDataIdsRetired": 59,
       "singletonIdsReplaced": 10,

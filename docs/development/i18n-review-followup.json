@@ -1692,7 +1692,7 @@
         {
           "arg": "count",
           "category": "one",
-          "authoredText": "Контекст"
+          "authoredText": "Не один контекст"
         }
       ]
     },
@@ -1704,13 +1704,13 @@
         {
           "arg": "count",
           "category": "one",
-          "authoredText": "Проект"
+          "authoredText": "Не один проект"
         }
       ]
     }
   ],
   "addedAuthoredPluralArms": 22,
-  "authoredChangeProof": "Follow-up to 2a992dfb: all 22 added one arms rewritten after reading defaultBasesFiles.ts and recurrence.ts. All 90 added es/fr many arms removed consistently; existing other/exact arms unchanged. One-arm wording is inventoried per ID; no copiedFrom other claim remains. Russian context/project categorical labels use nominative singular without adding numeric output absent from the source contract.",
+  "authoredChangeProof": "Follow-up to 2a992dfb: all 22 added one arms rewritten after reading defaultBasesFiles.ts and recurrence.ts. All 90 added es/fr many arms removed consistently; existing other/exact arms unchanged. One-arm wording is inventoried per ID; no copiedFrom other claim remains. Russian context/project categorical labels use Не один … (More than one …), preserving the multiple classification at 21/31/etc with nominative singular wording and no numeric output absent from the source contract; exact =1 still handles 1.",
   "linguisticLimitation": "Agent-authored contextual corrections, not independent native-speaker certification. fr/pt-BR one covers 0/1 (exact =0/=1 still take precedence); ru one covers 1/21/31… . Recurrence input rejects interval 0, but its ICU one wording remains singular for zero render proofs.",
   "deferredMinorFindings": {
     "1": "Generated Bases labels remain snapshots; owner decision needed before changing saved files.",
@@ -1719,10 +1719,14 @@
     "11": "Not all already-open views/modals/live text hot-refresh; registration-only command labels may require reload.",
     "13": "Broader noun/count ICU cleanup would require new authored target wording; not padded with English."
   },
-  "pluralRepairOperations": 102,
+  "pluralRepairOperations": 22,
   "removedOptionalPluralArms": 90,
   "pluralFollowup": {
     "baseline": "2a992dfbd67e6a0ef00c233c6cb7009cc290fc2c",
+    "historicalPluralRepairOperations": 102,
+    "changedMessages": 96,
+    "unchangedMessages": 24546,
+    "untargetedIcuStructureAndWordingUnchanged": true,
     "oneArms": {
       "fr": 10,
       "pt": 10,
@@ -1730,6 +1734,6 @@
     },
     "manyStrategy": "remove all 90 added es/fr many arms",
     "gate": "Mirrors mdbase-connect e61ab062 packages/i18n/scripts/checks.mjs: integer counts 0..999 after offset, exact arms match original count; many outside range optional. Existing kit tarball retained: no separately exported coverage helper, keep stricter plugin English-source/English-arm checks.",
-    "categoricalLabels": "The contexts/projects source says No/Single/Multiple, without a number. Preserve that output contract with singular Contexte/Projet, Contexto/Projeto, Контекст/Проект; do not insert an unsupported # or claim Один at 21."
+    "categoricalLabels": "The contexts/projects source says No/Single/Multiple, without a number. Preserve that output contract with singular Contexte/Projet and Contexto/Projeto. Russian one falls through only at 21/31/etc after exact =0/=1: Не один контекст/Не один проект means More than one context/project, preserving the multiple classification with nominative singular nouns. Do not insert an unsupported # or claim Один at 21."
   }
 }

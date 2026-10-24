@@ -64,7 +64,7 @@ test("the 22 rewritten one arms have contextual singular wording; all 90 copied 
       ciO00S: "A cada <n> mês", "f3a3-d": "A cada <n> semana: lundi",
       HI4G2n: "A cada <n> semana", qqgQnq: "A cada <n> ano, em date_fixture", m2FqzW: "A cada <n> ano",
     },
-    ru: { fuX_1m: "Контекст", "fJ_I-J": "Проект" },
+    ru: { fuX_1m: "Не один контекст", "fJ_I-J": "Не один проект" },
   };
   const report = { operands: [0, 1, 2, 5, 21, 1000000], rewrittenOneArms: 0, removedManyArms: 0, rows: [] };
   function choices(tokens) {
@@ -88,7 +88,7 @@ test("the 22 rewritten one arms have contextual singular wording; all 90 copied 
         // Exercise even exact-arm-shadowed one branches, without altering the PO.
         const text = `{${arm.arg}, plural, one {${arm.authoredText}} other {${arm.authoredText}}}`;
         const branch = setupI18n({ locale, messages: { [locale]: compiledCatalogue({ branch: text }) } });
-        for (const count of locale === "ru" ? [1, 21, 31, 101] : [0, 1]) {
+        for (const count of locale === "ru" ? [21, 31, 101] : [0, 1]) {
           const values = { ...operands(parse(text), count), weekday: "MO", position: "last", index: 1, day: 24, days: "lundi", date: "date_fixture" };
           assert.equal(branch._("branch", values), expected[locale][item.id].replace("<n>", new Intl.NumberFormat(locale).format(count)), `${locale} ${item.id}: one count=${count}`);
         }
