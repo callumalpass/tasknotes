@@ -1727,7 +1727,7 @@
     "3": "ICS generated-note dates stabilized, but remaining translated exported calendar/note prose needs an owner policy decision.",
     "8": "Generic numeric formatting policy unchanged; grouped year-like user numbers remain a follow-up.",
     "11": "Not all already-open views/modals/live text hot-refresh; registration-only command labels may require reload.",
-    "13": "Broader noun/count ICU cleanup would require new authored target wording; not padded with English."
+    "13": "Specific 22-one/90-many follow-up complete; broader catalogue noun/count authoring remains outside this scope."
   },
   "pluralRepairOperations": 22,
   "removedOptionalPluralArms": 90,
@@ -1735,6 +1735,9 @@
     "baseline": "2a992dfbd67e6a0ef00c233c6cb7009cc290fc2c",
     "historicalPluralRepairOperations": 102,
     "alignedRussianClassifierSiblingArms": 6,
+    "artifactSourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9",
+    "renderProof": "i18n-plural-render-proof.json",
+    "validation": "PASS: strict check/compile; all 20 workflow shell steps; 58 guard fixtures; 30 pack fixtures; full Jest and fresh absent-generated-JSON Jest each 768 suites/5020 tests; integration 5 suites/77 tests; 24642 authored contracts, 172494 all-catalogue and 576 focused renders; bundled 4189148 bytes/downloadable 3605793 bytes, each strictly below 5000000 bytes.",
     "changedMessages": 96,
     "unchangedMessages": 24546,
     "untargetedIcuStructureAndWordingUnchanged": true,

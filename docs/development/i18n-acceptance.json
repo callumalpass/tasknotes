@@ -1,8 +1,8 @@
 {
-  "status": "passed-assigned-desktop-review-scope",
-  "finalRecheck": "Review fixes pass all 20 checked-in workflow shell steps through rpnpm, fresh-generated-file validation, real rendered catalogue matrix, both strict production budgets/graphs, and both minified native modes including en/de/ru drag/creation/non-default saved-order regressions. This is not hosted Actions or mobile acceptance.",
+  "status": "passed-plural-followup-desktop-scope",
+  "finalRecheck": "Plural follow-up at 7ed79302: strict check and compile, all 20 workflow shell steps, full Jest with coverage and fresh absent-generated-JSON Jest, real rendered catalogue matrix, focused singular/grouping proof and both production budgets/graphs pass via rpnpm. Native Obsidian evidence below is historical, not rerun for these wordings; no hosted Actions or mobile acceptance.",
   "authoredPreservation": "i18n-authored-preservation.json",
-  "artifactSourceCommit": "febb5f8905439a92196da119d901ead204755fb1",
+  "artifactSourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9",
   "originalTranslationHandoff": "9b6f087e86af81e522d2d16661937a6f1a158ad0",
   "kitTarball": "vendor/mdbase-dev-i18n-0.1.0-beta.141-a36fa009.tgz",
   "lingui": "6.9.0",
@@ -38,8 +38,8 @@
     "additionalReviewDataRetirements": 59,
     "singletonContractReplacements": 10,
     "literalBraceIdReplacements": 2,
-    "addedAuthoredPluralArms": 112,
-    "pluralRepairOperations": 102,
+    "addedAuthoredPluralArms": 22,
+    "pluralRepairOperations": 22,
     "retainedAuthoredPreservation": {
       "de": {
         "translatorCommit": "20b7eb21211611110951e1fb27f92ddfefa407c0",
@@ -54,8 +54,8 @@
       "es": {
         "translatorCommit": "7632fbce55cd3cc90c7b1192701120d391268490",
         "retainedTranslations": 2726,
-        "unchangedRetainedTranslations": 2694,
-        "changedRetainedTranslations": 32,
+        "unchangedRetainedTranslations": 2726,
+        "changedRetainedTranslations": 0,
         "technicalIdsRetired": 12,
         "reviewDataIdsRetired": 59,
         "singletonIdsReplaced": 10,
@@ -64,8 +64,8 @@
       "fr": {
         "translatorCommit": "791a2e45f3eddf46bc23b6c8d7b5ba08a55d0bb5",
         "retainedTranslations": 2726,
-        "unchangedRetainedTranslations": 2694,
-        "changedRetainedTranslations": 32,
+        "unchangedRetainedTranslations": 2726,
+        "changedRetainedTranslations": 0,
         "technicalIdsRetired": 12,
         "reviewDataIdsRetired": 59,
         "singletonIdsReplaced": 10,
@@ -132,12 +132,13 @@
     "conditionalRows": 23,
     "finiteSites": 22,
     "finiteConcepts": 210,
-    "sourceFixtures": 54,
+    "sourceFixtures": 58,
     "nlpSrcLocalesChanged": false,
     "staticCallSiteValues": "PASS (direct static macro calls; computed/forwarded objects require adapter/runtime tests)",
-    "consumerPluralGate": "PASS: CLDR cardinal/ordinal categories, exact English-arm detection, scoped reasoned exceptions, read-only obsolete-PO rejection before kit pruning"
+    "consumerPluralGate": "PASS: integer-reachable 0..999 cardinal/ordinal categories after offset, exact original-count coverage, optional million-only many; mirrors shared kit e61ab062 locally while retaining stricter English-source/English-arm and read-only obsolete-PO rejection."
   },
   "jest": {
+    "sourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9",
     "strict": true,
     "freshGeneratedJsonAbsent": true,
     "passedSuites": 768,
@@ -153,7 +154,7 @@
     }
   },
   "otherGates": {
-    "translationContracts": "PASS: all 24,642 authored entries compiled; 172,494 real operand renders",
+    "translationContracts": "PASS: all 24,642 authored entries compiled; 172,494 real operand renders, plus 576 focused renders and explicit singular/stable-group checks (i18n-plural-render-proof.json).",
     "packAndPublicationScriptTests": 30,
     "lint": "PASS",
     "documentationPublishedPages": 221,
@@ -161,6 +162,7 @@
     "documentationHtmlFilesChecked": 229,
     "kitCheck": "PASS",
     "workflowParity": {
+      "sourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9",
       "report": "i18n-ci-workflow-parity.json",
       "sha256": "9587bdf752e8b654fe6425e42eefd5b287ca835a89c8035ff238797b8fdf043c",
       "node": "v22.22.0",
@@ -173,8 +175,8 @@
   },
   "builds": {
     "strictBudgetBytesExclusive": 5000000,
-    "bundledBytes": 4190040,
-    "downloadableBytes": 3605792,
+    "bundledBytes": 4189148,
+    "downloadableBytes": 3605793,
     "bundledCatalogueInputs": 9,
     "downloadableCatalogueInputs": [
       "en"
@@ -182,11 +184,13 @@
     "legacyUiResourceInputs": 0,
     "downloadFormat": "tasknotes-lingui-v1",
     "mainSha256": {
-      "bundled": "e988c99c8ca89a2425fc9327981297a594f97869f96215e20c221f2c9f2e2b84",
-      "downloadable": "eb08344d9361a29886c069ac227da8112fc7c173416906981860dfe95c20fdc2"
+      "bundled": "96ae8da716dbec127ba71153e453c56b07e9346e2c12ad4568b746b5aab9f51e",
+      "downloadable": "12b7450a30ac232127de142d371b6f1f7d1fc23a849732b66ef480c61f35e234"
     }
   },
   "native": {
+    "artifactSourceCommit": "febb5f8905439a92196da119d901ead204755fb1",
+    "pluralFollowupScope": "Historical native results retained; no native Obsidian rerun for the new plural wordings. Current compiled-render and fresh-Jest evidence is recorded separately.",
     "platform": "isolated Linux/Xvfb",
     "obsidian": "1.14.2",
     "remoteDebuggingPort": 19291,
@@ -391,23 +395,62 @@
     "R2 publication",
     "deployment",
     "production vault/profile interaction",
-    "subagent delegation"
+    "subagent delegation",
+    "native Obsidian rerun for this plural-only follow-up"
   ],
   "reproduce": [
+    "rpnpm run i18n:compile",
     "rpnpm --pull dist --pull coverage run check:ci-workflow",
     "rpnpm --pull dist run test:translation-contracts",
+    "rpnpm --pull dist run check:language-pack-builds",
     "rpnpm --pull dist --pull coverage run test:fresh-catalogues",
-    "rpnpm --pull dist run check:language-pack-builds http://127.0.0.1:19290/tasknotes",
-    "Isolated minified native instructions: docs/development/language-packs.md"
+    "rpnpm run docs:check",
+    "Historical isolated minified native instructions: docs/development/language-packs.md"
   ],
   "historicalBaseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
   "nativeHarnessCommit": "3e863f79a06e431008f0c1fcc352eb3037c5dd21",
   "reviewChangeInventory": "i18n-review-followup.json",
+  "pluralFollowup": {
+    "sourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9",
+    "baseline": "2a992dfbd67e6a0ef00c233c6cb7009cc290fc2c",
+    "rewrittenOneArms": {
+      "fr": 10,
+      "pt": 10,
+      "ru": 2
+    },
+    "removedOptionalManyArms": {
+      "es": 45,
+      "fr": 45
+    },
+    "alignedRussianClassifierSiblingArms": 6,
+    "manyStrategy": "Remove all 90 added es/fr many arms consistently; optional million categories fall back to authored other wording.",
+    "russianClassifiers": "Не один контекст / Не один проект means More than one context/project. Exact =1 still handles 1; one/few/many/other agree on the multiple-count group at 2/5/21/31/etc. Existing Jest grouping invariant retained.",
+    "coverageRule": "Mirror mdbase-connect e61ab062 packages/i18n/scripts/checks.mjs: integer counts 0..999 after offset; exact arms match original count and may exhaust a category. Existing vendored kit pin retained; no standalone coverage helper is exported and plugin English-source/English-arm checks remain stricter.",
+    "renderProof": "i18n-plural-render-proof.json",
+    "fullRenderReport": "dist/i18n-plural-followup-render-proof.json",
+    "focusedRenderedCases": 576,
+    "operands": [
+      0,
+      1,
+      2,
+      5,
+      21,
+      1000000
+    ],
+    "changedMessages": 96,
+    "unchangedMessages": 24546,
+    "untargetedIcuStructureAndWordingUnchanged": true,
+    "historicalAddedPluralArms": 112,
+    "historicalRepairOperations": 102,
+    "initialFullSuiteFailure": "The first wording split Russian 21 from the existing multiple-count group. Aligned six sibling arms rather than weakening the existing invariant; final complete workflow and fresh full Jest pass.",
+    "nativeRerun": false,
+    "independentNativeSpeakerCertification": false
+  },
   "deferredMinorFindings": {
     "1": "Generated Bases labels remain snapshots; owner decision needed before changing saved files.",
     "3": "ICS generated-note dates stabilized, but remaining translated exported calendar/note prose needs an owner policy decision.",
     "8": "Generic numeric formatting policy unchanged; grouped year-like user numbers remain a follow-up.",
     "11": "Not all already-open views/modals/live text hot-refresh; registration-only command labels may require reload.",
-    "13": "Broader noun/count ICU cleanup would require new authored target wording; not padded with English."
+    "13": "Specific 22-one/90-many follow-up complete; broader catalogue noun/count authoring remains outside this scope."
   }
 }

@@ -21,8 +21,8 @@
       "job": "bundle-size",
       "name": "Install dependencies",
       "command": "npm ci --prefer-offline --no-audit",
-      "started": "2026-10-24T00:27:52.658Z",
-      "finished": "2026-10-24T00:28:00.754Z",
+      "started": "2026-10-24T01:06:30.632Z",
+      "finished": "2026-10-24T01:06:38.619Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -31,8 +31,8 @@
       "job": "bundle-size",
       "name": "Test bundle size guard and dependency deduplication",
       "command": "node --test scripts/check-bundle-size.test.mjs scripts/bundle-dependencies.test.mjs",
-      "started": "2026-10-24T00:28:00.754Z",
-      "finished": "2026-10-24T00:28:01.186Z",
+      "started": "2026-10-24T01:06:38.620Z",
+      "finished": "2026-10-24T01:06:39.052Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -41,8 +41,8 @@
       "job": "bundle-size",
       "name": "Build production plugin",
       "command": "npm run build",
-      "started": "2026-10-24T00:28:01.186Z",
-      "finished": "2026-10-24T00:28:24.939Z",
+      "started": "2026-10-24T01:06:39.053Z",
+      "finished": "2026-10-24T01:07:03.304Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -51,8 +51,8 @@
       "job": "bundle-size",
       "name": "Check Obsidian Sync bundle size budget",
       "command": "npm run check:bundle-size",
-      "started": "2026-10-24T00:28:24.939Z",
-      "finished": "2026-10-24T00:28:25.074Z",
+      "started": "2026-10-24T01:07:03.304Z",
+      "finished": "2026-10-24T01:07:03.437Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -73,8 +73,8 @@
       "job": "test",
       "name": "Install dependencies",
       "command": "npm ci --prefer-offline --no-audit",
-      "started": "2026-10-24T00:28:25.074Z",
-      "finished": "2026-10-24T00:28:32.558Z",
+      "started": "2026-10-24T01:07:03.437Z",
+      "finished": "2026-10-24T01:07:10.969Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -83,8 +83,8 @@
       "job": "test",
       "name": "Check authored Lingui catalogues and Obsidian UI source",
       "command": "npm run i18n:check",
-      "started": "2026-10-24T00:28:32.558Z",
-      "finished": "2026-10-24T00:28:46.652Z",
+      "started": "2026-10-24T01:07:10.969Z",
+      "finished": "2026-10-24T01:07:25.533Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -93,8 +93,8 @@
       "job": "test",
       "name": "Test catalogue and source contract fixtures",
       "command": "npm run test:i18n-source && npm run test:translation-contracts",
-      "started": "2026-10-24T00:28:46.652Z",
-      "finished": "2026-10-24T00:28:49.902Z",
+      "started": "2026-10-24T01:07:25.533Z",
+      "finished": "2026-10-24T01:07:29.189Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -103,8 +103,8 @@
       "job": "test",
       "name": "Debug environment",
       "command": "echo \"Node version: $(node --version)\"\necho \"NPM version: $(npm --version)\"\necho \"Timezone: $(date)\"\necho \"Jest version: $(npx jest --version)\"\n",
-      "started": "2026-10-24T00:28:49.902Z",
-      "finished": "2026-10-24T00:28:50.261Z",
+      "started": "2026-10-24T01:07:29.189Z",
+      "finished": "2026-10-24T01:07:29.553Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -113,8 +113,8 @@
       "job": "test",
       "name": "Install documentation dependencies",
       "command": "npm ci",
-      "started": "2026-10-24T00:28:50.261Z",
-      "finished": "2026-10-24T00:28:51.886Z",
+      "started": "2026-10-24T01:07:29.553Z",
+      "finished": "2026-10-24T01:07:31.141Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -123,8 +123,8 @@
       "job": "test",
       "name": "Run docs quality checks",
       "command": "npm run docs:check",
-      "started": "2026-10-24T00:28:51.886Z",
-      "finished": "2026-10-24T00:29:08.247Z",
+      "started": "2026-10-24T01:07:31.141Z",
+      "finished": "2026-10-24T01:07:47.900Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -133,8 +133,8 @@
       "job": "test",
       "name": "Run linter",
       "command": "npm run lint",
-      "started": "2026-10-24T00:29:08.247Z",
-      "finished": "2026-10-24T00:29:52.056Z",
+      "started": "2026-10-24T01:07:47.900Z",
+      "finished": "2026-10-24T01:08:31.754Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -143,8 +143,8 @@
       "job": "test",
       "name": "Test language-pack export, build isolation, and local delivery",
       "command": "npm run test:language-packs",
-      "started": "2026-10-24T00:29:52.056Z",
-      "finished": "2026-10-24T00:30:49.863Z",
+      "started": "2026-10-24T01:08:31.754Z",
+      "finished": "2026-10-24T01:09:30.684Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -153,8 +153,8 @@
       "job": "test",
       "name": "Generate release notes import",
       "command": "node generate-release-notes-import.mjs",
-      "started": "2026-10-24T00:30:49.863Z",
-      "finished": "2026-10-24T00:30:50.036Z",
+      "started": "2026-10-24T01:09:30.684Z",
+      "finished": "2026-10-24T01:09:30.858Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -163,8 +163,8 @@
       "job": "test",
       "name": "Run type check",
       "command": "npm run typecheck",
-      "started": "2026-10-24T00:30:50.036Z",
-      "finished": "2026-10-24T00:30:56.786Z",
+      "started": "2026-10-24T01:09:30.858Z",
+      "finished": "2026-10-24T01:09:37.541Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -173,8 +173,8 @@
       "job": "test",
       "name": "Run unit tests with coverage",
       "command": "npm run test:ci -- --verbose",
-      "started": "2026-10-24T00:30:56.786Z",
-      "finished": "2026-10-24T00:31:33.382Z",
+      "started": "2026-10-24T01:09:37.541Z",
+      "finished": "2026-10-24T01:10:14.200Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -183,8 +183,8 @@
       "job": "test",
       "name": "Run integration tests",
       "command": "npm run test:integration",
-      "started": "2026-10-24T00:31:33.383Z",
-      "finished": "2026-10-24T00:31:51.919Z",
+      "started": "2026-10-24T01:10:14.200Z",
+      "finished": "2026-10-24T01:10:30.794Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -223,8 +223,8 @@
       "job": "build-test",
       "name": "Install dependencies",
       "command": "npm ci --prefer-offline --no-audit",
-      "started": "2026-10-24T00:31:51.919Z",
-      "finished": "2026-10-24T00:31:59.311Z",
+      "started": "2026-10-24T01:10:30.794Z",
+      "finished": "2026-10-24T01:10:38.470Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -233,8 +233,8 @@
       "job": "build-test",
       "name": "Build plugin",
       "command": "cat <<EOF > .env\nGOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}\nMICROSOFT_OAUTH_CLIENT_ID=${MICROSOFT_OAUTH_CLIENT_ID}\nEOF\nnpm run build\n",
-      "started": "2026-10-24T00:31:59.312Z",
-      "finished": "2026-10-24T00:32:23.126Z",
+      "started": "2026-10-24T01:10:38.470Z",
+      "finished": "2026-10-24T01:11:02.749Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -243,8 +243,8 @@
       "job": "build-test",
       "name": "Export versioned language packs",
       "command": "npm run i18n:export",
-      "started": "2026-10-24T00:32:23.126Z",
-      "finished": "2026-10-24T00:32:37.704Z",
+      "started": "2026-10-24T01:11:02.749Z",
+      "finished": "2026-10-24T01:11:17.686Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -253,8 +253,8 @@
       "job": "build-test",
       "name": "Test built plugin",
       "command": "npm run test:build",
-      "started": "2026-10-24T00:32:37.704Z",
-      "finished": "2026-10-24T00:32:37.820Z",
+      "started": "2026-10-24T01:11:17.686Z",
+      "finished": "2026-10-24T01:11:17.803Z",
       "status": "passed",
       "exit": 0,
       "signal": null
@@ -266,5 +266,6 @@
       "status": "not-reproduced-action"
     }
   ],
-  "status": "passed"
+  "status": "passed",
+  "sourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9"
 }
