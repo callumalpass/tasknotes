@@ -66,7 +66,7 @@ test("the 22 rewritten one arms have contextual singular wording; all 90 copied 
     },
     ru: { fuX_1m: "Не один контекст", "fJ_I-J": "Не один проект" },
   };
-  const report = { operands: [0, 1, 2, 5, 21, 1000000], rewrittenOneArms: 0, removedManyArms: 0, rows: [] };
+  const report = { operands: [0, 1, 2, 5, 21, 1000000], rewrittenOneArms: 0, alignedRussianClassifierSiblingArms: 0, removedManyArms: 0, rows: [] };
   function choices(tokens) {
     return tokens.flatMap(token => token.cases ? [token, ...token.cases.flatMap(arm => choices(arm.tokens))] : []);
   }
@@ -94,6 +94,17 @@ test("the 22 rewritten one arms have contextual singular wording; all 90 copied 
         }
         report.rewrittenOneArms++;
       }
+      for (const arm of item.rewrittenSiblingArms ?? []) {
+        const actual = selectors.find(token => token.arg === arm.arg).cases.find(candidate => candidate.key === arm.category);
+        assert.equal(actual.tokens.map(token => token.value).join(""), arm.authoredText);
+        report.alignedRussianClassifierSiblingArms++;
+      }
+      if (locale === "ru" && item.rewrittenSiblingArms) {
+        for (const count of [2, 5, 21, 31, 101, 1000000]) {
+          assert.equal(core._(item.id, { count }), expected.ru[item.id], `multiple-count group split at ${count}`);
+          assert.notEqual(core._(item.id, { count }), core._(item.id, { count: 1 }));
+        }
+      }
       const renders = report.operands.map(count => ({ count, text: core._(item.id, { ...operands(ast, count), weekday: "MO", position: "last", index: 1, day: 24, days: "lundi", date: "date_fixture" }) }));
       assert.ok(renders.every(row => typeof row.text === "string" && row.text.length > 0));
       report.rows.push({ locale, id: item.id, context: entry.context, renders });
@@ -101,6 +112,7 @@ test("the 22 rewritten one arms have contextual singular wording; all 90 copied 
   }
   assert.equal(report.rewrittenOneArms, 22);
   assert.equal(report.removedManyArms, 90);
+  assert.equal(report.alignedRussianClassifierSiblingArms, 6);
   await mkdir(new URL("dist/", root), { recursive: true });
   await writeFile(new URL("dist/i18n-plural-followup-render-proof.json", root), JSON.stringify(report, null, 2) + "\n");
 });

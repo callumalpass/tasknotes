@@ -242,12 +242,12 @@ msgstr "{count, plural, =0 {{title}} one {{title} (# вложение)} few {{ti
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases contexts count"
 msgid "{count, plural, =0 {No contexts} =1 {Single context} other {Multiple contexts}}"
-msgstr "{count, plural, =0 {Нет контекстов} =1 {Контекстов: 1} few {Несколько контекстов} many {Несколько контекстов} other {Несколько контекстов} one {Не один контекст}}"
+msgstr "{count, plural, =0 {Нет контекстов} =1 {Контекстов: 1} few {Не один контекст} many {Не один контекст} other {Не один контекст} one {Не один контекст}}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases projects count"
 msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
-msgstr "{count, plural, =0 {Нет проектов} =1 {Проектов: 1} few {Несколько проектов} many {Несколько проектов} other {Несколько проектов} one {Не один проект}}"
+msgstr "{count, plural, =0 {Нет проектов} =1 {Проектов: 1} few {Не один проект} many {Не один проект} other {Не один проект} one {Не один проект}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"

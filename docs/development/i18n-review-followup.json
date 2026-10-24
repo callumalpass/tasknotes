@@ -1694,6 +1694,11 @@
           "category": "one",
           "authoredText": "Не один контекст"
         }
+      ],
+      "rewrittenSiblingArms": [
+        { "arg": "count", "category": "few", "authoredText": "Не один контекст" },
+        { "arg": "count", "category": "many", "authoredText": "Не один контекст" },
+        { "arg": "count", "category": "other", "authoredText": "Не один контекст" }
       ]
     },
     {
@@ -1706,11 +1711,16 @@
           "category": "one",
           "authoredText": "Не один проект"
         }
+      ],
+      "rewrittenSiblingArms": [
+        { "arg": "count", "category": "few", "authoredText": "Не один проект" },
+        { "arg": "count", "category": "many", "authoredText": "Не один проект" },
+        { "arg": "count", "category": "other", "authoredText": "Не один проект" }
       ]
     }
   ],
   "addedAuthoredPluralArms": 22,
-  "authoredChangeProof": "Follow-up to 2a992dfb: all 22 added one arms rewritten after reading defaultBasesFiles.ts and recurrence.ts. All 90 added es/fr many arms removed consistently; existing other/exact arms unchanged. One-arm wording is inventoried per ID; no copiedFrom other claim remains. Russian context/project categorical labels use Не один … (More than one …), preserving the multiple classification at 21/31/etc with nominative singular wording and no numeric output absent from the source contract; exact =1 still handles 1.",
+  "authoredChangeProof": "Follow-up to 2a992dfb: all 22 added one arms rewritten after reading defaultBasesFiles.ts and recurrence.ts. All 90 added es/fr many arms removed consistently; existing exact arms unchanged. The six Russian classifier sibling arms (few/many/other) are aligned to the same Не один … wording so counts 2/5/21 remain one stable multiple-count group; all other pre-existing arms unchanged. One-arm wording is inventoried per ID; no copiedFrom other claim remains. Russian context/project categorical labels use Не один … (More than one …), preserving the multiple classification at 21/31/etc with nominative singular wording and no numeric output absent from the source contract; exact =1 still handles 1.",
   "linguisticLimitation": "Agent-authored contextual corrections, not independent native-speaker certification. fr/pt-BR one covers 0/1 (exact =0/=1 still take precedence); ru one covers 1/21/31… . Recurrence input rejects interval 0, but its ICU one wording remains singular for zero render proofs.",
   "deferredMinorFindings": {
     "1": "Generated Bases labels remain snapshots; owner decision needed before changing saved files.",
@@ -1724,6 +1734,7 @@
   "pluralFollowup": {
     "baseline": "2a992dfbd67e6a0ef00c233c6cb7009cc290fc2c",
     "historicalPluralRepairOperations": 102,
+    "alignedRussianClassifierSiblingArms": 6,
     "changedMessages": 96,
     "unchangedMessages": 24546,
     "untargetedIcuStructureAndWordingUnchanged": true,

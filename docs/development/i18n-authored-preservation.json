@@ -1,5 +1,5 @@
 {
-  "method": "Parsed targets compared directly with each original translator commit after the plural follow-up. All 2,726 retained IDs per target locale are now unchanged. Newly sourced count/recurrence IDs are reviewed separately against 2a992dfb: 22 contextually authored one arms and removal of 90 optional es/fr many arms, with all other ICU structure/wording preserved in 96 changed messages. No new English target padding.",
+  "method": "Parsed targets compared directly with each original translator commit after the plural follow-up. All 2,726 retained IDs per target locale are now unchanged. Newly sourced count/recurrence IDs are reviewed separately against 2a992dfb: 22 contextually authored one arms, six Russian classifier sibling arms aligned to the same multiple-group label, and removal of 90 optional es/fr many arms, with all untargeted ICU structure/wording preserved in 96 changed messages. No new English target padding.",
   "reviewedBaseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
   "changeInventory": "i18n-review-followup.json",
   "locales": {
