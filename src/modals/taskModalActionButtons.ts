@@ -11,7 +11,7 @@ export interface TaskModalLeadingButton {
 export interface CreateTaskModalActionButtonsOptions {
 	container: HTMLElement;
 	leadingButtons?: readonly TaskModalLeadingButton[];
-	/** Resolves false when validation failed and the modal must stay open. */
+	/** Resolves false when validation or saving failed and the modal must stay open. */
 	onSave: () => Promise<boolean | void>;
 	onSaved: () => void;
 	onCancel: () => void;

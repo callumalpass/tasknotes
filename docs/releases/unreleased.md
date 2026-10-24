@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2421, #2422) Fixed task creation and edit forms closing and discarding input after failed validation or save errors, including edit-modal keyboard saves and the save-before-closing confirmation.
+  - Thanks to @andriyor for reporting and contributing the validation fix.
 - (#1894) Fixed relative date changes (+1/-1 day and week) dropping scheduled and due times from task cards. Date-only tasks remain date-only. See [Task dates](https://tasknotes.dev/features/task-management/#task-dates).
   - Thanks to @gemx-world for reporting.
 - (#2140) Fixed edits to visible nested task tags being silently discarded by the task edit modal. Hidden identification tags and the exact task tag remain protected. See [Hide Identification Tags](https://tasknotes.dev/settings/general/#hide-identification-tags).

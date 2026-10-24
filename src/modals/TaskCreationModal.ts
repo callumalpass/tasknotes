@@ -747,6 +747,7 @@ export class TaskCreationModal extends TaskModal {
 			});
 			const message = getTaskCreationFailureNoticeMessage(error);
 			new Notice(this.t("modals.taskCreation.notices.failure", { message }));
+			return false;
 		}
 	}
 
