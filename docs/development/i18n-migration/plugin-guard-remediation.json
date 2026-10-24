@@ -1,0 +1,306 @@
+[
+  {
+    "file": "src/bases/CalendarView.ts",
+    "line": 137,
+    "code": "\"Refresh calendar subscriptions\"",
+    "reason": "localized human UI copy",
+    "context": "calendar refresh subscriptions button"
+  },
+  {
+    "file": "src/bases/helpers.ts",
+    "line": 941,
+    "code": "`Item ${index + 1}`",
+    "reason": "localized human UI copy",
+    "context": "Bases data inspector"
+  },
+  {
+    "file": "src/bases/helpers.ts",
+    "line": 973,
+    "code": "`Path: ${item.path}`",
+    "reason": "localized human UI copy",
+    "context": "Bases data inspector"
+  },
+  {
+    "file": "src/bases/helpers.ts",
+    "line": 1023,
+    "code": "\"Properties:\"",
+    "reason": "localized human UI copy",
+    "context": "Bases data inspector"
+  },
+  {
+    "file": "src/bases/helpers.ts",
+    "line": 1113,
+    "code": "\"Raw data structure\"",
+    "reason": "localized human UI copy",
+    "context": "Bases data inspector"
+  },
+  {
+    "file": "src/settings/tabs/generalTab.ts",
+    "line": 52,
+    "code": "\"TaskNotes\"",
+    "reason": "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"
+  },
+  {
+    "file": "src/settings/tabs/generalTab.ts",
+    "line": 67,
+    "code": "\"{{currentNotePath}}\"",
+    "reason": "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"
+  },
+  {
+    "file": "src/settings/tabs/generalTab.ts",
+    "line": 100,
+    "code": "\"TaskNotes/Archive\"",
+    "reason": "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"
+  },
+  {
+    "file": "src/settings/tabs/generalTab.ts",
+    "line": 161,
+    "code": "\"task\"",
+    "reason": "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"
+  },
+  {
+    "file": "src/settings/tabs/generalTab.ts",
+    "line": 648,
+    "code": "\"Templates, Archive\"",
+    "reason": "Example vault folder path, tag identifier or filename-template syntax; preserve the entered data contract"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 501,
+    "code": "\"your-client-id.apps.googleusercontent.com\"",
+    "reason": "Example OAuth credential syntax; credential identifiers must not be translated"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 502,
+    "code": "\"your-client-secret\"",
+    "reason": "Example OAuth credential syntax; credential identifiers must not be translated"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 634,
+    "code": "\"Microsoft Outlook Calendar\"",
+    "reason": "Proper Microsoft product name, not translatable UI copy"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 751,
+    "code": "\"Microsoft Outlook Calendar\"",
+    "reason": "Proper Microsoft product name, not translatable UI copy"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 871,
+    "code": "\"your-microsoft-client-id\"",
+    "reason": "Example OAuth credential syntax; credential identifiers must not be translated"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 872,
+    "code": "\"your-microsoft-client-secret\"",
+    "reason": "Example OAuth credential syntax; credential identifiers must not be translated"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 902,
+    "code": "\"Microsoft Outlook Calendar\"",
+    "reason": "Proper Microsoft product name, not translatable UI copy"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/priorityPropertyCard.ts",
+    "line": 30,
+    "code": "\"priority\"",
+    "reason": "Editable frontmatter property identifier; must remain compatible with existing YAML"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/priorityPropertyCard.ts",
+    "line": 278,
+    "code": "\"untitled\"",
+    "reason": "localized human UI copy",
+    "context": "untitled custom status or priority heading"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/priorityPropertyCard.ts",
+    "line": 366,
+    "code": "\"untitled\"",
+    "reason": "localized human UI copy",
+    "context": "untitled custom status or priority heading"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/projectsPropertyCard.ts",
+    "line": 33,
+    "code": "\"projects\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/remindersPropertyCard.ts",
+    "line": 29,
+    "code": "\"reminders\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/statusPropertyCard.ts",
+    "line": 34,
+    "code": "\"status\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/statusPropertyCard.ts",
+    "line": 387,
+    "code": "\"untitled\"",
+    "reason": "localized human UI copy",
+    "context": "untitled custom status or priority heading"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/statusPropertyCard.ts",
+    "line": 462,
+    "code": "\"untitled\"",
+    "reason": "localized human UI copy",
+    "context": "untitled custom status or priority heading"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/titlePropertyCard.ts",
+    "line": 32,
+    "code": "\"title\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/titlePropertyCard.ts",
+    "line": 119,
+    "code": "\"{{title}} — {{occurrenceDate}}\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskProperties/titlePropertyCard.ts",
+    "line": 139,
+    "code": "\"occurrenceFilenameTemplate\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 68,
+    "code": "\"due\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 99,
+    "code": "\"scheduled\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 134,
+    "code": "\"contexts\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 161,
+    "code": "\"timeEstimate\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 176,
+    "code": "\"recurrence\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 196,
+    "code": "\"recurrenceAnchor\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 208,
+    "code": "\"dateCreated\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 213,
+    "code": "\"dateModified\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 218,
+    "code": "\"completedDate\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 223,
+    "code": "\"archiveTag\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 228,
+    "code": "\"timeEntries\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 233,
+    "code": "\"completeInstances\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 238,
+    "code": "\"skippedInstances\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 243,
+    "code": "\"blockedBy\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 248,
+    "code": "\"sortOrder\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 257,
+    "code": "\"pomodoros\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 262,
+    "code": "\"icsEventId\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/settings/tabs/taskPropertiesTab.ts",
+    "line": 267,
+    "code": "\"icsEventTag\"",
+    "reason": "Editable frontmatter property identifier or filename-template syntax, not a display label"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 669,
+    "code": "\"(empty)\"",
+    "reason": "localized human UI copy",
+    "context": "empty task property display"
+  },
+  {
+    "file": "src/utils/dependencyUtils.ts",
+    "line": 6,
+    "code": "\"FINISHTOSTART\"",
+    "reason": "RFC 5545 dependency relationship wire identifier, also displayed verbatim as metadata"
+  },
+  {
+    "file": "src/utils/themeColors.ts",
+    "line": 17,
+    "code": "\"#6366f1, red, blue, cyan\"",
+    "reason": "CSS color literal/name examples; translated words would not parse as CSS colors"
+  }
+]

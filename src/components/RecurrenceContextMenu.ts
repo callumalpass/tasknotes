@@ -1,5 +1,11 @@
+import { uiNumber } from "../i18n/formatters";
+import { uiLocale } from "../i18n/runtime";
+import { uiData } from "../i18n/dataText";
+import { recurrenceMonthlyOn, recurrenceYearlyOn } from "../i18n/recurrence";
+import { messageForKey } from "../i18n/messages";
+import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting } from "obsidian";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
 import { showCoordinatedMenu } from "./ContextMenuCoordinator";
@@ -65,7 +71,7 @@ export interface BuildRecurrenceOptionsInput {
 	currentValue?: string;
 	scheduledDate?: string;
 	calendarLocale?: string;
-	translate: (key: TranslationKey, vars?: Record<string, string>) => string;
+	translate: (key: MessageDescriptor, vars?: Record<string, string>) => string;
 }
 
 const RECURRENCE_WEEKDAYS: RecurrenceWeekdayDefinition[] = [
@@ -230,37 +236,16 @@ function getScheduledDateTimePart(scheduledDate?: string): string | undefined {
 	return `${timeMatch[1]}${timeMatch[2]}${timeMatch[3] ?? "00"}Z`;
 }
 
-function getOrdinal(n: number): string {
-	const s = ["th", "st", "nd", "rd"];
-	const v = n % 100;
-	return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
 export function buildRecurrenceOptions(input: BuildRecurrenceOptionsInput): RecurrenceOption[] {
 	const options: RecurrenceOption[] = [];
 	const startDate = getRecurrenceStartDate(input.scheduledDate);
 
 	// Get selected day/month/year context for smart defaults
 	const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-	const monthNames = [
-		"January",
-		"February",
-		"March",
-		"April",
-		"May",
-		"June",
-		"July",
-		"August",
-		"September",
-		"October",
-		"November",
-		"December",
-	];
 	const currentDay = dayNames[startDate.getDay()];
 	const currentDate = startDate.getDate();
 	const currentMonth = startDate.getMonth() + 1; // 1-based
-	const currentMonthName = monthNames[startDate.getMonth()];
-	const dayName = startDate.toLocaleDateString(input.calendarLocale || undefined, {
+	const dayName = startDate.toLocaleDateString(uiLocale(), {
 		weekday: "long",
 	});
 
@@ -286,21 +271,21 @@ export function buildRecurrenceOptions(input: BuildRecurrenceOptionsInput): Recu
 
 	// Daily
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.daily"),
+		label: input.translate(msg({ message: "Daily", context: "components.recurrenceContextMenu.daily" })),
 		value: `DTSTART:${startDTSTART};FREQ=DAILY;INTERVAL=1`,
 		icon: "calendar-days",
 	});
 
 	// Weekly (for selected day of week)
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.weeklyOn", { day: dayName }),
+		label: input.translate(msg({ message: "Weekly on {day}", context: "components.recurrenceContextMenu.weeklyOn" }), { day: dayName }),
 		value: `DTSTART:${startDTSTART};FREQ=WEEKLY;INTERVAL=1;BYDAY=${currentDay}`,
 		icon: "calendar",
 	});
 
 	// Every 2 weeks (for selected day of week)
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.everyTwoWeeksOn", {
+		label: input.translate(msg({ message: "Every 2 weeks on {day}", context: "components.recurrenceContextMenu.everyTwoWeeksOn" }), {
 			day: dayName,
 		}),
 		value: `DTSTART:${startDTSTART};FREQ=WEEKLY;INTERVAL=2;BYDAY=${currentDay}`,
@@ -309,35 +294,28 @@ export function buildRecurrenceOptions(input: BuildRecurrenceOptionsInput): Recu
 
 	// Monthly (on selected date)
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.monthlyOnThe", {
-			ordinal: getOrdinal(currentDate),
-		}),
+		label: recurrenceMonthlyOn(currentDate),
 		value: `DTSTART:${startDTSTART};FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=${currentDate}`,
 		icon: "calendar-range",
 	});
 
 	// Every 3 months (on selected date)
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.everyThreeMonthsOnThe", {
-			ordinal: getOrdinal(currentDate),
-		}),
+		label: recurrenceMonthlyOn(currentDate, 3),
 		value: `DTSTART:${startDTSTART};FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=${currentDate}`,
 		icon: "calendar-range",
 	});
 
 	// Yearly (on selected date)
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.yearlyOn", {
-			month: currentMonthName,
-			ordinal: getOrdinal(currentDate),
-		}),
+		label: recurrenceYearlyOn(currentMonth, currentDate),
 		value: `DTSTART:${startDTSTART};FREQ=YEARLY;INTERVAL=1;BYMONTH=${currentMonth};BYMONTHDAY=${currentDate}`,
 		icon: "calendar-clock",
 	});
 
 	// Weekdays only
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.weekdaysOnly"),
+		label: input.translate(msg({ message: "Weekdays only", context: "components.recurrenceContextMenu.weekdaysOnly" })),
 		value: buildWeekdaysOnlyRecurrenceRule(startDTSTART, input.calendarLocale),
 		icon: "briefcase",
 	});
@@ -351,28 +329,28 @@ export function buildRecurrenceOptions(input: BuildRecurrenceOptionsInput): Recu
 
 	// Completion-based options
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.dailyAfterCompletion"),
+		label: input.translate(msg({ message: "Daily (after completion)", context: "components.recurrenceContextMenu.dailyAfterCompletion" })),
 		value: `DTSTART:${startDTSTART};FREQ=DAILY;INTERVAL=1`,
 		icon: "calendar-days",
 		anchor: "completion",
 	});
 
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.every3DaysAfterCompletion"),
+		label: input.translate(msg({ message: "Every 3 days (after completion)", context: "components.recurrenceContextMenu.every3DaysAfterCompletion" })),
 		value: `DTSTART:${startDTSTART};FREQ=DAILY;INTERVAL=3`,
 		icon: "calendar-days",
 		anchor: "completion",
 	});
 
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.weeklyAfterCompletion"),
+		label: input.translate(msg({ message: "Weekly (after completion)", context: "components.recurrenceContextMenu.weeklyAfterCompletion" })),
 		value: `DTSTART:${startDTSTART};FREQ=WEEKLY;INTERVAL=1`,
 		icon: "calendar",
 		anchor: "completion",
 	});
 
 	options.push({
-		label: input.translate("components.recurrenceContextMenu.monthlyAfterCompletion"),
+		label: input.translate(msg({ message: "Monthly (after completion)", context: "components.recurrenceContextMenu.monthlyAfterCompletion" })),
 		value: `DTSTART:${startDTSTART};FREQ=MONTHLY;INTERVAL=1`,
 		icon: "calendar-range",
 		anchor: "completion",
@@ -481,7 +459,7 @@ export function getMonthDayOptions(lastDayLabel = "Last day"): MonthDayOption[] 
 			const day = index + 1;
 			return {
 				value: day.toString(),
-				text: day.toString(),
+				text: uiNumber(day),
 			};
 		}),
 		{
@@ -494,7 +472,7 @@ export function getMonthDayOptions(lastDayLabel = "Last day"): MonthDayOption[] 
 export class RecurrenceContextMenu {
 	private menu: ContextMenu;
 	private options: RecurrenceContextMenuOptions;
-	private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
+	private translate: (key: MessageDescriptor, vars?: Record<string, string>) => string;
 
 	constructor(options: RecurrenceContextMenuOptions) {
 		this.menu = new ContextMenu();
@@ -540,7 +518,7 @@ export class RecurrenceContextMenu {
 
 		// Add custom recurrence option
 		this.menu.addItem((item) => {
-			item.setTitle(this.translate("components.recurrenceContextMenu.customRecurrence"));
+			item.setTitle(this.translate(msg({ message: "Custom recurrence...", context: "components.recurrenceContextMenu.customRecurrence" })));
 			item.setIcon("settings");
 			item.onClick(async () => {
 				this.showCustomRecurrenceModal();
@@ -550,7 +528,7 @@ export class RecurrenceContextMenu {
 		// Add clear option if there's a current value
 		if (this.options.currentValue) {
 			this.menu.addItem((item) => {
-				item.setTitle(this.translate("components.recurrenceContextMenu.clearRecurrence"));
+				item.setTitle(this.translate(msg({ message: "Clear recurrence", context: "components.recurrenceContextMenu.clearRecurrence" })));
 				item.setIcon("x");
 				item.onClick(async () => {
 					this.options.onSelect(null);
@@ -593,7 +571,7 @@ export class CustomRecurrenceModal extends Modal {
 	private scheduledDate?: string;
 	private plugin: TaskNotesPlugin;
 	private onSubmit: (result: string | null, anchor?: "scheduled" | "completion") => void;
-	private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
+	private translate: (key: MessageDescriptor, vars?: Record<string, string>) => string;
 	private frequency = "DAILY";
 	private interval = 1;
 	private byDay: string[] = [];
@@ -737,10 +715,13 @@ export class CustomRecurrenceModal extends Modal {
 		// Place existing controls in the catalogue's word order without HTML interpolation.
 		const controlLabel = (
 			container: HTMLElement,
-			key: TranslationKey,
+			key: MessageDescriptor,
 			controls: Record<string, HTMLElement>
 		) => {
-			const template = this.translate(key);
+			const markers = Object.fromEntries(Object.keys(controls).map(name => [name,
+				uiData(`{${name}}`, "Structural marker for an existing recurrence input; never displayed as copy"),
+			]));
+			const template = this.translate(key, markers);
 			for (const part of template.split(/(\{\w+\})/g)) {
 				const control = controls[part.slice(1, -1)];
 				container.append(control ?? document.createTextNode(part));
@@ -748,17 +729,17 @@ export class CustomRecurrenceModal extends Modal {
 		};
 
 		contentEl.createEl("h2", {
-			text: this.translate("components.recurrenceContextMenu.customRecurrenceModal.title"),
+			text: this.translate(msg({ message: "Custom recurrence", context: "components.recurrenceContextMenu.customRecurrenceModal.title" })),
 		});
 
 		// Start date selection
 		new Setting(contentEl)
 			.setName(
-				this.translate("components.recurrenceContextMenu.customRecurrenceModal.startDate")
+				this.translate(msg({ message: "Start date", context: "components.recurrenceContextMenu.customRecurrenceModal.startDate" }))
 			)
 			.setDesc(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.startDateDesc"
+					msg({ message: "The date when the recurrence pattern begins", context: "components.recurrenceContextMenu.customRecurrenceModal.startDateDesc" })
 				)
 			)
 			.addText((text) => {
@@ -776,11 +757,11 @@ export class CustomRecurrenceModal extends Modal {
 		// Start time selection
 		new Setting(contentEl)
 			.setName(
-				this.translate("components.recurrenceContextMenu.customRecurrenceModal.startTime")
+				this.translate(msg({ message: "Start time", context: "components.recurrenceContextMenu.customRecurrenceModal.startTime" }))
 			)
 			.setDesc(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.startTimeDesc"
+					msg({ message: "The time when recurring instances should appear (optional)", context: "components.recurrenceContextMenu.customRecurrenceModal.startTimeDesc" })
 				)
 			)
 			.addText((text) => {
@@ -794,11 +775,11 @@ export class CustomRecurrenceModal extends Modal {
 		// Recurrence anchor selection
 		new Setting(contentEl)
 			.setName(
-				this.translate("components.recurrenceContextMenu.customRecurrenceModal.recurFrom")
+				this.translate(msg({ message: "Recur from", context: "components.recurrenceContextMenu.customRecurrenceModal.recurFrom" }))
 			)
 			.setDesc(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.recurFromDesc"
+					msg({ message: "When should the next occurrence be calculated?", context: "components.recurrenceContextMenu.customRecurrenceModal.recurFromDesc" })
 				)
 			)
 			.addDropdown((dropdown) => {
@@ -806,13 +787,13 @@ export class CustomRecurrenceModal extends Modal {
 					.addOption(
 						"scheduled",
 						this.translate(
-							"components.recurrenceContextMenu.customRecurrenceModal.scheduledDate"
+							msg({ message: "Scheduled date", context: "components.recurrenceContextMenu.customRecurrenceModal.scheduledDate" })
 						)
 					)
 					.addOption(
 						"completion",
 						this.translate(
-							"components.recurrenceContextMenu.customRecurrenceModal.completionDate"
+							msg({ message: "Completion date", context: "components.recurrenceContextMenu.customRecurrenceModal.completionDate" })
 						)
 					)
 					.setValue(this.recurrenceAnchor)
@@ -825,32 +806,32 @@ export class CustomRecurrenceModal extends Modal {
 		// Frequency selection
 		new Setting(contentEl)
 			.setName(
-				this.translate("components.recurrenceContextMenu.customRecurrenceModal.frequency")
+				this.translate(msg({ message: "Frequency", context: "components.recurrenceContextMenu.customRecurrenceModal.frequency" }))
 			)
 			.addDropdown((dropdown) => {
 				dropdown
 					.addOption(
 						"DAILY",
 						this.translate(
-							"components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
+							msg({ message: "Daily", context: "components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily" })
 						)
 					)
 					.addOption(
 						"WEEKLY",
 						this.translate(
-							"components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly"
+							msg({ message: "Weekly", context: "components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly" })
 						)
 					)
 					.addOption(
 						"MONTHLY",
 						this.translate(
-							"components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
+							msg({ message: "Monthly", context: "components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly" })
 						)
 					)
 					.addOption(
 						"YEARLY",
 						this.translate(
-							"components.recurrenceContextMenu.customRecurrenceModal.frequencies.yearly"
+							msg({ message: "Yearly", context: "components.recurrenceContextMenu.customRecurrenceModal.frequencies.yearly" })
 						)
 					)
 					.setValue(this.frequency)
@@ -863,11 +844,11 @@ export class CustomRecurrenceModal extends Modal {
 		// Interval selection
 		new Setting(contentEl)
 			.setName(
-				this.translate("components.recurrenceContextMenu.customRecurrenceModal.interval")
+				this.translate(msg({ message: "Interval", context: "components.recurrenceContextMenu.customRecurrenceModal.interval" }))
 			)
 			.setDesc(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.intervalDesc"
+					msg({ message: "Every x days/weeks/months/years", context: "components.recurrenceContextMenu.customRecurrenceModal.intervalDesc" })
 				)
 			)
 			.addText((text) => {
@@ -879,11 +860,11 @@ export class CustomRecurrenceModal extends Modal {
 		// Days of week (for weekly frequency)
 		const byDaySetting = new Setting(contentEl)
 			.setName(
-				this.translate("components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek")
+				this.translate(msg({ message: "Days of week", context: "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek" }))
 			)
 			.setDesc(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc"
+					msg({ message: "Select specific days (for weekly recurrence)", context: "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc" })
 				)
 			);
 
@@ -891,7 +872,7 @@ export class CustomRecurrenceModal extends Modal {
 		const days = orderedWeekdays.map((day) => ({
 			key: day.code,
 			label: this.translate(
-				`components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.${day.shortKey}`
+				messageForKey(`components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.${day.shortKey}`)
 			),
 		}));
 
@@ -930,12 +911,12 @@ export class CustomRecurrenceModal extends Modal {
 		const monthlyTypeSetting = new Setting(contentEl)
 			.setName(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
+					msg({ message: "Monthly recurrence", context: "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence" })
 				)
 			)
 			.setDesc(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenceDesc"
+					msg({ message: "Choose how to repeat monthly", context: "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenceDesc" })
 				)
 			);
 
@@ -974,7 +955,7 @@ export class CustomRecurrenceModal extends Modal {
 		monthlyDateSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
 		monthlyDateSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		for (const dayOption of getMonthDayOptions(
-			this.translate("components.recurrenceContextMenu.customRecurrenceModal.lastDay")
+			this.translate(msg({ message: "Last day", context: "components.recurrenceContextMenu.customRecurrenceModal.lastDay" }))
 		)) {
 			const option = monthlyDateSelect.createEl("option", {
 				value: dayOption.value,
@@ -989,7 +970,7 @@ export class CustomRecurrenceModal extends Modal {
 		}
 		controlLabel(
 			monthlyByDateRadio,
-			"components.recurrenceContextMenu.customRecurrenceModal.onDayOfMonth",
+			msg({ message: "On day {day} of each month", context: "components.recurrenceContextMenu.customRecurrenceModal.onDayOfMonth" }),
 			{ day: monthlyDateSelect }
 		);
 
@@ -1028,31 +1009,31 @@ export class CustomRecurrenceModal extends Modal {
 			{
 				value: "1",
 				text: this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first"
+					msg({ message: "first", context: "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first" })
 				),
 			},
 			{
 				value: "2",
 				text: this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
+					msg({ message: "second", context: "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second" })
 				),
 			},
 			{
 				value: "3",
 				text: this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
+					msg({ message: "third", context: "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third" })
 				),
 			},
 			{
 				value: "4",
 				text: this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth"
+					msg({ message: "fourth", context: "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth" })
 				),
 			},
 			{
 				value: "-1",
 				text: this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.weekPositions.last"
+					msg({ message: "last", context: "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.last" })
 				),
 			},
 		];
@@ -1075,7 +1056,7 @@ export class CustomRecurrenceModal extends Modal {
 		const dayOptions = orderedWeekdays.map((day) => ({
 			value: day.code,
 			text: this.translate(
-				`components.recurrenceContextMenu.customRecurrenceModal.weekdays.${day.nameKey}`
+				messageForKey(`components.recurrenceContextMenu.customRecurrenceModal.weekdays.${day.nameKey}`)
 			),
 		}));
 		const currentDayCode = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"][
@@ -1094,7 +1075,7 @@ export class CustomRecurrenceModal extends Modal {
 		});
 		controlLabel(
 			monthlyByDayRadio,
-			"components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth",
+			msg({ message: "On the {week} {day} of each month", context: "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth" }),
 			{ week: monthlyWeekSelect, day: monthlyDaySelect }
 		);
 
@@ -1102,12 +1083,12 @@ export class CustomRecurrenceModal extends Modal {
 		const yearlyTypeSetting = new Setting(contentEl)
 			.setName(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence"
+					msg({ message: "Yearly recurrence", context: "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence" })
 				)
 			)
 			.setDesc(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrenceDesc"
+					msg({ message: "Choose how to repeat yearly", context: "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrenceDesc" })
 				)
 			);
 
@@ -1170,7 +1151,7 @@ export class CustomRecurrenceModal extends Modal {
 		yearlyDateSelect.classList.remove("tn-static-margin-right-8px-539fa9a0");
 		yearlyDateSelect.classList.add("tn-static-margin-right-4px-c6b76b85");
 		for (const dayOption of getMonthDayOptions(
-			this.translate("components.recurrenceContextMenu.customRecurrenceModal.lastDay")
+			this.translate(msg({ message: "Last day", context: "components.recurrenceContextMenu.customRecurrenceModal.lastDay" }))
 		)) {
 			const option = yearlyDateSelect.createEl("option", {
 				value: dayOption.value,
@@ -1185,7 +1166,7 @@ export class CustomRecurrenceModal extends Modal {
 		}
 		controlLabel(
 			yearlyByDateRadio,
-			"components.recurrenceContextMenu.customRecurrenceModal.onDateOfYear",
+			msg({ message: "On {month} {day} each year", context: "components.recurrenceContextMenu.customRecurrenceModal.onDateOfYear" }),
 			{ month: yearlyMonthSelect, day: yearlyDateSelect }
 		);
 
@@ -1265,7 +1246,7 @@ export class CustomRecurrenceModal extends Modal {
 		});
 		controlLabel(
 			yearlyByDayRadio,
-			"components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfYear",
+			msg({ message: "On the {week} {day} of {month} each year", context: "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfYear" }),
 			{ week: yearlyWeekSelect, day: yearlyDaySelect, month: yearlyByDayMonthSelect }
 		);
 
@@ -1273,12 +1254,12 @@ export class CustomRecurrenceModal extends Modal {
 		new Setting(contentEl)
 			.setName(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.endCondition"
+					msg({ message: "End condition", context: "components.recurrenceContextMenu.customRecurrenceModal.endCondition" })
 				)
 			)
 			.setDesc(
 				this.translate(
-					"components.recurrenceContextMenu.customRecurrenceModal.endConditionDesc"
+					msg({ message: "Choose when the recurrence should end", context: "components.recurrenceContextMenu.customRecurrenceModal.endConditionDesc" })
 				)
 			);
 
@@ -1310,7 +1291,7 @@ export class CustomRecurrenceModal extends Modal {
 		neverInput.checked = this.endType === "never";
 		neverRadio.createSpan({
 			text: this.translate(
-				"components.recurrenceContextMenu.customRecurrenceModal.neverEnds"
+				msg({ message: "Never ends", context: "components.recurrenceContextMenu.customRecurrenceModal.neverEnds" })
 			),
 		});
 
@@ -1355,7 +1336,7 @@ export class CustomRecurrenceModal extends Modal {
 		countText.value = this.count ? this.count.toString() : "";
 		controlLabel(
 			countRadio,
-			"components.recurrenceContextMenu.customRecurrenceModal.endAfterOccurrences",
+			msg({ message: "End after {count} occurrences", context: "components.recurrenceContextMenu.customRecurrenceModal.endAfterOccurrences" }),
 			{ count: countText }
 		);
 
@@ -1388,7 +1369,7 @@ export class CustomRecurrenceModal extends Modal {
 		untilDate.value = this.until ? this.until.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3") : "";
 		controlLabel(
 			untilRadio,
-			"components.recurrenceContextMenu.customRecurrenceModal.endOnDate",
+			msg({ message: "End on {date}", context: "components.recurrenceContextMenu.customRecurrenceModal.endOnDate" }),
 			{ date: untilDate }
 		);
 		attachDateInputBehavior(untilDate, {
@@ -1480,14 +1461,14 @@ export class CustomRecurrenceModal extends Modal {
 		buttonContainer.classList.add("tn-static-margin-top-16px-1b0f4999");
 
 		const cancelButton = buttonContainer.createEl("button", {
-			text: this.translate("components.recurrenceContextMenu.customRecurrenceModal.cancel"),
+			text: this.translate(msg({ message: "Cancel", context: "components.recurrenceContextMenu.customRecurrenceModal.cancel" })),
 		});
 		cancelButton.addEventListener("click", () => {
 			this.close();
 		});
 
 		const saveButton = buttonContainer.createEl("button", {
-			text: this.translate("components.recurrenceContextMenu.customRecurrenceModal.save"),
+			text: this.translate(msg({ message: "Save", context: "components.recurrenceContextMenu.customRecurrenceModal.save" })),
 			cls: "mod-cta",
 		});
 		saveButton.addEventListener("click", () => {

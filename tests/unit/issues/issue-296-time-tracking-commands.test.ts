@@ -1,3 +1,6 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+
+import { msg } from "@lingui/core/macro";
 import { createI18nService } from "../../../src/i18n";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
@@ -30,7 +33,7 @@ describe("Issue #296: direct current-task time tracking commands", () => {
 			const command = createTaskNotesCommandDefinitions(plugin).find(
 				(definition) => definition.id === `${action}-time-tracking-current-task`
 			);
-			expect(command?.nameKey).toBe(`commands.${action}TimeTrackingCurrentTask`);
+			expect(command?.nameKey).toEqual(mockConceptDescriptor(`commands.${action}TimeTrackingCurrentTask`));
 			expect(command?.callback).toBeDefined();
 			await command!.callback!(plugin);
 			expect(plugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
@@ -46,7 +49,7 @@ describe("Issue #296: direct current-task time tracking commands", () => {
 		const command = createTaskNotesCommandDefinitions(plugin).find(
 			(definition) => definition.id === "stop-active-time-tracking"
 		);
-		expect(command?.nameKey).toBe("commands.stopActiveTimeTracking");
+		expect(command?.nameKey).toEqual(msg({ message: "Stop active time tracking", context: "commands.stopActiveTimeTracking" }));
 		await command!.callback!(plugin);
 		expect(plugin.stopActiveTimeTracking).toHaveBeenCalledTimes(1);
 		expect(plugin.cacheManager.getTaskInfo).not.toHaveBeenCalled();

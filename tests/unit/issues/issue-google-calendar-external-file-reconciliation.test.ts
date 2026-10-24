@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 import { TFile } from "obsidian";
 
@@ -75,26 +76,7 @@ function createPlugin(
 			cancelAutoArchive: jest.fn().mockResolvedValue(undefined),
 		},
 		i18n: {
-			translate: jest.fn((key: string, params?: Record<string, string | number>) => {
-				const translations: Record<string, string> = {
-					"settings.integrations.googleCalendarExport.eventDescription.untitledTask":
-						"Untitled Task",
-					"settings.integrations.googleCalendarExport.eventDescription.priority":
-						"Priority: {value}",
-					"settings.integrations.googleCalendarExport.eventDescription.status":
-						"Status: {value}",
-					"settings.integrations.googleCalendarExport.eventDescription.scheduled":
-						"Scheduled: {value}",
-					"settings.integrations.googleCalendarExport.eventDescription.timeEstimate":
-						"Time Estimate: {value}",
-					"settings.integrations.googleCalendarExport.eventDescription.openInObsidian":
-						"Open in Obsidian",
-				};
-				const translation = translations[key] || key;
-				return translation.replace(/\{(\w+)\}/g, (_match, name) =>
-					String(params?.[name] ?? "")
-				);
-			}),
+			translate: mockObserveTranslation(),
 		},
 		cacheManager: {
 			getAllTasks: jest.fn().mockResolvedValue(tasks),

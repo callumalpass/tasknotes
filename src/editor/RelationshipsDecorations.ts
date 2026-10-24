@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 /**
  * Relationships Decorations
  *
@@ -286,7 +288,7 @@ async function createRelationshipsWidget(
 		if (!basesFilePath) {
 			const errorDiv = activeWindow.createDiv();
 			errorDiv.className = "relationships__error";
-			errorDiv.textContent = "Relationships view not configured";
+			errorDiv.textContent = uiText(msg({ message: "Relationships view not configured", context: "editor/RelationshipsDecorations: createRelationshipsWidget display" }));
 			basesContainer.appendChild(errorDiv);
 			return container;
 		}
@@ -309,7 +311,7 @@ async function createRelationshipsWidget(
 		});
 		const errorDiv = activeWindow.createDiv();
 		errorDiv.className = "relationships__error";
-		errorDiv.textContent = "Failed to load relationships view";
+		errorDiv.textContent = uiText(msg({ message: "Failed to load relationships view", context: "editor/RelationshipsDecorations: createRelationshipsWidget display" }));
 		basesContainer.appendChild(errorDiv);
 	}
 

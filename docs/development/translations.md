@@ -1,55 +1,63 @@
-# Translation Workflow
+# Translation workflow
 
-TaskNotes ships with a lightweight i18n system that keeps interface copy separate from natural-language parsing patterns. Follow this guide to add or update translations.
+TaskNotes UI uses the shared Lingui kit with synchronous English and nine supported locales: en, de, es, fr, ja, ko, pt, ru and zh. UI language selection is separate from the natural-language parsing configuration in `src/locales/`; do not migrate or rewrite that data when translating interface copy.
 
-## Folder Structure
+## Sources and generated data
 
-- `src/i18n/resources/en.ts` – English source strings (authoritative key set)
-- `src/i18n/resources/<lang>.ts` – One file per locale exporting the same key tree
-- `src/i18n/I18nService.ts` – Runtime that loads resources, handles fallbacks, and emits locale-change events
-- `src/i18n/bundledResources.ts` – Locale registry for ordinary, fully bundled builds
-- `scripts/export-language-packs.mjs` – Deterministic JSON export for versioned language-pack delivery
+- `src/i18n/locales/<locale>/messages.po`: authored interface catalogues.
+- `lingui.config.mjs`: extraction and compilation configuration.
+- `i18n-policy.json`: exact, reviewed exceptions for legitimate English-identical terms, not a completeness bypass.
+- `src/i18n/I18nService.ts`: an isolated Lingui core per service, negotiation and locale-change events.
+- `src/i18n/bundledResources.ts`: all nine ordinary bundled catalogues.
+- `scripts/export-language-packs.mjs`: deterministic compiled-ICU pack export.
 
-## Adding a New Language
+Generated `messages.json` files are ignored and must not be edited. Ordinary tests, compilation, documentation and production builds prepare them through strict gates. The old keyed resources, state manifests and one-shot converters have been removed. Their historical versions remain in Git at `797ebe3a`; migration ledgers live under `docs/development/i18n-migration/`. Do not rerun historical codemods against authored POs.
 
-2. Duplicate `src/i18n/resources/en.ts` to a new file with the ISO language code, e.g. `de.ts`.
-2. Translate only the string values. Keep keys identical so TypeScript’s type-checking continues to work.
-3. Import the new resource in `src/i18n/bundledResources.ts` and add it to `translationResources`.
-4. (Optional) Add a human-readable label under `common.languages.<code>` so the language shows up nicely in the UI picker.
-5. Run `npm run test:unit -- --runTestsByPath tests/unit/services/i18nService.test.ts` to verify lookups and fallbacks.
+## Changing interface copy
 
-## Using Translations in Code
+Use Node 22.22 or newer, install with `npm ci`, and initialize the documentation submodule with `git submodule update --init --checkout docs/spec`. This remains an npm project; machine-local remote-builder bridges are not project package-manager configuration.
+
+1. Mark concise English copy with a Lingui descriptor and meaningful semantic context.
+2. Run `npm run i18n:extract` for normal clean extraction. Generated IDs follow the English source and context; never invent IDs or edit compiled JSON.
+3. Author every affected target entry in the PO files. Leave unauthored targets empty; never pad them with English. Integrate other translators' POs, then extract normally to retire obsolete IDs.
+4. Run `npm run i18n:check`, `npm run test:translation-contracts`, and the relevant tests. The check rejects obsolete PO entries without rewriting them, requires CLDR plural/ordinal categories, detects exact English plural arms, and checks direct static call-site values. It also verifies extraction sync, authored completeness **before fallback**, ICU contracts, identical-term policy and both source guards, then compiles. Forwarded/computed value objects need adapter/runtime tests; exact English-arm detection is not a substitute for linguistic review.
+
+Lingui `--strict` alone permits fallback-filled entries and is not authored-completeness acceptance. `npm run i18n:compile`, ordinary `npm test`, CI, production builds and pack export use the full strict gate. `npm run test:dev` and development watch are explicitly labelled fallback workflows, never release acceptance. `npm run test:fresh-catalogues` verifies absent-generated-file typechecking, ordinary strict Jest preparation and standalone documentation regeneration.
+
+## Descriptors and ICU
 
 ```ts
-import type { TranslationKey } from 'src/i18n';
+import { msg } from "@lingui/core/macro";
 
-const t = (key: TranslationKey) => plugin.i18n.translate(key);
-button.setText(t('settings.features.uiLanguage.dropdown.name'));
+button.setText(plugin.i18n.translate(msg({
+    message: "Create task",
+    context: "Task creation button",
+})));
+
+const summary = plugin.i18n.translate(msg({
+    message: "{count, plural, one {{count, number} task} other {{count, number} tasks}}",
+    context: "Task selection count",
+}), { count });
 ```
 
-- Always prefer translation keys over inline strings for user-facing copy.
-- When dynamic parts are needed, use placeholders (`{count}`) and supply them via `plugin.i18n.translate(key, { count })`.
-- Use `plugin.i18n.resolveKey('common.languages.fr')` if you need the raw translated string without interpolation.
+Do not use keyed strings, `resolveKey`, plural suffix concatenation, generated-ID literals or translator-call casts. Direct macros own descriptors; only proven finite selections belong in the typed finite registry. Store descriptors if useful, but translate at rendering time rather than capturing a module-time string. Refresh visible labels when the locale changes.
 
-## UI Language Picker
+Use whole messages, explicit number/date formatting and real plural/ordinal/select arms. Quote literal ICU braces (`'{title}'`, `'{{title}}'`), and pass values using the exact argument names. Locale categories include million-count `many` in French, Spanish and Portuguese; use authored wording for every category. Individually reviewed identical plural arms require a locale/ID/argument/key reason, not a blanket exception. Preserve placeholder names and roles, fixed select keys, exact-number arms, offsets, numeric rich tags and bound pound markers. Locale-specific grammatical categories may differ. A semantic singleton shortcut must use `=1`, not grammatical `one`: Russian 21 is grammatically `one` but is not a single selected context or a daily interval.
 
-Users can switch the interface language under **Settings → Features → Interface Language**. Choosing “System default” tracks the OS/browser locale and falls back to English if unsupported.
+## Data and presentation boundaries
 
-## Best Practices
+Keep Lucide icon identifiers, persisted status/property IDs, literal path/filename/URL examples, protocol syntax and user-authored data stable. Reviewed callers may use `uiData(value, specificRationale)`; it is not a generic-renderer exemption for English labels. Template-path examples are placeholders, not translated stored defaults. Adjacent human labels and explanations remain translated.
 
-- Keep English strings concise; translators use them as context.
-- Update both English and new locale files in the same pull request so CI stays green.
-- If a string is reused in multiple places, create a single translation key instead of duplicating text in code.
-- When adding new UI, wire translations before merging to avoid regressions for non-English users.
+Kanban/List identities use the existing stable `None`/`True`/`False` tokens for serialized compatibility. Translate only display labels; never put localized labels into drop plans, frontmatter, collapse keys, neighbour lookup or saved column ordering. Empty Bases wrappers also use the same empty identity. Do not automatically rewrite a user's text that happens to resemble a translated empty label.
 
-## Language-pack delivery
+Default status/priority labels are writable English data, copied for each settings load. `configLabel()` localizes an untouched seed only when its stable ID, value and exact English label match; customized or already-localized labels pass through unchanged. Rendering never saves translations. Label editors edit the stored value. Editable field/group names are English seeds and remain user configuration, not locale snapshots. MDBASE schemas and their explanatory text are stable English data. NLP empty-title detection uses an empty title at the adapter boundary, never translated UI copy.
 
-Ordinary builds still bundle every supported locale. Setting `TASKNOTES_LANGUAGE_PACK_BASE_URL` at build time explicitly enables the experimental English-only bundle with pinned, downloadable JSON packs. Accepted translations remain in Git; exporting and building never calls an AI provider.
+Use locale-aware presentation helpers for numbers, durations and displayed dates. Preserve filename/template dates, native Bases syntax, RRULE data and persistence contracts. Whole-message rich text uses fixed numeric structural tags; user values cannot inject formatting. Translate audited diagnostics only at presentation boundaries, leaving raw throws, logs and API/wire values intact.
 
-See [Downloadable language packs](language-packs.md) for export, local testing, validation, offline behaviour, and publication constraints.
+## UI language and delivery
 
-## Future Enhancements
+The picker is under **Settings → TaskNotes → General → Interface language**. System selection follows the host locale, with English fallback when unsupported. Existing stored paths, user labels and user-authored Bases files are not rewritten when the UI language changes.
 
-- Automate translation key extraction.
-- Integrate a community translation platform once more locales arrive.
-- Expand test coverage to snapshot key workflows in multiple languages.
+Ordinary builds synchronously bundle all nine catalogues using compacted data modules. Explicit `TASKNOTES_LANGUAGE_PACK_BASE_URL` builds include English only and pin immutable `tasknotes-lingui-v1` JSON packs; obsolete flat-string packs are incompatible. Export requires exactly all nine complete catalogues. Adding a new language requires coordinated shared-kit locale/CLDR configuration, runtime registry, schema/export, policy and test updates, not just another resource file.
+
+See [Downloadable language packs](language-packs.md) for validation, isolated native acceptance, caching, failure/retry semantics and separately authorized publication. Builds and tests do not authorize publication, deployment, tags or releases.

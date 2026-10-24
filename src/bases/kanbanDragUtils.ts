@@ -495,7 +495,7 @@ export function planKanbanStatusDerivativeUpdate({
 	}
 
 	return {
-		// The "None" column clears status; never evaluate the label as a status value.
+		// The NONE_GROUP_KEY column clears status; never evaluate the label as a status value.
 		statusValue: normalizeGroupValue(statusValue) ?? "",
 		isRecurring: !!task?.recurrence,
 		dateModifiedField,
@@ -560,7 +560,7 @@ export function planKanbanDropSideEffect({
 	};
 }
 
-// Match the frontmatter write: dropping into "None" deletes the property.
+// Match the frontmatter write: dropping into NONE_GROUP_KEY deletes the property.
 function toKanbanDropTaskValue(value: unknown): unknown {
 	return typeof value === "string" ? (normalizeGroupValue(value) ?? undefined) : value;
 }

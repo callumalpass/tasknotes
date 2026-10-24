@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import {
 	decorateCalendarIcsEventElement,
 	enrichCalendarListTaskInfo,
@@ -19,8 +21,7 @@ function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 function createPlugin(overrides: Record<string, unknown> = {}) {
 	return {
 		i18n: {
-			translate: (key: string) =>
-				key === "modals.icsEventInfo.relatedNotesHeading" ? "Related notes" : key,
+			translate: mockObserveTranslation(),
 		},
 		calendarProviderRegistry: {
 			findProviderForEvent: jest.fn(() => ({ providerName: "google" })),
@@ -119,7 +120,7 @@ describe("calendarEventMount", () => {
 		expect(element.querySelector(".fc-event-provider-icon")).not.toBeNull();
 		const indicator = title.querySelector<HTMLElement>(".ics-related-note-indicator");
 		expect(indicator?.dataset.relatedNoteCount).toBe("2");
-		expect(indicator?.getAttribute("aria-label")).toBe("Related notes: 2");
+		expect(indicator?.getAttribute("aria-label")).toBe("Related notes & tasks: 2");
 	});
 
 	it("skips provider icons for list-view provider events", () => {

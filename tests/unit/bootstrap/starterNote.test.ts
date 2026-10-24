@@ -1,7 +1,7 @@
 import { App, TFile } from "obsidian";
 import {
 	ensureStarterNote,
-	STARTER_NOTE_CONTENT,
+	getStarterNoteContent,
 	STARTER_NOTE_PATH,
 } from "../../../src/bootstrap/starterNote";
 
@@ -56,7 +56,7 @@ describe("starter note onboarding", () => {
 
 		const file = app.vault.getAbstractFileByPath(STARTER_NOTE_PATH);
 		expect(file).toBeInstanceOf(TFile);
-		await expect(app.vault.read(file as TFile)).resolves.toBe(STARTER_NOTE_CONTENT);
+		await expect(app.vault.read(file as TFile)).resolves.toBe(getStarterNoteContent());
 		expect(settings.starterNoteCreated).toBe(true);
 		expect(saveSettings).toHaveBeenCalledTimes(1);
 		expect(openFile).toHaveBeenCalledTimes(1);

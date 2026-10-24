@@ -1,3 +1,5 @@
+import { configLabel } from "../i18n/configLabels";
+import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { PriorityConfig, TaskInfo } from "../types";
@@ -189,8 +191,8 @@ export function configurePriorityIndicator(
 	priorityDot.style.borderColor = priorityConfig.color;
 	priorityDot.setAttribute(
 		"aria-label",
-		plugin.i18n.translate("ui.taskCard.priorityAriaLabel", {
-			label: priorityConfig.label,
+		plugin.i18n.translate(msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" }), {
+			label: configLabel(priorityConfig),
 		})
 	);
 	priorityDot.replaceChildren();

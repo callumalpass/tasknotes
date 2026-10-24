@@ -1,0 +1,57 @@
+{
+  "baselineRef": "e70b7ba6",
+  "totals": {
+    "baseline": 4828946,
+    "raw": 5204369,
+    "compact": 4423994
+  },
+  "groups": {
+    "other plugin/dependencies": {
+      "baseline": 3461861,
+      "raw": 3386331,
+      "compact": 3386383
+    },
+    "Intl/date/recurrence adapters": {
+      "baseline": 7416,
+      "raw": 67726,
+      "compact": 67726
+    },
+    "other i18n/pack machinery": {
+      "baseline": 7643,
+      "raw": 10498,
+      "compact": 10498
+    },
+    "legacy UI resources": {
+      "baseline": 1337144
+    },
+    "release announcement + starter prose": {
+      "baseline": 7755,
+      "raw": 1995,
+      "compact": 1995
+    },
+    "release history": {
+      "baseline": 4688,
+      "raw": 4688,
+      "compact": 4688
+    },
+    "Lingui core": {
+      "raw": 5053,
+      "compact": 5053
+    },
+    "compiled UI catalogues": {
+      "raw": 1546860,
+      "compact": 761482
+    },
+    "diagnostic catalogue": {
+      "raw": 19555,
+      "compact": 19555
+    },
+    "dynamic descriptor registry": {
+      "raw": 159224,
+      "compact": 159224
+    },
+    "synchronous catalogue codec": {
+      "compact": 4951
+    }
+  }
+}

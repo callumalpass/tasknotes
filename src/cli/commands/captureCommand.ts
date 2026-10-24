@@ -1,3 +1,5 @@
+import { uiText } from "../../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type { CliData } from "obsidian";
 import type { CliCommandDefinition } from "../types";
 import { formatCliJson, formatTaskSummary } from "../helpers/formatters";
@@ -5,66 +7,66 @@ import { buildTaskCreationDataFromCli } from "../../services/buildTaskCreationDa
 
 export const captureCliCommand: CliCommandDefinition = {
 	command: "capture",
-	description: "Create a TaskNotes task from free text or explicit flags",
+	get description() { return uiText(msg({ message: "Create a TaskNotes task from free text or explicit flags", context: "cli/commands/captureCommand: defaults description" })); },
 	flags: {
 		text: {
 			value: "<text>",
-			description: "Task text to parse with NLP unless --literal is set",
+			get description() { return uiText(msg({ message: "Task text to parse with NLP unless --literal is set", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		title: {
 			value: "<title>",
-			description: "Explicit task title; overrides NLP-derived title",
+			get description() { return uiText(msg({ message: "Explicit task title; overrides NLP-derived title", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		details: {
 			value: "<details>",
-			description: "Task details/body; overrides NLP-derived details",
+			get description() { return uiText(msg({ message: "Task details/body; overrides NLP-derived details", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		status: {
 			value: "<status>",
-			description: "Explicit task status",
+			get description() { return uiText(msg({ message: "Explicit task status", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		priority: {
 			value: "<priority>",
-			description: "Explicit task priority",
+			get description() { return uiText(msg({ message: "Explicit task priority", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		due: {
 			value: "<date>",
-			description: "Due date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)",
+			get description() { return uiText(msg({ message: "Due date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		scheduled: {
 			value: "<date>",
-			description: "Scheduled date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)",
+			get description() { return uiText(msg({ message: "Scheduled date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		tags: {
 			value: "<tag1,tag2>",
-			description: "Comma-separated tags; overrides NLP-derived tags",
+			get description() { return uiText(msg({ message: "Comma-separated tags; overrides NLP-derived tags", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		contexts: {
 			value: "<ctx1,ctx2>",
-			description: "Comma-separated contexts; overrides NLP-derived contexts",
+			get description() { return uiText(msg({ message: "Comma-separated contexts; overrides NLP-derived contexts", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		projects: {
 			value: "<proj1,proj2>",
-			description: "Comma-separated projects; overrides NLP-derived projects",
+			get description() { return uiText(msg({ message: "Comma-separated projects; overrides NLP-derived projects", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		recurrence: {
 			value: "<rrule>",
-			description: "Explicit recurrence rule",
+			get description() { return uiText(msg({ message: "Explicit recurrence rule", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		"recurrence-anchor": {
 			value: "<scheduled|completion>",
-			description: "How recurring tasks advance: from the scheduled date or completion date",
+			get description() { return uiText(msg({ message: "How recurring tasks advance: from the scheduled date or completion date", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		reminders: {
 			value: "<spec>",
-			description: "Reminder spec(s): due:-PT1H;scheduled:-PT30M;at:2026-04-02T09:00 or a JSON array",
+			get description() { return uiText(msg({ message: "Reminder spec(s): due:-PT1H;scheduled:-PT30M;at:2026-04-02T09:00 or a JSON array", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		estimate: {
 			value: "<minutes>",
-			description: "Time estimate in minutes",
+			get description() { return uiText(msg({ message: "Time estimate in minutes", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 		literal: {
-			description: "Treat --text as a literal title instead of parsing it with NLP",
+			get description() { return uiText(msg({ message: "Treat --text as a literal title instead of parsing it with NLP", context: "cli/commands/captureCommand: defaults description" })); },
 		},
 	},
 	async handler(plugin, params: CliData): Promise<string> {

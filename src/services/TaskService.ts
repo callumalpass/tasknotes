@@ -1,3 +1,6 @@
+import { displayError } from "../i18n/runtime";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import {
 	EVENT_TASK_DELETED,
 	EVENT_TASK_UPDATED,
@@ -43,7 +46,7 @@ import {
 import { processFolderTemplate, TaskTemplateData, FolderTemplateOptions } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { TaskCreationService } from "./task-service/TaskCreationService";
 import { publishUserNotice } from "../core/userNotices";
 import { TaskUpdateService } from "./task-service/TaskUpdateService";
@@ -192,7 +195,7 @@ export class TaskService {
 		return false;
 	}
 
-	private translate(key: TranslationKey, variables?: InterpolationValues): string {
+	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -362,7 +365,7 @@ export class TaskService {
 				});
 				publishUserNotice(
 					this.plugin.emitter,
-					this.translate("services.task.notices.templateNotFound", { path: templatePath })
+					this.translate(msg({ message: "Task body template not found: {path}", context: "services.task.notices.templateNotFound" }), { path: templatePath })
 				);
 				return {
 					frontmatter: {},
@@ -378,7 +381,7 @@ export class TaskService {
 			});
 			publishUserNotice(
 				this.plugin.emitter,
-				this.translate("services.task.notices.templateReadError", {
+				this.translate(msg({ message: "Error reading task body template: {template}", context: "services.task.notices.templateReadError" }), {
 					template: defaults.bodyTemplate,
 				})
 			);
@@ -521,7 +524,7 @@ export class TaskService {
 			});
 			publishUserNotice(
 				this.plugin.emitter,
-				this.translate("services.task.notices.occurrenceTemplateNotFound", {
+				this.translate(msg({ message: "Occurrence note template not found: {path}", context: "services.task.notices.occurrenceTemplateNotFound" }), {
 					path: templateReference,
 				})
 			);
@@ -547,7 +550,7 @@ export class TaskService {
 			});
 			publishUserNotice(
 				this.plugin.emitter,
-				this.translate("services.task.notices.occurrenceTemplateReadError", {
+				this.translate(msg({ message: "Error reading occurrence note template: {template}", context: "services.task.notices.occurrenceTemplateReadError" }), {
 					template: templateReference,
 				})
 			);
@@ -838,7 +841,7 @@ export class TaskService {
 					operation: "seed-initial-occurrence",
 					error,
 				});
-				publishUserNotice(this.plugin.emitter, "Task saved, but its first occurrence could not be created. Use Create occurrence to retry.");
+				publishUserNotice(this.plugin.emitter, uiText(msg({ message: "Task saved, but its first occurrence could not be created. Use Create occurrence to retry.", context: "services/TaskService: TaskService.seedInitialOccurrence display" })));
 			}
 		}
 	}
@@ -1481,9 +1484,9 @@ export class TaskService {
 				});
 				publishUserNotice(
 					this.plugin.emitter,
-					this.translate("services.task.notices.moveTaskFailed", {
+					this.translate(msg({ message: "{operation, select, archiving {Failed to move archived task: {error}} unarchiving {Failed to move restored task: {error}} other {Failed to move task: {error}}}", context: "task archive move failure" }), {
 						operation,
-						error: errorMessage,
+						error: displayError(errorMessage),
 					})
 				);
 				// Continue with archive operation without moving the file

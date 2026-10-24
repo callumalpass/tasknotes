@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { TFile, setIcon } from "obsidian";
 import { NoteInfo } from "../types";
 import TaskNotesPlugin from "../main";
@@ -55,8 +57,8 @@ export function createNoteCard(
 	if (opts.showDailyNoteBadge && isDailyNote) {
 		item.createSpan({
 			cls: "note-card__badge",
-			text: plugin.i18n.translate("ui.noteCard.dailyBadge"),
-			attr: { title: plugin.i18n.translate("ui.noteCard.dailyTooltip") },
+			text: plugin.i18n.translate(msg({ message: "Daily", context: "ui.noteCard.dailyBadge" })),
+			attr: { title: plugin.i18n.translate(msg({ message: "Daily note", context: "ui.noteCard.dailyTooltip" })) },
 		});
 	}
 
@@ -107,8 +109,8 @@ export function createNoteCard(
 				: note.createdDate;
 		contentContainer.createDiv({
 			cls: "note-card__metadata",
-			text: `${plugin.i18n.translate("ui.noteCard.createdLabel")} ${dateStr}`,
-			attr: { title: `${plugin.i18n.translate("ui.noteCard.createdLabel")} ${dateStr}` },
+			text: uiText(msg({ message: "Created: {date}", context: "note created date" }), { date: dateStr }),
+			attr: { title: uiText(msg({ message: "Created: {date}", context: "note created date" }), { date: dateStr }) },
 		});
 	}
 
@@ -116,7 +118,7 @@ export function createNoteCard(
 		contentContainer.createDiv({
 			cls: "note-card__metadata",
 			text: note.path,
-			attr: { title: `Path: ${note.path}` },
+			attr: { title: uiText(msg({ message: "Path: {path}", context: "ui/NoteCard: createNoteCard title" }), { path: note.path }) },
 		});
 	}
 
@@ -228,7 +230,7 @@ export function updateNoteCard(
 			note.createdDate.indexOf("T") > 0
 				? formatDateForDisplay(note.createdDate, dateFormat)
 				: note.createdDate;
-		dateEl.textContent = `${plugin.i18n.translate("ui.noteCard.createdLabel")} ${dateStr}`;
+		dateEl.textContent = uiText(msg({ message: "Created: {date}", context: "note created date" }), { date: dateStr });
 	}
 
 	// Update path

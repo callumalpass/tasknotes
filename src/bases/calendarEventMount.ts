@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import type { EventMountArg } from "@fullcalendar/core";
 import type { BasesViewConfig } from "obsidian";
 import { setIcon, setTooltip } from "obsidian";
@@ -51,7 +52,7 @@ export function getCalendarRelatedNoteTooltip(
 	plugin: TaskNotesPlugin,
 	relatedNoteCount: number
 ): string {
-	const label = plugin.i18n.translate("modals.icsEventInfo.relatedNotesHeading");
+	const label = plugin.i18n.translate(msg({ message: "Related notes & tasks", context: "modals.icsEventInfo.relatedNotesHeading" }));
 	return `${label}: ${relatedNoteCount}`;
 }
 

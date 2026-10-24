@@ -43,12 +43,12 @@ describe("Issue #1201: Calendar Bases hourly breakdown toggle", () => {
 
 	it("registers a per-view Bases option for the hourly breakdown", () => {
 		const calendarOptionsSource = readRepoFile("src/bases/calendarViewOptions.ts");
-		const englishSource = readRepoFile("src/i18n/resources/en.ts");
+		const englishSource = readRepoFile("src/i18n/locales/en/messages.po");
 
 		expect(calendarOptionsSource).toContain('key: "showTimeGrid"');
 		expect(calendarOptionsSource).toContain('displayName: t("layout.showTimeGrid")');
 		expect(calendarOptionsSource).toContain("default: true");
-		expect(englishSource).toContain('showTimeGrid: "Show hourly breakdown"');
+		expect(englishSource).toContain('msgid "Show hourly breakdown"');
 	});
 
 	it("uses a scoped CSS state class for the FullCalendar timed body", () => {

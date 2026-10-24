@@ -1,10 +1,11 @@
+import { observeTranslation } from "../helpers/real-i18n";
 import { OAuthService } from "../../src/services/OAuthService";
 import { OAuthSecretStore } from "../../src/services/OAuthSecretStore";
 
 describe("OAuth callback validation", () => {
 	it("validates and consumes OAuth state before writing a static response", () => {
 		const store = new OAuthSecretStore({ getSecret: () => null, setSecret: () => {} });
-		const service: any = new OAuthService({} as any, store);
+		const service: any = new OAuthService({ i18n: { translate: observeTranslation(), getCurrentLocale: () => "en" } } as any, store);
 		const response: any = { writeHead: jest.fn(), end: jest.fn() };
 		service.handleCallback(
 			{ method: "GET", url: "/?error=%3Cscript%3E&state=unknown", headers: {} },

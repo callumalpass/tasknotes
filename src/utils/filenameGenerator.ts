@@ -1,3 +1,4 @@
+import { formatStableDate } from "../i18n/formatters";
 import { format } from "date-fns";
 import type { Vault } from "obsidian";
 import { TaskNotesSettings } from "../types/settings";
@@ -105,7 +106,7 @@ export function generateICSNoteFilename(
 							: "",
 						// Add formatted title with date for users who want the full context
 						icsEventTitleWithDate: sanitizeForFilename(
-							`${context.icsEventTitle || context.title} - ${format(now, "PPP")}`
+							`${context.icsEventTitle || context.title} - ${formatStableDate(now, "PPP")}`
 						),
 					};
 					return generateCustomFilename(
@@ -363,18 +364,18 @@ function generateCustomFilename(
 			// New date format variations
 			shortDate: format(date, "yyMMdd"),
 			shortYear: format(date, "yy"),
-			monthName: format(date, "MMMM"),
-			monthNameShort: format(date, "MMM"),
-			dayName: format(date, "EEEE"),
-			dayNameShort: format(date, "EEE"),
+			monthName: formatStableDate(date, "MMMM"),
+			monthNameShort: formatStableDate(date, "MMM"),
+			dayName: formatStableDate(date, "EEEE"),
+			dayNameShort: formatStableDate(date, "EEE"),
 			week: format(date, "ww"),
 			quarter: format(date, "q"),
 			// Time variations
-			time12: format(date, "hh:mm a"),
+			time12: formatStableDate(date, "hh:mm a"),
 			time24: format(date, "HH:mm"),
 			hourPadded: format(date, "HH"),
 			hour12: format(date, "hh"),
-			ampm: format(date, "a"),
+			ampm: formatStableDate(date, "a"),
 			// Unix timestamp
 			unix: Math.floor(date.getTime() / 1000).toString(),
 			unixMs: date.getTime().toString(),
@@ -656,7 +657,7 @@ export function buildOccurrenceFilenameVariables(occurrenceDate: string): Record
 		occurrenceWeek: format(date, "RRRR-'W'II"),
 		occurrenceMonth: format(date, "yyyy-MM"),
 		occurrenceYear: format(date, "yyyy"),
-		occurrenceMonthName: format(date, "MMMM"),
+		occurrenceMonthName: formatStableDate(date, "MMMM"),
 	};
 	return variables;
 }

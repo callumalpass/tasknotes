@@ -1,4 +1,5 @@
-import { flattenTranslations, validateTranslationMessage } from "./catalogue";
+import type { Messages } from "@lingui/core";
+import { isCompiledMessages, validateTranslationMessage } from "./catalogue";
 import {
 	LANGUAGE_PACK_FORMAT,
 	MAX_LANGUAGE_PACK_BYTES,
@@ -17,13 +18,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 /** Loads only pinned JSON data. No downloaded catalogue is executed as code. */
 export class LanguagePackLoader {
 	private readonly options: LanguagePackLoaderOptions;
-	private readonly english: Record<string, string>;
+	private readonly english: Messages;
 	private readonly baseUrl: string;
-	private readonly inFlight = new Map<string, Promise<Record<string, string>>>();
+	private readonly inFlight = new Map<string, Promise<Messages>>();
 
 	constructor(options: LanguagePackLoaderOptions) {
 		this.options = options;
-		this.english = flattenTranslations(options.english);
+		this.english = options.english;
 		const { manifest } = options.config;
 		if (
 			manifest.format !== LANGUAGE_PACK_FORMAT ||
@@ -47,7 +48,7 @@ export class LanguagePackLoader {
 		this.baseUrl = url.href.replace(/\/$/, "");
 	}
 
-	load(locale: string): Promise<Record<string, string>> {
+	load(locale: string): Promise<Messages> {
 		const existing = this.inFlight.get(locale);
 		if (existing) return existing;
 		const pending = this.loadPack(locale);
@@ -56,7 +57,7 @@ export class LanguagePackLoader {
 		return pending;
 	}
 
-	private async validate(locale: string, bytes: Uint8Array): Promise<Record<string, string>> {
+	private async validate(locale: string, bytes: Uint8Array): Promise<Messages> {
 		const { manifest } = this.options.config;
 		const descriptor = manifest.packs[locale];
 		if (bytes.byteLength !== descriptor.bytes) throw new Error("Language-pack size mismatch");
@@ -68,22 +69,21 @@ export class LanguagePackLoader {
 			pack.format !== LANGUAGE_PACK_FORMAT ||
 			pack.locale !== locale ||
 			pack.sourceHash !== manifest.sourceHash ||
-			!isRecord(pack.messages)
+			!isCompiledMessages(pack.messages)
 		) {
 			throw new Error("Language-pack compatibility mismatch");
 		}
-		const messages: Record<string, string> = Object.create(null);
+		const messages: Messages = Object.create(null);
 		for (const [key, value] of Object.entries(pack.messages)) {
 			if (
-				!Object.prototype.hasOwnProperty.call(this.english, key) ||
-				typeof value !== "string"
+				!Object.prototype.hasOwnProperty.call(this.english, key)
 			) {
 				throw new Error(`Invalid language-pack message: ${key}`);
 			}
 			validateTranslationMessage(key, this.english[key], value);
 			messages[key] = value;
 		}
-		if (Object.keys(messages).length === 0) throw new Error("Empty language pack");
+		if (Object.keys(messages).length !== Object.keys(this.english).length) throw new Error("Incomplete language pack");
 		return messages;
 	}
 
@@ -110,7 +110,7 @@ export class LanguagePackLoader {
 		}
 	}
 
-	private async loadPack(locale: string): Promise<Record<string, string>> {
+	private async loadPack(locale: string): Promise<Messages> {
 		const { manifest } = this.options.config;
 		const descriptor = Object.prototype.hasOwnProperty.call(manifest.packs, locale)
 			? manifest.packs[locale]

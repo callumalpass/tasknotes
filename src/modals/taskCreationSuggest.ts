@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { App, AbstractInputSuggest, parseFrontMatterAliases, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
@@ -522,13 +523,13 @@ export class NLPSuggest extends AbstractInputSuggest<
 							if (t.showName) {
 								const labelSpan = activeWindow.createSpan();
 								labelSpan.className = "nlp-suggest-project__meta-label";
-								labelSpan.textContent = `${t.displayName ?? t.property}:`;
+								labelSpan.textContent = `${uiData(t.displayName ?? t.property, "User-configured suggestion property label/identifier; preserve schema metadata")}:`;
 								metaRow.appendChild(labelSpan);
 								metaRow.appendChild(activeDocument.createTextNode(" "));
 							}
 							const valueSpan = activeWindow.createSpan();
 							valueSpan.className = "nlp-suggest-project__meta-value";
-							valueSpan.textContent = value;
+							valueSpan.textContent = uiData(value, "Resolved user-configured suggestion metadata; preserve vault values");
 							metaRow.appendChild(valueSpan);
 							appended = true;
 							const searchable = t.searchable === true || ALWAYS.has(t.property);

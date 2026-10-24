@@ -1,3 +1,6 @@
+import { uiData } from "../i18n/dataText";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { Component, App, Notice } from "obsidian";
 import type { BasesPropertyId, BasesQueryResult, BasesViewConfig, EventRef } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -365,12 +368,12 @@ export abstract class BasesViewBase extends Component {
 	private injectNewTaskButton(): void {
 		const result = injectBasesNewTaskButton({
 			containerEl: this.containerEl,
-			label: this.plugin.i18n.translate("common.new"),
+			label: this.plugin.i18n.translate(msg({ message: "New", context: "common.new" })),
 			onClick: (event) => {
 				event.preventDefault();
 				event.stopPropagation();
 
-				void this.createFileForView("New Task");
+				void this.createFileForView(uiText(msg({ message: "New Task", context: "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display" })));
 			},
 		});
 
@@ -696,12 +699,12 @@ export abstract class BasesViewBase extends Component {
 			});
 
 			if (result.status === "empty") {
-				new Notice(this.plugin.i18n.translate("notices.audit.noTasksCopy"));
+				new Notice(this.plugin.i18n.translate(msg({ message: "No tasks to copy", context: "notices.audit.noTasksCopy" })));
 				return;
 			}
 
 			new Notice(
-				this.plugin.i18n.translate("notices.audit.copiedTasks", { count: result.count })
+				this.plugin.i18n.translate(msg({ message: "Tasks copied: {count}", context: "notices.audit.copiedTasks" }), { count: result.count })
 			);
 		} catch (error) {
 			this.logger.error("Failed to copy current view tasks", {
@@ -709,7 +712,7 @@ export abstract class BasesViewBase extends Component {
 				operation: "copy-current-view-tasks",
 				error,
 			});
-			new Notice(this.plugin.i18n.translate("contextMenus.task.notices.copyFailure"));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })));
 		}
 	}
 
@@ -729,7 +732,7 @@ export abstract class BasesViewBase extends Component {
 
 			await navigator.clipboard.writeText(text);
 			new Notice(
-				this.plugin.i18n.translate("notices.audit.copiedRows", { count: table.rows.length })
+				this.plugin.i18n.translate(msg({ message: "Rows copied: {count}", context: "notices.audit.copiedRows" }), { count: table.rows.length })
 			);
 		} catch (error) {
 			this.logger.error("Failed to copy Bases table", {
@@ -737,7 +740,7 @@ export abstract class BasesViewBase extends Component {
 				operation: "copy-bases-table",
 				error,
 			});
-			new Notice(this.plugin.i18n.translate("contextMenus.task.notices.copyFailure"));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })));
 		}
 	}
 
@@ -755,7 +758,7 @@ export abstract class BasesViewBase extends Component {
 			link.click();
 			win.URL.revokeObjectURL(url);
 			new Notice(
-				this.plugin.i18n.translate("notices.audit.exportedRows", {
+				this.plugin.i18n.translate(msg({ message: "Rows exported: {count}", context: "notices.audit.exportedRows" }), {
 					count: table.rows.length,
 				})
 			);
@@ -765,7 +768,7 @@ export abstract class BasesViewBase extends Component {
 				operation: "export-bases-table",
 				error,
 			});
-			new Notice(this.plugin.i18n.translate("notices.audit.failed", { action: "CSV" }));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), { action: uiData("CSV", "CSV interchange format name; preserve the standard acronym") }));
 		}
 	}
 

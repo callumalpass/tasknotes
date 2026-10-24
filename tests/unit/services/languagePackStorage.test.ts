@@ -1,4 +1,7 @@
+import { msg } from "@lingui/core/macro";
 import { createHash } from "node:crypto";
+import { compiledCatalogue } from "../../helpers/compiled-catalogue.mjs";
+const save = msg({ message: "Save", context: "common.save" });
 import { createI18nService } from "../../../src/i18n";
 import { LanguagePackLoader } from "../../../src/i18n/LanguagePackLoader";
 import { LanguagePackController } from "../../../src/i18n/LanguagePackController";
@@ -15,14 +18,14 @@ function deferred<T>() {
 }
 
 function fixture() {
-	const english = { common: { save: "Save" } };
+	const english = compiledCatalogue({ [save.id]: "Save" });
 	const sourceHash = "a".repeat(64);
 	const bytes = new TextEncoder().encode(
 		JSON.stringify({
 			format: LANGUAGE_PACK_FORMAT,
 			locale: "fr",
 			sourceHash,
-			messages: { "common.save": "Enregistrer" },
+			messages: compiledCatalogue({ [save.id]: "Enregistrer" }),
 		})
 	);
 	const hash = (data: Uint8Array) => createHash("sha256").update(data).digest("hex");
@@ -72,10 +75,10 @@ describe("bounded best-effort language-pack storage with the real controller", (
 		const retry = controller.setLocale("fr");
 		await jest.advanceTimersByTimeAsync(5);
 		await expect(retry).resolves.toBe(true);
-		expect(i18n.translate("common.save")).toBe("Enregistrer");
+		expect(i18n.translate(save)).toBe("Enregistrer");
 		expect(download).toHaveBeenCalledTimes(2);
 		cache.read.mockResolvedValue(null);
-		await expect(loader.load("fr")).resolves.toHaveProperty(["common.save"]);
+		await expect(loader.load("fr")).resolves.toHaveProperty([save.id]);
 	});
 
 	it("activates validated data despite a never-settling write and allows a later load", async () => {
@@ -86,7 +89,7 @@ describe("bounded best-effort language-pack storage with the real controller", (
 		await expect(selection).resolves.toBe(true);
 		expect(i18n.getCurrentLocale()).toBe("fr");
 		cache.write.mockResolvedValue(undefined);
-		await expect(loader.load("fr")).resolves.toHaveProperty(["common.save"]);
+		await expect(loader.load("fr")).resolves.toHaveProperty([save.id]);
 	});
 
 	it("ignores a late read and handles a late write rejection without overriding a newer selection", async () => {
@@ -103,7 +106,7 @@ describe("bounded best-effort language-pack storage with the real controller", (
 		write.reject(new Error("late disk failure"));
 		await jest.advanceTimersByTimeAsync(50);
 		expect(i18n.getCurrentLocale()).toBe("en");
-		expect(i18n.translate("common.save")).toBe("Save");
+		expect(i18n.translate(save)).toBe("Save");
 		expect(cache.write).toHaveBeenCalledTimes(1);
 	});
 });

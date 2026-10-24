@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { createElementInDocument } from "../utils/documentDom";
@@ -67,11 +69,11 @@ export function renderBasesSearchNoResults(
 
 	const textEl = createElementInDocument(doc, "div");
 	textEl.className = "tn-search-no-results__text";
-	textEl.textContent = `No tasks match "${searchTerm}"`;
+	textEl.textContent = uiText(msg({ message: "No tasks match \"{searchTerm}\"", context: "bases/basesSearchUi: renderBasesSearchNoResults display" }), { searchTerm: searchTerm });
 
 	const hintEl = createElementInDocument(doc, "div");
 	hintEl.className = "tn-search-no-results__hint";
-	hintEl.textContent = "Try a different search term or clear the search";
+	hintEl.textContent = uiText(msg({ message: "Try a different search term or clear the search", context: "bases/basesSearchUi: renderBasesSearchNoResults display" }));
 
 	noResultsEl.appendChild(textEl);
 	noResultsEl.appendChild(hintEl);

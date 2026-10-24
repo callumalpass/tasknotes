@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import { packFixtures, packFormat } from "../helpers/language-pack-fixtures.mjs";
 import { createLanguagePackArtifacts, serialize } from "../../scripts/lib/language-packs.mjs";
 import {
 	createPublishPlan,
@@ -15,8 +16,8 @@ async function fixture(t) {
 	const directory = await mkdtemp(join(tmpdir(), "tasknotes-publisher-"));
 	t.after(() => rm(directory, { recursive: true, force: true }));
 	const { manifest, files } = createLanguagePackArtifacts(
-		{ en: { "common.save": "Save" }, fr: { "common.save": "Enregistrer" } },
-		"tasknotes-ui-v1",
+		packFixtures,
+		packFormat,
 		1_000_000
 	);
 	for (const [file, bytes] of files) await writeFile(join(directory, file), bytes);
@@ -36,7 +37,7 @@ async function fixture(t) {
 
 test("plan includes validated JSON and license, with immutable manifest last", async (t) => {
 	const { plan, manifest } = await fixture(t);
-	assert.equal(plan.objects.length, 4);
+	assert.equal(plan.objects.length, 11);
 	assert.equal(plan.objects.at(-1).key, `tasknotes/${manifest.catalogueVersion}/manifest.json`);
 	assert.ok(plan.objects.at(-1).manifest);
 	assert.ok(plan.objects.every((o) => !o.key.endsWith(".js")));
@@ -91,8 +92,8 @@ test("uploads packs first, verifies public bytes, then publishes the manifest", 
 	};
 	const verify = async (_plan, _fetcher, objects) =>
 		events.push(objects ? "verify-data" : "verify-all");
-	assert.deepEqual(await publishPlan(plan, client, verify), { uploaded: 4, reused: 0 });
-	assert.deepEqual(events, ["data", "data", "data", "verify-data", "manifest", "verify-all"]);
+	assert.deepEqual(await publishPlan(plan, client, verify), { uploaded: 11, reused: 0 });
+	assert.deepEqual(events, [...Array(10).fill("data"), "verify-data", "manifest", "verify-all"]);
 });
 
 test("failed public verification leaves the manifest unpublished", async (t) => {
@@ -114,7 +115,7 @@ test("identical existing objects are reused without writes", async (t) => {
 		read: async (key) => plan.objects.find((o) => o.key === key).bytes,
 		write: async () => assert.fail("No overwrite"),
 	};
-	assert.deepEqual(await publishPlan(plan, client, async () => {}), { uploaded: 0, reused: 4 });
+	assert.deepEqual(await publishPlan(plan, client, async () => {}), { uploaded: 0, reused: 11 });
 });
 
 test("public verification checks hashes, MIME type, immutable cache policy and CORS", async (t) => {

@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { App } from "obsidian";
 import { TimeblockCreationModal } from "../../../src/modals/TimeblockCreationModal";
 import { TimeblockInfoModal } from "../../../src/modals/TimeblockInfoModal";
@@ -20,7 +21,7 @@ const secondTask = { title: "Review report", path: "Tasks/Review report.md", arc
 
 function createPlugin() {
 	return {
-		i18n: { translate: (key: string) => key },
+		i18n: { translate: mockObserveTranslation() },
 		settings: {
 			calendarViewSettings: {
 				defaultTimeblockColor: "#8b5cf6",

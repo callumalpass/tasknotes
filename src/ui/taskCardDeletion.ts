@@ -1,3 +1,5 @@
+import { displayError } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { App, Modal, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
@@ -25,10 +27,10 @@ class DeleteTaskConfirmationModal extends Modal {
 		contentEl.empty();
 
 		contentEl.createEl("h2", {
-			text: this.plugin.i18n.translate("modals.taskEdit.deleteConfirmation.title"),
+			text: this.plugin.i18n.translate(msg({ message: "Delete task", context: "modals.taskEdit.deleteConfirmation.title" })),
 		});
 		contentEl.createEl("p", {
-			text: this.plugin.i18n.translate("modals.taskEdit.deleteConfirmation.message", {
+			text: this.plugin.i18n.translate(msg({ message: "Are you sure you want to delete \"{title}\"? This moves the task note to Obsidian trash.", context: "modals.taskEdit.deleteConfirmation.message" }), {
 				title: this.task.title,
 			}),
 		});
@@ -73,14 +75,14 @@ class DeleteTaskConfirmationModal extends Modal {
 		buttonContainer.classList.add("tn-static-margin-top-20px-a26bda7d");
 
 		const cancelButton = buttonContainer.createEl("button", {
-			text: this.plugin.i18n.translate("common.cancel"),
+			text: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
 		});
 		cancelButton.addEventListener("click", () => {
 			this.close();
 		});
 
 		const deleteButton = buttonContainer.createEl("button", {
-			text: this.plugin.i18n.translate("contextMenus.task.deleteConfirm"),
+			text: this.plugin.i18n.translate(msg({ message: "Delete", context: "contextMenus.task.deleteConfirm" })),
 			cls: "mod-warning",
 		});
 		deleteButton.classList.remove(
@@ -112,12 +114,12 @@ class DeleteTaskConfirmationModal extends Modal {
 				try {
 					await this.onConfirm();
 					this.close();
-					new Notice(this.plugin.i18n.translate("notices.interface.deleted"));
+					new Notice(this.plugin.i18n.translate(msg({ message: "Task deleted successfully", context: "notices.interface.deleted" })));
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
 					new Notice(
-						this.plugin.i18n.translate("modals.taskEdit.notices.deleteFailure", {
-							message: errorMessage,
+						this.plugin.i18n.translate(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), {
+							message: displayError(errorMessage),
 						})
 					);
 					tasknotesLogger.error("Error in delete confirmation:", {

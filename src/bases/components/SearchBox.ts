@@ -1,3 +1,5 @@
+import { uiText } from "../../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { setIcon } from 'obsidian';
 import { debounce } from '../../settings/components/settingHelpers';
 import { createElementInDocument } from '../../utils/documentDom';
@@ -71,15 +73,15 @@ export class SearchBox {
 		this.inputEl = createElementInDocument(doc, 'input');
 		this.inputEl.type = 'text';
 		this.inputEl.className = 'tn-search-box__input';
-		this.inputEl.placeholder = 'Search tasks...';
-		this.inputEl.setAttribute('aria-label', 'Search tasks');
+		this.inputEl.placeholder = uiText(msg({ message: "Search tasks...", context: "bases/components/SearchBox: SearchBox.render display" }));
+		this.inputEl.setAttribute('aria-label', uiText(msg({ message: "Search tasks", context: "bases/components/SearchBox: SearchBox.render display" })));
 
 		// Create clear button
 		const clearBtn = createElementInDocument(doc, 'button');
 		clearBtn.type = 'button';
 		clearBtn.className = 'tn-search-box__clear';
 		clearBtn.textContent = '×';
-		clearBtn.setAttribute('aria-label', 'Clear search');
+		clearBtn.setAttribute('aria-label', uiText(msg({ message: "Clear search", context: "bases/components/SearchBox: SearchBox.render display" })));
 		this.clearBtnEl = clearBtn;
 
 		// Assemble elements

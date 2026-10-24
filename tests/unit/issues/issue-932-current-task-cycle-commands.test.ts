@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import { createI18nService } from "../../../src/i18n";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
@@ -63,8 +65,8 @@ describe("Issue #932: current task status and priority cycle commands", () => {
 			cycleCurrentTaskPriority: jest.fn(),
 		};
 
-		expect(statusCommand?.nameKey).toBe("commands.cycleCurrentTaskStatus");
-		expect(priorityCommand?.nameKey).toBe("commands.cycleCurrentTaskPriority");
+		expect(statusCommand?.nameKey).toEqual(msg({ message: "Cycle current task status", context: "commands.cycleCurrentTaskStatus" }));
+		expect(priorityCommand?.nameKey).toEqual(msg({ message: "Cycle current task priority", context: "commands.cycleCurrentTaskPriority" }));
 
 		await statusCommand?.callback?.(ctx as never);
 		await priorityCommand?.callback?.(ctx as never);

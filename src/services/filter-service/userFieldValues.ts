@@ -273,36 +273,6 @@ export function getUserFieldGroupValue(
 	}
 }
 
-export function getHierarchicalUserFieldGroupValues(
-	field: UserFieldDefinition | undefined,
-	rawValue: unknown,
-	missingLabel: string
-): string[] {
-	if (!field) return [missingLabel];
-
-	switch (field.type) {
-		case "boolean": {
-			const boolValue = parseBooleanLike(rawValue);
-			return boolValue == null ? [missingLabel] : [boolValue ? "true" : "false"];
-		}
-		case "number": {
-			const numberToken = parseLeadingNumber(rawValue);
-			return numberToken ? [numberToken] : [missingLabel];
-		}
-		case "date":
-			return rawValue ? [stringifyUnknown(rawValue)] : [missingLabel];
-		case "list": {
-			const tokens = normalizeUserListValue(rawValue).filter((token) => !/^\[\[/.test(token));
-			return tokens.length > 0 ? tokens : [missingLabel];
-		}
-		case "text":
-		default: {
-			const textValue = stringifyUnknown(rawValue).trim();
-			return textValue ? [textValue] : [missingLabel];
-		}
-	}
-}
-
 export function sortUserFieldGroupKeys(
 	groupKeys: readonly string[],
 	field: UserFieldDefinition | undefined

@@ -28,7 +28,7 @@
  * - src/services/PomodoroService.ts (expose state getters if needed)
  * - src/settings.ts (new setting: showPomodoroInStatusBar)
  * - styles/status-bar.css (pomodoro-specific styling)
- * - src/i18n/resources/ (translation keys for tooltip)
+ * - src/i18n/locales/en/messages.po (translation keys for tooltip)
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1040
  */

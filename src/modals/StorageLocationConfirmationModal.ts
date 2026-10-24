@@ -1,3 +1,6 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { messageForKey } from "../i18n/messages";
+import { msg } from "@lingui/core/macro";
 import { Modal, Setting } from "obsidian";
 import TaskNotesPlugin from "../main";
 
@@ -15,7 +18,7 @@ export class StorageLocationConfirmationModal extends Modal {
 		this.hasExistingData = hasExistingData;
 	}
 
-	private t(key: string, params?: Record<string, string | number>): string {
+	private t(key: MessageDescriptor, params?: Record<string, string | number>): string {
 		return this.plugin.i18n.translate(key, params);
 	}
 
@@ -32,11 +35,11 @@ export class StorageLocationConfirmationModal extends Modal {
 
 		// Create title
 		const stateKey = this.hasExistingData ? "migrate" : "switch";
-		const title = this.t(`modals.storageLocation.title.${stateKey}`);
+		const title = this.t(messageForKey(`modals.storageLocation.title.${stateKey}`));
 		new Setting(contentEl).setName(title).setHeading();
 
 		// Main message
-		const message = this.t(`modals.storageLocation.message.${stateKey}`);
+		const message = this.t(messageForKey(`modals.storageLocation.message.${stateKey}`));
 
 		const messageP = contentEl.createEl("p");
 		const strongMessage = messageP.createEl("strong");
@@ -45,16 +48,16 @@ export class StorageLocationConfirmationModal extends Modal {
 		contentEl.createEl("br");
 
 		// "What this means" section
-		contentEl.createEl("p", { text: this.t("modals.storageLocation.whatThisMeans") });
+		contentEl.createEl("p", { text: this.t(msg({ message: "What this means:", context: "modals.storageLocation.whatThisMeans" })) });
 		const warningsList = contentEl.createEl("ul");
 
 		const warnings = [
-			this.t("modals.storageLocation.bullets.dailyNotesRequired"),
-			this.t("modals.storageLocation.bullets.storedInNotes"),
+			this.t(msg({ message: "Daily notes must be enabled in the core daily notes plugin or periodic notes", context: "modals.storageLocation.bullets.dailyNotesRequired" })),
+			this.t(msg({ message: "Data will be stored in your daily notes frontmatter", context: "modals.storageLocation.bullets.storedInNotes" })),
 			this.hasExistingData
-				? this.t("modals.storageLocation.bullets.migrateData")
-				: this.t("modals.storageLocation.bullets.futureSessions"),
-			this.t("modals.storageLocation.bullets.dataLongevity"),
+				? this.t(msg({ message: "Existing plugin data will be migrated and then cleared", context: "modals.storageLocation.bullets.migrateData" }))
+				: this.t(msg({ message: "Future sessions will be saved to daily notes", context: "modals.storageLocation.bullets.futureSessions" })),
+			this.t(msg({ message: "This provides better data longevity with your notes", context: "modals.storageLocation.bullets.dataLongevity" })),
 		];
 
 		warnings.forEach((warning) => {
@@ -68,9 +71,9 @@ export class StorageLocationConfirmationModal extends Modal {
 		const finalNote = contentEl.createEl("p");
 		if (this.hasExistingData) {
 			const strongWarning = finalNote.createEl("strong");
-			strongWarning.textContent = this.t("modals.storageLocation.finalNote.migrate");
+			strongWarning.textContent = this.t(msg({ message: "⚠️ Make sure you have backups if needed. This change cannot be automatically undone.", context: "modals.storageLocation.finalNote.migrate" }));
 		} else {
-			finalNote.textContent = this.t("modals.storageLocation.finalNote.switch");
+			finalNote.textContent = this.t(msg({ message: "You can switch back to plugin storage at any time in the future.", context: "modals.storageLocation.finalNote.switch" }));
 		}
 
 		// Create buttons
@@ -113,7 +116,7 @@ export class StorageLocationConfirmationModal extends Modal {
 		);
 		buttonContainer.classList.add("tn-static-margin-top-20px-a26bda7d");
 
-		const cancelButton = buttonContainer.createEl("button", { text: this.t("common.cancel") });
+		const cancelButton = buttonContainer.createEl("button", { text: this.t(msg({ message: "Cancel", context: "common.cancel" })) });
 		cancelButton.addEventListener("click", () => {
 			this.resolve(false);
 			this.close();
@@ -121,8 +124,8 @@ export class StorageLocationConfirmationModal extends Modal {
 
 		const confirmButton = buttonContainer.createEl("button", {
 			text: this.hasExistingData
-				? this.t("modals.storageLocation.buttons.migrate")
-				: this.t("modals.storageLocation.buttons.switch"),
+				? this.t(msg({ message: "Migrate data", context: "modals.storageLocation.buttons.migrate" }))
+				: this.t(msg({ message: "Switch storage", context: "modals.storageLocation.buttons.switch" })),
 			cls: "mod-cta",
 		});
 

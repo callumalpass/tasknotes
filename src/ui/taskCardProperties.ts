@@ -1,3 +1,9 @@
+import { uiData } from "../i18n/dataText";
+import type { MessageSuffix } from "../i18n/concepts";
+import { uiText } from "../i18n/runtime";
+import { uiNumber } from "../i18n/formatters";
+import { messageForKey } from "../i18n/messages";
+import { msg } from "@lingui/core/macro";
 import { Notice, setTooltip, TFile, type CachedMetadata } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo } from "../types";
@@ -44,10 +50,10 @@ export interface TaskCardPropertyOptions {
 
 function tTaskCard(
 	plugin: TaskNotesPlugin,
-	key: string,
+	key: MessageSuffix<"ui.taskCard.">,
 	vars?: Record<string, string | number>
 ): string {
-	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
+	return plugin.i18n.translate(messageForKey(`ui.taskCard.${key}`), vars);
 }
 
 function prepareInteractiveControl(element: HTMLElement): void {
@@ -164,8 +170,8 @@ function attachDateClickHandler(
 						});
 						const noticeKey =
 							dateType === "due"
-								? "contextMenus.task.notices.updateDueDateFailure"
-								: "contextMenus.task.notices.updateScheduledFailure";
+								? msg({ message: "Failed to update task due date: {message}", context: "contextMenus.task.notices.updateDueDateFailure" })
+								: msg({ message: "Failed to update task scheduled date: {message}", context: "contextMenus.task.notices.updateScheduledFailure" });
 						new Notice(plugin.i18n.translate(noticeKey, { message: errorMessage }));
 					}
 				})();
@@ -320,12 +326,12 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	timeEstimate: (element, value, _, plugin) => {
 		if (typeof value === "number") {
-			element.textContent = `${plugin.formatTime(value)} estimated`;
+			element.textContent = uiText(msg({ message: "{value1} estimated", context: "ui/taskCardProperties: timeEstimate display" }), { value1: plugin.formatTime(value) });
 		}
 	},
 	totalTrackedTime: (element, value, _, plugin) => {
 		if (typeof value === "number" && value > 0) {
-			element.textContent = `${plugin.formatTime(value)} tracked`;
+			element.textContent = uiText(msg({ message: "{value1} tracked", context: "ui/taskCardProperties: totalTrackedTime display" }), { value1: plugin.formatTime(value) });
 		}
 	},
 	recurrence: (element, value, _task, plugin, options) => {
@@ -335,7 +341,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	recurrenceParent: (element, value, task, plugin) => {
 		if (typeof value === "string" && value.trim() !== "") {
-			element.createSpan({ text: "Parent: " });
+			element.createSpan({ text: uiText(msg({ message: "Parent: ", context: "ui/taskCardProperties: recurrenceParent text" })) });
 			const linkServices: LinkServices = {
 				translate: plugin.i18n.translate.bind(plugin.i18n),
 				metadataCache: plugin.app.metadataCache,
@@ -347,33 +353,33 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	occurrenceDate: (element, value, _task, plugin) => {
 		if (typeof value === "string") {
-			element.textContent = `Occurrence: ${formatDateTimeForDisplay(value, {
+			element.textContent = uiText(msg({ message: "Occurrence: {value1}", context: "ui/taskCardProperties: occurrenceDate display" }), { value1: formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings?.timeFormat,
-			})}`;
+			}) });
 			element.classList.add("task-card__metadata-pill--occurrence");
 		}
 	},
 	occurrenceMaterialization: (element, value) => {
 		if (value === "manual") {
-			element.textContent = "Occurrence notes: manual";
+			element.textContent = uiText(msg({ message: "Occurrence notes: manual", context: "ui/taskCardProperties: occurrenceMaterialization display" }));
 		} else if (value === "on_completion") {
-			element.textContent = "Occurrence notes: after completion";
+			element.textContent = uiText(msg({ message: "Occurrence notes: after completion", context: "ui/taskCardProperties: occurrenceMaterialization display" }));
 		} else if (value === "rolling") {
-			element.textContent = "Occurrence notes: rolling";
+			element.textContent = uiText(msg({ message: "Occurrence notes: rolling", context: "ui/taskCardProperties: occurrenceMaterialization display" }));
 		}
 	},
 	occurrenceNextTrigger: (element, value) => {
 		if (value === "completion") {
-			element.textContent = "Next note: completion";
+			element.textContent = uiText(msg({ message: "Next note: completion", context: "ui/taskCardProperties: occurrenceNextTrigger display" }));
 		} else if (value === "completion_or_skip") {
-			element.textContent = "Next note: completion or skip";
+			element.textContent = uiText(msg({ message: "Next note: completion or skip", context: "ui/taskCardProperties: occurrenceNextTrigger display" }));
 		}
 	},
 	occurrenceTemplate: (element, value, task, plugin) => {
 		if (typeof value === "string" && value.trim() !== "") {
-			element.createSpan({ text: "Template: " });
+			element.createSpan({ text: uiText(msg({ message: "Template: ", context: "ui/taskCardProperties: occurrenceTemplate text" })) });
 			const linkServices: LinkServices = {
 				translate: plugin.i18n.translate.bind(plugin.i18n),
 				metadataCache: plugin.app.metadataCache,
@@ -392,16 +398,16 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			if (finiteTotal) {
 				const total = Math.max(finiteTotal, count + skippedCount);
 				const completionRate = Math.round((count / total) * 100);
-				element.textContent = `✓ ${count}/${total} completed (${completionRate}%)`;
+				element.textContent = uiText(msg({ message: "✓ {count, number}/{total, number} completed ({completionRate, number}%)", context: "ui/taskCardProperties: completeInstances display" }), { count: count, total: total, completionRate: completionRate });
 			} else {
-				element.textContent = `✓ ${count} completed`;
+				element.textContent = uiText(msg({ message: "✓ {count, number} completed", context: "ui/taskCardProperties: completeInstances display" }), { count: count });
 			}
 			element.classList.add("task-card__metadata-pill--completed-instances");
 		}
 	},
 	skippedInstances: (element, value) => {
 		if (Array.isArray(value) && value.length > 0) {
-			element.textContent = `⊘ ${value.length} skipped`;
+			element.textContent = uiText(msg({ message: "⊘ {length, number} skipped", context: "ui/taskCardProperties: skippedInstances display" }), { length: value.length });
 			element.classList.add("task-card__metadata-pill--skipped-instances");
 		}
 	},
@@ -412,31 +418,31 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 				plugin,
 				options?.propertyLabels
 			);
-			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
+			element.textContent = uiText(msg({ message: "{label}: {value2}", context: "ui/taskCardProperties: completedDate display" }), { label: label, value2: formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
-			})}`;
+			}) });
 		}
 	},
 	dateCreated: (element, value, _task, plugin, options) => {
 		if (typeof value === "string") {
 			const label = getTaskCardPropertyLabel("dateCreated", plugin, options?.propertyLabels);
-			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
+			element.textContent = uiText(msg({ message: "{label}: {value2}", context: "ui/taskCardProperties: dateCreated display" }), { label: label, value2: formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
-			})}`;
+			}) });
 		}
 	},
 	dateModified: (element, value, _task, plugin, options) => {
 		if (typeof value === "string") {
 			const label = getTaskCardPropertyLabel("dateModified", plugin, options?.propertyLabels);
-			element.textContent = `${label}: ${formatDateTimeForDisplay(value, {
+			element.textContent = uiText(msg({ message: "{label}: {value2}", context: "ui/taskCardProperties: dateModified display" }), { label: label, value2: formatDateTimeForDisplay(value, {
 				dateFormat: "MMM d",
 				showTime: false,
 				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
-			})}`;
+			}) });
 		}
 	},
 	blocked: (element, value, task, plugin, options) => {
@@ -457,7 +463,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	blockedBy: (element, value, task, plugin) => {
 		if (Array.isArray(value) && value.length > 0) {
-			element.createSpan({ text: "Blocked by: " });
+			element.createSpan({ text: uiText(msg({ message: "Blocked by: ", context: "ui/taskCardProperties: blockedBy text" })) });
 			const linksContainer = element.createSpan();
 			const linkServices: LinkServices = {
 				translate: plugin.i18n.translate.bind(plugin.i18n),
@@ -472,7 +478,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 					appendInternalLink(
 						linksContainer,
 						dependencyLink.path,
-						dependencyLink.displayText,
+						uiData(dependencyLink.displayText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"),
 						linkServices
 					);
 				}
@@ -481,7 +487,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	blockingTasks: (element, value, _task, plugin) => {
 		if (Array.isArray(value) && value.length > 0) {
-			element.createSpan({ text: "Blocking: " });
+			element.createSpan({ text: uiText(msg({ message: "Blocking: ", context: "ui/taskCardProperties: blockingTasks text" })) });
 			const linksContainer = element.createSpan();
 			value.forEach((path, index) => {
 				if (index > 0) linksContainer.appendChild(activeDocument.createTextNode(", "));
@@ -502,13 +508,13 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 		if (Array.isArray(value) && value.length > 0) {
 			const totalTime = calculateTotalTimeSpent(value);
 			if (totalTime > 0) {
-				element.textContent = `${plugin.formatTime(totalTime)} tracked (${value.length} ${value.length === 1 ? "entry" : "entries"})`;
+				element.textContent = uiText(msg({ message: "{length, plural, one {{value1} tracked ({length, number} entry)} other {{value1} tracked ({length, number} entries)}}", context: "ui/taskCardProperties: timeEntries display" }), { value1: plugin.formatTime(totalTime), length: value.length });
 			}
 		}
 	},
 	reminders: (element, value) => {
 		if (Array.isArray(value) && value.length > 0) {
-			element.textContent = `${value.length} ${value.length === 1 ? "reminder" : "reminders"}`;
+			element.textContent = uiText(msg({ message: "{length, plural, one {{length, number} reminder} other {{length, number} reminders}}", context: "ui/taskCardProperties: reminders display" }), { length: value.length });
 		}
 	},
 	icsEventId: (element, value, _task, plugin) => {
@@ -521,9 +527,9 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			.map((event) => formatICSEventSummary(event, plugin));
 
 		if (eventSummaries.length > 0) {
-			element.textContent = `Calendar: ${eventSummaries.join(", ")}`;
+			element.textContent = uiText(msg({ message: "Calendar: {value1}", context: "ui/taskCardProperties: icsEventId display" }), { value1: eventSummaries.join(", ") });
 		} else {
-			element.textContent = `Linked to ${eventIds.length} calendar ${eventIds.length === 1 ? "event" : "events"}`;
+			element.textContent = uiText(msg({ message: "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}", context: "ui/taskCardProperties: icsEventId display" }), { length: eventIds.length });
 		}
 	},
 	checklistProgress: (element, _value, task, plugin) => {
@@ -548,7 +554,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 
 		setTooltip(
 			progressEl,
-			`${progress.percent}% complete (${progress.completed}/${progress.total})`,
+			uiText(msg({ message: "{percent, number}% complete ({completed, number}/{total, number})", context: "ui/taskCardProperties: checklistProgress display" }), { percent: progress.percent, completed: progress.completed, total: progress.total }),
 			{
 				placement: "top",
 			}
@@ -603,7 +609,7 @@ export function renderPropertyMetadata(
 			operation: "taskcard-rendering-property",
 			error: error,
 		});
-		element.textContent = `${propertyId}: (error)`;
+		element.textContent = uiText(msg({ message: "{propertyId}: (error)", context: "ui/taskCardProperties: renderPropertyMetadata display" }), { propertyId: propertyId });
 		return element;
 	}
 }
@@ -622,12 +628,12 @@ function renderUserProperty(
 	const userField = plugin.settings.userFields?.find((field) => field.id === fieldId);
 
 	if (!userField) {
-		element.textContent = `${fieldId}: (not found)`;
+		element.textContent = uiText(msg({ message: "{fieldId}: (not found)", context: "ui/taskCardProperties: renderUserProperty display" }), { fieldId: fieldId });
 		return;
 	}
 
 	const fieldName = userField.displayName || fieldId;
-	element.createSpan({ text: `${fieldName}: ` });
+	element.createSpan({ text: uiText(msg({ message: "{fieldName}: ", context: "ui/taskCardProperties: renderUserProperty text" }), { fieldName: fieldName }) });
 	const valueContainer = element.createSpan({
 		cls: "task-card__metadata-value",
 	});
@@ -662,7 +668,7 @@ function renderUserProperty(
 		});
 	} else {
 		const displayValue = formatUserPropertyValue(value, userField);
-		valueContainer.textContent = displayValue.trim() !== "" ? displayValue : "(empty)";
+		valueContainer.textContent = displayValue.trim() !== "" ? displayValue : uiText(msg({ message: "(empty)", context: "empty task property display" }));
 	}
 }
 
@@ -681,7 +687,7 @@ function renderGenericProperty(
 	displayNameOverride?: string
 ): void {
 	const displayName = resolveTaskCardPropertyLabel(propertyId, {}, displayNameOverride);
-	element.createSpan({ text: `${displayName}: ` });
+	element.createSpan({ text: uiText(msg({ message: "{displayName}: ", context: "ui/taskCardProperties: renderGenericProperty text" }), { displayName: displayName }) });
 	const valueContainer = element.createSpan({
 		cls: "task-card__metadata-value",
 	});
@@ -750,7 +756,7 @@ function renderPropertyValue(
 	} else if (typeof value === "boolean") {
 		displayValue = value ? "✓" : "✗";
 	} else if (typeof value === "number") {
-		displayValue = Number.isInteger(value) ? String(value) : value.toFixed(2);
+		displayValue = uiNumber(value, { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 });
 	} else {
 		displayValue = stringifyUnknown(value);
 	}
@@ -775,14 +781,16 @@ function containsRichTextLink(value: string): boolean {
 
 function formatUserPropertyValue(value: unknown, userField: UserField): string {
 	if (value === null || value === undefined) return "";
+	const userText = (raw: unknown) => uiData(stringifyUnknown(raw), "User-authored custom property content; preserve vault data");
 
 	try {
 		switch (userField.type) {
 			case "text":
+				return userText(value);
 			case "number":
-				return stringifyUnknown(value);
+				return typeof value === "number" ? uiNumber(value, { maximumFractionDigits: 20 }) : userText(value);
 			case "date":
-				return formatDateTimeForDisplay(stringifyUnknown(value), {
+				return formatDateTimeForDisplay(userText(value), {
 					dateFormat: "MMM d, yyyy",
 					timeFormat: "",
 					showTime: false,
@@ -791,11 +799,11 @@ function formatUserPropertyValue(value: unknown, userField: UserField): string {
 				return value ? "✓" : "✗";
 			case "list":
 				if (Array.isArray(value)) {
-					return (value as unknown[]).flat(2).map(stringifyUnknown).join(", ");
+					return (value as unknown[]).flat(2).map(userText).join(", ");
 				}
-				return stringifyUnknown(value);
+				return userText(value);
 			default:
-				return stringifyUnknown(value);
+				return userText(value);
 		}
 	} catch (error) {
 		tasknotesLogger.warn("TaskCard: Error formatting user property value:", {
@@ -803,7 +811,7 @@ function formatUserPropertyValue(value: unknown, userField: UserField): string {
 			operation: "taskcard-formatting-user-property-value",
 			error: error,
 		});
-		return stringifyUnknown(value);
+		return userText(value);
 	}
 }
 

@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import { TaskActionCoordinator } from "../../../src/ui/TaskActionCoordinator";
 import { openTaskSelector } from "../../../src/modals/TaskSelectorWithCreateModal";
 import { Notice } from "obsidian";
@@ -14,7 +16,7 @@ function createCoordinator(tasks: TaskInfo[] = [task]) {
 			getTaskInfo: jest.fn(async (path: string) => tasks.find(t => t.path === path) ?? null),
 		},
 		getActiveTimeSession: jest.fn((t: TaskInfo) => t.timeEntries?.find(entry => !entry.endTime) ?? null),
-		i18n: { translate: jest.fn((key: string) => key) },
+		i18n: { translate: mockObserveTranslation() },
 		taskService: { stopTimeTracking: jest.fn().mockResolvedValue(task) },
 	};
 	return { plugin, coordinator: new TaskActionCoordinator(plugin as never) };
@@ -35,7 +37,7 @@ describe("Stop active time tracking (#2326)", () => {
 		await coordinator.stopActiveTimeTracking();
 		expect(openTaskSelector).not.toHaveBeenCalled();
 		expect(plugin.taskService.stopTimeTracking).not.toHaveBeenCalled();
-		expect(Notice).toHaveBeenCalledWith("modals.timeTracking.noActiveTasks");
+		expect(Notice).toHaveBeenCalledWith(mockEnglishText(msg({ message: "No active time tracking session found", context: "modals.timeTracking.noActiveTasks" })));
 	});
 
 	it("allows stopping an archived task that still has an active tracker", async () => {
@@ -50,7 +52,7 @@ describe("Stop active time tracking (#2326)", () => {
 		jest.mocked(openTaskSelector).mockImplementation((_plugin, _tasks, choose) => choose(other));
 		await coordinator.stopActiveTimeTracking();
 		expect(openTaskSelector).toHaveBeenCalledWith(plugin, [task, other], expect.any(Function), {
-			title: "commands.stopActiveTimeTracking", allowCreate: false, includeArchived: true,
+			title: mockEnglishText(msg({ message: "Stop active time tracking", context: "commands.stopActiveTimeTracking" })), allowCreate: false, includeArchived: true,
 		});
 		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledTimes(1);
 		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledWith(other);
@@ -82,7 +84,7 @@ describe("Stop active time tracking (#2326)", () => {
 		const { plugin, coordinator } = createCoordinator();
 		plugin.cacheManager.getAllTasks.mockRejectedValueOnce(new Error("Cannot read tasks"));
 		await coordinator.stopActiveTimeTracking();
-		expect(Notice).toHaveBeenCalledWith("modals.timeTracking.stopFailed");
+		expect(Notice).toHaveBeenCalledWith(mockEnglishText(msg({ message: "Failed to load active time tracking sessions", context: "modals.timeTracking.stopFailed" })));
 		await coordinator.stopActiveTimeTracking();
 		expect(plugin.taskService.stopTimeTracking).toHaveBeenCalledTimes(1);
 	});

@@ -5,7 +5,7 @@ import { languagePackConfig } from "./languagePackConfig";
 
 export { translationResources };
 
-export type TranslationKey = string;
+export type { MessageDescriptor } from "@lingui/core";
 export type { InterpolationValues } from "./types";
 
 export function createI18nService(options?: Partial<I18nServiceOptions>): I18nService {

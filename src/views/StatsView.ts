@@ -1,3 +1,6 @@
+import { uiDuration, uiNumber, uiPercent, formatUIDate } from "../i18n/formatters";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { ItemView, WorkspaceLeaf, Setting, EventRef, parseLinktext } from "obsidian";
 import {
 	format,
@@ -206,7 +209,7 @@ export class StatsView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return this.plugin.i18n.translate("views.stats.title");
+		return this.plugin.i18n.translate(msg({ message: "Statistics", context: "views.stats.title" }));
 	}
 
 	getIcon(): string {
@@ -289,13 +292,13 @@ export class StatsView extends ItemView {
 		// Header
 		const header = container.createDiv({ cls: "stats-header stats-view__header" });
 		new Setting(header)
-			.setName(this.plugin.i18n.translate("views.stats.taskProjectStats"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Task & project statistics", context: "views.stats.taskProjectStats" })))
 			.setHeading();
 
 		// Refresh button
 		const refreshButton = header.createEl("button", {
 			cls: "stats-refresh-button stats-view__refresh-button",
-			text: this.plugin.i18n.translate("views.stats.refreshButton"),
+			text: this.plugin.i18n.translate(msg({ message: "Refresh", context: "views.stats.refreshButton" })),
 		});
 		this.registerDomEvent(refreshButton, "click", () => {
 			void this.refreshStats();
@@ -304,7 +307,7 @@ export class StatsView extends ItemView {
 		// Filters section
 		const filtersSection = container.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(filtersSection)
-			.setName(this.plugin.i18n.translate("views.stats.sections.filters"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Filters", context: "views.stats.sections.filters" })))
 			.setHeading();
 		this.filtersEl = filtersSection.createDiv({ cls: "stats-filters stats-view__filters" });
 		this.renderFilters();
@@ -312,7 +315,7 @@ export class StatsView extends ItemView {
 		// Overview section
 		const overviewSection = container.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(overviewSection)
-			.setName(this.plugin.i18n.translate("views.stats.sections.overview"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Overview", context: "views.stats.sections.overview" })))
 			.setHeading();
 		this.overviewStatsEl = overviewSection.createDiv({
 			cls: "stats-overview-grid stats-view__overview-grid",
@@ -321,28 +324,28 @@ export class StatsView extends ItemView {
 		// Today's stats
 		const todaySection = container.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(todaySection)
-			.setName(this.plugin.i18n.translate("views.stats.sections.today"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Today", context: "views.stats.sections.today" })))
 			.setHeading();
 		this.todayStatsEl = todaySection.createDiv({ cls: "stats-grid stats-view__stats-grid" });
 
 		// This week's stats
 		const weekSection = container.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(weekSection)
-			.setName(this.plugin.i18n.translate("views.stats.sections.thisWeek"))
+			.setName(this.plugin.i18n.translate(msg({ message: "This week", context: "views.stats.sections.thisWeek" })))
 			.setHeading();
 		this.weekStatsEl = weekSection.createDiv({ cls: "stats-grid stats-view__stats-grid" });
 
 		// This month's stats
 		const monthSection = container.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(monthSection)
-			.setName(this.plugin.i18n.translate("views.stats.sections.thisMonth"))
+			.setName(this.plugin.i18n.translate(msg({ message: "This month", context: "views.stats.sections.thisMonth" })))
 			.setHeading();
 		this.monthStatsEl = monthSection.createDiv({ cls: "stats-grid stats-view__stats-grid" });
 
 		// Project breakdown
 		const projectsSection = container.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(projectsSection)
-			.setName(this.plugin.i18n.translate("views.stats.sections.projectBreakdown"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Project breakdown", context: "views.stats.sections.projectBreakdown" })))
 			.setHeading();
 		this.projectsStatsEl = projectsSection.createDiv({
 			cls: "stats-projects stats-view__projects",
@@ -808,7 +811,7 @@ export class StatsView extends ItemView {
 		}
 
 		// Sort by total time spent descending, with "No Project" at the end (like FilterService)
-		const noProjectLabel = this.plugin.i18n.translate("views.stats.noProject");
+		const noProjectLabel = this.plugin.i18n.translate(msg({ message: "No project", context: "views.stats.noProject" }));
 		projectStats.sort((a, b) => {
 			if (a.projectName === noProjectLabel) return 1;
 			if (b.projectName === noProjectLabel) return -1;
@@ -832,28 +835,28 @@ export class StatsView extends ItemView {
 		// Date range filter
 		const dateRangeContainer = filterGrid.createDiv({ cls: "stats-view__filter-item" });
 		const dateRangeLabel = dateRangeContainer.createDiv({ cls: "stats-view__filter-label" });
-		dateRangeLabel.textContent = this.plugin.i18n.translate("views.stats.sections.dateRange");
+		dateRangeLabel.textContent = this.plugin.i18n.translate(msg({ message: "Date range", context: "views.stats.sections.dateRange" }));
 
 		const dateRangeSelect = dateRangeContainer.createEl("select", {
 			cls: "stats-view__filter-select",
 		});
 		const dateOptions = [
-			{ value: "all", text: this.plugin.i18n.translate("views.stats.timeRanges.allTime") },
+			{ value: "all", text: this.plugin.i18n.translate(msg({ message: "All time", context: "views.stats.timeRanges.allTime" })) },
 			{
 				value: "7days",
-				text: this.plugin.i18n.translate("views.stats.timeRanges.last7Days"),
+				text: this.plugin.i18n.translate(msg({ message: "Last 7 days", context: "views.stats.timeRanges.last7Days" })),
 			},
 			{
 				value: "30days",
-				text: this.plugin.i18n.translate("views.stats.timeRanges.last30Days"),
+				text: this.plugin.i18n.translate(msg({ message: "Last 30 days", context: "views.stats.timeRanges.last30Days" })),
 			},
 			{
 				value: "90days",
-				text: this.plugin.i18n.translate("views.stats.timeRanges.last90Days"),
+				text: this.plugin.i18n.translate(msg({ message: "Last 90 days", context: "views.stats.timeRanges.last90Days" })),
 			},
 			{
 				value: "custom",
-				text: this.plugin.i18n.translate("views.stats.timeRanges.customRange"),
+				text: this.plugin.i18n.translate(msg({ message: "Custom range", context: "views.stats.timeRanges.customRange" })),
 			},
 		];
 
@@ -882,7 +885,7 @@ export class StatsView extends ItemView {
 		// Minimum time filter
 		const minTimeContainer = filterGrid.createDiv({ cls: "stats-view__filter-item" });
 		const minTimeLabel = minTimeContainer.createDiv({ cls: "stats-view__filter-label" });
-		minTimeLabel.textContent = this.plugin.i18n.translate("views.stats.filters.minTime");
+		minTimeLabel.textContent = this.plugin.i18n.translate(msg({ message: "Min time (minutes)", context: "views.stats.filters.minTime" }));
 
 		const minTimeInput = minTimeContainer.createEl("input", {
 			cls: "stats-view__filter-input",
@@ -901,7 +904,7 @@ export class StatsView extends ItemView {
 
 		const resetButton = buttonsContainer.createEl("button", {
 			cls: "stats-view__filter-button stats-view__filter-button--reset",
-			text: this.plugin.i18n.translate("views.stats.resetFiltersButton"),
+			text: this.plugin.i18n.translate(msg({ message: "Reset filters", context: "views.stats.resetFiltersButton" })),
 		});
 
 		this.registerDomEvent(resetButton, "click", () => {
@@ -928,7 +931,7 @@ export class StatsView extends ItemView {
 			});
 			startDateContainer.createDiv({
 				cls: "stats-view__date-label",
-				text: this.plugin.i18n.translate("views.stats.dateRangeFrom"),
+				text: this.plugin.i18n.translate(msg({ message: "From", context: "views.stats.dateRangeFrom" })),
 			});
 			const startInput = startDateContainer.createEl("input", {
 				cls: "stats-view__date-input",
@@ -941,7 +944,7 @@ export class StatsView extends ItemView {
 			});
 			endDateContainer.createDiv({
 				cls: "stats-view__date-label",
-				text: this.plugin.i18n.translate("views.stats.dateRangeTo"),
+				text: this.plugin.i18n.translate(msg({ message: "To", context: "views.stats.dateRangeTo" })),
 			});
 			const endInput = endDateContainer.createEl("input", {
 				cls: "stats-view__date-input",
@@ -1001,12 +1004,12 @@ export class StatsView extends ItemView {
 	private getTaskProjects(task: TaskInfo): string[] {
 		try {
 			return getVisibleStatsProjectNames(task.projects, {
-				noProjectLabel: this.plugin.i18n.translate("views.stats.noProject"),
+				noProjectLabel: this.plugin.i18n.translate(msg({ message: "No project", context: "views.stats.noProject" })),
 				consolidateProjectName: (project) => this.consolidateProjectName(project),
 				isArchivedProjectReference: (project) => this.isArchivedProjectReference(project),
 			});
 		} catch {
-			return [this.plugin.i18n.translate("views.stats.noProject")];
+			return [this.plugin.i18n.translate(msg({ message: "No project", context: "views.stats.noProject" }))];
 		}
 	}
 
@@ -1051,12 +1054,7 @@ export class StatsView extends ItemView {
 		container.empty();
 
 		// Format time duration in hours and minutes
-		const formatTime = (minutes: number): string => {
-			if (minutes < 60) return `${Math.round(minutes)}m`;
-			const hours = Math.floor(minutes / 60);
-			const mins = Math.round(minutes % 60);
-			return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-		};
+		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
 
 		// Total Time
 		const totalTimeCard = container.createDiv({
@@ -1068,7 +1066,7 @@ export class StatsView extends ItemView {
 		totalTimeValue.textContent = `${formatTime(stats.totalTimeSpent)} / ${formatTime(stats.totalTimeEstimate)}`;
 		totalTimeCard.createDiv({
 			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate("views.stats.cards.timeTrackedEstimated"),
+			text: this.plugin.i18n.translate(msg({ message: "Time tracked / estimated", context: "views.stats.cards.timeTrackedEstimated" })),
 		});
 
 		// Total Tasks
@@ -1078,10 +1076,10 @@ export class StatsView extends ItemView {
 		const totalTasksValue = totalTasksCard.createDiv({
 			cls: "overview-value stats-view__overview-value",
 		});
-		totalTasksValue.textContent = stats.totalTasks.toString();
+		totalTasksValue.textContent = uiNumber(stats.totalTasks);
 		totalTasksCard.createDiv({
 			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate("views.stats.cards.totalTasks"),
+			text: this.plugin.i18n.translate(msg({ message: "Total tasks", context: "views.stats.cards.totalTasks" })),
 		});
 
 		// Completion Rate
@@ -1091,10 +1089,10 @@ export class StatsView extends ItemView {
 		const completionValue = completionCard.createDiv({
 			cls: "overview-value stats-view__overview-value",
 		});
-		completionValue.textContent = `${Math.round(stats.completionRate)}%`;
+		completionValue.textContent = uiPercent(Math.round(stats.completionRate));
 		completionCard.createDiv({
 			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate("views.stats.cards.completionRate"),
+			text: this.plugin.i18n.translate(msg({ message: "Completion rate", context: "views.stats.cards.completionRate" })),
 		});
 
 		// Active Projects
@@ -1104,10 +1102,10 @@ export class StatsView extends ItemView {
 		const projectsValue = projectsCard.createDiv({
 			cls: "overview-value stats-view__overview-value",
 		});
-		projectsValue.textContent = stats.activeProjects.toString();
+		projectsValue.textContent = uiNumber(stats.activeProjects);
 		projectsCard.createDiv({
 			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate("views.stats.cards.activeProjects"),
+			text: this.plugin.i18n.translate(msg({ message: "Active projects", context: "views.stats.cards.activeProjects" })),
 		});
 
 		// Average Time per Task
@@ -1120,19 +1118,14 @@ export class StatsView extends ItemView {
 		avgTimeValue.textContent = formatTime(stats.avgTimePerTask);
 		avgTimeCard.createDiv({
 			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate("views.stats.cards.avgTimePerTask"),
+			text: this.plugin.i18n.translate(msg({ message: "Avg time per task", context: "views.stats.cards.avgTimePerTask" })),
 		});
 	}
 
 	private renderTimeRangeStats(container: HTMLElement, stats: TimeRangeStats) {
 		container.empty();
 
-		const formatTime = (minutes: number): string => {
-			if (minutes < 60) return `${Math.round(minutes)}m`;
-			const hours = Math.floor(minutes / 60);
-			const mins = Math.round(minutes % 60);
-			return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-		};
+		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
 
 		// Time Tracked
 		const timeCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
@@ -1142,40 +1135,40 @@ export class StatsView extends ItemView {
 		});
 		timeCard.createDiv({
 			cls: "stat-label stats-view__stat-label",
-			text: this.plugin.i18n.translate("views.stats.cards.timeTrackedEstimated"),
+			text: this.plugin.i18n.translate(msg({ message: "Time tracked / estimated", context: "views.stats.cards.timeTrackedEstimated" })),
 		});
 
 		// Tasks
 		const tasksCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
 		tasksCard.createDiv({
 			cls: "stat-value stats-view__stat-value",
-			text: stats.overall.totalTasks.toString(),
+			text: uiNumber(stats.overall.totalTasks),
 		});
 		tasksCard.createDiv({
 			cls: "stat-label stats-view__stat-label",
-			text: this.plugin.i18n.translate("views.stats.labels.tasks"),
+			text: this.plugin.i18n.translate(msg({ message: "Tasks", context: "views.stats.labels.tasks" })),
 		});
 
 		// Completed
 		const completedCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
 		completedCard.createDiv({
 			cls: "stat-value stats-view__stat-value",
-			text: stats.overall.completedTasks.toString(),
+			text: uiNumber(stats.overall.completedTasks),
 		});
 		completedCard.createDiv({
 			cls: "stat-label stats-view__stat-label",
-			text: this.plugin.i18n.translate("views.stats.labels.completed"),
+			text: this.plugin.i18n.translate(msg({ message: "Completed", context: "views.stats.labels.completed" })),
 		});
 
 		// Projects
 		const projectsCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
 		projectsCard.createDiv({
 			cls: "stat-value stats-view__stat-value",
-			text: stats.overall.activeProjects.toString(),
+			text: uiNumber(stats.overall.activeProjects),
 		});
 		projectsCard.createDiv({
 			cls: "stat-label stats-view__stat-label",
-			text: this.plugin.i18n.translate("views.stats.labels.projects"),
+			text: this.plugin.i18n.translate(msg({ message: "Projects", context: "views.stats.labels.projects" })),
 		});
 	}
 
@@ -1185,25 +1178,20 @@ export class StatsView extends ItemView {
 		if (projects.length === 0) {
 			container.createDiv({
 				cls: "stats-no-data stats-view__no-data",
-				text: this.plugin.i18n.translate("views.stats.noProjectData"),
+				text: this.plugin.i18n.translate(msg({ message: "No project data available", context: "views.stats.noProjectData" })),
 			});
 			return;
 		}
 
-		const formatTime = (minutes: number): string => {
-			if (minutes < 60) return `${Math.round(minutes)}m`;
-			const hours = Math.floor(minutes / 60);
-			const mins = Math.round(minutes % 60);
-			return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-		};
+		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
 
 		const formatDate = (dateString?: string): string => {
-			if (!dateString) return this.plugin.i18n.translate("views.stats.notAvailable");
+			if (!dateString) return this.plugin.i18n.translate(msg({ message: "N/A", context: "views.stats.notAvailable" }));
 			try {
 				const date = new Date(dateString);
-				return format(date, "MMM d, yyyy");
+				return formatUIDate(date, "MMM d, yyyy");
 			} catch {
-				return this.plugin.i18n.translate("views.stats.notAvailable");
+				return this.plugin.i18n.translate(msg({ message: "N/A", context: "views.stats.notAvailable" }));
 			}
 		};
 
@@ -1215,7 +1203,7 @@ export class StatsView extends ItemView {
 			];
 
 			// Add special class for "No Project" items
-			if (project.projectName === this.plugin.i18n.translate("views.stats.noProject")) {
+			if (project.projectName === this.plugin.i18n.translate(msg({ message: "No project", context: "views.stats.noProject" }))) {
 				projectClasses.push("stats-view__project-item--no-project");
 			}
 
@@ -1308,12 +1296,12 @@ export class StatsView extends ItemView {
 				const activityEl = statsEl.createDiv({
 					cls: "project-stat stats-view__project-stat",
 				});
-				activityEl.textContent = `Last activity: ${formatDate(project.lastActivity)}`;
+				activityEl.textContent = uiText(msg({ message: "Last activity: {value1}", context: "views/StatsView: StatsView.renderProjectStats display" }), { value1: formatDate(project.lastActivity) });
 			}
 
 			if (project.avgTimePerTask > 0) {
 				const avgEl = statsEl.createDiv({ cls: "project-stat stats-view__project-stat" });
-				avgEl.textContent = `Avg: ${formatTime(project.avgTimePerTask)}/task`;
+				avgEl.textContent = uiText(msg({ message: "Avg: {value1}/task", context: "views/StatsView: StatsView.renderProjectStats display" }), { value1: formatTime(project.avgTimePerTask) });
 			}
 
 			// Add sparkline trend (load asynchronously)
@@ -1373,7 +1361,7 @@ export class StatsView extends ItemView {
 		text.setAttribute("dy", "0.3em");
 		text.setAttribute("text-anchor", "middle");
 		text.classList.add("stats-view__progress-circle-text");
-		text.textContent = `${Math.round(percentage)}%`;
+		text.textContent = uiPercent(Math.round(percentage));
 
 		svg.appendChild(backgroundCircle);
 		svg.appendChild(foregroundCircle);
@@ -1382,7 +1370,7 @@ export class StatsView extends ItemView {
 		container.appendChild(svg);
 
 		const label = container.createDiv({ cls: "stats-view__progress-label" });
-		label.textContent = `${completed}/${total} tasks`;
+		label.textContent = uiText(msg({ message: "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}", context: "views/StatsView: StatsView.renderProgressCircle display" }), { completed: completed, total: total });
 	}
 
 	/**
@@ -1512,7 +1500,7 @@ export class StatsView extends ItemView {
 		// Modal header
 		const header = modal.createDiv({ cls: "stats-view__modal-header" });
 		const title = header.createDiv({ cls: "stats-view__modal-title" });
-		title.textContent = `${projectName} - Detailed View`;
+		title.textContent = uiText(msg({ message: "{projectName} - Detailed View", context: "views/StatsView: StatsView.openProjectDrilldown display" }), { projectName: projectName });
 
 		const closeBtn = header.createEl("button", {
 			cls: "stats-view__modal-close",
@@ -1521,7 +1509,7 @@ export class StatsView extends ItemView {
 
 		// Modal content
 		const content = modal.createDiv({ cls: "stats-view__modal-content" });
-		content.textContent = this.plugin.i18n.translate("views.stats.loading");
+		content.textContent = this.plugin.i18n.translate(msg({ message: "Loading...", context: "views.stats.loading" }));
 
 		// Event handlers
 		this.registerDomEvent(closeBtn, "click", () => this.closeDrilldownModal());
@@ -1549,7 +1537,7 @@ export class StatsView extends ItemView {
 				operation: "loading-drill-down-data",
 				error: error,
 			});
-			content.textContent = this.plugin.i18n.translate("notices.statsLoadingFailed");
+			content.textContent = this.plugin.i18n.translate(msg({ message: "Error loading project details.", context: "notices.statsLoadingFailed" }));
 		}
 	}
 
@@ -1716,12 +1704,7 @@ export class StatsView extends ItemView {
 	private renderDrilldownContent(container: HTMLElement, data: ProjectDrilldownData) {
 		container.empty();
 
-		const formatTime = (minutes: number): string => {
-			if (minutes < 60) return `${Math.round(minutes)}m`;
-			const hours = Math.floor(minutes / 60);
-			const mins = Math.round(minutes % 60);
-			return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-		};
+		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
 
 		// Overview stats with enhanced metrics
 		const overviewEl = container.createDiv({ cls: "stats-view__drilldown-overview" });
@@ -1735,27 +1718,27 @@ export class StatsView extends ItemView {
 		});
 		totalTimeCard.createDiv({
 			cls: "stats-view__drilldown-label",
-			text: this.plugin.i18n.translate("views.stats.project.totalTime"),
+			text: this.plugin.i18n.translate(msg({ message: "Total time", context: "views.stats.project.totalTime" })),
 		});
 
 		const tasksCard = statsGrid.createDiv({ cls: "stats-view__drilldown-card" });
 		tasksCard.createDiv({
 			cls: "stats-view__drilldown-value",
-			text: data.tasks.length.toString(),
+			text: uiNumber(data.tasks.length),
 		});
 		tasksCard.createDiv({
 			cls: "stats-view__drilldown-label",
-			text: this.plugin.i18n.translate("views.stats.project.totalTasks"),
+			text: this.plugin.i18n.translate(msg({ message: "Total tasks", context: "views.stats.project.totalTasks" })),
 		});
 
 		const completionCard = statsGrid.createDiv({ cls: "stats-view__drilldown-card" });
 		completionCard.createDiv({
 			cls: "stats-view__drilldown-value",
-			text: `${Math.round(data.completionRate)}%`,
+			text: uiPercent(Math.round(data.completionRate)),
 		});
 		completionCard.createDiv({
 			cls: "stats-view__drilldown-label",
-			text: this.plugin.i18n.translate("views.advancedCalendar.timeEntry.completedPrefix"),
+			text: this.plugin.i18n.translate(msg({ message: "Completed: ", context: "views.advancedCalendar.timeEntry.completedPrefix" })),
 		});
 
 		// Add average time per task
@@ -1769,14 +1752,14 @@ export class StatsView extends ItemView {
 		});
 		avgTimeCard.createDiv({
 			cls: "stats-view__drilldown-label",
-			text: this.plugin.i18n.translate("views.stats.project.average"),
+			text: this.plugin.i18n.translate(msg({ message: "Avg per task", context: "views.stats.project.average" })),
 		});
 
 		// Activity chart
 		const chartSection = container.createDiv({ cls: "stats-view__drilldown-section" });
 		chartSection.createDiv({
 			cls: "stats-view__drilldown-heading",
-			text: this.plugin.i18n.translate("views.stats.project.activity"),
+			text: this.plugin.i18n.translate(msg({ message: "Activity over time (last 30 days)", context: "views.stats.project.activity" })),
 		});
 		const chartEl = chartSection.createDiv({ cls: "stats-view__activity-chart" });
 		this.renderActivityChart(chartEl, data.timeByDay);
@@ -1786,7 +1769,7 @@ export class StatsView extends ItemView {
 		const tasksHeaderContainer = tasksSection.createDiv({ cls: "stats-view__section-header" });
 		tasksHeaderContainer.createDiv({
 			cls: "stats-view__drilldown-heading",
-			text: this.plugin.i18n.translate("views.stats.project.allTasks"),
+			text: this.plugin.i18n.translate(msg({ message: "All project tasks", context: "views.stats.project.allTasks" })),
 		});
 
 		// Add filter controls for tasks
@@ -1794,15 +1777,15 @@ export class StatsView extends ItemView {
 		const statusFilter = taskFilters.createEl("select", { cls: "stats-view__filter-select" });
 		statusFilter.createEl("option", {
 			value: "all",
-			text: this.plugin.i18n.translate("views.stats.filters.allTasks"),
+			text: this.plugin.i18n.translate(msg({ message: "All tasks", context: "views.stats.filters.allTasks" })),
 		});
 		statusFilter.createEl("option", {
 			value: "active",
-			text: this.plugin.i18n.translate("views.stats.filters.activeOnly"),
+			text: this.plugin.i18n.translate(msg({ message: "Active only", context: "views.stats.filters.activeOnly" })),
 		});
 		statusFilter.createEl("option", {
 			value: "completed",
-			text: this.plugin.i18n.translate("views.stats.filters.completedOnly"),
+			text: this.plugin.i18n.translate(msg({ message: "Completed only", context: "views.stats.filters.completedOnly" })),
 		});
 
 		const taskList = tasksSection.createDiv({ cls: "stats-view__task-list" });
@@ -1847,14 +1830,14 @@ export class StatsView extends ItemView {
 			if (filteredTasks.length === 0) {
 				taskList.createDiv({
 					cls: "stats-view__no-data",
-					text: this.plugin.i18n.translate("views.stats.noTasks"),
+					text: this.plugin.i18n.translate(msg({ message: "No tasks found", context: "views.stats.noTasks" })),
 				});
 				return;
 			}
 
 			// Show task count
 			const countEl = taskList.createDiv({ cls: "stats-view__task-count" });
-			countEl.textContent = `Showing ${filteredTasks.length} task${filteredTasks.length !== 1 ? "s" : ""}`;
+			countEl.textContent = uiText(msg({ message: "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}", context: "views/StatsView: StatsView.renderDrilldownContent.renderTasks display" }), { length: filteredTasks.length });
 
 			for (const task of filteredTasks) {
 				// Create TaskCard with checkbox disabled as requested
@@ -1891,7 +1874,7 @@ export class StatsView extends ItemView {
 		if (maxTime === 0) {
 			container.createDiv({
 				cls: "stats-view__no-data",
-				text: this.plugin.i18n.translate("views.stats.project.noTracking"),
+				text: this.plugin.i18n.translate(msg({ message: "No time tracking data", context: "views.stats.project.noTracking" })),
 			});
 			return;
 		}
@@ -1906,7 +1889,7 @@ export class StatsView extends ItemView {
 			bar.style.height = `${height}px`;
 
 			// Tooltip
-			const tooltip = `${format(new Date(day.date), "MMM d")}: ${Math.round(day.timeSpent)}m`;
+			const tooltip = uiText(msg({ message: "{date}: {duration}", context: "statistics daily time tooltip" }), { date: formatUIDate(new Date(day.date), "MMM d"), duration: uiDuration(Math.round(day.timeSpent)) });
 			bar.setAttribute("title", tooltip);
 		}
 	}

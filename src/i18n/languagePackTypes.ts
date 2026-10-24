@@ -1,13 +1,13 @@
-import type { TranslationTree } from "./types";
+import type { Messages } from "@lingui/core";
 
-export const LANGUAGE_PACK_FORMAT = "tasknotes-ui-v1";
+export const LANGUAGE_PACK_FORMAT = "tasknotes-lingui-v1";
 export const MAX_LANGUAGE_PACK_BYTES = 1_000_000;
 
 export interface LanguagePack {
 	format: typeof LANGUAGE_PACK_FORMAT;
 	locale: string;
 	sourceHash: string;
-	messages: Record<string, string>;
+	messages: Messages;
 }
 
 export interface LanguagePackDescriptor {
@@ -36,7 +36,7 @@ export interface LanguagePackCache {
 
 export interface LanguagePackLoaderOptions {
 	config: LanguagePackBuildConfig;
-	english: TranslationTree;
+	english: Messages;
 	cache: LanguagePackCache;
 	download(url: string): Promise<Uint8Array>;
 	sha256?: (bytes: Uint8Array) => Promise<string>;

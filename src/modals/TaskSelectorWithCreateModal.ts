@@ -1,8 +1,13 @@
+import { displayError } from "../i18n/runtime";
+import { uiDuration } from "../i18n/formatters";
+import { configLabel } from "../i18n/configLabels";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { App, SuggestModal, Notice, setIcon } from "obsidian";
 import { TaskInfo, TaskCreationData } from "../types";
 import { filterEmptyProjects } from "../utils/helpers";
 import type TaskNotesPlugin from "../main";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { NaturalLanguageParser, ParsedTaskData } from "../services/NaturalLanguageParser";
 import { createTaskCard } from "../ui/TaskCard";
 import { buildTaskCreationDataFromParsed } from "../services/buildTaskCreationDataFromParsed";
@@ -155,7 +160,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	private tasks: TaskInfo[];
 	private options: TaskSelectorWithCreateOptions;
 	private plugin: TaskNotesPlugin;
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 	private nlParser: NaturalLanguageParser;
 	private nlpSuggest: NLPSuggest | null = null;
 	private createFooterEl: HTMLElement | null = null;
@@ -180,23 +185,50 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		// Set placeholder
 		this.setPlaceholder(
-			options.placeholder || this.translate("modals.taskSelectorWithCreate.placeholder")
+			options.placeholder ||
+				this.translate(
+					msg({ message: "Search tasks or type to create new...", context: "modals.taskSelectorWithCreate.placeholder" })
+				)
 		);
 
 		// Set instructions
 		this.setInstructions([
-			{ command: "↑↓", purpose: this.translate("modals.taskSelector.instructions.navigate") },
-			{ command: "↵", purpose: this.translate("modals.taskSelector.instructions.select") },
-			...(options.allowCreate === false ? [] : [{
-				command: "⇧↵",
-				purpose: this.translate("modals.taskSelectorWithCreate.instructions.create"),
-			}]),
-			{ command: "esc", purpose: this.translate("modals.taskSelector.instructions.dismiss") },
+			{
+				command: "↑↓",
+				purpose: this.translate(
+					msg({ message: "to navigate", context: "modals.taskSelector.instructions.navigate" })
+				),
+			},
+			{
+				command: "↵",
+				purpose: this.translate(
+					msg({ message: "to select", context: "modals.taskSelector.instructions.select" })
+				),
+			},
+			...(options.allowCreate === false
+				? []
+				: [
+						{
+							command: "⇧↵",
+							purpose: this.translate(
+								msg({ message: "to create new task", context: "modals.taskSelectorWithCreate.instructions.create" })
+							),
+						},
+					]),
+			{
+				command: "esc",
+				purpose: this.translate(
+					msg({ message: "to cancel", context: "modals.taskSelector.instructions.dismiss" })
+				),
+			},
 		]);
 
 		// Set modal title for accessibility
 		this.titleEl.setText(
-			options.title || this.translate("modals.taskSelectorWithCreate.title")
+			options.title ||
+				this.translate(
+					msg({ message: "Create or open task", context: "modals.taskSelectorWithCreate.title" })
+				)
 		);
 		this.titleEl.setAttribute("id", "task-selector-with-create-title");
 
@@ -307,9 +339,9 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			return;
 		}
 
-		const parsed = this.nlParser.parseInput(query);
+		const parsed = this.nlParser.parseInputForModal(query);
 
-		if (parsed.title && parsed.title !== "Untitled Task") {
+		if (parsed.title.trim()) {
 			this.createFooterEl.empty();
 			this.createFooterEl.classList.remove(
 				"tn-static-display-block-2a1b75c9",
@@ -325,7 +357,13 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			this.createFooterEl.setAttribute("aria-hidden", "false");
 			this.createFooterEl.setAttribute(
 				"aria-label",
-				`${this.translate("modals.taskSelectorWithCreate.footer.createLabel").trim()} ${parsed.title}`.trim()
+				uiText(
+					msg({
+						message: "Create: {title}",
+						context: "task selector create action accessible name",
+					}),
+					{ title: parsed.title }
+				)
 			);
 			this.createFooterEl.tabIndex = 0;
 
@@ -371,12 +409,14 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			// Shortcut hint
 			const hintLine = contentDiv.createDiv({ cls: "task-selector-create-footer__hint" });
 			hintLine.createSpan({
-				cls: "task-selector-create-footer__shortcut",
-				text: "⇧↵",
-			});
-			hintLine.createSpan({
 				cls: "task-selector-create-footer__hint-text",
-				text: this.translate("modals.taskSelectorWithCreate.footer.createLabel"),
+				text: uiText(
+					msg({
+						message: "Create with {shortcut}",
+						context: "task selector create keyboard hint",
+					}),
+					{ shortcut: "⇧↵" }
+				),
 			});
 		} else {
 			this.createFooterEl.classList.remove(
@@ -426,7 +466,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			const statusConfig = this.plugin.statusManager.getStatusConfig(parsed.status);
 			parts.push({
 				icon: "circle-dot",
-				text: statusConfig?.label || parsed.status,
+				text: configLabel(statusConfig) || parsed.status,
 				type: "status",
 			});
 		}
@@ -463,9 +503,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		// Time estimate
 		if (parsed.estimate && parsed.estimate > 0) {
-			const hours = Math.floor(parsed.estimate / 60);
-			const mins = parsed.estimate % 60;
-			const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+			const timeStr = uiDuration(parsed.estimate);
 			parts.push({ icon: "timer", text: timeStr, type: "estimate" });
 		}
 
@@ -487,7 +525,14 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				const displayValue = Array.isArray(value) ? value.join(", ") : value;
 				parts.push({
 					icon: "sliders-horizontal",
-					text: `${displayName}: ${displayValue}`,
+					text: uiText(
+						msg({
+							message: "{displayName}: {displayValue}",
+							context:
+								"modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text",
+						}),
+						{ displayName: displayName, displayValue: displayValue }
+					),
 					type: "userfield",
 				});
 			}
@@ -504,7 +549,11 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		const query = this.inputEl.value.trim();
 		if (!query) {
-			new Notice(this.translate("modals.taskSelectorWithCreate.notices.emptyQuery"));
+			new Notice(
+				this.translate(
+					msg({ message: "Please enter a task description", context: "modals.taskSelectorWithCreate.notices.emptyQuery" })
+				)
+			);
 			return;
 		}
 
@@ -512,10 +561,14 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 		try {
 			// Parse the query using NLP
-			const parsed = this.nlParser.parseInput(query);
+			const parsed = this.nlParser.parseInputForModal(query);
 
-			if (!parsed.title || parsed.title === "Untitled Task") {
-				new Notice(this.translate("modals.taskSelectorWithCreate.notices.invalidTitle"));
+			if (!parsed.title.trim()) {
+				new Notice(
+					this.translate(
+						msg({ message: "Could not parse a valid task title", context: "modals.taskSelectorWithCreate.notices.invalidTitle" })
+					)
+				);
 				return;
 			}
 
@@ -526,9 +579,12 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			const result = await this.plugin.taskService.createTask(taskData);
 
 			new Notice(
-				this.translate("modals.taskCreation.notices.success", {
-					title: result.taskInfo.title,
-				})
+				this.translate(
+					msg({ message: "Task \"{title}\" created successfully", context: "modals.taskCreation.notices.success" }),
+					{
+						title: result.taskInfo.title,
+					}
+				)
 			);
 
 			// Close modal and return result
@@ -542,7 +598,12 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				error: error,
 			});
 			const message = error instanceof Error ? error.message : String(error);
-			new Notice(this.translate("modals.taskCreation.notices.failure", { message }));
+			new Notice(
+				this.translate(
+					msg({ message: "Failed to create task: {message}", context: "modals.taskCreation.notices.failure" }),
+					{ message: displayError(message) }
+				)
+			);
 		} finally {
 			this.isCreatingTask = false;
 		}

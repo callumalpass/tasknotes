@@ -1,0 +1,755 @@
+{
+  "sourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9",
+  "baseline": "2a992dfbd67e6a0ef00c233c6cb7009cc290fc2c",
+  "strategy": "Rewrite all 22 added one arms; remove all 90 added optional es/fr many arms. Align six Russian classifier sibling arms to preserve the identical multiple-count group at 2/5/21.",
+  "integerCoverage": "Plugin mirrors shared kit e61ab062: integer counts 0..999 after offset; exact =N arms match original counts. Million-only categories optional. Vendored kit unchanged.",
+  "rewrittenOneArms": {
+    "fr": 10,
+    "pt": 10,
+    "ru": 2
+  },
+  "alignedRussianClassifierSiblingArms": 6,
+  "removedManyArms": {
+    "es": 45,
+    "fr": 45
+  },
+  "astPreservation": {
+    "baseline": "2a992dfbd67e6a0ef00c233c6cb7009cc290fc2c",
+    "sourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9",
+    "changedMessages": 96,
+    "unchangedMessages": 24546,
+    "rewrittenOneArms": 22,
+    "removedOptionalManyArms": 90,
+    "alignedRussianClassifierSiblingArms": 6,
+    "untargetedIcuStructureAndWordingUnchanged": true,
+    "method": "Parse every current PO and 2a992dfb PO into ICU tokens, remove only inventoried optional many arms, replace only inventoried one/sibling arms, strip parser source positions and compare complete token trees. All message IDs, source text and contexts unchanged."
+  },
+  "renderProof": {
+    "operands": [
+      0,
+      1,
+      2,
+      5,
+      21,
+      1000000
+    ],
+    "allChangedMessages": 96,
+    "focusedRenderedCases": 576,
+    "allCatalogueOperandCases": 172494,
+    "allCatalogueAuthoredContracts": 24642,
+    "forcedOneBranchAssertions": 46,
+    "fullReport": "dist/i18n-plural-followup-render-proof.json",
+    "fullReportSha256": "bfa5eb7ed07a3675ffd7cbc8bca9b7a096b8cf3df7ee32d592d45f5e13070883",
+    "selectedRows": [
+      {
+        "locale": "fr",
+        "id": "fuX_1m",
+        "context": "generated Bases contexts count",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Aucun contexte"
+          },
+          {
+            "count": 1,
+            "text": "Un seul contexte"
+          },
+          {
+            "count": 2,
+            "text": "Plusieurs contextes"
+          },
+          {
+            "count": 5,
+            "text": "Plusieurs contextes"
+          },
+          {
+            "count": 21,
+            "text": "Plusieurs contextes"
+          },
+          {
+            "count": 1000000,
+            "text": "Plusieurs contextes"
+          }
+        ]
+      },
+      {
+        "locale": "fr",
+        "id": "fJ_I-J",
+        "context": "generated Bases projects count",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Aucun projet"
+          },
+          {
+            "count": 1,
+            "text": "Un seul projet"
+          },
+          {
+            "count": 2,
+            "text": "Plusieurs projets"
+          },
+          {
+            "count": 5,
+            "text": "Plusieurs projets"
+          },
+          {
+            "count": 21,
+            "text": "Plusieurs projets"
+          },
+          {
+            "count": 1000000,
+            "text": "Plusieurs projets"
+          }
+        ]
+      },
+      {
+        "locale": "fr",
+        "id": "7PuX6r",
+        "context": "monthly weekday recurrence",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Avec un intervalle de 0 mois, le dernier lundi"
+          },
+          {
+            "count": 1,
+            "text": "Chaque mois, le dernier lundi"
+          },
+          {
+            "count": 2,
+            "text": "Tous les 2 mois, le dernier lundi"
+          },
+          {
+            "count": 5,
+            "text": "Tous les 5 mois, le dernier lundi"
+          },
+          {
+            "count": 21,
+            "text": "Tous les 21 mois, le dernier lundi"
+          },
+          {
+            "count": 1000000,
+            "text": "Tous les 1 000 000 mois, le dernier lundi"
+          }
+        ]
+      },
+      {
+        "locale": "fr",
+        "id": "Y071tE",
+        "context": "recurrence daily interval",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Intervalle de 0 jour"
+          },
+          {
+            "count": 1,
+            "text": "Chaque jour"
+          },
+          {
+            "count": 2,
+            "text": "Tous les 2 jours"
+          },
+          {
+            "count": 5,
+            "text": "Tous les 5 jours"
+          },
+          {
+            "count": 21,
+            "text": "Tous les 21 jours"
+          },
+          {
+            "count": 1000000,
+            "text": "Tous les 1 000 000 jours"
+          }
+        ]
+      },
+      {
+        "locale": "fr",
+        "id": "01y_eC",
+        "context": "recurrence interval on month day",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Intervalle de 0 mois, le 24"
+          },
+          {
+            "count": 1,
+            "text": "Chaque mois le 24"
+          },
+          {
+            "count": 2,
+            "text": "Tous les 2 mois le 24"
+          },
+          {
+            "count": 5,
+            "text": "Tous les 5 mois le 24"
+          },
+          {
+            "count": 21,
+            "text": "Tous les 21 mois le 24"
+          },
+          {
+            "count": 1000000,
+            "text": "Tous les 1 000 000 mois le 24"
+          }
+        ]
+      },
+      {
+        "locale": "fr",
+        "id": "ciO00S",
+        "context": "recurrence monthly interval",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Intervalle de 0 mois"
+          },
+          {
+            "count": 1,
+            "text": "Chaque mois"
+          },
+          {
+            "count": 2,
+            "text": "Tous les 2 mois"
+          },
+          {
+            "count": 5,
+            "text": "Tous les 5 mois"
+          },
+          {
+            "count": 21,
+            "text": "Tous les 21 mois"
+          },
+          {
+            "count": 1000000,
+            "text": "Tous les 1 000 000 mois"
+          }
+        ]
+      },
+      {
+        "locale": "fr",
+        "id": "f3a3-d",
+        "context": "recurrence weekly weekdays",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Intervalle de 0 semaine, les jours suivants : lundi"
+          },
+          {
+            "count": 1,
+            "text": "Chaque semaine, les jours suivants : lundi"
+          },
+          {
+            "count": 2,
+            "text": "Toutes les 2 semaines, les jours suivants : lundi"
+          },
+          {
+            "count": 5,
+            "text": "Toutes les 5 semaines, les jours suivants : lundi"
+          },
+          {
+            "count": 21,
+            "text": "Toutes les 21 semaines, les jours suivants : lundi"
+          },
+          {
+            "count": 1000000,
+            "text": "Toutes les 1 000 000 semaines, les jours suivants : lundi"
+          }
+        ]
+      },
+      {
+        "locale": "fr",
+        "id": "HI4G2n",
+        "context": "recurrence weekly interval",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Intervalle de 0 semaine"
+          },
+          {
+            "count": 1,
+            "text": "Chaque semaine"
+          },
+          {
+            "count": 2,
+            "text": "Toutes les 2 semaines"
+          },
+          {
+            "count": 5,
+            "text": "Toutes les 5 semaines"
+          },
+          {
+            "count": 21,
+            "text": "Toutes les 21 semaines"
+          },
+          {
+            "count": 1000000,
+            "text": "Toutes les 1 000 000 semaines"
+          }
+        ]
+      },
+      {
+        "locale": "fr",
+        "id": "qqgQnq",
+        "context": "recurrence yearly interval date",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Intervalle de 0 an, le date_fixture"
+          },
+          {
+            "count": 1,
+            "text": "Chaque année le date_fixture"
+          },
+          {
+            "count": 2,
+            "text": "Tous les 2 ans le date_fixture"
+          },
+          {
+            "count": 5,
+            "text": "Tous les 5 ans le date_fixture"
+          },
+          {
+            "count": 21,
+            "text": "Tous les 21 ans le date_fixture"
+          },
+          {
+            "count": 1000000,
+            "text": "Tous les 1 000 000 ans le date_fixture"
+          }
+        ]
+      },
+      {
+        "locale": "fr",
+        "id": "m2FqzW",
+        "context": "recurrence yearly interval",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Intervalle de 0 an"
+          },
+          {
+            "count": 1,
+            "text": "Chaque année"
+          },
+          {
+            "count": 2,
+            "text": "Tous les 2 ans"
+          },
+          {
+            "count": 5,
+            "text": "Tous les 5 ans"
+          },
+          {
+            "count": 21,
+            "text": "Tous les 21 ans"
+          },
+          {
+            "count": 1000000,
+            "text": "Tous les 1 000 000 ans"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "fuX_1m",
+        "context": "generated Bases contexts count",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Nenhum contexto"
+          },
+          {
+            "count": 1,
+            "text": "Um contexto"
+          },
+          {
+            "count": 2,
+            "text": "Vários contextos"
+          },
+          {
+            "count": 5,
+            "text": "Vários contextos"
+          },
+          {
+            "count": 21,
+            "text": "Vários contextos"
+          },
+          {
+            "count": 1000000,
+            "text": "Vários contextos"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "fJ_I-J",
+        "context": "generated Bases projects count",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Nenhum projeto"
+          },
+          {
+            "count": 1,
+            "text": "Um projeto"
+          },
+          {
+            "count": 2,
+            "text": "Vários projetos"
+          },
+          {
+            "count": 5,
+            "text": "Vários projetos"
+          },
+          {
+            "count": 21,
+            "text": "Vários projetos"
+          },
+          {
+            "count": 1000000,
+            "text": "Vários projetos"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "7PuX6r",
+        "context": "monthly weekday recurrence",
+        "renders": [
+          {
+            "count": 0,
+            "text": "A cada 0 mês na última segunda-feira"
+          },
+          {
+            "count": 1,
+            "text": "Mensalmente na última segunda-feira"
+          },
+          {
+            "count": 2,
+            "text": "A cada 2 meses na última segunda-feira"
+          },
+          {
+            "count": 5,
+            "text": "A cada 5 meses na última segunda-feira"
+          },
+          {
+            "count": 21,
+            "text": "A cada 21 meses na última segunda-feira"
+          },
+          {
+            "count": 1000000,
+            "text": "A cada 1.000.000 meses na última segunda-feira"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "Y071tE",
+        "context": "recurrence daily interval",
+        "renders": [
+          {
+            "count": 0,
+            "text": "A cada 0 dia"
+          },
+          {
+            "count": 1,
+            "text": "Diariamente"
+          },
+          {
+            "count": 2,
+            "text": "A cada 2 dias"
+          },
+          {
+            "count": 5,
+            "text": "A cada 5 dias"
+          },
+          {
+            "count": 21,
+            "text": "A cada 21 dias"
+          },
+          {
+            "count": 1000000,
+            "text": "A cada 1.000.000 dias"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "01y_eC",
+        "context": "recurrence interval on month day",
+        "renders": [
+          {
+            "count": 0,
+            "text": "A cada 0 mês, no dia 24"
+          },
+          {
+            "count": 1,
+            "text": "Mensalmente no dia 24"
+          },
+          {
+            "count": 2,
+            "text": "A cada 2 meses, no dia 24"
+          },
+          {
+            "count": 5,
+            "text": "A cada 5 meses, no dia 24"
+          },
+          {
+            "count": 21,
+            "text": "A cada 21 meses, no dia 24"
+          },
+          {
+            "count": 1000000,
+            "text": "A cada 1.000.000 meses, no dia 24"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "ciO00S",
+        "context": "recurrence monthly interval",
+        "renders": [
+          {
+            "count": 0,
+            "text": "A cada 0 mês"
+          },
+          {
+            "count": 1,
+            "text": "Mensalmente"
+          },
+          {
+            "count": 2,
+            "text": "A cada 2 meses"
+          },
+          {
+            "count": 5,
+            "text": "A cada 5 meses"
+          },
+          {
+            "count": 21,
+            "text": "A cada 21 meses"
+          },
+          {
+            "count": 1000000,
+            "text": "A cada 1.000.000 meses"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "f3a3-d",
+        "context": "recurrence weekly weekdays",
+        "renders": [
+          {
+            "count": 0,
+            "text": "A cada 0 semana: lundi"
+          },
+          {
+            "count": 1,
+            "text": "Toda semana: lundi"
+          },
+          {
+            "count": 2,
+            "text": "A cada 2 semanas: lundi"
+          },
+          {
+            "count": 5,
+            "text": "A cada 5 semanas: lundi"
+          },
+          {
+            "count": 21,
+            "text": "A cada 21 semanas: lundi"
+          },
+          {
+            "count": 1000000,
+            "text": "A cada 1.000.000 semanas: lundi"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "HI4G2n",
+        "context": "recurrence weekly interval",
+        "renders": [
+          {
+            "count": 0,
+            "text": "A cada 0 semana"
+          },
+          {
+            "count": 1,
+            "text": "Semanalmente"
+          },
+          {
+            "count": 2,
+            "text": "A cada 2 semanas"
+          },
+          {
+            "count": 5,
+            "text": "A cada 5 semanas"
+          },
+          {
+            "count": 21,
+            "text": "A cada 21 semanas"
+          },
+          {
+            "count": 1000000,
+            "text": "A cada 1.000.000 semanas"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "qqgQnq",
+        "context": "recurrence yearly interval date",
+        "renders": [
+          {
+            "count": 0,
+            "text": "A cada 0 ano, em date_fixture"
+          },
+          {
+            "count": 1,
+            "text": "Anualmente em date_fixture"
+          },
+          {
+            "count": 2,
+            "text": "A cada 2 anos, em date_fixture"
+          },
+          {
+            "count": 5,
+            "text": "A cada 5 anos, em date_fixture"
+          },
+          {
+            "count": 21,
+            "text": "A cada 21 anos, em date_fixture"
+          },
+          {
+            "count": 1000000,
+            "text": "A cada 1.000.000 anos, em date_fixture"
+          }
+        ]
+      },
+      {
+        "locale": "pt",
+        "id": "m2FqzW",
+        "context": "recurrence yearly interval",
+        "renders": [
+          {
+            "count": 0,
+            "text": "A cada 0 ano"
+          },
+          {
+            "count": 1,
+            "text": "Anualmente"
+          },
+          {
+            "count": 2,
+            "text": "A cada 2 anos"
+          },
+          {
+            "count": 5,
+            "text": "A cada 5 anos"
+          },
+          {
+            "count": 21,
+            "text": "A cada 21 anos"
+          },
+          {
+            "count": 1000000,
+            "text": "A cada 1.000.000 anos"
+          }
+        ]
+      },
+      {
+        "locale": "ru",
+        "id": "fuX_1m",
+        "context": "generated Bases contexts count",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Нет контекстов"
+          },
+          {
+            "count": 1,
+            "text": "Контекстов: 1"
+          },
+          {
+            "count": 2,
+            "text": "Не один контекст"
+          },
+          {
+            "count": 5,
+            "text": "Не один контекст"
+          },
+          {
+            "count": 21,
+            "text": "Не один контекст"
+          },
+          {
+            "count": 1000000,
+            "text": "Не один контекст"
+          }
+        ]
+      },
+      {
+        "locale": "ru",
+        "id": "fJ_I-J",
+        "context": "generated Bases projects count",
+        "renders": [
+          {
+            "count": 0,
+            "text": "Нет проектов"
+          },
+          {
+            "count": 1,
+            "text": "Проектов: 1"
+          },
+          {
+            "count": 2,
+            "text": "Не один проект"
+          },
+          {
+            "count": 5,
+            "text": "Не один проект"
+          },
+          {
+            "count": 21,
+            "text": "Не один проект"
+          },
+          {
+            "count": 1000000,
+            "text": "Не один проект"
+          }
+        ]
+      }
+    ],
+    "stableRussianMultipleGroupCases": 12
+  },
+  "scope": "Real compiled Lingui/core renders, including exact-arm-shadowed one-branch assertions. No native Obsidian rerun or independent native-speaker certification. Removed many categories intentionally fall back to authored other wording at exact millions.",
+  "scope": "Historical plural-follow-up record retained verbatim. Current re-review counts, recovered/retired IDs and source-bound validation are in i18n-rereview.json.",
+  "rereview": {
+    "sourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "evidence": "i18n-rereview.json",
+    "unchangedSinceDcbPerLocale": 2700,
+    "restoredAuthoredDescriptors": 16,
+    "retiredDescriptors": 38,
+    "authoredContracts": 24444,
+    "allCatalogueOperandCases": 171108,
+    "focusedRenderedCases": 564,
+    "focusedMessages": 94,
+    "retiredByRereview": [
+      {
+        "locale": "es",
+        "id": "S3yJwA",
+        "reason": "N8: exact pre-port English ICS export restored; message is data, not UI"
+      },
+      {
+        "locale": "fr",
+        "id": "S3yJwA",
+        "reason": "N8: exact pre-port English ICS export restored; message is data, not UI"
+      }
+    ],
+    "fullReportSha256": "ff0320ff4d79e67ca16959dea9b604ef84728c0e1d454bca0e523087ede8060e"
+  }
+}

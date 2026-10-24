@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { MarkdownView, Platform, addIcon, setTooltip } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import type TaskNotesPlugin from "../main";
@@ -178,10 +180,10 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 }
 
 export function registerRibbonIcons(plugin: TaskNotesPlugin): void {
-	const ribbons: { element: HTMLElement; key: string }[] = [];
+	const ribbons: { element: HTMLElement; key: MessageDescriptor }[] = [];
 	const addRibbon = (
 		icon: string,
-		key: string,
+		key: MessageDescriptor,
 		callback: (event: MouseEvent) => void | Promise<void>
 	) => {
 		const element = plugin.addRibbonIcon(icon, plugin.i18n.translate(key), callback);
@@ -195,35 +197,35 @@ export function registerRibbonIcons(plugin: TaskNotesPlugin): void {
 	const listener = plugin.i18n.on("locale-changed", refresh);
 	plugin.register(() => plugin.i18n.offref(listener));
 
-	addRibbon("calendar-days", "commands.openCalendarView", async () => {
+	addRibbon("calendar-days", msg({ message: "Open mini calendar view", context: "commands.openCalendarView" }), async () => {
 		await plugin.activateCalendarView();
 	});
 
-	addRibbon("calendar", "commands.openAdvancedCalendarView", async () => {
+	addRibbon("calendar", msg({ message: "Open calendar view", context: "commands.openAdvancedCalendarView" }), async () => {
 		await plugin.openBasesFileForCommand("open-advanced-calendar-view");
 	});
 
-	addRibbon("check-square", "commands.openTasksView", async () => {
+	addRibbon("check-square", msg({ message: "Open tasks view", context: "commands.openTasksView" }), async () => {
 		await plugin.openBasesFileForCommand("open-tasks-view");
 	});
 
-	addRibbon("list", "commands.openAgendaView", async () => {
+	addRibbon("list", msg({ message: "Open agenda view", context: "commands.openAgendaView" }), async () => {
 		await plugin.openBasesFileForCommand("open-agenda-view");
 	});
 
-	addRibbon("columns-3", "commands.openKanbanView", async () => {
+	addRibbon("columns-3", msg({ message: "Open Kanban board", context: "commands.openKanbanView" }), async () => {
 		await plugin.openBasesFileForCommand("open-kanban-view");
 	});
 
-	addRibbon("timer", "commands.openPomodoroView", async () => {
+	addRibbon("timer", msg({ message: "Open Pomodoro timer", context: "commands.openPomodoroView" }), async () => {
 		await plugin.activatePomodoroView();
 	});
 
-	addRibbon("bar-chart-3", "commands.openPomodoroStats", async () => {
+	addRibbon("bar-chart-3", msg({ message: "Open Pomodoro statistics", context: "commands.openPomodoroStats" }), async () => {
 		await plugin.activatePomodoroStatsView();
 	});
 
-	addRibbon("tasknotes-simple", "commands.createNewTask", () => {
+	addRibbon("tasknotes-simple", msg({ message: "Create new task", context: "commands.createNewTask" }), () => {
 		plugin.openTaskCreationModal();
 	});
 }
@@ -338,7 +340,7 @@ export async function initializeHTTPAPI(plugin: TaskNotesPlugin): Promise<void> 
 		plugin.pomodoroService.setWebhookNotifier(plugin.apiService);
 		await plugin.apiService.start();
 		showNotice(
-			plugin.i18n.translate("notices.interface.apiStarted", {
+			plugin.i18n.translate(msg({ message: "TaskNotes API started on port {port}", context: "notices.interface.apiStarted" }), {
 				port: plugin.apiService.getPort(),
 			})
 		);
@@ -348,7 +350,7 @@ export async function initializeHTTPAPI(plugin: TaskNotesPlugin): Promise<void> 
 			operation: "initialize-http-api",
 			error: error,
 		});
-		showNotice(plugin.i18n.translate("notices.interface.apiFailed"));
+		showNotice(plugin.i18n.translate(msg({ message: "Failed to start TaskNotes API server. Check console for details.", context: "notices.interface.apiFailed" })));
 	}
 }
 
