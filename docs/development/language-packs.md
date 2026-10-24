@@ -135,7 +135,7 @@ For minified production acceptance, use the preserved artifacts from `npm run ch
    npm run e2e -- e2e/lingui-bundled.spec.ts --output=test-results/bundled)
 ```
 
-The bundled test cold-starts Italian, asserts ten loaded locales, and checks native en/it/ja/de/ru picker/command labels and 0/1/2/5/21 forms. Its Italian/German control test also checks visible release dates, persisted UI/NLP pickers and Italian NLP fill-form without creating a task. Both modes also run the same en/it/de/ru group-identity regression. Reports and native screenshots are written under `test-results/lingui-native` and `test-results/lingui-bundled`; each mode's `review/review-report.json` records the actual frontmatter and saved order.
+The bundled test cold-starts Italian, asserts ten loaded locales, and checks native en/it/ja/de/ru picker/command labels and 0/1/2/5/21 forms. Its Italian/German control test also checks visible ICS-note date fixtures, persisted UI/NLP pickers and Italian NLP fill-form without creating a task; disposable date notes are removed in `finally`. Both modes also run the same en/it/de/ru group-identity regression. Reports and native screenshots are written under `test-results/lingui-native` and `test-results/lingui-bundled`; each mode's `review/review-report.json` records the actual frontmatter and saved order.
 
 `npm run test:fresh-catalogues` removes only ignored generated JSON, typechecks before regeneration, runs ordinary strict Jest, removes JSON again and builds/checks documentation. Authored POs are never deleted or fallback-filled by that acceptance command. Development requires Node 22.22+ and initialized `docs/spec` (`git submodule update --init --checkout docs/spec`).
 

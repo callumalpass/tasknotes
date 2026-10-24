@@ -21,6 +21,8 @@ const cores = new Map<string, ReturnType<typeof setupI18n>>();
 test.skip(Boolean(process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL), "Requires the ordinary all-locale bundled build");
 
 test.beforeAll(async () => {
+	// Strict ten-locale preparation plus a cold isolated Electron profile.
+	test.setTimeout(180000);
 	execFileSync(process.execPath, ["scripts/compile-lingui.mjs"], { cwd: root, stdio: "inherit" });
 	for (const locale of ["en", "it", "ja", "de", "ru"]) {
 		const { messages } = JSON.parse(fs.readFileSync(path.join(root, "src/i18n/locales", locale, "messages.json"), "utf8"));
@@ -81,28 +83,43 @@ test("Italian and German native dates, persisted pickers and Italian NLP remain 
 	const page = app!.page;
 	const original = await page.evaluate(() => JSON.parse(JSON.stringify((window as any).app.plugins.plugins.tasknotes.settings)));
 	const report: Record<string, unknown> = {};
+	const dateFolder = `Italian-date-fixture-${Date.now()}`;
+	await page.evaluate(async folder => { await (window as any).app.vault.createFolder(folder); }, dateFolder);
 	try {
 		for (const locale of ["it", "de"]) {
-			let settings = await openTaskNotesSettings(page);
+			const general = await page.evaluate(id => (window as any).app.plugins.plugins.tasknotes.i18n.translate({ id }), keyMap["settings.tabs.general"].id);
+			const settings = await openTaskNotesSettings(page, general);
 			await settings.locator('select:has(option[value="system"]):has(option[value="it"])').selectOption(locale);
 			await expect.poll(() => page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale())).toBe(locale);
 			await settings.getByRole("tab", { name: cores.get(locale)!._(keyMap["settings.tabs.features"].id), exact: true }).click();
 			const nlpName = cores.get(locale)!._(keyMap["settings.features.nlp.language.name"].id);
-			const nlp = settings.locator(".setting-item").filter({ has: settings.getByText(nlpName, { exact: true }) }).locator("select");
+			const nlp = settings.getByText(nlpName, { exact: true })
+				.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " setting-item ")][1]')
+				.getByRole("combobox");
 			await expect(nlp.locator('option[value="it"]')).toHaveText("Italiano");
 			await nlp.selectOption("it");
+			await settings.getByRole("tab", { name: cores.get(locale)!._(keyMap["settings.tabs.general"].id), exact: true }).click();
 			await closeObsidianSettings(page, settings);
-			await expect.poll(() => JSON.parse(fs.readFileSync(settingsPath, "utf8")).nlpLanguage).toBe("it");
-			await expect.poll(() => JSON.parse(fs.readFileSync(settingsPath, "utf8")).uiLanguage).toBe(locale);
-			await page.evaluate(async () => {
-				const app = (window as any).app;
-				for (const leaf of app.workspace.getLeavesOfType("tasknotes-release-notes")) leaf.detach();
-				await app.commands.executeCommandById("tasknotes:view-release-notes");
-			});
-			const dates = await page.evaluate(() => (window as any).app.workspace.getLeavesOfType("tasknotes-release-notes")[0].view.releaseNotesBundle.filter(item => item.date).slice(0, 2).map(item => item.date));
-			expect(dates).toHaveLength(2);
-			const formattedDates = dates.map(date => format(new Date(`${date}T12:00:00`), "MMMM d, yyyy", { locale: locale === "it" ? italianDateLocale : germanDateLocale }));
-			for (const date of formattedDates) await expect(page.locator(".release-notes-version-header").filter({ hasText: date }).first()).toBeVisible();
+			await expect.poll(() => {
+				try {
+					// Obsidian may truncate data.json before completing its async save.
+					const saved = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
+					return { nlpLanguage: saved.nlpLanguage, uiLanguage: saved.uiLanguage };
+				} catch { return null; }
+			}).toEqual({ nlpLanguage: "it", uiLanguage: locale });
+			const dates = ["2026-10-24T12:00:00", "2026-12-25T13:30:00"];
+			await page.evaluate(async ({ folder, locale, dates }) => {
+				const app = (window as any).app, plugin = app.plugins.plugins.tasknotes;
+				const { file } = await plugin.icsNoteService.createNoteFromICS({
+					id: `italian-date-${locale}`, subscriptionId: "isolated-date-fixture",
+					title: `Date fixture ${locale}`, start: dates[0], end: dates[1], allDay: false,
+				}, { folder, title: `Date fixture ${locale}` });
+				const leaf = app.workspace.getLeaf(false);
+				await leaf.openFile(file);
+				await leaf.setViewState({ type: "markdown", state: { file: file.path, mode: "preview" } });
+			}, { folder: dateFolder, locale, dates });
+			const formattedDates = dates.map(date => format(new Date(date), "PPPp", { locale: locale === "it" ? italianDateLocale : germanDateLocale }));
+			for (const date of formattedDates) await expect(page.locator(".workspace-leaf.mod-active .markdown-preview-view")).toContainText(date);
 			await page.screenshot({ path: `test-results/lingui-bundled/${locale}-dates.png` });
 			await page.evaluate(() => (window as any).app.commands.executeCommandById("tasknotes:create-new-task"));
 			const modal = page.locator(".modal").filter({ has: page.locator(".title-input, .title-input-detailed") }).last();
@@ -110,7 +127,9 @@ test("Italian and German native dates, persisted pickers and Italian NLP remain 
 			const editor = modal.locator('.cm-content[contenteditable="true"]:visible').first();
 			// ISO input keeps this language-selection regression independent of
 			// the host's separate numeric date-order setting.
-			await editor.fill("Comprare latte entro 2026-12-25");
+			await editor.click();
+			await editor.press("ControlOrMeta+A");
+			await editor.pressSequentially("Comprare latte entro 2026-12-25");
 			const fill = cores.get(locale)!._(keyMap["modals.taskCreation.actions.fillFromNaturalLanguage"].id);
 			await modal.getByLabel(fill, { exact: true }).click();
 			await expect(modal.locator(".title-input-detailed")).toHaveValue("Comprare latte");
@@ -118,18 +137,22 @@ test("Italian and German native dates, persisted pickers and Italian NLP remain 
 			await expect(due).toHaveClass(/has-value/);
 			await expect(due).toHaveAttribute("aria-label", /2026-12-25/);
 			await page.screenshot({ path: `test-results/lingui-bundled/${locale}-italian-nlp.png` });
-			await page.keyboard.press("Escape");
+			await modal.getByRole("button", { name: cores.get(locale)!._(keyMap["common.cancel"].id), exact: true }).click();
+			await expect(modal).toHaveCount(0);
 			report[locale] = { dates: formattedDates, nlpLanguage: "it", parsedTitle: "Comprare latte", due: "2026-12-25", pickersPersisted: true };
 		}
 		fs.writeFileSync(path.join(root, "test-results/lingui-bundled/italian-report.json"), JSON.stringify(report, null, 2));
 	} finally {
 		await page.keyboard.press("Escape").catch(() => {});
-		await page.evaluate(async original => {
-			const plugin = (window as any).app.plugins.plugins.tasknotes;
+		await page.evaluate(async ({ original, folder }) => {
+			const app = (window as any).app, plugin = app.plugins.plugins.tasknotes;
 			Object.assign(plugin.settings, original);
 			await plugin.setUILanguage(original.uiLanguage);
 			await plugin.saveSettings();
-		}, original);
+			for (const leaf of app.workspace.getLeavesOfType("markdown")) if (leaf.view.file?.path.startsWith(folder + "/")) await leaf.setViewState({ type: "empty" });
+			const fixture = app.vault.getAbstractFileByPath(folder);
+			if (fixture) await app.vault.delete(fixture, true);
+		}, { original, folder: dateFolder });
 	}
 });
 
