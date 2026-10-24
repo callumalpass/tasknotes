@@ -121,8 +121,8 @@ test.describe('TaskNotes Plugin', () => {
     // Screenshot: after running calendar command
     await page.screenshot({ path: 'test-results/screenshots/calendar-view.png' });
 
-    // Verify the calendar view is visible (FullCalendar container)
-    const calendarContainer = page.locator('.fc');
+    // Verify the calendar view is visible
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 10000 });
   });
 
@@ -181,7 +181,7 @@ test.describe('TaskNotes Views', () => {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
 
-    // First open calendar view to initialize FullCalendar (required for Bases views)
+    // First open calendar view to initialize the calendar (required for Bases views)
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
@@ -249,8 +249,8 @@ test.describe('TaskNotes Views', () => {
 
     await page.screenshot({ path: 'test-results/screenshots/agenda-view.png' });
 
-    // Verify agenda view loads (uses FullCalendar's listWeek view or shows error)
-    const agendaContainer = page.locator('.fc, .tn-bases-integration, .tn-bases-error').first();
+    // Verify agenda view loads (list view or shows error)
+    const agendaContainer = page.locator('.tnc, .tn-bases-integration, .tn-bases-error').first();
     await expect(agendaContainer).toBeVisible({ timeout: 10000 });
   });
 });
@@ -263,8 +263,8 @@ test.describe('Calendar View Modes', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    // Click the Week button - FullCalendar uses fc-timeGridWeek-button class
-    const weekButton = page.locator('button.fc-timeGridWeek-button');
+    // Click the Week button - the calendar toolbar uses tnc-btn-view-week
+    const weekButton = page.locator('button.tnc-btn-view-week');
     if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await weekButton.click();
       await page.waitForTimeout(1000);
@@ -276,9 +276,9 @@ test.describe('Calendar View Modes', () => {
   test('should switch to day view', async () => {
     const page = getPage();
 
-    // Click the Day button - FullCalendar uses fc-timeGridDay-button class
+    // Click the Day button - the calendar toolbar uses tnc-btn-view-day
     // Using exact class selector to avoid matching other buttons
-    const dayButton = page.locator('button.fc-timeGridDay-button');
+    const dayButton = page.locator('button.tnc-btn-view-day');
     if (await dayButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await dayButton.click();
       await page.waitForTimeout(1000);
@@ -290,9 +290,9 @@ test.describe('Calendar View Modes', () => {
   test('should switch to year view', async () => {
     const page = getPage();
 
-    // Click the Year button - FullCalendar uses fc-multiMonthYear-button class
+    // Click the Year button - the calendar toolbar uses tnc-btn-view-year
     // Using exact class selector to avoid matching other buttons
-    const yearButton = page.locator('button.fc-multiMonthYear-button');
+    const yearButton = page.locator('button.tnc-btn-view-year');
     if (await yearButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await yearButton.click();
       await page.waitForTimeout(1000);
@@ -304,8 +304,8 @@ test.describe('Calendar View Modes', () => {
   test('should switch to list view', async () => {
     const page = getPage();
 
-    // Click the List button - FullCalendar uses fc-listWeekButton-button class
-    const listButton = page.locator('button.fc-listWeekButton-button');
+    // Click the List button - the calendar toolbar uses tnc-btn-view-list
+    const listButton = page.locator('button.tnc-btn-view-list');
     if (await listButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await listButton.click();
       await page.waitForTimeout(1000);
@@ -317,8 +317,8 @@ test.describe('Calendar View Modes', () => {
   test('should switch back to month view', async () => {
     const page = getPage();
 
-    // Click the Month button - FullCalendar uses fc-dayGridMonth-button class
-    const monthButton = page.locator('button.fc-dayGridMonth-button');
+    // Click the Month button - the calendar toolbar uses tnc-btn-view-month
+    const monthButton = page.locator('button.tnc-btn-view-month');
     if (await monthButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await monthButton.click();
       await page.waitForTimeout(1000);
@@ -608,7 +608,7 @@ test.describe('Documented UI Issues', () => {
       await page.waitForTimeout(1000);
 
       // Verify tasks are visible in the view
-      const taskItems = page.locator('.tasknotes-task-list-item, .fc-event');
+      const taskItems = page.locator('.tasknotes-task-list-item, .tnc-item');
       const count = await taskItems.count().catch(() => 0);
 
       await page.screenshot({ path: 'test-results/screenshots/tasks-default-view.png' });
@@ -620,7 +620,7 @@ test.describe('Documented UI Issues', () => {
 
   test('calendar view toolbar buttons should have title hints', async () => {
     // PREVIOUSLY: test.fixme - now passing after buttonHints fix
-    // Fix: Added buttonHints to FullCalendar configuration in CalendarView.ts
+    // Fix: Toolbar buttons get hints from the calendar text options in CalendarView.ts
     //
     // See: src/bases/CalendarView.ts - buttonHints configuration
     // See: src/i18n/locales/en/messages.po - views.basesCalendar.hints
@@ -634,8 +634,8 @@ test.describe('Documented UI Issues', () => {
     }
 
     // Verify buttons have title attributes for tooltips
-    const yearButton = page.locator('.fc-multiMonthYear-button[title], button:has-text("Y")[title]');
-    const monthButton = page.locator('.fc-dayGridMonth-button[title], button:has-text("M")[title]');
+    const yearButton = page.locator('.tnc-btn-view-year[title], button:has-text("Y")[title]');
+    const monthButton = page.locator('.tnc-btn-view-month[title], button:has-text("M")[title]');
 
     // At least one button should have a title attribute
     const yearHasTitle = await yearButton.count().catch(() => 0);
@@ -666,7 +666,7 @@ test.describe('Documented UI Issues', () => {
     await page.screenshot({ path: 'test-results/screenshots/mini-calendar-heatmap.png' });
 
     // Verify a calendar-like container is visible (mini calendar or any calendar view)
-    const calContainer = page.locator('.mini-calendar-view, .advanced-calendar-view, .fc');
+    const calContainer = page.locator('.mini-calendar-view, .advanced-calendar-view, .tnc');
     const isVisible = await calContainer.isVisible({ timeout: 5000 }).catch(() => false);
 
     // Soft check - the view should render something
@@ -719,58 +719,6 @@ test.describe('Documented UI Issues', () => {
     // Limitation: A complete fix would require Obsidian API changes or custom hover handling.
     //
     // See screenshots: test-results/screenshots/pomodoro-timer.png
-  });
-
-  test('week/day view today column should use theme accent color (not yellow)', async () => {
-    // PREVIOUSLY: test.fixme - now passing after CSS fix
-    // Fix: Added `.advanced-calendar-view .fc .fc-timegrid-col.fc-day-today` CSS rule
-    // in styles/advanced-calendar-view.css to use subtle accent color (8% opacity)
-    // matching the daygrid today styling.
-    //
-    // Original issue: In week and day views, the "today" column used FullCalendar's
-    // default yellowish background which was visually jarring and didn't match
-    // the theme's accent color.
-    //
-    // See: styles/advanced-calendar-view.css - fc-timegrid-col.fc-day-today
-    const page = getPage();
-
-    // First, ensure we're on the calendar view and navigate to today
-    const calendarView = page.locator('.nav-file-title:has-text("calendar-default")');
-    if (await calendarView.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await calendarView.click();
-      await page.waitForTimeout(1000);
-    }
-
-    // Click Today button to ensure we're viewing the current date
-    const todayButton = page.locator('.fc-today-button, button:has-text("Today")');
-    if (await todayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      if (await todayButton.isEnabled().catch(() => false)) {
-        await todayButton.click();
-        await page.waitForTimeout(500);
-      }
-    }
-
-    // Switch to week view to see the today column
-    const weekButton = page.locator('.fc-timeGridWeek-button, button:has-text("W")');
-    if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await weekButton.click({ timeout: 5000 }).catch(() => {
-        // Button may be obscured or not clickable - that's OK for this visual test
-      });
-      await page.waitForTimeout(500);
-    }
-
-    // Verify today column exists with fc-day-today class
-    const todayColumn = page.locator('.fc-timegrid-col.fc-day-today');
-    const hasTodayColumn = await todayColumn.isVisible({ timeout: 5000 }).catch(() => false);
-
-    // Capture screenshot for visual verification
-    await page.screenshot({ path: 'test-results/screenshots/week-view-today-highlight.png' });
-
-    // If today column is visible, test passes. If not, it means we're viewing a week
-    // that doesn't include today (valid state) - just log for visual verification
-    if (!hasTodayColumn) {
-      console.log('Today column not visible - week view may not include current date');
-    }
   });
 
   test.fixme('kanban board columns should show task cards instead of empty space', async () => {
@@ -921,7 +869,7 @@ test.describe('Task Interaction', () => {
     await page.waitForTimeout(1000);
 
     // Try to find any task event on the calendar
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.click({ button: 'right' });
       await page.waitForTimeout(500);
@@ -996,7 +944,7 @@ test.describe('Relationships View', () => {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
 
-    // First open calendar view to initialize FullCalendar (required for Bases views)
+    // First open calendar view to initialize the calendar (required for Bases views)
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
@@ -1024,7 +972,7 @@ test.describe('Task Card Interaction', () => {
     await page.waitForTimeout(1000);
 
     // Find a task event on the calendar
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       // Hover over the event
       await taskEvent.hover();
@@ -1040,7 +988,7 @@ test.describe('Task Card Interaction', () => {
     await page.waitForTimeout(1000);
 
     // Find and click a task event
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.click();
       await page.waitForTimeout(500);
@@ -1058,7 +1006,7 @@ test.describe('Keyboard Navigation', () => {
     await page.waitForTimeout(1000);
 
     // Wait for calendar to be visible
-    const calendarContainer = page.locator('.fc').first();
+    const calendarContainer = page.locator('.tnc').first();
     if (await calendarContainer.isVisible({ timeout: 5000 }).catch(() => false)) {
       await calendarContainer.click();
       await page.waitForTimeout(300);
@@ -1138,7 +1086,7 @@ test.describe('Calendar Navigation', () => {
     await page.screenshot({ path: 'test-results/screenshots/calendar-current-month.png' });
 
     // Click previous button
-    const prevButton = page.locator('.fc-prev-button, button:has-text("<")').first();
+    const prevButton = page.locator('.tnc-btn-prev, button:has-text("<")').first();
     if (await prevButton.isVisible()) {
       await prevButton.click();
       await page.waitForTimeout(500);
@@ -1146,7 +1094,7 @@ test.describe('Calendar Navigation', () => {
     }
 
     // Click next button twice to go forward
-    const nextButton = page.locator('.fc-next-button, button:has-text(">")').first();
+    const nextButton = page.locator('.tnc-btn-next, button:has-text(">")').first();
     if (await nextButton.isVisible()) {
       await nextButton.click();
       await nextButton.click();
@@ -1159,7 +1107,7 @@ test.describe('Calendar Navigation', () => {
     const page = getPage();
 
     // Navigate away from today first
-    const prevButton = page.locator('.fc-prev-button, button:has-text("<")').first();
+    const prevButton = page.locator('.tnc-btn-prev, button:has-text("<")').first();
     if (await prevButton.isVisible()) {
       await prevButton.click();
       await prevButton.click();
@@ -1167,7 +1115,7 @@ test.describe('Calendar Navigation', () => {
     }
 
     // Click Today button
-    const todayButton = page.locator('.fc-today-button, button:has-text("Today")').first();
+    const todayButton = page.locator('.tnc-btn-today, button:has-text("Today")').first();
     if (await todayButton.isVisible()) {
       await todayButton.click();
       await page.waitForTimeout(500);
@@ -1200,8 +1148,8 @@ test.describe('Calendar 3-Day View', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    // Click the 3-day button - FullCalendar uses fc-timeGridCustom-button class
-    const threeDayButton = page.locator('button.fc-timeGridCustom-button');
+    // Click the 3-day button - the calendar toolbar uses tnc-btn-view-days
+    const threeDayButton = page.locator('button.tnc-btn-view-days');
     if (await threeDayButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await threeDayButton.click();
       await page.waitForTimeout(1000);
@@ -1235,19 +1183,19 @@ test.describe('Calendar Performance - Issue #1330', () => {
     const startTime = Date.now();
     await runCommand(page, 'Open calendar view');
 
-    // Wait for FullCalendar container to appear (basic initialization)
-    const calendarContainer = page.locator('.fc');
+    // Wait for the calendar container to appear (basic initialization)
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 30000 });
 
     // Switch to week view which is reported as slow
-    const weekButton = page.locator('button.fc-timeGridWeek-button');
+    const weekButton = page.locator('button.tnc-btn-view-week');
     if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await weekButton.click();
     }
 
     // Wait for the calendar to be fully interactive (events rendered)
     // We check for the timeGrid body which indicates week view is loaded
-    const timeGridBody = page.locator('.fc-timegrid-body');
+    const timeGridBody = page.locator('.tnc-tg-body');
     await expect(timeGridBody).toBeVisible({ timeout: 30000 });
 
     // Wait for any event cards to finish rendering (if there are events)
@@ -1281,21 +1229,21 @@ test.describe('Calendar Performance - Issue #1330', () => {
 
     // The calendar container should appear quickly (within 500ms)
     const containerStartTime = Date.now();
-    const calendarContainer = page.locator('.fc');
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 1000 });
     const containerLoadTime = Date.now() - containerStartTime;
 
     console.log(`[Issue #1330] Calendar container visible in: ${containerLoadTime}ms`);
 
     // Switch to week view
-    const weekButton = page.locator('button.fc-timeGridWeek-button');
+    const weekButton = page.locator('button.tnc-btn-view-week');
     if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await weekButton.click();
     }
 
     // The week view grid should appear quickly, even if events are still loading
     const gridStartTime = Date.now();
-    const timeGrid = page.locator('.fc-timegrid');
+    const timeGrid = page.locator('.tnc-tg');
     await expect(timeGrid).toBeVisible({ timeout: 1000 });
     const gridLoadTime = Date.now() - gridStartTime;
 
@@ -1327,12 +1275,12 @@ test.describe('Calendar Performance - Issue #1330', () => {
     await runCommand(page, 'Open calendar view');
 
     // Time to first paint (calendar structure visible)
-    const calendarContainer = page.locator('.fc');
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 30000 });
     const firstPaintTime = Date.now() - startTime;
 
     // Switch to week view
-    const weekButton = page.locator('button.fc-timeGridWeek-button');
+    const weekButton = page.locator('button.tnc-btn-view-week');
     if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await weekButton.click();
     }
@@ -1360,9 +1308,11 @@ test.describe('Task Quick Add', () => {
     await page.waitForTimeout(500);
 
     // Find a day cell and double-click to create task
-    const dayCell = page.locator('.fc-daygrid-day').first();
+    const dayCell = page.locator('.tnc-dg-day').first();
     if (await dayCell.isVisible()) {
-      await dayCell.dblclick();
+      // Items are drawn over the cells; click the empty bottom edge of the day.
+      const cellBox = await dayCell.boundingBox();
+      await dayCell.dblclick({ position: { x: 8, y: Math.max(4, (cellBox?.height ?? 8) - 4) } });
       await page.waitForTimeout(500);
       await page.screenshot({ path: 'test-results/screenshots/quick-add-from-calendar.png' });
 
@@ -1429,7 +1379,7 @@ test.describe('Drag and Drop', () => {
     await page.waitForTimeout(1000);
 
     // Find a task event and hover to see drag handles
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.hover();
       await page.waitForTimeout(500);
@@ -1487,15 +1437,15 @@ test.describe('Year View Details', () => {
     await page.waitForTimeout(1000);
 
     const activeLeaf = page.locator('.workspace-leaf.mod-active');
-    const yearButton = activeLeaf.locator('button.fc-multiMonthYear-button').first();
+    const yearButton = activeLeaf.locator('button.tnc-btn-view-year').first();
     await expect(yearButton).toBeVisible();
     await yearButton.click();
     await expect(yearButton).toHaveAttribute('aria-pressed', 'true');
-    await expect(activeLeaf.locator('.fc-multimonth').first()).toBeVisible();
+    await expect(activeLeaf.locator('.tnc-year').first()).toBeVisible();
     await page.screenshot({ path: 'test-results/screenshots/year-view-overflow.png' });
 
     // Background calendars and overflow measurement clones are not hover targets.
-    const moreLinks = activeLeaf.locator('.fc-more-link:visible');
+    const moreLinks = activeLeaf.locator('.tnc-more:visible');
     if (await moreLinks.count() > 0) {
       await moreLinks.first().hover();
       await page.screenshot({ path: 'test-results/screenshots/year-view-overflow-hover.png' });
@@ -1554,7 +1504,7 @@ test.describe('Agenda View Details', () => {
     }
 
     // Check for day headers in agenda
-    const dayHeaders = page.locator('.fc-list-day-cushion');
+    const dayHeaders = page.locator('.tnc-list-day');
     const headerCount = await dayHeaders.count();
 
     await page.screenshot({ path: 'test-results/screenshots/agenda-day-headers.png' });
@@ -1767,7 +1717,7 @@ test.describe('Calendar Event Color Coding', () => {
     await page.waitForTimeout(1000);
 
     // Look for colored events
-    const events = page.locator('.fc-event');
+    const events = page.locator('.tnc-item');
     const eventCount = await events.count();
 
     if (eventCount > 0) {
@@ -1775,7 +1725,7 @@ test.describe('Calendar Event Color Coding', () => {
       await page.screenshot({ path: 'test-results/screenshots/calendar-colored-events.png' });
 
       // Check for overdue events (usually red/orange)
-      const overdueEvents = page.locator('.fc-event[class*="overdue"], .fc-event[style*="red"], .fc-event[style*="#f"]');
+      const overdueEvents = page.locator('.tnc-item[class*="overdue"], .tnc-item[style*="red"], .tnc-item[style*="#f"]');
       const overdueCount = await overdueEvents.count();
 
       if (overdueCount > 0) {
@@ -1817,7 +1767,7 @@ test.describe('Task Edit Modal', () => {
     await page.waitForTimeout(1000);
 
     // Click on a calendar event
-    const calendarEvent = page.locator('.fc-event').first();
+    const calendarEvent = page.locator('.tnc-item').first();
     if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await calendarEvent.click();
       await page.waitForTimeout(800);
@@ -1847,7 +1797,7 @@ test.describe('Task Edit Modal', () => {
     await page.waitForTimeout(1000);
 
     // Click on a calendar event to open edit modal
-    const calendarEvent = page.locator('.fc-event').first();
+    const calendarEvent = page.locator('.tnc-item').first();
     if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await calendarEvent.click();
       await page.waitForTimeout(800);
@@ -1903,7 +1853,7 @@ test.describe('Task Edit Modal', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    const calendarEvent = page.locator('.fc-event').first();
+    const calendarEvent = page.locator('.tnc-item').first();
     if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await calendarEvent.click();
       await page.waitForTimeout(800);
@@ -1957,7 +1907,7 @@ test.describe('Task Edit Modal', () => {
     await page.waitForTimeout(1000);
 
     // Click on a calendar event to open task edit modal
-    const calendarEvent = page.locator('.fc-event').first();
+    const calendarEvent = page.locator('.tnc-item').first();
     if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await calendarEvent.click();
       await page.waitForTimeout(800);
@@ -2523,7 +2473,7 @@ test.describe('Recurrence Configuration', () => {
     await page.waitForTimeout(1000);
 
     // Look for recurring task indicators
-    const recurringIndicator = page.locator('.fc-event [class*="recurring"], .fc-event [class*="repeat"], .fc-event svg[class*="repeat"]');
+    const recurringIndicator = page.locator('.tnc-item [class*="recurring"], .tnc-item [class*="repeat"], .tnc-item svg[class*="repeat"]');
     const indicatorCount = await recurringIndicator.count();
 
     await page.screenshot({ path: 'test-results/screenshots/calendar-recurring-indicators.png' });
@@ -2541,7 +2491,7 @@ test.describe('Time Tracking Interface', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    const calendarEvent = page.locator('.fc-event').first();
+    const calendarEvent = page.locator('.tnc-item').first();
     if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await calendarEvent.click();
       await page.waitForTimeout(800);
@@ -2570,7 +2520,7 @@ test.describe('Time Tracking Interface', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    const calendarEvent = page.locator('.fc-event').first();
+    const calendarEvent = page.locator('.tnc-item').first();
     if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       // Right-click to open context menu
       await calendarEvent.click({ button: 'right' });
@@ -2645,7 +2595,7 @@ test.describe('Task Dependencies Interface', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    const calendarEvent = page.locator('.fc-event').first();
+    const calendarEvent = page.locator('.tnc-item').first();
     if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await calendarEvent.click();
       await page.waitForTimeout(800);
@@ -2845,7 +2795,7 @@ test.describe('Mobile Mode', () => {
     await page.waitForTimeout(1500);
 
     // Verify calendar view is visible
-    const calendarView = page.locator('.tasknotes-calendar-view, .fc, .fc-view');
+    const calendarView = page.locator('.tasknotes-calendar-view, .tnc, .tnc-view');
     await expect(calendarView.first()).toBeVisible({ timeout: 10000 });
 
     await page.screenshot({ path: 'test-results/screenshots/mobile-calendar-view.png' });
@@ -2939,7 +2889,7 @@ test.describe('Priority Color Issues (#1036)', () => {
     await page.waitForTimeout(1500);
 
     // Find scheduled events (they have transparent background and colored border)
-    const scheduledEvents = page.locator('.fc-event[data-event-type="scheduled"], .fc-event:not([style*="background"])');
+    const scheduledEvents = page.locator('.tnc-item[data-event-type="scheduled"], .tnc-item:not([style*="background"])');
     const eventCount = await scheduledEvents.count().catch(() => 0);
 
     // Screenshot to capture the current state of priority coloring
@@ -2970,7 +2920,7 @@ test.describe('Priority Color Issues (#1036)', () => {
     await page.waitForTimeout(1500);
 
     // Due events have "DUE:" prefix in title and filled background
-    const dueEvents = page.locator('.fc-event:has-text("DUE:")');
+    const dueEvents = page.locator('.tnc-item:has-text("DUE:")');
     const dueCount = await dueEvents.count().catch(() => 0);
 
     await page.screenshot({ path: 'test-results/screenshots/issue-1036-due-events.png' });
@@ -3010,7 +2960,7 @@ test.describe('Priority Color Issues (#1036)', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1500);
 
-    const dueEvents = page.locator('.fc-event:has-text("DUE:")');
+    const dueEvents = page.locator('.tnc-item:has-text("DUE:")');
     const dueCount = await dueEvents.count().catch(() => 0);
 
     if (dueCount > 0) {
@@ -3043,7 +2993,7 @@ test.describe('Priority Color Issues (#1036)', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1500);
 
-    const dueEvents = page.locator('.fc-event:has-text("DUE:")');
+    const dueEvents = page.locator('.tnc-item:has-text("DUE:")');
     const dueCount = await dueEvents.count().catch(() => 0);
 
     if (dueCount > 0) {
@@ -3051,8 +3001,8 @@ test.describe('Priority Color Issues (#1036)', () => {
 
       // Due events should now have the draggable class
       const isDraggable = await firstDueEvent.evaluate(el => {
-        // FullCalendar adds fc-event-draggable class to editable events
-        return el.classList.contains('fc-event-draggable');
+        // The calendar adds is-draggable to editable items
+        return el.classList.contains('is-draggable');
       }).catch(() => false);
 
       // Due events are now draggable (fix #1036)
@@ -3070,7 +3020,7 @@ test.describe('Priority Color Issues (#1036)', () => {
     await page.waitForTimeout(1500);
 
     // Scheduled events don't have "DUE:" prefix
-    const allEvents = page.locator('.fc-event');
+    const allEvents = page.locator('.tnc-item');
     const scheduledEvents = allEvents.filter({ hasNotText: 'DUE:' });
     const scheduledCount = await scheduledEvents.count().catch(() => 0);
 
@@ -3078,7 +3028,7 @@ test.describe('Priority Color Issues (#1036)', () => {
       const firstScheduledEvent = scheduledEvents.first();
 
       const isDraggable = await firstScheduledEvent.evaluate(el => {
-        return el.classList.contains('fc-event-draggable');
+        return el.classList.contains('is-draggable');
       }).catch(() => false);
 
       // Scheduled events should be draggable (editable: true in createScheduledEvent)
@@ -3129,7 +3079,7 @@ test.describe('Priority Color Issues (#1036)', () => {
     await page.waitForTimeout(1500);
 
     // Find events and check if any have colored borders matching priority colors
-    const events = page.locator('.fc-event');
+    const events = page.locator('.tnc-item');
     const eventCount = await events.count().catch(() => 0);
 
     await page.screenshot({ path: 'test-results/screenshots/issue-1036-configured-priorities.png' });
@@ -3154,7 +3104,7 @@ test.describe('Priority Color Issues (#1036)', () => {
     // Test opening calendar view via the Bases file to verify priority rendering
     const page = getPage();
 
-    // First open calendar to ensure FullCalendar is registered
+    // First open calendar to ensure the calendar view is registered
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
     await page.keyboard.press('Escape');
@@ -3169,7 +3119,7 @@ test.describe('Priority Color Issues (#1036)', () => {
     }
 
     // Verify the calendar loaded
-    const calendarContainer = page.locator('.fc');
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
     // Screenshot showing priority colors in Bases calendar view
@@ -3344,7 +3294,7 @@ test.describe('Additional UI Issues', () => {
     await page.screenshot({ path: 'test-results/screenshots/agenda-metadata.png' });
 
     // Verify the view loaded
-    const agendaContainer = page.locator('.bases-agenda-list-view, .fc-list');
+    const agendaContainer = page.locator('.bases-agenda-list-view, .tnc-list');
     const isVisible = await agendaContainer.isVisible({ timeout: 5000 }).catch(() => false);
 
     // Soft check - verify the view rendered
@@ -3363,7 +3313,7 @@ test.describe('Additional UI Issues', () => {
     }
 
     // Switch to month view
-    const monthButton = page.locator('.fc-dayGridMonth-button, button:has-text("M")');
+    const monthButton = page.locator('.tnc-btn-view-month, button:has-text("M")');
     if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await monthButton.click();
       await page.waitForTimeout(500);
@@ -3372,7 +3322,7 @@ test.describe('Additional UI Issues', () => {
     await page.screenshot({ path: 'test-results/screenshots/calendar-month-events.png' });
 
     // Verify events exist
-    const events = page.locator('.fc-event');
+    const events = page.locator('.tnc-item');
     const eventCount = await events.count().catch(() => 0);
 
     // Should have some events visible
@@ -3446,7 +3396,7 @@ test.describe('Issue #1409 - Popout window functionality', () => {
     await page.waitForTimeout(1500);
 
     // Verify calendar is loaded
-    const calendarContainer = page.locator('.fc');
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
     // Move to popout window
@@ -3459,7 +3409,7 @@ test.describe('Issue #1409 - Popout window functionality', () => {
     await popoutPage.waitForTimeout(1000);
 
     // In the popout window, try to find draggable calendar events
-    const events = popoutPage.locator('.fc-event-draggable');
+    const events = popoutPage.locator('.tnc-item.is-draggable');
     const eventCount = await events.count().catch(() => 0);
 
     if (eventCount > 0) {
@@ -3481,7 +3431,7 @@ test.describe('Issue #1409 - Popout window functionality', () => {
         await popoutPage.waitForTimeout(300);
 
         // Check if drag ghost is visible in popout window
-        const dragGhost = popoutPage.locator('.fc-event-dragging, .tn-drag-ghost');
+        const dragGhost = popoutPage.locator('.tnc-item.is-dragging, .tn-drag-ghost');
         const ghostVisible = await dragGhost.isVisible({ timeout: 1000 }).catch(() => false);
 
         // BUG: Ghost should be visible in popout window but won't be
@@ -3539,7 +3489,7 @@ test.describe('Issue #1409 - Popout window functionality', () => {
     await popoutPage.waitForTimeout(1000);
 
     // Click on a calendar event to open task modal
-    const events = popoutPage.locator('.fc-event');
+    const events = popoutPage.locator('.tnc-item');
     const eventCount = await events.count().catch(() => 0);
 
     if (eventCount > 0) {
@@ -3643,13 +3593,13 @@ test.describe('Issue #1409 - Popout window functionality', () => {
     await popoutPage.screenshot({ path: 'test-results/screenshots/issue-1409-agenda-popout.png' });
 
     // Verify agenda view loaded in popout
-    const agendaContainer = popoutPage.locator('.fc-list, .bases-agenda-list-view');
+    const agendaContainer = popoutPage.locator('.tnc-list, .bases-agenda-list-view');
     const agendaVisible = await agendaContainer.isVisible({ timeout: 5000 }).catch(() => false);
 
     expect(agendaVisible).toBe(true);
 
     // Try clicking on a task in the agenda
-    const agendaEvents = popoutPage.locator('.fc-list-event, .agenda-task-item');
+    const agendaEvents = popoutPage.locator('.tnc-item--list, .agenda-task-item');
     const agendaEventCount = await agendaEvents.count().catch(() => 0);
 
     if (agendaEventCount > 0) {
@@ -4017,21 +3967,21 @@ test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
 
     // Navigate to the test date
     // Click on a date cell or use navigation to reach January 2026
-    const monthButton = page.locator('.fc-dayGridMonth-button');
+    const monthButton = page.locator('.tnc-btn-view-month');
     if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await monthButton.click();
       await page.waitForTimeout(500);
     }
 
     // Navigate forward to January 2026
-    const nextButton = page.locator('.fc-next-button');
+    const nextButton = page.locator('.tnc-btn-next');
     for (let i = 0; i < 12; i++) { // Navigate up to 12 months forward
       if (await nextButton.isVisible()) {
         await nextButton.click();
         await page.waitForTimeout(200);
       }
       // Check if we've reached January 2026
-      const headerText = await page.locator('.fc-toolbar-title').textContent();
+      const headerText = await page.locator('.tnc-title').textContent();
       if (headerText?.includes('January') && headerText?.includes('2026')) {
         break;
       }
@@ -4043,7 +3993,7 @@ test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
     // Count events for the test task on January 15, 2026
     // Currently: Should show 2 events (scheduled + due) - this is the bug
     // Expected: Should show 1 consolidated event
-    const eventsOnDate = page.locator('.fc-event:has-text("Same Date")');
+    const eventsOnDate = page.locator('.tnc-item:has-text("Same Date")');
     const eventCount = await eventsOnDate.count();
 
     console.log(`[Issue #1351] Events found for same-date task: ${eventCount}`);
@@ -4097,13 +4047,13 @@ test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
     await page.waitForTimeout(1000);
 
     // Navigate to January 2026
-    const nextButton = page.locator('.fc-next-button');
+    const nextButton = page.locator('.tnc-btn-next');
     for (let i = 0; i < 12; i++) {
       if (await nextButton.isVisible()) {
         await nextButton.click();
         await page.waitForTimeout(200);
       }
-      const headerText = await page.locator('.fc-toolbar-title').textContent();
+      const headerText = await page.locator('.tnc-title').textContent();
       if (headerText?.includes('January') && headerText?.includes('2026')) {
         break;
       }
@@ -4114,7 +4064,7 @@ test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
 
     // Look for consolidated event title
     // Expected: Should find "Start/Due: Consolidated Title Test"
-    const consolidatedEvent = page.locator('.fc-event:has-text("Start/Due")');
+    const consolidatedEvent = page.locator('.tnc-item:has-text("Start/Due")');
     const hasConsolidatedTitle = await consolidatedEvent.isVisible({ timeout: 3000 }).catch(() => false);
 
     expect(hasConsolidatedTitle).toBe(true);
@@ -4162,20 +4112,20 @@ test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
     await page.waitForTimeout(1000);
 
     // Switch to week view to see both days
-    const weekButton = page.locator('.fc-timeGridWeek-button');
+    const weekButton = page.locator('.tnc-btn-view-week');
     if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await weekButton.click();
       await page.waitForTimeout(500);
     }
 
     // Navigate to January 2026
-    const nextButton = page.locator('.fc-next-button');
+    const nextButton = page.locator('.tnc-btn-next');
     for (let i = 0; i < 12; i++) {
       if (await nextButton.isVisible()) {
         await nextButton.click();
         await page.waitForTimeout(200);
       }
-      const headerText = await page.locator('.fc-toolbar-title').textContent();
+      const headerText = await page.locator('.tnc-title').textContent();
       if (headerText?.includes('Jan') && headerText?.includes('2026')) {
         break;
       }
@@ -4185,8 +4135,8 @@ test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
     await page.screenshot({ path: 'test-results/screenshots/issue-1351-different-dates.png' });
 
     // For different dates, should still show 2 separate events
-    const scheduledEvent = page.locator('.fc-event:has-text("Different Dates Test")').first();
-    const dueEvent = page.locator('.fc-event:has-text("DUE: Different Dates Test")');
+    const scheduledEvent = page.locator('.tnc-item:has-text("Different Dates Test")').first();
+    const dueEvent = page.locator('.tnc-item:has-text("DUE: Different Dates Test")');
 
     const hasScheduled = await scheduledEvent.isVisible({ timeout: 3000 }).catch(() => false);
     const hasDue = await dueEvent.isVisible({ timeout: 3000 }).catch(() => false);
@@ -4241,20 +4191,20 @@ test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
     await page.waitForTimeout(1000);
 
     // Switch to day view to see timed events
-    const dayButton = page.locator('.fc-timeGridDay-button');
+    const dayButton = page.locator('.tnc-btn-view-day');
     if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await dayButton.click();
       await page.waitForTimeout(500);
     }
 
     // Navigate to January 20, 2026
-    const nextButton = page.locator('.fc-next-button');
+    const nextButton = page.locator('.tnc-btn-next');
     for (let i = 0; i < 30; i++) { // Navigate daily
       if (await nextButton.isVisible()) {
         await nextButton.click();
         await page.waitForTimeout(100);
       }
-      const headerText = await page.locator('.fc-toolbar-title').textContent();
+      const headerText = await page.locator('.tnc-title').textContent();
       if (headerText?.includes('January 20') && headerText?.includes('2026')) {
         break;
       }
@@ -4264,7 +4214,7 @@ test.describe('Same Date Start/Due Task Consolidation (Issue #1351)', () => {
     await page.screenshot({ path: 'test-results/screenshots/issue-1351-same-day-different-times.png' });
 
     // Count events - currently shows 2, should show 1 (or a span)
-    const eventsForTask = page.locator('.fc-event:has-text("Same Day Different Times")');
+    const eventsForTask = page.locator('.tnc-item:has-text("Same Day Different Times")');
     const eventCount = await eventsForTask.count();
 
     console.log(`[Issue #1351] Events found for same-day task with different times: ${eventCount}`);
@@ -5046,7 +4996,7 @@ test.describe('Task Edit Modal Autosave (Issue #1340)', () => {
     await page.waitForTimeout(1000);
 
     // Click on a task to open edit modal
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.click();
       await page.waitForTimeout(500);
@@ -5079,7 +5029,7 @@ test.describe('Task Edit Modal Autosave (Issue #1340)', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.click();
       await page.waitForTimeout(500);
@@ -5109,7 +5059,7 @@ test.describe('Task Edit Modal Autosave (Issue #1340)', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.click();
       await page.waitForTimeout(500);
@@ -5142,7 +5092,7 @@ test.describe('Task Edit Modal Autosave (Issue #1340)', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.click();
       await page.waitForTimeout(500);
@@ -5171,7 +5121,7 @@ test.describe('Task Edit Modal Autosave (Issue #1340)', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.click();
       await page.waitForTimeout(500);
@@ -5468,8 +5418,8 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
 
     await page.screenshot({ path: 'test-results/screenshots/issue-1331-agenda-unsorted.png' });
 
-    // Verify we're in the FullCalendar list view
-    const listView = page.locator('.fc-list');
+    // Verify we're in the calendar list view
+    const listView = page.locator('.tnc-list');
     const isListView = await listView.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isListView) {
@@ -5478,7 +5428,7 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
     }
 
     // Find all task cards within the agenda
-    const taskCards = page.locator('.fc-list-event .task-card, .fc-list-event-row');
+    const taskCards = page.locator('.tnc-item--list .task-card, .tnc-item--list');
     const taskCount = await taskCards.count();
     console.log(`[Issue #1331] Found ${taskCount} tasks in agenda view`);
 
@@ -5493,7 +5443,7 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
 
     for (let i = 0; i < Math.min(taskCount, 10); i++) {
       const card = taskCards.nth(i);
-      const title = await card.locator('.task-card__title, .fc-list-event-title').textContent().catch(() => '');
+      const title = await card.locator('.task-card__title, .tnc-item-title').textContent().catch(() => '');
       const priorityBadge = await card.locator('[class*="priority"]').textContent().catch(() => '');
       taskTitles.push(title || `task-${i}`);
       taskPriorities.push(priorityBadge || 'unknown');
@@ -5568,8 +5518,8 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
 
     await page.screenshot({ path: 'test-results/screenshots/issue-1331-agenda-no-groups.png' });
 
-    // Verify we're in the FullCalendar list view
-    const listView = page.locator('.fc-list');
+    // Verify we're in the calendar list view
+    const listView = page.locator('.tnc-list');
     const isListView = await listView.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isListView) {
@@ -5578,8 +5528,8 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
     }
 
     // Check for group headers in agenda view
-    // FullCalendar's list view uses fc-list-day for date headers
-    const dateHeaders = page.locator('.fc-list-day');
+    // The list view uses .tnc-list-day for date headers
+    const dateHeaders = page.locator('.tnc-list-day');
     const dateHeaderCount = await dateHeaders.count();
     console.log(`[Issue #1331] Found ${dateHeaderCount} date headers in agenda`);
 
@@ -5638,8 +5588,8 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
     await agendaItem.click();
     await page.waitForTimeout(2000);
 
-    // Verify we're in the FullCalendar list view
-    const listView = page.locator('.fc-list');
+    // Verify we're in the calendar list view
+    const listView = page.locator('.tnc-list');
     const isListView = await listView.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isListView) {
@@ -5648,7 +5598,7 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
     }
 
     // Find tasks within a single day
-    const dayGroups = page.locator('.fc-list-day');
+    const dayGroups = page.locator('.tnc-list-day');
     const dayCount = await dayGroups.count();
 
     for (let dayIndex = 0; dayIndex < Math.min(dayCount, 3); dayIndex++) {
@@ -5657,7 +5607,7 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
 
       // Get all events for this day (following tr elements until next fc-list-day)
       // This is tricky because FullCalendar uses table structure
-      const dayEvents = page.locator(`.fc-list-table tr.fc-list-event`);
+      const dayEvents = page.locator(`.tnc-list tr.tnc-item--list`);
       const eventsInDay: string[] = [];
       const prioritiesInDay: string[] = [];
 
@@ -5667,7 +5617,7 @@ test.describe('Issue #1331 - Agenda view sorting and grouping', () => {
 
       for (let i = 0; i < Math.min(eventCount, 5); i++) {
         const event = dayEvents.nth(i);
-        const title = await event.locator('.task-card__title, .fc-list-event-title').textContent().catch(() => '');
+        const title = await event.locator('.task-card__title, .tnc-item-title').textContent().catch(() => '');
         const priorityClass = await event.locator('.task-card').getAttribute('class').catch(() => '');
 
         eventsInDay.push(title || '');
@@ -5759,8 +5709,8 @@ test.describe('Issue #1411 - Agenda base ignores sort (duplicate of #1331)', () 
 
     await page.screenshot({ path: 'test-results/screenshots/issue-1411-agenda-sort-ignored.png' });
 
-    // Verify we're in the FullCalendar list view
-    const listView = page.locator('.fc-list');
+    // Verify we're in the calendar list view
+    const listView = page.locator('.tnc-list');
     const isListView = await listView.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isListView) {
@@ -5769,7 +5719,7 @@ test.describe('Issue #1411 - Agenda base ignores sort (duplicate of #1331)', () 
     }
 
     // Find all task events in the agenda
-    const taskEvents = page.locator('.fc-list-event');
+    const taskEvents = page.locator('.tnc-item--list');
     const taskCount = await taskEvents.count();
     console.log(`[Issue #1411] Found ${taskCount} tasks in agenda view`);
 
@@ -5783,7 +5733,7 @@ test.describe('Issue #1411 - Agenda base ignores sort (duplicate of #1331)', () 
 
     for (let i = 0; i < Math.min(taskCount, 10); i++) {
       const event = taskEvents.nth(i);
-      const title = await event.locator('.fc-list-event-title, .task-card__title').textContent().catch(() => '');
+      const title = await event.locator('.tnc-item-title, .task-card__title').textContent().catch(() => '');
       const statusBadge = await event.locator('[class*="status"]').first().textContent().catch(() => '');
       const priorityBadge = await event.locator('[class*="priority"]').first().textContent().catch(() => '');
 
@@ -6018,7 +5968,7 @@ test.describe('Issue #1328: Add task to calendar from agenda view', () => {
 
     const page = getPage();
 
-    // Initialize calendar first (required for FullCalendar)
+    // Initialize calendar first
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1000);
 
@@ -6032,8 +5982,8 @@ test.describe('Issue #1328: Add task to calendar from agenda view', () => {
     await page.screenshot({ path: 'test-results/screenshots/issue-1328-agenda-view.png' });
 
     // Check for task events in the agenda list view
-    // FullCalendar list view uses .fc-list-event class for events
-    const agendaEvents = page.locator('.fc-list-event, .fc-event');
+    // The list view uses .tnc-item--list for events
+    const agendaEvents = page.locator('.tnc-item--list, .tnc-item');
     const eventCount = await agendaEvents.count().catch(() => 0);
 
     console.log(`[Issue #1328] Found ${eventCount} events in agenda view`);
@@ -6049,8 +5999,8 @@ test.describe('Issue #1328: Add task to calendar from agenda view', () => {
 
     // Check if events in list mode are draggable
     const isDraggable = await firstEvent.evaluate(el => {
-      // Check for FullCalendar draggable class or draggable attribute
-      return el.classList.contains('fc-event-draggable') ||
+      // Check for the draggable class or draggable attribute
+      return el.classList.contains('is-draggable') ||
              el.getAttribute('draggable') === 'true' ||
              el.closest('[data-event]') !== null;
     }).catch(() => false);
@@ -6073,7 +6023,7 @@ test.describe('Issue #1328: Add task to calendar from agenda view', () => {
         await page.waitForTimeout(500);
 
         // Check for drag ghost/preview
-        const dragGhost = page.locator('.fc-event-dragging, .tn-drag-ghost');
+        const dragGhost = page.locator('.tnc-item.is-dragging, .tn-drag-ghost');
         const ghostVisible = await dragGhost.isVisible({ timeout: 1000 }).catch(() => false);
 
         console.log(`[Issue #1328] Drag ghost visible: ${ghostVisible}`);
@@ -6125,7 +6075,7 @@ test.describe('Issue #1328: Add task to calendar from agenda view', () => {
     await page.waitForTimeout(1500);
 
     // Find task events in the agenda
-    const agendaEvents = page.locator('.fc-list-event, .fc-event');
+    const agendaEvents = page.locator('.tnc-item--list, .tnc-item');
     const eventCount = await agendaEvents.count().catch(() => 0);
 
     console.log(`[Issue #1328] Found ${eventCount} events for context menu test`);
@@ -6215,13 +6165,13 @@ test.describe('Issue #1328: Add task to calendar from agenda view', () => {
     await page.waitForTimeout(1500);
 
     // Verify we're in list view mode
-    const fcListView = page.locator('.fc-list, .fc-listWeek-view');
+    const fcListView = page.locator('.tnc-list, .tnc-list');
     const isListView = await fcListView.isVisible({ timeout: 3000 }).catch(() => false);
 
     console.log(`[Issue #1328] Calendar is in list view: ${isListView}`);
 
     // Look for view switch buttons (Week button to switch to timeGridWeek)
-    const weekButton = page.locator('button.fc-timeGridWeek-button, button:has-text("Week")');
+    const weekButton = page.locator('button.tnc-btn-view-week, button:has-text("Week")');
     const weekButtonVisible = await weekButton.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (!weekButtonVisible) {
@@ -6237,13 +6187,13 @@ test.describe('Issue #1328: Add task to calendar from agenda view', () => {
     await page.screenshot({ path: 'test-results/screenshots/issue-1328-switched-to-week.png' });
 
     // Now check if events are draggable in week view
-    const weekEvents = page.locator('.fc-event');
+    const weekEvents = page.locator('.tnc-item');
     const eventCount = await weekEvents.count().catch(() => 0);
 
     if (eventCount > 0) {
       const firstEvent = weekEvents.first();
       const isDraggable = await firstEvent.evaluate(el => {
-        return el.classList.contains('fc-event-draggable');
+        return el.classList.contains('is-draggable');
       }).catch(() => false);
 
       console.log(`[Issue #1328] Event in week view is draggable: ${isDraggable}`);
@@ -6320,7 +6270,7 @@ test.describe('Open Note in New Tab - Issue #144', () => {
     console.log(`[Issue #144] Initial tab count: ${initialTabCount}`);
 
     // Find a task event on the calendar
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     const isVisible = await taskEvent.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isVisible) {
@@ -6417,7 +6367,7 @@ test.describe('Open Note in New Tab - Issue #144', () => {
     console.log(`[Issue #144] Initial tab count: ${initialTabCount}`);
 
     // Find a task card - try multiple selectors
-    const taskCard = page.locator('.tasknotes-task-card, .task-card, .fc-event').first();
+    const taskCard = page.locator('.tasknotes-task-card, .task-card, .tnc-item').first();
     const isVisible = await taskCard.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isVisible) {
@@ -6461,7 +6411,7 @@ test.describe('Open Note in New Tab - Issue #144', () => {
     await page.waitForTimeout(1500);
 
     // Find a task event
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     const isVisible = await taskEvent.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isVisible) {
@@ -6521,7 +6471,7 @@ test.describe('Open Note in New Tab - Issue #144', () => {
     await page.waitForTimeout(1500);
 
     // Find a task event
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     const isVisible = await taskEvent.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isVisible) {
@@ -8221,7 +8171,7 @@ test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro up
     await page.waitForTimeout(1000);
 
     // Wait for calendar to be rendered
-    await expect(page.locator('.fc-view-harness')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.tnc-view')).toBeVisible({ timeout: 10000 });
   }
 
   test.fixme('calendar should refresh immediately when time entries are saved', async () => {
@@ -8262,7 +8212,7 @@ test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro up
     await openCalendarView(page);
 
     // The calendar should NOT show any time entry events for this task yet
-    let timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+    let timeEntryEvent = page.locator('.tnc-item').filter({ hasText: taskTitle });
     await expect(timeEntryEvent).not.toBeVisible({ timeout: 2000 });
 
     // Add a time entry via the Time Entry Editor
@@ -8305,7 +8255,7 @@ test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro up
     // BUG: The calendar should refresh IMMEDIATELY (within 1-2 seconds)
     // but due to the 5-second debounce, we have to wait longer
     // This test documents the bug - it should pass once fixed
-    timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+    timeEntryEvent = page.locator('.tnc-item').filter({ hasText: taskTitle });
 
     // The fix would call expectImmediateUpdate() before saving time entries
     // so the calendar bypasses the 5-second debounce
@@ -8360,7 +8310,7 @@ test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro up
     await openCalendarView(page);
 
     // No time entry events should exist for this task yet
-    let timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+    let timeEntryEvent = page.locator('.tnc-item').filter({ hasText: taskTitle });
     await expect(timeEntryEvent).not.toBeVisible({ timeout: 2000 });
 
     // Simulate a completed Pomodoro session
@@ -8411,7 +8361,7 @@ test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro up
 
     // BUG: The calendar should refresh IMMEDIATELY after pomodoro completion
     // Currently it either waits for debounce or doesn't respond to EVENT_POMODORO_COMPLETE
-    timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+    timeEntryEvent = page.locator('.tnc-item').filter({ hasText: taskTitle });
 
     // The fix would be to:
     // 1. Have CalendarView listen to EVENT_POMODORO_COMPLETE
@@ -8479,7 +8429,7 @@ test.describe('Issue #1425 - Calendar auto-refresh on time entry and pomodoro up
 
     // Check if "Show Time Entries" toggle exists and is enabled
     // The calendar config should have showTimeEntries option
-    const timeEntryEvent = page.locator('.fc-event').filter({ hasText: taskTitle });
+    const timeEntryEvent = page.locator('.tnc-item').filter({ hasText: taskTitle });
 
     // If time entries toggle is enabled, the event should be visible
     // (after accounting for the current date view)

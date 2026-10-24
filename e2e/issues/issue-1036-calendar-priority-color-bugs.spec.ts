@@ -74,11 +74,11 @@ test.describe('Issue #1036: Strange Priority Behaviour in Calendar View', () => 
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1500);
 
-        const calendarView = page.locator('.fc, .bases-calendar-view');
+        const calendarView = page.locator('.tnc, .bases-calendar-view');
         await expect(calendarView).toBeVisible({ timeout: 10000 });
 
         // Look for scheduled events with different priorities
-        const scheduledEvents = page.locator('.fc-event[data-event-type="scheduled"]');
+        const scheduledEvents = page.locator('.tnc-item[data-event-type="scheduled"]');
         const eventCount = await scheduledEvents.count();
 
         if (eventCount > 0) {
@@ -90,7 +90,7 @@ test.describe('Issue #1036: Strange Priority Behaviour in Calendar View', () => 
             const colors = await event.evaluate((el) => {
               const computed = window.getComputedStyle(el);
               return {
-                title: el.querySelector('.fc-event-title')?.textContent || 'Unknown',
+                title: el.querySelector('.tnc-item-title')?.textContent || 'Unknown',
                 borderColor: computed.borderColor || computed.borderLeftColor,
                 backgroundColor: computed.backgroundColor,
               };
@@ -129,11 +129,11 @@ test.describe('Issue #1036: Strange Priority Behaviour in Calendar View', () => 
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1500);
 
-        const calendarView = page.locator('.fc, .bases-calendar-view');
+        const calendarView = page.locator('.tnc, .bases-calendar-view');
         await expect(calendarView).toBeVisible({ timeout: 10000 });
 
         // Find due events (they have "DUE:" prefix in title)
-        const dueEvents = page.locator('.fc-event').filter({ hasText: 'DUE:' });
+        const dueEvents = page.locator('.tnc-item').filter({ hasText: 'DUE:' });
         const dueCount = await dueEvents.count();
 
         if (dueCount > 0) {
@@ -192,7 +192,7 @@ test.describe('Issue #1036: Strange Priority Behaviour in Calendar View', () => 
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1500);
 
-        const calendarView = page.locator('.fc, .bases-calendar-view');
+        const calendarView = page.locator('.tnc, .bases-calendar-view');
         await expect(calendarView).toBeVisible({ timeout: 10000 });
 
         // This test would require:
@@ -230,11 +230,11 @@ test.describe('Issue #1036: Strange Priority Behaviour in Calendar View', () => 
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1500);
 
-        const calendarView = page.locator('.fc, .bases-calendar-view');
+        const calendarView = page.locator('.tnc, .bases-calendar-view');
         await expect(calendarView).toBeVisible({ timeout: 10000 });
 
         // Find a due event
-        const dueEvents = page.locator('.fc-event').filter({ hasText: 'DUE:' });
+        const dueEvents = page.locator('.tnc-item').filter({ hasText: 'DUE:' });
         const dueCount = await dueEvents.count();
 
         if (dueCount > 0) {
@@ -243,7 +243,7 @@ test.describe('Issue #1036: Strange Priority Behaviour in Calendar View', () => 
           // Check if the event has draggable attributes
           const isDraggable = await dueEvent.evaluate((el) => {
             // FullCalendar adds specific classes/attributes for draggable events
-            const hasEditableClass = el.classList.contains('fc-event-draggable');
+            const hasEditableClass = el.classList.contains('is-draggable');
             const cursorStyle = window.getComputedStyle(el).cursor;
             return {
               hasEditableClass,
@@ -317,11 +317,11 @@ test.describe('Issue #1036: Strange Priority Behaviour in Calendar View', () => 
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1500);
 
-        const calendarView = page.locator('.fc, .bases-calendar-view');
+        const calendarView = page.locator('.tnc, .bases-calendar-view');
         await expect(calendarView).toBeVisible({ timeout: 10000 });
 
         // Get all scheduled events
-        const scheduledEvents = page.locator('.fc-event:not(:has-text("DUE:"))');
+        const scheduledEvents = page.locator('.tnc-item:not(:has-text("DUE:"))');
         const eventCount = await scheduledEvents.count();
 
         const colorInconsistencies: string[] = [];
@@ -331,7 +331,7 @@ test.describe('Issue #1036: Strange Priority Behaviour in Calendar View', () => 
           const eventInfo = await event.evaluate((el) => {
             const computed = window.getComputedStyle(el);
             return {
-              title: el.querySelector('.fc-event-title')?.textContent || 'Unknown',
+              title: el.querySelector('.tnc-item-title')?.textContent || 'Unknown',
               borderColor: computed.borderColor || computed.borderLeftColor,
               backgroundColor: computed.backgroundColor,
               // Check for CSS variable in inline style (indicates fallback)
@@ -398,7 +398,7 @@ test.describe('Issue #1036: Strange Priority Behaviour in Calendar View', () => 
         await page.waitForTimeout(1500);
 
         // Find due events to check their background colors
-        const dueEvents = page.locator('.fc-event').filter({ hasText: 'DUE:' });
+        const dueEvents = page.locator('.tnc-item').filter({ hasText: 'DUE:' });
 
         if ((await dueEvents.count()) > 0) {
           const dueEvent = dueEvents.first();
