@@ -559,6 +559,7 @@ export const ko: TranslationTree = {
 				enabled: "사용:",
 				showInCreation: "생성할 때 표시:",
 				showInEdit: "편집할 때 표시:",
+				required: "필수:",
 				group: "그룹:",
 				fieldId: "ID: {id}",
 				fieldKey: "키: {key}",
@@ -2553,6 +2554,7 @@ export const ko: TranslationTree = {
 			tagsPlaceholder: "태그1, 태그2",
 			timeEstimateLabel: "시간 예상 (분)",
 			timeEstimatePlaceholder: "30",
+			requiredFieldsMissing: "필수 항목을 입력하세요: {fields}",
 			unsavedChanges: {
 				title: "저장되지 않은 변경 사항",
 				message: "저장되지 않은 변경 사항이 있습니다. 저장하시겠습니까?",

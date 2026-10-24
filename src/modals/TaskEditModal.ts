@@ -443,10 +443,13 @@ export class TaskEditModal extends TaskModal {
 		item.createSpan("metadata-value").textContent = value;
 	}
 
-	async handleSave(): Promise<void> {
+	async handleSave(): Promise<boolean | void> {
 		if (!this.validateForm()) {
 			new Notice(this.t("modals.taskEdit.notices.titleRequired"));
-			return;
+			return false;
+		}
+		if (!this.validateRequiredFields()) {
+			return false;
 		}
 
 		try {

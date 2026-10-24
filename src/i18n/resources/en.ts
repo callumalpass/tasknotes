@@ -578,6 +578,7 @@ export const en: TranslationTree = {
 				enabled: "Enabled:",
 				showInCreation: "Show in creation:",
 				showInEdit: "Show in edit:",
+				required: "Required:",
 				group: "Group:",
 				fieldId: "ID: {id}",
 				fieldKey: "Key: {key}",
@@ -2736,6 +2737,7 @@ export const en: TranslationTree = {
 			tagsPlaceholder: "tag1, tag2",
 			timeEstimateLabel: "Time estimate (minutes)",
 			timeEstimatePlaceholder: "30",
+			requiredFieldsMissing: "Fill in required fields: {fields}",
 			unsavedChanges: {
 				title: "Unsaved changes",
 				message: "You have unsaved changes. Do you want to save them?",

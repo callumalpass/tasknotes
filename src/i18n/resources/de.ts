@@ -559,6 +559,7 @@ export const de: TranslationTree = {
 				enabled: "Aktiviert:",
 				showInCreation: "Bei der Erstellung anzeigen:",
 				showInEdit: "Bei der Bearbeitung anzeigen:",
+				required: "Erforderlich:",
 				group: "Gruppe:",
 				fieldId: "ID: {id}",
 				fieldKey: "Schlüssel: {key}",
@@ -2569,6 +2570,7 @@ export const de: TranslationTree = {
 			tagsPlaceholder: "schlagwort1, schlagwort2",
 			timeEstimateLabel: "Zeitschätzung (Minuten)",
 			timeEstimatePlaceholder: "30",
+			requiredFieldsMissing: "Pflichtfelder ausfüllen: {fields}",
 			unsavedChanges: {
 				title: "Ungespeicherte Änderungen",
 				message: "Sie haben ungespeicherte Änderungen. Möchten Sie diese speichern?",

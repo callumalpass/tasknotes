@@ -176,6 +176,14 @@ function createFieldCard(
 		}
 	});
 
+	const requiredToggle = createCardToggle(!!field.required, (value) => {
+		const fieldIndex = config.fields.findIndex((f) => f.id === field.id);
+		if (fieldIndex !== -1) {
+			config.fields[fieldIndex].required = value;
+			onUpdate(config);
+		}
+	});
+
 	// Create group selector
 	const groupSelect = createCardSelect(
 		config.groups.map((g) => ({ value: g.id, label: g.displayName })),
@@ -220,6 +228,10 @@ function createFieldCard(
 								rows: [
 									{ label: translate("settings.modalFields.manager.showInCreation"), input: creationToggle },
 									{ label: translate("settings.modalFields.manager.showInEdit"), input: editToggle },
+									// Title is always required
+									...(field.id === "title"
+										? []
+										: [{ label: translate("settings.modalFields.manager.required"), input: requiredToggle }]),
 									{ label: translate("settings.modalFields.manager.group"), input: groupSelect, fullWidth: true },
 								],
 							},

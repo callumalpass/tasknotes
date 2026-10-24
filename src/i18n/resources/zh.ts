@@ -559,6 +559,7 @@ export const zh: TranslationTree = {
 				enabled: "已启用：",
 				showInCreation: "创建任务时显示：",
 				showInEdit: "编辑任务时显示：",
+				required: "必填：",
 				group: "分组：",
 				fieldId: "ID：{id}",
 				fieldKey: "键：{key}",
@@ -2569,6 +2570,7 @@ export const zh: TranslationTree = {
 			tagsPlaceholder: "标签1，标签2",
 			timeEstimateLabel: "时间估计（分钟）",
 			timeEstimatePlaceholder: "30",
+			requiredFieldsMissing: "请填写必填字段：{fields}",
 			unsavedChanges: {
 				title: "未保存的更改",
 				message: "您有未保存的更改。是否要保存？",
