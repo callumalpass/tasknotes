@@ -2,6 +2,10 @@
 
 This opt-in delivery layer serves the shared Lingui UI catalogues. Translation authoring remains in committed PO files; CI validates authored completeness before fallback and exports compiled JSON without AI calls. Normal builds still bundle all ten locales synchronously; the separate NLP configuration in `src/locales/` is unchanged.
 
+## Shipping decision
+
+Published releases ship the bundled build (decided October 2026). With ten locales the bundled `main.js` is 4,264,038 bytes, under the 5,000,000-byte budget. The downloadable build is 3,612,122 bytes, so it would save about 0.65 MB. The cost would be a network dependency on first use of each language, an operated hosting and publication path, and mobile behaviour that hasn't been accepted on the current Lingui build. Keep the downloadable mode in the codebase for experimental builds, but don't enable it in releases. Revisit this if added locales push the bundled build towards the budget.
+
 ## Build modes
 
 - **Ordinary builds:** all supported locales remain bundled. No language-pack endpoint is configured and no language-pack requests occur.
