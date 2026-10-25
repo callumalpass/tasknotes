@@ -35,7 +35,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Added
 
 - (#1955) Added Italian interface translations, localized dates and count-aware messages in bundled builds and downloadable language packs. UI language and NLP language remain independent settings.
-  - Thanks to @starise for requesting Italian support.
+  - Thanks to @starise for contributing and reviewing the Italian translation.
 
 - Added an opt-in build mode for downloadable interface language packs, with bundled English, validated local caching for offline use, and retry support. Ordinary builds continue bundling all supported languages. Versioned public hosting, a guarded operator publisher, and conditional-create publication tooling are available for experimental builds. Publication rejects permission errors even when identical objects already exist. See [Downloadable language packs](https://tasknotes.dev/development/language-packs/) for build configuration.
 
