@@ -1,4 +1,5 @@
 import { METADATA_SWAPS, recoverMetadataSwap, type SwapJournal } from "./MetadataSwap";
+import { getMdbaseMutationBackend } from "../../core/VaultMutationService";
 
 class MetadataPublicationConflict extends Error {}
 
@@ -183,10 +184,26 @@ export class SafeMetadata {
 		}
 	}
 
+	/**
+	 * The mdbase runtime owns this path as a resource, so it is written through the
+	 * replica (ordered in the log, with the read content as its base) instead of the
+	 * vault adapter.
+	 */
+	private runtimeOwner(path: string) {
+		const backend = getMdbaseMutationBackend();
+		return backend?.claimsResource(path) ? backend : null;
+	}
+
 	async replace(snapshot: MetadataSnapshot, content: string): Promise<void> {
 		await this.assertPhysical(snapshot.path);
 		if (await this.read(snapshot.path) !== snapshot.content) throw new Error(`Concurrent metadata change: ${snapshot.path}`);
 		if (snapshot.content === content) return;
+		const owner = this.runtimeOwner(snapshot.path);
+		if (owner) {
+			// base = what was read; null base = must_not_exist (a new type from a pack).
+			await owner.writeResources([{ kind: "put", vaultPath: snapshot.path, doc: content, base: snapshot.content }]);
+			return;
+		}
 		if (!this.adapter.rename) throw new Error(`Safe metadata move unavailable: ${snapshot.path}`);
 		if (snapshot.content === null) return this.create(snapshot.path, content);
 		const native = await this.native();
@@ -232,6 +249,14 @@ export class SafeMetadata {
 	/** Move, never copy/delete. Even an edit during rename survives in recovery storage. */
 	async move(snapshot: MetadataSnapshot, destination: string): Promise<void> {
 		if (await this.read(snapshot.path) !== snapshot.content) throw new Error(`Concurrent metadata change: ${snapshot.path}`);
+		const owner = this.runtimeOwner(snapshot.path);
+		if (snapshot.content !== null && owner && !this.runtimeOwner(destination)) {
+			// Set aside a resource: keep a copy outside the collection's resources, then
+			// delete the resource through the replica with the read content as base.
+			await this.create(destination, snapshot.content);
+			await owner.writeResources([{ kind: "delete", vaultPath: snapshot.path, base: snapshot.content }]);
+			return;
+		}
 		await this.moveEmpty(snapshot.path, destination);
 		if (await this.read(destination) !== snapshot.content) throw new Error(`Concurrent metadata change: ${snapshot.path}; retained at ${destination}`);
 	}

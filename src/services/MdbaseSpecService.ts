@@ -18,6 +18,7 @@ import {
 import { TASKNOTES_SPEC_VERSION as TASKNOTES_CONTRACT_VERSION } from "@tasknotes/model";
 
 import TaskNotesPlugin from "../main";
+import { getMdbaseMutationBackend } from "../core/VaultMutationService";
 import { FieldMapping } from "../types";
 import { UserMappedField } from "../types/settings";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -188,6 +189,19 @@ export class MdbaseSpecService {
 		);
 	}
 
+	private usesNativeSchemaProfile(): boolean {
+		return getMdbaseMutationBackend()?.claimsResource("mdbase.yaml") === true;
+	}
+
+	private async assertNativeSchemaProfileMigration(): Promise<void> {
+		if (!this.usesNativeSchemaProfile()) return;
+		for (const name of ["tasknotes-task.schema.json", "tasknotes-task-binding.schema.json"]) {
+			if (await this.plugin.app.vault.adapter.exists(`_schemas/tasknotes/${name}`)) {
+				throw new Error("Existing TaskNotes schema sidecars require explicit migration before using the native resource profile.");
+			}
+		}
+	}
+
 	/**
 	 * Load an enabled v0.3 TaskNotes type before runtime services capture their
 	 * settings, upgrading clearly TaskNotes-owned v0.2 metadata first.
@@ -198,6 +212,7 @@ export class MdbaseSpecService {
 		}
 
 		try {
+			await this.assertNativeSchemaProfileMigration();
 			await this.metadataIO.recoverSwaps();
 			await this.metadataTransaction.recover();
 			await this.recoverInterruptedV02Migration();
@@ -542,7 +557,7 @@ export class MdbaseSpecService {
 		let recoveryFolder = "see pending record";
 		try {
 			const parsed = JSON.parse(await adapter.read(MDBASE_MIGRATION_PENDING_PATH)) as unknown;
-			const journal = parseMigrationJournal(parsed);
+			const journal = parseMigrationJournal(parsed, this.usesNativeSchemaProfile());
 			recoveryFolder = journal.backupFolder;
 			const configSnapshot = journal.snapshots.find(({ path }) => path === "mdbase.yaml");
 			const typeSnapshot = journal.snapshots.find(({ path }) => path.endsWith("/task.md"));
@@ -1453,6 +1468,14 @@ export class MdbaseSpecService {
 	private async writeCanonicalSupportResources(
 		resources: TaskNotesMdbaseResources
 	): Promise<void> {
+		await this.assertNativeSchemaProfileMigration();
+		const backend = getMdbaseMutationBackend();
+		if (backend?.claimsResource("mdbase.yaml")) {
+			const { config, type, contract, taskSchema, bindingSchema } = resources.paths;
+			if (![config, type, contract, taskSchema, bindingSchema].every((path) => backend.claimsResource(path))) {
+				throw new Error("Native canonical resources must be owned by the resource backend.");
+			}
+		}
 		const entries = [
 			[resources.paths.contract, resources.contractDocument],
 			[resources.paths.taskSchema, resources.taskSchemaDocument],
@@ -1775,6 +1798,9 @@ export class MdbaseSpecService {
 			typeName,
 			typesFolder,
 			contractsFolder,
+			// Native Core resources include every file beneath types/contracts. Keep
+			// both required JSON sidecars without inventing a reserved schema folder.
+			...(this.usesNativeSchemaProfile() ? { schemasFolder: `${typesFolder}/tasknotes` } : {}),
 			tasksFolder: settings.tasksFolder || "",
 			legacyCompatibility,
 			modelConfig: buildTaskNotesModelConfig(settings),
@@ -2056,7 +2082,7 @@ function uniqueStrings(values: string[]): string[] {
 	return [...new Set(values.filter((value) => value.length > 0))];
 }
 
-function parseMigrationJournal(value: unknown): MigrationJournal {
+function parseMigrationJournal(value: unknown, nativeSchemaProfile: boolean): MigrationJournal {
 	if (!isRecord(value) || typeof value.backupFolder !== "string") {
 		throw new Error("The pending migration record is malformed.");
 	}
@@ -2104,12 +2130,13 @@ function parseMigrationJournal(value: unknown): MigrationJournal {
 		DEFAULT_TYPES_FOLDER;
 	const contractsFolder = normalizeJournalFolder(migratedConfig.settings?.contracts_folder) ??
 		DEFAULT_CONTRACTS_FOLDER;
+	const schemasFolder = nativeSchemaProfile ? `${typesFolder}/tasknotes` : "_schemas/tasknotes";
 	const expectedPaths = new Set([
 		"mdbase.yaml",
 		`${typesFolder}/task.md`,
 		`${contractsFolder}/tasknotes.task.md`,
-		"_schemas/tasknotes/tasknotes-task.schema.json",
-		"_schemas/tasknotes/tasknotes-task-binding.schema.json",
+		`${schemasFolder}/tasknotes-task.schema.json`,
+		`${schemasFolder}/tasknotes-task-binding.schema.json`,
 	]);
 	if (
 		snapshotPaths.length !== expectedPaths.size ||
