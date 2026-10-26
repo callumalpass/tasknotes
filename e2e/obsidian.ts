@@ -1,4 +1,4 @@
-import { Page, chromium, Browser, expect, type Dialog } from '@playwright/test';
+import { Page, chromium, Browser, expect } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
@@ -504,12 +504,6 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
     console.log('Keeping existing Obsidian instance running');
     return;
   }
-  // Obsidian can emit a beforeunload dialog while quitting. Playwright's
-  // automatic dismissal can race CDP disconnect and report an unhandled
-  // Page.handleJavaScriptDialog error after every assertion has passed.
-  // Own dismissal only during shutdown, tolerating the target closing first.
-  const dismissOnShutdown = (dialog: Dialog) => { void dialog.dismiss().catch(() => {}); };
-  app.page.on('dialog', dismissOnShutdown);
   try {
     if (app.browser) {
       // Electron can close a renderer before CDP acknowledges its beforeunload
@@ -530,7 +524,6 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
       await app.browser.close();
     }
   } finally {
-    app.page.off('dialog', dismissOnShutdown);
     await stopOwnedProcess(app.process);
   }
 }
