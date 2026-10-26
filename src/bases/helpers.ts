@@ -5,7 +5,6 @@ import { Reminder, TaskDependency, TaskInfo, TimeEntry } from "../types";
 import type { OccurrenceMaterializationMode, OccurrenceNextTrigger } from "@tasknotes/model";
 import { calculateTotalTimeSpent } from "../utils/helpers";
 import { normalizeRecurrenceOriginalDate } from "../core/fieldMapping";
-import { format } from "date-fns";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import type { TaskCardOptions } from "../ui/TaskCard";
