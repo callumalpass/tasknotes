@@ -89,6 +89,7 @@ nav:
                 - Changelog: spec/CHANGELOG.md
           - Obsidian E2E harness: development/obsidian-e2e-harness.md
           - Translation workflow: development/translations.md
+          - Downloadable language packs: development/language-packs.md
           - i18n-state-manager: development/i18n-state-manager.md
     - Releases and support:
           - Release notes: releases.md

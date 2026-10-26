@@ -1733,21 +1733,30 @@ export class StatsView extends ItemView {
 			cls: "stats-view__drilldown-value",
 			text: `${formatTime(data.totalTimeSpent)} / ${formatTime(data.totalTimeEstimate)}`,
 		});
-		totalTimeCard.createDiv({ cls: "stats-view__drilldown-label", text: "Total Time" });
+		totalTimeCard.createDiv({
+			cls: "stats-view__drilldown-label",
+			text: this.plugin.i18n.translate("views.stats.project.totalTime"),
+		});
 
 		const tasksCard = statsGrid.createDiv({ cls: "stats-view__drilldown-card" });
 		tasksCard.createDiv({
 			cls: "stats-view__drilldown-value",
 			text: data.tasks.length.toString(),
 		});
-		tasksCard.createDiv({ cls: "stats-view__drilldown-label", text: "Total Tasks" });
+		tasksCard.createDiv({
+			cls: "stats-view__drilldown-label",
+			text: this.plugin.i18n.translate("views.stats.project.totalTasks"),
+		});
 
 		const completionCard = statsGrid.createDiv({ cls: "stats-view__drilldown-card" });
 		completionCard.createDiv({
 			cls: "stats-view__drilldown-value",
 			text: `${Math.round(data.completionRate)}%`,
 		});
-		completionCard.createDiv({ cls: "stats-view__drilldown-label", text: "Completed" });
+		completionCard.createDiv({
+			cls: "stats-view__drilldown-label",
+			text: this.plugin.i18n.translate("views.advancedCalendar.timeEntry.completedPrefix"),
+		});
 
 		// Add average time per task
 		const avgTimeCard = statsGrid.createDiv({ cls: "stats-view__drilldown-card" });
@@ -1758,13 +1767,16 @@ export class StatsView extends ItemView {
 			cls: "stats-view__drilldown-value",
 			text: `${formatTime(avgTimeSpent)} / ${formatTime(avgTimeEstimate)}`,
 		});
-		avgTimeCard.createDiv({ cls: "stats-view__drilldown-label", text: "Avg per Task" });
+		avgTimeCard.createDiv({
+			cls: "stats-view__drilldown-label",
+			text: this.plugin.i18n.translate("views.stats.project.average"),
+		});
 
 		// Activity chart
 		const chartSection = container.createDiv({ cls: "stats-view__drilldown-section" });
 		chartSection.createDiv({
 			cls: "stats-view__drilldown-heading",
-			text: "Activity Over Time (Last 30 Days)",
+			text: this.plugin.i18n.translate("views.stats.project.activity"),
 		});
 		const chartEl = chartSection.createDiv({ cls: "stats-view__activity-chart" });
 		this.renderActivityChart(chartEl, data.timeByDay);
@@ -1774,7 +1786,7 @@ export class StatsView extends ItemView {
 		const tasksHeaderContainer = tasksSection.createDiv({ cls: "stats-view__section-header" });
 		tasksHeaderContainer.createDiv({
 			cls: "stats-view__drilldown-heading",
-			text: "All Project Tasks",
+			text: this.plugin.i18n.translate("views.stats.project.allTasks"),
 		});
 
 		// Add filter controls for tasks
@@ -1877,7 +1889,10 @@ export class StatsView extends ItemView {
 
 		const maxTime = Math.max(...timeByDay.map((d) => d.timeSpent));
 		if (maxTime === 0) {
-			container.createDiv({ cls: "stats-view__no-data", text: "No time tracking data" });
+			container.createDiv({
+				cls: "stats-view__no-data",
+				text: this.plugin.i18n.translate("views.stats.project.noTracking"),
+			});
 			return;
 		}
 

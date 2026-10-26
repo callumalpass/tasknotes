@@ -1680,9 +1680,7 @@ export class CalendarView extends BasesViewBase {
 
 		const getScale = (): number => {
 			const slat = this.calendarEl?.querySelector<HTMLElement>(".fc-timegrid-slot-lane");
-			return slat?.offsetHeight
-				? slat.getBoundingClientRect().height / slat.offsetHeight
-				: 1;
+			return slat?.offsetHeight ? slat.getBoundingClientRect().height / slat.offsetHeight : 1;
 		};
 		let lastScale = getScale();
 		this.canvasZoomObserver = new win.MutationObserver(() => {
@@ -2405,14 +2403,10 @@ export class CalendarView extends BasesViewBase {
 						const scheduledField = this.plugin.fieldMapper.toUserField("scheduled");
 						const dueField = this.plugin.fieldMapper.toUserField("due");
 
-						await processVaultFrontMatter(
-							this.plugin.app,
-							spanFile,
-							(frontmatter) => {
-								if (plan.scheduled) frontmatter[scheduledField] = plan.scheduled;
-								if (plan.due) frontmatter[dueField] = plan.due;
-							}
-						);
+						await processVaultFrontMatter(this.plugin.app, spanFile, (frontmatter) => {
+							if (plan.scheduled) frontmatter[scheduledField] = plan.scheduled;
+							if (plan.due) frontmatter[dueField] = plan.due;
+						});
 						await this.refreshAfterDirectCalendarTaskWrite({
 							...taskInfo,
 							scheduled: plan.scheduled ?? taskInfo.scheduled,
@@ -2595,7 +2589,7 @@ export class CalendarView extends BasesViewBase {
 		const menu = new Menu();
 
 		menu.addItem((item) => {
-			item.setTitle("Create task")
+			item.setTitle(this.plugin.i18n.translate("modals.taskCreation.title"))
 				.setIcon("check-square")
 				.onClick(async () => {
 					// Parse slot duration to get minutes (default to 30 if not set)
@@ -2623,7 +2617,7 @@ export class CalendarView extends BasesViewBase {
 		// Only show timeblock option if timeblocking is enabled
 		if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
 			menu.addItem((item) => {
-				item.setTitle("Create timeblock")
+				item.setTitle(this.plugin.i18n.translate("modals.timeblockCreation.heading"))
 					.setIcon("clock")
 					.onClick(async () => {
 						await handleTimeblockCreation(
@@ -2638,7 +2632,7 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		menu.addItem((item) => {
-			item.setTitle("Create time entry")
+			item.setTitle(this.plugin.i18n.translate("ui.audit.createEntry"))
 				.setIcon("play")
 				.onClick(async () => {
 					this.expectImmediateUpdate();
@@ -2655,7 +2649,7 @@ export class CalendarView extends BasesViewBase {
 			if (hasWritableCalendars) {
 				menu.addSeparator();
 				menu.addItem((item) => {
-					item.setTitle("Create external calendar event")
+					item.setTitle(this.plugin.i18n.translate("ui.audit.createExternal"))
 						.setIcon("calendar-plus")
 						.onClick(() => {
 							const modal = new CalendarEventCreationModal(
@@ -2862,9 +2856,7 @@ export class CalendarView extends BasesViewBase {
 		// Add hover preview for property-based events (Ctrl+hover to preview note)
 		if (eventType === "property-based" && extendedProps.filePath) {
 			arg.el.addEventListener("mouseover", (event: MouseEvent) => {
-				const file = this.plugin.app.vault.getAbstractFileByPath(
-					extendedProps.filePath
-				);
+				const file = this.plugin.app.vault.getAbstractFileByPath(extendedProps.filePath);
 				if (file) {
 					this.plugin.app.workspace.trigger("hover-link", {
 						event,
@@ -2884,9 +2876,7 @@ export class CalendarView extends BasesViewBase {
 				e.preventDefault();
 				e.stopPropagation();
 
-				const file = this.plugin.app.vault.getAbstractFileByPath(
-					extendedProps.filePath
-				);
+				const file = this.plugin.app.vault.getAbstractFileByPath(extendedProps.filePath);
 
 				if (file instanceof TFile) {
 					const menu = new Menu();

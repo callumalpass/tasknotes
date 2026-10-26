@@ -128,12 +128,14 @@ export class ICSEventInfoModal extends Modal {
 					: this.translate("modals.icsEventInfo.typeNote");
 				new Setting(contentEl)
 					.setName(note.title)
-					.setDesc(`Type: ${typeLabel}`)
+					.setDesc(this.translate("modals.icsEventInfo.typeValue", { type: typeLabel }))
 					.addButton((button) => {
-						button.setButtonText("Open").onClick(async () => {
-							await this.safeOpenFile(note.path);
-							this.close();
-						});
+						button
+							.setButtonText(this.translate("modals.deviceCode.steps.open"))
+							.onClick(async () => {
+								await this.safeOpenFile(note.path);
+								this.close();
+							});
 					});
 			});
 		}
@@ -152,9 +154,11 @@ export class ICSEventInfoModal extends Modal {
 				});
 			})
 			.addButton((button) => {
-				button.setButtonText("Create task").onClick(async () => {
-					await this.createTaskDirectly();
-				});
+				button
+					.setButtonText(this.translate("modals.taskCreation.title"))
+					.onClick(async () => {
+						await this.createTaskDirectly();
+					});
 			});
 
 		new Setting(contentEl)
@@ -166,7 +170,7 @@ export class ICSEventInfoModal extends Modal {
 				});
 			})
 			.addButton((button) => {
-				button.setButtonText("Refresh").onClick(() => {
+				button.setButtonText(this.translate("views.notes.refreshButton")).onClick(() => {
 					void this.refreshRelatedNotes();
 				});
 			});
@@ -231,19 +235,21 @@ export class ICSEventInfoModal extends Modal {
 								void this.refreshRelatedNotes();
 							},
 							{
-								errorMessage: "Failed to link note",
+								errorMessage: this.translate(
+									"contextMenus.ics.notices.linkFailure"
+								),
 								noticeHandler: showNotice,
 							}
 						);
 					},
 					{
-						placeholder: "Search notes to link...",
+						placeholder: this.translate("modals.icsEventInfo.searchNotes"),
 						filter: "markdown",
 					}
 				);
 			},
 			{
-				errorMessage: "Failed to open note selection",
+				errorMessage: this.translate("contextMenus.ics.notices.linkSelectionFailure"),
 				noticeHandler: showNotice,
 			}
 		);

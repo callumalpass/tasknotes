@@ -53,8 +53,8 @@ export async function openOrCreateOccurrenceNote(
 		onUpdate?.();
 		new Notice(
 			existingOccurrence
-				? `Opened occurrence note for ${dateStr}`
-				: `Created occurrence note for ${dateStr}`
+				? plugin.i18n.translate("notices.audit.occurrenceOpened", { date: dateStr })
+				: plugin.i18n.translate("notices.audit.occurrenceCreated", { date: dateStr })
 		);
 		return occurrence;
 	} catch (error) {
@@ -65,7 +65,11 @@ export async function openOrCreateOccurrenceNote(
 			details: { taskPath: parentTask.path, targetDate: dateStr },
 			error: errorMessage,
 		});
-		new Notice(`Failed to open occurrence note: ${errorMessage}`);
+		new Notice(
+			plugin.i18n.translate("notices.interface.occurrenceOpenFailed", {
+				message: errorMessage,
+			})
+		);
 		return null;
 	}
 }
@@ -78,7 +82,7 @@ export async function openMaterializedOccurrenceParent(
 	try {
 		const parent = await plugin.taskService.getMaterializedOccurrenceParent(occurrenceTask);
 		if (!parent) {
-			new Notice("Recurring parent not found");
+			new Notice(plugin.i18n.translate("notices.interface.parentMissing"));
 			return null;
 		}
 
@@ -95,7 +99,9 @@ export async function openMaterializedOccurrenceParent(
 			},
 			error: errorMessage,
 		});
-		new Notice(`Failed to open recurring parent: ${errorMessage}`);
+		new Notice(
+			plugin.i18n.translate("notices.interface.parentOpenFailed", { message: errorMessage })
+		);
 		return null;
 	}
 }

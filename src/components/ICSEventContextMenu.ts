@@ -246,7 +246,7 @@ export class ICSEventContextMenu {
 						);
 					},
 					{
-						placeholder: "Search notes to link...",
+						placeholder: this.t("modals.icsEventInfo.searchNotes"),
 						filter: "markdown",
 					}
 				);

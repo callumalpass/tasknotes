@@ -51,14 +51,32 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 		this.options = options;
 
 		// Set placeholder
-		this.setPlaceholder(options.placeholder || "Search files or type to create new...");
+		this.setPlaceholder(
+			options.placeholder || this.plugin.i18n.translate("modals.fileSelector.placeholder")
+		);
 
 		// Set instructions
 		this.setInstructions([
-			{ command: "↑↓", purpose: "to navigate" },
-			{ command: "↵", purpose: "to select" },
-			{ command: "⇧↵", purpose: "to create new" },
-			{ command: "esc", purpose: "to cancel" },
+			{
+				command: "↑↓",
+				purpose: this.plugin.i18n.translate(
+					"modals.unscheduledTasksSelector.instructions.navigate"
+				),
+			},
+			{
+				command: "↵",
+				purpose: this.plugin.i18n.translate("modals.taskSelector.instructions.select"),
+			},
+			{
+				command: "⇧↵",
+				purpose: this.plugin.i18n.translate(
+					"modals.taskSelectorWithCreate.instructions.create"
+				),
+			},
+			{
+				command: "esc",
+				purpose: this.plugin.i18n.translate("modals.taskSelector.instructions.dismiss"),
+			},
 		]);
 
 		// Set modal title
@@ -167,7 +185,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 		titleLine.createSpan({
 			cls: "file-selector-create-footer__hint-text",
-			text: " to create: ",
+			text: this.plugin.i18n.translate("modals.taskSelectorWithCreate.footer.createLabel"),
 		});
 
 		titleLine.createSpan({
@@ -187,7 +205,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 	private async createNewFile(): Promise<void> {
 		if (!this.currentQuery) {
-			new Notice("Please enter a file name");
+			new Notice(this.plugin.i18n.translate("modals.fileSelector.nameRequired"));
 			return;
 		}
 
@@ -205,7 +223,9 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 			// Check if file already exists
 			const existingFile = this.app.vault.getAbstractFileByPath(filePath);
 			if (existingFile) {
-				new Notice(`File "${filePath}" already exists`);
+				new Notice(
+					this.plugin.i18n.translate("modals.fileSelector.exists", { path: filePath })
+				);
 				return;
 			}
 
@@ -226,7 +246,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 				operation: "creating-file",
 				error: error,
 			});
-			new Notice("Failed to create file");
+			new Notice(this.plugin.i18n.translate("modals.fileSelector.createFailed"));
 		}
 	}
 

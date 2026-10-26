@@ -1,4 +1,6 @@
 import { Modal, App, Setting } from "obsidian";
+import type TaskNotesPlugin from "../main";
+import { createI18nService, type TranslationKey } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/PropertySelectorModal" });
@@ -8,6 +10,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/PropertySelectorMod
  * Used for both inline and default task card property selection
  */
 export class PropertySelectorModal extends Modal {
+	private readonly translate: (key: TranslationKey) => string;
 	private availableProperties: Array<{ id: string; label: string }>;
 	private currentSelection: string[];
 	private onSubmit: (selected: string[]) => unknown;
@@ -21,16 +24,20 @@ export class PropertySelectorModal extends Modal {
 		availableProperties: Array<{ id: string; label: string }>,
 		currentSelection: string[],
 		onSubmit: (selected: string[]) => unknown,
-		modalTitle = "Select Task Card Properties",
-		modalDescription = "Choose which properties to display in task cards. Selected properties will appear in the order shown below."
+		modalTitle?: string,
+		modalDescription?: string,
+		plugin?: TaskNotesPlugin
 	) {
 		super(app);
 		this.availableProperties = availableProperties;
 		this.currentSelection = currentSelection;
 		this.tempSelection = [...currentSelection];
 		this.onSubmit = onSubmit;
-		this.modalTitle = modalTitle;
-		this.modalDescription = modalDescription;
+		const i18n = plugin?.i18n ?? createI18nService();
+		this.translate = i18n.translate.bind(i18n);
+		this.modalTitle = modalTitle ?? this.translate("modals.propertySelector.title");
+		this.modalDescription =
+			modalDescription ?? this.translate("modals.propertySelector.description");
 	}
 
 	onOpen() {
@@ -118,13 +125,15 @@ export class PropertySelectorModal extends Modal {
 		);
 		buttonContainer.classList.add("tn-static-justify-content-flex-end-455f8cca");
 
-		const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
+		const cancelButton = buttonContainer.createEl("button", {
+			text: this.translate("common.cancel"),
+		});
 		cancelButton.addEventListener("click", () => {
 			this.close();
 		});
 
 		const saveButton = buttonContainer.createEl("button", {
-			text: "Save",
+			text: this.translate("common.save"),
 			cls: "mod-cta",
 		});
 		saveButton.addEventListener("click", () => {

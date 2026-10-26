@@ -2,6 +2,11 @@ import { TranslationTree } from "../types";
 
 export const en: TranslationTree = {
 	common: {
+		saving: "Saving...",
+		cannotUndo: "This action cannot be undone.",
+		untitled: "Untitled",
+		configure: "Configure",
+
 		appName: "TaskNotes",
 		new: "New",
 		cancel: "Cancel",
@@ -468,6 +473,15 @@ export const en: TranslationTree = {
 			},
 		},
 		stats: {
+			project: {
+				totalTime: "Total time",
+				totalTasks: "Total tasks",
+				average: "Avg per task",
+				activity: "Activity over time (last 30 days)",
+				allTasks: "All project tasks",
+				noTracking: "No time tracking data",
+			},
+
 			title: "Statistics",
 			taskProjectStats: "Task & project statistics",
 			sections: {
@@ -515,6 +529,8 @@ export const en: TranslationTree = {
 			loading: "Loading...",
 		},
 		releaseNotes: {
+			current: "Current",
+
 			title: "What's new in TaskNotes {version}",
 			header: "What's new in TaskNotes {version}",
 			viewAllLink: "View all release notes on GitHub →",
@@ -592,6 +608,10 @@ export const en: TranslationTree = {
 		},
 		features: {
 			inlineTasks: {
+				cardProperties: "Inline task card properties",
+				cardPropertiesDesc: "Select which properties to show in inline task cards.",
+				cardPropertiesUpdated: "Inline task card properties updated",
+
 				header: "Inline tasks",
 				description: "Settings for task links and checkbox-to-task conversion in notes.",
 			},
@@ -709,6 +729,9 @@ export const en: TranslationTree = {
 				},
 			},
 			uiLanguage: {
+				downloadDescription:
+					"Other interface languages are downloaded and cached locally for offline use. No vault content is sent.",
+				retryDownload: "Retry language download",
 				header: "Interface language",
 				description: "Change the language of TaskNotes menus, notices, and views.",
 				dropdown: {
@@ -781,6 +804,16 @@ export const en: TranslationTree = {
 					"Reset all Markdown checkboxes in the task body when a recurring task is completed and rescheduled",
 			},
 			timeblocking: {
+				attachmentOrder: "Attachment search order",
+				nameAsc: "Name (a to z)",
+				nameDesc: "Name (z to a)",
+				pathAsc: "Path (a to z)",
+				pathDesc: "Path (z to a)",
+				createdNewest: "Created (newest first)",
+				createdOldest: "Created (oldest first)",
+				modifiedNewest: "Modified (newest first)",
+				modifiedOldest: "Modified (oldest first)",
+
 				header: "Timeblocking",
 				description:
 					"Configure timeblock functionality for lightweight scheduling in daily notes. Drag on calendar views to create events - select 'Timeblock' from the context menu.",
@@ -891,6 +924,8 @@ export const en: TranslationTree = {
 				},
 			},
 			reminders: {
+				defaultDescription: "Reminder",
+
 				addReminder: {
 					name: "Add default reminder",
 					description:
@@ -1039,7 +1074,8 @@ export const en: TranslationTree = {
 				},
 				propertyNamePlaceholder: "Enter property name",
 				propertyValuePlaceholder: "Enter property value",
-				incompletePropertyWarning: "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings.",
+				incompletePropertyWarning:
+					"Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings.",
 				taskProperty: {
 					name: "Task property name",
 					description: 'The frontmatter property name (e.g., "category")',
@@ -1397,6 +1433,8 @@ export const en: TranslationTree = {
 					propertyHeader: "Your property name",
 				},
 				fields: {
+					skippedInstances: "Skipped instances",
+
 					title: "Title",
 					status: "Status",
 					priority: "Priority",
@@ -1469,6 +1507,9 @@ export const en: TranslationTree = {
 		},
 		appearance: {
 			taskCards: {
+				updated: "Default task card properties updated",
+				showing: "Currently showing: {properties}",
+
 				header: "Task cards",
 				description: "Configure how task cards are displayed across all views.",
 				defaultVisibleProperties: {
@@ -1628,6 +1669,11 @@ export const en: TranslationTree = {
 				},
 			},
 			timeSettings: {
+				invalidFormat: "Invalid time format. Please use hh:mm (e.g., {example})",
+				invalidTime: "Invalid time. Hours must be 00-23 and minutes 00-59",
+				invalidEndTime:
+					"Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day",
+
 				header: "Time settings",
 				description: "Configure time-related display settings for timeline views.",
 				timeSlotDuration: {
@@ -1809,6 +1855,58 @@ export const en: TranslationTree = {
 			},
 		},
 		integrations: {
+			oauth: {
+				infoLabel: "Info:",
+
+				header: "OAUTH calendar integration",
+				description:
+					"Connect Google Calendar or Microsoft Outlook to sync events into TaskNotes.",
+				setup: "Create OAUTH credentials with Google or Microsoft first. Initial setup takes about 15 minutes.",
+				guide: "View calendar setup guide",
+				stored: "Stored securely - enter a new value to replace",
+				unavailable: "OAUTH service not available",
+				connection: "OAuth 2.0 connection",
+				connected: "Connected",
+				disconnected: "Not connected",
+				connectedAt: "Connected {time}",
+				refreshedAt: "Last refreshed {time}",
+				neverRefreshed: "Never refreshed",
+				refresh: "Refresh now",
+				disconnect: "Disconnect",
+				refreshSuccess: "{provider} refreshed successfully",
+				refreshFailed: "Failed to refresh {provider}",
+				disconnectSuccess: "Disconnected from {provider}",
+				disconnectFailed: "Failed to disconnect from {provider}",
+				connect: "Connect {provider}",
+				connectSuccess: "{provider} connected successfully!",
+				connectFailed: "Failed to connect: {message}",
+				forget: "Forget saved credentials",
+				forgetTitle: "Forget OAuth credentials for {provider}?",
+				forgetMessage:
+					"This removes the saved client ID and client secret from Obsidian secret storage.",
+				forgetConfirm: "Forget credentials",
+				forgotten: "Forgot OAuth credentials for {provider}",
+				help: "Connect your {provider} account to sync events into TaskNotes.",
+				googleRefreshInterval: "Events refresh automatically every 15 minutes.",
+				credentialNote:
+					"Enter OAuth app credentials from {portal}. Obsidian Secret Storage encrypts credentials at rest when supported by the operating system.",
+				tokenRefreshed: "OAuth token refreshed {time}",
+				tokenNotRefreshed: "Token not refreshed yet",
+				syncUnavailable: "Calendar sync service not available",
+				syncFailed: "Calendar sync failed {time}: {message}",
+				syncSuccess: "Calendar sync succeeded {time} (events: {count})",
+				syncChecked: "Calendar sync checked {time}",
+				eventsNotRefreshed: "Calendar events not refreshed yet",
+				calendarErrors:
+					"Calendars with errors: {count}. First error: {calendar}: {message}",
+				refreshErrors: "{provider} refresh had errors: {message}",
+				tokenLabel: "Token:",
+				syncLabel: "Sync:",
+				issueLabel: "Issue:",
+				clientIdLabel: "Client ID:",
+				clientSecretLabel: "Client secret:",
+			},
+
 			mobileCalendar: {
 				disable: {
 					name: "Disable calendar integrations on mobile",
@@ -2038,7 +2136,8 @@ export const en: TranslationTree = {
 				},
 				requireDueDate: {
 					name: "Require due date",
-					description: "When enabled, only tasks with a due date are included in ICS exports.",
+					description:
+						"When enabled, only tasks with a due date are included in ICS exports.",
 				},
 				requireScheduledDate: {
 					name: "Require scheduled date",
@@ -2212,7 +2311,8 @@ export const en: TranslationTree = {
 				},
 				authToken: {
 					name: "API authentication token",
-					description: "TaskNotes token, not your AI provider's API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client's bearer authentication settings. Update clients whenever this token changes.",
+					description:
+						"TaskNotes token, not your AI provider's API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client's bearer authentication settings. Update clients whenever this token changes.",
 					placeholder: "your-secret-token",
 				},
 				mcp: {
@@ -2456,6 +2556,102 @@ export const en: TranslationTree = {
 		},
 	},
 	notices: {
+		audit: {
+			progress: "{action} — tasks: {count}…",
+			result: "{action} — successful: {count}; failed: {failed}.",
+			failed: "Action failed: {action}",
+			update: "Update tasks",
+			copiedTasks: "Tasks copied: {count}",
+			copiedRows: "Rows copied: {count}",
+			exportedRows: "Rows exported: {count}",
+			noTasksCopy: "No tasks to copy",
+			deleteTitle: "Delete tasks",
+			deleteConfirm: "Delete tasks ({count})? This action cannot be undone.",
+			noNotes: "No notes found for selected dates",
+			weeklyDisabled: "Weekly notes plugin is not enabled. Enable it in settings.",
+			weeklyFailed: "Failed to create weekly note: {message}",
+			rescheduled: "Next occurrence rescheduled; the recurrence pattern is unchanged.",
+			allDay: "Recurring task set to all-day; this affects all future instances.",
+			recurringTime: "Recurring task time set to {time}; this affects all future instances.",
+			timeblockCopied: "Timeblock duplicated successfully",
+			timeblockMoved: "Timeblock moved successfully",
+			timeblockResized: "Timeblock duration updated",
+			occurrenceOpened: "Opened occurrence note for {date}",
+			occurrenceCreated: "Created occurrence note for {date}",
+			occurrencePolicy: "Occurrence notes: {mode}",
+		},
+
+		interface: {
+			apiStarted: "TaskNotes API started on port {port}",
+			apiFailed: "Failed to start TaskNotes API server. Check console for details.",
+			serviceUnavailable: "Service not available. Please try reloading the plugin.",
+			subtasksFailed: "Failed to toggle subtasks",
+			statusFailed: "Failed to update task status: {message}",
+			priorityFailed: "Failed to update priority",
+			recurrenceFailed: "Failed to update recurrence",
+			occurrenceOpenFailed: "Failed to open occurrence note: {message}",
+			parentMissing: "Recurring parent not found",
+			parentOpenFailed: "Failed to open recurring parent: {message}",
+			deleted: "Task deleted successfully",
+			contextMenuFailed: "Failed to create context menu: {message}",
+			noteMissing: "Note “{title}” not found",
+			noteOpenFailed: "Failed to open note “{title}”",
+			trackingActive: "Time tracking is already active for this task",
+			trackingInactive: "No active time tracking session for this task",
+			trackingStopFailed: "Failed to stop time tracking",
+			noOverdue: "No overdue scheduled tasks to postpone",
+			postponeTitle: "Postpone overdue scheduled tasks",
+			postponeConfirm:
+				"Move active overdue scheduled tasks to today ({today})? Tasks: {count}.",
+			postpone: "Postpone",
+			postponing: "Postponing tasks: {count}…",
+			postponed: "Tasks postponed: {count}. Failed: {failed}.",
+			postponeFailed: "Failed to postpone overdue scheduled tasks",
+			commandFileMissing: "No file configured for command: {command}",
+			commandFileInvalid:
+				"File not found: {path}. Configure a valid file in the View Commands settings or create the default files.",
+			commandFileUnindexed:
+				"File not found in vault: {path}. The file exists but Obsidian cannot find it. Try reloading the vault.",
+			notAFile: "Path is not a file: {path}",
+		},
+
+		commands: {
+			basesCreated: "Created default Bases files ({count}):\n{files}",
+			basesUpdated: "Updated default Bases files ({count}):\n{files}",
+			basesExist: "Default Bases files already exist:\n{files}",
+			tagQueryFailed: "Search pane opened but could not set tag query",
+			tagSearchFailed: "Failed to open search pane for tag: {tag}",
+			dailyNotesDisabled:
+				"Daily notes core plugin is not enabled. Please enable it in settings > core plugins.",
+			dailyNoteCreateFailed: "Failed to create daily note: {message}",
+			dailyNoteOpenFailed: "Failed to navigate to daily note: {message}",
+			statusChanged: "Task marked as '{status}'",
+			taskUpdated: "Task updated",
+			taskUpdateFailed: "Failed to update task",
+			recurringUpdateFailed: "Failed to update recurring task",
+			archived: "Task archived",
+			unarchived: "Task unarchived",
+			archiveFailed: "Failed to update task archive status",
+			statusFailed: "Failed to update task status",
+			cacheRefreshing: "Refreshing TaskNotes cache...",
+			cacheRefreshed: "TaskNotes cache refreshed successfully",
+			cacheFailed: "Failed to refresh cache. Please try again.",
+			conversionUnavailable: "Task conversion service not available. Please try again.",
+			batchConversionFailed: "Failed to batch convert tasks. Please try again.",
+			linkFileMissing: "Failed to create link - file not found",
+			linkInsertFailed: "Failed to insert task link",
+			noOpenFile: "No file is currently open",
+			quickActionsFailed: "Failed to open quick actions",
+			noTaskLink: "No task link found",
+			taskLoadFailed: "Failed to load current task",
+			statusCycleFailed: "Failed to cycle task status",
+			priorityCycleFailed: "Failed to cycle task priority",
+			inlineCreateFailed: "Failed to create inline task",
+			inlineCreated: 'Inline task "{title}" created and linked successfully',
+		},
+
+		languagePackDownloadFailed:
+			"Could not load {language}. The current language is unchanged. Retry in the interface language settings.",
 		languageChanged: "Language changed to {language}.",
 		recurringCompletion: {
 			completed: "Completed occurrence: {date}",
@@ -2545,6 +2741,122 @@ export const en: TranslationTree = {
 		rolloverOverdueScheduledTasks: "Postpone overdue scheduled tasks to today",
 	},
 	modals: {
+		propertySelector: {
+			title: "Select task card properties",
+			description:
+				"Choose which properties to display in task cards. Selected properties appear in the order below.",
+			inlineTitle: "Select inline task card properties",
+		},
+
+		reminder: {
+			loading: "Loading reminders...",
+			loadFailed: "Failed to load task data. Please try again.",
+			title: "Task reminders",
+			noChanges: "No changes",
+			current: "Current reminders",
+			empty: "No reminders set",
+			addNew: "Add new reminder",
+			relative: "Relative",
+			absolute: "Absolute",
+			relativeTo: "Relative to",
+			noDates: "No dates available",
+			dueContext: "Due: {date}",
+			scheduledContext: "Scheduled: {date}",
+			description: "Description (optional)",
+			descriptionPlaceholder: "Custom reminder message",
+			addFailed: "Failed to add reminder. Please check your inputs.",
+			missingDue: "Cannot create reminder: Task has no due date",
+			missingScheduled: "Cannot create reminder: Task has no scheduled date",
+			missingDateTime: "Please specify both date and time for absolute reminder",
+			saveFailed: "Failed to save reminders. Please try again.",
+			added: "Added reminder: {description}",
+			at: "At {date}",
+			beforeDue: "Before due date: {duration}",
+			afterDue: "After due date: {duration}",
+			beforeScheduled: "Before scheduled date: {duration}",
+			afterScheduled: "After scheduled date: {duration}",
+			atDue: "At the due date",
+			atScheduled: "At the scheduled date",
+			quickTooltip: "Add reminder: {timing}",
+		},
+		actionPalette: {
+			presets: {
+				today: "today",
+				tomorrow: "tomorrow",
+				weekend: "This weekend",
+				nextWeek: "Next week",
+				nextMonth: "Next month",
+			},
+
+			placeholder: "Type to search for an action...",
+			title: "Quick actions: {title}",
+			execute: "To execute",
+			statusAction: 'Change status to "{label}"',
+			statusDesc: "Set task status to {label}",
+			statusChanged: "Status changed to {label}",
+			priorityAction: 'Set priority to "{label}"',
+			priorityDesc: "Change task priority to {label}",
+			priorityChanged: "Priority changed to {label}",
+			clearDueDesc: "Remove the due date from this task",
+			clearScheduledDesc: "Remove the scheduled date from this task",
+			dueCleared: "Due date cleared",
+			scheduledCleared: "Scheduled date cleared",
+			startTrackingDesc: "Start tracking time for this task",
+			stopTrackingDesc: "Stop tracking time for this task",
+			trackingStarted: "Time tracking started",
+			trackingStopped: "Time tracking stopped",
+			editTimeDesc: "View, edit, or add time entries for this task",
+			addProjectDesc: "Select a project note and add it to this task",
+			archiveDesc: "Archive this task",
+			unarchiveDesc: "Move task back to active tasks",
+			completeOccurrence: "Complete this occurrence",
+			completeOccurrenceDesc: "Mark this specific instance of the recurring task as complete",
+			occurrenceCompleted: "Recurring task instance completed",
+			openOccurrence: "Open or create occurrence note",
+			openOccurrenceDesc: "Open the note for this occurrence, creating it if needed",
+			openParent: "Open recurring parent",
+			openParentDesc: "Open the recurring task that generated this occurrence",
+			editTask: "Edit task details",
+			editTaskDesc: "Open the full task editor",
+			openFile: "Open task file",
+			openFileDesc: "Open the task file in the editor",
+			copyTitleDesc: "Copy the task title to clipboard",
+			copyLink: "Copy task link",
+			copyLinkDesc: "Copy a wikilink to this task",
+			linkCopied: "Task link copied to clipboard",
+			deleteDesc: "Permanently delete this task",
+			scheduleFor: "Schedule for {date}",
+			dueFor: "Set due for {date}",
+			scheduleDesc: "Set the scheduled date to {date}",
+			dueDesc: "Set the due date to {date}",
+			scheduledSet: "Scheduled date set",
+			dueSet: "Due date set",
+			taskNotFound: "Task not found",
+			actionFailed: "Failed to execute action: {message}",
+			categories: {
+				dates: "Dates",
+				tracking: "Tracking",
+				organization: "Organization",
+				other: "Other",
+			},
+		},
+		dateTimePicker: {
+			placeholder: "Enter a date or date/time",
+			naturalLanguage: "Natural language date",
+			apply: "Apply natural language date",
+			nativePicker: "Open native date picker",
+			notFound: "Could not find a date in that text.",
+		},
+		fileSelector: {
+			placeholder: "Search files or type to create new...",
+			nameRequired: "Please enter a file name",
+			exists: 'File "{path}" already exists',
+			createFailed: "Failed to create file",
+		},
+		projectSelector: {
+			placeholder: "Type to search for project notes...",
+		},
+
 		deviceCode: {
 			title: "Google Calendar authorization",
 			instructions: {
@@ -2566,6 +2878,9 @@ export const en: TranslationTree = {
 			expiresSeconds: "Code expires in {seconds}s",
 		},
 		icsEventInfo: {
+			typeValue: "Type: {type}",
+			searchNotes: "Search notes to link...",
+
 			calendarEventHeading: "Calendar event",
 			titleLabel: "Title",
 			calendarLabel: "Calendar",
@@ -2584,6 +2899,10 @@ export const en: TranslationTree = {
 			linkExistingDesc: "Link an existing note to this calendar event",
 		},
 		timeblockInfo: {
+			noTasks: "No tasks available to select",
+			selectorFailed: "Failed to open task selector",
+			confirmDelete: 'Are you sure you want to delete the timeblock "{title}"?',
+
 			editHeading: "Edit timeblock",
 			dateTimeLabel: "Date & time: ",
 			titleLabel: "Title",
@@ -2604,6 +2923,8 @@ export const en: TranslationTree = {
 			deleteConfirmationTitle: "Delete timeblock",
 		},
 		timeblockCreation: {
+			created: 'Timeblock "{title}" created successfully',
+
 			heading: "Create timeblock",
 			dateLabel: "Date: ",
 			titleLabel: "Title",
@@ -2648,6 +2969,14 @@ export const en: TranslationTree = {
 			error: "Failed to create calendar event: {message}",
 		},
 		icsNoteCreation: {
+			summary: "Summary",
+			variables: "Available template variables",
+			vaultRoot: "Vault root",
+			defaultFormat: "Default format",
+			noteCreated: "Note created: {title}",
+			titleRequired: "Title is required",
+			createFailed: "Failed to create note from ICS event",
+
 			heading: "Create from ICS event",
 			titleLabel: "Title",
 			titleDesc: "Title for the new content",
@@ -2666,6 +2995,10 @@ export const en: TranslationTree = {
 			templatePathPlaceholder: "templates/ics-note-template.md",
 		},
 		unscheduledTasksSelector: {
+			overdue: "Overdue: {date}",
+			dueToday: "Due today: {date}",
+			empty: "No unscheduled tasks found. All tasks are either scheduled, completed, or archived.",
+
 			title: "Unscheduled tasks",
 			placeholder: "Type to search for unscheduled tasks...",
 			instructions: {
@@ -2865,6 +3198,9 @@ export const en: TranslationTree = {
 			},
 		},
 		taskEdit: {
+			previousMonth: "Previous month",
+			occurrenceDate: "Occurrence {date}",
+
 			title: "Edit task",
 			sections: {
 				completions: "Completions",
@@ -3366,8 +3702,7 @@ export const en: TranslationTree = {
 				templateNotFound: "Task body template not found: {path}",
 				templateReadError: "Error reading task body template: {template}",
 				occurrenceTemplateNotFound: "Occurrence note template not found: {path}",
-				occurrenceTemplateReadError:
-					"Error reading occurrence note template: {template}",
+				occurrenceTemplateReadError: "Error reading occurrence note template: {template}",
 				moveTaskFailed: "Failed to move {operation} task: {error}",
 			},
 		},
@@ -3399,6 +3734,25 @@ export const en: TranslationTree = {
 		},
 	},
 	ui: {
+		audit: {
+			open: "Open",
+			openNewTab: "Open in new tab",
+
+			copySelected: "Copy selected tasks",
+			clearSelection: "Clear selection",
+			createEntry: "Create time entry",
+			createExternal: "Create external calendar event",
+			expandAll: "Expand all groups and subgroups",
+			collapseAll: "Collapse all groups and subgroups",
+			selectNote: "Select an item to open",
+			occurrenceNotes: "Occurrence notes",
+			manual: "Create manually",
+			afterCompletion: "Create next after completion",
+			rolling: "Rolling window (not automated yet)",
+			completionOnly: "Completion only",
+			completionOrSkip: "Completion or skip",
+		},
+
 		icsCard: {
 			untitledEvent: "Untitled event",
 			allDay: "All day",
@@ -3630,6 +3984,8 @@ export const en: TranslationTree = {
 			customRecurrence: "Custom recurrence...",
 			clearRecurrence: "Clear recurrence",
 			customRecurrenceModal: {
+				lastDay: "Last day",
+
 				title: "Custom recurrence",
 				startDate: "Start date",
 				startDateDesc: "The date when the recurrence pattern begins",

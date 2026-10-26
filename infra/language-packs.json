@@ -1,0 +1,9 @@
+{
+	"accountId": "a738af70299a1b59abd43fe1275f5892",
+	"bucket": "product-language-packs",
+	"product": "tasknotes",
+	"publicBaseUrl": "https://i18n.mdbase.dev/tasknotes",
+	"domain": "i18n.mdbase.dev",
+	"zoneId": "e487c04d9a4f447f08420ea337ab9477",
+	"minimumTlsVersion": "1.2"
+}

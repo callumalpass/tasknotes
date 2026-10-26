@@ -84,7 +84,7 @@ export function renderRemindersPropertyCard(
 			offset: 1,
 			unit: "hours" as const,
 			direction: "before" as const,
-			description: "Reminder",
+			description: translate("settings.defaults.reminders.defaultDescription"),
 		};
 		plugin.settings.taskCreationDefaults.defaultReminders =
 			plugin.settings.taskCreationDefaults.defaultReminders || [];
@@ -341,9 +341,7 @@ function formatReminderTiming(reminder: DefaultReminder, translate: TranslateFn)
 			reminder.direction === "before"
 				? translate("settings.defaults.reminders.directions.before")
 				: translate("settings.defaults.reminders.directions.after");
-		const unit = translate(
-			`settings.defaults.reminders.units.${reminder.unit || "hours"}`
-		);
+		const unit = translate(`settings.defaults.reminders.units.${reminder.unit || "hours"}`);
 		const offset = reminder.offset ?? 1;
 		const relatedTo =
 			reminder.relatedTo === "due"

@@ -33,6 +33,7 @@ export function renderTaskCardTitleText(
 ): void {
 	container.empty();
 	const linkServices: LinkServices = {
+		translate: plugin.i18n.translate.bind(plugin.i18n),
 		metadataCache: plugin.app.metadataCache,
 		workspace: plugin.app.workspace,
 		sourcePath: task.path,

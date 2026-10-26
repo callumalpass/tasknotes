@@ -326,10 +326,15 @@ function renderUserFieldsList(
 			const duplicate =
 				key.toLowerCase() === "tags" ||
 				plugin.settings.userFields?.some(
-					(other) => other.id !== field.id && other.key.trim().toLowerCase() === key.toLowerCase()
+					(other) =>
+						other.id !== field.id &&
+						other.key.trim().toLowerCase() === key.toLowerCase()
 				) ||
 				Object.entries(plugin.settings.fieldMapping).some(
-					([id, value]) => id !== "archiveTag" && id !== "icsEventTag" && value.toLowerCase() === key.toLowerCase()
+					([id, value]) =>
+						id !== "archiveTag" &&
+						id !== "icsEventTag" &&
+						value.toLowerCase() === key.toLowerCase()
 				);
 			const error = !key
 				? translate("settings.taskProperties.customUserFields.validation.emptyKey")
@@ -432,7 +437,9 @@ function renderUserFieldsList(
 				filterBadge.empty();
 				const filterIcon = filterBadge.createSpan();
 				setIcon(filterIcon, "filter");
-				filterBadge.createSpan({ text: "Filters On" });
+				filterBadge.createSpan({
+					text: translate("settings.taskProperties.projectsCard.filtersOn"),
+				});
 			} else {
 				filterBadge.classList.remove(
 					"tn-static-display-block-2a1b75c9",

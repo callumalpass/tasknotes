@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { TFile } from "obsidian";
 import { decorateRefreshCalendarsButton } from "../../../src/bases/CalendarView";
 import { renderGroupTitle } from "../../../src/bases/groupTitleRenderer";
@@ -6,6 +7,7 @@ import type { LinkServices } from "../../../src/ui/renderers/linkRenderer";
 function makeLinkServices(): LinkServices {
 	const nestedProject = new TFile("Projects/Client Alpha/Roadmap.md");
 	return {
+		translate: (key, params) => createI18nService().translate(key, params),
 		metadataCache: {
 			getFirstLinkpathDest: jest.fn((linkPath: string) =>
 				linkPath === "Projects/Client Alpha/Roadmap" ? nestedProject : null
