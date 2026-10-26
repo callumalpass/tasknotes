@@ -121,7 +121,21 @@ This flexibility allows for complete control over both the recurring pattern and
 
 ### View Options
 
-Open the view settings in the Bases toolbar. Options are grouped into **What to show**, **Layout**, **Time grid**, **Day cells**, **Property-based events**, and **Advanced**. Time-grid and day-cell controls appear only for applicable view modes. See [Calendar Settings](../settings/calendar-settings.md#per-view-settings-in-bases) for the full map. Existing saved keys keep the same meaning.
+Open a Calendar Base, then open its view settings from the Bases toolbar. These collapsible sections change only that saved view:
+
+- **What to show**: scheduled and due tasks, recurring tasks, time entries, timeblocks, and events from note properties. Scheduled-to-due spans appear when both scheduled and due tasks are enabled.
+- **Layout**: calendar mode, custom/list day count, height, week start, clock format, week numbers, weekends, today's highlight, and search.
+- **Time grid**: all-day area, day start/end, time between grid lines, initial scroll time, current-time marker, and hourly breakdown. Available for Week, Day, and Custom days.
+- **Day cells**: events shown before a “+ more” link, for Month, Year, and the all-day area of time-grid views. `0` chooses the automatic limit.
+- **Property-based events**: start, end, and title properties. Hidden when property-based events are off.
+- **Advanced**: opening date (fixed or taken from a property), daily-note creation, completed/skipped recurring instances, today column width, drag/resize step, selection preview, overlapping events, minimum event height, simultaneous-event limit, and the row-limit override.
+- Connected calendars have their own visibility sections.
+
+The **row limit override** in Advanced takes priority over the Day cells limit when positive. It counts rows including the “+ more” link; `0` turns off the override, not the ordinary event limit. The simultaneous-event limit applies to timed events; `0` means no limit.
+
+Existing `.base` keys and their values have not changed. Moving a control to Advanced does not reset it. Older files with settings nested under `config:` or `options:` are still read; direct view keys take precedence. Remove a per-view key to return to the plugin default on the next opening.
+
+For reusable setups, save separate Bases (for example a Day planner, Month overview, or List/Agenda) with different settings; there is no preset selector that overwrites several settings at once.
 
 The Calendar View provides several display options that control what types of events appear on the calendar:
 
