@@ -34,15 +34,18 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- (#1955) Added Italian interface translations, localized dates and count-aware messages in bundled builds and downloadable language packs. UI language and NLP language remain independent settings.
+  - Thanks to @starise for contributing and reviewing the Italian translation.
+
 - Added an opt-in build mode for downloadable interface language packs, with bundled English, validated local caching for offline use, and retry support. Ordinary builds continue bundling all supported languages. Versioned public hosting, a guarded operator publisher, and conditional-create publication tooling are available for experimental builds. Publication rejects permission errors even when identical objects already exist. See [Downloadable language packs](https://tasknotes.dev/development/language-packs/) for build configuration.
 
 ## Changed
 
-- Moved interface translations to Lingui catalogues with count-aware messages, locale-aware numbers and dates, and localized generated Bases labels. Ordinary builds retain all nine bundled interface languages.
+- Moved interface translations to Lingui catalogues with count-aware messages, locale-aware numbers and dates, and localized generated Bases labels. Ordinary builds retain all ten bundled interface languages.
 
 - Kept stored default names and reminder descriptions in English, translating unchanged defaults only for display. Restored English `.ics` descriptions and kept persisted Google Calendar metadata in English so exports do not vary with the exporting device’s interface language; user-authored labels are preserved.
 
-- Localized command notices, calendar connection and webhook settings, date/reminder/action/file/timeblock dialogs, task-property pickers, recurrence controls and statistics labels in all eight non-English interface languages. User-authored titles, paths, status labels and property names remain unchanged.
+- Localized command notices, calendar connection and webhook settings, date/reminder/action/file/timeblock dialogs, task-property pickers, recurrence controls and statistics labels in all nine non-English interface languages. User-authored titles, paths, status labels and property names remain unchanged.
 
 ## Removed
 

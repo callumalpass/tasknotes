@@ -52,7 +52,7 @@ export class I18nService extends Events {
 	/** Endonyms are intentional native-script data, not English UI copy. */
 	getNativeLanguageName(languageCode: string): string {
 		const nativeNames: Record<string, string> = {
-			en: "English", fr: "Français", de: "Deutsch", es: "Español",
+			en: "English", fr: "Français", de: "Deutsch", es: "Español", it: "Italiano",
 			pt: "Português (Brasil)", ru: "Русский", zh: "简体中文", ja: "日本語", ko: "한국어",
 		};
 		return nativeNames[languageCode] || languageCode;

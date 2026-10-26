@@ -109,7 +109,7 @@ describe("MdbaseSpecService", () => {
     const service = new MdbaseSpecService(createMockPlugin());
     observeTranslation("en");
     const expected = [service.buildMdbaseYaml(), service.buildTaskTypeDef()];
-    for (const locale of ["de", "es", "fr", "ja", "ko", "pt", "ru", "zh", "en"]) {
+    for (const locale of ["de", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh", "en"]) {
       observeTranslation(locale);
       const actual = [service.buildMdbaseYaml(), service.buildTaskTypeDef()];
       expect(actual).toEqual(expected);

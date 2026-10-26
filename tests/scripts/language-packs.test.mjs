@@ -77,14 +77,16 @@ test("source changes and target corrections produce distinct immutable versions"
 
 test("export rejects oversized packs, non-compiled values, partial locale sets and invalid locale paths", () => {
 	assert.throws(() => createLanguagePackArtifacts(fixtures, format, 1), /exceeds/);
-	assert.throws(() => createLanguagePackArtifacts({ en: fixtures.en }, format, 1_000_000), /all nine/);
+	const { it: _italian, ...withoutItalian } = fixtures;
+	assert.throws(() => createLanguagePackArtifacts(withoutItalian, format, 1_000_000), /all ten/);
+	assert.throws(() => createLanguagePackArtifacts({ en: fixtures.en }, format, 1_000_000), /all ten/);
 	assert.throws(
 		() => createLanguagePackArtifacts({ ...fixtures, en: { [saveId]: 3 } }, format, 1_000_000),
 		/Non-compiled/
 	);
 	assert.throws(
 		() => createLanguagePackArtifacts({ ...fixtures, "../fr": fixtures.fr }, format, 1_000_000),
-		/all nine/
+		/all ten/
 	);
 });
 
@@ -98,7 +100,13 @@ test("real catalogues export idempotently and cannot overwrite a corrupted immut
 		JSON.parse(await readFile(resolve(first.directory, "manifest.json"), "utf8")),
 		first.manifest
 	);
-	assert.equal(Object.keys(first.manifest.packs).length, 9);
+	assert.deepEqual(Object.keys(first.manifest.packs).sort(), ["de", "en", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"]);
+	const italian = JSON.parse(await readFile(resolve(first.directory, "it.json"), "utf8"));
+	assert.equal(italian.locale, "it");
+	assert.equal(italian.sourceHash, first.manifest.sourceHash);
+	const english = JSON.parse(await readFile(resolve(first.directory, "en.json"), "utf8"));
+	assert.deepEqual(Object.keys(italian.messages).sort(), Object.keys(english.messages).sort());
+	assert.equal(first.manifest.packs.it.sha256, sha256(await readFile(resolve(first.directory, "it.json"))));
 	await writeFile(resolve(first.directory, "fr.json"), "corrupt");
 	await assert.rejects(
 		exportLanguagePacks({ root, outdir }),
@@ -134,7 +142,8 @@ test("ordinary builds include all resources; opt-in builds include only English 
 	});
 	const localeInputs = (result) =>
 		Object.keys(result.metafile.inputs).filter((path) => /^src\/i18n\/locales\/[^/]+\/messages\.json$/.test(path));
-	assert.equal(localeInputs(bundled).length, 9);
+	assert.equal(localeInputs(bundled).length, 10);
+	assert.ok(localeInputs(bundled).includes("src/i18n/locales/it/messages.json"));
 	assert.deepEqual(localeInputs(remote), ["src/i18n/locales/en/messages.json"]);
 	// The old 900 KB delta assumed flat TS resources. Compacted ICU catalogues
 	// are checked by exact graph isolation above; production still has the
@@ -215,7 +224,7 @@ test("real packs load over local HTTP, then work offline from cache across loade
 			assert.deepEqual({ ...(await loader.load(locale)) }, { ...resources[locale] });
 		});
 	}
-	assert.equal(requests, 8);
+	assert.equal(requests, 9);
 	const offline = new LanguagePackLoader({
 		config,
 		english: resources.en,
@@ -229,7 +238,7 @@ test("real packs load over local HTTP, then work offline from cache across loade
 		(await offline.load("fr"))[keyMap["common.systemDefault"].id],
 		resources.fr[keyMap["common.systemDefault"].id]
 	);
-	assert.equal(requests, 8);
+	assert.equal(requests, 9);
 
 	const correction = createLanguagePackArtifacts(
 		{ ...resources, de: { ...resources.de, ...compiledCatalogue({ [keyMap["common.save"].id]: "Änderungen speichern" }) } },

@@ -32,7 +32,7 @@ export function serialize(value) {
 // are JSON data; this does not run downloaded code in the plugin.
 export async function loadTranslationResources(root = repositoryRoot) {
 	const locales = (await readdir(resolve(root, "src/i18n/locales"), { withFileTypes: true })).filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
-	if (JSON.stringify(locales) !== JSON.stringify([...supportedLocales].sort())) throw new Error("Language-pack export requires all nine supported catalogues, and no extra locales");
+	if (JSON.stringify(locales) !== JSON.stringify([...supportedLocales].sort())) throw new Error("Language-pack export requires all ten supported catalogues, and no extra locales");
 	const resources = Object.fromEntries(await Promise.all(locales.map(async locale => {
 		const catalogue = JSON.parse(await readFile(resolve(root, `src/i18n/locales/${locale}/messages.json`), "utf8"));
 		return [locale, catalogue.messages];
@@ -65,7 +65,7 @@ export async function loadTranslationResources(root = repositoryRoot) {
 
 export function createLanguagePackArtifacts(resources, format, maxBytes) {
 	if (!resources.en) throw new Error("English source catalogue is missing");
-	if (JSON.stringify(Object.keys(resources).sort()) !== JSON.stringify([...supportedLocales].sort())) throw new Error("Language-pack export requires all nine supported catalogues, and no extra locales");
+	if (JSON.stringify(Object.keys(resources).sort()) !== JSON.stringify([...supportedLocales].sort())) throw new Error("Language-pack export requires all ten supported catalogues, and no extra locales");
 	const sourceHash = sha256(serialize(resources.en));
 	const files = new Map();
 	const packs = {};

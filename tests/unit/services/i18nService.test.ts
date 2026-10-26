@@ -1,6 +1,6 @@
 import { msg } from "@lingui/core/macro";
 import { describe, expect, it } from "@jest/globals";
-import { createI18nService, translationResources } from "../../../src/i18n";
+import { createI18nService } from "../../../src/i18n";
 
 describe("I18nService", () => {
 	it("returns active English messages synchronously by default", () => {
@@ -53,8 +53,17 @@ describe("I18nService", () => {
 		]);
 	});
 
-	it("exposes all nine available locales", () => {
+	it("negotiates regional Italian system and explicit preferences without a special mapping", () => {
+		const service = createI18nService({ initialLocale: "system", getSystemLocale: () => "it-IT" });
+		expect(service.getCurrentLocale()).toBe("it");
+		expect(service.getNativeLanguageName("it")).toBe("Italiano");
+		service.setLocale("de");
+		service.setLocale("it_CH");
+		expect(service.getCurrentLocale()).toBe("it");
+	});
+
+	it("exposes all ten available locales", () => {
 		const service = createI18nService();
-		expect(service.getAvailableLocales().sort()).toEqual(Object.keys(translationResources).sort());
+		expect(service.getAvailableLocales().sort()).toEqual(["de", "en", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"]);
 	});
 });

@@ -185,7 +185,7 @@ try {
 		german.messages["common.save"]
 	);
 	passed("native retry button recovers German after reconnecting");
-	for (const code of ["es", "ja", "ko", "pt", "ru", "zh"]) {
+	for (const code of ["es", "it", "ja", "ko", "pt", "ru", "zh"]) {
 		await choose(code);
 		const text = adb(
 			"shell",

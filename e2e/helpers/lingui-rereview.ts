@@ -22,7 +22,7 @@ export async function runLinguiRereview(page: Page, output: string): Promise<voi
   const id = (message: string, context: string) => generateMessageId(message, context);
   const translate = (message: string, context: string) => page.evaluate(id => (window as any).app.plugins.plugins.tasknotes.i18n.translate({ id }), id(message, context));
   try {
-    for (const locale of ["en", "de"]) {
+    for (const locale of ["en", "it", "de"]) {
       let settings = await openTaskNotesSettings(page, await translate("General", "settings.tabs.general"));
       await settings.locator('select:has(option[value="system"]):has(option[value="fr"])').selectOption(locale, { timeout: 10000 });
       await expect.poll(() => page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale())).toBe(locale);
