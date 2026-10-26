@@ -46,6 +46,7 @@ export interface TaskEditChangeInput {
 	userFieldConfigs: UserMappedField[];
 	taskIdentificationMethod: string;
 	taskTag: string;
+	hideIdentifyingTagsInCards?: boolean;
 	hideIdentifyingTagsMode?: HideIdentifyingTagsMode;
 	maintainDueDateOffsetInRecurring: boolean;
 	normalizeDetails: (value: string) => string;
@@ -139,7 +140,9 @@ export function buildTaskEditChanges(input: TaskEditChangeInput): TaskEditChange
 			newTags,
 			oldTags,
 			input.taskTag,
-			input.hideIdentifyingTagsMode
+			// Restore hidden tags, but allow visible child tags to be edited.
+			// The exact task identifier remains protected even when visible.
+			input.hideIdentifyingTagsInCards ? input.hideIdentifyingTagsMode : "exact-only"
 		);
 	}
 

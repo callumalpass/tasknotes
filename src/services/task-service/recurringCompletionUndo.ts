@@ -4,6 +4,7 @@ import { EVENT_TASK_UPDATED, type TaskInfo, type FieldMapping } from "../../type
 import { getCurrentTimestamp, formatDateForStorage } from "../../utils/dateUtils";
 import { splitFrontmatterAndBody, resetMarkdownCheckboxes } from "../../utils/helpers";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { getRecurringTaskActionDate } from "./taskRecurringPlanning";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionUndo" });
 import {
@@ -18,14 +19,26 @@ import {
 // Only completion-owned fields are reversible. Never capture unrelated edits made
 // while the completion is awaiting metadata or an external integration.
 const completionFields = [
-	"scheduled", "due", "recurrence", "recurrence_anchor", "complete_instances",
-	"skipped_instances", "status", "completedDate", "timeEntries",
-	"googleCalendarExceptionEventId", "googleCalendarExceptionOriginalScheduled",
-	"googleCalendarMovedOriginalDates", "recurrence_parent", "occurrence_date",
+	"scheduled",
+	"due",
+	"recurrence",
+	"recurrence_anchor",
+	"recurrence_original_date",
+	"complete_instances",
+	"skipped_instances",
+	"status",
+	"completedDate",
+	"timeEntries",
+	"googleCalendarExceptionEventId",
+	"googleCalendarExceptionOriginalScheduled",
+	"googleCalendarMovedOriginalDates",
+	"recurrence_parent",
+	"occurrence_date",
 ] as const;
 
 function mappingKey(field: typeof completionFields[number]): keyof FieldMapping {
 	if (field === "recurrence_anchor") return "recurrenceAnchor";
+	if (field === "recurrence_original_date") return "recurrenceOriginalDate";
 	if (field === "complete_instances") return "completeInstances";
 	if (field === "skipped_instances") return "skippedInstances";
 	if (field === "recurrence_parent") return "recurrenceParent";
@@ -99,10 +112,14 @@ export async function completeRecurringTaskWithUndo(
 ): Promise<{ updatedTask: TaskInfo; completed: boolean; undo: () => Promise<boolean> }> {
 	const service = plugin.taskService;
 	const parent = (await plugin.cacheManager.getTaskInfo(task.path)) || task;
-	let occurrence = await service.findMaterializedOccurrence(parent, date);
-	if (!occurrence && parent.occurrence_materialization === "on_completion" &&
-		!parent.complete_instances?.includes(formatDateForStorage(date))) {
-		occurrence = await service.materializeOccurrence(parent, date);
+	const identityDate = getRecurringTaskActionDate(parent, date);
+	let occurrence = await service.findMaterializedOccurrence(parent, identityDate);
+	if (
+		!occurrence &&
+		parent.occurrence_materialization === "on_completion" &&
+		!parent.complete_instances?.includes(formatDateForStorage(identityDate))
+	) {
+		occurrence = await service.materializeOccurrence(parent, identityDate);
 	}
 	const tasks = occurrence ? [parent, occurrence] : [parent];
 	const before = await Promise.all(tasks.map(async taskInfo => {
@@ -111,7 +128,9 @@ export async function completeRecurringTaskWithUndo(
 		return { file, taskInfo: structuredClone(taskInfo), content: await plugin.app.vault.read(file) };
 	}));
 	const parentTransition: { original?: TaskInfo; updated?: TaskInfo } = {};
-	const result = await service.toggleRecurringTaskCompleteWithOccurrenceNotes(parent, date,
+	const result = await service.toggleRecurringTaskCompleteWithOccurrenceNotes(
+		parent,
+		identityDate,
 		(original, updated) => {
 			parentTransition.original = structuredClone(original);
 			parentTransition.updated = structuredClone(updated);

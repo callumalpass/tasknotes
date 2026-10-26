@@ -104,6 +104,12 @@ This frontmatter-first design keeps task data editable and portable while suppor
 
 For property types and examples, see [Core Concepts](../core-concepts.md#yaml-frontmatter). For configuration options, see [Task Properties Settings](../settings/task-properties.md).
 
+### Task Dates
+
+Scheduled and due dates can be date-only or include a time. The **+1 day**, **-1 day**, **+1 week**, and **-1 week** actions in card date menus and task context menus shift the existing date while keeping its local time, including across daylight-saving changes. Date-only values stay date-only; for example, `2026-05-16T21:37` becomes `2026-05-17T21:37` with **+1 day**.
+
+Absolute presets such as **Today** and **Tomorrow** set a date without a time. Use **Pick date & time…** to choose a specific date and time.
+
 ## Projects
 
 TaskNotes supports organizing tasks into projects using note-based linking. Projects are represented as links to actual notes in your vault, allowing you to leverage Obsidian's linking and backlinking features for project management.

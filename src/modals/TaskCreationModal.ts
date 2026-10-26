@@ -655,7 +655,7 @@ export class TaskCreationModal extends TaskModal {
 		await this.handleSave({ createAnother: shift });
 	}
 
-	async handleSave(options: { createAnother?: boolean } = {}): Promise<void> {
+	async handleSave(options: { createAnother?: boolean } = {}): Promise<boolean | void> {
 		// If NLP is enabled and there's content in the NL field, parse it first
 		if (this.plugin.settings.enableNaturalLanguageInput) {
 			const nlContent = this.getNLPInputValue().trim();
@@ -668,7 +668,7 @@ export class TaskCreationModal extends TaskModal {
 
 		if (!this.validateForm()) {
 			new Notice(this.t(msg({ message: "Please enter a task title", context: "modals.taskCreation.notices.titleRequired" })));
-			return;
+			return false;
 		}
 
 		try {
@@ -750,6 +750,7 @@ export class TaskCreationModal extends TaskModal {
 			});
 			const message = getTaskCreationFailureNoticeMessage(error);
 			new Notice(this.t(msg({ message: "Failed to create task: {message}", context: "modals.taskCreation.notices.failure" }), { message: displayError(message) }));
+			return false;
 		}
 	}
 

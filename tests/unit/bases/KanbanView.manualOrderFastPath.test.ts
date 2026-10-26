@@ -2,6 +2,7 @@ import { KanbanView } from "../../../src/bases/KanbanView";
 import type { KanbanTaskDropUpdatePlan } from "../../../src/bases/kanbanDragUtils";
 import type { SortOrderPlan } from "../../../src/bases/sortOrderUtils";
 import type { TaskInfo } from "../../../src/types";
+import { buildTaskCardRenderState } from "../../../src/ui/taskCardState";
 
 function createTask(path: string, sortOrder: string): TaskInfo {
 	return {
@@ -304,5 +305,58 @@ describe("KanbanView manual-order fast path", () => {
 			"tasks/c.md",
 		]);
 		expect((view as any).taskInfoCache.get("tasks/c.md").status).toBe("todo");
+	});
+});
+
+describe("KanbanView pending moved recurring occurrence (#2396)", () => {
+	const utcDay = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
+	// An exhausted, completed occurrence that was moved from 12 Oct to 19 Oct.
+	const completedMoved = (): TaskInfo => ({
+		...createTask("tasks/moved.md", "a"),
+		recurrence: "DTSTART:20261012;FREQ=DAILY;COUNT=1",
+		scheduled: "2026-10-19",
+		recurrence_original_date: "2026-10-12",
+		complete_instances: ["2026-10-12"],
+		skipped_instances: [],
+	});
+	const plugin = {
+		settings: { showCompletedTaskStrikethrough: true, subtaskChevronPosition: "right" },
+		statusManager: {
+			getCompletedStatuses: jest.fn(() => ["done"]),
+			isCompletedStatus: jest.fn((status: string) => status === "done"),
+		},
+		getActiveTimeSession: jest.fn(() => null),
+		app: { metadataCache: { getCache: jest.fn(() => null) } },
+	} as any;
+
+	it("targets the pending original for default actions", () => {
+		const view = makeView() as any;
+
+		expect(view.getTaskActionDate(completedMoved())).toEqual(utcDay("2026-10-12"));
+		expect(view.getTaskActionDate({ ...completedMoved(), recurrence_original_date: undefined })).toEqual(
+			utcDay("2026-10-19")
+		);
+	});
+
+	it("opts board cards into the pending occurrence so an exhausted completed card renders checked", () => {
+		const view = makeView() as any;
+		view.getVisiblePropertyLabels = jest.fn(() => ({}));
+
+		const options = view.getCardOptions();
+		expect(options.usePendingOccurrenceIdentity).toBe(true);
+
+		// The board passes today's date as the generic target; the opt-in overrides it.
+		const state = buildTaskCardRenderState(completedMoved(), plugin, {
+			...options,
+			targetDate: utcDay("2026-10-19"),
+		});
+		expect(state.targetDate).toEqual(utcDay("2026-10-12"));
+		expect(state.isCompleted).toBe(true);
+
+		// Without the opt-in an explicit projected date stays a distinct occurrence.
+		expect(
+			buildTaskCardRenderState(completedMoved(), plugin, { targetDate: utcDay("2026-10-19") })
+				.isCompleted
+		).toBe(false);
 	});
 });

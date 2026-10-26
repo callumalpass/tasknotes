@@ -14,6 +14,7 @@ import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { getTaskCardPropertyValue } from "../ui/taskCardPropertyAccess";
+import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 import { normalizeTaskSignatureValue } from "./taskSignatureValue";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { groupKeyLabel, NONE_GROUP_KEY } from "./groupKeys";
@@ -2589,7 +2590,11 @@ export class TaskListView extends BasesViewBase {
 
 		const seenPaths = new Set<string>();
 		const orderChanged = !this.arePathArraysEqual(taskNotes, this.lastFlatPaths);
-		const cardRenderSignature = this.buildCardRenderSignature(visibleProperties, cardOptions);
+		const cardRenderSignature = this.buildCardRenderSignature(
+			visibleProperties,
+			cardOptions,
+			true
+		);
 		const cardRenderChanged = cardRenderSignature !== this.lastCardRenderSignature;
 
 		if (orderChanged) {
@@ -3276,6 +3281,7 @@ export class TaskListView extends BasesViewBase {
 	private getCardOptions(targetDate: Date): TaskCardOptions {
 		return this.buildTaskCardOptions({
 			targetDate,
+			usePendingOccurrenceIdentity: true,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
 			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>
 				normalizeExpandedRelationshipFilterMode(
@@ -3619,7 +3625,7 @@ export class TaskListView extends BasesViewBase {
 	 * Prefers the task's scheduled (or due) date to avoid marking the wrong instance.
 	 */
 	private getTaskActionDate(task: TaskInfo): Date {
-		const dateStr = getDatePart(task.scheduled || task.due || "");
+		const dateStr = getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || task.due || "");
 		if (dateStr) {
 			return parseDateToUTC(dateStr);
 		}
@@ -3938,7 +3944,8 @@ export class TaskListView extends BasesViewBase {
 
 	private buildCardRenderSignature(
 		visibleProperties: string[] | undefined,
-		cardOptions: TaskCardOptions
+		cardOptions: TaskCardOptions,
+		includeRelationshipOrder = false
 	): string {
 		const propertyLabels = cardOptions.propertyLabels
 			? Object.entries(cardOptions.propertyLabels).sort(([left], [right]) =>
@@ -3949,6 +3956,12 @@ export class TaskListView extends BasesViewBase {
 			visibleProperties: visibleProperties ?? null,
 			propertyLabels,
 			expandedRelationshipFilterMode: cardOptions.expandedRelationshipFilterMode ?? null,
+			// Only non-virtual cards are reused across updates. Snapshot the live map
+			// to refresh hidden children's order without resetting virtual scroll.
+			expandedRelationshipTaskOrder:
+				includeRelationshipOrder && cardOptions.expandedRelationshipTaskOrder
+					? [...cardOptions.expandedRelationshipTaskOrder]
+					: null,
 			targetDate: cardOptions.targetDate?.toISOString().slice(0, 10) ?? null,
 		});
 	}

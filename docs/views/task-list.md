@@ -66,7 +66,7 @@ For existing `.base` files, add `file.tasks` in YAML manually; once present in `
 - `property`: Property to group by (e.g., `note.status`, `note.priority`)
 - `direction`: Sort direction for group headers
 
-**`hideTopLevelSubtasks`**: Optional boolean. When `true`, tasks whose Projects field links to another task in the current filtered result set are hidden as top-level rows and remain available through the parent task's expanded subtasks.
+**`hideTopLevelSubtasks`**: Optional boolean. When `true`, tasks whose Projects field links to another task in the current filtered result set are hidden as top-level rows and remain available through the parent task's expanded subtasks. Expanded subtasks in the filtered result set follow the current view's sort order, including formula sorts such as `formula.priorityWeight`. Changing that order refreshes already-expanded subtasks without needing to collapse and reopen the parent.
 
 **`filters`**: Optional filter conditions using Bases query syntax
 ```yaml

@@ -161,8 +161,9 @@ export class TaskEditModal extends TaskModal {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
 				void (async () => {
-					await this.handleSave();
-					this.forceClose();
+					if ((await this.handleSave()) !== false) {
+						this.forceClose();
+					}
 				})();
 			}
 		};
@@ -316,8 +317,9 @@ export class TaskEditModal extends TaskModal {
 			if (result === "save") {
 				// User wants to save - attempt save and close on success
 				try {
-					await this.handleSave();
-					this.forceClose();
+					if ((await this.handleSave()) !== false) {
+						this.forceClose();
+					}
 				} catch (error) {
 					// Save failed - stay open so user can fix issues
 					// handleSave() already shows a notice with the error
@@ -445,10 +447,10 @@ export class TaskEditModal extends TaskModal {
 		item.createSpan("metadata-value").textContent = value;
 	}
 
-	async handleSave(): Promise<void> {
+	async handleSave(): Promise<boolean | void> {
 		if (!this.validateForm()) {
 			new Notice(this.t(msg({ message: "Please enter a task title", context: "modals.taskEdit.notices.titleRequired" })));
-			return;
+			return false;
 		}
 
 		try {
@@ -537,6 +539,7 @@ export class TaskEditModal extends TaskModal {
 			});
 			const message = error instanceof Error && error.message ? error.message : String(error);
 			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(message) }));
+			return false;
 		}
 	}
 
@@ -570,6 +573,7 @@ export class TaskEditModal extends TaskModal {
 				userFields: this.plugin.settings?.userFields,
 				taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
 				taskTag: this.plugin.settings.taskTag,
+				hideIdentifyingTagsInCards: this.plugin.settings.hideIdentifyingTagsInCards,
 				hideIdentifyingTagsMode: this.plugin.settings.hideIdentifyingTagsMode,
 				maintainDueDateOffsetInRecurring:
 					this.plugin.settings.maintainDueDateOffsetInRecurring,
