@@ -159,8 +159,9 @@ export class TaskEditModal extends TaskModal {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
 				void (async () => {
-					await this.handleSave();
-					this.forceClose();
+					if ((await this.handleSave()) !== false) {
+						this.forceClose();
+					}
 				})();
 			}
 		};
@@ -314,8 +315,9 @@ export class TaskEditModal extends TaskModal {
 			if (result === "save") {
 				// User wants to save - attempt save and close on success
 				try {
-					await this.handleSave();
-					this.forceClose();
+					if ((await this.handleSave()) !== false) {
+						this.forceClose();
+					}
 				} catch (error) {
 					// Save failed - stay open so user can fix issues
 					// handleSave() already shows a notice with the error
@@ -443,10 +445,10 @@ export class TaskEditModal extends TaskModal {
 		item.createSpan("metadata-value").textContent = value;
 	}
 
-	async handleSave(): Promise<void> {
+	async handleSave(): Promise<boolean | void> {
 		if (!this.validateForm()) {
 			new Notice(this.t("modals.taskEdit.notices.titleRequired"));
-			return;
+			return false;
 		}
 
 		try {
@@ -535,6 +537,7 @@ export class TaskEditModal extends TaskModal {
 			});
 			const message = error instanceof Error && error.message ? error.message : String(error);
 			new Notice(this.t("modals.taskEdit.notices.updateFailure", { message }));
+			return false;
 		}
 	}
 

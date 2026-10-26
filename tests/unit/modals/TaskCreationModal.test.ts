@@ -407,11 +407,25 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 			expect(Notice).toHaveBeenCalledWith('Task "Test Task" created successfully');
 		});
 
+		it.each(["", "   "])("keeps the form intact for invalid title %j", async (title) => {
+			(modal as any).title = title;
+			(modal as any).details = "Unsaved details";
+			const close = jest.spyOn(modal, "close");
+
+			await expect(modal.handleSave()).resolves.toBe(false);
+
+			expect(mockPlugin.taskService.createTask).not.toHaveBeenCalled();
+			expect(close).not.toHaveBeenCalled();
+			expect((modal as any).details).toBe("Unsaved details");
+		});
+
 		it("should handle task creation errors", async () => {
 			(modal as any).title = "Test Task";
 			mockPlugin.taskService.createTask.mockRejectedValue(new Error("Creation failed"));
+			const close = jest.spyOn(modal, "close");
 
-			await modal.handleSave();
+			await expect(modal.handleSave()).resolves.toBe(false);
+			expect(close).not.toHaveBeenCalled();
 
 			expect(console.error).toHaveBeenCalledWith(
 				expect.stringContaining(
