@@ -77,6 +77,7 @@ function createEditInput(
 		userFieldConfigs: [],
 		taskIdentificationMethod: "tag",
 		taskTag: "task",
+		hideIdentifyingTagsInCards: true,
 		maintainDueDateOffsetInRecurring: false,
 		normalizeDetails: (value: string) => value,
 		...overrides,

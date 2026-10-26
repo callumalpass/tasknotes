@@ -16,6 +16,7 @@ import {
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { getDatePart, parseDateToUTC } from "../utils/dateUtils";
+import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 import {
 	openMaterializedOccurrenceParent,
 	openOrCreateOccurrenceNote,
@@ -468,7 +469,8 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 
 	private getOccurrenceNoteTargetDate(task: TaskInfo, targetDate: Date): Date {
 		try {
-			const scheduledDate = getDatePart(task.scheduled || "");
+			const scheduledDate =
+				getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || "");
 			return scheduledDate ? parseDateToUTC(scheduledDate) : targetDate;
 		} catch {
 			return targetDate;

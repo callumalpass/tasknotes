@@ -94,6 +94,8 @@ Drag column headers to reorder columns. The new order persists across sessions a
 
 ### Drag-and-Drop Tasks
 
+Use a mouse to drag immediately, including on touchscreen laptops. With touch, hold a card or column header for 350 ms before dragging. Moving before the hold completes keeps normal scrolling; no input-mode setting is needed when switching between mouse and touch.
+
 Drag task cards between columns to update the `groupBy` property value. In swimlane mode, dragging a task to a different cell updates both the `groupBy` and `swimLane` properties.
 
 When grouping by a list property (contexts, tags, projects) with "Show items in multiple columns" enabled, dragging a task between columns modifies the list rather than replacing it. The source column's value is removed and the target column's value is added. For example, dragging a task from the "work" column to the "home" column changes `contexts: [work, call]` to `contexts: [call, home]`.

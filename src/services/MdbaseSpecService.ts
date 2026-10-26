@@ -283,6 +283,10 @@ export class MdbaseSpecService {
 			type: "date",
 			description: uiData("Target recurrence date for a materialized occurrence note.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
+		this.addRoleField(lines, "recurrenceOriginalDate", {
+			type: "date",
+			description: "Original rule date of a pending moved virtual recurring occurrence.",
+		});
 		this.addField(lines, "tags", { type: "list", items: { type: "string" }, tn_role: "tags" });
 
 		// Complex nested fields

@@ -233,7 +233,7 @@ describe("taskUpdatePlanning", () => {
 	);
 
 	it("adds DTSTART when a scheduled recurring task moves and the rule lacks DTSTART", () => {
-		const addDTSTARTToRecurrenceRuleFn = jest.fn(() => "DTSTART:20260521;FREQ=DAILY");
+		const addDTSTARTToRecurrenceRuleFn = jest.fn(() => "DTSTART:20260519;FREQ=DAILY");
 
 		const result = buildTaskUpdateRecurrenceUpdates({
 			originalTask: createTask({
@@ -249,10 +249,13 @@ describe("taskUpdatePlanning", () => {
 		expect(addDTSTARTToRecurrenceRuleFn).toHaveBeenCalledWith(
 			expect.objectContaining({
 				recurrence: "FREQ=DAILY",
-				scheduled: "2026-05-21",
+				scheduled: "2026-05-19",
 			})
 		);
-		expect(result).toEqual({ recurrence: "DTSTART:20260521;FREQ=DAILY" });
+		expect(result).toEqual({
+			recurrence: "DTSTART:20260519;FREQ=DAILY",
+			recurrence_original_date: "2026-05-19",
+		});
 	});
 
 	it("applies mapped updates, custom frontmatter, removals, and task identification", () => {

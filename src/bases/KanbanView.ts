@@ -262,6 +262,8 @@ export class KanbanView extends BasesViewBase {
 	// Touch drag state for mobile
 	private touchDragActive = false;
 	private touchDragGhost: HTMLElement | null = null;
+	// Retain references so even moved or detached sources regain hit-testing.
+	private touchDragSources = new Set<HTMLElement>();
 	private touchStartX = 0;
 	private touchStartY = 0;
 	private longPressTimer: number | null = null;
@@ -2113,7 +2115,7 @@ export class KanbanView extends BasesViewBase {
 						this.boundContextMenuBlocker,
 						true
 					);
-					header.classList.add(draggingClass);
+					this.markTouchDragSource(header, draggingClass);
 					this.touchDragGhost = this.createTouchDragGhost(
 						header,
 						touch.clientX,
@@ -2157,52 +2159,59 @@ export class KanbanView extends BasesViewBase {
 					window.clearTimeout(this.longPressTimer);
 					this.longPressTimer = null;
 				}
-				header.classList.remove(draggingClass);
 
 				if (!this.touchDragActive || this.touchDragType !== "column") return;
 
-				const touch = e.changedTouches[0];
-				if (!touch) {
-					this.clearTouchDragState();
-					return;
-				}
+				try {
+					const touch = e.changedTouches[0];
+					if (!touch) {
+						return;
+					}
 
-				const target = this.findDropTargetAt(touch.clientX, touch.clientY);
-				if (
-					target.type &&
-					target.groupKey &&
-					this.draggedColumnKey &&
-					target.groupKey !== this.draggedColumnKey
-				) {
-					const groupBy = this.getGroupByPropertyId();
-					if (groupBy) {
-						const selector = isSwimlaneHeader
-							? ".kanban-view__column-header-cell"
-							: ".kanban-view__column-header";
-						const currentOrder = Array.from(this.boardEl!.querySelectorAll(selector))
-							.map((el) => (el as HTMLElement).dataset.columnKey)
-							.filter(Boolean) as string[];
+					const target = this.findDropTargetAt(touch.clientX, touch.clientY);
+					if (
+						target.type &&
+						target.groupKey &&
+						this.draggedColumnKey &&
+						target.groupKey !== this.draggedColumnKey
+					) {
+						const groupBy = this.getGroupByPropertyId();
+						if (groupBy) {
+							const selector = isSwimlaneHeader
+								? ".kanban-view__column-header-cell"
+								: ".kanban-view__column-header";
+							const currentOrder = Array.from(
+								this.boardEl!.querySelectorAll(selector)
+							)
+								.map((el) => (el as HTMLElement).dataset.columnKey)
+								.filter(Boolean) as string[];
 
-						const dragIndex = currentOrder.indexOf(this.draggedColumnKey);
-						const dropIndex = currentOrder.indexOf(target.groupKey);
+							const dragIndex = currentOrder.indexOf(this.draggedColumnKey);
+							const dropIndex = currentOrder.indexOf(target.groupKey);
 
-						if (dragIndex !== -1 && dropIndex !== -1) {
-							const newOrder = [...currentOrder];
-							newOrder.splice(dragIndex, 1);
-							newOrder.splice(dropIndex, 0, this.draggedColumnKey);
+							if (dragIndex !== -1 && dropIndex !== -1) {
+								const newOrder = [...currentOrder];
+								newOrder.splice(dragIndex, 1);
+								newOrder.splice(dropIndex, 0, this.draggedColumnKey);
 
-							await this.saveColumnOrder(groupBy, newOrder);
-							await this.render();
+								await this.saveColumnOrder(groupBy, newOrder);
+								await this.render();
+							}
 						}
 					}
+				} catch (error) {
+					tasknotesLogger.error("[TaskNotes][KanbanView] Error completing touch drag:", {
+						category: "persistence",
+						operation: "touch-column-drop",
+						error,
+					});
+				} finally {
+					this.clearTouchDragState();
 				}
-
-				this.clearTouchDragState();
 			})();
 		});
 
 		header.addEventListener("touchcancel", () => {
-			header.classList.remove(draggingClass);
 			this.clearTouchDragState();
 		});
 	}
@@ -2633,7 +2642,21 @@ export class KanbanView extends BasesViewBase {
 		}
 	}
 
+	private markTouchDragSource(element: HTMLElement, draggingClass: string): void {
+		element.classList.add(draggingClass, "kanban-view__touch-drag-source");
+		this.touchDragSources.add(element);
+	}
+
 	private clearTouchDragState(): void {
+		for (const element of this.touchDragSources) {
+			element.classList.remove(
+				"kanban-view__touch-drag-source",
+				"kanban-view__card--dragging",
+				"kanban-view__column-header--dragging",
+				"kanban-view__column-header-cell--dragging"
+			);
+		}
+		this.touchDragSources.clear();
 		this.touchDragActive = false;
 		// Use containerEl.ownerDocument to support pop-out windows
 		this.containerEl.ownerDocument.removeEventListener(
@@ -2650,6 +2673,7 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		this.clearDragoverFeedback();
+		this.cleanupDragShift();
 
 		for (const path of this.draggedTaskPaths) {
 			this.currentTaskElements.get(path)?.classList.remove("kanban-view__card--dragging");
@@ -3433,50 +3457,57 @@ export class KanbanView extends BasesViewBase {
 
 				if (!this.touchDragActive || this.touchDragType !== "task") return;
 
-				const touch = e.changedTouches[0];
-				if (!touch) {
+				try {
+					const touch = e.changedTouches[0];
+					if (!touch) {
+						return;
+					}
+
+					const target = this.findDropTargetAt(touch.clientX, touch.clientY);
+					if (target.groupKey && this.draggedTaskPath) {
+						const dropTarget =
+							target.type === "task"
+								? createKanbanDropTarget(target.taskPath, target.above ?? true)
+								: undefined;
+						const targetContainer =
+							target.cardsContainer ??
+							target.element?.querySelector<HTMLElement>(
+								".kanban-view__cards, .kanban-view__tasks-container"
+							) ??
+							null;
+
+						const paths = getKanbanDraggedPaths(
+							this.draggedTaskPaths,
+							this.draggedTaskPath
+						);
+						const optimisticResult = this.performOptimisticReorder(
+							paths,
+							dropTarget,
+							targetContainer
+						);
+						this.cleanupDragShift();
+
+						await this.handleTaskDrop(
+							this.draggedTaskPath,
+							target.groupKey,
+							target.swimLaneKey,
+							dropTarget,
+							{
+								optimisticReorderApplied: optimisticResult,
+								draggedPaths: paths,
+							}
+						);
+					}
+				} catch (error) {
+					tasknotesLogger.error("[TaskNotes][KanbanView] Error completing touch drag:", {
+						category: "persistence",
+						operation: "touch-task-drop",
+						error,
+					});
+				} finally {
 					this.clearTouchDragState();
-					return;
+					resetTouchDragSourceOverride();
 				}
-
-				const target = this.findDropTargetAt(touch.clientX, touch.clientY);
-				if (target.groupKey && this.draggedTaskPath) {
-					const dropTarget =
-						target.type === "task"
-							? createKanbanDropTarget(target.taskPath, target.above ?? true)
-							: undefined;
-					const targetContainer =
-						target.cardsContainer ??
-						target.element?.querySelector<HTMLElement>(
-							".kanban-view__cards, .kanban-view__tasks-container"
-						) ??
-						null;
-
-					const paths = getKanbanDraggedPaths(
-						this.draggedTaskPaths,
-						this.draggedTaskPath
-					);
-					const optimisticResult = this.performOptimisticReorder(
-						paths,
-						dropTarget,
-						targetContainer
-					);
-					this.cleanupDragShift();
-
-					await this.handleTaskDrop(
-						this.draggedTaskPath,
-						target.groupKey,
-						target.swimLaneKey,
-						dropTarget,
-						{
-							optimisticReorderApplied: optimisticResult,
-							draggedPaths: paths,
-						}
-					);
-				}
-
-				this.clearTouchDragState();
-				resetTouchDragSourceOverride();
 			})();
 		});
 
@@ -3520,7 +3551,7 @@ export class KanbanView extends BasesViewBase {
 			for (const path of this.draggedTaskPaths) {
 				const wrapper = this.currentTaskElements.get(path);
 				if (wrapper) {
-					wrapper.classList.add("kanban-view__card--dragging");
+					this.markTouchDragSource(wrapper, "kanban-view__card--dragging");
 					const col = wrapper.closest("[data-group]") as HTMLElement;
 					const swimCol = wrapper.closest("[data-column]") as HTMLElement;
 					const swimlaneRow = wrapper.closest("[data-swimlane]") as HTMLElement;
@@ -3530,11 +3561,11 @@ export class KanbanView extends BasesViewBase {
 					if (sourceSwimlane) this.draggedSourceSwimlanes.set(path, sourceSwimlane);
 				}
 			}
-			dragImageSource.classList.add("kanban-view__card--dragging");
+			this.markTouchDragSource(dragImageSource, "kanban-view__card--dragging");
 		} else {
 			this.draggedTaskPath = draggedTaskPath;
 			this.draggedTaskPaths = [draggedTaskPath];
-			dragImageSource.classList.add("kanban-view__card--dragging");
+			this.markTouchDragSource(dragImageSource, "kanban-view__card--dragging");
 		}
 		this.activeDragSourceElement = dragImageSource;
 
@@ -4203,6 +4234,7 @@ export class KanbanView extends BasesViewBase {
 		return this.buildTaskCardOptions({
 			layout: this.cardLayout,
 			targetDate,
+			usePendingOccurrenceIdentity: true,
 			hideStatusIndicator,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
 			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>
@@ -4358,6 +4390,7 @@ export class KanbanView extends BasesViewBase {
 	 * Override from Component base class.
 	 */
 	onunload(): void {
+		this.clearTouchDragState();
 		if (this.postDropTimer) {
 			window.clearTimeout(this.postDropTimer);
 			this.postDropTimer = null;
