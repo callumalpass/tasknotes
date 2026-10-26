@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import type { BasesEntry, BasesViewConfig } from "obsidian";
 import { setIcon, setTooltip } from "obsidian";
 import { format } from "date-fns";

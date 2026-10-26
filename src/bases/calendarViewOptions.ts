@@ -1,6 +1,7 @@
 import type { MessageSuffix } from "../i18n/concepts";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
+import { uiText } from "../i18n/runtime";
 import type { BasesAllOptions, BasesOptionGroup, BasesOptions, BasesViewConfig } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT } from "./MiniCalendarView";
@@ -12,14 +13,13 @@ type CalendarOptionsConfig = Pick<BasesViewConfig, "get">;
 type Translate = (key: MessageSuffix<"views.basesCalendar.settings.">) => string;
 
 function calendarViewOptions(plugin: TaskNotesPlugin, t: Translate): Record<string, string> {
-	const hint = (view: string) => plugin.i18n.translate(`views.basesCalendar.hints.${view}`);
 	return {
-		dayGridMonth: hint("month"),
-		timeGridWeek: hint("week"),
+		dayGridMonth: plugin.i18n.translate(msg({ message: "Month view", context: "views.basesCalendar.hints.month" })),
+		timeGridWeek: plugin.i18n.translate(msg({ message: "Week view", context: "views.basesCalendar.hints.week" })),
 		timeGridCustom: t("layout.customDayView"),
-		timeGridDay: hint("day"),
-		listWeek: hint("list"),
-		multiMonthYear: hint("year"),
+		timeGridDay: plugin.i18n.translate(msg({ message: "Day view", context: "views.basesCalendar.hints.day" })),
+		listWeek: plugin.i18n.translate(msg({ message: "List view", context: "views.basesCalendar.hints.list" })),
+		multiMonthYear: plugin.i18n.translate(msg({ message: "Year view", context: "views.basesCalendar.hints.year" })),
 	};
 }
 

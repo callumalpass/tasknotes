@@ -1,5 +1,4 @@
 import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
-import { msg } from "@lingui/core/macro";
 import type { BasesAllOptions, BasesOptions } from "obsidian";
 import { buildCalendarViewOptions } from "../../../src/bases/calendarViewOptions";
 import type TaskNotesPlugin from "../../../src/main";
@@ -72,12 +71,12 @@ describe("calendar view options", () => {
 		const options = buildCalendarViewOptions(createPlugin(), createConfig());
 
 		expect(options.filter(isGroup).map((group) => group.displayName)).toEqual([
-			"views.basesCalendar.settings.groups.events",
-			"views.basesCalendar.settings.groups.layout",
-			"views.basesCalendar.settings.groups.timeGrid",
-			"views.basesCalendar.settings.groups.dayCells",
-			"views.basesCalendar.settings.groups.propertyBasedEvents",
-			"views.basesCalendar.settings.groups.advanced",
+			"What to show",
+			"Layout",
+			"Time grid",
+			"Day cells",
+			"Property-based events",
+			"Advanced",
 		]);
 	});
 

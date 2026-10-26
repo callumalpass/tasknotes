@@ -1,6 +1,7 @@
 import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
+import type { MessageDescriptor } from "@lingui/core";
 import TaskNotesPlugin from "../main";
 import { createElementInDocument } from "../utils/documentDom";
 import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
@@ -1077,11 +1078,11 @@ export class CalendarView extends BasesViewBase {
 
 	/** Layout, text and callbacks for the calendar, from the Bases view settings. */
 	private buildCalendarOptions(): Partial<CalendarOptions<CalendarEventProps>> {
-		const t = (key: string, fallback: string) => this.plugin.i18n.translate(key) || fallback;
+		const t = (message: MessageDescriptor, fallback: string) => this.plugin.i18n.translate(message) || fallback;
 		const options = this.viewOptions;
 		const refreshLabel = t(
-			"views.basesCalendar.hints.refresh",
-			t("views.basesCalendar.buttonText.refresh", "Refresh calendar subscriptions")
+			msg({ message: "Refresh calendar subscriptions", context: "views.basesCalendar.hints.refresh" }),
+			t(msg({ message: "Refresh", context: "views.basesCalendar.buttonText.refresh" }), "Refresh calendar subscriptions")
 		);
 		return {
 			...basesLayoutOptions<CalendarEventProps>(options, {
@@ -1100,7 +1101,7 @@ export class CalendarView extends BasesViewBase {
 				extraButtons: [
 					{
 						id: "refreshCalendars",
-						text: t("views.basesCalendar.buttonText.refresh", "Refresh"),
+						text: t(msg({ message: "Refresh", context: "views.basesCalendar.buttonText.refresh" }), "Refresh"),
 						hint: refreshLabel,
 						icon: () => {
 							const icon = createElementInDocument(this.containerEl.ownerDocument, "span");
@@ -1114,25 +1115,25 @@ export class CalendarView extends BasesViewBase {
 				],
 			},
 			text: {
-				today: t("views.basesCalendar.today", "Today"),
-				prev: t("views.basesCalendar.hints.prev", "Previous"),
-				next: t("views.basesCalendar.hints.next", "Next"),
+				today: t(msg({ message: "Today", context: "views.basesCalendar.today" }), "Today"),
+				prev: t(msg({ message: "Previous", context: "views.basesCalendar.hints.prev" }), "Previous"),
+				next: t(msg({ message: "Next", context: "views.basesCalendar.hints.next" }), "Next"),
 				views: {
-					month: t("views.basesCalendar.buttonText.month", "Month"),
-					week: t("views.basesCalendar.buttonText.week", "Week"),
-					day: t("views.basesCalendar.buttonText.day", "Day"),
-					year: t("views.basesCalendar.buttonText.year", "Year"),
-					list: t("views.basesCalendar.buttonText.list", "List"),
-					days: this.plugin.i18n.translate("views.basesCalendar.buttonText.customDays", {
+					month: t(msg({ message: "M", context: "views.basesCalendar.buttonText.month" }), "Month"),
+					week: t(msg({ message: "W", context: "views.basesCalendar.buttonText.week" }), "Week"),
+					day: t(msg({ message: "D", context: "views.basesCalendar.buttonText.day" }), "Day"),
+					year: t(msg({ message: "Y", context: "views.basesCalendar.buttonText.year" }), "Year"),
+					list: t(msg({ message: "L", context: "views.basesCalendar.buttonText.list" }), "List"),
+					days: this.plugin.i18n.translate(msg({ message: "{count}D", context: "views.basesCalendar.buttonText.customDays" }), {
 						count: options.customDayCount.toString(),
 					}),
 				},
 				viewHints: {
-					month: t("views.basesCalendar.hints.month", "Month view"),
-					week: t("views.basesCalendar.hints.week", "Week view"),
-					day: t("views.basesCalendar.hints.day", "Day view"),
-					year: t("views.basesCalendar.hints.year", "Year view"),
-					list: t("views.basesCalendar.hints.list", "List view"),
+					month: t(msg({ message: "Month view", context: "views.basesCalendar.hints.month" }), "Month view"),
+					week: t(msg({ message: "Week view", context: "views.basesCalendar.hints.week" }), "Week view"),
+					day: t(msg({ message: "Day view", context: "views.basesCalendar.hints.day" }), "Day view"),
+					year: t(msg({ message: "Year view", context: "views.basesCalendar.hints.year" }), "Year view"),
+					list: t(msg({ message: "List view", context: "views.basesCalendar.hints.list" }), "List view"),
 				},
 			},
 			onRangeChange: (view) => {

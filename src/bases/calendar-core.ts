@@ -1,5 +1,6 @@
 import { displayError, uiText } from "../i18n/runtime";
-import { formatUIDate } from "../i18n/formatters";
+import { uiDuration } from "../i18n/formatters";
+import { configLabel } from "../i18n/configLabels";
 import { msg } from "@lingui/core/macro";
 /**
  * Calendar presentation, external sources, timeblocks and creation interactions.
@@ -33,7 +34,6 @@ import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
 import { colorWithAlpha, isCssVariableColor, normalizeThemeColor } from "../utils/themeColors";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarCore" });
 
