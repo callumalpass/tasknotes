@@ -568,6 +568,7 @@ export class TaskEditModal extends TaskModal {
 				userFields: this.plugin.settings?.userFields,
 				taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
 				taskTag: this.plugin.settings.taskTag,
+				hideIdentifyingTagsInCards: this.plugin.settings.hideIdentifyingTagsInCards,
 				hideIdentifyingTagsMode: this.plugin.settings.hideIdentifyingTagsMode,
 				maintainDueDateOffsetInRecurring:
 					this.plugin.settings.maintainDueDateOffsetInRecurring,

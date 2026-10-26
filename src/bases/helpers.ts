@@ -3,6 +3,7 @@ import { Reminder, TaskDependency, TaskInfo, TimeEntry } from "../types";
 import type { OccurrenceMaterializationMode, OccurrenceNextTrigger } from "@tasknotes/model";
 import { setIcon } from "obsidian";
 import { calculateTotalTimeSpent } from "../utils/helpers";
+import { normalizeRecurrenceOriginalDate } from "../core/fieldMapping";
 import { format } from "date-fns";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
@@ -186,6 +187,7 @@ function createTaskInfoFromProperties(
 		"recurrence",
 		"recurrence_parent",
 		"occurrence_date",
+		"recurrence_original_date",
 		"occurrence_materialization",
 		"occurrence_next_trigger",
 		"occurrence_template",
@@ -254,6 +256,7 @@ function createTaskInfoFromProperties(
 		recurrence: toOptionalString(props.recurrence),
 		recurrence_parent: toOptionalString(props.recurrence_parent),
 		occurrence_date: toOptionalString(props.occurrence_date),
+		recurrence_original_date: normalizeRecurrenceOriginalDate(props.recurrence_original_date),
 		occurrence_materialization: toOccurrenceMaterializationMode(
 			props.occurrence_materialization
 		),
@@ -335,14 +338,17 @@ export function createTaskInfoFromBasesData(
 		});
 
 		// Merge file properties with existing custom properties
-		return enrichTaskInfoFromCache({
-			...taskInfo,
-			customProperties: {
-				...mappedTaskInfo.customProperties,
-				...taskInfo.customProperties,
-				...fileProperties,
+		return enrichTaskInfoFromCache(
+			{
+				...taskInfo,
+				customProperties: {
+					...mappedTaskInfo.customProperties,
+					...taskInfo.customProperties,
+					...fileProperties,
+				},
 			},
-		}, plugin);
+			plugin
+		);
 	} else {
 		return enrichTaskInfoFromCache(createTaskInfoFromProperties(props, basesItem, plugin), plugin);
 	}

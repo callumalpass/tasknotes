@@ -42,6 +42,8 @@ If your task identification tag is `task` and a task has the tags `#task`, `#tas
 - With the setting **disabled** (default): All tags are shown: `#task`, `#task/project`, `#important`, `#review`
 - With the setting **enabled**: Only non-identifying tags are shown: `#important`, `#review`
 
+The task edit modal follows the same visibility setting. Visible child tags such as `task/project` can be changed or removed; hidden identification tags are preserved when you save. In **Exact only** mode, only the exact task tag is hidden, so child tags remain editable. The exact configured task tag remains protected in tag-based identification mode, even when visible, so editing tags does not accidentally remove the task identifier. In property-based identification mode, all tags are editable.
+
 ## Folder Management
 
 Use **Excluded folders** to omit paths from Notes tab indexing and keep large archive areas out of regular task browsing.

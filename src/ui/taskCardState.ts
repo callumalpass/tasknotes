@@ -1,10 +1,12 @@
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { formatDateForStorage, getDatePart } from "../utils/dateUtils";
+import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 import { filterEmptyProjects, getEffectiveTaskStatus, sanitizeForCssClass } from "../utils/helpers";
 
 export interface TaskCardStateOptions {
 	targetDate?: Date;
+	usePendingOccurrenceIdentity?: boolean;
 	layout?: "default" | "compact" | "inline";
 }
 
@@ -40,7 +42,7 @@ function getTodayTaskCardTargetDate(): Date {
 
 export function getDefaultTaskCardTargetDate(task: TaskInfo): Date {
 	if (task.recurrence && task.recurrence_anchor !== "completion" && task.scheduled) {
-		const scheduledDate = createUTCDateFromStorageDate(getDatePart(task.scheduled));
+		const scheduledDate = createUTCDateFromStorageDate(getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled));
 		if (scheduledDate) {
 			return scheduledDate;
 		}
@@ -128,7 +130,10 @@ export function buildTaskCardRenderState(
 	plugin: TaskNotesPlugin,
 	options: TaskCardStateOptions = {}
 ): TaskCardRenderState {
-	const targetDate = options.targetDate || getDefaultTaskCardTargetDate(task);
+	const targetDate = options.usePendingOccurrenceIdentity && task.recurrence &&
+		task.recurrence_anchor !== "completion" && task.scheduled
+		? getDefaultTaskCardTargetDate(task)
+		: options.targetDate || getDefaultTaskCardTargetDate(task);
 	const effectiveStatus = task.recurrence
 		? getEffectiveTaskStatus(task, targetDate, plugin.statusManager.getCompletedStatuses()[0])
 		: task.status;
