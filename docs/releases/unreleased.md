@@ -53,6 +53,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2418) Rejected title-less natural-language input in interactive task-creation dialogs across interface languages while preserving the existing API, MCP, CLI and instant-conversion fallback behaviour. Kept generated MDBASE schemas in stable English, and corrected literal template braces and missing values in task-created and unresolved-project messages.
 - (#2418) Restored translated built-in modal field/group labels and default-label inputs and NLP suggestions. Kept completed-date group sorting and API/MCP group keys stable across languages; viewing translated settings does not overwrite stored names. Task cards and cache-miss edit dialogs now share the same missing-title display fallback.
 
+- (#2421, #2422) Fixed task creation and edit forms closing and discarding input after failed validation or save errors, including edit-modal keyboard saves and the save-before-closing confirmation.
+  - Thanks to @andriyor for reporting and contributing the validation fix.
 - Prevented stalled language-pack cache reads/writes from leaving language selection and retry stuck, and refreshed ribbon tooltips and accessible names when a preferred language finishes loading after startup.
 - Completed Russian and Simplified Chinese calendar attachment and migration messages that still contained English fragments.
 - (#1894) Fixed relative date changes (+1/-1 day and week) dropping scheduled and due times from task cards. Date-only tasks remain date-only. See [Task dates](https://tasknotes.dev/features/task-management/#task-dates).

@@ -13,7 +13,8 @@ export interface TaskModalLeadingButton {
 export interface CreateTaskModalActionButtonsOptions {
 	container: HTMLElement;
 	leadingButtons?: readonly TaskModalLeadingButton[];
-	onSave: () => Promise<void>;
+	/** Resolves false when validation or saving failed and the modal must stay open. */
+	onSave: () => Promise<boolean | void>;
 	onSaved: () => void;
 	onCancel: () => void;
 }
@@ -54,13 +55,14 @@ export function createTaskModalActionButtons(
 
 export async function runTaskModalSaveAction(
 	saveButton: HTMLButtonElement,
-	onSave: () => Promise<void>,
+	onSave: () => Promise<boolean | void>,
 	onSaved: () => void
 ): Promise<void> {
 	saveButton.disabled = true;
 	try {
-		await onSave();
-		onSaved();
+		if ((await onSave()) !== false) {
+			onSaved();
+		}
 	} finally {
 		saveButton.disabled = false;
 	}

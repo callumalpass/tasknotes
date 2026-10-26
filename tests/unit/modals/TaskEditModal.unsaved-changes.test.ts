@@ -255,6 +255,36 @@ describe('TaskEditModal - Unsaved Changes Detection', () => {
     });
   });
 
+  describe('Failed saves retain the form', () => {
+    it.each(['', '   '])('returns false for invalid title %j', async (title) => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      initializeModalFields(modal, mockTask);
+      (modal as any).title = title;
+      const close = jest.spyOn(modal, 'close');
+      await expect(modal.handleSave()).resolves.toBe(false);
+      expect(mockPlugin.taskService.updateTask).not.toHaveBeenCalled();
+      expect(close).not.toHaveBeenCalled();
+      expect((modal as any).details).toBe('Original details');
+    });
+
+    it.each(['validation', 'persistence'])('does not force close after %s failure in save confirmation', async (failure) => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      initializeModalFields(modal, mockTask);
+      (modal as any).title = failure === 'validation' ? '' : 'Modified Title';
+      if (failure === 'persistence') {
+        mockPlugin.taskService.updateTask.mockRejectedValue(new Error('Write failed'));
+      }
+      jest.spyOn(modal as any, 'showThreeButtonConfirmation').mockResolvedValue('save');
+      const forceClose = jest.spyOn(modal, 'forceClose');
+
+      await (modal as any).showUnsavedChangesConfirmation();
+
+      expect(forceClose).not.toHaveBeenCalled();
+      expect((modal as any).isShowingConfirmation).toBe(false);
+      expect((modal as any).title).toBe(failure === 'validation' ? '' : 'Modified Title');
+    });
+  });
+
   describe('User confirmation choices', () => {
     it('should save and close when user confirms save', async () => {
       modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
