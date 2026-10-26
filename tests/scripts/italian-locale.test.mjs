@@ -74,8 +74,9 @@ test("Italian UI and existing Italian NLP selection coexist without locale remap
   core.loadAndActivate({ locale: "en", messages: {} });
   assert.equal(plugin.settings.nlpLanguage, "it");
   assert.equal(parser.parseInput("Comprare latte entro 25/12/2026").dueDate, "2026-12-25");
-  // Existing upstream limitation: chrono-node has no Italian parser. Do not
-  // silently map it to a different language or claim domani is supported.
-  assert.equal(parser.parseInput("Comprare latte domani").scheduledDate, undefined);
+  // The pinned core now handles Italian relative days itself (chrono has no it locale).
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  assert.equal(parser.parseInput("Comprare latte domani").scheduledDate, api.formatStableDate(tomorrow, "yyyy-MM-dd"));
   core.loadAndActivate({ locale: "it", messages: catalogue.messages });
 });
