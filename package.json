@@ -107,7 +107,8 @@
 		"@codemirror/view": "^6.38.6",
 		"@lingui/core": "6.9.0",
 		"@modelcontextprotocol/sdk": "1.32.1",
-		"@tasknotes/model": "0.3.0-rc.9",
+		"@tasknotes/calendar": "file:vendor/tasknotes-calendar-0.1.0-dev.0.tgz",
+		"@tasknotes/model": "file:vendor/tasknotes-model-0.3.0-rc.17-dev.0.tgz",
 		"ajv": "8.20.0",
 		"chrono-node": "^2.7.5",
 		"date-fns": "^4.1.0",
@@ -119,8 +120,7 @@
 		"rrule": "^2.8.1",
 		"tasknotes-nlp-core": "git+https://github.com/callumalpass/tasknotes-nlp-core.git#c148eed995f8de0f9fa7a8bf4d7177ddb69c145a",
 		"yaml": "^2.3.1",
-		"zod": "^3.24.0",
-		"@tasknotes/calendar": "file:vendor/tasknotes-calendar-0.1.0-dev.0.tgz"
+		"zod": "^3.24.0"
 	},
 	"peerDependencies": {
 		"electron": "*"
