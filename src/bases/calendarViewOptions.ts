@@ -1,24 +1,27 @@
 import type { MessageSuffix } from "../i18n/concepts";
-import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
-import type { BasesAllOptions, BasesOptions, BasesViewConfig } from "obsidian";
+import type { BasesAllOptions, BasesOptionGroup, BasesOptions, BasesViewConfig } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT } from "./MiniCalendarView";
 import { isNoteFileOrFormulaProperty } from "./propertyFilters";
 import { readBasesViewConfigValue } from "./basesViewConfig";
 
+type CalendarOptionGroup = BasesOptionGroup<BasesOptions>;
 type CalendarOptionsConfig = Pick<BasesViewConfig, "get">;
 type Translate = (key: MessageSuffix<"views.basesCalendar.settings.">) => string;
 
-const CALENDAR_VIEW_OPTIONS: Record<string, string> = {
-	get dayGridMonth() { return uiText(msg({ message: "Month", context: "bases/calendarViewOptions: defaults dayGridMonth" })); },
-	get timeGridWeek() { return uiText(msg({ message: "Week", context: "bases/calendarViewOptions: defaults timeGridWeek" })); },
-	get timeGridCustom() { return uiText(msg({ message: "Custom days", context: "bases/calendarViewOptions: defaults timeGridCustom" })); },
-	get timeGridDay() { return uiText(msg({ message: "Day", context: "bases/calendarViewOptions: defaults timeGridDay" })); },
-	get listWeek() { return uiText(msg({ message: "List", context: "bases/calendarViewOptions: defaults listWeek" })); },
-	get multiMonthYear() { return uiText(msg({ message: "Year", context: "bases/calendarViewOptions: defaults multiMonthYear" })); },
-};
+function calendarViewOptions(plugin: TaskNotesPlugin, t: Translate): Record<string, string> {
+	const hint = (view: string) => plugin.i18n.translate(`views.basesCalendar.hints.${view}`);
+	return {
+		dayGridMonth: hint("month"),
+		timeGridWeek: hint("week"),
+		timeGridCustom: t("layout.customDayView"),
+		timeGridDay: hint("day"),
+		listWeek: hint("list"),
+		multiMonthYear: hint("year"),
+	};
+}
 
 function translateCalendarSetting(plugin: TaskNotesPlugin): Translate {
 	return (key: MessageSuffix<"views.basesCalendar.settings.">) => plugin.i18n.translate(messageForKey(`views.basesCalendar.settings.${key}`));
@@ -140,7 +143,7 @@ function buildCalendarEventOptions(
 	plugin: TaskNotesPlugin,
 	config: CalendarOptionsConfig,
 	t: Translate
-): BasesAllOptions {
+): CalendarOptionGroup {
 	const calendarSettings = plugin.settings.calendarViewSettings;
 
 	return {
@@ -164,7 +167,8 @@ function buildCalendarEventOptions(
 				key: "showOverdueOnToday",
 				displayName: t("events.showOverdueOnToday"),
 				default: false,
-				shouldHide: () => getCalendarView(config, calendarSettings.defaultView) !== "listWeek",
+				shouldHide: () =>
+					getCalendarView(config, calendarSettings.defaultView) !== "listWeek",
 			},
 			{
 				type: "toggle",
@@ -183,30 +187,6 @@ function buildCalendarEventOptions(
 				key: "showRecurring",
 				displayName: t("events.showRecurringTasks"),
 				default: calendarSettings.defaultShowRecurring,
-			},
-			{
-				type: "toggle",
-				key: "showCompletedRecurringInstances",
-				displayName: t("events.showCompletedRecurringInstances"),
-				default: true,
-				shouldHide: () =>
-					!readBooleanOption(
-						config,
-						"showRecurring",
-						calendarSettings.defaultShowRecurring
-					),
-			},
-			{
-				type: "toggle",
-				key: "showSkippedRecurringInstances",
-				displayName: t("events.showSkippedRecurringInstances"),
-				default: true,
-				shouldHide: () =>
-					!readBooleanOption(
-						config,
-						"showRecurring",
-						calendarSettings.defaultShowRecurring
-					),
 			},
 			{
 				type: "toggle",
@@ -233,179 +213,156 @@ function buildCalendarEventOptions(
 function buildCalendarDateNavigationOptions(
 	config: CalendarOptionsConfig,
 	t: Translate
-): BasesAllOptions {
-	return {
-		type: "group",
-		displayName: t("groups.dateNavigation"),
-		items: [
-			{
-				type: "text",
-				key: "initialDate",
-				displayName: t("dateNavigation.navigateToDate"),
-				default: "",
-				placeholder: t("dateNavigation.navigateToDatePlaceholder"),
+): BasesOptions[] {
+	return [
+		{
+			type: "text",
+			key: "initialDate",
+			displayName: t("dateNavigation.navigateToDate"),
+			default: "",
+			placeholder: t("dateNavigation.navigateToDatePlaceholder"),
+		},
+		{
+			type: "property",
+			key: "initialDateProperty",
+			displayName: t("dateNavigation.navigateToDateFromProperty"),
+			placeholder: t("dateNavigation.navigateToDateFromPropertyPlaceholder"),
+			filter: (prop: string) => prop.startsWith("note.") || prop.startsWith("file."),
+		},
+		{
+			type: "dropdown",
+			key: "initialDateStrategy",
+			displayName: t("dateNavigation.propertyNavigationStrategy"),
+			default: "first",
+			options: {
+				first: t("dateNavigation.strategies.first"),
+				earliest: t("dateNavigation.strategies.earliest"),
+				latest: t("dateNavigation.strategies.latest"),
 			},
-			{
-				type: "property",
-				key: "initialDateProperty",
-				displayName: t("dateNavigation.navigateToDateFromProperty"),
-				placeholder: t("dateNavigation.navigateToDateFromPropertyPlaceholder"),
-				filter: (prop: string) => prop.startsWith("note.") || prop.startsWith("file."),
-			},
-			{
-				type: "dropdown",
-				key: "initialDateStrategy",
-				displayName: t("dateNavigation.propertyNavigationStrategy"),
-				default: "first",
-				options: {
-					first: t("dateNavigation.strategies.first"),
-					earliest: t("dateNavigation.strategies.earliest"),
-					latest: t("dateNavigation.strategies.latest"),
-				},
-				shouldHide: () => !hasConfiguredValue(config, "initialDateProperty"),
-			},
-			{
-				type: "toggle",
-				key: "createDailyNotesFromDateLinks",
-				displayName: t("dateNavigation.createDailyNotesFromDateLinks"),
-				default: true,
-			},
-		],
-	};
+			shouldHide: () => !hasConfiguredValue(config, "initialDateProperty"),
+		},
+		{
+			type: "toggle",
+			key: "createDailyNotesFromDateLinks",
+			displayName: t("dateNavigation.createDailyNotesFromDateLinks"),
+			default: true,
+		},
+	];
 }
 
 function buildCalendarViewModeOptions(
 	plugin: TaskNotesPlugin,
 	config: CalendarOptionsConfig,
 	t: Translate
-): BasesAllOptions {
+): BasesOptions[] {
 	const calendarSettings = plugin.settings.calendarViewSettings;
 	const defaultView = calendarSettings.defaultView;
 
-	return {
-		type: "group",
-		displayName: t("groups.view"),
-		items: [
-			{
-				type: "dropdown",
-				key: "calendarView",
-				displayName: t("layout.calendarView"),
-				default: defaultView,
-				options: CALENDAR_VIEW_OPTIONS,
+	return [
+		{
+			type: "dropdown",
+			key: "calendarView",
+			displayName: t("layout.calendarView"),
+			default: defaultView,
+			options: calendarViewOptions(plugin, t),
+		},
+		{
+			type: "slider",
+			key: "customDayCount",
+			displayName: t("layout.customDayCount"),
+			default: calendarSettings.customDayCount || 3,
+			min: 1,
+			max: 14,
+			step: 1,
+			shouldHide: () => getCalendarView(config, defaultView) !== "timeGridCustom",
+		},
+		{
+			type: "slider",
+			key: "listDayCount",
+			displayName: t("layout.listDayCount"),
+			default: 7,
+			min: 1,
+			max: 365,
+			step: 1,
+			shouldHide: () => getCalendarView(config, defaultView) !== "listWeek",
+		},
+		{
+			type: "dropdown",
+			key: "heightMode",
+			displayName: t("layout.heightMode"),
+			default: "fill",
+			options: {
+				fill: t("layout.heightModeFill"),
+				auto: t("layout.heightModeAuto"),
 			},
-			{
-				type: "slider",
-				key: "customDayCount",
-				displayName: t("layout.customDayCount"),
-				default: calendarSettings.customDayCount || 3,
-				min: 1,
-				max: 14,
-				step: 1,
-				shouldHide: () => getCalendarView(config, defaultView) !== "timeGridCustom",
-			},
-			{
-				type: "slider",
-				key: "listDayCount",
-				displayName: t("layout.listDayCount"),
-				default: 7,
-				min: 1,
-				max: 365,
-				step: 1,
-				shouldHide: () => getCalendarView(config, defaultView) !== "listWeek",
-			},
-			{
-				type: "dropdown",
-				key: "heightMode",
-				displayName: t("layout.heightMode"),
-				default: "fill",
-				options: {
-					fill: t("layout.heightModeFill"),
-					auto: t("layout.heightModeAuto"),
-				},
-			},
-		],
-	};
+		},
+	];
 }
 
 function buildCalendarDisplayOptions(
 	plugin: TaskNotesPlugin,
 	config: CalendarOptionsConfig,
 	t: Translate
-): BasesAllOptions {
+): BasesOptions[] {
 	const calendarSettings = plugin.settings.calendarViewSettings;
 	const defaultView = calendarSettings.defaultView;
 
-	return {
-		type: "group",
-		displayName: t("groups.display"),
-		items: [
-			{
-				type: "dropdown",
-				key: "firstDay",
-				displayName: t("layout.weekStartsOn"),
-				default: String(calendarSettings.firstDay),
-				options: buildWeekdayOptions(plugin),
+	return [
+		{
+			type: "dropdown",
+			key: "firstDay",
+			displayName: t("layout.weekStartsOn"),
+			default: String(calendarSettings.firstDay),
+			options: buildWeekdayOptions(plugin),
+		},
+		{
+			type: "dropdown",
+			key: "timeFormat",
+			displayName: t("layout.timeFormat"),
+			default: calendarSettings.timeFormat,
+			options: {
+				"12": t("layout.timeFormat12"),
+				"24": t("layout.timeFormat24"),
 			},
-			{
-				type: "dropdown",
-				key: "timeFormat",
-				displayName: t("layout.timeFormat"),
-				default: calendarSettings.timeFormat,
-				options: {
-					"12": t("layout.timeFormat12"),
-					"24": t("layout.timeFormat24"),
-				},
-			},
-			{
-				type: "toggle",
-				key: "weekNumbers",
-				displayName: t("layout.showWeekNumbers"),
-				default: calendarSettings.weekNumbers,
-				shouldHide: () => getCalendarView(config, defaultView) === "listWeek",
-			},
-			{
-				type: "toggle",
-				key: "showWeekends",
-				displayName: t("layout.showWeekends"),
-				default: calendarSettings.showWeekends,
-			},
-			{
-				type: "toggle",
-				key: "showAllDaySlot",
-				displayName: t("layout.showAllDaySlot"),
-				default: true,
-			},
-			{
-				type: "toggle",
-				key: "showTodayHighlight",
-				displayName: t("layout.showTodayHighlight"),
-				default: calendarSettings.showTodayHighlight,
-			},
-			{
-				type: "slider",
-				key: "todayColumnWidthMultiplier",
-				displayName: t("layout.todayColumnWidthMultiplier"),
-				default: 1,
-				min: 1,
-				max: 5,
-				step: 0.5,
-				shouldHide: () =>
-					!isCurrentView(config, defaultView, (viewType) => isTodayWidthView(viewType)),
-			},
-			{
-				type: "toggle",
-				key: "enableSearch",
-				displayName: t("layout.enableSearch"),
-				default: false,
-			},
-		],
-	};
+		},
+		{
+			type: "toggle",
+			key: "weekNumbers",
+			displayName: t("layout.showWeekNumbers"),
+			default: calendarSettings.weekNumbers,
+			shouldHide: () => getCalendarView(config, defaultView) === "listWeek",
+		},
+		{
+			type: "toggle",
+			key: "showWeekends",
+			displayName: t("layout.showWeekends"),
+			default: calendarSettings.showWeekends,
+		},
+		{
+			type: "toggle",
+			key: "showTodayHighlight",
+			displayName: t("layout.showTodayHighlight"),
+			default: calendarSettings.showTodayHighlight,
+		},
+		{
+			type: "toggle",
+			key: "enableSearch",
+			displayName: t("layout.enableSearch"),
+			default: false,
+		},
+	];
 }
 
 function buildCalendarTimeGridOptions(plugin: TaskNotesPlugin, t: Translate): BasesOptions[] {
 	const calendarSettings = plugin.settings.calendarViewSettings;
 
 	return [
+		{
+			type: "toggle",
+			key: "showAllDaySlot",
+			displayName: t("layout.showAllDaySlot"),
+			default: true,
+		},
 		{
 			type: "text",
 			key: "slotMinTime",
@@ -429,13 +386,6 @@ function buildCalendarTimeGridOptions(plugin: TaskNotesPlugin, t: Translate): Ba
 		},
 		{
 			type: "text",
-			key: "snapDuration",
-			displayName: t("layout.dragDropResolution"),
-			default: calendarSettings.slotDuration,
-			placeholder: t("layout.dragDropResolutionPlaceholder"),
-		},
-		{
-			type: "text",
 			key: "scrollTime",
 			displayName: t("layout.initialScrollTime"),
 			default: calendarSettings.scrollTime,
@@ -453,25 +403,16 @@ function buildCalendarTimeGridOptions(plugin: TaskNotesPlugin, t: Translate): Ba
 			displayName: t("layout.showTimeGrid"),
 			default: true,
 		},
-		{
-			type: "toggle",
-			key: "selectMirror",
-			displayName: t("layout.showSelectionPreview"),
-			default: calendarSettings.selectMirror,
-		},
 	];
 }
 
-function buildCalendarEventLayoutOptions(
+function buildCalendarDayCellOptions(
 	plugin: TaskNotesPlugin,
 	config: CalendarOptionsConfig,
 	t: Translate
 ): BasesOptions[] {
 	const calendarSettings = plugin.settings.calendarViewSettings;
 	const defaultView = calendarSettings.defaultView;
-	const shouldHideTimeGridOption = () =>
-		!isCurrentView(config, defaultView, (viewType) => isTimeGridView(viewType));
-	// Week/day views apply the same limits to their all-day row.
 	const shouldHideDayDensityOption = () =>
 		!isCurrentView(
 			config,
@@ -480,33 +421,6 @@ function buildCalendarEventLayoutOptions(
 		);
 
 	return [
-		{
-			type: "toggle",
-			key: "slotEventOverlap",
-			displayName: t("layout.slotEventOverlap"),
-			default: calendarSettings.slotEventOverlap,
-			shouldHide: shouldHideTimeGridOption,
-		},
-		{
-			type: "slider",
-			key: "eventMinHeight",
-			displayName: t("layout.minimumEventHeight"),
-			default: calendarSettings.eventMinHeight,
-			min: 15,
-			max: 100,
-			step: 5,
-			shouldHide: shouldHideTimeGridOption,
-		},
-		{
-			type: "slider",
-			key: "eventMaxStack",
-			displayName: t("layout.eventMaxStack"),
-			default: calendarSettings.eventMaxStack ?? 0,
-			min: 0,
-			max: 10,
-			step: 1,
-			shouldHide: shouldHideTimeGridOption,
-		},
 		{
 			type: "slider",
 			key: "dayMaxEvents",
@@ -520,26 +434,13 @@ function buildCalendarEventLayoutOptions(
 			step: 1,
 			shouldHide: shouldHideDayDensityOption,
 		},
-		{
-			type: "slider",
-			key: "dayMaxEventRows",
-			displayName: t("layout.dayMaxEventRows"),
-			default:
-				typeof calendarSettings.dayMaxEventRows === "number"
-					? calendarSettings.dayMaxEventRows
-					: 0,
-			min: 0,
-			max: 10,
-			step: 1,
-			shouldHide: shouldHideDayDensityOption,
-		},
 	];
 }
 
 function buildCalendarPropertyEventOptions(
 	config: CalendarOptionsConfig,
 	t: Translate
-): BasesAllOptions {
+): CalendarOptionGroup {
 	return {
 		type: "group",
 		displayName: t("groups.propertyBasedEvents"),
@@ -570,6 +471,120 @@ function buildCalendarPropertyEventOptions(
 	};
 }
 
+function buildCalendarAdvancedOptions(
+	plugin: TaskNotesPlugin,
+	config: CalendarOptionsConfig,
+	t: Translate
+): CalendarOptionGroup {
+	const calendarSettings = plugin.settings.calendarViewSettings;
+	const defaultView = calendarSettings.defaultView;
+	const shouldHideTimeGridOption = () => !isCurrentView(config, defaultView, isTimeGridView);
+	const shouldHideDayDensityOption = () =>
+		!isCurrentView(
+			config,
+			defaultView,
+			(viewType) => isMonthDensityView(viewType) || isTimeGridView(viewType)
+		);
+
+	return {
+		type: "group",
+		displayName: t("groups.advanced"),
+		items: [
+			...buildCalendarDateNavigationOptions(config, t),
+			{
+				type: "toggle",
+				key: "showCompletedRecurringInstances",
+				displayName: t("events.showCompletedRecurringInstances"),
+				default: true,
+				shouldHide: () =>
+					!readBooleanOption(
+						config,
+						"showRecurring",
+						calendarSettings.defaultShowRecurring
+					),
+			},
+			{
+				type: "toggle",
+				key: "showSkippedRecurringInstances",
+				displayName: t("events.showSkippedRecurringInstances"),
+				default: true,
+				shouldHide: () =>
+					!readBooleanOption(
+						config,
+						"showRecurring",
+						calendarSettings.defaultShowRecurring
+					),
+			},
+			{
+				type: "slider",
+				key: "todayColumnWidthMultiplier",
+				displayName: t("layout.todayColumnWidthMultiplier"),
+				default: 1,
+				min: 1,
+				max: 5,
+				step: 0.5,
+				shouldHide: () =>
+					!isCurrentView(config, defaultView, (viewType) => isTodayWidthView(viewType)),
+			},
+			{
+				type: "text",
+				key: "snapDuration",
+				displayName: t("layout.dragDropResolution"),
+				default: calendarSettings.slotDuration,
+				placeholder: t("layout.dragDropResolutionPlaceholder"),
+				shouldHide: shouldHideTimeGridOption,
+			},
+			{
+				type: "toggle",
+				key: "selectMirror",
+				displayName: t("layout.showSelectionPreview"),
+				default: calendarSettings.selectMirror,
+				shouldHide: shouldHideTimeGridOption,
+			},
+			{
+				type: "toggle",
+				key: "slotEventOverlap",
+				displayName: t("layout.slotEventOverlap"),
+				default: calendarSettings.slotEventOverlap,
+				shouldHide: shouldHideTimeGridOption,
+			},
+			{
+				type: "slider",
+				key: "eventMinHeight",
+				displayName: t("layout.minimumEventHeight"),
+				default: calendarSettings.eventMinHeight,
+				min: 15,
+				max: 100,
+				step: 5,
+				shouldHide: shouldHideTimeGridOption,
+			},
+			{
+				type: "slider",
+				key: "eventMaxStack",
+				displayName: t("layout.eventMaxStack"),
+				default: calendarSettings.eventMaxStack ?? 0,
+				min: 0,
+				max: 10,
+				step: 1,
+				shouldHide: shouldHideTimeGridOption,
+			},
+			{
+				type: "slider",
+				key: "dayMaxEventRows",
+				displayName: t("layout.dayMaxEventRows"),
+				default:
+					typeof calendarSettings.dayMaxEventRows === "number"
+						? calendarSettings.dayMaxEventRows
+						: 0,
+				min: 0,
+				max: 10,
+				step: 1,
+				shouldHide: shouldHideDayDensityOption,
+			},
+		],
+	};
+}
+
 export function buildCalendarViewOptions(
 	plugin: TaskNotesPlugin,
 	config: CalendarOptionsConfig
@@ -577,28 +592,35 @@ export function buildCalendarViewOptions(
 	const t = translateCalendarSetting(plugin);
 	const defaultView = plugin.settings.calendarViewSettings.defaultView;
 
+	// These are presentation groups only. CalendarView still reads every saved
+	// key, including the row-limit override and all advanced options.
 	return [
 		buildCalendarEventOptions(plugin, config, t),
-		buildCalendarDateNavigationOptions(config, t),
-		buildCalendarViewModeOptions(plugin, config, t),
-		buildCalendarDisplayOptions(plugin, config, t),
+		{
+			type: "group",
+			displayName: t("groups.layout"),
+			items: [
+				...buildCalendarViewModeOptions(plugin, config, t),
+				...buildCalendarDisplayOptions(plugin, config, t),
+			],
+		},
 		{
 			type: "group",
 			displayName: t("groups.timeGrid"),
-			shouldHide: () =>
-				!isCurrentView(config, defaultView, (viewType) => isTimeGridView(viewType)),
+			shouldHide: () => !isCurrentView(config, defaultView, isTimeGridView),
 			items: buildCalendarTimeGridOptions(plugin, t),
 		},
 		{
 			type: "group",
-			displayName: t("groups.eventLayout"),
+			displayName: t("groups.dayCells"),
 			shouldHide: () => {
 				const viewType = getCalendarView(config, defaultView);
 				return !isTimeGridView(viewType) && !isMonthDensityView(viewType);
 			},
-			items: buildCalendarEventLayoutOptions(plugin, config, t),
+			items: buildCalendarDayCellOptions(plugin, config, t),
 		},
 		buildCalendarPropertyEventOptions(config, t),
+		buildCalendarAdvancedOptions(plugin, config, t),
 		...buildExternalCalendarToggleGroups(plugin, t),
 	];
 }

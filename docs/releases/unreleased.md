@@ -41,6 +41,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Calendar view settings now use fewer, task-focused sections, with less common controls under Advanced and clearer names for time-grid and event limits. Saved `.base` settings keep applying unchanged. See [Calendar Settings](https://tasknotes.dev/settings/calendar-settings/#per-view-settings-in-bases).
+
 - The Calendar view now uses TaskNotes' own calendar engine instead of FullCalendar. Existing calendar view settings in `.base` files keep working, including the saved view, custom day count, first day of week, time format, slot range and size, height mode, week numbers, weekends, all-day row, today column width, and event limits.
   - Events update in place when tasks change, and changing a view setting no longer rebuilds the calendar.
   - Long-press drag on touch screens no longer competes with scrolling.

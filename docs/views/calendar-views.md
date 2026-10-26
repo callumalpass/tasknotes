@@ -121,6 +121,8 @@ This flexibility allows for complete control over both the recurring pattern and
 
 ### View Options
 
+Open the view settings in the Bases toolbar. Options are grouped into **What to show**, **Layout**, **Time grid**, **Day cells**, **Property-based events**, and **Advanced**. Time-grid and day-cell controls appear only for applicable view modes. See [Calendar Settings](../settings/calendar-settings.md#per-view-settings-in-bases) for the full map. Existing saved keys keep the same meaning.
+
 The Calendar View provides several display options that control what types of events appear on the calendar:
 
 - **Show scheduled**: Display tasks with scheduled dates
@@ -131,9 +133,9 @@ The Calendar View provides several display options that control what types of ev
 - **Show time entries**: Display time tracking entries
 - **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
 - **Show hourly breakdown**: Turn this off to show only the all-day area in Week, Day, and Custom views. The all-day area then fills the calendar height (unless the height is set to auto) and shows every event by default. Timed events are not shown while the hourly breakdown is hidden.
-- **Max events per day / Max event rows per day**: Limit how many events a day cell shows before a "+ more" link, in Month and Year views and in the all-day area of Week, Day, and Custom views. `0` uses the automatic limit.
+- **Events before “+ more”** (Day cells): Limit events in Month and Year day cells and the all-day area of Week, Day, and Custom views. `0` uses the automatic limit. **Row limit override** (Advanced) takes precedence when positive, counts the “+ more” row, and is disabled at `0`.
 - **Create daily notes from date links**: Let date header links create a missing daily note before opening it. Turn this off if date links should only open existing daily notes.
-- **Drag/drop resolution**: Set `snapDuration` when you want events to drag or resize in smaller increments than the visible `slotDuration`, such as 5-minute dragging on a 30-minute grid.
+- **Drag and resize step** (Advanced): Set `snapDuration` when you want events to drag or resize in smaller increments than the visible `slotDuration`, such as 5-minute dragging on a 30-minute grid.
 - **Span tasks between scheduled and due dates**: Display tasks as multi-day bars spanning from their scheduled date to their due date (see below)
 Multiple saved calendar views can store different option sets (for example planning vs focus), avoiding repeated manual toggles.
 

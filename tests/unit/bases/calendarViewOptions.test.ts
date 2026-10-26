@@ -72,13 +72,12 @@ describe("calendar view options", () => {
 		const options = buildCalendarViewOptions(createPlugin(), createConfig());
 
 		expect(options.filter(isGroup).map((group) => group.displayName)).toEqual([
-			mockEnglishText(msg({ message: "Events", context: "views.basesCalendar.settings.groups.events" })),
-			mockEnglishText(msg({ message: "Date navigation", context: "views.basesCalendar.settings.groups.dateNavigation" })),
-			mockEnglishText(msg({ message: "View", context: "views.basesCalendar.settings.groups.view" })),
-			mockEnglishText(msg({ message: "Display", context: "views.basesCalendar.settings.groups.display" })),
-			mockEnglishText(msg({ message: "Time grid", context: "views.basesCalendar.settings.groups.timeGrid" })),
-			mockEnglishText(msg({ message: "Event layout", context: "views.basesCalendar.settings.groups.eventLayout" })),
-			mockEnglishText(msg({ message: "Property-based events", context: "views.basesCalendar.settings.groups.propertyBasedEvents" })),
+			"views.basesCalendar.settings.groups.events",
+			"views.basesCalendar.settings.groups.layout",
+			"views.basesCalendar.settings.groups.timeGrid",
+			"views.basesCalendar.settings.groups.dayCells",
+			"views.basesCalendar.settings.groups.propertyBasedEvents",
+			"views.basesCalendar.settings.groups.advanced",
 		]);
 	});
 
@@ -115,7 +114,11 @@ describe("calendar view options", () => {
 		expect(isHidden(findGroup(monthOptions, "timeGrid"))).toBe(true);
 		expect(isHidden(findGroup(weekOptions, "timeGrid"))).toBe(false);
 		expect(isHidden(findOption(monthOptions, "eventMaxStack"))).toBe(true);
+		expect(isHidden(findOption(monthOptions, "snapDuration"))).toBe(true);
+		expect(isHidden(findOption(monthOptions, "selectMirror"))).toBe(true);
 		expect(isHidden(findOption(weekOptions, "eventMaxStack"))).toBe(false);
+		expect(isHidden(findOption(weekOptions, "snapDuration"))).toBe(false);
+		expect(isHidden(findOption(weekOptions, "selectMirror"))).toBe(false);
 	});
 
 	it("shows day density controls for month, year, and week/day views (#2387)", () => {
