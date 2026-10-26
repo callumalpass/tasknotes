@@ -107,6 +107,7 @@ function projectionTask(task: TaskInfo): CalendarTask {
 		timeEstimate: task.timeEstimate,
 		recurrence: task.recurrence,
 		recurrence_anchor: task.recurrence_anchor,
+		recurrence_original_date: task.recurrence_original_date,
 		recurrence_parent: task.recurrence_parent,
 		occurrence_date: task.occurrence_date,
 		complete_instances: task.complete_instances,
