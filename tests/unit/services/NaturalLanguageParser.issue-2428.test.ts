@@ -28,6 +28,23 @@ describe('Issue #2428: Italian NLP date fields and accented weekdays', () => {
         expect(result.dueDate).toBeUndefined();
     });
 
+    test.each(['entro il', 'per il'])('%s remains due despite the nested il', (trigger) => {
+        const result = parse(`${trigger} 25/12/2026`);
+        expect(result.title).toBe(title);
+        expect(result.dueDate).toBe('2026-12-25');
+        expect(result.scheduledDate).toBeUndefined();
+    });
+
+    test.each([
+        'programmata per il 25/12/2026 entro il 26/12/2026',
+        'entro il 26/12/2026 programmata per il 25/12/2026',
+    ])('keeps both fields: %s', (expression) => {
+        const result = parse(expression);
+        expect(result.title).toBe(title);
+        expect(result.scheduledDate).toBe('2026-12-25');
+        expect(result.dueDate).toBe('2026-12-26');
+    });
+
     test.each([
         ['lunedì', 'MO'], ['martedì', 'TU'], ['mercoledì', 'WE'],
         ['giovedì', 'TH'], ['venerdì', 'FR'], ['sabato', 'SA'], ['domenica', 'SU'],
