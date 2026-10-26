@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 /**
  * Issue #1235: blocked tasks should have a disclosure control for the tasks
  * they are waiting on, matching the existing "blocking" task-card toggle.
@@ -36,17 +37,7 @@ function createPlugin(blocker = TaskFactory.createTask({ path: "Tasks/blocker.md
 	plugin.cacheManager.getTaskInfo = jest.fn(async (path: string) =>
 		path === blocker.path ? blocker : null
 	);
-	plugin.i18n.translate = jest.fn((key: string, vars?: Record<string, string | number>) => {
-		const translations: Record<string, string> = {
-			"ui.taskCard.blockedBadge": "Blocked",
-			"ui.taskCard.blockingToggle": `Blocking ${vars?.count ?? 0} tasks`,
-			"ui.taskCard.loadingDependencies": "Loading dependencies...",
-			"ui.taskCard.blockingLoadError": "Failed to load dependencies",
-			"ui.taskCard.taskOptions": "Task options",
-			"ui.taskCard.priorityAriaLabel": `Priority: ${vars?.label ?? ""}`,
-		};
-		return translations[key] ?? key;
-	});
+	plugin.i18n.translate = mockObserveTranslation();
 
 	return plugin;
 }

@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import {
@@ -51,12 +53,7 @@ function createPlugin(): TaskNotesPlugin {
 			}),
 		},
 		i18n: {
-			translate: jest.fn((key: string, vars?: Record<string, string>) => {
-				if (key === "ui.taskCard.priorityAriaLabel") {
-					return `Priority: ${vars?.label ?? ""}`;
-				}
-				return key;
-			}),
+			translate: mockObserveTranslation(),
 		},
 	} as unknown as TaskNotesPlugin;
 }

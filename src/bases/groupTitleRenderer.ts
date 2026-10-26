@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { parseLinktext, TFile } from "obsidian";
 import { appendInternalLink, type LinkServices } from "../ui/renderers/linkRenderer";
 import { parseLinkToPath } from "../utils/linkUtils";
@@ -159,7 +160,7 @@ function renderLinkSegment(
 	linkServices: LinkServices
 ): void {
 	const resolvedText = resolveDisplayText(segment.filePath, segment.displayText, linkServices);
-	appendInternalLink(container, segment.filePath, resolvedText, linkServices, {
+	appendInternalLink(container, segment.filePath, uiData(resolvedText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), linkServices, {
 		cssClass: "internal-link task-group-link",
 		hoverSource: "tasknotes-bases-group",
 		showErrorNotices: false,
@@ -206,7 +207,7 @@ export function renderGroupTitle(
 	if (file instanceof TFile) {
 		const displayText = file.basename;
 		const resolvedText = resolveDisplayText(filePathToTry, displayText, linkServices);
-		appendInternalLink(container, filePathToTry, resolvedText, linkServices, {
+		appendInternalLink(container, filePathToTry, uiData(resolvedText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), linkServices, {
 			cssClass: "internal-link task-group-link",
 			hoverSource: "tasknotes-bases-group",
 			showErrorNotices: false,

@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { stringifyUnknown } from "../utils/stringUtils";
 
 export type BasesExportColumn = {
@@ -45,7 +47,7 @@ export function buildBasesExportColumns<TEntry extends BasesExportEntry>(
 ): BasesExportColumn[] {
 	const propertyIds = dataAdapter.getVisiblePropertyIds();
 	return [
-		{ id: "file", label: "File" },
+		{ id: "file", label: uiText(msg({ message: "File", context: "bases/basesExport: buildBasesExportColumns label" })) },
 		...propertyIds.map((propertyId) => ({
 			id: propertyId,
 			label: dataAdapter.getPropertyDisplayName(propertyId) || propertyId,

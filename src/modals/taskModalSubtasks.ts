@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { App, setTooltip, TFile, type TAbstractFile } from "obsidian";
 import { renderProjectLinks, type LinkServices } from "../ui/renderers/linkRenderer";
 import type { TaskInfo } from "../types";
@@ -12,7 +14,7 @@ export interface RenderTaskModalSubtasksListOptions {
 	sourcePath: string;
 	getCachedTaskInfo: (path: string) => Promise<TaskInfo | null | undefined>;
 	createTaskCard: (task: TaskInfo) => HTMLElement;
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	onRemove: (file: TFile) => void;
 }
 
@@ -99,7 +101,7 @@ export async function renderTaskModalSubtasksList({
 			cls: "task-project-remove",
 			text: "×",
 		});
-		setTooltip(removeBtn, translate("modals.task.organization.removeSubtaskTooltip"), {
+		setTooltip(removeBtn, translate(msg({ message: "Remove subtask", context: "modals.task.organization.removeSubtaskTooltip" })), {
 			placement: "top",
 		});
 		removeBtn.addEventListener("click", () => {

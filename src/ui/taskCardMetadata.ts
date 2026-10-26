@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { setIcon, setTooltip } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -55,7 +57,7 @@ function createBlockedMetadataPill(config: RenderTaskCardMetadataConfig): HTMLEl
 		return null;
 	}
 
-	const blockedLabel = plugin.i18n.translate("ui.taskCard.blockedBadge");
+	const blockedLabel = plugin.i18n.translate(msg({ message: "Blocked", context: "ui.taskCard.blockedBadge" }));
 	const blockedByPaths = getBlockedByTaskPaths(task, plugin.app);
 	const blockedCount = task.blockedBy?.length ?? 0;
 	const pillText = blockedCount > 0 ? `${blockedLabel} (${blockedCount})` : blockedLabel;
@@ -78,7 +80,7 @@ function createBlockedMetadataPill(config: RenderTaskCardMetadataConfig): HTMLEl
 			onBlockedByToggle();
 		});
 	} else {
-		setTooltip(blockedPill, plugin.i18n.translate("ui.taskCard.blockedBadgeTooltip"), {
+		setTooltip(blockedPill, plugin.i18n.translate(msg({ message: "This task is waiting on another task", context: "ui.taskCard.blockedBadgeTooltip" })), {
 			placement: "top",
 		});
 	}
@@ -92,14 +94,14 @@ function createBlockingMetadataPill(config: RenderTaskCardMetadataConfig): HTMLE
 		return null;
 	}
 
-	const blockingLabel = plugin.i18n.translate("ui.taskCard.blockingBadge");
+	const blockingLabel = plugin.i18n.translate(msg({ message: "Blocking", context: "ui.taskCard.blockingBadge" }));
 	const blockingCount = task.blocking?.length ?? 0;
 	const pillText = blockingCount > 0 ? `${blockingLabel} (${blockingCount})` : blockingLabel;
 	const blockingPill = metadataLine.createSpan({
 		cls: "task-card__metadata-pill task-card__metadata-pill--blocking",
 		text: pillText,
 	});
-	setTooltip(blockingPill, plugin.i18n.translate("ui.taskCard.blockingBadgeTooltip"), {
+	setTooltip(blockingPill, plugin.i18n.translate(msg({ message: "This task is blocking another task", context: "ui.taskCard.blockingBadgeTooltip" })), {
 		placement: "top",
 	});
 	return blockingPill;
@@ -115,7 +117,7 @@ function createGoogleCalendarSyncPill(config: RenderTaskCardMetadataConfig): HTM
 		cls: "task-card__metadata-pill task-card__metadata-pill--google-calendar",
 	});
 	setIcon(syncPill, "calendar");
-	setTooltip(syncPill, plugin.i18n.translate("ui.taskCard.googleCalendarSyncTooltip"), {
+	setTooltip(syncPill, plugin.i18n.translate(msg({ message: "Synced to Google Calendar", context: "ui.taskCard.googleCalendarSyncTooltip" })), {
 		placement: "top",
 	});
 	return syncPill;
@@ -136,13 +138,13 @@ function createOccurrenceMetadataPill(config: RenderTaskCardMetadataConfig): HTM
 		cls: "task-card__metadata-pill task-card__metadata-pill--occurrence",
 	});
 	setIcon(pill, "refresh-ccw");
-	pill.createSpan({ text: `Occurrence: ${dateLabel}` });
+	pill.createSpan({ text: uiText(msg({ message: "Occurrence: {dateLabel}", context: "ui/taskCardMetadata: createOccurrenceMetadataPill text" }), { dateLabel: dateLabel }) });
 	prepareInteractiveControl(pill);
 	pill.setAttribute(
 		"aria-label",
-		`Open recurring parent for occurrence on ${task.occurrence_date}`
+		uiText(msg({ message: "Open recurring parent for occurrence on {occurrence_date}", context: "ui/taskCardMetadata: createOccurrenceMetadataPill display" }), { occurrence_date: task.occurrence_date })
 	);
-	setTooltip(pill, `Occurrence of ${task.recurrence_parent} on ${task.occurrence_date}`, {
+	setTooltip(pill, uiText(msg({ message: "Occurrence of {recurrence_parent} on {occurrence_date}", context: "ui/taskCardMetadata: createOccurrenceMetadataPill display" }), { recurrence_parent: task.recurrence_parent, occurrence_date: task.occurrence_date }), {
 		placement: "top",
 	});
 	pill.addEventListener("click", (event) => {

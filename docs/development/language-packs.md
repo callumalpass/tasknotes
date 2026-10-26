@@ -1,6 +1,6 @@
 # Downloadable language packs
 
-This is an opt-in delivery layer for the existing TaskNotes translation system, not a Lingui migration or a hosted translation-management platform. Translation authoring runs locally; CI validates and exports committed resources without AI calls.
+This opt-in delivery layer serves the shared Lingui UI catalogues. Translation authoring remains in committed PO files; CI validates authored completeness before fallback and exports compiled JSON without AI calls. Normal builds still bundle all nine locales synchronously; the separate NLP configuration in `src/locales/` is unchanged.
 
 ## Build modes
 
@@ -12,7 +12,7 @@ Do not configure this for published releases until their packs are available and
 ## Export
 
 ```bash
-npm run i18n:verify
+npm run i18n:check
 npm run i18n:export
 ```
 
@@ -35,23 +35,23 @@ dist/language-packs/<catalogue-version>/
   manifest.json
 ```
 
-The catalogues are JSON **data**, not remotely executable code. They contain a format identifier, locale, English source hash, and flat message dictionary. The manifest contains the product, format, catalogue version, source hash, and each pack's filename, byte length, and SHA-256 digest.
+The catalogues are JSON **data**, not remotely executable code. `tasknotes-lingui-v1` contains the locale, English source hash and a generated-ID dictionary of compiled ICU arrays, never functions or flat translation strings. It deliberately rejects the obsolete `tasknotes-ui-v1` shape. The manifest contains the product, format, catalogue version, source hash, and each pack's filename, byte length, and SHA-256 digest.
 
 Canonical serialization makes exports reproducible. Changing English or a target translation changes the catalogue version. Re-exporting identical inputs is idempotent. Existing immutable artifacts with different content are rejected. The manifest is written after all locale files.
 
-English defines the authoritative key set. Obsolete keys remaining in old target resources are excluded from exported packs; the original source files are not rewritten. Placeholder validation rejects missing semantic parameters and invented parameters. Explicit legacy exceptions permit languages to omit English grammatical suffixes such as `{plural}` where appropriate. Double-brace template examples in descriptions are not treated as interface interpolation values.
+English defines the authoritative generated-ID set. Export requires exactly all nine supported catalogues and a complete matching ID set in each. Ordinary export/build/test entry points first check extraction sync, authored POs and source guards, then compile; Lingui `--strict` alone is not sufficient because it permits fallback-filled translations. ICU validation preserves argument names/roles, fixed select and exact-number arms, offsets, numeric rich tags and pound bindings while allowing locale-specific plural/ordinal categories. Required plural/ordinal categories are those reached by integer counts 0–999 after the ICU offset; exact `=N` cases match the original count and satisfy a category only when they cover all its representatives in that range. Million-only `many` categories in fr/es/pt are optional; the follow-up removes all 90 mechanically added es/fr `many` arms. The plugin mirrors `mdbase-connect` kit `e61ab062`'s coverage rule locally: the kit exposes no standalone coverage helper, and the plugin retains stricter English-source coverage and scoped English-arm rejection. Its existing vendored kit pin is unchanged. There are no legacy suffix-parameter exemptions. Literal template/path/code examples remain protected data. PO is authoritative; use normal clean extraction after integration. The legacy converter and its refresh flags have been retired.
 
 ## Local fixture
 
 ```bash
 npm run i18n:export
-python -m http.server 8123 --bind 127.0.0.1 --directory dist/language-packs
+python -m http.server 19280 --bind 127.0.0.1 --directory dist/language-packs
 ```
 
 In another terminal:
 
 ```bash
-TASKNOTES_LANGUAGE_PACK_BASE_URL=http://127.0.0.1:8123 npm run build
+TASKNOTES_LANGUAGE_PACK_BASE_URL=http://127.0.0.1:19280 npm run build
 npm run check:bundle-size
 ```
 
@@ -64,7 +64,7 @@ The build automatically exports the exact packs corresponding to its embedded ma
 - Startup has English immediately and does not await language-pack downloads.
 - If a preferred non-English locale is unloaded, its compatible cache is checked first.
 - Cached and downloaded files must match the pinned size, digest, format, locale, source hash, message types, key set, and placeholder contract.
-- Only a successfully validated pack is registered and activated. Missing target messages fall back to bundled English.
+- Only a complete, successfully validated pack is registered and activated. Incomplete or incompatible packs are rejected; failure retains the active language or synchronous English fallback.
 - Invalid or unreadable cache triggers a network attempt; it does not silently activate corrupt data.
 - Network failure preserves the currently active language. The settings picker includes a retry button in experimental builds.
 - Concurrent requests for one locale are deduplicated. A slow result cannot override a newer selection. Unloading the plugin prevents later activation.
@@ -82,7 +82,21 @@ They are separate from `data.json`. Content-addressed cache keys let an unchange
 
 English selection causes no download. System selection may download the detected system language in an experimental build. Requests contain only the artifact path and ordinary connection metadata, not vault content; see `PRIVACY.md`.
 
+## Data and display policy
+
+Persist English seeds for built-in field/group names, default and newly added status/priority labels, reminder descriptions, new calendar subscription names and untitled provider-event fallbacks. Translate only unchanged known seeds at display boundaries. Custom names and already-localized user data pass through untouched. Label inputs show translated defaults, but rendering or leaving an input untouched never writes that translation back. Edited input becomes user-owned text.
+
+Group identities and sort comparisons remain English; HTTP and MCP JSON use those same stable keys. UI adapters translate display labels only. Ambiguous user text such as `None`, `True` and `False` stays verbatim unless raw values or the property schema prove it is an empty/boolean bucket.
+
+The public NLP parser and API/MCP/instant-conversion paths retain the pre-port (`e70b7ba6`) fallback behaviour, including the persisted English `Untitled Task` title. CLI retains its existing missing-title rejection and explicit-title override. A non-enumerable internal missing-title identity lets interactive dialogs reject title-less input without changing public JSON. Both TaskInfo read paths share a localized read-only missing-title fallback; unrelated updates persist patches, not that synthetic title.
+
+Exported prose is deliberately separate from UI copy. `.ics` DESCRIPTION is restored to its exact pre-port English output (including legacy duration spelling); manual and automatic exports therefore do not switch language by device. Google Calendar metadata/duration/title fallbacks also remain English, preserving configured labels and user values verbatim. Generated Bases status/priority formula values remain the configured English/user-authored data; generated instructional labels and count formulas are deliberately localized on generation. Existing Bases files are never regenerated merely by changing interface language. ICS note-creation/template prose remains the previously documented separate deferred policy, not covered by the `.ics` DESCRIPTION decision.
+
+Historical migration ledgers are immutable records, not current classifications or runtime inputs. `i18n-rereview.json` supersedes the retirement classification of 14 built-in field/group descriptors and two new-status/priority display descriptors: all 128 translations were recovered verbatim from the last pre-retirement authored catalogues. Retired converter tooling, archive-rewriting scripts and unused grouping implementations/tests have been removed. The active descriptor map is hand-maintained; PO is the sole authored catalogue source.
+
 ## Validation
+
+`npm run check:ci-workflow` replays the checked-in `.github/workflows/test.yml` shell commands verbatim under Node 22. Run it through `rpnpm --pull dist --pull coverage run check:ci-workflow`. It includes npm installs, coverage, integration, docs, lint, both workflow build jobs and export. It does not dispatch Actions, change workflow triggers/base, provide OAuth secrets, or claim acceptance of checkout/setup/upload actions. The Node-20-only performance step remains skipped under the existing Node-22 matrix. Evidence is `dist/ci-workflow-parity.json`.
 
 ```bash
 node generate-release-notes-import.mjs
@@ -100,17 +114,30 @@ The standalone script suite exercises real locale exports and local HTTP deliver
 For native Obsidian acceptance testing, use only the repository's isolated test vault and user-data directory. Never copy this build into a personal vault or reuse a normal running Obsidian instance. With the isolated Obsidian runtime set up, the following test starts its own local HTTP fixture (do not start another server on that port):
 
 ```bash
-BASE_URL=http://127.0.0.1:18452/tasknotes
+BASE_URL=http://127.0.0.1:19290/tasknotes
 TASKNOTES_LANGUAGE_PACK_BASE_URL="$BASE_URL" \
   OBSIDIAN_PLUGIN_PATH="$PWD/tasknotes-e2e-vault/.obsidian/plugins/tasknotes" \
   npm run build:test
 TASKNOTES_LANGUAGE_PACK_BASE_URL="$BASE_URL" \
   TASKNOTES_E2E_REUSE_OBSIDIAN=0 \
-  TASKNOTES_E2E_REMOTE_DEBUGGING_PORT=18453 \
+  TASKNOTES_E2E_REMOTE_DEBUGGING_PORT=19291 \
   npm run e2e -- e2e/language-packs.spec.ts
 ```
 
-The test exercises native picker switching, French download, offline plugin reload, corrupt German data and retry, and a superseded Russian request. It restores the fixture's settings afterward.
+The tests exercise French download/offline reload, corrupt German delivery/retry and Russian supersession, then native en/ja/de/ru labels, plurals at 0/1/2/5/21 and preservation of existing user-authored Bases files. They also corrupt the Russian cache while offline, require English fallback, and verify explicit retry repairs the pinned cache. Fixture settings are restored even when a test fails. A further en/de/ru regression uses real native Kanban pointer drags and creation modals: empty drops remove properties, boolean drops/creation write booleans, empty-column creation does not seed a translated status, and stable saved ordering survives language switches. Its disposable fixture folder is removed in `finally`. The bundled native re-review additionally checks all 14 field/group labels, translated status/priority label inputs without writes, real completed-date grouping/sorting, baseline instant-conversion fallback, and interactive missing-title rejection in English and German. All fixtures use the isolated vault/profile and are restored/removed in `finally`.
+
+For minified production acceptance, use the preserved artifacts from `npm run check:language-pack-builds "$BASE_URL"` rather than a development build. Copy `dist/language-pack-builds/downloadable/{main.js,styles.css}` into the isolated plugin directory with `cp --remove-destination` (never follow a symlink into another checkout), then run the pack tests above. Copy the corresponding **bundled** artifacts into that same disposable directory and run:
+
+```bash
+# No remote base URL: all nine synchronously decoded catalogues must be present.
+(unset TASKNOTES_LANGUAGE_PACK_BASE_URL
+ TASKNOTES_E2E_REUSE_OBSIDIAN=0 TASKNOTES_E2E_REMOTE_DEBUGGING_PORT=19291 \
+   npm run e2e -- e2e/lingui-bundled.spec.ts --output=test-results/bundled)
+```
+
+The bundled test cold-starts Japanese, asserts nine loaded locales, and checks native en/ja/de/ru picker/command labels and 0/1/2/5/21 forms. Both modes also run the same en/de/ru group-identity regression. Reports and native screenshots are written under `test-results/lingui-native` and `test-results/lingui-bundled`; each mode's `review/review-report.json` records the actual frontmatter and saved order.
+
+`npm run test:fresh-catalogues` removes only ignored generated JSON, typechecks before regeneration, runs ordinary strict Jest, removes JSON again and builds/checks documentation. Authored POs are never deleted or fallback-filled by that acceptance command. Development requires Node 22.22+ and initialized `docs/spec` (`git submodule update --init --checkout docs/spec`).
 
 ### Actual Android acceptance
 
@@ -152,14 +179,14 @@ Repeat runs must begin with the fixture's English settings and no previously dow
 
 Evidence is written to `.tmp/android-language-packs/`: a structured report and native screenshots. The test verifies real mobile storage and WebCrypto, French picker download from public R2, offline full app force-stop/relaunch and translated commands, an uncached German failure preserving French, recovery through the retry button, every remaining target locale, and rejection/repair of a same-length corrupted French cache. Reconnection waits for real connectivity and tolerates native DNS negative-cache expiry; no transport or platform flag is mocked.
 
-Android 16 / API 36 with Obsidian 1.13.8 passed this acceptance test. This is not iOS validation, physical-device performance testing, or a complete older-Android compatibility matrix.
+Historical evidence: the pre-Lingui keyed-resource delivery layer passed this test on Android 16 / API 36 with Obsidian 1.13.8. This is not current Lingui-port Android acceptance, iOS validation, physical-device performance testing, or a complete older-Android compatibility matrix.
 
 ## R2 hosting and publication
 
 The public host is `https://i18n.mdbase.dev`, with TaskNotes assets under `/tasknotes/<catalogue-version>/`. The dedicated `product-language-packs` bucket contains public translation data only, never notes or credentials. Target account, bucket, domain, zone and TLS policy are recorded in `infra/language-packs.json`; read-only wildcard CORS is in `infra/language-packs.cors.json`. The exporter also emits English for reference, but the plugin never downloads English.
 
 ```bash
-npm run i18n:verify
+npm run i18n:check
 npm run i18n:publish                 # Local dry run; no cloud writes or authentication
 npm run i18n:publish -- --verify     # Verify public bytes and HTTP metadata; no cloud writes
 npm run i18n:publish -- --apply      # Operator-only Wrangler path; serialize publishers
@@ -203,5 +230,5 @@ Ordinary CI/release builds remain fully bundled. Integrating the publication ste
 - After merge and separate owner authorization, activate protected-environment S3 publication using the installed bucket-scoped credentials.
 - A Cache Rule scoped only to the language-pack host, enabling edge caching of JSON.
 - Optional cache pruning that preserves the current catalogue.
-- Lingui/generated-ID migration as a separate change, after a representative pilot.
+- Current Lingui-build mobile acceptance before ordinary remote releases; desktop evidence does not establish mobile compatibility.
 - Shared glossary and local agent workflow conventions across the initiative workspace.

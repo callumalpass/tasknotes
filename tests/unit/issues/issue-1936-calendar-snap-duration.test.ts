@@ -136,11 +136,11 @@ describe("Issue #1936: Calendar drag/drop snap duration", () => {
 	it("registers and passes the FullCalendar snapDuration option", () => {
 		const calendarSource = readRepoFile("src/bases/CalendarView.ts");
 		const calendarOptionsSource = readRepoFile("src/bases/calendarViewOptions.ts");
-		const englishSource = readRepoFile("src/i18n/resources/en.ts");
+		const englishSource = readRepoFile("src/i18n/locales/en/messages.po");
 
 		expect(calendarSource).toContain("snapDuration: this.viewOptions.snapDuration");
 		expect(calendarOptionsSource).toContain('key: "snapDuration"');
 		expect(calendarOptionsSource).toContain('displayName: t("layout.dragDropResolution")');
-		expect(englishSource).toContain('dragDropResolution: "Drag/drop resolution"');
+		expect(englishSource).toContain('msgid "Drag/drop resolution"');
 	});
 });

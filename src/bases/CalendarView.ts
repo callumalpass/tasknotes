@@ -1,3 +1,6 @@
+import { displayError } from "../i18n/runtime";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../main";
 import { createElementInDocument } from "../utils/documentDom";
 import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
@@ -132,7 +135,7 @@ export function decorateRefreshCalendarsButton(container: HTMLElement, label: st
 	const button = container.querySelector<HTMLButtonElement>(".fc-refreshCalendars-button");
 	if (!button) return;
 
-	const normalizedLabel = label.trim() || "Refresh calendar subscriptions";
+	const normalizedLabel = label.trim() || uiText(msg({ message: "Refresh calendar subscriptions", context: "calendar refresh subscriptions button" }));
 	button.replaceChildren();
 	setIcon(button, "refresh-cw");
 	button.classList.add("tasknotes-calendar-refresh-button--icon");
@@ -1275,32 +1278,32 @@ export class CalendarView extends BasesViewBase {
 				right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek",
 			},
 			buttonText: {
-				today: this.plugin.i18n.translate("views.basesCalendar.today"),
-				month: this.plugin.i18n.translate("views.basesCalendar.buttonText.month"),
-				week: this.plugin.i18n.translate("views.basesCalendar.buttonText.week"),
-				day: this.plugin.i18n.translate("views.basesCalendar.buttonText.day"),
-				year: this.plugin.i18n.translate("views.basesCalendar.buttonText.year"),
-				list: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
+				today: this.plugin.i18n.translate(msg({ message: "Today", context: "views.basesCalendar.today" })),
+				month: this.plugin.i18n.translate(msg({ message: "M", context: "views.basesCalendar.buttonText.month" })),
+				week: this.plugin.i18n.translate(msg({ message: "W", context: "views.basesCalendar.buttonText.week" })),
+				day: this.plugin.i18n.translate(msg({ message: "D", context: "views.basesCalendar.buttonText.day" })),
+				year: this.plugin.i18n.translate(msg({ message: "Y", context: "views.basesCalendar.buttonText.year" })),
+				list: this.plugin.i18n.translate(msg({ message: "L", context: "views.basesCalendar.buttonText.list" })),
 			},
 			buttonHints: {
 				today:
-					this.plugin.i18n.translate("views.basesCalendar.hints.today") || "Go to today",
-				prev: this.plugin.i18n.translate("views.basesCalendar.hints.prev") || "Previous",
-				next: this.plugin.i18n.translate("views.basesCalendar.hints.next") || "Next",
+					this.plugin.i18n.translate(msg({ message: "Go to today", context: "views.basesCalendar.hints.today" })) || "Go to today",
+				prev: this.plugin.i18n.translate(msg({ message: "Previous", context: "views.basesCalendar.hints.prev" })) || "Previous",
+				next: this.plugin.i18n.translate(msg({ message: "Next", context: "views.basesCalendar.hints.next" })) || "Next",
 				month:
-					this.plugin.i18n.translate("views.basesCalendar.hints.month") || "Month view",
-				week: this.plugin.i18n.translate("views.basesCalendar.hints.week") || "Week view",
-				day: this.plugin.i18n.translate("views.basesCalendar.hints.day") || "Day view",
-				year: this.plugin.i18n.translate("views.basesCalendar.hints.year") || "Year view",
-				list: this.plugin.i18n.translate("views.basesCalendar.hints.list") || "List view",
+					this.plugin.i18n.translate(msg({ message: "Month view", context: "views.basesCalendar.hints.month" })) || "Month view",
+				week: this.plugin.i18n.translate(msg({ message: "Week view", context: "views.basesCalendar.hints.week" })) || "Week view",
+				day: this.plugin.i18n.translate(msg({ message: "Day view", context: "views.basesCalendar.hints.day" })) || "Day view",
+				year: this.plugin.i18n.translate(msg({ message: "Year view", context: "views.basesCalendar.hints.year" })) || "Year view",
+				list: this.plugin.i18n.translate(msg({ message: "List view", context: "views.basesCalendar.hints.list" })) || "List view",
 			},
 			customButtons: {
 				refreshCalendars: {
 					text:
-						this.plugin.i18n.translate("views.basesCalendar.buttonText.refresh") ||
+						this.plugin.i18n.translate(msg({ message: "Refresh", context: "views.basesCalendar.buttonText.refresh" })) ||
 						"Refresh",
 					hint:
-						this.plugin.i18n.translate("views.basesCalendar.hints.refresh") ||
+						this.plugin.i18n.translate(msg({ message: "Refresh calendar subscriptions", context: "views.basesCalendar.hints.refresh" })) ||
 						"Refresh calendar subscriptions",
 					click: () => {
 						void this.refreshExternalCalendars();
@@ -1318,7 +1321,7 @@ export class CalendarView extends BasesViewBase {
 					type: "timeGrid",
 					duration: { days: this.viewOptions.customDayCount },
 					buttonText: this.plugin.i18n.translate(
-						"views.basesCalendar.buttonText.customDays",
+						msg({ message: "{count}D", context: "views.basesCalendar.buttonText.customDays" }),
 						{
 							count: this.viewOptions.customDayCount.toString(),
 						}
@@ -1328,7 +1331,7 @@ export class CalendarView extends BasesViewBase {
 				listWeek: {
 					type: "list",
 					duration: { days: this.viewOptions.listDayCount },
-					buttonText: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
+					buttonText: this.plugin.i18n.translate(msg({ message: "L", context: "views.basesCalendar.buttonText.list" })),
 				},
 			},
 			...getCalendarSizingOptions(this.getEffectiveHeightMode()),
@@ -1480,9 +1483,7 @@ export class CalendarView extends BasesViewBase {
 
 		decorateRefreshCalendarsButton(
 			this.calendarEl,
-			this.plugin.i18n.translate("views.basesCalendar.hints.refresh") ||
-				this.plugin.i18n.translate("views.basesCalendar.buttonText.refresh") ||
-				"Refresh calendar subscriptions"
+			this.plugin.i18n.translate(msg({ message: "Refresh calendar subscriptions", context: "views.basesCalendar.hints.refresh" }))
 		);
 	}
 
@@ -1717,12 +1718,12 @@ export class CalendarView extends BasesViewBase {
 		noticeEl.className = "advanced-calendar-view__popout-blocked";
 
 		const titleEl = createElementInDocument(doc, "h3");
-		titleEl.textContent = "Calendar view is unavailable in a separate window";
+		titleEl.textContent = uiText(msg({ message: "Calendar view is unavailable in a separate window", context: "bases/CalendarView: CalendarView.renderPopoutUnsupported display" }));
 		noticeEl.appendChild(titleEl);
 
 		const messageEl = createElementInDocument(doc, "p");
 		messageEl.textContent =
-			"Open this calendar view in the main Obsidian window. The calendar can freeze Obsidian when restored inside a separate window.";
+			uiText(msg({ message: "Open this calendar view in the main Obsidian window. The calendar can freeze Obsidian when restored inside a separate window.", context: "bases/CalendarView: CalendarView.renderPopoutUnsupported display" }));
 		noticeEl.appendChild(messageEl);
 
 		this.calendarEl.appendChild(noticeEl);
@@ -2589,7 +2590,7 @@ export class CalendarView extends BasesViewBase {
 		const menu = new Menu();
 
 		menu.addItem((item) => {
-			item.setTitle(this.plugin.i18n.translate("modals.taskCreation.title"))
+			item.setTitle(this.plugin.i18n.translate(msg({ message: "Create task", context: "modals.taskCreation.title" })))
 				.setIcon("check-square")
 				.onClick(async () => {
 					// Parse slot duration to get minutes (default to 30 if not set)
@@ -2617,7 +2618,7 @@ export class CalendarView extends BasesViewBase {
 		// Only show timeblock option if timeblocking is enabled
 		if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
 			menu.addItem((item) => {
-				item.setTitle(this.plugin.i18n.translate("modals.timeblockCreation.heading"))
+				item.setTitle(this.plugin.i18n.translate(msg({ message: "Create timeblock", context: "modals.timeblockCreation.heading" })))
 					.setIcon("clock")
 					.onClick(async () => {
 						await handleTimeblockCreation(
@@ -2632,7 +2633,7 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		menu.addItem((item) => {
-			item.setTitle(this.plugin.i18n.translate("ui.audit.createEntry"))
+			item.setTitle(this.plugin.i18n.translate(msg({ message: "Create time entry", context: "ui.audit.createEntry" })))
 				.setIcon("play")
 				.onClick(async () => {
 					this.expectImmediateUpdate();
@@ -2649,7 +2650,7 @@ export class CalendarView extends BasesViewBase {
 			if (hasWritableCalendars) {
 				menu.addSeparator();
 				menu.addItem((item) => {
-					item.setTitle(this.plugin.i18n.translate("ui.audit.createExternal"))
+					item.setTitle(this.plugin.i18n.translate(msg({ message: "Create external calendar event", context: "ui.audit.createExternal" })))
 						.setIcon("calendar-plus")
 						.onClick(() => {
 							const modal = new CalendarEventCreationModal(
@@ -3040,7 +3041,7 @@ export class CalendarView extends BasesViewBase {
 			"tn-static-padding-2rem-42aa6d9c"
 		);
 		errorEl.classList.add("tn-static-padding-20px-ebe8e48c");
-		errorEl.textContent = `Error loading calendar: ${error.message || "Unknown error"}`;
+		errorEl.textContent = uiText(msg({ message: "Error loading calendar: {message}", context: "bases/CalendarView: CalendarView.renderError display" }), { message: displayError(error.message || "Unknown error") });
 		this.calendarEl.appendChild(errorEl);
 	}
 

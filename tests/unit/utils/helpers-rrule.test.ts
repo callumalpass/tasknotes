@@ -458,8 +458,8 @@ describe('RRule Helper Functions', () => {
 
       const result = getRecurrenceDisplayText('FREQ=DAILY');
 
-      expect(mockRRule.fromString).toHaveBeenCalledWith('FREQ=DAILY');
-      expect(result).toBe('daily');
+      expect(mockRRule.fromString).not.toHaveBeenCalled();
+      expect(result).toBe('Daily');
     });
 
     it('should return fallback text on rrule parsing error', () => {
@@ -468,13 +468,14 @@ describe('RRule Helper Functions', () => {
       });
 
       const result = getRecurrenceDisplayText('INVALID_RRULE');
-      expect(result).toBe('rrule');
+      expect(result).toBe('Custom recurrence: INVALID_RRULE');
+      expect(mockRRule.fromString).not.toHaveBeenCalled();
     });
 
     it('should return fallback text for unknown format', () => {
       const unknownFormat = 'some random string';
       const result = getRecurrenceDisplayText(unknownFormat);
-      expect(result).toBe('rrule');
+      expect(result).toBe('Custom recurrence: some random string');
     });
 
     it('should handle complex rrule strings', () => {
@@ -487,8 +488,9 @@ describe('RRule Helper Functions', () => {
 
       const result = getRecurrenceDisplayText(complexRRule);
 
-      expect(mockRRule.fromString).toHaveBeenCalledWith(complexRRule);
-      expect(result).toBe('monthly on the 15th until December 31, 2024');
+      expect(mockRRule.fromString).not.toHaveBeenCalled();
+      expect(result).toContain('Monthly on the 15th');
+      expect(result).toContain('(until Dec 31, 2024');
     });
   });
 

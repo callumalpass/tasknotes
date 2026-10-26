@@ -1,30 +1,23 @@
-import { en } from "../../../src/i18n/resources/en";
-import { de } from "../../../src/i18n/resources/de";
-import { es } from "../../../src/i18n/resources/es";
-import { fr } from "../../../src/i18n/resources/fr";
-import { ja } from "../../../src/i18n/resources/ja";
-import { ko } from "../../../src/i18n/resources/ko";
-import { pt } from "../../../src/i18n/resources/pt";
-import { ru } from "../../../src/i18n/resources/ru";
-import { zh } from "../../../src/i18n/resources/zh";
+import concepts from "../../../scripts/plugin-key-map.json";
+import { translationResources } from "../../../src/i18n/bundledResources";
+import { observeTranslation, englishText } from "../../helpers/real-i18n";
 
-const locales = { de, es, fr, ja, ko, pt, ru, zh };
-const placeholders = (text: string) => (text.match(/\{[^{}]+\}/g) ?? []).sort();
-
-describe("Issue #2147: completion-date translations", () => {
-	it.each(Object.entries(locales))("%s translates every completion action and preserves interpolation", (_name, locale) => {
-		const groups = [
-			[en.contextMenus.task.completion, locale.contextMenus.task.completion],
-			[en.settings.appearance.taskCards.completionSubmenu, locale.settings.appearance.taskCards.completionSubmenu],
-		];
-		for (const [source, translated] of groups) {
-			expect(Object.keys(translated).sort()).toEqual(Object.keys(source).sort());
-			for (const [key, text] of Object.entries(source)) {
-				const translation = (translated as Record<string, string>)[key];
-				expect(translation.trim()).not.toBe("");
-				expect(translation).not.toBe(text);
-				expect(placeholders(translation)).toEqual(placeholders(text));
-			}
-		}
-	});
+const completion = Object.entries(concepts).filter(([concept]) =>
+  concept.startsWith("contextMenus.task.completion.") ||
+  concept.startsWith("settings.appearance.taskCards.completionSubmenu.")
+);
+afterEach(() => observeTranslation("en"));
+describe("Issue #2147: live PO completion-date translations", () => {
+  it.each(["de", "es", "fr", "ja", "ko", "pt", "ru", "zh"])("%s renders every completion action from its real compiled PO catalogue", locale => {
+    const translate = observeTranslation(locale);
+    expect(completion.length).toBeGreaterThan(0);
+    for (const [, descriptor] of completion) {
+      expect(Object.hasOwn(translationResources[locale], descriptor.id)).toBe(true);
+      const values = { date: "2026-10-24", count: 2 };
+      const rendered = translate(descriptor, values);
+      expect(rendered.trim()).not.toBe("");
+      expect(rendered).not.toBe(descriptor.id);
+      expect(rendered).not.toBe(englishText(descriptor, values));
+    }
+  });
 });

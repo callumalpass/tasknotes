@@ -1,6 +1,7 @@
+import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
-import type { TranslationKey } from "../../i18n";
+import type { MessageDescriptor } from "../../i18n";
 import {
 	createSettingGroup,
 	configureTextSetting,
@@ -56,7 +57,7 @@ export function renderAppearanceTab(
 ): void {
 	container.empty();
 
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 
 	// Task Cards Section
@@ -67,22 +68,22 @@ export function renderAppearanceTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.appearance.taskCards.header"),
-			description: translate("settings.appearance.taskCards.description"),
+			heading: translate(msg({ message: "Task cards", context: "settings.appearance.taskCards.header" })),
+			description: translate(msg({ message: "Configure how task cards are displayed across all views.", context: "settings.appearance.taskCards.description" })),
 		},
 		(group) => {
 			group.addSetting((setting) => {
 				setting
 					.setName(
-						translate("settings.appearance.taskCards.defaultVisibleProperties.name")
+						translate(msg({ message: "Default visible properties", context: "settings.appearance.taskCards.defaultVisibleProperties.name" }))
 					)
 					.setDesc(
 						translate(
-							"settings.appearance.taskCards.defaultVisibleProperties.description"
+							msg({ message: "Choose which properties appear on task cards by default.", context: "settings.appearance.taskCards.defaultVisibleProperties.description" })
 						)
 					)
 					.addButton((button) => {
-						button.setButtonText(translate("common.configure")).onClick(() => {
+						button.setButtonText(translate(msg({ message: "Configure", context: "common.configure" }))).onClick(() => {
 							const modal = new PropertySelectorModal(
 								plugin.app,
 								availableProperties,
@@ -90,12 +91,12 @@ export function renderAppearanceTab(
 								async (selected) => {
 									plugin.settings.defaultVisibleProperties = selected;
 									save();
-									new Notice(translate("settings.appearance.taskCards.updated"));
+									new Notice(translate(msg({ message: "Default task card properties updated", context: "settings.appearance.taskCards.updated" })));
 									// Re-render to update display
 									renderAppearanceTab(container, plugin, save);
 								},
-								translate("modals.propertySelector.title"),
-								translate("modals.propertySelector.description"),
+								translate(msg({ message: "Select task card properties", context: "modals.propertySelector.title" })),
+								translate(msg({ message: "Choose which properties to display in task cards. Selected properties appear in the order below.", context: "modals.propertySelector.description" })),
 								plugin
 							);
 							modal.open();
@@ -106,7 +107,7 @@ export function renderAppearanceTab(
 			// Show currently selected properties
 			group.addSetting((setting) => {
 				setting.setDesc(
-					translate("settings.appearance.taskCards.showing", {
+					translate(msg({ message: "Currently showing: {properties}", context: "settings.appearance.taskCards.showing" }), {
 						properties: currentLabels.join(", "),
 					})
 				);
@@ -116,9 +117,9 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.appearance.taskCards.completionSubmenu.name"),
+						name: translate(msg({ message: "Group complete and skip actions in a submenu", context: "settings.appearance.taskCards.completionSubmenu.name" })),
 						desc: translate(
-							"settings.appearance.taskCards.completionSubmenu.description"
+							msg({ message: "Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu.", context: "settings.appearance.taskCards.completionSubmenu.description" })
 						),
 						getValue: () => plugin.settings.completionMenuAsSubmenu,
 						setValue: async (value: boolean) => {
@@ -134,28 +135,28 @@ export function renderAppearanceTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.appearance.displayFormatting.header"),
-			description: translate("settings.appearance.displayFormatting.description"),
+			heading: translate(msg({ message: "Display formatting", context: "settings.appearance.displayFormatting.header" })),
+			description: translate(msg({ message: "Configure how dates, times, and other data are displayed across the plugin.", context: "settings.appearance.displayFormatting.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.appearance.displayFormatting.timeFormat.name"),
+						name: translate(msg({ message: "Time format", context: "settings.appearance.displayFormatting.timeFormat.name" })),
 						desc: translate(
-							"settings.appearance.displayFormatting.timeFormat.description"
+							msg({ message: "Display time in 12-hour or 24-hour format throughout the plugin", context: "settings.appearance.displayFormatting.timeFormat.description" })
 						),
 						options: [
 							{
 								value: "12",
 								label: translate(
-									"settings.appearance.displayFormatting.timeFormat.options.twelveHour"
+									msg({ message: "12-hour (AM/PM)", context: "settings.appearance.displayFormatting.timeFormat.options.twelveHour" })
 								),
 							},
 							{
 								value: "24",
 								label: translate(
-									"settings.appearance.displayFormatting.timeFormat.options.twentyFourHour"
+									msg({ message: "24-hour", context: "settings.appearance.displayFormatting.timeFormat.options.twentyFourHour" })
 								),
 							},
 						],
@@ -173,44 +174,44 @@ export function renderAppearanceTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.appearance.calendarView.header"),
-			description: translate("settings.appearance.calendarView.description"),
+			heading: translate(msg({ message: "Calendar view", context: "settings.appearance.calendarView.header" })),
+			description: translate(msg({ message: "Customize the appearance and behavior of the calendar view.", context: "settings.appearance.calendarView.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.appearance.calendarView.defaultView.name"),
-						desc: translate("settings.appearance.calendarView.defaultView.description"),
+						name: translate(msg({ message: "Default view", context: "settings.appearance.calendarView.defaultView.name" })),
+						desc: translate(msg({ message: "The calendar view shown when opening the calendar tab", context: "settings.appearance.calendarView.defaultView.description" })),
 						options: [
 							{
 								value: "dayGridMonth",
 								label: translate(
-									"settings.appearance.calendarView.defaultView.options.monthGrid"
+									msg({ message: "Month grid", context: "settings.appearance.calendarView.defaultView.options.monthGrid" })
 								),
 							},
 							{
 								value: "timeGridWeek",
 								label: translate(
-									"settings.appearance.calendarView.defaultView.options.weekTimeline"
+									msg({ message: "Week timeline", context: "settings.appearance.calendarView.defaultView.options.weekTimeline" })
 								),
 							},
 							{
 								value: "timeGridDay",
 								label: translate(
-									"settings.appearance.calendarView.defaultView.options.dayTimeline"
+									msg({ message: "Day timeline", context: "settings.appearance.calendarView.defaultView.options.dayTimeline" })
 								),
 							},
 							{
 								value: "multiMonthYear",
 								label: translate(
-									"settings.appearance.calendarView.defaultView.options.yearView"
+									msg({ message: "Year view", context: "settings.appearance.calendarView.defaultView.options.yearView" })
 								),
 							},
 							{
 								value: "timeGridCustom",
 								label: translate(
-									"settings.appearance.calendarView.defaultView.options.customMultiDay"
+									msg({ message: "Custom multi-day", context: "settings.appearance.calendarView.defaultView.options.customMultiDay" })
 								),
 							},
 						],
@@ -231,12 +232,12 @@ export function renderAppearanceTab(
 				group.addSetting(
 					(setting) =>
 						void configureNumberSetting(setting, {
-							name: translate("settings.appearance.calendarView.customDayCount.name"),
+							name: translate(msg({ message: "Custom view day count", context: "settings.appearance.calendarView.customDayCount.name" })),
 							desc: translate(
-								"settings.appearance.calendarView.customDayCount.description"
+								msg({ message: "Number of days to show in custom multi-day view", context: "settings.appearance.calendarView.customDayCount.description" })
 							),
 							placeholder: translate(
-								"settings.appearance.calendarView.customDayCount.placeholder"
+								msg({ message: "3", context: "settings.appearance.calendarView.customDayCount.placeholder" })
 							),
 							min: 2,
 							max: 10,
@@ -252,18 +253,18 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.appearance.calendarView.firstDayOfWeek.name"),
+						name: translate(msg({ message: "First day of week", context: "settings.appearance.calendarView.firstDayOfWeek.name" })),
 						desc: translate(
-							"settings.appearance.calendarView.firstDayOfWeek.description"
+							msg({ message: "Which day should be the first column in week views", context: "settings.appearance.calendarView.firstDayOfWeek.description" })
 						),
 						options: [
-							{ value: "0", label: translate("common.weekdays.sunday") },
-							{ value: "1", label: translate("common.weekdays.monday") },
-							{ value: "2", label: translate("common.weekdays.tuesday") },
-							{ value: "3", label: translate("common.weekdays.wednesday") },
-							{ value: "4", label: translate("common.weekdays.thursday") },
-							{ value: "5", label: translate("common.weekdays.friday") },
-							{ value: "6", label: translate("common.weekdays.saturday") },
+							{ value: "0", label: translate(msg({ message: "Sunday", context: "common.weekdays.sunday" })) },
+							{ value: "1", label: translate(msg({ message: "Monday", context: "common.weekdays.monday" })) },
+							{ value: "2", label: translate(msg({ message: "Tuesday", context: "common.weekdays.tuesday" })) },
+							{ value: "3", label: translate(msg({ message: "Wednesday", context: "common.weekdays.wednesday" })) },
+							{ value: "4", label: translate(msg({ message: "Thursday", context: "common.weekdays.thursday" })) },
+							{ value: "5", label: translate(msg({ message: "Friday", context: "common.weekdays.friday" })) },
+							{ value: "6", label: translate(msg({ message: "Saturday", context: "common.weekdays.saturday" })) },
 						],
 						getValue: () => plugin.settings.calendarViewSettings.firstDay.toString(),
 						setValue: async (value: string) => {
@@ -279,9 +280,9 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.appearance.calendarView.showWeekends.name"),
+						name: translate(msg({ message: "Show weekends", context: "settings.appearance.calendarView.showWeekends.name" })),
 						desc: translate(
-							"settings.appearance.calendarView.showWeekends.description"
+							msg({ message: "Display weekends in calendar views", context: "settings.appearance.calendarView.showWeekends.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.showWeekends,
 						setValue: async (value: boolean) => {
@@ -294,9 +295,9 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.appearance.calendarView.showWeekNumbers.name"),
+						name: translate(msg({ message: "Show week numbers", context: "settings.appearance.calendarView.showWeekNumbers.name" })),
 						desc: translate(
-							"settings.appearance.calendarView.showWeekNumbers.description"
+							msg({ message: "Display week numbers in calendar views", context: "settings.appearance.calendarView.showWeekNumbers.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.weekNumbers,
 						setValue: async (value: boolean) => {
@@ -309,9 +310,9 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.appearance.calendarView.showTodayHighlight.name"),
+						name: translate(msg({ message: "Show today highlight", context: "settings.appearance.calendarView.showTodayHighlight.name" })),
 						desc: translate(
-							"settings.appearance.calendarView.showTodayHighlight.description"
+							msg({ message: "Highlight the current day in calendar views", context: "settings.appearance.calendarView.showTodayHighlight.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.showTodayHighlight,
 						setValue: async (value: boolean) => {
@@ -325,10 +326,10 @@ export function renderAppearanceTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.calendarView.showCurrentTimeIndicator.name"
+							msg({ message: "Show current time indicator", context: "settings.appearance.calendarView.showCurrentTimeIndicator.name" })
 						),
 						desc: translate(
-							"settings.appearance.calendarView.showCurrentTimeIndicator.description"
+							msg({ message: "Display a line showing the current time in timeline views", context: "settings.appearance.calendarView.showCurrentTimeIndicator.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.nowIndicator,
 						setValue: async (value: boolean) => {
@@ -341,9 +342,9 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.appearance.calendarView.selectionMirror.name"),
+						name: translate(msg({ message: "Selection mirror", context: "settings.appearance.calendarView.selectionMirror.name" })),
 						desc: translate(
-							"settings.appearance.calendarView.selectionMirror.description"
+							msg({ message: "Show a visual preview while dragging to select time ranges", context: "settings.appearance.calendarView.selectionMirror.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.selectMirror,
 						setValue: async (value: boolean) => {
@@ -356,13 +357,13 @@ export function renderAppearanceTab(
 			// Calendar locale setting with blur validation
 			group.addSetting((setting) => {
 				setting
-					.setName(translate("settings.appearance.calendarView.calendarLocale.name"))
+					.setName(translate(msg({ message: "Calendar locale", context: "settings.appearance.calendarView.calendarLocale.name" })))
 					.setDesc(
-						translate("settings.appearance.calendarView.calendarLocale.description")
+						translate(msg({ message: "Calendar locale for date formatting and calendar system (e.g., \"en\", \"fa\" for Farsi/Persian, \"de\" for German). Leave empty to auto-detect from browser.", context: "settings.appearance.calendarView.calendarLocale.description" }))
 					)
 					.addText((text) => {
 						text.setPlaceholder(
-							translate("settings.appearance.calendarView.calendarLocale.placeholder")
+							translate(msg({ message: "Auto-detect", context: "settings.appearance.calendarView.calendarLocale.placeholder" }))
 						);
 						text.setValue(plugin.settings.calendarViewSettings.locale || "");
 						text.inputEl.addClass("settings-view__input");
@@ -380,7 +381,7 @@ export function renderAppearanceTab(
 									// Invalid locale - show notice and clear the field
 									new Notice(
 										translate(
-											"settings.appearance.calendarView.calendarLocale.invalidLocale"
+											msg({ message: "Invalid locale. Please enter a valid language tag (e.g., ''en'', ''de'', ''fr-FR'').", context: "settings.appearance.calendarView.calendarLocale.invalidLocale" })
 										)
 									);
 									plugin.settings.calendarViewSettings.locale = "";
@@ -402,18 +403,18 @@ export function renderAppearanceTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.appearance.defaultEventVisibility.header"),
-			description: translate("settings.appearance.defaultEventVisibility.description"),
+			heading: translate(msg({ message: "Default event visibility", context: "settings.appearance.defaultEventVisibility.header" })),
+			description: translate(msg({ message: "Configure which event types are visible by default when opening the calendar. Users can still toggle these on/off in the calendar view.", context: "settings.appearance.defaultEventVisibility.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.defaultEventVisibility.showScheduledTasks.name"
+							msg({ message: "Show scheduled tasks", context: "settings.appearance.defaultEventVisibility.showScheduledTasks.name" })
 						),
 						desc: translate(
-							"settings.appearance.defaultEventVisibility.showScheduledTasks.description"
+							msg({ message: "Display tasks with scheduled dates by default", context: "settings.appearance.defaultEventVisibility.showScheduledTasks.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.defaultShowScheduled,
 						setValue: async (value: boolean) => {
@@ -427,10 +428,10 @@ export function renderAppearanceTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.defaultEventVisibility.showDueDates.name"
+							msg({ message: "Show due dates", context: "settings.appearance.defaultEventVisibility.showDueDates.name" })
 						),
 						desc: translate(
-							"settings.appearance.defaultEventVisibility.showDueDates.description"
+							msg({ message: "Display task due dates by default", context: "settings.appearance.defaultEventVisibility.showDueDates.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.defaultShowDue,
 						setValue: async (value: boolean) => {
@@ -444,10 +445,10 @@ export function renderAppearanceTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
+							msg({ message: "Show due dates when scheduled", context: "settings.appearance.defaultEventVisibility.showDueWhenScheduled.name" })
 						),
 						desc: translate(
-							"settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
+							msg({ message: "Display due dates even for tasks that already have scheduled dates", context: "settings.appearance.defaultEventVisibility.showDueWhenScheduled.description" })
 						),
 						getValue: () =>
 							plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled,
@@ -463,10 +464,10 @@ export function renderAppearanceTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.defaultEventVisibility.showTimeEntries.name"
+							msg({ message: "Show time entries", context: "settings.appearance.defaultEventVisibility.showTimeEntries.name" })
 						),
 						desc: translate(
-							"settings.appearance.defaultEventVisibility.showTimeEntries.description"
+							msg({ message: "Display completed time tracking entries by default", context: "settings.appearance.defaultEventVisibility.showTimeEntries.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeEntries,
 						setValue: async (value: boolean) => {
@@ -480,10 +481,10 @@ export function renderAppearanceTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.defaultEventVisibility.showRecurringTasks.name"
+							msg({ message: "Show recurring tasks", context: "settings.appearance.defaultEventVisibility.showRecurringTasks.name" })
 						),
 						desc: translate(
-							"settings.appearance.defaultEventVisibility.showRecurringTasks.description"
+							msg({ message: "Display recurring task instances by default", context: "settings.appearance.defaultEventVisibility.showRecurringTasks.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.defaultShowRecurring,
 						setValue: async (value: boolean) => {
@@ -497,10 +498,10 @@ export function renderAppearanceTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.defaultEventVisibility.showICSEvents.name"
+							msg({ message: "Show ICS events", context: "settings.appearance.defaultEventVisibility.showICSEvents.name" })
 						),
 						desc: translate(
-							"settings.appearance.defaultEventVisibility.showICSEvents.description"
+							msg({ message: "Display events from ICS subscriptions by default", context: "settings.appearance.defaultEventVisibility.showICSEvents.description" })
 						),
 						getValue: () => plugin.settings.calendarViewSettings.defaultShowICSEvents,
 						setValue: async (value: boolean) => {
@@ -516,34 +517,34 @@ export function renderAppearanceTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.appearance.timeSettings.header"),
-			description: translate("settings.appearance.timeSettings.description"),
+			heading: translate(msg({ message: "Time settings", context: "settings.appearance.timeSettings.header" })),
+			description: translate(msg({ message: "Configure time-related display settings for timeline views.", context: "settings.appearance.timeSettings.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.appearance.timeSettings.timeSlotDuration.name"),
+						name: translate(msg({ message: "Time slot duration", context: "settings.appearance.timeSettings.timeSlotDuration.name" })),
 						desc: translate(
-							"settings.appearance.timeSettings.timeSlotDuration.description"
+							msg({ message: "Duration of each time slot in timeline views", context: "settings.appearance.timeSettings.timeSlotDuration.description" })
 						),
 						options: [
 							{
 								value: "00:15:00",
 								label: translate(
-									"settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinutes"
+									msg({ message: "15 minutes", context: "settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinutes" })
 								),
 							},
 							{
 								value: "00:30:00",
 								label: translate(
-									"settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes"
+									msg({ message: "30 minutes", context: "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes" })
 								),
 							},
 							{
 								value: "01:00:00",
 								label: translate(
-									"settings.appearance.timeSettings.timeSlotDuration.options.sixtyMinutes"
+									msg({ message: "60 minutes", context: "settings.appearance.timeSettings.timeSlotDuration.options.sixtyMinutes" })
 								),
 							},
 						],
@@ -561,10 +562,10 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureTextSetting(setting, {
-						name: translate("settings.appearance.timeSettings.startTime.name"),
-						desc: translate("settings.appearance.timeSettings.startTime.description"),
+						name: translate(msg({ message: "Start time", context: "settings.appearance.timeSettings.startTime.name" })),
+						desc: translate(msg({ message: "Earliest time shown in timeline views (HH:MM format)", context: "settings.appearance.timeSettings.startTime.description" })),
 						placeholder: translate(
-							"settings.appearance.timeSettings.startTime.placeholder"
+							msg({ message: "06:00", context: "settings.appearance.timeSettings.startTime.placeholder" })
 						),
 						debounceMs: 500,
 						getValue: () => {
@@ -581,7 +582,7 @@ export function renderAppearanceTab(
 						setValue: async (value: string) => {
 							if (!/^\d{2}:\d{2}$/.test(value)) {
 								new Notice(
-									translate("settings.appearance.timeSettings.invalidFormat", {
+									translate(msg({ message: "Invalid time format. Please use hh:mm (e.g., {example})", context: "settings.appearance.timeSettings.invalidFormat" }), {
 										example: "08:00",
 									})
 								);
@@ -590,7 +591,7 @@ export function renderAppearanceTab(
 							const [hours, minutes] = value.split(":").map(Number);
 							if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
 								new Notice(
-									translate("settings.appearance.timeSettings.invalidTime")
+									translate(msg({ message: "Invalid time. Hours must be 00-23 and minutes 00-59", context: "settings.appearance.timeSettings.invalidTime" }))
 								);
 								return;
 							}
@@ -603,10 +604,10 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureTextSetting(setting, {
-						name: translate("settings.appearance.timeSettings.endTime.name"),
-						desc: translate("settings.appearance.timeSettings.endTime.description"),
+						name: translate(msg({ message: "End time", context: "settings.appearance.timeSettings.endTime.name" })),
+						desc: translate(msg({ message: "Latest time shown in timeline views (HH:MM format). Use values above 24:00 to show early next-day hours, such as 26:00 for 2 AM.", context: "settings.appearance.timeSettings.endTime.description" })),
 						placeholder: translate(
-							"settings.appearance.timeSettings.endTime.placeholder"
+							msg({ message: "26:00", context: "settings.appearance.timeSettings.endTime.placeholder" })
 						),
 						debounceMs: 500,
 						getValue: () => {
@@ -623,7 +624,7 @@ export function renderAppearanceTab(
 						setValue: async (value: string) => {
 							if (!/^\d{2}:\d{2}$/.test(value)) {
 								new Notice(
-									translate("settings.appearance.timeSettings.invalidFormat", {
+									translate(msg({ message: "Invalid time format. Please use hh:mm (e.g., {example})", context: "settings.appearance.timeSettings.invalidFormat" }), {
 										example: "26:00",
 									})
 								);
@@ -635,7 +636,7 @@ export function renderAppearanceTab(
 							});
 							if (!result.isValid) {
 								new Notice(
-									translate("settings.appearance.timeSettings.invalidEndTime")
+									translate(msg({ message: "Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day", context: "settings.appearance.timeSettings.invalidEndTime" }))
 								);
 								return;
 							}
@@ -648,12 +649,12 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureTextSetting(setting, {
-						name: translate("settings.appearance.timeSettings.initialScrollTime.name"),
+						name: translate(msg({ message: "Initial scroll time", context: "settings.appearance.timeSettings.initialScrollTime.name" })),
 						desc: translate(
-							"settings.appearance.timeSettings.initialScrollTime.description"
+							msg({ message: "Time to scroll to when opening timeline views (HH:MM format)", context: "settings.appearance.timeSettings.initialScrollTime.description" })
 						),
 						placeholder: translate(
-							"settings.appearance.timeSettings.initialScrollTime.placeholder"
+							msg({ message: "09:00", context: "settings.appearance.timeSettings.initialScrollTime.placeholder" })
 						),
 						debounceMs: 500,
 						getValue: () => {
@@ -670,7 +671,7 @@ export function renderAppearanceTab(
 						setValue: async (value: string) => {
 							if (!/^\d{2}:\d{2}$/.test(value)) {
 								new Notice(
-									translate("settings.appearance.timeSettings.invalidFormat", {
+									translate(msg({ message: "Invalid time format. Please use hh:mm (e.g., {example})", context: "settings.appearance.timeSettings.invalidFormat" }), {
 										example: "08:00",
 									})
 								);
@@ -679,7 +680,7 @@ export function renderAppearanceTab(
 							const [hours, minutes] = value.split(":").map(Number);
 							if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
 								new Notice(
-									translate("settings.appearance.timeSettings.invalidTime")
+									translate(msg({ message: "Invalid time. Hours must be 00-23 and minutes 00-59", context: "settings.appearance.timeSettings.invalidTime" }))
 								);
 								return;
 							}
@@ -692,12 +693,12 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureNumberSetting(setting, {
-						name: translate("settings.appearance.timeSettings.eventMinHeight.name"),
+						name: translate(msg({ message: "Event minimum height", context: "settings.appearance.timeSettings.eventMinHeight.name" })),
 						desc: translate(
-							"settings.appearance.timeSettings.eventMinHeight.description"
+							msg({ message: "Minimum height for events in timeline views (pixels)", context: "settings.appearance.timeSettings.eventMinHeight.description" })
 						),
 						placeholder: translate(
-							"settings.appearance.timeSettings.eventMinHeight.placeholder"
+							msg({ message: "15", context: "settings.appearance.timeSettings.eventMinHeight.placeholder" })
 						),
 						min: 5,
 						max: 100,
@@ -716,18 +717,18 @@ export function renderAppearanceTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.appearance.uiElements.header"),
-			description: translate("settings.appearance.uiElements.description"),
+			heading: translate(msg({ message: "UI elements", context: "settings.appearance.uiElements.header" })),
+			description: translate(msg({ message: "Configure the display of various UI elements.", context: "settings.appearance.uiElements.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.uiElements.showTrackedTasksInStatusBar.name"
+							msg({ message: "Show tracked tasks in status bar", context: "settings.appearance.uiElements.showTrackedTasksInStatusBar.name" })
 						),
 						desc: translate(
-							"settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
+							msg({ message: "Display currently tracked tasks in Obsidian''s status bar", context: "settings.appearance.uiElements.showTrackedTasksInStatusBar.description" })
 						),
 						getValue: () => plugin.settings.showTrackedTasksInStatusBar,
 						setValue: async (value: boolean) => {
@@ -741,10 +742,10 @@ export function renderAppearanceTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.uiElements.showRelationshipsWidget.name"
+							msg({ message: "Show relationships widget", context: "settings.appearance.uiElements.showRelationshipsWidget.name" })
 						),
 						desc: translate(
-							"settings.appearance.uiElements.showRelationshipsWidget.description"
+							msg({ message: "Display a widget showing all relationships for the current note (subtasks, projects, dependencies)", context: "settings.appearance.uiElements.showRelationshipsWidget.description" })
 						),
 						getValue: () => plugin.settings.showRelationships,
 						setValue: async (value: boolean) => {
@@ -760,22 +761,22 @@ export function renderAppearanceTab(
 					(setting) =>
 						void configureDropdownSetting(setting, {
 							name: translate(
-								"settings.appearance.uiElements.relationshipsPosition.name"
+								msg({ message: "Relationships position", context: "settings.appearance.uiElements.relationshipsPosition.name" })
 							),
 							desc: translate(
-								"settings.appearance.uiElements.relationshipsPosition.description"
+								msg({ message: "Where to position the relationships widget", context: "settings.appearance.uiElements.relationshipsPosition.description" })
 							),
 							options: [
 								{
 									value: "top",
 									label: translate(
-										"settings.appearance.uiElements.relationshipsPosition.options.top"
+										msg({ message: "Top of note", context: "settings.appearance.uiElements.relationshipsPosition.options.top" })
 									),
 								},
 								{
 									value: "bottom",
 									label: translate(
-										"settings.appearance.uiElements.relationshipsPosition.options.bottom"
+										msg({ message: "Bottom of note", context: "settings.appearance.uiElements.relationshipsPosition.options.bottom" })
 									),
 								},
 							],
@@ -791,9 +792,9 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate("settings.appearance.uiElements.showTaskCardInNote.name"),
+						name: translate(msg({ message: "Show task card in note", context: "settings.appearance.uiElements.showTaskCardInNote.name" })),
 						desc: translate(
-							"settings.appearance.uiElements.showTaskCardInNote.description"
+							msg({ message: "Display a task card widget at the top of task notes showing the task details and actions", context: "settings.appearance.uiElements.showTaskCardInNote.description" })
 						),
 						getValue: () => plugin.settings.showTaskCardInNote,
 						setValue: async (value: boolean) => {
@@ -807,10 +808,10 @@ export function renderAppearanceTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
+							msg({ message: "Strike through completed task titles", context: "settings.appearance.uiElements.showCompletedTaskStrikethrough.name" })
 						),
 						desc: translate(
-							"settings.appearance.uiElements.showCompletedTaskStrikethrough.description"
+							msg({ message: "Draw a line through completed task card titles. Turn off to keep completed tasks easier to read", context: "settings.appearance.uiElements.showCompletedTaskStrikethrough.description" })
 						),
 						getValue: () => plugin.settings.showCompletedTaskStrikethrough,
 						setValue: async (value: boolean) => {
@@ -825,10 +826,10 @@ export function renderAppearanceTab(
 				(setting) =>
 					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.uiElements.showExpandableSubtasks.name"
+							msg({ message: "Show expandable subtasks", context: "settings.appearance.uiElements.showExpandableSubtasks.name" })
 						),
 						desc: translate(
-							"settings.appearance.uiElements.showExpandableSubtasks.description"
+							msg({ message: "Allow expanding/collapsing subtask sections in task cards", context: "settings.appearance.uiElements.showExpandableSubtasks.description" })
 						),
 						getValue: () => plugin.settings.showExpandableSubtasks,
 						setValue: async (value: boolean) => {
@@ -844,10 +845,10 @@ export function renderAppearanceTab(
 					(setting) =>
 						void configureToggleSetting(setting, {
 							name: translate(
-								"settings.appearance.uiElements.expandSubtasksByDefault.name"
+								msg({ message: "Expand subtasks by default", context: "settings.appearance.uiElements.expandSubtasksByDefault.name" })
 							),
 							desc: translate(
-								"settings.appearance.uiElements.expandSubtasksByDefault.description"
+								msg({ message: "Show project subtasks expanded when task cards are rendered", context: "settings.appearance.uiElements.expandSubtasksByDefault.description" })
 							),
 							getValue: () => plugin.settings.expandSubtasksByDefault,
 							setValue: async (value: boolean) => {
@@ -861,22 +862,22 @@ export function renderAppearanceTab(
 					(setting) =>
 						void configureDropdownSetting(setting, {
 							name: translate(
-								"settings.appearance.uiElements.subtaskChevronPosition.name"
+								msg({ message: "Subtask chevron position", context: "settings.appearance.uiElements.subtaskChevronPosition.name" })
 							),
 							desc: translate(
-								"settings.appearance.uiElements.subtaskChevronPosition.description"
+								msg({ message: "Position of expand/collapse chevrons in task cards", context: "settings.appearance.uiElements.subtaskChevronPosition.description" })
 							),
 							options: [
 								{
 									value: "left",
 									label: translate(
-										"settings.appearance.uiElements.subtaskChevronPosition.options.left"
+										msg({ message: "Left side", context: "settings.appearance.uiElements.subtaskChevronPosition.options.left" })
 									),
 								},
 								{
 									value: "right",
 									label: translate(
-										"settings.appearance.uiElements.subtaskChevronPosition.options.right"
+										msg({ message: "Right side", context: "settings.appearance.uiElements.subtaskChevronPosition.options.right" })
 									),
 								},
 							],
@@ -892,21 +893,21 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.appearance.uiElements.viewsButtonAlignment.name"),
+						name: translate(msg({ message: "Views button alignment", context: "settings.appearance.uiElements.viewsButtonAlignment.name" })),
 						desc: translate(
-							"settings.appearance.uiElements.viewsButtonAlignment.description"
+							msg({ message: "Alignment of the views/filters button in the task interface", context: "settings.appearance.uiElements.viewsButtonAlignment.description" })
 						),
 						options: [
 							{
 								value: "left",
 								label: translate(
-									"settings.appearance.uiElements.viewsButtonAlignment.options.left"
+									msg({ message: "Left side", context: "settings.appearance.uiElements.viewsButtonAlignment.options.left" })
 								),
 							},
 							{
 								value: "right",
 								label: translate(
-									"settings.appearance.uiElements.viewsButtonAlignment.options.right"
+									msg({ message: "Right side", context: "settings.appearance.uiElements.viewsButtonAlignment.options.right" })
 								),
 							},
 						],
@@ -924,24 +925,24 @@ export function renderAppearanceTab(
 	createSettingGroup(
 		container,
 		{
-			heading: translate("settings.general.taskInteraction.header"),
-			description: translate("settings.general.taskInteraction.description"),
+			heading: translate(msg({ message: "Task interaction", context: "settings.general.taskInteraction.header" })),
+			description: translate(msg({ message: "Configure how clicking on tasks behaves.", context: "settings.general.taskInteraction.description" })),
 		},
 		(group) => {
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.general.taskInteraction.singleClick.name"),
-						desc: translate("settings.general.taskInteraction.singleClick.description"),
+						name: translate(msg({ message: "Single-click action", context: "settings.general.taskInteraction.singleClick.name" })),
+						desc: translate(msg({ message: "Action performed when single-clicking a task card", context: "settings.general.taskInteraction.singleClick.description" })),
 						options: [
 							{
 								value: "edit",
-								label: translate("settings.general.taskInteraction.actions.edit"),
+								label: translate(msg({ message: "Edit task", context: "settings.general.taskInteraction.actions.edit" })),
 							},
 							{
 								value: "openNote",
 								label: translate(
-									"settings.general.taskInteraction.actions.openNote"
+									msg({ message: "Open note", context: "settings.general.taskInteraction.actions.openNote" })
 								),
 							},
 						],
@@ -956,22 +957,22 @@ export function renderAppearanceTab(
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
-						name: translate("settings.general.taskInteraction.doubleClick.name"),
-						desc: translate("settings.general.taskInteraction.doubleClick.description"),
+						name: translate(msg({ message: "Double-click action", context: "settings.general.taskInteraction.doubleClick.name" })),
+						desc: translate(msg({ message: "Action performed when double-clicking a task card", context: "settings.general.taskInteraction.doubleClick.description" })),
 						options: [
 							{
 								value: "edit",
-								label: translate("settings.general.taskInteraction.actions.edit"),
+								label: translate(msg({ message: "Edit task", context: "settings.general.taskInteraction.actions.edit" })),
 							},
 							{
 								value: "openNote",
 								label: translate(
-									"settings.general.taskInteraction.actions.openNote"
+									msg({ message: "Open note", context: "settings.general.taskInteraction.actions.openNote" })
 								),
 							},
 							{
 								value: "none",
-								label: translate("settings.general.taskInteraction.actions.none"),
+								label: translate(msg({ message: "No action", context: "settings.general.taskInteraction.actions.none" })),
 							},
 						],
 						getValue: () => plugin.settings.doubleClickAction,

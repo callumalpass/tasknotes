@@ -1,8 +1,10 @@
+import { formatUIDate } from "../i18n/formatters";
+import { msg } from "@lingui/core/macro";
 import { ItemView, WorkspaceLeaf, MarkdownRenderer } from "obsidian";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import TaskNotesPlugin from "../main";
 import type { ReleaseNoteVersion } from "../releaseNotes";
-import releaseNotesAnnouncement from "../releaseNotesAnnouncement.md";
+import { getReleaseNotesAnnouncement } from "../i18n/releaseNotesAnnouncement";
 
 export const RELEASE_NOTES_VIEW_TYPE = "tasknotes-release-notes";
 
@@ -54,7 +56,7 @@ export class ReleaseNotesView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return this.plugin.i18n.translate("views.releaseNotes.title", { version: this.version });
+		return this.plugin.i18n.translate(msg({ message: "What''s new in TaskNotes {version}", context: "views.releaseNotes.title" }), { version: this.version });
 	}
 
 	getIcon(): string {
@@ -75,7 +77,7 @@ export class ReleaseNotesView extends ItemView {
 		if (!dateString) return "";
 		try {
 			const date = parseISO(dateString);
-			return format(date, "MMMM d, yyyy");
+			return formatUIDate(date, "MMMM d, yyyy");
 		} catch {
 			return "";
 		}
@@ -94,7 +96,7 @@ export class ReleaseNotesView extends ItemView {
 		);
 		const transformedNotes = this.transformIssueLinks(notes);
 		const releaseContent = versionData.isCurrent
-			? `${this.plugin.i18n.translate("views.releaseNotes.baseFilesNotice")}\n\n${transformedNotes}`
+			? `${this.plugin.i18n.translate(msg({ message: "> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**.", context: "views.releaseNotes.baseFilesNotice" }))}\n\n${transformedNotes}`
 			: transformedNotes;
 		await MarkdownRenderer.render(this.plugin.app, releaseContent, content, "", this);
 	}
@@ -252,7 +254,7 @@ export class ReleaseNotesView extends ItemView {
 
 		if (versionData.isCurrent) {
 			const currentBadge = headerLeft.createSpan({
-				text: this.plugin.i18n.translate("views.releaseNotes.current"),
+				text: this.plugin.i18n.translate(msg({ message: "Current", context: "views.releaseNotes.current" })),
 			});
 			currentBadge.classList.remove(
 				"tn-static-font-size-0-8em-19dc7c13",
@@ -462,7 +464,7 @@ export class ReleaseNotesView extends ItemView {
 		);
 		header.classList.add("tn-static-margin-bottom-20px-49f14f8f");
 		header.createEl("h1", {
-			text: this.plugin.i18n.translate("views.releaseNotes.header", {
+			text: this.plugin.i18n.translate(msg({ message: "What''s new in TaskNotes {version}", context: "views.releaseNotes.header" }), {
 				version: this.version,
 			}),
 		});
@@ -504,7 +506,7 @@ export class ReleaseNotesView extends ItemView {
 			"tn-static-padding-20px-ebe8e48c"
 		);
 		starMessage.classList.add("tn-static-color-var-text-muted-5872de20");
-		const messageText = this.plugin.i18n.translate("views.releaseNotes.starMessage");
+		const messageText = this.plugin.i18n.translate(msg({ message: "We really appreciate all feedback. If something does not feel right, please let us know on GitHub. If you find TaskNotes useful, please consider giving it a star.", context: "views.releaseNotes.starMessage" }));
 		const githubIndex = messageText.toLowerCase().lastIndexOf("github");
 		if (githubIndex !== -1) {
 			starMessage.appendText(messageText.substring(0, githubIndex));
@@ -543,7 +545,7 @@ export class ReleaseNotesView extends ItemView {
 		});
 		await MarkdownRenderer.render(
 			this.plugin.app,
-			releaseNotesAnnouncement,
+			getReleaseNotesAnnouncement(),
 			announcement,
 			"",
 			this
@@ -579,7 +581,7 @@ export class ReleaseNotesView extends ItemView {
 		footer.classList.add("tn-static-text-align-center-91a87015");
 
 		const link = footer.createEl("a", {
-			text: this.plugin.i18n.translate("views.releaseNotes.viewAllLink"),
+			text: this.plugin.i18n.translate(msg({ message: "View all release notes on GitHub →", context: "views.releaseNotes.viewAllLink" })),
 			href: GITHUB_RELEASES_URL,
 		});
 		link.classList.remove(

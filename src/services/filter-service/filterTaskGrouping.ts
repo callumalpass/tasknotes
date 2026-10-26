@@ -1,5 +1,6 @@
+import { msg } from "@lingui/core/macro";
 import { format, parseISO } from "date-fns";
-import { TranslationKey } from "../../i18n";
+import { MessageDescriptor } from "../../i18n";
 import { TaskGroupKey, TaskInfo, TaskSortKey, SortDirection } from "../../types";
 import type { TaskNotesSettings } from "../../types/settings";
 import {
@@ -48,12 +49,40 @@ export type FilterTaskGroupingContext = {
 	getUserFieldRawValue(task: TaskInfo, fieldKey: string): unknown;
 	resolveProjectToAbsolutePath(projectValue: string): string;
 	translate(
-		key: TranslationKey,
+		key: MessageDescriptor,
 		fallback: string,
 		vars?: Record<string, string | number>
 	): string;
 	getLocale(): string;
 };
+
+// Group maps cross HTTP/MCP boundaries. English identities are never localized.
+function groupIdentityContext(context: FilterTaskGroupingContext): FilterTaskGroupingContext {
+	return { ...context, translate: (_key, fallback) => fallback };
+}
+
+/** Localize a known group identity only at a UI boundary, never in API JSON. */
+export function filterTaskGroupLabel(key: string, groupKey: TaskGroupKey, context: FilterTaskGroupingContext): string {
+	const identities = groupIdentityContext(context);
+	if (groupKey === "due") {
+		for (const code of ["overdue", "today", "tomorrow", "nextSevenDays", "later", "none", "invalid"] as const)
+			if (key === getDueGroupLabel(code, identities)) return getDueGroupLabel(code, context);
+	}
+	if (groupKey === "scheduled") {
+		for (const code of ["past", "today", "tomorrow", "nextSevenDays", "later", "none", "invalid"] as const)
+			if (key === getScheduledGroupLabel(code, identities)) return getScheduledGroupLabel(code, context);
+	}
+	if (groupKey === "project" && key === getNoProjectLabel(identities)) return getNoProjectLabel(context);
+	if (groupKey === "tags" && key === getNoTagsLabel(identities)) return getNoTagsLabel(context);
+	if (groupKey === "completedDate") {
+		if (key === getNotCompletedLabel(identities)) return getNotCompletedLabel(context);
+		if (key === getInvalidDateLabel(identities)) return getInvalidDateLabel(context);
+	}
+	return key;
+}
+function getNotCompletedLabel(context: FilterTaskGroupingContext): string {
+	return context.translate(msg({ message: "Not completed", context: "services/filter-service/filterTaskGrouping: getCompletedDateGroup display" }), "Not completed");
+}
 
 export function groupFilterTasks(
 	tasks: TaskInfo[],
@@ -66,9 +95,10 @@ export function groupFilterTasks(
 	}
 
 	const groups = new Map<string, TaskInfo[]>();
+	const identities = groupIdentityContext(context);
 
 	for (const task of tasks) {
-		const groupValues = getGroupValuesForTask(task, groupKey, context, targetDate);
+		const groupValues = getGroupValuesForTask(task, groupKey, identities, targetDate);
 		for (const groupValue of groupValues) {
 			if (!groups.has(groupValue)) {
 				groups.set(groupValue, []);
@@ -86,7 +116,7 @@ export function sortFilterTaskGroups(
 	context: FilterTaskGroupingContext
 ): Map<string, TaskInfo[]> {
 	const sortedGroups = new Map<string, TaskInfo[]>();
-	const sortedKeys = getSortedGroupKeys(groups, groupKey, context);
+	const sortedKeys = getSortedGroupKeys(groups, groupKey, groupIdentityContext(context));
 
 	for (const key of sortedKeys) {
 		const group = groups.get(key);
@@ -267,10 +297,9 @@ function getSortedGroupKeys(
 
 		case "completedDate":
 			return Array.from(groups.keys()).sort((a, b) => {
-				if (a === "Not completed") return 1;
-				if (b === "Not completed") return -1;
-				if (a === "Invalid date") return 1;
-				if (b === "Invalid date") return -1;
+				if (a === b) return 0;
+				const rank = (key: string) => key === "Not completed" ? 2 : key === "Invalid date" ? 1 : 0;
+				if (rank(a) !== rank(b)) return rank(a) - rank(b);
 				if (a == null || b == null) {
 					if (a == null) return 1;
 					if (b == null) return -1;
@@ -379,7 +408,7 @@ function getScheduledDateGroupFromDateString(
 }
 
 function getCompletedDateGroup(task: TaskInfo, context: FilterTaskGroupingContext): string {
-	if (!task.completedDate) return "Not completed";
+	if (!task.completedDate) return getNotCompletedLabel(context);
 
 	try {
 		return format(parseISO(task.completedDate), "yyyy-MM-dd");
@@ -419,20 +448,20 @@ function sortAlphaWithTrailingFallback(
 function getDueGroupLabel(code: DueGroupCode, context: FilterTaskGroupingContext): string {
 	switch (code) {
 		case "overdue":
-			return context.translate("services.filter.groupLabels.due.overdue", "Overdue");
+			return context.translate(msg({ message: "Overdue", context: "services.filter.groupLabels.due.overdue" }), "Overdue");
 		case "today":
-			return context.translate("services.filter.groupLabels.due.today", "Today");
+			return context.translate(msg({ message: "Today", context: "services.filter.groupLabels.due.today" }), "Today");
 		case "tomorrow":
-			return context.translate("services.filter.groupLabels.due.tomorrow", "Tomorrow");
+			return context.translate(msg({ message: "Tomorrow", context: "services.filter.groupLabels.due.tomorrow" }), "Tomorrow");
 		case "nextSevenDays":
 			return context.translate(
-				"services.filter.groupLabels.due.nextSevenDays",
+				msg({ message: "Next seven days", context: "services.filter.groupLabels.due.nextSevenDays" }),
 				"Next seven days"
 			);
 		case "later":
-			return context.translate("services.filter.groupLabels.due.later", "Later");
+			return context.translate(msg({ message: "Later", context: "services.filter.groupLabels.due.later" }), "Later");
 		case "none":
-			return context.translate("services.filter.groupLabels.due.none", "No due date");
+			return context.translate(msg({ message: "No due date", context: "services.filter.groupLabels.due.none" }), "No due date");
 		case "invalid":
 		default:
 			return getInvalidDateLabel(context);
@@ -446,23 +475,23 @@ function getScheduledGroupLabel(
 	switch (code) {
 		case "past":
 			return context.translate(
-				"services.filter.groupLabels.scheduled.past",
+				msg({ message: "Past scheduled", context: "services.filter.groupLabels.scheduled.past" }),
 				"Past scheduled"
 			);
 		case "today":
-			return context.translate("services.filter.groupLabels.scheduled.today", "Today");
+			return context.translate(msg({ message: "Today", context: "services.filter.groupLabels.scheduled.today" }), "Today");
 		case "tomorrow":
-			return context.translate("services.filter.groupLabels.scheduled.tomorrow", "Tomorrow");
+			return context.translate(msg({ message: "Tomorrow", context: "services.filter.groupLabels.scheduled.tomorrow" }), "Tomorrow");
 		case "nextSevenDays":
 			return context.translate(
-				"services.filter.groupLabels.scheduled.nextSevenDays",
+				msg({ message: "Next seven days", context: "services.filter.groupLabels.scheduled.nextSevenDays" }),
 				"Next seven days"
 			);
 		case "later":
-			return context.translate("services.filter.groupLabels.scheduled.later", "Later");
+			return context.translate(msg({ message: "Later", context: "services.filter.groupLabels.scheduled.later" }), "Later");
 		case "none":
 			return context.translate(
-				"services.filter.groupLabels.scheduled.none",
+				msg({ message: "No scheduled date", context: "services.filter.groupLabels.scheduled.none" }),
 				"No scheduled date"
 			);
 		case "invalid":
@@ -472,13 +501,13 @@ function getScheduledGroupLabel(
 }
 
 function getNoProjectLabel(context: FilterTaskGroupingContext): string {
-	return context.translate("services.filter.groupLabels.noProject", "No project");
+	return context.translate(msg({ message: "No project", context: "services.filter.groupLabels.noProject" }), "No project");
 }
 
 function getNoTagsLabel(context: FilterTaskGroupingContext): string {
-	return context.translate("services.filter.groupLabels.noTags", "No tags");
+	return context.translate(msg({ message: "No tags", context: "services.filter.groupLabels.noTags" }), "No tags");
 }
 
 function getInvalidDateLabel(context: FilterTaskGroupingContext): string {
-	return context.translate("services.filter.groupLabels.invalidDate", "Invalid date");
+	return context.translate(msg({ message: "Invalid date", context: "services.filter.groupLabels.invalidDate" }), "Invalid date");
 }

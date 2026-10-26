@@ -4,6 +4,7 @@
  */
 import { LexoRank as LexoRankValue } from "lexorank";
 import { TFile } from "obsidian";
+import { NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY } from "./groupKeys";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { stringifyUnknown } from "../utils/stringUtils";
@@ -258,19 +259,19 @@ function shouldRebalanceRank(rank: RankLike | null): boolean {
 }
 
 function frontmatterValueToGroupString(value: unknown): string {
-	if (value === null || value === undefined || value === "") return "None";
+	if (value === null || value === undefined || value === "") return NONE_GROUP_KEY;
 	if (typeof value === "string") return value;
-	if (typeof value === "boolean") return value ? "True" : "False";
+	if (typeof value === "boolean") return value ? TRUE_GROUP_KEY : FALSE_GROUP_KEY;
 	if (typeof value === "number") return String(value);
-	return stringifyUnknown(value) || "None";
+	return stringifyUnknown(value) || NONE_GROUP_KEY;
 }
 
 function getFrontmatterGroupValues(value: unknown): string[] {
-	if (value === null || value === undefined || value === "") return ["None"];
+	if (value === null || value === undefined || value === "") return [NONE_GROUP_KEY];
 	if (Array.isArray(value)) {
 		return value.length > 0
 			? value.map((entry) => frontmatterValueToGroupString(entry))
-			: ["None"];
+			: [NONE_GROUP_KEY];
 	}
 	return [frontmatterValueToGroupString(value)];
 }

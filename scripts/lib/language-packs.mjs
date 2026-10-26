@@ -1,4 +1,6 @@
 import { build } from "esbuild";
+import { locales as supportedLocales } from "@mdbase-dev/i18n/config";
+import catalogueGates from "./catalogue-gates.cjs";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -29,21 +31,16 @@ export function serialize(value) {
 // Compile trusted repository sources for the build process only. Published packs
 // are JSON data; this does not run downloaded code in the plugin.
 export async function loadTranslationResources(root = repositoryRoot) {
-	const files = (await readdir(resolve(root, "src/i18n/resources")))
-		.filter((file) => /^[a-z]{2}(?:-[A-Za-z0-9]+)*\.ts$/.test(file))
-		.sort();
-	const locales = files.map((file) => file.slice(0, -3));
-	if (!locales.includes("en")) throw new Error("English source catalogue is missing");
-	const imports = locales.map(
-		(locale, index) =>
-			`import { ${locale.replaceAll("-", "_")} as locale${index} } from "./src/i18n/resources/${locale}.ts";`
-	);
+	const locales = (await readdir(resolve(root, "src/i18n/locales"), { withFileTypes: true })).filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
+	if (JSON.stringify(locales) !== JSON.stringify([...supportedLocales].sort())) throw new Error("Language-pack export requires all nine supported catalogues, and no extra locales");
+	const resources = Object.fromEntries(await Promise.all(locales.map(async locale => {
+		const catalogue = JSON.parse(await readFile(resolve(root, `src/i18n/locales/${locale}/messages.json`), "utf8"));
+		return [locale, catalogue.messages];
+	})));
 	const contents = [
-		...imports,
-		'import { flattenTranslations, validateTranslationMessage } from "./src/i18n/catalogue.ts";',
+		'import { isCompiledMessages, validateTranslationMessage } from "./src/i18n/catalogue.ts";',
 		'import { LANGUAGE_PACK_FORMAT, MAX_LANGUAGE_PACK_BYTES } from "./src/i18n/languagePackTypes.ts";',
-		`export const resources = { ${locales.map((locale, index) => `${JSON.stringify(locale)}: flattenTranslations(locale${index})`).join(",")} };`,
-		"export { LANGUAGE_PACK_FORMAT, MAX_LANGUAGE_PACK_BYTES, validateTranslationMessage };",
+		"export { LANGUAGE_PACK_FORMAT, MAX_LANGUAGE_PACK_BYTES, isCompiledMessages, validateTranslationMessage };",
 	].join("\n");
 	const result = await build({
 		absWorkingDir: root,
@@ -58,26 +55,17 @@ export async function loadTranslationResources(root = repositoryRoot) {
 		"data:text/javascript;base64," +
 			Buffer.from(result.outputFiles[0].contents).toString("base64")
 	);
-	const omittedKeys = {};
-	const resources = Object.fromEntries(
-		Object.entries(loaded.resources).map(([locale, messages]) => {
-			omittedKeys[locale] = Object.keys(messages).filter(
-				(key) => !Object.hasOwn(loaded.resources.en, key)
-			);
-			const current = Object.fromEntries(
-				Object.entries(messages).filter(([key]) => Object.hasOwn(loaded.resources.en, key))
-			);
-			for (const [key, translated] of Object.entries(current)) {
-				loaded.validateTranslationMessage(key, loaded.resources.en[key], translated);
-			}
-			return [locale, current];
-		})
-	);
-	return { ...loaded, resources, omittedKeys };
+	for (const [locale, messages] of Object.entries(resources)) {
+		if (!loaded.isCompiledMessages(messages)) throw new Error(`Invalid compiled messages in ${locale}`);
+		if (JSON.stringify(Object.keys(messages).sort()) !== JSON.stringify(Object.keys(resources.en).sort())) throw new Error(`Message set mismatch: ${locale}`);
+		for (const [key, value] of Object.entries(messages)) loaded.validateTranslationMessage(key, resources.en[key], value);
+	}
+	return { ...loaded, resources, omittedKeys: {} };
 }
 
 export function createLanguagePackArtifacts(resources, format, maxBytes) {
 	if (!resources.en) throw new Error("English source catalogue is missing");
+	if (JSON.stringify(Object.keys(resources).sort()) !== JSON.stringify([...supportedLocales].sort())) throw new Error("Language-pack export requires all nine supported catalogues, and no extra locales");
 	const sourceHash = sha256(serialize(resources.en));
 	const files = new Map();
 	const packs = {};
@@ -85,8 +73,8 @@ export function createLanguagePackArtifacts(resources, format, maxBytes) {
 		if (!/^[a-z]{2}(?:-[A-Za-z0-9]+)*$/.test(locale))
 			throw new Error(`Invalid locale: ${locale}`);
 		const messages = resources[locale];
-		if (!Object.values(messages).every((value) => typeof value === "string")) {
-			throw new Error(`Non-string message in ${locale}`);
+		if (!messages || !Object.values(messages).every((value) => Array.isArray(value))) {
+			throw new Error(`Non-compiled message in ${locale}`);
 		}
 		const contents = serialize({ format, locale, sourceHash, messages });
 		const bytes = Buffer.byteLength(contents, "utf8");
@@ -116,6 +104,9 @@ export async function exportLanguagePacks({
 	root = repositoryRoot,
 	outdir = resolve(root, "dist/language-packs"),
 } = {}) {
+	// Publication and standalone build-plugin callers cannot bypass authored-PO checks.
+	// Send diagnostics to stderr so the export CLI retains its JSON stdout contract.
+	catalogueGates.prepareStrictCatalogues(root, { diagnosticsToStderr: true });
 	const { resources, LANGUAGE_PACK_FORMAT, MAX_LANGUAGE_PACK_BYTES } =
 		await loadTranslationResources(root);
 	const artifacts = createLanguagePackArtifacts(

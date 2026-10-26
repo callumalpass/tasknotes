@@ -1,3 +1,8 @@
+import { displayError } from "../i18n/runtime";
+import { formatUIDate, uiDuration } from "../i18n/formatters";
+import { configLabel } from "../i18n/configLabels";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- FullCalendar callbacks provide checked DOM references after mount. */
 /**
  * Shared Calendar Core Logic
@@ -232,23 +237,21 @@ export function generateTaskTooltip(task: TaskInfo, plugin: TaskNotesPlugin): st
 	let tooltipText = task.title;
 
 	if (task.projects && task.projects.length > 0) {
-		tooltipText += `\nProject: ${task.projects[0]}`;
+		tooltipText += uiText(msg({ message: "\nProject: {value1}", context: "bases/calendar-core: generateTaskTooltip display" }), { value1: task.projects[0] });
 	}
 
 	if (task.priority) {
 		const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
-		tooltipText += `\nPriority: ${priorityConfig?.label || task.priority}`;
+		tooltipText += uiText(msg({ message: "\nPriority: {value1}", context: "bases/calendar-core: generateTaskTooltip display" }), { value1: configLabel(priorityConfig) || task.priority });
 	}
 
 	if (task.status) {
 		const statusConfig = plugin.statusManager.getStatusConfig(task.status);
-		tooltipText += `\nStatus: ${statusConfig?.label || task.status}`;
+		tooltipText += uiText(msg({ message: "\nStatus: {value1}", context: "bases/calendar-core: generateTaskTooltip display" }), { value1: configLabel(statusConfig) || task.status });
 	}
 
 	if (task.timeEstimate) {
-		const hours = Math.floor(task.timeEstimate / 60);
-		const minutes = task.timeEstimate % 60;
-		tooltipText += `\nEstimate: ${hours > 0 ? `${hours}h ` : ""}${minutes}m`;
+		tooltipText += uiText(msg({ message: "\nEstimate: {duration}", context: "calendar task estimate tooltip" }), { duration: uiDuration(task.timeEstimate) });
 	}
 
 	return tooltipText;
@@ -373,7 +376,7 @@ export async function handlePatternInstanceDrop(
 			updatedRRule = ruleWithDTSTART;
 			new Notice(
 				plugin.i18n.translate(
-					allDay ? "notices.audit.allDay" : "notices.audit.recurringTime",
+					allDay ? msg({ message: "Recurring task set to all-day; this affects all future instances.", context: "notices.audit.allDay" }) : msg({ message: "Recurring task time set to {time}; this affects all future instances.", context: "notices.audit.recurringTime" }),
 					{ time: format(newStart, "HH:mm") }
 				)
 			);
@@ -397,7 +400,7 @@ export async function handlePatternInstanceDrop(
 			updatedRRule = taskInfo.recurrence.replace(/DTSTART:[^;]+/, `DTSTART:${newDTSTART}`);
 			new Notice(
 				plugin.i18n.translate(
-					allDay ? "notices.audit.allDay" : "notices.audit.recurringTime",
+					allDay ? msg({ message: "Recurring task set to all-day; this affects all future instances.", context: "notices.audit.allDay" }) : msg({ message: "Recurring task time set to {time}; this affects all future instances.", context: "notices.audit.recurringTime" }),
 					{ time: format(newStart, "HH:mm") }
 				)
 			);
@@ -449,7 +452,7 @@ export async function handleRecurringTaskDrop(
 
 		// Update the scheduled field directly (manual reschedule of next occurrence)
 		await plugin.taskService.updateProperty(taskInfo, "scheduled", newDateString);
-		new Notice(plugin.i18n.translate("notices.audit.rescheduled"));
+		new Notice(plugin.i18n.translate(msg({ message: "Next occurrence rescheduled; the recurrence pattern is unchanged.", context: "notices.audit.rescheduled" })));
 	} else if (isPatternInstance) {
 		// Dragging Pattern Instances: Updates DTSTART in RRULE and recalculates task.scheduled
 		await handlePatternInstanceDrop(taskInfo, newStart, allDay, plugin);
@@ -460,11 +463,11 @@ export async function handleRecurringTaskDrop(
 
 		if (allDay) {
 			updatedScheduled = originalDate;
-			new Notice(plugin.i18n.translate("notices.audit.allDay"));
+			new Notice(plugin.i18n.translate(msg({ message: "Recurring task set to all-day; this affects all future instances.", context: "notices.audit.allDay" })));
 		} else {
 			const newTime = format(newStart, "HH:mm");
 			updatedScheduled = `${originalDate}T${newTime}`;
-			new Notice(plugin.i18n.translate("notices.audit.recurringTime", { time: newTime }));
+			new Notice(plugin.i18n.translate(msg({ message: "Recurring task time set to {time}; this affects all future instances.", context: "notices.audit.recurringTime" }), { time: newTime }));
 		}
 
 		await plugin.taskService.updateProperty(taskInfo, "scheduled", updatedScheduled);
@@ -706,13 +709,13 @@ export function createICSEvent(
 			borderColor = icsEvent.color || "#4285F4"; // Default to Google Blue if no color
 			backgroundColor = hexToRgba(borderColor, 0.2);
 			textColor = getEventTextColor(true); // Use theme-appropriate text color
-			subscriptionName = "Google Calendar";
+			subscriptionName = uiText(msg({ message: "Google Calendar", context: "bases/calendar-core: createICSEvent display" }));
 		} else if (isMicrosoftCalendar) {
 			// Microsoft Calendar event - use event's color if available
 			borderColor = icsEvent.color || "#0078D4"; // Default to Microsoft Blue if no color
 			backgroundColor = hexToRgba(borderColor, 0.2);
 			textColor = getEventTextColor(true); // Use theme-appropriate text color
-			subscriptionName = "Microsoft Calendar";
+			subscriptionName = uiText(msg({ message: "Microsoft Calendar", context: "bases/calendar-core: createICSEvent display" }));
 		} else {
 			// ICS subscription event - use subscription settings
 			const subscription = plugin.icsSubscriptionService
@@ -1859,7 +1862,7 @@ export async function handleTimeblockCreation(
 ): Promise<void> {
 	// Don't create timeblocks for all-day selections
 	if (allDay) {
-		new Notice(plugin.i18n.translate("views.advancedCalendar.notices.timeblockSpecificTime"));
+		new Notice(plugin.i18n.translate(msg({ message: "Timeblocks must have specific times. Please select a time range in week or day view.", context: "views.advancedCalendar.notices.timeblockSpecificTime" })));
 		return;
 	}
 
@@ -1888,7 +1891,7 @@ export async function handleTimeEntryCreation(
 ): Promise<void> {
 	// Don't create time entries for all-day selections
 	if (allDay) {
-		new Notice(plugin.i18n.translate("modals.timeEntry.mustHaveSpecificTime"));
+		new Notice(plugin.i18n.translate(msg({ message: "Time entries must have specific times. Please select a time range in week or day view.", context: "modals.timeEntry.mustHaveSpecificTime" })));
 		return;
 	}
 
@@ -1898,7 +1901,7 @@ export async function handleTimeEntryCreation(
 		const unarchivedTasks = allTasks.filter((task) => !task.archived);
 
 		if (unarchivedTasks.length === 0) {
-			new Notice(plugin.i18n.translate("modals.timeEntry.noTasksAvailable"));
+			new Notice(plugin.i18n.translate(msg({ message: "No tasks available to create time entries for", context: "modals.timeEntry.noTasksAvailable" })));
 			return;
 		}
 
@@ -1939,7 +1942,7 @@ export async function handleTimeEntryCreation(
 						plugin.emitter.trigger(EVENT_DATA_CHANGED);
 
 						new Notice(
-							plugin.i18n.translate("modals.timeEntry.created", {
+							plugin.i18n.translate(msg({ message: "Time entry created for {taskTitle} ({duration} minutes)", context: "modals.timeEntry.created" }), {
 								taskTitle: selectedTask.title,
 								duration: durationMinutes.toString(),
 							})
@@ -1950,7 +1953,7 @@ export async function handleTimeEntryCreation(
 							operation: "creating-time-entry",
 							error: error,
 						});
-						new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
+						new Notice(plugin.i18n.translate(msg({ message: "Failed to create time entry", context: "modals.timeEntry.createFailed" })));
 					}
 				}
 			})();
@@ -1961,7 +1964,7 @@ export async function handleTimeEntryCreation(
 			operation: "opening-task-selector-time-entry",
 			error: error,
 		});
-		new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
+		new Notice(plugin.i18n.translate(msg({ message: "Failed to create time entry", context: "modals.timeEntry.createFailed" })));
 	}
 }
 
@@ -1998,7 +2001,7 @@ export async function handleTimeblockDrop(
 			);
 			dropInfo.revert();
 			plugin.emitter.trigger(EVENT_DATA_CHANGED);
-			new Notice(plugin.i18n.translate("notices.audit.timeblockCopied"));
+			new Notice(plugin.i18n.translate(msg({ message: "Timeblock duplicated successfully", context: "notices.audit.timeblockCopied" })));
 			return;
 		}
 
@@ -2012,7 +2015,7 @@ export async function handleTimeblockDrop(
 			newEndTime
 		);
 
-		new Notice(plugin.i18n.translate("notices.audit.timeblockMoved"));
+		new Notice(plugin.i18n.translate(msg({ message: "Timeblock moved successfully", context: "notices.audit.timeblockMoved" })));
 	} catch (error: unknown) {
 		tasknotesLogger.error("Error moving timeblock:", {
 			category: "provider",
@@ -2020,8 +2023,8 @@ export async function handleTimeblockDrop(
 			error: error,
 		});
 		new Notice(
-			plugin.i18n.translate("views.advancedCalendar.notices.timeblockMoveFailed", {
-				message: getErrorMessage(error),
+			plugin.i18n.translate(msg({ message: "Failed to move timeblock: {message}", context: "views.advancedCalendar.notices.timeblockMoveFailed" }), {
+				message: displayError(getErrorMessage(error)),
 			})
 		);
 		dropInfo.revert();
@@ -2060,7 +2063,7 @@ export async function handleTimeblockResize(
 			newEndTime
 		);
 
-		new Notice(plugin.i18n.translate("notices.audit.timeblockResized"));
+		new Notice(plugin.i18n.translate(msg({ message: "Timeblock duration updated", context: "notices.audit.timeblockResized" })));
 	} catch (error: unknown) {
 		tasknotesLogger.error("Error resizing timeblock:", {
 			category: "provider",
@@ -2068,8 +2071,8 @@ export async function handleTimeblockResize(
 			error: error,
 		});
 		new Notice(
-			plugin.i18n.translate("views.advancedCalendar.notices.timeblockResizeFailed", {
-				message: getErrorMessage(error),
+			plugin.i18n.translate(msg({ message: "Failed to resize timeblock: {message}", context: "views.advancedCalendar.notices.timeblockResizeFailed" }), {
+				message: displayError(getErrorMessage(error)),
 			})
 		);
 		resizeInfo.revert();
@@ -2116,7 +2119,11 @@ export function applyTimeblockStyling(element: HTMLElement, timeblock: TimeBlock
  */
 export function generateTimeblockTooltip(timeblock: TimeBlock): string {
 	const attachmentCount = timeblock.attachments?.length || 0;
-	return `${timeblock.title || "Timeblock"}${timeblock.description ? ` - ${timeblock.description}` : ""}${attachmentCount > 0 ? ` (${attachmentCount} attachment${attachmentCount > 1 ? "s" : ""})` : ""}`;
+	const title = timeblock.title || uiText(msg({ message: "Timeblock", context: "unnamed timeblock tooltip" }));
+	if (timeblock.description) {
+		return uiText(msg({ message: "{count, plural, =0 {{title} - {description}} one {{title} - {description} (# attachment)} other {{title} - {description} (# attachments)}}", context: "timeblock tooltip with description" }), { count: attachmentCount, title, description: timeblock.description });
+	}
+	return uiText(msg({ message: "{count, plural, =0 {{title}} one {{title} (# attachment)} other {{title} (# attachments)}}", context: "timeblock tooltip" }), { count: attachmentCount, title });
 }
 
 /**
@@ -2160,7 +2167,7 @@ export async function handleDateTitleClick(
 
 		// Check if Daily Notes plugin is enabled
 		if (!appHasDailyNotesPluginLoaded()) {
-			new Notice(plugin.i18n.translate("notices.commands.dailyNotesDisabled"));
+			new Notice(plugin.i18n.translate(msg({ message: "Daily notes core plugin is not enabled. Please enable it in settings > core plugins.", context: "notices.commands.dailyNotesDisabled" })));
 			return;
 		}
 
@@ -2173,7 +2180,7 @@ export async function handleDateTitleClick(
 
 		if (!dailyNote) {
 			if (!createIfMissing) {
-				new Notice(plugin.i18n.translate("views.basesCalendar.notices.noDailyNoteForDate"));
+				new Notice(plugin.i18n.translate(msg({ message: "No daily note exists for this date.", context: "views.basesCalendar.notices.noDailyNoteForDate" })));
 				return;
 			}
 
@@ -2188,8 +2195,8 @@ export async function handleDateTitleClick(
 					error: error,
 				});
 				new Notice(
-					plugin.i18n.translate("notices.commands.dailyNoteCreateFailed", {
-						message: errorMessage,
+					plugin.i18n.translate(msg({ message: "Failed to create daily note: {message}", context: "notices.commands.dailyNoteCreateFailed" }), {
+						message: displayError(errorMessage),
 					})
 				);
 				return;
@@ -2208,7 +2215,7 @@ export async function handleDateTitleClick(
 			error: error,
 		});
 		new Notice(
-			plugin.i18n.translate("notices.commands.dailyNoteOpenFailed", { message: errorMessage })
+			plugin.i18n.translate(msg({ message: "Failed to navigate to daily note: {message}", context: "notices.commands.dailyNoteOpenFailed" }), { message: displayError(errorMessage) })
 		);
 	}
 }
@@ -2234,7 +2241,7 @@ export function attachDailyNoteHeaderLink(
 
 	const linkEl =
 		headerCell.querySelector<HTMLElement>(".fc-col-header-cell-cushion") || headerCell;
-	const title = `Go to ${format(date, "d MMMM yyyy")}`;
+	const title = uiText(msg({ message: "Go to {value1}", context: "bases/calendar-core: attachDailyNoteHeaderLink display" }), { value1: formatUIDate(date, "d MMMM yyyy") });
 
 	linkEl.setAttribute("data-navlink", "");
 	linkEl.setAttribute("title", title);

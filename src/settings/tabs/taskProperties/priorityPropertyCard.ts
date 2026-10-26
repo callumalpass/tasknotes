@@ -1,3 +1,7 @@
+import { uiText } from "../../../i18n/runtime";
+import { configLabel } from "../../../i18n/configLabels";
+import { uiData } from "../../../i18n/dataText";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
 import { Notice, setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
@@ -26,7 +30,7 @@ export function renderPriorityPropertyCard(
 ): void {
 	const propertyKeyInput = createCardInput(
 		"text",
-		"priority",
+		uiData("priority", "Editable frontmatter property identifier; must remain compatible with existing YAML"),
 		plugin.settings.fieldMapping.priority
 	);
 
@@ -43,10 +47,10 @@ export function renderPriorityPropertyCard(
 
 	const defaultSelect = createCardSelect(
 		[
-			{ value: "", label: translate("settings.defaults.options.noDefault") },
+			{ value: "", label: translate(msg({ message: "No default", context: "settings.defaults.options.noDefault" })) },
 			...plugin.settings.customPriorities.map((priority) => ({
 				value: priority.value,
-				label: priority.label || priority.value,
+				label: configLabel(priority) || priority.value,
 			})),
 		],
 		plugin.settings.defaultTaskPriority
@@ -75,7 +79,7 @@ export function renderPriorityPropertyCard(
 		"tasknotes-settings__collapsible-section-header"
 	);
 	priorityValuesHeader.createSpan({
-		text: translate("settings.taskProperties.priorityCard.valuesHeader"),
+		text: translate(msg({ message: "Priority values", context: "settings.taskProperties.priorityCard.valuesHeader" })),
 		cls: "tasknotes-settings__collapsible-section-title",
 	});
 	const chevron = priorityValuesHeader.createSpan(
@@ -92,20 +96,20 @@ export function renderPriorityPropertyCard(
 		"tasknotes-settings__help-section"
 	);
 	priorityHelpContainer.createEl("h4", {
-		text: translate("settings.taskProperties.taskPriorities.howTheyWork.title"),
+		text: translate(msg({ message: "How priorities work:", context: "settings.taskProperties.taskPriorities.howTheyWork.title" })),
 	});
 	const priorityHelpList = priorityHelpContainer.createEl("ul");
 	priorityHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskPriorities.howTheyWork.value"),
+		text: translate(msg({ message: "Value: The internal identifier stored in your task files. Use prefixes like \"1-urgent\", \"2-high\" to control sort order in Bases views.", context: "settings.taskProperties.taskPriorities.howTheyWork.value" })),
 	});
 	priorityHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskPriorities.howTheyWork.label"),
+		text: translate(msg({ message: "Display Label: The display name shown in the interface (e.g., \"High Priority\")", context: "settings.taskProperties.taskPriorities.howTheyWork.label" })),
 	});
 	priorityHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskPriorities.howTheyWork.color"),
+		text: translate(msg({ message: "Color: Visual indicator color for the priority dot and badges", context: "settings.taskProperties.taskPriorities.howTheyWork.color" })),
 	});
 	priorityHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskPriorities.howTheyWork.icon"),
+		text: translate(msg({ message: "Icon: optional icon to show on task cards instead of the priority dot", context: "settings.taskProperties.taskPriorities.howTheyWork.icon" })),
 	});
 
 	// Render priority value cards
@@ -115,7 +119,7 @@ export function renderPriorityPropertyCard(
 		defaultSelect.empty();
 		const noDefaultOption = defaultSelect.createEl("option", {
 			value: "",
-			text: translate("settings.defaults.options.noDefault"),
+			text: translate(msg({ message: "No default", context: "settings.defaults.options.noDefault" })),
 		});
 		if (plugin.settings.defaultTaskPriority === "") {
 			noDefaultOption.selected = true;
@@ -123,7 +127,7 @@ export function renderPriorityPropertyCard(
 		plugin.settings.customPriorities.forEach((priority) => {
 			const option = defaultSelect.createEl("option", {
 				value: priority.value,
-				text: priority.label || priority.value,
+				text: configLabel(priority) || priority.value,
 			});
 			if (priority.value === plugin.settings.defaultTaskPriority) {
 				option.selected = true;
@@ -133,7 +137,7 @@ export function renderPriorityPropertyCard(
 
 	// Add priority button
 	const addPriorityButton = priorityValuesContent.createEl("button", {
-		text: translate("settings.taskProperties.taskPriorities.addNew.buttonText"),
+		text: translate(msg({ message: "Add priority", context: "settings.taskProperties.taskPriorities.addNew.buttonText" })),
 		cls: "tn-btn tn-btn--ghost",
 	});
 	addPriorityButton.classList.remove(
@@ -168,7 +172,7 @@ export function renderPriorityPropertyCard(
 			defaultSelect.empty();
 			const noDefaultOption = defaultSelect.createEl("option", {
 				value: "",
-				text: translate("settings.defaults.options.noDefault"),
+				text: translate(msg({ message: "No default", context: "settings.defaults.options.noDefault" })),
 			});
 			if (plugin.settings.defaultTaskPriority === "") {
 				noDefaultOption.selected = true;
@@ -176,7 +180,7 @@ export function renderPriorityPropertyCard(
 			plugin.settings.customPriorities.forEach((priority) => {
 				const option = defaultSelect.createEl("option", {
 					value: priority.value,
-					text: priority.label || priority.value,
+					text: configLabel(priority) || priority.value,
 				});
 				if (priority.value === plugin.settings.defaultTaskPriority) {
 					option.selected = true;
@@ -197,16 +201,16 @@ export function renderPriorityPropertyCard(
 
 	// Create description element
 	const descriptionEl = createPropertyDescription(
-		translate("settings.taskProperties.properties.priority.description")
+		translate(msg({ message: "Indicates task importance. Used for sorting and filtering. Values are sorted alphabetically in Bases views, so use prefixes like 1-, 2- to control order.", context: "settings.taskProperties.properties.priority.description" }))
 	);
 
 	const rows: CardRow[] = [
 		{ label: "", input: descriptionEl, fullWidth: true },
 		{
-			label: translate("settings.taskProperties.propertyCard.propertyKey"),
+			label: translate(msg({ message: "Property key:", context: "settings.taskProperties.propertyCard.propertyKey" })),
 			input: propertyKeyInput,
 		},
-		{ label: translate("settings.taskProperties.propertyCard.default"), input: defaultSelect },
+		{ label: translate(msg({ message: "Default:", context: "settings.taskProperties.propertyCard.default" })), input: defaultSelect },
 		...nlpRows,
 		{ label: "", input: nestedContainer, fullWidth: true },
 	];
@@ -216,7 +220,7 @@ export function renderPriorityPropertyCard(
 		collapsible: true,
 		defaultCollapsed: true,
 		header: {
-			primaryText: translate("settings.taskProperties.properties.priority.name"),
+			primaryText: translate(msg({ message: "Priority", context: "settings.taskProperties.properties.priority.name" })),
 			secondaryText: plugin.settings.fieldMapping.priority,
 		},
 		content: {
@@ -240,7 +244,7 @@ function renderPriorityList(
 	if (!plugin.settings.customPriorities || plugin.settings.customPriorities.length === 0) {
 		showCardEmptyState(
 			container,
-			translate("settings.taskProperties.taskPriorities.emptyState")
+			translate(msg({ message: "No custom priorities configured. Add a priority to get started.", context: "settings.taskProperties.taskPriorities.emptyState" }))
 		);
 		return;
 	}
@@ -252,18 +256,18 @@ function renderPriorityList(
 	sortedPriorities.forEach((priority) => {
 		const valueInput = createCardInput(
 			"text",
-			translate("settings.taskProperties.taskPriorities.placeholders.value"),
+			uiData("high", "Example persisted priority identifier; translating it must not change YAML/NLP values"),
 			priority.value
 		);
 		const labelInput = createCardInput(
 			"text",
-			translate("settings.taskProperties.taskPriorities.placeholders.label"),
-			priority.label
+			translate(msg({ message: "High priority", context: "settings.taskProperties.taskPriorities.placeholders.label" })),
+			configLabel(priority)
 		);
 		const colorInput = createThemeColorInput(priority.color);
 		const { container: iconInputContainer, input: iconInput } = createIconInput(
 			plugin.app,
-			translate("settings.taskProperties.taskPriorities.placeholders.icon"),
+			uiData("alert-circle", "Lucide icon identifier; must remain an exact icon lookup key in every locale"),
 			priority.icon || ""
 		);
 
@@ -274,12 +278,12 @@ function renderPriorityList(
 			defaultCollapsed: true,
 			colorIndicator: { color: priority.color },
 			header: {
-				primaryText: priority.label || priority.value || "untitled",
+				primaryText: configLabel(priority) || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" })),
 				actions: [
 					createDeleteHeaderButton(() => {
 						if (plugin.settings.customPriorities.length <= 1) {
 							new Notice(
-								translate("settings.taskProperties.taskPriorities.deleteConfirm")
+								translate(msg({ message: "You must have at least one priority", context: "settings.taskProperties.taskPriorities.deleteConfirm" }))
 							);
 							return;
 						}
@@ -316,7 +320,7 @@ function renderPriorityList(
 							);
 							if (onPrioritiesChanged) onPrioritiesChanged();
 						}
-					}, translate("settings.taskProperties.taskPriorities.deleteTooltip")),
+					}, translate(msg({ message: "Delete priority", context: "settings.taskProperties.taskPriorities.deleteTooltip" }))),
 				],
 			},
 			content: {
@@ -325,25 +329,25 @@ function renderPriorityList(
 						rows: [
 							{
 								label: translate(
-									"settings.taskProperties.taskPriorities.fields.value"
+									msg({ message: "Value:", context: "settings.taskProperties.taskPriorities.fields.value" })
 								),
 								input: valueInput,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskPriorities.fields.label"
+									msg({ message: "Label:", context: "settings.taskProperties.taskPriorities.fields.label" })
 								),
 								input: labelInput,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskPriorities.fields.color"
+									msg({ message: "Color:", context: "settings.taskProperties.taskPriorities.fields.color" })
 								),
 								input: colorInput,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskPriorities.fields.icon"
+									msg({ message: "Icon:", context: "settings.taskProperties.taskPriorities.fields.icon" })
 								),
 								input: iconInputContainer,
 							},
@@ -362,7 +366,7 @@ function renderPriorityList(
 		labelInput.addEventListener("input", () => {
 			priority.label = labelInput.value;
 			card.querySelector(".tasknotes-settings__card-primary-text")!.textContent =
-				priority.label || priority.value || "untitled";
+				configLabel(priority) || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }));
 			save();
 			if (onPrioritiesChanged) onPrioritiesChanged();
 		});

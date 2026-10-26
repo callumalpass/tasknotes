@@ -1,0 +1,557 @@
+{
+  "status": "passed-rereview-desktop-scope",
+  "finalRecheck": "N1–N9 desktop re-review passes at 46c0752b: all 20 unchanged workflow shell steps, strict catalogues/source fixtures, full coverage and absent-generated-JSON Jest, docs/typecheck/lint, both sized builds and three native bundled tests. Hosted Actions, current downloadable-native and mobile acceptance are not claimed.",
+  "authoredPreservation": "i18n-authored-preservation.json",
+  "artifactSourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+  "originalTranslationHandoff": "9b6f087e86af81e522d2d16661937a6f1a158ad0",
+  "kitTarball": "vendor/mdbase-dev-i18n-0.1.0-beta.141-a36fa009.tgz",
+  "lingui": "6.9.0",
+  "developmentNode": "22.22.0",
+  "catalogues": {
+    "locales": [
+      "en",
+      "de",
+      "es",
+      "fr",
+      "ja",
+      "ko",
+      "pt",
+      "ru",
+      "zh"
+    ],
+    "activePerLocale": 2716,
+    "missingAuthoredPerLocale": 0,
+    "authoredEntriesValidated": 24444,
+    "renderedOperandCases": 171108,
+    "operands": [
+      0,
+      1,
+      2,
+      5,
+      21,
+      1.5,
+      1000000
+    ],
+    "normalCleanExtractionByteStable": true,
+    "authoredBeforeFallback": true,
+    "technicalDataRetirements": 12,
+    "additionalReviewDataRetirements": 59,
+    "singletonContractReplacements": 10,
+    "literalBraceIdReplacements": 2,
+    "addedAuthoredPluralArms": 22,
+    "pluralRepairOperations": 22,
+    "retainedAuthoredPreservation": {
+      "de": {
+        "translatorCommit": "20b7eb21211611110951e1fb27f92ddfefa407c0",
+        "retainedTranslations": 2704,
+        "unchangedRetainedTranslations": 2704,
+        "changedRetainedTranslations": 0
+      },
+      "es": {
+        "translatorCommit": "7632fbce55cd3cc90c7b1192701120d391268490",
+        "retainedTranslations": 2704,
+        "unchangedRetainedTranslations": 2704,
+        "changedRetainedTranslations": 0
+      },
+      "fr": {
+        "translatorCommit": "791a2e45f3eddf46bc23b6c8d7b5ba08a55d0bb5",
+        "retainedTranslations": 2704,
+        "unchangedRetainedTranslations": 2704,
+        "changedRetainedTranslations": 0
+      },
+      "ja": {
+        "translatorCommit": "e0db2e3ebba160d784b87be401cb6a5ea226ae52",
+        "retainedTranslations": 2704,
+        "unchangedRetainedTranslations": 2704,
+        "changedRetainedTranslations": 0
+      },
+      "ko": {
+        "translatorCommit": "24b477682e05973ceb67d25f9b292839301be771",
+        "retainedTranslations": 2704,
+        "unchangedRetainedTranslations": 2704,
+        "changedRetainedTranslations": 0
+      },
+      "pt": {
+        "translatorCommit": "65844af337a4834780baa6ce01e133fe8b2be1bd",
+        "retainedTranslations": 2704,
+        "unchangedRetainedTranslations": 2704,
+        "changedRetainedTranslations": 0
+      },
+      "ru": {
+        "translatorCommit": "f4c6b0a3d7da7ed07133b62e8bfe7f9afa63760a",
+        "retainedTranslations": 2704,
+        "unchangedRetainedTranslations": 2704,
+        "changedRetainedTranslations": 0
+      },
+      "zh": {
+        "translatorCommit": "e1e430e71ac39da0db390747132de099bdb1ed3c",
+        "retainedTranslations": 2704,
+        "unchangedRetainedTranslations": 2704,
+        "changedRetainedTranslations": 0
+      }
+    },
+    "rereviewRecoveredDescriptors": 16,
+    "rereviewRecoveredAuthoredTranslations": 128,
+    "rereviewRetiredDescriptors": 38
+  },
+  "source": {
+    "modules": 416,
+    "consumerGuard": "PASS",
+    "sourceFixtures": 58,
+    "nlpSrcLocalesChanged": false,
+    "staticCallSiteValues": "PASS (direct static macro calls; computed/forwarded objects require adapter/runtime tests)",
+    "consumerPluralGate": "PASS: integer-reachable 0..999 cardinal/ordinal categories after offset, exact original-count coverage, optional million-only many; mirrors shared kit e61ab062 locally while retaining stricter English-source/English-arm and read-only obsolete-PO rejection.",
+    "historicalMigrationAudit": {
+      "sourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9",
+      "originalAuditRows": 1075,
+      "formattingRows": 156,
+      "forwardingRows": 93,
+      "conditionalRows": 23,
+      "finiteSites": 22,
+      "finiteConcepts": 210
+    }
+  },
+  "jest": {
+    "sourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "strict": true,
+    "freshGeneratedJsonAbsent": true,
+    "passedSuites": 766,
+    "passedTests": 5026,
+    "skippedSuites": 70,
+    "skippedTests": 1005,
+    "todo": 4,
+    "newSkips": 0,
+    "integration": {
+      "passedSuites": 5,
+      "passedTests": 77,
+      "skippedTests": 12
+    }
+  },
+  "otherGates": {
+    "translationContracts": "PASS: 24,444 authored contracts, 171,108 real operand renders; 564 focused renders across 94 still-active plural messages. All 22 corrected one arms retained; retired S3yJwA is explicitly accounted for in es/fr.",
+    "packAndPublicationScriptTests": 30,
+    "lint": "PASS",
+    "documentationPublishedPages": 221,
+    "documentationGeneratedReferences": 5,
+    "documentationHtmlFilesChecked": 229,
+    "kitCheck": "PASS",
+    "workflowParity": {
+      "sourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+      "report": "i18n-ci-workflow-parity.json",
+      "sha256": "9587bdf752e8b654fe6425e42eefd5b287ca835a89c8035ff238797b8fdf043c",
+      "node": "v22.22.0",
+      "passedShellSteps": 20,
+      "performance": "Skipped by the unchanged Node-20-only condition under the sole Node-22 matrix",
+      "hostedCI": false,
+      "actions": "Checkout/setup/coverage upload/artifact actions not reproduced",
+      "oauthSecretsSupplied": false
+    },
+    "typecheck": "PASS"
+  },
+  "builds": {
+    "strictBudgetBytesExclusive": 5000000,
+    "bundledBytes": 4185491,
+    "downloadableBytes": 3605436,
+    "bundledCatalogueInputs": 9,
+    "downloadableCatalogueInputs": [
+      "en"
+    ],
+    "legacyUiResourceInputs": 0,
+    "downloadFormat": "tasknotes-lingui-v1",
+    "mainSha256": {
+      "bundled": "b15f1c49d00632a2b23e7a130ce68eb7824313ff608400b6d47a0fcf0c2182fa",
+      "downloadable": "39aa5c81567fad8cdbbe4016db8e98d732ba43b79fc315c516b5b24988d65fa6"
+    }
+  },
+  "native": {
+    "state": "passed",
+    "artifactSourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "harnessSourceCommit": "46c0752b833e761002d5cb8e1794387447660856",
+    "mainSha256": "b15f1c49d00632a2b23e7a130ce68eb7824313ff608400b6d47a0fcf0c2182fa",
+    "platform": "Linux/Xvfb",
+    "obsidian": "1.14.2",
+    "remoteDebuggingPort": 19293,
+    "personalVaultOrProfileUsed": false,
+    "isolatedVault": "tasknotes-e2e-vault",
+    "isolatedProfile": ".obsidian-config-e2e/rereview",
+    "bundledTests": 3,
+    "reports": [
+      "test-results/lingui-bundled/report.json",
+      "test-results/lingui-bundled/review/review-report.json",
+      "test-results/lingui-bundled/rereview/report.json"
+    ],
+    "recording": "All three successful tests retain Playwright traces with screenshots; paths and hashes below.",
+    "traceAndReportArtifacts": {
+      "test-results/lingui-bundled/rereview/report.json": {
+        "bytes": 1636,
+        "sha256": "43c096839f3fcac2b837f1417e14bcca96f402760f4d48efa7b816835d6260a3"
+      },
+      "test-results/lingui-bundled-native-en-d-16bac-creation-and-saved-ordering-obsidian/trace.zip": {
+        "bytes": 9963181,
+        "sha256": "af6633435611e044e5f8a74e39aa811e6e19c7e72a933978ada9859217e6b4b4"
+      },
+      "test-results/lingui-bundled-native-en-d-cc4d5-from-programmatic-fallbacks-obsidian/trace.zip": {
+        "bytes": 10600578,
+        "sha256": "7508622645cfb8c4a3ce76b374bb539e7f5ad8337cce0af4906175d99d029c17"
+      },
+      "test-results/lingui-bundled-ordinary-na-94814-sly-and-renders-en-ja-de-ru-obsidian/trace.zip": {
+        "bytes": 6104441,
+        "sha256": "ac76150d342fbcb2ec66b00309838e88c4b50637f57a7123a438f51890d0442e"
+      }
+    },
+    "enDeRereview": {
+      "en": {
+        "fieldAndGroupLabels": [
+          "Basic Information",
+          "Title",
+          "Details",
+          "Metadata",
+          "Contexts",
+          "Tags",
+          "Time Estimate",
+          "Organization",
+          "Projects",
+          "Subtasks",
+          "Dependencies",
+          "Blocked By",
+          "Blocking",
+          "Custom Fields"
+        ],
+        "settingsUnchangedByRendering": true,
+        "completedDateGroups": {
+          "keys": [
+            "2026-10-23",
+            "2026-10-20",
+            "Invalid date",
+            "Not completed"
+          ],
+          "titles": [
+            "Rereview-1792808336976-new",
+            "Rereview-1792808336976-old",
+            "Rereview-1792808336976-invalid",
+            "Rereview-1792808336976-not-completed"
+          ]
+        },
+        "programmaticFallback": "Untitled Task",
+        "interactiveMissingTitleRejected": true
+      },
+      "de": {
+        "fieldAndGroupLabels": [
+          "Grundlegende Informationen",
+          "Titel",
+          "Details",
+          "Metadaten",
+          "Kontexte",
+          "Tags",
+          "Zeitschätzung",
+          "Organisation",
+          "Projekte",
+          "Unteraufgaben",
+          "Abhängigkeiten",
+          "Blockiert durch",
+          "Blockiert",
+          "Benutzerdefinierte Felder"
+        ],
+        "settingsUnchangedByRendering": true,
+        "completedDateGroups": {
+          "keys": [
+            "2026-10-23",
+            "2026-10-20",
+            "Invalid date",
+            "Not completed"
+          ],
+          "titles": [
+            "Rereview-1792808336976-new",
+            "Rereview-1792808336976-old",
+            "Rereview-1792808336976-invalid",
+            "Rereview-1792808336976-not-completed"
+          ]
+        },
+        "programmaticFallback": "Untitled Task",
+        "interactiveMissingTitleRejected": true
+      }
+    },
+    "coverage": [
+      "Synchronous nine-catalogue decode; en/ja/de/ru labels, commands and count renders",
+      "Native en/de/ru pointer drags, empty/boolean creation, saved ordering",
+      "All fourteen built-in field/group labels in en/de; default-label inputs never write on render",
+      "Real completed-date descending sort followed by Invalid date and Not completed",
+      "Programmatic Untitled Task fallback; interactive title-less input rejected"
+    ],
+    "pilotFindings": "Native run exposed the Obsidian icon-only empty placeholder; share its existing classifier with group-label provenance and regress it in units. Harness fixes use Ctrl/Cmd+Enter, reopen General, and exact field-label matching.",
+    "downloadable": {
+      "state": "not rerun in this round",
+      "historicalSource": "febb5f8905439a92196da119d901ead204755fb1",
+      "scope": "Historical offline/corrupt/retry/supersession evidence is retained separately; both current builds/graphs pass."
+    },
+    "mobile": "Not rerun; iOS remains explicitly unverified/waived."
+  },
+  "notPerformed": [
+    "main writes or merges",
+    "tags or releases",
+    "workflow_dispatch",
+    "R2 publication",
+    "deployment",
+    "production vault/profile interaction",
+    "subagent delegation",
+    "native Obsidian rerun for this plural-only follow-up"
+  ],
+  "reproduce": [
+    "rpnpm run i18n:compile",
+    "rpnpm --pull dist --pull coverage run check:ci-workflow",
+    "rpnpm --pull dist run test:translation-contracts",
+    "rpnpm --pull dist run check:language-pack-builds",
+    "rpnpm --pull dist --pull coverage run test:fresh-catalogues",
+    "rpnpm run docs:check",
+    "Historical isolated minified native instructions: docs/development/language-packs.md"
+  ],
+  "historicalBaseline": "797ebe3afda46507635110a8fdd7ffc046de0fd5",
+  "nativeHarnessCommit": "46c0752b833e761002d5cb8e1794387447660856",
+  "reviewChangeInventory": "i18n-review-followup.json",
+  "pluralFollowup": {
+    "sourceCommit": "7ed793024e8e7ffa6c61d2941f4d76e3737383e9",
+    "baseline": "2a992dfbd67e6a0ef00c233c6cb7009cc290fc2c",
+    "rewrittenOneArms": {
+      "fr": 10,
+      "pt": 10,
+      "ru": 2
+    },
+    "removedOptionalManyArms": {
+      "es": 45,
+      "fr": 45
+    },
+    "alignedRussianClassifierSiblingArms": 6,
+    "manyStrategy": "Remove all 90 added es/fr many arms consistently; optional million categories fall back to authored other wording.",
+    "russianClassifiers": "Не один контекст / Не один проект means More than one context/project. Exact =1 still handles 1; one/few/many/other agree on the multiple-count group at 2/5/21/31/etc. Existing Jest grouping invariant retained.",
+    "coverageRule": "Mirror mdbase-connect e61ab062 packages/i18n/scripts/checks.mjs: integer counts 0..999 after offset; exact arms match original count and may exhaust a category. Existing vendored kit pin retained; no standalone coverage helper is exported and plugin English-source/English-arm checks remain stricter.",
+    "renderProof": "i18n-plural-render-proof.json",
+    "fullRenderReport": "dist/i18n-plural-followup-render-proof.json",
+    "focusedRenderedCases": 576,
+    "operands": [
+      0,
+      1,
+      2,
+      5,
+      21,
+      1000000
+    ],
+    "changedMessages": 96,
+    "unchangedMessages": 24546,
+    "untargetedIcuStructureAndWordingUnchanged": true,
+    "historicalAddedPluralArms": 112,
+    "historicalRepairOperations": 102,
+    "initialFullSuiteFailure": "The first wording split Russian 21 from the existing multiple-count group. Aligned six sibling arms rather than weakening the existing invariant; final complete workflow and fresh full Jest pass.",
+    "nativeRerun": false,
+    "independentNativeSpeakerCertification": false
+  },
+  "deferredMinorFindings": {
+    "1": "Generated Bases labels remain snapshots; owner decision needed before changing saved files.",
+    "3": "ICS generated-note dates stabilized, but remaining translated exported calendar/note prose needs an owner policy decision.",
+    "8": "Generic numeric formatting policy unchanged; grouped year-like user numbers remain a follow-up.",
+    "11": "Not all already-open views/modals/live text hot-refresh; registration-only command labels may require reload.",
+    "13": "Specific 22-one/90-many follow-up complete; broader catalogue noun/count authoring remains outside this scope."
+  },
+  "rereviewEvidence": "i18n-rereview.json",
+  "historicalNative": {
+    "artifactSourceCommit": "febb5f8905439a92196da119d901ead204755fb1",
+    "pluralFollowupScope": "Historical native results retained; no native Obsidian rerun for the new plural wordings. Current compiled-render and fresh-Jest evidence is recorded separately.",
+    "platform": "isolated Linux/Xvfb",
+    "obsidian": "1.14.2",
+    "remoteDebuggingPort": 19291,
+    "httpFixturePort": 19290,
+    "personalVaultOrProfileUsed": false,
+    "bundled": {
+      "passedTests": 2,
+      "synchronousColdLocale": "ja",
+      "loadedLocales": 9,
+      "checkedLocales": [
+        "en",
+        "ja",
+        "de",
+        "ru"
+      ],
+      "counts": [
+        0,
+        1,
+        2,
+        5,
+        21
+      ],
+      "numericOperandsAsserted": true
+    },
+    "downloadable": {
+      "passedTests": 3,
+      "checkedLocales": [
+        "en",
+        "ja",
+        "de",
+        "ru"
+      ],
+      "counts": [
+        0,
+        1,
+        2,
+        5,
+        21
+      ],
+      "numericOperandsAsserted": true,
+      "synchronousEnglishDuringHeldFrenchDownload": true,
+      "offlineFrenchReload": true,
+      "corruptGermanNetworkRejected": true,
+      "retryGerman": true,
+      "supersededRussianCannotActivate": true,
+      "offlineRussianCacheReuse": true,
+      "corruptRussianCacheFallsBackToEnglish": true,
+      "explicitRetryRepairsPinnedRussianCache": true,
+      "existingBasesUnchanged": 7
+    },
+    "reports": [
+      "test-results/lingui-native/report.json",
+      "test-results/lingui-bundled/report.json",
+      "test-results/lingui-native/review/review-report.json",
+      "test-results/lingui-bundled/review/review-report.json"
+    ],
+    "mobile": {
+      "ios": "Unverified; explicitly waived",
+      "android": "Pre-Lingui delivery-layer evidence is historical, not acceptance of this port"
+    },
+    "groupIdentityReview": {
+      "locales": [
+        "en",
+        "de",
+        "ru"
+      ],
+      "actualPointerDrag": true,
+      "actualCreationModal": true,
+      "nonDefaultRenderedAndSavedColumnOrder": true,
+      "results": {
+        "bundled": {
+          "en": {
+            "emptyLabel": "None",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          },
+          "de": {
+            "emptyLabel": "Keine",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          },
+          "ru": {
+            "emptyLabel": "Нет",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          }
+        },
+        "native": {
+          "en": {
+            "emptyLabel": "None",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          },
+          "de": {
+            "emptyLabel": "Keine",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          },
+          "ru": {
+            "emptyLabel": "Нет",
+            "emptyDropRemovedProperty": true,
+            "createdEmptyHasGroupProperty": false,
+            "createdEmptyStatus": "open",
+            "createdBoolean": true,
+            "groupOrder": {
+              "note.review_group": [
+                "work",
+                "None"
+              ]
+            },
+            "booleanOrder": {
+              "note.review_flag": [
+                "True",
+                "None",
+                "False"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "historicalNativeHarnessCommit": "3e863f79a06e431008f0c1fcc352eb3037c5dd21",
+  "scope": "Current native is the three-test bundled desktop run. historicalNative and pluralFollowup retain their original source-bound records; migration inventories are historical, not regenerated."
+}

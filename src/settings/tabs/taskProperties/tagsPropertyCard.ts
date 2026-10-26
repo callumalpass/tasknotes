@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../../../main";
 import {
 	createCard,
@@ -17,7 +18,7 @@ export function renderTagsPropertyCard(
 ): void {
 	const defaultInput = createCardInput(
 		"text",
-		translate("settings.defaults.basicDefaults.defaultTags.placeholder"),
+		translate(msg({ message: "important, urgent", context: "settings.defaults.basicDefaults.defaultTags.placeholder" })),
 		plugin.settings.taskCreationDefaults.defaultTags
 	);
 
@@ -30,12 +31,12 @@ export function renderTagsPropertyCard(
 
 	// Create description element
 	const descriptionEl = createPropertyDescription(
-		translate("settings.taskProperties.properties.tags.description")
+		translate(msg({ message: "Native Obsidian tags for categorizing tasks. These are stored in the tags frontmatter property and work with Obsidian''s tag features.", context: "settings.taskProperties.properties.tags.description" }))
 	);
 
 	const rows: CardRow[] = [
 		{ label: "", input: descriptionEl, fullWidth: true },
-		{ label: translate("settings.taskProperties.propertyCard.default"), input: defaultInput },
+		{ label: translate(msg({ message: "Default:", context: "settings.taskProperties.propertyCard.default" })), input: defaultInput },
 		...nlpRows,
 	];
 
@@ -44,8 +45,8 @@ export function renderTagsPropertyCard(
 		collapsible: true,
 		defaultCollapsed: true,
 		header: {
-			primaryText: translate("settings.taskProperties.properties.tags.name"),
-			secondaryText: translate("settings.taskProperties.tagsCard.nativeObsidianTags"),
+			primaryText: translate(msg({ message: "Tags", context: "settings.taskProperties.properties.tags.name" })),
+			secondaryText: translate(msg({ message: "Uses native Obsidian tags", context: "settings.taskProperties.tagsCard.nativeObsidianTags" })),
 		},
 		content: {
 			sections: [{ rows }],

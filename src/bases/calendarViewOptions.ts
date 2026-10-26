@@ -1,3 +1,7 @@
+import type { MessageSuffix } from "../i18n/concepts";
+import { uiText } from "../i18n/runtime";
+import { messageForKey } from "../i18n/messages";
+import { msg } from "@lingui/core/macro";
 import type { BasesAllOptions, BasesOptions, BasesViewConfig } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT } from "./MiniCalendarView";
@@ -5,19 +9,19 @@ import { isNoteFileOrFormulaProperty } from "./propertyFilters";
 import { readBasesViewConfigValue } from "./basesViewConfig";
 
 type CalendarOptionsConfig = Pick<BasesViewConfig, "get">;
-type Translate = (key: string) => string;
+type Translate = (key: MessageSuffix<"views.basesCalendar.settings.">) => string;
 
 const CALENDAR_VIEW_OPTIONS: Record<string, string> = {
-	dayGridMonth: "Month",
-	timeGridWeek: "Week",
-	timeGridCustom: "Custom days",
-	timeGridDay: "Day",
-	listWeek: "List",
-	multiMonthYear: "Year",
+	get dayGridMonth() { return uiText(msg({ message: "Month", context: "bases/calendarViewOptions: defaults dayGridMonth" })); },
+	get timeGridWeek() { return uiText(msg({ message: "Week", context: "bases/calendarViewOptions: defaults timeGridWeek" })); },
+	get timeGridCustom() { return uiText(msg({ message: "Custom days", context: "bases/calendarViewOptions: defaults timeGridCustom" })); },
+	get timeGridDay() { return uiText(msg({ message: "Day", context: "bases/calendarViewOptions: defaults timeGridDay" })); },
+	get listWeek() { return uiText(msg({ message: "List", context: "bases/calendarViewOptions: defaults listWeek" })); },
+	get multiMonthYear() { return uiText(msg({ message: "Year", context: "bases/calendarViewOptions: defaults multiMonthYear" })); },
 };
 
 function translateCalendarSetting(plugin: TaskNotesPlugin): Translate {
-	return (key: string) => plugin.i18n.translate(`views.basesCalendar.settings.${key}`);
+	return (key: MessageSuffix<"views.basesCalendar.settings.">) => plugin.i18n.translate(messageForKey(`views.basesCalendar.settings.${key}`));
 }
 
 function readOption<T>(config: CalendarOptionsConfig, key: string, fallback: T): T {
@@ -71,13 +75,13 @@ function isCurrentView(
 
 function buildWeekdayOptions(plugin: TaskNotesPlugin): Record<string, string> {
 	return {
-		"0": plugin.i18n.translate("common.weekdays.sunday"),
-		"1": plugin.i18n.translate("common.weekdays.monday"),
-		"2": plugin.i18n.translate("common.weekdays.tuesday"),
-		"3": plugin.i18n.translate("common.weekdays.wednesday"),
-		"4": plugin.i18n.translate("common.weekdays.thursday"),
-		"5": plugin.i18n.translate("common.weekdays.friday"),
-		"6": plugin.i18n.translate("common.weekdays.saturday"),
+		"0": plugin.i18n.translate(msg({ message: "Sunday", context: "common.weekdays.sunday" })),
+		"1": plugin.i18n.translate(msg({ message: "Monday", context: "common.weekdays.monday" })),
+		"2": plugin.i18n.translate(msg({ message: "Tuesday", context: "common.weekdays.tuesday" })),
+		"3": plugin.i18n.translate(msg({ message: "Wednesday", context: "common.weekdays.wednesday" })),
+		"4": plugin.i18n.translate(msg({ message: "Thursday", context: "common.weekdays.thursday" })),
+		"5": plugin.i18n.translate(msg({ message: "Friday", context: "common.weekdays.friday" })),
+		"6": plugin.i18n.translate(msg({ message: "Saturday", context: "common.weekdays.saturday" })),
 	};
 }
 
@@ -605,8 +609,8 @@ export function buildMiniCalendarViewOptions(plugin: TaskNotesPlugin): BasesAllO
 		{
 			type: "property",
 			key: "dateProperty",
-			displayName: "Date Property",
-			placeholder: "Select property to show on calendar",
+			displayName: uiText(msg({ message: "Date Property", context: "bases/calendarViewOptions: buildMiniCalendarViewOptions displayName" })),
+			placeholder: uiText(msg({ message: "Select property to show on calendar", context: "bases/calendarViewOptions: buildMiniCalendarViewOptions placeholder" })),
 			default: "file.ctime",
 			filter: (prop: string) =>
 				prop.startsWith("note.") || prop.startsWith("file.") || prop.startsWith("task."),
@@ -614,15 +618,15 @@ export function buildMiniCalendarViewOptions(plugin: TaskNotesPlugin): BasesAllO
 		{
 			type: "property",
 			key: "titleProperty",
-			displayName: "Title Property",
-			placeholder: "Select property to use as title",
+			displayName: uiText(msg({ message: "Title Property", context: "bases/calendarViewOptions: buildMiniCalendarViewOptions displayName" })),
+			placeholder: uiText(msg({ message: "Select property to use as title", context: "bases/calendarViewOptions: buildMiniCalendarViewOptions placeholder" })),
 			default: "file.name",
 			filter: (prop: string) => isNoteFileOrFormulaProperty(prop),
 		},
 		{
 			type: "slider",
 			key: "heatMapMaxCount",
-			displayName: "Max color note count",
+			displayName: uiText(msg({ message: "Max color note count", context: "bases/calendarViewOptions: buildMiniCalendarViewOptions displayName" })),
 			default: DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT,
 			min: 1,
 			max: 20,

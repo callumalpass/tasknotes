@@ -1,3 +1,4 @@
+import { englishText } from "../../helpers/real-i18n";
 /**
  * Regression test for issue #1466.
  *
@@ -51,7 +52,7 @@ function createMockPlugin(activeFile: { path: string; basename: string; extensio
 			toUserField: (field: string) => field,
 		},
 		i18n: {
-			translate: (key: string) => (key === "common.new" ? "New" : key),
+			translate: englishText,
 		},
 		settings: {
 			taskTag: "task",

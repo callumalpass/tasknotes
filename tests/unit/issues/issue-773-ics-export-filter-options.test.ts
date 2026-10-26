@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import { CalendarExportService } from "../../../src/services/CalendarExportService";
 import { downloadAllTasksICSFile } from "../../../src/ui/calendarExportActions";
 import type { TaskInfo } from "../../../src/types";
@@ -175,12 +177,7 @@ describe("Issue #773: ICS export filter options", () => {
 		const originalRevokeObjectURL = URL.revokeObjectURL;
 		URL.createObjectURL = jest.fn(() => "blob:tasknotes");
 		URL.revokeObjectURL = jest.fn();
-		const translate = jest.fn((key: string, vars?: Record<string, unknown>) => {
-			if (key === "services.calendarExport.notices.downloadSuccess") {
-				return `Downloaded ${vars?.filename} with ${vars?.count} task${vars?.plural}`;
-			}
-			return key;
-		});
+		const translate = mockObserveTranslation();
 		const { Notice } = jest.requireMock("obsidian") as { Notice: jest.Mock };
 		Notice.mockClear();
 		downloadAllTasksICSFile(makeTasks(), translate, {

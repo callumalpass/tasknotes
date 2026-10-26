@@ -1,3 +1,5 @@
+import { uiText } from "../../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type { CliData } from "obsidian";
 import type { CliCommandDefinition } from "../types";
 import { formatCliJson } from "../helpers/formatters";
@@ -13,19 +15,19 @@ function hasExplicitLookup(params: CliData): boolean {
 
 export const timeStatusCliCommand: CliCommandDefinition = {
 	command: "time-status",
-	description: "Show active time-tracking sessions, or detailed status for a specific task",
+	get description() { return uiText(msg({ message: "Show active time-tracking sessions, or detailed status for a specific task", context: "cli/commands/timeStatusCommand: defaults description" })); },
 	flags: {
 		path: {
 			value: "<path>",
-			description: "Exact task file path",
+			get description() { return uiText(msg({ message: "Exact task file path", context: "cli/commands/timeStatusCommand: defaults description" })); },
 		},
 		title: {
 			value: "<title>",
-			description: "Exact task title",
+			get description() { return uiText(msg({ message: "Exact task title", context: "cli/commands/timeStatusCommand: defaults description" })); },
 		},
 		query: {
 			value: "<text>",
-			description: "Substring match against task title or path",
+			get description() { return uiText(msg({ message: "Substring match against task title or path", context: "cli/commands/timeStatusCommand: defaults description" })); },
 		},
 	},
 	async handler(plugin, params: CliData): Promise<string> {

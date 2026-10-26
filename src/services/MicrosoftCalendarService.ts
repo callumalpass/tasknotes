@@ -1,3 +1,7 @@
+import { uiData } from "../i18n/dataText";
+import { displayError } from "../i18n/runtime";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { requestUrl } from "obsidian";
 import { format, parseISO } from "date-fns";
 import TaskNotesPlugin from "../main";
@@ -339,12 +343,12 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		}
 
 		const firstError = errors[0];
-		const label = firstError.calendarName || firstError.calendarId || "Microsoft calendar";
+		const label = firstError.calendarName || firstError.calendarId || uiText(msg({ message: "Microsoft calendar", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display" }));
 		if (errors.length === 1) {
-			return `${label}: ${firstError.message}`;
+			return uiText(msg({ message: "{label}: {message}", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display" }), { label: label, message: displayError(firstError.message) });
 		}
 
-		return `${errors.length} Microsoft calendars failed to refresh. First error: ${label}: ${firstError.message}`;
+		return uiText(msg({ message: "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}", context: "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display" }), { count: errors.length, label, message: displayError(firstError.message) });
 	}
 
 	async initialize(): Promise<void> {
@@ -620,7 +624,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 		return {
 			id: `microsoft-${calendarId}-${msEvent.id}`,
 			subscriptionId: `microsoft-${calendarId}`,
-			title: msEvent.subject || "Untitled Event",
+			title: msEvent.subject || uiData("Untitled Event", "Persisted/cache provider fallback title; preserve English data seed"),
 			description: msEvent.bodyPreview || msEvent.body?.content,
 			start: start,
 			end: end,
@@ -874,7 +878,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 
 		if (timeSinceLastRefresh < minInterval) {
 			const remainingMs = minInterval - timeSinceLastRefresh;
-			publishUserNotice(this.plugin.emitter, `Please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`);
+			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "{seconds, plural, one {Please wait # second before refreshing again} other {Please wait # seconds before refreshing again}}", context: "calendar refresh throttling" }), { seconds: Math.ceil(remainingMs / 1000) }));
 			return;
 		}
 

@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { App } from "obsidian";
 import fs from "node:fs";
 import path from "node:path";
@@ -72,17 +73,17 @@ describe.each(locales)("Interface surfaces use the real %s catalogue", (locale) 
 			modal.contentEl
 				.querySelector(".date-time-picker-modal__nlp-input")
 				?.getAttribute("placeholder")
-		).toBe(i18n.translate("modals.dateTimePicker.placeholder"));
+		).toBe(i18n.translate(msg({ message: "Enter a date or date/time", context: "modals.dateTimePicker.placeholder" })));
 		expect(
 			modal.contentEl
 				.querySelector(".date-time-picker-modal__nlp-button")
 				?.getAttribute("aria-label")
-		).toBe(i18n.translate("modals.dateTimePicker.apply"));
+		).toBe(i18n.translate(msg({ message: "Apply natural language date", context: "modals.dateTimePicker.apply" })));
 		expect(
 			modal.contentEl
 				.querySelector(".date-time-picker-modal__native-date-button")
 				?.getAttribute("aria-label")
-		).toBe(i18n.translate("modals.dateTimePicker.nativePicker"));
+		).toBe(i18n.translate(msg({ message: "Open native date picker", context: "modals.dateTimePicker.nativePicker" })));
 		modal.onClose();
 	});
 
@@ -101,9 +102,9 @@ describe.each(locales)("Interface surfaces use the real %s catalogue", (locale) 
 				unitDisplay: "long",
 			}).format(count);
 		expect(primary).toEqual([
-			i18n.translate("modals.reminder.atDue"),
-			i18n.translate("modals.reminder.beforeDue", { duration: duration(1) }),
-			i18n.translate("modals.reminder.afterScheduled", { duration: duration(5) }),
+			i18n.translate(msg({ message: "At the due date", context: "modals.reminder.atDue" })),
+			i18n.translate(msg({ message: "Before due date: {duration}", context: "modals.reminder.beforeDue" }), { duration: duration(1) }),
+			i18n.translate(msg({ message: "After scheduled date: {duration}", context: "modals.reminder.afterScheduled" }), { duration: duration(5) }),
 		]);
 		expect(modal.contentEl.textContent).toContain("USER_TITLE");
 		expect(modal.contentEl.textContent).toContain("USER_DESCRIPTION");
@@ -111,7 +112,7 @@ describe.each(locales)("Interface surfaces use the real %s catalogue", (locale) 
 			"input.reminder-modal__description-input"
 		)!;
 		expect(description.placeholder).toBe(
-			i18n.translate("modals.reminder.descriptionPlaceholder")
+			i18n.translate(msg({ message: "Custom reminder message", context: "modals.reminder.descriptionPlaceholder" }))
 		);
 		description.value = "SECOND_USER_DESCRIPTION";
 		description.dispatchEvent(new Event("input", { bubbles: true }));
@@ -132,18 +133,18 @@ describe.each(locales)("Interface surfaces use the real %s catalogue", (locale) 
 		);
 		const actions = modal.getItems();
 		expect(actions.find((a) => a.id === "status-custom")?.title).toBe(
-			i18n.translate("modals.actionPalette.statusAction", { label: "USER_STATUS" })
+			i18n.translate(msg({ message: "Change status to \"{label}\"", context: "modals.actionPalette.statusAction" }), { label: "USER_STATUS" })
 		);
 		const today = actions.find((a) => a.id === "set-scheduled-today")!;
 		expect(today.title).toBe(
-			i18n.translate("modals.actionPalette.scheduleFor", {
-				date: i18n.translate("modals.actionPalette.presets.today"),
+			i18n.translate(msg({ message: "Schedule for {date}", context: "modals.actionPalette.scheduleFor" }), {
+				date: i18n.translate(msg({ message: "today", context: "modals.actionPalette.presets.today" })),
 			})
 		);
 		const el = document.createElement("div");
 		modal.renderSuggestion({ item: today, match: { score: 1, matches: [] } }, el);
 		expect(el.querySelector(".task-action-palette__category")?.textContent).toBe(
-			i18n.translate("modals.actionPalette.categories.dates")
+			i18n.translate(msg({ message: "Dates", context: "modals.actionPalette.categories.dates" }))
 		);
 		expect(today.id).toBe("set-scheduled-today");
 	});
@@ -162,20 +163,20 @@ describe.each(locales)("Interface surfaces use the real %s catalogue", (locale) 
 		Object.assign(modal, { bySetPos: undefined, count: undefined });
 		modal.onOpen();
 		expect(modal.contentEl.textContent).toContain(
-			i18n.translate("components.recurrenceContextMenu.customRecurrenceModal.startDate")
+			i18n.translate(msg({ message: "Start date", context: "components.recurrenceContextMenu.customRecurrenceModal.startDate" }))
 		);
 		const monthlyDate =
 			modal.contentEl.querySelector<HTMLLabelElement>(".monthly-options label")!;
 		const select = monthlyDate.querySelector<HTMLSelectElement>("select")!;
 		expect(select.querySelector('option[value="-1"]')?.textContent).toBe(
-			i18n.translate("components.recurrenceContextMenu.customRecurrenceModal.lastDay")
+			i18n.translate(msg({ message: "Last day", context: "components.recurrenceContextMenu.customRecurrenceModal.lastDay" }))
 		);
 		// Ignore option text: the remaining label must match the full translated sentence.
 		const clone = monthlyDate.cloneNode(true) as HTMLElement;
 		clone.querySelector("input")?.remove();
 		clone.querySelector("select")?.replaceWith(document.createTextNode("DAY"));
 		expect(clone.textContent).toBe(
-			i18n.translate("components.recurrenceContextMenu.customRecurrenceModal.onDayOfMonth", {
+			i18n.translate(msg({ message: "On day {day} of each month", context: "components.recurrenceContextMenu.customRecurrenceModal.onDayOfMonth" }), {
 				day: "DAY",
 			})
 		);
@@ -192,7 +193,7 @@ describe.each(locales)("Interface surfaces use the real %s catalogue", (locale) 
 		const { plugin, i18n } = fixture(locale);
 		const properties = getAvailableProperties(plugin);
 		expect(properties.find((p) => p.id === "status")?.label).toBe(
-			i18n.translate("settings.taskProperties.fieldMapping.fields.status")
+			i18n.translate(msg({ message: "Status", context: "settings.taskProperties.fieldMapping.fields.status" }))
 		);
 		expect(properties.find((p) => p.id === "due")?.label).toContain("deadline_custom");
 		expect(properties.find((p) => p.id === "user:user")?.label).toBe("USER_FIELD");

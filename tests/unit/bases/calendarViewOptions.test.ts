@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import type { BasesAllOptions, BasesOptions } from "obsidian";
 import { buildCalendarViewOptions } from "../../../src/bases/calendarViewOptions";
 import type TaskNotesPlugin from "../../../src/main";
@@ -25,7 +27,7 @@ function createPlugin(): TaskNotesPlugin {
 			},
 		},
 		i18n: {
-			translate: (key: string) => key,
+			translate: mockObserveTranslation(),
 		},
 	} as unknown as TaskNotesPlugin;
 }
@@ -35,7 +37,7 @@ function isGroup(option: BasesAllOptions): option is TestGroup {
 }
 
 function findGroup(options: BasesAllOptions[], groupKey: string): TestGroup {
-	const displayName = `views.basesCalendar.settings.groups.${groupKey}`;
+	const displayName = mockEnglishText(mockConceptDescriptor(`views.basesCalendar.settings.groups.${groupKey}`));
 	const group = options.find((option) => isGroup(option) && option.displayName === displayName);
 	if (!group || !isGroup(group)) {
 		throw new Error(`Missing group ${groupKey}`);
@@ -70,13 +72,13 @@ describe("calendar view options", () => {
 		const options = buildCalendarViewOptions(createPlugin(), createConfig());
 
 		expect(options.filter(isGroup).map((group) => group.displayName)).toEqual([
-			"views.basesCalendar.settings.groups.events",
-			"views.basesCalendar.settings.groups.dateNavigation",
-			"views.basesCalendar.settings.groups.view",
-			"views.basesCalendar.settings.groups.display",
-			"views.basesCalendar.settings.groups.timeGrid",
-			"views.basesCalendar.settings.groups.eventLayout",
-			"views.basesCalendar.settings.groups.propertyBasedEvents",
+			mockEnglishText(msg({ message: "Events", context: "views.basesCalendar.settings.groups.events" })),
+			mockEnglishText(msg({ message: "Date navigation", context: "views.basesCalendar.settings.groups.dateNavigation" })),
+			mockEnglishText(msg({ message: "View", context: "views.basesCalendar.settings.groups.view" })),
+			mockEnglishText(msg({ message: "Display", context: "views.basesCalendar.settings.groups.display" })),
+			mockEnglishText(msg({ message: "Time grid", context: "views.basesCalendar.settings.groups.timeGrid" })),
+			mockEnglishText(msg({ message: "Event layout", context: "views.basesCalendar.settings.groups.eventLayout" })),
+			mockEnglishText(msg({ message: "Property-based events", context: "views.basesCalendar.settings.groups.propertyBasedEvents" })),
 		]);
 	});
 

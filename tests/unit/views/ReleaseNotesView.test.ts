@@ -1,7 +1,11 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import { MarkdownRenderer } from "obsidian";
 import { ReleaseNotesView, transformReleaseNoteIssueLinks } from "../../../src/views/ReleaseNotesView";
 import type { ReleaseNoteVersion } from "../../../src/releaseNotes";
-import releaseNotesAnnouncement from "../../../src/releaseNotesAnnouncement.md";
+import { readFileSync } from "fs";
+import { join } from "path";
+const releaseNotesAnnouncement = readFileSync(join(__dirname, "../../../src/releaseNotesAnnouncement.md"), "utf8");
 
 describe("transformReleaseNoteIssueLinks", () => {
 	it("links a single parenthesized issue reference", () => {
@@ -37,8 +41,7 @@ describe("ReleaseNotesView", () => {
 			{
 				app: {},
 				i18n: {
-					translate: (key: string) =>
-						key === "views.releaseNotes.baseFilesNotice" ? "Base files notice" : key,
+					translate: mockObserveTranslation(),
 				},
 			} as never,
 			[],

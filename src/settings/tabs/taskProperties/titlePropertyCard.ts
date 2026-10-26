@@ -1,3 +1,5 @@
+import { uiData } from "../../../i18n/dataText";
+import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import {
@@ -28,7 +30,7 @@ export function renderTitlePropertyCard(
 
 		const propertyKeyInput = createCardInput(
 			"text",
-			"title",
+			uiData("title", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 			plugin.settings.fieldMapping.title
 		);
 
@@ -52,7 +54,7 @@ export function renderTitlePropertyCard(
 
 		// Create description element
 		const descriptionEl = createPropertyDescription(
-			translate("settings.taskProperties.properties.title.description")
+			translate(msg({ message: "The task name. Can be stored in frontmatter or in the filename (when ''store title in filename'' is enabled).", context: "settings.taskProperties.properties.title.description" }))
 		);
 
 		const rows: CardRow[] = [{ label: "", input: descriptionEl, fullWidth: true }];
@@ -60,14 +62,14 @@ export function renderTitlePropertyCard(
 		// Only show property key when NOT storing title in filename
 		if (!plugin.settings.storeTitleInFilename) {
 			rows.push({
-				label: translate("settings.taskProperties.propertyCard.propertyKey"),
+				label: translate(msg({ message: "Property key:", context: "settings.taskProperties.propertyCard.propertyKey" })),
 				input: propertyKeyInput,
 			});
 		}
 
 		rows.push(
 			{
-				label: translate("settings.taskProperties.titleCard.storeTitleInFilename"),
+				label: translate(msg({ message: "Store title in filename:", context: "settings.taskProperties.titleCard.storeTitleInFilename" })),
 				input: storeTitleToggle,
 			},
 			{ label: "", input: nestedContainer, fullWidth: true }
@@ -81,9 +83,9 @@ export function renderTitlePropertyCard(
 				isCollapsed = collapsed;
 			},
 			header: {
-				primaryText: translate("settings.taskProperties.properties.title.name"),
+				primaryText: translate(msg({ message: "Title", context: "settings.taskProperties.properties.title.name" })),
 				secondaryText: plugin.settings.storeTitleInFilename
-					? translate("settings.taskProperties.titleCard.storedInFilename")
+					? translate(msg({ message: "Stored in filename", context: "settings.taskProperties.titleCard.storedInFilename" }))
 					: plugin.settings.fieldMapping.title,
 			},
 			content: {
@@ -110,12 +112,12 @@ function renderFilenameSettingsContent(
 	// recurring tasks regardless of the filename format below (#2126)
 	const occurrenceTemplateContainer = container.createDiv("tasknotes-settings__card-config-row");
 	occurrenceTemplateContainer.createSpan({
-		text: translate("settings.taskProperties.titleCard.occurrenceFilenameTemplate"),
+		text: translate(msg({ message: "Occurrence filename template", context: "settings.taskProperties.titleCard.occurrenceFilenameTemplate" })),
 		cls: "tasknotes-settings__card-config-label",
 	});
 	const occurrenceTemplateInput = createCardInput(
 		"text",
-		"{{title}} — {{occurrenceDate}}",
+		uiData("{{title}} — {{occurrenceDate}}", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		plugin.settings.occurrenceFilenameTemplate
 	);
 	occurrenceTemplateInput.addEventListener("change", () => {
@@ -124,18 +126,18 @@ function renderFilenameSettingsContent(
 	});
 	occurrenceTemplateContainer.appendChild(occurrenceTemplateInput);
 	container.createDiv({
-		text: translate("settings.taskProperties.titleCard.occurrenceFilenameTemplateHelp"),
+		text: translate(msg({ message: "Filename template for materialized occurrences of recurring tasks. Leave empty to keep the existing name (parent title plus a numeric suffix). Choose the filename granularity explicitly with '{{occurrenceDate}}', '{{occurrenceWeek}}', '{{occurrenceMonth}}', '{{occurrenceYear}}', or '{{occurrenceMonthName}}'. All regular filename variables also work. A parent task can override this template via the frontmatter property configured below.", context: "settings.taskProperties.titleCard.occurrenceFilenameTemplateHelp" })),
 		cls: "setting-item-description",
 	});
 
 	const occurrencePropertyContainer = container.createDiv("tasknotes-settings__card-config-row");
 	occurrencePropertyContainer.createSpan({
-		text: translate("settings.taskProperties.titleCard.occurrenceFilenameProperty"),
+		text: translate(msg({ message: "Occurrence template override property", context: "settings.taskProperties.titleCard.occurrenceFilenameProperty" })),
 		cls: "tasknotes-settings__card-config-label",
 	});
 	const occurrencePropertyInput = createCardInput(
 		"text",
-		"occurrenceFilenameTemplate",
+		uiData("occurrenceFilenameTemplate", "Editable frontmatter property identifier or filename-template syntax, not a display label"),
 		plugin.settings.occurrenceFilenameTemplateProperty
 	);
 	occurrencePropertyInput.addEventListener("change", () => {
@@ -145,14 +147,14 @@ function renderFilenameSettingsContent(
 	});
 	occurrencePropertyContainer.appendChild(occurrencePropertyInput);
 	container.createDiv({
-		text: translate("settings.taskProperties.titleCard.occurrenceFilenamePropertyHelp"),
+		text: translate(msg({ message: "Name of the frontmatter property on a recurring (parent) task that overrides the occurrence filename template for that task''s occurrences.", context: "settings.taskProperties.titleCard.occurrenceFilenamePropertyHelp" })),
 		cls: "setting-item-description",
 	});
 
 	// Only show filename format settings when storeTitleInFilename is off
 	if (plugin.settings.storeTitleInFilename) {
 		container.createDiv({
-			text: translate("settings.taskProperties.titleCard.filenameUpdatesWithTitle"),
+			text: translate(msg({ message: "Filename will automatically update when the task title changes.", context: "settings.taskProperties.titleCard.filenameUpdatesWithTitle" })),
 			cls: "setting-item-description",
 		});
 		return;
@@ -161,7 +163,7 @@ function renderFilenameSettingsContent(
 	// Filename format dropdown
 	const formatContainer = container.createDiv("tasknotes-settings__card-config-row");
 	formatContainer.createSpan({
-		text: translate("settings.taskProperties.titleCard.filenameFormat"),
+		text: translate(msg({ message: "Filename format:", context: "settings.taskProperties.titleCard.filenameFormat" })),
 		cls: "tasknotes-settings__card-config-label",
 	});
 
@@ -169,25 +171,25 @@ function renderFilenameSettingsContent(
 		[
 			{
 				value: "title",
-				label: translate("settings.appearance.taskFilenames.filenameFormat.options.title"),
+				label: translate(msg({ message: "Task title (non-updating)", context: "settings.appearance.taskFilenames.filenameFormat.options.title" })),
 			},
 			{
 				value: "zettel",
-				label: translate("settings.appearance.taskFilenames.filenameFormat.options.zettel"),
+				label: translate(msg({ message: "Zettelkasten format (YYMMDD + base36 seconds since midnight)", context: "settings.appearance.taskFilenames.filenameFormat.options.zettel" })),
 			},
 			{
 				value: "timestamp",
 				label: translate(
-					"settings.appearance.taskFilenames.filenameFormat.options.timestamp"
+					msg({ message: "Full timestamp (YYYY-MM-DD-HHMMSS)", context: "settings.appearance.taskFilenames.filenameFormat.options.timestamp" })
 				),
 			},
 			{
 				value: "uuid",
-				label: translate("settings.appearance.taskFilenames.filenameFormat.options.uuid"),
+				label: translate(msg({ message: "UUID v4", context: "settings.appearance.taskFilenames.filenameFormat.options.uuid" })),
 			},
 			{
 				value: "custom",
-				label: translate("settings.appearance.taskFilenames.filenameFormat.options.custom"),
+				label: translate(msg({ message: "Custom template", context: "settings.appearance.taskFilenames.filenameFormat.options.custom" })),
 			},
 		],
 		plugin.settings.taskFilenameFormat
@@ -208,13 +210,13 @@ function renderFilenameSettingsContent(
 	if (plugin.settings.taskFilenameFormat === "custom") {
 		const templateContainer = container.createDiv("tasknotes-settings__card-config-row");
 		templateContainer.createSpan({
-			text: translate("settings.taskProperties.titleCard.customTemplate"),
+			text: translate(msg({ message: "Custom template:", context: "settings.taskProperties.titleCard.customTemplate" })),
 			cls: "tasknotes-settings__card-config-label",
 		});
 
 		const templateInput = createCardInput(
 			"text",
-			translate("settings.appearance.taskFilenames.customTemplate.placeholder"),
+			translate(msg({ message: "'{{date}}'-'{{title}}'-'{{dueDate}}'", context: "settings.appearance.taskFilenames.customTemplate.placeholder" })),
 			plugin.settings.customFilenameTemplate
 		);
 		templateInput.classList.remove(
@@ -307,7 +309,7 @@ function renderFilenameSettingsContent(
 
 				const textEl = warningEl.createSpan();
 				textEl.textContent = translate(
-					"settings.taskProperties.titleCard.legacySyntaxWarning"
+					msg({ message: "Single-brace syntax like '{title}' is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates.", context: "settings.taskProperties.titleCard.legacySyntaxWarning" })
 				);
 			}
 		};
@@ -322,7 +324,7 @@ function renderFilenameSettingsContent(
 
 		// Help text for template variables
 		container.createDiv({
-			text: translate("settings.appearance.taskFilenames.customTemplate.helpText"),
+			text: translate(msg({ message: "Note: '{{dueDate}}' and '{{scheduledDate}}' are in YYYY-MM-DD format and will be empty if not set.", context: "settings.appearance.taskFilenames.customTemplate.helpText" })),
 			cls: "setting-item-description",
 		});
 

@@ -65,7 +65,7 @@ describe("Modal fields settings rendering", () => {
 		const originalConfig = JSON.stringify(config);
 		renderModalFieldsTab(container, plugin, jest.fn());
 
-		expect(container.textContent).toContain("任务模态框的字段配置");
+		expect(container.textContent).toContain("任务对话框的字段配置");
 		for (const label of ["已启用：", "创建任务时显示：", "编辑任务时显示：", "分组："]) {
 			expect(container.textContent).toContain(label);
 		}
@@ -87,6 +87,13 @@ describe("Modal fields settings rendering", () => {
 			"ID：saved-core"
 		);
 		expect(JSON.stringify(config)).toBe(originalConfig);
+	});
+
+	it("shows unknown persisted field types as data instead of crashing the tab", () => {
+		const config = plugin.settings.modalFieldsConfig!;
+		Object.assign(config.fields[0], { fieldType: "old-extension" });
+		expect(() => renderModalFieldsTab(container, plugin, jest.fn())).not.toThrow();
+		expect(container.textContent).toContain("old-extension");
 	});
 
 	it("translates the missing-property-key fallback", () => {

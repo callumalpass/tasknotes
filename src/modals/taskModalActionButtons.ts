@@ -1,5 +1,7 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 export interface TaskModalActionButtonContext {
-	translate: (key: string) => string;
+	translate: (key: MessageDescriptor) => string;
 }
 
 export interface TaskModalLeadingButton {
@@ -35,7 +37,7 @@ export function createTaskModalActionButtons(
 
 	const saveButton = buttonContainer.createEl("button", {
 		cls: "mod-cta",
-		text: context.translate("modals.task.buttons.save"),
+		text: context.translate(msg({ message: "Save", context: "modals.task.buttons.save" })),
 	});
 
 	saveButton.addEventListener("click", () => {
@@ -43,7 +45,7 @@ export function createTaskModalActionButtons(
 	});
 
 	const cancelButton = buttonContainer.createEl("button", {
-		text: context.translate("common.cancel"),
+		text: context.translate(msg({ message: "Cancel", context: "common.cancel" })),
 	});
 
 	cancelButton.addEventListener("click", options.onCancel);

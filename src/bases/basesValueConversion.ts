@@ -1,3 +1,5 @@
+import { NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY } from "./groupKeys";
+import { isBasesEmptyPlaceholderValue } from "./basesValueKinds";
 import { stringifyUnknown } from "../utils/stringUtils";
 
 type BasesFileLike = {
@@ -74,16 +76,16 @@ export function convertBasesValueToNative(value: unknown): unknown {
 
 export function convertBasesGroupKeyToString(key: unknown): string {
 	if (key === null || key === undefined) {
-		return "Unknown";
+		return NONE_GROUP_KEY;
 	}
 
 	const basesKey = key as BasesValueInternals;
 	if (basesKey.constructor?.name === "NullValue") {
-		return "Unknown";
+		return NONE_GROUP_KEY;
 	}
 
 	if (isBasesEmptyPlaceholderValue(basesKey)) {
-		return "None";
+		return NONE_GROUP_KEY;
 	}
 
 	const actualValue = extractBasesGroupKeyValue(basesKey);
@@ -116,22 +118,6 @@ function extractBasesGroupKeyValue(basesKey: BasesValueInternals): unknown {
 	return basesKey;
 }
 
-function isBasesEmptyPlaceholderValue(value: BasesValueInternals): boolean {
-	return (
-		value.icon === "lucide-file-question" &&
-		typeof value.data === "undefined" &&
-		typeof value.display === "undefined" &&
-		typeof value.label === "undefined" &&
-		!(value.date instanceof Date) &&
-		!value.file &&
-		!Array.isArray(value.value) &&
-		typeof value.get !== "function" &&
-		typeof value.at !== "function" &&
-		typeof value.length !== "function" &&
-		typeof value.toISOString !== "function"
-	);
-}
-
 function extractBasesScalarValue(value: BasesValueInternals): string | number | boolean | undefined {
 	for (const candidate of [value.value, value.display, value.label]) {
 		if (
@@ -148,7 +134,7 @@ function extractBasesScalarValue(value: BasesValueInternals): string | number | 
 
 function formatBasesGroupKeyValue(actualValue: unknown): string {
 	if (actualValue === null || actualValue === undefined) {
-		return "None";
+		return NONE_GROUP_KEY;
 	}
 
 	if (actualValue instanceof Date) {
@@ -159,17 +145,17 @@ function formatBasesGroupKeyValue(actualValue: unknown): string {
 	}
 
 	if (typeof actualValue === "string") {
-		return actualValue || "None";
+		return actualValue || NONE_GROUP_KEY;
 	}
 	if (typeof actualValue === "number") return String(actualValue);
-	if (typeof actualValue === "boolean") return actualValue ? "True" : "False";
+	if (typeof actualValue === "boolean") return actualValue ? TRUE_GROUP_KEY : FALSE_GROUP_KEY;
 	if (Array.isArray(actualValue)) {
 		return actualValue.length > 0
 			? actualValue.map(stringifyUnknown).join(", ")
-			: "None";
+			: NONE_GROUP_KEY;
 	}
 
-	return stringifyUnknown(actualValue) || "None";
+	return stringifyUnknown(actualValue) || NONE_GROUP_KEY;
 }
 
 function convertBasesListValueToNative(basesValue: BasesValueInternals): unknown[] | null {

@@ -1,4 +1,7 @@
+import { msg } from "@lingui/core/macro";
 import { createHash } from "node:crypto";
+import { compiledCatalogue } from "../../helpers/compiled-catalogue.mjs";
+import { createI18nService } from "../../../src/i18n";
 import { LanguagePackLoader } from "../../../src/i18n/LanguagePackLoader";
 import {
 	LANGUAGE_PACK_FORMAT,
@@ -8,14 +11,17 @@ import {
 } from "../../../src/i18n/languagePackTypes";
 
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
-const english = { common: { save: "Save", hello: "Hello {name}", missing: "English fallback" } };
+const save = msg({ message: "Save", context: "common.save" });
+const hello = msg({ message: "Hello {name}", context: "pack fixture greeting" });
+const english = compiledCatalogue({ [save.id]: "Save", [hello.id]: "Hello {name}" });
+const french = compiledCatalogue({ [save.id]: "Enregistrer", [hello.id]: "Bonjour {name}" });
 
 function fixture(overrides: Partial<LanguagePack> = {}) {
 	const pack = {
 		format: LANGUAGE_PACK_FORMAT,
 		locale: "fr",
 		sourceHash: "a".repeat(64),
-		messages: { "common.save": "Enregistrer", "common.hello": "Bonjour {name}" },
+		messages: french,
 		...overrides,
 	};
 	const text = JSON.stringify(pack);
@@ -48,10 +54,12 @@ function fixture(overrides: Partial<LanguagePack> = {}) {
 describe("LanguagePackLoader", () => {
 	it("downloads a pinned pack, validates it, and caches the original JSON", async () => {
 		const { loader, config, cache, download, text } = fixture();
-		expect(await loader.load("fr")).toEqual({
-			"common.save": "Enregistrer",
-			"common.hello": "Bonjour {name}",
-		});
+		const messages = await loader.load("fr");
+		expect(messages).toEqual(french);
+		expect(Object.getPrototypeOf(messages)).toBeNull();
+		const i18n = createI18nService({ resources: { en: english, fr: messages }, initialLocale: "fr" });
+		expect(i18n.translate(save)).toBe("Enregistrer");
+		expect(i18n.translate(hello, { name: "Avery" })).toBe("Bonjour Avery");
 		expect(download).toHaveBeenCalledWith(
 			`https://languages.example.test/tasknotes/${config.manifest.catalogueVersion}/fr.json`
 		);
@@ -65,7 +73,7 @@ describe("LanguagePackLoader", () => {
 		const { loader, cache, download, text } = fixture();
 		cache.read.mockResolvedValue(text);
 		download.mockRejectedValue(new Error("offline"));
-		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect((await loader.load("fr"))[save.id]).toEqual(french[save.id]);
 		expect(download).not.toHaveBeenCalled();
 	});
 
@@ -92,13 +100,13 @@ describe("LanguagePackLoader", () => {
 		await expect(loader.load("fr")).rejects.toThrow("offline");
 		expect(cache.write).not.toHaveBeenCalled();
 		download.mockResolvedValue(bytes);
-		await expect(loader.load("fr")).resolves.toHaveProperty(["common.save"]);
+		await expect(loader.load("fr")).resolves.toHaveProperty([save.id]);
 	});
 
 	it("keeps a downloaded translation usable when cache writing fails", async () => {
 		const { loader, cache } = fixture();
 		cache.write.mockRejectedValue(new Error("disk full"));
-		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect((await loader.load("fr"))[save.id]).toEqual(french[save.id]);
 	});
 
 	it("rejects truncated data before hashing or caching", async () => {
@@ -121,6 +129,7 @@ describe("LanguagePackLoader", () => {
 		{ locale: "de" },
 		{ sourceHash: "c".repeat(64) },
 		{ format: "other-format" },
+		{ format: "tasknotes-ui-v1" },
 		{ messages: [] },
 	])(
 		"rejects an incompatible payload even with a matching content hash: %j",
@@ -132,19 +141,27 @@ describe("LanguagePackLoader", () => {
 	);
 
 	it.each([
-		{ "common.hello": "Bonjour {nom}" },
-		{ "unknown.key": "unknown" },
-		{ "common.save": { nested: "value" } },
-		JSON.parse('{"__proto__":"bad"}'),
-	])("rejects unknown keys, non-strings, and changed placeholders: %j", async (messages) => {
-		const { loader } = fixture({ messages } as Partial<LanguagePack>);
-		await expect(loader.load("fr")).rejects.toThrow("Invalid language-pack message");
+		[compiledCatalogue({ [save.id]: "Enregistrer", [hello.id]: "Bonjour {nom}" }), "arguments"],
+		[compiledCatalogue({ [save.id]: "Enregistrer", [hello.id]: "{name, number}" }), "arguments"],
+		[{ ...french, "unknown.key": ["unknown"] }, "message"],
+		[Object.fromEntries([...Object.entries(french), ["__proto__", ["bad"]]]), "message"],
+	])("rejects foreign IDs, prototype keys and changed argument roles: %j", async (messages, reason) => {
+		const { loader, cache } = fixture({ messages } as Partial<LanguagePack>);
+		await expect(loader.load("fr")).rejects.toThrow(`Invalid language-pack ${reason}`);
+		expect(cache.write).not.toHaveBeenCalled();
 	});
 
-	it("rejects empty packs", async () => {
-		await expect(fixture({ messages: {} }).loader.load("fr")).rejects.toThrow(
-			"Empty language pack"
-		);
+	it.each([{}, { "common.save": "Enregistrer" }, { [save.id]: { nested: "value" } }, { [save.id]: [["count", "plural", { one: ["one"] }]] }])(
+		"rejects empty, flat-string and malformed compiled catalogues: %j", async messages => {
+			const { loader, cache } = fixture({ messages } as Partial<LanguagePack>);
+			await expect(loader.load("fr")).rejects.toThrow("compatibility mismatch");
+			expect(cache.write).not.toHaveBeenCalled();
+		}
+	);
+	it("rejects an incomplete catalogue even when its present entries are valid", async () => {
+		const { loader, cache } = fixture({ messages: compiledCatalogue({ [save.id]: "Enregistrer" }) });
+		await expect(loader.load("fr")).rejects.toThrow("Incomplete language pack");
+		expect(cache.write).not.toHaveBeenCalled();
 	});
 
 	it("rejects unsupported locales and path traversal without cache or network access", async () => {
@@ -182,7 +199,7 @@ describe("LanguagePackLoader", () => {
 		expect(
 			() =>
 				new LanguagePackLoader({
-					config: { ...config, baseUrl: "http://127.0.0.1:8123/tasknotes" },
+					config: { ...config, baseUrl: "http://127.0.0.1:19280/tasknotes" },
 					english,
 					cache,
 					download,
@@ -206,14 +223,14 @@ describe("LanguagePackLoader", () => {
 			download,
 			sha256: async (bytes) => hash(bytes),
 		});
-		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect((await loader.load("fr"))[save.id]).toEqual(french[save.id]);
 		expect(download).not.toHaveBeenCalled();
 	});
 
 	it("does not substitute old target bytes for a corrected pack during an offline upgrade", async () => {
 		const old = fixture();
 		const next = fixture({
-			messages: { "common.save": "Sauvegarder", "common.hello": "Bonjour {name}" },
+			messages: compiledCatalogue({ [save.id]: "Sauvegarder", [hello.id]: "Bonjour {name}" }),
 		});
 		const cache = new Map([[`${old.config.manifest.packs.fr.sha256}/fr.json`, old.text]]);
 		const loader = new LanguagePackLoader({
@@ -256,7 +273,7 @@ describe("LanguagePackLoader", () => {
 		download.mockRejectedValueOnce(new Error("connection interrupted"));
 		await expect(loader.load("fr")).rejects.toThrow("connection interrupted");
 		expect(cache.write).not.toHaveBeenCalled();
-		expect((await loader.load("fr"))["common.save"]).toBe("Enregistrer");
+		expect((await loader.load("fr"))[save.id]).toEqual(french[save.id]);
 		expect(cache.write).toHaveBeenCalledWith(expect.any(String), text);
 		expect(download).toHaveBeenCalledTimes(2);
 		expect(bytes.length).toBeGreaterThan(0);
@@ -307,6 +324,6 @@ describe("LanguagePackLoader", () => {
 			sha256: async (bytes) => hash(bytes),
 		});
 		await expect(loader.load("fr")).rejects.toThrow("timed out");
-		await expect(loader.load("fr")).resolves.toHaveProperty(["common.save"]);
+		await expect(loader.load("fr")).resolves.toHaveProperty([save.id]);
 	});
 });

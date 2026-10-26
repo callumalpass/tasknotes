@@ -1,3 +1,5 @@
+import { displayError } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -53,7 +55,7 @@ export function createStatusCycleHandler(
 
 				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
 				if (!freshTask) {
-					new Notice(plugin.i18n.translate("modals.actionPalette.taskNotFound"));
+					new Notice(plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
 					return;
 				}
 
@@ -77,8 +79,8 @@ export function createStatusCycleHandler(
 					error,
 				});
 				new Notice(
-					plugin.i18n.translate("notices.interface.statusFailed", {
-						message: errorMessage,
+					plugin.i18n.translate(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), {
+						message: displayError(errorMessage),
 					})
 				);
 			}
@@ -109,7 +111,7 @@ export function createPriorityClickHandler(
 							details: { taskPath: task.path, newPriority },
 							error,
 						});
-						new Notice(plugin.i18n.translate("notices.interface.priorityFailed"));
+						new Notice(plugin.i18n.translate(msg({ message: "Failed to update priority", context: "notices.interface.priorityFailed" })));
 					}
 				})();
 			},
@@ -151,7 +153,7 @@ export function createRecurrenceClickHandler(
 							details: { taskPath: task.path, newRecurrence, anchor },
 							error,
 						});
-						new Notice(plugin.i18n.translate("notices.interface.recurrenceFailed"));
+						new Notice(plugin.i18n.translate(msg({ message: "Failed to update recurrence", context: "notices.interface.recurrenceFailed" })));
 					}
 				})();
 			},
@@ -184,7 +186,7 @@ export function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlug
 						error,
 					});
 					new Notice(
-						plugin.i18n.translate("contextMenus.task.notices.updateRemindersFailure")
+						plugin.i18n.translate(msg({ message: "Failed to update reminders", context: "contextMenus.task.notices.updateRemindersFailure" }))
 					);
 				}
 			})();

@@ -1,12 +1,10 @@
 import { EventRef } from "obsidian";
+import type { MessageDescriptor, Messages } from "@lingui/core";
 
-export type TranslationValue = string | TranslationTree;
 
-export interface TranslationTree {
-	[key: string]: TranslationValue;
-}
 
-export type TranslationResources = Record<string, TranslationTree>;
+
+export type TranslationResources = Record<string, Messages>;
 
 export type InterpolationValues = Record<string, string | number>;
 
@@ -29,9 +27,7 @@ export interface II18nService {
 	setLocale(locale: string): void;
 	getAvailableLocales(): string[];
 	getNativeLanguageName(languageCode: string): string;
-	translate(key: string, params?: InterpolationValues): string;
-	translatePlural(baseKey: string, count: number, params?: InterpolationValues): string;
-	resolveKey(key: string): string | undefined;
+	translate(descriptor: MessageDescriptor, params?: InterpolationValues): string;
 	getSystemLocale(): string;
 	on(
 		event: "locale-changed",
@@ -39,15 +35,3 @@ export interface II18nService {
 		ctx?: unknown
 	): EventRef;
 }
-
-export type LeafPaths<T, Prefix extends string = ""> = T extends string
-	? Prefix extends ""
-		? never
-		: Prefix
-	: T extends Record<string, unknown>
-		? {
-				[K in keyof T & string]: LeafPaths<T[K], Prefix extends "" ? K : `${Prefix}.${K}`>;
-			}[keyof T & string]
-		: never;
-
-export type TranslationSchema = TranslationTree;

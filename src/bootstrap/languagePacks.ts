@@ -4,7 +4,8 @@ import type { I18nService } from "../i18n/I18nService";
 import { LanguagePackController } from "../i18n/LanguagePackController";
 import { LanguagePackLoader } from "../i18n/LanguagePackLoader";
 import type { LanguagePackBuildConfig } from "../i18n/languagePackTypes";
-import { en } from "../i18n/resources/en";
+import english from "../i18n/locales/en/messages.json";
+import { compiledMessages } from "../i18n/catalogue";
 
 export function createLanguagePackController(
 	app: App,
@@ -27,7 +28,7 @@ export function createLanguagePackController(
 	};
 	const loader = new LanguagePackLoader({
 		config,
-		english: en,
+		english: compiledMessages(english.messages),
 		cache: {
 			read: async (key) => {
 				const path = cachePath(key);

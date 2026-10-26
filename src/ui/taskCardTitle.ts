@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { stringifyUnknown } from "../utils/stringUtils";
@@ -22,7 +23,8 @@ export interface UpdateTaskCardTitleOptions extends TaskCardTitleOptions {
 }
 
 export function getTaskCardTitleText(task: TaskInfo, displayText?: string): string {
-	return stringifyUnknown(displayText).trim() || stringifyUnknown(task.title);
+	return uiData(stringifyUnknown(displayText).trim(), "User-customized task display text; preserve vault content") ||
+		uiData(stringifyUnknown(task.title), "User-authored task title; preserve vault content");
 }
 
 export function renderTaskCardTitleText(

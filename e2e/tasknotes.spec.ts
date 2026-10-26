@@ -623,7 +623,7 @@ test.describe('Documented UI Issues', () => {
     // Fix: Added buttonHints to FullCalendar configuration in CalendarView.ts
     //
     // See: src/bases/CalendarView.ts - buttonHints configuration
-    // See: src/i18n/resources/en.ts - views.basesCalendar.hints
+    // See: src/i18n/locales/en/messages.po - views.basesCalendar.hints
     const page = getPage();
 
     // Open calendar view
@@ -7026,7 +7026,7 @@ test.describe('Issue #1299: Create or Open Task with Time Tracking', () => {
     //
     // Affected files:
     //   - src/main.ts (add command and handler)
-    //   - src/i18n/resources/en.ts (add translation)
+    //   - src/i18n/locales/en/messages.po (add translation)
     //   - Optionally: src/modals/TaskSelectorWithCreateModal.ts (if refactoring)
     //
     // Bonus feature mentioned in issue:
@@ -7195,7 +7195,7 @@ test.describe('Issue #1293: Incomplete Task Rollover to Next Day', () => {
     //   - src/services/TaskRolloverService.ts (new file)
     //   - src/main.ts (register service)
     //   - src/settings.ts (add settings)
-    //   - src/i18n/resources/en.ts (add translations)
+    //   - src/i18n/locales/en/messages.po (add translations)
     //
     // Related patterns:
     //   - AutoArchiveService.ts (queue-based scheduled processing)

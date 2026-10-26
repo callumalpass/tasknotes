@@ -24,7 +24,7 @@
  * - src/bases/CalendarView.ts:674 - Refresh button text translation
  * - styles/advanced-calendar-view.css:643-649 - .fc-toolbar-title styling
  * - styles/advanced-calendar-view.css:787-814 - Multi-month (year) view styling
- * - src/i18n/resources/en.ts:178 - refresh button translation key
+ * - src/i18n/locales/en/messages.po - refresh button descriptor
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1037
  */

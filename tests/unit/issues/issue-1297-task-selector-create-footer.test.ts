@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { TaskSelectorWithCreateModal } from "../../../src/modals/TaskSelectorWithCreateModal";
 import { NLPSuggest } from "../../../src/modals/taskCreationSuggest";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
@@ -37,7 +38,7 @@ describe("Issue #1297: Create or open task footer activation", () => {
 				calendarViewSettings: { locale: "en" },
 			},
 			i18n: {
-				translate: jest.fn((key: string) => key),
+				translate: mockObserveTranslation(),
 			},
 			statusManager: {
 				isCompletedStatus: jest.fn(() => false),

@@ -1,3 +1,6 @@
+import { uiData } from "../i18n/dataText";
+import { displayError } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- ICS parsing normalizes optional event fields before use. */
 import { requestUrl, TFile } from "obsidian";
 import ICAL from "ical.js";
@@ -5,7 +8,7 @@ import { getICSCalendarOwnerEmail, getICSOwnerDeclined } from "../utils/icsAtten
 import { ICSSubscription, ICSEvent, ICSCache } from "../types";
 import { EventEmitter } from "../utils/EventEmitter";
 import TaskNotesPlugin from "../main";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { resolveTzidToIANA, wallTimeInZoneToUtcIso } from "../utils/icsTimezoneFallback";
@@ -129,7 +132,7 @@ export class ICSSubscriptionService extends EventEmitter {
 	// Grace period after cache expiration to show stale data while refreshing (5 minutes)
 	private readonly CACHE_GRACE_PERIOD = 5 * 60 * 1000;
 
-	private translate(key: TranslationKey, variables?: InterpolationValues): string {
+	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -468,7 +471,7 @@ export class ICSSubscriptionService extends EventEmitter {
 			if (subscription.type === "remote") {
 				if (errorMessage.includes("404")) {
 					publishUserNotice(this.plugin.emitter,
-						this.translate("services.icsSubscription.notices.calendarNotFound", {
+						this.translate(msg({ message: "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible.", context: "services.icsSubscription.notices.calendarNotFound" }), {
 							name: subscription.name,
 						})
 					);
@@ -477,23 +480,23 @@ export class ICSSubscriptionService extends EventEmitter {
 					errorMessage.includes("OwaBasicUnsupportedException")
 				) {
 					publishUserNotice(this.plugin.emitter,
-						this.translate("services.icsSubscription.notices.calendarAccessDenied", {
+						this.translate(msg({ message: "Calendar \"{name}\" access denied (500). This may be due to Microsoft Outlook server restrictions. Try regenerating the ICS URL from your calendar settings.", context: "services.icsSubscription.notices.calendarAccessDenied" }), {
 							name: subscription.name,
 						})
 					);
 				} else {
 					publishUserNotice(this.plugin.emitter,
-						this.translate("services.icsSubscription.notices.fetchRemoteFailed", {
+						this.translate(msg({ message: "Failed to fetch remote calendar \"{name}\": {error}", context: "services.icsSubscription.notices.fetchRemoteFailed" }), {
 							name: subscription.name,
-							error: errorMessage,
+							error: displayError(errorMessage),
 						})
 					);
 				}
 			} else {
 				publishUserNotice(this.plugin.emitter,
-					this.translate("services.icsSubscription.notices.readLocalFailed", {
+					this.translate(msg({ message: "Failed to read local calendar \"{name}\": {error}", context: "services.icsSubscription.notices.readLocalFailed" }), {
 						name: subscription.name,
-						error: errorMessage,
+						error: displayError(errorMessage),
 					})
 				);
 			}
@@ -560,7 +563,7 @@ export class ICSSubscriptionService extends EventEmitter {
 					}
 
 					// Extract basic properties
-					const summary = event.summary || "Untitled Event";
+					const summary = event.summary || uiData("Untitled Event", "Persisted/cache provider fallback title; preserve English data seed");
 					const description = event.description || undefined;
 					const location = event.location || undefined;
 

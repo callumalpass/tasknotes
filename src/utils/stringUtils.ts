@@ -16,7 +16,7 @@ export function stringifyUnknown(value: unknown): string {
 	}
 
 	if (typeof value === "boolean") {
-		return value ? "true" : "false";
+		return Boolean.prototype.toString.call(value);
 	}
 
 	if (typeof value === "symbol") {

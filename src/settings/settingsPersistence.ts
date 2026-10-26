@@ -244,8 +244,8 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 			loadedData?.modalFieldsConfig,
 			loadedData?.userFields
 		),
-		customStatuses: loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses,
-		customPriorities: loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities,
+		customStatuses: (loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses).map((status) => ({ ...status })),
+		customPriorities: (loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities).map((priority) => ({ ...priority })),
 		savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews,
 	};
 

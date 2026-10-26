@@ -1,3 +1,6 @@
+import { uiData } from "../i18n/dataText";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, setIcon, Notice, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder } from "../types";
@@ -48,7 +51,7 @@ export class ReminderModal extends Modal {
 
 		// Show loading state while we fetch fresh data
 		const loadingContainer = contentEl.createDiv({ cls: "reminder-modal__loading" });
-		loadingContainer.createDiv({ text: this.plugin.i18n.translate("modals.reminder.loading") });
+		loadingContainer.createDiv({ text: this.plugin.i18n.translate(msg({ message: "Loading reminders...", context: "modals.reminder.loading" })) });
 
 		// Fetch fresh data and render the modal
 		this.initializeWithFreshData().catch((error) => {
@@ -62,7 +65,7 @@ export class ReminderModal extends Modal {
 			contentEl.addClass("tasknotes-reminder-modal");
 			contentEl.createDiv({
 				cls: "reminder-modal__error",
-				text: this.plugin.i18n.translate("modals.reminder.loadFailed"),
+				text: this.plugin.i18n.translate(msg({ message: "Failed to load task data. Please try again.", context: "modals.reminder.loadFailed" })),
 			});
 		});
 	}
@@ -98,7 +101,7 @@ export class ReminderModal extends Modal {
 		// Compact header
 		const headerContainer = contentEl.createDiv({ cls: "reminder-modal__header" });
 		headerContainer.createEl("h2", {
-			text: this.plugin.i18n.translate("modals.reminder.title"),
+			text: this.plugin.i18n.translate(msg({ message: "Task reminders", context: "modals.reminder.title" })),
 		});
 
 		headerContainer.createDiv({
@@ -135,7 +138,7 @@ export class ReminderModal extends Modal {
 
 		// Save button (initially disabled)
 		this.saveBtn = buttonContainer.createEl("button", {
-			text: this.plugin.i18n.translate("modals.timeblockInfo.saveButton"),
+			text: this.plugin.i18n.translate(msg({ message: "Save changes", context: "modals.timeblockInfo.saveButton" })),
 			cls: "mod-cta reminder-modal__save-btn",
 		});
 		this.saveBtn.disabled = true;
@@ -144,7 +147,7 @@ export class ReminderModal extends Modal {
 		};
 
 		const cancelBtn = buttonContainer.createEl("button", {
-			text: this.plugin.i18n.translate("common.cancel"),
+			text: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
 			cls: "reminder-modal__cancel-btn",
 		});
 		cancelBtn.onclick = () => {
@@ -157,7 +160,7 @@ export class ReminderModal extends Modal {
 
 		if (this.task.due) {
 			parts.push(
-				this.plugin.i18n.translate("modals.reminder.dueContext", {
+				this.plugin.i18n.translate(msg({ message: "Due: {date}", context: "modals.reminder.dueContext" }), {
 					date: formatDateForDisplay(this.task.due),
 				})
 			);
@@ -165,7 +168,7 @@ export class ReminderModal extends Modal {
 
 		if (this.task.scheduled) {
 			parts.push(
-				this.plugin.i18n.translate("modals.reminder.scheduledContext", {
+				this.plugin.i18n.translate(msg({ message: "Scheduled: {date}", context: "modals.reminder.scheduledContext" }), {
 					date: formatDateForDisplay(this.task.scheduled),
 				})
 			);
@@ -199,8 +202,8 @@ export class ReminderModal extends Modal {
 		const hasChanges = this.remindersHaveChanged();
 		this.saveBtn.disabled = !hasChanges;
 		this.saveBtn.textContent = hasChanges
-			? this.plugin.i18n.translate("modals.timeblockInfo.saveButton")
-			: this.plugin.i18n.translate("modals.reminder.noChanges");
+			? this.plugin.i18n.translate(msg({ message: "Save changes", context: "modals.timeblockInfo.saveButton" }))
+			: this.plugin.i18n.translate(msg({ message: "No changes", context: "modals.reminder.noChanges" }));
 	}
 
 	private renderExistingReminders(container: HTMLElement): void {
@@ -208,7 +211,7 @@ export class ReminderModal extends Modal {
 
 		const sectionHeader = section.createDiv({ cls: "reminder-modal__section-header" });
 		sectionHeader.createEl("h3", {
-			text: this.plugin.i18n.translate("modals.reminder.current"),
+			text: this.plugin.i18n.translate(msg({ message: "Current reminders", context: "modals.reminder.current" })),
 		});
 
 		if (this.reminders.length > 0) {
@@ -223,7 +226,7 @@ export class ReminderModal extends Modal {
 			setIcon(emptyState.createDiv({ cls: "reminder-modal__empty-icon" }), "bell-off");
 			emptyState.createDiv({
 				cls: "reminder-modal__empty-text",
-				text: this.plugin.i18n.translate("modals.reminder.empty"),
+				text: this.plugin.i18n.translate(msg({ message: "No reminders set", context: "modals.reminder.empty" })),
 			});
 			return;
 		}
@@ -263,7 +266,7 @@ export class ReminderModal extends Modal {
 			setIcon(removeBtn, "trash-2");
 			setTooltip(
 				removeBtn,
-				this.plugin.i18n.translate("settings.defaults.reminders.deleteTooltip")
+				this.plugin.i18n.translate(msg({ message: "Delete reminder", context: "settings.defaults.reminders.deleteTooltip" }))
 			);
 			removeBtn.onclick = async (e) => {
 				e.stopPropagation();
@@ -275,9 +278,9 @@ export class ReminderModal extends Modal {
 	private formatReminderDisplayText(reminder: Reminder): string {
 		if (reminder.type === "absolute") {
 			if (!reminder.absoluteTime)
-				return this.plugin.i18n.translate("modals.reminder.absolute");
+				return this.plugin.i18n.translate(msg({ message: "Absolute", context: "modals.reminder.absolute" }));
 			const date = new Date(reminder.absoluteTime);
-			return this.plugin.i18n.translate("modals.reminder.at", {
+			return this.plugin.i18n.translate(msg({ message: "At {date}", context: "modals.reminder.at" }), {
 				date: Number.isNaN(date.getTime())
 					? reminder.absoluteTime
 					: date.toLocaleString(this.plugin.i18n.getCurrentLocale(), {
@@ -329,7 +332,7 @@ export class ReminderModal extends Modal {
 			// Use Obsidian's native tooltip
 			setTooltip(
 				quickBtn,
-				this.plugin.i18n.translate("modals.reminder.quickTooltip", { timing: fullLabel })
+				this.plugin.i18n.translate(msg({ message: "Add reminder: {timing}", context: "modals.reminder.quickTooltip" }), { timing: fullLabel })
 			);
 
 			quickBtn.onclick = async () => {
@@ -352,7 +355,7 @@ export class ReminderModal extends Modal {
 		};
 
 		await this.addReminder(reminder);
-		new Notice(this.plugin.i18n.translate("modals.reminder.added", { description }));
+		new Notice(this.plugin.i18n.translate(msg({ message: "Added reminder: {description}", context: "modals.reminder.added" }), { description }));
 	}
 
 	private renderAddReminderForm(container: HTMLElement): void {
@@ -360,7 +363,7 @@ export class ReminderModal extends Modal {
 
 		const sectionHeader = section.createDiv({ cls: "reminder-modal__section-header" });
 		sectionHeader.createEl("h3", {
-			text: this.plugin.i18n.translate("modals.reminder.addNew"),
+			text: this.plugin.i18n.translate(msg({ message: "Add new reminder", context: "modals.reminder.addNew" })),
 		});
 
 		// Add quick actions for common reminders
@@ -373,13 +376,13 @@ export class ReminderModal extends Modal {
 
 		const relativeTab = typeSelector.createEl("button", {
 			cls: "reminder-modal__type-tab reminder-modal__type-tab--active",
-			text: this.plugin.i18n.translate("modals.reminder.relative"),
+			text: this.plugin.i18n.translate(msg({ message: "Relative", context: "modals.reminder.relative" })),
 			attr: { "data-type": "relative" },
 		});
 
 		const absoluteTab = typeSelector.createEl("button", {
 			cls: "reminder-modal__type-tab",
-			text: this.plugin.i18n.translate("modals.reminder.absolute"),
+			text: this.plugin.i18n.translate(msg({ message: "Absolute", context: "modals.reminder.absolute" })),
 			attr: { "data-type": "absolute" },
 		});
 
@@ -412,7 +415,7 @@ export class ReminderModal extends Modal {
 		const relativeContainer = form.createDiv({ cls: "relative-fields" });
 
 		new Setting(relativeContainer)
-			.setName(this.plugin.i18n.translate("settings.defaults.reminders.fields.time"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Time:", context: "settings.defaults.reminders.fields.time" })))
 			.addText((text) => {
 				text.setPlaceholder("15")
 					.setValue(String(this.relativeOffset))
@@ -424,15 +427,15 @@ export class ReminderModal extends Modal {
 				dropdown
 					.addOption(
 						"minutes",
-						this.plugin.i18n.translate("views.pomodoroStats.stats.minutes")
+						this.plugin.i18n.translate(msg({ message: "Minutes", context: "views.pomodoroStats.stats.minutes" }))
 					)
 					.addOption(
 						"hours",
-						this.plugin.i18n.translate("settings.defaults.reminders.units.hours")
+						this.plugin.i18n.translate(msg({ message: "hours", context: "settings.defaults.reminders.units.hours" }))
 					)
 					.addOption(
 						"days",
-						this.plugin.i18n.translate("settings.defaults.reminders.units.days")
+						this.plugin.i18n.translate(msg({ message: "days", context: "settings.defaults.reminders.units.days" }))
 					)
 					.setValue(this.relativeUnit)
 					.onChange((value) => {
@@ -441,16 +444,16 @@ export class ReminderModal extends Modal {
 			});
 
 		new Setting(relativeContainer)
-			.setName(this.plugin.i18n.translate("settings.defaults.reminders.fields.direction"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Direction:", context: "settings.defaults.reminders.fields.direction" })))
 			.addDropdown((dropdown) => {
 				dropdown
 					.addOption(
 						"before",
-						this.plugin.i18n.translate("settings.defaults.reminders.directions.before")
+						this.plugin.i18n.translate(msg({ message: "before", context: "settings.defaults.reminders.directions.before" }))
 					)
 					.addOption(
 						"after",
-						this.plugin.i18n.translate("settings.defaults.reminders.directions.after")
+						this.plugin.i18n.translate(msg({ message: "after", context: "settings.defaults.reminders.directions.after" }))
 					)
 					.setValue(this.relativeDirection)
 					.onChange((value) => {
@@ -459,23 +462,23 @@ export class ReminderModal extends Modal {
 			});
 
 		new Setting(relativeContainer)
-			.setName(this.plugin.i18n.translate("modals.reminder.relativeTo"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Relative to", context: "modals.reminder.relativeTo" })))
 			.addDropdown((dropdown) => {
 				const options: Record<string, string> = {};
 				if (this.task.due) {
-					options.due = this.plugin.i18n.translate("modals.reminder.dueContext", {
+					options.due = this.plugin.i18n.translate(msg({ message: "Due: {date}", context: "modals.reminder.dueContext" }), {
 						date: formatDateForDisplay(this.task.due),
 					});
 				}
 				if (this.task.scheduled) {
 					options.scheduled = this.plugin.i18n.translate(
-						"modals.reminder.scheduledContext",
+						msg({ message: "Scheduled: {date}", context: "modals.reminder.scheduledContext" }),
 						{ date: formatDateForDisplay(this.task.scheduled) }
 					);
 				}
 
 				if (Object.keys(options).length === 0) {
-					options.none = "No dates available";
+					options.none = uiText(msg({ message: "No dates available", context: "modals/ReminderModal: ReminderModal.renderAddReminderForm display" }));
 					dropdown.setDisabled(true);
 				} else {
 					Object.entries(options).forEach(([key, label]) => {
@@ -495,7 +498,7 @@ export class ReminderModal extends Modal {
 		});
 
 		new Setting(absoluteContainer)
-			.setName(this.plugin.i18n.translate("settings.defaults.reminders.fields.date"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Date:", context: "settings.defaults.reminders.fields.date" })))
 			.addText((text) => {
 				text.setPlaceholder("Yyyy-mm-dd")
 					.setValue(this.absoluteDate)
@@ -511,7 +514,7 @@ export class ReminderModal extends Modal {
 			});
 
 		new Setting(absoluteContainer)
-			.setName(this.plugin.i18n.translate("settings.defaults.reminders.fields.time"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Time:", context: "settings.defaults.reminders.fields.time" })))
 			.addText((text) => {
 				text.setPlaceholder("Hh:mm")
 					.setValue(this.absoluteTime)
@@ -523,11 +526,11 @@ export class ReminderModal extends Modal {
 
 		// Description field (common)
 		new Setting(form)
-			.setName(this.plugin.i18n.translate("modals.reminder.description"))
+			.setName(this.plugin.i18n.translate(msg({ message: "Description (optional)", context: "modals.reminder.description" })))
 			.addText((text) => {
 				text.inputEl.addClass("reminder-modal__description-input");
 				text.setPlaceholder(
-					this.plugin.i18n.translate("modals.reminder.descriptionPlaceholder")
+					this.plugin.i18n.translate(msg({ message: "Custom reminder message", context: "modals.reminder.descriptionPlaceholder" }))
 				)
 					.setValue(this.description)
 					.onChange((value) => {
@@ -544,7 +547,7 @@ export class ReminderModal extends Modal {
 		setIcon(addIcon, "plus");
 		addBtn.createSpan({
 			cls: "reminder-add-btn-text",
-			text: this.plugin.i18n.translate("settings.defaults.reminders.addReminder.buttonText"),
+			text: this.plugin.i18n.translate(msg({ message: "Add reminder", context: "settings.defaults.reminders.addReminder.buttonText" })),
 		});
 		addBtn.onclick = async () => {
 			// Add loading state
@@ -586,7 +589,7 @@ export class ReminderModal extends Modal {
 					operation: "adding-reminder",
 					error: error,
 				});
-				new Notice(this.plugin.i18n.translate("modals.reminder.addFailed"));
+				new Notice(this.plugin.i18n.translate(msg({ message: "Failed to add reminder. Please check your inputs.", context: "modals.reminder.addFailed" })));
 			} finally {
 				// Remove loading state
 				addBtn.disabled = false;
@@ -625,8 +628,8 @@ export class ReminderModal extends Modal {
 				new Notice(
 					this.plugin.i18n.translate(
 						anchor === "due"
-							? "modals.reminder.missingDue"
-							: "modals.reminder.missingScheduled"
+							? msg({ message: "Cannot create reminder: Task has no due date", context: "modals.reminder.missingDue" })
+							: msg({ message: "Cannot create reminder: Task has no scheduled date", context: "modals.reminder.missingScheduled" })
 					)
 				);
 				return null;
@@ -657,7 +660,7 @@ export class ReminderModal extends Modal {
 		} else {
 			// Absolute reminder
 			if (!date || !time) {
-				new Notice(this.plugin.i18n.translate("modals.reminder.missingDateTime"));
+				new Notice(this.plugin.i18n.translate(msg({ message: "Please specify both date and time for absolute reminder", context: "modals.reminder.missingDateTime" })));
 				return null;
 			}
 
@@ -674,7 +677,7 @@ export class ReminderModal extends Modal {
 
 	private formatRelativeReminder(anchor: "due" | "scheduled", offset: string): string {
 		const match = /^(-?)P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?$/.exec(offset);
-		if (!match && offset) return offset;
+		if (!match && offset) return uiData(offset, "Invalid/unsupported stored ISO duration; preserve user data for diagnosis");
 		const [, negative, days, hours, minutes] = match ?? [];
 		const locale = this.plugin.i18n.getCurrentLocale();
 		const parts = (
@@ -694,17 +697,17 @@ export class ReminderModal extends Modal {
 			);
 		if (parts.length === 0) {
 			return this.plugin.i18n.translate(
-				anchor === "due" ? "modals.reminder.atDue" : "modals.reminder.atScheduled"
+				anchor === "due" ? msg({ message: "At the due date", context: "modals.reminder.atDue" }) : msg({ message: "At the scheduled date", context: "modals.reminder.atScheduled" })
 			);
 		}
 		const key =
 			anchor === "due"
 				? negative
-					? "modals.reminder.beforeDue"
-					: "modals.reminder.afterDue"
+					? msg({ message: "Before due date: {duration}", context: "modals.reminder.beforeDue" })
+					: msg({ message: "After due date: {duration}", context: "modals.reminder.afterDue" })
 				: negative
-					? "modals.reminder.beforeScheduled"
-					: "modals.reminder.afterScheduled";
+					? msg({ message: "Before scheduled date: {duration}", context: "modals.reminder.beforeScheduled" })
+					: msg({ message: "After scheduled date: {duration}", context: "modals.reminder.afterScheduled" });
 		return this.plugin.i18n.translate(key, {
 			duration: new Intl.ListFormat(locale, { style: "long", type: "unit" }).format(parts),
 		});
@@ -804,7 +807,7 @@ export class ReminderModal extends Modal {
 
 	private async save(): Promise<void> {
 		this.saveBtn.disabled = true;
-		this.saveBtn.textContent = this.plugin.i18n.translate("common.saving");
+		this.saveBtn.textContent = this.plugin.i18n.translate(msg({ message: "Saving...", context: "common.saving" }));
 
 		try {
 			// Clear processed reminders for this task so they can trigger again if needed
@@ -834,10 +837,10 @@ export class ReminderModal extends Modal {
 				operation: "save-reminders",
 				error: error,
 			});
-			new Notice(this.plugin.i18n.translate("modals.reminder.saveFailed"));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to save reminders. Please try again.", context: "modals.reminder.saveFailed" })));
 			this.saveBtn.disabled = false;
 			this.saveBtn.textContent = this.plugin.i18n.translate(
-				"modals.timeblockInfo.saveButton"
+				msg({ message: "Save changes", context: "modals.timeblockInfo.saveButton" })
 			);
 		}
 	}

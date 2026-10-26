@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { Setting } from "obsidian";
 
 interface TaskModalListFieldOptions {
@@ -9,7 +11,7 @@ interface TaskModalListFieldOptions {
 }
 
 export interface TaskModalOrganizationFieldContext {
-	translate: (key: string) => string;
+	translate: (key: MessageDescriptor) => string;
 }
 
 export interface CreateTaskModalOrganizationFieldOptions {
@@ -38,9 +40,9 @@ export function createTaskModalProjectsField(
 	options: CreateTaskModalOrganizationFieldOptions
 ): HTMLElement {
 	return createTaskModalListField(options.container, {
-		label: context.translate("modals.task.organization.projects"),
-		buttonText: context.translate("modals.task.organization.addToProjectButton"),
-		buttonTooltip: context.translate("modals.task.projectsTooltip"),
+		label: context.translate(msg({ message: "Projects", context: "modals.task.organization.projects" })),
+		buttonText: context.translate(msg({ message: "Add to project", context: "modals.task.organization.addToProjectButton" })),
+		buttonTooltip: context.translate(msg({ message: "Select a project note using fuzzy search", context: "modals.task.projectsTooltip" })),
 		onButtonClick: options.onButtonClick,
 		listElement: options.listElement,
 	});
@@ -51,9 +53,9 @@ export function createTaskModalSubtasksField(
 	options: CreateTaskModalOrganizationFieldOptions
 ): HTMLElement {
 	return createTaskModalListField(options.container, {
-		label: context.translate("modals.task.organization.subtasks"),
-		buttonText: context.translate("modals.task.organization.addSubtasksButton"),
-		buttonTooltip: context.translate("modals.task.organization.addSubtasksTooltip"),
+		label: context.translate(msg({ message: "Subtasks", context: "modals.task.organization.subtasks" })),
+		buttonText: context.translate(msg({ message: "Add subtask", context: "modals.task.organization.addSubtasksButton" })),
+		buttonTooltip: context.translate(msg({ message: "Select tasks to make them subtasks of this task", context: "modals.task.organization.addSubtasksTooltip" })),
 		onButtonClick: options.onButtonClick,
 		listElement: options.listElement,
 	});
@@ -64,9 +66,9 @@ export function createTaskModalBlockedByField(
 	options: CreateTaskModalOrganizationFieldOptions
 ): HTMLElement {
 	return createTaskModalListField(options.container, {
-		label: context.translate("modals.task.dependencies.blockedBy"),
-		buttonText: context.translate("modals.task.dependencies.addTaskButton"),
-		buttonTooltip: context.translate("modals.task.dependencies.selectTaskTooltip"),
+		label: context.translate(msg({ message: "Blocked by", context: "modals.task.dependencies.blockedBy" })),
+		buttonText: context.translate(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" })),
+		buttonTooltip: context.translate(msg({ message: "Select a task note using fuzzy search", context: "modals.task.dependencies.selectTaskTooltip" })),
 		onButtonClick: options.onButtonClick,
 		listElement: options.listElement,
 	});
@@ -77,9 +79,9 @@ export function createTaskModalBlockingField(
 	options: CreateTaskModalOrganizationFieldOptions
 ): HTMLElement {
 	return createTaskModalListField(options.container, {
-		label: context.translate("modals.task.dependencies.blocking"),
-		buttonText: context.translate("modals.task.dependencies.addTaskButton"),
-		buttonTooltip: context.translate("modals.task.dependencies.selectTaskTooltip"),
+		label: context.translate(msg({ message: "Blocking", context: "modals.task.dependencies.blocking" })),
+		buttonText: context.translate(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" })),
+		buttonTooltip: context.translate(msg({ message: "Select a task note using fuzzy search", context: "modals.task.dependencies.selectTaskTooltip" })),
 		onButtonClick: options.onButtonClick,
 		listElement: options.listElement,
 	});

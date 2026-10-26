@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { TaskInfo } from "../types";
 import { extractBasesValue } from "./taskCardPresentation";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -147,7 +149,7 @@ export function getTaskCardPropertyValue(
 					operation: "computing-formula",
 					error: error,
 				});
-				return "[Formula Error]";
+				return uiText(msg({ message: "[Formula Error]", context: "ui/taskCardPropertyAccess: getTaskCardPropertyValue display" }));
 			}
 		}
 
