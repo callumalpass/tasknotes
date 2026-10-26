@@ -1,4 +1,4 @@
-import { MarkdownView, Platform, addIcon } from "obsidian";
+import { MarkdownView, Platform, addIcon, setTooltip } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import type TaskNotesPlugin from "../main";
 import {
@@ -178,61 +178,54 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 }
 
 export function registerRibbonIcons(plugin: TaskNotesPlugin): void {
-	plugin.addRibbonIcon(
-		"calendar-days",
-		plugin.i18n.translate("commands.openCalendarView"),
-		async () => {
-			await plugin.activateCalendarView();
+	const ribbons: { element: HTMLElement; key: string }[] = [];
+	const addRibbon = (
+		icon: string,
+		key: string,
+		callback: (event: MouseEvent) => void | Promise<void>
+	) => {
+		const element = plugin.addRibbonIcon(icon, plugin.i18n.translate(key), callback);
+		ribbons.push({ element, key });
+	};
+	const refresh = () => {
+		for (const { element, key } of ribbons) {
+			setTooltip(element, plugin.i18n.translate(key), { placement: "right" });
 		}
-	);
+	};
+	const listener = plugin.i18n.on("locale-changed", refresh);
+	plugin.register(() => plugin.i18n.offref(listener));
 
-	plugin.addRibbonIcon(
-		"calendar",
-		plugin.i18n.translate("commands.openAdvancedCalendarView"),
-		async () => {
-			await plugin.openBasesFileForCommand("open-advanced-calendar-view");
-		}
-	);
+	addRibbon("calendar-days", "commands.openCalendarView", async () => {
+		await plugin.activateCalendarView();
+	});
 
-	plugin.addRibbonIcon(
-		"check-square",
-		plugin.i18n.translate("commands.openTasksView"),
-		async () => {
-			await plugin.openBasesFileForCommand("open-tasks-view");
-		}
-	);
+	addRibbon("calendar", "commands.openAdvancedCalendarView", async () => {
+		await plugin.openBasesFileForCommand("open-advanced-calendar-view");
+	});
 
-	plugin.addRibbonIcon("list", plugin.i18n.translate("commands.openAgendaView"), async () => {
+	addRibbon("check-square", "commands.openTasksView", async () => {
+		await plugin.openBasesFileForCommand("open-tasks-view");
+	});
+
+	addRibbon("list", "commands.openAgendaView", async () => {
 		await plugin.openBasesFileForCommand("open-agenda-view");
 	});
 
-	plugin.addRibbonIcon(
-		"columns-3",
-		plugin.i18n.translate("commands.openKanbanView"),
-		async () => {
-			await plugin.openBasesFileForCommand("open-kanban-view");
-		}
-	);
+	addRibbon("columns-3", "commands.openKanbanView", async () => {
+		await plugin.openBasesFileForCommand("open-kanban-view");
+	});
 
-	plugin.addRibbonIcon("timer", plugin.i18n.translate("commands.openPomodoroView"), async () => {
+	addRibbon("timer", "commands.openPomodoroView", async () => {
 		await plugin.activatePomodoroView();
 	});
 
-	plugin.addRibbonIcon(
-		"bar-chart-3",
-		plugin.i18n.translate("commands.openPomodoroStats"),
-		async () => {
-			await plugin.activatePomodoroStatsView();
-		}
-	);
+	addRibbon("bar-chart-3", "commands.openPomodoroStats", async () => {
+		await plugin.activatePomodoroStatsView();
+	});
 
-	plugin.addRibbonIcon(
-		"tasknotes-simple",
-		plugin.i18n.translate("commands.createNewTask"),
-		() => {
-			plugin.openTaskCreationModal();
-		}
-	);
+	addRibbon("tasknotes-simple", "commands.createNewTask", () => {
+		plugin.openTaskCreationModal();
+	});
 }
 
 export function initializeCalendarProviders(plugin: TaskNotesPlugin): void {
@@ -344,14 +337,18 @@ export async function initializeHTTPAPI(plugin: TaskNotesPlugin): Promise<void> 
 		plugin.taskService.setWebhookNotifier(plugin.apiService);
 		plugin.pomodoroService.setWebhookNotifier(plugin.apiService);
 		await plugin.apiService.start();
-		showNotice(`TaskNotes API started on port ${plugin.apiService.getPort()}`);
+		showNotice(
+			plugin.i18n.translate("notices.interface.apiStarted", {
+				port: plugin.apiService.getPort(),
+			})
+		);
 	} catch (error) {
 		tasknotesLogger.error("Failed to initialize HTTP API:", {
 			category: "provider",
 			operation: "initialize-http-api",
 			error: error,
 		});
-		showNotice("Failed to start tasknotes API server. Check console for details.");
+		showNotice(plugin.i18n.translate("notices.interface.apiFailed"));
 	}
 }
 

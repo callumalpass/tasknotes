@@ -175,6 +175,7 @@ export abstract class TaskModal extends Modal {
 
 	protected getLinkServices(): LinkServices {
 		return {
+			translate: this.t.bind(this),
 			metadataCache: this.plugin.app.metadataCache,
 			workspace: this.plugin.app.workspace,
 			sourcePath:
@@ -353,8 +354,7 @@ export abstract class TaskModal extends Modal {
 	// UI elements
 	protected titleInput: TaskModalTitleInputElement =
 		undefined as unknown as TaskModalTitleInputElement;
-	protected detailsInput: HTMLTextAreaElement =
-		undefined as unknown as HTMLTextAreaElement; // Legacy - kept for compatibility
+	protected detailsInput: HTMLTextAreaElement = undefined as unknown as HTMLTextAreaElement; // Legacy - kept for compatibility
 	protected detailsMarkdownEditor: EmbeddableMarkdownEditor | null = null;
 	protected contextsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
 	protected projectsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
@@ -1160,9 +1160,10 @@ export abstract class TaskModal extends Modal {
 		const parentTask = parentPath
 			? await this.plugin.cacheManager.getTaskInfo(parentPath)
 			: null;
-		const creationDefaults = parentFile instanceof TFile && parentTask
-			? buildSubtaskCreationPrePopulatedValues(this.plugin, parentTask, parentFile)
-			: undefined;
+		const creationDefaults =
+			parentFile instanceof TFile && parentTask
+				? buildSubtaskCreationPrePopulatedValues(this.plugin, parentTask, parentFile)
+				: undefined;
 
 		await openTaskModalTaskSelector({
 			plugin: this.plugin,

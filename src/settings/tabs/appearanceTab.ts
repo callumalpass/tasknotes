@@ -82,7 +82,7 @@ export function renderAppearanceTab(
 						)
 					)
 					.addButton((button) => {
-						button.setButtonText("Configure").onClick(() => {
+						button.setButtonText(translate("common.configure")).onClick(() => {
 							const modal = new PropertySelectorModal(
 								plugin.app,
 								availableProperties,
@@ -90,12 +90,13 @@ export function renderAppearanceTab(
 								async (selected) => {
 									plugin.settings.defaultVisibleProperties = selected;
 									save();
-									new Notice("Default task card properties updated");
+									new Notice(translate("settings.appearance.taskCards.updated"));
 									// Re-render to update display
 									renderAppearanceTab(container, plugin, save);
 								},
-								"Select Default Task Card Properties",
-								"Choose which properties to display in task cards (views, kanban, etc.). Selected properties will appear in the order shown below."
+								translate("modals.propertySelector.title"),
+								translate("modals.propertySelector.description"),
+								plugin
 							);
 							modal.open();
 						});
@@ -104,20 +105,27 @@ export function renderAppearanceTab(
 
 			// Show currently selected properties
 			group.addSetting((setting) => {
-				setting.setDesc(`Currently showing: ${currentLabels.join(", ")}`);
+				setting.setDesc(
+					translate("settings.appearance.taskCards.showing", {
+						properties: currentLabels.join(", "),
+					})
+				);
 				setting.settingEl.addClass("settings-view__group-description");
 			});
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.appearance.taskCards.completionSubmenu.name"),
-					desc: translate("settings.appearance.taskCards.completionSubmenu.description"),
-					getValue: () => plugin.settings.completionMenuAsSubmenu,
-					setValue: async (value: boolean) => {
-						plugin.settings.completionMenuAsSubmenu = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.appearance.taskCards.completionSubmenu.name"),
+						desc: translate(
+							"settings.appearance.taskCards.completionSubmenu.description"
+						),
+						getValue: () => plugin.settings.completionMenuAsSubmenu,
+						setValue: async (value: boolean) => {
+							plugin.settings.completionMenuAsSubmenu = value;
+							save();
+						},
+					})
 			);
 		}
 	);
@@ -130,30 +138,33 @@ export function renderAppearanceTab(
 			description: translate("settings.appearance.displayFormatting.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.appearance.displayFormatting.timeFormat.name"),
-					desc: translate("settings.appearance.displayFormatting.timeFormat.description"),
-					options: [
-						{
-							value: "12",
-							label: translate(
-								"settings.appearance.displayFormatting.timeFormat.options.twelveHour"
-							),
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.appearance.displayFormatting.timeFormat.name"),
+						desc: translate(
+							"settings.appearance.displayFormatting.timeFormat.description"
+						),
+						options: [
+							{
+								value: "12",
+								label: translate(
+									"settings.appearance.displayFormatting.timeFormat.options.twelveHour"
+								),
+							},
+							{
+								value: "24",
+								label: translate(
+									"settings.appearance.displayFormatting.timeFormat.options.twentyFourHour"
+								),
+							},
+						],
+						getValue: () => plugin.settings.calendarViewSettings.timeFormat,
+						setValue: async (value: string) => {
+							plugin.settings.calendarViewSettings.timeFormat = value as "12" | "24";
+							save();
 						},
-						{
-							value: "24",
-							label: translate(
-								"settings.appearance.displayFormatting.timeFormat.options.twentyFourHour"
-							),
-						},
-					],
-					getValue: () => plugin.settings.calendarViewSettings.timeFormat,
-					setValue: async (value: string) => {
-						plugin.settings.calendarViewSettings.timeFormat = value as "12" | "24";
-						save();
-					},
-				})
+					})
 			);
 		}
 	);
@@ -166,164 +177,180 @@ export function renderAppearanceTab(
 			description: translate("settings.appearance.calendarView.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.appearance.calendarView.defaultView.name"),
-					desc: translate("settings.appearance.calendarView.defaultView.description"),
-					options: [
-						{
-							value: "dayGridMonth",
-							label: translate(
-								"settings.appearance.calendarView.defaultView.options.monthGrid"
-							),
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.appearance.calendarView.defaultView.name"),
+						desc: translate("settings.appearance.calendarView.defaultView.description"),
+						options: [
+							{
+								value: "dayGridMonth",
+								label: translate(
+									"settings.appearance.calendarView.defaultView.options.monthGrid"
+								),
+							},
+							{
+								value: "timeGridWeek",
+								label: translate(
+									"settings.appearance.calendarView.defaultView.options.weekTimeline"
+								),
+							},
+							{
+								value: "timeGridDay",
+								label: translate(
+									"settings.appearance.calendarView.defaultView.options.dayTimeline"
+								),
+							},
+							{
+								value: "multiMonthYear",
+								label: translate(
+									"settings.appearance.calendarView.defaultView.options.yearView"
+								),
+							},
+							{
+								value: "timeGridCustom",
+								label: translate(
+									"settings.appearance.calendarView.defaultView.options.customMultiDay"
+								),
+							},
+						],
+						getValue: () => plugin.settings.calendarViewSettings.defaultView,
+						setValue: async (value: string) => {
+							if (!isCalendarDefaultView(value)) {
+								return;
+							}
+							plugin.settings.calendarViewSettings.defaultView = value;
+							save();
+							// Re-render to show custom day count if needed
+							renderAppearanceTab(container, plugin, save);
 						},
-						{
-							value: "timeGridWeek",
-							label: translate(
-								"settings.appearance.calendarView.defaultView.options.weekTimeline"
-							),
-						},
-						{
-							value: "timeGridDay",
-							label: translate(
-								"settings.appearance.calendarView.defaultView.options.dayTimeline"
-							),
-						},
-						{
-							value: "multiMonthYear",
-							label: translate(
-								"settings.appearance.calendarView.defaultView.options.yearView"
-							),
-						},
-						{
-							value: "timeGridCustom",
-							label: translate(
-								"settings.appearance.calendarView.defaultView.options.customMultiDay"
-							),
-						},
-					],
-					getValue: () => plugin.settings.calendarViewSettings.defaultView,
-					setValue: async (value: string) => {
-						if (!isCalendarDefaultView(value)) {
-							return;
-						}
-						plugin.settings.calendarViewSettings.defaultView = value;
-						save();
-						// Re-render to show custom day count if needed
-						renderAppearanceTab(container, plugin, save);
-					},
-				})
+					})
 			);
 
 			if (plugin.settings.calendarViewSettings.defaultView === "timeGridCustom") {
-				group.addSetting((setting) =>
-					void configureNumberSetting(setting, {
-						name: translate("settings.appearance.calendarView.customDayCount.name"),
-						desc: translate(
-							"settings.appearance.calendarView.customDayCount.description"
-						),
-						placeholder: translate(
-							"settings.appearance.calendarView.customDayCount.placeholder"
-						),
-						min: 2,
-						max: 10,
-						getValue: () => plugin.settings.calendarViewSettings.customDayCount,
-						setValue: async (value: number) => {
-							plugin.settings.calendarViewSettings.customDayCount = value;
-							save();
-						},
-					})
+				group.addSetting(
+					(setting) =>
+						void configureNumberSetting(setting, {
+							name: translate("settings.appearance.calendarView.customDayCount.name"),
+							desc: translate(
+								"settings.appearance.calendarView.customDayCount.description"
+							),
+							placeholder: translate(
+								"settings.appearance.calendarView.customDayCount.placeholder"
+							),
+							min: 2,
+							max: 10,
+							getValue: () => plugin.settings.calendarViewSettings.customDayCount,
+							setValue: async (value: number) => {
+								plugin.settings.calendarViewSettings.customDayCount = value;
+								save();
+							},
+						})
 				);
 			}
 
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.appearance.calendarView.firstDayOfWeek.name"),
-					desc: translate("settings.appearance.calendarView.firstDayOfWeek.description"),
-					options: [
-						{ value: "0", label: translate("common.weekdays.sunday") },
-						{ value: "1", label: translate("common.weekdays.monday") },
-						{ value: "2", label: translate("common.weekdays.tuesday") },
-						{ value: "3", label: translate("common.weekdays.wednesday") },
-						{ value: "4", label: translate("common.weekdays.thursday") },
-						{ value: "5", label: translate("common.weekdays.friday") },
-						{ value: "6", label: translate("common.weekdays.saturday") },
-					],
-					getValue: () => plugin.settings.calendarViewSettings.firstDay.toString(),
-					setValue: async (value: string) => {
-						plugin.settings.calendarViewSettings.firstDay = parseCalendarFirstDay(
-							value,
-							plugin.settings.calendarViewSettings.firstDay
-						);
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.appearance.calendarView.firstDayOfWeek.name"),
+						desc: translate(
+							"settings.appearance.calendarView.firstDayOfWeek.description"
+						),
+						options: [
+							{ value: "0", label: translate("common.weekdays.sunday") },
+							{ value: "1", label: translate("common.weekdays.monday") },
+							{ value: "2", label: translate("common.weekdays.tuesday") },
+							{ value: "3", label: translate("common.weekdays.wednesday") },
+							{ value: "4", label: translate("common.weekdays.thursday") },
+							{ value: "5", label: translate("common.weekdays.friday") },
+							{ value: "6", label: translate("common.weekdays.saturday") },
+						],
+						getValue: () => plugin.settings.calendarViewSettings.firstDay.toString(),
+						setValue: async (value: string) => {
+							plugin.settings.calendarViewSettings.firstDay = parseCalendarFirstDay(
+								value,
+								plugin.settings.calendarViewSettings.firstDay
+							);
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.appearance.calendarView.showWeekends.name"),
-					desc: translate("settings.appearance.calendarView.showWeekends.description"),
-					getValue: () => plugin.settings.calendarViewSettings.showWeekends,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.showWeekends = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.appearance.calendarView.showWeekends.name"),
+						desc: translate(
+							"settings.appearance.calendarView.showWeekends.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.showWeekends,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.showWeekends = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.appearance.calendarView.showWeekNumbers.name"),
-					desc: translate("settings.appearance.calendarView.showWeekNumbers.description"),
-					getValue: () => plugin.settings.calendarViewSettings.weekNumbers,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.weekNumbers = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.appearance.calendarView.showWeekNumbers.name"),
+						desc: translate(
+							"settings.appearance.calendarView.showWeekNumbers.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.weekNumbers,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.weekNumbers = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.appearance.calendarView.showTodayHighlight.name"),
-					desc: translate(
-						"settings.appearance.calendarView.showTodayHighlight.description"
-					),
-					getValue: () => plugin.settings.calendarViewSettings.showTodayHighlight,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.showTodayHighlight = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.appearance.calendarView.showTodayHighlight.name"),
+						desc: translate(
+							"settings.appearance.calendarView.showTodayHighlight.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.showTodayHighlight,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.showTodayHighlight = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate(
-						"settings.appearance.calendarView.showCurrentTimeIndicator.name"
-					),
-					desc: translate(
-						"settings.appearance.calendarView.showCurrentTimeIndicator.description"
-					),
-					getValue: () => plugin.settings.calendarViewSettings.nowIndicator,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.nowIndicator = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.calendarView.showCurrentTimeIndicator.name"
+						),
+						desc: translate(
+							"settings.appearance.calendarView.showCurrentTimeIndicator.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.nowIndicator,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.nowIndicator = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.appearance.calendarView.selectionMirror.name"),
-					desc: translate("settings.appearance.calendarView.selectionMirror.description"),
-					getValue: () => plugin.settings.calendarViewSettings.selectMirror,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.selectMirror = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate("settings.appearance.calendarView.selectionMirror.name"),
+						desc: translate(
+							"settings.appearance.calendarView.selectionMirror.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.selectMirror,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.selectMirror = value;
+							save();
+						},
+					})
 			);
 
 			// Calendar locale setting with blur validation
@@ -379,99 +406,108 @@ export function renderAppearanceTab(
 			description: translate("settings.appearance.defaultEventVisibility.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate(
-						"settings.appearance.defaultEventVisibility.showScheduledTasks.name"
-					),
-					desc: translate(
-						"settings.appearance.defaultEventVisibility.showScheduledTasks.description"
-					),
-					getValue: () => plugin.settings.calendarViewSettings.defaultShowScheduled,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.defaultShowScheduled = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.defaultEventVisibility.showScheduledTasks.name"
+						),
+						desc: translate(
+							"settings.appearance.defaultEventVisibility.showScheduledTasks.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.defaultShowScheduled,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.defaultShowScheduled = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.appearance.defaultEventVisibility.showDueDates.name"),
-					desc: translate(
-						"settings.appearance.defaultEventVisibility.showDueDates.description"
-					),
-					getValue: () => plugin.settings.calendarViewSettings.defaultShowDue,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.defaultShowDue = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.defaultEventVisibility.showDueDates.name"
+						),
+						desc: translate(
+							"settings.appearance.defaultEventVisibility.showDueDates.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.defaultShowDue,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.defaultShowDue = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate(
-						"settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
-					),
-					desc: translate(
-						"settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
-					),
-					getValue: () =>
-						plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
+						),
+						desc: translate(
+							"settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
+						),
+						getValue: () =>
+							plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled =
+								value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate(
-						"settings.appearance.defaultEventVisibility.showTimeEntries.name"
-					),
-					desc: translate(
-						"settings.appearance.defaultEventVisibility.showTimeEntries.description"
-					),
-					getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeEntries,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.defaultShowTimeEntries = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.defaultEventVisibility.showTimeEntries.name"
+						),
+						desc: translate(
+							"settings.appearance.defaultEventVisibility.showTimeEntries.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeEntries,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.defaultShowTimeEntries = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate(
-						"settings.appearance.defaultEventVisibility.showRecurringTasks.name"
-					),
-					desc: translate(
-						"settings.appearance.defaultEventVisibility.showRecurringTasks.description"
-					),
-					getValue: () => plugin.settings.calendarViewSettings.defaultShowRecurring,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.defaultShowRecurring = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.defaultEventVisibility.showRecurringTasks.name"
+						),
+						desc: translate(
+							"settings.appearance.defaultEventVisibility.showRecurringTasks.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.defaultShowRecurring,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.defaultShowRecurring = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate(
-						"settings.appearance.defaultEventVisibility.showICSEvents.name"
-					),
-					desc: translate(
-						"settings.appearance.defaultEventVisibility.showICSEvents.description"
-					),
-					getValue: () => plugin.settings.calendarViewSettings.defaultShowICSEvents,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.defaultShowICSEvents = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.defaultEventVisibility.showICSEvents.name"
+						),
+						desc: translate(
+							"settings.appearance.defaultEventVisibility.showICSEvents.description"
+						),
+						getValue: () => plugin.settings.calendarViewSettings.defaultShowICSEvents,
+						setValue: async (value: boolean) => {
+							plugin.settings.calendarViewSettings.defaultShowICSEvents = value;
+							save();
+						},
+					})
 			);
 		}
 	);
@@ -484,179 +520,194 @@ export function renderAppearanceTab(
 			description: translate("settings.appearance.timeSettings.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.appearance.timeSettings.timeSlotDuration.name"),
-					desc: translate(
-						"settings.appearance.timeSettings.timeSlotDuration.description"
-					),
-					options: [
-						{
-							value: "00:15:00",
-							label: translate(
-								"settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinutes"
-							),
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.appearance.timeSettings.timeSlotDuration.name"),
+						desc: translate(
+							"settings.appearance.timeSettings.timeSlotDuration.description"
+						),
+						options: [
+							{
+								value: "00:15:00",
+								label: translate(
+									"settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinutes"
+								),
+							},
+							{
+								value: "00:30:00",
+								label: translate(
+									"settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes"
+								),
+							},
+							{
+								value: "01:00:00",
+								label: translate(
+									"settings.appearance.timeSettings.timeSlotDuration.options.sixtyMinutes"
+								),
+							},
+						],
+						getValue: () => plugin.settings.calendarViewSettings.slotDuration,
+						setValue: async (value: string) => {
+							if (!isCalendarSlotDuration(value)) {
+								return;
+							}
+							plugin.settings.calendarViewSettings.slotDuration = value;
+							save();
 						},
-						{
-							value: "00:30:00",
-							label: translate(
-								"settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes"
-							),
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: translate("settings.appearance.timeSettings.startTime.name"),
+						desc: translate("settings.appearance.timeSettings.startTime.description"),
+						placeholder: translate(
+							"settings.appearance.timeSettings.startTime.placeholder"
+						),
+						debounceMs: 500,
+						getValue: () => {
+							const timeValue = plugin.settings.calendarViewSettings.slotMinTime;
+							if (
+								!timeValue ||
+								timeValue.length < 5 ||
+								!/^\d{2}:\d{2}:\d{2}$/.test(timeValue)
+							) {
+								return "00:00";
+							}
+							return timeValue.slice(0, 5);
 						},
-						{
-							value: "01:00:00",
-							label: translate(
-								"settings.appearance.timeSettings.timeSlotDuration.options.sixtyMinutes"
-							),
+						setValue: async (value: string) => {
+							if (!/^\d{2}:\d{2}$/.test(value)) {
+								new Notice(
+									translate("settings.appearance.timeSettings.invalidFormat", {
+										example: "08:00",
+									})
+								);
+								return;
+							}
+							const [hours, minutes] = value.split(":").map(Number);
+							if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+								new Notice(
+									translate("settings.appearance.timeSettings.invalidTime")
+								);
+								return;
+							}
+							plugin.settings.calendarViewSettings.slotMinTime = value + ":00";
+							save();
 						},
-					],
-					getValue: () => plugin.settings.calendarViewSettings.slotDuration,
-					setValue: async (value: string) => {
-						if (!isCalendarSlotDuration(value)) {
-							return;
-						}
-						plugin.settings.calendarViewSettings.slotDuration = value;
-						save();
-					},
-				})
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureTextSetting(setting, {
-					name: translate("settings.appearance.timeSettings.startTime.name"),
-					desc: translate("settings.appearance.timeSettings.startTime.description"),
-					placeholder: translate(
-						"settings.appearance.timeSettings.startTime.placeholder"
-					),
-					debounceMs: 500,
-					getValue: () => {
-						const timeValue = plugin.settings.calendarViewSettings.slotMinTime;
-						if (
-							!timeValue ||
-							timeValue.length < 5 ||
-							!/^\d{2}:\d{2}:\d{2}$/.test(timeValue)
-						) {
-							return "00:00";
-						}
-						return timeValue.slice(0, 5);
-					},
-					setValue: async (value: string) => {
-						if (!/^\d{2}:\d{2}$/.test(value)) {
-							new Notice(
-								"Invalid time format. Please use hh:mm format (e.g., 08:00)"
-							);
-							return;
-						}
-						const [hours, minutes] = value.split(":").map(Number);
-						if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-							new Notice(
-								"Invalid time. Hours must be 00-23 and minutes must be 00-59"
-							);
-							return;
-						}
-						plugin.settings.calendarViewSettings.slotMinTime = value + ":00";
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: translate("settings.appearance.timeSettings.endTime.name"),
+						desc: translate("settings.appearance.timeSettings.endTime.description"),
+						placeholder: translate(
+							"settings.appearance.timeSettings.endTime.placeholder"
+						),
+						debounceMs: 500,
+						getValue: () => {
+							const timeValue = plugin.settings.calendarViewSettings.slotMaxTime;
+							if (
+								!timeValue ||
+								timeValue.length < 5 ||
+								!/^\d{2}:\d{2}:\d{2}$/.test(timeValue)
+							) {
+								return "24:00";
+							}
+							return timeValue.slice(0, 5);
+						},
+						setValue: async (value: string) => {
+							if (!/^\d{2}:\d{2}$/.test(value)) {
+								new Notice(
+									translate("settings.appearance.timeSettings.invalidFormat", {
+										example: "26:00",
+									})
+								);
+								return;
+							}
+							const result = normalizeCalendarTimeValue(value, "24:00:00", {
+								maxHour: CALENDAR_END_TIME_MAX_HOUR,
+								allowMaxHourOnlyAtZero: true,
+							});
+							if (!result.isValid) {
+								new Notice(
+									translate("settings.appearance.timeSettings.invalidEndTime")
+								);
+								return;
+							}
+							plugin.settings.calendarViewSettings.slotMaxTime = result.value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureTextSetting(setting, {
-					name: translate("settings.appearance.timeSettings.endTime.name"),
-					desc: translate("settings.appearance.timeSettings.endTime.description"),
-					placeholder: translate("settings.appearance.timeSettings.endTime.placeholder"),
-					debounceMs: 500,
-					getValue: () => {
-						const timeValue = plugin.settings.calendarViewSettings.slotMaxTime;
-						if (
-							!timeValue ||
-							timeValue.length < 5 ||
-							!/^\d{2}:\d{2}:\d{2}$/.test(timeValue)
-						) {
-							return "24:00";
-						}
-						return timeValue.slice(0, 5);
-					},
-					setValue: async (value: string) => {
-						if (!/^\d{2}:\d{2}$/.test(value)) {
-							new Notice(
-								"Invalid time format. Please use hh:mm format (e.g., 26:00)"
-							);
-							return;
-						}
-						const result = normalizeCalendarTimeValue(value, "24:00:00", {
-							maxHour: CALENDAR_END_TIME_MAX_HOUR,
-							allowMaxHourOnlyAtZero: true,
-						});
-						if (!result.isValid) {
-							new Notice(
-								"Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day"
-							);
-							return;
-						}
-						plugin.settings.calendarViewSettings.slotMaxTime = result.value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: translate("settings.appearance.timeSettings.initialScrollTime.name"),
+						desc: translate(
+							"settings.appearance.timeSettings.initialScrollTime.description"
+						),
+						placeholder: translate(
+							"settings.appearance.timeSettings.initialScrollTime.placeholder"
+						),
+						debounceMs: 500,
+						getValue: () => {
+							const timeValue = plugin.settings.calendarViewSettings.scrollTime;
+							if (
+								!timeValue ||
+								timeValue.length < 5 ||
+								!/^\d{2}:\d{2}:\d{2}$/.test(timeValue)
+							) {
+								return "08:00";
+							}
+							return timeValue.slice(0, 5);
+						},
+						setValue: async (value: string) => {
+							if (!/^\d{2}:\d{2}$/.test(value)) {
+								new Notice(
+									translate("settings.appearance.timeSettings.invalidFormat", {
+										example: "08:00",
+									})
+								);
+								return;
+							}
+							const [hours, minutes] = value.split(":").map(Number);
+							if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+								new Notice(
+									translate("settings.appearance.timeSettings.invalidTime")
+								);
+								return;
+							}
+							plugin.settings.calendarViewSettings.scrollTime = value + ":00";
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureTextSetting(setting, {
-					name: translate("settings.appearance.timeSettings.initialScrollTime.name"),
-					desc: translate(
-						"settings.appearance.timeSettings.initialScrollTime.description"
-					),
-					placeholder: translate(
-						"settings.appearance.timeSettings.initialScrollTime.placeholder"
-					),
-					debounceMs: 500,
-					getValue: () => {
-						const timeValue = plugin.settings.calendarViewSettings.scrollTime;
-						if (
-							!timeValue ||
-							timeValue.length < 5 ||
-							!/^\d{2}:\d{2}:\d{2}$/.test(timeValue)
-						) {
-							return "08:00";
-						}
-						return timeValue.slice(0, 5);
-					},
-					setValue: async (value: string) => {
-						if (!/^\d{2}:\d{2}$/.test(value)) {
-							new Notice(
-								"Invalid time format. Please use hh:mm format (e.g., 08:00)"
-							);
-							return;
-						}
-						const [hours, minutes] = value.split(":").map(Number);
-						if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-							new Notice(
-								"Invalid time. Hours must be 00-23 and minutes must be 00-59"
-							);
-							return;
-						}
-						plugin.settings.calendarViewSettings.scrollTime = value + ":00";
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureNumberSetting(setting, {
-					name: translate("settings.appearance.timeSettings.eventMinHeight.name"),
-					desc: translate("settings.appearance.timeSettings.eventMinHeight.description"),
-					placeholder: translate(
-						"settings.appearance.timeSettings.eventMinHeight.placeholder"
-					),
-					min: 5,
-					max: 100,
-					debounceMs: 300,
-					getValue: () => plugin.settings.calendarViewSettings.eventMinHeight,
-					setValue: async (value: number) => {
-						plugin.settings.calendarViewSettings.eventMinHeight = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureNumberSetting(setting, {
+						name: translate("settings.appearance.timeSettings.eventMinHeight.name"),
+						desc: translate(
+							"settings.appearance.timeSettings.eventMinHeight.description"
+						),
+						placeholder: translate(
+							"settings.appearance.timeSettings.eventMinHeight.placeholder"
+						),
+						min: 5,
+						max: 100,
+						debounceMs: 300,
+						getValue: () => plugin.settings.calendarViewSettings.eventMinHeight,
+						setValue: async (value: number) => {
+							plugin.settings.calendarViewSettings.eventMinHeight = value;
+							save();
+						},
+					})
 			);
 		}
 	);
@@ -669,189 +720,202 @@ export function renderAppearanceTab(
 			description: translate("settings.appearance.uiElements.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate(
-						"settings.appearance.uiElements.showTrackedTasksInStatusBar.name"
-					),
-					desc: translate(
-						"settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
-					),
-					getValue: () => plugin.settings.showTrackedTasksInStatusBar,
-					setValue: async (value: boolean) => {
-						plugin.settings.showTrackedTasksInStatusBar = value;
-						save();
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.uiElements.showTrackedTasksInStatusBar.name"
+						),
+						desc: translate(
+							"settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
+						),
+						getValue: () => plugin.settings.showTrackedTasksInStatusBar,
+						setValue: async (value: boolean) => {
+							plugin.settings.showTrackedTasksInStatusBar = value;
+							save();
+						},
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.appearance.uiElements.showRelationshipsWidget.name"),
-					desc: translate(
-						"settings.appearance.uiElements.showRelationshipsWidget.description"
-					),
-					getValue: () => plugin.settings.showRelationships,
-					setValue: async (value: boolean) => {
-						plugin.settings.showRelationships = value;
-						save();
-						renderAppearanceTab(container, plugin, save);
-					},
-				})
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.uiElements.showRelationshipsWidget.name"
+						),
+						desc: translate(
+							"settings.appearance.uiElements.showRelationshipsWidget.description"
+						),
+						getValue: () => plugin.settings.showRelationships,
+						setValue: async (value: boolean) => {
+							plugin.settings.showRelationships = value;
+							save();
+							renderAppearanceTab(container, plugin, save);
+						},
+					})
 			);
 
 			if (plugin.settings.showRelationships) {
-				group.addSetting((setting) =>
-					void configureDropdownSetting(setting, {
-						name: translate(
-							"settings.appearance.uiElements.relationshipsPosition.name"
-						),
-						desc: translate(
-							"settings.appearance.uiElements.relationshipsPosition.description"
-						),
-						options: [
-							{
-								value: "top",
-								label: translate(
-									"settings.appearance.uiElements.relationshipsPosition.options.top"
-								),
+				group.addSetting(
+					(setting) =>
+						void configureDropdownSetting(setting, {
+							name: translate(
+								"settings.appearance.uiElements.relationshipsPosition.name"
+							),
+							desc: translate(
+								"settings.appearance.uiElements.relationshipsPosition.description"
+							),
+							options: [
+								{
+									value: "top",
+									label: translate(
+										"settings.appearance.uiElements.relationshipsPosition.options.top"
+									),
+								},
+								{
+									value: "bottom",
+									label: translate(
+										"settings.appearance.uiElements.relationshipsPosition.options.bottom"
+									),
+								},
+							],
+							getValue: () => plugin.settings.relationshipsPosition,
+							setValue: async (value: string) => {
+								plugin.settings.relationshipsPosition = value as "top" | "bottom";
+								save();
 							},
-							{
-								value: "bottom",
-								label: translate(
-									"settings.appearance.uiElements.relationshipsPosition.options.bottom"
-								),
-							},
-						],
-						getValue: () => plugin.settings.relationshipsPosition,
-						setValue: async (value: string) => {
-							plugin.settings.relationshipsPosition = value as "top" | "bottom";
-							save();
-						},
-					})
+						})
 				);
 			}
 
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.appearance.uiElements.showTaskCardInNote.name"),
-					desc: translate(
-						"settings.appearance.uiElements.showTaskCardInNote.description"
-					),
-					getValue: () => plugin.settings.showTaskCardInNote,
-					setValue: async (value: boolean) => {
-						plugin.settings.showTaskCardInNote = value;
-						save();
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate(
-						"settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
-					),
-					desc: translate(
-						"settings.appearance.uiElements.showCompletedTaskStrikethrough.description"
-					),
-					getValue: () => plugin.settings.showCompletedTaskStrikethrough,
-					setValue: async (value: boolean) => {
-						plugin.settings.showCompletedTaskStrikethrough = value;
-						save();
-						plugin.app.workspace.trigger("tasknotes:refresh-views");
-					},
-				})
-			);
-
-			group.addSetting((setting) =>
-				void configureToggleSetting(setting, {
-					name: translate("settings.appearance.uiElements.showExpandableSubtasks.name"),
-					desc: translate(
-						"settings.appearance.uiElements.showExpandableSubtasks.description"
-					),
-					getValue: () => plugin.settings.showExpandableSubtasks,
-					setValue: async (value: boolean) => {
-						plugin.settings.showExpandableSubtasks = value;
-						save();
-						renderAppearanceTab(container, plugin, save);
-					},
-				})
-			);
-
-			if (plugin.settings.showExpandableSubtasks) {
-				group.addSetting((setting) =>
+			group.addSetting(
+				(setting) =>
 					void configureToggleSetting(setting, {
-						name: translate(
-							"settings.appearance.uiElements.expandSubtasksByDefault.name"
-						),
+						name: translate("settings.appearance.uiElements.showTaskCardInNote.name"),
 						desc: translate(
-							"settings.appearance.uiElements.expandSubtasksByDefault.description"
+							"settings.appearance.uiElements.showTaskCardInNote.description"
 						),
-						getValue: () => plugin.settings.expandSubtasksByDefault,
+						getValue: () => plugin.settings.showTaskCardInNote,
 						setValue: async (value: boolean) => {
-							plugin.settings.expandSubtasksByDefault = value;
+							plugin.settings.showTaskCardInNote = value;
 							save();
 						},
 					})
-				);
+			);
 
-				group.addSetting((setting) =>
-					void configureDropdownSetting(setting, {
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
 						name: translate(
-							"settings.appearance.uiElements.subtaskChevronPosition.name"
+							"settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
 						),
 						desc: translate(
-							"settings.appearance.uiElements.subtaskChevronPosition.description"
+							"settings.appearance.uiElements.showCompletedTaskStrikethrough.description"
+						),
+						getValue: () => plugin.settings.showCompletedTaskStrikethrough,
+						setValue: async (value: boolean) => {
+							plugin.settings.showCompletedTaskStrikethrough = value;
+							save();
+							plugin.app.workspace.trigger("tasknotes:refresh-views");
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.appearance.uiElements.showExpandableSubtasks.name"
+						),
+						desc: translate(
+							"settings.appearance.uiElements.showExpandableSubtasks.description"
+						),
+						getValue: () => plugin.settings.showExpandableSubtasks,
+						setValue: async (value: boolean) => {
+							plugin.settings.showExpandableSubtasks = value;
+							save();
+							renderAppearanceTab(container, plugin, save);
+						},
+					})
+			);
+
+			if (plugin.settings.showExpandableSubtasks) {
+				group.addSetting(
+					(setting) =>
+						void configureToggleSetting(setting, {
+							name: translate(
+								"settings.appearance.uiElements.expandSubtasksByDefault.name"
+							),
+							desc: translate(
+								"settings.appearance.uiElements.expandSubtasksByDefault.description"
+							),
+							getValue: () => plugin.settings.expandSubtasksByDefault,
+							setValue: async (value: boolean) => {
+								plugin.settings.expandSubtasksByDefault = value;
+								save();
+							},
+						})
+				);
+
+				group.addSetting(
+					(setting) =>
+						void configureDropdownSetting(setting, {
+							name: translate(
+								"settings.appearance.uiElements.subtaskChevronPosition.name"
+							),
+							desc: translate(
+								"settings.appearance.uiElements.subtaskChevronPosition.description"
+							),
+							options: [
+								{
+									value: "left",
+									label: translate(
+										"settings.appearance.uiElements.subtaskChevronPosition.options.left"
+									),
+								},
+								{
+									value: "right",
+									label: translate(
+										"settings.appearance.uiElements.subtaskChevronPosition.options.right"
+									),
+								},
+							],
+							getValue: () => plugin.settings.subtaskChevronPosition,
+							setValue: async (value: string) => {
+								plugin.settings.subtaskChevronPosition = value as "left" | "right";
+								save();
+							},
+						})
+				);
+			}
+
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.appearance.uiElements.viewsButtonAlignment.name"),
+						desc: translate(
+							"settings.appearance.uiElements.viewsButtonAlignment.description"
 						),
 						options: [
 							{
 								value: "left",
 								label: translate(
-									"settings.appearance.uiElements.subtaskChevronPosition.options.left"
+									"settings.appearance.uiElements.viewsButtonAlignment.options.left"
 								),
 							},
 							{
 								value: "right",
 								label: translate(
-									"settings.appearance.uiElements.subtaskChevronPosition.options.right"
+									"settings.appearance.uiElements.viewsButtonAlignment.options.right"
 								),
 							},
 						],
-						getValue: () => plugin.settings.subtaskChevronPosition,
+						getValue: () => plugin.settings.viewsButtonAlignment,
 						setValue: async (value: string) => {
-							plugin.settings.subtaskChevronPosition = value as "left" | "right";
+							plugin.settings.viewsButtonAlignment = value as "left" | "right";
 							save();
 						},
 					})
-				);
-			}
-
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.appearance.uiElements.viewsButtonAlignment.name"),
-					desc: translate(
-						"settings.appearance.uiElements.viewsButtonAlignment.description"
-					),
-					options: [
-						{
-							value: "left",
-							label: translate(
-								"settings.appearance.uiElements.viewsButtonAlignment.options.left"
-							),
-						},
-						{
-							value: "right",
-							label: translate(
-								"settings.appearance.uiElements.viewsButtonAlignment.options.right"
-							),
-						},
-					],
-					getValue: () => plugin.settings.viewsButtonAlignment,
-					setValue: async (value: string) => {
-						plugin.settings.viewsButtonAlignment = value as "left" | "right";
-						save();
-					},
-				})
 			);
 		}
 	);
@@ -864,52 +928,61 @@ export function renderAppearanceTab(
 			description: translate("settings.general.taskInteraction.description"),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.general.taskInteraction.singleClick.name"),
-					desc: translate("settings.general.taskInteraction.singleClick.description"),
-					options: [
-						{
-							value: "edit",
-							label: translate("settings.general.taskInteraction.actions.edit"),
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.general.taskInteraction.singleClick.name"),
+						desc: translate("settings.general.taskInteraction.singleClick.description"),
+						options: [
+							{
+								value: "edit",
+								label: translate("settings.general.taskInteraction.actions.edit"),
+							},
+							{
+								value: "openNote",
+								label: translate(
+									"settings.general.taskInteraction.actions.openNote"
+								),
+							},
+						],
+						getValue: () => plugin.settings.singleClickAction,
+						setValue: async (value: string) => {
+							plugin.settings.singleClickAction = value as "edit" | "openNote";
+							save();
 						},
-						{
-							value: "openNote",
-							label: translate("settings.general.taskInteraction.actions.openNote"),
-						},
-					],
-					getValue: () => plugin.settings.singleClickAction,
-					setValue: async (value: string) => {
-						plugin.settings.singleClickAction = value as "edit" | "openNote";
-						save();
-					},
-				})
+					})
 			);
 
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate("settings.general.taskInteraction.doubleClick.name"),
-					desc: translate("settings.general.taskInteraction.doubleClick.description"),
-					options: [
-						{
-							value: "edit",
-							label: translate("settings.general.taskInteraction.actions.edit"),
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
+						name: translate("settings.general.taskInteraction.doubleClick.name"),
+						desc: translate("settings.general.taskInteraction.doubleClick.description"),
+						options: [
+							{
+								value: "edit",
+								label: translate("settings.general.taskInteraction.actions.edit"),
+							},
+							{
+								value: "openNote",
+								label: translate(
+									"settings.general.taskInteraction.actions.openNote"
+								),
+							},
+							{
+								value: "none",
+								label: translate("settings.general.taskInteraction.actions.none"),
+							},
+						],
+						getValue: () => plugin.settings.doubleClickAction,
+						setValue: async (value: string) => {
+							plugin.settings.doubleClickAction = value as
+								| "edit"
+								| "openNote"
+								| "none";
+							save();
 						},
-						{
-							value: "openNote",
-							label: translate("settings.general.taskInteraction.actions.openNote"),
-						},
-						{
-							value: "none",
-							label: translate("settings.general.taskInteraction.actions.none"),
-						},
-					],
-					getValue: () => plugin.settings.doubleClickAction,
-					setValue: async (value: string) => {
-						plugin.settings.doubleClickAction = value as "edit" | "openNote" | "none";
-						save();
-					},
-				})
+					})
 			);
 		}
 	);

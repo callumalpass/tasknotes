@@ -1,6 +1,6 @@
 # TaskNotes Privacy Policy
 
-Last updated: July 11, 2026
+Last updated: October 4, 2026
 
 ## Overview
 
@@ -27,6 +27,7 @@ Optional network features:
 - ICS subscriptions: fetches events from configured ICS URLs.
 - Webhooks: sends event payloads to webhook endpoints you configure.
 - API docs UI (`/api/docs/ui`): loads Swagger UI assets from `unpkg.com` in your browser.
+- Downloadable interface languages (experimental builds only): builds explicitly configured with a language-pack host download the selected language, or the system language when selected, if a compatible local pack is unavailable. English is bundled. Packs are validated and cached locally for offline use; there is no periodic refresh. Requests identify the catalogue version and language but do not send notes, tasks, or other vault content. The host receives normal connection metadata, such as your IP address. Ordinary builds bundle all supported languages and do not make these requests.
 
 ## OAuth Credentials and Tokens
 
@@ -42,6 +43,7 @@ Optional network features:
 - Microsoft APIs: https://privacy.microsoft.com/privacystatement
 - GitHub: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement
 - Any ICS host or webhook endpoint you configure
+- The language-pack host configured by the distributor of an experimental downloadable-language build
 
 ## What TaskNotes Does Not Do
 

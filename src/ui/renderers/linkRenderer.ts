@@ -14,6 +14,7 @@ export type LinkNavigateHandler = (
 
 /** Minimal services required to render internal links (DI-friendly) */
 export interface LinkServices {
+	translate: (key: string, params?: Record<string, string | number>) => string;
 	metadataCache: App["metadataCache"];
 	workspace: App["workspace"];
 	/**
@@ -107,7 +108,9 @@ export function appendInternalLink(
 				if (file instanceof TFile) {
 					await deps.workspace.getLeaf(false).openFile(file);
 				} else if (showErrorNotices) {
-					new Notice(`Note "${displayText}" not found`);
+					new Notice(
+						deps.translate("notices.interface.noteMissing", { title: displayText })
+					);
 				}
 			} catch (error) {
 				tasknotesLogger.error("[TaskNotes] Error opening internal link:", {
@@ -117,7 +120,9 @@ export function appendInternalLink(
 					error: error,
 				});
 				if (showErrorNotices) {
-					new Notice(`Failed to open note "${displayText}"`);
+					new Notice(
+						deps.translate("notices.interface.noteOpenFailed", { title: displayText })
+					);
 				}
 			}
 		})();

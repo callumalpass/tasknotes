@@ -597,9 +597,11 @@ export class KanbanView extends BasesViewBase {
 
 			if (
 				renderTasks.length === 0 &&
-				!(filteredTasks.length > 0 &&
+				!(
+					filteredTasks.length > 0 &&
 					!this.hideEmptySwimLanes &&
-					this.isPropertyField(this.swimLanePropertyId, "priority"))
+					this.isPropertyField(this.swimLanePropertyId, "priority")
+				)
 			) {
 				// Show "no results" if search returned empty but we had tasks
 				if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
@@ -731,7 +733,7 @@ export class KanbanView extends BasesViewBase {
 			pathsToUpdate.length === 1 &&
 			(options.draggedPaths?.length ?? 1) === 1 &&
 			(options.optimisticReorderApplied === true || hasVirtualScroller)
-			);
+		);
 	}
 
 	private canFastPatchCrossScopeDrop(
@@ -856,7 +858,9 @@ export class KanbanView extends BasesViewBase {
 			return false;
 		}
 
-		const sourceSwimLaneKey = this.swimLanePropertyId ? (dropPlan.sourceSwimlane ?? null) : null;
+		const sourceSwimLaneKey = this.swimLanePropertyId
+			? (dropPlan.sourceSwimlane ?? null)
+			: null;
 		const targetGroupKey = dropPlan.newGroupValue;
 		const targetSwimLaneKey = this.swimLanePropertyId ? dropPlan.newSwimLaneValue : null;
 		const sourceScopePaths = this.getVisibleSortScopePaths(sourceGroupKey, sourceSwimLaneKey);
@@ -866,7 +870,11 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		const nextSourceScopePaths = sourceScopePaths.filter((scopePath) => scopePath !== path);
-		const nextTargetScopePaths = this.insertPathIntoDropScope(targetScopePaths, path, dropTarget);
+		const nextTargetScopePaths = this.insertPathIntoDropScope(
+			targetScopePaths,
+			path,
+			dropTarget
+		);
 		if (!nextTargetScopePaths) {
 			return false;
 		}
@@ -876,7 +884,8 @@ export class KanbanView extends BasesViewBase {
 			return false;
 		}
 
-		const task = updatedTask ?? this.buildTaskInfoForLocalDropPatch(path, dropPlan, sortOrderPlan);
+		const task =
+			updatedTask ?? this.buildTaskInfoForLocalDropPatch(path, dropPlan, sortOrderPlan);
 		if (!task) {
 			return false;
 		}
@@ -922,7 +931,9 @@ export class KanbanView extends BasesViewBase {
 			}
 			targetScroller.invalidateItems([path]);
 			this.removeNormalRenderedTask(path);
-		} else if (!this.renderNormalTaskInDropScope(task, targetGroupKey, targetSwimLaneKey, dropTarget)) {
+		} else if (
+			!this.renderNormalTaskInDropScope(task, targetGroupKey, targetSwimLaneKey, dropTarget)
+		) {
 			return false;
 		}
 
@@ -976,10 +987,7 @@ export class KanbanView extends BasesViewBase {
 		);
 	}
 
-	private moveVisiblePathForDrop(
-		path: string,
-		dropTarget?: KanbanDropTarget
-	): string[] | null {
+	private moveVisiblePathForDrop(path: string, dropTarget?: KanbanDropTarget): string[] | null {
 		const visiblePaths = this.getCurrentVisibleTaskPathOrder();
 		if (!visiblePaths.includes(path)) {
 			return null;
@@ -990,7 +998,12 @@ export class KanbanView extends BasesViewBase {
 		if (!visiblePaths.includes(dropTarget.taskPath)) {
 			return null;
 		}
-		return movePathsRelativeToTarget(visiblePaths, [path], dropTarget.taskPath, dropTarget.above);
+		return movePathsRelativeToTarget(
+			visiblePaths,
+			[path],
+			dropTarget.taskPath,
+			dropTarget.above
+		);
 	}
 
 	private buildTaskInfoForLocalDropPatch(
@@ -3622,19 +3635,19 @@ export class KanbanView extends BasesViewBase {
 				const pathsToUpdate =
 					requestedDraggedPaths.length > 1 ? requestedDraggedPaths : [taskPath];
 				const isBatchOperation = pathsToUpdate.length > 1;
-					const canFastPatchManualOrder = this.canFastPatchManualOrderDrop(
-						options,
-						dropTarget,
-						pathsToUpdate,
-						newGroupValue,
-						newSwimLaneValue
-					);
-					const canFastPatchCrossScopeDrop = this.canFastPatchCrossScopeDrop(
-						options,
-						pathsToUpdate
-					);
-					let fastPatchedManualOrder = false;
-					let fastPatchedCrossScopeDrop = false;
+				const canFastPatchManualOrder = this.canFastPatchManualOrderDrop(
+					options,
+					dropTarget,
+					pathsToUpdate,
+					newGroupValue,
+					newSwimLaneValue
+				);
+				const canFastPatchCrossScopeDrop = this.canFastPatchCrossScopeDrop(
+					options,
+					pathsToUpdate
+				);
+				let fastPatchedManualOrder = false;
+				let fastPatchedCrossScopeDrop = false;
 
 				// Pre-compute sort_order related state
 				const hasSortOrder = isSortOrderInSortConfig(
@@ -4114,6 +4127,7 @@ export class KanbanView extends BasesViewBase {
 	private renderLinkAwareGroupTitle(container: HTMLElement, title: string): void {
 		const app = this.app || this.plugin.app;
 		const linkServices: LinkServices = {
+			translate: this.plugin.i18n.translate.bind(this.plugin.i18n),
 			metadataCache: app.metadataCache,
 			workspace: app.workspace,
 		};
@@ -4166,7 +4180,9 @@ export class KanbanView extends BasesViewBase {
 			columnKeys,
 			swimLaneOrders: this.swimLaneOrders,
 			hideEmptySwimLanes: this.hideEmptySwimLanes,
-			priorityKeys: this.plugin.priorityManager.getAllPriorities().map((priority) => priority.value),
+			priorityKeys: this.plugin.priorityManager
+				.getAllPriorities()
+				.map((priority) => priority.value),
 			isPriorityField: (propertyId) => this.isPropertyField(propertyId, "priority"),
 			isStatusField: (propertyId) => this.isPropertyField(propertyId, "status"),
 			getPriorityWeight: (key) => this.plugin.priorityManager.getPriorityWeight(key),

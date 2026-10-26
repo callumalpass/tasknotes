@@ -135,6 +135,7 @@ export function renderTaskModalProjectsList({
 	}
 
 	const linkServices: LinkServices = {
+		translate: translate,
 		metadataCache: app.metadataCache,
 		workspace: app.workspace,
 	};

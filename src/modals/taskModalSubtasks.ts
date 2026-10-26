@@ -73,6 +73,7 @@ export async function renderTaskModalSubtasksList({
 	}
 
 	const linkServices: LinkServices = {
+		translate: translate,
 		metadataCache: app.metadataCache,
 		workspace: app.workspace,
 	};

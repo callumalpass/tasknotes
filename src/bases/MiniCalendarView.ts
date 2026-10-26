@@ -13,7 +13,6 @@ import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { readBasesViewConfigValue } from "./basesViewConfig";
 import { ICSEvent, TaskInfo } from "../types";
-import { format } from "date-fns";
 import {
 	formatDateForStorage,
 	getTodayLocal,
@@ -694,8 +693,8 @@ export class MiniCalendarView extends BasesViewBase {
 			text: "‹",
 			cls: "mini-calendar-view__nav-button mini-calendar-view__nav-button--prev tn-btn tn-btn--icon tn-btn--ghost",
 			attr: {
-				"aria-label": "Previous month",
-				title: "Previous month",
+				"aria-label": this.plugin.i18n.translate("modals.taskEdit.previousMonth"),
+				title: this.plugin.i18n.translate("modals.taskEdit.previousMonth"),
 			},
 		});
 		prevButton.addEventListener("click", () => this.navigateToPreviousMonth());
@@ -703,7 +702,11 @@ export class MiniCalendarView extends BasesViewBase {
 		// Current month display
 		navSection.createDiv({
 			cls: "mini-calendar-view__month-display",
-			text: format(convertUTCToLocalCalendarDate(this.selectedDate), "MMMM yyyy"),
+			text: new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), {
+				month: "long",
+				year: "numeric",
+				timeZone: "UTC",
+			}).format(this.selectedDate),
 		});
 
 		// Next month button
@@ -711,19 +714,19 @@ export class MiniCalendarView extends BasesViewBase {
 			text: "›",
 			cls: "mini-calendar-view__nav-button mini-calendar-view__nav-button--next tn-btn tn-btn--icon tn-btn--ghost",
 			attr: {
-				"aria-label": "Next month",
-				title: "Next month",
+				"aria-label": this.plugin.i18n.translate("components.dateContextMenu.nextMonth"),
+				title: this.plugin.i18n.translate("components.dateContextMenu.nextMonth"),
 			},
 		});
 		nextButton.addEventListener("click", () => this.navigateToNextMonth());
 
 		// Today button
 		const todayButton = headerContainer.createEl("button", {
-			text: "Today",
+			text: this.plugin.i18n.translate("views.basesCalendar.today"),
 			cls: "mini-calendar-view__today-button tn-btn tn-btn--ghost tn-btn--sm",
 			attr: {
-				"aria-label": "Go to today",
-				title: "Go to today",
+				"aria-label": this.plugin.i18n.translate("views.basesCalendar.hints.today"),
+				title: this.plugin.i18n.translate("views.basesCalendar.hints.today"),
 			},
 		});
 		todayButton.addEventListener("click", () => this.navigateToToday());
@@ -751,7 +754,7 @@ export class MiniCalendarView extends BasesViewBase {
 			cls: "mini-calendar-view__grid",
 			attr: {
 				role: "grid",
-				"aria-label": `Calendar for ${format(convertUTCToLocalCalendarDate(new Date(Date.UTC(currentYear, currentMonth, 1))), "MMMM yyyy")}`,
+				"aria-label": `${this.plugin.i18n.translate("views.miniCalendar.title")}: ${new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), { month: "long", year: "numeric", timeZone: "UTC" }).format(firstDayOfMonth)}`,
 				tabindex: "0",
 			},
 		});
@@ -777,7 +780,12 @@ export class MiniCalendarView extends BasesViewBase {
 			attr: { role: "columnheader" },
 		});
 
-		const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+		const dayNames = Array.from({ length: 7 }, (_, day) =>
+			new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), {
+				weekday: "short",
+				timeZone: "UTC",
+			}).format(new Date(Date.UTC(2026, 9, 18 + day)))
+		);
 		const reorderedDayNames = [
 			...dayNames.slice(firstDaySetting),
 			...dayNames.slice(0, firstDaySetting),
@@ -852,7 +860,7 @@ export class MiniCalendarView extends BasesViewBase {
 		const weekNum = this.getWeekNumber(weekDays[0]);
 		const weekCell = weekRow.createDiv({
 			cls: "mini-calendar-week-number",
-			text: `W${weekNum}`,
+			text: new Intl.NumberFormat(this.plugin.i18n.getCurrentLocale()).format(weekNum),
 		});
 
 		weekCell.addEventListener("click", (e) => {
@@ -906,8 +914,13 @@ export class MiniCalendarView extends BasesViewBase {
 			attr: {
 				role: "gridcell",
 				"aria-label":
-					format(convertUTCToLocalCalendarDate(dayDate), "EEEE, MMMM d, yyyy") +
-					(isToday ? " (Today)" : ""),
+					new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), {
+						dateStyle: "full",
+						timeZone: "UTC",
+					}).format(dayDate) +
+					(isToday
+						? ` (${this.plugin.i18n.translate("views.basesCalendar.today")})`
+						: ""),
 				"aria-selected": isSelected ? "true" : "false",
 				"aria-current": isToday ? "date" : null,
 			},
@@ -995,7 +1008,7 @@ export class MiniCalendarView extends BasesViewBase {
 			const dot = indicators.createSpan({
 				cls: "mini-calendar-view__external-event-dot",
 				attr: {
-					"aria-label": `${entry.title} (${entry.sourceName || "Calendar"})`,
+					"aria-label": `${entry.title} (${entry.sourceName || this.plugin.i18n.translate("ui.icsCard.calendarFallback")})`,
 				},
 			});
 
@@ -1052,9 +1065,7 @@ export class MiniCalendarView extends BasesViewBase {
 	private async openDailyNoteForDate(date: Date): Promise<void> {
 		// Check if daily notes plugin is enabled
 		if (!appHasDailyNotesPluginLoaded()) {
-			new Notice(
-				"Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
-			);
+			new Notice(this.plugin.i18n.translate("notices.commands.dailyNotesDisabled"));
 			return;
 		}
 
@@ -1086,7 +1097,11 @@ export class MiniCalendarView extends BasesViewBase {
 					operation: "create-daily-note",
 					error: error,
 				});
-				new Notice(`Failed to create daily note: ${errorMessage}`);
+				new Notice(
+					this.plugin.i18n.translate("notices.commands.dailyNoteCreateFailed", {
+						message: errorMessage,
+					})
+				);
 				return;
 			}
 		}
@@ -1099,9 +1114,7 @@ export class MiniCalendarView extends BasesViewBase {
 
 	private async openWeeklyNoteForDate(date: Date): Promise<void> {
 		if (!appHasWeeklyNotesPluginLoaded()) {
-			new Notice(
-				"Weekly notes core plugin is not enabled. Please enable it in settings > core plugins."
-			);
+			new Notice(this.plugin.i18n.translate("notices.audit.weeklyDisabled"));
 			return;
 		}
 
@@ -1130,7 +1143,11 @@ export class MiniCalendarView extends BasesViewBase {
 					operation: "create-weekly-note",
 					error: error,
 				});
-				new Notice(`Failed to create weekly note: ${errorMessage}`);
+				new Notice(
+					this.plugin.i18n.translate("notices.audit.weeklyFailed", {
+						message: errorMessage,
+					})
+				);
 				return;
 			}
 		}
@@ -1458,7 +1475,7 @@ export class MiniCalendarView extends BasesViewBase {
 			);
 			modal.open();
 		} else {
-			new Notice("No notes found for selected dates");
+			new Notice(this.plugin.i18n.translate("notices.audit.noNotes"));
 		}
 	}
 
@@ -1611,7 +1628,7 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 		this.notes = notes;
 		this.onChooseNote = onChooseNote;
 
-		this.setPlaceholder("Select an item to open");
+		this.setPlaceholder(this.plugin.i18n.translate("ui.audit.selectNote"));
 		this.setInstructions([
 			{ command: "↑↓", purpose: "Navigate" },
 			{ command: "↵", purpose: "Open item" },

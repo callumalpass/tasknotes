@@ -1,4 +1,12 @@
-import { Menu, Notice, Platform, TFile, setTooltip, type MenuItem, type TAbstractFile } from "obsidian";
+import {
+	Menu,
+	Notice,
+	Platform,
+	TFile,
+	setTooltip,
+	type MenuItem,
+	type TAbstractFile,
+} from "obsidian";
 import type { OccurrenceMaterializationMode, OccurrenceNextTrigger } from "@tasknotes/model";
 import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
@@ -422,7 +430,7 @@ export class TaskContextMenu {
 		// Create timeblock from task
 		if (plugin.settings.calendarViewSettings.enableTimeblocking) {
 			this.menu.addItem((item) => {
-				item.setTitle("Create timeblock");
+				item.setTitle(this.t("modals.timeblockCreation.heading"));
 				item.setIcon("calendar-plus");
 				item.onClick(() => {
 					const prefill = buildTimeblockPrefillForTask(task, this.options.targetDate);
@@ -619,7 +627,9 @@ export class TaskContextMenu {
 									operation: "deleting-task",
 									error: error,
 								});
-								new Notice(`Failed to delete task: ${message}`);
+								new Notice(
+									this.t("modals.taskEdit.notices.deleteFailure", { message })
+								);
 							}
 						}
 					});
@@ -982,11 +992,7 @@ export class TaskContextMenu {
 		});
 	}
 
-	private addPickCompletionDateAction(
-		task: TaskInfo,
-		plugin: TaskNotesPlugin,
-		menu: Menu
-	): void {
+	private addPickCompletionDateAction(task: TaskInfo, plugin: TaskNotesPlugin, menu: Menu): void {
 		menu.addItem((item) => {
 			item.setTitle(this.t("contextMenus.task.completion.completeOnPicked"));
 			item.setIcon("calendar-plus");
@@ -1143,7 +1149,7 @@ export class TaskContextMenu {
 
 	private addOccurrenceNoteMenuItem(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		this.menu.addItem((item) => {
-			item.setTitle("Open or create occurrence note");
+			item.setTitle(this.t("modals.actionPalette.openOccurrence"));
 			item.setIcon("file-plus");
 			item.onClick(async () => {
 				await openOrCreateOccurrenceNote({
@@ -1171,7 +1177,7 @@ export class TaskContextMenu {
 
 	private addMaterializedOccurrenceMenuItems(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		this.menu.addItem((item) => {
-			item.setTitle("Open recurring parent");
+			item.setTitle(this.t("modals.actionPalette.openParent"));
 			item.setIcon("refresh-ccw");
 			item.onClick(async () => {
 				await openMaterializedOccurrenceParent({
@@ -1188,7 +1194,13 @@ export class TaskContextMenu {
 		}
 
 		this.menu.addItem((item) => {
-			item.setTitle(isSkipped ? "Unskip occurrence" : "Skip occurrence");
+			item.setTitle(
+				this.t(
+					isSkipped
+						? "contextMenus.task.unskipInstance"
+						: "contextMenus.task.skipInstance"
+				)
+			);
 			item.setIcon(isSkipped ? "undo" : "x-circle");
 			item.onClick(async () => {
 				try {
@@ -1205,7 +1217,9 @@ export class TaskContextMenu {
 						details: { taskPath: task.path, occurrenceDate: task.occurrence_date },
 						error: errorMessage,
 					});
-					new Notice(`Failed to update occurrence: ${errorMessage}`);
+					new Notice(
+						this.t("modals.taskEdit.notices.updateFailure", { message: errorMessage })
+					);
 				}
 			});
 		});
@@ -1901,7 +1915,11 @@ export class TaskContextMenu {
 							details: { taskPath: task.path },
 							error: errorMessage,
 						});
-						new Notice(`Failed to update task status: ${errorMessage}`);
+						new Notice(
+							this.t("notices.interface.statusFailed", {
+								message: errorMessage,
+							})
+						);
 					}
 				});
 
@@ -1955,7 +1973,11 @@ export class TaskContextMenu {
 							details: { taskPath: task.path },
 							error: errorMessage,
 						});
-						new Notice(`Failed to update task priority: ${errorMessage}`);
+						new Notice(
+							this.t("modals.taskEdit.notices.updateFailure", {
+								message: errorMessage,
+							})
+						);
 					}
 				});
 
@@ -2313,7 +2335,7 @@ export class TaskContextMenu {
 
 		submenu.addSeparator();
 		submenu.addItem((item) => {
-			item.setTitle("Occurrence notes");
+			item.setTitle(this.t("ui.audit.occurrenceNotes"));
 			item.setIcon("files");
 
 			const policyMenu = getSubmenu(item);
@@ -2331,14 +2353,14 @@ export class TaskContextMenu {
 				});
 			};
 
-			addModeOption("manual", "Create manually", "file-plus");
-			addModeOption("on_completion", "Create next after completion", "check-circle");
+			addModeOption("manual", this.t("ui.audit.manual"), "file-plus");
+			addModeOption("on_completion", this.t("ui.audit.afterCompletion"), "check-circle");
 
 			policyMenu.addItem((modeItem) => {
 				modeItem.setTitle(
 					currentMode === "rolling"
-						? "✓ Rolling window (not automated yet)"
-						: "Rolling window (not automated yet)"
+						? `✓ ${this.t("ui.audit.rolling")}`
+						: this.t("ui.audit.rolling")
 				);
 				modeItem.setIcon("calendar-range");
 				modeItem.setDisabled(true);
@@ -2356,12 +2378,12 @@ export class TaskContextMenu {
 			}> = [
 				{
 					value: "completion",
-					label: "Completion only",
+					label: this.t("ui.audit.completionOnly"),
 					icon: "check",
 				},
 				{
 					value: "completion_or_skip",
-					label: "Completion or skip",
+					label: this.t("ui.audit.completionOrSkip"),
 					icon: "check-check",
 				},
 			];
@@ -2405,8 +2427,10 @@ export class TaskContextMenu {
 			this.options.onUpdate?.();
 			new Notice(
 				mode === "manual"
-					? "Occurrence notes set to manual creation"
-					: "Occurrence notes will be created after completion"
+					? this.t("notices.audit.occurrencePolicy", { mode: this.t("ui.audit.manual") })
+					: this.t("notices.audit.occurrencePolicy", {
+							mode: this.t("ui.audit.afterCompletion"),
+						})
 			);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -2416,7 +2440,7 @@ export class TaskContextMenu {
 				details: { taskPath: task.path, mode },
 				error: errorMessage,
 			});
-			new Notice(`Failed to update occurrence notes setting: ${errorMessage}`);
+			new Notice(this.t("modals.taskEdit.notices.updateFailure", { message: errorMessage }));
 		}
 	}
 
@@ -2435,8 +2459,12 @@ export class TaskContextMenu {
 			this.options.onUpdate?.();
 			new Notice(
 				trigger === "completion"
-					? "Next occurrence note will be created after completion"
-					: "Next occurrence note will be created after completion or skip"
+					? this.t("notices.audit.occurrencePolicy", {
+							mode: this.t("ui.audit.completionOnly"),
+						})
+					: this.t("notices.audit.occurrencePolicy", {
+							mode: this.t("ui.audit.completionOrSkip"),
+						})
 			);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -2446,7 +2474,7 @@ export class TaskContextMenu {
 				details: { taskPath: task.path, trigger },
 				error: errorMessage,
 			});
-			new Notice(`Failed to update occurrence trigger: ${errorMessage}`);
+			new Notice(this.t("modals.taskEdit.notices.updateFailure", { message: errorMessage }));
 		}
 	}
 
@@ -2546,7 +2574,7 @@ export class TaskContextMenu {
 				operation: "adding-reminder",
 				error: error,
 			});
-			new Notice("Failed to add reminder");
+			new Notice(this.t("contextMenus.task.notices.addReminderFailure"));
 		}
 	}
 

@@ -4,6 +4,7 @@ import { builtinModules } from "node:module";
 import { readFileSync, existsSync, copyFileSync, mkdirSync } from "fs";
 import { resolve, join } from "path";
 import { homedir } from "os";
+import { createLanguagePackBuildPlugin } from "./scripts/lib/language-pack-build.mjs";
 
 const banner =
 `/*
@@ -98,7 +99,13 @@ const context = await esbuild.context({
 	minify: prod,
 	// Avoid bulky Unicode escapes in translations; keep the bundle within Obsidian Sync's limit.
 	charset: "utf8",
-	plugins: [markdownPlugin, ...(!prod ? [copyToVaultPlugin] : [])],
+	plugins: [
+		markdownPlugin,
+		...(process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL
+			? [createLanguagePackBuildPlugin({ baseUrl: process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL })]
+			: []),
+		...(!prod ? [copyToVaultPlugin] : []),
+	],
 });
 
 if (prod) {

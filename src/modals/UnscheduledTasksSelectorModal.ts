@@ -171,21 +171,29 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 				dueEl.addClass("overdue");
 				const warningIcon = dueEl.createSpan();
 				setIcon(warningIcon, "alert-triangle");
-				dueEl.createSpan({ text: ` Overdue: ${dueDateStr}` });
+				dueEl.createSpan({
+					text: this.translate("modals.unscheduledTasksSelector.overdue", {
+						date: dueDateStr,
+					}),
+				});
 			} else if (isToday(getDatePart(task.due))) {
 				dueEl.addClass("due-today");
 				const calendarIcon = dueEl.createSpan();
 				setIcon(calendarIcon, "calendar");
-				dueEl.createSpan({ text: ` Due today: ${dueDateStr}` });
+				dueEl.createSpan({
+					text: this.translate("modals.unscheduledTasksSelector.dueToday", {
+						date: dueDateStr,
+					}),
+				});
 			} else {
-				dueEl.setText(`Due: ${dueDateStr}`);
+				dueEl.setText(this.translate("modals.reminder.dueContext", { date: dueDateStr }));
 			}
 		}
 
 		// Time estimate if exists
 		if (task.timeEstimate) {
 			metaEl.createSpan({
-				text: `~${task.timeEstimate}min`,
+				text: `~${new Intl.NumberFormat(this.plugin.i18n.getCurrentLocale(), { style: "unit", unit: "minute", unitDisplay: "short" }).format(task.timeEstimate)}`,
 				cls: "unscheduled-tasks-selector__time-estimate",
 			});
 		}
@@ -248,9 +256,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 		const el = this.resultContainerEl.createDiv({
 			cls: "unscheduled-tasks-selector__no-results",
 		});
-		el.setText(
-			"No unscheduled tasks found. All tasks are either scheduled, completed, or archived."
-		);
+		el.setText(this.translate("modals.unscheduledTasksSelector.empty"));
 	}
 }
 
@@ -274,6 +280,7 @@ function renderProjectLinksForSelector(
 	container.innerHTML = "";
 
 	const linkServices: LinkServices = {
+		translate: plugin.i18n.translate.bind(plugin.i18n),
 		metadataCache: plugin.app.metadataCache,
 		workspace: plugin.app.workspace,
 		sourcePath: plugin.app.workspace.getActiveFile()?.path || "",
