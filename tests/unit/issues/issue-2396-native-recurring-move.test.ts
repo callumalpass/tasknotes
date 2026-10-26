@@ -16,7 +16,9 @@ jest.mock("../../../src/utils/dateUtils", () => ({
 	getTodayString: jest.fn(),
 }));
 
-import { generateRecurringTaskInstances, type CalendarEvent } from "../../../src/bases/calendar-core";
+import type { CalendarSettings } from "@tasknotes/model/calendar";
+import type { CalendarEvent } from "../../../src/bases/calendar-core";
+import { CalendarTaskProjection, calendarEntryToEvent } from "../../../src/bases/calendarModelEvents";
 import { getKanbanTaskActionDate } from "../../../src/bases/kanbanCardActions";
 import { FieldMapper } from "../../../src/core/FieldMapper";
 import type TaskNotesPlugin from "../../../src/main";
@@ -644,23 +646,27 @@ describe("issue #2396 buildTaskUpdateRecurrenceUpdates", () => {
 	});
 });
 
-describe("issue #2396 calendar placement", () => {
-	function createPlugin(): TaskNotesPlugin {
-		return {
-			priorityManager: {
-				getPriorityConfig: jest.fn().mockReturnValue({ color: "#3366ff" }),
-			},
-		} as unknown as TaskNotesPlugin;
-	}
+function renderCalendarTask(
+	task: TaskInfo,
+	from: string,
+	to: string,
+	{ materializedOccurrenceDates, ...settings }: CalendarSettings & { materializedOccurrenceDates?: string[] } = {}
+): CalendarEvent[] {
+	const projection = new CalendarTaskProjection({
+		timezone: "UTC",
+		now: "2026-10-11T00:00:00.000Z",
+		settings: { showDue: false, ...settings },
+		materializedOccurrences: { [task.id ?? task.path]: materializedOccurrenceDates ?? [] },
+	}, (_task, error) => { throw error; });
+	projection.setTasks([task]);
+	return projection.entriesInRange({ start: from, end: to }).map(entry => calendarEntryToEvent(entry, task, {
+		getPriorityColor: () => "#3366ff",
+		getThemeTextColor: () => "white",
+	}));
+}
 
-	function render(
-		task: TaskInfo,
-		from: string,
-		to: string,
-		options: Parameters<typeof generateRecurringTaskInstances>[4] = {}
-	): CalendarEvent[] {
-		return generateRecurringTaskInstances(task, day(from), day(to), createPlugin(), options);
-	}
+describe("issue #2396 calendar placement", () => {
+	const render = renderCalendarTask;
 
 	// [start, instanceDate] per event, sorted for stable comparison.
 	const placements = (events: CalendarEvent[]) =>
@@ -672,6 +678,26 @@ describe("issue #2396 calendar placement", () => {
 		expect(placements(events)).toEqual([["2026-10-12", "2026-10-18"]]);
 		expect(events[0].extendedProps.isNextScheduledOccurrence).toBe(true);
 		expect(events[0].id).toBe(`next-scheduled-${PATH}-2026-10-18`);
+	});
+
+	it("refreshes cached placements when only the original-date marker changes", () => {
+		const projection = new CalendarTaskProjection({
+			timezone: "UTC",
+			now: "2026-10-11T00:00:00Z",
+			settings: { showDue: false },
+		}, (_task, error) => { throw error; });
+		const range = { start: "2026-10-11", end: "2026-10-20" };
+		const task = annual({ scheduled: "2026-10-12" });
+		projection.setTasks([task]);
+		expect(projection.entriesInRange(range).map(entry => [entry.start, entry.instanceDate])).toEqual([
+			["2026-10-12", "2026-10-12"],
+			["2026-10-18", "2026-10-18"],
+		]);
+
+		projection.upsert({ ...task, recurrence_original_date: "2026-10-18" });
+		expect(projection.entriesInRange(range).map(entry => [entry.start, entry.instanceDate])).toEqual([
+			["2026-10-12", "2026-10-18"],
+		]);
 	});
 
 	it("keeps the next year's rule occurrence after the move", () => {
@@ -1474,15 +1500,8 @@ describe("issue #2396 due span of a moved occurrence", () => {
 	});
 
 	describe("calendar span segments", () => {
-		const plugin = {
-			priorityManager: { getPriorityConfig: jest.fn().mockReturnValue({ color: "#3366ff" }) },
-			statusManager: { isCompletedStatus: jest.fn().mockReturnValue(false) },
-		} as unknown as TaskNotesPlugin;
-
 		const renderSpan = (task: TaskInfo) =>
-			generateRecurringTaskInstances(task, new Date(2026, 9, 11), new Date(2026, 9, 20), plugin, {
-				showScheduledToDueSpan: true,
-			});
+			renderCalendarTask(task, "2026-10-11", "2026-10-20", { showScheduledToDueSpan: true });
 
 		it("renders an all-day moved span once with the original instance identity", () => {
 			const events = renderSpan(spanned());

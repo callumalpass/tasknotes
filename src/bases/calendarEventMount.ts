@@ -1,16 +1,16 @@
 import { msg } from "@lingui/core/macro";
-import type { EventMountArg } from "@fullcalendar/core";
-import type { BasesViewConfig } from "obsidian";
+import type { BasesEntry, BasesViewConfig } from "obsidian";
 import { setIcon, setTooltip } from "obsidian";
 import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
-import type { ICSEvent, TaskInfo, TimeBlock } from "../types";
+import type { ICSEvent, TaskInfo } from "../types";
 import { createTaskCard, type TaskCardOptions } from "../ui/TaskCard";
 import { createICSEventCard } from "../ui/ICSCard";
 import { createPropertyEventCard } from "../ui/PropertyEventCard";
 import { createTimeBlockCard } from "../ui/TimeBlockCard";
 import { getTargetDateForEvent } from "./calendar-core";
 import { createElementInDocument } from "../utils/documentDom";
+import type { CalendarEventApi } from "./calendarEngine";
 
 type BasesEntryValue = {
 	data?: string;
@@ -27,8 +27,8 @@ type CalendarListCardFactories = {
 	createTimeBlockCard?: typeof createTimeBlockCard;
 };
 
-export type CalendarListEventMountInput = {
-	arg: EventMountArg;
+export type CalendarListEventCardInput = {
+	event: CalendarEventApi;
 	plugin: TaskNotesPlugin;
 	config?: BasesViewConfig;
 	visibleProperties: string[];
@@ -116,7 +116,7 @@ export function decorateCalendarIcsEventElement({
 		element.appendChild(iconEl);
 	}
 
-	const titleEl = element.querySelector(".fc-event-title");
+	const titleEl = element.querySelector(".tnc-item-title");
 	if (titleEl && relatedNoteCount > 0) {
 		appendCalendarRelatedNoteIndicator(titleEl, plugin, relatedNoteCount);
 	}
@@ -172,8 +172,9 @@ export function enrichCalendarListTaskInfo({
 	return enrichedTask;
 }
 
-export function mountCalendarListEventCard({
-	arg,
+/** The card shown for an event in the list view, or null to keep the calendar's default row. */
+export function createCalendarListEventCard({
+	event,
 	plugin,
 	config,
 	visibleProperties,
@@ -181,17 +182,10 @@ export function mountCalendarListEventCard({
 	buildTaskCardOptions,
 	logDebug,
 	factories = {},
-}: CalendarListEventMountInput): boolean {
-	if (arg.view.type !== "listWeek") {
-		return false;
-	}
-
-	arg.el.innerHTML = "";
-
+}: CalendarListEventCardInput): HTMLElement | null {
 	const { taskInfo, timeblock, icsEvent, eventType, basesEntry, relatedNoteCount } =
-		arg.event.extendedProps || {};
+		event.extendedProps;
 	const relatedNoteTotal = normalizeCalendarRelatedNoteCount(relatedNoteCount);
-	let cardElement: HTMLElement | null = null;
 
 	if (taskInfo && eventType !== "ics" && eventType !== "property-based") {
 		const enrichedTask = enrichCalendarListTaskInfo({
@@ -200,57 +194,37 @@ export function mountCalendarListEventCard({
 			visibleProperties,
 			logDebug,
 		});
-		const targetDate = getTargetDateForEvent(arg);
-		cardElement = (factories.createTaskCard ?? createTaskCard)(
+		return (factories.createTaskCard ?? createTaskCard)(
 			enrichedTask,
 			plugin,
 			visibleProperties,
 			buildTaskCardOptions({
-				targetDate,
+				targetDate: getTargetDateForEvent({ event }),
 				promoteOccurrenceControlsInContextMenu: Boolean(
 					taskInfo.recurrence || (taskInfo.recurrence_parent && taskInfo.occurrence_date)
 				),
 			})
 		);
-	} else if (icsEvent && eventType === "ics") {
-		cardElement = (factories.createICSEventCard ?? createICSEventCard)(icsEvent, plugin, {
+	}
+	if (icsEvent && eventType === "ics") {
+		return (factories.createICSEventCard ?? createICSEventCard)(icsEvent, plugin, {
 			relatedNoteCount: relatedNoteTotal,
 		});
-	} else if (eventType === "property-based" && basesEntry) {
-		cardElement = (factories.createPropertyEventCard ?? createPropertyEventCard)(
-			basesEntry,
+	}
+	if (eventType === "property-based" && basesEntry) {
+		// Property events carry the Bases entry they were built from.
+		return (factories.createPropertyEventCard ?? createPropertyEventCard)(
+			basesEntry as BasesEntry,
 			plugin,
 			config
 		);
-	} else if (eventType === "timeblock" && timeblock) {
-		const originalDate = arg.event.start ? format(arg.event.start, "yyyy-MM-dd") : undefined;
-		cardElement = (factories.createTimeBlockCard ?? createTimeBlockCard)(
-			timeblock as TimeBlock,
-			plugin,
-			{
-				eventDate: arg.event.start ?? undefined,
-				originalDate,
-			}
-		);
 	}
-
-	if (!cardElement) {
-		arg.el.classList.add("fc-event-default-list");
-		return false;
+	if (eventType === "timeblock" && timeblock) {
+		const originalDate = event.start ? format(event.start, "yyyy-MM-dd") : undefined;
+		return (factories.createTimeBlockCard ?? createTimeBlockCard)(timeblock, plugin, {
+			eventDate: event.start ?? undefined,
+			originalDate,
+		});
 	}
-
-	const cardCell = createElementInDocument(arg.el.ownerDocument, "td");
-	cardCell.className = "fc-list-event-title fc-list-card-content";
-	cardCell.colSpan = 3;
-	cardCell.appendChild(cardElement);
-	arg.el.appendChild(cardCell);
-
-	if (taskInfo?.path) {
-		arg.el.setAttribute("data-task-path", taskInfo.path);
-		arg.el.classList.add("fc-task-event");
-	}
-	arg.el.classList.add("fc-list-task-card");
-	arg.el.classList.remove("fc-event", "fc-event-start", "fc-event-end");
-
-	return true;
+	return null;
 }

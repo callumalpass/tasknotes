@@ -20,7 +20,7 @@
  * - Add a `locked` property to TaskInfo interface
  * - Check locked status in handleEventDrop() and call info.revert() if locked
  * - Set editable: false for locked tasks in handleEventDidMount()
- * - Add visual styling (.fc-event-locked CSS class)
+ * - Add visual styling (.tnc-item.is-locked CSS class)
  * - Add context menu option to toggle lock
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1072
@@ -64,12 +64,12 @@ test.describe('Issue #1072: Lock Tasks - Prevent task movement on calendar', () 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view for better drag testing
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
@@ -77,8 +77,8 @@ test.describe('Issue #1072: Lock Tasks - Prevent task movement on calendar', () 
       }
 
       // Find a task event on the calendar
-      // Task events have class fc-event and contain task info in extendedProps
-      const taskEvents = page.locator('.fc-event[data-event-type="scheduled"], .fc-event[data-event-type="due"]');
+      // Task events have class tnc-item and contain task info in extendedProps
+      const taskEvents = page.locator('.tnc-item[data-event-type="scheduled"], .tnc-item[data-event-type="due"]');
       const eventCount = await taskEvents.count();
 
       if (eventCount > 0) {
@@ -125,7 +125,7 @@ test.describe('Issue #1072: Lock Tasks - Prevent task movement on calendar', () 
        * This could be a lock icon overlay, different border style, or CSS class.
        *
        * Expected behavior:
-       * - Locked tasks have .fc-event-locked CSS class
+       * - Locked tasks have .tnc-item.is-locked CSS class
        * - Visual differentiation (lock icon, opacity, border style)
        */
       const page = app.page;
@@ -134,12 +134,12 @@ test.describe('Issue #1072: Lock Tasks - Prevent task movement on calendar', () 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Look for locked task indicator
       // Once implemented, locked tasks should have a distinguishing class or element
-      const lockedEvents = page.locator('.fc-event-locked, .fc-event[data-locked="true"]');
+      const lockedEvents = page.locator('.tnc-item.is-locked, .tnc-item[data-locked="true"]');
       const lockedCount = await lockedEvents.count();
 
       // This test documents the expected visual indicator
@@ -187,11 +187,11 @@ test.describe('Issue #1072: Lock Tasks - Prevent task movement on calendar', () 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find a task event
-      const taskEvents = page.locator('.fc-event');
+      const taskEvents = page.locator('.tnc-item');
       const eventCount = await taskEvents.count();
 
       if (eventCount > 0) {
@@ -244,11 +244,11 @@ test.describe('Issue #1072: Lock Tasks - Prevent task movement on calendar', () 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find and lock a task (implementation pending)
-      const taskEvents = page.locator('.fc-event');
+      const taskEvents = page.locator('.tnc-item');
       const eventCount = await taskEvents.count();
 
       if (eventCount > 0) {
@@ -274,20 +274,20 @@ test.describe('Issue #1072: Lock Tasks - Prevent task movement on calendar', () 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
         await page.waitForTimeout(500);
       }
 
-      // Find an unlocked task event (one without .fc-event-locked class)
-      const unlockedEvents = page.locator('.fc-event:not(.fc-event-locked)');
+      // Find an unlocked task event (one without .tnc-item.is-locked class)
+      const unlockedEvents = page.locator('.tnc-item:not(.tnc-item.is-locked)');
       const eventCount = await unlockedEvents.count();
 
       if (eventCount > 0) {
@@ -342,16 +342,16 @@ test.describe('Issue #1072: Lock Tasks - Prevent task movement on calendar', () 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // This test documents the comprehensive lock behavior
       // Once implemented, verify that:
       // 1. All events from the same locked task have editable: false
-      // 2. All events from the same locked task have .fc-event-locked class
+      // 2. All events from the same locked task have .tnc-item.is-locked class
 
       // Find events that share a task path
-      const events = page.locator('.fc-event[data-task-path]');
+      const events = page.locator('.tnc-item[data-task-path]');
       const eventCount = await events.count();
 
       console.log(`Found ${eventCount} events with task path data attribute`);

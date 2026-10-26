@@ -285,12 +285,12 @@ test.describe('Issue #1147: Deleting time block should remove pomodoro session',
       await runCommand(page, 'TaskNotes: Open advanced calendar');
       await page.waitForTimeout(1000);
 
-      const calendarView = page.locator('.calendar-view, .fc, .bases-view');
+      const calendarView = page.locator('.calendar-view, .tnc, .bases-view');
       await expect(calendarView).toBeVisible({ timeout: 5000 });
 
       // Look for time entry events in the calendar
       const timeEntryEvents = calendarView.locator(
-        '.fc-event[data-event-type="timeEntry"], ' +
+        '.tnc-item[data-event-type="timeEntry"], ' +
           '.calendar-event--time-entry, ' +
           '[class*="timeentry"]'
       );

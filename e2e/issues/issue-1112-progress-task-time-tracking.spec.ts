@@ -444,12 +444,12 @@ test.describe('Issue #1112: Progress Task Time Tracking Features', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Find a recurring task event
         const recurringEvent = page
-          .locator('.fc-event')
+          .locator('.tnc-item')
           .filter({ has: page.locator('[data-is-recurring="true"], .recurring-indicator') })
           .first();
 

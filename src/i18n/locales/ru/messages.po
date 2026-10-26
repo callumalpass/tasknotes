@@ -1748,6 +1748,11 @@ msgctxt "settings.taskProperties.sections.taskDetailsDesc"
 msgid "Additional details like time estimates, recurrence, and reminders."
 msgstr "Дополнительные детали: оценка времени, повторения и напоминания."
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.groups.advanced"
+msgid "Advanced"
+msgstr "Дополнительно"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings.defaults.reminders.directions.after"
@@ -2535,11 +2540,6 @@ msgstr "Представление календаря"
 msgctxt "views.basesCalendar.settings.layout.calendarView"
 msgid "Calendar view"
 msgstr "Вид календаря"
-
-#: src/bases/CalendarView.ts
-msgctxt "bases/CalendarView: CalendarView.renderPopoutUnsupported display"
-msgid "Calendar view is unavailable in a separate window"
-msgstr "Календарь недоступен в отдельном окне"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.calendarLabel"
@@ -4004,8 +4004,8 @@ msgctxt "views.basesCalendar.settings.layout.customDayCount"
 msgid "Custom day count"
 msgstr "Пользовательское количество дней"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults timeGridCustom"
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.customDayView"
 msgid "Custom days"
 msgstr "Произвольное число дней"
 
@@ -4277,10 +4277,10 @@ msgctxt "modals.actionPalette.categories.dates"
 msgid "Dates"
 msgstr "Даты"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults timeGridDay"
-msgid "Day"
-msgstr "День"
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.groups.dayCells"
+msgid "Day cells"
+msgstr "Ячейки дней"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dayEndTime"
@@ -4298,6 +4298,7 @@ msgid "Day timeline"
 msgstr "Временная линия дня"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.day"
 msgid "Day view"
 msgstr "Вид по дням"
@@ -4866,6 +4867,11 @@ msgctxt "services.calendarExport.notices.singleDownloadSuccess"
 msgid "Downloaded {filename}"
 msgstr "Скачан {filename}"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.dragDropResolution"
+msgid "Drag and resize step"
+msgstr "Шаг перетаскивания и изменения размера"
+
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCard display"
 msgid "Drag to reorder"
@@ -4875,11 +4881,6 @@ msgstr "Перетащите, чтобы изменить порядок"
 msgctxt "settings/components/ListEditorComponent: ListEditorComponent.renderItemRow display"
 msgid "Drag to reorder"
 msgstr "Перетащите, чтобы изменить порядок"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.dragDropResolution"
-msgid "Drag/drop resolution"
-msgstr "Шаг перетаскивания"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.description"
@@ -5403,9 +5404,9 @@ msgid "Event URL copied to clipboard"
 msgstr "URL события скопирован в буфер обмена"
 
 #: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.groups.events"
-msgid "Events"
-msgstr "События"
+msgctxt "views.basesCalendar.settings.layout.dayMaxEvents"
+msgid "Events before “+ more” (0 = automatic)"
+msgstr "Событий до ссылки «ещё» (0 = автоматически)"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.googleRefreshInterval"
@@ -6762,12 +6763,6 @@ msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOr
 msgid "Generated link text is too long."
 msgstr "Текст созданной ссылки слишком длинный."
 
-#: src/bases/calendar-core.ts
-msgctxt "bases/calendar-core: attachDailyNoteHeaderLink display"
-msgid "Go to {value1}"
-msgstr "Перейти к {value1}"
-
-#: src/bases/CalendarView.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.hints.today"
 msgid "Go to today"
@@ -7557,11 +7552,6 @@ msgctxt "settings.taskProperties.properties.blockedBy.description"
 msgid "Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator."
 msgstr "Ссылки на задачи, которые должны быть выполнены до этой. Хранится как викиссылки. Заблокированные задачи отображают визуальный индикатор."
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults listWeek"
-msgid "List"
-msgstr "Список"
-
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 msgctxt "settings.taskProperties.customUserFields.types.list"
 msgid "List"
@@ -7573,6 +7563,7 @@ msgid "List day count"
 msgstr "Количество дней списка"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.list"
 msgid "List view"
 msgstr "Вид списком"
@@ -7773,6 +7764,11 @@ msgctxt "contextMenus.task.completion.submenu"
 msgid "Mark complete or skip"
 msgstr "Отметить как выполненную или пропустить"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.showNowIndicator"
+msgid "Mark current time"
+msgstr "Отмечать текущее время"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.completion.markIncomplete"
 msgid "Mark incomplete"
@@ -7797,21 +7793,6 @@ msgstr "Отмечен как незавершённый: {date}"
 msgctxt "bases/calendarViewOptions: buildMiniCalendarViewOptions displayName"
 msgid "Max color note count"
 msgstr "Максимальное число заметок для окраски"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.dayMaxEventRows"
-msgid "Max event rows per day (0 = unlimited)"
-msgstr "Макс. строк событий в день (0 = без ограничений)"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.dayMaxEvents"
-msgid "Max events per day (0 = auto)"
-msgstr "Макс. событий в день (0 = авто)"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.eventMaxStack"
-msgid "Max stacked events (week/day view, 0 = unlimited)"
-msgstr "Макс. наложенных событий (неделя/день, 0 = без ограничений)"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
@@ -7981,11 +7962,6 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.monday"
 msgid "Monday"
 msgstr "Понедельник"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults dayGridMonth"
-msgid "Month"
-msgstr "Месяц"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
 msgid "Month"
@@ -7997,6 +7973,7 @@ msgid "Month grid"
 msgstr "Сетка месяца"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.month"
 msgid "Month view"
 msgstr "Вид по месяцам"
@@ -8215,11 +8192,6 @@ msgstr "Следующая заметка: после завершения"
 msgctxt "ui/taskCardProperties: occurrenceNextTrigger display"
 msgid "Next note: completion or skip"
 msgstr "Следующая заметка: после завершения или пропуска"
-
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.rescheduled"
-msgid "Next occurrence rescheduled; the recurrence pattern is unchanged."
-msgstr "Следующее повторение перенесено; правило повторения не изменилось."
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.due.nextSevenDays"
@@ -9202,11 +9174,6 @@ msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
 msgstr "Открыть файл задачи в редакторе"
 
-#: src/bases/CalendarView.ts
-msgctxt "bases/CalendarView: CalendarView.renderPopoutUnsupported display"
-msgid "Open this calendar view in the main Obsidian window. The calendar can freeze Obsidian when restored inside a separate window."
-msgstr "Откройте этот календарь в основном окне Obsidian. При восстановлении календаря в отдельном окне Obsidian может зависнуть."
-
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.contextMenu.openWeeklyNote"
 msgid "Open weekly note"
@@ -9724,6 +9691,11 @@ msgctxt "settings.features.notifications.soundPreviewName"
 msgid "Preview notification sound"
 msgstr "Прослушать звук уведомления"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.showSelectionPreview"
+msgid "Preview selected time range"
+msgstr "Предпросмотр выбранного периода"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.prev"
 msgid "Previous"
@@ -10018,16 +9990,6 @@ msgctxt "modals.actionPalette.occurrenceCompleted"
 msgid "Recurring task instance completed"
 msgstr "Повторение задачи завершено"
 
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.allDay"
-msgid "Recurring task set to all-day; this affects all future instances."
-msgstr "Повторяющаяся задача переведена на весь день; это влияет на все будущие повторения."
-
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.recurringTime"
-msgid "Recurring task time set to {time}; this affects all future instances."
-msgstr "Время повторяющейся задачи изменено на {time}; это влияет на все будущие повторения."
-
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
@@ -10072,11 +10034,6 @@ msgstr "Обновить все подписки"
 msgctxt "commands.refreshCache"
 msgid "Refresh cache"
 msgstr "Обновить кэш"
-
-#: src/bases/CalendarView.ts
-msgctxt "calendar refresh subscriptions button"
-msgid "Refresh calendar subscriptions"
-msgstr "Обновить подписки календаря"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.refresh"
@@ -10493,6 +10450,11 @@ msgstr "Строка 2 (опционально)"
 msgctxt "settings.appearance.projectAutosuggest.displayRows.row3.name"
 msgid "Row 3 (optional)"
 msgstr "Строка 3 (опционально)"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.dayMaxEventRows"
+msgid "Row limit override (0 = off; includes “+ more”)"
+msgstr "Приоритетный лимит строк (0 = выключен; включая «ещё»)"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.copiedRows"
@@ -11005,8 +10967,8 @@ msgstr "Показать все"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.showAllDaySlot"
-msgid "Show all-day slot"
-msgstr "Показать слот на весь день"
+msgid "Show all-day area"
+msgstr "Показывать область событий на весь день"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.name"
@@ -11104,11 +11066,6 @@ msgid "Show notifications when Pomodoro sessions end"
 msgstr "Показывать уведомления при завершении сессий помодоро"
 
 #: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.showNowIndicator"
-msgid "Show now indicator"
-msgstr "Показать индикатор текущего времени"
-
-#: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showOverdueOnToday"
 msgid "Show overdue tasks on today"
 msgstr "Показывать просроченные задачи сегодня"
@@ -11157,11 +11114,6 @@ msgstr "Показать запланированные задачи"
 msgctxt "views.basesCalendar.settings.events.showScheduledTasks"
 msgid "Show scheduled tasks"
 msgstr "Показать запланированные задачи"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.showSelectionPreview"
-msgid "Show selection preview"
-msgstr "Показать предпросмотр выбора"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showSkippedRecurringInstances"
@@ -11237,6 +11189,11 @@ msgstr "Показать выходные"
 msgctxt "modals.deviceCode.steps.signIn"
 msgid "Sign in with your Google account and grant access"
 msgstr "Войдите в свой аккаунт Google и предоставьте доступ"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.eventMaxStack"
+msgid "Simultaneous events (0 = no limit)"
+msgstr "Одновременные события (0 = без ограничений)"
 
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.titleCard.legacySyntaxWarning"
@@ -12548,6 +12505,11 @@ msgctxt "contextMenus.date.modal.timeLabel"
 msgid "Time (optional)"
 msgstr "Время (опционально)"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.timeSlotDuration"
+msgid "Time between grid lines"
+msgstr "Интервал между линиями времени"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.timeEntries.name"
 msgid "Time entries"
@@ -12625,11 +12587,6 @@ msgstr "Настройки времени"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.name"
-msgid "Time slot duration"
-msgstr "Длительность временного слота"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.timeSlotDuration"
 msgid "Time slot duration"
 msgstr "Длительность временного слота"
 
@@ -12980,8 +12937,8 @@ msgstr "Сегодня"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.todayColumnWidthMultiplier"
-msgid "Today column width multiplier"
-msgstr "Множитель ширины колонки сегодняшнего дня"
+msgid "Today column width (×)"
+msgstr "Ширина столбца сегодняшнего дня (×)"
 
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.overviewCards.todayFocus.label"
@@ -13793,11 +13750,6 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.wednesd
 msgid "Wednesday"
 msgstr "Среда"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults timeGridWeek"
-msgid "Week"
-msgstr "Неделя"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.weekStartsOn"
 msgid "Week starts on"
@@ -13809,6 +13761,7 @@ msgid "Week timeline"
 msgstr "Временная линия недели"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.week"
 msgid "Week view"
 msgstr "Вид по неделям"
@@ -13878,6 +13831,11 @@ msgstr "Что нужно сделать?"
 msgctxt "modals.storageLocation.whatThisMeans"
 msgid "What this means:"
 msgstr "Что это означает:"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.groups.events"
+msgid "What to show"
+msgstr "Что показывать"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.header"
@@ -14074,17 +14032,13 @@ msgctxt "contextMenus.task.calendar.yahoo"
 msgid "Yahoo Calendar"
 msgstr "Yahoo Календарь"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults multiMonthYear"
-msgid "Year"
-msgstr "Год"
-
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.yearView"
 msgid "Year view"
 msgstr "Представление года"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.year"
 msgid "Year view"
 msgstr "Вид по годам"

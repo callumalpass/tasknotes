@@ -1745,6 +1745,11 @@ msgctxt "settings.taskProperties.sections.taskDetailsDesc"
 msgid "Additional details like time estimates, recurrence, and reminders."
 msgstr "Ulteriori dettagli come tempo stimato, ricorrenza e promemoria."
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.groups.advanced"
+msgid "Advanced"
+msgstr "Avanzate"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings.defaults.reminders.directions.after"
@@ -2532,11 +2537,6 @@ msgstr "Vista del calendario"
 msgctxt "views.basesCalendar.settings.layout.calendarView"
 msgid "Calendar view"
 msgstr "Vista calendario"
-
-#: src/bases/CalendarView.ts
-msgctxt "bases/CalendarView: CalendarView.renderPopoutUnsupported display"
-msgid "Calendar view is unavailable in a separate window"
-msgstr "La vista calendario non è disponibile in una finestra separata"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.calendarLabel"
@@ -4001,8 +4001,8 @@ msgctxt "views.basesCalendar.settings.layout.customDayCount"
 msgid "Custom day count"
 msgstr "Numero di giorni della vista personalizzata"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults timeGridCustom"
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.customDayView"
 msgid "Custom days"
 msgstr "Giorni personalizzati"
 
@@ -4274,10 +4274,10 @@ msgctxt "modals.actionPalette.categories.dates"
 msgid "Dates"
 msgstr "Date"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults timeGridDay"
-msgid "Day"
-msgstr "Giorno"
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.groups.dayCells"
+msgid "Day cells"
+msgstr "Celle dei giorni"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dayEndTime"
@@ -4295,6 +4295,7 @@ msgid "Day timeline"
 msgstr "Sequenza temporale giornaliera"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.day"
 msgid "Day view"
 msgstr "Vista giornaliera"
@@ -4863,6 +4864,11 @@ msgctxt "services.calendarExport.notices.singleDownloadSuccess"
 msgid "Downloaded {filename}"
 msgstr "Scaricato {filename}"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.dragDropResolution"
+msgid "Drag and resize step"
+msgstr "Intervallo di trascinamento e ridimensionamento"
+
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCard display"
 msgid "Drag to reorder"
@@ -4872,11 +4878,6 @@ msgstr "Trascina per riordinare"
 msgctxt "settings/components/ListEditorComponent: ListEditorComponent.renderItemRow display"
 msgid "Drag to reorder"
 msgstr "Trascina per riordinare"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.dragDropResolution"
-msgid "Drag/drop resolution"
-msgstr "Intervallo di aggancio durante il trascinamento"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.description"
@@ -5400,9 +5401,9 @@ msgid "Event URL copied to clipboard"
 msgstr "URL dell’evento copiato negli appunti"
 
 #: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.groups.events"
-msgid "Events"
-msgstr "Eventi"
+msgctxt "views.basesCalendar.settings.layout.dayMaxEvents"
+msgid "Events before “+ more” (0 = automatic)"
+msgstr "Eventi prima di «+ altri» (0 = automatico)"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.googleRefreshInterval"
@@ -6761,12 +6762,6 @@ msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOr
 msgid "Generated link text is too long."
 msgstr "Il testo del collegamento generato è troppo lungo."
 
-#: src/bases/calendar-core.ts
-msgctxt "bases/calendar-core: attachDailyNoteHeaderLink display"
-msgid "Go to {value1}"
-msgstr "Vai a {value1}"
-
-#: src/bases/CalendarView.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.hints.today"
 msgid "Go to today"
@@ -7556,11 +7551,6 @@ msgctxt "settings.taskProperties.properties.blockedBy.description"
 msgid "Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator."
 msgstr "Collegamenti alle attività da completare prima di questa. Sono salvati come collegamenti wiki. Le attività bloccate mostrano un indicatore visivo."
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults listWeek"
-msgid "List"
-msgstr "Elenco"
-
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 msgctxt "settings.taskProperties.customUserFields.types.list"
 msgid "List"
@@ -7572,6 +7562,7 @@ msgid "List day count"
 msgstr "Numero di giorni nella vista elenco"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.list"
 msgid "List view"
 msgstr "Vista elenco"
@@ -7772,6 +7763,11 @@ msgctxt "contextMenus.task.completion.submenu"
 msgid "Mark complete or skip"
 msgstr "Contrassegna come completata o salta"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.showNowIndicator"
+msgid "Mark current time"
+msgstr "Segna ora attuale"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.completion.markIncomplete"
 msgid "Mark incomplete"
@@ -7796,21 +7792,6 @@ msgstr "Occorrenza segnata come incompleta: {date}"
 msgctxt "bases/calendarViewOptions: buildMiniCalendarViewOptions displayName"
 msgid "Max color note count"
 msgstr "Numero di note per l’intensità massima del colore"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.dayMaxEventRows"
-msgid "Max event rows per day (0 = unlimited)"
-msgstr "Numero massimo di righe di eventi al giorno, 0 = illimitato"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.dayMaxEvents"
-msgid "Max events per day (0 = auto)"
-msgstr "Numero massimo di eventi al giorno, 0 = automatico"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.eventMaxStack"
-msgid "Max stacked events (week/day view, 0 = unlimited)"
-msgstr "Numero massimo di eventi sovrapposti nelle viste settimanale e giornaliera, 0 = illimitato"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
@@ -7980,11 +7961,6 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.monday"
 msgid "Monday"
 msgstr "Lunedì"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults dayGridMonth"
-msgid "Month"
-msgstr "Mese"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
 msgid "Month"
@@ -7996,6 +7972,7 @@ msgid "Month grid"
 msgstr "Griglia mensile"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.month"
 msgid "Month view"
 msgstr "Vista mensile"
@@ -8214,11 +8191,6 @@ msgstr "Nota successiva: al completamento"
 msgctxt "ui/taskCardProperties: occurrenceNextTrigger display"
 msgid "Next note: completion or skip"
 msgstr "Nota successiva: al completamento o quando l’occorrenza viene saltata"
-
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.rescheduled"
-msgid "Next occurrence rescheduled; the recurrence pattern is unchanged."
-msgstr "Prossima occorrenza ripianificata; lo schema di ricorrenza è invariato."
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.due.nextSevenDays"
@@ -9201,11 +9173,6 @@ msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
 msgstr "Apri il file dell’attività nell’editor"
 
-#: src/bases/CalendarView.ts
-msgctxt "bases/CalendarView: CalendarView.renderPopoutUnsupported display"
-msgid "Open this calendar view in the main Obsidian window. The calendar can freeze Obsidian when restored inside a separate window."
-msgstr "Apri questa vista del calendario nella finestra principale di Obsidian. Il calendario può bloccare Obsidian se viene ripristinato in una finestra separata."
-
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.contextMenu.openWeeklyNote"
 msgid "Open weekly note"
@@ -9723,6 +9690,11 @@ msgctxt "settings.features.notifications.soundPreviewName"
 msgid "Preview notification sound"
 msgstr "Anteprima del suono di notifica"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.showSelectionPreview"
+msgid "Preview selected time range"
+msgstr "Mostra anteprima dell’intervallo selezionato"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.prev"
 msgid "Previous"
@@ -10017,16 +9989,6 @@ msgctxt "modals.actionPalette.occurrenceCompleted"
 msgid "Recurring task instance completed"
 msgstr "Occorrenza dell’attività ricorrente completata"
 
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.allDay"
-msgid "Recurring task set to all-day; this affects all future instances."
-msgstr "Attività ricorrente impostata come giornata intera: la modifica si applica a tutte le occorrenze future."
-
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.recurringTime"
-msgid "Recurring task time set to {time}; this affects all future instances."
-msgstr "Orario dell’attività ricorrente impostato su {time}; la modifica si applica a tutte le occorrenze future."
-
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
@@ -10071,11 +10033,6 @@ msgstr "Aggiorna tutte le sottoscrizioni"
 msgctxt "commands.refreshCache"
 msgid "Refresh cache"
 msgstr "Aggiorna cache"
-
-#: src/bases/CalendarView.ts
-msgctxt "calendar refresh subscriptions button"
-msgid "Refresh calendar subscriptions"
-msgstr "Aggiorna sottoscrizioni ai calendari"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.refresh"
@@ -10492,6 +10449,11 @@ msgstr "Riga 2 (facoltativa)"
 msgctxt "settings.appearance.projectAutosuggest.displayRows.row3.name"
 msgid "Row 3 (optional)"
 msgstr "Riga 3 (facoltativa)"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.dayMaxEventRows"
+msgid "Row limit override (0 = off; includes “+ more”)"
+msgstr "Limite di righe personalizzato (0 = disattivato; include «+ altri»)"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.copiedRows"
@@ -11004,8 +10966,8 @@ msgstr "Mostra tutto"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.showAllDaySlot"
-msgid "Show all-day slot"
-msgstr "Mostra fascia per gli eventi che durano tutto il giorno"
+msgid "Show all-day area"
+msgstr "Mostra area per l’intera giornata"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.name"
@@ -11103,11 +11065,6 @@ msgid "Show notifications when Pomodoro sessions end"
 msgstr "Mostra notifiche al termine delle sessioni Pomodoro"
 
 #: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.showNowIndicator"
-msgid "Show now indicator"
-msgstr "Mostra indicatore dell’ora corrente"
-
-#: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showOverdueOnToday"
 msgid "Show overdue tasks on today"
 msgstr "Mostra attività in ritardo nella data di oggi"
@@ -11156,11 +11113,6 @@ msgstr "Mostra attività pianificate"
 msgctxt "views.basesCalendar.settings.events.showScheduledTasks"
 msgid "Show scheduled tasks"
 msgstr "Mostra attività pianificate"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.showSelectionPreview"
-msgid "Show selection preview"
-msgstr "Mostra anteprima della selezione"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showSkippedRecurringInstances"
@@ -11236,6 +11188,11 @@ msgstr "Mostra fine settimana"
 msgctxt "modals.deviceCode.steps.signIn"
 msgid "Sign in with your Google account and grant access"
 msgstr "Accedi con il tuo account Google e concedi l’accesso"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.eventMaxStack"
+msgid "Simultaneous events (0 = no limit)"
+msgstr "Eventi simultanei (0 = nessun limite)"
 
 #: src/settings/tabs/taskProperties/titlePropertyCard.ts
 msgctxt "settings.taskProperties.titleCard.legacySyntaxWarning"
@@ -12547,6 +12504,11 @@ msgctxt "contextMenus.date.modal.timeLabel"
 msgid "Time (optional)"
 msgstr "Ora (facoltativa)"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.timeSlotDuration"
+msgid "Time between grid lines"
+msgstr "Intervallo tra le linee della griglia"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.timeEntries.name"
 msgid "Time entries"
@@ -12626,11 +12588,6 @@ msgstr "Impostazioni dell’ora"
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.name"
 msgid "Time slot duration"
 msgstr "Durata dell’intervallo di tempo"
-
-#: src/i18n/messages.ts
-msgctxt "views.basesCalendar.settings.layout.timeSlotDuration"
-msgid "Time slot duration"
-msgstr "Durata delle fasce orarie"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.label"
@@ -12979,8 +12936,8 @@ msgstr "Oggi"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.todayColumnWidthMultiplier"
-msgid "Today column width multiplier"
-msgstr "Moltiplicatore della larghezza della colonna di oggi"
+msgid "Today column width (×)"
+msgstr "Larghezza della colonna di oggi (×)"
 
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.overviewCards.todayFocus.label"
@@ -13792,11 +13749,6 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.wednesd
 msgid "Wednesday"
 msgstr "Mercoledì"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults timeGridWeek"
-msgid "Week"
-msgstr "Settimana"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.weekStartsOn"
 msgid "Week starts on"
@@ -13808,6 +13760,7 @@ msgid "Week timeline"
 msgstr "Sequenza temporale settimanale"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.week"
 msgid "Week view"
 msgstr "Vista settimanale"
@@ -13877,6 +13830,11 @@ msgstr "Cosa bisogna fare?"
 msgctxt "modals.storageLocation.whatThisMeans"
 msgid "What this means:"
 msgstr "Cosa significa:"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.groups.events"
+msgid "What to show"
+msgstr "Cosa mostrare"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.header"
@@ -14073,17 +14031,13 @@ msgctxt "contextMenus.task.calendar.yahoo"
 msgid "Yahoo Calendar"
 msgstr "Calendario Yahoo"
 
-#: src/bases/calendarViewOptions.ts
-msgctxt "bases/calendarViewOptions: defaults multiMonthYear"
-msgid "Year"
-msgstr "Anno"
-
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.yearView"
 msgid "Year view"
 msgstr "Vista annuale"
 
 #: src/bases/CalendarView.ts
+#: src/bases/calendarViewOptions.ts
 msgctxt "views.basesCalendar.hints.year"
 msgid "Year view"
 msgstr "Vista annuale"

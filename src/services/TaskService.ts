@@ -21,6 +21,7 @@ import {
 	taskInfoUpdatesToFrontmatterPatch,
 	type MaterializedOccurrenceStatusPlan,
 } from "@tasknotes/model/operations";
+import { planCalendarEdit, type CalendarEntry, type CalendarChange } from "@tasknotes/model/calendar";
 import { AutoArchiveService } from "./AutoArchiveService";
 import { TFile, normalizePath } from "obsidian";
 import { TemplateData, processTemplate } from "../utils/templateProcessor";
@@ -599,9 +600,52 @@ export class TaskService {
 		}
 	}
 
-	/**
-	 * Update a single property of a task following the deterministic data flow pattern
-	 */
+	/** Apply a calendar plan once, without generic recurrence advancement or duplicate clearing. */
+	async applyCalendarEdit(
+		task: TaskInfo,
+		entry: CalendarEntry,
+		change: CalendarChange,
+		timezone: string,
+		options: {
+			now?: string;
+			confirmClearInstances?: (cleared: { complete: string[]; skipped: string[] }) => Promise<boolean>;
+		} = {}
+	): Promise<TaskInfo | null> {
+		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+		if (!(file instanceof TFile)) throw new Error(`Cannot find task file: ${task.path}`);
+		const freshTask = await this.plugin.cacheManager.getTaskInfo(task.path);
+		if (!freshTask) throw new Error(`Cannot read task: ${task.path}`);
+		const plan = planCalendarEdit({
+			task: freshTask, entry, change, timezone,
+			now: options.now ?? getCurrentTimestamp(),
+			fieldMapping: this.plugin.fieldMapper.getMapping(),
+		});
+		if ((plan.clearedInstances.complete.length || plan.clearedInstances.skipped.length)
+			&& options.confirmClearInstances
+			&& !await options.confirmClearInstances(plan.clearedInstances)) return null;
+		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
+			for (const operation of plan.frontmatterPatch) {
+				if (operation.op === "delete") delete frontmatter[operation.field];
+				else frontmatter[operation.field] = operation.value;
+			}
+		});
+		// Calendar gestures never change status or materialize occurrences. Reuse the
+		// cache/event/webhook/provider effects, but not recurrence activation/seeding.
+		await runTaskPropertyChangeSideEffects({
+			cacheManager: this.plugin.cacheManager,
+			emitter: this.plugin.emitter,
+			statusManager: this.plugin.statusManager,
+			taskCalendarSyncService: this.plugin.taskCalendarSyncService,
+			webhookNotifier: this.webhookNotifier,
+			normalizeStatusValue: value => this.normalizeStatusValue(value),
+		}, {
+			file, originalTask: freshTask, updatedTask: plan.updatedTask,
+			property: "dateModified", oldValue: freshTask.dateModified, newValue: plan.dateModified,
+		});
+		return plan.updatedTask;
+	}
+
+	/** Update one property through the normal task mutation flow. */
 	async updateProperty(
 		task: TaskInfo,
 		property: keyof TaskInfo,

@@ -41,6 +41,14 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Calendar view settings now use fewer, task-focused sections, with less common controls under Advanced and clearer names for time-grid and event limits. Saved `.base` settings keep applying unchanged. See [Calendar Views](https://tasknotes.dev/views/calendar-views/#view-options).
+
+- The Calendar view now uses TaskNotes' own calendar engine instead of FullCalendar. Existing calendar view settings in `.base` files keep working, including the saved view, custom day count, first day of week, time format, slot range and size, height mode, week numbers, weekends, all-day row, today column width, and event limits.
+  - Events update in place when tasks change, and changing a view setting no longer rebuilds the calendar.
+  - Long-press drag on touch screens no longer competes with scrolling.
+  - Calendar views now work in popout windows.
+  - CSS snippets that target FullCalendar's internal classes (such as `.fc-timegrid-slot` or `.fc-daygrid-event`) no longer apply. TaskNotes' own event classes, such as `fc-task-event`, `fc-recurring-event`, `fc-timeblock-event`, `fc-ics-event` and the tag and project classes, are unchanged.
+
 - Moved interface translations to Lingui catalogues with count-aware messages, locale-aware numbers and dates, and localized generated Bases labels. Ordinary builds retain all ten bundled interface languages.
 
 - Kept stored default names and reminder descriptions in English, translating unchanged defaults only for display. Restored English `.ics` descriptions and kept persisted Google Calendar metadata in English so exports do not vary with the exporting device’s interface language; user-authored labels are preserved.
@@ -53,6 +61,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2428) Fixed Italian `entro le` deadlines, masculine/feminine scheduled-date expressions and recurring accented weekdays (Monday through Friday).
   - Thanks to @starise for reporting and identifying the causes.
+- Calendar pattern drags preserve multiline recurrence rules and excluded dates. Recurring tasks with a timezone now appear on the correct civil dates, and duration ends retain the correct instant during the repeated daylight-saving hour.
+- Materialized occurrence notes excluded by a Bases filter no longer leave duplicate virtual parent occurrences on the calendar.
+- Completion-anchored recurring tasks preserve the clock and timezone parameters when advancing their recurrence anchor.
 
 - (#2418) Corrected singular agreement in French, Brazilian Portuguese and Russian count labels and recurrence messages; removed mechanically copied optional French/Spanish plural branches.
 - (#2418) Kept Kanban and Task List group keys stable across interface languages so moving or creating tasks in empty and boolean columns does not write translated labels into task properties. Default status and priority labels remain editable and survive saving and reloading.

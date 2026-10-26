@@ -60,14 +60,14 @@ test.describe('Issue #775: Calendar mobile optimization', () => {
     await page.waitForTimeout(1500);
 
     // Wait for FullCalendar to render
-    const calendarView = page.locator('.fc');
+    const calendarView = page.locator('.tnc');
     await expect(calendarView.first()).toBeVisible({ timeout: 10000 });
 
     // Find the toolbar with view mode buttons
-    const toolbar = page.locator('.fc-toolbar, .tasknotes-calendar-controls');
+    const toolbar = page.locator('.tnc-toolbar, .tasknotes-calendar-controls');
 
     // Look for view mode buttons (Y, M, W, 3D, D, L or their FullCalendar equivalents)
-    const viewButtons = page.locator('.fc-button-group .fc-button, .fc-toolbar-chunk button');
+    const viewButtons = page.locator('.tnc-toolbar-group .tnc-btn, .tnc-toolbar-group button');
 
     const buttonCount = await viewButtons.count();
     console.log(`Found ${buttonCount} toolbar buttons`);
@@ -110,11 +110,11 @@ test.describe('Issue #775: Calendar mobile optimization', () => {
     await runCommand(page, 'TaskNotes: Open calendar view');
     await page.waitForTimeout(1500);
 
-    const calendarView = page.locator('.fc');
+    const calendarView = page.locator('.tnc');
     await expect(calendarView.first()).toBeVisible({ timeout: 10000 });
 
     // Find navigation buttons
-    const navButtons = page.locator('.fc-prev-button, .fc-next-button, .fc-today-button, .mini-calendar-view__nav-button');
+    const navButtons = page.locator('.tnc-btn-prev, .tnc-btn-next, .tnc-btn-today, .mini-calendar-view__nav-button');
 
     const buttonCount = await navButtons.count();
     console.log(`Found ${buttonCount} navigation buttons`);
@@ -158,11 +158,11 @@ test.describe('Issue #775: Calendar mobile optimization', () => {
     await runCommand(page, 'TaskNotes: Open calendar view');
     await page.waitForTimeout(1500);
 
-    const calendarView = page.locator('.fc');
+    const calendarView = page.locator('.tnc');
     await expect(calendarView.first()).toBeVisible({ timeout: 10000 });
 
     // Check for horizontal overflow on the toolbar
-    const toolbar = page.locator('.fc-header-toolbar, .tasknotes-calendar-controls');
+    const toolbar = page.locator('.tnc-toolbar, .tasknotes-calendar-controls');
 
     if (await toolbar.isVisible({ timeout: 2000 }).catch(() => false)) {
       const overflowInfo = await toolbar.evaluate((el) => {
@@ -226,11 +226,11 @@ test.describe('Issue #775: Calendar mobile optimization', () => {
     await runCommand(page, 'TaskNotes: Open calendar view');
     await page.waitForTimeout(1500);
 
-    const calendarView = page.locator('.fc');
+    const calendarView = page.locator('.tnc');
     await expect(calendarView.first()).toBeVisible({ timeout: 10000 });
 
     // Look for event elements (task badges) in the calendar
-    const events = page.locator('.fc-event, .fc-daygrid-event, .fc-timegrid-event');
+    const events = page.locator('.tnc-item, .tnc-dg .tnc-item, .tnc-item--timed');
     const eventCount = await events.count();
 
     console.log(`Found ${eventCount} events in calendar`);
@@ -242,7 +242,7 @@ test.describe('Issue #775: Calendar mobile optimization', () => {
 
         if (await event.isVisible({ timeout: 1000 }).catch(() => false)) {
           const eventInfo = await event.evaluate((el) => {
-            const titleEl = el.querySelector('.fc-event-title, .fc-event-title-container');
+            const titleEl = el.querySelector('.tnc-item-title, .tnc-item-main');
             const box = el.getBoundingClientRect();
             return {
               width: box.width,
@@ -296,11 +296,11 @@ test.describe('Issue #775: Calendar mobile optimization', () => {
     await runCommand(page, 'TaskNotes: Open calendar view');
     await page.waitForTimeout(1500);
 
-    const calendarView = page.locator('.fc');
+    const calendarView = page.locator('.tnc');
     await expect(calendarView.first()).toBeVisible({ timeout: 10000 });
 
     // Find day cells in the calendar grid
-    const dayCells = page.locator('.fc-daygrid-day, .fc-timegrid-slot, .mini-calendar-view__day');
+    const dayCells = page.locator('.tnc-dg-day, .tnc-col, .mini-calendar-view__day');
     const cellCount = await dayCells.count();
 
     console.log(`Found ${cellCount} day cells`);

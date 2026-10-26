@@ -18,9 +18,10 @@ async function placements(path: string) {
     const view = app.workspace.getLeavesOfType('bases')
       .find((leaf: any) => leaf.view.file?.path === basePath)?.view.controller.view;
     if (!view?.calendar) throw new Error('Reproduction calendar is not ready');
-    return view.calendar.getEvents()
-      .filter((event: any) => event.extendedProps.taskInfo?.path === path)
-      .map((event: any) => event.startStr).sort() as string[];
+    return Array.from(view.calendar.store.all())
+      .map((entry: any) => entry.item)
+      .filter((item: any) => item.data?.taskInfo?.path === path)
+      .map((item: any) => String(item.start)).sort() as string[];
   }, { path, basePath });
 }
 
@@ -132,7 +133,7 @@ views:
 
   await showWeek('2027-10-12');
   for (const path of [nativePath, controlPath]) {
-    // getEvents() can include the next-scheduled event outside the visible week.
+    // Only compare placements in the requested year's range.
     await expect.poll(async () => (await placements(path)).filter(date => date.startsWith('2027-')))
       .toEqual(['2027-10-18']);
   }
@@ -148,8 +149,8 @@ views:
     const app = (window as any).app;
     const view = app.workspace.getLeavesOfType('bases')
       .find((leaf: any) => leaf.view.file?.path === basePath).view.controller.view;
-    return view.calendar.getEvents().find((event: any) =>
-      event.extendedProps.taskInfo?.path === nativePath).extendedProps.instanceDate;
+    return Array.from(view.calendar.store.all()).map((entry: any) => entry.item).find((item: any) =>
+      item.data?.taskInfo?.path === nativePath).data.instanceDate;
   }, { nativePath, basePath });
   expect(eventIdentity).toBe('2026-10-18');
 

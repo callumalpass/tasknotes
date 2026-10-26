@@ -13,7 +13,7 @@
  *
  * Root cause hypothesis:
  * - The vertical year display suggests a CSS width constraint issue on the
- *   .fc-toolbar-title element when embedded, causing text to wrap per character
+ *   .tnc-title element when embedded, causing text to wrap per character
  * - The raw translation key suggests the i18n service may not be properly
  *   initialized or accessible when calendar bases are embedded in notes
  * - The empty space issue suggests the multiMonthYear view isn't respecting
@@ -22,7 +22,7 @@
  * Related code locations:
  * - src/bases/CalendarView.ts:640-710 - Calendar toolbar configuration
  * - src/bases/CalendarView.ts:674 - Refresh button text translation
- * - styles/advanced-calendar-view.css:643-649 - .fc-toolbar-title styling
+ * - styles/advanced-calendar-view.css:643-649 - .tnc-title styling
  * - styles/advanced-calendar-view.css:787-814 - Multi-month (year) view styling
  * - src/i18n/locales/en/messages.po - refresh button descriptor
  *
@@ -92,7 +92,7 @@ test.describe('Issue #1037: Embedded Calendar Year View Strange Spacing', () => 
     }
 
     // Click the year view button
-    const yearButton = page.locator('.internal-embed .fc-multiMonthYear-button, .internal-embed button:has-text("Y")');
+    const yearButton = page.locator('.internal-embed .tnc-btn-view-year, .internal-embed button:has-text("Y")');
     if (await yearButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await yearButton.click();
       await page.waitForTimeout(1000);
@@ -103,7 +103,7 @@ test.describe('Issue #1037: Embedded Calendar Year View Strange Spacing', () => 
 
     // Check the toolbar title dimensions
     const toolbarTitleMetrics = await page.evaluate(() => {
-      const title = document.querySelector('.internal-embed .fc-toolbar-title');
+      const title = document.querySelector('.internal-embed .tnc-title');
       if (title) {
         const rect = title.getBoundingClientRect();
         const styles = window.getComputedStyle(title);
@@ -176,7 +176,7 @@ test.describe('Issue #1037: Embedded Calendar Year View Strange Spacing', () => 
       if (!embed) return [];
 
       // Find all text content in buttons and toolbar
-      const buttons = embed.querySelectorAll('button, .fc-toolbar *');
+      const buttons = embed.querySelectorAll('button, .tnc-toolbar *');
       const rawKeys: string[] = [];
 
       buttons.forEach((el) => {
@@ -241,7 +241,7 @@ test.describe('Issue #1037: Embedded Calendar Year View Strange Spacing', () => 
     }
 
     // Click the year view button
-    const yearButton = page.locator('.internal-embed .fc-multiMonthYear-button, .internal-embed button:has-text("Y")');
+    const yearButton = page.locator('.internal-embed .tnc-btn-view-year, .internal-embed button:has-text("Y")');
     if (await yearButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await yearButton.click();
       await page.waitForTimeout(1000);
@@ -253,8 +253,8 @@ test.describe('Issue #1037: Embedded Calendar Year View Strange Spacing', () => 
     // Measure the container and calendar grid widths
     const widthMetrics = await page.evaluate(() => {
       const embed = document.querySelector('.internal-embed');
-      const calendarView = embed?.querySelector('.advanced-calendar-view, .fc');
-      const calendarGrid = embed?.querySelector('.fc-view-harness, .fc-multimonth');
+      const calendarView = embed?.querySelector('.advanced-calendar-view, .tnc');
+      const calendarGrid = embed?.querySelector('.tnc-view, .tnc-year');
 
       if (embed && calendarView && calendarGrid) {
         const embedRect = embed.getBoundingClientRect();
@@ -301,7 +301,7 @@ test.describe('Issue #1037: Embedded Calendar Year View Strange Spacing', () => 
     await page.waitForTimeout(2000);
 
     // Switch to year view in standalone calendar
-    const standaloneYearButton = page.locator('.advanced-calendar-view .fc-multiMonthYear-button');
+    const standaloneYearButton = page.locator('.advanced-calendar-view .tnc-btn-view-year');
     if (await standaloneYearButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await standaloneYearButton.click();
       await page.waitForTimeout(1000);
@@ -310,8 +310,8 @@ test.describe('Issue #1037: Embedded Calendar Year View Strange Spacing', () => 
     // Measure standalone calendar layout
     const standaloneMetrics = await page.evaluate(() => {
       const calendar = document.querySelector('.advanced-calendar-view');
-      const title = calendar?.querySelector('.fc-toolbar-title');
-      const grid = calendar?.querySelector('.fc-view-harness');
+      const title = calendar?.querySelector('.tnc-title');
+      const grid = calendar?.querySelector('.tnc-view');
 
       if (calendar && title && grid) {
         const calRect = calendar.getBoundingClientRect();
@@ -345,7 +345,7 @@ test.describe('Issue #1037: Embedded Calendar Year View Strange Spacing', () => 
     await page.waitForTimeout(2000);
 
     // Switch to year view in embedded calendar
-    const embeddedYearButton = page.locator('.internal-embed .fc-multiMonthYear-button, .internal-embed button:has-text("Y")');
+    const embeddedYearButton = page.locator('.internal-embed .tnc-btn-view-year, .internal-embed button:has-text("Y")');
     if (await embeddedYearButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await embeddedYearButton.click();
       await page.waitForTimeout(1000);
@@ -354,9 +354,9 @@ test.describe('Issue #1037: Embedded Calendar Year View Strange Spacing', () => 
     // Measure embedded calendar layout
     const embeddedMetrics = await page.evaluate(() => {
       const embed = document.querySelector('.internal-embed');
-      const calendar = embed?.querySelector('.advanced-calendar-view, .fc');
-      const title = embed?.querySelector('.fc-toolbar-title');
-      const grid = embed?.querySelector('.fc-view-harness');
+      const calendar = embed?.querySelector('.advanced-calendar-view, .tnc');
+      const title = embed?.querySelector('.tnc-title');
+      const grid = embed?.querySelector('.tnc-view');
 
       if (embed && calendar && title && grid) {
         const embedRect = embed.getBoundingClientRect();

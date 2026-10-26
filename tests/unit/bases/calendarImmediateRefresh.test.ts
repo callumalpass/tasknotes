@@ -1,259 +1,127 @@
 import { CalendarView } from "../../../src/bases/CalendarView";
+import {
+	CalendarTaskProjection,
+	calendarMaterializedOccurrences,
+} from "../../../src/bases/calendarModelEvents";
 import { TaskFactory } from "../../helpers/mock-factories";
+import type { TaskInfo } from "../../../src/types";
+import type { CalendarEventItem } from "../../../src/bases/calendarEngine";
 
-describe("Calendar immediate task refresh", () => {
-	it("refreshes FullCalendar immediately for expected task updates", async () => {
-		const originalTask = TaskFactory.createTask({
-			path: "TaskNotes/Event.md",
-			due: "2026-05-19",
-			status: "open",
-		});
-		const updatedTask = TaskFactory.createTask({
-			...originalTask,
-			due: "2026-05-20",
-		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
-		const view = Object.create(CalendarView.prototype) as CalendarView & {
-			_expectingImmediateUpdate: boolean;
-			currentTasks: typeof originalTask[];
-			calendar: typeof calendar;
-			plugin: {
-				cacheManager: {
-					getCachedTaskInfoSync: jest.Mock;
-				};
-			};
-			handleTaskUpdate(task: typeof originalTask): Promise<void>;
-		};
-		Object.assign(view, {
-			_expectingImmediateUpdate: true,
-			calendar,
-			currentTasks: [originalTask],
-			plugin: {
-				cacheManager: {
-					getCachedTaskInfoSync: jest.fn(() => originalTask),
-				},
-			},
-		});
+const context = {
+	timezone: "UTC",
+	now: "2026-05-19T12:00:00Z",
+	settings: { showRecurring: false },
+};
+const range = { start: new Date("2026-05-19T00:00:00Z"), end: new Date("2026-05-21T00:00:00Z") };
+const first = TaskFactory.createTask({
+	id: "stable",
+	path: "Tasks/First.md",
+	scheduled: "2026-05-19T09:00",
+});
+const second = TaskFactory.createTask({ path: "Tasks/Second.md", scheduled: "2026-05-19T11:00" });
 
-		await view.handleTaskUpdate(updatedTask);
-
-		expect(view._expectingImmediateUpdate).toBe(false);
-		expect(view.currentTasks).toHaveLength(1);
-		expect(view.currentTasks[0]).toMatchObject({
-			path: updatedTask.path,
-			due: "2026-05-20",
-		});
-		expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
+function harness() {
+	const projection = new CalendarTaskProjection(context, (_task, error) => {
+		throw error;
 	});
+	projection.setTasks([first, second]);
+	const setItems = jest.fn<void, [CalendarEventItem[]]>();
+	const refetchEvents = jest.fn();
+	const readTask = jest.fn();
+	const view = Object.assign(Object.create(CalendarView.prototype), {
+		currentTasks: [first, second],
+		identityTasks: [first, second],
+		nonTaskEvents: [],
+		taskProjection: projection,
+		calendarTimezone: "UTC",
+		refetchSeq: 0,
+		basesSortIndexByPath: new Map(),
+		_expectingImmediateUpdate: true,
+		updateDebounceTimer: null,
+		dataUpdateDebounceTimer: null,
+		calendar: { getView: () => ({ range, type: "week" }), setItems },
+		refetchEvents,
+		plugin: {
+			cacheManager: { getCachedTaskInfoSync: readTask },
+			priorityManager: { getPriorityConfig: () => ({ color: "#3366ff" }) },
+		},
+	}) as {
+		currentTasks: TaskInfo[];
+		handleTaskUpdate(task: TaskInfo, source?: string): Promise<void>;
+		refreshAfterDirectCalendarTaskWrite(task: TaskInfo): Promise<void>;
+		_expectingImmediateUpdate: boolean;
+	};
+	return { view, projection, setItems, refetchEvents, readTask };
+}
 
-	it("keeps ordinary task updates on the debounced refresh path", async () => {
-		const task = TaskFactory.createTask({
-			path: "TaskNotes/Event.md",
-		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
-		const view = Object.create(CalendarView.prototype) as CalendarView & {
-			_expectingImmediateUpdate: boolean;
-			calendar: typeof calendar;
-			debouncedRefresh: jest.Mock;
-			handleTaskUpdate(task: typeof task, source?: "metadata-cache"): Promise<void>;
-		};
-		Object.assign(view, {
-			_expectingImmediateUpdate: false,
-			calendar,
-			debouncedRefresh: jest.fn(),
-		});
-
-		await view.handleTaskUpdate(task, "metadata-cache");
-
-		expect(view.debouncedRefresh).toHaveBeenCalledTimes(1);
-		expect(calendar.refetchEvents).not.toHaveBeenCalled();
-	});
-
-	it("refreshes TaskNotes service updates without rendering from stale Bases data", async () => {
-		const originalTask = TaskFactory.createTask({
-			path: "TaskNotes/Event.md",
-			scheduled: "2026-05-19T09:00",
-			priority: "normal",
-		});
-		const updatedTask = TaskFactory.createTask({
-			...originalTask,
-			scheduled: "2026-05-19T10:00",
-			priority: "high",
-		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
-		const view = Object.create(CalendarView.prototype) as CalendarView & {
-			_expectingImmediateUpdate: boolean;
-			currentTasks: typeof originalTask[];
-			calendar: typeof calendar;
-			debouncedRefresh: jest.Mock;
-			plugin: {
-				cacheManager: {
-					getCachedTaskInfoSync: jest.Mock;
-				};
+describe("incremental calendar updates", () => {
+	it.each(["tasknotes-service", "metadata-cache"])(
+		"updates only the changed row after %s, without a range refetch",
+		async (source) => {
+			const { view, projection, setItems, refetchEvents, readTask } = harness();
+			const upsert = jest.spyOn(projection, "upsert");
+			const changed = {
+				...first,
+				scheduled: "2026-05-20T10:00",
+				dateModified: "2026-05-19T12:01:00Z",
 			};
-			handleTaskUpdate(task: typeof updatedTask, source: "tasknotes-service"): Promise<void>;
-		};
-		Object.assign(view, {
-			_expectingImmediateUpdate: false,
-			calendar,
-			currentTasks: [originalTask],
-			debouncedRefresh: jest.fn(),
-			plugin: {
-				cacheManager: {
-					getCachedTaskInfoSync: jest.fn(() => originalTask),
-				},
-			},
-		});
-
-		await view.handleTaskUpdate(updatedTask, "tasknotes-service");
-
-		expect(view.debouncedRefresh).not.toHaveBeenCalled();
-		expect(view.currentTasks[0]).toMatchObject({
-			path: updatedTask.path,
-			scheduled: "2026-05-19T10:00",
-			priority: "high",
-		});
-		expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
-	});
-
-	it("refreshes direct calendar writes without the expected-update flag", async () => {
-		const originalTask = TaskFactory.createTask({
-			path: "TaskNotes/Event.md",
-			due: "2026-05-19",
-			status: "open",
-		});
-		const updatedTask = TaskFactory.createTask({
-			...originalTask,
-			due: "2026-05-20",
-		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
-		const view = Object.create(CalendarView.prototype) as CalendarView & {
-			_expectingImmediateUpdate: boolean;
-			currentTasks: typeof originalTask[];
-			calendar: typeof calendar;
-			plugin: {
-				cacheManager: {
-					getCachedTaskInfoSync: jest.Mock;
-				};
-			};
-			refreshAfterDirectCalendarTaskWrite(task: typeof updatedTask): Promise<void>;
-		};
-		Object.assign(view, {
-			_expectingImmediateUpdate: false,
-			calendar,
-			currentTasks: [originalTask],
-			updateDebounceTimer: null,
-			dataUpdateDebounceTimer: null,
-			plugin: {
-				cacheManager: {
-					getCachedTaskInfoSync: jest.fn(() => originalTask),
-				},
-			},
-		});
-
-		await view.refreshAfterDirectCalendarTaskWrite(updatedTask);
-
-		expect(view._expectingImmediateUpdate).toBe(false);
-		expect(view.currentTasks[0]).toMatchObject({
-			path: updatedTask.path,
-			due: "2026-05-20",
-		});
-		expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
-	});
-
-	it("clears stale pending renders after direct calendar writes", async () => {
-		jest.useFakeTimers();
-		try {
-			const originalTask = TaskFactory.createTask({
-				path: "TaskNotes/Event.md",
-				due: "2026-05-19",
-			});
-			const updatedTask = TaskFactory.createTask({
-				...originalTask,
-				due: "2026-05-20",
-			});
-			const calendar = {
-				refetchEvents: jest.fn(),
-			};
-			const view = Object.create(CalendarView.prototype) as CalendarView & {
-				currentTasks: typeof originalTask[];
-				calendar: typeof calendar;
-				updateDebounceTimer: number | null;
-				dataUpdateDebounceTimer: number | null;
-				plugin: {
-					cacheManager: {
-						getCachedTaskInfoSync: jest.Mock;
-					};
-				};
-				refreshAfterDirectCalendarTaskWrite(task: typeof updatedTask): Promise<void>;
-			};
-			Object.assign(view, {
-				calendar,
-				currentTasks: [originalTask],
-				updateDebounceTimer: window.setTimeout(jest.fn(), 300),
-				dataUpdateDebounceTimer: window.setTimeout(jest.fn(), 300),
-				plugin: {
-					cacheManager: {
-						getCachedTaskInfoSync: jest.fn(() => originalTask),
-					},
-				},
-			});
-
-			await view.refreshAfterDirectCalendarTaskWrite(updatedTask);
-
-			expect(view.updateDebounceTimer).toBeNull();
-			expect(view.dataUpdateDebounceTimer).toBeNull();
-			expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
-		} finally {
-			jest.useRealTimers();
+			await view.handleTaskUpdate(changed, source);
+			expect(view._expectingImmediateUpdate).toBe(false);
+			expect(view.currentTasks[1]).toBe(second);
+			expect(upsert).toHaveBeenCalledTimes(1);
+			expect(upsert).toHaveBeenCalledWith(
+				expect.objectContaining({ scheduled: changed.scheduled })
+			);
+			expect(readTask).not.toHaveBeenCalled();
+			expect(refetchEvents).not.toHaveBeenCalled();
+			expect(setItems).toHaveBeenCalledTimes(1);
+			expect(setItems.mock.calls[0][0].map((item) => [item.id, item.start])).toEqual([
+				["scheduled-stable", changed.scheduled],
+				[`scheduled-${second.path}`, second.scheduled],
+			]);
 		}
+	);
+
+	it("removes archived tasks and never inserts an excluded task before Bases admits it", async () => {
+		const { view, projection, setItems } = harness();
+		view._expectingImmediateUpdate = false;
+		await view.refreshAfterDirectCalendarTaskWrite({ ...first, archived: true });
+		await view.handleTaskUpdate(
+			TaskFactory.createTask({ path: "Tasks/Excluded.md", scheduled: "2026-05-19" })
+		);
+		expect(view.currentTasks).toEqual([second]);
+		expect(
+			projection.entriesInRange({
+				start: range.start.toISOString(),
+				end: range.end.toISOString(),
+			})
+		).toHaveLength(1);
+		expect(setItems.mock.calls.at(-1)![0]).toHaveLength(1);
 	});
 
-	it("can include a newly created calendar task before Bases has refreshed", async () => {
-		const existingTask = TaskFactory.createTask({
-			path: "TaskNotes/Existing.md",
-			due: "2026-05-19",
+	it("resolves materialized children outside the query to their parent's stable id", () => {
+		const child = TaskFactory.createTask({
+			path: "Elsewhere/Child.md",
+			recurrence_parent: "[[First]]",
+			occurrence_date: "2026-05-19",
 		});
-		const createdTask = TaskFactory.createTask({
-			path: "TaskNotes/New.md",
-			due: "2026-05-19",
+		const resolve = jest.fn(() => first.path);
+		expect(calendarMaterializedOccurrences([first, child], resolve)).toEqual({
+			stable: ["2026-05-19"],
 		});
-		const calendar = {
-			refetchEvents: jest.fn(),
-		};
-		const view = Object.create(CalendarView.prototype) as CalendarView & {
-			currentTasks: typeof existingTask[];
-			calendar: typeof calendar;
-			plugin: {
-				cacheManager: {
-					getCachedTaskInfoSync: jest.Mock;
-				};
-			};
-			refreshCalendarWithFreshData(task?: typeof createdTask): Promise<void>;
-		};
-		Object.assign(view, {
-			calendar,
-			currentTasks: [existingTask],
-			plugin: {
-				cacheManager: {
-					getCachedTaskInfoSync: jest.fn((path: string) =>
-						path === createdTask.path ? null : existingTask
-					),
-				},
-			},
-		});
+		expect(resolve).toHaveBeenCalledWith("First", child.path);
+	});
 
-		await view.refreshCalendarWithFreshData(createdTask);
-
-		expect(view.currentTasks).toEqual([existingTask, createdTask]);
-		expect(calendar.refetchEvents).toHaveBeenCalledTimes(1);
+	it("rejects malformed dates without hiding valid rows", () => {
+		const invalid = jest.fn();
+		const projection = new CalendarTaskProjection(context, invalid);
+		projection.setTasks([first, { ...second, scheduled: "not-a-date" }]);
+		expect(
+			projection.entriesInRange({
+				start: range.start.toISOString(),
+				end: range.end.toISOString(),
+			})
+		).toHaveLength(1);
+		expect(invalid).toHaveBeenCalledTimes(1);
 	});
 });

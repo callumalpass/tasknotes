@@ -342,22 +342,22 @@ test.describe('Issue #1599: Google Calendar tasks displayed as all-day events', 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Check for any events and their duration representation
-      const events = page.locator('.fc-event');
+      const events = page.locator('.tnc-item');
       const eventCount = await events.count();
       console.log(`Events in calendar: ${eventCount}`);
 
       if (eventCount > 0) {
         // All-day events appear in the all-day row at the top
         // Timed events appear in the time grid
-        const allDayRow = page.locator('.fc-daygrid-body, .fc-all-day');
-        const timeGrid = page.locator('.fc-timegrid-body');
+        const allDayRow = page.locator('.tnc-tg-allday');
+        const timeGrid = page.locator('.tnc-tg-body');
 
-        const allDayEvents = await allDayRow.locator('.fc-event').count().catch(() => 0);
-        const timedEvents = await timeGrid.locator('.fc-event').count().catch(() => 0);
+        const allDayEvents = await allDayRow.locator('.tnc-item').count().catch(() => 0);
+        const timedEvents = await timeGrid.locator('.tnc-item').count().catch(() => 0);
 
         console.log(`All-day events: ${allDayEvents}`);
         console.log(`Timed events: ${timedEvents}`);

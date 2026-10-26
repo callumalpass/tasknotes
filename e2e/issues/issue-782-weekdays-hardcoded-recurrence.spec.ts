@@ -91,11 +91,11 @@ test.describe('Issue #782: Hardcoded weekdays in recurrence settings', () => {
       await page.waitForTimeout(1000);
 
       // Wait for calendar to load
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find and right-click on a task event to access recurrence menu
-      const taskEvent = page.locator('.fc-event').first();
+      const taskEvent = page.locator('.tnc-item').first();
 
       if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
         await taskEvent.click({ button: 'right' });
@@ -179,11 +179,11 @@ test.describe('Issue #782: Hardcoded weekdays in recurrence settings', () => {
       await page.waitForTimeout(1000);
 
       // Wait for calendar to load
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find and right-click on a task event
-      const taskEvent = page.locator('.fc-event').first();
+      const taskEvent = page.locator('.tnc-item').first();
 
       if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
         await taskEvent.click({ button: 'right' });
@@ -267,10 +267,10 @@ test.describe('Issue #782: Hardcoded weekdays in recurrence settings', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
-      const taskEvent = page.locator('.fc-event').first();
+      const taskEvent = page.locator('.tnc-item').first();
 
       if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
         await taskEvent.click({ button: 'right' });

@@ -714,6 +714,7 @@ export interface FieldMapping {
 	contexts: string;
 	projects: string;
 	attachments: string;
+	assignees: string;
 	timeEstimate: string;
 	completedDate: string;
 	dateCreated: string;

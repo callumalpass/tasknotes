@@ -128,8 +128,8 @@ async function openBaseFile(page: Page, relativePath: string): Promise<void> {
     throw new Error(`Could not open ${relativePath}`);
   }
 
-  await expect(page.locator(`${ACTIVE_LEAF_SELECTOR} .fc`).first()).toBeVisible({ timeout: 10000 });
-  const monthButton = page.locator(`${ACTIVE_LEAF_SELECTOR} .fc-dayGridMonth-button`).first();
+  await expect(page.locator(`${ACTIVE_LEAF_SELECTOR} .tnc`).first()).toBeVisible({ timeout: 10000 });
+  const monthButton = page.locator(`${ACTIVE_LEAF_SELECTOR} .tnc-btn-view-month`).first();
   if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
     await monthButton.click();
   }
@@ -155,7 +155,7 @@ async function readTaskDates(page: Page): Promise<TaskDates> {
 
 function eventsForTask(page: Page, eventType: string): Locator {
   return page
-    .locator(`${ACTIVE_LEAF_SELECTOR} .fc-event[data-event-type="${eventType}"]`)
+    .locator(`${ACTIVE_LEAF_SELECTOR} .tnc-item[data-event-type="${eventType}"]`)
     .filter({ hasText: SPAN_TASK_TITLE });
 }
 
@@ -175,7 +175,7 @@ async function dragEventByOneDay(page: Page, event: Locator): Promise<void> {
   expect(eventBox).not.toBeNull();
   const startX = eventBox!.x + eventBox!.width / 2;
   const startY = eventBox!.y + eventBox!.height / 2;
-  const sourceDay = await page.locator(`${ACTIVE_LEAF_SELECTOR} .fc-daygrid-day`).evaluateAll(
+  const sourceDay = await page.locator(`${ACTIVE_LEAF_SELECTOR} .tnc-dg-day`).evaluateAll(
     (cells, point) => {
       const cell = cells.find(candidate => {
         const box = candidate.getBoundingClientRect();
@@ -191,7 +191,7 @@ async function dragEventByOneDay(page: Page, event: Locator): Promise<void> {
   const nextDay = new Date(`${sourceDay!.date}T12:00:00`);
   nextDay.setDate(nextDay.getDate() + 1);
   const targetBox = await page.locator(
-    `${ACTIVE_LEAF_SELECTOR} .fc-daygrid-day[data-date="${formatLocalDate(nextDay)}"]`
+    `${ACTIVE_LEAF_SELECTOR} .tnc-dg-day[data-date="${formatLocalDate(nextDay)}"]`
   ).boundingBox();
   expect(targetBox).not.toBeNull();
   // Saturday -> Sunday changes rows; a horizontal-only drag leaves the calendar.
@@ -295,7 +295,7 @@ test.describe('Issue #1441: Span task drag with scheduled-to-due span enabled', 
     await page.mouse.down();
     await page.mouse.move(startX + 50, startY, { steps: 3 });
 
-    const dragMirror = page.locator('.fc-event-mirror, .fc-event-dragging');
+    const dragMirror = page.locator('.tnc-item.is-mirror, .tnc-item.is-dragging');
     await expect(dragMirror.first()).toBeVisible({ timeout: 1000 });
 
     await page.mouse.up();

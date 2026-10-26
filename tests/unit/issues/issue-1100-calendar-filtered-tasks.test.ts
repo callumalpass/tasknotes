@@ -51,6 +51,7 @@ function createPlugin(): TaskNotesPlugin {
 			mapFromFrontmatter: (frontmatter: Record<string, unknown>) => frontmatter,
 		},
 		cacheManager: {
+			getAllTasks: jest.fn<() => Promise<TaskInfo[]>>(() => Promise.resolve([])),
 			isTaskFile: (frontmatter: Record<string, unknown>) =>
 				Array.isArray(frontmatter.tags) && frontmatter.tags.includes("task"),
 			getCachedTaskInfoSync: jest.fn(() => null),

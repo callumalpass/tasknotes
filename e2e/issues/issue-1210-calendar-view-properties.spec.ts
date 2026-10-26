@@ -53,15 +53,15 @@ test.describe('Issue #1210: Display properties in Calendar View', () => {
     await page.waitForTimeout(1000);
 
     // Verify the calendar view is visible and in month mode
-    const calendarContainer = page.locator('.fc');
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
     // Verify we're in month view (dayGridMonth)
-    const monthView = page.locator('.fc-dayGridMonth-view, .fc-daygrid');
+    const monthView = page.locator('.tnc--month, .tnc-dg');
     await expect(monthView).toBeVisible({ timeout: 5000 });
 
     // Find calendar events in the month view
-    const calendarEvents = page.locator('.fc-daygrid-event, .fc-event');
+    const calendarEvents = page.locator('.tnc-dg .tnc-item, .tnc-item');
     const eventCount = await calendarEvents.count();
 
     if (eventCount > 0) {
@@ -158,19 +158,19 @@ test.describe('Issue #1210: Display properties in Calendar View', () => {
     await runCommand(page, 'TaskNotes: Open calendar view');
     await page.waitForTimeout(1000);
 
-    const calendarContainer = page.locator('.fc');
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
     // Switch to week view
     const weekButton = page.locator(
-      '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+      '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
     );
     if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await weekButton.click();
       await page.waitForTimeout(500);
 
       // Check for property display in week view events
-      const weekEvents = page.locator('.fc-timegrid-event, .fc-event');
+      const weekEvents = page.locator('.tnc-item--timed, .tnc-item');
       const weekEventCount = await weekEvents.count();
 
       if (weekEventCount > 0) {
@@ -187,14 +187,14 @@ test.describe('Issue #1210: Display properties in Calendar View', () => {
 
     // Switch to day view
     const dayButton = page.locator(
-      '.fc-timeGridDay-button, button:has-text("day"), .fc-toolbar button:has-text("Day")'
+      '.tnc-btn-view-day, button:has-text("day"), .tnc-toolbar button:has-text("Day")'
     );
     if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await dayButton.click();
       await page.waitForTimeout(500);
 
       // Check for property display in day view events
-      const dayEvents = page.locator('.fc-timegrid-event, .fc-event');
+      const dayEvents = page.locator('.tnc-item--timed, .tnc-item');
       const dayEventCount = await dayEvents.count();
 
       if (dayEventCount > 0) {
@@ -226,11 +226,11 @@ test.describe('Issue #1210: Display properties in Calendar View', () => {
     await runCommand(page, 'TaskNotes: Open calendar view');
     await page.waitForTimeout(1000);
 
-    const calendarContainer = page.locator('.fc');
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
     // Find calendar events
-    const calendarEvents = page.locator('.fc-daygrid-event, .fc-event');
+    const calendarEvents = page.locator('.tnc-dg .tnc-item, .tnc-item');
     const eventCount = await calendarEvents.count();
 
     if (eventCount > 0) {
@@ -241,7 +241,7 @@ test.describe('Issue #1210: Display properties in Calendar View', () => {
 
       if (eventBox) {
         // Get the bounding box of the day cell containing the event
-        const dayCell = page.locator('.fc-daygrid-day').first();
+        const dayCell = page.locator('.tnc-dg-day').first();
         const cellBox = await dayCell.boundingBox();
 
         if (cellBox) {
@@ -294,13 +294,13 @@ test.describe('Issue #1210: Display properties in Calendar View', () => {
     await runCommand(page, 'TaskNotes: Open calendar view');
     await page.waitForTimeout(1000);
 
-    const calendarContainer = page.locator('.fc');
+    const calendarContainer = page.locator('.tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
     // Switch to list view
     const listButton = page.locator(
-      '.fc-listWeek-button, .fc-listMonth-button, ' +
-      'button:has-text("list"), .fc-toolbar button:has-text("List")'
+      '.tnc-btn-view-list, .tnc-btn-view-list, ' +
+      'button:has-text("list"), .tnc-toolbar button:has-text("List")'
     );
 
     if (await listButton.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -308,7 +308,7 @@ test.describe('Issue #1210: Display properties in Calendar View', () => {
       await page.waitForTimeout(500);
 
       // In list view, tasks should already display properties via TaskCard
-      const listEvents = page.locator('.fc-list-event, .fc-event');
+      const listEvents = page.locator('.tnc-item--list, .tnc-item');
       const listEventCount = await listEvents.count();
 
       if (listEventCount > 0) {
