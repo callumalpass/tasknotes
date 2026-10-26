@@ -1,4 +1,5 @@
 import type { App } from "obsidian";
+import { createI18nService } from "../../../src/i18n";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import {
 	buildTaskEditFormState,
@@ -26,7 +27,7 @@ async function createModal(tags: string | string[], settings: TaskEditFormStateS
 	const app = MockObsidian.createMockApp() as unknown as App;
 	const task = createTask({ tags: tags as unknown as string[] });
 	const plugin = {
-		i18n: { translate: (key: string) => key },
+		i18n: createI18nService(),
 		settings: {
 			taskIdentificationMethod: "tag",
 			taskTag: "task",
