@@ -50,6 +50,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Calendar pattern drags preserve multiline recurrence rules and excluded dates. Recurring tasks with a timezone now appear on the correct civil dates, and duration ends retain the correct instant during the repeated daylight-saving hour.
+- Materialized occurrence notes excluded by a Bases filter no longer leave duplicate virtual parent occurrences on the calendar.
+- Completion-anchored recurring tasks preserve the clock and timezone parameters when advancing their recurrence anchor.
 - (#2414) Fixed Kanban mouse drags aborting on touchscreen laptops while preserving long-press touch dragging. See [Kanban drag-and-drop](https://tasknotes.dev/views/kanban-view/#drag-and-drop-tasks).
   - Thanks to @paladinm078 for reporting and isolating the cause.
 - (#2394) Fixed expanded subtasks keeping their previous order after changing a Task List sort when top-level subtasks are hidden. Formula sorts such as `priorityWeight` now refresh already-expanded subtasks. See [Task List](https://tasknotes.dev/views/task-list/). Thanks to @iantierney for reporting this.

@@ -10,6 +10,7 @@ test.afterAll(async () => { if (app) await closeObsidian(app); });
 
 const BASE_PATH = 'TaskNotes/Views/e2e-calendar-engine.base';
 const TASK_PATH = 'TaskNotes/E2E calendar engine task.md';
+const CHILD_PATH = 'TaskNotes/E2E calendar engine child.md';
 
 function baseFile(view: string): string {
 	return `filters:
@@ -51,6 +52,7 @@ test.afterEach(async () => {
 	await app.page.evaluate(() => (window as any).app.workspace.getLeaf()?.detach());
 	await removeFile(app.page, BASE_PATH);
 	await removeFile(app.page, TASK_PATH);
+	await removeFile(app.page, CHILD_PATH);
 });
 
 test('time grid settings from the .base file apply', async () => {
@@ -130,4 +132,57 @@ test('dragging and resizing a task writes back to its frontmatter', async () => 
 	await page.mouse.move(box.x + box.width / 2, box.y + box.height * 2 - 3, { steps: 8 });
 	await page.mouse.up();
 	await expect.poll(async () => (await frontmatter(page)).timeEstimate).toBe(120);
+});
+
+async function recurrenceDates(page: Page): Promise<string[]> {
+	return page.evaluate(() => Array.from({ length: 3 }, (_, offset) => {
+		const date = new Date();
+		date.setDate(date.getDate() + offset);
+		return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+	}));
+}
+
+test('pattern gestures preserve multiline rules and the independently scheduled next occurrence', async () => {
+	const page = app.page;
+	const [today, tomorrow, third] = await recurrenceDates(page);
+	const rule = `DTSTART:${today.replace(/-/g, '')}T090000Z\nRRULE:FREQ=DAILY;COUNT=5\nEXDATE:${third.replace(/-/g, '')}T090000Z`;
+	await page.evaluate(async ({ path, scheduled, recurrence }) => {
+		await (window as any).app.vault.create(path,
+			`---\ntitle: E2E calendar engine task\nstatus: open\npriority: normal\ntags: [task]\nscheduled: ${scheduled}\nrecurrence: ${JSON.stringify(recurrence)}\n---\n`);
+	}, { path: TASK_PATH, scheduled: `${tomorrow}T11:00`, recurrence: rule });
+	await openBase(page, baseFile(`    calendarView: timeGridCustom
+    customDayCount: 3
+    snapDuration: 00:30:00
+    scrollTime: 08:00:00
+`));
+	const pattern = page.locator('.tnc:visible .fc-pattern-instance-event', { hasText: 'E2E calendar engine task' }).first();
+	await expect(pattern).toBeVisible();
+	await pattern.focus();
+	await page.keyboard.press('Alt+ArrowDown');
+	await expect.poll(async () => (await frontmatter(page)).recurrence)
+		.toBe(rule.replace('T090000Z\nRRULE', 'T093000Z\nRRULE'));
+	expect((await frontmatter(page)).scheduled).toBe(`${tomorrow}T11:00`);
+});
+
+test('filtered materialized children suppress virtual parent occurrences', async () => {
+	const page = app.page;
+	const [today] = await recurrenceDates(page);
+	await page.evaluate(async ({ parent, child, day }) => {
+		const vault = (window as any).app.vault;
+		await vault.create(parent,
+			`---\ntitle: E2E calendar engine task\nstatus: open\npriority: normal\ntags: [task]\nscheduled: ${day}T09:00\nrecurrence: FREQ=DAILY\n---\n`);
+		await vault.create(child,
+			`---\ntitle: E2E excluded child\nstatus: open\npriority: normal\ntags: [task]\nscheduled: ${day}T11:00\nrecurrence_parent: "[[${parent.replace(/\.md$/, '')}]]"\noccurrence_date: ${day}\n---\n`);
+	}, { parent: TASK_PATH, child: CHILD_PATH, day: today });
+	await openBase(page, baseFile(`    calendarView: timeGridCustom
+    customDayCount: 3
+    scrollTime: 08:00:00
+`).replace('- note.status && note.status != ""', `- file.path == "${TASK_PATH}"`));
+	const cal = page.locator('.tnc:visible').first();
+	await expect(cal.locator('.fc-pattern-instance-event', { hasText: 'E2E calendar engine task' }).first()).toBeVisible();
+	await expect(cal.locator('.fc-next-scheduled-event', { hasText: 'E2E calendar engine task' })).toHaveCount(0);
+	await expect(cal.getByText('E2E excluded child')).toHaveCount(0);
+	// Deletion outside the Bases query must release the parent's virtual date.
+	await removeFile(page, CHILD_PATH);
+	await expect(cal.locator('.fc-next-scheduled-event', { hasText: 'E2E calendar engine task' })).toHaveCount(1);
 });

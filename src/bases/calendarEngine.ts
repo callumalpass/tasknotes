@@ -59,28 +59,11 @@ export function calendarInputToDate(value: DateInput | null | undefined): Date |
 	return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-const EDITABLE_TASK_EVENT_TYPES = new Set([
-	"scheduled",
-	"recurring",
-	"timeEntry",
-	"due",
-	"scheduledToDueSpan",
-]);
-
-/**
- * Whether dragging may change an event. Timeblocks and task events are
- * editable except recurring spans; property-based and provider events keep
- * the permission their builder set.
- */
+/** Model permissions are authoritative; non-task sources retain their builder permissions. */
 export function resolveCalendarEventEditable(event: CalendarEventInput): boolean | undefined {
 	const props = event.extendedProps as CalendarEventProps;
+	if (props.modelEntry) return props.modelEntry.startEditable;
 	if (props.eventType === "timeblock" && props.timeblock) return true;
-	if (props.taskInfo?.path && EDITABLE_TASK_EVENT_TYPES.has(props.eventType)) {
-		return (
-			props.eventType !== "scheduledToDueSpan" ||
-			!(props.isRecurringInstance || props.isNextScheduledOccurrence || props.isPatternInstance)
-		);
-	}
 	return event.editable;
 }
 
@@ -103,6 +86,11 @@ export function toCalendarItems(events: readonly CalendarEventInput[]): Calendar
 			borderColor: event.borderColor,
 			textColor: event.textColor,
 			editable,
+			...(props.modelEntry ? {
+				startEditable: props.modelEntry.startEditable,
+				durationEditable: props.modelEntry.durationEditable,
+				completed: props.modelEntry.isCompleted,
+			} : {}),
 			data: props,
 		};
 		if (props.eventType === "timeEntry") item.lane = "actual";

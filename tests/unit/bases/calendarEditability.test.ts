@@ -24,21 +24,9 @@ function createEvent(
 }
 
 describe("Calendar editability policy", () => {
-	it.each<[string, Record<string, unknown>, boolean]>([
-		["scheduled", {}, true],
-		["due", {}, true],
-		["timeEntry", {}, true],
-		["recurring", { isPatternInstance: true }, true],
-		["scheduled", { isNextScheduledOccurrence: true }, true],
-		["recurring", { isRecurringInstance: true, isCompleted: true }, true],
-		["scheduledToDueSpan", {}, true],
-		["scheduledToDueSpan", { isRecurringInstance: true }, false],
-		["scheduledToDueSpan", { isNextScheduledOccurrence: true }, false],
-		["scheduledToDueSpan", { isPatternInstance: true }, false],
-		["timeblock", { timeblock: { id: "block", title: "Block", color: "#6366f1" } }, true],
-	])("makes %s %j editable: %s", (eventType, props, editable) => {
-		const [item] = toCalendarItems([createEvent(eventType, props)]);
-		expect(item.editable).toBe(editable);
+	it("keeps timeblocks draggable", () => {
+		const [item] = toCalendarItems([createEvent("timeblock", { timeblock: { id: "b" } })]);
+		expect(item.editable).toBe(true);
 	});
 
 	it.each([
