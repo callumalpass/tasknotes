@@ -613,14 +613,7 @@ export class InstantTaskConvertService {
 		// Capture parent note information (current active file)
 		const currentFile = this.plugin.app.workspace.getActiveFile();
 		const parentNote = currentFile
-			? generateLink(
-					this.plugin.app,
-					currentFile,
-					currentFile.path,
-					"",
-					"",
-					this.plugin.settings.useFrontmatterMarkdownLinks
-				)
+			? this.plugin.app.fileManager.generateMarkdownLink(currentFile, currentFile.path)
 			: "";
 
 		// Parse due and scheduled dates from task (if present)
@@ -794,8 +787,16 @@ export class InstantTaskConvertService {
 
 			// Add parent note as project if enabled
 			if (defaults.useParentNoteAsProject && currentFile) {
-				// The parentNote is already a markdown link, so we can add it directly
-				projectsArray.push(parentNote);
+				projectsArray.push(
+					generateLink(
+						this.plugin.app,
+						currentFile,
+						currentFile.path,
+						"",
+						"",
+						this.plugin.settings.useFrontmatterMarkdownLinks
+					)
+				);
 			}
 
 			if (defaults.useParentHeaderAsProject && currentFile) {
