@@ -1140,17 +1140,24 @@ export abstract class TaskModal extends Modal {
 		);
 	}
 
-	protected initializeProjectsFromStrings(projects: string[]): void {
+	protected initializeProjectsFromStrings(projects: string[], formatLinks = false): void {
 		this.selectedProjectItems = [];
-		this.addProjectsFromStrings(projects);
+		this.addProjectsFromStrings(projects, formatLinks);
 		// Don't render immediately - let the caller decide when to render
 	}
 
-	protected addProjectsFromStrings(projects: string[]): void {
+	/**
+	 * Add projects given as text. `formatLinks` writes projects that resolve to a
+	 * note in the TaskNotes link format (new tasks); otherwise links are kept as written.
+	 */
+	protected addProjectsFromStrings(projects: string[], formatLinks = false): void {
+		const context = this.getProjectStringContext();
 		this.selectedProjectItems = addTaskModalProjectItemsFromStrings(
 			this.selectedProjectItems,
 			projects,
-			this.getProjectStringContext()
+			formatLinks
+				? { ...context, formatLink: (file) => this.buildProjectReference(file, context.sourcePath) }
+				: context
 		);
 		this.updateProjectsFromFiles();
 		// Don't render immediately - let the caller decide when to render

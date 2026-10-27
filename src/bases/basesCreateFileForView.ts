@@ -1,4 +1,5 @@
 import type { App } from "obsidian";
+import { generateLink } from "../utils/linkUtils";
 import type { UserMappedField } from "../types/settings";
 import {
 	buildTaskCreationDataFromFrontmatter,
@@ -16,11 +17,6 @@ export type BuildBasesTaskCreationDataForViewOptions = {
 	userFields?: readonly Pick<UserMappedField, "key">[];
 	currentFileLink: () => string | null;
 	frontmatterProcessor?: BasesFrontmatterProcessor;
-};
-
-type ActiveFileLike = {
-	extension?: string;
-	path: string;
 };
 
 export function buildBasesTaskCreationDataForView({
@@ -44,11 +40,11 @@ export function buildBasesTaskCreationDataForView({
 	return buildTaskCreationDataFromFrontmatter(frontmatter, fieldMapper, userFields);
 }
 
-export function getBasesCurrentFileLinkDefault(app: App): string | null {
-	const activeFile = app.workspace.getActiveFile() as ActiveFileLike | null;
+export function getBasesCurrentFileLinkDefault(app: App, useMarkdownLinks?: boolean): string | null {
+	const activeFile = app.workspace.getActiveFile();
 	if (!activeFile || activeFile.extension === "base") {
 		return null;
 	}
 
-	return app.fileManager.generateMarkdownLink(activeFile as never, activeFile.path);
+	return generateLink(app, activeFile, activeFile.path, "", "", useMarkdownLinks);
 }

@@ -223,3 +223,15 @@ describe("taskModalProjects", () => {
 		expect(container.textContent).toBe("");
 	});
 });
+
+describe("NLP projects in the creation modal", () => {
+	it("writes a resolved wikilink project with the configured link format", () => {
+		const project = file("Projects/Project C.md");
+		const context = {
+			...createContext([], { "Project C": project }),
+			formatLink: (target: TFile) => `[${target.basename}](Projects/Project%20C.md)`,
+		};
+		const items = addTaskModalProjectItemsFromStrings([], ["[[Project C]]"], context);
+		expect(getTaskModalProjectsValue(items)).toBe("[Project C](Projects/Project%20C.md)");
+	});
+});

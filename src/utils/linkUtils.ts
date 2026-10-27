@@ -191,7 +191,7 @@ function shouldUseResolvedTitle(
  * @param sourcePath - The path of the file containing the link (for relative paths)
  * @param subpath - Optional subpath (e.g., heading anchor)
  * @param alias - Optional display alias
- * @param useMarkdownLinks - If true, use Obsidian API which respects user's link format preference (requires third-party plugin for frontmatter)
+ * @param useMarkdownLinks - If true, write a Markdown link regardless of Obsidian's global link preference (requires third-party plugin for frontmatter)
  * @returns A link string in wikilink or markdown format
  */
 export function generateLink(
@@ -202,14 +202,22 @@ export function generateLink(
 	alias?: string,
 	useMarkdownLinks?: boolean
 ): string {
-	// If markdown links are explicitly requested, use Obsidian API
 	if (useMarkdownLinks) {
-		return app.fileManager.generateMarkdownLink(
+		// Obsidian's API follows the global "Use [[Wikilinks]]" preference; the
+		// TaskNotes setting decides the format, so build a Markdown link when the
+		// API returns a wikilink.
+		const generated = app.fileManager.generateMarkdownLink(
 			targetFile,
 			sourcePath,
 			subpath || "",
 			alias || ""
 		);
+		if (!/^!?\[\[/.test(generated)) return generated;
+		const linkPath = app.metadataCache.fileToLinktext(targetFile, sourcePath, false);
+		const destination = encodeURI(`${linkPath}${subpath || ""}`)
+			.replace(/\(/g, "%28")
+			.replace(/\)/g, "%29");
+		return `[${alias || targetFile.basename}](${destination})`;
 	}
 
 	// Default: generate wikilink format for frontmatter compatibility (issue #827)
@@ -267,4 +275,26 @@ export function generateLinkWithDisplay(
 	useMarkdownLinks?: boolean
 ): string {
 	return generateLink(app, targetFile, sourcePath, "", displayName, useMarkdownLinks);
+}
+
+/**
+ * Rewrite a project link that resolves to a note into the TaskNotes link
+ * format. Plain values, unresolved links and links already in that format are
+ * returned unchanged.
+ */
+export function formatResolvedProjectReference(
+	app: App,
+	value: string,
+	sourcePath: string,
+	useMarkdownLinks?: boolean
+): string {
+	const trimmed = value.trim();
+	const wikilink = trimmed.match(/^\[\[([^\]]+)\]\]$/);
+	const markdown = /^\[[^\]]*\]\([^)]+\)$/.test(trimmed);
+	if (!wikilink && !markdown) return value;
+	if (Boolean(useMarkdownLinks) === markdown) return value;
+	const file = app.metadataCache.getFirstLinkpathDest(parseLinkToPath(trimmed), sourcePath);
+	if (!file) return value;
+	const alias = wikilink?.[1].includes("|") ? wikilink[1].slice(wikilink[1].indexOf("|") + 1).trim() : "";
+	return generateLink(app, file, sourcePath, "", alias, useMarkdownLinks);
 }

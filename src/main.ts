@@ -109,6 +109,7 @@ import {
 import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
 import { createTaskNotesLogger } from "./utils/tasknotesLogger";
 import { sanitizeLinkAliasText } from "./utils/linkAliasUtils";
+import { generateLink } from "./utils/linkUtils";
 import { TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS } from "./api/runtime-api";
 import {
 	createTaskNotesPerformanceProfiler,
@@ -1325,7 +1326,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		const currentFile = this.app.workspace.getActiveFile();
 		const parentNote = currentFile
-			? this.app.fileManager.generateMarkdownLink(currentFile, currentFile.path)
+			? generateLink(this.app, currentFile, currentFile.path, "", "", this.settings.useFrontmatterMarkdownLinks)
 			: undefined;
 
 		return applyParentNoteProjectDefault(prePopulatedValues, parentNote);

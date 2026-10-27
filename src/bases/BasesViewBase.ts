@@ -512,7 +512,8 @@ export abstract class BasesViewBase extends Component {
 			fieldMapper: this.plugin.fieldMapper,
 			taskTag: this.plugin.settings.taskTag,
 			userFields: this.plugin.settings.userFields || [],
-			currentFileLink: () => getBasesCurrentFileLinkDefault(app),
+			currentFileLink: () =>
+				getBasesCurrentFileLinkDefault(app, this.plugin.settings.useFrontmatterMarkdownLinks),
 			frontmatterProcessor,
 		});
 

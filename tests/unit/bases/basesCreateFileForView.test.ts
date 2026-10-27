@@ -64,21 +64,23 @@ describe("Bases create-file view helpers", () => {
 		expect(app.fileManager.generateMarkdownLink).not.toHaveBeenCalled();
 	});
 
-	it("uses Obsidian markdown link generation for the active markdown file", () => {
-		const activeFile = { extension: "md", path: "Projects/Launch.md" };
+	it("links the active markdown file in the TaskNotes link format", () => {
+		const activeFile = { extension: "md", path: "Projects/Launch.md", basename: "Launch" };
 		const app = {
 			workspace: {
 				getActiveFile: () => activeFile,
 			},
 			fileManager: {
+				// Obsidian's global preference is wikilinks.
 				generateMarkdownLink: jest.fn(() => "[[Projects/Launch]]"),
+			},
+			metadataCache: {
+				fileToLinktext: (_file: unknown, _source: string, omitMd = true) =>
+					omitMd ? "Projects/Launch" : "Projects/Launch.md",
 			},
 		};
 
 		expect(getBasesCurrentFileLinkDefault(app as never)).toBe("[[Projects/Launch]]");
-		expect(app.fileManager.generateMarkdownLink).toHaveBeenCalledWith(
-			activeFile,
-			activeFile.path
-		);
+		expect(getBasesCurrentFileLinkDefault(app as never, true)).toBe("[Launch](Projects/Launch.md)");
 	});
 });
