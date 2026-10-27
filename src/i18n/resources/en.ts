@@ -28,6 +28,8 @@ export const en: TranslationTree = {
 		settingsSaved: "TaskNotes saved your settings, but could not synchronize the canonical mdbase type.",
 		blocked: "TaskNotes stopped the mdbase metadata update. {details} Review the listed file and recovery copies, resolve the conflict or permissions, then reload TaskNotes. Task files were not changed.",
 		multiple: "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration.",
+		competingSettings:
+			"Other TaskNotes settings records found: {paths}. TaskNotes is using {record} and ignoring the others. Copy any settings you want to keep into {record}, then delete the other files.",
 		referenced: "TaskNotes kept {typePath}: {recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.",
 	},
 	onboarding: {
@@ -2593,7 +2595,7 @@ export const en: TranslationTree = {
 				enable: {
 					name: "Use canonical mdbase configuration",
 					description:
-						"Publish the TaskNotes data contract and make its implementing mdbase type the portable source of truth. File edits update TaskNotes, and portable settings changes update the type binding.",
+						"Publish the TaskNotes data contract and make its implementing mdbase type, with the TaskNotes settings record, the portable source of truth. File edits update TaskNotes. Settings changes update the type binding, or the settings record for app behaviour such as templates, archive moves and status cycling.",
 				},
 			},
 			timeFormats: {

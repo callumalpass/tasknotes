@@ -1,5 +1,6 @@
 import YAML from "yaml";
 import { SafeMetadata, type MetadataSnapshot } from "./SafeMetadata";
+import { APP_SETTINGS_RECORD_PATH, isAppSettingsMetadataPath } from "./appSettingsResources";
 
 export const METADATA_PENDING = ".tasknotes/migrations/mdbase-v0.3-pending.json";
 type Journal = { backupFolder: string; snapshots: MetadataSnapshot[]; intendedWrites: MetadataSnapshot[] };
@@ -92,8 +93,10 @@ export class MetadataTransaction {
 	}
 
 	private rank(path: string): number {
-		if (path === "mdbase.yaml") return 3;
-		if (path.endsWith("/tasknotes.task.md")) return 2;
+		if (path === "mdbase.yaml") return 4;
+		// The settings record after its type and contracts.
+		if (path === APP_SETTINGS_RECORD_PATH) return 3;
+		if (/(^|\/)(tasknotes\.task|tasknotes\.settings|mdbase\.app-settings)(\/[^/]+)?\.md$/.test(path)) return 2;
 		if (path.endsWith(".json")) return 1;
 		return 0;
 	}
@@ -120,6 +123,8 @@ export class MetadataTransaction {
 				if (typeof entry.path !== "string" || (entry.content !== null && typeof entry.content !== "string")) throw new Error("Invalid journal entry");
 				await this.io.assertPhysical(entry.path);
 				if (entry.path !== "mdbase.yaml" && entry.path !== `${contracts}/tasknotes.task.md` &&
+					!(entry.path.startsWith(`${contracts}/tasknotes.task/`) && entry.path.endsWith(".md")) &&
+					!isAppSettingsMetadataPath(entry.path, contracts, types) &&
 					!(/^_schemas\/tasknotes\/tasknotes-task(-binding)?\.schema\.json$/.test(entry.path)) &&
 					!(entry.path.startsWith(`${types}/`) && entry.path.endsWith(".md"))) throw new Error(`Unsafe recovery target: ${entry.path}`);
 			}
@@ -141,8 +146,15 @@ export class MetadataTransaction {
 			if (content !== snapshot.content && content !== journal.intendedWrites.find((write) => write.path === snapshot.path)?.content) throw new Error(`Concurrent metadata change: ${snapshot.path}`);
 		}
 		for (const snapshot of [...journal.snapshots].reverse()) {
-			if (snapshot.content === null || current.get(snapshot.path) === snapshot.content) continue;
-			await this.io.replace({ path: snapshot.path, content: current.get(snapshot.path) ?? null }, snapshot.content);
+			const content = current.get(snapshot.path) ?? null;
+			if (content === snapshot.content) continue;
+			if (snapshot.content === null) {
+				// Created by this upgrade: remove it while it still holds what was written.
+				if (content !== null) await this.io.removeIfUnchanged(snapshot.path, content);
+				continue;
+			}
+			await this.io.replace({ path: snapshot.path, content }, snapshot.content);
 		}
+		await this.io.removeAbandonedStages(journal.snapshots.map(({ path }) => path));
 	}
 }

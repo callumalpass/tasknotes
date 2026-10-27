@@ -37,6 +37,8 @@ export const ko: TranslationTree = {
 			"TaskNotes가 mdbase 메타데이터 업데이트를 중단했습니다. {details} 표시된 파일과 복구 사본을 확인하고 충돌 또는 권한 문제를 해결한 뒤 TaskNotes를 다시 불러오세요. 작업 파일은 변경되지 않았습니다.",
 		multiple:
 			"TaskNotes 유형이 여러 개 있습니다: {paths}. 정식 제공자를 하나만 유지하거나 나머지를 유형 폴더 밖으로 옮긴 뒤 TaskNotes를 다시 불러오세요. TaskNotes는 마지막으로 확인된 유효한 설정을 유지했습니다.",
+		competingSettings:
+			"다른 TaskNotes 설정 레코드가 있습니다: {paths}. TaskNotes는 {record}을(를) 사용하고 나머지는 무시합니다. 유지할 설정을 {record}에 복사한 뒤 다른 파일을 삭제하세요.",
 		referenced:
 			"TaskNotes가 {typePath}을 유지했습니다. {recordPath}에서 이 유형을 명시적으로 참조합니다. 제공자를 옮기기 전에 유형 소속을 확인하세요. 작업 파일은 변경되지 않았습니다.",
 	},
@@ -2578,7 +2580,7 @@ export const ko: TranslationTree = {
 				enable: {
 					name: "표준 mdbase 구성 사용",
 					description:
-						"TaskNotes 데이터 계약을 게시하고 이를 구현하는 mdbase 타입을 이식 가능한 단일 기준 정보로 사용합니다. 파일을 수정하면 TaskNotes가 업데이트되고, 이식 가능한 설정을 변경하면 타입 바인딩이 업데이트됩니다.",
+						"TaskNotes 데이터 계약을 게시하고, 이를 구현하는 mdbase 유형과 TaskNotes 설정 레코드를 이식 가능한 기준 정보로 만듭니다. 파일을 편집하면 TaskNotes가 업데이트됩니다. 설정 변경은 유형 바인딩을 업데이트하며, 템플릿, 보관 이동, 상태 순환 같은 앱 동작은 설정 레코드를 업데이트합니다.",
 				},
 			},
 			timeFormats: {

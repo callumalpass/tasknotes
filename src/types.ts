@@ -712,6 +712,7 @@ export interface FieldMapping {
 	dateModified: string;
 	recurrence: string; // RFC 5545 recurrence rule string
 	recurrenceAnchor: string; // User-configurable property name for recurrence_anchor field
+	recurrenceOriginalDate?: string; // Optional so settings saved before this field existed keep working; defaults to recurrence_original_date
 	recurrenceParent: string;
 	occurrenceDate: string;
 	occurrenceMaterialization: string;

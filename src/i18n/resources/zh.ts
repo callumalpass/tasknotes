@@ -37,6 +37,8 @@ export const zh: TranslationTree = {
 			"TaskNotes 已停止更新 mdbase 元数据。{details} 请检查列出的文件和恢复副本，解决冲突或权限问题，然后重新加载 TaskNotes。任务文件未被更改。",
 		multiple:
 			"发现多个 TaskNotes 类型：{paths}。请保留一个规范提供者，或将其他类型移出类型文件夹，然后重新加载 TaskNotes。TaskNotes 已保留上次有效的配置。",
+		competingSettings:
+			"发现其他 TaskNotes 设置记录：{paths}。TaskNotes 正在使用 {record}，并忽略其他记录。请将需要保留的设置复制到 {record}，然后删除其他文件。",
 		referenced:
 			"TaskNotes 已保留 {typePath}：{recordPath} 显式引用了此类型。移动提供者之前，请检查其类型归属；任务文件未被更改。",
 	},
@@ -2509,7 +2511,7 @@ export const zh: TranslationTree = {
 				enable: {
 					name: "使用规范的 mdbase 配置",
 					description:
-						"发布 TaskNotes 数据契约，并将实现该契约的 mdbase 类型作为可移植的权威数据源。文件编辑会更新 TaskNotes，可移植设置的更改会更新类型绑定。",
+						"发布 TaskNotes 数据契约，并让实现它的 mdbase 类型与 TaskNotes 设置记录成为可移植的唯一可信来源。编辑文件会更新 TaskNotes。更改设置会更新类型绑定；模板、归档移动和状态循环等应用行为则写入设置记录。",
 				},
 			},
 			timeFormats: {

@@ -8,6 +8,7 @@ import { parseMdbaseTaskTypeDocument, validateCanonicalTaskType, mergeCanonicalT
 import { checkCollection, repairCollectionRecord } from "../../../src/services/mdbase/checkCollection";
 import { addAppCollectionConfig, applyTaskExclusions, effectiveMembershipKeys, taskExclusionExpression } from "../../../src/services/mdbase/collectionConfig";
 import { buildTaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
+import { readAppSettingsFrontmatter, taskNotesAppSettingsFromLegacyBinding, withoutTaskNotesAppSettings } from "@tasknotes/model/settings";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
 
 const root = path.join(__dirname, "../../fixtures/mdbase-upgrades");
@@ -89,7 +90,10 @@ describe("migration meaning preservation", () => {
 		await h.service.initialize();
 		const after = typeOf(h.files.get("_types/task.md")!);
 		expect(after.implements[0].fields).toEqual({ ...before.implements[0].fields, assignees: "assignees" });
-		expect(after.implements[0].binding).toEqual(before.implements[0].binding);
+		// rc.6 moves app behaviour out of the binding into the settings record, unchanged.
+		expect(after.implements[0].binding).toEqual(withoutTaskNotesAppSettings(before.implements[0].binding));
+		const record = readAppSettingsFrontmatter(h.files.get("_settings/dev.tasknotes.md")!)!;
+		expect(record).toMatchObject(taskNotesAppSettingsFromLegacyBinding(before.implements[0].binding));
 		expect(after.implements[0].fields.id).toBe("uid");
 		expect(after.implements[0].binding.archive.archived_tag).toBe("cold");
 		expect(after.implements[0].binding.occurrences.future_horizon).toBe("P90D");
@@ -121,10 +125,12 @@ describe("migration meaning preservation", () => {
 		prior.schema.value.allOf.push({ properties: { title: { maxLength: 200 } } });
 		prior.schema.value.required.push("due");
 		const generated = buildTaskNotesMdbaseResources({ archive: { moveOnArchive: true, folder: "New archive" } });
+		expect(generated.appSettings).toMatchObject({ move_on_archive: true, archive_folder: "New archive" });
 		const after = typeOf(mergeCanonicalTaskTypeDocument(doc(prior), generated));
 		expect(after.implements[0].fields.id).toBe("uid");
 		expect(after.implements[0].binding.occurrences).toEqual(prior.implements[0].binding.occurrences);
-		expect(after.implements[0].binding.archive).toEqual({ archived_tag: "cold", move_on_archive: true, folder: "New archive" });
+		// Archive moves are app settings in rc.6; the binding keeps only the archived tag.
+		expect(after.implements[0].binding.archive).toEqual({ archived_tag: "cold" });
 		expect(after.implements[0]["x-owner"]).toEqual({ note: "keep" });
 		expect(after.schema.value.properties.uid.maxLength).toBe(99);
 		expect(after.schema.value.properties.title.minLength).toBe(12);

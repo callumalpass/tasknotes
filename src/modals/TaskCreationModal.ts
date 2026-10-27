@@ -615,7 +615,7 @@ export class TaskCreationModal extends TaskModal {
 
 		// Handle projects differently - they use file selection, not text input
 		if (parsed.projects && parsed.projects.length > 0) {
-			this.addProjectsFromStrings(parsed.projects);
+			this.addProjectsFromStrings(parsed.projects, true);
 			this.renderProjectsList();
 		}
 
@@ -673,7 +673,7 @@ export class TaskCreationModal extends TaskModal {
 		this.userFields = formState.userFields;
 
 		if (formState.projectStrings.length > 0) {
-			this.initializeProjectsFromStrings(formState.projectStrings);
+			this.initializeProjectsFromStrings(formState.projectStrings, true);
 		}
 
 		this.details = this.normalizeDetails(this.details);

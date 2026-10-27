@@ -2,6 +2,7 @@ import {
 	buildTaskNotesMdbaseResources,
 	TASKNOTES_TASK_CONTRACT_VERSION,
 } from "@tasknotes/model/mdbase";
+import { newTaskNotesSettingsFrontmatter } from "@tasknotes/model/settings";
 import YAML from "yaml";
 
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
@@ -82,7 +83,10 @@ describe("canonical mdbase TaskNotes configuration", () => {
 			},
 		});
 
-		applyCanonicalTaskTypeToSettings(settings, resources.type);
+		// rc.6: app behaviour comes from the settings record, not the binding.
+		applyCanonicalTaskTypeToSettings(settings, resources.type, {
+			record: newTaskNotesSettingsFrontmatter(resources.appSettings),
+		});
 
 		expect(settings.tasksFolder).toBe("Work/Tasks");
 		expect(settings.fieldMapping.status).toBe("state");

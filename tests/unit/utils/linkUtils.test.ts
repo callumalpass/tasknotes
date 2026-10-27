@@ -1,4 +1,4 @@
-import { generateLink, generateLinkWithBasename, generateLinkWithDisplay, getProjectDisplayName, parseLinkToPath } from '../../../src/utils/linkUtils';
+import { generateLink, generateLinkWithBasename, generateLinkWithDisplay, formatResolvedProjectReference, getProjectDisplayName, parseLinkToPath } from '../../../src/utils/linkUtils';
 import { MockObsidian } from '../../helpers/obsidian-runtime';
 import type { App, TFile } from 'obsidian';
 
@@ -143,5 +143,28 @@ describe('linkUtils - frontmatter link format', () => {
       const link = '[[Folder/My Note]]';
       expect(getProjectDisplayName(link)).toBe('My Note');
     });
+  });
+});
+
+describe('linkUtils - TaskNotes link format overrides Obsidian preference', () => {
+  const projectFile = { path: 'Projects/Project C.md', basename: 'Project C', name: 'Project C.md', extension: 'md' } as TFile;
+  // Obsidian's API with the global "Use [[Wikilinks]]" preference on.
+  const app = createMockApp({
+    fileManager: { generateMarkdownLink: jest.fn((file: TFile) => `[[${file.basename}]]`) },
+    metadataCache: {
+      fileToLinktext: (file: TFile, _source: string, omitMd = true) => (omitMd ? file.path.replace(/\.md$/, '') : file.path),
+      getFirstLinkpathDest: (linkPath: string) => (linkPath === 'Project C' || linkPath === projectFile.path ? projectFile : null),
+    },
+  });
+
+  it('writes a Markdown link when the setting is Markdown, even if Obsidian prefers wikilinks', () => {
+    expect(generateLink(app, projectFile, 'Tasks/a.md', '', '', true)).toBe('[Project C](Projects/Project%20C.md)');
+  });
+
+  it('rewrites resolved NLP project links to the setting and leaves others unchanged', () => {
+    expect(formatResolvedProjectReference(app, '[[Project C]]', '', true)).toBe('[Project C](Projects/Project%20C.md)');
+    expect(formatResolvedProjectReference(app, '[[Project C]]', '', false)).toBe('[[Project C]]');
+    expect(formatResolvedProjectReference(app, '[[Missing]]', '', true)).toBe('[[Missing]]');
+    expect(formatResolvedProjectReference(app, 'Project C', '', true)).toBe('Project C');
   });
 });

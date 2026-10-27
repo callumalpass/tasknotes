@@ -39,6 +39,8 @@ export const es: TranslationTree = {
 			"TaskNotes detuvo la actualización de los metadatos de mdbase. {details} Revise el archivo indicado y las copias de recuperación, resuelva el conflicto o los permisos y vuelva a cargar TaskNotes. Los archivos de tareas no se modificaron.",
 		multiple:
 			"Varios tipos de TaskNotes: {paths}. Conserve un proveedor canónico o mueva los demás fuera de la carpeta de tipos y vuelva a cargar TaskNotes. TaskNotes conservó la última configuración válida.",
+		competingSettings:
+			"Se encontraron otros registros de ajustes de TaskNotes: {paths}. TaskNotes usa {record} e ignora los demás. Copie en {record} los ajustes que quiera conservar y después elimine los otros archivos.",
 		referenced:
 			"TaskNotes conservó {typePath}: {recordPath} hace referencia explícita a este tipo. Revise su pertenencia antes de mover el proveedor; los archivos de tareas no se modificaron.",
 	},
@@ -2697,7 +2699,7 @@ export const es: TranslationTree = {
 				enable: {
 					name: "Usar la configuración canónica de mdbase",
 					description:
-						"Publica el contrato de datos de TaskNotes y convierte el tipo de mdbase que lo implementa en la fuente de referencia portátil. Las ediciones de archivos actualizan TaskNotes y los cambios en la configuración portátil actualizan la vinculación del tipo.",
+						"Publica el contrato de datos de TaskNotes y convierte su tipo mdbase implementador, junto con el registro de ajustes de TaskNotes, en la fuente de verdad portátil. Las ediciones de archivos actualizan TaskNotes. Los cambios de ajustes actualizan la vinculación del tipo o, para el comportamiento de la app como plantillas, traslados al archivo y ciclo de estados, el registro de ajustes.",
 				},
 			},
 			timeFormats: {

@@ -13,6 +13,8 @@ export interface TaskModalProjectStringContext {
 	sourcePath: string;
 	getMarkdownFiles: () => readonly TFile[];
 	resolveLink: (linkPath: string, sourcePath: string) => unknown;
+	/** When set, a project that resolves to a note is written with this link. */
+	formatLink?: (file: TFile) => string;
 }
 
 export interface RenderTaskModalProjectsListOptions {
@@ -206,7 +208,7 @@ function createTaskModalProjectItemFromWikiLink(
 ): TaskModalProjectItem {
 	const file = context.resolveLink(linkPath, context.sourcePath);
 	if (file instanceof TFile) {
-		return createTaskModalProjectItemFromFile(file, projectString);
+		return createTaskModalProjectItemFromFile(file, context.formatLink?.(file) ?? projectString);
 	}
 
 	return {
@@ -224,7 +226,7 @@ function createTaskModalProjectItemFromMarkdownLink(
 	const linkPath = parseLinkToPath(projectString);
 	const file = context.resolveLink(linkPath, context.sourcePath);
 	if (file instanceof TFile) {
-		return createTaskModalProjectItemFromFile(file, projectString);
+		return createTaskModalProjectItemFromFile(file, context.formatLink?.(file) ?? projectString);
 	}
 
 	return {
@@ -246,7 +248,7 @@ function createTaskModalProjectItemFromPlainText(
 		return {
 			file: matchingFile,
 			name: matchingFile.basename,
-			link: `[[${matchingFile.basename}]]`,
+			link: context.formatLink?.(matchingFile) ?? `[[${matchingFile.basename}]]`,
 		};
 	}
 

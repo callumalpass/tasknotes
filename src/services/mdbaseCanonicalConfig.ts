@@ -1,7 +1,15 @@
 import {
 	resolveTaskNotesModelConfigFromMdbaseType,
+	upgradeTaskNotesMdbaseTypeContract,
 	type TaskNotesMdbaseResources,
 } from "@tasknotes/model/mdbase";
+import {
+	resolveTaskNotesAppSettings,
+	taskNotesAppSettingsFromLegacyBinding,
+	taskNotesAppSettingsFromModelConfig,
+	taskNotesStatusBehavior,
+	type TaskNotesAppSettingsValues,
+} from "@tasknotes/model/settings";
 import { TASKNOTES_SPEC_VERSION as TASKNOTES_CONTRACT_VERSION } from "@tasknotes/model";
 import YAML from "yaml";
 import { validateContractMapping, validateTaskBinding, validationIssues, compileRecordSchema } from "./mdbase/contractValidation";
@@ -42,38 +50,53 @@ export function parseMdbaseTaskTypeDocument(markdown: string): ParsedMdbaseTaskT
 }
 
 /**
- * tasknotes.task versions written by earlier TaskNotes releases. Their binding
- * is unchanged in the current version, which only adds optional assignees, so
- * such a type is read as the current version and then rewritten.
+ * tasknotes.task versions written by earlier TaskNotes releases. rc.6 moved
+ * app behaviour (templates, archive moves, time tracking, checkbox resets, the
+ * link format, NLP triggers and per-status automation) from the binding to the
+ * TaskNotes settings record; nothing else changed since rc.3 but the optional
+ * assignees. Such a type is read as the current version, with those settings
+ * taken from its binding where the record lacks them, and then rewritten.
  */
-export const PREVIOUS_TASKNOTES_CONTRACT_VERSIONS: readonly string[] = ["0.3.0-rc.3"];
+export const PREVIOUS_TASKNOTES_CONTRACT_VERSIONS: readonly string[] = ["0.3.0-rc.5", "0.3.0-rc.3"];
 
 /**
  * Returns the type with an earlier TaskNotes implementation lifted to the
- * current contract version, and whether it needed lifting. A type that already
- * implements the current version, or no TaskNotes version, is returned as is.
+ * current contract version, whether it needed lifting, and the earlier binding
+ * (which still holds the settings rc.6 moved to the settings record). A type
+ * that already implements the current version, or no TaskNotes version, is
+ * returned as is.
  */
 export function withCurrentTaskNotesContract(type: UnknownRecord): {
 	type: UnknownRecord;
 	outdated: boolean;
+	legacyBinding?: UnknownRecord;
+	/** The tasknotes.task version the file implemented before the upgrade. */
+	previousVersion?: string;
 } {
 	if (!Array.isArray(type.implements) || taskNotesImplementation(type)) {
 		return { type, outdated: false };
 	}
-	const index = type.implements.findIndex(
-		(value) =>
+	const previous = type.implements.find(
+		(value): value is UnknownRecord =>
 			isRecord(value) &&
 			value.contract === "tasknotes.task" &&
 			typeof value.version === "string" &&
 			PREVIOUS_TASKNOTES_CONTRACT_VERSIONS.includes(value.version)
 	);
-	if (index < 0) return { type, outdated: false };
-	const implementations = [...type.implements];
-	implementations[index] = {
-		...(implementations[index] as UnknownRecord),
-		version: TASKNOTES_CONTRACT_VERSION,
+	if (!previous) return { type, outdated: false };
+	const legacyBinding = asRecord(cloneValue(previous.binding)) ?? undefined;
+	const upgraded = upgradeTaskNotesMdbaseTypeContract(type).type;
+	return {
+		type: upgraded,
+		outdated: true,
+		previousVersion: previous.version as string,
+		...(legacyBinding ? { legacyBinding } : {}),
 	};
-	return { type: { ...type, implements: implementations }, outdated: true };
+}
+
+/** Whether an earlier binding holds any setting rc.6 moved to the settings record. */
+export function hasLegacyAppSettings(binding: unknown): boolean {
+	return Object.keys(taskNotesAppSettingsFromLegacyBinding(binding)).length > 0;
 }
 
 export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeValidationResult {
@@ -168,10 +191,25 @@ export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeVal
 	return issues.length > 0 ? { valid: false, issues } : { valid: true };
 }
 
+export type CanonicalAppSettingsSources = {
+	/** Frontmatter of the TaskNotes settings record, when it should be applied. */
+	record?: UnknownRecord;
+	/** The binding of an earlier (rc.3 to rc.5) type, before it was lifted. */
+	legacyBinding?: UnknownRecord;
+};
+
+/**
+ * Apply a canonical type, and the app settings from the settings record, to the
+ * plugin settings. Each app setting comes from the record, then from an
+ * earlier binding, then stays as the plugin has it, so a missing or late
+ * record never loses a value.
+ */
 export function applyCanonicalTaskTypeToSettings(
 	settings: TaskNotesSettings,
-	type: UnknownRecord
+	type: UnknownRecord,
+	sources: CanonicalAppSettingsSources = {}
 ): void {
+	const localAppSettings = appSettingsFromPluginSettings(settings);
 	const modelConfig = resolveTaskNotesModelConfigFromMdbaseType(
 		type,
 		buildTaskNotesModelConfig(settings)
@@ -181,9 +219,10 @@ export function applyCanonicalTaskTypeToSettings(
 	modelConfig.userFields = resolveRetainedUserFields(type, settings.userFields ?? [], modelConfig.userFields, Object.values(modelConfig.fieldMapping));
 	const extension = asRecord(taskNotesImplementation(type)?.binding) ?? {};
 	const title = asRecord(extension.title);
-	const links = asRecord(extension.links);
-	const archive = asRecord(extension.archive);
-	const templating = asRecord(extension.templating);
+	const appSettings = resolveTaskNotesAppSettings(sources.record, {
+		legacyBinding: sources.legacyBinding,
+		fallback: localAppSettings,
+	}).values;
 	const collectionPath = recordAt(type, ["collection", "path"]);
 
 	const excludedFolders = asRecord(type["x-tasknotes-generator"])?.excluded_folders;
@@ -205,11 +244,6 @@ export function applyCanonicalTaskTypeToSettings(
 		modelConfig.userFields
 	);
 	settings.maintainDueDateOffsetInRecurring = modelConfig.recurrence.maintainDueDateOffset;
-	settings.resetCheckboxesOnRecurrence = modelConfig.recurrence.resetCheckboxesOnRecurrence;
-	settings.autoStopTimeTrackingOnComplete = modelConfig.timeTracking.autoStopOnComplete;
-	settings.nlpTriggers = {
-		triggers: (modelConfig.nlp?.triggers ?? []).map((trigger) => ({ ...trigger })),
-	};
 
 	if (collectionPath && typeof collectionPath.folder === "string") {
 		settings.tasksFolder = collectionPath.folder;
@@ -225,19 +259,68 @@ export function applyCanonicalTaskTypeToSettings(
 		typeof title?.custom_filename_template === "string"
 			? title.custom_filename_template
 			: settings.customFilenameTemplate;
-	settings.useFrontmatterMarkdownLinks = links?.write_format === "markdown";
-	settings.moveArchivedTasks = archive?.move_on_archive === true;
-	settings.archiveFolder = typeof archive?.folder === "string" ? archive.folder : "";
+	applyAppSettingsToPluginSettings(settings, appSettings);
+}
+
+/** The settings-record values the plugin settings describe. */
+export function appSettingsFromPluginSettings(settings: TaskNotesSettings): TaskNotesAppSettingsValues {
+	const creation = settings.taskCreationDefaults;
+	return taskNotesAppSettingsFromModelConfig(buildTaskNotesModelConfig(settings), {
+		templating: {
+			enabled: creation?.useBodyTemplate === true,
+			templatePath: creation?.bodyTemplate ?? "",
+			occurrenceEnabled: creation?.useOccurrenceBodyTemplate === true,
+			occurrenceTemplatePath: creation?.occurrenceBodyTemplate ?? "",
+		},
+		archive: { moveOnArchive: settings.moveArchivedTasks === true, folder: settings.archiveFolder ?? "" },
+		links: { writeFormat: settings.useFrontmatterMarkdownLinks ? "markdown" : "wikilink" },
+	});
+}
+
+/** Apply settings-record values to the plugin settings. */
+export function applyAppSettingsToPluginSettings(
+	settings: TaskNotesSettings,
+	values: TaskNotesAppSettingsValues
+): void {
+	settings.customStatuses = settings.customStatuses.map((status) => {
+		const behavior = taskNotesStatusBehavior(values, status);
+		const next = {
+			...status,
+			excludeFromCycle: behavior.exclude_from_cycle,
+			autoArchive: behavior.auto_archive,
+			autoArchiveDelay: behavior.auto_archive_delay_minutes,
+		};
+		if (behavior.next_status) next.nextStatus = behavior.next_status;
+		else delete next.nextStatus;
+		return next;
+	});
+	settings.resetCheckboxesOnRecurrence = values.reset_body_checkboxes_on_recurrence;
+	settings.autoStopTimeTrackingOnComplete = values.auto_stop_time_tracking_on_complete;
+	if (values.nlp_triggers) {
+		settings.nlpTriggers = {
+			...settings.nlpTriggers,
+			triggers: values.nlp_triggers.map((trigger) => ({
+				propertyId: trigger.property_id,
+				trigger: trigger.trigger,
+				enabled: trigger.enabled,
+			})),
+		};
+	}
+	settings.useFrontmatterMarkdownLinks = values.link_write_format === "markdown";
+	settings.moveArchivedTasks = values.move_on_archive;
+	settings.archiveFolder = values.archive_folder;
 	settings.taskCreationDefaults = {
 		...settings.taskCreationDefaults,
-		useBodyTemplate: templating?.enabled === true,
-		bodyTemplate: typeof templating?.template_path === "string" ? templating.template_path : "",
-		useOccurrenceBodyTemplate: templating?.occurrence_enabled === true,
-		occurrenceBodyTemplate:
-			typeof templating?.occurrence_template_path === "string"
-				? templating.occurrence_template_path
-				: "",
+		useBodyTemplate: values.template_enabled,
+		bodyTemplate: values.template_path,
+		useOccurrenceBodyTemplate: values.occurrence_template_enabled,
+		occurrenceBodyTemplate: values.occurrence_template_path,
 	};
+}
+
+/** Fingerprint of the settings kept in the TaskNotes settings record. */
+export function appSettingsFingerprint(settings: TaskNotesSettings): string {
+	return JSON.stringify(appSettingsFromPluginSettings(settings));
 }
 
 export function buildTaskNotesModelConfig(settings: TaskNotesSettings) {
@@ -280,13 +363,11 @@ export function buildTaskNotesModelConfig(settings: TaskNotesSettings) {
 	};
 }
 
+/** Fingerprint of the settings kept in the canonical task type. */
 export function portableSettingsFingerprint(settings: TaskNotesSettings): string {
-	const creationDefaults = settings.taskCreationDefaults;
 	return JSON.stringify({
 		tasksFolder: settings.tasksFolder,
 		excludedFolders: settings.excludedFolders,
-		moveArchivedTasks: settings.moveArchivedTasks,
-		archiveFolder: settings.archiveFolder,
 		taskTag: settings.taskTag,
 		taskIdentificationMethod: settings.taskIdentificationMethod,
 		taskPropertyName: settings.taskPropertyName,
@@ -297,24 +378,17 @@ export function portableSettingsFingerprint(settings: TaskNotesSettings): string
 		storeTitleInFilename: settings.storeTitleInFilename,
 		customFilenameTemplate: settings.customFilenameTemplate,
 		fieldMapping: settings.fieldMapping,
-		customStatuses: settings.customStatuses,
+		// Per-status automation lives in the settings record (appSettingsFingerprint).
+		customStatuses: settings.customStatuses.map(
+			({ nextStatus: _next, excludeFromCycle: _exclude, autoArchive: _archive, autoArchiveDelay: _delay, ...status }) => status
+		),
 		customPriorities: settings.customPriorities,
 		userFields: (settings.userFields ?? []).map((field) => ({
 			key: field.key,
 			type: field.type,
 			defaultValue: field.defaultValue,
 		})),
-		autoStopTimeTrackingOnComplete: settings.autoStopTimeTrackingOnComplete,
 		maintainDueDateOffsetInRecurring: settings.maintainDueDateOffsetInRecurring,
-		resetCheckboxesOnRecurrence: settings.resetCheckboxesOnRecurrence,
-		nlpTriggers: settings.nlpTriggers?.triggers ?? [],
-		useFrontmatterMarkdownLinks: settings.useFrontmatterMarkdownLinks,
-		templating: {
-			useBodyTemplate: creationDefaults.useBodyTemplate,
-			bodyTemplate: creationDefaults.bodyTemplate,
-			useOccurrenceBodyTemplate: creationDefaults.useOccurrenceBodyTemplate,
-			occurrenceBodyTemplate: creationDefaults.occurrenceBodyTemplate,
-		},
 	});
 }
 

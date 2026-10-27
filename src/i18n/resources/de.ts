@@ -39,6 +39,8 @@ export const de: TranslationTree = {
 			"TaskNotes hat die Aktualisierung der mdbase-Metadaten gestoppt. {details} Prüfen Sie die angegebene Datei und die Sicherungskopien, beheben Sie den Konflikt oder die Zugriffsrechte und laden Sie TaskNotes neu. Aufgabendateien wurden nicht geändert.",
 		multiple:
 			"Mehrere TaskNotes-Typen: {paths}. Behalten Sie einen kanonischen Anbieter oder verschieben Sie die anderen aus dem Typenordner und laden Sie TaskNotes neu. TaskNotes hat die letzte gültige Konfiguration beibehalten.",
+		competingSettings:
+			"Weitere TaskNotes-Einstellungsdatensätze gefunden: {paths}. TaskNotes verwendet {record} und ignoriert die anderen. Übernehmen Sie die Einstellungen, die Sie behalten möchten, in {record} und löschen Sie dann die anderen Dateien.",
 		referenced:
 			"TaskNotes hat {typePath} beibehalten: {recordPath} verweist ausdrücklich auf diesen Typ. Prüfen Sie die Typzugehörigkeit, bevor Sie den Anbieter verschieben; Aufgabendateien wurden nicht geändert.",
 	},
@@ -2690,7 +2692,7 @@ export const de: TranslationTree = {
 				enable: {
 					name: "Kanonische mdbase-Konfiguration verwenden",
 					description:
-						"Veröffentlicht den TaskNotes-Datenvertrag und macht den implementierenden mdbase-Typ zur portablen maßgeblichen Quelle. Dateiänderungen aktualisieren TaskNotes, und Änderungen an portablen Einstellungen aktualisieren die Typbindung.",
+						"Veröffentlicht den TaskNotes-Datenvertrag und macht den implementierenden mdbase-Typ zusammen mit dem TaskNotes-Einstellungsdatensatz zur portablen maßgeblichen Quelle. Dateiänderungen aktualisieren TaskNotes. Einstellungsänderungen aktualisieren die Typbindung oder, für App-Verhalten wie Vorlagen, Archivverschiebungen und Statuswechsel, den Einstellungsdatensatz.",
 				},
 			},
 			timeFormats: {

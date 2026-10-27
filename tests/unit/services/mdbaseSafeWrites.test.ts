@@ -77,7 +77,7 @@ describe("safe migration writes and recovery", () => {
 				return new FieldMapper(mapping);
 			}
 			expect(h.plugin.fieldMapper).toBeDefined();
-			expect(type(h.files.get("_types/task.md")!).implements[0].version).toBe("0.3.0-rc.5");
+			expect(type(h.files.get("_types/task.md")!).implements[0].version).toBe("0.3.0-rc.6");
 			expect(h.files.has(METADATA_PENDING)).toBe(false);
 			throw new Error("runtime boundary reached");
 		}) }));
@@ -100,7 +100,7 @@ describe("safe migration writes and recovery", () => {
 		expect(h.files.get("mdbase.yaml")).toBe("external");
 		expect([...h.files.keys()]).toEqual(["mdbase.yaml"]);
 	});
-	it.each(["_types/task.md", "_schemas/tasknotes/tasknotes-task.schema.json", "_contracts/tasknotes.task.md", "mdbase.yaml"])("rolls back a beta upgrade when %s fails", async (target) => {
+	it.each(["_types/task.md", "_schemas/tasknotes/tasknotes-task.schema.json", "_contracts/tasknotes.task/0.3.0-rc.6.md", "_settings/dev.tasknotes.md", "mdbase.yaml"])("rolls back a beta upgrade when %s fails", async (target) => {
 		const before = faultFixture(target);
 		const h = safetyHarness(before);
 		let failed = false;
@@ -111,12 +111,14 @@ describe("safe migration writes and recovery", () => {
 		await h.service.initialize();
 		expect(failed).toBe(true);
 		for (const [p, content] of Object.entries(before)) expect(h.files.get(p)).toBe(content);
+		// Files the upgrade created (the settings record included) and staging files are removed.
+		expect([...h.files.keys()].filter((p) => !p.startsWith(".tasknotes/") && !(p in before))).toEqual([]);
 		expect(h.files.has(METADATA_PENDING)).toBe(false);
 		expect(h.notices.join(" ")).toContain("Backups");
 		expect(h.notices.some((notice) => notice.startsWith("TaskNotes updated"))).toBe(false);
 		unchangedRecords(before, h.files);
 		await new MdbaseSpecService(h.plugin).initialize();
-		expect(type(h.files.get("_types/task.md")!).implements[0].version).toBe("0.3.0-rc.5");
+		expect(type(h.files.get("_types/task.md")!).implements[0].version).toBe("0.3.0-rc.6");
 	});
 
 	it.each(["_types/task.md", "mdbase.yaml", METADATA_PENDING])("a torn temp write for %s never corrupts the active file", async (target) => {
@@ -133,7 +135,7 @@ describe("safe migration writes and recovery", () => {
 		for (const [p, content] of Object.entries(before)) expect(h.files.get(p)).toBe(content);
 		expect([...h.files.keys()].some((p) => p.includes(".tasknotes-stage-"))).toBe(false);
 		await new MdbaseSpecService(h.plugin).initialize();
-		expect(type(h.files.get("_types/task.md")!).implements[0].version).toBe("0.3.0-rc.5");
+		expect(type(h.files.get("_types/task.md")!).implements[0].version).toBe("0.3.0-rc.6");
 		unchangedRecords(before, h.files);
 	});
 
@@ -164,7 +166,7 @@ describe("safe migration writes and recovery", () => {
 		const h = safetyHarness(fixture("beta0-custom"));
 		let fired = false;
 		h.hooks.rename = async (_from, to) => {
-			if (!fired && to === "_contracts/tasknotes.task.md") {
+			if (!fired && to === "_contracts/tasknotes.task/0.3.0-rc.6.md") {
 				fired = true;
 				h.files.set("_types/task.md", h.files.get("_types/task.md")! + "\nEXTERNAL CHANGE\n");
 				throw new Error("Injected contract failure");
@@ -239,7 +241,7 @@ describe("safe migration writes and recovery", () => {
 		try {
 			await h.service.initialize();
 			expect(h.files.get(orphan)).toBe("RECOVERY COPY FROM EARLIER FAILURE");
-			expect(type(h.files.get("_types/task.md")!).implements[0].version).toBe("0.3.0-rc.5");
+			expect(type(h.files.get("_types/task.md")!).implements[0].version).toBe("0.3.0-rc.6");
 			expect(h.files.has(`${folder}-2/manifest.json`)).toBe(true);
 		} finally { iso.mockRestore(); }
 	});

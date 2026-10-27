@@ -39,6 +39,8 @@ export const fr: TranslationTree = {
 			"TaskNotes a arrêté la mise à jour des métadonnées mdbase. {details} Vérifiez le fichier indiqué et les copies de récupération, résolvez le conflit ou les permissions, puis rechargez TaskNotes. Les fichiers de tâches n’ont pas été modifiés.",
 		multiple:
 			"Plusieurs types TaskNotes : {paths}. Gardez un fournisseur canonique ou déplacez les autres hors du dossier des types, puis rechargez TaskNotes. TaskNotes a conservé la dernière configuration valide.",
+		competingSettings:
+			"Autres enregistrements de paramètres TaskNotes trouvés : {paths}. TaskNotes utilise {record} et ignore les autres. Copiez dans {record} les paramètres que vous souhaitez conserver, puis supprimez les autres fichiers.",
 		referenced:
 			"TaskNotes a conservé {typePath} : {recordPath} fait explicitement référence à ce type. Vérifiez son appartenance avant de déplacer le fournisseur ; les fichiers de tâches n’ont pas été modifiés.",
 	},
@@ -2704,7 +2706,7 @@ export const fr: TranslationTree = {
 				enable: {
 					name: "Utiliser la configuration mdbase canonique",
 					description:
-						"Publie le contrat de données TaskNotes et fait du type mdbase qui l’implémente la source de référence portable. Les modifications de fichiers mettent TaskNotes à jour, et les changements des paramètres portables mettent à jour la liaison du type.",
+						"Publie le contrat de données TaskNotes et fait de son type mdbase d’implémentation, avec l’enregistrement de paramètres TaskNotes, la source de vérité portable. Les modifications de fichiers mettent à jour TaskNotes. Les changements de paramètres mettent à jour la liaison du type ou, pour le comportement de l’application comme les modèles, les déplacements vers l’archive et le cycle des statuts, l’enregistrement de paramètres.",
 				},
 			},
 			timeFormats: {

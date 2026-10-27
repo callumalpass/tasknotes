@@ -39,6 +39,8 @@ export const ja: TranslationTree = {
 			"TaskNotes は mdbase メタデータの更新を停止しました。{details} 表示されたファイルと復旧用コピーを確認し、競合またはアクセス権を解決してから TaskNotes を再読み込みしてください。タスクファイルは変更されていません。",
 		multiple:
 			"TaskNotes の型が複数あります: {paths}。正規のプロバイダーを1つ残すか、他の型を型フォルダーの外へ移動してから TaskNotes を再読み込みしてください。TaskNotes は最後に確認された有効な設定を保持しました。",
+		competingSettings:
+			"TaskNotes の設定レコードが他にも見つかりました: {paths}。TaskNotes は {record} を使用し、他のレコードは無視します。残したい設定を {record} にコピーしてから、他のファイルを削除してください。",
 		referenced:
 			"TaskNotes は {typePath} を保持しました。{recordPath} がこの型を明示的に参照しています。プロバイダーを移動する前に型への所属を確認してください。タスクファイルは変更されていません。",
 	},
@@ -2627,7 +2629,7 @@ export const ja: TranslationTree = {
 				enable: {
 					name: "正規のmdbase設定を使用",
 					description:
-						"TaskNotesのデータ契約を公開し、それを実装するmdbase型を移植可能な信頼できる情報源として使用します。ファイルの編集はTaskNotesを更新し、移植可能な設定の変更は型のバインディングを更新します。",
+						"TaskNotes データコントラクトを公開し、それを実装する mdbase タイプと TaskNotes 設定レコードをポータブルな信頼できる情報源にします。ファイルの編集は TaskNotes に反映されます。設定の変更はタイプのバインディングに、テンプレート、アーカイブ移動、ステータスの循環などのアプリの動作は設定レコードに書き込まれます。",
 				},
 			},
 			timeFormats: {

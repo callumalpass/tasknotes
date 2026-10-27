@@ -229,6 +229,44 @@ export class SafeMetadata {
 		}
 	}
 
+	/**
+	 * Remove a file a rolled-back write created, only while it still holds exactly
+	 * what was written. A file that changed since is kept.
+	 */
+	async removeIfUnchanged(path: string, written: string): Promise<boolean> {
+		if (await this.read(path) !== written) return false;
+		await this.adapter.remove(path);
+		return true;
+	}
+
+	/**
+	 * Remove staging files (`<path>.tasknotes-stage-*`) left beside `paths` by an
+	 * interrupted or failed write. Stages a pending swap journal owns are kept.
+	 */
+	async removeAbandonedStages(paths: readonly string[]): Promise<void> {
+		const owned = new Set<string>();
+		if (await this.exists(METADATA_SWAPS)) {
+			for (const journalPath of (await this.adapter.list(METADATA_SWAPS)).files.filter((file) => file.endsWith(".json"))) {
+				try {
+					const journal = JSON.parse(await this.adapter.read(journalPath)) as Partial<SwapJournal>;
+					if (typeof journal.stage === "string") owned.add(journal.stage);
+				} catch { /* An unreadable journal is reported by swap recovery. */ }
+			}
+		}
+		for (const path of new Set(paths)) {
+			await this.assertPhysical(path);
+			const folder = path.split("/").slice(0, -1).join("/");
+			if (folder && !await this.adapter.exists(folder)) continue;
+			let files: string[];
+			try { files = (await this.adapter.list(folder)).files; } catch { continue; }
+			const prefix = `${path}.tasknotes-stage-`;
+			for (const file of files) {
+				const stage = [...owned].some((owner) => file === owner || file.startsWith(`${owner}.`));
+				if (file.startsWith(prefix) && !stage) await this.adapter.remove(file);
+			}
+		}
+	}
+
 	/** Move, never copy/delete. Even an edit during rename survives in recovery storage. */
 	async move(snapshot: MetadataSnapshot, destination: string): Promise<void> {
 		if (await this.read(snapshot.path) !== snapshot.content) throw new Error(`Concurrent metadata change: ${snapshot.path}`);

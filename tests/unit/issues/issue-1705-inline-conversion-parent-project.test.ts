@@ -31,6 +31,7 @@ describe("Issue #1705: inline conversion parent note project", () => {
 		plugin.app.fileManager.generateMarkdownLink = jest
 			.fn()
 			.mockReturnValue("[[Projects/Home]]");
+		plugin.app.metadataCache.fileToLinktext = jest.fn().mockReturnValue("Projects/Home");
 		plugin.taskService.createTask = jest.fn().mockImplementation(async (taskData) => {
 			createdTaskData = taskData;
 			return {
