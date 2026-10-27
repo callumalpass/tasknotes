@@ -289,3 +289,24 @@ describe("saving a moved setting after a v4 migration", () => {
 		expect(restarted.archiveFolder).toBe("New/Archive");
 	});
 });
+
+describe("competing TaskNotes settings records", () => {
+	it("names sync conflict copies and keeps using the canonical record", async () => {
+		const { files, vault } = memoryVault(JSON.parse(fs.readFileSync(path.join(FIXTURES, "beta3-default.json"), "utf8")).files);
+		await load(files, vault, settingsFor("default"));
+		const canonicalRecord = files.get("_settings/dev.tasknotes.md")!;
+		files.set("_settings/dev.tasknotes.md", canonicalRecord.replace(/archive_folder: .*/, "archive_folder: Device-A"));
+		const copy = canonicalRecord.replace(/archive_folder: .*/, "archive_folder: Device-B");
+		files.set("_settings/dev.tasknotes (conflicted copy Device-B).md", copy);
+		files.set("_settings/dev.other.md", "---\napp: dev.other\nscope: collection\n---\n");
+
+		const settings = settingsFor("default");
+		const notices = await load(files, vault, settings);
+
+		const notice = notices.find((message) => message.includes("conflicted copy"));
+		expect(notice).toContain("_settings/dev.tasknotes (conflicted copy Device-B).md");
+		expect(notice).not.toContain("dev.other");
+		expect(settings.archiveFolder).toBe("Device-A");
+		expect(files.get("_settings/dev.tasknotes (conflicted copy Device-B).md")).toBe(copy);
+	});
+});

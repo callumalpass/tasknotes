@@ -88,6 +88,10 @@
       "source": "8e9edf0677fbb6a0c5c63cbfdb84229bfcde27c6",
       "translation": "eb6239ca1cc643edc09cc1e4546cec3881d1dde9"
     },
+    "mdbaseSafety.competingSettings": {
+      "source": "a4a3430b0d8cd973be5a34b2592a68b9c3a5a537",
+      "translation": "66488ca614f66eafb258ae1d99288caf7d2b0dbb"
+    },
     "mdbaseSafety.referenced": {
       "source": "8845207c5dd3bd6ee4a7cb39f6614a58355ba625",
       "translation": "9b0e5ce455a2b847585645409b85ff48faac5610"
@@ -10009,6 +10013,10 @@
     "mdbaseSafety.multiple": {
       "source": "8e9edf0677fbb6a0c5c63cbfdb84229bfcde27c6",
       "translation": "7ce3bcac9baf2a72aa09b2e9bf9c9e58d2e45139"
+    },
+    "mdbaseSafety.competingSettings": {
+      "source": "a4a3430b0d8cd973be5a34b2592a68b9c3a5a537",
+      "translation": "f9b06951bdd9cdabc87c6e752190cd6b8bccf155"
     },
     "mdbaseSafety.referenced": {
       "source": "8845207c5dd3bd6ee4a7cb39f6614a58355ba625",
@@ -19932,6 +19940,10 @@
       "source": "8e9edf0677fbb6a0c5c63cbfdb84229bfcde27c6",
       "translation": "347df4c3274ff5f491b2a80c3a0e4f161e728454"
     },
+    "mdbaseSafety.competingSettings": {
+      "source": "a4a3430b0d8cd973be5a34b2592a68b9c3a5a537",
+      "translation": "bbceb7796336ebf930d812935b5ecb0c91d2bf0c"
+    },
     "mdbaseSafety.referenced": {
       "source": "8845207c5dd3bd6ee4a7cb39f6614a58355ba625",
       "translation": "74ca7c486ba7c678626a8990c399627d24bf4ca7"
@@ -29853,6 +29865,10 @@
     "mdbaseSafety.multiple": {
       "source": "8e9edf0677fbb6a0c5c63cbfdb84229bfcde27c6",
       "translation": "322144a9f03ba03c661c19ecabdee7ed5d4ee361"
+    },
+    "mdbaseSafety.competingSettings": {
+      "source": "a4a3430b0d8cd973be5a34b2592a68b9c3a5a537",
+      "translation": "15174a49fb4c9548d5a3e88461d6c2aba66bc585"
     },
     "mdbaseSafety.referenced": {
       "source": "8845207c5dd3bd6ee4a7cb39f6614a58355ba625",
@@ -39776,6 +39792,10 @@
       "source": "8e9edf0677fbb6a0c5c63cbfdb84229bfcde27c6",
       "translation": "05e52e84051a32c7c81de684bac7133d83eceba6"
     },
+    "mdbaseSafety.competingSettings": {
+      "source": "a4a3430b0d8cd973be5a34b2592a68b9c3a5a537",
+      "translation": "8c95febede911e41637ed23157290ac8becb0179"
+    },
     "mdbaseSafety.referenced": {
       "source": "8845207c5dd3bd6ee4a7cb39f6614a58355ba625",
       "translation": "1351b1937e47aa8a6ce94e65a3ccb72d9731fac6"
@@ -49697,6 +49717,10 @@
     "mdbaseSafety.multiple": {
       "source": "8e9edf0677fbb6a0c5c63cbfdb84229bfcde27c6",
       "translation": "9512633d2afdff571fa5102f91c8dea84ea1424b"
+    },
+    "mdbaseSafety.competingSettings": {
+      "source": "a4a3430b0d8cd973be5a34b2592a68b9c3a5a537",
+      "translation": "1c3864114f5f55ea5a24a4406ddc1f2bd112a465"
     },
     "mdbaseSafety.referenced": {
       "source": "8845207c5dd3bd6ee4a7cb39f6614a58355ba625",
@@ -59620,6 +59644,10 @@
       "source": "8e9edf0677fbb6a0c5c63cbfdb84229bfcde27c6",
       "translation": "940d5edab0f3b77c95b91e4140c2d9fb0416b6ae"
     },
+    "mdbaseSafety.competingSettings": {
+      "source": "a4a3430b0d8cd973be5a34b2592a68b9c3a5a537",
+      "translation": "64e9d0b4e190e4eee7630083efd2ac0394512fc0"
+    },
     "mdbaseSafety.referenced": {
       "source": "8845207c5dd3bd6ee4a7cb39f6614a58355ba625",
       "translation": "ac3aa3dff10c3f7b236af2e91607f8051f46b375"
@@ -69541,6 +69569,10 @@
     "mdbaseSafety.multiple": {
       "source": "8e9edf0677fbb6a0c5c63cbfdb84229bfcde27c6",
       "translation": "ca89ecfe5b20cb2b20fef2a14fb77278d6d4028f"
+    },
+    "mdbaseSafety.competingSettings": {
+      "source": "a4a3430b0d8cd973be5a34b2592a68b9c3a5a537",
+      "translation": "aabfa44683bcca2a24d1e221b58dc8e285a363a7"
     },
     "mdbaseSafety.referenced": {
       "source": "8845207c5dd3bd6ee4a7cb39f6614a58355ba625",

@@ -22,8 +22,10 @@ import {
 	changedTaskNotesAppSettings,
 	completeTaskNotesAppSettingsChanges,
 	newTaskNotesSettingsFrontmatter,
+	APP_SETTINGS_FOLDER,
 	readAppSettingsFrontmatter,
 	resolveTaskNotesAppSettings,
+	TASKNOTES_SETTINGS_APP,
 	TASKNOTES_SETTINGS_TYPE,
 	writeAppSettingsDocument,
 	type TaskNotesAppSettingsValues,
@@ -202,6 +204,7 @@ export class MdbaseSpecService {
 	/** Set when a synchronization applied app settings read from the record. */
 	private appSettingsAppliedFromRecord = false;
 	private lastRecordNotice: string | null = null;
+	private lastCompetingRecordsNotice: string | null = null;
 	/** Whether this session has added the fields an existing record lacked. */
 	private recordAbsentFieldsMerged = false;
 	private canonicalReadBlocked = false;
@@ -1176,6 +1179,34 @@ export class MdbaseSpecService {
 
 	private async loadAppSettingsRecord(): Promise<void> {
 		this.currentRecordContent = await this.metadataIO.read(APP_SETTINGS_RECORD_PATH);
+		await this.reportCompetingSettingsRecords();
+	}
+
+	/**
+	 * Name other files in the settings folder that also claim to be the TaskNotes
+	 * collection settings record, such as sync conflict copies. TaskNotes keeps
+	 * using the canonical record; the others are never changed.
+	 */
+	private async reportCompetingSettingsRecords(): Promise<void> {
+		const adapter = this.plugin.app.vault.adapter;
+		const competing: string[] = [];
+		if (typeof adapter.list === "function" && (await adapter.exists(APP_SETTINGS_FOLDER))) {
+			for (const path of await this.listMarkdownFilesRecursively(APP_SETTINGS_FOLDER)) {
+				if (path === APP_SETTINGS_RECORD_PATH) continue;
+				const frontmatter = this.parseRecord(await adapter.read(path));
+				if (frontmatter?.app === TASKNOTES_SETTINGS_APP && frontmatter.scope === "collection") competing.push(path);
+			}
+		}
+		if (competing.length === 0) {
+			this.lastCompetingRecordsNotice = null;
+			return;
+		}
+		const paths = competing.sort().join(", ");
+		const message = this.plugin.i18n?.translate("mdbaseSafety.competingSettings", { paths, record: APP_SETTINGS_RECORD_PATH }) ??
+			`Other TaskNotes settings records found: ${paths}. TaskNotes is using ${APP_SETTINGS_RECORD_PATH} and ignoring the others. Copy any settings you want to keep into ${APP_SETTINGS_RECORD_PATH}, then delete the other files.`;
+		if (this.lastCompetingRecordsNotice === message) return;
+		this.lastCompetingRecordsNotice = message;
+		this.publishNotice(message);
 	}
 
 	private recordNotice(message: string): void {
@@ -1457,6 +1488,8 @@ export class MdbaseSpecService {
 
 	private isCanonicalPath(path: string): boolean {
 		if (path === "mdbase.yaml" || path === this.canonicalTypePath || path === APP_SETTINGS_RECORD_PATH) return true;
+		// Other records in the settings folder: a competing copy is reported.
+		if (path.startsWith(`${APP_SETTINGS_FOLDER}/`) && path.endsWith(".md")) return true;
 		return Boolean(
 			this.canonicalTypesFolder &&
 				path.startsWith(`${this.canonicalTypesFolder}/`) &&

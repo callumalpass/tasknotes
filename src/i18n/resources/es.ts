@@ -39,6 +39,8 @@ export const es: TranslationTree = {
 			"TaskNotes detuvo la actualización de los metadatos de mdbase. {details} Revise el archivo indicado y las copias de recuperación, resuelva el conflicto o los permisos y vuelva a cargar TaskNotes. Los archivos de tareas no se modificaron.",
 		multiple:
 			"Varios tipos de TaskNotes: {paths}. Conserve un proveedor canónico o mueva los demás fuera de la carpeta de tipos y vuelva a cargar TaskNotes. TaskNotes conservó la última configuración válida.",
+		competingSettings:
+			"Se encontraron otros registros de ajustes de TaskNotes: {paths}. TaskNotes usa {record} e ignora los demás. Copie en {record} los ajustes que quiera conservar y después elimine los otros archivos.",
 		referenced:
 			"TaskNotes conservó {typePath}: {recordPath} hace referencia explícita a este tipo. Revise su pertenencia antes de mover el proveedor; los archivos de tareas no se modificaron.",
 	},
