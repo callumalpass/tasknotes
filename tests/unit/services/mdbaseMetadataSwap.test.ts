@@ -44,7 +44,8 @@ function harness(entries: Record<string, string>) {
 	return { adapter, hooks, files, plugin, notices, io: new SafeMetadata(adapter) };
 }
 const fixture = (name: string): Record<string, string> => require(`../../fixtures/mdbase-upgrades/${name}.json`).files;
-const targets = ["_types/task.md", "mdbase.yaml", "_contracts/tasknotes.task.md"];
+// rc.6 adds its contract at a new versioned path; the task schema is replaced in place.
+const targets = ["_types/task.md", "mdbase.yaml", "_schemas/tasknotes/tasknotes-task.schema.json"];
 
 it.each(["v4-custom", "beta3-custom"])("upgrades %s on a no-clobber adapter in cold bootstrap state", async (name) => {
 	const before = fixture(name);
@@ -62,7 +63,7 @@ it.each(["v4-custom", "beta3-custom"])("upgrades %s on a no-clobber adapter in c
 	expect(h.plugin.fieldMapper).toBeUndefined();
 	await new MdbaseSpecService(h.plugin).initialize();
 	expect(YAML.parse(h.files.get("mdbase.yaml")!).spec_version).toBe("0.3.0");
-	expect((parseMdbaseTaskTypeDocument(h.files.get("_types/task.md")!).type as any).implements[0].version).toBe("0.3.0-rc.5");
+	expect((parseMdbaseTaskTypeDocument(h.files.get("_types/task.md")!).type as any).implements[0].version).toBe("0.3.0-rc.6");
 	for (const p of ["paper.md", "TaskNotes/Tasks/open.md", "TaskNotes/Tasks/cancelled.md"]) expect(h.files.get(p)).toBe(before[p]);
 	const after = Object.fromEntries(h.files);
 	await new MdbaseSpecService(h.plugin).initialize();
@@ -160,7 +161,7 @@ it.each(["v4-default", "beta3-custom"].flatMap((name) => ["before displacement",
 	const restarted = harness(interruptedFiles!);
 	restarted.plugin.settings = h.plugin.settings;
 	await new MdbaseSpecService(restarted.plugin).initialize();
-	expect((parseMdbaseTaskTypeDocument(restarted.files.get("_types/task.md")!).type as any).implements[0].version).toBe("0.3.0-rc.5");
+	expect((parseMdbaseTaskTypeDocument(restarted.files.get("_types/task.md")!).type as any).implements[0].version).toBe("0.3.0-rc.6");
 	expect([...restarted.files.keys()].filter((p) => path.posix.dirname(p) === METADATA_SWAPS && p.endsWith(".json"))).toEqual([]);
 	expect([...restarted.files.keys()].filter((p) => p.endsWith("-pending.json"))).toEqual([]);
 });

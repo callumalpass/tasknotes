@@ -2704,7 +2704,7 @@ export const fr: TranslationTree = {
 				enable: {
 					name: "Utiliser la configuration mdbase canonique",
 					description:
-						"Publie le contrat de données TaskNotes et fait du type mdbase qui l’implémente la source de référence portable. Les modifications de fichiers mettent TaskNotes à jour, et les changements des paramètres portables mettent à jour la liaison du type.",
+						"Publie le contrat de données TaskNotes et fait de son type mdbase d’implémentation, avec l’enregistrement de paramètres TaskNotes, la source de vérité portable. Les modifications de fichiers mettent à jour TaskNotes. Les changements de paramètres mettent à jour la liaison du type ou, pour le comportement de l’application comme les modèles, les déplacements vers l’archive et le cycle des statuts, l’enregistrement de paramètres.",
 				},
 			},
 			timeFormats: {

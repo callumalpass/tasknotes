@@ -689,7 +689,7 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 			name:
 				labels[property] ??
 				property.replace(/([A-Z])/g, " $1").replace(/^./, (char) => char.toUpperCase()),
-			displayValue: () => mapping[property],
+			displayValue: () => mapping[property] ?? "",
 			items,
 		};
 	});

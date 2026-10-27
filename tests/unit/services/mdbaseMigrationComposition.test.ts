@@ -39,7 +39,7 @@ describe("composed migration writes", () => {
 		expect(h.plugin.fieldMapper).toBeUndefined();
 		await h.service.initialize();
 		const type = parseMdbaseTaskTypeDocument(h.files.get("_types/task.md")!).type as any;
-		expect(type.implements[0].version).toBe("0.3.0-rc.5");
+		expect(type.implements[0].version).toBe("0.3.0-rc.6");
 		expect(type.implements[0].fields.id).toBe("uid");
 		expect(type.implements[0].binding.occurrences.future_horizon).toBe("P90D");
 		expect(type.match.expr.$expr).toContain('!file.path.startsWith("Private/")');

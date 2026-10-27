@@ -2627,7 +2627,7 @@ export const ja: TranslationTree = {
 				enable: {
 					name: "正規のmdbase設定を使用",
 					description:
-						"TaskNotesのデータ契約を公開し、それを実装するmdbase型を移植可能な信頼できる情報源として使用します。ファイルの編集はTaskNotesを更新し、移植可能な設定の変更は型のバインディングを更新します。",
+						"TaskNotes データコントラクトを公開し、それを実装する mdbase タイプと TaskNotes 設定レコードをポータブルな信頼できる情報源にします。ファイルの編集は TaskNotes に反映されます。設定の変更はタイプのバインディングに、テンプレート、アーカイブ移動、ステータスの循環などのアプリの動作は設定レコードに書き込まれます。",
 				},
 			},
 			timeFormats: {

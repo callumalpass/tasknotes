@@ -9,7 +9,7 @@ import { checkCollection, repairCollectionRecord } from "../../../src/services/m
 import { addAppCollectionConfig } from "../../../src/services/mdbase/collectionConfig";
 import { collectionScope } from "../../../src/services/mdbase/collectionMembership";
 import { findExplicitTypeReference } from "../../../src/services/mdbase/ExplicitTypeReferences";
-import { parseMdbaseTaskTypeDocument, validateCanonicalTaskType } from "../../../src/services/mdbaseCanonicalConfig";
+import { parseMdbaseTaskTypeDocument, validateCanonicalTaskType, withCurrentTaskNotesContract } from "../../../src/services/mdbaseCanonicalConfig";
 import { recognitionVault } from "../../helpers/mdbaseRecognitionVault";
 
 const root = path.join(__dirname, "../../fixtures/mdbase-upgrades");
@@ -135,7 +135,7 @@ describe("approved repair robustness", () => {
 		const h = harness(capture("round3-glob-array")); h.files.delete("outside.md");
 		h.files.set("TaskNotes/Tasks/stale.md", "---\ntags: [task]\ntitle: Stale status\nstatus: unknown\ndateCreated: 2026-01-01T00:00:00Z\n---\nBody\n");
 		const [preview] = await checkCollection(h.plugin); expect(preview.statusValues).toContain("open");
-		const type = JSON.parse(JSON.stringify(typeOf(h)).replace(/"open"/g, '"queued"'));
+		const type = withCurrentTaskNotesContract(JSON.parse(JSON.stringify(typeOf(h)).replace(/"open"/g, '"queued"'))).type;
 		expect(validateCanonicalTaskType(type).valid).toBe(true); setType(h, type);
 		const before = Object.fromEntries(h.files);
 		await expect(repairCollectionRecord(h.plugin, preview, "open")).rejects.toThrow("allowed status");

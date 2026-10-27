@@ -50,7 +50,7 @@ it.each(["v4-custom", "beta0-custom"])("runs real bootstrap for %s without a pre
 	expect(YAML.parse(memory.files.get("mdbase.yaml")!).spec_version).toBe("0.3.0");
 	expect(plugin.fieldMapper.toUserField("due")).toBe("deadline");
 	expect(plugin.settings.fieldMapping.due).toBe("deadline");
-	expect(parseMdbaseTaskTypeDocument(memory.files.get("_types/task.md")!).type.implements).toEqual(expect.arrayContaining([expect.objectContaining({ contract: "tasknotes.task", version: "0.3.0-rc.5" })]));
+	expect(parseMdbaseTaskTypeDocument(memory.files.get("_types/task.md")!).type.implements).toEqual(expect.arrayContaining([expect.objectContaining({ contract: "tasknotes.task", version: "0.3.0-rc.6" })]));
 	expect(plugin.emitter.trigger).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ message: expect.stringContaining("could not initialize") }));
 	for (const file of ["TaskNotes/Tasks/open.md", "TaskNotes/Tasks/cancelled.md", "paper.md"]) {
 		expect(memory.files.get(file)).toBe(fixture.files[file]);

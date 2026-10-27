@@ -10,7 +10,7 @@ const normalized = (value: unknown): unknown => Array.isArray(value) ? value.map
 const implementation = (type: ObjectValue): ObjectValue | undefined =>
 	Array.isArray(type.implements) ? type.implements.map(object).find((value) => value.contract === "tasknotes.task") : undefined;
 
-/** Structural contract lift: no settings round-trip and no rewriting existing policies. */
+/** Structural contract lift: no settings round-trip and no rewriting existing policies other than removing those rc.6 moved. */
 export function upgradeCanonicalDocument(markdown: string, resources: TaskNotesMdbaseResources): string {
 	const parts = requireFrontmatter(markdown);
 	const document = YAML.parseDocument(parts.frontmatter);
@@ -20,6 +20,20 @@ export function upgradeCanonicalDocument(markdown: string, resources: TaskNotesM
 	const desired = implementation(resources.type);
 	if (!desired) throw new Error("Generated type has no TaskNotes implementation");
 	document.setIn(["implements", index, "version"], desired.version);
+	// tasknotes.task rc.6 keeps app behaviour in the settings record, which the
+	// same metadata transaction writes; remove it from the binding in place.
+	const binding = ["implements", index, "binding"];
+	for (const path of [["nlp"], ["templating"], ["time_tracking"], ["archive", "move_on_archive"], ["archive", "folder"], ["recurrence", "reset_body_checkboxes"], ["links", "write_format"]]) {
+		document.deleteIn([...binding, ...path]);
+	}
+	const definitions = object(object(object(implementations[index].binding).status)).definitions;
+	if (Array.isArray(definitions)) {
+		definitions.forEach((_definition, position) => {
+			for (const key of ["next_status", "exclude_from_cycle", "auto_archive", "auto_archive_delay_minutes"]) {
+				document.deleteIn([...binding, "status", "definitions", position, key]);
+			}
+		});
+	}
 	if (!object(implementations[index].fields).assignees && !document.hasIn(["schema", "value", "properties", "assignees"])) {
 		document.setIn(["implements", index, "fields", "assignees"], "assignees");
 		document.setIn(["schema", "value", "properties", "assignees"], copy(object(object(object(resources.type.schema).value).properties).assignees));

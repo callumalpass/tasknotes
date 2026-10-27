@@ -2684,7 +2684,7 @@ export const pt: TranslationTree = {
 				enable: {
 					name: "Usar a configuração canônica do mdbase",
 					description:
-						"Publica o contrato de dados do TaskNotes e torna o tipo mdbase que o implementa a fonte de referência portátil. Edições de arquivos atualizam o TaskNotes, e alterações nas configurações portáteis atualizam a vinculação do tipo.",
+						"Publica o contrato de dados do TaskNotes e torna o seu tipo mdbase implementador, com o registo de definições do TaskNotes, a fonte de verdade portátil. As edições de ficheiros atualizam o TaskNotes. As alterações de definições atualizam a associação do tipo ou, para o comportamento da app como modelos, movimentos para o arquivo e ciclo de estados, o registo de definições.",
 				},
 			},
 			timeFormats: {

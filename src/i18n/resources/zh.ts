@@ -2509,7 +2509,7 @@ export const zh: TranslationTree = {
 				enable: {
 					name: "使用规范的 mdbase 配置",
 					description:
-						"发布 TaskNotes 数据契约，并将实现该契约的 mdbase 类型作为可移植的权威数据源。文件编辑会更新 TaskNotes，可移植设置的更改会更新类型绑定。",
+						"发布 TaskNotes 数据契约，并让实现它的 mdbase 类型与 TaskNotes 设置记录成为可移植的唯一可信来源。编辑文件会更新 TaskNotes。更改设置会更新类型绑定；模板、归档移动和状态循环等应用行为则写入设置记录。",
 				},
 			},
 			timeFormats: {

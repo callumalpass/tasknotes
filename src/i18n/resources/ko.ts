@@ -2578,7 +2578,7 @@ export const ko: TranslationTree = {
 				enable: {
 					name: "표준 mdbase 구성 사용",
 					description:
-						"TaskNotes 데이터 계약을 게시하고 이를 구현하는 mdbase 타입을 이식 가능한 단일 기준 정보로 사용합니다. 파일을 수정하면 TaskNotes가 업데이트되고, 이식 가능한 설정을 변경하면 타입 바인딩이 업데이트됩니다.",
+						"TaskNotes 데이터 계약을 게시하고, 이를 구현하는 mdbase 유형과 TaskNotes 설정 레코드를 이식 가능한 기준 정보로 만듭니다. 파일을 편집하면 TaskNotes가 업데이트됩니다. 설정 변경은 유형 바인딩을 업데이트하며, 템플릿, 보관 이동, 상태 순환 같은 앱 동작은 설정 레코드를 업데이트합니다.",
 				},
 			},
 			timeFormats: {

@@ -49,7 +49,7 @@ function assertMigrated(h: ReturnType<typeof harness>, typePath = "_types/task.m
 	expect(YAML.parse(h.files.get("mdbase.yaml")!).spec_version).toBe("0.3.0");
 	const type = parseMdbaseTaskTypeDocument(h.files.get(typePath)!).type;
 	expect(type.implements).toEqual(expect.arrayContaining([expect.objectContaining({ contract: "tasknotes.task" })]));
-	expect([...h.files.keys()].filter((p) => p.startsWith(typePath.split("/")[0] + "/") && p.endsWith(".md") && p.includes("task"))).toEqual([typePath]);
+	expect([...h.files.keys()].filter((p) => p.startsWith(typePath.split("/")[0] + "/") && p.endsWith(".md") && p.includes("task") && !p.endsWith("/tasknotes-settings.md"))).toEqual([typePath]);
 	for (const [p, content] of Object.entries(h.entries)) {
 		if (p.startsWith("Tasks/")) expect(h.files.get(p)).toBe(content);
 	}
@@ -163,10 +163,11 @@ describe("historical generated type recognition", () => {
 			h.files.set(resource, original.replace(/\n/g, "\r\n") + (edited ? "\nCustom commentary\n" : ""));
 			await h.service.initialize();
 			if (edited) {
-				expect(h.files.get(resource)).toContain("Custom commentary");
-				expect(h.notices.join(" ")).toMatch(/_contracts\/tasknotes.task.md.*backup/);
+				// rc.6 adds a versioned contract and leaves the earlier one as it is.
+				expect(h.files.get(resource)).toBe(original.replace(/\n/g, "\r\n") + "\nCustom commentary\n");
+				expect(h.files.has("_contracts/tasknotes.task/0.3.0-rc.6.md")).toBe(true);
 			} else {
-				expect(parseMdbaseTaskTypeDocument(h.files.get("_types/task.md")!).type.implements).toEqual(expect.arrayContaining([expect.objectContaining({ version: "0.3.0-rc.5" })]));
+				expect(parseMdbaseTaskTypeDocument(h.files.get("_types/task.md")!).type.implements).toEqual(expect.arrayContaining([expect.objectContaining({ version: "0.3.0-rc.6" })]));
 				expect(h.notices.join(" ")).not.toContain("could not initialize");
 			}
 		}

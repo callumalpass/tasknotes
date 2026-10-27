@@ -14,6 +14,7 @@ import YAML from "yaml";
 
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
+import { appSettingsFromPluginSettings } from "../../../src/services/mdbaseCanonicalConfig";
 import {
 	DEFAULT_FIELD_MAPPING,
 	DEFAULT_NLP_TRIGGERS,
@@ -320,7 +321,7 @@ describe("MdbaseSpecService", () => {
 			});
 			await service.initialize();
 			expect(asObject(asObject(YAML.parse(files.get("mdbase.yaml")!)).settings).explicit_type_keys).toEqual([]);
-			expect(files.get("_contracts/tasknotes.task.md")).toContain("contract_type: record");
+			expect(files.get("_contracts/tasknotes.task/0.3.0-rc.6.md")).toContain("contract_type: record");
 			expect(files.get("_schemas/tasknotes/tasknotes-task.schema.json")).toBeDefined();
 			const snapshot = new Map(files);
 			await new MdbaseSpecService(plugin).initialize();
@@ -968,7 +969,9 @@ describe("MdbaseSpecService", () => {
 			const canonicalFrontmatter = parseFrontmatter(service.buildTaskTypeDef());
 
 			expect(legacyFrontmatter["x-tasknotes"].nlp).toEqual({ triggers });
-			expect(tasknotesBinding(canonicalFrontmatter).nlp).toEqual({ triggers });
+			// rc.6: capture triggers are app settings, kept in the settings record.
+			expect(tasknotesBinding(canonicalFrontmatter).nlp).toBeUndefined();
+			expect(appSettingsFromPluginSettings(service["plugin"].settings).nlp_triggers).toEqual(triggers);
 		});
 
 		it("exports an empty trigger list when capture triggers are unavailable", () => {
@@ -979,7 +982,7 @@ describe("MdbaseSpecService", () => {
 			const canonicalFrontmatter = parseFrontmatter(service.buildTaskTypeDef());
 
 			expect(legacyFrontmatter["x-tasknotes"].nlp.triggers).toEqual([]);
-			expect(tasknotesBinding(canonicalFrontmatter).nlp).toEqual({ triggers: [] });
+			expect(tasknotesBinding(canonicalFrontmatter).nlp).toBeUndefined();
 		});
 	});
 
@@ -1302,7 +1305,6 @@ describe("MdbaseSpecService", () => {
 				recurrence: {
 					syntax: "tasknotes",
 					maintain_due_date_offset: true,
-					reset_body_checkboxes: true,
 				},
 				occurrences: {
 					identity_roles: ["recurrenceParent", "occurrenceDate"],
@@ -1311,20 +1313,30 @@ describe("MdbaseSpecService", () => {
 				},
 				links: {
 					accepted_formats: ["wikilink", "markdown"],
-					write_format: "markdown",
 				},
 				archive: {
 					archived_tag: "filed-away",
-					move_on_archive: true,
-					folder: "Archive/Tasks",
 				},
-				time_tracking: { auto_stop_on_complete: false },
-				templating: {
-					enabled: true,
-					template_path: "Templates/Task.md",
-					occurrence_enabled: true,
-					occurrence_template_path: "Templates/Occurrence.md",
-				},
+			});
+			// rc.6: app behaviour is not part of the binding; it goes to the settings record.
+			for (const moved of ["time_tracking", "templating", "nlp"]) expect(extension[moved]).toBeUndefined();
+			expect(asObject(extension.recurrence).reset_body_checkboxes).toBeUndefined();
+			expect(asObject(extension.links).write_format).toBeUndefined();
+			expect(asObject(extension.archive).move_on_archive).toBeUndefined();
+			expect(appSettingsFromPluginSettings(service["plugin"].settings)).toMatchObject({
+				reset_body_checkboxes_on_recurrence: true,
+				link_write_format: "markdown",
+				move_on_archive: true,
+				archive_folder: "Archive/Tasks",
+				auto_stop_time_tracking_on_complete: false,
+				template_enabled: true,
+				template_path: "Templates/Task.md",
+				occurrence_template_enabled: true,
+				occurrence_template_path: "Templates/Occurrence.md",
+				status_behavior: expect.objectContaining({
+					done: expect.objectContaining({ auto_archive: true, auto_archive_delay_minutes: 15 }),
+					cancelled: expect.objectContaining({ exclude_from_cycle: true }),
+				}),
 			});
 			expect(asObject(taskImplementation.fields)).toMatchObject({
 				title: "summary",
@@ -1342,13 +1354,10 @@ describe("MdbaseSpecService", () => {
 					expect.objectContaining({
 						value: "done",
 						is_completed: true,
-						auto_archive: true,
-						auto_archive_delay_minutes: 15,
 					}),
 					expect.objectContaining({
 						value: "cancelled",
 						is_skipped: true,
-						exclude_from_cycle: true,
 					}),
 				])
 			);
@@ -1477,7 +1486,7 @@ describe("MdbaseSpecService", () => {
 
 			expect(plugin.app.vault.createFolder).toHaveBeenCalledWith("_types");
 			expect(files.get("_types/task.md")).toContain("contract: tasknotes.task");
-			expect(files.get("_contracts/tasknotes.task.md")).toContain("kind: mdbase.contract");
+			expect(files.get("_contracts/tasknotes.task/0.3.0-rc.6.md")).toContain("kind: mdbase.contract");
 			expect(files.get("_schemas/tasknotes/tasknotes-task.schema.json")).toContain('"$schema"');
 			expect(files.get("_schemas/tasknotes/tasknotes-task-binding.schema.json")).toContain('"profiles"');
 		});
@@ -1503,7 +1512,7 @@ describe("MdbaseSpecService", () => {
 
 			await service.generate();
 
-			expect(files.get("System/contracts/tasknotes.task.md")).toContain("id: tasknotes.task");
+			expect(files.get("System/contracts/tasknotes.task/0.3.0-rc.6.md")).toContain("id: tasknotes.task");
 		});
 
 		it("does not overwrite unrecognized v0.2 metadata during generation", async () => {
@@ -2044,7 +2053,7 @@ describe("MdbaseSpecService", () => {
 			).toBe(false);
 			expect([...files.keys()]).toEqual(
 				expect.arrayContaining([
-					"_contracts/tasknotes.task.md",
+					"_contracts/tasknotes.task/0.3.0-rc.6.md",
 					"_schemas/tasknotes/tasknotes-task.schema.json",
 					"_schemas/tasknotes/tasknotes-task-binding.schema.json",
 				])
@@ -2188,7 +2197,7 @@ describe("MdbaseSpecService", () => {
 			expect(files.get("mdbase.yaml")).toBe(oldConfig);
 			expect(files.get("_types/task.md")).toBe(oldType);
 			expect(files.get(taskPath)).toBe(taskContent);
-			expect(files.has("_contracts/tasknotes.task.md")).toBe(true);
+			expect(files.has("_contracts/tasknotes.task/0.3.0-rc.6.md")).toBe(true);
 			expect(files.has("_schemas/tasknotes/tasknotes-task.schema.json")).toBe(true);
 			expect(files.has("_schemas/tasknotes/tasknotes-task-binding.schema.json")).toBe(true);
 			expect([...files.keys()].some((path) => path.endsWith("/manifest.json"))).toBe(true);
@@ -2231,7 +2240,7 @@ describe("MdbaseSpecService", () => {
 
 			expect(files.has(".tasknotes/migrations/mdbase-v0.2-pending.json")).toBe(false);
 			expect(asObject(YAML.parse(files.get("mdbase.yaml") ?? "")).spec_version).toBe("0.3.0");
-			expect(files.has("_contracts/tasknotes.task.md")).toBe(true);
+			expect(files.has("_contracts/tasknotes.task/0.3.0-rc.6.md")).toBe(true);
 		});
 
 		it("does not overwrite a concurrent type edit while rolling back", async () => {
@@ -2277,7 +2286,7 @@ describe("MdbaseSpecService", () => {
 				},
 				{
 					failWrite: (path) => {
-						if (path === "_contracts/tasknotes.task.md") {
+						if (path === "_contracts/tasknotes.task/0.3.0-rc.6.md") {
 							files.set("_types/task.md", concurrentType);
 						}
 						return false;

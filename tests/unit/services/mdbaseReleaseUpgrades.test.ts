@@ -8,6 +8,11 @@
  * set up through Connect ("app-", with an mdbase.lock.yaml). This release must
  * bring every one of them to the current contract without touching records,
  * and leave a collection that is already current exactly as it is.
+ *
+ * tasknotes.task rc.6 moved app behaviour out of the binding: every upgrade
+ * also writes the TaskNotes settings record (_settings/dev.tasknotes.md) with
+ * the settings the collection had (data.json for v4, the binding for rc.3 and
+ * rc.5), in the same journalled step.
  */
 import { TFile } from "obsidian";
 import * as fs from "fs";
@@ -136,15 +141,10 @@ describe("upgrading collections written by shipped TaskNotes releases", () => {
 
 		const notices = await load(files, vault, settings);
 		if (name.startsWith("app-rc17")) {
-			// Already current: additive App config only; omitted membership keys retain engine defaults.
-			const { "mdbase.yaml": config, ...rest } = Object.fromEntries(files);
-			const { "mdbase.yaml": _previous, ...previous } = before;
-			expect(Object.fromEntries(Object.entries(rest).filter(([path]) => !path.startsWith(".tasknotes/migrations/")))).toEqual(previous);
-			const configBackups = [...files].filter(([path]) => path.startsWith(".tasknotes/migrations/") && path.endsWith("/mdbase.yaml.bak"));
-			expect(configBackups.map(([, content]) => content)).toEqual([_previous]);
-			expect(YAML.parse(config).settings.explicit_type_keys).toBeUndefined();
-			expect(YAML.parse(config).settings.record_extensions).toEqual(expect.arrayContaining(["md", "base"]));
-			expect(notices).toEqual([]);
+			// Omitted membership keys retain engine defaults.
+			const config = YAML.parse(files.get("mdbase.yaml")!);
+			expect(config.settings.explicit_type_keys).toBeUndefined();
+			expect(config.settings.record_extensions).toEqual(expect.arrayContaining(["md", "base"]));
 		}
 
 		const config = YAML.parse(files.get("mdbase.yaml")!);
@@ -161,7 +161,24 @@ describe("upgrading collections written by shipped TaskNotes releases", () => {
 		expect(implementation.fields.assignees).toBe("assignees");
 		expect(type.collection.links["assignees[]"]).toBeDefined();
 
-		expect(files.get("_contracts/tasknotes.task.md")).toBe(canonical(`contracts/tasknotes.task/${TASKNOTES_SPEC_VERSION}.md`));
+		expect(files.get(`_contracts/tasknotes.task/${TASKNOTES_SPEC_VERSION}.md`)).toBe(canonical(`contracts/tasknotes.task/${TASKNOTES_SPEC_VERSION}.md`));
+		for (const binding of [implementation.binding]) {
+			expect(binding.templating).toBeUndefined();
+			expect(binding.time_tracking).toBeUndefined();
+			expect(binding.nlp).toBeUndefined();
+			expect(binding.archive.move_on_archive).toBeUndefined();
+			expect(binding.status.definitions.some((d: any) => "auto_archive" in d || "next_status" in d)).toBe(false);
+		}
+		expect(files.get("_types/tasknotes-settings.md")).toBe(canonical("types/tasknotes-settings/1.md"));
+		expect(files.get("_contracts/tasknotes.settings/1.0.0.md")).toBe(canonical("contracts/tasknotes.settings/1.0.0.md"));
+		expect(files.get("_contracts/mdbase.app-settings/1.0.0.md")).toBe(canonical("contracts/mdbase.app-settings/1.0.0.md"));
+		const record = frontmatter(files.get("_settings/dev.tasknotes.md")!);
+		expect(record).toMatchObject({ app: "dev.tasknotes", scope: "collection", settings_version: 1 });
+		expect(Object.keys(record.status_behavior).sort()).toEqual([...implementation.binding.status.values].sort());
+		if (implementation.binding.status.values.includes("cancelled")) {
+			expect(record.status_behavior.cancelled.exclude_from_cycle).toBe(true);
+		}
+		expect(record.link_write_format).toBe("wikilink");
 		expect(files.get("_schemas/tasknotes/tasknotes-task.schema.json")).toBe(
 			canonical(`schemas/tasknotes.task/${TASKNOTES_SPEC_VERSION}.schema.json`)
 		);
@@ -189,5 +206,55 @@ describe("upgrading collections written by shipped TaskNotes releases", () => {
 		const again = await load(files, vault, settingsFor(profile));
 		expect(files).toEqual(snapshot);
 		expect(again).toEqual([]);
+	});
+});
+
+describe("the TaskNotes settings record during the rc.6 upgrade", () => {
+	const RECORD = "_settings/dev.tasknotes.md";
+
+	it("keeps an existing record, adds only absent fields, and reads record over binding over local settings", async () => {
+		const before: Record<string, string> = { ...JSON.parse(fs.readFileSync(path.join(FIXTURES, "beta3-custom.json"), "utf8")).files };
+		// The rc.5 binding holds an archive move that the local settings do not.
+		before["_types/task.md"] = before["_types/task.md"]
+			.replace("move_on_archive: false", "move_on_archive: true")
+			.replace("folder: TaskNotes/Archive", "folder: Legacy/Archive");
+		expect(before["_types/task.md"]).toContain("folder: Legacy/Archive");
+		// TaskNotes App already wrote a record with some settings.
+		before[RECORD] = [
+			"---",
+			"type: tasknotes-settings",
+			"app: dev.tasknotes",
+			"scope: collection",
+			"settings_version: 1",
+			"template_enabled: true",
+			"template_path: Templates/App.md",
+			"link_write_format: markdown",
+			"x-other-client: keep",
+			"---",
+			"Notes for people.",
+			"",
+		].join("\n");
+		const { files, vault } = memoryVault(before);
+		const settings = settingsFor("custom");
+
+		await load(files, vault, settings);
+
+		const content = files.get(RECORD)!;
+		expect(content).toContain("Notes for people.");
+		const record = frontmatter(content);
+		// Present fields are kept as written, and win over the binding.
+		expect(record).toMatchObject({ template_enabled: true, template_path: "Templates/App.md", link_write_format: "markdown", "x-other-client": "keep" });
+		// Absent fields come from the rc.5 binding, not local defaults.
+		expect(record).toMatchObject({ move_on_archive: true, archive_folder: "Legacy/Archive", auto_stop_time_tracking_on_complete: true });
+		expect(record.status_behavior.cancelled.exclude_from_cycle).toBe(true);
+		expect(settings.taskCreationDefaults.useBodyTemplate).toBe(true);
+		expect(settings.taskCreationDefaults.bodyTemplate).toBe("Templates/App.md");
+		expect(settings.useFrontmatterMarkdownLinks).toBe(true);
+		expect(settings.moveArchivedTasks).toBe(true);
+		expect(settings.archiveFolder).toBe("Legacy/Archive");
+
+		const snapshot = new Map(files);
+		expect(await load(files, vault, settings)).toEqual([]);
+		expect(files).toEqual(snapshot);
 	});
 });

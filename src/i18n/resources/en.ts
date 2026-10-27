@@ -2593,7 +2593,7 @@ export const en: TranslationTree = {
 				enable: {
 					name: "Use canonical mdbase configuration",
 					description:
-						"Publish the TaskNotes data contract and make its implementing mdbase type the portable source of truth. File edits update TaskNotes, and portable settings changes update the type binding.",
+						"Publish the TaskNotes data contract and make its implementing mdbase type, with the TaskNotes settings record, the portable source of truth. File edits update TaskNotes. Settings changes update the type binding, or the settings record for app behaviour such as templates, archive moves and status cycling.",
 				},
 			},
 			timeFormats: {

@@ -64,7 +64,7 @@ describe("BOM metadata and record membership", () => {
 			const entries = { ...fixture.files }; entries["_types/task.md"] = "\ufeff" + entries["_types/task.md"].replace(/\r?\n/g, newline);
 			const h = harness(entries); h.plugin.settings.excludedFolders = "Private"; await h.service.initialize();
 			const type = typeOf(h.files.get("_types/task.md")!);
-			expect(type.implements[0].version).toBe("0.3.0-rc.5");
+			expect(type.implements[0].version).toBe("0.3.0-rc.6");
 			expect(type.match.expr.$expr).toContain("Private/");
 			expect(h.notices.join("\n")).not.toMatch(/frontmatter|stopped/);
 			expect([...h.files.values()]).toContain(entries["_types/task.md"]);

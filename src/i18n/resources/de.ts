@@ -2690,7 +2690,7 @@ export const de: TranslationTree = {
 				enable: {
 					name: "Kanonische mdbase-Konfiguration verwenden",
 					description:
-						"Veröffentlicht den TaskNotes-Datenvertrag und macht den implementierenden mdbase-Typ zur portablen maßgeblichen Quelle. Dateiänderungen aktualisieren TaskNotes, und Änderungen an portablen Einstellungen aktualisieren die Typbindung.",
+						"Veröffentlicht den TaskNotes-Datenvertrag und macht den implementierenden mdbase-Typ zusammen mit dem TaskNotes-Einstellungsdatensatz zur portablen maßgeblichen Quelle. Dateiänderungen aktualisieren TaskNotes. Einstellungsänderungen aktualisieren die Typbindung oder, für App-Verhalten wie Vorlagen, Archivverschiebungen und Statuswechsel, den Einstellungsdatensatz.",
 				},
 			},
 			timeFormats: {
