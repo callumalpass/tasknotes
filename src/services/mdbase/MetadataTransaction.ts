@@ -146,8 +146,15 @@ export class MetadataTransaction {
 			if (content !== snapshot.content && content !== journal.intendedWrites.find((write) => write.path === snapshot.path)?.content) throw new Error(`Concurrent metadata change: ${snapshot.path}`);
 		}
 		for (const snapshot of [...journal.snapshots].reverse()) {
-			if (snapshot.content === null || current.get(snapshot.path) === snapshot.content) continue;
-			await this.io.replace({ path: snapshot.path, content: current.get(snapshot.path) ?? null }, snapshot.content);
+			const content = current.get(snapshot.path) ?? null;
+			if (content === snapshot.content) continue;
+			if (snapshot.content === null) {
+				// Created by this upgrade: remove it while it still holds what was written.
+				if (content !== null) await this.io.removeIfUnchanged(snapshot.path, content);
+				continue;
+			}
+			await this.io.replace({ path: snapshot.path, content }, snapshot.content);
 		}
+		await this.io.removeAbandonedStages(journal.snapshots.map(({ path }) => path));
 	}
 }

@@ -2165,7 +2165,7 @@ describe("MdbaseSpecService", () => {
 			expect(plugin.app.vault.create).not.toHaveBeenCalled();
 		});
 
-		it("restores the exact v0.2 files without deleting support resources after a failed commit", async () => {
+		it("restores the exact v0.2 files and removes the files it created after a failed commit", async () => {
 			const plugin = createMockPlugin();
 			plugin.emitter = { trigger: jest.fn() };
 			const service = new MdbaseSpecService(plugin);
@@ -2197,9 +2197,10 @@ describe("MdbaseSpecService", () => {
 			expect(files.get("mdbase.yaml")).toBe(oldConfig);
 			expect(files.get("_types/task.md")).toBe(oldType);
 			expect(files.get(taskPath)).toBe(taskContent);
-			expect(files.has("_contracts/tasknotes.task/0.3.0-rc.6.md")).toBe(true);
-			expect(files.has("_schemas/tasknotes/tasknotes-task.schema.json")).toBe(true);
-			expect(files.has("_schemas/tasknotes/tasknotes-task-binding.schema.json")).toBe(true);
+			// Everything the migration created is removed; only the backups remain.
+			expect([...files.keys()].filter((path) => !path.startsWith(".tasknotes/")).sort()).toEqual(
+				["_types/task.md", "mdbase.yaml", taskPath].sort()
+			);
 			expect([...files.keys()].some((path) => path.endsWith("/manifest.json"))).toBe(true);
 			expect(plugin.emitter.trigger).toHaveBeenCalledWith(
 				"user-notice",
@@ -2207,7 +2208,32 @@ describe("MdbaseSpecService", () => {
 			);
 		});
 
-		it("recovers an interrupted rollback without deleting created support resources", async () => {
+		it("keeps a file the migration created when it was edited before the rollback", async () => {
+			const plugin = createMockPlugin();
+			const service = new MdbaseSpecService(plugin);
+			const oldType = service.buildTaskTypeDef("0.2.1");
+			const edited = "---\napp: dev.tasknotes\nscope: collection\narchive_folder: Mine\n---\n";
+			let files: Map<string, string>;
+			files = installMemoryVault(
+				plugin,
+				{ "mdbase.yaml": v02Config(), "_types/task.md": oldType },
+				{
+					failWrite: (path, content) => {
+						if (path === "mdbase.yaml" && content.includes("spec_version: 0.3.0")) {
+							files.set("_settings/dev.tasknotes.md", edited);
+							return true;
+						}
+						return false;
+					},
+				}
+			);
+
+			await service.initialize();
+
+			expect(files.get("_settings/dev.tasknotes.md")).toBe(edited);
+		});
+
+		it("recovers an interrupted rollback, removing abandoned staging files, and completes the migration", async () => {
 			const plugin = createMockPlugin();
 			const service = new MdbaseSpecService(plugin);
 			const oldConfig = v02Config();
@@ -2235,9 +2261,13 @@ describe("MdbaseSpecService", () => {
 			expect(files.has(".tasknotes/migrations/mdbase-v0.2-pending.json")).toBe(true);
 			expect(parseFrontmatter(files.get("_types/task.md") ?? "").kind).toBe("mdbase.type");
 
+			// A write killed while staging leaves its temporary file behind.
+			const stage = "_schemas/tasknotes/tasknotes-task.schema.json.tasknotes-stage-1-1-abc-def";
+			files.set(stage, "{}");
 			failRollback = false;
 			await new MdbaseSpecService(plugin).initialize();
 
+			expect(files.has(stage)).toBe(false);
 			expect(files.has(".tasknotes/migrations/mdbase-v0.2-pending.json")).toBe(false);
 			expect(asObject(YAML.parse(files.get("mdbase.yaml") ?? "")).spec_version).toBe("0.3.0");
 			expect(files.has("_contracts/tasknotes.task/0.3.0-rc.6.md")).toBe(true);

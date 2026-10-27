@@ -111,6 +111,8 @@ describe("safe migration writes and recovery", () => {
 		await h.service.initialize();
 		expect(failed).toBe(true);
 		for (const [p, content] of Object.entries(before)) expect(h.files.get(p)).toBe(content);
+		// Files the upgrade created (the settings record included) and staging files are removed.
+		expect([...h.files.keys()].filter((p) => !p.startsWith(".tasknotes/") && !(p in before))).toEqual([]);
 		expect(h.files.has(METADATA_PENDING)).toBe(false);
 		expect(h.notices.join(" ")).toContain("Backups");
 		expect(h.notices.some((notice) => notice.startsWith("TaskNotes updated"))).toBe(false);

@@ -593,9 +593,9 @@ export class MdbaseSpecService {
 			const currentContent = current.find(({ path }) => path === snapshot.path)?.content ?? null;
 			if (currentContent === snapshot.content) continue;
 			if (snapshot.content === null) {
-				// Never delete a newly created support resource during rollback: an
-				// external process could have changed it after our last comparison.
-				// Leaving an orphaned generated file is safer than risking user data.
+				// Created by this migration: remove it only while it still holds
+				// exactly what the migration wrote (checked again just before removal).
+				if (currentContent !== null) await this.metadataIO.removeIfUnchanged(snapshot.path, currentContent);
 				continue;
 			} else {
 				await this.writeFileIfUnchanged(
@@ -604,6 +604,7 @@ export class MdbaseSpecService {
 				);
 			}
 		}
+		await this.metadataIO.removeAbandonedStages(journal.snapshots.map(({ path }) => path));
 	}
 
 	private async writeMigrationJournal(journal: MigrationJournal): Promise<void> {
