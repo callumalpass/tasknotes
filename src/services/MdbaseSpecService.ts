@@ -401,6 +401,9 @@ export class MdbaseSpecService {
 			await this.loadAppSettingsRecord();
 			this.canonicalTypesFolder = typesFolder;
 			this.applyCanonicalState(state);
+			// The migration wrote the record with every absent field added, so the
+			// next sync only has to carry local changes.
+			if (this.lastKnownRecordContent !== null) this.recordAbsentFieldsMerged = true;
 			this.publishNotice(
 				`TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in ${backupFolder}.`
 			);
@@ -1219,14 +1222,20 @@ export class MdbaseSpecService {
 		if (!this.recordAbsentFieldsMerged && (this.lastKnownRecordContent === null || this.lastKnownRecordContent === content)) {
 			// First sync of this record in the session. applyCanonicalState already
 			// applied what it holds (over an earlier binding and local settings), so
-			// the plugin settings now supply exactly the fields the record lacks.
+			// the plugin settings now supply the fields the record lacks, plus any
+			// setting changed locally since then (this sync may be the first save).
 			this.recordAbsentFieldsMerged = true;
 			this.lastKnownRecordContent = content;
 			if (readOnly) {
 				this.recordNotice(`${path}: ${readOnly}`);
 				return;
 			}
-			const patch = absentTaskNotesSettingsPatch(frontmatter, local);
+			const patch = {
+				...absentTaskNotesSettingsPatch(frontmatter, local),
+				...(this.localAppSettingsChanged()
+					? buildTaskNotesSettingsPatch(frontmatter, changedTaskNotesAppSettings(this.lastAppliedAppValues ?? local, local))
+					: {}),
+			};
 			if (Object.keys(patch).length > 0) await this.writeRecordPatch(content, patch);
 			this.rememberAppliedAppSettings();
 			return;

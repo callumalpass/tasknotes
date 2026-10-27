@@ -103,6 +103,10 @@ function memoryVault(entries: Record<string, string>) {
 }
 
 async function load(files: Map<string, string>, vault: unknown, settings: Record<string, any>) {
+	return (await start(files, vault, settings)).notices;
+}
+
+async function start(_files: Map<string, string>, vault: unknown, settings: Record<string, any>) {
 	const notices: string[] = [];
 	const plugin: any = {
 		settings,
@@ -115,7 +119,7 @@ async function load(files: Map<string, string>, vault: unknown, settings: Record
 	const service = new MdbaseSpecService(plugin);
 	await service.initialize();
 	service.flushPendingNotices();
-	return notices;
+	return { notices, service };
 }
 
 function frontmatter(document: string): Record<string, any> {
@@ -256,5 +260,32 @@ describe("the TaskNotes settings record during the rc.6 upgrade", () => {
 		const snapshot = new Map(files);
 		expect(await load(files, vault, settings)).toEqual([]);
 		expect(files).toEqual(snapshot);
+	});
+});
+
+describe("saving a moved setting after a v4 migration", () => {
+	it("writes the first and later saves to the settings record", async () => {
+		const { files, vault } = memoryVault(JSON.parse(fs.readFileSync(path.join(FIXTURES, "v4-default.json"), "utf8")).files);
+		const settings = settingsFor("default");
+		settings.moveArchivedTasks = true;
+		settings.archiveFolder = "Old/Archive";
+		const { service } = await start(files, vault, settings);
+		const record = () => frontmatter(files.get("_settings/dev.tasknotes.md")!);
+		expect(record()).toMatchObject({ move_on_archive: true, archive_folder: "Old/Archive" });
+
+		settings.moveArchivedTasks = false;
+		await service.onSettingsChanged();
+		expect(record().move_on_archive).toBe(false);
+
+		settings.archiveFolder = "New/Archive";
+		await service.onSettingsChanged();
+		expect(record()).toMatchObject({ move_on_archive: false, archive_folder: "New/Archive" });
+
+		// A restart reads the saved values back from the record.
+		const restarted = settingsFor("default");
+		restarted.moveArchivedTasks = true;
+		await load(files, vault, restarted);
+		expect(restarted.moveArchivedTasks).toBe(false);
+		expect(restarted.archiveFolder).toBe("New/Archive");
 	});
 });
