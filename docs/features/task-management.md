@@ -19,6 +19,12 @@ TaskNotes also supports **Natural Language Creation**, which allows you to creat
 
 In most workflows, users combine both approaches: fast capture with natural language, then occasional structured edits in the modal when more precision is needed.
 
+### Highlighting in Natural Language Input
+
+As you type, the parts of the input that set a value are highlighted in the natural language field: dates (blue), recurrence (purple), time estimates (orange), priority (red), status (green), and tags, contexts, projects and custom fields (accent color). Text that is not highlighted becomes the title. A highlighted phrase can still stay in the title, as in "weekly review" or "Monday's meeting", where the phrase both names the task and sets the value.
+
+To change the colors, target the `tn-nlp-highlight` class, or one kind such as `tn-nlp-highlight--due`, in a CSS snippet.
+
 ### Auto-Suggestions in Natural Language Input
 
 The natural language input field includes auto-suggestion functionality that activates when typing specific trigger characters:

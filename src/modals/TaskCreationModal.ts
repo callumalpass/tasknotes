@@ -17,6 +17,7 @@ import type {
 	MarkdownEditorProps,
 } from "../editor/EmbeddableMarkdownEditor";
 import { createNLPAutocomplete } from "../editor/NLPCodeMirrorAutocomplete";
+import { createNLPHighlight } from "../editor/NLPHighlight";
 import { buildCreationBlockingUpdates, buildTaskCreationData } from "./taskCreationData";
 import {
 	buildTaskCreationFormState,
@@ -211,7 +212,10 @@ export class TaskCreationModal extends TaskModal {
 				value: "",
 				placeholder: this.t(msg({ message: "Buy groceries tomorrow at 3pm @home #errands", context: "modals.taskCreation.nlPlaceholder" })),
 				cls: "nlp-editor",
-				extensions: nlpAutocomplete, // Add autocomplete extensions (array)
+				extensions: [
+					...nlpAutocomplete,
+					createNLPHighlight((text) => this.nlParser.parseInputWithSpans(text).spans),
+				],
 				enterVimInsertMode: true, // Auto-enter insert mode when vim is enabled (#1410)
 				onChange: (value) => {
 					// Update preview as user types

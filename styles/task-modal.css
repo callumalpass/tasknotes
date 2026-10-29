@@ -1627,3 +1627,32 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     color: var(--text-muted);
     margin-top: 2px;
 }
+
+/* Parts of the NLP input the parser recognised */
+.tn-task-modal__markdown-editor--nlp .tn-nlp-highlight {
+    --tn-nlp-highlight-color: var(--interactive-accent);
+    background-color: color-mix(in srgb, var(--tn-nlp-highlight-color) 18%, transparent);
+    border-radius: var(--radius-s);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tn-nlp-highlight-color) 18%, transparent);
+}
+
+.tn-task-modal__markdown-editor--nlp .tn-nlp-highlight--scheduled,
+.tn-task-modal__markdown-editor--nlp .tn-nlp-highlight--due {
+    --tn-nlp-highlight-color: var(--color-blue);
+}
+
+.tn-task-modal__markdown-editor--nlp .tn-nlp-highlight--recurrence {
+    --tn-nlp-highlight-color: var(--color-purple);
+}
+
+.tn-task-modal__markdown-editor--nlp .tn-nlp-highlight--estimate {
+    --tn-nlp-highlight-color: var(--color-orange);
+}
+
+.tn-task-modal__markdown-editor--nlp .tn-nlp-highlight--priority {
+    --tn-nlp-highlight-color: var(--color-red);
+}
+
+.tn-task-modal__markdown-editor--nlp .tn-nlp-highlight--status {
+    --tn-nlp-highlight-color: var(--color-green);
+}
