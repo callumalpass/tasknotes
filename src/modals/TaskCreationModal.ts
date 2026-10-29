@@ -1,9 +1,10 @@
 import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
-import { App, Notice, setIcon, setTooltip, TFile } from "obsidian";
+import { App, Notice, setIcon, setTooltip, TAbstractFile, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
+import type { TaskModalProjectItem } from "./taskModalProjects";
 import { TaskInfo } from "../types";
 import { sanitizeTags } from "../utils/helpers";
 import {
@@ -106,6 +107,7 @@ function createEmbeddableMarkdownEditor(
 
 export class TaskCreationModal extends TaskModal {
 	private options: TaskCreationOptions;
+	private defaultProjectItems = new Set<TaskModalProjectItem>();
 	private nlParser: NaturalLanguageParser;
 	private nlInput: HTMLTextAreaElement = undefined as unknown as HTMLTextAreaElement; // Legacy - keeping for compatibility
 	private nlMarkdownEditor: EmbeddableMarkdownEditor | null = null;
@@ -620,7 +622,28 @@ export class TaskCreationModal extends TaskModal {
 		}
 	}
 
+	private clearDefaultProjectsForExplicitSelection(): void {
+		if (!this.plugin.settings.taskCreationDefaults.defaultProjectsOnlyWhenEmpty) return;
+		this.selectedProjectItems = this.selectedProjectItems.filter(
+			(item) => !this.defaultProjectItems.has(item)
+		);
+		this.defaultProjectItems.clear();
+	}
+
+	protected addProject(file: TAbstractFile): void {
+		if (file instanceof TFile) this.clearDefaultProjectsForExplicitSelection();
+		super.addProject(file);
+	}
+
+	protected addProjectsFromStrings(projects: string[]): void {
+		if (projects.some((project) => project.trim().length > 0)) {
+			this.clearDefaultProjectsForExplicitSelection();
+		}
+		super.addProjectsFromStrings(projects);
+	}
+
 	async initializeFormData(): Promise<void> {
+		this.defaultProjectItems.clear();
 		const formState = buildTaskCreationFormState({
 			defaultPriority: this.plugin.settings.defaultTaskPriority,
 			defaultStatus: this.plugin.settings.defaultTaskStatus,
@@ -643,8 +666,11 @@ export class TaskCreationModal extends TaskModal {
 		this.reminders = formState.reminders;
 		this.userFields = formState.userFields;
 
-		if (formState.projectStrings.length > 0) {
-			this.initializeProjectsFromStrings(formState.projectStrings);
+		this.initializeProjectsFromStrings(formState.projectStrings);
+		// Only defaults have this provenance. Bases, parent/subtask and caller-supplied
+		// projects are intentional assignments, even if they name a default project.
+		if (this.options.prePopulatedValues?.projects === undefined) {
+			this.defaultProjectItems = new Set(this.selectedProjectItems);
 		}
 
 		this.details = this.normalizeDetails(this.details);

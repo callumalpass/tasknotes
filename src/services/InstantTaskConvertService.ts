@@ -775,7 +775,10 @@ export class InstantTaskConvertService {
 		// Apply default projects if defaults are enabled
 		if (this.plugin.settings.useDefaultsOnInstantConvert) {
 			const defaults = this.plugin.settings.taskCreationDefaults;
-			if (defaults.defaultProjects) {
+			if (
+				defaults.defaultProjects &&
+				!(defaults.defaultProjectsOnlyWhenEmpty && parsedProjects.length > 0)
+			) {
 				const defaultProjectsArray = splitListPreservingLinksAndQuotes(
 					defaults.defaultProjects
 				);

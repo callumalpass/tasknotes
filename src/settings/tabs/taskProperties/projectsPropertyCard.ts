@@ -105,6 +105,14 @@ export function renderProjectsPropertyCard(
 			translate
 		);
 
+		const defaultProjectsOnlyWhenEmptyToggle = createCardToggle(
+			plugin.settings.taskCreationDefaults.defaultProjectsOnlyWhenEmpty,
+			(value) => {
+				plugin.settings.taskCreationDefaults.defaultProjectsOnlyWhenEmpty = value;
+				save();
+			}
+		);
+
 		const useParentNoteForTaskCreationToggle = createCardToggle(
 			plugin.settings.taskCreationDefaults.useParentNoteForTaskCreation,
 			(value) => {
@@ -159,6 +167,10 @@ export function renderProjectsPropertyCard(
 				label: translate(msg({ message: "Default projects:", context: "settings.taskProperties.projectsCard.defaultProjects" })),
 				input: nestedContainer,
 				fullWidth: true,
+			},
+			{
+				label: translate(msg({ message: "Use default projects only when no project is specified", context: "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty" })),
+				input: defaultProjectsOnlyWhenEmptyToggle,
 			},
 			{
 				label: translate(

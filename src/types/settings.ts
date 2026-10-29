@@ -283,6 +283,7 @@ export interface TaskCreationDefaults {
 	defaultContexts: string; // Comma-separated list
 	defaultTags: string; // Comma-separated list
 	defaultProjects: string; // Comma-separated list of project links
+	defaultProjectsOnlyWhenEmpty: boolean; // Explicit projects replace creation defaults
 	useParentNoteForTaskCreation: boolean; // Use the active note as a project for normal task creation
 	useParentNoteAsProject: boolean; // Use the parent note as a project during inline creation and instant conversion
 	useParentHeaderAsProject: boolean; // Use the closest markdown heading as a project during instant conversion
