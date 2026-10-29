@@ -75,7 +75,7 @@
 		"@lingui/babel-plugin-lingui-macro": "6.9.0",
 		"@lingui/format-po": "6.9.0",
 		"@lingui/message-utils": "6.9.0",
-		"@mdbase-dev/i18n": "file:vendor/mdbase-dev-i18n-0.1.0-beta.141-49bea0aa.tgz",
+		"@mdbase-dev/i18n": "0.1.0-beta.147",
 		"@playwright/test": "^1.57.0",
 		"@types/jest": "^30.0.0",
 		"@types/node": "^24.3.0",
