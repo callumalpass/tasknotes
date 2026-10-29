@@ -249,7 +249,7 @@ describe('NaturalLanguageParser', () => {
       const result = parser.parseInput('This is a High priority task');
 
       expect(result.priority).toBe('high');
-      expect(result.title).toBe('This is a priority task');
+      expect(result.title).toBe('This is a task');
     });
 
     it('should use fallback patterns when no config provided', () => {
@@ -491,7 +491,7 @@ describe('NaturalLanguageParser', () => {
       const result = parser.parseInput('Workout on mondays');
 
       expect(result.recurrence).toBe('FREQ=WEEKLY;BYDAY=MO');
-      expect(result.title).toBe('Workout on');
+      expect(result.title).toBe('Workout');
     });
 
     it('should parse ordinal weekdays', () => {
@@ -849,7 +849,7 @@ describe('NaturalLanguageParser', () => {
       const result = basicParser.parseInput('high priority task');
 
       expect(result.priority).toBe('high');
-      expect(result.title).toBe('priority task');
+      expect(result.title).toBe('task');
     });
 
     it('should prefer configured values over fallbacks', () => {

@@ -37,6 +37,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#1955) Added Italian interface translations, localized dates and count-aware messages in bundled builds and downloadable language packs. UI language and NLP language remain independent settings.
   - Thanks to @starise for contributing and reviewing the Italian translation.
 
+- Added highlighting to the natural language input in the task creation dialog. Dates, recurrence, estimates, priority, status, tags, contexts, projects and custom fields are highlighted as you type, so you can see what will become the title. See [Highlighting in Natural Language Input](https://tasknotes.dev/features/task-management/#highlighting-in-natural-language-input).
+
 - Added an opt-in build mode for downloadable interface language packs, with bundled English, validated local caching for offline use, and retry support. Ordinary builds continue bundling all supported languages. Versioned public hosting, a guarded operator publisher, and conditional-create publication tooling are available for experimental builds. Publication rejects permission errors even when identical objects already exist. See [Downloadable language packs](https://tasknotes.dev/development/language-packs/) for build configuration.
 
 ## Changed
@@ -57,10 +59,17 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Localized command notices, calendar connection and webhook settings, date/reminder/action/file/timeblock dialogs, task-property pickers, recurrence controls and statistics labels in all nine non-English interface languages. User-authored titles, paths, status labels and property names remain unchanged.
 
+- Rebuilt natural language parsing on recognized spans. Titles keep only the task text: connector words go with the value they introduce ("call Jo at 3pm" gives "call Jo"), and separators and brackets left by a removed value are dropped.
+  - Every NLP language now has fuller date, recurrence, estimate, status and priority phrases, including relative days, end-of-period dates, clock phrases, fortnightly and quarterly recurrence, `until` and `times` limits, and time ranges that set a scheduled time and an estimate.
+  - A frequency word that names the task stays in the title and still sets the recurrence, as in "daily standup" or "reunión semanal". After an article, as in "buy a weekly planner", it is ordinary text.
+  - Ambiguous single words such as French `fait`, Chinese `低` or `完成` no longer set a status or priority on their own; use the full phrase, such as `terminé`, `低优先级` or `已完成`.
+
 ## Removed
 
 ## Fixed
 
+- (#2433) Fixed Italian invalid numeric dates, decimal hour estimates (`1,5 ore`), `domani alle 20:00` date-and-time phrases and weekday deadlines such as `entro lunedì`.
+  - Thanks to @starise for reporting.
 - (#2428) Fixed Italian `entro le` deadlines, masculine/feminine scheduled-date expressions and recurring accented weekdays (Monday through Friday).
   - Thanks to @starise for reporting and identifying the causes.
 - Calendar pattern drags preserve multiline recurrence rules and excluded dates. Recurring tasks with a timezone now appear on the correct civil dates, and duration ends retain the correct instant during the repeated daylight-saving hour.
