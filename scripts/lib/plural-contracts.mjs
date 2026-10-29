@@ -16,8 +16,8 @@ function choices(tokens) {
  * Coverage mirrors mdbase-connect e61ab062 packages/i18n/scripts/checks.mjs:
  * require only categories reached by integer counts 0..999, after offset;
  * exact arms match the original count and may exhaust a category's domain.
- * The kit does not export coverage separately. Keep its existing tarball pin
- * and mirror this small rule here, retaining strict English-source coverage
+ * The kit does not export coverage separately. Mirror this small rule here
+ * alongside the published kit, retaining strict English-source coverage
  * and the plugin's scoped English-arm rejection (the newer kit only warns).
  * This is deliberately conservative: it catches exact English branches, not every
  * possible untranslated sentence. No heuristic can establish translation quality.
