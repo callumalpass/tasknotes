@@ -69,6 +69,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
-- (#1370) A recurring series now moves to the **Next status** set on your completed status when its current occurrence is completed or skipped, so an in-progress status does not carry over to the next occurrence. Series keep their status when no next status is set. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
+- (#1370) A recurring series now moves to the **Next status** set on your first completed status when its current occurrence is completed or skipped, so an in-progress status does not carry over to the next occurrence. Series keep their status when no next status is set. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
   - Thanks to @martin-forge for the implementation in PR #2441
 - Task List group and subgroup headers stay visible while scrolling, including virtualized lists. Thanks to @christenbc for the contribution in #2168.

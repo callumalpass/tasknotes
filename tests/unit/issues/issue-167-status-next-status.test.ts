@@ -40,6 +40,23 @@ describe("Issue #167: explicit next status overrides", () => {
 			expect(manager.getConfiguredStatusAfterCompletion()).toBeUndefined();
 		});
 
+		it("comes only from the first completed status", () => {
+			const onFirst = new StatusManager([
+				createStatus("open", 0),
+				createStatus("done", 1, { nextStatus: "open" }),
+				createStatus("archived", 2, { nextStatus: "backlog" }),
+				createStatus("backlog", 3),
+			]);
+			const onSecond = new StatusManager([
+				createStatus("open", 0),
+				createStatus("done", 1),
+				createStatus("archived", 2, { nextStatus: "open" }),
+			]);
+
+			expect(onFirst.getConfiguredStatusAfterCompletion()).toBe("open");
+			expect(onSecond.getConfiguredStatusAfterCompletion()).toBeUndefined();
+		});
+
 		it("is undefined when the next status is itself completed or unknown", () => {
 			const archived = new StatusManager([
 				createStatus("open", 0),
