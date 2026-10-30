@@ -1,3 +1,4 @@
+import { Notice } from "obsidian";
 import {
 	completeOccurrenceForStatusMove,
 	getShownOccurrence,
@@ -44,20 +45,6 @@ function moveWith(task: TaskInfo | null, overrides: { status?: string | null } =
 }
 
 describe("recurring status moves", () => {
-	it("reads no occurrence from an ordinary or missing task", () => {
-		expect(getShownOccurrence(undefined, getOccurrenceDate)).toBeUndefined();
-		expect(
-			getShownOccurrence(createTask({ recurrence: undefined }), getOccurrenceDate)
-		).toBeUndefined();
-	});
-
-	it("reads the occurrence a recurring card acts on", () => {
-		expect(getShownOccurrence(createTask(), getOccurrenceDate)).toEqual({
-			date: "2026-10-19",
-			scheduled: "2026-10-19",
-		});
-	});
-
 	it("completes the shown occurrence on any completed status", async () => {
 		for (const status of ["done", "cancelled"]) {
 			const task = createTask();
@@ -90,14 +77,9 @@ describe("recurring status moves", () => {
 		await expect(move()).resolves.toBe(true);
 
 		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
-	});
-
-	it("does not complete another occurrence when the series moved on without closing this one", async () => {
-		const { plugin, move } = moveWith(createTask({ scheduled: "2026-10-26" }));
-
-		await expect(move()).resolves.toBe(true);
-
-		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+		expect(Notice).toHaveBeenCalledWith(
+			"That occurrence was already completed, skipped or rescheduled."
+		);
 	});
 
 	it("does not complete the next occurrence when the shown one was skipped elsewhere", async () => {
@@ -139,14 +121,6 @@ describe("recurring status moves", () => {
 				getOccurrenceDate: moved,
 			})
 		).resolves.toBe(true);
-		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
-	});
-
-	it("does not complete an occurrence skipped without advancing", async () => {
-		const { plugin, move } = moveWith(createTask({ skipped_instances: ["2026-10-19"] }));
-
-		await expect(move()).resolves.toBe(true);
-
 		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
 	});
 

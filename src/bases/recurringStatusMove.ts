@@ -1,4 +1,7 @@
+import { msg } from "@lingui/core/macro";
+import { Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
+import { uiText } from "../i18n/runtime";
 import type { TaskInfo } from "../types";
 import { formatDateForStorage } from "../utils/dateUtils";
 
@@ -59,10 +62,19 @@ export async function completeOccurrenceForStatusMove({
 			!current.skipped_instances?.includes(shownOccurrence.date)
 		);
 	};
-	if (isStillOpen(task)) {
-		await plugin.toggleRecurringTaskComplete(task, getOccurrenceDate(task), {
-			onlyIf: isStillOpen,
-		});
+	if (!isStillOpen(task)) {
+		new Notice(
+			uiText(
+				msg({
+					message: "That occurrence was already completed, skipped or rescheduled.",
+					context: "views.recurringStatusMove.stale",
+				})
+			)
+		);
+		return true;
 	}
+	await plugin.toggleRecurringTaskComplete(task, getOccurrenceDate(task), {
+		onlyIf: isStillOpen,
+	});
 	return true;
 }
