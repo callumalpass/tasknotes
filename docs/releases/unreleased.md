@@ -41,6 +41,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Added an opt-in build mode for downloadable interface language packs, with bundled English, validated local caching for offline use, and retry support. Ordinary builds continue bundling all supported languages. Versioned public hosting, a guarded operator publisher, and conditional-create publication tooling are available for experimental builds. Publication rejects permission errors even when identical objects already exist. See [Downloadable language packs](https://tasknotes.dev/development/language-packs/) for build configuration.
 
+- (#2442) The MCP tools `tasknotes_create_task` and `tasknotes_update_task` now accept `blockedBy`, so MCP clients can set task dependencies as they can over HTTP. On update, `null` or `[]` clears the dependencies. See [HTTP API](https://tasknotes.dev/HTTP_API/#post-apitasks).
+  - Thanks to @vanillaflava for the request.
+
 ## Changed
 
 - Use the published shared translation tooling instead of bundled development tarballs; all ten interface languages remain available offline in ordinary builds.
