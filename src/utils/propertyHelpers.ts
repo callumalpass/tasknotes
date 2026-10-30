@@ -1,5 +1,8 @@
+import { uiData } from "../i18n/dataText";
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../main";
 import type { FieldMapping } from "../types";
+import type { MessageDescriptor } from "../i18n";
 
 /**
  * Get all available properties for property selection modals.
@@ -12,10 +15,11 @@ export function getAvailableProperties(
 	plugin: TaskNotesPlugin
 ): Array<{ id: string; label: string }> {
 	// Helper to create label showing user's configured property name
-	const makeLabel = (displayName: string, mappingKey: keyof FieldMapping): string => {
+	const makeLabel = (labelKey: MessageDescriptor, mappingKey: keyof FieldMapping): string => {
+		const displayName = plugin.i18n.translate(labelKey);
 		const userPropertyName = plugin.fieldMapper.toUserField(mappingKey);
-		// Only show the property name if it differs from the display name (lowercased)
-		if (userPropertyName !== displayName.toLowerCase().replace(/\s+/g, "")) {
+		// Compare identifiers, never localized text. User-defined names stay untouched.
+		if (userPropertyName !== mappingKey) {
 			return `${displayName} (${userPropertyName})`;
 		}
 		return displayName;
@@ -23,24 +27,100 @@ export function getAvailableProperties(
 
 	// Core properties using FieldMapping keys as IDs
 	const coreProperties = [
-		{ id: "status", label: makeLabel("Status", "status") },
-		{ id: "priority", label: makeLabel("Priority", "priority") },
-		{ id: "blocked", label: "Blocked Status" }, // Special property, not in FieldMapping
-		{ id: "blocking", label: "Blocking Status" }, // Special property, not in FieldMapping
-		{ id: "due", label: makeLabel("Due Date", "due") },
-		{ id: "scheduled", label: makeLabel("Scheduled Date", "scheduled") },
-		{ id: "timeEstimate", label: makeLabel("Time Estimate", "timeEstimate") },
-		{ id: "totalTrackedTime", label: "Total Tracked Time" }, // Computed property, not in FieldMapping
-		{ id: "checklistProgress", label: "Checklist Progress" }, // Computed from metadata cache listItems
-		{ id: "recurrence", label: makeLabel("Recurrence", "recurrence") },
-		{ id: "completeInstances", label: makeLabel("Completed Instances", "completeInstances") },
-		{ id: "skippedInstances", label: makeLabel("Skipped Instances", "skippedInstances") },
-		{ id: "completedDate", label: makeLabel("Completed Date", "completedDate") },
-		{ id: "dateCreated", label: makeLabel("Created Date", "dateCreated") },
-		{ id: "dateModified", label: makeLabel("Modified Date", "dateModified") },
-		{ id: "projects", label: makeLabel("Projects", "projects") },
-		{ id: "contexts", label: makeLabel("Contexts", "contexts") },
-		{ id: "tags", label: "Tags" }, // Special property, not in FieldMapping
+		{
+			id: "status",
+			label: makeLabel(msg({ message: "Status", context: "settings.taskProperties.fieldMapping.fields.status" }), "status"),
+		},
+		{
+			id: "priority",
+			label: makeLabel(msg({ message: "Priority", context: "settings.taskProperties.fieldMapping.fields.priority" }), "priority"),
+		},
+		{
+			id: "blocked",
+			label: plugin.i18n.translate(msg({ message: "Blocked", context: "settings.appearance.taskCards.properties.blocked" })),
+		},
+		{
+			id: "blocking",
+			label: plugin.i18n.translate(msg({ message: "Blocking", context: "settings.appearance.taskCards.properties.blocking" })),
+		},
+		{ id: "due", label: makeLabel(msg({ message: "Due date", context: "settings.taskProperties.fieldMapping.fields.due" }), "due") },
+		{
+			id: "scheduled",
+			label: makeLabel(msg({ message: "Scheduled date", context: "settings.taskProperties.fieldMapping.fields.scheduled" }), "scheduled"),
+		},
+		{
+			id: "timeEstimate",
+			label: makeLabel(
+				msg({ message: "Time estimate", context: "settings.taskProperties.fieldMapping.fields.timeEstimate" }),
+				"timeEstimate"
+			),
+		},
+		{
+			id: "totalTrackedTime",
+			label: plugin.i18n.translate(
+				msg({ message: "Total tracked time", context: "settings.appearance.taskCards.properties.totalTrackedTime" })
+			),
+		},
+		{
+			id: "checklistProgress",
+			label: plugin.i18n.translate(
+				msg({ message: "Checklist progress", context: "settings.appearance.taskCards.properties.checklistProgress" })
+			),
+		},
+		{
+			id: "recurrence",
+			label: makeLabel(
+				msg({ message: "Recurrence", context: "settings.taskProperties.fieldMapping.fields.recurrence" }),
+				"recurrence"
+			),
+		},
+		{
+			id: "completeInstances",
+			label: makeLabel(
+				msg({ message: "Complete instances", context: "settings.taskProperties.fieldMapping.fields.completeInstances" }),
+				"completeInstances"
+			),
+		},
+		{
+			id: "skippedInstances",
+			label: makeLabel(
+				msg({ message: "Skipped instances", context: "settings.taskProperties.fieldMapping.fields.skippedInstances" }),
+				"skippedInstances"
+			),
+		},
+		{
+			id: "completedDate",
+			label: makeLabel(
+				msg({ message: "Completed date", context: "settings.taskProperties.fieldMapping.fields.completedDate" }),
+				"completedDate"
+			),
+		},
+		{
+			id: "dateCreated",
+			label: makeLabel(
+				msg({ message: "Created date", context: "settings.taskProperties.fieldMapping.fields.dateCreated" }),
+				"dateCreated"
+			),
+		},
+		{
+			id: "dateModified",
+			label: makeLabel(
+				msg({ message: "Modified date", context: "settings.taskProperties.fieldMapping.fields.dateModified" }),
+				"dateModified"
+			),
+		},
+		{
+			id: "projects",
+			label: makeLabel(msg({ message: "Projects", context: "settings.taskProperties.fieldMapping.fields.projects" }), "projects"),
+		},
+		{
+			id: "contexts",
+			label: makeLabel(msg({ message: "Contexts", context: "settings.taskProperties.fieldMapping.fields.contexts" }), "contexts"),
+		},
+		{
+			id: "tags",
+			label: plugin.i18n.translate(msg({ message: "Tags", context: "settings.appearance.taskCards.properties.tags" })),
+		},
 	];
 
 	// Add user-defined fields
@@ -57,12 +137,9 @@ export function getAvailableProperties(
  * Get labels for a list of property IDs
  * Useful for displaying current selection
  */
-export function getPropertyLabels(
-	plugin: TaskNotesPlugin,
-	propertyIds: string[]
-): string[] {
+export function getPropertyLabels(plugin: TaskNotesPlugin, propertyIds: string[]): string[] {
 	const availableProperties = getAvailableProperties(plugin);
 	return propertyIds
-		.map((id) => availableProperties.find((p) => p.id === id)?.label || id)
+		.map((id) => availableProperties.find((p) => p.id === id)?.label || uiData(id, "Unknown/custom property identifier; preserve user schema metadata"))
 		.filter(Boolean);
 }

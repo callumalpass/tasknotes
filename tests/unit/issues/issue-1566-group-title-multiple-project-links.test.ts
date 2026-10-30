@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { TFile } from "obsidian";
 import { renderGroupTitle } from "../../../src/bases/groupTitleRenderer";
 import type { LinkServices } from "../../../src/ui/renderers/linkRenderer";
@@ -5,6 +6,7 @@ import type { LinkServices } from "../../../src/ui/renderers/linkRenderer";
 function makeServices(): LinkServices {
 	const knownPaths = new Set(["Project A", "Project B", "Project A.md", "Project B.md"]);
 	return {
+		translate: (key, params) => createI18nService().translate(key, params),
 		metadataCache: {
 			getFirstLinkpathDest: jest.fn((linkPath: string) =>
 				knownPaths.has(linkPath) ? new TFile(`${linkPath}.md`) : null
@@ -27,7 +29,9 @@ describe("Issue #1566: grouped project links", () => {
 
 		renderGroupTitle(container, "[[Project A]], [[Project B]]", makeServices());
 
-		const links = Array.from(container.querySelectorAll<HTMLAnchorElement>("a.task-group-link"));
+		const links = Array.from(
+			container.querySelectorAll<HTMLAnchorElement>("a.task-group-link")
+		);
 		expect(links).toHaveLength(2);
 		expect(links.map((link) => link.textContent)).toEqual(["Project A", "Project B"]);
 		expect(links.map((link) => link.getAttribute("data-href"))).toEqual([
@@ -40,9 +44,15 @@ describe("Issue #1566: grouped project links", () => {
 	it("renders comma-delimited markdown link group titles as individual links", () => {
 		const container = document.createElement("div");
 
-		renderGroupTitle(container, "[Project A](Project%20A.md), [Project B](Project B.md)", makeServices());
+		renderGroupTitle(
+			container,
+			"[Project A](Project%20A.md), [Project B](Project B.md)",
+			makeServices()
+		);
 
-		const links = Array.from(container.querySelectorAll<HTMLAnchorElement>("a.task-group-link"));
+		const links = Array.from(
+			container.querySelectorAll<HTMLAnchorElement>("a.task-group-link")
+		);
 		expect(links).toHaveLength(2);
 		expect(links.map((link) => link.textContent)).toEqual(["Project A", "Project B"]);
 		expect(links.map((link) => link.getAttribute("data-href"))).toEqual([

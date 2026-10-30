@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import type { App } from "obsidian";
 import type TaskNotesPlugin from "../../../src/main";
 import { ProjectSelectModal } from "../../../src/modals/ProjectSelectModal";
@@ -21,6 +22,7 @@ function createPlugin(): TaskNotesPlugin {
 
 	return {
 		app,
+		i18n: createI18nService(),
 		settings: {
 			...DEFAULT_SETTINGS,
 			excludedFolders: excludedFolders.join(", "),

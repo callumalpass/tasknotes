@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { App, TFile } from "obsidian";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import { ProjectSelectModal } from "../../../src/modals/ProjectSelectModal";
@@ -37,9 +38,7 @@ function createPlugin(): TaskNotesPlugin {
 	const app = new App();
 	return {
 		app,
-		i18n: {
-			translate: jest.fn((key: string) => key),
-		},
+		i18n: createI18nService(),
 		statusManager: {
 			getAllStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),
 			getNonCompletionStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),

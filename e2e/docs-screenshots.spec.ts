@@ -160,14 +160,14 @@ test.describe('Main Views', () => {
     await page.waitForTimeout(1500);
 
     // Ensure we're on month view
-    const monthButton = page.locator('.workspace-leaf.mod-active button.fc-dayGridMonth-button').first();
+    const monthButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-month').first();
     if (await monthButton.isVisible()) {
       await monthButton.click();
       await page.waitForTimeout(500);
     }
 
     // Click Today to ensure we're viewing current month
-    const todayButton = page.locator('.workspace-leaf.mod-active .fc-today-button').first();
+    const todayButton = page.locator('.workspace-leaf.mod-active .tnc-btn-today').first();
     if (await todayButton.isVisible() && await todayButton.isEnabled()) {
       await todayButton.click();
       await page.waitForTimeout(500);
@@ -179,7 +179,7 @@ test.describe('Main Views', () => {
   test('calendar-week-view', async () => {
     const page = getPage();
 
-    const weekButton = page.locator('.workspace-leaf.mod-active button.fc-timeGridWeek-button').first();
+    const weekButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-week').first();
     if (await weekButton.isVisible()) {
       await weekButton.click();
       await page.waitForTimeout(800);
@@ -191,7 +191,7 @@ test.describe('Main Views', () => {
   test('calendar-day-view', async () => {
     const page = getPage();
 
-    const dayButton = page.locator('.workspace-leaf.mod-active button.fc-timeGridDay-button').first();
+    const dayButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-day').first();
     if (await dayButton.isVisible()) {
       await dayButton.click();
       await page.waitForTimeout(800);
@@ -203,7 +203,7 @@ test.describe('Main Views', () => {
   test('calendar-year-view', async () => {
     const page = getPage();
 
-    const yearButton = page.locator('.workspace-leaf.mod-active button.fc-multiMonthYear-button').first();
+    const yearButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-year').first();
     if (await yearButton.isVisible()) {
       await yearButton.click();
       await page.waitForTimeout(800);
@@ -319,7 +319,7 @@ test.describe('Task Modal', () => {
     await page.waitForTimeout(1500);
 
     // Click on a task event in the calendar
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 5000 }).catch(() => false)) {
       await taskEvent.click();
       await page.waitForTimeout(800);
@@ -447,7 +447,7 @@ test.describe('UI Elements', () => {
     await page.waitForTimeout(1000);
 
     // Keep this capture simple and robust: verify toolbar visibility, then screenshot the view.
-    const toolbar = page.locator('.tn-view-toolbar, .fc-header-toolbar').first();
+    const toolbar = page.locator('.tn-view-toolbar, .tnc-toolbar').first();
     if (await toolbar.isVisible({ timeout: 5000 }).catch(() => false)) {
       await docScreenshot(page, 'ui-calendar-toolbar');
     }
@@ -514,7 +514,7 @@ test.describe('Time Tracking', () => {
     await page.waitForTimeout(1000);
 
     // Other leaves can contain calendars too; operate on the active calendar.
-    const weekButton = page.locator('.workspace-leaf.mod-active button.fc-timeGridWeek-button').first();
+    const weekButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-week').first();
     if (await weekButton.isVisible()) {
       await weekButton.click();
       await page.waitForTimeout(800);
@@ -527,7 +527,7 @@ test.describe('Time Tracking', () => {
     const page = getPage();
 
     // Switch to day view
-    const dayButton = page.locator('.workspace-leaf.mod-active button.fc-timeGridDay-button').first();
+    const dayButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-day').first();
     if (await dayButton.isVisible()) {
       await dayButton.click();
       await page.waitForTimeout(800);
@@ -594,16 +594,18 @@ test.describe('Workflows', () => {
     await page.waitForTimeout(1000);
 
     // Ensure month view
-    const monthButton = page.locator('.workspace-leaf.mod-active button.fc-dayGridMonth-button').first();
+    const monthButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-month').first();
     if (await monthButton.isVisible()) {
       await monthButton.click();
       await page.waitForTimeout(500);
     }
 
     // Double-click a day to open quick add
-    const dayCell = page.locator('.workspace-leaf.mod-active .fc-daygrid-day').nth(15); // Middle of month
+    const dayCell = page.locator('.workspace-leaf.mod-active .tnc-dg-day').nth(15); // Middle of month
     if (await dayCell.isVisible()) {
-      await dayCell.dblclick();
+      // Items are drawn over the cells; click the empty bottom edge of the day.
+      const cellBox = await dayCell.boundingBox();
+      await dayCell.dblclick({ position: { x: 8, y: Math.max(4, (cellBox?.height ?? 8) - 4) } });
       await page.waitForTimeout(500);
 
       await docScreenshot(page, 'workflow-quick-add-calendar');
@@ -620,7 +622,7 @@ test.describe('Workflows', () => {
     await page.waitForTimeout(1000);
 
     // Right-click on a task event
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.click({ button: 'right' });
       await page.waitForTimeout(500);
@@ -639,7 +641,7 @@ test.describe('Workflows', () => {
     await page.waitForTimeout(1000);
 
     // Hover over a task event
-    const taskEvent = page.locator('.fc-event').first();
+    const taskEvent = page.locator('.tnc-item').first();
     if (await taskEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
       await taskEvent.hover();
       await page.waitForTimeout(800);
@@ -778,7 +780,7 @@ test.describe('Recurring Tasks', () => {
     await page.waitForTimeout(1500);
 
     // Look for recurring task event and click to open edit modal
-    const recurringEvent = page.locator('.fc-event:has-text("Daily standup")').first();
+    const recurringEvent = page.locator('.tnc-item:has-text("Daily standup")').first();
     if (await recurringEvent.isVisible({ timeout: 5000 }).catch(() => false)) {
       await recurringEvent.click();
       await page.waitForTimeout(800);
@@ -799,7 +801,7 @@ test.describe('Recurring Tasks', () => {
     await page.waitForTimeout(1500);
 
     // Switch to week view to see recurring events across days
-    const weekButton = page.locator('.workspace-leaf.mod-active button.fc-timeGridWeek-button').first();
+    const weekButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-week').first();
     if (await weekButton.isVisible()) {
       await weekButton.click();
       await page.waitForTimeout(800);
@@ -823,7 +825,7 @@ test.describe('Recurring Tasks', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1500);
 
-    const weeklyEvent = page.locator('.fc-event:has-text("Weekly team")').first();
+    const weeklyEvent = page.locator('.tnc-item:has-text("Weekly team")').first();
     if (await weeklyEvent.isVisible({ timeout: 5000 }).catch(() => false)) {
       await weeklyEvent.click();
       await page.waitForTimeout(800);

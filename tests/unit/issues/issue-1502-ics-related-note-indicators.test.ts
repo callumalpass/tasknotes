@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import { describe, expect, it, jest } from "@jest/globals";
 import { createICSEvent } from "../../../src/bases/calendar-core";
 import { ICSNoteService } from "../../../src/services/ICSNoteService";
@@ -34,10 +36,7 @@ function createPlugin() {
 
 	const plugin = {
 		i18n: {
-			translate: (key: string) =>
-				key === "modals.icsEventInfo.relatedNotesHeading"
-					? "Related notes & tasks"
-					: key,
+			translate: mockObserveTranslation(),
 		},
 		settings: {
 			calendarViewSettings: {

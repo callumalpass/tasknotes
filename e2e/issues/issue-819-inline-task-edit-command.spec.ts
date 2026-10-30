@@ -27,7 +27,7 @@
  * - src/main.ts (new command registration)
  * - src/editor/TaskLinkOverlay.ts (cursor position detection utilities)
  * - src/modals/TaskActionPaletteModal.ts (modal invocation)
- * - src/i18n/resources/ (translation keys)
+ * - src/i18n/locales/en/messages.po (Lingui message descriptors)
  *
  * @see https://github.com/callumalpass/tasknotes/issues/819
  * @see src/modals/TaskActionPaletteModal.ts (existing quick actions modal)

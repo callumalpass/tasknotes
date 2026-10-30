@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Notice, Platform, type SettingDefinitionItem, type SettingDefinitionPage } from "obsidian";
 import { SettingsContext } from "./SettingsContext";
 import { formatDateLabel } from "../../utils/dateUtils";
@@ -32,8 +33,8 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 	const googlePrefix = "settings.integrations.googleCalendarExport";
 	return [
 		{
-			name: ctx.t("settings.native.calendarSetupGuide"),
-			desc: ctx.t("settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"),
+			name: ctx.t(msg({ message: "Calendar setup guide", context: "settings.native.calendarSetupGuide" })),
+			desc: ctx.t(msg({ message: "Connect a Google or Microsoft calendar using credentials from your own developer application.", context: "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn" })),
 			action: () =>
 				window.open("https://callumalpass.github.io/tasknotes/calendar-setup", "_blank"),
 		},
@@ -47,18 +48,18 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		connectionPage(ctx, "microsoft"),
 		{
 			type: "page",
-			name: t("settings.integrations.subscriptionsList.header"),
+			name: t(msg({ message: "Calendar subscriptions list", context: "settings.integrations.subscriptionsList.header" })),
 			displayValue: () =>
 				String(plugin.icsSubscriptionService?.getSubscriptions().length ?? 0),
 			items: [
 				subscriptionList(ctx),
 				ctx.button("ics.refreshAll", {
-					name: t("settings.integrations.subscriptionsList.refreshAll.name"),
-					buttonText: t("settings.integrations.subscriptionsList.refreshAll.buttonText"),
+					name: t(msg({ message: "Refresh all subscriptions", context: "settings.integrations.subscriptionsList.refreshAll.name" })),
+					buttonText: t(msg({ message: "Refresh all", context: "settings.integrations.subscriptionsList.refreshAll.buttonText" })),
 					onClick: async () => {
 						if (!plugin.icsSubscriptionService)
 							throw new Error(
-								ctx.t("settings.native.calendarSubscriptionServiceUnavailable")
+								ctx.t(msg({ message: "Calendar subscription service unavailable.", context: "settings.native.calendarSubscriptionServiceUnavailable" }))
 							);
 						await plugin.icsSubscriptionService.refreshAllSubscriptions();
 						ctx.rebuild();
@@ -68,8 +69,8 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		},
 		{
 			type: "page",
-			name: t("settings.integrations.calendarSubscriptions.header"),
-			desc: t("settings.integrations.calendarSubscriptions.description"),
+			name: t(msg({ message: "Calendar subscriptions", context: "settings.integrations.calendarSubscriptions.header" })),
+			desc: t(msg({ message: "Subscribe to external calendars via ICS/iCal URLs to view events alongside your tasks.", context: "settings.integrations.calendarSubscriptions.description" })),
 			items: [
 				ctx.field(
 					ics,
@@ -416,7 +417,7 @@ export function apiDefinitions(ctx: SettingsContext): SettingDefinitionPage {
 			},
 			{
 				type: "page",
-				name: t("settings.integrations.webhooks.header"),
+				name: t(msg({ message: "Webhooks", context: "settings.integrations.webhooks.header" })),
 				items: [webhookList(ctx)],
 			},
 		],

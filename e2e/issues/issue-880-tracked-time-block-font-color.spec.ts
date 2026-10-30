@@ -52,18 +52,18 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view to see time entries clearly
-      const weekButton = page.locator('.fc-timeGridWeek-button');
+      const weekButton = page.locator('.tnc-btn-view-week');
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
         await page.waitForTimeout(500);
       }
 
       // Look for time entry events (tracked time blocks)
-      const timeEntryEvents = page.locator('.fc-event[data-event-type="timeEntry"]');
+      const timeEntryEvents = page.locator('.tnc-item[data-event-type="timeEntry"]');
       const timeEntryCount = await timeEntryEvents.count();
 
       if (timeEntryCount === 0) {
@@ -75,7 +75,7 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
 
       // Check the text color of the first time entry
       const firstTimeEntry = timeEntryEvents.first();
-      const titleElement = firstTimeEntry.locator('.fc-event-title, .fc-event-time');
+      const titleElement = firstTimeEntry.locator('.tnc-item-title, .tnc-item-time');
 
       if (await titleElement.isVisible({ timeout: 2000 }).catch(() => false)) {
         const computedColor = await titleElement.evaluate((el) => {
@@ -132,18 +132,18 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view
-      const weekButton = page.locator('.fc-timeGridWeek-button');
+      const weekButton = page.locator('.tnc-btn-view-week');
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
         await page.waitForTimeout(500);
       }
 
       // Look for time entry events
-      const timeEntryEvents = page.locator('.fc-event[data-event-type="timeEntry"]');
+      const timeEntryEvents = page.locator('.tnc-item[data-event-type="timeEntry"]');
       const timeEntryCount = await timeEntryEvents.count();
 
       if (timeEntryCount === 0) {
@@ -153,7 +153,7 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
 
       // Check the text color
       const firstTimeEntry = timeEntryEvents.first();
-      const titleElement = firstTimeEntry.locator('.fc-event-title, .fc-event-time');
+      const titleElement = firstTimeEntry.locator('.tnc-item-title, .tnc-item-time');
 
       if (await titleElement.isVisible({ timeout: 2000 }).catch(() => false)) {
         const computedColor = await titleElement.evaluate((el) => {
@@ -192,8 +192,8 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
        * The CSS rules for time entry text color should have enough specificity
        * to override theme styles. Currently, the styles use:
        *
-       * .fc-event[data-event-type="timeEntry"] .fc-event-time,
-       * .fc-event[data-event-type="timeEntry"] .fc-event-title {
+       * .tnc-item[data-event-type="timeEntry"] .tnc-item-time,
+       * .tnc-item[data-event-type="timeEntry"] .tnc-item-title {
        *     color: #059669 !important;
        * }
        *
@@ -205,18 +205,18 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view
-      const weekButton = page.locator('.fc-timeGridWeek-button');
+      const weekButton = page.locator('.tnc-btn-view-week');
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
         await page.waitForTimeout(500);
       }
 
       // Look for time entry events
-      const timeEntryEvents = page.locator('.fc-event[data-event-type="timeEntry"]');
+      const timeEntryEvents = page.locator('.tnc-item[data-event-type="timeEntry"]');
       const timeEntryCount = await timeEntryEvents.count();
 
       if (timeEntryCount === 0) {
@@ -229,7 +229,7 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
 
       // Check the computed style to see if our CSS or theme CSS is winning
       const styleInfo = await firstTimeEntry.evaluate((el) => {
-        const titleEl = el.querySelector('.fc-event-title') || el.querySelector('.fc-event-time');
+        const titleEl = el.querySelector('.tnc-item-title') || el.querySelector('.tnc-item-time');
         if (!titleEl) return null;
 
         const style = window.getComputedStyle(titleEl as Element);
@@ -287,7 +287,7 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Get current theme info
@@ -305,14 +305,14 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
       console.log('Theme info:', themeInfo);
 
       // Switch to week view
-      const weekButton = page.locator('.fc-timeGridWeek-button');
+      const weekButton = page.locator('.tnc-btn-view-week');
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
         await page.waitForTimeout(500);
       }
 
       // Look for time entry events
-      const timeEntryEvents = page.locator('.fc-event[data-event-type="timeEntry"]');
+      const timeEntryEvents = page.locator('.tnc-item[data-event-type="timeEntry"]');
       const timeEntryCount = await timeEntryEvents.count();
 
       if (timeEntryCount === 0) {
@@ -322,7 +322,7 @@ test.describe('Issue #880: Tracked Time Blocks Font Color Readability', () => {
 
       // Check contrast ratio
       const contrastInfo = await timeEntryEvents.first().evaluate((el) => {
-        const titleEl = el.querySelector('.fc-event-title') || el.querySelector('.fc-event-time');
+        const titleEl = el.querySelector('.tnc-item-title') || el.querySelector('.tnc-item-time');
         if (!titleEl) return null;
 
         const textColor = window.getComputedStyle(titleEl as Element).color;

@@ -7,6 +7,7 @@ import {
 	parseDateToUTC,
 } from "../utils/dateUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/KanbanCardActions" });
 
@@ -104,7 +105,7 @@ async function handleToggleStatus(
 }
 
 export function getKanbanTaskActionDate(task: TaskInfo): Date {
-	const dateStr = getDatePart(task.scheduled || task.due || "");
+	const dateStr = getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || task.due || "");
 	if (dateStr) {
 		return parseDateToUTC(dateStr);
 	}

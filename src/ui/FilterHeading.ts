@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { GroupCountUtils } from "../utils/GroupCountUtils";
 import { SavedView } from "../types";
 import TaskNotesPlugin from "../main";
@@ -34,7 +35,7 @@ export class FilterHeading {
 		// View name element
 		this.headingElement = headingContent.createEl("h2", {
 			cls: "filter-heading__title",
-			text: this.plugin.i18n.translate("ui.filterHeading.allViewName"),
+			text: this.plugin.i18n.translate(msg({ message: "All", context: "ui.filterHeading.allViewName" })),
 		});
 
 		// Count element
@@ -54,7 +55,7 @@ export class FilterHeading {
 
 		// Update view name
 		const viewName =
-			activeSavedView?.name || this.plugin.i18n.translate("ui.filterHeading.allViewName");
+			activeSavedView?.name || this.plugin.i18n.translate(msg({ message: "All", context: "ui.filterHeading.allViewName" }));
 		this.headingElement.textContent = viewName;
 
 		// Update count

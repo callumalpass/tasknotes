@@ -60,9 +60,9 @@ describe("Bases value conversion", () => {
 	});
 
 	it("formats group keys for display without leaking Bases wrapper objects", () => {
-		expect(convertBasesGroupKeyToString(null)).toBe("Unknown");
+		expect(convertBasesGroupKeyToString(null)).toBe("None");
 		expect(convertBasesGroupKeyToString({ constructor: { name: "NullValue" } })).toBe(
-			"Unknown"
+			"None"
 		);
 		expect(convertBasesGroupKeyToString({ data: null })).toBe("None");
 		expect(

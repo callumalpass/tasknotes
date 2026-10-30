@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import type { UserMappedField } from "../../types/settings";
 import { createI18nService } from "../../i18n";
 
@@ -46,7 +47,7 @@ export function resolveRetainedUserFields(
 				...(defaultValue !== undefined ? { defaultValue } : {}),
 			});
 		} else if (previous || managed.has(key)) {
-			throw new Error(createI18nService().translate("collectionCheck.unresolvedUserField", { field: key }));
+			throw new Error(createI18nService().translate(msg({ message: "Cannot resolve owned user field {field}. Review its schema and retained field type before saving settings. Existing settings and metadata were preserved.", context: "collectionCheck.unresolvedUserField" }), { field: key }));
 		}
 	}
 	// Follow schema order so generator/import/settings round-trips are stable.

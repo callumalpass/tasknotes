@@ -1,4 +1,5 @@
-import type { TranslationKey } from "../../i18n";
+import { msg } from "@lingui/core/macro";
+import type { MessageDescriptor } from "../../i18n";
 import type { FileFilterConfig } from "../../suggest/FileSuggestHelper";
 import { createCardInput } from "./CardComponent";
 
@@ -10,7 +11,7 @@ export function createFilterSettingsInputs(
 	container: HTMLElement,
 	currentConfig: FileFilterConfig | undefined,
 	onChange: (updated: FileFilterConfig) => void,
-	translate: (key: TranslationKey) => string
+	translate: (key: MessageDescriptor) => string
 ): void {
 	// Track current config state to preserve values across sequential updates
 	let config = currentConfig || {
@@ -29,7 +30,7 @@ export function createFilterSettingsInputs(
 	// Required Tags input
 	const tagsInput = createCardInput(
 		"text",
-		translate("settings.appearance.projectAutosuggest.requiredTags.placeholder"),
+		translate(msg({ message: "project, active, important", context: "settings.appearance.projectAutosuggest.requiredTags.placeholder" })),
 		config.requiredTags?.join(", ") || ""
 	);
 	tagsInput.addEventListener("change", () => {
@@ -43,7 +44,7 @@ export function createFilterSettingsInputs(
 	// Include Folders input
 	const foldersInput = createCardInput(
 		"text",
-		translate("settings.appearance.projectAutosuggest.includeFolders.placeholder"),
+		translate(msg({ message: "Projects/, Work/Active, Personal", context: "settings.appearance.projectAutosuggest.includeFolders.placeholder" })),
 		config.includeFolders?.join(", ") || ""
 	);
 	foldersInput.addEventListener("change", () => {
@@ -57,7 +58,7 @@ export function createFilterSettingsInputs(
 	// Property Key input
 	const keyInput = createCardInput(
 		"text",
-		translate("settings.appearance.projectAutosuggest.requiredPropertyKey.placeholder"),
+		translate(msg({ message: "type", context: "settings.appearance.projectAutosuggest.requiredPropertyKey.placeholder" })),
 		config.propertyKey || ""
 	);
 	keyInput.addEventListener("change", () => {
@@ -67,7 +68,7 @@ export function createFilterSettingsInputs(
 	// Property Value input
 	const valueInput = createCardInput(
 		"text",
-		translate("settings.appearance.projectAutosuggest.requiredPropertyValue.placeholder"),
+		translate(msg({ message: "project", context: "settings.appearance.projectAutosuggest.requiredPropertyValue.placeholder" })),
 		config.propertyValue || ""
 	);
 	valueInput.addEventListener("change", () => {
@@ -82,17 +83,17 @@ export function createFilterSettingsInputs(
 		row.appendChild(input);
 	};
 
-	createRow(translate("settings.appearance.projectAutosuggest.requiredTags.name"), tagsInput);
+	createRow(translate(msg({ message: "Required tags", context: "settings.appearance.projectAutosuggest.requiredTags.name" })), tagsInput);
 	createRow(
-		translate("settings.appearance.projectAutosuggest.includeFolders.name"),
+		translate(msg({ message: "Include folders", context: "settings.appearance.projectAutosuggest.includeFolders.name" })),
 		foldersInput
 	);
 	createRow(
-		translate("settings.appearance.projectAutosuggest.requiredPropertyKey.name"),
+		translate(msg({ message: "Required property key", context: "settings.appearance.projectAutosuggest.requiredPropertyKey.name" })),
 		keyInput
 	);
 	createRow(
-		translate("settings.appearance.projectAutosuggest.requiredPropertyValue.name"),
+		translate(msg({ message: "Required property value", context: "settings.appearance.projectAutosuggest.requiredPropertyValue.name" })),
 		valueInput
 	);
 }

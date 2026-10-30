@@ -5,7 +5,9 @@ import { DEFAULT_FIELD_MAPPING } from "../../../src/settings/defaults";
 import { TaskFactory } from "../../helpers/mock-factories";
 import { createTaskCard } from "../../../src/ui/TaskCard";
 import { getTaskCardPropertyValue } from "../../../src/ui/taskCardPropertyAccess";
+import { buildTaskCardRenderState } from "../../../src/ui/taskCardState";
 import type { TaskInfo } from "../../../src/types";
+import { sortExpandedRelationshipTasks } from "../../../src/ui/taskCardRelationships";
 
 jest.mock("tasknotes-nlp-core", () => ({ NaturalLanguageParserCore: class {} }), { virtual: true });
 jest.mock("../../../src/ui/TaskCard", () => ({
@@ -83,6 +85,53 @@ describe("TaskListView metadata refresh", () => {
 		}
 	);
 
+	it.each(["renderFlatNormal", "renderFlatVirtual"])(
+		"#2394: %s refreshes expanded children when only their view order or scope changes",
+		async (renderMethod) => {
+			const parent = TaskFactory.createTask({ path: "Tasks/parent.md" });
+			const low = TaskFactory.createTask({ path: "Tasks/low.md", priority: "low" });
+			const high = TaskFactory.createTask({ path: "Tasks/high.md", priority: "high" });
+			const order = new Map([[high.path, 0], [parent.path, 1], [low.path, 2]]);
+			const options = { expandedRelationshipTaskOrder: order };
+			jest.mocked(createTaskCard).mockImplementation((_task, _plugin, _properties, cardOptions) => {
+				const card = document.createElement("div");
+				card.className = "task-card";
+				card.textContent = sortExpandedRelationshipTasks(
+					[low, high].filter((child) => order.has(child.path)),
+					cardOptions,
+					(tasks) => tasks
+				).map((child) => child.priority).join(",");
+				return card;
+			});
+
+			// hideTopLevelSubtasks leaves the same parent row in place across sorts.
+			await view[renderMethod]([parent], [], options);
+			expect(container.querySelector(".task-card")?.textContent).toBe("high,low");
+			const original = container.querySelector(".task-card");
+			const scroller = view.virtualScroller;
+			await view[renderMethod]([parent], [], options);
+			if (renderMethod === "renderFlatNormal") {
+				expect(container.querySelector(".task-card")).toBe(original);
+			}
+
+			// The view mutates the existing order map, rather than replacing it.
+			order.clear();
+			order.set(low.path, 0);
+			order.set(parent.path, 1);
+			order.set(high.path, 2);
+			await view[renderMethod]([parent], [], options);
+			expect(container.querySelector(".task-card")?.textContent).toBe("low,high");
+
+			// Filtering a child out must also invalidate the cached expansion.
+			order.delete(low.path);
+			await view[renderMethod]([parent], [], options);
+			expect(container.querySelector(".task-card")?.textContent).toBe("high");
+			if (renderMethod === "renderFlatVirtual") {
+				expect(view.virtualScroller).toBe(scroller);
+			}
+		}
+	);
+
 	it("refreshes properties read directly from the metadata cache", async () => {
 		const frontmatter = { external: "before" };
 		jest.spyOn(view.plugin.app.metadataCache, "getCache").mockReturnValue({ frontmatter });
@@ -145,5 +194,67 @@ describe("TaskListView metadata refresh", () => {
 		(task.customProperties!.nested as { value: string }).value = "after";
 		await view.renderFlatNormal([task], [], {});
 		expect(container.firstElementChild).not.toBe(secondCard);
+	});
+	describe("pending moved recurring occurrence (#2396)", () => {
+		const utcDay = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
+		// Monday 12 Oct occurrence moved onto the 19 Oct rule date.
+		const collision = (overrides: Partial<TaskInfo> = {}) =>
+			TaskFactory.createTask({
+				recurrence: "DTSTART:20261012;FREQ=WEEKLY;BYDAY=MO",
+				scheduled: "2026-10-19",
+				recurrence_original_date: "2026-10-12",
+				complete_instances: [],
+				skipped_instances: [],
+				...overrides,
+			});
+
+		it("targets the pending original, not the landing date, for default actions", async () => {
+			view.plugin.toggleRecurringTaskComplete = jest.fn().mockResolvedValue(undefined);
+			const task = collision();
+
+			expect(view.getTaskActionDate(task)).toEqual(utcDay("2026-10-12"));
+			await view.handleToggleStatus(task, new MouseEvent("click"));
+
+			expect(view.plugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(
+				task,
+				utcDay("2026-10-12")
+			);
+		});
+
+		it("keeps the scheduled-or-due date for an unmarked recurring task", () => {
+			expect(view.getTaskActionDate(collision({ recurrence_original_date: undefined }))).toEqual(
+				utcDay("2026-10-19")
+			);
+		});
+
+		it("opts list cards into the pending occurrence so an exhausted completed card renders checked", () => {
+			view.getVisiblePropertyLabels = jest.fn(() => ({}));
+			const plugin = {
+				settings: { showCompletedTaskStrikethrough: true, subtaskChevronPosition: "right" },
+				statusManager: {
+					getCompletedStatuses: jest.fn(() => ["done"]),
+					isCompletedStatus: jest.fn((status: string) => status === "done"),
+				},
+				getActiveTimeSession: jest.fn(() => null),
+				app: { metadataCache: { getCache: jest.fn(() => null) } },
+			} as any;
+			const done = collision({
+				recurrence: "DTSTART:20261012;FREQ=DAILY;COUNT=1",
+				scheduled: "2026-10-19",
+				complete_instances: ["2026-10-12"],
+			});
+
+			// The list passes the current day as the generic target.
+			const options = view.getCardOptions(utcDay("2026-10-19"));
+			expect(options.usePendingOccurrenceIdentity).toBe(true);
+			const state = buildTaskCardRenderState(done, plugin, options);
+			expect(state.targetDate).toEqual(utcDay("2026-10-12"));
+			expect(state.isCompleted).toBe(true);
+
+			// An explicit projected date without the opt-in remains its own occurrence.
+			expect(
+				buildTaskCardRenderState(done, plugin, { targetDate: utcDay("2026-10-19") }).isCompleted
+			).toBe(false);
+		});
 	});
 });

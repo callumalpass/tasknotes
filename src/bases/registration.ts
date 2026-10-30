@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../main";
 import { requireApiVersion } from "obsidian";
 import { buildTaskListViewFactory } from "./TaskListView";
@@ -9,18 +11,18 @@ import { buildCalendarViewOptions, buildMiniCalendarViewOptions } from "./calend
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const KANBAN_CARD_LAYOUT_OPTIONS: Record<string, string> = {
-	default: "Default",
-	compact: "Compact",
+	get default() { return uiText(msg({ message: "Default", context: "bases/registration: defaults default" })); },
+	get compact() { return uiText(msg({ message: "Compact", context: "bases/registration: defaults compact" })); },
 };
 
 const TASK_LIST_DEFAULT_COLLAPSED_STATE_OPTIONS: Record<string, string> = {
-	Expanded: "Expanded",
-	Collapsed: "Collapsed",
+	get Expanded() { return uiText(msg({ message: "Expanded", context: "bases/registration: defaults Expanded" })); },
+	get Collapsed() { return uiText(msg({ message: "Collapsed", context: "bases/registration: defaults Collapsed" })); },
 };
 
 const EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS: Record<string, string> = {
-	inherit: "Inherit",
-	"show-all": "Show all",
+	get inherit() { return uiText(msg({ message: "Inherit", context: "bases/registration: defaults inherit" })); },
+	get "show-all"() { return uiText(msg({ message: "Show all", context: "bases/registration: defaults show-all" })); },
 };
 
 /**
@@ -42,15 +44,15 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 				plugin,
 				"tasknotesTaskList",
 				{
-					name: "TaskNotes Task List",
+					name: uiText(msg({ message: "TaskNotes Task List", context: "bases/registration: registerBasesTaskList.attemptRegistration name" })),
 					icon: "tasknotes-simple",
 					factory: buildTaskListViewFactory(plugin),
 					options: () => [
 						{
 							type: "property",
 							key: "subGroup",
-							displayName: "Sub-group by",
-							placeholder: "Select property for sub-grouping (optional)",
+							displayName: uiText(msg({ message: "Sub-group by", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+							placeholder: uiText(msg({ message: "Select property for sub-grouping (optional)", context: "bases/registration: registerBasesTaskList.attemptRegistration.options placeholder" })),
 							filter: (prop: string) => {
 								// Show all note, task, and formula properties that could be used for sub-grouping
 								return (
@@ -63,27 +65,27 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 						{
 							type: "toggle",
 							key: "enableSearch",
-							displayName: "Enable search box",
+							displayName: uiText(msg({ message: "Enable search box", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
 							default: false,
 						},
 						{
 							type: "dropdown",
 							key: "defaultCollapsedState",
-							displayName: "Default collapsed state",
+							displayName: uiText(msg({ message: "Default collapsed state", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
 							default: "Expanded",
 							options: TASK_LIST_DEFAULT_COLLAPSED_STATE_OPTIONS,
 						},
 						{
 							type: "dropdown",
 							key: "expandedRelationshipFilterMode",
-							displayName: "Expanded relationships",
+							displayName: uiText(msg({ message: "Expanded relationships", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
 							default: "inherit",
 							options: EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS,
 						},
 						{
 							type: "toggle",
 							key: "hideTopLevelSubtasks",
-							displayName: "Hide top-level subtasks",
+							displayName: uiText(msg({ message: "Hide top-level subtasks", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
 							default: false,
 						},
 					],
@@ -96,113 +98,109 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 				plugin,
 				"tasknotesKanban",
 				{
-					name: "TaskNotes Kanban",
+					name: uiText(msg({ message: "TaskNotes Kanban", context: "bases/registration: registerBasesTaskList.attemptRegistration name" })),
 					icon: "tasknotes-simple",
 					factory: buildKanbanViewFactory(plugin),
 					options: () => [
-						{
-							type: "property",
-							key: "swimLane",
-							displayName: "Swim Lane",
-							placeholder: "Select property for swim lanes (optional)",
-							filter: (prop: string) => {
-								// Show all note, task, and formula properties that could be used for swimlanes
-								return (
-									prop.startsWith("note.") ||
-									prop.startsWith("task.") ||
-									prop.startsWith("formula.")
-								);
-							},
+					{
+						type: "property",
+						key: "swimLane",
+						displayName: uiText(msg({ message: "Swim Lane", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						placeholder: uiText(msg({ message: "Select property for swim lanes (optional)", context: "bases/registration: registerBasesTaskList.attemptRegistration.options placeholder" })),
+						filter: (prop: string) => {
+							// Show all note, task, and formula properties that could be used for swimlanes
+							return prop.startsWith("note.") || prop.startsWith("task.") || prop.startsWith("formula.");
 						},
-						{
-							type: "slider",
-							key: "columnWidth",
-							displayName: "Column Width",
-							default: 280,
-							min: 200,
-							max: 500,
-							step: 20,
-						},
-						{
-							type: "slider",
-							key: "maxSwimlaneHeight",
-							displayName: "Max Swimlane Height",
-							default: 600,
-							min: 300,
-							max: 1200,
-							step: 50,
-						},
-						{
-							type: "toggle",
-							key: "hideEmptyColumns",
-							displayName: "Hide Empty Columns",
-							default: false,
-						},
-						{
-							type: "text",
-							key: "pinnedColumns",
-							displayName: "Pinned Columns",
-							placeholder: "Comma-separated column values to keep visible",
-							default: "",
-						},
-						{
-							type: "toggle",
-							key: "hideEmptySwimLanes",
-							displayName: "Hide Empty Swimlanes",
-							default: false,
-						},
-						{
-							type: "toggle",
-							key: "enableSearch",
-							displayName: "Enable search box",
-							default: false,
-						},
-						{
-							type: "toggle",
-							key: "explodeListColumns",
-							displayName: "Show items in multiple columns",
-							default: true,
-						},
-						{
-							type: "toggle",
-							key: "consolidateStatusIcon",
-							displayName: "Show status icon in column header only",
-							default: false,
-						},
-						{
-							type: "dropdown",
-							key: "cardLayout",
-							displayName: "Card layout",
-							default: "default",
-							options: KANBAN_CARD_LAYOUT_OPTIONS,
-						},
-						{
-							type: "text",
-							key: "columnOrder",
-							displayName: "Column Order (Advanced)",
-							placeholder: "Auto-managed when dragging columns",
-							default: "{}",
-						},
-						{
-							type: "text",
-							key: "swimLaneOrder",
-							displayName: "Swim Lane Order (Advanced)",
-							placeholder: "JSON object keyed by swim lane property",
-							default: "{}",
-						},
-						{
-							type: "dropdown",
-							key: "expandedRelationshipFilterMode",
-							displayName: "Expanded relationships",
-							default: "inherit",
-							options: EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS,
-						},
-						{
-							type: "toggle",
-							key: "hideTopLevelSubtasks",
-							displayName: "Hide top-level subtasks",
-							default: false,
-						},
+					},
+					{
+						type: "slider",
+						key: "columnWidth",
+						displayName: uiText(msg({ message: "Column Width", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: 280,
+						min: 200,
+						max: 500,
+						step: 20,
+					},
+					{
+						type: "slider",
+						key: "maxSwimlaneHeight",
+						displayName: uiText(msg({ message: "Max Swimlane Height", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: 600,
+						min: 300,
+						max: 1200,
+						step: 50,
+					},
+					{
+						type: "toggle",
+						key: "hideEmptyColumns",
+						displayName: uiText(msg({ message: "Hide Empty Columns", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: false,
+					},
+					{
+						type: "text",
+						key: "pinnedColumns",
+						displayName: uiText(msg({ message: "Pinned Columns", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						placeholder: uiText(msg({ message: "Comma-separated column values to keep visible", context: "bases/registration: registerBasesTaskList.attemptRegistration.options placeholder" })),
+						default: "",
+					},
+					{
+						type: "toggle",
+						key: "hideEmptySwimLanes",
+						displayName: uiText(msg({ message: "Hide Empty Swimlanes", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: false,
+					},
+					{
+						type: "toggle",
+						key: "enableSearch",
+						displayName: uiText(msg({ message: "Enable search box", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: false,
+					},
+					{
+						type: "toggle",
+						key: "explodeListColumns",
+						displayName: uiText(msg({ message: "Show items in multiple columns", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: true,
+					},
+					{
+						type: "toggle",
+						key: "consolidateStatusIcon",
+						displayName: uiText(msg({ message: "Show status icon in column header only", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: false,
+					},
+					{
+						type: "dropdown",
+						key: "cardLayout",
+						displayName: uiText(msg({ message: "Card layout", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: "default",
+						options: KANBAN_CARD_LAYOUT_OPTIONS,
+					},
+					{
+						type: "text",
+						key: "columnOrder",
+						displayName: uiText(msg({ message: "Column Order (Advanced)", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						placeholder: uiText(msg({ message: "Auto-managed when dragging columns", context: "bases/registration: registerBasesTaskList.attemptRegistration.options placeholder" })),
+						default: "{}",
+					},
+					{
+						type: "text",
+						key: "swimLaneOrder",
+						displayName: uiText(msg({ message: "Swim Lane Order (Advanced)", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						placeholder: uiText(msg({ message: "JSON object keyed by swim lane property", context: "bases/registration: registerBasesTaskList.attemptRegistration.options placeholder" })),
+						default: "{}",
+					},
+					{
+						type: "dropdown",
+						key: "expandedRelationshipFilterMode",
+						displayName: uiText(msg({ message: "Expanded relationships", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: "inherit",
+						options: EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS,
+					},
+					{
+						type: "toggle",
+						key: "hideTopLevelSubtasks",
+						displayName: uiText(msg({ message: "Hide top-level subtasks", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+						default: false,
+					},
 					],
 				},
 				logger
@@ -213,7 +211,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 				plugin,
 				"tasknotesCalendar",
 				{
-					name: "TaskNotes Calendar",
+					name: uiText(msg({ message: "TaskNotes Calendar", context: "bases/registration: registerBasesTaskList.attemptRegistration name" })),
 					icon: "tasknotes-simple",
 					factory: buildCalendarViewFactory(plugin),
 					options: (config) => buildCalendarViewOptions(plugin, config),
@@ -226,7 +224,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 				plugin,
 				"tasknotesMiniCalendar",
 				{
-					name: "TaskNotes Mini Calendar",
+					name: uiText(msg({ message: "TaskNotes Mini Calendar", context: "bases/registration: registerBasesTaskList.attemptRegistration name" })),
 					icon: "tasknotes-simple",
 					factory: buildMiniCalendarViewFactory(plugin),
 					options: () => buildMiniCalendarViewOptions(plugin),

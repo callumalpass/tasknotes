@@ -1,9 +1,10 @@
+import { uiData } from "../i18n/dataText";
 import { App, TFile, parseLinktext } from "obsidian";
 import type { TaskDependency, TaskDependencyRelType } from "../types";
 import { splitListPreservingLinksAndQuotes } from "./stringSplit";
 import { generateLink, parseLinkToPath } from "./linkUtils";
 
-export const DEFAULT_DEPENDENCY_RELTYPE: TaskDependencyRelType = "FINISHTOSTART";
+export const DEFAULT_DEPENDENCY_RELTYPE: TaskDependencyRelType = uiData("FINISHTOSTART", "RFC 5545 dependency relationship wire identifier, also displayed verbatim as metadata");
 
 const VALID_RELATIONSHIP_TYPES: TaskDependencyRelType[] = [
 	"FINISHTOSTART",

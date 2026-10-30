@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { convertBasesGroupKeyToString } from "../../../src/bases/basesValueConversion";
 import { KanbanView } from "../../../src/bases/KanbanView";
 import { applyKanbanColumnOrder } from "../../../src/bases/kanbanGrouping";
@@ -54,6 +55,7 @@ function makePlugin() {
 	const statusManager = new StatusManager([OPEN_STATUS, DONE_STATUS], OPEN_STATUS.value);
 
 	return {
+		i18n: createI18nService(),
 		app: {
 			metadataCache: {
 				getFirstLinkpathDest: () => null,

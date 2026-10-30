@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../helpers/real-i18n";
 import { TaskCalendarSyncService } from "../../src/services/TaskCalendarSyncService";
 import { TaskInfo } from "../../src/types";
 
@@ -58,20 +59,7 @@ describe("TaskCalendarSyncService", () => {
                 getPriorityConfig: jest.fn((priority: string) => ({ label: priority === "2-high" ? "High" : "Medium" }))
             },
             i18n: {
-                translate: jest.fn((key: string, params?: Record<string, string | number>) => {
-                    const translations: Record<string, string> = {
-                        "settings.integrations.googleCalendarExport.eventDescription.untitledTask": "Untitled Task",
-                        "settings.integrations.googleCalendarExport.eventDescription.priority": "Priority: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.status": "Status: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.scheduled": "Scheduled: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.timeEstimate": "Time Estimate: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.contexts": "Contexts: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.projects": "Projects: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.openInObsidian": "Open in Obsidian",
-                    };
-                    const translation = translations[key] || key;
-                    return translation.replace(/\{(\w+)\}/g, (_match, name) => String(params?.[name] ?? ""));
-                })
+                translate: mockObserveTranslation()
             }
         };
 

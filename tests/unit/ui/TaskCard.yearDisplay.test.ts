@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 /**
  * TaskCard Year Display Tests
  *
@@ -135,26 +136,7 @@ describe('TaskCard Year Display (#1431)', () => {
 				isTaskUsedAsProjectSync: jest.fn().mockReturnValue(false)
 			},
 			i18n: {
-				translate: jest.fn((key: string, vars?: Record<string, string | number>) => {
-					const translations: Record<string, string> = {
-						"ui.taskCard.dueLabel": "{label}: {display}",
-						"ui.taskCard.dueToday": "{label}: Today",
-						"ui.taskCard.dueTodayAt": "{label}: Today at {time}",
-						"ui.taskCard.dueOverdue": "{label}: {display}",
-						"ui.taskCard.scheduledLabel": "{label}: {display}",
-						"ui.taskCard.scheduledToday": "{label}: Today",
-						"ui.taskCard.scheduledTodayAt": "{label}: Today at {time}",
-						"ui.taskCard.scheduledPast": "{label}: {display}",
-						"ui.taskCard.labels.due": "Due",
-						"ui.taskCard.labels.scheduled": "Scheduled",
-						"ui.taskCard.taskOptions": "Task options"
-					};
-					let translated = translations[key] ?? key;
-					for (const [name, value] of Object.entries(vars ?? {})) {
-						translated = translated.replace(`{${name}}`, String(value));
-					}
-					return translated;
-				})
+				translate: mockObserveTranslation()
 			},
 			settings: {
 				singleClickAction: 'edit',

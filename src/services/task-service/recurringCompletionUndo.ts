@@ -5,6 +5,7 @@ import { getCurrentTimestamp, formatDateForStorage } from "../../utils/dateUtils
 import { splitFrontmatterAndBody, resetMarkdownCheckboxes } from "../../utils/helpers";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import { buildTaskInfoFromMappedTask } from "../../utils/taskInfoAssembly";
+import { getRecurringTaskActionDate } from "./taskRecurringPlanning";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionUndo" });
 import { applyTaskMovementUndo, type TaskMovementUndoChange } from "../../bases/taskMovementUndo";
@@ -17,6 +18,7 @@ const completionFields = [
 	"due",
 	"recurrence",
 	"recurrence_anchor",
+	"recurrence_original_date",
 	"complete_instances",
 	"skipped_instances",
 	"status",
@@ -31,6 +33,7 @@ const completionFields = [
 
 function mappingKey(field: (typeof completionFields)[number]): keyof FieldMapping {
 	if (field === "recurrence_anchor") return "recurrenceAnchor";
+	if (field === "recurrence_original_date") return "recurrenceOriginalDate";
 	if (field === "complete_instances") return "completeInstances";
 	if (field === "skipped_instances") return "skippedInstances";
 	if (field === "recurrence_parent") return "recurrenceParent";
@@ -106,13 +109,14 @@ export async function completeRecurringTaskWithUndo(
 ): Promise<{ updatedTask: TaskInfo; completed: boolean; undo: () => Promise<boolean> }> {
 	const service = plugin.taskService;
 	const parent = (await plugin.cacheManager.getTaskInfo(task.path)) || task;
-	let occurrence = await service.findMaterializedOccurrence(parent, date);
+	const identityDate = getRecurringTaskActionDate(parent, date);
+	let occurrence = await service.findMaterializedOccurrence(parent, identityDate);
 	if (
 		!occurrence &&
 		parent.occurrence_materialization === "on_completion" &&
-		!parent.complete_instances?.includes(formatDateForStorage(date))
+		!parent.complete_instances?.includes(formatDateForStorage(identityDate))
 	) {
-		occurrence = await service.materializeOccurrence(parent, date);
+		occurrence = await service.materializeOccurrence(parent, identityDate);
 	}
 	const tasks = occurrence ? [parent, occurrence] : [parent];
 	const before = await Promise.all(
@@ -129,7 +133,7 @@ export async function completeRecurringTaskWithUndo(
 	const parentTransition: { original?: TaskInfo; updated?: TaskInfo } = {};
 	const result = await service.toggleRecurringTaskCompleteWithOccurrenceNotes(
 		parent,
-		date,
+		identityDate,
 		(original, updated) => {
 			parentTransition.original = structuredClone(original);
 			parentTransition.updated = structuredClone(updated);

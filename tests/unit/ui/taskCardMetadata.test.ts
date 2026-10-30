@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import {
@@ -41,24 +42,7 @@ function createPlugin(): TaskNotesPlugin {
 			toUserField: jest.fn((field: string) => field),
 		},
 		i18n: {
-			translate: jest.fn((key: string, vars?: Record<string, string | number>) => {
-				const translations: Record<string, string> = {
-					"ui.taskCard.blockedBadge": "Blocked",
-					"ui.taskCard.blockedBadgeTooltip": "This task is blocked",
-					"ui.taskCard.blockingBadge": "Blocking",
-					"ui.taskCard.blockingBadgeTooltip": "This task is blocking another task",
-					"ui.taskCard.googleCalendarSyncTooltip": "Synced to Google Calendar",
-					"ui.taskCard.labels.due": "Due",
-					"ui.taskCard.labels.scheduled": "Scheduled",
-				};
-				if (translations[key]) {
-					return translations[key];
-				}
-				if (vars) {
-					return `${key} ${Object.values(vars).join(" ")}`;
-				}
-				return key;
-			}),
+			translate: mockObserveTranslation(),
 		},
 		statusManager: {
 			isCompletedStatus: jest.fn((status: string) => status === "done"),

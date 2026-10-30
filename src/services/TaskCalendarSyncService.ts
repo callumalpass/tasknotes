@@ -1,3 +1,6 @@
+import { uiData } from "../i18n/dataText";
+import { displayError } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { TFile, stringifyYaml } from "obsidian";
 import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
@@ -90,10 +93,10 @@ function getErrorMessage(error: unknown): string {
 	if (error !== null && typeof error === "object") {
 		const message = (error as { message?: unknown }).message;
 		if (message !== undefined) {
-			return stringifyUnknown(message);
+			return uiData(stringifyUnknown(message), "Non-Error provider/structured message payload; preserve protocol details");
 		}
 	}
-	return stringifyUnknown(error);
+	return uiData(stringifyUnknown(error), "Unknown external error payload; preserve third-party protocol details");
 }
 
 function isAlreadyDeletedError(error: unknown): boolean {
@@ -2046,9 +2049,7 @@ export class TaskCalendarSyncService {
 			? this.plugin.priorityManager.getPriorityConfig(task.priority)
 			: null;
 
-		const untitledTask = this.plugin.i18n.translate(
-			"settings.integrations.googleCalendarExport.eventDescription.untitledTask"
-		);
+		const untitledTask = uiData("Untitled task", "Persisted Google Calendar fallback title; locale-stable English data");
 		return template
 			.replace(/\{\{title\}\}/g, task.title || untitledTask)
 			.replace(/\{\{status\}\}/g, statusConfig?.label || task.status || "")
@@ -2068,11 +2069,9 @@ export class TaskCalendarSyncService {
 	 */
 	private buildEventDescription(task: TaskInfo): string {
 		const settings = this.plugin.settings.googleCalendarExport;
-		const t = (key: string, params?: Record<string, string | number>) =>
-			this.plugin.i18n.translate(
-				`settings.integrations.googleCalendarExport.eventDescription.${key}`,
-				params
-			);
+		// Remote event descriptions are persisted external data, not a UI label.
+		const labels = { priority: "Priority", status: "Status", due: "Due", scheduled: "Scheduled", timeEstimate: "Time Estimate", tags: "Tags", contexts: "Contexts", projects: "Projects", openInObsidian: "Open in Obsidian" };
+		const t = (key: keyof typeof labels, params?: { value: string }) => params ? `${labels[key]}: ${params.value}` : labels[key];
 		const parts: string[] = [];
 
 		// Add task metadata
@@ -2142,7 +2141,7 @@ export class TaskCalendarSyncService {
 			parts.push(`${linkText}: ${obsidianUri}`);
 		}
 
-		return parts.join("\n");
+		return uiData(parts.join("\n"), "Persisted Google Calendar description: English metadata, untouched configured labels and user data");
 	}
 
 	private toCalendarDescriptionLabel(value: string): string {
@@ -3034,15 +3033,15 @@ export class TaskCalendarSyncService {
 				publishUserNotice(
 					this.plugin.emitter,
 					this.plugin.i18n.translate(
-						"settings.integrations.googleCalendarExport.notices.connectionExpired"
+						msg({ message: "Google Calendar connection expired. Please reconnect in Settings > Integrations.", context: "settings.integrations.googleCalendarExport.notices.connectionExpired" })
 					)
 				);
 			} else {
 				publishUserNotice(
 					this.plugin.emitter,
 					this.plugin.i18n.translate(
-						"settings.integrations.googleCalendarExport.notices.syncFailed",
-						{ message: getErrorMessage(error) }
+						msg({ message: "Failed to sync task to Google Calendar: {message}", context: "settings.integrations.googleCalendarExport.notices.syncFailed" }),
+						{ message: displayError(getErrorMessage(error)) }
 					)
 				);
 			}
@@ -3457,7 +3456,7 @@ export class TaskCalendarSyncService {
 		if (!this.isEnabled()) {
 			publishUserNotice(this.plugin.emitter,
 				this.plugin.i18n.translate(
-					"settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
+					msg({ message: "Google Calendar export is not enabled or configured", context: "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured" })
 				)
 			);
 			return results;
@@ -3478,7 +3477,7 @@ export class TaskCalendarSyncService {
 		publishUserNotice(
 			this.plugin.emitter,
 			this.plugin.i18n.translate(
-				"settings.integrations.googleCalendarExport.notices.syncingTasks",
+				msg({ message: "Syncing {total} tasks to Google Calendar...", context: "settings.integrations.googleCalendarExport.notices.syncingTasks" }),
 				{ total }
 			)
 		);
@@ -3505,7 +3504,7 @@ export class TaskCalendarSyncService {
 		publishUserNotice(
 			this.plugin.emitter,
 			this.plugin.i18n.translate(
-				"settings.integrations.googleCalendarExport.notices.syncComplete",
+				msg({ message: "Sync complete: {synced} synced, {failed} failed, {skipped} skipped", context: "settings.integrations.googleCalendarExport.notices.syncComplete" }),
 				{
 					synced: results.synced,
 					failed: results.failed,
@@ -3591,11 +3590,11 @@ export class TaskCalendarSyncService {
 			this.plugin.emitter,
 			deleteEvents
 				? this.plugin.i18n.translate(
-						"settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnlinked",
+						msg({ message: "All events deleted and unlinked", context: "settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnlinked" }),
 						{ count: unlinkedCount }
 					)
 				: this.plugin.i18n.translate(
-						"settings.integrations.googleCalendarExport.notices.tasksUnlinked",
+						msg({ message: "All task links removed", context: "settings.integrations.googleCalendarExport.notices.tasksUnlinked" }),
 						{ count: unlinkedCount }
 					)
 		);

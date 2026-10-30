@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { FieldMapping, StatusConfig, PriorityConfig } from "../types";
 import {
 	TaskNotesSettings,
@@ -29,7 +30,7 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 	{
 		id: "none",
 		value: "none",
-		label: "None",
+		label: uiData("None", "Writable persisted default label; localized only by configLabel at display boundaries"),
 		color: "#cccccc",
 		isCompleted: false,
 		excludeFromCycle: false,
@@ -40,7 +41,7 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 	{
 		id: "open",
 		value: "open",
-		label: "Open",
+		label: uiData("Open", "Writable persisted default label; localized only by configLabel at display boundaries"),
 		color: "#808080",
 		isCompleted: false,
 		excludeFromCycle: false,
@@ -51,7 +52,7 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 	{
 		id: "in-progress",
 		value: "in-progress",
-		label: "In progress",
+		label: uiData("In progress", "Writable persisted default label; localized only by configLabel at display boundaries"),
 		color: "#0066cc",
 		isCompleted: false,
 		excludeFromCycle: false,
@@ -62,7 +63,7 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 	{
 		id: "done",
 		value: "done",
-		label: "Done",
+		label: uiData("Done", "Writable persisted default label; localized only by configLabel at display boundaries"),
 		color: "#00aa00",
 		isCompleted: true,
 		excludeFromCycle: false,
@@ -77,28 +78,28 @@ export const DEFAULT_PRIORITIES: PriorityConfig[] = [
 	{
 		id: "none",
 		value: "none",
-		label: "None",
+		label: uiData("None", "Writable persisted default label; localized only by configLabel at display boundaries"),
 		color: "#cccccc",
 		weight: 0,
 	},
 	{
 		id: "low",
 		value: "low",
-		label: "Low",
+		label: uiData("Low", "Writable persisted default label; localized only by configLabel at display boundaries"),
 		color: "#00aa00",
 		weight: 1,
 	},
 	{
 		id: "normal",
 		value: "normal",
-		label: "Normal",
+		label: uiData("Normal", "Writable persisted default label; localized only by configLabel at display boundaries"),
 		color: "#ffaa00",
 		weight: 2,
 	},
 	{
 		id: "high",
 		value: "high",
-		label: "High",
+		label: uiData("High", "Writable persisted default label; localized only by configLabel at display boundaries"),
 		color: "#ff0000",
 		weight: 3,
 	},

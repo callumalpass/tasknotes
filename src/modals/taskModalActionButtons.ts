@@ -1,5 +1,7 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 export interface TaskModalActionButtonContext {
-	translate: (key: string) => string;
+	translate: (key: MessageDescriptor) => string;
 }
 
 export interface TaskModalLeadingButton {
@@ -11,7 +13,8 @@ export interface TaskModalLeadingButton {
 export interface CreateTaskModalActionButtonsOptions {
 	container: HTMLElement;
 	leadingButtons?: readonly TaskModalLeadingButton[];
-	onSave: () => Promise<void>;
+	/** Resolves false when validation or saving failed and the modal must stay open. */
+	onSave: () => Promise<boolean | void>;
 	onSaved: () => void;
 	onCancel: () => void;
 }
@@ -34,7 +37,7 @@ export function createTaskModalActionButtons(
 
 	const saveButton = buttonContainer.createEl("button", {
 		cls: "mod-cta",
-		text: context.translate("modals.task.buttons.save"),
+		text: context.translate(msg({ message: "Save", context: "modals.task.buttons.save" })),
 	});
 
 	saveButton.addEventListener("click", () => {
@@ -42,7 +45,7 @@ export function createTaskModalActionButtons(
 	});
 
 	const cancelButton = buttonContainer.createEl("button", {
-		text: context.translate("common.cancel"),
+		text: context.translate(msg({ message: "Cancel", context: "common.cancel" })),
 	});
 
 	cancelButton.addEventListener("click", options.onCancel);
@@ -52,13 +55,14 @@ export function createTaskModalActionButtons(
 
 export async function runTaskModalSaveAction(
 	saveButton: HTMLButtonElement,
-	onSave: () => Promise<void>,
+	onSave: () => Promise<boolean | void>,
 	onSaved: () => void
 ): Promise<void> {
 	saveButton.disabled = true;
 	try {
-		await onSave();
-		onSaved();
+		if ((await onSave()) !== false) {
+			onSaved();
+		}
 	} finally {
 		saveButton.disabled = false;
 	}

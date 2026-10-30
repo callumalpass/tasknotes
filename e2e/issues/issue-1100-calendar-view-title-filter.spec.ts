@@ -89,11 +89,11 @@ test.describe('Issue #1100: Calendar View Title Filter Not Working', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Count initial calendar events
-      const calendarEvents = page.locator('.fc-event');
+      const calendarEvents = page.locator('.tnc-item');
       const initialEventCount = await calendarEvents.count();
 
       // Find search box in Calendar View
@@ -145,7 +145,7 @@ test.describe('Issue #1100: Calendar View Title Filter Not Working', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Look for FilterBar UI
@@ -165,7 +165,7 @@ test.describe('Issue #1100: Calendar View Title Filter Not Working', () => {
 
         if (await titleFilterInput.isVisible({ timeout: 2000 }).catch(() => false)) {
           // Count initial events
-          const calendarEvents = page.locator('.fc-event');
+          const calendarEvents = page.locator('.tnc-item');
           const initialCount = await calendarEvents.count();
 
           // Apply title filter
@@ -194,7 +194,7 @@ test.describe('Issue #1100: Calendar View Title Filter Not Working', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       const searchBox = page.locator(
@@ -206,12 +206,12 @@ test.describe('Issue #1100: Calendar View Title Filter Not Working', () => {
         await searchBox.fill('test-filter');
         await page.waitForTimeout(500);
 
-        const calendarEvents = page.locator('.fc-event');
+        const calendarEvents = page.locator('.tnc-item');
         const filteredCountBefore = await calendarEvents.count();
 
         // Switch calendar view (e.g., to weekly view)
         const weekButton = page.locator(
-          '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+          '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
         );
 
         if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -233,7 +233,7 @@ test.describe('Issue #1100: Calendar View Title Filter Not Working', () => {
         }
 
         // Navigate to next/previous period
-        const nextButton = page.locator('.fc-next-button, .fc-toolbar button[title*="next"]');
+        const nextButton = page.locator('.tnc-btn-next, .tnc-toolbar button[title*="next"]');
         if (await nextButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await nextButton.click();
           await page.waitForTimeout(500);
@@ -257,10 +257,10 @@ test.describe('Issue #1100: Calendar View Title Filter Not Working', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
-      const calendarEvents = page.locator('.fc-event');
+      const calendarEvents = page.locator('.tnc-item');
       const initialCount = await calendarEvents.count();
 
       const searchBox = page.locator(

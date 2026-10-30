@@ -1,3 +1,7 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+
+import { msg } from "@lingui/core/macro";
+import { createI18nService } from "../../../src/i18n";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
@@ -6,8 +10,12 @@ import { App, TFile } from "../../helpers/obsidian-runtime";
 
 const task = { path: "Tasks/work.md", title: "Work" } as TaskInfo;
 
-function createPlugin(activeFile: TFile | null = new TFile(task.path), currentTask: TaskInfo | null = task) {
+function createPlugin(
+	activeFile: TFile | null = new TFile(task.path),
+	currentTask: TaskInfo | null = task
+) {
 	const plugin = new TaskNotesPlugin(new App() as never, {} as never);
+	plugin.i18n = createI18nService();
 	plugin.app.workspace.getActiveFile = jest.fn(() => activeFile) as never;
 	plugin.cacheManager = { getTaskInfo: jest.fn(async () => currentTask) } as never;
 	plugin.startTimeTracking = jest.fn(async () => task);
@@ -18,25 +26,30 @@ function createPlugin(activeFile: TFile | null = new TFile(task.path), currentTa
 describe("Issue #296: direct current-task time tracking commands", () => {
 	beforeEach(() => jest.clearAllMocks());
 
-	it.each(["start", "stop"] as const)("registers and executes the %s command without a selector", async (action) => {
-		const plugin = createPlugin();
-		const command = createTaskNotesCommandDefinitions(plugin).find(
-			(definition) => definition.id === `${action}-time-tracking-current-task`
-		);
-		expect(command?.nameKey).toBe(`commands.${action}TimeTrackingCurrentTask`);
-		expect(command?.callback).toBeDefined();
-		await command!.callback!(plugin);
-		expect(plugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
-		expect(plugin.startTimeTracking).toHaveBeenCalledTimes(action === "start" ? 1 : 0);
-		expect(plugin.stopTimeTracking).toHaveBeenCalledTimes(action === "stop" ? 1 : 0);
-		expect(plugin[`${action}TimeTracking`]).toHaveBeenCalledWith(task);
-	});
+	it.each(["start", "stop"] as const)(
+		"registers and executes the %s command without a selector",
+		async (action) => {
+			const plugin = createPlugin();
+			const command = createTaskNotesCommandDefinitions(plugin).find(
+				(definition) => definition.id === `${action}-time-tracking-current-task`
+			);
+			expect(command?.nameKey).toEqual(mockConceptDescriptor(`commands.${action}TimeTrackingCurrentTask`));
+			expect(command?.callback).toBeDefined();
+			await command!.callback!(plugin);
+			expect(plugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
+			expect(plugin.startTimeTracking).toHaveBeenCalledTimes(action === "start" ? 1 : 0);
+			expect(plugin.stopTimeTracking).toHaveBeenCalledTimes(action === "stop" ? 1 : 0);
+			expect(plugin[`${action}TimeTracking`]).toHaveBeenCalledWith(task);
+		}
+	);
 
 	it("registers a separate active-tracker stop command that does not resolve the current note (#2326)", async () => {
 		const plugin = createPlugin(null);
 		plugin.stopActiveTimeTracking = jest.fn().mockResolvedValue(undefined);
-		const command = createTaskNotesCommandDefinitions(plugin).find((definition) => definition.id === "stop-active-time-tracking");
-		expect(command?.nameKey).toBe("commands.stopActiveTimeTracking");
+		const command = createTaskNotesCommandDefinitions(plugin).find(
+			(definition) => definition.id === "stop-active-time-tracking"
+		);
+		expect(command?.nameKey).toEqual(msg({ message: "Stop active time tracking", context: "commands.stopActiveTimeTracking" }));
 		await command!.callback!(plugin);
 		expect(plugin.stopActiveTimeTracking).toHaveBeenCalledTimes(1);
 		expect(plugin.cacheManager.getTaskInfo).not.toHaveBeenCalled();
@@ -57,12 +70,17 @@ describe("Issue #296: direct current-task time tracking commands", () => {
 		expect(Notice).toHaveBeenCalledWith("Current file is not a task");
 	});
 
-	it.each(["start", "stop"] as const)("handles %s failures without duplicating coordinator notices", async (action) => {
-		const plugin = createPlugin();
-		jest.mocked(plugin[`${action}TimeTracking`]).mockRejectedValue(new Error("Already reported"));
-		await expect(plugin.setCurrentTaskTimeTracking(action)).resolves.toBeUndefined();
-		expect(Notice).not.toHaveBeenCalled();
-	});
+	it.each(["start", "stop"] as const)(
+		"handles %s failures without duplicating coordinator notices",
+		async (action) => {
+			const plugin = createPlugin();
+			jest.mocked(plugin[`${action}TimeTracking`]).mockRejectedValue(
+				new Error("Already reported")
+			);
+			await expect(plugin.setCurrentTaskTimeTracking(action)).resolves.toBeUndefined();
+			expect(Notice).not.toHaveBeenCalled();
+		}
+	);
 
 	it("ignores overlapping invocations and allows later commands", async () => {
 		const plugin = createPlugin();

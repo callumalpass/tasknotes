@@ -1,3 +1,7 @@
+import { uiData } from "../i18n/dataText";
+import { msg } from "@lingui/core/macro";
+import type { MessageDescriptor } from "@lingui/core";
+import { uiText } from "../i18n/runtime";
 import { TFile, normalizePath, type App } from "obsidian";
 import type { TaskNotesSettings } from "../types/settings";
 import { createI18nService } from "../i18n";
@@ -5,26 +9,26 @@ import { ensureFolderHierarchy } from "./defaultBasesFiles";
 
 export const STARTER_NOTE_PATH = "TaskNotes/Start Here.md";
 
-export function generateStarterNoteContent(translate: (key: string) => string): string {
+export function generateStarterNoteContent(translate: (key: MessageDescriptor) => string): string {
 	return [
-		`# ${translate("onboarding.title")}`,
+		`# ${translate(msg({ message: "Start here with TaskNotes", context: "onboarding.title" }))}`,
 		"",
-		translate("onboarding.intro"),
+		translate(msg({ message: "Tasks are Markdown notes in your vault. Use the command palette for these three steps.", context: "onboarding.intro" })),
 		"",
-		`1. **${translate("commands.createNewTask")}**. ${translate("onboarding.create")}`,
-		`2. **${translate("commands.openToday")}**. ${translate("onboarding.review")}`,
-		`3. ${translate("onboarding.complete")}`,
+		`1. **${translate(msg({ message: "Create new task", context: "commands.createNewTask" }))}**. ${translate(msg({ message: "Create a real task and schedule it for today.", context: "onboarding.create" }))}`,
+		`2. **${translate(msg({ message: "Open today", context: "commands.openToday" }))}**. ${translate(msg({ message: "Find your task in `Today`.", context: "onboarding.review" }))}`,
+		`3. ${translate(msg({ message: "Click the status control until the task is `Done`. It leaves `Today`, but its note stays in your vault.", context: "onboarding.complete" }))}`,
 		"",
-		translate("onboarding.inbox"),
+		translate(msg({ message: "For undated capture, clear the scheduled date. The inbox shows incomplete tasks with no project, scheduled date, or due date.", context: "onboarding.inbox" })),
 		"",
-		`[[TaskNotes/Views/tasks-default.base#Today|${translate("commands.openToday")}]] · [[TaskNotes/Views/tasks-default.base#Inbox|${translate("commands.openInbox")}]]`,
+		`[[TaskNotes/Views/tasks-default.base#Today|${translate(msg({ message: "Open today", context: "commands.openToday" }))}]] · [[TaskNotes/Views/tasks-default.base#Inbox|${translate(msg({ message: "Open inbox", context: "commands.openInbox" }))}]]`,
 		"",
-		`## ${translate("onboarding.settings")}`,
+		`## ${translate(msg({ message: "Settings, when you need them", context: "onboarding.settings" }))}`,
 		"",
-		`- ${translate("common.settings")} → TaskNotes → ${translate("settings.native.taskFiles")}`,
-		`- ${translate("common.settings")} → TaskNotes → ${translate("ui.filterBar.properties")}`,
-		`- ${translate("common.settings")} → TaskNotes → ${translate("settings.features.taskCreation.header")} → ${translate("settings.native.formFields")}`,
-		`- ${translate("common.settings")} → TaskNotes → ${translate("settings.native.appearanceInteraction")} → ${translate("settings.integrations.basesIntegration.viewCommands.header")}`,
+		`- ${translate(msg({ message: "Settings", context: "common.settings" }))} → TaskNotes → ${translate(msg({ message: "Task files", context: "settings.native.taskFiles" }))}`,
+		`- ${translate(msg({ message: "Settings", context: "common.settings" }))} → TaskNotes → ${translate(msg({ message: "Properties", context: "ui.filterBar.properties" }))}`,
+		`- ${translate(msg({ message: "Settings", context: "common.settings" }))} → TaskNotes → ${translate(msg({ message: "Task creation", context: "settings.features.taskCreation.header" }))} → ${translate(msg({ message: "Form fields", context: "settings.native.formFields" }))}`,
+		`- ${translate(msg({ message: "Settings", context: "common.settings" }))} → TaskNotes → ${translate(msg({ message: "Appearance & interaction", context: "settings.native.appearanceInteraction" }))} → ${translate(msg({ message: "Views & base files", context: "settings.integrations.basesIntegration.viewCommands.header" }))}`,
 		"",
 		"[tasknotes.dev](https://tasknotes.dev/getting-started/)",
 		"",
@@ -46,7 +50,7 @@ export type StarterNoteHost = {
 	app: Pick<App, "vault" | "workspace">;
 	settings: Pick<TaskNotesSettings, "starterNoteCreated">;
 	shouldCreateStarterNote: boolean;
-	translate?: (key: string) => string;
+	translate?: (key: MessageDescriptor) => string;
 	saveSettings(): Promise<void>;
 	warn?(message: string, error?: unknown): void;
 };

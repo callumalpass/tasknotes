@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { Menu } from "obsidian";
 import type { MenuItem } from "obsidian";
 import { FilterOptions, FilterQuery, TaskGroupKey } from "../types";
@@ -8,7 +10,7 @@ import type TaskNotesPlugin from "../main";
  * Kept independent for ease of testing and minimal integration surface.
  */
 export class SubgroupMenuBuilder {
-	private static translate(plugin: TaskNotesPlugin, key: string, fallback: string): string {
+	private static translate(plugin: TaskNotesPlugin, key: MessageDescriptor, fallback: string): string {
 		const translator = plugin?.i18n?.translate?.bind(plugin.i18n);
 		try {
 			const value = translator ? translator(key) : undefined;
@@ -31,25 +33,25 @@ export class SubgroupMenuBuilder {
 		plugin: TaskNotesPlugin
 	): Record<string, string> {
 		const builtIn: Record<TaskGroupKey, string> = {
-			none: SubgroupMenuBuilder.translate(plugin, "ui.filterBar.group.none", "None"),
-			status: SubgroupMenuBuilder.translate(plugin, "ui.filterBar.group.status", "Status"),
+			none: SubgroupMenuBuilder.translate(plugin, msg({ message: "None", context: "ui.filterBar.group.none" }), "None"),
+			status: SubgroupMenuBuilder.translate(plugin, msg({ message: "Status", context: "ui.filterBar.group.status" }), "Status"),
 			priority: SubgroupMenuBuilder.translate(
 				plugin,
-				"ui.filterBar.group.priority",
+				msg({ message: "Priority", context: "ui.filterBar.group.priority" }),
 				"Priority"
 			),
-			context: SubgroupMenuBuilder.translate(plugin, "ui.filterBar.group.context", "Context"),
-			project: SubgroupMenuBuilder.translate(plugin, "ui.filterBar.group.project", "Project"),
-			due: SubgroupMenuBuilder.translate(plugin, "ui.filterBar.group.dueDate", "Due Date"),
+			context: SubgroupMenuBuilder.translate(plugin, msg({ message: "Context", context: "ui.filterBar.group.context" }), "Context"),
+			project: SubgroupMenuBuilder.translate(plugin, msg({ message: "Project", context: "ui.filterBar.group.project" }), "Project"),
+			due: SubgroupMenuBuilder.translate(plugin, msg({ message: "Due date", context: "ui.filterBar.group.dueDate" }), "Due Date"),
 			scheduled: SubgroupMenuBuilder.translate(
 				plugin,
-				"ui.filterBar.group.scheduledDate",
+				msg({ message: "Scheduled date", context: "ui.filterBar.group.scheduledDate" }),
 				"Scheduled Date"
 			),
-			tags: SubgroupMenuBuilder.translate(plugin, "ui.filterBar.group.tags", "Tags"),
+			tags: SubgroupMenuBuilder.translate(plugin, msg({ message: "Tags", context: "ui.filterBar.group.tags" }), "Tags"),
 			completedDate: SubgroupMenuBuilder.translate(
 				plugin,
-				"ui.filterBar.group.completedDate",
+				msg({ message: "Completed date", context: "ui.filterBar.group.completedDate" }),
 				"Completed Date"
 			),
 		} as const;
@@ -98,7 +100,7 @@ export class SubgroupMenuBuilder {
 		menu.addSeparator();
 			menu.addItem((item: MenuItem) => {
 				item.setTitle(
-					SubgroupMenuBuilder.translate(plugin, "ui.filterBar.subgroupLabel", "SUBGROUP")
+					SubgroupMenuBuilder.translate(plugin, msg({ message: "SUBGROUP", context: "ui.filterBar.subgroupLabel" }), "SUBGROUP")
 				);
 			if (typeof item.setDisabled === "function") item.setDisabled(true);
 		});

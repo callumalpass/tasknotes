@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { TFile } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
@@ -8,6 +9,7 @@ describe("Issue #2247: create-inline-task link aliases", () => {
 	it("strips nested wikilink markup from the inserted task-link alias", () => {
 		const app = new App();
 		const plugin = new TaskNotesPlugin(app as never, {} as never);
+		plugin.i18n = createI18nService();
 		const taskFile = new TFile("Tasks/some task John Smith.md");
 		const editor = {
 			replaceRange: jest.fn(),
@@ -20,8 +22,8 @@ describe("Issue #2247: create-inline-task link aliases", () => {
 			.mockReturnValue(new TFile("Notes/source.md"));
 		plugin.app.fileManager.generateMarkdownLink = jest
 			.fn()
-			.mockImplementation((_file, _sourcePath, _subpath, alias) =>
-				`[[some task John Smith|${alias}]]`
+			.mockImplementation(
+				(_file, _sourcePath, _subpath, alias) => `[[some task John Smith|${alias}]]`
 			);
 
 		(plugin as any).handleInlineTaskCreated(
@@ -49,14 +51,15 @@ describe("Issue #2247: create-inline-task link aliases", () => {
 	});
 
 	it("flattens a wikilink nested inside a Markdown-link label", () => {
-		expect(
-			sanitizeLinkAliasText("review [the [[Projects/Q2|Q2]] plan](Projects/Q2.md)")
-		).toBe("review the Q2 plan");
+		expect(sanitizeLinkAliasText("review [the [[Projects/Q2|Q2]] plan](Projects/Q2.md)")).toBe(
+			"review the Q2 plan"
+		);
 	});
 
 	it("uses wikilink aliases and markdown-link labels in the inserted alias", () => {
 		const app = new App();
 		const plugin = new TaskNotesPlugin(app as never, {} as never);
+		plugin.i18n = createI18nService();
 		const taskFile = new TFile("Tasks/review Q2 with Sam.md");
 		const editor = {
 			replaceRange: jest.fn(),
@@ -67,8 +70,8 @@ describe("Issue #2247: create-inline-task link aliases", () => {
 		plugin.app.workspace.getActiveFile = jest.fn().mockReturnValue(null);
 		plugin.app.fileManager.generateMarkdownLink = jest
 			.fn()
-			.mockImplementation((_file, _sourcePath, _subpath, alias) =>
-				`[[review Q2 with Sam|${alias}]]`
+			.mockImplementation(
+				(_file, _sourcePath, _subpath, alias) => `[[review Q2 with Sam|${alias}]]`
 			);
 
 		(plugin as any).handleInlineTaskCreated(

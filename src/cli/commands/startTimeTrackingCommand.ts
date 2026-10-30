@@ -1,3 +1,5 @@
+import { uiText } from "../../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type { CliData } from "obsidian";
 import type { CliCommandDefinition } from "../types";
 import { formatCliJson } from "../helpers/formatters";
@@ -9,23 +11,23 @@ import {
 
 export const startTimeTrackingCliCommand: CliCommandDefinition = {
 	command: "start-time",
-	description: "Start time tracking for a task",
+	get description() { return uiText(msg({ message: "Start time tracking for a task", context: "cli/commands/startTimeTrackingCommand: defaults description" })); },
 	flags: {
 		path: {
 			value: "<path>",
-			description: "Exact task file path",
+			get description() { return uiText(msg({ message: "Exact task file path", context: "cli/commands/startTimeTrackingCommand: defaults description" })); },
 		},
 		title: {
 			value: "<title>",
-			description: "Exact task title",
+			get description() { return uiText(msg({ message: "Exact task title", context: "cli/commands/startTimeTrackingCommand: defaults description" })); },
 		},
 		query: {
 			value: "<text>",
-			description: "Substring match against task title or path",
+			get description() { return uiText(msg({ message: "Substring match against task title or path", context: "cli/commands/startTimeTrackingCommand: defaults description" })); },
 		},
 		description: {
 			value: "<text>",
-			description: "Optional description for the started time entry",
+			get description() { return uiText(msg({ message: "Optional description for the started time entry", context: "cli/commands/startTimeTrackingCommand: defaults description" })); },
 		},
 	},
 	async handler(plugin, params: CliData): Promise<string> {

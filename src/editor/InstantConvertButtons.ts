@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { Extension, RangeSetBuilder } from "@codemirror/state";
 import {
 	Decoration,
@@ -33,9 +35,9 @@ class ConvertButtonWidget extends WidgetType {
 
 		const button = container.createEl("button", {
 			cls: "instant-convert-button",
-			attr: { "aria-label": "Convert to tasknote" },
+			attr: { "aria-label": uiText(msg({ message: "Convert to tasknote", context: "editor/InstantConvertButtons: ConvertButtonWidget.toDOM aria-label" })) },
 		});
-		setTooltip(button, "Convert to TaskNote", { placement: "top" });
+		setTooltip(button, uiText(msg({ message: "Convert to TaskNote", context: "editor/InstantConvertButtons: ConvertButtonWidget.toDOM display" })), { placement: "top" });
 
 		// Add the convert icon
 		const iconSpan = button.createSpan({ cls: "instant-convert-button__icon" });

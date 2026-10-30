@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import fs from "fs";
 import path from "path";
 import type { App } from "obsidian";
@@ -15,7 +16,7 @@ function readRepoFile(relativePath: string): string {
 function createPlugin(app: App): any {
 	return {
 		app,
-		settings: { ...DEFAULT_SETTINGS },
+		i18n: createI18nService(),
 		emitter: {
 			trigger: jest.fn(),
 		},
@@ -72,6 +73,8 @@ describe("Issue #2079: Reminder modal absolute tab visibility", () => {
 		expect(css).toMatch(
 			/\.tasknotes-plugin \.relative-fields\.reminder-modal__fields--hidden,\s*\.tasknotes-plugin \.absolute-fields\.reminder-modal__fields--hidden\s*\{[^}]*display:\s*none;/s
 		);
-		expect(css).not.toMatch(/\.tasknotes-plugin \.absolute-fields\s*\{\s*display:\s*none;\s*\}/);
+		expect(css).not.toMatch(
+			/\.tasknotes-plugin \.absolute-fields\s*\{\s*display:\s*none;\s*\}/
+		);
 	});
 });

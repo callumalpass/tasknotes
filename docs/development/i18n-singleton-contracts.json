@@ -1,0 +1,65 @@
+{
+  "reason": "Semantic zero/single/multiple grouping uses exact =1 for its singleton case, not the grammatical one category (Russian 21 is multiple). The original singleton migration reused authored wording: the Russian exact-one numeric interpolation is constant-folded to 1; Korean presence labels receive nonlinguistic (1)/(2+) suffixes so native groups cannot collapse. The later plural follow-up adds reviewed singular wording, inventoried in i18n-review-followup.json. The same correction applies to eight recurrence interval shortcuts (daily/weekly/monthly/yearly): interval 21 must not use a singular shortcut. Existing exact-one arms are retained; other languages reuse their authored one arm, or constant-fold their authored numeric arm at interval=1. Nested ordinal one categories are unchanged. Russian recurrence keeps its authored grammatical one arm for 21/31/etc, in addition to exact =1; the semantic Bases classifiers retain exact =0/=1 cases. Their required Russian grammatical one fallback now uses Не один … (More than one …) at 21/31/etc, preserving the multiple classification with nominative singular wording. The sibling few/many/other arms use the identical Не один … label so all multiple counts still generate the same saved Bases group.",
+  "replacements": [
+    {
+      "oldId": "krcPql",
+      "id": "fuX_1m",
+      "message": "{count, plural, =0 {No contexts} =1 {Single context} other {Multiple contexts}}",
+      "context": "generated Bases contexts count"
+    },
+    {
+      "oldId": "KwdX9l",
+      "id": "fJ_I-J",
+      "message": "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}",
+      "context": "generated Bases projects count"
+    },
+    {
+      "oldId": "aUnkWF",
+      "id": "7PuX6r",
+      "message": "{interval, plural, =1 {{weekday, select, MO {{position, select, last {Monthly on the last Monday} every {Monthly on every Monday} other {{index, selectordinal, one {Monthly on the #st Monday} two {Monthly on the #nd Monday} few {Monthly on the #rd Monday} other {Monthly on the #th Monday}}}}} TU {{position, select, last {Monthly on the last Tuesday} every {Monthly on every Tuesday} other {{index, selectordinal, one {Monthly on the #st Tuesday} two {Monthly on the #nd Tuesday} few {Monthly on the #rd Tuesday} other {Monthly on the #th Tuesday}}}}} WE {{position, select, last {Monthly on the last Wednesday} every {Monthly on every Wednesday} other {{index, selectordinal, one {Monthly on the #st Wednesday} two {Monthly on the #nd Wednesday} few {Monthly on the #rd Wednesday} other {Monthly on the #th Wednesday}}}}} TH {{position, select, last {Monthly on the last Thursday} every {Monthly on every Thursday} other {{index, selectordinal, one {Monthly on the #st Thursday} two {Monthly on the #nd Thursday} few {Monthly on the #rd Thursday} other {Monthly on the #th Thursday}}}}} FR {{position, select, last {Monthly on the last Friday} every {Monthly on every Friday} other {{index, selectordinal, one {Monthly on the #st Friday} two {Monthly on the #nd Friday} few {Monthly on the #rd Friday} other {Monthly on the #th Friday}}}}} SA {{position, select, last {Monthly on the last Saturday} every {Monthly on every Saturday} other {{index, selectordinal, one {Monthly on the #st Saturday} two {Monthly on the #nd Saturday} few {Monthly on the #rd Saturday} other {Monthly on the #th Saturday}}}}} SU {{position, select, last {Monthly on the last Sunday} every {Monthly on every Sunday} other {{index, selectordinal, one {Monthly on the #st Sunday} two {Monthly on the #nd Sunday} few {Monthly on the #rd Sunday} other {Monthly on the #th Sunday}}}}} other {Monthly}}} other {{weekday, select, MO {{position, select, last {Every {interval, number} months on the last Monday} every {Every {interval, number} months on every Monday} other {{index, selectordinal, one {Every {interval, number} months on the #st Monday} two {Every {interval, number} months on the #nd Monday} few {Every {interval, number} months on the #rd Monday} other {Every {interval, number} months on the #th Monday}}}}} TU {{position, select, last {Every {interval, number} months on the last Tuesday} every {Every {interval, number} months on every Tuesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Tuesday} two {Every {interval, number} months on the #nd Tuesday} few {Every {interval, number} months on the #rd Tuesday} other {Every {interval, number} months on the #th Tuesday}}}}} WE {{position, select, last {Every {interval, number} months on the last Wednesday} every {Every {interval, number} months on every Wednesday} other {{index, selectordinal, one {Every {interval, number} months on the #st Wednesday} two {Every {interval, number} months on the #nd Wednesday} few {Every {interval, number} months on the #rd Wednesday} other {Every {interval, number} months on the #th Wednesday}}}}} TH {{position, select, last {Every {interval, number} months on the last Thursday} every {Every {interval, number} months on every Thursday} other {{index, selectordinal, one {Every {interval, number} months on the #st Thursday} two {Every {interval, number} months on the #nd Thursday} few {Every {interval, number} months on the #rd Thursday} other {Every {interval, number} months on the #th Thursday}}}}} FR {{position, select, last {Every {interval, number} months on the last Friday} every {Every {interval, number} months on every Friday} other {{index, selectordinal, one {Every {interval, number} months on the #st Friday} two {Every {interval, number} months on the #nd Friday} few {Every {interval, number} months on the #rd Friday} other {Every {interval, number} months on the #th Friday}}}}} SA {{position, select, last {Every {interval, number} months on the last Saturday} every {Every {interval, number} months on every Saturday} other {{index, selectordinal, one {Every {interval, number} months on the #st Saturday} two {Every {interval, number} months on the #nd Saturday} few {Every {interval, number} months on the #rd Saturday} other {Every {interval, number} months on the #th Saturday}}}}} SU {{position, select, last {Every {interval, number} months on the last Sunday} every {Every {interval, number} months on every Sunday} other {{index, selectordinal, one {Every {interval, number} months on the #st Sunday} two {Every {interval, number} months on the #nd Sunday} few {Every {interval, number} months on the #rd Sunday} other {Every {interval, number} months on the #th Sunday}}}}} other {Every {interval, number} months}}}}",
+      "context": "monthly weekday recurrence"
+    },
+    {
+      "oldId": "7TGCcp",
+      "id": "Y071tE",
+      "message": "{interval, plural, =1 {Daily} other {Every # days}}",
+      "context": "recurrence daily interval"
+    },
+    {
+      "oldId": "OYPWW3",
+      "id": "01y_eC",
+      "message": "{interval, plural, =1 {Monthly on day {day, number}} other {Every # months on day {day, number}}}",
+      "context": "recurrence interval on month day"
+    },
+    {
+      "oldId": "928_l_",
+      "id": "ciO00S",
+      "message": "{interval, plural, =1 {Monthly} other {Every # months}}",
+      "context": "recurrence monthly interval"
+    },
+    {
+      "oldId": "3wiSEF",
+      "id": "f3a3-d",
+      "message": "{interval, plural, =1 {Weekly on {days}} other {Every # weeks on {days}}}",
+      "context": "recurrence weekly weekdays"
+    },
+    {
+      "oldId": "9Bo_OS",
+      "id": "HI4G2n",
+      "message": "{interval, plural, =1 {Weekly} other {Every # weeks}}",
+      "context": "recurrence weekly interval"
+    },
+    {
+      "oldId": "bNKsfa",
+      "id": "qqgQnq",
+      "message": "{interval, plural, =1 {Yearly on {date}} other {Every # years on {date}}}",
+      "context": "recurrence yearly interval date"
+    },
+    {
+      "oldId": "73jKwY",
+      "id": "m2FqzW",
+      "message": "{interval, plural, =1 {Yearly} other {Every # years}}",
+      "context": "recurrence yearly interval"
+    }
+  ]
+}

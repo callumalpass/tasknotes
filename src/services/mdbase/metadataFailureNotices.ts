@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../../main";
 import { createI18nService } from "../../i18n";
 import { publishUserNotice } from "../../core/userNotices";
@@ -6,7 +7,7 @@ import { migrationRecognitionNotice } from "./recognitionNotices";
 export function metadataSafetyNotice(plugin: TaskNotesPlugin, details: string): string {
 	const support = /Preserved customized mdbase support resource: ([^;\n]+)/.exec(details);
 	if (support) return migrationRecognitionNotice(plugin, "support", { path: support[1] });
-	return (plugin.i18n ?? createI18nService()).translate("mdbaseSafety.blocked", { details });
+	return (plugin.i18n ?? createI18nService()).translate(msg({ message: "TaskNotes stopped the mdbase metadata update. {details} Review the listed file and recovery copies, resolve the conflict or permissions, then reload TaskNotes. Task files were not changed.", context: "mdbaseSafety.blocked" }), { details });
 }
 
 const lastFailures = new WeakMap<TaskNotesPlugin, string>();
@@ -18,6 +19,6 @@ export function reportSettingsMetadataResult(plugin: TaskNotesPlugin, error: unk
 	const identity = /\.tasknotes\/migrations\/(?:metadata-swaps\/[^;\s]+|mdbase-v0\.3-pending)\.json/.exec(details)?.[0] ?? details;
 	if (lastFailures.get(plugin) === identity) return;
 	lastFailures.set(plugin, identity);
-	const saved = (plugin.i18n ?? createI18nService()).translate("mdbaseSafety.settingsSaved");
+	const saved = (plugin.i18n ?? createI18nService()).translate(msg({ message: "TaskNotes saved your settings, but could not synchronize the canonical mdbase type.", context: "mdbaseSafety.settingsSaved" }));
 	publishUserNotice(plugin.emitter, `${saved} ${metadataSafetyNotice(plugin, details)}`);
 }

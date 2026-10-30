@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 /**
  * Skipped tests for Issue #1233: Add option to expand subtasks by default
  *
@@ -344,11 +345,11 @@ describe('Issue #1233: Settings UI implementation', () => {
         // Translation keys should be added for name and description
 
         const expectedTranslationKeys = {
-            name: 'settings.appearance.uiElements.expandSubtasksByDefault.name',
-            description: 'settings.appearance.uiElements.expandSubtasksByDefault.description',
+            name: msg({ message: "Expand subtasks by default", context: "settings.appearance.uiElements.expandSubtasksByDefault.name" }),
+            description: msg({ message: "Show project subtasks expanded when task cards are rendered", context: "settings.appearance.uiElements.expandSubtasksByDefault.description" }),
         };
 
-        // These keys should be added to src/i18n/resources/en.ts and other language files
+        // These keys should be added to src/i18n/locales/en/messages.po and other language files
         expect(expectedTranslationKeys.name).toBeDefined();
         expect(expectedTranslationKeys.description).toBeDefined();
     });

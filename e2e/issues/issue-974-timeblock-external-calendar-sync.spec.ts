@@ -361,7 +361,7 @@ test.describe('Issue #974: Timeblock external calendar sync', () => {
 
         // Find an existing timeblock
         const timeblockCard = calendarView.locator(
-          '.timeblock-card, ' + '.fc-event[data-event-type="timeblock"], ' + '.timeblock-event'
+          '.timeblock-card, ' + '.tnc-item[data-event-type="timeblock"], ' + '.timeblock-event'
         );
 
         const hasTimeblock = await timeblockCard.first().isVisible({ timeout: 3000 }).catch(() => false);
@@ -374,7 +374,7 @@ test.describe('Issue #974: Timeblock external calendar sync', () => {
           if (boundingBox) {
             // Drag to resize
             const resizeHandle = firstTimeblock.locator(
-              '.fc-event-resizer, ' + '.timeblock-resize-handle, ' + '.resize-handle'
+              '.tnc-resize, ' + '.timeblock-resize-handle, ' + '.resize-handle'
             );
 
             if (await resizeHandle.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -446,7 +446,7 @@ test.describe('Issue #974: Timeblock external calendar sync', () => {
 
         // Find a timeblock to delete
         const timeblockCard = calendarView.locator(
-          '.timeblock-card, ' + '.fc-event[data-event-type="timeblock"], ' + '.timeblock-event'
+          '.timeblock-card, ' + '.tnc-item[data-event-type="timeblock"], ' + '.timeblock-event'
         );
 
         const hasTimeblock = await timeblockCard.first().isVisible({ timeout: 3000 }).catch(() => false);
@@ -588,7 +588,7 @@ test.describe('Issue #974: Timeblock external calendar sync', () => {
 
         // Find timeblock card
         const timeblockCard = calendarView.locator(
-          '.timeblock-card, ' + '.fc-event[data-event-type="timeblock"]'
+          '.timeblock-card, ' + '.tnc-item[data-event-type="timeblock"]'
         );
 
         if (await timeblockCard.first().isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -640,7 +640,7 @@ test.describe('Issue #974: Timeblock external calendar sync', () => {
 
         // Click on a timeblock to open info modal
         const timeblockCard = calendarView.locator(
-          '.timeblock-card, ' + '.fc-event[data-event-type="timeblock"]'
+          '.timeblock-card, ' + '.tnc-item[data-event-type="timeblock"]'
         );
 
         if (await timeblockCard.first().isVisible({ timeout: 3000 }).catch(() => false)) {

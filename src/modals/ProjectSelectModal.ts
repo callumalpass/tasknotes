@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import {
 	App,
 	FuzzySuggestModal,
@@ -30,11 +31,22 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 		super(app);
 		this.plugin = plugin;
 		this.onChoose = onChoose;
-		this.setPlaceholder("Type to search for project notes...");
+		this.setPlaceholder(this.plugin.i18n.translate(msg({ message: "Type to search for project notes...", context: "modals.projectSelector.placeholder" })));
 		this.setInstructions([
-			{ command: "↑↓", purpose: "to navigate" },
-			{ command: "↵", purpose: "to select" },
-			{ command: "esc", purpose: "to cancel" },
+			{
+				command: "↑↓",
+				purpose: this.plugin.i18n.translate(
+					msg({ message: "to navigate", context: "modals.unscheduledTasksSelector.instructions.navigate" })
+				),
+			},
+			{
+				command: "↵",
+				purpose: this.plugin.i18n.translate(msg({ message: "to select", context: "modals.taskSelector.instructions.select" })),
+			},
+			{
+				command: "esc",
+				purpose: this.plugin.i18n.translate(msg({ message: "to cancel", context: "modals.taskSelector.instructions.dismiss" })),
+			},
 		]);
 	}
 

@@ -1,3 +1,6 @@
+import { uiNumber } from "../i18n/formatters";
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { Menu, setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
@@ -19,7 +22,7 @@ interface TaskEditCompletionsOptions {
 	plugin: TaskNotesPlugin;
 	completedInstancesChanges: string[];
 	skippedInstancesChanges: string[];
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 }
 
 export function createCompletionsCalendarSection(
@@ -32,7 +35,7 @@ export function createCompletionsCalendarSection(
 
 	const calendarContainer = container.createDiv("completions-calendar-container");
 	const calendarLabel = calendarContainer.createDiv("detail-label");
-	calendarLabel.textContent = options.translate("modals.taskEdit.sections.completions");
+	calendarLabel.textContent = options.translate(msg({ message: "Completions", context: "modals.taskEdit.sections.completions" }));
 
 	const calendarContent = calendarContainer.createDiv("completions-calendar-content");
 	createRecurringCalendar(calendarContent, options);
@@ -48,7 +51,10 @@ function createRecurringCalendar(
 
 	if (options.task.complete_instances && options.task.complete_instances.length > 0) {
 		const validCompletions = options.task.complete_instances
-			.filter((date) => date && typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date.trim()))
+			.filter(
+				(date) =>
+					date && typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date.trim())
+			)
 			.map((date) => parseDateAsLocal(date).getTime())
 			.filter((time) => !isNaN(time));
 
@@ -59,9 +65,9 @@ function createRecurringCalendar(
 
 	// Carry the selected local calendar month as a UTC month anchor, not an instant.
 	// Day one also prevents month navigation overflowing short months.
-	const displayMonth = new Date(Date.UTC(
-		mostRecentCompletion.getFullYear(), mostRecentCompletion.getMonth(), 1
-	));
+	const displayMonth = new Date(
+		Date.UTC(mostRecentCompletion.getFullYear(), mostRecentCompletion.getMonth(), 1)
+	);
 	renderCalendarMonth(calendarWrapper, displayMonth, options);
 }
 
@@ -77,14 +83,16 @@ function renderCalendarMonth(
 		cls: "recurring-calendar__nav",
 		attr: {
 			type: "button",
-			"aria-label": "Previous month",
+			"aria-label": options.translate(msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })),
 		},
 	});
 	setIcon(prevButton, "chevron-left");
 	const monthLabel = header.createSpan("recurring-calendar__month");
 	const locale = options.plugin.i18n.getCurrentLocale() || "en";
 	const monthFormatter = new Intl.DateTimeFormat(locale, {
-		month: "short", year: "numeric", timeZone: "UTC",
+		month: "short",
+		year: "numeric",
+		timeZone: "UTC",
 	});
 	monthLabel.textContent = options.plugin.settings.dateDisplayFormat === "iso"
 		? formatDateForStorage(displayDate).slice(0, 7)
@@ -93,7 +101,7 @@ function renderCalendarMonth(
 		cls: "recurring-calendar__nav",
 		attr: {
 			type: "button",
-			"aria-label": "Next month",
+			"aria-label": options.translate(msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })),
 		},
 	});
 	setIcon(nextButton, "chevron-right");
@@ -122,7 +130,7 @@ function renderCalendarMonth(
 		const isOccurrenceDate = recurringDateStrings.has(dayStr);
 		const occurrenceDate = new Date(day);
 		const dayElement = grid.createDiv("recurring-calendar__day");
-		dayElement.textContent = String(day.getUTCDate());
+		dayElement.textContent = uiNumber(day.getUTCDate());
 		dayElement.addClass("recurring-calendar__day--clickable");
 		dayElement.setAttribute("data-occurrence-date", dayStr);
 
@@ -132,7 +140,10 @@ function renderCalendarMonth(
 		if (isOccurrenceDate) {
 			dayElement.addClass("recurring-calendar__day--recurring");
 			dayElement.addClass("recurring-calendar__day--contextable");
-			dayElement.setAttribute("aria-label", `Occurrence ${dayStr}`);
+			dayElement.setAttribute(
+				"aria-label",
+				options.translate(msg({ message: "Occurrence {date}", context: "modals.taskEdit.occurrenceDate" }), { date: dayStr })
+			);
 		}
 		if (completedInstances.has(dayStr)) {
 			dayElement.addClass("recurring-calendar__day--completed");
@@ -182,7 +193,7 @@ function showOccurrenceContextMenu(
 	const menu = new Menu();
 
 	menu.addItem((item) => {
-		item.setTitle("Open or create occurrence note");
+		item.setTitle(options.translate(msg({ message: "Open or create occurrence note", context: "modals.actionPalette.openOccurrence" })));
 		item.setIcon("file-plus");
 		item.onClick(async () => {
 			await openOrCreateOccurrenceNote({
@@ -197,7 +208,11 @@ function showOccurrenceContextMenu(
 	menu.addSeparator();
 
 	menu.addItem((item) => {
-		item.setTitle(isCompleted ? "Mark incomplete for this date" : "Mark complete for this date");
+		item.setTitle(
+			options.translate(
+				isCompleted ? msg({ message: "Mark incomplete for this date", context: "contextMenus.task.markIncomplete" }) : msg({ message: "Mark complete for this date", context: "contextMenus.task.markComplete" })
+			)
+		);
 		item.setIcon(isCompleted ? "x" : "check");
 		item.onClick(() => {
 			syncInstanceChangeState(options, dayStr, "complete");
@@ -209,7 +224,11 @@ function showOccurrenceContextMenu(
 	const isSkipped = skippedInstances.has(dayStr);
 
 	menu.addItem((item) => {
-		item.setTitle(isSkipped ? "Unskip instance" : "Skip instance");
+		item.setTitle(
+			options.translate(
+				isSkipped ? msg({ message: "Unskip instance", context: "contextMenus.task.unskipInstance" }) : msg({ message: "Skip instance", context: "contextMenus.task.skipInstance" })
+			)
+		);
 		item.setIcon(isSkipped ? "undo" : "x-circle");
 		item.onClick(() => {
 			syncInstanceChangeState(options, dayStr, "skip");

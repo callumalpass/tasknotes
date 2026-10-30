@@ -60,7 +60,7 @@ test.describe('Issue #644: Daily Notes Folder Desync on Mobile', () => {
 			await expect(calendarView).toBeVisible({ timeout: 10000 });
 
 			// Click on today's date title in the calendar
-			const todayCell = app.page.locator('.fc-day-today .fc-daygrid-day-number');
+			const todayCell = app.page.locator('.is-today .tnc-dg-num');
 			await todayCell.click();
 
 			// Should navigate to or create the daily note without error
@@ -91,7 +91,7 @@ test.describe('Issue #644: Daily Notes Folder Desync on Mobile', () => {
 			await expect(calendarView).toBeVisible({ timeout: 10000 });
 
 			// Click on multiple dates in sequence
-			const dayNumbers = app.page.locator('.fc-daygrid-day-number');
+			const dayNumbers = app.page.locator('.tnc-dg-num');
 			const dayCount = await dayNumbers.count();
 
 			for (let i = 0; i < Math.min(3, dayCount); i++) {

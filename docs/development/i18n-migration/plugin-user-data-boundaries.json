@@ -1,0 +1,86 @@
+[
+  {
+    "file": "src/bases/groupTitleRenderer.ts",
+    "line": 162,
+    "expression": "resolvedText",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/bases/groupTitleRenderer.ts",
+    "line": 209,
+    "expression": "resolvedText",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/modals/taskModalDependencies.ts",
+    "line": 244,
+    "expression": "item.name",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/ui/taskCardProperties.ts",
+    "line": 480,
+    "expression": "dependencyLink.displayText",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/modals/UnscheduledTasksSelectorModal.ts",
+    "line": 303,
+    "expression": "noteName",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/modals/UnscheduledTasksSelectorModal.ts",
+    "line": 314,
+    "expression": "displayText",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/ui/renderers/linkRenderer.ts",
+    "line": 216,
+    "expression": "displayText",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/ui/renderers/linkRenderer.ts",
+    "line": 221,
+    "expression": "disp",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/ui/renderers/linkRenderer.ts",
+    "line": 223,
+    "expression": "disp",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/ui/renderers/linkRenderer.ts",
+    "line": 227,
+    "expression": "href",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/ui/renderers/linkRenderer.ts",
+    "line": 433,
+    "expression": "resolvedText",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/ui/renderers/linkRenderer.ts",
+    "line": 448,
+    "expression": "resolvedText",
+    "reason": "Resolved vault/Markdown link alias or filename; preserve user-authored link data"
+  },
+  {
+    "file": "src/main.ts",
+    "line": 1246,
+    "expression": "statusConfig?.label || statusValue",
+    "reason": "User-configured status label/value; never rewrite stored metadata"
+  },
+  {
+    "file": "src/main.ts",
+    "line": 1346,
+    "expression": "statusConfig?.label || updatedTask.status",
+    "reason": "User-configured status label/value; never rewrite stored metadata"
+  }
+]

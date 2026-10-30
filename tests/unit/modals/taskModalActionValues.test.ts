@@ -60,7 +60,7 @@ describe("taskModalActionValues", () => {
 			"Weekly on Tuesday"
 		);
 		expect(getTaskModalRecurrenceDisplayText("FREQ=WEEKLY;BYDAY=XX")).toBe(
-			"Weekly on XX"
+			"Custom recurrence: FREQ=WEEKLY;BYDAY=XX"
 		);
 	});
 
@@ -73,22 +73,22 @@ describe("taskModalActionValues", () => {
 			"Monthly on the 1st"
 		);
 		expect(getTaskModalRecurrenceDisplayText("FREQ=MONTHLY;BYDAY=MO")).toBe(
-			"Monthly (by weekday)"
+			"Monthly on every Monday"
 		);
 		expect(getTaskModalRecurrenceDisplayText("FREQ=YEARLY")).toBe("Yearly");
 		expect(getTaskModalRecurrenceDisplayText("FREQ=YEARLY;BYMONTH=5;BYMONTHDAY=3")).toBe(
-			"Yearly on May 3rd"
+			"Yearly on May 3"
 		);
 	});
 
-	it("keeps custom fallback end-condition text", () => {
+	it("preserves all unsupported rule data in the custom fallback", () => {
 		expect(getTaskModalRecurrenceDisplayText("FREQ=HOURLY;COUNT=4")).toBe(
-			"Custom (4 times)"
+			"Custom recurrence: FREQ=HOURLY;COUNT=4"
 		);
 		expect(getTaskModalRecurrenceDisplayText("FREQ=HOURLY;UNTIL=20260519")).toBe(
-			"Custom (until 2026-05-19)"
+			"Custom recurrence: FREQ=HOURLY;UNTIL=20260519"
 		);
-		expect(getTaskModalRecurrenceDisplayText("FREQ=HOURLY")).toBe("Custom");
+		expect(getTaskModalRecurrenceDisplayText("FREQ=HOURLY")).toBe("Custom recurrence: FREQ=HOURLY");
 	});
 
 	it("formats ordinal suffixes", () => {

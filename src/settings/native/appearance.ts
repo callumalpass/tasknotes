@@ -1,5 +1,6 @@
+import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
-import type { TranslationKey } from "../../i18n";
+import type { MessageDescriptor } from "../../i18n";
 import { propertySelectionPage } from "./propertySelection";
 import type { CalendarViewSettings } from "../../types/settings";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../../utils/calendarTime";
@@ -34,22 +35,22 @@ import type { SettingDefinitionGroup } from "obsidian";
 
 export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGroup[] {
 	const { plugin, save } = ctx;
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
+	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 	return [
 		{
 			type: "group",
-			heading: translate("settings.appearance.taskCards.header"),
+			heading: translate(msg({ message: "Task cards", context: "settings.appearance.taskCards.header" })),
 			items: [
 				propertySelectionPage(
 					ctx,
 					"defaultVisibleProperties",
-					translate("settings.appearance.taskCards.defaultVisibleProperties.name"),
-					translate("settings.appearance.taskCards.defaultVisibleProperties.description")
+					translate(msg({ message: "Default visible properties", context: "settings.appearance.taskCards.defaultVisibleProperties.name" })),
+					translate(msg({ message: "Choose which properties appear on task cards by default.", context: "settings.appearance.taskCards.defaultVisibleProperties.description" }))
 				),
 				ctx.toggle("completionMenuAsSubmenu", {
-					name: translate("settings.appearance.taskCards.completionSubmenu.name"),
-					desc: translate("settings.appearance.taskCards.completionSubmenu.description"),
+					name: translate(msg({ message: "Group complete and skip actions in a submenu", context: "settings.appearance.taskCards.completionSubmenu.name" })),
+					desc: translate(msg({ message: "Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu.", context: "settings.appearance.taskCards.completionSubmenu.description" })),
 					getValue: () => plugin.settings.completionMenuAsSubmenu,
 					setValue: async (value: boolean) => {
 						plugin.settings.completionMenuAsSubmenu = value;
@@ -60,13 +61,13 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 		},
 		{
 			type: "group",
-			heading: translate("settings.appearance.displayFormatting.header"),
+			heading: translate(msg({ message: "Display formatting", context: "settings.appearance.displayFormatting.header" })),
 			items: [
 				ctx.dropdown("dateDisplayFormat", {
-					name: translate("settings.appearance.displayFormatting.dateFormat.name"),
-					desc: translate("settings.appearance.displayFormatting.dateFormat.description"),
+					name: translate(msg({ message: "Date format", context: "settings.appearance.displayFormatting.dateFormat.name" })),
+					desc: translate(msg({ message: "Choose how dates appear throughout TaskNotes. Stored dates and custom Bases formulas are unchanged. Time format is set separately.", context: "settings.appearance.displayFormatting.dateFormat.description" })),
 					options: [
-						{ value: "default", label: translate("settings.appearance.displayFormatting.dateFormat.options.default") },
+						{ value: "default", label: translate(msg({ message: "Default", context: "settings.appearance.displayFormatting.dateFormat.options.default" })) },
 						{ value: "iso", label: "ISO 8601 (2026-08-23)" },
 					],
 					getValue: () => plugin.settings.dateDisplayFormat,
@@ -77,19 +78,19 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.dropdown("calendarViewSettings.timeFormat", {
-					name: translate("settings.appearance.displayFormatting.timeFormat.name"),
-					desc: translate("settings.appearance.displayFormatting.timeFormat.description"),
+					name: translate(msg({ message: "Time format", context: "settings.appearance.displayFormatting.timeFormat.name" })),
+					desc: translate(msg({ message: "Display time in 12-hour or 24-hour format throughout the plugin", context: "settings.appearance.displayFormatting.timeFormat.description" })),
 					options: [
 						{
 							value: "12",
 							label: translate(
-								"settings.appearance.displayFormatting.timeFormat.options.twelveHour"
+								msg({ message: "12-hour (AM/PM)", context: "settings.appearance.displayFormatting.timeFormat.options.twelveHour" })
 							),
 						},
 						{
 							value: "24",
 							label: translate(
-								"settings.appearance.displayFormatting.timeFormat.options.twentyFourHour"
+								msg({ message: "24-hour", context: "settings.appearance.displayFormatting.timeFormat.options.twentyFourHour" })
 							),
 						},
 					],
@@ -103,40 +104,40 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 		},
 		{
 			type: "group",
-			heading: translate("settings.appearance.calendarView.header"),
+			heading: translate(msg({ message: "Calendar view", context: "settings.appearance.calendarView.header" })),
 			items: [
 				ctx.dropdown("calendarViewSettings.defaultView", {
-					name: translate("settings.appearance.calendarView.defaultView.name"),
-					desc: translate("settings.appearance.calendarView.defaultView.description"),
+					name: translate(msg({ message: "Default view", context: "settings.appearance.calendarView.defaultView.name" })),
+					desc: translate(msg({ message: "The calendar view shown when opening the calendar tab", context: "settings.appearance.calendarView.defaultView.description" })),
 					options: [
 						{
 							value: "dayGridMonth",
 							label: translate(
-								"settings.appearance.calendarView.defaultView.options.monthGrid"
+								msg({ message: "Month grid", context: "settings.appearance.calendarView.defaultView.options.monthGrid" })
 							),
 						},
 						{
 							value: "timeGridWeek",
 							label: translate(
-								"settings.appearance.calendarView.defaultView.options.weekTimeline"
+								msg({ message: "Week timeline", context: "settings.appearance.calendarView.defaultView.options.weekTimeline" })
 							),
 						},
 						{
 							value: "timeGridDay",
 							label: translate(
-								"settings.appearance.calendarView.defaultView.options.dayTimeline"
+								msg({ message: "Day timeline", context: "settings.appearance.calendarView.defaultView.options.dayTimeline" })
 							),
 						},
 						{
 							value: "multiMonthYear",
 							label: translate(
-								"settings.appearance.calendarView.defaultView.options.yearView"
+								msg({ message: "Year view", context: "settings.appearance.calendarView.defaultView.options.yearView" })
 							),
 						},
 						{
 							value: "timeGridCustom",
 							label: translate(
-								"settings.appearance.calendarView.defaultView.options.customMultiDay"
+								msg({ message: "Custom multi-day", context: "settings.appearance.calendarView.defaultView.options.customMultiDay" })
 							),
 						},
 					],
@@ -154,12 +155,12 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 				ctx.number(
 					"calendarViewSettings.customDayCount",
 					{
-						name: translate("settings.appearance.calendarView.customDayCount.name"),
+						name: translate(msg({ message: "Custom view day count", context: "settings.appearance.calendarView.customDayCount.name" })),
 						desc: translate(
-							"settings.appearance.calendarView.customDayCount.description"
+							msg({ message: "Number of days to show in custom multi-day view", context: "settings.appearance.calendarView.customDayCount.description" })
 						),
 						placeholder: translate(
-							"settings.appearance.calendarView.customDayCount.placeholder"
+							msg({ message: "3", context: "settings.appearance.calendarView.customDayCount.placeholder" })
 						),
 						min: 2,
 						max: 10,
@@ -172,16 +173,16 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					() => !(plugin.settings.calendarViewSettings.defaultView === "timeGridCustom")
 				),
 				ctx.dropdown("calendarViewSettings.firstDay", {
-					name: translate("settings.appearance.calendarView.firstDayOfWeek.name"),
-					desc: translate("settings.appearance.calendarView.firstDayOfWeek.description"),
+					name: translate(msg({ message: "First day of week", context: "settings.appearance.calendarView.firstDayOfWeek.name" })),
+					desc: translate(msg({ message: "Which day should be the first column in week views", context: "settings.appearance.calendarView.firstDayOfWeek.description" })),
 					options: [
-						{ value: "0", label: translate("common.weekdays.sunday") },
-						{ value: "1", label: translate("common.weekdays.monday") },
-						{ value: "2", label: translate("common.weekdays.tuesday") },
-						{ value: "3", label: translate("common.weekdays.wednesday") },
-						{ value: "4", label: translate("common.weekdays.thursday") },
-						{ value: "5", label: translate("common.weekdays.friday") },
-						{ value: "6", label: translate("common.weekdays.saturday") },
+						{ value: "0", label: translate(msg({ message: "Sunday", context: "common.weekdays.sunday" })) },
+						{ value: "1", label: translate(msg({ message: "Monday", context: "common.weekdays.monday" })) },
+						{ value: "2", label: translate(msg({ message: "Tuesday", context: "common.weekdays.tuesday" })) },
+						{ value: "3", label: translate(msg({ message: "Wednesday", context: "common.weekdays.wednesday" })) },
+						{ value: "4", label: translate(msg({ message: "Thursday", context: "common.weekdays.thursday" })) },
+						{ value: "5", label: translate(msg({ message: "Friday", context: "common.weekdays.friday" })) },
+						{ value: "6", label: translate(msg({ message: "Saturday", context: "common.weekdays.saturday" })) },
 					],
 					getValue: () => plugin.settings.calendarViewSettings.firstDay.toString(),
 					setValue: async (value: string) => {
@@ -193,8 +194,8 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.toggle("calendarViewSettings.showWeekends", {
-					name: translate("settings.appearance.calendarView.showWeekends.name"),
-					desc: translate("settings.appearance.calendarView.showWeekends.description"),
+					name: translate(msg({ message: "Show weekends", context: "settings.appearance.calendarView.showWeekends.name" })),
+					desc: translate(msg({ message: "Display weekends in calendar views", context: "settings.appearance.calendarView.showWeekends.description" })),
 					getValue: () => plugin.settings.calendarViewSettings.showWeekends,
 					setValue: async (value: boolean) => {
 						plugin.settings.calendarViewSettings.showWeekends = value;
@@ -202,8 +203,8 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.toggle("calendarViewSettings.weekNumbers", {
-					name: translate("settings.appearance.calendarView.showWeekNumbers.name"),
-					desc: translate("settings.appearance.calendarView.showWeekNumbers.description"),
+					name: translate(msg({ message: "Show week numbers", context: "settings.appearance.calendarView.showWeekNumbers.name" })),
+					desc: translate(msg({ message: "Display week numbers in calendar views", context: "settings.appearance.calendarView.showWeekNumbers.description" })),
 					getValue: () => plugin.settings.calendarViewSettings.weekNumbers,
 					setValue: async (value: boolean) => {
 						plugin.settings.calendarViewSettings.weekNumbers = value;
@@ -211,9 +212,9 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.toggle("calendarViewSettings.showTodayHighlight", {
-					name: translate("settings.appearance.calendarView.showTodayHighlight.name"),
+					name: translate(msg({ message: "Show today highlight", context: "settings.appearance.calendarView.showTodayHighlight.name" })),
 					desc: translate(
-						"settings.appearance.calendarView.showTodayHighlight.description"
+						msg({ message: "Highlight the current day in calendar views", context: "settings.appearance.calendarView.showTodayHighlight.description" })
 					),
 					getValue: () => plugin.settings.calendarViewSettings.showTodayHighlight,
 					setValue: async (value: boolean) => {
@@ -223,10 +224,10 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 				}),
 				ctx.toggle("calendarViewSettings.nowIndicator", {
 					name: translate(
-						"settings.appearance.calendarView.showCurrentTimeIndicator.name"
+						msg({ message: "Show current time indicator", context: "settings.appearance.calendarView.showCurrentTimeIndicator.name" })
 					),
 					desc: translate(
-						"settings.appearance.calendarView.showCurrentTimeIndicator.description"
+						msg({ message: "Display a line showing the current time in timeline views", context: "settings.appearance.calendarView.showCurrentTimeIndicator.description" })
 					),
 					getValue: () => plugin.settings.calendarViewSettings.nowIndicator,
 					setValue: async (value: boolean) => {
@@ -235,8 +236,8 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.toggle("calendarViewSettings.selectMirror", {
-					name: translate("settings.appearance.calendarView.selectionMirror.name"),
-					desc: translate("settings.appearance.calendarView.selectionMirror.description"),
+					name: translate(msg({ message: "Selection mirror", context: "settings.appearance.calendarView.selectionMirror.name" })),
+					desc: translate(msg({ message: "Show a visual preview while dragging to select time ranges", context: "settings.appearance.calendarView.selectionMirror.description" })),
 					getValue: () => plugin.settings.calendarViewSettings.selectMirror,
 					setValue: async (value: boolean) => {
 						plugin.settings.calendarViewSettings.selectMirror = value;
@@ -244,15 +245,15 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.text("calendarViewSettings.locale", {
-					name: translate("settings.appearance.calendarView.calendarLocale.name"),
-					desc: translate("settings.appearance.calendarView.calendarLocale.description"),
+					name: translate(msg({ message: "Calendar locale", context: "settings.appearance.calendarView.calendarLocale.name" })),
+					desc: translate(msg({ message: "Calendar locale for date formatting and calendar system (e.g., \"en\", \"fa\" for Farsi/Persian, \"de\" for German). Leave empty to auto-detect from browser.", context: "settings.appearance.calendarView.calendarLocale.description" })),
 					getValue: () => plugin.settings.calendarViewSettings.locale || "",
 					validate: (value) => {
 						try {
 							if (value.trim()) Intl.getCanonicalLocales(value.trim());
 						} catch {
 							return translate(
-								"settings.appearance.calendarView.calendarLocale.invalidLocale"
+								msg({ message: "Invalid locale. Please enter a valid language tag (e.g., ''en'', ''de'', ''fr-FR'').", context: "settings.appearance.calendarView.calendarLocale.invalidLocale" })
 							);
 						}
 					},
@@ -265,14 +266,14 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 		},
 		{
 			type: "group",
-			heading: translate("settings.appearance.defaultEventVisibility.header"),
+			heading: translate(msg({ message: "Default event visibility", context: "settings.appearance.defaultEventVisibility.header" })),
 			items: [
 				ctx.toggle("calendarViewSettings.defaultShowScheduled", {
 					name: translate(
-						"settings.appearance.defaultEventVisibility.showScheduledTasks.name"
+						msg({ message: "Show scheduled tasks", context: "settings.appearance.defaultEventVisibility.showScheduledTasks.name" })
 					),
 					desc: translate(
-						"settings.appearance.defaultEventVisibility.showScheduledTasks.description"
+						msg({ message: "Display tasks with scheduled dates by default", context: "settings.appearance.defaultEventVisibility.showScheduledTasks.description" })
 					),
 					getValue: () => plugin.settings.calendarViewSettings.defaultShowScheduled,
 					setValue: async (value: boolean) => {
@@ -281,9 +282,9 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.toggle("calendarViewSettings.defaultShowDue", {
-					name: translate("settings.appearance.defaultEventVisibility.showDueDates.name"),
+					name: translate(msg({ message: "Show due dates", context: "settings.appearance.defaultEventVisibility.showDueDates.name" })),
 					desc: translate(
-						"settings.appearance.defaultEventVisibility.showDueDates.description"
+						msg({ message: "Display task due dates by default", context: "settings.appearance.defaultEventVisibility.showDueDates.description" })
 					),
 					getValue: () => plugin.settings.calendarViewSettings.defaultShowDue,
 					setValue: async (value: boolean) => {
@@ -293,10 +294,10 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 				}),
 				ctx.toggle("calendarViewSettings.defaultShowDueWhenScheduled", {
 					name: translate(
-						"settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
+						msg({ message: "Show due dates when scheduled", context: "settings.appearance.defaultEventVisibility.showDueWhenScheduled.name" })
 					),
 					desc: translate(
-						"settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
+						msg({ message: "Display due dates even for tasks that already have scheduled dates", context: "settings.appearance.defaultEventVisibility.showDueWhenScheduled.description" })
 					),
 					getValue: () =>
 						plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled,
@@ -307,10 +308,10 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 				}),
 				ctx.toggle("calendarViewSettings.defaultShowTimeEntries", {
 					name: translate(
-						"settings.appearance.defaultEventVisibility.showTimeEntries.name"
+						msg({ message: "Show time entries", context: "settings.appearance.defaultEventVisibility.showTimeEntries.name" })
 					),
 					desc: translate(
-						"settings.appearance.defaultEventVisibility.showTimeEntries.description"
+						msg({ message: "Display completed time tracking entries by default", context: "settings.appearance.defaultEventVisibility.showTimeEntries.description" })
 					),
 					getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeEntries,
 					setValue: async (value: boolean) => {
@@ -320,10 +321,10 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 				}),
 				ctx.toggle("calendarViewSettings.defaultShowRecurring", {
 					name: translate(
-						"settings.appearance.defaultEventVisibility.showRecurringTasks.name"
+						msg({ message: "Show recurring tasks", context: "settings.appearance.defaultEventVisibility.showRecurringTasks.name" })
 					),
 					desc: translate(
-						"settings.appearance.defaultEventVisibility.showRecurringTasks.description"
+						msg({ message: "Display recurring task instances by default", context: "settings.appearance.defaultEventVisibility.showRecurringTasks.description" })
 					),
 					getValue: () => plugin.settings.calendarViewSettings.defaultShowRecurring,
 					setValue: async (value: boolean) => {
@@ -333,10 +334,10 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 				}),
 				ctx.toggle("calendarViewSettings.defaultShowICSEvents", {
 					name: translate(
-						"settings.appearance.defaultEventVisibility.showICSEvents.name"
+						msg({ message: "Show ICS events", context: "settings.appearance.defaultEventVisibility.showICSEvents.name" })
 					),
 					desc: translate(
-						"settings.appearance.defaultEventVisibility.showICSEvents.description"
+						msg({ message: "Display events from ICS subscriptions by default", context: "settings.appearance.defaultEventVisibility.showICSEvents.description" })
 					),
 					getValue: () => plugin.settings.calendarViewSettings.defaultShowICSEvents,
 					setValue: async (value: boolean) => {
@@ -348,30 +349,30 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 		},
 		{
 			type: "group",
-			heading: translate("settings.appearance.timeSettings.header"),
+			heading: translate(msg({ message: "Time settings", context: "settings.appearance.timeSettings.header" })),
 			items: [
 				ctx.dropdown("calendarViewSettings.slotDuration", {
-					name: translate("settings.appearance.timeSettings.timeSlotDuration.name"),
+					name: translate(msg({ message: "Time slot duration", context: "settings.appearance.timeSettings.timeSlotDuration.name" })),
 					desc: translate(
-						"settings.appearance.timeSettings.timeSlotDuration.description"
+						msg({ message: "Duration of each time slot in timeline views", context: "settings.appearance.timeSettings.timeSlotDuration.description" })
 					),
 					options: [
 						{
 							value: "00:15:00",
 							label: translate(
-								"settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinutes"
+								msg({ message: "15 minutes", context: "settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinutes" })
 							),
 						},
 						{
 							value: "00:30:00",
 							label: translate(
-								"settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes"
+								msg({ message: "30 minutes", context: "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes" })
 							),
 						},
 						{
 							value: "01:00:00",
 							label: translate(
-								"settings.appearance.timeSettings.timeSlotDuration.options.sixtyMinutes"
+								msg({ message: "60 minutes", context: "settings.appearance.timeSettings.timeSlotDuration.options.sixtyMinutes" })
 							),
 						},
 					],
@@ -388,11 +389,11 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					validate: (value) =>
 						/^([01]\d|2[0-3]):[0-5]\d$/.test(value)
 							? undefined
-							: ctx.t("settings.native.invalidTimeHoursMustBe0023AndMinutes"),
-					name: translate("settings.appearance.timeSettings.startTime.name"),
-					desc: translate("settings.appearance.timeSettings.startTime.description"),
+							: ctx.t(msg({ message: "Invalid time. Hours must be 00-23 and minutes must be 00-59", context: "settings.native.invalidTimeHoursMustBe0023AndMinutes" })),
+					name: translate(msg({ message: "Start time", context: "settings.appearance.timeSettings.startTime.name" })),
+					desc: translate(msg({ message: "Earliest time shown in timeline views (HH:MM format)", context: "settings.appearance.timeSettings.startTime.description" })),
 					placeholder: translate(
-						"settings.appearance.timeSettings.startTime.placeholder"
+						msg({ message: "06:00", context: "settings.appearance.timeSettings.startTime.placeholder" })
 					),
 					debounceMs: 500,
 					getValue: () => {
@@ -409,14 +410,14 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					setValue: async (value: string) => {
 						if (!/^\d{2}:\d{2}$/.test(value)) {
 							new Notice(
-								ctx.t("settings.native.invalidTimeFormatPleaseUseHhMmFormatE")
+								ctx.t(msg({ message: "Invalid time format. Please use hh:mm format (e.g., 08:00)", context: "settings.native.invalidTimeFormatPleaseUseHhMmFormatE" }))
 							);
 							return;
 						}
 						const [hours, minutes] = value.split(":").map(Number);
 						if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
 							new Notice(
-								ctx.t("settings.native.invalidTimeHoursMustBe0023AndMinutes")
+								ctx.t(msg({ message: "Invalid time. Hours must be 00-23 and minutes must be 00-59", context: "settings.native.invalidTimeHoursMustBe0023AndMinutes" }))
 							);
 							return;
 						}
@@ -432,10 +433,10 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 							allowMaxHourOnlyAtZero: true,
 						}).isValid
 							? undefined
-							: ctx.t("settings.native.invalidTimeUse00004800ValuesAfter"),
-					name: translate("settings.appearance.timeSettings.endTime.name"),
-					desc: translate("settings.appearance.timeSettings.endTime.description"),
-					placeholder: translate("settings.appearance.timeSettings.endTime.placeholder"),
+							: ctx.t(msg({ message: "Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day", context: "settings.native.invalidTimeUse00004800ValuesAfter" })),
+					name: translate(msg({ message: "End time", context: "settings.appearance.timeSettings.endTime.name" })),
+					desc: translate(msg({ message: "Latest time shown in timeline views (HH:MM format). Use values above 24:00 to show early next-day hours, such as 26:00 for 2 AM.", context: "settings.appearance.timeSettings.endTime.description" })),
+					placeholder: translate(msg({ message: "26:00", context: "settings.appearance.timeSettings.endTime.placeholder" })),
 					debounceMs: 500,
 					getValue: () => {
 						const timeValue = plugin.settings.calendarViewSettings.slotMaxTime;
@@ -451,7 +452,7 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					setValue: async (value: string) => {
 						if (!/^\d{2}:\d{2}$/.test(value)) {
 							new Notice(
-								ctx.t("settings.native.invalidTimeFormatPleaseUseHhMmFormatE2")
+								ctx.t(msg({ message: "Invalid time format. Please use hh:mm format (e.g., 26:00)", context: "settings.native.invalidTimeFormatPleaseUseHhMmFormatE2" }))
 							);
 							return;
 						}
@@ -460,7 +461,7 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 							allowMaxHourOnlyAtZero: true,
 						});
 						if (!result.isValid) {
-							new Notice(ctx.t("settings.native.invalidTimeUse00004800ValuesAfter"));
+							new Notice(ctx.t(msg({ message: "Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day", context: "settings.native.invalidTimeUse00004800ValuesAfter" })));
 							return;
 						}
 						plugin.settings.calendarViewSettings.slotMaxTime = result.value;
@@ -471,13 +472,13 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					validate: (value) =>
 						/^([01]\d|2[0-3]):[0-5]\d$/.test(value)
 							? undefined
-							: ctx.t("settings.native.invalidTimeHoursMustBe0023AndMinutes"),
-					name: translate("settings.appearance.timeSettings.initialScrollTime.name"),
+							: ctx.t(msg({ message: "Invalid time. Hours must be 00-23 and minutes must be 00-59", context: "settings.native.invalidTimeHoursMustBe0023AndMinutes" })),
+					name: translate(msg({ message: "Initial scroll time", context: "settings.appearance.timeSettings.initialScrollTime.name" })),
 					desc: translate(
-						"settings.appearance.timeSettings.initialScrollTime.description"
+						msg({ message: "Time to scroll to when opening timeline views (HH:MM format)", context: "settings.appearance.timeSettings.initialScrollTime.description" })
 					),
 					placeholder: translate(
-						"settings.appearance.timeSettings.initialScrollTime.placeholder"
+						msg({ message: "09:00", context: "settings.appearance.timeSettings.initialScrollTime.placeholder" })
 					),
 					debounceMs: 500,
 					getValue: () => {
@@ -494,14 +495,14 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					setValue: async (value: string) => {
 						if (!/^\d{2}:\d{2}$/.test(value)) {
 							new Notice(
-								ctx.t("settings.native.invalidTimeFormatPleaseUseHhMmFormatE")
+								ctx.t(msg({ message: "Invalid time format. Please use hh:mm format (e.g., 08:00)", context: "settings.native.invalidTimeFormatPleaseUseHhMmFormatE" }))
 							);
 							return;
 						}
 						const [hours, minutes] = value.split(":").map(Number);
 						if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
 							new Notice(
-								ctx.t("settings.native.invalidTimeHoursMustBe0023AndMinutes")
+								ctx.t(msg({ message: "Invalid time. Hours must be 00-23 and minutes must be 00-59", context: "settings.native.invalidTimeHoursMustBe0023AndMinutes" }))
 							);
 							return;
 						}
@@ -510,10 +511,10 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.number("calendarViewSettings.eventMinHeight", {
-					name: translate("settings.appearance.timeSettings.eventMinHeight.name"),
-					desc: translate("settings.appearance.timeSettings.eventMinHeight.description"),
+					name: translate(msg({ message: "Event minimum height", context: "settings.appearance.timeSettings.eventMinHeight.name" })),
+					desc: translate(msg({ message: "Minimum height for events in timeline views (pixels)", context: "settings.appearance.timeSettings.eventMinHeight.description" })),
 					placeholder: translate(
-						"settings.appearance.timeSettings.eventMinHeight.placeholder"
+						msg({ message: "15", context: "settings.appearance.timeSettings.eventMinHeight.placeholder" })
 					),
 					min: 5,
 					max: 100,
@@ -528,14 +529,14 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 		},
 		{
 			type: "group",
-			heading: translate("settings.appearance.uiElements.header"),
+			heading: translate(msg({ message: "UI elements", context: "settings.appearance.uiElements.header" })),
 			items: [
 				ctx.toggle("showTrackedTasksInStatusBar", {
 					name: translate(
-						"settings.appearance.uiElements.showTrackedTasksInStatusBar.name"
+						msg({ message: "Show tracked tasks in status bar", context: "settings.appearance.uiElements.showTrackedTasksInStatusBar.name" })
 					),
 					desc: translate(
-						"settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
+						msg({ message: "Display currently tracked tasks in Obsidian''s status bar", context: "settings.appearance.uiElements.showTrackedTasksInStatusBar.description" })
 					),
 					getValue: () => plugin.settings.showTrackedTasksInStatusBar,
 					setValue: async (value: boolean) => {
@@ -544,9 +545,9 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.toggle("showRelationships", {
-					name: translate("settings.appearance.uiElements.showRelationshipsWidget.name"),
+					name: translate(msg({ message: "Show relationships widget", context: "settings.appearance.uiElements.showRelationshipsWidget.name" })),
 					desc: translate(
-						"settings.appearance.uiElements.showRelationshipsWidget.description"
+						msg({ message: "Display a widget showing all relationships for the current note (subtasks, projects, dependencies)", context: "settings.appearance.uiElements.showRelationshipsWidget.description" })
 					),
 					getValue: () => plugin.settings.showRelationships,
 					setValue: async (value: boolean) => {
@@ -559,22 +560,22 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					"relationshipsPosition",
 					{
 						name: translate(
-							"settings.appearance.uiElements.relationshipsPosition.name"
+							msg({ message: "Relationships position", context: "settings.appearance.uiElements.relationshipsPosition.name" })
 						),
 						desc: translate(
-							"settings.appearance.uiElements.relationshipsPosition.description"
+							msg({ message: "Where to position the relationships widget", context: "settings.appearance.uiElements.relationshipsPosition.description" })
 						),
 						options: [
 							{
 								value: "top",
 								label: translate(
-									"settings.appearance.uiElements.relationshipsPosition.options.top"
+									msg({ message: "Top of note", context: "settings.appearance.uiElements.relationshipsPosition.options.top" })
 								),
 							},
 							{
 								value: "bottom",
 								label: translate(
-									"settings.appearance.uiElements.relationshipsPosition.options.bottom"
+									msg({ message: "Bottom of note", context: "settings.appearance.uiElements.relationshipsPosition.options.bottom" })
 								),
 							},
 						],
@@ -587,9 +588,9 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					() => !plugin.settings.showRelationships
 				),
 				ctx.toggle("showTaskCardInNote", {
-					name: translate("settings.appearance.uiElements.showTaskCardInNote.name"),
+					name: translate(msg({ message: "Show task card in note", context: "settings.appearance.uiElements.showTaskCardInNote.name" })),
 					desc: translate(
-						"settings.appearance.uiElements.showTaskCardInNote.description"
+						msg({ message: "Display a task card widget at the top of task notes showing the task details and actions", context: "settings.appearance.uiElements.showTaskCardInNote.description" })
 					),
 					getValue: () => plugin.settings.showTaskCardInNote,
 					setValue: async (value: boolean) => {
@@ -599,10 +600,10 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 				}),
 				ctx.toggle("showCompletedTaskStrikethrough", {
 					name: translate(
-						"settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
+						msg({ message: "Strike through completed task titles", context: "settings.appearance.uiElements.showCompletedTaskStrikethrough.name" })
 					),
 					desc: translate(
-						"settings.appearance.uiElements.showCompletedTaskStrikethrough.description"
+						msg({ message: "Draw a line through completed task card titles. Turn off to keep completed tasks easier to read", context: "settings.appearance.uiElements.showCompletedTaskStrikethrough.description" })
 					),
 					getValue: () => plugin.settings.showCompletedTaskStrikethrough,
 					setValue: async (value: boolean) => {
@@ -612,9 +613,9 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.toggle("showExpandableSubtasks", {
-					name: translate("settings.appearance.uiElements.showExpandableSubtasks.name"),
+					name: translate(msg({ message: "Show expandable subtasks", context: "settings.appearance.uiElements.showExpandableSubtasks.name" })),
 					desc: translate(
-						"settings.appearance.uiElements.showExpandableSubtasks.description"
+						msg({ message: "Allow expanding/collapsing subtask sections in task cards", context: "settings.appearance.uiElements.showExpandableSubtasks.description" })
 					),
 					getValue: () => plugin.settings.showExpandableSubtasks,
 					setValue: async (value: boolean) => {
@@ -627,10 +628,10 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					"expandSubtasksByDefault",
 					{
 						name: translate(
-							"settings.appearance.uiElements.expandSubtasksByDefault.name"
+							msg({ message: "Expand subtasks by default", context: "settings.appearance.uiElements.expandSubtasksByDefault.name" })
 						),
 						desc: translate(
-							"settings.appearance.uiElements.expandSubtasksByDefault.description"
+							msg({ message: "Show project subtasks expanded when task cards are rendered", context: "settings.appearance.uiElements.expandSubtasksByDefault.description" })
 						),
 						getValue: () => plugin.settings.expandSubtasksByDefault,
 						setValue: async (value: boolean) => {
@@ -644,22 +645,22 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					"subtaskChevronPosition",
 					{
 						name: translate(
-							"settings.appearance.uiElements.subtaskChevronPosition.name"
+							msg({ message: "Subtask chevron position", context: "settings.appearance.uiElements.subtaskChevronPosition.name" })
 						),
 						desc: translate(
-							"settings.appearance.uiElements.subtaskChevronPosition.description"
+							msg({ message: "Position of expand/collapse chevrons in task cards", context: "settings.appearance.uiElements.subtaskChevronPosition.description" })
 						),
 						options: [
 							{
 								value: "left",
 								label: translate(
-									"settings.appearance.uiElements.subtaskChevronPosition.options.left"
+									msg({ message: "Left side", context: "settings.appearance.uiElements.subtaskChevronPosition.options.left" })
 								),
 							},
 							{
 								value: "right",
 								label: translate(
-									"settings.appearance.uiElements.subtaskChevronPosition.options.right"
+									msg({ message: "Right side", context: "settings.appearance.uiElements.subtaskChevronPosition.options.right" })
 								),
 							},
 						],
@@ -675,19 +676,19 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 		},
 		{
 			type: "group",
-			heading: translate("settings.general.taskInteraction.header"),
+			heading: translate(msg({ message: "Task interaction", context: "settings.general.taskInteraction.header" })),
 			items: [
 				ctx.dropdown("singleClickAction", {
-					name: translate("settings.general.taskInteraction.singleClick.name"),
-					desc: translate("settings.general.taskInteraction.singleClick.description"),
+					name: translate(msg({ message: "Single-click action", context: "settings.general.taskInteraction.singleClick.name" })),
+					desc: translate(msg({ message: "Action performed when single-clicking a task card", context: "settings.general.taskInteraction.singleClick.description" })),
 					options: [
 						{
 							value: "edit",
-							label: translate("settings.general.taskInteraction.actions.edit"),
+							label: translate(msg({ message: "Edit task", context: "settings.general.taskInteraction.actions.edit" })),
 						},
 						{
 							value: "openNote",
-							label: translate("settings.general.taskInteraction.actions.openNote"),
+							label: translate(msg({ message: "Open note", context: "settings.general.taskInteraction.actions.openNote" })),
 						},
 					],
 					getValue: () => plugin.settings.singleClickAction,
@@ -697,20 +698,20 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					},
 				}),
 				ctx.dropdown("doubleClickAction", {
-					name: translate("settings.general.taskInteraction.doubleClick.name"),
-					desc: translate("settings.general.taskInteraction.doubleClick.description"),
+					name: translate(msg({ message: "Double-click action", context: "settings.general.taskInteraction.doubleClick.name" })),
+					desc: translate(msg({ message: "Action performed when double-clicking a task card", context: "settings.general.taskInteraction.doubleClick.description" })),
 					options: [
 						{
 							value: "edit",
-							label: translate("settings.general.taskInteraction.actions.edit"),
+							label: translate(msg({ message: "Edit task", context: "settings.general.taskInteraction.actions.edit" })),
 						},
 						{
 							value: "openNote",
-							label: translate("settings.general.taskInteraction.actions.openNote"),
+							label: translate(msg({ message: "Open note", context: "settings.general.taskInteraction.actions.openNote" })),
 						},
 						{
 							value: "none",
-							label: translate("settings.general.taskInteraction.actions.none"),
+							label: translate(msg({ message: "No action", context: "settings.general.taskInteraction.actions.none" })),
 						},
 					],
 					getValue: () => plugin.settings.doubleClickAction,

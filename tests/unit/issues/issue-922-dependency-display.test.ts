@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 /**
  * Issue #922: dependency display behavior on task cards.
  *
@@ -46,15 +47,7 @@ function createPlugin(
 	plugin.cacheManager.getTaskInfo = jest.fn(async (path: string) =>
 		path === blocker.path ? blocker : null
 	);
-	plugin.i18n.translate = jest.fn((key: string, vars?: Record<string, string | number>) => {
-		const translations: Record<string, string> = {
-			"ui.taskCard.blockedBadge": "Blocked",
-			"ui.taskCard.blockedBadgeTooltip": "This task is blocked",
-			"ui.taskCard.taskOptions": "Task options",
-			"ui.taskCard.priorityAriaLabel": `Priority: ${vars?.label ?? ""}`,
-		};
-		return translations[key] ?? key;
-	});
+	plugin.i18n.translate = mockObserveTranslation();
 
 	return plugin;
 }

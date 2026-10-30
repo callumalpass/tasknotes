@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { App } from "obsidian";
 import { TimeblockCreationModal } from "../../../src/modals/TimeblockCreationModal";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
@@ -44,7 +45,7 @@ function createMockPlugin() {
 
 	return {
 		i18n: {
-			translate: (key: string) => translations[key] || key,
+			translate: mockObserveTranslation(),
 		},
 		settings: {
 			calendarViewSettings: {

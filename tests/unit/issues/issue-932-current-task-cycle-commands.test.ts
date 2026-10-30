@@ -1,3 +1,6 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
+import { createI18nService } from "../../../src/i18n";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
@@ -21,6 +24,7 @@ function createPlugin(
 	activeFile: TFile | null = new TFile(task?.path ?? "Tasks/review.md")
 ): TaskNotesPlugin {
 	const plugin = new TaskNotesPlugin(new App() as never, {} as never);
+	plugin.i18n = createI18nService();
 	plugin.app.workspace.getActiveFile = jest.fn(() => activeFile) as never;
 	plugin.cacheManager = {
 		getTaskInfo: jest.fn(async () => task),
@@ -61,8 +65,8 @@ describe("Issue #932: current task status and priority cycle commands", () => {
 			cycleCurrentTaskPriority: jest.fn(),
 		};
 
-		expect(statusCommand?.nameKey).toBe("commands.cycleCurrentTaskStatus");
-		expect(priorityCommand?.nameKey).toBe("commands.cycleCurrentTaskPriority");
+		expect(statusCommand?.nameKey).toEqual(msg({ message: "Cycle current task status", context: "commands.cycleCurrentTaskStatus" }));
+		expect(priorityCommand?.nameKey).toEqual(msg({ message: "Cycle current task priority", context: "commands.cycleCurrentTaskPriority" }));
 
 		await statusCommand?.callback?.(ctx as never);
 		await priorityCommand?.callback?.(ctx as never);
@@ -80,11 +84,7 @@ describe("Issue #932: current task status and priority cycle commands", () => {
 		expect(plugin.app.workspace.getActiveFile).toHaveBeenCalledTimes(1);
 		expect(plugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
 		expect(plugin.statusManager.getNextStatus).toHaveBeenCalledWith("open");
-		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(
-			task,
-			"status",
-			"in-progress"
-		);
+		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "status", "in-progress");
 	});
 
 	it("cycles the active task priority through the existing PriorityManager sequence", async () => {

@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { type TFile } from "obsidian";
 import { createI18nService } from "../../i18n";
 import YAML from "yaml";
@@ -98,8 +99,8 @@ export async function repairCollectionRecord(
 	return withVaultFileMutation(problem.file, async () => {
 		// Recheck scope, bytes AND the current provider's repair semantics, not the old preview vocabulary.
 		const current = (await checkCollection(plugin)).find((candidate) => candidate.file.path === problem.file.path);
-		if (!current || current.content !== problem.content || current.dateCreatedField !== problem.dateCreatedField || current.statusField !== problem.statusField) throw new Error((plugin.i18n ?? createI18nService()).translate("collectionCheck.membershipChanged"));
-		const stale = () => new Error((plugin.i18n ?? createI18nService()).translate("collectionCheck.repairChanged"));
+		if (!current || current.content !== problem.content || current.dateCreatedField !== problem.dateCreatedField || current.statusField !== problem.statusField) throw new Error((plugin.i18n ?? createI18nService()).translate(msg({ message: "Collection membership or record changed since collection check; check again.", context: "collectionCheck.membershipChanged" })));
+		const stale = () => new Error((plugin.i18n ?? createI18nService()).translate(msg({ message: "The task type or allowed status values changed, or the proposed repair is no longer valid. Nothing was repaired; check the collection again.", context: "collectionCheck.repairChanged" })));
 		if (current.repairSignature !== problem.repairSignature || (statusChoice !== undefined && !current.statusValues.includes(statusChoice))) throw stale();
 		const { document, body, prefix } = recordDocument(problem.content);
 		let changed = false;

@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 /**
  * @see https://github.com/callumalpass/tasknotes/issues/1476
  */
@@ -21,6 +22,7 @@ function makeAppWithTaskTitle(title = "Homework") {
 function makeLinkServices(title = "Homework"): LinkServices {
 	const file = new TFile("TaskNotes/Tasks/202601132359.md");
 	return {
+		translate: (key, params) => createI18nService().translate(key, params),
 		metadataCache: {
 			getFirstLinkpathDest: jest.fn(() => file),
 			getCache: jest.fn(() => ({ frontmatter: { title } })),
@@ -39,28 +41,23 @@ describe("issue #1476 parent-task project title rendering", () => {
 	it("uses a linked task's frontmatter title instead of its timestamp filename", () => {
 		const app = makeAppWithTaskTitle("Homework");
 
-		expect(getProjectDisplayName("[[TaskNotes/Tasks/202601132359]]", app)).toBe(
-			"Homework"
-		);
+		expect(getProjectDisplayName("[[TaskNotes/Tasks/202601132359]]", app)).toBe("Homework");
 	});
 
 	it("uses the frontmatter title for generated markdown links whose display is the basename", () => {
 		const app = makeAppWithTaskTitle("Homework");
 
-		expect(
-			getProjectDisplayName(
-				"[202601132359](TaskNotes/Tasks/202601132359.md)",
-				app
-			)
-		).toBe("Homework");
+		expect(getProjectDisplayName("[202601132359](TaskNotes/Tasks/202601132359.md)", app)).toBe(
+			"Homework"
+		);
 	});
 
 	it("keeps explicit markdown aliases", () => {
 		const app = makeAppWithTaskTitle("Homework");
 
-		expect(
-			getProjectDisplayName("[Assignment](TaskNotes/Tasks/202601132359.md)", app)
-		).toBe("Assignment");
+		expect(getProjectDisplayName("[Assignment](TaskNotes/Tasks/202601132359.md)", app)).toBe(
+			"Assignment"
+		);
 	});
 
 	it("renders Bases group titles with the linked task title", () => {

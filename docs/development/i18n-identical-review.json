@@ -1,0 +1,3228 @@
+{
+  "note": "Exact active-ID exception inventory after review-driven data retirements and literal-brace migrations. Some plural messages now differ structurally because of required CLDR arms; scoped English-identical plural arms are separately reasoned in policy. This is not an authorship or completeness bypass.",
+  "locales": {
+    "fr": [
+      {
+        "id": "-93N6o",
+        "message": "3000",
+        "context": "settings.integrations.httpApi.port.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "-ckyyr",
+        "message": "'{{date}}'-'{{title}}'-'{{dueDate}}'",
+        "context": "settings.appearance.taskFilenames.customTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "0WMZj8",
+        "message": "Description",
+        "context": "modals.timeblockCreation.descriptionLabel",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "0rZ5ht",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.scheduledLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1TjpjD",
+        "message": "+{duration}",
+        "context": "timer add duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1WEUU_",
+        "message": "✓ {label}",
+        "context": "contextMenus.date.selected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "2Y6vv9",
+        "message": "{minutes} min",
+        "context": "views.pomodoroStats.recents.duration",
+        "reason": "Standard minute abbreviation"
+      },
+      {
+        "id": "3Oe9si",
+        "message": "UUID v4",
+        "context": "settings.appearance.taskFilenames.filenameFormat.options.uuid",
+        "reason": "Standard identifier format"
+      },
+      {
+        "id": "3TeIeB",
+        "message": "'{date}'-'{title}'",
+        "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "6yWWWg",
+        "message": "TaskNotes",
+        "context": "common.appName",
+        "reason": "Product name"
+      },
+      {
+        "id": "70WGix",
+        "message": "Google Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "946d3d",
+        "message": "60",
+        "context": "settings.integrations.autoExport.interval.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "9fm2Qe",
+        "message": "Actions",
+        "context": "modals.icsEventInfo.actionsHeading",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "AEDUyz",
+        "message": "Agenda",
+        "context": "generated Bases view name",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "BJiuGD",
+        "message": "'{{title}}'",
+        "context": "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "Dm5D0Q",
+        "message": "15 minutes",
+        "context": "settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinutes",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "F1uk87",
+        "message": "Microsoft Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "FBlWXu",
+        "message": "{noteCount, plural, one {{noteCount, number} note} other {{noteCount, number} notes}}",
+        "context": "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display",
+        "reason": "French note/notes are genuine cognates; authored ICU preserves French count agreement"
+      },
+      {
+        "id": "FGhDtE",
+        "message": "Note",
+        "context": "modals.icsEventInfo.typeNote",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "GHQ66X",
+        "message": "Webhook",
+        "context": "settings.integrations.webhooks.cardHeader",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "HQ7sXr",
+        "message": "60 minutes",
+        "context": "settings.appearance.timeSettings.timeSlotDuration.options.sixtyMinutes",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "Ilah1P",
+        "message": "Date",
+        "context": "components.dateContextMenu.dateLabel",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "JDPkem",
+        "message": "L",
+        "context": "views.basesCalendar.buttonText.list",
+        "reason": "Localized calendar initial: Liste/Liste/Lista/Lista or mois/Monat/mes/mês"
+      },
+      {
+        "id": "KBu6fI",
+        "message": "Google Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "KECZB2",
+        "message": "Compact",
+        "context": "bases/registration: defaults compact",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "MDqYZ5",
+        "message": "minutes",
+        "context": "settings.defaults.reminders.units.minutes",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "MK7PHt",
+        "message": "Microsoft Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "MM_MAN",
+        "message": "30",
+        "context": "modals.task.timeEstimatePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "M_M2LS",
+        "message": "−{duration}",
+        "context": "timer subtract duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "O_C4Ji",
+        "message": "▶",
+        "context": "settings.integrations.httpApi.endpoints.expandIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "ObIEer",
+        "message": "### Description",
+        "context": "contextMenus.ics.markdown.descriptionHeading",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "OpPJIb",
+        "message": "Notifications",
+        "context": "settings.features.notifications.header",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "P9hKsn",
+        "message": "#3b82f6",
+        "context": "modals.timeblockCreation.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "PxIhAK",
+        "message": "60",
+        "context": "settings.defaults.basicDefaults.defaultTimeEstimate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QKBmYo",
+        "message": "11:00",
+        "context": "modals.timeblockCreation.endTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "RhiwdU",
+        "message": "Dates",
+        "context": "modals.actionPalette.categories.dates",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "Rlg1-w",
+        "message": "26:00",
+        "context": "settings.appearance.timeSettings.endTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rv1-hM",
+        "message": "09:00",
+        "context": "settings.appearance.timeSettings.initialScrollTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "RvjoPv",
+        "message": "Description",
+        "context": "modals.calendarEventCreation.descriptionLabel",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "T-wLRv",
+        "message": "{label}: {value}",
+        "context": "ui.taskCard.recurrenceTooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "TIQsPO",
+        "message": "important, urgent",
+        "context": "settings.defaults.basicDefaults.defaultTags.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "TtGRE8",
+        "message": "Google Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexGoogleCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "XEC2Iw",
+        "message": "Date",
+        "context": "generated Bases column name",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "YC_bjz",
+        "message": "06:00",
+        "context": "settings.appearance.timeSettings.startTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Yg8TnJ",
+        "message": "09:00",
+        "context": "modals.timeblockCreation.startTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "ZPt1r5",
+        "message": "Description",
+        "context": "modals.icsEventInfo.descriptionLabel",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "awdKEp",
+        "message": "Pomodoro",
+        "context": "views.pomodoro.title",
+        "reason": "Named productivity technique"
+      },
+      {
+        "id": "bB_Jku",
+        "message": "Pomodoros",
+        "context": "settings.taskProperties.properties.pomodoros.name",
+        "reason": "Locale-valid plural of the named technique"
+      },
+      {
+        "id": "c1dw9r",
+        "message": "▼",
+        "context": "settings.integrations.httpApi.endpoints.collapseIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "dBdBmg",
+        "message": "0",
+        "context": "modals.task.userFields.numberPlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "eveBLc",
+        "message": "Description",
+        "context": "modals.timeblockInfo.descriptionLabel",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "gYjcxb",
+        "message": "Webhooks",
+        "context": "settings.integrations.webhooks.header",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "hs2a-V",
+        "message": "✓ {context}",
+        "context": "contextMenus.task.organization.contextSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "htCxDP",
+        "message": "Description",
+        "context": "modals.timeEntryEditor.description",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "m1s27V",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.dueLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "mAg2fD",
+        "message": "Documentation",
+        "context": "settings.header.documentation",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "nKlsZa",
+        "message": "M",
+        "context": "views.basesCalendar.buttonText.month",
+        "reason": "Localized calendar initial: Liste/Liste/Lista/Lista or mois/Monat/mes/mês"
+      },
+      {
+        "id": "oqIXU7",
+        "message": "3",
+        "context": "settings.appearance.calendarView.customDayCount.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "q0Sfpx",
+        "message": "Occurrences",
+        "context": "generated Bases view name",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "re_zjV",
+        "message": "#3b82f6",
+        "context": "modals.timeblockInfo.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "so9I-j",
+        "message": "Pomodoros",
+        "context": "views.pomodoroStats.stats.pomodoros",
+        "reason": "Locale-valid plural of the named technique"
+      },
+      {
+        "id": "veiAoK",
+        "message": "15",
+        "context": "settings.appearance.timeSettings.eventMinHeight.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "wK7vCr",
+        "message": "Microsoft Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexMicrosoftCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "wrv1Mv",
+        "message": "URL",
+        "context": "modals.icsEventInfo.urlLabel",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "xrD5mc",
+        "message": "30 minutes",
+        "context": "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes",
+        "reason": "Individually reviewed fr cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "z0HHJp",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.statusSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "zw1MbE",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.prioritySelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      }
+    ],
+    "de": [
+      {
+        "id": "-93N6o",
+        "message": "3000",
+        "context": "settings.integrations.httpApi.port.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "-ckyyr",
+        "message": "'{{date}}'-'{{title}}'-'{{dueDate}}'",
+        "context": "settings.appearance.taskFilenames.customTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "0rZ5ht",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.scheduledLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1TjpjD",
+        "message": "+{duration}",
+        "context": "timer add duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1WEUU_",
+        "message": "✓ {label}",
+        "context": "contextMenus.date.selected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "2WpQmG",
+        "message": "'{'aliases|n(Aliases)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row2.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "2Y6vv9",
+        "message": "{minutes} min",
+        "context": "views.pomodoroStats.recents.duration",
+        "reason": "Standard minute abbreviation"
+      },
+      {
+        "id": "30_Hpx",
+        "message": "{label}: {message}",
+        "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "3Oe9si",
+        "message": "UUID v4",
+        "context": "settings.appearance.taskFilenames.filenameFormat.options.uuid",
+        "reason": "Standard identifier format"
+      },
+      {
+        "id": "3TeIeB",
+        "message": "'{date}'-'{title}'",
+        "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "3tafv9",
+        "message": "Text",
+        "context": "settings.taskProperties.customUserFields.types.text",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "3yBHmP",
+        "message": "Details",
+        "context": "modals.task.detailsLabel",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "5Euhmg",
+        "message": "Tags: {value}",
+        "context": "settings.integrations.googleCalendarExport.eventDescription.tags",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "6yWWWg",
+        "message": "TaskNotes",
+        "context": "common.appName",
+        "reason": "Product name"
+      },
+      {
+        "id": "8gK8og",
+        "message": "Status: {status}",
+        "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "946d3d",
+        "message": "60",
+        "context": "settings.integrations.autoExport.interval.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "9zE7b1",
+        "message": "{fieldName}: ",
+        "context": "ui/taskCardProperties: renderUserProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "AEDUyz",
+        "message": "Agenda",
+        "context": "generated Bases view name",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "BJiuGD",
+        "message": "'{{title}}'",
+        "context": "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "COtnZP",
+        "message": "Status: {value}",
+        "context": "settings.integrations.googleCalendarExport.eventDescription.status",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "GHQ66X",
+        "message": "Webhook",
+        "context": "settings.integrations.webhooks.cardHeader",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "GQ7xbT",
+        "message": "ID: {id}",
+        "context": "settings.modalFields.manager.fieldId",
+        "reason": "Identifier acronym"
+      },
+      {
+        "id": "HnX1bk",
+        "message": "**URL:** {value}",
+        "context": "contextMenus.ics.markdown.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "Hzj6ex",
+        "message": "Name:",
+        "context": "settings.integrations.subscriptionsList.labels.name",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "IcahGQ",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateModified display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "J9QNy_",
+        "message": "Status",
+        "context": "settings.taskProperties.fieldMapping.fields.status",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "JDPkem",
+        "message": "L",
+        "context": "views.basesCalendar.buttonText.list",
+        "reason": "Localized calendar initial: Liste/Liste/Lista/Lista or mois/Monat/mes/mês"
+      },
+      {
+        "id": "JueTNA",
+        "message": "Status",
+        "context": "ui.filterBar.group.status",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "KQQBBg",
+        "message": "Tags",
+        "context": "modals.task.tagsLabel",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "MM_MAN",
+        "message": "30",
+        "context": "modals.task.timeEstimatePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "M_M2LS",
+        "message": "−{duration}",
+        "context": "timer subtract duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "O_C4Ji",
+        "message": "▶",
+        "context": "settings.integrations.httpApi.endpoints.expandIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "OoOK-L",
+        "message": "Info:",
+        "context": "settings.integrations.oauth.infoLabel",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "P9hKsn",
+        "message": "#3b82f6",
+        "context": "modals.timeblockCreation.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "PByvQK",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: completedDate display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PN4jTB",
+        "message": "{prefix}: {text}",
+        "context": "services.notification.missed.message",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PxIhAK",
+        "message": "60",
+        "context": "settings.defaults.basicDefaults.defaultTimeEstimate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Q2TMtF",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateCreated display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QKBmYo",
+        "message": "11:00",
+        "context": "modals.timeblockCreation.endTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QXilFr",
+        "message": "'{'title|n(Title)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row1.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "QkB1b_",
+        "message": "'{'file.path|n(Path)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row3.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "RDLl0e",
+        "message": "Tag",
+        "context": "editor/NLPCodeMirrorAutocomplete: getListSuggestions display",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "RkY2Am",
+        "message": "Status: {value}",
+        "context": "modals.task.tooltips.statusValue",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "Rlg1-w",
+        "message": "26:00",
+        "context": "settings.appearance.timeSettings.endTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rv1-hM",
+        "message": "09:00",
+        "context": "settings.appearance.timeSettings.initialScrollTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "S_awFf",
+        "message": "Tags",
+        "context": "components.propertyVisibilityDropdown.properties.tags",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "T-wLRv",
+        "message": "{label}: {value}",
+        "context": "ui.taskCard.recurrenceTooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "UOqIQr",
+        "message": "{calendar}: {message}",
+        "context": "calendar sync single error",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Ukq7R0",
+        "message": "Status",
+        "context": "contextMenus.task.status",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "VPekkt",
+        "message": "{displayName}: ",
+        "context": "ui/taskCardProperties: renderGenericProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "X-e5Yh",
+        "message": "URL:",
+        "context": "settings.integrations.subscriptionsList.labels.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "XMobL1",
+        "message": "{date}: {duration}",
+        "context": "statistics daily time tooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "YC_bjz",
+        "message": "06:00",
+        "context": "settings.appearance.timeSettings.startTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Yg8TnJ",
+        "message": "09:00",
+        "context": "modals.timeblockCreation.startTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "YzZqjc",
+        "message": "Normal",
+        "context": "settings/defaults: defaults label",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "agti9e",
+        "message": "W",
+        "context": "views.basesCalendar.buttonText.week",
+        "reason": "German calendar initial for Woche"
+      },
+      {
+        "id": "awdKEp",
+        "message": "Pomodoro",
+        "context": "views.pomodoro.title",
+        "reason": "Named productivity technique"
+      },
+      {
+        "id": "bB_Jku",
+        "message": "Pomodoros",
+        "context": "settings.taskProperties.properties.pomodoros.name",
+        "reason": "Locale-valid plural of the named technique"
+      },
+      {
+        "id": "c1dw9r",
+        "message": "▼",
+        "context": "settings.integrations.httpApi.endpoints.collapseIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "dBdBmg",
+        "message": "0",
+        "context": "modals.task.userFields.numberPlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "drtjvz",
+        "message": "Tags: {value1}",
+        "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "eTrfrx",
+        "message": "Layout",
+        "context": "views.basesCalendar.settings.groups.layout",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "gYjcxb",
+        "message": "Webhooks",
+        "context": "settings.integrations.webhooks.header",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "hs2a-V",
+        "message": "✓ {context}",
+        "context": "contextMenus.task.organization.contextSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "iMHOJC",
+        "message": "{errorMessage}: {message}",
+        "context": "utils/safeAsync: SafeAsync.executeWithRetry display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "jivOxP",
+        "message": "Tag",
+        "context": "settings.general.taskIdentification.identifyBy.options.tag",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "lXILeS",
+        "message": "YYYY-MM-DD",
+        "context": "modals.task.userFields.datePlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "lm6o2a",
+        "message": "{displayName}: {displayValue}",
+        "context": "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "lotbm4",
+        "message": "Tags",
+        "context": "ui.filterBar.group.tags",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "m1s27V",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.dueLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "mNiGS7",
+        "message": "Token:",
+        "context": "settings.integrations.oauth.tokenLabel",
+        "reason": "Reviewed authentication technical term"
+      },
+      {
+        "id": "nKlsZa",
+        "message": "M",
+        "context": "views.basesCalendar.buttonText.month",
+        "reason": "Localized calendar initial: Liste/Liste/Lista/Lista or mois/Monat/mes/mês"
+      },
+      {
+        "id": "ndm4yF",
+        "message": "Tags",
+        "context": "contextMenus.task.tags",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "oqIXU7",
+        "message": "3",
+        "context": "settings.appearance.calendarView.customDayCount.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "p4U5Kv",
+        "message": "Status",
+        "context": "settings.taskProperties.properties.status.name",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "qtA22g",
+        "message": "{stateLabel}: {timeRemaining}",
+        "context": "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "rMR2Xo",
+        "message": "{displayName}: ",
+        "context": "ui/PropertyEventCard: createPropertyEventCard text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "re_zjV",
+        "message": "#3b82f6",
+        "context": "modals.timeblockInfo.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "sBU1Xn",
+        "message": "Status",
+        "context": "editor/NLPCodeMirrorAutocomplete: getStatusSuggestions info",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "so9I-j",
+        "message": "Pomodoros",
+        "context": "views.pomodoroStats.stats.pomodoros",
+        "reason": "Locale-valid plural of the named technique"
+      },
+      {
+        "id": "tfrEWg",
+        "message": "\nStatus: {value1}",
+        "context": "bases/calendar-core: generateTaskTooltip display",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "veiAoK",
+        "message": "15",
+        "context": "settings.appearance.timeSettings.eventMinHeight.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "wKbiKS",
+        "message": "Start: ",
+        "context": "modals.icsNoteCreation.startLabel",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "wrv1Mv",
+        "message": "URL",
+        "context": "modals.icsEventInfo.urlLabel",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "x32G0f",
+        "message": "Frontmatter",
+        "context": "settings.general.frontmatter.header",
+        "reason": "Reviewed Markdown technical term"
+      },
+      {
+        "id": "x7ybXd",
+        "message": "URL:",
+        "context": "settings.integrations.webhooks.cardFields.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "xHstq-",
+        "message": "HTTP API",
+        "context": "settings.integrations.httpApi.header",
+        "reason": "Protocol acronym"
+      },
+      {
+        "id": "xakL-p",
+        "message": "Tags",
+        "context": "settings.appearance.taskCards.properties.tags",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "yV-F_P",
+        "message": "Tags",
+        "context": "settings.taskProperties.properties.tags.name",
+        "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "z0HHJp",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.statusSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "zw1MbE",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.prioritySelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      }
+    ],
+    "es": [
+      {
+        "id": "-93N6o",
+        "message": "3000",
+        "context": "settings.integrations.httpApi.port.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "-ckyyr",
+        "message": "'{{date}}'-'{{title}}'-'{{dueDate}}'",
+        "context": "settings.appearance.taskFilenames.customTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "-yeFsY",
+        "message": "Color",
+        "context": "modals.timeblockInfo.colorLabel",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "0rZ5ht",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.scheduledLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1TjpjD",
+        "message": "+{duration}",
+        "context": "timer add duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1WEUU_",
+        "message": "✓ {label}",
+        "context": "contextMenus.date.selected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "2WpQmG",
+        "message": "'{'aliases|n(Aliases)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row2.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "2Y6vv9",
+        "message": "{minutes} min",
+        "context": "views.pomodoroStats.recents.duration",
+        "reason": "Standard minute abbreviation"
+      },
+      {
+        "id": "30_Hpx",
+        "message": "{label}: {message}",
+        "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "3Oe9si",
+        "message": "UUID v4",
+        "context": "settings.appearance.taskFilenames.filenameFormat.options.uuid",
+        "reason": "Standard identifier format"
+      },
+      {
+        "id": "3TeIeB",
+        "message": "'{date}'-'{title}'",
+        "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "6yWWWg",
+        "message": "TaskNotes",
+        "context": "common.appName",
+        "reason": "Product name"
+      },
+      {
+        "id": "70WGix",
+        "message": "Google Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "946d3d",
+        "message": "60",
+        "context": "settings.integrations.autoExport.interval.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "9_1C6o",
+        "message": "General",
+        "context": "api/loadAPIEndpoints: loadAPIEndpoints display",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "9zE7b1",
+        "message": "{fieldName}: ",
+        "context": "ui/taskCardProperties: renderUserProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "AEDUyz",
+        "message": "Agenda",
+        "context": "generated Bases view name",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "BJiuGD",
+        "message": "'{{title}}'",
+        "context": "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "C357Fl",
+        "message": "{propertyId}: (error)",
+        "context": "ui/taskCardProperties: renderPropertyMetadata display",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "CkHM8g",
+        "message": "Color:",
+        "context": "settings.taskProperties.taskPriorities.fields.color",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "D6pPwG",
+        "message": "D",
+        "context": "views.basesCalendar.buttonText.day",
+        "reason": "Calendar initial for día/dia"
+      },
+      {
+        "id": "F1uk87",
+        "message": "Microsoft Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "GHQ66X",
+        "message": "Webhook",
+        "context": "settings.integrations.webhooks.cardHeader",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "GQ7xbT",
+        "message": "ID: {id}",
+        "context": "settings.modalFields.manager.fieldId",
+        "reason": "Identifier acronym"
+      },
+      {
+        "id": "HnX1bk",
+        "message": "**URL:** {value}",
+        "context": "contextMenus.ics.markdown.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "IcahGQ",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateModified display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "JDPkem",
+        "message": "L",
+        "context": "views.basesCalendar.buttonText.list",
+        "reason": "Localized calendar initial: Liste/Liste/Lista/Lista or mois/Monat/mes/mês"
+      },
+      {
+        "id": "KBu6fI",
+        "message": "Google Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "LhJsSs",
+        "message": "Color:",
+        "context": "settings.taskProperties.taskStatuses.fields.color",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "Ly5myg",
+        "message": "Color",
+        "context": "modals.timeblockCreation.colorLabel",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "MK7PHt",
+        "message": "Microsoft Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "MM_MAN",
+        "message": "30",
+        "context": "modals.task.timeEstimatePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "M_M2LS",
+        "message": "−{duration}",
+        "context": "timer subtract duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "O_C4Ji",
+        "message": "▶",
+        "context": "settings.integrations.httpApi.endpoints.expandIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "P9hKsn",
+        "message": "#3b82f6",
+        "context": "modals.timeblockCreation.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "PByvQK",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: completedDate display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PN4jTB",
+        "message": "{prefix}: {text}",
+        "context": "services.notification.missed.message",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PxIhAK",
+        "message": "60",
+        "context": "settings.defaults.basicDefaults.defaultTimeEstimate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Q2TMtF",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateCreated display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QKBmYo",
+        "message": "11:00",
+        "context": "modals.timeblockCreation.endTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QXilFr",
+        "message": "'{'title|n(Title)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row1.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "QkB1b_",
+        "message": "'{'file.path|n(Path)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row3.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "Rlg1-w",
+        "message": "26:00",
+        "context": "settings.appearance.timeSettings.endTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rv1-hM",
+        "message": "09:00",
+        "context": "settings.appearance.timeSettings.initialScrollTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "T-wLRv",
+        "message": "{label}: {value}",
+        "context": "ui.taskCard.recurrenceTooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "TmD2iu",
+        "message": "{count}D",
+        "context": "views.basesCalendar.buttonText.customDays",
+        "reason": "Calendar initial for día/dia"
+      },
+      {
+        "id": "TtGRE8",
+        "message": "Google Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexGoogleCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "UOqIQr",
+        "message": "{calendar}: {message}",
+        "context": "calendar sync single error",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "VPekkt",
+        "message": "{displayName}: ",
+        "context": "ui/taskCardProperties: renderGenericProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "X-e5Yh",
+        "message": "URL:",
+        "context": "settings.integrations.subscriptionsList.labels.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "XMobL1",
+        "message": "{date}: {duration}",
+        "context": "statistics daily time tooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "YC_bjz",
+        "message": "06:00",
+        "context": "settings.appearance.timeSettings.startTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Yg8TnJ",
+        "message": "09:00",
+        "context": "modals.timeblockCreation.startTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "YzZqjc",
+        "message": "Normal",
+        "context": "settings/defaults: defaults label",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "awdKEp",
+        "message": "Pomodoro",
+        "context": "views.pomodoro.title",
+        "reason": "Named productivity technique"
+      },
+      {
+        "id": "bB_Jku",
+        "message": "Pomodoros",
+        "context": "settings.taskProperties.properties.pomodoros.name",
+        "reason": "Locale-valid plural of the named technique"
+      },
+      {
+        "id": "c1dw9r",
+        "message": "▼",
+        "context": "settings.integrations.httpApi.endpoints.collapseIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "dBdBmg",
+        "message": "0",
+        "context": "modals.task.userFields.numberPlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "gYjcxb",
+        "message": "Webhooks",
+        "context": "settings.integrations.webhooks.header",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "hs2a-V",
+        "message": "✓ {context}",
+        "context": "contextMenus.task.organization.contextSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "iMHOJC",
+        "message": "{errorMessage}: {message}",
+        "context": "utils/safeAsync: SafeAsync.executeWithRetry display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "jNag0r",
+        "message": "Error",
+        "context": "settings.integrations.subscriptionsList.statusLabels.error",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "lXILeS",
+        "message": "YYYY-MM-DD",
+        "context": "modals.task.userFields.datePlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "lm6o2a",
+        "message": "{displayName}: {displayValue}",
+        "context": "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "m1s27V",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.dueLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "mNiGS7",
+        "message": "Token:",
+        "context": "settings.integrations.oauth.tokenLabel",
+        "reason": "Reviewed authentication technical term"
+      },
+      {
+        "id": "nKlsZa",
+        "message": "M",
+        "context": "views.basesCalendar.buttonText.month",
+        "reason": "Localized calendar initial: Liste/Liste/Lista/Lista or mois/Monat/mes/mês"
+      },
+      {
+        "id": "oqIXU7",
+        "message": "3",
+        "context": "settings.appearance.calendarView.customDayCount.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "pupsha",
+        "message": "General",
+        "context": "settings.tabs.general",
+        "reason": "Individually reviewed es cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "qtA22g",
+        "message": "{stateLabel}: {timeRemaining}",
+        "context": "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "rMR2Xo",
+        "message": "{displayName}: ",
+        "context": "ui/PropertyEventCard: createPropertyEventCard text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "re_zjV",
+        "message": "#3b82f6",
+        "context": "modals.timeblockInfo.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "so9I-j",
+        "message": "Pomodoros",
+        "context": "views.pomodoroStats.stats.pomodoros",
+        "reason": "Locale-valid plural of the named technique"
+      },
+      {
+        "id": "veiAoK",
+        "message": "15",
+        "context": "settings.appearance.timeSettings.eventMinHeight.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "wK7vCr",
+        "message": "Microsoft Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexMicrosoftCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "wrv1Mv",
+        "message": "URL",
+        "context": "modals.icsEventInfo.urlLabel",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "x32G0f",
+        "message": "Frontmatter",
+        "context": "settings.general.frontmatter.header",
+        "reason": "Reviewed Markdown technical term"
+      },
+      {
+        "id": "x7ybXd",
+        "message": "URL:",
+        "context": "settings.integrations.webhooks.cardFields.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "z0HHJp",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.statusSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "zw1MbE",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.prioritySelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      }
+    ],
+    "ja": [
+      {
+        "id": "-93N6o",
+        "message": "3000",
+        "context": "settings.integrations.httpApi.port.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "-ckyyr",
+        "message": "'{{date}}'-'{{title}}'-'{{dueDate}}'",
+        "context": "settings.appearance.taskFilenames.customTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "0rZ5ht",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.scheduledLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1TjpjD",
+        "message": "+{duration}",
+        "context": "timer add duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1WEUU_",
+        "message": "✓ {label}",
+        "context": "contextMenus.date.selected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "30_Hpx",
+        "message": "{label}: {message}",
+        "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "3TeIeB",
+        "message": "'{date}'-'{title}'",
+        "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "6yWWWg",
+        "message": "TaskNotes",
+        "context": "common.appName",
+        "reason": "Product name"
+      },
+      {
+        "id": "946d3d",
+        "message": "60",
+        "context": "settings.integrations.autoExport.interval.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "9zE7b1",
+        "message": "{fieldName}: ",
+        "context": "ui/taskCardProperties: renderUserProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "BJiuGD",
+        "message": "'{{title}}'",
+        "context": "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "GQ7xbT",
+        "message": "ID: {id}",
+        "context": "settings.modalFields.manager.fieldId",
+        "reason": "Identifier acronym"
+      },
+      {
+        "id": "IcahGQ",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateModified display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "MM_MAN",
+        "message": "30",
+        "context": "modals.task.timeEstimatePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "M_M2LS",
+        "message": "−{duration}",
+        "context": "timer subtract duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "O_C4Ji",
+        "message": "▶",
+        "context": "settings.integrations.httpApi.endpoints.expandIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "P9hKsn",
+        "message": "#3b82f6",
+        "context": "modals.timeblockCreation.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "PByvQK",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: completedDate display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PxIhAK",
+        "message": "60",
+        "context": "settings.defaults.basicDefaults.defaultTimeEstimate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Q2TMtF",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateCreated display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QKBmYo",
+        "message": "11:00",
+        "context": "modals.timeblockCreation.endTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rlg1-w",
+        "message": "26:00",
+        "context": "settings.appearance.timeSettings.endTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rv1-hM",
+        "message": "09:00",
+        "context": "settings.appearance.timeSettings.initialScrollTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "T-wLRv",
+        "message": "{label}: {value}",
+        "context": "ui.taskCard.recurrenceTooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "UOqIQr",
+        "message": "{calendar}: {message}",
+        "context": "calendar sync single error",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "VPekkt",
+        "message": "{displayName}: ",
+        "context": "ui/taskCardProperties: renderGenericProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "XMobL1",
+        "message": "{date}: {duration}",
+        "context": "statistics daily time tooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "YC_bjz",
+        "message": "06:00",
+        "context": "settings.appearance.timeSettings.startTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Yg8TnJ",
+        "message": "09:00",
+        "context": "modals.timeblockCreation.startTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "aLal-e",
+        "message": "{percent, number}%",
+        "context": "generated Bases completion percentage",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "c1dw9r",
+        "message": "▼",
+        "context": "settings.integrations.httpApi.endpoints.collapseIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "dBdBmg",
+        "message": "0",
+        "context": "modals.task.userFields.numberPlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "hs2a-V",
+        "message": "✓ {context}",
+        "context": "contextMenus.task.organization.contextSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "iMHOJC",
+        "message": "{errorMessage}: {message}",
+        "context": "utils/safeAsync: SafeAsync.executeWithRetry display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "lXILeS",
+        "message": "YYYY-MM-DD",
+        "context": "modals.task.userFields.datePlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "lm6o2a",
+        "message": "{displayName}: {displayValue}",
+        "context": "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "m1s27V",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.dueLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "oqIXU7",
+        "message": "3",
+        "context": "settings.appearance.calendarView.customDayCount.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "pEX5XU",
+        "message": "N/A",
+        "context": "views.stats.notAvailable",
+        "reason": "Standard unavailable-value notation"
+      },
+      {
+        "id": "qtA22g",
+        "message": "{stateLabel}: {timeRemaining}",
+        "context": "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "rMR2Xo",
+        "message": "{displayName}: ",
+        "context": "ui/PropertyEventCard: createPropertyEventCard text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "re_zjV",
+        "message": "#3b82f6",
+        "context": "modals.timeblockInfo.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "veiAoK",
+        "message": "15",
+        "context": "settings.appearance.timeSettings.eventMinHeight.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "wrv1Mv",
+        "message": "URL",
+        "context": "modals.icsEventInfo.urlLabel",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "z0HHJp",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.statusSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "zw1MbE",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.prioritySelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      }
+    ],
+    "ko": [
+      {
+        "id": "-93N6o",
+        "message": "3000",
+        "context": "settings.integrations.httpApi.port.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "-ckyyr",
+        "message": "'{{date}}'-'{{title}}'-'{{dueDate}}'",
+        "context": "settings.appearance.taskFilenames.customTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "0rZ5ht",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.scheduledLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1TjpjD",
+        "message": "+{duration}",
+        "context": "timer add duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1WEUU_",
+        "message": "✓ {label}",
+        "context": "contextMenus.date.selected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1pk7LF",
+        "message": "@home, @work",
+        "context": "settings.defaults.basicDefaults.defaultContexts.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "2WpQmG",
+        "message": "'{'aliases|n(Aliases)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row2.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "30_Hpx",
+        "message": "{label}: {message}",
+        "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "3Oe9si",
+        "message": "UUID v4",
+        "context": "settings.appearance.taskFilenames.filenameFormat.options.uuid",
+        "reason": "Standard identifier format"
+      },
+      {
+        "id": "3TeIeB",
+        "message": "'{date}'-'{title}'",
+        "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "6yWWWg",
+        "message": "TaskNotes",
+        "context": "common.appName",
+        "reason": "Product name"
+      },
+      {
+        "id": "70WGix",
+        "message": "Google Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "946d3d",
+        "message": "60",
+        "context": "settings.integrations.autoExport.interval.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "9zE7b1",
+        "message": "{fieldName}: ",
+        "context": "ui/taskCardProperties: renderUserProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "BJiuGD",
+        "message": "'{{title}}'",
+        "context": "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "F1uk87",
+        "message": "Microsoft Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "GQ7xbT",
+        "message": "ID: {id}",
+        "context": "settings.modalFields.manager.fieldId",
+        "reason": "Identifier acronym"
+      },
+      {
+        "id": "HnX1bk",
+        "message": "**URL:** {value}",
+        "context": "contextMenus.ics.markdown.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "IcahGQ",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateModified display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "KBu6fI",
+        "message": "Google Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "MK7PHt",
+        "message": "Microsoft Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "MM_MAN",
+        "message": "30",
+        "context": "modals.task.timeEstimatePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "M_M2LS",
+        "message": "−{duration}",
+        "context": "timer subtract duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "O_C4Ji",
+        "message": "▶",
+        "context": "settings.integrations.httpApi.endpoints.expandIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "P9hKsn",
+        "message": "#3b82f6",
+        "context": "modals.timeblockCreation.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "PByvQK",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: completedDate display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PN4jTB",
+        "message": "{prefix}: {text}",
+        "context": "services.notification.missed.message",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PxIhAK",
+        "message": "60",
+        "context": "settings.defaults.basicDefaults.defaultTimeEstimate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Q2TMtF",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateCreated display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QKBmYo",
+        "message": "11:00",
+        "context": "modals.timeblockCreation.endTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QXilFr",
+        "message": "'{'title|n(Title)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row1.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "QkB1b_",
+        "message": "'{'file.path|n(Path)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row3.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "Rlg1-w",
+        "message": "26:00",
+        "context": "settings.appearance.timeSettings.endTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rv1-hM",
+        "message": "09:00",
+        "context": "settings.appearance.timeSettings.initialScrollTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "T-wLRv",
+        "message": "{label}: {value}",
+        "context": "ui.taskCard.recurrenceTooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "TtGRE8",
+        "message": "Google Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexGoogleCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "UOqIQr",
+        "message": "{calendar}: {message}",
+        "context": "calendar sync single error",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "VPekkt",
+        "message": "{displayName}: ",
+        "context": "ui/taskCardProperties: renderGenericProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "X-e5Yh",
+        "message": "URL:",
+        "context": "settings.integrations.subscriptionsList.labels.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "XMobL1",
+        "message": "{date}: {duration}",
+        "context": "statistics daily time tooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "YC_bjz",
+        "message": "06:00",
+        "context": "settings.appearance.timeSettings.startTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Yg8TnJ",
+        "message": "09:00",
+        "context": "modals.timeblockCreation.startTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "aLal-e",
+        "message": "{percent, number}%",
+        "context": "generated Bases completion percentage",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "c1dw9r",
+        "message": "▼",
+        "context": "settings.integrations.httpApi.endpoints.collapseIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "dBdBmg",
+        "message": "0",
+        "context": "modals.task.userFields.numberPlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "hs2a-V",
+        "message": "✓ {context}",
+        "context": "contextMenus.task.organization.contextSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "iMHOJC",
+        "message": "{errorMessage}: {message}",
+        "context": "utils/safeAsync: SafeAsync.executeWithRetry display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "inyWqV",
+        "message": "ICS/iCal URL",
+        "context": "settings/tabs/integrationsTab: renderICSSubscriptionsList display",
+        "reason": "Calendar-format and URL acronyms"
+      },
+      {
+        "id": "lXILeS",
+        "message": "YYYY-MM-DD",
+        "context": "modals.task.userFields.datePlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "lm6o2a",
+        "message": "{displayName}: {displayValue}",
+        "context": "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "m1s27V",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.dueLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "oqIXU7",
+        "message": "3",
+        "context": "settings.appearance.calendarView.customDayCount.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "pEX5XU",
+        "message": "N/A",
+        "context": "views.stats.notAvailable",
+        "reason": "Standard unavailable-value notation"
+      },
+      {
+        "id": "qtA22g",
+        "message": "{stateLabel}: {timeRemaining}",
+        "context": "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "rMR2Xo",
+        "message": "{displayName}: ",
+        "context": "ui/PropertyEventCard: createPropertyEventCard text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "re_zjV",
+        "message": "#3b82f6",
+        "context": "modals.timeblockInfo.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "veiAoK",
+        "message": "15",
+        "context": "settings.appearance.timeSettings.eventMinHeight.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "wK7vCr",
+        "message": "Microsoft Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexMicrosoftCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "wrv1Mv",
+        "message": "URL",
+        "context": "modals.icsEventInfo.urlLabel",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "x7ybXd",
+        "message": "URL:",
+        "context": "settings.integrations.webhooks.cardFields.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "xHstq-",
+        "message": "HTTP API",
+        "context": "settings.integrations.httpApi.header",
+        "reason": "Protocol acronym"
+      },
+      {
+        "id": "z0HHJp",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.statusSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "zw1MbE",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.prioritySelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      }
+    ],
+    "pt": [
+      {
+        "id": "-93N6o",
+        "message": "3000",
+        "context": "settings.integrations.httpApi.port.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "-ckyyr",
+        "message": "'{{date}}'-'{{title}}'-'{{dueDate}}'",
+        "context": "settings.appearance.taskFilenames.customTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "0rZ5ht",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.scheduledLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1TjpjD",
+        "message": "+{duration}",
+        "context": "timer add duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1WEUU_",
+        "message": "✓ {label}",
+        "context": "contextMenus.date.selected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "2WpQmG",
+        "message": "'{'aliases|n(Aliases)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row2.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "2Y6vv9",
+        "message": "{minutes} min",
+        "context": "views.pomodoroStats.recents.duration",
+        "reason": "Standard minute abbreviation"
+      },
+      {
+        "id": "30_Hpx",
+        "message": "{label}: {message}",
+        "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "3Oe9si",
+        "message": "UUID v4",
+        "context": "settings.appearance.taskFilenames.filenameFormat.options.uuid",
+        "reason": "Standard identifier format"
+      },
+      {
+        "id": "3TeIeB",
+        "message": "'{date}'-'{title}'",
+        "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "6yWWWg",
+        "message": "TaskNotes",
+        "context": "common.appName",
+        "reason": "Product name"
+      },
+      {
+        "id": "70WGix",
+        "message": "Google Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "8gK8og",
+        "message": "Status: {status}",
+        "context": "services/CalendarExportService: CalendarExportService.buildDescription display",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "946d3d",
+        "message": "60",
+        "context": "settings.integrations.autoExport.interval.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "9zE7b1",
+        "message": "{fieldName}: ",
+        "context": "ui/taskCardProperties: renderUserProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "AEDUyz",
+        "message": "Agenda",
+        "context": "generated Bases view name",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "BJiuGD",
+        "message": "'{{title}}'",
+        "context": "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "COtnZP",
+        "message": "Status: {value}",
+        "context": "settings.integrations.googleCalendarExport.eventDescription.status",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "D6pPwG",
+        "message": "D",
+        "context": "views.basesCalendar.buttonText.day",
+        "reason": "Calendar initial for día/dia"
+      },
+      {
+        "id": "F1uk87",
+        "message": "Microsoft Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "GHQ66X",
+        "message": "Webhook",
+        "context": "settings.integrations.webhooks.cardHeader",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "GQ7xbT",
+        "message": "ID: {id}",
+        "context": "settings.modalFields.manager.fieldId",
+        "reason": "Identifier acronym"
+      },
+      {
+        "id": "HnX1bk",
+        "message": "**URL:** {value}",
+        "context": "contextMenus.ics.markdown.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "IcahGQ",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateModified display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "J9QNy_",
+        "message": "Status",
+        "context": "settings.taskProperties.fieldMapping.fields.status",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "JDPkem",
+        "message": "L",
+        "context": "views.basesCalendar.buttonText.list",
+        "reason": "Localized calendar initial: Liste/Liste/Lista/Lista or mois/Monat/mes/mês"
+      },
+      {
+        "id": "JueTNA",
+        "message": "Status",
+        "context": "ui.filterBar.group.status",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "KBu6fI",
+        "message": "Google Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "MK7PHt",
+        "message": "Microsoft Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "MM_MAN",
+        "message": "30",
+        "context": "modals.task.timeEstimatePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "M_M2LS",
+        "message": "−{duration}",
+        "context": "timer subtract duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "O_C4Ji",
+        "message": "▶",
+        "context": "settings.integrations.httpApi.endpoints.expandIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "P9hKsn",
+        "message": "#3b82f6",
+        "context": "modals.timeblockCreation.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "PByvQK",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: completedDate display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PN4jTB",
+        "message": "{prefix}: {text}",
+        "context": "services.notification.missed.message",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PxIhAK",
+        "message": "60",
+        "context": "settings.defaults.basicDefaults.defaultTimeEstimate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Q2TMtF",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateCreated display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QKBmYo",
+        "message": "11:00",
+        "context": "modals.timeblockCreation.endTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QXilFr",
+        "message": "'{'title|n(Title)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row1.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "QkB1b_",
+        "message": "'{'file.path|n(Path)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row3.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "RkY2Am",
+        "message": "Status: {value}",
+        "context": "modals.task.tooltips.statusValue",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "Rlg1-w",
+        "message": "26:00",
+        "context": "settings.appearance.timeSettings.endTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rv1-hM",
+        "message": "09:00",
+        "context": "settings.appearance.timeSettings.initialScrollTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "T-wLRv",
+        "message": "{label}: {value}",
+        "context": "ui.taskCard.recurrenceTooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "TmD2iu",
+        "message": "{count}D",
+        "context": "views.basesCalendar.buttonText.customDays",
+        "reason": "Calendar initial for día/dia"
+      },
+      {
+        "id": "TtGRE8",
+        "message": "Google Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexGoogleCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "UOqIQr",
+        "message": "{calendar}: {message}",
+        "context": "calendar sync single error",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Ukq7R0",
+        "message": "Status",
+        "context": "contextMenus.task.status",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "VPekkt",
+        "message": "{displayName}: ",
+        "context": "ui/taskCardProperties: renderGenericProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "X-e5Yh",
+        "message": "URL:",
+        "context": "settings.integrations.subscriptionsList.labels.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "XMobL1",
+        "message": "{date}: {duration}",
+        "context": "statistics daily time tooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "YC_bjz",
+        "message": "06:00",
+        "context": "settings.appearance.timeSettings.startTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Yg8TnJ",
+        "message": "09:00",
+        "context": "modals.timeblockCreation.startTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "YzZqjc",
+        "message": "Normal",
+        "context": "settings/defaults: defaults label",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "aLal-e",
+        "message": "{percent, number}%",
+        "context": "generated Bases completion percentage",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "awdKEp",
+        "message": "Pomodoro",
+        "context": "views.pomodoro.title",
+        "reason": "Named productivity technique"
+      },
+      {
+        "id": "bB_Jku",
+        "message": "Pomodoros",
+        "context": "settings.taskProperties.properties.pomodoros.name",
+        "reason": "Locale-valid plural of the named technique"
+      },
+      {
+        "id": "c1dw9r",
+        "message": "▼",
+        "context": "settings.integrations.httpApi.endpoints.collapseIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "dBdBmg",
+        "message": "0",
+        "context": "modals.task.userFields.numberPlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "eTrfrx",
+        "message": "Layout",
+        "context": "views.basesCalendar.settings.groups.layout",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "fGcyLh",
+        "message": "Item {value1, number}",
+        "context": "Bases data inspector",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "gYjcxb",
+        "message": "Webhooks",
+        "context": "settings.integrations.webhooks.header",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "hs2a-V",
+        "message": "✓ {context}",
+        "context": "contextMenus.task.organization.contextSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "iMHOJC",
+        "message": "{errorMessage}: {message}",
+        "context": "utils/safeAsync: SafeAsync.executeWithRetry display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "lm6o2a",
+        "message": "{displayName}: {displayValue}",
+        "context": "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "m1s27V",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.dueLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "mNiGS7",
+        "message": "Token:",
+        "context": "settings.integrations.oauth.tokenLabel",
+        "reason": "Reviewed authentication technical term"
+      },
+      {
+        "id": "nKlsZa",
+        "message": "M",
+        "context": "views.basesCalendar.buttonText.month",
+        "reason": "Localized calendar initial: Liste/Liste/Lista/Lista or mois/Monat/mes/mês"
+      },
+      {
+        "id": "oqIXU7",
+        "message": "3",
+        "context": "settings.appearance.calendarView.customDayCount.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "p4U5Kv",
+        "message": "Status",
+        "context": "settings.taskProperties.properties.status.name",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "pXBvDd",
+        "message": "title: {title}",
+        "context": "suggest/FileSuggestHelper: suggest.run display",
+        "reason": "Native metadata property name"
+      },
+      {
+        "id": "qtA22g",
+        "message": "{stateLabel}: {timeRemaining}",
+        "context": "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "rMR2Xo",
+        "message": "{displayName}: ",
+        "context": "ui/PropertyEventCard: createPropertyEventCard text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "re_zjV",
+        "message": "#3b82f6",
+        "context": "modals.timeblockInfo.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "sBU1Xn",
+        "message": "Status",
+        "context": "editor/NLPCodeMirrorAutocomplete: getStatusSuggestions info",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "sdrOMJ",
+        "message": "aliases: {value1}",
+        "context": "suggest/FileSuggestHelper: suggest.run display",
+        "reason": "Native metadata property name"
+      },
+      {
+        "id": "so9I-j",
+        "message": "Pomodoros",
+        "context": "views.pomodoroStats.stats.pomodoros",
+        "reason": "Locale-valid plural of the named technique"
+      },
+      {
+        "id": "tfrEWg",
+        "message": "\nStatus: {value1}",
+        "context": "bases/calendar-core: generateTaskTooltip display",
+        "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "veiAoK",
+        "message": "15",
+        "context": "settings.appearance.timeSettings.eventMinHeight.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "wK7vCr",
+        "message": "Microsoft Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexMicrosoftCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "wrv1Mv",
+        "message": "URL",
+        "context": "modals.icsEventInfo.urlLabel",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "x32G0f",
+        "message": "Frontmatter",
+        "context": "settings.general.frontmatter.header",
+        "reason": "Reviewed Markdown technical term"
+      },
+      {
+        "id": "x7ybXd",
+        "message": "URL:",
+        "context": "settings.integrations.webhooks.cardFields.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "z0HHJp",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.statusSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "zw1MbE",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.prioritySelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      }
+    ],
+    "ru": [
+      {
+        "id": "-93N6o",
+        "message": "3000",
+        "context": "settings.integrations.httpApi.port.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "-ckyyr",
+        "message": "'{{date}}'-'{{title}}'-'{{dueDate}}'",
+        "context": "settings.appearance.taskFilenames.customTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "0rZ5ht",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.scheduledLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1TjpjD",
+        "message": "+{duration}",
+        "context": "timer add duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1WEUU_",
+        "message": "✓ {label}",
+        "context": "contextMenus.date.selected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "2WpQmG",
+        "message": "'{'aliases|n(Aliases)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row2.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "30_Hpx",
+        "message": "{label}: {message}",
+        "context": "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "3Oe9si",
+        "message": "UUID v4",
+        "context": "settings.appearance.taskFilenames.filenameFormat.options.uuid",
+        "reason": "Standard identifier format"
+      },
+      {
+        "id": "3TeIeB",
+        "message": "'{date}'-'{title}'",
+        "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "6yWWWg",
+        "message": "TaskNotes",
+        "context": "common.appName",
+        "reason": "Product name"
+      },
+      {
+        "id": "946d3d",
+        "message": "60",
+        "context": "settings.integrations.autoExport.interval.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "9zE7b1",
+        "message": "{fieldName}: ",
+        "context": "ui/taskCardProperties: renderUserProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "BJiuGD",
+        "message": "'{{title}}'",
+        "context": "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "GQ7xbT",
+        "message": "ID: {id}",
+        "context": "settings.modalFields.manager.fieldId",
+        "reason": "Identifier acronym"
+      },
+      {
+        "id": "HnX1bk",
+        "message": "**URL:** {value}",
+        "context": "contextMenus.ics.markdown.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "IcahGQ",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateModified display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "MM_MAN",
+        "message": "30",
+        "context": "modals.task.timeEstimatePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "M_M2LS",
+        "message": "−{duration}",
+        "context": "timer subtract duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "O_C4Ji",
+        "message": "▶",
+        "context": "settings.integrations.httpApi.endpoints.expandIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "P9hKsn",
+        "message": "#3b82f6",
+        "context": "modals.timeblockCreation.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "PByvQK",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: completedDate display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PN4jTB",
+        "message": "{prefix}: {text}",
+        "context": "services.notification.missed.message",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "PxIhAK",
+        "message": "60",
+        "context": "settings.defaults.basicDefaults.defaultTimeEstimate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Q2TMtF",
+        "message": "{label}: {value2}",
+        "context": "ui/taskCardProperties: dateCreated display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QKBmYo",
+        "message": "11:00",
+        "context": "modals.timeblockCreation.endTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QXilFr",
+        "message": "'{'title|n(Title)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row1.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "QkB1b_",
+        "message": "'{'file.path|n(Path)'}'",
+        "context": "settings.appearance.projectAutosuggest.displayRows.row3.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "Rlg1-w",
+        "message": "26:00",
+        "context": "settings.appearance.timeSettings.endTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rv1-hM",
+        "message": "09:00",
+        "context": "settings.appearance.timeSettings.initialScrollTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "T-wLRv",
+        "message": "{label}: {value}",
+        "context": "ui.taskCard.recurrenceTooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "UOqIQr",
+        "message": "{calendar}: {message}",
+        "context": "calendar sync single error",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "VPekkt",
+        "message": "{displayName}: ",
+        "context": "ui/taskCardProperties: renderGenericProperty text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "X-e5Yh",
+        "message": "URL:",
+        "context": "settings.integrations.subscriptionsList.labels.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "XMobL1",
+        "message": "{date}: {duration}",
+        "context": "statistics daily time tooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "YC_bjz",
+        "message": "06:00",
+        "context": "settings.appearance.timeSettings.startTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Yg8TnJ",
+        "message": "09:00",
+        "context": "modals.timeblockCreation.startTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "aLal-e",
+        "message": "{percent, number}%",
+        "context": "generated Bases completion percentage",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "c1dw9r",
+        "message": "▼",
+        "context": "settings.integrations.httpApi.endpoints.collapseIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "dBdBmg",
+        "message": "0",
+        "context": "modals.task.userFields.numberPlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "hs2a-V",
+        "message": "✓ {context}",
+        "context": "contextMenus.task.organization.contextSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "iMHOJC",
+        "message": "{errorMessage}: {message}",
+        "context": "utils/safeAsync: SafeAsync.executeWithRetry display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "lm6o2a",
+        "message": "{displayName}: {displayValue}",
+        "context": "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "m1s27V",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.dueLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "oqIXU7",
+        "message": "3",
+        "context": "settings.appearance.calendarView.customDayCount.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "qtA22g",
+        "message": "{stateLabel}: {timeRemaining}",
+        "context": "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "rMR2Xo",
+        "message": "{displayName}: ",
+        "context": "ui/PropertyEventCard: createPropertyEventCard text",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "re_zjV",
+        "message": "#3b82f6",
+        "context": "modals.timeblockInfo.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "veiAoK",
+        "message": "15",
+        "context": "settings.appearance.timeSettings.eventMinHeight.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "wrv1Mv",
+        "message": "URL",
+        "context": "modals.icsEventInfo.urlLabel",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "x7ybXd",
+        "message": "URL:",
+        "context": "settings.integrations.webhooks.cardFields.url",
+        "reason": "URL acronym"
+      },
+      {
+        "id": "xHstq-",
+        "message": "HTTP API",
+        "context": "settings.integrations.httpApi.header",
+        "reason": "Protocol acronym"
+      },
+      {
+        "id": "z0HHJp",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.statusSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "zw1MbE",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.prioritySelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      }
+    ],
+    "zh": [
+      {
+        "id": "-93N6o",
+        "message": "3000",
+        "context": "settings.integrations.httpApi.port.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "-ckyyr",
+        "message": "'{{date}}'-'{{title}}'-'{{dueDate}}'",
+        "context": "settings.appearance.taskFilenames.customTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "0rZ5ht",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.scheduledLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1TjpjD",
+        "message": "+{duration}",
+        "context": "timer add duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1WEUU_",
+        "message": "✓ {label}",
+        "context": "contextMenus.date.selected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "1pk7LF",
+        "message": "@home, @work",
+        "context": "settings.defaults.basicDefaults.defaultContexts.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "3Oe9si",
+        "message": "UUID v4",
+        "context": "settings.appearance.taskFilenames.filenameFormat.options.uuid",
+        "reason": "Standard identifier format"
+      },
+      {
+        "id": "3TeIeB",
+        "message": "'{date}'-'{title}'",
+        "context": "settings.integrations.calendarSubscriptions.customTemplate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "6aO_Yj",
+        "message": "type",
+        "context": "settings.appearance.projectAutosuggest.requiredPropertyKey.placeholder",
+        "reason": "Literal configured metadata key/value example, not untranslated prose"
+      },
+      {
+        "id": "6yWWWg",
+        "message": "TaskNotes",
+        "context": "common.appName",
+        "reason": "Product name"
+      },
+      {
+        "id": "70WGix",
+        "message": "Google Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "946d3d",
+        "message": "60",
+        "context": "settings.integrations.autoExport.interval.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "BJiuGD",
+        "message": "'{{title}}'",
+        "context": "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "F1uk87",
+        "message": "Microsoft Calendar",
+        "context": "bases/calendar-core: createICSEvent display",
+        "reason": "Product name"
+      },
+      {
+        "id": "FQsQE1",
+        "message": "project",
+        "context": "settings.appearance.projectAutosuggest.requiredPropertyValue.placeholder",
+        "reason": "Literal configured metadata key/value example, not untranslated prose"
+      },
+      {
+        "id": "GHQ66X",
+        "message": "Webhook",
+        "context": "settings.integrations.webhooks.cardHeader",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "KBu6fI",
+        "message": "Google Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "MK7PHt",
+        "message": "Microsoft Calendar",
+        "context": "services/ICSNoteService: ICSNoteService.findEventById display",
+        "reason": "Product name"
+      },
+      {
+        "id": "MM_MAN",
+        "message": "30",
+        "context": "modals.task.timeEstimatePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "M_M2LS",
+        "message": "−{duration}",
+        "context": "timer subtract duration button",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "O_C4Ji",
+        "message": "▶",
+        "context": "settings.integrations.httpApi.endpoints.expandIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "P9hKsn",
+        "message": "#3b82f6",
+        "context": "modals.timeblockCreation.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "PxIhAK",
+        "message": "60",
+        "context": "settings.defaults.basicDefaults.defaultTimeEstimate.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "QKBmYo",
+        "message": "11:00",
+        "context": "modals.timeblockCreation.endTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rlg1-w",
+        "message": "26:00",
+        "context": "settings.appearance.timeSettings.endTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Rv1-hM",
+        "message": "09:00",
+        "context": "settings.appearance.timeSettings.initialScrollTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "T-wLRv",
+        "message": "{label}: {value}",
+        "context": "ui.taskCard.recurrenceTooltip",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "TtGRE8",
+        "message": "Google Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexGoogleCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "YC_bjz",
+        "message": "06:00",
+        "context": "settings.appearance.timeSettings.startTime.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "Yg8TnJ",
+        "message": "09:00",
+        "context": "modals.timeblockCreation.startTimePlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "aLal-e",
+        "message": "{percent, number}%",
+        "context": "generated Bases completion percentage",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "bTZ_3y",
+        "message": "Webhook URL",
+        "context": "settings/tabs/integrationsTab: renderWebhookList display",
+        "reason": "Integration technical term and URL acronym"
+      },
+      {
+        "id": "c1dw9r",
+        "message": "▼",
+        "context": "settings.integrations.httpApi.endpoints.collapseIcon",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "dBdBmg",
+        "message": "0",
+        "context": "modals.task.userFields.numberPlaceholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "gYjcxb",
+        "message": "Webhooks",
+        "context": "settings.integrations.webhooks.header",
+        "reason": "Reviewed integration technical term"
+      },
+      {
+        "id": "hs2a-V",
+        "message": "✓ {context}",
+        "context": "contextMenus.task.organization.contextSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "inyWqV",
+        "message": "ICS/iCal URL",
+        "context": "settings/tabs/integrationsTab: renderICSSubscriptionsList display",
+        "reason": "Calendar-format and URL acronyms"
+      },
+      {
+        "id": "lXILeS",
+        "message": "YYYY-MM-DD",
+        "context": "modals.task.userFields.datePlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "m1s27V",
+        "message": "{label}: {display}",
+        "context": "ui.taskCard.dueLabel",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "oqIXU7",
+        "message": "3",
+        "context": "settings.appearance.calendarView.customDayCount.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "pXBvDd",
+        "message": "title: {title}",
+        "context": "suggest/FileSuggestHelper: suggest.run display",
+        "reason": "Native metadata property name"
+      },
+      {
+        "id": "re_zjV",
+        "message": "#3b82f6",
+        "context": "modals.timeblockInfo.colorPlaceholder",
+        "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "sdrOMJ",
+        "message": "aliases: {value1}",
+        "context": "suggest/FileSuggestHelper: suggest.run display",
+        "reason": "Native metadata property name"
+      },
+      {
+        "id": "veiAoK",
+        "message": "15",
+        "context": "settings.appearance.timeSettings.eventMinHeight.placeholder",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "wK7vCr",
+        "message": "Microsoft Calendar",
+        "context": "bases/MiniCalendarView: MiniCalendarView.indexMicrosoftCalendarEvents display",
+        "reason": "Product name"
+      },
+      {
+        "id": "xHstq-",
+        "message": "HTTP API",
+        "context": "settings.integrations.httpApi.header",
+        "reason": "Protocol acronym"
+      },
+      {
+        "id": "z0HHJp",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.statusSelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      },
+      {
+        "id": "zw1MbE",
+        "message": "✓ {label}",
+        "context": "contextMenus.task.prioritySelected",
+        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      }
+    ]
+  },
+  "allowEnglishPluralArms": {
+    "fr": {
+      "FBlWXu": {
+        "noteCount:one": "French note is the same spelling as English note; reviewed existing translation",
+        "noteCount:other": "French notes is the same spelling as English notes; reviewed existing translation",
+        "noteCount:many": "French million-count notes uses the existing authored other wording"
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { App, SuggestModal, TAbstractFile, TFile, parseFrontMatterAliases, Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -51,14 +52,32 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 		this.options = options;
 
 		// Set placeholder
-		this.setPlaceholder(options.placeholder || "Search files or type to create new...");
+		this.setPlaceholder(
+			options.placeholder || this.plugin.i18n.translate(msg({ message: "Search files or type to create new...", context: "modals.fileSelector.placeholder" }))
+		);
 
 		// Set instructions
 		this.setInstructions([
-			{ command: "↑↓", purpose: "to navigate" },
-			{ command: "↵", purpose: "to select" },
-			{ command: "⇧↵", purpose: "to create new" },
-			{ command: "esc", purpose: "to cancel" },
+			{
+				command: "↑↓",
+				purpose: this.plugin.i18n.translate(
+					msg({ message: "to navigate", context: "modals.unscheduledTasksSelector.instructions.navigate" })
+				),
+			},
+			{
+				command: "↵",
+				purpose: this.plugin.i18n.translate(msg({ message: "to select", context: "modals.taskSelector.instructions.select" })),
+			},
+			{
+				command: "⇧↵",
+				purpose: this.plugin.i18n.translate(
+					msg({ message: "to create new task", context: "modals.taskSelectorWithCreate.instructions.create" })
+				),
+			},
+			{
+				command: "esc",
+				purpose: this.plugin.i18n.translate(msg({ message: "to cancel", context: "modals.taskSelector.instructions.dismiss" })),
+			},
 		]);
 
 		// Set modal title
@@ -167,7 +186,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 		titleLine.createSpan({
 			cls: "file-selector-create-footer__hint-text",
-			text: " to create: ",
+			text: this.plugin.i18n.translate(msg({ message: " to create: ", context: "modals.taskSelectorWithCreate.footer.createLabel" })),
 		});
 
 		titleLine.createSpan({
@@ -187,7 +206,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 	private async createNewFile(): Promise<void> {
 		if (!this.currentQuery) {
-			new Notice("Please enter a file name");
+			new Notice(this.plugin.i18n.translate(msg({ message: "Please enter a file name", context: "modals.fileSelector.nameRequired" })));
 			return;
 		}
 
@@ -205,7 +224,9 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 			// Check if file already exists
 			const existingFile = this.app.vault.getAbstractFileByPath(filePath);
 			if (existingFile) {
-				new Notice(`File "${filePath}" already exists`);
+				new Notice(
+					this.plugin.i18n.translate(msg({ message: "File \"{path}\" already exists", context: "modals.fileSelector.exists" }), { path: filePath })
+				);
 				return;
 			}
 
@@ -226,7 +247,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 				operation: "creating-file",
 				error: error,
 			});
-			new Notice("Failed to create file");
+			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to create file", context: "modals.fileSelector.createFailed" })));
 		}
 	}
 

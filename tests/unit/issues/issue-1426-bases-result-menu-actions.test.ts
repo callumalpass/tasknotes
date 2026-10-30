@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 /**
  * Issue #1426 follow-up: TaskNotes custom Bases views should implement the
  * native result-count menu hooks, not only custom getViewActions entries.
@@ -19,6 +20,7 @@ class TestBasesView extends BasesViewBase {
 
 function createView(): TestBasesView {
 	const plugin = {
+		i18n: createI18nService(),
 		fieldMapper: {
 			isRecognizedProperty: jest.fn().mockReturnValue(false),
 		},
@@ -65,8 +67,9 @@ describe("Issue #1426: native Bases result-count menu actions", () => {
 	it("copies the current Bases rows as a tab-separated table", async () => {
 		const view = createView();
 
-		await (view as unknown as { copyBasesTableToClipboard(): Promise<void> })
-			.copyBasesTableToClipboard();
+		await (
+			view as unknown as { copyBasesTableToClipboard(): Promise<void> }
+		).copyBasesTableToClipboard();
 
 		expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
 			"File\tStatus\tPriority\nTasks/A.md\topen\thigh"

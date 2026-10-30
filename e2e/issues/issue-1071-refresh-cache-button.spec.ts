@@ -65,13 +65,13 @@ test.describe('Issue #1071: Refresh button should also refresh cache', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find the refresh button in the calendar toolbar
       // The button text is "Refresh" based on i18n key views.basesCalendar.buttonText.refresh
       const refreshButton = page.locator(
-        '.fc-toolbar button:has-text("Refresh"), .fc-refreshCalendars-button'
+        '.tnc-toolbar button:has-text("Refresh"), .tnc-btn-refreshCalendars'
       );
 
       const isRefreshVisible = await refreshButton.isVisible({ timeout: 2000 }).catch(() => false);
@@ -120,12 +120,12 @@ test.describe('Issue #1071: Refresh button should also refresh cache', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find the refresh button
       const refreshButton = page.locator(
-        '.fc-toolbar button:has-text("Refresh"), .fc-refreshCalendars-button'
+        '.tnc-toolbar button:has-text("Refresh"), .tnc-btn-refreshCalendars'
       );
 
       const isRefreshVisible = await refreshButton.isVisible({ timeout: 2000 }).catch(() => false);
@@ -206,13 +206,13 @@ test.describe('Issue #1071: Refresh button should also refresh cache', () => {
       await page.waitForTimeout(1000);
 
       // Go back to calendar view
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       const isCalendarVisible = await calendarContainer.isVisible({ timeout: 2000 }).catch(() => false);
 
       if (isCalendarVisible) {
         // Find and click refresh button
         const refreshButton = page.locator(
-          '.fc-toolbar button:has-text("Refresh"), .fc-refreshCalendars-button'
+          '.tnc-toolbar button:has-text("Refresh"), .tnc-btn-refreshCalendars'
         );
 
         const isRefreshVisible = await refreshButton.isVisible({ timeout: 2000 }).catch(() => false);

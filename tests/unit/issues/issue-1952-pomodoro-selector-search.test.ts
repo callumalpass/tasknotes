@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { TaskSelectorWithCreateModal } from "../../../src/modals/TaskSelectorWithCreateModal";
 import { TaskInfo } from "../../../src/types";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
@@ -32,7 +33,7 @@ function createModal(tasks: TaskInfo[]): TaskSelectorWithCreateModal {
 			calendarViewSettings: { locale: "en" },
 		},
 		i18n: {
-			translate: jest.fn((key: string) => key),
+			translate: mockObserveTranslation(),
 		},
 		statusManager: {
 			getCompletedStatuses: jest.fn(() => ["done"]),

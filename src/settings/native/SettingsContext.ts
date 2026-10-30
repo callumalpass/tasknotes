@@ -1,3 +1,5 @@
+import { msg } from "@lingui/core/macro";
+import type { MessageDescriptor } from "@lingui/core";
 import { Notice, type SettingDefinition, type SettingControl } from "obsidian";
 import type TaskNotesPlugin from "../../main";
 
@@ -34,7 +36,7 @@ export class SettingsContext {
 		readonly rebuild: () => void
 	) {}
 
-	readonly t = (key: string, params?: Record<string, string | number>): string =>
+	readonly t = (key: MessageDescriptor, params?: Record<string, string | number>): string =>
 		this.plugin.i18n.translate(key, params);
 
 	readonly save = (): void => {
@@ -46,7 +48,7 @@ export class SettingsContext {
 			.catch((error: unknown) => {
 				this.saveError = error instanceof Error ? error : new Error(String(error));
 				new Notice(
-					this.t("settings.native.saveError", {
+					this.t(msg({ message: "Could not save TaskNotes settings: {error}", context: "settings.native.saveError" }), {
 						error: error instanceof Error ? error.message : String(error),
 					})
 				);
@@ -157,7 +159,7 @@ export class SettingsContext {
 				(options.min !== undefined && value < options.min) ||
 				(options.max !== undefined && value > options.max)
 			) {
-				return this.t("settings.native.numberRange", {
+				return this.t(msg({ message: "Enter a number between {min} and {max}.", context: "settings.native.numberRange" }), {
 					min: options.min ?? "−∞",
 					max: options.max ?? "∞",
 				});

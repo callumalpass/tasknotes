@@ -1,6 +1,7 @@
+import { msg } from "@lingui/core/macro";
 import { createFilterSettingsInputs } from '../../../src/settings/components/FilterSettingsComponent';
 import type { FileFilterConfig } from '../../../src/suggest/FileSuggestHelper';
-import type { TranslationKey } from '../../../src/i18n';
+import type { MessageDescriptor } from '../../../src/i18n';
 
 // Mock createCardInput
 jest.mock('../../../src/settings/components/CardComponent', () => ({
@@ -21,7 +22,7 @@ describe('FilterSettingsComponent', () => {
 	beforeEach(() => {
 		container = document.createElement('div');
 		mockOnChange = jest.fn();
-		mockTranslate = jest.fn((key: TranslationKey) => {
+		mockTranslate = jest.fn((key: MessageDescriptor) => {
 			// Return simplified translations for testing
 			const translations: Record<string, string> = {
 				'settings.appearance.projectAutosuggest.requiredTags.name': 'Required tags',
@@ -240,16 +241,16 @@ describe('FilterSettingsComponent', () => {
 			// Should translate 4 labels + 4 placeholders = 8 calls
 			expect(mockTranslate).toHaveBeenCalledTimes(8);
 			expect(mockTranslate).toHaveBeenCalledWith(
-				'settings.appearance.projectAutosuggest.requiredTags.name'
+				msg({ message: "Required tags", context: "settings.appearance.projectAutosuggest.requiredTags.name" })
 			);
 			expect(mockTranslate).toHaveBeenCalledWith(
-				'settings.appearance.projectAutosuggest.includeFolders.name'
+				msg({ message: "Include folders", context: "settings.appearance.projectAutosuggest.includeFolders.name" })
 			);
 			expect(mockTranslate).toHaveBeenCalledWith(
-				'settings.appearance.projectAutosuggest.requiredPropertyKey.name'
+				msg({ message: "Required property key", context: "settings.appearance.projectAutosuggest.requiredPropertyKey.name" })
 			);
 			expect(mockTranslate).toHaveBeenCalledWith(
-				'settings.appearance.projectAutosuggest.requiredPropertyValue.name'
+				msg({ message: "Required property value", context: "settings.appearance.projectAutosuggest.requiredPropertyValue.name" })
 			);
 		});
 	});

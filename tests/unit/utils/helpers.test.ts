@@ -336,21 +336,23 @@ describe('Helpers', () => {
 
     describe('formatTime', () => {
       it('should format hours and minutes', () => {
-        expect(formatTime(90)).toBe('1h 30m');
-        expect(formatTime(120)).toBe('2h');
-        expect(formatTime(45)).toBe('45m');
-        expect(formatTime(0)).toBe('0m');
+        expect(formatTime(90)).toBe('1 hr 30 min');
+        expect(formatTime(120)).toBe('2 hr');
+        expect(formatTime(45)).toBe('45 min');
+        expect(formatTime(0)).toBe('0 min');
+        expect(formatTime(0.5)).toBe('0.5 min');
+        expect(formatTime(119.9999)).toBe('2 hr');
       });
 
       it('should handle edge cases', () => {
-        expect(formatTime(null as any)).toBe('0m');
-        expect(formatTime(undefined as any)).toBe('0m');
-        expect(formatTime(NaN)).toBe('0m');
+        expect(formatTime(null as any)).toBe('0 min');
+        expect(formatTime(undefined as any)).toBe('0 min');
+        expect(formatTime(NaN)).toBe('0 min');
       });
 
       it('should handle large values', () => {
-        expect(formatTime(1440)).toBe('24h'); // 24 hours
-        expect(formatTime(1500)).toBe('25h'); // 25 hours
+        expect(formatTime(1440)).toBe('24 hr'); // 24 hours
+        expect(formatTime(1500)).toBe('25 hr'); // 25 hours
       });
     });
 
@@ -901,7 +903,7 @@ invalid yaml: [
     it('should handle null and undefined inputs gracefully', () => {
       expect(calculateTotalTimeSpent(null as any)).toBe(0);
       expect(getActiveTimeEntry(undefined as any)).toBeNull();
-      expect(formatTime(null as any)).toBe('0m');
+      expect(formatTime(null as any)).toBe('0 min');
       expect(parseTime(null as any)).toBeNull();
     });
 

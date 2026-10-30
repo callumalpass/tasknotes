@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Menu } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder } from "../types";
@@ -30,12 +31,12 @@ export class ReminderContextMenu {
 		this.addQuickRemindersSection(
 			menu,
 			"due",
-			this.plugin.i18n.translate("components.reminderContextMenu.remindBeforeDue")
+			this.plugin.i18n.translate(msg({ message: "Remind before due...", context: "components.reminderContextMenu.remindBeforeDue" }))
 		);
 		this.addQuickRemindersSection(
 			menu,
 			"scheduled",
-			this.plugin.i18n.translate("components.reminderContextMenu.remindBeforeScheduled")
+			this.plugin.i18n.translate(msg({ message: "Remind before scheduled...", context: "components.reminderContextMenu.remindBeforeScheduled" }))
 		);
 
 		menu.addSeparator();
@@ -43,7 +44,7 @@ export class ReminderContextMenu {
 		// Manage reminders
 		menu.addItem((item) => {
 			item.setTitle(
-				this.plugin.i18n.translate("components.reminderContextMenu.manageAllReminders")
+				this.plugin.i18n.translate(msg({ message: "Manage all reminders...", context: "components.reminderContextMenu.manageAllReminders" }))
 			)
 				.setIcon("settings")
 				.onClick(() => {
@@ -55,7 +56,7 @@ export class ReminderContextMenu {
 		if (this.task.reminders && this.task.reminders.length > 0) {
 			menu.addItem((item) => {
 				item.setTitle(
-					this.plugin.i18n.translate("components.reminderContextMenu.clearAllReminders")
+					this.plugin.i18n.translate(msg({ message: "Clear all reminders", context: "components.reminderContextMenu.clearAllReminders" }))
 				)
 					.setIcon("trash")
 					.onClick(async () => {
@@ -90,31 +91,31 @@ export class ReminderContextMenu {
 		const quickOptions = [
 			{
 				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.atTime"
+					msg({ message: "At time of event", context: "components.reminderContextMenu.quickReminders.atTime" })
 				),
 				offset: "PT0M",
 			},
 			{
 				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.fiveMinutesBefore"
+					msg({ message: "5 minutes before", context: "components.reminderContextMenu.quickReminders.fiveMinutesBefore" })
 				),
 				offset: "-PT5M",
 			},
 			{
 				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
+					msg({ message: "15 minutes before", context: "components.reminderContextMenu.quickReminders.fifteenMinutesBefore" })
 				),
 				offset: "-PT15M",
 			},
 			{
 				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.oneHourBefore"
+					msg({ message: "1 hour before", context: "components.reminderContextMenu.quickReminders.oneHourBefore" })
 				),
 				offset: "-PT1H",
 			},
 			{
 				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.oneDayBefore"
+					msg({ message: "1 day before", context: "components.reminderContextMenu.quickReminders.oneDayBefore" })
 				),
 				offset: "-P1D",
 			},

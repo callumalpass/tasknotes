@@ -25,6 +25,7 @@
 
 import { test, expect } from '@playwright/test';
 import { launchObsidian, closeObsidian, ObsidianApp, runCommand } from '../obsidian';
+import { calendarTimeSlots } from '../calendar-helpers';
 
 let app: ObsidianApp;
 
@@ -64,12 +65,12 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to week view which has both all-day section and time slots
         const weekButton = page.locator(
-          '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+          '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
         );
         if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await weekButton.click();
@@ -77,13 +78,13 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         }
 
         // Verify we're in time grid week view
-        const timeGrid = page.locator('.fc-timegrid-body, .fc-timegrid');
+        const timeGrid = page.locator('.tnc-tg-body, .tnc-tg');
         await expect(timeGrid).toBeVisible({ timeout: 5000 });
 
         // Look for an all-day event in the all-day section
-        // All-day events appear in the fc-daygrid-body (top section of week view)
-        const allDaySection = page.locator('.fc-daygrid-body');
-        const allDayEvent = allDaySection.locator('.fc-event').first();
+        // All-day events appear in the all-day row (top section of week view)
+        const allDaySection = page.locator('.tnc-tg-allday');
+        const allDayEvent = allDaySection.locator('.tnc-item').first();
 
         if (!(await allDayEvent.isVisible({ timeout: 3000 }).catch(() => false))) {
           console.log('No all-day events found to test dragging. Test skipped.');
@@ -98,7 +99,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         }
 
         // Find a time slot in the timed section (e.g., 10:00 AM)
-        const timeSlots = page.locator('.fc-timegrid-slot-lane');
+        const timeSlots = calendarTimeSlots(page);
         const targetSlot = timeSlots.nth(20); // Approximately 10:00 AM (20 * 30min from midnight)
         const slotBox = await targetSlot.boundingBox();
 
@@ -124,7 +125,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
 
         // After implementation, the event should now appear in the time grid
         // not in the all-day section
-        const timedEvents = page.locator('.fc-timegrid-event');
+        const timedEvents = page.locator('.tnc-item--timed');
         const timedEventCount = await timedEvents.count();
 
         console.log(`Timed events after drag: ${timedEventCount}`);
@@ -152,19 +153,19 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to week view
-        const weekButton = page.locator('.fc-timeGridWeek-button');
+        const weekButton = page.locator('.tnc-btn-view-week');
         if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await weekButton.click();
           await page.waitForTimeout(500);
         }
 
         // Find an all-day event
-        const allDaySection = page.locator('.fc-daygrid-body');
-        const allDayEvent = allDaySection.locator('.fc-event').first();
+        const allDaySection = page.locator('.tnc-tg-allday');
+        const allDayEvent = allDaySection.locator('.tnc-item').first();
 
         if (!(await allDayEvent.isVisible({ timeout: 3000 }).catch(() => false))) {
           console.log('No all-day events found');
@@ -172,12 +173,12 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         }
 
         // Get the task title before drag
-        const taskTitle = await allDayEvent.locator('.fc-event-title').textContent();
+        const taskTitle = await allDayEvent.locator('.tnc-item-title').textContent();
         console.log(`Testing with task: ${taskTitle}`);
 
         // Perform the drag to a time slot (similar to previous test)
         const eventBox = await allDayEvent.boundingBox();
-        const timeSlots = page.locator('.fc-timegrid-slot-lane');
+        const timeSlots = calendarTimeSlots(page);
         const targetSlot = timeSlots.nth(20);
         const slotBox = await targetSlot.boundingBox();
 
@@ -194,13 +195,13 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         // After implementation, verify the task's scheduled property has a time component
         // This would require reading the task file or checking the event's data attributes
         const updatedEvent = page.locator(
-          `.fc-event:has-text("${taskTitle}"), .fc-timegrid-event:has-text("${taskTitle}")`
+          `.tnc-item:has-text("${taskTitle}"), .tnc-item--timed:has-text("${taskTitle}")`
         );
 
         if (await updatedEvent.isVisible({ timeout: 2000 }).catch(() => false)) {
           // Check if the event is now in the timed grid (not all-day)
           const isTimedEvent = await updatedEvent.evaluate((el) =>
-            el.closest('.fc-timegrid-body')
+            el.closest('.tnc-tg-body')
           );
           expect(isTimedEvent).toBeTruthy();
         }
@@ -218,12 +219,12 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to day view
         const dayButton = page.locator(
-          '.fc-timeGridDay-button, button:has-text("day"), .fc-toolbar button:has-text("Day")'
+          '.tnc-btn-view-day, button:has-text("day"), .tnc-toolbar button:has-text("Day")'
         );
         if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await dayButton.click();
@@ -231,12 +232,12 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         }
 
         // Verify day view is active
-        const timeGrid = page.locator('.fc-timegrid');
+        const timeGrid = page.locator('.tnc-tg');
         await expect(timeGrid).toBeVisible({ timeout: 5000 });
 
         // Find all-day event
-        const allDaySection = page.locator('.fc-daygrid-body');
-        const allDayEvent = allDaySection.locator('.fc-event').first();
+        const allDaySection = page.locator('.tnc-tg-allday');
+        const allDayEvent = allDaySection.locator('.tnc-item').first();
 
         if (!(await allDayEvent.isVisible({ timeout: 3000 }).catch(() => false))) {
           console.log('No all-day events in day view');
@@ -245,7 +246,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
 
         // Drag to time slot
         const eventBox = await allDayEvent.boundingBox();
-        const timeSlots = page.locator('.fc-timegrid-slot-lane');
+        const timeSlots = calendarTimeSlots(page);
         const targetSlot = timeSlots.nth(18); // ~9:00 AM
         const slotBox = await targetSlot.boundingBox();
 
@@ -260,7 +261,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         }
 
         // Verify event moved to timed section
-        const timedEvents = page.locator('.fc-timegrid-event');
+        const timedEvents = page.locator('.tnc-item--timed');
         const count = await timedEvents.count();
         console.log(`Timed events in day view: ${count}`);
         expect(count).toBeGreaterThan(0);
@@ -295,18 +296,18 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to week view
-        const weekButton = page.locator('.fc-timeGridWeek-button');
+        const weekButton = page.locator('.tnc-btn-view-week');
         if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await weekButton.click();
           await page.waitForTimeout(500);
         }
 
         // Find time slots
-        const timeSlots = page.locator('.fc-timegrid-slot-lane');
+        const timeSlots = calendarTimeSlots(page);
         const slotCount = await timeSlots.count();
 
         if (slotCount < 4) {
@@ -347,8 +348,8 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
 
         // Check if a timeblock was created (look for timeblock-specific elements)
         const timeblockEvent = page.locator(
-          '.fc-event[data-event-type="timeblock"], ' +
-            '.fc-event.tasknotes-timeblock, ' +
+          '.tnc-item[data-event-type="timeblock"], ' +
+            '.tnc-item.tasknotes-timeblock, ' +
             '.timeblock-event'
         );
 
@@ -390,23 +391,23 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to day view
-        const dayButton = page.locator('.fc-timeGridDay-button');
+        const dayButton = page.locator('.tnc-btn-view-day');
         if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await dayButton.click();
           await page.waitForTimeout(500);
         }
 
         // Count existing timeblocks
-        const existingTimeblocks = page.locator('.fc-event[data-event-type="timeblock"]');
+        const existingTimeblocks = page.locator('.tnc-item[data-event-type="timeblock"]');
         const initialCount = await existingTimeblocks.count();
         console.log(`Initial timeblock count: ${initialCount}`);
 
         // Draw a time range (proposed: double-click creates with default)
-        const timeSlots = page.locator('.fc-timegrid-slot-lane');
+        const timeSlots = calendarTimeSlots(page);
         const slot = timeSlots.nth(28); // ~2:00 PM
         const slotBox = await slot.boundingBox();
 
@@ -437,18 +438,18 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to week view
-        const weekButton = page.locator('.fc-timeGridWeek-button');
+        const weekButton = page.locator('.tnc-btn-view-week');
         if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await weekButton.click();
           await page.waitForTimeout(500);
         }
 
         // Find an existing timeblock
-        const timeblockEvent = page.locator('.fc-event[data-event-type="timeblock"]').first();
+        const timeblockEvent = page.locator('.tnc-item[data-event-type="timeblock"]').first();
 
         if (!(await timeblockEvent.isVisible({ timeout: 3000 }).catch(() => false))) {
           console.log('No timeblocks found for inline editing test');
@@ -456,7 +457,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         }
 
         // After implementation: double-click on timeblock title should enable inline editing
-        const titleElement = timeblockEvent.locator('.fc-event-title');
+        const titleElement = timeblockEvent.locator('.tnc-item-title');
         if (await titleElement.isVisible()) {
           await titleElement.dblclick();
           await page.waitForTimeout(300);
@@ -464,9 +465,9 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
 
         // Check if inline input appeared
         const inlineInput = page.locator(
-          '.fc-event input[type="text"], ' +
+          '.tnc-item input[type="text"], ' +
             '.timeblock-title-input, ' +
-            '.fc-event [contenteditable="true"]'
+            '.tnc-item [contenteditable="true"]'
         );
 
         const inlineEditingEnabled = await inlineInput.isVisible({ timeout: 1000 }).catch(() => false);
@@ -587,11 +588,11 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to day view to see time blocks clearly
-        const dayButton = page.locator('.fc-timeGridDay-button');
+        const dayButton = page.locator('.tnc-btn-view-day');
         if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await dayButton.click();
           await page.waitForTimeout(500);
@@ -599,7 +600,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
 
         // After implementation: look for a task that appears multiple times
         // These would have the same task ID but different time ranges
-        const scheduledEvents = page.locator('.fc-event[data-event-type="scheduled"]');
+        const scheduledEvents = page.locator('.tnc-item[data-event-type="scheduled"]');
         const eventCount = await scheduledEvents.count();
 
         console.log(`Total scheduled events: ${eventCount}`);
@@ -639,11 +640,11 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to day view
-        const dayButton = page.locator('.fc-timeGridDay-button');
+        const dayButton = page.locator('.tnc-btn-view-day');
         if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await dayButton.click();
           await page.waitForTimeout(500);
@@ -651,7 +652,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
 
         // Find a multi-block task (would need one to exist after implementation)
         // For this test, we'll look for events with the same file path
-        const events = page.locator('.fc-event[data-event-type="scheduled"]');
+        const events = page.locator('.tnc-item[data-event-type="scheduled"]');
         const eventCount = await events.count();
 
         if (eventCount < 2) {
@@ -687,7 +688,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
 
         // Drag the first event to a new time
         if (firstBox) {
-          const timeSlots = page.locator('.fc-timegrid-slot-lane');
+          const timeSlots = calendarTimeSlots(page);
           const targetSlot = timeSlots.nth(30); // Move to ~3:00 PM
           const targetBox = await targetSlot.boundingBox();
 
@@ -732,18 +733,18 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to day view
-        const dayButton = page.locator('.fc-timeGridDay-button');
+        const dayButton = page.locator('.tnc-btn-view-day');
         if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await dayButton.click();
           await page.waitForTimeout(500);
         }
 
         // Find a scheduled event
-        const event = page.locator('.fc-event[data-event-type="scheduled"]').first();
+        const event = page.locator('.tnc-item[data-event-type="scheduled"]').first();
         if (!(await event.isVisible({ timeout: 3000 }).catch(() => false))) {
           console.log('No scheduled events found');
           return;
@@ -771,7 +772,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         }
 
         // After completion, all events for this task should have completed styling
-        const relatedEvents = page.locator(`.fc-event[data-file-path="${filePath}"]`);
+        const relatedEvents = page.locator(`.tnc-item[data-file-path="${filePath}"]`);
         const relatedCount = await relatedEvents.count();
 
         for (let i = 0; i < relatedCount; i++) {
@@ -889,7 +890,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // This test documents the expected Pomodoro workflow
@@ -927,7 +928,7 @@ test.describe('Issue #1119: Time Block Handling in Calendar View', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Document the use case

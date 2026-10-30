@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { TaskEditModal } from '../../../src/modals/TaskEditModal';
 import { showConfirmationModal } from '../../../src/modals/ConfirmationModal';
 import { MockObsidian, Notice } from '../../helpers/obsidian-runtime';
@@ -22,35 +23,13 @@ function createMockApp(mockApp: unknown): App {
 	return mockApp as App;
 }
 
-function translate(key: string, params?: Record<string, string | number>): string {
-	const translations: Record<string, string> = {
-		'common.cancel': 'Cancel',
-		'contextMenus.task.delete': 'Delete',
-		'contextMenus.task.deleteTitle': 'Delete file',
-		'contextMenus.task.deleteMessage': 'Are you sure you want to delete "{name}"?',
-		'contextMenus.task.deleteConfirm': 'Delete',
-		'modals.taskEdit.deleteConfirmation.title': 'Delete task',
-		'modals.taskEdit.deleteConfirmation.message':
-			'Are you sure you want to delete "{title}"? This moves the task note to Obsidian trash.',
-		'modals.taskEdit.deleteConfirmation.confirm': 'Delete task',
-		'modals.taskEdit.buttons.archive': 'Archive',
-		'modals.taskEdit.buttons.unarchive': 'Unarchive',
-		'modals.taskEdit.notices.deleteSuccess': 'Task "{title}" deleted successfully',
-		'modals.taskEdit.notices.deleteFailure': 'Failed to delete task: {message}',
-		'modals.task.buttons.openNote': 'Open note',
-		'modals.task.buttons.save': 'Save',
-	};
-	const template = translations[key] || key;
-	return template.replace(/\{(\w+)\}/g, (_match, name: string) =>
-		params?.[name] !== undefined ? String(params[name]) : `{${name}}`
-	);
-}
+function translate(...args: Parameters<typeof mockEnglishText>): string { return mockEnglishText(...args); }
 
 function createMockPlugin(app: App) {
 	return {
 		app,
 		i18n: {
-			translate: jest.fn(translate),
+			translate: mockObserveTranslation(),
 		},
 		settings: {
 			enableModalSplitLayout: false,

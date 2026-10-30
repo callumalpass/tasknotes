@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Menu } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -38,12 +39,12 @@ export class PropertyVisibilityDropdown {
 			// Add property groups efficiently
 			this.addPropertyGroup(
 				menu,
-				this.plugin.i18n.translate("components.propertyVisibilityDropdown.coreProperties"),
+				this.plugin.i18n.translate(msg({ message: "Core properties", context: "components.propertyVisibilityDropdown.coreProperties" })),
 				propertyGroups.core
 			);
 			this.addPropertyGroup(
 				menu,
-				this.plugin.i18n.translate("components.propertyVisibilityDropdown.organization"),
+				this.plugin.i18n.translate(msg({ message: "ORGANIZATION", context: "components.propertyVisibilityDropdown.organization" })),
 				propertyGroups.organization
 			);
 
@@ -51,7 +52,7 @@ export class PropertyVisibilityDropdown {
 				this.addPropertyGroup(
 					menu,
 					this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.customProperties"
+						msg({ message: "Custom properties", context: "components.propertyVisibilityDropdown.customProperties" })
 					),
 					propertyGroups.user
 				);
@@ -68,7 +69,7 @@ export class PropertyVisibilityDropdown {
 			// Provide user feedback on error
 			this.plugin.app.workspace.trigger(
 				"notice",
-				this.plugin.i18n.translate("components.propertyVisibilityDropdown.failed")
+				this.plugin.i18n.translate(msg({ message: "Failed to show properties menu", context: "components.propertyVisibilityDropdown.failed" }))
 			);
 		}
 	}
@@ -133,91 +134,91 @@ export class PropertyVisibilityDropdown {
 				{
 					id: "status",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.statusDot"
+						msg({ message: "Status dot", context: "components.propertyVisibilityDropdown.properties.statusDot" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "priority",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.priorityDot"
+						msg({ message: "Priority dot", context: "components.propertyVisibilityDropdown.properties.priorityDot" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "blocked",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.blocked"
+						msg({ message: "Blocked", context: "components.propertyVisibilityDropdown.properties.blocked" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "blocking",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.blocking"
+						msg({ message: "Blocking", context: "components.propertyVisibilityDropdown.properties.blocking" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "due",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.dueDate"
+						msg({ message: "Due date", context: "components.propertyVisibilityDropdown.properties.dueDate" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "scheduled",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.scheduledDate"
+						msg({ message: "Scheduled date", context: "components.propertyVisibilityDropdown.properties.scheduledDate" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "timeEstimate",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.timeEstimate"
+						msg({ message: "Time estimate", context: "components.propertyVisibilityDropdown.properties.timeEstimate" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "totalTrackedTime",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.totalTrackedTime"
+						msg({ message: "Total tracked time", context: "components.propertyVisibilityDropdown.properties.totalTrackedTime" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "checklistProgress",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.checklistProgress"
+						msg({ message: "Checklist progress", context: "components.propertyVisibilityDropdown.properties.checklistProgress" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "recurrence",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.recurrence"
+						msg({ message: "Recurrence", context: "components.propertyVisibilityDropdown.properties.recurrence" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "completedDate",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.completedDate"
+						msg({ message: "Completed date", context: "components.propertyVisibilityDropdown.properties.completedDate" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "dateCreated",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.createdDate"
+						msg({ message: "Created date", context: "components.propertyVisibilityDropdown.properties.createdDate" })
 					),
 					category: "core" as const,
 				},
 				{
 					id: "dateModified",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.modifiedDate"
+						msg({ message: "Modified date", context: "components.propertyVisibilityDropdown.properties.modifiedDate" })
 					),
 					category: "core" as const,
 				},
@@ -230,21 +231,21 @@ export class PropertyVisibilityDropdown {
 				{
 					id: "projects",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.projects"
+						msg({ message: "Projects", context: "components.propertyVisibilityDropdown.properties.projects" })
 					),
 					category: "organization" as const,
 				},
 				{
 					id: "contexts",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.contexts"
+						msg({ message: "Contexts", context: "components.propertyVisibilityDropdown.properties.contexts" })
 					),
 					category: "organization" as const,
 				},
 				{
 					id: "tags",
 					name: this.plugin.i18n.translate(
-						"components.propertyVisibilityDropdown.properties.tags"
+						msg({ message: "Tags", context: "components.propertyVisibilityDropdown.properties.tags" })
 					),
 					category: "organization" as const,
 				},

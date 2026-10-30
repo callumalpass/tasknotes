@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import type { TaskInfo } from "../types";
 import {
 	createUTCDateFromLocalCalendarDate,
@@ -30,7 +32,7 @@ export interface CompletionDateContext {
  */
 export type CompletionDateResolution =
 	| { available: true; date: Date }
-	| { available: false; reasonKey: string };
+	| { available: false; reasonKey: MessageDescriptor };
 
 function toUtcDay(dateString: string | undefined): Date | null {
 	if (!dateString) {
@@ -60,17 +62,17 @@ export function resolveCompletionDate(
 			const date = ctx.occurrenceDate ?? toUtcDay(task.scheduled);
 			return date
 				? { available: true, date }
-				: { available: false, reasonKey: "contextMenus.task.completion.noScheduledDate" };
+				: { available: false, reasonKey: msg({ message: "No scheduled date on this task", context: "contextMenus.task.completion.noScheduledDate" }) };
 		}
 		case "onDue": {
 			const date = toUtcDay(task.due);
 			return date
 				? { available: true, date }
-				: { available: false, reasonKey: "contextMenus.task.completion.noDueDate" };
+				: { available: false, reasonKey: msg({ message: "No due date on this task", context: "contextMenus.task.completion.noDueDate" }) };
 		}
 		case "onPicked":
 			return ctx.pickedDate
 				? { available: true, date: ctx.pickedDate }
-				: { available: false, reasonKey: "contextMenus.task.completion.noPickedDate" };
+				: { available: false, reasonKey: msg({ message: "No date selected", context: "contextMenus.task.completion.noPickedDate" }) };
 	}
 }

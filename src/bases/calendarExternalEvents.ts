@@ -1,7 +1,6 @@
-import type { EventInput } from "@fullcalendar/core";
 import type TaskNotesPlugin from "../main";
 import type { ICSEvent } from "../types";
-import { createICSEvent } from "./calendar-core";
+import { createICSEvent, type CalendarEvent } from "./calendar-core";
 import { PRIMARY_CALENDAR_ALIAS, ProviderCalendar } from "../services/CalendarProvider";
 
 export type ExternalCalendarProvider = "ics" | "google" | "microsoft";
@@ -10,7 +9,7 @@ export type ExternalCalendarEventFactory = (
 	event: ICSEvent,
 	plugin: TaskNotesPlugin,
 	options: { relatedNoteCount?: number }
-) => Nullable<EventInput>;
+) => Nullable<CalendarEvent>;
 
 type Nullable<T> = T | null;
 
@@ -67,8 +66,8 @@ export function buildExternalCalendarEvents({
 	toggles,
 	relatedNoteCountsByEventId,
 	createEvent = createICSEvent,
-}: BuildExternalCalendarEventsInput): EventInput[] {
-	const calendarEvents: EventInput[] = [];
+}: BuildExternalCalendarEventsInput): CalendarEvent[] {
+	const calendarEvents: CalendarEvent[] = [];
 
 	for (const event of events) {
 		if (!shouldIncludeExternalCalendarEvent(event, provider, toggles)) {

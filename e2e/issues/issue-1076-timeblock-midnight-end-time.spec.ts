@@ -31,6 +31,7 @@
 
 import { test, expect } from '@playwright/test';
 import { launchObsidian, closeObsidian, ObsidianApp, runCommand } from '../obsidian';
+import { calendarTimeSlots } from '../calendar-helpers';
 
 let app: ObsidianApp;
 
@@ -68,22 +69,22 @@ test.describe('Issue #1076: Timeblock end time 00:00 (midnight)', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to day view for easier time slot access
-      const dayButton = page.locator('.fc-timeGridDay-button');
+      const dayButton = page.locator('.tnc-btn-view-day');
       if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await dayButton.click();
         await page.waitForTimeout(500);
       }
 
       // Find the time grid and right-click to open context menu
-      const timeGrid = page.locator('.fc-timegrid-body');
+      const timeGrid = page.locator('.tnc-tg-body');
       await expect(timeGrid).toBeVisible({ timeout: 5000 });
 
       // Find a late evening time slot (around 22:00)
-      const timeSlots = page.locator('.fc-timegrid-slot-lane');
+      const timeSlots = calendarTimeSlots(page);
       const eveningSlot = timeSlots.nth(44); // Approximately 22:00 (44 * 30min / 60 = 22)
       const slotBox = await eveningSlot.boundingBox();
 
@@ -158,7 +159,7 @@ test.describe('Issue #1076: Timeblock end time 00:00 (midnight)', () => {
         await page.waitForTimeout(500);
 
         // Verify the timeblock was created
-        const newTimeblock = page.locator('.fc-event:has-text("Late Night Work")');
+        const newTimeblock = page.locator('.tnc-item:has-text("Late Night Work")');
         await expect(newTimeblock).toBeVisible({ timeout: 3000 });
       }
 
@@ -194,23 +195,23 @@ test.describe('Issue #1076: Timeblock end time 00:00 (midnight)', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to day view
-      const dayButton = page.locator('.fc-timeGridDay-button');
+      const dayButton = page.locator('.tnc-btn-view-day');
       if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await dayButton.click();
         await page.waitForTimeout(500);
       }
 
       // Count existing timeblocks
-      const existingTimeblocks = page.locator('.fc-event[data-event-type="timeblock"]');
+      const existingTimeblocks = page.locator('.tnc-item[data-event-type="timeblock"]');
       const initialCount = await existingTimeblocks.count();
       console.log(`Initial timeblock count: ${initialCount}`);
 
       // Try to create a timeblock ending at midnight via drag selection
-      const timeSlots = page.locator('.fc-timegrid-slot-lane');
+      const timeSlots = calendarTimeSlots(page);
 
       // Drag from 23:00 to beyond the visible area (attempting to reach midnight)
       const slot2300 = timeSlots.nth(46); // 23:00
@@ -287,11 +288,11 @@ test.describe('Issue #1076: Timeblock end time 00:00 (midnight)', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Navigate to day view
-      const dayButton = page.locator('.fc-timeGridDay-button');
+      const dayButton = page.locator('.tnc-btn-view-day');
       if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await dayButton.click();
         await page.waitForTimeout(500);
@@ -358,10 +359,10 @@ test.describe('Issue #1076: Timeblock end time 00:00 (midnight)', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
-      const dayButton = page.locator('.fc-timeGridDay-button');
+      const dayButton = page.locator('.tnc-btn-view-day');
       if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await dayButton.click();
         await page.waitForTimeout(500);
@@ -419,7 +420,7 @@ test.describe('Issue #1076: Timeblock end time 00:00 (midnight)', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // This test would require creating a daily note with a timeblock

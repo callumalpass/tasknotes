@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { Menu, Notice, TFile } from "obsidian";
 import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
 import type TaskNotesPlugin from "../../../src/main";
@@ -29,14 +30,7 @@ function createPlugin(task: TaskInfo | null = createTask()): TaskNotesPlugin {
 		settings: {
 			enableDebugLogging: false,
 		},
-		i18n: {
-			translate: jest.fn((key: string) => {
-				if (key === "ui.taskCard.taskOptions") {
-					return "Task options";
-				}
-				return key;
-			}),
-		},
+		i18n: createI18nService(),
 		app: {
 			vault: {
 				getAbstractFileByPath: jest.fn(() => null),
@@ -142,7 +136,9 @@ describe("taskCardContextMenu", () => {
 		await showTaskContextMenu(new MouseEvent("contextmenu"), file.path, plugin, new Date());
 
 		expect(consoleError).toHaveBeenCalledWith(
-			expect.stringContaining("[TaskNotes][TaskCard/ContextMenu][internal][create-context-menu]"),
+			expect.stringContaining(
+				"[TaskNotes][TaskCard/ContextMenu][internal][create-context-menu]"
+			),
 			expect.objectContaining({ taskPath: file.path, errorMessage: "Cache error" }),
 			error
 		);

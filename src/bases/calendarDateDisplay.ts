@@ -1,35 +1,34 @@
-import type { CalendarOptions } from "@fullcalendar/core";
+import { Formatter, type Calendar, type CalendarOptions } from "@tasknotes/calendar";
 import type { DateDisplaySettings } from "../utils/dateUtils";
 
-interface CalendarDateParts {
-	year: number;
-	month: number;
-	day: number;
+/** Calendar days are civil-day numbers, not instants in the OS timezone. */
+export class ISOCalendarFormatter extends Formatter {
+	override fullDate(day: number): string { return this.isoDate(day); }
+	override longDate(day: number): string { return this.isoDate(day); }
+	override listDay(day: number): string { return this.isoDate(day); }
+	override monthYear(day: number): string { return this.isoDate(day).slice(0, 7); }
+	override year(day: number): string { return this.isoDate(day).slice(0, 4); }
+	override range(start: number, last: number): string {
+		return start === last ? this.isoDate(start) : `${this.isoDate(start)} – ${this.isoDate(last)}`;
+	}
 }
 
-// FullCalendar supplies calendar-zone parts. Do not convert them through the OS timezone.
-export function formatCalendarISODate(date: CalendarDateParts): string {
-	return `${String(date.year).padStart(4, "0")}-${String(date.month + 1).padStart(2, "0")}-${String(date.day).padStart(2, "0")}`;
-}
-
-export function getCalendarDateDisplayOptions(
+export function getCalendarDateDisplayOptions<D>(
 	preference: DateDisplaySettings["dateDisplayFormat"]
-): CalendarOptions {
-	if (preference !== "iso") return {};
+): Partial<CalendarOptions<D>> {
 	return {
-		titleFormat: ({ start, end }) => {
-			const first = formatCalendarISODate(start);
-			const last = end ? formatCalendarISODate(end) : first;
-			return first === last ? first : `${first} – ${last}`;
-		},
-		views: {
-			// Month/year weekday headings use placeholder dates, not visible calendar dates.
-			timeGrid: { dayHeaderFormat: ({ date }) => formatCalendarISODate(date) },
-			dayGridMonth: { titleFormat: ({ date }) => formatCalendarISODate(date).slice(0, 7) },
-			multiMonthYear: { titleFormat: ({ date }) => String(date.year) },
-		},
-		dayPopoverFormat: ({ date }) => formatCalendarISODate(date),
-		listDayFormat: ({ date }) => formatCalendarISODate(date),
-		listDaySideFormat: false,
+		dayHeaderContent: preference === "iso"
+			? ({ dateStr, view }) => view.type === "month" || view.type === "year" ? undefined : dateStr
+			: undefined,
 	};
+}
+
+/** Use the engine's public formatter boundary for titles, popovers and accessible dates. */
+export function applyCalendarDateDisplay<D>(
+	calendar: Calendar<D>,
+	preference: DateDisplaySettings["dateDisplayFormat"]
+): void {
+	const FormatterType = preference === "iso" ? ISOCalendarFormatter : Formatter;
+	calendar.fmt = new FormatterType(calendar.opts.locale, calendar.opts.hour12);
+	calendar.rerender();
 }

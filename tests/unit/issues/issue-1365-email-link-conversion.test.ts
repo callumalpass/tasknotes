@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { InstantTaskConvertService } from "../../../src/services/InstantTaskConvertService";
 import { renderTextWithLinks, type LinkServices } from "../../../src/ui/renderers/linkRenderer";
 import { PluginFactory } from "../../helpers/mock-factories";
@@ -52,6 +53,7 @@ describe("issue #1365 email link conversion", () => {
 	it("renders single-colon URI markdown links as external links", () => {
 		const container = makeContainer();
 		const linkServices: LinkServices = {
+			translate: (key, params) => createI18nService().translate(key, params),
 			metadataCache: {
 				getFirstLinkpathDest: jest.fn().mockReturnValue(null),
 			} as unknown as LinkServices["metadataCache"],

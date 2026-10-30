@@ -317,12 +317,12 @@ test.describe('Issue #1137: Schedule a task for multiple dates', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Navigate to January 2026 (where our test dates would be)
-        const nextButton = page.locator('.fc-next-button, button[aria-label*="next"]');
-        const monthTitle = page.locator('.fc-toolbar-title');
+        const nextButton = page.locator('.tnc-btn-next, button[aria-label*="next"]');
+        const monthTitle = page.locator('.tnc-title');
 
         // Navigate until we're in January 2026
         let attempts = 0;
@@ -341,8 +341,8 @@ test.describe('Issue #1137: Schedule a task for multiple dates', () => {
 
         // Get all scheduled events (not due or recurring)
         const scheduledEvents = page.locator(
-          '.fc-event[data-event-type="scheduled"], ' +
-            '.fc-event.tasknotes-scheduled-event'
+          '.tnc-item[data-event-type="scheduled"], ' +
+            '.tnc-item.tasknotes-scheduled-event'
         );
 
         const eventCount = await scheduledEvents.count();
@@ -355,19 +355,19 @@ test.describe('Issue #1137: Schedule a task for multiple dates', () => {
         const jan29Cell = page.locator('[data-date="2026-01-29"]');
 
         if (await jan15Cell.isVisible()) {
-          const eventsOn15 = jan15Cell.locator('.fc-event');
+          const eventsOn15 = jan15Cell.locator('.tnc-item');
           const count15 = await eventsOn15.count();
           console.log(`Events on Jan 15: ${count15}`);
         }
 
         if (await jan22Cell.isVisible()) {
-          const eventsOn22 = jan22Cell.locator('.fc-event');
+          const eventsOn22 = jan22Cell.locator('.tnc-item');
           const count22 = await eventsOn22.count();
           console.log(`Events on Jan 22: ${count22}`);
         }
 
         if (await jan29Cell.isVisible()) {
-          const eventsOn29 = jan29Cell.locator('.fc-event');
+          const eventsOn29 = jan29Cell.locator('.tnc-item');
           const count29 = await eventsOn29.count();
           console.log(`Events on Jan 29: ${count29}`);
         }
@@ -391,11 +391,11 @@ test.describe('Issue #1137: Schedule a task for multiple dates', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Find a scheduled event
-        const scheduledEvent = page.locator('.fc-event').first();
+        const scheduledEvent = page.locator('.tnc-item').first();
         if (!(await scheduledEvent.isVisible({ timeout: 2000 }).catch(() => false))) {
           console.log('No calendar events found');
           return;
@@ -446,11 +446,11 @@ test.describe('Issue #1137: Schedule a task for multiple dates', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Find a scheduled event
-        const scheduledEvent = page.locator('.fc-event').first();
+        const scheduledEvent = page.locator('.tnc-item').first();
         if (!(await scheduledEvent.isVisible({ timeout: 2000 }).catch(() => false))) {
           return;
         }
@@ -460,7 +460,7 @@ test.describe('Issue #1137: Schedule a task for multiple dates', () => {
         if (!eventBox) return;
 
         // Find a target date cell
-        const targetCell = page.locator('.fc-daygrid-day').nth(10);
+        const targetCell = page.locator('.tnc-dg-day').nth(10);
         const targetBox = await targetCell.boundingBox();
         if (!targetBox) return;
 

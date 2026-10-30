@@ -1,0 +1,819 @@
+{
+  "base": "e70b7ba65423465628e414511b3436a8121c1809",
+  "forwards": [
+    {
+      "file": "src/bases/TaskListView.ts",
+      "line": 1724,
+      "code": "this.plugin.i18n.translate(`views.taskList.movement.${key}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/bases/TaskListView.ts",
+      "line": 1841,
+      "code": "this.plugin.i18n.translate(`views.taskList.movement.${key}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/bases/calendarViewOptions.ts",
+      "line": 20,
+      "code": "plugin.i18n.translate(`views.basesCalendar.settings.${key}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/bootstrap/pluginBootstrap.ts",
+      "line": 187,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/bootstrap/pluginBootstrap.ts",
+      "line": 192,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/commands/TranslatedCommandRegistry.ts",
+      "line": 53,
+      "code": "this.plugin.i18n.translate(definition.nameKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/commands/TranslatedCommandRegistry.ts",
+      "line": 66,
+      "code": "this.plugin.i18n.translate(definition.nameKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/BatchContextMenu.ts",
+      "line": 60,
+      "code": "this.options.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/DateContextMenu.ts",
+      "line": 68,
+      "code": "this.options.plugin?.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/DateContextMenu.ts",
+      "line": 243,
+      "code": "this.t(`common.weekdays.${dayName.toLowerCase()}` as const)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/ICSEventContextMenu.ts",
+      "line": 33,
+      "code": "this.options.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/RecurrenceContextMenu.ts",
+      "line": 743,
+      "code": "this.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/RecurrenceContextMenu.ts",
+      "line": 893,
+      "code": "this.translate(`components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.${day.shortKey}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/RecurrenceContextMenu.ts",
+      "line": 1077,
+      "code": "this.translate(`components.recurrenceContextMenu.customRecurrenceModal.weekdays.${day.nameKey}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/SubgroupMenuBuilder.ts",
+      "line": 14,
+      "code": "translator(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/TaskContextMenu.ts",
+      "line": 182,
+      "code": "this.options.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/TaskContextMenu.ts",
+      "line": 969,
+      "code": "this.t(baseLabelKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/TaskContextMenu.ts",
+      "line": 974,
+      "code": "this.t(resolution.reasonKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/TaskContextMenu.ts",
+      "line": 986,
+      "code": "this.t(baseLabelKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/TaskContextMenu.ts",
+      "line": 2542,
+      "code": "this.t(option.labelKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/i18n/I18nService.ts",
+      "line": 106,
+      "code": "this.resolveKey(key)",
+      "state": "obsolete keyed resolver removed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/i18n/I18nService.ts",
+      "line": 113,
+      "code": "this.translate(pluralKey)",
+      "state": "obsolete keyed resolver removed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/ReminderModal.ts",
+      "line": 708,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/StorageLocationConfirmationModal.ts",
+      "line": 19,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/StorageLocationConfirmationModal.ts",
+      "line": 35,
+      "code": "this.t(`modals.storageLocation.title.${stateKey}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/StorageLocationConfirmationModal.ts",
+      "line": 39,
+      "code": "this.t(`modals.storageLocation.message.${stateKey}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskActionPaletteModal.ts",
+      "line": 605,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskEditModal.ts",
+      "line": 259,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskEditModal.ts",
+      "line": 634,
+      "code": "this.t(actionKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 214,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 290,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 313,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 394,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 804,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 840,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 848,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 947,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 999,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 1051,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 1150,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 1182,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskModal.ts",
+      "line": 1217,
+      "code": "this.t(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/taskModalActionIconStates.ts",
+      "line": 75,
+      "code": "context.translate(tooltipKeys.activeTooltipKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/taskModalActionIconStates.ts",
+      "line": 82,
+      "code": "context.translate(tooltipKeys.defaultTooltipKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/taskModalActionIconStates.ts",
+      "line": 157,
+      "code": "context.translate(options.activeTooltipKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/taskModalActionIconStates.ts",
+      "line": 162,
+      "code": "context.translate(options.defaultTooltipKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/taskModalTaskSelector.ts",
+      "line": 54,
+      "code": "translate(noEligibleTasksMessageKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/taskModalTaskSelector.ts",
+      "line": 76,
+      "code": "translate(openFailedMessageKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/AutoExportService.ts",
+      "line": 22,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/FilterService.ts",
+      "line": 114,
+      "code": "this.runtime.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/FilterService.ts",
+      "line": 129,
+      "code": "instance.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/FilterService.ts",
+      "line": 453,
+      "code": "this.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/ICSNoteService.ts",
+      "line": 39,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/ICSSubscriptionService.ts",
+      "line": 133,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/InstantTaskConvertService.ts",
+      "line": 102,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/PomodoroService.ts",
+      "line": 82,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/TaskCalendarSyncService.ts",
+      "line": 1947,
+      "code": "this.plugin.i18n.translate(`settings.integrations.googleCalendarExport.eventDescription.${key}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/TaskService.ts",
+      "line": 196,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/taskRelationshipActions.ts",
+      "line": 13,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/TaskNotesSettingTab.ts",
+      "line": 62,
+      "code": "this.plugin.i18n.translate(tab.nameKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/TaskNotesSettingTab.ts",
+      "line": 83,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/TaskNotesSettingTab.ts",
+      "line": 108,
+      "code": "translate(tab.nameKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/components/FieldManagerComponent.ts",
+      "line": 32,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/components/FieldManagerComponent.ts",
+      "line": 87,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/components/FieldManagerComponent.ts",
+      "line": 122,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/components/FieldManagerComponent.ts",
+      "line": 128,
+      "code": "translate(`settings.modalFields.manager.fieldTypes.${field.fieldType}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/appearanceTab.ts",
+      "line": 60,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/featuresTab.ts",
+      "line": 40,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/generalTab.ts",
+      "line": 34,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/generalTab.ts",
+      "line": 381,
+      "code": "translate(`settings.integrations.basesIntegration.viewCommands.commands.${nameKey}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/integrationsTab.ts",
+      "line": 243,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/integrationsTab.ts",
+      "line": 2213,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/integrationsTab.ts",
+      "line": 2621,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/integrationsTab.ts",
+      "line": 2943,
+      "code": "this.translate(`${event.translation}.label`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/integrationsTab.ts",
+      "line": 2944,
+      "code": "this.translate(`${event.translation}.description`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/integrationsTab.ts",
+      "line": 2948,
+      "code": "this.translate(`${event.translation}.label`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/integrationsTab.ts",
+      "line": 3145,
+      "code": "this.translate(`${event.translation}.label`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/integrationsTab.ts",
+      "line": 3146,
+      "code": "this.translate(`${event.translation}.description`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/integrationsTab.ts",
+      "line": 3150,
+      "code": "this.translate(`${event.translation}.label`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/modalFieldsTab.ts",
+      "line": 21,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/taskProperties/remindersPropertyCard.ts",
+      "line": 344,
+      "code": "translate(`settings.defaults.reminders.units.${reminder.unit || \"hours\"}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/settings/tabs/taskPropertiesTab.ts",
+      "line": 34,
+      "code": "plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/NotificationService.ts",
+      "line": 651,
+      "code": "this.translateMissed(`${anchorLabel}${past ? \"Was\" : \"Is\"}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/NotificationService.ts",
+      "line": 656,
+      "code": "this.plugin.i18n.translate(`services.notification.missed.${key}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/calendarExportActions.ts",
+      "line": 22,
+      "code": "translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/taskCardContextMenu.ts",
+      "line": 24,
+      "code": "plugin.i18n.translate(`ui.taskCard.${key}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/taskCardHelpers.ts",
+      "line": 12,
+      "code": "plugin.i18n.translate(`ui.taskCard.${key}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/taskCardProperties.ts",
+      "line": 50,
+      "code": "plugin.i18n.translate(`ui.taskCard.${key}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/taskCardProperties.ts",
+      "line": 169,
+      "code": "plugin.i18n.translate(noticeKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/taskCardSecondaryBadges.ts",
+      "line": 72,
+      "code": "plugin.i18n.translate(`ui.taskCard.${key}`)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/utils/propertyHelpers.ts",
+      "line": 17,
+      "code": "plugin.i18n.translate(labelKey)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/views/PomodoroStatsView.ts",
+      "line": 46,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/views/PomodoroView.ts",
+      "line": 146,
+      "code": "this.plugin.i18n.translate(key)",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    }
+  ],
+  "conditionals": [
+    {
+      "file": "src/bases/TaskListView.ts",
+      "line": 3728,
+      "code": "dateType === \"due\"\\n\t\t\t\t\t\t\t\t\t? \"contextMenus.task.notices.updateDueDateFailure\"\\n\t\t\t\t\t\t\t\t\t: \"contextMenus.task.notices.updateScheduledFailure\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/bases/calendar-core.ts",
+      "line": 374,
+      "code": "allDay ? \"notices.audit.allDay\" : \"notices.audit.recurringTime\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/bases/calendar-core.ts",
+      "line": 398,
+      "code": "allDay ? \"notices.audit.allDay\" : \"notices.audit.recurringTime\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/BatchContextMenu.ts",
+      "line": 491,
+      "code": "archive ? \"contextMenus.task.archive\" : \"contextMenus.task.unarchive\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/BatchContextMenu.ts",
+      "line": 525,
+      "code": "archive ? \"contextMenus.task.archive\" : \"contextMenus.task.unarchive\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/TaskContextMenu.ts",
+      "line": 898,
+      "code": "isRecurring\\n\t\t\t\t\t\t? \"contextMenus.task.completion.submenu\"\\n\t\t\t\t\t\t: \"contextMenus.task.completion.submenuCompleteOnly\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/components/TaskContextMenu.ts",
+      "line": 1198,
+      "code": "isSkipped\\n\t\t\t\t\t\t? \"contextMenus.task.unskipInstance\"\\n\t\t\t\t\t\t: \"contextMenus.task.skipInstance\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/main.ts",
+      "line": 1319,
+      "code": "updatedTask.archived\\n\t\t\t\t\t\t? \"notices.commands.archived\"\\n\t\t\t\t\t\t: \"notices.commands.unarchived\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/ReminderModal.ts",
+      "line": 626,
+      "code": "anchor === \"due\"\\n\t\t\t\t\t\t\t? \"modals.reminder.missingDue\"\\n\t\t\t\t\t\t\t: \"modals.reminder.missingScheduled\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/ReminderModal.ts",
+      "line": 696,
+      "code": "anchor === \"due\" ? \"modals.reminder.atDue\" : \"modals.reminder.atScheduled\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskActionPaletteModal.ts",
+      "line": 527,
+      "code": "property === \"scheduled\"\\n\t\t\t\t\t\t? \"modals.actionPalette.scheduleFor\"\\n\t\t\t\t\t\t: \"modals.actionPalette.dueFor\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskActionPaletteModal.ts",
+      "line": 533,
+      "code": "property === \"scheduled\"\\n\t\t\t\t\t\t? \"modals.actionPalette.scheduleDesc\"\\n\t\t\t\t\t\t: \"modals.actionPalette.dueDesc\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/TaskActionPaletteModal.ts",
+      "line": 549,
+      "code": "property === \"scheduled\"\\n\t\t\t\t\t\t\t\t? \"modals.actionPalette.scheduledSet\"\\n\t\t\t\t\t\t\t\t: \"modals.actionPalette.dueSet\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/taskEditCompletions.ts",
+      "line": 207,
+      "code": "isCompleted ? \"contextMenus.task.markIncomplete\" : \"contextMenus.task.markComplete\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/modals/taskEditCompletions.ts",
+      "line": 223,
+      "code": "isSkipped ? \"contextMenus.task.unskipInstance\" : \"contextMenus.task.skipInstance\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/services/PomodoroService.ts",
+      "line": 480,
+      "code": "isLongBreak\\n\t\t\t\t\t? \"services.pomodoro.notices.longBreakStarted\"\\n\t\t\t\t\t: \"services.pomodoro.notices.shortBreakStarted\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/recurringCompletionNotice.ts",
+      "line": 22,
+      "code": "completed\\n\t\t? \"notices.recurringCompletion.completed\"\\n\t\t: \"notices.recurringCompletion.incomplete\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/recurringCompletionNotice.ts",
+      "line": 47,
+      "code": "restored\\n\t\t\t\t\t? \"notices.recurringCompletion.undone\"\\n\t\t\t\t\t: \"notices.recurringCompletion.conflict\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/taskCardSecondaryBadges.ts",
+      "line": 274,
+      "code": "canToggleSubtasks ? \"projectTooltip\" : \"projectIndicatorTooltip\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/ui/taskCardSecondaryBadges.ts",
+      "line": 415,
+      "code": "canToggleSubtasks ? \"projectTooltip\" : \"projectIndicatorTooltip\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/views/PomodoroStatsView.ts",
+      "line": 271,
+      "code": "session.completed\\n\t\t\t\t\t? \"views.pomodoroStats.recents.status.completed\"\\n\t\t\t\t\t: \"views.pomodoroStats.recents.status.interrupted\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/views/PomodoroStatsView.ts",
+      "line": 337,
+      "code": "deleted\\n\t\t\t\t\t? \"views.pomodoroStats.recents.deleteSuccess\"\\n\t\t\t\t\t: \"views.pomodoroStats.recents.deleteNotFound\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    },
+    {
+      "file": "src/views/PomodoroView.ts",
+      "line": 1362,
+      "code": "isLongBreak\\n\t\t\t\t\t\t? \"views.pomodoro.status.breakLength.long\"\\n\t\t\t\t\t\t: \"views.pomodoro.status.breakLength.short\"",
+      "state": "descriptor/finite-selection migration reviewed",
+      "evidence": "Typecheck plus Obsidian source guard; no TranslationKey/MessageDescriptor/any casts at translator calls"
+    }
+  ]
+}

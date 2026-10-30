@@ -1,3 +1,5 @@
+import { displayError } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -53,7 +55,7 @@ export function createStatusCycleHandler(
 
 				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
 				if (!freshTask) {
-					new Notice("Task not found");
+					new Notice(plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
 					return;
 				}
 
@@ -61,7 +63,11 @@ export function createStatusCycleHandler(
 				const nextStatus = e.shiftKey
 					? plugin.statusManager.getPreviousStatus(currentStatus)
 					: plugin.statusManager.getNextStatus(currentStatus);
-				const updatedTask = await plugin.updateTaskProperty(freshTask, "status", nextStatus);
+				const updatedTask = await plugin.updateTaskProperty(
+					freshTask,
+					"status",
+					nextStatus
+				);
 				const isNowCompleted = plugin.statusManager.isCompletedStatus(nextStatus);
 				updateStatusVisuals(updatedTask, nextStatus, isNowCompleted);
 			} catch (error) {
@@ -72,7 +78,11 @@ export function createStatusCycleHandler(
 					details: { taskPath: task.path, errorMessage },
 					error,
 				});
-				new Notice(`Failed to update task status: ${errorMessage}`);
+				new Notice(
+					plugin.i18n.translate(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), {
+						message: displayError(errorMessage),
+					})
+				);
 			}
 		})();
 	};
@@ -101,7 +111,7 @@ export function createPriorityClickHandler(
 							details: { taskPath: task.path, newPriority },
 							error,
 						});
-						new Notice("Failed to update priority");
+						new Notice(plugin.i18n.translate(msg({ message: "Failed to update priority", context: "notices.interface.priorityFailed" })));
 					}
 				})();
 			},
@@ -143,7 +153,7 @@ export function createRecurrenceClickHandler(
 							details: { taskPath: task.path, newRecurrence, anchor },
 							error,
 						});
-						new Notice("Failed to update recurrence");
+						new Notice(plugin.i18n.translate(msg({ message: "Failed to update recurrence", context: "notices.interface.recurrenceFailed" })));
 					}
 				})();
 			},
@@ -175,7 +185,9 @@ export function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlug
 						details: { taskPath: task.path, reminderCount: reminders.length },
 						error,
 					});
-					new Notice("Failed to update reminders");
+					new Notice(
+						plugin.i18n.translate(msg({ message: "Failed to update reminders", context: "contextMenus.task.notices.updateRemindersFailure" }))
+					);
 				}
 			})();
 		});

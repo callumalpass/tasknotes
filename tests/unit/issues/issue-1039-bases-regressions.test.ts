@@ -1,11 +1,12 @@
+import { createI18nService } from "../../../src/i18n";
 import { TFile } from "obsidian";
-import { decorateRefreshCalendarsButton } from "../../../src/bases/CalendarView";
 import { renderGroupTitle } from "../../../src/bases/groupTitleRenderer";
 import type { LinkServices } from "../../../src/ui/renderers/linkRenderer";
 
 function makeLinkServices(): LinkServices {
 	const nestedProject = new TFile("Projects/Client Alpha/Roadmap.md");
 	return {
+		translate: (key, params) => createI18nService().translate(key, params),
 		metadataCache: {
 			getFirstLinkpathDest: jest.fn((linkPath: string) =>
 				linkPath === "Projects/Client Alpha/Roadmap" ? nestedProject : null
@@ -32,21 +33,5 @@ describe("Issue #1039: Bases beta regressions", () => {
 		expect(link).not.toBeNull();
 		expect(link?.textContent).toBe("Roadmap");
 		expect(link?.getAttribute("data-href")).toBe("Projects/Client Alpha/Roadmap");
-	});
-
-	it("renders the TaskNotes Calendar refresh control as an icon button", () => {
-		const container = document.createElement("div");
-		const button = container.createEl("button", {
-			cls: "fc-refreshCalendars-button",
-			text: "Refresh",
-		});
-
-		decorateRefreshCalendarsButton(container, "Refresh calendar subscriptions");
-
-		expect(button.textContent).toBe("");
-		expect(button.getAttribute("data-icon")).toBe("refresh-cw");
-		expect(button.classList.contains("tasknotes-calendar-refresh-button--icon")).toBe(true);
-		expect(button.getAttribute("aria-label")).toBe("Refresh calendar subscriptions");
-		expect(button.getAttribute("title")).toBe("Refresh calendar subscriptions");
 	});
 });

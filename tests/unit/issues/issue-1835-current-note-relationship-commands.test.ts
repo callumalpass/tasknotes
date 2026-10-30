@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import { TFile } from "obsidian";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
 import {
@@ -18,8 +20,7 @@ function makePlugin() {
 			useFrontmatterMarkdownLinks: false,
 		},
 		i18n: {
-			translate: (key: string, params?: Record<string, string | number>) =>
-				params ? `${key}:${Object.values(params).join(",")}` : key,
+			translate: mockObserveTranslation(),
 		},
 		emitter: {
 			trigger: jest.fn(),
@@ -51,8 +52,8 @@ describe("Issue #1835: current note relationship commands", () => {
 			addSubtaskToCurrentNote: jest.fn(),
 		};
 
-		expect(addProject?.nameKey).toBe("commands.addProjectToCurrentTask");
-		expect(addSubtask?.nameKey).toBe("commands.addSubtaskToCurrentNote");
+		expect(addProject?.nameKey).toEqual(msg({ message: "Add project to current task", context: "commands.addProjectToCurrentTask" }));
+		expect(addSubtask?.nameKey).toEqual(msg({ message: "Add subtask to current note", context: "commands.addSubtaskToCurrentNote" }));
 
 		await addProject?.callback?.(ctx as any);
 		await addSubtask?.callback?.(ctx as any);
@@ -79,7 +80,7 @@ describe("Issue #1835: current note relationship commands", () => {
 		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
 			EVENT_USER_NOTICE,
 			expect.objectContaining({
-				message: "contextMenus.task.organization.notices.addedToProject:Alpha",
+				message: mockEnglishText(mockConceptDescriptor("contextMenus.task.organization.notices.addedToProject"), {"project":"Alpha"}),
 			})
 		);
 	});
@@ -102,7 +103,7 @@ describe("Issue #1835: current note relationship commands", () => {
 		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
 			EVENT_USER_NOTICE,
 			expect.objectContaining({
-				message: "contextMenus.task.organization.notices.addedAsSubtask:Subtask,Alpha",
+				message: mockEnglishText(mockConceptDescriptor("contextMenus.task.organization.notices.addedAsSubtask"), {"subtask":"Subtask","parent":"Alpha"}),
 			})
 		);
 	});
@@ -123,7 +124,7 @@ describe("Issue #1835: current note relationship commands", () => {
 		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
 			EVENT_USER_NOTICE,
 			expect.objectContaining({
-				message: "contextMenus.task.organization.notices.alreadyInProject",
+				message: mockEnglishText(msg({ message: "Task is already in this project", context: "contextMenus.task.organization.notices.alreadyInProject" })),
 			})
 		);
 	});

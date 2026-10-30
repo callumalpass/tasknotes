@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { App, TFile } from "obsidian";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import type TaskNotesPlugin from "../../../src/main";
@@ -27,6 +28,7 @@ function createPlugin(occurrence: TaskInfo): TaskNotesPlugin {
 
 	return {
 		app,
+		i18n: createI18nService(),
 		statusManager: {
 			getAllStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),
 			getNonCompletionStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),
@@ -72,7 +74,9 @@ describe("Issue #2174: quick actions open the scheduled occurrence note", () => 
 			plugin,
 			new Date("2026-07-30T00:00:00.000Z")
 		);
-		const action = modal.getItems().find((item) => item.id === "open-or-create-occurrence-note");
+		const action = modal
+			.getItems()
+			.find((item) => item.id === "open-or-create-occurrence-note");
 
 		await action?.execute(task, plugin, new Date("2026-07-30T00:00:00.000Z"));
 

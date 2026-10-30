@@ -36,6 +36,8 @@ export { showTaskContextMenu } from "./taskCardContextMenu";
 
 export interface TaskCardOptions {
 	targetDate?: Date;
+	/** List/board cards represent the pending commitment, not a projected date. */
+	usePendingOccurrenceIdentity?: boolean;
 	layout?: "default" | "compact" | "inline";
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;

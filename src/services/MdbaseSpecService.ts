@@ -1,3 +1,5 @@
+import { msg } from "@lingui/core/macro";
+import { uiData } from "../i18n/dataText";
 import { Modal, normalizePath, type TAbstractFile } from "obsidian";
 import YAML from "yaml";
 import { canonicalTaskNotesResources } from "./canonicalTaskNotesPack";
@@ -1063,7 +1065,7 @@ export class MdbaseSpecService {
 		if (candidates.length > 1) {
 			this.canonicalReadBlocked = true;
 			const paths = candidates.map((candidate) => candidate.path).sort().join(", ");
-			const message = this.plugin.i18n?.translate("mdbaseSafety.multiple", { paths }) ??
+			const message = this.plugin.i18n?.translate(msg({ message: "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration.", context: "mdbaseSafety.multiple" }), { paths }) ??
 				`Multiple TaskNotes types: ${paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration.`;
 			if (this.lastBlockedNotice !== message) {
 				this.publishNotice(message);
@@ -1103,7 +1105,7 @@ export class MdbaseSpecService {
 				this.canonicalTypePath = path;
 				this.canonicalReadBlocked = true;
 				this.reportInvalidCanonicalType(
-					(this.plugin.i18n ?? createI18nService()).translate("collectionCheck.invalidType", { path, issues: validation.issues.join("; ") })
+					(this.plugin.i18n ?? createI18nService()).translate(msg({ message: "{path} is inconsistent: {issues}. Review its implements.fields and binding before retrying; plugin settings were kept.", context: "collectionCheck.invalidType" }), { path, issues: validation.issues.join("; ") })
 				);
 				return null;
 			}
@@ -1203,7 +1205,7 @@ export class MdbaseSpecService {
 			return;
 		}
 		const paths = competing.sort().join(", ");
-		const message = this.plugin.i18n?.translate("mdbaseSafety.competingSettings", { paths, record: APP_SETTINGS_RECORD_PATH }) ??
+		const message = this.plugin.i18n?.translate(msg({ message: "Other TaskNotes settings records found: {paths}. TaskNotes is using {record} and ignoring the others. Copy any settings you want to keep into {record}, then delete the other files.", context: "mdbaseSafety.competingSettings" }), { paths, record: APP_SETTINGS_RECORD_PATH }) ??
 			`Other TaskNotes settings records found: ${paths}. TaskNotes is using ${APP_SETTINGS_RECORD_PATH} and ignoring the others. Copy any settings you want to keep into ${APP_SETTINGS_RECORD_PATH}, then delete the other files.`;
 		if (this.lastCompetingRecordsNotice === message) return;
 		this.lastCompetingRecordsNotice = message;
@@ -1426,7 +1428,7 @@ export class MdbaseSpecService {
 		}
 		const reference = await findExplicitTypeReference(adapter, superseded, collection.config);
 		if (reference) {
-			this.publishNotice(this.plugin.i18n?.translate("mdbaseSafety.referenced", reference) ??
+			this.publishNotice(this.plugin.i18n?.translate(msg({ message: "TaskNotes kept {typePath}: {recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.", context: "mdbaseSafety.referenced" }), reference) ??
 				`TaskNotes kept ${reference.typePath}: ${reference.recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.`);
 			return false;
 		}
@@ -1615,7 +1617,7 @@ export class MdbaseSpecService {
 			operation: "canonical-type-invalid",
 			...(error ? { error } : {}),
 		});
-		this.publishNotice(`${message} ${(this.plugin.i18n ?? createI18nService()).translate("collectionCheck.keptConfiguration")}`);
+		this.publishNotice(`${message} ${(this.plugin.i18n ?? createI18nService()).translate(msg({ message: "TaskNotes kept its last-known-good configuration.", context: "collectionCheck.keptConfiguration" }))}`);
 	}
 
 	private safetyNotice(details: string): string {
@@ -1847,7 +1849,7 @@ export class MdbaseSpecService {
 		const lines: string[] = [];
 		lines.push("---");
 		lines.push("name: task");
-		lines.push("description: A task managed by the TaskNotes plugin for Obsidian.");
+		lines.push(uiData("description: A task managed by the TaskNotes plugin for Obsidian.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push(`display_name_key: ${fm.toUserField("title")}`);
 		lines.push("strict: false");
 		lines.push(`path_pattern: ${yamlQuote(this.buildPathPattern())}`);
@@ -1865,7 +1867,7 @@ export class MdbaseSpecService {
 		this.addRoleField(lines, "title", {
 			type: "string",
 			required: true,
-			description: "Short summary of the task.",
+			description: uiData("Short summary of the task.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 
 		this.addRoleField(lines, "status", {
@@ -1893,12 +1895,12 @@ export class MdbaseSpecService {
 		this.addRoleField(lines, "projects", {
 			type: "list",
 			items: { type: "link" },
-			description: "Wikilinks to related project notes.",
+			description: uiData("Wikilinks to related project notes.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "timeEstimate", {
 			type: "integer",
 			min: 0,
-			description: "Estimated time in minutes.",
+			description: uiData("Estimated time in minutes.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "completedDate", { type: "date" });
 		this.addRoleField(lines, "dateCreated", {
@@ -1920,33 +1922,37 @@ export class MdbaseSpecService {
 			type: "enum",
 			values: ["manual", "on_completion", "rolling"],
 			default: "manual",
-			description: "How occurrence task notes are materialized for a recurring parent task.",
+			description: uiData("How occurrence task notes are materialized for a recurring parent task.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrenceNextTrigger", {
 			type: "enum",
 			values: ["completion", "completion_or_skip"],
 			default: "completion",
-			description: "Which occurrence state changes should materialize the next occurrence.",
+			description: uiData("Which occurrence state changes should materialize the next occurrence.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrenceTemplate", {
 			type: "link",
-			description: "Optional template note used when materializing occurrences.",
+			description: uiData("Optional template note used when materializing occurrences.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrencePastHorizon", {
 			type: "string",
-			description: "ISO 8601 duration controlling rolling materialization before today.",
+			description: uiData("ISO 8601 duration controlling rolling materialization before today.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrenceFutureHorizon", {
 			type: "string",
-			description: "ISO 8601 duration controlling rolling materialization after today.",
+			description: uiData("ISO 8601 duration controlling rolling materialization after today.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "recurrenceParent", {
 			type: "link",
-			description: "Parent recurring task for a materialized occurrence note.",
+			description: uiData("Parent recurring task for a materialized occurrence note.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 		this.addRoleField(lines, "occurrenceDate", {
 			type: "date",
-			description: "Target recurrence date for a materialized occurrence note.",
+			description: uiData("Target recurrence date for a materialized occurrence note.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
+		});
+		this.addRoleField(lines, "recurrenceOriginalDate", {
+			type: "date",
+			description: "Original rule date of a pending moved virtual recurring occurrence.",
 		});
 		this.addField(lines, "tags", { type: "list", items: { type: "string" }, tn_role: "tags" });
 
@@ -1975,16 +1981,16 @@ export class MdbaseSpecService {
 					relatedTo: {
 						type: "enum",
 						values: ["due", "scheduled"],
-						description: "Field the reminder is relative to (e.g. 'due').",
+						description: uiData("Field the reminder is relative to (e.g. 'due').", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 					},
 					offset: {
 						type: "string",
-						description: "ISO 8601 duration offset (e.g. '-PT1H').",
+						description: uiData("ISO 8601 duration offset (e.g. '-PT1H').", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 					},
 					absoluteTime: { type: "datetime" },
 				},
 			},
-			description: "Reminder objects with id, type, offset, etc.",
+			description: uiData("Reminder objects with id, type, offset, etc.", "Stable English MDBASE schema/documentation data; never depend on UI locale"),
 		});
 
 		this.addRoleField(lines, "blockedBy", {
@@ -2047,26 +2053,26 @@ export class MdbaseSpecService {
 		lines.push("");
 		lines.push("# Task");
 		lines.push("");
-		lines.push("This type definition describes the data schema for tasks managed by");
-		lines.push("[TaskNotes](https://github.com/callumalpass/tasknotes), an Obsidian plugin");
-		lines.push("for note-based task management.");
+		lines.push(uiData("This type definition describes the data schema for tasks managed by", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("[TaskNotes](https://github.com/callumalpass/tasknotes), an Obsidian plugin", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("for note-based task management.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push("");
 		lines.push(
-			"It conforms to [mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0,"
+			uiData("It conforms to [mdbase-spec](https://github.com/callumalpass/mdbase-spec) v0.2.0,", "Stable English MDBASE schema/documentation data; never depend on UI locale")
 		);
-		lines.push("a specification for typed markdown collections.");
+		lines.push(uiData("a specification for typed markdown collections.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push("");
-		lines.push("TaskNotes also adds a non-standard `tn_role` field annotation on schema");
-		lines.push("fields. This maps each field to its TaskNotes semantic role so custom");
-		lines.push("frontmatter field names can still be interpreted consistently.");
-		lines.push("The status field also includes `tn_completed_values`, listing");
-		lines.push("which status values count as completed.");
+		lines.push(uiData("TaskNotes also adds a non-standard `tn_role` field annotation on schema", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("fields. This maps each field to its TaskNotes semantic role so custom", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("frontmatter field names can still be interpreted consistently.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("The status field also includes `tn_completed_values`, listing", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("which status values count as completed.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push("");
 		lines.push(
-			"This file is automatically generated from TaskNotes settings and should not be"
+			uiData("This file is automatically generated from TaskNotes settings and should not be", "Stable English MDBASE schema/documentation data; never depend on UI locale")
 		);
-		lines.push("edited manually. Changes to TaskNotes settings (statuses, priorities, field");
-		lines.push("mappings, user fields) will cause this file to be regenerated.");
+		lines.push(uiData("edited manually. Changes to TaskNotes settings (statuses, priorities, field", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
+		lines.push(uiData("mappings, user fields) will cause this file to be regenerated.", "Stable English MDBASE schema/documentation data; never depend on UI locale"));
 		lines.push("");
 
 		return lines.join("\n");

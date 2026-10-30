@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { TaskInfo } from "../types";
 import { format, parseISO } from "date-fns";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -284,7 +285,7 @@ export class CalendarExportService {
 			parts.push(`Open in Obsidian: ${obsidianUri}`);
 		}
 
-		return parts.join("\n");
+		return uiData(parts.join("\n"), "Pre-port ICS DESCRIPTION contract; exported data stays stable English");
 	}
 
 	private static buildObsidianOpenUri(task: TaskInfo, options?: ICSExportOptions): string | null {
@@ -292,9 +293,9 @@ export class CalendarExportService {
 			return null;
 		}
 
-		return `obsidian://open?vault=${encodeURIComponent(options.vaultName)}&file=${encodeURIComponent(
+		return uiData(`obsidian://open?vault=${encodeURIComponent(options.vaultName)}&file=${encodeURIComponent(
 			task.path
-		)}`;
+		)}`, "Obsidian deep-link URI; preserve the protocol and encoded vault/file data");
 	}
 
 	/**

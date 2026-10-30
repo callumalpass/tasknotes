@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import {
 	createTaskModalActionButtons,
 	runTaskModalSaveAction,
@@ -6,11 +7,7 @@ import {
 
 function createContext(): TaskModalActionButtonContext {
 	return {
-		translate: (key) =>
-			({
-				"modals.task.buttons.save": "Save",
-				"common.cancel": "Cancel",
-			})[key] || key,
+		translate: mockObserveTranslation(),
 	};
 }
 
@@ -72,6 +69,16 @@ describe("taskModalActionButtons", () => {
 		await running;
 
 		expect(onSaved).toHaveBeenCalledTimes(1);
+		expect(saveButton.disabled).toBe(false);
+	});
+
+	it("skips the saved callback when save reports failed validation", async () => {
+		const saveButton = document.createElement("button");
+		const onSaved = jest.fn();
+
+		await runTaskModalSaveAction(saveButton, () => Promise.resolve(false), onSaved);
+
+		expect(onSaved).not.toHaveBeenCalled();
 		expect(saveButton.disabled).toBe(false);
 	});
 

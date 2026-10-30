@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { Notice } from "obsidian";
 import {
 	createPriorityClickHandler,
@@ -45,6 +46,7 @@ const task: TaskInfo = {
 function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin {
 	return {
 		app: {},
+		i18n: createI18nService(),
 		settings: {
 			defaultTaskStatus: "open",
 			enableDebugLogging: false,

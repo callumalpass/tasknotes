@@ -1,3 +1,4 @@
+import type { MessageDescriptor } from "@lingui/core";
 import { Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -18,9 +19,9 @@ export interface OpenTaskModalTaskSelectorOptions {
 	getAllTasks?: () => Promise<readonly TaskInfo[] | null | undefined>;
 	getCandidates: (allTasks: readonly TaskInfo[]) => readonly TaskInfo[];
 	onSelect: (selected: TaskInfo) => void;
-	translate: (key: string) => string;
-	noEligibleTasksMessageKey: string;
-	openFailedMessageKey: string;
+	translate: (key: MessageDescriptor) => string;
+	noEligibleTasksMessageKey: MessageDescriptor;
+	openFailedMessageKey: MessageDescriptor;
 	logOperation: string;
 	openSelector?: TaskModalTaskSelectorOpener;
 	selectorOptions?: Parameters<typeof openTaskSelector>[3];

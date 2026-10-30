@@ -16,6 +16,7 @@ export interface TaskEditChangeSettings {
 	userFields?: UserMappedField[];
 	taskIdentificationMethod?: string;
 	taskTag?: string;
+	hideIdentifyingTagsInCards?: boolean;
 	hideIdentifyingTagsMode?: HideIdentifyingTagsMode;
 	maintainDueDateOffsetInRecurring?: boolean;
 }
@@ -100,6 +101,7 @@ export function buildTaskEditChangesFromModalState(
 		userFieldConfigs: input.settings.userFields || [],
 		taskIdentificationMethod: input.settings.taskIdentificationMethod || "",
 		taskTag: input.settings.taskTag || "",
+		hideIdentifyingTagsInCards: input.settings.hideIdentifyingTagsInCards,
 		hideIdentifyingTagsMode: input.settings.hideIdentifyingTagsMode,
 		maintainDueDateOffsetInRecurring:
 			input.settings.maintainDueDateOffsetInRecurring === true,

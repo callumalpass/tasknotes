@@ -11,6 +11,7 @@ import {
 } from "@tasknotes/model/mdbase";
 import { TFile } from "obsidian";
 import YAML from "yaml";
+import { observeTranslation } from "../../helpers/real-i18n";
 
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
@@ -354,6 +355,19 @@ describe("MdbaseSpecService", () => {
 		});
 	});
 
+
+  it("generates byte-identical English schemas/data across all UI languages", () => {
+    const service = new MdbaseSpecService(createMockPlugin());
+    observeTranslation("en");
+    const expected = [service.buildMdbaseYaml(), service.buildTaskTypeDef()];
+    for (const locale of ["de", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh", "en"]) {
+      observeTranslation(locale);
+      const actual = [service.buildMdbaseYaml(), service.buildTaskTypeDef()];
+      expect(actual).toEqual(expected);
+      expect(YAML.parse(actual[0]).description).toBe("Task collection managed by TaskNotes for Obsidian");
+      expect(YAML.parse(extractFrontmatter(actual[1])).description).toBe("A task managed by the TaskNotes plugin for Obsidian.");
+    }
+  });
 	describe("buildMdbaseYaml", () => {
 		it("should create a v0.3 collection", () => {
 			const service = new MdbaseSpecService(createMockPlugin());

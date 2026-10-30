@@ -40,7 +40,7 @@
  * - src/utils/DependencyCache.ts (data source for blocking relationships)
  * - src/utils/ProjectSubtasksService.ts (data source for project hierarchy)
  * - styles/ (new mindmap-view.css)
- * - src/i18n/resources/ (translation keys)
+ * - src/i18n/locales/en/messages.po (Lingui message descriptors)
  * - package.json (new visualization library dependency)
  *
  * @see https://github.com/callumalpass/tasknotes/issues/730

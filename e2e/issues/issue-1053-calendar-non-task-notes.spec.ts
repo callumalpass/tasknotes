@@ -80,12 +80,12 @@ test.describe('Issue #1053: Calendar View support for non-task notes', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view for easier time slot selection
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
@@ -94,7 +94,7 @@ test.describe('Issue #1053: Calendar View support for non-task notes', () => {
 
       // Look for calendar events - we need to find a non-task event
       // Non-task events might have different styling or lack the task status circle
-      const calendarEvents = page.locator('.fc-event');
+      const calendarEvents = page.locator('.tnc-item');
       const eventCount = await calendarEvents.count();
 
       console.log(`Found ${eventCount} events on calendar`);
@@ -155,12 +155,12 @@ test.describe('Issue #1053: Calendar View support for non-task notes', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
@@ -168,7 +168,7 @@ test.describe('Issue #1053: Calendar View support for non-task notes', () => {
       }
 
       // Look for task events (events with task card styling)
-      const taskEvents = page.locator('.fc-event .task-card, .fc-event.task-event');
+      const taskEvents = page.locator('.tnc-item .task-card, .tnc-item.task-event');
       const taskEventCount = await taskEvents.count();
 
       console.log(`Found ${taskEventCount} task events on calendar`);
@@ -233,12 +233,12 @@ test.describe('Issue #1053: Calendar View support for non-task notes', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Look for property-based events
       // These events use accent color styling as defined in buildPropertyBasedEvents()
-      const propertyEvents = page.locator('.fc-event');
+      const propertyEvents = page.locator('.tnc-item');
       const eventCount = await propertyEvents.count();
 
       console.log(`Found ${eventCount} events (includes property-based if configured)`);
@@ -315,11 +315,11 @@ test.describe('Issue #1053: Calendar View support for non-task notes', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find events and attempt to drag
-      const events = page.locator('.fc-event');
+      const events = page.locator('.tnc-item');
       const eventCount = await events.count();
 
       console.log(`Calendar shows ${eventCount} events`);

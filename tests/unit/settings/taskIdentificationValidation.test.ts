@@ -1,6 +1,8 @@
+
 import { SettingsLifecycleService } from "../../../src/services/SettingsLifecycleService";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import { hasCompletePropertyTaskIdentification, isTaskFrontmatter } from "../../../src/utils/taskIdentification";
+
 
 describe("Property identification validation (#2363)", () => {
 	it.each([["", ""], ["category", ""], ["", "task"], [" ", "task"]])("rejects incomplete settings without assuming defaults (%s, %s)", (name, value) => {

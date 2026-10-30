@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { App } from "obsidian";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import type TaskNotesPlugin from "../../../src/main";
@@ -17,6 +18,7 @@ function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 function createPlugin(): TaskNotesPlugin {
 	return {
 		app: new App(),
+		i18n: createI18nService(),
 		statusManager: {
 			getAllStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),
 			getNonCompletionStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),

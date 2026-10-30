@@ -1,3 +1,4 @@
+import { formatStableDate } from "../i18n/formatters";
 import { format } from "date-fns";
 import type { SpecFieldMapping } from "./specFieldMapping";
 import { denormalizeFrontmatter, resolveField } from "./specFieldMapping";
@@ -281,8 +282,8 @@ function buildTemplateValues(
 	values.timeEstimate = timeEstimate;
 	values.year = format(now, "yyyy");
 	values.month = format(now, "MM");
-	values.monthName = sanitizeForPathSegment(format(now, "MMMM"));
-	values.monthNameShort = sanitizeForPathSegment(format(now, "MMM"));
+	values.monthName = sanitizeForPathSegment(formatStableDate(now, "MMMM"));
+	values.monthNameShort = sanitizeForPathSegment(formatStableDate(now, "MMM"));
 	values.day = format(now, "dd");
 	values.date = format(now, "yyyy-MM-dd");
 	values.shortDate = format(now, "yyyyMMdd");

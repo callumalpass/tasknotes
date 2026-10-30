@@ -1,4 +1,5 @@
 import { DateValue, type RenderContext } from "obsidian";
+import { uiData } from "../i18n/dataText";
 import { formatDateTimeForDisplay, type DateDisplaySettings } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -31,7 +32,7 @@ export function isBasesValue(value: unknown): value is RenderableBasesValue {
 
 function getBasesDisplayString(value: RenderableBasesValue): string {
 	const text = value.toString();
-	return text === "[object Object]" ? "" : text;
+	return text === "[object Object]" ? "" : uiData(text, "Native Bases query display string; preserve user data");
 }
 
 export function isNullBasesValue(value: unknown): boolean {
@@ -106,6 +107,10 @@ export function renderBasesValue(
  * returned intact so TaskCard can render them with Value.renderTo().
  */
 export function extractBasesValue(value: unknown): unknown {
+	return uiData(extractBasesData(value), "Native Bases property/query output; user data, not interface copy");
+}
+
+function extractBasesData(value: unknown): unknown {
 	if (isNullBasesValue(value)) {
 		return "";
 	}
@@ -163,7 +168,7 @@ export function resolveTaskCardPropertyLabel(
 		return fallbackLabel;
 	}
 	if (propertyId.startsWith("formula.")) {
-		return propertyId.substring(8);
+		return uiData(propertyId.substring(8), "User-authored formula identifier; preserve the native property name");
 	}
-	return propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
+	return uiData(propertyId.charAt(0).toUpperCase() + propertyId.slice(1), "Unknown/custom property identifier; preserve user schema metadata");
 }

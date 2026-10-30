@@ -506,6 +506,14 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
   }
   try {
     if (app.browser) {
+      // Electron can close a renderer before CDP acknowledges its beforeunload
+      // dialog. Handle teardown dialogs explicitly so Playwright's automatic
+      // handler cannot leak a rejected protocol call into the last test.
+      for (const context of app.browser.contexts()) {
+        for (const page of context.pages()) {
+          page.on('dialog', dialog => { void dialog.accept().catch(() => {}); });
+        }
+      }
       // Quit the owned native app, including Settings popouts, before disconnecting.
       await app.page.evaluate(async () => {
         const remote = (window as any).require?.('electron')?.remote;

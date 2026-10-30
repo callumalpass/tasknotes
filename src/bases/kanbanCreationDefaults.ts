@@ -1,3 +1,4 @@
+import { NONE_GROUP_KEY } from "./groupKeys";
 import type { FieldMappingKey } from "../types";
 import type { UserMappedField } from "../types/settings";
 import type {
@@ -50,7 +51,7 @@ const KANBAN_CREATION_CORE_FIELDS = [
 
 export function applyKanbanCreationDefault(options: KanbanCreationDefaultOptions): void {
 	const { frontmatter, propertyId, groupKey } = options;
-	if (!propertyId || !groupKey || groupKey === "None") {
+	if (!propertyId || !groupKey || groupKey === NONE_GROUP_KEY) {
 		return;
 	}
 

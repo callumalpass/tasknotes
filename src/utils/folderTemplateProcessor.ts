@@ -1,3 +1,4 @@
+import { formatStableDate } from "../i18n/formatters";
 import { format } from "date-fns";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
@@ -76,7 +77,7 @@ const DAILY_NOTES_DATE_TOKEN_PATTERN = /YYYY|MMMM|dddd|MMM|ddd|YY|MM|DD/g;
 
 function replaceDailyNotesDateTokens(template: string, date: Date): string {
 	return template.replace(DAILY_NOTES_DATE_TOKEN_PATTERN, (token) =>
-		format(date, DAILY_NOTES_DATE_TOKEN_FORMATS[token])
+		formatStableDate(date, DAILY_NOTES_DATE_TOKEN_FORMATS[token])
 	);
 }
 
@@ -454,19 +455,19 @@ export function processFolderTemplate(
 	// New date format variations
 	processedPath = processedPath.replace(/\{\{shortDate\}\}/g, format(date, "yyMMdd"));
 	processedPath = processedPath.replace(/\{\{shortYear\}\}/g, format(date, "yy"));
-	processedPath = processedPath.replace(/\{\{monthName\}\}/g, format(date, "MMMM"));
-	processedPath = processedPath.replace(/\{\{monthNameShort\}\}/g, format(date, "MMM"));
-	processedPath = processedPath.replace(/\{\{dayName\}\}/g, format(date, "EEEE"));
-	processedPath = processedPath.replace(/\{\{dayNameShort\}\}/g, format(date, "EEE"));
+	processedPath = processedPath.replace(/\{\{monthName\}\}/g, formatStableDate(date, "MMMM"));
+	processedPath = processedPath.replace(/\{\{monthNameShort\}\}/g, formatStableDate(date, "MMM"));
+	processedPath = processedPath.replace(/\{\{dayName\}\}/g, formatStableDate(date, "EEEE"));
+	processedPath = processedPath.replace(/\{\{dayNameShort\}\}/g, formatStableDate(date, "EEE"));
 	processedPath = processedPath.replace(/\{\{week\}\}/g, format(date, "ww"));
 	processedPath = processedPath.replace(/\{\{quarter\}\}/g, format(date, "q"));
 
 	// Time variations
-	processedPath = processedPath.replace(/\{\{time12\}\}/g, format(date, "hh:mm a"));
+	processedPath = processedPath.replace(/\{\{time12\}\}/g, formatStableDate(date, "hh:mm a"));
 	processedPath = processedPath.replace(/\{\{time24\}\}/g, format(date, "HH:mm"));
 	processedPath = processedPath.replace(/\{\{hourPadded\}\}/g, format(date, "HH"));
 	processedPath = processedPath.replace(/\{\{hour12\}\}/g, format(date, "hh"));
-	processedPath = processedPath.replace(/\{\{ampm\}\}/g, format(date, "a"));
+	processedPath = processedPath.replace(/\{\{ampm\}\}/g, formatStableDate(date, "a"));
 
 	// Unix timestamp and milliseconds
 	processedPath = processedPath.replace(

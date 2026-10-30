@@ -1,10 +1,10 @@
 import type { EventRef } from "obsidian";
 import type { TaskInfo } from "../types";
-import type { TranslationKey } from "../i18n";
+import type { MessageDescriptor } from "../i18n";
 
 export interface PluginI18nAccessor {
 	i18n: {
-		translate(key: TranslationKey, variables?: Record<string, string | number>): string;
+		translate(key: MessageDescriptor, variables?: Record<string, string | number>): string;
 		getCurrentLocale?: () => string;
 	};
 }

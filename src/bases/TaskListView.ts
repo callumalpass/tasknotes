@@ -1,3 +1,9 @@
+import { displayError } from "../i18n/runtime";
+import type { MessageSuffix } from "../i18n/concepts";
+import { uiNumber } from "../i18n/formatters";
+import { uiText } from "../i18n/runtime";
+import { messageForKey } from "../i18n/messages";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
 import { Menu, Notice, TFile, setIcon, type MenuItem } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
@@ -8,8 +14,10 @@ import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { getTaskCardPropertyValue } from "../ui/taskCardPropertyAccess";
+import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 import { normalizeTaskSignatureValue } from "./taskSignatureValue";
 import { renderGroupTitle } from "./groupTitleRenderer";
+import { groupKeyLabel, NONE_GROUP_KEY } from "./groupKeys";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
@@ -37,6 +45,7 @@ import { createElementInDocument } from "../utils/documentDom";
 import {
 	computeBasesFormulas,
 	isObsidianListProperty,
+	getObsidianPropertyType,
 	populateBasesFormulaProperty,
 } from "./basesViewAdapters";
 import { coerceGroupKeyForFrontmatter as coercePropertyGroupKeyForFrontmatter } from "./propertyValueCoercion";
@@ -308,7 +317,7 @@ export class TaskListView extends BasesViewBase {
 		const menu = new Menu();
 
 		menu.addItem((item) => {
-			item.setTitle(allSubGroupsCollapsed ? "Expand subgroups" : "Collapse subgroups")
+			item.setTitle(allSubGroupsCollapsed ? uiText(msg({ message: "Expand subgroups", context: "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display" })) : uiText(msg({ message: "Collapse subgroups", context: "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display" })))
 				.setIcon(allSubGroupsCollapsed ? "list-tree" : "list-collapse")
 				.onClick(() => void this.setSubGroupsCollapsed(groupKey, !allSubGroupsCollapsed));
 		});
@@ -320,25 +329,25 @@ export class TaskListView extends BasesViewBase {
 		const menu = new Menu();
 
 		menu.addItem((item) => {
-			item.setTitle("Expand all groups")
+			item.setTitle(this.plugin.i18n.translate(msg({ message: "Expand all groups", context: "views.taskList.expandAllGroups" })))
 				.setIcon("chevrons-down")
 				.onClick(() => void this.setAllPrimaryGroupsCollapsed(false));
 		});
 
 		menu.addItem((item) => {
-			item.setTitle("Collapse all groups")
+			item.setTitle(this.plugin.i18n.translate(msg({ message: "Collapse all groups", context: "views.taskList.collapseAllGroups" })))
 				.setIcon("chevrons-up")
 				.onClick(() => void this.setAllPrimaryGroupsCollapsed(true));
 		});
 
 		menu.addItem((item) => {
-			item.setTitle("Expand all groups and subgroups")
+			item.setTitle(this.plugin.i18n.translate(msg({ message: "Expand all groups and subgroups", context: "ui.audit.expandAll" })))
 				.setIcon("list-tree")
 				.onClick(() => void this.setAllGroupsAndSubGroupsCollapsed(false));
 		});
 
 		menu.addItem((item) => {
-			item.setTitle("Collapse all groups and subgroups")
+			item.setTitle(this.plugin.i18n.translate(msg({ message: "Collapse all groups and subgroups", context: "ui.audit.collapseAll" })))
 				.setIcon("list-collapse")
 				.onClick(() => void this.setAllGroupsAndSubGroupsCollapsed(true));
 		});
@@ -831,20 +840,20 @@ export class TaskListView extends BasesViewBase {
 		const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 		const scopeLabel =
 			targetGroupKey === null
-				? this.plugin.i18n.translate("views.taskList.reorder.scope.ungrouped")
-				: this.plugin.i18n.translate("views.taskList.reorder.scope.group", {
+				? this.plugin.i18n.translate(msg({ message: "this ungrouped list", context: "views.taskList.reorder.scope.ungrouped" }))
+				: this.plugin.i18n.translate(msg({ message: "group \"{group}\"", context: "views.taskList.reorder.scope.group" }), {
 						group: targetGroupKey,
 					});
 
 		return showConfirmationModal(this.plugin.app, {
-			title: this.plugin.i18n.translate("common.reorder.confirmLargeTitle"),
-			message: this.plugin.i18n.translate("common.reorder.confirmLargeMessage", {
+			title: this.plugin.i18n.translate(msg({ message: "Confirm large reorder", context: "common.reorder.confirmLargeTitle" })),
+			message: this.plugin.i18n.translate(msg({ message: "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?", context: "common.reorder.confirmLargeMessage" }), {
 				field: sortOrderField,
 				count: editCount,
 				scope: scopeLabel,
 			}),
-			confirmText: this.plugin.i18n.translate("common.reorder.confirmButton"),
-			cancelText: this.plugin.i18n.translate("common.cancel"),
+			confirmText: this.plugin.i18n.translate(msg({ message: "Reorder notes", context: "common.reorder.confirmButton" })),
+			cancelText: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
 		});
 	}
 
@@ -900,9 +909,9 @@ export class TaskListView extends BasesViewBase {
 		handle.tabIndex = 0;
 		handle.setAttribute(
 			"aria-label",
-			this.plugin.i18n.translate("views.taskList.movement.handle")
+			this.plugin.i18n.translate(msg({ message: "Move task", context: "views.taskList.movement.handle" }))
 		);
-		handle.setAttribute("title", this.plugin.i18n.translate("views.taskList.movement.handle"));
+		handle.setAttribute("title", this.plugin.i18n.translate(msg({ message: "Move task", context: "views.taskList.movement.handle" })));
 		setIcon(handle, "grip-vertical");
 		handle.addEventListener("click", (event) => {
 			event.preventDefault();
@@ -1102,7 +1111,7 @@ export class TaskListView extends BasesViewBase {
 					return { values: value };
 				if (isPrimitive(value) && value !== "") return { values: [value] };
 			}
-			return { unresolved: hasMembers && key !== null && key !== "None" };
+			return { unresolved: hasMembers && key !== null && key !== NONE_GROUP_KEY };
 		};
 		const group = listValues(groupProperty, groupKey, true);
 		const subGroup = listValues(this.subGroupPropertyId, subGroupKey);
@@ -1155,12 +1164,12 @@ export class TaskListView extends BasesViewBase {
 		);
 		for (const key of knownValues(effectiveProperty)) groupKeys.add(key);
 		if (effectiveProperty && this.isMovableGroupingProperty(effectiveProperty))
-			groupKeys.add("None");
+			groupKeys.add(NONE_GROUP_KEY);
 		for (const groupKey of groupKeys) {
 			const primary = this.createMovementDestination(groupKey);
 			destinations.set(taskListDestinationKey(primary), primary);
 			if (primaryProperty && this.subGroupPropertyId) {
-				for (const subGroupKey of [...knownValues(this.subGroupPropertyId), "None"]) {
+				for (const subGroupKey of [...knownValues(this.subGroupPropertyId), NONE_GROUP_KEY]) {
 					const child = this.createMovementDestination(groupKey, subGroupKey);
 					destinations.set(taskListDestinationKey(child), child);
 				}
@@ -1169,13 +1178,18 @@ export class TaskListView extends BasesViewBase {
 		return [...destinations.values()];
 	}
 
+	private groupDisplayLabel(key: string, propertyId: string | null): string {
+		const sources = propertyId === this.getGroupByPropertyId() ? this.dataAdapter?.getGroupedData().filter(group => this.dataAdapter.convertGroupKeyToString(group.key) === key).map(group => group.key) : [];
+		return groupKeyLabel(key, { values: sources, propertyType: propertyId && this.plugin.app ? getObsidianPropertyType(this.plugin.app, propertyId.replace(/^(note\\.|task\\.)/, "")) : undefined });
+	}
+
 	private movementDestinationLabel(destination: TaskListDestination): string {
 		return [destination.groupKey, destination.subGroupKey]
 			.filter((value) => value !== undefined)
-			.map((value) =>
-				value === null || value === "None"
-					? this.plugin.i18n.translate("views.taskList.movement.noValue")
-					: value
+			.map((value, index) =>
+				value === null || value === NONE_GROUP_KEY
+					? this.plugin.i18n.translate(msg({ message: "No value", context: "views.taskList.movement.noValue" }))
+					: this.groupDisplayLabel(value ?? "", index === 0 ? this.getGroupByPropertyId() ?? this.subGroupPropertyId : this.subGroupPropertyId)
 			)
 			.join(" / ");
 	}
@@ -1195,7 +1209,7 @@ export class TaskListView extends BasesViewBase {
 		shelf.className = "task-list-view__empty-destinations";
 		shelf.createDiv({
 			cls: "task-list-view__destination-label",
-			text: this.plugin.i18n.translate("views.taskList.movement.otherDestinations"),
+			text: this.plugin.i18n.translate(msg({ message: "Other destinations", context: "views.taskList.movement.otherDestinations" })),
 		});
 		for (const destination of missing) {
 			const target = shelf.createDiv({
@@ -1224,12 +1238,12 @@ export class TaskListView extends BasesViewBase {
 		const menu = new Menu();
 		menu.addItem((item) =>
 			item
-				.setTitle(this.plugin.i18n.translate("views.taskList.movement.handle"))
+				.setTitle(this.plugin.i18n.translate(msg({ message: "Move task", context: "views.taskList.movement.handle" })))
 				.setIsLabel(true)
 		);
 		menu.addItem((item) =>
 			item
-				.setTitle(this.plugin.i18n.translate("views.taskList.movement.parentChoose"))
+				.setTitle(this.plugin.i18n.translate(msg({ message: "Add as subtask of…", context: "views.taskList.movement.parentChoose" })))
 				.setIcon("corner-down-right")
 				.onClick(() => void this.showParentAssignmentSelector(task.path))
 		);
@@ -1237,7 +1251,7 @@ export class TaskListView extends BasesViewBase {
 		menu.addSeparator();
 		menu.addItem((item) =>
 			item
-				.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveTo"))
+				.setTitle(this.plugin.i18n.translate(msg({ message: "Move to a group", context: "views.taskList.movement.moveTo" })))
 				.setIsLabel(true)
 		);
 		const move = (target: TaskListDestination) => () =>
@@ -1281,7 +1295,7 @@ export class TaskListView extends BasesViewBase {
 					parentMenu.addItem((child) =>
 						child
 							.setTitle(
-								this.plugin.i18n.translate("views.taskList.movement.keepSubgroup")
+								this.plugin.i18n.translate(msg({ message: "Keep current subgroup", context: "views.taskList.movement.keepSubgroup" }))
 							)
 							.onClick(move(destination))
 					);
@@ -1335,14 +1349,14 @@ export class TaskListView extends BasesViewBase {
 		if (index > 0)
 			menu.addItem((item) =>
 				item
-					.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveUp"))
+					.setTitle(this.plugin.i18n.translate(msg({ message: "Move up", context: "views.taskList.movement.moveUp" })))
 					.setIcon("arrow-up")
 					.onClick(reorder(scope[index - 1], true))
 			);
 		if (index < scope.length - 1)
 			menu.addItem((item) =>
 				item
-					.setTitle(this.plugin.i18n.translate("views.taskList.movement.moveDown"))
+					.setTitle(this.plugin.i18n.translate(msg({ message: "Move down", context: "views.taskList.movement.moveDown" })))
 					.setIcon("arrow-down")
 					.onClick(reorder(scope[index + 1], false))
 			);
@@ -1384,15 +1398,15 @@ export class TaskListView extends BasesViewBase {
 		const text =
 			plan.kind === "blocked"
 				? plan.readOnlyProperties.length > 0
-					? this.plugin.i18n.translate("views.taskList.movement.readOnly", {
+					? this.plugin.i18n.translate(msg({ message: "Cannot change {properties}: these groups are read-only.", context: "views.taskList.movement.readOnly" }), {
 							properties: names(plan.readOnlyProperties),
 						})
-					: this.plugin.i18n.translate("views.taskList.movement.unresolved", {
+					: this.plugin.i18n.translate(msg({ message: "Cannot determine the {properties} values for this destination.", context: "views.taskList.movement.unresolved" }), {
 							properties: names(plan.unresolvedProperties),
 						})
 				: plan.kind === "move"
 					? plan.changes.map((change) => this.describeMovementChange(change)).join(" · ")
-					: this.plugin.i18n.translate("views.taskList.movement.noChange");
+					: this.plugin.i18n.translate(msg({ message: "Already in this group.", context: "views.taskList.movement.noChange" }));
 		this.setMovementFeedback(text);
 		this.itemsContainer
 			?.querySelectorAll<HTMLElement>(
@@ -1416,7 +1430,7 @@ export class TaskListView extends BasesViewBase {
 	/** Lists are replaced as a whole, so show what the task holds before and after. */
 	private describeMovementChange(change: TaskListGroupDropPlan): string {
 		const name = this.dataAdapter.getPropertyDisplayName(change.groupByPropertyId!);
-		const noValue = this.plugin.i18n.translate("views.taskList.movement.noValue");
+		const noValue = this.plugin.i18n.translate(msg({ message: "No value", context: "views.taskList.movement.noValue" }));
 		if (!change.isListGrouping || !change.frontmatterKey || !this.draggedTaskPath)
 			return `${name} → ${change.normalizedTargetGroupKey ?? noValue}`;
 		const current = this.movementProperties.get(this.draggedTaskPath)?.[change.frontmatterKey];
@@ -1707,7 +1721,7 @@ export class TaskListView extends BasesViewBase {
 				operation: "task-movement",
 				error,
 			});
-			new Notice(this.plugin.i18n.translate("views.taskList.movement.failed"));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Could not move the task. Check the task and try again.", context: "views.taskList.movement.failed" })));
 		} finally {
 			this.debouncedRefresh();
 		}
@@ -1721,7 +1735,7 @@ export class TaskListView extends BasesViewBase {
 		propertyChanges: readonly Pick<TaskListGroupDropPlan, "groupByTaskProp">[],
 		successMessage?: string
 	): void {
-		const t = (key: string) => this.plugin.i18n.translate(`views.taskList.movement.${key}`);
+		const t = (key: MessageSuffix<"views.taskList.movement.">) => this.plugin.i18n.translate(messageForKey(`views.taskList.movement.${key}`));
 		// Recurring status changes can write other occurrence notes. Do not offer a
 		// misleading single-note undo until those writes have a transaction ledger.
 		if (
@@ -1818,7 +1832,7 @@ export class TaskListView extends BasesViewBase {
 		const icon = target.createSpan();
 		setIcon(icon, "corner-down-right");
 		target.createSpan({
-			text: this.plugin.i18n.translate("views.taskList.movement.parentAdd"),
+			text: this.plugin.i18n.translate(msg({ message: "Add as subtask", context: "views.taskList.movement.parentAdd" })),
 		});
 		anchor.appendChild(target);
 	}
@@ -1838,7 +1852,7 @@ export class TaskListView extends BasesViewBase {
 			this.taskInfoCache.get(parentPath)?.title ??
 			this.plugin.app.vault.getAbstractFileByPath(parentPath)?.name.replace(/\.md$/, "") ??
 			parentPath;
-		return this.plugin.i18n.translate(`views.taskList.movement.${key}`, { parent });
+		return this.plugin.i18n.translate(messageForKey(`views.taskList.movement.${key}`), { parent });
 	}
 
 	private async showParentAssignmentSelector(sourcePath: string): Promise<void> {
@@ -1856,7 +1870,7 @@ export class TaskListView extends BasesViewBase {
 				},
 				{
 					allowCreate: false,
-					placeholder: this.plugin.i18n.translate("views.taskList.movement.parentChoose"),
+					placeholder: this.plugin.i18n.translate(msg({ message: "Add as subtask of…", context: "views.taskList.movement.parentChoose" })),
 				}
 			);
 		} catch (error) {
@@ -1865,7 +1879,7 @@ export class TaskListView extends BasesViewBase {
 				operation: "parent-selector",
 				error,
 			});
-			new Notice(this.plugin.i18n.translate("views.taskList.movement.failed"));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Could not move the task. Check the task and try again.", context: "views.taskList.movement.failed" })));
 		}
 	}
 
@@ -1885,7 +1899,7 @@ export class TaskListView extends BasesViewBase {
 					result.originalTask,
 					result.updatedTask,
 					[{ groupByTaskProp: "projects" }],
-					this.plugin.i18n.translate("views.taskList.movement.parentAssigned", { parent })
+					this.plugin.i18n.translate(msg({ message: "Added as a subtask of {parent}.", context: "views.taskList.movement.parentAssigned" }), { parent })
 				);
 			});
 		} catch (error) {
@@ -1897,7 +1911,7 @@ export class TaskListView extends BasesViewBase {
 					operation: "parent-assignment",
 					error,
 				});
-				new Notice(this.plugin.i18n.translate("views.taskList.movement.failed"));
+				new Notice(this.plugin.i18n.translate(msg({ message: "Could not move the task. Check the task and try again.", context: "views.taskList.movement.failed" })));
 			}
 		} finally {
 			this.debouncedRefresh();
@@ -2315,7 +2329,7 @@ export class TaskListView extends BasesViewBase {
 
 			if (groupDropPlan.isFormulaGrouping && groupDropPlan.needsGroupUpdate) {
 				new Notice(
-					this.plugin.i18n.translate("views.taskList.errors.formulaGroupingReadOnly")
+					this.plugin.i18n.translate(msg({ message: "Cannot reorder tasks in formula-based groups. Formula values are computed and cannot be directly modified.", context: "views.taskList.errors.formulaGroupingReadOnly" }))
 				);
 				return;
 			}
@@ -2576,7 +2590,11 @@ export class TaskListView extends BasesViewBase {
 
 		const seenPaths = new Set<string>();
 		const orderChanged = !this.arePathArraysEqual(taskNotes, this.lastFlatPaths);
-		const cardRenderSignature = this.buildCardRenderSignature(visibleProperties, cardOptions);
+		const cardRenderSignature = this.buildCardRenderSignature(
+			visibleProperties,
+			cardOptions,
+			true
+		);
 		const cardRenderChanged = cardRenderSignature !== this.lastCardRenderSignature;
 
 		if (orderChanged) {
@@ -2954,7 +2972,7 @@ export class TaskListView extends BasesViewBase {
 		const toggleBtn = createElementInDocument(doc, "button");
 		toggleBtn.className = "task-group-toggle";
 		toggleBtn.type = "button";
-		toggleBtn.setAttribute("aria-label", "Toggle group");
+		toggleBtn.setAttribute("aria-label", uiText(msg({ message: "Toggle group", context: "bases/TaskListView: TaskListView.createGroupHeader display" })));
 		toggleBtn.setAttribute("aria-expanded", String(!headerItem.isCollapsed));
 		toggleBtn.dataset.groupKey = groupKey;
 		headerElement.appendChild(toggleBtn);
@@ -2971,11 +2989,11 @@ export class TaskListView extends BasesViewBase {
 		// Add group title
 		const titleContainer = headerElement.createSpan({ cls: "task-group-title" });
 		const displayTitle = isSubHeader ? headerItem.subGroupTitle : headerItem.groupTitle;
-		this.renderGroupTitle(titleContainer, displayTitle);
+		this.renderGroupTitle(titleContainer, this.groupDisplayLabel(displayTitle, isSubHeader ? this.subGroupPropertyId : this.getGroupByPropertyId() ?? this.subGroupPropertyId));
 
 		// Add count
 		headerElement.createSpan({
-			text: ` (${headerItem.taskCount})`,
+			text: ` (${uiNumber(headerItem.taskCount)})`,
 			cls: "agenda-view__item-count",
 		});
 
@@ -3075,7 +3093,7 @@ export class TaskListView extends BasesViewBase {
 			"tn-static-text-align-center-91a87015"
 		);
 		emptyEl.classList.add("tn-static-padding-20px-7a035d95");
-		emptyEl.textContent = "No tasknotes tasks found for this base.";
+		emptyEl.textContent = uiText(msg({ message: "No tasknotes tasks found for this base.", context: "bases/TaskListView: TaskListView.renderEmptyState display" }));
 		this.itemsContainer!.appendChild(emptyEl);
 	}
 
@@ -3114,7 +3132,7 @@ export class TaskListView extends BasesViewBase {
 			"tn-static-padding-2rem-42aa6d9c"
 		);
 		errorEl.classList.add("tn-static-padding-20px-ebe8e48c");
-		errorEl.textContent = `Error loading tasks: ${error.message || "Unknown error"}`;
+		errorEl.textContent = uiText(msg({ message: "Error loading tasks: {message}", context: "bases/TaskListView: TaskListView.renderError display" }), { message: displayError(error.message || "Unknown error") });
 		this.itemsContainer!.appendChild(errorEl);
 	}
 
@@ -3127,6 +3145,7 @@ export class TaskListView extends BasesViewBase {
 		const app = this.app || this.plugin.app;
 
 		const linkServices: LinkServices = {
+			translate: this.plugin.i18n.translate.bind(this.plugin.i18n),
 			metadataCache: app.metadataCache,
 			workspace: app.workspace,
 		};
@@ -3262,6 +3281,7 @@ export class TaskListView extends BasesViewBase {
 	private getCardOptions(targetDate: Date): TaskCardOptions {
 		return this.buildTaskCardOptions({
 			targetDate,
+			usePendingOccurrenceIdentity: true,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
 			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>
 				normalizeExpandedRelationshipFilterMode(
@@ -3596,7 +3616,7 @@ export class TaskListView extends BasesViewBase {
 				details: { taskPath: task.path },
 				error: message,
 			});
-			new Notice(`Failed to toggle task status: ${message}`);
+			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), { message: displayError(message) }));
 		}
 	}
 
@@ -3605,7 +3625,7 @@ export class TaskListView extends BasesViewBase {
 	 * Prefers the task's scheduled (or due) date to avoid marking the wrong instance.
 	 */
 	private getTaskActionDate(task: TaskInfo): Date {
-		const dateStr = getDatePart(task.scheduled || task.due || "");
+		const dateStr = getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || task.due || "");
 		if (dateStr) {
 			return parseDateToUTC(dateStr);
 		}
@@ -3625,7 +3645,7 @@ export class TaskListView extends BasesViewBase {
 							"[TaskNotes][TaskListView] Failed to update priority",
 							{ category: "validation", operation: "update-priority", error: error }
 						);
-						new Notice("Failed to update priority");
+						new Notice(this.plugin.i18n.translate(msg({ message: "Failed to update priority", context: "notices.interface.priorityFailed" })));
 					}
 				})();
 			},
@@ -3655,7 +3675,9 @@ export class TaskListView extends BasesViewBase {
 							"[TaskNotes][TaskListView] Failed to update recurrence",
 							{ category: "validation", operation: "update-recurrence", error: error }
 						);
-						new Notice("Failed to update recurrence");
+						new Notice(
+							this.plugin.i18n.translate(msg({ message: "Failed to update recurrence", context: "notices.interface.recurrenceFailed" }))
+						);
 					}
 				})();
 			},
@@ -3680,7 +3702,11 @@ export class TaskListView extends BasesViewBase {
 						operation: "update-reminders",
 						error: error,
 					});
-					new Notice("Failed to update reminders");
+					new Notice(
+						this.plugin.i18n.translate(
+							msg({ message: "Failed to update reminders", context: "contextMenus.task.notices.updateRemindersFailure" })
+						)
+					);
 				}
 			})();
 		});
@@ -3717,7 +3743,14 @@ export class TaskListView extends BasesViewBase {
 							details: { taskPath: task.path, dateType },
 							error: message,
 						});
-						new Notice(`Failed to update ${dateType} date: ${message}`);
+						new Notice(
+							this.plugin.i18n.translate(
+								dateType === "due"
+									? msg({ message: "Failed to update task due date: {message}", context: "contextMenus.task.notices.updateDueDateFailure" })
+									: msg({ message: "Failed to update task scheduled date: {message}", context: "contextMenus.task.notices.updateScheduledFailure" }),
+								{ message }
+							)
+						);
 					}
 				})();
 			},
@@ -3811,7 +3844,7 @@ export class TaskListView extends BasesViewBase {
 					"[TaskNotes][TaskListView] ExpandedProjectsService not initialized",
 					{ category: "stale-data", operation: "expandedprojectsservice-not-initialized" }
 				);
-				new Notice("Service not available. Please try reloading the plugin.");
+				new Notice(this.plugin.i18n.translate(msg({ message: "Service not available. Please try reloading the plugin.", context: "notices.interface.serviceUnavailable" })));
 				return;
 			}
 
@@ -3822,7 +3855,7 @@ export class TaskListView extends BasesViewBase {
 			target.classList.toggle("task-card__chevron--expanded", newExpanded);
 			target.setAttribute(
 				"aria-label",
-				newExpanded ? "Collapse subtasks" : "Expand subtasks"
+				newExpanded ? uiText(msg({ message: "Collapse subtasks", context: "bases/TaskListView: TaskListView.toggleSubtasks display" })) : uiText(msg({ message: "Expand subtasks", context: "bases/TaskListView: TaskListView.toggleSubtasks display" }))
 			);
 
 			// Find the card element and toggle subtasks display
@@ -3837,7 +3870,7 @@ export class TaskListView extends BasesViewBase {
 				operation: "toggle-subtasks",
 				error: error,
 			});
-			new Notice("Failed to toggle subtasks");
+			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to toggle subtasks", context: "notices.interface.subtasksFailed" })));
 		}
 	}
 
@@ -3857,7 +3890,7 @@ export class TaskListView extends BasesViewBase {
 				operation: "toggle-blocking-tasks",
 				error: error,
 			});
-			new Notice("Failed to toggle blocking tasks");
+			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to load dependencies", context: "ui.taskCard.blockingLoadError" })));
 		}
 	}
 
@@ -3911,7 +3944,8 @@ export class TaskListView extends BasesViewBase {
 
 	private buildCardRenderSignature(
 		visibleProperties: string[] | undefined,
-		cardOptions: TaskCardOptions
+		cardOptions: TaskCardOptions,
+		includeRelationshipOrder = false
 	): string {
 		const propertyLabels = cardOptions.propertyLabels
 			? Object.entries(cardOptions.propertyLabels).sort(([left], [right]) =>
@@ -3924,6 +3958,12 @@ export class TaskListView extends BasesViewBase {
 			timeFormat: this.plugin.settings.calendarViewSettings?.timeFormat,
 			propertyLabels,
 			expandedRelationshipFilterMode: cardOptions.expandedRelationshipFilterMode ?? null,
+			// Only non-virtual cards are reused across updates. Snapshot the live map
+			// to refresh hidden children's order without resetting virtual scroll.
+			expandedRelationshipTaskOrder:
+				includeRelationshipOrder && cardOptions.expandedRelationshipTaskOrder
+					? [...cardOptions.expandedRelationshipTaskOrder]
+					: null,
 			targetDate: cardOptions.targetDate?.toISOString().slice(0, 10) ?? null,
 		});
 	}

@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { TFile } from "obsidian";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
@@ -22,6 +23,7 @@ function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 
 function createPlugin(): TaskNotesPlugin {
 	return {
+		i18n: createI18nService(),
 		app: {
 			metadataCache: {
 				getFirstLinkpathDest: jest.fn(),

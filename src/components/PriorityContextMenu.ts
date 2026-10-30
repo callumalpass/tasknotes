@@ -1,3 +1,4 @@
+import { configLabel } from "../i18n/configLabels";
 import TaskNotesPlugin from "../main";
 import { PriorityConfig } from "../types";
 import { ContextMenu } from "./ContextMenu";
@@ -27,14 +28,14 @@ export class PriorityContextMenu {
 
 		this.sortedPriorities.forEach((priority) => {
 			this.menu.addItem((item) => {
-				let title = priority.label;
+				let title = configLabel(priority);
 
 				// Preview the priority's own icon, if it has one
 				item.setIcon(priority.icon || "star");
 
 				// Highlight current selection with visual indicator
 				if (priority.value === this.options.currentValue) {
-					title = `✓ ${priority.label}`;
+					title = `✓ ${configLabel(priority)}`;
 				}
 
 				item.setTitle(title);

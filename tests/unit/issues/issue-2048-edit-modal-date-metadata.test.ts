@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import type { App } from "obsidian";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import type { TaskInfo } from "../../../src/types";
@@ -24,7 +25,7 @@ function createPlugin(app: App): never {
 			},
 		},
 		i18n: {
-			translate: jest.fn((key: string) => translations[key] || key),
+			translate: mockObserveTranslation(),
 		},
 	} as never;
 }

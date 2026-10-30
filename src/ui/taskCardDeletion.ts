@@ -1,3 +1,5 @@
+import { displayError } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { App, Modal, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
@@ -9,7 +11,12 @@ class DeleteTaskConfirmationModal extends Modal {
 	private task: TaskInfo;
 	private onConfirm: () => Promise<void>;
 
-	constructor(app: App, task: TaskInfo, onConfirm: () => Promise<void>) {
+	constructor(
+		app: App,
+		task: TaskInfo,
+		onConfirm: () => Promise<void>,
+		private readonly plugin: TaskNotesPlugin
+	) {
 		super(app);
 		this.task = task;
 		this.onConfirm = onConfirm;
@@ -19,16 +26,13 @@ class DeleteTaskConfirmationModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		contentEl.createEl("h2", { text: "Delete task" });
-
-		const description = contentEl.createEl("p");
-		description.appendText('Are you sure you want to delete the task "');
-		description.createEl("strong", { text: this.task.title });
-		description.appendText('"?');
-
+		contentEl.createEl("h2", {
+			text: this.plugin.i18n.translate(msg({ message: "Delete task", context: "modals.taskEdit.deleteConfirmation.title" })),
+		});
 		contentEl.createEl("p", {
-			cls: "mod-warning",
-			text: "This action cannot be undone. The task file will be permanently deleted.",
+			text: this.plugin.i18n.translate(msg({ message: "Are you sure you want to delete \"{title}\"? This moves the task note to Obsidian trash.", context: "modals.taskEdit.deleteConfirmation.message" }), {
+				title: this.task.title,
+			}),
 		});
 
 		const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
@@ -70,13 +74,15 @@ class DeleteTaskConfirmationModal extends Modal {
 		);
 		buttonContainer.classList.add("tn-static-margin-top-20px-a26bda7d");
 
-		const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
+		const cancelButton = buttonContainer.createEl("button", {
+			text: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
+		});
 		cancelButton.addEventListener("click", () => {
 			this.close();
 		});
 
 		const deleteButton = buttonContainer.createEl("button", {
-			text: "Delete",
+			text: this.plugin.i18n.translate(msg({ message: "Delete", context: "contextMenus.task.deleteConfirm" })),
 			cls: "mod-warning",
 		});
 		deleteButton.classList.remove(
@@ -108,10 +114,14 @@ class DeleteTaskConfirmationModal extends Modal {
 				try {
 					await this.onConfirm();
 					this.close();
-					new Notice("Task deleted successfully");
+					new Notice(this.plugin.i18n.translate(msg({ message: "Task deleted successfully", context: "notices.interface.deleted" })));
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
-					new Notice(`Failed to delete task: ${errorMessage}`);
+					new Notice(
+						this.plugin.i18n.translate(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), {
+							message: displayError(errorMessage),
+						})
+					);
 					tasknotesLogger.error("Error in delete confirmation:", {
 						category: "persistence",
 						operation: "delete-confirmation",
@@ -135,14 +145,19 @@ export async function showDeleteConfirmationModal(
 	plugin: TaskNotesPlugin
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
-		const modal = new DeleteTaskConfirmationModal(plugin.app, task, async () => {
-			try {
-				await plugin.taskService.deleteTask(task);
-				resolve();
-			} catch (error) {
-				reject(error instanceof Error ? error : new Error(String(error)));
-			}
-		});
+		const modal = new DeleteTaskConfirmationModal(
+			plugin.app,
+			task,
+			async () => {
+				try {
+					await plugin.taskService.deleteTask(task);
+					resolve();
+				} catch (error) {
+					reject(error instanceof Error ? error : new Error(String(error)));
+				}
+			},
+			plugin
+		);
 		modal.open();
 	});
 }

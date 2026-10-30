@@ -318,11 +318,11 @@ test.describe('Issue #1159: Bug report after latest update', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Count time entry events before disabling
-        const timeEntryEvents = page.locator('.fc-event[data-event-type="timeEntry"]');
+        const timeEntryEvents = page.locator('.tnc-item[data-event-type="timeEntry"]');
         const initialTimeEntryCount = await timeEntryEvents.count();
 
         console.log(`Initial time entry count: ${initialTimeEntryCount}`);
@@ -356,7 +356,7 @@ test.describe('Issue #1159: Bug report after latest update', () => {
           const optionsButton = page.locator(
             '.calendar-view__options-button, ' +
               'button[aria-label="Options"], ' +
-              '.fc-toolbar button:has-text("Options")'
+              '.tnc-toolbar button:has-text("Options")'
           );
 
           if (await optionsButton.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -395,7 +395,7 @@ test.describe('Issue #1159: Bug report after latest update', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Disable time entries (if possible through the UI)
@@ -409,7 +409,7 @@ test.describe('Issue #1159: Bug report after latest update', () => {
         await page.waitForTimeout(1000);
 
         // Time entries should still be hidden (setting persisted)
-        const timeEntryEvents = page.locator('.fc-event[data-event-type="timeEntry"]');
+        const timeEntryEvents = page.locator('.tnc-item[data-event-type="timeEntry"]');
         const countAfterReturn = await timeEntryEvents.count();
 
         // If the setting persisted correctly, time entries should still be hidden
@@ -446,13 +446,13 @@ test.describe('Issue #1159: Bug report after latest update', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Get time entry styling
-        const timeEntryEvent = page.locator('.fc-event[data-event-type="timeEntry"]').first();
+        const timeEntryEvent = page.locator('.tnc-item[data-event-type="timeEntry"]').first();
         const taskEvent = page.locator(
-          '.fc-task-event, .fc-event:not([data-event-type="timeEntry"])'
+          '.fc-task-event, .tnc-item:not([data-event-type="timeEntry"])'
         ).first();
 
         let timeEntryStyles = null;

@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import {
 	Notice,
 	type SettingDefinitionItem,
@@ -24,14 +25,14 @@ export function validatePropertyKey(
 	value: string,
 	ownId: string
 ): string | void {
-	if (!value.trim()) return ctx.t("settings.native.enterAPropertyKey");
+	if (!value.trim()) return ctx.t(msg({ message: "Enter a property key.", context: "settings.native.enterAPropertyKey" }));
 	if (value !== value.trim() || /[\n\r:#[\]{}]/.test(value))
-		return ctx.t("settings.native.useAPropertyKeyWithoutSurroundingSpacesLineBreaks");
+		return ctx.t(msg({ message: "Use a property key without surrounding spaces, line breaks, or YAML punctuation.", context: "settings.native.useAPropertyKeyWithoutSurroundingSpacesLineBreaks" }));
 	const mapping = ctx.plugin.settings.fieldMapping;
 	const reservedTags = ownId === "archiveTag" || ownId === "icsEventTag";
 	if (reservedTags) return;
 	if (value.toLowerCase() === "tags")
-		return ctx.t("settings.native.theTagsPropertyIsReservedByObsidian");
+		return ctx.t(msg({ message: "The tags property is reserved by Obsidian.", context: "settings.native.theTagsPropertyIsReservedByObsidian" }));
 	if (
 		Object.entries(mapping).some(
 			([id, key]) =>
@@ -44,7 +45,7 @@ export function validatePropertyKey(
 			(field) => field.id !== ownId && field.key.toLowerCase() === value.toLowerCase()
 		)
 	)
-		return ctx.t("settings.native.anotherPropertyAlreadyUsesThisKey");
+		return ctx.t(msg({ message: "Another property already uses this key.", context: "settings.native.anotherPropertyAlreadyUsesThisKey" }));
 }
 
 function triggerGroup(ctx: SettingsContext, id: string, fallback: string): SettingDefinitionGroup {
@@ -63,22 +64,22 @@ function triggerGroup(ctx: SettingsContext, id: string, fallback: string): Setti
 	};
 	return {
 		type: "group",
-		heading: t("settings.features.nlp.header"),
+		heading: t(msg({ message: "Natural language processing", context: "settings.features.nlp.header" })),
 		items: [
 			ctx.toggle(`nlp.${id}.enabled`, {
-				name: t("settings.taskProperties.propertyCard.nlpTrigger"),
+				name: t(msg({ message: "NLP trigger:", context: "settings.taskProperties.propertyCard.nlpTrigger" })),
 				getValue: () => read()?.enabled ?? id !== "priority",
 				setValue: (enabled) => change({ enabled }),
 			}),
 			ctx.text(`nlp.${id}.trigger`, {
-				name: t("settings.taskProperties.propertyCard.triggerChar"),
+				name: t(msg({ message: "Trigger character:", context: "settings.taskProperties.propertyCard.triggerChar" })),
 				getValue: () => read()?.trigger ?? fallback,
 				setValue: (trigger) => change({ trigger }),
 				validate: (value) =>
 					!value.trim()
-						? t("settings.taskProperties.propertyCard.triggerEmpty")
+						? t(msg({ message: "Trigger cannot be empty", context: "settings.taskProperties.propertyCard.triggerEmpty" }))
 						: value.length > 10
-							? t("settings.taskProperties.propertyCard.triggerTooLong")
+							? t(msg({ message: "Trigger is too long (max 10 characters)", context: "settings.taskProperties.propertyCard.triggerTooLong" }))
 							: undefined,
 			}),
 		],
@@ -98,23 +99,23 @@ export function filterPage(
 	};
 	return {
 		type: "page",
-		name: t("settings.taskProperties.customUserFields.autosuggestFilters.header"),
+		name: t(msg({ message: "Autosuggestion filters (advanced)", context: "settings.taskProperties.customUserFields.autosuggestFilters.header" })),
 		displayValue: () => {
 			const value = read();
 			return value?.requiredTags?.length ||
 				value?.includeFolders?.length ||
 				value?.propertyKey
-				? ctx.t("settings.taskProperties.projectsCard.filtersOn")
-				: ctx.t("settings.native.allNotes");
+				? ctx.t(msg({ message: "Filters on", context: "settings.taskProperties.projectsCard.filtersOn" }))
+				: ctx.t(msg({ message: "All notes", context: "settings.native.allNotes" }));
 		},
 		items: [
 			...(["requiredTags", "includeFolders"] as const).map((key) =>
 				ctx.text(`${id}.${key}`, {
 					name:
 						key === "requiredTags"
-							? ctx.t("settings.appearance.projectAutosuggest.requiredTags.name")
-							: ctx.t("settings.native.includedFolders"),
-					desc: ctx.t("settings.native.separateValuesWithCommas"),
+							? ctx.t(msg({ message: "Required tags", context: "settings.appearance.projectAutosuggest.requiredTags.name" }))
+							: ctx.t(msg({ message: "Included folders", context: "settings.native.includedFolders" })),
+					desc: ctx.t(msg({ message: "Separate values with commas.", context: "settings.native.separateValuesWithCommas" })),
 					getValue: () => read()?.[key]?.join(", ") ?? "",
 					setValue: (value) =>
 						set({
@@ -126,13 +127,13 @@ export function filterPage(
 				})
 			),
 			ctx.text(`${id}.propertyKey`, {
-				name: ctx.t("settings.native.propertyName"),
+				name: ctx.t(msg({ message: "Property name", context: "settings.native.propertyName" })),
 				getValue: () => read()?.propertyKey ?? "",
 				setValue: (propertyKey) => set({ propertyKey }),
 			}),
 			ctx.text(`${id}.propertyValue`, {
-				name: ctx.t("settings.native.propertyValue"),
-				desc: ctx.t("settings.native.leaveEmptyToMatchAnyNoteWithThisProperty"),
+				name: ctx.t(msg({ message: "Property value", context: "settings.native.propertyValue" })),
+				desc: ctx.t(msg({ message: "Leave empty to match any note with this property.", context: "settings.native.leaveEmptyToMatchAnyNoteWithThisProperty" })),
 				getValue: () => read()?.propertyValue ?? "",
 				setValue: (propertyValue) => set({ propertyValue }),
 			}),
@@ -157,12 +158,12 @@ function configuredValues(
 	const labelKey = isStatus ? "taskStatuses" : "taskPriorities";
 	return {
 		type: "list",
-		heading: isStatus ? ctx.t("settings.native.statuses") : ctx.t("settings.native.priorities"),
-		emptyState: ctx.t("settings.native.noValuesConfigured"),
+		heading: isStatus ? ctx.t(msg({ message: "Statuses", context: "settings.native.statuses" })) : ctx.t(msg({ message: "Priorities", context: "settings.native.priorities" })),
+		emptyState: ctx.t(msg({ message: "No values configured.", context: "settings.native.noValuesConfigured" })),
 		addItem: {
 			name: isStatus
-				? ctx.t("settings.taskProperties.taskStatuses.addNew.buttonText")
-				: ctx.t("settings.taskProperties.taskPriorities.addNew.buttonText"),
+				? ctx.t(msg({ message: "Add status", context: "settings.taskProperties.taskStatuses.addNew.buttonText" }))
+				: ctx.t(msg({ message: "Add priority", context: "settings.taskProperties.taskPriorities.addNew.buttonText" })),
 			action: () => {
 				const id = crypto.randomUUID();
 				let value = isStatus ? "new-status" : "new-priority";
@@ -212,18 +213,18 @@ function configuredValues(
 				const item = values[index];
 				if (!item) return;
 				if (values.length <= 1) {
-					new Notice(ctx.t("settings.native.keepAtLeastOneConfiguredValue"));
+					new Notice(ctx.t(msg({ message: "Keep at least one configured value.", context: "settings.native.keepAtLeastOneConfiguredValue" })));
 					return;
 				}
 				if (
 					!(await showConfirmationModal(plugin.app, {
-						title: ctx.t("settings.native.deleteEntry", {
+						title: ctx.t(msg({ message: "Delete {name}?", context: "settings.native.deleteEntry" }), {
 							name: item.label || item.value,
 						}),
 						message: ctx.t(
-							"settings.native.existingTaskNotesWillNotBeChangedTasksUsing"
+							msg({ message: "Existing task notes will not be changed. Tasks using this value keep it in their frontmatter.", context: "settings.native.existingTaskNotesWillNotBeChangedTasksUsing" })
 						),
-						confirmText: ctx.t("views.advancedCalendar.contextMenus.deleteButton"),
+						confirmText: ctx.t(msg({ message: "Delete", context: "views.advancedCalendar.contextMenus.deleteButton" })),
 						isDestructive: true,
 					}))
 				)
@@ -253,13 +254,13 @@ function configuredValues(
 			const fields: SettingDefinitionItem[] = [
 				ctx.text(`${id}.value`, {
 					name: t(`settings.taskProperties.${labelKey}.fields.value`),
-					desc: ctx.t("settings.native.storedInTaskNotesChangingThisDoesNotRename"),
+					desc: ctx.t(msg({ message: "Stored in task notes. Changing this does not rename values in existing notes.", context: "settings.native.storedInTaskNotesChangingThisDoesNotRename" })),
 					getValue: () => item.value,
 					validate: (value) =>
 						!value.trim()
-							? ctx.t("settings.native.enterValue")
+							? ctx.t(msg({ message: "Enter a value.", context: "settings.native.enterValue" }))
 							: values.some((other) => other.id !== item.id && other.value === value)
-								? ctx.t("settings.native.duplicateValue")
+								? ctx.t(msg({ message: "This value already exists.", context: "settings.native.duplicateValue" }))
 								: undefined,
 					setValue: (value) => {
 						const previous = item.value;
@@ -280,26 +281,26 @@ function configuredValues(
 					item,
 					"label",
 					`${id}.label`,
-					ctx.t("settings.taskProperties.taskStatuses.fields.label"),
+					ctx.t(msg({ message: "Label:", context: "settings.taskProperties.taskStatuses.fields.label" })),
 					{ onChange: ctx.rebuild }
 				),
 				ctx.field(
 					item,
 					"color",
 					`${id}.color`,
-					ctx.t("settings.taskProperties.taskStatuses.fields.color"),
+					ctx.t(msg({ message: "Color:", context: "settings.taskProperties.taskStatuses.fields.color" })),
 					{
-						desc: ctx.t("settings.native.aCSSColorOrThemeVariableSuchAsVar"),
+						desc: ctx.t(msg({ message: "A CSS color or theme variable, such as var(--text-accent).", context: "settings.native.aCSSColorOrThemeVariableSuchAsVar" })),
 					}
 				),
 				ctx.field(
 					item,
 					"icon",
 					`${id}.icon`,
-					ctx.t("settings.taskProperties.taskStatuses.fields.icon"),
+					ctx.t(msg({ message: "Icon:", context: "settings.taskProperties.taskStatuses.fields.icon" })),
 					{
 						desc: ctx.t(
-							"settings.native.lucideIconNameLeaveEmptyForTheDefaultIndicator"
+							msg({ message: "Lucide icon name. Leave empty for the default indicator.", context: "settings.native.lucideIconNameLeaveEmptyForTheDefaultIndicator" })
 						),
 					}
 				),
@@ -310,13 +311,13 @@ function configuredValues(
 						item,
 						"isCompleted",
 						`${id}.isCompleted`,
-						ctx.t("settings.native.countsAsCompleted")
+						ctx.t(msg({ message: "Counts as completed", context: "settings.native.countsAsCompleted" }))
 					),
 					ctx.field(
 						item,
 						"isSkipped",
 						`${id}.isSkipped`,
-						ctx.t("settings.native.countsAsSkipped"),
+						ctx.t(msg({ message: "Counts as skipped", context: "settings.native.countsAsSkipped" })),
 						{
 							type: "toggle",
 						}
@@ -325,18 +326,18 @@ function configuredValues(
 						item,
 						"excludeFromCycle",
 						`${id}.excludeFromCycle`,
-						ctx.t("settings.native.excludeFromStatusCycle"),
+						ctx.t(msg({ message: "Exclude from status cycle", context: "settings.native.excludeFromStatusCycle" })),
 						{ type: "toggle" }
 					),
 					ctx.field(
 						item,
 						"nextStatus",
 						`${id}.nextStatus`,
-						ctx.t("settings.taskProperties.taskStatuses.fields.nextStatus"),
+						ctx.t(msg({ message: "Next status:", context: "settings.taskProperties.taskStatuses.fields.nextStatus" })),
 						{
 							type: "dropdown",
 							options: {
-								"": ctx.t("settings.native.nextInOrder"),
+								"": ctx.t(msg({ message: "Next in order", context: "settings.native.nextInOrder" })),
 								...Object.fromEntries(
 									values
 										.filter((other) => other.id !== item.id)
@@ -347,19 +348,19 @@ function configuredValues(
 					),
 					{
 						type: "group",
-						heading: ctx.t("settings.native.automaticArchiving"),
+						heading: ctx.t(msg({ message: "Automatic archiving", context: "settings.native.automaticArchiving" })),
 						items: [
 							ctx.field(
 								item,
 								"autoArchive",
 								`${id}.autoArchive`,
-								ctx.t("settings.native.automaticallyArchive")
+								ctx.t(msg({ message: "Automatically archive", context: "settings.native.automaticallyArchive" }))
 							),
 							ctx.field(
 								item,
 								"autoArchiveDelay",
 								`${id}.autoArchiveDelay`,
-								ctx.t("settings.taskProperties.taskStatuses.fields.delayMinutes"),
+								ctx.t(msg({ message: "Delay (minutes):", context: "settings.taskProperties.taskStatuses.fields.delayMinutes" })),
 								{
 									type: "number",
 									min: 1,
@@ -372,9 +373,9 @@ function configuredValues(
 				);
 			else
 				fields.push(
-					ctx.field(item, "weight", `${id}.weight`, ctx.t("settings.native.sortWeight"), {
+					ctx.field(item, "weight", `${id}.weight`, ctx.t(msg({ message: "Sort weight", context: "settings.native.sortWeight" })), {
 						type: "number",
-						desc: ctx.t("settings.native.higherValuesSortFirst"),
+						desc: ctx.t(msg({ message: "Higher values sort first.", context: "settings.native.higherValuesSortFirst" })),
 					})
 				);
 			return {
@@ -393,10 +394,10 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 	const fields = plugin.settings.userFields ?? [];
 	return {
 		type: "list",
-		heading: t("settings.taskProperties.customUserFields.header"),
-		emptyState: t("settings.taskProperties.customUserFields.emptyState"),
+		heading: t(msg({ message: "Custom user fields", context: "settings.taskProperties.customUserFields.header" })),
+		emptyState: t(msg({ message: "No custom user fields configured. Add a field to create custom properties for your tasks.", context: "settings.taskProperties.customUserFields.emptyState" })),
 		addItem: {
-			name: t("settings.taskProperties.customUserFields.addNew.buttonText"),
+			name: t(msg({ message: "Add user field", context: "settings.taskProperties.customUserFields.addNew.buttonText" })),
 			action: () => {
 				const id = crypto.randomUUID();
 				let key = "custom";
@@ -405,7 +406,7 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 				const field: UserMappedField = {
 					id,
 					key,
-					displayName: ctx.t("settings.native.newProperty"),
+					displayName: ctx.t(msg({ message: "New property", context: "settings.native.newProperty" })),
 					type: "text",
 				};
 				plugin.settings.userFields = [...fields, field];
@@ -442,13 +443,13 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 				if (!field) return;
 				if (
 					!(await showConfirmationModal(plugin.app, {
-						title: ctx.t("settings.native.deleteEntry", {
+						title: ctx.t(msg({ message: "Delete {name}?", context: "settings.native.deleteEntry" }), {
 							name: field.displayName || field.key,
 						}),
 						message: ctx.t(
-							"settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"
+							msg({ message: "This removes the property from TaskNotes forms, not from existing notes.", context: "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom" })
 						),
-						confirmText: ctx.t("settings.native.deleteProperty"),
+						confirmText: ctx.t(msg({ message: "Delete property", context: "settings.native.deleteProperty" })),
 						isDestructive: true,
 					}))
 				)
@@ -471,7 +472,7 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 				name:
 					field.displayName ||
 					field.key ||
-					t("settings.taskProperties.customUserFields.defaultNames.unnamedField"),
+					t(msg({ message: "Unnamed field", context: "settings.taskProperties.customUserFields.defaultNames.unnamedField" })),
 				desc: field.key,
 				displayValue: () =>
 					t(`settings.taskProperties.customUserFields.types.${field.type}`),
@@ -480,7 +481,7 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 						field,
 						"displayName",
 						`${id}.displayName`,
-						t("settings.taskProperties.customUserFields.fields.displayName"),
+						t(msg({ message: "Display name:", context: "settings.taskProperties.customUserFields.fields.displayName" })),
 						{
 							onChange: () => {
 								const modalField = plugin.settings.modalFieldsConfig?.fields.find(
@@ -492,7 +493,7 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 						}
 					),
 					ctx.text(`${id}.key`, {
-						name: t("settings.taskProperties.customUserFields.fields.propertyKey"),
+						name: t(msg({ message: "Property key:", context: "settings.taskProperties.customUserFields.fields.propertyKey" })),
 						getValue: () => field.key,
 						validate: (value) => validatePropertyKey(ctx, value.trim(), field.id),
 						setValue: (value) => {
@@ -500,13 +501,13 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 							ctx.rebuild();
 							ctx.save();
 						},
-						desc: ctx.t("settings.native.changingThisKeyDoesNotMigrateExistingNotes"),
+						desc: ctx.t(msg({ message: "Changing this key does not migrate existing notes.", context: "settings.native.changingThisKeyDoesNotMigrateExistingNotes" })),
 					}),
 					ctx.field(
 						field,
 						"type",
 						`${id}.type`,
-						t("settings.taskProperties.customUserFields.fields.type"),
+						t(msg({ message: "Type:", context: "settings.taskProperties.customUserFields.fields.type" })),
 						{
 							type: "dropdown",
 							options: Object.fromEntries(
@@ -541,7 +542,7 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 
 function customDefault(ctx: SettingsContext, field: UserMappedField): SettingDefinitionItem {
 	const name = ctx.plugin.i18n.translate(
-		"settings.taskProperties.customUserFields.fields.defaultValue"
+		msg({ message: "Default value:", context: "settings.taskProperties.customUserFields.fields.defaultValue" })
 	);
 	const key = `userFields.${field.id}.defaultValue`;
 	if (field.type === "boolean")
@@ -549,12 +550,12 @@ function customDefault(ctx: SettingsContext, field: UserMappedField): SettingDef
 	if (field.type === "date")
 		return ctx.dropdown(key, {
 			name,
-			options: ["none", "today", "tomorrow", "next-week"].map((value) => ({
-				value,
-				label: ctx.t(
-					`settings.defaults.options.${value === "next-week" ? "nextWeek" : value}`
-				),
-			})),
+			options: [
+				{ value: "none", label: ctx.t(msg({ message: "None", context: "settings.defaults.options.none" })) },
+				{ value: "today", label: ctx.t(msg({ message: "Today", context: "settings.defaults.options.today" })) },
+				{ value: "tomorrow", label: ctx.t(msg({ message: "Tomorrow", context: "settings.defaults.options.tomorrow" })) },
+				{ value: "next-week", label: ctx.t(msg({ message: "Next week", context: "settings.defaults.options.nextWeek" })) },
+			],
 			getValue: () => String(field.defaultValue ?? "none"),
 			setValue: (value) => {
 				field.defaultValue = value === "none" ? undefined : value;
@@ -565,15 +566,15 @@ function customDefault(ctx: SettingsContext, field: UserMappedField): SettingDef
 		name,
 		desc:
 			field.type === "list"
-				? ctx.t("settings.native.separateValuesWithCommas")
-				: ctx.t("settings.native.noDefaultHint"),
+				? ctx.t(msg({ message: "Separate values with commas.", context: "settings.native.separateValuesWithCommas" }))
+				: ctx.t(msg({ message: "Leave empty for no default.", context: "settings.native.noDefaultHint" })),
 		getValue: () =>
 			Array.isArray(field.defaultValue)
 				? field.defaultValue.join(", ")
 				: String(field.defaultValue ?? ""),
 		validate: (value) =>
 			field.type === "number" && value.trim() && !Number.isFinite(Number(value))
-				? ctx.t("settings.native.optionalNumber")
+				? ctx.t(msg({ message: "Enter a number or leave empty.", context: "settings.native.optionalNumber" }))
 				: undefined,
 		setValue: (value) => {
 			field.defaultValue = !value.trim()
@@ -596,16 +597,16 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 	const t = plugin.i18n.translate.bind(plugin.i18n);
 	const mapping = plugin.settings.fieldMapping;
 	const labels: Partial<Record<keyof FieldMapping, string>> = {
-		title: ctx.t("settings.taskProperties.properties.title.name"),
-		status: ctx.t("settings.taskProperties.properties.status.name"),
-		priority: ctx.t("settings.taskProperties.properties.priority.name"),
-		due: ctx.t("settings.taskProperties.properties.due.name"),
-		scheduled: ctx.t("settings.taskProperties.properties.scheduled.name"),
-		contexts: ctx.t("settings.taskProperties.properties.contexts.name"),
-		projects: ctx.t("modals.task.organization.projects"),
-		timeEstimate: ctx.t("settings.taskProperties.properties.timeEstimate.name"),
-		recurrence: ctx.t("settings.taskProperties.properties.recurrence.name"),
-		reminders: ctx.t("settings.taskProperties.properties.reminders.name"),
+		title: ctx.t(msg({ message: "Title", context: "settings.taskProperties.properties.title.name" })),
+		status: ctx.t(msg({ message: "Status", context: "settings.taskProperties.properties.status.name" })),
+		priority: ctx.t(msg({ message: "Priority", context: "settings.taskProperties.properties.priority.name" })),
+		due: ctx.t(msg({ message: "Due date", context: "settings.taskProperties.properties.due.name" })),
+		scheduled: ctx.t(msg({ message: "Scheduled date", context: "settings.taskProperties.properties.scheduled.name" })),
+		contexts: ctx.t(msg({ message: "Contexts", context: "settings.taskProperties.properties.contexts.name" })),
+		projects: ctx.t(msg({ message: "Projects", context: "modals.task.organization.projects" })),
+		timeEstimate: ctx.t(msg({ message: "Time estimate", context: "settings.taskProperties.properties.timeEstimate.name" })),
+		recurrence: ctx.t(msg({ message: "Recurrence", context: "settings.taskProperties.properties.recurrence.name" })),
+		reminders: ctx.t(msg({ message: "Reminders", context: "settings.taskProperties.properties.reminders.name" })),
 	};
 	const triggers: Record<string, string> = {
 		status: "status:",
@@ -620,13 +621,13 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 				mapping,
 				property,
 				`fieldMapping.${property}`,
-				t("settings.taskProperties.propertyCard.propertyKey"),
+				t(msg({ message: "Property key:", context: "settings.taskProperties.propertyCard.propertyKey" })),
 				{
 					validate: (value) => validatePropertyKey(ctx, value, property),
 					onChange: ctx.rebuild,
 					disabled: () => property === "title" && plugin.settings.storeTitleInFilename,
 					desc: ctx.t(
-						"settings.native.changingThisMappingDoesNotRenamePropertiesInExisting"
+						msg({ message: "Changing this mapping does not rename properties in existing notes.", context: "settings.native.changingThisMappingDoesNotRenamePropertiesInExisting" })
 					),
 				}
 			),
@@ -647,11 +648,11 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 				}),
 				{
 					type: "page",
-					name: t("settings.taskProperties.projectsCard.customizeDisplay"),
+					name: t(msg({ message: "Customize display", context: "settings.taskProperties.projectsCard.customizeDisplay" })),
 					items: [
 						ctx.toggle("projectAutosuggest.enableFuzzy", {
 							name: t(
-								"settings.appearance.projectAutosuggest.enableFuzzyMatching.name"
+								msg({ message: "Enable fuzzy matching", context: "settings.appearance.projectAutosuggest.enableFuzzyMatching.name" })
 							),
 							getValue: () => get()?.enableFuzzy ?? false,
 							setValue: (enableFuzzy) => {
@@ -665,8 +666,8 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 						}),
 						...[0, 1, 2].map((index) =>
 							ctx.text(`projectAutosuggest.rows.${index}`, {
-								name: ctx.t("settings.native.displayRow", { number: index + 1 }),
-								desc: t("settings.appearance.projectAutosuggest.displayRowsHelp"),
+								name: ctx.t(msg({ message: "Display row {number}", context: "settings.native.displayRow" }), { number: index + 1 }),
+								desc: t(msg({ message: "Configure up to 3 lines of information to show for each project suggestion.", context: "settings.appearance.projectAutosuggest.displayRowsHelp" })),
 								getValue: () => get()?.rows[index] ?? "",
 								setValue: (value) => {
 									const config = {
@@ -697,20 +698,20 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 	return [
 		{
 			type: "group",
-			heading: t("settings.taskProperties.sections.coreProperties"),
+			heading: t(msg({ message: "Core properties", context: "settings.taskProperties.sections.coreProperties" })),
 			items: pages.filter((_, index) => core.has(Object.keys(mapping)[index])),
 		},
 		{
 			type: "page",
-			name: ctx.t("settings.native.metadataIntegrationProperties"),
+			name: ctx.t(msg({ message: "Metadata & integration properties", context: "settings.native.metadataIntegrationProperties" })),
 			desc: ctx.t(
-				"settings.native.timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents"
+				msg({ message: "Timestamps, recurrence records, ordering, and linked calendar events.", context: "settings.native.timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents" })
 			),
 			items: pages.filter((_, index) => !core.has(Object.keys(mapping)[index])),
 		},
 		{
 			type: "page",
-			name: ctx.t("settings.taskProperties.properties.tags.name"),
+			name: ctx.t(msg({ message: "Tags", context: "settings.taskProperties.properties.tags.name" })),
 			items: [triggerGroup(ctx, "tags", "#")],
 		},
 		customProperties(ctx),

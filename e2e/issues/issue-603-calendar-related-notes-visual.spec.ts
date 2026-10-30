@@ -47,17 +47,17 @@ test.describe('Issue #603: Visually identify related notes in Calendar', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find ICS events in the calendar
-      const icsEvents = page.locator('.fc-event[data-event-type="ics"]');
+      const icsEvents = page.locator('.tnc-item[data-event-type="ics"]');
       const eventCount = await icsEvents.count();
 
       if (eventCount > 0) {
         // Check if any ICS events have the 'has-related-note' class
         const eventsWithRelatedNotes = page.locator(
-          '.fc-event[data-event-type="ics"].has-related-note'
+          '.tnc-item[data-event-type="ics"].has-related-note'
         );
         const relatedNoteCount = await eventsWithRelatedNotes.count();
 
@@ -90,14 +90,14 @@ test.describe('Issue #603: Visually identify related notes in Calendar', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Look for ICS events with related note indicators
       const eventsWithIcon = page.locator(
-        '.fc-event[data-event-type="ics"].has-related-note .related-note-icon, ' +
-        '.fc-event[data-event-type="ics"].has-related-note [data-icon="file-text"], ' +
-        '.fc-event[data-event-type="ics"].has-related-note [data-icon="link"]'
+        '.tnc-item[data-event-type="ics"].has-related-note .related-note-icon, ' +
+        '.tnc-item[data-event-type="ics"].has-related-note [data-icon="file-text"], ' +
+        '.tnc-item[data-event-type="ics"].has-related-note [data-icon="link"]'
       );
 
       const iconCount = await eventsWithIcon.count();
@@ -120,16 +120,16 @@ test.describe('Issue #603: Visually identify related notes in Calendar', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find all ICS events
-      const allIcsEvents = page.locator('.fc-event[data-event-type="ics"]');
+      const allIcsEvents = page.locator('.tnc-item[data-event-type="ics"]');
       const totalCount = await allIcsEvents.count();
 
       // Find ICS events with related note indicator
       const withRelatedNotes = page.locator(
-        '.fc-event[data-event-type="ics"].has-related-note'
+        '.tnc-item[data-event-type="ics"].has-related-note'
       );
       const withIndicatorCount = await withRelatedNotes.count();
 
@@ -153,12 +153,12 @@ test.describe('Issue #603: Visually identify related notes in Calendar', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to list view
       const listButton = page.locator(
-        '.fc-listWeek-button, button:has-text("list"), .fc-toolbar button:has-text("List")'
+        '.tnc-btn-view-list, button:has-text("list"), .tnc-toolbar button:has-text("List")'
       );
       if (await listButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await listButton.click();

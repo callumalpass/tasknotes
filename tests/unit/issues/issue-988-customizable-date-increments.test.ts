@@ -24,7 +24,7 @@
  * - src/settings/defaults.ts (add default increment options)
  * - src/components/DateContextMenu.ts (use settings instead of hardcoded values)
  * - src/settings/SettingsTab.ts (add UI for configuring increments)
- * - src/i18n/resources/*.ts (add translation keys for new setting labels)
+ * - src/i18n/locales/en/messages.po (mark source messages and extract PO catalogues for new setting labels)
  *
  * @see https://github.com/callumc/tasknotes/issues/988
  */

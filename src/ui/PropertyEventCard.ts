@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
 import type { BasesEntry, BasesViewConfig } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -31,7 +33,7 @@ export function createPropertyEventCard(
 
 	const file = entry.file;
 	if (!file) {
-		card.textContent = plugin.i18n.translate("ui.propertyEventCard.unknownFile");
+		card.textContent = plugin.i18n.translate(msg({ message: "Unknown file", context: "ui.propertyEventCard.unknownFile" }));
 		return card;
 	}
 
@@ -168,7 +170,7 @@ export function createPropertyEventCard(
 					const propertyEl = metadata.createSpan({
 						cls: "property-event-card__metadata-property",
 					});
-					propertyEl.createSpan({ text: `${displayName}: ` });
+					propertyEl.createSpan({ text: uiText(msg({ message: "{displayName}: ", context: "ui/PropertyEventCard: createPropertyEventCard text" }), { displayName: displayName }) });
 					const valueEl = propertyEl.createSpan({
 						cls: "property-event-card__metadata-value",
 					});

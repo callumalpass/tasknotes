@@ -29,6 +29,12 @@ Repeated project prefixes remove only the first configured prefix: `++personal` 
 
 Italian relative days `oggi`, `domani`, and `dopodomani` use the local calendar date. Bare words follow the default date setting; `entro oggi` and `per domani` set Due, while `programmato per oggi` sets Scheduled. This is partial Italian date support, not a complete Italian date grammar. Links, metadata, escaped words, and details containing these words are not converted to dates.
 
+### Highlighting in Natural Language Input
+
+As you type, the parts of the input that set a value are highlighted in the natural language field: dates (blue), recurrence (purple), time estimates (orange), priority (red), status (green), and tags, contexts, projects and custom fields (accent color). Text that is not highlighted becomes the title. A highlighted phrase can still stay in the title, as in "weekly review" or "Monday's meeting", where the phrase both names the task and sets the value.
+
+To change the colors, target the `tn-nlp-highlight` class, or one kind such as `tn-nlp-highlight--due`, in a CSS snippet.
+
 ### Auto-Suggestions in Natural Language Input
 
 The natural language input field includes auto-suggestion functionality that activates when typing specific trigger characters:
@@ -113,6 +119,12 @@ Tasks store their data in YAML frontmatter with properties for status, priority,
 This frontmatter-first design keeps task data editable and portable while supporting consistent behavior across views and widgets.
 
 For property types and examples, see [Core Concepts](../core-concepts.md#yaml-frontmatter). For configuration options, see [Task Properties Settings](../settings/task-properties.md).
+
+### Task Dates
+
+Scheduled and due dates can be date-only or include a time. The **+1 day**, **-1 day**, **+1 week**, and **-1 week** actions in card date menus and task context menus shift the existing date while keeping its local time, including across daylight-saving changes. Date-only values stay date-only; for example, `2026-05-16T21:37` becomes `2026-05-17T21:37` with **+1 day**.
+
+Absolute presets such as **Today** and **Tomorrow** set a date without a time. Use **Pick date & time…** to choose a specific date and time.
 
 ## Projects
 

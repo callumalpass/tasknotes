@@ -70,7 +70,7 @@ test.describe('Issue #1060: Calendar view should reopen in sidebar', () => {
       // Verify Calendar view opened
       const calendarView = page.locator(
         '.workspace-leaf-content[data-type="tasknotesCalendar"], ' +
-        '.workspace-leaf .fc, ' +
+        '.workspace-leaf .tnc, ' +
         '.calendar-view'
       );
       await expect(calendarView.first()).toBeVisible({ timeout: 5000 });
@@ -91,7 +91,7 @@ test.describe('Issue #1060: Calendar view should reopen in sidebar', () => {
       const rightSidebar = page.locator('.mod-right-split');
       const calendarInSidebar = rightSidebar.locator(
         '.workspace-leaf-content[data-type="tasknotesCalendar"], ' +
-        '.workspace-leaf .fc'
+        '.workspace-leaf .tnc'
       );
 
       const isInSidebar = await calendarInSidebar.isVisible({ timeout: 3000 }).catch(() => false);
@@ -101,7 +101,7 @@ test.describe('Issue #1060: Calendar view should reopen in sidebar', () => {
         const leftSidebar = page.locator('.mod-left-split');
         const calendarInLeftSidebar = leftSidebar.locator(
           '.workspace-leaf-content[data-type="tasknotesCalendar"], ' +
-          '.workspace-leaf .fc'
+          '.workspace-leaf .tnc'
         );
         const isInLeftSidebar = await calendarInLeftSidebar.isVisible({ timeout: 1000 }).catch(() => false);
 
@@ -115,7 +115,7 @@ test.describe('Issue #1060: Calendar view should reopen in sidebar', () => {
       const mainWorkspace = page.locator('.mod-root');
       const calendarInMain = mainWorkspace.locator(
         '.workspace-leaf-content[data-type="tasknotesCalendar"], ' +
-        '.workspace-leaf .fc'
+        '.workspace-leaf .tnc'
       );
 
       if (await calendarInMain.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -140,7 +140,7 @@ test.describe('Issue #1060: Calendar view should reopen in sidebar', () => {
       // Check if there's now a Calendar in the main workspace (this would be the bug)
       const calendarInMainAfter = mainWorkspace.locator(
         '.workspace-leaf-content[data-type="tasknotesCalendar"], ' +
-        '.workspace-leaf .fc'
+        '.workspace-leaf .tnc'
       );
       const bugPresent = await calendarInMainAfter.isVisible({ timeout: 2000 }).catch(() => false);
 
@@ -304,7 +304,7 @@ test.describe('Issue #1060: Calendar view should reopen in sidebar', () => {
       const leftSidebar = page.locator('.mod-left-split');
       const calendarInLeftSidebar = leftSidebar.locator(
         '.workspace-leaf-content[data-type="tasknotesCalendar"], ' +
-        '.workspace-leaf .fc'
+        '.workspace-leaf .tnc'
       );
 
       const isInLeftSidebar = await calendarInLeftSidebar.isVisible({ timeout: 2000 }).catch(() => false);
@@ -318,7 +318,7 @@ test.describe('Issue #1060: Calendar view should reopen in sidebar', () => {
         const mainWorkspace = page.locator('.mod-root');
         const calendarInMain = mainWorkspace.locator(
           '.workspace-leaf-content[data-type="tasknotesCalendar"], ' +
-          '.workspace-leaf .fc'
+          '.workspace-leaf .tnc'
         );
 
         const bugPresent = await calendarInMain.isVisible({ timeout: 2000 }).catch(() => false);

@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { Setting, setIcon, type App, type TextComponent } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { DateTimePickerModal } from "./DateTimePickerModal";
@@ -22,7 +24,7 @@ export interface TaskModalUserFieldToggleControl {
 export interface TaskModalUserFieldContext {
 	app: App;
 	plugin: TaskNotesPlugin;
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	attachMobileKeyboardScrollGuard: (input: HTMLInputElement) => void;
 }
 
@@ -130,7 +132,7 @@ export function createTaskModalUserFieldsSection(
 	if (fields.length > 0) {
 		const separator = container.createDiv({ cls: "tn-task-modal__user-fields" });
 		separator.createDiv({
-			text: context.translate("modals.task.customFieldsLabel"),
+			text: context.translate(msg({ message: "Custom fields", context: "modals.task.customFieldsLabel" })),
 			cls: "tn-task-modal__section-label",
 		});
 	}
@@ -177,7 +179,7 @@ function createTaskModalUserFieldSectionControl(
 
 		case "number":
 			new Setting(options.container).setName(field.displayName).addText((text) => {
-				text.setPlaceholder(context.translate("modals.task.userFields.numberPlaceholder"))
+				text.setPlaceholder(context.translate(msg({ message: "0", context: "modals.task.userFields.numberPlaceholder" })))
 					.setValue(currentValue ? stringifyUnknown(currentValue) : "")
 					.onChange((value) => {
 						options.onValueChange(field.key, parseNumberUserFieldInput(value));
@@ -200,7 +202,7 @@ function createTaskModalUserFieldSectionControl(
 						? stringifyUnknown(currentValue)
 						: "";
 
-				text.setPlaceholder(context.translate("modals.task.userFields.listPlaceholder"))
+				text.setPlaceholder(context.translate(msg({ message: "item1, item2, item3", context: "modals.task.userFields.listPlaceholder" })))
 					.setValue(displayValue)
 					.onChange((value) => {
 						options.onValueChange(field.key, parseNullableListUserFieldInput(value));
@@ -216,7 +218,7 @@ function createTaskModalUserFieldSectionControl(
 		default:
 			new Setting(options.container).setName(field.displayName).addText((text) => {
 				text.setPlaceholder(
-					context.translate("modals.task.userFields.textPlaceholder", {
+					context.translate(msg({ message: "Enter {field}...", context: "modals.task.userFields.textPlaceholder" }), {
 						field: field.displayName,
 					})
 				)
@@ -237,7 +239,7 @@ function createTaskModalDateUserField(
 	currentValue: unknown
 ): void {
 	new Setting(options.container).setName(field.displayName).addText((text) => {
-		text.setPlaceholder(context.translate("modals.task.userFields.datePlaceholder"))
+		text.setPlaceholder(context.translate(msg({ message: "YYYY-MM-DD", context: "modals.task.userFields.datePlaceholder" })))
 			.setValue(currentValue ? stringifyUnknown(currentValue) : "")
 			.onChange((value) => {
 				options.onValueChange(field.key, parseNullableTextUserFieldInput(value));
@@ -259,7 +261,7 @@ function createTaskModalDateUserField(
 		if (button) {
 			button.setAttribute(
 				"aria-label",
-				context.translate("modals.task.userFields.pickDate", {
+				context.translate(msg({ message: "Pick {field} date", context: "modals.task.userFields.pickDate" }), {
 					field: field.displayName,
 				})
 			);
@@ -268,7 +270,7 @@ function createTaskModalDateUserField(
 				event.preventDefault();
 				const picker = new DateTimePickerModal(context.app, {
 					currentDate: getTextValue(text) || null,
-					title: context.translate("modals.task.userFields.pickDate", {
+					title: context.translate(msg({ message: "Pick {field} date", context: "modals.task.userFields.pickDate" }), {
 						field: field.displayName,
 					}),
 					showTime: false,
