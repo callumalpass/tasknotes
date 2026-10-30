@@ -745,6 +745,15 @@ export interface FieldMapping {
 	sortOrder: string; // Numeric ordering within column (lower = higher)
 }
 
+/**
+ * onlyIf is for callers acting on state read earlier, such as a queued drop. The
+ * occurrence is completed only if it holds for the task as the operation reads it,
+ * and a completed occurrence is never reopened.
+ */
+export interface RecurringCompletionOptions {
+	onlyIf?: (task: TaskInfo) => boolean;
+}
+
 export interface StatusConfig {
 	id: string; // Unique identifier
 	value: string; // What gets written to YAML

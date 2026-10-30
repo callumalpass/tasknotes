@@ -44,6 +44,7 @@ import {
 	createKanbanDropTarget,
 	getKanbanCardDropTargetFromClientY,
 	getKanbanDraggedPaths,
+	getKanbanDropStatusValue,
 	kanbanDropPlanNeedsWrite,
 	performKanbanOptimisticReorder,
 	planKanbanDropSideEffect,
@@ -57,6 +58,11 @@ import {
 	type KanbanTaskDropUpdatePlan,
 	type KanbanTaskDragSource,
 } from "./kanbanDragUtils";
+import {
+	completeOccurrenceForStatusMove,
+	getShownOccurrence,
+	type ShownOccurrence,
+} from "./recurringStatusMove";
 import {
 	buildBasesPathProperties,
 	computeBasesFormulas,
@@ -3588,6 +3594,9 @@ export class KanbanView extends BasesViewBase {
 	): Promise<void> {
 		this.activeDropCount++;
 		let dropRequiresPostDropRefresh = true;
+		// Read before queueing: a drop acts on the occurrence its card showed, not
+		// on whatever the series has advanced to by the time the queue reaches it.
+		const droppedOccurrences = this.getDroppedOccurrences(taskPath, options);
 		try {
 			await this.dropQueue.enqueue(taskPath, async () => {
 				// Suppress renders immediately — dragend clears draggedTaskPath
@@ -3724,6 +3733,15 @@ export class KanbanView extends BasesViewBase {
 						sourceSwimlane,
 						newSwimLaneValue,
 					});
+
+					const isSettled = await completeOccurrenceForStatusMove({
+						plugin: this.plugin,
+						path,
+						status: getKanbanDropStatusValue(dropPlan),
+						shownOccurrence: droppedOccurrences.get(path),
+						getOccurrenceDate: getKanbanTaskActionDate,
+					});
+					if (isSettled) continue;
 
 					// Compute sort_order first (read-only — no file writes yet)
 					let sortOrderPlan = null;
@@ -3946,6 +3964,21 @@ export class KanbanView extends BasesViewBase {
 				}
 			}
 		}
+	}
+
+	private getDroppedOccurrences(
+		taskPath: string,
+		options: KanbanDropExecutionOptions
+	): Map<string, ShownOccurrence> {
+		const occurrences = new Map<string, ShownOccurrence>();
+		for (const path of [taskPath, ...(options.draggedPaths ?? []), ...this.draggedTaskPaths]) {
+			const occurrence = getShownOccurrence(
+				this.taskInfoCache.get(path),
+				getKanbanTaskActionDate
+			);
+			if (occurrence) occurrences.set(path, occurrence);
+		}
+		return occurrences;
 	}
 
 	protected setupContainer(): void {

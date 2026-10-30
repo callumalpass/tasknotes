@@ -78,11 +78,13 @@ import {
 	type TaskListGroupDropPlan,
 } from "./taskListDropPlanning";
 import {
+	getTaskListMovementStatus,
 	planTaskListMovement,
 	taskListDestinationKey,
 	type TaskListDestination,
 	type TaskListMovementPlan,
 } from "./taskListMovement";
+import { completeOccurrenceForStatusMove, getShownOccurrence } from "./recurringStatusMove";
 import {
 	buildTaskMovementUndo,
 	applyTaskMovementUndo,
@@ -1618,6 +1620,9 @@ export class TaskListView extends BasesViewBase {
 		// The members the user saw when acting. Values added by another edit before the
 		// queued write lands are not part of the move and must survive it.
 		const shown = this.movementProperties.get(path);
+		const shownOccurrence = getShownOccurrence(this.taskInfoCache.get(path), (task) =>
+			this.getTaskActionDate(task)
+		);
 		try {
 			if (plan.kind === "reorder" && insertion) {
 				await this.handleSortOrderDrop(
@@ -1631,6 +1636,15 @@ export class TaskListView extends BasesViewBase {
 				);
 			} else if (plan.kind === "move") {
 				await this.dropQueue.enqueue(`move:${path}`, async () => {
+					const isSettled = await completeOccurrenceForStatusMove({
+						plugin: this.plugin,
+						path,
+						status: getTaskListMovementStatus(plan),
+						shownOccurrence,
+						getOccurrenceDate: (task) => this.getTaskActionDate(task),
+					});
+					if (isSettled) return;
+
 					const file = this.plugin.app.vault.getAbstractFileByPath(path);
 					if (!(file instanceof TFile)) throw new Error("Task file no longer exists");
 					const originalTask =
