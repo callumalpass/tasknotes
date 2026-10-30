@@ -1,7 +1,5 @@
-import { uiData } from "../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
-import { uiText } from "../i18n/runtime";
 import { TFile, normalizePath, type App } from "obsidian";
 import type { TaskNotesSettings } from "../types/settings";
 import { createI18nService } from "../i18n";

@@ -398,7 +398,7 @@ function reminderDefaults(ctx: SettingsContext): SettingDefinitionList {
 						`${id}.absoluteTime`,
 						ctx.t(msg({ message: "Time:", context: "settings.defaults.reminders.fields.time" })),
 						{
-							desc: ctx.t(msg({ message: "HH:MM", context: "modals.dueDate.inputs.time.placeholder" })),
+							desc: "HH:MM",
 							disabled: () => reminder.type !== "absolute",
 							validate: (value) =>
 								/^([01]\d|2[0-3]):[0-5]\d$/.test(value)

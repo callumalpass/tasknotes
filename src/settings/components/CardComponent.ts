@@ -415,12 +415,12 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 			if (isCurrentlyCollapsed) {
 				// Expand
 				card.removeClass("tasknotes-settings__card--collapsed");
-				header.title = "Collapse card";
+				header.title = uiText(msg({ message: "Collapse card", context: "settings/components/CardComponent: createCard display" }));
 				config.onCollapseChange?.(false);
 			} else {
 				// Collapse
 				card.addClass("tasknotes-settings__card--collapsed");
-				header.title = "Expand card";
+				header.title = uiText(msg({ message: "Expand card", context: "settings/components/CardComponent: createCard display" }));
 				config.onCollapseChange?.(true);
 			}
 		};

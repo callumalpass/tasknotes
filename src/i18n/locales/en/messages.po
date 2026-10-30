@@ -43,6 +43,11 @@ msgstr ""
 "\n"
 "Status: {value1}"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Appsettingsitheldsuchastemplatesandarchivemoves"
+msgid " App settings it held (such as templates and archive moves) were not used: TaskNotes keeps them in {appSettingsRecordPath}, alongside {value2}."
+msgstr " App settings it held (such as templates and archive moves) were not used: TaskNotes keeps them in {appSettingsRecordPath}, alongside {value2}."
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.at"
 msgid " at {time}"
@@ -224,6 +229,11 @@ msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
 msgstr "{count, plural, one {# attachment} other {# attachments}}"
 
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDaysAgo"
+msgid "{count, plural, one {# day ago} other {# days ago}}"
+msgstr "{count, plural, one {# day ago} other {# days ago}}"
+
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
@@ -253,6 +263,11 @@ msgstr "{count, plural, one {Converting {count, number} task...} other {Converti
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
 msgstr "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.oauth.lastSynced"
+msgid "{count, plural, one {Last synced: {date} (# event)} other {Last synced: {date} (# events)}}"
+msgstr "{count, plural, one {Last synced: {date} (# event)} other {Last synced: {date} (# events)}}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -288,6 +303,11 @@ msgstr "{day, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}"
 msgctxt "recurrence monthly date"
 msgid "{day, selectordinal, one {Monthly on the #st} two {Monthly on the #nd} few {Monthly on the #rd} other {Monthly on the #th}}"
 msgstr "{day, selectordinal, one {Monthly on the #st} two {Monthly on the #nd} few {Monthly on the #rd} other {Monthly on the #th}}"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDayAtTime"
+msgid "{day} at {time}"
+msgstr "{day} at {time}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases relative due date"
@@ -515,9 +535,29 @@ msgid "{operation, select, archiving {Failed to move archived task: {error}} una
 msgstr "{operation, select, archiving {Failed to move archived task: {error}} unarchiving {Failed to move restored task: {error}} other {Failed to move task: {error}}}"
 
 #: src/services/MdbaseSpecService.ts
+msgctxt "integration.couldnotbeparsed"
+msgid "{path} could not be parsed."
+msgstr "{path} could not be parsed."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.couldnotbereadsoTaskNotesleftitunchangedand"
+msgid "{path} could not be read, so TaskNotes left it unchanged and kept its current settings."
+msgstr "{path} could not be read, so TaskNotes left it unchanged and kept its current settings."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.couldnotbeupdatedwithoutreplacinginvalidfrontmatter"
+msgid "{path} could not be updated without replacing invalid frontmatter."
+msgstr "{path} could not be updated without replacing invalid frontmatter."
+
+#: src/services/MdbaseSpecService.ts
 msgctxt "collectionCheck.invalidType"
 msgid "{path} is inconsistent: {issues}. Review its implements.fields and binding before retrying; plugin settings were kept."
 msgstr "{path} is inconsistent: {issues}. Review its implements.fields and binding before retrying; plugin settings were kept."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.isinconsistent"
+msgid "{path} is inconsistent: {value2}"
+msgstr "{path} is inconsistent: {value2}"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: checklistProgress display"
@@ -639,6 +679,16 @@ msgctxt "views.pomodoro.meta.breakReady"
 msgid "{type} ready · {time} planned"
 msgstr "{type} ready · {time} planned"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.andTaskNotessettingsbothchangedsincetheywerelastsynchronized"
+msgid "{typePath} and TaskNotes settings both changed since they were last synchronized."
+msgstr "{typePath} and TaskNotes settings both changed since they were last synchronized."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.isnotavalidTaskNotescontractTaskNoteskeptitslast"
+msgid "{typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings."
+msgstr "{typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings."
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{value1, plural, one {+ {value1, number} more...} other {+ {value1, number} more...}}"
@@ -658,6 +708,11 @@ msgstr "{value1} from {startTime} to {endTime}"
 msgctxt "ui/taskCardProperties: totalTrackedTime display"
 msgid "{value1} tracked"
 msgstr "{value1} tracked"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.backups"
+msgid "{value1}; backups: {folder}"
+msgstr "{value1}; backups: {folder}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -2210,6 +2265,11 @@ msgctxt "timeblock Daily Notes setup guidance"
 msgid "Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists."
 msgstr "Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists."
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.oauth.checking"
+msgid "Checking connection…"
+msgstr "Checking connection…"
+
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.checklistProgress"
 msgid "Checklist progress"
@@ -2284,6 +2344,16 @@ msgstr "Choose which properties appear on task cards by default."
 msgctxt "modals.propertySelector.description"
 msgid "Choose which properties to display in task cards. Selected properties appear in the order below."
 msgstr "Choose which properties to display in task cards. Selected properties appear in the order below."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.ChoosewhichversionshouldbecomecanonicalUnknownmdbaseextensionswill"
+msgid "Choose which version should become canonical. Unknown mdbase extensions will be preserved."
+msgstr "Choose which version should become canonical. Unknown mdbase extensions will be preserved."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.ChoosewhichversionshouldbecomecanonicalUsingTaskNotessettingswrites"
+msgid "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept."
+msgstr "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept."
 
 #: src/components/ReminderContextMenu.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
@@ -2594,6 +2664,11 @@ msgstr "Completion or skip"
 msgctxt "modals.taskEdit.sections.completions"
 msgid "Completions"
 msgstr "Completions"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Configurationconflict"
+msgid "Configuration conflict"
+msgstr "Configuration conflict"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
@@ -2920,6 +2995,11 @@ msgctxt "modals.taskSelectorWithCreate.notices.invalidTitle"
 msgid "Could not parse a valid task title"
 msgstr "Could not parse a valid task title"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Couldnotread"
+msgid "Could not read {path}."
+msgstr "Could not read {path}."
+
 #: src/modals/taskModalDependencies.ts
 #: src/modals/taskModalProjects.ts
 msgctxt "contextMenus.task.dependencies.notices.unresolved"
@@ -3179,7 +3259,6 @@ msgctxt "main: TaskNotesPlugin.getCurrentTaskForCommand display"
 msgid "Current file is not a task"
 msgstr "Current file is not a task"
 
-#: src/commands/taskNotesCommands.ts
 #: src/main.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.notATask"
 msgid "Current file is not a task"
@@ -5786,11 +5865,6 @@ msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
 msgstr "Height mode"
 
-#: src/settings/native/creation.ts
-msgctxt "modals.dueDate.inputs.time.placeholder"
-msgid "HH:MM"
-msgstr "HH:MM"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder"
 msgid "HH:mm:ss (e.g., 00:05:00)"
@@ -5886,16 +5960,6 @@ msgstr "How recurring tasks advance: from the scheduled date or completion date"
 msgctxt "settings.native.hTTPHTTPSWebcalOrWebcalsURL"
 msgid "HTTP, HTTPS, webcal, or webcals URL."
 msgstr "HTTP, HTTPS, webcal, or webcals URL."
-
-#: src/settings/TaskNotesSettingTab.ts
-msgctxt "settings.header.documentationUrl"
-msgid "https://tasknotes.dev"
-msgstr "https://tasknotes.dev"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.viewCommands.docsLinkUrl"
-msgid "https://tasknotes.dev/views/default-base-templates"
-msgstr "https://tasknotes.dev/views/default-base-templates"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.fields.icon"
@@ -6177,6 +6241,16 @@ msgstr "Keep current subgroup"
 msgctxt "modals.task.unsavedChanges.cancel"
 msgid "Keep editing"
 msgstr "Keep editing"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Keepfileunchanged"
+msgid "Keep file unchanged"
+msgstr "Keep file unchanged"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Keepthefileunchangedsoyoucanrepairitmanually"
+msgid "Keep the file unchanged so you can repair it manually, or replace its managed TaskNotes fields with the current settings."
+msgstr "Keep the file unchanged so you can repair it manually, or replace its managed TaskNotes fields with the current settings."
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurring.maintainOffsetDesc"
@@ -6530,6 +6604,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Max Swimlane Height"
 msgstr "Max Swimlane Height"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.mdbaseyamlhasanunreadableorunsupportedspecversion"
+msgid "mdbase.yaml has an unreadable or unsupported spec version."
+msgstr "mdbase.yaml has an unreadable or unsupported spec version."
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
@@ -6814,7 +6893,6 @@ msgid "New"
 msgstr "New"
 
 #: src/i18n/dataSeedLabels.ts
-#: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.newCalendarName"
 msgid "New calendar"
 msgstr "New calendar"
@@ -6912,6 +6990,7 @@ msgstr "Next week"
 
 #: src/modals/DateTimePickerModal.ts
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.nextWeek"
 msgid "Next week"
 msgstr "Next week"
@@ -7113,11 +7192,6 @@ msgctxt "notices.interface.commandFileMissing"
 msgid "No file configured for command: {command}"
 msgstr "No file configured for command: {command}"
 
-#: src/commands/taskNotesCommands.ts
-msgctxt "settings.integrations.googleCalendarExport.notices.noActiveFile"
-msgid "No file is currently active"
-msgstr "No file is currently active"
-
 #: src/main.ts
 msgctxt "notices.commands.noOpenFile"
 msgid "No file is currently open"
@@ -7307,6 +7381,7 @@ msgid "None"
 msgstr "None"
 
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "None"
@@ -7594,6 +7669,7 @@ msgid "Open"
 msgstr "Open"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.advancedCalendar"
 msgid "Open advanced calendar view"
 msgstr "Open advanced calendar view"
@@ -7605,6 +7681,7 @@ msgid "Open agenda view"
 msgstr "Open agenda view"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.agenda"
 msgid "Open agenda view"
 msgstr "Open agenda view"
@@ -7668,6 +7745,7 @@ msgid "Open Kanban board"
 msgstr "Open Kanban board"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.kanban"
 msgid "Open Kanban view"
 msgstr "Open Kanban view"
@@ -7679,6 +7757,7 @@ msgid "Open mini calendar view"
 msgstr "Open mini calendar view"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar"
 msgid "Open mini calendar view"
 msgstr "Open mini calendar view"
@@ -7750,6 +7829,7 @@ msgid "Open tasks view"
 msgstr "Open tasks view"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.tasks"
 msgid "Open tasks view"
 msgstr "Open tasks view"
@@ -7876,6 +7956,11 @@ msgctxt "views.taskList.movement.otherDestinations"
 msgid "Other destinations"
 msgstr "Other destinations"
 
+#: src/settings/native/general.ts
+msgctxt "settings.features.uiLanguage.downloadDescription"
+msgid "Other interface languages are downloaded and cached locally for offline use. No vault content is sent."
+msgstr "Other interface languages are downloaded and cached locally for offline use. No vault content is sent."
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.competingSettings"
 msgid "Other TaskNotes settings records found: {paths}. TaskNotes is using {record} and ignoring the others. Copy any settings you want to keep into {record}, then delete the other files."
@@ -7985,6 +8070,11 @@ msgstr "Pause/resume Pomodoro timer"
 msgctxt "views.pomodoro.status.paused"
 msgid "Paused"
 msgstr "Paused"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Pendingrecordbackupsblockedfile"
+msgid "Pending record: {mdbaseMigrationPendingPath}; backups: {backupFolder}; blocked file: {value3}"
+msgstr "Pending record: {mdbaseMigrationPendingPath}; backups: {backupFolder}; blocked file: {value3}"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.performance.header"
@@ -8533,6 +8623,7 @@ msgid "Relationships view not configured"
 msgstr "Relationships view not configured"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.relationships"
 msgid "Relationships widget"
 msgstr "Relationships widget"
@@ -8728,6 +8819,11 @@ msgctxt "common.reorder.confirmLargeMessage"
 msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
 msgstr "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.RepairfromTaskNotes"
+msgid "Repair from TaskNotes"
+msgstr "Repair from TaskNotes"
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.requiredPropertyKey.name"
 msgid "Required property key"
@@ -8808,6 +8904,11 @@ msgstr "Resume the current session instead of starting a new one"
 msgctxt "services.pomodoro.notices.resumeSessionInstead"
 msgid "Resume the current session instead of starting a new one"
 msgstr "Resume the current session instead of starting a new one"
+
+#: src/settings/native/general.ts
+msgctxt "settings.features.uiLanguage.retryDownload"
+msgid "Retry language download"
+msgstr "Retry language download"
 
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.returnToObsidian"
@@ -9987,6 +10088,11 @@ msgctxt "settings.native.syncCustomProperties"
 msgid "Sync custom properties"
 msgstr "Sync custom properties"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.oauth.syncFailed"
+msgid "Sync failed: {message}"
+msgstr "Sync failed: {message}"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.native.syncProperties"
 msgid "Sync properties"
@@ -10448,6 +10554,11 @@ msgctxt "services.autoExport.notices.exportFailed"
 msgid "TaskNotes auto export failed: {error}"
 msgstr "TaskNotes auto export failed: {error}"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesbackeduptheinvalidtypeto"
+msgid "TaskNotes backed up the invalid type to {backupPath}."
+msgstr "TaskNotes backed up the invalid type to {backupPath}."
+
 #: src/main.ts
 msgctxt "notices.commands.cacheRefreshed"
 msgid "TaskNotes cache refreshed successfully"
@@ -10457,6 +10568,21 @@ msgstr "TaskNotes cache refreshed successfully"
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Calendar"
 msgstr "TaskNotes Calendar"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotescouldnotupdatethemdbasemetadataandrestoredthe"
+msgid "TaskNotes could not update the mdbase metadata and restored the v0.2 files. A backup is available in {backupFolder}."
+msgstr "TaskNotes could not update the mdbase metadata and restored the v0.2 files. A backup is available in {backupFolder}."
+
+#: src/bootstrap/pluginBootstrap.ts
+msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
+msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
+msgstr "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.waiting"
+msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
+msgstr "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
@@ -10473,10 +10599,25 @@ msgctxt "collectionCheck.keptConfiguration"
 msgid "TaskNotes kept its last-known-good configuration."
 msgstr "TaskNotes kept its last-known-good configuration."
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesleftthemdbasevcollectionunchangedbecauseitsmetadata"
+msgid "TaskNotes left the mdbase v0.2 collection unchanged because its metadata changed while the upgrade was being prepared."
+msgstr "TaskNotes left the mdbase v0.2 collection unchanged because its metadata changed while the upgrade was being prepared."
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Mini Calendar"
 msgstr "TaskNotes Mini Calendar"
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.review"
+msgid "TaskNotes preserved {path}: legacy metadata is missing, edited, or includes other types. Finish syncing and restart; otherwise migrate a backed-up copy with mdbase and review the type before retrying."
+msgstr "TaskNotes preserved {path}: legacy metadata is missing, edited, or includes other types. Finish syncing and restart; otherwise migrate a backed-up copy with mdbase and review the type before retrying."
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.support"
+msgid "TaskNotes preserved customized support file {path}. Restore the generated version from a backup or review and migrate a copy with mdbase, then restart."
+msgstr "TaskNotes preserved customized support file {path}. Restore the generated version from a backup or review and migrate a copy with mdbase, then restart."
 
 #: src/ui/NotificationService.ts
 msgctxt "ui/NotificationService: NotificationService.deliverNotification display"
@@ -10487,6 +10628,26 @@ msgstr "TaskNotes Reminder"
 msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotification display"
 msgid "TaskNotes Reminder"
 msgstr "TaskNotes Reminder"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesremovedanearlierduplicateofAcopyisin"
+msgid "TaskNotes removed {value1}, an earlier duplicate of {value2}. A copy is in {folder}."
+msgstr "TaskNotes removed {value1}, an earlier duplicate of {value2}. A copy is in {folder}."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesrestoredaninterruptedmdbasevmetadatamigrationRecoverycopies"
+msgid "TaskNotes restored an interrupted mdbase v0.2 metadata migration. Recovery copies remain in {backupFolder}."
+msgstr "TaskNotes restored an interrupted mdbase v0.2 metadata migration. Recovery copies remain in {backupFolder}."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesrestoredthemissingcanonicalmdbaseyamlfile"
+msgid "TaskNotes restored the missing canonical mdbase.yaml file."
+msgstr "TaskNotes restored the missing canonical mdbase.yaml file."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesrestoredthemissingcanonicaltypeat"
+msgid "TaskNotes restored the missing canonical type at {previousPath}."
+msgstr "TaskNotes restored the missing canonical type at {previousPath}."
 
 #: src/services/mdbase/metadataFailureNotices.ts
 msgctxt "mdbaseSafety.settingsSaved"
@@ -10502,6 +10663,21 @@ msgstr "TaskNotes stopped the mdbase metadata update. {details} Review the liste
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Task List"
 msgstr "TaskNotes Task List"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesupdatedtotasknotestaskandmoveditsappsettings"
+msgid "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed."
+msgstr "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesupdatedtotasknotestaskTaskfileswerenotchanged"
+msgid "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion}. Task files were not changed."
+msgstr "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion}. Task files were not changed."
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere"
+msgid "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
+msgstr "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
 
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.intro"
@@ -10543,16 +10719,6 @@ msgstr "Template: "
 msgctxt "settings.native.templates"
 msgid "Templates"
 msgstr "Templates"
-
-#: src/settings/native/features.ts
-msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder"
-msgid "Templates/Occurrence Template.md"
-msgstr "Templates/Occurrence Template.md"
-
-#: src/settings/native/features.ts
-msgctxt "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
-msgid "Templates/Task Template.md"
-msgstr "Templates/Task Template.md"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -11102,6 +11268,7 @@ msgid "Today"
 msgstr "Today"
 
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.today"
 msgid "Today"
 msgstr "Today"
@@ -11169,7 +11336,13 @@ msgstr "Tomorrow"
 
 #: src/modals/DateTimePickerModal.ts
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.tomorrow"
+msgid "Tomorrow"
+msgstr "Tomorrow"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeTomorrow"
 msgid "Tomorrow"
 msgstr "Tomorrow"
 
@@ -11396,6 +11569,11 @@ msgctxt "ui.propertyEventCard.unknownFile"
 msgid "Unknown file"
 msgstr "Unknown file"
 
+#: src/services/mdbase/metadataFailureNotices.ts
+msgctxt "mdbaseSafety.unknownSyncError"
+msgid "Unknown metadata synchronization error"
+msgstr "Unknown metadata synchronization error"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.fetchSubscription display"
 msgid "Unknown subscription type"
@@ -11547,6 +11725,11 @@ msgctxt "settings.general.frontmatter.useMarkdownLinks.name"
 msgid "Use Markdown links in frontmatter"
 msgstr "Use Markdown links in frontmatter"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Usemdbasetype"
+msgid "Use mdbase type"
+msgstr "Use mdbase type"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name"
 msgid "Use occurrence note template"
@@ -11562,10 +11745,20 @@ msgctxt "settings.taskProperties.projectsCard.useParentNoteForInlineTasks"
 msgid "Use parent note for inline/instant conversion:"
 msgstr "Use parent note for inline/instant conversion:"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Usesettingsfile"
+msgid "Use settings file"
+msgstr "Use settings file"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
 msgid "Use task defaults on instant convert"
 msgstr "Use task defaults on instant convert"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.UseTaskNotessettings"
+msgid "Use TaskNotes settings"
+msgstr "Use TaskNotes settings"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.useTemplateLabel"
@@ -11932,6 +12125,11 @@ msgstr "Yearly recurrence"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
+msgid "Yesterday"
+msgstr "Yesterday"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeYesterday"
 msgid "Yesterday"
 msgstr "Yesterday"
 

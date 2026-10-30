@@ -529,7 +529,7 @@ export class CalendarView extends BasesViewBase {
 	 * Used to detect user-initiated config changes.
 	 */
 	private getConfigSnapshot(): string {
-		return buildCalendarConfigSnapshot({
+		return JSON.stringify([this.plugin.settings.dateDisplayFormat, buildCalendarConfigSnapshot({
 			config: this.config,
 			icsCalendarIds:
 				this.plugin.icsSubscriptionService?.getSubscriptions().map((sub) => sub.id) ?? [],
@@ -541,7 +541,7 @@ export class CalendarView extends BasesViewBase {
 				this.plugin.microsoftCalendarService
 					?.getAvailableCalendars()
 					.map((calendar) => calendar.id) ?? [],
-		});
+		})]);
 	}
 
 	/**

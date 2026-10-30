@@ -1,3 +1,4 @@
+import { uiData } from "../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import { languagePackConfig } from "../../i18n/languagePackConfig";
 import { Notice, TFile } from "obsidian";
@@ -490,7 +491,7 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 													savedViews
 												);
 											const fileName = "all-saved-views.base";
-											const filePath = `TaskNotes/Views/${fileName}`;
+											const filePath = uiData(`TaskNotes/Views/${fileName}`, "Generated default Base path, not UI prose");
 
 											// Create folder if needed (check on-disk via adapter, not in-memory cache)
 											if (
@@ -601,7 +602,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 		{
 			type: "group",
 			heading: translate(msg({ message: "Interface language", context: "settings.features.uiLanguage.header" })),
-			description: languagePackConfig ? translate(msg({ message: "Non-English languages are downloaded on demand and cached on this device for offline use.", context: "settings.features.uiLanguage.downloadDescription" })) : undefined,
 			items: [
 				...(languagePackConfig ? [ctx.button("uiLanguage.retry", {
 					name: translate(msg({ message: "Retry language download", context: "settings.features.uiLanguage.retryDownload" })),
@@ -610,7 +610,7 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 				})] : []),
 				ctx.dropdown("uiLanguage", {
 					name: translate(msg({ message: "UI language", context: "settings.features.uiLanguage.dropdown.name" })),
-					desc: translate(msg({ message: "Select the language used for TaskNotes interface text", context: "settings.features.uiLanguage.dropdown.description" })),
+					desc: [translate(msg({ message: "Select the language used for TaskNotes interface text", context: "settings.features.uiLanguage.dropdown.description" })), languagePackConfig ? translate(msg({ message: "Other interface languages are downloaded and cached locally for offline use. No vault content is sent.", context: "settings.features.uiLanguage.downloadDescription" })) : ""].filter(Boolean).join(" "),
 					options: uiLanguageOptions,
 					getValue: () => plugin.settings.uiLanguage ?? "system",
 					setValue: async (value: string) => {

@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import { Modal, Notice, Setting } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -58,13 +59,13 @@ export class CheckCollectionModal extends Modal {
 		try {
 			const confirmed = await showConfirmationModal(this.app, {
 				title: translate(msg({ message: "Back up and fix", context: "collectionCheck.fix" })),
-				message: `${translate(msg({ message: "Apply only the changes listed below; original notes will be backed up in {backupFolder} before each change, and unselected statuses and other errors will remain unchanged?", context: "collectionCheck.confirm" }), { backupFolder: ".tasknotes/migrations" })}\n${selected.map((problem) => `${problem.file.path}: ${problem.missingDateCreated ? `${problem.dateCreatedField} = ${new Date(problem.file.stat.ctime).toISOString()}` : ""}${this.choices.has(problem) ? ` ${problem.statusField} = ${this.choices.get(problem)}` : ""}`).join("\n")}`,
+				message: `${translate(msg({ message: "Apply only the changes listed below; original notes will be backed up in {backupFolder} before each change, and unselected statuses and other errors will remain unchanged?", context: "collectionCheck.confirm" }), { backupFolder: uiData(".tasknotes/migrations", "Vault-relative recovery folder, not UI prose") })}\n${selected.map((problem) => `${problem.file.path}: ${problem.missingDateCreated ? `${problem.dateCreatedField} = ${new Date(problem.file.stat.ctime).toISOString()}` : ""}${this.choices.has(problem) ? ` ${problem.statusField} = ${this.choices.get(problem)}` : ""}`).join("\n")}`,
 				confirmText: translate(msg({ message: "Back up and fix", context: "collectionCheck.fix" })),
 				cancelText: translate(msg({ message: "Cancel", context: "common.cancel" })),
 			});
 			if (!confirmed) return;
 			for (const problem of selected) await repairCollectionRecord(this.plugin, problem, this.choices.get(problem));
-			new Notice(translate(msg({ message: "Approved changes saved; backups are in {backupFolder}, please check remaining errors.", context: "collectionCheck.fixed" }), { backupFolder: ".tasknotes/migrations" }));
+			new Notice(translate(msg({ message: "Approved changes saved; backups are in {backupFolder}, please check remaining errors.", context: "collectionCheck.fixed" }), { backupFolder: uiData(".tasknotes/migrations", "Vault-relative recovery folder, not UI prose") }));
 			await this.scan();
 		} catch (error) {
 			new Notice(`${translate(msg({ message: "Collection check or repair stopped. No unapproved changes were made.", context: "collectionCheck.error" }))} ${String(error)}`);

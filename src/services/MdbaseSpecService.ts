@@ -1,3 +1,5 @@
+import { displayError } from "../i18n/runtime";
+import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { uiData } from "../i18n/dataText";
 import { Modal, normalizePath, type TAbstractFile } from "obsidian";
@@ -57,13 +59,13 @@ import {
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MdbaseSpecService" });
 
-const DEFAULT_TYPES_FOLDER = "_types";
+const DEFAULT_TYPES_FOLDER = uiData("_types", "Default vault-relative metadata folder, not UI prose");
 const DEFAULT_CONTRACTS_FOLDER = "_contracts";
 const MDBASE_V03_SPEC_VERSION = "0.3.0";
 
 const writableMembershipKeys = effectiveMembershipKeys;
 
-const MDBASE_MIGRATION_BACKUP_FOLDER = ".tasknotes/migrations";
+const MDBASE_MIGRATION_BACKUP_FOLDER = uiData(".tasknotes/migrations", "Vault-relative recovery folder, not UI prose");
 const MDBASE_MIGRATION_PENDING_PATH = `${MDBASE_MIGRATION_BACKUP_FOLDER}/mdbase-v0.2-pending.json`;
 
 type SupportedSpecFamily = "v0.2" | "v0.3";
@@ -131,32 +133,32 @@ class MdbaseConfigurationConflictModal extends Modal {
 	}
 
 	onOpen(): void {
-		this.titleEl.setText("Configuration conflict");
+		this.titleEl.setText(uiText(msg({ message: "Configuration conflict", context: "integration.Configurationconflict" })));
 		this.contentEl.createEl("p", {
 			text: this.invalidType
-				? `${this.typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings.`
-				: `${this.typePath} and TaskNotes settings both changed since they were last synchronized.`,
+				? uiText(msg({ message: "{typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings.", context: "integration.isnotavalidTaskNotescontractTaskNoteskeptitslast" }), { typePath: this.typePath })
+				: uiText(msg({ message: "{typePath} and TaskNotes settings both changed since they were last synchronized.", context: "integration.andTaskNotessettingsbothchangedsincetheywerelastsynchronized" }), { typePath: this.typePath }),
 		});
 		this.contentEl.createEl("p", {
 			text: this.invalidType
-				? "Keep the file unchanged so you can repair it manually, or replace its managed TaskNotes fields with the current settings."
+				? uiText(msg({ message: "Keep the file unchanged so you can repair it manually, or replace its managed TaskNotes fields with the current settings.", context: "integration.Keepthefileunchangedsoyoucanrepairitmanually" }))
 				: this.settingsRecord
-					? "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept."
-					: "Choose which version should become canonical. Unknown mdbase extensions will be preserved.",
+					? uiText(msg({ message: "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept.", context: "integration.ChoosewhichversionshouldbecomecanonicalUsingTaskNotessettingswrites" }))
+					: uiText(msg({ message: "Choose which version should become canonical. Unknown mdbase extensions will be preserved.", context: "integration.ChoosewhichversionshouldbecomecanonicalUnknownmdbaseextensionswill" })),
 		});
 
 		const actions = this.contentEl.createDiv({ cls: "modal-button-container" });
 		const useTypeButton = actions.createEl("button", {
 			text: this.invalidType
-				? "Keep file unchanged"
+				? uiText(msg({ message: "Keep file unchanged", context: "integration.Keepfileunchanged" }))
 				: this.settingsRecord
-					? "Use settings file"
-					: "Use mdbase type",
+					? uiText(msg({ message: "Use settings file", context: "integration.Usesettingsfile" }))
+					: uiText(msg({ message: "Use mdbase type", context: "integration.Usemdbasetype" })),
 		});
 		useTypeButton.addEventListener("click", () => this.finish("type"));
 
 		const useSettingsButton = actions.createEl("button", {
-			text: this.invalidType ? "Repair from TaskNotes" : "Use TaskNotes settings",
+			text: this.invalidType ? uiText(msg({ message: "Repair from TaskNotes", context: "integration.RepairfromTaskNotes" })) : uiText(msg({ message: "Use TaskNotes settings", context: "integration.UseTaskNotessettings" })),
 		});
 		useSettingsButton.addClass("mod-cta");
 		useSettingsButton.addEventListener("click", () => this.finish("settings"));
@@ -257,7 +259,7 @@ export class MdbaseSpecService {
 				await this.migrateGeneratedV02Collection(existingCollection);
 			} else if (!specFamily) {
 				this.reportInvalidCanonicalType(
-					"mdbase.yaml has an unreadable or unsupported spec version."
+					uiText(msg({ message: "mdbase.yaml has an unreadable or unsupported spec version.", context: "integration.mdbaseyamlhasanunreadableorunsupportedspecversion" }))
 				);
 			}
 		} catch (error) {
@@ -354,7 +356,7 @@ export class MdbaseSpecService {
 			)
 		) {
 			this.publishNotice(
-				"TaskNotes left the mdbase v0.2 collection unchanged because its metadata changed while the upgrade was being prepared."
+				uiText(msg({ message: "TaskNotes left the mdbase v0.2 collection unchanged because its metadata changed while the upgrade was being prepared.", context: "integration.TaskNotesleftthemdbasevcollectionunchangedbecauseitsmetadata" }))
 			);
 			return false;
 		}
@@ -410,7 +412,7 @@ export class MdbaseSpecService {
 			// next sync only has to carry local changes.
 			if (this.lastKnownRecordContent !== null) this.recordAbsentFieldsMerged = true;
 			this.publishNotice(
-				`TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in ${backupFolder}.`
+				uiText(msg({ message: "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}.", context: "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere" }), { backupFolder: backupFolder })
 			);
 			tasknotesLogger.debug("[TaskNotes][mdbase] Migrated generated v0.2 metadata.", {
 				category: "configuration",
@@ -435,11 +437,11 @@ export class MdbaseSpecService {
 			});
 			if (rollbackError) {
 				this.publishNotice(
-					this.safetyNotice(`Pending record: ${MDBASE_MIGRATION_PENDING_PATH}; backups: ${backupFolder}; blocked file: ${rollbackError instanceof Error ? rollbackError.message : "Unknown recovery error"}`)
+					this.safetyNotice(uiText(msg({ message: "Pending record: {mdbaseMigrationPendingPath}; backups: {backupFolder}; blocked file: {value3}", context: "integration.Pendingrecordbackupsblockedfile" }), { mdbaseMigrationPendingPath: uiData(MDBASE_MIGRATION_PENDING_PATH, "Stable contract version or vault path, never translated"), backupFolder: backupFolder, value3: displayError(rollbackError) }))
 				);
 			} else {
 				this.publishNotice(
-					`TaskNotes could not update the mdbase metadata and restored the v0.2 files. A backup is available in ${backupFolder}.`
+					uiText(msg({ message: "TaskNotes could not update the mdbase metadata and restored the v0.2 files. A backup is available in {backupFolder}.", context: "integration.TaskNotescouldnotupdatethemdbasemetadataandrestoredthe" }), { backupFolder: backupFolder })
 				);
 			}
 			return false;
@@ -654,7 +656,7 @@ export class MdbaseSpecService {
 			await this.restoreSnapshotsIfUnchanged(journal);
 			await this.removeMigrationJournal();
 			this.publishNotice(
-				`TaskNotes restored an interrupted mdbase v0.2 metadata migration. Recovery copies remain in ${journal.backupFolder}.`
+				uiText(msg({ message: "TaskNotes restored an interrupted mdbase v0.2 metadata migration. Recovery copies remain in {backupFolder}.", context: "integration.TaskNotesrestoredaninterruptedmdbasevmetadatamigrationRecoverycopies" }), { backupFolder: journal.backupFolder })
 			);
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][mdbase] Could not recover interrupted migration.", {
@@ -764,7 +766,7 @@ export class MdbaseSpecService {
 		}
 		if (existingCollection.exists && !specFamily) {
 			this.reportInvalidCanonicalType(
-				"mdbase.yaml has an unreadable or unsupported spec version."
+				uiText(msg({ message: "mdbase.yaml has an unreadable or unsupported spec version.", context: "integration.mdbaseyamlhasanunreadableorunsupportedspecversion" }))
 			);
 			return;
 		}
@@ -948,8 +950,8 @@ export class MdbaseSpecService {
 			if (upgraded !== state.content) {
 				this.publishNotice(
 					hasLegacyAppSettings(state.legacyBinding)
-						? `TaskNotes updated ${state.path} to tasknotes.task ${TASKNOTES_CONTRACT_VERSION} and moved its app settings to ${APP_SETTINGS_RECORD_PATH}. Task files were not changed.`
-						: `TaskNotes updated ${state.path} to tasknotes.task ${TASKNOTES_CONTRACT_VERSION}. Task files were not changed.`
+						? uiText(msg({ message: "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed.", context: "integration.TaskNotesupdatedtotasknotestaskandmoveditsappsettings" }), { path: state.path, tasknotesContractVersion: uiData(TASKNOTES_CONTRACT_VERSION, "Stable contract version or vault path, never translated"), appSettingsRecordPath: uiData(APP_SETTINGS_RECORD_PATH, "Stable contract version or vault path, never translated") })
+						: uiText(msg({ message: "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion}. Task files were not changed.", context: "integration.TaskNotesupdatedtotasknotestaskTaskfileswerenotchanged" }), { path: state.path, tasknotesContractVersion: uiData(TASKNOTES_CONTRACT_VERSION, "Stable contract version or vault path, never translated") })
 				);
 			}
 			return;
@@ -1065,8 +1067,7 @@ export class MdbaseSpecService {
 		if (candidates.length > 1) {
 			this.canonicalReadBlocked = true;
 			const paths = candidates.map((candidate) => candidate.path).sort().join(", ");
-			const message = this.plugin.i18n?.translate(msg({ message: "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration.", context: "mdbaseSafety.multiple" }), { paths }) ??
-				`Multiple TaskNotes types: ${paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration.`;
+			const message = this.plugin.i18n.translate(msg({ message: "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration.", context: "mdbaseSafety.multiple" }), { paths });
 			if (this.lastBlockedNotice !== message) {
 				this.publishNotice(message);
 				this.lastBlockedNotice = message;
@@ -1089,7 +1090,7 @@ export class MdbaseSpecService {
 			content = await adapter.read(path);
 		} catch (error) {
 			if (reportErrors) {
-				this.reportInvalidCanonicalType(`Could not read ${path}.`, error);
+				this.reportInvalidCanonicalType(uiText(msg({ message: "Could not read {path}.", context: "integration.Couldnotread" }), { path: path }), error);
 			}
 			return null;
 		}
@@ -1120,7 +1121,7 @@ export class MdbaseSpecService {
 		} catch (error) {
 			this.canonicalTypePath = path;
 			if (reportErrors) {
-				this.reportInvalidCanonicalType(`${path} could not be parsed.`, error);
+				this.reportInvalidCanonicalType(uiText(msg({ message: "{path} could not be parsed.", context: "integration.couldnotbeparsed" }), { path: path }), error);
 			}
 			return null;
 		}
@@ -1205,8 +1206,7 @@ export class MdbaseSpecService {
 			return;
 		}
 		const paths = competing.sort().join(", ");
-		const message = this.plugin.i18n?.translate(msg({ message: "Other TaskNotes settings records found: {paths}. TaskNotes is using {record} and ignoring the others. Copy any settings you want to keep into {record}, then delete the other files.", context: "mdbaseSafety.competingSettings" }), { paths, record: APP_SETTINGS_RECORD_PATH }) ??
-			`Other TaskNotes settings records found: ${paths}. TaskNotes is using ${APP_SETTINGS_RECORD_PATH} and ignoring the others. Copy any settings you want to keep into ${APP_SETTINGS_RECORD_PATH}, then delete the other files.`;
+		const message = this.plugin.i18n.translate(msg({ message: "Other TaskNotes settings records found: {paths}. TaskNotes is using {record} and ignoring the others. Copy any settings you want to keep into {record}, then delete the other files.", context: "mdbaseSafety.competingSettings" }), { paths, record: APP_SETTINGS_RECORD_PATH });
 		if (this.lastCompetingRecordsNotice === message) return;
 		this.lastCompetingRecordsNotice = message;
 		this.publishNotice(message);
@@ -1248,7 +1248,7 @@ export class MdbaseSpecService {
 		}
 		const frontmatter = this.parseRecord(content);
 		if (!frontmatter) {
-			this.recordNotice(`${path} could not be read, so TaskNotes left it unchanged and kept its current settings.`);
+			this.recordNotice(uiText(msg({ message: "{path} could not be read, so TaskNotes left it unchanged and kept its current settings.", context: "integration.couldnotbereadsoTaskNotesleftitunchangedand" }), { path: path }));
 			this.lastKnownRecordContent = content;
 			return;
 		}
@@ -1357,7 +1357,7 @@ export class MdbaseSpecService {
 				);
 				if (!validation.valid && !allowRepair) {
 					this.reportInvalidCanonicalType(
-						`${path} is inconsistent: ${validation.issues.join("; ")}`
+						uiText(msg({ message: "{path} is inconsistent: {value2}", context: "integration.isinconsistent" }), { path: path, value2: validation.issues.join("; ") })
 					);
 					return false;
 				}
@@ -1368,7 +1368,7 @@ export class MdbaseSpecService {
 			} catch (error) {
 				if (!allowRepair) {
 					this.reportInvalidCanonicalType(
-						`${path} could not be updated without replacing invalid frontmatter.`,
+						uiText(msg({ message: "{path} could not be updated without replacing invalid frontmatter.", context: "integration.couldnotbeupdatedwithoutreplacinginvalidfrontmatter" }), { path: path }),
 						error
 					);
 					return false;
@@ -1428,12 +1428,11 @@ export class MdbaseSpecService {
 		}
 		const reference = await findExplicitTypeReference(adapter, superseded, collection.config);
 		if (reference) {
-			this.publishNotice(this.plugin.i18n?.translate(msg({ message: "TaskNotes kept {typePath}: {recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.", context: "mdbaseSafety.referenced" }), reference) ??
-				`TaskNotes kept ${reference.typePath}: ${reference.recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.`);
+			this.publishNotice(this.plugin.i18n.translate(msg({ message: "TaskNotes kept {typePath}: {recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed.", context: "mdbaseSafety.referenced" }), reference));
 			return false;
 		}
 		const suffix = new Date().toISOString().replace(/[:.]/g, "-");
-		const baseFolder = `${MDBASE_MIGRATION_BACKUP_FOLDER}/superseded-types-${suffix}`;
+		const baseFolder = uiData(`${MDBASE_MIGRATION_BACKUP_FOLDER}/superseded-types-${suffix}`, "Generated vault-relative backup path, not UI prose");
 		let folder = baseFolder;
 		let attempt = 2;
 		while (await adapter.exists(folder)) folder = `${baseFolder}-${attempt++}`;
@@ -1444,7 +1443,7 @@ export class MdbaseSpecService {
 			try {
 				await this.metadataIO.move({ path: state.path, content: state.content }, destination);
 			} catch (error) {
-				this.publishNotice(this.safetyNotice(`${String(error)}; backups: ${folder}`));
+				this.publishNotice(this.safetyNotice(uiText(msg({ message: "{value1}; backups: {folder}", context: "integration.backups" }), { value1: displayError(error), folder: folder })));
 				return false;
 			}
 		}
@@ -1452,9 +1451,9 @@ export class MdbaseSpecService {
 		// App settings come from the canonical type's collection record only.
 		const withAppSettings = superseded.filter((state) => hasLegacyAppSettings(state.legacyBinding));
 		this.publishNotice(
-			`TaskNotes removed ${superseded.map((state) => state.path).join(", ")}, an earlier duplicate of ${current[0].path}. A copy is in ${folder}.` +
+			uiText(msg({ message: "TaskNotes removed {value1}, an earlier duplicate of {value2}. A copy is in {folder}.", context: "integration.TaskNotesremovedanearlierduplicateofAcopyisin" }), { value1: superseded.map((state) => state.path).join(", "), value2: current[0].path, folder: folder }) +
 				(withAppSettings.length > 0
-					? ` App settings it held (such as templates and archive moves) were not used: TaskNotes keeps them in ${APP_SETTINGS_RECORD_PATH}, alongside ${current[0].path}.`
+					? uiText(msg({ message: " App settings it held (such as templates and archive moves) were not used: TaskNotes keeps them in {appSettingsRecordPath}, alongside {value2}.", context: "integration.Appsettingsitheldsuchastemplatesandarchivemoves" }), { appSettingsRecordPath: uiData(APP_SETTINGS_RECORD_PATH, "Stable contract version or vault path, never translated"), value2: current[0].path })
 					: "")
 		);
 		return true;
@@ -1462,9 +1461,9 @@ export class MdbaseSpecService {
 
 	private async backupInvalidType(path: string, content: string): Promise<void> {
 		const suffix = new Date().toISOString().replace(/[:.]/g, "-");
-		const backupPath = `${path}.tasknotes-backup-${suffix}`;
+		const backupPath = uiData(`${path}.tasknotes-backup-${suffix}`, "Generated vault-relative backup path, not UI prose");
 		await this.metadataIO.replace({ path: backupPath, content: null }, content);
-		this.publishNotice(`TaskNotes backed up the invalid type to ${backupPath}.`);
+		this.publishNotice(uiText(msg({ message: "TaskNotes backed up the invalid type to {backupPath}.", context: "integration.TaskNotesbackeduptheinvalidtypeto" }), { backupPath: backupPath }));
 	}
 
 	private registerCanonicalWatchers(): void {
@@ -1538,7 +1537,7 @@ export class MdbaseSpecService {
 		if (!collection.exists) {
 			await this.syncSettingsToCanonicalType(collection);
 			if (await this.plugin.app.vault.adapter.exists("mdbase.yaml")) {
-				this.publishNotice("TaskNotes restored the missing canonical mdbase.yaml file.");
+				this.publishNotice(uiText(msg({ message: "TaskNotes restored the missing canonical mdbase.yaml file.", context: "integration.TaskNotesrestoredthemissingcanonicalmdbaseyamlfile" })));
 			}
 			return;
 		}
@@ -1562,7 +1561,7 @@ export class MdbaseSpecService {
 				(await this.plugin.app.vault.adapter.exists(previousPath))
 			) {
 				this.publishNotice(
-					`TaskNotes restored the missing canonical type at ${previousPath}.`
+					uiText(msg({ message: "TaskNotes restored the missing canonical type at {previousPath}.", context: "integration.TaskNotesrestoredthemissingcanonicaltypeat" }), { previousPath: previousPath })
 				);
 			}
 			return;

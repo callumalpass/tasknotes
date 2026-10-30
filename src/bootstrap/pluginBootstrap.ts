@@ -1,3 +1,4 @@
+import { uiText } from "../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { MarkdownView, Platform, addIcon, setTooltip } from "obsidian";
@@ -357,7 +358,7 @@ export async function initializeHTTPAPI(plugin: TaskNotesPlugin): Promise<void> 
 		);
 		if (plugin.apiService.didGenerateAuthToken()) {
 			showNotice(
-				"TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients.",
+				uiText(msg({ message: "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients.", context: "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy" })),
 				15000
 			);
 		}

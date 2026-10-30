@@ -455,7 +455,7 @@ export class TaskContextMenu {
 						});
 						new Notice(
 							this.t(msg({ message: "Failed to update task recurrence: {message}", context: "contextMenus.task.notices.updateRecurrenceFailure" }), {
-								message: errorMessage,
+								message: displayError(errorMessage),
 							})
 						);
 					}
@@ -871,7 +871,7 @@ export class TaskContextMenu {
 					});
 					new Notice(
 						this.t(msg({ message: "Failed to toggle task archive: {message}", context: "contextMenus.task.notices.archiveFailure" }), {
-							message: errorMessage,
+							message: displayError(errorMessage),
 						})
 					);
 				}

@@ -43,6 +43,11 @@ msgstr ""
 "\n"
 "ステータス: {value1}"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Appsettingsitheldsuchastemplatesandarchivemoves"
+msgid " App settings it held (such as templates and archive moves) were not used: TaskNotes keeps them in {appSettingsRecordPath}, alongside {value2}."
+msgstr " このファイルに含まれていたアプリ設定（テンプレートやアーカイブ先への移動など）は使用されませんでした。TaskNotes はこれらを {value2} と同じ場所の {appSettingsRecordPath} に保存します。"
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.at"
 msgid " at {time}"
@@ -91,47 +96,47 @@ msgstr "-1週"
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.contexts"
 msgid "'{{contexts}}' - Task contexts"
-msgstr ""
+msgstr "'{{contexts}}' - タスクコンテキスト"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.date"
 msgid "'{{date}}' - Current date (YYYY-MM-DD)"
-msgstr ""
+msgstr "'{{date}}' - 現在の日付（YYYY-MM-DD）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.details"
 msgid "'{{details}}' - User-provided details from modal"
-msgstr ""
+msgstr "'{{details}}' - モーダルからユーザー提供の詳細"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.priority"
 msgid "'{{priority}}' - Task priority"
-msgstr ""
+msgstr "'{{priority}}' - タスク優先度"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.projects"
 msgid "'{{projects}}' - Task projects"
-msgstr ""
+msgstr "'{{projects}}' - タスクプロジェクト"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.status"
 msgid "'{{status}}' - Task status"
-msgstr ""
+msgstr "'{{status}}' - タスクステータス"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.tags"
 msgid "'{{tags}}' - Task tags"
-msgstr ""
+msgstr "'{{tags}}' - タスクタグ"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.time"
 msgid "'{{time}}' - Current time (HH:MM)"
-msgstr ""
+msgstr "'{{time}}' - 現在の時間（HH:MM）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.title"
 msgid "'{{title}}' - Task title"
-msgstr ""
+msgstr "'{{title}}' - タスクタイトル"
 
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
@@ -224,6 +229,11 @@ msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
 msgstr "{count, plural, other {添付ファイル # 件}}"
 
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDaysAgo"
+msgid "{count, plural, one {# day ago} other {# days ago}}"
+msgstr "{count, plural, other {#日前}}"
+
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
@@ -253,6 +263,11 @@ msgstr "{count, plural, other {{count, number}件のタスクを変換中…}}"
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
 msgstr "{count, plural, other {{count, number}件のタスクを含む {filename} をダウンロードしました}}"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.oauth.lastSynced"
+msgid "{count, plural, one {Last synced: {date} (# event)} other {Last synced: {date} (# events)}}"
+msgstr "{count, plural, other {最終同期: {date}（#件のイベント）}}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -288,6 +303,11 @@ msgstr "{day, selectordinal, other {#番目}}"
 msgctxt "recurrence monthly date"
 msgid "{day, selectordinal, one {Monthly on the #st} two {Monthly on the #nd} few {Monthly on the #rd} other {Monthly on the #th}}"
 msgstr "{day, selectordinal, other {毎月#日}}"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDayAtTime"
+msgid "{day} at {time}"
+msgstr "{day} {time}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases relative due date"
@@ -515,9 +535,29 @@ msgid "{operation, select, archiving {Failed to move archived task: {error}} una
 msgstr "{operation, select, archiving {アーカイブしたタスクを移動できませんでした: {error}} unarchiving {復元したタスクを移動できませんでした: {error}} other {タスクを移動できませんでした: {error}}}"
 
 #: src/services/MdbaseSpecService.ts
+msgctxt "integration.couldnotbeparsed"
+msgid "{path} could not be parsed."
+msgstr "{path} を解析できませんでした。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.couldnotbereadsoTaskNotesleftitunchangedand"
+msgid "{path} could not be read, so TaskNotes left it unchanged and kept its current settings."
+msgstr "{path} を読み込めなかったため、TaskNotes はファイルを変更せず、現在の設定を保持しました。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.couldnotbeupdatedwithoutreplacinginvalidfrontmatter"
+msgid "{path} could not be updated without replacing invalid frontmatter."
+msgstr "無効なフロントマターを置き換えずに {path} を更新することはできませんでした。"
+
+#: src/services/MdbaseSpecService.ts
 msgctxt "collectionCheck.invalidType"
 msgid "{path} is inconsistent: {issues}. Review its implements.fields and binding before retrying; plugin settings were kept."
-msgstr ""
+msgstr "{path} に不整合があります: {issues}。再試行する前に implements.fields と binding を確認してください。プラグイン設定は保持されました。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.isinconsistent"
+msgid "{path} is inconsistent: {value2}"
+msgstr "{path} に不整合があります: {value2}"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: checklistProgress display"
@@ -639,6 +679,16 @@ msgctxt "views.pomodoro.meta.breakReady"
 msgid "{type} ready · {time} planned"
 msgstr "{type} 準備完了 · {time} 予定"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.andTaskNotessettingsbothchangedsincetheywerelastsynchronized"
+msgid "{typePath} and TaskNotes settings both changed since they were last synchronized."
+msgstr "{typePath} と TaskNotes の設定は、最後の同期以降に両方とも変更されています。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.isnotavalidTaskNotescontractTaskNoteskeptitslast"
+msgid "{typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings."
+msgstr "{typePath} は有効な TaskNotes コントラクトではありません。TaskNotes は最後の有効な設定を保持しました。"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{value1, plural, one {+ {value1, number} more...} other {+ {value1, number} more...}}"
@@ -658,6 +708,11 @@ msgstr "{value1}: {startTime}～{endTime}"
 msgctxt "ui/taskCardProperties: totalTrackedTime display"
 msgid "{value1} tracked"
 msgstr "追跡済み {value1}"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.backups"
+msgid "{value1}; backups: {folder}"
+msgstr "{value1}。バックアップ: {folder}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -979,12 +1034,12 @@ msgstr "60分"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.aCSSColorOrThemeVariableSuchAsVar"
 msgid "A CSS color or theme variable, such as var(--text-accent)."
-msgstr ""
+msgstr "CSS の色またはテーマ変数（例：var(--text-accent)）。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.aCSSColorOrThemeVariable"
 msgid "A CSS color or theme variable."
-msgstr ""
+msgstr "CSS の色またはテーマ変数。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.exportV3Views.confirmOverwrite"
@@ -1009,7 +1064,7 @@ msgstr "ポモドーロが既に実行中です"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.aPropertyOnTheParentTaskThatOverridesThe"
 msgid "A property on the parent task that overrides the occurrence filename template."
-msgstr ""
+msgstr "各回のファイル名テンプレートを上書きする、親タスクのプロパティ。"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentSelf"
@@ -1070,7 +1125,7 @@ msgstr "アクション"
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.webhooks.statusLabels.active"
 msgid "Active"
-msgstr ""
+msgstr "アクティブ"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.stopTimeTrackingLocked display"
@@ -1284,7 +1339,7 @@ msgstr "プロジェクトに追加されました：{project}"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.advanced"
 msgid "Advanced"
-msgstr ""
+msgstr "詳細設定"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.advanced"
@@ -1335,7 +1390,7 @@ msgstr "すべてのイベントが削除され、リンク解除されました
 #: src/settings/native/properties.ts
 msgctxt "settings.native.allNotes"
 msgid "All notes"
-msgstr ""
+msgstr "すべてのノート"
 
 #: src/services/TaskCalendarSyncService.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.tasksUnlinked"
@@ -1371,7 +1426,7 @@ msgstr "すでにこのグループにあります。"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.anIcsFileInThisVault"
 msgid "An .ics file in this vault."
-msgstr ""
+msgstr "この保管庫内の .ics ファイル。"
 
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
@@ -1391,12 +1446,12 @@ msgstr "OAuth のコールバックは既に待機中です"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.anOptionalJsonTemplateInTheVaultLeaveEmpty"
 msgid "An optional .json template in the vault. Leave empty to send raw event data."
-msgstr ""
+msgstr "保管庫内の任意の .json テンプレート。空欄なら未加工のイベントデータを送信します。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.anotherPropertyAlreadyUsesThisKey"
 msgid "Another property already uses this key."
-msgstr ""
+msgstr "別のプロパティがこのキーを使用しています。"
 
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
@@ -1412,12 +1467,12 @@ msgstr "API を利用できません ({status})"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.appearanceInteraction"
 msgid "Appearance & interaction"
-msgstr ""
+msgstr "外観と操作"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.oAuthCredentials"
 msgid "Application credentials"
-msgstr ""
+msgstr "OAuth 認証情報"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.useTemplateDesc"
@@ -1437,12 +1492,12 @@ msgstr "自然言語の日付を適用"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.confirm"
 msgid "Apply only the changes listed below; original notes will be backed up in {backupFolder} before each change, and unselected statuses and other errors will remain unchanged?"
-msgstr ""
+msgstr "以下の変更のみ適用しますか？変更前に元のノートを {backupFolder} にバックアップします。未選択のステータスとその他のエラーは変更しません。"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fixed"
 msgid "Approved changes saved; backups are in {backupFolder}, please check remaining errors."
-msgstr ""
+msgstr "承認された変更を保存しました。バックアップは {backupFolder} にあります。残りのエラーを確認してください。"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -1524,7 +1579,7 @@ msgstr "イベント時刻に"
 #: src/settings/native/features.ts
 msgctxt "settings.native.attachmentSearchOrder"
 msgid "Attachment search order"
-msgstr ""
+msgstr "添付ファイルの検索順序"
 
 #: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.attachmentsLabel"
@@ -1589,12 +1644,12 @@ msgstr "時間追跡を自動停止しました: {title}"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.automaticArchiving"
 msgid "Automatic archiving"
-msgstr ""
+msgstr "自動アーカイブ"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.automaticallyArchive"
 msgid "Automatically archive"
-msgstr ""
+msgstr "自動的にアーカイブ"
 
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.autoCreateDefaultFiles.description"
@@ -1639,17 +1694,17 @@ msgstr "使用できるテンプレート変数"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fix"
 msgid "Back up and fix"
-msgstr ""
+msgstr "バックアップして修正"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fixAll"
 msgid "Back up and fix selected changes in all records"
-msgstr ""
+msgstr "すべてのレコードで選択した変更をバックアップして適用"
 
 #: src/settings/native/general.ts
 msgctxt "settings.native.baseFile"
 msgid "Base file"
-msgstr ""
+msgstr "Base ファイル"
 
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.descriptionRegen"
@@ -1835,12 +1890,12 @@ msgstr "カレンダー\"{name}\"が見つかりません（404）。ICS URLが�
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.calendarAccountsSubscriptionsTaskExportAndInteroperability"
 msgid "Calendar accounts, subscriptions, task export, and interoperability."
-msgstr ""
+msgstr "カレンダーアカウント、購読、タスクのエクスポート、相互運用。"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.calendarDefaults"
 msgid "Calendar defaults"
-msgstr ""
+msgstr "カレンダーの既定値"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.calendarEventHeading"
@@ -1865,7 +1920,7 @@ msgstr "カレンダーイベントが見つかりません: {eventId}"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.calendarFile"
 msgid "Calendar file"
-msgstr ""
+msgstr "カレンダーファイル"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/validation: validateCalendarId display"
@@ -1880,7 +1935,7 @@ msgstr "カレンダー ID"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.calendarIntegrationIsUnavailableOnThisDevice"
 msgid "Calendar integration is unavailable on this device."
-msgstr ""
+msgstr "この端末ではカレンダー連携を利用できません。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.calendarLocale.name"
@@ -1895,7 +1950,7 @@ msgstr "日付形式とカレンダーシステムのカレンダーロケール
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.placeholders.calendarName"
 msgid "Calendar name"
-msgstr ""
+msgstr "カレンダー名"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/errors: CalendarNotFoundError display"
@@ -1905,7 +1960,7 @@ msgstr "カレンダーが見つかりません: {calendarId}"
 #: src/settings/native/integrations.ts
 msgctxt "settings.native.calendarSetupGuide"
 msgid "Calendar setup guide"
-msgstr ""
+msgstr "カレンダー設定ガイド"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.indexICSEvents display"
@@ -1916,7 +1971,7 @@ msgstr "カレンダーの購読"
 #: src/settings/native/integrations.ts
 msgctxt "settings.native.calendarSubscriptionServiceUnavailable"
 msgid "Calendar subscription service unavailable."
-msgstr ""
+msgstr "カレンダー購読サービスを利用できません。"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.header"
@@ -1937,12 +1992,12 @@ msgstr "カレンダー購読リスト"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.calendarSyncServiceUnavailable"
 msgid "Calendar sync service unavailable."
-msgstr ""
+msgstr "カレンダー同期サービスを利用できません。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.calendarURL"
 msgid "Calendar URL"
-msgstr ""
+msgstr "カレンダー URL"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.header"
@@ -1967,7 +2022,7 @@ msgstr "カレンダー: {value1}"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.calendarsIntegrations"
 msgid "Calendars & integrations"
-msgstr ""
+msgstr "カレンダーと連携"
 
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
@@ -2131,7 +2186,7 @@ msgstr "繰り返し回の親タスクを特定できません"
 #: src/services/mdbase/resolveUserFields.ts
 msgctxt "collectionCheck.unresolvedUserField"
 msgid "Cannot resolve owned user field {field}. Review its schema and retained field type before saving settings. Existing settings and metadata were preserved."
-msgstr ""
+msgstr "管理対象のカスタムフィールド {field} の型を判定できません。設定を保存する前に、スキーマと保持されたフィールドの型を確認してください。既存の設定とメタデータは保持されています。"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.conflict"
@@ -2166,28 +2221,28 @@ msgstr "タスクを変更..."
 #: src/settings/native/creation.ts
 msgctxt "settings.native.changingTheseValuesDoesNotUpdateExistingTaskNotes"
 msgid "Changing these values does not update existing task notes."
-msgstr ""
+msgstr "これらの値を変更しても、既存のタスクノートは更新されません。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.changingThisKeyDoesNotMigrateExistingNotes"
 msgid "Changing this key does not migrate existing notes."
-msgstr ""
+msgstr "このキーを変更しても既存のノートは移行されません。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.changingThisMappingDoesNotRenamePropertiesInExisting"
 msgid "Changing this mapping does not rename properties in existing notes."
-msgstr ""
+msgstr "この対応付けを変更しても既存のノートのプロパティ名は変わりません。"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.check"
 msgid "Check again"
-msgstr ""
+msgstr "再確認"
 
 #: src/commands/taskNotesCommands.ts
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.title"
 msgid "Check collection"
-msgstr ""
+msgstr "コレクションを確認"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.releaseNotes.checkForUpdates.name"
@@ -2202,12 +2257,17 @@ msgstr "TaskNotes の起動時に GitHub を一度だけ確認し、互換性の
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.description"
 msgid "Check task records without changing notes. Missing creation dates can be filled from file creation time. Invalid statuses require your choice. Other errors need manual review."
-msgstr ""
+msgstr "ノートを変更せずにタスクを検証します。作成日時がない場合はファイルの作成日時で補えます。無効なステータスは置き換え先を選ぶ必要があります。その他のエラーは手動で確認してください。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "timeblock Daily Notes setup guidance"
 msgid "Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists."
 msgstr "Daily Notes コアプラグインの設定を確認し、設定したデイリーノートのフォルダーが存在することを確かめてください。"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.oauth.checking"
+msgid "Checking connection…"
+msgstr "接続を確認中…"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.checklistProgress"
@@ -2222,17 +2282,17 @@ msgstr "チェックリストの進捗"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.chooseCalendarFile"
 msgid "Choose a local .ics file."
-msgstr ""
+msgstr "ローカルの .ics ファイルを選択してください。"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.chooseStatus"
 msgid "Choose a replacement status"
-msgstr ""
+msgstr "置き換え先のステータスを選択"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.dateFormat.description"
 msgid "Choose how dates appear throughout TaskNotes. Stored dates and custom Bases formulas are unchanged. Time format is set separately."
-msgstr ""
+msgstr "TaskNotes全体の日付表示を選択します。保存された日付と独自のBases数式は変更されません。時刻の表示形式は別に設定します。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenceDesc"
@@ -2272,7 +2332,7 @@ msgstr "タグまたはフロントマタープロパティでタスクを識別
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.chooseWhichFieldsAppearWhenCreatingAndEditingTasks"
 msgid "Choose which fields appear when creating and editing tasks."
-msgstr ""
+msgstr "タスクの作成時と編集時に表示するフィールドを選択します。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.defaultVisibleProperties.description"
@@ -2283,6 +2343,16 @@ msgstr "タスクカードにデフォルトで表示するプロパティを選
 msgctxt "modals.propertySelector.description"
 msgid "Choose which properties to display in task cards. Selected properties appear in the order below."
 msgstr "タスクカードに表示するプロパティを選択します。選択した項目は以下の順序で表示されます。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.ChoosewhichversionshouldbecomecanonicalUnknownmdbaseextensionswill"
+msgid "Choose which version should become canonical. Unknown mdbase extensions will be preserved."
+msgstr "正規のバージョンにするものを選択してください。不明な mdbase 拡張は保持されます。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.ChoosewhichversionshouldbecomecanonicalUsingTaskNotessettingswrites"
+msgid "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept."
+msgstr "正規のバージョンにするものを選択してください。TaskNotes の設定を使用すると、変更した設定のみを書き込み、ファイル内の他のフィールドは保持されます。"
 
 #: src/components/ReminderContextMenu.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
@@ -2361,7 +2431,7 @@ msgstr "タスクをクリア"
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.complete"
 msgid "Click the status control until the task is `Done`. It leaves `Today`, but its note stays in your vault."
-msgstr ""
+msgstr "完了になるまで状態ボタンをクリックします。「今日」からは消えますが、ノートは保管庫に残ります。"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display"
@@ -2371,12 +2441,12 @@ msgstr "クリックして開く"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.clientID"
 msgid "Client ID"
-msgstr ""
+msgstr "クライアント ID"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.clientSecret"
 msgid "Client secret"
-msgstr ""
+msgstr "クライアントシークレット"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "common.close"
@@ -2426,7 +2496,7 @@ msgstr "サブタスクを折りたたむ"
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.collapseSwimlane"
 msgid "Collapse swimlane"
-msgstr ""
+msgstr "スイムレーンを折りたたむ"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults Collapsed"
@@ -2436,12 +2506,12 @@ msgstr "折りたたみ"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.error"
 msgid "Collection check or repair stopped. No unapproved changes were made."
-msgstr ""
+msgstr "コレクションの確認または修正を停止しました。未承認の変更は行っていません。"
 
 #: src/services/mdbase/checkCollection.ts
 msgctxt "collectionCheck.membershipChanged"
 msgid "Collection membership or record changed since collection check; check again."
-msgstr ""
+msgstr "コレクションの確認後に所属条件またはレコードが変更されました。もう一度確認してください。"
 
 #: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.colorLabel"
@@ -2594,6 +2664,11 @@ msgctxt "modals.taskEdit.sections.completions"
 msgid "Completions"
 msgstr "完了"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Configurationconflict"
+msgid "Configuration conflict"
+msgstr "設定の競合"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
@@ -2602,7 +2677,7 @@ msgstr "各プロジェクト提案に表示する最大3行の情報を設定�
 #: src/settings/native/features.ts
 msgctxt "settings.features.dataStorage.description"
 msgid "Configure where Pomodoro session data is stored and how it''s managed."
-msgstr ""
+msgstr "ポモドーロセッションデータの保存場所と管理方法を設定します。"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -2629,32 +2704,32 @@ msgstr "大規模な並べ替えを確認"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connect"
 msgid "Connect"
-msgstr ""
+msgstr "接続"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectAccount"
 msgid "Connect {name}"
-msgstr ""
+msgstr "{name} に接続"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
 msgid "Connect a Google or Microsoft calendar using credentials from your own developer application."
-msgstr ""
+msgstr "独自の OAuth アプリ認証情報を使って Google または Microsoft のカレンダーに接続します。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connected"
 msgid "Connected"
-msgstr ""
+msgstr "接続済み"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectedSince"
 msgid "Connected: {date}"
-msgstr ""
+msgstr "接続日時：{date}"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectionStatus"
 msgid "Connection status"
-msgstr ""
+msgstr "接続状態"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error"
@@ -2729,7 +2804,7 @@ msgstr "TaskNotes のポモドーロセッションを操作するか、現在�
 #: src/settings/native/features.ts
 msgctxt "settings.native.controlsHowFilesAreOrderedInTheAddAttachment"
 msgid "Controls file order when searching for timeblock attachments."
-msgstr ""
+msgstr "タイムブロックへの添付ファイル追加時に、検索結果のファイルを並べる順序を指定します。"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.convertAllTasksInNote"
@@ -2814,7 +2889,7 @@ msgstr "パスをコピー"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.copySecret"
 msgid "Copy secret"
-msgstr ""
+msgstr "シークレットをコピー"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "ui.audit.copySelected"
@@ -2919,6 +2994,11 @@ msgctxt "modals.taskSelectorWithCreate.notices.invalidTitle"
 msgid "Could not parse a valid task title"
 msgstr "有効なタスクタイトルを認識できませんでした"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Couldnotread"
+msgid "Could not read {path}."
+msgstr "{path} を読み込めませんでした。"
+
 #: src/modals/taskModalDependencies.ts
 #: src/modals/taskModalProjects.ts
 msgctxt "contextMenus.task.dependencies.notices.unresolved"
@@ -2938,7 +3018,7 @@ msgstr "解決できませんでした：{entries}"
 #: src/settings/native/SettingsContext.ts
 msgctxt "settings.native.saveError"
 msgid "Could not save TaskNotes settings: {error}"
-msgstr ""
+msgstr "TaskNotes の設定を保存できませんでした：{error}"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.failed"
@@ -2953,12 +3033,12 @@ msgstr "この移動を元に戻せませんでした。"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.countsAsCompleted"
 msgid "Counts as completed"
-msgstr ""
+msgstr "完了と見なす"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.countsAsSkipped"
 msgid "Counts as skipped"
-msgstr ""
+msgstr "スキップ済みと見なす"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.createButton"
@@ -2973,7 +3053,7 @@ msgstr "このカレンダーイベントから新しいノートまたはタス
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.create"
 msgid "Create a real task and schedule it for today."
-msgstr ""
+msgstr "実際のタスクを作成し、今日に予定を設定します。"
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
@@ -3129,12 +3209,12 @@ msgstr "作成"
 #: src/settings/native/features.ts
 msgctxt "settings.native.createdNewestFirst"
 msgid "Created (newest first)"
-msgstr ""
+msgstr "作成日時（新しい順）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.createdOldestFirst"
 msgid "Created (oldest first)"
-msgstr ""
+msgstr "作成日時（古い順）"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.createdDate"
@@ -3178,7 +3258,6 @@ msgctxt "main: TaskNotesPlugin.getCurrentTaskForCommand display"
 msgid "Current file is not a task"
 msgstr "現在のファイルはタスクではありません"
 
-#: src/commands/taskNotesCommands.ts
 #: src/main.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.notATask"
 msgid "Current file is not a task"
@@ -3418,7 +3497,7 @@ msgstr "日時："
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.dateFormat.name"
 msgid "Date format"
-msgstr ""
+msgstr "日付の表示形式"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.dateNavigation"
@@ -3496,7 +3575,7 @@ msgstr "デフォルト"
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.dateFormat.options.default"
 msgid "Default"
-msgstr ""
+msgstr "既定"
 
 #: src/main.ts
 msgctxt "notices.commands.basesExist"
@@ -3513,17 +3592,17 @@ msgstr "デフォルトの折りたたみ状態"
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultContexts.name"
 msgid "Default contexts"
-msgstr ""
+msgstr "デフォルトコンテキスト"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.dateDefaults.defaultDueDate.name"
 msgid "Default due date"
-msgstr ""
+msgstr "デフォルト期限日"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.defaultDueTime"
 msgid "Default due time"
-msgstr ""
+msgstr "既定の期限時刻"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.header"
@@ -3538,47 +3617,47 @@ msgstr "既定の形式"
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.defaultFolder.description"
 msgid "Default location for new tasks. Supports folder template variables like '{{currentNotePath}}', '{{currentNoteTitle}}', and '{{projectFilePath}}', plus Daily Notes-style date tokens like YYYY/MM/DD."
-msgstr ""
+msgstr "新しいタスクのデフォルト保存場所です。'{{currentNotePath}}'、'{{currentNoteTitle}}'、'{{projectFilePath}}' などのフォルダテンプレート変数と、YYYY/MM/DD などのDaily Notes形式の日付トークンをサポートします。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultPriority.name"
 msgid "Default priority"
-msgstr ""
+msgstr "デフォルト優先度"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultProjects.name"
 msgid "Default projects"
-msgstr ""
+msgstr "デフォルトプロジェクト"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultRecurrence.name"
 msgid "Default recurrence"
-msgstr ""
+msgstr "デフォルト繰り返し"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.header.defaultReminders"
 msgid "Default reminders"
-msgstr ""
+msgstr "デフォルトリマインダー"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.dateDefaults.defaultScheduledDate.name"
 msgid "Default scheduled date"
-msgstr ""
+msgstr "デフォルト予定日"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.defaultScheduledTime"
 msgid "Default scheduled time"
-msgstr ""
+msgstr "既定の予定時刻"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultStatus.name"
 msgid "Default status"
-msgstr ""
+msgstr "デフォルトステータス"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultTags.name"
 msgid "Default tags"
-msgstr ""
+msgstr "デフォルトタグ"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.defaultFolder.name"
@@ -3588,7 +3667,7 @@ msgstr "デフォルトタスクフォルダー"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.defaultTimeEstimateMinutes"
 msgid "Default time estimate (minutes)"
-msgstr ""
+msgstr "既定の見積もり時間（分）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeblocking.defaultColorName"
@@ -3618,22 +3697,22 @@ msgstr "デフォルト表示プロパティ"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.defaults"
 msgid "Defaults"
-msgstr ""
+msgstr "既定値"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.defaultsApplyToNewTasks"
 msgid "Defaults apply to new tasks"
-msgstr ""
+msgstr "既定値は新しいタスクに適用されます"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.defaultsForCalendarViewsIndividualBasesViewsMayOverride"
 msgid "Defaults for calendar views. Individual Bases views may override these settings."
-msgstr ""
+msgstr "カレンダービューの既定値です。各 Bases ビューで上書きできます。"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.defaultsTemplatesNaturalLanguageInputAndFormFields"
 msgid "Defaults, templates, natural-language input, and form fields."
-msgstr ""
+msgstr "既定値、テンプレート、自然言語入力、フォームのフィールド。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.fields.delayMinutes"
@@ -3674,7 +3753,7 @@ msgstr "削除"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteEntry"
 msgid "Delete {name}?"
-msgstr ""
+msgstr "{name} を削除しますか？"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.deleteEntry"
@@ -3689,7 +3768,7 @@ msgstr "ファイル削除"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
-msgstr ""
+msgstr "プロパティを削除"
 
 #: src/modals/ReminderModal.ts
 msgctxt "settings.defaults.reminders.deleteTooltip"
@@ -3699,7 +3778,7 @@ msgstr "リマインダーを削除"
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
 msgid "Delete subscription"
-msgstr ""
+msgstr "購読を削除"
 
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.deleteConfirmation.confirm"
@@ -3741,12 +3820,12 @@ msgstr "Webhookを削除"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.deleteWebhook"
 msgid "Delete webhook?"
-msgstr ""
+msgstr "Webhook を削除しますか？"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.deliveryStatus"
 msgid "Delivery status"
-msgstr ""
+msgstr "配信状態"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.dependencies.title"
@@ -3863,12 +3942,12 @@ msgstr "変更を破棄"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.disconnect"
 msgid "Disconnect"
-msgstr ""
+msgstr "接続解除"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.disconnectAccount"
 msgid "Disconnect {name}"
-msgstr ""
+msgstr "{name} の接続を解除"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.disconnect display"
@@ -3913,7 +3992,7 @@ msgstr "完了した時間追跡エントリをデフォルトで表示"
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
 msgid "Display currently tracked tasks in Obsidian''s status bar"
-msgstr ""
+msgstr "Obsidianのステータスバーに現在追跡中のタスクを表示"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
@@ -3943,7 +4022,7 @@ msgstr "繰り返しタスクの各回を既定で表示します。"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.displayRow"
 msgid "Display row {number}"
-msgstr ""
+msgstr "表示行 {number}"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.showDueDates.description"
@@ -3958,7 +4037,7 @@ msgstr "予定日のあるタスクをデフォルトで表示"
 #: src/settings/native/features.ts
 msgctxt "settings.features.pomodoro.statusBar.description"
 msgid "Display the active Pomodoro countdown in Obsidian''s status bar"
-msgstr ""
+msgstr "ObsidianのステータスバーにアクティブなPomodoroカウントダウンを表示"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.description"
@@ -4264,19 +4343,19 @@ msgstr "タイムブロッキングを有効にする"
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeblocking.enableDesc"
 msgid "Enable timeblocking feature for lightweight scheduling in daily notes. When enabled, ''Timeblock'' option appears in the calendar drag context menu."
-msgstr ""
+msgstr "デイリーノートでの軽量スケジューリングのためのタイムブロック機能を有効にする。有効にすると、カレンダーのドラッグコンテキストメニューに''タイムブロック''オプションが表示されます。"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/creation.ts
 msgctxt "settings.integrations.subscriptionsList.statusLabels.enabled"
 msgid "Enabled"
-msgstr ""
+msgstr "有効"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/creation.ts
 msgctxt "settings.integrations.subscriptionsList.labels.enabled"
 msgid "Enabled:"
-msgstr ""
+msgstr "有効："
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endAfterOccurrences"
@@ -4341,7 +4420,7 @@ msgstr "{field}を入力..."
 #: src/settings/native/connections.ts
 msgctxt "settings.native.enterCalendarName"
 msgid "Enter a calendar name."
-msgstr ""
+msgstr "カレンダー名を入力してください。"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "modals.dateTimePicker.placeholder"
@@ -4356,37 +4435,37 @@ msgstr "10、10:30、1:30:00 のような時間を入力してください。"
 #: src/settings/native/SettingsContext.ts
 msgctxt "settings.native.numberRange"
 msgid "Enter a number between {min} and {max}."
-msgstr ""
+msgstr "{min} から {max} の数値を入力してください。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.optionalNumber"
 msgid "Enter a number or leave empty."
-msgstr ""
+msgstr "数値を入力するか、空欄にしてください。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.enterAPropertyKey"
 msgid "Enter a property key."
-msgstr ""
+msgstr "プロパティキーを入力してください。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validTime"
 msgid "Enter a time from 00:00 to 23:59."
-msgstr ""
+msgstr "00:00〜23:59 の時刻を入力してください。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validDate"
 msgid "Enter a valid date in YYYY-MM-DD format."
-msgstr ""
+msgstr "YYYY-MM-DD 形式で有効な日付を入力してください。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.enterValue"
 msgid "Enter a value."
-msgstr ""
+msgstr "値を入力してください。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.enterAnHTTPOrHTTPSURL"
 msgid "Enter an HTTP or HTTPS URL."
-msgstr ""
+msgstr "HTTP または HTTPS の URL を入力してください。"
 
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
@@ -4506,7 +4585,7 @@ msgstr "「他の予定」までの表示件数（0 = 自動）"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
-msgstr ""
+msgstr "このエンドポイントにはイベントが送信されなくなります。"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "modals.task.recurrence.everyTwoWeeks"
@@ -4586,7 +4665,7 @@ msgstr "期限切れタスク計算から完了タスクを除外"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.excludeFromStatusCycle"
 msgid "Exclude from status cycle"
-msgstr ""
+msgstr "ステータスの循環から除外"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.folderManagement.excludedFolders.name"
@@ -4601,7 +4680,7 @@ msgstr "既存のプラグインデータは移行され、その後クリアさ
 #: src/settings/native/properties.ts
 msgctxt "settings.native.existingTaskNotesWillNotBeChangedTasksUsing"
 msgid "Existing task notes will not be changed. Tasks using this value keep it in their frontmatter."
-msgstr ""
+msgstr "既存のタスクノートは変更されません。この値を使うタスクはフロントマターに値を保持します。"
 
 #: src/bases/TaskListView.ts
 msgctxt "views.taskList.expandAllGroups"
@@ -4641,7 +4720,7 @@ msgstr "サブタスクを既定で展開"
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.expandSwimlane"
 msgid "Expand swimlane"
-msgstr ""
+msgstr "スイムレーンを展開"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults Expanded"
@@ -5481,7 +5560,7 @@ msgstr "ファイル名に有効な文字がありません"
 #: src/settings/native/creation.ts
 msgctxt "settings.appearance.taskFilenames.filenameFormat.name"
 msgid "Filename format"
-msgstr ""
+msgstr "ファイル名形式"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/filenameGenerator: validateFilename error"
@@ -5491,7 +5570,7 @@ msgstr "ファイル名が長すぎます (最大255文字)"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.filenames"
 msgid "Filenames"
-msgstr ""
+msgstr "ファイル名"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.attachmentsDesc"
@@ -5521,7 +5600,7 @@ msgstr "フィルター有効"
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.review"
 msgid "Find your task in `Today`."
-msgstr ""
+msgstr "「今日」ビューでタスクを確認します。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first"
@@ -5586,12 +5665,12 @@ msgstr "フォルダー管理"
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.archiveFolder.description"
 msgid "Folder to move tasks to when archived. Supports template variables like '{{year}}', '{{month}}', '{{priority}}', etc."
-msgstr ""
+msgstr "アーカイブ時にタスクを移動するフォルダー。'{{year}}'、'{{month}}'、'{{priority}}'などのテンプレート変数をサポートします。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.instantConvert.folder.description"
 msgid "Folder where tasks created from inline commands or checkbox conversion will be created. Leave empty to use the default tasks folder. Use '{{currentNotePath}}' for the current note''s folder, or '{{currentNoteTitle}}' for a subfolder named after the current note."
-msgstr ""
+msgstr "インラインコマンドまたはチェックボックス変換から作成されるタスクの作成先フォルダです。空のままにするとデフォルトのタスクフォルダを使用します。現在のノートのフォルダには '{{currentNotePath}}'、現在のノート名のサブフォルダには '{{currentNoteTitle}}' を使用します。"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderPlaceholder"
@@ -5601,28 +5680,28 @@ msgstr "フォルダー/サブフォルダー"
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.inbox"
 msgid "For undated capture, clear the scheduled date. The inbox shows incomplete tasks with no project, scheduled date, or due date."
-msgstr ""
+msgstr "日付を付けずに記録するには予定日を消します。受信トレイにはプロジェクト、予定日、期限のない未完了タスクが表示されます。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.forgetCredentials"
 msgid "Forget credentials"
-msgstr ""
+msgstr "認証情報を削除"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.forgetAccountCredentials"
 msgid "Forget credentials for {name}?"
-msgstr ""
+msgstr "{name} の認証情報を削除しますか？"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.forgetSavedCredentials"
 msgid "Forget saved credentials"
-msgstr ""
+msgstr "保存済み認証情報を削除"
 
 #: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.formFields"
 msgid "Form fields"
-msgstr ""
+msgstr "フォームのフィールド"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth"
@@ -5669,19 +5748,21 @@ msgstr "一般"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.description"
 msgid "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change."
-msgstr ""
+msgstr "設定の変更に合わせて、保管庫のルートに mdbase 型ファイル（mdbase.yaml と _types/task.md）を生成し、維持します。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
 msgid "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties.\n"
 "\n"
 "⚠️ Requires the ''obsidian-frontmatter-markdown-links'' plugin to work correctly."
-msgstr ""
+msgstr "frontmatterプロパティでwikilink（[[link]]）の代わりにmarkdownリンク（[text](path)）を生成します。\n"
+"\n"
+"⚠️ 正しく機能するには''obsidian-frontmatter-markdown-links''プラグインが必要です。"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.name"
 msgid "Generate mdbase type definitions"
-msgstr ""
+msgstr "mdbase 型定義を生成"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error"
@@ -5766,7 +5847,7 @@ msgstr "素晴らしい仕事です！{length}休憩の時間です"
 #: src/settings/native/creation.ts
 msgctxt "ui.filterBar.groupMenuHeader"
 msgid "Group"
-msgstr ""
+msgstr "グループ"
 
 #: src/bases/TaskListView.ts
 msgctxt "views.taskList.reorder.scope.group"
@@ -5782,11 +5863,6 @@ msgstr "完了とスキップの操作をサブメニューにまとめる"
 msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
 msgstr "高さモード"
-
-#: src/settings/native/creation.ts
-msgctxt "modals.dueDate.inputs.time.placeholder"
-msgid "HH:MM"
-msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder"
@@ -5816,7 +5892,7 @@ msgstr "HH:mm:ss（例：20:00:00）"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.hHMmLeaveEmptyForAnAllDayTask"
 msgid "HH:mm. Leave empty for an all-day task."
-msgstr ""
+msgstr "HH:mm。終日タスクの場合は空欄にします。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
@@ -5861,7 +5937,7 @@ msgstr "高"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.higherValuesSortFirst"
 msgid "Higher values sort first."
-msgstr ""
+msgstr "値が大きいものを先に表示します。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.showTodayHighlight.description"
@@ -5882,17 +5958,7 @@ msgstr "繰り返しタスクの次回の日付を予定日と完了日のどち
 #: src/settings/native/connections.ts
 msgctxt "settings.native.hTTPHTTPSWebcalOrWebcalsURL"
 msgid "HTTP, HTTPS, webcal, or webcals URL."
-msgstr ""
-
-#: src/settings/TaskNotesSettingTab.ts
-msgctxt "settings.header.documentationUrl"
-msgid "https://tasknotes.dev"
-msgstr ""
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.viewCommands.docsLinkUrl"
-msgid "https://tasknotes.dev/views/default-base-templates"
-msgstr ""
+msgstr "HTTP、HTTPS、webcal、webcals の URL。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.fields.icon"
@@ -5947,7 +6013,7 @@ msgstr "カスタムヘッダーを含める"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.includeEventTypeSignatureAndDeliveryIDTurnOff"
 msgid "Include event type, signature, and delivery ID. Turn off for services with strict CORS policies."
-msgstr ""
+msgstr "イベント種別、署名、配信 ID を含めます。CORS ポリシーが厳格なサービスでは無効にしてください。"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.name"
@@ -5957,7 +6023,7 @@ msgstr "含めるフォルダー"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.includedFolders"
 msgid "Included folders"
-msgstr ""
+msgstr "対象フォルダー"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskCalendarSyncService: calendar sync diagnostic"
@@ -5972,7 +6038,7 @@ msgstr "インデックス内のタスクはカレンダー同期の条件を満
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.indexingHTTPAPIWebhooksAndDiagnostics"
 msgid "Indexing, HTTP API, webhooks, and diagnostics."
-msgstr ""
+msgstr "インデックス、HTTP API、Webhook、診断。"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults inherit"
@@ -6002,7 +6068,7 @@ msgstr "インラインタスク「{title}」を作成してリンクしまし�
 #: src/settings/native/features.ts
 msgctxt "settings.native.inlineTaskCardProperties"
 msgid "Inline task card properties"
-msgstr ""
+msgstr "インラインタスクカードのプロパティ"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.inlineTasks.header"
@@ -6082,7 +6148,7 @@ msgstr "入力が無効です。行は文字列にしてください"
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.calendarLocale.invalidLocale"
 msgid "Invalid locale. Please enter a valid language tag (e.g., ''en'', ''de'', ''fr-FR'')."
-msgstr ""
+msgstr "無効なロケールです。有効な言語タグを入力してください（例：''ja''、''en''、''fr-FR''）。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.waitForCallback display"
@@ -6092,7 +6158,7 @@ msgstr "OAuth の状態が無効です"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.count"
 msgid "Invalid records: {count}"
-msgstr ""
+msgstr "無効なレコード: {count}"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.invalidTaskData"
@@ -6102,12 +6168,12 @@ msgstr "無効なタスクデータ。"
 #: src/settings/native/appearance.ts
 msgctxt "settings.native.invalidTimeFormatPleaseUseHhMmFormatE"
 msgid "Invalid time format. Please use hh:mm format (e.g., 08:00)"
-msgstr ""
+msgstr "時刻の形式が無効です。hh:mm 形式を使用してください（例：08:00）。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.native.invalidTimeFormatPleaseUseHhMmFormatE2"
 msgid "Invalid time format. Please use hh:mm format (e.g., 26:00)"
-msgstr ""
+msgstr "時刻の形式が無効です。hh:mm 形式を使用してください（例：26:00）。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.stopTimeTrackingLocked display"
@@ -6117,12 +6183,12 @@ msgstr "時間追跡の停止日時が無効です"
 #: src/settings/native/appearance.ts
 msgctxt "settings.native.invalidTimeHoursMustBe0023AndMinutes"
 msgid "Invalid time. Hours must be 00-23 and minutes must be 00-59"
-msgstr ""
+msgstr "時刻が無効です。時は 00〜23、分は 00〜59 で入力してください。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.native.invalidTimeUse00004800ValuesAfter"
 msgid "Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day"
-msgstr ""
+msgstr "時刻が無効です。00:00〜48:00 を使用してください。翌日は 24:00〜48:00 で指定します（例：翌日午前2時は 26:00）。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/validation: validateUrl display"
@@ -6157,7 +6223,7 @@ msgstr "カンバンビューには「グループ化」プロパティの設定
 #: src/settings/native/properties.ts
 msgctxt "settings.native.keepAtLeastOneConfiguredValue"
 msgid "Keep at least one configured value."
-msgstr ""
+msgstr "設定済みの値を1つ以上残してください。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.instantConvert.preserveCheckbox.name"
@@ -6174,6 +6240,16 @@ msgstr "現在のサブグループを維持"
 msgctxt "modals.task.unsavedChanges.cancel"
 msgid "Keep editing"
 msgstr "編集を続ける"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Keepfileunchanged"
+msgid "Keep file unchanged"
+msgstr "ファイルを変更せず保持"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Keepthefileunchangedsoyoucanrepairitmanually"
+msgid "Keep the file unchanged so you can repair it manually, or replace its managed TaskNotes fields with the current settings."
+msgstr "手動で修復できるようファイルを変更せずに保持するか、TaskNotes が管理するフィールドを現在の設定で置き換えてください。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurring.maintainOffsetDesc"
@@ -6213,7 +6289,7 @@ msgstr "月末"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.lastSync"
 msgid "Last sync"
-msgstr ""
+msgstr "最終同期"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -6253,22 +6329,22 @@ msgstr "mdbase-spec について詳しく見る"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.noDefaultHint"
 msgid "Leave empty for no default."
-msgstr ""
+msgstr "既定値を設定しない場合は空欄にします。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.leaveEmptyToKeepTheSavedSecretEnterA"
 msgid "Leave empty to keep the saved secret. Enter a replacement, then leave this field to save it."
-msgstr ""
+msgstr "空欄なら保存済みの値を維持します。置き換える値を入力し、このフィールドから移動すると保存されます。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.leaveEmptyToMatchAnyNoteWithThisProperty"
 msgid "Leave empty to match any note with this property."
-msgstr ""
+msgstr "空欄なら、このプロパティを持つすべてのノートに一致します。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.leaveEmptyToUseTheNormalTaskFilenameWith"
 msgid "Leave empty to use the normal task filename with a unique suffix."
-msgstr ""
+msgstr "空欄なら通常のタスクファイル名に一意の接尾辞を付けます。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.instantConvert.preserveCheckbox.description"
@@ -6455,7 +6531,7 @@ msgstr "低"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.lucideIconNameLeaveEmptyForTheDefaultIndicator"
 msgid "Lucide icon name. Leave empty for the default indicator."
-msgstr ""
+msgstr "Lucide アイコン名。空欄なら既定の表示を使用します。"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.month"
@@ -6527,6 +6603,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Max Swimlane Height"
 msgstr "スイムレーンの最大高さ"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.mdbaseyamlhasanunreadableorunsupportedspecversion"
+msgid "mdbase.yaml has an unreadable or unsupported spec version."
+msgstr "mdbase.yaml の仕様バージョンを読み取れないか、サポートされていません。"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
@@ -6540,7 +6621,7 @@ msgstr "メタデータ"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.metadataIntegrationProperties"
 msgid "Metadata & integration properties"
-msgstr ""
+msgstr "メタデータと連携用プロパティ"
 
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
@@ -6630,12 +6711,12 @@ msgstr "更新"
 #: src/settings/native/features.ts
 msgctxt "settings.native.modifiedNewestFirst"
 msgid "Modified (newest first)"
-msgstr ""
+msgstr "更新日時（新しい順）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.modifiedOldestFirst"
 msgid "Modified (oldest first)"
-msgstr ""
+msgstr "更新日時（古い順）"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.modifiedDate"
@@ -6698,7 +6779,7 @@ msgstr "月次繰り返し"
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.more"
 msgid "More"
-msgstr ""
+msgstr "その他"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.postponeConfirm"
@@ -6742,7 +6823,7 @@ msgstr "上へ移動"
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
-msgstr ""
+msgstr "TaskNotes の型が複数あります: {paths}。正規のプロバイダーを1つ残すか、他の型を型フォルダーの外へ移動してから TaskNotes を再読み込みしてください。TaskNotes は最後に確認された有効な設定を保持しました。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "cli/helpers/timeTracking: resolveTaskForStopTimeTracking display"
@@ -6762,12 +6843,12 @@ msgstr "タイトル「{title}」に複数のタスクが一致しました: {va
 #: src/settings/native/features.ts
 msgctxt "settings.native.nameAToZ"
 msgid "Name (ascending)"
-msgstr ""
+msgstr "名前（A〜Z）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.nameZToA"
 msgid "Name (descending)"
-msgstr ""
+msgstr "名前（Z〜A）"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "modals.dateTimePicker.naturalLanguage"
@@ -6811,7 +6892,6 @@ msgid "New"
 msgstr "新規"
 
 #: src/i18n/dataSeedLabels.ts
-#: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.newCalendarName"
 msgid "New calendar"
 msgstr "新しいカレンダー"
@@ -6824,7 +6904,7 @@ msgstr "新しい優先度"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.newProperty"
 msgid "New property"
-msgstr ""
+msgstr "新しいプロパティ"
 
 #: src/i18n/dataSeedLabels.ts
 msgctxt "services/StatusManager: StatusManager.createDefaultStatus label"
@@ -6839,12 +6919,12 @@ msgstr "新しいタスク"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.newTasksHaveNoDefaultProjects"
 msgid "New tasks have no default projects."
-msgstr ""
+msgstr "新しいタスクに既定のプロジェクトはありません。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.newTasksHaveNoDefaultReminders"
 msgid "New tasks have no default reminders."
-msgstr ""
+msgstr "新しいタスクに既定のリマインダーはありません。"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.next"
@@ -6854,7 +6934,7 @@ msgstr "次へ"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.nextInOrder"
 msgid "Next in order"
-msgstr ""
+msgstr "順序内の次のステータス"
 
 #: src/bases/MiniCalendarView.ts
 #: src/modals/taskEditCompletions.ts
@@ -6909,6 +6989,7 @@ msgstr "来週"
 
 #: src/modals/DateTimePickerModal.ts
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.nextWeek"
 msgid "Next week"
 msgstr "来週"
@@ -7103,17 +7184,12 @@ msgstr "見積もりなし"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.noFieldsInThisGroup"
 msgid "No fields in this group."
-msgstr ""
+msgstr "このグループにはフィールドがありません。"
 
 #: src/ui/WorkspaceNavigationService.ts
 msgctxt "notices.interface.commandFileMissing"
 msgid "No file configured for command: {command}"
 msgstr "コマンドにファイルが設定されていません：{command}"
-
-#: src/commands/taskNotesCommands.ts
-msgctxt "settings.integrations.googleCalendarExport.notices.noActiveFile"
-msgid "No file is currently active"
-msgstr "現在アクティブなファイルがありません"
 
 #: src/main.ts
 msgctxt "notices.commands.noOpenFile"
@@ -7123,12 +7199,12 @@ msgstr "ファイルが開かれていません"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.clean"
 msgid "No invalid task records found."
-msgstr ""
+msgstr "無効なタスクレコードはありません。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.noKeySet"
 msgid "No key set"
-msgstr ""
+msgstr "キー未設定"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/TaskModal.ts
@@ -7291,12 +7367,12 @@ msgstr "値なし"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.noValuesConfigured"
 msgid "No values configured."
-msgstr ""
+msgstr "値が設定されていません。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.noWebhooksConfiguredAddOneToSendTaskEvents"
 msgid "No webhooks configured. Add one to send task events to another service."
-msgstr ""
+msgstr "Webhook は未設定です。追加すると、タスクのイベントを外部サービスに送信できます。"
 
 #: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
@@ -7304,6 +7380,7 @@ msgid "None"
 msgstr "なし"
 
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "なし"
@@ -7336,7 +7413,7 @@ msgstr "未完了"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.notConnected"
 msgid "Not connected"
-msgstr ""
+msgstr "未接続"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -7351,7 +7428,7 @@ msgstr "未開始"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.notSyncedYet"
 msgid "Not synced yet"
-msgstr ""
+msgstr "未同期"
 
 #: src/modals/ICSEventInfoModal.ts
 #: src/modals/ICSNoteCreationModal.ts
@@ -7392,7 +7469,7 @@ msgstr "ノートパネル"
 #: src/settings/native/creation.ts
 msgctxt "settings.appearance.taskFilenames.customTemplate.helpText"
 msgid "Note: '{{dueDate}}' and '{{scheduledDate}}' are in YYYY-MM-DD format and will be empty if not set."
-msgstr ""
+msgstr "注意：'{{dueDate}}'と'{{scheduledDate}}'はYYYY-MM-DD形式で、設定されていない場合は空になります。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.soundEnabledName"
@@ -7412,7 +7489,7 @@ msgstr "通知"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.notificationsTimeTrackingRecurrencePomodoroAndTimeblocking"
 msgid "Notifications, time tracking, recurrence, Pomodoro, and timeblocking."
-msgstr ""
+msgstr "通知、時間記録、繰り返し、ポモドーロ、タイムブロック。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.customDayCount.description"
@@ -7477,7 +7554,7 @@ msgstr "繰り返し回のファイル名テンプレート"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.occurrenceFilenameTemplateProperty"
 msgid "Occurrence filename template property"
-msgstr ""
+msgstr "各回のファイル名テンプレートのプロパティ"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name"
@@ -7591,6 +7668,7 @@ msgid "Open"
 msgstr "開く"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.advancedCalendar"
 msgid "Open advanced calendar view"
 msgstr "高度なカレンダービューを開く"
@@ -7602,6 +7680,7 @@ msgid "Open agenda view"
 msgstr "アジェンダビューを開く"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.agenda"
 msgid "Open agenda view"
 msgstr "アジェンダビューを開く"
@@ -7651,7 +7730,7 @@ msgstr "同じタブで開く"
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openInbox"
 msgid "Open inbox"
-msgstr ""
+msgstr "受信トレイを開く"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: NoteSelectionModal purpose"
@@ -7665,6 +7744,7 @@ msgid "Open Kanban board"
 msgstr "カンバンボードを開く"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.kanban"
 msgid "Open Kanban view"
 msgstr "カンバンビューを開く"
@@ -7676,6 +7756,7 @@ msgid "Open mini calendar view"
 msgstr "ミニカレンダービューを開く"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar"
 msgid "Open mini calendar view"
 msgstr "ミニカレンダービューを開く"
@@ -7747,6 +7828,7 @@ msgid "Open tasks view"
 msgstr "タスクビューを開く"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.tasks"
 msgid "Open tasks view"
 msgstr "タスクビューを開く"
@@ -7775,7 +7857,7 @@ msgstr "タスクのファイルをエディターで開く"
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openToday"
 msgid "Open today"
-msgstr ""
+msgstr "今日を開く"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.contextMenu.openWeeklyNote"
@@ -7873,10 +7955,15 @@ msgctxt "views.taskList.movement.otherDestinations"
 msgid "Other destinations"
 msgstr "その他の移動先"
 
+#: src/settings/native/general.ts
+msgctxt "settings.features.uiLanguage.downloadDescription"
+msgid "Other interface languages are downloaded and cached locally for offline use. No vault content is sent."
+msgstr "他の表示言語はダウンロードされ、オフラインで使えるようローカルにキャッシュされます。保管庫の内容は送信されません。"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.competingSettings"
 msgid "Other TaskNotes settings records found: {paths}. TaskNotes is using {record} and ignoring the others. Copy any settings you want to keep into {record}, then delete the other files."
-msgstr ""
+msgstr "TaskNotes の設定レコードが他にも見つかりました: {paths}。TaskNotes は {record} を使用し、他のレコードは無視します。残したい設定を {record} にコピーしてから、他のファイルを削除してください。"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.outlook"
@@ -7931,12 +8018,12 @@ msgstr "過去の予定"
 #: src/settings/native/features.ts
 msgctxt "settings.native.pathAToZ"
 msgid "Path (ascending)"
-msgstr ""
+msgstr "パス（A〜Z）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.pathZToA"
 msgid "Path (descending)"
-msgstr ""
+msgstr "パス（Z〜A）"
 
 #: src/ui/WorkspaceNavigationService.ts
 msgctxt "notices.interface.notAFile"
@@ -7946,12 +8033,12 @@ msgstr "ファイルではないパスです：{path}"
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description"
 msgid "Path to template file for materialized occurrence notes. A recurring task''s occurrence_template field takes priority over this fallback."
-msgstr ""
+msgstr "マテリアライズされた発生ノート用テンプレートファイルへのパス。繰り返しタスクの occurrence_template フィールドがこのフォールバックより優先されます。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.bodyTemplateFile.description"
 msgid "Path to template file for task body content. Supports template variables like '{{title}}', '{{date}}', '{{time}}', '{{priority}}', '{{status}}', etc."
-msgstr ""
+msgstr "タスクボディコンテンツのテンプレートファイルへのパス。'{{title}}'、'{{date}}'、'{{time}}'、'{{priority}}'、'{{status}}'などのテンプレート変数をサポート。"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.templatePathDesc"
@@ -7982,6 +8069,11 @@ msgstr "ポモドーロタイマーを一時停止/再開"
 msgctxt "views.pomodoro.status.paused"
 msgid "Paused"
 msgstr "一時停止"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Pendingrecordbackupsblockedfile"
+msgid "Pending record: {mdbaseMigrationPendingPath}; backups: {backupFolder}; blocked file: {value3}"
+msgstr "保留中のレコード: {mdbaseMigrationPendingPath}。バックアップ: {backupFolder}。処理が妨げられたファイル: {value3}"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.performance.header"
@@ -8199,7 +8291,7 @@ msgstr "前の月"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.priorities"
 msgid "Priorities"
-msgstr ""
+msgstr "優先度"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -8305,7 +8397,7 @@ msgstr "プロジェクト/, 仕事/アクティブ, 個人"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "ui.filterBar.properties"
 msgid "Properties"
-msgstr ""
+msgstr "プロパティ"
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
@@ -8330,12 +8422,12 @@ msgstr "プロパティキー:"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.propertyMappingsStatusesPrioritiesAndCustomProperties"
 msgid "Property mappings, statuses, priorities, and custom properties."
-msgstr ""
+msgstr "プロパティの対応付け、ステータス、優先度、カスタムプロパティ。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.propertyName"
 msgid "Property name"
-msgstr ""
+msgstr "プロパティ名"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy"
@@ -8345,7 +8437,7 @@ msgstr "プロパティでの移動方法"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.propertyValue"
 msgid "Property value"
-msgstr ""
+msgstr "プロパティ値"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
@@ -8480,7 +8572,7 @@ msgstr "キャッシュを更新"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.refreshCalendarEvents"
 msgid "Refresh calendar events"
-msgstr ""
+msgstr "カレンダーの予定を更新"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.refresh"
@@ -8490,17 +8582,17 @@ msgstr "カレンダー購読を更新"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.refreshIntervalMinutes"
 msgid "Refresh interval (minutes)"
-msgstr ""
+msgstr "更新間隔（分）"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.refreshNow"
 msgid "Refresh now"
-msgstr ""
+msgstr "今すぐ更新"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.refreshSubscription"
 msgid "Refresh subscription"
-msgstr ""
+msgstr "購読を更新"
 
 #: src/main.ts
 msgctxt "notices.commands.cacheRefreshing"
@@ -8530,6 +8622,7 @@ msgid "Relationships view not configured"
 msgstr "関係ビューが設定されていません"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.relationships"
 msgid "Relationships widget"
 msgstr "関係ウィジェット"
@@ -8557,7 +8650,7 @@ msgstr "基準日"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.relativeTo"
 msgid "Relative to"
-msgstr ""
+msgstr "基準"
 
 #: src/settings/native/general.ts
 #: src/settings/TaskNotesSettingTab.ts
@@ -8593,7 +8686,7 @@ msgstr "リマインダー"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.reminderNumber"
 msgid "Reminder {number}"
-msgstr ""
+msgstr "リマインダー {number}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand display"
@@ -8725,6 +8818,11 @@ msgctxt "common.reorder.confirmLargeMessage"
 msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
 msgstr "ここで並べ替えると、{scope} の永続的な手動順序を作るために {count} 件のノートの \"{field}\" が更新されます。同じ範囲内の非表示または絞り込み済みのノートも更新される場合があります。続行しますか？"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.RepairfromTaskNotes"
+msgid "Repair from TaskNotes"
+msgstr "TaskNotes から修復"
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.requiredPropertyKey.name"
 msgid "Required property key"
@@ -8769,27 +8867,27 @@ msgstr "繰り返し時にチェックボックスをリセット"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFields"
 msgid "Reset fields"
-msgstr ""
+msgstr "フィールドをリセット"
 
 #: src/settings/native/general.ts
 msgctxt "settings.native.resetFileMapping"
 msgid "Reset file mapping"
-msgstr ""
+msgstr "ファイルの対応付けをリセット"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFormFields"
 msgid "Reset form fields"
-msgstr ""
+msgstr "フォームのフィールドをリセット"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFormFields2"
 msgid "Reset form fields?"
-msgstr ""
+msgstr "フォームのフィールドをリセットしますか？"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept"
 msgid "Restore visibility, grouping, and ordering. Custom properties are kept."
-msgstr ""
+msgstr "表示、グループ分け、順序を元に戻します。カスタムプロパティは保持されます。"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.resume"
@@ -8805,6 +8903,11 @@ msgstr "新しいセッションを開始する代わりに現在のセッショ
 msgctxt "services.pomodoro.notices.resumeSessionInstead"
 msgid "Resume the current session instead of starting a new one"
 msgstr "新しいセッションを開始する代わりに現在のセッションを再開してください"
+
+#: src/settings/native/general.ts
+msgctxt "settings.features.uiLanguage.retryDownload"
+msgid "Retry language download"
+msgstr "言語のダウンロードを再試行"
 
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.returnToObsidian"
@@ -9008,12 +9111,12 @@ msgstr "第2"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.secretSaved"
 msgid "Secret saved"
-msgstr ""
+msgstr "シークレットを保存済み"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.releaseNotes.viewButton.description"
 msgid "See what''s new in the latest version of TaskNotes"
-msgstr ""
+msgstr "TaskNotesの最新バージョンの新機能を確認する"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.select"
@@ -9063,7 +9166,7 @@ msgstr "開く項目を選択"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.selectAtLeastOneEventBeforeEnablingThisWebhook"
 msgid "Select at least one event before enabling this webhook."
-msgstr ""
+msgstr "この Webhook を有効にする前に、イベントを1つ以上選択してください。"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder"
@@ -9129,7 +9232,7 @@ msgstr "TaskNotesインターフェーステキストに使用する言語を選
 #: src/settings/native/features.ts
 msgctxt "settings.native.selectWhichPropertiesToShowInInlineTaskCards"
 msgid "Select which properties to show in inline task cards."
-msgstr ""
+msgstr "インラインタスクカードに表示するプロパティを選択します。"
 
 #: src/main.ts
 msgctxt "main: TaskNotesPlugin.openQuickActionsForTaskFile display"
@@ -9159,17 +9262,17 @@ msgstr "テストリマインダーを送信"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.separateContextsWithCommas"
 msgid "Separate contexts with commas."
-msgstr ""
+msgstr "コンテキストをカンマで区切ります。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.separateTagsWithCommas"
 msgid "Separate tags with commas."
-msgstr ""
+msgstr "タグをカンマで区切ります。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
-msgstr ""
+msgstr "値をカンマで区切ります。"
 
 #: src/bases/TaskListView.ts
 #: src/ui/taskCardSecondaryBadges.ts
@@ -9268,12 +9371,12 @@ msgstr "このタスクに取り組む予定を設定"
 #: src/bootstrap/starterNote.ts
 msgctxt "common.settings"
 msgid "Settings"
-msgstr ""
+msgstr "設定"
 
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.settings"
 msgid "Settings, when you need them"
-msgstr ""
+msgstr "必要になったら設定する"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakLength.short"
@@ -9468,7 +9571,7 @@ msgstr "ノート内にタスクカードを表示"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.showTheDetailsEditorBesideTheFieldsOnScreens"
 msgid "Show the details editor beside the fields on screens 900px or wider."
-msgstr ""
+msgstr "幅 900px 以上の画面では、詳細エディターをフィールドの横に表示します。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.showTimeEntries.name"
@@ -9528,12 +9631,12 @@ msgstr "週末を表示"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.showWhenCreatingTasks"
 msgid "Show when creating tasks"
-msgstr ""
+msgstr "タスク作成時に表示"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.showWhenEditingTasks"
 msgid "Show when editing tasks"
-msgstr ""
+msgstr "タスク編集時に表示"
 
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.signIn"
@@ -9543,12 +9646,12 @@ msgstr "Googleアカウントでサインインしてアクセスを許可"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.signingSecret"
 msgid "Signing secret"
-msgstr ""
+msgstr "署名用シークレット"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.signingSecretCopied"
 msgid "Signing secret copied"
-msgstr ""
+msgstr "署名用シークレットをコピーしました"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.eventMaxStack"
@@ -9558,7 +9661,7 @@ msgstr "同時に表示する予定数（0 = 無制限）"
 #: src/settings/native/creation.ts
 msgctxt "settings.taskProperties.titleCard.legacySyntaxWarning"
 msgid "Single-brace syntax like '{title}' is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates."
-msgstr ""
+msgstr "'{title}'のような単一波括弧構文は非推奨です。本文テンプレートとの一貫性のために、'{{title}}'のような二重波括弧構文を使用してください。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.general.taskInteraction.singleClick.name"
@@ -9584,7 +9687,7 @@ msgstr "スキップした回"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.sortWeight"
 msgid "Sort weight"
-msgstr ""
+msgstr "並び替えの重み"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.pomodoroSound.enabledName"
@@ -9604,7 +9707,7 @@ msgstr "サウンド音量"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.source"
 msgid "Source"
-msgstr ""
+msgstr "取得元"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
@@ -9614,7 +9717,7 @@ msgstr "予定日から期限日までタスクを表示"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.splitLayoutOnWideScreens"
 msgid "Split layout on wide screens"
-msgstr ""
+msgstr "広い画面で分割表示"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDate"
@@ -9639,7 +9742,7 @@ msgstr "フォーカスを開始"
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.title"
 msgid "Start here with TaskNotes"
-msgstr ""
+msgstr "TaskNotes を始める"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startLongBreak"
@@ -9772,7 +9875,7 @@ msgstr "ステータス：{value}"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.statuses"
 msgid "Statuses"
-msgstr ""
+msgstr "ステータス"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.stop"
@@ -9820,12 +9923,12 @@ msgstr "タイトルをファイル名に保存:"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.storedInObsidianSecretStorageNotTaskNotesSettings"
 msgid "Stored in Obsidian secret storage, not TaskNotes settings."
-msgstr ""
+msgstr "TaskNotes の設定ではなく、Obsidian のシークレットストレージに保存されます。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.storedInTaskNotesChangingThisDoesNotRename"
 msgid "Stored in task notes. Changing this does not rename values in existing notes."
-msgstr ""
+msgstr "タスクノートに保存されます。変更しても既存のノート内の値は改名されません。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
@@ -9905,7 +10008,7 @@ msgstr "1分減らす"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.deliveryCounts"
 msgid "Successful: {success} · Failed: {failure}"
-msgstr ""
+msgstr "成功：{success} · 失敗：{failure}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.authenticateStandard display"
@@ -9982,12 +10085,17 @@ msgstr "現在のタスクをGoogleカレンダーに同期"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.syncCustomProperties"
 msgid "Sync custom properties"
-msgstr ""
+msgstr "カスタムプロパティを同期"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.oauth.syncFailed"
+msgid "Sync failed: {message}"
+msgstr "同期に失敗しました: {message}"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.syncProperties"
 msgid "Sync properties"
-msgstr ""
+msgstr "プロパティを同期"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogle"
@@ -10018,7 +10126,7 @@ msgstr "システム通知"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.tabMovesFocusInDetailsEditor"
 msgid "Tab moves focus in details editor"
-msgstr ""
+msgstr "詳細エディターで Tab キーによるフォーカス移動"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getListSuggestions display"
@@ -10142,7 +10250,7 @@ msgstr "タスクカード"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.taskCardsInlineTasksClickBehaviourAndViewDefaults"
 msgid "Task cards, inline tasks, click behaviour, and view defaults."
-msgstr ""
+msgstr "タスクカード、インラインタスク、クリック操作、ビューの既定値。"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskCompleted.label"
@@ -10210,7 +10318,7 @@ msgstr "タスクの詳細/本文。NLP から取得した詳細より優先し�
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.taskFiles"
 msgid "Task files"
-msgstr ""
+msgstr "タスクファイル"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.detailsTooltip"
@@ -10230,7 +10338,7 @@ msgstr "タスク識別"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.taskIdentificationFoldersFilenamesAndFrontmatter"
 msgid "Task identification, folders, filenames, and frontmatter."
-msgstr ""
+msgstr "タスクの識別、フォルダー、ファイル名、フロントマター。"
 
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.sections.taskInfo"
@@ -10445,6 +10553,11 @@ msgctxt "services.autoExport.notices.exportFailed"
 msgid "TaskNotes auto export failed: {error}"
 msgstr "TaskNotes自動エクスポートに失敗しました：{error}"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesbackeduptheinvalidtypeto"
+msgid "TaskNotes backed up the invalid type to {backupPath}."
+msgstr "TaskNotes は無効な型のバックアップを {backupPath} に保存しました。"
+
 #: src/main.ts
 msgctxt "notices.commands.cacheRefreshed"
 msgid "TaskNotes cache refreshed successfully"
@@ -10455,6 +10568,21 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Calendar"
 msgstr "TaskNotes カレンダー"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotescouldnotupdatethemdbasemetadataandrestoredthe"
+msgid "TaskNotes could not update the mdbase metadata and restored the v0.2 files. A backup is available in {backupFolder}."
+msgstr "TaskNotes は mdbase メタデータを更新できず、v0.2 のファイルを復元しました。バックアップは {backupFolder} にあります。"
+
+#: src/bootstrap/pluginBootstrap.ts
+msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
+msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
+msgstr "TaskNotes はこのデバイス用の新しい API トークンを作成しました。設定 → TaskNotes → 連携から、API および MCP クライアントにコピーしてください。"
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.waiting"
+msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
+msgstr "TaskNotes は {path} に mdbase.yaml のないメタデータを検出したため、別のコレクションを作成しませんでした。同期を完了するか、対応する設定をバックアップから復元してください。メタデータの到着時に移行を再試行します。"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Kanban"
@@ -10463,17 +10591,32 @@ msgstr "TaskNotes カンバン"
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.referenced"
 msgid "TaskNotes kept {typePath}: {recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed."
-msgstr ""
+msgstr "TaskNotes は {typePath} を保持しました。{recordPath} がこの型を明示的に参照しています。プロバイダーを移動する前に型への所属を確認してください。タスクファイルは変更されていません。"
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "collectionCheck.keptConfiguration"
 msgid "TaskNotes kept its last-known-good configuration."
-msgstr ""
+msgstr "TaskNotes は最後の正常な設定を保持しました。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesleftthemdbasevcollectionunchangedbecauseitsmetadata"
+msgid "TaskNotes left the mdbase v0.2 collection unchanged because its metadata changed while the upgrade was being prepared."
+msgstr "アップグレードの準備中にメタデータが変更されたため、TaskNotes は mdbase v0.2 コレクションを変更しませんでした。"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Mini Calendar"
 msgstr "TaskNotes ミニカレンダー"
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.review"
+msgid "TaskNotes preserved {path}: legacy metadata is missing, edited, or includes other types. Finish syncing and restart; otherwise migrate a backed-up copy with mdbase and review the type before retrying."
+msgstr "TaskNotes は {path} を変更せずに保持しました。旧形式のメタデータが不足しているか、編集されているか、他の型が含まれています。同期を完了して再起動してください。解決しない場合は、バックアップしたコピーを mdbase で移行し、型を確認してから再試行してください。"
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.support"
+msgid "TaskNotes preserved customized support file {path}. Restore the generated version from a backup or review and migrate a copy with mdbase, then restart."
+msgstr "TaskNotes はカスタマイズされた補助ファイル {path} を保持しました。生成されたバージョンをバックアップから復元するか、コピーを確認して mdbase で移行し、再起動してください。"
 
 #: src/ui/NotificationService.ts
 msgctxt "ui/NotificationService: NotificationService.deliverNotification display"
@@ -10485,25 +10628,60 @@ msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotificatio
 msgid "TaskNotes Reminder"
 msgstr "TaskNotes リマインダー"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesremovedanearlierduplicateofAcopyisin"
+msgid "TaskNotes removed {value1}, an earlier duplicate of {value2}. A copy is in {folder}."
+msgstr "TaskNotes は {value2} の以前の重複である {value1} を削除しました。コピーは {folder} にあります。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesrestoredaninterruptedmdbasevmetadatamigrationRecoverycopies"
+msgid "TaskNotes restored an interrupted mdbase v0.2 metadata migration. Recovery copies remain in {backupFolder}."
+msgstr "TaskNotes は中断された mdbase v0.2 メタデータ移行を復旧しました。復旧用コピーは {backupFolder} に残っています。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesrestoredthemissingcanonicalmdbaseyamlfile"
+msgid "TaskNotes restored the missing canonical mdbase.yaml file."
+msgstr "TaskNotes は見つからなかった正規の mdbase.yaml ファイルを復元しました。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesrestoredthemissingcanonicaltypeat"
+msgid "TaskNotes restored the missing canonical type at {previousPath}."
+msgstr "TaskNotes は見つからなかった正規の型を {previousPath} に復元しました。"
+
 #: src/services/mdbase/metadataFailureNotices.ts
 msgctxt "mdbaseSafety.settingsSaved"
 msgid "TaskNotes saved your settings, but could not synchronize the canonical mdbase type."
-msgstr ""
+msgstr "TaskNotesは設定を保存しましたが、正規のmdbase型を同期できませんでした。"
 
 #: src/services/mdbase/metadataFailureNotices.ts
 msgctxt "mdbaseSafety.blocked"
 msgid "TaskNotes stopped the mdbase metadata update. {details} Review the listed file and recovery copies, resolve the conflict or permissions, then reload TaskNotes. Task files were not changed."
-msgstr ""
+msgstr "TaskNotes は mdbase メタデータの更新を停止しました。{details} 表示されたファイルと復旧用コピーを確認し、競合またはアクセス権を解決してから TaskNotes を再読み込みしてください。タスクファイルは変更されていません。"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Task List"
 msgstr "TaskNotes タスクリスト"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesupdatedtotasknotestaskandmoveditsappsettings"
+msgid "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed."
+msgstr "TaskNotes は {path} を tasknotes.task {tasknotesContractVersion} に更新し、アプリ設定を {appSettingsRecordPath} に移動しました。タスクファイルは変更されていません。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesupdatedtotasknotestaskTaskfileswerenotchanged"
+msgid "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion}. Task files were not changed."
+msgstr "TaskNotes は {path} を tasknotes.task {tasknotesContractVersion} に更新しました。タスクファイルは変更されていません。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere"
+msgid "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
+msgstr "TaskNotes は mdbase メタデータを v0.3 に更新しました。タスクファイルは変更されていません。以前のメタデータは {backupFolder} にバックアップされています。"
+
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.intro"
 msgid "Tasks are Markdown notes in your vault. Use the command palette for these three steps."
-msgstr ""
+msgstr "タスクは保管庫内の Markdown ノートです。コマンドパレットで次の3つの手順を試してください。"
 
 #: src/bases/BasesViewBase.ts
 #: src/components/BatchContextMenu.ts
@@ -10539,22 +10717,12 @@ msgstr "テンプレート: "
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.templates"
 msgid "Templates"
-msgstr ""
-
-#: src/settings/native/features.ts
-msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder"
-msgid "Templates/Occurrence Template.md"
-msgstr ""
-
-#: src/settings/native/features.ts
-msgctxt "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
-msgid "Templates/Task Template.md"
-msgstr ""
+msgstr "テンプレート"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
 msgid "The calendar subscription will be removed. Linked notes will be kept."
-msgstr ""
+msgstr "カレンダーの購読を削除します。リンクされたノートは保持されます。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.description"
@@ -10579,12 +10747,12 @@ msgstr "フロントマタープロパティ名（例：\"category\"）"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.theTagsPropertyIsReservedByObsidian"
 msgid "The tags property is reserved by Obsidian."
-msgstr ""
+msgstr "tags プロパティは Obsidian が予約しています。"
 
 #: src/services/mdbase/checkCollection.ts
 msgctxt "collectionCheck.repairChanged"
 msgid "The task type or allowed status values changed, or the proposed repair is no longer valid. Nothing was repaired; check the collection again."
-msgstr ""
+msgstr "タスクの型または使用可能なステータスが変更されたか、提案された修復が無効になりました。修復は行われていません。コレクションをもう一度確認してください。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startTimeDesc"
@@ -10629,12 +10797,12 @@ msgstr "これによりノートとのデータの永続性が向上します"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"
 msgid "This removes the property from TaskNotes forms, not from existing notes."
-msgstr ""
+msgstr "TaskNotes のフォームから削除しますが、既存のノートからは削除しません。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
-msgstr ""
+msgstr "Obsidian のシークレットストレージからクライアント ID とシークレットを削除します。"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
@@ -10666,7 +10834,7 @@ msgstr "この未グループ化リスト"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.duplicateValue"
 msgid "This value already exists."
-msgstr ""
+msgstr "この値はすでに存在します。"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -10724,7 +10892,7 @@ msgstr "時間（オプション）"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.timeReminders"
 msgid "Time & reminders"
-msgstr ""
+msgstr "時間とリマインダー"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.timeSlotDuration"
@@ -10927,7 +11095,7 @@ msgstr "タイマー時間"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents"
 msgid "Timestamps, recurrence records, ordering, and linked calendar events."
-msgstr ""
+msgstr "日時、繰り返しの記録、順序、リンクされたカレンダーの予定。"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleLabel"
@@ -11099,6 +11267,7 @@ msgid "Today"
 msgstr "今日"
 
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.today"
 msgid "Today"
 msgstr "今日"
@@ -11137,7 +11306,7 @@ msgstr "トークン更新に失敗しました (ステータス {status}): {mes
 #: src/settings/native/connections.ts
 msgctxt "settings.native.tokenRefreshed"
 msgid "Token refreshed: {date}"
-msgstr ""
+msgstr "トークン更新日時：{date}"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.presets.tomorrow"
@@ -11166,7 +11335,13 @@ msgstr "明日"
 
 #: src/modals/DateTimePickerModal.ts
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.tomorrow"
+msgid "Tomorrow"
+msgstr "明日"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeTomorrow"
 msgid "Tomorrow"
 msgstr "明日"
 
@@ -11393,6 +11568,11 @@ msgctxt "ui.propertyEventCard.unknownFile"
 msgid "Unknown file"
 msgstr "不明なファイル"
 
+#: src/services/mdbase/metadataFailureNotices.ts
+msgctxt "mdbaseSafety.unknownSyncError"
+msgid "Unknown metadata synchronization error"
+msgstr "不明なメタデータ同期エラー"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.fetchSubscription display"
 msgid "Unknown subscription type"
@@ -11512,12 +11692,12 @@ msgstr "URL"
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeblocking.usage"
 msgid "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration."
-msgstr ""
+msgstr "使用方法：カレンダーでドラッグしてイベントを作成します。コンテキストメニューから''タイムブロック''を選択します（タイムブロッキングが有効な場合のみ表示されます）。ドラッグして既存のタイムブロックを移動します。端を調整して時間を変更します。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.useAPropertyKeyWithoutSurroundingSpacesLineBreaks"
 msgid "Use a property key without surrounding spaces, line breaks, or YAML punctuation."
-msgstr ""
+msgstr "前後の空白、改行、YAML の記号を含まないキーを使用してください。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description"
@@ -11544,6 +11724,11 @@ msgctxt "settings.general.frontmatter.useMarkdownLinks.name"
 msgid "Use Markdown links in frontmatter"
 msgstr "フロントマターで Markdown リンクを使用"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Usemdbasetype"
+msgid "Use mdbase type"
+msgstr "mdbase 型を使用"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name"
 msgid "Use occurrence note template"
@@ -11559,10 +11744,20 @@ msgctxt "settings.taskProperties.projectsCard.useParentNoteForInlineTasks"
 msgid "Use parent note for inline/instant conversion:"
 msgstr "インライン/インスタント変換で親ノートを使用:"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Usesettingsfile"
+msgid "Use settings file"
+msgstr "設定ファイルを使用"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
 msgid "Use task defaults on instant convert"
 msgstr "インスタント変換でタスクデフォルトを使用"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.UseTaskNotessettings"
+msgid "Use TaskNotes settings"
+msgstr "TaskNotes の設定を使用"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.useTemplateLabel"
@@ -11572,7 +11767,7 @@ msgstr "テンプレートを使用"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
-msgstr ""
+msgstr "受信側のアプリケーションでペイロードを検証するために使用します。"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"
@@ -11653,7 +11848,7 @@ msgstr "どんなフィードバックも本当にありがたいです。何か
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.webhooks.placeholders.url"
 msgid "Webhook URL"
-msgstr ""
+msgstr "Webhook のURL"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/integrations.ts
@@ -11774,7 +11969,7 @@ msgstr "TaskNotes {version} の新機能"
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.description"
 msgid "When enabled, tags matching the task identification tag (including hierarchical matches like ''task/project'') will be hidden from task card displays"
-msgstr ""
+msgstr "有効にすると、タスク識別タグに一致するタグ（''task/project''のような階層的一致を含む）がタスクカード表示から非表示になります"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskCreated.description"
@@ -11789,7 +11984,7 @@ msgstr "NLP が用途を特定できない日付は、期限日ではなく予�
 #: src/settings/native/creation.ts
 msgctxt "settings.native.whenOffTabIndentsTextInTheMarkdownEditor"
 msgid "When off, the tab key indents text in the Markdown editor."
-msgstr ""
+msgstr "無効の場合、Tab キーは Markdown エディター内のテキストを字下げします。"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.pomodoroInterrupted.description"
@@ -11932,6 +12127,11 @@ msgctxt "generated Bases grouping label"
 msgid "Yesterday"
 msgstr "昨日"
 
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeYesterday"
+msgid "Yesterday"
+msgstr "昨日"
+
 #: src/services/OAuthService.ts
 msgctxt "OAuth callback description"
 msgid "You can close this window and return to Obsidian."
@@ -11955,7 +12155,7 @@ msgstr "あなたのコード："
 #: src/settings/native/creation.ts
 msgctxt "settings.native.yourCustomFieldLayoutWillBeReplacedWithThe"
 msgid "Your custom field layout will be replaced with the default layout."
-msgstr ""
+msgstr "カスタムレイアウトを既定のレイアウトに置き換えます。"
 
 #: src/modals/taskModalUserFieldControls.ts
 #: src/settings/native/creation.ts

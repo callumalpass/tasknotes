@@ -43,6 +43,11 @@ msgstr ""
 "\n"
 "状态：{value1}"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Appsettingsitheldsuchastemplatesandarchivemoves"
+msgid " App settings it held (such as templates and archive moves) were not used: TaskNotes keeps them in {appSettingsRecordPath}, alongside {value2}."
+msgstr " 其中的应用设置（如模板和归档移动）未被使用：TaskNotes 将它们保存在 {appSettingsRecordPath} 中，与 {value2} 放在一起。"
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.at"
 msgid " at {time}"
@@ -91,47 +96,47 @@ msgstr "-1周"
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.contexts"
 msgid "'{{contexts}}' - Task contexts"
-msgstr ""
+msgstr "'{{contexts}}' - 任务上下文"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.date"
 msgid "'{{date}}' - Current date (YYYY-MM-DD)"
-msgstr ""
+msgstr "'{{date}}' - 当前日期（YYYY-MM-DD）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.details"
 msgid "'{{details}}' - User-provided details from modal"
-msgstr ""
+msgstr "'{{details}}' - 用户从模态框提供的详情"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.priority"
 msgid "'{{priority}}' - Task priority"
-msgstr ""
+msgstr "'{{priority}}' - 任务优先级"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.projects"
 msgid "'{{projects}}' - Task projects"
-msgstr ""
+msgstr "'{{projects}}' - 任务项目"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.status"
 msgid "'{{status}}' - Task status"
-msgstr ""
+msgstr "'{{status}}' - 任务状态"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.tags"
 msgid "'{{tags}}' - Task tags"
-msgstr ""
+msgstr "'{{tags}}' - 任务标签"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.time"
 msgid "'{{time}}' - Current time (HH:MM)"
-msgstr ""
+msgstr "'{{time}}' - 当前时间（HH:MM）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.title"
 msgid "'{{title}}' - Task title"
-msgstr ""
+msgstr "'{{title}}' - 任务标题"
 
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
@@ -224,6 +229,11 @@ msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
 msgstr "{count, plural, other {# 个附件}}"
 
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDaysAgo"
+msgid "{count, plural, one {# day ago} other {# days ago}}"
+msgstr "{count, plural, other {#天前}}"
+
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
@@ -253,6 +263,11 @@ msgstr "{count, plural, other {正在转换{count, number}个任务...}}"
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
 msgstr "{count, plural, other {下载了{filename}，包含{count, number}个任务}}"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.oauth.lastSynced"
+msgid "{count, plural, one {Last synced: {date} (# event)} other {Last synced: {date} (# events)}}"
+msgstr "{count, plural, other {上次同步：{date}（#个事件）}}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -288,6 +303,11 @@ msgstr "{day, selectordinal, other {第 #}}"
 msgctxt "recurrence monthly date"
 msgid "{day, selectordinal, one {Monthly on the #st} two {Monthly on the #nd} few {Monthly on the #rd} other {Monthly on the #th}}"
 msgstr "{day, selectordinal, other {每月第 # 天}}"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDayAtTime"
+msgid "{day} at {time}"
+msgstr "{day} {time}"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases relative due date"
@@ -515,9 +535,29 @@ msgid "{operation, select, archiving {Failed to move archived task: {error}} una
 msgstr "{operation, select, archiving {移动已归档任务失败：{error}} unarchiving {移动已恢复任务失败：{error}} other {移动任务失败：{error}}}"
 
 #: src/services/MdbaseSpecService.ts
+msgctxt "integration.couldnotbeparsed"
+msgid "{path} could not be parsed."
+msgstr "无法解析 {path}。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.couldnotbereadsoTaskNotesleftitunchangedand"
+msgid "{path} could not be read, so TaskNotes left it unchanged and kept its current settings."
+msgstr "无法读取 {path}。TaskNotes 保持文件不变，并保留了当前设置。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.couldnotbeupdatedwithoutreplacinginvalidfrontmatter"
+msgid "{path} could not be updated without replacing invalid frontmatter."
+msgstr "如果不替换无效的前置属性，就无法更新 {path}。"
+
+#: src/services/MdbaseSpecService.ts
 msgctxt "collectionCheck.invalidType"
 msgid "{path} is inconsistent: {issues}. Review its implements.fields and binding before retrying; plugin settings were kept."
-msgstr ""
+msgstr "{path} 存在不一致：{issues}。重试前请检查 implements.fields 和 binding；插件设置已保留。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.isinconsistent"
+msgid "{path} is inconsistent: {value2}"
+msgstr "{path} 存在不一致：{value2}"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: checklistProgress display"
@@ -639,6 +679,16 @@ msgctxt "views.pomodoro.meta.breakReady"
 msgid "{type} ready · {time} planned"
 msgstr "{type} 已就绪 · 已计划 {time}"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.andTaskNotessettingsbothchangedsincetheywerelastsynchronized"
+msgid "{typePath} and TaskNotes settings both changed since they were last synchronized."
+msgstr "{typePath} 和 TaskNotes 设置自上次同步后都发生了更改。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.isnotavalidTaskNotescontractTaskNoteskeptitslast"
+msgid "{typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings."
+msgstr "{typePath} 不是有效的 TaskNotes 契约。TaskNotes 保留了上次有效的设置。"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{value1, plural, one {+ {value1, number} more...} other {+ {value1, number} more...}}"
@@ -658,6 +708,11 @@ msgstr "{value1}，从 {startTime} 到 {endTime}"
 msgctxt "ui/taskCardProperties: totalTrackedTime display"
 msgid "{value1} tracked"
 msgstr "已跟踪 {value1}"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.backups"
+msgid "{value1}; backups: {folder}"
+msgstr "{value1}；备份：{folder}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -979,12 +1034,12 @@ msgstr "60分钟"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.aCSSColorOrThemeVariableSuchAsVar"
 msgid "A CSS color or theme variable, such as var(--text-accent)."
-msgstr ""
+msgstr "CSS 颜色或主题变量，例如 var(--text-accent)。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.aCSSColorOrThemeVariable"
 msgid "A CSS color or theme variable."
-msgstr ""
+msgstr "CSS 颜色或主题变量。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.exportV3Views.confirmOverwrite"
@@ -1009,7 +1064,7 @@ msgstr "番茄钟已经在运行"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.aPropertyOnTheParentTaskThatOverridesThe"
 msgid "A property on the parent task that overrides the occurrence filename template."
-msgstr ""
+msgstr "父任务中用于覆盖实例文件名模板的属性。"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentSelf"
@@ -1070,7 +1125,7 @@ msgstr "操作"
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.webhooks.statusLabels.active"
 msgid "Active"
-msgstr ""
+msgstr "活动"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.stopTimeTrackingLocked display"
@@ -1284,7 +1339,7 @@ msgstr "已添加到项目：{project}"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.advanced"
 msgid "Advanced"
-msgstr ""
+msgstr "高级"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.advanced"
@@ -1335,7 +1390,7 @@ msgstr "所有事件均已删除，并已解除关联"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.allNotes"
 msgid "All notes"
-msgstr ""
+msgstr "所有笔记"
 
 #: src/services/TaskCalendarSyncService.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.tasksUnlinked"
@@ -1371,7 +1426,7 @@ msgstr "已在此分组中。"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.anIcsFileInThisVault"
 msgid "An .ics file in this vault."
-msgstr ""
+msgstr "此仓库中的 .ics 文件。"
 
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
@@ -1391,12 +1446,12 @@ msgstr "已有一项 OAuth 回调等待处理"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.anOptionalJsonTemplateInTheVaultLeaveEmpty"
 msgid "An optional .json template in the vault. Leave empty to send raw event data."
-msgstr ""
+msgstr "仓库中可选的 .json 模板。留空以发送原始事件数据。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.anotherPropertyAlreadyUsesThisKey"
 msgid "Another property already uses this key."
-msgstr ""
+msgstr "另一个属性已使用此键。"
 
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
@@ -1412,12 +1467,12 @@ msgstr "API 不可用（{status}）"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.appearanceInteraction"
 msgid "Appearance & interaction"
-msgstr ""
+msgstr "外观与交互"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.oAuthCredentials"
 msgid "Application credentials"
-msgstr ""
+msgstr "OAuth 凭据"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.useTemplateDesc"
@@ -1437,12 +1492,12 @@ msgstr "应用自然语言日期"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.confirm"
 msgid "Apply only the changes listed below; original notes will be backed up in {backupFolder} before each change, and unselected statuses and other errors will remain unchanged?"
-msgstr ""
+msgstr "仅应用以下更改吗？每次更改前，原始笔记都会备份到 {backupFolder}。未选择的状态和其他错误将保持不变。"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fixed"
 msgid "Approved changes saved; backups are in {backupFolder}, please check remaining errors."
-msgstr ""
+msgstr "已保存获准的更改。备份位于 {backupFolder}。请检查剩余错误。"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -1524,7 +1579,7 @@ msgstr "在事件时间"
 #: src/settings/native/features.ts
 msgctxt "settings.native.attachmentSearchOrder"
 msgid "Attachment search order"
-msgstr ""
+msgstr "附件搜索顺序"
 
 #: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.attachmentsLabel"
@@ -1589,12 +1644,12 @@ msgstr "已自动停止以下任务的时间跟踪：{title}"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.automaticArchiving"
 msgid "Automatic archiving"
-msgstr ""
+msgstr "自动归档"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.automaticallyArchive"
 msgid "Automatically archive"
-msgstr ""
+msgstr "自动归档任务"
 
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.autoCreateDefaultFiles.description"
@@ -1639,17 +1694,17 @@ msgstr "可用的模板变量"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fix"
 msgid "Back up and fix"
-msgstr ""
+msgstr "备份并修复"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fixAll"
 msgid "Back up and fix selected changes in all records"
-msgstr ""
+msgstr "备份并对所有记录应用所选更改"
 
 #: src/settings/native/general.ts
 msgctxt "settings.native.baseFile"
 msgid "Base file"
-msgstr ""
+msgstr "Base 文件"
 
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.descriptionRegen"
@@ -1835,12 +1890,12 @@ msgstr "找不到日历\"{name}\"（404）。请检查ICS URL是否正确且日�
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.calendarAccountsSubscriptionsTaskExportAndInteroperability"
 msgid "Calendar accounts, subscriptions, task export, and interoperability."
-msgstr ""
+msgstr "日历账户、订阅、任务导出和互操作设置。"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.calendarDefaults"
 msgid "Calendar defaults"
-msgstr ""
+msgstr "日历默认值"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.calendarEventHeading"
@@ -1865,7 +1920,7 @@ msgstr "未找到日历事件：{eventId}"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.calendarFile"
 msgid "Calendar file"
-msgstr ""
+msgstr "日历文件"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/validation: validateCalendarId display"
@@ -1880,7 +1935,7 @@ msgstr "日历 ID"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.calendarIntegrationIsUnavailableOnThisDevice"
 msgid "Calendar integration is unavailable on this device."
-msgstr ""
+msgstr "此设备无法使用日历集成。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.calendarLocale.name"
@@ -1895,7 +1950,7 @@ msgstr "日期格式和日历系统的日历区域设置（例如，\"en\"、\"f
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.placeholders.calendarName"
 msgid "Calendar name"
-msgstr ""
+msgstr "日历名称"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/errors: CalendarNotFoundError display"
@@ -1905,7 +1960,7 @@ msgstr "未找到日历：{calendarId}"
 #: src/settings/native/integrations.ts
 msgctxt "settings.native.calendarSetupGuide"
 msgid "Calendar setup guide"
-msgstr ""
+msgstr "日历设置指南"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.indexICSEvents display"
@@ -1916,7 +1971,7 @@ msgstr "日历订阅"
 #: src/settings/native/integrations.ts
 msgctxt "settings.native.calendarSubscriptionServiceUnavailable"
 msgid "Calendar subscription service unavailable."
-msgstr ""
+msgstr "日历订阅服务不可用。"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.header"
@@ -1937,12 +1992,12 @@ msgstr "日历订阅列表"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.calendarSyncServiceUnavailable"
 msgid "Calendar sync service unavailable."
-msgstr ""
+msgstr "日历同步服务不可用。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.calendarURL"
 msgid "Calendar URL"
-msgstr ""
+msgstr "日历 URL"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.header"
@@ -1967,7 +2022,7 @@ msgstr "日历：{value1}"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.calendarsIntegrations"
 msgid "Calendars & integrations"
-msgstr ""
+msgstr "日历与集成"
 
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
@@ -2131,7 +2186,7 @@ msgstr "无法找到重复实例的父任务"
 #: src/services/mdbase/resolveUserFields.ts
 msgctxt "collectionCheck.unresolvedUserField"
 msgid "Cannot resolve owned user field {field}. Review its schema and retained field type before saving settings. Existing settings and metadata were preserved."
-msgstr ""
+msgstr "无法确定受管理的自定义字段 {field} 的类型。保存设置前，请检查其架构和保留的字段类型。现有设置和元数据已保留。"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.conflict"
@@ -2166,28 +2221,28 @@ msgstr "更换任务..."
 #: src/settings/native/creation.ts
 msgctxt "settings.native.changingTheseValuesDoesNotUpdateExistingTaskNotes"
 msgid "Changing these values does not update existing task notes."
-msgstr ""
+msgstr "修改这些值不会更新现有任务笔记。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.changingThisKeyDoesNotMigrateExistingNotes"
 msgid "Changing this key does not migrate existing notes."
-msgstr ""
+msgstr "修改此键不会迁移现有笔记。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.changingThisMappingDoesNotRenamePropertiesInExisting"
 msgid "Changing this mapping does not rename properties in existing notes."
-msgstr ""
+msgstr "修改此映射不会重命名现有笔记中的属性。"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.check"
 msgid "Check again"
-msgstr ""
+msgstr "重新检查"
 
 #: src/commands/taskNotesCommands.ts
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.title"
 msgid "Check collection"
-msgstr ""
+msgstr "检查集合"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.releaseNotes.checkForUpdates.name"
@@ -2202,12 +2257,17 @@ msgstr "TaskNotes 启动时检查一次 GitHub，并在有较新的兼容版本�
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.description"
 msgid "Check task records without changing notes. Missing creation dates can be filled from file creation time. Invalid statuses require your choice. Other errors need manual review."
-msgstr ""
+msgstr "检查任务记录，不修改笔记。缺失的创建日期可使用文件创建时间填充。无效状态需要您选择替代状态。其他错误需要手动检查。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "timeblock Daily Notes setup guidance"
 msgid "Check the Daily Notes core plugin settings and make sure the configured daily notes folder exists."
 msgstr "请检查“每日笔记”核心插件的设置，确保配置的每日笔记文件夹存在。"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.oauth.checking"
+msgid "Checking connection…"
+msgstr "正在检查连接…"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.checklistProgress"
@@ -2222,17 +2282,17 @@ msgstr "清单进度"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.chooseCalendarFile"
 msgid "Choose a local .ics file."
-msgstr ""
+msgstr "请选择本地 .ics 文件。"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.chooseStatus"
 msgid "Choose a replacement status"
-msgstr ""
+msgstr "选择替代状态"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.dateFormat.description"
 msgid "Choose how dates appear throughout TaskNotes. Stored dates and custom Bases formulas are unchanged. Time format is set separately."
-msgstr ""
+msgstr "选择 TaskNotes 中的日期显示方式。已存储的日期和自定义 Bases 公式保持不变。时间格式单独设置。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenceDesc"
@@ -2272,7 +2332,7 @@ msgstr "选择是通过标签还是通过前置元数据属性识别任务"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.chooseWhichFieldsAppearWhenCreatingAndEditingTasks"
 msgid "Choose which fields appear when creating and editing tasks."
-msgstr ""
+msgstr "选择创建和编辑任务时显示的字段。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.defaultVisibleProperties.description"
@@ -2283,6 +2343,16 @@ msgstr "选择默认在任务卡片上显示的属性。"
 msgctxt "modals.propertySelector.description"
 msgid "Choose which properties to display in task cards. Selected properties appear in the order below."
 msgstr "选择任务卡片中显示的属性。所选属性将按以下顺序显示。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.ChoosewhichversionshouldbecomecanonicalUnknownmdbaseextensionswill"
+msgid "Choose which version should become canonical. Unknown mdbase extensions will be preserved."
+msgstr "请选择应作为规范的版本。未知的 mdbase 扩展将被保留。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.ChoosewhichversionshouldbecomecanonicalUsingTaskNotessettingswrites"
+msgid "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept."
+msgstr "请选择应作为规范的版本。使用 TaskNotes 设置时，仅写入您更改的设置；文件中的其他字段将被保留。"
 
 #: src/components/ReminderContextMenu.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
@@ -2361,7 +2431,7 @@ msgstr "清除任务"
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.complete"
 msgid "Click the status control until the task is `Done`. It leaves `Today`, but its note stays in your vault."
-msgstr ""
+msgstr "点击状态控件，直到任务完成。任务会离开“今天”视图，但笔记仍保留在仓库中。"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display"
@@ -2371,12 +2441,12 @@ msgstr "点击打开"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.clientID"
 msgid "Client ID"
-msgstr ""
+msgstr "客户端 ID"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.clientSecret"
 msgid "Client secret"
-msgstr ""
+msgstr "客户端密钥"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "common.close"
@@ -2426,7 +2496,7 @@ msgstr "折叠子任务"
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.collapseSwimlane"
 msgid "Collapse swimlane"
-msgstr ""
+msgstr "折叠泳道"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults Collapsed"
@@ -2436,12 +2506,12 @@ msgstr "已收起"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.error"
 msgid "Collection check or repair stopped. No unapproved changes were made."
-msgstr ""
+msgstr "集合检查或修复已停止。未进行未经批准的更改。"
 
 #: src/services/mdbase/checkCollection.ts
 msgctxt "collectionCheck.membershipChanged"
 msgid "Collection membership or record changed since collection check; check again."
-msgstr ""
+msgstr "检查后，集合成员资格或记录已发生变化。请重新检查集合。"
 
 #: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.colorLabel"
@@ -2594,6 +2664,11 @@ msgctxt "modals.taskEdit.sections.completions"
 msgid "Completions"
 msgstr "完成"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Configurationconflict"
+msgid "Configuration conflict"
+msgstr "配置冲突"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
@@ -2602,7 +2677,7 @@ msgstr "配置为每个项目建议显示最多3行信息。"
 #: src/settings/native/features.ts
 msgctxt "settings.features.dataStorage.description"
 msgid "Configure where Pomodoro session data is stored and how it''s managed."
-msgstr ""
+msgstr "配置番茄钟会话数据的存储位置和管理方式。"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -2629,32 +2704,32 @@ msgstr "确认大规模重排"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connect"
 msgid "Connect"
-msgstr ""
+msgstr "连接"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectAccount"
 msgid "Connect {name}"
-msgstr ""
+msgstr "连接 {name}"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
 msgid "Connect a Google or Microsoft calendar using credentials from your own developer application."
-msgstr ""
+msgstr "使用您自己的 OAuth 应用凭据连接 Google 或 Microsoft 日历。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connected"
 msgid "Connected"
-msgstr ""
+msgstr "已连接"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectedSince"
 msgid "Connected: {date}"
-msgstr ""
+msgstr "连接时间：{date}"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectionStatus"
 msgid "Connection status"
-msgstr ""
+msgstr "连接状态"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error"
@@ -2729,7 +2804,7 @@ msgstr "控制 TaskNotes 番茄钟会话或查看当前番茄钟状态"
 #: src/settings/native/features.ts
 msgctxt "settings.native.controlsHowFilesAreOrderedInTheAddAttachment"
 msgid "Controls file order when searching for timeblock attachments."
-msgstr ""
+msgstr "控制为时间块添加附件时，搜索窗口中文件的排列顺序。"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.convertAllTasksInNote"
@@ -2814,7 +2889,7 @@ msgstr "复制路径"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.copySecret"
 msgid "Copy secret"
-msgstr ""
+msgstr "复制密钥"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "ui.audit.copySelected"
@@ -2919,6 +2994,11 @@ msgctxt "modals.taskSelectorWithCreate.notices.invalidTitle"
 msgid "Could not parse a valid task title"
 msgstr "无法识别有效的任务标题"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Couldnotread"
+msgid "Could not read {path}."
+msgstr "无法读取 {path}。"
+
 #: src/modals/taskModalDependencies.ts
 #: src/modals/taskModalProjects.ts
 msgctxt "contextMenus.task.dependencies.notices.unresolved"
@@ -2938,7 +3018,7 @@ msgstr "无法解析：{entries}"
 #: src/settings/native/SettingsContext.ts
 msgctxt "settings.native.saveError"
 msgid "Could not save TaskNotes settings: {error}"
-msgstr ""
+msgstr "无法保存 TaskNotes 设置：{error}"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.failed"
@@ -2953,12 +3033,12 @@ msgstr "无法撤销此次移动。"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.countsAsCompleted"
 msgid "Counts as completed"
-msgstr ""
+msgstr "视为已完成"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.countsAsSkipped"
 msgid "Counts as skipped"
-msgstr ""
+msgstr "视为已跳过"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.createButton"
@@ -2973,7 +3053,7 @@ msgstr "从此日历事件创建新的笔记或任务"
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.create"
 msgid "Create a real task and schedule it for today."
-msgstr ""
+msgstr "创建一个实际任务，并安排在今天。"
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
@@ -3129,12 +3209,12 @@ msgstr "创建于"
 #: src/settings/native/features.ts
 msgctxt "settings.native.createdNewestFirst"
 msgid "Created (newest first)"
-msgstr ""
+msgstr "创建时间（最新优先）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.createdOldestFirst"
 msgid "Created (oldest first)"
-msgstr ""
+msgstr "创建时间（最早优先）"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.createdDate"
@@ -3178,7 +3258,6 @@ msgctxt "main: TaskNotesPlugin.getCurrentTaskForCommand display"
 msgid "Current file is not a task"
 msgstr "当前文件不是任务"
 
-#: src/commands/taskNotesCommands.ts
 #: src/main.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.notATask"
 msgid "Current file is not a task"
@@ -3418,7 +3497,7 @@ msgstr "日期和时间："
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.dateFormat.name"
 msgid "Date format"
-msgstr ""
+msgstr "日期格式"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.dateNavigation"
@@ -3496,7 +3575,7 @@ msgstr "默认"
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.dateFormat.options.default"
 msgid "Default"
-msgstr ""
+msgstr "默认"
 
 #: src/main.ts
 msgctxt "notices.commands.basesExist"
@@ -3513,17 +3592,17 @@ msgstr "默认收起状态"
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultContexts.name"
 msgid "Default contexts"
-msgstr ""
+msgstr "默认上下文"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.dateDefaults.defaultDueDate.name"
 msgid "Default due date"
-msgstr ""
+msgstr "默认到期日期"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.defaultDueTime"
 msgid "Default due time"
-msgstr ""
+msgstr "默认截止时间"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.header"
@@ -3538,47 +3617,47 @@ msgstr "默认格式"
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.defaultFolder.description"
 msgid "Default location for new tasks. Supports folder template variables like '{{currentNotePath}}', '{{currentNoteTitle}}', and '{{projectFilePath}}', plus Daily Notes-style date tokens like YYYY/MM/DD."
-msgstr ""
+msgstr "新任务的默认位置。支持 '{{currentNotePath}}'、'{{currentNoteTitle}}' 和 '{{projectFilePath}}' 等文件夹模板变量，也支持 YYYY/MM/DD 等 Daily Notes 风格日期标记。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultPriority.name"
 msgid "Default priority"
-msgstr ""
+msgstr "默认优先级"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultProjects.name"
 msgid "Default projects"
-msgstr ""
+msgstr "默认项目"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultRecurrence.name"
 msgid "Default recurrence"
-msgstr ""
+msgstr "默认重复"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.header.defaultReminders"
 msgid "Default reminders"
-msgstr ""
+msgstr "默认提醒"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.dateDefaults.defaultScheduledDate.name"
 msgid "Default scheduled date"
-msgstr ""
+msgstr "默认安排日期"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.defaultScheduledTime"
 msgid "Default scheduled time"
-msgstr ""
+msgstr "默认计划时间"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultStatus.name"
 msgid "Default status"
-msgstr ""
+msgstr "默认状态"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultTags.name"
 msgid "Default tags"
-msgstr ""
+msgstr "默认标签"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.defaultFolder.name"
@@ -3588,7 +3667,7 @@ msgstr "默认任务文件夹"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.defaultTimeEstimateMinutes"
 msgid "Default time estimate (minutes)"
-msgstr ""
+msgstr "默认预计时间（分钟）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeblocking.defaultColorName"
@@ -3618,22 +3697,22 @@ msgstr "默认可见属性"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.defaults"
 msgid "Defaults"
-msgstr ""
+msgstr "默认值"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.defaultsApplyToNewTasks"
 msgid "Defaults apply to new tasks"
-msgstr ""
+msgstr "默认值适用于新任务"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.defaultsForCalendarViewsIndividualBasesViewsMayOverride"
 msgid "Defaults for calendar views. Individual Bases views may override these settings."
-msgstr ""
+msgstr "日历视图的默认设置。各 Bases 视图可以覆盖这些设置。"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.defaultsTemplatesNaturalLanguageInputAndFormFields"
 msgid "Defaults, templates, natural-language input, and form fields."
-msgstr ""
+msgstr "默认值、模板、自然语言输入和表单字段。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.fields.delayMinutes"
@@ -3674,7 +3753,7 @@ msgstr "删除"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteEntry"
 msgid "Delete {name}?"
-msgstr ""
+msgstr "删除 {name}？"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.deleteEntry"
@@ -3689,7 +3768,7 @@ msgstr "删除文件"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
-msgstr ""
+msgstr "删除属性"
 
 #: src/modals/ReminderModal.ts
 msgctxt "settings.defaults.reminders.deleteTooltip"
@@ -3699,7 +3778,7 @@ msgstr "删除提醒"
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
 msgid "Delete subscription"
-msgstr ""
+msgstr "删除订阅"
 
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.deleteConfirmation.confirm"
@@ -3741,12 +3820,12 @@ msgstr "删除Webhook"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.deleteWebhook"
 msgid "Delete webhook?"
-msgstr ""
+msgstr "删除 Webhook？"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.deliveryStatus"
 msgid "Delivery status"
-msgstr ""
+msgstr "投递状态"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.dependencies.title"
@@ -3863,12 +3942,12 @@ msgstr "放弃更改"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.disconnect"
 msgid "Disconnect"
-msgstr ""
+msgstr "断开连接"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.disconnectAccount"
 msgid "Disconnect {name}"
-msgstr ""
+msgstr "断开 {name}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.disconnect display"
@@ -3913,7 +3992,7 @@ msgstr "默认显示已完成的时间跟踪条目"
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
 msgid "Display currently tracked tasks in Obsidian''s status bar"
-msgstr ""
+msgstr "在Obsidian状态栏中显示当前跟踪的任务"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
@@ -3943,7 +4022,7 @@ msgstr "默认显示重复任务实例"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.displayRow"
 msgid "Display row {number}"
-msgstr ""
+msgstr "显示行 {number}"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.showDueDates.description"
@@ -3958,7 +4037,7 @@ msgstr "默认显示有计划日期的任务"
 #: src/settings/native/features.ts
 msgctxt "settings.features.pomodoro.statusBar.description"
 msgid "Display the active Pomodoro countdown in Obsidian''s status bar"
-msgstr ""
+msgstr "在 Obsidian 状态栏显示当前 Pomodoro 倒计时"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.description"
@@ -4264,19 +4343,19 @@ msgstr "启用时间块"
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeblocking.enableDesc"
 msgid "Enable timeblocking feature for lightweight scheduling in daily notes. When enabled, ''Timeblock'' option appears in the calendar drag context menu."
-msgstr ""
+msgstr "启用时间块功能，在日记中进行轻量级调度。启用后，''时间块''选项会出现在日历拖动上下文菜单中。"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/creation.ts
 msgctxt "settings.integrations.subscriptionsList.statusLabels.enabled"
 msgid "Enabled"
-msgstr ""
+msgstr "已启用"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/creation.ts
 msgctxt "settings.integrations.subscriptionsList.labels.enabled"
 msgid "Enabled:"
-msgstr ""
+msgstr "已启用："
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endAfterOccurrences"
@@ -4341,7 +4420,7 @@ msgstr "输入{field}..."
 #: src/settings/native/connections.ts
 msgctxt "settings.native.enterCalendarName"
 msgid "Enter a calendar name."
-msgstr ""
+msgstr "请输入日历名称。"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "modals.dateTimePicker.placeholder"
@@ -4356,37 +4435,37 @@ msgstr "请输入类似 10、10:30 或 1:30:00 的时长。"
 #: src/settings/native/SettingsContext.ts
 msgctxt "settings.native.numberRange"
 msgid "Enter a number between {min} and {max}."
-msgstr ""
+msgstr "请输入 {min} 到 {max} 之间的数字。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.optionalNumber"
 msgid "Enter a number or leave empty."
-msgstr ""
+msgstr "请输入数字或留空。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.enterAPropertyKey"
 msgid "Enter a property key."
-msgstr ""
+msgstr "请输入属性键。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validTime"
 msgid "Enter a time from 00:00 to 23:59."
-msgstr ""
+msgstr "请输入 00:00 到 23:59 之间的时间。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validDate"
 msgid "Enter a valid date in YYYY-MM-DD format."
-msgstr ""
+msgstr "请以 YYYY-MM-DD 格式输入有效日期。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.enterValue"
 msgid "Enter a value."
-msgstr ""
+msgstr "请输入值。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.enterAnHTTPOrHTTPSURL"
 msgid "Enter an HTTP or HTTPS URL."
-msgstr ""
+msgstr "请输入 HTTP 或 HTTPS URL。"
 
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
@@ -4506,7 +4585,7 @@ msgstr "显示“更多”前的事件数（0 = 自动）"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
-msgstr ""
+msgstr "将不再向此端点发送事件。"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "modals.task.recurrence.everyTwoWeeks"
@@ -4586,7 +4665,7 @@ msgstr "从逾期任务计算中排除已完成的任务"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.excludeFromStatusCycle"
 msgid "Exclude from status cycle"
-msgstr ""
+msgstr "从状态循环中排除"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.folderManagement.excludedFolders.name"
@@ -4601,7 +4680,7 @@ msgstr "现有插件数据将迁移然后清除"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.existingTaskNotesWillNotBeChangedTasksUsing"
 msgid "Existing task notes will not be changed. Tasks using this value keep it in their frontmatter."
-msgstr ""
+msgstr "不会修改现有任务笔记。使用此值的任务将在 YAML 属性中保留该值。"
 
 #: src/bases/TaskListView.ts
 msgctxt "views.taskList.expandAllGroups"
@@ -4641,7 +4720,7 @@ msgstr "默认展开子任务"
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.expandSwimlane"
 msgid "Expand swimlane"
-msgstr ""
+msgstr "展开泳道"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults Expanded"
@@ -5481,7 +5560,7 @@ msgstr "文件名只包含无效字符"
 #: src/settings/native/creation.ts
 msgctxt "settings.appearance.taskFilenames.filenameFormat.name"
 msgid "Filename format"
-msgstr ""
+msgstr "文件名格式"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/filenameGenerator: validateFilename error"
@@ -5491,7 +5570,7 @@ msgstr "文件名过长（最多 255 个字符）"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.filenames"
 msgid "Filenames"
-msgstr ""
+msgstr "文件名"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.attachmentsDesc"
@@ -5521,7 +5600,7 @@ msgstr "筛选器开启"
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.review"
 msgid "Find your task in `Today`."
-msgstr ""
+msgstr "在“今天”视图中找到任务。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first"
@@ -5586,12 +5665,12 @@ msgstr "文件夹管理"
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.archiveFolder.description"
 msgid "Folder to move tasks to when archived. Supports template variables like '{{year}}', '{{month}}', '{{priority}}', etc."
-msgstr ""
+msgstr "归档时将任务移动到的文件夹。支持模板变量，如 '{{year}}'、'{{month}}'、'{{priority}}' 等。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.instantConvert.folder.description"
 msgid "Folder where tasks created from inline commands or checkbox conversion will be created. Leave empty to use the default tasks folder. Use '{{currentNotePath}}' for the current note''s folder, or '{{currentNoteTitle}}' for a subfolder named after the current note."
-msgstr ""
+msgstr "通过内联命令或复选框转换创建的任务将存放在此文件夹。留空则使用默认任务文件夹。使用 '{{currentNotePath}}' 表示当前笔记的文件夹，或使用 '{{currentNoteTitle}}' 表示以当前笔记命名的子文件夹。"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderPlaceholder"
@@ -5601,28 +5680,28 @@ msgstr "文件夹/子文件夹"
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.inbox"
 msgid "For undated capture, clear the scheduled date. The inbox shows incomplete tasks with no project, scheduled date, or due date."
-msgstr ""
+msgstr "记录无日期任务时，清除安排日期。收件箱显示没有项目、安排日期或截止日期的未完成任务。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.forgetCredentials"
 msgid "Forget credentials"
-msgstr ""
+msgstr "忘记凭据"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.forgetAccountCredentials"
 msgid "Forget credentials for {name}?"
-msgstr ""
+msgstr "清除 {name} 的凭据？"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.forgetSavedCredentials"
 msgid "Forget saved credentials"
-msgstr ""
+msgstr "忘记已保存的凭据"
 
 #: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.formFields"
 msgid "Form fields"
-msgstr ""
+msgstr "表单字段"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth"
@@ -5669,19 +5748,19 @@ msgstr "常规"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.description"
 msgid "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change."
-msgstr ""
+msgstr "随设置的更改，在仓库根目录生成并维护 mdbase 类型文件（mdbase.yaml 和 _types/task.md）。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
 msgid "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties.\n"
 "\n"
 "⚠️ Requires the ''obsidian-frontmatter-markdown-links'' plugin to work correctly."
-msgstr ""
+msgstr "在 frontmatter 属性中生成 markdown 链接 ([文本](路径)) 而不是 wikilinks ([[链接]])。\\n\\n⚠️ 需要 ''obsidian-frontmatter-markdown-links'' 插件才能正常工作。"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.name"
 msgid "Generate mdbase type definitions"
-msgstr ""
+msgstr "生成 mdbase 类型定义"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error"
@@ -5766,7 +5845,7 @@ msgstr "做得好！该{length}休息了"
 #: src/settings/native/creation.ts
 msgctxt "ui.filterBar.groupMenuHeader"
 msgid "Group"
-msgstr ""
+msgstr "分组"
 
 #: src/bases/TaskListView.ts
 msgctxt "views.taskList.reorder.scope.group"
@@ -5782,11 +5861,6 @@ msgstr "将完成和跳过操作归入子菜单"
 msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
 msgstr "高度模式"
-
-#: src/settings/native/creation.ts
-msgctxt "modals.dueDate.inputs.time.placeholder"
-msgid "HH:MM"
-msgstr ""
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder"
@@ -5816,7 +5890,7 @@ msgstr "HH:mm:ss（例如：20:00:00）"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.hHMmLeaveEmptyForAnAllDayTask"
 msgid "HH:mm. Leave empty for an all-day task."
-msgstr ""
+msgstr "HH:mm。留空表示全天任务。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
@@ -5861,7 +5935,7 @@ msgstr "高"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.higherValuesSortFirst"
 msgid "Higher values sort first."
-msgstr ""
+msgstr "较大的值排在前面。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.showTodayHighlight.description"
@@ -5882,17 +5956,7 @@ msgstr "重复任务如何推进：按计划日期或完成日期"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.hTTPHTTPSWebcalOrWebcalsURL"
 msgid "HTTP, HTTPS, webcal, or webcals URL."
-msgstr ""
-
-#: src/settings/TaskNotesSettingTab.ts
-msgctxt "settings.header.documentationUrl"
-msgid "https://tasknotes.dev"
-msgstr ""
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.viewCommands.docsLinkUrl"
-msgid "https://tasknotes.dev/views/default-base-templates"
-msgstr ""
+msgstr "HTTP、HTTPS、webcal 或 webcals URL。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.fields.icon"
@@ -5947,7 +6011,7 @@ msgstr "包含自定义标头"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.includeEventTypeSignatureAndDeliveryIDTurnOff"
 msgid "Include event type, signature, and delivery ID. Turn off for services with strict CORS policies."
-msgstr ""
+msgstr "包含事件类型、签名和投递 ID。对于具有严格 CORS 策略的服务，请关闭此项。"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.name"
@@ -5957,7 +6021,7 @@ msgstr "包含文件夹"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.includedFolders"
 msgid "Included folders"
-msgstr ""
+msgstr "包含的文件夹"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskCalendarSyncService: calendar sync diagnostic"
@@ -5972,7 +6036,7 @@ msgstr "已索引的任务不再符合日历同步条件"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.indexingHTTPAPIWebhooksAndDiagnostics"
 msgid "Indexing, HTTP API, webhooks, and diagnostics."
-msgstr ""
+msgstr "索引、HTTP API、Webhook 和诊断。"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults inherit"
@@ -6002,7 +6066,7 @@ msgstr "行内任务“{title}”已成功创建并链接"
 #: src/settings/native/features.ts
 msgctxt "settings.native.inlineTaskCardProperties"
 msgid "Inline task card properties"
-msgstr ""
+msgstr "行内任务卡片属性"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.inlineTasks.header"
@@ -6082,7 +6146,7 @@ msgstr "输入无效：行必须是字符串"
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.calendarLocale.invalidLocale"
 msgid "Invalid locale. Please enter a valid language tag (e.g., ''en'', ''de'', ''fr-FR'')."
-msgstr ""
+msgstr "无效的区域设置。请输入有效的语言标签（例如：''zh''、''en''、''fr-FR''）。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.waitForCallback display"
@@ -6092,7 +6156,7 @@ msgstr "无效的 OAuth 状态"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.count"
 msgid "Invalid records: {count}"
-msgstr ""
+msgstr "无效记录：{count}"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.invalidTaskData"
@@ -6102,12 +6166,12 @@ msgstr "无效的任务数据。"
 #: src/settings/native/appearance.ts
 msgctxt "settings.native.invalidTimeFormatPleaseUseHhMmFormatE"
 msgid "Invalid time format. Please use hh:mm format (e.g., 08:00)"
-msgstr ""
+msgstr "时间格式无效。请使用 hh:mm 格式，例如 08:00。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.native.invalidTimeFormatPleaseUseHhMmFormatE2"
 msgid "Invalid time format. Please use hh:mm format (e.g., 26:00)"
-msgstr ""
+msgstr "时间格式无效。请使用 hh:mm 格式，例如 26:00。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.stopTimeTrackingLocked display"
@@ -6117,12 +6181,12 @@ msgstr "停止时间跟踪的时间戳无效"
 #: src/settings/native/appearance.ts
 msgctxt "settings.native.invalidTimeHoursMustBe0023AndMinutes"
 msgid "Invalid time. Hours must be 00-23 and minutes must be 00-59"
-msgstr ""
+msgstr "时间无效。小时须为 00–23，分钟须为 00–59。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.native.invalidTimeUse00004800ValuesAfter"
 msgid "Invalid time. Use 00:00-48:00; values after midnight use 24:00-48:00, such as 26:00 for 2 am next day"
-msgstr ""
+msgstr "时间无效。请使用 00:00–48:00；跨午夜时使用 24:00–48:00，例如 26:00 表示次日凌晨 2 点。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/validation: validateUrl display"
@@ -6157,7 +6221,7 @@ msgstr "看板视图需要配置「分组依据」属性。点击「排序」按
 #: src/settings/native/properties.ts
 msgctxt "settings.native.keepAtLeastOneConfiguredValue"
 msgid "Keep at least one configured value."
-msgstr ""
+msgstr "请至少保留一个已配置的值。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.instantConvert.preserveCheckbox.name"
@@ -6174,6 +6238,16 @@ msgstr "保留当前子分组"
 msgctxt "modals.task.unsavedChanges.cancel"
 msgid "Keep editing"
 msgstr "继续编辑"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Keepfileunchanged"
+msgid "Keep file unchanged"
+msgstr "保持文件不变"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Keepthefileunchangedsoyoucanrepairitmanually"
+msgid "Keep the file unchanged so you can repair it manually, or replace its managed TaskNotes fields with the current settings."
+msgstr "保持文件不变以便手动修复，或使用当前设置替换其中由 TaskNotes 管理的字段。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurring.maintainOffsetDesc"
@@ -6213,7 +6287,7 @@ msgstr "最后一天"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.lastSync"
 msgid "Last sync"
-msgstr ""
+msgstr "上次同步"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -6253,22 +6327,22 @@ msgstr "了解更多关于 mdbase-spec 的信息"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.noDefaultHint"
 msgid "Leave empty for no default."
-msgstr ""
+msgstr "留空表示无默认值。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.leaveEmptyToKeepTheSavedSecretEnterA"
 msgid "Leave empty to keep the saved secret. Enter a replacement, then leave this field to save it."
-msgstr ""
+msgstr "留空以保留已保存的密钥。输入替代值后离开此字段即可保存。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.leaveEmptyToMatchAnyNoteWithThisProperty"
 msgid "Leave empty to match any note with this property."
-msgstr ""
+msgstr "留空以匹配具有此属性的任何笔记。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.leaveEmptyToUseTheNormalTaskFilenameWith"
 msgid "Leave empty to use the normal task filename with a unique suffix."
-msgstr ""
+msgstr "留空以使用常规任务文件名并添加唯一后缀。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.instantConvert.preserveCheckbox.description"
@@ -6455,7 +6529,7 @@ msgstr "低"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.lucideIconNameLeaveEmptyForTheDefaultIndicator"
 msgid "Lucide icon name. Leave empty for the default indicator."
-msgstr ""
+msgstr "Lucide 图标名称。留空使用默认标记。"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.month"
@@ -6527,6 +6601,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Max Swimlane Height"
 msgstr "泳道最大高度"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.mdbaseyamlhasanunreadableorunsupportedspecversion"
+msgid "mdbase.yaml has an unreadable or unsupported spec version."
+msgstr "mdbase.yaml 的规范版本无法读取或不受支持。"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Medium (30m-2h)"
@@ -6540,7 +6619,7 @@ msgstr "元数据"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.metadataIntegrationProperties"
 msgid "Metadata & integration properties"
-msgstr ""
+msgstr "元数据与集成属性"
 
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
@@ -6630,12 +6709,12 @@ msgstr "修改于"
 #: src/settings/native/features.ts
 msgctxt "settings.native.modifiedNewestFirst"
 msgid "Modified (newest first)"
-msgstr ""
+msgstr "修改时间（最新优先）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.modifiedOldestFirst"
 msgid "Modified (oldest first)"
-msgstr ""
+msgstr "修改时间（最早优先）"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.modifiedDate"
@@ -6698,7 +6777,7 @@ msgstr "每月重复"
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.more"
 msgid "More"
-msgstr ""
+msgstr "更多"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.postponeConfirm"
@@ -6742,7 +6821,7 @@ msgstr "上移"
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
-msgstr ""
+msgstr "发现多个 TaskNotes 类型：{paths}。请保留一个规范提供者，或将其他类型移出类型文件夹，然后重新加载 TaskNotes。TaskNotes 已保留上次有效的配置。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "cli/helpers/timeTracking: resolveTaskForStopTimeTracking display"
@@ -6762,12 +6841,12 @@ msgstr "多个任务匹配标题“{title}”：{value2}"
 #: src/settings/native/features.ts
 msgctxt "settings.native.nameAToZ"
 msgid "Name (ascending)"
-msgstr ""
+msgstr "名称（A 到 Z）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.nameZToA"
 msgid "Name (descending)"
-msgstr ""
+msgstr "名称（Z 到 A）"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "modals.dateTimePicker.naturalLanguage"
@@ -6811,7 +6890,6 @@ msgid "New"
 msgstr "新建"
 
 #: src/i18n/dataSeedLabels.ts
-#: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.newCalendarName"
 msgid "New calendar"
 msgstr "新日历"
@@ -6824,7 +6902,7 @@ msgstr "新优先级"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.newProperty"
 msgid "New property"
-msgstr ""
+msgstr "新属性"
 
 #: src/i18n/dataSeedLabels.ts
 msgctxt "services/StatusManager: StatusManager.createDefaultStatus label"
@@ -6839,12 +6917,12 @@ msgstr "新任务"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.newTasksHaveNoDefaultProjects"
 msgid "New tasks have no default projects."
-msgstr ""
+msgstr "新任务没有默认项目。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.newTasksHaveNoDefaultReminders"
 msgid "New tasks have no default reminders."
-msgstr ""
+msgstr "新任务没有默认提醒。"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.next"
@@ -6854,7 +6932,7 @@ msgstr "下一个"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.nextInOrder"
 msgid "Next in order"
-msgstr ""
+msgstr "按顺序下一个"
 
 #: src/bases/MiniCalendarView.ts
 #: src/modals/taskEditCompletions.ts
@@ -6909,6 +6987,7 @@ msgstr "下周"
 
 #: src/modals/DateTimePickerModal.ts
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.nextWeek"
 msgid "Next week"
 msgstr "下周"
@@ -7103,17 +7182,12 @@ msgstr "无预估时长"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.noFieldsInThisGroup"
 msgid "No fields in this group."
-msgstr ""
+msgstr "此分组没有字段。"
 
 #: src/ui/WorkspaceNavigationService.ts
 msgctxt "notices.interface.commandFileMissing"
 msgid "No file configured for command: {command}"
 msgstr "未为命令配置文件：{command}"
-
-#: src/commands/taskNotesCommands.ts
-msgctxt "settings.integrations.googleCalendarExport.notices.noActiveFile"
-msgid "No file is currently active"
-msgstr "当前没有活动文件"
 
 #: src/main.ts
 msgctxt "notices.commands.noOpenFile"
@@ -7123,12 +7197,12 @@ msgstr "当前没有打开的文件"
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.clean"
 msgid "No invalid task records found."
-msgstr ""
+msgstr "未发现无效的任务记录。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.noKeySet"
 msgid "No key set"
-msgstr ""
+msgstr "未设置键名"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/TaskModal.ts
@@ -7291,12 +7365,12 @@ msgstr "无值"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.noValuesConfigured"
 msgid "No values configured."
-msgstr ""
+msgstr "尚未配置任何值。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.noWebhooksConfiguredAddOneToSendTaskEvents"
 msgid "No webhooks configured. Add one to send task events to another service."
-msgstr ""
+msgstr "尚未配置 Webhook。添加一个以将任务事件发送到其他服务。"
 
 #: src/bases/groupKeys.ts
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
@@ -7304,6 +7378,7 @@ msgid "None"
 msgstr "无"
 
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "无"
@@ -7336,7 +7411,7 @@ msgstr "未受阻"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.notConnected"
 msgid "Not connected"
-msgstr ""
+msgstr "未连接"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -7351,7 +7426,7 @@ msgstr "未计划"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.notSyncedYet"
 msgid "Not synced yet"
-msgstr ""
+msgstr "尚未同步"
 
 #: src/modals/ICSEventInfoModal.ts
 #: src/modals/ICSNoteCreationModal.ts
@@ -7392,7 +7467,7 @@ msgstr "笔记面板"
 #: src/settings/native/creation.ts
 msgctxt "settings.appearance.taskFilenames.customTemplate.helpText"
 msgid "Note: '{{dueDate}}' and '{{scheduledDate}}' are in YYYY-MM-DD format and will be empty if not set."
-msgstr ""
+msgstr "注意：'{{dueDate}}'和'{{scheduledDate}}'格式为YYYY-MM-DD，如果未设置则为空。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.soundEnabledName"
@@ -7412,7 +7487,7 @@ msgstr "通知"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.notificationsTimeTrackingRecurrencePomodoroAndTimeblocking"
 msgid "Notifications, time tracking, recurrence, Pomodoro, and timeblocking."
-msgstr ""
+msgstr "通知、时间跟踪、重复任务、番茄钟和时间块。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.customDayCount.description"
@@ -7477,7 +7552,7 @@ msgstr "实例文件名模板"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.occurrenceFilenameTemplateProperty"
 msgid "Occurrence filename template property"
-msgstr ""
+msgstr "实例文件名模板属性"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.name"
@@ -7591,6 +7666,7 @@ msgid "Open"
 msgstr "打开"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.advancedCalendar"
 msgid "Open advanced calendar view"
 msgstr "打开高级日历视图"
@@ -7602,6 +7678,7 @@ msgid "Open agenda view"
 msgstr "打开议程视图"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.agenda"
 msgid "Open agenda view"
 msgstr "打开议程视图"
@@ -7651,7 +7728,7 @@ msgstr "在当前标签页打开"
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openInbox"
 msgid "Open inbox"
-msgstr ""
+msgstr "打开收件箱"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: NoteSelectionModal purpose"
@@ -7665,6 +7742,7 @@ msgid "Open Kanban board"
 msgstr "打开看板"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.kanban"
 msgid "Open Kanban view"
 msgstr "打开看板视图"
@@ -7676,6 +7754,7 @@ msgid "Open mini calendar view"
 msgstr "打开迷你日历视图"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar"
 msgid "Open mini calendar view"
 msgstr "打开迷你日历视图"
@@ -7747,6 +7826,7 @@ msgid "Open tasks view"
 msgstr "打开任务视图"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.tasks"
 msgid "Open tasks view"
 msgstr "打开任务视图"
@@ -7775,7 +7855,7 @@ msgstr "在编辑器中打开任务文件"
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openToday"
 msgid "Open today"
-msgstr ""
+msgstr "打开今天"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.contextMenu.openWeeklyNote"
@@ -7873,10 +7953,15 @@ msgctxt "views.taskList.movement.otherDestinations"
 msgid "Other destinations"
 msgstr "其他目标"
 
+#: src/settings/native/general.ts
+msgctxt "settings.features.uiLanguage.downloadDescription"
+msgid "Other interface languages are downloaded and cached locally for offline use. No vault content is sent."
+msgstr "其他界面语言会下载并缓存在本地，以供离线使用。不会发送仓库内容。"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.competingSettings"
 msgid "Other TaskNotes settings records found: {paths}. TaskNotes is using {record} and ignoring the others. Copy any settings you want to keep into {record}, then delete the other files."
-msgstr ""
+msgstr "发现其他 TaskNotes 设置记录：{paths}。TaskNotes 正在使用 {record}，并忽略其他记录。请将需要保留的设置复制到 {record}，然后删除其他文件。"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.outlook"
@@ -7931,12 +8016,12 @@ msgstr "计划日期已过"
 #: src/settings/native/features.ts
 msgctxt "settings.native.pathAToZ"
 msgid "Path (ascending)"
-msgstr ""
+msgstr "路径（A 到 Z）"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.pathZToA"
 msgid "Path (descending)"
-msgstr ""
+msgstr "路径（Z 到 A）"
 
 #: src/ui/WorkspaceNavigationService.ts
 msgctxt "notices.interface.notAFile"
@@ -7946,12 +8031,12 @@ msgstr "路径不是文件：{path}"
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description"
 msgid "Path to template file for materialized occurrence notes. A recurring task''s occurrence_template field takes priority over this fallback."
-msgstr ""
+msgstr "已物化实例笔记的模板文件路径。重复任务的 occurrence_template 字段优先于此备用模板。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.bodyTemplateFile.description"
 msgid "Path to template file for task body content. Supports template variables like '{{title}}', '{{date}}', '{{time}}', '{{priority}}', '{{status}}', etc."
-msgstr ""
+msgstr "任务正文内容的模板文件路径。支持模板变量如'{{title}}'、'{{date}}'、'{{time}}'、'{{priority}}'、'{{status}}'等。"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.templatePathDesc"
@@ -7982,6 +8067,11 @@ msgstr "暂停/恢复番茄钟计时器"
 msgctxt "views.pomodoro.status.paused"
 msgid "Paused"
 msgstr "已暂停"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Pendingrecordbackupsblockedfile"
+msgid "Pending record: {mdbaseMigrationPendingPath}; backups: {backupFolder}; blocked file: {value3}"
+msgstr "待处理记录：{mdbaseMigrationPendingPath}；备份：{backupFolder}；受阻文件：{value3}"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.performance.header"
@@ -8199,7 +8289,7 @@ msgstr "上个月"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.priorities"
 msgid "Priorities"
-msgstr ""
+msgstr "优先级"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -8305,7 +8395,7 @@ msgstr "项目/，工作/活动，个人"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "ui.filterBar.properties"
 msgid "Properties"
-msgstr ""
+msgstr "属性"
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
@@ -8330,12 +8420,12 @@ msgstr "属性键："
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.propertyMappingsStatusesPrioritiesAndCustomProperties"
 msgid "Property mappings, statuses, priorities, and custom properties."
-msgstr ""
+msgstr "属性映射、状态、优先级和自定义属性。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.propertyName"
 msgid "Property name"
-msgstr ""
+msgstr "属性名称"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy"
@@ -8345,7 +8435,7 @@ msgstr "属性导航策略"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.propertyValue"
 msgid "Property value"
-msgstr ""
+msgstr "属性值"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
@@ -8480,7 +8570,7 @@ msgstr "刷新缓存"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.refreshCalendarEvents"
 msgid "Refresh calendar events"
-msgstr ""
+msgstr "刷新日历事件"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.refresh"
@@ -8490,17 +8580,17 @@ msgstr "刷新日历订阅"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.refreshIntervalMinutes"
 msgid "Refresh interval (minutes)"
-msgstr ""
+msgstr "刷新间隔（分钟）"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.refreshNow"
 msgid "Refresh now"
-msgstr ""
+msgstr "立即刷新"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.refreshSubscription"
 msgid "Refresh subscription"
-msgstr ""
+msgstr "刷新订阅"
 
 #: src/main.ts
 msgctxt "notices.commands.cacheRefreshing"
@@ -8530,6 +8620,7 @@ msgid "Relationships view not configured"
 msgstr "未配置关联关系视图"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.relationships"
 msgid "Relationships widget"
 msgstr "关系小部件"
@@ -8557,7 +8648,7 @@ msgstr "参照日期"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.relativeTo"
 msgid "Relative to"
-msgstr ""
+msgstr "相对于"
 
 #: src/settings/native/general.ts
 #: src/settings/TaskNotesSettingTab.ts
@@ -8593,7 +8684,7 @@ msgstr "提醒"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.reminderNumber"
 msgid "Reminder {number}"
-msgstr ""
+msgstr "提醒 {number}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand display"
@@ -8725,6 +8816,11 @@ msgctxt "common.reorder.confirmLargeMessage"
 msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
 msgstr "重排会更新 {count} 篇笔记的“{field}”字段，为 {scope} 保存手动排序。同一范围内隐藏或被筛选的笔记也可能更新。是否继续？"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.RepairfromTaskNotes"
+msgid "Repair from TaskNotes"
+msgstr "从 TaskNotes 修复"
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.requiredPropertyKey.name"
 msgid "Required property key"
@@ -8769,27 +8865,27 @@ msgstr "重复时重置复选框"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFields"
 msgid "Reset fields"
-msgstr ""
+msgstr "重置字段"
 
 #: src/settings/native/general.ts
 msgctxt "settings.native.resetFileMapping"
 msgid "Reset file mapping"
-msgstr ""
+msgstr "重置文件映射"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFormFields"
 msgid "Reset form fields"
-msgstr ""
+msgstr "重置表单字段"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFormFields2"
 msgid "Reset form fields?"
-msgstr ""
+msgstr "重置表单字段？"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept"
 msgid "Restore visibility, grouping, and ordering. Custom properties are kept."
-msgstr ""
+msgstr "恢复可见性、分组和顺序。保留自定义属性。"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.resume"
@@ -8805,6 +8901,11 @@ msgstr "恢复当前会话而不是开始新的"
 msgctxt "services.pomodoro.notices.resumeSessionInstead"
 msgid "Resume the current session instead of starting a new one"
 msgstr "恢复当前会话而不是开始新的"
+
+#: src/settings/native/general.ts
+msgctxt "settings.features.uiLanguage.retryDownload"
+msgid "Retry language download"
+msgstr "重试语言下载"
 
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.returnToObsidian"
@@ -9008,12 +9109,12 @@ msgstr "第二"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.secretSaved"
 msgid "Secret saved"
-msgstr ""
+msgstr "密钥已保存"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.releaseNotes.viewButton.description"
 msgid "See what''s new in the latest version of TaskNotes"
-msgstr ""
+msgstr "查看TaskNotes最新版本的新功能"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.select"
@@ -9063,7 +9164,7 @@ msgstr "选择要打开的项目"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.selectAtLeastOneEventBeforeEnablingThisWebhook"
 msgid "Select at least one event before enabling this webhook."
-msgstr ""
+msgstr "启用此 Webhook 前，请至少选择一个事件。"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder"
@@ -9129,7 +9230,7 @@ msgstr "选择TaskNotes界面文本使用的语言"
 #: src/settings/native/features.ts
 msgctxt "settings.native.selectWhichPropertiesToShowInInlineTaskCards"
 msgid "Select which properties to show in inline task cards."
-msgstr ""
+msgstr "选择行内任务卡片中显示的属性。"
 
 #: src/main.ts
 msgctxt "main: TaskNotesPlugin.openQuickActionsForTaskFile display"
@@ -9159,17 +9260,17 @@ msgstr "发送测试提醒"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.separateContextsWithCommas"
 msgid "Separate contexts with commas."
-msgstr ""
+msgstr "用逗号分隔情境。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.separateTagsWithCommas"
 msgid "Separate tags with commas."
-msgstr ""
+msgstr "用逗号分隔标签。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
-msgstr ""
+msgstr "用逗号分隔值。"
 
 #: src/bases/TaskListView.ts
 #: src/ui/taskCardSecondaryBadges.ts
@@ -9268,12 +9369,12 @@ msgstr "设置你计划何时处理此任务"
 #: src/bootstrap/starterNote.ts
 msgctxt "common.settings"
 msgid "Settings"
-msgstr ""
+msgstr "设置"
 
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.settings"
 msgid "Settings, when you need them"
-msgstr ""
+msgstr "需要时再调整设置"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakLength.short"
@@ -9468,7 +9569,7 @@ msgstr "在笔记中显示任务卡片"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.showTheDetailsEditorBesideTheFieldsOnScreens"
 msgid "Show the details editor beside the fields on screens 900px or wider."
-msgstr ""
+msgstr "在宽度至少为 900px 的屏幕上，将详情编辑器显示在字段旁。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.showTimeEntries.name"
@@ -9528,12 +9629,12 @@ msgstr "显示周末"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.showWhenCreatingTasks"
 msgid "Show when creating tasks"
-msgstr ""
+msgstr "创建任务时显示"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.showWhenEditingTasks"
 msgid "Show when editing tasks"
-msgstr ""
+msgstr "编辑任务时显示"
 
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.signIn"
@@ -9543,12 +9644,12 @@ msgstr "使用你的 Google 帐户登录并授予访问权限"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.signingSecret"
 msgid "Signing secret"
-msgstr ""
+msgstr "签名密钥"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.signingSecretCopied"
 msgid "Signing secret copied"
-msgstr ""
+msgstr "签名密钥已复制"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.eventMaxStack"
@@ -9558,7 +9659,7 @@ msgstr "同时显示的事件数（0 = 不限）"
 #: src/settings/native/creation.ts
 msgctxt "settings.taskProperties.titleCard.legacySyntaxWarning"
 msgid "Single-brace syntax like '{title}' is deprecated. Please use double-brace syntax '{{title}}' instead for consistency with body templates."
-msgstr ""
+msgstr "像 '{title}' 这样的单花括号语法已弃用。请使用双花括号语法 '{{title}}' 以与正文模板保持一致。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.general.taskInteraction.singleClick.name"
@@ -9584,7 +9685,7 @@ msgstr "已跳过的重复实例"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.sortWeight"
 msgid "Sort weight"
-msgstr ""
+msgstr "排序权重"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.pomodoroSound.enabledName"
@@ -9604,7 +9705,7 @@ msgstr "声音音量"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.source"
 msgid "Source"
-msgstr ""
+msgstr "来源"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
@@ -9614,7 +9715,7 @@ msgstr "在计划日期至截止日期之间显示任务"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.splitLayoutOnWideScreens"
 msgid "Split layout on wide screens"
-msgstr ""
+msgstr "宽屏分栏布局"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDate"
@@ -9639,7 +9740,7 @@ msgstr "开始专注"
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.title"
 msgid "Start here with TaskNotes"
-msgstr ""
+msgstr "开始使用 TaskNotes"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startLongBreak"
@@ -9772,7 +9873,7 @@ msgstr "状态：{value}"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.statuses"
 msgid "Statuses"
-msgstr ""
+msgstr "状态"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.stop"
@@ -9820,12 +9921,12 @@ msgstr "在文件名中存储标题："
 #: src/settings/native/connections.ts
 msgctxt "settings.native.storedInObsidianSecretStorageNotTaskNotesSettings"
 msgid "Stored in Obsidian secret storage, not TaskNotes settings."
-msgstr ""
+msgstr "保存在 Obsidian 的机密存储中，而非 TaskNotes 设置中。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.storedInTaskNotesChangingThisDoesNotRename"
 msgid "Stored in task notes. Changing this does not rename values in existing notes."
-msgstr ""
+msgstr "存储在任务笔记中。修改此项不会重命名现有笔记中的值。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
@@ -9905,7 +10006,7 @@ msgstr "减少一分钟"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.deliveryCounts"
 msgid "Successful: {success} · Failed: {failure}"
-msgstr ""
+msgstr "成功：{success} · 失败：{failure}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.authenticateStandard display"
@@ -9982,12 +10083,17 @@ msgstr "同步当前任务到Google 日历"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.syncCustomProperties"
 msgid "Sync custom properties"
-msgstr ""
+msgstr "同步自定义属性"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.oauth.syncFailed"
+msgid "Sync failed: {message}"
+msgstr "同步失败：{message}"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.syncProperties"
 msgid "Sync properties"
-msgstr ""
+msgstr "同步属性"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogle"
@@ -10018,7 +10124,7 @@ msgstr "系统通知"
 #: src/settings/native/creation.ts
 msgctxt "settings.native.tabMovesFocusInDetailsEditor"
 msgid "Tab moves focus in details editor"
-msgstr ""
+msgstr "Tab 在详情编辑器中移动焦点"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getListSuggestions display"
@@ -10142,7 +10248,7 @@ msgstr "任务卡片"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.taskCardsInlineTasksClickBehaviourAndViewDefaults"
 msgid "Task cards, inline tasks, click behaviour, and view defaults."
-msgstr ""
+msgstr "任务卡片、行内任务、点击行为和视图默认值。"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskCompleted.label"
@@ -10210,7 +10316,7 @@ msgstr "任务详情/正文；覆盖从自然语言解析的详情"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.taskFiles"
 msgid "Task files"
-msgstr ""
+msgstr "任务文件"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.detailsTooltip"
@@ -10230,7 +10336,7 @@ msgstr "任务识别"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.taskIdentificationFoldersFilenamesAndFrontmatter"
 msgid "Task identification, folders, filenames, and frontmatter."
-msgstr ""
+msgstr "任务识别、文件夹、文件名和 YAML 属性。"
 
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.sections.taskInfo"
@@ -10445,6 +10551,11 @@ msgctxt "services.autoExport.notices.exportFailed"
 msgid "TaskNotes auto export failed: {error}"
 msgstr "TaskNotes自动导出失败：{error}"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesbackeduptheinvalidtypeto"
+msgid "TaskNotes backed up the invalid type to {backupPath}."
+msgstr "TaskNotes 已将无效类型备份到 {backupPath}。"
+
 #: src/main.ts
 msgctxt "notices.commands.cacheRefreshed"
 msgid "TaskNotes cache refreshed successfully"
@@ -10455,6 +10566,21 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Calendar"
 msgstr "TaskNotes 日历"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotescouldnotupdatethemdbasemetadataandrestoredthe"
+msgid "TaskNotes could not update the mdbase metadata and restored the v0.2 files. A backup is available in {backupFolder}."
+msgstr "TaskNotes 无法更新 mdbase 元数据，已恢复 v0.2 文件。备份位于 {backupFolder}。"
+
+#: src/bootstrap/pluginBootstrap.ts
+msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
+msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
+msgstr "TaskNotes 已为此设备创建新的 API 令牌。请从设置 → TaskNotes → 集成中将其复制到您的 API 和 MCP 客户端。"
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.waiting"
+msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
+msgstr "TaskNotes 在 {path} 中发现了没有 mdbase.yaml 的元数据，因此未创建另一个集合。请完成同步或从备份恢复对应的配置；元数据到达后会重试迁移。"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Kanban"
@@ -10463,17 +10589,32 @@ msgstr "TaskNotes 看板"
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.referenced"
 msgid "TaskNotes kept {typePath}: {recordPath} explicitly references this type. Review its membership before moving the provider; task files were not changed."
-msgstr ""
+msgstr "TaskNotes 已保留 {typePath}：{recordPath} 显式引用了此类型。移动提供者之前，请检查其类型归属；任务文件未被更改。"
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "collectionCheck.keptConfiguration"
 msgid "TaskNotes kept its last-known-good configuration."
-msgstr ""
+msgstr "TaskNotes 已保留最近的有效配置。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesleftthemdbasevcollectionunchangedbecauseitsmetadata"
+msgid "TaskNotes left the mdbase v0.2 collection unchanged because its metadata changed while the upgrade was being prepared."
+msgstr "由于准备升级期间元数据发生变化，TaskNotes 保持 mdbase v0.2 集合不变。"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Mini Calendar"
 msgstr "TaskNotes 迷你日历"
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.review"
+msgid "TaskNotes preserved {path}: legacy metadata is missing, edited, or includes other types. Finish syncing and restart; otherwise migrate a backed-up copy with mdbase and review the type before retrying."
+msgstr "TaskNotes 已保留 {path}：旧版元数据缺失、已被编辑或包含其他类型。请完成同步并重启；若仍未解决，请使用 mdbase 迁移备份副本，检查类型后再重试。"
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.support"
+msgid "TaskNotes preserved customized support file {path}. Restore the generated version from a backup or review and migrate a copy with mdbase, then restart."
+msgstr "TaskNotes 已保留自定义辅助文件 {path}。请从备份恢复生成的版本，或检查并使用 mdbase 迁移副本，然后重启。"
 
 #: src/ui/NotificationService.ts
 msgctxt "ui/NotificationService: NotificationService.deliverNotification display"
@@ -10485,25 +10626,60 @@ msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotificatio
 msgid "TaskNotes Reminder"
 msgstr "TaskNotes 提醒"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesremovedanearlierduplicateofAcopyisin"
+msgid "TaskNotes removed {value1}, an earlier duplicate of {value2}. A copy is in {folder}."
+msgstr "TaskNotes 已删除 {value1}，它是 {value2} 的早期重复项。副本位于 {folder}。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesrestoredaninterruptedmdbasevmetadatamigrationRecoverycopies"
+msgid "TaskNotes restored an interrupted mdbase v0.2 metadata migration. Recovery copies remain in {backupFolder}."
+msgstr "TaskNotes 已恢复中断的 mdbase v0.2 元数据迁移。恢复副本保留在 {backupFolder} 中。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesrestoredthemissingcanonicalmdbaseyamlfile"
+msgid "TaskNotes restored the missing canonical mdbase.yaml file."
+msgstr "TaskNotes 已恢复缺失的规范文件 mdbase.yaml。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesrestoredthemissingcanonicaltypeat"
+msgid "TaskNotes restored the missing canonical type at {previousPath}."
+msgstr "TaskNotes 已在 {previousPath} 恢复缺失的规范类型。"
+
 #: src/services/mdbase/metadataFailureNotices.ts
 msgctxt "mdbaseSafety.settingsSaved"
 msgid "TaskNotes saved your settings, but could not synchronize the canonical mdbase type."
-msgstr ""
+msgstr "TaskNotes 已保存设置，但无法同步规范的 mdbase 类型。"
 
 #: src/services/mdbase/metadataFailureNotices.ts
 msgctxt "mdbaseSafety.blocked"
 msgid "TaskNotes stopped the mdbase metadata update. {details} Review the listed file and recovery copies, resolve the conflict or permissions, then reload TaskNotes. Task files were not changed."
-msgstr ""
+msgstr "TaskNotes 已停止更新 mdbase 元数据。{details} 请检查列出的文件和恢复副本，解决冲突或权限问题，然后重新加载 TaskNotes。任务文件未被更改。"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Task List"
 msgstr "TaskNotes 任务列表"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesupdatedtotasknotestaskandmoveditsappsettings"
+msgid "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed."
+msgstr "TaskNotes 已将 {path} 更新为 tasknotes.task {tasknotesContractVersion}，并将应用设置移动到 {appSettingsRecordPath}。任务文件未更改。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesupdatedtotasknotestaskTaskfileswerenotchanged"
+msgid "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion}. Task files were not changed."
+msgstr "TaskNotes 已将 {path} 更新为 tasknotes.task {tasknotesContractVersion}。任务文件未更改。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere"
+msgid "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
+msgstr "TaskNotes 已将 mdbase 元数据更新到 v0.3。任务文件未更改。先前的元数据已备份到 {backupFolder}。"
+
 #: src/bootstrap/starterNote.ts
 msgctxt "onboarding.intro"
 msgid "Tasks are Markdown notes in your vault. Use the command palette for these three steps."
-msgstr ""
+msgstr "任务是仓库中的 Markdown 笔记。通过命令面板完成以下三步。"
 
 #: src/bases/BasesViewBase.ts
 #: src/components/BatchContextMenu.ts
@@ -10539,22 +10715,12 @@ msgstr "模板："
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.templates"
 msgid "Templates"
-msgstr ""
-
-#: src/settings/native/features.ts
-msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.placeholder"
-msgid "Templates/Occurrence Template.md"
-msgstr ""
-
-#: src/settings/native/features.ts
-msgctxt "settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"
-msgid "Templates/Task Template.md"
-msgstr ""
+msgstr "模板"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
 msgid "The calendar subscription will be removed. Linked notes will be kept."
-msgstr ""
+msgstr "将移除日历订阅。已关联的笔记会保留。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.description"
@@ -10579,12 +10745,12 @@ msgstr "前置元数据中的属性名（例如 \"category\"）"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.theTagsPropertyIsReservedByObsidian"
 msgid "The tags property is reserved by Obsidian."
-msgstr ""
+msgstr "tags 属性由 Obsidian 保留。"
 
 #: src/services/mdbase/checkCollection.ts
 msgctxt "collectionCheck.repairChanged"
 msgid "The task type or allowed status values changed, or the proposed repair is no longer valid. Nothing was repaired; check the collection again."
-msgstr ""
+msgstr "任务类型或允许的状态值已更改，或者建议的修复已不再有效。未修复任何记录；请重新检查集合。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startTimeDesc"
@@ -10629,12 +10795,12 @@ msgstr "这提供了与你的笔记更好的数据持久性"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"
 msgid "This removes the property from TaskNotes forms, not from existing notes."
-msgstr ""
+msgstr "从 TaskNotes 表单中移除此属性，不会从现有笔记中移除。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
-msgstr ""
+msgstr "从 Obsidian 机密存储中移除客户端 ID 和客户端密钥。"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
@@ -10666,7 +10832,7 @@ msgstr "这个未分组列表"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.duplicateValue"
 msgid "This value already exists."
-msgstr ""
+msgstr "此值已存在。"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -10724,7 +10890,7 @@ msgstr "时间（可选）"
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.timeReminders"
 msgid "Time & reminders"
-msgstr ""
+msgstr "时间与提醒"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.timeSlotDuration"
@@ -10927,7 +11093,7 @@ msgstr "计时器时长"
 #: src/settings/native/properties.ts
 msgctxt "settings.native.timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents"
 msgid "Timestamps, recurrence records, ordering, and linked calendar events."
-msgstr ""
+msgstr "时间戳、重复任务记录、排序和关联的日历事件。"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleLabel"
@@ -11099,6 +11265,7 @@ msgid "Today"
 msgstr "今天"
 
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.today"
 msgid "Today"
 msgstr "今天"
@@ -11137,7 +11304,7 @@ msgstr "令牌刷新失败（状态 {status}）：{message}"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.tokenRefreshed"
 msgid "Token refreshed: {date}"
-msgstr ""
+msgstr "令牌刷新时间：{date}"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.presets.tomorrow"
@@ -11166,7 +11333,13 @@ msgstr "明天"
 
 #: src/modals/DateTimePickerModal.ts
 #: src/settings/native/creation.ts
+#: src/settings/native/properties.ts
 msgctxt "settings.defaults.options.tomorrow"
+msgid "Tomorrow"
+msgstr "明天"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeTomorrow"
 msgid "Tomorrow"
 msgstr "明天"
 
@@ -11393,6 +11566,11 @@ msgctxt "ui.propertyEventCard.unknownFile"
 msgid "Unknown file"
 msgstr "未知文件"
 
+#: src/services/mdbase/metadataFailureNotices.ts
+msgctxt "mdbaseSafety.unknownSyncError"
+msgid "Unknown metadata synchronization error"
+msgstr "未知的元数据同步错误"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.fetchSubscription display"
 msgid "Unknown subscription type"
@@ -11512,12 +11690,12 @@ msgstr "网址"
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeblocking.usage"
 msgid "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration."
-msgstr ""
+msgstr "用法：在日历上拖动以创建事件。从上下文菜单中选择''时间块''（仅在启用时间块时可见）。拖动以移动现有时间块。调整边缘以修改持续时间。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.useAPropertyKeyWithoutSurroundingSpacesLineBreaks"
 msgid "Use a property key without surrounding spaces, line breaks, or YAML punctuation."
-msgstr ""
+msgstr "请使用不含首尾空格、换行或 YAML 标点的属性键。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description"
@@ -11544,6 +11722,11 @@ msgctxt "settings.general.frontmatter.useMarkdownLinks.name"
 msgid "Use Markdown links in frontmatter"
 msgstr "在前置元数据中使用 Markdown 链接"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Usemdbasetype"
+msgid "Use mdbase type"
+msgstr "使用 mdbase 类型"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name"
 msgid "Use occurrence note template"
@@ -11559,10 +11742,20 @@ msgctxt "settings.taskProperties.projectsCard.useParentNoteForInlineTasks"
 msgid "Use parent note for inline/instant conversion:"
 msgstr "内联/即时转换时使用父笔记："
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.Usesettingsfile"
+msgid "Use settings file"
+msgstr "使用设置文件"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
 msgid "Use task defaults on instant convert"
 msgstr "即时转换时使用任务默认值"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "integration.UseTaskNotessettings"
+msgid "Use TaskNotes settings"
+msgstr "使用 TaskNotes 设置"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.useTemplateLabel"
@@ -11572,7 +11765,7 @@ msgstr "使用模板"
 #: src/settings/native/connections.ts
 msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
-msgstr ""
+msgstr "使用此密钥在接收应用中验证数据载荷。"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"
@@ -11653,7 +11846,7 @@ msgstr "我们非常感谢所有反馈。如果有什么感觉不对，请在 Gi
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.webhooks.placeholders.url"
 msgid "Webhook URL"
-msgstr ""
+msgstr "Webhook 地址"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/integrations.ts
@@ -11774,7 +11967,7 @@ msgstr "TaskNotes {version} 的新功能"
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.description"
 msgid "When enabled, tags matching the task identification tag (including hierarchical matches like ''task/project'') will be hidden from task card displays"
-msgstr ""
+msgstr "启用后，与任务识别标签匹配的标签（包括层次匹配，如 ''task/project''）将在任务卡片显示中隐藏"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskCreated.description"
@@ -11789,7 +11982,7 @@ msgstr "自然语言输入中的日期若未说明用途，则视为计划日期
 #: src/settings/native/creation.ts
 msgctxt "settings.native.whenOffTabIndentsTextInTheMarkdownEditor"
 msgid "When off, the tab key indents text in the Markdown editor."
-msgstr ""
+msgstr "关闭时，Tab 会在 Markdown 编辑器中缩进文本。"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.pomodoroInterrupted.description"
@@ -11932,6 +12125,11 @@ msgctxt "generated Bases grouping label"
 msgid "Yesterday"
 msgstr "昨天"
 
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeYesterday"
+msgid "Yesterday"
+msgstr "昨天"
+
 #: src/services/OAuthService.ts
 msgctxt "OAuth callback description"
 msgid "You can close this window and return to Obsidian."
@@ -11955,7 +12153,7 @@ msgstr "你的代码："
 #: src/settings/native/creation.ts
 msgctxt "settings.native.yourCustomFieldLayoutWillBeReplacedWithThe"
 msgid "Your custom field layout will be replaced with the default layout."
-msgstr ""
+msgstr "自定义字段布局将被默认布局替换。"
 
 #: src/modals/taskModalUserFieldControls.ts
 #: src/settings/native/creation.ts

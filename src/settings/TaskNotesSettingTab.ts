@@ -160,7 +160,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			]),
 			{
 				name: t(msg({ message: "Documentation", context: "settings.header.documentation" })),
-				action: () => window.open(t(msg({ message: "https://tasknotes.dev", context: "settings.header.documentationUrl" })), "_blank"),
+				action: () => window.open("https://tasknotes.dev", "_blank"),
 			},
 		];
 		makePageNamesUnique(definitions);

@@ -310,51 +310,13 @@ export function createTaskNotesCommandDefinitions(
 		{
 			id: "sync-current-task-google-calendar",
 			nameKey: msg({ message: "Sync current task to Google Calendar", context: "commands.syncCurrentTaskGoogleCalendar" }),
-			callback: async (ctx) => {
-				if (!ctx.taskCalendarSyncService?.isEnabled()) {
-					new Notice(
-						ctx.i18n.translate(
-							msg({ message: "Google Calendar export is not enabled. Configure it in Settings > Integrations.", context: "settings.integrations.googleCalendarExport.notices.notEnabled" })
-						)
-					);
-					return;
-				}
-
-				const activeFile = ctx.app.workspace.getActiveFile();
-				if (!activeFile) {
-					new Notice(
-						ctx.i18n.translate(
-							msg({ message: "No file is currently active", context: "settings.integrations.googleCalendarExport.notices.noActiveFile" })
-						)
-					);
-					return;
-				}
-
-				const task = await ctx.cacheManager.getTaskInfo(activeFile.path);
-				if (!task) {
-					new Notice(
-						ctx.i18n.translate(
-							msg({ message: "Current file is not a task", context: "settings.integrations.googleCalendarExport.notices.notATask" })
-						)
-					);
-					return;
-				}
-
-				if (!ctx.taskCalendarSyncService.shouldSyncTask(task)) {
-					new Notice(
-						ctx.i18n.translate(
-							msg({ message: "Task has no scheduled or due date to sync", context: "settings.integrations.googleCalendarExport.notices.noDateToSync" })
-						)
-					);
-					return;
-				}
-
-				await ctx.taskCalendarSyncService.syncTaskToCalendar(task);
-				new Notice(
-					ctx.i18n.translate(
-						msg({ message: "Task synced to Google Calendar", context: "settings.integrations.googleCalendarExport.notices.taskSynced" })
-					)
-				);
+			checkCallback: (checking) => {
+				if (!plugin.taskCalendarSyncService?.isEnabled()) return false;
+				const file = plugin.app.workspace.getActiveFile();
+				const frontmatter = file && plugin.app.metadataCache.getFileCache(file)?.frontmatter;
+				if (!frontmatter || !plugin.cacheManager.isTaskFile(frontmatter)) return false;
+				if (!checking) void syncCurrentTask(plugin);
+				return true;
 			},
 		},
 		{

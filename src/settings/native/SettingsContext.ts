@@ -1,3 +1,4 @@
+import { displayError } from "../../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
 import { Notice, type SettingDefinition, type SettingControl } from "obsidian";
@@ -49,7 +50,7 @@ export class SettingsContext {
 				this.saveError = error instanceof Error ? error : new Error(String(error));
 				new Notice(
 					this.t(msg({ message: "Could not save TaskNotes settings: {error}", context: "settings.native.saveError" }), {
-						error: error instanceof Error ? error.message : String(error),
+						error: displayError(error),
 					})
 				);
 			})
@@ -205,7 +206,7 @@ export class SettingsContext {
 						await options.onClick();
 						await this.flush();
 					} catch (error) {
-						new Notice(error instanceof Error ? error.message : String(error));
+						new Notice(displayError(error));
 					} finally {
 						busy = false;
 						this.refresh();
