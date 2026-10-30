@@ -10,7 +10,10 @@ import {
 	formatTimestampForDisplay,
 	getDateDisplayPattern,
 } from "../../../src/utils/dateUtils";
-import { getCalendarDateDisplayOptions, formatCalendarISODate } from "../../../src/bases/calendarDateDisplay";
+import { Calendar } from "@tasknotes/calendar";
+import { createI18nService } from "../../../src/i18n";
+import { observeTranslation } from "../../helpers/real-i18n";
+import { getCalendarDateDisplayOptions, ISOCalendarFormatter, applyCalendarDateDisplay } from "../../../src/bases/calendarDateDisplay";
 import { renderPropertyMetadata } from "../../../src/ui/taskCardProperties";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import { TaskListView } from "../../../src/bases/TaskListView";
@@ -43,8 +46,7 @@ function pluginFixture() {
 		},
 		statusManager: { isCompletedStatus: () => false },
 		i18n: {
-			translate: (key: string, params?: Record<string, unknown>) =>
-				`${key} ${Object.values(params ?? {}).join(" ")}`,
+			translate: observeTranslation(),
 		},
 	};
 }
@@ -151,23 +153,38 @@ describe("#2354 date display preference", () => {
 		expect(list.buildCardRenderSignature(["due"], {})).not.toBe(listBefore);
 	});
 
-	it("formats FullCalendar's own timezone parts and date ranges", () => {
-		const start = { year: 2026, month: 11, day: 31 };
-		const end = { year: 2027, month: 0, day: 1 };
-		expect(formatCalendarISODate(start)).toBe("2026-12-31");
+	it("formats engine civil days, headings, titles and popovers without OS timezone shifts", () => {
+		const start = Date.UTC(2026, 11, 31) / 86400000;
+		const end = start + 1;
+		const fmt = new ISOCalendarFormatter("fr", true);
+		expect(fmt.fullDate(start)).toBe("2026-12-31");
+		expect(fmt.longDate(start)).toBe("2026-12-31");
+		expect(fmt.listDay(start)).toBe("2026-12-31");
+		expect(fmt.monthYear(start)).toBe("2026-12");
+		expect(fmt.year(start)).toBe("2026");
+		expect(fmt.range(start, end)).toBe("2026-12-31 – 2027-01-01");
+		expect(fmt.range(start, start)).toBe("2026-12-31");
 		const options = getCalendarDateDisplayOptions("iso");
-		expect(options.dayHeaderFormat).toBeUndefined(); // Month weekday headings must not show placeholder dates.
-		const timeGridHeader = options.views!.timeGrid.dayHeaderFormat as (arg: unknown) => string;
-		expect(timeGridHeader({ date: start })).toBe("2026-12-31");
-		const monthTitle = options.views!.dayGridMonth.titleFormat as (arg: unknown) => string;
-		expect(monthTitle({ date: start })).toBe("2026-12");
-		for (const name of ["dayPopoverFormat", "listDayFormat"] as const) {
-			const formatter = options[name] as (arg: unknown) => string;
-			expect(formatter({ date: start })).toBe("2026-12-31");
-		}
-		const title = options.titleFormat as (arg: unknown) => string;
-		expect(title({ start, end })).toBe("2026-12-31 – 2027-01-01");
-		expect(title({ start })).toBe("2026-12-31");
-		expect(getCalendarDateDisplayOptions("default")).toEqual({});
+		const calendar = new Calendar(document.createElement("div"), { ...options, date: "2026-12-31", view: "day", locale: "fr" });
+		try {
+			applyCalendarDateDisplay(calendar, "iso");
+			expect(calendar.getView().title).toBe("2026-12-31");
+			expect(options.dayHeaderContent?.(calendar.dayArg(start))).toBe("2026-12-31");
+			calendar.changeView("month");
+			expect(calendar.getView().title).toBe("2026-12");
+			expect(options.dayHeaderContent?.(calendar.dayArg(start))).toBeUndefined();
+			applyCalendarDateDisplay(calendar, "default");
+			expect(calendar.getView().title).toMatch(/décembre.*2026/);
+		} finally { calendar.destroy(); }
+		expect(getCalendarDateDisplayOptions("default").dayHeaderContent).toBeUndefined();
 	});
-});
+
+	it("combines localized default dates, ISO dates and the explicit clock preference", () => {
+		createI18nService({ initialLocale: "fr" });
+		try {
+			expect(formatDateForDisplay("2026-08-23")).toContain("août");
+			expect(formatDateLabel(new Date(2026, 7, 23), {})).toContain("août");
+			expect(formatDateForDisplay("2026-08-23", undefined, "iso")).toBe("2026-08-23");
+			expect(formatTimestampForDisplay("2026-08-23T19:16", undefined, "12", "iso")).toBe("2026-08-23 7:16 PM");
+		} finally { createI18nService(); }
+	});});

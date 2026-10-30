@@ -2,6 +2,7 @@ import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { applyCalendarDateDisplay, getCalendarDateDisplayOptions } from "./calendarDateDisplay";
+import { observeCalendarLayering } from "./calendarStyleCompatibility";
 import type { MessageDescriptor } from "@lingui/core";
 import TaskNotesPlugin from "../main";
 import { createElementInDocument } from "../utils/documentDom";
@@ -1002,6 +1003,7 @@ export class CalendarView extends BasesViewBase {
 					);
 					this.calendar.setOptions(this.buildCalendarOptions());
 					applyCalendarDateDisplay(this.calendar, this.plugin.settings.dateDisplayFormat);
+					this.applyLayoutClasses();
 				}
 			} else {
 				// Normal render - just re-read event toggles
@@ -1074,6 +1076,7 @@ export class CalendarView extends BasesViewBase {
 			...this.buildCalendarOptions(),
 			...(initialDate ? { date: initialDate } : {}),
 		});
+		this.register(observeCalendarLayering(this.calendar.root));
 		applyCalendarDateDisplay(this.calendar, this.plugin.settings.dateDisplayFormat);
 		this.applyLayoutClasses();
 		await this.refetchEvents();
@@ -1092,6 +1095,7 @@ export class CalendarView extends BasesViewBase {
 				embedded: this.getEffectiveHeightMode() === "auto",
 			}),
 			...getCalendarDateDisplayOptions<CalendarEventProps>(this.plugin.settings.dateDisplayFormat),
+			dayHeaderDidMount: ({ el }) => el.classList.toggle("tnc-dh--capacity", el.querySelector(".tnc-cap") !== null),
 			timeZone: this.calendarTimezone,
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
 			editable: true,
@@ -1256,6 +1260,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private applyLayoutClasses(): void {
+		this.rootElement?.classList.toggle("advanced-calendar-view--week-numbers", this.viewOptions.weekNumbers);
 		this.applyHeightModeClass();
 		this.applyTimeGridVisibilityClass();
 		this.applyCalendarModeClass();
