@@ -221,6 +221,8 @@ Common optional fields:
 
 `blocking` is a read-only reverse relationship in API responses. To make a task block existing tasks, update those existing tasks' `blockedBy` fields.
 
+The MCP tools `tasknotes_create_task` and `tasknotes_update_task` accept the same `blockedBy` objects. On `tasknotes_update_task`, `blockedBy` replaces the whole list, and `null` or `[]` clears it.
+
 ```bash
 curl -X POST http://localhost:8080/api/tasks \
   -H "Content-Type: application/json" \
