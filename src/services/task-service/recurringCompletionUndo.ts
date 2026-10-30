@@ -128,7 +128,8 @@ export async function completeRecurringTaskWithUndo(
 	if (
 		!occurrence &&
 		parent.occurrence_materialization === "on_completion" &&
-		!parent.complete_instances?.includes(formatDateForStorage(identityDate))
+		!parent.complete_instances?.includes(formatDateForStorage(identityDate)) &&
+		(options.onlyIf?.(parent) ?? true)
 	) {
 		occurrence = await service.materializeOccurrence(parent, identityDate);
 	}

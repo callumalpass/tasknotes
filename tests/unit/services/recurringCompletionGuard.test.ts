@@ -43,17 +43,35 @@ const series = (overrides: Partial<TaskInfo> = {}) =>
 		...overrides,
 	});
 
-describe("completeOnly recurring completion", () => {
-	it("writes nothing when the occurrence finished after the caller's check", async () => {
-		const stored = series({ scheduled: "2024-01-19", complete_instances: [occurrence] });
+const stillOpen = (task: TaskInfo) =>
+	task.scheduled === occurrence &&
+	!task.complete_instances?.includes(occurrence) &&
+	!task.skipped_instances?.includes(occurrence);
+
+describe("guarded recurring completion", () => {
+	it.each([
+		["completed", { scheduled: "2024-01-19", complete_instances: [occurrence] }],
+		["skipped", { scheduled: "2024-01-19", skipped_instances: [occurrence] }],
+		["rescheduled", { scheduled: "2024-01-14", recurrence_original_date: occurrence }],
+	])("writes nothing when the occurrence was %s after the caller's check", async (_change, change) => {
+		const stored = series(change);
 		const { service, processFrontMatter } = createService(stored);
 
 		const result = await service.toggleRecurringTaskComplete(series(), targetDate, {
-			completeOnly: true,
+			onlyIf: stillOpen,
 		});
 
 		expect(processFrontMatter).not.toHaveBeenCalled();
 		expect(result).toBe(stored);
+	});
+
+	it("never reopens a completed occurrence, whatever the condition says", async () => {
+		const stored = series({ complete_instances: [occurrence] });
+		const { service, processFrontMatter } = createService(stored);
+
+		await service.toggleRecurringTaskComplete(series(), targetDate, { onlyIf: () => true });
+
+		expect(processFrontMatter).not.toHaveBeenCalled();
 	});
 
 	it("completes an occurrence that is still open", async () => {
@@ -61,14 +79,14 @@ describe("completeOnly recurring completion", () => {
 		const { service, processFrontMatter } = createService(stored);
 
 		const result = await service.toggleRecurringTaskComplete(stored, targetDate, {
-			completeOnly: true,
+			onlyIf: stillOpen,
 		});
 
 		expect(processFrontMatter).toHaveBeenCalledTimes(1);
 		expect(result.complete_instances).toEqual([occurrence]);
 	});
 
-	it("still toggles a completed occurrence off for callers without the option", async () => {
+	it("still toggles a completed occurrence off for callers without a condition", async () => {
 		const stored = series({ complete_instances: [occurrence] });
 		const { service } = createService(stored);
 
@@ -103,16 +121,18 @@ describe("completeOnly recurring completion", () => {
 			};
 		};
 
-		it("reports no change when completeOnly left the file alone", async () => {
+		it("reports no change when the condition left the file alone", async () => {
 			const { plugin, toggle } = pluginReading(content, content);
 
+			const onlyIf = () => true;
+
 			const result = await completeRecurringTaskWithUndo(plugin, series(), targetDate, {
-				completeOnly: true,
+				onlyIf,
 			});
 
 			expect(result.changed).toBe(false);
 			expect(toggle).toHaveBeenCalledWith(expect.anything(), targetDate, expect.anything(), {
-				completeOnly: true,
+				onlyIf,
 			});
 		});
 
@@ -122,6 +142,17 @@ describe("completeOnly recurring completion", () => {
 			const result = await completeRecurringTaskWithUndo(plugin, series(), targetDate);
 
 			expect(result.changed).toBe(true);
+		});
+
+		it("creates no occurrence note for a stale completion", async () => {
+			const { plugin } = pluginReading(content, content);
+			const stored = series({ occurrence_materialization: "on_completion" });
+			plugin.cacheManager.getTaskInfo.mockResolvedValue(stored);
+			plugin.taskService.materializeOccurrence = jest.fn();
+
+			await completeRecurringTaskWithUndo(plugin, stored, targetDate, { onlyIf: () => false });
+
+			expect(plugin.taskService.materializeOccurrence).not.toHaveBeenCalled();
 		});
 	});
 
@@ -146,7 +177,20 @@ describe("completeOnly recurring completion", () => {
 				series(),
 				targetDate,
 				undefined,
-				{ completeOnly: true }
+				{ onlyIf: stillOpen }
+			);
+
+			expect(toggleStatus).not.toHaveBeenCalled();
+		});
+
+		it("leaves an open note alone when the condition no longer holds", async () => {
+			const { service, toggleStatus } = withNote("open");
+
+			await service.toggleRecurringTaskCompleteWithOccurrenceNotes(
+				series(),
+				targetDate,
+				undefined,
+				{ onlyIf: () => false }
 			);
 
 			expect(toggleStatus).not.toHaveBeenCalled();
@@ -159,7 +203,7 @@ describe("completeOnly recurring completion", () => {
 				series(),
 				targetDate,
 				undefined,
-				{ completeOnly: true }
+				{ onlyIf: stillOpen }
 			);
 
 			expect(toggleStatus).toHaveBeenCalledTimes(1);

@@ -15,6 +15,7 @@ function localDate(offsetDays = 0): string {
 }
 
 const today = localDate();
+const inTwoDays = localDate(2);
 const nextWeek = localDate(7);
 const rule = `DTSTART:${today.replaceAll("-", "")};FREQ=WEEKLY`;
 
@@ -82,6 +83,24 @@ async function dropOn(target: Locator): Promise<void> {
 async function dragToDone(name: string): Promise<void> {
 	await pickUp(card(name));
 	await dropOn(column("done"));
+}
+
+/** The native operation starts by resolving its date, so this runs after a drop's check and before that operation reads fresh state. */
+async function interleaveBeforeNativeRead(change: "complete" | "skip" | "reschedule"): Promise<void> {
+	await page.evaluate(
+		({ change, inTwoDays }) => {
+			const service = (window as any).app.plugins.plugins.tasknotes.taskService;
+			const resolve = service.resolveRecurringTaskActionDate.bind(service);
+			service.resolveRecurringTaskActionDate = async (task: unknown, date?: Date) => {
+				service.resolveRecurringTaskActionDate = resolve;
+				if (change === "complete") await service.toggleRecurringTaskComplete(task, date);
+				if (change === "skip") await service.toggleRecurringTaskSkipped(task, date);
+				if (change === "reschedule") await service.updateProperty(task, "scheduled", inTwoDays);
+				return resolve(task, date);
+			};
+		},
+		{ change, inTwoDays }
+	);
 }
 
 test.beforeAll(async () => {
@@ -164,17 +183,7 @@ test("a drop acting on an occurrence finished mid-drag changes nothing", async (
 test("a completion landing after the drop's check cannot reopen the occurrence", async () => {
 	await openBase(board);
 	await expect(card("Weekly")).toBeVisible();
-	await page.evaluate(() => {
-		// The native operation starts by resolving its date, so this runs a competing
-		// completion after the drop's check and before the operation reads fresh state.
-		const service = (window as any).app.plugins.plugins.tasknotes.taskService;
-		const resolve = service.resolveRecurringTaskActionDate.bind(service);
-		service.resolveRecurringTaskActionDate = async (task: unknown, date?: Date) => {
-			service.resolveRecurringTaskActionDate = resolve;
-			await service.toggleRecurringTaskComplete(task, date);
-			return resolve(task, date);
-		};
-	});
+	await interleaveBeforeNativeRead("complete");
 
 	await dragToDone("Weekly");
 
@@ -185,6 +194,35 @@ test("a completion landing after the drop's check cannot reopen the occurrence",
 	expect(settled.scheduled).toBe(nextWeek);
 	expect(settled.status).toBe("open");
 	await expect(notice("Marked incomplete")).toHaveCount(0);
+});
+
+test("a skip landing after the drop's check keeps the occurrence skipped", async () => {
+	await openBase(board);
+	await expect(card("Weekly")).toBeVisible();
+	await interleaveBeforeNativeRead("skip");
+
+	await dragToDone("Weekly");
+
+	await expect.poll(async () => (await yaml("Weekly")).skipped_instances).toEqual([today]);
+	await page.waitForTimeout(1500);
+	const settled = await yaml("Weekly");
+	expect(settled.skipped_instances).toEqual([today]);
+	expect(settled.complete_instances ?? []).toEqual([]);
+	expect(settled.scheduled).toBe(nextWeek);
+});
+
+test("a reschedule landing after the drop's check keeps the new placement", async () => {
+	await openBase(board);
+	await expect(card("Weekly")).toBeVisible();
+	await interleaveBeforeNativeRead("reschedule");
+
+	await dragToDone("Weekly");
+
+	await expect.poll(async () => (await yaml("Weekly")).scheduled).toBe(inTwoDays);
+	await page.waitForTimeout(1500);
+	const settled = await yaml("Weekly");
+	expect(settled.scheduled).toBe(inTwoDays);
+	expect(settled.complete_instances ?? []).toEqual([]);
 });
 
 test("a touch drop on Done completes the occurrence", async () => {

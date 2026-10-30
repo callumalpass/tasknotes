@@ -1062,13 +1062,16 @@ export class TaskService {
 		if (!freshTask.recurrence) {
 			throw new Error("Task is not recurring");
 		}
+		if (options.onlyIf && !options.onlyIf(freshTask)) {
+			return freshTask;
+		}
 
 		const targetDate = this.getRecurringTaskActionDate(freshTask, date);
 		const dateStr = formatDateForStorage(targetDate);
 		const existingOccurrence = await this.findMaterializedOccurrence(freshTask, targetDate);
 		if (existingOccurrence) {
 			if (
-				options.completeOnly &&
+				options.onlyIf &&
 				this.plugin.statusManager.isCompletedStatus(existingOccurrence.status)
 			) {
 				return existingOccurrence;
@@ -2098,9 +2101,9 @@ export class TaskService {
 		});
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
 
-		// Decide on the same read that sets the direction of the toggle, so a completion
-		// landing after the caller's own check cannot be reversed.
-		if (options.completeOnly && !newComplete) {
+		// Decide on the same read that sets the direction of the toggle, so nothing
+		// landing after the caller's own check can be reversed or overwritten.
+		if (options.onlyIf && (!newComplete || !options.onlyIf(freshTask))) {
 			return freshTask;
 		}
 

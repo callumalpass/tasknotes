@@ -746,11 +746,12 @@ export interface FieldMapping {
 }
 
 /**
- * completeOnly is for callers acting on state read earlier, such as a queued
- * drop: an occurrence found already complete stays complete, with no write.
+ * onlyIf is for callers acting on state read earlier, such as a queued drop. The
+ * occurrence is completed only if it holds for the task as the operation reads it,
+ * and a completed occurrence is never reopened.
  */
 export interface RecurringCompletionOptions {
-	completeOnly?: boolean;
+	onlyIf?: (task: TaskInfo) => boolean;
 }
 
 export interface StatusConfig {

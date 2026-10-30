@@ -37,7 +37,7 @@ function moveWith(task: TaskInfo | null, overrides: { status?: string | null } =
 				plugin: plugin as any,
 				path: "tasks/recurring.md",
 				status: "status" in overrides ? (overrides.status as string | null) : "done",
-				shownOccurrence: "2026-10-19",
+				shownOccurrence: getShownOccurrence(createTask(), getOccurrenceDate),
 				getOccurrenceDate,
 			}),
 	};
@@ -52,7 +52,10 @@ describe("recurring status moves", () => {
 	});
 
 	it("reads the occurrence a recurring card acts on", () => {
-		expect(getShownOccurrence(createTask(), getOccurrenceDate)).toBe("2026-10-19");
+		expect(getShownOccurrence(createTask(), getOccurrenceDate)).toEqual({
+			date: "2026-10-19",
+			scheduled: "2026-10-19",
+		});
 	});
 
 	it("completes the shown occurrence on any completed status", async () => {
@@ -66,7 +69,7 @@ describe("recurring status moves", () => {
 			expect(plugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(
 				task,
 				parseDateToUTC("2026-10-19"),
-				{ completeOnly: true }
+				{ onlyIf: expect.any(Function) }
 			);
 		}
 	});
@@ -104,6 +107,38 @@ describe("recurring status moves", () => {
 
 		await expect(move()).resolves.toBe(true);
 
+		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+	});
+
+	it("passes the same check down, so the operation can repeat it on its own read", async () => {
+		const task = createTask();
+		const { plugin, move } = moveWith(task);
+
+		await move();
+
+		const [, , { onlyIf }] = plugin.toggleRecurringTaskComplete.mock.calls[0];
+		expect(onlyIf(task)).toBe(true);
+		expect(onlyIf(createTask({ complete_instances: ["2026-10-19"] }))).toBe(false);
+		expect(onlyIf(createTask({ skipped_instances: ["2026-10-19"] }))).toBe(false);
+		expect(onlyIf(createTask({ scheduled: "2026-10-21" }))).toBe(false);
+	});
+
+	it("does not complete a rescheduled occurrence that keeps its identity", async () => {
+		const { plugin } = moveWith(
+			createTask({ scheduled: "2026-10-21", recurrence_original_date: "2026-10-19" })
+		);
+		const moved = (task: TaskInfo): Date =>
+			parseDateToUTC((task.recurrence_original_date ?? task.scheduled) as string);
+
+		await expect(
+			completeOccurrenceForStatusMove({
+				plugin: plugin as any,
+				path: "tasks/recurring.md",
+				status: "done",
+				shownOccurrence: getShownOccurrence(createTask(), moved),
+				getOccurrenceDate: moved,
+			})
+		).resolves.toBe(true);
 		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
 	});
 

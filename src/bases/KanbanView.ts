@@ -58,7 +58,11 @@ import {
 	type KanbanTaskDropUpdatePlan,
 	type KanbanTaskDragSource,
 } from "./kanbanDragUtils";
-import { completeOccurrenceForStatusMove, getShownOccurrence } from "./recurringStatusMove";
+import {
+	completeOccurrenceForStatusMove,
+	getShownOccurrence,
+	type ShownOccurrence,
+} from "./recurringStatusMove";
 import {
 	buildBasesPathProperties,
 	computeBasesFormulas,
@@ -3965,8 +3969,8 @@ export class KanbanView extends BasesViewBase {
 	private getDroppedOccurrences(
 		taskPath: string,
 		options: KanbanDropExecutionOptions
-	): Map<string, string> {
-		const occurrences = new Map<string, string>();
+	): Map<string, ShownOccurrence> {
+		const occurrences = new Map<string, ShownOccurrence>();
 		for (const path of [taskPath, ...(options.draggedPaths ?? []), ...this.draggedTaskPaths]) {
 			const occurrence = getShownOccurrence(
 				this.taskInfoCache.get(path),
