@@ -225,9 +225,9 @@ it("keeps audited notice and setting-label call sites marked for translation", (
 		"modals/TaskActionPaletteModal.ts",
 		"modals/DateTimePickerModal.ts",
 		"modals/FileSelectorModal.ts",
-		"settings/tabs/integrationsTab.ts",
-		"settings/tabs/featuresTab.ts",
-		"settings/tabs/appearanceTab.ts",
+		"settings/native/integrations.ts",
+		"settings/native/features.ts",
+		"settings/native/appearance.ts",
 		"components/RecurrenceContextMenu.ts",
 	]) {
 		const source = fs.readFileSync(path.resolve(__dirname, "../../../src", file), "utf8");

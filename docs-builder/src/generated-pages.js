@@ -186,8 +186,8 @@ function translationArgument(call) {
 	}
 	const expression = call.expression;
 	const isTranslate =
-		(ts.isIdentifier(expression) && ["translate", "uiText"].includes(expression.text)) ||
-		(ts.isPropertyAccessExpression(expression) && expression.name.text === "translate");
+		(ts.isIdentifier(expression) && ["translate", "uiText", "t"].includes(expression.text)) ||
+		(ts.isPropertyAccessExpression(expression) && ["translate", "t"].includes(expression.name.text));
 	return isTranslate ? messageDescriptor(call.arguments[0]) : messageDescriptor(call);
 }
 
@@ -210,6 +210,11 @@ export function collectSettingControls(source, en) {
 	}
 
 	walk(source, (node) => {
+		if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && node.expression.name.text === "field") {
+			const options = node.arguments[4];
+			const desc = options && ts.isObjectLiteralExpression(options) ? options.properties.find(property => ts.isPropertyAssignment(property) && propertyName(property.name) === "desc") : undefined;
+			add(translationArgument(node.arguments[3]), desc ? translationArgument(desc.initializer) : undefined);
+		}
 		if (ts.isObjectLiteralExpression(node)) {
 			const properties = new Map(
 				node.properties
@@ -247,48 +252,23 @@ export function collectSettingControls(source, en) {
 }
 
 async function settingsCatalog(en) {
-	const tabSource = await sourceFile("src/settings/TaskNotesSettingTab.ts");
-	const tabIds = new Map();
-
-	walk(tabSource, (node) => {
-		if (!ts.isObjectLiteralExpression(node)) {
-			return;
-		}
-		const values = Object.fromEntries(
-			node.properties
-				.filter(ts.isPropertyAssignment)
-				.map((property) => [propertyName(property.name), stringValue(property.initializer) ?? messageDescriptor(property.initializer)])
-		);
-		if (values.id && values.nameKey?.context?.startsWith("settings.tabs.")) {
-			tabIds.set(values.id, values.nameKey);
-		}
-	});
-
-	const fileNames = {
-		general: "generalTab.ts",
-		"task-properties": "taskPropertiesTab.ts",
-		"modal-fields": "modalFieldsTab.ts",
-		appearance: "appearanceTab.ts",
-		features: "featuresTab.ts",
-		integrations: "integrationsTab.ts",
-	};
-	const tabs = [];
-
-	for (const [id, nameKey] of tabIds) {
-		const fileName = fileNames[id];
-		if (!fileName) {
-			continue;
-		}
-		const source = await sourceFile(`src/settings/tabs/${fileName}`);
-		tabs.push({
-			id,
-			name: getTranslation(en, nameKey) || id,
-			source: `src/settings/tabs/${fileName}`,
-			controls: collectSettingControls(source, en),
-		});
-	}
-
-	return tabs;
+	// Native definitions replace the retired six-tab renderer. Inventory every
+	// definition module, including controls indexed before any page is rendered.
+	const sections = [
+		["general", "Task files, language and release notes"],
+		["properties", "Properties"],
+		["creation", "Task creation and form fields"],
+		["appearance", "Appearance and interaction"],
+		["features", "Time, reminders and feature defaults"],
+		["integrations", "Calendar export and HTTP API"],
+		["connections", "Calendar accounts, subscriptions and webhooks"],
+	];
+	return Promise.all(sections.map(async ([id, name]) => {
+		const source = `src/settings/native/${id}.ts`;
+		const controls = collectSettingControls(await sourceFile(source), en);
+		if (!controls.length) throw new Error(`Native settings inventory is empty: ${source}`);
+		return { id, name, source, controls };
+	}));
 }
 
 async function httpRoutes() {
@@ -401,16 +381,16 @@ ${rows}`;
 
 	return `${frontmatter(
 		"Settings source reference",
-		"The six TaskNotes settings tabs, their controls, and the complete default settings snapshot generated from source.",
+		"Native TaskNotes settings definitions, their controls, and the complete default settings snapshot generated from source.",
 		[
 			"src/settings/TaskNotesSettingTab.ts",
-			"src/settings/tabs/*.ts",
+			"src/settings/native/*.ts",
 			"src/settings/defaults.ts",
 			"src/i18n/locales/en/messages.po",
 		]
 	)}# Settings source reference
 
-TaskNotes currently exposes ${tabs.length} settings tabs. This inventory is generated from the tab renderer and English translation source so additions cannot silently disappear from the documentation.
+This inventory covers all ${tabs.length} native settings definition modules. It is generated from their controls and English translation source so additions cannot silently disappear from the documentation.
 
 ${sections}
 
@@ -484,7 +464,7 @@ export async function buildGeneratedPages(manifest) {
 		httpRoutes(),
 	]);
 	await verifyHttpGuideParity(routes);
-	if (!commands.length || tabs.length !== 6) throw new Error(`Documentation inventory lost commands/settings: ${commands.length} commands, ${tabs.length} tabs`);
+	if (!commands.length || tabs.length !== 7) throw new Error(`Documentation inventory lost commands/settings: ${commands.length} commands, ${tabs.length} native definition modules`);
 
 	return new Map([
 		["reference/commands.md", commandsPage(commands)],

@@ -1,4 +1,4 @@
-// Execute the checked-in workflow's shell gates verbatim on the remote builder.
+// Execute the checked-in workflow's shell gates verbatim in this environment.
 // This does not dispatch Actions or claim checkout/setup/upload action acceptance.
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -16,7 +16,7 @@ const report = {
   sha256: createHash("sha256").update(source).digest("hex"),
   node: process.version,
   hostedCI: false,
-  environment: "rpnpm remote builder; Node 22; no OAuth secrets supplied",
+  environment: "shell-gate parity; Node 22; no OAuth secrets supplied",
   steps: [],
 };
 let failed = false;

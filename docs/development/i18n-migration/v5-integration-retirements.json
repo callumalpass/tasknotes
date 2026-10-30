@@ -1,0 +1,19 @@
+{
+  "reason": "The v5 branch already removed StatsView before the main Lingui migration. These two historical optional-many-arm reviews have no active UI call site in v5; all active catalogues remain subject to complete ICU validation.",
+  "retiredDescriptors": [
+    {
+      "id": "gJcV8t",
+      "message": "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}",
+      "context": "views/StatsView: StatsView.renderDrilldownContent.renderTasks display",
+      "source": "src/views/StatsView.ts",
+      "retiredBefore": "40619978deab6c4f821929b3b52f1e775f0dfb88"
+    },
+    {
+      "id": "9jhhqk",
+      "message": "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}",
+      "context": "views/StatsView: StatsView.renderProgressCircle display",
+      "source": "src/views/StatsView.ts",
+      "retiredBefore": "40619978deab6c4f821929b3b52f1e775f0dfb88"
+    }
+  ]
+}

@@ -4,6 +4,9 @@ import { dirname, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { adaptPinnedSpecRuntime } from "./conformance-adapter-compat.mjs";
+import { build } from "esbuild";
+import { linguiMacros } from "./lib/lingui-build.mjs";
+import catalogueGates from "./lib/catalogue-gates.cjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const tasknotesRoot = resolve(scriptDir, "..");
@@ -136,9 +139,25 @@ if (result.status !== 0) {
   process.exit(result.status ?? 1);
 }
 
-result = run("npm", ["run", "conformance:build:tasknotes-bridge"], { cwd: specRoot });
-if (result.status !== 0) {
-  process.exit(result.status ?? 1);
+// The pinned adapter imports plugin source. Compile its Lingui descriptors with
+// the same transform as production rather than bundling macro implementation code.
+catalogueGates.prepareStrictCatalogues(tasknotesRoot);
+for (const [entry, output, format] of [
+  ["tasknotes-core/conformance.ts", "tasknotes-conformance-core.mjs", "esm"],
+  ["tasknotes-date-bridge.ts", "tasknotes-date-bridge.mjs", "esm"],
+  ["tasknotes-templating-bridge.ts", "tasknotes-templating-bridge.cjs", "cjs"],
+  ["tasknotes-runtime-bridge.ts", "tasknotes-runtime-bridge.cjs", "cjs"],
+]) {
+  await build({
+    absWorkingDir: specRoot,
+    entryPoints: [`conformance/adapters/${entry}`],
+    outfile: `conformance/adapters/.generated/${output}`,
+    bundle: true, platform: "node", target: "node20", format,
+    plugins: [linguiMacros()],
+    ...(entry === "tasknotes-runtime-bridge.ts" ? {
+      alias: { obsidian: resolve(specRoot, "conformance/adapters/tasknotes-runtime-obsidian-shim.ts") },
+    } : {}),
+  });
 }
 const waiverSession = applyFixtureWaivers(specRoot, waivers);
 

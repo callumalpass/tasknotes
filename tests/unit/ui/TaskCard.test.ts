@@ -21,6 +21,7 @@ import {
   DEFAULT_TASK_CARD_OPTIONS
 } from '../../../src/ui/TaskCard';
 
+import { observeTranslation } from "../../helpers/real-i18n";
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
 import { MockObsidian, TFile, Menu, Notice, Modal, App } from '../../helpers/obsidian-runtime';
@@ -195,18 +196,7 @@ describe('TaskCard Component', () => {
         toggle: jest.fn(() => true),
       },
       i18n: {
-        translate: jest.fn((key, vars) => {
-          if (key === 'ui.taskCard.priorityAriaLabel') {
-            return `Priority: ${vars?.label ?? ''}`;
-          }
-          if (key === 'ui.taskCard.taskOptions') {
-            return 'Task options';
-          }
-          if (key === 'ui.taskCard.blockingToggle') {
-            return `Blocking ${vars?.count ?? 0}`;
-          }
-          return key;
-        }),
+        translate: observeTranslation(),
       },
       settings: {
         singleClickAction: 'edit',

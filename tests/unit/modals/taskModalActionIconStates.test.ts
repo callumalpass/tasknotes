@@ -139,7 +139,7 @@ describe("taskModalActionIconStates", () => {
 		expect(actionBar.querySelectorAll(".action-icon__value")).toHaveLength(6);
 		expect(
 			actionBar.querySelector('[data-type="due-date"] .action-icon__value')?.textContent
-		).toBe("modals.task.tooltips.dueValue:value=Formatted 2026-05-21");
+		).toBe("Due: Formatted 2026-05-21");
 		expect(priority.querySelector(".action-icon__value")?.textContent).toBe("Review <draft>");
 		expect(priority.querySelector("draft")).toBeNull();
 		expect(priority.querySelector(".icon")).toBe(originalIcon);

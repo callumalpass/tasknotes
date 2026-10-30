@@ -1,9 +1,9 @@
 import { App, TFile } from "obsidian";
-import { en } from "../../../src/i18n/resources/en";
+import { msg } from "@lingui/core/macro";
 import { createI18nService } from "../../../src/i18n";
 import {
 	ensureStarterNote,
-	getStarterNoteContent,
+	STARTER_NOTE_CONTENT,
 	STARTER_NOTE_PATH,
 } from "../../../src/bootstrap/starterNote";
 
@@ -45,9 +45,14 @@ function createHost(options: { shouldCreateStarterNote: boolean; starterNoteCrea
 
 describe("starter note onboarding", () => {
 	it("uses the current native settings vocabulary and starts with create, review, complete", () => {
-		for (const route of [en.settings.native.taskFiles, en.ui.filterBar.properties,
-			en.settings.features.taskCreation.header, en.settings.native.formFields,
-			en.settings.native.appearanceInteraction]) {
+		const english = createI18nService();
+		for (const route of [
+			msg({ message: "Task files", context: "settings.native.taskFiles" }),
+			msg({ message: "Properties", context: "ui.filterBar.properties" }),
+			msg({ message: "Task creation", context: "settings.features.taskCreation.header" }),
+			msg({ message: "Form fields", context: "settings.native.formFields" }),
+			msg({ message: "Appearance & interaction", context: "settings.native.appearanceInteraction" }),
+		].map(message => english.translate(message))) {
 			expect(STARTER_NOTE_CONTENT).toContain(route);
 		}
 		expect(STARTER_NOTE_CONTENT).not.toMatch(/General|Inline Task Settings|Modal Fields|Task Properties/);
@@ -70,7 +75,7 @@ describe("starter note onboarding", () => {
 
 		const file = app.vault.getAbstractFileByPath(STARTER_NOTE_PATH);
 		expect(file).toBeInstanceOf(TFile);
-		await expect(app.vault.read(file as TFile)).resolves.toBe(getStarterNoteContent());
+		await expect(app.vault.read(file as TFile)).resolves.toBe(STARTER_NOTE_CONTENT);
 		expect(settings.starterNoteCreated).toBe(true);
 		expect(saveSettings).toHaveBeenCalledTimes(1);
 		expect(openFile).toHaveBeenCalledTimes(1);

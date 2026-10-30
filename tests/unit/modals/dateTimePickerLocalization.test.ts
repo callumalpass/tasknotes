@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import { createI18nService, translationResources } from "../../../src/i18n";
 import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
@@ -13,16 +14,16 @@ describe("date picker localization", () => {
 		});
 		modal.onOpen();
 		const content = modal.contentEl;
-		expect(content.querySelector(".date-time-picker-modal__quick-button")?.textContent).toBe(i18n.translate("dateTimePicker.today"));
+		expect(content.querySelector(".date-time-picker-modal__quick-button")?.textContent).toBe(i18n.translate(msg({ message: "Today", context: "views.agenda.today" })));
 		const input = content.querySelector<HTMLInputElement>(".date-time-picker-modal__nlp-input")!;
-		expect(input.placeholder).toBe(i18n.translate("dateTimePicker.naturalLanguagePlaceholder"));
-		expect(input.getAttribute("aria-label")).toBe(i18n.translate("dateTimePicker.naturalLanguageLabel"));
-		expect(content.querySelector(".date-time-picker-modal__native-date-button")?.getAttribute("aria-label")).toBe(i18n.translate("dateTimePicker.openNativePicker"));
-		expect(content.textContent).toContain(i18n.translate("dateTimePicker.time"));
-		expect(content.textContent).toContain(i18n.translate("common.cancel"));
+		expect(input.placeholder).toBe(i18n.translate(msg({ message: "Enter a date or date/time", context: "modals.dateTimePicker.placeholder" })));
+		expect(input.getAttribute("aria-label")).toBe(i18n.translate(msg({ message: "Natural language date", context: "modals.dateTimePicker.naturalLanguage" })));
+		expect(content.querySelector(".date-time-picker-modal__native-date-button")?.getAttribute("aria-label")).toBe(i18n.translate(msg({ message: "Open native date picker", context: "modals.dateTimePicker.nativePicker" })));
+		expect(content.textContent).toContain(i18n.translate(msg({ message: "Time (optional)", context: "contextMenus.date.modal.timeLabel" })));
+		expect(content.textContent).toContain(i18n.translate(msg({ message: "Cancel", context: "common.cancel" })));
 		input.value = "invalid";
 		input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-		expect(Notice).toHaveBeenLastCalledWith(i18n.translate("dateTimePicker.invalidInput"));
+		expect(Notice).toHaveBeenLastCalledWith(i18n.translate(msg({ message: "Could not find a date in that text.", context: "modals.dateTimePicker.notFound" })));
 		modal.onClose();
 	});
 });

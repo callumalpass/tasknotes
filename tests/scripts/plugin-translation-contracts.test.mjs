@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import test from "node:test";
+import { generateMessageId } from "@lingui/message-utils/generateMessageId";
 import { formatter } from "@lingui/format-po";
 import { locales } from "@mdbase-dev/i18n/config";
 import { setupI18n } from "@lingui/core";
@@ -61,6 +62,13 @@ test("all ten authored catalogues preserve generated IDs, completeness and ICU c
 test("the 22 rewritten one arms have contextual singular wording; all 90 copied es/fr many arms are absent", async () => {
   const ledger = JSON.parse(await readFile(new URL("docs/development/i18n-review-followup.json", root), "utf8"));
   const rereview = JSON.parse(await readFile(new URL("docs/development/i18n-rereview.json", root), "utf8"));
+  const { retiredDescriptors: v5Retirements } = JSON.parse(await readFile(new URL("docs/development/i18n-migration/v5-integration-retirements.json", root), "utf8"));
+  assert.equal(v5Retirements.length, 2);
+  for (const retirement of v5Retirements) {
+    assert.equal(generateMessageId(retirement.message, retirement.context), retirement.id);
+    assert.equal(retirement.source, "src/views/StatsView.ts");
+    await assert.rejects(readFile(new URL(retirement.source, root)), { code: "ENOENT" });
+  }
   const expected = {
     fr: {
       fuX_1m: "Contexte", "fJ_I-J": "Projet",
@@ -88,10 +96,12 @@ test("the 22 rewritten one arms have contextual singular wording; all 90 copied 
     for (const item of ledger.retainedAuthoredChanges.filter(item => item.locale === locale && (item.addedArms || item.removedArms))) {
       const entry = catalogue[item.id];
       if (!entry) {
-        assert.ok(rereview.retiredDescriptors.some(row => row.id === item.id && row.finding === "N8"), `Unreviewed missing plural: ${locale} ${item.id}`);
+        const dataRetirement = rereview.retiredDescriptors.find(row => row.id === item.id && row.finding === "N8");
+        const v5Retirement = v5Retirements.find(row => row.id === item.id && row.context === item.context);
+        assert.ok(dataRetirement || v5Retirement, `Unreviewed missing plural: ${locale} ${item.id}`);
         assert.equal((item.addedArms ?? []).length, 0, "None of the 22 corrected one arms may disappear");
         report.removedManyArms += (item.removedArms ?? []).length;
-        report.retiredByRereview.push({ locale, id: item.id, reason: "N8: exact pre-port English ICS export restored; message is data, not UI" });
+        report.retiredByRereview.push({ locale, id: item.id, reason: dataRetirement ? "N8: exact pre-port English ICS export restored; message is data, not UI" : "v5: StatsView was already retired; no active descriptor or source remains" });
         continue;
       }
       const ast = parse(entry.translation), selectors = choices(ast);
