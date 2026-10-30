@@ -56,7 +56,10 @@ const versionsWithDates = versionsToBundle.map(version => ({
 	version,
 	date: getVersionDate(version)
 })).sort((a, b) => {
-	// Versions without dates go to the end
+	// A locally prepared release has no tag yet, but must still appear first.
+	const currentOrder = Number(b.version === currentVersion) - Number(a.version === currentVersion);
+	if (currentOrder) return currentOrder;
+	// Other versions without dates go to the end
 	if (!a.date && !b.date) return 0;
 	if (!a.date) return 1;
 	if (!b.date) return -1;
