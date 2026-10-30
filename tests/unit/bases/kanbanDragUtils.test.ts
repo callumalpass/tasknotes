@@ -3,6 +3,7 @@ import {
 	clearKanbanDropMarkers,
 	getKanbanCardDropTargetFromClientY,
 	getKanbanDraggedPaths,
+	getKanbanDropStatusValue,
 	kanbanDropPlanNeedsWrite,
 	performKanbanOptimisticReorder,
 	planKanbanDropSideEffect,
@@ -457,6 +458,41 @@ describe("kanbanDragUtils", () => {
 				dateModifiedValue: "2026-10-04T10:00:00Z",
 			})?.statusValue
 		).toBe("");
+	});
+
+	it("reads the status a drop would write from a column or a swimlane", () => {
+		const plan = (overrides: Partial<Parameters<typeof planKanbanTaskDropUpdate>[0]>) =>
+			planKanbanTaskDropUpdate({
+				path: "Tasks/a.md",
+				sourceColumn: "open",
+				sourceSwimlane: null,
+				newGroupValue: "done",
+				newSwimLaneValue: null,
+				groupByPropertyId: "task.status",
+				swimLanePropertyId: null,
+				groupByTaskProp: "status",
+				swimlaneTaskProp: null,
+				isGroupByListProperty: false,
+				isSwimlaneListProperty: false,
+				...overrides,
+			});
+
+		expect(getKanbanDropStatusValue(plan({}))).toBe("done");
+		expect(getKanbanDropStatusValue(plan({ newGroupValue: "open" }))).toBeNull();
+		expect(
+			getKanbanDropStatusValue(
+				plan({
+					sourceColumn: "high",
+					newGroupValue: "high",
+					groupByPropertyId: "task.priority",
+					groupByTaskProp: "priority",
+					sourceSwimlane: "open",
+					newSwimLaneValue: "done",
+					swimLanePropertyId: "task.status",
+					swimlaneTaskProp: "status",
+				})
+			)
+		).toBe("done");
 	});
 
 	it("appends to a list property instead of overwriting it when the source is unknown", () => {

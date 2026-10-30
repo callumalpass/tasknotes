@@ -1,4 +1,8 @@
-import { planTaskListMovement, taskListDestinationKey } from "../../../src/bases/taskListMovement";
+import {
+	getTaskListMovementStatus,
+	planTaskListMovement,
+	taskListDestinationKey,
+} from "../../../src/bases/taskListMovement";
 import {
 	applyGroupPropertyMutation,
 	getListMembers,
@@ -22,6 +26,19 @@ const defaults = {
 };
 
 describe("List movement intentions", () => {
+	it("reads the status a move would write, and only a status", () => {
+		expect(
+			getTaskListMovementStatus(
+				planTaskListMovement({
+					...defaults,
+					source: { groupKey: "open", subGroupKey: "high" },
+					target: { groupKey: "done", subGroupKey: "high" },
+				})
+			)
+		).toBe("done");
+		expect(getTaskListMovementStatus(planTaskListMovement(defaults))).toBeNull();
+	});
+
 	it("moves between subgroups without manual sorting", () => {
 		const plan = planTaskListMovement(defaults);
 		expect(plan.kind).toBe("move");

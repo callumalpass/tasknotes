@@ -1,0 +1,152 @@
+import {
+	completeOccurrenceForStatusMove,
+	getShownOccurrence,
+} from "../../../src/bases/recurringStatusMove";
+import type { TaskInfo } from "../../../src/types";
+import { parseDateToUTC } from "../../../src/utils/dateUtils";
+
+function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
+	return {
+		title: "Recurring task",
+		status: "open",
+		priority: "normal",
+		path: "tasks/recurring.md",
+		archived: false,
+		recurrence: "DTSTART:20261019;FREQ=WEEKLY",
+		scheduled: "2026-10-19",
+		complete_instances: [],
+		skipped_instances: [],
+		...overrides,
+	};
+}
+
+const getOccurrenceDate = (task: TaskInfo): Date => parseDateToUTC(task.scheduled as string);
+
+function moveWith(task: TaskInfo | null, overrides: { status?: string | null } = {}) {
+	const plugin = {
+		cacheManager: { getTaskInfo: jest.fn().mockResolvedValue(task) },
+		statusManager: {
+			isCompletedStatus: (status: string) => status === "done" || status === "cancelled",
+		},
+		toggleRecurringTaskComplete: jest.fn().mockResolvedValue(task),
+	};
+	return {
+		plugin,
+		move: () =>
+			completeOccurrenceForStatusMove({
+				plugin: plugin as any,
+				path: "tasks/recurring.md",
+				status: "status" in overrides ? (overrides.status as string | null) : "done",
+				shownOccurrence: "2026-10-19",
+				getOccurrenceDate,
+			}),
+	};
+}
+
+describe("recurring status moves", () => {
+	it("reads no occurrence from an ordinary or missing task", () => {
+		expect(getShownOccurrence(undefined, getOccurrenceDate)).toBeUndefined();
+		expect(
+			getShownOccurrence(createTask({ recurrence: undefined }), getOccurrenceDate)
+		).toBeUndefined();
+	});
+
+	it("reads the occurrence a recurring card acts on", () => {
+		expect(getShownOccurrence(createTask(), getOccurrenceDate)).toBe("2026-10-19");
+	});
+
+	it("completes the shown occurrence on any completed status", async () => {
+		for (const status of ["done", "cancelled"]) {
+			const task = createTask();
+			const { plugin, move } = moveWith(task, { status });
+
+			await expect(move()).resolves.toBe(true);
+
+			expect(plugin.toggleRecurringTaskComplete).toHaveBeenCalledTimes(1);
+			expect(plugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(
+				task,
+				parseDateToUTC("2026-10-19"),
+				{ completeOnly: true }
+			);
+		}
+	});
+
+	it("does not reopen an occurrence a repeated move finds complete", async () => {
+		const { plugin, move } = moveWith(createTask({ complete_instances: ["2026-10-19"] }));
+
+		await expect(move()).resolves.toBe(true);
+
+		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+	});
+
+	it("does not complete the next occurrence after the series has advanced", async () => {
+		const { plugin, move } = moveWith(
+			createTask({ scheduled: "2026-10-26", complete_instances: ["2026-10-19"] })
+		);
+
+		await expect(move()).resolves.toBe(true);
+
+		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+	});
+
+	it("does not complete another occurrence when the series moved on without closing this one", async () => {
+		const { plugin, move } = moveWith(createTask({ scheduled: "2026-10-26" }));
+
+		await expect(move()).resolves.toBe(true);
+
+		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+	});
+
+	it("does not complete the next occurrence when the shown one was skipped elsewhere", async () => {
+		const { plugin, move } = moveWith(
+			createTask({ scheduled: "2026-10-26", skipped_instances: ["2026-10-19"] })
+		);
+
+		await expect(move()).resolves.toBe(true);
+
+		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+	});
+
+	it("does not complete an occurrence skipped without advancing", async () => {
+		const { plugin, move } = moveWith(createTask({ skipped_instances: ["2026-10-19"] }));
+
+		await expect(move()).resolves.toBe(true);
+
+		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+	});
+
+	it("settles a move with no known occurrence without ending the series", async () => {
+		const task = createTask();
+		const plugin = {
+			cacheManager: { getTaskInfo: jest.fn().mockResolvedValue(task) },
+			statusManager: { isCompletedStatus: (status: string) => status === "done" },
+			toggleRecurringTaskComplete: jest.fn(),
+		};
+
+		await expect(
+			completeOccurrenceForStatusMove({
+				plugin: plugin as any,
+				path: task.path,
+				status: "done",
+				shownOccurrence: undefined,
+				getOccurrenceDate,
+			})
+		).resolves.toBe(true);
+
+		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		["no status change", createTask(), { status: null }],
+		["an open status", createTask(), { status: "in-progress" }],
+		["an ordinary task", createTask({ recurrence: undefined }), {}],
+		["an ended series", createTask({ status: "done" }), { status: "cancelled" }],
+		["a missing task", null, {}],
+	])("leaves %s to the ordinary move", async (_name, task, overrides) => {
+		const { plugin, move } = moveWith(task, overrides);
+
+		await expect(move()).resolves.toBe(false);
+
+		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+	});
+});

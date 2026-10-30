@@ -6,6 +6,7 @@ import {
 	EVENT_TASK_UPDATED,
 	TaskCreationData,
 	TaskDependency,
+	RecurringCompletionOptions,
 	TaskInfo,
 	IWebhookNotifier,
 } from "../types";
@@ -1054,7 +1055,8 @@ export class TaskService {
 	async toggleRecurringTaskCompleteWithOccurrenceNotes(
 		task: TaskInfo,
 		date?: Date,
-		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void,
+		options: RecurringCompletionOptions = {}
 	): Promise<TaskInfo> {
 		const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
 		if (!freshTask.recurrence) {
@@ -1065,6 +1067,12 @@ export class TaskService {
 		const dateStr = formatDateForStorage(targetDate);
 		const existingOccurrence = await this.findMaterializedOccurrence(freshTask, targetDate);
 		if (existingOccurrence) {
+			if (
+				options.completeOnly &&
+				this.plugin.statusManager.isCompletedStatus(existingOccurrence.status)
+			) {
+				return existingOccurrence;
+			}
 			return onRecurringParentUpdated
 				? this.toggleStatus(existingOccurrence, onRecurringParentUpdated)
 				: this.toggleStatus(existingOccurrence);
@@ -1085,7 +1093,7 @@ export class TaskService {
 				: this.toggleStatus(occurrence);
 		}
 
-		return this.toggleRecurringTaskComplete(freshTask, targetDate);
+		return this.toggleRecurringTaskComplete(freshTask, targetDate, options);
 	}
 
 	async getMaterializedOccurrenceParent(occurrenceTask: TaskInfo): Promise<TaskInfo | null> {
@@ -2065,7 +2073,11 @@ export class TaskService {
 		return getRecurringTaskActionDate(task, date);
 	}
 
-	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
+	async toggleRecurringTaskComplete(
+		task: TaskInfo,
+		date?: Date,
+		options: RecurringCompletionOptions = {}
+	): Promise<TaskInfo> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
 			throw new Error(`Cannot find task file: ${task.path}`);
@@ -2085,6 +2097,12 @@ export class TaskService {
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 		});
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
+
+		// Decide on the same read that sets the direction of the toggle, so a completion
+		// landing after the caller's own check cannot be reversed.
+		if (options.completeOnly && !newComplete) {
+			return freshTask;
+		}
 
 		// Step 2: Persist to file
 		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
