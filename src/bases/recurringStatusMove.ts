@@ -28,8 +28,9 @@ export function getShownOccurrence(
 }
 
 /**
- * A completed status on a recurring task ends the whole series, so moving its
- * card onto one completes the occurrence the card showed instead, as its
+ * A status belongs to the whole recurring task, so writing a completed one
+ * completes no occurrence and leaves every later occurrence in that status. Moving
+ * a card onto one therefore completes the occurrence the card showed, as its
  * checkbox does. A repeated or late move leaves an occurrence that has since been
  * completed, skipped or rescheduled alone, and the operation repeats this check on
  * the read that decides its write. Returns whether the move is settled here, in

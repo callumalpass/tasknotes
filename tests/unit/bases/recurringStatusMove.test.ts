@@ -150,7 +150,7 @@ describe("recurring status moves", () => {
 		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
 	});
 
-	it("settles a move with no known occurrence without ending the series", async () => {
+	it("settles a move with no known occurrence without writing the status", async () => {
 		const task = createTask();
 		const plugin = {
 			cacheManager: { getTaskInfo: jest.fn().mockResolvedValue(task) },
@@ -175,7 +175,7 @@ describe("recurring status moves", () => {
 		["no status change", createTask(), { status: null }],
 		["an open status", createTask(), { status: "in-progress" }],
 		["an ordinary task", createTask({ recurrence: undefined }), {}],
-		["an ended series", createTask({ status: "done" }), { status: "cancelled" }],
+		["a task already in a completed status", createTask({ status: "done" }), { status: "cancelled" }],
 		["a missing task", null, {}],
 	])("leaves %s to the ordinary move", async (_name, task, overrides) => {
 		const { plugin, move } = moveWith(task, overrides);
