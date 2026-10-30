@@ -203,6 +203,121 @@ describe("taskRecurringPlanning", () => {
 		expect(frontmatter.dateModified).toBe("2026-05-19T07:15:00+10:00");
 	});
 
+	describe("status after an occurrence", () => {
+		const completionOf = (
+			task: Partial<TaskInfo>,
+			targetDate = "2026-05-19",
+			statusAfterOccurrence: string | null = "open"
+		) =>
+			buildRecurringTaskCompletePlan({
+				freshTask: createRecurringTask({ status: "in-progress", ...task }),
+				targetDate: new Date(`${targetDate}T12:00:00.000Z`),
+				currentTimestamp: "2026-05-19T07:15:00+10:00",
+				maintainDueDateOffsetInRecurring: true,
+				statusAfterOccurrence: statusAfterOccurrence ?? undefined,
+			});
+		const skipOf = (task: Partial<TaskInfo>, statusAfterOccurrence: string | null = "open") =>
+			buildRecurringTaskSkippedPlan({
+				freshTask: createRecurringTask({ status: "in-progress", ...task }),
+				targetDate: new Date("2026-05-19T12:00:00.000Z"),
+				currentTimestamp: "2026-05-19T07:15:00+10:00",
+				maintainDueDateOffsetInRecurring: true,
+				statusAfterOccurrence: statusAfterOccurrence ?? undefined,
+			});
+
+		it("moves the series to the configured status when completion advances it", () => {
+			const plan = completionOf({});
+
+			expect(plan.updatedTask.scheduled).toBe("2026-05-20");
+			expect(plan.updatedTask.status).toBe("open");
+			expect(plan.originalStatus).toBe("in-progress");
+		});
+
+		it("keeps the series status when none is configured", () => {
+			expect(completionOf({}, "2026-05-19", null).updatedTask.status).toBe("in-progress");
+		});
+
+		it("keeps the status when a moved occurrence is still pending", () => {
+			const plan = completionOf(
+				{
+					recurrence: "DTSTART:20260519;FREQ=WEEKLY",
+					recurrence_original_date: "2026-05-26",
+					scheduled: "2026-05-28",
+				},
+				"2026-05-19"
+			);
+
+			expect(plan.updatedTask.scheduled).toBe("2026-05-28");
+			expect(plan.updatedTask.status).toBe("in-progress");
+		});
+
+		it("keeps the status when completion is toggled off and the series moves back", () => {
+			const plan = completionOf({
+				recurrence: "DTSTART:20260519;FREQ=WEEKLY",
+				scheduled: "2026-05-26",
+				complete_instances: ["2026-05-19"],
+			});
+
+			expect(plan.newComplete).toBe(false);
+			expect(plan.updatedTask.scheduled).toBe("2026-05-19");
+			expect(plan.updatedTask.status).toBe("in-progress");
+		});
+
+		it("moves the series on when a skip advances it, but not when it is unskipped", () => {
+			expect(skipOf({}).updatedTask.status).toBe("open");
+			expect(skipOf({ skipped_instances: ["2026-05-19"] }).updatedTask.status).toBe("in-progress");
+		});
+
+		it("writes the status under the mapped field only when it changed", () => {
+			const fields = {
+				completeInstancesField: "complete_instances",
+				skippedInstancesField: "skipped_instances",
+				dateModifiedField: "dateModified",
+				scheduledField: "scheduled",
+				dueField: "due",
+				recurrenceField: "recurrence",
+				statusField: "state",
+				googleCalendarExceptionOriginalScheduledField: "googleCalendarExceptionOriginalScheduled",
+				googleCalendarMovedOriginalDatesField: "googleCalendarMovedOriginalDates",
+			};
+			const changed: Record<string, unknown> = { state: "in-progress" };
+			const unchanged: Record<string, unknown> = { state: "in-progress" };
+
+			applyRecurringTaskCompleteFrontmatterChange({
+				frontmatter: changed,
+				...fields,
+				plan: completionOf({}),
+			});
+			applyRecurringTaskCompleteFrontmatterChange({
+				frontmatter: unchanged,
+				...fields,
+				plan: completionOf({}, "2026-05-19", null),
+			});
+
+			expect(changed.state).toBe("open");
+			expect(unchanged.state).toBe("in-progress");
+		});
+
+		it("writes a skip's status under the mapped field", () => {
+			const frontmatter: Record<string, unknown> = { state: "in-progress" };
+
+			applyRecurringTaskSkippedFrontmatterChange({
+				frontmatter,
+				skippedField: "skipped_instances",
+				completeField: "complete_instances",
+				dateModifiedField: "dateModified",
+				scheduledField: "scheduled",
+				dueField: "due",
+				statusField: "state",
+				googleCalendarExceptionOriginalScheduledField: "googleCalendarExceptionOriginalScheduled",
+				googleCalendarMovedOriginalDatesField: "googleCalendarMovedOriginalDates",
+				plan: skipOf({}),
+			});
+
+			expect(frontmatter.state).toBe("open");
+		});
+	});
+
 	describe("Google Calendar occurrences moved before their series date", () => {
 		beforeEach(() => {
 			mockGetTodayString.mockReturnValue("2026-04-10");
