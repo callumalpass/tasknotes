@@ -64,6 +64,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - A frequency word that names the task stays in the title and still sets the recurrence, as in "daily standup" or "reunión semanal". After an article, as in "buy a weekly planner", it is ordinary text.
   - Ambiguous single words such as French `fait`, Chinese `低` or `完成` no longer set a status or priority on their own; use the full phrase, such as `terminé`, `低优先级` or `已完成`.
 
+- The startup update check now reads the latest release from the GitHub releases API
+
 ## Removed
 
 ## Fixed
