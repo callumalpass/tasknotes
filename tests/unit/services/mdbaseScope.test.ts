@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import fs from "fs";
 import path from "path";
 import YAML from "yaml";
@@ -34,7 +35,7 @@ function harness(entries: Record<string, string>, settings = defaults()) {
 	};
 	const vault: any = { ...h.vault, configDir: ".obsidian", getFiles: () => [...h.files.keys()].map(file), getMarkdownFiles: () => [...h.files.keys()].filter((p) => p.endsWith(".md")).map(file), read: async (f: TFile) => h.files.get(f.path) };
 	const notices: string[] = [];
-	const plugin: any = { settings: { ...settings, enableMdbaseSpec: true }, app: { vault }, registerEvent: jest.fn(), saveSettingsDataOnly: jest.fn(), emitter: { trigger: (_event: string, message: any) => notices.push(String(message?.message ?? message)) } };
+	const plugin: any = { i18n: createI18nService(), settings: { ...settings, enableMdbaseSpec: true }, app: { vault }, registerEvent: jest.fn(), saveSettingsDataOnly: jest.fn(), emitter: { trigger: (_event: string, message: any) => notices.push(String(message?.message ?? message)) } };
 	return { ...h, plugin, notices, service: new MdbaseSpecService(plugin) };
 }
 const invalid = (membership = "type: task\n") => `---\n${membership}status: open\n---\nUnchanged body\n`;

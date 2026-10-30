@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+import { createI18nService } from "../../../src/i18n";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import YAML from "yaml";
@@ -44,6 +46,7 @@ export function safetyHarness(entries: Record<string, string>) {
 	};
 	const notices: string[] = [];
 	const plugin: any = {
+		i18n: createI18nService(),
 		settings: { ...JSON.parse(JSON.stringify(DEFAULT_SETTINGS)), enableMdbaseSpec: true },
 		// Exactly the bootstrap state: no FieldMapper/runtime services yet.
 		app: { vault: {
@@ -298,7 +301,7 @@ describe("safe migration writes and recovery", () => {
 	});
 
 	it("refuses symlinked metadata directories before modifying external targets", async () => {
-		const scratch = await fs.mkdtemp(path.join(process.env.TMPDIR!, "safewrite-symlink-"));
+		const scratch = await fs.mkdtemp(path.join(tmpdir(), "safewrite-symlink-"));
 		const previousRequire = window.require;
 		window.require = require;
 		try {

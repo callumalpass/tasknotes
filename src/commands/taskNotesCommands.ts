@@ -294,6 +294,11 @@ export function createTaskNotesCommandDefinitions(
 		{
 			id: "sync-all-tasks-google-calendar",
 			nameKey: msg({ message: "Sync all tasks to Google Calendar", context: "commands.syncAllTasksGoogleCalendar" }),
+			checkCallback: (checking) => {
+				if (!plugin.taskCalendarSyncService?.isEnabled()) return false;
+				if (!checking) void plugin.taskCalendarSyncService.syncAllTasks();
+				return true;
+			},
 			callback: async (ctx) => {
 				if (!ctx.taskCalendarSyncService?.isEnabled()) {
 					new Notice(

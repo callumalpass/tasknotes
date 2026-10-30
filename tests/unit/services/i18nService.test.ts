@@ -7,7 +7,7 @@ describe("I18nService", () => {
 		const service = createI18nService();
 		expect(service.getCurrentLocale()).toBe("en");
 		expect(service.translate(msg({ message: "System default", context: "common.systemDefault" }))).toBe("System default");
-		expect(service.translate(msg({ message: "This week", context: "views.pomodoroStats.sections.week" }))).toBe("This week");
+		expect(service.translate(msg({ message: "This week", context: "generated Bases grouping label" }))).toBe("This week");
 		expect(service.translate(msg({ message: "Start focus", context: "views.pomodoro.buttons.startFocus" }))).toBe("Start focus");
 		expect(service.translate(msg({ message: "Please enter a task title", context: "modals.taskCreation.notices.titleRequired" }))).toBe("Please enter a task title");
 	});
@@ -17,7 +17,7 @@ describe("I18nService", () => {
 		service.setLocale("fr");
 		expect(service.getCurrentLocale()).toBe("fr");
 		expect(service.translate(msg({ message: "System default", context: "common.systemDefault" }))).toBe("Langue du système");
-		expect(service.translate(msg({ message: "This week", context: "views.pomodoroStats.sections.week" }))).toBe("Cette semaine");
+		expect(service.translate(msg({ message: "This week", context: "generated Bases grouping label" }))).toBe("Cette semaine");
 		expect(service.translate(msg({ message: "Start focus", context: "views.pomodoro.buttons.startFocus" }))).toBe("Démarrer la concentration");
 		expect(service.translate(msg({ message: "Please enter a task title", context: "modals.taskCreation.notices.titleRequired" }))).toBe("Veuillez saisir un titre de tâche");
 		const idOnly = { id: "uncatalogued-id" };

@@ -135,6 +135,7 @@ function createMockPlugin(overrides: Record<string, any> = {}): any {
 
 	return {
 		settings,
+		i18n: { translate: observeTranslation() },
 		fieldMapper: new FieldMapper(settings.fieldMapping),
 		app: {
 			vault: {
@@ -365,7 +366,7 @@ describe("MdbaseSpecService", () => {
       const actual = [service.buildMdbaseYaml(), service.buildTaskTypeDef()];
       expect(actual).toEqual(expected);
       expect(YAML.parse(actual[0]).description).toBe("Task collection managed by TaskNotes for Obsidian");
-      expect(YAML.parse(extractFrontmatter(actual[1])).description).toBe("A task managed by the TaskNotes plugin for Obsidian.");
+      expect(YAML.parse(extractFrontmatter(actual[1])).description).toBe("A task managed by TaskNotes.");
     }
   });
 	describe("buildMdbaseYaml", () => {

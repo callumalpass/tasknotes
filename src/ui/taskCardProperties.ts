@@ -811,6 +811,7 @@ function formatUserPropertyValue(value: unknown, userField: UserField, plugin: T
 				return typeof value === "number" ? uiNumber(value, { maximumFractionDigits: 20 }) : userText(value);
 			case "date":
 				return formatDateTimeForDisplay(userText(value), {
+					dateDisplayFormat: plugin.settings.dateDisplayFormat,
 					dateFormat: "MMM d, yyyy",
 					timeFormat: "",
 					showTime: false,

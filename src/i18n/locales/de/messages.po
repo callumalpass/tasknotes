@@ -309,6 +309,11 @@ msgctxt "ui.taskCard.relativeDayAtTime"
 msgid "{day} at {time}"
 msgstr "{day} um {time}"
 
+#: src/settings/native/relativeSyncTime.ts
+msgctxt "settings.integrations.timeFormats.daysAgo"
+msgid "{days, plural, one {{days, number} day ago} other {{days, number} days ago}}"
+msgstr "{days, plural, one {vor {days, number} Tag} other {vor {days, number} Tagen}}"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases relative due date"
 msgid "{days, plural, one {# day ago} other {# days ago}}"
@@ -378,6 +383,11 @@ msgstr "{fieldName}: "
 msgctxt "generated Bases compact hours and minutes"
 msgid "{hours, number}h {minutes, number}m"
 msgstr "{hours, number} Std. {minutes, number} Min."
+
+#: src/settings/native/relativeSyncTime.ts
+msgctxt "settings.integrations.timeFormats.hoursAgo"
+msgid "{hours, plural, one {{hours, number} hour ago} other {{hours, number} hours ago}}"
+msgstr "{hours, plural, one {vor {hours, number} Stunde} other {vor {hours, number} Stunden}}"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalTime"
@@ -514,6 +524,11 @@ msgctxt "generated Bases compact minutes"
 msgid "{minutes, number}m"
 msgstr "{minutes, number} Min."
 
+#: src/settings/native/relativeSyncTime.ts
+msgctxt "settings.integrations.timeFormats.minutesAgo"
+msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
+msgstr "{minutes, plural, one {vor {minutes, number} Minute} other {vor {minutes, number} Minuten}}"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
 msgid "{minutes}m total"
@@ -598,6 +613,11 @@ msgstr "{provider}-OAuth ist nicht konfiguriert. Geben Sie OAuth-Zugangsdaten in
 msgctxt "recurrence end date"
 msgid "{recurrence} (until {date})"
 msgstr "{recurrence} (bis {date})"
+
+#: src/settings/native/creation.ts
+msgctxt "default reminder timing summary"
+msgid "{relatedTo, select, due {{direction, select, before {{duration} before due date} after {{duration} after due date} other {{duration} before due date}}} scheduled {{direction, select, before {{duration} before scheduled date} after {{duration} after scheduled date} other {{duration} before scheduled date}}} other {{direction, select, before {{duration} before scheduled date} after {{duration} after scheduled date} other {{duration} before scheduled date}}}}"
+msgstr "{relatedTo, select, due {{direction, select, before {{duration} vor dem Fälligkeitsdatum} after {{duration} nach dem Fälligkeitsdatum} other {{duration} vor dem Fälligkeitsdatum}}} scheduled {{direction, select, before {{duration} vor dem Planungsdatum} after {{duration} nach dem Planungsdatum} other {{duration} vor dem Planungsdatum}}} other {{direction, select, before {{duration} vor dem Planungsdatum} after {{duration} nach dem Planungsdatum} other {{duration} vor dem Planungsdatum}}}}"
 
 #: src/services/GoogleCalendarService.ts
 #: src/services/MicrosoftCalendarService.ts
@@ -1148,6 +1168,11 @@ msgctxt "contextMenus.task.dependencies.addBlocking"
 msgid "Add “blocking”…"
 msgstr "„Blockiert“ hinzufügen…"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.includeObsidianLink.description"
+msgid "Add a link back to the task in Obsidian in the event description."
+msgstr "Einen Link zur Aufgabe in Obsidian in der Ereignisbeschreibung hinzufügen."
+
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentAdd"
@@ -1210,6 +1235,11 @@ msgctxt "views.pomodoro.buttons.addMinute"
 msgid "Add one minute"
 msgstr "Eine Minute hinzufügen"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.defaultReminder.description"
+msgid "Add popup reminders to timed Google Calendar events. Enter minutes before the event, separated by commas. Leave empty to use calendar defaults. Common values: 15, 30, 60, 1440."
+msgstr "Popup-Erinnerungen zu zeitgebundenen Google-Kalender-Ereignissen hinzufügen. Geben Sie Minuten vor dem Ereignis durch Kommas getrennt ein. Leer lassen, um Kalenderstandards zu verwenden. Übliche Werte: 15, 30, 60, 1440."
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskPriorities.addNew.buttonText"
 msgid "Add priority"
@@ -1269,6 +1299,11 @@ msgstr "Tag hinzufügen…"
 msgctxt "modals.task.dependencies.addTaskButton"
 msgid "Add task"
 msgstr "Aufgabe hinzufügen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.includeDescription.description"
+msgid "Add task metadata (priority, status, tags, etc.) to the event description."
+msgstr "Aufgabenmetadaten (Priorität, Status, Tags, etc.) zur Ereignisbeschreibung hinzufügen."
 
 #: src/bases/KanbanView.ts
 msgctxt "bases/KanbanView: KanbanView.getAddTaskLabel display"
@@ -1403,6 +1438,11 @@ msgctxt "generated Bases view name"
 msgid "All Tasks"
 msgstr "Alle Aufgaben"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.description"
+msgid "All-day task exports do not block availability, including tasks converted to all-day. Timed events stay busy. Run sync all tasks to apply changes to existing events."
+msgstr "Ganztägige Aufgabenexporte blockieren die Verfügbarkeit nicht, auch bei in ganztägige Ereignisse umgewandelten Aufgaben. Ereignisse mit Uhrzeit bleiben beschäftigt. Nutzen Sie die Synchronisierung aller Aufgaben, um bestehende Ereignisse zu aktualisieren."
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.slotEventOverlap"
 msgid "Allow events to overlap"
@@ -1453,6 +1493,16 @@ msgstr "Eine optionale .json-Vorlage im Vault. Leer lassen, um unveränderte Ere
 msgctxt "settings.native.anotherPropertyAlreadyUsesThisKey"
 msgid "Another property already uses this key."
 msgstr "Eine andere Eigenschaft verwendet bereits diesen Schlüssel."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.name"
+msgid "API authentication token"
+msgstr "API-Authentifizierungstoken"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.port.name"
+msgid "API port"
+msgstr "API-Port"
 
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
@@ -1607,6 +1657,11 @@ msgctxt "OAuth callback description"
 msgid "Authorization was not completed. Return to Obsidian."
 msgstr "Autorisierung wurde nicht abgeschlossen. Kehren Sie zu Obsidian zurück."
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.notices.serviceUnavailable"
+msgid "Auto export service not available"
+msgstr "Auto-Export-Dienst nicht verfügbar"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.heightModeAuto"
 msgid "Auto height"
@@ -1647,15 +1702,40 @@ msgctxt "settings.native.automaticArchiving"
 msgid "Automatic archiving"
 msgstr "Automatische Archivierung"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.header"
+msgid "Automatic ICS export"
+msgstr "Automatischer ICS-Export"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.automaticSyncBehavior.header"
+msgid "Automatic sync behavior"
+msgstr "Automatisches Synchronisierungsverhalten"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.automaticallyArchive"
 msgid "Automatically archive"
 msgstr "Automatisch archivieren"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnCreate.description"
+msgid "Automatically create calendar event when a new task is created."
+msgstr "Automatisch ein Kalenderereignis erstellen, wenn eine neue Aufgabe erstellt wird."
+
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.autoCreateDefaultFiles.description"
 msgid "Automatically create missing default base view files on startup. Disable to prevent deleted sample files from being recreated."
 msgstr "Fehlende Standard-Base-Ansichtsdateien beim Start automatisch erstellen. Deaktivieren, um zu verhindern, dass gelöschte Beispieldateien neu erstellt werden."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.description"
+msgid "Automatically export all your tasks to an ICS file."
+msgstr "Automatisch alle Ihre Aufgaben in eine ICS-Datei exportieren."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.enable.description"
+msgid "Automatically keep an ICS file updated with all your tasks"
+msgstr "Eine ICS-Datei automatisch mit allen Ihren Aufgaben aktuell halten"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.moveArchived.description"
@@ -1682,10 +1762,25 @@ msgctxt "settings.features.timeTracking.autoStopDesc"
 msgid "Automatically stop time tracking when a task is marked complete"
 msgstr "Zeiterfassung automatisch stoppen, wenn eine Aufgabe als abgeschlossen markiert wird"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.description"
+msgid "Automatically sync your tasks to Google Calendar as events. Requires Google Calendar to be connected above."
+msgstr "Synchronisieren Sie Ihre Aufgaben automatisch als Ereignisse mit Google Kalender. Dazu muss Google Kalender zuvor verbunden werden."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnUpdate.description"
+msgid "Automatically update calendar event when a task is modified."
+msgstr "Automatisch das Kalenderereignis aktualisieren, wenn eine Aufgabe geändert wird."
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.autosuggestFilters.header"
 msgid "Autosuggestion filters (advanced)"
 msgstr "Autovervollständigungsfilter (Erweitert)"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.endpoints.header"
+msgid "Available API endpoints"
+msgstr "Verfügbare API-Endpunkte"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.variables"
@@ -1836,6 +1931,16 @@ msgstr "Datei für Inhaltsvorlage"
 msgctxt "editor/NLPCodeMirrorAutocomplete: getBooleanSuggestions info"
 msgid "Boolean"
 msgstr "Boolesch"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.boolean"
+msgid "Boolean"
+msgstr "Boolesch"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.both"
+msgid "Both (prefer scheduled)"
+msgstr "Beide (geplant bevorzugt)"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentUnavailable"
@@ -2280,6 +2385,11 @@ msgctxt "settings.appearance.taskCards.properties.checklistProgress"
 msgid "Checklist progress"
 msgstr "Checklistenfortschritt"
 
+#: src/settings/native/general.ts
+msgctxt "settings.native.chooseBaseFile"
+msgid "Choose a .base file."
+msgstr "Wähle eine .base-Datei."
+
 #: src/settings/native/connections.ts
 msgctxt "settings.native.chooseCalendarFile"
 msgid "Choose a local .ics file."
@@ -2319,6 +2429,11 @@ msgstr "Wählen Sie, wann die Wiederholung enden soll"
 msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.description"
 msgid "Choose whether hiding identification tags also hides nested tags."
 msgstr "Wählen Sie, ob beim Ausblenden von Identifikations-Tags auch verschachtelte Tags ausgeblendet werden."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description"
+msgid "Choose whether notes linked to one recurrence of an external calendar event appear across the loaded series or only on the selected instance."
+msgstr "Wählen Sie, ob Notizen, die mit einer Wiederholung eines externen Kalenderereignisses verknüpft sind, in der geladenen Serie oder nur in der ausgewählten Instanz erscheinen."
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.description"
@@ -3061,6 +3176,11 @@ msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Create a TaskNotes task from free text or explicit flags"
 msgstr "TaskNotes-Aufgabe aus Freitext oder expliziten Optionen erstellen"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.allDayEvents.name"
+msgid "Create as all-day events"
+msgstr "Als Ganztagesereignisse erstellen"
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.heading"
 msgid "Create calendar event"
@@ -3328,6 +3448,11 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Custom Fields"
 msgstr "Benutzerdefinierte Felder"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.customTemplate.name"
+msgid "Custom ICS filename template"
+msgstr "Benutzerdefinierte ICS-Dateinamenvorlage"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.customMultiDay"
 msgid "Custom multi-day"
@@ -3362,6 +3487,16 @@ msgstr "Benutzerdefinierte Wiederholung..."
 msgctxt "modals.reminder.descriptionPlaceholder"
 msgid "Custom reminder message"
 msgstr "Eigene Erinnerungsnachricht"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.custom"
+msgid "Custom template"
+msgstr "Benutzerdefinierte Vorlage"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.options.custom"
+msgid "Custom template"
+msgstr "Benutzerdefinierte Vorlage"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.taskProperties.titleCard.customTemplate"
@@ -3410,6 +3545,11 @@ msgstr "Täglich"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "modals.task.recurrence.daily"
+msgid "Daily"
+msgstr "Täglich"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.defaults.options.daily"
 msgid "Daily"
 msgstr "Täglich"
 
@@ -3477,6 +3617,11 @@ msgstr "Daten werden im Frontmatter Ihrer täglichen Notizen gespeichert"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "components.dateContextMenu.dateLabel"
+msgid "Date"
+msgstr "Datum"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.date"
 msgid "Date"
 msgstr "Datum"
 
@@ -3605,6 +3750,11 @@ msgctxt "settings.native.defaultDueTime"
 msgid "Default due time"
 msgstr "Standard-Fälligkeitszeit"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.defaultDuration.name"
+msgid "Default event duration"
+msgstr "Standard-Ereignisdauer"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.header"
 msgid "Default event visibility"
@@ -3620,6 +3770,16 @@ msgctxt "settings.general.taskStorage.defaultFolder.description"
 msgid "Default location for new tasks. Supports folder template variables like '{{currentNotePath}}', '{{currentNoteTitle}}', and '{{projectFilePath}}', plus Daily Notes-style date tokens like YYYY/MM/DD."
 msgstr "Standardort für neue Aufgaben. Unterstützt Ordnervorlagen-Variablen wie '{{currentNotePath}}', '{{currentNoteTitle}}' und '{{projectFilePath}}' sowie Datums-Tokens im Daily-Notes-Stil wie YYYY/MM/DD."
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.defaultNoteFolder.name"
+msgid "Default note folder"
+msgstr "Standard-Notizordner"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.defaultNoteTemplate.name"
+msgid "Default note template"
+msgstr "Standard-Notizvorlage"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultPriority.name"
 msgid "Default priority"
@@ -3634,6 +3794,11 @@ msgstr "Standardprojekte"
 msgctxt "settings.defaults.basicDefaults.defaultRecurrence.name"
 msgid "Default recurrence"
 msgstr "Standard-Wiederholung"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.defaultReminder.name"
+msgid "Default reminder"
+msgstr "Standard-Erinnerung"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.header.defaultReminders"
@@ -3760,6 +3925,11 @@ msgstr "{name} löschen?"
 msgctxt "modals.timeEntryEditor.deleteEntry"
 msgid "Delete entry"
 msgstr "Eintrag löschen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
+msgid "Delete event on task delete"
+msgstr "Ereignis bei Aufgabenlöschung löschen"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.deleteTitle"
@@ -3918,6 +4088,11 @@ msgstr "Richtung:"
 msgctxt "settings.features.indexing.disableDesc"
 msgid "Disable automatic indexing of note content for better performance"
 msgstr "Automatische Indexierung von Notizinhalten für bessere Leistung deaktivieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.mobileCalendar.disable.name"
+msgid "Disable calendar integrations on mobile"
+msgstr "Kalenderintegrationen auf Mobilgeräten deaktivieren"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.indexing.disableName"
@@ -4136,6 +4311,11 @@ msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "Fälligkeitsdatum"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.due"
+msgid "Due date"
+msgstr "Fälligkeitsdatum"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.due"
 msgid "Due date"
@@ -4192,6 +4372,11 @@ msgstr "Fällig: {date}"
 msgctxt "modals.task.tooltips.dueValue"
 msgid "Due: {value}"
 msgstr "Fällig: {value}"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.defaultDuration.description"
+msgid "Duration in minutes for timed events (used when task has no time estimate)."
+msgstr "Dauer in Minuten für zeitgesteuerte Ereignisse (wird verwendet, wenn die Aufgabe keine Zeitschätzung hat)."
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.description"
@@ -4301,6 +4486,11 @@ msgctxt "services/buildTaskCreationDataFromCli: buildTaskCreationDataFromCli dis
 msgid "Either --text or --title is required"
 msgstr "Entweder --text oder --title ist erforderlich"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.enable.name"
+msgid "Enable automatic export"
+msgstr "Automatischen Export aktivieren"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.debugLogging.enableName"
 msgid "Enable debug logging"
@@ -4310,6 +4500,16 @@ msgstr "Debug-Protokollierung aktivieren"
 msgctxt "settings.appearance.projectAutosuggest.enableFuzzyMatching.name"
 msgid "Enable fuzzy matching"
 msgstr "Unscharfe Suche aktivieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.enable.name"
+msgid "Enable HTTP API"
+msgstr "HTTP API aktivieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.mcp.enable.name"
+msgid "Enable MCP server"
+msgstr "MCP-Server aktivieren"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.nlp.enable.name"
@@ -4330,6 +4530,11 @@ msgstr "Suchfeld aktivieren"
 msgctxt "views.basesCalendar.settings.layout.enableSearch"
 msgid "Enable search box"
 msgstr "Suchfeld aktivieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.enable.name"
+msgid "Enable task export"
+msgstr "Aufgabenexport aktivieren"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.enableDesc"
@@ -4493,6 +4698,11 @@ msgctxt "settings.general.taskIdentification.propertyValuePlaceholder"
 msgid "Enter property value"
 msgstr "Eigenschaftswert eingeben"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.native.reminderOffsetRange"
+msgid "Enter reminder offsets from 1 to {max} minutes, separated by commas."
+msgstr "Gib Erinnerungsabstände von 1 bis {max} Minuten ein, durch Kommas getrennt."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.nlp.enterToSubmit.name"
 msgid "Enter saves task"
@@ -4563,6 +4773,11 @@ msgctxt "settings.appearance.timeSettings.eventMinHeight.name"
 msgid "Event minimum height"
 msgstr "Ereignis-Mindesthöhe"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.options.title"
+msgid "Event title"
+msgstr "Ereignis-Titel"
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyTitleSuccess"
 msgid "Event title copied to clipboard"
@@ -4572,6 +4787,11 @@ msgstr "Ereignis-Titel in Zwischenablage kopiert"
 msgctxt "modals.calendarEventCreation.titleRequired"
 msgid "Event title is required"
 msgstr "Ereignistitel ist erforderlich"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.name"
+msgid "Event title template"
+msgstr "Ereignistitelvorlage"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyUrlSuccess"
@@ -4657,6 +4877,16 @@ msgstr "Exakter Aufgabentitel"
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Exact task title for action=start"
 msgstr "Exakter Aufgabentitel für action=start"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.excludeArchived.name"
+msgid "Exclude archived tasks"
+msgstr "Archivierte Aufgaben ausschließen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.excludeCompleted.name"
+msgid "Exclude completed tasks"
+msgstr "Abgeschlossene Aufgaben ausschließen"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overdue.hideCompletedDesc"
@@ -4758,6 +4988,31 @@ msgctxt "commands.exportAllTasksIcs"
 msgid "Export all tasks as ICS file"
 msgstr "Alle Aufgaben als ICS-Datei exportieren"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.filePath.name"
+msgid "Export file path"
+msgstr "Export-Dateipfad"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.exportNow.buttonText"
+msgid "Export now"
+msgstr "Jetzt exportieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.exportNow.name"
+msgid "Export now"
+msgstr "Jetzt exportieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.status.title"
+msgid "Export status:"
+msgstr "Export-Status:"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.header"
+msgid "Export tasks to Google Calendar"
+msgstr "Aufgaben zu Google Kalender exportieren"
+
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
 msgid "Export v3 saved views to Bases"
@@ -4772,6 +5027,11 @@ msgstr "V3-Ansichten exportieren"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "{count} gespeicherte Ansichten nach {filePath} exportiert"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.mcp.enable.description"
+msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
+msgstr "TaskNotes-Werkzeuge über Model Context Protocol am Endpunkt /mcp bereitstellen. Erfordert, dass die HTTP API aktiviert ist."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.notices.addReminderFailure"
@@ -5658,6 +5918,11 @@ msgctxt "settings.features.instantConvert.folder.name"
 msgid "Folder for inline-created tasks"
 msgstr "Ordner für inline erstellte Aufgaben"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.defaultNoteFolder.description"
+msgid "Folder for notes created from ICS events"
+msgstr "Ordner für Notizen, die aus ICS-Ereignisse erstellt werden"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.folderManagement.header"
 msgid "Folder management"
@@ -5736,6 +6001,11 @@ msgctxt "settings.general.frontmatter.header"
 msgid "Frontmatter"
 msgstr "Frontmatter"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.timestamp"
+msgid "Full timestamp (YYYY-MM-DD-HHMMSS)"
+msgstr "Vollständiger Zeitstempel (YYYY-MM-DD-HHMMSS)"
+
 #: src/modals/StorageLocationConfirmationModal.ts
 msgctxt "modals.storageLocation.bullets.futureSessions"
 msgid "Future sessions will be saved to daily notes"
@@ -5809,6 +6079,7 @@ msgid "Google Calendar connection expired. Please reconnect in Settings > Integr
 msgstr "Die Google Kalender-Verbindung ist abgelaufen. Bitte verbinden Sie sie unter Einstellungen > Integrationen erneut."
 
 #: src/services/TaskCalendarSyncService.ts
+#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
 msgid "Google Calendar export is not enabled or configured"
 msgstr "Google Kalender-Export ist nicht aktiviert oder konfiguriert"
@@ -5949,10 +6220,25 @@ msgctxt "settings.defaults.reminders.units.hours"
 msgid "hours"
 msgstr "Stunden"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.description"
+msgid "How filenames are generated for notes created from ICS events"
+msgstr "Wie Dateinamen für Notizen generiert werden, die aus ICS-Ereignisse erstellt werden"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.interval.description"
+msgid "How often to update the export file"
+msgstr "Wie oft die Export-Datei aktualisiert werden soll"
+
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "How recurring tasks advance: from the scheduled date or completion date"
 msgstr "Wie wiederkehrende Aufgaben fortgesetzt werden: ab Planungsdatum oder Abschlussdatum"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.header"
+msgid "HTTP API"
+msgstr "HTTP API"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.hTTPHTTPSWebcalOrWebcalsURL"
@@ -5963,6 +6249,11 @@ msgstr "HTTP-, HTTPS-, webcal- oder webcals-URL."
 msgctxt "settings.taskProperties.taskStatuses.fields.icon"
 msgid "Icon:"
 msgstr "Symbol:"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.name"
+msgid "ICS note filename format"
+msgstr "ICS-Notiz-Dateinamenformat"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.notices.serviceUnavailable"
@@ -6018,6 +6309,16 @@ msgstr "Ereignistyp, Signatur und Zustellungs-ID einschließen. Für Dienste mit
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.name"
 msgid "Include folders"
 msgstr "Ordner einschließen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.includeObsidianLink.name"
+msgid "Include Obsidian link"
+msgstr "Obsidian-Link einschließen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.includeDescription.name"
+msgid "Include task details in description"
+msgstr "Aufgabendetails in Beschreibung einschließen"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.includedFolders"
@@ -6209,6 +6510,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options p
 msgid "JSON object keyed by swim lane property"
 msgstr "JSON-Objekt mit Swimlane-Eigenschaften als Schlüsseln"
 
+#: src/settings/native/relativeSyncTime.ts
+msgctxt "settings.integrations.timeFormats.justNow"
+msgid "Just now"
+msgstr "Gerade eben"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Kanban Board"
@@ -6284,6 +6590,11 @@ msgstr "letzten"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
 msgstr "Letzter Tag"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.status.lastExport"
+msgid "Last export: {time}"
+msgstr "Letzter Export: {time}"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.lastSync"
@@ -6409,6 +6720,11 @@ msgstr "Notiz \"{name}\" mit Ereignis verlinkt"
 msgctxt "services.icsNote.notices.linkedToEvent"
 msgid "Linked note to ICS event: {title}"
 msgstr "Notiz mit ICS-Ereignis verlinkt: {title}"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.list"
+msgid "List"
+msgstr "Liste"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.listDayCount"
@@ -6765,6 +7081,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.mont
 msgid "Monthly"
 msgstr "Monatlich"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.defaults.options.monthly"
+msgid "Monthly"
+msgstr "Monatlich"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.monthlyAfterCompletion"
 msgid "Monthly (after completion)"
@@ -6929,6 +7250,11 @@ msgstr "Neue Aufgaben haben keine Standarderinnerungen."
 msgctxt "views.basesCalendar.hints.next"
 msgid "Next"
 msgstr "Weiter"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.status.nextExport"
+msgid "Next export: {time}"
+msgstr "Nächster Export: {time}"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.nextInOrder"
@@ -7490,6 +7816,11 @@ msgctxt "settings.native.notificationsTimeTrackingRecurrencePomodoroAndTimeblock
 msgid "Notifications, time tracking, recurrence, Pomodoro, and timeblocking."
 msgstr "Benachrichtigungen, Zeiterfassung, Wiederholungen, Pomodoro und Zeitblöcke."
 
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.number"
+msgid "Number"
+msgstr "Zahl"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.customDayCount.description"
 msgid "Number of days to show in custom multi-day view"
@@ -8034,6 +8365,11 @@ msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description"
 msgid "Path to template file for materialized occurrence notes. A recurring task''s occurrence_template field takes priority over this fallback."
 msgstr "Pfad zur Vorlagendatei für materialisierte Vorkommnisnotizen. Das occurrence_template einer wiederkehrenden Aufgabe hat Vorrang vor diesem Fallback."
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.defaultNoteTemplate.description"
+msgid "Path to template file for notes created from ICS events"
+msgstr "Pfad zur Vorlagendatei für Notizen, die aus ICS-Ereignisse erstellt werden"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.bodyTemplateFile.description"
 msgid "Path to template file for task body content. Supports template variables like '{{title}}', '{{date}}', '{{time}}', '{{priority}}', '{{status}}', etc."
@@ -8043,6 +8379,11 @@ msgstr "Pfad zur Vorlagendatei für Aufgabenkörperinhalte. Unterstützt Vorlage
 msgctxt "modals.icsNoteCreation.templatePathDesc"
 msgid "Path to the template file"
 msgstr "Pfad zur Vorlagendatei"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.filePath.description"
+msgid "Path where the ICS file will be saved (relative to vault root)"
+msgstr "Pfad, wo die ICS-Datei gespeichert wird (relativ zur Vault-Wurzel)"
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
@@ -8146,6 +8487,11 @@ msgctxt "notices.timeblockRequiredFieldsMissing"
 msgid "Please fill in all required fields"
 msgstr "Bitte füllen Sie alle erforderlichen Felder aus"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.notices.reloadRequired"
+msgid "Please reload Obsidian for the automatic export changes to take effect."
+msgstr "Bitte laden Sie Obsidian neu, damit die automatischen Export-Änderungen wirksam werden."
+
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.missingDateTime"
 msgid "Please specify both date and time for absolute reminder"
@@ -8235,6 +8581,11 @@ msgstr "Pomodoro-Speicherort geändert zu {location}"
 msgctxt "settings.features.pomodoro.header"
 msgid "Pomodoro timer"
 msgstr "Pomodoro-Timer"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.port.description"
+msgid "Port number for the HTTP API server"
+msgstr "Port-Nummer für den HTTP API-Server"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.subtaskChevronPosition.description"
@@ -8518,6 +8869,11 @@ msgctxt "ui.taskCard.labels.recurrence"
 msgid "Recurring"
 msgstr "Wiederkehrend"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name"
+msgid "Recurring event related notes"
+msgstr "Verknüpfte Notizen für wiederkehrende Ereignisse"
+
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.recurringCompleted.label"
 msgid "Recurring instance completed"
@@ -8733,6 +9089,11 @@ msgctxt "contextMenus.task.removeTag"
 msgid "Remove {tag}"
 msgstr "{tag} entfernen"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.description"
+msgid "Remove all task-event links without deleting calendar events."
+msgstr "Alle Verknüpfungen zwischen Aufgaben und Ereignissen entfernen, ohne Kalenderereignisse zu löschen."
+
 #: src/modals/TimeblockCreationModal.ts
 msgctxt "modals/TimeblockCreationModal: TimeblockCreationModal.renderAttachmentsList display"
 msgid "Remove attachment"
@@ -8752,6 +9113,11 @@ msgstr "„Blockiert durch“ entfernen…"
 msgctxt "contextMenus.task.dependencies.removeBlocking"
 msgid "Remove blocking…"
 msgstr "„Blockiert“ entfernen…"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.description"
+msgid "Remove calendar event when the corresponding task is deleted."
+msgstr "Kalenderereignis entfernen, wenn die entsprechende Aufgabe gelöscht wird."
 
 #: src/modals/taskModalProjects.ts
 msgctxt "modals.task.projectsRemoveTooltip"
@@ -8821,6 +9187,16 @@ msgstr "Durch das Neuordnen werden in {count} Notizen die Werte von \"{field}\" 
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"
 msgstr "Aus TaskNotes reparieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.requireDueDate.name"
+msgid "Require due date"
+msgstr "Fälligkeitsdatum erforderlich"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.requireScheduledDate.name"
+msgid "Require scheduled date"
+msgstr "Planungsdatum erforderlich"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.requiredPropertyKey.name"
@@ -9023,6 +9399,11 @@ msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "Planungsdatum"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.scheduled"
+msgid "Scheduled date"
+msgstr "Planungsdatum"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.scheduled"
 msgid "Scheduled date"
@@ -9121,6 +9502,11 @@ msgstr "Sehen Sie, was in der neuesten Version von TaskNotes neu ist"
 msgctxt "contextMenus.date.modal.select"
 msgid "Select"
 msgstr "Auswählen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.targetCalendar.placeholder"
+msgid "Select a calendar..."
+msgstr "Kalender auswählen..."
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder"
@@ -9228,6 +9614,11 @@ msgctxt "settings.features.uiLanguage.dropdown.description"
 msgid "Select the language used for TaskNotes interface text"
 msgstr "Wählen Sie die Sprache für TaskNotes-Oberflächentexte"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.targetCalendar.description"
+msgid "Select which calendar to create task events in."
+msgstr "Wählen Sie den Kalender aus, in dem Aufgabenereignisse erstellt werden sollen."
+
 #: src/settings/native/features.ts
 msgctxt "settings.native.selectWhichPropertiesToShowInInlineTaskCards"
 msgid "Select which properties to show in inline task cards."
@@ -9237,6 +9628,11 @@ msgstr "Eigenschaften auswählen, die in eingebetteten Aufgabenkarten erscheinen
 msgctxt "main: TaskNotesPlugin.openQuickActionsForTaskFile display"
 msgid "Selected file is not a tasknote"
 msgstr "Ausgewählte Datei ist keine Aufgabennotiz"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance"
+msgid "Selected instance only"
+msgstr "Nur ausgewählte Instanz"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.name"
@@ -9273,11 +9669,21 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Werte durch Kommas trennen."
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
+msgid "Series-wide"
+msgstr "Gesamte Serie"
+
 #: src/bases/TaskListView.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.serviceUnavailable"
 msgid "Service not available. Please try reloading the plugin."
 msgstr "Dienst nicht verfügbar. Laden Sie das Plugin erneut."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
+msgid "Service not initialized - please restart Obsidian"
+msgstr "Dienst nicht initialisiert - bitte starten Sie Obsidian neu"
 
 #: src/components/DateContextMenu.ts
 msgctxt "contextMenus.date.modal.title"
@@ -9421,6 +9827,11 @@ msgstr "Alle anzeigen"
 msgctxt "views.basesCalendar.settings.layout.showAllDaySlot"
 msgid "Show all-day area"
 msgstr "Ganztagesbereich anzeigen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.name"
+msgid "Show all-day task events as free"
+msgstr "Ganztägige Aufgabenereignisse als frei anzeigen"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showCompletedRecurringInstances"
@@ -9672,6 +10083,11 @@ msgctxt "views.pomodoro.buttons.skipBreak"
 msgid "Skip break"
 msgstr "Pause überspringen"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.mobileCalendar.disable.description"
+msgid "Skip Google, Microsoft, and ICS calendar loading on Obsidian mobile. Desktop calendar integrations are unchanged."
+msgstr "Google-, Microsoft- und ICS-Kalender auf Obsidian Mobile nicht laden. Desktop-Kalenderintegrationen bleiben unverändert."
+
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskEditCompletions.ts
 msgctxt "contextMenus.task.skipInstance"
@@ -9742,6 +10158,11 @@ msgstr "Fokus starten"
 msgctxt "onboarding.title"
 msgid "Start here with TaskNotes"
 msgstr "Erste Schritte mit TaskNotes"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.enable.description"
+msgid "Start local HTTP server for API access"
+msgstr "Lokalen HTTP-Server für API-Zugriff starten"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startLongBreak"
@@ -10066,6 +10487,21 @@ msgctxt "modals.storageLocation.title.switch"
 msgid "Switch to daily notes storage?"
 msgstr "Zu täglichen Notizen wechseln?"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncAllTasks.buttonText"
+msgid "Sync all"
+msgstr "Alle synchronisieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncAllTasks.description"
+msgid "Sync all existing tasks to Google Calendar. This will create events for tasks that haven''t been synced yet."
+msgstr "Alle vorhandenen Aufgaben mit Google Kalender synchronisieren. Dies erstellt Ereignisse für Aufgaben, die noch nicht synchronisiert wurden."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncAllTasks.name"
+msgid "Sync all tasks"
+msgstr "Alle Aufgaben synchronisieren"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.syncAllTasksGoogleCalendar"
 msgid "Sync all tasks to Google Calendar"
@@ -10091,6 +10527,21 @@ msgctxt "settings.integrations.oauth.syncFailed"
 msgid "Sync failed: {message}"
 msgstr "Synchronisierung fehlgeschlagen: {message}"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnComplete.name"
+msgid "Sync on task complete"
+msgstr "Bei Aufgabenabschluss synchronisieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnCreate.name"
+msgid "Sync on task create"
+msgstr "Bei Aufgabenerstellung synchronisieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnUpdate.name"
+msgid "Sync on task update"
+msgstr "Bei Aufgabenaktualisierung synchronisieren"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.native.syncProperties"
 msgid "Sync properties"
@@ -10101,11 +10552,21 @@ msgctxt "contextMenus.task.calendar.syncToGoogle"
 msgid "Sync to Google Calendar"
 msgstr "Mit Google Kalender synchronisieren"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.name"
+msgid "Sync trigger"
+msgstr "Synchronisierungsauslöser"
+
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
 msgctxt "ui.taskCard.googleCalendarSyncTooltip"
 msgid "Synced to Google Calendar"
 msgstr "Mit Google Kalender synchronisiert"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.notices.syncResults"
+msgid "Synced: {synced}, Failed: {failed}, Skipped: {skipped}"
+msgstr "Synchronisiert: {synced}, Fehlgeschlagen: {failed}, Übersprungen: {skipped}"
 
 #: src/services/TaskCalendarSyncService.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.syncingTasks"
@@ -10189,6 +10650,11 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Tags"
 msgstr "Tags"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
+msgid "Target calendar"
+msgstr "Zielkalender"
+
 #: src/bases/KanbanView.ts
 msgctxt "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display"
 msgid "Task"
@@ -10240,6 +10706,11 @@ msgstr "Aufgabe archiviert"
 msgctxt "services.task.notices.templateNotFound"
 msgid "Task body template not found: {path}"
 msgstr "Aufgabenkörper-Vorlage nicht gefunden: {path}"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.notices.serviceNotAvailable"
+msgid "Task calendar sync service not available"
+msgstr "Aufgaben-Kalender-Synchronisierungsdienst nicht verfügbar"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.header"
@@ -10495,6 +10966,11 @@ msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Task text to parse with NLP unless --literal is set"
 msgstr "Aufgabentext, der mit NLP eingelesen wird, sofern --literal nicht gesetzt ist"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.title"
+msgid "Task title (non-updating)"
+msgstr "Aufgabentitel (Nicht-aktualisierend)"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.validateTaskData error"
 msgid "Task title cannot be empty."
@@ -10662,6 +11138,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Task List"
 msgstr "TaskNotes-Aufgabenliste"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.description"
+msgid "TaskNotes token, not your AI provider''s API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client''s bearer authentication settings. Update clients whenever this token changes."
+msgstr "TaskNotes-Token, nicht der API-Schlüssel Ihres KI-Anbieters. Zum Erstellen HTTP-API aktivieren, dieses Feld leer lassen und Obsidian neu starten. Anschließend das erzeugte Token in die Bearer-Authentifizierungseinstellungen des Clients kopieren. Bei jeder Token-Änderung die Clients aktualisieren."
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.TaskNotesupdatedtotasknotestaskandmoveditsappsettings"
 msgid "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed."
@@ -10688,10 +11169,25 @@ msgctxt "notices.audit.copiedTasks"
 msgid "Tasks copied: {count}"
 msgstr "Kopierte Aufgaben: {count}"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.notices.exportSuccess"
+msgid "Tasks exported successfully"
+msgstr "Aufgaben erfolgreich exportiert"
+
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.postponed"
 msgid "Tasks postponed: {count}. Failed: {failed}."
 msgstr "Verschobene Aufgaben: {count}. Fehlgeschlagen: {failed}."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
+msgid "Template for custom ICS event filenames"
+msgstr "Vorlage für benutzerdefinierte ICS-Ereignis-Dateinamen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.description"
+msgid "Template for event titles. Available variables: '{{title}}', '{{status}}', '{{priority}}'"
+msgstr "Vorlage für Ereignistitel. Verfügbare Variablen: '{{title}}', '{{status}}', '{{priority}}'"
 
 #: src/services/ICSNoteService.ts
 msgctxt "services.icsNote.notices.templateNotFound"
@@ -10717,6 +11213,11 @@ msgstr "Vorlage: "
 msgctxt "settings.native.templates"
 msgid "Templates"
 msgstr "Vorlagen"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.text"
+msgid "Text"
+msgstr "Text"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -10865,6 +11366,11 @@ msgstr "Ihre vorhandenen Pomodoro-Sitzungsdaten werden in das Frontmatter tägli
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.confirmMessage"
 msgid "This will overwrite the configured default .base files with freshly generated templates. Any manual edits in those files will be replaced."
 msgstr "Dadurch werden die konfigurierten Standard-.base-Dateien mit neu generierten Vorlagen überschrieben. Manuelle Änderungen in diesen Dateien werden ersetzt."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessage"
+msgid "This will remove all links between tasks and calendar events. The calendar events will remain but will no longer be updated when tasks change. Are you sure?"
+msgstr "Dadurch werden alle Verknüpfungen zwischen Aufgaben und Kalenderereignissen entfernt. Die Ereignisse bleiben erhalten, werden bei Änderungen an Aufgaben aber nicht mehr aktualisiert. Möchten Sie fortfahren?"
 
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.thu"
@@ -11090,6 +11596,11 @@ msgstr "Zeitblöcke müssen spezifische Zeiten haben. Bitte wählen Sie einen Ze
 msgctxt "views.pomodoro.timer.inputLabel"
 msgid "Timer duration"
 msgstr "Timerdauer"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.options.timestamp"
+msgid "Timestamp"
+msgstr "Zeitstempel"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents"
@@ -11577,6 +12088,26 @@ msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.fetchSubscripti
 msgid "Unknown subscription type"
 msgstr "Unbekannter Abonnementtyp"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.buttonText"
+msgid "Unlink all"
+msgstr "Alle trennen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmButtonText"
+msgid "Unlink all"
+msgstr "Alle trennen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmTitle"
+msgid "Unlink all tasks"
+msgstr "Alle Aufgaben trennen"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.name"
+msgid "Unlink all tasks"
+msgstr "Alle Aufgaben trennen"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.defaultNames.unnamedField"
 msgid "Unnamed field"
@@ -11644,6 +12175,11 @@ msgctxt "utils/TasksPluginParser: TasksPluginParser.parseTaskContent title"
 msgid "Untitled Task"
 msgstr "Aufgabe ohne Titel"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnComplete.description"
+msgid "Update calendar event when a task is completed (adds checkmark to title)."
+msgstr "Kalenderereignis aktualisieren, wenn eine Aufgabe abgeschlossen wird (fügt ein Häkchen zum Titel hinzu)."
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.updateDefaultBaseFiles"
 msgid "Update default base files"
@@ -11670,6 +12206,11 @@ msgstr "Dateien aktualisieren"
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.confirmText"
 msgid "Update files"
 msgstr "Dateien aktualisieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.interval.name"
+msgid "Update interval (between 5 and 1440 minutes)"
+msgstr "Aktualisierungsintervall (zwischen 5 und 1440 Minuten)"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"
@@ -11718,6 +12259,11 @@ msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "Inhaltsvorlage verwenden"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
+msgid "Use ICS event end time as task due date"
+msgstr "ICS-Ereignis-Endzeit als Fälligkeitsdatum verwenden"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.name"
 msgid "Use Markdown links in frontmatter"
@@ -11753,6 +12299,11 @@ msgctxt "settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
 msgid "Use task defaults on instant convert"
 msgstr "Aufgabenstandards bei sofortiger Konvertierung verwenden"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.useDuration.name"
+msgid "Use task duration for event length"
+msgstr "Aufgabendauer für Ereignislänge verwenden"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.UseTaskNotessettings"
 msgid "Use TaskNotes settings"
@@ -11772,6 +12323,21 @@ msgstr "Verwenden Sie dieses Geheimnis, um Nutzdaten in der empfangenden Anwendu
 msgctxt "settings.modalFields.manager.fieldTypes.user"
 msgid "User"
 msgstr "Benutzerdefiniert"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.uuid"
+msgid "UUID v4"
+msgstr "UUID v4"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.taskPriorities.fields.value"
+msgid "Value:"
+msgstr "Wert:"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.taskStatuses.fields.value"
+msgid "Value:"
+msgstr "Wert:"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.vaultRoot"
@@ -11914,6 +12480,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.week
 msgid "Weekly"
 msgstr "Wöchentlich"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.defaults.options.weekly"
+msgid "Weekly"
+msgstr "Wöchentlich"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.weeklyAfterCompletion"
 msgid "Weekly (after completion)"
@@ -11965,10 +12536,50 @@ msgctxt "views.releaseNotes.title"
 msgid "What''s new in TaskNotes {version}"
 msgstr "Was ist neu in TaskNotes {version}"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.excludeArchived.description"
+msgid "When enabled, archived tasks are omitted from ICS exports."
+msgstr "Wenn aktiviert, werden archivierte Aufgaben aus ICS-Exporten ausgelassen."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.excludeCompleted.description"
+msgid "When enabled, completed tasks are omitted from ICS exports. Completed statuses are taken from your task statuses settings."
+msgstr "Wenn aktiviert, werden abgeschlossene Aufgaben aus ICS-Exporten ausgelassen. Abgeschlossene Status werden aus Ihren Aufgabenstatus-Einstellungen übernommen."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.requireDueDate.description"
+msgid "When enabled, only tasks with a due date are included in ICS exports."
+msgstr "Wenn aktiviert, werden nur Aufgaben mit Fälligkeitsdatum in ICS-Exporte aufgenommen."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.requireScheduledDate.description"
+msgid "When enabled, only tasks with a scheduled date are included in ICS exports."
+msgstr "Wenn aktiviert, werden nur Aufgaben mit geplantem Datum in ICS-Exporte aufgenommen."
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.description"
 msgid "When enabled, tags matching the task identification tag (including hierarchical matches like ''task/project'') will be hidden from task card displays"
 msgstr "Wenn aktiviert, werden Tags, die mit dem Aufgabenidentifikations-Tag übereinstimmen (einschließlich hierarchischer Übereinstimmungen wie ''task/project''), in Aufgabenkartenanzeigen ausgeblendet"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.allDayEvents.description"
+msgid "When enabled, tasks are created as all-day events. When disabled, uses time estimate for duration."
+msgstr "Wenn aktiviert, werden Aufgaben als Ganztagesereignisse erstellt. Wenn deaktiviert, wird die Zeitschätzung für die Dauer verwendet."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.description"
+msgid "When enabled, tasks created from calendar events will have their due date set to the event''s end time. For all-day events, the due date will be set to the event date. For timed events, the due date will include the end time."
+msgstr "Wenn aktiviert, wird das Fälligkeitsdatum von Aufgaben aus Kalenderereignissen auf die Endzeit des Ereignisses gesetzt. Bei ganztägigen Ereignissen wird das Fälligkeitsdatum auf das Ereignisdatum gesetzt. Bei zeitgesteuerten Ereignissen enthält das Fälligkeitsdatum die Endzeit."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.enable.description"
+msgid "When enabled, tasks with dates will be automatically synced to Google Calendar as events."
+msgstr "Wenn aktiviert, werden Aufgaben mit Terminen automatisch als Ereignisse mit Google Kalender synchronisiert."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.useDuration.description"
+msgid "When enabled, uses the task''s time estimate (duration) instead of due date for the calendar event end time. This is useful for GTD workflows where scheduled + duration represents work planning, while due date represents deadlines."
+msgstr "Wenn aktiviert, wird die geschätzte Dauer der Aufgabe anstelle des Fälligkeitsdatums für die Endzeit des Kalenderevents verwendet. Dies ist nützlich für GTD-Workflows, bei denen geplant + Dauer die Arbeitsplanung darstellt, während das Fälligkeitsdatum Fristen repräsentiert."
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskCreated.description"
@@ -12080,6 +12691,11 @@ msgctxt "settings.appearance.calendarView.firstDayOfWeek.description"
 msgid "Which day should be the first column in week views"
 msgstr "Welcher Tag soll die erste Spalte in Wochenansichten sein"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.description"
+msgid "Which task date should trigger calendar event creation."
+msgstr "Welches Aufgabendatum soll die Kalenderereigniserstellung auslösen."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
@@ -12108,6 +12724,11 @@ msgstr "Jahresansicht"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.yearly"
+msgid "Yearly"
+msgstr "Jährlich"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.defaults.options.yearly"
 msgid "Yearly"
 msgstr "Jährlich"
 
@@ -12166,3 +12787,13 @@ msgstr "YYYY-MM-DD"
 msgctxt "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder"
 msgid "YYYY-MM-DD (e.g., 2025-01-15) - leave empty to use property"
 msgstr "JJJJ-MM-TT (z.B. 2025-01-15) - leer lassen, um Eigenschaft zu verwenden"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.options.zettel"
+msgid "Zettelkasten format"
+msgstr "Zettelkasten-Format"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.zettel"
+msgid "Zettelkasten format (YYMMDD + base36 seconds since midnight)"
+msgstr "Zettelkasten-Format (JJMMTT + base36 Sekunden seit Mitternacht)"

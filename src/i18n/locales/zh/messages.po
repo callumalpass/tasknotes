@@ -309,6 +309,11 @@ msgctxt "ui.taskCard.relativeDayAtTime"
 msgid "{day} at {time}"
 msgstr "{day} {time}"
 
+#: src/settings/native/relativeSyncTime.ts
+msgctxt "settings.integrations.timeFormats.daysAgo"
+msgid "{days, plural, one {{days, number} day ago} other {{days, number} days ago}}"
+msgstr "{days, plural, other {{days, number}天前}}"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases relative due date"
 msgid "{days, plural, one {# day ago} other {# days ago}}"
@@ -378,6 +383,11 @@ msgstr "{fieldName}："
 msgctxt "generated Bases compact hours and minutes"
 msgid "{hours, number}h {minutes, number}m"
 msgstr "{hours, number}小时 {minutes, number}分钟"
+
+#: src/settings/native/relativeSyncTime.ts
+msgctxt "settings.integrations.timeFormats.hoursAgo"
+msgid "{hours, plural, one {{hours, number} hour ago} other {{hours, number} hours ago}}"
+msgstr "{hours, plural, other {{hours, number}小时前}}"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalTime"
@@ -514,6 +524,11 @@ msgctxt "generated Bases compact minutes"
 msgid "{minutes, number}m"
 msgstr "{minutes, number}分钟"
 
+#: src/settings/native/relativeSyncTime.ts
+msgctxt "settings.integrations.timeFormats.minutesAgo"
+msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
+msgstr "{minutes, plural, other {{minutes, number}分钟前}}"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
 msgid "{minutes}m total"
@@ -598,6 +613,11 @@ msgstr "尚未配置 {provider} OAuth。请在设置中提供 OAuth 凭据。"
 msgctxt "recurrence end date"
 msgid "{recurrence} (until {date})"
 msgstr "{recurrence}（截至 {date}）"
+
+#: src/settings/native/creation.ts
+msgctxt "default reminder timing summary"
+msgid "{relatedTo, select, due {{direction, select, before {{duration} before due date} after {{duration} after due date} other {{duration} before due date}}} scheduled {{direction, select, before {{duration} before scheduled date} after {{duration} after scheduled date} other {{duration} before scheduled date}}} other {{direction, select, before {{duration} before scheduled date} after {{duration} after scheduled date} other {{duration} before scheduled date}}}}"
+msgstr "{relatedTo, select, due {{direction, select, before {截止日期前 {duration}} after {截止日期后 {duration}} other {截止日期前 {duration}}}} scheduled {{direction, select, before {计划日期前 {duration}} after {计划日期后 {duration}} other {计划日期前 {duration}}}} other {{direction, select, before {计划日期前 {duration}} after {计划日期后 {duration}} other {计划日期前 {duration}}}}}"
 
 #: src/services/GoogleCalendarService.ts
 #: src/services/MicrosoftCalendarService.ts
@@ -1147,6 +1167,11 @@ msgctxt "contextMenus.task.dependencies.addBlocking"
 msgid "Add “blocking”…"
 msgstr "添加“受此任务阻塞”的任务…"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.includeObsidianLink.description"
+msgid "Add a link back to the task in Obsidian in the event description."
+msgstr "在事件描述中添加返回Obsidian中任务的链接。"
+
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentAdd"
@@ -1209,6 +1234,11 @@ msgctxt "views.pomodoro.buttons.addMinute"
 msgid "Add one minute"
 msgstr "增加一分钟"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.defaultReminder.description"
+msgid "Add popup reminders to timed Google Calendar events. Enter minutes before the event, separated by commas. Leave empty to use calendar defaults. Common values: 15, 30, 60, 1440."
+msgstr "为带时间的 Google 日历 事件添加弹出提醒。请输入事件开始前的分钟数，用逗号分隔。留空则使用日历默认值。常用值：15、30、60、1440。"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskPriorities.addNew.buttonText"
 msgid "Add priority"
@@ -1268,6 +1298,11 @@ msgstr "添加标签…"
 msgctxt "modals.task.dependencies.addTaskButton"
 msgid "Add task"
 msgstr "添加任务"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.includeDescription.description"
+msgid "Add task metadata (priority, status, tags, etc.) to the event description."
+msgstr "将任务元数据（优先级、状态、标签等）添加到事件描述中。"
 
 #: src/bases/KanbanView.ts
 msgctxt "bases/KanbanView: KanbanView.getAddTaskLabel display"
@@ -1402,6 +1437,11 @@ msgctxt "generated Bases view name"
 msgid "All Tasks"
 msgstr "所有任务"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.description"
+msgid "All-day task exports do not block availability, including tasks converted to all-day. Timed events stay busy. Run sync all tasks to apply changes to existing events."
+msgstr "导出的全天任务事件不会占用你的日历时间，包括转换为全天事件的任务；定时事件仍标记为忙碌。运行“同步所有任务”可将更改应用到现有事件。"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.slotEventOverlap"
 msgid "Allow events to overlap"
@@ -1452,6 +1492,16 @@ msgstr "仓库中可选的 .json 模板。留空以发送原始事件数据。"
 msgctxt "settings.native.anotherPropertyAlreadyUsesThisKey"
 msgid "Another property already uses this key."
 msgstr "另一个属性已使用此键。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.name"
+msgid "API authentication token"
+msgstr "API认证令牌"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.port.name"
+msgid "API port"
+msgstr "API端口"
 
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
@@ -1606,6 +1656,11 @@ msgctxt "OAuth callback description"
 msgid "Authorization was not completed. Return to Obsidian."
 msgstr "授权未完成。请返回 Obsidian。"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.notices.serviceUnavailable"
+msgid "Auto export service not available"
+msgstr "自动导出服务不可用"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.heightModeAuto"
 msgid "Auto height"
@@ -1646,15 +1701,40 @@ msgctxt "settings.native.automaticArchiving"
 msgid "Automatic archiving"
 msgstr "自动归档"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.header"
+msgid "Automatic ICS export"
+msgstr "自动ICS导出"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.automaticSyncBehavior.header"
+msgid "Automatic sync behavior"
+msgstr "自动同步行为"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.automaticallyArchive"
 msgid "Automatically archive"
 msgstr "自动归档任务"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnCreate.description"
+msgid "Automatically create calendar event when a new task is created."
+msgstr "创建新任务时自动创建日历事件。"
+
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.autoCreateDefaultFiles.description"
 msgid "Automatically create missing default base view files on startup. Disable to prevent deleted sample files from being recreated."
 msgstr "启动时自动创建缺失的默认 Base 视图文件。禁用以防止已删除的示例文件被重新创建。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.description"
+msgid "Automatically export all your tasks to an ICS file."
+msgstr "自动将所有任务导出到ICS文件。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.enable.description"
+msgid "Automatically keep an ICS file updated with all your tasks"
+msgstr "自动更新包含所有任务的 ICS 文件"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.moveArchived.description"
@@ -1681,10 +1761,25 @@ msgctxt "settings.features.timeTracking.autoStopDesc"
 msgid "Automatically stop time tracking when a task is marked complete"
 msgstr "任务标记为完成时自动停止时间跟踪"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.description"
+msgid "Automatically sync your tasks to Google Calendar as events. Requires Google Calendar to be connected above."
+msgstr "自动将你的任务同步到Google 日历作为事件。需要在上方连接Google 日历。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnUpdate.description"
+msgid "Automatically update calendar event when a task is modified."
+msgstr "修改任务时自动更新日历事件。"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.autosuggestFilters.header"
 msgid "Autosuggestion filters (advanced)"
 msgstr "自动建议筛选器（高级）"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.endpoints.header"
+msgid "Available API endpoints"
+msgstr "可用API端点"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.variables"
@@ -1835,6 +1930,16 @@ msgstr "正文模板文件"
 msgctxt "editor/NLPCodeMirrorAutocomplete: getBooleanSuggestions info"
 msgid "Boolean"
 msgstr "布尔值"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.boolean"
+msgid "Boolean"
+msgstr "布尔值"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.both"
+msgid "Both (prefer scheduled)"
+msgstr "两者（优先计划日期）"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentUnavailable"
@@ -2279,6 +2384,11 @@ msgctxt "settings.appearance.taskCards.properties.checklistProgress"
 msgid "Checklist progress"
 msgstr "清单进度"
 
+#: src/settings/native/general.ts
+msgctxt "settings.native.chooseBaseFile"
+msgid "Choose a .base file."
+msgstr "请选择 .base 文件。"
+
 #: src/settings/native/connections.ts
 msgctxt "settings.native.chooseCalendarFile"
 msgid "Choose a local .ics file."
@@ -2318,6 +2428,11 @@ msgstr "选择重复何时结束"
 msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.description"
 msgid "Choose whether hiding identification tags also hides nested tags."
 msgstr "选择隐藏识别标签时是否同时隐藏嵌套标签。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description"
+msgid "Choose whether notes linked to one recurrence of an external calendar event appear across the loaded series or only on the selected instance."
+msgstr "选择关联到外部日历事件某一次重复的笔记，是显示在已加载的整个系列中，还是仅显示在所选实例上。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.description"
@@ -3060,6 +3175,11 @@ msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Create a TaskNotes task from free text or explicit flags"
 msgstr "从自由文本或明确指定的选项创建 TaskNotes 任务"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.allDayEvents.name"
+msgid "Create as all-day events"
+msgstr "创建为全天事件"
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.heading"
 msgid "Create calendar event"
@@ -3327,6 +3447,11 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Custom Fields"
 msgstr "自定义字段"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.customTemplate.name"
+msgid "Custom ICS filename template"
+msgstr "自定义ICS文件名模板"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.customMultiDay"
 msgid "Custom multi-day"
@@ -3361,6 +3486,16 @@ msgstr "自定义重复..."
 msgctxt "modals.reminder.descriptionPlaceholder"
 msgid "Custom reminder message"
 msgstr "自定义提醒消息"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.custom"
+msgid "Custom template"
+msgstr "自定义模板"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.options.custom"
+msgid "Custom template"
+msgstr "自定义模板"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.taskProperties.titleCard.customTemplate"
@@ -3409,6 +3544,11 @@ msgstr "每日"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "modals.task.recurrence.daily"
+msgid "Daily"
+msgstr "每日"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.defaults.options.daily"
 msgid "Daily"
 msgstr "每日"
 
@@ -3476,6 +3616,11 @@ msgstr "数据将存储在你的每日笔记前置元数据中"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "components.dateContextMenu.dateLabel"
+msgid "Date"
+msgstr "日期"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.date"
 msgid "Date"
 msgstr "日期"
 
@@ -3604,6 +3749,11 @@ msgctxt "settings.native.defaultDueTime"
 msgid "Default due time"
 msgstr "默认截止时间"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.defaultDuration.name"
+msgid "Default event duration"
+msgstr "默认事件持续时间"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.defaultEventVisibility.header"
 msgid "Default event visibility"
@@ -3619,6 +3769,16 @@ msgctxt "settings.general.taskStorage.defaultFolder.description"
 msgid "Default location for new tasks. Supports folder template variables like '{{currentNotePath}}', '{{currentNoteTitle}}', and '{{projectFilePath}}', plus Daily Notes-style date tokens like YYYY/MM/DD."
 msgstr "新任务的默认位置。支持 '{{currentNotePath}}'、'{{currentNoteTitle}}' 和 '{{projectFilePath}}' 等文件夹模板变量，也支持 YYYY/MM/DD 等 Daily Notes 风格日期标记。"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.defaultNoteFolder.name"
+msgid "Default note folder"
+msgstr "默认笔记文件夹"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.defaultNoteTemplate.name"
+msgid "Default note template"
+msgstr "默认笔记模板"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.basicDefaults.defaultPriority.name"
 msgid "Default priority"
@@ -3633,6 +3793,11 @@ msgstr "默认项目"
 msgctxt "settings.defaults.basicDefaults.defaultRecurrence.name"
 msgid "Default recurrence"
 msgstr "默认重复"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.defaultReminder.name"
+msgid "Default reminder"
+msgstr "默认提醒"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.header.defaultReminders"
@@ -3759,6 +3924,11 @@ msgstr "删除 {name}？"
 msgctxt "modals.timeEntryEditor.deleteEntry"
 msgid "Delete entry"
 msgstr "删除条目"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
+msgid "Delete event on task delete"
+msgstr "删除任务时删除事件"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.deleteTitle"
@@ -3917,6 +4087,11 @@ msgstr "方向："
 msgctxt "settings.features.indexing.disableDesc"
 msgid "Disable automatic indexing of note content for better performance"
 msgstr "禁用笔记内容的自动索引以提高性能"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.mobileCalendar.disable.name"
+msgid "Disable calendar integrations on mobile"
+msgstr "在移动端禁用日历集成"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.indexing.disableName"
@@ -4135,6 +4310,11 @@ msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "截止日期"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.due"
+msgid "Due date"
+msgstr "截止日期"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.due"
 msgid "Due date"
@@ -4191,6 +4371,11 @@ msgstr "截止日期：{date}"
 msgctxt "modals.task.tooltips.dueValue"
 msgid "Due: {value}"
 msgstr "截止：{value}"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.defaultDuration.description"
+msgid "Duration in minutes for timed events (used when task has no time estimate)."
+msgstr "带时间的事件持续时间（分钟）（当任务没有预估时长时使用）。"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.description"
@@ -4300,6 +4485,11 @@ msgctxt "services/buildTaskCreationDataFromCli: buildTaskCreationDataFromCli dis
 msgid "Either --text or --title is required"
 msgstr "必须提供 --text 或 --title"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.enable.name"
+msgid "Enable automatic export"
+msgstr "启用自动导出"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.debugLogging.enableName"
 msgid "Enable debug logging"
@@ -4309,6 +4499,16 @@ msgstr "启用调试日志"
 msgctxt "settings.appearance.projectAutosuggest.enableFuzzyMatching.name"
 msgid "Enable fuzzy matching"
 msgstr "启用模糊匹配"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.enable.name"
+msgid "Enable HTTP API"
+msgstr "启用HTTP API"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.mcp.enable.name"
+msgid "Enable MCP server"
+msgstr "启用 MCP 服务器"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.nlp.enable.name"
@@ -4329,6 +4529,11 @@ msgstr "启用搜索框"
 msgctxt "views.basesCalendar.settings.layout.enableSearch"
 msgid "Enable search box"
 msgstr "启用搜索框"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.enable.name"
+msgid "Enable task export"
+msgstr "启用任务导出"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.enableDesc"
@@ -4492,6 +4697,11 @@ msgctxt "settings.general.taskIdentification.propertyValuePlaceholder"
 msgid "Enter property value"
 msgstr "输入属性值"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.native.reminderOffsetRange"
+msgid "Enter reminder offsets from 1 to {max} minutes, separated by commas."
+msgstr "请输入1到{max}分钟的提醒偏移量，以逗号分隔。"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.nlp.enterToSubmit.name"
 msgid "Enter saves task"
@@ -4562,6 +4772,11 @@ msgctxt "settings.appearance.timeSettings.eventMinHeight.name"
 msgid "Event minimum height"
 msgstr "事件最小高度"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.options.title"
+msgid "Event title"
+msgstr "事件标题"
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyTitleSuccess"
 msgid "Event title copied to clipboard"
@@ -4571,6 +4786,11 @@ msgstr "事件标题已复制到剪贴板"
 msgctxt "modals.calendarEventCreation.titleRequired"
 msgid "Event title is required"
 msgstr "事件标题为必填项"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.name"
+msgid "Event title template"
+msgstr "事件标题模板"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyUrlSuccess"
@@ -4656,6 +4876,16 @@ msgstr "准确的任务标题"
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Exact task title for action=start"
 msgstr "用于 action=start 的准确任务标题"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.excludeArchived.name"
+msgid "Exclude archived tasks"
+msgstr "排除已归档任务"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.excludeCompleted.name"
+msgid "Exclude completed tasks"
+msgstr "排除已完成任务"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overdue.hideCompletedDesc"
@@ -4757,6 +4987,31 @@ msgctxt "commands.exportAllTasksIcs"
 msgid "Export all tasks as ICS file"
 msgstr "导出所有任务为ICS文件"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.filePath.name"
+msgid "Export file path"
+msgstr "导出文件路径"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.exportNow.buttonText"
+msgid "Export now"
+msgstr "立即导出"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.exportNow.name"
+msgid "Export now"
+msgstr "立即导出"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.status.title"
+msgid "Export status:"
+msgstr "导出状态："
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.header"
+msgid "Export tasks to Google Calendar"
+msgstr "将任务导出到Google 日历"
+
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
 msgid "Export v3 saved views to Bases"
@@ -4771,6 +5026,11 @@ msgstr "导出 v3 视图"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "已将 {count} 个已保存视图导出到 {filePath}"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.mcp.enable.description"
+msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
+msgstr "通过 /mcp 端点使用 Model Context Protocol 暴露 TaskNotes 工具。需要启用 HTTP API。"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.notices.addReminderFailure"
@@ -5657,6 +5917,11 @@ msgctxt "settings.features.instantConvert.folder.name"
 msgid "Folder for inline-created tasks"
 msgstr "内联创建任务的文件夹"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.defaultNoteFolder.description"
+msgid "Folder for notes created from ICS events"
+msgstr "从ICS事件创建笔记的文件夹"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.folderManagement.header"
 msgid "Folder management"
@@ -5735,6 +6000,11 @@ msgctxt "settings.general.frontmatter.header"
 msgid "Frontmatter"
 msgstr "前置元数据"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.timestamp"
+msgid "Full timestamp (YYYY-MM-DD-HHMMSS)"
+msgstr "完整时间戳（YYYY-MM-DD-HHMMSS）"
+
 #: src/modals/StorageLocationConfirmationModal.ts
 msgctxt "modals.storageLocation.bullets.futureSessions"
 msgid "Future sessions will be saved to daily notes"
@@ -5808,6 +6078,7 @@ msgid "Google Calendar connection expired. Please reconnect in Settings > Integr
 msgstr "Google 日历连接已过期。请在“设置 > 集成”中重新连接。"
 
 #: src/services/TaskCalendarSyncService.ts
+#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
 msgid "Google Calendar export is not enabled or configured"
 msgstr "Google 日历导出未启用或未配置"
@@ -5948,10 +6219,25 @@ msgctxt "settings.defaults.reminders.units.hours"
 msgid "hours"
 msgstr "小时"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.description"
+msgid "How filenames are generated for notes created from ICS events"
+msgstr "从ICS事件创建笔记的文件名生成方式"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.interval.description"
+msgid "How often to update the export file"
+msgstr "更新导出文件的频率"
+
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "How recurring tasks advance: from the scheduled date or completion date"
 msgstr "重复任务如何推进：按计划日期或完成日期"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.header"
+msgid "HTTP API"
+msgstr "HTTP API"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.hTTPHTTPSWebcalOrWebcalsURL"
@@ -5962,6 +6248,11 @@ msgstr "HTTP、HTTPS、webcal 或 webcals URL。"
 msgctxt "settings.taskProperties.taskStatuses.fields.icon"
 msgid "Icon:"
 msgstr "图标："
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.name"
+msgid "ICS note filename format"
+msgstr "ICS笔记文件名格式"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.notices.serviceUnavailable"
@@ -6017,6 +6308,16 @@ msgstr "包含事件类型、签名和投递 ID。对于具有严格 CORS 策略
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.name"
 msgid "Include folders"
 msgstr "包含文件夹"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.includeObsidianLink.name"
+msgid "Include Obsidian link"
+msgstr "包含Obsidian链接"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.includeDescription.name"
+msgid "Include task details in description"
+msgstr "在描述中包含任务详情"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.includedFolders"
@@ -6208,6 +6509,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options p
 msgid "JSON object keyed by swim lane property"
 msgstr "以泳道属性为键的 JSON 对象"
 
+#: src/settings/native/relativeSyncTime.ts
+msgctxt "settings.integrations.timeFormats.justNow"
+msgid "Just now"
+msgstr "刚刚"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Kanban Board"
@@ -6283,6 +6589,11 @@ msgstr "最后"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
 msgstr "最后一天"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.status.lastExport"
+msgid "Last export: {time}"
+msgstr "上次导出：{time}"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.lastSync"
@@ -6408,6 +6719,11 @@ msgstr "已将笔记\"{name}\"链接到事件"
 msgctxt "services.icsNote.notices.linkedToEvent"
 msgid "Linked note to ICS event: {title}"
 msgstr "已将笔记关联到 ICS 事件：{title}"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.list"
+msgid "List"
+msgstr "列表"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.listDayCount"
@@ -6764,6 +7080,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.mont
 msgid "Monthly"
 msgstr "每月"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.defaults.options.monthly"
+msgid "Monthly"
+msgstr "每月"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.monthlyAfterCompletion"
 msgid "Monthly (after completion)"
@@ -6928,6 +7249,11 @@ msgstr "新任务没有默认提醒。"
 msgctxt "views.basesCalendar.hints.next"
 msgid "Next"
 msgstr "下一个"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.status.nextExport"
+msgid "Next export: {time}"
+msgstr "下次导出：{time}"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.nextInOrder"
@@ -7489,6 +7815,11 @@ msgctxt "settings.native.notificationsTimeTrackingRecurrencePomodoroAndTimeblock
 msgid "Notifications, time tracking, recurrence, Pomodoro, and timeblocking."
 msgstr "通知、时间跟踪、重复任务、番茄钟和时间块。"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.number"
+msgid "Number"
+msgstr "数字"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.customDayCount.description"
 msgid "Number of days to show in custom multi-day view"
@@ -8033,6 +8364,11 @@ msgctxt "settings.defaults.bodyTemplate.occurrenceBodyTemplateFile.description"
 msgid "Path to template file for materialized occurrence notes. A recurring task''s occurrence_template field takes priority over this fallback."
 msgstr "已物化实例笔记的模板文件路径。重复任务的 occurrence_template 字段优先于此备用模板。"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.defaultNoteTemplate.description"
+msgid "Path to template file for notes created from ICS events"
+msgstr "从ICS事件创建笔记的模板文件路径"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.bodyTemplateFile.description"
 msgid "Path to template file for task body content. Supports template variables like '{{title}}', '{{date}}', '{{time}}', '{{priority}}', '{{status}}', etc."
@@ -8042,6 +8378,11 @@ msgstr "任务正文内容的模板文件路径。支持模板变量如'{{title}
 msgctxt "modals.icsNoteCreation.templatePathDesc"
 msgid "Path to the template file"
 msgstr "模板文件的路径"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.filePath.description"
+msgid "Path where the ICS file will be saved (relative to vault root)"
+msgstr "ICS文件保存的路径（相对于库根目录）"
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
@@ -8145,6 +8486,11 @@ msgctxt "notices.timeblockRequiredFieldsMissing"
 msgid "Please fill in all required fields"
 msgstr "请填写所有必填字段"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.notices.reloadRequired"
+msgid "Please reload Obsidian for the automatic export changes to take effect."
+msgstr "请重新加载Obsidian以使自动导出更改生效。"
+
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.missingDateTime"
 msgid "Please specify both date and time for absolute reminder"
@@ -8234,6 +8580,11 @@ msgstr "番茄钟存储位置已更改为 {location}"
 msgctxt "settings.features.pomodoro.header"
 msgid "Pomodoro timer"
 msgstr "番茄钟计时器"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.port.description"
+msgid "Port number for the HTTP API server"
+msgstr "HTTP API服务器的端口号"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.subtaskChevronPosition.description"
@@ -8517,6 +8868,11 @@ msgctxt "ui.taskCard.labels.recurrence"
 msgid "Recurring"
 msgstr "重复"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name"
+msgid "Recurring event related notes"
+msgstr "重复事件的关联笔记"
+
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.recurringCompleted.label"
 msgid "Recurring instance completed"
@@ -8732,6 +9088,11 @@ msgctxt "contextMenus.task.removeTag"
 msgid "Remove {tag}"
 msgstr "移除 {tag}"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.description"
+msgid "Remove all task-event links without deleting calendar events."
+msgstr "删除所有任务-事件关联而不删除日历事件。"
+
 #: src/modals/TimeblockCreationModal.ts
 msgctxt "modals/TimeblockCreationModal: TimeblockCreationModal.renderAttachmentsList display"
 msgid "Remove attachment"
@@ -8751,6 +9112,11 @@ msgstr "移除“受阻于”任务…"
 msgctxt "contextMenus.task.dependencies.removeBlocking"
 msgid "Remove blocking…"
 msgstr "移除“受此任务阻塞”的任务…"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.description"
+msgid "Remove calendar event when the corresponding task is deleted."
+msgstr "删除相应任务时删除日历事件。"
 
 #: src/modals/taskModalProjects.ts
 msgctxt "modals.task.projectsRemoveTooltip"
@@ -8820,6 +9186,16 @@ msgstr "重排会更新 {count} 篇笔记的“{field}”字段，为 {scope} �
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"
 msgstr "从 TaskNotes 修复"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.requireDueDate.name"
+msgid "Require due date"
+msgstr "要求截止日期"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.requireScheduledDate.name"
+msgid "Require scheduled date"
+msgstr "要求计划日期"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.requiredPropertyKey.name"
@@ -9022,6 +9398,11 @@ msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "计划日期"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.scheduled"
+msgid "Scheduled date"
+msgstr "计划日期"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.scheduled"
 msgid "Scheduled date"
@@ -9120,6 +9501,11 @@ msgstr "查看TaskNotes最新版本的新功能"
 msgctxt "contextMenus.date.modal.select"
 msgid "Select"
 msgstr "选择"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.targetCalendar.placeholder"
+msgid "Select a calendar..."
+msgstr "选择日历..."
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder"
@@ -9227,6 +9613,11 @@ msgctxt "settings.features.uiLanguage.dropdown.description"
 msgid "Select the language used for TaskNotes interface text"
 msgstr "选择TaskNotes界面文本使用的语言"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.targetCalendar.description"
+msgid "Select which calendar to create task events in."
+msgstr "选择要创建任务事件的日历。"
+
 #: src/settings/native/features.ts
 msgctxt "settings.native.selectWhichPropertiesToShowInInlineTaskCards"
 msgid "Select which properties to show in inline task cards."
@@ -9236,6 +9627,11 @@ msgstr "选择行内任务卡片中显示的属性。"
 msgctxt "main: TaskNotesPlugin.openQuickActionsForTaskFile display"
 msgid "Selected file is not a tasknote"
 msgstr "所选文件不是任务笔记"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance"
+msgid "Selected instance only"
+msgstr "仅所选实例"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.name"
@@ -9272,11 +9668,21 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "用逗号分隔值。"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
+msgid "Series-wide"
+msgstr "整个系列"
+
 #: src/bases/TaskListView.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.serviceUnavailable"
 msgid "Service not available. Please try reloading the plugin."
 msgstr "服务不可用。请尝试重新加载插件。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
+msgid "Service not initialized - please restart Obsidian"
+msgstr "服务未初始化 - 请重启 Obsidian"
 
 #: src/components/DateContextMenu.ts
 msgctxt "contextMenus.date.modal.title"
@@ -9420,6 +9826,11 @@ msgstr "显示全部"
 msgctxt "views.basesCalendar.settings.layout.showAllDaySlot"
 msgid "Show all-day area"
 msgstr "显示全天区域"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.name"
+msgid "Show all-day task events as free"
+msgstr "将全天任务事件标记为空闲"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showCompletedRecurringInstances"
@@ -9671,6 +10082,11 @@ msgctxt "views.pomodoro.buttons.skipBreak"
 msgid "Skip break"
 msgstr "跳过休息"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.mobileCalendar.disable.description"
+msgid "Skip Google, Microsoft, and ICS calendar loading on Obsidian mobile. Desktop calendar integrations are unchanged."
+msgstr "在 Obsidian Mobile 上跳过 Google、Microsoft 和 ICS 日历加载。桌面端日历集成不受影响。"
+
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskEditCompletions.ts
 msgctxt "contextMenus.task.skipInstance"
@@ -9741,6 +10157,11 @@ msgstr "开始专注"
 msgctxt "onboarding.title"
 msgid "Start here with TaskNotes"
 msgstr "开始使用 TaskNotes"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.enable.description"
+msgid "Start local HTTP server for API access"
+msgstr "启动本地HTTP服务器进行API访问"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startLongBreak"
@@ -10065,6 +10486,21 @@ msgctxt "modals.storageLocation.title.switch"
 msgid "Switch to daily notes storage?"
 msgstr "切换到每日笔记存储？"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncAllTasks.buttonText"
+msgid "Sync all"
+msgstr "全部同步"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncAllTasks.description"
+msgid "Sync all existing tasks to Google Calendar. This will create events for tasks that haven''t been synced yet."
+msgstr "将所有现有任务同步到Google 日历。这将为尚未同步的任务创建事件。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncAllTasks.name"
+msgid "Sync all tasks"
+msgstr "同步所有任务"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.syncAllTasksGoogleCalendar"
 msgid "Sync all tasks to Google Calendar"
@@ -10090,6 +10526,21 @@ msgctxt "settings.integrations.oauth.syncFailed"
 msgid "Sync failed: {message}"
 msgstr "同步失败：{message}"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnComplete.name"
+msgid "Sync on task complete"
+msgstr "完成任务时同步"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnCreate.name"
+msgid "Sync on task create"
+msgstr "创建任务时同步"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnUpdate.name"
+msgid "Sync on task update"
+msgstr "更新任务时同步"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.native.syncProperties"
 msgid "Sync properties"
@@ -10100,11 +10551,21 @@ msgctxt "contextMenus.task.calendar.syncToGoogle"
 msgid "Sync to Google Calendar"
 msgstr "同步到Google 日历"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.name"
+msgid "Sync trigger"
+msgstr "同步触发器"
+
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
 msgctxt "ui.taskCard.googleCalendarSyncTooltip"
 msgid "Synced to Google Calendar"
 msgstr "已同步到Google 日历"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.notices.syncResults"
+msgid "Synced: {synced}, Failed: {failed}, Skipped: {skipped}"
+msgstr "已同步：{synced}，失败：{failed}，跳过：{skipped}"
 
 #: src/services/TaskCalendarSyncService.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.syncingTasks"
@@ -10188,6 +10649,11 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Tags"
 msgstr "标签"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
+msgid "Target calendar"
+msgstr "目标日历"
+
 #: src/bases/KanbanView.ts
 msgctxt "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display"
 msgid "Task"
@@ -10239,6 +10705,11 @@ msgstr "任务已归档"
 msgctxt "services.task.notices.templateNotFound"
 msgid "Task body template not found: {path}"
 msgstr "找不到任务正文模板：{path}"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.notices.serviceNotAvailable"
+msgid "Task calendar sync service not available"
+msgstr "任务日历同步服务不可用"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.header"
@@ -10494,6 +10965,11 @@ msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Task text to parse with NLP unless --literal is set"
 msgstr "需要用 NLP 解析的任务文本；设置 --literal 后不解析"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.title"
+msgid "Task title (non-updating)"
+msgstr "任务标题（不更新）"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.validateTaskData error"
 msgid "Task title cannot be empty."
@@ -10661,6 +11137,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Task List"
 msgstr "TaskNotes 任务列表"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.description"
+msgid "TaskNotes token, not your AI provider''s API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client''s bearer authentication settings. Update clients whenever this token changes."
+msgstr "这是TaskNotes令牌，不是AI服务提供商的API密钥。要生成令牌，请启用HTTP API，将此字段留空，然后重启Obsidian。随后将生成的令牌复制到客户端的Bearer认证设置中。每次更改令牌后，都需要更新客户端设置。"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.TaskNotesupdatedtotasknotestaskandmoveditsappsettings"
 msgid "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed."
@@ -10687,10 +11168,25 @@ msgctxt "notices.audit.copiedTasks"
 msgid "Tasks copied: {count}"
 msgstr "已复制任务：{count} 个"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.notices.exportSuccess"
+msgid "Tasks exported successfully"
+msgstr "任务导出成功"
+
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.postponed"
 msgid "Tasks postponed: {count}. Failed: {failed}."
 msgstr "已推迟任务：{count} 个。失败：{failed} 个。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
+msgid "Template for custom ICS event filenames"
+msgstr "自定义ICS事件文件名的模板"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.description"
+msgid "Template for event titles. Available variables: '{{title}}', '{{status}}', '{{priority}}'"
+msgstr "事件标题模板。可用变量：'{{title}}'、'{{status}}'、'{{priority}}'"
 
 #: src/services/ICSNoteService.ts
 msgctxt "services.icsNote.notices.templateNotFound"
@@ -10716,6 +11212,11 @@ msgstr "模板："
 msgctxt "settings.native.templates"
 msgid "Templates"
 msgstr "模板"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.customUserFields.types.text"
+msgid "Text"
+msgstr "文本"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -10864,6 +11365,11 @@ msgstr "这将把现有的番茄钟会话数据迁移到每日笔记前置元数
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.confirmMessage"
 msgid "This will overwrite the configured default .base files with freshly generated templates. Any manual edits in those files will be replaced."
 msgstr "这会用新生成的模板覆盖已配置的默认 .base 文件。这些文件中的任何手动编辑都将被替换。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessage"
+msgid "This will remove all links between tasks and calendar events. The calendar events will remain but will no longer be updated when tasks change. Are you sure?"
+msgstr "这将删除任务和日历事件之间的所有关联。日历事件将保留，但任务更改时不再更新。确定吗？"
 
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.thu"
@@ -11089,6 +11595,11 @@ msgstr "时间块必须有具体时间。请在周视图或日视图中选择时
 msgctxt "views.pomodoro.timer.inputLabel"
 msgid "Timer duration"
 msgstr "计时器时长"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.options.timestamp"
+msgid "Timestamp"
+msgstr "时间戳"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.timestampsRecurrenceRecordsOrderingAndLinkedCalendarEvents"
@@ -11576,6 +12087,26 @@ msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.fetchSubscripti
 msgid "Unknown subscription type"
 msgstr "未知的订阅类型"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.buttonText"
+msgid "Unlink all"
+msgstr "全部取消关联"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmButtonText"
+msgid "Unlink all"
+msgstr "全部取消关联"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmTitle"
+msgid "Unlink all tasks"
+msgstr "取消关联所有任务"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.name"
+msgid "Unlink all tasks"
+msgstr "取消关联所有任务"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.defaultNames.unnamedField"
 msgid "Unnamed field"
@@ -11643,6 +12174,11 @@ msgctxt "utils/TasksPluginParser: TasksPluginParser.parseTaskContent title"
 msgid "Untitled Task"
 msgstr "无标题任务"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncOnComplete.description"
+msgid "Update calendar event when a task is completed (adds checkmark to title)."
+msgstr "任务完成时更新日历事件（在标题中添加勾选标记）。"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.updateDefaultBaseFiles"
 msgid "Update default base files"
@@ -11669,6 +12205,11 @@ msgstr "更新文件"
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.confirmText"
 msgid "Update files"
 msgstr "更新文件"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.interval.name"
+msgid "Update interval (between 5 and 1440 minutes)"
+msgstr "更新间隔（5到1440分钟之间）"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"
@@ -11717,6 +12258,11 @@ msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "使用正文模板"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
+msgid "Use ICS event end time as task due date"
+msgstr "使用ICS事件结束时间作为任务截止日期"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.name"
 msgid "Use Markdown links in frontmatter"
@@ -11752,6 +12298,11 @@ msgctxt "settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"
 msgid "Use task defaults on instant convert"
 msgstr "即时转换时使用任务默认值"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.useDuration.name"
+msgid "Use task duration for event length"
+msgstr "使用任务持续时间作为事件长度"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.UseTaskNotessettings"
 msgid "Use TaskNotes settings"
@@ -11771,6 +12322,21 @@ msgstr "使用此密钥在接收应用中验证数据载荷。"
 msgctxt "settings.modalFields.manager.fieldTypes.user"
 msgid "User"
 msgstr "用户"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.uuid"
+msgid "UUID v4"
+msgstr "UUID v4"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.taskPriorities.fields.value"
+msgid "Value:"
+msgstr "值："
+
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.taskStatuses.fields.value"
+msgid "Value:"
+msgstr "值："
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.vaultRoot"
@@ -11913,6 +12479,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.week
 msgid "Weekly"
 msgstr "每周"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.defaults.options.weekly"
+msgid "Weekly"
+msgstr "每周"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.weeklyAfterCompletion"
 msgid "Weekly (after completion)"
@@ -11964,10 +12535,50 @@ msgctxt "views.releaseNotes.title"
 msgid "What''s new in TaskNotes {version}"
 msgstr "TaskNotes {version} 的新功能"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.excludeArchived.description"
+msgid "When enabled, archived tasks are omitted from ICS exports."
+msgstr "启用后，已归档任务会从 ICS 导出中省略。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.excludeCompleted.description"
+msgid "When enabled, completed tasks are omitted from ICS exports. Completed statuses are taken from your task statuses settings."
+msgstr "启用后，已完成任务会从 ICS 导出中省略。已完成状态来自任务状态设置。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.requireDueDate.description"
+msgid "When enabled, only tasks with a due date are included in ICS exports."
+msgstr "启用后，只有带截止日期的任务会包含在 ICS 导出中。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.requireScheduledDate.description"
+msgid "When enabled, only tasks with a scheduled date are included in ICS exports."
+msgstr "启用后，只有带计划日期的任务会包含在 ICS 导出中。"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.description"
 msgid "When enabled, tags matching the task identification tag (including hierarchical matches like ''task/project'') will be hidden from task card displays"
 msgstr "启用后，与任务识别标签匹配的标签（包括层次匹配，如 ''task/project''）将在任务卡片显示中隐藏"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.allDayEvents.description"
+msgid "When enabled, tasks are created as all-day events. When disabled, uses time estimate for duration."
+msgstr "启用后，任务将创建为全天事件。禁用后，使用预估时长作为持续时间。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.description"
+msgid "When enabled, tasks created from calendar events will have their due date set to the event''s end time. For all-day events, the due date will be set to the event date. For timed events, the due date will include the end time."
+msgstr "启用后，从日历事件创建的任务将把截止日期设置为事件的结束时间。对于全天事件，截止日期将设置为事件日期。对于有时间的事件，截止日期将包含结束时间。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.enable.description"
+msgid "When enabled, tasks with dates will be automatically synced to Google Calendar as events."
+msgstr "启用后，带有日期的任务将自动同步到Google 日历作为事件。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.autoExport.useDuration.description"
+msgid "When enabled, uses the task''s time estimate (duration) instead of due date for the calendar event end time. This is useful for GTD workflows where scheduled + duration represents work planning, while due date represents deadlines."
+msgstr "启用后，使用任务的预估时长（持续时间）而不是截止日期作为日历事件的结束时间。这对于GTD工作流程很有用，其中计划 + 持续时间代表工作规划，而截止日期代表最后期限。"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskCreated.description"
@@ -12079,6 +12690,11 @@ msgctxt "settings.appearance.calendarView.firstDayOfWeek.description"
 msgid "Which day should be the first column in week views"
 msgstr "周视图中应作为第一列的日期"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.syncTrigger.description"
+msgid "Which task date should trigger calendar event creation."
+msgstr "哪个任务日期应触发日历事件创建。"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
@@ -12107,6 +12723,11 @@ msgstr "年视图"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.yearly"
+msgid "Yearly"
+msgstr "每年"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.defaults.options.yearly"
 msgid "Yearly"
 msgstr "每年"
 
@@ -12165,3 +12786,13 @@ msgstr "YYYY-MM-DD"
 msgctxt "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder"
 msgid "YYYY-MM-DD (e.g., 2025-01-15) - leave empty to use property"
 msgstr "YYYY-MM-DD（例如 2025-01-15）；留空则使用属性值"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.calendarSubscriptions.filenameFormat.options.zettel"
+msgid "Zettelkasten format"
+msgstr "Zettelkasten格式"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.appearance.taskFilenames.filenameFormat.options.zettel"
+msgid "Zettelkasten format (YYMMDD + base36 seconds since midnight)"
+msgstr "Zettelkasten格式（YYMMDD + base36自午夜以来的秒数）"

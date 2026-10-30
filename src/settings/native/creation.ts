@@ -1,4 +1,9 @@
 import { msg } from "@lingui/core/macro";
+import { configLabel } from "../../i18n/configLabels";
+import { fieldGroupLabel, fieldLabel } from "../../i18n/fieldLabels";
+import { uiNumber } from "../../i18n/formatters";
+import { reminderDescriptionLabel } from "../../i18n/dataSeedLabels";
+import { formatDateTimeForDisplay } from "../../utils/dateUtils";
 import type { SettingDefinitionItem, SettingDefinitionList, SettingGroupItem } from "obsidian";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { ProjectSelectModal } from "../../modals/ProjectSelectModal";
@@ -11,7 +16,7 @@ import { reorder } from "./properties";
 export function filenameDefinitions(ctx: SettingsContext): SettingGroupItem[] {
 	const { plugin } = ctx;
 	const s = plugin.settings;
-	const t = plugin.i18n.translate.bind(plugin.i18n);
+	const t = ctx.t;
 	return [
 		ctx.field(
 			s,
@@ -30,7 +35,7 @@ export function filenameDefinitions(ctx: SettingsContext): SettingGroupItem[] {
 				options: Object.fromEntries(
 					(["title", "zettel", "timestamp", "uuid", "custom"] as const).map((value) => [
 						value,
-						t(`settings.appearance.taskFilenames.filenameFormat.options.${value}`),
+						t({ "title": msg({ message: "Task title (non-updating)", context: "settings.appearance.taskFilenames.filenameFormat.options.title" }), "zettel": msg({ message: "Zettelkasten format (YYMMDD + base36 seconds since midnight)", context: "settings.appearance.taskFilenames.filenameFormat.options.zettel" }), "timestamp": msg({ message: "Full timestamp (YYYY-MM-DD-HHMMSS)", context: "settings.appearance.taskFilenames.filenameFormat.options.timestamp" }), "uuid": msg({ message: "UUID v4", context: "settings.appearance.taskFilenames.filenameFormat.options.uuid" }), "custom": msg({ message: "Custom template", context: "settings.appearance.taskFilenames.filenameFormat.options.custom" }) }[value]),
 					])
 				),
 			}
@@ -72,7 +77,7 @@ export function creationDefaults(ctx: SettingsContext): SettingGroupItem[] {
 	const { plugin, save } = ctx;
 	const s = plugin.settings;
 	const d = s.taskCreationDefaults;
-	const t = plugin.i18n.translate.bind(plugin.i18n);
+	const t = ctx.t;
 	const dateOptions = {
 		none: t(msg({ message: "None", context: "settings.defaults.options.none" })),
 		today: t(msg({ message: "Today", context: "settings.defaults.options.today" })),
@@ -92,7 +97,7 @@ export function creationDefaults(ctx: SettingsContext): SettingGroupItem[] {
 			{
 				type: "dropdown",
 				options: Object.fromEntries(
-					s.customStatuses.map((status) => [status.value, status.label || status.value])
+					s.customStatuses.map((status) => [status.value, configLabel(status) || status.value])
 				),
 			}
 		),
@@ -108,7 +113,7 @@ export function creationDefaults(ctx: SettingsContext): SettingGroupItem[] {
 					...Object.fromEntries(
 						s.customPriorities.map((priority) => [
 							priority.value,
-							priority.label || priority.value,
+							configLabel(priority) || priority.value,
 						])
 					),
 				},
@@ -181,7 +186,7 @@ export function creationDefaults(ctx: SettingsContext): SettingGroupItem[] {
 				options: Object.fromEntries(
 					(["none", "daily", "weekly", "monthly", "yearly"] as const).map((value) => [
 						value,
-						t(`settings.defaults.options.${value}`),
+						t({ "none": msg({ message: "None", context: "settings.defaults.options.none" }), "daily": msg({ message: "Daily", context: "settings.defaults.options.daily" }), "weekly": msg({ message: "Weekly", context: "settings.defaults.options.weekly" }), "monthly": msg({ message: "Monthly", context: "settings.defaults.options.monthly" }), "yearly": msg({ message: "Yearly", context: "settings.defaults.options.yearly" }) }[value]),
 					])
 				),
 			}
@@ -292,14 +297,21 @@ function reminderDefaults(ctx: SettingsContext): SettingDefinitionList {
 			return {
 				type: "page",
 				name:
-					reminder.description ||
+					reminderDescriptionLabel(reminder.description) ||
 					ctx.t(msg({ message: "Reminder {number}", context: "settings.native.reminderNumber" }), { number: index + 1 }),
-				displayValue: () =>
-					ctx.t(
-						reminder.type === "relative"
-							? msg({ message: "Relative (before/after task dates)", context: "settings.defaults.reminders.types.relative" })
-							: msg({ message: "Absolute (specific date/time)", context: "settings.defaults.reminders.types.absolute" })
-					),
+				displayValue: () => {
+					if (reminder.type === "relative") {
+						const unit = reminder.unit === "minutes" ? "minute" : reminder.unit === "days" ? "day" : "hour";
+						return ctx.t(msg({ message: "{relatedTo, select, due {{direction, select, before {{duration} before due date} after {{duration} after due date} other {{duration} before due date}}} scheduled {{direction, select, before {{duration} before scheduled date} after {{duration} after scheduled date} other {{duration} before scheduled date}}} other {{direction, select, before {{duration} before scheduled date} after {{duration} after scheduled date} other {{duration} before scheduled date}}}}", context: "default reminder timing summary" }), {
+							duration: uiNumber(reminder.offset ?? 1, { style: "unit", unit, unitDisplay: "long" }),
+							relatedTo: reminder.relatedTo ?? "scheduled", direction: reminder.direction ?? "before",
+						});
+					}
+					return reminder.absoluteDate ? formatDateTimeForDisplay(`${reminder.absoluteDate}${reminder.absoluteTime ? `T${reminder.absoluteTime}` : ""}`, {
+						dateDisplayFormat: ctx.plugin.settings.dateDisplayFormat,
+						userTimeFormat: ctx.plugin.settings.calendarViewSettings.timeFormat,
+					}) : ctx.t(msg({ message: "Absolute (specific date/time)", context: "settings.defaults.reminders.types.absolute" }));
+				},
 				items: [
 					ctx.field(
 						reminder,
@@ -476,11 +488,11 @@ export function formDefinitions(ctx: SettingsContext): SettingDefinitionItem[] {
 					.sort((a, b) => a.order - b.order);
 				return {
 					type: "page" as const,
-					name: group.displayName,
+					name: fieldGroupLabel(group),
 					items: [
 						{
 							type: "list" as const,
-							heading: group.displayName,
+							heading: fieldGroupLabel(group),
 							emptyState: ctx.t(msg({ message: "No fields in this group.", context: "settings.native.noFieldsInThisGroup" })),
 							onReorder:
 								group.id === "basic"
@@ -493,7 +505,7 @@ export function formDefinitions(ctx: SettingsContext): SettingDefinitionItem[] {
 										},
 							items: fields.map((field) => ({
 								type: "page" as const,
-								name: field.displayName || field.id,
+								name: fieldLabel(field) || field.id,
 								desc:
 									field.fieldType === "user"
 										? plugin.settings.userFields?.find(
@@ -551,7 +563,7 @@ export function formDefinitions(ctx: SettingsContext): SettingDefinitionItem[] {
 										{
 											type: "dropdown",
 											options: Object.fromEntries(
-												config.groups.map((g) => [g.id, g.displayName])
+												config.groups.map((g) => [g.id, fieldGroupLabel(g)])
 											),
 											disabled: () =>
 												field.id === "title" || field.id === "details",

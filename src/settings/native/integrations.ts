@@ -1,4 +1,5 @@
 import { msg } from "@lingui/core/macro";
+import type { MessageDescriptor } from "../../i18n";
 import { Notice, Platform, type SettingDefinitionItem, type SettingDefinitionPage } from "obsidian";
 import { SettingsContext } from "./SettingsContext";
 import { formatDateLabel } from "../../utils/dateUtils";
@@ -10,27 +11,24 @@ import { connectionPage, subscriptionList, webhookList } from "./connections";
 export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem[] {
 	const { plugin } = ctx;
 	const s = plugin.settings;
-	const t = plugin.i18n.translate.bind(plugin.i18n);
+	const t = ctx.t;
 	const ics = s.icsIntegration;
 	const google = s.googleCalendarExport;
 	const field = <T extends object, K extends keyof T>(
 		object: T,
 		property: K,
 		id: string,
-		prefix: string,
+		labels: { name: MessageDescriptor; description: MessageDescriptor },
 		options?: Record<string, string>,
 		bounds?: { min: number; max: number }
 	) =>
-		ctx.field(object, property, id, t(`${prefix}.name`), {
-			desc: t(`${prefix}.description`),
+		ctx.field(object, property, id, t(labels.name), {
+			desc: t(labels.description),
 			...(options ? { type: "dropdown" as const, options } : {}),
 			...bounds,
 		});
-	const notePrefix = "settings.integrations.calendarSubscriptions";
-	const exportPrefix = "settings.integrations.autoExport";
 	const formatExportTime = (date: Date | null | undefined): string =>
 		date ? formatDateLabel(date, plugin.settings, undefined, true) : "—";
-	const googlePrefix = "settings.integrations.googleCalendarExport";
 	return [
 		{
 			name: ctx.t(msg({ message: "Calendar setup guide", context: "settings.native.calendarSetupGuide" })),
@@ -42,7 +40,7 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 			s,
 			"disableCalendarOnMobile",
 			"disableCalendarOnMobile",
-			"settings.integrations.mobileCalendar.disable"
+			{ name: msg({ message: "Disable calendar integrations on mobile", context: "settings.integrations.mobileCalendar.disable.name" }), description: msg({ message: "Skip Google, Microsoft, and ICS calendar loading on Obsidian mobile. Desktop calendar integrations are unchanged.", context: "settings.integrations.mobileCalendar.disable.description" }) }
 		),
 		connectionPage(ctx, "google"),
 		connectionPage(ctx, "microsoft"),
@@ -76,25 +74,25 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 					ics,
 					"defaultNoteTemplate",
 					"icsIntegration.defaultNoteTemplate",
-					t(`${notePrefix}.defaultNoteTemplate.name`),
-					{ type: "file", desc: t(`${notePrefix}.defaultNoteTemplate.description`) }
+					t(msg({ message: "Default note template", context: "settings.integrations.calendarSubscriptions.defaultNoteTemplate.name" })),
+					{ type: "file", desc: t(msg({ message: "Path to template file for notes created from ICS events", context: "settings.integrations.calendarSubscriptions.defaultNoteTemplate.description" })) }
 				),
 				ctx.field(
 					ics,
 					"defaultNoteFolder",
 					"icsIntegration.defaultNoteFolder",
-					t(`${notePrefix}.defaultNoteFolder.name`),
-					{ type: "folder", desc: t(`${notePrefix}.defaultNoteFolder.description`) }
+					t(msg({ message: "Default note folder", context: "settings.integrations.calendarSubscriptions.defaultNoteFolder.name" })),
+					{ type: "folder", desc: t(msg({ message: "Folder for notes created from ICS events", context: "settings.integrations.calendarSubscriptions.defaultNoteFolder.description" })) }
 				),
 				field(
 					ics,
 					"icsNoteFilenameFormat",
 					"icsIntegration.icsNoteFilenameFormat",
-					`${notePrefix}.filenameFormat`,
+					{ name: msg({ message: "ICS note filename format", context: "settings.integrations.calendarSubscriptions.filenameFormat.name" }), description: msg({ message: "How filenames are generated for notes created from ICS events", context: "settings.integrations.calendarSubscriptions.filenameFormat.description" }) },
 					Object.fromEntries(
 						(["title", "zettel", "timestamp", "custom"] as const).map((value) => [
 							value,
-							t(`${notePrefix}.filenameFormat.options.${value}`),
+							t({ "title": msg({ message: "Event title", context: "settings.integrations.calendarSubscriptions.filenameFormat.options.title" }), "zettel": msg({ message: "Zettelkasten format", context: "settings.integrations.calendarSubscriptions.filenameFormat.options.zettel" }), "timestamp": msg({ message: "Timestamp", context: "settings.integrations.calendarSubscriptions.filenameFormat.options.timestamp" }), "custom": msg({ message: "Custom template", context: "settings.integrations.calendarSubscriptions.filenameFormat.options.custom" }) }[value]),
 						])
 					)
 				),
@@ -102,9 +100,9 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 					ics,
 					"customICSNoteFilenameTemplate",
 					"icsIntegration.customICSNoteFilenameTemplate",
-					t(`${notePrefix}.customTemplate.name`),
+					t(msg({ message: "Custom ICS filename template", context: "settings.integrations.calendarSubscriptions.customTemplate.name" })),
 					{
-						desc: t(`${notePrefix}.customTemplate.description`),
+						desc: t(msg({ message: "Template for custom ICS event filenames", context: "settings.integrations.calendarSubscriptions.customTemplate.description" })),
 						disabled: () => ics.icsNoteFilenameFormat !== "custom",
 					}
 				),
@@ -112,17 +110,17 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 					ics,
 					"useICSEndAsDue",
 					"icsIntegration.useICSEndAsDue",
-					`${notePrefix}.useICSEndAsDue`
+					{ name: msg({ message: "Use ICS event end time as task due date", context: "settings.integrations.calendarSubscriptions.useICSEndAsDue.name" }), description: msg({ message: "When enabled, tasks created from calendar events will have their due date set to the event''s end time. For all-day events, the due date will be set to the event date. For timed events, the due date will include the end time.", context: "settings.integrations.calendarSubscriptions.useICSEndAsDue.description" }) }
 				),
 				field(
 					ics,
 					"recurringEventRelatedNotesMode",
 					"icsIntegration.recurringEventRelatedNotesMode",
-					`${notePrefix}.recurringEventRelatedNotesMode`,
+					{ name: msg({ message: "Recurring event related notes", context: "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.name" }), description: msg({ message: "Choose whether notes linked to one recurrence of an external calendar event appear across the loaded series or only on the selected instance.", context: "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.description" }) },
 					{
-						series: t(`${notePrefix}.recurringEventRelatedNotesMode.options.series`),
+						series: t(msg({ message: "Series-wide", context: "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series" })),
 						instance: t(
-							`${notePrefix}.recurringEventRelatedNotesMode.options.instance`
+							msg({ message: "Selected instance only", context: "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.instance" })
 						),
 					}
 				),
@@ -130,20 +128,20 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		},
 		{
 			type: "page",
-			name: t(`${googlePrefix}.header`),
-			desc: t(`${googlePrefix}.description`),
+			name: t(msg({ message: "Export tasks to Google Calendar", context: "settings.integrations.googleCalendarExport.header" })),
+			desc: t(msg({ message: "Automatically sync your tasks to Google Calendar as events. Requires Google Calendar to be connected above.", context: "settings.integrations.googleCalendarExport.description" })),
 			items: [
-				field(google, "enabled", "googleCalendarExport.enabled", `${googlePrefix}.enable`),
+				field(google, "enabled", "googleCalendarExport.enabled", { name: msg({ message: "Enable task export", context: "settings.integrations.googleCalendarExport.enable.name" }), description: msg({ message: "When enabled, tasks with dates will be automatically synced to Google Calendar as events.", context: "settings.integrations.googleCalendarExport.enable.description" }) }),
 				ctx.field(
 					google,
 					"targetCalendarId",
 					"googleCalendarExport.targetCalendarId",
-					t(`${googlePrefix}.targetCalendar.name`),
+					t(msg({ message: "Target calendar", context: "settings.integrations.googleCalendarExport.targetCalendar.name" })),
 					{
 						type: "dropdown",
-						desc: t(`${googlePrefix}.targetCalendar.description`),
+						desc: t(msg({ message: "Select which calendar to create task events in.", context: "settings.integrations.googleCalendarExport.targetCalendar.description" })),
 						options: {
-							"": t(`${googlePrefix}.targetCalendar.placeholder`),
+							"": t(msg({ message: "Select a calendar...", context: "settings.integrations.googleCalendarExport.targetCalendar.placeholder" })),
 							...(google.targetCalendarId
 								? { [google.targetCalendarId]: google.targetCalendarId }
 								: {}),
@@ -159,11 +157,11 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 					google,
 					"syncTrigger",
 					"googleCalendarExport.syncTrigger",
-					`${googlePrefix}.syncTrigger`,
+					{ name: msg({ message: "Sync trigger", context: "settings.integrations.googleCalendarExport.syncTrigger.name" }), description: msg({ message: "Which task date should trigger calendar event creation.", context: "settings.integrations.googleCalendarExport.syncTrigger.description" }) },
 					Object.fromEntries(
 						(["scheduled", "due", "both"] as const).map((value) => [
 							value,
-							t(`${googlePrefix}.syncTrigger.options.${value}`),
+							t({ "scheduled": msg({ message: "Scheduled date", context: "settings.integrations.googleCalendarExport.syncTrigger.options.scheduled" }), "due": msg({ message: "Due date", context: "settings.integrations.googleCalendarExport.syncTrigger.options.due" }), "both": msg({ message: "Both (prefer scheduled)", context: "settings.integrations.googleCalendarExport.syncTrigger.options.both" }) }[value]),
 						])
 					)
 				),
@@ -171,19 +169,19 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 					google,
 					"createAsAllDay",
 					"googleCalendarExport.createAsAllDay",
-					`${googlePrefix}.allDayEvents`
+					{ name: msg({ message: "Create as all-day events", context: "settings.integrations.googleCalendarExport.allDayEvents.name" }), description: msg({ message: "When enabled, tasks are created as all-day events. When disabled, uses time estimate for duration.", context: "settings.integrations.googleCalendarExport.allDayEvents.description" }) }
 				),
 				field(
 					google,
 					"showAllDayAsFree",
 					"googleCalendarExport.showAllDayAsFree",
-					`${googlePrefix}.showAllDayAsFree`
+					{ name: msg({ message: "Show all-day task events as free", context: "settings.integrations.googleCalendarExport.showAllDayAsFree.name" }), description: msg({ message: "All-day task exports do not block availability, including tasks converted to all-day. Timed events stay busy. Run sync all tasks to apply changes to existing events.", context: "settings.integrations.googleCalendarExport.showAllDayAsFree.description" }) }
 				),
 				field(
 					google,
 					"defaultEventDuration",
 					"googleCalendarExport.defaultEventDuration",
-					`${googlePrefix}.defaultDuration`,
+					{ name: msg({ message: "Default event duration", context: "settings.integrations.googleCalendarExport.defaultDuration.name" }), description: msg({ message: "Duration in minutes for timed events (used when task has no time estimate).", context: "settings.integrations.googleCalendarExport.defaultDuration.description" }) },
 					undefined,
 					{ min: 15, max: 480 }
 				),
@@ -191,23 +189,23 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 					google,
 					"eventTitleTemplate",
 					"googleCalendarExport.eventTitleTemplate",
-					`${googlePrefix}.eventTitleTemplate`
+					{ name: msg({ message: "Event title template", context: "settings.integrations.googleCalendarExport.eventTitleTemplate.name" }), description: msg({ message: "Template for event titles. Available variables: '{{title}}', '{{status}}', '{{priority}}'", context: "settings.integrations.googleCalendarExport.eventTitleTemplate.description" }) }
 				),
 				field(
 					google,
 					"includeDescription",
 					"googleCalendarExport.includeDescription",
-					`${googlePrefix}.includeDescription`
+					{ name: msg({ message: "Include task details in description", context: "settings.integrations.googleCalendarExport.includeDescription.name" }), description: msg({ message: "Add task metadata (priority, status, tags, etc.) to the event description.", context: "settings.integrations.googleCalendarExport.includeDescription.description" }) }
 				),
 				field(
 					google,
 					"includeObsidianLink",
 					"googleCalendarExport.includeObsidianLink",
-					`${googlePrefix}.includeObsidianLink`
+					{ name: msg({ message: "Include Obsidian link", context: "settings.integrations.googleCalendarExport.includeObsidianLink.name" }), description: msg({ message: "Add a link back to the task in Obsidian in the event description.", context: "settings.integrations.googleCalendarExport.includeObsidianLink.description" }) }
 				),
 				ctx.text("googleCalendarExport.defaultReminderMinutes", {
-					name: t(`${googlePrefix}.defaultReminder.name`),
-					desc: t(`${googlePrefix}.defaultReminder.description`),
+					name: t(msg({ message: "Default reminder", context: "settings.integrations.googleCalendarExport.defaultReminder.name" })),
+					desc: t(msg({ message: "Add popup reminders to timed Google Calendar events. Enter minutes before the event, separated by commas. Leave empty to use calendar defaults. Common values: 15, 30, 60, 1440.", context: "settings.integrations.googleCalendarExport.defaultReminder.description" })),
 					getValue: () =>
 						Array.isArray(google.defaultReminderMinutes)
 							? google.defaultReminderMinutes.join(", ")
@@ -222,7 +220,7 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 									Number(part) < 1 ||
 									Number(part) > GOOGLE_CALENDAR_CONSTANTS.MAX_REMINDER_MINUTES
 							)
-							? `Enter reminder offsets from 1 to ${GOOGLE_CALENDAR_CONSTANTS.MAX_REMINDER_MINUTES} minutes, separated by commas.`
+							? t(msg({ message: "Enter reminder offsets from 1 to {max} minutes, separated by commas.", context: "settings.native.reminderOffsetRange" }), { max: GOOGLE_CALENDAR_CONSTANTS.MAX_REMINDER_MINUTES })
 							: undefined,
 					setValue: (value) => {
 						const values = [
@@ -241,48 +239,48 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 				}),
 				{
 					type: "page",
-					name: t(`${googlePrefix}.automaticSyncBehavior.header`),
+					name: t(msg({ message: "Automatic sync behavior", context: "settings.integrations.googleCalendarExport.automaticSyncBehavior.header" })),
 					items: [
 						...(
 							[
-								["syncOnTaskCreate", "syncOnCreate"],
-								["syncOnTaskUpdate", "syncOnUpdate"],
-								["syncOnTaskComplete", "syncOnComplete"],
-								["syncOnTaskDelete", "syncOnDelete"],
+								["syncOnTaskCreate", { name: msg({ message: "Sync on task create", context: "settings.integrations.googleCalendarExport.syncOnCreate.name" }), description: msg({ message: "Automatically create calendar event when a new task is created.", context: "settings.integrations.googleCalendarExport.syncOnCreate.description" }) }],
+								["syncOnTaskUpdate", { name: msg({ message: "Sync on task update", context: "settings.integrations.googleCalendarExport.syncOnUpdate.name" }), description: msg({ message: "Automatically update calendar event when a task is modified.", context: "settings.integrations.googleCalendarExport.syncOnUpdate.description" }) }],
+								["syncOnTaskComplete", { name: msg({ message: "Sync on task complete", context: "settings.integrations.googleCalendarExport.syncOnComplete.name" }), description: msg({ message: "Update calendar event when a task is completed (adds checkmark to title).", context: "settings.integrations.googleCalendarExport.syncOnComplete.description" }) }],
+								["syncOnTaskDelete", { name: msg({ message: "Delete event on task delete", context: "settings.integrations.googleCalendarExport.syncOnDelete.name" }), description: msg({ message: "Remove calendar event when the corresponding task is deleted.", context: "settings.integrations.googleCalendarExport.syncOnDelete.description" }) }],
 							] as const
 						).map(([key, name]) =>
 							field(
 								google,
 								key,
 								`googleCalendarExport.${key}`,
-								`${googlePrefix}.${name}`
+								name
 							)
 						),
 					],
 				},
 				ctx.button("google.syncAll", {
-					name: t(`${googlePrefix}.syncAllTasks.name`),
-					desc: t(`${googlePrefix}.syncAllTasks.description`),
-					buttonText: t(`${googlePrefix}.syncAllTasks.buttonText`),
+					name: t(msg({ message: "Sync all tasks", context: "settings.integrations.googleCalendarExport.syncAllTasks.name" })),
+					desc: t(msg({ message: "Sync all existing tasks to Google Calendar. This will create events for tasks that haven''t been synced yet.", context: "settings.integrations.googleCalendarExport.syncAllTasks.description" })),
+					buttonText: t(msg({ message: "Sync all", context: "settings.integrations.googleCalendarExport.syncAllTasks.buttonText" })),
 					onClick: async () => {
 						if (!plugin.taskCalendarSyncService?.isEnabled())
-							throw new Error(t(`${googlePrefix}.notices.notEnabledOrConfigured`));
+							throw new Error(t(msg({ message: "Google Calendar export is not enabled or configured", context: "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured" })));
 						const results = await plugin.taskCalendarSyncService.syncAllTasks();
-						new Notice(t(`${googlePrefix}.notices.syncResults`, results));
+						new Notice(t(msg({ message: "Synced: {synced}, Failed: {failed}, Skipped: {skipped}", context: "settings.integrations.googleCalendarExport.notices.syncResults" }), results));
 					},
 				}),
 				ctx.button("google.unlinkAll", {
-					name: t(`${googlePrefix}.unlinkAllTasks.name`),
-					desc: t(`${googlePrefix}.unlinkAllTasks.description`),
-					buttonText: t(`${googlePrefix}.unlinkAllTasks.buttonText`),
+					name: t(msg({ message: "Unlink all tasks", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.name" })),
+					desc: t(msg({ message: "Remove all task-event links without deleting calendar events.", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.description" })),
+					buttonText: t(msg({ message: "Unlink all", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.buttonText" })),
 					onClick: async () => {
 						if (!plugin.taskCalendarSyncService)
-							throw new Error(t(`${googlePrefix}.notices.serviceNotAvailable`));
+							throw new Error(t(msg({ message: "Task calendar sync service not available", context: "settings.integrations.googleCalendarExport.notices.serviceNotAvailable" })));
 						if (
 							await showConfirmationModal(plugin.app, {
-								title: t(`${googlePrefix}.unlinkAllTasks.confirmTitle`),
-								message: t(`${googlePrefix}.unlinkAllTasks.confirmMessage`),
-								confirmText: t(`${googlePrefix}.unlinkAllTasks.confirmButtonText`),
+								title: t(msg({ message: "Unlink all tasks", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmTitle" })),
+								message: t(msg({ message: "This will remove all links between tasks and calendar events. The calendar events will remain but will no longer be updated when tasks change. Are you sure?", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessage" })),
+								confirmText: t(msg({ message: "Unlink all", context: "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmButtonText" })),
 								isDestructive: true,
 							})
 						)
@@ -293,28 +291,28 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		},
 		{
 			type: "page",
-			name: t(`${exportPrefix}.header`),
-			desc: t(`${exportPrefix}.description`),
+			name: t(msg({ message: "Automatic ICS export", context: "settings.integrations.autoExport.header" })),
+			desc: t(msg({ message: "Automatically export all your tasks to an ICS file.", context: "settings.integrations.autoExport.description" })),
 			items: [
 				ctx.field(
 					ics,
 					"enableAutoExport",
 					"icsIntegration.enableAutoExport",
-					t(`${exportPrefix}.enable.name`),
+					t(msg({ message: "Enable automatic export", context: "settings.integrations.autoExport.enable.name" })),
 					{
-						desc: t(`${exportPrefix}.enable.description`),
-						onChange: () => new Notice(t(`${exportPrefix}.notices.reloadRequired`)),
+						desc: t(msg({ message: "Automatically keep an ICS file updated with all your tasks", context: "settings.integrations.autoExport.enable.description" })),
+						onChange: () => new Notice(t(msg({ message: "Please reload Obsidian for the automatic export changes to take effect.", context: "settings.integrations.autoExport.notices.reloadRequired" }))),
 					}
 				),
 				field(
 					ics,
 					"autoExportPath",
 					"icsIntegration.autoExportPath",
-					`${exportPrefix}.filePath`
+					{ name: msg({ message: "Export file path", context: "settings.integrations.autoExport.filePath.name" }), description: msg({ message: "Path where the ICS file will be saved (relative to vault root)", context: "settings.integrations.autoExport.filePath.description" }) }
 				),
 				ctx.number("icsIntegration.autoExportInterval", {
-					name: t(`${exportPrefix}.interval.name`),
-					desc: t(`${exportPrefix}.interval.description`),
+					name: t(msg({ message: "Update interval (between 5 and 1440 minutes)", context: "settings.integrations.autoExport.interval.name" })),
+					desc: t(msg({ message: "How often to update the export file", context: "settings.integrations.autoExport.interval.description" })),
 					min: 5,
 					max: 1440,
 					getValue: () => ics.autoExportInterval,
@@ -326,33 +324,33 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 				}),
 				...(
 					[
-						["useDurationForExport", "useDuration"],
-						["excludeCompletedFromExport", "excludeCompleted"],
-						["excludeArchivedFromExport", "excludeArchived"],
-						["requireDueDateForExport", "requireDueDate"],
-						["requireScheduledDateForExport", "requireScheduledDate"],
+						["useDurationForExport", { name: msg({ message: "Use task duration for event length", context: "settings.integrations.autoExport.useDuration.name" }), description: msg({ message: "When enabled, uses the task''s time estimate (duration) instead of due date for the calendar event end time. This is useful for GTD workflows where scheduled + duration represents work planning, while due date represents deadlines.", context: "settings.integrations.autoExport.useDuration.description" }) }],
+						["excludeCompletedFromExport", { name: msg({ message: "Exclude completed tasks", context: "settings.integrations.autoExport.excludeCompleted.name" }), description: msg({ message: "When enabled, completed tasks are omitted from ICS exports. Completed statuses are taken from your task statuses settings.", context: "settings.integrations.autoExport.excludeCompleted.description" }) }],
+						["excludeArchivedFromExport", { name: msg({ message: "Exclude archived tasks", context: "settings.integrations.autoExport.excludeArchived.name" }), description: msg({ message: "When enabled, archived tasks are omitted from ICS exports.", context: "settings.integrations.autoExport.excludeArchived.description" }) }],
+						["requireDueDateForExport", { name: msg({ message: "Require due date", context: "settings.integrations.autoExport.requireDueDate.name" }), description: msg({ message: "When enabled, only tasks with a due date are included in ICS exports.", context: "settings.integrations.autoExport.requireDueDate.description" }) }],
+						["requireScheduledDateForExport", { name: msg({ message: "Require scheduled date", context: "settings.integrations.autoExport.requireScheduledDate.name" }), description: msg({ message: "When enabled, only tasks with a scheduled date are included in ICS exports.", context: "settings.integrations.autoExport.requireScheduledDate.description" }) }],
 					] as const
 				).map(([key, name]) =>
-					field(ics, key, `icsIntegration.${key}`, `${exportPrefix}.${name}`)
+					field(ics, key, `icsIntegration.${key}`, name)
 				),
 				ctx.button("ics.exportNow", {
-					name: t(`${exportPrefix}.exportNow.name`),
-					buttonText: t(`${exportPrefix}.exportNow.buttonText`),
+					name: t(msg({ message: "Export now", context: "settings.integrations.autoExport.exportNow.name" })),
+					buttonText: t(msg({ message: "Export now", context: "settings.integrations.autoExport.exportNow.buttonText" })),
 					onClick: async () => {
 						if (!plugin.autoExportService)
-							throw new Error(t(`${exportPrefix}.notices.serviceUnavailable`));
+							throw new Error(t(msg({ message: "Auto export service not available", context: "settings.integrations.autoExport.notices.serviceUnavailable" })));
 						await plugin.autoExportService.exportNow();
-						new Notice(t(`${exportPrefix}.notices.exportSuccess`));
+						new Notice(t(msg({ message: "Tasks exported successfully", context: "settings.integrations.autoExport.notices.exportSuccess" })));
 						ctx.rebuild();
 					},
 				}),
 				{
-					name: t(`${exportPrefix}.status.title`),
+					name: t(msg({ message: "Export status:", context: "settings.integrations.autoExport.status.title" })),
 					render: (setting) => {
 						setting.setDesc(
 							plugin.autoExportService
-								? `${t(`${exportPrefix}.status.lastExport`, { time: formatExportTime(plugin.autoExportService.getLastExportTime()) })}\n${t(`${exportPrefix}.status.nextExport`, { time: formatExportTime(plugin.autoExportService.getNextExportTime()) })}`
-								: t(`${exportPrefix}.status.serviceNotInitialized`)
+								? `${t(msg({ message: "Last export: {time}", context: "settings.integrations.autoExport.status.lastExport" }), { time: formatExportTime(plugin.autoExportService.getLastExportTime()) })}\n${t(msg({ message: "Next export: {time}", context: "settings.integrations.autoExport.status.nextExport" }), { time: formatExportTime(plugin.autoExportService.getNextExportTime()) })}`
+								: t(msg({ message: "Service not initialized - please restart Obsidian", context: "settings.integrations.autoExport.status.serviceNotInitialized" }))
 						);
 					},
 				},
@@ -364,26 +362,25 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 export function apiDefinitions(ctx: SettingsContext): SettingDefinitionPage {
 	const { plugin } = ctx;
 	const s = plugin.settings;
-	const t = plugin.i18n.translate.bind(plugin.i18n);
-	const prefix = "settings.integrations.httpApi";
+	const t = ctx.t;
 	return {
 		type: "page",
-		name: t(`${prefix}.header`),
+		name: t(msg({ message: "HTTP API", context: "settings.integrations.httpApi.header" })),
 		visible: () => !Platform.isMobile,
 		items: [
-			ctx.field(s, "enableAPI", "enableAPI", t(`${prefix}.enable.name`), {
-				desc: t(`${prefix}.enable.description`),
+			ctx.field(s, "enableAPI", "enableAPI", t(msg({ message: "Enable HTTP API", context: "settings.integrations.httpApi.enable.name" })), {
+				desc: t(msg({ message: "Start local HTTP server for API access", context: "settings.integrations.httpApi.enable.description" })),
 			}),
-			ctx.field(s, "apiPort", "apiPort", t(`${prefix}.port.name`), {
+			ctx.field(s, "apiPort", "apiPort", t(msg({ message: "API port", context: "settings.integrations.httpApi.port.name" })), {
 				type: "number",
 				min: 1024,
 				max: 65535,
-				desc: t(`${prefix}.port.description`),
+				desc: t(msg({ message: "Port number for the HTTP API server", context: "settings.integrations.httpApi.port.description" })),
 				disabled: () => !s.enableAPI,
 			}),
 			{
-				name: t(`${prefix}.authToken.name`),
-				desc: t(`${prefix}.authToken.description`),
+				name: t(msg({ message: "API authentication token", context: "settings.integrations.httpApi.authToken.name" })),
+				desc: t(msg({ message: "TaskNotes token, not your AI provider''s API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client''s bearer authentication settings. Update clients whenever this token changes.", context: "settings.integrations.httpApi.authToken.description" })),
 				aliases: ["apiAuthToken", "authentication", "password"],
 				render: (setting) => {
 					setting.addText((text) => {
@@ -396,16 +393,16 @@ export function apiDefinitions(ctx: SettingsContext): SettingDefinitionPage {
 					});
 				},
 			},
-			ctx.field(s, "enableMCP", "enableMCP", t(`${prefix}.mcp.enable.name`), {
-				desc: t(`${prefix}.mcp.enable.description`),
+			ctx.field(s, "enableMCP", "enableMCP", t(msg({ message: "Enable MCP server", context: "settings.integrations.httpApi.mcp.enable.name" })), {
+				desc: t(msg({ message: "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled.", context: "settings.integrations.httpApi.mcp.enable.description" })),
 				disabled: () => !s.enableAPI,
 			}),
 			{
 				type: "page",
-				name: t(`${prefix}.endpoints.header`),
+				name: t(msg({ message: "Available API endpoints", context: "settings.integrations.httpApi.endpoints.header" })),
 				items: [
 					{
-						name: t(`${prefix}.endpoints.header`),
+						name: t(msg({ message: "Available API endpoints", context: "settings.integrations.httpApi.endpoints.header" })),
 						render: (setting) => {
 							const details = setting.descEl.createDiv();
 							void loadAPIEndpoints(details, s.apiPort, {

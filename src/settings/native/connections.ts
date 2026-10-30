@@ -12,6 +12,7 @@ import type { OAuthProvider, WebhookEvent, ICSSubscription } from "../../types";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { isCalendarIntegrationDisabledOnMobile } from "../../utils/calendarIntegration";
 import { SettingsContext } from "./SettingsContext";
+import { relativeSyncTime } from "./relativeSyncTime";
 import { formatDateLabel } from "../../utils/dateUtils";
 
 export function validateHttpUrl(
@@ -251,7 +252,7 @@ export function connectionPage(
 export function subscriptionList(ctx: SettingsContext): SettingDefinitionList {
 	const { plugin } = ctx;
 	const service = plugin.icsSubscriptionService;
-	const t = plugin.i18n.translate.bind(plugin.i18n);
+	const t = ctx.t;
 	const subscriptions = service?.getSubscriptions() ?? [];
 	const run = (action: () => Promise<void>) => {
 		void action().catch(
@@ -417,7 +418,7 @@ export function subscriptionList(ctx: SettingsContext): SettingDefinitionList {
 						name: ctx.t(msg({ message: "Last sync", context: "settings.native.lastSync" })),
 						desc:
 							(service?.getLastError(subscription.id) ? displayError(service.getLastError(subscription.id)) : undefined) ??
-							(lastFetched ? formatDateLabel(new Date(lastFetched), plugin.settings, undefined, true) : undefined) ??
+							(lastFetched ? relativeSyncTime(new Date(lastFetched), ctx) : undefined) ??
 							ctx.t(msg({ message: "Not synced yet", context: "settings.native.notSyncedYet" })),
 					},
 					ctx.button(

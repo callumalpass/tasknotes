@@ -77,7 +77,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 						plugin.settings.tasksFolder = value;
 						save();
 					},
-					ariaLabel: "Default folder path for new tasks",
 				}),
 				ctx.text("inlineTaskConvertFolder", {
 					name: translate(msg({ message: "Folder for inline-created tasks", context: "settings.features.instantConvert.folder.name" })),
@@ -88,7 +87,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 						plugin.settings.inlineTaskConvertFolder = value;
 						save();
 					},
-					ariaLabel: "Folder for inline-created tasks",
 				}),
 				ctx.toggle("moveArchivedTasks", {
 					name: translate(msg({ message: "Move archived tasks to folder", context: "settings.general.taskStorage.moveArchived.name" })),
@@ -112,7 +110,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 							plugin.settings.archiveFolder = value;
 							save();
 						},
-						ariaLabel: "Archive folder path",
 					},
 					() => !plugin.settings.moveArchivedTasks
 				),
@@ -146,7 +143,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 						// Re-render to show/hide conditional fields
 						ctx.refresh();
 					},
-					ariaLabel: "Task identification method",
 				}),
 				ctx.text(
 					"taskTag",
@@ -159,7 +155,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 							plugin.settings.taskTag = value;
 							save();
 						},
-						ariaLabel: "Task identification tag",
 					},
 					() => !(plugin.settings.taskIdentificationMethod === "tag")
 				),
@@ -210,7 +205,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 								value as HideIdentifyingTagsMode;
 							save();
 						},
-						ariaLabel: "Hidden identification tag scope",
 					},
 					() =>
 						!(
@@ -317,7 +311,7 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 							{
 								type: "file",
 								validate: (value) =>
-									value.endsWith(".base") ? undefined : "Choose a .base file.",
+									value.endsWith(".base") ? undefined : translate(msg({ message: "Choose a .base file.", context: "settings.native.chooseBaseFile" })),
 							}
 						),
 						ctx.button(`commandFileMapping.${id}.reset`, {
@@ -595,7 +589,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 						plugin.settings.excludedFolders = value;
 						save();
 					},
-					ariaLabel: "Excluded folder paths",
 				}),
 			],
 		},

@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 /**
  * Upgrade matrix for collections written by shipped TaskNotes releases.
  *
@@ -109,6 +110,7 @@ async function load(files: Map<string, string>, vault: unknown, settings: Record
 async function start(_files: Map<string, string>, vault: unknown, settings: Record<string, any>) {
 	const notices: string[] = [];
 	const plugin: any = {
+		i18n: createI18nService(),
 		settings,
 		fieldMapper: new FieldMapper(settings.fieldMapping),
 		app: { vault },

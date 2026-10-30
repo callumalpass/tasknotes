@@ -1,4 +1,5 @@
 import { msg } from "@lingui/core/macro";
+import { configLabel } from "../../i18n/configLabels";
 import {
 	Notice,
 	type SettingDefinitionItem,
@@ -50,7 +51,7 @@ export function validatePropertyKey(
 
 function triggerGroup(ctx: SettingsContext, id: string, fallback: string): SettingDefinitionGroup {
 	const { plugin, save } = ctx;
-	const t = plugin.i18n.translate.bind(plugin.i18n);
+	const t = ctx.t;
 	const read = () =>
 		plugin.settings.nlpTriggers.triggers.find((trigger) => trigger.propertyId === id);
 	const change = (patch: { enabled?: boolean; trigger?: string }) => {
@@ -92,7 +93,7 @@ export function filterPage(
 	read: () => FileFilterConfig | undefined,
 	write: (value: FileFilterConfig) => void
 ): SettingDefinitionPage {
-	const t = ctx.plugin.i18n.translate.bind(ctx.plugin.i18n);
+	const t = ctx.t;
 	const set = (patch: Partial<FileFilterConfig>) => {
 		write({ ...read(), ...patch });
 		ctx.save();
@@ -146,7 +147,7 @@ function configuredValues(
 	kind: "status" | "priority"
 ): SettingDefinitionList {
 	const { plugin, save } = ctx;
-	const t = plugin.i18n.translate.bind(plugin.i18n);
+	const t = ctx.t;
 	const isStatus = kind === "status";
 	const values: Array<StatusConfig | PriorityConfig> = isStatus
 		? [...plugin.settings.customStatuses].sort((a, b) => a.order - b.order)
@@ -155,7 +156,7 @@ function configuredValues(
 		save();
 		ctx.rebuild();
 	};
-	const labelKey = isStatus ? "taskStatuses" : "taskPriorities";
+
 	return {
 		type: "list",
 		heading: isStatus ? ctx.t(msg({ message: "Statuses", context: "settings.native.statuses" })) : ctx.t(msg({ message: "Priorities", context: "settings.native.priorities" })),
@@ -219,7 +220,7 @@ function configuredValues(
 				if (
 					!(await showConfirmationModal(plugin.app, {
 						title: ctx.t(msg({ message: "Delete {name}?", context: "settings.native.deleteEntry" }), {
-							name: item.label || item.value,
+							name: configLabel(item) || item.value,
 						}),
 						message: ctx.t(
 							msg({ message: "Existing task notes will not be changed. Tasks using this value keep it in their frontmatter.", context: "settings.native.existingTaskNotesWillNotBeChangedTasksUsing" })
@@ -253,7 +254,7 @@ function configuredValues(
 			const id = `${kind}.${item.id}`;
 			const fields: SettingDefinitionItem[] = [
 				ctx.text(`${id}.value`, {
-					name: t(`settings.taskProperties.${labelKey}.fields.value`),
+					name: t(isStatus ? msg({ message: "Value:", context: "settings.taskProperties.taskStatuses.fields.value" }) : msg({ message: "Value:", context: "settings.taskProperties.taskPriorities.fields.value" })),
 					desc: ctx.t(msg({ message: "Stored in task notes. Changing this does not rename values in existing notes.", context: "settings.native.storedInTaskNotesChangingThisDoesNotRename" })),
 					getValue: () => item.value,
 					validate: (value) =>
@@ -341,7 +342,7 @@ function configuredValues(
 								...Object.fromEntries(
 									values
 										.filter((other) => other.id !== item.id)
-										.map((other) => [other.value, other.label || other.value])
+										.map((other) => [other.value, configLabel(other) || other.value])
 								),
 							},
 						}
@@ -380,7 +381,7 @@ function configuredValues(
 				);
 			return {
 				type: "page",
-				name: item.label || item.value,
+				name: configLabel(item) || item.value,
 				desc: item.value,
 				items: fields,
 			};
@@ -390,7 +391,7 @@ function configuredValues(
 
 export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 	const { plugin, save } = ctx;
-	const t = plugin.i18n.translate.bind(plugin.i18n);
+	const t = ctx.t;
 	const fields = plugin.settings.userFields ?? [];
 	return {
 		type: "list",
@@ -475,7 +476,7 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 					t(msg({ message: "Unnamed field", context: "settings.taskProperties.customUserFields.defaultNames.unnamedField" })),
 				desc: field.key,
 				displayValue: () =>
-					t(`settings.taskProperties.customUserFields.types.${field.type}`),
+					t({ "text": msg({ message: "Text", context: "settings.taskProperties.customUserFields.types.text" }), "number": msg({ message: "Number", context: "settings.taskProperties.customUserFields.types.number" }), "boolean": msg({ message: "Boolean", context: "settings.taskProperties.customUserFields.types.boolean" }), "date": msg({ message: "Date", context: "settings.taskProperties.customUserFields.types.date" }), "list": msg({ message: "List", context: "settings.taskProperties.customUserFields.types.list" }) }[field.type]),
 				items: [
 					ctx.field(
 						field,
@@ -514,7 +515,7 @@ export function customProperties(ctx: SettingsContext): SettingDefinitionList {
 								(["text", "number", "boolean", "date", "list"] as const).map(
 									(type) => [
 										type,
-										t(`settings.taskProperties.customUserFields.types.${type}`),
+										t({ "text": msg({ message: "Text", context: "settings.taskProperties.customUserFields.types.text" }), "number": msg({ message: "Number", context: "settings.taskProperties.customUserFields.types.number" }), "boolean": msg({ message: "Boolean", context: "settings.taskProperties.customUserFields.types.boolean" }), "date": msg({ message: "Date", context: "settings.taskProperties.customUserFields.types.date" }), "list": msg({ message: "List", context: "settings.taskProperties.customUserFields.types.list" }) }[type]),
 									]
 								)
 							),
@@ -594,7 +595,7 @@ function customDefault(ctx: SettingsContext, field: UserMappedField): SettingDef
 
 export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem[] {
 	const { plugin } = ctx;
-	const t = plugin.i18n.translate.bind(plugin.i18n);
+	const t = ctx.t;
 	const mapping = plugin.settings.fieldMapping;
 	const labels: Partial<Record<keyof FieldMapping, string>> = {
 		title: ctx.t(msg({ message: "Title", context: "settings.taskProperties.properties.title.name" })),

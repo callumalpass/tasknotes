@@ -28,7 +28,9 @@ export function applyCalendarDateDisplay<D>(
 	calendar: Calendar<D>,
 	preference: DateDisplaySettings["dateDisplayFormat"]
 ): void {
-	const FormatterType = preference === "iso" ? ISOCalendarFormatter : Formatter;
+	const wantsISO = preference === "iso";
+	if ((calendar.fmt instanceof ISOCalendarFormatter) === wantsISO) return;
+	const FormatterType = wantsISO ? ISOCalendarFormatter : Formatter;
 	calendar.fmt = new FormatterType(calendar.opts.locale, calendar.opts.hour12);
 	calendar.rerender();
 }

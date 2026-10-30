@@ -1,4 +1,5 @@
 import { uiData } from "../i18n/dataText";
+import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { Modal, Notice, Setting } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -68,7 +69,7 @@ export class CheckCollectionModal extends Modal {
 			new Notice(translate(msg({ message: "Approved changes saved; backups are in {backupFolder}, please check remaining errors.", context: "collectionCheck.fixed" }), { backupFolder: uiData(".tasknotes/migrations", "Vault-relative recovery folder, not UI prose") }));
 			await this.scan();
 		} catch (error) {
-			new Notice(`${translate(msg({ message: "Collection check or repair stopped. No unapproved changes were made.", context: "collectionCheck.error" }))} ${String(error)}`);
+			new Notice([translate(msg({ message: "Collection check or repair stopped. No unapproved changes were made.", context: "collectionCheck.error" })), displayError(error)].join(" "));
 		} finally { this.busy = false; }
 	}
 }
