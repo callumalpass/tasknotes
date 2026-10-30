@@ -1255,6 +1255,11 @@ export class CalendarView extends BasesViewBase {
 		this.applyHeightModeClass();
 		this.applyTimeGridVisibilityClass();
 		this.applyCalendarModeClass();
+		// Lets bases-calendar.css offset the month event layer past the week-number column.
+		this.calendarEl?.classList.toggle(
+			"advanced-calendar-view__calendar--week-numbers",
+			this.viewOptions.weekNumbers === true
+		);
 	}
 
 	private getEffectiveHeightMode(): CalendarHeightMode {

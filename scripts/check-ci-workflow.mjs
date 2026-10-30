@@ -16,7 +16,7 @@ const report = {
   sha256: createHash("sha256").update(source).digest("hex"),
   node: process.version,
   hostedCI: false,
-  environment: "rpnpm remote builder; Node 22; no OAuth secrets supplied",
+  environment: "Node 22 workflow shell replay; no OAuth secrets supplied",
   steps: [],
 };
 let failed = false;

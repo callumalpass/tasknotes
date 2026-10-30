@@ -25,15 +25,15 @@ jobs:
       run: npm ci --prefer-offline --no-audit
       timeout-minutes: 5
 
-    - name: Test bundle size guard and dependency deduplication
-      run: node --test scripts/check-bundle-size.test.mjs scripts/bundle-dependencies.test.mjs
+    - name: Test bundle guard, dependency deduplication and maintained security patches
+      run: node --test scripts/check-bundle-size.test.mjs scripts/bundle-dependencies.test.mjs scripts/braces-security.test.mjs scripts/dependency-security.test.mjs scripts/calendar-css.test.mjs
 
     - name: Build production plugin
       run: npm run build
       timeout-minutes: 10
 
-    - name: Check Obsidian Sync bundle size budget
-      run: npm run check:bundle-size
+    - name: Check Obsidian Sync bundle size budget and generated CSS
+      run: npm run check:bundle-size && npm run lint:css:dist
 
   test:
     runs-on: ubuntu-latest

@@ -1,0 +1,33 @@
+{
+  "name": "@tasknotes/deepmerge",
+  "description": "A library for deep (recursive) merging of Javascript objects",
+  "keywords": [
+    "merge",
+    "deep",
+    "extend",
+    "copy",
+    "clone",
+    "recursive"
+  ],
+  "version": "4.3.1-tasknotes.1",
+  "homepage": "https://github.com/TehShrike/deepmerge",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/TehShrike/deepmerge.git"
+  },
+  "main": "dist/cjs.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "license": "MIT",
+  "private": true,
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "dist",
+    "license.txt",
+    "readme.md",
+    "PATCHES.md",
+    "UPSTREAM-SHA256.json"
+  ]
+}

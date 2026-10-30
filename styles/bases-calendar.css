@@ -33,6 +33,11 @@
     flex: 0 0 auto;
 }
 
+/* Month week numbers take the first column; offset the event layer past it (set by CalendarView). */
+.advanced-calendar-view__calendar--week-numbers .tnc-dg-layer {
+    left: var(--tnc-weeknum-w);
+}
+
 /* Obsidian styles every button; let the calendar's toolbar and links draw their own. */
 .advanced-calendar-view .tnc button:not(.clickable-icon) {
     box-shadow: none;
@@ -47,6 +52,12 @@
 
 .advanced-calendar-view .tnc-item[data-event-type="timeblock"]:hover {
     opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .advanced-calendar-view .tnc-item[data-event-type="timeblock"] {
+        transition: none;
+    }
 }
 
 /* External calendar events */

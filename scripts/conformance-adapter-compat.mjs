@@ -2,7 +2,21 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 // The pinned spec ships adapters for an older TaskNotes runtime. Only adapt the
-// host mocks and migration input boundary; never change fixtures or assertions.
+// host mocks, build tooling and migration input boundary; never change fixtures or assertions.
+export function adaptPinnedSpecBuild(specRoot, tasknotesRoot) {
+  const path = resolve(specRoot, "package.json");
+  const metadata = JSON.parse(readFileSync(path, "utf8"));
+  const key = "conformance:build:tasknotes-bridge";
+  const command = metadata.scripts?.[key];
+  const cli = "npm --prefix ../tasknotes exec -- esbuild";
+  if (typeof command !== "string" || command.split(cli).length !== 5) {
+    throw new Error("Pinned spec build changed; review Lingui bridge compilation");
+  }
+  metadata.scripts[key] = command.replaceAll(cli,
+    `node ${JSON.stringify(resolve(tasknotesRoot, "scripts/conformance-esbuild.mjs"))}`);
+  writeFileSync(path, `${JSON.stringify(metadata, null, 2)}\n`);
+}
+
 export function adaptPinnedSpecRuntime(specRoot) {
   const patches = [
     {

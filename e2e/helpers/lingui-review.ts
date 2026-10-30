@@ -75,6 +75,9 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
         const app = (window as any).app;
         await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(`${folder}/Source.md`), (fm: any) => { fm.review_group = "work"; fm.review_flag = false; });
       }, folder);
+      // processFrontMatter writes disk before Obsidian publishes fresh metadata.
+      // A cached Flags view can otherwise still place Source in its prior True column.
+      await expect.poll(frontmatter).toMatchObject({ review_group: "work", review_flag: false });
       await openBase("note.review_group", "Groups", ["work", "None"]);
       const label = await page.evaluate(id => (window as any).app.plugins.plugins.tasknotes.i18n.translate({ id }), noneId);
       await expect(column("None").locator(".kanban-view__column-title")).toContainText(label);
@@ -87,6 +90,7 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
       const groupOrder = JSON.parse(parse(await readBase("Groups")).views[0].columnOrder);
       expect(groupOrder["note.review_group"]).toEqual(["work", "None"]);
       await openBase("note.review_flag", "Flags", ["True", "None", "False"]);
+      await expect(column("False").locator(`.kanban-view__card-wrapper[data-task-path="${folder}/Source.md"]`)).toHaveCount(1);
       await source().dragTo(column("True").locator(".kanban-view__cards"), { targetPosition: { x: 30, y: 5 } });
       await expect.poll(async () => (await frontmatter())?.review_flag).toBe(true);
       const createdTrue = await createInColumn("True", `Created true ${locale}`);

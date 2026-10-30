@@ -12,7 +12,7 @@ const childPaths = () => parentCard().locator(".task-card__subtasks > .task-card
 	.evaluateAll((cards) => cards.map((card) => card.getAttribute("data-task-path")));
 
 async function changeDirection(from: string, to: string): Promise<void> {
-	await instance.page.getByRole("button", { name: "Sort", exact: true }).click();
+	await instance.page.locator(".workspace-leaf.mod-active").getByText("Sort", { exact: true }).click();
 	await instance.page.getByText(from, { exact: true }).click();
 	await instance.page.getByText(to, { exact: true }).last().click();
 	await instance.page.keyboard.press("Escape");
@@ -42,7 +42,9 @@ test.beforeAll(async () => {
 			"    hideTopLevelSubtasks: true", "    order:", "      - note.priority",
 			"    sort:", "      - property: formula.priorityWeight", "        direction: DESC", "",
 		].join("\n"));
-		await app.workspace.getLeaf("tab").openFile(base);
+		const leaf = app.workspace.getLeaf("tab");
+		await leaf.openFile(base);
+		app.workspace.setActiveLeaf(leaf, { focus: true });
 	}, folder);
 	await expect(parentCard()).toBeVisible();
 });

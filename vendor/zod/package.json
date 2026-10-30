@@ -1,0 +1,87 @@
+{
+  "name": "@tasknotes/zod",
+  "version": "3.25.76-tasknotes.1",
+  "type": "module",
+  "author": "Colin McDonnell <zod@colinhacks.com>",
+  "description": "TypeScript-first schema declaration and validation library with static type inference",
+  "files": [
+    "index.*",
+    "v3",
+    "v4",
+    "v4-mini",
+    "LICENSE",
+    "README.md",
+    "PATCHES.md",
+    "UPSTREAM-SHA256.json"
+  ],
+  "funding": "https://github.com/sponsors/colinhacks",
+  "homepage": "https://zod.dev",
+  "keywords": [
+    "typescript",
+    "schema",
+    "validation",
+    "type",
+    "inference"
+  ],
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./index.cjs",
+  "types": "./index.d.cts",
+  "module": "./index.js",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./index.d.cts",
+      "import": "./index.js",
+      "require": "./index.cjs"
+    },
+    "./v3": {
+      "types": "./v3/index.d.cts",
+      "import": "./v3/index.js",
+      "require": "./v3/index.cjs"
+    },
+    "./v4": {
+      "types": "./v4/index.d.cts",
+      "import": "./v4/index.js",
+      "require": "./v4/index.cjs"
+    },
+    "./v4-mini": {
+      "types": "./v4-mini/index.d.cts",
+      "import": "./v4-mini/index.js",
+      "require": "./v4-mini/index.cjs"
+    },
+    "./v4/mini": {
+      "types": "./v4/mini/index.d.cts",
+      "import": "./v4/mini/index.js",
+      "require": "./v4/mini/index.cjs"
+    },
+    "./v4/core": {
+      "types": "./v4/core/index.d.cts",
+      "import": "./v4/core/index.js",
+      "require": "./v4/core/index.cjs"
+    },
+    "./v4/locales": {
+      "types": "./v4/locales/index.d.cts",
+      "import": "./v4/locales/index.js",
+      "require": "./v4/locales/index.cjs"
+    },
+    "./v4/locales/*": {
+      "types": "./v4/locales/*",
+      "import": "./v4/locales/*",
+      "require": "./v4/locales/*"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/colinhacks/zod.git"
+  },
+  "bugs": {
+    "url": "https://github.com/colinhacks/zod/issues"
+  },
+  "support": {
+    "backing": {
+      "npm-funding": true
+    }
+  },
+  "private": true
+}

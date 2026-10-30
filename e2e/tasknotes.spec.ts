@@ -6587,8 +6587,8 @@ test.describe('Issue #1297: TaskSelectorWithCreate modal mobile support', () => 
 
     if (isFooterVisible) {
       // Check for the keyboard shortcut hint
-      const shortcutHint = page.locator('.task-selector-create-footer__shortcut');
-      await expect(shortcutHint).toContainText('⇧↵');
+      const shortcutHint = page.locator('.task-selector-create-footer__hint-text');
+      await expect(shortcutHint).toHaveText('Create with ⇧↵');
 
       await page.screenshot({ path: 'test-results/screenshots/issue-1297-footer-visible.png' });
     }

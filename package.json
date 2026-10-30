@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "4.14.0",
+	"version": "4.15.0",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -84,6 +84,7 @@
 		"@typescript-eslint/parser": "^8.59.3",
 		"babel-jest": "30.1.1",
 		"braces": "file:./vendor/braces",
+		"deepmerge": "file:./vendor/deepmerge",
 		"esbuild": "^0.25.9",
 		"eslint": "^9.39.4",
 		"eslint-config-prettier": "^10.1.8",
@@ -101,7 +102,7 @@
 		"ts-jest": "^29.1.1",
 		"tslib": "^2.8.1",
 		"typescript": "^5.9.2",
-		"wrangler": "4.127.1"
+		"wrangler": "4.156.0"
 	},
 	"dependencies": {
 		"@codemirror/view": "^6.38.6",
@@ -112,7 +113,7 @@
 		"ajv": "8.20.0",
 		"chrono-node": "^2.7.5",
 		"date-fns": "^4.1.0",
-		"fflate": "0.8.2",
+		"fflate": "0.8.3",
 		"ical.js": "^2.2.1",
 		"lexorank": "1.0.5",
 		"obsidian-daily-notes-interface": "^0.9.4",
@@ -120,7 +121,7 @@
 		"rrule": "^2.8.1",
 		"tasknotes-nlp-core": "git+https://github.com/callumalpass/tasknotes-nlp-core.git#abe88d9c0a683e162ee6581bbf67699bc8b6e596",
 		"yaml": "^2.3.1",
-		"zod": "^3.24.0"
+		"zod": "file:./vendor/zod"
 	},
 	"peerDependencies": {
 		"electron": "*"
@@ -131,9 +132,11 @@
 		}
 	},
 	"overrides": {
-		"@hono/node-server": "2.1.0",
+		"@hono/node-server": "2.1.5",
 		"moment": "2.31.0",
 		"js-yaml": "4.3.2",
-		"braces": "$braces"
+		"braces": "$braces",
+		"deepmerge": "$deepmerge",
+		"zod": "$zod"
 	}
 }

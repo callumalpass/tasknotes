@@ -11,8 +11,9 @@ import { launchObsidian, closeObsidian, openTaskNotesSettings, closeObsidianSett
 
 test.use({ trace: "on" });
 const root = path.resolve(__dirname, "..");
-const settingsPath = path.join(root, "tasknotes-e2e-vault/.obsidian/plugins/tasknotes/data.json");
-const statsPath = path.join(root, "tasknotes-e2e-vault/TaskNotes/Views/pomodoro-stats.base");
+const vaultRoot = path.resolve(process.env.TASKNOTES_E2E_VAULT_DIR ?? path.join(root, "tasknotes-e2e-vault"));
+const settingsPath = path.join(vaultRoot, ".obsidian/plugins/tasknotes/data.json");
+const statsPath = path.join(vaultRoot, "TaskNotes/Views/pomodoro-stats.base");
 const hadStats = fs.existsSync(statsPath);
 const keyMap = JSON.parse(fs.readFileSync(path.join(root, "scripts/plugin-key-map.json"), "utf8"));
 let savedSettings: Buffer | undefined;

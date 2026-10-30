@@ -70,7 +70,7 @@ test.afterAll(async () => {
 
 test("renders translated chrome while preserving saved labels, keys, and type identifiers", async () => {
 	const panel = settingsPage.locator("#settings-tab-modal-fields");
-	await expect(panel).toContainText("任务模态框的字段配置");
+	await expect(panel).toContainText("任务对话框的字段配置");
 	await expect(panel).toContainText("已启用：");
 	await expect(panel).toContainText("创建任务时显示：");
 	await expect(panel).toContainText("编辑任务时显示：");
