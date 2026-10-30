@@ -160,7 +160,7 @@ describe('TaskService Completion (Issue #160)', () => {
       expect(frontmatter.status).toBe('open');
     });
 
-    it('does not reopen a series that has already ended', async () => {
+    it('leaves a task already in a completed status alone', async () => {
       const frontmatter = written();
 
       await taskService.toggleRecurringTaskComplete(

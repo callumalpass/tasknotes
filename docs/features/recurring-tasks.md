@@ -231,7 +231,7 @@ Checking off a recurring task shows a notification with the occurrence date and 
 
 When you complete an occurrence from the context menu, you can choose which date it is recorded against — today, the occurrence's scheduled date, its due date, or a date you pick (see [Completing Tasks](task-management.md#completing-tasks)). Completion-anchored recurrences resolve *on schedule* to the newly scheduled date, an explicit re-anchor.
 
-A series keeps its status when an occurrence is completed or skipped, so one moved to In Progress stays there for its next occurrence. To have each occurrence start from the same status, set **Next status** on the first status marked **Completed** under [Settings → Task Properties](../settings/task-properties.md). Completing or skipping the current occurrence then moves the series to that status, and **Undo** restores the previous one. Series that have ended and statuses that are themselves completed are not affected.
+A series keeps its status when an occurrence is completed or skipped, so one moved to In Progress stays there for its next occurrence. To have each occurrence start from the same status, set **Next status** on the first status marked **Completed** under [Settings → Task Properties](../settings/task-properties.md). Completing or skipping the current occurrence then moves the series to that status, and **Undo** restores the previous one. A task already in a completed status keeps it.
 
 Completed instances are stored in:
 
