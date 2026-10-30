@@ -65,7 +65,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Ambiguous single words such as French `fait`, Chinese `低` or `完成` no longer set a status or priority on their own; use the full phrase, such as `terminé`, `低优先级` or `已完成`.
 
 - The startup update check now reads the latest release from the GitHub releases API
-- A recurring series now moves to the **Next status** set on your completed status when its current occurrence is completed or skipped, so an in-progress status does not carry over to the next occurrence. Series keep their status when no next status is set. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
+- A recurring series now moves to the **Next status** set on your first completed status when its current occurrence is completed or skipped, so an in-progress status does not carry over to the next occurrence. Series keep their status when no next status is set. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
 
 ## Removed
 
