@@ -13497,6 +13497,11 @@ msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "본문 템플릿 사용"
 
+#: src/settings/tabs/taskProperties/projectsPropertyCard.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty"
+msgid "Use default projects only when no project is specified"
+msgstr "프로젝트가 지정되지 않은 경우에만 기본 프로젝트 사용"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
 msgid "Use ICS event end time as task due date"

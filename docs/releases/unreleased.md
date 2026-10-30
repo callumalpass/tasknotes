@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- (#2436, #909) Added an opt-in setting to use default projects only when no project is specified, so selecting a project or entering one with NLP can replace the defaults. Existing additive behavior remains unchanged by default. See [Projects settings](https://tasknotes.dev/settings/task-properties/#projects). Thanks to @RumiaKitinari for the suggestion.
+
 - (#1955) Added Italian interface translations, localized dates and count-aware messages in bundled builds and downloadable language packs. UI language and NLP language remain independent settings.
   - Thanks to @starise for contributing and reviewing the Italian translation.
 

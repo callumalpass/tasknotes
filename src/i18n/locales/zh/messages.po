@@ -13497,6 +13497,11 @@ msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "使用正文模板"
 
+#: src/settings/tabs/taskProperties/projectsPropertyCard.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty"
+msgid "Use default projects only when no project is specified"
+msgstr "仅在未指定项目时使用默认项目"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
 msgid "Use ICS event end time as task due date"

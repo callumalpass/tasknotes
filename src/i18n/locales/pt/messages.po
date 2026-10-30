@@ -13499,6 +13499,11 @@ msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "Usar modelo de corpo"
 
+#: src/settings/tabs/taskProperties/projectsPropertyCard.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty"
+msgid "Use default projects only when no project is specified"
+msgstr "Usar os projetos padrão apenas quando nenhum projeto for especificado"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
 msgid "Use ICS event end time as task due date"
