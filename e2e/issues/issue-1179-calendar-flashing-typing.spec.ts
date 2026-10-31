@@ -66,7 +66,7 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Split the pane vertically to create a second pane
@@ -87,13 +87,13 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
 
       // Record the initial state of the calendar
       // We'll check for DOM mutations or style changes that indicate flashing
-      const calendarEvents = page.locator('.fc-event');
+      const calendarEvents = page.locator('.tnc-item');
       const initialEventCount = await calendarEvents.count();
 
       // Set up a mutation observer to detect DOM changes in the calendar
       const flashDetected = await page.evaluate(() => {
         return new Promise<boolean>((resolve) => {
-          const calendar = document.querySelector('.fc');
+          const calendar = document.querySelector('.tnc');
           if (!calendar) {
             resolve(false);
             return;
@@ -172,7 +172,7 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Split pane and open a note
@@ -188,7 +188,7 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
 
       // Inject a counter to track how many times the calendar re-renders
       await page.evaluate(() => {
-        const calendar = document.querySelector('.fc');
+        const calendar = document.querySelector('.tnc');
         if (calendar) {
           (window as any).__calendarRenderCount = 0;
           const observer = new MutationObserver((mutations) => {
@@ -197,8 +197,8 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
               (m) =>
                 m.target instanceof Element &&
                 (m.target.classList.contains('fc-event') ||
-                  m.target.closest('.fc-timegrid-events') ||
-                  m.target.closest('.fc-daygrid-events'))
+                  m.target.closest('.tnc-col-plan') ||
+                  m.target.closest('.tnc-dg-layer'))
             );
             if (hasEventRebuild) {
               (window as any).__calendarRenderCount++;
@@ -261,7 +261,7 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Create a completely new note (not a task note)
@@ -301,7 +301,7 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
       expect(calendarScreenshotAfter.length).toBeGreaterThan(0);
 
       // Verify calendar is still responsive (not stuck)
-      const todayButton = page.locator('.fc-today-button');
+      const todayButton = page.locator('.tnc-btn-today');
       if (await todayButton.isEnabled({ timeout: 1000 }).catch(() => false)) {
         await todayButton.click();
         await page.waitForTimeout(300);
@@ -328,24 +328,24 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Wait for events to load
       await page.waitForTimeout(2000);
 
-      const calendarEvents = page.locator('.fc-event');
+      const calendarEvents = page.locator('.tnc-item');
       const eventCount = await calendarEvents.count();
 
       if (eventCount > 0) {
         // Trigger a forced refresh via the refresh button if available
-        const refreshButton = page.locator('.fc-refreshCalendars-button, button[title*="Refresh"]');
+        const refreshButton = page.locator('.tnc-btn-refreshCalendars, button[title*="Refresh"]');
 
         if (await refreshButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           // Monitor for opacity changes (indicator of flashing)
           const flashingDetected = await page.evaluate(() => {
             return new Promise<boolean>((resolve) => {
-              const events = document.querySelectorAll('.fc-event');
+              const events = document.querySelectorAll('.tnc-item');
               let opacityChanges = 0;
 
               events.forEach((event) => {
@@ -366,7 +366,7 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
               });
 
               // Also watch for elements being removed and re-added
-              const container = document.querySelector('.fc-view-harness');
+              const container = document.querySelector('.tnc-view');
               if (container) {
                 const containerObserver = new MutationObserver((mutations) => {
                   mutations.forEach((m) => {
@@ -374,7 +374,7 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
                       m.removedNodes.forEach((node) => {
                         if (
                           node instanceof Element &&
-                          (node.classList.contains('fc-event') || node.querySelector('.fc-event'))
+                          (node.classList.contains('fc-event') || node.querySelector('.tnc-item'))
                         ) {
                           opacityChanges++;
                         }
@@ -421,7 +421,7 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Split and create a note
@@ -441,7 +441,7 @@ test.describe('Issue #1179: Calendar view flashes when typing in another pane', 
 
       await page.evaluate(() => {
         (window as any).__renderTimestamps = [];
-        const calendar = document.querySelector('.fc');
+        const calendar = document.querySelector('.tnc');
         if (calendar) {
           const observer = new MutationObserver(() => {
             (window as any).__renderTimestamps.push(Date.now());

@@ -98,6 +98,8 @@ Use a mouse to drag immediately, including on touchscreen laptops. With touch, h
 
 Drag task cards between columns to update the `groupBy` property value. In swimlane mode, dragging a task to a different cell updates both the `groupBy` and `swimLane` properties.
 
+Dropping a recurring task on a status marked **Completed** completes the occurrence shown on its card, as its checkbox does, instead of setting the task to that status. The task moves on to its next date, and the notification offers **Undo**. Nothing else in the drop is applied, including a change of swimlane. If that occurrence has since been completed, skipped or rescheduled, for example on another device, the drop changes nothing and a notice says so. To change the task's own status, use the context menu or edit modal.
+
 When grouping by a list property (contexts, tags, projects) with "Show items in multiple columns" enabled, dragging a task between columns modifies the list rather than replacing it. The source column's value is removed and the target column's value is added. For example, dragging a task from the "work" column to the "home" column changes `contexts: [work, call]` to `contexts: [call, home]`.
 Drag operations write directly to task metadata, so consistent grouping values reduce ambiguity.
 

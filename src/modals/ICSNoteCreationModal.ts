@@ -1,9 +1,11 @@
+import { uiData } from "../i18n/dataText";
+import { formatUIDate, formatStableDate } from "../i18n/formatters";
+import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, NoteInfo } from "../types";
-import { format } from "date-fns";
 import { SafeAsync } from "../utils/safeAsync";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { showNotice } from "../ui/notifications";
 
 export interface ICSNoteCreationOptions {
@@ -19,7 +21,7 @@ export class ICSNoteCreationModal extends Modal {
 	private folder = "";
 	private template = "";
 	private useTemplate = false;
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 
 	// UI elements
 	private titleInput: HTMLInputElement;
@@ -72,7 +74,7 @@ export class ICSNoteCreationModal extends Modal {
 
 		// Modal header
 		const header = contentEl.createDiv("modal-header");
-		header.createEl("h2", { text: this.translate("modals.icsNoteCreation.heading") });
+		header.createEl("h2", { text: this.translate(msg({ message: "Create from ICS event", context: "modals.icsNoteCreation.heading" })) });
 
 		// Event info preview
 		const eventPreview = contentEl.createDiv("ics-event-preview");
@@ -82,8 +84,8 @@ export class ICSNoteCreationModal extends Modal {
 
 		// Title input
 		new Setting(contentEl)
-			.setName(this.translate("modals.icsNoteCreation.titleLabel"))
-			.setDesc(this.translate("modals.icsNoteCreation.titleDesc"))
+			.setName(this.translate(msg({ message: "Title", context: "modals.icsNoteCreation.titleLabel" })))
+			.setDesc(this.translate(msg({ message: "Title for the new content", context: "modals.icsNoteCreation.titleDesc" })))
 			.addText((text) => {
 				this.titleInput = text.inputEl;
 				text.setValue(this.title).onChange((value) => {
@@ -94,12 +96,12 @@ export class ICSNoteCreationModal extends Modal {
 
 		// Folder input
 		new Setting(contentEl)
-			.setName(this.translate("modals.icsNoteCreation.folderLabel"))
-			.setDesc(this.translate("modals.icsNoteCreation.folderDesc"))
+			.setName(this.translate(msg({ message: "Folder", context: "modals.icsNoteCreation.folderLabel" })))
+			.setDesc(this.translate(msg({ message: "Destination folder (leave empty for vault root)", context: "modals.icsNoteCreation.folderDesc" })))
 			.addText((text) => {
 				this.folderInput = text.inputEl;
 				text.setValue(this.folder)
-					.setPlaceholder(this.translate("modals.icsNoteCreation.folderPlaceholder"))
+					.setPlaceholder(this.translate(msg({ message: "folder/subfolder", context: "modals.icsNoteCreation.folderPlaceholder" })))
 					.onChange((value) => {
 						this.folder = value;
 						this.updatePreview();
@@ -118,7 +120,7 @@ export class ICSNoteCreationModal extends Modal {
 		const buttonContainer = contentEl.createDiv("modal-button-container");
 
 		const createButton = buttonContainer.createEl("button", {
-			text: this.translate("modals.icsNoteCreation.createButton"),
+			text: this.translate(msg({ message: "Create", context: "modals.icsNoteCreation.createButton" })),
 			cls: "mod-cta",
 		});
 		createButton.onclick = (e) => {
@@ -128,7 +130,7 @@ export class ICSNoteCreationModal extends Modal {
 		};
 
 		const cancelButton = buttonContainer.createEl("button", {
-			text: this.translate("common.cancel"),
+			text: this.translate(msg({ message: "Cancel", context: "common.cancel" })),
 		});
 		cancelButton.onclick = (e) => {
 			e.preventDefault();
@@ -156,9 +158,9 @@ export class ICSNoteCreationModal extends Modal {
 			const startDate = new Date(startDateStr);
 			const startDiv = details.createDiv();
 			startDiv.createEl("strong", {
-				text: this.translate("modals.icsNoteCreation.startLabel"),
+				text: this.translate(msg({ message: "Start: ", context: "modals.icsNoteCreation.startLabel" })),
 			});
-			startDiv.appendText(format(startDate, "PPPp"));
+			startDiv.appendText(formatUIDate(startDate, "PPPp"));
 		}
 
 		if (icsEvent.end && !icsEvent.allDay) {
@@ -167,21 +169,21 @@ export class ICSNoteCreationModal extends Modal {
 				: icsEvent.end;
 			const endDate = new Date(endDateStr);
 			const endDiv = details.createDiv();
-			endDiv.createEl("strong", { text: this.translate("modals.icsNoteCreation.endLabel") });
-			endDiv.appendText(format(endDate, "PPPp"));
+			endDiv.createEl("strong", { text: this.translate(msg({ message: "End: ", context: "modals.icsNoteCreation.endLabel" })) });
+			endDiv.appendText(formatUIDate(endDate, "PPPp"));
 		}
 
 		if (icsEvent.location) {
 			const locationDiv = details.createDiv();
 			locationDiv.createEl("strong", {
-				text: this.translate("modals.icsNoteCreation.locationLabel"),
+				text: this.translate(msg({ message: "Location: ", context: "modals.icsNoteCreation.locationLabel" })),
 			});
 			locationDiv.appendText(icsEvent.location);
 		}
 
 		const calendarDiv = details.createDiv();
 		calendarDiv.createEl("strong", {
-			text: this.translate("modals.icsNoteCreation.calendarLabel"),
+			text: this.translate(msg({ message: "Calendar: ", context: "modals.icsNoteCreation.calendarLabel" })),
 		});
 		calendarDiv.appendText(subscriptionName);
 	}
@@ -190,8 +192,8 @@ export class ICSNoteCreationModal extends Modal {
 		this.templateContainer.empty();
 
 		new Setting(this.templateContainer)
-			.setName(this.translate("modals.icsNoteCreation.useTemplateLabel"))
-			.setDesc(this.translate("modals.icsNoteCreation.useTemplateDesc"))
+			.setName(this.translate(msg({ message: "Use template", context: "modals.icsNoteCreation.useTemplateLabel" })))
+			.setDesc(this.translate(msg({ message: "Apply a template when creating the content", context: "modals.icsNoteCreation.useTemplateDesc" })))
 			.addToggle((toggle) => {
 				toggle.setValue(this.useTemplate).onChange((value) => {
 					this.useTemplate = value;
@@ -202,13 +204,13 @@ export class ICSNoteCreationModal extends Modal {
 
 		if (this.useTemplate) {
 			new Setting(this.templateContainer)
-				.setName(this.translate("modals.icsNoteCreation.templatePathLabel"))
-				.setDesc(this.translate("modals.icsNoteCreation.templatePathDesc"))
+				.setName(this.translate(msg({ message: "Template path", context: "modals.icsNoteCreation.templatePathLabel" })))
+				.setDesc(this.translate(msg({ message: "Path to the template file", context: "modals.icsNoteCreation.templatePathDesc" })))
 				.addText((text) => {
 					this.templateInput = text.inputEl;
 					text.setValue(this.template)
 						.setPlaceholder(
-							this.translate("modals.icsNoteCreation.templatePathPlaceholder")
+							uiData("templates/ics-note-template.md", "Literal vault-path example; preserve the template filename and lookup syntax across locales")
 						)
 						.onChange((value) => {
 							this.template = value;
@@ -235,33 +237,43 @@ export class ICSNoteCreationModal extends Modal {
 		if (!this.previewContainer) return;
 
 		this.previewContainer.empty();
-		this.previewContainer.createEl("h4", { text: "Summary" });
+		this.previewContainer.createEl("h4", {
+			text: this.translate(msg({ message: "Summary", context: "modals.icsNoteCreation.summary" })),
+		});
 
 		const previewDetails = this.previewContainer.createDiv("preview-details");
 
 		const typeDiv = previewDetails.createDiv();
-		typeDiv.createEl("strong", { text: "Type: " });
-		typeDiv.appendText("Note");
+		typeDiv.createEl("strong", {
+			text: this.translate(msg({ message: "Type:", context: "settings.integrations.subscriptionsList.labels.type" })),
+		});
+		typeDiv.appendText(this.translate(msg({ message: "Note", context: "modals.icsEventInfo.typeNote" })));
 		const titleDiv = previewDetails.createDiv();
-		titleDiv.createEl("strong", { text: "Title: " });
-		titleDiv.appendText(this.title || "Untitled");
+		titleDiv.createEl("strong", { text: this.translate(msg({ message: "Title", context: "modals.icsNoteCreation.titleLabel" })) });
+		titleDiv.appendText(this.title || this.translate(msg({ message: "Untitled", context: "common.untitled" })));
 		const folderDiv = previewDetails.createDiv();
-		folderDiv.createEl("strong", { text: "Folder: " });
-		folderDiv.appendText(this.folder || "Vault root");
+		folderDiv.createEl("strong", {
+			text: this.translate(msg({ message: "Folder", context: "modals.icsNoteCreation.folderLabel" })),
+		});
+		folderDiv.appendText(this.folder || this.translate(msg({ message: "Vault root", context: "modals.icsNoteCreation.vaultRoot" })));
 
 		if (this.useTemplate && this.template) {
 			const templateDiv = previewDetails.createDiv();
-			templateDiv.createEl("strong", { text: "Template: " });
+			templateDiv.createEl("strong", {
+				text: this.translate(msg({ message: "Template path", context: "modals.icsNoteCreation.templatePathLabel" })),
+			});
 			templateDiv.appendText(this.template);
 		} else {
 			const templateDiv = previewDetails.createDiv();
-			templateDiv.createEl("strong", { text: "Template: " });
-			templateDiv.appendText("Default format");
+			templateDiv.createEl("strong", {
+				text: this.translate(msg({ message: "Template path", context: "modals.icsNoteCreation.templatePathLabel" })),
+			});
+			templateDiv.appendText(this.translate(msg({ message: "Default format", context: "modals.icsNoteCreation.defaultFormat" })));
 		}
 
 		// Show available template variables
 		const variablesDiv = this.previewContainer.createDiv("template-variables");
-		variablesDiv.createEl("h5", { text: "Available template variables" });
+		variablesDiv.createEl("h5", { text: this.translate(msg({ message: "Available template variables", context: "modals.icsNoteCreation.variables" })) });
 
 		const variables = [
 			"{{title}}",
@@ -280,7 +292,7 @@ export class ICSNoteCreationModal extends Modal {
 		const variablesList = variablesDiv.createDiv("variables-list");
 		variables.forEach((variable) => {
 			variablesList.createSpan({
-				text: variable,
+				text: uiData(variable, "Immutable template placeholder; preserve native expansion syntax"),
 				cls: "template-variable",
 			});
 		});
@@ -294,7 +306,7 @@ export class ICSNoteCreationModal extends Modal {
 				? icsEvent.start + "T00:00:00"
 				: icsEvent.start;
 		const startDate = new Date(startDateStr);
-		return `${icsEvent.title} - ${format(startDate, "PPP")}`;
+		return `${icsEvent.title} - ${formatStableDate(startDate, "PPP")}`;
 	}
 
 	private getDefaultFolder(): string {
@@ -316,7 +328,9 @@ export class ICSNoteCreationModal extends Modal {
 					template: this.useTemplate && this.template ? this.template : undefined,
 				});
 
-				new Notice(`Note created: ${this.title}`);
+				new Notice(
+					this.translate(msg({ message: "Note created: {title}", context: "modals.icsNoteCreation.noteCreated" }), { title: this.title })
+				);
 				this.options.onContentCreated?.(result.file, result.noteInfo);
 
 				this.close();
@@ -324,11 +338,11 @@ export class ICSNoteCreationModal extends Modal {
 			[
 				{
 					condition: !!this.title.trim(),
-					message: "Title is required",
+					message: this.translate(msg({ message: "Title is required", context: "modals.icsNoteCreation.titleRequired" })),
 				},
 			],
 			{
-				errorMessage: "Failed to create note from ICS event",
+				errorMessage: this.translate(msg({ message: "Failed to create note from ICS event", context: "modals.icsNoteCreation.createFailed" })),
 				noticeHandler: showNotice,
 			}
 		);

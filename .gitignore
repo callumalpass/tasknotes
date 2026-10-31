@@ -24,6 +24,13 @@ styles.css
 # Don't include the auto-generated release notes import file
 src/releaseNotes.ts
 
+# Generated compiled ICU data; authored PO files are the source of truth.
+/src/i18n/locales/*/messages.json
+
+# Generated language-pack exports and local bundle measurements
+/dist/
+tasknotes-e2e-vault/.obsidian/plugins/tasknotes/language-packs/
+
 # Exclude sourcemaps
 *.map
 

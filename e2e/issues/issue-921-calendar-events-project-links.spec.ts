@@ -61,7 +61,7 @@ test.describe('Issue #921: Calendar events with project links', () => {
       const calendarView = page.locator('.advanced-calendar-view, .bases-calendar-view, .calendar-view');
 
       // Look for calendar events
-      const calendarEvents = calendarView.locator('.fc-event, .calendar-event');
+      const calendarEvents = calendarView.locator('.tnc-item, .calendar-event');
 
       // Find an event that has a project associated with it
       const eventWithProject = calendarEvents.filter({
@@ -110,7 +110,7 @@ test.describe('Issue #921: Calendar events with project links', () => {
       const calendarView = page.locator('.advanced-calendar-view, .bases-calendar-view, .calendar-view');
 
       // Find a calendar event and hover to show tooltip
-      const calendarEvent = calendarView.locator('.fc-event, .calendar-event').first();
+      const calendarEvent = calendarView.locator('.tnc-item, .calendar-event').first();
 
       if (await calendarEvent.isVisible({ timeout: 3000 })) {
         await calendarEvent.hover();
@@ -239,7 +239,7 @@ test.describe('Issue #921: Calendar events with project links', () => {
       const calendarView = page.locator('.advanced-calendar-view, .bases-calendar-view, .calendar-view');
 
       // Find an event with a project link
-      const eventWithProject = calendarView.locator('.fc-event .project-link, .fc-event .internal-link[data-project]').first();
+      const eventWithProject = calendarView.locator('.tnc-item .project-link, .tnc-item .internal-link[data-project]').first();
 
       const hasProjectLink = await eventWithProject.isVisible({ timeout: 3000 }).catch(() => false);
 
@@ -293,7 +293,7 @@ test.describe('Issue #921: Calendar events with project links', () => {
       const calendarView = page.locator('.advanced-calendar-view, .bases-calendar-view, .calendar-view');
 
       // Click on a calendar event to open its detail view
-      const calendarEvent = calendarView.locator('.fc-event, .calendar-event').first();
+      const calendarEvent = calendarView.locator('.tnc-item, .calendar-event').first();
 
       if (await calendarEvent.isVisible({ timeout: 3000 })) {
         await calendarEvent.click();
@@ -338,7 +338,7 @@ test.describe('Issue #921: Calendar events with project links', () => {
       const calendarView = page.locator('.advanced-calendar-view, .bases-calendar-view, .calendar-view');
 
       // Find an event that has multiple projects (indicated by multiple + prefixes)
-      const calendarEvents = calendarView.locator('.fc-event, .calendar-event');
+      const calendarEvents = calendarView.locator('.tnc-item, .calendar-event');
 
       // Look for an event with multiple project links
       let foundMultiProject = false;
@@ -394,10 +394,10 @@ test.describe('Issue #921: Calendar events with project links', () => {
 
       // Array of view types and their selectors/buttons
       const viewTypes = [
-        { name: 'month', selector: '.fc-dayGridMonth-button, [data-view="month"]' },
-        { name: 'week', selector: '.fc-timeGridWeek-button, [data-view="week"]' },
-        { name: 'day', selector: '.fc-timeGridDay-button, [data-view="day"]' },
-        { name: 'list', selector: '.fc-listWeek-button, [data-view="list"]' },
+        { name: 'month', selector: '.tnc-btn-view-month, [data-view="month"]' },
+        { name: 'week', selector: '.tnc-btn-view-week, [data-view="week"]' },
+        { name: 'day', selector: '.tnc-btn-view-day, [data-view="day"]' },
+        { name: 'list', selector: '.tnc-btn-view-list, [data-view="list"]' },
       ];
 
       for (const viewType of viewTypes) {
@@ -408,7 +408,7 @@ test.describe('Issue #921: Calendar events with project links', () => {
           await page.waitForTimeout(500);
 
           // Check for events with project display in this view
-          const eventsWithProjects = calendarView.locator('.fc-event .project-link, .fc-event [data-project]');
+          const eventsWithProjects = calendarView.locator('.tnc-item .project-link, .tnc-item [data-project]');
           const count = await eventsWithProjects.count();
 
           console.log(`${viewType.name} view - events with project display: ${count}`);

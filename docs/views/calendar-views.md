@@ -121,6 +121,22 @@ This flexibility allows for complete control over both the recurring pattern and
 
 ### View Options
 
+Open a Calendar Base, then open its view settings from the Bases toolbar. These collapsible sections change only that saved view:
+
+- **What to show**: scheduled and due tasks, recurring tasks, time entries, timeblocks, and events from note properties. Scheduled-to-due spans appear when both scheduled and due tasks are enabled.
+- **Layout**: calendar mode, custom/list day count, height, week start, clock format, week numbers, weekends, today's highlight, and search.
+- **Time grid**: all-day area, day start/end, time between grid lines, initial scroll time, current-time marker, and hourly breakdown. Available for Week, Day, and Custom days.
+- **Day cells**: events shown before a “+ more” link, for Month, Year, and the all-day area of time-grid views. `0` chooses the automatic limit.
+- **Property-based events**: start, end, and title properties. Hidden when property-based events are off.
+- **Advanced**: opening date (fixed or taken from a property), daily-note creation, completed/skipped recurring instances, today column width, drag/resize step, selection preview, overlapping events, minimum event height, simultaneous-event limit, and the row-limit override.
+- Connected calendars have their own visibility sections.
+
+The **row limit override** in Advanced takes priority over the Day cells limit when positive. It counts rows including the “+ more” link; `0` turns off the override, not the ordinary event limit. The simultaneous-event limit applies to timed events; `0` means no limit.
+
+Existing `.base` keys and their values have not changed. Moving a control to Advanced does not reset it. Older files with settings nested under `config:` or `options:` are still read; direct view keys take precedence. Remove a per-view key to return to the plugin default on the next opening.
+
+For reusable setups, save separate Bases (for example a Day planner, Month overview, or List/Agenda) with different settings; there is no preset selector that overwrites several settings at once.
+
 The Calendar View provides several display options that control what types of events appear on the calendar:
 
 - **Show scheduled**: Display tasks with scheduled dates
@@ -131,9 +147,9 @@ The Calendar View provides several display options that control what types of ev
 - **Show time entries**: Display time tracking entries
 - **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
 - **Show hourly breakdown**: Turn this off to show only the all-day area in Week, Day, and Custom views. The all-day area then fills the calendar height (unless the height is set to auto) and shows every event by default. Timed events are not shown while the hourly breakdown is hidden.
-- **Max events per day / Max event rows per day**: Limit how many events a day cell shows before a "+ more" link, in Month and Year views and in the all-day area of Week, Day, and Custom views. `0` uses the automatic limit.
+- **Events before “+ more”** (Day cells): Limit events in Month and Year day cells and the all-day area of Week, Day, and Custom views. `0` uses the automatic limit. **Row limit override** (Advanced) takes precedence when positive, counts the “+ more” row, and is disabled at `0`.
 - **Create daily notes from date links**: Let date header links create a missing daily note before opening it. Turn this off if date links should only open existing daily notes.
-- **Drag/drop resolution**: Set `snapDuration` when you want events to drag or resize in smaller increments than the visible `slotDuration`, such as 5-minute dragging on a 30-minute grid.
+- **Drag and resize step** (Advanced): Set `snapDuration` when you want events to drag or resize in smaller increments than the visible `slotDuration`, such as 5-minute dragging on a 30-minute grid.
 - **Span tasks between scheduled and due dates**: Display tasks as multi-day bars spanning from their scheduled date to their due date (see below)
 Multiple saved calendar views can store different option sets (for example planning vs focus), avoiding repeated manual toggles.
 

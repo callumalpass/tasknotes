@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 /**
  * TaskCreationModal Tests - Fixed Implementation
  *
@@ -175,26 +176,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 				}),
 			},
 			i18n: {
-				translate: jest.fn((key: string, params?: Record<string, string | number>) => {
-					// Mock translations for specific keys used in tests
-					const translations: Record<string, string> = {
-						"modals.taskCreation.notices.success":
-							'Task "{title}" created successfully',
-						"modals.taskCreation.notices.failure": "Failed to create task: {message}",
-						"modals.taskCreation.notices.titleRequired": "Please enter a task title",
-					};
-
-					let result = translations[key] || key;
-
-					// Handle parameter substitution
-					if (params) {
-						Object.entries(params).forEach(([param, value]) => {
-							result = result.replace(`{${param}}`, String(value));
-						});
-					}
-
-					return result;
-				}),
+				translate: mockObserveTranslation(),
 			},
 		};
 
@@ -407,11 +389,25 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 			expect(Notice).toHaveBeenCalledWith('Task "Test Task" created successfully');
 		});
 
+		it.each(["", "   "])("keeps the form intact for invalid title %j", async (title) => {
+			(modal as any).title = title;
+			(modal as any).details = "Unsaved details";
+			const close = jest.spyOn(modal, "close");
+
+			await expect(modal.handleSave()).resolves.toBe(false);
+
+			expect(mockPlugin.taskService.createTask).not.toHaveBeenCalled();
+			expect(close).not.toHaveBeenCalled();
+			expect((modal as any).details).toBe("Unsaved details");
+		});
+
 		it("should handle task creation errors", async () => {
 			(modal as any).title = "Test Task";
 			mockPlugin.taskService.createTask.mockRejectedValue(new Error("Creation failed"));
+			const close = jest.spyOn(modal, "close");
 
-			await modal.handleSave();
+			await expect(modal.handleSave()).resolves.toBe(false);
+			expect(close).not.toHaveBeenCalled();
 
 			expect(console.error).toHaveBeenCalledWith(
 				expect.stringContaining(

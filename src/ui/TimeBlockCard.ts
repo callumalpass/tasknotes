@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TimeBlock } from "../types";
@@ -106,7 +108,7 @@ export function createTimeBlockCard(
 	const content = mainRow.createDiv({ cls: "task-card__content" });
 
 	// Title with time range
-	const titleText = timeblock.title || "Timeblock";
+	const titleText = timeblock.title || uiText(msg({ message: "Timeblock", context: "ui/TimeBlockCard: createTimeBlockCard display" }));
 	const timeRange = `${timeblock.startTime} - ${timeblock.endTime}`;
 	content.createDiv({
 		cls: "task-card__title",
@@ -211,10 +213,7 @@ export function createTimeBlockCard(
 		);
 		attachmentsEl.classList.add("tn-static-margin-top-4px-96ad6099");
 
-		const attachmentText =
-			timeblock.attachments.length === 1
-				? "1 attachment"
-				: `${timeblock.attachments.length} attachments`;
+		const attachmentText = uiText(msg({ message: "{count, plural, one {# attachment} other {# attachments}}", context: "timeblock attachment count" }), { count: timeblock.attachments.length });
 		attachmentsEl.textContent = `📎 ${attachmentText}`;
 	}
 

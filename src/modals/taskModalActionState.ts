@@ -1,3 +1,4 @@
+import type { MessageDescriptor } from "@lingui/core";
 import type { App } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { PriorityConfig, Reminder, StatusConfig } from "../types";
@@ -28,7 +29,7 @@ export interface TaskModalActionStateInput {
 export interface TaskModalActionMenuContextOptions {
 	app: App;
 	plugin: TaskNotesPlugin;
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	getState: () => TaskModalActionMenuState;
 	setDueDate: (value: string) => void;
 	setScheduledDate: (value: string) => void;

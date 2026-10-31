@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { describe, it, expect, jest } from "@jest/globals";
 import { TFile } from "obsidian";
 
@@ -7,6 +8,7 @@ import { TaskInfo } from "../../../src/types";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 
 jest.mock("obsidian", () => ({
+	...jest.requireActual("obsidian"),
 	Notice: jest.fn(),
 	TFile: class MockTFile {
 		path: string;
@@ -78,7 +80,7 @@ describe("Google Calendar archive reliability", () => {
 				getStatusConfig: jest.fn().mockReturnValue(null),
 			},
 			i18n: {
-				translate: jest.fn((key: string) => key),
+				translate: mockObserveTranslation(),
 			},
 			cacheManager: {
 				getTaskInfo: jest.fn().mockResolvedValue(null),

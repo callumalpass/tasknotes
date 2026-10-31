@@ -161,7 +161,7 @@ test.describe('Issue #873: Notification Sound Setting', () => {
       await page.waitForTimeout(1000);
 
       // For now, just verify the notification system is working
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Check if AudioContext API is available in the browser context

@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import { createNLPTriggerRows } from "../../../src/settings/tabs/taskProperties/helpers";
 import type { TaskNotesSettings } from "../../../src/types/settings";
@@ -10,7 +12,7 @@ describe("Issue #1815: Priority NLP trigger character setting", () => {
 	it("shows and saves the priority trigger character even when priority NLP is disabled", () => {
 		const settings = cloneSettings();
 		const save = jest.fn();
-		const translate = (key: string) => key;
+		const translate = mockObserveTranslation();
 		const plugin = { settings } as any;
 
 		const rows = createNLPTriggerRows(
@@ -22,8 +24,8 @@ describe("Issue #1815: Priority NLP trigger character setting", () => {
 		);
 
 		expect(rows).toHaveLength(2);
-		expect(rows[0].label).toBe("settings.taskProperties.propertyCard.nlpTrigger");
-		expect(rows[1].label).toBe("settings.taskProperties.propertyCard.triggerChar");
+		expect(rows[0].label).toBe(mockEnglishText(msg({ message: "NLP trigger:", context: "settings.taskProperties.propertyCard.nlpTrigger" })));
+		expect(rows[1].label).toBe(mockEnglishText(msg({ message: "Trigger character:", context: "settings.taskProperties.propertyCard.triggerChar" })));
 
 		const triggerInput = rows[1].input as HTMLInputElement;
 		expect(triggerInput.value).toBe("!");

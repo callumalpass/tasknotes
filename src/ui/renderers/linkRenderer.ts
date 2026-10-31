@@ -1,3 +1,6 @@
+import { uiData } from "../../i18n/dataText";
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Renderer utilities check created elements before attaching interactions. */
 // Link and tag rendering utilities for UI components
 
@@ -14,6 +17,7 @@ export type LinkNavigateHandler = (
 
 /** Minimal services required to render internal links (DI-friendly) */
 export interface LinkServices {
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	metadataCache: App["metadataCache"];
 	workspace: App["workspace"];
 	/**
@@ -107,7 +111,9 @@ export function appendInternalLink(
 				if (file instanceof TFile) {
 					await deps.workspace.getLeaf(false).openFile(file);
 				} else if (showErrorNotices) {
-					new Notice(`Note "${displayText}" not found`);
+					new Notice(
+						deps.translate(msg({ message: "Note “{title}” not found", context: "notices.interface.noteMissing" }), { title: displayText })
+					);
 				}
 			} catch (error) {
 				tasknotesLogger.error("[TaskNotes] Error opening internal link:", {
@@ -117,7 +123,9 @@ export function appendInternalLink(
 					error: error,
 				});
 				if (showErrorNotices) {
-					new Notice(`Failed to open note "${displayText}"`);
+					new Notice(
+						deps.translate(msg({ message: "Failed to open note “{title}”", context: "notices.interface.noteOpenFailed" }), { title: displayText })
+					);
 				}
 			}
 		})();
@@ -206,18 +214,18 @@ export function renderTextWithLinks(
 				filePath = fp;
 				displayText = alias;
 			}
-			appendInternalLink(container, filePath, displayText, deps);
+			appendInternalLink(container, filePath, uiData(displayText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps);
 		} else if (mdText && mdHref) {
 			const href = String(mdHref).trim();
 			const disp = String(mdText).trim();
 			if (isExternalHref(href)) {
-				appendExternalLink(container, href, disp);
+				appendExternalLink(container, href, uiData(disp, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"));
 			} else {
-				appendInternalLink(container, href, disp, deps);
+				appendInternalLink(container, href, uiData(disp, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps);
 			}
 		} else if (autolinkHref || bareHref) {
 			const href = String(autolinkHref || bareHref);
-			appendExternalLink(container, href, href);
+			appendExternalLink(container, href, uiData(href, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"));
 		} else {
 			container.appendChild(activeDocument.createTextNode(full));
 		}
@@ -423,7 +431,7 @@ export function renderProjectLinks(
 			}
 
 			const resolvedText = resolveProjectDisplayText(filePath, displayText, deps);
-			appendInternalLink(container, filePath, resolvedText, deps, {
+			appendInternalLink(container, filePath, uiData(resolvedText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps, {
 				cssClass: "task-card__project-link internal-link",
 				hoverSource: "tasknotes-project-link",
 				showErrorNotices: true,
@@ -438,7 +446,7 @@ export function renderProjectLinks(
 					parsed.displayText,
 					deps
 				);
-				appendInternalLink(container, parsed.filePath, resolvedText, deps, {
+				appendInternalLink(container, parsed.filePath, uiData(resolvedText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps, {
 					cssClass: "task-card__project-link internal-link",
 					hoverSource: "tasknotes-project-link",
 					showErrorNotices: true,

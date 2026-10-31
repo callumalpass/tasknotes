@@ -1,3 +1,6 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
+import { createI18nService } from "../../../src/i18n";
 import { Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../../../src/main";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
@@ -46,7 +49,7 @@ describe("Issue #819: quick actions for inline task links", () => {
 			openQuickActionsForTaskUnderCursor: jest.fn(),
 		};
 
-		expect(command?.nameKey).toBe("commands.quickActionsTaskUnderCursor");
+		expect(command?.nameKey).toEqual(msg({ message: "Quick actions for task under cursor", context: "commands.quickActionsTaskUnderCursor" }));
 
 		await command?.editorCallback?.(ctx as never, editor as never, { file } as never);
 
@@ -57,6 +60,7 @@ describe("Issue #819: quick actions for inline task links", () => {
 		const task = createTask();
 		const app = new App();
 		const plugin = new TaskNotesPlugin(app as never, {} as never);
+		plugin.i18n = createI18nService();
 		const sourceFile = new TFile("Notes/source.md");
 		const detectionService = {
 			findWikilinks: jest.fn(() => [
@@ -89,9 +93,8 @@ describe("Issue #819: quick actions for inline task links", () => {
 			"wikilink"
 		);
 		expect(TaskActionPaletteModal).toHaveBeenCalledTimes(1);
-		const [modalApp, modalTask, modalPlugin, modalDate] = (
-			TaskActionPaletteModal as jest.Mock
-		).mock.calls[0];
+		const [modalApp, modalTask, modalPlugin, modalDate] = (TaskActionPaletteModal as jest.Mock)
+			.mock.calls[0];
 		expect(modalApp).toBe(plugin.app);
 		expect(modalTask).toBe(task);
 		expect(modalPlugin).toBe(plugin);
@@ -103,6 +106,7 @@ describe("Issue #819: quick actions for inline task links", () => {
 	it("does not open quick actions when the cursor is not on a task link", async () => {
 		const app = new App();
 		const plugin = new TaskNotesPlugin(app as never, {} as never);
+		plugin.i18n = createI18nService();
 		const detectionService = {
 			findWikilinks: jest.fn(() => [
 				{

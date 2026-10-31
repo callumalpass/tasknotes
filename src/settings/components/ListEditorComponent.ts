@@ -1,3 +1,5 @@
+import { uiText } from "../../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { setTooltip } from "obsidian";
 import { createListHeaders } from "./settingHelpers";
 
@@ -69,7 +71,7 @@ export class ListEditorComponent<T extends ListEditorItem> {
 		if (this.config.dragEnabled !== false) {
 			const dragHandle = itemRow.createDiv("settings-drag-handle");
 			dragHandle.textContent = "☰";
-			setTooltip(dragHandle, "Drag to reorder", { placement: "top" });
+			setTooltip(dragHandle, uiText(msg({ message: "Drag to reorder", context: "settings/components/ListEditorComponent: ListEditorComponent.renderItemRow display" })), { placement: "top" });
 			itemRow.setAttribute("draggable", "true");
 			this.setupDragAndDrop(itemRow, item);
 		}
@@ -103,7 +105,7 @@ export class ListEditorComponent<T extends ListEditorItem> {
 
 		const addButtonContainer = this.container.createDiv("settings-view__add-button-container");
 		const addButton = addButtonContainer.createEl("button", {
-			text: this.config.addButtonText || "Add Item",
+			text: this.config.addButtonText || uiText(msg({ message: "Add Item", context: "settings/components/ListEditorComponent: ListEditorComponent.renderAddButton text" })),
 			cls: "tn-btn tn-btn--primary",
 		});
 

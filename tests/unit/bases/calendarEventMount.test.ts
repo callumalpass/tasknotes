@@ -1,8 +1,11 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import {
 	decorateCalendarIcsEventElement,
+	createCalendarListEventCard,
 	enrichCalendarListTaskInfo,
-	mountCalendarListEventCard,
 } from "../../../src/bases/calendarEventMount";
+import type { CalendarEventApi } from "../../../src/bases/calendarEngine";
 import type { TaskInfo } from "../../../src/types";
 
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
@@ -19,8 +22,7 @@ function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 function createPlugin(overrides: Record<string, unknown> = {}) {
 	return {
 		i18n: {
-			translate: (key: string) =>
-				key === "modals.icsEventInfo.relatedNotesHeading" ? "Related notes" : key,
+			translate: mockObserveTranslation(),
 		},
 		calendarProviderRegistry: {
 			findProviderForEvent: jest.fn(() => ({ providerName: "google" })),
@@ -34,28 +36,15 @@ function createPlugin(overrides: Record<string, unknown> = {}) {
 	} as any;
 }
 
-function createEventMountArg({
-	viewType = "listWeek",
-	start = new Date("2026-05-19T10:30:00"),
-	extendedProps = {},
-}: {
-	viewType?: string;
-	start?: Date | null;
-	extendedProps?: Record<string, unknown>;
-}) {
-	const el = document.createElement("tr");
-	el.className = "fc-event fc-event-start fc-event-end";
-	el.innerHTML = "<td>default</td>";
+function createEvent(extendedProps: Record<string, unknown>): CalendarEventApi {
 	return {
-		el,
-		view: {
-			type: viewType,
-		},
-		event: {
-			start,
-			extendedProps,
-		},
-	} as any;
+		id: "event",
+		title: "Event",
+		start: new Date("2026-05-19T10:30:00"),
+		end: null,
+		allDay: false,
+		extendedProps: extendedProps as CalendarEventApi["extendedProps"],
+	};
 }
 
 describe("calendarEventMount", () => {
@@ -102,7 +91,7 @@ describe("calendarEventMount", () => {
 	it("decorates provider calendar events with related-note state in grid views", () => {
 		const plugin = createPlugin();
 		const element = document.createElement("div");
-		const title = element.createDiv({ cls: "fc-event-title" });
+		const title = element.createDiv({ cls: "tnc-item-title" });
 
 		decorateCalendarIcsEventElement({
 			element,
@@ -119,7 +108,7 @@ describe("calendarEventMount", () => {
 		expect(element.querySelector(".fc-event-provider-icon")).not.toBeNull();
 		const indicator = title.querySelector<HTMLElement>(".ics-related-note-indicator");
 		expect(indicator?.dataset.relatedNoteCount).toBe("2");
-		expect(indicator?.getAttribute("aria-label")).toBe("Related notes: 2");
+		expect(indicator?.getAttribute("aria-label")).toBe("Related notes & tasks: 2");
 	});
 
 	it("skips provider icons for list-view provider events", () => {
@@ -137,62 +126,60 @@ describe("calendarEventMount", () => {
 		expect(element.querySelector(".fc-event-provider-icon")).toBeNull();
 	});
 
-	it("mounts a list-view task card with enriched task data", () => {
+	it("renders a list-view task card with enriched task data", () => {
 		const task = createTask();
-		const arg = createEventMountArg({
-			extendedProps: {
-				taskInfo: task,
-				eventType: "scheduled",
-			},
-		});
 		const basesEntry = { getValue: jest.fn(() => ({ data: "2026-05-19T00:00:00" })) };
-		const createTaskCard = jest.fn((enrichedTask: TaskInfo) => {
-			const card = document.createElement("div");
-			card.className = "task-card";
-			card.dataset.path = enrichedTask.path;
-			card.dataset.created = enrichedTask.dateCreated;
-			return card;
-		});
+		const createTaskCard = jest.fn(() => document.createElement("div"));
+		const buildTaskCardOptions = jest.fn((options) => options as any);
 
-		const mounted = mountCalendarListEventCard({
-			arg,
+		const card = createCalendarListEventCard({
+			event: createEvent({ taskInfo: task, eventType: "scheduled" }),
 			plugin: createPlugin(),
 			visibleProperties: ["formula.score"],
 			basesEntryByPath: new Map([[task.path, basesEntry]]),
-			buildTaskCardOptions: ({ targetDate }) => ({ targetDate }) as any,
-			factories: {
-				createTaskCard: createTaskCard as any,
-			},
+			buildTaskCardOptions,
+			factories: { createTaskCard: createTaskCard as any },
 		});
 
-		expect(mounted).toBe(true);
-		expect(arg.el.getAttribute("data-task-path")).toBe("Tasks/task.md");
-		expect(arg.el.classList.contains("fc-list-task-card")).toBe(true);
-		expect(arg.el.classList.contains("fc-event")).toBe(false);
-		expect(arg.el.querySelector("td.fc-list-card-content")?.getAttribute("colspan")).toBe(
-			"3"
-		);
-		expect(arg.el.querySelector(".task-card")).not.toBeNull();
-		expect(createTaskCard.mock.calls[0][0].basesData).toBe(basesEntry);
-		expect(createTaskCard.mock.calls[0][0].dateCreated).toBe("2026-05-19T00:00:00");
+		expect(card).toBe(createTaskCard.mock.results[0].value);
+		const [enrichedTask, , visibleProperties] = createTaskCard.mock.calls[0] as unknown as [
+			TaskInfo,
+			unknown,
+			string[],
+		];
+		expect(enrichedTask.basesData).toBe(basesEntry);
+		expect(enrichedTask.dateCreated).toBe("2026-05-19T00:00:00");
+		expect(visibleProperties).toEqual(["formula.score"]);
+		expect(buildTaskCardOptions.mock.calls[0][0].targetDate).toBeInstanceOf(Date);
 	});
 
-	it("leaves unknown list events on the default rendering path", () => {
-		const arg = createEventMountArg({
-			extendedProps: {
-				eventType: "unknown",
-			},
-		});
+	it("renders provider events as calendar event cards with related-note counts", () => {
+		const icsEvent = { id: "event-1", title: "Event", start: "2026-05-19" };
+		const createICSEventCard = jest.fn(() => document.createElement("div"));
 
-		const mounted = mountCalendarListEventCard({
-			arg,
+		createCalendarListEventCard({
+			event: createEvent({ eventType: "ics", icsEvent, relatedNoteCount: 2 }),
 			plugin: createPlugin(),
 			visibleProperties: [],
 			basesEntryByPath: new Map(),
-			buildTaskCardOptions: ({ targetDate }) => ({ targetDate }) as any,
+			buildTaskCardOptions: (options) => options as any,
+			factories: { createICSEventCard: createICSEventCard as any },
 		});
 
-		expect(mounted).toBe(false);
-		expect(arg.el.classList.contains("fc-event-default-list")).toBe(true);
+		expect(createICSEventCard).toHaveBeenCalledWith(icsEvent, expect.anything(), {
+			relatedNoteCount: 2,
+		});
+	});
+
+	it("keeps the calendar's default row for unknown list events", () => {
+		const card = createCalendarListEventCard({
+			event: createEvent({ eventType: "unknown" }),
+			plugin: createPlugin(),
+			visibleProperties: [],
+			basesEntryByPath: new Map(),
+			buildTaskCardOptions: (options) => options as any,
+		});
+
+		expect(card).toBeNull();
 	});
 });

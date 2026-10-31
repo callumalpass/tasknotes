@@ -1,3 +1,5 @@
+import type { MessageSuffix } from "../i18n/concepts";
+import { messageForKey } from "../i18n/messages";
 import TaskNotesPlugin from "../main";
 import { getRecurrenceDisplayText } from "../utils/helpers";
 import { resolveTaskCardPropertyLabel } from "./taskCardPresentation";
@@ -6,10 +8,10 @@ export { getTaskCardPropertyValue } from "./taskCardPropertyAccess";
 
 function tTaskCard(
 	plugin: TaskNotesPlugin,
-	key: string,
+	key: MessageSuffix<"ui.taskCard.">,
 	vars?: Record<string, string | number>
 ): string {
-	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
+	return plugin.i18n.translate(messageForKey(`ui.taskCard.${key}`), vars);
 }
 
 export function getTaskCardPropertyLabel(
@@ -75,9 +77,7 @@ export function getRecurrenceTooltip(
 }
 
 export function getReminderTooltip(plugin: TaskNotesPlugin, count: number): string {
-	return count === 1
-		? tTaskCard(plugin, "reminderTooltipOne")
-		: tTaskCard(plugin, "reminderTooltipMany", { count });
+	return tTaskCard(plugin, "reminderTooltipMany", { count });
 }
 
 export function getChevronTooltip(plugin: TaskNotesPlugin, expanded: boolean): string {

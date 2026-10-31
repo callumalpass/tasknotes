@@ -1,3 +1,7 @@
+import { uiData } from "../../../i18n/dataText";
+import { uiText } from "../../../i18n/runtime";
+import { configLabel } from "../../../i18n/configLabels";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
@@ -29,7 +33,7 @@ export function renderStatusPropertyCard(
 	save: () => void,
 	translate: TranslateFn
 ): void {
-	const propertyKeyInput = createCardInput("text", "status", plugin.settings.fieldMapping.status);
+	const propertyKeyInput = createCardInput("text", uiData("status", "Editable frontmatter property identifier or filename-template syntax, not a display label"), plugin.settings.fieldMapping.status);
 
 	// Validate defaultTaskStatus - if it doesn't exist in customStatuses, reset to first available
 	const validStatusValues = plugin.settings.customStatuses.map((s) => s.value);
@@ -44,7 +48,7 @@ export function renderStatusPropertyCard(
 	const defaultSelect = createCardSelect(
 		plugin.settings.customStatuses.map((status) => ({
 			value: status.value,
-			label: status.label || status.value,
+			label: configLabel(status) || status.value,
 		})),
 		plugin.settings.defaultTaskStatus
 	);
@@ -72,7 +76,7 @@ export function renderStatusPropertyCard(
 		"tasknotes-settings__collapsible-section-header"
 	);
 	statusValuesHeader.createSpan({
-		text: translate("settings.taskProperties.statusCard.valuesHeader"),
+		text: translate(msg({ message: "Status values", context: "settings.taskProperties.statusCard.valuesHeader" })),
 		cls: "tasknotes-settings__collapsible-section-title",
 	});
 	const chevron = statusValuesHeader.createSpan(
@@ -87,29 +91,29 @@ export function renderStatusPropertyCard(
 	// Help text explaining how statuses work
 	const statusHelpContainer = statusValuesContent.createDiv("tasknotes-settings__help-section");
 	statusHelpContainer.createEl("h4", {
-		text: translate("settings.taskProperties.taskStatuses.howTheyWork.title"),
+		text: translate(msg({ message: "How statuses work:", context: "settings.taskProperties.taskStatuses.howTheyWork.title" })),
 	});
 	const statusHelpList = statusHelpContainer.createEl("ul");
 	statusHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskStatuses.howTheyWork.value"),
+		text: translate(msg({ message: "Value: The internal identifier stored in your task files (e.g., \"in-progress\")", context: "settings.taskProperties.taskStatuses.howTheyWork.value" })),
 	});
 	statusHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskStatuses.howTheyWork.label"),
+		text: translate(msg({ message: "Label: The display name shown in the interface (e.g., \"In Progress\")", context: "settings.taskProperties.taskStatuses.howTheyWork.label" })),
 	});
 	statusHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskStatuses.howTheyWork.color"),
+		text: translate(msg({ message: "Color: Visual indicator color for the status dot and badges", context: "settings.taskProperties.taskStatuses.howTheyWork.color" })),
 	});
 	statusHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskStatuses.howTheyWork.icon"),
+		text: translate(msg({ message: "Icon: Optional Lucide icon name to display instead of colored dot (e.g., \"check\", \"circle\", \"clock\"). Browse icons at lucide.dev", context: "settings.taskProperties.taskStatuses.howTheyWork.icon" })),
 	});
 	statusHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskStatuses.howTheyWork.completed"),
+		text: translate(msg({ message: "Completed: When checked, tasks with this status are considered finished and may be filtered differently", context: "settings.taskProperties.taskStatuses.howTheyWork.completed" })),
 	});
 	statusHelpList.createEl("li", {
-		text: translate("settings.taskProperties.taskStatuses.howTheyWork.autoArchive"),
+		text: translate(msg({ message: "Auto-archive: When enabled, tasks will be automatically archived after the specified delay (1-1440 minutes)", context: "settings.taskProperties.taskStatuses.howTheyWork.autoArchive" })),
 	});
 	statusHelpContainer.createEl("p", {
-		text: translate("settings.taskProperties.taskStatuses.howTheyWork.orderNote"),
+		text: translate(msg({ message: "The order below determines the sequence when cycling through statuses by clicking on task status badges.", context: "settings.taskProperties.taskStatuses.howTheyWork.orderNote" })),
 		cls: "setting-item-description",
 	});
 
@@ -121,7 +125,7 @@ export function renderStatusPropertyCard(
 		plugin.settings.customStatuses.forEach((status) => {
 			const option = defaultSelect.createEl("option", {
 				value: status.value,
-				text: status.label || status.value,
+				text: configLabel(status) || status.value,
 			});
 			if (status.value === plugin.settings.defaultTaskStatus) {
 				option.selected = true;
@@ -131,7 +135,7 @@ export function renderStatusPropertyCard(
 
 	// Add status button
 	const addStatusButton = statusValuesContent.createEl("button", {
-		text: translate("settings.taskProperties.taskStatuses.addNew.buttonText"),
+		text: translate(msg({ message: "Add status", context: "settings.taskProperties.taskStatuses.addNew.buttonText" })),
 		cls: "tn-btn tn-btn--ghost",
 	});
 	addStatusButton.classList.remove(
@@ -168,7 +172,7 @@ export function renderStatusPropertyCard(
 			plugin.settings.customStatuses.forEach((status) => {
 				const option = defaultSelect.createEl("option", {
 					value: status.value,
-					text: status.label || status.value,
+					text: configLabel(status) || status.value,
 				});
 				if (status.value === plugin.settings.defaultTaskStatus) {
 					option.selected = true;
@@ -189,16 +193,16 @@ export function renderStatusPropertyCard(
 
 	// Create description element
 	const descriptionEl = createPropertyDescription(
-		translate("settings.taskProperties.properties.status.description")
+		translate(msg({ message: "Tracks the current state of a task (e.g., todo, in-progress, done). Status determines whether a task appears as completed and can trigger auto-archiving.", context: "settings.taskProperties.properties.status.description" }))
 	);
 
 	const rows: CardRow[] = [
 		{ label: "", input: descriptionEl, fullWidth: true },
 		{
-			label: translate("settings.taskProperties.propertyCard.propertyKey"),
+			label: translate(msg({ message: "Property key:", context: "settings.taskProperties.propertyCard.propertyKey" })),
 			input: propertyKeyInput,
 		},
-		{ label: translate("settings.taskProperties.propertyCard.default"), input: defaultSelect },
+		{ label: translate(msg({ message: "Default:", context: "settings.taskProperties.propertyCard.default" })), input: defaultSelect },
 		...nlpRows,
 		{ label: "", input: nestedContainer, fullWidth: true },
 	];
@@ -208,7 +212,7 @@ export function renderStatusPropertyCard(
 		collapsible: true,
 		defaultCollapsed: true,
 		header: {
-			primaryText: translate("settings.taskProperties.properties.status.name"),
+			primaryText: translate(msg({ message: "Status", context: "settings.taskProperties.properties.status.name" })),
 			secondaryText: plugin.settings.fieldMapping.status,
 		},
 		content: {
@@ -230,7 +234,7 @@ function renderStatusList(
 	container.empty();
 
 	if (!plugin.settings.customStatuses || plugin.settings.customStatuses.length === 0) {
-		showCardEmptyState(container, translate("settings.taskProperties.taskStatuses.emptyState"));
+		showCardEmptyState(container, translate(msg({ message: "No custom statuses configured. Add a status to get started.", context: "settings.taskProperties.taskStatuses.emptyState" })));
 		return;
 	}
 
@@ -240,18 +244,18 @@ function renderStatusList(
 		let previousStatusValue = status.value;
 		const valueInput = createCardInput(
 			"text",
-			translate("settings.taskProperties.taskStatuses.placeholders.value"),
+			uiData("in-progress", "Example persisted status identifier; translating it must not change YAML/NLP values"),
 			status.value
 		);
 		const labelInput = createCardInput(
 			"text",
-			translate("settings.taskProperties.taskStatuses.placeholders.label"),
-			status.label
+			translate(msg({ message: "In progress", context: "settings.taskProperties.taskStatuses.placeholders.label" })),
+			configLabel(status)
 		);
 		const colorInput = createThemeColorInput(status.color);
 		const { container: iconInputContainer, input: iconInput } = createIconInput(
 			plugin.app,
-			translate("settings.taskProperties.taskStatuses.placeholders.icon"),
+			uiData("check, circle, clock", "Literal Lucide icon identifiers, not translated display labels"),
 			status.icon || ""
 		);
 
@@ -263,7 +267,7 @@ function renderStatusList(
 				if (status.isCompleted) {
 					metaContainer.appendChild(
 						createStatusBadge(
-							translate("settings.taskProperties.taskStatuses.badges.completed"),
+							translate(msg({ message: "Completed", context: "settings.taskProperties.taskStatuses.badges.completed" })),
 							"completed"
 						)
 					);
@@ -285,14 +289,14 @@ function renderStatusList(
 				{
 					value: "",
 					label: translate(
-						"settings.taskProperties.taskStatuses.placeholders.nextStatusDefault"
+						msg({ message: "Use status order", context: "settings.taskProperties.taskStatuses.placeholders.nextStatusDefault" })
 					),
 				},
 				...sortedStatuses
 					.filter((statusOption) => statusOption.id !== status.id)
 					.map((statusOption) => ({
 						value: statusOption.value,
-						label: statusOption.label || statusOption.value,
+						label: configLabel(statusOption) || statusOption.value,
 					})),
 			],
 			status.nextStatus === status.value ? "" : status.nextStatus || ""
@@ -314,7 +318,7 @@ function renderStatusList(
 		const metaElements = status.isCompleted
 			? [
 					createStatusBadge(
-						translate("settings.taskProperties.taskStatuses.badges.completed"),
+						translate(msg({ message: "Completed", context: "settings.taskProperties.taskStatuses.badges.completed" })),
 						"completed"
 					),
 				]
@@ -333,14 +337,14 @@ function renderStatusList(
 
 		const deleteStatus = () => {
 			void (async () => {
-				const message = translate("settings.taskProperties.taskStatuses.deleteConfirm", {
-					label: status.label || status.value,
+				const message = translate(msg({ message: "Are you sure you want to delete the status \"{label}\"?", context: "settings.taskProperties.taskStatuses.deleteConfirm" }), {
+					label: configLabel(status) || status.value,
 				});
 				const confirmDelete = await showConfirmationModal(plugin.app, {
-					title: translate("common.confirm"),
+					title: translate(msg({ message: "Confirm", context: "common.confirm" })),
 					message,
-					confirmText: translate("common.confirm"),
-					cancelText: translate("common.cancel"),
+					confirmText: translate(msg({ message: "Confirm", context: "common.confirm" })),
+					cancelText: translate(msg({ message: "Cancel", context: "common.cancel" })),
 					isDestructive: true,
 				});
 				if (!confirmDelete) {
@@ -382,8 +386,8 @@ function renderStatusList(
 			defaultCollapsed: true,
 			colorIndicator: { color: status.color, cssVar: "--status-color" },
 			header: {
-				primaryText: status.value || "untitled",
-				secondaryText: status.label || "No label",
+				primaryText: status.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" })),
+				secondaryText: configLabel(status) || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList secondaryText" })),
 				meta: metaElements,
 				actions: [createDeleteHeaderButton(deleteStatus)],
 			},
@@ -393,55 +397,55 @@ function renderStatusList(
 						rows: [
 							{
 								label: translate(
-									"settings.taskProperties.taskStatuses.fields.value"
+									msg({ message: "Value:", context: "settings.taskProperties.taskStatuses.fields.value" })
 								),
 								input: valueInput,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskStatuses.fields.label"
+									msg({ message: "Label:", context: "settings.taskProperties.taskStatuses.fields.label" })
 								),
 								input: labelInput,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskStatuses.fields.color"
+									msg({ message: "Color:", context: "settings.taskProperties.taskStatuses.fields.color" })
 								),
 								input: colorInput,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskStatuses.fields.icon"
+									msg({ message: "Icon:", context: "settings.taskProperties.taskStatuses.fields.icon" })
 								),
 								input: iconInputContainer,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskStatuses.fields.completed"
+									msg({ message: "Completed:", context: "settings.taskProperties.taskStatuses.fields.completed" })
 								),
 								input: completedToggle,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskStatuses.fields.excludeFromCycle"
+									msg({ message: "Skip when cycling:", context: "settings.taskProperties.taskStatuses.fields.excludeFromCycle" })
 								),
 								input: excludeFromCycleToggle,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskStatuses.fields.nextStatus"
+									msg({ message: "Next status:", context: "settings.taskProperties.taskStatuses.fields.nextStatus" })
 								),
 								input: nextStatusSelect,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskStatuses.fields.autoArchive"
+									msg({ message: "Auto-archive:", context: "settings.taskProperties.taskStatuses.fields.autoArchive" })
 								),
 								input: autoArchiveToggle,
 							},
 							{
 								label: translate(
-									"settings.taskProperties.taskStatuses.fields.delayMinutes"
+									msg({ message: "Delay (minutes):", context: "settings.taskProperties.taskStatuses.fields.delayMinutes" })
 								),
 								input: autoArchiveDelayInput,
 							},
@@ -457,7 +461,7 @@ function renderStatusList(
 		valueInput.addEventListener("input", () => {
 			status.value = valueInput.value;
 			statusCard.querySelector(".tasknotes-settings__card-primary-text")!.textContent =
-				status.value || "untitled";
+				status.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }));
 			save();
 			if (onStatusesChanged) onStatusesChanged();
 		});
@@ -481,7 +485,7 @@ function renderStatusList(
 		labelInput.addEventListener("input", () => {
 			status.label = labelInput.value;
 			statusCard.querySelector(".tasknotes-settings__card-secondary-text")!.textContent =
-				status.label || "No label";
+				configLabel(status) || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList display" }));
 			save();
 			if (onStatusesChanged) onStatusesChanged();
 		});

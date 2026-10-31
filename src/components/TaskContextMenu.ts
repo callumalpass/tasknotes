@@ -1,4 +1,18 @@
-import { Menu, Notice, Platform, TFile, setTooltip, type MenuItem, type TAbstractFile } from "obsidian";
+import { configLabel } from "../i18n/configLabels";
+import { displayError } from "../i18n/runtime";
+import type { MessageDescriptor } from "@lingui/core";
+import { uiLocale } from "../i18n/runtime";
+import { recurrenceMonthlyOn, recurrenceYearlyOn } from "../i18n/recurrence";
+import { msg } from "@lingui/core/macro";
+import {
+	Menu,
+	Notice,
+	Platform,
+	TFile,
+	setTooltip,
+	type MenuItem,
+	type TAbstractFile,
+} from "obsidian";
 import type { OccurrenceMaterializationMode, OccurrenceNextTrigger } from "@tasknotes/model";
 import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
@@ -170,7 +184,7 @@ export class TaskContextMenu {
 		new TaskContextMenu(options, menu);
 	}
 
-	private t(key: string, params?: Record<string, string | number>): string {
+	private t(key: MessageDescriptor, params?: Record<string, string | number>): string {
 		return this.options.plugin.i18n.translate(key, params);
 	}
 
@@ -180,7 +194,7 @@ export class TaskContextMenu {
 
 		// Status submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.status"));
+			item.setTitle(this.t(msg({ message: "Status", context: "contextMenus.task.status" })));
 			item.setIcon("circle");
 
 			const submenu = getSubmenu(item);
@@ -191,7 +205,7 @@ export class TaskContextMenu {
 
 		// Priority submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.priority"));
+			item.setTitle(this.t(msg({ message: "Priority", context: "contextMenus.task.priority" })));
 			item.setIcon("star");
 
 			const submenu = getSubmenu(item);
@@ -200,7 +214,7 @@ export class TaskContextMenu {
 
 		// Tags submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.tags"));
+			item.setTitle(this.t(msg({ message: "Tags", context: "contextMenus.task.tags" })));
 			item.setIcon("tags");
 
 			const submenu = getSubmenu(item);
@@ -211,7 +225,7 @@ export class TaskContextMenu {
 
 		// Due Date submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.dueDate"));
+			item.setTitle(this.t(msg({ message: "Due date", context: "contextMenus.task.dueDate" })));
 			item.setIcon("calendar");
 
 			const submenu = getSubmenu(item);
@@ -231,8 +245,8 @@ export class TaskContextMenu {
 							error: errorMessage,
 						});
 						new Notice(
-							this.t("contextMenus.task.notices.updateDueDateFailure", {
-								message: errorMessage,
+							this.t(msg({ message: "Failed to update task due date: {message}", context: "contextMenus.task.notices.updateDueDateFailure" }), {
+								message: displayError(errorMessage),
 							})
 						);
 					}
@@ -245,7 +259,7 @@ export class TaskContextMenu {
 
 		// Scheduled Date submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.scheduledDate"));
+			item.setTitle(this.t(msg({ message: "Scheduled date", context: "contextMenus.task.scheduledDate" })));
 			item.setIcon("calendar-clock");
 
 			const submenu = getSubmenu(item);
@@ -265,8 +279,8 @@ export class TaskContextMenu {
 							error: errorMessage,
 						});
 						new Notice(
-							this.t("contextMenus.task.notices.updateScheduledFailure", {
-								message: errorMessage,
+							this.t(msg({ message: "Failed to update task scheduled date: {message}", context: "contextMenus.task.notices.updateScheduledFailure" }), {
+								message: displayError(errorMessage),
 							})
 						);
 					}
@@ -292,7 +306,7 @@ export class TaskContextMenu {
 
 		// Reminders submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.reminders"));
+			item.setTitle(this.t(msg({ message: "Reminders", context: "contextMenus.task.reminders" })));
 			item.setIcon("bell");
 
 			const submenu = getSubmenu(item);
@@ -303,21 +317,21 @@ export class TaskContextMenu {
 				task,
 				plugin,
 				"due",
-				this.t("contextMenus.task.remindBeforeDue")
+				this.t(msg({ message: "Remind before due…", context: "contextMenus.task.remindBeforeDue" }))
 			);
 			this.addQuickRemindersSection(
 				submenu,
 				task,
 				plugin,
 				"scheduled",
-				this.t("contextMenus.task.remindBeforeScheduled")
+				this.t(msg({ message: "Remind before scheduled…", context: "contextMenus.task.remindBeforeScheduled" }))
 			);
 
 			submenu.addSeparator();
 
 			// Manage reminders
 			submenu.addItem((subItem) => {
-				subItem.setTitle(this.t("contextMenus.task.manageReminders"));
+				subItem.setTitle(this.t(msg({ message: "Manage all reminders…", context: "contextMenus.task.manageReminders" })));
 				subItem.setIcon("settings");
 				subItem.onClick(() => {
 					const modal = new ReminderModal(plugin.app, plugin, task, (reminders) => {
@@ -336,7 +350,7 @@ export class TaskContextMenu {
 									error: error,
 								});
 								new Notice(
-									this.t("contextMenus.task.notices.updateRemindersFailure")
+									this.t(msg({ message: "Failed to update reminders", context: "contextMenus.task.notices.updateRemindersFailure" }))
 								);
 							}
 						})();
@@ -348,7 +362,7 @@ export class TaskContextMenu {
 			// Clear reminders (if any exist)
 			if (task.reminders && task.reminders.length > 0) {
 				submenu.addItem((subItem) => {
-					subItem.setTitle(this.t("contextMenus.task.clearReminders"));
+					subItem.setTitle(this.t(msg({ message: "Clear all reminders", context: "contextMenus.task.clearReminders" })));
 					subItem.setIcon("trash");
 					subItem.onClick(async () => {
 						try {
@@ -360,7 +374,7 @@ export class TaskContextMenu {
 								operation: "clearing-reminders",
 								error: error,
 							});
-							new Notice(this.t("contextMenus.task.notices.clearRemindersFailure"));
+							new Notice(this.t(msg({ message: "Failed to clear reminders", context: "contextMenus.task.notices.clearRemindersFailure" })));
 						}
 					});
 				});
@@ -370,7 +384,7 @@ export class TaskContextMenu {
 		this.menu.addSeparator();
 
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.dependencies.title"));
+			item.setTitle(this.t(msg({ message: "Dependencies", context: "contextMenus.task.dependencies.title" })));
 			item.setIcon("git-branch");
 
 			const submenu = getSubmenu(item);
@@ -381,7 +395,7 @@ export class TaskContextMenu {
 
 		// Organization submenu (projects and subtasks)
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.organization.title"));
+			item.setTitle(this.t(msg({ message: "Organization", context: "contextMenus.task.organization.title" })));
 			item.setIcon("folder-tree");
 
 			const submenu = getSubmenu(item);
@@ -395,8 +409,8 @@ export class TaskContextMenu {
 			const activeSession = plugin.getActiveTimeSession(task);
 			item.setTitle(
 				activeSession
-					? this.t("contextMenus.task.stopTimeTracking")
-					: this.t("contextMenus.task.startTimeTracking")
+					? this.t(msg({ message: "Stop time tracking", context: "contextMenus.task.stopTimeTracking" }))
+					: this.t(msg({ message: "Start time tracking", context: "contextMenus.task.startTimeTracking" }))
 			);
 			item.setIcon(activeSession ? "pause" : "play");
 			item.onClick(async () => {
@@ -412,7 +426,7 @@ export class TaskContextMenu {
 
 		// Edit Time Entries
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.editTimeEntries"));
+			item.setTitle(this.t(msg({ message: "Edit time entries", context: "contextMenus.task.editTimeEntries" })));
 			item.setIcon("clock");
 			item.onClick(() => {
 				plugin.openTimeEntryEditor(task);
@@ -422,7 +436,7 @@ export class TaskContextMenu {
 		// Create timeblock from task
 		if (plugin.settings.calendarViewSettings.enableTimeblocking) {
 			this.menu.addItem((item) => {
-				item.setTitle("Create timeblock");
+				item.setTitle(this.t(msg({ message: "Create timeblock", context: "modals.timeblockCreation.heading" })));
 				item.setIcon("calendar-plus");
 				item.onClick(() => {
 					const prefill = buildTimeblockPrefillForTask(task, this.options.targetDate);
@@ -442,8 +456,8 @@ export class TaskContextMenu {
 		this.menu.addItem((item) => {
 			item.setTitle(
 				task.archived
-					? this.t("contextMenus.task.unarchive")
-					: this.t("contextMenus.task.archive")
+					? this.t(msg({ message: "Unarchive", context: "contextMenus.task.unarchive" }))
+					: this.t(msg({ message: "Archive", context: "contextMenus.task.archive" }))
 			);
 			item.setIcon(task.archived ? "archive-restore" : "archive");
 			item.onClick(async () => {
@@ -459,8 +473,8 @@ export class TaskContextMenu {
 						error: errorMessage,
 					});
 					new Notice(
-						this.t("contextMenus.task.notices.archiveFailure", {
-							message: errorMessage,
+						this.t(msg({ message: "Failed to toggle task archive: {message}", context: "contextMenus.task.notices.archiveFailure" }), {
+							message: displayError(errorMessage),
 						})
 					);
 				}
@@ -471,7 +485,7 @@ export class TaskContextMenu {
 
 		// Edit Task
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("modals.taskEdit.title"));
+			item.setTitle(this.t(msg({ message: "Edit task", context: "modals.taskEdit.title" })));
 			item.setIcon("pencil");
 			item.onClick(() => {
 				void plugin.openTaskEditModal(task, () => {
@@ -482,7 +496,7 @@ export class TaskContextMenu {
 
 		// Open Note
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.openNote"));
+			item.setTitle(this.t(msg({ message: "Open note", context: "contextMenus.task.openNote" })));
 			item.setIcon("file-text");
 			item.onClick(() => {
 				const file = plugin.app.vault.getAbstractFileByPath(task.path);
@@ -493,7 +507,7 @@ export class TaskContextMenu {
 		});
 
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.openNoteInNewTab"));
+			item.setTitle(this.t(msg({ message: "Open note in new tab", context: "contextMenus.task.openNoteInNewTab" })));
 			item.setIcon("external-link");
 			item.onClick(() => {
 				const file = plugin.app.vault.getAbstractFileByPath(task.path);
@@ -505,21 +519,21 @@ export class TaskContextMenu {
 
 		// Copy Task Title
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.copyTitle"));
+			item.setTitle(this.t(msg({ message: "Copy task title", context: "contextMenus.task.copyTitle" })));
 			item.setIcon("copy");
 			item.onClick(async () => {
 				try {
 					await navigator.clipboard.writeText(task.title);
-					new Notice(this.t("contextMenus.task.notices.copyTitleSuccess"));
+					new Notice(this.t(msg({ message: "Task title copied to clipboard", context: "contextMenus.task.notices.copyTitleSuccess" })));
 				} catch {
-					new Notice(this.t("contextMenus.task.notices.copyFailure"));
+					new Notice(this.t(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })));
 				}
 			});
 		});
 
 		// Note actions submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.noteActions"));
+			item.setTitle(this.t(msg({ message: "Note actions", context: "contextMenus.task.noteActions" })));
 			item.setIcon("file-text");
 
 			const submenu = getSubmenu(item);
@@ -545,15 +559,15 @@ export class TaskContextMenu {
 
 				// Add common file actions (these will either supplement or replace the native menu)
 				submenu.addItem((subItem) => {
-					subItem.setTitle(this.t("contextMenus.task.rename"));
+					subItem.setTitle(this.t(msg({ message: "Rename", context: "contextMenus.task.rename" })));
 					subItem.setIcon("pencil");
 					subItem.onClick(async () => {
 						try {
 							// Modal-based rename
 							const currentName = file.basename;
 							const newName = await showTextInputModal(plugin.app, {
-								title: this.t("contextMenus.task.renameTitle"),
-								placeholder: this.t("contextMenus.task.renamePlaceholder"),
+								title: this.t(msg({ message: "Rename file", context: "contextMenus.task.renameTitle" })),
+								placeholder: this.t(msg({ message: "Enter new name", context: "contextMenus.task.renamePlaceholder" })),
 								initialValue: currentName,
 							});
 
@@ -572,7 +586,7 @@ export class TaskContextMenu {
 								// Rename the file
 								await renameVaultFile(plugin.app, file, newPath);
 								new Notice(
-									this.t("contextMenus.task.notices.renameSuccess", {
+									this.t(msg({ message: "Renamed to \"{name}\"", context: "contextMenus.task.notices.renameSuccess" }), {
 										name: finalName,
 									})
 								);
@@ -588,21 +602,21 @@ export class TaskContextMenu {
 								operation: "renaming-file",
 								error: error,
 							});
-							new Notice(this.t("contextMenus.task.notices.renameFailure"));
+							new Notice(this.t(msg({ message: "Failed to rename file", context: "contextMenus.task.notices.renameFailure" })));
 						}
 					});
 				});
 
 				submenu.addItem((subItem) => {
-					subItem.setTitle(this.t("contextMenus.task.delete"));
+					subItem.setTitle(this.t(msg({ message: "Delete", context: "contextMenus.task.delete" })));
 					subItem.setIcon("trash");
 					subItem.onClick(async () => {
 						// Show confirmation and delete
 						const confirmed = await showConfirmationModal(plugin.app, {
-							title: this.t("contextMenus.task.deleteTitle"),
-							message: this.t("contextMenus.task.deleteMessage", { name: file.name }),
-							confirmText: this.t("contextMenus.task.deleteConfirm"),
-							cancelText: this.t("common.cancel"),
+							title: this.t(msg({ message: "Delete file", context: "contextMenus.task.deleteTitle" })),
+							message: this.t(msg({ message: "Are you sure you want to delete \"{name}\"?", context: "contextMenus.task.deleteMessage" }), { name: file.name }),
+							confirmText: this.t(msg({ message: "Delete", context: "contextMenus.task.deleteConfirm" })),
+							cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
 							isDestructive: true,
 						});
 						if (confirmed) {
@@ -619,7 +633,9 @@ export class TaskContextMenu {
 									operation: "deleting-task",
 									error: error,
 								});
-								new Notice(`Failed to delete task: ${message}`);
+								new Notice(
+									this.t(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), { message: displayError(message) })
+								);
 							}
 						}
 					});
@@ -628,32 +644,32 @@ export class TaskContextMenu {
 				submenu.addSeparator();
 
 				submenu.addItem((subItem) => {
-					subItem.setTitle(this.t("contextMenus.task.copyPath"));
+					subItem.setTitle(this.t(msg({ message: "Copy path", context: "contextMenus.task.copyPath" })));
 					subItem.setIcon("copy");
 					subItem.onClick(() => {
 						void navigator.clipboard
 							.writeText(file.path)
 							.then(() => {
-								new Notice(this.t("contextMenus.task.notices.copyPathSuccess"));
+								new Notice(this.t(msg({ message: "File path copied to clipboard", context: "contextMenus.task.notices.copyPathSuccess" })));
 							})
 							.catch(() => {
-								new Notice(this.t("contextMenus.task.notices.copyFailure"));
+								new Notice(this.t(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })));
 							});
 					});
 				});
 
 				submenu.addItem((subItem) => {
-					subItem.setTitle(this.t("contextMenus.task.copyUrl"));
+					subItem.setTitle(this.t(msg({ message: "Copy Obsidian URL", context: "contextMenus.task.copyUrl" })));
 					subItem.setIcon("link");
 					subItem.onClick(() => {
 						const url = `obsidian://open?vault=${encodeURIComponent(plugin.app.vault.getName())}&file=${encodeURIComponent(file.path)}`;
 						void navigator.clipboard
 							.writeText(url)
 							.then(() => {
-								new Notice(this.t("contextMenus.task.notices.copyUrlSuccess"));
+								new Notice(this.t(msg({ message: "Obsidian URL copied to clipboard", context: "contextMenus.task.notices.copyUrlSuccess" })));
 							})
 							.catch(() => {
-								new Notice(this.t("contextMenus.task.notices.copyFailure"));
+								new Notice(this.t(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })));
 							});
 					});
 				});
@@ -661,7 +677,7 @@ export class TaskContextMenu {
 				submenu.addSeparator();
 
 				submenu.addItem((subItem) => {
-					subItem.setTitle(this.t("contextMenus.task.showInExplorer"));
+					subItem.setTitle(this.t(msg({ message: "Show in file explorer", context: "contextMenus.task.showInExplorer" })));
 					subItem.setIcon("folder-open");
 					subItem.onClick(() => {
 						// Reveal file in file explorer
@@ -695,14 +711,14 @@ export class TaskContextMenu {
 
 		// Add to Calendar submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.addToCalendar"));
+			item.setTitle(this.t(msg({ message: "Add to calendar", context: "contextMenus.task.addToCalendar" })));
 			item.setIcon("calendar-plus");
 
 			const submenu = getSubmenu(item);
 
 			// Google Calendar
 			submenu.addItem((subItem) => {
-				subItem.setTitle(this.t("contextMenus.task.calendar.google"));
+				subItem.setTitle(this.t(msg({ message: "Google Calendar", context: "contextMenus.task.calendar.google" })));
 				subItem.setIcon("external-link");
 				subItem.onClick(() => {
 					openCalendarURL(
@@ -718,7 +734,7 @@ export class TaskContextMenu {
 
 			// Outlook Calendar
 			submenu.addItem((subItem) => {
-				subItem.setTitle(this.t("contextMenus.task.calendar.outlook"));
+				subItem.setTitle(this.t(msg({ message: "Outlook Calendar", context: "contextMenus.task.calendar.outlook" })));
 				subItem.setIcon("external-link");
 				subItem.onClick(() => {
 					openCalendarURL(
@@ -734,7 +750,7 @@ export class TaskContextMenu {
 
 			// Yahoo Calendar
 			submenu.addItem((subItem) => {
-				subItem.setTitle(this.t("contextMenus.task.calendar.yahoo"));
+				subItem.setTitle(this.t(msg({ message: "Yahoo Calendar", context: "contextMenus.task.calendar.yahoo" })));
 				subItem.setIcon("external-link");
 				subItem.onClick(() => {
 					openCalendarURL(
@@ -752,7 +768,7 @@ export class TaskContextMenu {
 
 			// Download ICS file
 			submenu.addItem((subItem) => {
-				subItem.setTitle(this.t("contextMenus.task.calendar.downloadIcs"));
+				subItem.setTitle(this.t(msg({ message: "Download .ics file", context: "contextMenus.task.calendar.downloadIcs" })));
 				subItem.setIcon("download");
 				subItem.onClick(() => {
 					downloadTaskICSFile(task, this.t.bind(this), {
@@ -766,16 +782,16 @@ export class TaskContextMenu {
 
 			// Sync to Google Calendar (via API)
 			submenu.addItem((subItem) => {
-				subItem.setTitle(this.t("contextMenus.task.calendar.syncToGoogle"));
+				subItem.setTitle(this.t(msg({ message: "Sync to Google Calendar", context: "contextMenus.task.calendar.syncToGoogle" })));
 				subItem.setIcon("refresh-cw");
 				subItem.onClick(async () => {
 					if (!plugin.taskCalendarSyncService?.isEnabled()) {
-						new Notice(this.t("contextMenus.task.calendar.syncToGoogleNotConfigured"));
+						new Notice(this.t(msg({ message: "Google Calendar sync not configured", context: "contextMenus.task.calendar.syncToGoogleNotConfigured" })));
 						return;
 					}
 					try {
 						await plugin.taskCalendarSyncService.syncTaskToCalendar(task);
-						new Notice(this.t("contextMenus.task.calendar.syncToGoogleSuccess"));
+						new Notice(this.t(msg({ message: "Task synced to Google Calendar", context: "contextMenus.task.calendar.syncToGoogleSuccess" })));
 						this.options.onUpdate?.();
 					} catch (error) {
 						tasknotesLogger.error("Failed to sync task to Google Calendar:", {
@@ -783,7 +799,7 @@ export class TaskContextMenu {
 							operation: "sync-task-google-calendar",
 							error: error,
 						});
-						new Notice(this.t("contextMenus.task.calendar.syncToGoogleFailed"));
+						new Notice(this.t(msg({ message: "Failed to sync task to Google Calendar", context: "contextMenus.task.calendar.syncToGoogleFailed" })));
 					}
 				});
 			});
@@ -793,7 +809,7 @@ export class TaskContextMenu {
 
 		// Recurrence submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.recurrence"));
+			item.setTitle(this.t(msg({ message: "Recurrence", context: "contextMenus.task.recurrence" })));
 			item.setIcon("refresh-ccw");
 
 			const submenu = getSubmenu(item);
@@ -815,8 +831,8 @@ export class TaskContextMenu {
 							error: errorMessage,
 						});
 						new Notice(
-							this.t("contextMenus.task.notices.updateRecurrenceFailure", {
-								message: errorMessage,
+							this.t(msg({ message: "Failed to update task recurrence: {message}", context: "contextMenus.task.notices.updateRecurrenceFailure" }), {
+								message: displayError(errorMessage),
 							})
 						);
 					}
@@ -833,7 +849,7 @@ export class TaskContextMenu {
 
 		// Create subtask
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.createSubtask"));
+			item.setTitle(this.t(msg({ message: "Create subtask", context: "contextMenus.task.createSubtask" })));
 			item.setIcon("plus");
 			item.onClick(() => {
 				const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
@@ -860,7 +876,7 @@ export class TaskContextMenu {
 
 		this.menu.addSeparator();
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("common.close"));
+			item.setTitle(this.t(msg({ message: "Close", context: "common.close" })));
 			item.setIcon("x");
 			item.onClick(() => {
 				this.menu.hide();
@@ -887,8 +903,8 @@ export class TaskContextMenu {
 			item.setTitle(
 				this.t(
 					isRecurring
-						? "contextMenus.task.completion.submenu"
-						: "contextMenus.task.completion.submenuCompleteOnly"
+						? msg({ message: "Mark complete or skip", context: "contextMenus.task.completion.submenu" })
+						: msg({ message: "Mark complete", context: "contextMenus.task.completion.submenuCompleteOnly" })
 				)
 			);
 			item.setIcon("check-check");
@@ -909,7 +925,7 @@ export class TaskContextMenu {
 
 		if (!isRecurring && plugin.statusManager.isCompletedStatus(task.status)) {
 			menu.addItem((item) => {
-				item.setTitle(this.t("contextMenus.task.completion.markIncomplete"));
+				item.setTitle(this.t(msg({ message: "Mark incomplete", context: "contextMenus.task.completion.markIncomplete" })));
 				item.setIcon("x");
 				item.onClick(async () => {
 					await this.uncompleteNonRecurringTask(task, plugin);
@@ -922,21 +938,21 @@ export class TaskContextMenu {
 			task,
 			plugin,
 			"today",
-			"contextMenus.task.completion.completeToday",
+			msg({ message: "Completed today", context: "contextMenus.task.completion.completeToday" }),
 			menu
 		);
 		this.addConcreteCompletionAction(
 			task,
 			plugin,
 			"asScheduled",
-			"contextMenus.task.completion.completeAsScheduled",
+			msg({ message: "Completed on schedule", context: "contextMenus.task.completion.completeAsScheduled" }),
 			menu
 		);
 		this.addConcreteCompletionAction(
 			task,
 			plugin,
 			"onDue",
-			"contextMenus.task.completion.completeOnDue",
+			msg({ message: "Completed on due date", context: "contextMenus.task.completion.completeOnDue" }),
 			menu
 		);
 		this.addPickCompletionDateAction(task, plugin, menu);
@@ -946,7 +962,7 @@ export class TaskContextMenu {
 		task: TaskInfo,
 		plugin: TaskNotesPlugin,
 		mode: CompletionMode,
-		baseLabelKey: string,
+		baseLabelKey: MessageDescriptor,
 		menu: Menu
 	): void {
 		const isRecurring = !!task.recurrence;
@@ -972,7 +988,7 @@ export class TaskContextMenu {
 				(task.complete_instances?.includes(formatDateForStorage(resolvedDate)) ?? false);
 			item.setTitle(
 				alreadyComplete
-					? this.t("contextMenus.task.completion.markIncomplete")
+					? this.t(msg({ message: "Mark incomplete", context: "contextMenus.task.completion.markIncomplete" }))
 					: this.t(baseLabelKey)
 			);
 			item.setIcon(alreadyComplete ? "x" : "check");
@@ -982,13 +998,9 @@ export class TaskContextMenu {
 		});
 	}
 
-	private addPickCompletionDateAction(
-		task: TaskInfo,
-		plugin: TaskNotesPlugin,
-		menu: Menu
-	): void {
+	private addPickCompletionDateAction(task: TaskInfo, plugin: TaskNotesPlugin, menu: Menu): void {
 		menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.completion.completeOnPicked"));
+			item.setTitle(this.t(msg({ message: "Completed on (pick date)", context: "contextMenus.task.completion.completeOnPicked" })));
 			item.setIcon("calendar-plus");
 			item.onClick(() => {
 				this.pickCompletionDate(task, plugin);
@@ -1004,7 +1016,7 @@ export class TaskContextMenu {
 		this.menu.hide();
 		const modal = new DateTimePickerModal(plugin.app, {
 			currentDate: null,
-			title: this.t("contextMenus.task.completion.pickDateTitle"),
+			title: this.t(msg({ message: "Complete on date", context: "contextMenus.task.completion.pickDateTitle" })),
 			showTime: false,
 			plugin,
 			onSelect: (date) => {
@@ -1034,7 +1046,7 @@ export class TaskContextMenu {
 			} else {
 				const completedStatus = plugin.statusManager.getCompletedStatuses()[0];
 				if (!completedStatus) {
-					new Notice(this.t("contextMenus.task.completion.noCompletedStatus"));
+					new Notice(this.t(msg({ message: "No completed status configured", context: "contextMenus.task.completion.noCompletedStatus" })));
 					return;
 				}
 				await plugin.updateTaskProperty(task, "status", completedStatus, {
@@ -1051,8 +1063,8 @@ export class TaskContextMenu {
 				error: errorMessage,
 			});
 			new Notice(
-				this.t("contextMenus.task.completion.completeFailure", {
-					message: errorMessage,
+				this.t(msg({ message: "Failed to update task completion: {message}", context: "contextMenus.task.completion.completeFailure" }), {
+					message: displayError(errorMessage),
 				})
 			);
 		}
@@ -1077,8 +1089,8 @@ export class TaskContextMenu {
 				error: errorMessage,
 			});
 			new Notice(
-				this.t("contextMenus.task.completion.completeFailure", {
-					message: errorMessage,
+				this.t(msg({ message: "Failed to update task completion: {message}", context: "contextMenus.task.completion.completeFailure" }), {
+					message: displayError(errorMessage),
 				})
 			);
 		}
@@ -1094,8 +1106,8 @@ export class TaskContextMenu {
 		menu.addItem((item) => {
 			item.setTitle(
 				isSkippedForDate
-					? this.t("contextMenus.task.unskipInstance")
-					: this.t("contextMenus.task.skipInstance")
+					? this.t(msg({ message: "Unskip instance", context: "contextMenus.task.unskipInstance" }))
+					: this.t(msg({ message: "Skip instance", context: "contextMenus.task.skipInstance" }))
 			);
 			item.setIcon(isSkippedForDate ? "undo" : "x-circle");
 			item.onClick(async () => {
@@ -1111,8 +1123,8 @@ export class TaskContextMenu {
 						error: errorMessage,
 					});
 					new Notice(
-						this.t("contextMenus.task.notices.toggleSkipFailure", {
-							message: errorMessage,
+						this.t(msg({ message: "Failed to toggle recurring task skip: {message}", context: "contextMenus.task.notices.toggleSkipFailure" }), {
+							message: displayError(errorMessage),
 						})
 					);
 				}
@@ -1143,7 +1155,7 @@ export class TaskContextMenu {
 
 	private addOccurrenceNoteMenuItem(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		this.menu.addItem((item) => {
-			item.setTitle("Open or create occurrence note");
+			item.setTitle(this.t(msg({ message: "Open or create occurrence note", context: "modals.actionPalette.openOccurrence" })));
 			item.setIcon("file-plus");
 			item.onClick(async () => {
 				await openOrCreateOccurrenceNote({
@@ -1171,7 +1183,7 @@ export class TaskContextMenu {
 
 	private addMaterializedOccurrenceMenuItems(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		this.menu.addItem((item) => {
-			item.setTitle("Open recurring parent");
+			item.setTitle(this.t(msg({ message: "Open recurring parent", context: "modals.actionPalette.openParent" })));
 			item.setIcon("refresh-ccw");
 			item.onClick(async () => {
 				await openMaterializedOccurrenceParent({
@@ -1188,7 +1200,13 @@ export class TaskContextMenu {
 		}
 
 		this.menu.addItem((item) => {
-			item.setTitle(isSkipped ? "Unskip occurrence" : "Skip occurrence");
+			item.setTitle(
+				this.t(
+					isSkipped
+						? msg({ message: "Unskip instance", context: "contextMenus.task.unskipInstance" })
+						: msg({ message: "Skip instance", context: "contextMenus.task.skipInstance" })
+				)
+			);
 			item.setIcon(isSkipped ? "undo" : "x-circle");
 			item.onClick(async () => {
 				try {
@@ -1205,7 +1223,9 @@ export class TaskContextMenu {
 						details: { taskPath: task.path, occurrenceDate: task.occurrence_date },
 						error: errorMessage,
 					});
-					new Notice(`Failed to update occurrence: ${errorMessage}`);
+					new Notice(
+						this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(errorMessage) })
+					);
 				}
 			});
 		});
@@ -1225,7 +1245,7 @@ export class TaskContextMenu {
 
 	private addDependencyMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
 		menu.addItem((subItem) => {
-			subItem.setTitle(this.t("contextMenus.task.dependencies.addBlockedBy"));
+			subItem.setTitle(this.t(msg({ message: "Add “blocked by”…", context: "contextMenus.task.dependencies.addBlockedBy" })));
 			subItem.setIcon("link-2");
 			subItem.onClick(() => {
 				this.menu.hide();
@@ -1236,14 +1256,14 @@ export class TaskContextMenu {
 		const blockedByEntries = task.blockedBy ?? [];
 		if (blockedByEntries.length > 0) {
 			menu.addItem((subItem) => {
-				subItem.setTitle(this.t("contextMenus.task.dependencies.removeBlockedBy"));
+				subItem.setTitle(this.t(msg({ message: "Remove blocked-by…", context: "contextMenus.task.dependencies.removeBlockedBy" })));
 				subItem.setIcon("unlink");
 				const innerMenu = getSubmenu(subItem);
 				blockedByEntries.forEach((entry, index) => {
 					innerMenu.addItem((item) => {
 						const uid = toMenuTitle(
 							extractDependencyUid(entry),
-							this.t("contextMenus.task.dependencies.unknownDependency")
+							this.t(msg({ message: "Unknown", context: "contextMenus.task.dependencies.unknownDependency" }))
 						);
 						item.setTitle(uid);
 						item.onClick(async () => {
@@ -1257,7 +1277,7 @@ export class TaskContextMenu {
 								Object.assign(task, updatedTask);
 								new Notice(
 									this.t(
-										"contextMenus.task.dependencies.notices.blockedByRemoved"
+										msg({ message: "Dependency removed", context: "contextMenus.task.dependencies.notices.blockedByRemoved" })
 									)
 								);
 								this.options.onUpdate?.();
@@ -1268,7 +1288,7 @@ export class TaskContextMenu {
 									error: error,
 								});
 								new Notice(
-									this.t("contextMenus.task.dependencies.notices.updateFailed")
+									this.t(msg({ message: "Failed to update dependencies", context: "contextMenus.task.dependencies.notices.updateFailed" }))
 								);
 							}
 						});
@@ -1280,7 +1300,7 @@ export class TaskContextMenu {
 		menu.addSeparator();
 
 		menu.addItem((subItem) => {
-			subItem.setTitle(this.t("contextMenus.task.dependencies.addBlocking"));
+			subItem.setTitle(this.t(msg({ message: "Add “blocking”…", context: "contextMenus.task.dependencies.addBlocking" })));
 			subItem.setIcon("git-branch-plus");
 			subItem.onClick(() => {
 				this.menu.hide();
@@ -1291,7 +1311,7 @@ export class TaskContextMenu {
 		const blockingEntries = task.blocking ?? [];
 		if (blockingEntries.length > 0) {
 			menu.addItem((subItem) => {
-				subItem.setTitle(this.t("contextMenus.task.dependencies.removeBlocking"));
+				subItem.setTitle(this.t(msg({ message: "Remove blocking…", context: "contextMenus.task.dependencies.removeBlocking" })));
 				subItem.setIcon("git-branch-minus");
 				const innerMenu = getSubmenu(subItem);
 				blockingEntries.forEach((path) => {
@@ -1315,7 +1335,7 @@ export class TaskContextMenu {
 									Object.assign(task, refreshed);
 								}
 								new Notice(
-									this.t("contextMenus.task.dependencies.notices.blockingRemoved")
+									this.t(msg({ message: "Dependent task removed", context: "contextMenus.task.dependencies.notices.blockingRemoved" }))
 								);
 								this.options.onUpdate?.();
 							} catch (error) {
@@ -1325,7 +1345,7 @@ export class TaskContextMenu {
 									error: error,
 								});
 								new Notice(
-									this.t("contextMenus.task.dependencies.notices.updateFailed")
+									this.t(msg({ message: "Failed to update dependencies", context: "contextMenus.task.dependencies.notices.updateFailed" }))
 								);
 							}
 						});
@@ -1398,7 +1418,7 @@ export class TaskContextMenu {
 			const candidates = allTasks.filter(filter);
 
 			if (candidates.length === 0) {
-				new Notice(this.t("contextMenus.task.dependencies.notices.noEligibleTasks"));
+				new Notice(this.t(msg({ message: "No matching tasks available", context: "contextMenus.task.dependencies.notices.noEligibleTasks" })));
 				return;
 			}
 
@@ -1412,7 +1432,7 @@ export class TaskContextMenu {
 				operation: "open-task-selector-dependencies",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
+			new Notice(this.t(msg({ message: "Failed to update dependencies", context: "contextMenus.task.dependencies.notices.updateFailed" })));
 		}
 	}
 
@@ -1445,7 +1465,7 @@ export class TaskContextMenu {
 			Object.assign(task, updatedTask);
 
 			new Notice(
-				this.t("contextMenus.task.dependencies.notices.blockedByAdded", { count: 1 })
+				this.t(msg({ message: "{count} dependency added", context: "contextMenus.task.dependencies.notices.blockedByAdded" }), { count: 1 })
 			);
 			this.options.onUpdate?.();
 		} catch (error) {
@@ -1454,7 +1474,7 @@ export class TaskContextMenu {
 				operation: "add-blocked-by-dependency-via-selector",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
+			new Notice(this.t(msg({ message: "Failed to update dependencies", context: "contextMenus.task.dependencies.notices.updateFailed" })));
 		}
 	}
 
@@ -1495,7 +1515,7 @@ export class TaskContextMenu {
 			}
 
 			new Notice(
-				this.t("contextMenus.task.dependencies.notices.blockingAdded", { count: 1 })
+				this.t(msg({ message: "{count} dependent task added", context: "contextMenus.task.dependencies.notices.blockingAdded" }), { count: 1 })
 			);
 			this.options.onUpdate?.();
 		} catch (error) {
@@ -1504,7 +1524,7 @@ export class TaskContextMenu {
 				operation: "add-blocking-dependency-via-selector",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
+			new Notice(this.t(msg({ message: "Failed to update dependencies", context: "contextMenus.task.dependencies.notices.updateFailed" })));
 		}
 	}
 
@@ -1515,7 +1535,7 @@ export class TaskContextMenu {
 	private addOrganizationMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
 		// Contexts
 		menu.addItem((subItem) => {
-			subItem.setTitle(this.t("contextMenus.task.organization.contexts"));
+			subItem.setTitle(this.t(msg({ message: "Contexts", context: "contextMenus.task.organization.contexts" })));
 			subItem.setIcon("at-sign");
 			const contextMenu = getSubmenu(subItem);
 			this.addContextMenuItems(contextMenu, task, plugin);
@@ -1525,7 +1545,7 @@ export class TaskContextMenu {
 
 		// Add to project
 		menu.addItem((subItem) => {
-			subItem.setTitle(this.t("contextMenus.task.organization.addToProject"));
+			subItem.setTitle(this.t(msg({ message: "Add to project…", context: "contextMenus.task.organization.addToProject" })));
 			subItem.setIcon("folder-plus");
 			subItem.onClick(() => {
 				this.menu.hide();
@@ -1535,7 +1555,7 @@ export class TaskContextMenu {
 
 		// Add subtasks
 		menu.addItem((subItem) => {
-			subItem.setTitle(this.t("contextMenus.task.organization.addSubtasks"));
+			subItem.setTitle(this.t(msg({ message: "Add subtasks…", context: "contextMenus.task.organization.addSubtasks" })));
 			subItem.setIcon("indent");
 			subItem.onClick(() => {
 				this.menu.hide();
@@ -1549,7 +1569,7 @@ export class TaskContextMenu {
 		const contextOptions = this.getContextOptions(task, plugin);
 
 		menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.organization.addContext"));
+			item.setTitle(this.t(msg({ message: "Add context…", context: "contextMenus.task.organization.addContext" })));
 			item.setIcon("plus");
 			item.onClick(() => {
 				this.menu.hide();
@@ -1564,7 +1584,7 @@ export class TaskContextMenu {
 					const selected = currentContexts.includes(context);
 					item.setTitle(
 						selected
-							? this.t("contextMenus.task.organization.contextSelected", {
+							? this.t(msg({ message: "✓ {context}", context: "contextMenus.task.organization.contextSelected" }), {
 									context,
 								})
 							: context
@@ -1584,7 +1604,7 @@ export class TaskContextMenu {
 		if (currentContexts.length > 0) {
 			menu.addSeparator();
 			menu.addItem((item) => {
-				item.setTitle(this.t("contextMenus.task.organization.clearContexts"));
+				item.setTitle(this.t(msg({ message: "Clear contexts", context: "contextMenus.task.organization.clearContexts" })));
 				item.setIcon("x");
 				item.onClick(async () => {
 					await this.updateTaskContexts(task, plugin, undefined);
@@ -1601,10 +1621,10 @@ export class TaskContextMenu {
 
 	private async openContextInput(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
 		const context = await showTextInputModal(plugin.app, {
-			title: this.t("contextMenus.task.organization.addContext"),
-			placeholder: this.t("contextMenus.task.organization.contextPlaceholder"),
-			confirmText: this.t("common.confirm"),
-			cancelText: this.t("common.cancel"),
+			title: this.t(msg({ message: "Add context…", context: "contextMenus.task.organization.addContext" })),
+			placeholder: this.t(msg({ message: "context", context: "contextMenus.task.organization.contextPlaceholder" })),
+			confirmText: this.t(msg({ message: "Confirm", context: "common.confirm" })),
+			cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
 		});
 
 		if (!context) return;
@@ -1626,7 +1646,7 @@ export class TaskContextMenu {
 				operation: "update-task-contexts",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.organization.notices.updateContextsFailed"));
+			new Notice(this.t(msg({ message: "Failed to update contexts", context: "contextMenus.task.organization.notices.updateContextsFailed" })));
 		}
 	}
 
@@ -1634,7 +1654,7 @@ export class TaskContextMenu {
 		const editableTags = getEditableTaskTags(task, plugin.settings);
 
 		submenu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.addTag"));
+			item.setTitle(this.t(msg({ message: "Add tag…", context: "contextMenus.task.addTag" })));
 			item.setIcon("plus");
 			item.onClick(() => {
 				this.menu.hide();
@@ -1646,7 +1666,7 @@ export class TaskContextMenu {
 			submenu.addSeparator();
 			for (const tag of editableTags) {
 				submenu.addItem((item) => {
-					item.setTitle(this.t("contextMenus.task.removeTag", { tag: `#${tag}` }));
+					item.setTitle(this.t(msg({ message: "Remove {tag}", context: "contextMenus.task.removeTag" }), { tag: `#${tag}` }));
 					item.setIcon("x");
 					item.onClick(async () => {
 						await this.updateTaskTags(
@@ -1660,7 +1680,7 @@ export class TaskContextMenu {
 
 			submenu.addSeparator();
 			submenu.addItem((item) => {
-				item.setTitle(this.t("contextMenus.task.clearTags"));
+				item.setTitle(this.t(msg({ message: "Clear tags", context: "contextMenus.task.clearTags" })));
 				item.setIcon("eraser");
 				item.onClick(async () => {
 					await this.updateTaskTags(
@@ -1681,11 +1701,11 @@ export class TaskContextMenu {
 		const input = await showTextInputModal(plugin.app, {
 			title:
 				mode === "add"
-					? this.t("contextMenus.task.addTag")
-					: this.t("contextMenus.task.removeTagInput"),
-			placeholder: this.t("contextMenus.task.tagPlaceholder"),
-			confirmText: this.t("common.confirm"),
-			cancelText: this.t("common.cancel"),
+					? this.t(msg({ message: "Add tag…", context: "contextMenus.task.addTag" }))
+					: this.t(msg({ message: "Remove tag…", context: "contextMenus.task.removeTagInput" })),
+			placeholder: this.t(msg({ message: "Tag or #tag", context: "contextMenus.task.tagPlaceholder" })),
+			confirmText: this.t(msg({ message: "Confirm", context: "common.confirm" })),
+			cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
 			onInputReady: (inputEl) => {
 				new TagSuggest(plugin.app, inputEl, plugin);
 			},
@@ -1714,7 +1734,7 @@ export class TaskContextMenu {
 				operation: "update-task-tags",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.notices.updateTagsFailed"));
+			new Notice(this.t(msg({ message: "Failed to update tags", context: "contextMenus.task.notices.updateTagsFailed" })));
 		}
 	}
 
@@ -1731,7 +1751,7 @@ export class TaskContextMenu {
 				operation: "open-project-selector",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.organization.notices.projectSelectFailed"));
+			new Notice(this.t(msg({ message: "Failed to open project selector", context: "contextMenus.task.organization.notices.projectSelectFailed" })));
 		}
 	}
 
@@ -1746,7 +1766,7 @@ export class TaskContextMenu {
 			const candidates = allTasks.filter((candidate) => candidate.path !== task.path);
 
 			if (candidates.length === 0) {
-				new Notice(this.t("contextMenus.task.organization.notices.noEligibleSubtasks"));
+				new Notice(this.t(msg({ message: "No eligible tasks available to assign as subtasks", context: "contextMenus.task.organization.notices.noEligibleSubtasks" })));
 				return;
 			}
 
@@ -1760,7 +1780,7 @@ export class TaskContextMenu {
 				operation: "open-subtask-assignment-selector",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.organization.notices.subtaskSelectFailed"));
+			new Notice(this.t(msg({ message: "Failed to open subtask selector", context: "contextMenus.task.organization.notices.subtaskSelectFailed" })));
 		}
 	}
 
@@ -1771,7 +1791,7 @@ export class TaskContextMenu {
 	): Promise<void> {
 		try {
 			if (!(projectFile instanceof TFile)) {
-				new Notice(this.t("contextMenus.task.organization.notices.projectSelectFailed"));
+				new Notice(this.t(msg({ message: "Failed to open project selector", context: "contextMenus.task.organization.notices.projectSelectFailed" })));
 				return;
 			}
 
@@ -1786,7 +1806,7 @@ export class TaskContextMenu {
 				operation: "add-task-project",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.organization.notices.addToProjectFailed"));
+			new Notice(this.t(msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" })));
 		}
 	}
 
@@ -1798,7 +1818,7 @@ export class TaskContextMenu {
 		try {
 			const currentTaskFile = plugin.app.vault.getAbstractFileByPath(task.path);
 			if (!(currentTaskFile instanceof TFile)) {
-				new Notice(this.t("contextMenus.task.organization.notices.currentTaskNotFound"));
+				new Notice(this.t(msg({ message: "Current task file not found", context: "contextMenus.task.organization.notices.currentTaskNotFound" })));
 				return;
 			}
 
@@ -1813,7 +1833,7 @@ export class TaskContextMenu {
 				operation: "assign-task-as-subtask",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.organization.notices.addAsSubtaskFailed"));
+			new Notice(this.t(msg({ message: "Failed to add task as subtask", context: "contextMenus.task.organization.notices.addAsSubtaskFailed" })));
 		}
 	}
 
@@ -1837,8 +1857,8 @@ export class TaskContextMenu {
 		if (!menuEl) return;
 
 		const menuItems = menuEl.querySelectorAll(".menu-item");
-		const statusTitle = this.t("contextMenus.task.status");
-		const priorityTitle = this.t("contextMenus.task.priority");
+		const statusTitle = this.t(msg({ message: "Status", context: "contextMenus.task.status" }));
+		const priorityTitle = this.t(msg({ message: "Priority", context: "contextMenus.task.priority" }));
 
 		// Find status and priority menu items and apply colors
 		menuItems.forEach((menuItem: Element) => {
@@ -1884,7 +1904,7 @@ export class TaskContextMenu {
 
 				// Highlight current selection with visual indicator
 				if (option.value === task.status) {
-					title = this.t("contextMenus.task.statusSelected", { label });
+					title = this.t(msg({ message: "✓ {label}", context: "contextMenus.task.statusSelected" }), { label });
 				}
 
 				item.setTitle(title);
@@ -1901,7 +1921,11 @@ export class TaskContextMenu {
 							details: { taskPath: task.path },
 							error: errorMessage,
 						});
-						new Notice(`Failed to update task status: ${errorMessage}`);
+						new Notice(
+							this.t(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), {
+								message: displayError(errorMessage),
+							})
+						);
 					}
 				});
 
@@ -1928,7 +1952,7 @@ export class TaskContextMenu {
 		priorityOptions.forEach((priority) => {
 			const value = toMenuTitle(priority.value);
 			if (!value) return;
-			const label = toMenuTitle(priority.label, value);
+			const label = toMenuTitle(configLabel(priority), value);
 
 			submenu.addItem((item) => {
 				let title = label;
@@ -1938,7 +1962,7 @@ export class TaskContextMenu {
 
 				// Highlight current selection with visual indicator
 				if (value === task.priority) {
-					title = this.t("contextMenus.task.prioritySelected", { label });
+					title = this.t(msg({ message: "✓ {label}", context: "contextMenus.task.prioritySelected" }), { label });
 				}
 
 				item.setTitle(title);
@@ -1955,7 +1979,11 @@ export class TaskContextMenu {
 							details: { taskPath: task.path },
 							error: errorMessage,
 						});
-						new Notice(`Failed to update task priority: ${errorMessage}`);
+						new Notice(
+							this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), {
+								message: displayError(errorMessage),
+							})
+						);
 					}
 				});
 
@@ -2014,7 +2042,7 @@ export class TaskContextMenu {
 				if (option.icon) item.setIcon(option.icon);
 				const isSelected = option.value === currentValue;
 				const title = isSelected
-					? this.t("contextMenus.date.selected", { label: option.label })
+					? this.t(msg({ message: "✓ {label}", context: "contextMenus.date.selected" }), { label: option.label })
 					: option.label;
 				item.setTitle(title);
 				item.onClick(() => {
@@ -2027,14 +2055,14 @@ export class TaskContextMenu {
 		if (weekdayOptions.length > 0) {
 			submenu.addSeparator();
 			submenu.addItem((item) => {
-				item.setTitle(this.t("contextMenus.date.weekdaysLabel"));
+				item.setTitle(this.t(msg({ message: "Weekdays", context: "contextMenus.date.weekdaysLabel" })));
 				item.setIcon("calendar");
 				const weekdaySubmenu = getSubmenu(item);
 				weekdayOptions.forEach((option) => {
 					weekdaySubmenu.addItem((subItem) => {
 						const isSelected = option.value === currentValue;
 						const title = isSelected
-							? this.t("contextMenus.date.selected", { label: option.label })
+							? this.t(msg({ message: "✓ {label}", context: "contextMenus.date.selected" }), { label: option.label })
 							: option.label;
 						subItem.setTitle(title);
 						subItem.setIcon("calendar");
@@ -2049,14 +2077,14 @@ export class TaskContextMenu {
 		submenu.addSeparator();
 
 		submenu.addItem((item) => {
-			item.setTitle(options.pickDateTitle ?? this.t("contextMenus.date.pickDateTime"));
+			item.setTitle(options.pickDateTitle ?? this.t(msg({ message: "Pick date & time…", context: "contextMenus.date.pickDateTime" })));
 			item.setIcon("calendar");
 			item.onClick(onCustomDate);
 		});
 
 		if (currentValue) {
 			submenu.addItem((item) => {
-				item.setTitle(this.t("contextMenus.date.clearDate"));
+				item.setTitle(this.t(msg({ message: "Clear date", context: "contextMenus.date.clearDate" })));
 				item.setIcon("x");
 				item.onClick(() => {
 					void onSelect(null);
@@ -2072,7 +2100,7 @@ export class TaskContextMenu {
 		}
 
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.customDates"));
+			item.setTitle(this.t(msg({ message: "Custom dates", context: "contextMenus.task.customDates" })));
 			item.setIcon("calendar-days");
 
 			const submenu = getSubmenu(item);
@@ -2094,7 +2122,7 @@ export class TaskContextMenu {
 							this.openCustomDateFieldPicker(task, plugin, field, currentValue);
 						},
 						{
-							pickDateTitle: this.t("modals.task.userFields.pickDate", {
+							pickDateTitle: this.t(msg({ message: "Pick {field} date", context: "modals.task.userFields.pickDate" }), {
 								field: fieldLabel,
 							}),
 						}
@@ -2130,7 +2158,7 @@ export class TaskContextMenu {
 		const fieldLabel = this.getCustomFieldLabel(field);
 		const modal = new DateTimePickerModal(plugin.app, {
 			currentDate: currentValue || null,
-			title: this.t("modals.task.userFields.pickDate", { field: fieldLabel }),
+			title: this.t(msg({ message: "Pick {field} date", context: "modals.task.userFields.pickDate" }), { field: fieldLabel }),
 			showTime: false,
 			plugin,
 			onSelect: (date) => {
@@ -2164,9 +2192,9 @@ export class TaskContextMenu {
 				error: errorMessage,
 			});
 			new Notice(
-				this.t("contextMenus.task.notices.updateCustomDateFailure", {
+				this.t(msg({ message: "Failed to update {field}: {message}", context: "contextMenus.task.notices.updateCustomDateFailure" }), {
 					field: fieldLabel,
-					message: errorMessage,
+					message: displayError(errorMessage),
 				})
 			);
 		}
@@ -2180,26 +2208,11 @@ export class TaskContextMenu {
 	): void {
 		const today = new Date();
 		const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-		const monthNames = [
-			plugin.i18n.translate("common.months.january"),
-			plugin.i18n.translate("common.months.february"),
-			plugin.i18n.translate("common.months.march"),
-			plugin.i18n.translate("common.months.april"),
-			plugin.i18n.translate("common.months.may"),
-			plugin.i18n.translate("common.months.june"),
-			plugin.i18n.translate("common.months.july"),
-			plugin.i18n.translate("common.months.august"),
-			plugin.i18n.translate("common.months.september"),
-			plugin.i18n.translate("common.months.october"),
-			plugin.i18n.translate("common.months.november"),
-			plugin.i18n.translate("common.months.december"),
-		];
 		const currentDay = dayNames[today.getDay()];
 		const currentDate = today.getDate();
 		const currentMonth = today.getMonth() + 1;
-		const currentMonthName = monthNames[today.getMonth()];
 		const calendarLocale = getPluginCalendarLocale(plugin);
-		const dayName = today.toLocaleDateString(calendarLocale || undefined, { weekday: "long" });
+		const dayName = today.toLocaleDateString(uiLocale(), { weekday: "long" });
 
 		const formatDateForDTSTART = (date: Date): string => {
 			const year = date.getFullYear();
@@ -2208,52 +2221,41 @@ export class TaskContextMenu {
 			return `${year}${month}${day}`;
 		};
 
-		const getOrdinal = (n: number): string => {
-			const s = ["th", "st", "nd", "rd"];
-			const v = n % 100;
-			return n + (s[(v - 20) % 10] || s[v] || s[0]);
-		};
-
 		let todayDTSTART = formatDateForDTSTART(today);
 
 		const recurrenceOptions = [
 			{
-				label: this.t("modals.task.recurrence.daily"),
+				label: this.t(msg({ message: "Daily", context: "modals.task.recurrence.daily" })),
 				value: `DTSTART:${todayDTSTART};FREQ=DAILY;INTERVAL=1`,
 				icon: "calendar-days",
 			},
 			{
-				label: this.t("modals.task.recurrence.weeklyOn", { days: dayName }),
+				label: this.t(msg({ message: "Weekly on {days}", context: "modals.task.recurrence.weeklyOn" }), { days: dayName }),
 				value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=1;BYDAY=${currentDay}`,
 				icon: "calendar",
 			},
 			{
-				label: this.t("modals.task.recurrence.everyTwoWeeks"),
+				label: this.t(msg({ message: "Every 2 weeks", context: "modals.task.recurrence.everyTwoWeeks" })),
 				value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=2;BYDAY=${currentDay}`,
 				icon: "calendar",
 			},
 			{
-				label: this.t("modals.task.recurrence.monthlyOnOrdinal", {
-					ordinal: getOrdinal(currentDate),
-				}),
+				label: recurrenceMonthlyOn(currentDate),
 				value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=${currentDate}`,
 				icon: "calendar-range",
 			},
 			{
-				label: this.t("modals.task.recurrence.everyThreeMonths"),
+				label: this.t(msg({ message: "Every 3 months", context: "modals.task.recurrence.everyThreeMonths" })),
 				value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=${currentDate}`,
 				icon: "calendar-range",
 			},
 			{
-				label: this.t("modals.task.recurrence.yearlyOn", {
-					month: currentMonthName,
-					day: getOrdinal(currentDate),
-				}),
+				label: recurrenceYearlyOn(currentMonth, currentDate),
 				value: `DTSTART:${todayDTSTART};FREQ=YEARLY;INTERVAL=1;BYMONTH=${currentMonth};BYMONTHDAY=${currentDate}`,
 				icon: "calendar-clock",
 			},
 			{
-				label: this.t("modals.task.recurrence.weekdays"),
+				label: this.t(msg({ message: "Weekdays", context: "modals.task.recurrence.weekdays" })),
 				value: buildWeekdaysOnlyRecurrenceRule(todayDTSTART, calendarLocale),
 				icon: "briefcase",
 			},
@@ -2274,7 +2276,7 @@ export class TaskContextMenu {
 
 		// Custom recurrence option
 		submenu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.customRecurrence"));
+			item.setTitle(this.t(msg({ message: "Custom recurrence...", context: "contextMenus.task.customRecurrence" })));
 			item.setIcon("settings");
 			item.onClick(() => {
 				const recurrenceMenu = new RecurrenceContextMenu({
@@ -2294,7 +2296,7 @@ export class TaskContextMenu {
 		// Clear option if there's a current value
 		if (currentValue) {
 			submenu.addItem((item) => {
-				item.setTitle(this.t("contextMenus.task.clearRecurrence"));
+				item.setTitle(this.t(msg({ message: "Clear recurrence", context: "contextMenus.task.clearRecurrence" })));
 				item.setIcon("x");
 				item.onClick(() => {
 					void onSelect(null);
@@ -2313,7 +2315,7 @@ export class TaskContextMenu {
 
 		submenu.addSeparator();
 		submenu.addItem((item) => {
-			item.setTitle("Occurrence notes");
+			item.setTitle(this.t(msg({ message: "Occurrence notes", context: "ui.audit.occurrenceNotes" })));
 			item.setIcon("files");
 
 			const policyMenu = getSubmenu(item);
@@ -2331,14 +2333,14 @@ export class TaskContextMenu {
 				});
 			};
 
-			addModeOption("manual", "Create manually", "file-plus");
-			addModeOption("on_completion", "Create next after completion", "check-circle");
+			addModeOption("manual", this.t(msg({ message: "Create manually", context: "ui.audit.manual" })), "file-plus");
+			addModeOption("on_completion", this.t(msg({ message: "Create next after completion", context: "ui.audit.afterCompletion" })), "check-circle");
 
 			policyMenu.addItem((modeItem) => {
 				modeItem.setTitle(
 					currentMode === "rolling"
-						? "✓ Rolling window (not automated yet)"
-						: "Rolling window (not automated yet)"
+						? `✓ ${this.t(msg({ message: "Rolling window (not automated yet)", context: "ui.audit.rolling" }))}`
+						: this.t(msg({ message: "Rolling window (not automated yet)", context: "ui.audit.rolling" }))
 				);
 				modeItem.setIcon("calendar-range");
 				modeItem.setDisabled(true);
@@ -2356,12 +2358,12 @@ export class TaskContextMenu {
 			}> = [
 				{
 					value: "completion",
-					label: "Completion only",
+					label: this.t(msg({ message: "Completion only", context: "ui.audit.completionOnly" })),
 					icon: "check",
 				},
 				{
 					value: "completion_or_skip",
-					label: "Completion or skip",
+					label: this.t(msg({ message: "Completion or skip", context: "ui.audit.completionOrSkip" })),
 					icon: "check-check",
 				},
 			];
@@ -2405,8 +2407,10 @@ export class TaskContextMenu {
 			this.options.onUpdate?.();
 			new Notice(
 				mode === "manual"
-					? "Occurrence notes set to manual creation"
-					: "Occurrence notes will be created after completion"
+					? this.t(msg({ message: "Occurrence notes: {mode}", context: "notices.audit.occurrencePolicy" }), { mode: this.t(msg({ message: "Create manually", context: "ui.audit.manual" })) })
+					: this.t(msg({ message: "Occurrence notes: {mode}", context: "notices.audit.occurrencePolicy" }), {
+							mode: this.t(msg({ message: "Create next after completion", context: "ui.audit.afterCompletion" })),
+						})
 			);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -2416,7 +2420,7 @@ export class TaskContextMenu {
 				details: { taskPath: task.path, mode },
 				error: errorMessage,
 			});
-			new Notice(`Failed to update occurrence notes setting: ${errorMessage}`);
+			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(errorMessage) }));
 		}
 	}
 
@@ -2435,8 +2439,12 @@ export class TaskContextMenu {
 			this.options.onUpdate?.();
 			new Notice(
 				trigger === "completion"
-					? "Next occurrence note will be created after completion"
-					: "Next occurrence note will be created after completion or skip"
+					? this.t(msg({ message: "Occurrence notes: {mode}", context: "notices.audit.occurrencePolicy" }), {
+							mode: this.t(msg({ message: "Completion only", context: "ui.audit.completionOnly" })),
+						})
+					: this.t(msg({ message: "Occurrence notes: {mode}", context: "notices.audit.occurrencePolicy" }), {
+							mode: this.t(msg({ message: "Completion or skip", context: "ui.audit.completionOrSkip" })),
+						})
 			);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -2446,7 +2454,7 @@ export class TaskContextMenu {
 				details: { taskPath: task.path, trigger },
 				error: errorMessage,
 			});
-			new Notice(`Failed to update occurrence trigger: ${errorMessage}`);
+			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(errorMessage) }));
 		}
 	}
 
@@ -2464,7 +2472,7 @@ export class TaskContextMenu {
 				const value = toMenuTitle(status.value);
 				if (!value) return;
 				statusOptions.push({
-					label: toMenuTitle(status.label, value),
+					label: toMenuTitle(configLabel(status), value),
 					value,
 					color: typeof status.color === "string" ? status.color : undefined,
 					icon: typeof status.icon === "string" ? status.icon : undefined,
@@ -2502,11 +2510,11 @@ export class TaskContextMenu {
 			const reminderSubmenu = getSubmenu(subItem);
 
 			const quickOptions = [
-				{ labelKey: "contextMenus.task.quickReminders.atTime", offset: "PT0M" },
-				{ labelKey: "contextMenus.task.quickReminders.fiveMinutes", offset: "-PT5M" },
-				{ labelKey: "contextMenus.task.quickReminders.fifteenMinutes", offset: "-PT15M" },
-				{ labelKey: "contextMenus.task.quickReminders.oneHour", offset: "-PT1H" },
-				{ labelKey: "contextMenus.task.quickReminders.oneDay", offset: "-P1D" },
+				{ labelKey: msg({ message: "At time of event", context: "contextMenus.task.quickReminders.atTime" }), offset: "PT0M" },
+				{ labelKey: msg({ message: "5 minutes before", context: "contextMenus.task.quickReminders.fiveMinutes" }), offset: "-PT5M" },
+				{ labelKey: msg({ message: "15 minutes before", context: "contextMenus.task.quickReminders.fifteenMinutes" }), offset: "-PT15M" },
+				{ labelKey: msg({ message: "1 hour before", context: "contextMenus.task.quickReminders.oneHour" }), offset: "-PT1H" },
+				{ labelKey: msg({ message: "1 day before", context: "contextMenus.task.quickReminders.oneDay" }), offset: "-P1D" },
 			];
 
 			quickOptions.forEach((option) => {
@@ -2546,7 +2554,7 @@ export class TaskContextMenu {
 				operation: "adding-reminder",
 				error: error,
 			});
-			new Notice("Failed to add reminder");
+			new Notice(this.t(msg({ message: "Failed to add reminder", context: "contextMenus.task.notices.addReminderFailure" })));
 		}
 	}
 

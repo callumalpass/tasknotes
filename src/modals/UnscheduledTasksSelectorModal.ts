@@ -1,5 +1,7 @@
+import { uiData } from "../i18n/dataText";
+import { formatUIDate } from "../i18n/formatters";
+import { msg } from "@lingui/core/macro";
 import { App, FuzzySuggestModal, FuzzyMatch, setIcon } from "obsidian";
-import { format } from "date-fns";
 import { TaskInfo } from "../types";
 import {
 	isPastDate,
@@ -10,7 +12,7 @@ import {
 } from "../utils/dateUtils";
 import { filterEmptyProjects } from "../utils/helpers";
 import TaskNotesPlugin from "../main";
-import { TranslationKey } from "../i18n";
+import { MessageDescriptor } from "../i18n";
 import { appendInternalLink, LinkServices } from "../ui/renderers/linkRenderer";
 import { parseLinkToPath } from "../utils/linkUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -28,7 +30,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 	private tasks: TaskInfo[];
 	private onScheduleTask: (task: TaskInfo | null, options?: ScheduleTaskOptions) => void;
 	private defaultScheduleOptions?: ScheduleTaskOptions;
-	private translate: (key: TranslationKey, variables?: Record<string, unknown>) => string;
+	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 
 	constructor(
 		app: App,
@@ -42,24 +44,24 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 		this.defaultScheduleOptions = defaultScheduleOptions;
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);
 
-		this.setPlaceholder(this.translate("modals.unscheduledTasksSelector.placeholder"));
+		this.setPlaceholder(this.translate(msg({ message: "Type to search for unscheduled tasks...", context: "modals.unscheduledTasksSelector.placeholder" })));
 		this.setInstructions([
 			{
 				command: "↑↓",
-				purpose: this.translate("modals.unscheduledTasksSelector.instructions.navigate"),
+				purpose: this.translate(msg({ message: "to navigate", context: "modals.unscheduledTasksSelector.instructions.navigate" })),
 			},
 			{
 				command: "↵",
-				purpose: this.translate("modals.unscheduledTasksSelector.instructions.schedule"),
+				purpose: this.translate(msg({ message: "to schedule", context: "modals.unscheduledTasksSelector.instructions.schedule" })),
 			},
 			{
 				command: "esc",
-				purpose: this.translate("modals.unscheduledTasksSelector.instructions.dismiss"),
+				purpose: this.translate(msg({ message: "to dismiss", context: "modals.unscheduledTasksSelector.instructions.dismiss" })),
 			},
 		]);
 
 		// Set modal title for accessibility
-		this.titleEl.setText(this.translate("modals.unscheduledTasksSelector.title"));
+		this.titleEl.setText(this.translate(msg({ message: "Unscheduled tasks", context: "modals.unscheduledTasksSelector.title" })));
 		this.titleEl.setAttribute("id", "unscheduled-tasks-selector-title");
 
 		// Set aria attributes on the modal
@@ -161,31 +163,39 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 
 			const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
 			const dueDateStr = hasTimeComponent(task.due)
-				? format(
+				? formatUIDate(
 						parseDateToLocal(task.due),
 						userTimeFormat === "12" ? "MMM d, h:mm a" : "MMM d, HH:mm"
 					)
-				: format(parseDateToLocal(task.due), "MMM d");
+				: formatUIDate(parseDateToLocal(task.due), "MMM d");
 
 			if (isPastDate(getDatePart(task.due))) {
 				dueEl.addClass("overdue");
 				const warningIcon = dueEl.createSpan();
 				setIcon(warningIcon, "alert-triangle");
-				dueEl.createSpan({ text: ` Overdue: ${dueDateStr}` });
+				dueEl.createSpan({
+					text: this.translate(msg({ message: "Overdue: {date}", context: "modals.unscheduledTasksSelector.overdue" }), {
+						date: dueDateStr,
+					}),
+				});
 			} else if (isToday(getDatePart(task.due))) {
 				dueEl.addClass("due-today");
 				const calendarIcon = dueEl.createSpan();
 				setIcon(calendarIcon, "calendar");
-				dueEl.createSpan({ text: ` Due today: ${dueDateStr}` });
+				dueEl.createSpan({
+					text: this.translate(msg({ message: "Due today: {date}", context: "modals.unscheduledTasksSelector.dueToday" }), {
+						date: dueDateStr,
+					}),
+				});
 			} else {
-				dueEl.setText(`Due: ${dueDateStr}`);
+				dueEl.setText(this.translate(msg({ message: "Due: {date}", context: "modals.reminder.dueContext" }), { date: dueDateStr }));
 			}
 		}
 
 		// Time estimate if exists
 		if (task.timeEstimate) {
 			metaEl.createSpan({
-				text: `~${task.timeEstimate}min`,
+				text: `~${new Intl.NumberFormat(this.plugin.i18n.getCurrentLocale(), { style: "unit", unit: "minute", unitDisplay: "short" }).format(task.timeEstimate)}`,
 				cls: "unscheduled-tasks-selector__time-estimate",
 			});
 		}
@@ -248,9 +258,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 		const el = this.resultContainerEl.createDiv({
 			cls: "unscheduled-tasks-selector__no-results",
 		});
-		el.setText(
-			"No unscheduled tasks found. All tasks are either scheduled, completed, or archived."
-		);
+		el.setText(this.translate(msg({ message: "No unscheduled tasks found. All tasks are either scheduled, completed, or archived.", context: "modals.unscheduledTasksSelector.empty" })));
 	}
 }
 
@@ -274,6 +282,7 @@ function renderProjectLinksForSelector(
 	container.innerHTML = "";
 
 	const linkServices: LinkServices = {
+		translate: plugin.i18n.translate.bind(plugin.i18n),
 		metadataCache: plugin.app.metadataCache,
 		workspace: plugin.app.workspace,
 		sourcePath: plugin.app.workspace.getActiveFile()?.path || "",
@@ -291,7 +300,7 @@ function renderProjectLinksForSelector(
 		if (isWikilinkProject(project)) {
 			// Extract the note name from [[Note Name]]
 			const noteName = project.slice(2, -2).trim();
-			appendInternalLink(container, noteName, noteName, linkServices, {
+			appendInternalLink(container, noteName, uiData(noteName, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), linkServices, {
 				cssClass: "unscheduled-tasks-selector__project-link internal-link",
 				hoverSource: "tasknotes-project-link",
 				showErrorNotices: true,
@@ -302,7 +311,7 @@ function renderProjectLinksForSelector(
 				const displayText = match[1].trim();
 				const rawPath = match[2].trim();
 				const path = parseLinkToPath(rawPath);
-				appendInternalLink(container, path, displayText, linkServices, {
+				appendInternalLink(container, path, uiData(displayText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), linkServices, {
 					cssClass: "unscheduled-tasks-selector__project-link internal-link",
 					hoverSource: "tasknotes-project-link",
 					showErrorNotices: true,

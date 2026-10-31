@@ -1,12 +1,13 @@
+import { configLabel } from "../i18n/configLabels";
+import { uiText } from "../i18n/runtime";
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { Menu, Notice, TFile, type MenuItem } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { DateContextMenu, type DateOption } from "./DateContextMenu";
 import { ContextMenu } from "./ContextMenu";
-import {
-	closeActiveContextMenu,
-	showCoordinatedMenu,
-} from "./ContextMenuCoordinator";
+import { closeActiveContextMenu, showCoordinatedMenu } from "./ContextMenuCoordinator";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { showTextInputModal } from "../modals/TextInputModal";
 import { TagSuggest } from "../modals/taskModalSuggests";
@@ -59,7 +60,7 @@ export class BatchContextMenu {
 		this.buildMenu();
 	}
 
-	private t(key: string, params?: Record<string, string | number>): string {
+	private t(key: MessageDescriptor, params?: Record<string, string | number>): string {
 		return this.options.plugin.i18n.translate(key, params);
 	}
 
@@ -69,7 +70,7 @@ export class BatchContextMenu {
 
 		// Header showing selection count
 		this.menu.addItem((item) => {
-			item.setTitle(`${count} tasks selected`);
+			item.setTitle(uiText(msg({ message: "{count, plural, one {# task selected} other {# tasks selected}}", context: "components/BatchContextMenu: BatchContextMenu.buildMenu display" }), { count: count }));
 			item.setIcon("check-square");
 			item.setDisabled(true);
 		});
@@ -78,7 +79,7 @@ export class BatchContextMenu {
 
 		// Status submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.status"));
+			item.setTitle(this.t(msg({ message: "Status", context: "contextMenus.task.status" })));
 			item.setIcon("circle");
 
 			const submenu = getSubmenu(item);
@@ -87,7 +88,7 @@ export class BatchContextMenu {
 
 		// Priority submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.priority"));
+			item.setTitle(this.t(msg({ message: "Priority", context: "contextMenus.task.priority" })));
 			item.setIcon("star");
 
 			const submenu = getSubmenu(item);
@@ -95,7 +96,7 @@ export class BatchContextMenu {
 		});
 
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.tags"));
+			item.setTitle(this.t(msg({ message: "Tags", context: "contextMenus.task.tags" })));
 			item.setIcon("tags");
 
 			const submenu = getSubmenu(item);
@@ -106,7 +107,7 @@ export class BatchContextMenu {
 
 		// Due Date submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.dueDate"));
+			item.setTitle(this.t(msg({ message: "Due date", context: "contextMenus.task.dueDate" })));
 			item.setIcon("calendar");
 
 			const submenu = getSubmenu(item);
@@ -115,7 +116,7 @@ export class BatchContextMenu {
 
 		// Scheduled Date submenu
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.scheduledDate"));
+			item.setTitle(this.t(msg({ message: "Scheduled date", context: "contextMenus.task.scheduledDate" })));
 			item.setIcon("calendar-clock");
 
 			const submenu = getSubmenu(item);
@@ -126,7 +127,7 @@ export class BatchContextMenu {
 
 		// Archive/Unarchive
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.archive"));
+			item.setTitle(this.t(msg({ message: "Archive", context: "contextMenus.task.archive" })));
 			item.setIcon("archive");
 			item.onClick(async () => {
 				await this.batchArchive(true);
@@ -134,7 +135,7 @@ export class BatchContextMenu {
 		});
 
 		this.menu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.unarchive"));
+			item.setTitle(this.t(msg({ message: "Unarchive", context: "contextMenus.task.unarchive" })));
 			item.setIcon("archive-restore");
 			item.onClick(async () => {
 				await this.batchArchive(false);
@@ -145,7 +146,7 @@ export class BatchContextMenu {
 
 		// Copy selected tasks
 		this.menu.addItem((item) => {
-			item.setTitle("Copy selected tasks");
+			item.setTitle(this.t(msg({ message: "Copy selected tasks", context: "ui.audit.copySelected" })));
 			item.setIcon("copy");
 
 			const submenu = getSubmenu(item);
@@ -156,7 +157,7 @@ export class BatchContextMenu {
 
 		// Clear selection
 		this.menu.addItem((item) => {
-			item.setTitle("Clear selection");
+			item.setTitle(this.t(msg({ message: "Clear selection", context: "ui.audit.clearSelection" })));
 			item.setIcon("x");
 			item.onClick(() => {
 				this.options.plugin.taskSelectionService?.clearSelection();
@@ -168,7 +169,7 @@ export class BatchContextMenu {
 		this.menu.addSeparator();
 
 		this.menu.addItem((item) => {
-			item.setTitle(`Delete ${count} tasks`);
+			item.setTitle(this.t(msg({ message: "Delete tasks", context: "notices.audit.deleteTitle" })) + ` (${count})`);
 			item.setIcon("trash");
 			item.onClick(async () => {
 				await this.batchDelete();
@@ -178,7 +179,7 @@ export class BatchContextMenu {
 
 	private addTagOptions(submenu: Menu): void {
 		submenu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.addTag"));
+			item.setTitle(this.t(msg({ message: "Add tag…", context: "contextMenus.task.addTag" })));
 			item.setIcon("plus");
 			item.onClick(() => {
 				void this.openBatchTagInput("add");
@@ -186,7 +187,7 @@ export class BatchContextMenu {
 		});
 
 		submenu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.removeTagInput"));
+			item.setTitle(this.t(msg({ message: "Remove tag…", context: "contextMenus.task.removeTagInput" })));
 			item.setIcon("x");
 			item.onClick(() => {
 				void this.openBatchTagInput("remove");
@@ -195,7 +196,7 @@ export class BatchContextMenu {
 
 		submenu.addSeparator();
 		submenu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.task.clearTags"));
+			item.setTitle(this.t(msg({ message: "Clear tags", context: "contextMenus.task.clearTags" })));
 			item.setIcon("eraser");
 			item.onClick(async () => {
 				await this.batchUpdateTags((task) =>
@@ -207,10 +208,10 @@ export class BatchContextMenu {
 
 	private addCopyOptions(submenu: Menu): void {
 		const options: Array<{ title: string; icon: string; format: TaskCopyFormat }> = [
-			{ title: "Copy filenames", icon: "file-text", format: "filenames" },
-			{ title: "Copy Markdown links", icon: "link", format: "markdown-links" },
-			{ title: "Copy titles", icon: "text", format: "titles" },
-			{ title: "Copy paths", icon: "copy", format: "paths" },
+			{ title: uiText(msg({ message: "Copy filenames", context: "components/BatchContextMenu: BatchContextMenu.addCopyOptions title" })), icon: "file-text", format: "filenames" },
+			{ title: uiText(msg({ message: "Copy Markdown links", context: "components/BatchContextMenu: BatchContextMenu.addCopyOptions title" })), icon: "link", format: "markdown-links" },
+			{ title: uiText(msg({ message: "Copy titles", context: "components/BatchContextMenu: BatchContextMenu.addCopyOptions title" })), icon: "text", format: "titles" },
+			{ title: uiText(msg({ message: "Copy paths", context: "components/BatchContextMenu: BatchContextMenu.addCopyOptions title" })), icon: "copy", format: "paths" },
 		];
 
 		for (const option of options) {
@@ -230,7 +231,7 @@ export class BatchContextMenu {
 
 		for (const status of sortedStatuses) {
 			submenu.addItem((item) => {
-				item.setTitle(status.label);
+				item.setTitle(configLabel(status));
 				// Use custom icon if configured, otherwise default to circle
 				item.setIcon(status.icon || "circle");
 				item.onClick(async () => {
@@ -258,7 +259,7 @@ export class BatchContextMenu {
 
 		for (const priority of priorityOptions) {
 			submenu.addItem((item) => {
-				item.setTitle(priority.label);
+				item.setTitle(configLabel(priority));
 				item.setIcon("star");
 				item.onClick(async () => {
 					await this.batchUpdateProperty("priority", priority.value);
@@ -282,7 +283,7 @@ export class BatchContextMenu {
 		// Add option to clear priority
 		submenu.addSeparator();
 		submenu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.priority.clearPriority"));
+			item.setTitle(this.t(msg({ message: "Clear priority", context: "contextMenus.priority.clearPriority" })));
 			item.setIcon("x");
 			item.onClick(async () => {
 				await this.batchUpdateProperty("priority", undefined);
@@ -317,7 +318,7 @@ export class BatchContextMenu {
 		// Clear date option
 		submenu.addSeparator();
 		submenu.addItem((item) => {
-			item.setTitle(this.t("contextMenus.date.clearDate"));
+			item.setTitle(this.t(msg({ message: "Clear date", context: "contextMenus.date.clearDate" })));
 			item.setIcon("x");
 			item.onClick(async () => {
 				await this.batchUpdateProperty(dateType, undefined);
@@ -330,11 +331,11 @@ export class BatchContextMenu {
 		const input = await showTextInputModal(plugin.app, {
 			title:
 				mode === "add"
-					? this.t("contextMenus.task.addTag")
-					: this.t("contextMenus.task.removeTagInput"),
-			placeholder: this.t("contextMenus.task.tagPlaceholder"),
-			confirmText: this.t("common.confirm"),
-			cancelText: this.t("common.cancel"),
+					? this.t(msg({ message: "Add tag…", context: "contextMenus.task.addTag" }))
+					: this.t(msg({ message: "Remove tag…", context: "contextMenus.task.removeTagInput" })),
+			placeholder: this.t(msg({ message: "Tag or #tag", context: "contextMenus.task.tagPlaceholder" })),
+			confirmText: this.t(msg({ message: "Confirm", context: "common.confirm" })),
+			cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
 			onInputReady: (inputEl) => {
 				new TagSuggest(plugin.app, inputEl, plugin);
 			},
@@ -364,7 +365,7 @@ export class BatchContextMenu {
 			this.getMarkdownLinkText(task.path)
 		);
 		await navigator.clipboard.writeText(text);
-		new Notice(`Copied ${tasks.length} tasks`);
+		new Notice(this.t(msg({ message: "Tasks copied: {count}", context: "notices.audit.copiedTasks" }), { count: tasks.length }));
 	}
 
 	private getMarkdownLinkText(path: string): string {
@@ -382,7 +383,12 @@ export class BatchContextMenu {
 		const count = selectedPaths.length;
 
 		try {
-			new Notice(`Updating tags on ${count} tasks...`);
+			new Notice(
+				this.t(msg({ message: "{action} — tasks: {count}…", context: "notices.audit.progress" }), {
+					action: this.t(msg({ message: "Tags", context: "contextMenus.task.tags" })),
+					count,
+				})
+			);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -406,12 +412,13 @@ export class BatchContextMenu {
 				}
 			}
 
-			if (failCount === 0) {
-				new Notice(`Updated tags on ${successCount} tasks`);
-			} else {
-				new Notice(`Updated tags on ${successCount} tasks, ${failCount} failed`);
-			}
-
+			new Notice(
+				this.t(msg({ message: "{action} — successful: {count}; failed: {failed}.", context: "notices.audit.result" }), {
+					action: this.t(msg({ message: "Tags", context: "contextMenus.task.tags" })),
+					count: successCount,
+					failed: failCount,
+				})
+			);
 			plugin.taskSelectionService?.clearSelection();
 			plugin.taskSelectionService?.exitSelectionMode();
 
@@ -422,7 +429,7 @@ export class BatchContextMenu {
 				operation: "batch-tag-update",
 				error: error,
 			});
-			new Notice(this.t("contextMenus.task.notices.updateTagsFailed"));
+			new Notice(this.t(msg({ message: "Failed to update tags", context: "contextMenus.task.notices.updateTagsFailed" })));
 		}
 	}
 
@@ -431,7 +438,9 @@ export class BatchContextMenu {
 		const count = selectedPaths.length;
 
 		try {
-			new Notice(`Updating ${count} tasks...`);
+			new Notice(
+				this.t(msg({ message: "{action} — tasks: {count}…", context: "notices.audit.progress" }), { action: this.t(msg({ message: "Update tasks", context: "notices.audit.update" })), count })
+			);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -455,13 +464,13 @@ export class BatchContextMenu {
 				}
 			}
 
-			if (failCount === 0) {
-				new Notice(`Updated ${successCount} tasks`);
-			} else {
-				new Notice(`Updated ${successCount} tasks, ${failCount} failed`);
-			}
-
-			// Clear selection after successful batch operation
+			new Notice(
+				this.t(msg({ message: "{action} — successful: {count}; failed: {failed}.", context: "notices.audit.result" }), {
+					action: this.t(msg({ message: "Update tasks", context: "notices.audit.update" })),
+					count: successCount,
+					failed: failCount,
+				})
+			); // Clear selection after successful batch operation
 			plugin.taskSelectionService?.clearSelection();
 			plugin.taskSelectionService?.exitSelectionMode();
 
@@ -472,7 +481,7 @@ export class BatchContextMenu {
 				operation: "batch-update",
 				error: error,
 			});
-			new Notice("Failed to update tasks");
+			new Notice(this.t(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), { action: this.t(msg({ message: "Update tasks", context: "notices.audit.update" })) }));
 		}
 	}
 
@@ -481,7 +490,14 @@ export class BatchContextMenu {
 		const count = selectedPaths.length;
 
 		try {
-			new Notice(`${archive ? "Archiving" : "Unarchiving"} ${count} tasks...`);
+			new Notice(
+				this.t(msg({ message: "{action} — tasks: {count}…", context: "notices.audit.progress" }), {
+					action: this.t(
+						archive ? msg({ message: "Archive", context: "contextMenus.task.archive" }) : msg({ message: "Unarchive", context: "contextMenus.task.unarchive" })
+					),
+					count,
+				})
+			);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -508,15 +524,15 @@ export class BatchContextMenu {
 				}
 			}
 
-			if (failCount === 0) {
-				new Notice(`${archive ? "Archived" : "Unarchived"} ${successCount} tasks`);
-			} else {
-				new Notice(
-					`${archive ? "Archived" : "Unarchived"} ${successCount} tasks, ${failCount} failed`
-				);
-			}
-
-			// Clear selection after successful batch operation
+			new Notice(
+				this.t(msg({ message: "{action} — successful: {count}; failed: {failed}.", context: "notices.audit.result" }), {
+					action: this.t(
+						archive ? msg({ message: "Archive", context: "contextMenus.task.archive" }) : msg({ message: "Unarchive", context: "contextMenus.task.unarchive" })
+					),
+					count: successCount,
+					failed: failCount,
+				})
+			); // Clear selection after successful batch operation
 			plugin.taskSelectionService?.clearSelection();
 			plugin.taskSelectionService?.exitSelectionMode();
 
@@ -527,7 +543,9 @@ export class BatchContextMenu {
 				operation: "batch-archive",
 				error: error,
 			});
-			new Notice("Failed to archive tasks");
+			new Notice(
+				this.t(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), { action: this.t(msg({ message: "Archive", context: "contextMenus.task.archive" })) })
+			);
 		}
 	}
 
@@ -537,17 +555,22 @@ export class BatchContextMenu {
 
 		// Show confirmation dialog
 		const confirmed = await showConfirmationModal(plugin.app, {
-			title: "Delete tasks",
-			message: `Are you sure you want to delete ${count} tasks? This action cannot be undone.`,
-			confirmText: "Delete",
-			cancelText: this.t("common.cancel"),
+			title: this.t(msg({ message: "Delete tasks", context: "notices.audit.deleteTitle" })),
+			message: this.t(msg({ message: "Delete tasks ({count})? This action cannot be undone.", context: "notices.audit.deleteConfirm" }), { count }),
+			confirmText: this.t(msg({ message: "Delete", context: "contextMenus.task.deleteConfirm" })),
+			cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
 			isDestructive: true,
 		});
 
 		if (!confirmed) return;
 
 		try {
-			new Notice(`Deleting ${count} tasks...`);
+			new Notice(
+				this.t(msg({ message: "{action} — tasks: {count}…", context: "notices.audit.progress" }), {
+					action: this.t(msg({ message: "Delete", context: "contextMenus.task.delete" })),
+					count,
+				})
+			);
 
 			let successCount = 0;
 			let failCount = 0;
@@ -571,13 +594,13 @@ export class BatchContextMenu {
 				}
 			}
 
-			if (failCount === 0) {
-				new Notice(`Deleted ${successCount} tasks`);
-			} else {
-				new Notice(`Deleted ${successCount} tasks, ${failCount} failed`);
-			}
-
-			// Clear selection after successful batch operation
+			new Notice(
+				this.t(msg({ message: "{action} — successful: {count}; failed: {failed}.", context: "notices.audit.result" }), {
+					action: this.t(msg({ message: "Delete", context: "contextMenus.task.delete" })),
+					count: successCount,
+					failed: failCount,
+				})
+			); // Clear selection after successful batch operation
 			plugin.taskSelectionService?.clearSelection();
 			plugin.taskSelectionService?.exitSelectionMode();
 
@@ -588,7 +611,9 @@ export class BatchContextMenu {
 				operation: "batch-delete",
 				error: error,
 			});
-			new Notice("Failed to delete tasks");
+			new Notice(
+				this.t(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), { action: this.t(msg({ message: "Delete", context: "contextMenus.task.delete" })) })
+			);
 		}
 	}
 

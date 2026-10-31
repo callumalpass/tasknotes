@@ -475,12 +475,7 @@ export function applyKanbanTaskDropFrontmatterPlan(
 	}
 }
 
-export function planKanbanStatusDerivativeUpdate({
-	plan,
-	task,
-	dateModifiedField,
-	dateModifiedValue,
-}: KanbanStatusDerivativePlanInput): KanbanStatusDerivativePlan | null {
+export function getKanbanDropStatusValue(plan: KanbanTaskDropUpdatePlan): string | null {
 	const statusValue =
 		plan.needsGroupUpdate && plan.groupByTaskProp === "status"
 			? plan.newGroupValue
@@ -490,13 +485,24 @@ export function planKanbanStatusDerivativeUpdate({
 				? plan.newSwimLaneValue
 				: null;
 
+	// The NONE_GROUP_KEY column clears status; never evaluate the label as a status value.
+	return statusValue === null ? null : (normalizeGroupValue(statusValue) ?? "");
+}
+
+export function planKanbanStatusDerivativeUpdate({
+	plan,
+	task,
+	dateModifiedField,
+	dateModifiedValue,
+}: KanbanStatusDerivativePlanInput): KanbanStatusDerivativePlan | null {
+	const statusValue = getKanbanDropStatusValue(plan);
+
 	if (statusValue === null) {
 		return null;
 	}
 
 	return {
-		// The "None" column clears status; never evaluate the label as a status value.
-		statusValue: normalizeGroupValue(statusValue) ?? "",
+		statusValue,
 		isRecurring: !!task?.recurrence,
 		dateModifiedField,
 		dateModifiedValue,
@@ -560,7 +566,7 @@ export function planKanbanDropSideEffect({
 	};
 }
 
-// Match the frontmatter write: dropping into "None" deletes the property.
+// Match the frontmatter write: dropping into NONE_GROUP_KEY deletes the property.
 function toKanbanDropTaskValue(value: unknown): unknown {
 	return typeof value === "string" ? (normalizeGroupValue(value) ?? undefined) : value;
 }

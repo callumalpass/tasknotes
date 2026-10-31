@@ -1,0 +1,158 @@
+[
+  {
+    "file": "src/modals/TaskModal.ts",
+    "line": 328,
+    "expression": "\"normal\"",
+    "reason": "Persisted priority value; preserve user metadata and matching semantics"
+  },
+  {
+    "file": "src/modals/TaskModal.ts",
+    "line": 329,
+    "expression": "\"open\"",
+    "reason": "Persisted status value; preserve user metadata and matching semantics"
+  },
+  {
+    "file": "src/services/CalendarExportService.ts",
+    "line": 297,
+    "expression": "`obsidian://open?vault=${encodeURIComponent(options.vaultName)}&file=${encodeURIComponent(\n\t\t\ttask.path\n\t\t)}`",
+    "reason": "Obsidian deep-link URI; preserve the protocol and encoded vault/file data"
+  },
+  {
+    "file": "src/settings/tabs/generalTab.ts",
+    "line": 574,
+    "expression": "`TaskNotes/Views/${fileName}`",
+    "reason": "Generated native Bases vault path; preserve saved command/file mapping"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 427,
+    "expression": "\"Google Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 440,
+    "expression": "\"Google Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 457,
+    "expression": "\"Google Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 469,
+    "expression": "\"Google Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 483,
+    "expression": "\"Google Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 510,
+    "expression": "\"Google Cloud Console\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 550,
+    "expression": "\"Google Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 562,
+    "expression": "\"Google Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 592,
+    "expression": "\"Google Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 607,
+    "expression": "\"Google Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 786,
+    "expression": "\"Microsoft Outlook Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 795,
+    "expression": "\"Microsoft Outlook Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 809,
+    "expression": "\"Microsoft Outlook Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 828,
+    "expression": "\"Microsoft Outlook Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 840,
+    "expression": "\"Microsoft Outlook Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 854,
+    "expression": "\"Microsoft Outlook\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 880,
+    "expression": "\"Azure Portal\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 920,
+    "expression": "\"Microsoft Outlook Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 933,
+    "expression": "\"Microsoft Outlook Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 963,
+    "expression": "\"Microsoft Outlook Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/settings/tabs/integrationsTab.ts",
+    "line": 978,
+    "expression": "\"Microsoft Outlook Calendar\"",
+    "reason": "Upstream product or console name; not plugin-authored prose"
+  },
+  {
+    "file": "src/utils/taskInfoAssembly.ts",
+    "line": 31,
+    "expression": "\"normal\"",
+    "reason": "Persisted priority value; preserve user metadata and matching semantics"
+  }
+]

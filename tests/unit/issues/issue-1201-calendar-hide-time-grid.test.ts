@@ -1,25 +1,17 @@
 /**
  * Regression coverage for issue #1201.
  *
- * Calendar Bases can now hide the hourly time-grid section while keeping the
+ * Calendar Bases can hide the hourly time-grid section while keeping the
  * all-day slot available for day-based planning.
  */
 
-import fs from "fs";
-import path from "path";
-
-import {
-	getTimeGridDayMaxEvents,
-	isTimeGridCalendarView,
-	shouldHideCalendarTimeGrid,
-} from "../../../src/bases/CalendarView";
-
-function readRepoFile(relativePath: string): string {
-	return fs.readFileSync(path.resolve(__dirname, "../../../", relativePath), "utf8");
-}
+import { shouldHideCalendarTimeGrid } from "../../../src/bases/CalendarView";
+import { calendarOptionsFor } from "../../helpers/calendarViewHarness";
 
 describe("Issue #1201: Calendar Bases hourly breakdown toggle", () => {
-	it("only hides the time grid for FullCalendar timeGrid views", () => {
+	afterEach(() => document.body.replaceChildren());
+
+	it("only hides the time grid for time-grid views", () => {
 		expect(shouldHideCalendarTimeGrid(false, "timeGridWeek")).toBe(true);
 		expect(shouldHideCalendarTimeGrid(false, "timeGridCustom")).toBe(true);
 		expect(shouldHideCalendarTimeGrid(false, "timeGridDay")).toBe(true);
@@ -28,34 +20,27 @@ describe("Issue #1201: Calendar Bases hourly breakdown toggle", () => {
 		expect(shouldHideCalendarTimeGrid(true, "timeGridWeek")).toBe(false);
 	});
 
-	it("shows every all-day event by default when the hourly grid is hidden (#2387)", () => {
-		expect(getTimeGridDayMaxEvents(false, true)).toBe(false);
-		expect(getTimeGridDayMaxEvents(false, 5)).toBe(5);
-		expect(getTimeGridDayMaxEvents(true, true)).toBe(true);
+	it("hides the time grid and shows every all-day event by default (#2387)", () => {
+		const options = calendarOptionsFor({ calendarView: "timeGridWeek", showTimeGrid: false });
+
+		expect(options.timeGrid).toBe(false);
+		expect(options.dayMaxEvents).toBe(false);
 	});
 
-	it("keeps the timeGrid view list explicit", () => {
-		expect(isTimeGridCalendarView("timeGridWeek")).toBe(true);
-		expect(isTimeGridCalendarView("timeGridCustom")).toBe(true);
-		expect(isTimeGridCalendarView("timeGridDay")).toBe(true);
-		expect(isTimeGridCalendarView("multiMonthYear")).toBe(false);
+	it("keeps an explicit all-day event limit when the time grid is hidden", () => {
+		const options = calendarOptionsFor({
+			calendarView: "timeGridWeek",
+			showTimeGrid: false,
+			dayMaxEvents: 5,
+		});
+
+		expect(options.dayMaxEvents).toBe(5);
 	});
 
-	it("registers a per-view Bases option for the hourly breakdown", () => {
-		const calendarOptionsSource = readRepoFile("src/bases/calendarViewOptions.ts");
-		const englishSource = readRepoFile("src/i18n/resources/en.ts");
+	it("keeps the automatic all-day limit while the time grid is shown", () => {
+		const options = calendarOptionsFor({ calendarView: "timeGridWeek" });
 
-		expect(calendarOptionsSource).toContain('key: "showTimeGrid"');
-		expect(calendarOptionsSource).toContain('displayName: t("layout.showTimeGrid")');
-		expect(calendarOptionsSource).toContain("default: true");
-		expect(englishSource).toContain('showTimeGrid: "Show hourly breakdown"');
-	});
-
-	it("uses a scoped CSS state class for the FullCalendar timed body", () => {
-		const css = readRepoFile("styles/advanced-calendar-view.css");
-
-		expect(css).toContain("advanced-calendar-view--hide-time-grid");
-		expect(css).toContain(".fc-timegrid .fc-timegrid-body");
-		expect(css).toContain(".fc-timegrid .fc-timegrid-divider");
+		expect(options.timeGrid).toBe(true);
+		expect(options.dayMaxEvents).toBe(true);
 	});
 });

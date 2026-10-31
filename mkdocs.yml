@@ -89,6 +89,7 @@ nav:
                 - Changelog: spec/CHANGELOG.md
           - Obsidian E2E harness: development/obsidian-e2e-harness.md
           - Translation workflow: development/translations.md
+          - Downloadable language packs: development/language-packs.md
           - i18n-state-manager: development/i18n-state-manager.md
     - Releases and support:
           - Release notes: releases.md
@@ -108,6 +109,8 @@ redirects:
 # Redirected legacy pages remain here so their old Markdown can still support
 # maintainers without becoming a second public source of truth.
 drafts:
+    - development/i18n-migration/README.md
+    - development/i18n-translation-handoff.md
     - development/local-credentials-and-runtime-state.md
     - development/architecture.md
     - development/data-flow.md

@@ -138,14 +138,14 @@ test.describe('Issue #929: Recurring task with subtasks', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Look for recurring task events (they typically have a recurrence indicator)
       const recurringEvents = page.locator(
-        '.fc-event:has([data-recurrence]), ' +
-          '.fc-event.recurring, ' +
-          '.fc-event:has(.recurrence-icon)'
+        '.tnc-item:has([data-recurrence]), ' +
+          '.tnc-item.recurring, ' +
+          '.tnc-item:has(.recurrence-icon)'
       );
 
       const eventCount = await recurringEvents.count();
@@ -336,7 +336,7 @@ test.describe('Issue #929: Recurring task with subtasks', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       console.log('Expected behavior after feature implementation:');

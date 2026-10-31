@@ -32,9 +32,65 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#1955) Added Italian interface translations, localized dates and count-aware messages in bundled builds and downloadable language packs. UI language and NLP language remain independent settings.
+  - Thanks to @starise for contributing and reviewing the Italian translation.
+
+- Added highlighting to the natural language input in the task creation dialog. Dates, recurrence, estimates, priority, status, tags, contexts, projects and custom fields are highlighted as you type, so you can see what will become the title. See [Highlighting in Natural Language Input](https://tasknotes.dev/features/task-management/#highlighting-in-natural-language-input).
+
+- Added an opt-in build mode for downloadable interface language packs, with bundled English, validated local caching for offline use, and retry support. Ordinary builds continue bundling all supported languages. Versioned public hosting, a guarded operator publisher, and conditional-create publication tooling are available for experimental builds. Publication rejects permission errors even when identical objects already exist. See [Downloadable language packs](https://tasknotes.dev/development/language-packs/) for build configuration.
+
+- (#2442) The MCP tools `tasknotes_create_task` and `tasknotes_update_task` now accept `blockedBy`, so MCP clients can set task dependencies as they can over HTTP. On update, `null` or `[]` clears the dependencies. See [HTTP API](https://tasknotes.dev/HTTP_API/#post-apitasks).
+  - Thanks to @vanillaflava for the request.
+
+## Changed
+
+- Use the published shared translation tooling instead of bundled development tarballs; all ten interface languages remain available offline in ordinary builds.
+
+- Calendar view settings now use fewer, task-focused sections, with less common controls under Advanced and clearer names for time-grid and event limits. Saved `.base` settings keep applying unchanged. See [Calendar Views](https://tasknotes.dev/views/calendar-views/#view-options).
+
+- The Calendar view now uses TaskNotes' own calendar engine instead of FullCalendar. Existing calendar view settings in `.base` files keep working, including the saved view, custom day count, first day of week, time format, slot range and size, height mode, week numbers, weekends, all-day row, today column width, and event limits.
+  - Events update in place when tasks change, and changing a view setting no longer rebuilds the calendar.
+  - Long-press drag on touch screens no longer competes with scrolling.
+  - Calendar views now work in popout windows.
+  - CSS snippets that target FullCalendar's internal classes (such as `.fc-timegrid-slot` or `.fc-daygrid-event`) no longer apply. TaskNotes' own event classes, such as `fc-task-event`, `fc-recurring-event`, `fc-timeblock-event`, `fc-ics-event` and the tag and project classes, are unchanged.
+
+- Moved interface translations to Lingui catalogues with count-aware messages, locale-aware numbers and dates, and localized generated Bases labels. Ordinary builds retain all ten bundled interface languages.
+
+- Kept stored default names and reminder descriptions in English, translating unchanged defaults only for display. Restored English `.ics` descriptions and kept persisted Google Calendar metadata in English so exports do not vary with the exporting device’s interface language; user-authored labels are preserved.
+
+- Localized command notices, calendar connection and webhook settings, date/reminder/action/file/timeblock dialogs, task-property pickers, recurrence controls and statistics labels in all nine non-English interface languages. User-authored titles, paths, status labels and property names remain unchanged.
+
+- Rebuilt natural language parsing on recognized spans. Titles keep only the task text: connector words go with the value they introduce ("call Jo at 3pm" gives "call Jo"), and separators and brackets left by a removed value are dropped.
+  - Every NLP language now has fuller date, recurrence, estimate, status and priority phrases, including relative days, end-of-period dates, clock phrases, fortnightly and quarterly recurrence, `until` and `times` limits, and time ranges that set a scheduled time and an estimate.
+  - A frequency word that names the task stays in the title and still sets the recurrence, as in "daily standup" or "reunión semanal". After an article, as in "buy a weekly planner", it is ordinary text.
+  - Ambiguous single words such as French `fait`, Chinese `低` or `完成` no longer set a status or priority on their own; use the full phrase, such as `terminé`, `低优先级` or `已完成`.
+
+- The startup update check now reads the latest release from the GitHub releases API
+
+## Removed
+
 ## Fixed
 
 - Fixed long Task List views embedded in a note rendering only their first rows until the list itself was scrolled. The visible rows now follow the note's own scrolling, including inside multi-column callouts.
+- (#2433) Fixed Italian invalid numeric dates, decimal hour estimates (`1,5 ore`), `domani alle 20:00` date-and-time phrases and weekday deadlines such as `entro lunedì`.
+  - Thanks to @starise for reporting.
+- (#2428) Fixed Italian `entro le` deadlines, masculine/feminine scheduled-date expressions and recurring accented weekdays (Monday through Friday).
+  - Thanks to @starise for reporting and identifying the causes.
+- Calendar pattern drags preserve multiline recurrence rules and excluded dates. Recurring tasks with a timezone now appear on the correct civil dates, and duration ends retain the correct instant during the repeated daylight-saving hour.
+- Materialized occurrence notes excluded by a Bases filter no longer leave duplicate virtual parent occurrences on the calendar.
+- Completion-anchored recurring tasks preserve the clock and timezone parameters when advancing their recurrence anchor.
+
+- (#2418) Corrected singular agreement in French, Brazilian Portuguese and Russian count labels and recurrence messages; removed mechanically copied optional French/Spanish plural branches.
+- (#2418) Kept Kanban and Task List group keys stable across interface languages so moving or creating tasks in empty and boolean columns does not write translated labels into task properties. Default status and priority labels remain editable and survive saving and reloading.
+- (#2418) Rejected title-less natural-language input in interactive task-creation dialogs across interface languages while preserving the existing API, MCP, CLI and instant-conversion fallback behaviour. Kept generated MDBASE schemas in stable English, and corrected literal template braces and missing values in task-created and unresolved-project messages.
+- (#2418) Restored translated built-in modal field/group labels and default-label inputs and NLP suggestions. Kept completed-date group sorting and API/MCP group keys stable across languages; viewing translated settings does not overwrite stored names. Task cards and cache-miss edit dialogs now share the same missing-title display fallback.
+
+- (#2421, #2422) Fixed task creation and edit forms closing and discarding input after failed validation or save errors, including edit-modal keyboard saves and the save-before-closing confirmation.
+  - Thanks to @andriyor for reporting and contributing the validation fix.
+- Prevented stalled language-pack cache reads/writes from leaving language selection and retry stuck, and refreshed ribbon tooltips and accessible names when a preferred language finishes loading after startup.
+- Completed Russian and Simplified Chinese calendar attachment and migration messages that still contained English fragments.
 - (#1894) Fixed relative date changes (+1/-1 day and week) dropping scheduled and due times from task cards. Date-only tasks remain date-only. See [Task dates](https://tasknotes.dev/features/task-management/#task-dates).
   - Thanks to @gemx-world for reporting.
 - (#2140) Fixed edits to visible nested task tags being silently discarded by the task edit modal. Hidden identification tags and the exact task tag remain protected. See [Hide Identification Tags](https://tasknotes.dev/settings/general/#hide-identification-tags).
@@ -46,3 +102,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2394) Fixed expanded subtasks keeping their previous order after changing a Task List sort when top-level subtasks are hidden. Formula sorts such as `priorityWeight` now refresh already-expanded subtasks. See [Task List](https://tasknotes.dev/views/task-list/). Thanks to @iantierney for reporting this.
 - (#2396) Rescheduling a native virtual recurring task now replaces its original calendar placement without changing later recurrence dates. Completion, skip and Undo retain the original occurrence identity. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-a-virtual-occurrence).
   - Thanks to @martin-forge for reporting and providing a fresh-vault reproduction.
+- Fixed dropping a recurring task on a completed status in Kanban and Task List views setting the whole task to that status without completing anything. The drop now completes the occurrence shown on the card, as its checkbox does, with the same notification and Undo. A repeated or late drop leaves the task alone, with a notice, if that occurrence has since been completed, skipped or rescheduled. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
+  - Thanks to @martin-forge for the implementation.

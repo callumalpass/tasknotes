@@ -1,4 +1,3 @@
-import { Draggable } from "@fullcalendar/interaction";
 import TaskNotesPlugin from "../main";
 
 /**
@@ -6,29 +5,26 @@ import TaskNotesPlugin from "../main";
  */
 export class DragDropManager {
 	private plugin: TaskNotesPlugin;
-	private draggableInstances: Map<HTMLElement, Draggable> = new Map();
+	private draggableElements = new Set<HTMLElement>();
 
 	constructor(plugin: TaskNotesPlugin) {
 		this.plugin = plugin;
 	}
 
 	/**
-	 * Make a task card draggable for FullCalendar external drop
+	 * Make a task card draggable (HTML5 drag and drop, e.g. into editors)
 	 */
 	makeTaskCardDraggable(element: HTMLElement, taskPath: string): void {
 		// Check if already draggable
-		if (this.draggableInstances.has(element)) {
+		if (this.draggableElements.has(element)) {
 			return;
 		}
 
 		// Store task path in a custom attribute for our drop handler
 		element.dataset.taskPath = taskPath;
 
-		// Create FullCalendar Draggable instance
-		// Don't provide eventData so it won't create events, just trigger drop handler
-		const draggable = new Draggable(element);
-
-		this.draggableInstances.set(element, draggable);
+		element.draggable = true;
+		this.draggableElements.add(element);
 
 		// Add visual feedback
 		element.classList.remove(
@@ -58,10 +54,8 @@ export class DragDropManager {
 	 * Remove draggable functionality from an element
 	 */
 	removeDraggable(element: HTMLElement): void {
-		const draggable = this.draggableInstances.get(element);
-		if (draggable) {
-			draggable.destroy();
-			this.draggableInstances.delete(element);
+		if (this.draggableElements.delete(element)) {
+			element.draggable = false;
 		}
 	}
 
@@ -69,9 +63,9 @@ export class DragDropManager {
 	 * Clean up all draggable instances
 	 */
 	destroy(): void {
-		this.draggableInstances.forEach((draggable) => {
-			draggable.destroy();
+		this.draggableElements.forEach((element) => {
+			element.draggable = false;
 		});
-		this.draggableInstances.clear();
+		this.draggableElements.clear();
 	}
 }

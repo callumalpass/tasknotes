@@ -135,7 +135,7 @@ test.describe('Issue #703: Multiple scheduled datetimes for a single task', () =
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // After implementation: A task with multiple scheduled dates
@@ -508,7 +508,7 @@ test.describe('Issue #703: Multiple scheduled datetimes for a single task', () =
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // After implementation: Multi-date tasks create multiple calendar events
@@ -516,8 +516,8 @@ test.describe('Issue #703: Multiple scheduled datetimes for a single task', () =
 
         // Look for events that might be part of a multi-date task
         const scheduledEvents = page.locator(
-          '.fc-event[data-event-type="scheduled"], ' +
-            '.fc-event.tasknotes-scheduled-event'
+          '.tnc-item[data-event-type="scheduled"], ' +
+            '.tnc-item.tasknotes-scheduled-event'
         );
 
         const eventCount = await scheduledEvents.count();

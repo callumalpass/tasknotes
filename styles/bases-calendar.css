@@ -1,0 +1,105 @@
+/* Bases calendar view on @tasknotes/calendar: Obsidian theme mapping and TaskNotes event styles.
+   The calendar's own stylesheet (scoped to .tnc) is bundled before this file. */
+
+#bases-calendar {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.advanced-calendar-view .tnc {
+    --tnc-theme-bg: var(--background-primary);
+    --tnc-theme-bg-2: var(--background-secondary);
+    --tnc-theme-bg-3: var(--background-modifier-hover);
+    --tnc-theme-line: var(--background-modifier-border);
+    --tnc-theme-line-strong: var(--background-modifier-border-hover);
+    --tnc-theme-text: var(--text-normal);
+    --tnc-theme-muted: var(--text-muted);
+    --tnc-theme-faint: var(--text-faint);
+    --tnc-theme-accent: var(--interactive-accent);
+    --tnc-theme-accent-text: var(--text-on-accent);
+    --tnc-theme-now: var(--color-red);
+    --tnc-theme-warn: var(--color-pink);
+    --tnc-theme-ok: var(--color-green);
+    --tnc-theme-amber: var(--color-orange);
+    --tnc-radius: var(--radius-s);
+    --tnc-shadow: var(--shadow-s);
+    font-family: var(--font-interface);
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.advanced-calendar-view.advanced-calendar-view--auto-height .tnc {
+    flex: 0 0 auto;
+}
+
+/* Obsidian styles every button; let the calendar's toolbar and links draw their own. */
+.advanced-calendar-view .tnc button:not(.clickable-icon) {
+    box-shadow: none;
+    height: auto;
+}
+
+/* Timeblocks: planned focus time, quieter than tasks. */
+.advanced-calendar-view .tnc-item[data-event-type="timeblock"] {
+    opacity: 0.65;
+    transition: opacity 0.2s ease;
+}
+
+.advanced-calendar-view .tnc-item[data-event-type="timeblock"]:hover {
+    opacity: 0.9;
+}
+
+/* External calendar events */
+.advanced-calendar-view .tnc-item[data-ics-event="true"] {
+    opacity: 0.9;
+}
+
+.advanced-calendar-view .tnc-item[data-ics-event="true"]:hover {
+    opacity: 1;
+}
+
+.advanced-calendar-view .tnc-item[data-ics-event="true"].has-related-note {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-muted) 32%, transparent);
+}
+
+.advanced-calendar-view .tnc-item .fc-event-provider-icon {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 1;
+    display: inline-flex;
+    width: 12px;
+    height: 12px;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.advanced-calendar-view .tnc-item .fc-event-provider-icon svg {
+    width: 12px;
+    height: 12px;
+}
+
+.advanced-calendar-view .tnc-item .ics-related-note-indicator {
+    margin-left: 4px;
+}
+
+/* Hovering one of a task's events (scheduled, due, span) highlights the others. */
+.advanced-calendar-view .tnc-item.fc-task-event--hover-source,
+.advanced-calendar-view .tnc-item.fc-task-event--related-hover {
+    box-shadow: inset 0 0 0 1px var(--interactive-accent), var(--shadow-s);
+}
+
+.advanced-calendar-view .tnc-item.fc-task-event--related-hover {
+    filter: saturate(1.08);
+}
+
+/* List view rows are task cards. */
+.advanced-calendar-view .tnc-item--list.tn-calendar-list-card {
+    padding: 0;
+    background: none;
+}
+
+.advanced-calendar-view .tnc-item--list .task-card {
+    width: 100%;
+    min-width: 0;
+}

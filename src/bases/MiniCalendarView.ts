@@ -1,3 +1,7 @@
+import { displayError } from "../i18n/runtime";
+import { uiNumber } from "../i18n/formatters";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import {
 	TFile,
 	FuzzySuggestModal,
@@ -13,7 +17,6 @@ import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { readBasesViewConfigValue } from "./basesViewConfig";
 import { ICSEvent, TaskInfo } from "../types";
-import { format } from "date-fns";
 import {
 	formatDateForStorage,
 	getTodayLocal,
@@ -440,7 +443,7 @@ export class MiniCalendarView extends BasesViewBase {
 
 			this.indexExternalEvent(
 				icsEvent,
-				subscription?.name || "Calendar subscription",
+				subscription?.name || uiText(msg({ message: "Calendar subscription", context: "bases/MiniCalendarView: MiniCalendarView.indexICSEvents display" })),
 				icsEvent.color || subscription?.color
 			);
 		}
@@ -460,7 +463,7 @@ export class MiniCalendarView extends BasesViewBase {
 			const calendar = findProviderCalendar(calendars, calendarId);
 			this.indexExternalEvent(
 				icsEvent,
-				calendar?.summary || "Google Calendar",
+				calendar?.summary || uiText(msg({ message: "Google Calendar", context: "bases/MiniCalendarView: MiniCalendarView.indexGoogleCalendarEvents display" })),
 				icsEvent.color || "#4285F4"
 			);
 		}
@@ -484,7 +487,7 @@ export class MiniCalendarView extends BasesViewBase {
 			const calendar = calendars.get(calendarId);
 			this.indexExternalEvent(
 				icsEvent,
-				calendar?.summary || "Microsoft Calendar",
+				calendar?.summary || uiText(msg({ message: "Microsoft Calendar", context: "bases/MiniCalendarView: MiniCalendarView.indexMicrosoftCalendarEvents display" })),
 				icsEvent.color || "#0078D4"
 			);
 		}
@@ -694,8 +697,8 @@ export class MiniCalendarView extends BasesViewBase {
 			text: "‹",
 			cls: "mini-calendar-view__nav-button mini-calendar-view__nav-button--prev tn-btn tn-btn--icon tn-btn--ghost",
 			attr: {
-				"aria-label": "Previous month",
-				title: "Previous month",
+				"aria-label": this.plugin.i18n.translate(msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })),
+				title: this.plugin.i18n.translate(msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })),
 			},
 		});
 		prevButton.addEventListener("click", () => this.navigateToPreviousMonth());
@@ -703,7 +706,11 @@ export class MiniCalendarView extends BasesViewBase {
 		// Current month display
 		navSection.createDiv({
 			cls: "mini-calendar-view__month-display",
-			text: format(convertUTCToLocalCalendarDate(this.selectedDate), "MMMM yyyy"),
+			text: new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), {
+				month: "long",
+				year: "numeric",
+				timeZone: "UTC",
+			}).format(this.selectedDate),
 		});
 
 		// Next month button
@@ -711,19 +718,19 @@ export class MiniCalendarView extends BasesViewBase {
 			text: "›",
 			cls: "mini-calendar-view__nav-button mini-calendar-view__nav-button--next tn-btn tn-btn--icon tn-btn--ghost",
 			attr: {
-				"aria-label": "Next month",
-				title: "Next month",
+				"aria-label": this.plugin.i18n.translate(msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })),
+				title: this.plugin.i18n.translate(msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })),
 			},
 		});
 		nextButton.addEventListener("click", () => this.navigateToNextMonth());
 
 		// Today button
 		const todayButton = headerContainer.createEl("button", {
-			text: "Today",
+			text: this.plugin.i18n.translate(msg({ message: "Today", context: "views.basesCalendar.today" })),
 			cls: "mini-calendar-view__today-button tn-btn tn-btn--ghost tn-btn--sm",
 			attr: {
-				"aria-label": "Go to today",
-				title: "Go to today",
+				"aria-label": this.plugin.i18n.translate(msg({ message: "Go to today", context: "views.basesCalendar.hints.today" })),
+				title: this.plugin.i18n.translate(msg({ message: "Go to today", context: "views.basesCalendar.hints.today" })),
 			},
 		});
 		todayButton.addEventListener("click", () => this.navigateToToday());
@@ -751,7 +758,7 @@ export class MiniCalendarView extends BasesViewBase {
 			cls: "mini-calendar-view__grid",
 			attr: {
 				role: "grid",
-				"aria-label": `Calendar for ${format(convertUTCToLocalCalendarDate(new Date(Date.UTC(currentYear, currentMonth, 1))), "MMMM yyyy")}`,
+				"aria-label": `${this.plugin.i18n.translate(msg({ message: "Mini calendar", context: "views.miniCalendar.title" }))}: ${new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), { month: "long", year: "numeric", timeZone: "UTC" }).format(firstDayOfMonth)}`,
 				tabindex: "0",
 			},
 		});
@@ -777,7 +784,12 @@ export class MiniCalendarView extends BasesViewBase {
 			attr: { role: "columnheader" },
 		});
 
-		const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+		const dayNames = Array.from({ length: 7 }, (_, day) =>
+			new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), {
+				weekday: "short",
+				timeZone: "UTC",
+			}).format(new Date(Date.UTC(2026, 9, 18 + day)))
+		);
 		const reorderedDayNames = [
 			...dayNames.slice(firstDaySetting),
 			...dayNames.slice(0, firstDaySetting),
@@ -852,7 +864,7 @@ export class MiniCalendarView extends BasesViewBase {
 		const weekNum = this.getWeekNumber(weekDays[0]);
 		const weekCell = weekRow.createDiv({
 			cls: "mini-calendar-week-number",
-			text: `W${weekNum}`,
+			text: new Intl.NumberFormat(this.plugin.i18n.getCurrentLocale()).format(weekNum),
 		});
 
 		weekCell.addEventListener("click", (e) => {
@@ -902,12 +914,17 @@ export class MiniCalendarView extends BasesViewBase {
 
 		const dayEl = weekRow.createDiv({
 			cls: classNames,
-			text: dayNum.toString(),
+			text: uiNumber(dayNum),
 			attr: {
 				role: "gridcell",
 				"aria-label":
-					format(convertUTCToLocalCalendarDate(dayDate), "EEEE, MMMM d, yyyy") +
-					(isToday ? " (Today)" : ""),
+					new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), {
+						dateStyle: "full",
+						timeZone: "UTC",
+					}).format(dayDate) +
+					(isToday
+						? ` (${this.plugin.i18n.translate(msg({ message: "Today", context: "views.basesCalendar.today" }))})`
+						: ""),
 				"aria-selected": isSelected ? "true" : "false",
 				"aria-current": isToday ? "date" : null,
 			},
@@ -995,7 +1012,7 @@ export class MiniCalendarView extends BasesViewBase {
 			const dot = indicators.createSpan({
 				cls: "mini-calendar-view__external-event-dot",
 				attr: {
-					"aria-label": `${entry.title} (${entry.sourceName || "Calendar"})`,
+					"aria-label": `${entry.title} (${entry.sourceName || this.plugin.i18n.translate(msg({ message: "Calendar", context: "ui.icsCard.calendarFallback" }))})`,
 				},
 			});
 
@@ -1025,7 +1042,7 @@ export class MiniCalendarView extends BasesViewBase {
 		const menu = new Menu();
 		menu.addItem((item) => {
 			item.setTitle(
-				this.plugin.i18n.translate("views.miniCalendar.contextMenu.openDailyNote")
+				this.plugin.i18n.translate(msg({ message: "Open daily note", context: "views.miniCalendar.contextMenu.openDailyNote" }))
 			);
 			item.setIcon("calendar-days");
 			item.onClick(() => {
@@ -1039,7 +1056,7 @@ export class MiniCalendarView extends BasesViewBase {
 		const menu = new Menu();
 		menu.addItem((item) => {
 			item.setTitle(
-				this.plugin.i18n.translate("views.miniCalendar.contextMenu.openWeeklyNote")
+				this.plugin.i18n.translate(msg({ message: "Open weekly note", context: "views.miniCalendar.contextMenu.openWeeklyNote" }))
 			);
 			item.setIcon("calendar-range");
 			item.onClick(() => {
@@ -1052,9 +1069,7 @@ export class MiniCalendarView extends BasesViewBase {
 	private async openDailyNoteForDate(date: Date): Promise<void> {
 		// Check if daily notes plugin is enabled
 		if (!appHasDailyNotesPluginLoaded()) {
-			new Notice(
-				"Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
-			);
+			new Notice(this.plugin.i18n.translate(msg({ message: "Daily notes core plugin is not enabled. Please enable it in settings > core plugins.", context: "notices.commands.dailyNotesDisabled" })));
 			return;
 		}
 
@@ -1086,7 +1101,11 @@ export class MiniCalendarView extends BasesViewBase {
 					operation: "create-daily-note",
 					error: error,
 				});
-				new Notice(`Failed to create daily note: ${errorMessage}`);
+				new Notice(
+					this.plugin.i18n.translate(msg({ message: "Failed to create daily note: {message}", context: "notices.commands.dailyNoteCreateFailed" }), {
+						message: displayError(errorMessage),
+					})
+				);
 				return;
 			}
 		}
@@ -1099,9 +1118,7 @@ export class MiniCalendarView extends BasesViewBase {
 
 	private async openWeeklyNoteForDate(date: Date): Promise<void> {
 		if (!appHasWeeklyNotesPluginLoaded()) {
-			new Notice(
-				"Weekly notes core plugin is not enabled. Please enable it in settings > core plugins."
-			);
+			new Notice(this.plugin.i18n.translate(msg({ message: "Weekly notes plugin is not enabled. Enable it in settings.", context: "notices.audit.weeklyDisabled" })));
 			return;
 		}
 
@@ -1130,7 +1147,11 @@ export class MiniCalendarView extends BasesViewBase {
 					operation: "create-weekly-note",
 					error: error,
 				});
-				new Notice(`Failed to create weekly note: ${errorMessage}`);
+				new Notice(
+					this.plugin.i18n.translate(msg({ message: "Failed to create weekly note: {message}", context: "notices.audit.weeklyFailed" }), {
+						message: displayError(errorMessage),
+					})
+				);
 				return;
 			}
 		}
@@ -1458,7 +1479,7 @@ export class MiniCalendarView extends BasesViewBase {
 			);
 			modal.open();
 		} else {
-			new Notice("No notes found for selected dates");
+			new Notice(this.plugin.i18n.translate(msg({ message: "No notes found for selected dates", context: "notices.audit.noNotes" })));
 		}
 	}
 
@@ -1473,12 +1494,12 @@ export class MiniCalendarView extends BasesViewBase {
 		// Header
 		if (noteCount > 0 && eventCount > 0) {
 			lines.push(
-				`${noteCount} note${noteCount > 1 ? "s" : ""}, ${eventCount} event${eventCount > 1 ? "s" : ""}`
+				uiText(msg({ message: "{noteCount, plural, one {{eventCount, plural, one {{noteCount, number} note, {eventCount, number} event} other {{noteCount, number} note, {eventCount, number} events}}} other {{eventCount, plural, one {{noteCount, number} notes, {eventCount, number} event} other {{noteCount, number} notes, {eventCount, number} events}}}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { noteCount: noteCount, eventCount: eventCount })
 			);
 		} else if (eventCount > 0) {
-			lines.push(`${eventCount} event${eventCount > 1 ? "s" : ""}`);
+			lines.push(uiText(msg({ message: "{eventCount, plural, one {{eventCount, number} event} other {{eventCount, number} events}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { eventCount: eventCount }));
 		} else {
-			lines.push(`${noteCount} note${noteCount > 1 ? "s" : ""}`);
+			lines.push(uiText(msg({ message: "{noteCount, plural, one {{noteCount, number} note} other {{noteCount, number} notes}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { noteCount: noteCount }));
 		}
 		lines.push(""); // Empty line for spacing
 
@@ -1517,7 +1538,7 @@ export class MiniCalendarView extends BasesViewBase {
 
 		// Add "more" indicator if needed
 		if (notes.length > 5) {
-			lines.push(`+ ${notes.length - 5} more...`);
+			lines.push(uiText(msg({ message: "{value1, plural, one {+ {value1, number} more...} other {+ {value1, number} more...}}", context: "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display" }), { value1: notes.length - 5 }));
 		}
 
 		return lines.join("\n");
@@ -1580,7 +1601,7 @@ export class MiniCalendarView extends BasesViewBase {
 			"tn-static-padding-2rem-42aa6d9c"
 		);
 		errorEl.classList.add("tn-static-padding-20px-ebe8e48c");
-		errorEl.textContent = `Error loading mini calendar: ${error.message || "Unknown error"}`;
+		errorEl.textContent = uiText(msg({ message: "Error loading mini calendar: {message}", context: "bases/MiniCalendarView: MiniCalendarView.renderError display" }), { message: displayError(error.message || "Unknown error") });
 		this.calendarEl.appendChild(errorEl);
 	}
 
@@ -1611,11 +1632,11 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 		this.notes = notes;
 		this.onChooseNote = onChooseNote;
 
-		this.setPlaceholder("Select an item to open");
+		this.setPlaceholder(this.plugin.i18n.translate(msg({ message: "Select an item to open", context: "ui.audit.selectNote" })));
 		this.setInstructions([
-			{ command: "↑↓", purpose: "Navigate" },
-			{ command: "↵", purpose: "Open item" },
-			{ command: "esc", purpose: "Dismiss" },
+			{ command: "↑↓", purpose: uiText(msg({ message: "Navigate", context: "bases/MiniCalendarView: NoteSelectionModal purpose" })) },
+			{ command: "↵", purpose: uiText(msg({ message: "Open item", context: "bases/MiniCalendarView: NoteSelectionModal purpose" })) },
+			{ command: "esc", purpose: uiText(msg({ message: "Dismiss", context: "bases/MiniCalendarView: NoteSelectionModal purpose" })) },
 		]);
 	}
 

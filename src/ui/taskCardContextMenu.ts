@@ -1,3 +1,7 @@
+import { displayError } from "../i18n/runtime";
+import type { MessageSuffix } from "../i18n/concepts";
+import { messageForKey } from "../i18n/messages";
+import { msg } from "@lingui/core/macro";
 import { Menu, Notice, TFile, setIcon, setTooltip } from "obsidian";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import type TaskNotesPlugin from "../main";
@@ -18,10 +22,10 @@ export interface TaskCardContextMenuButtonOptions {
 
 function tTaskCard(
 	plugin: TaskNotesPlugin,
-	key: string,
+	key: MessageSuffix<"ui.taskCard.">,
 	vars?: Record<string, string | number>
 ): string {
-	return plugin.i18n.translate(`ui.taskCard.${key}`, vars);
+	return plugin.i18n.translate(messageForKey(`ui.taskCard.${key}`), vars);
 }
 
 function getTaskCardContextMenuLogger(plugin: TaskNotesPlugin) {
@@ -104,7 +108,9 @@ export async function showTaskContextMenu(
 			details: { taskPath, errorMessage },
 			error,
 		});
-		new Notice(`Failed to create context menu: ${errorMessage}`);
+		new Notice(
+			plugin.i18n.translate(msg({ message: "Failed to create context menu: {message}", context: "notices.interface.contextMenuFailed" }), { message: displayError(errorMessage) })
+		);
 		showFileMenuFallback();
 	}
 }
@@ -122,14 +128,14 @@ function showFileContextMenu(event: MouseEvent, file: TFile, plugin: TaskNotesPl
 
 	if (!populated) {
 		menu.addItem((item) => {
-			item.setTitle("Open");
+			item.setTitle(plugin.i18n.translate(msg({ message: "Open", context: "ui.audit.open" })));
 			item.setIcon("file-text");
 			item.onClick(() => {
 				void plugin.app.workspace.getLeaf(false).openFile(file);
 			});
 		});
 		menu.addItem((item) => {
-			item.setTitle("Open in new tab");
+			item.setTitle(plugin.i18n.translate(msg({ message: "Open in new tab", context: "ui.audit.openNewTab" })));
 			item.setIcon("external-link");
 			item.onClick(() => {
 				void plugin.app.workspace.openLinkText(file.path, "", true);

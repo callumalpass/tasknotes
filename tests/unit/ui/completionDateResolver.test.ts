@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import { resolveCompletionDate } from "../../../src/ui/completionDateResolver";
 import { formatDateForStorage, getTodayString } from "../../../src/utils/dateUtils";
 import type { TaskInfo } from "../../../src/types";
@@ -60,7 +61,7 @@ describe("resolveCompletionDate", () => {
 			);
 			expect(nonRecurring).toEqual({
 				available: false,
-				reasonKey: "contextMenus.task.completion.noScheduledDate",
+				reasonKey: msg({ message: "No scheduled date on this task", context: "contextMenus.task.completion.noScheduledDate" }),
 			});
 			expect(dueOnlyRecurring.available).toBe(false);
 		});
@@ -101,7 +102,7 @@ describe("resolveCompletionDate", () => {
 			const result = resolveCompletionDate(task({ scheduled: "2026-06-02" }), "onDue");
 			expect(result).toEqual({
 				available: false,
-				reasonKey: "contextMenus.task.completion.noDueDate",
+				reasonKey: msg({ message: "No due date on this task", context: "contextMenus.task.completion.noDueDate" }),
 			});
 		});
 	});
@@ -127,7 +128,7 @@ describe("resolveCompletionDate", () => {
 			const result = resolveCompletionDate(task(), "onPicked");
 			expect(result).toEqual({
 				available: false,
-				reasonKey: "contextMenus.task.completion.noPickedDate",
+				reasonKey: msg({ message: "No date selected", context: "contextMenus.task.completion.noPickedDate" }),
 			});
 		});
 	});
