@@ -161,11 +161,20 @@ export class VirtualScroller<T> {
 		const sampleHeights: number[] = [];
 
 		// Temporarily render sample items for measurement
+		// A container with no width yet (a Base embed that has not been laid out) would
+		// measure every card as one word per line, many times its real height.
+		if (this.container.getBoundingClientRect().width === 0) {
+			this.estimatedHeight = 60;
+			return;
+		}
+
 		const tempContainer = this.contentContainer.createDiv({
 			cls: "virtual-scroller__sample",
 		});
 		tempContainer.style.cssText = `
 			position: absolute;
+			left: 0;
+			right: 0;
 			visibility: hidden;
 			pointer-events: none;
 		`;
@@ -221,7 +230,13 @@ export class VirtualScroller<T> {
 	}
 
 	private updateSpacerHeight(): void {
-		this.spacer.style.height = `${this.totalHeight + this.getContainerBottomPadding()}px`;
+		const height = `${this.totalHeight + this.getContainerBottomPadding()}px`;
+		this.spacer.style.height = height;
+		// The spacer is absolutely positioned, so it does not give the container any
+		// height. When no ancestor bounds the list (a Base embedded in a note), the
+		// container must reserve the list's full height itself, or the note cannot
+		// scroll to the items that are not rendered yet.
+		this.container.style.minHeight = height;
 	}
 
 	/**
@@ -365,7 +380,9 @@ export class VirtualScroller<T> {
 
 		let insertAt = currentEntries.length;
 		if (position !== "end") {
-			const targetIndex = currentEntries.findIndex((entry) => entry.key === options.targetKey);
+			const targetIndex = currentEntries.findIndex(
+				(entry) => entry.key === options.targetKey
+			);
 			if (targetIndex === -1) {
 				return null;
 			}
@@ -471,12 +488,73 @@ export class VirtualScroller<T> {
 		}
 
 		if (heightsChanged) {
+			// Items not rendered yet are sized by the estimate, and the container
+			// reserves their height, so keep it at the average of what was measured.
+			let measuredTotal = 0;
+			for (const height of this.itemHeights.values()) {
+				measuredTotal += height;
+			}
+			this.estimatedHeight = Math.ceil(measuredTotal / this.itemHeights.size);
 			this.rebuildPositionCache();
 		}
 	}
 
 	private attachScrollListener(): void {
-		this.scrollContainer.addEventListener("scroll", this.handleScroll);
+		// Scroll events do not bubble, but a capturing listener on the document sees
+		// every scroll: the list's own scroll container and the note scrolling a Base
+		// that is embedded in it.
+		const doc = this.container.ownerDocument;
+		doc.addEventListener("scroll", this.handleScroll, { capture: true, passive: true });
+		doc.defaultView?.addEventListener("resize", this.handleScroll);
+	}
+
+	/**
+	 * The part of the list that is on screen, in the container's own coordinates:
+	 * the viewport, clipped by every ancestor that clips its content. Returns null
+	 * when the container has no layout yet (not attached, hidden, or a test DOM).
+	 */
+	private getVisibleWindow(): { top: number; bottom: number } | null {
+		const rect = this.container.getBoundingClientRect();
+		if (rect.width === 0 && rect.height === 0) {
+			return null;
+		}
+
+		const view = this.container.ownerDocument.defaultView ?? window;
+		let top = -Infinity;
+		let bottom = Infinity;
+		let hasOwnViewport = false;
+		for (let current = this.container.parentElement; current; current = current.parentElement) {
+			const style = view.getComputedStyle(current);
+			// An element with `display: contents` has no box and clips nothing, though its
+			// computed overflow may say otherwise (a multi-column callout's content).
+			if (
+				style.display === "contents" ||
+				!["auto", "scroll", "hidden", "clip"].includes(style.overflowY)
+			) {
+				continue;
+			}
+			const clip = current.getBoundingClientRect();
+			top = Math.max(top, clip.top);
+			bottom = Math.min(bottom, clip.bottom);
+			// The first ancestor that really scrolls is the list's viewport. Anything
+			// further out only moves the list and that viewport together, so a capped
+			// list must not redraw its rows while the note around it scrolls.
+			if (
+				["auto", "scroll"].includes(style.overflowY) &&
+				current.scrollHeight > current.clientHeight + 1
+			) {
+				hasOwnViewport = true;
+				break;
+			}
+		}
+		if (!hasOwnViewport) {
+			top = Math.max(top, 0);
+			bottom = Math.min(bottom, view.innerHeight);
+		}
+
+		const visibleTop = Math.min(Math.max(0, top - rect.top), this.totalHeight);
+		const visibleBottom = Math.min(Math.max(visibleTop, bottom - rect.top), this.totalHeight);
+		return { top: visibleTop, bottom: visibleBottom };
 	}
 
 	private handleScroll = (): void => {
@@ -492,15 +570,22 @@ export class VirtualScroller<T> {
 	};
 
 	private updateVisibleRange(): void {
-		const scrollTop = this.scrollContainer.scrollTop;
-		let containerHeight = this.scrollContainer.clientHeight;
+		// Measure what is actually on screen. The nearest ancestor with overflow is not
+		// always the element that scrolls the list: Obsidian gives an embedded Base's
+		// view `overflow-x: auto`, which computes `overflow-y` to `auto` as well, yet
+		// that element grows with its content while the note scrolls it.
+		const visibleWindow = this.getVisibleWindow();
+		const scrollTop = visibleWindow ? visibleWindow.top : this.scrollContainer.scrollTop;
+		let containerHeight = visibleWindow
+			? visibleWindow.bottom - visibleWindow.top
+			: this.scrollContainer.clientHeight;
 
 		// If container height is 0, try to get a better estimate
-		if (containerHeight === 0) {
+		if (!visibleWindow && containerHeight === 0) {
 			// Try parent element height
 			containerHeight = this.scrollContainer.parentElement?.clientHeight || 0;
 		}
-		if (containerHeight === 0) {
+		if (!visibleWindow && containerHeight === 0) {
 			// Fall back to window height as last resort
 			containerHeight = window.innerHeight;
 			tasknotesLogger.warn("[VirtualScroller] Using window height as fallback:", {
@@ -563,12 +648,29 @@ export class VirtualScroller<T> {
 			}
 		}
 
+		for (let i = startIndex; i <= endIndex; i++) {
+			visibleKeys.add(this.getItemKey(this.items[i], i));
+		}
+
+		// Remove elements that are no longer visible. This comes before the rows are
+		// placed: with a row that left still in front of them, every remaining row
+		// looks out of place, and moving each one costs a layout of the whole list.
+		for (const [key, element] of this.renderedElements) {
+			if (!visibleKeys.has(key)) {
+				if (this.resizeObserver) {
+					this.resizeObserver.unobserve(element);
+				}
+				element.remove();
+				this.renderedElements.delete(key);
+				this.invalidatedKeys.delete(key);
+			}
+		}
+
 		// Render visible items in order
 		let previousElement: HTMLElement | null = null;
 		for (let i = startIndex; i <= endIndex; i++) {
 			const item = this.items[i];
 			const key = this.getItemKey(item, i);
-			visibleKeys.add(key);
 
 			let element = this.renderedElements.get(key);
 
@@ -615,18 +717,6 @@ export class VirtualScroller<T> {
 			}
 
 			previousElement = element;
-		}
-
-		// Remove elements that are no longer visible
-		for (const [key, element] of this.renderedElements) {
-			if (!visibleKeys.has(key)) {
-				if (this.resizeObserver) {
-					this.resizeObserver.unobserve(element);
-				}
-				element.remove();
-				this.renderedElements.delete(key);
-				this.invalidatedKeys.delete(key);
-			}
 		}
 
 		// Schedule measurement after render
@@ -881,7 +971,9 @@ export class VirtualScroller<T> {
 			this.resizeObserver.disconnect();
 			this.resizeObserver = null;
 		}
-		this.scrollContainer.removeEventListener("scroll", this.handleScroll);
+		const doc = this.container.ownerDocument;
+		doc.removeEventListener("scroll", this.handleScroll, { capture: true });
+		doc.defaultView?.removeEventListener("resize", this.handleScroll);
 		this.renderedElements.clear();
 		this.contentContainer.empty();
 		this.itemHeights.clear();

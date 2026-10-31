@@ -48,6 +48,20 @@ function createTestScrollerWithContainer(container: HTMLElement, items: TestItem
 	return { renderItem, scroller };
 }
 
+function rectAt(top: number, bottom: number): DOMRect {
+	return {
+		top,
+		bottom,
+		left: 0,
+		right: 300,
+		width: 300,
+		height: bottom - top,
+		x: 0,
+		y: top,
+		toJSON: () => ({}),
+	} as DOMRect;
+}
+
 function renderedKeys(container: HTMLElement): string[] {
 	return Array.from(container.querySelectorAll<HTMLElement>("[data-key]")).map(
 		(element) => element.dataset.key ?? ""
@@ -69,6 +83,159 @@ describe("VirtualScroller", () => {
 		expect(
 			container.querySelector<HTMLElement>(".virtual-scroller__spacer")?.style.height
 		).toBe("172px");
+	});
+
+	describe("when a Base is embedded in a note", () => {
+		let raf: jest.SpyInstance;
+		let note: HTMLElement;
+		let container: HTMLElement;
+		let listTop: number;
+
+		beforeEach(() => {
+			raf = jest.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+				callback(0);
+				return 1;
+			});
+			// The note scrolls; the embedded view between it and the list grows with
+			// its content, so it never scrolls the list itself.
+			note = document.createElement("div");
+			note.style.overflowY = "auto";
+			const embeddedView = document.createElement("div");
+			container = document.createElement("div");
+			embeddedView.appendChild(container);
+			note.appendChild(embeddedView);
+			document.body.appendChild(note);
+
+			listTop = 300;
+			note.getBoundingClientRect = () => rectAt(0, 500);
+			container.getBoundingClientRect = () => rectAt(listTop, listTop + 1000);
+		});
+
+		afterEach(() => {
+			raf.mockRestore();
+			note.remove();
+		});
+
+		const items = Array.from({ length: 50 }, (_, index) => ({
+			id: `i${index}`,
+			label: `I${index}`,
+		}));
+
+		it("renders the rows inside the note's viewport, measured from the list's own top", () => {
+			const { scroller } = createTestScrollerWithContainer(container, items);
+
+			const keys = renderedKeys(container);
+			expect(keys[0]).toBe("i0");
+			expect(keys[keys.length - 1]).toBe("i10");
+			scroller.destroy();
+		});
+
+		it("renders the rows the note scrolls into view", () => {
+			const { scroller } = createTestScrollerWithContainer(container, items);
+
+			listTop = -400;
+			note.dispatchEvent(new Event("scroll"));
+
+			const keys = renderedKeys(container);
+			expect(keys[0]).toBe("i19");
+			expect(keys[keys.length - 1]).toBe("i45");
+			scroller.destroy();
+		});
+
+		it("ignores an ancestor with no box, such as a multi-column callout's content", () => {
+			const columns = document.createElement("div");
+			columns.style.display = "contents";
+			columns.style.overflowY = "auto";
+			columns.getBoundingClientRect = () => rectAt(0, 0);
+			const embeddedView = container.parentElement as HTMLElement;
+			note.replaceChild(columns, embeddedView);
+			columns.appendChild(embeddedView);
+
+			const { scroller } = createTestScrollerWithContainer(container, items);
+
+			const keys = renderedKeys(container);
+			expect(keys[keys.length - 1]).toBe("i10");
+			scroller.destroy();
+		});
+
+		describe("and its view has a scrollbar of its own, capped to a few rows", () => {
+			let ownScroll: number;
+			let frames: FrameRequestCallback[];
+
+			const scrollAndDraw = () => {
+				note.dispatchEvent(new Event("scroll"));
+				for (const frame of frames.splice(0)) frame(0);
+			};
+
+			beforeEach(() => {
+				ownScroll = 0;
+				frames = [];
+				// One frame at a time: a scroll waits for the frame before it to finish.
+				raf.mockImplementation((callback) => {
+					frames.push(callback);
+					return 1;
+				});
+				const view = container.parentElement as HTMLElement;
+				view.style.overflowY = "auto";
+				Object.defineProperty(view, "clientHeight", { value: 200 });
+				Object.defineProperty(view, "scrollHeight", { value: 2000 });
+				view.getBoundingClientRect = () => rectAt(listTop, listTop + 200);
+				container.getBoundingClientRect = () =>
+					rectAt(listTop - ownScroll, listTop - ownScroll + 2000);
+			});
+
+			it("renders from its own viewport, wherever the note has it", () => {
+				const { scroller } = createTestScrollerWithContainer(container, items);
+				const before = renderedKeys(container);
+
+				for (const top of [250, 100, -100, -180, -600, 900]) {
+					listTop = top;
+					scrollAndDraw();
+					expect(renderedKeys(container)).toEqual(before);
+				}
+				scroller.destroy();
+			});
+
+			it("adds the row that scrolls in without moving the rows already there", () => {
+				const { scroller } = createTestScrollerWithContainer(container, items);
+				const before = renderedKeys(container);
+				const moves = new MutationObserver(() => undefined);
+				moves.observe(container, { childList: true, subtree: true });
+
+				ownScroll = 200;
+				scrollAndDraw();
+
+				const added = moves
+					.takeRecords()
+					.flatMap((record) => Array.from(record.addedNodes))
+					.map((node) => (node as HTMLElement).dataset.key);
+				moves.disconnect();
+				const after = renderedKeys(container);
+				expect(after).not.toEqual(before);
+				expect(added.sort()).toEqual(after.filter((key) => !before.includes(key)).sort());
+				scroller.destroy();
+			});
+
+			it("renders the rows its own scrollbar brings into view", () => {
+				const { scroller } = createTestScrollerWithContainer(container, items);
+
+				const before = renderedKeys(container);
+				ownScroll = 800;
+				scrollAndDraw();
+
+				const keys = renderedKeys(container);
+				expect(keys).not.toContain(before[0]);
+				expect(keys.length).toBe(before.length);
+				scroller.destroy();
+			});
+		});
+
+		it("reserves the list's full height so the note can scroll to unrendered rows", () => {
+			const { scroller } = createTestScrollerWithContainer(container, items);
+
+			expect(container.style.minHeight).toBe("1000px");
+			scroller.destroy();
+		});
 	});
 
 	it("reorders keyed items without rerendering existing visible elements", () => {

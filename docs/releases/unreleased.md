@@ -73,6 +73,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed long Task List views embedded in a note rendering only their first rows until the list itself was scrolled. The visible rows now follow the note's own scrolling, including inside multi-column callouts.
 - (#2433) Fixed Italian invalid numeric dates, decimal hour estimates (`1,5 ore`), `domani alle 20:00` date-and-time phrases and weekday deadlines such as `entro lunedì`.
   - Thanks to @starise for reporting.
 - (#2428) Fixed Italian `entro le` deadlines, masculine/feminine scheduled-date expressions and recurring accented weekdays (Monday through Friday).
