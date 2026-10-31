@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { parse } from "yaml";
-import { closeObsidian, launchObsidian, type ObsidianApp } from "../obsidian";
+import { closeObsidian, launchObsidian, type ObsidianApp } from "./obsidian";
 
 const root = `Recurring next status ${Date.now()}`;
 let folder = root;
