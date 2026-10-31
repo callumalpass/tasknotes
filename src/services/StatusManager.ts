@@ -117,6 +117,18 @@ export class StatusManager {
 	}
 
 	/**
+	 * Get the status explicitly configured to follow the first completed status,
+	 * the one toggleStatus completes to. Unlike getNextStatus, this never falls back
+	 * to cycle order, so a recurring series keeps its status unless the user has
+	 * said what comes after done.
+	 */
+	getConfiguredStatusAfterCompletion(): string | undefined {
+		const completed = this.getStatusConfig(this.getCompletedStatuses()[0] ?? "");
+		const next = completed?.nextStatus ? this.getStatusConfig(completed.nextStatus) : undefined;
+		return next && !next.isCompleted ? next.value : undefined;
+	}
+
+	/**
 	 * Get all non-completed status values
 	 */
 	getOpenStatuses(): string[] {

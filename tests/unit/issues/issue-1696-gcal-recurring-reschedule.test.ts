@@ -83,6 +83,7 @@ function createGoogleSyncPlugin(frontmatter: Record<string, unknown> = {}) {
 		statusManager: {
 			getStatusConfig: jest.fn().mockReturnValue(null),
 			isCompletedStatus: jest.fn().mockImplementation((status: string) => status === "done"),
+			getConfiguredStatusAfterCompletion: jest.fn(),
 		},
 		i18n: {
 			translate: jest.fn((key: string) => key),
