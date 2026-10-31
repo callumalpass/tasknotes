@@ -36,10 +36,11 @@ function formatLocalDate(date: Date): string {
 
 function initialTaskDates(): TaskDates {
   const today = new Date();
-  const scheduled = new Date(today);
-  scheduled.setDate(today.getDate() - 1);
-  const due = new Date(today);
-  due.setDate(today.getDate() + 2);
+  // Keep both individual events in the visible month, including on its first
+  // day (when yesterday is not in a month grid that starts on Sunday).
+  const scheduled = new Date(today.getFullYear(), today.getMonth(), 15);
+  const due = new Date(scheduled);
+  due.setDate(scheduled.getDate() + 3);
   return {
     scheduled: formatLocalDate(scheduled),
     due: formatLocalDate(due),
@@ -133,6 +134,9 @@ async function openBaseFile(page: Page, relativePath: string): Promise<void> {
   if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
     await monthButton.click();
   }
+  // Restore the fixture's current month if a preceding view navigated away.
+  const todayButton = page.locator(`${ACTIVE_LEAF_SELECTOR} .tnc-btn-today`).first();
+  if (await todayButton.isEnabled()) await todayButton.click();
   await page.waitForTimeout(500);
 }
 

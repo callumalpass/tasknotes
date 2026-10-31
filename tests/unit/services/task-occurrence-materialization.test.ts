@@ -509,7 +509,8 @@ describe("TaskService materialized occurrences", () => {
 
 		expect(virtualComplete).toHaveBeenCalledWith(
 			expect.objectContaining({ path: parent.path }),
-			new Date("2026-06-01T12:00:00Z")
+			new Date("2026-06-01T12:00:00Z"),
+			{}
 		);
 		expect(materializeOccurrence).not.toHaveBeenCalled();
 	});

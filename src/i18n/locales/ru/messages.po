@@ -12310,6 +12310,11 @@ msgctxt "settings.taskProperties.customUserFields.types.text"
 msgid "Text"
 msgstr "Текст"
 
+#: src/bases/recurringStatusMove.ts
+msgctxt "views.recurringStatusMove.stale"
+msgid "That occurrence was already completed, skipped or rescheduled."
+msgstr "Этот повтор уже выполнен, пропущен или перенесён."
+
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.defaultView.description"
 msgid "The calendar view shown when opening the calendar tab"

@@ -28,6 +28,7 @@ import { TaskNotesSettings } from "./types/settings";
 import { generateBasesFileTemplate } from "./templates/defaultBasesFiles";
 import {
 	MINI_CALENDAR_VIEW_TYPE,
+	RecurringCompletionOptions,
 	TaskInfo,
 	EVENT_DATA_CHANGED,
 	EVENT_TASK_UPDATED,
@@ -1290,21 +1291,28 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Toggles a recurring task's completion status for the selected date
 	 */
-	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
+	async toggleRecurringTaskComplete(
+		task: TaskInfo,
+		date?: Date,
+		options?: RecurringCompletionOptions
+	): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
-			const { updatedTask, completed, undo } = await completeRecurringTaskWithUndo(
+			const { updatedTask, completed, changed, undo } = await completeRecurringTaskWithUndo(
 				this,
 				task,
-				targetDate
+				targetDate,
+				options
 			);
-			showRecurringCompletionNotice(
-				this,
-				updatedTask,
-				formatDateForStorage(targetDate),
-				completed,
-				undo
-			);
+			if (changed) {
+				showRecurringCompletionNotice(
+					this,
+					updatedTask,
+					formatDateForStorage(targetDate),
+					completed,
+					undo
+				);
+			}
 			return updatedTask;
 		} catch (error) {
 			tasknotesLogger.error("Failed to toggle recurring task completion:", {
