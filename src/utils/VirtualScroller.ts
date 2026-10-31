@@ -520,8 +520,9 @@ export class VirtualScroller<T> {
 		}
 
 		const view = this.container.ownerDocument.defaultView ?? window;
-		let top = 0;
-		let bottom = view.innerHeight;
+		let top = -Infinity;
+		let bottom = Infinity;
+		let hasOwnViewport = false;
 		for (let current = this.container.parentElement; current; current = current.parentElement) {
 			const style = view.getComputedStyle(current);
 			// An element with `display: contents` has no box and clips nothing, though its
@@ -535,6 +536,20 @@ export class VirtualScroller<T> {
 			const clip = current.getBoundingClientRect();
 			top = Math.max(top, clip.top);
 			bottom = Math.min(bottom, clip.bottom);
+			// The first ancestor that really scrolls is the list's viewport. Anything
+			// further out only moves the list and that viewport together, so a capped
+			// list must not redraw its rows while the note around it scrolls.
+			if (
+				["auto", "scroll"].includes(style.overflowY) &&
+				current.scrollHeight > current.clientHeight + 1
+			) {
+				hasOwnViewport = true;
+				break;
+			}
+		}
+		if (!hasOwnViewport) {
+			top = Math.max(top, 0);
+			bottom = Math.min(bottom, view.innerHeight);
 		}
 
 		const visibleTop = Math.min(Math.max(0, top - rect.top), this.totalHeight);
@@ -633,12 +648,29 @@ export class VirtualScroller<T> {
 			}
 		}
 
+		for (let i = startIndex; i <= endIndex; i++) {
+			visibleKeys.add(this.getItemKey(this.items[i], i));
+		}
+
+		// Remove elements that are no longer visible. This comes before the rows are
+		// placed: with a row that left still in front of them, every remaining row
+		// looks out of place, and moving each one costs a layout of the whole list.
+		for (const [key, element] of this.renderedElements) {
+			if (!visibleKeys.has(key)) {
+				if (this.resizeObserver) {
+					this.resizeObserver.unobserve(element);
+				}
+				element.remove();
+				this.renderedElements.delete(key);
+				this.invalidatedKeys.delete(key);
+			}
+		}
+
 		// Render visible items in order
 		let previousElement: HTMLElement | null = null;
 		for (let i = startIndex; i <= endIndex; i++) {
 			const item = this.items[i];
 			const key = this.getItemKey(item, i);
-			visibleKeys.add(key);
 
 			let element = this.renderedElements.get(key);
 
@@ -685,18 +717,6 @@ export class VirtualScroller<T> {
 			}
 
 			previousElement = element;
-		}
-
-		// Remove elements that are no longer visible
-		for (const [key, element] of this.renderedElements) {
-			if (!visibleKeys.has(key)) {
-				if (this.resizeObserver) {
-					this.resizeObserver.unobserve(element);
-				}
-				element.remove();
-				this.renderedElements.delete(key);
-				this.invalidatedKeys.delete(key);
-			}
 		}
 
 		// Schedule measurement after render

@@ -158,6 +158,78 @@ describe("VirtualScroller", () => {
 			scroller.destroy();
 		});
 
+		describe("and its view has a scrollbar of its own, capped to a few rows", () => {
+			let ownScroll: number;
+			let frames: FrameRequestCallback[];
+
+			const scrollAndDraw = () => {
+				note.dispatchEvent(new Event("scroll"));
+				for (const frame of frames.splice(0)) frame(0);
+			};
+
+			beforeEach(() => {
+				ownScroll = 0;
+				frames = [];
+				// One frame at a time: a scroll waits for the frame before it to finish.
+				raf.mockImplementation((callback) => {
+					frames.push(callback);
+					return 1;
+				});
+				const view = container.parentElement as HTMLElement;
+				view.style.overflowY = "auto";
+				Object.defineProperty(view, "clientHeight", { value: 200 });
+				Object.defineProperty(view, "scrollHeight", { value: 2000 });
+				view.getBoundingClientRect = () => rectAt(listTop, listTop + 200);
+				container.getBoundingClientRect = () =>
+					rectAt(listTop - ownScroll, listTop - ownScroll + 2000);
+			});
+
+			it("renders from its own viewport, wherever the note has it", () => {
+				const { scroller } = createTestScrollerWithContainer(container, items);
+				const before = renderedKeys(container);
+
+				for (const top of [250, 100, -100, -180, -600, 900]) {
+					listTop = top;
+					scrollAndDraw();
+					expect(renderedKeys(container)).toEqual(before);
+				}
+				scroller.destroy();
+			});
+
+			it("adds the row that scrolls in without moving the rows already there", () => {
+				const { scroller } = createTestScrollerWithContainer(container, items);
+				const before = renderedKeys(container);
+				const moves = new MutationObserver(() => undefined);
+				moves.observe(container, { childList: true, subtree: true });
+
+				ownScroll = 200;
+				scrollAndDraw();
+
+				const added = moves
+					.takeRecords()
+					.flatMap((record) => Array.from(record.addedNodes))
+					.map((node) => (node as HTMLElement).dataset.key);
+				moves.disconnect();
+				const after = renderedKeys(container);
+				expect(after).not.toEqual(before);
+				expect(added.sort()).toEqual(after.filter((key) => !before.includes(key)).sort());
+				scroller.destroy();
+			});
+
+			it("renders the rows its own scrollbar brings into view", () => {
+				const { scroller } = createTestScrollerWithContainer(container, items);
+
+				const before = renderedKeys(container);
+				ownScroll = 800;
+				scrollAndDraw();
+
+				const keys = renderedKeys(container);
+				expect(keys).not.toContain(before[0]);
+				expect(keys.length).toBe(before.length);
+				scroller.destroy();
+			});
+		});
+
 		it("reserves the list's full height so the note can scroll to unrendered rows", () => {
 			const { scroller } = createTestScrollerWithContainer(container, items);
 
