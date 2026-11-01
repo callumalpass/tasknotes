@@ -3713,6 +3713,11 @@ msgid "Could not find task file: {path}"
 msgstr "Impossible de trouver le fichier de la tâche : {path}"
 
 #: src/main.ts
+msgctxt "notices.commands.repeatFailed"
+msgid "Could not finish repeating task. Earlier changes were kept; check the task before trying again."
+msgstr "Impossible de terminer la répétition de la tâche. Les changements précédents ont été conservés ; vérifiez la tâche avant de réessayer."
+
+#: src/main.ts
 msgctxt "notices.languagePackDownloadFailed"
 msgid "Could not load {language}. The current language is unchanged. Retry in the interface language settings."
 msgstr "Impossible de charger {language}. La langue actuelle reste inchangée. Réessayez dans les paramètres de langue de l’interface."
@@ -4036,6 +4041,11 @@ msgstr "Rappels actuels"
 msgctxt "contextMenus.task.organization.notices.currentTaskNotFound"
 msgid "Current task file not found"
 msgstr "Fichier de tâche actuel introuvable"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatNotCompleted"
+msgid "Current task is not completed"
+msgstr "La tâche actuelle n’est pas terminée"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.description"
@@ -10125,6 +10135,11 @@ msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
 msgstr "Tâches récurrentes"
 
+#: src/main.ts
+msgctxt "notices.commands.repeatRecurring"
+msgid "Recurring tasks already track each occurrence"
+msgstr "Les tâches récurrentes suivent déjà chaque occurrence"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
 msgid "Refresh"
@@ -10429,6 +10444,11 @@ msgctxt "contextMenus.task.notices.renameSuccess"
 msgid "Renamed to \"{name}\""
 msgstr "Renommé en \"{name}\""
 
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask.confirm"
+msgid "Reopen this task, save its completion date and unarchive it? Body checkboxes will reset if enabled. You can edit dates afterwards; cancelling that editor will not undo these changes."
+msgstr "Rouvrir cette tâche, enregistrer sa date d’achèvement et la désarchiver ? Les cases à cocher du corps seront réinitialisées si l’option est activée. Vous pourrez modifier les dates ensuite ; annuler cet éditeur n’annulera pas ces changements."
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.reorder.confirmButton"
@@ -10440,6 +10460,12 @@ msgstr "Réorganiser les notes"
 msgctxt "common.reorder.confirmLargeMessage"
 msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
 msgstr "La réorganisation ici mettra à jour \"{field}\" dans {count} notes afin de créer un ordre manuel persistant pour {scope}. Les notes masquées ou filtrées dans le même périmètre peuvent aussi être mises à jour. Continuer ?"
+
+#: src/commands/taskNotesCommands.ts
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask"
+msgid "Repeat current task"
+msgstr "Répéter la tâche actuelle"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
@@ -12599,6 +12625,11 @@ msgstr "Cette action supprime l’identifiant client et le secret client enregis
 msgctxt "views.pomodoroStats.recents.deleteConfirmMessage"
 msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
 msgstr "Cela supprime la session de l’historique Pomodoro. Les entrées de temps de tâche existantes ne sont pas modifiées."
+
+#: src/main.ts
+msgctxt "notices.commands.repeatOccurrence"
+msgid "This task is an occurrence of a recurring task"
+msgstr "Cette tâche est une occurrence d’une tâche récurrente"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts

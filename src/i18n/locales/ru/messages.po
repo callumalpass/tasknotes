@@ -3715,6 +3715,11 @@ msgid "Could not find task file: {path}"
 msgstr "Не удалось найти файл задачи: {path}"
 
 #: src/main.ts
+msgctxt "notices.commands.repeatFailed"
+msgid "Could not finish repeating task. Earlier changes were kept; check the task before trying again."
+msgstr "Не удалось закончить повторение задачи. Предыдущие изменения сохранены; проверьте задачу перед повторной попыткой."
+
+#: src/main.ts
 msgctxt "notices.languagePackDownloadFailed"
 msgid "Could not load {language}. The current language is unchanged. Retry in the interface language settings."
 msgstr "Не удалось загрузить {language}. Текущий язык не изменён. Повторите попытку в настройках языка интерфейса."
@@ -4038,6 +4043,11 @@ msgstr "Текущие напоминания"
 msgctxt "contextMenus.task.organization.notices.currentTaskNotFound"
 msgid "Current task file not found"
 msgstr "Файл текущей задачи не найден"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatNotCompleted"
+msgid "Current task is not completed"
+msgstr "Текущая задача не завершена"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.description"
@@ -10125,6 +10135,11 @@ msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
 msgstr "Повторяющиеся задачи"
 
+#: src/main.ts
+msgctxt "notices.commands.repeatRecurring"
+msgid "Recurring tasks already track each occurrence"
+msgstr "Повторяющиеся задачи уже учитывают каждый экземпляр"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
 msgid "Refresh"
@@ -10429,6 +10444,11 @@ msgctxt "contextMenus.task.notices.renameSuccess"
 msgid "Renamed to \"{name}\""
 msgstr "Переименовано в \"{name}\""
 
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask.confirm"
+msgid "Reopen this task, save its completion date and unarchive it? Body checkboxes will reset if enabled. You can edit dates afterwards; cancelling that editor will not undo these changes."
+msgstr "Открыть эту задачу заново, сохранить дату её завершения и разархивировать её? Если соответствующая настройка включена, флажки в тексте будут сброшены. Даты можно изменить позже; отмена редактирования не отменит эти изменения."
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.reorder.confirmButton"
@@ -10440,6 +10460,12 @@ msgstr "Переупорядочить заметки"
 msgctxt "common.reorder.confirmLargeMessage"
 msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
 msgstr "Область: {scope}. Для сохранения ручного порядка поле «{field}» изменится в заметках (всего: {count}). Это может затронуть и скрытые или отфильтрованные заметки в той же области. Продолжить?"
+
+#: src/commands/taskNotesCommands.ts
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask"
+msgid "Repeat current task"
+msgstr "Повторить текущую задачу"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
@@ -12599,6 +12625,11 @@ msgstr "Сохранённые идентификатор и секрет кли
 msgctxt "views.pomodoroStats.recents.deleteConfirmMessage"
 msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
 msgstr "Это удалит сессию из истории Pomodoro. Существующие записи времени задач не изменятся."
+
+#: src/main.ts
+msgctxt "notices.commands.repeatOccurrence"
+msgid "This task is an occurrence of a recurring task"
+msgstr "Эта задача является экземпляром повторяющейся задачи"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts

@@ -3712,6 +3712,11 @@ msgid "Could not find task file: {path}"
 msgstr "작업 파일을 찾을 수 없습니다: {path}"
 
 #: src/main.ts
+msgctxt "notices.commands.repeatFailed"
+msgid "Could not finish repeating task. Earlier changes were kept; check the task before trying again."
+msgstr "작업 반복을 마치지 못했습니다. 앞서 적용된 변경 사항은 유지됩니다. 다시 시도하기 전에 작업을 확인하세요."
+
+#: src/main.ts
 msgctxt "notices.languagePackDownloadFailed"
 msgid "Could not load {language}. The current language is unchanged. Retry in the interface language settings."
 msgstr "{language} 언어를 불러오지 못했습니다. 현재 언어는 변경되지 않았습니다. 인터페이스 언어 설정에서 다시 시도하세요."
@@ -4035,6 +4040,11 @@ msgstr "현재 리마인더"
 msgctxt "contextMenus.task.organization.notices.currentTaskNotFound"
 msgid "Current task file not found"
 msgstr "현재 작업 파일을 찾을 수 없습니다"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatNotCompleted"
+msgid "Current task is not completed"
+msgstr "현재 작업이 완료되지 않았습니다"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.description"
@@ -10124,6 +10134,11 @@ msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
 msgstr "반복 작업"
 
+#: src/main.ts
+msgctxt "notices.commands.repeatRecurring"
+msgid "Recurring tasks already track each occurrence"
+msgstr "반복 작업은 이미 각 회차를 기록합니다"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
 msgid "Refresh"
@@ -10428,6 +10443,11 @@ msgctxt "contextMenus.task.notices.renameSuccess"
 msgid "Renamed to \"{name}\""
 msgstr "\"{name}\"(으)로 이름이 변경되었습니다"
 
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask.confirm"
+msgid "Reopen this task, save its completion date and unarchive it? Body checkboxes will reset if enabled. You can edit dates afterwards; cancelling that editor will not undo these changes."
+msgstr "이 작업을 다시 열고 완료 날짜를 저장한 다음 보관을 해제할까요? 설정이 켜져 있으면 본문의 체크박스도 초기화됩니다. 날짜는 나중에 편집할 수 있지만, 해당 편집을 취소해도 이 변경 사항은 되돌려지지 않습니다."
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.reorder.confirmButton"
@@ -10439,6 +10459,12 @@ msgstr "노트 재정렬"
 msgctxt "common.reorder.confirmLargeMessage"
 msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
 msgstr "여기서 재정렬하면 {scope}에 대한 지속적인 수동 순서를 만들기 위해 {count}개 노트의 \"{field}\" 값이 업데이트됩니다. 같은 범위의 숨겨진 노트나 필터링된 노트도 함께 업데이트될 수 있습니다. 계속하시겠습니까?"
+
+#: src/commands/taskNotesCommands.ts
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask"
+msgid "Repeat current task"
+msgstr "현재 작업 반복"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
@@ -12598,6 +12624,11 @@ msgstr "Obsidian 비밀 저장소에서 저장된 클라이언트 ID와 클라�
 msgctxt "views.pomodoroStats.recents.deleteConfirmMessage"
 msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
 msgstr "뽀모도로 기록에서 이 세션을 삭제합니다. 기존 작업의 시간 기록은 변경되지 않습니다."
+
+#: src/main.ts
+msgctxt "notices.commands.repeatOccurrence"
+msgid "This task is an occurrence of a recurring task"
+msgstr "이 작업은 반복 작업의 개별 회차입니다"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts

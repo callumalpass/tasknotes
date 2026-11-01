@@ -34,6 +34,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- (#2188) Added **Repeat current task** for completed, non-recurring tasks. After confirmation, it reopens the same note, records its distinct completion dates, unarchives it and optionally resets body checkboxes, then opens the date editor. See [Repeating a completed task](https://tasknotes.dev/features/task-management/#repeating-a-completed-task). Thanks to @tgrosinger for contributing this command.
 - (#2285) Swimlane rows in Kanban views can be reordered by dragging their labels. The order is saved in the view's `swimLaneOrder` option, and rows hidden by search or by **Hide Empty Swimlanes** keep their positions. Dragging rows needs a mouse for now. See [Kanban View](https://tasknotes.dev/views/kanban-view/)
   - Thanks to @borsos-ilo for requesting this, and to @ppeirce for the interaction design and the original implementation in PR #1862
 - (#2138) Property-based task identification can match on a property alone. Leave **Task property value** empty to treat every note that has the property as a task, whatever its value (for example any note with a `status` property). Task detection, the default Base files (`file.hasProperty()`) and the generated mdbase type (`exists: true`) all use this rule, and new or converted tasks get the property if they don't have it. See [General settings](https://tasknotes.dev/settings/general/)

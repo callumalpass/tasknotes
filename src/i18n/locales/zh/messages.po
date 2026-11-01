@@ -3712,6 +3712,11 @@ msgid "Could not find task file: {path}"
 msgstr "找不到任务文件：{path}"
 
 #: src/main.ts
+msgctxt "notices.commands.repeatFailed"
+msgid "Could not finish repeating task. Earlier changes were kept; check the task before trying again."
+msgstr "未能完成重复任务操作。此前的更改已保留；请检查任务后再重试。"
+
+#: src/main.ts
 msgctxt "notices.languagePackDownloadFailed"
 msgid "Could not load {language}. The current language is unchanged. Retry in the interface language settings."
 msgstr "无法加载{language}。当前语言未更改。请在界面语言设置中重试。"
@@ -4035,6 +4040,11 @@ msgstr "当前提醒"
 msgctxt "contextMenus.task.organization.notices.currentTaskNotFound"
 msgid "Current task file not found"
 msgstr "找不到当前任务文件"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatNotCompleted"
+msgid "Current task is not completed"
+msgstr "当前任务尚未完成"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.description"
@@ -10124,6 +10134,11 @@ msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
 msgstr "重复任务"
 
+#: src/main.ts
+msgctxt "notices.commands.repeatRecurring"
+msgid "Recurring tasks already track each occurrence"
+msgstr "重复任务已记录每次发生的实例"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
 msgid "Refresh"
@@ -10428,6 +10443,11 @@ msgctxt "contextMenus.task.notices.renameSuccess"
 msgid "Renamed to \"{name}\""
 msgstr "重命名为\"{name}\""
 
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask.confirm"
+msgid "Reopen this task, save its completion date and unarchive it? Body checkboxes will reset if enabled. You can edit dates afterwards; cancelling that editor will not undo these changes."
+msgstr "重新打开此任务、保存完成日期并取消归档？如果已启用相应设置，正文中的复选框也会重置。之后可以编辑日期；取消该编辑不会撤销这些更改。"
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.reorder.confirmButton"
@@ -10439,6 +10459,12 @@ msgstr "重排笔记"
 msgctxt "common.reorder.confirmLargeMessage"
 msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
 msgstr "重排会更新 {count} 篇笔记的“{field}”字段，为 {scope} 保存手动排序。同一范围内隐藏或被筛选的笔记也可能更新。是否继续？"
+
+#: src/commands/taskNotesCommands.ts
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask"
+msgid "Repeat current task"
+msgstr "重复当前任务"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
@@ -12598,6 +12624,11 @@ msgstr "这将从 Obsidian 安全存储中删除已保存的客户端 ID 和客�
 msgctxt "views.pomodoroStats.recents.deleteConfirmMessage"
 msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
 msgstr "此操作会从番茄钟历史记录中删除该会话，但不会更改现有的任务时间记录。"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatOccurrence"
+msgid "This task is an occurrence of a recurring task"
+msgstr "此任务是重复任务的一个实例"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
