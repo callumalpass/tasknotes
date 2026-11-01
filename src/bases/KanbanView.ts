@@ -95,6 +95,7 @@ import {
 	shouldRenderKanbanColumn,
 } from "./kanbanGrouping";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { TASK_PATH_DRAG_TYPE } from "../utils/DragDropManager";
 import { processVaultFrontMatter } from "../services/VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/KanbanView" });
@@ -2995,8 +2996,10 @@ export class KanbanView extends BasesViewBase {
 				dragImageSource.classList.add("kanban-view__card--dragging");
 
 				if (e.dataTransfer) {
-					e.dataTransfer.effectAllowed = "move";
+					// copyMove: Calendar views accept the task path as a copy-style drop
+					e.dataTransfer.effectAllowed = "copyMove";
 					e.dataTransfer.setData("text/plain", draggedTaskPath);
+					e.dataTransfer.setData(TASK_PATH_DRAG_TYPE, draggedTaskPath);
 				}
 			}
 
