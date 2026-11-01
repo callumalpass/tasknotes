@@ -5250,15 +5250,15 @@ msgctxt "settings.taskProperties.customUserFields.validation.emptyKey"
 msgid "Enter a property key."
 msgstr "속성 키를 입력하세요."
 
+#: src/settings/tabs/generalTab.ts
+msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
+msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
+msgstr "속성 이름을 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 속성 이름을 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다."
+
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "HTTP://, HTTPS://, webcal:// 또는 webcals:// URL을 입력하세요"
-
-#: src/settings/tabs/generalTab.ts
-msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
-msgid "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings."
-msgstr "속성 이름과 값을 모두 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 둘 다 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
@@ -12376,8 +12376,8 @@ msgstr "반복 회차가 나타나야 하는 시간 (선택사항)"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
-msgid "The value that identifies a note as a task (e.g., \"task\")"
-msgstr "노트를 작업으로 식별하는 값 (예: \"task\")"
+msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
+msgstr "노트를 작업으로 식별하는 값 (예: \"task\"). 비워 두면 값과 관계없이 이 속성이 있는 모든 노트를 작업으로 처리합니다."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"

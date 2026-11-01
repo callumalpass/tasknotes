@@ -5250,15 +5250,15 @@ msgctxt "settings.taskProperties.customUserFields.validation.emptyKey"
 msgid "Enter a property key."
 msgstr "请输入属性键。"
 
+#: src/settings/tabs/generalTab.ts
+msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
+msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
+msgstr "请输入属性名称。示例文字不是已保存的配置。只有设置属性名称后，TaskNotes 才能识别任务。现有 .base 筛选条件必须与这些设置一致。"
+
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "输入 HTTP://、HTTPS://、webcal:// 或 webcals:// URL"
-
-#: src/settings/tabs/generalTab.ts
-msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
-msgid "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings."
-msgstr "请输入属性名称和值。示例文字不是已保存的配置。只有两者都设置后，TaskNotes 才能识别任务。现有 .base 筛选条件必须与这些设置一致。"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
@@ -12376,8 +12376,8 @@ msgstr "重复实例应出现的时间（可选）"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
-msgid "The value that identifies a note as a task (e.g., \"task\")"
-msgstr "用于识别任务笔记的值（例如 \"task\"）"
+msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
+msgstr "用于识别任务笔记的值（例如 \"task\"）。留空则将所有具有此属性的笔记视为任务，无论其值为何。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"

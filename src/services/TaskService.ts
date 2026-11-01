@@ -102,6 +102,7 @@ import {
 import { resolveTaskPropertyFrontmatterField } from "./task-service/taskPropertyFrontmatterField";
 import { processVaultFile, processVaultFrontMatter } from "./VaultMutationService";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { applyPropertyTaskIdentifier } from "../utils/taskIdentificationFrontmatter";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService" });
 
@@ -765,6 +766,15 @@ export class TaskService {
 						this.plugin.statusManager.isCompletedStatus(status),
 					currentDateString: completionDateString,
 				});
+				// Clearing a field can remove the identifying property (for example `due` with
+				// presence identification), which would stop the note being a task.
+				if (this.plugin.settings.taskIdentificationMethod === "property") {
+					applyPropertyTaskIdentifier(
+						frontmatter,
+						this.plugin.settings.taskPropertyName,
+						this.plugin.settings.taskPropertyValue
+					);
+				}
 
 				this.writeOptionalFrontmatterField(
 					frontmatter,

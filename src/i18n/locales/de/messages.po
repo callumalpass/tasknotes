@@ -5251,15 +5251,15 @@ msgctxt "settings.taskProperties.customUserFields.validation.emptyKey"
 msgid "Enter a property key."
 msgstr "Geben Sie einen Eigenschaftsschlüssel ein."
 
+#: src/settings/tabs/generalTab.ts
+msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
+msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
+msgstr "Geben Sie einen Eigenschaftsnamen ein. Beispieltext ist keine gespeicherte Konfiguration. TaskNotes kann Aufgaben erst erkennen, wenn ein Eigenschaftsname festgelegt ist. Bestehende .base-Filter müssen diesen Einstellungen entsprechen."
+
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "Geben Sie eine HTTP://-, HTTPS://-, webcal://- oder webcals://-URL ein"
-
-#: src/settings/tabs/generalTab.ts
-msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
-msgid "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings."
-msgstr "Geben Sie einen Eigenschaftsnamen und einen Wert ein. Beispieltext ist keine gespeicherte Konfiguration. TaskNotes kann Aufgaben erst erkennen, wenn beide festgelegt sind. Bestehende .base-Filter müssen diesen Einstellungen entsprechen."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
@@ -12377,8 +12377,8 @@ msgstr "Die Zeit, zu der wiederkehrende Instanzen erscheinen sollen (optional)"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
-msgid "The value that identifies a note as a task (e.g., \"task\")"
-msgstr "Der Wert, der eine Notiz als Aufgabe identifiziert (z.B. \"task\")"
+msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
+msgstr "Der Wert, der eine Notiz als Aufgabe identifiziert (z.B. \"task\"). Leer lassen, um jede Notiz mit dieser Eigenschaft unabhängig von ihrem Wert als Aufgabe zu behandeln."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"

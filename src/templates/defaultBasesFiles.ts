@@ -20,7 +20,10 @@ import type TaskNotesPlugin from "../main";
 import type { FieldMapping } from "../types";
 import { parseExcludedFolders } from "../utils/pathExclusions";
 import { isTagsTaskIdentifierProperty } from "../utils/taskIdentificationFrontmatter";
-import { hasCompletePropertyTaskIdentification } from "../utils/taskIdentification";
+import {
+	hasUsablePropertyTaskIdentification,
+	isPropertyPresenceTaskIdentification,
+} from "../utils/taskIdentification";
 
 function escapeBasesStringLiteral(value: string): string {
 	return value
@@ -61,9 +64,12 @@ function generateTaskFilterCondition(settings: TaskNotesSettings): string {
 		const propertyName = settings.taskPropertyName;
 		const propertyValue = settings.taskPropertyValue;
 
-		if (!hasCompletePropertyTaskIdentification(settings)) {
-			// Match TaskManager: incomplete property identification recognizes no tasks.
+		if (!hasUsablePropertyTaskIdentification(settings)) {
+			// Match TaskManager: property identification without a name recognizes no tasks.
 			return "false";
+		}
+		if (isPropertyPresenceTaskIdentification(settings)) {
+			return `file.hasProperty("${escapeBasesStringLiteral(propertyName)}")`;
 		}
 
 		if (isTagsTaskIdentifierProperty(propertyName)) {

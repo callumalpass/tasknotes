@@ -5250,15 +5250,15 @@ msgctxt "settings.taskProperties.customUserFields.validation.emptyKey"
 msgid "Enter a property key."
 msgstr "プロパティキーを入力してください。"
 
+#: src/settings/tabs/generalTab.ts
+msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
+msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
+msgstr "プロパティ名を入力してください。例のテキストは保存された設定ではありません。プロパティ名を設定するまで、TaskNotes はタスクを識別できません。既存の .base フィルターもこの設定に合わせてください。"
+
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "HTTP://、HTTPS://、webcal://、webcals:// のいずれかの URL を入力"
-
-#: src/settings/tabs/generalTab.ts
-msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
-msgid "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings."
-msgstr "プロパティ名と値の両方を入力してください。例のテキストは保存された設定ではありません。両方を設定するまで、TaskNotes はタスクを識別できません。既存の .base フィルターもこの設定に合わせてください。"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
@@ -12376,8 +12376,8 @@ msgstr "繰り返しの各回を表示する時刻（任意）"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
-msgid "The value that identifies a note as a task (e.g., \"task\")"
-msgstr "ノートをタスクとして識別する値（例：\"task\"）"
+msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
+msgstr "ノートをタスクとして識別する値（例：\"task\"）。空欄にすると、値に関係なく、このプロパティを持つすべてのノートをタスクとして扱います。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
