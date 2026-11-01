@@ -167,13 +167,26 @@ function renderLinkSegment(
 	});
 }
 
+function isExactVaultPath(
+	title: string,
+	pathWithoutExtension: string,
+	linkServices: LinkServices
+): boolean {
+	if (!title.includes("/") && !title.endsWith(".md")) return false;
+	const file = linkServices.metadataCache.getFirstLinkpathDest(pathWithoutExtension, "");
+	return (
+		file instanceof TFile &&
+		(file.path === title || file.path === `${pathWithoutExtension}.md`)
+	);
+}
+
 /**
  * Render a group title, converting wiki-links and file paths to clickable links with hover preview.
  * Handles:
  * - [[link]] and [[link|alias]] wiki-link formats
  * - Comma-delimited lists of wiki-links and Markdown links
- * - File paths (with or without .md extension)
- * - Regular text
+ * - Exact vault paths of notes ("Projects/Alpha", "Projects/Alpha.md", "Alpha.md")
+ * - Regular text, including bare names that only match a note by basename
  */
 export function renderGroupTitle(
 	container: HTMLElement,
@@ -199,13 +212,12 @@ export function renderGroupTitle(
 		return;
 	}
 
-	// Check if title is a file path (with or without .md extension)
-	// Try to resolve it as a file
+	// Bases keys file values by vault path, so a plain value that is the exact vault
+	// path of a note is rendered as a link. Bare names such as a context "STY" stay text
+	// even when a note with that name exists; only explicit links resolve by name.
 	const filePathToTry = title.endsWith(".md") ? title.replace(/\.md$/, "") : title;
-	const file = linkServices.metadataCache.getFirstLinkpathDest(filePathToTry, "");
-
-	if (file instanceof TFile) {
-		const displayText = file.basename;
+	if (isExactVaultPath(title, filePathToTry, linkServices)) {
+		const displayText = filePathToTry.split("/").pop() ?? filePathToTry;
 		const resolvedText = resolveDisplayText(filePathToTry, displayText, linkServices);
 		appendInternalLink(container, filePathToTry, uiData(resolvedText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), linkServices, {
 			cssClass: "internal-link task-group-link",
