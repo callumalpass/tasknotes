@@ -1,22 +1,35 @@
 import { test, expect, type Page, type Locator } from "@playwright/test";
 import { launchObsidian, closeObsidian, type ObsidianApp } from "./obsidian";
+import { rmSync } from "node:fs";
+import { join } from "node:path";
 
 // Discussion #2435: batch date picking and calendar task selection/group moves.
 let obsidian: ObsidianApp;
-const folder = "E2E calendar batch";
-const basePath = `${folder}/Batch.base`;
+let folder: string;
+let basePath: string;
+let vaultDirectory: string;
+const createdFolders: string[] = [];
 let days: string[];
 
 test.beforeAll(async () => {
 	obsidian = await launchObsidian();
+	vaultDirectory = await obsidian.page.evaluate(() => (window as any).app.vault.adapter.basePath);
 	days = await obsidian.page.evaluate(() => Array.from({ length: 5 }, (_, i) => {
 		const date = new Date(); date.setDate(date.getDate() + i);
 		return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 	}));
 });
-test.afterAll(async () => { if (obsidian) await closeObsidian(obsidian); });
+test.afterAll(async () => {
+	if (obsidian) await closeObsidian(obsidian);
+	// Bases can finish a debounced config save after its view detaches. Keep
+	// each fixture until our isolated process has stopped, then remove only it.
+	for (const name of createdFolders) rmSync(join(vaultDirectory, name), { recursive: true, force: true });
+});
 
 test.beforeEach(async () => {
+	folder = `E2E calendar batch ${Date.now()}-${createdFolders.length}`;
+	basePath = `${folder}/Batch.base`;
+	createdFolders.push(folder);
 	await obsidian.page.evaluate(async ({ folder, basePath, days }) => {
 		const app = (window as any).app;
 		app.plugins.plugins.tasknotes.i18n.setLocale("en");
@@ -48,8 +61,6 @@ test.afterEach(async () => {
 		for (const leaf of app.workspace.getLeavesOfType("bases")) {
 			if (leaf.view.file?.path.startsWith(folder)) leaf.detach();
 		}
-		const dir = app.vault.getAbstractFileByPath(folder);
-		if (dir) await app.vault.delete(dir, true);
 	}, folder);
 });
 
@@ -109,6 +120,12 @@ test("modifier selection, visible clear control, range and keyboard select-all",
 test("calendar list mode keeps selection consistent and excludes recurrence previews", async () => {
 	const page = obsidian.page;
 	await page.getByRole("button", { name: "List view", exact: true }).click();
+	// Wait for the existing debounced view preference save, not just the first
+	// list paint: its config refresh can replace a card during a pointer click.
+	await expect.poll(() => page.evaluate(async path => {
+		const app = (window as any).app;
+		return app.vault.read(app.vault.getAbstractFileByPath(path));
+	}, basePath)).toMatch(/calendarView:\s*listWeek/);
 	await event(page, "Alpha").locator(".task-card").click({ modifiers: ["Control"] });
 	await event(page, "Bravo").locator(".task-card").click({ modifiers: ["Control"] });
 	await page.locator(`.tnc:visible .tnc-item[data-task-path="${folder}/Recurring.md"] .task-card`).first().click({ modifiers: ["Shift"] });
