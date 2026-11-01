@@ -887,6 +887,41 @@ export function applyKanbanSwimLaneOrder(options: {
 	return [...ordered, ...unordered];
 }
 
+/**
+ * Moves a dragged swimlane onto a target swimlane. The DOM only holds the rows that
+ * are rendered, so the move is made within `visibleOrder` and then written back into
+ * the visible slots of `currentOrder`; rows hidden by search or by "hide empty
+ * swimlanes" keep their positions. Returns null when the drop changes nothing.
+ */
+export function reorderKanbanSwimLaneKeys(options: {
+	currentOrder: readonly string[];
+	visibleOrder: readonly string[];
+	draggedKey: string;
+	targetKey: string;
+}): string[] | null {
+	const { draggedKey, targetKey } = options;
+	const visibleOrder = Array.from(new Set(options.visibleOrder));
+	const dragIndex = visibleOrder.indexOf(draggedKey);
+	const dropIndex = visibleOrder.indexOf(targetKey);
+	if (draggedKey === targetKey || dragIndex === -1 || dropIndex === -1) {
+		return null;
+	}
+
+	const reorderedVisible = [...visibleOrder];
+	reorderedVisible.splice(dragIndex, 1);
+	reorderedVisible.splice(dropIndex, 0, draggedKey);
+
+	const visibleSet = new Set(reorderedVisible);
+	const result: string[] = [];
+	let visibleCursor = 0;
+	for (const key of new Set(options.currentOrder)) {
+		result.push(visibleSet.has(key) ? reorderedVisible[visibleCursor++] : key);
+	}
+	result.push(...reorderedVisible.slice(visibleCursor));
+
+	return result;
+}
+
 export function createEmptyKanbanSwimLaneColumns<TTask>(
 	columnKeys: readonly string[]
 ): Map<string, TTask[]> {
@@ -905,6 +940,8 @@ export function applyKanbanSwimLaneOrderToMap<TTask>(options: {
 	columnKeys: readonly string[];
 	swimLaneOrders: Readonly<Record<string, readonly string[]>>;
 	hideEmptySwimLanes: boolean;
+	/** Lanes that have tasks, but none matching the current search. */
+	searchHiddenKeys?: ReadonlySet<string>;
 	priorityKeys: readonly string[];
 	isPriorityField: (propertyId: string | null) => boolean;
 	isStatusField: (propertyId: string | null) => boolean;
@@ -930,6 +967,7 @@ export function applyKanbanSwimLaneOrderToMap<TTask>(options: {
 	const orderedSwimLanes = new Map<string, Map<string, TTask[]>>();
 
 	for (const swimLaneKey of orderedKeys) {
+		if (options.searchHiddenKeys?.has(swimLaneKey)) continue;
 		const columns =
 			options.swimLanes.get(swimLaneKey) ??
 			createEmptyKanbanSwimLaneColumns(options.columnKeys);
