@@ -384,6 +384,12 @@ describe("Issue #974: sync daily-note timeblocks to Google Calendar", () => {
 			"Daily/empty.md": {
 				sections: [{ type: "yaml", position: { start: { line: 0 }, end: { line: 1 } } }],
 			},
+			// Valid frontmatter with only a blank line or comments parses to nothing
+			// but keeps its position.
+			"Daily/blank.md": {
+				frontmatterPosition: { start: { line: 0 }, end: { line: 3 } },
+				sections: [{ type: "yaml", position: { start: { line: 0 }, end: { line: 3 } } }],
+			},
 			"Daily/editing.md": {
 				frontmatter: { timeblocks: [{ id: "tb-1", startTime: "09:00", endTime: "10:00" }] },
 			},
@@ -400,6 +406,9 @@ describe("Issue #974: sync daily-note timeblocks to Google Calendar", () => {
 			expect.objectContaining({ indexed: false, timeblocks: [] })
 		);
 		expect(source.read("Daily/empty.md")).toEqual(
+			expect.objectContaining({ indexed: true, timeblocks: [] })
+		);
+		expect(source.read("Daily/blank.md")).toEqual(
 			expect.objectContaining({ indexed: true, timeblocks: [] })
 		);
 		expect(source.read("Daily/editing.md")).toEqual(
@@ -455,6 +464,7 @@ describe("Issue #974: sync daily-note timeblocks to Google Calendar", () => {
 		// The new file is indexed a moment later, outside the daily-notes folder.
 		await new Promise((resolve) => setTimeout(resolve, 50));
 		notes.set("Archive/2026-11-02.md", { date: null, timeblocks: [moved] });
+		sync.handleNoteCreated("Archive/2026-11-02.md");
 		sync.handleNoteChanged("Archive/2026-11-02.md");
 		await sync.flush();
 
@@ -507,6 +517,59 @@ describe("Issue #974: sync daily-note timeblocks to Google Calendar", () => {
 		expect(google.updateEvent).not.toHaveBeenCalled();
 		expect(google.deleteEvent).toHaveBeenCalledWith(CALENDAR_ID, "event-1", expect.any(Number));
 		expect(pluginData.googleCalendarTimeblockEventIndex).toEqual([]);
+	});
+
+	it("does not move an event into an existing non-daily note that is first seen this session", async () => {
+		const notes: Notes = new Map([
+			["Daily/2026-11-02.md", { date: "2026-11-02", timeblocks: [timeblock("tb-template")] }],
+			["Projects/Plan.md", { date: null, timeblocks: [timeblock("tb-template")] }],
+		]);
+		const pluginData: Record<string, any> = {
+			googleCalendarTimeblockEventIndex: [
+				indexEntry("Daily/2026-11-02.md", "tb-template", "event-1"),
+			],
+		};
+		const { google, sync } = setup(notes, pluginData);
+
+		// An edit to the old project note is its first change this session.
+		notes.get("Projects/Plan.md")!.timeblocks[0].title = "Edited";
+		sync.handleNoteChanged("Projects/Plan.md");
+		notes.get("Daily/2026-11-02.md")!.timeblocks = [];
+		sync.handleNoteChanged("Daily/2026-11-02.md");
+		await sync.flush();
+		await sync.flush();
+
+		expect(google.deleteEvent).toHaveBeenCalledWith(CALENDAR_ID, "event-1", expect.any(Number));
+		expect(pluginData.googleCalendarTimeblockEventIndex).toEqual([]);
+	});
+
+	it("keeps a queued deletion queued while the note's frontmatter does not parse", async () => {
+		const notePath = "Daily/2026-11-02.md";
+		const notes: Notes = new Map([
+			[notePath, { date: "2026-11-02", timeblocks: [timeblock("tb-1")] }],
+		]);
+		const pluginData: Record<string, any> = {
+			googleCalendarTimeblockEventIndex: [indexEntry(notePath, "tb-1", "event-1")],
+		};
+		const { google, service, sync } = setup(notes, pluginData);
+		google.deleteEvent.mockRejectedValueOnce(
+			Object.assign(new Error("backend error"), { status: 500 })
+		);
+		notes.get(notePath)!.timeblocks = [];
+		sync.handleNoteChanged(notePath);
+		await sync.flush();
+		expect(pluginData.googleCalendarDeletionQueue).toHaveLength(1);
+
+		notes.get(notePath)!.indexed = false;
+		await expect(service.processDeletionQueue()).resolves.toEqual(
+			expect.objectContaining({ deleted: 0, remaining: 1 })
+		);
+		expect(google.deleteEvent).toHaveBeenCalledTimes(1);
+
+		notes.get(notePath)!.indexed = true;
+		await expect(service.processDeletionQueue()).resolves.toEqual(
+			expect.objectContaining({ deleted: 1, remaining: 0 })
+		);
 	});
 
 	it("does not lose plugin-data writes made concurrently by timeblock and task sync", async () => {

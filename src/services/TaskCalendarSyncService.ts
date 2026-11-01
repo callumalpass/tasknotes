@@ -1441,6 +1441,10 @@ export class TaskCalendarSyncService {
 			for (const item of dedupedQueue.values()) {
 				const connectionGeneration = this.getConnectionGeneration();
 				try {
+					if (this.timeblocks.shouldDeferQueuedDeletion(item)) {
+						remainingItems.push(item);
+						continue;
+					}
 					const deletionStillNeeded = item.timeblockId
 						? await this.timeblocks.isQueuedDeletionStillNeeded(item)
 						: await this.isQueuedDeletionStillNeeded(item);

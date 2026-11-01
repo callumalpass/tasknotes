@@ -148,7 +148,8 @@ function getRawTimeblockId(timeblock: unknown): string | null {
  * the top of the note. An empty block (`---` then `---`) spans only two lines.
  */
 function hasUnparseableFrontmatter(cache: CachedMetadata): boolean {
-	if (cache.frontmatter) return false;
+	// Valid but empty or comment-only frontmatter keeps its position.
+	if (cache.frontmatter || cache.frontmatterPosition) return false;
 	const first = cache.sections?.[0];
 	return (
 		first?.type === "yaml" &&
@@ -281,6 +282,14 @@ export class TimeblockCalendarSync {
 	private recentlyAddedIds: Map<string, Map<string, number>> = new Map();
 	/** Notes whose deletions waited at startup for Obsidian to finish indexing */
 	private deferredDeletionNotes: Set<string> = new Set();
+	/**
+	 * Daily notes recorded by initialize() and files created afterwards. Only
+	 * these can receive a moved timeblock on their first change; any other note
+	 * seen for the first time may be an old note sharing a template's ID.
+	 */
+	private baselinePaths: Set<string> = new Set();
+	private createdPaths: Set<string> = new Set();
+	private initialized = false;
 	private startupRecoveryStartedAt: number | null = null;
 	private destroyed = false;
 
@@ -311,6 +320,8 @@ export class TimeblockCalendarSync {
 		this.unindexedNotes.clear();
 		this.recentlyAddedIds.clear();
 		this.deferredDeletionNotes.clear();
+		this.baselinePaths.clear();
+		this.createdPaths.clear();
 	}
 
 	isEnabled(): boolean {
@@ -333,6 +344,7 @@ export class TimeblockCalendarSync {
 		for (const notePath of this.source.listNotePaths()) {
 			const state = this.source.read(notePath);
 			if (!state) continue;
+			this.baselinePaths.add(notePath);
 			if (!state.indexed) {
 				this.unindexedNotes.add(notePath);
 				continue;
@@ -342,6 +354,7 @@ export class TimeblockCalendarSync {
 				this.snapshots.set(notePath, fingerprints);
 			}
 		}
+		this.initialized = true;
 	}
 
 	/** Subscribe to vault and metadata events for daily notes. */
@@ -350,6 +363,11 @@ export class TimeblockCalendarSync {
 		this.plugin.registerEvent(
 			app.metadataCache.on("changed", (file: TFile) => {
 				this.handleNoteChanged(file.path);
+			})
+		);
+		this.plugin.registerEvent(
+			app.vault.on("create", (file: TAbstractFile) => {
+				this.handleNoteCreated(file.path);
 			})
 		);
 		this.plugin.registerEvent(
@@ -372,6 +390,12 @@ export class TimeblockCalendarSync {
 				}
 			})
 		);
+	}
+
+	/** Remember files created after startup; vault "create" also fires while the vault loads. */
+	handleNoteCreated(notePath: string): void {
+		if (this.destroyed || !this.initialized) return;
+		this.createdPaths.add(notePath);
 	}
 
 	/**
@@ -397,6 +421,13 @@ export class TimeblockCalendarSync {
 			this.unindexedNotes.delete(notePath) ||
 			!this.plugin.settings.googleCalendarExport?.syncTimeblocks
 		) {
+			return;
+		}
+
+		// Any other note seen for the first time (e.g. an old project note sharing
+		// a template's timeblock ID) only sets a baseline, like an unindexed one,
+		// so it can't take over another note's event.
+		if (!previous && !this.baselinePaths.has(notePath) && !this.createdPaths.has(notePath)) {
 			return;
 		}
 
@@ -444,6 +475,8 @@ export class TimeblockCalendarSync {
 		this.cancelPendingReconcile(oldPath);
 		const snapshot = this.snapshots.get(oldPath);
 		const wasUnindexed = this.unindexedNotes.delete(oldPath);
+		if (this.baselinePaths.delete(oldPath)) this.baselinePaths.add(newPath);
+		if (this.createdPaths.delete(oldPath)) this.createdPaths.add(newPath);
 		if (!snapshot && !wasUnindexed) {
 			return;
 		}
@@ -529,6 +562,16 @@ export class TimeblockCalendarSync {
 		for (const [notePath, ids] of work) {
 			await this.enqueueReconcile(notePath, ids, { deferDeletions: !settled });
 		}
+	}
+
+	/**
+	 * Whether a queued timeblock deletion should wait for a later pass because
+	 * the note's contents are unknown right now (for example YAML mid-edit).
+	 */
+	shouldDeferQueuedDeletion(item: PendingGoogleCalendarDeletion): boolean {
+		if (!item.timeblockId) return false;
+		const state = this.source.read(item.taskPath);
+		return !!state && !state.indexed;
 	}
 
 	/**
