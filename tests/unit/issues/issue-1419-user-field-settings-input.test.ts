@@ -85,6 +85,32 @@ describe("Issue #1419: custom user field settings save while typing", () => {
 		expect(save).toHaveBeenCalledTimes(2);
 	});
 
+	it("updates the card header title and subtitle while editing", () => {
+		const plugin = createPlugin({
+			userFields: [{ id: "field_header", displayName: "Old", key: "old_key", type: "text" }],
+		});
+		const container = document.createElement("div");
+
+		renderUserFieldsSection(container, plugin, jest.fn(), translate as never);
+
+		updateInput(
+			inputByPlaceholder(
+				container,
+				mockEnglishText(msg({ message: "Display name", context: "settings.taskProperties.customUserFields.placeholders.displayName" }))
+			),
+			"New name"
+		);
+		updateInput(inputByPlaceholder(container, "property-name"), "new_key");
+
+		const card = container.querySelector('[data-card-id="field_header"]');
+		expect(card?.querySelector(".tasknotes-settings__card-primary-text")?.textContent).toBe(
+			"New name"
+		);
+		expect(card?.querySelector(".tasknotes-settings__card-secondary-text")?.textContent).toBe(
+			"new_key"
+		);
+	});
+
 	it("updates text, list, and number defaults on input", () => {
 		const save = jest.fn();
 		const plugin = createPlugin({

@@ -16,11 +16,11 @@ TaskNotes can identify task notes using either a tag or a frontmatter property.
 Use **Identify tasks by** to select a strategy.
 
 - **Tag mode** uses a configured task tag (for example `task`) and can optionally hide that identifying tag in card displays.
-- **Property mode** matches a property/value pair (for example `isTask: true` or `category: task`) and is useful when you avoid tag-based identification.
+- **Property mode** matches a property/value pair (for example `isTask: true` or `category: task`), or only the presence of a property (for example any note with a `status` property). It is useful when you avoid tag-based identification.
 
-In property mode, enter both **Task property name** and **Task property value** explicitly. The input prompts are not saved defaults. An inline warning appears while either field is empty or whitespace-only; TaskNotes does not recognize tasks until both are configured.
+In property mode, enter **Task property name** explicitly. The input prompts are not saved defaults. An inline warning appears while the name is empty or whitespace-only; TaskNotes does not recognize tasks until a name is configured. Leave **Task property value** empty to treat every note that has the property as a task, whatever its value, including an empty value. New and converted tasks get the property (with an empty value) if they don't already have it.
 
-If you change task identification after creating default Base views, existing `.base` filters keep their old settings until you update the default Base files or edit those filters. For `category: task`, filter on that value, not merely whether `category` exists. Updating default files overwrites their manual edits, so back them up first.
+If you change task identification after creating default Base views, existing `.base` filters keep their old settings until you update the default Base files or edit those filters. For `category: task`, filter on that value, not merely whether `category` exists. With an empty value, the default Base files filter with `file.hasProperty("category")`. Updating default files overwrites their manual edits, so back them up first.
 
 ### Hide Identification Tags
 

@@ -1266,3 +1266,7 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
         transition: none;
     }
 }
+
+.tasknotes-settings__card-config-row--hidden {
+    display: none;
+}

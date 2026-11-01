@@ -280,7 +280,7 @@ describe("defaultBasesFiles", () => {
 		expect(template).not.toContain('note["Task Type"] == "true"');
 	});
 
-	it.each([["Task Type", ""], ["", "task"], ["", ""], [" ", "task"], ["category", " "]])("matches no tasks with incomplete property identification (%s, %s) (#2363)", (name, value) => {
+	it.each([["", "task"], ["", ""], [" ", "task"]])("matches no tasks with incomplete property identification (%s, %s) (#2363)", (name, value) => {
 		const template = generateBasesFileTemplate(
 			"open-tasks-view",
 			createMockPlugin({
@@ -292,6 +292,19 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain('    - "false"');
 		expect(template).not.toContain('file.hasTag("task")');
 		expect(template).not.toContain('note["Task Type"] &&');
+	});
+
+	it.each([["Task Type", ""], ["Task Type", " "]])("matches notes that have the property when the value is empty (%s, %j) (#2138)", (name, value) => {
+		const template = generateBasesFileTemplate(
+			"open-tasks-view",
+			createMockPlugin({
+				taskIdentificationMethod: "property",
+				taskPropertyName: name,
+				taskPropertyValue: value,
+			}) as any
+		);
+		expect(template).toContain('file.hasProperty("Task Type")');
+		expect(template).not.toContain('    - "false"');
 	});
 
 	it("adds excluded folder filters to generated task Bases", () => {

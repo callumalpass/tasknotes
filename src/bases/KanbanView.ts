@@ -76,6 +76,7 @@ import {
 	buildKanbanTaskGroups,
 	applyKanbanColumnOrder,
 	applyKanbanSwimLaneOrder,
+	reorderKanbanSwimLaneKeys,
 	applyKanbanSwimLaneOrderToMap,
 	buildKanbanSwimlaneColumns,
 	canonicalizeKanbanConfiguredGroupKey,
@@ -97,6 +98,13 @@ import {
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { TASK_PATH_DRAG_TYPE } from "../utils/DragDropManager";
 import { processVaultFrontMatter } from "../services/VaultMutationService";
+
+const SWIMLANE_DRAG_TYPE = "text/x-kanban-swimlane";
+
+/** Swimlane row drags must not be handled as task drops. */
+function isSwimLaneDrag(e: DragEvent): boolean {
+	return e.dataTransfer?.types.includes(SWIMLANE_DRAG_TYPE) ?? false;
+}
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/KanbanView" });
 
@@ -299,6 +307,8 @@ export class KanbanView extends BasesViewBase {
 	private pinnedColumns: string[] = [];
 	private wipLimits: Record<string, number> = {};
 	private swimLaneOrders: Record<string, string[]> = {};
+	/** Full swimlane order at the last render, including rows that are not shown. */
+	private currentSwimLaneOrder: string[] = [];
 	private hideEmptySwimLanes = false;
 	private cardLayout: TaskCardOptions["layout"] = "default";
 	private configLoaded = false; // Track if we've successfully loaded config
@@ -1543,11 +1553,35 @@ export class KanbanView extends BasesViewBase {
 			this.hideEmptyColumns,
 			this.pinnedColumns
 		);
+		const searchHiddenKeys = new Set(
+			Array.from(candidateSwimLanes.keys()).filter((key) => !swimLanes.has(key))
+		);
 		const orderedSwimLanes = this.applySwimLaneOrderToMap(
 			this.swimLanePropertyId,
 			swimLanes,
-			columnKeys
+			columnKeys,
+			searchHiddenKeys
 		);
+		// Candidate lanes come first so the default (Bases sort) order is the unfiltered one.
+		const priorityKeys = this.isPropertyField(this.swimLanePropertyId, "priority")
+			? this.plugin.priorityManager.getAllPriorities().map((priority) => priority.value)
+			: [];
+		this.currentSwimLaneOrder = applyKanbanSwimLaneOrder({
+			swimLanePropertyId: this.swimLanePropertyId,
+			actualKeys: Array.from(
+				new Set([
+					...candidateSwimLanes.keys(),
+					...orderedSwimLanes.keys(),
+					...priorityKeys,
+				])
+			),
+			swimLaneOrders: this.swimLaneOrders,
+			hideEmptySwimLanes: false,
+			isPriorityField: (propertyId) => this.isPropertyField(propertyId, "priority"),
+			isStatusField: (propertyId) => this.isPropertyField(propertyId, "status"),
+			getPriorityWeight: (key) => this.plugin.priorityManager.getPriorityWeight(key),
+			getStatusOrder: (key) => this.plugin.statusManager.getStatusOrder(key),
+		});
 
 		// Render swimlane table
 		await this.renderSwimLaneTable(
@@ -1630,8 +1664,17 @@ export class KanbanView extends BasesViewBase {
 		for (const [swimLaneKey, columns] of swimLanes) {
 			const row = this.boardEl.createDiv({ cls: "kanban-view__swimlane-row" });
 
-			// Swimlane label cell
-			const labelCell = row.createDiv({ cls: "kanban-view__swimlane-label" });
+			// Swimlane label cell, draggable to reorder rows
+			const labelCell = row.createDiv({
+				cls: "kanban-view__swimlane-label",
+				attr: { draggable: "true", "data-swimlane-key": swimLaneKey },
+			});
+			const labelDragHandle = labelCell.createSpan({
+				cls: "kanban-view__drag-handle kanban-view__swimlane-drag-handle",
+			});
+			labelDragHandle.setAttribute("aria-hidden", "true");
+			setIcon(labelDragHandle, "grip-vertical");
+			this.setupSwimLaneLabelDragHandlers(labelCell, swimLaneKey);
 
 			// Add swimlane title and count
 			const titleEl = labelCell.createDiv({ cls: "kanban-view__swimlane-title" });
@@ -2002,6 +2045,75 @@ export class KanbanView extends BasesViewBase {
 		}
 	}
 
+	private setupSwimLaneLabelDragHandlers(label: HTMLElement, swimLaneKey: string): void {
+		const draggingClass = "kanban-view__swimlane-label--dragging";
+		const dragoverClass = "kanban-view__swimlane-label--dragover";
+
+		label.addEventListener("dragstart", (e: DragEvent) => {
+			if (!e.dataTransfer) return;
+			e.dataTransfer.effectAllowed = "move";
+			e.dataTransfer.setData(SWIMLANE_DRAG_TYPE, swimLaneKey);
+			label.classList.add(draggingClass);
+		});
+
+		label.addEventListener("dragover", (e: DragEvent) => {
+			if (!isSwimLaneDrag(e)) return;
+			e.preventDefault();
+			e.stopPropagation();
+			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+			label.classList.add(dragoverClass);
+		});
+
+		label.addEventListener("dragleave", (e: DragEvent) => {
+			if (!isSwimLaneDrag(e)) return;
+			if (!(e.relatedTarget instanceof Node && label.contains(e.relatedTarget))) {
+				label.classList.remove(dragoverClass);
+			}
+		});
+
+		label.addEventListener("drop", (e: DragEvent) => {
+			if (!isSwimLaneDrag(e)) return;
+			e.preventDefault();
+			e.stopPropagation();
+			label.classList.remove(dragoverClass);
+
+			const draggedKey = e.dataTransfer?.getData(SWIMLANE_DRAG_TYPE);
+			if (!draggedKey) return;
+			void this.moveSwimLane(draggedKey, swimLaneKey);
+		});
+
+		label.addEventListener("dragend", () => {
+			label.classList.remove(draggingClass);
+			this.boardEl
+				?.querySelectorAll(`.${dragoverClass}`)
+				.forEach((el) => el.classList.remove(dragoverClass));
+		});
+	}
+
+	private async moveSwimLane(draggedKey: string, targetKey: string): Promise<void> {
+		const swimLanePropertyId = this.swimLanePropertyId;
+		if (!swimLanePropertyId || !this.boardEl) return;
+
+		const visibleOrder = Array.from(
+			this.boardEl.querySelectorAll<HTMLElement>(
+				".kanban-view__swimlane-label[data-swimlane-key]"
+			)
+		)
+			.map((el) => el.dataset.swimlaneKey)
+			.filter((key): key is string => !!key);
+
+		const newOrder = reorderKanbanSwimLaneKeys({
+			currentOrder: this.currentSwimLaneOrder,
+			visibleOrder,
+			draggedKey,
+			targetKey,
+		});
+		if (!newOrder) return;
+
+		this.saveSwimLaneOrder(swimLanePropertyId, newOrder);
+		await this.render();
+	}
+
 	private setupColumnHeaderDragHandlers(header: HTMLElement): void {
 		const columnKey = header.dataset.columnKey;
 		if (!columnKey) return;
@@ -2232,6 +2344,7 @@ export class KanbanView extends BasesViewBase {
 		column.addEventListener("dragover", (e: DragEvent) => {
 			// Only handle task drags (not column drags)
 			if (e.dataTransfer?.types.includes("text/x-kanban-column")) return;
+			if (isSwimLaneDrag(e)) return;
 			e.preventDefault();
 			e.stopPropagation();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
@@ -2255,6 +2368,7 @@ export class KanbanView extends BasesViewBase {
 			void (async () => {
 				// Only handle task drags (not column drags)
 				if (e.dataTransfer?.types.includes("text/x-kanban-column")) return;
+				if (isSwimLaneDrag(e)) return;
 				e.preventDefault();
 				e.stopPropagation();
 
@@ -2353,6 +2467,7 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		// Drag over handler
 		cell.addEventListener("dragover", (e: DragEvent) => {
+			if (isSwimLaneDrag(e)) return;
 			e.preventDefault();
 			e.stopPropagation();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
@@ -2374,6 +2489,7 @@ export class KanbanView extends BasesViewBase {
 		// Drop handler
 		cell.addEventListener("drop", (e: DragEvent) => {
 			void (async () => {
+				if (isSwimLaneDrag(e)) return;
 				e.preventDefault();
 				e.stopPropagation();
 
@@ -2780,6 +2896,7 @@ export class KanbanView extends BasesViewBase {
 		cardWrapper.addEventListener("dragover", (e: DragEvent) => {
 			// Skip if dragging over self
 			if (this.draggedTaskPath === task.path) return;
+			if (isSwimLaneDrag(e)) return;
 			// Must call preventDefault synchronously to keep the drop zone active
 			e.preventDefault();
 			e.stopPropagation();
@@ -2882,6 +2999,7 @@ export class KanbanView extends BasesViewBase {
 			void (async () => {
 				// Only handle task drags (not column drags)
 				if (e.dataTransfer?.types.includes("text/x-kanban-column")) return;
+				if (isSwimLaneDrag(e)) return;
 				e.preventDefault();
 				e.stopPropagation();
 
@@ -4167,8 +4285,8 @@ export class KanbanView extends BasesViewBase {
 
 		// Default: use link-aware title rendering
 		const propertyId = isSwimLane ? this.swimLanePropertyId : this.getGroupByPropertyId();
-		const displayTitle = this.getGroupDisplayTitle(title, propertyId);
-		this.renderLinkAwareGroupTitle(container, displayTitle);
+		const linkTitle = isSwimLane ? null : this.dataAdapter?.getGroupLinkTitle(title);
+		this.renderLinkAwareGroupTitle(container, linkTitle ?? this.getGroupDisplayTitle(title, propertyId));
 	}
 
 	private renderLinkAwareGroupTitle(container: HTMLElement, title: string): void {
@@ -4219,7 +4337,8 @@ export class KanbanView extends BasesViewBase {
 	private applySwimLaneOrderToMap(
 		swimLanePropertyId: string | null,
 		swimLanes: Map<string, Map<string, TaskInfo[]>>,
-		columnKeys: string[]
+		columnKeys: string[],
+		searchHiddenKeys?: ReadonlySet<string>
 	): Map<string, Map<string, TaskInfo[]>> {
 		return applyKanbanSwimLaneOrderToMap({
 			swimLanePropertyId,
@@ -4227,6 +4346,7 @@ export class KanbanView extends BasesViewBase {
 			columnKeys,
 			swimLaneOrders: this.swimLaneOrders,
 			hideEmptySwimLanes: this.hideEmptySwimLanes,
+			searchHiddenKeys,
 			priorityKeys: this.plugin.priorityManager
 				.getAllPriorities()
 				.map((priority) => priority.value),
@@ -4235,6 +4355,20 @@ export class KanbanView extends BasesViewBase {
 			getPriorityWeight: (key) => this.plugin.priorityManager.getPriorityWeight(key),
 			getStatusOrder: (key) => this.plugin.statusManager.getStatusOrder(key),
 		});
+	}
+
+	private saveSwimLaneOrder(swimLanePropertyId: string, order: string[]): void {
+		this.swimLaneOrders[swimLanePropertyId] = order;
+
+		try {
+			this.config.set("swimLaneOrder", JSON.stringify(this.swimLaneOrders));
+		} catch (error) {
+			tasknotesLogger.error("[KanbanView] Failed to save swimlane order:", {
+				category: "persistence",
+				operation: "save-swimlane-order",
+				error: error,
+			});
+		}
 	}
 
 	private async saveColumnOrder(groupBy: string, order: string[]): Promise<void> {

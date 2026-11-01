@@ -16,7 +16,7 @@ import { languagePackConfig } from "../../i18n/languagePackConfig";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
-import { hasCompletePropertyTaskIdentification } from "../../utils/taskIdentification";
+import { hasUsablePropertyTaskIdentification } from "../../utils/taskIdentification";
 import {
 	createVaultFile,
 	createVaultFolder,
@@ -229,17 +229,13 @@ export function renderGeneralTab(
 					descEl: HTMLElement;
 				};
 				let nameSetting: IdentificationSetting | undefined;
-				let valueSetting: IdentificationSetting | undefined;
 				let warningSetting: IdentificationSetting | undefined;
 				const updateValidation = () => {
 					if (warningSetting) {
-						warningSetting.settingEl.hidden = hasCompletePropertyTaskIdentification(plugin.settings);
+						warningSetting.settingEl.hidden = hasUsablePropertyTaskIdentification(plugin.settings);
 					}
 					nameSetting?.controlEl.querySelector("input")?.setAttribute(
 						"aria-invalid", String(!plugin.settings.taskPropertyName.trim())
-					);
-					valueSetting?.controlEl.querySelector("input")?.setAttribute(
-						"aria-invalid", String(!plugin.settings.taskPropertyValue.trim())
 					);
 				};
 				group.addSetting(
@@ -265,13 +261,12 @@ export function renderGeneralTab(
 
 				group.addSetting(
 					(setting) => {
-						valueSetting = setting;
 						configureTextSetting(setting, {
 							name: translate(
 								msg({ message: "Task property value", context: "settings.general.taskIdentification.taskPropertyValue.name" })
 							),
 							desc: translate(
-								msg({ message: "The value that identifies a note as a task (e.g., \"task\")", context: "settings.general.taskIdentification.taskPropertyValue.description" })
+								msg({ message: "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value.", context: "settings.general.taskIdentification.taskPropertyValue.description" })
 							),
 							placeholder: translate(msg({ message: "Enter property value", context: "settings.general.taskIdentification.propertyValuePlaceholder" })),
 							getValue: () => plugin.settings.taskPropertyValue,
@@ -286,13 +281,11 @@ export function renderGeneralTab(
 				group.addSetting((setting) => {
 					warningSetting = setting;
 					setting.settingEl.addClass("settings-view__identification-warning");
-					setting.setDesc(translate(msg({ message: "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings.", context: "settings.general.taskIdentification.incompletePropertyWarning" })));
+					setting.setDesc(translate(msg({ message: "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings.", context: "settings.general.taskIdentification.incompletePropertyWarning" })));
 					setting.descEl.addClass("mod-warning");
 					setting.descEl.setAttribute("role", "status");
 					setting.descEl.id = "tasknotes-property-identification-warning";
-					for (const field of [nameSetting, valueSetting]) {
-						field?.controlEl.querySelector("input")?.setAttribute("aria-describedby", setting.descEl.id);
-					}
+					nameSetting?.controlEl.querySelector("input")?.setAttribute("aria-describedby", setting.descEl.id);
 				});
 				updateValidation();
 			}

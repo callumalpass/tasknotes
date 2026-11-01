@@ -81,6 +81,15 @@ TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) for
 
 Add and manage ICS subscriptions from `Settings -> TaskNotes -> Integrations` (Calendar Subscriptions section).
 
+### Private feeds (username and password)
+
+Some servers, such as Nextcloud, Baïkal, Davis and Radicale, only serve private calendars to signed-in users. For these feeds, set **Authentication** to **Username and password (HTTP Basic)** on the subscription card and enter your credentials. Use the server's ICS export URL (for Nextcloud, Baïkal and Davis this usually ends in `?export`). An app-specific password is recommended where the server supports one.
+
+- Authenticated feeds must use an `https://` URL. TaskNotes refuses to send credentials over plain `http://` or `webcal://` and shows an error instead.
+- The username is saved with the subscription settings. The password is stored in Obsidian Secret Storage, not in TaskNotes' `data.json`, so it is not synced with your settings and must be entered on each device. If Secret Storage is unavailable, the password cannot be saved.
+- The password field never shows the saved password. Enter a new one to replace it. Switching **Authentication** back to **None** or deleting the subscription removes the saved password.
+- If the server rejects the credentials (HTTP 401 or 403), TaskNotes shows an authentication error for that calendar.
+
 Recurring subscriptions load a bounded window from 30 days ago through one year ahead, with at most 3,000 retained instances per series. Historical occurrences do not consume that visible-instance limit. Non-recurring events are not affected by this window.
 
 Google recurring-task exports include completion, skip, and moved-original exclusions only when those dates belong to the exported recurrence. All-day exports use their date-only start when validating exclusions.
@@ -100,3 +109,21 @@ The Calendar View supports time blocking for scheduling dedicated work periods. 
 Time blocks are stored in the frontmatter of daily notes and can be linked to specific tasks. This differs from time entries, which track actual time spent and are stored in task frontmatter rather than daily notes.
 
 Enable time blocking under `Settings -> TaskNotes -> Features` (Timeblocking section).
+
+### Syncing Timeblocks to Google Calendar
+
+TaskNotes can create Google Calendar events for your timeblocks. This is off by default. Under **Settings → TaskNotes → Integrations → Export timeblocks to Google Calendar**:
+
+- **Sync timeblocks** turns syncing on. It works independently of **Enable task export**, but Google Calendar must be connected.
+- **Timeblock calendar** chooses the calendar for timeblock events. Leave it on **Same as task calendar** to use the task export target calendar.
+- **Timeblock event title template** sets event titles separately from task events. It supports `{{title}}`, `{{date}}`, `{{startTime}}` and `{{endTime}}`.
+
+When syncing is on, adding a timeblock creates an event, editing it (including dragging or resizing it in the calendar) updates the event, and removing it, or deleting its daily note, deletes the event. Moving a timeblock to another day keeps the same event. Copying a timeblock creates a separate event, so deleting the copy leaves the original's event alone. A timeblock whose ID also appears in an older note (for example, one added by a template) is not treated as moved there; removing it deletes its event.
+
+A daily note moved outside Obsidian (by a file manager, git or a sync client) keeps its events, as long as the moved file appears within a few seconds or, for moves made while Obsidian was closed, keeps its file name. Events are not deleted while a note's frontmatter cannot be read, for example while you are editing the YAML by hand, or while a timeblock is incomplete, such as one without a title.
+
+Existing timeblocks are not exported when you turn syncing on; each one is synced the next time you edit it. Event descriptions contain the timeblock's description and attachments, and a link to the daily note when **Include Obsidian link** is on. The task export's event color also applies.
+
+TaskNotes keeps the link between each timeblock and its event in plugin data, not in the daily note. If Google Calendar cannot be reached, creates, updates and deletions are retried in the background. When Obsidian starts, changes made while it was closed to timeblocks that already have events are synced. Changing **Timeblock calendar** moves existing events to the new calendar the next time each timeblock is synced. Turning syncing off leaves existing events in place.
+
+Timeblock sync is available for Google Calendar only.

@@ -8554,7 +8554,7 @@ test.describe('Issue #1430: Modal Fields Property ID Display', () => {
     await expect(modalFieldCard).toBeVisible({ timeout: 5000 });
 
     // Get the secondary text (which shows the ID/key)
-    const secondaryText = modalFieldCard.locator('.tasknotes-settings__card-header-secondary');
+    const secondaryText = modalFieldCard.locator('.tasknotes-settings__card-secondary-text');
     const secondaryTextContent = await secondaryText.textContent();
 
     // BUG: This assertion will fail because it shows internal ID instead of property key

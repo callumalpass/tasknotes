@@ -214,17 +214,29 @@ type TaskFilenameNoticeSettings = Pick<
 	"storeTitleInFilename" | "taskFilenameFormat"
 >;
 
-export function shouldShowFilenameShortenedNotice(
+export type TaskFilenameNotice = "shortened" | "sanitized" | null;
+
+/**
+ * Says how a title-based filename departs from the title: replaced by a
+ * fallback name ("shortened"), or stripped of characters that filenames
+ * cannot contain, such as / or : ("sanitized"). The title property keeps the
+ * full title, but Obsidian shows the filename in tabs, search and links.
+ */
+export function getTaskFilenameNotice(
 	settings: TaskFilenameNoticeSettings,
 	title: string,
 	actualFilename: string
-): boolean {
+): TaskFilenameNotice {
 	if (!settings.storeTitleInFilename && settings.taskFilenameFormat !== "title") {
-		return false;
+		return null;
 	}
 
 	const expectedFilename = sanitizeForFilename(title);
-	return actualFilename.startsWith("task-") && actualFilename !== expectedFilename;
+	if (actualFilename.startsWith("task-") && actualFilename !== expectedFilename) {
+		return "shortened";
+	}
+	// Collapsed whitespace is not worth a warning; removed characters are.
+	return expectedFilename !== title.trim().replace(/\s+/g, " ") ? "sanitized" : null;
 }
 
 /**

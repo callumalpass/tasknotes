@@ -60,6 +60,12 @@ This prevents invalid reminder states and keeps the quick menu focused on option
 
 ![Task context menu](../assets/feature-task-context-menu.png)
 
+## Editing Reminders
+
+In the reminders dialog, select the pencil button next to a reminder to load it into the form, change its timing or description, then select **Update reminder**. Select **Save changes** to write the edit to the task. The **Cancel** button beside **Update reminder** leaves the reminder unchanged.
+
+An edited reminder keeps its identity, so it is rescheduled for its new time rather than treated as a new reminder.
+
 ## Reminder Data Format
 
 Reminders are stored in YAML frontmatter arrays.

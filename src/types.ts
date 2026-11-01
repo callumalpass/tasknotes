@@ -841,6 +841,8 @@ export interface ICSSubscription {
 	color: string;
 	enabled: boolean;
 	refreshInterval: number; // minutes (for remote) or check interval (for local)
+	authType?: "none" | "basic"; // HTTP auth for remote feeds; the password lives in SecretStorage
+	username?: string;
 }
 
 export interface ICSEvent {
@@ -928,7 +930,10 @@ export interface PendingAutoArchive {
 }
 
 export interface PendingGoogleCalendarDeletion {
+	/** Task path, or the daily note path when `timeblockId` is set */
 	taskPath: string;
+	/** Set when the event belongs to a daily-note timeblock rather than a task */
+	timeblockId?: string;
 	calendarId: string;
 	eventId: string;
 	createdAt: number;
@@ -942,6 +947,25 @@ export interface GoogleCalendarEventIndexEntry {
 	calendarId: string;
 	eventId: string;
 	updatedAt: number;
+}
+
+/** Links a daily-note timeblock to the Google Calendar event created for it */
+export interface GoogleCalendarTimeblockEventIndexEntry {
+	notePath: string;
+	timeblockId: string;
+	calendarId: string;
+	eventId: string;
+	/** Event payload last written to Google, used to skip unchanged timeblocks */
+	fingerprint: string;
+	updatedAt: number;
+}
+
+export interface PendingGoogleCalendarTimeblockSync {
+	notePath: string;
+	timeblockId: string;
+	requestedAt: number;
+	attempts: number;
+	lastError?: string;
 }
 
 export interface PendingGoogleCalendarSync {

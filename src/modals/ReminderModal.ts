@@ -11,6 +11,46 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ReminderModal" });
 const REMINDER_FIELDS_HIDDEN_CLASS = "reminder-modal__fields--hidden";
 
+/** Split a stored absolute reminder time into local date and time input values. */
+export function splitAbsoluteReminderTime(value: string | undefined): { date: string; time: string } {
+	if (!value) return { date: "", time: "" };
+	const local = /^(\d{4}-\d{2}-\d{2})(?:T(\d{2}:\d{2}))?(?::\d{2}(?:\.\d+)?)?$/.exec(value);
+	if (local) return { date: local[1], time: local[2] ?? "" };
+	const parsed = new Date(value);
+	if (Number.isNaN(parsed.getTime())) return { date: "", time: "" };
+	const pad = (n: number) => String(n).padStart(2, "0");
+	return {
+		date: `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}`,
+		time: `${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`,
+	};
+}
+
+/**
+ * Convert a stored ISO 8601 offset into the modal's single value/unit/direction fields.
+ * Returns null for offsets the form can't represent (years, months, seconds).
+ */
+export function parseRelativeReminderOffset(offset: string | undefined): {
+	value: number;
+	unit: "minutes" | "hours" | "days";
+	direction: "before" | "after";
+} | null {
+	const match = /^(-?)P(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?$/.exec(offset ?? "");
+	if (!match) return null;
+	const [, negative, weeks, days, hours, minutes] = match;
+	const direction = negative ? "before" : "after";
+	const totalMinutes =
+		(Number(weeks ?? 0) * 7 + Number(days ?? 0)) * 24 * 60 +
+		Number(hours ?? 0) * 60 +
+		Number(minutes ?? 0);
+	if (totalMinutes > 0 && totalMinutes % (24 * 60) === 0) {
+		return { value: totalMinutes / (24 * 60), unit: "days", direction };
+	}
+	if (totalMinutes > 0 && totalMinutes % 60 === 0) {
+		return { value: totalMinutes / 60, unit: "hours", direction };
+	}
+	return { value: totalMinutes, unit: "minutes", direction };
+}
+
 export class ReminderModal extends Modal {
 	private plugin: TaskNotesPlugin;
 	private task: TaskInfo;
@@ -28,6 +68,13 @@ export class ReminderModal extends Modal {
 	private absoluteDate = "";
 	private absoluteTime = "";
 	private description = "";
+	// Index of the reminder loaded into the form for editing, or null when adding
+	private editingIndex: number | null = null;
+	// Relative timing as loaded for editing; if untouched, the stored offset is kept verbatim
+	private editingLoadedTiming: { value: number; unit: string; direction: string } | null = null;
+	// Add-mode type and anchor, restored when editing ends
+	private addModeSelection: { type: "absolute" | "relative"; anchor: "due" | "scheduled" } | null =
+		null;
 
 	constructor(
 		app: App,
@@ -92,6 +139,8 @@ export class ReminderModal extends Modal {
 			this.reminders = this.task.reminders ? [...this.task.reminders] : [];
 			this.originalReminders = this.task.reminders ? [...this.task.reminders] : [];
 		}
+
+		this.editingIndex = null;
 
 		// Clear loading state and render the actual modal content
 		contentEl.empty();
@@ -207,7 +256,9 @@ export class ReminderModal extends Modal {
 	}
 
 	private renderExistingReminders(container: HTMLElement): void {
-		const section = container.createDiv({ cls: "reminder-modal__section" });
+		const section = container.createDiv({
+			cls: "reminder-modal__section reminder-modal__section--existing",
+		});
 
 		const sectionHeader = section.createDiv({ cls: "reminder-modal__section-header" });
 		sectionHeader.createEl("h3", {
@@ -235,6 +286,10 @@ export class ReminderModal extends Modal {
 
 		this.reminders.forEach((reminder, index) => {
 			const reminderCard = reminderList.createDiv({ cls: "reminder-modal__reminder-card" });
+			reminderCard.classList.toggle(
+				"reminder-modal__reminder-card--editing",
+				this.editingIndex === index
+			);
 
 			// Reminder type icon
 			const iconContainer = reminderCard.createDiv({ cls: "reminder-modal__reminder-icon" });
@@ -256,8 +311,20 @@ export class ReminderModal extends Modal {
 				description.textContent = `"${reminder.description}"`;
 			}
 
-			// Actions area - only remove button
 			const actions = reminderCard.createDiv({ cls: "reminder-modal__reminder-actions" });
+
+			const editBtn = actions.createEl("button", {
+				cls: "reminder-modal__action-btn reminder-modal__edit-btn",
+			});
+			setIcon(editBtn, "pencil");
+			setTooltip(
+				editBtn,
+				this.plugin.i18n.translate(msg({ message: "Edit reminder", context: "modals.reminder.edit" }))
+			);
+			editBtn.onclick = (e) => {
+				e.stopPropagation();
+				this.startEditing(index);
+			};
 
 			// Remove button with Obsidian tooltip
 			const removeBtn = actions.createEl("button", {
@@ -359,15 +426,20 @@ export class ReminderModal extends Modal {
 	}
 
 	private renderAddReminderForm(container: HTMLElement): void {
-		const section = container.createDiv({ cls: "reminder-modal__section" });
+		const isEditing = this.editingIndex !== null;
+		const section = container.createDiv({
+			cls: "reminder-modal__section reminder-modal__section--form",
+		});
 
 		const sectionHeader = section.createDiv({ cls: "reminder-modal__section-header" });
 		sectionHeader.createEl("h3", {
-			text: this.plugin.i18n.translate(msg({ message: "Add new reminder", context: "modals.reminder.addNew" })),
+			text: isEditing
+				? this.plugin.i18n.translate(msg({ message: "Edit reminder", context: "modals.reminder.edit" }))
+				: this.plugin.i18n.translate(msg({ message: "Add new reminder", context: "modals.reminder.addNew" })),
 		});
 
-		// Add quick actions for common reminders
-		this.renderQuickActions(section);
+		// Quick actions add new reminders, so they are hidden while editing
+		if (!isEditing) this.renderQuickActions(section);
 
 		const form = section.createDiv({ cls: "reminder-modal__form" });
 
@@ -539,16 +611,28 @@ export class ReminderModal extends Modal {
 			});
 
 		// Enhanced add button with icon
-		const addBtn = form.createEl("button", {
+		const formActions = form.createDiv({ cls: "reminder-modal__form-actions" });
+		const addBtn = formActions.createEl("button", {
 			cls: "reminder-add-btn",
 		});
 
 		const addIcon = addBtn.createSpan({ cls: "reminder-add-btn-icon" });
-		setIcon(addIcon, "plus");
+		setIcon(addIcon, isEditing ? "check" : "plus");
 		addBtn.createSpan({
 			cls: "reminder-add-btn-text",
-			text: this.plugin.i18n.translate(msg({ message: "Add reminder", context: "settings.defaults.reminders.addReminder.buttonText" })),
+			text: isEditing
+				? this.plugin.i18n.translate(msg({ message: "Update reminder", context: "modals.reminder.updateButton" }))
+				: this.plugin.i18n.translate(msg({ message: "Add reminder", context: "settings.defaults.reminders.addReminder.buttonText" })),
 		});
+
+		if (isEditing) {
+			const cancelEditBtn = formActions.createEl("button", {
+				cls: "reminder-modal__cancel-edit-btn",
+				text: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
+			});
+			cancelEditBtn.onclick = () => this.stopEditing();
+		}
+
 		addBtn.onclick = async () => {
 			// Add loading state
 			addBtn.disabled = true;
@@ -566,7 +650,9 @@ export class ReminderModal extends Modal {
 					this.description
 				);
 
-				if (newReminder) {
+				if (newReminder && this.editingIndex !== null) {
+					this.updateReminder(this.editingIndex, newReminder);
+				} else if (newReminder) {
 					await this.addReminder(newReminder);
 
 					// Reset form values for next reminder
@@ -731,6 +817,13 @@ export class ReminderModal extends Modal {
 	private async removeReminder(index: number): Promise<void> {
 		const removedReminder = this.reminders[index];
 		this.reminders.splice(index, 1);
+		if (this.editingIndex !== null) {
+			if (this.editingIndex === index) {
+				this.stopEditing();
+			} else if (this.editingIndex > index) {
+				this.editingIndex--;
+			}
+		}
 		this.refreshRemindersListOnly();
 
 		// Emit immediate event for live UI updates (optional, for real-time feedback)
@@ -744,6 +837,96 @@ export class ReminderModal extends Modal {
 		}
 	}
 
+	private startEditing(index: number): void {
+		const reminder = this.reminders[index];
+		if (!reminder) return;
+
+		if (this.editingIndex === null) {
+			this.addModeSelection = { type: this.selectedType, anchor: this.relativeAnchor };
+		}
+		this.editingIndex = index;
+		this.editingLoadedTiming = null;
+		this.description = reminder.description ?? "";
+		if (reminder.type === "absolute") {
+			this.selectedType = "absolute";
+			const { date, time } = splitAbsoluteReminderTime(reminder.absoluteTime);
+			this.absoluteDate = date;
+			this.absoluteTime = time;
+		} else {
+			this.selectedType = "relative";
+			this.relativeAnchor = reminder.relatedTo ?? "due";
+			const parsed = parseRelativeReminderOffset(reminder.offset) ?? {
+				value: 15,
+				unit: "minutes",
+				direction: "before",
+			};
+			this.relativeOffset = parsed.value;
+			this.relativeUnit = parsed.unit;
+			this.relativeDirection = parsed.direction;
+			this.editingLoadedTiming = { ...parsed };
+		}
+
+		this.rerenderForm();
+		this.refreshRemindersListOnly();
+	}
+
+	private stopEditing(): void {
+		this.editingIndex = null;
+		this.editingLoadedTiming = null;
+		if (this.addModeSelection) {
+			this.selectedType = this.addModeSelection.type;
+			this.relativeAnchor = this.addModeSelection.anchor;
+			this.addModeSelection = null;
+		}
+		this.relativeOffset = 15;
+		this.relativeUnit = "minutes";
+		this.relativeDirection = "before";
+		this.absoluteDate = "";
+		this.absoluteTime = "";
+		this.description = "";
+		this.rerenderForm();
+		this.refreshRemindersListOnly();
+	}
+
+	/** Replace a reminder in place, keeping its id so delivery state follows it. */
+	private updateReminder(index: number, edited: Reminder): void {
+		const original = this.reminders[index];
+		if (!original) return;
+		const updated: Reminder = { ...edited, id: original.id };
+		const loaded = this.editingLoadedTiming;
+		if (
+			loaded &&
+			updated.type === "relative" &&
+			original.type === "relative" &&
+			loaded.value === this.relativeOffset &&
+			loaded.unit === this.relativeUnit &&
+			loaded.direction === this.relativeDirection
+		) {
+			// Timing untouched: keep the stored offset, which the form may not represent exactly.
+			updated.offset = original.offset;
+		}
+		this.reminders[index] = updated;
+		this.stopEditing();
+
+		if (this.task.path) {
+			this.plugin.emitter.trigger("reminder-preview-changed", {
+				taskPath: this.task.path,
+				currentReminders: [...this.reminders],
+				action: "updated",
+				reminder: updated,
+			});
+		}
+	}
+
+	private rerenderForm(): void {
+		const contentContainer = this.contentEl.querySelector<HTMLElement>(
+			".reminder-modal__content"
+		);
+		if (!contentContainer) return;
+		contentContainer.querySelector(".reminder-modal__section--form")?.remove();
+		this.renderAddReminderForm(contentContainer);
+	}
+
 	private async refresh(): Promise<void> {
 		await this.initializeWithFreshData();
 	}
@@ -754,7 +937,7 @@ export class ReminderModal extends Modal {
 		if (contentContainer) {
 			// Find and remove existing reminders section
 			const existingRemindersSection = contentContainer.querySelector(
-				".reminder-modal__section"
+				".reminder-modal__section--existing"
 			);
 			if (existingRemindersSection) {
 				existingRemindersSection.remove();
