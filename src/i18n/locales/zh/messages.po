@@ -175,6 +175,11 @@ msgid "\"{fileName}\" is already attached"
 msgstr "“{fileName}”已在附件中"
 
 #: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.unsupportedNameNotice"
+msgid "\"{name}\" can't be attached. Rename it so it has a file extension and no [ ] # or | characters."
+msgstr "无法附加“{name}”。请重命名，使其带有文件扩展名且不含 [ ] # 或 | 字符。"
+
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.attachments.duplicateNotice"
 msgid "\"{name}\" is already attached"
 msgstr "“{name}”已在附件中"

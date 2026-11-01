@@ -24,6 +24,14 @@ export interface MaterializeTaskModalAttachmentsOptions {
 	sourcePath: string;
 	getAvailablePath: (filename: string, sourcePath: string) => Promise<string>;
 	writeBinary: (path: string, data: ArrayBuffer) => Promise<{ path: string }>;
+	/** Moves a file this save created to the trash when the save is rolled back. */
+	trashFile: (path: string) => Promise<void>;
+}
+
+export interface MaterializedTaskModalAttachments {
+	references: string[];
+	/** Trash the files this call wrote and put their rows back to pending. */
+	rollback: () => Promise<void>;
 }
 
 export function createLinkedAttachmentEntries(
@@ -35,6 +43,19 @@ export function createLinkedAttachmentEntries(
 		reference,
 		path: attachmentPathFromReference(reference, sourcePath),
 	}));
+}
+
+/**
+ * Whether a vault path can be stored as an attachment link and read back.
+ * Names with brackets, `#` or `|`, or without an extension, would be rejected
+ * or misread as a heading/alias by the attachments field.
+ */
+export function isAttachablePath(path: string): boolean {
+	try {
+		return attachmentPathFromReference(canonicalAttachmentReference(path)) === path;
+	} catch {
+		return false;
+	}
 }
 
 export function createVaultAttachmentEntry(path: string): TaskModalAttachmentEntry {
@@ -97,24 +118,49 @@ export function isAttachmentAlreadyListed(
 /**
  * Copy pending disk files into the vault and convert them to linked entries.
  *
- * Entries are replaced in place as each file is written, so a failure part
- * way through keeps the files that were already imported as linked entries
- * and a retry does not import them twice.
+ * Entries are replaced in place as each file is written. If any import fails,
+ * the files already written are trashed and their rows go back to pending, so
+ * a failed save leaves no unlinked files and a retry imports each file once.
+ * Callers use the returned rollback the same way when the task write fails.
  */
 export async function materializeTaskModalAttachments(
 	entries: TaskModalAttachmentEntry[],
 	options: MaterializeTaskModalAttachmentsOptions
-): Promise<string[]> {
-	for (let index = 0; index < entries.length; index++) {
-		const entry = entries[index];
-		if (entry.kind !== "pending") {
-			continue;
+): Promise<MaterializedTaskModalAttachments> {
+	const created: { index: number; pending: TaskModalAttachmentEntry; path: string }[] = [];
+	const rollback = async () => {
+		for (const item of created.splice(0).reverse()) {
+			entries[item.index] = item.pending;
+			try {
+				await options.trashFile(item.path);
+			} catch {
+				// Best effort: the file stays in the vault, but the row is pending again.
+			}
 		}
-		const targetPath = await options.getAvailablePath(entry.file.name, options.sourcePath);
-		const created = await options.writeBinary(targetPath, await entry.file.arrayBuffer());
-		entries[index] = createVaultAttachmentEntry(created.path);
+	};
+
+	try {
+		for (let index = 0; index < entries.length; index++) {
+			const entry = entries[index];
+			if (entry.kind !== "pending") {
+				continue;
+			}
+			const targetPath = await options.getAvailablePath(entry.file.name, options.sourcePath);
+			if (!isAttachablePath(targetPath)) {
+				throw new Error(`Unsupported attachment path: ${targetPath}`);
+			}
+			const written = await options.writeBinary(targetPath, await entry.file.arrayBuffer());
+			created.push({ index, pending: entry, path: written.path });
+			if (!isAttachablePath(written.path)) {
+				throw new Error(`Unsupported attachment path: ${written.path}`);
+			}
+			entries[index] = createVaultAttachmentEntry(written.path);
+		}
+	} catch (error) {
+		await rollback();
+		throw error;
 	}
-	return getLinkedAttachmentReferences(entries);
+	return { references: getLinkedAttachmentReferences(entries), rollback };
 }
 
 export interface TaskModalAttachmentsFieldOptions {
@@ -128,6 +174,8 @@ export interface TaskModalAttachmentsFieldOptions {
 	openAttachment: (path: string) => void;
 	resolveExists: (path: string) => boolean;
 	onDuplicate: (name: string) => void;
+	/** Called for a file whose name can't be stored as an attachment link. */
+	onUnsupportedName: (name: string) => void;
 }
 
 type FocusTarget = { index: number; control: "open" | "up" | "down" | "remove" } | "add";
@@ -201,6 +249,10 @@ export class TaskModalAttachmentsField {
 	}
 
 	addVaultFile(file: TaskModalAttachmentVaultFile): void {
+		if (!isAttachablePath(file.path)) {
+			this.options.onUnsupportedName(file.name);
+			return;
+		}
 		this.addEntries([createVaultAttachmentEntry(file.path)]);
 	}
 
@@ -212,6 +264,12 @@ export class TaskModalAttachmentsField {
 		if (candidates.length === 0) return;
 		const entries = [...this.options.getEntries()];
 		for (const candidate of candidates) {
+			const candidatePath =
+				candidate.kind === "pending" ? candidate.file.name : (candidate.path ?? "");
+			if (!isAttachablePath(candidatePath)) {
+				this.options.onUnsupportedName(getAttachmentEntryName(candidate));
+				continue;
+			}
 			if (isAttachmentAlreadyListed(entries, candidate)) {
 				this.options.onDuplicate(getAttachmentEntryName(candidate));
 				continue;

@@ -23,6 +23,7 @@ import { AttachmentFileSuggestModal } from "./AttachmentFileSuggestModal";
 import {
 	TaskModalAttachmentsField,
 	materializeTaskModalAttachments,
+	type MaterializedTaskModalAttachments,
 	type TaskModalAttachmentEntry,
 } from "./taskModalAttachments";
 import { fieldLabelForId } from "../i18n/fieldLabels";
@@ -878,6 +879,11 @@ export abstract class TaskModal extends Modal {
 					this.t(msg({ message: "\"{name}\" is already attached", context: "modals.task.attachments.duplicateNotice" }), { name })
 				);
 			},
+			onUnsupportedName: (name) => {
+				new Notice(
+					this.t(msg({ message: "\"{name}\" can't be attached. Rename it so it has a file extension and no [ ] # or | characters.", context: "modals.task.attachments.unsupportedNameNotice" }), { name })
+				);
+			},
 		});
 	}
 
@@ -885,15 +891,30 @@ export abstract class TaskModal extends Modal {
 	 * Copy files picked from disk into the vault. Called only while saving so a
 	 * discarded modal never writes attachment files.
 	 */
-	protected async importPendingAttachments(sourcePath: string): Promise<string[]> {
-		const references = await materializeTaskModalAttachments(this.attachmentEntries, {
-			sourcePath,
-			getAvailablePath: (filename, source) =>
-				this.app.fileManager.getAvailablePathForAttachment(filename, source),
-			writeBinary: (path, data) => createVaultBinaryFile(this.app, path, data),
-		});
-		this.attachmentsField?.render();
-		return references;
+	protected async importPendingAttachments(
+		sourcePath: string
+	): Promise<MaterializedTaskModalAttachments> {
+		try {
+			const imported = await materializeTaskModalAttachments(this.attachmentEntries, {
+				sourcePath,
+				getAvailablePath: (filename, source) =>
+					this.app.fileManager.getAvailablePathForAttachment(filename, source),
+				writeBinary: (path, data) => createVaultBinaryFile(this.app, path, data),
+				trashFile: async (path) => {
+					const file = this.app.vault.getAbstractFileByPath(path);
+					if (file instanceof TFile) await this.app.fileManager.trashFile(file);
+				},
+			});
+			return {
+				references: imported.references,
+				rollback: async () => {
+					await imported.rollback();
+					this.attachmentsField?.render();
+				},
+			};
+		} finally {
+			this.attachmentsField?.render();
+		}
 	}
 
 	private getOrganizationFieldContext(): TaskModalOrganizationFieldContext {

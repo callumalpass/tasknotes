@@ -175,6 +175,11 @@ msgid "\"{fileName}\" is already attached"
 msgstr "\"{fileName}\" è già allegato"
 
 #: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.unsupportedNameNotice"
+msgid "\"{name}\" can't be attached. Rename it so it has a file extension and no [ ] # or | characters."
+msgstr "Impossibile allegare \"{name}\". Rinominalo in modo che abbia un'estensione e non contenga i caratteri [ ] # o |."
+
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.attachments.duplicateNotice"
 msgid "\"{name}\" is already attached"
 msgstr "\"{name}\" è già allegato"

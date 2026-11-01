@@ -31,7 +31,10 @@ function setup(task: TaskInfo) {
 	MockObsidian.reset();
 	const app = MockObsidian.createMockApp() as unknown as App;
 	const vaultFiles = new Set(["Files/invoice.pdf", "Files/receipt.png", "Files/contract.pdf"]);
-	const createBinary = jest.fn(async (path: string) => ({ path }));
+	const createBinary = jest.fn(async (path: string) => {
+		vaultFiles.add(path);
+		return { path };
+	});
 	const vaultDelete = jest.fn();
 	const vaultTrash = jest.fn();
 	const trashFile = jest.fn();
@@ -80,6 +83,7 @@ function setup(task: TaskInfo) {
 		internals,
 		updateTask,
 		createBinary,
+		trashFile,
 		destructive: [vaultDelete, vaultTrash, trashFile],
 	};
 }
@@ -160,5 +164,31 @@ describe("TaskEditModal attachments", () => {
 		for (const destroy of destructive) {
 			expect(destroy).not.toHaveBeenCalled();
 		}
+	});
+
+	it("rejects files whose names can't be stored as attachment links", async () => {
+		const { modal, container, createBinary } = await renderField(createTask({ attachments: [] }));
+		const field = (modal as unknown as { attachmentsField: { addVaultFile(f: { path: string; name: string }): void; addPendingFiles(f: File[]): void } }).attachmentsField;
+
+		field.addPendingFiles([pendingFile("scan [1].png"), pendingFile("README")]);
+		field.addVaultFile({ path: "Files/Invoice #42.pdf", name: "Invoice #42.pdf" });
+
+		expect(container.querySelectorAll(".task-attachment-item")).toHaveLength(0);
+		expect(createBinary).not.toHaveBeenCalled();
+	});
+
+	it("trashes imported files and keeps them pending when the task update fails", async () => {
+		const { modal, container, updateTask, createBinary, trashFile } = await renderField(
+			createTask({ attachments: [] })
+		);
+		const field = (modal as unknown as { attachmentsField: { addPendingFiles(f: File[]): void } }).attachmentsField;
+		field.addPendingFiles([pendingFile("scan.png")]);
+		updateTask.mockRejectedValueOnce(new Error("write failed"));
+
+		await modal.handleSave();
+
+		expect(createBinary).toHaveBeenCalledWith("Attachments/scan.png", expect.anything());
+		expect(trashFile).toHaveBeenCalledWith(expect.objectContaining({ path: "Attachments/scan.png" }));
+		expect(container.querySelector(".task-attachment-item--pending")).not.toBeNull();
 	});
 });

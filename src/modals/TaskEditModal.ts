@@ -485,12 +485,21 @@ export class TaskEditModal extends TaskModal {
 
 			let updatedTask = this.task;
 
-			if (hasPendingAttachments(this.attachmentEntries)) {
-				changes.attachments = await this.importPendingAttachments(this.task.path);
+			const imported = hasPendingAttachments(this.attachmentEntries)
+				? await this.importPendingAttachments(this.task.path)
+				: undefined;
+			if (imported) {
+				changes.attachments = imported.references;
 			}
 
 			if (hasTaskChanges) {
-				updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
+				try {
+					updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
+				} catch (error) {
+					// Don't leave imported files behind if the task wasn't updated.
+					await imported?.rollback();
+					throw error;
+				}
 				this.task = updatedTask;
 				if (Object.prototype.hasOwnProperty.call(changes, "details")) {
 					const updatedDetails = stringifyUnknown(

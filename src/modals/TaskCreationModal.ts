@@ -697,10 +697,15 @@ export class TaskCreationModal extends TaskModal {
 			// Disk files are copied only now that the task exists, next to its note.
 			if (hasPendingAttachments(this.attachmentEntries)) {
 				try {
-					const attachments = await this.importPendingAttachments(createdTask.path);
-					createdTask = await this.plugin.taskService.updateTask(createdTask, {
-						attachments,
-					});
+					const imported = await this.importPendingAttachments(createdTask.path);
+					try {
+						createdTask = await this.plugin.taskService.updateTask(createdTask, {
+							attachments: imported.references,
+						});
+					} catch (error) {
+						await imported.rollback();
+						throw error;
+					}
 				} catch (error) {
 					tasknotesLogger.error("Failed to import task attachments:", {
 						category: "persistence",
