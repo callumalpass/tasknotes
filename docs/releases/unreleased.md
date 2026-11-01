@@ -39,6 +39,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2138) Property-based task identification can match on a property alone. Leave **Task property value** empty to treat every note that has the property as a task, whatever its value (for example any note with a `status` property). Task detection, the default Base files (`file.hasProperty()`) and the generated mdbase type (`exists: true`) all use this rule, and new or converted tasks get the property if they don't have it. See [General settings](https://tasknotes.dev/settings/general/)
   - If you already have a property name set with the value left empty, which previously identified no tasks, every note with that property now becomes a task after updating. Set a value to keep the old matching
   - Thanks to @jcconnects for requesting this and for the original implementation in PR #2139
+- (#974) Added optional syncing of daily-note timeblocks to Google Calendar. Turn on **Sync timeblocks** under **Settings → TaskNotes → Integrations → Export timeblocks to Google Calendar** to create, update and delete events as you add, edit, move and remove timeblocks. Timeblocks can use their own target calendar and event title template. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/#syncing-timeblocks-to-google-calendar).
+  - Thanks to @karthikm-0 for requesting this, and to @Lorite for the original implementation in #1677
 
 ## Fixed
 

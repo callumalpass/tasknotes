@@ -24,6 +24,7 @@ import {
 	withVaultFileMutation,
 } from "./VaultMutationService";
 import type { PerformanceProfilerDetails } from "../utils/PerformanceProfiler";
+import { TimeblockCalendarSync, type TimeblockNoteSource } from "./TimeblockCalendarSync";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskCalendarSyncService" });
 
@@ -157,9 +158,35 @@ export class TaskCalendarSyncService {
 	private calendarFingerprints: Map<string, string> | null = null;
 	private destroyed = false;
 
-	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
+	/** Daily-note timeblock sync, built on this service's rate limiter, connection guard and queues */
+	readonly timeblocks: TimeblockCalendarSync;
+
+	constructor(
+		plugin: TaskNotesPlugin,
+		googleCalendarService: GoogleCalendarService,
+		options: { timeblockSource?: TimeblockNoteSource } = {}
+	) {
 		this.plugin = plugin;
 		this.googleCalendarService = googleCalendarService;
+		this.timeblocks = new TimeblockCalendarSync(
+			plugin,
+			googleCalendarService,
+			{
+				withGoogleRateLimit: (fn) => this.withGoogleRateLimit(fn),
+				getConnectionGeneration: () => this.getConnectionGeneration(),
+				assertConnectionGenerationCurrent: (generation) =>
+					this.assertConnectionGenerationCurrent(generation),
+				deleteOrQueueEvent: (notePath, timeblockId, calendarId, eventId, generation) =>
+					this.deleteOrQueueCalendarEvent(notePath, calendarId, eventId, generation, {
+						timeblockId,
+					}),
+				queueEventDeletion: (notePath, timeblockId, calendarId, eventId, error) =>
+					this.queueCalendarDeletion(notePath, calendarId, eventId, error, false, {
+						timeblockId,
+					}),
+			},
+			options.timeblockSource
+		);
 	}
 
 	private static getTaskCalendarCacheKey(taskPath: string, calendarId?: string): string {
@@ -213,6 +240,7 @@ export class TaskCalendarSyncService {
 		TaskCalendarSyncService.taskExceptionEventIdCache.clear();
 		TaskCalendarSyncService.googleCalendarFrontmatterWrites.clear();
 		TaskCalendarSyncService.googleCalendarDeletionQueueWrite = Promise.resolve();
+		TimeblockCalendarSync.clearSharedStateForTests();
 	}
 
 	private getTaskEventIdCacheKey(taskPath: string, calendarId?: string): string {
@@ -254,6 +282,7 @@ export class TaskCalendarSyncService {
 	 */
 	destroy(): void {
 		this.destroyed = true;
+		this.timeblocks.destroy();
 		for (const timer of this.pendingSyncs.values()) {
 			window.clearTimeout(timer);
 		}
@@ -399,7 +428,7 @@ export class TaskCalendarSyncService {
 		const isConnected = this.googleCalendarService.getAvailableCalendars().length > 0;
 		// Entries already in this queue represent remote events TaskNotes committed
 		// to remove, including orphan cleanup after a failed metadata write.
-		return !!settings?.enabled && isConnected;
+		return (!!settings?.enabled || !!settings?.syncTimeblocks) && isConnected;
 	}
 
 	private isSyncQueueReady(): boolean {
@@ -806,7 +835,8 @@ export class TaskCalendarSyncService {
 		calendarId: string,
 		eventId: string,
 		error?: unknown,
-		attempted = false
+		attempted = false,
+		owner: { timeblockId?: string } = {}
 	): Promise<void> {
 		const now = Date.now();
 		const key = this.getDeletionQueueKey({ calendarId, eventId });
@@ -816,6 +846,11 @@ export class TaskCalendarSyncService {
 			const existing = queue.find((item) => this.getDeletionQueueKey(item) === key);
 			if (existing) {
 				existing.taskPath = taskPath;
+				if (owner.timeblockId) {
+					existing.timeblockId = owner.timeblockId;
+				} else {
+					delete existing.timeblockId;
+				}
 				if (attempted) {
 					existing.attempts += 1;
 					existing.lastAttemptAt = now;
@@ -830,6 +865,7 @@ export class TaskCalendarSyncService {
 				...queue,
 				{
 					taskPath,
+					...(owner.timeblockId ? { timeblockId: owner.timeblockId } : {}),
 					calendarId,
 					eventId,
 					createdAt: now,
@@ -845,9 +881,11 @@ export class TaskCalendarSyncService {
 		taskPath: string,
 		calendarId: string,
 		eventId: string,
-		expectedConnectionGeneration?: number
+		expectedConnectionGeneration?: number,
+		owner: { timeblockId?: string } = {}
 	): Promise<boolean> {
-		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
+		// "Delete event on task delete" only governs task events.
+		if (!owner.timeblockId && !this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
 			return true;
 		}
 
@@ -856,7 +894,9 @@ export class TaskCalendarSyncService {
 				taskPath,
 				calendarId,
 				eventId,
-				new Error("Google Calendar sync is not ready")
+				new Error("Google Calendar sync is not ready"),
+				false,
+				owner
 			);
 			return false;
 		}
@@ -886,7 +926,7 @@ export class TaskCalendarSyncService {
 				details: { value: taskPath },
 				error: error,
 			});
-			await this.queueCalendarDeletion(taskPath, calendarId, eventId, error, true);
+			await this.queueCalendarDeletion(taskPath, calendarId, eventId, error, true, owner);
 			return false;
 		}
 	}
@@ -914,6 +954,18 @@ export class TaskCalendarSyncService {
 		}
 	}
 
+	private async clearDeletedEventLinks(
+		item: PendingGoogleCalendarDeletion,
+		connectionGeneration: number
+	): Promise<void> {
+		if (item.timeblockId) {
+			await this.timeblocks.removeIndexEntriesForEvent(item.calendarId, item.eventId);
+			return;
+		}
+		await this.clearTaskEventIdIfMatching(item, connectionGeneration);
+		await this.removeEventIndexForEvent(item.calendarId, item.eventId);
+	}
+
 	private async isQueuedDeletionStillNeeded(
 		item: PendingGoogleCalendarDeletion
 	): Promise<boolean> {
@@ -935,6 +987,7 @@ export class TaskCalendarSyncService {
 			await this.recoverDeletedTaskEventsFromIndex();
 			await this.processDeletionQueue();
 			await this.processPendingSyncQueue();
+			await this.timeblocks.processRecovery(true);
 		});
 	}
 
@@ -943,6 +996,7 @@ export class TaskCalendarSyncService {
 			await this.recoverDeletedTaskEventsFromIndexIfDue();
 			await this.processDeletionQueue();
 			await this.processPendingSyncQueue();
+			await this.timeblocks.processRecovery(false);
 		});
 	}
 
@@ -1367,7 +1421,9 @@ export class TaskCalendarSyncService {
 			for (const item of dedupedQueue.values()) {
 				const connectionGeneration = this.getConnectionGeneration();
 				try {
-					const deletionStillNeeded = await this.isQueuedDeletionStillNeeded(item);
+					const deletionStillNeeded = item.timeblockId
+						? await this.timeblocks.isQueuedDeletionStillNeeded(item)
+						: await this.isQueuedDeletionStillNeeded(item);
 					if (!deletionStillNeeded) {
 						continue;
 					}
@@ -1380,13 +1436,11 @@ export class TaskCalendarSyncService {
 							connectionGeneration
 						);
 					});
-					await this.clearTaskEventIdIfMatching(item, connectionGeneration);
-					await this.removeEventIndexForEvent(item.calendarId, item.eventId);
+					await this.clearDeletedEventLinks(item, connectionGeneration);
 					results.deleted++;
 				} catch (error: unknown) {
 					if (isAlreadyDeletedError(error)) {
-						await this.clearTaskEventIdIfMatching(item, connectionGeneration);
-						await this.removeEventIndexForEvent(item.calendarId, item.eventId);
+						await this.clearDeletedEventLinks(item, connectionGeneration);
 						results.deleted++;
 						continue;
 					}

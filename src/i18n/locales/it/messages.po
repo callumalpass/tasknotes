@@ -3858,6 +3858,11 @@ msgctxt "task selector create keyboard hint"
 msgid "Create with {shortcut}"
 msgstr "Crea con {shortcut}"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.enable.description"
+msgid "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them."
+msgstr "Crea, aggiorna ed elimina gli eventi del calendario quando aggiungi, modifichi e rimuovi blocchi temporali. I blocchi temporali esistenti vengono sincronizzati alla successiva modifica."
+
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "task selector create action accessible name"
 msgid "Create: {title}"
@@ -5634,6 +5639,11 @@ msgstr "Stato di esportazione:"
 msgctxt "settings.integrations.googleCalendarExport.header"
 msgid "Export tasks to Google Calendar"
 msgstr "Esporta attività in Google Calendar"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.header"
+msgid "Export timeblocks to Google Calendar"
+msgstr "Esporta blocchi temporali in Google Calendar"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
@@ -10465,6 +10475,11 @@ msgctxt "notices.audit.exportedRows"
 msgid "Rows exported: {count}"
 msgstr "Righe esportate: {count}"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.sameAsTasks"
+msgid "Same as task calendar"
+msgstr "Uguale al calendario delle attività"
+
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.sat"
 msgid "Sat"
@@ -10774,6 +10789,11 @@ msgstr "Seleziona la lingua del testo dell’interfaccia di TaskNotes"
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.description"
 msgid "Select which calendar to create task events in."
 msgstr "Seleziona il calendario in cui creare gli eventi delle attività."
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.description"
+msgid "Select which calendar to create timeblock events in."
+msgstr "Seleziona il calendario in cui creare gli eventi dei blocchi temporali."
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.inlineTasks.cardPropertiesDesc"
@@ -11679,6 +11699,16 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnUpdate.name"
 msgid "Sync on task update"
 msgstr "Sincronizza quando un’attività viene aggiornata"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.enable.name"
+msgid "Sync timeblocks"
+msgstr "Sincronizza blocchi temporali"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.description"
+msgid "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above."
+msgstr "Sincronizza i blocchi temporali delle tue note giornaliere con Google Calendar come eventi. Google Calendar deve essere collegato nelle impostazioni sopra."
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogle"
 msgid "Sync to Google Calendar"
@@ -12294,6 +12324,11 @@ msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.descripti
 msgid "Template for event titles. Available variables: '{{title}}', '{{status}}', '{{priority}}'"
 msgstr "Modello per i titoli degli eventi. Variabili disponibili: '{{title}}', '{{status}}', '{{priority}}'"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.description"
+msgid "Template for timeblock event titles. Available variables: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'"
+msgstr "Modello per i titoli degli eventi dei blocchi temporali. Variabili disponibili: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'"
+
 #: src/services/ICSNoteService.ts
 msgctxt "services.icsNote.notices.templateNotFound"
 msgid "Template not found: {path}"
@@ -12698,6 +12733,11 @@ msgctxt "utils/helpers: updateTimeblockTimes display"
 msgid "Timeblock {timeblockId} not found"
 msgstr "Blocco temporale {timeblockId} non trovato"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name"
+msgid "Timeblock calendar"
+msgstr "Calendario dei blocchi temporali"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
@@ -12707,6 +12747,11 @@ msgstr "Blocco temporale duplicato correttamente"
 msgctxt "notices.audit.timeblockResized"
 msgid "Timeblock duration updated"
 msgstr "Durata del blocco temporale aggiornata"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name"
+msgid "Timeblock event title template"
+msgstr "Modello per il titolo degli eventi dei blocchi temporali"
 
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockMoved"

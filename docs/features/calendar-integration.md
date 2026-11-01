@@ -100,3 +100,19 @@ The Calendar View supports time blocking for scheduling dedicated work periods. 
 Time blocks are stored in the frontmatter of daily notes and can be linked to specific tasks. This differs from time entries, which track actual time spent and are stored in task frontmatter rather than daily notes.
 
 Enable time blocking under `Settings -> TaskNotes -> Features` (Timeblocking section).
+
+### Syncing Timeblocks to Google Calendar
+
+TaskNotes can create Google Calendar events for your timeblocks. This is off by default. Under **Settings → TaskNotes → Integrations → Export timeblocks to Google Calendar**:
+
+- **Sync timeblocks** turns syncing on. It works independently of **Enable task export**, but Google Calendar must be connected.
+- **Timeblock calendar** chooses the calendar for timeblock events. Leave it on **Same as task calendar** to use the task export target calendar.
+- **Timeblock event title template** sets event titles separately from task events. It supports `{{title}}`, `{{date}}`, `{{startTime}}` and `{{endTime}}`.
+
+When syncing is on, adding a timeblock creates an event, editing it (including dragging or resizing it in the calendar) updates the event, and removing it, or deleting its daily note, deletes the event. Moving a timeblock to another day keeps the same event. Copying a timeblock creates a separate event, so deleting the copy leaves the original's event alone.
+
+Existing timeblocks are not exported when you turn syncing on; each one is synced the next time you edit it. Event descriptions contain the timeblock's description and attachments, and a link to the daily note when **Include Obsidian link** is on. The task export's event color also applies.
+
+TaskNotes keeps the link between each timeblock and its event in plugin data, not in the daily note. If Google Calendar cannot be reached, creates, updates and deletions are retried in the background. When Obsidian starts, changes made while it was closed to timeblocks that already have events are synced. Changing **Timeblock calendar** moves existing events to the new calendar the next time each timeblock is synced. Turning syncing off leaves existing events in place.
+
+Timeblock sync is available for Google Calendar only.

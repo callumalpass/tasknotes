@@ -435,6 +435,8 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 						await import("../services/TaskCalendarSyncService")
 					).TaskCalendarSyncService(plugin, plugin.googleCalendarService);
 					await plugin.taskCalendarSyncService.initializeExternalFileReconciliation();
+					plugin.taskCalendarSyncService.timeblocks.initialize();
+					plugin.taskCalendarSyncService.timeblocks.registerVaultEvents();
 					plugin.taskCalendarSyncService.startRecoveryQueueProcessor();
 
 					plugin.registerEvent(
