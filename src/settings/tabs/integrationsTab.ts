@@ -2438,7 +2438,12 @@ function renderICSSubscriptionsList(
 				const subscriptionService = plugin.icsSubscriptionService;
 				if (!subscriptionService) return;
 				await subscriptionService.updateSubscription(subscription.id, updates);
-				Object.assign(subscription, updates);
+				// updateSubscription replaces the stored object. This card skips the
+				// re-render, so point it at the new object; otherwise later toggle and
+				// type edits would mutate a detached copy.
+				subscription =
+					subscriptionService.getSubscriptions().find((s) => s.id === subscription.id) ??
+					subscription;
 				save();
 			} catch (error) {
 				tasknotesLogger.error("Error updating subscription authentication:", {

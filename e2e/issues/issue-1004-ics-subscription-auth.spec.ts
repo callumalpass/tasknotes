@@ -65,6 +65,21 @@ test("credentials can be entered without the card collapsing; password goes to S
 	await expect(password).toHaveValue("");
 	await expect(password).toHaveAttribute("placeholder", /Saved/);
 
+	// Auth edits skip the re-render; later edits on the same card must still
+	// reach the service's subscription, not a detached copy.
+	await card.locator(".checkbox-container").first().click();
+	await expect
+		.poll(() =>
+			obsidian.page.evaluate(
+				(id) =>
+					(window as any).app.plugins.plugins.tasknotes.icsSubscriptionService
+						.getSubscriptions()
+						.find((sub: { id: string }) => sub.id === id)?.enabled,
+				subscriptionId
+			)
+		)
+		.toBe(true);
+
 	const stored = await obsidian.page.evaluate(async (id) => {
 		const app = (window as any).app;
 		const plugin = app.plugins.plugins.tasknotes;
