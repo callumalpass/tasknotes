@@ -258,31 +258,35 @@ function insertOrderPropertyAfterOrAppend(
 
 /**
  * Generate a priorityWeight formula based on user's custom priorities.
- * Creates nested if() statements that map priority values to their weights.
- * Lower weight = higher priority, so tasks sort correctly in ascending order.
+ * Creates nested if() statements that rank priority values by their configured weight.
+ * Higher weight = higher priority, so sort descending for highest priority first.
+ * Missing or unrecognized priorities rank below every configured priority.
  *
- * Example output: if(priority=="high",0,if(priority=="normal",1,if(priority=="low",2,999)))
+ * Example output: if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,-1))))
  */
 function generatePriorityWeightFormula(plugin: TaskNotesPlugin): string {
 	const settings = plugin.settings;
 	const priorityProperty = getPropertyName(mapPropertyToBasesProperty("priority", plugin));
 
-	// Sort priorities by weight (ascending - lower weight = higher priority)
+	// Sort priorities by weight (ascending - higher weight = higher priority)
 	const sortedPriorities = [...settings.customPriorities].sort((a, b) => a.weight - b.weight);
+
+	// Fallback for tasks with no priority or unknown priority. It must stay below
+	// every rank so these tasks sort last and do not raise urgencyScore.
+	const unrankedWeight = "-1";
 
 	if (sortedPriorities.length === 0) {
 		// No priorities configured, return a constant
-		return "999";
+		return unrankedWeight;
 	}
 
 	// Build nested if statements from the inside out
-	// Start with the fallback value (for tasks with no priority or unknown priority)
-	let formula = "999";
+	let formula = unrankedWeight;
 
 	// Work backwards through priorities to build nested ifs
 	for (let i = sortedPriorities.length - 1; i >= 0; i--) {
 		const priority = sortedPriorities[i];
-		// Use the index as the weight value (0 = highest priority)
+		// Use the rank as the weight value (highest index = highest priority)
 		formula = `if(${priorityProperty}=="${escapeBasesStringLiteral(priority.value)}",${i},${formula})`;
 	}
 
@@ -350,7 +354,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 	const nextDateStartOfDay = 'date(date(formula.nextDate).format("YYYY-MM-DD"))';
 
 	return {
-		// Priority weight for sorting (lower = higher priority)
+		// Priority weight for sorting (higher = higher priority; sort descending)
 		priorityWeight: generatePriorityWeightFormula(plugin),
 
 		// Days until due (negative = overdue, positive = days remaining)

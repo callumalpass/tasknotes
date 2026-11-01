@@ -103,7 +103,7 @@ These formulas work with either due date or scheduled date, useful for finding t
 
 | Formula | Description | Expression |
 |---------|-------------|------------|
-| `priorityWeight` | Numeric weight for priority sorting (lower = higher priority) | `if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))` |
+| `priorityWeight` | Priority rank in your configured order (higher = higher priority; missing or unknown priorities are `-1`) | `if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,-1))))` |
 | `urgencyScore` | Combines priority, next date proximity, and time-of-day (due or scheduled, higher = more urgent) | `if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))` |
 
 ### Display formulas
@@ -128,7 +128,7 @@ filters:
 
 formulas:
   # Sorting
-  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))'
+  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,-1))))'
   urgencyScore: 'if(due.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilDue))'
   # Date calculations
   daysUntilDue: 'if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)'
