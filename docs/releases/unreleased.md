@@ -41,6 +41,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @jcconnects for requesting this and for the original implementation in PR #2139
 - (#974) Added optional syncing of daily-note timeblocks to Google Calendar. Turn on **Sync timeblocks** under **Settings → TaskNotes → Integrations → Export timeblocks to Google Calendar** to create, update and delete events as you add, edit, move and remove timeblocks. Timeblocks can use their own target calendar and event title template. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/#syncing-timeblocks-to-google-calendar).
   - Thanks to @karthikm-0 for requesting this, and to @Lorite for the original implementation in #1677
+- Inline task conversion can turn a task line into an existing note. When the line links to a note with the alias `note` (for example `[[Skills/Live demos|note]]`), that note becomes the task instead of a new file being created. Its name, body and existing properties are kept; only missing task properties are added. See [Inline Tasks](https://tasknotes.dev/features/inline-tasks/#converting-into-an-existing-note)
+  - Thanks to @johnyoonh for the original proposal and test cases in PR #1867
 
 ## Fixed
 
