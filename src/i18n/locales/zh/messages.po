@@ -11833,6 +11833,11 @@ msgid "Task"
 msgstr "任务"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "任务\"{title}\"已创建为文件\"{filename}\"。文件名不能包含某些字符，因此完整标题保留在标题属性中。"
+
+#: src/modals/TaskCreationModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskCreation.notices.success"
 msgid "Task \"{title}\" created successfully"
@@ -11903,6 +11908,11 @@ msgstr "任务转换服务不可用。请重试。"
 msgctxt "services.instantTaskConvert.notices.conversionCompleteShortened"
 msgid "Task converted: \"{title}\" (filename shortened due to length)"
 msgstr "任务已转换：“{title}”（文件名因过长而缩短）"
+
+#: src/services/InstantTaskConvertService.ts
+msgctxt "services.instantTaskConvert.notices.conversionCompleteFilenameSanitized"
+msgid "Task converted: \"{title}\" as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "任务已转换：“{title}”，文件为“{filename}”。文件名不能包含某些字符，因此完整标题保留在标题属性中。"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionComplete"

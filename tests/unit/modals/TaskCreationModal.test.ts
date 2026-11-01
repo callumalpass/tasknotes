@@ -86,7 +86,7 @@ jest.mock("../../../src/utils/filenameGenerator", () => ({
 		const dateStr = format(context.date || new Date("2025-01-15"), "yyyy-MM-dd");
 		return `${context.title.toLowerCase().replace(/\s+/g, "-")}-${dateStr}`;
 	}),
-	shouldShowFilenameShortenedNotice: jest.fn(() => false),
+	getTaskFilenameNotice: jest.fn(() => null),
 }));
 
 jest.mock("../../../src/services/NaturalLanguageParser", () => {
