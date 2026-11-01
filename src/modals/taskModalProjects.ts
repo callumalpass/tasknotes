@@ -207,7 +207,7 @@ function createTaskModalProjectItemFromWikiLink(
 	linkPath: string,
 	context: TaskModalProjectStringContext
 ): TaskModalProjectItem {
-	const file = context.resolveLink(linkPath, context.sourcePath);
+	const file = context.resolveLink(parseLinkToPath(projectString), context.sourcePath);
 	if (file instanceof TFile) {
 		return createTaskModalProjectItemFromFile(file, projectString);
 	}

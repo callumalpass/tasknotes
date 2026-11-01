@@ -56,6 +56,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2434) Fixed aliased project links appearing unresolved when reopening a task in the edit modal, while preserving their aliases and heading/block references.
+  - Thanks to @stemForge for reporting and identifying the parsing problem.
+
 - Fixed the custom field settings card header not updating its title and property key while the field is edited. Thanks to @cybersader for finding this in #1730.
 - (#1440) Links to a heading or block, such as `[[Note#Heading]]`, `[[Note#^block]]` or `[text](<Folder/My%20Note.md#Heading>)`, now open the note at that heading or block from task cards, project links and task details, and keep the target for Ctrl/Cmd+click, middle-click and hover previews. Angle-bracket wikilinks with encoded spaces and a heading now resolve to the right note, and relative project links (for example `[[../Projects/Alpha]]`) are resolved from the task's own folder when filtering, grouping and in Stats. Thanks to @normenmueller for the original pull request
 - (#1451) Hide exported Google Calendar copies only when Calendar or Mini Calendar shows the linked task on that day. Unrelated events and occurrences without a visible task stay visible. Thanks to @Pedrohgv for contributing this in #2218.
