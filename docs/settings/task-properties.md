@@ -146,8 +146,12 @@ Control which notes appear when selecting projects:
 - **Required tags**: Comma-separated list of tags (shows notes with ANY of these tags)
 - **Include folders**: Comma-separated list of folder paths (shows notes in ANY of these folders)
 - **Required property key**: Frontmatter property that must exist
-- **Required property value**: Expected value for the property (optional)
-These filters reduce suggestion noise in large vaults.
+- **Required property value**: Optional comma-separated allow-list, such as `active, planned`, or an explicit `containsAny("active", "planned")` expression. Use `!containsAny("completed", "archived")` or `not containsAny("done")` to exclude values. Matching is case-insensitive, including list-valued properties.
+  - Quoted expression arguments can contain commas; escape quotes and backslashes with a backslash. Malformed `containsAny(...)` calls match no notes.
+  - Plain filters remain literal: `not started` and `"active"` keep their original meaning. Negation only applies to explicit `containsAny(...)` calls.
+  - With no value filter, the property only has to exist (empty strings and lists are allowed). With a value filter, missing or null properties, blank strings and empty lists are excluded, including under negation.
+
+These filters reduce suggestion noise in large vaults, including hiding completed or archived projects from the `+` suggestions and project picker. Folder exclusions and suggestion sort order are separate settings/features.
 
 A "Filters On" badge appears when any filters are configured.
 
@@ -273,7 +277,7 @@ Each custom field can configure filters to control which files appear in wikilin
 - **Required tags**: Comma-separated list of tags (shows files with ANY of these tags)
 - **Include folders**: Comma-separated list of folder paths (shows files in ANY of these folders)
 - **Required property key**: Frontmatter property that must exist
-- **Required property value**: Expected value for the property (optional)
+- **Required property value**: Optional comma-separated allow-list or `containsAny("a", "b")` expression. Prefix the expression with `!` to exclude values, for example `!containsAny("archived")`.
 
 A "Filters On" badge appears when filters are configured.
 

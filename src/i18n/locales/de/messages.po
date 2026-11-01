@@ -13724,6 +13724,11 @@ msgctxt "settings.features.timeblocking.usage"
 msgid "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration."
 msgstr "Verwendung: Ziehen Sie im Kalender einen Zeitbereich auf und wählen Sie im Kontextmenü „Zeitblock“ (nur bei aktivierter Zeitplanung mit Zeitblöcken sichtbar). Ziehen Sie bestehende Zeitblöcke zum Verschieben und ändern Sie ihre Dauer an den Rändern."
 
+#: src/settings/components/FilterSettingsComponent.ts
+msgctxt "Property value filter syntax help"
+msgid "Use a comma-separated allow-list or containsAny(...). Prefix containsAny(...) with ! to exclude values."
+msgstr "Verwende eine kommagetrennte Positivliste oder containsAny(...). Setze ! vor containsAny(...), um Werte auszuschließen."
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description"
 msgid "Use a separate fallback template for materialized occurrence notes when the recurring task has no occurrence_template"

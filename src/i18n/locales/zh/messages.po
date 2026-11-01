@@ -13723,6 +13723,11 @@ msgctxt "settings.features.timeblocking.usage"
 msgid "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration."
 msgstr "用法：在日历中拖动选择时段，然后在菜单中选择“时间块”（须先启用）。拖动已有时间块可移动，拖动边缘可调整时长。"
 
+#: src/settings/components/FilterSettingsComponent.ts
+msgctxt "Property value filter syntax help"
+msgid "Use a comma-separated allow-list or containsAny(...). Prefix containsAny(...) with ! to exclude values."
+msgstr "使用逗号分隔的允许值列表或 containsAny(...)。在 containsAny(...) 前添加 ! 可排除指定值。"
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.description"
 msgid "Use a separate fallback template for materialized occurrence notes when the recurring task has no occurrence_template"
