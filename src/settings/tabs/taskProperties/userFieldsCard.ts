@@ -11,6 +11,8 @@ import {
 	createCardSelect,
 	createCardToggle,
 	CardRow,
+	setCardPrimaryText,
+	setCardSecondaryText,
 } from "../../components/CardComponent";
 import { createFilterSettingsInputs } from "../../components/FilterSettingsComponent";
 import { initializeFieldConfig } from "../../../utils/fieldConfigDefaults";
@@ -305,17 +307,13 @@ function renderUserFieldsList(
 			}
 
 			// Update the card header text directly without re-rendering
-			const card = container.querySelector(`[data-card-id="${field.id}"]`);
-			if (card) {
-				const primaryText = card.querySelector(".tasknotes-settings__card-header-primary");
-				if (primaryText) {
-					primaryText.textContent =
-						field.displayName ||
-						translate(
-							msg({ message: "Unnamed field", context: "settings.taskProperties.customUserFields.defaultNames.unnamedField" })
-						);
-				}
-			}
+			setCardPrimaryText(
+				container.querySelector(`[data-card-id="${field.id}"]`),
+				field.displayName ||
+					translate(
+						msg({ message: "Unnamed field", context: "settings.taskProperties.customUserFields.defaultNames.unnamedField" })
+					)
+			);
 
 			save();
 		});
@@ -350,17 +348,11 @@ function renderUserFieldsList(
 			field.key = key;
 
 			// Update the card header secondary text directly without re-rendering
-			const card = container.querySelector(`[data-card-id="${field.id}"]`);
-			if (card) {
-				const secondaryText = card.querySelector(
-					".tasknotes-settings__card-header-secondary"
-				);
-				if (secondaryText) {
-					secondaryText.textContent =
-						field.key ||
-						translate(msg({ message: "no-key", context: "settings.taskProperties.customUserFields.defaultNames.noKey" }));
-				}
-			}
+			setCardSecondaryText(
+				container.querySelector(`[data-card-id="${field.id}"]`),
+				field.key ||
+					translate(msg({ message: "no-key", context: "settings.taskProperties.customUserFields.defaultNames.noKey" }))
+			);
 
 			save();
 		});

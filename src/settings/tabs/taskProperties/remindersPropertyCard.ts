@@ -14,6 +14,8 @@ import {
 	createCardNumberInput,
 	createCardSelect,
 	CardRow,
+	setCardPrimaryText,
+	setCardSecondaryText,
 } from "../../components/CardComponent";
 import { createPropertyDescription, TranslateFn } from "./helpers";
 
@@ -200,15 +202,10 @@ function renderRemindersList(
 		const updateCallback = (updates: Partial<DefaultReminder>) => {
 			Object.assign(reminder, updates);
 			save();
-			const card = container.querySelector(`[data-card-id="${reminder.id}"]`);
-			if (card) {
-				const secondaryText = card.querySelector(
-					".tasknotes-settings__card-secondary-text"
-				);
-				if (secondaryText) {
-					secondaryText.textContent = formatReminderTiming(reminder, translate);
-				}
-			}
+			setCardSecondaryText(
+				container.querySelector(`[data-card-id="${reminder.id}"]`),
+				formatReminderTiming(reminder, translate)
+			);
 		};
 
 		const configRows =
@@ -268,14 +265,13 @@ function renderRemindersList(
 		descInput.addEventListener("input", () => {
 			reminder.description = descInput.value;
 			save();
-			const primaryText = card.querySelector(".tasknotes-settings__card-primary-text");
-			if (primaryText) {
-				primaryText.textContent =
-					reminder.description ||
+			setCardPrimaryText(
+				card,
+				reminder.description ||
 					translate(
 						msg({ message: "Unnamed reminder", context: "settings.defaults.reminders.unnamedReminder" })
-					);
-			}
+					)
+			);
 		});
 
 		typeSelect.addEventListener("change", () => {

@@ -2,7 +2,6 @@ import { uiData } from "../../../i18n/dataText";
 import { uiText } from "../../../i18n/runtime";
 import { configLabel } from "../../../i18n/configLabels";
 import { msg } from "@lingui/core/macro";
-/* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import { showConfirmationModal } from "../../../modals/ConfirmationModal";
@@ -20,6 +19,8 @@ import {
 	createThemeColorInput,
 	readThemeColorInput,
 	CardRow,
+	setCardPrimaryText,
+	setCardSecondaryText,
 } from "../../components/CardComponent";
 import { createIconInput } from "../../components/IconSuggest";
 import { createNLPTriggerRows, createPropertyDescription, TranslateFn } from "./helpers";
@@ -460,8 +461,10 @@ function renderStatusList(
 
 		valueInput.addEventListener("input", () => {
 			status.value = valueInput.value;
-			statusCard.querySelector(".tasknotes-settings__card-primary-text")!.textContent =
-				status.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }));
+			setCardPrimaryText(
+				statusCard,
+				status.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }))
+			);
 			save();
 			if (onStatusesChanged) onStatusesChanged();
 		});
@@ -484,8 +487,10 @@ function renderStatusList(
 
 		labelInput.addEventListener("input", () => {
 			status.label = labelInput.value;
-			statusCard.querySelector(".tasknotes-settings__card-secondary-text")!.textContent =
-				configLabel(status) || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList display" }));
+			setCardSecondaryText(
+				statusCard,
+				configLabel(status) || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList display" }))
+			);
 			save();
 			if (onStatusesChanged) onStatusesChanged();
 		});
@@ -548,5 +553,3 @@ function renderStatusList(
 		});
 	});
 }
-
-/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the status settings renderer. */

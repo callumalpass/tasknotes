@@ -39,6 +39,7 @@ import {
 	createThemeColorInput,
 	readThemeColorInput,
 	type CardSection,
+	setCardSecondaryText,
 } from "../components/CardComponent";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 
@@ -2580,19 +2581,16 @@ function renderICSSubscriptionsList(
 						}
 
 						// Update the secondary text in the header
-						const secondaryText = card.querySelector(
-							".tasknotes-settings__card-secondary-text"
+						setCardSecondaryText(
+							card,
+							newType === "remote"
+								? translate(
+										msg({ message: "Remote calendar", context: "settings.integrations.subscriptionsList.statusLabels.remoteCalendar" })
+									)
+								: translate(
+										msg({ message: "Local file", context: "settings.integrations.subscriptionsList.typeOptions.local" })
+									)
 						);
-						if (secondaryText) {
-							secondaryText.textContent =
-								newType === "remote"
-									? translate(
-											msg({ message: "Remote calendar", context: "settings.integrations.subscriptionsList.statusLabels.remoteCalendar" })
-										)
-									: translate(
-											msg({ message: "Local file", context: "settings.integrations.subscriptionsList.typeOptions.local" })
-										);
-						}
 
 						// Update the type badge
 						const typeBadge = card.querySelector(

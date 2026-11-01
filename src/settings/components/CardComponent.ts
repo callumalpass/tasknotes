@@ -272,6 +272,37 @@ export function setCardCollapsed(card: HTMLElement, collapsed: boolean): void {
 	if (header) header.title = collapsed ? uiText(msg({ message: "Expand card", context: "settings/components/CardComponent: setCardCollapsed display" })) : uiText(msg({ message: "Collapse card", context: "settings/components/CardComponent: setCardCollapsed display" }));
 }
 
+const CARD_INFO_CLASS = "tasknotes-settings__card-info";
+const CARD_PRIMARY_TEXT_CLASS = "tasknotes-settings__card-primary-text";
+const CARD_SECONDARY_TEXT_CLASS = "tasknotes-settings__card-secondary-text";
+
+function getCardHeaderInfo(card: Element): HTMLElement | null {
+	return card.querySelector<HTMLElement>(
+		`:scope > .tasknotes-settings__card-header .${CARD_INFO_CLASS}`
+	);
+}
+
+/** Update a card's header title in place without re-rendering the card. */
+export function setCardPrimaryText(card: Element | null | undefined, text: string): void {
+	const primaryText = card && getCardHeaderInfo(card)?.querySelector(`.${CARD_PRIMARY_TEXT_CLASS}`);
+	if (primaryText) primaryText.textContent = text;
+}
+
+/**
+ * Update a card's header subtitle in place without re-rendering the card.
+ * Creates the subtitle when the card was rendered without one.
+ */
+export function setCardSecondaryText(card: Element | null | undefined, text: string): void {
+	const headerInfo = card ? getCardHeaderInfo(card) : null;
+	if (!headerInfo) return;
+	let secondaryText = headerInfo.querySelector(`.${CARD_SECONDARY_TEXT_CLASS}`);
+	if (!secondaryText) {
+		if (!text) return;
+		secondaryText = headerInfo.createSpan(CARD_SECONDARY_TEXT_CLASS);
+	}
+	secondaryText.textContent = text;
+}
+
 /**
  * Creates a deduplicated card component
  */
@@ -343,11 +374,11 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
 	// Header info
 	const headerInfo = headerLeft.createDiv("tasknotes-settings__card-info");
-	const primaryText = headerInfo.createSpan("tasknotes-settings__card-primary-text");
+	const primaryText = headerInfo.createSpan(CARD_PRIMARY_TEXT_CLASS);
 	primaryText.textContent = config.header.primaryText;
 
 	if (config.header.secondaryText) {
-		const secondaryText = headerInfo.createSpan("tasknotes-settings__card-secondary-text");
+		const secondaryText = headerInfo.createSpan(CARD_SECONDARY_TEXT_CLASS);
 		secondaryText.textContent = config.header.secondaryText;
 	}
 
