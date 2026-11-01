@@ -11,6 +11,7 @@ import {
 	stringifyYaml,
 	TFile,
 	setTooltip,
+	getFrontMatterInfo,
 	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -512,24 +513,19 @@ export class TimeblockInfoModal extends Modal {
 
 		// Parse existing frontmatter
 		let frontmatter: Record<string, unknown> = {};
-		let bodyContent = content;
+		const info = getFrontMatterInfo(content);
+		const bodyContent = info.exists ? content.slice(info.contentStart) : content;
 
-		if (content.startsWith("---")) {
-			const endOfFrontmatter = content.indexOf("---", 3);
-			if (endOfFrontmatter !== -1) {
-				const frontmatterText = content.substring(3, endOfFrontmatter);
-				bodyContent = content.substring(endOfFrontmatter + 3);
-
-				try {
-					frontmatter = parseFrontmatterRecord(frontmatterText);
-				} catch (error) {
-					tasknotesLogger.error("Error parsing existing frontmatter:", {
-						category: "validation",
-						operation: "parsing-existing-frontmatter",
-						error: error,
-					});
-					frontmatter = {};
-				}
+		if (info.exists) {
+			try {
+				frontmatter = parseFrontmatterRecord(info.frontmatter);
+			} catch (error) {
+				tasknotesLogger.error("Error parsing existing frontmatter:", {
+					category: "validation",
+					operation: "parsing-existing-frontmatter",
+					error: error,
+				});
+				frontmatter = {};
 			}
 		}
 
@@ -553,10 +549,10 @@ export class TimeblockInfoModal extends Modal {
 		}
 
 		// Convert frontmatter back to YAML
-		const frontmatterText = stringifyYaml(frontmatter);
+		const newFrontmatterText = stringifyYaml(frontmatter);
 
 		// Reconstruct file content
-		const newContent = `---\n${frontmatterText}---${bodyContent}`;
+		const newContent = `---\n${newFrontmatterText}---\n${bodyContent}`;
 
 		// Write back to file
 		await modifyVaultFile(this.app, dailyNote, newContent);
@@ -689,24 +685,19 @@ export class TimeblockInfoModal extends Modal {
 
 		// Parse existing frontmatter
 		let frontmatter: Record<string, unknown> = {};
-		let bodyContent = content;
+		const info = getFrontMatterInfo(content);
+		const bodyContent = info.exists ? content.slice(info.contentStart) : content;
 
-		if (content.startsWith("---")) {
-			const endOfFrontmatter = content.indexOf("---", 3);
-			if (endOfFrontmatter !== -1) {
-				const frontmatterText = content.substring(3, endOfFrontmatter);
-				bodyContent = content.substring(endOfFrontmatter + 3);
-
-				try {
-					frontmatter = parseFrontmatterRecord(frontmatterText);
-				} catch (error) {
-					tasknotesLogger.error("Error parsing existing frontmatter:", {
-						category: "validation",
-						operation: "parsing-existing-frontmatter",
-						error: error,
-					});
-					frontmatter = {};
-				}
+		if (info.exists) {
+			try {
+				frontmatter = parseFrontmatterRecord(info.frontmatter);
+			} catch (error) {
+				tasknotesLogger.error("Error parsing existing frontmatter:", {
+					category: "validation",
+					operation: "parsing-existing-frontmatter",
+					error: error,
+				});
+				frontmatter = {};
 			}
 		}
 
@@ -735,12 +726,12 @@ export class TimeblockInfoModal extends Modal {
 		}
 
 		// Convert frontmatter back to YAML
-		const frontmatterText =
+		const newFrontmatterText =
 			Object.keys(frontmatter).length > 0 ? stringifyYaml(frontmatter) : "";
 
 		// Reconstruct file content
-		const newContent = frontmatterText
-			? `---\n${frontmatterText}---${bodyContent}`
+		const newContent = newFrontmatterText
+			? `---\n${newFrontmatterText}---\n${bodyContent}`
 			: bodyContent.trim();
 
 		// Write back to file

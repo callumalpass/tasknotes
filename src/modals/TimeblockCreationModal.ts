@@ -12,6 +12,7 @@ import {
 	parseYaml,
 	stringifyYaml,
 	setTooltip,
+	getFrontMatterInfo,
 	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -418,24 +419,19 @@ export class TimeblockCreationModal extends Modal {
 
 		// Parse existing frontmatter
 		let frontmatter: DailyNoteFrontmatter = {};
-		let bodyContent = content;
+		const info = getFrontMatterInfo(content);
+		const bodyContent = info.exists ? content.slice(info.contentStart) : content;
 
-		if (content.startsWith("---")) {
-			const endOfFrontmatter = content.indexOf("---", 3);
-			if (endOfFrontmatter !== -1) {
-				const frontmatterText = content.substring(3, endOfFrontmatter);
-				bodyContent = content.substring(endOfFrontmatter + 3);
-
-				try {
-					frontmatter = parseYaml(frontmatterText) || {};
-				} catch (error) {
-					tasknotesLogger.error("Error parsing existing frontmatter:", {
-						category: "validation",
-						operation: "parsing-existing-frontmatter",
-						error: error,
-					});
-					frontmatter = {};
-				}
+		if (info.exists) {
+			try {
+				frontmatter = parseYaml(info.frontmatter) || {};
+			} catch (error) {
+				tasknotesLogger.error("Error parsing existing frontmatter:", {
+					category: "validation",
+					operation: "parsing-existing-frontmatter",
+					error: error,
+				});
+				frontmatter = {};
 			}
 		}
 
@@ -446,10 +442,10 @@ export class TimeblockCreationModal extends Modal {
 		frontmatter.timeblocks.push(timeblock);
 
 		// Convert frontmatter back to YAML
-		const frontmatterText = stringifyYaml(frontmatter);
+		const newFrontmatterText = stringifyYaml(frontmatter);
 
 		// Reconstruct file content
-		const newContent = `---\n${frontmatterText}---${bodyContent}`;
+		const newContent = `---\n${newFrontmatterText}---\n${bodyContent}`;
 
 		// Write back to file
 		await modifyVaultFile(this.app, dailyNote, newContent);
