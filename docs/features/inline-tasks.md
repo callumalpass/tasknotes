@@ -86,6 +86,12 @@ Conversion preserves surrounding formatting, including callouts, outlines, and n
 
 The feature handles edge cases like nested blockquotes and maintains proper indentation in the final link replacement.
 
+### Converting into an Existing Note
+
+If the line links to a note with the alias `note`, for example `- [ ] Practise the demo [[Skills/Live demos|note]] 📅 2026-05-08`, conversion makes that note the task instead of creating a new file. The link is resolved the same way Obsidian resolves any link from the current note. The note keeps its name, body and existing properties: TaskNotes only adds task properties it doesn't already have (such as the due date above, or the task tag or identifying property) and adds any new tags. If the line says more than the note's name, or sets a value the note already has differently, the line's text is appended to the end of the note so nothing from it is lost. Any selected details are appended too. The line is then replaced with a link to the note.
+
+A link with any other alias, or one that doesn't resolve to an existing note, is converted as usual.
+
 ## Bulk Task Conversion
 
 The **Bulk Task Conversion** command converts all checkbox tasks in the current note to TaskNotes in a single operation. This command is available in the command palette as "Convert all tasks in note to TaskNotes".
