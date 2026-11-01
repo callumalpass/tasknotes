@@ -4285,8 +4285,8 @@ export class KanbanView extends BasesViewBase {
 
 		// Default: use link-aware title rendering
 		const propertyId = isSwimLane ? this.swimLanePropertyId : this.getGroupByPropertyId();
-		const displayTitle = this.getGroupDisplayTitle(title, propertyId);
-		this.renderLinkAwareGroupTitle(container, displayTitle);
+		const linkTitle = isSwimLane ? null : this.dataAdapter?.getGroupLinkTitle(title);
+		this.renderLinkAwareGroupTitle(container, linkTitle ?? this.getGroupDisplayTitle(title, propertyId));
 	}
 
 	private renderLinkAwareGroupTitle(container: HTMLElement, title: string): void {

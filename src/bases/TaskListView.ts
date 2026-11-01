@@ -3006,7 +3006,9 @@ export class TaskListView extends BasesViewBase {
 		// Add group title
 		const titleContainer = headerElement.createSpan({ cls: "task-group-title" });
 		const displayTitle = isSubHeader ? headerItem.subGroupTitle : headerItem.groupTitle;
-		this.renderGroupTitle(titleContainer, this.groupDisplayLabel(displayTitle, isSubHeader ? this.subGroupPropertyId : this.getGroupByPropertyId() ?? this.subGroupPropertyId));
+		const groupPropertyId = isSubHeader ? this.subGroupPropertyId : this.getGroupByPropertyId() ?? this.subGroupPropertyId;
+		const linkTitle = !isSubHeader && groupPropertyId === this.getGroupByPropertyId() ? this.dataAdapter?.getGroupLinkTitle(displayTitle) : null;
+		this.renderGroupTitle(titleContainer, linkTitle ?? this.groupDisplayLabel(displayTitle, groupPropertyId));
 
 		// Add count
 		headerElement.createSpan({

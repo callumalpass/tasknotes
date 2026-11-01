@@ -92,6 +92,46 @@ export function convertBasesGroupKeyToString(key: unknown): string {
 	return formatBasesGroupKeyValue(actualValue);
 }
 
+const LINK_MARKUP = /^(?:\[\[[^\]]+\]\]|\[[^\]]*\]\([^)]+\))$/;
+
+function basesLinkMarkup(value: unknown): string | null {
+	if (value === null || typeof value !== "object") return null;
+	const data = (value as BasesValueInternals).data;
+	if (typeof data !== "string") return null;
+	const toString = Reflect.get(value, "toString");
+	if (typeof toString !== "function" || toString === Object.prototype.toString) return null;
+	const markup: unknown = Reflect.apply(toString, value, []);
+	return typeof markup === "string" && markup !== data && LINK_MARKUP.test(markup) ? markup : null;
+}
+
+/**
+ * Link markup for a Bases group key whose value is a link or a list of links.
+ * Group key strings drop link syntax ("[[Project]]" becomes "Project"), so headers use
+ * this to keep rendering links without resolving every bare name as a note.
+ */
+export function convertBasesGroupKeyToLinkTitle(key: unknown): string | null {
+	const single = basesLinkMarkup(key);
+	if (single) return single;
+	if (key === null || typeof key !== "object") return null;
+
+	const basesKey = key as BasesValueInternals;
+	const getListItem =
+		typeof basesKey.get === "function"
+			? basesKey.get.bind(basesKey)
+			: typeof basesKey.at === "function"
+				? basesKey.at.bind(basesKey)
+				: null;
+	if (typeof basesKey.length !== "function" || !getListItem) return null;
+
+	const links: string[] = [];
+	for (let i = 0; i < basesKey.length(); i++) {
+		const markup = basesLinkMarkup(getListItem(i));
+		if (!markup) return null;
+		links.push(markup);
+	}
+	return links.length > 0 ? links.join(", ") : null;
+}
+
 function extractBasesGroupKeyValue(basesKey: BasesValueInternals): unknown {
 	if (basesKey.file && typeof basesKey.file === "object") {
 		return basesKey.file.path;
