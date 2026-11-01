@@ -30,6 +30,18 @@ function getDateLocaleFromPlugin(plugin: TaskNotesPlugin): string {
 	return getBrowserLocale() || plugin.settings.nlpLanguage || "en";
 }
 
+/** The part of the parser that long-lived services use. */
+export type TaskTextParser = Pick<NaturalLanguageParser, "parseInput">;
+
+/**
+ * A parser for services that outlive a settings change. Each parse reads the
+ * current NLP settings, so changing the NLP language, statuses or triggers
+ * takes effect without reloading the plugin.
+ */
+export function createLivePluginParser(plugin: TaskNotesPlugin): TaskTextParser {
+	return { parseInput: (input) => NaturalLanguageParser.fromPlugin(plugin).parseInput(input) };
+}
+
 /**
  * TaskNotes adapter around shared NLP core.
  * Keeps plugin-facing API stable while core logic lives in a reusable package.

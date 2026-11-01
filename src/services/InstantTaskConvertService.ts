@@ -7,7 +7,7 @@ import type { HeadingCache } from "obsidian";
 import type { EditorView } from "@codemirror/view";
 import TaskNotesPlugin from "../main";
 import { TasksPluginParser, ParsedTaskData } from "../utils/TasksPluginParser";
-import { NaturalLanguageParser } from "./NaturalLanguageParser";
+import { createLivePluginParser, type TaskTextParser } from "./NaturalLanguageParser";
 import { Reminder, TaskCreationData } from "../types";
 import {
 	getCurrentTimestamp,
@@ -99,7 +99,7 @@ export class InstantTaskConvertService {
 	private plugin: TaskNotesPlugin;
 	private statusManager: StatusManager;
 	private priorityManager: PriorityManager;
-	private nlParser: NaturalLanguageParser;
+	private nlParser: TaskTextParser;
 	private inFlightConversions = new WeakMap<Editor, Map<number, Promise<void>>>();
 
 	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
@@ -114,7 +114,7 @@ export class InstantTaskConvertService {
 		this.plugin = plugin;
 		this.statusManager = statusManager;
 		this.priorityManager = priorityManager;
-		this.nlParser = NaturalLanguageParser.fromPlugin(plugin);
+		this.nlParser = createLivePluginParser(plugin);
 	}
 
 	/**
