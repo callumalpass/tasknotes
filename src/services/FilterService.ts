@@ -268,7 +268,7 @@ export class FilterService extends EventEmitter {
 	 * Returns the absolute path if it resolves to a file, otherwise returns the original value.
 	 * Supports wikilinks ([[path]]), markdown links ([text](path)), and plain paths.
 	 */
-	resolveProjectToAbsolutePath(projectValue: string): string {
+	resolveProjectToAbsolutePath(projectValue: string, sourcePath = ""): string {
 		if (!projectValue || typeof projectValue !== "string") {
 			return projectValue || "";
 		}
@@ -282,7 +282,10 @@ export class FilterService extends EventEmitter {
 		const linkPath = this.parseLinkToPath(projectValue);
 
 		// Always try to resolve using Obsidian's API - this handles relative paths correctly
-		const resolvedFile = this.runtime.app.metadataCache.getFirstLinkpathDest(linkPath, "");
+		const resolvedFile = this.runtime.app.metadataCache.getFirstLinkpathDest(
+			linkPath,
+			sourcePath
+		);
 		if (resolvedFile) {
 			// Return the absolute file path (vault-relative) without .md extension
 			return resolvedFile.path.replace(/\.md$/, "");
@@ -348,8 +351,8 @@ export class FilterService extends EventEmitter {
 			getPriorityWeight: (priority) => this.priorityManager.getPriorityWeight(priority),
 			getStatusOrder: (status) => this.statusManager.getStatusOrder(status),
 			getUserFieldRawValue: (task, fieldKey) => this.getUserFieldRawValue(task, fieldKey),
-			resolveProjectToAbsolutePath: (projectValue) =>
-				this.resolveProjectToAbsolutePath(projectValue),
+			resolveProjectToAbsolutePath: (projectValue, sourcePath) =>
+				this.resolveProjectToAbsolutePath(projectValue, sourcePath),
 			translate: (key, fallback, vars) => this.translate(key, fallback, vars),
 			getLocale: () => this.getLocale(),
 		};

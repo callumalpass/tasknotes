@@ -1,4 +1,4 @@
-import { generateLink, generateLinkWithBasename, generateLinkWithDisplay, getProjectDisplayName, parseLinkToPath } from '../../../src/utils/linkUtils';
+import { generateLink, generateLinkWithBasename, generateLinkWithDisplay, getProjectDisplayName, parseLinkTarget, parseLinkToPath } from '../../../src/utils/linkUtils';
 import { MockObsidian } from '../../helpers/obsidian-runtime';
 import type { App, TFile } from 'obsidian';
 
@@ -116,6 +116,31 @@ describe('linkUtils - frontmatter link format', () => {
       const link = '[My Note](Folder/My%20Note)';
       expect(parseLinkToPath(link)).toBe('Folder/My Note');
     });
+
+    it('should keep already-encoded angle bracket paths decodable', () => {
+      expect(parseLinkToPath('<Folder/My%20Note.md>')).toBe('Folder/My Note.md');
+      expect(parseLinkToPath('[x](<Folder/My%20Note.md>)')).toBe('Folder/My Note.md');
+    });
+
+    it('should keep bare block targets in angle brackets', () => {
+      expect(parseLinkToPath('<#^abc123>')).toBe('#^abc123');
+    });
+  });
+
+  describe('parseLinkTarget', () => {
+    it.each([
+      ['[My Note](Folder/My Note.md#Section)', 'Folder/My Note.md', '#Section'],
+      ['[[Folder/My Note#Section]]', 'Folder/My Note', '#Section'],
+      ['[[Folder/My Note#^abc123|Alias]]', 'Folder/My Note', '#^abc123'],
+      ['[[<Folder/My%20Note.md#Section>]]', 'Folder/My Note.md', '#Section'],
+      ['[x](<Folder/My%20Note.md#Section>)', 'Folder/My Note.md', '#Section'],
+      ['<Folder/My%20Note.md#^abc123>', 'Folder/My Note.md', '#^abc123'],
+      ['[[../Projects/Alpha#Goals]]', '../Projects/Alpha', '#Goals'],
+      ['[[#^abc123]]', '', '#^abc123'],
+      ['[[Folder/My Note]]', 'Folder/My Note', ''],
+    ])('splits %s into lookup path and subpath', (link, path, subpath) => {
+      expect(parseLinkTarget(link)).toEqual({ path, subpath });
+    });
   });
 
   describe('getProjectDisplayName', () => {
@@ -137,6 +162,15 @@ describe('linkUtils - frontmatter link format', () => {
 
       const link = '[[Folder/My Note]]';
       expect(getProjectDisplayName(link, appWithResolver)).toBe('Resolved Project');
+    });
+
+    it('should resolve relative project links from the task path', () => {
+      const appWithResolver = createMockApp(MockObsidian.createMockApp());
+      const getFirstLinkpathDest = jest.fn().mockReturnValue({ basename: 'Alpha' });
+      (appWithResolver.metadataCache as any).getFirstLinkpathDest = getFirstLinkpathDest;
+
+      expect(getProjectDisplayName('[[../Projects/Alpha#Goals]]', appWithResolver, 'Tasks/Task.md')).toBe('Alpha');
+      expect(getFirstLinkpathDest).toHaveBeenCalledWith('../Projects/Alpha', 'Tasks/Task.md');
     });
 
     it('should fall back to last path segment when unresolved', () => {
