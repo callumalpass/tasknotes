@@ -5071,6 +5071,11 @@ msgctxt "settings.integrations.webhooks.editEvents"
 msgid "Edit events"
 msgstr "编辑事件"
 
+#: src/modals/ReminderModal.ts
+msgctxt "modals.reminder.edit"
+msgid "Edit reminder"
+msgstr "编辑提醒"
+
 #: src/components/TaskContextMenu.ts
 #: src/main.ts
 #: src/modals/TaskEditModal.ts
@@ -13554,6 +13559,11 @@ msgstr "更新文件"
 msgctxt "settings.integrations.autoExport.interval.name"
 msgid "Update interval (between 5 and 1440 minutes)"
 msgstr "更新间隔（5到1440分钟之间）"
+
+#: src/modals/ReminderModal.ts
+msgctxt "modals.reminder.updateButton"
+msgid "Update reminder"
+msgstr "更新提醒"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"

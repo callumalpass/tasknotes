@@ -45,9 +45,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @johnyoonh for the original proposal and test cases in PR #1867
 - (#1004) ICS calendar subscriptions can now use a username and password (HTTP Basic authentication) for private feeds such as Nextcloud, Baïkal and Davis. The password is stored in Obsidian Secret Storage, not in plugin settings, and credentials are only sent over HTTPS. See [Private feeds](https://tasknotes.dev/features/calendar-integration/#private-feeds-username-and-password).
   - Thanks to @WorldTeacher for the original implementation in #1346, and to @vbaz for requesting this
+- Reminders can now be edited in place from the reminders dialog instead of being deleted and recreated. An edited reminder keeps its identity and is rescheduled for its new time. See [Reminders](https://tasknotes.dev/features/reminders/#editing-reminders). Thanks to @cybersader for the original implementation in #1730.
 
 ## Fixed
 
+- Fixed the custom field settings card header not updating its title and property key while the field is edited. Thanks to @cybersader for finding this in #1730.
 - (#1811) Restored dragging tasks onto Calendar views to schedule them. Inline task widgets can be dragged again, and so can Task List and Kanban cards; dropping on a time slot sets a scheduled date and time, and dropping on a date or the all-day row sets a scheduled date. See [Calendar views](https://tasknotes.dev/views/calendar-views/). Thanks to @ghake for reporting this.
 - (#1545) Fixed Task List and Kanban group headers showing an unrelated note for plain values. A context such as `STY` was rendered as a link to any note named like it, using that note's title. Plain values now stay plain text unless they are the exact vault path of a note (for example `Projects/Alpha` or `Alpha.md`); wikilinks and Markdown links, including root-level project links, still render as links with their aliases and frontmatter titles
   - Thanks to @normenmueller for the original fix

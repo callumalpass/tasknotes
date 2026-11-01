@@ -185,8 +185,16 @@
 }
 
 .tasknotes-plugin .reminder-modal__action-btn:hover {
-    color: var(--text-error);
+    color: var(--text-normal);
     background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .reminder-modal__remove-btn:hover {
+    color: var(--text-error);
+}
+
+.tasknotes-plugin .reminder-modal__reminder-card--editing {
+    border-color: var(--interactive-accent);
 }
 
 body.is-mobile .tasknotes-plugin .reminder-modal__reminder-actions {
@@ -197,6 +205,9 @@ body.is-mobile .tasknotes-plugin .reminder-modal__reminder-actions {
 body.is-mobile .tasknotes-plugin .reminder-modal__action-btn {
     width: 44px;
     height: 44px;
+}
+
+body.is-mobile .tasknotes-plugin .reminder-modal__remove-btn {
     color: var(--text-error);
 }
 
@@ -355,6 +366,12 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     border-color: var(--interactive-accent);
     background: var(--background-primary);
     outline: none;
+}
+
+.tasknotes-plugin .reminder-modal__form-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
 }
 
 .tasknotes-plugin .reminder-add-btn {
