@@ -1,6 +1,6 @@
 import type { HTTPRequestLike, HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
-import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
+import type { TaskTextParser } from "../services/NaturalLanguageParser";
 import { TaskService } from "../services/TaskService";
 import TaskNotesPlugin from "../main";
 import { buildTaskCreationDataFromParsed } from "../services/buildTaskCreationDataFromParsed";
@@ -23,7 +23,7 @@ export class SystemController extends BaseController {
 	constructor(
 		private plugin: TaskNotesPlugin,
 		private taskService: TaskService,
-		private nlParser: NaturalLanguageParser,
+		private nlParser: TaskTextParser,
 		private httpAPIService?: OpenAPISpecProvider
 	) {
 		super();

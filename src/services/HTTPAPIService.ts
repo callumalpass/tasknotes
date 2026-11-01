@@ -2,7 +2,7 @@ import { IWebhookNotifier, WebhookEvent } from "../types";
 import { TaskService } from "./TaskService";
 import { FilterService } from "./FilterService";
 import { TaskManager } from "../utils/TaskManager";
-import { NaturalLanguageParser } from "./NaturalLanguageParser";
+import { createLivePluginParser } from "./NaturalLanguageParser";
 import { StatusManager } from "./StatusManager";
 import { TaskStatsService } from "./TaskStatsService";
 import TaskNotesPlugin from "../main";
@@ -59,7 +59,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 		this.plugin = plugin;
 
 		// Initialize dependencies
-		const nlParser = NaturalLanguageParser.fromPlugin(plugin);
+		const nlParser = createLivePluginParser(plugin);
 		const statusManager = new StatusManager(
 			plugin.settings.customStatuses,
 			plugin.settings.defaultTaskStatus

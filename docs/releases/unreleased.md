@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2274) Changing the NLP language now applies straight away to instant task conversion and to the HTTP API and MCP parse tools. Previously these kept parsing in the language that was set when Obsidian started, so Italian phrases such as "Comprare latte oggi" were left unparsed until a restart
+  - Thanks to @MarcoBarna for reporting

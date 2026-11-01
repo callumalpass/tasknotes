@@ -8,7 +8,7 @@ import { TaskService } from "./TaskService";
 import { FilterService } from "./FilterService";
 import { TaskManager } from "../utils/TaskManager";
 import { StatusManager } from "./StatusManager";
-import { NaturalLanguageParser } from "./NaturalLanguageParser";
+import type { TaskTextParser } from "./NaturalLanguageParser";
 import { TaskStatsService } from "./TaskStatsService";
 import {
 	FILTER_OPERATORS,
@@ -186,7 +186,7 @@ export class MCPService {
 		private filterService: FilterService,
 		private cacheManager: TaskManager,
 		private statusManager: StatusManager,
-		private nlParser: NaturalLanguageParser,
+		private nlParser: TaskTextParser,
 		private taskStatsService: TaskStatsService
 	) {}
 
