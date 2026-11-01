@@ -42,6 +42,8 @@ A common setup is to keep one board grouped by status and another grouped by pro
 
 In standard mode, the Kanban board displays a horizontal row of columns. Each column corresponds to a unique value of the `groupBy` property.
 
+When columns are grouped by Status (including a mapped status property), their backgrounds and borders use a subtle tint from the configured status colour. Swimlane column headers and cells use the same colour. Other grouping properties, unknown statuses and missing or unresolved colours keep the normal theme surface. Updating a status colour refreshes open boards.
+
 Each column includes:
 - A header showing the property value and task count
 - A scrollable area containing task cards

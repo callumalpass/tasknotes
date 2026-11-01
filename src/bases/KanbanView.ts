@@ -352,6 +352,8 @@ export class KanbanView extends BasesViewBase {
 		this.readViewOptions();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		this.registerEvent(this.plugin.emitter.on("settings-changed", () => this.debouncedRefresh()));
+		this.registerEvent(this.app.workspace.on("css-change", () => this.debouncedRefresh()));
 	}
 
 	/**
@@ -1451,22 +1453,25 @@ export class KanbanView extends BasesViewBase {
 		const status = this.findStatusConfigForGroupKey(groupKey);
 		if (!status || !isSupportedColorValue(status.color)) return;
 
-		const color = normalizeThemeColor(status.color);
-		if (!color || !this.isRenderableStatusColor(element, color)) return;
+		const color = this.resolveStatusColor(element, normalizeThemeColor(status.color));
+		if (!color) return;
 
 		element.addClass(modifierClass);
 		element.style.setProperty("--tn-kanban-status-color", color);
 	}
 
-	private isRenderableStatusColor(element: HTMLElement, color: string): boolean {
-		const css = element.ownerDocument.defaultView?.CSS;
-		if (css && typeof css.supports === "function") {
-			return css.supports("color", color);
-		}
-
-		const probe = element.ownerDocument.win.createSpan();
-		probe.style.color = color;
-		return probe.style.color !== "";
+	private resolveStatusColor(element: HTMLElement, color: string): string | null {
+		const doc = element.ownerDocument;
+		const probe = doc.win.createSpan();
+		probe.style.backgroundColor = color;
+		if (!probe.style.backgroundColor) return null;
+		doc.body.appendChild(probe);
+		const resolved = doc.defaultView!.getComputedStyle(probe).backgroundColor;
+		probe.remove();
+		// Unresolved variables and non-colour variable values compute to the
+		// initial transparent background, not a usable tint.
+		return !resolved || resolved === "transparent" || resolved === "rgba(0, 0, 0, 0)" ||
+			resolved.includes("var(") ? null : resolved;
 	}
 
 	private isUnknownStatusGroup(groupKey: string, groupByPropertyId: string | null): boolean {

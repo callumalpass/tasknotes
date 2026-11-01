@@ -73,7 +73,7 @@ function makePlugin() {
 			normalizePriorityValue: (value: string) => value,
 		},
 		i18n: {
-			translate: (key: string) => (key === "views.kanban.noTasks" ? "No tasks" : key),
+			translate: (descriptor: { message: string }) => descriptor.message,
 		},
 		settings: {
 			customStatuses: STATUSES,
@@ -91,13 +91,14 @@ function makeView(): KanbanView {
 		getOrder: jest.fn(() => []),
 		getDisplayName: jest.fn(() => undefined),
 	};
+	(view as any).getVisibleProperties = jest.fn(() => []);
 	return view;
 }
 
 function expectStatusColor(
 	element: Element | null,
 	modifierClass: string,
-	color = OPEN_STATUS.color
+	color = "rgb(124, 58, 237)"
 ): void {
 	expect(element).not.toBeNull();
 	expect(element?.classList.contains(modifierClass)).toBe(true);
@@ -112,23 +113,6 @@ function expectNoStatusColor(element: HTMLElement, modifierClass: string): void 
 }
 
 describe("Kanban status colors", () => {
-	const originalCss = window.CSS;
-
-	beforeAll(() => {
-		Object.defineProperty(window, "CSS", {
-			configurable: true,
-			value: {
-				supports: (_property: string, value: string) => value !== INVALID_COLOR_STATUS.color,
-			},
-		});
-	});
-
-	afterAll(() => {
-		Object.defineProperty(window, "CSS", {
-			configurable: true,
-			value: originalCss,
-		});
-	});
 
 	it("marks only configured status-grouped flat columns with their status color", async () => {
 		const view = makeView();
@@ -161,19 +145,47 @@ describe("Kanban status colors", () => {
 		);
 
 		expectStatusColor(statusColumn, "kanban-view__column--status-colored");
-		expectStatusColor(
-			themeColorColumn,
-			"kanban-view__column--status-colored",
-			"var(--color-blue)"
-		);
+		// JSDOM does not resolve custom properties; real theme variables are covered in e2e.
+		expectNoStatusColor(themeColorColumn, "kanban-view__column--status-colored");
 		expectStatusColor(
 			functionColorColumn,
 			"kanban-view__column--status-colored",
-			FUNCTION_COLOR_STATUS.color
+			"rgb(10, 20, 30)"
 		);
 		expectNoStatusColor(projectColumn, "kanban-view__column--status-colored");
 		expectNoStatusColor(unknownStatusColumn, "kanban-view__column--status-colored");
 		expectNoStatusColor(invalidColorColumn, "kanban-view__column--status-colored");
+	});
+
+	it("leaves missing colours and unresolved or non-colour variables untinted", async () => {
+		const view = makeView();
+		for (const color of ["", "var(--missing)", "var(--not-a-colour)"]) {
+			document.body.style.setProperty("--not-a-colour", "12px");
+			(view as any).plugin.statusManager.updateStatuses([{ ...OPEN_STATUS, color }]);
+			const column = await (view as any).createColumn("open", [], [], "status");
+			expectNoStatusColor(column, "kanban-view__column--status-colored");
+		}
+	});
+
+	it("recognizes mapped status properties and status aliases", async () => {
+		const view = makeView();
+		(view as any).plugin.fieldMapper.toUserField = (field: string) => field === "status" ? "state" : field;
+		const column = await (view as any).createColumn("Open", [], [], "note.state");
+		expectStatusColor(column, "kanban-view__column--status-colored");
+	});
+
+	it("does not tint non-status swimlane columns", async () => {
+		const view = makeView();
+		const board = document.createElement("div");
+		(view as any).boardEl = board;
+		(view as any).setupColumnHeaderDragHandlers = jest.fn();
+		(view as any).setupSwimLaneCellDragDrop = jest.fn();
+		(view as any).renderEmptyCellHint = jest.fn();
+		(view as any).createAddTaskButton = jest.fn();
+		await (view as any).renderSwimLaneTable(
+			new Map([["todo", new Map([["open", []]])]]), ["open"], new Map(), "projects"
+		);
+		expect(board.querySelector('[class*="--status-colored"]')).toBeNull();
 	});
 
 	it("marks configured status swimlane headers and matching cells", async () => {
