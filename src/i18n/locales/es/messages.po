@@ -5251,15 +5251,15 @@ msgctxt "settings.taskProperties.customUserFields.validation.emptyKey"
 msgid "Enter a property key."
 msgstr "Introduce una clave de propiedad."
 
+#: src/settings/tabs/generalTab.ts
+msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
+msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
+msgstr "Introduce un nombre de propiedad. El texto de ejemplo no es una configuración guardada. TaskNotes no puede identificar tareas hasta que se defina un nombre de propiedad. Los filtros .base existentes deben coincidir con estos ajustes."
+
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "Introduce una URL HTTP://, HTTPS://, webcal:// o webcals://"
-
-#: src/settings/tabs/generalTab.ts
-msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
-msgid "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings."
-msgstr "Introduce un nombre de propiedad y un valor. El texto de ejemplo no es una configuración guardada. TaskNotes no puede identificar tareas hasta que ambos estén definidos. Los filtros .base existentes deben coincidir con estos ajustes."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
@@ -12377,8 +12377,8 @@ msgstr "La hora a la que deben aparecer las repeticiones (opcional)"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
-msgid "The value that identifies a note as a task (e.g., \"task\")"
-msgstr "El valor que identifica una nota como tarea (ej. \"tarea\")"
+msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
+msgstr "El valor que identifica una nota como tarea (ej. \"tarea\"). Déjalo vacío para tratar como tarea cualquier nota que tenga esta propiedad, sea cual sea su valor."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"

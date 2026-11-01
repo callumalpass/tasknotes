@@ -310,9 +310,7 @@ export class TaskCreationService {
 			if (runtime.settings.taskIdentificationMethod === "property") {
 				const propName = runtime.settings.taskPropertyName;
 				const propValue = runtime.settings.taskPropertyValue;
-				if (propName && propValue) {
-					applyPropertyTaskIdentifier(frontmatter, propName, propValue);
-				}
+				applyPropertyTaskIdentifier(frontmatter, propName, propValue);
 				if (tagsArray.length > 0) {
 					frontmatter.tags = tagsArray;
 				}

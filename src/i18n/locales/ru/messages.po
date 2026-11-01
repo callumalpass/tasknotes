@@ -5253,15 +5253,15 @@ msgctxt "settings.taskProperties.customUserFields.validation.emptyKey"
 msgid "Enter a property key."
 msgstr "Введите ключ свойства."
 
+#: src/settings/tabs/generalTab.ts
+msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
+msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
+msgstr "Введите имя свойства. Текст примера не является сохранённой настройкой. TaskNotes не может определять задачи, пока не задано имя свойства. Существующие фильтры .base должны соответствовать этим настройкам."
+
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "Введите URL с протоколом HTTP://, HTTPS://, webcal:// или webcals://"
-
-#: src/settings/tabs/generalTab.ts
-msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
-msgid "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings."
-msgstr "Введите имя свойства и значение. Текст примера не является сохранённой настройкой. TaskNotes не может определять задачи, пока оба поля не заполнены. Существующие фильтры .base должны соответствовать этим настройкам."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
@@ -12377,8 +12377,8 @@ msgstr "Время, когда должны появляться повторя�
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
-msgid "The value that identifies a note as a task (e.g., \"task\")"
-msgstr "Значение, которое идентифицирует заметку как задачу (например, \"задача\")"
+msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
+msgstr "Значение, которое идентифицирует заметку как задачу (например, \"задача\"). Оставьте пустым, чтобы считать задачей любую заметку с этим свойством, независимо от его значения."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"

@@ -408,13 +408,11 @@ function applyConfiguredPropertyTaskIdentifier(
 	frontmatter: Record<string, unknown>,
 	taskIdentification: TaskIdentificationSettings
 ): void {
-	if (taskIdentification.propertyName && taskIdentification.propertyValue) {
-		applyPropertyTaskIdentifier(
-			frontmatter,
-			taskIdentification.propertyName,
-			taskIdentification.propertyValue
-		);
-	}
+	applyPropertyTaskIdentifier(
+		frontmatter,
+		taskIdentification.propertyName,
+		taskIdentification.propertyValue
+	);
 }
 
 function removeUnsetMappedFields(

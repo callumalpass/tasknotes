@@ -30,7 +30,16 @@ export function applyPropertyTaskIdentifier(
 	propertyName: string,
 	propertyValue: string
 ): void {
-	if (!propertyName || !propertyValue) {
+	if (!propertyName) {
+		return;
+	}
+
+	// Without a value, the property only has to be present for the note to be a task.
+	if (!propertyValue?.trim()) {
+		if (!Object.prototype.hasOwnProperty.call(frontmatter, propertyName)) {
+			// null rather than "" so typed properties (such as dates) still validate.
+			frontmatter[propertyName] = isTagsTaskIdentifierProperty(propertyName) ? [] : null;
+		}
 		return;
 	}
 

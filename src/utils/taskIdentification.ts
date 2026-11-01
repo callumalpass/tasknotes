@@ -26,8 +26,19 @@ export function compareTaskPropertyIdentifierValue(
 	return frontmatterValue === settingValue;
 }
 
-export function hasCompletePropertyTaskIdentification(settings: TaskIdentificationSettings): boolean {
-	return Boolean(settings.taskPropertyName?.trim() && settings.taskPropertyValue?.trim());
+/**
+ * Property identification needs a property name. Without a value, a note is a task
+ * whenever it has the property, whatever its value (including empty or null). This is
+ * the same rule as mdbase `exists: true` and Bases `file.hasProperty()`.
+ */
+export function hasUsablePropertyTaskIdentification(settings: TaskIdentificationSettings): boolean {
+	return Boolean(settings.taskPropertyName?.trim());
+}
+
+export function isPropertyPresenceTaskIdentification(
+	settings: Pick<TaskIdentificationSettings, "taskPropertyValue">
+): boolean {
+	return !settings.taskPropertyValue?.trim();
 }
 
 export function isTaskFrontmatter(
@@ -41,7 +52,10 @@ export function isTaskFrontmatter(
 	if (settings.taskIdentificationMethod === "property") {
 		const propName = settings.taskPropertyName;
 		const propValue = settings.taskPropertyValue;
-		if (!hasCompletePropertyTaskIdentification(settings)) return false;
+		if (!hasUsablePropertyTaskIdentification(settings)) return false;
+		if (isPropertyPresenceTaskIdentification(settings)) {
+			return Object.prototype.hasOwnProperty.call(frontmatter, propName);
+		}
 
 		const frontmatterValue = frontmatter[propName];
 		if (frontmatterValue === undefined) return false;
