@@ -33,7 +33,7 @@ Mini Calendar is commonly used as an entry view: select a date, then open Task L
 
 ## Calendar View
 
-The Calendar View provides multiple view modes (month, week, day, year, list, and custom days) with drag-and-drop scheduling and time-blocking capabilities. Tasks can be created by clicking on dates or time slots, and rescheduled by dragging them to new dates or times.
+The Calendar View provides multiple view modes (month, week, day, year, list, and custom days) with drag-and-drop scheduling and time-blocking capabilities. Tasks can be created by clicking on dates or time slots, and rescheduled by dragging them to new dates or times. To schedule a task from elsewhere, drag its inline task widget, or its card in a Task List or Kanban view, onto a date or time slot: TaskNotes sets the task's scheduled date, with a time when it is dropped on a time slot.
 
 ### View Modes
 
