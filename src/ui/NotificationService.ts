@@ -17,6 +17,25 @@ import { isTaskInstanceCompleted } from "../utils/taskInstanceStatus";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/NotificationService" });
 
+/**
+ * Windows silently drops system notifications whose tag is longer than about
+ * 44 characters (#2061), so a reminder's tag is a short hash of its task path
+ * and reminder id rather than the raw values.
+ */
+export function reminderNotificationTag(taskPath: string, reminderId: string): string {
+	const key = `${taskPath}\u0000${reminderId}`;
+	// Two independent 32-bit hashes (djb2 and FNV-1a) keep collisions negligible.
+	let djb2 = 5381;
+	let fnv = 0x811c9dc5;
+	for (let i = 0; i < key.length; i++) {
+		const code = key.charCodeAt(i);
+		djb2 = Math.imul(djb2, 33) ^ code;
+		fnv = Math.imul(fnv ^ code, 0x01000193);
+	}
+	const hex = (value: number) => (value >>> 0).toString(16).padStart(8, "0");
+	return `tasknotes-${hex(djb2)}${hex(fnv)}`;
+}
+
 interface NotificationQueueItem {
 	taskPath: string;
 	reminder: Reminder;
@@ -420,7 +439,7 @@ export class NotificationService {
 			if ("Notification" in window && Notification.permission === "granted") {
 				const notification = new Notification(task.title || uiText(msg({ message: "TaskNotes Reminder", context: "ui/NotificationService: NotificationService.deliverNotification display" })), {
 					body: message,
-					tag: `tasknotes-${item.taskPath}-${item.reminder.id}`,
+					tag: reminderNotificationTag(item.taskPath, item.reminder.id),
 				});
 
 				// Open task note when notification is clicked
