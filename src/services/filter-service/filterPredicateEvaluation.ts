@@ -12,7 +12,7 @@ import {
 	type TaskPropertyValue,
 } from "../../utils/FilterUtils";
 import { getEffectiveTaskStatus } from "../../utils/helpers";
-import { getProjectDisplayName } from "../../utils/linkUtils";
+import { getProjectDisplayName, parseLinkToPath } from "../../utils/linkUtils";
 import {
 	coerceUserFieldTaskValue,
 	findUserFieldById,
@@ -239,8 +239,10 @@ export function compareProjectWikilinks(
 		return false;
 	}
 
-	const taskLinkPath = extractWikilinkPath(taskProject);
-	const conditionLinkPath = extractWikilinkPath(conditionProject);
+	// Drop aliases and #heading/#^block subpaths so they don't break resolution.
+	const taskLinkPath = typeof taskProject === "string" ? parseLinkToPath(taskProject) : "";
+	const conditionLinkPath =
+		typeof conditionProject === "string" ? parseLinkToPath(conditionProject) : "";
 
 	if (!taskLinkPath || !conditionLinkPath) {
 		return false;

@@ -229,6 +229,9 @@ describe("filter predicate evaluation", () => {
 			"Projects/Canonical",
 			""
 		);
+		expect(
+			compareProjectWikilinks("[[Projects/Canonical#Goals|Canon]]", "[[Canonical]]", app)
+		).toBe(true);
 	});
 
 	it("resolves relative project links from the task's own path", () => {
