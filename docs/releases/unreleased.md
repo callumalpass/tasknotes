@@ -32,6 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2188) Added **Repeat current task** for completed, non-recurring tasks. After confirmation, it reopens the same note, records its distinct completion dates, unarchives it and optionally resets body checkboxes, then opens the date editor. See [Repeating a completed task](https://tasknotes.dev/features/task-management/#repeating-a-completed-task). Thanks to @tgrosinger for contributing this command.
+
 ## Fixed
 
 - (#1811) Restored dragging tasks onto Calendar views to schedule them. Inline task widgets can be dragged again, and so can Task List and Kanban cards; dropping on a time slot sets a scheduled date and time, and dropping on a date or the all-day row sets a scheduled date. See [Calendar views](https://tasknotes.dev/views/calendar-views/). Thanks to @ghake for reporting this.

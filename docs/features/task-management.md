@@ -211,6 +211,25 @@ With the submenu grouping turned off, the same actions appear directly in the me
 
 ![Completion actions shown flat in the menu](../assets/feature-completion-date-actions-flat.png)
 
+## Repeating a Completed Task
+
+For tasks that come back irregularly, **TaskNotes: Repeat current task** reuses the same note instead of creating a new one. Open the completed task's note and run the command from the command palette.
+
+A confirmation appears **before any changes**. Cancel or dismiss it to leave the note unchanged. Confirming:
+
+1. Unarchives the task, moving it back to the task folder if **Move archived tasks to folder** is enabled.
+2. Saves its completion date in `complete_instances`, returns it to the default status and clears `completedDate`.
+3. Resets body checkboxes if **Reset checkboxes on recurrence** is enabled.
+4. Opens the task editor to choose new scheduled and due dates.
+
+The previous scheduled and due dates stay unchanged until you save the editor. **Cancelling that editor does not undo the confirmed repeat.**
+
+The history stores **distinct completion dates**, not every completion: repeating a task completed twice on the same date adds that date only once. A completed task without `completedDate` is reopened without adding a history entry. This history is available in frontmatter and Bases; the editor's completions calendar remains specific to recurring tasks.
+
+Recurring tasks and materialized occurrence notes cannot be repeated with this command; they already have an occurrence workflow.
+
+If a step fails, earlier changes are kept, not rolled back, and later steps are not attempted. Check the note before retrying: for example, reopening can fail after unarchiving, or a checkbox reset can fail after the task has reopened and saved its history. Archive moves follow the existing best-effort behavior: if the move fails, a notice appears and the task is still unarchived and repeated at its existing path.
+
 ## Recurring Tasks
 
 TaskNotes recurring tasks use RFC 5545 RRule syntax with `DTSTART`, separate pattern definition from next occurrence scheduling, and support independent instance completion. When an individual recurrence needs its own checklist, time entries, or notes, you can create a materialized occurrence note from the task or calendar context menu.

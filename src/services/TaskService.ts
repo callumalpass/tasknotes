@@ -2076,6 +2076,66 @@ export class TaskService {
 		return getRecurringTaskActionDate(task, date);
 	}
 
+	/**
+	 * Reset checkboxes against the latest serialized file contents, preserving
+	 * frontmatter changes and body edits made while the operation was queued.
+	 */
+	private async resetTaskBodyCheckboxes(file: TFile): Promise<string | null> {
+		let resetDetails: string | null = null;
+		await processVaultFile(this.plugin.app, file, (currentContent) => {
+			const { frontmatter: frontmatterText, body } = splitFrontmatterAndBody(currentContent);
+			const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
+			if (!changed) {
+				return currentContent;
+			}
+
+			const frontmatterBlock =
+				frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
+			const finalBody = resetBody.trimEnd();
+			resetDetails = resetBody.replace(/\r\n/g, "\n").trimEnd();
+			return finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
+		});
+		return resetDetails;
+	}
+
+	/**
+	 * Repeat only after the caller has obtained confirmation. Steps are kept if
+	 * a later step fails; archive moves retain toggleArchive's best-effort policy.
+	 */
+	async repeatTask(task: TaskInfo): Promise<TaskInfo> {
+		const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
+		if (freshTask.recurrence || isMaterializedOccurrenceTask(freshTask)) {
+			throw new Error("Task is recurring");
+		}
+		if (!this.plugin.statusManager.isCompletedStatus(freshTask.status)) {
+			throw new Error("Task is not completed");
+		}
+
+		// Unarchiving can move the note: subsequent writes must use its new path.
+		const activeTask = freshTask.archived ? await this.toggleArchive(freshTask) : freshTask;
+		const updates: Partial<TaskInfo> = { status: this.plugin.settings.defaultTaskStatus };
+		const completedDate = this.getSafeDatePart(activeTask.completedDate);
+		const completeInstances = Array.isArray(activeTask.complete_instances)
+			? activeTask.complete_instances
+			: [];
+		if (completedDate && !completeInstances.includes(completedDate)) {
+			updates.complete_instances = [...completeInstances, completedDate];
+		}
+
+		const updatedTask = await this.updateTask(activeTask, updates);
+		if (this.plugin.settings.resetCheckboxesOnRecurrence) {
+			const file = this.plugin.app.vault.getAbstractFileByPath(updatedTask.path);
+			if (!(file instanceof TFile)) {
+				throw new Error(`Cannot find task file: ${updatedTask.path}`);
+			}
+			const resetDetails = await this.resetTaskBodyCheckboxes(file);
+			if (resetDetails !== null) {
+				updatedTask.details = resetDetails;
+			}
+		}
+		return updatedTask;
+	}
+
 	async toggleRecurringTaskComplete(
 		task: TaskInfo,
 		date?: Date,
@@ -2139,21 +2199,7 @@ export class TaskService {
 
 		// Step 2b: Reset checkboxes in task body when completing (if setting enabled)
 		if (newComplete && this.plugin.settings.resetCheckboxesOnRecurrence) {
-			let resetDetails: string | null = null;
-			await processVaultFile(this.plugin.app, file, (currentContent) => {
-				const { frontmatter: frontmatterText, body } =
-					splitFrontmatterAndBody(currentContent);
-				const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
-				if (!changed) {
-					return currentContent;
-				}
-
-				const frontmatterBlock =
-					frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
-				const finalBody = resetBody.trimEnd();
-				resetDetails = resetBody.replace(/\r\n/g, "\n").trimEnd();
-				return finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
-			});
+			const resetDetails = await this.resetTaskBodyCheckboxes(file);
 
 			if (resetDetails !== null) {
 				updatedTask.details = resetDetails;

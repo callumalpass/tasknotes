@@ -155,6 +155,13 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "repeat-current-task",
+			nameKey: msg({ message: "Repeat current task", context: "commands.repeatCurrentTask" }),
+			callback: async (ctx) => {
+				await ctx.repeatCurrentTask();
+			},
+		},
+		{
 			id: "cycle-current-task-status",
 			nameKey: msg({ message: "Cycle current task status", context: "commands.cycleCurrentTaskStatus" }),
 			callback: async (ctx) => {

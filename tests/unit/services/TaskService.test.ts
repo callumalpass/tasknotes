@@ -54,7 +54,8 @@ jest.mock('../../../src/utils/helpers', () => ({
   addDTSTARTToRecurrenceRule: jest.fn((task: { recurrence?: string }) => task.recurrence ? `DTSTART:20250110T120000Z;${task.recurrence}` : null),
   updateDTSTARTInRecurrenceRule: jest.fn((rule: string) => rule),
   updateToNextScheduledOccurrence: jest.fn(),
-  splitFrontmatterAndBody: jest.fn(() => ({ frontmatter: {}, body: '' }))
+  splitFrontmatterAndBody: jest.fn(() => ({ frontmatter: {}, body: '' })),
+  resetMarkdownCheckboxes: jest.fn(() => ({ content: '', changed: false }))
 }));
 
 jest.mock('../../../src/utils/templateProcessor', () => ({
@@ -1548,6 +1549,183 @@ describe('TaskService', () => {
       const result = await taskService.updateTask(task, updates);
 
       expect(result.priority).toBe('high');
+    });
+  });
+
+  describe('repeatTask', () => {
+    let completedTask: TaskInfo;
+    let capturedFrontmatter: any;
+
+    beforeEach(() => {
+      completedTask = TaskFactory.createTask({
+        status: 'done',
+        completedDate: '2025-01-01',
+        scheduled: '2024-12-28'
+      });
+      mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(new TFile(completedTask.path));
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(completedTask);
+
+      mockPlugin.app.vault.process = jest.fn(async (_file: TFile, update: (content: string) => string) => update('latest content'));
+      capturedFrontmatter = { completedDate: '2025-01-01', status: 'done' };
+      mockPlugin.app.fileManager.processFrontMatter.mockImplementation(async (_file: any, fn: any) => {
+        fn(capturedFrontmatter);
+      });
+    });
+
+    it('should log the completion date and reopen the task', async () => {
+      const result = await taskService.repeatTask(completedTask);
+
+      expect(result.status).toBe('open');
+      expect(result.complete_instances).toEqual(['2025-01-01']);
+      expect(result.completedDate).toBeUndefined();
+      expect(capturedFrontmatter.completedDate).toBeUndefined();
+    });
+
+    it('should append to an existing completion history', async () => {
+      completedTask = TaskFactory.createTask({
+        status: 'done',
+        completedDate: '2025-01-01',
+        complete_instances: ['2024-11-05']
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(completedTask);
+
+      const result = await taskService.repeatTask(completedTask);
+
+      expect(result.complete_instances).toEqual(['2024-11-05', '2025-01-01']);
+    });
+
+    it('should not record the same completion date twice', async () => {
+      completedTask = TaskFactory.createTask({
+        status: 'done',
+        completedDate: '2025-01-01',
+        complete_instances: ['2025-01-01']
+      });
+      capturedFrontmatter.complete_instances = ['2025-01-01'];
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(completedTask);
+
+      const result = await taskService.repeatTask(completedTask);
+
+      expect(result.complete_instances).toEqual(['2025-01-01']);
+      expect(result.status).toBe('open');
+    });
+
+    it('should store only the date part of a completion timestamp', async () => {
+      completedTask = TaskFactory.createTask({
+        status: 'done',
+        completedDate: '2025-01-01T14:30:00'
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(completedTask);
+
+      const result = await taskService.repeatTask(completedTask);
+
+      expect(result.complete_instances).toEqual(['2025-01-01']);
+    });
+
+    it('should still reopen a task that has no completion date', async () => {
+      completedTask = TaskFactory.createTask({ status: 'done', completedDate: undefined });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(completedTask);
+
+      const result = await taskService.repeatTask(completedTask);
+
+      expect(result.status).toBe('open');
+      expect(result.complete_instances).toBeUndefined();
+    });
+
+    it('should reject a recurring task', async () => {
+      const recurringTask = TaskFactory.createRecurringTask('FREQ=DAILY', { status: 'done' });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      await expect(taskService.repeatTask(recurringTask)).rejects.toThrow('Task is recurring');
+    });
+
+    it('should reject a task that is not completed', async () => {
+      const openTask = TaskFactory.createTask({ status: 'open' });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(openTask);
+
+      await expect(taskService.repeatTask(openTask)).rejects.toThrow('Task is not completed');
+    });
+
+    it('should unarchive before reopening an archived task', async () => {
+      const archivedTask = TaskFactory.createTask({
+        status: 'done',
+        completedDate: '2025-01-01',
+        archived: true
+      });
+      const unarchivedTask = { ...archivedTask, archived: false, path: 'tasks/unarchived.md' };
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(archivedTask);
+      const toggleArchive = jest.spyOn(taskService, 'toggleArchive').mockResolvedValue(unarchivedTask);
+      const updateTask = jest.spyOn(taskService, 'updateTask');
+
+      const result = await taskService.repeatTask(archivedTask);
+
+      expect(toggleArchive).toHaveBeenCalledWith(archivedTask);
+      expect(updateTask).toHaveBeenCalledWith(unarchivedTask, expect.objectContaining({ status: 'open' }));
+      expect(result.archived).toBe(false);
+    });
+
+    it('should reject materialized occurrences before writing', async () => {
+      const occurrence = { ...completedTask, recurrence_parent: '[[Tasks/parent]]', occurrence_date: '2025-01-01' };
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(occurrence);
+      await expect(taskService.repeatTask(occurrence)).rejects.toThrow('Task is recurring');
+      expect(mockPlugin.app.fileManager.processFrontMatter).not.toHaveBeenCalled();
+    });
+
+    it('keeps a failed archive move best-effort and repeats at the original path', async () => {
+      const archived = { ...completedTask, path: 'Archive/test.md', archived: true, tags: ['task', 'archived'] };
+      const file = new TFile(archived.path);
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(archived);
+      mockPlugin.settings.moveArchivedTasks = true;
+      mockPlugin.settings.tasksFolder = 'Tasks';
+      mockPlugin.app.vault.getAbstractFileByPath.mockImplementation((path: string) => path === archived.path ? file : null);
+      mockPlugin.app.fileManager.renameFile = jest.fn().mockRejectedValue(new Error('move denied'));
+
+      const result = await taskService.repeatTask(archived);
+
+      expect(mockPlugin.app.fileManager.renameFile).toHaveBeenCalled();
+      expect(result).toMatchObject({ path: archived.path, archived: false, status: 'open', complete_instances: ['2025-01-01'] });
+      expect(capturedFrontmatter.status).toBe('open');
+    });
+
+    it('keeps unarchiving if reopening fails and does not reset checkboxes', async () => {
+      const archived = { ...completedTask, archived: true, tags: ['task', 'archived'] };
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(archived);
+      mockPlugin.settings.resetCheckboxesOnRecurrence = true;
+      mockPlugin.app.fileManager.processFrontMatter
+        .mockImplementationOnce(async (_file: TFile, update: (fm: any) => void) => update(capturedFrontmatter))
+        .mockRejectedValueOnce(new Error('reopen denied'));
+
+      await expect(taskService.repeatTask(archived)).rejects.toThrow('reopen denied');
+      expect(mockPlugin.cacheManager.updateTaskInfoInCache).toHaveBeenCalledWith(
+        archived.path, expect.objectContaining({ archived: false, status: 'done' })
+      );
+      expect(mockPlugin.app.vault.process).not.toHaveBeenCalled();
+    });
+
+    it('keeps reopened status and history if the checkbox write fails', async () => {
+      mockPlugin.settings.resetCheckboxesOnRecurrence = true;
+      mockPlugin.app.vault.process.mockRejectedValueOnce(new Error('checkbox write denied'));
+
+      await expect(taskService.repeatTask(completedTask)).rejects.toThrow('checkbox write denied');
+      expect(capturedFrontmatter.status).toBe('open');
+      expect(capturedFrontmatter.completedDate).toBeUndefined();
+      expect(capturedFrontmatter.complete_instances).toEqual(['2025-01-01']);
+    });
+
+    it('should reset body checkboxes only when the recurrence setting is enabled', async () => {
+      const helpers = jest.requireMock('../../../src/utils/helpers');
+      helpers.splitFrontmatterAndBody.mockReturnValue({ frontmatter: 'title: Test', body: '- [x] Step one' });
+      helpers.resetMarkdownCheckboxes.mockReturnValue({ content: '- [ ] Step one', changed: true });
+
+      await taskService.repeatTask(completedTask);
+      expect(mockPlugin.app.vault.modify).not.toHaveBeenCalled();
+
+      mockPlugin.settings.resetCheckboxesOnRecurrence = true;
+      const result = await taskService.repeatTask(completedTask);
+
+      expect(mockPlugin.app.vault.process).toHaveBeenCalledTimes(1);
+      expect(mockPlugin.app.vault.modify).not.toHaveBeenCalled();
+      expect(await mockPlugin.app.vault.process.mock.results[0].value).toContain('- [ ] Step one');
+      expect(result.details).toBe('- [ ] Step one');
     });
   });
 
