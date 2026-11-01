@@ -37,6 +37,12 @@ Optional network features:
 - Secret Storage is local to the Obsidian installation and vault, so another device may require its own credentials and calendar connection.
 - You can disconnect providers at any time to revoke TaskNotes access. Disconnecting retains the OAuth app credentials for reconnection; **Forget saved credentials** removes them from Secret Storage.
 
+## ICS Subscription Credentials
+
+- Passwords for authenticated ICS subscriptions are stored in Obsidian Secret Storage and are not written to `data.json`. The username is stored with the subscription settings.
+- Credentials are sent only to the subscription's `https://` URL.
+- Deleting the subscription, or setting its authentication to **None**, removes the saved password.
+
 ## Third-Party Services (When Enabled)
 
 - Google APIs: https://policies.google.com/privacy

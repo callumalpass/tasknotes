@@ -2052,6 +2052,21 @@ msgctxt "generated Bases column name"
 msgid "Attempted"
 msgstr "已尝试"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authHelp"
+msgid "Authenticated feeds must use https://. The password is stored in Obsidian's secure storage, not in plugin settings."
+msgstr "需要认证的订阅源必须使用 https://。密码保存在 Obsidian 的安全存储中，而不是插件设置中。"
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authenticationFailed"
+msgid "Authentication failed for calendar \"{name}\". Check the username and password."
+msgstr "日历\"{name}\"认证失败。请检查用户名和密码。"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.authentication"
+msgid "Authentication:"
+msgstr "认证："
+
 #: src/services/OAuthService.ts
 msgctxt "OAuth callback title"
 msgid "Authorization complete"
@@ -2424,9 +2439,19 @@ msgid "Calendar \"{name}\" access denied (500). This may be due to Microsoft Out
 msgstr "日历\"{name}\"访问被拒绝（500）。这可能是由于Microsoft Outlook服务器限制。尝试从日历设置重新生成ICS URL。"
 
 #: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authPasswordMissing"
+msgid "Calendar \"{name}\" needs a password. Enter it in the calendar subscription settings."
+msgstr "日历\"{name}\"需要密码。请在日历订阅设置中输入。"
+
+#: src/services/ICSSubscriptionService.ts
 msgctxt "services.icsSubscription.notices.calendarNotFound"
 msgid "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible."
 msgstr "找不到日历\"{name}\"（404）。请检查ICS URL是否正确且日历可公开访问。"
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authRequiresHttps"
+msgid "Calendar \"{name}\" uses a username and password, so its URL must start with https://. The credentials were not sent."
+msgstr "日历\"{name}\"使用用户名和密码，因此其 URL 必须以 https:// 开头。凭据未被发送。"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.calendarEventHeading"
@@ -6236,6 +6261,11 @@ msgctxt "modals.reminder.saveFailed"
 msgid "Failed to save reminders. Please try again."
 msgstr "无法保存提醒。请重试。"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
+msgid "Failed to save the calendar password"
+msgstr "无法保存日历密码"
+
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.timeEntryEditor.saveFailed"
 msgid "Failed to save time entries"
@@ -8690,6 +8720,11 @@ msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "无"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.none"
+msgid "None"
+msgstr "无"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
@@ -8870,6 +8905,11 @@ msgstr "OAuth 令牌刷新时间：{time}"
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "Obsidian URL已复制到剪贴板"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authStorageUnavailable"
+msgid "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device."
+msgstr "Obsidian 的安全存储不可用，因此无法在此设备上保存密码。"
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.occurrenceDate"
@@ -9353,6 +9393,16 @@ msgstr "从文本输入解析日期、优先级和其他属性。"
 msgctxt "settings.features.nlp.enable.description"
 msgid "Parse due dates, priorities, and contexts from natural language when creating tasks"
 msgstr "创建任务时从自然语言解析截止日期、优先级和上下文"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.password"
+msgid "Password"
+msgstr "密码"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.password"
+msgid "Password:"
+msgstr "密码："
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.past"
@@ -10528,6 +10578,11 @@ msgstr "保存更改"
 msgctxt "settings.integrations.webhooks.modals.edit.buttons.save"
 msgid "Save changes"
 msgstr "保存更改"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
+msgid "Saved. Enter a new password to replace it"
+msgstr "已保存。输入新密码以替换"
 
 #: src/modals/ReminderModal.ts
 msgctxt "common.saving"
@@ -13611,6 +13666,21 @@ msgstr "用户"
 msgctxt "settings.modalFields.sync.notice"
 msgid "User fields synced to modal configuration"
 msgstr "用户字段已同步到对话框配置"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.username"
+msgid "Username"
+msgstr "用户名"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.basic"
+msgid "Username and password (HTTP Basic)"
+msgstr "用户名和密码（HTTP Basic）"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.username"
+msgid "Username:"
+msgstr "用户名："
 
 #: src/settings/tabs/taskProperties/tagsPropertyCard.ts
 msgctxt "settings.taskProperties.tagsCard.nativeObsidianTags"
