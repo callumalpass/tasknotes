@@ -33,7 +33,7 @@ Access these options through the Bases view settings panel. In YAML, put them di
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Hide top-level subtasks**: When enabled, tasks whose Projects field links to another task in the current filtered board are hidden as standalone cards and remain available through the parent task's expanded subtasks
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
-- **Swim Lane Order**: Advanced JSON configuration for pinning swimlane rows in a stable order
+- **Swim Lane Order**: Managed automatically when dragging swimlane labels. Can also be edited as JSON to pin swimlane rows in a stable order
 A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.
 
 ## Interface Layout
@@ -91,6 +91,8 @@ Click a card to open the task file for editing. Right-click to access the contex
 ### Reordering Columns
 
 Drag column headers to reorder columns. The new order persists across sessions and is stored in the `columnOrder` configuration.
+
+In swimlane mode, drag a swimlane label to reorder rows. The new order persists across sessions and is stored in the `swimLaneOrder` configuration. Rows hidden by search or by **Hide Empty Swimlanes** keep their positions. As with a hand-written `swimLaneOrder`, saved rows stay visible as empty rows when **Hide Empty Swimlanes** is off. Row dragging needs a mouse; on touch devices, edit `swimLaneOrder` instead.
 
 ### Drag-and-Drop Tasks
 

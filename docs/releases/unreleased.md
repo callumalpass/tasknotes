@@ -32,6 +32,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2285) Swimlane rows in Kanban views can be reordered by dragging their labels. The order is saved in the view's `swimLaneOrder` option, and rows hidden by search or by **Hide Empty Swimlanes** keep their positions. Dragging rows needs a mouse for now. See [Kanban View](https://tasknotes.dev/views/kanban-view/)
+  - Thanks to @borsos-ilo for requesting this, and to @ppeirce for the interaction design and the original implementation in PR #1862
+
 ## Fixed
 
 - (#1811) Restored dragging tasks onto Calendar views to schedule them. Inline task widgets can be dragged again, and so can Task List and Kanban cards; dropping on a time slot sets a scheduled date and time, and dropping on a date or the all-day row sets a scheduled date. See [Calendar views](https://tasknotes.dev/views/calendar-views/). Thanks to @ghake for reporting this.
