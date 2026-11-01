@@ -1,4 +1,4 @@
-import { TAbstractFile, TFile } from "obsidian";
+import { type CachedMetadata, TAbstractFile, TFile } from "obsidian";
 import { appHasDailyNotesPluginLoaded, getAllDailyNotes } from "obsidian-daily-notes-interface";
 import { format } from "date-fns";
 import { uiData } from "../i18n/dataText";
@@ -13,6 +13,7 @@ import type {
 import { validateTimeBlock } from "../utils/helpers";
 import { parseDateToLocal } from "../utils/dateUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TimeblockCalendarSync" });
 
@@ -25,11 +26,35 @@ const TIMEBLOCK_SYNC_QUEUE_KEY = "googleCalendarTimeblockSyncQueue";
 /** Debounce delay for rapid daily-note edits (ms) */
 const TIMEBLOCK_SYNC_DEBOUNCE_MS = 500;
 
+/**
+ * How long a deleted note's events wait before being deleted (ms). File
+ * managers, git and sync clients move files as a delete followed by a create;
+ * the wait lets Obsidian index the new file so the move keeps its events.
+ */
+const NOTE_DELETE_GRACE_MS = 3000;
+
+/** How long a newly added timeblock can be the destination of a move (ms) */
+const MOVE_WINDOW_MS = 60_000;
+
+/** Longest time startup deletions wait for Obsidian to finish indexing (ms) */
+const STARTUP_DELETION_MAX_DEFER_MS = 5 * 60_000;
+
+/** Snapshot fingerprint of a timeblock that is present but invalid, e.g. mid-edit */
+const INVALID_TIMEBLOCK_FINGERPRINT = "invalid";
+
 export interface DailyNoteTimeblocks {
 	/** The note's date (YYYY-MM-DD), or null when it has no timeblocks or is not a daily note */
 	date: string | null;
 	timeblocks: TimeBlock[];
-	/** False while Obsidian has not parsed the note yet, so its timeblocks are unknown */
+	/**
+	 * IDs of timeblocks in the note that fail validation, such as one whose
+	 * title is being typed. They still exist, so their events are left alone.
+	 */
+	invalidIds?: string[];
+	/**
+	 * False while Obsidian has not parsed the note, or its frontmatter does not
+	 * parse (for example mid-edit), so its timeblocks are unknown
+	 */
 	indexed: boolean;
 }
 
@@ -38,6 +63,10 @@ export interface TimeblockNoteSource {
 	/** Returns null only when no file exists at the path. */
 	read(notePath: string): DailyNoteTimeblocks | null;
 	listNotePaths(): string[];
+	/** Every note, daily or not, whose frontmatter has a timeblock with this ID */
+	findNotesWithTimeblock(timeblockId: string): string[];
+	/** False while Obsidian is still indexing files, e.g. at startup */
+	isMetadataSettled(): boolean;
 }
 
 /**
@@ -63,6 +92,7 @@ export interface TimeblockCalendarSyncHost {
 		eventId: string,
 		error: unknown
 	): Promise<void>;
+	renameQueuedEventDeletions(oldPath: string, newPath: string): Promise<void>;
 }
 
 type TimeblockEventPayload = {
@@ -90,6 +120,45 @@ function isEventGoneError(error: unknown): boolean {
 
 function getErrorMessage(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
+}
+
+/** Short, stable 53-bit hash (cyrb53), so index entries do not store whole event payloads */
+function hashString(value: string): string {
+	let h1 = 0xdeadbeef;
+	let h2 = 0x41c6ce57;
+	for (let i = 0; i < value.length; i++) {
+		const code = value.charCodeAt(i);
+		h1 = Math.imul(h1 ^ code, 2654435761);
+		h2 = Math.imul(h2 ^ code, 1597334677);
+	}
+	h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+	h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+	return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+function getRawTimeblockId(timeblock: unknown): string | null {
+	if (timeblock === null || typeof timeblock !== "object") return null;
+	const { id } = timeblock as { id?: unknown };
+	return typeof id === "string" && id ? id : null;
+}
+
+/**
+ * When frontmatter YAML does not parse, as happens mid-edit, Obsidian drops
+ * `frontmatter` and `frontmatterPosition` but still lists a YAML section at
+ * the top of the note. An empty block (`---` then `---`) spans only two lines.
+ */
+function hasUnparseableFrontmatter(cache: CachedMetadata): boolean {
+	if (cache.frontmatter) return false;
+	const first = cache.sections?.[0];
+	return (
+		first?.type === "yaml" &&
+		first.position.start.line === 0 &&
+		first.position.end.line - first.position.start.line > 1
+	);
+}
+
+function getBasename(notePath: string): string {
+	return notePath.slice(notePath.lastIndexOf("/") + 1);
 }
 
 /** Matches calendar-core's daily-note cache lifetime */
@@ -129,12 +198,22 @@ export function createDailyNoteTimeblockSource(plugin: TaskNotesPlugin): Timeblo
 				return null;
 			}
 			const cache = plugin.app.metadataCache.getFileCache(file);
-			const rawTimeblocks: unknown = cache?.frontmatter?.timeblocks;
-			const timeblocks = Array.isArray(rawTimeblocks)
-				? rawTimeblocks.filter((timeblock): timeblock is TimeBlock =>
-						validateTimeBlock(timeblock)
-					)
-				: [];
+			if (!cache || hasUnparseableFrontmatter(cache)) {
+				return { date: null, timeblocks: [], indexed: false };
+			}
+			const rawTimeblocks: unknown = cache.frontmatter?.timeblocks;
+			const timeblocks: TimeBlock[] = [];
+			const invalidIds: string[] = [];
+			if (Array.isArray(rawTimeblocks)) {
+				for (const timeblock of rawTimeblocks) {
+					if (validateTimeBlock(timeblock)) {
+						timeblocks.push(timeblock);
+					} else {
+						const id = getRawTimeblockId(timeblock);
+						if (id) invalidIds.push(id);
+					}
+				}
+			}
 			// Only look up the date for notes that have timeblocks; this runs on
 			// every metadata change in the vault.
 			// A cache miss may be a daily note created moments ago, so refresh once.
@@ -144,10 +223,28 @@ export function createDailyNoteTimeblockSource(plugin: TaskNotesPlugin): Timeblo
 						getDailyNoteDates(true).get(notePath) ??
 						null)
 					: null;
-			return { date, timeblocks, indexed: !!cache };
+			return { date, timeblocks, invalidIds, indexed: true };
 		},
 		listNotePaths() {
 			return Array.from(getDailyNoteDates().keys());
+		},
+		findNotesWithTimeblock(timeblockId) {
+			const { vault, metadataCache } = plugin.app;
+			return vault
+				.getMarkdownFiles()
+				.filter((file) => {
+					const rawTimeblocks: unknown =
+						metadataCache.getFileCache(file)?.frontmatter?.timeblocks;
+					return (
+						Array.isArray(rawTimeblocks) &&
+						rawTimeblocks.some((timeblock) => getRawTimeblockId(timeblock) === timeblockId)
+					);
+				})
+				.map((file) => file.path);
+		},
+		isMetadataSettled() {
+			const { vault, metadataCache } = plugin.app;
+			return vault.getMarkdownFiles().every((file) => !!metadataCache.getFileCache(file));
 		},
 	};
 }
@@ -166,8 +263,6 @@ export function createDailyNoteTimeblockSource(plugin: TaskNotesPlugin): Timeblo
 export class TimeblockCalendarSync {
 	/** In-flight creates keyed by calendar, note and timeblock, so overlapping saves create one event */
 	private static pendingCreates: Map<string, Promise<string>> = new Map();
-	private static indexWrite: Promise<unknown> = Promise.resolve();
-	private static syncQueueWrite: Promise<unknown> = Promise.resolve();
 
 	private plugin: TaskNotesPlugin;
 	private googleCalendarService: GoogleCalendarService;
@@ -182,6 +277,11 @@ export class TimeblockCalendarSync {
 	private snapshots: Map<string, Map<string, string>> = new Map();
 	/** Notes Obsidian had not parsed when snapshots were taken; their first change only sets a baseline */
 	private unindexedNotes: Set<string> = new Set();
+	/** When each note's timeblocks first appeared this session; only these can be a move's destination */
+	private recentlyAddedIds: Map<string, Map<string, number>> = new Map();
+	/** Notes whose deletions waited at startup for Obsidian to finish indexing */
+	private deferredDeletionNotes: Set<string> = new Set();
+	private startupRecoveryStartedAt: number | null = null;
 	private destroyed = false;
 
 	constructor(
@@ -198,8 +298,6 @@ export class TimeblockCalendarSync {
 
 	static clearSharedStateForTests(): void {
 		TimeblockCalendarSync.pendingCreates.clear();
-		TimeblockCalendarSync.indexWrite = Promise.resolve();
-		TimeblockCalendarSync.syncQueueWrite = Promise.resolve();
 	}
 
 	destroy(): void {
@@ -211,6 +309,8 @@ export class TimeblockCalendarSync {
 		this.pendingChangedIds.clear();
 		this.snapshots.clear();
 		this.unindexedNotes.clear();
+		this.recentlyAddedIds.clear();
+		this.deferredDeletionNotes.clear();
 	}
 
 	isEnabled(): boolean {
@@ -237,8 +337,9 @@ export class TimeblockCalendarSync {
 				this.unindexedNotes.add(notePath);
 				continue;
 			}
-			if (state.timeblocks.length > 0) {
-				this.snapshots.set(notePath, this.getContentFingerprints(state));
+			const fingerprints = this.getContentFingerprints(state);
+			if (fingerprints.size > 0) {
+				this.snapshots.set(notePath, fingerprints);
 			}
 		}
 	}
@@ -286,17 +387,24 @@ export class TimeblockCalendarSync {
 		}
 
 		const previous = this.snapshots.get(notePath);
-		if (!previous && state.timeblocks.length === 0) {
+		const current = this.getContentFingerprints(state);
+		if (!previous && current.size === 0) {
 			this.unindexedNotes.delete(notePath);
 			return;
 		}
-		const current = this.getContentFingerprints(state);
 		this.snapshots.set(notePath, current);
 		if (
 			this.unindexedNotes.delete(notePath) ||
 			!this.plugin.settings.googleCalendarExport?.syncTimeblocks
 		) {
 			return;
+		}
+
+		const now = Date.now();
+		for (const id of current.keys()) {
+			if (!previous?.has(id)) {
+				this.markRecentlyAdded(notePath, id, now);
+			}
 		}
 
 		const changedIds = new Set<string>();
@@ -315,16 +423,18 @@ export class TimeblockCalendarSync {
 
 	/**
 	 * A deleted daily note removes all of its timeblocks. Pending debounced work
-	 * for the note is cancelled and the reconcile runs straight away, so a
-	 * queued update cannot recreate an event after its timeblock is gone.
+	 * for the note is cancelled, so a queued update cannot recreate an event
+	 * after its timeblock is gone. The deletion waits briefly: if the note
+	 * reappears elsewhere (a move made outside Obsidian), its events follow it.
 	 */
 	handleNoteDeleted(notePath: string): void {
 		if (this.destroyed) return;
 		this.cancelPendingReconcile(notePath);
+		this.recentlyAddedIds.delete(notePath);
 		const hadTimeblocks = this.snapshots.delete(notePath);
 		const wasUnindexed = this.unindexedNotes.delete(notePath);
 		if (hadTimeblocks || wasUnindexed) {
-			void this.enqueueReconcile(notePath, new Set());
+			this.scheduleReconcile(notePath, new Set(), NOTE_DELETE_GRACE_MS);
 		}
 	}
 
@@ -339,6 +449,9 @@ export class TimeblockCalendarSync {
 		}
 		this.snapshots.delete(oldPath);
 		if (snapshot) this.snapshots.set(newPath, snapshot);
+		const recentlyAdded = this.recentlyAddedIds.get(oldPath);
+		this.recentlyAddedIds.delete(oldPath);
+		if (recentlyAdded) this.recentlyAddedIds.set(newPath, recentlyAdded);
 
 		await this.mutateIndex((index) => {
 			let changed = false;
@@ -360,6 +473,7 @@ export class TimeblockCalendarSync {
 			}
 			return changed ? queue : null;
 		});
+		await this.host.renameQueuedEventDeletions(oldPath, newPath);
 
 		// The renamed note may have stopped being a daily note; reconcile both.
 		void this.enqueueReconcile(oldPath, new Set());
@@ -379,12 +493,21 @@ export class TimeblockCalendarSync {
 	/**
 	 * Retry failed creates/updates. At startup, also reconcile every note with
 	 * linked timeblocks to catch edits, deletions and settings changes made
-	 * while Obsidian was closed.
+	 * while Obsidian was closed. Until Obsidian has indexed every file, events
+	 * of missing timeblocks are kept, since the timeblock may have moved to a
+	 * file that is not indexed yet; a later pass deletes them.
 	 */
 	async processRecovery(includeIndexedNotes: boolean): Promise<void> {
 		if (!this.isEnabled()) {
 			return;
 		}
+		if (includeIndexedNotes) {
+			this.startupRecoveryStartedAt = Date.now();
+		}
+		const settled =
+			this.source.isMetadataSettled() ||
+			(this.startupRecoveryStartedAt !== null &&
+				Date.now() - this.startupRecoveryStartedAt >= STARTUP_DELETION_MAX_DEFER_MS);
 
 		const work = new Map<string, Set<string>>();
 		for (const item of await this.getSyncQueue()) {
@@ -392,16 +515,19 @@ export class TimeblockCalendarSync {
 			ids.add(item.timeblockId);
 			work.set(item.notePath, ids);
 		}
-		if (includeIndexedNotes) {
-			for (const entry of await this.getIndex()) {
-				if (!work.has(entry.notePath)) {
-					work.set(entry.notePath, new Set());
-				}
+		const notesWithLinks = includeIndexedNotes
+			? (await this.getIndex()).map((entry) => entry.notePath)
+			: [];
+		const deferred = settled ? Array.from(this.deferredDeletionNotes) : [];
+		if (settled) this.deferredDeletionNotes.clear();
+		for (const notePath of [...notesWithLinks, ...deferred]) {
+			if (!work.has(notePath)) {
+				work.set(notePath, new Set());
 			}
 		}
 
 		for (const [notePath, ids] of work) {
-			await this.enqueueReconcile(notePath, ids);
+			await this.enqueueReconcile(notePath, ids, { deferDeletions: !settled });
 		}
 	}
 
@@ -412,7 +538,7 @@ export class TimeblockCalendarSync {
 	async isQueuedDeletionStillNeeded(item: PendingGoogleCalendarDeletion): Promise<boolean> {
 		if (!item.timeblockId) return true;
 		const state = this.source.read(item.taskPath);
-		if (!state?.timeblocks.some((timeblock) => timeblock.id === item.timeblockId)) {
+		if (!state || !this.holdsTimeblock(state, item.timeblockId)) {
 			return true;
 		}
 		const entry = (await this.getIndex()).find(
@@ -431,7 +557,11 @@ export class TimeblockCalendarSync {
 		});
 	}
 
-	private scheduleReconcile(notePath: string, changedIds: Set<string>): void {
+	private scheduleReconcile(
+		notePath: string,
+		changedIds: Set<string>,
+		delayMs = TIMEBLOCK_SYNC_DEBOUNCE_MS
+	): void {
 		const pending = this.pendingChangedIds.get(notePath) ?? new Set<string>();
 		for (const id of changedIds) pending.add(id);
 		this.pendingChangedIds.set(notePath, pending);
@@ -445,7 +575,7 @@ export class TimeblockCalendarSync {
 			this.debounceTimers.delete(notePath);
 			this.pendingChangedIds.delete(notePath);
 			void this.enqueueReconcile(notePath, ids);
-		}, TIMEBLOCK_SYNC_DEBOUNCE_MS);
+		}, delayMs);
 		this.debounceTimers.set(notePath, timer);
 	}
 
@@ -458,42 +588,39 @@ export class TimeblockCalendarSync {
 		this.pendingChangedIds.delete(notePath);
 	}
 
-	private enqueueReconcile(notePath: string, changedIds: Set<string>): Promise<void> {
+	private enqueueReconcile(
+		notePath: string,
+		changedIds: Set<string>,
+		options: { deferDeletions?: boolean } = {}
+	): Promise<void> {
 		const run = this.reconcileChain
 			.catch(() => undefined)
-			.then(() => this.reconcileNote(notePath, changedIds));
-		this.reconcileChain = run.catch((error) => {
+			.then(() => this.reconcileNote(notePath, changedIds, options));
+		this.reconcileChain = run.catch(async (error) => {
 			tasknotesLogger.error("Failed to sync timeblocks to Google Calendar:", {
 				category: "provider",
 				operation: "reconcile-timeblock-note",
 				details: { value: notePath },
 				error,
 			});
+			// The snapshot already holds these edits; queue them so they are retried.
+			for (const id of changedIds) {
+				await this.queueSyncRetry(notePath, id, error).catch(() => undefined);
+			}
 		});
 		return run;
 	}
 
-	private async reconcileNote(notePath: string, changedIds: Set<string>): Promise<void> {
+	private async reconcileNote(
+		notePath: string,
+		changedIds: Set<string>,
+		options: { deferDeletions?: boolean } = {}
+	): Promise<void> {
 		if (this.destroyed) {
 			return;
 		}
 		if (!this.isEnabled()) {
-			// Sync is on but Google is not connected yet: keep the edits for retry.
-			if (this.plugin.settings.googleCalendarExport?.syncTimeblocks) {
-				const present = new Set(
-					(this.source.read(notePath)?.timeblocks ?? []).map((timeblock) => timeblock.id)
-				);
-				const removedIds = (await this.getIndex())
-					.filter((entry) => entry.notePath === notePath && !present.has(entry.timeblockId))
-					.map((entry) => entry.timeblockId);
-				for (const id of new Set([...changedIds, ...removedIds])) {
-					await this.queueSyncRetry(
-						notePath,
-						id,
-						new Error("Google Calendar sync is not ready")
-					);
-				}
-			}
+			await this.queueUntilReady(notePath, changedIds);
 			return;
 		}
 
@@ -505,6 +632,7 @@ export class TimeblockCalendarSync {
 			return;
 		}
 		const timeblocks = this.getUniqueTimeblocks(notePath, state?.timeblocks ?? []);
+		const invalidIds = new Set(state?.invalidIds ?? []);
 		const index = await this.getIndex();
 		const entries = new Map(
 			index
@@ -512,23 +640,39 @@ export class TimeblockCalendarSync {
 				.map((entry) => [entry.timeblockId, entry])
 		);
 
-		for (const entry of entries.values()) {
-			if (timeblocks.has(entry.timeblockId)) continue;
+		for (const entry of Array.from(entries.values())) {
+			// An invalid timeblock is still there, probably mid-edit; keep its event.
+			if (timeblocks.has(entry.timeblockId) || invalidIds.has(entry.timeblockId)) continue;
 
-			const movedTo = this.findNoteHoldingMovedTimeblock(entry, index);
+			const movedTo = this.findMoveDestination(entry, index, !state);
 			if (movedTo) {
-				// A timeblock moved to another day keeps its event.
+				// A timeblock moved to another note keeps its event.
 				await this.rekeyIndexEntry(entry, movedTo);
+				entries.delete(entry.timeblockId);
 				this.scheduleReconcile(movedTo, new Set([entry.timeblockId]));
 				continue;
 			}
 
+			if (options.deferDeletions) {
+				this.deferredDeletionNotes.add(notePath);
+				continue;
+			}
 			await this.deleteTimeblockEvent(entry, connectionGeneration);
 		}
 
 		for (const id of changedIds) {
-			if (!timeblocks.has(id) && !entries.has(id)) {
+			if (!timeblocks.has(id) && !entries.has(id) && !invalidIds.has(id)) {
 				await this.removeFromSyncQueue(notePath, id);
+			}
+		}
+
+		// Adopt the events of timeblocks that just moved here, even into a
+		// note that is not a daily note, so they are not deleted.
+		for (const id of timeblocks.keys()) {
+			if (entries.has(id) || !changedIds.has(id)) continue;
+			const adoptable = this.findAdoptableEntry(notePath, id, index);
+			if (adoptable) {
+				entries.set(id, await this.rekeyIndexEntry(adoptable, notePath));
 			}
 		}
 
@@ -540,13 +684,7 @@ export class TimeblockCalendarSync {
 		}
 
 		for (const [id, timeblock] of timeblocks) {
-			let entry = entries.get(id);
-			if (!entry) {
-				const adoptable = this.findAdoptableEntry(notePath, id, index);
-				if (adoptable) {
-					entry = await this.rekeyIndexEntry(adoptable, notePath);
-				}
-			}
+			const entry = entries.get(id);
 			if (!entry && !changedIds.has(id)) {
 				continue;
 			}
@@ -573,6 +711,35 @@ export class TimeblockCalendarSync {
 		}
 	}
 
+	/**
+	 * Sync is on but Google is not connected yet: keep the edits for retry.
+	 * Nothing is queued without a target calendar, and new timeblocks outside
+	 * daily notes are not queued, since they would never be synced.
+	 */
+	private async queueUntilReady(notePath: string, changedIds: Set<string>): Promise<void> {
+		if (!this.plugin.settings.googleCalendarExport?.syncTimeblocks || !this.getTargetCalendarId()) {
+			return;
+		}
+		const state = this.source.read(notePath);
+		if (state && !state.indexed) {
+			// Unknown contents: keep only the edits already seen.
+			for (const id of changedIds) {
+				await this.queueSyncRetry(notePath, id, new Error("Google Calendar sync is not ready"));
+			}
+			return;
+		}
+		const removedIds = (await this.getIndex())
+			.filter(
+				(entry) =>
+					entry.notePath === notePath && !(state && this.holdsTimeblock(state, entry.timeblockId))
+			)
+			.map((entry) => entry.timeblockId);
+		const ids = new Set([...(state?.date ? changedIds : []), ...removedIds]);
+		for (const id of ids) {
+			await this.queueSyncRetry(notePath, id, new Error("Google Calendar sync is not ready"));
+		}
+	}
+
 	private async syncTimeblock(
 		notePath: string,
 		date: string,
@@ -582,7 +749,7 @@ export class TimeblockCalendarSync {
 		connectionGeneration: number
 	): Promise<void> {
 		const payload = this.buildEventPayload(notePath, date, timeblock);
-		const fingerprint = JSON.stringify({ calendarId, payload });
+		const fingerprint = hashString(JSON.stringify({ calendarId, payload }));
 
 		if (entry && entry.calendarId === calendarId) {
 			if (entry.fingerprint === fingerprint) {
@@ -734,12 +901,20 @@ export class TimeblockCalendarSync {
 		}
 	}
 
-	/** An indexed timeblock missing from its note but present, unlinked, in another daily note. */
-	private findNoteHoldingMovedTimeblock(
+	/**
+	 * The note an indexed timeblock moved to: another note, daily or not, that
+	 * holds it without its own link. Only a copy that appeared this session
+	 * counts, so an old note sharing the ID (for example from a template) does
+	 * not take over the event. When the whole note is gone, a note with the
+	 * same file name also counts: the note was moved while Obsidian was closed.
+	 */
+	private findMoveDestination(
 		entry: GoogleCalendarTimeblockEventIndexEntry,
-		index: GoogleCalendarTimeblockEventIndexEntry[]
+		index: GoogleCalendarTimeblockEventIndexEntry[],
+		noteGone: boolean
 	): string | null {
-		for (const notePath of this.source.listNotePaths()) {
+		const now = Date.now();
+		for (const notePath of this.source.findNotesWithTimeblock(entry.timeblockId)) {
 			if (notePath === entry.notePath) continue;
 			const hasOwnLink = index.some(
 				(candidate) =>
@@ -747,7 +922,14 @@ export class TimeblockCalendarSync {
 			);
 			if (hasOwnLink) continue;
 			const state = this.source.read(notePath);
-			if (state?.timeblocks.some((timeblock) => timeblock.id === entry.timeblockId)) {
+			if (!state?.indexed || !state.timeblocks.some((tb) => tb.id === entry.timeblockId)) {
+				continue;
+			}
+			const justAdded =
+				this.pendingChangedIds.get(notePath)?.has(entry.timeblockId) ||
+				this.isRecentlyAdded(notePath, entry.timeblockId, now);
+			const sameFile = noteGone && getBasename(notePath) === getBasename(entry.notePath);
+			if (justAdded || sameFile) {
 				return notePath;
 			}
 		}
@@ -757,7 +939,8 @@ export class TimeblockCalendarSync {
 	/**
 	 * An index entry for this timeblock ID whose note no longer contains it,
 	 * i.e. the timeblock moved here. A copy that still exists in its original
-	 * note is never adopted, so it gets its own event.
+	 * note is never adopted, so it gets its own event; neither is the entry of
+	 * a note whose contents are unknown, such as one with unparseable YAML.
 	 */
 	private findAdoptableEntry(
 		notePath: string,
@@ -769,8 +952,31 @@ export class TimeblockCalendarSync {
 				return false;
 			}
 			const origin = this.source.read(entry.notePath);
-			return !origin?.timeblocks.some((timeblock) => timeblock.id === timeblockId);
+			if (!origin) return true;
+			return origin.indexed && !this.holdsTimeblock(origin, timeblockId);
 		});
+	}
+
+	/** Whether a note has this timeblock, valid or not. */
+	private holdsTimeblock(state: DailyNoteTimeblocks, timeblockId: string): boolean {
+		return (
+			state.timeblocks.some((timeblock) => timeblock.id === timeblockId) ||
+			!!state.invalidIds?.includes(timeblockId)
+		);
+	}
+
+	private markRecentlyAdded(notePath: string, timeblockId: string, now: number): void {
+		const added = this.recentlyAddedIds.get(notePath) ?? new Map<string, number>();
+		for (const [id, addedAt] of added) {
+			if (now - addedAt >= MOVE_WINDOW_MS) added.delete(id);
+		}
+		added.set(timeblockId, now);
+		this.recentlyAddedIds.set(notePath, added);
+	}
+
+	private isRecentlyAdded(notePath: string, timeblockId: string, now: number): boolean {
+		const addedAt = this.recentlyAddedIds.get(notePath)?.get(timeblockId);
+		return addedAt !== undefined && now - addedAt < MOVE_WINDOW_MS;
 	}
 
 	private async rekeyIndexEntry(
@@ -811,6 +1017,9 @@ export class TimeblockCalendarSync {
 
 	private getContentFingerprints(state: DailyNoteTimeblocks): Map<string, string> {
 		const fingerprints = new Map<string, string>();
+		for (const id of state.invalidIds ?? []) {
+			fingerprints.set(id, INVALID_TIMEBLOCK_FINGERPRINT);
+		}
 		for (const timeblock of state.timeblocks) {
 			if (fingerprints.has(timeblock.id)) continue;
 			fingerprints.set(
@@ -924,23 +1133,28 @@ export class TimeblockCalendarSync {
 			index: GoogleCalendarTimeblockEventIndexEntry[]
 		) => GoogleCalendarTimeblockEventIndexEntry[] | null
 	): Promise<void> {
-		const write = TimeblockCalendarSync.indexWrite
-			.catch(() => undefined)
-			.then(async () => {
-				const data = await this.plugin.loadPluginDataForSafeWrite(
-					"save-google-calendar-timeblock-event-index"
-				);
-				if (!data) return;
-				const current = data[TIMEBLOCK_EVENT_INDEX_KEY];
-				const next = mutation(
-					Array.isArray(current) ? (current as GoogleCalendarTimeblockEventIndexEntry[]) : []
-				);
-				if (next === null) return;
-				data[TIMEBLOCK_EVENT_INDEX_KEY] = next;
-				await this.plugin.saveData(data);
-			});
-		TimeblockCalendarSync.indexWrite = write;
-		await write;
+		await withPluginDataWriteLock(this.plugin, async () => {
+			const data = await this.loadPluginDataOrThrow("save-google-calendar-timeblock-event-index");
+			const current = data[TIMEBLOCK_EVENT_INDEX_KEY];
+			const next = mutation(
+				Array.isArray(current) ? (current as GoogleCalendarTimeblockEventIndexEntry[]) : []
+			);
+			if (next === null) return;
+			data[TIMEBLOCK_EVENT_INDEX_KEY] = next;
+			await this.plugin.saveData(data);
+		});
+	}
+
+	/**
+	 * Unlike other plugin-data writes, a skipped timeblock write must fail: a
+	 * new event whose link was not saved would be orphaned and duplicated.
+	 */
+	private async loadPluginDataOrThrow(operation: string): Promise<Record<string, unknown>> {
+		const data = await this.plugin.loadPluginDataForSafeWrite(operation);
+		if (!data) {
+			throw new Error("TaskNotes plugin data could not be read safely");
+		}
+		return data;
 	}
 
 	private async getSyncQueue(): Promise<PendingGoogleCalendarTimeblockSync[]> {
@@ -982,22 +1196,15 @@ export class TimeblockCalendarSync {
 			queue: PendingGoogleCalendarTimeblockSync[]
 		) => PendingGoogleCalendarTimeblockSync[] | null
 	): Promise<void> {
-		const write = TimeblockCalendarSync.syncQueueWrite
-			.catch(() => undefined)
-			.then(async () => {
-				const data = await this.plugin.loadPluginDataForSafeWrite(
-					"save-google-calendar-timeblock-sync-queue"
-				);
-				if (!data) return;
-				const current = data[TIMEBLOCK_SYNC_QUEUE_KEY];
-				const next = mutation(
-					Array.isArray(current) ? (current as PendingGoogleCalendarTimeblockSync[]) : []
-				);
-				if (next === null) return;
-				data[TIMEBLOCK_SYNC_QUEUE_KEY] = next;
-				await this.plugin.saveData(data);
-			});
-		TimeblockCalendarSync.syncQueueWrite = write;
-		await write;
+		await withPluginDataWriteLock(this.plugin, async () => {
+			const data = await this.loadPluginDataOrThrow("save-google-calendar-timeblock-sync-queue");
+			const current = data[TIMEBLOCK_SYNC_QUEUE_KEY];
+			const next = mutation(
+				Array.isArray(current) ? (current as PendingGoogleCalendarTimeblockSync[]) : []
+			);
+			if (next === null) return;
+			data[TIMEBLOCK_SYNC_QUEUE_KEY] = next;
+			await this.plugin.saveData(data);
+		});
 	}
 }

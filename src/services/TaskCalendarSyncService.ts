@@ -24,6 +24,7 @@ import {
 	withVaultFileMutation,
 } from "./VaultMutationService";
 import type { PerformanceProfilerDetails } from "../utils/PerformanceProfiler";
+import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 import { TimeblockCalendarSync, type TimeblockNoteSource } from "./TimeblockCalendarSync";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskCalendarSyncService" });
@@ -183,6 +184,17 @@ export class TaskCalendarSyncService {
 				queueEventDeletion: (notePath, timeblockId, calendarId, eventId, error) =>
 					this.queueCalendarDeletion(notePath, calendarId, eventId, error, false, {
 						timeblockId,
+					}),
+				renameQueuedEventDeletions: (oldPath, newPath) =>
+					this.mutateDeletionQueue((queue) => {
+						let changed = false;
+						for (const item of queue) {
+							if (item.timeblockId && item.taskPath === oldPath) {
+								item.taskPath = newPath;
+								changed = true;
+							}
+						}
+						return changed ? queue : null;
 					}),
 			},
 			options.timeblockSource
@@ -480,17 +492,19 @@ export class TaskCalendarSyncService {
 		) => PendingGoogleCalendarDeletion[] | null
 	): Promise<void> {
 		const previousMutation = TaskCalendarSyncService.googleCalendarDeletionQueueWrite;
-		const currentMutation = previousMutation.catch(() => undefined).then(async () => {
-			const data = await this.plugin.loadPluginDataForSafeWrite(
-				"save-google-calendar-deletion-queue"
-			);
-			if (!data) return;
-			const queue = (data[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] || []) as PendingGoogleCalendarDeletion[];
-			const updatedQueue = mutation(queue);
-			if (updatedQueue === null) return;
-			data[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] = updatedQueue;
-			await this.plugin.saveData(data);
-		});
+		const currentMutation = previousMutation.catch(() => undefined).then(() =>
+			withPluginDataWriteLock(this.plugin, async () => {
+				const data = await this.plugin.loadPluginDataForSafeWrite(
+					"save-google-calendar-deletion-queue"
+				);
+				if (!data) return;
+				const queue = (data[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] || []) as PendingGoogleCalendarDeletion[];
+				const updatedQueue = mutation(queue);
+				if (updatedQueue === null) return;
+				data[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] = updatedQueue;
+				await this.plugin.saveData(data);
+			})
+		);
 		TaskCalendarSyncService.googleCalendarDeletionQueueWrite = currentMutation;
 		await currentMutation;
 	}
@@ -503,10 +517,12 @@ export class TaskCalendarSyncService {
 	}
 
 	private async saveEventIndex(index: GoogleCalendarEventIndexEntry[]): Promise<void> {
-		const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-event-index");
-		if (!data) return;
-		data[GOOGLE_CALENDAR_EVENT_INDEX_KEY] = index;
-		await this.plugin.saveData(data);
+		await withPluginDataWriteLock(this.plugin, async () => {
+			const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-event-index");
+			if (!data) return;
+			data[GOOGLE_CALENDAR_EVENT_INDEX_KEY] = index;
+			await this.plugin.saveData(data);
+		});
 	}
 
 	private async getSyncQueue(): Promise<PendingGoogleCalendarSync[]> {
@@ -520,14 +536,16 @@ export class TaskCalendarSyncService {
 		mutation: (queue: PendingGoogleCalendarSync[]) => PendingGoogleCalendarSync[]
 	): Promise<void> {
 		const currentMutation = TaskCalendarSyncService.googleCalendarSyncQueueWrite
-			.catch(() => undefined).then(async () => {
+			.catch(() => undefined).then(() =>
+				withPluginDataWriteLock(this.plugin, async () => {
 					const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-sync-queue");
 					if (!data) return;
 					data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] = mutation(
 						(data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] || []) as PendingGoogleCalendarSync[]
 					);
 					await this.plugin.saveData(data);
-				});
+				})
+			);
 		TaskCalendarSyncService.googleCalendarSyncQueueWrite = currentMutation;
 		await currentMutation;
 	}
@@ -557,12 +575,14 @@ export class TaskCalendarSyncService {
 
 	private async saveCalendarFingerprints(fingerprints?: Map<string, string>): Promise<void> {
 		const map = fingerprints || (await this.getCalendarFingerprints());
-		const data = await this.plugin.loadPluginDataForSafeWrite(
-			"save-google-calendar-fingerprints"
-		);
-		if (!data) return;
-		data[GOOGLE_CALENDAR_FINGERPRINTS_KEY] = Object.fromEntries(map.entries());
-		await this.plugin.saveData(data);
+		await withPluginDataWriteLock(this.plugin, async () => {
+			const data = await this.plugin.loadPluginDataForSafeWrite(
+				"save-google-calendar-fingerprints"
+			);
+			if (!data) return;
+			data[GOOGLE_CALENDAR_FINGERPRINTS_KEY] = Object.fromEntries(map.entries());
+			await this.plugin.saveData(data);
+		});
 	}
 
 	private getCalendarRelevantFingerprint(task: TaskInfo): string {

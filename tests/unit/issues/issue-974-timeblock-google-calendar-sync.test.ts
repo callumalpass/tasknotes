@@ -1,21 +1,52 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
 
+import { TFile } from "obsidian";
+
 import { TaskCalendarSyncService } from "../../../src/services/TaskCalendarSyncService";
-import type { TimeblockNoteSource } from "../../../src/services/TimeblockCalendarSync";
+import {
+	createDailyNoteTimeblockSource,
+	type TimeblockNoteSource,
+} from "../../../src/services/TimeblockCalendarSync";
 import type { TimeBlock } from "../../../src/types";
 import { createCopiedTimeblock } from "../../../src/utils/helpers";
 import { PluginFactory } from "../../helpers/mock-factories";
 
 const CALENDAR_ID = "primary";
 
-type Notes = Map<string, { date: string; timeblocks: TimeBlock[] }>;
+type Note = {
+	date: string | null;
+	timeblocks: TimeBlock[];
+	invalidIds?: string[];
+	/** False models frontmatter that Obsidian has not parsed or cannot parse */
+	indexed?: boolean;
+};
+type Notes = Map<string, Note>;
 
-const createSource = (notes: Notes): TimeblockNoteSource => ({
+const createSource = (notes: Notes, settled: { value: boolean } = { value: true }): TimeblockNoteSource => ({
 	read: (notePath) => {
 		const note = notes.get(notePath);
-		return note ? { ...note, timeblocks: [...note.timeblocks], indexed: true } : null;
+		if (!note) return null;
+		if (note.indexed === false) return { date: null, timeblocks: [], indexed: false };
+		return {
+			date: note.date,
+			timeblocks: [...note.timeblocks],
+			invalidIds: [...(note.invalidIds ?? [])],
+			indexed: true,
+		};
 	},
-	listNotePaths: () => Array.from(notes.keys()),
+	listNotePaths: () =>
+		Array.from(notes.entries())
+			.filter(([, note]) => note.date)
+			.map(([notePath]) => notePath),
+	findNotesWithTimeblock: (timeblockId) =>
+		Array.from(notes.entries())
+			.filter(
+				([, note]) =>
+					note.timeblocks.some((tb) => tb.id === timeblockId) ||
+					!!note.invalidIds?.includes(timeblockId)
+			)
+			.map(([notePath]) => notePath),
+	isMetadataSettled: () => settled.value,
 });
 
 const createPlugin = (pluginData: Record<string, any>, calendarSettings = {}) => {
@@ -71,13 +102,18 @@ const indexEntry = (notePath: string, timeblockId: string, eventId: string) => (
 	updatedAt: 1,
 });
 
-const setup = (notes: Notes, pluginData: Record<string, any> = {}, calendarSettings = {}) => {
+const setup = (
+	notes: Notes,
+	pluginData: Record<string, any> = {},
+	calendarSettings = {},
+	settled = { value: true }
+) => {
 	const plugin = createPlugin(pluginData, calendarSettings);
 	const google = createGoogle(
 		(calendarSettings as { targetCalendarId?: string }).targetCalendarId ?? CALENDAR_ID
 	);
 	const service = new TaskCalendarSyncService(plugin, google as any, {
-		timeblockSource: createSource(notes),
+		timeblockSource: createSource(notes, settled),
 	});
 	service.timeblocks.initialize();
 	return { plugin, google, service, sync: service.timeblocks, pluginData };
@@ -335,5 +371,166 @@ describe("Issue #974: sync daily-note timeblocks to Google Calendar", () => {
 		await sync.flush();
 
 		expect(google.deleteEvent).toHaveBeenCalledWith(calendarId, "abc-123", expect.any(Number));
+	});
+	it("reads a note whose frontmatter does not parse, or whose timeblock is mid-edit, as not deleted", () => {
+		const caches: Record<string, unknown> = {
+			// Obsidian 1.15's cache for invalid YAML: a YAML section but no frontmatter.
+			"Daily/broken.md": {
+				sections: [
+					{ type: "yaml", position: { start: { line: 0 }, end: { line: 5 } } },
+					{ type: "paragraph", position: { start: { line: 6 }, end: { line: 6 } } },
+				],
+			},
+			"Daily/empty.md": {
+				sections: [{ type: "yaml", position: { start: { line: 0 }, end: { line: 1 } } }],
+			},
+			"Daily/editing.md": {
+				frontmatter: { timeblocks: [{ id: "tb-1", startTime: "09:00", endTime: "10:00" }] },
+			},
+		};
+		const plugin = {
+			app: {
+				vault: { getAbstractFileByPath: (path: string) => new TFile(path) },
+				metadataCache: { getFileCache: (file: TFile) => caches[file.path] },
+			},
+		};
+		const source = createDailyNoteTimeblockSource(plugin as any);
+
+		expect(source.read("Daily/broken.md")).toEqual(
+			expect.objectContaining({ indexed: false, timeblocks: [] })
+		);
+		expect(source.read("Daily/empty.md")).toEqual(
+			expect.objectContaining({ indexed: true, timeblocks: [] })
+		);
+		expect(source.read("Daily/editing.md")).toEqual(
+			expect.objectContaining({ indexed: true, timeblocks: [], invalidIds: ["tb-1"] })
+		);
+	});
+
+	it("keeps the events of timeblocks that are invalid mid-edit, and copies never adopt an unparseable note's event", async () => {
+		const original = timeblock("tb-1");
+		const notes: Notes = new Map([
+			["Daily/2026-11-02.md", { date: "2026-11-02", timeblocks: [original] }],
+			["Daily/2026-11-03.md", { date: "2026-11-03", timeblocks: [] }],
+		]);
+		const pluginData: Record<string, any> = {
+			googleCalendarTimeblockEventIndex: [indexEntry("Daily/2026-11-02.md", "tb-1", "original-event")],
+		};
+		const { google, sync } = setup(notes, pluginData);
+
+		// The title is cleared while being retyped: the timeblock fails validation.
+		notes.set("Daily/2026-11-02.md", { date: null, timeblocks: [], invalidIds: ["tb-1"] });
+		sync.handleNoteChanged("Daily/2026-11-02.md");
+		await sync.flush();
+		expect(google.deleteEvent).not.toHaveBeenCalled();
+
+		// While the original's YAML is broken, a same-ID copy elsewhere gets its own event.
+		notes.set("Daily/2026-11-02.md", { date: null, timeblocks: [], indexed: false });
+		notes.get("Daily/2026-11-03.md")!.timeblocks.push({ ...original });
+		sync.handleNoteChanged("Daily/2026-11-03.md");
+		await sync.flush();
+
+		expect(google.deleteEvent).not.toHaveBeenCalled();
+		expect(google.createEvent).toHaveBeenCalledTimes(1);
+		expect(pluginData.googleCalendarTimeblockEventIndex).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ notePath: "Daily/2026-11-02.md", eventId: "original-event" }),
+				expect.objectContaining({ notePath: "Daily/2026-11-03.md", eventId: "event-1" }),
+			])
+		);
+	});
+
+	it("keeps events when a note is moved outside Obsidian as a delete followed by a create", async () => {
+		const moved = timeblock("tb-1");
+		const notes: Notes = new Map([
+			["Daily/2026-11-02.md", { date: "2026-11-02", timeblocks: [moved] }],
+		]);
+		const pluginData: Record<string, any> = {
+			googleCalendarTimeblockEventIndex: [indexEntry("Daily/2026-11-02.md", "tb-1", "event-1")],
+		};
+		const { google, sync } = setup(notes, pluginData);
+
+		notes.delete("Daily/2026-11-02.md");
+		sync.handleNoteDeleted("Daily/2026-11-02.md");
+		// The new file is indexed a moment later, outside the daily-notes folder.
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		notes.set("Archive/2026-11-02.md", { date: null, timeblocks: [moved] });
+		sync.handleNoteChanged("Archive/2026-11-02.md");
+		await sync.flush();
+
+		expect(google.deleteEvent).not.toHaveBeenCalled();
+		expect(google.createEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarTimeblockEventIndex).toEqual([
+			expect.objectContaining({ notePath: "Archive/2026-11-02.md", eventId: "event-1" }),
+		]);
+	});
+
+	it("waits for indexing before startup deletes the events of a note moved while Obsidian was closed", async () => {
+		const notes: Notes = new Map();
+		const settled = { value: false };
+		const pluginData: Record<string, any> = {
+			googleCalendarTimeblockEventIndex: [indexEntry("Daily/2026-11-02.md", "tb-1", "event-1")],
+		};
+		const { google, sync } = setup(notes, pluginData, {}, settled);
+
+		await sync.processRecovery(true);
+		expect(google.deleteEvent).not.toHaveBeenCalled();
+
+		notes.set("Archive/2026/2026-11-02.md", { date: null, timeblocks: [timeblock("tb-1")] });
+		settled.value = true;
+		await sync.processRecovery(false);
+		await sync.flush();
+
+		expect(google.deleteEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarTimeblockEventIndex).toEqual([
+			expect.objectContaining({ notePath: "Archive/2026/2026-11-02.md", eventId: "event-1" }),
+		]);
+	});
+
+	it("deletes a removed timeblock's event even when an old note shares its template ID", async () => {
+		const notes: Notes = new Map([
+			["Daily/2026-10-01.md", { date: "2026-10-01", timeblocks: [timeblock("tb-template")] }],
+			["Daily/2026-11-02.md", { date: "2026-11-02", timeblocks: [timeblock("tb-template")] }],
+		]);
+		const pluginData: Record<string, any> = {
+			googleCalendarTimeblockEventIndex: [
+				indexEntry("Daily/2026-11-02.md", "tb-template", "event-1"),
+			],
+		};
+		const { google, sync } = setup(notes, pluginData);
+
+		notes.get("Daily/2026-11-02.md")!.timeblocks = [];
+		sync.handleNoteChanged("Daily/2026-11-02.md");
+		await sync.flush();
+		await sync.flush();
+
+		expect(google.updateEvent).not.toHaveBeenCalled();
+		expect(google.deleteEvent).toHaveBeenCalledWith(CALENDAR_ID, "event-1", expect.any(Number));
+		expect(pluginData.googleCalendarTimeblockEventIndex).toEqual([]);
+	});
+
+	it("does not lose plugin-data writes made concurrently by timeblock and task sync", async () => {
+		let stored: Record<string, any> = {};
+		const { plugin, service, sync } = setup(new Map());
+		const tick = () => new Promise((resolve) => setTimeout(resolve, 5));
+		plugin.loadPluginDataForSafeWrite = jest.fn(async () => {
+			const copy = JSON.parse(JSON.stringify(stored));
+			await tick();
+			return copy;
+		});
+		plugin.saveData = jest.fn(async (data: Record<string, any>) => {
+			await tick();
+			stored = JSON.parse(JSON.stringify(data));
+		});
+
+		await Promise.all([
+			(sync as any).upsertIndexEntry(indexEntry("Daily/2026-11-02.md", "tb-1", "event-1")),
+			(service as any).queueCalendarDeletion("Tasks/a.md", CALENDAR_ID, "orphan", new Error("x")),
+			(sync as any).queueSyncRetry("Daily/2026-11-03.md", "tb-2", new Error("offline")),
+		]);
+
+		expect(stored.googleCalendarTimeblockEventIndex).toHaveLength(1);
+		expect(stored.googleCalendarDeletionQueue).toHaveLength(1);
+		expect(stored.googleCalendarTimeblockSyncQueue).toHaveLength(1);
 	});
 });

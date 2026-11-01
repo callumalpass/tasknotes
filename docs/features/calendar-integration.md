@@ -109,7 +109,9 @@ TaskNotes can create Google Calendar events for your timeblocks. This is off by 
 - **Timeblock calendar** chooses the calendar for timeblock events. Leave it on **Same as task calendar** to use the task export target calendar.
 - **Timeblock event title template** sets event titles separately from task events. It supports `{{title}}`, `{{date}}`, `{{startTime}}` and `{{endTime}}`.
 
-When syncing is on, adding a timeblock creates an event, editing it (including dragging or resizing it in the calendar) updates the event, and removing it, or deleting its daily note, deletes the event. Moving a timeblock to another day keeps the same event. Copying a timeblock creates a separate event, so deleting the copy leaves the original's event alone.
+When syncing is on, adding a timeblock creates an event, editing it (including dragging or resizing it in the calendar) updates the event, and removing it, or deleting its daily note, deletes the event. Moving a timeblock to another day keeps the same event. Copying a timeblock creates a separate event, so deleting the copy leaves the original's event alone. A timeblock whose ID also appears in an older note (for example, one added by a template) is not treated as moved there; removing it deletes its event.
+
+A daily note moved outside Obsidian (by a file manager, git or a sync client) keeps its events, as long as the moved file appears within a few seconds or, for moves made while Obsidian was closed, keeps its file name. Events are not deleted while a note's frontmatter cannot be read, for example while you are editing the YAML by hand, or while a timeblock is incomplete, such as one without a title.
 
 Existing timeblocks are not exported when you turn syncing on; each one is synced the next time you edit it. Event descriptions contain the timeblock's description and attachments, and a link to the daily note when **Include Obsidian link** is on. The task export's event color also applies.
 
