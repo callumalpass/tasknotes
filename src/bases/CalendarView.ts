@@ -426,6 +426,11 @@ export class CalendarView extends BasesViewBase {
 		this._previousControllerViewName = this.getControllerViewName();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		if (this.plugin.icsSubscriptionService) {
+			this.register(this.plugin.icsSubscriptionService.on("data-changed", () => {
+				if (this.rootElement?.isConnected) void this.refetchEvents();
+			}));
+		}
 		// Bases ignores metadata-only updates and deletions outside its query. Such
 		// children still own occurrence dates in the model's materialization context.
 		const updateRef = this.plugin.emitter.on(EVENT_TASK_UPDATED, (eventData: unknown) => {

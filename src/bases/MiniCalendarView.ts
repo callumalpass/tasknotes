@@ -166,6 +166,11 @@ export class MiniCalendarView extends BasesViewBase {
 		this.readViewOptions();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		if (this.plugin.icsSubscriptionService) {
+			this.register(this.plugin.icsSubscriptionService.on("data-changed", () => {
+				if (this.rootElement?.isConnected) void this.render();
+			}));
+		}
 	}
 
 	/**

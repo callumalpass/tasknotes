@@ -2805,6 +2805,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Card layout"
 msgstr "Kartenlayout"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.titleFilter.help"
+msgid "Case-insensitive text, not regex; empty shows all events"
+msgstr "Text ohne Beachtung der Groß-/Kleinschreibung, kein regulärer Ausdruck; leer zeigt alle Termine"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.statusAction"
 msgid "Change status to \"{label}\""
@@ -13004,6 +13009,11 @@ msgstr "Titel"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "Titel"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.titleFilter.label"
+msgid "Title contains:"
+msgstr "Titel enthält:"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleDesc"

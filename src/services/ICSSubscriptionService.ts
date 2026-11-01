@@ -964,7 +964,7 @@ export class ICSSubscriptionService extends EventEmitter {
 
 			// Return events if within grace period
 			if (now < gracePeriodEnd) {
-				allEvents.push(...cache.events);
+				allEvents.push(...this.filterEvents(cache.events, subscription.filter));
 
 				// Trigger refresh if cache expired but within grace period
 				const isStale = now > expiryDate;
@@ -1031,7 +1031,15 @@ export class ICSSubscriptionService extends EventEmitter {
 			);
 		}
 
-		return [...cache.events];
+		const subscription = this.subscriptions.find((sub) => sub.id === subscriptionId);
+		return this.filterEvents(cache.events, subscription?.filter);
+	}
+
+	private filterEvents(events: ICSEvent[], filter = ""): ICSEvent[] {
+		// Filter normalized occurrences, not source VEVENTs: exceptions can have
+		// their own titles, and the complete cache must survive edits/clearing.
+		const titleContains = filter.trim().toLowerCase();
+		return events.filter((event) => event.title.toLowerCase().includes(titleContains));
 	}
 
 	async refreshAllSubscriptions(): Promise<void> {

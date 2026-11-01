@@ -2806,6 +2806,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Card layout"
 msgstr "Layout dos cartões"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.titleFilter.help"
+msgid "Case-insensitive text, not regex; empty shows all events"
+msgstr "Texto sem distinguir maiúsculas de minúsculas, não uma expressão regular; vazio mostra todos os eventos"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.statusAction"
 msgid "Change status to \"{label}\""
@@ -13005,6 +13010,11 @@ msgstr "Título"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "Título"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.titleFilter.label"
+msgid "Title contains:"
+msgstr "O título contém:"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleDesc"
