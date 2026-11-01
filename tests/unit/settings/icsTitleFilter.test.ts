@@ -18,6 +18,8 @@ describe.each(["en", "de", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"])(
 				getSubscriptions: () => [subscription],
 				getLastFetched: () => undefined,
 				getLastError: () => undefined,
+				hasPassword: () => false,
+				isPasswordStorageAvailable: () => true,
 				updateSubscription: jest.fn(async (_id: string, updates: Partial<ICSSubscription>) => {
 					subscription = { ...subscription, ...updates };
 				}),
