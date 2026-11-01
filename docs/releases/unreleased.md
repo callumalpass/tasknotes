@@ -66,3 +66,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2379) Generated Bases files now give tasks with a missing or unrecognized priority a `priorityWeight` of `-1` instead of `999`, so sorting by `formula.priorityWeight` in descending order lists High, Normal, Low, None, and then those tasks, and they no longer rank as the most urgent in `urgencyScore` sorts. The documentation now explains that sorting by `priority` itself is alphabetical and that `formula.priorityWeight` sorts in your configured priority order when sorted descending, correcting earlier guidance that said ascending. Existing Bases files keep their formula; see [Sort by priority](https://tasknotes.dev/guides/custom-bases/#sort-by-priority) to update it. Thanks to @iantierney for reporting this.
 - (#2202) Recurring tasks created without a scheduled date now get one: the first upcoming occurrence, with the start time kept for timed recurrences. Previously only the recurrence start was written, so features that need a scheduled date, such as Google Calendar export, skipped the task until it was edited. Series that have already ended are left unscheduled
   - Thanks to @christenbc for finding this and for the original fix in PR #2202
+
+## Changed
+
+- Task List group and subgroup headers stay visible while scrolling, including virtualized lists. Thanks to @christenbc for the contribution in #2168.

@@ -112,6 +112,53 @@
 	min-width: 0;
 }
 
+/* Own the vertical scroll so group headers can stick relative to this container.
+   Embed overrides below set overflow-y: visible when a parent note scroller should win. */
+.tn-tasknotesTaskList .tn-bases-items-container {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+}
+
+/* Each section bounds its sticky header; nested offsets follow measured height. */
+.tn-tasknotesTaskList .task-list-group > .task-group,
+.tn-tasknotesTaskList .task-list-subgroup > .task-group {
+	position: sticky;
+	top: 0;
+	z-index: var(--tn-z-sticky);
+	background: var(--tn-bg-primary);
+}
+
+.tn-tasknotesTaskList .task-list-subgroup > .task-group {
+	top: var(--task-list-parent-header-height, 0px);
+	z-index: calc(var(--tn-z-sticky) - 1);
+}
+
+/*
+ * Virtualized lists position rows with transform, which breaks CSS sticky.
+ * A zero-height sticky pin overlays the active group header instead.
+ */
+.tn-tasknotesTaskList .task-list-virtual-sticky-header {
+	position: sticky;
+	top: 0;
+	z-index: calc(var(--tn-z-sticky) + 1);
+	height: 0;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header.is-empty {
+	display: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header__group {
+	pointer-events: auto;
+	background: var(--tn-bg-primary);
+	position: relative;
+	top: auto;
+	z-index: auto;
+}
+
 /* Toggle button for groups */
 .tn-bases-tasknotes-list .task-group-toggle {
     appearance: none;
@@ -227,6 +274,13 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
     flex: 0 1 auto;
     max-height: none;
     overflow-y: visible;
+}
+
+/* Let the note be the sticky/virtual scroll root, rather than an unbounded
+   Bases wrapper that never actually scrolls. */
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed,
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed .bases-view {
+    overflow: visible;
 }
 
 /* Reset indentation for task cards after a primary group header */

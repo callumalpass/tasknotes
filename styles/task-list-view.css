@@ -109,7 +109,8 @@
     margin-bottom: var(--tn-spacing-md);
 }
 
-.tasknotes-plugin .task-list-view__group-header {
+.tasknotes-plugin .task-list-view__group-header,
+.tasknotes-plugin .task-group-header {
     display: flex;
     align-items: center;
     gap: var(--tn-spacing-sm);
