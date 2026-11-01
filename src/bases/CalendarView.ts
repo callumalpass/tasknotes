@@ -63,6 +63,7 @@ import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
 import { buildExternalCalendarEvents, setProviderCalendarToggle } from "./calendarExternalEvents";
 import { acceptsExternalTaskDrop, getExternalTaskDropPath } from "./calendarExternalTaskDrop";
 import {
+	appendCalendarAttachmentIndicator,
 	decorateCalendarIcsEventElement,
 	getCalendarRelatedNoteTooltip,
 	createCalendarListEventCard,
@@ -1881,6 +1882,8 @@ export class CalendarView extends BasesViewBase {
 
 			// Apply recurring task styling (handles completion styling as well)
 			applyRecurringTaskStyling(el, extendedProps);
+
+			appendCalendarAttachmentIndicator(el, this.plugin, taskInfo.attachments?.length ?? 0);
 		}
 
 		// Add hover tooltip for tasks and ICS events

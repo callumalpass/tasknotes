@@ -174,6 +174,16 @@ msgctxt "notices.timeblockAttachmentExists"
 msgid "\"{fileName}\" is already attached"
 msgstr "\"{fileName}\"は既に添付されています"
 
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.unsupportedNameNotice"
+msgid "\"{name}\" can't be attached. Rename it so it has a file extension and no [ ] # or | characters."
+msgstr "「{name}」は添付できません。拡張子があり、[ ] # | の文字を含まない名前に変更してください。"
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.duplicateNotice"
+msgid "\"{name}\" is already attached"
+msgstr "\"{name}\"は既に添付されています"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "empty task property display"
 msgid "(empty)"
@@ -248,6 +258,11 @@ msgstr "{count, plural, =0 {コンテキストなし} =1 {コンテキスト1件
 msgctxt "generated Bases projects count"
 msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
 msgstr "{count, plural, =0 {プロジェクトなし} =1 {プロジェクト1件} other {複数のプロジェクト}}"
+
+#: src/ui/taskCardHelpers.ts
+msgctxt "ui.taskCard.attachmentsTooltip"
+msgid "{count, plural, one {{count, number} attachment} other {{count, number} attachments}}"
+msgstr "{count, plural, other {添付ファイル {count, number} 件}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"
@@ -1544,6 +1559,11 @@ msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
 msgstr "イベントの詳細を追加..."
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultButton"
+msgid "Add from vault"
+msgstr "保管庫から追加"
+
 #: src/settings/components/ListEditorComponent.ts
 msgctxt "settings/components/ListEditorComponent: ListEditorComponent.renderAddButton text"
 msgid "Add Item"
@@ -2032,6 +2052,11 @@ msgctxt "contextMenus.task.quickReminders.atTime"
 msgid "At time of event"
 msgstr "イベント時刻に"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultTooltip"
+msgid "Attach an existing vault file"
+msgstr "保管庫の既存ファイルを添付"
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.timeblocking.attachmentOrder"
 msgid "Attachment search order"
@@ -2044,6 +2069,11 @@ msgstr "添付ファイル"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.attachmentsLabel"
+msgid "Attachments"
+msgstr "添付ファイル"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
 msgstr "添付ファイル"
 
@@ -2819,6 +2849,11 @@ msgctxt "settings.appearance.taskCards.properties.checklistProgress"
 msgid "Checklist progress"
 msgstr "チェックリストの進捗"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importTooltip"
+msgid "Choose a file from this device. It is copied into the vault when the task is saved."
+msgstr "このデバイスからファイルを選択します。タスクの保存時に保管庫へコピーされます。"
+
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.description"
 msgid "Choose how TaskNotes identifies notes as tasks."
@@ -3543,6 +3578,11 @@ msgstr "タスクノートに変換"
 msgctxt "commands.convertCurrentNoteToTask.success"
 msgid "Converted ''{title}'' to a task"
 msgstr "''{title}''をタスクに変換しました"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.pendingHint"
+msgid "Copied into the vault when the task is saved"
+msgstr "タスクの保存時に保管庫へコピーされます"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.copyLinkDesc"
@@ -6500,6 +6540,11 @@ msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFil
 msgid "File is not an ICS file: {normalizedFilePath}"
 msgstr "ICS ファイルではありません: {normalizedFilePath}"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.missingHint"
+msgid "File not found"
+msgstr "ファイルが見つかりません"
+
 #: src/ui/WorkspaceNavigationService.ts
 msgctxt "notices.interface.commandFileUnindexed"
 msgid "File not found in vault: {path}. The file exists but Obsidian cannot find it. Try reloading the vault."
@@ -7089,6 +7134,11 @@ msgstr "ID: {id}"
 msgctxt "settings.general.taskIdentification.identifyBy.name"
 msgid "Identify tasks by"
 msgstr "タスクの識別方法"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importButton"
+msgid "Import file"
+msgstr "ファイルをインポート"
 
 #: src/settings/tabs/taskProperties/tagsPropertyCard.ts
 msgctxt "settings.defaults.basicDefaults.defaultTags.placeholder"
@@ -8046,6 +8096,16 @@ msgstr "毎月（完了後）"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "月次繰り返し"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveDownAriaLabel"
+msgid "Move {name} down"
+msgstr "{name} を下へ移動"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveUpAriaLabel"
+msgid "Move {name} up"
+msgstr "{name} を上へ移動"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.postponeConfirm"
@@ -9041,6 +9101,11 @@ msgstr "未着手"
 msgctxt "ui.audit.open"
 msgid "Open"
 msgstr "開く"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.openAriaLabel"
+msgid "Open {name}"
+msgstr "{name} を開く"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.advancedCalendar"
@@ -10271,6 +10336,11 @@ msgctxt "settings.defaults.basicDefaults.defaultProjects.removeTooltip"
 msgid "Remove {name} from default projects"
 msgstr "デフォルトプロジェクトから{name}を削除"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.removeAriaLabel"
+msgid "Remove {name} from this task"
+msgstr "このタスクから {name} を外す"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.removeTag"
 msgid "Remove {tag}"
@@ -10712,6 +10782,11 @@ msgstr "タスクを検索または入力して新規作成..."
 msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Search tasks..."
 msgstr "タスクを検索..."
+
+#: src/modals/AttachmentFileSuggestModal.ts
+msgctxt "modals.task.attachments.pickerPlaceholder"
+msgid "Search vault files to attach..."
+msgstr "添付する保管庫のファイルを検索..."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
@@ -12013,6 +12088,11 @@ msgstr "タスクが変換されました：{title}"
 msgctxt "settings.integrations.webhooks.events.taskCreated.label"
 msgid "Task created"
 msgstr "タスク作成"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.attachmentImportFailure"
+msgid "Task created, but some attachments could not be imported: {message}"
+msgstr "タスクは作成されましたが、一部の添付ファイルをインポートできませんでした: {message}"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.openCreatedTaskFailure"

@@ -8,6 +8,7 @@ const CALENDAR_DATA_SIGNATURE_FIELDS: FieldMappingKey[] = [
 	"scheduled",
 	"contexts",
 	"projects",
+	"attachments",
 	"timeEstimate",
 	"completedDate",
 	"recurrence",

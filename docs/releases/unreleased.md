@@ -46,6 +46,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#1004) ICS calendar subscriptions can now use a username and password (HTTP Basic authentication) for private feeds such as Nextcloud, Baïkal and Davis. The password is stored in Obsidian Secret Storage, not in plugin settings, and credentials are only sent over HTTPS. See [Private feeds](https://tasknotes.dev/features/calendar-integration/#private-feeds-username-and-password).
   - Thanks to @WorldTeacher for the original implementation in #1346, and to @vbaz for requesting this
 - Reminders can now be edited in place from the reminders dialog instead of being deleted and recreated. An edited reminder keeps its identity and is rescheduled for its new time. See [Reminders](https://tasknotes.dev/features/reminders/#editing-reminders). Thanks to @cybersader for the original implementation in #1730.
+- (#1708) Added attachment management to the task creation and edit modals. **Add from vault** links an existing file, and **Import file** (or dragging files onto the field) copies a file from your device into the vault when the task is saved; cancelling writes nothing. Attachments can be opened, reordered and unlinked, and unlinking never deletes the file. Task cards and calendar events show a paperclip with the attachment count. The field can be hidden in Modal Fields settings. See [Attachments](https://tasknotes.dev/features/task-management/#attachments).
+  - Thanks to @davidszp for the original pull request
 
 ## Fixed
 

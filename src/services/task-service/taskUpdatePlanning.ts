@@ -445,6 +445,12 @@ function removeUnsetMappedFields(
 		}
 	}
 	if (
+		Object.prototype.hasOwnProperty.call(updates, "attachments") &&
+		(!Array.isArray(updates.attachments) || updates.attachments.length === 0)
+	) {
+		delete frontmatter[fieldMapper.toUserField("attachments")];
+	}
+	if (
 		Object.prototype.hasOwnProperty.call(updates, "timeEstimate") &&
 		updates.timeEstimate === undefined
 	) {

@@ -643,6 +643,7 @@ body.is-mobile .timeblock-attachment-remove {
 .advanced-calendar-view.advanced-calendar-view--list .task-card__recurring-indicator,
 .advanced-calendar-view.advanced-calendar-view--list .task-card__reminder-indicator,
 .advanced-calendar-view.advanced-calendar-view--list .task-card__details-indicator,
+.advanced-calendar-view.advanced-calendar-view--list .task-card__attachment-indicator,
 .advanced-calendar-view.advanced-calendar-view--list .task-card__project-indicator,
 .advanced-calendar-view.advanced-calendar-view--list .task-card__chevron,
 .advanced-calendar-view.advanced-calendar-view--list .task-card__blocking-toggle,

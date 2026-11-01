@@ -1,7 +1,7 @@
 import { uiData } from "../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { App, Modal, TAbstractFile, TFile } from "obsidian";
+import { App, Modal, Notice, TAbstractFile, TFile } from "obsidian";
 
 type Nullable<T> = T | null;
 
@@ -19,6 +19,15 @@ import {
 } from "./taskModalDetailsEditor";
 import { splitFrontmatterAndBody } from "../utils/helpers";
 import { ProjectSelectModal } from "./ProjectSelectModal";
+import { AttachmentFileSuggestModal } from "./AttachmentFileSuggestModal";
+import {
+	TaskModalAttachmentsField,
+	materializeTaskModalAttachments,
+	type MaterializedTaskModalAttachments,
+	type TaskModalAttachmentEntry,
+} from "./taskModalAttachments";
+import { fieldLabelForId } from "../i18n/fieldLabels";
+import { createVaultBinaryFile } from "../services/VaultMutationService";
 import { TaskDependency, Reminder } from "../types";
 import { DEFAULT_DEPENDENCY_RELTYPE, formatDependencyLink } from "../utils/dependencyUtils";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
@@ -349,6 +358,10 @@ export abstract class TaskModal extends Modal {
 
 	// Project link storage
 	protected selectedProjectItems: TaskModalProjectItem[] = [];
+
+	// Attachments: linked vault files plus disk files imported on save
+	protected attachmentEntries: TaskModalAttachmentEntry[] = [];
+	protected attachmentsField: TaskModalAttachmentsField | null = null;
 
 	// Subtask storage - tracks tasks that should become subtasks of this task
 	protected selectedSubtaskFiles: TAbstractFile[] = [];
@@ -766,6 +779,7 @@ export abstract class TaskModal extends Modal {
 			"time-estimate": (container) => this.createTimeEstimateField(container),
 			projects: (container) => this.createProjectsField(container),
 			subtasks: (container) => this.createSubtasksField(container),
+			attachments: (container) => this.createAttachmentsField(container),
 			"blocked-by": (container) => this.createBlockedByField(container),
 			blocking: (container) => this.createBlockingField(container),
 		};
@@ -837,6 +851,70 @@ export abstract class TaskModal extends Modal {
 		});
 
 		this.renderOrganizationLists();
+	}
+
+	protected createAttachmentsField(container: HTMLElement): void {
+		this.attachmentsField = new TaskModalAttachmentsField({
+			container,
+			label: fieldLabelForId("attachments"),
+			translate: (key, params) => this.t(key, params),
+			getEntries: () => this.attachmentEntries,
+			setEntries: (entries) => {
+				this.attachmentEntries = entries;
+			},
+			pickVaultFile: (onChoose) => {
+				new AttachmentFileSuggestModal(
+					this.app,
+					this.plugin,
+					onChoose,
+					this.getCurrentTaskPath()
+				).open();
+			},
+			openAttachment: (path) => {
+				void this.app.workspace.openLinkText(path, "", "tab");
+			},
+			resolveExists: (path) => this.app.vault.getAbstractFileByPath(path) instanceof TFile,
+			onDuplicate: (name) => {
+				new Notice(
+					this.t(msg({ message: "\"{name}\" is already attached", context: "modals.task.attachments.duplicateNotice" }), { name })
+				);
+			},
+			onUnsupportedName: (name) => {
+				new Notice(
+					this.t(msg({ message: "\"{name}\" can't be attached. Rename it so it has a file extension and no [ ] # or | characters.", context: "modals.task.attachments.unsupportedNameNotice" }), { name })
+				);
+			},
+		});
+	}
+
+	/**
+	 * Copy files picked from disk into the vault. Called only while saving so a
+	 * discarded modal never writes attachment files.
+	 */
+	protected async importPendingAttachments(
+		sourcePath: string
+	): Promise<MaterializedTaskModalAttachments> {
+		try {
+			const imported = await materializeTaskModalAttachments(this.attachmentEntries, {
+				sourcePath,
+				getAvailablePath: (filename, source) =>
+					this.app.fileManager.getAvailablePathForAttachment(filename, source),
+				writeBinary: (path, data) => createVaultBinaryFile(this.app, path, data),
+				trashFile: async (path) => {
+					const file = this.app.vault.getAbstractFileByPath(path);
+					if (file instanceof TFile) await this.app.fileManager.trashFile(file);
+				},
+			});
+			return {
+				references: imported.references,
+				rollback: async () => {
+					await imported.rollback();
+					this.attachmentsField?.render();
+				},
+			};
+		} finally {
+			this.attachmentsField?.render();
+		}
 	}
 
 	private getOrganizationFieldContext(): TaskModalOrganizationFieldContext {

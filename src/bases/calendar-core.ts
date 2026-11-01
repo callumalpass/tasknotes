@@ -34,6 +34,7 @@ import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
 import { colorWithAlpha, isCssVariableColor, normalizeThemeColor } from "../utils/themeColors";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { getAttachmentCountLabel } from "../ui/taskCardHelpers";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarCore" });
 
@@ -191,6 +192,11 @@ export function generateTaskTooltip(task: TaskInfo, plugin: TaskNotesPlugin): st
 
 	if (task.timeEstimate) {
 		tooltipText += uiText(msg({ message: "\nEstimate: {duration}", context: "calendar task estimate tooltip" }), { duration: uiDuration(task.timeEstimate) });
+	}
+
+	const attachmentCount = task.attachments?.length ?? 0;
+	if (attachmentCount > 0) {
+		tooltipText += `\n${getAttachmentCountLabel(plugin, attachmentCount)}`;
 	}
 
 	return tooltipText;
