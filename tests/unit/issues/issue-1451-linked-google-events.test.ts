@@ -87,6 +87,14 @@ describe("Issue 1451: hide only represented Google exports", () => {
 		expect((await view.buildAllEvents({ range, type: "week" })).map((e: { id: string }) => e.id)).toContain(event.id);
 	});
 
+	it("suppresses each rendered recurring occurrence when the recurring layer is on", async () => {
+		const event = googleEvent("instance", "2026-05-20", { recurringEventId: `google-${calendarId}-exported` });
+		const { view } = calendar([{ ...task, recurrence: "DTSTART:20260519\nRRULE:FREQ=DAILY;COUNT=3" }], [event]);
+		const events = await view.buildAllEvents({ range, type: "week" });
+		expect(events.some((e: { id: string }) => e.id === event.id)).toBe(false);
+		expect(events.some((e: { id: string }) => e.id === `recurring-${task.path}-2026-05-20`)).toBe(true);
+	});
+
 	it("re-evaluates suppression after an exception-id-only incremental update", async () => {
 		const event = googleEvent("detached");
 		const { view, setItems } = calendar([task], [event]);

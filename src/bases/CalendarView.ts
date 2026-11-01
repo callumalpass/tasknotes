@@ -1483,7 +1483,7 @@ export class CalendarView extends BasesViewBase {
 			taskEvents.flatMap(event => {
 				const props = event.extendedProps;
 				const task = props && "taskInfo" in props ? props.taskInfo : undefined;
-				return task && ["scheduled", "due", "scheduledToDueSpan"].includes(event.extendedProps?.eventType ?? "")
+				return task && ["scheduled", "due", "scheduledToDueSpan", "recurring"].includes(event.extendedProps?.eventType ?? "")
 					? [{ task, date: String(event.start) }]
 					: [];
 			}),
