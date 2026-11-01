@@ -96,5 +96,9 @@ export function createFilterSettingsInputs(
 		translate(msg({ message: "Required property value", context: "settings.appearance.projectAutosuggest.requiredPropertyValue.name" })),
 		valueInput
 	);
+	container.createDiv({
+		cls: "setting-item-description",
+		text: translate(msg({ message: "Use a comma-separated allow-list or containsAny(...). Prefix containsAny(...) with ! to exclude values.", context: "Property value filter syntax help" })),
+	});
 }
 

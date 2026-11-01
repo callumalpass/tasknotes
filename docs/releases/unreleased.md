@@ -52,6 +52,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#1708) Added attachment management to the task creation and edit modals. **Add from vault** links an existing file, and **Import file** (or dragging files onto the field) copies a file from your device into the vault when the task is saved; cancelling writes nothing. Attachments can be opened, reordered and unlinked, and unlinking never deletes the file. Task cards and calendar events show a paperclip with the attachment count. The field can be hidden in Modal Fields settings. See [Attachments](https://tasknotes.dev/features/task-management/#attachments).
   - Thanks to @davidszp for the original pull request
 - (#1477) Added a per-calendar “Title contains” filter for ICS subscriptions. It matches plain text without case sensitivity, applies immediately to cached events, and uses renamed recurring occurrences’ own titles. Leave it empty to show all events. Regular expressions are not supported. Thanks to @mcbabo for the contribution.
+- Project and wikilink suggestions support `containsAny(...)` and `!containsAny(...)` property-value filters to include or exclude values, while preserving literal filters and key-only matching. See [Task properties](https://tasknotes.dev/settings/task-properties/). Thanks to @kapej42 for contributing this in #2089.
 
 ## Fixed
 

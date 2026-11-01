@@ -34,7 +34,7 @@ describe('FilterSettingsComponent', () => {
 				'settings.appearance.projectAutosuggest.requiredPropertyValue.name': 'Required property value',
 				'settings.appearance.projectAutosuggest.requiredPropertyValue.placeholder': 'property-value',
 			};
-			return translations[key] || key;
+			return translations[key] || key.message || key;
 		});
 	});
 
@@ -81,6 +81,12 @@ describe('FilterSettingsComponent', () => {
 			expect(inputs[2].value).toBe('');
 			expect(inputs[3].value).toBe('');
 		});
+	});
+
+	it("explains explicit inclusion and negation syntax", () => {
+		createFilterSettingsInputs(container, undefined, mockOnChange, mockTranslate);
+		expect(container.querySelector(".setting-item-description")?.textContent)
+			.toBe("Use a comma-separated allow-list or containsAny(...). Prefix containsAny(...) with ! to exclude values.");
 	});
 
 	describe('User Interactions', () => {
@@ -238,8 +244,8 @@ describe('FilterSettingsComponent', () => {
 		it('should call translate for all label keys', () => {
 			createFilterSettingsInputs(container, undefined, mockOnChange, mockTranslate);
 
-			// Should translate 4 labels + 4 placeholders = 8 calls
-			expect(mockTranslate).toHaveBeenCalledTimes(8);
+			// Four labels, four placeholders and the expression syntax help.
+			expect(mockTranslate).toHaveBeenCalledTimes(9);
 			expect(mockTranslate).toHaveBeenCalledWith(
 				msg({ message: "Required tags", context: "settings.appearance.projectAutosuggest.requiredTags.name" })
 			);
