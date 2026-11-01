@@ -28,6 +28,7 @@ test.beforeAll(async () => {
   test.setTimeout(120_000);
   instance = await launchObsidian();
   page = instance.page;
+  page.on('pageerror', error => console.error('Obsidian page error:', error));
   await page.evaluate(async ({ folder, colors }) => {
     const app = (window as any).app, plugin = app.plugins.plugins.tasknotes;
     document.body.style.setProperty('--tn-test-length', '12px');

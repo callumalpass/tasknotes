@@ -353,7 +353,7 @@ export class KanbanView extends BasesViewBase {
 		// Call parent onload which sets up container and listeners
 		super.onload();
 		this.registerEvent(this.plugin.emitter.on("settings-changed", () => this.debouncedRefresh()));
-		this.registerEvent(this.app.workspace.on("css-change", () => this.debouncedRefresh()));
+		this.registerEvent(this.plugin.app.workspace.on("css-change", () => this.debouncedRefresh()));
 	}
 
 	/**
