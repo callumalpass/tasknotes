@@ -539,12 +539,12 @@ export class StatsView extends ItemView {
 	 * Returns a canonical project name that represents all variations.
 	 * Based on the implementation from PR #486
 	 */
-	private consolidateProjectName(projectValue: string): string {
+	private consolidateProjectName(projectValue: string, sourcePath = ""): string {
 		if (!projectValue || typeof projectValue !== "string") {
 			return projectValue;
 		}
 
-		const displayName = getProjectDisplayName(projectValue, this.plugin?.app);
+		const displayName = getProjectDisplayName(projectValue, this.plugin?.app, sourcePath);
 		if (displayName && displayName !== projectValue) {
 			return displayName;
 		}
@@ -555,7 +555,7 @@ export class StatsView extends ItemView {
 			if (linkPath && this.plugin?.app) {
 				const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
 					linkPath,
-					""
+					sourcePath
 				);
 				if (resolvedFile) {
 					// Return the file basename as the canonical name
@@ -563,7 +563,7 @@ export class StatsView extends ItemView {
 				}
 
 				// If file doesn't exist, extract clean name from path
-				const cleanName = this.extractProjectName(projectValue);
+				const cleanName = this.extractProjectName(projectValue, sourcePath);
 				if (cleanName) {
 					return cleanName;
 				}
@@ -609,17 +609,17 @@ export class StatsView extends ItemView {
 	/**
 	 * Extract clean project name from various formats
 	 */
-	private extractProjectName(projectValue: string): string | null {
+	private extractProjectName(projectValue: string, sourcePath = ""): string | null {
 		if (!projectValue) return null;
-		const displayName = getProjectDisplayName(projectValue, this.plugin?.app);
+		const displayName = getProjectDisplayName(projectValue, this.plugin?.app, sourcePath);
 		return displayName || null;
 	}
 
-	private isArchivedProjectReference(projectValue: string): boolean {
-		return this.getProjectReferenceTask(projectValue)?.archived === true;
+	private isArchivedProjectReference(projectValue: string, sourcePath = ""): boolean {
+		return this.getProjectReferenceTask(projectValue, sourcePath)?.archived === true;
 	}
 
-	private getProjectReferenceTask(projectValue: string): TaskInfo | null {
+	private getProjectReferenceTask(projectValue: string, sourcePath = ""): TaskInfo | null {
 		const trimmedProject = projectValue.trim();
 		if (!this.isProjectNoteReference(trimmedProject)) {
 			return null;
@@ -633,7 +633,7 @@ export class StatsView extends ItemView {
 		const pathWithoutExtension = parsedPath.replace(/\.md$/i, "");
 		const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
 			pathWithoutExtension,
-			""
+			sourcePath
 		);
 		if (resolvedFile) {
 			const resolvedTask = this.plugin.cacheManager.getCachedTaskInfoSync(resolvedFile.path);
@@ -1005,8 +1005,9 @@ export class StatsView extends ItemView {
 		try {
 			return getVisibleStatsProjectNames(task.projects, {
 				noProjectLabel: this.plugin.i18n.translate(msg({ message: "No project", context: "views.stats.noProject" })),
-				consolidateProjectName: (project) => this.consolidateProjectName(project),
-				isArchivedProjectReference: (project) => this.isArchivedProjectReference(project),
+				consolidateProjectName: (project) => this.consolidateProjectName(project, task.path),
+				isArchivedProjectReference: (project) =>
+					this.isArchivedProjectReference(project, task.path),
 			});
 		} catch {
 			return [this.plugin.i18n.translate(msg({ message: "No project", context: "views.stats.noProject" }))];
