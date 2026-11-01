@@ -77,6 +77,14 @@ export async function createVaultFile(app: App, path: string, content: string): 
 	return app.vault.create(path, content);
 }
 
+export async function createVaultBinaryFile(
+	app: App,
+	path: string,
+	data: ArrayBuffer
+): Promise<TFile> {
+	return app.vault.createBinary(path, data);
+}
+
 export async function createVaultFolder(app: App, path: string): Promise<void> {
 	await app.vault.createFolder(path);
 }

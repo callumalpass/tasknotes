@@ -131,6 +131,16 @@ export const DEFAULT_CORE_FIELDS: ModalFieldConfig[] = [
 		order: 1,
 		enabled: true,
 	},
+	{
+		id: "attachments",
+		fieldType: "organization",
+		group: "organization",
+		displayName: uiData("Attachments", "Writable persisted field/group name; preserve configured settings across locales"),
+		visibleInCreation: true,
+		visibleInEdit: true,
+		order: 2,
+		enabled: true,
+	},
 
 	// Dependencies group
 	{
@@ -231,6 +241,26 @@ export function migrateUserFieldsToFieldConfig(
 	}));
 }
 
+function addMissingCoreFields(config: TaskModalFieldsConfig): TaskModalFieldsConfig {
+	const fields = Array.isArray(config.fields) ? config.fields : [];
+	const existingIds = new Set(fields.map((field) => field.id));
+	const missing = DEFAULT_CORE_FIELDS.filter((field) => !existingIds.has(field.id));
+	if (missing.length === 0) {
+		return config;
+	}
+
+	// Append each new field after the user's existing fields in its group.
+	const merged = [...fields];
+	for (const field of missing) {
+		const groupOrders = merged
+			.filter((candidate) => candidate.group === field.group)
+			.map((candidate) => candidate.order);
+		const order = groupOrders.length > 0 ? Math.max(...groupOrders) + 1 : field.order;
+		merged.push({ ...field, order });
+	}
+	return { ...config, fields: merged };
+}
+
 /**
  * Initialize or migrate field configuration
  */
@@ -238,9 +268,9 @@ export function initializeFieldConfig(
 	existingConfig?: TaskModalFieldsConfig,
 	userFields?: UserMappedField[]
 ): TaskModalFieldsConfig {
-	// If we have an existing config, return it
+	// Keep an existing config, adding built-in fields introduced after it was saved
 	if (existingConfig) {
-		return existingConfig;
+		return addMissingCoreFields(existingConfig);
 	}
 
 	// Create default config

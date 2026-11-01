@@ -10,7 +10,7 @@ Fields are organized into draggable groups:
 
 - **Basic Information** – Title and Details
 - **Metadata** – Contexts, Tags, Time Estimate
-- **Organization** – Projects and Subtasks
+- **Organization** – Projects, Subtasks and Attachments
 - **Dependencies** – Blocked By and Blocking
 - **Custom Fields** – Any user-defined fields that you add through Task Properties
 

@@ -20,6 +20,7 @@ const fields = {
 	subtasks: { english: "Subtasks", descriptor: msg({ message: "Subtasks", context: "utils/fieldConfigDefaults: defaults displayName" }) },
 	"blocked-by": { english: "Blocked By", descriptor: msg({ message: "Blocked By", context: "utils/fieldConfigDefaults: defaults displayName" }) },
 	blocking: { english: "Blocking", descriptor: msg({ message: "Blocking", context: "utils/fieldConfigDefaults: defaults displayName" }) },
+	attachments: { english: "Attachments", descriptor: msg({ message: "Attachments", context: "utils/fieldConfigDefaults: defaults displayName" }) },
 };
 export function fieldGroupLabel(group: FieldGroupConfig): string {
 	const seed = Object.prototype.hasOwnProperty.call(groups, group.id) ? groups[group.id] : undefined;
@@ -28,4 +29,8 @@ export function fieldGroupLabel(group: FieldGroupConfig): string {
 export function fieldLabel(field: ModalFieldConfig): string {
 	const seed = field.fieldType !== "user" && Object.prototype.hasOwnProperty.call(fields, field.id) ? fields[field.id as keyof typeof fields] : undefined;
 	return seed && field.displayName === seed.english ? uiText(seed.descriptor) : field.displayName;
+}
+/** Label for a built-in modal field when no configured display name is in scope. */
+export function fieldLabelForId(id: keyof typeof fields): string {
+	return uiText(fields[id].descriptor);
 }

@@ -28,13 +28,13 @@ afterEach(() => observeTranslation("en"));
 
 describe.each(["en", "de", "ru"])("re-review data/display boundaries in %s", locale => {
   beforeEach(() => observeTranslation(locale));
-  it("restores all fourteen field/group labels without mutating or relabelling customized data", () => {
+  it("restores all fifteen field/group labels without mutating or relabelling customized data", () => {
     const config = buildSettingsFromLoadedData(null).settings.modalFieldsConfig;
     const before = JSON.stringify(config);
     const labels = [...config.groups.map(fieldGroupLabel), ...config.fields.map(fieldLabel)];
-    expect(labels).toHaveLength(14);
+    expect(labels).toHaveLength(15);
     expect(labels.every(label => label.length > 0)).toBe(true);
-    if (locale === "de") expect(labels).toEqual(["Grundlegende Informationen", "Metadaten", "Organisation", "Abhängigkeiten", "Benutzerdefinierte Felder", "Titel", "Details", "Kontexte", "Tags", "Zeitschätzung", "Projekte", "Unteraufgaben", "Blockiert durch", "Blockiert"]);
+    if (locale === "de") expect(labels).toEqual(["Grundlegende Informationen", "Metadaten", "Organisation", "Abhängigkeiten", "Benutzerdefinierte Felder", "Titel", "Details", "Kontexte", "Tags", "Zeitschätzung", "Projekte", "Unteraufgaben", "Anhänge", "Blockiert durch", "Blockiert"]);
     for (const field of config.fields) {
       expect(fieldLabel({ ...field, displayName: "My label" })).toBe("My label");
       expect(fieldLabel({ ...field, fieldType: "user" })).toBe(field.displayName);

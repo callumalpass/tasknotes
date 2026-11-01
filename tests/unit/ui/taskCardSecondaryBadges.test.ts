@@ -395,4 +395,43 @@ describe("taskCardSecondaryBadges", () => {
 		expect(card.querySelector(".task-card__blocking-toggle")).toBeNull();
 		expect(card.querySelector(".task-card__blocked-by")).toBeNull();
 	});
+	it("shows a paperclip with the attachment count and keeps it in sync on update", () => {
+		const plugin = createPlugin();
+		const handlers = createHandlers();
+		const { card, mainRow, badgesContainer } = createCard();
+
+		renderTaskCardSecondaryBadges({
+			card,
+			badgesContainer,
+			task: createTask({ attachments: ["[[Files/a.pdf]]", "[[Files/b.png]]"] }),
+			plugin,
+			hasDetails: false,
+			propertyOptions: {},
+			handlers,
+		});
+
+		const indicator = card.querySelector<HTMLElement>(".task-card__attachment-indicator");
+		expect(indicator).not.toBeNull();
+		expect(indicator?.querySelector(".task-card__attachment-count")?.textContent).toBe("2");
+		expect(indicator?.getAttribute("aria-label")).toBe("2 attachments");
+
+		const update = (attachments: string[]) =>
+			updateTaskCardSecondaryBadges({
+				card,
+				mainRow,
+				task: createTask({ attachments }),
+				plugin,
+				hasDetails: false,
+				propertyOptions: {},
+				handlers,
+			});
+
+		update(["[[Files/a.pdf]]"]);
+		expect(card.querySelectorAll(".task-card__attachment-indicator")).toHaveLength(1);
+		expect(card.querySelector(".task-card__attachment-count")?.textContent).toBe("1");
+		expect(card.querySelector(".task-card__attachment-indicator")?.getAttribute("aria-label")).toBe("1 attachment");
+
+		update([]);
+		expect(card.querySelector(".task-card__attachment-indicator")).toBeNull();
+	});
 });

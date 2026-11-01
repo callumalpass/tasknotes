@@ -94,6 +94,23 @@
     margin-left: 4px;
 }
 
+.advanced-calendar-view .tnc-item .tn-calendar-attachment-indicator {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    margin-left: 4px;
+    color: currentColor;
+    opacity: 0.78;
+    vertical-align: text-bottom;
+}
+
+.advanced-calendar-view .tnc-item .tn-calendar-attachment-indicator svg {
+    width: 12px;
+    height: 12px;
+}
+
 /* Hovering one of a task's events (scheduled, due, span) highlights the others. */
 .advanced-calendar-view .tnc-item.fc-task-event--hover-source,
 .advanced-calendar-view .tnc-item.fc-task-event--related-hover {

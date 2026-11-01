@@ -174,6 +174,11 @@ msgctxt "notices.timeblockAttachmentExists"
 msgid "\"{fileName}\" is already attached"
 msgstr "\"{fileName}\"이(가) 이미 첨부되어 있습니다"
 
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.duplicateNotice"
+msgid "\"{name}\" is already attached"
+msgstr "\"{name}\"이(가) 이미 첨부되어 있습니다"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "empty task property display"
 msgid "(empty)"
@@ -248,6 +253,11 @@ msgstr "{count, plural, =0 {컨텍스트 없음} =1 {컨텍스트 있음 (1)} ot
 msgctxt "generated Bases projects count"
 msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
 msgstr "{count, plural, =0 {프로젝트 없음} =1 {프로젝트 있음 (1)} other {프로젝트 있음 (2+)}}"
+
+#: src/ui/taskCardHelpers.ts
+msgctxt "ui.taskCard.attachmentsTooltip"
+msgid "{count, plural, one {{count, number} attachment} other {{count, number} attachments}}"
+msgstr "{count, plural, other {첨부 파일 {count, number}개}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"
@@ -1544,6 +1554,11 @@ msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
 msgstr "이벤트에 대한 세부정보 추가..."
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultButton"
+msgid "Add from vault"
+msgstr "보관함에서 추가"
+
 #: src/settings/components/ListEditorComponent.ts
 msgctxt "settings/components/ListEditorComponent: ListEditorComponent.renderAddButton text"
 msgid "Add Item"
@@ -2032,6 +2047,11 @@ msgctxt "contextMenus.task.quickReminders.atTime"
 msgid "At time of event"
 msgstr "이벤트 시간에"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultTooltip"
+msgid "Attach an existing vault file"
+msgstr "보관함의 기존 파일 첨부"
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.timeblocking.attachmentOrder"
 msgid "Attachment search order"
@@ -2044,6 +2064,11 @@ msgstr "첨부 파일"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.attachmentsLabel"
+msgid "Attachments"
+msgstr "첨부 파일"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
 msgstr "첨부 파일"
 
@@ -2819,6 +2844,11 @@ msgctxt "settings.appearance.taskCards.properties.checklistProgress"
 msgid "Checklist progress"
 msgstr "체크리스트 진행률"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importTooltip"
+msgid "Choose a file from this device. It is copied into the vault when the task is saved."
+msgstr "이 기기에서 파일을 선택하세요. 작업을 저장할 때 보관함로 복사됩니다."
+
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.description"
 msgid "Choose how TaskNotes identifies notes as tasks."
@@ -3543,6 +3573,11 @@ msgstr "작업 노트로 변환"
 msgctxt "commands.convertCurrentNoteToTask.success"
 msgid "Converted ''{title}'' to a task"
 msgstr "''{title}''을(를) 작업으로 변환했습니다"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.pendingHint"
+msgid "Copied into the vault when the task is saved"
+msgstr "작업을 저장할 때 보관함로 복사됨"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.copyLinkDesc"
@@ -6500,6 +6535,11 @@ msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFil
 msgid "File is not an ICS file: {normalizedFilePath}"
 msgstr "ICS 파일이 아닙니다: {normalizedFilePath}"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.missingHint"
+msgid "File not found"
+msgstr "파일을 찾을 수 없음"
+
 #: src/ui/WorkspaceNavigationService.ts
 msgctxt "notices.interface.commandFileUnindexed"
 msgid "File not found in vault: {path}. The file exists but Obsidian cannot find it. Try reloading the vault."
@@ -7089,6 +7129,11 @@ msgstr "ID: {id}"
 msgctxt "settings.general.taskIdentification.identifyBy.name"
 msgid "Identify tasks by"
 msgstr "작업 식별 기준"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importButton"
+msgid "Import file"
+msgstr "파일 가져오기"
 
 #: src/settings/tabs/taskProperties/tagsPropertyCard.ts
 msgctxt "settings.defaults.basicDefaults.defaultTags.placeholder"
@@ -8046,6 +8091,16 @@ msgstr "매월 (완료 후)"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "월간 반복"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveDownAriaLabel"
+msgid "Move {name} down"
+msgstr "{name} 아래로 이동"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveUpAriaLabel"
+msgid "Move {name} up"
+msgstr "{name} 위로 이동"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.postponeConfirm"
@@ -9041,6 +9096,11 @@ msgstr "미완료"
 msgctxt "ui.audit.open"
 msgid "Open"
 msgstr "열기"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.openAriaLabel"
+msgid "Open {name}"
+msgstr "{name} 열기"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.advancedCalendar"
@@ -10271,6 +10331,11 @@ msgctxt "settings.defaults.basicDefaults.defaultProjects.removeTooltip"
 msgid "Remove {name} from default projects"
 msgstr "기본 프로젝트에서 {name} 제거"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.removeAriaLabel"
+msgid "Remove {name} from this task"
+msgstr "이 작업에서 {name} 제거"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.removeTag"
 msgid "Remove {tag}"
@@ -10712,6 +10777,11 @@ msgstr "작업을 검색하거나 새로 만들려면 입력하세요..."
 msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Search tasks..."
 msgstr "작업 검색..."
+
+#: src/modals/AttachmentFileSuggestModal.ts
+msgctxt "modals.task.attachments.pickerPlaceholder"
+msgid "Search vault files to attach..."
+msgstr "첨부할 보관함 파일 검색..."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
@@ -12013,6 +12083,11 @@ msgstr "작업 변환됨: {title}"
 msgctxt "settings.integrations.webhooks.events.taskCreated.label"
 msgid "Task created"
 msgstr "작업 생성됨"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.attachmentImportFailure"
+msgid "Task created, but some attachments could not be imported: {message}"
+msgstr "작업이 생성되었지만 일부 첨부 파일을 가져오지 못했습니다: {message}"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.openCreatedTaskFailure"

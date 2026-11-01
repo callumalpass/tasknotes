@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
 import type { ICSEvent, TaskInfo } from "../types";
 import { createTaskCard, type TaskCardOptions } from "../ui/TaskCard";
+import { getAttachmentCountLabel } from "../ui/taskCardHelpers";
 import { createICSEventCard } from "../ui/ICSCard";
 import { createPropertyEventCard } from "../ui/PropertyEventCard";
 import { createTimeBlockCard } from "../ui/TimeBlockCard";
@@ -82,6 +83,31 @@ export function appendCalendarRelatedNoteIndicator(
 		placement: "top",
 	});
 	container.appendChild(iconContainer);
+}
+
+/** Paperclip after a task event's title in the calendar grid views. */
+export function appendCalendarAttachmentIndicator(
+	element: HTMLElement,
+	plugin: TaskNotesPlugin,
+	attachmentCount: number
+): void {
+	const titleEl = element.querySelector(".tnc-item-title");
+	if (
+		!titleEl ||
+		attachmentCount <= 0 ||
+		titleEl.querySelector(".tn-calendar-attachment-indicator")
+	) {
+		return;
+	}
+
+	const label = getAttachmentCountLabel(plugin, attachmentCount);
+	const iconEl = createElementInDocument(element.ownerDocument, "span");
+	iconEl.classList.add("tn-calendar-attachment-indicator");
+	iconEl.setAttribute("role", "img");
+	iconEl.setAttribute("aria-label", label);
+	iconEl.dataset.count = String(attachmentCount);
+	setIcon(iconEl, "paperclip");
+	titleEl.appendChild(iconEl);
 }
 
 export function decorateCalendarIcsEventElement({

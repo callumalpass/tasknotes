@@ -171,6 +171,34 @@ These controls currently create and manage finish-to-start style blockers. Advan
 
 ![Task context menu](../assets/feature-task-context-menu.png)
 
+## Attachments
+
+Attachments are files that belong to a task, such as a receipt, a scan or a PDF. They are stored as an ordered list of links in the task's `attachments` frontmatter property:
+
+```yaml
+attachments:
+  - "[[Files/receipt.png]]"
+  - "[[Files/invoice.pdf]]"
+```
+
+Each entry links to a file in the vault by its full path. The property name follows the `attachments` field mapping, and the field can be used in Bases filters, formulas and columns like other list properties.
+
+### Managing attachments in the task modals
+
+The **Attachments** field in the task creation and edit modals shows the task's attachments in order. From there you can:
+
+- **Add from vault** to pick an existing file with fuzzy search. The picker only selects files; it does not create new ones.
+- **Import file** to choose a file from your device, or drag files onto the field. Imported files are copied into the vault only when you save the task, into the folder set by Obsidian's **Default location for new attachments** setting (relative to the task note). If you cancel or discard the modal, nothing is written.
+- Select a file name to open it in a new tab.
+- Use the arrow buttons to change the order.
+- Use the remove button to unlink a file from the task. Removing an attachment never deletes the file from the vault; delete it from Obsidian's file explorer if you no longer need it.
+
+All controls are buttons with labels, so they can be reached with the keyboard and used on touch devices. You can hide the field, or show it only in one of the modals, in [Modal Fields Settings](../settings/modal-fields.md).
+
+### Attachment indicators
+
+Task cards show a paperclip with the number of attachments next to their other badges. Calendar views show a paperclip after the title of task events, and the event tooltip includes the attachment count.
+
 ## Automation
 
 ### Auto-Archiving

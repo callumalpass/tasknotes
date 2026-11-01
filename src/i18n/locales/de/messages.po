@@ -174,6 +174,11 @@ msgctxt "notices.timeblockAttachmentExists"
 msgid "\"{fileName}\" is already attached"
 msgstr "\"{fileName}\" ist bereits angehängt"
 
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.duplicateNotice"
+msgid "\"{name}\" is already attached"
+msgstr "„{name}“ ist bereits angehängt"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "empty task property display"
 msgid "(empty)"
@@ -248,6 +253,11 @@ msgstr "{count, plural, =0 {Keine Kontexte} =1 {Ein Kontext} other {Mehrere Kont
 msgctxt "generated Bases projects count"
 msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
 msgstr "{count, plural, =0 {Keine Projekte} =1 {Ein Projekt} other {Mehrere Projekte}}"
+
+#: src/ui/taskCardHelpers.ts
+msgctxt "ui.taskCard.attachmentsTooltip"
+msgid "{count, plural, one {{count, number} attachment} other {{count, number} attachments}}"
+msgstr "{count, plural, one {{count, number} Anhang} other {{count, number} Anhänge}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"
@@ -1545,6 +1555,11 @@ msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
 msgstr "Details zu diesem Ereignis hinzufügen..."
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultButton"
+msgid "Add from vault"
+msgstr "Aus Vault hinzufügen"
+
 #: src/settings/components/ListEditorComponent.ts
 msgctxt "settings/components/ListEditorComponent: ListEditorComponent.renderAddButton text"
 msgid "Add Item"
@@ -2033,6 +2048,11 @@ msgctxt "contextMenus.task.quickReminders.atTime"
 msgid "At time of event"
 msgstr "Zum Zeitpunkt des Ereignisses"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultTooltip"
+msgid "Attach an existing vault file"
+msgstr "Vorhandene Datei aus dem Vault anhängen"
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.timeblocking.attachmentOrder"
 msgid "Attachment search order"
@@ -2045,6 +2065,11 @@ msgstr "Anhänge"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.attachmentsLabel"
+msgid "Attachments"
+msgstr "Anhänge"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
 msgstr "Anhänge"
 
@@ -2820,6 +2845,11 @@ msgctxt "settings.appearance.taskCards.properties.checklistProgress"
 msgid "Checklist progress"
 msgstr "Checklistenfortschritt"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importTooltip"
+msgid "Choose a file from this device. It is copied into the vault when the task is saved."
+msgstr "Datei von diesem Gerät auswählen. Sie wird beim Speichern der Aufgabe in den Vault kopiert."
+
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.description"
 msgid "Choose how TaskNotes identifies notes as tasks."
@@ -3544,6 +3574,11 @@ msgstr "In Aufgabennotiz umwandeln"
 msgctxt "commands.convertCurrentNoteToTask.success"
 msgid "Converted ''{title}'' to a task"
 msgstr "''{title}'' in eine Aufgabe umgewandelt"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.pendingHint"
+msgid "Copied into the vault when the task is saved"
+msgstr "Wird beim Speichern der Aufgabe in den Vault kopiert"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.copyLinkDesc"
@@ -6501,6 +6536,11 @@ msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFil
 msgid "File is not an ICS file: {normalizedFilePath}"
 msgstr "Datei ist keine ICS-Datei: {normalizedFilePath}"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.missingHint"
+msgid "File not found"
+msgstr "Datei nicht gefunden"
+
 #: src/ui/WorkspaceNavigationService.ts
 msgctxt "notices.interface.commandFileUnindexed"
 msgid "File not found in vault: {path}. The file exists but Obsidian cannot find it. Try reloading the vault."
@@ -7090,6 +7130,11 @@ msgstr "ID: {id}"
 msgctxt "settings.general.taskIdentification.identifyBy.name"
 msgid "Identify tasks by"
 msgstr "Aufgaben identifizieren durch"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importButton"
+msgid "Import file"
+msgstr "Datei importieren"
 
 #: src/settings/tabs/taskProperties/tagsPropertyCard.ts
 msgctxt "settings.defaults.basicDefaults.defaultTags.placeholder"
@@ -8047,6 +8092,16 @@ msgstr "Monatlich (nach Abschluss)"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "Monatliche Wiederholung"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveDownAriaLabel"
+msgid "Move {name} down"
+msgstr "{name} nach unten verschieben"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveUpAriaLabel"
+msgid "Move {name} up"
+msgstr "{name} nach oben verschieben"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.postponeConfirm"
@@ -9042,6 +9097,11 @@ msgstr "Offen"
 msgctxt "ui.audit.open"
 msgid "Open"
 msgstr "Öffnen"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.openAriaLabel"
+msgid "Open {name}"
+msgstr "{name} öffnen"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.advancedCalendar"
@@ -10272,6 +10332,11 @@ msgctxt "settings.defaults.basicDefaults.defaultProjects.removeTooltip"
 msgid "Remove {name} from default projects"
 msgstr "{name} aus Standardprojekten entfernen"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.removeAriaLabel"
+msgid "Remove {name} from this task"
+msgstr "{name} von dieser Aufgabe entfernen"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.removeTag"
 msgid "Remove {tag}"
@@ -10713,6 +10778,11 @@ msgstr "Aufgaben suchen oder eingeben zum Erstellen..."
 msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Search tasks..."
 msgstr "Aufgaben suchen …"
+
+#: src/modals/AttachmentFileSuggestModal.ts
+msgctxt "modals.task.attachments.pickerPlaceholder"
+msgid "Search vault files to attach..."
+msgstr "Vault-Dateien zum Anhängen durchsuchen..."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
@@ -12014,6 +12084,11 @@ msgstr "Aufgabe konvertiert: {title}"
 msgctxt "settings.integrations.webhooks.events.taskCreated.label"
 msgid "Task created"
 msgstr "Aufgabe erstellt"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.attachmentImportFailure"
+msgid "Task created, but some attachments could not be imported: {message}"
+msgstr "Aufgabe erstellt, aber einige Anhänge konnten nicht importiert werden: {message}"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.openCreatedTaskFailure"

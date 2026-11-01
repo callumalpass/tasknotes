@@ -30,6 +30,12 @@ import { setTaskModalDetailsEditorValue } from "./taskModalDetailsEditor";
 import { collapseTaskModalDetailsLayout } from "./taskModalLayout";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
+import {
+	createLinkedAttachmentEntries,
+	getLinkedAttachmentReferences,
+	hasPendingAttachments,
+} from "./taskModalAttachments";
+
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskCreationModal" });
 export type { StatusSuggestion } from "./taskCreationSuggest";
 
@@ -651,6 +657,11 @@ export class TaskCreationModal extends TaskModal {
 			this.initializeProjectsFromStrings(formState.projectStrings);
 		}
 
+		this.attachmentEntries = createLinkedAttachmentEntries(
+			this.options.prePopulatedValues?.attachments,
+			""
+		);
+
 		this.details = this.normalizeDetails(this.details);
 		this.originalDetails = this.details;
 	}
@@ -682,6 +693,27 @@ export class TaskCreationModal extends TaskModal {
 				applyDefaults: false,
 			});
 			let createdTask = result.taskInfo;
+
+			// Disk files are copied only now that the task exists, next to its note.
+			if (hasPendingAttachments(this.attachmentEntries)) {
+				try {
+					const attachments = await this.importPendingAttachments(createdTask.path);
+					createdTask = await this.plugin.taskService.updateTask(createdTask, {
+						attachments,
+					});
+				} catch (error) {
+					tasknotesLogger.error("Failed to import task attachments:", {
+						category: "persistence",
+						operation: "import-task-attachments",
+						error: error,
+					});
+					new Notice(
+						this.t(msg({ message: "Task created, but some attachments could not be imported: {message}", context: "modals.taskCreation.notices.attachmentImportFailure" }), {
+							message: displayError(error instanceof Error ? error.message : String(error)),
+						})
+					);
+				}
+			}
 
 			const filenameNotice = getTaskFilenameNotice(
 				this.plugin.settings,
@@ -807,6 +839,10 @@ export class TaskCreationModal extends TaskModal {
 			taskTag: this.plugin.settings.taskTag,
 			normalizeDetails: (value) => this.normalizeDetails(value),
 		});
+		const attachments = getLinkedAttachmentReferences(this.attachmentEntries);
+		if (attachments.length > 0) {
+			taskData.attachments = attachments;
+		}
 		const prePopulatedCustomFrontmatter = this.options.prePopulatedValues?.customFrontmatter;
 		if (prePopulatedCustomFrontmatter) {
 			taskData.customFrontmatter = {

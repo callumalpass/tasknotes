@@ -19,6 +19,12 @@ import { createTaskModalActionButtons } from "./taskModalActionButtons";
 import { showTaskModalReminderContextMenu } from "./taskModalActionMenus";
 import { buildTaskEditChangesFromModalState } from "./taskEditChangeState";
 import { buildTaskEditFormStateFromTask } from "./taskEditFormState";
+import {
+	createLinkedAttachmentEntries,
+	getLinkedAttachmentReferences,
+	hasPendingAttachments,
+	haveAttachmentsChanged,
+} from "./taskModalAttachments";
 import { applyTaskEditSubtaskChanges, hasTaskEditSubtaskChanges } from "./taskEditSubtasks";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -107,6 +113,7 @@ export class TaskEditModal extends TaskModal {
 		this.recurrenceRule = formState.recurrenceRule;
 		this.recurrenceAnchor = formState.recurrenceAnchor;
 		this.reminders = formState.reminders;
+		this.attachmentEntries = createLinkedAttachmentEntries(this.task.attachments, this.task.path);
 		this.details = formState.details;
 		this.originalDetails = formState.originalDetails;
 		this.userFields = formState.userFields;
@@ -478,6 +485,10 @@ export class TaskEditModal extends TaskModal {
 
 			let updatedTask = this.task;
 
+			if (hasPendingAttachments(this.attachmentEntries)) {
+				changes.attachments = await this.importPendingAttachments(this.task.path);
+			}
+
 			if (hasTaskChanges) {
 				updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
 				this.task = updatedTask;
@@ -580,6 +591,11 @@ export class TaskEditModal extends TaskModal {
 			},
 			normalizeDetails: (value) => this.normalizeDetails(value),
 		});
+
+		if (haveAttachmentsChanged(this.attachmentEntries, this.task.attachments)) {
+			// Pending disk files are added to this list when the save imports them.
+			result.changes.attachments = getLinkedAttachmentReferences(this.attachmentEntries);
+		}
 
 		this.pendingBlockingUpdates = result.blockingUpdates;
 		this.unresolvedBlockingEntries = result.unresolvedBlockingEntries;

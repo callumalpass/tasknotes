@@ -222,6 +222,10 @@ export class TaskCreationService {
 				scheduled: taskData.scheduled || undefined,
 				contexts: contextsArray.length > 0 ? contextsArray : undefined,
 				projects: projectsArray.length > 0 ? projectsArray : undefined,
+				attachments:
+					taskData.attachments && taskData.attachments.length > 0
+						? taskData.attachments
+						: undefined,
 				timeEstimate:
 					taskData.timeEstimate && taskData.timeEstimate > 0
 						? taskData.timeEstimate
