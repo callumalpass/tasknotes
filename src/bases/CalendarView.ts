@@ -14,6 +14,7 @@ import {
 	basesLayoutOptions,
 	viewToBases,
 	type CalendarOptions,
+	type ExternalDropArg,
 	type ItemArg,
 	type ItemPointerArg,
 	type SelectArg,
@@ -60,6 +61,7 @@ import {
 } from "./calendarConfigSnapshot";
 import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
 import { buildExternalCalendarEvents, setProviderCalendarToggle } from "./calendarExternalEvents";
+import { acceptsExternalTaskDrop, getExternalTaskDropPath } from "./calendarExternalTaskDrop";
 import {
 	decorateCalendarIcsEventElement,
 	getCalendarRelatedNoteTooltip,
@@ -1156,6 +1158,8 @@ export class CalendarView extends BasesViewBase {
 			onItemDrop: (arg) => this.handleEventDrop(eventChangeFromArg(arg, "drop")),
 			onItemResize: (arg) => this.handleEventResize(eventChangeFromArg(arg, "resize")),
 			onSelect: (arg) => this.handleDateSelect(arg),
+			acceptNativeDrop: acceptsExternalTaskDrop,
+			onExternalDrop: (arg) => void this.handleExternalTaskDrop(arg),
 			itemDidMount: (arg) => this.handleEventDidMount(arg),
 			listItemContent: (arg) => this.renderListItem(arg),
 		};
@@ -1681,6 +1685,32 @@ export class CalendarView extends BasesViewBase {
 		}, CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS);
 
 		this.register(cleanup);
+	}
+
+	/** Schedules a task dragged in from outside the calendar, such as an inline task widget. */
+	private async handleExternalTaskDrop(arg: ExternalDropArg<CalendarEventProps>): Promise<void> {
+		const taskPath = getExternalTaskDropPath(arg.dataTransfer);
+		if (!taskPath) return;
+
+		try {
+			const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
+			if (!task) {
+				tasknotesLogger.warn("[TaskNotes][CalendarView] Dropped task not found", {
+					category: "persistence",
+					operation: "external-task-drop",
+				});
+				return;
+			}
+			this.expectImmediateUpdate();
+			const updated = await this.plugin.taskService.updateProperty(task, "scheduled", arg.startStr);
+			await this.refreshAfterDirectCalendarTaskWrite(updated);
+		} catch (error) {
+			tasknotesLogger.error("[TaskNotes][CalendarView] Error scheduling dropped task", {
+				category: "persistence",
+				operation: "external-task-drop",
+				error,
+			});
+		}
 	}
 
 	private async handleEventDrop(info: CalendarEventChange): Promise<void> {
