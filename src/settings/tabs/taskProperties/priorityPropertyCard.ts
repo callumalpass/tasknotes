@@ -2,7 +2,6 @@ import { uiText } from "../../../i18n/runtime";
 import { configLabel } from "../../../i18n/configLabels";
 import { uiData } from "../../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
-/* eslint-disable @typescript-eslint/no-non-null-assertion -- Settings controls are created synchronously before handlers access them. */
 import { Notice, setIcon } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import {
@@ -15,6 +14,7 @@ import {
 	createThemeColorInput,
 	readThemeColorInput,
 	CardRow,
+	setCardPrimaryText,
 } from "../../components/CardComponent";
 import { createIconInput } from "../../components/IconSuggest";
 import { createNLPTriggerRows, createPropertyDescription, TranslateFn } from "./helpers";
@@ -365,8 +365,10 @@ function renderPriorityList(
 
 		labelInput.addEventListener("input", () => {
 			priority.label = labelInput.value;
-			card.querySelector(".tasknotes-settings__card-primary-text")!.textContent =
-				configLabel(priority) || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }));
+			setCardPrimaryText(
+				card,
+				configLabel(priority) || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }))
+			);
 			save();
 			if (onPrioritiesChanged) onPrioritiesChanged();
 		});
@@ -421,5 +423,3 @@ function renderPriorityList(
 		});
 	});
 }
-
-/* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the priority settings renderer. */
