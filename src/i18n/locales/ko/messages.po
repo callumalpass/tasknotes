@@ -199,6 +199,7 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[수식 오류]"
 
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
@@ -1447,6 +1448,7 @@ msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "절대 시간 리마인더는 at:YYYY-MM-DDTHH:MM 또는 전체 ISO 날짜·시간을 사용해야 합니다"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -6959,6 +6961,11 @@ msgctxt "settings.appearance.taskCards.completionSubmenu.name"
 msgid "Group complete and skip actions in a submenu"
 msgstr "완료 및 건너뛰기 동작을 하위 메뉴로 묶기"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.batchMoveUnsupported"
+msgid "Group moves require visible, non-recurring tasks with matching date markers. Keep the dragged task in the same all-day or timed area."
+msgstr "그룹 이동에는 같은 종류의 날짜 표시가 있는, 화면에 보이는 반복되지 않는 작업이 필요합니다. 드래그한 작업은 원래의 종일 영역 또는 시간 지정 영역 안에서 이동하세요."
+
 #: src/settings/components/FieldManagerComponent.ts
 msgctxt "settings.modalFields.manager.group"
 msgid "Group:"
@@ -9590,6 +9597,7 @@ msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "{field} 날짜 선택"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.date.pickDateTime"
@@ -10941,6 +10949,11 @@ msgctxt "modals.propertySelector.title"
 msgid "Select task card properties"
 msgstr "작업 카드 속성 선택"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.selectTasks"
+msgid "Select tasks"
+msgstr "작업 선택"
+
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
@@ -11012,6 +11025,7 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "서비스가 초기화되지 않았습니다 - Obsidian을 다시 시작하세요"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 msgctxt "contextMenus.date.modal.title"
 msgid "Set date & time"
@@ -12291,6 +12305,7 @@ msgctxt "cli/helpers/taskResolution: resolveTaskForCli display"
 msgid "Task not found for title: {title}"
 msgstr "제목에 해당하는 작업을 찾을 수 없습니다: {title}"
 
+#: src/bases/CalendarView.ts
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
@@ -13691,6 +13706,7 @@ msgctxt "modals.reminder.updateButton"
 msgid "Update reminder"
 msgstr "리마인더 업데이트"
 
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"
 msgid "Update tasks"

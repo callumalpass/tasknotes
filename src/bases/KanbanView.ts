@@ -4533,6 +4533,7 @@ export class KanbanView extends BasesViewBase {
 			layout: this.cardLayout,
 			targetDate,
 			usePendingOccurrenceIdentity: true,
+			onSelectionClick: (event, path) => this.handleSelectionClick(event, path),
 			hideStatusIndicator,
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
 			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>

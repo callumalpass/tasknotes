@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- (Discussion #2435) Added an arbitrary date/time picker to batch Scheduled date and Due date menus in Task List, Kanban, and Calendar. Calendar tasks can be selected and rescheduled as a group, with non-interactive drag previews, relative dates/times preserved, and Undo for successful moves. Recurring templates, span bars, tracked time and external events are excluded from calendar task selection. See [Calendar selection](https://tasknotes.dev/views/calendar-views/#selecting-and-rescheduling-multiple-tasks).
+  - Thanks to @mnicolas94 for requesting this and @Thanatos9404 for explaining the existing selection support and quick-date limitation.
 - (#2188) Added **Repeat current task** for completed, non-recurring tasks. After confirmation, it reopens the same note, records its distinct completion dates, unarchives it and optionally resets body checkboxes, then opens the date editor. See [Repeating a completed task](https://tasknotes.dev/features/task-management/#repeating-a-completed-task). Thanks to @tgrosinger for contributing this command.
 - Added collapsible columns in flat Kanban boards. Collapse is per grouping property and column for the current Bases session, not saved in the `.base` file. See [Kanban View](https://tasknotes.dev/views/kanban-view/). Thanks to @nesyeklaf for #2259.
 - Kanban columns use configured status colours for subtle backgrounds and borders, including swimlane headers and cells. Unknown statuses and unresolved colours keep the normal surface. See [Kanban View](https://tasknotes.dev/views/kanban-view/). Thanks to @nesyeklaf for #2260.
@@ -58,7 +60,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2434) Fixed aliased project links appearing unresolved when reopening a task in the edit modal, while preserving their aliases and heading/block references.
   - Thanks to @stemForge for reporting and identifying the parsing problem.
-
+- Fixed Ctrl/Cmd-clicks on Task List and Kanban card bodies opening task notes instead of selecting tasks. Shift-click uses the view's range selection, while card links, controls and standalone embedded cards keep their existing actions.
 - Fixed the custom field settings card header not updating its title and property key while the field is edited. Thanks to @cybersader for finding this in #1730.
 - (#1440) Links to a heading or block, such as `[[Note#Heading]]`, `[[Note#^block]]` or `[text](<Folder/My%20Note.md#Heading>)`, now open the note at that heading or block from task cards, project links and task details, and keep the target for Ctrl/Cmd+click, middle-click and hover previews. Angle-bracket wikilinks with encoded spaces and a heading now resolve to the right note, and relative project links (for example `[[../Projects/Alpha]]`) are resolved from the task's own folder when filtering, grouping and in Stats. Thanks to @normenmueller for the original pull request
 - (#1451) Hide exported Google Calendar copies only when Calendar or Mini Calendar shows the linked task on that day. Unrelated events and occurrences without a visible task stay visible. Thanks to @Pedrohgv for contributing this in #2218.
@@ -77,6 +79,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Updated the calendar engine to 0.1.5. Narrow week views scroll sideways instead of crushing day columns, year views use a compact phone layout, touch swipes on items scroll the page, and dragging keeps working after moving a calendar to a popout window.
 - (#1370) A recurring series now moves to the **Next status** set on your first completed status when its current occurrence is completed or skipped, so an in-progress status does not carry over to the next occurrence. Series keep their status when no next status is set. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
   - Thanks to @martin-forge for the implementation in PR #2441
 - Task List group and subgroup headers stay visible while scrolling, including virtualized lists. Thanks to @christenbc for the contribution in #2168.

@@ -302,6 +302,8 @@ The Task List View provides interaction with tasks through clicking and context 
 
 Context menu availability depends on your TaskNotes settings and task properties.
 
+For batch date changes in Task List or Kanban, Ctrl/Cmd-click individual task cards to toggle selection, or Shift-click to select a range, then right-click a selected card. Modifier-clicks on task-card bodies select tasks rather than opening their source notes; links and other card controls keep their own actions. **Scheduled date** and **Due date** include **Pick date & time…**, alongside the quick-date options. Choosing a date and optional time assigns that same value to each selected task. A date-only choice removes the time from that property; cancelling the picker changes nothing.
+
 ## Virtual Scrolling
 
 The Task List View automatically enables virtual scrolling when displaying 100 or more items (tasks + group headers). Virtual scrolling provides:

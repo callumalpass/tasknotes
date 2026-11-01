@@ -3413,6 +3413,7 @@ export class TaskListView extends BasesViewBase {
 		return this.buildTaskCardOptions({
 			targetDate,
 			usePendingOccurrenceIdentity: true,
+			onSelectionClick: (event, path) => this.handleSelectionClick(event, path),
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
 			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>
 				normalizeExpandedRelationshipFilterMode(

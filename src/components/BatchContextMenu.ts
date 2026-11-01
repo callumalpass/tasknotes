@@ -6,6 +6,8 @@ import { Menu, Notice, TFile, type MenuItem } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { DateContextMenu, type DateOption } from "./DateContextMenu";
+import { DateTimePickerModal } from "../modals/DateTimePickerModal";
+import { combineDateAndTime } from "../utils/dateUtils";
 import { ContextMenu } from "./ContextMenu";
 import { closeActiveContextMenu, showCoordinatedMenu } from "./ContextMenuCoordinator";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
@@ -56,7 +58,8 @@ export class BatchContextMenu {
 
 	constructor(options: BatchContextMenuOptions) {
 		this.menu = new ContextMenu();
-		this.options = options;
+		// Keep the target set stable while a date picker is open.
+		this.options = { ...options, selectedPaths: [...options.selectedPaths] };
 		this.buildMenu();
 	}
 
@@ -314,6 +317,22 @@ export class BatchContextMenu {
 				});
 			});
 		}
+
+		submenu.addSeparator();
+		submenu.addItem((item) => {
+			item.setTitle(this.t(msg({ message: "Pick date & time…", context: "contextMenus.date.pickDateTime" })));
+			item.setIcon("calendar");
+			item.onClick(() => {
+				new DateTimePickerModal(this.options.plugin.app, {
+					plugin: this.options.plugin,
+					dateRole: dateType,
+					title: this.t(msg({ message: "Set date & time", context: "contextMenus.date.modal.title" })),
+					onSelect: (date, time) => {
+						void this.batchUpdateProperty(dateType, date ? combineDateAndTime(date, time || "") : undefined);
+					},
+				}).open();
+			});
+		});
 
 		// Clear date option
 		submenu.addSeparator();

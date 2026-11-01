@@ -1,7 +1,7 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.0 dist/calendar.css (MIT, see
- * LICENSE beside this file; upstream sha256 43932615da8bfe1b2398ac8368413e9a
- * eb28e9a4d28cf6ed4459c56a403f0e15). build-css.mjs bundles this file in place
+ * Pinned host copy of @tasknotes/calendar 0.1.5 dist/calendar.css (MIT, see
+ * LICENSE beside this file; upstream sha256 ed8a1387ff972fa71b1cc66b53cd0283
+ * 691da9860db5d02de37a37ef8beac97a). build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
  * short hex colours expanded; !important replaced by specificity, source order
@@ -42,12 +42,16 @@
 	--tnc-dot-size: 8px;
 	--tnc-dot-gap: 3px;
 	--tnc-gutter-w: 52px;
+	/* Narrowest a time-grid day column gets; narrower containers scroll sideways. */
+	--tnc-col-min: 64px;
 	--tnc-weeknum-w: 32px;
 	--tnc-dg-top-h: 24px;
 	--tnc-day-min-h: 92px;
 	--tnc-item-c: var(--tnc-accent);
 
 	position: relative;
+	/* Keep the calendar's own layers (sticky headers, popovers) below host overlays. */
+	isolation: isolate;
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
@@ -231,8 +235,16 @@
 		z-index: 40;
 	}
 }
-/* Host: (0,2,0) beats the (0,1,0) item border rules. */
+/* Host: animation beats inline z-index/pointer-events; specificity keeps the dashed border. */
+@keyframes tnc-host-inert-mirror {
+	from,
+	to {
+		z-index: 40;
+		pointer-events: none;
+	}
+}
 .tnc-item.is-mirror {
+	animation: tnc-host-inert-mirror 1s linear both paused;
 	opacity: 0.8;
 	border-style: dashed;
 	pointer-events: none;
@@ -475,6 +487,18 @@
 	display: grid;
 	grid-template-columns: var(--tnc-cols);
 }
+.tnc-tg-top,
+.tnc-tg-body {
+	min-width: calc(var(--tnc-gutter-w) + var(--tnc-ncols, 1) * var(--tnc-col-min));
+}
+.tnc-gutter-head,
+.tnc-gutter-label,
+.tnc-gutter {
+	position: sticky;
+	left: 0;
+	z-index: 6;
+	background: var(--tnc-surface);
+}
 .tnc-gutter-head {
 	display: flex;
 	align-items: flex-end;
@@ -571,7 +595,6 @@
 	position: relative;
 }
 .tnc-gutter {
-	position: relative;
 	border-right: 1px solid var(--tnc-line);
 }
 .tnc-slot-label {
@@ -884,11 +907,281 @@
 	color: var(--tnc-faint);
 }
 
+/* ---------------------------------------------------------------- agenda */
+.tnc-strip {
+	--tnc-strip-cell: 40px;
+	flex: none;
+	/* Above a time grid's sticky header and now line; popovers stay on top. */
+	position: relative;
+	z-index: 55;
+	padding: 6px 4px 0;
+	background: var(--tnc-surface);
+	border-bottom: 1px solid var(--tnc-line);
+	/* Vertical pans scroll the page; sideways swipes step the strip. */
+	touch-action: pan-y;
+	user-select: none;
+}
+/* At auto height the page scrolls, so the strip sticks below `--tnc-sticky-top`. */
+.tnc--height-auto .tnc-strip {
+	position: sticky;
+	top: var(--tnc-sticky-top, 0px);
+}
+.tnc--height-auto.tnc--has-strip .tnc-tg-top {
+	top: calc(var(--tnc-sticky-top, 0px) + var(--tnc-strip-h, 0px));
+}
+.tnc--height-auto .tnc-list--agenda .tnc-list-day {
+	top: calc(var(--tnc-sticky-top, 0px) + var(--tnc-strip-h, 0px));
+}
+.tnc--height-auto .tnc-list--agenda .tnc-list-section {
+	scroll-margin-top: calc(var(--tnc-sticky-top, 0px) + var(--tnc-strip-h, 0px));
+}
+.tnc-strip-head {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	padding: 0 6px 6px;
+}
+.tnc-strip-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin-right: auto;
+	padding: 4px 6px;
+	border: 0;
+	border-radius: var(--tnc-radius);
+	background: none;
+	color: var(--tnc-text);
+	font: inherit;
+	font-size: 15px;
+	font-weight: 650;
+	cursor: pointer;
+}
+.tnc-strip-caret {
+	width: 0;
+	height: 0;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 6px solid currentColor;
+	transition: transform 0.15s;
+}
+.tnc-strip.is-expanded .tnc-strip-title {
+	color: var(--tnc-accent);
+}
+.tnc-strip.is-expanded .tnc-strip-caret {
+	transform: rotate(180deg);
+}
+.tnc-strip-today {
+	margin-right: 4px;
+	padding: 4px 10px;
+	border: 1px solid var(--tnc-line-strong);
+	border-radius: 999px;
+	background: none;
+	color: var(--tnc-text);
+	font: inherit;
+	font-size: var(--tnc-small);
+	font-weight: 600;
+	cursor: pointer;
+}
+.tnc-strip-today[hidden] {
+	display: none;
+}
+.tnc-strip-today:hover {
+	background: var(--tnc-surface-2);
+}
+.tnc-strip-slot {
+	display: flex;
+	align-items: center;
+}
+.tnc-strip-slot:empty {
+	display: none;
+}
+.tnc-strip-nav {
+	width: 32px;
+	height: 32px;
+	border: 0;
+	border-radius: var(--tnc-radius);
+	background: none;
+	color: var(--tnc-muted);
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+}
+.tnc-strip-title:hover,
+.tnc-strip-nav:hover {
+	background: var(--tnc-surface-2);
+}
+.tnc-strip-dows,
+.tnc-strip-grid {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.tnc-strip-dows span {
+	padding-bottom: 4px;
+	text-align: center;
+	color: var(--tnc-muted);
+	font-size: var(--tnc-small);
+	font-weight: 600;
+}
+.tnc-strip-day {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: calc(var(--tnc-strip-cell) + 10px);
+	padding: 0;
+	border: 0;
+	border-radius: var(--tnc-radius);
+	background: none;
+	color: var(--tnc-text);
+	font: inherit;
+	cursor: pointer;
+}
+.tnc-strip-num {
+	display: grid;
+	place-items: center;
+	width: min(var(--tnc-strip-cell), 100%);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	font-size: 15px;
+	font-variant-numeric: tabular-nums;
+}
+.tnc-strip-month {
+	position: absolute;
+	top: 0;
+	color: var(--tnc-muted);
+	font-size: 10px;
+	font-weight: 650;
+	line-height: 1;
+}
+.tnc-strip-dot {
+	width: 5px;
+	height: 5px;
+	margin-top: 1px;
+	border-radius: 50%;
+	visibility: hidden;
+	background: var(--tnc-muted);
+}
+.tnc-strip-day.has-items .tnc-strip-dot {
+	visibility: visible;
+}
+.tnc-strip-day.is-past,
+.tnc-strip-day.is-other-month {
+	color: var(--tnc-faint);
+}
+.tnc-strip-day.is-today .tnc-strip-num {
+	color: var(--tnc-accent);
+	font-weight: 700;
+}
+.tnc-strip-day.is-focus .tnc-strip-num {
+	background: var(--tnc-accent);
+	color: var(--tnc-accent-text);
+	font-weight: 700;
+}
+.tnc-strip-day.is-in-range .tnc-strip-num {
+	background: var(--tnc-accent-soft);
+}
+.tnc-strip-day:hover .tnc-strip-num {
+	background: var(--tnc-surface-2);
+}
+.tnc-strip-day.is-focus:hover .tnc-strip-num {
+	background: var(--tnc-accent);
+}
+.tnc-strip-day.is-drop-target .tnc-strip-num {
+	box-shadow: 0 0 0 2px var(--tnc-accent);
+	background: var(--tnc-accent-soft);
+}
+.tnc-strip-day:focus-visible,
+.tnc-strip-title:focus-visible,
+.tnc-strip-today:focus-visible,
+.tnc-strip-nav:focus-visible {
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: -2px;
+}
+.tnc-strip-handle {
+	display: block;
+	width: 36px;
+	height: 14px;
+	margin: 0 auto;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+}
+.tnc-strip-handle::before {
+	content: "";
+	display: block;
+	width: 36px;
+	height: 4px;
+	margin: 0 auto;
+	border-radius: 2px;
+	background: var(--tnc-line-strong);
+}
+.tnc-list--agenda .tnc-list-section.is-empty .tnc-list-day {
+	color: var(--tnc-faint);
+	font-weight: 600;
+}
+/* Host: rows are the last child exactly when no add button follows, avoiding :has(). */
+.tnc-list--agenda .tnc-list-section.is-empty .tnc-list-rows:last-child {
+	min-height: 28px;
+}
+.tnc-list-lead-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--tnc-text);
+}
+.tnc-list-lead-title {
+	margin-right: auto;
+}
+.tnc-list-lead-slot {
+	display: flex;
+	align-items: center;
+	font-weight: 400;
+}
+.tnc-list-lead-slot:empty {
+	display: none;
+}
+.tnc-list-add {
+	display: block;
+	width: 100%;
+	padding: 6px 10px;
+	border: 0;
+	background: none;
+	color: var(--tnc-muted);
+	font: inherit;
+	font-size: var(--tnc-small);
+	text-align: left;
+	cursor: pointer;
+}
+.tnc-list-add::before {
+	content: "+";
+	display: inline-block;
+	width: 1em;
+	margin-right: 6px;
+	color: var(--tnc-accent);
+	font-weight: 700;
+	text-align: center;
+}
+.tnc-list-add:hover {
+	color: var(--tnc-accent);
+	background: var(--tnc-surface-2);
+}
+.tnc-list-add:focus-visible {
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: -2px;
+}
+.tnc-list-more {
+	height: 1px;
+}
+
 /* ------------------------------------------------------------------ year */
 .tnc-year {
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
+	/* Narrow calendars (phones, sidebars) use the compact year below. */
+	container-type: inline-size;
 }
 .tnc-year-scroll {
 	flex: 1 1 auto;
@@ -957,6 +1250,35 @@
 	height: 4px;
 	border-radius: 50%;
 	background: var(--tnc-c, var(--tnc-accent));
+}
+
+/* Two months a row: each day is a shaded square, and its count is in its label. */
+@container (max-width: 520px) {
+	.tnc-year-scroll {
+		padding: 8px 4px;
+	}
+	.tnc-year-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 14px 12px;
+	}
+	.tnc-ym-title {
+		font-size: 12px;
+		padding-bottom: 4px;
+	}
+	.tnc-ym-days {
+		gap: 1px;
+	}
+	.tnc-ym-day {
+		border-radius: 4px;
+		font-size: 10px;
+	}
+	/* Without dots, one item must still read as busy. */
+	.tnc-ym-day.has-items {
+		background: color-mix(in srgb, var(--tnc-accent) calc((0.3 + var(--tnc-heat) * 0.7) * 50%), transparent);
+	}
+	.tnc-ym-dots {
+		display: none;
+	}
 }
 
 /* -------------------------------------------------------------- timeline */
