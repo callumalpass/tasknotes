@@ -115,6 +115,10 @@ describe('Off-by-One Completion Date Bug', () => {
           })
         }
       },
+      statusManager: {
+        isCompletedStatus: jest.fn(() => false),
+        getConfiguredStatusAfterCompletion: jest.fn(),
+      },
       fieldMapper: {
         toUserField: jest.fn((field) => {
           const mapping = {

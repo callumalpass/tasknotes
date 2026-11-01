@@ -2082,6 +2082,13 @@ export class TaskService {
 		return this.getRecurringTaskActionDate(freshTask, date);
 	}
 
+	private getStatusAfterOccurrence(task: TaskInfo): string | undefined {
+		const { statusManager } = this.plugin;
+		return statusManager.isCompletedStatus(task.status)
+			? undefined
+			: statusManager.getConfiguredStatusAfterCompletion();
+	}
+
 	private getRecurringTaskActionDate(task: TaskInfo, date?: Date): Date {
 		return getRecurringTaskActionDate(task, date);
 	}
@@ -2168,6 +2175,7 @@ export class TaskService {
 			targetDate: this.getRecurringTaskActionDate(freshTask, date),
 			currentTimestamp: getCurrentTimestamp(),
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
+			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),
 		});
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
 
@@ -2201,6 +2209,7 @@ export class TaskService {
 				recurrenceField,
 				recurrenceOriginalDateField:
 					this.plugin.fieldMapper.toUserField("recurrenceOriginalDate"),
+				statusField: this.plugin.fieldMapper.toUserField("status"),
 				googleCalendarExceptionOriginalScheduledField,
 				googleCalendarMovedOriginalDatesField,
 				plan: recurringPlan,
@@ -2316,6 +2325,7 @@ export class TaskService {
 			targetDate: this.getRecurringTaskActionDate(freshTask, date),
 			currentTimestamp: getCurrentTimestamp(),
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
+			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),
 		});
 		const { updatedTask, dateStr, newSkipped, targetDate } = recurringPlan;
 
@@ -2341,6 +2351,7 @@ export class TaskService {
 				dueField,
 				recurrenceOriginalDateField:
 					this.plugin.fieldMapper.toUserField("recurrenceOriginalDate"),
+				statusField: this.plugin.fieldMapper.toUserField("status"),
 				googleCalendarExceptionOriginalScheduledField,
 				googleCalendarMovedOriginalDatesField,
 				plan: recurringPlan,

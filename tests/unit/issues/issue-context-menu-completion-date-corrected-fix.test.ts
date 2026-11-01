@@ -72,6 +72,10 @@ describe('Context Menu Completion Date Fix (Corrected)', () => {
           })
         }
       },
+      statusManager: {
+        isCompletedStatus: jest.fn(() => false),
+        getConfiguredStatusAfterCompletion: jest.fn(),
+      },
       fieldMapper: {
         toUserField: jest.fn((field) => {
           const mapping = {
