@@ -2,7 +2,15 @@ import { taskInfoTitle } from "../i18n/taskInfoTitle";
 import { uiDuration } from "../i18n/formatters";
 import { uiData } from "../i18n/dataText";
 import { recurrenceDisplayText } from "../i18n/recurrence";
-import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from "obsidian";
+import {
+	normalizePath,
+	TFile,
+	Vault,
+	App,
+	parseYaml,
+	stringifyYaml,
+	getFrontMatterInfo,
+} from "obsidian";
 import { format } from "date-fns";
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from "../types";
 import { FieldMapper } from "../core/FieldMapper";
@@ -49,18 +57,13 @@ function getWindowMoment(input?: string | Date): ObsidianMoment {
  * Extracts frontmatter from a markdown file content using Obsidian's native parser
  */
 function extractFrontmatter(content: string): unknown {
-	if (!content.startsWith("---")) {
+	const info = getFrontMatterInfo(content);
+	if (!info.exists) {
 		return {};
 	}
 
-	const endOfFrontmatter = content.indexOf("---", 3);
-	if (endOfFrontmatter === -1) {
-		return {};
-	}
-
-	const frontmatterText = content.substring(3, endOfFrontmatter);
 	try {
-		return parseYaml(frontmatterText) || {};
+		return parseYaml(info.frontmatter) || {};
 	} catch (error) {
 		tasknotesLogger.error("Error parsing frontmatter:", {
 			category: "validation",
@@ -970,20 +973,17 @@ async function updateDailyNoteFrontmatter(
 	frontmatter: DailyNoteFrontmatterWithTimeblocks,
 	originalContent: string
 ): Promise<void> {
-	// Get body content (everything after frontmatter)
-	let bodyContent = originalContent;
-	if (originalContent.startsWith("---")) {
-		const endOfFrontmatter = originalContent.indexOf("---", 3);
-		if (endOfFrontmatter !== -1) {
-			bodyContent = originalContent.substring(endOfFrontmatter + 3);
-		}
-	}
+	// Get body content (everything after frontmatter), using Obsidian's own fence
+	// detection so a `---` inside a frontmatter value can't be mistaken for the
+	// closing fence.
+	const info = getFrontMatterInfo(originalContent);
+	const body = info.exists ? originalContent.slice(info.contentStart) : originalContent;
 
 	// Convert frontmatter back to YAML
 	const frontmatterText = stringifyYaml(frontmatter);
 
 	// Reconstruct file content
-	const newContent = `---\n${frontmatterText}---${bodyContent}`;
+	const newContent = `---\n${frontmatterText}---\n${body}`;
 
 	// Write back to file
 	await modifyVaultFile(app, dailyNote, newContent);
