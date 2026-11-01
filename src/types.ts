@@ -843,6 +843,7 @@ export interface ICSSubscription {
 	refreshInterval: number; // minutes (for remote) or check interval (for local)
 	authType?: "none" | "basic"; // HTTP auth for remote feeds; the password lives in SecretStorage
 	username?: string;
+	filter?: string; // Case-insensitive literal title substring; empty/missing shows all events
 }
 
 export interface ICSEvent {

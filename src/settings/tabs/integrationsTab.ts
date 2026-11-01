@@ -2353,6 +2353,14 @@ function renderICSSubscriptionsList(
 
 		const colorInput = createThemeColorInput(subscription.color);
 		const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval || 60);
+		const filterLabel = translate(msg({ message: "Title contains:", context: "settings.integrations.subscriptionsList.titleFilter.label" }));
+		const filterInput = createCardInput(
+			"text",
+			translate(msg({ message: "Case-insensitive text, not regex; empty shows all events", context: "settings.integrations.subscriptionsList.titleFilter.help" })),
+			subscription.filter ?? ""
+		);
+		filterInput.setAttribute("aria-label", filterLabel);
+		filterInput.title = filterInput.placeholder;
 
 		// Authentication inputs (remote feeds only). The password is kept in
 		// Obsidian SecretStorage; the input never shows a stored value.
@@ -2507,6 +2515,10 @@ function renderICSSubscriptionsList(
 		refreshInput.addEventListener("blur", () => {
 			const minutes = parseInt(refreshInput.value) || 60;
 			void updateSubscription({ refreshInterval: minutes });
+		});
+
+		filterInput.addEventListener("change", () => {
+			void updateSubscription({ filter: filterInput.value });
 		});
 
 		// Type change handler - re-render the subscription list to update input type
@@ -2691,6 +2703,10 @@ function renderICSSubscriptionsList(
 				input: passwordInput,
 			},
 			{ label: "", input: authHelp, fullWidth: true },
+			{
+				label: filterLabel,
+				input: filterInput,
+			},
 		];
 
 		createCard(container, {
