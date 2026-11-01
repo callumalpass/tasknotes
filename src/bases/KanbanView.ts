@@ -528,6 +528,9 @@ export class KanbanView extends BasesViewBase {
 		} else if ("collapsedColumns" in state) {
 			this.collapsedColumns.clear();
 		}
+		this.boardEl?.querySelectorAll<HTMLElement>(".kanban-view__column").forEach(column => {
+			this.applyColumnCollapsedState(column);
+		});
 
 		// Restore board-level horizontal scroll
 		if (typeof state.scrollTop === "number" && this.rootElement) {
@@ -1869,23 +1872,15 @@ export class KanbanView extends BasesViewBase {
 			cls: "kanban-view__column-collapse-button",
 			attr: {
 				type: "button",
-				"aria-label": this.plugin.i18n.translate("views.kanban.toggleColumn", {
+				"aria-label": this.plugin.i18n.translate(msg({ message: "Toggle {column} column", context: "views.kanban.toggleColumn" }), {
 					column: this.getGroupDisplayTitle(groupKey, groupByPropertyId),
 				}),
 			},
 		});
 
-		const applyState = (collapsed: boolean) => {
-			column.classList.toggle("kanban-view__column--collapsed", collapsed);
-			column.dataset.collapsed = String(collapsed);
-			column.style.width = collapsed
-				? "var(--tn-kanban-collapsed-column-width, 48px)"
-				: `${this.columnWidth}px`;
-			button.setAttribute("aria-expanded", String(!collapsed));
-			setIcon(button, collapsed ? "chevron-right" : "chevron-left");
-		};
-
-		applyState(this.collapsedColumns.has(groupKey));
+		const collapseKey = JSON.stringify([groupByPropertyId, groupKey]);
+		column.dataset.collapseKey = collapseKey;
+		this.applyColumnCollapsedState(column);
 
 		for (const eventName of ["mousedown", "pointerdown", "touchstart"]) {
 			button.addEventListener(eventName, (event) => event.stopPropagation());
@@ -1897,14 +1892,28 @@ export class KanbanView extends BasesViewBase {
 		button.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			const collapsed = !this.collapsedColumns.has(groupKey);
+			const collapsed = !this.collapsedColumns.has(collapseKey);
 			if (collapsed) {
-				this.collapsedColumns.add(groupKey);
+				this.collapsedColumns.add(collapseKey);
 			} else {
-				this.collapsedColumns.delete(groupKey);
+				this.collapsedColumns.delete(collapseKey);
 			}
-			applyState(collapsed);
+			this.applyColumnCollapsedState(column);
+			if (!collapsed) this.columnScrollers.get(groupKey)?.recalculate();
 		});
+	}
+
+	private applyColumnCollapsedState(column: HTMLElement): void {
+		const button = column.querySelector<HTMLElement>(".kanban-view__column-collapse-button");
+		if (!button) return;
+		const collapsed = this.collapsedColumns.has(column.dataset.collapseKey!);
+		column.classList.toggle("kanban-view__column--collapsed", collapsed);
+		column.dataset.collapsed = String(collapsed);
+		column.style.width = collapsed
+			? "var(--tn-kanban-collapsed-column-width, 48px)"
+			: `${this.columnWidth}px`;
+		button.setAttribute("aria-expanded", String(!collapsed));
+		setIcon(button, collapsed ? "chevron-right" : "chevron-left");
 	}
 
 	private renderColumnCount(container: HTMLElement, groupKey: string, taskCount: number): void {
@@ -4202,9 +4211,6 @@ export class KanbanView extends BasesViewBase {
 			suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
 		});
 
-		// Save current scroll state before the timer fires
-		const savedState = this.getEphemeralState();
-
 		// Use correct window for pop-out window support
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.updateDebounceTimer = win.setTimeout(() => {
@@ -4224,6 +4230,7 @@ export class KanbanView extends BasesViewBase {
 					activeDropCount: this.activeDropCount,
 					suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
 				});
+				const savedState = this.getEphemeralState();
 				await this.render();
 				this.updateDebounceTimer = null;
 				// Restore scroll state after render completes

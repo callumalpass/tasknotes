@@ -432,6 +432,12 @@
     order: -1;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin .kanban-view__column {
+        transition: none;
+    }
+}
+
 /* ================================================
    KANBAN TASK CARDS
    ================================================ */
@@ -596,6 +602,11 @@ body.is-mobile .tasknotes-plugin .kanban-view__column {
     max-width: min(78vw, 320px);
     max-height: 100%;
     scroll-snap-align: start;
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__column--collapsed {
+    min-width: var(--tn-kanban-collapsed-column-width, 48px);
+    max-width: var(--tn-kanban-collapsed-column-width, 48px);
 }
 
 body.is-mobile .tasknotes-plugin .kanban-view__board--swimlanes {
