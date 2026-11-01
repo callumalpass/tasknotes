@@ -80,6 +80,28 @@ for (const count of [40, 160]) {
   }
 }
 
+test('grouped card drag still writes the target status', async () => {
+  await setObsidianViewport(page, { width: 1400, height: 900 });
+  const content = stringify({
+    filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")',
+      'file.name == "Task 000" || file.name == "Task 121"'] },
+    views: [{ type: 'tasknotesTaskList', name: 'Drag', groupBy: { property: 'status', direction: 'ASC' },
+      subGroup: 'note.priority', enableSearch: false }],
+  });
+  await page.evaluate(async ({ path, content }) => {
+    const app = (window as any).app;
+    await app.workspace.getLeaf(false).openFile(await app.vault.create(path, content));
+  }, { path: `${folder}/Drag.base`, content });
+  const card = page.locator(`.task-card[data-task-path="${folder}/Task 000.md"]`);
+  const target = page.locator('.task-list-group > .task-group[data-group-key="done"]');
+  await expect(card).toBeVisible();
+  await card.locator('.task-card__title').dragTo(target);
+  await expect.poll(() => page.evaluate(async path => {
+    const app = (window as any).app;
+    return app.vault.read(app.vault.getAbstractFileByPath(path));
+  }, `${folder}/Task 000.md`)).toMatch(/status: done/);
+});
+
 test('sidebar embed keeps both virtual headers visible deep in the parent note scroller', async () => {
   await setObsidianViewport(page, { width: 1400, height: 900 });
   await page.evaluate(async folder => {
