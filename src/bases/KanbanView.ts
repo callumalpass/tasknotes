@@ -97,6 +97,7 @@ import {
 } from "./kanbanGrouping";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { TASK_PATH_DRAG_TYPE } from "../utils/DragDropManager";
+import { isSupportedColorValue, normalizeThemeColor } from "../utils/themeColors";
 import { processVaultFrontMatter } from "../services/VaultMutationService";
 
 const SWIMLANE_DRAG_TYPE = "text/x-kanban-swimlane";
@@ -351,6 +352,8 @@ export class KanbanView extends BasesViewBase {
 		this.readViewOptions();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		this.registerEvent(this.plugin.emitter.on("settings-changed", () => this.debouncedRefresh()));
+		this.registerEvent(this.plugin.app.workspace.on("css-change", () => this.debouncedRefresh()));
 	}
 
 	/**
@@ -1439,6 +1442,38 @@ export class KanbanView extends BasesViewBase {
 		);
 	}
 
+	private applyStatusColor(
+		element: HTMLElement,
+		groupKey: string,
+		groupByPropertyId: string | null,
+		modifierClass: string
+	): void {
+		if (!groupByPropertyId || !this.isStatusGroupingProperty(groupByPropertyId)) return;
+
+		const status = this.findStatusConfigForGroupKey(groupKey);
+		if (!status || !isSupportedColorValue(status.color)) return;
+
+		const color = this.resolveStatusColor(element, normalizeThemeColor(status.color));
+		if (!color) return;
+
+		element.addClass(modifierClass);
+		element.style.setProperty("--tn-kanban-status-color", color);
+	}
+
+	private resolveStatusColor(element: HTMLElement, color: string): string | null {
+		const doc = element.ownerDocument;
+		const probe = doc.win.createSpan();
+		probe.style.backgroundColor = color;
+		if (!probe.style.backgroundColor) return null;
+		doc.body.appendChild(probe);
+		const resolved = doc.defaultView!.getComputedStyle(probe).backgroundColor;
+		probe.remove();
+		// Unresolved variables and non-colour variable values compute to the
+		// initial transparent background, not a usable tint.
+		return !resolved || resolved === "transparent" || resolved === "rgba(0, 0, 0, 0)" ||
+			resolved.includes("var(") ? null : resolved;
+	}
+
 	private isUnknownStatusGroup(groupKey: string, groupByPropertyId: string | null): boolean {
 		if (!groupByPropertyId || !this.isStatusGroupingProperty(groupByPropertyId)) {
 			return false;
@@ -1648,6 +1683,12 @@ export class KanbanView extends BasesViewBase {
 			});
 			headerCell.setAttribute("draggable", "true");
 			headerCell.setAttribute("data-column-key", columnKey);
+			this.applyStatusColor(
+				headerCell,
+				columnKey,
+				groupByPropertyId,
+				"kanban-view__column-header-cell--status-colored"
+			);
 			const isUnknownStatusColumn = this.isUnknownStatusGroup(columnKey, groupByPropertyId);
 			if (isUnknownStatusColumn) {
 				this.markUnknownStatusColumnHeader(headerCell, columnKey);
@@ -1732,6 +1773,12 @@ export class KanbanView extends BasesViewBase {
 						"data-swimlane": swimLaneKey,
 					},
 				});
+				this.applyStatusColor(
+					cell,
+					columnKey,
+					groupByPropertyId,
+					"kanban-view__swimlane-column--status-colored"
+				);
 				if (isUnknownStatusColumn) {
 					this.markUnknownStatusColumn(cell, columnKey);
 				}
@@ -1796,6 +1843,12 @@ export class KanbanView extends BasesViewBase {
 		column.className = "kanban-view__column";
 		column.style.width = `${this.columnWidth}px`;
 		column.setAttribute("data-group", groupKey);
+		this.applyStatusColor(
+			column,
+			groupKey,
+			groupByPropertyId,
+			"kanban-view__column--status-colored"
+		);
 		const isUnknownStatusColumn = this.isUnknownStatusGroup(groupKey, groupByPropertyId);
 		if (isUnknownStatusColumn) {
 			this.markUnknownStatusColumn(column, groupKey);
