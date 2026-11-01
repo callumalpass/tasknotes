@@ -93,7 +93,7 @@ Each priority value has:
 Priority cards support drag-and-drop reordering.
 Status and priority values are stored in frontmatter; renaming them later may require migration of existing task files.
 
-> **Note for Bases plugin users:** Obsidian's Bases plugin sorts priorities alphabetically by their **Value**. To control sort order, name values to sort alphabetically in the desired order:
+> **Note for Bases plugin users:** Obsidian's Bases plugin sorts the `priority` property alphabetically by its **Value**. To sort in the order of your priority cards, sort by `formula.priorityWeight` in descending order; see [Sort by priority](../guides/custom-bases.md#sort-by-priority). Alternatively, name values to sort alphabetically in the desired order:
 > - Example: `1-urgent`, `2-high`, `3-medium`, `4-normal`, `5-low`
 > - Or: `a-urgent`, `b-high`, `c-medium`, `d-normal`, `e-low`
 

@@ -59,7 +59,7 @@ views:
 For existing `.base` files, add `file.tasks` in YAML manually; once present in `order`, it appears in the Bases picker as `tasks`.
 
 **`sort`**: Array of sort criteria. Tasks are sorted by the first criterion, with ties broken by subsequent criteria.
-- `column`: Property to sort by (e.g., `due`, `scheduled`, `priority`, `title`)
+- `column`: Property to sort by (e.g., `due`, `scheduled`, `formula.priorityWeight`, `title`). Sorting by `priority` itself is alphabetical; see [Sort by priority](../guides/custom-bases.md#sort-by-priority).
 - `direction`: `ASC` (ascending) or `DESC` (descending)
 
 **`groupBy`**: Optional grouping configuration
@@ -142,7 +142,7 @@ sort:
 Multiple sort criteria:
 ```yaml
 sort:
-  - column: priority
+  - column: formula.priorityWeight
     direction: DESC
   - column: due
     direction: ASC
