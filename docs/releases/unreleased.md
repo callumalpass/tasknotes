@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2061) Fixed reminder system notifications not appearing on Windows. Windows silently drops notifications with long tags, and reminder notifications were tagged with the full task path. They now use a short tag, so they appear like the test notification does
+  - Thanks to @Xiarno for reporting, and to @hokutonanto, @jahlpub, @pepijnvtol and @dmantisk for confirming it across Windows 11 setups
