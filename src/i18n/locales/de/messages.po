@@ -3864,6 +3864,11 @@ msgctxt "task selector create keyboard hint"
 msgid "Create with {shortcut}"
 msgstr "Mit {shortcut} erstellen"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.enable.description"
+msgid "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them."
+msgstr "Kalenderereignisse erstellen, aktualisieren und löschen, wenn Sie Zeitblöcke hinzufügen, bearbeiten und entfernen. Bestehende Zeitblöcke werden bei ihrer nächsten Bearbeitung synchronisiert."
+
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "task selector create action accessible name"
 msgid "Create: {title}"
@@ -5261,15 +5266,15 @@ msgctxt "settings.taskProperties.customUserFields.validation.emptyKey"
 msgid "Enter a property key."
 msgstr "Geben Sie einen Eigenschaftsschlüssel ein."
 
+#: src/settings/tabs/generalTab.ts
+msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
+msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
+msgstr "Geben Sie einen Eigenschaftsnamen ein. Beispieltext ist keine gespeicherte Konfiguration. TaskNotes kann Aufgaben erst erkennen, wenn ein Eigenschaftsname festgelegt ist. Bestehende .base-Filter müssen diesen Einstellungen entsprechen."
+
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "Geben Sie eine HTTP://-, HTTPS://-, webcal://- oder webcals://-URL ein"
-
-#: src/settings/tabs/generalTab.ts
-msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
-msgid "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings."
-msgstr "Geben Sie einen Eigenschaftsnamen und einen Wert ein. Beispieltext ist keine gespeicherte Konfiguration. TaskNotes kann Aufgaben erst erkennen, wenn beide festgelegt sind. Bestehende .base-Filter müssen diesen Einstellungen entsprechen."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
@@ -5645,6 +5650,11 @@ msgstr "Export-Status:"
 msgctxt "settings.integrations.googleCalendarExport.header"
 msgid "Export tasks to Google Calendar"
 msgstr "Aufgaben zu Google Kalender exportieren"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.header"
+msgid "Export timeblocks to Google Calendar"
+msgstr "Zeitblöcke zu Google Kalender exportieren"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
@@ -10492,6 +10502,11 @@ msgctxt "notices.audit.exportedRows"
 msgid "Rows exported: {count}"
 msgstr "Exportierte Zeilen: {count}"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.sameAsTasks"
+msgid "Same as task calendar"
+msgstr "Wie Aufgabenkalender"
+
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.sat"
 msgid "Sat"
@@ -10801,6 +10816,11 @@ msgstr "Wählen Sie die Sprache für TaskNotes-Oberflächentexte"
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.description"
 msgid "Select which calendar to create task events in."
 msgstr "Wählen Sie den Kalender aus, in dem Aufgabenereignisse erstellt werden sollen."
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.description"
+msgid "Select which calendar to create timeblock events in."
+msgstr "Wählen Sie den Kalender aus, in dem Zeitblockereignisse erstellt werden sollen."
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.inlineTasks.cardPropertiesDesc"
@@ -11706,6 +11726,16 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnUpdate.name"
 msgid "Sync on task update"
 msgstr "Bei Aufgabenaktualisierung synchronisieren"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.enable.name"
+msgid "Sync timeblocks"
+msgstr "Zeitblöcke synchronisieren"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.description"
+msgid "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above."
+msgstr "Synchronisieren Sie Zeitblöcke aus Ihren täglichen Notizen als Ereignisse mit Google Kalender. Dazu muss Google Kalender zuvor verbunden werden."
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogle"
 msgid "Sync to Google Calendar"
@@ -11860,6 +11890,11 @@ msgid "Task"
 msgstr "Aufgabe"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "Aufgabe \"{title}\" als Datei \"{filename}\" erstellt. Dateinamen dürfen einige Zeichen nicht enthalten, daher bleibt der vollständige Titel in der Titel-Eigenschaft erhalten."
+
+#: src/modals/TaskCreationModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskCreation.notices.success"
 msgid "Task \"{title}\" created successfully"
@@ -11930,6 +11965,11 @@ msgstr "Aufgabenkonvertierung ist nicht verfügbar. Bitte versuchen Sie es erneu
 msgctxt "services.instantTaskConvert.notices.conversionCompleteShortened"
 msgid "Task converted: \"{title}\" (filename shortened due to length)"
 msgstr "Aufgabe konvertiert: \"{title}\" (Dateiname wegen Länge gekürzt)"
+
+#: src/services/InstantTaskConvertService.ts
+msgctxt "services.instantTaskConvert.notices.conversionCompleteFilenameSanitized"
+msgid "Task converted: \"{title}\" as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "Aufgabe konvertiert: \"{title}\" als Datei \"{filename}\". Dateinamen dürfen einige Zeichen nicht enthalten, daher bleibt der vollständige Titel in der Titel-Eigenschaft erhalten."
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionComplete"
@@ -12311,6 +12351,11 @@ msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.descripti
 msgid "Template for event titles. Available variables: '{{title}}', '{{status}}', '{{priority}}'"
 msgstr "Vorlage für Ereignistitel. Verfügbare Variablen: '{{title}}', '{{status}}', '{{priority}}'"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.description"
+msgid "Template for timeblock event titles. Available variables: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'"
+msgstr "Vorlage für Titel von Zeitblockereignissen. Verfügbare Variablen: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'"
+
 #: src/services/ICSNoteService.ts
 msgctxt "services.icsNote.notices.templateNotFound"
 msgid "Template not found: {path}"
@@ -12393,8 +12438,8 @@ msgstr "Die Zeit, zu der wiederkehrende Instanzen erscheinen sollen (optional)"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
-msgid "The value that identifies a note as a task (e.g., \"task\")"
-msgstr "Der Wert, der eine Notiz als Aufgabe identifiziert (z.B. \"task\")"
+msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
+msgstr "Der Wert, der eine Notiz als Aufgabe identifiziert (z.B. \"task\"). Leer lassen, um jede Notiz mit dieser Eigenschaft unabhängig von ihrem Wert als Aufgabe zu behandeln."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
@@ -12720,6 +12765,11 @@ msgctxt "utils/helpers: updateTimeblockTimes display"
 msgid "Timeblock {timeblockId} not found"
 msgstr "Zeitblock {timeblockId} nicht gefunden"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name"
+msgid "Timeblock calendar"
+msgstr "Zeitblock-Kalender"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
@@ -12729,6 +12779,11 @@ msgstr "Zeitblock dupliziert"
 msgctxt "notices.audit.timeblockResized"
 msgid "Timeblock duration updated"
 msgstr "Zeitblockdauer aktualisiert"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name"
+msgid "Timeblock event title template"
+msgstr "Titelvorlage für Zeitblockereignisse"
 
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockMoved"

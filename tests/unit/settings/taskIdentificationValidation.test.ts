@@ -3,7 +3,7 @@ import { TextComponent } from "obsidian";
 import { renderGeneralTab } from "../../../src/settings/tabs/generalTab";
 import { SettingsLifecycleService } from "../../../src/services/SettingsLifecycleService";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
-import { hasCompletePropertyTaskIdentification, isTaskFrontmatter } from "../../../src/utils/taskIdentification";
+import { hasUsablePropertyTaskIdentification, isTaskFrontmatter } from "../../../src/utils/taskIdentification";
 
 function renderIdentification(name = "", value = "") {
 	const container = document.createElement("div");
@@ -38,9 +38,9 @@ describe("Property identification validation (#2363)", () => {
 		});
 	});
 
-	it.each([["", ""], ["category", ""], ["", "task"], [" ", "task"]])("rejects incomplete settings without assuming defaults (%s, %s)", (name, value) => {
+	it.each([["", ""], ["", "task"], [" ", "task"]])("rejects settings without a property name, without assuming defaults (%s, %s)", (name, value) => {
 		const settings = { ...DEFAULT_SETTINGS, taskIdentificationMethod: "property" as const, taskPropertyName: name, taskPropertyValue: value };
-		expect(hasCompletePropertyTaskIdentification(settings)).toBe(false);
+		expect(hasUsablePropertyTaskIdentification(settings)).toBe(false);
 		expect(isTaskFrontmatter({ category: "task", tags: ["task"] }, settings)).toBe(false);
 	});
 
@@ -54,13 +54,15 @@ describe("Property identification validation (#2363)", () => {
 		expect(ui.name.getAttribute("aria-describedby")).toBe(ui.warning.id);
 		await enter(ui.name, "category");
 		expect(ui.name.getAttribute("aria-invalid")).toBe("false");
-		expect(ui.warning.closest("[hidden]")).toBeNull();
+		// A name without a value identifies notes by the property's presence (#2138).
+		expect(ui.warning.closest("[hidden]")).not.toBeNull();
+		expect(isTaskFrontmatter({ category: "anything" }, ui.plugin.settings as never)).toBe(true);
 		await enter(ui.value, "task");
 		expect(ui.warning.closest("[hidden]")).not.toBeNull();
-		expect(ui.value.getAttribute("aria-invalid")).toBe("false");
 		expect(ui.save).toHaveBeenCalledTimes(2);
 		expect(isTaskFrontmatter({ category: "task" }, ui.plugin.settings as never)).toBe(true);
-		await enter(ui.value, "");
+		expect(isTaskFrontmatter({ category: "other" }, ui.plugin.settings as never)).toBe(false);
+		await enter(ui.name, "");
 		expect(ui.warning.closest("[hidden]")).toBeNull();
 	});
 

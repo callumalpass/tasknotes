@@ -20,7 +20,7 @@ import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
-import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
+import { getTaskFilenameNotice } from "../utils/filenameGenerator";
 import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { sanitizeGeneratedLinkAlias, sanitizeLinkAliasText } from "../utils/linkAliasUtils";
@@ -395,17 +395,23 @@ export class InstantTaskConvertService {
 
 			await this.persistSourceNoteAfterReplacement(editor);
 
-			if (
-				shouldShowFilenameShortenedNotice(
-					this.plugin.settings,
-					parsedData.title,
-					file.basename
-				)
-			) {
+			const filenameNotice = getTaskFilenameNotice(
+				this.plugin.settings,
+				parsedData.title,
+				file.basename
+			);
+			if (filenameNotice === "shortened") {
 				publishUserNotice(this.plugin.emitter,
 					this.translate(
 						msg({ message: "Task converted: \"{title}\" (filename shortened due to length)", context: "services.instantTaskConvert.notices.conversionCompleteShortened" }),
 						{ title: parsedData.title }
+					)
+				);
+			} else if (filenameNotice === "sanitized") {
+				publishUserNotice(this.plugin.emitter,
+					this.translate(
+						msg({ message: "Task converted: \"{title}\" as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property.", context: "services.instantTaskConvert.notices.conversionCompleteFilenameSanitized" }),
+						{ title: parsedData.title, filename: file.basename }
 					)
 				);
 			} else {

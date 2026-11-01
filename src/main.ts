@@ -113,6 +113,7 @@ import {
 import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
 import { createTaskNotesLogger } from "./utils/tasknotesLogger";
 import { sanitizeLinkAliasText } from "./utils/linkAliasUtils";
+import { withPluginDataWriteLock } from "./utils/pluginDataWriteLock";
 import { TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS } from "./api/runtime-api";
 import {
 	createTaskNotesPerformanceProfiler,
@@ -888,12 +889,14 @@ export default class TaskNotesPlugin extends Plugin {
 			return;
 		}
 
-		const data = await this.loadPluginDataForSafeWrite("save-settings-data-only");
-		if (!data) {
-			return;
-		}
+		await withPluginDataWriteLock(this, async () => {
+			const data = await this.loadPluginDataForSafeWrite("save-settings-data-only");
+			if (!data) {
+				return;
+			}
 
-		await this.saveData(buildSettingsDataForSave(data, this.settings));
+			await this.saveData(buildSettingsDataForSave(data, this.settings));
+		});
 	}
 
 	async onExternalSettingsChange(): Promise<void> {

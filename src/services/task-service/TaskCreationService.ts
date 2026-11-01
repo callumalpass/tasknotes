@@ -7,7 +7,7 @@ import {
 	TaskInfo,
 } from "../../types";
 import type { TaskNotesSettings } from "../../types/settings";
-import { addDTSTARTToRecurrenceRule } from "../../core/recurrence";
+import { addDTSTARTToRecurrenceRule, updateToNextScheduledOccurrence } from "../../core/recurrence";
 import {
 	FilenameContext,
 	type TaskFilenameSettings,
@@ -271,6 +271,17 @@ export class TaskCreationService {
 			if (
 				completeTaskData.recurrence &&
 				typeof completeTaskData.recurrence === "string" &&
+				!completeTaskData.scheduled
+			) {
+				const scheduled = getFirstScheduledOccurrence(completeTaskData);
+				if (scheduled) {
+					completeTaskData.scheduled = scheduled;
+				}
+			}
+
+			if (
+				completeTaskData.recurrence &&
+				typeof completeTaskData.recurrence === "string" &&
 				!completeTaskData.recurrence.includes("DTSTART:")
 			) {
 				const tempTaskInfo: TaskInfo = {
@@ -299,9 +310,7 @@ export class TaskCreationService {
 			if (runtime.settings.taskIdentificationMethod === "property") {
 				const propName = runtime.settings.taskPropertyName;
 				const propValue = runtime.settings.taskPropertyValue;
-				if (propName && propValue) {
-					applyPropertyTaskIdentifier(frontmatter, propName, propValue);
-				}
+				applyPropertyTaskIdentifier(frontmatter, propName, propValue);
 				if (tagsArray.length > 0) {
 					frontmatter.tags = tagsArray;
 				}
@@ -438,4 +447,31 @@ export class TaskCreationService {
 		const tasksFolder = runtime.settings.tasksFolder || "";
 		return this.deps.processFolderTemplate(tasksFolder, taskData);
 	}
+}
+
+/**
+ * A recurring task created without a scheduled date gets its first occurrence on or after
+ * today, so it behaves like a task whose recurrence was added later (for example, it can
+ * be exported to Google Calendar). The time comes from a timed DTSTART. Ended or invalid
+ * rules have no next occurrence and are left unscheduled.
+ */
+function getFirstScheduledOccurrence(task: Partial<TaskInfo>): string | undefined {
+	if (typeof task.recurrence !== "string") return undefined;
+
+	// The first occurrence of a new task is the same for both anchors. Completion-based
+	// lookup skips DTSTART itself, so it would schedule one interval late.
+	const input = { recurrence: task.recurrence, dateCreated: task.dateCreated };
+	let next = updateToNextScheduledOccurrence(input).scheduled;
+
+	// The lookup only searches a window after today, so start a future series at its start.
+	const dtstart = task.recurrence.match(/DTSTART(?:;[^:;]+)*:(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2}))?/);
+	const dtstartDate = dtstart ? `${dtstart[1]}-${dtstart[2]}-${dtstart[3]}` : undefined;
+	if (!next && dtstartDate && dtstartDate > getCurrentDateString()) {
+		next = updateToNextScheduledOccurrence(input, true, {
+			minOccurrenceDate: dtstartDate,
+		}).scheduled;
+	}
+	if (!next) return undefined;
+
+	return dtstart?.[4] ? `${next}T${dtstart[4]}:${dtstart[5]}` : next;
 }

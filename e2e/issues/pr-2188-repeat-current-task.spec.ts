@@ -13,6 +13,7 @@ for (const width of [1400, 390]) {
     const taskPath = await page.evaluate(async (width) => {
       const host = (window as any).app;
       const plugin = host.plugins.plugins.tasknotes;
+      plugin.settings.resetCheckboxesOnRecurrence = true;
       const { file, taskInfo } = await plugin.taskService.createTask({
         title: `Repeat confirmation ${width}`,
         status: plugin.statusManager.getCompletedStatuses()[0],

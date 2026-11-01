@@ -44,6 +44,7 @@ Controls include:
 - ICS import behavior and note/task creation options
 - Automatic ICS export settings
 - Google Calendar task export settings
+- Google Calendar timeblock export settings (see [Syncing Timeblocks to Google Calendar](../features/calendar-integration.md#syncing-timeblocks-to-google-calendar))
 
 ## Practical Setup Order
 

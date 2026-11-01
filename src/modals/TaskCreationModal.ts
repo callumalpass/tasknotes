@@ -25,7 +25,7 @@ import {
 } from "./taskCreationFormState";
 import { applyTaskCreationSubtaskAssignments } from "./taskCreationSubtasks";
 import { NLPSuggest } from "./taskCreationSuggest";
-import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
+import { getTaskFilenameNotice } from "../utils/filenameGenerator";
 import { setTaskModalDetailsEditorValue } from "./taskModalDetailsEditor";
 import { collapseTaskModalDetailsLayout } from "./taskModalLayout";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -683,16 +683,22 @@ export class TaskCreationModal extends TaskModal {
 			});
 			let createdTask = result.taskInfo;
 
-			if (
-				shouldShowFilenameShortenedNotice(
-					this.plugin.settings,
-					result.taskInfo.title,
-					result.file.basename
-				)
-			) {
+			const filenameNotice = getTaskFilenameNotice(
+				this.plugin.settings,
+				result.taskInfo.title,
+				result.file.basename
+			);
+			if (filenameNotice === "shortened") {
 				new Notice(
 					this.t(msg({ message: "Task \"{title}\" created successfully (filename shortened due to length)", context: "modals.taskCreation.notices.successShortened" }), {
 						title: createdTask.title,
+					})
+				);
+			} else if (filenameNotice === "sanitized") {
+				new Notice(
+					this.t(msg({ message: "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property.", context: "modals.taskCreation.notices.successFilenameSanitized" }), {
+						title: createdTask.title,
+						filename: result.file.basename,
 					})
 				);
 			} else {

@@ -24,6 +24,8 @@ import {
 	withVaultFileMutation,
 } from "./VaultMutationService";
 import type { PerformanceProfilerDetails } from "../utils/PerformanceProfiler";
+import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
+import { TimeblockCalendarSync, type TimeblockNoteSource } from "./TimeblockCalendarSync";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskCalendarSyncService" });
 
@@ -157,9 +159,46 @@ export class TaskCalendarSyncService {
 	private calendarFingerprints: Map<string, string> | null = null;
 	private destroyed = false;
 
-	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
+	/** Daily-note timeblock sync, built on this service's rate limiter, connection guard and queues */
+	readonly timeblocks: TimeblockCalendarSync;
+
+	constructor(
+		plugin: TaskNotesPlugin,
+		googleCalendarService: GoogleCalendarService,
+		options: { timeblockSource?: TimeblockNoteSource } = {}
+	) {
 		this.plugin = plugin;
 		this.googleCalendarService = googleCalendarService;
+		this.timeblocks = new TimeblockCalendarSync(
+			plugin,
+			googleCalendarService,
+			{
+				withGoogleRateLimit: (fn) => this.withGoogleRateLimit(fn),
+				getConnectionGeneration: () => this.getConnectionGeneration(),
+				assertConnectionGenerationCurrent: (generation) =>
+					this.assertConnectionGenerationCurrent(generation),
+				deleteOrQueueEvent: (notePath, timeblockId, calendarId, eventId, generation) =>
+					this.deleteOrQueueCalendarEvent(notePath, calendarId, eventId, generation, {
+						timeblockId,
+					}),
+				queueEventDeletion: (notePath, timeblockId, calendarId, eventId, error) =>
+					this.queueCalendarDeletion(notePath, calendarId, eventId, error, false, {
+						timeblockId,
+					}),
+				renameQueuedEventDeletions: (oldPath, newPath) =>
+					this.mutateDeletionQueue((queue) => {
+						let changed = false;
+						for (const item of queue) {
+							if (item.timeblockId && item.taskPath === oldPath) {
+								item.taskPath = newPath;
+								changed = true;
+							}
+						}
+						return changed ? queue : null;
+					}),
+			},
+			options.timeblockSource
+		);
 	}
 
 	private static getTaskCalendarCacheKey(taskPath: string, calendarId?: string): string {
@@ -213,6 +252,7 @@ export class TaskCalendarSyncService {
 		TaskCalendarSyncService.taskExceptionEventIdCache.clear();
 		TaskCalendarSyncService.googleCalendarFrontmatterWrites.clear();
 		TaskCalendarSyncService.googleCalendarDeletionQueueWrite = Promise.resolve();
+		TimeblockCalendarSync.clearSharedStateForTests();
 	}
 
 	private getTaskEventIdCacheKey(taskPath: string, calendarId?: string): string {
@@ -254,6 +294,7 @@ export class TaskCalendarSyncService {
 	 */
 	destroy(): void {
 		this.destroyed = true;
+		this.timeblocks.destroy();
 		for (const timer of this.pendingSyncs.values()) {
 			window.clearTimeout(timer);
 		}
@@ -399,7 +440,7 @@ export class TaskCalendarSyncService {
 		const isConnected = this.googleCalendarService.getAvailableCalendars().length > 0;
 		// Entries already in this queue represent remote events TaskNotes committed
 		// to remove, including orphan cleanup after a failed metadata write.
-		return !!settings?.enabled && isConnected;
+		return (!!settings?.enabled || !!settings?.syncTimeblocks) && isConnected;
 	}
 
 	private isSyncQueueReady(): boolean {
@@ -451,17 +492,19 @@ export class TaskCalendarSyncService {
 		) => PendingGoogleCalendarDeletion[] | null
 	): Promise<void> {
 		const previousMutation = TaskCalendarSyncService.googleCalendarDeletionQueueWrite;
-		const currentMutation = previousMutation.catch(() => undefined).then(async () => {
-			const data = await this.plugin.loadPluginDataForSafeWrite(
-				"save-google-calendar-deletion-queue"
-			);
-			if (!data) return;
-			const queue = (data[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] || []) as PendingGoogleCalendarDeletion[];
-			const updatedQueue = mutation(queue);
-			if (updatedQueue === null) return;
-			data[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] = updatedQueue;
-			await this.plugin.saveData(data);
-		});
+		const currentMutation = previousMutation.catch(() => undefined).then(() =>
+			withPluginDataWriteLock(this.plugin, async () => {
+				const data = await this.plugin.loadPluginDataForSafeWrite(
+					"save-google-calendar-deletion-queue"
+				);
+				if (!data) return;
+				const queue = (data[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] || []) as PendingGoogleCalendarDeletion[];
+				const updatedQueue = mutation(queue);
+				if (updatedQueue === null) return;
+				data[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] = updatedQueue;
+				await this.plugin.saveData(data);
+			})
+		);
 		TaskCalendarSyncService.googleCalendarDeletionQueueWrite = currentMutation;
 		await currentMutation;
 	}
@@ -474,10 +517,12 @@ export class TaskCalendarSyncService {
 	}
 
 	private async saveEventIndex(index: GoogleCalendarEventIndexEntry[]): Promise<void> {
-		const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-event-index");
-		if (!data) return;
-		data[GOOGLE_CALENDAR_EVENT_INDEX_KEY] = index;
-		await this.plugin.saveData(data);
+		await withPluginDataWriteLock(this.plugin, async () => {
+			const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-event-index");
+			if (!data) return;
+			data[GOOGLE_CALENDAR_EVENT_INDEX_KEY] = index;
+			await this.plugin.saveData(data);
+		});
 	}
 
 	private async getSyncQueue(): Promise<PendingGoogleCalendarSync[]> {
@@ -491,14 +536,16 @@ export class TaskCalendarSyncService {
 		mutation: (queue: PendingGoogleCalendarSync[]) => PendingGoogleCalendarSync[]
 	): Promise<void> {
 		const currentMutation = TaskCalendarSyncService.googleCalendarSyncQueueWrite
-			.catch(() => undefined).then(async () => {
+			.catch(() => undefined).then(() =>
+				withPluginDataWriteLock(this.plugin, async () => {
 					const data = await this.plugin.loadPluginDataForSafeWrite("save-google-calendar-sync-queue");
 					if (!data) return;
 					data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] = mutation(
 						(data[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] || []) as PendingGoogleCalendarSync[]
 					);
 					await this.plugin.saveData(data);
-				});
+				})
+			);
 		TaskCalendarSyncService.googleCalendarSyncQueueWrite = currentMutation;
 		await currentMutation;
 	}
@@ -528,12 +575,14 @@ export class TaskCalendarSyncService {
 
 	private async saveCalendarFingerprints(fingerprints?: Map<string, string>): Promise<void> {
 		const map = fingerprints || (await this.getCalendarFingerprints());
-		const data = await this.plugin.loadPluginDataForSafeWrite(
-			"save-google-calendar-fingerprints"
-		);
-		if (!data) return;
-		data[GOOGLE_CALENDAR_FINGERPRINTS_KEY] = Object.fromEntries(map.entries());
-		await this.plugin.saveData(data);
+		await withPluginDataWriteLock(this.plugin, async () => {
+			const data = await this.plugin.loadPluginDataForSafeWrite(
+				"save-google-calendar-fingerprints"
+			);
+			if (!data) return;
+			data[GOOGLE_CALENDAR_FINGERPRINTS_KEY] = Object.fromEntries(map.entries());
+			await this.plugin.saveData(data);
+		});
 	}
 
 	private getCalendarRelevantFingerprint(task: TaskInfo): string {
@@ -806,7 +855,8 @@ export class TaskCalendarSyncService {
 		calendarId: string,
 		eventId: string,
 		error?: unknown,
-		attempted = false
+		attempted = false,
+		owner: { timeblockId?: string } = {}
 	): Promise<void> {
 		const now = Date.now();
 		const key = this.getDeletionQueueKey({ calendarId, eventId });
@@ -816,6 +866,11 @@ export class TaskCalendarSyncService {
 			const existing = queue.find((item) => this.getDeletionQueueKey(item) === key);
 			if (existing) {
 				existing.taskPath = taskPath;
+				if (owner.timeblockId) {
+					existing.timeblockId = owner.timeblockId;
+				} else {
+					delete existing.timeblockId;
+				}
 				if (attempted) {
 					existing.attempts += 1;
 					existing.lastAttemptAt = now;
@@ -830,6 +885,7 @@ export class TaskCalendarSyncService {
 				...queue,
 				{
 					taskPath,
+					...(owner.timeblockId ? { timeblockId: owner.timeblockId } : {}),
 					calendarId,
 					eventId,
 					createdAt: now,
@@ -845,9 +901,11 @@ export class TaskCalendarSyncService {
 		taskPath: string,
 		calendarId: string,
 		eventId: string,
-		expectedConnectionGeneration?: number
+		expectedConnectionGeneration?: number,
+		owner: { timeblockId?: string } = {}
 	): Promise<boolean> {
-		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
+		// "Delete event on task delete" only governs task events.
+		if (!owner.timeblockId && !this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
 			return true;
 		}
 
@@ -856,7 +914,9 @@ export class TaskCalendarSyncService {
 				taskPath,
 				calendarId,
 				eventId,
-				new Error("Google Calendar sync is not ready")
+				new Error("Google Calendar sync is not ready"),
+				false,
+				owner
 			);
 			return false;
 		}
@@ -886,7 +946,7 @@ export class TaskCalendarSyncService {
 				details: { value: taskPath },
 				error: error,
 			});
-			await this.queueCalendarDeletion(taskPath, calendarId, eventId, error, true);
+			await this.queueCalendarDeletion(taskPath, calendarId, eventId, error, true, owner);
 			return false;
 		}
 	}
@@ -914,6 +974,18 @@ export class TaskCalendarSyncService {
 		}
 	}
 
+	private async clearDeletedEventLinks(
+		item: PendingGoogleCalendarDeletion,
+		connectionGeneration: number
+	): Promise<void> {
+		if (item.timeblockId) {
+			await this.timeblocks.removeIndexEntriesForEvent(item.calendarId, item.eventId);
+			return;
+		}
+		await this.clearTaskEventIdIfMatching(item, connectionGeneration);
+		await this.removeEventIndexForEvent(item.calendarId, item.eventId);
+	}
+
 	private async isQueuedDeletionStillNeeded(
 		item: PendingGoogleCalendarDeletion
 	): Promise<boolean> {
@@ -935,6 +1007,7 @@ export class TaskCalendarSyncService {
 			await this.recoverDeletedTaskEventsFromIndex();
 			await this.processDeletionQueue();
 			await this.processPendingSyncQueue();
+			await this.timeblocks.processRecovery(true);
 		});
 	}
 
@@ -943,6 +1016,7 @@ export class TaskCalendarSyncService {
 			await this.recoverDeletedTaskEventsFromIndexIfDue();
 			await this.processDeletionQueue();
 			await this.processPendingSyncQueue();
+			await this.timeblocks.processRecovery(false);
 		});
 	}
 
@@ -1367,7 +1441,13 @@ export class TaskCalendarSyncService {
 			for (const item of dedupedQueue.values()) {
 				const connectionGeneration = this.getConnectionGeneration();
 				try {
-					const deletionStillNeeded = await this.isQueuedDeletionStillNeeded(item);
+					if (this.timeblocks.shouldDeferQueuedDeletion(item)) {
+						remainingItems.push(item);
+						continue;
+					}
+					const deletionStillNeeded = item.timeblockId
+						? await this.timeblocks.isQueuedDeletionStillNeeded(item)
+						: await this.isQueuedDeletionStillNeeded(item);
 					if (!deletionStillNeeded) {
 						continue;
 					}
@@ -1380,13 +1460,11 @@ export class TaskCalendarSyncService {
 							connectionGeneration
 						);
 					});
-					await this.clearTaskEventIdIfMatching(item, connectionGeneration);
-					await this.removeEventIndexForEvent(item.calendarId, item.eventId);
+					await this.clearDeletedEventLinks(item, connectionGeneration);
 					results.deleted++;
 				} catch (error: unknown) {
 					if (isAlreadyDeletedError(error)) {
-						await this.clearTaskEventIdIfMatching(item, connectionGeneration);
-						await this.removeEventIndexForEvent(item.calendarId, item.eventId);
+						await this.clearDeletedEventLinks(item, connectionGeneration);
 						results.deleted++;
 						continue;
 					}

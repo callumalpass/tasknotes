@@ -993,6 +993,107 @@ export function renderIntegrationsTab(
 	// Initial render
 	void renderMicrosoftCalendarCard();
 
+	/** A dropdown of the connected Google account's calendars, refreshed when they load. */
+	const configureGoogleCalendarDropdown = (
+		setting: Setting,
+		options: { placeholder: string; getValue: () => string; setValue: (value: string) => void }
+	) => {
+		const { placeholder, getValue, setValue } = options;
+		const dropdown = setting.controlEl.createEl("select", {
+			cls: "dropdown",
+		});
+		dropdown.classList.remove(
+			"tn-static-width-100-0466783d",
+			"tn-static-width-12px-fbf353fb",
+			"tn-static-width-16px-7375d50b",
+			"tn-static-width-1px-aa77e27e",
+			"tn-static-width-60px-bd09c419",
+			"tn-static-width-80px-8573bae3"
+		);
+		dropdown.classList.add("tn-static-width-200px-2acaf3b5");
+
+		// Add placeholder option
+		dropdown.createEl("option", { text: placeholder, value: "" });
+
+		// Populate calendars if connected
+		const populateCalendars = async () => {
+			// Clear existing options except placeholder
+			while (dropdown.options.length > 1) {
+				dropdown.remove(1);
+			}
+
+			const isConnected =
+				plugin.oauthService && (await plugin.oauthService.isConnected("google"));
+			if (isConnected && plugin.googleCalendarService) {
+				const calendars = plugin.googleCalendarService.getAvailableCalendars();
+				for (const cal of calendars) {
+					const option = dropdown.createEl("option", {
+						text:
+							cal.summary +
+							(cal.primary
+								? translate(
+										msg({ message: " (Primary)", context: "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix" })
+									)
+								: ""),
+						value: cal.id,
+					});
+					if (cal.id === getValue()) {
+						option.selected = true;
+					}
+				}
+			} else {
+				dropdown.createEl("option", {
+					text: translate(
+						msg({ message: "Connect Google Calendar first", context: "settings.integrations.googleCalendarExport.targetCalendar.connectFirst" })
+					),
+					value: "",
+				});
+			}
+		};
+
+		void populateCalendars();
+
+		// Re-populate when calendar data is fetched after startup.
+		// Clean up the listener automatically when this settings control is detached.
+		let unsubscribeGoogleCalendarDataChanged: (() => void) | null = null;
+		let detachObserver: MutationObserver | null = null;
+		const cleanupGoogleCalendarDataChanged = () => {
+			if (unsubscribeGoogleCalendarDataChanged) {
+				unsubscribeGoogleCalendarDataChanged();
+				unsubscribeGoogleCalendarDataChanged = null;
+			}
+			if (detachObserver) {
+				detachObserver.disconnect();
+				detachObserver = null;
+			}
+		};
+
+		unsubscribeGoogleCalendarDataChanged = plugin.googleCalendarService.on(
+			"data-changed",
+			() => {
+				if (!dropdown.isConnected) {
+					cleanupGoogleCalendarDataChanged();
+					return;
+				}
+				void populateCalendars();
+			}
+		);
+
+		detachObserver = new MutationObserver(() => {
+			if (!dropdown.isConnected) {
+				cleanupGoogleCalendarDataChanged();
+			}
+		});
+		detachObserver.observe(container.ownerDocument.body, {
+			childList: true,
+			subtree: true,
+		});
+
+		dropdown.addEventListener("change", () => {
+			setValue(dropdown.value);
+		});
+	};
+
 	// Google Calendar Task Export Section
 	createSettingGroup(
 		container,
@@ -1027,105 +1128,15 @@ export function renderIntegrationsTab(
 						msg({ message: "Select which calendar to create task events in.", context: "settings.integrations.googleCalendarExport.targetCalendar.description" })
 					)
 				);
-
-				const dropdown = setting.controlEl.createEl("select", {
-					cls: "dropdown",
-				});
-				dropdown.classList.remove(
-					"tn-static-width-100-0466783d",
-					"tn-static-width-12px-fbf353fb",
-					"tn-static-width-16px-7375d50b",
-					"tn-static-width-1px-aa77e27e",
-					"tn-static-width-60px-bd09c419",
-					"tn-static-width-80px-8573bae3"
-				);
-				dropdown.classList.add("tn-static-width-200px-2acaf3b5");
-
-				// Add placeholder option
-				dropdown.createEl("option", {
-					text: translate(
+				configureGoogleCalendarDropdown(setting, {
+					placeholder: translate(
 						msg({ message: "Select a calendar...", context: "settings.integrations.googleCalendarExport.targetCalendar.placeholder" })
 					),
-					value: "",
-				});
-
-				// Populate calendars if connected
-				const populateCalendars = async () => {
-					// Clear existing options except placeholder
-					while (dropdown.options.length > 1) {
-						dropdown.remove(1);
-					}
-
-					const isConnected =
-						plugin.oauthService && (await plugin.oauthService.isConnected("google"));
-					if (isConnected && plugin.googleCalendarService) {
-						const calendars = plugin.googleCalendarService.getAvailableCalendars();
-						for (const cal of calendars) {
-							const option = dropdown.createEl("option", {
-								text:
-									cal.summary +
-									(cal.primary
-										? translate(
-												msg({ message: " (Primary)", context: "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix" })
-											)
-										: ""),
-								value: cal.id,
-							});
-							if (cal.id === plugin.settings.googleCalendarExport.targetCalendarId) {
-								option.selected = true;
-							}
-						}
-					} else {
-						dropdown.createEl("option", {
-							text: translate(
-								msg({ message: "Connect Google Calendar first", context: "settings.integrations.googleCalendarExport.targetCalendar.connectFirst" })
-							),
-							value: "",
-						});
-					}
-				};
-
-				void populateCalendars();
-
-				// Re-populate when calendar data is fetched after startup.
-				// Clean up the listener automatically when this settings control is detached.
-				let unsubscribeGoogleCalendarDataChanged: (() => void) | null = null;
-				let detachObserver: MutationObserver | null = null;
-				const cleanupGoogleCalendarDataChanged = () => {
-					if (unsubscribeGoogleCalendarDataChanged) {
-						unsubscribeGoogleCalendarDataChanged();
-						unsubscribeGoogleCalendarDataChanged = null;
-					}
-					if (detachObserver) {
-						detachObserver.disconnect();
-						detachObserver = null;
-					}
-				};
-
-				unsubscribeGoogleCalendarDataChanged = plugin.googleCalendarService.on(
-					"data-changed",
-					() => {
-						if (!dropdown.isConnected) {
-							cleanupGoogleCalendarDataChanged();
-							return;
-						}
-						void populateCalendars();
-					}
-				);
-
-				detachObserver = new MutationObserver(() => {
-					if (!dropdown.isConnected) {
-						cleanupGoogleCalendarDataChanged();
-					}
-				});
-				detachObserver.observe(container.ownerDocument.body, {
-					childList: true,
-					subtree: true,
-				});
-
-				dropdown.addEventListener("change", () => {
-					plugin.settings.googleCalendarExport.targetCalendarId = dropdown.value;
-					save();
+					getValue: () => plugin.settings.googleCalendarExport.targetCalendarId,
+					setValue: (value) => {
+						plugin.settings.googleCalendarExport.targetCalendarId = value;
+						save();
+					},
 				});
 			});
 
@@ -1464,6 +1475,73 @@ export function renderIntegrationsTab(
 							if (confirmed) {
 								await plugin.taskCalendarSyncService.unlinkAllTasks(false);
 							}
+						},
+					})
+			);
+		}
+	);
+
+	// Google Calendar Timeblock Export Section
+	createSettingGroup(
+		container,
+		{
+			heading: translate(msg({ message: "Export timeblocks to Google Calendar", context: "settings.integrations.googleCalendarTimeblockExport.header" })),
+			description: translate(msg({ message: "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above.", context: "settings.integrations.googleCalendarTimeblockExport.description" })),
+		},
+		(group) => {
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(msg({ message: "Sync timeblocks", context: "settings.integrations.googleCalendarTimeblockExport.enable.name" })),
+						desc: translate(
+							msg({ message: "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them.", context: "settings.integrations.googleCalendarTimeblockExport.enable.description" })
+						),
+						getValue: () => plugin.settings.googleCalendarExport.syncTimeblocks,
+						setValue: async (value: boolean) => {
+							plugin.settings.googleCalendarExport.syncTimeblocks = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting((setting) => {
+				setting.setName(
+					translate(msg({ message: "Timeblock calendar", context: "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name" }))
+				);
+				setting.setDesc(
+					translate(
+						msg({ message: "Select which calendar to create timeblock events in.", context: "settings.integrations.googleCalendarTimeblockExport.targetCalendar.description" })
+					)
+				);
+				configureGoogleCalendarDropdown(setting, {
+					placeholder: translate(
+						msg({ message: "Same as task calendar", context: "settings.integrations.googleCalendarTimeblockExport.targetCalendar.sameAsTasks" })
+					),
+					getValue: () => plugin.settings.googleCalendarExport.timeblockTargetCalendarId,
+					setValue: (value) => {
+						plugin.settings.googleCalendarExport.timeblockTargetCalendarId = value;
+						save();
+					},
+				});
+			});
+
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: translate(
+							msg({ message: "Timeblock event title template", context: "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name" })
+						),
+						desc: translate(
+							msg({ message: "Template for timeblock event titles. Available variables: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'", context: "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.description" })
+						),
+						placeholder: translate(
+							msg({ message: "'{{title}}'", context: "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder" })
+						),
+						getValue: () => plugin.settings.googleCalendarExport.timeblockEventTitleTemplate,
+						setValue: async (value: string) => {
+							plugin.settings.googleCalendarExport.timeblockEventTitleTemplate =
+								value || "{{title}}";
+							save();
 						},
 					})
 			);
