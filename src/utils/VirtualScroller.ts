@@ -157,6 +157,7 @@ export class VirtualScroller<T> {
 
 		// Find the actual scrolling container by walking up the DOM
 		this.scrollContainer = this.findScrollContainer(this.container);
+		this.updateSpacerHeight();
 	}
 
 	/**
@@ -228,7 +229,12 @@ export class VirtualScroller<T> {
 	}
 
 	private updateSpacerHeight(): void {
-		this.spacer.style.height = `${this.totalHeight + this.getContainerBottomPadding()}px`;
+		const height = `${this.totalHeight + this.getContainerBottomPadding()}px`;
+		this.spacer.style.height = height;
+		if (this.scrollContainer && this.scrollContainer !== this.container) {
+			// Transforms and the absolute spacer do not size the sticky boundary.
+			this.container.style.minHeight = height;
+		}
 	}
 
 	/**
@@ -500,7 +506,7 @@ export class VirtualScroller<T> {
 	};
 
 	private updateVisibleRange(): void {
-		const scrollTop = this.scrollContainer.scrollTop;
+		const scrollTop = this.getScrollTop();
 		let containerHeight = this.scrollContainer.clientHeight;
 
 		// If container height is 0, try to get a better estimate
@@ -843,6 +849,13 @@ export class VirtualScroller<T> {
 	 * Force recalculation of visible range (useful after container resize)
 	 */
 	recalculate(): void {
+		// Bases may attach an embedded view only after its first render.
+		const scrollContainer = this.findScrollContainer(this.container);
+		if (scrollContainer !== this.scrollContainer) {
+			this.scrollContainer.removeEventListener("scroll", this.handleScroll);
+			this.scrollContainer = scrollContainer;
+			this.attachScrollListener();
+		}
 		// Force a fresh calculation by resetting state
 		this.state.startIndex = -1;
 		this.state.endIndex = -1;
@@ -893,7 +906,10 @@ export class VirtualScroller<T> {
 	 * Current scroll offset of the scroll container.
 	 */
 	getScrollTop(): number {
-		return this.scrollContainer.scrollTop;
+		if (this.container === this.scrollContainer) return this.scrollContainer.scrollTop;
+		// Embedded lists begin below the note's scroll origin.
+		return this.scrollContainer.getBoundingClientRect().top + this.scrollContainer.clientTop -
+			this.container.getBoundingClientRect().top;
 	}
 
 	/**
@@ -911,6 +927,7 @@ export class VirtualScroller<T> {
 			this.resizeObserver = null;
 		}
 		this.scrollContainer.removeEventListener("scroll", this.handleScroll);
+		if (this.scrollContainer !== this.container) this.container.style.removeProperty("min-height");
 		this.renderedElements.clear();
 		this.contentContainer.empty();
 		this.itemHeights.clear();

@@ -85,10 +85,7 @@
     padding: var(--tn-spacing-xs) var(--tn-spacing-md) var(--tn-spacing-xs) var(--tn-spacing-sm);
     margin-bottom: var(--tn-spacing-sm);
     border-bottom: 1px solid var(--tn-border-color);
-    position: sticky;
-    top: 0;
-    z-index: var(--tn-z-sticky);
-    background: var(--tn-bg-primary);
+    position: relative;
     font-size: var(--tn-font-size-lg);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
@@ -123,18 +120,17 @@
 	overflow-y: auto;
 }
 
-/* Flat grouped list: headers are siblings of task cards (not wrapping them), so
-   sticky must be on the section wrapper. Sticky on the inner h3 fails because its
-   containing block is only as tall as the header itself. */
-.tn-tasknotesTaskList .tn-bases-items-container > .task-section.task-group {
+/* Each section bounds its sticky header; nested offsets follow measured height. */
+.tn-tasknotesTaskList .task-list-group > .task-group,
+.tn-tasknotesTaskList .task-list-subgroup > .task-group {
 	position: sticky;
 	top: 0;
 	z-index: var(--tn-z-sticky);
 	background: var(--tn-bg-primary);
 }
 
-.tn-tasknotesTaskList .tn-bases-items-container > .task-section.task-group[data-level="sub"] {
-	top: calc(var(--tn-spacing-md) + var(--tn-spacing-sm) + (1.4 * var(--tn-font-size-lg)) + 1px);
+.tn-tasknotesTaskList .task-list-subgroup > .task-group {
+	top: var(--task-list-parent-header-height, 0px);
 	z-index: calc(var(--tn-z-sticky) - 1);
 }
 
@@ -278,6 +274,13 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
     flex: 0 1 auto;
     max-height: none;
     overflow-y: visible;
+}
+
+/* Let the note be the sticky/virtual scroll root, rather than an unbounded
+   Bases wrapper that never actually scrolls. */
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed,
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed .bases-view {
+    overflow: visible;
 }
 
 /* Reset indentation for task cards after a primary group header */
