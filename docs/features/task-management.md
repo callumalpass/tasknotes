@@ -193,6 +193,8 @@ The **Attachments** field in the task creation and edit modals shows the task's 
 - Use the arrow buttons to change the order.
 - Use the remove button to unlink a file from the task. Removing an attachment never deletes the file from the vault; delete it from Obsidian's file explorer if you no longer need it.
 
+Files need a file extension, and their names can't contain `[`, `]`, `#` or `|`, because those characters would break the link. Rename such a file before attaching it. If saving fails, files that save had already copied in are moved to the trash, and they stay in the list waiting to be imported again.
+
 All controls are buttons with labels, so they can be reached with the keyboard and used on touch devices. You can hide the field, or show it only in one of the modals, in [Modal Fields Settings](../settings/modal-fields.md).
 
 ### Attachment indicators
