@@ -56,6 +56,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2471) Fixed TaskNotes Bases views that were open during a plugin update continuing to run the previous version until reopened. After updating from 4.14 to 4.15, an open Calendar tab kept the old calendar but lost its styles, so the week view drew the time labels inside the Wednesday column. Open TaskNotes views are now rebuilt with the updated plugin when it loads. Restarting Obsidian or reopening the tab also fixes it
+  - Thanks to @flynn-frog for reporting
+
 - (#2434) Fixed aliased project links appearing unresolved when reopening a task in the edit modal, while preserving their aliases and heading/block references.
   - Thanks to @stemForge for reporting and identifying the parsing problem.
 

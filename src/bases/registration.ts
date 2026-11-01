@@ -25,6 +25,28 @@ const EXPANDED_RELATIONSHIP_FILTER_MODE_OPTIONS: Record<string, string> = {
 	get "show-all"() { return uiText(msg({ message: "Show all", context: "bases/registration: defaults show-all" })); },
 };
 
+const TASKNOTES_BASES_VIEW_TYPES = new Set([
+	"tasknotesTaskList",
+	"tasknotesKanban",
+	"tasknotesCalendar",
+	"tasknotesMiniCalendar",
+]);
+
+/**
+ * Bases keeps an open tab's view instance when the plugin that registered it
+ * unloads, so after an in-app update the previous version's view keeps running
+ * under the new stylesheet (#2471). Such a view belongs to another plugin instance.
+ */
+export function hasStaleTaskNotesView(basesView: unknown, plugin: TaskNotesPlugin): boolean {
+	const view = (basesView as { controller?: { view?: { type?: unknown; plugin?: unknown } } })
+		.controller?.view;
+	return (
+		typeof view?.type === "string" &&
+		TASKNOTES_BASES_VIEW_TYPES.has(view.type) &&
+		view.plugin !== plugin
+	);
+}
+
 /**
  * Register TaskNotes views with Bases plugin
  * Requires Obsidian 1.10.1+ (public Bases API with groupBy support)
@@ -254,6 +276,10 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 			// Refresh existing Bases views
 			plugin.app.workspace.iterateAllLeaves((leaf) => {
 				if (leaf.view?.getViewType?.() === "bases") {
+					if (hasStaleTaskNotesView(leaf.view, plugin)) {
+						void leaf.rebuildView();
+						return;
+					}
 					const view = leaf.view as { refresh?: () => void };
 					if (typeof view.refresh === "function") {
 						try {
