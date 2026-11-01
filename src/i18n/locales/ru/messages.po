@@ -11834,6 +11834,11 @@ msgid "Task"
 msgstr "Задача"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "Задача \"{title}\" создана как файл \"{filename}\". Имена файлов не могут содержать некоторые символы, поэтому полное название сохранено в свойстве заголовка."
+
+#: src/modals/TaskCreationModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskCreation.notices.success"
 msgid "Task \"{title}\" created successfully"
@@ -11904,6 +11909,11 @@ msgstr "Сервис преобразования задач недоступе�
 msgctxt "services.instantTaskConvert.notices.conversionCompleteShortened"
 msgid "Task converted: \"{title}\" (filename shortened due to length)"
 msgstr "Задача преобразована: \"{title}\" (имя файла сокращено из-за длины)"
+
+#: src/services/InstantTaskConvertService.ts
+msgctxt "services.instantTaskConvert.notices.conversionCompleteFilenameSanitized"
+msgid "Task converted: \"{title}\" as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "Задача преобразована: \"{title}\" как файл \"{filename}\". Имена файлов не могут содержать некоторые символы, поэтому полное название сохранено в свойстве заголовка."
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionComplete"

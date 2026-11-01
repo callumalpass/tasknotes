@@ -11833,6 +11833,11 @@ msgid "Task"
 msgstr "タスク"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "タスク\"{title}\"をファイル\"{filename}\"として作成しました。ファイル名に使用できない文字があるため、完全なタイトルはタイトルプロパティに保存されています。"
+
+#: src/modals/TaskCreationModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskCreation.notices.success"
 msgid "Task \"{title}\" created successfully"
@@ -11903,6 +11908,11 @@ msgstr "タスク変換サービスを利用できません。もう一度お試
 msgctxt "services.instantTaskConvert.notices.conversionCompleteShortened"
 msgid "Task converted: \"{title}\" (filename shortened due to length)"
 msgstr "タスクが変換されました：\"{title}\"（長さのためファイル名が短縮されました）"
+
+#: src/services/InstantTaskConvertService.ts
+msgctxt "services.instantTaskConvert.notices.conversionCompleteFilenameSanitized"
+msgid "Task converted: \"{title}\" as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "タスクが変換されました：\"{title}\"（ファイル\"{filename}\"）。ファイル名に使用できない文字があるため、完全なタイトルはタイトルプロパティに保存されています。"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionComplete"

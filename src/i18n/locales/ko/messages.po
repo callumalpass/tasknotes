@@ -11833,6 +11833,11 @@ msgid "Task"
 msgstr "작업"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "작업 \"{title}\"이(가) 파일 \"{filename}\"(으)로 생성되었습니다. 파일명에는 일부 문자를 사용할 수 없으므로 전체 제목은 제목 속성에 유지됩니다."
+
+#: src/modals/TaskCreationModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskCreation.notices.success"
 msgid "Task \"{title}\" created successfully"
@@ -11903,6 +11908,11 @@ msgstr "작업 변환 서비스를 사용할 수 없습니다. 다시 시도하�
 msgctxt "services.instantTaskConvert.notices.conversionCompleteShortened"
 msgid "Task converted: \"{title}\" (filename shortened due to length)"
 msgstr "작업 변환됨: \"{title}\" (길이로 인해 파일명이 단축됨)"
+
+#: src/services/InstantTaskConvertService.ts
+msgctxt "services.instantTaskConvert.notices.conversionCompleteFilenameSanitized"
+msgid "Task converted: \"{title}\" as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "작업 변환됨: \"{title}\", 파일 \"{filename}\". 파일명에는 일부 문자를 사용할 수 없으므로 전체 제목은 제목 속성에 유지됩니다."
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionComplete"
