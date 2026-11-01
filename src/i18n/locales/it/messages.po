@@ -13180,6 +13180,11 @@ msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
 msgid "Today''s pomos"
 msgstr "Pomodori di oggi"
 
+#: src/bases/KanbanView.ts
+msgctxt "views.kanban.toggleColumn"
+msgid "Toggle {column} column"
+msgstr "Comprimi o espandi colonna {column}"
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"

@@ -138,6 +138,7 @@ type VirtualScrollerWithContainer = {
 type KanbanEphemeralState = {
 	scrollTop?: unknown;
 	columnScroll?: unknown;
+	collapsedColumns?: unknown;
 };
 
 type KanbanDropExecutionOptions = {
@@ -177,6 +178,16 @@ function getColumnScrollState(state: KanbanEphemeralState): Record<string, numbe
 		}
 	}
 	return result;
+}
+
+function getCollapsedColumnState(state: KanbanEphemeralState): Set<string> | null {
+	if (
+		!Array.isArray(state.collapsedColumns) ||
+		!state.collapsedColumns.every((value): value is string => typeof value === "string")
+	) {
+		return null;
+	}
+	return new Set(state.collapsedColumns);
 }
 
 function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "show-all" {
@@ -261,6 +272,7 @@ export class KanbanView extends BasesViewBase {
 	private sortScopeCandidateTaskPaths = new Map<string, string[]>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
+	private collapsedColumns = new Set<string>();
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
@@ -499,6 +511,7 @@ export class KanbanView extends BasesViewBase {
 			...baseStateObject,
 			scrollTop: this.rootElement?.scrollTop || 0,
 			columnScroll,
+			collapsedColumns: Array.from(this.collapsedColumns),
 		};
 	}
 
@@ -509,6 +522,15 @@ export class KanbanView extends BasesViewBase {
 		if (!isKanbanEphemeralState(state)) return;
 		super.setEphemeralState(state);
 		const columnScroll = getColumnScrollState(state);
+		const collapsedColumns = getCollapsedColumnState(state);
+		if (collapsedColumns) {
+			this.collapsedColumns = collapsedColumns;
+		} else if ("collapsedColumns" in state) {
+			this.collapsedColumns.clear();
+		}
+		this.boardEl?.querySelectorAll<HTMLElement>(".kanban-view__column").forEach(column => {
+			this.applyColumnCollapsedState(column);
+		});
 
 		// Restore board-level horizontal scroll
 		if (typeof state.scrollTop === "number" && this.rootElement) {
@@ -1806,6 +1828,7 @@ export class KanbanView extends BasesViewBase {
 		this.renderGroupTitleWrapper(titleContainer, groupKey, false, true);
 
 		this.renderColumnCount(header, groupKey, tasks.length);
+		this.createColumnCollapseButton(header, column, groupKey, groupByPropertyId);
 
 		// Setup column header drag handlers
 		this.setupColumnHeaderDragHandlers(header);
@@ -1837,6 +1860,60 @@ export class KanbanView extends BasesViewBase {
 		this.createAddTaskButton(column, groupByPropertyId, groupKey);
 
 		return column;
+	}
+
+	private createColumnCollapseButton(
+		header: HTMLElement,
+		column: HTMLElement,
+		groupKey: string,
+		groupByPropertyId: string | null
+	): void {
+		const button = header.createEl("button", {
+			cls: "kanban-view__column-collapse-button",
+			attr: {
+				type: "button",
+				"aria-label": this.plugin.i18n.translate(msg({ message: "Toggle {column} column", context: "views.kanban.toggleColumn" }), {
+					column: this.getGroupDisplayTitle(groupKey, groupByPropertyId),
+				}),
+			},
+		});
+
+		const collapseKey = JSON.stringify([groupByPropertyId, groupKey]);
+		column.dataset.collapseKey = collapseKey;
+		this.applyColumnCollapsedState(column);
+
+		for (const eventName of ["mousedown", "pointerdown", "touchstart"]) {
+			button.addEventListener(eventName, (event) => event.stopPropagation());
+		}
+		button.addEventListener("dragstart", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+		});
+		button.addEventListener("click", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			const collapsed = !this.collapsedColumns.has(collapseKey);
+			if (collapsed) {
+				this.collapsedColumns.add(collapseKey);
+			} else {
+				this.collapsedColumns.delete(collapseKey);
+			}
+			this.applyColumnCollapsedState(column);
+			if (!collapsed) this.columnScrollers.get(groupKey)?.recalculate();
+		});
+	}
+
+	private applyColumnCollapsedState(column: HTMLElement): void {
+		const button = column.querySelector<HTMLElement>(".kanban-view__column-collapse-button");
+		if (!button) return;
+		const collapsed = this.collapsedColumns.has(column.dataset.collapseKey!);
+		column.classList.toggle("kanban-view__column--collapsed", collapsed);
+		column.dataset.collapsed = String(collapsed);
+		column.style.width = collapsed
+			? "var(--tn-kanban-collapsed-column-width, 48px)"
+			: `${this.columnWidth}px`;
+		button.setAttribute("aria-expanded", String(!collapsed));
+		setIcon(button, collapsed ? "chevron-right" : "chevron-left");
 	}
 
 	private renderColumnCount(container: HTMLElement, groupKey: string, taskCount: number): void {
@@ -4134,9 +4211,6 @@ export class KanbanView extends BasesViewBase {
 			suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
 		});
 
-		// Save current scroll state before the timer fires
-		const savedState = this.getEphemeralState();
-
 		// Use correct window for pop-out window support
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.updateDebounceTimer = win.setTimeout(() => {
@@ -4156,6 +4230,7 @@ export class KanbanView extends BasesViewBase {
 					activeDropCount: this.activeDropCount,
 					suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
 				});
+				const savedState = this.getEphemeralState();
 				await this.render();
 				this.updateDebounceTimer = null;
 				// Restore scroll state after render completes

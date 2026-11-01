@@ -13181,6 +13181,11 @@ msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
 msgid "Today''s pomos"
 msgstr "Pomos de hoy"
 
+#: src/bases/KanbanView.ts
+msgctxt "views.kanban.toggleColumn"
+msgid "Toggle {column} column"
+msgstr "Contraer o expandir la columna {column}"
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
