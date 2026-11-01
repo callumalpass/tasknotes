@@ -25,18 +25,23 @@ export function splitAbsoluteReminderTime(value: string | undefined): { date: st
 	};
 }
 
-/** Convert a stored ISO 8601 offset into the modal's single value/unit/direction fields. */
+/**
+ * Convert a stored ISO 8601 offset into the modal's single value/unit/direction fields.
+ * Returns null for offsets the form can't represent (years, months, seconds).
+ */
 export function parseRelativeReminderOffset(offset: string | undefined): {
 	value: number;
 	unit: "minutes" | "hours" | "days";
 	direction: "before" | "after";
-} {
-	const match = /^(-?)P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?$/.exec(offset ?? "");
-	if (!match) return { value: 15, unit: "minutes", direction: "before" };
-	const [, negative, days, hours, minutes] = match;
+} | null {
+	const match = /^(-?)P(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?$/.exec(offset ?? "");
+	if (!match) return null;
+	const [, negative, weeks, days, hours, minutes] = match;
 	const direction = negative ? "before" : "after";
 	const totalMinutes =
-		Number(days ?? 0) * 24 * 60 + Number(hours ?? 0) * 60 + Number(minutes ?? 0);
+		(Number(weeks ?? 0) * 7 + Number(days ?? 0)) * 24 * 60 +
+		Number(hours ?? 0) * 60 +
+		Number(minutes ?? 0);
 	if (totalMinutes > 0 && totalMinutes % (24 * 60) === 0) {
 		return { value: totalMinutes / (24 * 60), unit: "days", direction };
 	}
@@ -65,6 +70,11 @@ export class ReminderModal extends Modal {
 	private description = "";
 	// Index of the reminder loaded into the form for editing, or null when adding
 	private editingIndex: number | null = null;
+	// Relative timing as loaded for editing; if untouched, the stored offset is kept verbatim
+	private editingLoadedTiming: { value: number; unit: string; direction: string } | null = null;
+	// Add-mode type and anchor, restored when editing ends
+	private addModeSelection: { type: "absolute" | "relative"; anchor: "due" | "scheduled" } | null =
+		null;
 
 	constructor(
 		app: App,
@@ -831,7 +841,11 @@ export class ReminderModal extends Modal {
 		const reminder = this.reminders[index];
 		if (!reminder) return;
 
+		if (this.editingIndex === null) {
+			this.addModeSelection = { type: this.selectedType, anchor: this.relativeAnchor };
+		}
 		this.editingIndex = index;
+		this.editingLoadedTiming = null;
 		this.description = reminder.description ?? "";
 		if (reminder.type === "absolute") {
 			this.selectedType = "absolute";
@@ -841,10 +855,15 @@ export class ReminderModal extends Modal {
 		} else {
 			this.selectedType = "relative";
 			this.relativeAnchor = reminder.relatedTo ?? "due";
-			const parsed = parseRelativeReminderOffset(reminder.offset);
+			const parsed = parseRelativeReminderOffset(reminder.offset) ?? {
+				value: 15,
+				unit: "minutes",
+				direction: "before",
+			};
 			this.relativeOffset = parsed.value;
 			this.relativeUnit = parsed.unit;
 			this.relativeDirection = parsed.direction;
+			this.editingLoadedTiming = { ...parsed };
 		}
 
 		this.rerenderForm();
@@ -853,6 +872,12 @@ export class ReminderModal extends Modal {
 
 	private stopEditing(): void {
 		this.editingIndex = null;
+		this.editingLoadedTiming = null;
+		if (this.addModeSelection) {
+			this.selectedType = this.addModeSelection.type;
+			this.relativeAnchor = this.addModeSelection.anchor;
+			this.addModeSelection = null;
+		}
 		this.relativeOffset = 15;
 		this.relativeUnit = "minutes";
 		this.relativeDirection = "before";
@@ -868,6 +893,18 @@ export class ReminderModal extends Modal {
 		const original = this.reminders[index];
 		if (!original) return;
 		const updated: Reminder = { ...edited, id: original.id };
+		const loaded = this.editingLoadedTiming;
+		if (
+			loaded &&
+			updated.type === "relative" &&
+			original.type === "relative" &&
+			loaded.value === this.relativeOffset &&
+			loaded.unit === this.relativeUnit &&
+			loaded.direction === this.relativeDirection
+		) {
+			// Timing untouched: keep the stored offset, which the form may not represent exactly.
+			updated.offset = original.offset;
+		}
 		this.reminders[index] = updated;
 		this.stopEditing();
 

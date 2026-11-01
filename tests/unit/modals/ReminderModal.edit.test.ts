@@ -105,8 +105,26 @@ describe("ReminderModal editing", () => {
 		]);
 	});
 
+	it("keeps a stored offset the form can't represent when only the description changes", async () => {
+		const { modal, contentEl, onSave } = await openModal([
+			{ id: "rem_month", type: "relative", relatedTo: "due", offset: "-P1M" },
+		]);
+
+		contentEl.querySelector<HTMLButtonElement>(".reminder-modal__edit-btn")!.click();
+		(modal as any).description = "Renew";
+		contentEl.querySelector<HTMLButtonElement>(".reminder-add-btn")!.click();
+		contentEl.querySelector<HTMLButtonElement>(".reminder-modal__save-btn")!.click();
+		await Promise.resolve();
+
+		expect(onSave).toHaveBeenCalledWith([
+			expect.objectContaining({ id: "rem_month", offset: "-P1M", description: "Renew" }),
+		]);
+	});
+
 	it("maps stored offsets onto the modal's single value and unit", () => {
 		expect(parseRelativeReminderOffset("-P1D")).toEqual({ value: 1, unit: "days", direction: "before" });
 		expect(parseRelativeReminderOffset("PT1H30M")).toEqual({ value: 90, unit: "minutes", direction: "after" });
+		expect(parseRelativeReminderOffset("-P1W")).toEqual({ value: 7, unit: "days", direction: "before" });
+		expect(parseRelativeReminderOffset("-P1M")).toBeNull();
 	});
 });
