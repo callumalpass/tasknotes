@@ -199,6 +199,7 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[Error de fórmula]"
 
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
@@ -1448,6 +1449,7 @@ msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "Los recordatorios absolutos deben usar at:YYYY-MM-DDTHH:MM o una fecha y hora ISO completa"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -6960,6 +6962,11 @@ msgctxt "settings.appearance.taskCards.completionSubmenu.name"
 msgid "Group complete and skip actions in a submenu"
 msgstr "Agrupar las acciones de completar y omitir en un submenú"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.batchMoveUnsupported"
+msgid "Group moves require visible, non-recurring tasks with matching date markers. Keep the dragged task in the same all-day or timed area."
+msgstr "Para mover un grupo, las tareas deben estar visibles, no ser recurrentes y tener marcadores de fecha del mismo tipo. Mantén la tarea arrastrada en la misma zona de todo el día o con horario."
+
 #: src/settings/components/FieldManagerComponent.ts
 msgctxt "settings.modalFields.manager.group"
 msgid "Group:"
@@ -9591,6 +9598,7 @@ msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "Elegir fecha de {field}"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.date.pickDateTime"
@@ -10942,6 +10950,11 @@ msgctxt "modals.propertySelector.title"
 msgid "Select task card properties"
 msgstr "Seleccionar propiedades de las tarjetas de tarea"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.selectTasks"
+msgid "Select tasks"
+msgstr "Seleccionar tareas"
+
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
@@ -11013,6 +11026,7 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "Servicio no inicializado - por favor reinicia Obsidian"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 msgctxt "contextMenus.date.modal.title"
 msgid "Set date & time"
@@ -12292,6 +12306,7 @@ msgctxt "cli/helpers/taskResolution: resolveTaskForCli display"
 msgid "Task not found for title: {title}"
 msgstr "No se encontró la tarea para el título: {title}"
 
+#: src/bases/CalendarView.ts
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
@@ -13692,6 +13707,7 @@ msgctxt "modals.reminder.updateButton"
 msgid "Update reminder"
 msgstr "Actualizar recordatorio"
 
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"
 msgid "Update tasks"

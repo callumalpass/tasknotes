@@ -199,6 +199,7 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[数式エラー]"
 
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
@@ -1447,6 +1448,7 @@ msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "日時指定のリマインダーには at:YYYY-MM-DDTHH:MM または完全な ISO 日時を使用してください"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -6959,6 +6961,11 @@ msgctxt "settings.appearance.taskCards.completionSubmenu.name"
 msgid "Group complete and skip actions in a submenu"
 msgstr "完了とスキップの操作をサブメニューにまとめる"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.batchMoveUnsupported"
+msgid "Group moves require visible, non-recurring tasks with matching date markers. Keep the dragged task in the same all-day or timed area."
+msgstr "グループ移動には、表示中の繰り返しでないタスクと同じ種類の日付マーカーが必要です。ドラッグするタスクは、元の終日エリアまたは時間指定エリア内で移動してください。"
+
 #: src/settings/components/FieldManagerComponent.ts
 msgctxt "settings.modalFields.manager.group"
 msgid "Group:"
@@ -9590,6 +9597,7 @@ msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "{field}の日付を選択"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.date.pickDateTime"
@@ -10941,6 +10949,11 @@ msgctxt "modals.propertySelector.title"
 msgid "Select task card properties"
 msgstr "タスクカードのプロパティを選択"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.selectTasks"
+msgid "Select tasks"
+msgstr "タスクを選択"
+
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
@@ -11012,6 +11025,7 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "サービスが初期化されていません - Obsidianを再起動してください"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 msgctxt "contextMenus.date.modal.title"
 msgid "Set date & time"
@@ -12291,6 +12305,7 @@ msgctxt "cli/helpers/taskResolution: resolveTaskForCli display"
 msgid "Task not found for title: {title}"
 msgstr "タイトルに対応するタスクが見つかりません: {title}"
 
+#: src/bases/CalendarView.ts
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
@@ -13691,6 +13706,7 @@ msgctxt "modals.reminder.updateButton"
 msgid "Update reminder"
 msgstr "リマインダーを更新"
 
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"
 msgid "Update tasks"

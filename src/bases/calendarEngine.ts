@@ -8,6 +8,8 @@ export type CalendarEventInput = CalendarEvent | CalendarPropertyEvent;
 /** Per-item data: the event's extended props, plus the Bases sort rank. */
 export type CalendarEventProps = CalendarEvent["extendedProps"] & {
 	tasknotesSortIndex?: number;
+	/** Temporary peer placement during a group drag; never persisted or selectable. */
+	isBatchPreview?: boolean;
 };
 
 export type CalendarEventItem = CalendarItem<CalendarEventProps>;
