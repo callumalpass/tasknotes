@@ -33,6 +33,7 @@ import {
 } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
+import { TASK_PATH_DRAG_TYPE } from "../utils/DragDropManager";
 import {
 	isSortOrderInSortConfig,
 	getSortOrderDirection,
@@ -991,8 +992,10 @@ export class TaskListView extends BasesViewBase {
 			e.stopPropagation();
 			this.beginTaskMovement(cardEl, task, groupKey);
 			if (e.dataTransfer) {
-				e.dataTransfer.effectAllowed = "move";
+				// copyMove: Calendar views accept the task path as a copy-style drop
+				e.dataTransfer.effectAllowed = "copyMove";
 				e.dataTransfer.setData("text/plain", task.path);
+				e.dataTransfer.setData(TASK_PATH_DRAG_TYPE, task.path);
 			}
 		});
 

@@ -65,9 +65,11 @@ export class TaskLinkWidget extends WidgetType {
 		wrapper.addEventListener("pointerdown", (event) => {
 			event.stopPropagation();
 		});
+		// A draggable wrapper already keeps the caret in place, and cancelling its
+		// mousedown would stop it from being dragged onto a Calendar view.
 		wrapper.addEventListener("mousedown", (event) => {
 			event.stopPropagation();
-			if (event.button === 0) {
+			if (event.button === 0 && !wrapper.draggable) {
 				event.preventDefault();
 			}
 		});
@@ -88,6 +90,9 @@ export class TaskLinkWidget extends WidgetType {
 
 		// Store original text for reference
 		card.dataset.originalText = this.originalText;
+
+		// Let the widget be dragged onto Calendar views to schedule the task
+		this.plugin.dragDropManager?.makeTaskCardDraggable(wrapper, this.taskInfo.path);
 
 		// Trigger update after status changes (for editor sync)
 		// Listen for task updates within the card
@@ -137,7 +142,12 @@ export class TaskLinkWidget extends WidgetType {
 	ignoreEvent(event: Event): boolean {
 		// Ignore mouse events to prevent cursor from moving into widget
 		// This keeps the widget rendered while interacting with it
-		if (event.type === "mousedown" || event.type === "click") {
+		if (
+			event.type === "mousedown" ||
+			event.type === "click" ||
+			event.type === "dragstart" ||
+			event.type === "dragend"
+		) {
 			return true;
 		}
 		return false;
