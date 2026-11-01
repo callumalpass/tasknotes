@@ -60,7 +60,7 @@ import {
 	getCalendarConfigValue as getCalendarConfigValueFromSnapshot,
 } from "./calendarConfigSnapshot";
 import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
-import { buildExternalCalendarEvents, setProviderCalendarToggle } from "./calendarExternalEvents";
+import { buildExternalCalendarEvents, buildLinkedGoogleEventPredicate, setProviderCalendarToggle } from "./calendarExternalEvents";
 import { acceptsExternalTaskDrop, getExternalTaskDropPath } from "./calendarExternalTaskDrop";
 import {
 	appendCalendarAttachmentIndicator,
@@ -1474,7 +1474,25 @@ export class CalendarView extends BasesViewBase {
 			viewToBases(view.type) ?? this.viewOptions.calendarView,
 			this.viewOptions.showAllDaySlot
 		);
-		return [...this.buildTaskEvents(view), ...this.nonTaskEvents];
+		return this.buildVisibleEvents(view);
+	}
+
+	private buildVisibleEvents(view: ViewInfo): CalendarEventInput[] {
+		const taskEvents = this.buildTaskEvents(view);
+		const isLinked = buildLinkedGoogleEventPredicate(
+			taskEvents.flatMap(event => {
+				const props = event.extendedProps;
+				const task = props && "taskInfo" in props ? props.taskInfo : undefined;
+				return task && ["scheduled", "due", "scheduledToDueSpan", "recurring"].includes(event.extendedProps?.eventType ?? "")
+					? [{ task, date: String(event.start) }]
+					: [];
+			}),
+			this.plugin
+		);
+		return [...taskEvents, ...this.nonTaskEvents.filter(event => {
+			const props = event.extendedProps;
+			return !props || !("icsEvent" in props) || !props.icsEvent || !isLinked(props.icsEvent);
+		})];
 	}
 
 	private getMaterializedOccurrences(): Record<string, string[]> {
@@ -1601,7 +1619,7 @@ export class CalendarView extends BasesViewBase {
 		if (!this.calendar) return;
 		++this.refetchSeq;
 		const view = this.calendar.getView();
-		this.calendar.setItems(toCalendarItems([...this.buildTaskEvents(view), ...this.nonTaskEvents]));
+		this.calendar.setItems(toCalendarItems(this.buildVisibleEvents(view)));
 	}
 
 	private async refreshAfterExpectedCalendarTaskWrite(updatedTask: TaskInfo): Promise<void> {

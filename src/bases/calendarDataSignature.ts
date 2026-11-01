@@ -20,6 +20,7 @@ const CALENDAR_DATA_SIGNATURE_FIELDS: FieldMappingKey[] = [
 	"blockedBy",
 	"icsEventId",
 	"googleCalendarEventId",
+	"googleCalendarExceptionEventId",
 	"googleCalendarExceptionOriginalScheduled",
 	"googleCalendarMovedOriginalDates",
 	"reminders",
