@@ -78,7 +78,7 @@ When connected, displays:
 
 ## Calendar subscriptions (ICS)
 
-ICS settings define how subscribed calendar events are represented in your vault. You can set a default template, destination folder, filename strategy, and custom filename template for generated notes. Use **Add Calendar Subscription** to register URLs or local files, and **Refresh all subscriptions** for manual synchronization.
+ICS settings define how subscribed calendar events are represented in your vault. You can set a default template, destination folder, filename strategy, and custom filename template for generated notes. Use **Add Calendar Subscription** to register URLs or local files, and **Refresh all subscriptions** for manual synchronization. Remote subscriptions can use a username and password for private feeds over HTTPS; see [Private feeds](../features/calendar-integration.md#private-feeds-username-and-password).
 
 **Recurring event related notes** controls how notes linked from recurring external calendar events are matched. **Series-wide** keeps the current behavior: a note linked to one loaded recurrence can appear on the other loaded recurrences from the same Google, Microsoft, or ICS event series. **Selected instance only** limits related notes and counts to the exact recurrence instance that was linked.
 

@@ -2054,6 +2054,21 @@ msgctxt "generated Bases column name"
 msgid "Attempted"
 msgstr "Tentativa"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authHelp"
+msgid "Authenticated feeds must use https://. The password is stored in Obsidian's secure storage, not in plugin settings."
+msgstr "Feeds autenticados devem usar https://. A senha é guardada no armazenamento seguro do Obsidian, não nas configurações do plugin."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authenticationFailed"
+msgid "Authentication failed for calendar \"{name}\". Check the username and password."
+msgstr "Falha na autenticação do calendário \"{name}\". Verifique o usuário e a senha."
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.authentication"
+msgid "Authentication:"
+msgstr "Autenticação:"
+
 #: src/services/OAuthService.ts
 msgctxt "OAuth callback title"
 msgid "Authorization complete"
@@ -2426,9 +2441,19 @@ msgid "Calendar \"{name}\" access denied (500). This may be due to Microsoft Out
 msgstr "Acesso ao calendário \"{name}\" negado (500). Isso pode ser devido a restrições do servidor Microsoft Outlook. Tente regenerar a URL ICS das configurações do seu calendário."
 
 #: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authPasswordMissing"
+msgid "Calendar \"{name}\" needs a password. Enter it in the calendar subscription settings."
+msgstr "O calendário \"{name}\" precisa de uma senha. Informe-a nas configurações da assinatura do calendário."
+
+#: src/services/ICSSubscriptionService.ts
 msgctxt "services.icsSubscription.notices.calendarNotFound"
 msgid "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible."
 msgstr "Calendário \"{name}\" não encontrado (404). Por favor, verifique se a URL ICS está correta e se o calendário é acessível publicamente."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authRequiresHttps"
+msgid "Calendar \"{name}\" uses a username and password, so its URL must start with https://. The credentials were not sent."
+msgstr "O calendário \"{name}\" usa usuário e senha, por isso sua URL deve começar com https://. As credenciais não foram enviadas."
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.calendarEventHeading"
@@ -6238,6 +6263,11 @@ msgctxt "modals.reminder.saveFailed"
 msgid "Failed to save reminders. Please try again."
 msgstr "Não foi possível salvar os lembretes. Tente novamente."
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
+msgid "Failed to save the calendar password"
+msgstr "Falha ao salvar a senha do calendário"
+
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.timeEntryEditor.saveFailed"
 msgid "Failed to save time entries"
@@ -8692,6 +8722,11 @@ msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "Nenhum"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.none"
+msgid "None"
+msgstr "Nenhuma"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
@@ -8872,6 +8907,11 @@ msgstr "Token OAuth atualizado {time}"
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "URL do Obsidian copiado para a área de transferência"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authStorageUnavailable"
+msgid "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device."
+msgstr "O armazenamento seguro do Obsidian não está disponível, então não é possível salvar senhas neste dispositivo."
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.occurrenceDate"
@@ -9355,6 +9395,16 @@ msgstr "Analisa datas, prioridades e outras propriedades do texto inserido."
 msgctxt "settings.features.nlp.enable.description"
 msgid "Parse due dates, priorities, and contexts from natural language when creating tasks"
 msgstr "Analisar datas de vencimento, prioridades e contextos da linguagem natural ao criar tarefas"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.password"
+msgid "Password"
+msgstr "Senha"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.password"
+msgid "Password:"
+msgstr "Senha:"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.past"
@@ -10530,6 +10580,11 @@ msgstr "Salvar Alterações"
 msgctxt "settings.integrations.webhooks.modals.edit.buttons.save"
 msgid "Save changes"
 msgstr "Salvar Alterações"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
+msgid "Saved. Enter a new password to replace it"
+msgstr "Salva. Digite uma nova senha para substituí-la"
 
 #: src/modals/ReminderModal.ts
 msgctxt "common.saving"
@@ -13613,6 +13668,21 @@ msgstr "Usuário"
 msgctxt "settings.modalFields.sync.notice"
 msgid "User fields synced to modal configuration"
 msgstr "Campos de usuário sincronizados com a configuração do modal"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.username"
+msgid "Username"
+msgstr "Usuário"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.basic"
+msgid "Username and password (HTTP Basic)"
+msgstr "Usuário e senha (HTTP Basic)"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.username"
+msgid "Username:"
+msgstr "Usuário:"
 
 #: src/settings/tabs/taskProperties/tagsPropertyCard.ts
 msgctxt "settings.taskProperties.tagsCard.nativeObsidianTags"

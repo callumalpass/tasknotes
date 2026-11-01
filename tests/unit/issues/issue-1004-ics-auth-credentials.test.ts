@@ -1,315 +1,161 @@
 /**
- * Test for Issue #1004: Add login/password authentication for iCal calendar sync
+ * Issue #1004 / PR #1346: HTTP Basic auth for ICS calendar subscriptions.
  *
- * Feature Request: Support HTTP Basic Authentication for iCal/ICS calendar subscriptions.
- *
- * Current Behavior:
- * - ICS subscriptions only work with public (unauthenticated) calendar URLs
- * - No option to provide username/password for authenticated calendar access
- * - Nextcloud and other self-hosted calendar servers require authentication
- *
- * Requested Behavior:
- * - Add username and password fields to ICS subscription configuration
- * - Include HTTP Basic Authentication header in calendar fetch requests
- * - Support authenticated access to Nextcloud, Radicale, Baïkal, and similar servers
- *
- * Implementation Considerations:
- * - Store credentials securely (encrypted in plugin settings)
- * - Support Basic Authentication header: Authorization: Basic base64(user:pass)
- * - Consider OAuth as an alternative for supported providers
- * - Handle authentication failures gracefully with clear error messages
- *
- * Issue: https://github.com/[owner]/[repo]/issues/1004
+ * The username is stored with the subscription; the password lives in
+ * Obsidian SecretStorage and must never reach data.json. Credentials are
+ * only sent over HTTPS.
  */
-
 import { requestUrl } from 'obsidian';
+import {
+	ICSSubscriptionService,
+	ICSInsecureAuthError,
+	buildICSRequestHeaders,
+} from '../../../src/services/ICSSubscriptionService';
+import { ICSSecretStore, getICSPasswordSecretId } from '../../../src/services/ICSSecretStore';
 
-// Mock Obsidian's dependencies
 jest.mock('obsidian', () => ({
-    Notice: jest.fn(),
-    requestUrl: jest.fn(),
-    TFile: jest.fn()
+	Notice: jest.fn(),
+	requestUrl: jest.fn(),
+	TFile: jest.fn(),
+}));
+
+jest.mock('ical.js', () => ({
+	...jest.requireActual('ical.js'),
 }));
 
 const mockRequestUrl = requestUrl as jest.MockedFunction<typeof requestUrl>;
 
-describe('Issue #1004: ICS Authentication Feature Request', () => {
-
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    describe('Current Behavior - No Authentication Support', () => {
-
-        it.skip('reproduces issue #1004 - authenticated Nextcloud calendar fails without credentials', async () => {
-            // Simulates the current behavior when accessing an authenticated Nextcloud calendar
-            // The request will fail with 401 Unauthorized because no credentials are provided
-
-            const nextcloudCalendarUrl = 'https://cloud.example.com/remote.php/dav/public-calendars/abcd1234/?export';
-
-            // Simulate 401 response from authenticated endpoint
-            mockRequestUrl.mockRejectedValueOnce(new Error('Request failed, status 401'));
-
-            // Current ICSSubscriptionService fetch behavior (simplified)
-            try {
-                await requestUrl({
-                    url: nextcloudCalendarUrl,
-                    method: "GET",
-                    headers: {
-                        Accept: "text/calendar,*/*;q=0.1",
-                        "Accept-Language": "en-US,en;q=0.9",
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                    },
-                });
-                fail('Expected request to fail with 401');
-            } catch (error) {
-                // Current behavior: 401 error with no way to provide credentials
-                expect((error as Error).message).toContain('401');
-            }
-        });
-
-        it.skip('reproduces issue #1004 - private calendar URL requires authentication', async () => {
-            // Nextcloud private calendar URLs (not public-calendars) require authentication
-            const privateCalendarUrl = 'https://cloud.example.com/remote.php/dav/calendars/username/personal/?export';
-
-            mockRequestUrl.mockRejectedValueOnce(new Error('Request failed, status 401'));
-
-            try {
-                await requestUrl({
-                    url: privateCalendarUrl,
-                    method: "GET",
-                    headers: {
-                        Accept: "text/calendar,*/*;q=0.1",
-                    },
-                });
-                fail('Expected request to fail with 401');
-            } catch (error) {
-                expect((error as Error).message).toContain('401');
-            }
-
-            // No way to provide authentication in current implementation
-        });
-    });
-
-    describe('Requested Feature - HTTP Basic Authentication', () => {
-
-        it.skip('reproduces issue #1004 - demonstrates how Basic Auth header should be added', async () => {
-            // This test documents the expected behavior after implementing the feature
-            const calendarUrl = 'https://cloud.example.com/remote.php/dav/calendars/user/personal/?export';
-            const username = 'testuser';
-            const password = 'testpass123';
-
-            // Expected: Base64 encode credentials for Basic Auth
-            const credentials = btoa(`${username}:${password}`);
-            const authHeader = `Basic ${credentials}`;
-
-            // Mock successful response with auth
-            mockRequestUrl.mockResolvedValueOnce({
-                status: 200,
-                text: `BEGIN:VCALENDAR
+const ICS_BODY = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Nextcloud//Calendar//EN
+PRODID:-//Test//EN
 BEGIN:VEVENT
-UID:event-123
-SUMMARY:Test Event
+UID:event-1
+SUMMARY:Private event
 DTSTART:20250115T100000Z
 DTEND:20250115T110000Z
 END:VEVENT
-END:VCALENDAR`,
-                headers: {},
-                arrayBuffer: new ArrayBuffer(0),
-                json: {},
-            });
+END:VCALENDAR`;
 
-            // Expected implementation would add Authorization header
-            const response = await requestUrl({
-                url: calendarUrl,
-                method: "GET",
-                headers: {
-                    Accept: "text/calendar,*/*;q=0.1",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                    "Authorization": authHeader, // <-- This is what needs to be added
-                },
-            });
+class InMemorySecretStorage {
+	readonly values = new Map<string, string>();
+	getSecret(id: string): string | null {
+		return this.values.get(id) ?? null;
+	}
+	setSecret(id: string, value: string): void {
+		this.values.set(id, value);
+	}
+}
 
-            expect(response.status).toBe(200);
-            expect(response.text).toContain('BEGIN:VCALENDAR');
+function decodeBasic(header: string): string {
+	const binary = atob(header.replace(/^Basic /, ''));
+	return new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0)));
+}
 
-            // Verify the request was made with auth header
-            expect(mockRequestUrl).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        Authorization: authHeader,
-                    }),
-                })
-            );
-        });
+function createService(secretStorage?: InMemorySecretStorage) {
+	let persisted: Record<string, unknown> = { icsSubscriptions: [] };
+	const plugin: any = {
+		loadData: jest.fn(async () => persisted),
+		loadPluginDataForSafeWrite: jest.fn(async () => JSON.parse(JSON.stringify(persisted))),
+		saveData: jest.fn(async (data: Record<string, unknown>) => {
+			persisted = JSON.parse(JSON.stringify(data));
+		}),
+		emitter: { trigger: jest.fn() },
+		app: { vault: { on: jest.fn(), offref: jest.fn(), getFiles: jest.fn(() => []) } },
+		i18n: { translate: jest.fn((descriptor: { id?: string }) => descriptor.id ?? '') },
+	};
+	const service = new ICSSubscriptionService(plugin, new ICSSecretStore(secretStorage));
+	return { service, plugin, getPersisted: () => JSON.stringify(persisted) };
+}
 
-        it.skip('reproduces issue #1004 - ICSSubscription interface should include auth fields', () => {
-            // Documents the expected interface changes for the feature
+const remoteAuthSubscription = {
+	name: 'Nextcloud',
+	url: 'https://cloud.example.com/remote.php/dav/calendars/user/personal/?export',
+	type: 'remote' as const,
+	color: '#4285f4',
+	enabled: true,
+	refreshInterval: 60,
+	authType: 'basic' as const,
+	username: 'jürgen',
+};
 
-            // Current ICSSubscription interface (from src/types.ts):
-            interface ICSSubscriptionCurrent {
-                id: string;
-                name: string;
-                url?: string;
-                filePath?: string;
-                type: "remote" | "local";
-                color: string;
-                enabled: boolean;
-                refreshInterval: number;
-            }
+describe('Issue #1004: ICS subscription Basic auth', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+		mockRequestUrl.mockResolvedValue({ status: 200, text: ICS_BODY } as any);
+	});
 
-            // Expected ICSSubscription interface after feature implementation:
-            interface ICSSubscriptionWithAuth {
-                id: string;
-                name: string;
-                url?: string;
-                filePath?: string;
-                type: "remote" | "local";
-                color: string;
-                enabled: boolean;
-                refreshInterval: number;
-                // New optional authentication fields:
-                authType?: 'none' | 'basic'; // Could extend to 'bearer', 'oauth' etc.
-                username?: string;
-                password?: string; // Should be stored encrypted
-            }
+	it('encodes non-Latin-1 credentials as UTF-8 in the Authorization header', () => {
+		const headers = buildICSRequestHeaders(
+			{ url: remoteAuthSubscription.url, authType: 'basic', username: '用户jürgen' },
+			'pässwörd🔒'
+		);
+		expect(decodeBasic(headers.Authorization)).toBe('用户jürgen:pässwörd🔒');
+	});
 
-            // Sample subscription with auth
-            const authSubscription: ICSSubscriptionWithAuth = {
-                id: 'nextcloud-personal',
-                name: 'My Nextcloud Calendar',
-                url: 'https://cloud.example.com/remote.php/dav/calendars/user/personal/?export',
-                type: 'remote',
-                color: '#4285f4',
-                enabled: true,
-                refreshInterval: 30,
-                authType: 'basic',
-                username: 'user@example.com',
-                password: 'encrypted-password-here',
-            };
+	it('sends no Authorization header for unauthenticated subscriptions', () => {
+		const headers = buildICSRequestHeaders({ url: 'http://example.com/a.ics' }, null);
+		expect(headers.Authorization).toBeUndefined();
+	});
 
-            expect(authSubscription.authType).toBe('basic');
-            expect(authSubscription.username).toBeDefined();
-            expect(authSubscription.password).toBeDefined();
-        });
-    });
+	it.each(['http://cloud.example.com/cal.ics', 'webcal://cloud.example.com/cal.ics', 'not a url'])(
+		'refuses to build credentials for non-HTTPS URL %s',
+		(url) => {
+			expect(() =>
+				buildICSRequestHeaders({ url, authType: 'basic', username: 'u' }, 'p')
+			).toThrow(ICSInsecureAuthError);
+		}
+	);
 
-    describe('Supported Calendar Servers', () => {
+	it('does not send a request when an authenticated feed uses plain HTTP', async () => {
+		const storage = new InMemorySecretStorage();
+		const { service, plugin } = createService(storage);
+		const sub = await service.addSubscription({
+			...remoteAuthSubscription,
+			url: 'http://cloud.example.com/cal.ics',
+		});
+		await service.setPassword(sub.id, 'secret');
 
-        it.skip('reproduces issue #1004 - Nextcloud CalDAV URL format', () => {
-            // Documents Nextcloud calendar URL formats that require authentication
+		expect(mockRequestUrl).not.toHaveBeenCalled();
+		expect(service.getLastError(sub.id)).toMatch(/https/);
+		expect(plugin.emitter.trigger).toHaveBeenCalled();
+		service.destroy();
+	});
 
-            // Private calendar (requires auth)
-            const privateUrl = 'https://cloud.example.com/remote.php/dav/calendars/USERNAME/CALENDAR_NAME/?export';
+	it('keeps the password out of plugin data and sends it from SecretStorage', async () => {
+		const storage = new InMemorySecretStorage();
+		const { service, getPersisted } = createService(storage);
+		const sub = await service.addSubscription(remoteAuthSubscription);
+		await service.setPassword(sub.id, 'top-secret-pw');
 
-            // Public shared calendar (may not require auth)
-            const publicUrl = 'https://cloud.example.com/remote.php/dav/public-calendars/TOKEN/?export';
+		expect(getPersisted()).not.toContain('top-secret-pw');
+		expect(getPersisted()).toContain('jürgen');
+		expect(storage.getSecret(getICSPasswordSecretId(sub.id))).toBe('top-secret-pw');
 
-            // The user's scenario: accessing private calendars requires login/password
-            expect(privateUrl).toContain('calendars');
-            expect(publicUrl).toContain('public-calendars');
-        });
+		const lastCall = mockRequestUrl.mock.calls.at(-1)?.[0] as { headers: Record<string, string> };
+		expect(decodeBasic(lastCall.headers.Authorization)).toBe('jürgen:top-secret-pw');
+		service.destroy();
+	});
 
-        it.skip('reproduces issue #1004 - Radicale CalDAV URL format', () => {
-            // Radicale is another self-hosted CalDAV server that requires auth
-            const radicaleUrl = 'https://radicale.example.com/user/calendar.ics';
+	it('removes the stored password when the subscription is deleted', async () => {
+		const storage = new InMemorySecretStorage();
+		const { service } = createService(storage);
+		const sub = await service.addSubscription(remoteAuthSubscription);
+		await service.setPassword(sub.id, 'top-secret-pw');
 
-            expect(radicaleUrl).toContain('.ics');
-        });
+		await service.removeSubscription(sub.id);
 
-        it.skip('reproduces issue #1004 - Baikal CalDAV URL format', () => {
-            // Baïkal (another self-hosted CalDAV server)
-            const baikalUrl = 'https://baikal.example.com/dav.php/calendars/user/default/?export';
+		expect(storage.getSecret(getICSPasswordSecretId(sub.id))).toBe('');
+		expect(service.hasPassword(sub.id)).toBe(false);
+		service.destroy();
+	});
 
-            expect(baikalUrl).toContain('calendars');
-        });
-    });
+	it('refuses to save a password when SecretStorage is unavailable', async () => {
+		const { service, getPersisted } = createService(undefined);
+		const sub = await service.addSubscription(remoteAuthSubscription);
 
-    describe('Security Considerations', () => {
-
-        it.skip('reproduces issue #1004 - credentials should not be logged', () => {
-            // Security requirement: passwords should never appear in logs
-
-            const password = 'super-secret-password';
-            const credentials = btoa(`user:${password}`);
-
-            // When logging errors, mask sensitive data
-            const logSafeCredentials = credentials.replace(/./g, '*');
-
-            expect(logSafeCredentials).not.toContain(password);
-            expect(logSafeCredentials).not.toContain(btoa(password));
-        });
-
-        it.skip('reproduces issue #1004 - credentials should be encrypted at rest', () => {
-            // Security requirement: passwords stored in plugin settings should be encrypted
-
-            // Example of how Obsidian plugins typically store encrypted data:
-            // 1. Use a master key derived from vault + plugin ID
-            // 2. Encrypt password before saving to settings
-            // 3. Decrypt only when making the request
-
-            // This test documents the requirement, actual implementation would use
-            // crypto APIs available in the runtime environment
-
-            const plainPassword = 'mypassword';
-            // Would be: const encryptedPassword = encrypt(plainPassword, masterKey);
-
-            expect(true).toBe(true); // Documentation test
-        });
-
-        it.skip('reproduces issue #1004 - only send credentials over HTTPS', () => {
-            // Security requirement: Never send Basic Auth over unencrypted HTTP
-
-            const httpUrl = 'http://calendar.example.com/calendar.ics';
-            const httpsUrl = 'https://calendar.example.com/calendar.ics';
-
-            const isSecure = (url: string) => url.startsWith('https://');
-
-            expect(isSecure(httpUrl)).toBe(false);
-            expect(isSecure(httpsUrl)).toBe(true);
-
-            // Implementation should warn/block sending credentials over HTTP
-        });
-    });
-
-    describe('UI/UX Considerations', () => {
-
-        it.skip('reproduces issue #1004 - settings UI should conditionally show auth fields', () => {
-            // When adding a remote ICS subscription:
-            // 1. Show URL field
-            // 2. Add optional "Requires Authentication" checkbox or auth type dropdown
-            // 3. When enabled, show username and password fields
-            // 4. Password field should use type="password" for masking
-
-            // Settings UI flow:
-            const subscription = {
-                type: 'remote',
-                url: 'https://cloud.example.com/calendar.ics',
-                requiresAuth: true,
-                username: 'user@example.com',
-                password: '********', // Masked in UI
-            };
-
-            expect(subscription.requiresAuth).toBe(true);
-            expect(subscription.username).toBeDefined();
-            expect(subscription.password).toBeDefined();
-        });
-
-        it.skip('reproduces issue #1004 - should show helpful error for 401 responses', () => {
-            // When a 401 error occurs, the error message should:
-            // 1. Indicate that authentication is required
-            // 2. Suggest adding credentials in subscription settings
-            // 3. Link to documentation for the specific calendar provider
-
-            const error401Message = 'Calendar requires authentication. ' +
-                'Please add your username and password in the calendar subscription settings.';
-
-            expect(error401Message).toContain('authentication');
-            expect(error401Message).toContain('username');
-            expect(error401Message).toContain('password');
-        });
-    });
+		expect(service.isPasswordStorageAvailable()).toBe(false);
+		await expect(service.setPassword(sub.id, 'top-secret-pw')).rejects.toThrow(/SecretStorage/);
+		expect(getPersisted()).not.toContain('top-secret-pw');
+		service.destroy();
+	});
 });

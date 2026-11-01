@@ -2052,6 +2052,21 @@ msgctxt "generated Bases column name"
 msgid "Attempted"
 msgstr "試行済み"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authHelp"
+msgid "Authenticated feeds must use https://. The password is stored in Obsidian's secure storage, not in plugin settings."
+msgstr "認証付きフィードには https:// を使用する必要があります。パスワードはプラグイン設定ではなく、Obsidian のセキュアストレージに保存されます。"
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authenticationFailed"
+msgid "Authentication failed for calendar \"{name}\". Check the username and password."
+msgstr "カレンダー\"{name}\"の認証に失敗しました。ユーザー名とパスワードを確認してください。"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.authentication"
+msgid "Authentication:"
+msgstr "認証："
+
 #: src/services/OAuthService.ts
 msgctxt "OAuth callback title"
 msgid "Authorization complete"
@@ -2424,9 +2439,19 @@ msgid "Calendar \"{name}\" access denied (500). This may be due to Microsoft Out
 msgstr "カレンダー\"{name}\"のアクセスが拒否されました（500）。これはMicrosoft Outlookサーバーの制限によるものかもしれません。カレンダー設定からICS URLを再生成してみてください。"
 
 #: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authPasswordMissing"
+msgid "Calendar \"{name}\" needs a password. Enter it in the calendar subscription settings."
+msgstr "カレンダー\"{name}\"にはパスワードが必要です。カレンダー購読の設定で入力してください。"
+
+#: src/services/ICSSubscriptionService.ts
 msgctxt "services.icsSubscription.notices.calendarNotFound"
 msgid "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible."
 msgstr "カレンダー\"{name}\"が見つかりません（404）。ICS URLが正しく、カレンダーが公開アクセス可能であることを確認してください。"
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authRequiresHttps"
+msgid "Calendar \"{name}\" uses a username and password, so its URL must start with https://. The credentials were not sent."
+msgstr "カレンダー\"{name}\"はユーザー名とパスワードを使用するため、URL は https:// で始まる必要があります。認証情報は送信されませんでした。"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.calendarEventHeading"
@@ -6236,6 +6261,11 @@ msgctxt "modals.reminder.saveFailed"
 msgid "Failed to save reminders. Please try again."
 msgstr "リマインダーを保存できませんでした。もう一度お試しください。"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
+msgid "Failed to save the calendar password"
+msgstr "カレンダーのパスワードを保存できませんでした"
+
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.timeEntryEditor.saveFailed"
 msgid "Failed to save time entries"
@@ -8690,6 +8720,11 @@ msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "なし"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.none"
+msgid "None"
+msgstr "なし"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
@@ -8870,6 +8905,11 @@ msgstr "OAuth トークンの更新：{time}"
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "Obsidian URLをクリップボードにコピーしました"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authStorageUnavailable"
+msgid "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device."
+msgstr "Obsidian のセキュアストレージが利用できないため、このデバイスではパスワードを保存できません。"
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.occurrenceDate"
@@ -9353,6 +9393,16 @@ msgstr "テキスト入力から日付、優先度、その他のプロパティ
 msgctxt "settings.features.nlp.enable.description"
 msgid "Parse due dates, priorities, and contexts from natural language when creating tasks"
 msgstr "タスク作成時に自然言語から期限日、優先度、コンテキストを解析"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.password"
+msgid "Password"
+msgstr "パスワード"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.password"
+msgid "Password:"
+msgstr "パスワード："
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.past"
@@ -10528,6 +10578,11 @@ msgstr "変更を保存"
 msgctxt "settings.integrations.webhooks.modals.edit.buttons.save"
 msgid "Save changes"
 msgstr "変更を保存"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
+msgid "Saved. Enter a new password to replace it"
+msgstr "保存済み。置き換えるには新しいパスワードを入力してください"
 
 #: src/modals/ReminderModal.ts
 msgctxt "common.saving"
@@ -13611,6 +13666,21 @@ msgstr "ユーザー"
 msgctxt "settings.modalFields.sync.notice"
 msgid "User fields synced to modal configuration"
 msgstr "ユーザーフィールドがモーダル設定に同期されました"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.username"
+msgid "Username"
+msgstr "ユーザー名"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.basic"
+msgid "Username and password (HTTP Basic)"
+msgstr "ユーザー名とパスワード（HTTP Basic）"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.username"
+msgid "Username:"
+msgstr "ユーザー名："
 
 #: src/settings/tabs/taskProperties/tagsPropertyCard.ts
 msgctxt "settings.taskProperties.tagsCard.nativeObsidianTags"

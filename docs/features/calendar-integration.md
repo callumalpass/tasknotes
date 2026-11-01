@@ -81,6 +81,15 @@ TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) for
 
 Add and manage ICS subscriptions from `Settings -> TaskNotes -> Integrations` (Calendar Subscriptions section).
 
+### Private feeds (username and password)
+
+Some servers, such as Nextcloud, Baïkal, Davis and Radicale, only serve private calendars to signed-in users. For these feeds, set **Authentication** to **Username and password (HTTP Basic)** on the subscription card and enter your credentials. Use the server's ICS export URL (for Nextcloud, Baïkal and Davis this usually ends in `?export`). An app-specific password is recommended where the server supports one.
+
+- Authenticated feeds must use an `https://` URL. TaskNotes refuses to send credentials over plain `http://` or `webcal://` and shows an error instead.
+- The username is saved with the subscription settings. The password is stored in Obsidian Secret Storage, not in TaskNotes' `data.json`, so it is not synced with your settings and must be entered on each device. If Secret Storage is unavailable, the password cannot be saved.
+- The password field never shows the saved password. Enter a new one to replace it. Switching **Authentication** back to **None** or deleting the subscription removes the saved password.
+- If the server rejects the credentials (HTTP 401 or 403), TaskNotes shows an authentication error for that calendar.
+
 Recurring subscriptions load a bounded window from 30 days ago through one year ahead, with at most 3,000 retained instances per series. Historical occurrences do not consume that visible-instance limit. Non-recurring events are not affected by this window.
 
 Google recurring-task exports include completion, skip, and moved-original exclusions only when those dates belong to the exported recurrence. All-day exports use their date-only start when validating exclusions.

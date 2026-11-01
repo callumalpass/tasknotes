@@ -2053,6 +2053,21 @@ msgctxt "generated Bases column name"
 msgid "Attempted"
 msgstr "Tentative effectuée"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authHelp"
+msgid "Authenticated feeds must use https://. The password is stored in Obsidian's secure storage, not in plugin settings."
+msgstr "Les flux authentifiés doivent utiliser https://. Le mot de passe est enregistré dans le stockage sécurisé d’Obsidian, pas dans les paramètres du plugin."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authenticationFailed"
+msgid "Authentication failed for calendar \"{name}\". Check the username and password."
+msgstr "Échec de l’authentification pour le calendrier \"{name}\". Vérifiez le nom d’utilisateur et le mot de passe."
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.authentication"
+msgid "Authentication:"
+msgstr "Authentification :"
+
 #: src/services/OAuthService.ts
 msgctxt "OAuth callback title"
 msgid "Authorization complete"
@@ -2425,9 +2440,19 @@ msgid "Calendar \"{name}\" access denied (500). This may be due to Microsoft Out
 msgstr "Accès refusé au calendrier \"{name}\" (500). Cela peut être dû aux restrictions du serveur Microsoft Outlook. Essayez de régénérer l''URL ICS depuis les paramètres de votre calendrier."
 
 #: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authPasswordMissing"
+msgid "Calendar \"{name}\" needs a password. Enter it in the calendar subscription settings."
+msgstr "Le calendrier \"{name}\" nécessite un mot de passe. Saisissez-le dans les paramètres de l’abonnement au calendrier."
+
+#: src/services/ICSSubscriptionService.ts
 msgctxt "services.icsSubscription.notices.calendarNotFound"
 msgid "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible."
 msgstr "Calendrier \"{name}\" introuvable (404). Veuillez vérifier que l''URL ICS est correcte et que le calendrier est accessible publiquement."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authRequiresHttps"
+msgid "Calendar \"{name}\" uses a username and password, so its URL must start with https://. The credentials were not sent."
+msgstr "Le calendrier \"{name}\" utilise un nom d’utilisateur et un mot de passe : son URL doit donc commencer par https://. Les identifiants n’ont pas été envoyés."
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.calendarEventHeading"
@@ -6237,6 +6262,11 @@ msgctxt "modals.reminder.saveFailed"
 msgid "Failed to save reminders. Please try again."
 msgstr "Impossible d’enregistrer les rappels. Réessayez."
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
+msgid "Failed to save the calendar password"
+msgstr "Impossible d’enregistrer le mot de passe du calendrier"
+
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.timeEntryEditor.saveFailed"
 msgid "Failed to save time entries"
@@ -8691,6 +8721,11 @@ msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "Aucune"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.none"
+msgid "None"
+msgstr "Aucune"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
@@ -8871,6 +8906,11 @@ msgstr "Jeton OAuth actualisé {time}"
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "URL Obsidian copiée dans le presse-papiers"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authStorageUnavailable"
+msgid "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device."
+msgstr "Le stockage sécurisé d’Obsidian n’est pas disponible : les mots de passe ne peuvent pas être enregistrés sur cet appareil."
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.occurrenceDate"
@@ -9354,6 +9394,16 @@ msgstr "Analyse les dates, priorités et autres propriétés depuis le texte sai
 msgctxt "settings.features.nlp.enable.description"
 msgid "Parse due dates, priorities, and contexts from natural language when creating tasks"
 msgstr "Analyser les dates, priorités et contextes lors de la création de tâches"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.password"
+msgid "Password"
+msgstr "Mot de passe"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.password"
+msgid "Password:"
+msgstr "Mot de passe :"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.past"
@@ -10529,6 +10579,11 @@ msgstr "Enregistrer les modifications"
 msgctxt "settings.integrations.webhooks.modals.edit.buttons.save"
 msgid "Save changes"
 msgstr "Enregistrer les modifications"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
+msgid "Saved. Enter a new password to replace it"
+msgstr "Enregistré. Saisissez un nouveau mot de passe pour le remplacer"
 
 #: src/modals/ReminderModal.ts
 msgctxt "common.saving"
@@ -13612,6 +13667,21 @@ msgstr "Utilisateur"
 msgctxt "settings.modalFields.sync.notice"
 msgid "User fields synced to modal configuration"
 msgstr "Champs utilisateur synchronisés avec la configuration de la fenêtre"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.username"
+msgid "Username"
+msgstr "Nom d’utilisateur"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.basic"
+msgid "Username and password (HTTP Basic)"
+msgstr "Nom d’utilisateur et mot de passe (HTTP Basic)"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.username"
+msgid "Username:"
+msgstr "Nom d’utilisateur :"
 
 #: src/settings/tabs/taskProperties/tagsPropertyCard.ts
 msgctxt "settings.taskProperties.tagsCard.nativeObsidianTags"

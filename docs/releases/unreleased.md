@@ -43,6 +43,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @karthikm-0 for requesting this, and to @Lorite for the original implementation in #1677
 - Inline task conversion can turn a task line into an existing note. When the line links to a note with the alias `note` (for example `[[Skills/Live demos|note]]`), that note becomes the task instead of a new file being created. Its name, body and existing properties are kept; only missing task properties are added. See [Inline Tasks](https://tasknotes.dev/features/inline-tasks/#converting-into-an-existing-note)
   - Thanks to @johnyoonh for the original proposal and test cases in PR #1867
+- (#1004) ICS calendar subscriptions can now use a username and password (HTTP Basic authentication) for private feeds such as Nextcloud, Baïkal and Davis. The password is stored in Obsidian Secret Storage, not in plugin settings, and credentials are only sent over HTTPS. See [Private feeds](https://tasknotes.dev/features/calendar-integration/#private-feeds-username-and-password).
+  - Thanks to @WorldTeacher for the original implementation in #1346, and to @vbaz for requesting this
 
 ## Fixed
 

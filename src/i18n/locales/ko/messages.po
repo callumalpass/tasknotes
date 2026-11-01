@@ -2052,6 +2052,21 @@ msgctxt "generated Bases column name"
 msgid "Attempted"
 msgstr "시도됨"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authHelp"
+msgid "Authenticated feeds must use https://. The password is stored in Obsidian's secure storage, not in plugin settings."
+msgstr "인증이 필요한 피드는 https://를 사용해야 합니다. 비밀번호는 플러그인 설정이 아니라 Obsidian 보안 저장소에 저장됩니다."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authenticationFailed"
+msgid "Authentication failed for calendar \"{name}\". Check the username and password."
+msgstr "캘린더 \"{name}\" 인증에 실패했습니다. 사용자 이름과 비밀번호를 확인하세요."
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.authentication"
+msgid "Authentication:"
+msgstr "인증:"
+
 #: src/services/OAuthService.ts
 msgctxt "OAuth callback title"
 msgid "Authorization complete"
@@ -2424,9 +2439,19 @@ msgid "Calendar \"{name}\" access denied (500). This may be due to Microsoft Out
 msgstr "캘린더 \"{name}\" 액세스가 거부되었습니다 (500). Microsoft Outlook 서버 제한 때문일 수 있습니다. 캘린더 설정에서 ICS URL을 다시 생성해 보세요."
 
 #: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authPasswordMissing"
+msgid "Calendar \"{name}\" needs a password. Enter it in the calendar subscription settings."
+msgstr "캘린더 \"{name}\"에 비밀번호가 필요합니다. 캘린더 구독 설정에서 입력하세요."
+
+#: src/services/ICSSubscriptionService.ts
 msgctxt "services.icsSubscription.notices.calendarNotFound"
 msgid "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible."
 msgstr "캘린더 \"{name}\"을(를) 찾을 수 없습니다 (404). ICS URL이 올바르고 캘린더가 공개적으로 접근 가능한지 확인하세요."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authRequiresHttps"
+msgid "Calendar \"{name}\" uses a username and password, so its URL must start with https://. The credentials were not sent."
+msgstr "캘린더 \"{name}\"은(는) 사용자 이름과 비밀번호를 사용하므로 URL이 https://로 시작해야 합니다. 자격 증명은 전송되지 않았습니다."
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.calendarEventHeading"
@@ -6236,6 +6261,11 @@ msgctxt "modals.reminder.saveFailed"
 msgid "Failed to save reminders. Please try again."
 msgstr "리마인더를 저장하지 못했습니다. 다시 시도하세요."
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
+msgid "Failed to save the calendar password"
+msgstr "캘린더 비밀번호를 저장하지 못했습니다"
+
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.timeEntryEditor.saveFailed"
 msgid "Failed to save time entries"
@@ -8690,6 +8720,11 @@ msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "없음"
 
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.none"
+msgid "None"
+msgstr "없음"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
@@ -8870,6 +8905,11 @@ msgstr "OAuth 토큰 새로고침: {time}"
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "Obsidian URL이 클립보드에 복사되었습니다"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authStorageUnavailable"
+msgid "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device."
+msgstr "Obsidian 보안 저장소를 사용할 수 없어 이 기기에서는 비밀번호를 저장할 수 없습니다."
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.occurrenceDate"
@@ -9353,6 +9393,16 @@ msgstr "텍스트 입력에서 날짜, 우선순위 및 기타 속성을 파싱�
 msgctxt "settings.features.nlp.enable.description"
 msgid "Parse due dates, priorities, and contexts from natural language when creating tasks"
 msgstr "작업 생성 시 자연어에서 마감일, 우선순위, 컨텍스트 파싱"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.password"
+msgid "Password"
+msgstr "비밀번호"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.password"
+msgid "Password:"
+msgstr "비밀번호:"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.past"
@@ -10528,6 +10578,11 @@ msgstr "변경 사항 저장"
 msgctxt "settings.integrations.webhooks.modals.edit.buttons.save"
 msgid "Save changes"
 msgstr "변경 사항 저장"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
+msgid "Saved. Enter a new password to replace it"
+msgstr "저장됨. 바꾸려면 새 비밀번호를 입력하세요"
 
 #: src/modals/ReminderModal.ts
 msgctxt "common.saving"
@@ -13611,6 +13666,21 @@ msgstr "사용자"
 msgctxt "settings.modalFields.sync.notice"
 msgid "User fields synced to modal configuration"
 msgstr "사용자 필드가 모달 구성에 동기화되었습니다"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.username"
+msgid "Username"
+msgstr "사용자 이름"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.basic"
+msgid "Username and password (HTTP Basic)"
+msgstr "사용자 이름과 비밀번호(HTTP Basic)"
+
+#: src/settings/tabs/integrationsTab.ts
+msgctxt "settings.integrations.subscriptionsList.labels.username"
+msgid "Username:"
+msgstr "사용자 이름:"
 
 #: src/settings/tabs/taskProperties/tagsPropertyCard.ts
 msgctxt "settings.taskProperties.tagsCard.nativeObsidianTags"
