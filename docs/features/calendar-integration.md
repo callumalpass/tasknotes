@@ -126,4 +126,6 @@ Existing timeblocks are not exported when you turn syncing on; each one is synce
 
 TaskNotes keeps the link between each timeblock and its event in plugin data, not in the daily note. If Google Calendar cannot be reached, creates, updates and deletions are retried in the background. When Obsidian starts, changes made while it was closed to timeblocks that already have events are synced. Changing **Timeblock calendar** moves existing events to the new calendar the next time each timeblock is synced. Turning syncing off leaves existing events in place.
 
+Startup cleanup treats a linked timeblock or daily note that is missing after vault indexing as a deletion, including deleting its Google Calendar event. Keep all relevant daily notes available on any device with timeblock sync enabled and Google Calendar connected; selective sync or excluded folders can otherwise remove their events. The event-link index is stored in plugin data, so independently exporting the same timeblocks from devices with unsynchronized indexes can create duplicate events.
+
 Timeblock sync is available for Google Calendar only.

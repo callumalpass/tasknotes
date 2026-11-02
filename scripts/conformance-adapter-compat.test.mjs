@@ -23,7 +23,12 @@ test("pinned adapter compatibility leaves fixture expectations unchanged and fai
     for (const file of ["fixtures/migrations.json", "fixtures/operations.json", "tests/runner.test.mjs"]) {
       assert.equal(read(root, file), read(source, file));
     }
+    assert.match(read(root, "adapters/tasknotes-runtime-obsidian-shim.ts"),
+      /export \{ getFrontMatterInfo \} from .*obsidian-test-mocks.*getFrontMatterInfo\.mjs/);
     const runtime = read(root, "adapters/tasknotes-runtime-bridge.ts");
+    assert.match(runtime, /import \{ StatusManager \}/);
+    assert.match(runtime, /new StatusManager\(statuses as ConstructorParameters<typeof StatusManager>\[0\]\)/);
+    assert.match(runtime, /\.getConfiguredStatusAfterCompletion\(\)/);
     assert.match(runtime, /expandedProjectsService: \{ renamePath:/);
     assert.match(runtime, /projectSubtasksService: \{ invalidateIndex:/);
     assert.match(read(root, "adapters/tasknotes-core/conformance.ts"), /parseDateToUTC\(iso\)/);

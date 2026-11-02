@@ -76,6 +76,53 @@ test("discarding the edit modal does not write an imported file", async () => {
 	expect(await vaultFilesNamed("pr1708-scan")).toEqual([]);
 });
 
+test("a failed details write cannot leave attachment links pointing to trashed imports", async () => {
+	const page = obsidian.page;
+	const taskPath = await openEditModalForNewTask("PR 1708 failed body write");
+	const modal = page.locator(".modal.mod-tasknotes");
+	await modal.locator(".task-attachments-file-input").setInputFiles(scanFile);
+	const editor = modal.locator(".details-editor .cm-content");
+	// The modal schedules initial title focus (100ms desktop / 350ms touch).
+	// Let it finish before typing into the body, rather than racing that focus.
+	await page.waitForTimeout(400);
+	await editor.click();
+	await page.keyboard.press("ControlOrMeta+A");
+	await page.keyboard.insertText("PR1708 injected body write failure");
+
+	await page.evaluate((taskPath) => {
+		const app = (window as any).app;
+		const original = app.vault.process;
+		(window as any).__pr1708FailureReached = false;
+		(window as any).__pr1708RestoreProcess = () => { app.vault.process = original; };
+		app.vault.process = async (file: any, update: (content: string) => string, ...rest: any[]) => {
+			if (file.path === taskPath && update(await app.vault.read(file)).includes("PR1708 injected body write failure")) {
+				(window as any).__pr1708FailureReached = true;
+				throw new Error("PR1708 injected body write failure");
+			}
+			return original.call(app.vault, file, update, ...rest);
+		};
+	}, taskPath);
+	try {
+		await modal.getByRole("button", { name: "Save", exact: true }).click();
+		await expect.poll(() => page.evaluate(() => (window as any).__pr1708FailureReached)).toBe(true);
+		await expect(modal.locator(".task-attachment-item--pending")).toHaveCount(1);
+		await expect(modal).toBeVisible();
+		await expect.poll(() => vaultFilesNamed("pr1708-scan")).toEqual([]);
+		expect(await attachmentsOf(taskPath)).toBeNull();
+	} finally {
+		await page.evaluate(() => {
+			(window as any).__pr1708RestoreProcess();
+			delete (window as any).__pr1708RestoreProcess;
+			delete (window as any).__pr1708FailureReached;
+		});
+		if (await modal.isVisible()) {
+			await modal.getByRole("button", { name: "Cancel", exact: true }).click();
+			await page.getByRole("button", { name: "Discard changes", exact: true }).click();
+			await expect(modal).toHaveCount(0);
+		}
+	}
+});
+
 test("saving imports the file, writes a canonical link, and unlinking keeps the file", async () => {
 	const page = obsidian.page;
 	const taskPath = await openEditModalForNewTask("PR 1708 save");

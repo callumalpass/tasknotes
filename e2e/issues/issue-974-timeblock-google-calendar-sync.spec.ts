@@ -81,6 +81,37 @@ test('creates, updates and deletes a Google event as a timeblock is added, edite
       { op: 'update', calendarId: 'team-e2e@group.calendar.google.com', eventId: 'evt-1', summary: 'TB: Planning (09:00)' },
     ]);
 
+    // Exercise the installed Obsidian's real malformed-YAML index, not a fake
+    // cache shape. An incomplete hand-edit must not delete the linked event.
+    await page.evaluate(async (note) => {
+      const host = (window as any).app;
+      let indexed!: () => void;
+      const changed = new Promise<void>((resolve) => { indexed = resolve; });
+      const ref = host.metadataCache.on('changed', (file: any, data: string) => {
+        if (file.path === note && data.includes('timeblocks: [')) indexed();
+      });
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await host.vault.modify(host.vault.getAbstractFileByPath(note), '---\ntimeblocks: [\n---\n');
+        await Promise.race([changed, new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error('Malformed YAML was not indexed')), 10000);
+        })]);
+        const sync = host.plugins.plugins.tasknotes.taskCalendarSyncService.timeblocks;
+        sync.handleNoteChanged(note);
+        await sync.flush();
+        await sync.processRecovery(true);
+      } finally {
+        clearTimeout(timer);
+        host.metadataCache.offref(ref);
+      }
+    }, NOTE);
+    expect(await calls()).toHaveLength(2);
+    await write('Planning');
+    await expect.poll(() => page.evaluate((note) => {
+      const host = (window as any).app;
+      return host.metadataCache.getFileCache(host.vault.getAbstractFileByPath(note))?.frontmatter?.timeblocks?.[0]?.title;
+    }, NOTE)).toBe('Planning');
+
     await write(null);
     await expect.poll(async () => (await calls()).slice(2), { timeout: 10000 }).toEqual([
       { op: 'delete', calendarId: 'team-e2e@group.calendar.google.com', eventId: 'evt-1' },

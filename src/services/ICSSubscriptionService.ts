@@ -1,3 +1,4 @@
+import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -396,10 +397,12 @@ export class ICSSubscriptionService extends EventEmitter {
 
 	private async saveSubscriptions(): Promise<void> {
 		try {
-			const data = await this.plugin.loadPluginDataForSafeWrite("save-ics-subscriptions");
-			if (!data) return;
-			data.icsSubscriptions = this.subscriptions;
-			await this.plugin.saveData(data);
+			await withPluginDataWriteLock(this.plugin, async () => {
+				const data = await this.plugin.loadPluginDataForSafeWrite("save-ics-subscriptions");
+				if (!data) return;
+				data.icsSubscriptions = this.subscriptions;
+				await this.plugin.saveData(data);
+			});
 		} catch (error) {
 			tasknotesLogger.error("Failed to save ICS subscriptions:", {
 				category: "provider",

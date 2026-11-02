@@ -19,6 +19,7 @@ const DESCRIPTION = 'Part A --- Part B';
 const BODY = 'Daily body stays here.';
 
 let notePath = '';
+let originalTimeblocking: boolean;
 
 function noteContent(): string {
 	return [
@@ -74,6 +75,12 @@ const timeblockItem = (page: Page, title: string) =>
 
 test.beforeAll(async () => {
 	app = await launchObsidian();
+	originalTimeblocking = await app.page.evaluate(() => {
+		const plugin = (window as any).app.plugins.plugins.tasknotes;
+		const original = plugin.settings.calendarViewSettings.enableTimeblocking;
+		plugin.settings.calendarViewSettings.enableTimeblocking = true;
+		return original;
+	});
 	notePath = await app.page.evaluate(() => {
 		const d = new Date();
 		return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.md`;
@@ -102,13 +109,14 @@ test.afterEach(async ({}, testInfo) => {
 test.afterAll(async () => {
 	if (!app) return;
 	try {
-		await app.page.evaluate(async (paths) => {
+		await app.page.evaluate(async ({ paths, originalTimeblocking }) => {
 			const w = window as any;
+			w.app.plugins.plugins.tasknotes.settings.calendarViewSettings.enableTimeblocking = originalTimeblocking;
 			for (const p of paths) {
 				const f = w.app.vault.getAbstractFileByPath(p);
 				if (f) await w.app.vault.delete(f);
 			}
-		}, [BASE_PATH, notePath]);
+		}, { paths: [BASE_PATH, notePath], originalTimeblocking });
 	} finally {
 		await closeObsidian(app);
 	}

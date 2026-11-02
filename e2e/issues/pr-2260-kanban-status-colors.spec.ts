@@ -4,6 +4,7 @@ import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } 
 
 let instance: ObsidianApp;
 let page: Page;
+let originalSettings: { fieldMapping: unknown; customStatuses: unknown };
 const folder = `Colors2260-${Date.now()}`;
 const colors: Record<string, string> = {
   open: '#7c3aed', themed: 'blue', missing: '', unresolved: 'var(--tn-missing-colour)',
@@ -29,6 +30,10 @@ test.beforeAll(async () => {
   instance = await launchObsidian();
   page = instance.page;
   page.on('pageerror', error => console.error('Obsidian page error:', error));
+  originalSettings = await page.evaluate(() => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    return JSON.parse(JSON.stringify({ fieldMapping: plugin.settings.fieldMapping, customStatuses: plugin.settings.customStatuses }));
+  });
   await page.evaluate(async ({ folder, colors }) => {
     const app = (window as any).app, plugin = app.plugins.plugins.tasknotes;
     document.body.style.setProperty('--tn-test-length', '12px');
@@ -46,11 +51,15 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => {
   try {
-    if (page && !page.isClosed()) await page.evaluate(async folder => {
-      const app = (window as any).app;
+    if (page && !page.isClosed()) await page.evaluate(async ({ folder, originalSettings }) => {
+      const app = (window as any).app, plugin = app.plugins.plugins.tasknotes;
+      Object.assign(plugin.settings, originalSettings);
+      plugin.fieldMapper.updateMapping(plugin.settings.fieldMapping);
+      plugin.statusManager.updateStatuses(plugin.settings.customStatuses);
+      await plugin.saveSettings();
       const fixture = app.vault.getAbstractFileByPath(folder);
       if (fixture) await app.vault.delete(fixture, true);
-    }, folder);
+    }, { folder, originalSettings });
   } finally { if (instance) await closeObsidian(instance); }
 });
 

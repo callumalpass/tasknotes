@@ -96,6 +96,17 @@ test("installed model/SDK/Jest consumers resolve to the maintained forks", () =>
   assert.equal(require("deepmerge/package.json").name, "@tasknotes/deepmerge");
 });
 
+test("documentation tooling pins every Zod consumer to the maintained fork", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../docs-builder/package.json", import.meta.url), "utf8"));
+  const lock = JSON.parse(readFileSync(new URL("../docs-builder/package-lock.json", import.meta.url), "utf8"));
+  assert.equal(pkg.dependencies.zod, "file:../vendor/zod");
+  assert.equal(pkg.overrides.zod, "$zod");
+  assert.equal(lock.packages[""].dependencies.zod, pkg.dependencies.zod);
+  assert.deepEqual(lock.packages["node_modules/zod"], { resolved: "../vendor/zod", link: true });
+  assert.equal(lock.packages["../vendor/zod"].version, require("zod/package.json").version);
+  assert.deepEqual(Object.keys(lock.packages).filter(path => /(^|\/)node_modules\/zod$/.test(path)), ["node_modules/zod"]);
+});
+
 test("vendor runtime differs from upstream only in the documented backport files", () => {
   for (const [directory, changed] of [
     ["zod", ["v3/types.js", "v3/types.cjs"]],
