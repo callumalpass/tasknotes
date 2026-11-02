@@ -81,6 +81,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @christenbc for finding this and for the original fix in PR #2202
 - (#2468) Fixed timeblock edits losing or corrupting a daily note's frontmatter when a frontmatter value contained `---`, for example `description: "Part A --- Part B"`. Reading timeblocks dropped everything after that value, editing or deleting a timeblock failed with "No timeblocks found", and creating one could leave a stray line in the note. TaskNotes now finds the end of frontmatter the same way Obsidian does, so only a `---` on its own line closes it
   - Thanks to @ac8318740 for finding and fixing this
+- (Discussion #2475) Fixed tasks missing from the Calendar view since 4.15.0 when a date property used a space instead of `T` between date and time (for example `dateCreated: 2025-06-01 10:00:00`) or could not be read. Such dates are now read as usual, and a date the calendar cannot read is ignored on its own instead of hiding the whole task
+  - Thanks to @DianHallGH for reporting this
 
 ## Changed
 

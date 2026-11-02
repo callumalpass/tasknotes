@@ -120,6 +120,56 @@ function projectionTask(task: TaskInfo): CalendarTask {
 	};
 }
 
+/** Accept the space separator other tools write; the model parses strict ISO only. */
+function calendarDate(value: string | undefined, timezone: string): string | undefined {
+	if (!value) return value;
+	for (const candidate of [value, value.trim().replace(/^(\d{4}-\d{2}-\d{2}) (?=\d)/, "$1T")]) {
+		try {
+			calendarDateToInstant(candidate, timezone);
+			return candidate;
+		} catch {
+			// Try the next spelling.
+		}
+	}
+	return undefined;
+}
+
+/** Drop only the unparseable dates, so a malformed field cannot hide the whole task. */
+function withValidDates(
+	task: CalendarTask,
+	timezone: string
+): { task: CalendarTask; invalid: string[] } {
+	const invalid: string[] = [];
+	const date = (field: string, value: string | undefined) => {
+		const parsed = calendarDate(value, timezone);
+		if (value && !parsed) invalid.push(field);
+		return parsed;
+	};
+	const dates = (field: string, values: string[] | undefined) =>
+		values?.flatMap((value) => {
+			const parsed = date(field, value);
+			return parsed ? [parsed] : [];
+		});
+	return {
+		task: {
+			...task,
+			scheduled: date("scheduled", task.scheduled),
+			due: date("due", task.due),
+			dateCreated: date("dateCreated", task.dateCreated),
+			complete_instances: dates("complete_instances", task.complete_instances),
+			skipped_instances: dates("skipped_instances", task.skipped_instances),
+			timeEntries: task.timeEntries?.flatMap((entry) => {
+				const startTime = date("timeEntries", entry.startTime);
+				const endTime = date("timeEntries", entry.endTime);
+				return startTime && (endTime || !entry.endTime)
+					? [{ ...entry, startTime, endTime }]
+					: [];
+			}),
+		},
+		invalid: [...new Set(invalid)],
+	};
+}
+
 export class CalendarTaskProjection {
 	private readonly index;
 	private readonly tasks = new Map<string, { signature: string; task: CalendarTask }>();
@@ -156,20 +206,15 @@ export class CalendarTaskProjection {
 		const projected = projectionTask(task);
 		const signature = JSON.stringify(projected);
 		if (this.tasks.get(id)?.signature === signature) return;
+		// Keep malformed notes from breaking every other row in the calendar, and a malformed
+		// date from hiding the rest of its task.
+		const { task: valid, invalid } = withValidDates(projected, this.context.timezone);
+		if (invalid.length) {
+			this.onInvalid(task, new Error(`invalid-calendar-date: ${invalid.join(", ")}`));
+		}
 		try {
-			// Keep malformed notes from breaking every other row in the calendar.
-			for (const value of [
-				task.scheduled,
-				task.due,
-				task.dateCreated,
-				...(task.complete_instances ?? []),
-				...(task.skipped_instances ?? []),
-				...(task.timeEntries ?? []).flatMap((entry) => [entry.startTime, entry.endTime]),
-			]) {
-				if (value) calendarDateToInstant(value, this.context.timezone);
-			}
-			this.tasks.set(id, { signature, task: projected });
-			this.index.upsert(id, projected);
+			this.tasks.set(id, { signature, task: valid });
+			this.index.upsert(id, valid);
 		} catch (error) {
 			this.remove(id);
 			this.onInvalid(task, error);
