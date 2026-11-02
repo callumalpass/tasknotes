@@ -124,4 +124,19 @@ describe("incremental calendar updates", () => {
 		).toHaveLength(1);
 		expect(invalid).toHaveBeenCalledTimes(1);
 	});
+
+	it("keeps tasks whose created date uses a space or cannot be parsed (#2475)", () => {
+		const invalid = jest.fn();
+		const projection = new CalendarTaskProjection(context, invalid);
+		projection.setTasks([
+			{ ...first, dateCreated: "2025-06-01 10:00:00" },
+			{ ...second, dateCreated: "1 June 2025", scheduled: "2026-05-19 11:00" },
+		]);
+		const entries = projection.entriesInRange({
+			start: range.start.toISOString(),
+			end: range.end.toISOString(),
+		});
+		expect(entries.map((entry) => entry.taskId).sort()).toEqual([second.path, "stable"]);
+		expect(invalid).toHaveBeenCalledTimes(1);
+	});
 });
