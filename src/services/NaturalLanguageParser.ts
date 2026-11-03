@@ -2,6 +2,7 @@ import { configLabel } from "../i18n/configLabels";
 import type TaskNotesPlugin from "../main";
 import { StatusConfig, PriorityConfig } from "../types";
 import { NLPTriggersConfig, UserMappedField } from "../types/settings";
+import { shieldMarkdownLiterals } from "../utils/markdownLiterals";
 import {
 	NaturalLanguageParserCore,
 	type NaturalLanguageParserOptions,
@@ -97,7 +98,9 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 
 	parseInput(input: string): ParsedTaskData {
 		// Locale may change after construction (including lazy language-pack load).
-		let coreInput = input;
+		// Links and inline code are markup, so status and priority words in them stay text.
+		const shielded = shieldMarkdownLiterals(input);
+		let coreInput = shielded.text;
 		for (const [configs, trigger] of [[this.taskNotesStatusConfigs, this.getStatusTrigger()], [this.taskNotesPriorityConfigs, this.getPriorityTrigger()]] as const) {
 			if (!trigger) continue;
 			for (const config of [...configs].sort((a, b) => configLabel(b).length - configLabel(a).length)) {
@@ -107,10 +110,10 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 				coreInput = coreInput.replace(pattern, (_match, prefix: string) => prefix + trigger + config.value);
 			}
 		}
-		const parsed = super.parseInput(coreInput);
-		const withStatusShortcutResidueRemoved = this.applyTriggeredStatusMatch(input, parsed);
+		const parsed = super.parseInput(shielded.restore(coreInput));
+		const withStatusShortcutResidueRemoved = this.applyTriggeredStatusMatch(shielded.text, parsed);
 		const withPriorityShortcutResidueRemoved = this.removePriorityShortcutResidue(
-			input,
+			shielded.text,
 			withStatusShortcutResidueRemoved
 		);
 		const withLinkedFields = this.extractLinkedUserFields(input, withPriorityShortcutResidueRemoved);

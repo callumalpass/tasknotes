@@ -119,7 +119,7 @@
 		"obsidian-daily-notes-interface": "^0.9.4",
 		"reflect-metadata": "^0.2.2",
 		"rrule": "^2.8.1",
-		"tasknotes-nlp-core": "git+https://github.com/callumalpass/tasknotes-nlp-core.git#abe88d9c0a683e162ee6581bbf67699bc8b6e596",
+		"tasknotes-nlp-core": "git+https://github.com/callumalpass/tasknotes-nlp-core.git#3b3f73c4c0312ba219b443f273fbd5aae4d11583",
 		"yaml": "^2.3.1",
 		"zod": "file:./vendor/zod"
 	},
