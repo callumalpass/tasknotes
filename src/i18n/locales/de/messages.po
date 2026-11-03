@@ -6941,6 +6941,11 @@ msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
 msgstr "Höhenmodus"
 
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.description"
+msgid "Height of each time slot in timeline views (pixels). Lower it to keep a long time range, or short slots such as 15 minutes, from needing a scrollbar."
+msgstr "Höhe eines Zeitfensters in Zeitachsen-Ansichten (Pixel). Verringern Sie den Wert, damit ein langer Zeitbereich oder kurze Fenster wie 15 Minuten ohne Scrollen passen."
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder"
 msgid "HH:mm:ss (e.g., 00:05:00)"
@@ -12786,6 +12791,16 @@ msgstr "Zeiteinstellungen"
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.name"
 msgid "Time slot duration"
 msgstr "Zeitslot-Dauer"
+
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.name"
+msgid "Time slot height"
+msgstr "Höhe des Zeitfensters"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.slotHeight"
+msgid "Time slot height (px)"
+msgstr "Höhe des Zeitfensters (px)"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.label"

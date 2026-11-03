@@ -6940,6 +6940,11 @@ msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
 msgstr "높이 모드"
 
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.description"
+msgid "Height of each time slot in timeline views (pixels). Lower it to keep a long time range, or short slots such as 15 minutes, from needing a scrollbar."
+msgstr "타임라인 보기에서 각 시간 슬롯의 높이(픽셀)입니다. 긴 시간 범위나 15분 같은 짧은 슬롯도 스크롤 없이 보이도록 값을 줄이세요."
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder"
 msgid "HH:mm:ss (e.g., 00:05:00)"
@@ -12785,6 +12790,16 @@ msgstr "시간 설정"
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.name"
 msgid "Time slot duration"
 msgstr "시간 슬롯 간격"
+
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.name"
+msgid "Time slot height"
+msgstr "시간 슬롯 높이"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.slotHeight"
+msgid "Time slot height (px)"
+msgstr "시간 슬롯 높이(px)"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.label"
