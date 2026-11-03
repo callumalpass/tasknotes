@@ -1,6 +1,7 @@
 import { RRule } from "rrule";
 import { parseDateToUTC, isPastDate, isToday, formatDateForStorage } from "./dateUtils";
 import { createTaskNotesLogger } from "./tasknotesLogger";
+import { shieldMarkdownLiterals } from "./markdownLiterals";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/TasksPluginParser" });
 
@@ -647,7 +648,8 @@ export class TasksPluginParser {
 			const tags: string[] = [];
 			let match;
 
-			while ((match = freshPattern.exec(content)) !== null) {
+			const searchable = shieldMarkdownLiterals(content).text;
+			while ((match = freshPattern.exec(searchable)) !== null) {
 				if (match[0]) {
 					const tag = match[0].substring(1);
 					if (tag && !tags.includes(tag)) {
@@ -680,7 +682,8 @@ export class TasksPluginParser {
 			const contexts: string[] = [];
 			let match;
 
-			while ((match = freshPattern.exec(content)) !== null) {
+			const searchable = shieldMarkdownLiterals(content).text;
+			while ((match = freshPattern.exec(searchable)) !== null) {
 				if (match[0]) {
 					const context = match[0].substring(1);
 					if (context && !contexts.includes(context)) {
@@ -706,9 +709,11 @@ export class TasksPluginParser {
 		}
 
 		try {
-			let cleanContent = content;
+			const shielded = shieldMarkdownLiterals(content);
+			let cleanContent = shielded.text;
 			cleanContent = cleanContent.replace(this.TAG_PATTERN, "");
 			cleanContent = cleanContent.replace(this.CONTEXT_PATTERN, "");
+			cleanContent = shielded.restore(cleanContent);
 			cleanContent = cleanContent.replace(this.DATAVIEW_FIELD_ANY_PATTERN, "");
 
 			const cleaned = cleanContent.replace(/\s+/g, " ").trim();
