@@ -13,7 +13,15 @@ describe("ICS filter changes refresh mounted calendars", () => {
 		const root = document.createElement("div");
 		document.body.appendChild(root);
 		const view = Object.assign(Object.create(View.prototype), {
-			plugin: { icsSubscriptionService: service, emitter: { on: jest.fn(), offref: jest.fn() } },
+			plugin: {
+				icsSubscriptionService: service,
+				emitter: { on: jest.fn(), offref: jest.fn() },
+				app: {
+					vault: { getMarkdownFiles: () => [] },
+					metadataCache: { on: jest.fn() },
+				},
+			},
+			registerEvent: jest.fn(),
 			rootElement: root, readViewOptions: jest.fn(),
 			getConfigSnapshot: jest.fn(), getDataSignature: jest.fn(), getControllerViewName: jest.fn(),
 			register: (cleanup: () => void) => cleanups.push(cleanup),
