@@ -92,7 +92,7 @@ Click a card to open the task file for editing. Right-click to access the contex
 
 ### Collapsing Columns
 
-In a standard (non-swimlane) board, use the chevron button in a column header to collapse that column to a narrow label. Click it again, or focus the button and press Enter or Space, to expand it. You can still reorder collapsed columns or drop tasks onto them.
+In a standard (non-swimlane) board, use the chevron button in a column header to collapse that column to a narrow strip. The strip keeps the column's status icon (when **Show status icon in column header only** is on) and shows its title vertically, reading from top to bottom; long titles are cut off with an ellipsis. Click it again, or focus the button and press Enter or Space, to expand it. You can still reorder collapsed columns or drop tasks onto them.
 
 Collapsed columns are saved per view and grouping property in the `collapsedColumns` configuration of the `.base` file, so they stay collapsed after Obsidian restarts. Swimlane columns are unchanged.
 
