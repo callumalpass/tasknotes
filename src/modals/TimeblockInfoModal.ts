@@ -12,6 +12,7 @@ import {
 	TFile,
 	setTooltip,
 	getFrontMatterInfo,
+	parseLinktext,
 	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -76,6 +77,8 @@ export class TimeblockInfoModal extends Modal {
 
 	// Attachment management
 	private selectedAttachments: TAbstractFile[] = [];
+	// Preserve existing link text rather than rewriting it to a file path on save.
+	private attachmentLinks = new Map<string, string>();
 	private attachmentsList: HTMLElement;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 
@@ -314,9 +317,13 @@ export class TimeblockInfoModal extends Modal {
 		for (const attachmentPath of this.timeblock.attachments) {
 			// Remove wikilink brackets if present
 			const cleanPath = attachmentPath.replace(/^\[\[|\]\]$/g, "");
-			const file = this.app.vault.getAbstractFileByPath(cleanPath);
-			if (file) {
+			const linkpath = parseLinktext(cleanPath.split("|")[0]).path;
+			const file =
+				this.app.metadataCache.getFirstLinkpathDest(linkpath, "") ??
+				this.app.vault.getAbstractFileByPath(cleanPath);
+			if (file && !this.attachmentLinks.has(file.path)) {
 				this.selectedAttachments.push(file);
+				this.attachmentLinks.set(file.path, attachmentPath);
 			}
 		}
 	}
@@ -468,7 +475,7 @@ export class TimeblockInfoModal extends Modal {
 
 			// Convert selected attachments to wikilinks
 			const attachments: string[] = this.selectedAttachments.map(
-				(file) => `[[${file.path}]]`
+				(file) => this.attachmentLinks.get(file.path) ?? `[[${file.path}]]`
 			);
 			this.timeblock.attachments = attachments.length > 0 ? attachments : undefined;
 
