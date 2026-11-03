@@ -133,6 +133,7 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	customDayCount: 3, // Default to 3 days as requested in issue #282
 	// Time settings
 	slotDuration: "00:30:00", // 30-minute slots
+	slotHeight: 24, // Height of one slot in px; 15-minute slots therefore take half the height of an hour
 	slotMinTime: "00:00:00", // Start at midnight
 	slotMaxTime: "24:00:00", // End at midnight next day
 	scrollTime: "08:00:00", // Scroll to 8 AM

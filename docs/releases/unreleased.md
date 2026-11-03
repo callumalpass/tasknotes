@@ -32,6 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- Added a time slot height setting for the calendar time grid, in Settings → Appearance → Time settings and in each calendar view's time grid options. Short slots such as 15 minutes no longer force a taller day: lower the height and the whole time range fits without scrolling.
+
 ## Changed
 
 - Shortened the v5 and app announcement above the release notes, removed Android tester sign-up instructions, and refreshed the plugin beta link.
