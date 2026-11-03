@@ -53,13 +53,17 @@ function makePlugin() {
 	};
 }
 
-function makeView(): KanbanView {
+function makeView(store: Record<string, unknown> = {}): KanbanView {
 	const view = new KanbanView({}, document.createElement("div"), makePlugin() as any);
 	(view as any).config = {
-		get: jest.fn(() => undefined),
+		get: jest.fn((key: string) => store[key]),
+		set: jest.fn((key: string, value: unknown) => {
+			store[key] = value;
+		}),
 		getOrder: jest.fn(() => []),
 		getDisplayName: jest.fn(() => undefined),
 	};
+	(view as any).readViewOptions();
 	return view;
 }
 
@@ -89,17 +93,11 @@ describe("Kanban column collapse state", () => {
 		expect(column.classList.contains("kanban-view__column--collapsed")).toBe(true);
 		expect(toggle?.getAttribute("aria-expanded")).toBe("false");
 		expect(bubbledClick).not.toHaveBeenCalled();
-		expect(view.getEphemeralState()).toEqual(
-			expect.objectContaining({ collapsedColumns: [JSON.stringify(["status", "open"])] })
-		);
 
 		toggle?.click();
 
 		expect(column.classList.contains("kanban-view__column--collapsed")).toBe(false);
 		expect(toggle?.getAttribute("aria-expanded")).toBe("true");
-		expect(view.getEphemeralState()).toEqual(
-			expect.objectContaining({ collapsedColumns: [] })
-		);
 	});
 
 	it("does not render collapse controls in swimlane column headers", async () => {
@@ -122,81 +120,37 @@ describe("Kanban column collapse state", () => {
 		expect(board.querySelector(".kanban-view__column-collapse-button")).toBeNull();
 	});
 
-	it("restores collapsed keys in a recreated view instance", async () => {
-		const sourceView = makeView();
-		const sourceColumn = await createColumn(sourceView, "open");
-		sourceColumn.querySelector<HTMLButtonElement>(
+	it("saves collapsed columns in the view config so a reloaded view restores them (#2484)", async () => {
+		const store: Record<string, unknown> = {};
+		const sourceView = makeView(store);
+		const toggle = (await createColumn(sourceView, "open")).querySelector<HTMLButtonElement>(
 			".kanban-view__column-collapse-button"
-		)?.click();
-		const savedState = {
-			...sourceView.getEphemeralState(),
-			collapsedColumns: [JSON.stringify(["status", "open"]), JSON.stringify(["status", "no-longer-rendered"])],
-		};
+		)!;
+		toggle.click();
+		expect(JSON.parse(store.collapsedColumns as string)).toEqual({ status: ["open"] });
 
-		const restoredView = makeView();
-		restoredView.setEphemeralState(savedState);
-		const restoredColumn = await createColumn(restoredView, "open");
-		const otherColumn = await createColumn(restoredView, "done");
-
-		expect(restoredColumn.classList.contains("kanban-view__column--collapsed")).toBe(true);
-		expect(
-			restoredColumn
-				.querySelector(".kanban-view__column-collapse-button")
-				?.getAttribute("aria-expanded")
-		).toBe("false");
-		expect(otherColumn.classList.contains("kanban-view__column--collapsed")).toBe(false);
-	});
-
-	it("applies restored state to columns already rendered, including width and aria state", async () => {
-		const view = makeView();
-		const board = document.createElement("div");
-		(view as any).boardEl = board;
-		const column = await createColumn(view);
-		board.appendChild(column);
-		view.setEphemeralState({ collapsedColumns: [JSON.stringify(["status", "open"])] });
-		expect(column.dataset.collapsed).toBe("true");
-		expect(column.style.width).toContain("48px");
-		expect(column.querySelector("button")?.getAttribute("aria-expanded")).toBe("false");
-		view.setEphemeralState({ collapsedColumns: [] });
-		expect(column.dataset.collapsed).toBe("false");
-		expect(column.querySelector("button")?.getAttribute("aria-expanded")).toBe("true");
-	});
-
-	it("does not reuse another grouping property's collapse state for the same value", async () => {
-		const view = makeView();
-		const status = await createColumn(view);
-		status.querySelector<HTMLButtonElement>(".kanban-view__column-collapse-button")!.click();
-		const other = await (view as any).createColumn("open", [], [], "priority");
-		expect(other.dataset.collapsed).toBe("false");
-		const restored = await createColumn(view);
+		const reloadedView = makeView(store);
+		const restored = await createColumn(reloadedView, "open");
+		const other = await createColumn(reloadedView, "done");
+		const sameValueOtherProperty = await (reloadedView as any).createColumn(
+			"open",
+			[],
+			[],
+			"priority"
+		);
 		expect(restored.dataset.collapsed).toBe("true");
+		expect(restored.style.width).toContain("48px");
+		expect(restored.querySelector("button")?.getAttribute("aria-expanded")).toBe("false");
+		expect(other.dataset.collapsed).toBe("false");
+		expect(sameValueOtherProperty.dataset.collapsed).toBe("false");
+
+		toggle.click();
+		expect(JSON.parse(store.collapsedColumns as string)).toEqual({});
 	});
 
-	it("keeps a toggle performed while a refresh is pending", async () => {
-		jest.useFakeTimers();
-		try {
-			const view = makeView();
-			const column = await createColumn(view);
-			(view as any).render = jest.fn().mockResolvedValue(undefined);
-			(view as any).debouncedRefresh();
-			column.querySelector<HTMLButtonElement>(".kanban-view__column-collapse-button")!.click();
-			await jest.advanceTimersByTimeAsync(150);
-			expect(view.getEphemeralState()).toEqual(expect.objectContaining({
-				collapsedColumns: [JSON.stringify(["status", "open"])],
-			}));
-		} finally { jest.useRealTimers(); }
-	});
-
-	it("ignores malformed restored collapse state", async () => {
-		const view = makeView();
-
-		expect(() =>
-			view.setEphemeralState({
-				collapsedColumns: ["open", 42, null],
-			})
-		).not.toThrow();
-
+	it("ignores malformed collapsed column config", async () => {
+		const view = makeView({ collapsedColumns: "{not json" });
 		const column = await createColumn(view, "open");
-		expect(column.classList.contains("kanban-view__column--collapsed")).toBe(false);
+		expect(column.dataset.collapsed).toBe("false");
 	});
 });
