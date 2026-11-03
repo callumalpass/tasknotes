@@ -40,5 +40,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2482) Fixed open calendars showing stale timeblocks after daily-note edits made outside TaskNotes, such as sync updates or hand edits. Edits that leave timeblocks unchanged do not refresh the calendar
+  - Thanks to @ac8318740 for finding and fixing this
 - (#2484) Fixed collapsed Kanban columns expanding again after Obsidian restarts or the view reloads. Collapsed columns are now saved in the view's `.base` configuration, like column order. See [Collapsing Columns](https://tasknotes.dev/views/kanban-view/#collapsing-columns)
   - Thanks to @UniCode9696 for reporting this
