@@ -1,4 +1,5 @@
 import { StatusManager } from "../../../src/services/StatusManager";
+import { DEFAULT_STATUSES } from "../../../src/settings/defaults";
 import { StatusConfig } from "../../../src/types";
 
 const createStatus = (
@@ -18,6 +19,13 @@ const createStatus = (
 });
 
 describe("Issue #167: explicit next status overrides", () => {
+	it("reopens the built-in Done status at Open, where a finished series also starts again", () => {
+		const manager = new StatusManager(DEFAULT_STATUSES);
+
+		expect(manager.getNextStatus("done")).toBe("open");
+		expect(manager.getConfiguredStatusAfterCompletion()).toBe("open");
+	});
+
 	describe("status after completion", () => {
 		it("is the open status explicitly configured to follow the completed status", () => {
 			const manager = new StatusManager([

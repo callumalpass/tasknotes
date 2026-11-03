@@ -67,6 +67,8 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 		color: "#00aa00",
 		isCompleted: true,
 		excludeFromCycle: false,
+		// Reopening a task, or finishing a recurring occurrence, starts again at Open.
+		nextStatus: "open",
 		order: 3,
 		autoArchive: false,
 		autoArchiveDelay: 5,
