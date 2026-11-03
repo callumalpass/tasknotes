@@ -171,6 +171,7 @@ const DAILY_NOTES_CACHE_TTL_MS = 5000;
 export function createDailyNoteTimeblockSource(plugin: TaskNotesPlugin): TimeblockNoteSource {
 	let dailyNoteDates: Map<string, string> | null = null;
 	let dailyNoteDatesAt = 0;
+	let loggedMissingFolder = false;
 	const getDailyNoteDates = (refresh = false): Map<string, string> => {
 		const now = Date.now();
 		if (!refresh && dailyNoteDates && now - dailyNoteDatesAt < DAILY_NOTES_CACHE_TTL_MS) {
@@ -179,7 +180,20 @@ export function createDailyNoteTimeblockSource(plugin: TaskNotesPlugin): Timeblo
 		const byPath = new Map<string, string>();
 		if (appHasDailyNotesPluginLoaded()) {
 			// Keys are date UIDs such as "day-2026-11-01T00:00:00+10:00".
-			const dailyNotes = getAllDailyNotes();
+			let dailyNotes: Record<string, unknown> = {};
+			try {
+				dailyNotes = getAllDailyNotes();
+			} catch (error) {
+				// Throws when the daily notes folder doesn't exist yet: no daily notes.
+				if (!loggedMissingFolder) {
+					loggedMissingFolder = true;
+					tasknotesLogger.warn("Could not list daily notes for timeblock sync", {
+						category: "provider",
+						operation: "list-daily-notes-for-timeblock-sync",
+						error: error,
+					});
+				}
+			}
 			for (const [key, file] of Object.entries(dailyNotes)) {
 				const match = /^day-(\d{4}-\d{2}-\d{2})/.exec(key);
 				if (match && file instanceof TFile) {

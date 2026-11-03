@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2478) Fixed Instant Task Convert, the convert button and several other features not loading in 4.16.0 when the Daily Notes core plugin's "New file location" folder does not exist. The command reported "Task conversion service is not available." A missing daily notes folder is now treated as having no daily notes, and a feature that fails to start no longer stops the others from loading
+  - Thanks to @mihihihih for reporting this
