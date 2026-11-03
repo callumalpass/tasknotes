@@ -285,6 +285,11 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncE
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
 msgstr "{count, plural, other {Microsoft 캘린더 #개의 새로고침에 실패했습니다. 첫 번째 오류: {label}: {message}}}"
 
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector button listing a recurring task's occurrence notes"
+msgid "{count, plural, one {# occurrence note} other {# occurrence notes}}"
+msgstr "{count, plural, other {반복 항목 노트 #개}}"
+
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
@@ -8981,6 +8986,11 @@ msgctxt "ui.audit.occurrenceNotes"
 msgid "Occurrence notes"
 msgstr "반복 항목 노트"
 
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector placeholder while listing one recurring task's occurrence notes"
+msgid "Occurrence notes of {title} (backspace to go back)"
+msgstr "{title}의 반복 항목 노트 (Backspace로 돌아가기)"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "notices.audit.occurrencePolicy"
 msgid "Occurrence notes: {mode}"
@@ -13090,6 +13100,11 @@ msgstr "예정"
 msgctxt "modals.taskSelector.instructions.select"
 msgid "to select"
 msgstr "선택"
+
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector instruction: Tab lists the highlighted recurring task's occurrence notes"
+msgid "to show occurrence notes"
+msgstr "반복 항목 노트 표시"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.presets.today"

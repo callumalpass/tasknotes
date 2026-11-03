@@ -285,6 +285,11 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncE
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
 msgstr "{count, plural, one {Не удалось обновить # календарь Microsoft. Первая ошибка: {label}: {message}} few {Не удалось обновить # календаря Microsoft. Первая ошибка: {label}: {message}} many {Не удалось обновить # календарей Microsoft. Первая ошибка: {label}: {message}} other {Не удалось обновить # календаря Microsoft. Первая ошибка: {label}: {message}}}"
 
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector button listing a recurring task's occurrence notes"
+msgid "{count, plural, one {# occurrence note} other {# occurrence notes}}"
+msgstr "{count, plural, one {# заметка повторения} few {# заметки повторений} many {# заметок повторений} other {# заметки повторений}}"
+
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
@@ -8982,6 +8987,11 @@ msgctxt "ui.audit.occurrenceNotes"
 msgid "Occurrence notes"
 msgstr "Заметки повторений"
 
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector placeholder while listing one recurring task's occurrence notes"
+msgid "Occurrence notes of {title} (backspace to go back)"
+msgstr "Заметки повторений: {title} (Backspace — назад)"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "notices.audit.occurrencePolicy"
 msgid "Occurrence notes: {mode}"
@@ -13091,6 +13101,11 @@ msgstr "для планирования"
 msgctxt "modals.taskSelector.instructions.select"
 msgid "to select"
 msgstr "для выбора"
+
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector instruction: Tab lists the highlighted recurring task's occurrence notes"
+msgid "to show occurrence notes"
+msgstr "для показа заметок повторений"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.presets.today"

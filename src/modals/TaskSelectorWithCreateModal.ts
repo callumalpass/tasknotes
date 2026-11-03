@@ -6,6 +6,7 @@ import { msg } from "@lingui/core/macro";
 import { App, SuggestModal, Notice, setIcon } from "obsidian";
 import { TaskInfo, TaskCreationData } from "../types";
 import { filterEmptyProjects } from "../utils/helpers";
+import { parseLinkToPath } from "../utils/linkUtils";
 import type TaskNotesPlugin from "../main";
 import { MessageDescriptor } from "../i18n";
 import { NaturalLanguageParser, ParsedTaskData } from "../services/NaturalLanguageParser";
@@ -37,6 +38,16 @@ export interface TaskSelectorWithCreateOptions {
 	creationDefaults?: Partial<TaskCreationData>;
 	/** Date used for recurring task instance status in the selector */
 	targetDate?: Date;
+}
+
+/**
+ * A month or day in the query, even partly typed (2026-1, 2026-11-0), reveals occurrence notes
+ * hidden behind their parent. A bare year does not, so numbers in titles do not reveal them.
+ */
+const OCCURRENCE_DATE_QUERY = /\b\d{4}-\d{1,2}(?:-\d{0,2})?/;
+
+function isOccurrenceNote(task: TaskInfo): boolean {
+	return !!(task.recurrence_parent && task.occurrence_date);
 }
 
 function searchableValueIncludes(value: unknown, lowerQuery: string): boolean {
@@ -168,6 +179,12 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	private resultHandled = false;
 	private isCreatingTask = false;
 	private targetDate: Date;
+	/** Occurrence notes whose parent is also listed, newest first, keyed by parent path. */
+	private occurrencesByParent: Map<string, TaskInfo[]>;
+	private collapsedOccurrencePaths: Set<string>;
+	private drillParent: TaskInfo | null = null;
+	private lastSuggestions: TaskInfo[] = [];
+	private defaultPlaceholder: string;
 
 	constructor(
 		app: App,
@@ -182,14 +199,18 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		this.targetDate = options.targetDate || new Date();
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);
 		this.nlParser = NaturalLanguageParser.fromPlugin(plugin);
+		this.occurrencesByParent = this.buildOccurrenceIndex();
+		this.collapsedOccurrencePaths = new Set(
+			[...this.occurrencesByParent.values()].flat().map((task) => task.path)
+		);
 
 		// Set placeholder
-		this.setPlaceholder(
+		this.defaultPlaceholder =
 			options.placeholder ||
-				this.translate(
-					msg({ message: "Search tasks or type to create new...", context: "modals.taskSelectorWithCreate.placeholder" })
-				)
-		);
+			this.translate(
+				msg({ message: "Search tasks or type to create new...", context: "modals.taskSelectorWithCreate.placeholder" })
+			);
+		this.setPlaceholder(this.defaultPlaceholder);
 
 		// Set instructions
 		this.setInstructions([
@@ -205,6 +226,20 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 					msg({ message: "to select", context: "modals.taskSelector.instructions.select" })
 				),
 			},
+			...(this.occurrencesByParent.size === 0
+				? []
+				: [
+						{
+							command: "⇥",
+							purpose: uiText(
+								msg({
+									message: "to show occurrence notes",
+									context:
+										"task selector instruction: Tab lists the highlighted recurring task's occurrence notes",
+								})
+							),
+						},
+					]),
 			...(options.allowCreate === false
 				? []
 				: [
@@ -243,6 +278,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 	onOpen(): void {
 		super.onOpen();
+		this.inputEl.addEventListener("keydown", this.handleOccurrenceKeydown);
 		if (this.options.allowCreate === false) return;
 
 		// Add keydown listener for Shift+Enter on the modal container to catch it before Obsidian
@@ -626,18 +662,99 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 	getSuggestions(query: string): TaskInfo[] {
 		this.currentQuery = query;
-		return this.getFilteredTasks(query);
+		this.lastSuggestions = this.drillParent
+			? this.getDrillSuggestions(query.trim().toLowerCase())
+			: this.getFilteredTasks(query);
+		return this.lastSuggestions;
 	}
+
+	private buildOccurrenceIndex(): Map<string, TaskInfo[]> {
+		const shownTasks = this.tasks.filter(
+			(task) => this.options.includeArchived || !task.archived
+		);
+		const listedPaths = new Set(shownTasks.map((task) => task.path));
+		const byParent = new Map<string, TaskInfo[]>();
+		for (const task of shownTasks) {
+			if (!isOccurrenceNote(task)) continue;
+			const linkPath = parseLinkToPath(task.recurrence_parent || "");
+			const parentPath =
+				this.app.metadataCache.getFirstLinkpathDest(linkPath, task.path)?.path ??
+				(linkPath.endsWith(".md") ? linkPath : `${linkPath}.md`);
+			if (!listedPaths.has(parentPath)) continue;
+			byParent.set(parentPath, [...(byParent.get(parentPath) ?? []), task]);
+		}
+		for (const notes of byParent.values()) {
+			notes.sort((a, b) => (b.occurrence_date ?? "").localeCompare(a.occurrence_date ?? ""));
+		}
+		return byParent;
+	}
+
+	/** The drilled-into parent first, then its occurrence notes, newest first. */
+	private getDrillSuggestions(lowerQuery: string): TaskInfo[] {
+		if (!this.drillParent) return [];
+		const notes = this.occurrencesByParent.get(this.drillParent.path) ?? [];
+		return [this.drillParent, ...notes].filter(
+			(task) =>
+				!lowerQuery ||
+				taskMatchesSelectorQuery(task, lowerQuery) ||
+				!!task.occurrence_date?.includes(lowerQuery)
+		);
+	}
+
+	private setDrillParent(parent: TaskInfo | null): void {
+		this.drillParent = parent;
+		this.setPlaceholder(
+			parent
+				? uiText(
+						msg({
+							message: "Occurrence notes of {title} (backspace to go back)",
+							context:
+								"task selector placeholder while listing one recurring task's occurrence notes",
+						}),
+						{ title: parent.title }
+					)
+				: this.defaultPlaceholder
+		);
+		this.inputEl.value = "";
+		// Lets SuggestModal refresh the list and the create footer reset.
+		this.inputEl.dispatchEvent(new Event("input"));
+		this.inputEl.focus();
+	}
+
+	private handleOccurrenceKeydown = (event: KeyboardEvent): void => {
+		if (event.key === "Backspace" && this.drillParent && !this.inputEl.value) {
+			event.preventDefault();
+			this.setDrillParent(null);
+			return;
+		}
+		if (event.key !== "Tab" || event.shiftKey || this.drillParent) return;
+		const items = Array.from(this.resultContainerEl.querySelectorAll(".suggestion-item"));
+		const selected =
+			this.lastSuggestions[items.findIndex((item) => item.classList.contains("is-selected"))];
+		if (!selected || !this.occurrencesByParent.has(selected.path)) return;
+		event.preventDefault();
+		this.setDrillParent(selected);
+	};
 
 	private getFilteredTasks(query: string): TaskInfo[] {
 		const lowerQuery = query.trim().toLowerCase();
 		const hasQuery = lowerQuery.length > 0;
+		const dateQuery = lowerQuery.match(OCCURRENCE_DATE_QUERY)?.[0];
+		const queryWithoutDate = dateQuery
+			? lowerQuery.replace(dateQuery, " ").replace(/\s+/g, " ").trim()
+			: "";
 
 		return this.tasks
 			.filter((task) => this.options.includeArchived || !task.archived)
 			.filter((task) => {
+				const revealedByDate =
+					!!dateQuery &&
+					isOccurrenceNote(task) &&
+					!!task.occurrence_date?.includes(dateQuery) &&
+					(!queryWithoutDate || taskMatchesSelectorQuery(task, queryWithoutDate));
+				if (this.collapsedOccurrencePaths.has(task.path)) return revealedByDate;
 				if (!hasQuery) return true;
-				return taskMatchesSelectorQuery(task, lowerQuery);
+				return taskMatchesSelectorQuery(task, lowerQuery) || revealedByDate;
 			})
 			.sort((a, b) => {
 				if (hasQuery) {
@@ -709,9 +826,41 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		const cleanCard = taskCard.cloneNode(true) as HTMLElement;
 
 		el.appendChild(cleanCard);
+
+		const occurrenceCount = this.drillParent
+			? 0
+			: (this.occurrencesByParent.get(task.path)?.length ?? 0);
+		if (occurrenceCount > 0) {
+			// Sits in the card's metadata line, so rows keep the same height with or without it.
+			const metadataLine =
+				cleanCard.querySelector<HTMLElement>(".task-card__metadata") ??
+				(cleanCard.querySelector(".task-card__content") ?? cleanCard).createDiv({
+					cls: "task-card__metadata",
+				});
+			const countButton = metadataLine.createEl("button", {
+				cls: "task-card__metadata-pill task-card__metadata-pill--occurrence task-selector-modal__occurrence-count",
+			});
+			setIcon(countButton, "refresh-ccw");
+			countButton.createSpan({
+				text: uiText(
+					msg({
+						message:
+							"{count, plural, one {# occurrence note} other {# occurrence notes}}",
+						context: "task selector button listing a recurring task's occurrence notes",
+					}),
+					{ count: occurrenceCount }
+				),
+			});
+			countButton.addEventListener("click", (event) => {
+				// Keep the click from also choosing the parent row.
+				event.preventDefault();
+				event.stopPropagation();
+				this.setDrillParent(task);
+			});
+		}
 	}
 
-	onChooseSuggestion(task: TaskInfo, evt: MouseEvent | KeyboardEvent): void {
+	onChooseSuggestion(task: TaskInfo): void {
 		// Select existing task
 		this.resultHandled = true;
 		this.options.onResult({ type: "selected", task });
@@ -720,6 +869,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	onClose(): void {
 		// Remove event listeners
 		this.inputEl.removeEventListener("input", this.handleInputChange);
+		this.inputEl.removeEventListener("keydown", this.handleOccurrenceKeydown);
 		this.nlpSuggest?.close();
 		this.nlpSuggest = null;
 

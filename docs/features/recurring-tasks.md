@@ -106,6 +106,8 @@ To create one manually, right-click a recurring task card or calendar occurrence
 
 An occurrence note is an ordinary TaskNotes task. It appears in views, can be edited like any other task, and shows an occurrence pill that links back to the recurring parent. On the calendar, a materialized occurrence replaces the matching virtual parent occurrence for the same parent/date pair, so you do not see both the generated instance and the note-backed instance at the same time.
 
+In task pickers, such as the task selector, Pomodoro and time tracking, an occurrence note is listed under its recurring task instead of as its own result. The recurring task's row shows how many occurrence notes it has. Press Tab on that row, or click the count, to list the recurring task and its occurrence notes, newest first; type a date such as `2026-06` to narrow them, and press Backspace in the empty search box to go back. To find occurrence notes from anywhere in the picker, include a month or day in the search, for example `weekly review 2026-06`. An occurrence note whose recurring task is not in the list shows on its own.
+
 Its frontmatter includes:
 
 ```yaml

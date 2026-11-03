@@ -369,3 +369,21 @@
         gap: 4px;
     }
 }
+
+/* Count of a recurring task's occurrence notes; Tab or click lists them. Looks like the card's occurrence pill. */
+.tasknotes-plugin .task-selector-modal__occurrence-count {
+    height: auto;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.tasknotes-plugin .task-selector-modal__occurrence-count svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Pills match tag height here, so rows with and without them are the same height. */
+.tasknotes-plugin .task-selector-modal__suggestion .task-card__metadata-pill {
+    padding-block: 1px;
+    line-height: 1;
+}

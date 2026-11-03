@@ -285,6 +285,11 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncE
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
 msgstr "{count, plural, one {Aggiornamento di # calendario Microsoft non riuscito. Primo errore: {label}: {message}} other {Aggiornamento di # calendari Microsoft non riuscito. Primo errore: {label}: {message}}}"
 
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector button listing a recurring task's occurrence notes"
+msgid "{count, plural, one {# occurrence note} other {# occurrence notes}}"
+msgstr "{count, plural, one {# nota dell’occorrenza} other {# note delle occorrenze}}"
+
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
@@ -8982,6 +8987,11 @@ msgctxt "ui.audit.occurrenceNotes"
 msgid "Occurrence notes"
 msgstr "Note delle occorrenze"
 
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector placeholder while listing one recurring task's occurrence notes"
+msgid "Occurrence notes of {title} (backspace to go back)"
+msgstr "Note delle occorrenze di {title} (backspace per tornare indietro)"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "notices.audit.occurrencePolicy"
 msgid "Occurrence notes: {mode}"
@@ -13091,6 +13101,11 @@ msgstr "per pianificare"
 msgctxt "modals.taskSelector.instructions.select"
 msgid "to select"
 msgstr "per selezionare"
+
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task selector instruction: Tab lists the highlighted recurring task's occurrence notes"
+msgid "to show occurrence notes"
+msgstr "per mostrare le note delle occorrenze"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.presets.today"
