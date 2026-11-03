@@ -53,6 +53,7 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 		},
 		statusManager: {
 			getCompletedStatuses: jest.fn(() => ["done"]),
+			getConfiguredStatusAfterCompletion: jest.fn(() => undefined),
 			getNextStatus: jest.fn(() => "done"),
 			getPreviousStatus: jest.fn(() => "backlog"),
 			isCompletedStatus: jest.fn((status: string) => status === "done"),
@@ -140,6 +141,88 @@ describe("taskCardActions", () => {
 
 		expect(Notice).toHaveBeenCalledWith("Task not found");
 		expect(plugin.updateTaskProperty).not.toHaveBeenCalled();
+	});
+
+	describe("on a recurring card", () => {
+		const targetDate = new Date("2026-05-19T00:00:00Z");
+		const recurring: TaskInfo = { ...task, recurrence: "FREQ=WEEKLY", scheduled: "2026-05-19" };
+		const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+		function cyclingPlugin(card: TaskInfo, statuses: Partial<Record<"next" | "previous", string>>) {
+			const plugin = createPlugin({
+				cacheManager: { getTaskInfo: jest.fn(async () => card) },
+			} as Partial<TaskNotesPlugin>);
+			const statusManager = plugin.statusManager as unknown as Record<string, jest.Mock>;
+			statusManager.getConfiguredStatusAfterCompletion.mockReturnValue("open");
+			if (statuses.next) statusManager.getNextStatus.mockReturnValue(statuses.next);
+			if (statuses.previous) statusManager.getPreviousStatus.mockReturnValue(statuses.previous);
+			return plugin;
+		}
+
+		async function click(plugin: TaskNotesPlugin, card: TaskInfo, shiftKey = false) {
+			const updateStatusVisuals = jest.fn();
+			createStatusCycleHandler({ task: card, plugin, targetDate, updateStatusVisuals })({
+				stopPropagation: jest.fn(),
+				shiftKey,
+			} as unknown as MouseEvent);
+			await settle();
+			return updateStatusVisuals;
+		}
+
+		it("completes the occurrence in one click while a finished series has no status to return to", async () => {
+			const plugin = cyclingPlugin(recurring, { next: "in-progress" });
+			(plugin.statusManager.getConfiguredStatusAfterCompletion as jest.Mock).mockReturnValue(undefined);
+
+			await click(plugin, recurring);
+
+			expect(plugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(recurring, targetDate);
+			expect(plugin.updateTaskProperty).not.toHaveBeenCalled();
+		});
+
+		it("follows the status cycle like any other card once the series has one", async () => {
+			const plugin = cyclingPlugin(recurring, { next: "in-progress" });
+
+			const updateStatusVisuals = await click(plugin, recurring);
+
+			expect(plugin.statusManager.getNextStatus).toHaveBeenCalledWith("open");
+			expect(plugin.updateTaskProperty).toHaveBeenCalledWith(recurring, "status", "in-progress");
+			expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
+			expect(updateStatusVisuals).toHaveBeenCalledWith(
+				expect.objectContaining({ status: "in-progress" }),
+				"in-progress",
+				false
+			);
+		});
+
+		it("completes the occurrence when the cycle reaches a completed status", async () => {
+			const inProgress = { ...recurring, status: "in-progress" };
+			const plugin = cyclingPlugin(inProgress, { next: "done" });
+
+			await click(plugin, inProgress);
+
+			expect(plugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(inProgress, targetDate);
+			expect(plugin.updateTaskProperty).not.toHaveBeenCalled();
+		});
+
+		it("steps back through open statuses on shift-click", async () => {
+			const inProgress = { ...recurring, status: "in-progress" };
+			const plugin = cyclingPlugin(inProgress, { previous: "open" });
+
+			await click(plugin, inProgress, true);
+
+			expect(plugin.statusManager.getPreviousStatus).toHaveBeenCalledWith("in-progress");
+			expect(plugin.updateTaskProperty).toHaveBeenCalledWith(inProgress, "status", "open");
+		});
+
+		it("reopens a completed occurrence instead of cycling the series", async () => {
+			const completed = { ...recurring, complete_instances: ["2026-05-19"] };
+			const plugin = cyclingPlugin(completed, { next: "in-progress" });
+
+			await click(plugin, completed);
+
+			expect(plugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(completed, targetDate);
+			expect(plugin.updateTaskProperty).not.toHaveBeenCalled();
+		});
 	});
 
 	it("wires priority menu selections to priority writes", async () => {
