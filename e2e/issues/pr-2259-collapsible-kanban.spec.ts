@@ -69,7 +69,7 @@ test.afterAll(async () => {
   } finally { if (instance) await closeObsidian(instance); }
 });
 
-test('keyboard/touch collapse, late restore, locale stability, drag/drop and restart lifetime', async () => {
+test('keyboard/touch collapse, locale stability, drag/drop and restart persistence', async () => {
   test.setTimeout(180_000);
   for (const theme of ['theme-light', 'theme-dark']) {
     await page.evaluate(theme => {
@@ -89,11 +89,7 @@ test('keyboard/touch collapse, late restore, locale stability, drag/drop and res
   }
   await page.evaluate(() => document.body.classList.remove('is-mobile'));
   await setObsidianViewport(page, { width: 1400, height: 900 });
-  const key = await column('waiting').getAttribute('data-collapse-key');
-  await page.evaluate(key => {
-    const view = (window as any).app.workspace.activeLeaf.view.controller.view;
-    view.setEphemeralState({ collapsedColumns: [key] });
-  }, key);
+  await toggle('waiting').click();
   await expect(toggle('waiting')).toHaveAttribute('aria-expanded', 'false');
 
   await expect(column('waiting')).toHaveCSS('width', '48px');
@@ -123,7 +119,8 @@ test('keyboard/touch collapse, late restore, locale stability, drag/drop and res
   await drag(column('waiting').locator('[data-column-key]'), column('open').locator('[data-column-key]'));
   await expect.poll(async () => (await readYaml(basePath)).views[0].columnOrder).toContain('waiting');
 
-  // Ephemeral state is intentionally not a saved .base option or workspace setting.
+  // Collapse state is saved in the .base view config (#2484).
+  await expect.poll(async () => (await readYaml(basePath)).views[0].collapsedColumns).toContain('waiting');
   await closeObsidian(instance);
   const port = process.env.TASKNOTES_E2E_REMOTE_DEBUGGING_PORT;
   process.env.TASKNOTES_E2E_REMOTE_DEBUGGING_PORT = String(Number(port ?? 9223) + 10);
@@ -137,6 +134,6 @@ test('keyboard/touch collapse, late restore, locale stability, drag/drop and res
     const app = (window as any).app;
     await app.workspace.getLeaf(false).openFile(app.vault.getAbstractFileByPath(path));
   }, basePath);
-  await expect(toggle('waiting')).toHaveAttribute('aria-expanded', 'true');
-  expect((await readYaml(basePath)).views[0].collapsedColumns).toBeUndefined();
+  await expect(toggle('waiting')).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle('open')).toHaveAttribute('aria-expanded', 'true');
 });
