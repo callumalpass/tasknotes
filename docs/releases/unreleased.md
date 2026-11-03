@@ -42,3 +42,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2484) Fixed collapsed Kanban columns expanding again after Obsidian restarts or the view reloads. Collapsed columns are now saved in the view's `.base` configuration, like column order. See [Collapsing Columns](https://tasknotes.dev/views/kanban-view/#collapsing-columns)
   - Thanks to @UniCode9696 for reporting this
+- (#2481) Fixed the timeblock edit modal dropping attachments written as links without `.md` (for example `[[Tasks/Write report]]`) when saving. Existing links now keep their original text.
+  - Thanks to @ac8318740 for reporting this
