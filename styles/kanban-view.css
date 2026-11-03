@@ -212,18 +212,23 @@
 }
 
 .tasknotes-plugin .kanban-view__column--collapsed .kanban-view__drag-handle,
-.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-icon,
 .tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-count,
 .tasknotes-plugin .kanban-view__column--collapsed .kanban-view__cards,
 .tasknotes-plugin .kanban-view__column--collapsed .kanban-view__add-task-button {
     display: none;
 }
 
-.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-title {
+/* Collapsed strip label: icon, then the title reading top to bottom, cut off with an
+   ellipsis. The title always starts at the top, also in right-to-left layouts. */
+.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-header .kanban-view__column-title {
     flex: none;
-    overflow: visible;
+    max-height: var(--tn-kanban-collapsed-title-max-height, 240px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     writing-mode: vertical-rl;
-    transform: rotate(180deg);
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .tasknotes-plugin .kanban-view__column--status-colored {
