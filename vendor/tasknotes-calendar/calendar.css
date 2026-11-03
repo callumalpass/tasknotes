@@ -1,7 +1,7 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.5 dist/calendar.css (MIT, see
- * LICENSE beside this file; upstream sha256 ed8a1387ff972fa71b1cc66b53cd0283
- * 691da9860db5d02de37a37ef8beac97a). build-css.mjs bundles this file in place
+ * Pinned host copy of @tasknotes/calendar 0.1.6 dist/calendar.css (MIT, see
+ * LICENSE beside this file; upstream sha256 725742e962757e54a56f7e67b823f017
+ * 993bb705f17e181233173d1f3e9ddfe1). build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
  * short hex colours expanded; !important replaced by specificity, source order
@@ -33,6 +33,8 @@
 	--tnc-off: color-mix(in srgb, var(--tnc-text) 3.5%, transparent);
 	--tnc-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
 	--tnc-radius: 6px;
+	/* Time-grid share for tracked ("actual") items where they overlap planned ones. */
+	--tnc-actual-w: 22%;
 	--tnc-font-size: 12px;
 	--tnc-small: 11px;
 	--tnc-bar-h: 20px;
@@ -126,9 +128,21 @@
 }
 .tnc-btn-prev,
 .tnc-btn-next {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	min-width: 28px;
 	padding: 3px 6px;
-	font-size: 15px;
+}
+.tnc-btn-prev svg,
+.tnc-btn-next svg {
+	width: 16px;
+	height: 16px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
 }
 .tnc-btn:focus-visible,
 .tnc-navlink:focus-visible,
@@ -633,31 +647,19 @@
 .tnc-col.is-today {
 	background-color: color-mix(in srgb, var(--tnc-accent) 5%, transparent);
 }
+/* Items position themselves within the column; see inLane in timegrid.ts. */
 .tnc-col-plan,
 .tnc-col-bg,
 .tnc-col-actual {
 	position: absolute;
-	top: 0;
-	bottom: 0;
+	inset: 0;
 }
-.tnc-col-bg {
-	left: 0;
-	right: 0;
-}
-.tnc-col-plan {
-	left: 1px;
-	right: 8px;
-}
+/* Above the plan layer, so it must not swallow clicks meant for plan items. */
 .tnc-col-actual {
-	display: none;
-	right: 2px;
-	width: 22%;
+	pointer-events: none;
 }
-.tnc-col.has-actual .tnc-col-plan {
-	right: calc(22% + 4px);
-}
-.tnc-col.has-actual .tnc-col-actual {
-	display: block;
+.tnc-col-actual > * {
+	pointer-events: auto;
 }
 .tnc-now {
 	position: absolute;

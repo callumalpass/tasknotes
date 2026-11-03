@@ -48,3 +48,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @Mirrimo for reporting this
 - (#2481) Fixed the timeblock edit modal dropping attachments written as links without `.md` (for example `[[Tasks/Write report]]`) when saving. Existing links now keep their original text.
   - Thanks to @ac8318740 for reporting this
+- (#2494, #2498) Fixed time entries in the calendar's week and day views squeezing every event on their day, even where nothing overlapped. Time entries now sit in the narrow strip on the right only where they overlap a scheduled task, timeblock or calendar event. Elsewhere, events and time entries use the full column width, as they did before 4.15.
+- (#2494) The previous and next buttons in the calendar toolbar now show larger, clearer arrows.
+  - Thanks to @RumiaKitinari for reporting both, and @mgreen3 for the related report
