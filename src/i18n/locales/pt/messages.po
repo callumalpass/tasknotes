@@ -859,7 +859,7 @@ msgstr "**Início:** {value1}"
 msgctxt "release announcement Markdown"
 msgid "**TaskNotes v5 beta.** Use your Markdown tasks in Obsidian and the new TaskNotes app. [Plugin beta]({token1}) · [Web app]({token2}) · [iOS]({token3}). Back up your vault before trying the beta.\n"
 ""
-msgstr "**TaskNotes v5 beta.** Use suas tarefas em Markdown no Obsidian e no novo aplicativo TaskNotes. [Plugin beta]({token1}) · [Aplicativo web]({token2}) · [iOS]({token3}). Faça uma cópia de segurança do seu cofre antes de experimentar a versão beta.\n"
+msgstr "**TaskNotes v5 beta.** Use suas tarefas em Markdown no Obsidian e no novo aplicativo TaskNotes. [Plugin beta]({token1}) · [Aplicativo web]({token2}) · [iOS]({token3}). Faça backup do seu cofre antes de experimentar a versão beta.\n"
 ""
 
 #: src/components/ICSEventContextMenu.ts
