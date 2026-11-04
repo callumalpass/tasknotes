@@ -1,3 +1,6 @@
+import { KanbanDragPreview } from "./kanbanDragPreview";
+import { resolveKanbanStatusColor } from "./kanbanStatusPresentation";
+import { createKanbanCardScroller } from "./kanbanCardScroller";
 import { displayError } from "../i18n/runtime";
 import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
@@ -247,14 +250,7 @@ export class KanbanView extends BasesViewBase {
 	private dragSourceColumnEl: HTMLElement | null = null; // Source column element (height-locked during drag)
 	private dragTargetColumnEl: HTMLElement | null = null; // Target column element (max-height expanded during drag)
 	private activeDragSourceElement: HTMLElement | null = null;
-	private floatingDragPreviewEl: HTMLElement | null = null;
-	private floatingDragPreviewDocument: Document | null = null;
-	private floatingDragPreviewMoveHandler: ((event: DragEvent) => void) | null = null;
-	private floatingDragPreviewRafId: number | null = null;
-	private floatingDragPreviewWidth = 280;
-	private floatingDragPreviewHeight = 40;
-	private floatingDragPreviewPendingX = 0;
-	private floatingDragPreviewPendingY = 0;
+	private dragPreview = new KanbanDragPreview();
 	private draggedSourceColumns: Map<string, string> = new Map(); // Track source column per task for batch operations
 	private draggedSourceSwimlanes: Map<string, string> = new Map(); // Track source swimlane per task for batch operations
 	private taskInfoCache = new Map<string, TaskInfo>();
@@ -1438,25 +1434,11 @@ export class KanbanView extends BasesViewBase {
 		const status = this.findStatusConfigForGroupKey(groupKey);
 		if (!status || !isSupportedColorValue(status.color)) return;
 
-		const color = this.resolveStatusColor(element, normalizeThemeColor(status.color));
+		const color = resolveKanbanStatusColor(element, normalizeThemeColor(status.color));
 		if (!color) return;
 
 		element.addClass(modifierClass);
 		element.style.setProperty("--tn-kanban-status-color", color);
-	}
-
-	private resolveStatusColor(element: HTMLElement, color: string): string | null {
-		const doc = element.ownerDocument;
-		const probe = doc.win.createSpan();
-		probe.style.backgroundColor = color;
-		if (!probe.style.backgroundColor) return null;
-		doc.body.appendChild(probe);
-		const resolved = doc.defaultView!.getComputedStyle(probe).backgroundColor;
-		probe.remove();
-		// Unresolved variables and non-colour variable values compute to the
-		// initial transparent background, not a usable tint.
-		return !resolved || resolved === "transparent" || resolved === "rgba(0, 0, 0, 0)" ||
-			resolved.includes("var(") ? null : resolved;
 	}
 
 	private isUnknownStatusGroup(groupKey: string, groupByPropertyId: string | null): boolean {
@@ -2098,34 +2080,8 @@ export class KanbanView extends BasesViewBase {
 		visibleProperties: string[],
 		cardOptions: TaskCardOptions
 	): void {
-		// Use semantic class instead of inline style for easier maintenance.
 		cardsContainer.addClass("kanban-view__cards--virtual");
-
-		// Use containerEl.ownerDocument for pop-out window support
-		const doc = this.containerEl.ownerDocument;
-		const scroller = new VirtualScroller<TaskInfo>({
-			container: cardsContainer,
-			items: tasks,
-			// itemHeight omitted - automatically calculated from sample
-			overscan: 3,
-			renderItem: (task: TaskInfo) => {
-				const cardWrapper = createElementInDocument(doc, "div");
-				cardWrapper.className = "kanban-view__card-wrapper";
-				cardWrapper.setAttribute("draggable", "true");
-				cardWrapper.setAttribute("data-task-path", task.path);
-
-				const card = createTaskCard(task, this.plugin, visibleProperties, cardOptions);
-				cardWrapper.appendChild(card);
-
-				this.taskInfoCache.set(task.path, task);
-				this.setupCardDragHandlers(cardWrapper, task);
-
-				return cardWrapper;
-			},
-			getItemKey: (task: TaskInfo) => task.path,
-		});
-
-		this.columnScrollers.set(groupKey, scroller);
+		this.columnScrollers.set(groupKey, this.createCardScroller(cardsContainer, tasks, visibleProperties, cardOptions));
 	}
 
 	private async createVirtualSwimLaneCell(
@@ -2134,37 +2090,19 @@ export class KanbanView extends BasesViewBase {
 		tasks: TaskInfo[],
 		visibleProperties: string[]
 	): Promise<void> {
-		// Use semantic class instead of inline style for easier maintenance.
 		tasksContainer.addClass("kanban-view__tasks-container--virtual");
+		this.columnScrollers.set(cellKey, this.createCardScroller(tasksContainer, tasks, visibleProperties, this.getCardOptions()));
+	}
 
-		const cardOptions = this.getCardOptions();
-
-		// Use containerEl.ownerDocument for pop-out window support
-		const doc = this.containerEl.ownerDocument;
-		const scroller = new VirtualScroller<TaskInfo>({
-			container: tasksContainer,
-			items: tasks,
-			// itemHeight omitted - automatically calculated from sample
-			overscan: 3,
-			renderItem: (task: TaskInfo) => {
-				const cardWrapper = createElementInDocument(doc, "div");
-				cardWrapper.className = "kanban-view__card-wrapper";
-				cardWrapper.setAttribute("draggable", "true");
-				cardWrapper.setAttribute("data-task-path", task.path);
-
-				const card = createTaskCard(task, this.plugin, visibleProperties, cardOptions);
-
-				cardWrapper.appendChild(card);
-
+	private createCardScroller(container: HTMLElement, tasks: TaskInfo[], visibleProperties: string[], cardOptions: TaskCardOptions): VirtualScroller<TaskInfo> {
+		return createKanbanCardScroller({
+			container, tasks, visibleProperties, cardOptions, plugin: this.plugin,
+			document: this.containerEl.ownerDocument,
+			onRender: (wrapper, task) => {
 				this.taskInfoCache.set(task.path, task);
-				this.setupCardDragHandlers(cardWrapper, task);
-
-				return cardWrapper;
+				this.setupCardDragHandlers(wrapper, task);
 			},
-			getItemKey: (task: TaskInfo) => task.path,
 		});
-
-		this.columnScrollers.set(cellKey, scroller);
 	}
 
 	private createNormalColumn(
@@ -3544,124 +3482,12 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private showFloatingDragPreview(sourceElement: HTMLElement, event: DragEvent): void {
-		this.cleanupFloatingDragPreview();
-
-		const doc = sourceElement.ownerDocument;
-		const body = doc.body;
-		if (!body) return;
-
-		const rect = sourceElement.getBoundingClientRect();
-		const preview = createElementInDocument(doc, "div");
-		const title = this.getFloatingDragPreviewTitle(sourceElement);
-		const titleEl = createElementInDocument(doc, "span");
-
-		titleEl.className = "kanban-view__floating-drag-preview-title";
-		titleEl.textContent = title;
-
-		preview.classList.add("tasknotes-plugin", "kanban-view__floating-drag-preview");
-		preview.appendChild(titleEl);
-		preview.setAttribute("aria-hidden", "true");
-		preview.setAttribute("draggable", "false");
-		if (this.draggedTaskPaths.length > 1) {
-			preview.dataset.dragCount = `${this.draggedTaskPaths.length}`;
-		}
-		this.floatingDragPreviewWidth = Math.min(Math.max(rect.width, 180), 320);
-		this.floatingDragPreviewHeight = 40;
-		preview.setCssProps({
-			"--tn-kanban-drag-preview-width": `${this.floatingDragPreviewWidth}px`,
-			"--tn-kanban-drag-preview-transform": "translate3d(-9999px, -9999px, 0)",
-		});
-
-		body.appendChild(preview);
-		this.floatingDragPreviewEl = preview;
-		this.floatingDragPreviewDocument = doc;
-
-		const handleMove = (dragEvent: DragEvent) => {
-			this.positionFloatingDragPreview(dragEvent.clientX, dragEvent.clientY);
-		};
-		this.floatingDragPreviewMoveHandler = handleMove;
-		doc.addEventListener("drag", handleMove, true);
-		doc.addEventListener("dragover", handleMove, true);
-
-		this.positionFloatingDragPreview(event.clientX, event.clientY);
-	}
-
-	private positionFloatingDragPreview(clientX: number, clientY: number): void {
-		const preview = this.floatingDragPreviewEl;
-		if (!preview || (clientX === 0 && clientY === 0)) return;
-
-		const win = preview.ownerDocument.defaultView ?? window;
-		const margin = 8;
-		const offset = 14;
-		const width = this.floatingDragPreviewWidth;
-		const height = this.floatingDragPreviewHeight;
-		let x = clientX + offset;
-		let y = clientY + offset;
-
-		if (x + width > win.innerWidth - margin) {
-			x = clientX - width - offset;
-		}
-		if (y + height > win.innerHeight - margin) {
-			y = clientY - height - offset;
-		}
-
-		x = Math.max(margin, Math.min(x, Math.max(margin, win.innerWidth - width - margin)));
-		y = Math.max(margin, Math.min(y, Math.max(margin, win.innerHeight - height - margin)));
-		x += win.scrollX;
-		y += win.scrollY;
-		this.floatingDragPreviewPendingX = x;
-		this.floatingDragPreviewPendingY = y;
-
-		if (this.floatingDragPreviewRafId !== null) {
-			return;
-		}
-
-		this.floatingDragPreviewRafId = win.requestAnimationFrame(() => {
-			this.floatingDragPreviewRafId = null;
-			const pendingX = this.floatingDragPreviewPendingX;
-			const pendingY = this.floatingDragPreviewPendingY;
-			this.floatingDragPreviewEl?.setCssProps({
-				"--tn-kanban-drag-preview-transform": `translate3d(${pendingX}px, ${pendingY}px, 0)`,
-			});
-		});
-	}
-
-	private getFloatingDragPreviewTitle(sourceElement: HTMLElement): string {
-		const title =
-			sourceElement.querySelector<HTMLElement>(".task-card__title-text")?.textContent ||
-			sourceElement.querySelector<HTMLElement>(".task-card__title")?.textContent ||
-			sourceElement.dataset.taskPath?.split("/").pop()?.replace(/\.md$/i, "") ||
-			uiText(msg({ message: "Task", context: "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display" }));
-		const normalized = title.trim().replace(/\s+/g, " ");
-		return normalized.length > 80 ? `${normalized.slice(0, 77).trimEnd()}...` : normalized;
+		this.dragPreview.show(sourceElement, event, this.draggedTaskPaths.length,
+			uiText(msg({ message: "Task", context: "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display" })));
 	}
 
 	private cleanupFloatingDragPreview(): void {
-		if (this.floatingDragPreviewRafId !== null) {
-			const win = this.floatingDragPreviewDocument?.defaultView ?? window;
-			win.cancelAnimationFrame(this.floatingDragPreviewRafId);
-			this.floatingDragPreviewRafId = null;
-		}
-		if (this.floatingDragPreviewMoveHandler && this.floatingDragPreviewDocument) {
-			this.floatingDragPreviewDocument.removeEventListener(
-				"drag",
-				this.floatingDragPreviewMoveHandler,
-				true
-			);
-			this.floatingDragPreviewDocument.removeEventListener(
-				"dragover",
-				this.floatingDragPreviewMoveHandler,
-				true
-			);
-		}
-		this.floatingDragPreviewEl?.remove();
-		this.floatingDragPreviewEl = null;
-		this.floatingDragPreviewDocument = null;
-		this.floatingDragPreviewMoveHandler = null;
-		this.floatingDragPreviewWidth = 280;
-		this.floatingDragPreviewHeight = 40;
-		this.floatingDragPreviewPendingX = 0;
-		this.floatingDragPreviewPendingY = 0;
+		this.dragPreview.destroy();
 	}
 
 	private setupCardTouchHandlers(cardWrapper: HTMLElement, task: TaskInfo): void {
