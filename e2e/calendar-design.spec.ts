@@ -246,8 +246,9 @@ test('timeblocks retain drag and resize in both themes', async () => {
   const readBlock = () => page.evaluate(folder => {
     const app = (window as any).app;
     const file = app.vault.getMarkdownFiles().find((file: any) => file.path.startsWith(folder) && app.metadataCache.getFileCache(file)?.frontmatter?.timeblocks);
-    return app.metadataCache.getFileCache(file)?.frontmatter?.timeblocks[0];
+    return file ? app.metadataCache.getFileCache(file)?.frontmatter?.timeblocks?.[0] : undefined;
   }, folder);
+  await expect.poll(readBlock).toMatchObject({ startTime: '13:00', endTime: '14:00' });
   const originalBlock = await readBlock();
   for (const theme of ['theme-light', 'theme-dark']) {
     await page.evaluate(theme => {
@@ -255,6 +256,10 @@ test('timeblocks retain drag and resize in both themes', async () => {
       document.body.classList.add(theme);
     }, theme);
     await calendar.locator('.tnc-btn-view-days').click();
+    await expect.poll(() => page.evaluate(async folder => {
+      const app = (window as any).app;
+      return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/Calendar.base`));
+    }, folder)).toMatch(/calendarView: ["']?timeGridCustom/);
     const block = calendar.locator('.tnc-item[data-event-type="timeblock"]');
     await expect(block).toBeVisible();
     let box = (await block.boundingBox())!;
@@ -262,8 +267,9 @@ test('timeblocks retain drag and resize in both themes', async () => {
     await page.mouse.down();
     await page.mouse.move(box.x + box.width / 2, box.y + 10 + box.height, { steps: 10 });
     await page.mouse.up();
-    await expect.poll(async () => (await readBlock()).startTime).toBe('14:00');
+    await expect.poll(async () => (await readBlock())?.startTime).toBe('14:00');
     await expect(block).toContainText('14:00 – 15:00');
+    await expect(calendar.locator('.tnc-btn-view-days')).toHaveAttribute('aria-pressed', 'true');
     box = (await block.boundingBox())!;
     const handle = block.locator('.tnc-resize-end');
     await handle.hover();
@@ -272,7 +278,8 @@ test('timeblocks retain drag and resize in both themes', async () => {
     await page.mouse.down();
     await page.mouse.move(resize.x + resize.width / 2, resize.y + resize.height / 2 + box.height, { steps: 10 });
     await page.mouse.up();
-    await expect.poll(async () => (await readBlock()).endTime).toBe('16:00');
+    await expect.poll(async () => (await readBlock())?.endTime).toBe('16:00');
+    await expect(calendar.locator('.tnc-btn-view-days')).toHaveAttribute('aria-pressed', 'true');
     await page.evaluate(async ({ folder, originalBlock }) => {
       const app = (window as any).app;
       const file = app.vault.getMarkdownFiles().find((file: any) => file.path.startsWith(folder) && app.metadataCache.getFileCache(file)?.frontmatter?.timeblocks);
@@ -280,7 +287,7 @@ test('timeblocks retain drag and resize in both themes', async () => {
         frontmatter.timeblocks[0] = originalBlock;
       });
     }, { folder, originalBlock });
-    await expect.poll(async () => (await readBlock()).startTime).toBe('13:00');
+    await expect.poll(async () => (await readBlock())?.startTime).toBe('13:00');
     await calendar.locator('.tnc-btn-next').click();
     await expect(block).toHaveCount(0);
     await calendar.locator('.tnc-btn-prev').click();

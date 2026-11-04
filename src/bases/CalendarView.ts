@@ -738,10 +738,12 @@ export class CalendarView extends BasesViewBase {
 			);
 
 			// Layout
-			this.viewOptions.calendarView = this.getConfigOption(
-				"calendarView",
-				this.viewOptions.calendarView
-			);
+			if (!this._saveViewTypeTimer) {
+				this.viewOptions.calendarView = this.getConfigOption(
+					"calendarView",
+					this.viewOptions.calendarView
+				);
+			}
 			this.viewOptions.heightMode = normalizeCalendarHeightMode(
 				this.getConfigOption("heightMode", this.viewOptions.heightMode)
 			);
