@@ -4,11 +4,11 @@
 
 /* Pomodoro Stats View Container - Root Block */
 .tasknotes-plugin .pomodoro-stats-view {
-    padding: var(--tn-spacing-lg);
+    padding: var(--tn-space-3);
     max-width: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xl);
+    gap: var(--tn-space-4);
     height: 100%;
     overflow-y: auto;
 }
@@ -23,11 +23,11 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--tn-border-color);
-    padding-bottom: var(--tn-spacing-md);
+    padding-bottom: var(--tn-space-2);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__title {
-    font-size: var(--tn-font-size-xl);
+    font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-semibold);
     color: var(--tn-text-normal);
     margin: 0;
@@ -43,7 +43,7 @@
 .tasknotes-plugin .pomodoro-stats-view__header-actions {
     display: inline-flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     flex: 0 0 auto;
 }
 
@@ -52,7 +52,7 @@
     color: var(--tn-text-normal);
     border: none;
     box-shadow: none;
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
 }
 
@@ -71,7 +71,7 @@
     border: none;
     box-shadow: none;
     color: var(--tn-text-muted);
-    border-radius: var(--tn-radius-sm);
+    border-radius: var(--tn-radius-md);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__bases-help:hover,
@@ -93,15 +93,15 @@
 .tasknotes-plugin .pomodoro-stats-view__section {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__section-title {
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-semibold);
     color: var(--tn-text-normal);
     margin: 0;
-    padding-bottom: var(--tn-spacing-xs);
+    padding-bottom: var(--tn-space-half);
     border-bottom: 1px solid var(--tn-border-color);
 }
 
@@ -113,7 +113,7 @@
 .tasknotes-plugin .pomodoro-stats-view__overview-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--tn-spacing-lg);
+    gap: var(--tn-space-3);
 }
 
 /* Overview Card - Larger than regular stat cards */
@@ -121,7 +121,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: var(--tn-spacing-xl);
+    padding: var(--tn-space-4);
     background: var(--tn-bg-secondary);
     border-radius: var(--tn-radius-lg);
     border: 1px solid var(--tn-border-color);
@@ -140,26 +140,26 @@
     font-size: 2.5rem;
     font-weight: var(--tn-font-weight-bold);
     color: var(--tn-interactive-accent);
-    margin-bottom: var(--tn-spacing-xs);
+    margin-bottom: var(--tn-space-half);
     line-height: 1;
 }
 
 .tasknotes-plugin .pomodoro-stats-view__overview-label {
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-normal);
     font-weight: var(--tn-font-weight-semibold);
-    margin-bottom: var(--tn-spacing-xs);
+    margin-bottom: var(--tn-space-half);
     line-height: 1.2;
 }
 
 .tasknotes-plugin .pomodoro-stats-view__overview-change {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1.2;
 }
 
 .tasknotes-plugin .pomodoro-stats-view__overview-change.positive {
-    color: var(--tn-status-done-color, #10B981);
+    color: var(--tn-success);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__overview-change.negative {
@@ -174,7 +174,7 @@
 .tasknotes-plugin .pomodoro-stats-view__stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
 }
 
 /* Individual Stat Card */
@@ -182,7 +182,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: var(--tn-spacing-lg);
+    padding: var(--tn-space-3);
     background: var(--tn-bg-secondary);
     border-radius: var(--tn-radius-lg);
     border: 1px solid var(--tn-border-color);
@@ -200,12 +200,12 @@
     font-size: 2rem;
     font-weight: var(--tn-font-weight-bold);
     color: var(--tn-interactive-accent);
-    margin-bottom: var(--tn-spacing-sm);
+    margin-bottom: var(--tn-space-1);
     line-height: 1;
 }
 
 .tasknotes-plugin .pomodoro-stats-view__stat-label {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
     font-weight: var(--tn-font-weight-medium);
     text-transform: uppercase;
@@ -221,19 +221,19 @@
 .tasknotes-plugin .pomodoro-stats-view__recent-sessions {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
     max-height: 400px;
     overflow-y: auto;
 }
 
 /* No Sessions State */
 .tasknotes-plugin .pomodoro-stats-view__no-sessions {
-    padding: var(--tn-spacing-xl);
+    padding: var(--tn-space-4);
     text-align: center;
     color: var(--tn-text-muted);
     font-style: italic;
     background: var(--tn-bg-secondary);
-    border-radius: var(--tn-radius-md);
+    border-radius: var(--tn-radius-lg);
     border: 1px solid var(--tn-border-color);
 }
 
@@ -245,11 +245,11 @@
 .tasknotes-plugin .pomodoro-stats-view__session-item {
     display: grid;
     grid-template-columns: auto auto auto 1fr auto;
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
     align-items: center;
-    padding: var(--tn-spacing-md);
+    padding: var(--tn-space-2);
     background: var(--tn-bg-secondary);
-    border-radius: var(--tn-radius-sm);
+    border-radius: var(--tn-radius-md);
     border: 1px solid var(--tn-border-color);
     transition: background-color var(--tn-transition-fast);
 }
@@ -260,35 +260,35 @@
 
 /* Session Item Elements */
 .tasknotes-plugin .pomodoro-stats-view__session-date {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
     font-weight: var(--tn-font-weight-medium);
     min-width: 100px;
-    font-family: var(--tn-font-mono);
+    font-family: var(--font-monospace);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__session-duration {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-normal);
     font-weight: var(--tn-font-weight-semibold);
-    font-family: var(--tn-font-mono);
+    font-family: var(--font-monospace);
     min-width: 60px;
 }
 
 /* Session Status Badge */
 .tasknotes-plugin .pomodoro-stats-view__session-status {
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     font-weight: var(--tn-font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    border-radius: var(--tn-radius-sm);
+    padding: var(--tn-space-half) var(--tn-space-1);
+    border-radius: var(--tn-radius-md);
     min-width: 80px;
     text-align: center;
 }
 
 .tasknotes-plugin .pomodoro-stats-view__session-status--completed {
-    background: var(--tn-status-done-color, #10B981);
+    background: var(--tn-success);
     color: var(--tn-bg-primary);
 }
 
@@ -299,7 +299,7 @@
 
 /* Session Task */
 .tasknotes-plugin .pomodoro-stats-view__session-task {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-normal);
     font-weight: var(--tn-font-weight-medium);
     text-align: right;
@@ -318,7 +318,7 @@
     color: var(--tn-text-muted);
     background: transparent;
     border: 1px solid transparent;
-    border-radius: var(--tn-radius-sm);
+    border-radius: var(--tn-radius-md);
     cursor: pointer;
 }
 
@@ -335,14 +335,14 @@
 
 @media (max-width: 768px) {
     .tasknotes-plugin .pomodoro-stats-view {
-        padding: var(--tn-spacing-md);
-        gap: var(--tn-spacing-md);
+        padding: var(--tn-space-2);
+        gap: var(--tn-space-2);
     }
     
     .tasknotes-plugin .pomodoro-stats-view__header {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--tn-spacing-sm);
+        gap: var(--tn-space-1);
     }
     
     .tasknotes-plugin .pomodoro-stats-view__refresh-button {
@@ -359,7 +359,7 @@
     
     .tasknotes-plugin .pomodoro-stats-view__session-item {
         grid-template-columns: 1fr;
-        gap: var(--tn-spacing-sm);
+        gap: var(--tn-space-1);
         text-align: center;
     }
     
@@ -381,7 +381,7 @@
 
 @media (max-width: 480px) {
     .tasknotes-plugin .pomodoro-stats-view {
-        padding: var(--tn-spacing-sm);
+        padding: var(--tn-space-1);
     }
     
     .tasknotes-plugin .pomodoro-stats-view__overview-grid {
@@ -393,7 +393,7 @@
     }
     
     .tasknotes-plugin .pomodoro-stats-view__overview-card {
-        padding: var(--tn-spacing-lg);
+        padding: var(--tn-space-3);
         min-height: 100px;
     }
     
@@ -402,7 +402,7 @@
     }
     
     .tasknotes-plugin .pomodoro-stats-view__stat-card {
-        padding: var(--tn-spacing-md);
+        padding: var(--tn-space-2);
     }
     
     .tasknotes-plugin .pomodoro-stats-view__stat-value {
@@ -410,7 +410,7 @@
     }
     
     .tasknotes-plugin .pomodoro-stats-view__session-item {
-        padding: var(--tn-spacing-sm);
+        padding: var(--tn-space-1);
     }
 }
 

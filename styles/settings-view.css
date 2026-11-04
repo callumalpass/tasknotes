@@ -34,8 +34,8 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: var(--tn-spacing-xs) var(--tn-spacing-md);
-    margin-bottom: var(--tn-spacing-md);
+    gap: var(--tn-space-half) var(--tn-space-2);
+    margin-bottom: var(--tn-space-2);
 }
 
 .tasknotes-plugin .settings-header {
@@ -48,7 +48,7 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
 .tasknotes-plugin .settings-header-link {
     display: inline-flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     min-height: 28px;
     padding: 3px 8px;
     border-radius: var(--radius-m);
@@ -80,7 +80,7 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     align-items: center;
     flex: 1 1 36rem;
     flex-wrap: wrap;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     min-width: 0;
     width: auto;
     max-width: 100%;
@@ -132,7 +132,7 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     .tasknotes-plugin .settings-view__toolbar {
         align-items: flex-start;
         flex-direction: column;
-        gap: var(--tn-spacing-xs);
+        gap: var(--tn-space-half);
     }
 
     .tasknotes-plugin .settings-header {
@@ -346,7 +346,7 @@ input.tasknotes-theme-color-picker {
 body.is-mobile .tasknotes-plugin .tasknotes-settings__card-config-row {
     align-items: stretch;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     min-width: 0;
     width: 100%;
     max-width: 100%;
@@ -719,11 +719,11 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
 
 .tasknotes-webhook-modal {
     max-width: 800px;
-    padding: var(--tn-spacing-lg);
+    padding: var(--tn-space-3);
 }
 
 .tasknotes-webhook-events-list .setting-item {
-    padding: var(--tn-spacing-sm) 0;
+    padding: var(--tn-space-1) 0;
     border-bottom: 1px solid var(--background-modifier-border);
 }
 
@@ -734,7 +734,7 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
 /* Webhook Secret Notice */
 
 .tasknotes-webhook-secret-content p {
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-space-2);
     color: var(--text-normal);
 }
 
@@ -1075,7 +1075,7 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
 .tasknotes-plugin .icon-input-container {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     flex: 1;
 }
 
@@ -1085,7 +1085,7 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     justify-content: center;
     width: 28px;
     height: 28px;
-    border-radius: var(--tn-radius-sm);
+    border-radius: var(--tn-radius-md);
     background: var(--background-modifier-hover);
     flex-shrink: 0;
 }

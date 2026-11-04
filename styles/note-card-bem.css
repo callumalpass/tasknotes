@@ -12,7 +12,7 @@
     position: relative;
     
     /* Spacing & Sizing - Todoist compact style */
-    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
+    padding: var(--tn-space-2) var(--tn-space-3);
     margin-bottom: 1px;
     
     /* Visual Styling - Todoist minimal style */
@@ -55,7 +55,7 @@
 .tasknotes-plugin .tn-card__title,
 .tasknotes-plugin .note-card--daily .note-card__title,
 .tasknotes-plugin .note-card--daily-note .note-card__title {
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-type-sm);
     font-weight: 400;
     line-height: 1.3;
 }
@@ -105,7 +105,7 @@
 }
 
 .tasknotes-plugin .note-card__title {
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-type-sm);
     font-weight: 400;
     line-height: 1.3;
     color: var(--tn-text-normal);
@@ -119,27 +119,27 @@
 .tasknotes-plugin .note-card__divider {
     height: 1px;
     background: var(--tn-border-color);
-    margin: var(--tn-spacing-xs) 0;
+    margin: var(--tn-space-half) 0;
     opacity: 0.6;
 }
 
 .tasknotes-plugin .note-card__tags {
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     color: var(--tn-text-muted);
     line-height: 1.2;
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
 }
 
 .tasknotes-plugin .note-card__tag {
     display: inline-flex;
     align-items: center;
-    padding: 1px var(--tn-spacing-xs);
-    border-radius: var(--tn-radius-xs);
+    padding: 1px var(--tn-space-half);
+    border-radius: var(--tn-radius-sm);
     background: var(--tn-bg-secondary);
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     color: var(--tn-text-muted);
     border: 1px solid var(--tn-border-color);
     transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast), color var(--tn-transition-fast);
@@ -151,7 +151,7 @@
 }
 
 .tasknotes-plugin .note-card__tags-text {
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     color: var(--tn-text-muted);
     line-height: 1.2;
     margin: 0;
@@ -159,7 +159,7 @@
 }
 
 .tasknotes-plugin .note-card__metadata {
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     color: var(--tn-text-faint);
     line-height: 1.2;
     margin: 0;
@@ -167,10 +167,10 @@
 }
 
 .tasknotes-plugin .note-card__preview {
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     color: var(--tn-text-muted);
     line-height: 1.3;
-    margin-top: var(--tn-spacing-xs);
+    margin-top: var(--tn-space-half);
     max-height: 2.6em; /* Approximately 2 lines */
     overflow: hidden;
     text-overflow: ellipsis;
@@ -181,11 +181,11 @@
 
 .tasknotes-plugin .note-card__badge {
     position: absolute;
-    top: var(--tn-spacing-md);
-    right: var(--tn-spacing-md);
-    padding: 2px var(--tn-spacing-xs);
-    border-radius: var(--tn-radius-xs);
-    font-size: var(--tn-font-size-xs);
+    top: var(--tn-space-2);
+    right: var(--tn-space-2);
+    padding: 2px var(--tn-space-half);
+    border-radius: var(--tn-radius-sm);
+    font-size: var(--tn-type-2xs);
     font-weight: var(--tn-font-weight-medium);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -204,7 +204,7 @@
 
 /* Compact Layout */
 .tasknotes-plugin .note-card--compact {
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    padding: var(--tn-space-1) var(--tn-space-2);
 }
 
 .tasknotes-plugin .note-card--compact .note-card__content {
@@ -212,7 +212,7 @@
 }
 
 .tasknotes-plugin .note-card--compact .note-card__title {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
 }
 
 .tasknotes-plugin .note-card--compact .note-card__preview {
@@ -274,7 +274,7 @@
     align-items: flex-start;
     gap: 0;
     position: relative;
-    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
+    padding: var(--tn-space-2) var(--tn-space-3);
     margin-bottom: 0;
     background-color: var(--tn-bg-primary);
     border: none;
@@ -292,12 +292,12 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     min-width: 0;
 }
 
 .tasknotes-plugin .tn-card__title {
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-type-sm);
     font-weight: 400;
     line-height: 1.3;
     color: var(--tn-text-normal);
@@ -315,7 +315,7 @@
 /* Touch-specific adjustments */
 @media (pointer: coarse) {
     .tasknotes-plugin .note-card {
-        padding: var(--tn-spacing-lg) var(--tn-spacing-xl);
+        padding: var(--tn-space-3) var(--tn-space-4);
         min-height: 44px;
     }
     
@@ -329,7 +329,7 @@
     }
     
     .tasknotes-plugin .note-card__badge {
-        padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-        font-size: var(--tn-font-size-sm);
+        padding: var(--tn-space-half) var(--tn-space-1);
+        font-size: var(--tn-type-xs);
     }
 }

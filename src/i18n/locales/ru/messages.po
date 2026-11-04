@@ -1840,6 +1840,11 @@ msgctxt "views.taskList.movement.noChange"
 msgid "Already in this group."
 msgstr "Уже в этой группе."
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Alt"
+msgstr "Alt"
+
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
 msgid "An error occurred"
@@ -3968,6 +3973,11 @@ msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Creation date unknown"
 msgstr "Дата создания неизвестна"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Ctrl"
+msgstr "Ctrl"
+
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.current"
 msgid "Current"
@@ -5403,6 +5413,11 @@ msgstr "Ошибка: не удалось инициализировать на�
 msgctxt "settings.modalFields.manager.invalidConfig"
 msgid "Error: Invalid field configuration. Please reset to defaults."
 msgstr "Ошибка: недопустимая конфигурация полей. Сбросьте настройки до значений по умолчанию."
+
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Esc"
+msgstr "Esc"
 
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.timeEstimate.description"
@@ -8782,6 +8797,11 @@ msgctxt "ui.filterBar.group.none"
 msgid "None"
 msgstr "Нет"
 
+#: src/ui/taskCardPrimaryIndicators.ts
+msgctxt "ui.taskCard.noPriority"
+msgid "None"
+msgstr "Нет"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Normal"
@@ -11071,6 +11091,11 @@ msgctxt "settings.features.inlineTasks.description"
 msgid "Settings for task links and checkbox-to-task conversion in notes."
 msgstr "Настройки ссылок на задачи и преобразования флажков в задачи в заметках."
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Shift"
+msgstr "Shift"
+
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakLength.short"
 msgid "short"
@@ -13122,6 +13147,11 @@ msgctxt "settings.defaults.options.today"
 msgid "Today"
 msgstr "Сегодня"
 
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDay"
+msgid "Today"
+msgstr "Сегодня"
+
 #: src/modals/DateTimePickerModal.ts
 msgctxt "views.agenda.today"
 msgid "Today"
@@ -13218,6 +13248,11 @@ msgstr "Завтра"
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.options.tomorrow"
+msgid "Tomorrow"
+msgstr "Завтра"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDay"
 msgid "Tomorrow"
 msgstr "Завтра"
 
@@ -14305,6 +14340,11 @@ msgstr "Ежегодное повторение"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
+msgid "Yesterday"
+msgstr "Вчера"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDay"
 msgid "Yesterday"
 msgstr "Вчера"
 

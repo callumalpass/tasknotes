@@ -164,7 +164,7 @@ const allowedHostClassesInScopedContext = new Set([
 ]);
 
 const ignoredSelectorFiles = new Set([
-	"variables.css",
+	"tokens.css",
 	"static-style-utilities.css",
 	"index.css",
 ]);

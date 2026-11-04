@@ -30,7 +30,7 @@
 .task-selector-with-create-modal .task-card {
     background: transparent;
     box-shadow: none;
-    padding: var(--tn-spacing-sm) 0;
+    padding: var(--tn-space-1) 0;
     margin: 0;
     width: 100%;
     min-width: 0;
@@ -72,8 +72,8 @@
 .task-selector-create-footer {
     display: flex;
     align-items: flex-start;
-    gap: var(--tn-spacing-md);
-    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
+    gap: var(--tn-space-2);
+    padding: var(--tn-space-2) var(--tn-space-3);
     background: var(--background-secondary);
     border-top: 1px solid var(--background-modifier-border);
     margin-top: auto;
@@ -118,7 +118,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 }
 
 /* ================================================
@@ -128,12 +128,12 @@
 .task-selector-create-footer__title-line {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
 }
 
 .task-selector-create-footer__title {
     font-weight: 600;
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     color: var(--text-normal);
     line-height: 1.3;
     /* Allow wrapping for long titles */
@@ -149,7 +149,7 @@
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
-    margin-top: var(--tn-spacing-xs);
+    margin-top: var(--tn-space-half);
 }
 
 .task-selector-create-footer__chip {
@@ -158,7 +158,7 @@
     gap: 4px;
     padding: 3px 10px;
     border-radius: 12px;
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     font-weight: 500;
     white-space: nowrap;
     max-width: 180px;
@@ -265,7 +265,7 @@
 }
 
 .task-selector-create-footer__hint-text {
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     color: var(--text-faint);
 }
 
@@ -343,7 +343,7 @@
 
 @media (max-width: 480px) {
     .task-selector-create-footer {
-        padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+        padding: var(--tn-space-half) var(--tn-space-1);
     }
 
     .task-selector-create-footer__icon {
@@ -357,7 +357,7 @@
     }
 
     .task-selector-create-footer__title {
-        font-size: var(--tn-font-size-sm);
+        font-size: var(--tn-type-xs);
     }
 
     .task-selector-create-footer__chip {

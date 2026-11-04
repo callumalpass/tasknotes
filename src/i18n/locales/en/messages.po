@@ -1838,6 +1838,11 @@ msgctxt "views.taskList.movement.noChange"
 msgid "Already in this group."
 msgstr "Already in this group."
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Alt"
+msgstr "Alt"
+
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
 msgid "An error occurred"
@@ -3966,6 +3971,11 @@ msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Creation date unknown"
 msgstr "Creation date unknown"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Ctrl"
+msgstr "Ctrl"
+
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.current"
 msgid "Current"
@@ -5401,6 +5411,11 @@ msgstr "Error: Could not initialize field configuration"
 msgctxt "settings.modalFields.manager.invalidConfig"
 msgid "Error: Invalid field configuration. Please reset to defaults."
 msgstr "Error: Invalid field configuration. Please reset to defaults."
+
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Esc"
+msgstr "Esc"
 
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.timeEstimate.description"
@@ -8782,6 +8797,11 @@ msgctxt "ui.filterBar.group.none"
 msgid "None"
 msgstr "None"
 
+#: src/ui/taskCardPrimaryIndicators.ts
+msgctxt "ui.taskCard.noPriority"
+msgid "None"
+msgstr "None"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Normal"
@@ -11071,6 +11091,11 @@ msgctxt "settings.features.inlineTasks.description"
 msgid "Settings for task links and checkbox-to-task conversion in notes."
 msgstr "Settings for task links and checkbox-to-task conversion in notes."
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Shift"
+msgstr "Shift"
+
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakLength.short"
 msgid "short"
@@ -13122,6 +13147,11 @@ msgctxt "settings.defaults.options.today"
 msgid "Today"
 msgstr "Today"
 
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDay"
+msgid "Today"
+msgstr "Today"
+
 #: src/modals/DateTimePickerModal.ts
 msgctxt "views.agenda.today"
 msgid "Today"
@@ -13218,6 +13248,11 @@ msgstr "Tomorrow"
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.options.tomorrow"
+msgid "Tomorrow"
+msgstr "Tomorrow"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDay"
 msgid "Tomorrow"
 msgstr "Tomorrow"
 
@@ -14305,6 +14340,11 @@ msgstr "Yearly recurrence"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
+msgid "Yesterday"
+msgstr "Yesterday"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDay"
 msgid "Yesterday"
 msgstr "Yesterday"
 

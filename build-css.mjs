@@ -3,8 +3,8 @@ import { join } from 'path';
 
 const CSS_FILES = [
     // Core System Files
-    'styles/variables.css',          // CSS custom properties and design system variables
-    'styles/utilities.css',          // Scoped utility classes for layout, spacing, typography
+    'styles/tokens.css',             // Design tokens (see docs/development/design-system.md)
+    'styles/kit.css',                // Shared component kit
     'styles/base.css',               // Basic styles, animations, card components, and layout
     
     // BEM Component Files
@@ -56,8 +56,8 @@ const MAIN_CSS_TEMPLATE = `/* TaskNotes Plugin Styles */
    Source files:
    
    Core System:
-   - styles/variables.css: CSS custom properties and design system variables
-   - styles/utilities.css: Scoped utility classes for layout, spacing, typography, and states
+   - styles/tokens.css: Design tokens
+   - styles/kit.css: Shared component kit
    - styles/base.css: Basic styles, animations, card components, and layout
    
    BEM Component Files:

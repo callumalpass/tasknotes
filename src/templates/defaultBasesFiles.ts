@@ -207,7 +207,6 @@ function generateOrderArray(plugin: TaskNotesPlugin): string[] {
 
 	// Add essential properties that should always be in the order
 	const essentialProperties = [
-		"file.name", // title
 		mapPropertyToBasesProperty("recurrence", plugin),
 		mapPropertyToBasesProperty("complete_instances", plugin),
 		mapPropertyToBasesProperty("checklistProgress", plugin),

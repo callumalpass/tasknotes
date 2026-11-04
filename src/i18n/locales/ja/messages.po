@@ -1837,6 +1837,11 @@ msgctxt "views.taskList.movement.noChange"
 msgid "Already in this group."
 msgstr "すでにこのグループにあります。"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Alt"
+msgstr "Alt"
+
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
 msgid "An error occurred"
@@ -3965,6 +3970,11 @@ msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Creation date unknown"
 msgstr "作成日は不明です"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Ctrl"
+msgstr "Ctrl"
+
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.current"
 msgid "Current"
@@ -5400,6 +5410,11 @@ msgstr "エラー: フィールド設定を初期化できませんでした"
 msgctxt "settings.modalFields.manager.invalidConfig"
 msgid "Error: Invalid field configuration. Please reset to defaults."
 msgstr "エラー: フィールド設定が無効です。既定値にリセットしてください。"
+
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Esc"
+msgstr "Esc"
 
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.timeEstimate.description"
@@ -8781,6 +8796,11 @@ msgctxt "ui.filterBar.group.none"
 msgid "None"
 msgstr "なし"
 
+#: src/ui/taskCardPrimaryIndicators.ts
+msgctxt "ui.taskCard.noPriority"
+msgid "None"
+msgstr "なし"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Normal"
@@ -11070,6 +11090,11 @@ msgctxt "settings.features.inlineTasks.description"
 msgid "Settings for task links and checkbox-to-task conversion in notes."
 msgstr "ノート内のタスクリンクとチェックボックスからタスクへの変換の設定。"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Shift"
+msgstr "Shift"
+
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakLength.short"
 msgid "short"
@@ -13121,6 +13146,11 @@ msgctxt "settings.defaults.options.today"
 msgid "Today"
 msgstr "今日"
 
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDay"
+msgid "Today"
+msgstr "今日"
+
 #: src/modals/DateTimePickerModal.ts
 msgctxt "views.agenda.today"
 msgid "Today"
@@ -13217,6 +13247,11 @@ msgstr "明日"
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.options.tomorrow"
+msgid "Tomorrow"
+msgstr "明日"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDay"
 msgid "Tomorrow"
 msgstr "明日"
 
@@ -14304,6 +14339,11 @@ msgstr "年次繰り返し"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
+msgid "Yesterday"
+msgstr "昨日"
+
+#: src/ui/taskCardProperties.ts
+msgctxt "ui.taskCard.relativeDay"
 msgid "Yesterday"
 msgstr "昨日"
 

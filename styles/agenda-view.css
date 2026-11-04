@@ -4,12 +4,12 @@
 
 /* Agenda View Container - Root Block */
 .tasknotes-plugin .agenda-view {
-    padding: var(--tn-spacing-sm);
+    padding: var(--tn-space-1);
     display: flex;
     flex-direction: column;
     height: 100%;
     overflow-y: auto;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
     max-width: 100%;
 }
 
@@ -17,8 +17,8 @@
 .tasknotes-plugin .agenda-view__controls {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-md);
-    margin-bottom: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
+    margin-bottom: var(--tn-space-2);
 }
 
 /* Header Section */
@@ -26,8 +26,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--tn-spacing-lg) var(--tn-spacing-md);
-    margin-bottom: var(--tn-spacing-lg);
+    padding: var(--tn-space-3) var(--tn-space-2);
+    margin-bottom: var(--tn-space-3);
     position: relative;
     background: transparent;
 }
@@ -44,24 +44,24 @@
 .tasknotes-plugin .agenda-view__nav-section {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
 }
 
 .tasknotes-plugin .agenda-view__title-section {
     flex: 1;
     display: flex;
     justify-content: center;
-    margin: 0 var(--tn-spacing-lg);
+    margin: 0 var(--tn-space-3);
 }
 
 .tasknotes-plugin .agenda-view__actions-section {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 }
 
 .tasknotes-plugin .agenda-view__period-title {
-    font-size: var(--tn-font-size-xl);
+    font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
     text-align: center;
@@ -82,7 +82,7 @@
 
 /* Filter Bar Container */
 .tasknotes-plugin .agenda-view__filter-container {
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-space-2);
 }
 
 /* Settings Section */
@@ -90,42 +90,42 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--tn-spacing-md);
+    padding: var(--tn-space-2);
     background: var(--tn-bg-secondary);
     border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    gap: var(--tn-spacing-md);
+    border-radius: var(--tn-radius-lg);
+    gap: var(--tn-space-2);
     flex-wrap: wrap;
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-space-2);
     box-shadow: var(--tn-shadow-light);
 }
 
 .tasknotes-plugin .agenda-view__settings-left {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 }
 
 .tasknotes-plugin .agenda-view__settings-right {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
 }
 
 /* Period Selector */
 .tasknotes-plugin .agenda-view__period-select {
     appearance: none;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-xl) var(--tn-spacing-sm) var(--tn-spacing-md);
+    padding: var(--tn-space-1) var(--tn-space-4) var(--tn-space-1) var(--tn-space-2);
     border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
+    border-radius: var(--tn-radius-md);
     background: var(--tn-bg-primary);
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right var(--tn-spacing-sm) center;
+    background-position: right var(--tn-space-1) center;
     background-repeat: no-repeat;
     background-size: 16px;
     color: var(--tn-text-normal);
     font-family: inherit;
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     font-weight: 400;
     min-width: 120px;
     min-height: var(--tn-input-height-md);
@@ -150,14 +150,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--tn-spacing-xs);
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    gap: var(--tn-space-half);
+    padding: var(--tn-space-1) var(--tn-space-2);
     border: none;
-    border-radius: var(--tn-radius-md);
+    border-radius: var(--tn-radius-lg);
     background: transparent;
     color: var(--tn-text-muted);
     font-family: inherit;
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1.25;
     height: var(--tn-button-height-md);
@@ -181,7 +181,7 @@
 }
 
 .tasknotes-plugin .agenda-view__today-button:active {
-    background: var(--tn-interactive-active);
+    background: var(--tn-active);
     transform: translateY(1px);
 }
 
@@ -189,13 +189,13 @@
 .tasknotes-plugin .agenda-view__toggle {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
     cursor: var(--cursor-link, pointer);
     user-select: none;
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-normal);
-    padding: var(--tn-spacing-sm);
-    border-radius: var(--tn-radius-sm);
+    padding: var(--tn-space-1);
+    border-radius: var(--tn-radius-md);
     transition: background-color var(--tn-transition-fast);
 }
 
@@ -208,7 +208,7 @@
 .tasknotes-plugin .agenda-view__content {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
     flex: 1;
     min-height: 0;
 }
@@ -218,16 +218,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--tn-spacing-sm);
-    padding: var(--tn-spacing-lg);
+    gap: var(--tn-space-1);
+    padding: var(--tn-space-3);
     color: var(--tn-text-muted);
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     font-style: italic;
     font-weight: 400;
     background: var(--tn-bg-secondary);
     border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    margin-bottom: var(--tn-spacing-md);
+    border-radius: var(--tn-radius-lg);
+    margin-bottom: var(--tn-space-2);
     box-shadow: var(--tn-shadow-light);
 }
 
@@ -244,16 +244,16 @@
 
 /* Day Section */
 .tasknotes-plugin .agenda-view__day {
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-space-2);
 }
 
 .tasknotes-plugin .agenda-view__day-header {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: var(--tn-spacing-sm);
-    padding: var(--tn-spacing-md) 0 var(--tn-spacing-sm);
-    margin-bottom: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
+    padding: var(--tn-space-2) 0 var(--tn-space-1);
+    margin-bottom: var(--tn-space-1);
     border-bottom: 1px solid var(--tn-border-color);
     position: relative;
     cursor: var(--cursor-link, pointer);
@@ -261,14 +261,14 @@
 
 /* Day section container (like task groups) */
 .tasknotes-plugin .agenda-view__day-section {
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-space-2);
 }
 
 /* Day items container */
 .tasknotes-plugin .agenda-view__day-items {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
 }
 
 /* Collapsed state */
@@ -283,7 +283,7 @@
     justify-content: center;
     width: 20px;
     height: 20px;
-    margin-right: var(--tn-spacing-xs);
+    margin-right: var(--tn-space-half);
     border: none;
     background: transparent;
     color: var(--tn-text-normal);
@@ -319,11 +319,11 @@
 .tasknotes-plugin .agenda-view__day-header-text {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 }
 
 .tasknotes-plugin .agenda-view__day-name {
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
     letter-spacing: 0.01em;
@@ -333,9 +333,9 @@
 .tasknotes-plugin .agenda-view__day-name--today {
     background: var(--tn-interactive-accent);
     color: var(--tn-bg-primary);
-    padding: var(--tn-spacing-xs) var(--tn-spacing-md);
-    border-radius: var(--tn-radius-md);
-    font-size: var(--tn-font-size-sm);
+    padding: var(--tn-space-half) var(--tn-space-2);
+    border-radius: var(--tn-radius-lg);
+    font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -349,7 +349,7 @@
 }
 
 .tasknotes-plugin .agenda-view__day-date {
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
     font-weight: 400;
     letter-spacing: 0.01em;
@@ -361,7 +361,7 @@
     border: none;
     border-radius: 0;
     padding: 0;
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1.2;
     display: inline-flex;
@@ -377,37 +377,37 @@
 .tasknotes-plugin .agenda-view__day-content {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
 }
 
 .tasknotes-plugin .agenda-view__day-content--flat {
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
 }
 
 
 /* Empty States */
 .tasknotes-plugin .agenda-view__empty {
-    padding: var(--tn-spacing-xl) var(--tn-spacing-lg);
+    padding: var(--tn-space-4) var(--tn-space-3);
     text-align: center;
     background: var(--tn-bg-secondary);
     border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    margin: var(--tn-spacing-lg) 0;
+    border-radius: var(--tn-radius-lg);
+    margin: var(--tn-space-3) 0;
     box-shadow: var(--tn-shadow-light);
 }
 
 .tasknotes-plugin .agenda-view__empty-title {
-    margin: 0 0 var(--tn-spacing-md) 0;
+    margin: 0 0 var(--tn-space-2) 0;
     color: var(--tn-text-normal);
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1.3;
 }
 
 .tasknotes-plugin .agenda-view__empty-description {
-    margin: 0 0 var(--tn-spacing-md) 0;
+    margin: 0 0 var(--tn-space-2) 0;
     color: var(--tn-text-muted);
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     line-height: 1.5;
     font-weight: 400;
 }
@@ -418,9 +418,9 @@
 
 .tasknotes-plugin .agenda-view__empty-tip {
     font-style: italic;
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
-    margin-top: var(--tn-spacing-sm);
+    margin-top: var(--tn-space-1);
 }
 
 .tasknotes-plugin .agenda-view__empty-tip span {
@@ -431,13 +431,13 @@
 
 /* Error States */
 .tasknotes-plugin .agenda-view__error {
-    padding: var(--tn-spacing-lg);
+    padding: var(--tn-space-3);
     text-align: center;
     color: var(--tn-color-error);
     background: color-mix(in srgb, var(--tn-color-error) 0.05, var(--tn-bg-secondary));
     border: 1px solid color-mix(in srgb, var(--tn-color-error) 0.3, transparent);
-    border-radius: var(--tn-radius-md);
-    font-size: var(--tn-font-size-md);
+    border-radius: var(--tn-radius-lg);
+    font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1.5;
     box-shadow: var(--tn-shadow-light);
@@ -445,17 +445,17 @@
 
 
 .tasknotes-plugin .agenda-view .tasks-container {
-    margin-bottom: var(--tn-spacing-xs);
+    margin-bottom: var(--tn-space-half);
 }
 
 /* Note Date Display in Flat List */
 .tasknotes-plugin .agenda-view__note-date {
     display: inline-block;
-    margin-left: var(--tn-spacing-sm);
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    margin-left: var(--tn-space-1);
+    padding: var(--tn-space-half) var(--tn-space-1);
     background: var(--tn-bg-secondary);
-    border-radius: var(--tn-radius-sm);
-    font-size: var(--tn-font-size-xs);
+    border-radius: var(--tn-radius-md);
+    font-size: var(--tn-type-2xs);
     color: var(--tn-text-muted);
     font-weight: var(--tn-font-weight-medium);
 }
@@ -463,12 +463,12 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .tasknotes-plugin .agenda-view {
-        padding: var(--tn-spacing-xs);
+        padding: var(--tn-space-half);
     }
     
     .tasknotes-plugin .agenda-view__header-content {
         flex-direction: column;
-        gap: var(--tn-spacing-md);
+        gap: var(--tn-space-2);
     }
     
     .tasknotes-plugin .agenda-view__title-section {
@@ -477,7 +477,7 @@
     }
     
     .tasknotes-plugin .agenda-view__period-title {
-        font-size: var(--tn-font-size-lg);
+        font-size: var(--tn-type-sm);
     }
     
     .tasknotes-plugin .agenda-view__nav-section,
@@ -494,7 +494,7 @@
     .tasknotes-plugin .agenda-view__settings {
         flex-direction: column;
         align-items: stretch;
-        gap: var(--tn-spacing-sm);
+        gap: var(--tn-space-1);
     }
     
     .tasknotes-plugin .agenda-view__settings-left,
@@ -504,13 +504,13 @@
     }
     
     .tasknotes-plugin .agenda-view__settings-right {
-        gap: var(--tn-spacing-sm);
+        gap: var(--tn-space-1);
     }
     
     .tasknotes-plugin .agenda-view__day-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--tn-spacing-xs);
+        gap: var(--tn-space-half);
     }
     
     .tasknotes-plugin .agenda-view__day-header-text {
@@ -525,11 +525,11 @@
 
 @media (max-width: 480px) {
     .tasknotes-plugin .agenda-view__header-content {
-        gap: var(--tn-spacing-xs);
+        gap: var(--tn-space-half);
     }
     
     .tasknotes-plugin .agenda-view__period-title {
-        font-size: var(--tn-font-size-md);
+        font-size: var(--tn-type-xs);
         min-width: 120px;
     }
     

@@ -307,7 +307,7 @@
 .tasknotes-plugin .task-inline-preview--completed .task-inline-preview__status-dot {
     background-color: var(--current-status-color, var(--tn-color-success));
     border-color: var(--current-status-color, var(--tn-color-success));
-    color: var(--tn-text-on-accent);
+    color: var(--text-on-accent);
     font-size: 9px;
     font-weight: bold;
     display: flex;

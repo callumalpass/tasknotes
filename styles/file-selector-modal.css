@@ -10,23 +10,23 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: var(--tn-spacing-xs) 0;
+    padding: var(--tn-space-half) 0;
 }
 
 .file-selector-suggestion__name {
     font-weight: 500;
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     color: var(--text-normal);
 }
 
 .file-selector-suggestion__title,
 .file-selector-suggestion__aliases {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     color: var(--text-muted);
 }
 
 .file-selector-suggestion__path {
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     color: var(--text-faint);
 }
 
@@ -37,8 +37,8 @@
 .file-selector-create-footer {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-md);
-    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
+    gap: var(--tn-space-2);
+    padding: var(--tn-space-2) var(--tn-space-3);
     background: var(--background-secondary);
     border-top: 1px solid var(--background-modifier-border);
     margin-top: auto;
@@ -52,7 +52,7 @@
 .file-selector-create-footer__title-line {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
 }
 
 .file-selector-create-footer__shortcut {
@@ -69,12 +69,12 @@
 }
 
 .file-selector-create-footer__hint-text {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     color: var(--text-faint);
 }
 
 .file-selector-create-footer__filename {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     color: var(--text-normal);
     font-weight: 500;
 }

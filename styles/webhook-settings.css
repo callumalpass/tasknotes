@@ -408,7 +408,7 @@
 
 .tasknotes-webhook-help-list {
   color: var(--text-muted);
-  font-size: var(--tn-font-size-sm);
+  font-size: var(--tn-type-xs);
   margin: 0.75rem 0;
   padding-left: 1.25rem;
 }
@@ -512,7 +512,7 @@
 }
 
 .tasknotes-webhook-secret-content {
-  margin-bottom: var(--tn-spacing-lg);
+  margin-bottom: var(--tn-space-3);
   font-size: 0.9rem;
   line-height: 1.4;
 }

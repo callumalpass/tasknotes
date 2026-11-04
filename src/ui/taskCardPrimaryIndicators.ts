@@ -5,6 +5,12 @@ import type TaskNotesPlugin from "../main";
 import type { PriorityConfig, TaskInfo } from "../types";
 import { isPropertyForField } from "../utils/propertyMapping";
 import { prepareInteractiveControl } from "./taskCardIndicators";
+import {
+	priorityGlyphState,
+	renderPriorityGlyph,
+	renderStatusGlyph,
+	statusGlyphState,
+} from "./kit/glyphs";
 
 type StatusConfig = ReturnType<TaskNotesPlugin["statusManager"]["getStatusConfig"]>;
 
@@ -88,24 +94,20 @@ export function applyTaskCardPriorityColor(
 
 export function configureStatusIndicator(
 	statusDot: HTMLElement,
-	statusConfig: StatusConfig | null | undefined
+	statusConfig: StatusConfig | null | undefined,
+	plugin: TaskNotesPlugin
 ): void {
-	if (statusConfig?.color) {
-		statusDot.style.borderColor = statusConfig.color;
-	} else {
-		statusDot.style.removeProperty("border-color");
-	}
-
+	statusDot.addClass("task-card__status-dot--icon");
+	statusDot.empty();
 	if (statusConfig?.icon) {
-		statusDot.addClass("task-card__status-dot--icon");
-		statusDot.empty();
+		delete statusDot.dataset.tnGlyph;
 		setIcon(statusDot, statusConfig.icon);
-	} else {
-		statusDot.removeClass("task-card__status-dot--icon");
-		statusDot.empty();
-		statusDot.removeAttribute("data-icon");
-		statusDot.classList.remove("has-icon");
+		return;
 	}
+	renderStatusGlyph(
+		statusDot,
+		statusGlyphState(statusConfig?.value ?? "", plugin.statusManager.getAllStatuses())
+	);
 }
 
 export function createStatusIndicator(config: StatusIndicatorConfig): HTMLElement | null {
@@ -128,7 +130,7 @@ export function createStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 	}
 
 	const statusDot = mainRow.createSpan({ cls: "task-card__status-dot" });
-	configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus));
+	configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus), plugin);
 	prepareInteractiveControl(statusDot);
 	statusDot.addEventListener("click", onClick);
 	statusDot.dataset.taskPath = task.path;
@@ -169,7 +171,7 @@ export function updateStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 	}
 
 	if (statusDot) {
-		configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus));
+		configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus), plugin);
 		return statusDot;
 	}
 	if (!mainRow) {
@@ -185,37 +187,37 @@ export function updateStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 
 export function configurePriorityIndicator(
 	priorityDot: HTMLElement,
-	priorityConfig: PriorityConfig,
+	priorityConfig: PriorityConfig | undefined,
 	plugin: TaskNotesPlugin
 ): void {
-	priorityDot.style.borderColor = priorityConfig.color;
+	const label = priorityConfig
+		? configLabel(priorityConfig)
+		: plugin.i18n.translate(msg({ message: "None", context: "ui.taskCard.noPriority" }));
 	priorityDot.setAttribute(
 		"aria-label",
 		plugin.i18n.translate(msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" }), {
-			label: configLabel(priorityConfig),
+			label,
 		})
 	);
 	priorityDot.replaceChildren();
-	priorityDot.classList.toggle("task-card__priority-dot--icon", !!priorityConfig.icon);
+	priorityDot.classList.add("task-card__priority-dot--icon");
 
-	if (priorityConfig.icon) {
+	if (priorityConfig?.icon) {
+		delete priorityDot.dataset.tnGlyph;
 		setIcon(priorityDot, priorityConfig.icon);
-	} else {
-		priorityDot.removeAttribute("data-icon");
-		priorityDot.classList.remove("has-icon");
+		return;
 	}
+	renderPriorityGlyph(
+		priorityDot,
+		priorityGlyphState(priorityConfig?.value, plugin.priorityManager.getAllPriorities())
+	);
 }
 
 export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLElement | null {
 	const { mainRow, task, plugin, visibleProperties, onClick } = config;
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 
-	if (
-		!task.priority ||
-		!priorityConfig ||
-		!shouldShowPriorityIndicator(visibleProperties, plugin) ||
-		!mainRow
-	) {
+	if (!shouldShowPriorityIndicator(visibleProperties, plugin) || !mainRow) {
 		return null;
 	}
 
@@ -239,11 +241,7 @@ export function updatePriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	const existingPriorityDot = card.querySelector<HTMLElement>(".task-card__priority-dot");
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 
-	if (
-		!task.priority ||
-		!priorityConfig ||
-		!shouldShowPriorityIndicator(visibleProperties, plugin)
-	) {
+	if (!shouldShowPriorityIndicator(visibleProperties, plugin)) {
 		existingPriorityDot?.remove();
 		return null;
 	}

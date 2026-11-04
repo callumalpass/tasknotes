@@ -612,7 +612,7 @@ body.is-mobile .timeblock-attachment-remove {
     flex: 1;
     overflow: auto;
     border: 1px solid var(--background-modifier-border);
-    border-radius: var(--tn-radius-md);
+    border-radius: var(--tn-radius-lg);
     min-height: 0;
 }
 

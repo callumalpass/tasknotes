@@ -75,7 +75,7 @@ export function updateTaskCardStatusIndicatorVisuals({
 	effectiveStatus,
 	isCompleted,
 }: UpdateTaskCardStatusIndicatorVisualsOptions): void {
-	configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus));
+	configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus), plugin);
 	applyTaskCardStatusColors(card, effectiveStatus, plugin);
 
 	const checkbox = card.querySelector<HTMLInputElement>(".task-card__checkbox");

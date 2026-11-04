@@ -1,0 +1,171 @@
+/* TaskNotes design tokens. See docs/development/design-system.md.
+   This is the only file that may hold raw font sizes, radii and shadows. */
+
+.tasknotes-plugin {
+    /* Type */
+    /* Scales with Obsidian's font size setting. Absolute units so pop-out roots can't shrink it. */
+    --tn-type-base: var(--font-text-size, 16px);
+    --tn-type-2xs: calc(var(--tn-type-base) * 0.6875);
+    --tn-type-xs: calc(var(--tn-type-base) * 0.75);
+    --tn-type-sm: calc(var(--tn-type-base) * 0.8125);
+    --tn-type-md: calc(var(--tn-type-base) * 0.875);
+    --tn-type-lg: calc(var(--tn-type-base) * 1.125);
+    --tn-type-xl: calc(var(--tn-type-base) * 1.5);
+
+    --tn-font-weight-normal: 400;
+    --tn-font-weight-medium: 500;
+    --tn-font-weight-semibold: 600;
+    --tn-font-weight-bold: 600;
+
+    /* Space */
+    --tn-space-half: 2px;
+    --tn-space-1: 4px;
+    --tn-space-2: 8px;
+    --tn-space-3: 12px;
+    --tn-space-4: 16px;
+    --tn-space-5: 20px;
+    --tn-space-6: 24px;
+    --tn-space-8: 32px;
+
+    /* Radius */
+    --tn-radius-sm: 4px;
+    --tn-radius-md: 6px;
+    --tn-radius-lg: 8px;
+    --tn-radius-xl: 12px;
+    --tn-radius-full: 999px;
+
+    /* Surfaces and text come from the theme */
+    --tn-bg-primary: var(--background-primary);
+    --tn-bg-secondary: var(--background-secondary);
+    --tn-bg-primary-alt: var(--background-primary-alt, var(--background-primary));
+    --tn-bg-secondary-alt: var(--background-secondary-alt, var(--background-secondary));
+    --tn-text-normal: var(--text-normal);
+    --tn-text-muted: var(--text-muted);
+    --tn-text-faint: var(--text-faint);
+    --tn-text-accent: var(--text-accent, var(--interactive-accent));
+
+    /* Lines */
+    --tn-hairline: color-mix(in srgb, var(--background-modifier-border) 70%, transparent);
+    --tn-border-color: var(--background-modifier-border);
+    --tn-border-color-hover: var(--background-modifier-border-hover);
+    --tn-border-color-focus: var(--background-modifier-border-focus);
+    --tn-border-color-interactive: var(--interactive-accent);
+
+    /* Interaction states */
+    --tn-hover: var(--background-modifier-hover);
+    --tn-active: var(--background-modifier-active-hover, var(--background-modifier-hover));
+    --tn-selected: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+    --tn-selected-hover: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+    --tn-focus-ring: color-mix(in srgb, var(--interactive-accent) 60%, transparent);
+
+    --tn-interactive-normal: var(--interactive-normal);
+    --tn-interactive-hover: var(--tn-hover);
+    --tn-interactive-accent: var(--interactive-accent);
+    --tn-interactive-accent-hover: var(--interactive-accent-hover);
+    --tn-interactive-success: var(--interactive-success);
+
+    /* Semantic colour */
+    --tn-danger: var(--color-red, var(--text-error));
+    --tn-warning: var(--color-orange, var(--text-warning));
+    --tn-success: var(--color-green, var(--text-success));
+    --tn-info: var(--color-blue, var(--text-accent));
+
+    --tn-color-success: var(--tn-success);
+    --tn-color-warning: var(--tn-warning);
+    --tn-color-error: var(--tn-danger);
+    --tn-color-info: var(--tn-info);
+    --tn-color-overdue: var(--tn-danger);
+
+    /* Depth */
+    --tn-shadow-color: black;
+    --tn-shadow-raised: 0 2px 8px rgba(0, 0, 0, 0.12);
+    --tn-shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.08);
+    --tn-shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.08);
+
+    --tn-shadow-light: var(--tn-shadow-raised);
+    --tn-shadow-medium: var(--tn-shadow-raised);
+    --tn-shadow-strong: var(--tn-shadow-overlay);
+    --tn-shadow-hover: var(--tn-shadow-raised);
+
+    /* Motion */
+    --tn-motion-fast: 80ms;
+    --tn-motion-base: 140ms;
+    --tn-motion-slow: 220ms;
+    --tn-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+    --tn-transition-instant: var(--tn-motion-fast) var(--tn-ease);
+    --tn-transition-fast: var(--tn-motion-fast) var(--tn-ease);
+    --tn-transition-normal: var(--tn-motion-base) var(--tn-ease);
+    --tn-transition-slow: var(--tn-motion-slow) var(--tn-ease);
+
+    /* Controls */
+    --tn-control-sm: 24px;
+    --tn-control-md: 28px;
+    --tn-row-height: 34px;
+    --tn-row-height-compact: 28px;
+    --tn-glyph: 16px;
+    --tn-glyph-sm: 14px;
+
+    --tn-button-height-sm: var(--tn-control-sm);
+    --tn-button-height-md: var(--tn-control-md);
+    --tn-button-height-lg: 32px;
+    --tn-input-height-sm: var(--tn-control-sm);
+    --tn-input-height-md: var(--tn-control-md);
+    --tn-input-height-lg: 32px;
+    --tn-touch-target: 40px;
+    --tn-icon-sm: var(--tn-glyph-sm);
+    --tn-icon-md: var(--tn-glyph);
+    --tn-icon-lg: 20px;
+
+    /* Layers */
+    --tn-z-base: 0;
+    --tn-z-sticky: 100;
+    --tn-z-dropdown: 1000;
+    --tn-z-modal: 2000;
+    --tn-z-tooltip: 3000;
+    --tn-z-notification: 4000;
+
+    /* Status and priority colours are injected by StatusManager and PriorityManager */
+    --tn-color-status-fallback: var(--tn-text-muted);
+    --tn-color-priority-fallback: var(--tn-text-muted);
+
+    /* Meaningful non-status colours */
+    --tn-color-archived: var(--text-muted);
+    --tn-color-daily-note: var(--color-purple, var(--text-accent));
+    --tn-color-recurring: var(--color-purple, var(--text-accent));
+    --tn-color-notes-light: var(--color-blue, var(--text-accent));
+    --tn-color-notes-medium: var(--color-blue, var(--text-accent));
+    --tn-color-notes-heavy: var(--color-blue, var(--text-accent));
+    --tn-color-google-calendar: var(--color-blue, #4285f4);
+    --tn-color-microsoft-calendar: var(--color-blue, #0078d4);
+    --tn-color-time-entry: var(--tn-success);
+    --tn-color-time-entry-text: var(--tn-success);
+    --tn-color-time-entry-bg-soft: color-mix(in srgb, var(--tn-success) 8%, transparent);
+    --tn-color-time-entry-bg-medium: color-mix(in srgb, var(--tn-success) 15%, transparent);
+
+    --tn-nested-task-indent: 24px;
+    --tn-nested-task-padding: 15px;
+
+    font-variant-numeric: tabular-nums;
+}
+
+body.is-mobile .tasknotes-plugin {
+    --tn-row-height: 44px;
+    --tn-row-height-compact: 40px;
+    --tn-control-md: 36px;
+    --tn-nested-task-indent: 12px;
+    --tn-nested-task-padding: 10px;
+    --tn-mobile-task-card-indicator-size: 24px;
+    --tn-mobile-task-card-menu-size: 32px;
+    --tn-mobile-task-card-dot-padding: 6px;
+    --tn-mobile-inline-indicator-size: 20px;
+    --tn-mobile-inline-menu-size: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin {
+        --tn-motion-fast: 0ms;
+        --tn-motion-base: 0ms;
+        --tn-motion-slow: 0ms;
+    }
+}

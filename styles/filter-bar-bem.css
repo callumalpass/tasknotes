@@ -8,8 +8,8 @@
 .tasknotes-plugin .advanced-filter-bar {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-md);
-    margin-bottom: var(--tn-spacing-lg);
+    gap: var(--tn-space-2);
+    margin-bottom: var(--tn-space-3);
 }
 
 /* Top Controls (Filter Icon + Search + Templates Button) */
@@ -77,8 +77,8 @@
 .tasknotes-plugin .filter-bar__clear-filters {
   display: inline-flex;
   align-items: center;
-  gap: var(--tn-spacing-xs);
-  margin-left: var(--tn-spacing-sm);
+  gap: var(--tn-space-half);
+  margin-left: var(--tn-space-1);
   padding: 2px 6px;
   border-radius: var(--radius-s);
   border: 1px solid var(--color-grey-tint);
@@ -142,7 +142,7 @@
 .tasknotes-plugin .filter-date-input-container {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     width: 100%;
 }
 
@@ -195,7 +195,7 @@
     background: var(--background-primary);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-m);
-    padding: var(--tn-spacing-sm);
+    padding: var(--tn-space-1);
     box-shadow: var(--shadow-s);
     min-width: 200px;
     max-width: 300px;
@@ -203,7 +203,7 @@
 }
 
 .filter-date-help-tooltip h4 {
-    margin: 0 0 var(--tn-spacing-xs) 0;
+    margin: 0 0 var(--tn-space-half) 0;
     color: var(--text-normal);
     font-weight: var(--font-semibold);
 }
@@ -218,7 +218,7 @@
 }
 
 .filter-date-help-tooltip li {
-    padding: 2px var(--tn-spacing-xs);
+    padding: 2px var(--tn-space-half);
     color: var(--text-muted);
     background: var(--background-modifier-hover);
     border-radius: var(--radius-s);
@@ -228,7 +228,7 @@
 
 .tasknotes-plugin .filter-bar__filter-toggle {
     position: relative; /* context for badge */
-    padding: var(--tn-spacing-xs);
+    padding: var(--tn-space-half);
     background: transparent;
     border: none;
     border-radius: var(--radius-s);
@@ -255,7 +255,7 @@
 }
 
 .tasknotes-plugin .filter-bar__templates-button {
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    padding: var(--tn-space-half) var(--tn-space-1);
     background: transparent;
     border: none;
     border-radius: var(--radius-s);
@@ -291,7 +291,7 @@
 /* Search Input */
 .tasknotes-plugin .filter-bar__search-input {
     flex: 1;
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    padding: var(--tn-space-half) var(--tn-space-1);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
     background: var(--background-primary);
@@ -325,8 +325,8 @@
     z-index: 1000; /* High z-index */
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-lg);
-    padding: var(--tn-spacing-lg);
+    gap: var(--tn-space-3);
+    padding: var(--tn-space-3);
     background: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-m);
@@ -381,7 +381,7 @@
 }
 
 .tasknotes-plugin .filter-bar__view-section {
-    padding: var(--tn-spacing-md);
+    padding: var(--tn-space-2);
 }
 
 .tasknotes-plugin .filter-bar__view-section:not(:last-child) {
@@ -394,8 +394,8 @@
     color: var(--text-normal);
     text-transform: none; /* Normal case */
     letter-spacing: 0; /* Natural spacing */
-    margin-bottom: var(--tn-spacing-sm);
-    padding-bottom: var(--tn-spacing-xs);
+    margin-bottom: var(--tn-space-1);
+    padding-bottom: var(--tn-space-half);
 }
 
 .tasknotes-plugin .filter-bar__view-item-container {
@@ -420,7 +420,7 @@
     justify-content: center;
     width: 24px;
     height: 24px;
-    margin-right: var(--tn-spacing-xs);
+    margin-right: var(--tn-space-half);
     color: var(--text-faint);
     cursor: grab;
     font-size: 14px;
@@ -480,7 +480,7 @@
 
 .tasknotes-plugin .filter-bar__view-item {
     flex: 1;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    padding: var(--tn-space-1) var(--tn-space-2);
     background: none;
     border: none;
     box-shadow: none;
@@ -515,13 +515,13 @@
     box-shadow: none;
     color: var(--text-muted);
     cursor: var(--cursor-link, pointer);
-    padding: var(--tn-spacing-xs);
+    padding: var(--tn-space-half);
     border-radius: var(--radius-s);
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s ease, color 0.2s ease;
-    margin-right: var(--tn-spacing-xs);
+    margin-right: var(--tn-space-half);
 }
 
 .tasknotes-plugin .filter-bar__view-delete:hover {
@@ -532,7 +532,7 @@
 .tasknotes-plugin .filter-bar__view-action {
     display: block;
     width: 100%;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    padding: var(--tn-space-1) var(--tn-space-2);
     background: none;
     border: none;
     color: var(--color-accent);
@@ -550,12 +550,12 @@
 }
 
 .tasknotes-plugin .filter-bar__view-empty-message {
-    padding: var(--tn-spacing-lg);
+    padding: var(--tn-space-3);
     color: var(--text-muted);
     font-size: var(--font-ui-small);
     text-align: center;
     background: var(--background-modifier-hover);
-    margin: var(--tn-spacing-sm);
+    margin: var(--tn-space-1);
 }
 
 /* =================================================================
@@ -563,7 +563,7 @@
    ================================================================= */
 
 .tasknotes-plugin .filter-bar__section {
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-space-2);
 }
 
 .tasknotes-plugin .filter-bar__section:last-child {
@@ -590,7 +590,7 @@
     align-items: center;
     flex-grow: 1;
     cursor: var(--cursor-link, pointer);
-    padding: var(--tn-spacing-sm) 0;
+    padding: var(--tn-space-1) 0;
 }
 
 .tasknotes-plugin .filter-bar__section-header-main:hover {
@@ -599,7 +599,7 @@
 
 .tasknotes-plugin .filter-bar__section-header-main::before {
     content: "▼";
-    margin-right: var(--tn-spacing-xs);
+    margin-right: var(--tn-space-half);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 10px;
     color: var(--text-muted);
@@ -612,9 +612,9 @@
 .tasknotes-plugin .filter-bar__section-header-actions {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 
-    padding-right: var(--tn-spacing-sm);
+    padding-right: var(--tn-space-1);
 }
 
 .tasknotes-plugin .filter-bar__save-button {
@@ -630,7 +630,7 @@
 /* Expand/Collapse all group buttons - Add pointer cursor but keep good hover */
 .tasknotes-plugin .filter-bar__expand-groups,
 .tasknotes-plugin .filter-bar__collapse-groups {
-    padding: var(--tn-spacing-xs);
+    padding: var(--tn-space-half);
     background: transparent;
     border: none;
     border-radius: var(--radius-s);
@@ -669,12 +669,12 @@
     font-weight: 400;
     font-size: var(--font-ui-smaller);
     color: var(--text-accent);
-    margin-left: var(--tn-spacing-xs);
+    margin-left: var(--tn-space-half);
     font-style: italic;
 }
 
 .tasknotes-plugin .filter-bar__section-content {
-    padding: var(--tn-spacing-md);
+    padding: var(--tn-space-2);
     background: var(--background-primary);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
@@ -699,15 +699,15 @@
 .tasknotes-plugin .filter-bar__filter-builder {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
 }
 
 /* Filter Groups and Conditions */
 .tasknotes-plugin .filter-bar__group {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-sm);
-    padding: var(--tn-spacing-md);
+    gap: var(--tn-space-1);
+    padding: var(--tn-space-2);
     background: var(--background-primary);
     border: 1px solid var(--background-modifier-border); /* Subtle border for grouping */
     border-radius: var(--radius-m);
@@ -730,20 +730,20 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--tn-spacing-sm);
+    margin-bottom: var(--tn-space-1);
 }
 
 .tasknotes-plugin .filter-bar__conjunction {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 }
 
 .tasknotes-plugin .filter-bar__conjunction .dropdown {
     border: none;
     background: transparent;
     box-shadow: none;
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    padding: var(--tn-space-half) var(--tn-space-1);
     height: 28px;
     color: var(--text-normal);
     font-size: var(--font-ui-small);
@@ -763,7 +763,7 @@
 .tasknotes-plugin .filter-bar__children {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
     margin-left: 0;
 }
 
@@ -772,7 +772,7 @@
     border: none;
     background: transparent;
     box-shadow: none;
-    padding: var(--tn-spacing-xs);
+    padding: var(--tn-space-half);
     height: 28px;
     max-width: 200px;
     flex: 1;
@@ -786,8 +786,8 @@
 .tasknotes-plugin .filter-bar__condition {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
-    padding: var(--tn-spacing-xs) 0; /* Let parent padding handle horizontal space */
+    gap: var(--tn-space-1);
+    padding: var(--tn-space-half) 0; /* Let parent padding handle horizontal space */
     background: transparent; /* No background */
     border: 1px; /* No border */
     border-radius: 0;
@@ -805,13 +805,13 @@
     font-weight: 500;
     text-align: right;
     min-width: 50px; /* More flexible width */
-    padding-right: var(--tn-spacing-sm);
+    padding-right: var(--tn-space-1);
 }
 
 .tasknotes-plugin .filter-bar__value-input {
     border: none; /* No borders on inputs */
     background: transparent; /* Transparent background */
-    padding: var(--tn-spacing-xs);
+    padding: var(--tn-space-half);
     border-radius: var(--radius-s);
     color: var(--text-normal);
     font-size: var(--font-ui-small);
@@ -854,7 +854,7 @@
     flex: 1;
 	width: 100%;
     border-radius: var(--radius-s);
-    padding: 0 var(--tn-spacing-xs);
+    padding: 0 var(--tn-space-half);
     transition: background-color 0.2s ease;
 }
 
@@ -869,7 +869,7 @@
     box-shadow: none;
     color: var(--text-muted);
     cursor: var(--cursor-link, pointer);
-    padding: var(--tn-spacing-xs);
+    padding: var(--tn-space-half);
     border-radius: var(--radius-s);
     display: flex;
     align-items: center;
@@ -885,14 +885,14 @@
 
 .tasknotes-plugin .filter-bar__group-actions {
     display: flex;
-    gap: var(--tn-spacing-md);
-    margin-top: var(--tn-spacing-sm);
+    gap: var(--tn-space-2);
+    margin-top: var(--tn-space-1);
     border-top: none;
     padding-top: 0;
 }
 
 .tasknotes-plugin .filter-bar__action-button {
-    padding: var(--tn-spacing-xs);
+    padding: var(--tn-space-half);
     background: transparent;
     border: none;
     box-shadow: none;
@@ -903,7 +903,7 @@
     transition: background-color 0.2s ease, color 0.2s ease;
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
 }
 
 .tasknotes-plugin .filter-bar__action-button:hover {
@@ -923,7 +923,7 @@
 .tasknotes-plugin .filter-bar__display-controls {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
     align-items: center;
 }
 
@@ -931,7 +931,7 @@
 .tasknotes-plugin .filter-bar__group-container {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 }
 
 .tasknotes-plugin .filter-bar__label {
@@ -945,7 +945,7 @@
     border: none;
     background: transparent;
     box-shadow: none;
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    padding: var(--tn-space-half) var(--tn-space-1);
     height: 28px;
     color: var(--text-normal);
     font-size: var(--font-ui-small);
@@ -963,7 +963,7 @@
     border: none;
     background: transparent;
     box-shadow: none;
-    padding: var(--tn-spacing-xs);
+    padding: var(--tn-space-half);
     height: 28px;
     width: 30px;
     border-radius: var(--radius-s);
@@ -990,7 +990,7 @@
 .tasknotes-plugin .filter-bar__view-options {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 }
 
 .tasknotes-plugin .filter-bar__view-option {
@@ -1001,7 +1001,7 @@
 .tasknotes-plugin .filter-bar__view-option-label {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     cursor: var(--cursor-link, pointer);
     font-size: var(--font-ui-small);
     color: var(--text-normal);
@@ -1060,7 +1060,7 @@
         min-width: 0;
         max-width: none;
         max-height: min(70vh, 560px);
-        padding: var(--tn-spacing-md);
+        padding: var(--tn-space-2);
     }
 
     .tasknotes-plugin .filter-bar__view-selector-dropdown {
@@ -1114,20 +1114,20 @@
 /* Mobile styles */
 @media (max-width: 768px) {
     .tasknotes-plugin .advanced-filter-bar {
-        padding: var(--tn-spacing-sm);
-        gap: var(--tn-spacing-sm);
+        padding: var(--tn-space-1);
+        gap: var(--tn-space-1);
     }
 
     .tasknotes-plugin .filter-bar__condition {
         flex-direction: column;
         align-items: stretch;
-        gap: var(--tn-spacing-xs);
+        gap: var(--tn-space-half);
     }
 
     .tasknotes-plugin .filter-bar__display-controls {
         flex-direction: column;
         align-items: stretch;
-        gap: var(--tn-spacing-sm);
+        gap: var(--tn-space-1);
     }
 
     .tasknotes-plugin .filter-bar__sort-container,
