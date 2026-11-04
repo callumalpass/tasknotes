@@ -127,7 +127,7 @@ describe("Issue #1903: mobile edit task modal", () => {
 		expect(
 			extractCssBlock(
 				cssContent,
-				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .mod-cta"
+				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__open-note-button"
 			)
 		).toContain("grid-column: span 2");
 		expect(cssContent).toMatch(

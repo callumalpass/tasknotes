@@ -46,7 +46,6 @@ async function createModal(tags: string | string[], settings: TaskEditFormStateS
 	const modal = new TaskEditModal(app, plugin as never, { task });
 	const state = modal as unknown as {
 		initializeSubtasks: jest.Mock;
-		tags: string;
 		getChanges: () => Partial<TaskInfo>;
 	};
 	state.initializeSubtasks = jest.fn().mockResolvedValue(undefined);
@@ -64,9 +63,9 @@ const tagFormats: Array<[string, string | string[]]> = [
 describe("issue #2140 edit modal identifying tags", () => {
 	it.each(tagFormats)("saves removal of visible nested tags from %s", async (_name, tags) => {
 		const { modal, state, task, updateTask } = await createModal(tags);
-		expect(state.tags).toContain("task/context/onscreen");
+		expect(modal.form.values.tags).toContain("task/context/onscreen");
 
-		state.tags = Array.isArray(tags) ? "task, health" : "task";
+		modal.form.values.tags = Array.isArray(tags) ? "task, health" : "task";
 		// The same change set drives unsaved-change detection and saving.
 		expect(state.getChanges().tags).not.toContain("task/context/onscreen");
 		await modal.handleSave();
@@ -81,7 +80,7 @@ describe("issue #2140 edit modal identifying tags", () => {
 
 	it.each(tagFormats)("saves replacement of visible nested tags from %s", async (_name, tags) => {
 		const { modal, state, task, updateTask } = await createModal(tags);
-		state.tags = "task, task/context/research";
+		modal.form.values.tags = "task, task/context/research";
 		await modal.handleSave();
 
 		expect(updateTask).toHaveBeenCalledWith(
@@ -104,8 +103,8 @@ describe("issue #2140 edit modal identifying tags", () => {
 		const { modal, state, task, updateTask } = await createModal(tags, {
 			hideIdentifyingTagsInCards: true,
 		});
-		expect(state.tags).toBe("health");
-		state.tags = "wellness";
+		expect(modal.form.values.tags).toBe("health");
+		modal.form.values.tags = "wellness";
 		await modal.handleSave();
 		expect(updateTask).toHaveBeenCalledWith(
 			task,
@@ -120,8 +119,8 @@ describe("issue #2140 edit modal identifying tags", () => {
 			["task", "task/context/onscreen", "health"],
 			{ hideIdentifyingTagsInCards: true, hideIdentifyingTagsMode: "exact-only" }
 		);
-		expect(state.tags).toBe("task/context/onscreen, health");
-		state.tags = "health";
+		expect(modal.form.values.tags).toBe("task/context/onscreen, health");
+		modal.form.values.tags = "health";
 		await modal.handleSave();
 		expect(updateTask).toHaveBeenCalledWith(
 			task,
@@ -133,7 +132,7 @@ describe("issue #2140 edit modal identifying tags", () => {
 		"protects the exact task identifier in %j",
 		async (tags) => {
 			const { modal, state, updateTask } = await createModal(tags);
-			state.tags = "";
+			modal.form.values.tags = "";
 			await modal.handleSave();
 			const savedTags = updateTask.mock.calls[0]?.[1].tags ?? tags;
 			expect([savedTags].flat().map((tag) => tag.replace(/^#/, ""))).toEqual(["task"]);
@@ -146,7 +145,7 @@ describe("issue #2140 edit modal identifying tags", () => {
 			"task/context/onscreen",
 			"health",
 		]);
-		state.tags = "";
+		modal.form.values.tags = "";
 		await modal.handleSave();
 		expect(updateTask).toHaveBeenCalledWith(task, expect.objectContaining({ tags: ["task"] }));
 	});
@@ -157,7 +156,7 @@ describe("issue #2140 edit modal identifying tags", () => {
 			const { modal, state, task, updateTask } = await createModal(tags, {
 				taskIdentificationMethod: "property",
 			});
-			state.tags = "wellness";
+			modal.form.values.tags = "wellness";
 			await modal.handleSave();
 			expect(updateTask).toHaveBeenCalledWith(
 				task,
@@ -174,7 +173,7 @@ describe("issue #2140 edit modal identifying tags", () => {
 				hideIdentifyingTagsInCards: true,
 			}
 		);
-		state.tags = "health";
+		modal.form.values.tags = "health";
 		await modal.handleSave();
 		expect(updateTask).toHaveBeenCalledWith(
 			task,

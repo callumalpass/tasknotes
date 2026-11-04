@@ -5,6 +5,8 @@ export interface TaskModalActionIconSpec {
 	tooltip: string;
 	onClick: (icon: HTMLElement, event: UIEvent) => void;
 	dataType?: string;
+	/** Chips carry a text label, written by updateTaskModalActionIconStates. */
+	chip?: boolean;
 }
 
 export function createTaskModalActionIcon(
@@ -24,6 +26,11 @@ export function createTaskModalActionIcon(
 
 	const icon = iconContainer.createSpan("icon");
 	setIcon(icon, spec.iconName);
+
+	if (spec.chip) {
+		iconContainer.addClass("tn-task-modal__chip");
+		iconContainer.createSpan("action-icon__label");
+	}
 
 	const activate = (event: UIEvent): void => {
 		event.preventDefault();

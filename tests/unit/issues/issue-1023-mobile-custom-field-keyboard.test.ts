@@ -14,8 +14,11 @@ import { MockObsidian } from "../../helpers/obsidian-runtime";
 const cssFilePath = path.resolve(__dirname, "../../../styles/task-modal.css");
 
 class TestTaskModal extends TaskModal {
+	protected readonly mode = "create" as const;
 	async initializeFormData(): Promise<void> {}
-	async handleSave(): Promise<void> {}
+	async handleSave() {
+		return { status: "saved" as const };
+	}
 	getModalTitle(): string {
 		return "Test task modal";
 	}

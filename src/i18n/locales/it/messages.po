@@ -4745,7 +4745,7 @@ msgctxt "settings.integrations.subscriptionsList.statusLabels.disabled"
 msgid "Disabled"
 msgstr "Disabilitato"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.discard"
 msgid "Discard changes"
 msgstr "Scarta modifiche"
@@ -4952,6 +4952,7 @@ msgstr "Data di scadenza"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "Data di scadenza"
@@ -5000,11 +5001,6 @@ msgstr "In scadenza"
 msgctxt "modals.unscheduledTasksSelector.dueToday"
 msgid "Due today: {date}"
 msgstr "Scade oggi: {date}"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.due"
-msgid "Due:"
-msgstr "Scadenza:"
 
 #: src/modals/ReminderModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
@@ -5305,6 +5301,11 @@ msgstr "Inserisci una chiave della proprietà."
 msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
 msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
 msgstr "Inserisci il nome della proprietà. Il testo di esempio non viene salvato come configurazione. TaskNotes non può identificare le attività finché non imposti il nome della proprietà. I filtri .base esistenti devono corrispondere a queste impostazioni."
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.timeEstimateInvalid"
+msgid "Enter a time such as 45 or 1h 30m"
+msgstr "Inserisci un tempo come 45 o 1h 30m"
 
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
@@ -6611,11 +6612,6 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "Riempi contenitore"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.fillFromNaturalLanguage"
-msgid "Fill form from natural language"
-msgstr "Compila modulo usando il linguaggio naturale"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.sections.filters"
 msgid "Filters"
@@ -7427,7 +7423,7 @@ msgctxt "views.taskList.movement.keepSubgroup"
 msgid "Keep current subgroup"
 msgstr "Mantieni sottogruppo attuale"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.cancel"
 msgid "Keep editing"
 msgstr "Continua a modificare"
@@ -8077,6 +8073,11 @@ msgstr "Ogni mese (dopo il completamento)"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "Ricorrenza mensile"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "modals.task.buttons.moreActions"
+msgid "More actions"
+msgstr "Altre azioni"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.moveDownAriaLabel"
@@ -9183,7 +9184,6 @@ msgid "Open note"
 msgstr "Apri nota"
 
 #: src/modals/TaskEditModal.ts
-#: src/modals/TaskModal.ts
 msgctxt "modals.task.buttons.openNote"
 msgid "Open note"
 msgstr "Apri nota"
@@ -9593,13 +9593,8 @@ msgctxt "modals.taskSelectorWithCreate.notices.emptyQuery"
 msgid "Please enter a task description"
 msgstr "Inserisci una descrizione dell'attività"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.notices.titleRequired"
-msgid "Please enter a task title"
-msgstr "Inserisci il titolo dell’attività"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.titleRequired"
 msgid "Please enter a task title"
 msgstr "Inserisci il titolo dell’attività"
 
@@ -10047,6 +10042,7 @@ msgid "Recurrence"
 msgstr "Ricorrenza"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.recurrence"
 msgid "Recurrence"
 msgstr "Ricorrenza"
@@ -10284,6 +10280,7 @@ msgid "Reminder: {title}"
 msgstr "Promemoria: {title}"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "Promemoria"
@@ -10636,7 +10633,7 @@ msgctxt "modals.task.buttons.save"
 msgid "Save"
 msgstr "Salva"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.save"
 msgid "Save changes"
 msgstr "Salva modifiche"
@@ -10694,6 +10691,7 @@ msgstr "Data pianificata"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "Data pianificata"
@@ -10732,11 +10730,6 @@ msgstr "Data pianificata o data e ora (YYYY-MM-DD o YYYY-MM-DDTHH:MM)"
 msgctxt "modals.actionPalette.scheduledSet"
 msgid "Scheduled date set"
 msgstr "Data pianificata impostata"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.scheduled"
-msgid "Scheduled:"
-msgstr "Pianificata:"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -12094,6 +12087,11 @@ msgid "Task created"
 msgstr "Attività creata"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.followUpFailure"
+msgid "Task created, but a follow-up step failed: {message}"
+msgstr "Attività creata, ma un passaggio successivo non è riuscito: {message}"
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"
 msgid "Task created, but some attachments could not be imported: {message}"
 msgstr "Attività creata, ma non è stato possibile importare alcuni allegati: {message}"
@@ -12269,11 +12267,6 @@ msgstr "Attività non trovata per il titolo: {title}"
 msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
 msgstr "Opzioni dell'attività"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals/TaskCreationModal: TaskCreationModal.createNaturalLanguageInput display"
-msgid "Task preview"
-msgstr "Anteprima dell’attività"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.tabs.taskProperties"
@@ -13103,6 +13096,7 @@ msgid "today"
 msgstr "oggi"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.today"
 msgid "Today"
 msgstr "Oggi"
@@ -13200,6 +13194,7 @@ msgid "tomorrow"
 msgstr "domani"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.tomorrow"
 msgid "Tomorrow"
 msgstr "Domani"
@@ -13555,7 +13550,7 @@ msgctxt "settings.defaults.reminders.unnamedReminder"
 msgid "Unnamed reminder"
 msgstr "Promemoria senza nome"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.title"
 msgid "Unsaved changes"
 msgstr "Modifiche non salvate"
@@ -14323,7 +14318,7 @@ msgctxt "modals.storageLocation.finalNote.switch"
 msgid "You can switch back to plugin storage at any time in the future."
 msgstr "Puoi tornare in qualsiasi momento all’archiviazione nei dati del plugin."
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.message"
 msgid "You have unsaved changes. Do you want to save them?"
 msgstr "Hai delle modifiche non salvate. Vuoi salvarle?"

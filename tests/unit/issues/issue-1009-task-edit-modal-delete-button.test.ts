@@ -70,6 +70,13 @@ function createTask(): TaskInfo {
 	} as TaskInfo;
 }
 
+function chooseDelete(modal: TaskEditModal): void {
+	(modal as any)
+		.getOverflowActions()
+		.find((action: { warning?: boolean }) => action.warning)
+		.onClick();
+}
+
 function flushPromises(): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, 0));
 }
@@ -94,22 +101,10 @@ describe('Issue #1009 - Edit Task modal delete action', () => {
 			.createActionButtons(container);
 	});
 
-	it('adds a delete button to the edit modal action bar', () => {
-		const deleteButton = container.querySelector<HTMLButtonElement>(
-			'.tn-task-modal__delete-button'
-		);
-
-		expect(deleteButton).not.toBeNull();
-		expect(deleteButton?.textContent).toBe('Delete');
-		expect(deleteButton?.classList.contains('mod-warning')).toBe(true);
-	});
-
 	it('confirms before deleting the task file from the modal', async () => {
 		mockShowConfirmationModal.mockResolvedValue(true);
 
-		container
-			.querySelector<HTMLButtonElement>('.tn-task-modal__delete-button')!
-			.click();
+		chooseDelete(modal);
 		await flushPromises();
 
 		expect(mockShowConfirmationModal).toHaveBeenCalledWith(app, {
@@ -128,9 +123,7 @@ describe('Issue #1009 - Edit Task modal delete action', () => {
 	it('does not delete when the confirmation is cancelled', async () => {
 		mockShowConfirmationModal.mockResolvedValue(false);
 
-		container
-			.querySelector<HTMLButtonElement>('.tn-task-modal__delete-button')!
-			.click();
+		chooseDelete(modal);
 		await flushPromises();
 
 		expect(plugin.taskService.deleteTask).not.toHaveBeenCalled();

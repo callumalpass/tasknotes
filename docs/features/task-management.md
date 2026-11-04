@@ -15,7 +15,7 @@ TaskNotes keeps a storage title and a filename-safe title separate. When **Store
 
 For existing tasks, the **Quick actions for current task** command opens a keyboard-searchable action palette. It includes status, priority, time-tracking, archive, edit, and date actions, including built-in due and scheduled date presets such as today, tomorrow, this weekend, next week, and next month.
 
-TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority."
+TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority." The form updates as you type: removing text undoes what it set, and a field you change by hand keeps your value.
 
 In most workflows, users combine both approaches: fast capture with natural language, then occasional structured edits in the modal when more precision is needed.
 

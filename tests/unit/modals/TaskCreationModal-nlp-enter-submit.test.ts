@@ -31,8 +31,7 @@ jest.mock("../../../src/editor/NLPCodeMirrorAutocomplete", () => ({
 jest.mock("../../../src/services/NaturalLanguageParser", () => ({
 	NaturalLanguageParser: {
 		fromPlugin: jest.fn(() => ({
-			parseInput: jest.fn(() => ({ title: "Captured task" })),
-			getPreviewData: jest.fn(() => []),
+			parseInputForModal: jest.fn(() => ({ title: "Captured task" })),
 		})),
 	},
 }));
@@ -126,23 +125,5 @@ describe("TaskCreationModal NLP input: Enter to submit", () => {
 		expect(options.onEnter?.(editor, false, false)).toBe(true);
 		expect(view.state.doc.toString()).toBe("Buy milk");
 		expect(submit).not.toHaveBeenCalled();
-	});
-
-	it("does not save from the textarea fallback while Enter confirms IME composition", async () => {
-		MockedEditor.mockImplementationOnce(() => {
-			throw new Error("editor unavailable");
-		});
-		const { modal, submit } = setup(true);
-		const textarea = (modal as any).nlInput as HTMLTextAreaElement;
-		textarea.value = "買い物";
-		textarea.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", isComposing: true }));
-		// WebKit order: compositionend, then the confirming Enter without isComposing
-		textarea.dispatchEvent(new Event("compositionstart"));
-		textarea.dispatchEvent(new Event("compositionend"));
-		textarea.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-		expect(submit).not.toHaveBeenCalled();
-		await new Promise((resolve) => setTimeout(resolve, 0));
-		textarea.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-		expect(submit).toHaveBeenCalledWith(false);
 	});
 });
