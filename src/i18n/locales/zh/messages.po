@@ -199,7 +199,6 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[公式错误]"
 
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
@@ -290,10 +289,20 @@ msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
 msgstr "{count, plural, other {已设置 # 条提醒}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback archive"
+msgid "{count, plural, one {# task archived} other {# tasks archived}}"
+msgstr "{count, plural, other {已归档 # 个任务}}"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, other {已选择 # 个任务}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback unarchive"
+msgid "{count, plural, one {# task unarchived} other {# tasks unarchived}}"
+msgstr "{count, plural, other {已取消归档 # 个任务}}"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction feedback"
@@ -1366,7 +1375,6 @@ msgid "Accent"
 msgstr "强调色"
 
 #: src/bases/BasesViewBase.ts
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -1913,11 +1921,6 @@ msgstr "归档任务"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "归档此任务"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.archived"
-msgid "archived"
-msgstr "归档"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.deleteMessage"
@@ -2736,10 +2739,10 @@ msgctxt "services/TaskService: TaskService.unskipMaterializedOccurrence display"
 msgid "Cannot resolve occurrence parent"
 msgstr "无法找到重复实例的父任务"
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.conflict"
-msgid "Cannot undo: this occurrence or its schedule has changed."
-msgstr "无法撤销：此次重复或其计划已发生变化。"
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo conflict"
+msgid "Cannot undo: the note has changed."
+msgstr "无法撤销：笔记已更改。"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoConflict"
@@ -3725,11 +3728,6 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "无法解析：{entries}"
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.failed"
-msgid "Could not undo the recurring task change."
-msgstr "无法撤销重复任务的更改。"
-
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
@@ -4678,11 +4676,6 @@ msgstr "依赖关系"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Dependencies"
 msgstr "依赖关系"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
-msgid "Dependencies updated"
-msgstr "依赖关系已更新"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
@@ -5781,11 +5774,6 @@ msgctxt "contextMenus.task.organization.notices.addToProjectFailed"
 msgid "Failed to add task to project"
 msgstr "无法将任务添加到项目"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveFailure"
-msgid "Failed to archive task"
-msgstr "归档任务失败"
-
 #: src/main.ts
 msgctxt "notices.commands.batchConversionFailed"
 msgid "Failed to batch convert tasks. Please try again."
@@ -6138,11 +6126,6 @@ msgid "Failed to migrate Pomodoro data. Please try again or check the console fo
 msgstr "迁移番茄钟数据失败。请重试或检查控制台获取详细信息。"
 
 #: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockMoveFailed"
-msgid "Failed to move timeblock: {message}"
-msgstr "移动时间块失败：{message}"
-
-#: src/bases/calendar-core.ts
 #: src/main.ts
 msgctxt "notices.commands.dailyNoteOpenFailed"
 msgid "Failed to navigate to daily note: {message}"
@@ -6309,11 +6292,6 @@ msgctxt "services.instantTaskConvert.notices.replaceLineFailed"
 msgid "Failed to replace task line."
 msgstr "替换任务行失败。"
 
-#: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockResizeFailed"
-msgid "Failed to resize timeblock: {message}"
-msgstr "调整时间块大小失败：{message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "Failed to resolve moved task file: {newPath}"
@@ -6329,11 +6307,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
 msgid "Failed to save the calendar password"
 msgstr "无法保存日历密码"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeEntryEditor.saveFailed"
-msgid "Failed to save time entries"
-msgstr "无法保存时间记录"
-
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.failed"
 msgid "Failed to show properties menu"
@@ -6348,11 +6321,6 @@ msgstr "无法启动 TaskNotes API 服务器。详情请查看控制台。"
 msgctxt "modals.timeTracking.startFailed"
 msgid "Failed to start time tracking"
 msgstr "无法开始时间跟踪"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.trackingStopFailed"
-msgid "Failed to stop time tracking"
-msgstr "无法停止计时"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogleFailed"
@@ -6449,11 +6417,6 @@ msgstr "更新标签失败"
 msgctxt "notices.commands.taskUpdateFailed"
 msgid "Failed to update task"
 msgstr "无法更新任务"
-
-#: src/main.ts
-msgctxt "notices.commands.archiveFailed"
-msgid "Failed to update task archive status"
-msgstr "无法更新任务归档状态"
 
 #: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeFailure"
@@ -9173,6 +9136,11 @@ msgctxt "bases creation feedback"
 msgid "Open"
 msgstr "打开"
 
+#: src/modals/TaskCreationModal.ts
+msgctxt "interaction created open"
+msgid "Open"
+msgstr "打开"
+
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.deviceCode.steps.open"
@@ -11640,11 +11608,6 @@ msgctxt "modals.icsNoteCreation.startLabel"
 msgid "Start: "
 msgstr "开始："
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeTracking.started"
-msgid "Started tracking time for: {taskTitle}"
-msgstr "开始跟踪时间：{taskTitle}"
-
 #: src/settings/tabs/taskProperties/projectsPropertyCard.ts
 msgctxt "settings.appearance.projectAutosuggest.quickReference.staticText"
 msgid "Static text: literal:My Custom Label"
@@ -12152,11 +12115,6 @@ msgctxt "modals.taskEdit.notices.updateSuccess"
 msgid "Task \"{title}\" updated successfully"
 msgstr "任务\"{title}\"更新成功"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveSuccess"
-msgid "Task {action} successfully"
-msgstr "任务{action}"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.taskProjectStats"
 msgid "Task & project statistics"
@@ -12587,11 +12545,6 @@ msgctxt "settings.integrations.autoExport.notices.exportSuccess"
 msgid "Tasks exported successfully"
 msgstr "任务导出成功"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponed"
-msgid "Tasks postponed: {count}. Failed: {failed}."
-msgstr "已推迟任务：{count} 个。失败：{failed} 个。"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
 msgid "Template for custom ICS event filenames"
@@ -12962,7 +12915,6 @@ msgctxt "services/TaskService: TaskService.startTimeTrackingLocked display"
 msgid "Time tracking is already active for this task"
 msgstr "此任务已开始时间跟踪"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStarted"
 msgid "Time tracking started"
@@ -12973,7 +12925,6 @@ msgctxt "settings.features.timeTracking.stopNotificationName"
 msgid "Time tracking stop notification"
 msgstr "时间跟踪停止通知"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
@@ -13579,11 +13530,6 @@ msgctxt "modals/TaskActionPaletteModal: TaskActionPaletteModal.buildActionsList 
 msgid "Unarchive task"
 msgstr "取消归档任务"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.unarchived"
-msgid "unarchived"
-msgstr "取消归档"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
@@ -13803,11 +13749,6 @@ msgstr "更新间隔（5到1440分钟之间）"
 msgctxt "modals.reminder.updateButton"
 msgid "Update reminder"
 msgstr "更新提醒"
-
-#: src/bases/CalendarView.ts
-msgctxt "notices.audit.update"
-msgid "Update tasks"
-msgstr "更新任务"
 
 #: src/main.ts
 msgctxt "notices.commands.basesUpdated"

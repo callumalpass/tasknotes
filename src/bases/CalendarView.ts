@@ -1,3 +1,5 @@
+import { captureTaskUndo } from "../ui/taskMutationUndo";
+import { showTaskUndo } from "../ui/taskPropertyPickers";
 import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -33,7 +35,6 @@ import { calendarTaskId } from "@tasknotes/model/calendar";
 import { buildCalendarBatchPreview, isCalendarBatchTarget, planCalendarBatchMove, type CalendarBatchMove } from "./calendarBatchMove";
 import { CalendarBatchPreview } from "./calendarBatchPreview";
 import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR } from "../utils/clickHandlers";
-import { messageForKey } from "../i18n/messages";
 import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccurrences } from "./calendarModelEvents";
 import { handleCalendarEventClick, handleCalendarEventContextMenu, toMouseEvent, type CalendarMenuContext } from "./calendarMenus";
 import { Notice, Platform, TFile, setIcon } from "obsidian";
@@ -1784,8 +1785,9 @@ export class CalendarView extends BasesViewBase {
 				return;
 			}
 			this.expectImmediateUpdate();
-			const updated = await this.plugin.taskService.updateProperty(task, "scheduled", arg.startStr);
-			await this.refreshAfterDirectCalendarTaskWrite(updated);
+			const receipt = await captureTaskUndo(this.plugin, task, () => this.plugin.taskService.updateProperty(task, "scheduled", arg.startStr));
+			if (receipt.task) await this.refreshAfterDirectCalendarTaskWrite(receipt.task);
+			showTaskUndo(receipt.undo ? [receipt.undo] : [], false, 1, this.plugin.app.vault, task.title);
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][CalendarView] Error scheduling dropped task", {
 				category: "persistence",
@@ -1817,7 +1819,9 @@ export class CalendarView extends BasesViewBase {
 		}
 		this.batchMoveInProgress = true;
 		const completed: CalendarBatchMove[] = [];
+		const undo: Array<() => Promise<unknown>> = [];
 		let planned = false;
+		let failedTitle = "";
 		try {
 			const tasks = await Promise.all(paths.map(async path => {
 				const task = await this.plugin.cacheManager.getTaskInfo(path);
@@ -1829,12 +1833,15 @@ export class CalendarView extends BasesViewBase {
 				this.plugin.fieldMapper.getMapping(), new Date().toISOString());
 			planned = true;
 			for (const move of moves) {
+				failedTitle = move.task.title;
 				const fresh = await this.plugin.cacheManager.getTaskInfo(move.task.path);
 				if (!fresh || fresh.recurrence || fresh.scheduled !== move.before.scheduled || fresh.due !== move.before.due) {
 					throw new Error("Task dates changed during batch move");
 				}
-				const updated = await this.plugin.taskService.applyCalendarEdit(fresh, move.entry, move.change, this.calendarTimezone);
+				const receipt = await captureTaskUndo(this.plugin, fresh, () => this.plugin.taskService.applyCalendarEdit(fresh, move.entry, move.change, this.calendarTimezone));
+				const updated = receipt.task;
 				if (!updated) throw new Error("Calendar move was cancelled");
+				if (receipt.undo) undo.push(receipt.undo);
 				completed.push(move);
 				await this.refreshAfterDirectCalendarTaskWrite(updated);
 			}
@@ -1844,16 +1851,12 @@ export class CalendarView extends BasesViewBase {
 			// notes. Reproject successful writes so partial failure cannot show stale dates.
 			if (completed.length) this.refreshTaskItems();
 			tasknotesLogger.warn("Calendar batch move stopped", { category: "persistence", operation: "calendar-batch-move", error });
-			if (planned) {
-				new Notice(this.plugin.i18n.translate(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), {
-					action: this.plugin.i18n.translate(msg({ message: "Update tasks", context: "notices.audit.update" })),
-				}));
-			} else {
+			if (!planned) {
 				this.showUnsupportedCalendarBatchMove();
 			}
 		} finally {
 			this.batchMoveInProgress = false;
-			if (completed.length) this.showCalendarBatchUndo(completed, paths.length - completed.length);
+			if (planned) showTaskUndo(undo, paths.length !== completed.length, completed.length, this.plugin.app.vault, paths.length !== completed.length ? failedTitle : undefined);
 		}
 	}
 
@@ -1864,40 +1867,6 @@ export class CalendarView extends BasesViewBase {
 		})));
 	}
 
-	private showCalendarBatchUndo(moves: CalendarBatchMove[], failed: number): void {
-		const fragment = (this.containerEl.ownerDocument.defaultView ?? window).createFragment();
-		fragment.append(this.plugin.i18n.translate(msg({ message: "{action} — successful: {count}; failed: {failed}.", context: "notices.audit.result" }), {
-			action: this.plugin.i18n.translate(msg({ message: "Update tasks", context: "notices.audit.update" })), count: moves.length, failed,
-		}), " ");
-		const button = createElementInDocument(this.containerEl.ownerDocument, "button");
-		button.textContent = this.plugin.i18n.translate(messageForKey("views.taskList.movement.undo"));
-		fragment.append(button);
-		const notice = new Notice(fragment, 12000);
-		button.addEventListener("click", () => {
-			if (this.batchMoveInProgress) return;
-			button.disabled = true;
-			this.batchMoveInProgress = true;
-			void (async () => {
-				try {
-					for (const move of [...moves].reverse()) {
-						const task = await this.plugin.cacheManager.getTaskInfo(move.task.path);
-						if (!task || task.recurrence || task.scheduled !== move.after.scheduled || task.due !== move.after.due) {
-							new Notice(this.plugin.i18n.translate(messageForKey("views.taskList.movement.undoConflict")));
-							continue;
-						}
-						const updated = await this.plugin.taskService.applyCalendarEdit(task, move.undoEntry, move.undoChange, this.calendarTimezone);
-						if (updated) await this.refreshAfterDirectCalendarTaskWrite(updated);
-					}
-				} catch (error) {
-					tasknotesLogger.error("Calendar batch undo failed", { category: "persistence", operation: "calendar-batch-undo", error });
-					new Notice(this.plugin.i18n.translate(messageForKey("views.taskList.movement.undoFailed")));
-				} finally {
-					this.batchMoveInProgress = false;
-					notice.hide();
-				}
-			})();
-		});
-	}
 
 	private async handleEventResize(info: CalendarEventChange): Promise<void> {
 		if (this.batchMoveInProgress) {

@@ -1,3 +1,4 @@
+import { showToast } from "../ui/kit/toast";
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { App, Notice, TFile } from "obsidian";
@@ -556,13 +557,17 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	private showTaskCreatedNotice(createdTask: TaskInfo, file: TFile): void {
+		const notify = (message: string) => showToast({ message, action: {
+			label: this.t(msg({ message: "Open", context: "interaction created open" })),
+			run: async () => { await this.app.workspace.getLeaf(false).openFile(file); },
+		} });
 		const filenameNotice = getTaskFilenameNotice(
 			this.plugin.settings,
 			createdTask.title,
 			file.basename
 		);
 		if (filenameNotice === "shortened") {
-			new Notice(
+			notify(
 				this.t(
 					msg({
 						message:
@@ -575,7 +580,7 @@ export class TaskCreationModal extends TaskModal {
 				)
 			);
 		} else if (filenameNotice === "sanitized") {
-			new Notice(
+			notify(
 				this.t(
 					msg({
 						message:
@@ -589,7 +594,7 @@ export class TaskCreationModal extends TaskModal {
 				)
 			);
 		} else {
-			new Notice(
+			notify(
 				this.t(
 					msg({
 						message: 'Task "{title}" created successfully',

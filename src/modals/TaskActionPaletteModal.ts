@@ -238,10 +238,8 @@ export class TaskActionPaletteModal {
 				const currentSession = this.plugin.getActiveTimeSession(task);
 				if (currentSession) {
 					await this.plugin.stopTimeTracking(task);
-					showToast({ message: this.plugin.i18n.translate(msg({ message: "Time tracking stopped", context: "modals.actionPalette.trackingStopped" })) });
 				} else {
 					await this.plugin.startTimeTracking(task);
-					showToast({ message: this.plugin.i18n.translate(msg({ message: "Time tracking started", context: "modals.actionPalette.trackingStarted" })) });
 				}
 			},
 		});

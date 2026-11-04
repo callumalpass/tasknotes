@@ -1,3 +1,6 @@
+import { captureTaskUndo } from "./taskMutationUndo";
+import { showTaskUndo, taskPropertyLabel } from "./taskPropertyPickers";
+import { showToast } from "./kit/toast";
 import { msg } from "@lingui/core/macro";
 import { TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -58,24 +61,41 @@ export class TaskActionCoordinator {
 
 	async startTimeTracking(task: TaskInfo, description?: string): Promise<TaskInfo> {
 		try {
-			let updatedTask = await this.plugin.taskService.startTimeTracking(task);
+			const receipt = await captureTaskUndo(
+				this.plugin,
+				task,
+				async () => {
+					let updatedTask = await this.plugin.taskService.startTimeTracking(task);
 
-			const trimmedDescription = description?.trim();
-			if (
-				trimmedDescription &&
-				updatedTask.timeEntries &&
-				updatedTask.timeEntries.length > 0
-			) {
-				const latestEntry = updatedTask.timeEntries[updatedTask.timeEntries.length - 1];
-				if (latestEntry && !latestEntry.endTime) {
-					latestEntry.description = trimmedDescription;
-					updatedTask = await this.plugin.taskService.updateTask(updatedTask, {
-						timeEntries: updatedTask.timeEntries,
-					});
-				}
-			}
+					const trimmedDescription = description?.trim();
+					if (
+						trimmedDescription &&
+						updatedTask.timeEntries &&
+						updatedTask.timeEntries.length > 0
+					) {
+						const latestEntry =
+							updatedTask.timeEntries[updatedTask.timeEntries.length - 1];
+						if (latestEntry && !latestEntry.endTime) {
+							latestEntry.description = trimmedDescription;
+							updatedTask = await this.plugin.taskService.updateTask(updatedTask, {
+								timeEntries: updatedTask.timeEntries,
+							});
+						}
+					}
 
-			showNotice(this.plugin.i18n.translate(msg({ message: "Time tracking started", context: "modals.actionPalette.trackingStarted" })));
+					return updatedTask;
+				},
+				[this.plugin.fieldMapper.toUserField("timeEntries")]
+			);
+			if (!receipt.task) throw new Error("Tracking did not start");
+			const updatedTask = receipt.task;
+			showTaskUndo(
+				receipt.undo ? [receipt.undo] : [],
+				false,
+				1,
+				this.plugin.app.vault,
+				`${task.title} · ${this.plugin.i18n.translate(msg({ message: "Time tracking started", context: "modals.actionPalette.trackingStarted" }))}`
+			);
 			this.requestStatusBarUpdate();
 			return updatedTask;
 		} catch (error: unknown) {
@@ -88,9 +108,16 @@ export class TaskActionCoordinator {
 				error instanceof Error &&
 				error.message === "Time tracking is already active for this task"
 			) {
-				showNotice(this.plugin.i18n.translate(msg({ message: "Time tracking is already active for this task", context: "notices.interface.trackingActive" })));
+				showNotice(
+					this.plugin.i18n.translate(
+						msg({
+							message: "Time tracking is already active for this task",
+							context: "notices.interface.trackingActive",
+						})
+					)
+				);
 			} else {
-				showNotice(this.plugin.i18n.translate(msg({ message: "Failed to start time tracking", context: "modals.timeTracking.startFailed" })));
+				showTaskUndo([], true, 0, this.plugin.app.vault, task.title);
 			}
 			throw error;
 		}
@@ -98,8 +125,21 @@ export class TaskActionCoordinator {
 
 	async stopTimeTracking(task: TaskInfo): Promise<TaskInfo> {
 		try {
-			const updatedTask = await this.plugin.taskService.stopTimeTracking(task);
-			showNotice(this.plugin.i18n.translate(msg({ message: "Time tracking stopped", context: "modals.actionPalette.trackingStopped" })));
+			const receipt = await captureTaskUndo(
+				this.plugin,
+				task,
+				() => this.plugin.taskService.stopTimeTracking(task),
+				[this.plugin.fieldMapper.toUserField("timeEntries")]
+			);
+			if (!receipt.task) throw new Error("Tracking did not stop");
+			const updatedTask = receipt.task;
+			showTaskUndo(
+				receipt.undo ? [receipt.undo] : [],
+				false,
+				1,
+				this.plugin.app.vault,
+				`${task.title} · ${this.plugin.i18n.translate(msg({ message: "Time tracking stopped", context: "modals.actionPalette.trackingStopped" }))}`
+			);
 			this.requestStatusBarUpdate();
 			return updatedTask;
 		} catch (error: unknown) {
@@ -112,9 +152,16 @@ export class TaskActionCoordinator {
 				error instanceof Error &&
 				error.message === "No active time tracking session for this task"
 			) {
-				showNotice(this.plugin.i18n.translate(msg({ message: "No active time tracking session for this task", context: "notices.interface.trackingInactive" })));
+				showNotice(
+					this.plugin.i18n.translate(
+						msg({
+							message: "No active time tracking session for this task",
+							context: "notices.interface.trackingInactive",
+						})
+					)
+				);
 			} else {
-				showNotice(this.plugin.i18n.translate(msg({ message: "Failed to stop time tracking", context: "notices.interface.trackingStopFailed" })));
+				showTaskUndo([], true, 0, this.plugin.app.vault, task.title);
 			}
 			throw error;
 		}
@@ -192,20 +239,12 @@ export class TaskActionCoordinator {
 
 						try {
 							await this.startTimeTracking(selectedTask);
-							showNotice(
-								this.plugin.i18n.translate(msg({ message: "Started tracking time for: {taskTitle}", context: "modals.timeTracking.started" }), {
-									taskTitle: selectedTask.title,
-								})
-							);
 						} catch (error) {
 							tasknotesLogger.error("Error starting time tracking:", {
 								category: "persistence",
 								operation: "starting-time-tracking",
 								error: error,
 							});
-							showNotice(
-								this.plugin.i18n.translate(msg({ message: "Failed to start time tracking", context: "modals.timeTracking.startFailed" }))
-							);
 						}
 					})();
 				},
@@ -277,21 +316,24 @@ export class TaskActionCoordinator {
 				return;
 			}
 
-			showNotice(
+			showToast({ message:
 				this.plugin.i18n.translate(msg({ message: "Postponing tasks: {count}…", context: "notices.interface.postponing" }), {
 					count: candidates.length,
 				})
-			);
+			});
 
+			const undo: Array<() => Promise<unknown>> = [];
+			const failedTitles: string[] = [];
 			let successCount = 0;
 			let failCount = 0;
 			for (const candidate of candidates) {
 				try {
-					await this.plugin.taskService.updateProperty(
+					const receipt = await captureTaskUndo(this.plugin, candidate.task, () => this.plugin.taskService.updateProperty(
 						candidate.task,
 						"scheduled",
 						candidate.nextScheduled
-					);
+					));
+					if (receipt.undo) undo.push(receipt.undo);
 					successCount++;
 				} catch (error) {
 					tasknotesLogger.error(
@@ -303,14 +345,12 @@ export class TaskActionCoordinator {
 						}
 					);
 					failCount++;
+					failedTitles.push(candidate.task.title);
 				}
 			}
 
-			showNotice(
-				this.plugin.i18n.translate(msg({ message: "Tasks postponed: {count}. Failed: {failed}.", context: "notices.interface.postponed" }), {
-					count: successCount,
-					failed: failCount,
-				})
+			showTaskUndo(undo, failCount > 0, successCount, this.plugin.app.vault,
+				failedTitles.length ? failedTitles.join(", ") : `${taskPropertyLabel("scheduled")} → ${today} · ${successCount}`
 			);
 
 			this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
@@ -338,20 +378,20 @@ export class TaskActionCoordinator {
 							return sanitizedEntry;
 						});
 
-						await this.plugin.taskService.updateTask(task, {
+						const receipt = await captureTaskUndo(this.plugin, task, () => this.plugin.taskService.updateTask(task, {
 							timeEntries: sanitizedEntries,
-						});
+						}), [this.plugin.fieldMapper.toUserField("timeEntries")]);
 
 						onSave?.();
 						this.plugin.emitter.trigger(EVENT_DATA_CHANGED);
-						showNotice(this.plugin.i18n.translate(msg({ message: "Time entries saved", context: "modals.timeEntryEditor.saved" })));
+						showTaskUndo(receipt.undo ? [receipt.undo] : [], false, 1, this.plugin.app.vault, `${task.title} · ${this.plugin.i18n.translate(msg({ message: "Time entries saved", context: "modals.timeEntryEditor.saved" }))}`);
 					} catch (error) {
 						tasknotesLogger.error("Error saving time entries:", {
 							category: "persistence",
 							operation: "saving-time-entries",
 							error: error,
 						});
-						showNotice(this.plugin.i18n.translate(msg({ message: "Failed to save time entries", context: "modals.timeEntryEditor.saveFailed" })));
+						showTaskUndo([], true, 0, this.plugin.app.vault, task.title);
 					}
 				})();
 			}

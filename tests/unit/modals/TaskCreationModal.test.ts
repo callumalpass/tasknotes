@@ -386,7 +386,8 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 				{ applyDefaults: false }
 			);
 
-			expect(Notice).toHaveBeenCalledWith('Task "Test Task" created successfully');
+			expect(document.querySelector('.tn-toast__message')?.textContent).toBe('Task "Test Task" created successfully');
+			expect(document.querySelector('.tn-toast__action')?.textContent).toBe('Open');
 		});
 
 		it.each(["", "   "])("keeps the form intact for invalid title %j", async (title) => {

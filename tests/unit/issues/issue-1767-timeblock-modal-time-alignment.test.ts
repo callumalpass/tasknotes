@@ -1,5 +1,8 @@
 import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { App } from "obsidian";
+import { serialize, deserialize } from "node:v8";
+
+beforeAll(() => { globalThis.structuredClone = value => deserialize(serialize(value)); });
 import { TimeblockCreationModal } from "../../../src/modals/TimeblockCreationModal";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 import { getDailyNote } from "obsidian-daily-notes-interface";
@@ -44,6 +47,7 @@ function createMockPlugin() {
 	};
 
 	return {
+		fieldMapper: { toUserField: () => "dateModified" },
 		i18n: {
 			translate: mockObserveTranslation(),
 		},

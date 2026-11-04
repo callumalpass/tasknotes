@@ -10,21 +10,20 @@ import {
 	Notice,
 	TAbstractFile,
 	TFile,
-	parseYaml,
-	stringifyYaml,
 	setTooltip,
 	setIcon,
-	getFrontMatterInfo,
 	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { TimeBlock, DailyNoteFrontmatter, TaskInfo } from "../types";
+import { TimeBlock, TaskInfo } from "../types";
 import { generateTimeblockId } from "../utils/helpers";
 import { openFileSelector } from "./FileSelectorModal";
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { parseDateAsLocal } from "../utils/dateUtils";
 import { normalizeThemeColor } from "../utils/themeColors";
-import { modifyVaultFile } from "../services/VaultMutationService";
+import { processVaultFrontMatter } from "../services/VaultMutationService";
+import { collectFileUndo, createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
+import { showTaskUndo } from "../ui/taskPropertyPickers";
 import {
 	createDailyNote,
 	getDailyNote,
@@ -305,7 +304,7 @@ export class TimeblockCreationModal extends Modal {
 			}
 
 			// Save to daily note
-			const dailyNote = await this.saveTimeblockToDailyNote(timeblock);
+			const { dailyNote, undo } = await this.saveTimeblockToDailyNote(timeblock);
 
 			// Refresh calendar views
 			this.plugin.emitter.trigger("data-changed");
@@ -315,7 +314,7 @@ export class TimeblockCreationModal extends Modal {
 				dailyNote,
 			});
 
-			new Notice(this.translate(msg({ message: "Timeblock \"{title}\" created successfully", context: "modals.timeblockCreation.created" }), { title }));
+			showTaskUndo([undo], false, 1, this.app.vault, this.translate(msg({ message: "Timeblock \"{title}\" created successfully", context: "modals.timeblockCreation.created" }), { title }));
 			this.close();
 		} catch (error) {
 			tasknotesLogger.error("Error creating timeblock:", {
@@ -327,7 +326,7 @@ export class TimeblockCreationModal extends Modal {
 		}
 	}
 
-	private async saveTimeblockToDailyNote(timeblock: TimeBlock): Promise<TFile> {
+	private async saveTimeblockToDailyNote(timeblock: TimeBlock): Promise<{ dailyNote: TFile; undo: () => Promise<void> }> {
 		if (!appHasDailyNotesPluginLoaded()) {
 			throw new Error(
 				`Daily Notes core plugin is not enabled. ${TIMEBLOCK_DAILY_NOTES_SETUP_GUIDANCE}`
@@ -359,44 +358,17 @@ export class TimeblockCreationModal extends Modal {
 			}
 		}
 
-		// Read current content
-		const content = await this.app.vault.read(dailyNote);
-
-		// Parse existing frontmatter
-		let frontmatter: DailyNoteFrontmatter = {};
-		const info = getFrontMatterInfo(content);
-		const bodyContent = info.exists ? content.slice(info.contentStart) : content;
-
-		if (info.exists) {
-			try {
-				frontmatter = parseYaml(info.frontmatter) || {};
-			} catch (error) {
-				tasknotesLogger.error("Error parsing existing frontmatter:", {
-					category: "validation",
-					operation: "parsing-existing-frontmatter",
-					error: error,
-				});
-				frontmatter = {};
-			}
-		}
-
-		// Add timeblock to frontmatter
-		if (!frontmatter.timeblocks) {
-			frontmatter.timeblocks = [];
-		}
-		frontmatter.timeblocks.push(timeblock);
-
-		// Convert frontmatter back to YAML
-		const newFrontmatterText = stringifyYaml(frontmatter);
-
-		// Reconstruct file content
-		const newContent = `---\n${newFrontmatterText}---\n${bodyContent}`;
-
-		// Write back to file
-		await modifyVaultFile(this.app, dailyNote, newContent);
-
-		// The native metadata cache will automatically update
-		return dailyNote;
+		const receipts: FileUndoReceipt[] = [];
+		let before: Record<string, unknown> = {};
+		let after: Record<string, unknown> = {};
+		await processVaultFrontMatter(this.app, dailyNote, frontmatter => {
+			before = structuredClone(frontmatter);
+			const blocks = Array.isArray(frontmatter.timeblocks) ? frontmatter.timeblocks : [];
+			frontmatter.timeblocks = [...blocks, timeblock];
+			after = structuredClone(frontmatter);
+		});
+		collectFileUndo(this.plugin, receipts)(dailyNote, before, after);
+		return { dailyNote, undo: createFileUndo(this.plugin, receipts) };
 	}
 
 	private addAttachment(file: TAbstractFile): void {

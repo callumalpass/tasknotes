@@ -7,7 +7,7 @@ import {
 	type TaskInfo,
 } from "../../types";
 import { getCurrentTimestamp, formatDateForStorage } from "../../utils/dateUtils";
-import { splitFrontmatterAndBody, resetMarkdownCheckboxes } from "../../utils/helpers";
+import { resetMarkdownCheckboxes } from "../../utils/helpers";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import { getRecurringTaskActionDate } from "./taskRecurringPlanning";
 
@@ -55,7 +55,9 @@ export function readCompletionContent(content: string): {
 	frontmatter: Record<string, unknown>;
 	body: string;
 } {
-	const { frontmatter, body } = splitFrontmatterAndBody(content);
+	const match = /^---[\t ]*\r?\n([\s\S]*?)\r?\n---[\t ]*(?:\r?\n|$)/.exec(content);
+	const frontmatter = match?.[1] ?? null;
+	const body = match ? content.slice(match[0].length) : content;
 	const parsed: unknown = frontmatter === null ? {} : parseYaml(frontmatter);
 	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
 		throw new Error("Invalid task frontmatter");
@@ -117,6 +119,7 @@ export async function completeRecurringTaskWithUndo(
 	options: RecurringCompletionOptions = {}
 ): Promise<{
 	updatedTask: TaskInfo;
+	occurrenceDate: string;
 	completed: boolean;
 	changed: boolean;
 	undo: () => Promise<boolean>;
@@ -181,9 +184,15 @@ export async function completeRecurringTaskWithUndo(
 	const completed = occurrence
 		? plugin.statusManager.isCompletedStatus(result.status)
 		: (updatedTask.complete_instances ?? []).some(day => !parent.complete_instances?.includes(day));
+	const previousDays = parent.complete_instances ?? [];
+	const updatedDays = updatedTask.complete_instances ?? [];
+	const changedDay = completed
+		? updatedDays.find(day => !previousDays.includes(day))
+		: previousDays.find(day => !updatedDays.includes(day));
 	let used = false;
 	return {
 		updatedTask,
+		occurrenceDate: occurrence?.occurrence_date ?? changedDay ?? formatDateForStorage(identityDate),
 		completed,
 		changed: entries.some(entry => entry.changed),
 		undo: async () => {
