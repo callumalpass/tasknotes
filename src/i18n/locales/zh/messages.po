@@ -315,6 +315,11 @@ msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}"
 msgstr "{count, plural, other {正在跟踪 # 个任务（总计 {totalElapsed}）}}"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "{count} days"
+msgstr "{count}天"
+
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.notices.blockedByAdded"
 msgid "{count} dependency added"
@@ -339,6 +344,11 @@ msgstr "{count} 条错过的 TaskNotes 提醒"
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.more"
 msgid "{count} more than yesterday"
 msgstr "比昨天多{count}个"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar view hint"
+msgid "{count}-day view"
+msgstr "{count}天视图"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.customDays"
@@ -1766,6 +1776,7 @@ msgctxt "settings.integrations.subscriptionsList.notices.refreshSuccess"
 msgid "All calendar subscriptions refreshed successfully"
 msgstr "所有日历订阅刷新成功"
 
+#: src/bases/CalendarView.ts
 #: src/ui/ICSCard.ts
 msgctxt "ui.icsCard.allDay"
 msgid "All day"
@@ -4366,6 +4377,11 @@ msgctxt "modals.actionPalette.categories.dates"
 msgid "Dates"
 msgstr "日期"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Day"
+msgstr "日"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.dayCells"
 msgid "Day cells"
@@ -4402,6 +4418,12 @@ msgstr "天"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek"
 msgid "Days of week"
 msgstr "每周重复日期"
+
+#: src/bases/calendarEventPresentation.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar event marker"
+msgid "Deadline"
+msgstr "截止日期"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.debugLogging.header"
@@ -7701,6 +7723,11 @@ msgctxt "settings.taskProperties.properties.blockedBy.description"
 msgid "Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator."
 msgstr "必须在此任务之前完成的任务链接。存储为Wiki 链接。受阻的任务显示视觉指示器。"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "List"
+msgstr "列表"
+
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 msgctxt "settings.taskProperties.customUserFields.types.list"
 msgid "List"
@@ -8110,6 +8137,11 @@ msgstr "星期一"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.monday"
 msgid "Monday"
 msgstr "星期一"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Month"
+msgstr "月"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
@@ -14152,6 +14184,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.wednesd
 msgid "Wednesday"
 msgstr "星期三"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Week"
+msgstr "周"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.weekStartsOn"
 msgid "Week starts on"
@@ -14433,6 +14470,11 @@ msgstr "年"
 msgctxt "contextMenus.task.calendar.yahoo"
 msgid "Yahoo Calendar"
 msgstr "Yahoo日历"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Year"
+msgstr "年"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.yearView"

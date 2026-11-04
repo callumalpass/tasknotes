@@ -1,4 +1,5 @@
-import { Platform, setTooltip } from "obsidian";
+import { Platform, setIcon, setTooltip } from "obsidian";
+import { msg } from "@lingui/core/macro";
 import { viewToBases, type ItemArg } from "@tasknotes/calendar";
 import type TaskNotesPlugin from "../main";
 import type { CalendarEventProps } from "./calendarEngine";
@@ -9,6 +10,7 @@ import { filterEmptyProjects, sanitizeForCssClass, getEffectiveTaskStatus } from
 import { eventApiFromItem } from "./calendarEngine";
 import type { TaskInfo } from "../types";
 import { createTaskGlyphs } from "../ui/taskGlyphs";
+import { createElementInDocument } from "../utils/documentDom";
 
 interface CalendarPresentationContext {
  plugin: TaskNotesPlugin;
@@ -23,6 +25,12 @@ export function decorateCalendarTaskGlyphs(element: HTMLElement, task: TaskInfo,
 	const title = element.querySelector<HTMLElement>(".tnc-item-title");
 	if (!title) return;
 	title.querySelector(".tn-task-glyphs")?.remove();
+	if (!title.querySelector(".tn-calendar-event-title")) {
+		const text = createElementInDocument(element.ownerDocument, "span");
+		text.className = "tn-calendar-event-title";
+		text.append(...Array.from(title.childNodes));
+		title.append(text);
+	}
 	title.prepend(createTaskGlyphs(element.ownerDocument, task, plugin));
 }
 
@@ -94,6 +102,16 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 				? getEffectiveTaskStatus(taskInfo, getTargetDateForEvent({ event: eventApiFromItem(arg.item) }), context.plugin.statusManager.getCompletedStatuses()[0])
 				: taskInfo.status;
 			decorateCalendarTaskGlyphs(el, { ...taskInfo, status }, context.plugin);
+			if (eventType === "due") {
+				const title = el.querySelector(".tnc-item-title");
+				if (title && !title.querySelector(".tn-calendar-deadline-marker")) {
+					const marker = createElementInDocument(el.ownerDocument, "span");
+					marker.className = "tn-calendar-deadline-marker";
+					marker.setAttribute("aria-hidden", "true");
+					setIcon(marker, "flag-triangle-right");
+					title.prepend(marker);
+				}
+			}
 
 			// Add tag classes to tasks
 			if (taskInfo.tags && taskInfo.tags.length > 0) {
@@ -120,7 +138,11 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 
 		// Add hover tooltip for tasks and ICS events
 		if (taskInfo) {
-			setTooltip(el, generateTaskTooltip(taskInfo, context.plugin));
+			const tooltip = generateTaskTooltip(taskInfo, context.plugin);
+			const deadline = eventType === "due"
+				? context.plugin.i18n.translate(msg({ message: "Deadline", context: "calendar event marker" }))
+				: null;
+			setTooltip(el, deadline ? `${deadline}: ${tooltip}` : tooltip);
 		} else if (icsEvent) {
 			const relatedNotesText =
 				relatedNoteTotal > 0

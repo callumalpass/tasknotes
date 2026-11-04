@@ -39,6 +39,30 @@ timeEntries:
     endTime: '${new Date(`${today}T11:30`).toISOString()}'
 ---
 `);
+    const titles = ['Reconcile supplier invoices', 'Review onboarding changes', 'Prepare customer research', 'Plan accessibility fixes', 'Send weekly project update'];
+    for (let offset = -3; offset <= 3; offset++) {
+      const date = day(new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset));
+      for (const [index, title] of titles.entries()) {
+        await app.vault.create(`${folder}/Busy ${offset} ${index}.md`, `---
+title: ${title}${offset === 0 ? '' : ` (${['Acme', 'Atlas', 'Cedar', 'Delta', 'Ember', 'Folio', 'Grove'][offset + 3]})`}
+tags: [task]
+status: open
+priority: normal
+scheduled: ${date}T${String(8 + index * 2).padStart(2, '0')}:00
+timeEstimate: ${index === 0 ? 30 : 60}
+---
+`);
+      }
+    }
+    await app.vault.create(`${folder}/Daily review.md`, `---
+title: Daily project review
+tags: [task]
+status: open
+scheduled: ${today}T09:00
+recurrence: FREQ=DAILY
+timeEstimate: 30
+---
+`);
     const base = await app.vault.create(`${folder}/Calendar.base`, `filters:
   and:
     - file.inFolder("${folder}")
@@ -78,6 +102,37 @@ test.afterAll(async () => {
   }
 });
 
+test('narrow defaults are temporary and explicit view choices survive resizing', async () => {
+  const page = app.page;
+  await page.evaluate(() => {
+    const app = (window as any).app;
+    app.workspace.leftSplit.collapse();
+    app.workspace.rightSplit.collapse();
+  });
+  const calendar = page.locator('.workspace-leaf.mod-active .tnc');
+  for (const theme of ['theme-light', 'theme-dark']) {
+    await page.evaluate(theme => {
+      document.body.classList.remove('theme-light', 'theme-dark');
+      document.body.classList.add(theme);
+      document.querySelectorAll('.notice').forEach(element => element.remove());
+    }, theme);
+    await setObsidianViewport(page, { width: 400, height: 800 });
+    await expect(calendar.locator('.tnc-btn-view-list')).toHaveAttribute('aria-pressed', 'true');
+    await expect(calendar.locator('.task-card__title').first()).toBeVisible();
+    await page.screenshot({ path: `test-results/calendar-design/${theme}-400-default-agenda.png`, clip: { x: 0, y: 0, width: 400, height: 800 } });
+    const base = await page.evaluate(async folder => {
+      const app = (window as any).app;
+      return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/Calendar.base`));
+    }, folder);
+    expect(base).toContain('calendarView: timeGridWeek');
+    await setObsidianViewport(page, { width: 1180, height: 800 });
+    await expect(calendar.locator('.tnc-btn-view-week')).toHaveAttribute('aria-pressed', 'true');
+  }
+  await calendar.locator('.tnc-btn-view-month').click();
+  await setObsidianViewport(page, { width: 400, height: 800 });
+  await expect(calendar.locator('.tnc-btn-view-month')).toHaveAttribute('aria-pressed', 'true');
+});
+
 test('public view buttons share kit styles across themes and narrow panes', async () => {
   test.setTimeout(180000);
   const page = app.page;
@@ -88,7 +143,7 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
       document.body.classList.remove('theme-light', 'theme-dark');
       document.body.classList.add(theme);
     }, theme);
-    for (const width of [1180, 430]) {
+    for (const width of [1180, 400]) {
       await page.evaluate(() => {
         const app = (window as any).app;
         app.workspace.leftSplit.collapse();
@@ -107,7 +162,7 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
         });
         expect(toolbarLine).toBeLessThan(3);
         if (mode === 'week') {
-          const event = calendar.locator('.tnc-item[data-task-path] .tn-task-glyphs').first();
+          const event = calendar.locator('.tnc-item[data-task-path] .tn-calendar-event-title').first();
           await expect(event).toBeVisible();
           const style = await calendar.locator('.tnc-item[data-task-path]').first().evaluate(element => {
             const css = getComputedStyle(element);
@@ -115,13 +170,20 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
           });
           expect(style).toEqual({ left: '2px', top: '0px' });
           await expect(calendar.locator('.tnc-item[data-event-type="timeblock"]').first()).toBeVisible();
+          await expect(calendar.locator('.tnc-item[data-event-type="due"]').first()).toHaveAttribute('aria-label', /^Deadline:/);
+          if (width === 1180) {
+            await expect(calendar.locator('[data-task-path$="Busy 0 2.md"] .tnc-item-time')).toBeVisible();
+          }
         }
         if (mode === 'list') {
+          await expect(calendar.locator('[data-event-type="due"] .tn-calendar-list-deadline').first()).toHaveText('Deadline');
+          await expect(calendar.locator('[data-event-type="scheduled"] .tn-calendar-list-stamp').first()).toContainText('08:00');
           await expect(calendar.locator('.task-card__metadata-date--overdue').first()).toBeVisible();
           await expect(calendar.locator('.timeblock-card__time')).toHaveText('13:00 - 14:00');
           await expect(calendar.locator('.timeblock-card__attachments')).toContainText('1 attachment');
         }
-        await page.screenshot({ path: `test-results/calendar-design/${theme}-${width}-${mode}.png` });
+        await page.mouse.move(5, 5);
+        await page.screenshot({ path: `test-results/calendar-design/${theme}-${width}-${mode}.png`, clip: { x: 0, y: 0, width, height: 800 } });
       }
       const comparison = await calendar.evaluate(calendar => {
         const kit = document.createElement('div');
@@ -139,6 +201,113 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
       expect(comparison.calendar).toEqual(comparison.kit);
     }
   }
+});
+
+test('dense recurring days retain readable titles and every overflow item', async () => {
+  const page = app.page;
+  await page.evaluate(async folder => {
+    const app = (window as any).app;
+    const date = new Date();
+    const today = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    await app.vault.createFolder(`${folder}/Dense`);
+    for (let index = 0; index < 35; index++) {
+      await app.vault.create(`${folder}/Dense/Check ${index}.md`, `---\ntitle: Recurring project check ${index + 1}\ntags: [task]\nstatus: open\nscheduled: ${today}\nrecurrence: FREQ=DAILY\n---\n`);
+    }
+    const base = await app.vault.create(`${folder}/Dense.base`, `filters:\n  and:\n    - file.inFolder("${folder}/Dense")\nviews:\n  - type: tasknotesCalendar\n    name: Dense calendar\n    calendarView: dayGridMonth\n    showTimeblocks: false\n    showPropertyBasedEvents: false\n`);
+    await app.workspace.getLeaf(true).openFile(base);
+  }, folder);
+  const calendar = page.locator('.workspace-leaf.mod-active .tnc');
+  for (const theme of ['theme-light', 'theme-dark']) {
+    await page.evaluate(theme => {
+      document.body.classList.remove('theme-light', 'theme-dark');
+      document.body.classList.add(theme);
+    }, theme);
+    await setObsidianViewport(page, { width: 1180, height: 800 });
+    await expect(calendar.locator('.tnc-more').first()).toBeVisible({ timeout: 15000 });
+    await page.screenshot({ path: `test-results/calendar-design/${theme}-1180-dense-month.png`, clip: { x: 0, y: 0, width: 1180, height: 800 } });
+    await calendar.locator('.tnc-more').first().click();
+    await expect(calendar.locator('.tnc-popover .tnc-item')).toHaveCount(35);
+    await expect(calendar.locator('.tnc-popover .tn-calendar-event-title').first()).toBeVisible();
+    await page.screenshot({ path: `test-results/calendar-design/${theme}-1180-dense-overflow.png`, clip: { x: 0, y: 0, width: 1180, height: 800 } });
+    await page.keyboard.press('Escape');
+  }
+  await page.evaluate(async folder => {
+    const app = (window as any).app;
+    await app.vault.delete(app.vault.getAbstractFileByPath(`${folder}/Dense`), true);
+    const leaf = app.workspace.getMostRecentLeaf();
+    await leaf.openFile(app.vault.getAbstractFileByPath(`${folder}/Calendar.base`));
+  }, folder);
+});
+
+test('timeblocks retain drag and resize in both themes', async () => {
+  const page = app.page;
+  await setObsidianViewport(page, { width: 1180, height: 800 });
+  const calendar = page.locator('.workspace-leaf.mod-active .tnc');
+  const readBlock = () => page.evaluate(folder => {
+    const app = (window as any).app;
+    const file = app.vault.getMarkdownFiles().find((file: any) => file.path.startsWith(folder) && app.metadataCache.getFileCache(file)?.frontmatter?.timeblocks);
+    return app.metadataCache.getFileCache(file)?.frontmatter?.timeblocks[0];
+  }, folder);
+  const originalBlock = await readBlock();
+  for (const theme of ['theme-light', 'theme-dark']) {
+    await page.evaluate(theme => {
+      document.body.classList.remove('theme-light', 'theme-dark');
+      document.body.classList.add(theme);
+    }, theme);
+    await calendar.locator('.tnc-btn-view-days').click();
+    const block = calendar.locator('.tnc-item[data-event-type="timeblock"]');
+    await expect(block).toBeVisible();
+    let box = (await block.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + 10);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, box.y + 10 + box.height, { steps: 10 });
+    await page.mouse.up();
+    await expect.poll(async () => (await readBlock()).startTime).toBe('14:00');
+    await expect(block).toContainText('14:00 – 15:00');
+    box = (await block.boundingBox())!;
+    const handle = block.locator('.tnc-resize-end');
+    await handle.hover();
+    const resize = (await handle.boundingBox())!;
+    await page.mouse.move(resize.x + resize.width / 2, resize.y + resize.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(resize.x + resize.width / 2, resize.y + resize.height / 2 + box.height, { steps: 10 });
+    await page.mouse.up();
+    await expect.poll(async () => (await readBlock()).endTime).toBe('16:00');
+    await page.evaluate(async ({ folder, originalBlock }) => {
+      const app = (window as any).app;
+      const file = app.vault.getMarkdownFiles().find((file: any) => file.path.startsWith(folder) && app.metadataCache.getFileCache(file)?.frontmatter?.timeblocks);
+      await app.fileManager.processFrontMatter(file, (frontmatter: any) => {
+        frontmatter.timeblocks[0] = originalBlock;
+      });
+    }, { folder, originalBlock });
+    await expect.poll(async () => (await readBlock()).startTime).toBe('13:00');
+    await calendar.locator('.tnc-btn-next').click();
+    await expect(block).toHaveCount(0);
+    await calendar.locator('.tnc-btn-prev').click();
+    await expect(block).toContainText('13:00');
+  }
+});
+
+test('empty agendas remain legible at desktop and narrow widths', async () => {
+  const page = app.page;
+  await page.evaluate(async folder => {
+    const app = (window as any).app;
+    const file = await app.vault.create(`${folder}/Empty.base`, `filters:\n  and:\n    - file.inFolder("${folder}/empty")\nviews:\n  - type: tasknotesCalendar\n    name: Empty calendar\n    calendarView: listWeek\n    showTimeblocks: false\n    showTimeEntries: false\n    showPropertyBasedEvents: false\n`);
+    await app.workspace.getLeaf(true).openFile(file);
+  }, folder);
+  for (const theme of ['theme-light', 'theme-dark']) {
+    await page.evaluate(theme => {
+      document.body.classList.remove('theme-light', 'theme-dark');
+      document.body.classList.add(theme);
+    }, theme);
+    for (const width of [1180, 400]) {
+      await setObsidianViewport(page, { width, height: 800 });
+      await page.evaluate(width => document.body.classList.toggle('is-mobile', width === 400), width);
+      await expect(page.locator('.workspace-leaf.mod-active .tnc-list-empty')).toBeVisible();
+      await page.screenshot({ path: `test-results/calendar-design/${theme}-${width}-empty.png`, clip: { x: 0, y: 0, width, height: 800 } });
+    }
+  }
+  await page.evaluate(() => document.body.classList.remove('is-mobile'));
 });
 
 test('mini calendar retains today, selection and note chooser', async () => {
@@ -165,21 +334,29 @@ views:
       document.body.classList.remove('theme-light', 'theme-dark');
       document.body.classList.add(theme);
     }, theme);
-    const todayCell = mini.locator('[aria-current="date"]');
-    await expect(todayCell).toBeVisible();
-    await page.screenshot({ path: `test-results/calendar-design/${theme}-mini.png` });
-    await todayCell.click();
-    await expect(page.locator('.note-selector-modal__title').filter({ hasText: 'Review calendar' })).toBeVisible();
-    await expect(page.locator('.note-selector-modal__title .tn-task-glyphs')).toBeVisible();
-    await page.keyboard.press('Escape');
-    await mini.locator('.mini-calendar-view__day:not(.mini-calendar-view__day--outside-month):not([aria-current="date"])').first().click();
-    await expect(todayCell).toHaveAttribute('aria-selected', 'false');
-    const todayStyle = await todayCell.evaluate(element => {
-      const css = getComputedStyle(element);
-      return { border: css.borderWidth, shadow: css.boxShadow };
-    });
-    expect(todayStyle).toEqual({ border: '0px', shadow: 'none' });
-    await expect(todayCell).toHaveClass(/mini-calendar-view__day--intensity-/);
-    await page.screenshot({ path: `test-results/calendar-design/${theme}-mini-independent-selection.png` });
+    for (const width of [1180, 400]) {
+      await setObsidianViewport(page, { width, height: 800 });
+      expect((await mini.boundingBox())!.width).toBeLessThanOrEqual(360);
+      await expect(mini.locator('.mini-calendar-view__month-display')).toHaveCSS('text-transform', 'none');
+      const todayCell = mini.locator('[aria-current="date"]');
+      await expect(todayCell).toBeVisible();
+      await page.screenshot({ path: `test-results/calendar-design/${theme}-${width}-mini.png`, clip: { x: 0, y: 0, width, height: 800 } });
+      await todayCell.click();
+      await expect(page.locator('.note-selector-modal__title').filter({ hasText: 'Review calendar' })).toBeVisible();
+      await expect(page.locator('.note-selector-modal__title .tn-task-glyphs').first()).toBeVisible();
+      await page.keyboard.press('Escape');
+      await mini.locator('.mini-calendar-view__day:not(.mini-calendar-view__day--outside-month):not([aria-current="date"])').first().click();
+      await expect(todayCell).toHaveAttribute('aria-selected', 'false');
+      const todayStyle = await todayCell.evaluate(element => {
+        const css = getComputedStyle(element);
+        return { border: css.borderWidth, shadow: css.boxShadow };
+      });
+      expect(todayStyle).toEqual({ border: '0px', shadow: 'none' });
+      await expect(todayCell).toHaveClass(/mini-calendar-view__day--intensity-/);
+      await page.screenshot({ path: `test-results/calendar-design/${theme}-${width}-mini-independent-selection.png`, clip: { x: 0, y: 0, width, height: 800 } });
+    }
   }
+  await mini.locator('[aria-current="date"]').click();
+  await page.locator('.note-selector-modal__title').filter({ hasText: 'Review calendar' }).click();
+  await expect.poll(() => page.evaluate(() => (window as any).app.workspace.getActiveFile()?.path)).toBe(`${folder}/Design task.md`);
 });

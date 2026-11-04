@@ -126,6 +126,8 @@ export class CalendarView extends BasesViewBase {
 	private calendarEl: HTMLElement | null = null;
 	/** Range the current items were built for. */
 	private visibleView: ViewInfo | null = null;
+	private automaticViewChange = false;
+	private explicitlyChosenView = false;
 	private refetchSeq = 0;
 	private currentTasks: TaskInfo[] = [];
 	private identityTasks: TaskInfo[] = [];
@@ -309,6 +311,12 @@ export class CalendarView extends BasesViewBase {
 			}));
 		}
 		if (this.rootElement) {
+			const observer = new ResizeObserver(() => this.onResize());
+			observer.observe(this.rootElement);
+			this.register(() => observer.disconnect());
+			this.registerDomEvent(this.rootElement, "click", (event: MouseEvent) => {
+				if ((event.target as HTMLElement).closest(".tnc-btn-view")) this.explicitlyChosenView = true;
+			}, { capture: true });
 			const preview = new CalendarBatchPreview({
 				root: this.rootElement,
 				getItems: () => this.calendarItems,
@@ -358,7 +366,23 @@ export class CalendarView extends BasesViewBase {
 	 * The calendar observes its own size; this covers hosts that resize without layout changes.
 	 */
 	onResize(): void {
+		if (this.calendar && !this.explicitlyChosenView) {
+			const preferred = basesLayoutOptions<CalendarEventProps>(this.viewOptions).view;
+			const view = this.isNarrowCalendar() && preferred === "week" ? "list" : preferred;
+			if (view && this.calendar.view.type !== view) {
+				this.automaticViewChange = true;
+				try {
+					this.calendar.changeView(view);
+				} finally {
+					this.automaticViewChange = false;
+				}
+			}
+		}
 		this.calendar?.updateSize();
+	}
+
+	private isNarrowCalendar(): boolean {
+		return Boolean(this.rootElement && this.rootElement.clientWidth > 0 && this.rootElement.clientWidth < 640);
 	}
 
 	/**
@@ -899,7 +923,12 @@ export class CalendarView extends BasesViewBase {
 						previousNavigationState,
 						nextNavigationState
 					);
-					this.calendar.setOptions(this.buildCalendarOptions());
+					this.automaticViewChange = true;
+					try {
+						this.calendar.setOptions(this.buildCalendarOptions());
+					} finally {
+						this.automaticViewChange = false;
+					}
 					this.syncSelectionModeAfterCalendarRender();
 				}
 			} else {
@@ -1030,10 +1059,15 @@ export class CalendarView extends BasesViewBase {
 
 		const initialDate = this.determineInitialDate(taskNotes);
 		this.calendarEl.replaceChildren();
-		this.calendar = new Calendar<CalendarEventProps>(this.calendarEl, {
-			...this.buildCalendarOptions(),
-			...(initialDate ? { date: initialDate } : {}),
-		});
+		this.automaticViewChange = true;
+		try {
+			this.calendar = new Calendar<CalendarEventProps>(this.calendarEl, {
+				...this.buildCalendarOptions(),
+				...(initialDate ? { date: initialDate } : {}),
+			});
+		} finally {
+			this.automaticViewChange = false;
+		}
 		this.applyLayoutClasses();
 		await this.refetchEvents();
 	}
@@ -1042,14 +1076,16 @@ export class CalendarView extends BasesViewBase {
 	private buildCalendarOptions(): Partial<CalendarOptions<CalendarEventProps>> {
 		const t = (message: MessageDescriptor, fallback: string) => this.plugin.i18n.translate(message) || fallback;
 		const options = this.viewOptions;
+		const layout = basesLayoutOptions<CalendarEventProps>(options, {
+			embedded: this.getEffectiveHeightMode() === "auto",
+		});
 		const refreshLabel = t(
 			msg({ message: "Refresh calendar subscriptions", context: "views.basesCalendar.hints.refresh" }),
 			t(msg({ message: "Refresh", context: "views.basesCalendar.buttonText.refresh" }), "Refresh calendar subscriptions")
 		);
 		return {
-			...basesLayoutOptions<CalendarEventProps>(options, {
-				embedded: this.getEffectiveHeightMode() === "auto",
-			}),
+			...layout,
+			view: !this.explicitlyChosenView && this.isNarrowCalendar() && layout.view === "week" ? "list" : layout.view,
 			timeZone: this.calendarTimezone,
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
 			editable: true,
@@ -1103,16 +1139,17 @@ export class CalendarView extends BasesViewBase {
 				prev: t(msg({ message: "Previous", context: "views.basesCalendar.hints.prev" }), "Previous"),
 				next: t(msg({ message: "Next", context: "views.basesCalendar.hints.next" }), "Next"),
 				views: {
-					month: t(msg({ message: "M", context: "views.basesCalendar.buttonText.month" }), "Month"),
-					week: t(msg({ message: "W", context: "views.basesCalendar.buttonText.week" }), "Week"),
-					day: t(msg({ message: "D", context: "views.basesCalendar.buttonText.day" }), "Day"),
-					year: t(msg({ message: "Y", context: "views.basesCalendar.buttonText.year" }), "Year"),
-					list: t(msg({ message: "L", context: "views.basesCalendar.buttonText.list" }), "List"),
-					days: this.plugin.i18n.translate(msg({ message: "{count}D", context: "views.basesCalendar.buttonText.customDays" }), {
+					month: t(msg({ message: "Month", context: "calendar view name" }), "Month"),
+					week: t(msg({ message: "Week", context: "calendar view name" }), "Week"),
+					day: t(msg({ message: "Day", context: "calendar view name" }), "Day"),
+					year: t(msg({ message: "Year", context: "calendar view name" }), "Year"),
+					list: t(msg({ message: "List", context: "calendar view name" }), "List"),
+					days: this.plugin.i18n.translate(msg({ message: "{count} days", context: "calendar view name" }), {
 						count: options.customDayCount.toString(),
 					}),
 				},
 				viewHints: {
+					days: this.plugin.i18n.translate(msg({ message: "{count}-day view", context: "calendar view hint" }), { count: options.customDayCount.toString() }),
 					month: t(msg({ message: "Month view", context: "views.basesCalendar.hints.month" }), "Month view"),
 					week: t(msg({ message: "Week view", context: "views.basesCalendar.hints.week" }), "Week view"),
 					day: t(msg({ message: "Day view", context: "views.basesCalendar.hints.day" }), "Day view"),
@@ -1121,6 +1158,7 @@ export class CalendarView extends BasesViewBase {
 				},
 			},
 			onRangeChange: (view) => {
+				this.syncCalendarViewLabels();
 				if (this.visibleView && sameRange(this.visibleView, view)) return;
 				if (this.visibleView) {
 					this.plugin.taskSelectionService?.clearSelection();
@@ -1156,7 +1194,8 @@ export class CalendarView extends BasesViewBase {
 		this.batchPreview?.clear();
 		this.syncSelectionModeAfterCalendarRender();
 		const viewType = viewToBases(view.type);
-		if (viewType && viewType !== this.viewOptions.calendarView) {
+		if (!this.automaticViewChange && viewType && viewType !== this.viewOptions.calendarView) {
+			this.explicitlyChosenView = true;
 			this.viewOptions.calendarView = viewType;
 			this.debouncedSaveViewType(viewType);
 		}
@@ -1228,7 +1267,7 @@ export class CalendarView extends BasesViewBase {
 	private applyTimeGridVisibilityClass(): void {
 		const hideTimeGrid = shouldHideCalendarTimeGrid(
 			this.viewOptions.showTimeGrid,
-			this.viewOptions.calendarView
+			(this.visibleView ? viewToBases(this.visibleView.type) : null) ?? this.viewOptions.calendarView
 		);
 
 		this.rootElement?.classList.toggle("advanced-calendar-view--hide-time-grid", hideTimeGrid);
@@ -1239,12 +1278,13 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private applyCalendarModeClass(): void {
-		const isListView = this.viewOptions.calendarView.startsWith("list");
+		const isListView = this.visibleView ? this.visibleView.type === "list" : this.viewOptions.calendarView.startsWith("list");
 		this.rootElement?.classList.toggle("advanced-calendar-view--list", isListView);
 		this.calendarEl?.classList.toggle("advanced-calendar-view__calendar--list", isListView);
 	}
 
 	private applyLayoutClasses(): void {
+		this.syncCalendarViewLabels();
 		this.applyHeightModeClass();
 		this.applyTimeGridVisibilityClass();
 		this.applyCalendarModeClass();
@@ -1253,6 +1293,29 @@ export class CalendarView extends BasesViewBase {
 			"advanced-calendar-view__calendar--week-numbers",
 			this.viewOptions.weekNumbers === true
 		);
+	}
+
+	private syncCalendarViewLabels(): void {
+		const compact = {
+			month: this.plugin.i18n.translate(msg({ message: "M", context: "views.basesCalendar.buttonText.month" })),
+			week: this.plugin.i18n.translate(msg({ message: "W", context: "views.basesCalendar.buttonText.week" })),
+			day: this.plugin.i18n.translate(msg({ message: "D", context: "views.basesCalendar.buttonText.day" })),
+			year: this.plugin.i18n.translate(msg({ message: "Y", context: "views.basesCalendar.buttonText.year" })),
+			list: this.plugin.i18n.translate(msg({ message: "L", context: "views.basesCalendar.buttonText.list" })),
+			days: this.plugin.i18n.translate(msg({ message: "{count}D", context: "views.basesCalendar.buttonText.customDays" }), { count: this.viewOptions.customDayCount.toString() }),
+		};
+		for (const [view, label] of Object.entries(compact)) {
+			const button = this.calendarEl?.querySelector<HTMLElement>(`.tnc-btn-view-${view}`);
+			if (!button || button.querySelector(".tn-calendar-view-label")) continue;
+			const full = createElementInDocument(button.ownerDocument, "span");
+			full.className = "tn-calendar-view-label";
+			full.textContent = button.textContent;
+			const short = createElementInDocument(button.ownerDocument, "span");
+			short.className = "tn-calendar-view-abbreviation";
+			short.textContent = label;
+			short.setAttribute("aria-hidden", "true");
+			button.replaceChildren(full, short);
+		}
 	}
 
 	private getEffectiveHeightMode(): CalendarHeightMode {
@@ -1907,6 +1970,23 @@ export class CalendarView extends BasesViewBase {
 			}, { capture: true });
 		}
 		arg.el.classList.toggle("tn-calendar-list-card", card !== null);
+		if (card && task) {
+			const entry = createElementInDocument(arg.el.ownerDocument, "div");
+			entry.className = "tn-calendar-list-entry";
+			const stamp = entry.createDiv({ cls: "tn-calendar-list-stamp" });
+			if (arg.item.data?.eventType === "due") {
+				const deadline = this.plugin.i18n.translate(msg({ message: "Deadline", context: "calendar event marker" }));
+				const marker = stamp.createSpan({ cls: "tn-calendar-list-deadline" });
+				setIcon(marker.createSpan(), "flag-triangle-right");
+				marker.createSpan({ text: deadline });
+				stamp.setAttribute("aria-label", `${deadline}: ${arg.timeText}`);
+			} else if (arg.item.data?.eventType === "timeEntry") {
+				setIcon(stamp.createSpan({ cls: "tn-calendar-list-tracked" }), "timer");
+			}
+			stamp.createSpan({ text: arg.timeText || this.plugin.i18n.translate(msg({ message: "All day", context: "ui.icsCard.allDay" })) });
+			entry.append(card);
+			return entry;
+		}
 		return card;
 	}
 

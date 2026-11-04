@@ -315,6 +315,11 @@ msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}"
 msgstr "{count, plural, one {Учёт времени для # задачи (всего {totalElapsed})} few {Учёт времени для # задач (всего {totalElapsed})} many {Учёт времени для # задач (всего {totalElapsed})} other {Учёт времени для # задач (всего {totalElapsed})}}"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "{count} days"
+msgstr "{count} дн."
+
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.notices.blockedByAdded"
 msgid "{count} dependency added"
@@ -339,6 +344,11 @@ msgstr "Пропущено напоминаний TaskNotes: {count}"
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.more"
 msgid "{count} more than yesterday"
 msgstr "на {count} больше, чем вчера"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar view hint"
+msgid "{count}-day view"
+msgstr "Вид на {count} дн."
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.customDays"
@@ -1769,6 +1779,7 @@ msgctxt "settings.integrations.subscriptionsList.notices.refreshSuccess"
 msgid "All calendar subscriptions refreshed successfully"
 msgstr "Все подписки на календари успешно обновлены"
 
+#: src/bases/CalendarView.ts
 #: src/ui/ICSCard.ts
 msgctxt "ui.icsCard.allDay"
 msgid "All day"
@@ -4369,6 +4380,11 @@ msgctxt "modals.actionPalette.categories.dates"
 msgid "Dates"
 msgstr "Даты"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Day"
+msgstr "День"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.dayCells"
 msgid "Day cells"
@@ -4405,6 +4421,12 @@ msgstr "дни"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek"
 msgid "Days of week"
 msgstr "Дни недели"
+
+#: src/bases/calendarEventPresentation.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar event marker"
+msgid "Deadline"
+msgstr "Срок"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.debugLogging.header"
@@ -7702,6 +7724,11 @@ msgctxt "settings.taskProperties.properties.blockedBy.description"
 msgid "Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator."
 msgstr "Ссылки на задачи, которые должны быть выполнены до этой. Хранится как викиссылки. Заблокированные задачи отображают визуальный индикатор."
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "List"
+msgstr "Список"
+
 #: src/settings/tabs/taskProperties/userFieldsCard.ts
 msgctxt "settings.taskProperties.customUserFields.types.list"
 msgid "List"
@@ -8111,6 +8138,11 @@ msgstr "Понедельник"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.monday"
 msgid "Monday"
 msgstr "Понедельник"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Month"
+msgstr "Месяц"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
@@ -14153,6 +14185,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.wednesd
 msgid "Wednesday"
 msgstr "Среда"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Week"
+msgstr "Неделя"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.weekStartsOn"
 msgid "Week starts on"
@@ -14434,6 +14471,11 @@ msgstr "Г"
 msgctxt "contextMenus.task.calendar.yahoo"
 msgid "Yahoo Calendar"
 msgstr "Yahoo Календарь"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Year"
+msgstr "Год"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.yearView"
