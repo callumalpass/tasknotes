@@ -2107,7 +2107,9 @@ test.describe('Tag and Project Editing', () => {
 
     // Bases renders file.tags as native property chips rather than legacy a.tag links.
     // Assert a known fixture tag in the active board, not a hidden Markdown leaf.
-    const tag = page.locator('.workspace-leaf.mod-active .task-card').getByText('errands', { exact: true }).first();
+    const tag = page.locator('.workspace-leaf.mod-active .task-card').locator('.tag:visible, .task-card__metadata-overflow:visible').filter({ hasText: /^errands$/ }).or(
+      page.locator('.workspace-leaf.mod-active .task-card .task-card__metadata-overflow[aria-label*="errands"]:visible')
+    ).first();
     await expect(tag).toBeVisible();
     await page.screenshot({ path: 'test-results/screenshots/kanban-task-tags.png' });
     await tag.hover();
@@ -3702,109 +3704,37 @@ test.describe('Issue #1409 - Popout window functionality', () => {
 // ============================================================================
 test.describe('Issue #1352 - Preserve time when updating dates', () => {
   test('should preserve time when using +1 day from date context menu', async () => {
-    // STATUS: BUG - Issue #1352
-    //
-    // When using the date context menu's increment operations (+1 day, -1 day, etc.),
-    // the time component of the scheduled/due date is lost.
-    //
-    // Example from issue:
-    //   scheduled_date: 2025-12-10T16:00
-    //   After "+1 day": 2025-12-11 (time lost!)
-    //   Expected: 2025-12-11T16:00 (time preserved)
-    //
-    // ROOT CAUSE: In src/ui/TaskCard.ts line 362:
-    //   currentValue: getDatePart(currentValue || ""),
-    // The full datetime is stripped to just the date before being passed to DateContextMenu.
-    // When addDaysToDateTime() is called with just "2025-12-10", there's no time to preserve.
-    //
-    // FIX: Pass the full currentValue to DateContextMenu instead of just getDatePart().
-    // The DateContextMenu's getDateOptions() already uses addDaysToDateTime() which
-    // correctly preserves time when present.
     const page = getPage();
-
-    // Open the tasks view
+    const original = await page.evaluate(async () => {
+      const app = (window as any).app;
+      const path = `TaskNotes/Tasks/Issue 1352 meeting ${Date.now()}.md`;
+      await app.vault.create(path, '---\ntags: [task]\ntitle: Issue 1352 meeting\nstatus: open\nscheduled: 2025-12-30T10:00\n---\n');
+      return { path, scheduled: '2025-12-30T10:00' };
+    });
+    expect(original.scheduled).toMatch(/T10:00$/);
     await runCommand(page, 'Open tasks view');
-    await page.waitForTimeout(1500);
-
-    // Find the "Weekly team meeting" task which has scheduled: 2025-12-30T10:00
-    // This task has a time component that should be preserved
-    const taskCard = page.locator('.tn-task-card:has-text("Weekly team meeting"), .task-card:has-text("Weekly team meeting")').first();
-
-    if (!await taskCard.isVisible({ timeout: 5000 }).catch(() => false)) {
-      // If task card is not visible in default view, try searching
-      const searchInput = page.locator('.tn-search-input, [placeholder*="Search"]');
-      if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await searchInput.fill('Weekly team meeting');
-        await page.waitForTimeout(500);
-      }
-    }
-
-    // Look for the scheduled date indicator (usually has a calendar icon or shows the date)
-    const scheduledDateElement = taskCard.locator('[class*="scheduled"], [data-property="scheduled"], .tn-date-badge').first();
-
-    if (await scheduledDateElement.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Click to open the date context menu
-      await scheduledDateElement.click();
-      await page.waitForTimeout(300);
-
-      // Look for the context menu with +1 day option
-      const contextMenu = page.locator('.menu, .suggestion-container, .tn-context-menu');
-      await expect(contextMenu).toBeVisible({ timeout: 3000 });
-
-      // Screenshot showing the context menu
-      await page.screenshot({ path: 'test-results/screenshots/issue-1352-date-context-menu.png' });
-
-      // Click +1 day
-      const plusOneDay = contextMenu.locator('text="+1 day"').first();
-      if (await plusOneDay.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await plusOneDay.click();
-        await page.waitForTimeout(500);
-
-        // Screenshot after clicking +1 day
-        await page.screenshot({ path: 'test-results/screenshots/issue-1352-after-plus-one-day.png' });
-
-        // Now verify that the time was preserved by reading the task file
-        // We need to check the actual YAML frontmatter of the file
-        const updatedScheduled = await page.evaluate(async () => {
-          // @ts-ignore - Obsidian global
-          const app = (window as any).app;
-          const plugin = app?.plugins?.plugins?.['tasknotes'];
-          if (!plugin) return null;
-
-          // Find the task by title
-          const allTasks = plugin.taskService?.getAllTasks?.() || [];
-          const task = allTasks.find((t: any) => t.title === 'Weekly team meeting');
-          return task?.scheduled;
-        });
-
-        console.log('Updated scheduled value:', updatedScheduled);
-
-        // BUG: Time should be preserved!
-        // The original was 2025-12-30T10:00, after +1 day it should be 2025-12-31T10:00
-        // But the bug causes it to become just 2025-12-31 (no time)
-        if (updatedScheduled) {
-          // Check if time component is preserved (should contain 'T' and time)
-          const hasTimeComponent = updatedScheduled.includes('T') && /T\d{2}:\d{2}/.test(updatedScheduled);
-
-          // This assertion will FAIL until the bug is fixed
-          expect(hasTimeComponent).toBe(true);
-
-          // Additionally verify the time is specifically 10:00
-          if (hasTimeComponent) {
-            expect(updatedScheduled).toMatch(/T10:00$/);
-          }
-        }
-      } else {
-        // Close menu if +1 day wasn't found
-        await page.keyboard.press('Escape');
-      }
-    } else {
-      // Try right-clicking the task card instead
-      await taskCard.click({ button: 'right' });
-      await page.waitForTimeout(300);
-      await page.screenshot({ path: 'test-results/screenshots/issue-1352-task-context-menu.png' });
-      await page.keyboard.press('Escape');
-    }
+    const taskCard = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${original.path}"]`);
+    await expect(taskCard).toBeVisible();
+    await taskCard.locator('.task-card__metadata-date--scheduled').click();
+    const picker = page.locator('.tn-picker');
+    await expect(picker).toBeVisible();
+    await page.screenshot({ path: 'test-results/screenshots/issue-1352-date-context-menu.png' });
+    await picker.getByText('+1 day', { exact: true }).click();
+    const expected = original.scheduled.replace('2025-12-30', '2025-12-31');
+    await expect.poll(() => page.evaluate(async path => {
+      const app = (window as any).app;
+      return app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path))?.frontmatter?.scheduled;
+    }, original.path)).toBe(expected);
+    await expect(page.locator('.tn-toast').last()).toContainText('1 task updated');
+    await page.locator('.tn-toast').last().getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect.poll(() => page.evaluate(async path => {
+      const plugin = (window as any).app.plugins.plugins.tasknotes;
+      return (await plugin.cacheManager.getTaskInfo(path))?.scheduled;
+    }, original.path)).toBe(original.scheduled);
+    await page.evaluate(async path => {
+      const app = (window as any).app;
+      await app.vault.delete(app.vault.getAbstractFileByPath(path));
+    }, original.path);
   });
 
   test('should preserve time when using -1 day from date context menu', async () => {

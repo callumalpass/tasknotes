@@ -85,12 +85,9 @@ for (const mode of ['create', 'edit']) {
 async function capture(name: string, width: number, height: number) {
   if (cssTheme) name += `-${cssTheme.toLowerCase().replaceAll(' ', '-')}`;
   expect(await page.evaluate(() => [innerWidth, innerHeight])).toEqual([width, height]);
-  const session = await page.context().newCDPSession(page);
-  const { data } = await session.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false, clip: { x: 0, y: 0, width, height, scale: 1 } });
   mkdirSync('test-results/modal-round1', { recursive: true });
-  writeFileSync(`test-results/modal-round1/${name}.png`, Buffer.from(data, 'base64'));
+  await page.screenshot({ path: `test-results/modal-round1/${name}.png`, clip: { x: 0, y: 0, width, height } });
   writeFileSync(`test-results/modal-round1/${name}.json`, JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('.modal-content, .minimalist-modal-container, .modal-split-content, .modal-split-left, .modal-split-right, .tn-task-modal__markdown-editor--details, .cm-editor, .cm-scroller, .cm-content, .tn-task-modal__action-bar, .task-projects-list, .metadata-container, .tn-task-modal__button-bar')].map(element => ({ cls: element.className, bounds: element.getBoundingClientRect().toJSON(), minHeight: getComputedStyle(element).minHeight, height: getComputedStyle(element).height, padding: getComputedStyle(element).padding, margin: getComputedStyle(element).margin }))), null, 2));
-  await session.detach();
 }
 
 for (const mobile of [false, true]) {

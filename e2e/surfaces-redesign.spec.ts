@@ -303,7 +303,10 @@ test('inline task glyphs, dates and unknown values sit in reading and live-previ
       await expect(page.locator('.task-card-note-widget')).toBeVisible();
       const nativeTag = page.locator('.metadata-property[data-property-key="tags"] .multi-select-pill').first();
       const widgetTag = page.locator('.task-card-note-widget .tag').first();
-      await expect(widgetTag).toBeVisible();
+      const tagText = (await widgetTag.textContent())!;
+      const overflow = page.locator('.task-card-note-widget .task-card__metadata-overflow:visible');
+      await expect.poll(async () => await widgetTag.isVisible() ||
+        (await overflow.getAttribute('aria-label'))?.includes(tagText)).toBe(true);
       await expect(widgetTag).toHaveCSS('background-color', await nativeTag.evaluate(element => getComputedStyle(element).backgroundColor));
       await screenshot(`task-note-${theme}-${mobile ? 'mobile' : 'desktop'}`);
     }

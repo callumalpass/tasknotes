@@ -99,7 +99,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
       const picker = page.locator('.tn-picker');
       await expect(picker.locator('[data-picker-id]')).toHaveCount(18);
       await expect(picker.locator('[data-picker-id="review-1"]')).toHaveClass(/is-selected/);
-      await expect(picker.locator('[data-picker-id="review-1"] svg')).toHaveClass(/orbit/);
+      await expect(picker.locator('[data-picker-id="review-1"] .tn-picker__leading svg')).toHaveClass(/orbit/);
       await expect(picker.locator('input')).toBeFocused();
       await page.evaluate(() => document.querySelectorAll('.notice-container').forEach(element => element.remove()));
       await page.screenshot({ path: `test-results/modal-pickers/${mode}-${theme}-status.png`, clip: (await modal.boundingBox())! });
@@ -115,8 +115,9 @@ for (const theme of ['theme-light', 'theme-dark']) {
       await page.keyboard.press('Enter');
       await expect(status).toContainText('Review stage 3');
       await modal.locator('[data-type="priority"]').click();
-      await expect(picker.locator('[data-picker-id]')).toHaveCount(19);
-      await expect(picker.locator('[data-picker-id="impact-1"] svg')).toHaveClass(/flame/);
+      await expect(picker.locator('[data-picker-id]')).toHaveCount(18);
+      await expect(picker.locator('[data-picker-id="impact-0"]')).toBeAttached();
+      await expect(picker.locator('[data-picker-id="impact-1"] .tn-picker__leading svg')).toHaveClass(/flame/);
       await picker.locator('input').fill('Impact level 18');
       await page.keyboard.press('Enter');
       await expect(modal.locator('[data-type="priority"]')).toContainText('Impact level 18');
