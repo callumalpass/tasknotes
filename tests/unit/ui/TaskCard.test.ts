@@ -163,6 +163,7 @@ describe("TaskCard Component", () => {
 				getCompletedStatuses: jest.fn(() => ["done"]),
 			},
 			priorityManager: {
+        getAllPriorities: jest.fn(() => [{ value: "low", label: "Low", color: "#666666", weight: 1 }, { value: "high", label: "High", color: "#ff0000", weight: 2 }]),
 				getPriorityConfig: jest.fn((priority) => ({
 					value: priority,
 					label: priority,
@@ -442,7 +443,7 @@ describe("TaskCard Component", () => {
 
 			const priorityDot = card.querySelector(".task-card__priority-dot") as HTMLElement;
 			expect(priorityDot).toBeTruthy();
-			expect(priorityDot.style.borderColor).toBe("rgb(255, 0, 0)");
+			expect(card.style.getPropertyValue("--current-priority-color")).toBe("#ff0000");
 			expect(priorityDot.getAttribute("aria-label")).toBe("Priority: high");
 		});
 
@@ -886,7 +887,7 @@ describe("TaskCard Component", () => {
 			});
 
 			// Task initially has no priority indicator
-			expect(cardWithoutPriority.querySelector(".task-card__priority-dot")).toBeNull();
+			expect((cardWithoutPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("unset");
 
 			const updatedTask = TaskFactory.createTask({
 				...taskWithoutPriority,
@@ -906,7 +907,7 @@ describe("TaskCard Component", () => {
 			});
 			const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
 
-			expect(cardWithPriority.querySelector(".task-card__priority-dot--icon")).toBeNull();
+			expect((cardWithPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("bars");
 
 			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
 				(priority) => ({
@@ -926,7 +927,7 @@ describe("TaskCard Component", () => {
 			expect(priorityDot.getAttribute("data-icon")).toBe("alert-circle");
 		});
 
-		it("should return a priority icon indicator to a plain dot when the icon is cleared", () => {
+		it("should return a custom priority icon to rank bars when the icon is cleared", () => {
 			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
 				(priority) => ({
 					value: priority,
@@ -954,11 +955,11 @@ describe("TaskCard Component", () => {
 			const priorityDot = cardWithPriority.querySelector(
 				".task-card__priority-dot"
 			) as HTMLElement;
-			expect(priorityDot.classList.contains("task-card__priority-dot--icon")).toBe(false);
-			expect(priorityDot.getAttribute("data-icon")).toBeNull();
+			expect(priorityDot.dataset.tnGlyph).toBe("bars");
+			expect(priorityDot.querySelector("svg.tn-glyph")).not.toBeNull();
 		});
 
-		it("should remove priority indicator when task loses priority", () => {
+		it("should show unset priority glyph when task loses priority", () => {
 			// Start with priority
 			const taskWithPriority = TaskFactory.createTask({
 				...task,
@@ -975,7 +976,7 @@ describe("TaskCard Component", () => {
 
 			updateTaskCard(cardWithPriority, updatedTask, mockPlugin);
 
-			expect(cardWithPriority.querySelector(".task-card__priority-dot")).toBeNull();
+			expect((cardWithPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("unset");
 		});
 
 		it("should add details indicator when task gains note body details", () => {
@@ -1030,7 +1031,7 @@ describe("TaskCard Component", () => {
 			updateTaskCard(card, updatedTask, mockPlugin);
 
 			const statusDot = card.querySelector(".task-card__status-dot") as HTMLElement;
-			expect(statusDot.style.borderColor).toBe("rgb(0, 255, 0)");
+			expect(card.style.getPropertyValue("--current-status-color")).toBe("#00ff00");
 		});
 
 		it.skip("should update metadata line", () => {

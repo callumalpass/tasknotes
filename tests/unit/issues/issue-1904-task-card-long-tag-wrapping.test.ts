@@ -21,10 +21,8 @@ function extractCssBlock(css: string, selector: string): string {
 describe("Issue #1904: task card long tag wrapping", () => {
 	it("allows tag metadata and long tag pills to wrap within card width", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
-		const tagsPropertyBlock = extractCssBlock(
-			css,
-			".tasknotes-plugin .task-card__metadata-property--tags"
-		);
+		const stackedCss = css.slice(css.indexOf("@container tn-task-card (max-width: 480px)", css.indexOf(".tasknotes-plugin .task-card__metadata-property--tags")));
+		const tagsPropertyBlock = extractCssBlock(stackedCss, ".tasknotes-plugin .task-card__metadata-property--tags");
 		const tagBlock = extractCssBlock(
 			css,
 			".tasknotes-plugin .task-card__metadata-property--tags :where(.tag)"
@@ -37,6 +35,6 @@ describe("Issue #1904: task card long tag wrapping", () => {
 		expect(tagBlock).toContain("max-width: 100%");
 		expect(tagBlock).toContain("overflow-wrap: anywhere");
 		expect(tagBlock).toContain("word-break: break-word");
-		expect(tagBlock).toContain("white-space: normal");
+		expect(css).toMatch(/@container tn-task-card \(max-width: 480px\)\s*\{\s*\.tasknotes-plugin \.task-card__metadata-property--tags :where\(\.tag\)\s*\{\s*white-space: normal/);
 	});
 });

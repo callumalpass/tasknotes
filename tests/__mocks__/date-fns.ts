@@ -195,3 +195,5 @@ export const addYears = jest.fn((date: Date, amount: number) => {
   result.setFullYear(result.getFullYear() + amount);
   return result;
 });
+
+export const differenceInCalendarDays = jest.requireActual("date-fns/differenceInCalendarDays").differenceInCalendarDays;

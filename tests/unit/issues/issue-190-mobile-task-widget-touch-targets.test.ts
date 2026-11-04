@@ -9,7 +9,7 @@ function readRepoFile(relativePath: string): string {
 
 describe("Issue #190: mobile task widget touch targets", () => {
 	it("keeps Obsidian mobile task-card controls compact on narrow screens", () => {
-		const variablesCss = readRepoFile("styles/variables.css");
+		const variablesCss = readRepoFile("styles/tokens.css");
 		const css = readRepoFile("styles/task-card-bem.css");
 
 		expect(variablesCss).toMatch(
@@ -19,7 +19,7 @@ describe("Issue #190: mobile task widget touch targets", () => {
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__main-row\s*\{[^}]*align-items:\s*flex-start;[^}]*flex-wrap:\s*wrap;/s
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__content\s*\{[^}]*flex-grow:\s*1;[^}]*flex-shrink:\s*0;[^}]*flex-basis:\s*min\(13rem,\s*calc\(100% - var\(--tn-mobile-task-card-indicator-size\) - var\(--tn-mobile-task-card-indicator-size\) - var\(--tn-spacing-xs\) - var\(--tn-spacing-xs\)\)\);[^}]*padding-top:\s*0;/s
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__content\s*\{[^}]*flex-grow:\s*1;[^}]*flex-shrink:\s*0;[^}]*flex-basis:\s*min\(13rem,\s*calc\(100% - var\(--tn-mobile-task-card-indicator-size\) - var\(--tn-mobile-task-card-indicator-size\) - var\(--tn-space-half\) - var\(--tn-space-half\)\)\);[^}]*padding-top:\s*0;/s
 		);
 		expect(css).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__status-dot\s*\{[^}]*width:\s*var\(--tn-mobile-task-card-indicator-size\);[^}]*height:\s*var\(--tn-mobile-task-card-indicator-size\);/s
@@ -34,7 +34,7 @@ describe("Issue #190: mobile task widget touch targets", () => {
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__badges\s*\{[^}]*order:\s*0;[^}]*flex:\s*0 0 auto;[^}]*margin-left:\s*auto;/s
 		);
 		expect(css).toMatch(
-			/@container tn-task-card \(max-width:\s*300px\)\s*\{[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__main-row\s*\{[^}]*align-items:\s*flex-start;[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__badges\s*\{[^}]*order:\s*2;[^}]*flex:\s*1 0 100%;[^}]*justify-content:\s*flex-end;[^}]*padding-left:\s*calc\(var\(--tn-mobile-task-card-indicator-size\) \+ var\(--tn-mobile-task-card-indicator-size\) \+ var\(--tn-spacing-sm\)\);/s
+			/@container tn-task-card \(max-width:\s*300px\)\s*\{[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__main-row\s*\{[^}]*align-items:\s*flex-start;[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__badges\s*\{[^}]*order:\s*2;[^}]*flex:\s*1 0 100%;[^}]*justify-content:\s*flex-end;[^}]*padding-left:\s*calc\(var\(--tn-mobile-task-card-indicator-size\) \+ var\(--tn-mobile-task-card-indicator-size\) \+ var\(--tn-space-1\)\);/s
 		);
 		expect(css).toMatch(
 			/@container tn-task-card \(max-width:\s*300px\)\s*\{[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata-property\s*\{[^}]*flex:\s*1 1 100%;[\s\S]*body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata-value\s*\{[^}]*flex:\s*1 1 0;/s

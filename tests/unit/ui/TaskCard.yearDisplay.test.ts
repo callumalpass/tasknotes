@@ -104,6 +104,7 @@ describe('TaskCard Year Display (#1431)', () => {
 				getNextStatus: jest.fn(() => 'done')
 			},
 			priorityManager: {
+        getAllPriorities: jest.fn(() => [{ value: "low", label: "Low", color: "#666666", weight: 1 }, { value: "high", label: "High", color: "#ff0000", weight: 2 }]),
 				getPriorityConfig: jest.fn((priority) => ({
 					value: priority,
 					label: priority,
@@ -186,7 +187,7 @@ describe('TaskCard Year Display (#1431)', () => {
 			const metadataText = card.querySelector('.task-card__metadata')?.textContent || '';
 
 			// Should show "Feb 27" without year for current year dates
-			expect(metadataText).toContain('Due:');
+			expect(card.querySelector('[aria-label^="Due:"]')).not.toBeNull();
 			expect(metadataText).toContain('Feb 27');
 			// Should NOT contain the year for current year
 			expect(metadataText).not.toMatch(/Feb 27.*2025/);
@@ -204,7 +205,7 @@ describe('TaskCard Year Display (#1431)', () => {
 			const metadataText = card.querySelector('.task-card__metadata')?.textContent || '';
 
 			// Should show "Feb 27, 2027" with year for future dates
-			expect(metadataText).toContain('Due:');
+			expect(card.querySelector('[aria-label^="Due:"]')).not.toBeNull();
 			expect(metadataText).toMatch(/Feb 27.*2027/);
 		});
 
@@ -220,7 +221,7 @@ describe('TaskCard Year Display (#1431)', () => {
 			const metadataText = card.querySelector('.task-card__metadata')?.textContent || '';
 
 			// Should show "Feb 27, 2024" with year for past dates
-			expect(metadataText).toContain('Due:');
+			expect(card.querySelector('[aria-label^="Due:"]')).not.toBeNull();
 			expect(metadataText).toMatch(/Feb 27.*2024/);
 		});
 
@@ -236,7 +237,7 @@ describe('TaskCard Year Display (#1431)', () => {
 			const metadataText = card.querySelector('.task-card__metadata')?.textContent || '';
 
 			// Should show date with year and time
-			expect(metadataText).toContain('Due:');
+			expect(card.querySelector('[aria-label^="Due:"]')).not.toBeNull();
 			expect(metadataText).toMatch(/Feb 27.*2027/);
 			expect(metadataText).toContain('14:30');
 		});
@@ -255,7 +256,7 @@ describe('TaskCard Year Display (#1431)', () => {
 			const metadataText = card.querySelector('.task-card__metadata')?.textContent || '';
 
 			// Should show "Mar 15" without year for current year dates
-			expect(metadataText).toContain('Scheduled:');
+			expect(card.querySelector('[aria-label^="Scheduled:"]')).not.toBeNull();
 			expect(metadataText).toContain('Mar 15');
 			// Should NOT contain the year for current year
 			expect(metadataText).not.toMatch(/Mar 15.*2025/);
@@ -273,7 +274,7 @@ describe('TaskCard Year Display (#1431)', () => {
 			const metadataText = card.querySelector('.task-card__metadata')?.textContent || '';
 
 			// Should show "Mar 15, 2026" with year for future dates
-			expect(metadataText).toContain('Scheduled:');
+			expect(card.querySelector('[aria-label^="Scheduled:"]')).not.toBeNull();
 			expect(metadataText).toMatch(/Mar 15.*2026/);
 		});
 
@@ -289,7 +290,7 @@ describe('TaskCard Year Display (#1431)', () => {
 			const metadataText = card.querySelector('.task-card__metadata')?.textContent || '';
 
 			// Should show "Mar 15, 2024" with year for past dates
-			expect(metadataText).toContain('Scheduled:');
+			expect(card.querySelector('[aria-label^="Scheduled:"]')).not.toBeNull();
 			expect(metadataText).toMatch(/Mar 15.*2024/);
 		});
 
@@ -305,7 +306,7 @@ describe('TaskCard Year Display (#1431)', () => {
 			const metadataText = card.querySelector('.task-card__metadata')?.textContent || '';
 
 			// Should show date with year and time
-			expect(metadataText).toContain('Scheduled:');
+			expect(card.querySelector('[aria-label^="Scheduled:"]')).not.toBeNull();
 			expect(metadataText).toMatch(/Mar 15.*2026/);
 			expect(metadataText).toContain('09:00');
 		});
@@ -324,9 +325,9 @@ describe('TaskCard Year Display (#1431)', () => {
 			const metadataText = card.querySelector('.task-card__metadata')?.textContent || '';
 
 			// Due date should show year (future)
-			expect(metadataText).toMatch(/Due:.*Jun 1.*2027/);
+			expect(metadataText).toMatch(/Jun 1.*2027/);
 			// Scheduled date should NOT show year (current)
-			expect(metadataText).toContain('Scheduled:');
+			expect(card.querySelector('[aria-label^="Scheduled:"]')).not.toBeNull();
 			expect(metadataText).toContain('May 15');
 			expect(metadataText).not.toMatch(/May 15.*2025/);
 		});

@@ -45,6 +45,7 @@ function createPlugin(): TaskNotesPlugin {
 			translate: mockObserveTranslation(),
 		},
 		statusManager: {
+        getAllStatuses: jest.fn(() => [{ value: "open", label: "Open", color: "#666666", isCompleted: false, order: 0 }, { value: "done", label: "Done", color: "#00ff00", isCompleted: true, order: 1 }]),
 			isCompletedStatus: jest.fn((status: string) => status === "done"),
 		},
 		updateTaskProperty: jest.fn(),

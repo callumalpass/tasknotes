@@ -31,7 +31,7 @@ describe("Issue #1234: right-aligned subtask chevron visibility", () => {
 
 		expect(leftChevronBlock).toContain("opacity: 1");
 		expect(leftChevronBlock).toContain("position: absolute");
-		expect(leftChevronBlock).toContain("left: calc(-1 * var(--tn-spacing-lg) - 14px)");
+		expect(leftChevronBlock).toContain("left: calc(-1 * var(--tn-space-3) - 14px)");
 	});
 });
 
