@@ -586,7 +586,7 @@
    ADDITIONAL FIELDS - SETTINGS STYLE
    ===================================================================== */
 
-.tasknotes-plugin .details-container .setting-item {
+.tasknotes-plugin.minimalist-task-modal .details-container .setting-item {
     display: grid;
     grid-template-columns: minmax(7rem, 1fr) minmax(0, 2fr);
     align-items: center;
@@ -787,7 +787,12 @@ body.is-mobile .tasknotes-plugin .tn-task-modal__chip {
     width: auto;
 }
 
-body.is-mobile .tasknotes-plugin .details-container .setting-item {
+body.is-mobile .tasknotes-plugin .tn-task-modal__chip .icon {
+    width: auto;
+    height: auto;
+}
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal .details-container .setting-item {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--size-2-2) 0;
 }
