@@ -173,9 +173,19 @@
 }
 
 .tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata-date {
-    flex: 0 0 15ch;
-    width: 15ch;
+    flex: 0 0 22ch;
+    width: 22ch;
     font-variant-numeric: tabular-nums;
+}
+
+.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata-date > span:not(.task-card__date-icon) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__date-icon {
+    flex: 0 0 auto;
 }
 
 @container tn-task-card (max-width: 480px) {

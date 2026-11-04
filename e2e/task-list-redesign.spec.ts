@@ -15,7 +15,7 @@ test.beforeAll(async () => {
     await app.vault.createFolder(folder);
     for (let index = 0; index < 6; index++) {
       await app.vault.create(`${folder}/Task ${index}.md`,
-        `---\ntags: [task, ${index === 3 ? longTag : 'design'}]\ntitle: ${index === 3 ? 'A long task title '.repeat(12) : `Task ${index}`}\nstatus: ${index < 4 ? 'open' : 'done'}\npriority: high\ndue: 2027-02-27\nscheduled: 2027-02-25\n${index % 2 ? 'recurrence: FREQ=DAILY\n' : ''}${index === 2 ? `blockedBy: [\"[[${folder}/Task 0]]\"]\n` : ''}${index === 5 ? `projects: [\"[[${folder}/Task 1]]\"]\n` : ''}---\n${index % 2 ? 'Task details to make indicator widths differ.' : ''}`);
+        `---\ntags: [task, ${index === 3 ? longTag : 'design'}]\ntitle: ${index === 3 ? 'A long task title '.repeat(12) : `Task ${index}`}\nstatus: ${index < 4 ? 'open' : 'done'}\npriority: high\ndue: 2027-02-27${index === 2 ? 'T15:30:00' : ''}\nscheduled: 2027-02-25\n${index % 2 ? 'recurrence: FREQ=DAILY\n' : ''}${index === 2 ? `blockedBy: [\"[[${folder}/Task 0]]\"]\n` : ''}${index === 5 ? `projects: [\"[[${folder}/Task 1]]\"]\n` : ''}---\n${index % 2 ? 'Task details to make indicator widths differ.' : ''}`);
     }
   }, { folder, longTag });
 });
@@ -56,6 +56,10 @@ for (const theme of ['theme-light', 'theme-dark']) {
     await expect(dates).toHaveCount(6);
     const positions = await dates.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().x));
     expect(Math.max(...positions) - Math.min(...positions)).toBeLessThan(1);
+    expect(await dates.evaluateAll(elements => elements.every(element => {
+      const text = element.querySelector('span:not(.task-card__date-icon)')!;
+      return text.getBoundingClientRect().right <= element.getBoundingClientRect().right;
+    }))).toBe(true);
     await expect(items.locator('.task-card__title .task-card__badges').first()).toHaveCount(1);
     const tag = items.locator('.task-card__metadata-property--tags .tag').first();
     expect(await tag.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
@@ -106,3 +110,51 @@ for (const theme of ['theme-light', 'theme-dark']) {
     });
   });
 }
+
+test('shared compact cards and inline task links retain their layout', async () => {
+  await setObsidianViewport(page, { width: 1180, height: 800 });
+  const content = stringify({
+    filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")'] },
+    views: [{ type: 'tasknotesKanban', name: 'Compact', cardLayout: 'compact',
+      groupBy: { property: 'status', direction: 'ASC' }, order: ['status', 'priority', 'tags', 'due'] }],
+  });
+  await page.evaluate(async ({ folder, content }) => {
+    const app = (window as any).app;
+    await app.workspace.getLeaf(false).openFile(await app.vault.create(`${folder}/Compact.base`, content));
+  }, { folder, content });
+  const compact = page.locator('.workspace-leaf.mod-active .task-card--layout-compact');
+  await expect(compact).toHaveCount(6);
+  await expect(compact.first().locator('.task-card__title .task-card__badges')).toHaveCount(1);
+  expect(await compact.first().evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: 'test-results/list-redesign-compact.png' });
+  await page.evaluate(async folder => {
+    const app = (window as any).app;
+    const file = await app.vault.create(`${folder}/Inline.md`, `# Inline tasks\n\n[[${folder}/Task 1]]\n\nAfter the task.\n`);
+    const leaf = app.workspace.getLeaf(false);
+    await leaf.openFile(file);
+    await leaf.setViewState({ type: 'markdown', state: { file: file.path, mode: 'source', source: false } });
+    leaf.view.editor?.setCursor({ line: 4, ch: 0 });
+  }, folder);
+  const inline = page.locator('.workspace-leaf.mod-active .task-card--layout-inline');
+  await expect(inline).toHaveCount(1);
+  await expect(inline.locator('.task-card__title-text')).toHaveText('Task 1');
+  await expect(inline.locator('.task-card__badges')).toHaveCount(0);
+  await expect(inline.locator('.task-card__metadata')).toBeVisible();
+  await page.screenshot({ path: 'test-results/list-redesign-inline.png' });
+});
+
+test('empty lists use the shared empty state and creation action', async () => {
+  const content = stringify({
+    filters: { and: [`file.inFolder("${folder}/Missing")`, 'file.hasTag("task")'] },
+    views: [{ type: 'tasknotesTaskList', name: 'Empty' }],
+  });
+  await page.evaluate(async ({ folder, content }) => {
+    const app = (window as any).app;
+    await app.workspace.getLeaf(false).openFile(await app.vault.create(`${folder}/Empty.base`, content));
+  }, { folder, content });
+  const empty = page.locator('.workspace-leaf.mod-active .tn-empty');
+  await expect(empty).toBeVisible();
+  await empty.getByRole('button', { name: 'New', exact: true }).click();
+  await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
+  await page.keyboard.press('Escape');
+});
