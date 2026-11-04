@@ -3895,6 +3895,7 @@ msgctxt "contextMenus.task.createSubtask"
 msgid "Create subtask"
 msgstr "Criar subtarefa"
 
+#: src/bases/calendarKeyboard.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Create task"
@@ -4375,6 +4376,7 @@ msgctxt "modals.actionPalette.categories.dates"
 msgid "Dates"
 msgstr "Datas"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "Day"
@@ -8120,6 +8122,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.monday"
 msgid "Monday"
 msgstr "Segunda-feira"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "Month"
@@ -8208,6 +8211,7 @@ msgctxt "views.taskList.movement.moveDown"
 msgid "Move down"
 msgstr "Mover para baixo"
 
+#: src/bases/calendarKeyboard.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Move focus"
@@ -8356,6 +8360,7 @@ msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
 msgid "New Task"
 msgstr "Nova tarefa"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.next"
 msgid "Next"
@@ -9213,6 +9218,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth
 msgid "On the {week} {day} of each month"
 msgstr "Na {week} {day} de cada mês"
 
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Open"
+msgstr "Abrir"
+
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.deviceCode.steps.open"
@@ -9960,6 +9970,7 @@ msgctxt "views.basesCalendar.settings.layout.showSelectionPreview"
 msgid "Preview selected time range"
 msgstr "Pré-visualizar o intervalo selecionado"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.prev"
 msgid "Previous"
@@ -12255,6 +12266,11 @@ msgctxt "kanban creation feedback"
 msgid "Task created, but hidden by the current view"
 msgstr "Tarefa criada, mas oculta na visualização atual"
 
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Task created, but hidden by this view"
+msgstr "Tarefa criada, mas oculta nesta visualização"
+
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"
 msgid "Task created, but some attachments could not be imported: {message}"
@@ -13293,6 +13309,7 @@ msgctxt "views.agenda.today"
 msgid "Today"
 msgstr "Hoje"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.today"
@@ -14165,6 +14182,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.wednesd
 msgid "Wednesday"
 msgstr "Quarta-feira"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "Week"

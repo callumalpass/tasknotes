@@ -314,7 +314,7 @@ export class TaskService {
 	 */
 	async createTask(
 		taskData: TaskCreationData,
-		options: { applyDefaults?: boolean; applyTemplate?: boolean } = {}
+		options: { applyDefaults?: boolean; applyTemplate?: boolean; targetFolder?: string } = {}
 	): Promise<{ file: TFile; taskInfo: TaskInfo }> {
 		const result = await this.taskCreationService.createTask(taskData, options);
 		await this.seedInitialOccurrence(result.taskInfo);

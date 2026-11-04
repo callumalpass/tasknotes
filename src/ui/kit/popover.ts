@@ -58,9 +58,12 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	const { anchor } = options;
 	const doc = isElementAnchor(anchor) ? anchor.ownerDocument : activeDocument;
 	const win = doc.defaultView ?? activeWindow;
-	const returnFocus = isElementAnchor(anchor) && anchor.tabIndex >= 0
+	const viewRoot = isElementAnchor(anchor)
+		? anchor.closest<HTMLElement>(".bases-view .tasknotes-plugin[tabindex]")
+		: doc.activeElement?.closest<HTMLElement>(".bases-view .tasknotes-plugin[tabindex]");
+	const returnFocus = viewRoot ?? (isElementAnchor(anchor) && anchor.tabIndex >= 0
 		? anchor
-		: doc.activeElement as HTMLElement | null;
+		: doc.activeElement as HTMLElement | null);
 	const modal = isElementAnchor(anchor) ? anchor.closest(".modal-container") : null;
 
 	const host = modal ?? doc.body;
@@ -81,20 +84,33 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	};
 
 	let closed = false;
+	const isOtherModal = (target: EventTarget | null) => {
+		const element = target as HTMLElement | null;
+		const targetModal = element?.closest?.(".modal-container");
+		return !!targetModal && targetModal !== modal && !el.contains(element);
+	};
 	const onPointerDown = (event: PointerEvent) => {
+		if (isOtherModal(event.target)) return;
 		if (el.contains(event.target as Node)) return;
 		if (modal) {
 			event.preventDefault();
 			event.stopImmediatePropagation();
-		} else handle.close();
+		} else {
+			handle.close();
+			win.setTimeout(() => {
+				if (doc.activeElement === doc.body && viewRoot?.isConnected) viewRoot.focus({ preventScroll: true });
+			}, 0);
+		}
 	};
 	const onClick = (event: MouseEvent) => {
+		if (isOtherModal(event.target)) return;
 		if (!modal || el.contains(event.target as Node)) return;
 		event.preventDefault();
 		event.stopImmediatePropagation();
 		handle.close();
 	};
 	const onKeyDown = (event: KeyboardEvent) => {
+		if (isOtherModal(event.target)) return;
 		dismissTooltips(doc);
 		if (event.key !== "Escape") return;
 		event.preventDefault();
@@ -117,12 +133,12 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 			doc.removeEventListener("scroll", reposition, true);
 			el.remove();
 			if (current === handle) current = null;
-			returnFocus?.focus?.();
+			if (returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
 			options.onClose?.();
 		},
 	};
 
-	const scope = options.app ? new Scope() : null;
+	const scope = options.app ? new Scope(options.app.scope) : null;
 	scope?.register(null, "Escape", (event) => {
 		onKeyDown(event);
 		return false;

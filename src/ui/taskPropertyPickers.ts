@@ -4,6 +4,7 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
+import { taskDateLabel } from "./kit/dateLabel";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { DateContextMenu } from "../components/DateContextMenu";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
@@ -527,7 +528,7 @@ export async function openTaskPropertyChoices(
 		}));
 		if (currentValue) items.unshift({
 			id: "current",
-			label: currentValue,
+			label: taskDateLabel(currentValue, plugin.settings.calendarViewSettings.timeFormat),
 			selected: true,
 			renderLeading: (host) => setIcon(host, "calendar"),
 		});
@@ -546,9 +547,11 @@ export async function openTaskPropertyChoices(
 			items,
 			placeholder: label,
 			emptyText: label,
-			createLabel: (query) =>
-				parse(query) ??
-				uiText(msg({ message: "Enter a valid date", context: "interaction date" })),
+			createLabel: (query) => {
+				const date = parse(query);
+				return date ? taskDateLabel(date, plugin.settings.calendarViewSettings.timeFormat) :
+					uiText(msg({ message: "Enter a valid date", context: "interaction date" }));
+			},
 			canCreate: (query) => !!parse(query),
 			onCreate: (query) => {
 				const date = parse(query);

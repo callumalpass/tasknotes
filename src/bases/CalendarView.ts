@@ -6,6 +6,8 @@ import TaskNotesPlugin from "../main";
 import { createElementInDocument } from "../utils/documentDom";
 import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
+import { installCalendarKeyboard } from "./calendarKeyboard";
+import { format } from "date-fns";
 import { EVENT_TASK_UPDATED, EVENT_TASK_DELETED, type TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import type { TimeblockCreationResult } from "../modals/TimeblockCreationModal";
@@ -123,6 +125,7 @@ function isCalendarScrollPosition(value: unknown): value is { top: number; left:
 export class CalendarView extends BasesViewBase {
 	type = "tasknotesCalendar";
 	calendar: TaskCalendar | null = null; // Made public for factory access
+	private keyboard?: ReturnType<typeof installCalendarKeyboard>;
 	private calendarEl: HTMLElement | null = null;
 	/** Range the current items were built for. */
 	private visibleView: ViewInfo | null = null;
@@ -305,6 +308,23 @@ export class CalendarView extends BasesViewBase {
 		this._previousControllerViewName = this.getControllerViewName();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		if (this.rootElement) {
+			this.keyboard = installCalendarKeyboard({
+				plugin: this.plugin,
+				root: this.rootElement,
+				calendar: () => this.calendar,
+				create: (date) => { void this.createFileForView(undefined, (frontmatter) => {
+					frontmatter[this.plugin.fieldMapper.toUserField("scheduled")] = format(date, "yyyy-MM-dd");
+				}); },
+				search: () => {
+					this.enableSearch = true;
+					if (this.rootElement) this.setupSearch(this.rootElement);
+					this.searchContainerEl?.querySelector("input")?.focus();
+				},
+				open: (arg) => handleCalendarEventClick(this.getMenuContext(), arg),
+			});
+			this.register(() => this.keyboard?.destroy());
+		}
 		if (this.plugin.icsSubscriptionService) {
 			this.register(this.plugin.icsSubscriptionService.on("data-changed", () => {
 				if (this.rootElement?.isConnected) void this.refetchEvents();
@@ -1919,6 +1939,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private handleEventDidMount(arg: ItemArg<CalendarEventProps>): void {
+		this.keyboard?.mount(arg);
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
 		decorateCalendarEvent({ plugin: this.plugin, rootElement: this.rootElement }, arg);
 	}

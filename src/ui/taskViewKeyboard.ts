@@ -30,6 +30,15 @@ export interface TaskViewKeyboardOptions {
 	search: () => void;
 	refreshSelection: () => void;
 	horizontal?: (path: string | null, direction: number) => string | null;
+	horizontalLabel?: string;
+	groupForPath?: (path: string) => { key: string; paths: string[] } | undefined;
+	elementForPath?: (path: string) => HTMLElement | undefined;
+	pathFromElement?: (element: HTMLElement) => string | null;
+	taskForPath?: (path: string) => Promise<TaskInfo | null>;
+	selectionPath?: (path: string) => string | undefined;
+	open?: (path: string) => Promise<void>;
+	targetDate?: (path: string) => Date;
+	shortcuts?: { key: string; label: string; run: (path: string | null) => void; when?: (path: string | null) => boolean }[];
 }
 
 export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () => void {
@@ -43,7 +52,12 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	let arrivalPath: string | undefined;
 	let revealFrame: number | undefined;
 	let pending = false;
+	let triage: { path: string; key: string; candidates: string[] } | undefined;
 	const selection = plugin.taskSelectionService;
+	const propertyKeys = PROPERTY_KEYS;
+	const taskFor = (path: string) => options.taskForPath?.(path) ?? plugin.cacheManager.getTaskInfo(path);
+	const selectionPath = (path: string) => options.selectionPath ? options.selectionPath(path) : path;
+	const selector = options.elementForPath ? "[data-keyboard-id]" : ".task-card[data-task-path]";
 	const scope = new Scope(plugin.app.scope);
 	let scoped = false;
 	const releaseScope = () => {
@@ -62,12 +76,30 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		plugin.app.keymap.pushScope(scope);
 		scoped = true;
 	};
-	const cardFor = (path: string) =>
+	const cardFor = (path: string) => options.elementForPath ? options.elementForPath(path) :
 		Array.from(root.querySelectorAll<HTMLElement>(".task-card[data-task-path]")).find(
 			(card) => card.dataset.taskPath === path
 		);
 	const paint = () => {
 		options.refreshSelection();
+		if (triage) {
+			const moved = options.groupForPath?.(triage.path);
+			if (!moved || moved.key !== triage.key) {
+				const paths = options.paths();
+				focusedPath = triage.candidates.find((path) => paths.includes(path)) ?? paths[0] ?? null;
+				if (focusedPath) options.reveal(focusedPath);
+				triage = undefined;
+			}
+		}
+		if (arrivalPath && arrivalPath !== focusedPath) {
+			const arrived = cardFor(arrivalPath);
+			if (arrived && arrived !== paintedCard) {
+				arrived.classList.add("tn-task-arrived");
+				root.ownerDocument.defaultView?.clearTimeout(highlightTimer);
+				highlightTimer = root.ownerDocument.defaultView?.setTimeout(() => arrived.classList.remove("tn-task-arrived"), 1200);
+				arrivalPath = undefined;
+			}
+		}
 		root.querySelectorAll(".tn-task-focused").forEach((card) =>
 			card.classList.remove("tn-task-focused")
 		);
@@ -97,15 +129,20 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	const observer = new MutationObserver(paint);
 	observer.observe(root, { childList: true, subtree: true });
 	const taskUpdated = plugin.emitter.on("task-updated", (event: { originalTask?: TaskInfo; updatedTask?: TaskInfo }) => {
-		if (event.originalTask?.path !== focusedPath || !event.updatedTask) return;
-		focusedPath = event.updatedTask.path;
+		if (!focusedPath || event.originalTask?.path !== selectionPath(focusedPath) || !event.updatedTask) return;
+		const group = options.groupForPath?.(focusedPath);
+		if (group) {
+			const index = group.paths.indexOf(focusedPath);
+			triage = { path: event.updatedTask.path, key: group.key, candidates: [...group.paths.slice(index + 1), ...group.paths.slice(0, index).reverse()] };
+		}
+		if (!options.selectionPath) focusedPath = event.updatedTask.path;
 		arrivalPath = focusedPath;
 	});
 	const pointer = (event: PointerEvent) => {
 		const target = event.target as HTMLElement;
-		const card = target.closest<HTMLElement>(".task-card[data-task-path]");
+		const card = target.closest<HTMLElement>(selector);
 		if (!card) return;
-		focusedPath = card.dataset.taskPath ?? null;
+		focusedPath = options.pathFromElement?.(card) ?? card.dataset.taskPath ?? null;
 		rangeAnchor = null;
 		keyboardFocus = true;
 		paint();
@@ -113,7 +150,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			root.focus({ preventScroll: true });
 	};
 	const help = () => {
-		const overlay = openPopover({ anchor: helpButton });
+		const overlay = openPopover({ anchor: helpButton, app: plugin.app, onClose: () => root.focus({ preventScroll: true }) });
 		overlay.el.setAttribute("role", "dialog");
 		overlay.el.setAttribute(
 			"aria-label",
@@ -124,7 +161,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		for (const [key, label] of [
 			["ArrowUp+ArrowDown+K+J", uiText(msg({ message: "Move focus", context: "interaction shortcut" }))],
 			...(options.horizontal ? [
-				["ArrowLeft+ArrowRight+H+L", uiText(msg({ message: "Move between columns", context: "interaction shortcut" }))],
+				["ArrowLeft+ArrowRight+H+L", options.horizontalLabel ?? uiText(msg({ message: "Move between columns", context: "interaction shortcut" }))],
 			] : []),
 			[
 				"Shift+ArrowDown",
@@ -138,13 +175,14 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			["Enter", uiText(msg({ message: "Open task", context: "interaction shortcut" }))],
 			["E", uiText(msg({ message: "Edit task", context: "interaction shortcut" }))],
 			["Space", uiText(msg({ message: "Preview", context: "interaction shortcut" }))],
-			...Object.entries(PROPERTY_KEYS).map(([key, property]) => [
-				key === "h" ? "Shift+H" : key,
+			...(options.shortcuts && !focusedPath ? [] : Object.entries(propertyKeys)).map(([key, property]) => [
+				property === "scheduled" ? "Shift+H" : key,
 				taskPropertyLabel(property),
 			]),
 			["C", uiText(msg({ message: "Create task", context: "interaction shortcut" }))],
 			["/", uiText(msg({ message: "Search", context: "interaction shortcut" }))],
 			["Mod+K", uiText(msg({ message: "Actions", context: "interaction shortcut" }))],
+			...(options.shortcuts ?? []).filter((shortcut) => shortcut.key !== "c" && (!shortcut.when || shortcut.when(focusedPath))).map((shortcut) => [shortcut.key, shortcut.label]),
 		]) {
 			const row = list.createDiv({ cls: "tn-shortcut-row" });
 			row.createSpan({ text: label });
@@ -185,6 +223,19 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		const mod = event.metaKey || event.ctrlKey;
 		if (!mod && target.closest("button, a, [role=button]") && ["enter", " "].includes(key)) return;
 		if (mod && key !== "k" && key !== "a") return;
+		const shortcut = !mod && !event.shiftKey && options.shortcuts?.find((shortcut) => shortcut.key === key && (!shortcut.when || shortcut.when(focusedPath)));
+		if (shortcut) {
+			event.preventDefault();
+			event.stopPropagation();
+			root.focus({ preventScroll: true });
+			shortcut.run(focusedPath);
+			if (key !== "c") {
+				focusedPath = null;
+				keyboardFocus = false;
+				paint();
+			}
+			return;
+		}
 		if (
 			event.shiftKey &&
 			key !== "h" &&
@@ -248,7 +299,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		}
 		if (mod && key === "a") {
 			selection.enterSelectionMode();
-			selection.selectAll(paths);
+			selection.selectAll(paths.flatMap((path) => selectionPath(path) ?? []));
 			return;
 		}
 		if (!mod && !event.shiftKey && options.horizontal && ["arrowleft", "arrowright", "h", "l"].includes(key)) {
@@ -288,7 +339,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 						...paths.slice(
 							Math.min(anchorIndex, index),
 							Math.max(anchorIndex, index) + 1
-						),
+						).flatMap((path) => selectionPath(path) ?? []),
 					]),
 				]);
 			} else rangeAnchor = null;
@@ -303,23 +354,32 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		if (!focusedPath) return;
 		if (key === "x") {
 			rangeAnchor = null;
-			selection.toggleSelection(focusedPath);
+			const path = selectionPath(focusedPath);
+			if (path) selection.toggleSelection(path);
 			paint();
 			return;
 		}
 		if (pending || event.repeat) return;
 		pending = true;
 		try {
-			const selected = selection.getSelectedPaths().filter((path) => paths.includes(path));
+			if (key === "enter" && options.open) {
+				await options.open(focusedPath);
+				return;
+			}
+			const selected = paths.filter((path) => {
+				const taskPath = selectionPath(path);
+				return taskPath && selection.getSelectedPaths().includes(taskPath);
+			});
 			const taskPaths = selected.length ? selected : [focusedPath];
-			const tasks = (
-				await Promise.all(taskPaths.map((path) => plugin.cacheManager.getTaskInfo(path)))
+			const fetchedTasks = (
+				await Promise.all(taskPaths.map(taskFor))
 			).filter((task): task is TaskInfo => !!task);
-			const task = await plugin.cacheManager.getTaskInfo(focusedPath);
+			const tasks = [...new Map(fetchedTasks.map((task) => [task.path, task])).values()];
+			const task = await taskFor(focusedPath);
 			if (!task) return;
 			const anchor = cardFor(focusedPath) ?? root;
 			if (mod && key === "k") {
-				new TaskActionPaletteModal(plugin.app, task, plugin, new Date(), (existing) => {
+				new TaskActionPaletteModal(plugin.app, task, plugin, options.targetDate?.(focusedPath) ?? new Date(), (existing) => {
 					const properties: TaskAction[] = [
 						"status",
 						"priority",
@@ -337,9 +397,10 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 							icon: "list",
 							category: "other",
 							keywords: [property],
-							keyHint: property === "scheduled" ? "Shift+H" : Object.entries(PROPERTY_KEYS).find(
-								([, candidate]) => candidate === property
-							)?.[0],
+							keyHint: (() => {
+								const key = Object.entries(propertyKeys).find(([, candidate]) => candidate === property)?.[0];
+								return property === "scheduled" ? "Shift+H" : key;
+							})(),
 							isApplicable: () => true,
 							execute: () => openTaskPropertyPicker(plugin, property, tasks, anchor),
 						};
@@ -361,7 +422,6 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 									),
 							description: "",
 							icon: "archive",
-							keyHint: "Enter",
 							category: "organization",
 							keywords: [],
 							isApplicable: () => true,
@@ -377,12 +437,12 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 							)
 							.map((action) => ({
 								...action,
-								keyHint: action.id === "edit-task" ? "E" : "Enter",
+								keyHint: action.id === "edit-task" ? "E" : action.id === "open-task-file" ? "Enter" : action.keyHint,
 							})),
 					];
 				}).open();
-			} else if (PROPERTY_KEYS[key])
-				await openTaskPropertyPicker(plugin, PROPERTY_KEYS[key], tasks, anchor);
+			} else if (propertyKeys[key])
+				await openTaskPropertyPicker(plugin, propertyKeys[key], tasks, anchor);
 			else if (key === "e") await plugin.openTaskEditModal(task);
 			else if (key === "enter") await plugin.app.workspace.openLinkText(task.path, "", false);
 			else if (key === " ") {
@@ -406,6 +466,15 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	const listener = (event: KeyboardEvent) => {
 		void handle(event);
 	};
+	const searchExit = (event: Event) => {
+		if ((event as CustomEvent<boolean>).detail) {
+			focusedPath = options.paths()[0] ?? null;
+			keyboardFocus = !!focusedPath;
+		}
+		root.focus({ preventScroll: true });
+		if (focusedPath) options.reveal(focusedPath);
+		paint();
+	};
 	scope.register(["Mod"], "k", (event) => {
 		void handle(event);
 		return false;
@@ -413,6 +482,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	root.addEventListener("focusin", focusScope);
 	root.addEventListener("focusout", releaseScope);
 	root.addEventListener("keydown", listener);
+	root.addEventListener("tn-search-exit", searchExit);
 	root.addEventListener("pointerdown", pointer);
 	return () => {
 		helpButton.remove();
@@ -425,6 +495,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		observer.disconnect();
 		chromeObserver.disconnect();
 		root.removeEventListener("keydown", listener);
+		root.removeEventListener("tn-search-exit", searchExit);
 		root.removeEventListener("pointerdown", pointer);
 	};
 }

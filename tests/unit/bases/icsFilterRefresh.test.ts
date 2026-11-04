@@ -3,6 +3,10 @@ import { CalendarView } from "../../../src/bases/CalendarView";
 import { MiniCalendarView } from "../../../src/bases/MiniCalendarView";
 import { EventEmitter } from "../../../src/utils/EventEmitter";
 
+jest.mock("../../../src/bases/calendarKeyboard", () => ({
+	installCalendarKeyboard: jest.fn(() => ({ mount: jest.fn(), destroy: jest.fn() })),
+}));
+
 describe("ICS filter changes refresh mounted calendars", () => {
 	afterEach(() => jest.restoreAllMocks());
 	it.each([CalendarView, MiniCalendarView])("refreshes %p and unsubscribes on teardown", View => {

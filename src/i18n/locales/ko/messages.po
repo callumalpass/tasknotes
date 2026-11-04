@@ -3893,6 +3893,7 @@ msgctxt "contextMenus.task.createSubtask"
 msgid "Create subtask"
 msgstr "하위 작업 만들기"
 
+#: src/bases/calendarKeyboard.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Create task"
@@ -4373,6 +4374,7 @@ msgctxt "modals.actionPalette.categories.dates"
 msgid "Dates"
 msgstr "날짜"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "Day"
@@ -8118,6 +8120,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.monday"
 msgid "Monday"
 msgstr "월요일"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "Month"
@@ -8206,6 +8209,7 @@ msgctxt "views.taskList.movement.moveDown"
 msgid "Move down"
 msgstr "아래로 이동"
 
+#: src/bases/calendarKeyboard.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Move focus"
@@ -8354,6 +8358,7 @@ msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
 msgid "New Task"
 msgstr "새 작업"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.next"
 msgid "Next"
@@ -9211,6 +9216,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth
 msgid "On the {week} {day} of each month"
 msgstr "매월 {week} {day}에"
 
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Open"
+msgstr "열기"
+
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.deviceCode.steps.open"
@@ -9958,6 +9968,7 @@ msgctxt "views.basesCalendar.settings.layout.showSelectionPreview"
 msgid "Preview selected time range"
 msgstr "선택한 시간 범위 미리 보기"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.prev"
 msgid "Previous"
@@ -12253,6 +12264,11 @@ msgctxt "kanban creation feedback"
 msgid "Task created, but hidden by the current view"
 msgstr "작업을 만들었지만 현재 보기에서는 숨겨져 있습니다"
 
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Task created, but hidden by this view"
+msgstr "작업이 생성되었지만 이 보기에서는 숨겨져 있습니다"
+
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"
 msgid "Task created, but some attachments could not be imported: {message}"
@@ -13291,6 +13307,7 @@ msgctxt "views.agenda.today"
 msgid "Today"
 msgstr "오늘"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.today"
@@ -14163,6 +14180,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.wednesd
 msgid "Wednesday"
 msgstr "수요일"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "Week"

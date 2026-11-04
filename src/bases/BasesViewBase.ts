@@ -1,6 +1,8 @@
 import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { installTaskViewKeyboard } from "../ui/taskViewKeyboard";
+import { inferBasesCreationFolder } from "./basesFilterDefaults";
+import { showToast } from "../ui/kit/toast";
 import { msg } from "@lingui/core/macro";
 import { Component, App, Notice } from "obsidian";
 import type { BasesPropertyId, BasesQueryResult, BasesViewConfig, EventRef } from "obsidian";
@@ -526,10 +528,19 @@ export abstract class BasesViewBase extends Component {
 		// Open TaskNotes creation modal
 		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
 		const modal = new TaskCreationModal(app, this.plugin, {
+			targetFolder: inferBasesCreationFolder(this.config),
 			prePopulatedValues: taskCreationData,
 			onTaskCreated: (task: TaskInfo) => {
 				// Refresh the view after task creation so it appears immediately
 				this.onViewTaskCreated(task);
+				const timer = window.setTimeout(() => {
+					if (!this.rootElement?.isConnected || this.data?.data.some((entry) => entry.file.path === task.path)) return;
+					showToast({
+						message: uiText(msg({ message: "Task created, but hidden by this view", context: "bases creation feedback" })),
+						action: { label: uiText(msg({ message: "Open", context: "bases creation feedback" })), run: () => { void app.workspace.openLinkText(task.path, "", false); } },
+					});
+				}, 1500);
+				this.register(() => window.clearTimeout(timer));
 			},
 		});
 
@@ -678,12 +689,12 @@ export abstract class BasesViewBase extends Component {
 	 * Subclasses can override for custom behavior.
 	 * Includes performance monitoring for search operations.
 	 */
-	protected handleSearch(term: string): void {
+	protected async handleSearch(term: string): Promise<void> {
 		const startTime = performance.now();
 		this.currentSearchTerm = term;
 
 		// Re-render with filtered tasks
-		void this.render();
+		await this.render();
 
 		const filterTime = performance.now() - startTime;
 
@@ -868,7 +879,7 @@ export abstract class BasesViewBase extends Component {
 	protected renderSearchNoResults(container: HTMLElement): void {
 		renderBasesSearchNoResults(container, this.currentSearchTerm, () => {
 			this.searchBox?.setValue("");
-			this.handleSearch("");
+			void this.handleSearch("");
 		});
 	}
 
@@ -882,14 +893,15 @@ export abstract class BasesViewBase extends Component {
 	protected setupSelectionHandling(): void {
 		if (!this.rootElement) return;
 		const hasTaskKeyboard =
-			this.type === "tasknotesTaskList" || this.type === "tasknotesKanban";
-		if (hasTaskKeyboard)
+			this.type === "tasknotesTaskList" || this.type === "tasknotesKanban" || this.type === "tasknotesCalendar";
+		if (hasTaskKeyboard && this.type !== "tasknotesCalendar")
 			this.register(
 				installTaskViewKeyboard({
 					plugin: this.plugin,
 					root: this.rootElement,
 					paths: () => this.getVisibleTaskPaths(),
 					reveal: (path) => this.revealKeyboardTask(path),
+					groupForPath: (path) => this.getKeyboardTaskGroup(path),
 					horizontal: this.type === "tasknotesKanban"
 						? (path, direction) => this.getHorizontalTaskPath(path, direction)
 						: undefined,
@@ -1047,6 +1059,10 @@ export abstract class BasesViewBase extends Component {
 	}
 
 	protected revealKeyboardTask(_path: string): void {}
+
+	protected getKeyboardTaskGroup(_path: string): { key: string; paths: string[] } | undefined {
+		return undefined;
+	}
 
 	protected getHorizontalTaskPath(_path: string | null, _direction: number): string | null {
 		return null;
