@@ -106,10 +106,22 @@ describe("ReleaseNotesView", () => {
 
 		const rendered = jest.mocked(MarkdownRenderer.render).mock.calls[0][1];
 		expect(rendered).not.toContain("Old announcement");
+		expect(rendered).not.toContain("# TaskNotes 4.12.4");
 		expect(rendered).not.toContain("[!info] TaskNotes v5 beta");
 		expect(rendered).toContain("## Fixed\n\n- A fix");
 		expect(rendered).toContain("> [!info] Another notice\n> Keep this");
 		expect(content).toContain("Old announcement");
+	});
+
+	it("expands and collapses release sections with the keyboard", async () => {
+		const container = await createSection(releaseNote(), false);
+		const header = container.querySelector<HTMLElement>(".release-notes-version-header")!;
+		expect(header.getAttribute("aria-expanded")).toBe("false");
+		header.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+		await flushPromises();
+		expect(header.getAttribute("aria-expanded")).toBe("true");
+		header.dispatchEvent(new KeyboardEvent("keydown", { key: " " }));
+		expect(header.getAttribute("aria-expanded")).toBe("false");
 	});
 
 	it("renders initially expanded release notes immediately", async () => {
