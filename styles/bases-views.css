@@ -414,7 +414,7 @@ body.is-mobile .tn-bases-kanban-column {
     gap: var(--tn-space-1);
     overflow: auto;
     padding: var(--tn-space-1);
-    min-height: 400px;
+    min-height: 0;
 }
 
 /* Each swimlane row */
@@ -427,8 +427,9 @@ body.is-mobile .tn-bases-kanban-column {
     grid-auto-flow: column;
     gap: 0;
     background: transparent;
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    border-radius: 0;
     min-width: max-content;
     overflow: hidden;
 }
@@ -439,7 +440,7 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Last row gets bottom border */
 .kanban-view__swimlane-row:last-child {
-    border-bottom: 1px solid var(--tn-border-color);
+    border-bottom: 1px solid var(--tn-hairline);
 }
 
 /* Header row styling */
@@ -453,18 +454,19 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Swimlane label cell (leftmost column) */
 .kanban-view__swimlane-label {
-    background: color-mix(in srgb, var(--tn-bg-secondary) 86%, var(--tn-bg-primary));
+    background: var(--background-secondary);
+    color: var(--text-normal);
     padding: var(--tn-space-2);
     display: flex;
     flex-direction: column;
     gap: var(--tn-space-half);
     align-items: flex-start;
     justify-content: flex-start;
-    border-right: 1px solid var(--tn-border-color);
+    border-right: none;
     position: sticky;
     left: 0;
     z-index: 5;
-    min-height: 72px;
+    min-height: var(--tn-row-height);
     overflow: hidden;
 }
 
@@ -485,15 +487,13 @@ body.is-mobile .tn-bases-kanban-column {
 .kanban-view__swimlane-count {
     font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
-    background: var(--tn-bg-primary);
-    border: 1px solid color-mix(in srgb, var(--tn-border-color) 72%, transparent);
-    padding: 2px 6px;
-    border-radius: var(--tn-radius-md);
+    font-variant-numeric: tabular-nums;
 }
 
 /* Column header cell in header row */
 .kanban-view__column-header-cell {
-    background: var(--tn-bg-secondary);
+    background: var(--background-secondary);
+    color: var(--text-normal);
     padding: var(--tn-space-1) var(--tn-space-2);
     display: flex;
     align-items: center;
@@ -501,15 +501,14 @@ body.is-mobile .tn-bases-kanban-column {
     text-align: left;
     cursor: grab;
     user-select: none;
-    transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), opacity var(--tn-transition-fast), transform var(--tn-transition-fast);
+    transition: opacity var(--tn-motion-fast) var(--tn-ease), transform var(--tn-motion-fast) var(--tn-ease);
     gap: var(--tn-space-half);
     min-height: 40px;
-    border-right: 1px solid var(--tn-border-color);
+    border-right: none;
 }
 
 .kanban-view__column-header-cell--status-colored {
-    background: color-mix(in srgb, var(--tn-kanban-status-color) 12%, var(--tn-bg-secondary));
-    border-right-color: color-mix(in srgb, var(--tn-kanban-status-color) 38%, var(--tn-border-color));
+    background: var(--background-secondary);
 }
 
 .kanban-view__column-header-cell:active {
@@ -521,15 +520,10 @@ body.is-mobile .tn-bases-kanban-column {
     box-shadow: var(--tn-shadow-medium);
 }
 
-@media (pointer: coarse) {
-    .kanban-view__column-header-cell--dragging {
-        pointer-events: none;
-    }
-}
-
 .kanban-view__column-header-cell .kanban-view__column-title {
+    flex: 1;
     font-size: var(--tn-type-xs);
-    font-weight: var(--tn-font-weight-semibold);
+    font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
     min-width: 0;
     overflow: hidden;
@@ -544,19 +538,19 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Individual swimlane column cells (data cells) */
 .kanban-view__swimlane-column {
-    background: color-mix(in srgb, var(--tn-bg-primary) 92%, var(--tn-bg-secondary));
+    background: var(--background-secondary);
+    color: var(--text-normal);
     padding: var(--tn-space-1);
-    min-height: 112px;
+    min-height: var(--tn-row-height);
     max-height: var(--kanban-swimlane-max-height, 600px);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--tn-border-color);
+    border-right: none;
     overflow: hidden;
 }
 
 .kanban-view__swimlane-column--status-colored {
-    background: color-mix(in srgb, var(--tn-kanban-status-color) 6%, var(--tn-bg-primary));
-    border-right-color: color-mix(in srgb, var(--tn-kanban-status-color) 38%, var(--tn-border-color));
+    background: var(--background-secondary);
 }
 
 .kanban-view__swimlane-column.kanban-view__column--unknown-status {
@@ -568,10 +562,30 @@ body.is-mobile .tn-bases-kanban-column {
 .kanban-view__swimlane-column .kanban-view__tasks-container {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-space-half);
+    gap: var(--tn-space-2);
     flex: 1;
     overflow-y: auto;
     min-height: 0;
+}
+
+.tasknotes-plugin .kanban-view__swimlane-row--empty .kanban-view__swimlane-label {
+    flex-direction: row;
+    align-items: center;
+    padding-block: var(--tn-space-1);
+}
+
+.tasknotes-plugin .kanban-view__swimlane-row--empty .kanban-view__swimlane-column {
+    min-height: var(--tn-row-height);
+    padding-block: 0;
+}
+
+.tasknotes-plugin .kanban-view__swimlane-row--empty .kanban-view__add-task-footer {
+    padding: 0;
+    min-height: var(--tn-row-height);
+}
+
+.tasknotes-plugin .kanban-view__swimlane-row--empty .kanban-view__tasks-container {
+    flex: 0 0 auto;
 }
 
 /* Drag over state for swimlane cells */
@@ -584,8 +598,7 @@ body.is-mobile .tn-bases-kanban-column {
 /* Responsive adjustments for swimlanes */
 @media (max-width: 1200px) {
     .kanban-view__swimlane-row > :first-child {
-        width: 150px;
-        min-width: 150px;
+        min-width: 0;
     }
 
     .kanban-view__swimlane-label {
@@ -595,8 +608,7 @@ body.is-mobile .tn-bases-kanban-column {
 
 @media (max-width: 768px) {
     .kanban-view__swimlane-row > :first-child {
-        width: 120px;
-        min-width: 120px;
+        min-width: 0;
     }
 
     .kanban-view__swimlane-title {
