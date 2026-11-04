@@ -8212,6 +8212,11 @@ msgctxt "settings.general.taskStorage.moveArchived.name"
 msgid "Move archived tasks to folder"
 msgstr "Mover tarefas arquivadas para pasta"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Move between columns"
+msgstr "Mover entre colunas"
+
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.moveDown"
@@ -9209,6 +9214,7 @@ msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "Aberta"
 
+#: src/bases/KanbanView.ts
 #: src/ui/taskCardContextMenu.ts
 msgctxt "ui.audit.open"
 msgid "Open"
@@ -12263,6 +12269,11 @@ msgstr "Tarefa Criada"
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "Tarefa criada, mas um passo seguinte falhou: {message}"
+
+#: src/bases/KanbanView.ts
+msgctxt "kanban creation feedback"
+msgid "Task created, but hidden by the current view"
+msgstr "Tarefa criada, mas oculta na visualização atual"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"

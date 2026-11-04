@@ -134,7 +134,7 @@ test('neutral board surfaces, stacked metadata, compact empty lanes and pane ove
     expect(measurements.stacked).toBe(true);
     expect(measurements.cardOverflow).toBe(false);
     expect(measurements.emptyHeight).toBeLessThanOrEqual(52);
-    expect(measurements.overflowing).toBe(true);
+    expect(measurements.overflowing).toBe(false);
     await page.screenshot({ path: `test-results/kanban-redesign/${theme}.png` });
   }
 
@@ -169,7 +169,6 @@ async function expectNativeDrop(lane: string) {
   await page.mouse.down();
   await page.mouse.move(bounds!.x + bounds!.width / 2 + 15, bounds!.y + 20, { steps: 5 });
   await expect(page.locator('.kanban-view__board')).toHaveClass(/kanban-view__board--task-dragging/);
-  await expect(target.locator('.kanban-view__empty-cell')).toBeVisible();
   const destination = await target.boundingBox();
   expect(destination).not.toBeNull();
   await page.mouse.move(destination!.x + destination!.width / 2, destination!.y + 18, { steps: 25 });
@@ -193,6 +192,38 @@ async function expectNativeDrop(lane: string) {
 test('native mouse drag persists a drop into an empty lane', () => expectNativeDrop('low'));
 test('native mouse drag persists a drop into an empty cell', () => expectNativeDrop('normal'));
 
+test('repeated real drags below an empty swimlane keep every destination stable', async () => {
+  const page = instance.page;
+  const title = 'Review the release checklist and outstanding dependencies';
+  for (const [column, lane] of [['waiting', 'low'], ['open', 'normal'], ['waiting', 'low'], ['open', 'high']]) {
+    const source = page.locator(`.kanban-view__card-wrapper[data-task-path="${folder}/${title}.md"]`);
+    await expect(async () => {
+      await source.scrollIntoViewIfNeeded();
+    }).toPass({ timeout: 5000 });
+    const target = cell(column, lane);
+    const destination = (await target.boundingBox())!;
+    const bounds = (await source.boundingBox())!;
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 18);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + bounds.width / 2 + 16, bounds.y + 18, { steps: 8 });
+    await expect(page.locator('.kanban-view__board')).toHaveClass(/kanban-view__board--task-dragging/);
+    const during = (await target.boundingBox())!;
+    expect(Math.abs(during.y - destination.y)).toBeLessThan(1);
+    console.info('Drag destination', column, lane, destination, during);
+    expect(Math.abs(during.height - destination.height)).toBeLessThan(1);
+    await page.mouse.move(destination.x + destination.width / 2, destination.y + destination.height / 2, { steps: 24 });
+    await target.hover({ position: { x: destination.width / 2, y: destination.height / 2 } });
+    await page.mouse.move(destination.x + destination.width / 2 + 1, destination.y + destination.height / 2, { steps: 3 });
+    await page.mouse.up();
+    await expect.poll(async () => {
+      const task = await readTask(title);
+      return { status: task.status, priority: task.priority };
+    }).toEqual({ status: column, priority: lane });
+    await expect(page.locator('.kanban-view__board')).not.toHaveClass(/kanban-view__board--task-dragging/);
+    await expect(target.locator(`.kanban-view__card-wrapper[data-task-path="${folder}/${title}.md"]`)).toBeVisible();
+  }
+});
+
 test('repeated DOM drag lifecycles persist swimlane moves and clear board state', async () => {
   const page = instance.page;
   const title = 'Review the release checklist and outstanding dependencies';
@@ -203,7 +234,6 @@ test('repeated DOM drag lifecycles persist swimlane moves and clear board state'
     await source!.dispatchEvent('dragstart', { dataTransfer: transfer });
     await expect(page.locator('.kanban-view__board')).toHaveClass(/kanban-view__board--task-dragging/);
     const target = cell(column, lane);
-    await expect(target.locator('.kanban-view__empty-cell')).toBeVisible();
     const bounds = (await target.boundingBox())!;
     const event = { dataTransfer: transfer, clientX: bounds.x + bounds.width / 2, clientY: bounds.y + 18 };
     await target.dispatchEvent('dragover', event);
@@ -257,8 +287,213 @@ test('flat columns retain virtualization, collapse and header creation', async (
   await collapse.focus();
   await page.keyboard.press('Enter');
   await expect(column).not.toHaveClass(/kanban-view__column--collapsed/);
+  await page.locator('.kanban-view__column[data-group="waiting"] .kanban-view__column-collapse-button').click();
   await page.locator('.kanban-view__column[data-group="waiting"] .kanban-view__column-header').hover();
   await page.locator('.kanban-view__column[data-group="waiting"] .kanban-view__column-header button[aria-label="Add task to waiting"]').click();
   await expect(page.locator('.modal')).toBeVisible();
   await page.keyboard.press('Escape');
+});
+
+async function openPopulatedBoard(custom: boolean) {
+  await instance.page.evaluate(async ({ folder, custom, content }) => {
+    const app = (window as any).app;
+    const plugin = app.plugins.plugins.tasknotes;
+    const statuses = custom
+      ? Array.from({ length: 8 }, (_, index) => ({
+        id: `workflow-${index}`, value: `workflow-${index}`,
+        label: ['Awaiting initial design review and approval', 'Ready for detailed implementation planning',
+          'Implementation in progress across teams', 'Blocked pending external dependencies',
+          'Awaiting accessibility and quality review', 'Ready for stakeholder acceptance testing',
+          'Approved for the next scheduled release', 'Delivered and awaiting retrospective'][index],
+        color: ['var(--text-muted)', 'var(--color-blue)', 'var(--color-orange)', 'var(--color-red)',
+          'var(--color-purple)', 'var(--color-cyan)', 'var(--color-green)', 'var(--text-muted)'][index],
+        icon: index % 2 ? 'circle-dashed' : 'circle-dot', order: index, isCompleted: index === 7,
+      }))
+      : [
+        { id: 'none', value: 'none', label: 'None', color: 'var(--text-faint)', order: 0 },
+        { id: 'open', value: 'open', label: 'Open', color: 'var(--text-muted)', order: 1 },
+        { id: 'in-progress', value: 'in-progress', label: 'In progress', color: 'var(--color-blue)', order: 2 },
+        { id: 'done', value: 'done', label: 'Done', color: 'var(--color-green)', order: 3, isCompleted: true },
+      ];
+    plugin.settings.customStatuses = statuses;
+    plugin.statusManager.updateStatuses(statuses);
+    for (const file of [...app.vault.getAbstractFileByPath(folder).children]) {
+      if (file.extension === 'md') await app.vault.delete(file);
+    }
+    const status = plugin.fieldMapper.toUserField('status');
+    const titles = ['Review release dependencies and remaining accessibility issues',
+      'Align navigation and keyboard interactions', 'Resolve the last integration review comments'];
+    for (const [index, config] of statuses.entries()) {
+      if (!custom && index === 0) continue;
+      for (let taskIndex = 0; taskIndex < (custom ? 2 : 3); taskIndex++) {
+        const title = titles[taskIndex];
+        await app.vault.create(`${folder}/Design ${index}-${taskIndex}.md`,
+          `---\ntitle: ${title}\ntags: [task, design-system, accessibility]\n${status}: ${config.value}\npriority: normal\ndue: 2026-11-10\nprojects: ["[[Quarterly planning and delivery]]"]\ncontexts: [office, review]\n---\n`);
+      }
+    }
+    const path = `${folder}/${custom ? 'Custom' : 'Default'}.base`;
+    await app.workspace.getLeaf(false).openFile(await app.vault.create(path, content));
+  }, {
+    folder, custom,
+    content: stringify({
+      filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")'] },
+      views: [{ type: 'tasknotesKanban', name: 'Design delivery', groupBy: { property: 'status', direction: 'ASC' },
+        order: ['file.name', 'priority', 'due', 'projects', 'contexts', 'file.tags'], columnWidth: 280 }],
+    }),
+  });
+  await expect(instance.page.locator('.kanban-view__card-wrapper')).toHaveCount(custom ? 16 : 9);
+}
+
+test('default and eight long custom statuses stay composed in both themes at desktop and 400px', async () => {
+  const page = instance.page;
+  for (const custom of [false, true]) {
+    await openPopulatedBoard(custom);
+    for (const theme of ['theme-light', 'theme-dark']) {
+      await page.evaluate(theme => {
+        document.body.classList.remove('theme-light', 'theme-dark');
+        document.body.classList.add(theme);
+        document.querySelectorAll('.notice-container').forEach(element => element.remove());
+      }, theme);
+      for (const width of [1180, 400]) {
+        await setObsidianViewport(page, { width, height: 800 });
+        await page.evaluate(width => {
+          const app = (window as any).app;
+          if (width === 400) app.workspace.leftSplit.collapse();
+          else app.workspace.leftSplit.expand();
+        }, width);
+        const board = page.locator('.kanban-view__board');
+        await board.evaluate(element => { element.scrollLeft = 0; });
+        await expect.poll(() => board.evaluate(element => element.clientWidth)).toBeGreaterThan(250);
+        const cards = await board.locator('.task-card').evaluateAll(elements => elements.map(element => ({
+          width: element.clientWidth, overflow: element.scrollWidth > element.clientWidth,
+          height: element.getBoundingClientRect().height,
+          titleHeight: element.querySelector('.task-card__title-text')!.getBoundingClientRect().height,
+        })));
+        expect(cards.every(card => !card.overflow && card.height < 90 && card.titleHeight < 24)).toBe(true);
+        if (!custom) await expect(page.locator('.kanban-view__column[data-group="none"]')).toHaveClass(/--collapsed/);
+        if (custom) await expect(board).toHaveClass(/--overflow/);
+        await page.mouse.move(width - 30, 760);
+        await expect(async () => {
+          const image = await page.screenshot({ clip: { x: 0, y: 0, width, height: 800 }, path: `test-results/kanban-round1/${custom ? 'custom-eight' : 'default'}-${theme}-${width}.png` });
+          expect(image.readUInt32BE(16)).toBe(width);
+          expect(image.readUInt32BE(20)).toBe(800);
+        }).toPass({ timeout: 5000 });
+      }
+    }
+  }
+});
+
+test('horizontal keyboard navigation, help and real auto-scroll drops preserve task identity', async () => {
+  const page = instance.page;
+  await openPopulatedBoard(true);
+  const root = page.locator('.tn-tasknotesKanban');
+  await root.focus();
+  await page.keyboard.press('j');
+  const first = root.locator('.tn-task-focused');
+  const firstPath = await first.getAttribute('data-task-path');
+  await page.keyboard.press('l');
+  await expect(root.locator('.tn-task-focused')).not.toHaveAttribute('data-task-path', firstPath!);
+  await page.keyboard.press('h');
+  await expect(root.locator('.tn-task-focused')).toHaveAttribute('data-task-path', firstPath!);
+  await page.keyboard.press('ArrowRight');
+  await expect(root.locator('.tn-task-focused')).not.toHaveAttribute('data-task-path', firstPath!);
+  await page.keyboard.press('ArrowLeft');
+  await expect(root.locator('.tn-task-focused')).toHaveAttribute('data-task-path', firstPath!);
+  await page.keyboard.press('?');
+  await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts' })).toContainText('Move between columns');
+  await page.keyboard.press('Escape');
+  const source = page.locator(`.kanban-view__card-wrapper[data-task-path="${firstPath}"]`);
+  await source.scrollIntoViewIfNeeded();
+  const bounds = (await source.boundingBox())!;
+  const board = page.locator('.kanban-view__board');
+  const boardBounds = (await board.boundingBox())!;
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 18);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width / 2 + 16, bounds.y + 18, { steps: 6 });
+  await expect(board).toHaveClass(/--task-dragging/);
+  await page.mouse.move(boardBounds.x + boardBounds.width - 12, bounds.y + 20, { steps: 30 });
+  await expect.poll(() => board.evaluate(element => element.scrollWidth - element.clientWidth - element.scrollLeft), { timeout: 10000 }).toBeLessThan(2);
+  const target = page.locator('.kanban-view__column[data-group="workflow-7"]');
+  await target.hover({ position: { x: 80, y: 55 } });
+  await page.mouse.move((await target.boundingBox())!.x + 82, bounds.y + 20, { steps: 3 });
+  await page.mouse.up();
+  await expect.poll(async () => {
+    return page.evaluate(async path => {
+      const app = (window as any).app;
+      return app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path))?.frontmatter.status;
+    }, firstPath);
+  }).toBe('workflow-7');
+  await expect(board).not.toHaveClass(/--task-dragging/);
+});
+
+test('a cancelled real drag restores its source and leaves task properties unchanged', async () => {
+  const page = instance.page;
+  const title = 'Review the release checklist and outstanding dependencies';
+  const original = await readTask(title);
+  const source = page.locator(`.kanban-view__card-wrapper[data-task-path="${folder}/${title}.md"]`);
+  const bounds = (await source.boundingBox())!;
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 18);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width / 2 + 16, bounds.y + 18, { steps: 8 });
+  await expect(page.locator('.kanban-view__board')).toHaveClass(/--task-dragging/);
+  const preview = page.locator('.kanban-view__floating-drag-preview');
+  await expect(preview.locator('.task-card')).toBeVisible();
+  expect((await preview.boundingBox())!.height).toBeLessThan(100);
+  await page.screenshot({ path: 'test-results/kanban-round1/drag-ghost.png' });
+  await page.mouse.move(100, 60, { steps: 20 });
+  await page.mouse.up();
+  await expect(source.locator('.task-card')).toBeVisible();
+  await expect(page.locator('.kanban-view__board')).not.toHaveClass(/--task-dragging/);
+  await expect(preview).toHaveCount(0);
+  expect(await readTask(title)).toEqual(original);
+});
+
+test('horizontal keyboard navigation reaches adjacent columns across empty swimlane cells', async () => {
+  const page = instance.page;
+  const targetPath = `${folder}/A control task with a longer project and context.md`;
+  await page.evaluate(async path => {
+    const app = (window as any).app;
+    const plugin = app.plugins.plugins.tasknotes;
+    await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (frontmatter: Record<string, unknown>) => {
+      frontmatter[plugin.fieldMapper.toUserField('status')] = 'waiting';
+      frontmatter[plugin.fieldMapper.toUserField('priority')] = 'low';
+    });
+  }, targetPath);
+  await expect(cell('waiting', 'low').locator('.kanban-view__card-wrapper')).toHaveCount(1);
+  const root = page.locator('.tn-tasknotesKanban');
+  await root.focus();
+  await page.keyboard.press('j');
+  await page.keyboard.press('ArrowRight');
+  await expect(root.locator('.tn-task-focused')).toHaveAttribute('data-task-path', targetPath);
+  await page.keyboard.press('h');
+  await expect(root.locator('.tn-task-focused')).not.toHaveAttribute('data-task-path', targetPath);
+});
+
+test('keyboard creation outside a board filter offers Open without modifying the filter', async () => {
+  const page = instance.page;
+  const title = `Outside board filter ${Date.now()}`;
+  await page.locator('.tn-tasknotesKanban').focus();
+  await page.keyboard.press('c');
+  const modal = page.locator('.modal.mod-tasknotes');
+  await expect(modal).toBeVisible();
+  await modal.locator('.tn-task-modal__markdown-editor--nlp .cm-content').fill(title);
+  await modal.locator('button.mod-cta').click();
+  await expect(modal).toHaveCount(0);
+  const toast = page.locator('.tn-toast');
+  await expect(toast).toContainText('Task created, but hidden by the current view');
+  const path = await page.evaluate(async title => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    return (await plugin.cacheManager.getAllTasks()).find((task: any) => task.title === title)?.path;
+  }, title);
+  expect(path).toBeTruthy();
+  try {
+    await toast.getByRole('button', { name: 'Open', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).app.workspace.getActiveFile()?.path)).toBe(path);
+  } finally {
+    await page.evaluate(async path => {
+      const app = (window as any).app;
+      const file = app.vault.getAbstractFileByPath(path);
+      if (file) await app.vault.delete(file);
+    }, path);
+  }
 });

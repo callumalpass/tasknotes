@@ -527,11 +527,15 @@ export abstract class BasesViewBase extends Component {
 			prePopulatedValues: taskCreationData,
 			onTaskCreated: (task: TaskInfo) => {
 				// Refresh the view after task creation so it appears immediately
-				this.refresh();
+				this.onViewTaskCreated(task);
 			},
 		});
 
 		modal.open();
+	}
+
+	protected onViewTaskCreated(_task: TaskInfo): void {
+		this.refresh();
 	}
 
 	/**
@@ -863,6 +867,9 @@ export abstract class BasesViewBase extends Component {
 					root: this.rootElement,
 					paths: () => this.getVisibleTaskPaths(),
 					reveal: (path) => this.revealKeyboardTask(path),
+					horizontal: this.type === "tasknotesKanban"
+						? (path, direction) => this.getHorizontalTaskPath(path, direction)
+						: undefined,
 					refreshSelection: () => this.updateSelectionVisuals(),
 					create: () => {
 						void this.createFileForView(
@@ -1017,6 +1024,10 @@ export abstract class BasesViewBase extends Component {
 	}
 
 	protected revealKeyboardTask(_path: string): void {}
+
+	protected getHorizontalTaskPath(_path: string | null, _direction: number): string | null {
+		return null;
+	}
 
 	// Abstract methods that subclasses must implement
 

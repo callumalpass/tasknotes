@@ -68,7 +68,8 @@ function makeView(store: Record<string, unknown> = {}): KanbanView {
 }
 
 async function createColumn(view: KanbanView, groupKey = "open"): Promise<HTMLElement> {
-	return (view as any).createColumn(groupKey, [], [], "status");
+	(view as any).createNormalColumn = jest.fn();
+	return (view as any).createColumn(groupKey, [{ path: "task.md" }], [], "status");
 }
 
 describe("Kanban column collapse state", () => {
@@ -100,7 +101,7 @@ describe("Kanban column collapse state", () => {
 		expect(toggle?.getAttribute("aria-expanded")).toBe("true");
 	});
 
-	it("does not render collapse controls in swimlane column headers", async () => {
+	it("renders accessible collapse controls in swimlane column headers", async () => {
 		const view = makeView();
 		const board = document.createElement("div");
 		(view as any).boardEl = board;
@@ -117,7 +118,11 @@ describe("Kanban column collapse state", () => {
 		);
 
 		expect(board.querySelector(".kanban-view__column-header-cell")).not.toBeNull();
-		expect(board.querySelector(".kanban-view__column-collapse-button")).toBeNull();
+		const toggle = board.querySelector<HTMLButtonElement>(".kanban-view__column-collapse-button")!;
+		expect(toggle.getAttribute("aria-expanded")).toBe("false");
+		toggle.click();
+		expect(toggle.getAttribute("aria-expanded")).toBe("true");
+		expect(board.querySelector(".kanban-view__swimlane-column")?.classList.contains("kanban-view__column--collapsed")).toBe(false);
 	});
 
 	it("saves collapsed columns in the view config so a reloaded view restores them (#2484)", async () => {
@@ -134,7 +139,7 @@ describe("Kanban column collapse state", () => {
 		const other = await createColumn(reloadedView, "done");
 		const sameValueOtherProperty = await (reloadedView as any).createColumn(
 			"open",
-			[],
+			[{ path: "other.md" }],
 			[],
 			"priority"
 		);
@@ -152,5 +157,36 @@ describe("Kanban column collapse state", () => {
 		const view = makeView({ collapsedColumns: "{not json" });
 		const column = await createColumn(view, "open");
 		expect(column.dataset.collapsed).toBe("false");
+	});
+
+	it("automatically collapses empty columns except pinned ones without persisting a default", async () => {
+		const store: Record<string, unknown> = {};
+		const view = makeView(store);
+		const empty = await (view as any).createColumn("open", [], [], "status");
+		expect(empty.dataset.collapsed).toBe("true");
+		expect(store.collapsedColumns).toBeUndefined();
+		empty.querySelector("button").click();
+		expect(empty.dataset.collapsed).toBe("false");
+		const otherProperty = await (view as any).createColumn("open", [], [], "priority");
+		expect(otherProperty.dataset.collapsed).toBe("true");
+		(view as any).pinnedColumns = ["done"];
+		const pinned = await (view as any).createColumn("done", [], [], "status");
+		expect(pinned.dataset.collapsed).toBe("false");
+	});
+
+	it("preserves the public rail width and freezes board sizing during a drag", async () => {
+		const view = makeView();
+		const board = document.createElement("div");
+		Object.defineProperty(board, "clientWidth", { value: 800 });
+		(view as any).boardEl = board;
+		const empty = await (view as any).createColumn("open", [], [], "status");
+		board.append(empty, await createColumn(view, "done"));
+		(view as any).updateBoardLayout();
+		expect(empty.style.width).toBe("var(--tn-kanban-collapsed-column-width, 48px)");
+		const previous = board.innerHTML;
+		(view as any).draggedTaskPath = "task.md";
+		(view as any).columnWidth = 400;
+		(view as any).updateBoardLayout();
+		expect(board.innerHTML).toBe(previous);
 	});
 });

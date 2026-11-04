@@ -8211,6 +8211,11 @@ msgctxt "settings.general.taskStorage.moveArchived.name"
 msgid "Move archived tasks to folder"
 msgstr "Archivierte Aufgaben in Ordner verschieben"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Move between columns"
+msgstr "Zwischen Spalten wechseln"
+
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.moveDown"
@@ -9208,6 +9213,7 @@ msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "Offen"
 
+#: src/bases/KanbanView.ts
 #: src/ui/taskCardContextMenu.ts
 msgctxt "ui.audit.open"
 msgid "Open"
@@ -12262,6 +12268,11 @@ msgstr "Aufgabe erstellt"
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "Aufgabe erstellt, aber ein Folgeschritt ist fehlgeschlagen: {message}"
+
+#: src/bases/KanbanView.ts
+msgctxt "kanban creation feedback"
+msgid "Task created, but hidden by the current view"
+msgstr "Aufgabe erstellt, aber in der aktuellen Ansicht ausgeblendet"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"

@@ -25,16 +25,28 @@ export class KanbanDragPreview {
 		titleEl.textContent = title;
 
 		preview.classList.add("tasknotes-plugin", "kanban-view__floating-drag-preview");
-		preview.appendChild(titleEl);
+		const sourceCard = sourceElement.matches(".task-card")
+			? sourceElement
+			: sourceElement.querySelector(".task-card");
+		if (sourceCard) {
+			const wrapper = preview.createDiv({ cls: "kanban-view__card-wrapper" });
+			const card = sourceCard.cloneNode(true) as HTMLElement;
+			card.querySelectorAll("[id]").forEach(element => element.removeAttribute("id"));
+			card.removeAttribute("id");
+			wrapper.appendChild(card);
+		} else {
+			preview.appendChild(titleEl);
+		}
 		preview.setAttribute("aria-hidden", "true");
 		preview.setAttribute("draggable", "false");
 		if (count > 1) {
 			preview.dataset.dragCount = `${count}`;
 		}
 		this.floatingDragPreviewWidth = Math.min(Math.max(rect.width, 180), 320);
-		this.floatingDragPreviewHeight = 40;
+		this.floatingDragPreviewHeight = rect.height;
 		preview.setCssProps({
 			"--tn-kanban-drag-preview-width": `${this.floatingDragPreviewWidth}px`,
+			"--tn-kanban-drag-preview-height": `${rect.height}px`,
 			"--tn-kanban-drag-preview-transform": "translate3d(-9999px, -9999px, 0)",
 		});
 
