@@ -91,7 +91,7 @@
 }
 
 .tasknotes-plugin .task-card__metadata {
-    flex: 0 1 48%;
+    flex: 1 1 55%;
     min-width: 0;
     max-width: 55%;
     font-size: var(--tn-type-xs);
@@ -155,7 +155,7 @@
 }
 
 .tasknotes-plugin .kanban-view__card-wrapper .task-card__metadata > .task-card__metadata-values {
-    flex: 1 0 100%;
+    flex: 1 1 0;
     display: flex;
     white-space: nowrap;
 }
@@ -194,7 +194,7 @@
         -webkit-mask-image: none;
         mask-image: none;
         justify-content: flex-start;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: var(--tn-space-1) var(--tn-space-2);
     }
 
@@ -204,7 +204,8 @@
     }
 
     .tasknotes-plugin .task-card__metadata-values {
-        flex: 1 0 100%;
+        flex: 1 1 0;
+        order: 3;
     }
 }
 

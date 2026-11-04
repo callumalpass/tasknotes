@@ -2,6 +2,17 @@ import { differenceInCalendarDays, isValid, parseISO } from "date-fns";
 import { msg } from "@lingui/core/macro";
 import { uiText } from "../../i18n/runtime";
 import { formatDateTimeForDisplay } from "../../utils/dateUtils";
+import { isOverdueTimeAware, isTodayTimeAware } from "../../utils/dateUtils";
+
+export function taskDueUrgency(
+	value: string | undefined,
+	completed = false,
+	hideCompleted = true
+): "overdue" | "today" | "neutral" {
+	if (!value) return "neutral";
+	if (isOverdueTimeAware(value, completed, hideCompleted)) return "overdue";
+	return isTodayTimeAware(value) ? "today" : "neutral";
+}
 
 export type RelativeDay = "today" | "tomorrow" | "yesterday" | null;
 

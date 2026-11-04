@@ -44,6 +44,7 @@ export interface TaskModalActionIconStateOptions {
 	statusConfigs?: readonly StatusConfig[];
 	priorityConfigs?: readonly PriorityConfig[];
 	timeFormat?: "12" | "24";
+	hideCompletedFromOverdue?: boolean;
 }
 
 export function createTaskModalActionMenuState(
@@ -110,5 +111,6 @@ export function buildTaskModalActionIconState(
 		statusConfigs,
 		priorityConfigs,
 		timeFormat: options.timeFormat ?? "24",
+		hideCompletedFromOverdue: options.hideCompletedFromOverdue ?? true,
 	};
 }

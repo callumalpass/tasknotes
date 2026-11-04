@@ -8,6 +8,7 @@ import {
 	renderStatusGlyph,
 	statusGlyphState,
 	unconfiguredValueLabel,
+	hasVisiblePriority,
 } from "./kit/glyphs";
 
 export function createTaskGlyphs(
@@ -30,7 +31,8 @@ export function createTaskGlyphs(
 			statusGlyphState(task.status, plugin.statusManager.getAllStatuses())
 		);
 	// A task with no priority shows nothing: events are too narrow to spend space on an empty slot.
-	if (!priority && !task.priority) return glyphs;
+	if (!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities()))
+		return glyphs;
 	const priorityGlyph = glyphs.createSpan({ cls: "tn-task-glyphs__priority" });
 	if (!priority) priorityGlyph.setAttribute("title", unconfiguredValueLabel(task.priority));
 	priorityGlyph.style.color = priority?.color || "var(--text-muted)";

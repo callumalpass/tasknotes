@@ -777,7 +777,7 @@ export abstract class TaskModal extends Modal {
 				chip: true,
 			},
 			{
-				iconName: "calendar",
+				iconName: "flag-triangle-right",
 				tooltip: this.t(
 					msg({ message: "Set due date", context: "modals.task.actions.due" })
 				),
@@ -1340,6 +1340,7 @@ export abstract class TaskModal extends Modal {
 				statusConfigs: this.plugin.settings.customStatuses || [],
 				priorityConfigs: this.plugin.settings.customPriorities || [],
 				timeFormat: this.plugin.settings.calendarViewSettings?.timeFormat,
+				hideCompletedFromOverdue: this.plugin.settings.hideCompletedFromOverdue,
 			})
 		);
 	}

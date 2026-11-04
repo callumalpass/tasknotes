@@ -1997,8 +1997,8 @@ export class KanbanView extends BasesViewBase {
 		const openCount = columns.length - collapsedCount;
 		const available = board.clientWidth - labelWidth - 16 - collapsedWidth - Math.max(0, columns.length - 1) * (swimlanes ? 0 : 8);
 		const width = board.clientWidth < 480
-			? Math.min(this.columnWidth, Math.max(156, board.clientWidth - labelWidth - 44))
-			: Math.min(this.columnWidth, Math.max(208, available / Math.max(1, openCount)));
+			? Math.max(320, Math.min(this.columnWidth, board.clientWidth - labelWidth - 44))
+			: Math.max(320, Math.min(this.columnWidth, available / Math.max(1, openCount)));
 		const tracks = columns.map(column => {
 			const collapsed = column.classList.contains("kanban-view__column--collapsed");
 			const track = collapsed ? "var(--tn-kanban-collapsed-column-width, 48px)" : `${width}px`;

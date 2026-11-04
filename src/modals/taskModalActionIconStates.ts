@@ -8,8 +8,9 @@ import {
 	renderPriorityGlyph,
 	renderStatusGlyph,
 	statusGlyphState,
+	hasVisiblePriority,
 } from "../ui/kit/glyphs";
-import { taskDateLabel } from "../ui/kit/dateLabel";
+import { taskDateLabel, taskDueUrgency } from "../ui/kit/dateLabel";
 import { formatDateTimeForDisplay } from "../utils/dateUtils";
 
 export interface TaskModalActionIconStateContext {
@@ -29,6 +30,7 @@ export interface TaskModalActionIconState {
 	statusConfigs: readonly StatusConfig[];
 	priorityConfigs: readonly PriorityConfig[];
 	timeFormat: "12" | "24";
+	hideCompletedFromOverdue?: boolean;
 }
 
 export function updateTaskModalActionIconStates(
@@ -82,6 +84,17 @@ function updateDateIcon(
 ): void {
 	const icon = getActionIcon(actionBar, dataType);
 	if (!icon) return;
+	icon.classList.add("tn-task-date");
+	icon.dataset.tnDateUrgency =
+		dataType === "due-date"
+			? taskDueUrgency(
+					value,
+					state.statusConfigs.some(
+						(config) => config.value === state.status && config.isCompleted
+					),
+					state.hideCompletedFromOverdue ?? true
+				)
+			: "neutral";
 
 	if (value) {
 		icon.classList.add("has-value");
@@ -153,6 +166,9 @@ function updatePriorityIcon(
 	renderConfiguredGlyph(icon, priorityConfig?.icon, priorityGlyph, (host) =>
 		renderPriorityGlyph(host, priorityGlyph)
 	);
+	const glyphElement = icon.querySelector<HTMLElement>(".icon");
+	if (glyphElement)
+		glyphElement.hidden = !hasVisiblePriority(state.priority, state.priorityConfigs);
 	updateConfiguredValueIcon(icon, context, {
 		isActive: Boolean(state.priority && state.priority !== state.defaultPriority),
 		activeTooltipKey: msg({

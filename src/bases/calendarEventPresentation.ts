@@ -11,6 +11,7 @@ import { eventApiFromItem } from "./calendarEngine";
 import type { TaskInfo } from "../types";
 import { createTaskGlyphs } from "../ui/taskGlyphs";
 import { createElementInDocument } from "../utils/documentDom";
+import { taskDueUrgency } from "../ui/kit/dateLabel";
 
 interface CalendarPresentationContext {
  plugin: TaskNotesPlugin;
@@ -86,7 +87,12 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 		}
 
 		// List rows are task cards with their own tooltips, previews and menus.
-		if (arg.view.type === "list") return;
+		if (arg.view.type === "list") {
+			if (taskInfo && el.querySelector(".tnc-item-title") && !el.querySelector(".task-card")) {
+				decorateCalendarTaskGlyphs(el, taskInfo, context.plugin);
+			}
+			return;
+		}
 
 		// Handle timeblock events
 		if (eventType === "timeblock" && timeblock) {
@@ -106,7 +112,9 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 				const title = el.querySelector(".tnc-item-title");
 				if (title && !title.querySelector(".tn-calendar-deadline-marker")) {
 					const marker = createElementInDocument(el.ownerDocument, "span");
-					marker.className = "tn-calendar-deadline-marker";
+					marker.className = "tn-calendar-deadline-marker tn-task-date";
+					marker.dataset.tnDateUrgency = taskDueUrgency(taskInfo.due,
+						context.plugin.statusManager.isCompletedStatus(status), context.plugin.settings.hideCompletedFromOverdue);
 					marker.setAttribute("aria-hidden", "true");
 					setIcon(marker, "flag-triangle-right");
 					title.prepend(marker);
