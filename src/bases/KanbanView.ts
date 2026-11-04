@@ -4435,6 +4435,45 @@ export class KanbanView extends BasesViewBase {
 		});
 	}
 
+	protected getVisibleTaskPaths(): string[] {
+		const paths: string[] = [];
+		const containers =
+			this.rootElement?.querySelectorAll<HTMLElement>(
+				".kanban-view__cards, .kanban-view__tasks-container"
+			) ?? [];
+		for (const container of containers) {
+			if (container.closest(".kanban-view__column--collapsed")) continue;
+			const column = container.closest<HTMLElement>(
+				"[data-group], [data-column][data-swimlane]"
+			);
+			const key =
+				column?.dataset.group ??
+				this.getColumnScrollerKey(
+					column?.dataset.column ?? "",
+					column?.dataset.swimlane ?? null
+				);
+			const scroller = this.columnScrollers.get(key);
+			if (scroller) paths.push(...scroller.getItems().map((task) => task.path));
+			else
+				paths.push(
+					...Array.from(
+						container.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
+					).flatMap((card) => (card.dataset.taskPath ? [card.dataset.taskPath] : []))
+				);
+		}
+		return [...new Set(paths)];
+	}
+
+	protected revealKeyboardTask(path: string): void {
+		for (const scroller of this.columnScrollers.values()) {
+			const index = scroller.getItems().findIndex((task) => task.path === path);
+			if (index >= 0) {
+				scroller.scrollToIndex(index, "instant");
+				return;
+			}
+		}
+	}
+
 	/**
 	 * Check if the view is currently grouped by the status property
 	 */

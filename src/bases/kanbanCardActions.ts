@@ -1,4 +1,6 @@
 import { App } from "obsidian";
+import { openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
+import { createStatusCycleHandler } from "../ui/taskCardActions";
 import TaskNotesPlugin from "../main";
 import { Reminder, TaskInfo } from "../types";
 import {
@@ -35,6 +37,39 @@ export async function handleKanbanCardAction({
 	plugin,
 	app,
 }: KanbanCardActionContext): Promise<void> {
+	const property =
+		action === "toggle-status"
+			? "status"
+			: action === "priority-menu"
+				? "priority"
+				: action === "edit-date"
+					? target.dataset.tnDateType
+					: undefined;
+	const taskView = target.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban");
+	if (taskView && property === "status" && event.altKey) {
+		createStatusCycleHandler({
+			task,
+			plugin,
+			targetDate: getKanbanTaskActionDate(task),
+			updateStatusVisuals: () => {},
+		})(event);
+		return;
+	}
+	if (
+		taskView &&
+		(property === "status" ||
+			property === "priority" ||
+			property === "due" ||
+			property === "scheduled")
+	) {
+		await openTaskPropertyPicker(
+			plugin,
+			property,
+			await tasksForPropertyAction(plugin, task),
+			target
+		);
+		return;
+	}
 	const [
 		{ DateContextMenu },
 		{ PriorityContextMenu },
@@ -105,7 +140,8 @@ async function handleToggleStatus(
 }
 
 export function getKanbanTaskActionDate(task: TaskInfo): Date {
-	const dateStr = getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || task.due || "");
+	const dateStr =
+		getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || task.due || "");
 	if (dateStr) {
 		return parseDateToUTC(dateStr);
 	}

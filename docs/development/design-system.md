@@ -126,6 +126,10 @@ Inside a task view, with no text input focused:
 
 Single-letter keys never fire when an input, textarea or contenteditable has focus. Plugin keys are scoped to the focused view, so global Obsidian hotkeys keep working.
 
+List and board status/priority glyphs open anchored property pickers. Alt-click on a status glyph retains one-click cycling (Alt-Shift-click reverses it), including recurring-task occurrence behaviour and configured cycle exclusions. The default is a picker because an explicit choice is predictable across arbitrary custom workflows; ordinary card click settings still govern opening/editing. Escape clears selection first, then the keyboard focus marker. Keyboard focus is tracked by task path rather than a recycled virtual row.
+
+`openTaskPropertyPicker(plugin, property, tasks, anchor)` in `src/ui/taskPropertyPickers.ts` is the shared entry point for views and future modal integration. Dates retain the existing presets, relative adjustments, natural-language parser, date/time editor and clearing. Reversible property and archive actions from this layer offer a toast that restores each task's own previous values; delete retains its existing confirmation.
+
 ## Theming contract
 
 - Must look correct with the default Obsidian theme in light and dark, and with at least Minimal and one high-contrast theme.

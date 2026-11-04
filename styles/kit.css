@@ -527,3 +527,7 @@
     font-size: var(--tn-type-sm);
     text-align: center;
 }
+.tasknotes-plugin:focus-within .tn-task-focused {
+	outline: var(--tn-space-half) solid var(--tn-focus-ring);
+	outline-offset: calc(-1 * var(--tn-space-half));
+}

@@ -1,4 +1,5 @@
 import { uiData } from "../i18n/dataText";
+import { openTaskPropertyPicker, tasksForPropertyAction } from "./taskPropertyPickers";
 import type { MessageSuffix } from "../i18n/concepts";
 import { uiText } from "../i18n/runtime";
 import { uiNumber } from "../i18n/formatters";
@@ -146,6 +147,10 @@ function attachDateClickHandler(
 	prepareInteractiveControl(span);
 	span.addEventListener("click", (event) => {
 		event.stopPropagation();
+		if (span.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
+			void tasksForPropertyAction(plugin, task).then((tasks) => openTaskPropertyPicker(plugin, dateType, tasks, span));
+			return;
+		}
 		const currentValue = dateType === "due" ? task.due : task.scheduled;
 		const menu = new DateContextMenu({
 			currentValue: getDatePart(currentValue || ""),

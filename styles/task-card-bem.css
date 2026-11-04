@@ -384,6 +384,10 @@
     height: 14px;
 }
 
+body:not(.is-mobile) .tn-tasknotesTaskList .task-card--reorderable:not(.task-card--layout-inline) {
+    padding-left: calc(var(--tn-space-2) + var(--tn-space-5));
+}
+
 .tasknotes-plugin .task-card [role="button"]:focus-visible,
 .tasknotes-plugin .tn-selection-indicator:focus-visible {
     outline: 2px solid var(--background-modifier-border-focus);

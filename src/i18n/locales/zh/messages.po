@@ -1412,6 +1412,11 @@ msgctxt "settings.general.taskInteraction.singleClick.description"
 msgid "Action performed when single-clicking a task card"
 msgstr "单击任务卡片时执行的操作"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Actions"
+msgstr "操作"
+
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.actionsHeading"
 msgid "Actions"
@@ -1832,6 +1837,11 @@ msgctxt "keyboard key name"
 msgid "Alt"
 msgstr "Alt"
 
+#: src/ui/taskCardPrimaryIndicators.ts
+msgctxt "interaction status hint"
+msgid "Alt-click to cycle"
+msgstr "按住 Alt 点击以循环切换"
+
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
 msgid "An error occurred"
@@ -1895,6 +1905,11 @@ msgstr "应用自然语言日期"
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.archive"
+msgid "Archive"
+msgstr "归档"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction archive"
 msgid "Archive"
 msgstr "归档"
 
@@ -2871,6 +2886,11 @@ msgctxt "modals.propertySelector.description"
 msgid "Choose which properties to display in task cards. Selected properties appear in the order below."
 msgstr "选择任务卡片中显示的属性。所选属性将按以下顺序显示。"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction clear"
+msgid "Clear"
+msgstr "清除"
+
 #: src/components/ReminderContextMenu.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
@@ -2928,6 +2948,11 @@ msgstr "清除计划日期"
 msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Clear search"
 msgstr "清除搜索"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Clear selection"
+msgstr "清除选择"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "ui.audit.clearSelection"
@@ -3470,6 +3495,11 @@ msgctxt "contextMenus.task.organization.contexts"
 msgid "Contexts"
 msgstr "上下文"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Contexts"
+msgstr "情境"
+
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.contextsLabel"
 msgid "Contexts"
@@ -3724,6 +3754,12 @@ msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
 msgstr "无法撤销此次移动。"
 
+#: src/ui/taskPropertyPickers.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction failure"
+msgid "Could not update tasks"
+msgstr "无法更新任务"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.pomodoros.description"
 msgid "Count of completed Pomodoro sessions. When data storage is set to ''daily notes'', this is written to daily notes instead of task files."
@@ -3854,6 +3890,11 @@ msgstr "创建或打开任务并开始时间跟踪"
 msgctxt "contextMenus.task.createSubtask"
 msgid "Create subtask"
 msgstr "创建子任务"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Create task"
+msgstr "创建任务"
 
 #: src/bases/calendarCreationMenu.ts
 #: src/modals/ICSEventInfoModal.ts
@@ -4962,6 +5003,11 @@ msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "截止日期"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Due date"
+msgstr "截止日期"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.due"
 msgid "Due date"
@@ -5092,6 +5138,11 @@ msgstr "编辑事件"
 msgctxt "modals.reminder.edit"
 msgid "Edit reminder"
 msgstr "编辑提醒"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Edit task"
+msgstr "编辑任务"
 
 #: src/components/TaskContextMenu.ts
 #: src/main.ts
@@ -5311,6 +5362,11 @@ msgstr "请输入属性名称。示例文字不是已保存的配置。只有设
 msgctxt "modals.task.timeEstimateInvalid"
 msgid "Enter a time such as 45 or 1h 30m"
 msgstr "请输入时间，例如 45 或 1h 30m"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction date"
+msgid "Enter a valid date"
+msgstr "请输入有效日期"
 
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
@@ -5721,6 +5777,11 @@ msgstr "已将 {count} 个已保存视图导出到 {filePath}"
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
 msgstr "通过 /mcp 端点使用 Model Context Protocol 暴露 TaskNotes 工具。需要启用 HTTP API。"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Extend selection"
+msgstr "扩展选择"
 
 #: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.notices.addReminderFailure"
@@ -7450,6 +7511,11 @@ msgctxt "settings.modalFields.manager.fieldKey"
 msgid "Key: {key}"
 msgstr "键：{key}"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction help"
+msgid "Keyboard shortcuts"
+msgstr "键盘快捷键"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.list"
 msgid "L"
@@ -8116,6 +8182,11 @@ msgstr "将归档任务移动到文件夹"
 msgctxt "views.taskList.movement.moveDown"
 msgid "Move down"
 msgstr "下移"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Move focus"
+msgstr "移动焦点"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -9247,6 +9318,11 @@ msgctxt "ui/taskCardMetadata: createOccurrenceMetadataPill display"
 msgid "Open recurring parent for occurrence on {occurrence_date}"
 msgstr "打开 {occurrence_date} 的重复实例的父任务"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Open task"
+msgstr "打开任务"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openStatisticsView"
 msgid "Open task & project statistics"
@@ -9578,6 +9654,7 @@ msgstr "选择{field}日期"
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "选择日期和时间..."
@@ -9806,6 +9883,11 @@ msgctxt "notices.interface.postponing"
 msgid "Postponing tasks: {count}…"
 msgstr "正在推迟任务：{count} 个…"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Preview"
+msgstr "预览"
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.notifications.soundPreviewButton"
 msgid "Preview"
@@ -9841,6 +9923,11 @@ msgstr "优先级"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getPrioritySuggestions info"
+msgid "Priority"
+msgstr "优先级"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Priority"
 msgstr "优先级"
 
@@ -9917,6 +10004,11 @@ msgstr "项目"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
+msgid "Projects"
+msgstr "项目"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Projects"
 msgstr "项目"
 
@@ -10715,6 +10807,11 @@ msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "计划日期"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Scheduled date"
+msgstr "计划日期"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.scheduled"
 msgid "Scheduled date"
@@ -10759,6 +10856,11 @@ msgstr "计划日期：{date}"
 msgctxt "modals.task.tooltips.scheduledValue"
 msgid "Scheduled: {value}"
 msgstr "计划：{value}"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Search"
+msgstr "搜索"
 
 #: src/modals/FileSelectorModal.ts
 #: src/modals/TimeblockCreationModal.ts
@@ -11431,6 +11533,11 @@ msgctxt "settings.features.pomodoroSound.volumeName"
 msgid "Sound volume"
 msgstr "声音音量"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Space"
+msgstr "空格"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
 msgid "Span tasks between scheduled and due dates"
@@ -11561,6 +11668,11 @@ msgstr "状态"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getStatusSuggestions info"
+msgid "Status"
+msgstr "状态"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Status"
 msgstr "状态"
 
@@ -11975,6 +12087,11 @@ msgstr "标签"
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.tags"
+msgid "Tags"
+msgstr "标签"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Tags"
 msgstr "标签"
 
@@ -12475,6 +12592,11 @@ msgstr "任务导出成功"
 msgctxt "notices.interface.postponed"
 msgid "Tasks postponed: {count}. Failed: {failed}."
 msgstr "已推迟任务：{count} 个。失败：{failed} 个。"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback"
+msgid "Tasks updated"
+msgstr "任务已更新"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
@@ -13202,6 +13324,11 @@ msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
 msgstr "切换分组展开状态"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Toggle selection"
+msgstr "切换选择"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.exchangeCodeForTokens display"
 msgid "Token exchange failed with status {status}: {value2}"
@@ -13475,6 +13602,7 @@ msgid "Unarchive"
 msgstr "取消归档"
 
 #: src/modals/TaskActionPaletteModal.ts
+#: src/ui/taskViewKeyboard.ts
 msgctxt "modals/TaskActionPaletteModal: TaskActionPaletteModal.buildActionsList title"
 msgid "Unarchive task"
 msgstr "取消归档任务"
@@ -13488,6 +13616,11 @@ msgstr "取消归档"
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
 msgstr "低于预估时长"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction undo"
+msgid "Undo"
+msgstr "撤销"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undo"

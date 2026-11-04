@@ -8,6 +8,13 @@ import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { ReminderModal } from "../modals/ReminderModal";
 import { getEffectiveTaskStatus } from "../utils/helpers";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import {
+	openTaskPropertyPicker,
+	tasksForPropertyAction,
+	showTaskUndo,
+	changeTaskProperty,
+} from "./taskPropertyPickers";
+import { completeRecurringTaskWithUndo } from "../services/task-service/recurringCompletionUndo";
 
 export type TaskCardStatusVisualUpdater = (
 	updatedTask: TaskInfo,
@@ -46,7 +53,9 @@ function getRecurringCycleStatus(
 	const { statusManager } = plugin;
 	if (!statusManager.getConfiguredStatusAfterCompletion()) return undefined;
 	const completedStatus = statusManager.getCompletedStatuses()[0];
-	if (statusManager.isCompletedStatus(getEffectiveTaskStatus(task, targetDate, completedStatus))) {
+	if (
+		statusManager.isCompletedStatus(getEffectiveTaskStatus(task, targetDate, completedStatus))
+	) {
 		return undefined;
 	}
 	const currentStatus = task.status || plugin.settings.defaultTaskStatus;
@@ -65,15 +74,75 @@ export function createStatusCycleHandler(
 	const { task, plugin, targetDate, updateStatusVisuals } = options;
 	return (e: MouseEvent) => {
 		e.stopPropagation();
+		const anchor = e.currentTarget as HTMLElement;
+		if (!e.altKey && anchor?.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
+			void tasksForPropertyAction(plugin, task).then((tasks) =>
+				openTaskPropertyPicker(plugin, "status", tasks, anchor)
+			);
+			return;
+		}
 		void (async () => {
 			const logger = getTaskCardActionLogger(plugin);
 			try {
+				if (anchor?.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
+					const fresh = await plugin.cacheManager.getTaskInfo(task.path);
+					if (!fresh) return;
+					const cycle = fresh.recurrence
+						? getRecurringCycleStatus(fresh, plugin, targetDate, e.shiftKey)
+						: e.shiftKey
+							? plugin.statusManager.getPreviousStatus(
+									fresh.status || plugin.settings.defaultTaskStatus
+								)
+							: plugin.statusManager.getNextStatus(
+									fresh.status || plugin.settings.defaultTaskStatus
+								);
+					if (cycle) {
+						await changeTaskProperty(
+							plugin,
+							await tasksForPropertyAction(plugin, fresh),
+							"status",
+							cycle
+						);
+					} else {
+						const date = await plugin.taskService.resolveRecurringTaskActionDate(
+							fresh,
+							targetDate
+						);
+						const result = await completeRecurringTaskWithUndo(plugin, fresh, date);
+						if (result.changed)
+							showTaskUndo([
+								async () => {
+									if (!(await result.undo()))
+										throw new Error("Task changed since completion");
+								},
+							]);
+					}
+					const updated = await plugin.cacheManager.getTaskInfo(fresh.path);
+					if (updated) {
+						const effective = getEffectiveTaskStatus(
+							updated,
+							targetDate,
+							plugin.statusManager.getCompletedStatuses()[0]
+						);
+						updateStatusVisuals(
+							updated,
+							effective,
+							plugin.statusManager.isCompletedStatus(effective)
+						);
+					}
+					return;
+				}
 				if (task.recurrence) {
 					const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
 					const cycleStatus =
-						freshTask && getRecurringCycleStatus(freshTask, plugin, targetDate, e.shiftKey);
+						freshTask &&
+						getRecurringCycleStatus(freshTask, plugin, targetDate, e.shiftKey);
 					if (freshTask && cycleStatus) {
-						const updatedTask = await plugin.updateTaskProperty(freshTask, "status", cycleStatus);
+						const updatedTask = await plugin.updateTaskProperty(
+							freshTask,
+							"status",
+							cycleStatus
+						);
 						updateStatusVisuals(updatedTask, cycleStatus, false);
 						return;
 					}
@@ -91,7 +160,14 @@ export function createStatusCycleHandler(
 
 				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
 				if (!freshTask) {
-					new Notice(plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
+					new Notice(
+						plugin.i18n.translate(
+							msg({
+								message: "Task not found",
+								context: "modals.actionPalette.taskNotFound",
+							})
+						)
+					);
 					return;
 				}
 
@@ -115,9 +191,15 @@ export function createStatusCycleHandler(
 					error,
 				});
 				new Notice(
-					plugin.i18n.translate(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), {
-						message: displayError(errorMessage),
-					})
+					plugin.i18n.translate(
+						msg({
+							message: "Failed to update task status: {message}",
+							context: "notices.interface.statusFailed",
+						}),
+						{
+							message: displayError(errorMessage),
+						}
+					)
 				);
 			}
 		})();
@@ -133,6 +215,13 @@ export function createPriorityClickHandler(
 ): (e: MouseEvent) => void {
 	return (e: MouseEvent) => {
 		e.stopPropagation();
+		const anchor = e.currentTarget as HTMLElement;
+		if (anchor?.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
+			void tasksForPropertyAction(plugin, task).then((tasks) =>
+				openTaskPropertyPicker(plugin, "priority", tasks, anchor)
+			);
+			return;
+		}
 		const menu = new PriorityContextMenu({
 			currentValue: task.priority,
 			onSelect: (newPriority) => {
@@ -147,7 +236,14 @@ export function createPriorityClickHandler(
 							details: { taskPath: task.path, newPriority },
 							error,
 						});
-						new Notice(plugin.i18n.translate(msg({ message: "Failed to update priority", context: "notices.interface.priorityFailed" })));
+						new Notice(
+							plugin.i18n.translate(
+								msg({
+									message: "Failed to update priority",
+									context: "notices.interface.priorityFailed",
+								})
+							)
+						);
 					}
 				})();
 			},
@@ -189,7 +285,14 @@ export function createRecurrenceClickHandler(
 							details: { taskPath: task.path, newRecurrence, anchor },
 							error,
 						});
-						new Notice(plugin.i18n.translate(msg({ message: "Failed to update recurrence", context: "notices.interface.recurrenceFailed" })));
+						new Notice(
+							plugin.i18n.translate(
+								msg({
+									message: "Failed to update recurrence",
+									context: "notices.interface.recurrenceFailed",
+								})
+							)
+						);
 					}
 				})();
 			},
@@ -222,7 +325,12 @@ export function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlug
 						error,
 					});
 					new Notice(
-						plugin.i18n.translate(msg({ message: "Failed to update reminders", context: "contextMenus.task.notices.updateRemindersFailure" }))
+						plugin.i18n.translate(
+							msg({
+								message: "Failed to update reminders",
+								context: "contextMenus.task.notices.updateRemindersFailure",
+							})
+						)
 					);
 				}
 			})();

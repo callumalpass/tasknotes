@@ -1,5 +1,6 @@
 import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
+import { installTaskViewKeyboard } from "../ui/taskViewKeyboard";
 import { msg } from "@lingui/core/macro";
 import { Component, App, Notice } from "obsidian";
 import type { BasesPropertyId, BasesQueryResult, BasesViewConfig, EventRef } from "obsidian";
@@ -368,12 +369,21 @@ export abstract class BasesViewBase extends Component {
 	private injectNewTaskButton(): void {
 		const result = injectBasesNewTaskButton({
 			containerEl: this.containerEl,
+			keyHint: this.type === "tasknotesTaskList" || this.type === "tasknotesKanban" ? "C" : undefined,
 			label: this.plugin.i18n.translate(msg({ message: "New", context: "common.new" })),
 			onClick: (event) => {
 				event.preventDefault();
 				event.stopPropagation();
 
-				void this.createFileForView(uiText(msg({ message: "New Task", context: "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display" })));
+				void this.createFileForView(
+					uiText(
+						msg({
+							message: "New Task",
+							context:
+								"bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display",
+						})
+					)
+				);
 			},
 		});
 
@@ -699,12 +709,19 @@ export abstract class BasesViewBase extends Component {
 			});
 
 			if (result.status === "empty") {
-				new Notice(this.plugin.i18n.translate(msg({ message: "No tasks to copy", context: "notices.audit.noTasksCopy" })));
+				new Notice(
+					this.plugin.i18n.translate(
+						msg({ message: "No tasks to copy", context: "notices.audit.noTasksCopy" })
+					)
+				);
 				return;
 			}
 
 			new Notice(
-				this.plugin.i18n.translate(msg({ message: "Tasks copied: {count}", context: "notices.audit.copiedTasks" }), { count: result.count })
+				this.plugin.i18n.translate(
+					msg({ message: "Tasks copied: {count}", context: "notices.audit.copiedTasks" }),
+					{ count: result.count }
+				)
 			);
 		} catch (error) {
 			this.logger.error("Failed to copy current view tasks", {
@@ -712,7 +729,14 @@ export abstract class BasesViewBase extends Component {
 				operation: "copy-current-view-tasks",
 				error,
 			});
-			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })));
+			new Notice(
+				this.plugin.i18n.translate(
+					msg({
+						message: "Failed to copy to clipboard",
+						context: "contextMenus.task.notices.copyFailure",
+					})
+				)
+			);
 		}
 	}
 
@@ -732,7 +756,10 @@ export abstract class BasesViewBase extends Component {
 
 			await navigator.clipboard.writeText(text);
 			new Notice(
-				this.plugin.i18n.translate(msg({ message: "Rows copied: {count}", context: "notices.audit.copiedRows" }), { count: table.rows.length })
+				this.plugin.i18n.translate(
+					msg({ message: "Rows copied: {count}", context: "notices.audit.copiedRows" }),
+					{ count: table.rows.length }
+				)
 			);
 		} catch (error) {
 			this.logger.error("Failed to copy Bases table", {
@@ -740,7 +767,14 @@ export abstract class BasesViewBase extends Component {
 				operation: "copy-bases-table",
 				error,
 			});
-			new Notice(this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })));
+			new Notice(
+				this.plugin.i18n.translate(
+					msg({
+						message: "Failed to copy to clipboard",
+						context: "contextMenus.task.notices.copyFailure",
+					})
+				)
+			);
 		}
 	}
 
@@ -758,9 +792,15 @@ export abstract class BasesViewBase extends Component {
 			link.click();
 			win.URL.revokeObjectURL(url);
 			new Notice(
-				this.plugin.i18n.translate(msg({ message: "Rows exported: {count}", context: "notices.audit.exportedRows" }), {
-					count: table.rows.length,
-				})
+				this.plugin.i18n.translate(
+					msg({
+						message: "Rows exported: {count}",
+						context: "notices.audit.exportedRows",
+					}),
+					{
+						count: table.rows.length,
+					}
+				)
 			);
 		} catch (error) {
 			this.logger.error("Failed to export Bases table", {
@@ -768,7 +808,17 @@ export abstract class BasesViewBase extends Component {
 				operation: "export-bases-table",
 				error,
 			});
-			new Notice(this.plugin.i18n.translate(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), { action: uiData("CSV", "CSV interchange format name; preserve the standard acronym") }));
+			new Notice(
+				this.plugin.i18n.translate(
+					msg({ message: "Action failed: {action}", context: "notices.audit.failed" }),
+					{
+						action: uiData(
+							"CSV",
+							"CSV interchange format name; preserve the standard acronym"
+						),
+					}
+				)
+			);
 		}
 	}
 
@@ -801,12 +851,41 @@ export abstract class BasesViewBase extends Component {
 	 */
 	protected setupSelectionHandling(): void {
 		if (!this.rootElement) return;
+		const hasTaskKeyboard =
+			this.type === "tasknotesTaskList" || this.type === "tasknotesKanban";
+		if (hasTaskKeyboard)
+			this.register(
+				installTaskViewKeyboard({
+					plugin: this.plugin,
+					root: this.rootElement,
+					paths: () => this.getVisibleTaskPaths(),
+					reveal: (path) => this.revealKeyboardTask(path),
+					refreshSelection: () => this.updateSelectionVisuals(),
+					create: () => {
+						void this.createFileForView(
+							uiText(
+								msg({
+									message: "New Task",
+									context:
+										"bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display",
+								})
+							)
+						);
+					},
+					search: () => {
+						this.enableSearch = true;
+						if (this.rootElement) this.setupSearch(this.rootElement);
+						this.rootElement?.querySelector<HTMLInputElement>("input")?.focus();
+					},
+				})
+			);
 
 		const selectionService = this.plugin.taskSelectionService;
 		if (!selectionService) return;
 
 		// Keyboard event handler for selection mode
 		const handleKeyDown = (e: KeyboardEvent) => {
+			if (hasTaskKeyboard) return;
 			handleBasesSelectionKeyDown({
 				event: e,
 				selectionService,
@@ -933,6 +1012,8 @@ export abstract class BasesViewBase extends Component {
 	protected getVisibleTaskPaths(): string[] {
 		return getVisibleTaskPathsFromBasesRoot(this.rootElement);
 	}
+
+	protected revealKeyboardTask(_path: string): void {}
 
 	// Abstract methods that subclasses must implement
 

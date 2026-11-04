@@ -759,6 +759,22 @@ export class TaskListView extends BasesViewBase {
 		return this.getVirtualItemTask(item)?.path ?? null;
 	}
 
+	protected getVisibleTaskPaths(): string[] {
+		if (!this.useVirtualScrolling) return super.getVisibleTaskPaths();
+		return this.lastVirtualItems.flatMap((item) => {
+			const path = this.getVirtualItemPath(item);
+			return path ? [path] : [];
+		});
+	}
+
+	protected revealKeyboardTask(path: string): void {
+		if (!this.useVirtualScrolling) return;
+		const index = this.lastVirtualItems.findIndex(
+			(item) => this.getVirtualItemPath(item) === path
+		);
+		if (index >= 0) this.virtualScroller?.scrollToIndex(index, "instant");
+	}
+
 	private getVirtualItemGroupKey(item: TaskListVirtualItem): string | null {
 		if ("type" in item) {
 			return item.type === "task" ? item.groupKey : null;

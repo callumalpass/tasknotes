@@ -1,4 +1,6 @@
 import { configLabel } from "../i18n/configLabels";
+import { uiText } from "../i18n/runtime";
+import { keyLabel } from "./kit/keyHint";
 import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -95,9 +97,14 @@ export function applyTaskCardPriorityColor(
 export function configureStatusIndicator(
 	statusDot: HTMLElement,
 	statusConfig: StatusConfig | null | undefined,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	statusValue = statusConfig?.value ?? ""
 ): void {
 	statusDot.addClass("task-card__status-dot--icon");
+	statusDot.setAttribute(
+		"title",
+		`${statusConfig ? configLabel(statusConfig) : statusValue} · ${keyLabel("S")} · ${uiText(msg({ message: "Alt-click to cycle", context: "interaction status hint" }))}`
+	);
 	statusDot.empty();
 	if (statusConfig?.icon) {
 		delete statusDot.dataset.tnGlyph;
@@ -106,7 +113,7 @@ export function configureStatusIndicator(
 	}
 	renderStatusGlyph(
 		statusDot,
-		statusGlyphState(statusConfig?.value ?? "", plugin.statusManager.getAllStatuses())
+		statusGlyphState(statusValue, plugin.statusManager.getAllStatuses())
 	);
 }
 
@@ -130,7 +137,12 @@ export function createStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 	}
 
 	const statusDot = mainRow.createSpan({ cls: "task-card__status-dot" });
-	configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus), plugin);
+	configureStatusIndicator(
+		statusDot,
+		plugin.statusManager.getStatusConfig(effectiveStatus),
+		plugin,
+		effectiveStatus
+	);
 	prepareInteractiveControl(statusDot);
 	statusDot.addEventListener("click", onClick);
 	statusDot.dataset.taskPath = task.path;
@@ -171,7 +183,12 @@ export function updateStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 	}
 
 	if (statusDot) {
-		configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus), plugin);
+		configureStatusIndicator(
+			statusDot,
+			plugin.statusManager.getStatusConfig(effectiveStatus),
+			plugin,
+			effectiveStatus
+		);
 		return statusDot;
 	}
 	if (!mainRow) {
@@ -188,18 +205,27 @@ export function updateStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 export function configurePriorityIndicator(
 	priorityDot: HTMLElement,
 	priorityConfig: PriorityConfig | undefined,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	priorityValue = priorityConfig?.value
 ): void {
 	const label = priorityConfig
 		? configLabel(priorityConfig)
-		: plugin.i18n.translate(msg({ message: "None", context: "ui.taskCard.noPriority" }));
+		: priorityValue ||
+			plugin.i18n.translate(msg({ message: "None", context: "ui.taskCard.noPriority" }));
 	priorityDot.setAttribute(
 		"aria-label",
-		plugin.i18n.translate(msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" }), {
-			label,
-		})
+		plugin.i18n.translate(
+			msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" }),
+			{
+				label,
+			}
+		)
 	);
 	priorityDot.replaceChildren();
+	priorityDot.setAttribute(
+		"title",
+		`${priorityDot.getAttribute("aria-label")} · ${keyLabel("P")}`
+	);
 	priorityDot.classList.add("task-card__priority-dot--icon");
 
 	if (priorityConfig?.icon) {
@@ -209,7 +235,7 @@ export function configurePriorityIndicator(
 	}
 	renderPriorityGlyph(
 		priorityDot,
-		priorityGlyphState(priorityConfig?.value, plugin.priorityManager.getAllPriorities())
+		priorityGlyphState(priorityValue, plugin.priorityManager.getAllPriorities())
 	);
 }
 
@@ -224,7 +250,7 @@ export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	const priorityDot = mainRow.createSpan({
 		cls: "task-card__priority-dot",
 	});
-	configurePriorityIndicator(priorityDot, priorityConfig, plugin);
+	configurePriorityIndicator(priorityDot, priorityConfig, plugin, task.priority);
 	prepareInteractiveControl(priorityDot);
 	priorityDot.addEventListener("click", onClick);
 	return priorityDot;
@@ -257,7 +283,7 @@ export function updatePriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 		return priorityDot;
 	}
 
-	configurePriorityIndicator(existingPriorityDot, priorityConfig, plugin);
+	configurePriorityIndicator(existingPriorityDot, priorityConfig, plugin, task.priority);
 	const newPriorityDot = existingPriorityDot.cloneNode(true) as HTMLElement;
 	prepareInteractiveControl(newPriorityDot);
 	newPriorityDot.addEventListener("click", config.onClick);
