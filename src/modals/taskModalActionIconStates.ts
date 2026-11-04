@@ -9,12 +9,8 @@ import {
 	renderStatusGlyph,
 	statusGlyphState,
 } from "../ui/kit/glyphs";
-import {
-	addDaysToDateTime,
-	formatDateTimeForDisplay,
-	getDatePart,
-	getTodayString,
-} from "../utils/dateUtils";
+import { taskDateLabel } from "../ui/kit/dateLabel";
+import { formatDateTimeForDisplay } from "../utils/dateUtils";
 
 export interface TaskModalActionIconStateContext {
 	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
@@ -67,33 +63,6 @@ export function updateTaskModalActionIconStates(
 	updateReminderIcon(actionBar, context, state.reminderCount);
 }
 
-/** Short enough for a chip: relative near today, without the year when it is this year. */
-export function formatTaskModalChipDate(
-	value: string,
-	context: TaskModalActionIconStateContext,
-	timeFormat: "12" | "24"
-): string {
-	const today = getTodayString();
-	const date = getDatePart(value);
-	const time = formatDateTimeForDisplay(value, { dateFormat: "", userTimeFormat: timeFormat });
-
-	let day: string;
-	if (date === today) {
-		day = context.translate(
-			msg({ message: "Today", context: "contextMenus.date.basic.today" })
-		);
-	} else if (date === addDaysToDateTime(today, 1)) {
-		day = context.translate(
-			msg({ message: "Tomorrow", context: "contextMenus.date.basic.tomorrow" })
-		);
-	} else {
-		const dateFormat = date.slice(0, 4) === today.slice(0, 4) ? "MMM d" : "MMM d, yyyy";
-		day = formatDateTimeForDisplay(value, { dateFormat, showTime: false });
-	}
-
-	return time ? `${day} ${time}` : day;
-}
-
 function setChipLabel(icon: HTMLElement, label: string): void {
 	const labelEl = icon.querySelector<HTMLElement>(".action-icon__label");
 	if (labelEl) labelEl.textContent = label;
@@ -116,7 +85,7 @@ function updateDateIcon(
 
 	if (value) {
 		icon.classList.add("has-value");
-		setChipLabel(icon, formatTaskModalChipDate(value, context, state.timeFormat));
+		setChipLabel(icon, taskDateLabel(value, state.timeFormat));
 		const fullDate = formatDateTimeForDisplay(value, { userTimeFormat: state.timeFormat });
 		setTooltip(icon, context.translate(keys.activeKey, { value: fullDate }), {
 			placement: "top",
