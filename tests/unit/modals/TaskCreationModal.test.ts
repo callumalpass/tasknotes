@@ -473,7 +473,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 			);
 		});
 
-		it("should reopen a fresh creation modal when saving and creating another task", async () => {
+		it("should honor Create more when submitting with the keyboard", async () => {
 			jest.useFakeTimers();
 			const openSpy = jest
 				.spyOn(TaskCreationModal.prototype, "open")
@@ -482,8 +482,9 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 			try {
 				(modal as any).form.values.title = "First Task";
 				(modal as any).frequencyMode = "NONE";
+				(modal as any).createMore = true;
 
-				await (modal as any).submit({ createAnother: true });
+				await (modal as any).handleSubmitShortcut(false);
 
 				expect(mockPlugin.taskService.createTask).toHaveBeenCalledWith(
 					expect.objectContaining({
@@ -495,6 +496,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 				expect(openSpy).not.toHaveBeenCalled();
 				jest.runOnlyPendingTimers();
 				expect(openSpy).toHaveBeenCalledTimes(1);
+				expect((openSpy.mock.instances[0] as any).createMore).toBe(true);
 			} finally {
 				jest.useRealTimers();
 			}

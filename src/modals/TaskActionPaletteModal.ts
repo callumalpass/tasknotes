@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { displayError } from "../i18n/runtime";
 import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
@@ -70,6 +71,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 
 	constructor(app: App, task: TaskInfo, plugin: TaskNotesPlugin, targetDate: Date) {
 		super(app);
+		applyModalShell(this);
 		this.task = task;
 		this.plugin = plugin;
 		this.targetDate = targetDate;

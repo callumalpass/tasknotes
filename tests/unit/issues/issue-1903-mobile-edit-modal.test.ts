@@ -105,13 +105,13 @@ describe("Issue #1903: mobile edit task modal", () => {
 				cssContent,
 				"body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-left .details-container"
 			)
-		).toContain("order: 3");
+		).toContain("order: 4");
 		expect(
 			extractCssBlock(
 				cssContent,
 				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar"
 			)
-		).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
+		).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
 		expect(
 			extractCssBlock(
 				cssContent,
@@ -129,7 +129,7 @@ describe("Issue #1903: mobile edit task modal", () => {
 				cssContent,
 				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__open-note-button"
 			)
-		).toContain("grid-column: span 2");
+		).toContain("grid-column: auto");
 		expect(cssContent).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.tn-task-modal__markdown-editor--details,[^{]*\{[^}]*min-height:\s*140px/s
 		);

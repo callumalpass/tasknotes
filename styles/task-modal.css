@@ -1,5 +1,5 @@
 /* =====================================================================
-   TASK MODAL - Google Keep/Todoist Inspired
+   TASK MODAL - Composer and property bar
    ===================================================================== */
 
 /* Fix suggestion text truncation */
@@ -17,15 +17,15 @@
 
 .tn-task-modal__markdown-editor--details {
     margin-bottom: var(--size-4-3);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
+    border: none;
+    border-radius: var(--tn-radius-md);
     overflow: hidden;
-    min-height: 200px;
+    min-height: 80px;
     max-height: 400px;
 }
 
 .tn-task-modal__markdown-editor--details .task-details-editor {
-    min-height: 200px;
+    min-height: 80px;
     max-height: 400px;
     overflow-y: auto;
 }
@@ -33,7 +33,7 @@
 /* Make the editor container scrollable */
 .tn-task-modal__markdown-editor--details .cm-editor {
     height: 100%;
-    min-height: 200px;
+    min-height: 80px;
     max-height: 400px;
 }
 
@@ -160,24 +160,24 @@
 
 .tn-task-modal__markdown-editor--nlp {
     margin-bottom: var(--size-4-2);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
+    border: none;
+    border-radius: var(--tn-radius-md);
     overflow: visible;
-    min-height: 80px;
+    min-height: 44px;
     max-height: 200px;
     background: transparent;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tn-task-modal__markdown-editor--nlp .nlp-editor {
-    min-height: 80px;
+    min-height: 44px;
     max-height: 200px;
     overflow-y: auto;
 }
 
 .tn-task-modal__markdown-editor--nlp .cm-editor {
     height: 100%;
-    min-height: 80px;
+    min-height: 44px;
     max-height: 200px;
     background: transparent;
 	overflow: visible;
@@ -185,9 +185,8 @@
 
 /* Focus state for NLP editor - match old nl-input styling */
 .tn-task-modal__markdown-editor--nlp:focus-within {
-    border-color: var(--interactive-accent);
     background: transparent;
-    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+    box-shadow: none;
 }
 
 .tn-task-modal__markdown-editor--nlp:focus-within .cm-editor {
@@ -221,8 +220,9 @@
     padding-right: var(--size-4-2);
     padding-top: var(--size-4-3);
     padding-bottom: var(--size-4-3);
-    font-family: var(--font-text);
-    font-size: var(--font-ui-medium);
+    font-family: var(--font-interface);
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
     line-height: 1.5;
     caret-color: var(--text-normal);
 }
@@ -244,7 +244,7 @@
 
 .tn-task-modal__markdown-editor--nlp .cm-placeholder {
     color: var(--text-muted);
-    font-style: italic;
+    font-style: normal;
 }
 
 
@@ -352,8 +352,8 @@
     color: var(--text-muted);
     font-size: 0.9em;
     margin-bottom: var(--size-4-2);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .tasknotes-plugin.minimalist-task-modal .modal-content {
@@ -366,8 +366,9 @@
 }
 
 .tasknotes-plugin .minimalist-modal-container {
-    padding: var(--size-4-4);
-    background: var(--modal-background);
+    padding: var(--tn-space-4);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
 }
 
 /* Override shadow variable inside the modal, then re-apply outer shadow explicitly */
@@ -430,12 +431,12 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--size-2-3);
-    margin-bottom: var(--size-4-3);
-    padding: var(--size-4-1) 0;
+    gap: var(--tn-space-2);
+    margin-bottom: var(--tn-space-4);
+    padding: var(--tn-space-2) 0;
 }
 
-.tasknotes-plugin .action-icon {
+.tasknotes-plugin .action-icon:not(.tn-chip--property) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -451,7 +452,7 @@
     background: var(--background-modifier-hover);
 }
 
-.tasknotes-plugin .action-icon .icon {
+.tasknotes-plugin .action-icon:not(.tn-chip--property) .icon {
     width: 16px;
     height: 16px;
     color: var(--text-muted);
@@ -459,40 +460,6 @@
 }
 
 .tasknotes-plugin .action-icon:hover .icon {
-    color: var(--text-normal);
-}
-
-.tasknotes-plugin .tn-task-modal__chip {
-    width: auto;
-    min-width: 0;
-    max-width: 15rem;
-    height: 28px;
-    gap: var(--size-2-2);
-    padding: 0 var(--size-2-3);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-m);
-}
-
-.tasknotes-plugin .tn-task-modal__chip .icon {
-    flex: 0 0 auto;
-}
-
-.tasknotes-plugin .action-icon__label {
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text-muted);
-    font-size: var(--font-ui-smaller);
-    line-height: 1;
-    padding-block: 2px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.tasknotes-plugin .tn-task-modal__chip.has-value {
-    border-color: var(--interactive-accent);
-}
-
-.tasknotes-plugin .tn-task-modal__chip.has-value .action-icon__label {
     color: var(--text-normal);
 }
 
@@ -540,8 +507,8 @@
     color: var(--text-muted);
     margin-bottom: var(--size-4-1);
     margin-top: var(--size-4-3);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .tasknotes-plugin .detail-label:first-child {
@@ -609,8 +576,8 @@
     font-size: var(--font-ui-small);
     font-weight: 600;
     color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .tasknotes-plugin .details-container .setting-item-control input:not([type="checkbox"]) {
@@ -759,11 +726,11 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-split-con
 }
 
 body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-left .details-container {
-    order: 3;
+    order: 4;
 }
 
 body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-right {
-    order: 4;
+    order: 2;
 }
 
 body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details,
@@ -778,18 +745,13 @@ body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .cm-sc
     max-height: 32vh;
 }
 
-body.is-mobile .tasknotes-plugin .action-icon {
+body.is-mobile .tasknotes-plugin .action-icon:not(.tn-chip--property) {
     width: 40px;
     height: 40px;
 }
 
 body.is-mobile .tasknotes-plugin .tn-task-modal__chip {
     width: auto;
-}
-
-body.is-mobile .tasknotes-plugin .tn-task-modal__chip .icon {
-    width: auto;
-    height: auto;
 }
 
 body.is-mobile .tasknotes-plugin.minimalist-task-modal .details-container .setting-item {
@@ -813,7 +775,7 @@ body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-co
 
 body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--size-4-2);
 }
 
@@ -829,7 +791,11 @@ body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar button {
 
 body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .mod-cta,
 body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__open-note-button {
-    grid-column: span 2;
+    grid-column: auto;
+}
+
+body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-modal__create-more {
+    grid-column: 1 / -1;
 }
 
 body.is-mobile .tasknotes-plugin .task-project-remove {
@@ -872,12 +838,12 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
 /* Action bar - second item */
 .tasknotes-plugin.minimalist-task-modal .modal-split-left .tn-task-modal__action-bar {
-    order: 2;
+    order: 3;
 }
 
 /* Right column: contains details editor - appears after action bar on narrow screens */
 .tasknotes-plugin.minimalist-task-modal .modal-split-right {
-    order: 3;
+    order: 2;
 }
 
 /* Details container (form fields) - after the details editor on narrow screens */
@@ -1096,7 +1062,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 .tasknotes-plugin .metadata-item {
     display: flex;
     align-items: center;
-    font-size: var(--font-ui-small);
+    font-size: var(--tn-type-xs);
     min-width: 0;
 }
 
@@ -1110,7 +1076,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 .tasknotes-plugin .metadata-value {
     color: var(--text-normal);
     flex: 1 1 auto;
-    font-family: var(--font-monospace);
+    font-family: var(--font-interface);
     min-width: 0;
     overflow-wrap: anywhere;
     white-space: normal;

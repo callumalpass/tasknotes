@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { displayError } from "../i18n/runtime";
 import { uiNumber } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
@@ -1649,6 +1650,7 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 		onChooseNote: (note: NoteEntry | null) => void
 	) {
 		super(app);
+		applyModalShell(this);
 		this.containerEl.addClass("tasknotes-plugin");
 		this.plugin = plugin;
 		this.notes = notes;

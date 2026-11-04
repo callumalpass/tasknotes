@@ -555,7 +555,9 @@ export class TaskCreationModal extends TaskModal {
 	protected afterSubmit(options: TaskSubmitOptions): void {
 		if (options.createAnother) {
 			window.setTimeout(() => {
-				new TaskCreationModal(this.app, this.plugin, this.options).open();
+				const nextModal = new TaskCreationModal(this.app, this.plugin, this.options);
+				nextModal.createMore = this.createMore;
+				nextModal.open();
 			}, 0);
 		}
 	}

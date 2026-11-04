@@ -1,0 +1,246 @@
+import { test, expect, type Page } from '@playwright/test';
+import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
+
+let instance: ObsidianApp;
+let page: Page;
+const folder = `ModalMenuRedesign-${Date.now()}`;
+const taskPath = `${folder}/Composer.md`;
+const taskTitle = 'Review the launch plan with accessibility, localization, and offline recovery owners';
+
+test.beforeAll(async () => {
+  instance = await launchObsidian();
+  page = instance.page;
+  page.on('pageerror', error => console.error('Obsidian renderer error:', error));
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await setObsidianViewport(page, { width: 1180, height: 800 });
+  await page.evaluate(async ({ folder, taskPath, taskTitle }) => {
+    const app = (window as any).app;
+    const plugin = app.plugins.plugins.tasknotes;
+    (window as any).__modalMenuOriginalSettings = {
+      customStatuses: plugin.settings.customStatuses,
+      customPriorities: plugin.settings.customPriorities,
+      defaultTaskStatus: plugin.settings.defaultTaskStatus,
+      defaultTaskPriority: plugin.settings.defaultTaskPriority,
+    };
+    plugin.settings.enableModalSplitLayout = false;
+    const status = plugin.settings.customStatuses[0];
+    const priority = plugin.settings.customPriorities[0];
+    plugin.settings.customStatuses = Array.from({ length: 18 }, (_, index) => ({
+      ...status, id: `review-${index}`, value: `review-${index}`,
+      label: index === 1 ? 'Awaiting cross-functional accessibility and localization review' : `Review stage ${index + 1}`,
+      order: index, icon: index === 1 ? 'orbit' : 'circle', isCompleted: index === 17,
+    }));
+    plugin.settings.customPriorities = Array.from({ length: 18 }, (_, index) => ({
+      ...priority, id: `impact-${index}`, value: `impact-${index}`,
+      label: index === 1 ? 'Customer-facing and time-sensitive priority' : `Impact level ${index + 1}`,
+      weight: index, icon: index === 1 ? 'flame' : 'flag',
+    }));
+    plugin.settings.defaultTaskStatus = 'review-1';
+    plugin.settings.defaultTaskPriority = 'impact-1';
+    plugin.statusManager.updateStatuses(plugin.settings.customStatuses);
+    plugin.priorityManager.updatePriorities(plugin.settings.customPriorities);
+    for (const notice of document.querySelectorAll('.notice-container')) notice.remove();
+    await app.vault.createFolder(folder);
+    await app.vault.create(taskPath, `---\ntags: [task, release, accessibility, localization]\ntitle: ${taskTitle}\nstatus: review-1\npriority: impact-1\ndue: 2027-02-27T15:30\nscheduled: 2027-02-25\ncontexts: [work, planning, review]\ntimeEstimate: 120\nrecurrence: FREQ=WEEKLY;BYDAY=TU,TH\n---\n## Acceptance criteria\n\n- Preserve every existing action and all custom properties.\n- Check keyboard focus, light and dark themes, and narrow screens.\n\n${'Detailed planning notes with links, decisions, and follow-up work. '.repeat(8)}`);
+  }, { folder, taskPath, taskTitle });
+  await expect.poll(() => page.evaluate(async taskPath => !!await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(taskPath), taskPath)).toBe(true);
+});
+
+test.afterEach(async () => {
+  await page.evaluate(() => {
+    const app = (window as any).app;
+    for (const modal of [...(app.modalStack ?? [])].reverse()) modal.close();
+  });
+  await page.keyboard.press('Escape');
+});
+
+test.afterAll(async () => {
+  try {
+    if (page && !page.isClosed()) await page.evaluate(async folder => {
+      const app = (window as any).app;
+      const fixture = app.vault.getAbstractFileByPath(folder);
+      if (fixture) await app.vault.delete(fixture, true);
+    }, folder);
+  } finally {
+    if (instance) await closeObsidian(instance);
+  }
+});
+
+for (const theme of ['theme-light', 'theme-dark']) {
+  test(`${theme}: composer hierarchy, defaults, custom icons and labelled values`, async () => {
+    await setObsidianViewport(page, { width: 1180, height: 800 });
+    await page.evaluate(theme => {
+      document.body.classList.remove('theme-light', 'theme-dark', 'is-mobile');
+      document.body.classList.add(theme);
+      (window as any).app.plugins.plugins.tasknotes.openTaskCreationModal();
+    }, theme);
+    const modal = page.locator('.modal.mod-tasknotes');
+    await expect(modal.locator('[data-type="status"]')).toHaveAttribute('data-value-state', 'default');
+    await expect(modal.locator('[data-type="priority"]')).toHaveAttribute('data-value-state', 'default');
+    await expect(modal.getByRole('checkbox', { name: 'Create more' })).toBeVisible();
+    await expect(modal.locator('.tn-task-modal__markdown-editor--details')).toBeVisible();
+    await expect(modal.locator('.tn-task-modal__action-bar')).toBeVisible();
+    expect(await modal.locator('[data-type="status"]').evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThan(150);
+    const positions = await modal.evaluate(element => ['.tn-task-modal__markdown-editor--nlp', '.modal-split-right', '.tn-task-modal__action-bar'].map(selector => element.querySelector(selector)!.getBoundingClientRect().top));
+    expect(positions[0]).toBeLessThan(positions[1]);
+    expect(positions[1]).toBeLessThan(positions[2]);
+    expect(await modal.locator('[data-type="status"] .icon svg').getAttribute('class')).toContain('orbit');
+    expect(await modal.locator('[data-type="priority"] .icon svg').getAttribute('class')).toContain('flame');
+    await page.screenshot({ path: `test-results/modal-menu/create-${theme}.png` });
+    await page.keyboard.press('Escape');
+    await page.evaluate(async taskPath => {
+      const plugin = (window as any).app.plugins.plugins.tasknotes;
+      plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
+    }, taskPath);
+    await expect(modal.locator('.title-input')).toHaveValue(taskTitle);
+    await expect(modal.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
+    await expect(modal.locator('.mod-cta .tn-key-hint')).toBeVisible();
+    await page.screenshot({ path: `test-results/modal-menu/edit-${theme}.png` });
+    await page.keyboard.press('Escape');
+  });
+}
+
+test('narrow mobile composer preserves every property without horizontal overflow', async () => {
+  await setObsidianViewport(page, { width: 420, height: 780 });
+  await page.evaluate(async taskPath => {
+    document.body.classList.add('is-mobile');
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
+  }, taskPath);
+  const modal = page.locator('.modal.mod-tasknotes');
+  await expect(modal.locator('.title-input')).toHaveValue(taskTitle);
+  const layout = await modal.evaluate(element => ({
+    width: element.getBoundingClientRect().width,
+    viewport: innerWidth,
+    contentWidth: element.querySelector('.modal-content')!.scrollWidth,
+    available: element.querySelector('.modal-content')!.clientWidth,
+  }));
+  expect(layout.width).toBeLessThanOrEqual(layout.viewport);
+  expect(layout.contentWidth).toBeLessThanOrEqual(layout.available + 1);
+  await expect(modal.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
+  const positions = await modal.evaluate(element => ['.title-input-container', '.modal-split-right', '.tn-task-modal__action-bar'].map(selector => element.querySelector(selector)!.getBoundingClientRect().top));
+  expect(positions[0]).toBeLessThan(positions[1]);
+  expect(positions[1]).toBeLessThan(positions[2]);
+  await page.screenshot({ path: 'test-results/modal-menu/edit-mobile.png' });
+  await page.keyboard.press('Escape');
+});
+
+test('native task menu groups every action and keeps keyboard hints aligned', async () => {
+  await setObsidianViewport(page, { width: 1180, height: 800 });
+  await page.evaluate(async ({ folder, taskPath }) => {
+    document.body.classList.remove('is-mobile');
+    const app = (window as any).app;
+    const base = await app.vault.create(`${folder}/Menu.base`, `filters:\n  and:\n    - file.inFolder("${folder}")\n    - file.hasTag("task")\nviews:\n  - type: tasknotesTaskList\n    name: Tasks\n`);
+    await app.workspace.getLeaf(false).openFile(base);
+    app.workspace.leftSplit.collapse();
+    app.workspace.rightSplit.collapse();
+  }, { folder, taskPath });
+  const card = page.locator(`.task-card[data-task-path="${taskPath}"]`).first();
+  await expect(card).toBeVisible();
+  await card.click({ button: 'right' });
+  const menu = page.locator('.menu').last();
+  await expect(menu.locator('.menu-item-title').filter({ hasText: /^Time tracking$/ })).toBeVisible();
+  await expect(menu.locator('.menu-item-title').filter({ hasText: /^Note actions$/ })).toBeVisible();
+  await expect(menu.locator('.menu-item-shortcut').filter({ hasText: /^E$/ })).toBeVisible();
+  await page.screenshot({ path: 'test-results/modal-menu/task-menu.png' });
+  await menu.locator('.menu-item').filter({ has: page.locator('.menu-item-title', { hasText: /^Status$/ }) }).hover();
+  const statuses = page.locator('.menu').last();
+  await expect(statuses.locator('.menu-item')).toHaveCount(18);
+  await expect(statuses.getByText('Awaiting cross-functional accessibility and localization review', { exact: true })).toBeVisible();
+  await page.screenshot({ path: 'test-results/modal-menu/status-menu.png' });
+  await page.keyboard.press('Escape');
+});
+
+test('date, recurrence and reminder editors share the modal shell', async () => {
+  await page.evaluate(async taskPath => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
+  }, taskPath);
+  const composer = page.locator('.modal.mod-tasknotes');
+  await composer.locator('[data-type="due-date"]').click();
+  let editor = page.locator('.modal.tn-modal').last();
+  await expect(editor.locator('.mod-cta .tn-key-hint')).toBeVisible();
+  await page.screenshot({ path: 'test-results/modal-menu/date-time.png', clip: (await editor.boundingBox())! });
+  await page.keyboard.press('Escape');
+  await composer.locator('[data-type="recurrence"]').click();
+  await page.locator('.menu-item-title').getByText('Custom recurrence...', { exact: true }).click();
+  editor = page.locator('.modal.tn-modal').last();
+  await expect(editor.locator('.mod-cta .tn-key-hint')).toBeVisible();
+  await page.screenshot({ path: 'test-results/modal-menu/recurrence.png', clip: (await editor.boundingBox())! });
+  await page.keyboard.press('Escape');
+  await composer.locator('[data-type="reminders"]').click();
+  await page.getByText('Manage all reminders...', { exact: true }).click();
+  editor = page.locator('.modal.tn-modal').last();
+  await expect(editor.locator('.reminder-modal__save-btn .tn-key-hint')).toBeVisible();
+  await page.screenshot({ path: 'test-results/modal-menu/reminders.png', clip: (await editor.boundingBox())! });
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+});
+
+test('unknown workflow values remain visible and selectable menus preserve them', async () => {
+  await page.evaluate(async taskPath => {
+    const app = (window as any).app;
+    await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(taskPath), (frontmatter: any) => {
+      frontmatter.status = 'retired-review-stage';
+      frontmatter.priority = 'legacy-impact';
+    });
+  }, taskPath);
+  await expect.poll(() => page.evaluate(async taskPath => (await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(taskPath)).status, taskPath)).toBe('retired-review-stage');
+  await page.evaluate(async taskPath => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
+  }, taskPath);
+  const modal = page.locator('.modal.mod-tasknotes');
+  await expect(modal.locator('[data-type="status"]')).toHaveAttribute('data-value-state', 'set');
+  await expect(modal.locator('[data-type="priority"]')).toContainText('legacy-impact');
+  await modal.locator('[data-type="status"]').click();
+  await expect(page.locator('.menu').last().getByText('retired-review-stage', { exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+});
+
+test('project selector and delete confirmation retain native cancellation', async () => {
+  await page.evaluate(async taskPath => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
+  }, taskPath);
+  const modal = page.locator('.modal.mod-tasknotes');
+  await modal.getByText('Add to project', { exact: true }).click();
+  const selector = page.locator('.prompt.tn-modal');
+  await expect(selector.locator('input')).toBeVisible();
+  await page.screenshot({ path: 'test-results/modal-menu/project-selector.png', clip: (await selector.boundingBox())! });
+  await page.keyboard.press('Escape');
+  await modal.locator('.tn-task-modal__overflow-button').click();
+  await page.locator('.menu').last().getByText('Delete', { exact: true }).click();
+  const confirmation = page.locator('.modal.tn-modal').last();
+  await expect(confirmation.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
+  await page.screenshot({ path: 'test-results/modal-menu/delete-confirmation.png', clip: (await confirmation.boundingBox())! });
+  await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
+  expect(await page.evaluate(taskPath => !!(window as any).app.vault.getAbstractFileByPath(taskPath), taskPath)).toBe(true);
+  await page.keyboard.press('Escape');
+});
+
+test('documentation image shows the current filled composer', async () => {
+  await page.evaluate(async ({ taskPath, taskTitle }) => {
+    const app = (window as any).app;
+    const plugin = app.plugins.plugins.tasknotes;
+    const settings = (window as any).__modalMenuOriginalSettings;
+    Object.assign(plugin.settings, settings);
+    plugin.statusManager.updateStatuses(settings.customStatuses);
+    plugin.priorityManager.updatePriorities(settings.customPriorities);
+    document.body.classList.remove('theme-dark', 'is-mobile');
+    document.body.classList.add('theme-light');
+    const task = await plugin.cacheManager.getTaskInfo(taskPath);
+    await app.vault.modify(app.vault.getAbstractFileByPath(taskPath), `---\ntags: [task, launch]\ntitle: ${taskTitle}\nstatus: ${settings.defaultTaskStatus}\npriority: ${settings.defaultTaskPriority}\ndue: 2027-02-27\nscheduled: 2027-02-25\n---\nCoordinate the launch checklist with the team.\n\n- Review accessibility and localization\n- Confirm the offline recovery plan`);
+    plugin.openTaskEditModal({ ...task, title: taskTitle, status: settings.defaultTaskStatus, priority: settings.defaultTaskPriority });
+  }, { taskPath, taskTitle: 'Prepare the product launch checklist' });
+  const modal = page.locator('.modal.mod-tasknotes');
+  await expect(modal.locator('.title-input')).toHaveValue('Prepare the product launch checklist');
+  await expect(modal.locator('[data-type="status"] .action-icon__label')).toBeVisible();
+  await page.evaluate(() => {
+    (document.activeElement as HTMLElement)?.blur();
+    window.getSelection()?.removeAllRanges();
+  });
+  await page.screenshot({ path: 'test-results/modal-menu/feature-task-modal-filled.png', clip: (await modal.boundingBox())! });
+  await page.keyboard.press('Escape');
+});

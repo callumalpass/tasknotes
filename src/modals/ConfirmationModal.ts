@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting } from "obsidian";
@@ -24,6 +25,7 @@ export class ConfirmationModal extends Modal {
 
 	constructor(app: App, options: ConfirmationModalOptions) {
 		super(app);
+		applyModalShell(this);
 		this.options = {
 			confirmText: uiText(msg({ message: "Confirm", context: "modals/ConfirmationModal: ConfirmationModal confirmText" })),
 			cancelText: uiText(msg({ message: "Cancel", context: "modals/ConfirmationModal: ConfirmationModal cancelText" })),

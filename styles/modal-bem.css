@@ -465,8 +465,8 @@
     font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: normal;
     cursor: var(--cursor-link, pointer);
     user-select: none;
     line-height: 1;
@@ -634,7 +634,7 @@
     padding: 2px var(--tn-space-half);
     border-radius: var(--tn-radius-md);
     font-size: var(--tn-type-2xs);
-    text-transform: capitalize;
+    text-transform: none;
     background: var(--tn-bg-secondary);
     color: var(--tn-text-normal);
 }
@@ -798,8 +798,8 @@
     margin: 0 0 var(--size-4-2) 0;
     font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .tasknotes-plugin .variables-list {

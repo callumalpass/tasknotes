@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { msg } from "@lingui/core/macro";
 import {
 	App,
@@ -29,6 +30,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 
 	constructor(app: App, plugin: TaskNotesPlugin, onChoose: (file: TAbstractFile) => void) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.onChoose = onChoose;
 		this.setPlaceholder(this.plugin.i18n.translate(msg({ message: "Type to search for project notes...", context: "modals.projectSelector.placeholder" })));

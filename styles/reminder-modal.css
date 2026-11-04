@@ -10,7 +10,7 @@
     display: flex;
     flex-direction: column;
     border-radius: var(--radius-l);
-    box-shadow: var(--shadow-l);
+    box-shadow: none;
 }
 
 /* =====================================================================
@@ -27,14 +27,14 @@
     font-size: var(--font-ui-large);
     font-weight: 600;
     color: var(--text-normal);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .tasknotes-plugin .reminder-modal__task-title {
     font-size: var(--font-ui-medium);
     font-weight: 500;
-    color: var(--interactive-accent);
+    color: var(--text-normal);
     display: block;
     margin-bottom: var(--size-4-1);
     overflow-wrap: anywhere;
@@ -77,8 +77,8 @@
     font-size: var(--font-ui-small);
     font-weight: 600;
     color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .tasknotes-plugin .reminder-modal__reminder-count {
@@ -347,8 +347,8 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     font-size: var(--font-ui-small);
     font-weight: 600;
     color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .tasknotes-plugin .reminder-modal__form .setting-item-control input,
@@ -514,7 +514,7 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
    ===================================================================== */
 
 .theme-dark .tasknotes-plugin .tasknotes-reminder-modal {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: none;
 }
 
 /* =====================================================================
@@ -737,8 +737,8 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     font-size: var(--font-ui-small);
     font-weight: 600;
     color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 /* Type Selector */
@@ -805,8 +805,8 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     font-size: var(--font-ui-small);
     font-weight: 600;
     color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .tasknotes-plugin .reminder-defaults-form .setting-item-control input,

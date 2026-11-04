@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { displayError } from "../i18n/runtime";
 import { uiDuration } from "../i18n/formatters";
 import { configLabel } from "../i18n/configLabels";
@@ -176,6 +177,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		options: TaskSelectorWithCreateOptions
 	) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.tasks = tasks;
 		this.options = options;

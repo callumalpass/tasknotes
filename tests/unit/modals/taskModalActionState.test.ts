@@ -201,4 +201,18 @@ describe("taskModalActionState", () => {
 		expect(iconState.statusConfigs).toEqual([]);
 		expect(iconState.priorityConfigs).toEqual([]);
 	});
+
+	it("uses configured creation defaults rather than assuming the first ranked option", () => {
+		const state = buildTaskModalActionIconState(
+			createTaskModalActionMenuState(createStateInput()),
+			{
+				statusConfigs: [status("queued", 0, "Queued"), status("working", 1, "Working")],
+				priorityConfigs: [priority("low", 0, "Low"), priority("normal", 1, "Normal")],
+				defaultStatus: "working",
+				defaultPriority: "normal",
+			}
+		);
+		expect(state.defaultStatus).toBe("working");
+		expect(state.defaultPriority).toBe("normal");
+	});
 });

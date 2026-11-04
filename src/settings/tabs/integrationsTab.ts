@@ -1,3 +1,4 @@
+import { applyModalShell } from "../../ui/kit/modal";
 import { displayError } from "../../i18n/runtime";
 import { calendarNameLabel } from "../../i18n/dataSeedLabels";
 import { uiData } from "../../i18n/dataText";
@@ -3062,6 +3063,7 @@ class SecretNoticeModal extends Modal {
 		secret: string
 	) {
 		super(app);
+		applyModalShell(this);
 		this.secret = secret;
 	}
 
@@ -3118,6 +3120,7 @@ class WebhookEditModal extends Modal {
 		onSubmit: (config: Partial<WebhookConfig>) => unknown
 	) {
 		super(app);
+		applyModalShell(this);
 		this.selectedEvents = [...webhook.events];
 		this.transformFile = webhook.transformFile || "";
 		this.corsHeaders = webhook.corsHeaders ?? true;
@@ -3302,6 +3305,7 @@ class WebhookModal extends Modal {
 		onSubmit: (config: Partial<WebhookConfig>) => unknown
 	) {
 		super(app);
+		applyModalShell(this);
 		this.onSubmit = onSubmit;
 	}
 

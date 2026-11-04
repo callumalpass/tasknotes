@@ -18,7 +18,7 @@
     background: var(--text-selection);
     color: var(--text-normal);
     padding: 0.1em 0.2em;
-    border-radius: 2px;
+    border-radius: var(--tn-radius-sm);
 }
 
 .unscheduled-tasks-selector__meta {
@@ -32,27 +32,15 @@
 .unscheduled-tasks-selector__priority {
     display: inline-block;
     padding: 0.125rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
+    border-radius: var(--tn-radius-sm);
+    font-size: var(--tn-type-xs);
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
-.unscheduled-tasks-selector__priority.priority-high {
-    background: var(--color-red);
-    color: var(--text-on-accent);
-}
 
-.unscheduled-tasks-selector__priority.priority-normal {
-    background: var(--color-yellow);
-    color: var(--text-normal);
-}
 
-.unscheduled-tasks-selector__priority.priority-low {
-    background: var(--color-green);
-    color: var(--text-on-accent);
-}
 
 .unscheduled-tasks-selector__due {
     font-size: 0.8rem;

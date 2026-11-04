@@ -3,10 +3,7 @@ import type { App } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { PriorityConfig, Reminder, StatusConfig } from "../types";
 import type { TaskModalActionIconState } from "./taskModalActionIconStates";
-import type {
-	TaskModalActionMenuContext,
-	TaskModalActionMenuState,
-} from "./taskModalActionMenus";
+import type { TaskModalActionMenuContext, TaskModalActionMenuState } from "./taskModalActionMenus";
 import {
 	getDefaultTaskModalPriority,
 	getDefaultTaskModalStatus,
@@ -42,6 +39,8 @@ export interface TaskModalActionMenuContextOptions {
 }
 
 export interface TaskModalActionIconStateOptions {
+	defaultStatus?: string;
+	defaultPriority?: string;
 	statusConfigs?: readonly StatusConfig[];
 	priorityConfigs?: readonly PriorityConfig[];
 	timeFormat?: "12" | "24";
@@ -106,8 +105,8 @@ export function buildTaskModalActionIconState(
 		recurrenceRule: state.recurrenceRule,
 		recurrenceDisplayText: getTaskModalRecurrenceDisplayText(state.recurrenceRule),
 		reminderCount: state.reminders.length,
-		defaultStatus: getDefaultTaskModalStatus(statusConfigs),
-		defaultPriority: getDefaultTaskModalPriority(priorityConfigs),
+		defaultStatus: options.defaultStatus ?? getDefaultTaskModalStatus(statusConfigs),
+		defaultPriority: options.defaultPriority ?? getDefaultTaskModalPriority(priorityConfigs),
 		statusConfigs,
 		priorityConfigs,
 		timeFormat: options.timeFormat ?? "24",

@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { uiLocale } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -94,6 +95,7 @@ export class TimeblockInfoModal extends Modal {
 		onChange?: () => void
 	) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.timeblock = { ...timeblock }; // Create a copy for editing
 		this.originalTimeblock = timeblock; // Keep original for comparison

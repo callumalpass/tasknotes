@@ -4,6 +4,12 @@ import { msg } from "@lingui/core/macro";
 import { setIcon, setTooltip } from "obsidian";
 import type { PriorityConfig, StatusConfig } from "../types";
 import {
+	priorityGlyphState,
+	renderPriorityGlyph,
+	renderStatusGlyph,
+	statusGlyphState,
+} from "../ui/kit/glyphs";
+import {
 	addDaysToDateTime,
 	formatDateTimeForDisplay,
 	getDatePart,
@@ -42,9 +48,18 @@ export function updateTaskModalActionIconStates(
 		emptyLabelKey: msg({ message: "Due date", context: "contextMenus.task.dueDate" }),
 	});
 	updateDateIcon(actionBar, context, state, "scheduled-date", state.scheduledDate, {
-		activeKey: msg({ message: "Scheduled: {value}", context: "modals.task.tooltips.scheduledValue" }),
-		defaultTooltipKey: msg({ message: "Set scheduled date", context: "modals.task.actions.scheduled" }),
-		emptyLabelKey: msg({ message: "Scheduled date", context: "contextMenus.task.scheduledDate" }),
+		activeKey: msg({
+			message: "Scheduled: {value}",
+			context: "modals.task.tooltips.scheduledValue",
+		}),
+		defaultTooltipKey: msg({
+			message: "Set scheduled date",
+			context: "modals.task.actions.scheduled",
+		}),
+		emptyLabelKey: msg({
+			message: "Scheduled date",
+			context: "contextMenus.task.scheduledDate",
+		}),
 	});
 	updateStatusIcon(actionBar, context, state);
 	updatePriorityIcon(actionBar, context, state);
@@ -64,9 +79,13 @@ export function formatTaskModalChipDate(
 
 	let day: string;
 	if (date === today) {
-		day = context.translate(msg({ message: "Today", context: "contextMenus.date.basic.today" }));
+		day = context.translate(
+			msg({ message: "Today", context: "contextMenus.date.basic.today" })
+		);
 	} else if (date === addDaysToDateTime(today, 1)) {
-		day = context.translate(msg({ message: "Tomorrow", context: "contextMenus.date.basic.tomorrow" }));
+		day = context.translate(
+			msg({ message: "Tomorrow", context: "contextMenus.date.basic.tomorrow" })
+		);
 	} else {
 		const dateFormat = date.slice(0, 4) === today.slice(0, 4) ? "MMM d" : "MMM d, yyyy";
 		day = formatDateTimeForDisplay(value, { dateFormat, showTime: false });
@@ -125,30 +144,35 @@ function updateStatusIcon(
 
 	const statusConfig = state.statusConfigs.find((config) => config.value === state.status);
 	const statusLabel = statusConfig ? configLabel(statusConfig) : state.status;
-	setStatusIconSymbol(icon, getTaskModalStatusIconName(statusConfig));
+	const statusGlyph = statusGlyphState(state.status, state.statusConfigs);
+	renderConfiguredGlyph(icon, statusConfig?.icon, statusGlyph, (host) =>
+		renderStatusGlyph(host, statusGlyph)
+	);
 	updateConfiguredValueIcon(icon, context, {
-		isActive: Boolean(
-			state.status && statusConfig && statusConfig.value !== state.defaultStatus
-		),
-		activeTooltipKey: msg({ message: "Status: {value}", context: "modals.task.tooltips.statusValue" }),
+		isActive: Boolean(state.status && state.status !== state.defaultStatus),
+		activeTooltipKey: msg({
+			message: "Status: {value}",
+			context: "modals.task.tooltips.statusValue",
+		}),
 		defaultTooltipKey: msg({ message: "Set status", context: "modals.task.actions.status" }),
 		label: statusLabel,
 		color: statusConfig?.color,
 	});
 }
 
-/** Match task cards: the configured status icon, otherwise a circle. */
-export function getTaskModalStatusIconName(statusConfig: StatusConfig | undefined): string {
-	if (statusConfig?.icon) return statusConfig.icon;
-	return statusConfig?.isCompleted ? "circle-check" : "circle";
-}
-
-function setStatusIconSymbol(icon: HTMLElement, iconName: string): void {
+function renderConfiguredGlyph(
+	icon: HTMLElement,
+	customIcon: string | undefined,
+	state: unknown,
+	render: (host: HTMLElement) => void
+): void {
 	const iconElement = icon.querySelector<HTMLElement>(".icon");
-	if (!iconElement || iconElement.dataset.statusIcon === iconName) return;
+	const signature = customIcon ?? JSON.stringify(state);
+	if (!iconElement || iconElement.dataset.glyphSignature === signature) return;
 	iconElement.empty();
-	setIcon(iconElement, iconName);
-	iconElement.dataset.statusIcon = iconName;
+	if (customIcon) setIcon(iconElement, customIcon);
+	else render(iconElement);
+	iconElement.dataset.glyphSignature = signature;
 }
 
 function updatePriorityIcon(
@@ -161,12 +185,20 @@ function updatePriorityIcon(
 
 	const priorityConfig = state.priorityConfigs.find((config) => config.value === state.priority);
 	const priorityLabel = priorityConfig ? configLabel(priorityConfig) : state.priority;
+	const priorityGlyph = priorityGlyphState(state.priority, state.priorityConfigs);
+	renderConfiguredGlyph(icon, priorityConfig?.icon, priorityGlyph, (host) =>
+		renderPriorityGlyph(host, priorityGlyph)
+	);
 	updateConfiguredValueIcon(icon, context, {
-		isActive: Boolean(
-			state.priority && priorityConfig && priorityConfig.value !== state.defaultPriority
-		),
-		activeTooltipKey: msg({ message: "Priority: {value}", context: "modals.task.tooltips.priorityValue" }),
-		defaultTooltipKey: msg({ message: "Set priority", context: "modals.task.actions.priority" }),
+		isActive: Boolean(state.priority && state.priority !== state.defaultPriority),
+		activeTooltipKey: msg({
+			message: "Priority: {value}",
+			context: "modals.task.tooltips.priorityValue",
+		}),
+		defaultTooltipKey: msg({
+			message: "Set priority",
+			context: "modals.task.actions.priority",
+		}),
 		label: priorityLabel,
 		color: priorityConfig?.color,
 	});
@@ -183,7 +215,10 @@ function updateConfiguredValueIcon(
 		color?: string;
 	}
 ): void {
-	setChipLabel(icon, options.label);
+	const label = context.translate(options.activeTooltipKey, { value: options.label });
+	setChipLabel(icon, label);
+	icon.setAttribute("aria-label", label);
+	icon.dataset.valueState = options.isActive ? "set" : "default";
 
 	if (options.isActive) {
 		icon.classList.add("has-value");
@@ -220,7 +255,10 @@ function updateRecurrenceIcon(
 		setTooltip(
 			icon,
 			context.translate(
-				msg({ message: "Recurrence: {value}", context: "modals.task.tooltips.recurrenceValue" }),
+				msg({
+					message: "Recurrence: {value}",
+					context: "modals.task.tooltips.recurrenceValue",
+				}),
 				{
 					value: state.recurrenceDisplayText,
 				}

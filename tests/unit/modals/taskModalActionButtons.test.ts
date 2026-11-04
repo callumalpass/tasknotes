@@ -11,7 +11,7 @@ function createContext(): TaskModalActionButtonContext {
 }
 
 describe("taskModalActionButtons", () => {
-	it("renders leading actions before save and cancel and wires click handlers", () => {
+	it("renders leading actions, cancel, and a primary save with its keyboard hint", () => {
 		const container = document.createElement("div");
 		const open = jest.fn();
 		const save = jest.fn();
@@ -25,18 +25,33 @@ describe("taskModalActionButtons", () => {
 		});
 
 		const buttons = Array.from(buttonContainer.querySelectorAll("button"));
-		expect(buttons.map((button) => button.textContent)).toEqual([
-			"Open note",
-			"Save",
-			"Cancel",
-		]);
-		expect(buttons[1].classList.contains("mod-cta")).toBe(true);
+		expect(buttons[0].textContent).toBe("Open note");
+		expect(buttons[1].textContent).toBe("Cancel");
+		expect(buttons[2].getAttribute("aria-label")).toBe("Save");
+		expect(buttons[2].classList.contains("mod-cta")).toBe(true);
+		expect(buttons[2].querySelector(".tn-key-hint")).not.toBeNull();
 
 		buttons.forEach((button) => button.click());
 
 		expect(open).toHaveBeenCalledTimes(1);
 		expect(save).toHaveBeenCalledTimes(1);
 		expect(cancel).toHaveBeenCalledTimes(1);
+	});
+
+	it("keeps repeat creation an explicit choice and preserves its checked state", () => {
+		const onCreateMoreChange = jest.fn();
+		const bar = createTaskModalActionButtons(createContext(), {
+			container: document.createElement("div"),
+			createMore: true,
+			onCreateMoreChange,
+			onSave: jest.fn(),
+			onCancel: jest.fn(),
+		});
+		const checkbox = bar.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+		expect(checkbox.checked).toBe(true);
+		checkbox.checked = false;
+		checkbox.dispatchEvent(new Event("change"));
+		expect(onCreateMoreChange).toHaveBeenCalledWith(false);
 	});
 
 	it("puts overflow actions in a menu rather than the button bar", () => {

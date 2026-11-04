@@ -1200,16 +1200,6 @@ msgctxt "contextMenus.date.selected"
 msgid "✓ {label}"
 msgstr "✓ {label}"
 
-#: src/components/task-context-menu/properties.ts
-msgctxt "contextMenus.task.prioritySelected"
-msgid "✓ {label}"
-msgstr "✓ {label}"
-
-#: src/components/task-context-menu/properties.ts
-msgctxt "contextMenus.task.statusSelected"
-msgid "✓ {label}"
-msgstr "✓ {label}"
-
 #: src/services/PomodoroService.ts
 msgctxt "services/PomodoroService: PomodoroService.completePomodoro display"
 msgid "🍅 Pomodoro completed!"
@@ -3808,6 +3798,11 @@ msgstr "ICS 이벤트에서 생성"
 msgctxt "ui.audit.manual"
 msgid "Create manually"
 msgstr "수동으로 만들기"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "task modal repeat creation"
+msgid "Create more"
+msgstr "계속 만들기"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.createInlineTask"
@@ -12833,6 +12828,11 @@ msgstr "기록 시간 / 예상 시간"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.timeTrackingSection.header"
+msgid "Time tracking"
+msgstr "시간 추적"
+
+#: src/components/TaskContextMenu.ts
+msgctxt "task menu time tracking group"
 msgid "Time tracking"
 msgstr "시간 추적"
 

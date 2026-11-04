@@ -9,6 +9,7 @@ import { DateContextMenu } from "../DateContextMenu";
 import { DateTimePickerModal } from "../../modals/DateTimePickerModal";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import type { UserMappedField } from "../../types/settings";
+import { renderUnconfiguredMenuValue } from "../../ui/kit/menu";
 import type { TaskContextMenuOptions } from "./types";
 import { getSubmenu, getMenuItemElement, toMenuTitle, type TaskStatusOption } from "./helpers";
 
@@ -23,24 +24,16 @@ export class TaskPropertyMenu {
 	}
 	addStatusOptions(submenu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
 		const statusOptions = this.getStatusOptions(task, plugin);
+		renderUnconfiguredMenuValue(submenu, task.status, statusOptions);
 
-		statusOptions.forEach((option, index) => {
+		statusOptions.forEach((option) => {
 			submenu.addItem((item) => {
 				const label = toMenuTitle(option.label, option.value);
-				let title = label;
 
 				// Use custom icon if configured, otherwise default to circle
 				item.setIcon(option.icon || "circle");
 
-				// Highlight current selection with visual indicator
-				if (option.value === task.status) {
-					title = this.t(
-						msg({ message: "✓ {label}", context: "contextMenus.task.statusSelected" }),
-						{ label }
-					);
-				}
-
-				item.setTitle(title);
+				item.setTitle(label).setChecked(option.value === task.status);
 
 				item.onClick(async () => {
 					try {
@@ -87,6 +80,7 @@ export class TaskPropertyMenu {
 
 	addPriorityOptions(submenu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
 		const priorityOptions = plugin.priorityManager.getPrioritiesByWeight();
+		renderUnconfiguredMenuValue(submenu, task.priority, priorityOptions);
 
 		priorityOptions.forEach((priority) => {
 			const value = toMenuTitle(priority.value);
@@ -94,23 +88,10 @@ export class TaskPropertyMenu {
 			const label = toMenuTitle(configLabel(priority), value);
 
 			submenu.addItem((item) => {
-				let title = label;
-
 				// Use consistent icon for all items
-				item.setIcon("star");
+				item.setIcon(priority.icon || "signal");
 
-				// Highlight current selection with visual indicator
-				if (value === task.priority) {
-					title = this.t(
-						msg({
-							message: "✓ {label}",
-							context: "contextMenus.task.prioritySelected",
-						}),
-						{ label }
-					);
-				}
-
-				item.setTitle(title);
+				item.setTitle(label).setChecked(value === task.priority);
 
 				item.onClick(async () => {
 					try {

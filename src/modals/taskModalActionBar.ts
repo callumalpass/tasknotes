@@ -28,7 +28,7 @@ export function createTaskModalActionIcon(
 	setIcon(icon, spec.iconName);
 
 	if (spec.chip) {
-		iconContainer.addClass("tn-task-modal__chip");
+		iconContainer.addClass("tn-task-modal__chip", "tn-chip", "tn-chip--property");
 		iconContainer.createSpan("action-icon__label");
 	}
 

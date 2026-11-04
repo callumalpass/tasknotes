@@ -11,6 +11,7 @@ import { PriorityConfig } from "../../../src/types";
 
 type MockMenuItem = {
 	setTitle: jest.Mock;
+	setChecked: jest.Mock;
 };
 
 type MockMenu = {
@@ -72,6 +73,9 @@ describe("Issue #1189: priority dropdown sorting", () => {
 
 		const menu = buildPriorityMenu(priorities, "normal");
 
-		expect(menuTitles(menu)).toEqual(["Low", "✓ Normal", "High"]);
+		expect(menuTitles(menu)).toEqual(["Low", "Normal", "High"]);
+		expect(menu.items.map((item) => item.setChecked.mock.calls[0][0])).toEqual([
+			false, true, false,
+		]);
 	});
 });

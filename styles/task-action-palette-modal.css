@@ -106,9 +106,9 @@
     border-radius: calc(var(--palette-border-radius) / 2);
     background-color: var(--background-modifier-border);
     color: var(--text-muted);
-    text-transform: capitalize;
+    text-transform: none;
     font-weight: 500;
-    letter-spacing: 0.02em;
+    letter-spacing: normal;
 }
 
 .suggestion-item.is-selected .task-action-palette__category {

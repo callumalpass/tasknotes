@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { uiData } from "../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
@@ -140,8 +141,14 @@ export abstract class TaskModal extends Modal {
 		details: "",
 		dueDate: "",
 		scheduledDate: "",
-		priority: uiData("normal", "Persisted priority value; preserve user metadata and matching semantics"),
-		status: uiData("open", "Persisted status value; preserve user metadata and matching semantics"),
+		priority: uiData(
+			"normal",
+			"Persisted priority value; preserve user metadata and matching semantics"
+		),
+		status: uiData(
+			"open",
+			"Persisted status value; preserve user metadata and matching semantics"
+		),
 		contexts: "",
 		projects: "",
 		tags: "",
@@ -160,6 +167,7 @@ export abstract class TaskModal extends Modal {
 	private isModalOpen = false;
 	private isSyncingControls = false;
 	private saveButton: HTMLButtonElement | null = null;
+	protected createMore = false;
 	private readonly fieldErrorEls = new Map<TaskFormErrorField, HTMLElement>();
 
 	// Dependency item definition
@@ -315,8 +323,14 @@ export abstract class TaskModal extends Modal {
 				this.addBlockedByDependency(dependency);
 			},
 			translate: (key) => this.t(key),
-			noEligibleTasksMessageKey: msg({ message: "No matching tasks available", context: "contextMenus.task.dependencies.notices.noEligibleTasks" }),
-			openFailedMessageKey: msg({ message: "Failed to update dependencies", context: "contextMenus.task.dependencies.notices.updateFailed" }),
+			noEligibleTasksMessageKey: msg({
+				message: "No matching tasks available",
+				context: "contextMenus.task.dependencies.notices.noEligibleTasks",
+			}),
+			openFailedMessageKey: msg({
+				message: "Failed to update dependencies",
+				context: "contextMenus.task.dependencies.notices.updateFailed",
+			}),
 			logOperation: "open-blocked-by-selector",
 		});
 	}
@@ -338,8 +352,14 @@ export abstract class TaskModal extends Modal {
 				this.addBlockingTaskFromPath(selected.path);
 			},
 			translate: (key) => this.t(key),
-			noEligibleTasksMessageKey: msg({ message: "No matching tasks available", context: "contextMenus.task.dependencies.notices.noEligibleTasks" }),
-			openFailedMessageKey: msg({ message: "Failed to update dependencies", context: "contextMenus.task.dependencies.notices.updateFailed" }),
+			noEligibleTasksMessageKey: msg({
+				message: "No matching tasks available",
+				context: "contextMenus.task.dependencies.notices.noEligibleTasks",
+			}),
+			openFailedMessageKey: msg({
+				message: "Failed to update dependencies",
+				context: "contextMenus.task.dependencies.notices.updateFailed",
+			}),
 			logOperation: "open-blocking-selector",
 		});
 	}
@@ -382,6 +402,7 @@ export abstract class TaskModal extends Modal {
 
 	constructor(app: App, plugin: TaskNotesPlugin) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.focusGuards = new TaskModalFocusGuards({
 			containerEl: this.containerEl,
@@ -414,7 +435,7 @@ export abstract class TaskModal extends Modal {
 	abstract getModalTitle(): string;
 
 	protected async handleSubmitShortcut(shift: boolean): Promise<void> {
-		await this.submit({ createAnother: shift });
+		await this.submit({ createAnother: shift || (this.mode === "create" && this.createMore) });
 	}
 
 	/** Save and close. Save, the keyboard shortcuts and the close prompt all end up here. */
@@ -504,11 +525,27 @@ export abstract class TaskModal extends Modal {
 	private showThreeButtonConfirmation(): Promise<UnsavedChangesChoice> {
 		return new Promise((resolve) => {
 			const modal = new ConfirmationModal(this.app, {
-				title: this.t(msg({ message: "Unsaved changes", context: "modals.task.unsavedChanges.title" })),
-				message: this.t(msg({ message: "You have unsaved changes. Do you want to save them?", context: "modals.task.unsavedChanges.message" })),
-				confirmText: this.t(msg({ message: "Save changes", context: "modals.task.unsavedChanges.save" })),
-				cancelText: this.t(msg({ message: "Discard changes", context: "modals.task.unsavedChanges.discard" })),
-				thirdButtonText: this.t(msg({ message: "Keep editing", context: "modals.task.unsavedChanges.cancel" })),
+				title: this.t(
+					msg({ message: "Unsaved changes", context: "modals.task.unsavedChanges.title" })
+				),
+				message: this.t(
+					msg({
+						message: "You have unsaved changes. Do you want to save them?",
+						context: "modals.task.unsavedChanges.message",
+					})
+				),
+				confirmText: this.t(
+					msg({ message: "Save changes", context: "modals.task.unsavedChanges.save" })
+				),
+				cancelText: this.t(
+					msg({
+						message: "Discard changes",
+						context: "modals.task.unsavedChanges.discard",
+					})
+				),
+				thirdButtonText: this.t(
+					msg({ message: "Keep editing", context: "modals.task.unsavedChanges.cancel" })
+				),
 				defaultToConfirm: true,
 				onThirdButton: () => resolve("cancel"),
 			});
@@ -582,13 +619,12 @@ export abstract class TaskModal extends Modal {
 		// Create primary input area (title or NLP) - subclasses can override
 		this.createPrimaryInput(this.splitLeftColumn);
 
-		// Create action bar with icons - goes in left column
-		this.createActionBar(this.splitLeftColumn);
-
 		this.splitRightColumn = this.splitLeftColumn.createDiv("modal-split-right");
 
 		// Create collapsible details section (fields in left, details editor in right)
 		this.createDetailsSection(container);
+		this.createActionBar(this.splitLeftColumn);
+		this.detailsContainer.before(this.actionBar);
 
 		// Hook for subclasses to add additional sections to left column
 		this.createAdditionalSections(this.splitLeftColumn);
@@ -602,7 +638,10 @@ export abstract class TaskModal extends Modal {
 	 * Default: simple title input
 	 */
 	protected createPrimaryInput(container: HTMLElement): void {
-		if (this.mode === "create" || this.shouldShowField("title", this.plugin.settings.modalFieldsConfig)) {
+		if (
+			this.mode === "create" ||
+			this.shouldShowField("title", this.plugin.settings.modalFieldsConfig)
+		) {
 			this.createTitleInput(container);
 		}
 	}
@@ -621,7 +660,9 @@ export abstract class TaskModal extends Modal {
 		this.titleInput = this.createTitleTextarea(
 			titleContainer,
 			"title-input",
-			this.t(msg({ message: "What needs to be done?", context: "modals.task.titlePlaceholder" }))
+			this.t(
+				msg({ message: "What needs to be done?", context: "modals.task.titlePlaceholder" })
+			)
 		);
 	}
 
@@ -659,7 +700,9 @@ export abstract class TaskModal extends Modal {
 		return [
 			{
 				iconName: "circle",
-				tooltip: this.t(msg({ message: "Set status", context: "modals.task.actions.status" })),
+				tooltip: this.t(
+					msg({ message: "Set status", context: "modals.task.actions.status" })
+				),
 				onClick: (_, event) => {
 					this.showStatusContextMenu(event);
 				},
@@ -668,7 +711,9 @@ export abstract class TaskModal extends Modal {
 			},
 			{
 				iconName: "star",
-				tooltip: this.t(msg({ message: "Set priority", context: "modals.task.actions.priority" })),
+				tooltip: this.t(
+					msg({ message: "Set priority", context: "modals.task.actions.priority" })
+				),
 				onClick: (_, event) => {
 					this.showPriorityContextMenu(event);
 				},
@@ -677,7 +722,9 @@ export abstract class TaskModal extends Modal {
 			},
 			{
 				iconName: "calendar",
-				tooltip: this.t(msg({ message: "Set due date", context: "modals.task.actions.due" })),
+				tooltip: this.t(
+					msg({ message: "Set due date", context: "modals.task.actions.due" })
+				),
 				onClick: (_, event) => {
 					this.showDateContextMenu(event, "due");
 				},
@@ -686,7 +733,9 @@ export abstract class TaskModal extends Modal {
 			},
 			{
 				iconName: "calendar-clock",
-				tooltip: this.t(msg({ message: "Set scheduled date", context: "modals.task.actions.scheduled" })),
+				tooltip: this.t(
+					msg({ message: "Set scheduled date", context: "modals.task.actions.scheduled" })
+				),
 				onClick: (_, event) => {
 					this.showDateContextMenu(event, "scheduled");
 				},
@@ -695,7 +744,9 @@ export abstract class TaskModal extends Modal {
 			},
 			{
 				iconName: "refresh-ccw",
-				tooltip: this.t(msg({ message: "Set recurrence", context: "modals.task.actions.recurrence" })),
+				tooltip: this.t(
+					msg({ message: "Set recurrence", context: "modals.task.actions.recurrence" })
+				),
 				onClick: (_, event) => {
 					this.showRecurrenceContextMenu(event);
 				},
@@ -704,7 +755,9 @@ export abstract class TaskModal extends Modal {
 			},
 			{
 				iconName: "bell",
-				tooltip: this.t(msg({ message: "Set reminders", context: "modals.task.actions.reminders" })),
+				tooltip: this.t(
+					msg({ message: "Set reminders", context: "modals.task.actions.reminders" })
+				),
 				onClick: (_, event) => {
 					this.showReminderContextMenu(event);
 				},
@@ -757,12 +810,19 @@ export abstract class TaskModal extends Modal {
 		// parsed title gets its own field here.
 		if (shouldShowTitle && this.showsTitleInDetails()) {
 			const titleLabel = this.detailsContainer.createDiv("detail-label");
-			titleLabel.textContent = this.t(msg({ message: "Title", context: "modals.task.titleLabel" }));
+			titleLabel.textContent = this.t(
+				msg({ message: "Title", context: "modals.task.titleLabel" })
+			);
 
 			this.titleInput = this.createTitleTextarea(
 				this.detailsContainer,
 				"title-input-detailed",
-				this.t(msg({ message: "Task title...", context: "modals.task.titleDetailedPlaceholder" }))
+				this.t(
+					msg({
+						message: "Task title...",
+						context: "modals.task.titleDetailedPlaceholder",
+					})
+				)
 			);
 		}
 
@@ -775,7 +835,12 @@ export abstract class TaskModal extends Modal {
 				parent: rightColumn,
 				label: this.t(msg({ message: "Details", context: "modals.task.detailsLabel" })),
 				value: this.form.values.details,
-				placeholder: this.t(msg({ message: "Add more details...", context: "modals.task.detailsPlaceholder" })),
+				placeholder: this.t(
+					msg({
+						message: "Add more details...",
+						context: "modals.task.detailsPlaceholder",
+					})
+				),
 				file: this.getModalEditorFile(),
 				tabMovesFocus: this.plugin.settings.taskModalTabMovesFocus,
 				onChange: (value) => {
@@ -882,7 +947,12 @@ export abstract class TaskModal extends Modal {
 				this.form.setError(
 					"timeEstimate",
 					value === null
-						? this.t(msg({ message: "Enter a time such as 45 or 1h 30m", context: "modals.task.timeEstimateInvalid" }))
+						? this.t(
+								msg({
+									message: "Enter a time such as 45 or 1h 30m",
+									context: "modals.task.timeEstimateInvalid",
+								})
+							)
 						: null
 				);
 			},
@@ -950,12 +1020,25 @@ export abstract class TaskModal extends Modal {
 			resolveExists: (path) => this.app.vault.getAbstractFileByPath(path) instanceof TFile,
 			onDuplicate: (name) => {
 				new Notice(
-					this.t(msg({ message: "\"{name}\" is already attached", context: "modals.task.attachments.duplicateNotice" }), { name })
+					this.t(
+						msg({
+							message: '"{name}" is already attached',
+							context: "modals.task.attachments.duplicateNotice",
+						}),
+						{ name }
+					)
 				);
 			},
 			onUnsupportedName: (name) => {
 				new Notice(
-					this.t(msg({ message: "\"{name}\" can't be attached. Rename it so it has a file extension and no [ ] # or | characters.", context: "modals.task.attachments.unsupportedNameNotice" }), { name })
+					this.t(
+						msg({
+							message:
+								'"{name}" can\'t be attached. Rename it so it has a file extension and no [ ] # or | characters.',
+							context: "modals.task.attachments.unsupportedNameNotice",
+						}),
+						{ name }
+					)
 				);
 			},
 		});
@@ -1065,8 +1148,16 @@ export abstract class TaskModal extends Modal {
 			container,
 			leadingButtons: this.getLeadingButtons(),
 			overflowActions: this.getOverflowActions(),
+			saveLabel: this.mode === "create" ? this.getModalTitle() : undefined,
+			onCreateMoreChange:
+				this.mode === "create"
+					? (checked) => {
+							this.createMore = checked;
+						}
+					: undefined,
+			createMore: this.createMore,
 			onSave: () => {
-				void this.submit();
+				void this.submit({ createAnother: this.mode === "create" && this.createMore });
 			},
 			onCancel: () => {
 				this.close();
@@ -1173,6 +1264,8 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			{ translate: (key, params) => this.t(key, params) },
 			buildTaskModalActionIconState(actionMenuState, {
+				defaultStatus: this.plugin.settings.defaultTaskStatus,
+				defaultPriority: this.plugin.settings.defaultTaskPriority,
 				statusConfigs: this.plugin.settings.customStatuses || [],
 				priorityConfigs: this.plugin.settings.customPriorities || [],
 				timeFormat: this.plugin.settings.calendarViewSettings?.timeFormat,
@@ -1369,8 +1462,14 @@ export abstract class TaskModal extends Modal {
 				}
 			},
 			translate: (key) => this.t(key),
-			noEligibleTasksMessageKey: msg({ message: "No eligible tasks available to assign as subtasks", context: "modals.task.organization.notices.noEligibleSubtasks" }),
-			openFailedMessageKey: msg({ message: "Failed to open subtask selector", context: "modals.task.organization.notices.subtaskSelectFailed" }),
+			noEligibleTasksMessageKey: msg({
+				message: "No eligible tasks available to assign as subtasks",
+				context: "modals.task.organization.notices.noEligibleSubtasks",
+			}),
+			openFailedMessageKey: msg({
+				message: "Failed to open subtask selector",
+				context: "modals.task.organization.notices.subtaskSelectFailed",
+			}),
 			logOperation: "open-subtask-selector",
 		});
 	}
@@ -1417,7 +1516,12 @@ export abstract class TaskModal extends Modal {
 	protected validateForm(): boolean {
 		const titleError = this.form.values.title.trim()
 			? null
-			: this.t(msg({ message: "Please enter a task title", context: "modals.taskCreation.notices.titleRequired" }));
+			: this.t(
+					msg({
+						message: "Please enter a task title",
+						context: "modals.taskCreation.notices.titleRequired",
+					})
+				);
 		this.form.setError("title", titleError);
 		if (titleError && !this.getTitleErrorAnchor()) {
 			new Notice(titleError);

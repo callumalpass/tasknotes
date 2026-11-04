@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { uiLocale } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -25,6 +26,7 @@ export class ICSEventInfoModal extends Modal {
 
 	constructor(app: App, plugin: TaskNotesPlugin, icsEvent: ICSEvent, subscriptionName?: string) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.icsEvent = icsEvent;
 		this.subscriptionName = subscriptionName;

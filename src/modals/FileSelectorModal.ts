@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { msg } from "@lingui/core/macro";
 import { App, SuggestModal, TAbstractFile, TFile, parseFrontMatterAliases, Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -48,6 +49,7 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: FileSelectorOptions) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.options = options;
 

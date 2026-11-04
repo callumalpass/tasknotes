@@ -1,4 +1,5 @@
 import { configLabel } from "../i18n/configLabels";
+import { renderUnconfiguredMenuValue } from "../ui/kit/menu";
 import TaskNotesPlugin from "../main";
 import { PriorityConfig } from "../types";
 import { ContextMenu } from "./ContextMenu";
@@ -25,20 +26,16 @@ export class PriorityContextMenu {
 	private buildMenu(): void {
 		// Match the order shown in Priority settings.
 		this.sortedPriorities = this.options.plugin.priorityManager.getPrioritiesByWeightAsc();
+		renderUnconfiguredMenuValue(this.menu, this.options.currentValue, this.sortedPriorities);
 
 		this.sortedPriorities.forEach((priority) => {
 			this.menu.addItem((item) => {
-				let title = configLabel(priority);
-
 				// Use consistent icon for all items
-				item.setIcon("star");
+				item.setIcon(priority.icon || "signal");
 
-				// Highlight current selection with visual indicator
-				if (priority.value === this.options.currentValue) {
-					title = `✓ ${configLabel(priority)}`;
-				}
-
-				item.setTitle(title);
+				item.setTitle(configLabel(priority)).setChecked(
+					priority.value === this.options.currentValue
+				);
 
 				item.onClick(async () => {
 					this.options.onSelect(priority.value);
@@ -78,9 +75,14 @@ export class PriorityContextMenu {
 		if (!menuEl) return;
 
 		const menuItems = menuEl.querySelectorAll(".menu-item");
+		const offset =
+			this.options.currentValue &&
+			!this.sortedPriorities.some((priority) => priority.value === this.options.currentValue)
+				? 1
+				: 0;
 
 		this.sortedPriorities.forEach((priority, index) => {
-			const menuItem = menuItems[index] as HTMLElement;
+			const menuItem = menuItems[index + offset] as HTMLElement;
 			if (menuItem && priority.color) {
 				const iconEl = menuItem.querySelector(".menu-item-icon");
 				if (iconEl) {

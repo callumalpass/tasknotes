@@ -10,6 +10,20 @@ const SYMBOL_KEYS: Record<string, string> = {
 	Backspace: "⌫",
 };
 
+export const TASK_KEYBOARD_MAP = {
+	open: "Enter",
+	edit: "E",
+	status: "S",
+	priority: "P",
+	due: "D",
+	scheduled: "H",
+	tags: "T",
+	create: "C",
+	actions: "Mod+K",
+	save: "Mod+Enter",
+	createMore: "Mod+Shift+Enter",
+} as const;
+
 /** Key names read at call time so they follow the active locale. */
 function namedKey(key: string): string | undefined {
 	switch (key) {
@@ -34,7 +48,7 @@ export function keyLabel(key: string): string {
 
 /** Renders keycaps for a combo such as "Mod+K" or "Shift+J". */
 export function renderKeyHint(container: HTMLElement, combo: string): HTMLElement {
-	const hint = container.createSpan({ cls: "tn-key-hint" });
+	const hint = container.createSpan({ cls: "tn-key-hint", attr: { "aria-hidden": "true" } });
 	for (const key of combo.split("+")) {
 		hint.createEl("kbd", { cls: "tn-key", text: keyLabel(key) });
 	}

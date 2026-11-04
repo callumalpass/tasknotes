@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { displayError } from "../i18n/runtime";
 import { uiLocale } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
@@ -112,6 +113,7 @@ export class TimeblockCreationModal extends Modal {
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: TimeblockCreationOptions) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.options = options;
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);

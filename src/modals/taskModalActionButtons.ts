@@ -1,6 +1,7 @@
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { Menu, setIcon, setTooltip } from "obsidian";
+import { renderKeyHint, TASK_KEYBOARD_MAP } from "../ui/kit/keyHint";
 
 export interface TaskModalActionButtonContext {
 	translate: (key: MessageDescriptor) => string;
@@ -25,6 +26,9 @@ export interface CreateTaskModalActionButtonsOptions {
 	overflowActions?: readonly TaskModalOverflowAction[];
 	onSave: () => void;
 	onCancel: () => void;
+	saveLabel?: string;
+	createMore?: boolean;
+	onCreateMoreChange?: (checked: boolean) => void;
 }
 
 export function createTaskModalActionButtons(
@@ -34,6 +38,18 @@ export function createTaskModalActionButtons(
 	const buttonContainer = options.container.createDiv(
 		"modal-button-container tn-task-modal__button-bar"
 	);
+	if (options.onCreateMoreChange) {
+		const label = buttonContainer.createEl("label", { cls: "tn-modal__create-more" });
+		const checkbox = label.createEl("input", { attr: { type: "checkbox" } });
+		checkbox.checked = options.createMore ?? false;
+		label.createSpan({
+			text: context.translate(
+				msg({ message: "Create more", context: "task modal repeat creation" })
+			),
+		});
+		checkbox.addEventListener("change", () => options.onCreateMoreChange?.(checkbox.checked));
+		renderKeyHint(label, TASK_KEYBOARD_MAP.createMore);
+	}
 
 	for (const buttonConfig of options.leadingButtons ?? []) {
 		const button = buttonContainer.createEl("button", {
@@ -47,16 +63,26 @@ export function createTaskModalActionButtons(
 		createOverflowButton(buttonContainer, context, options.overflowActions);
 	}
 
-	const saveButton = buttonContainer.createEl("button", {
-		cls: "mod-cta",
-		text: context.translate(msg({ message: "Save", context: "modals.task.buttons.save" })),
-	});
-	saveButton.addEventListener("click", options.onSave);
-
 	const cancelButton = buttonContainer.createEl("button", {
+		cls: "tn-btn",
 		text: context.translate(msg({ message: "Cancel", context: "common.cancel" })),
 	});
 	cancelButton.addEventListener("click", options.onCancel);
+	const saveButton = buttonContainer.createEl("button", {
+		cls: "mod-cta tn-btn tn-btn--primary",
+	});
+	saveButton.setAttribute(
+		"aria-label",
+		options.saveLabel ??
+			context.translate(msg({ message: "Save", context: "modals.task.buttons.save" }))
+	);
+	saveButton.createSpan({
+		text:
+			options.saveLabel ??
+			context.translate(msg({ message: "Save", context: "modals.task.buttons.save" })),
+	});
+	renderKeyHint(saveButton, TASK_KEYBOARD_MAP.save);
+	saveButton.addEventListener("click", options.onSave);
 
 	return buttonContainer;
 }
@@ -66,7 +92,9 @@ function createOverflowButton(
 	context: TaskModalActionButtonContext,
 	actions: readonly TaskModalOverflowAction[]
 ): void {
-	const label = context.translate(msg({ message: "More actions", context: "modals.task.buttons.moreActions" }));
+	const label = context.translate(
+		msg({ message: "More actions", context: "modals.task.buttons.moreActions" })
+	);
 	const button = container.createEl("button", {
 		cls: "clickable-icon tn-task-modal__overflow-button",
 		attr: { "aria-label": label, "aria-haspopup": "menu" },

@@ -1,3 +1,4 @@
+import { renderTaskMenuKeyHint } from "../ui/kit/menu";
 import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
@@ -83,6 +84,7 @@ export class BatchContextMenu {
 		// Status submenu
 		this.menu.addItem((item) => {
 			item.setTitle(this.t(msg({ message: "Status", context: "contextMenus.task.status" })));
+			renderTaskMenuKeyHint(item, "status");
 			item.setIcon("circle");
 
 			const submenu = getSubmenu(item);
@@ -92,6 +94,7 @@ export class BatchContextMenu {
 		// Priority submenu
 		this.menu.addItem((item) => {
 			item.setTitle(this.t(msg({ message: "Priority", context: "contextMenus.task.priority" })));
+			renderTaskMenuKeyHint(item, "priority");
 			item.setIcon("star");
 
 			const submenu = getSubmenu(item);
@@ -100,6 +103,7 @@ export class BatchContextMenu {
 
 		this.menu.addItem((item) => {
 			item.setTitle(this.t(msg({ message: "Tags", context: "contextMenus.task.tags" })));
+			renderTaskMenuKeyHint(item, "tags");
 			item.setIcon("tags");
 
 			const submenu = getSubmenu(item);
@@ -111,6 +115,7 @@ export class BatchContextMenu {
 		// Due Date submenu
 		this.menu.addItem((item) => {
 			item.setTitle(this.t(msg({ message: "Due date", context: "contextMenus.task.dueDate" })));
+			renderTaskMenuKeyHint(item, "due");
 			item.setIcon("calendar");
 
 			const submenu = getSubmenu(item);
@@ -120,6 +125,7 @@ export class BatchContextMenu {
 		// Scheduled Date submenu
 		this.menu.addItem((item) => {
 			item.setTitle(this.t(msg({ message: "Scheduled date", context: "contextMenus.task.scheduledDate" })));
+			renderTaskMenuKeyHint(item, "scheduled");
 			item.setIcon("calendar-clock");
 
 			const submenu = getSubmenu(item);

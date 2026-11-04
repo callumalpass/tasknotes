@@ -1201,16 +1201,6 @@ msgctxt "contextMenus.date.selected"
 msgid "✓ {label}"
 msgstr "✓ {label}"
 
-#: src/components/task-context-menu/properties.ts
-msgctxt "contextMenus.task.prioritySelected"
-msgid "✓ {label}"
-msgstr "✓ {label}"
-
-#: src/components/task-context-menu/properties.ts
-msgctxt "contextMenus.task.statusSelected"
-msgid "✓ {label}"
-msgstr "✓ {label}"
-
 #: src/services/PomodoroService.ts
 msgctxt "services/PomodoroService: PomodoroService.completePomodoro display"
 msgid "🍅 Pomodoro completed!"
@@ -3809,6 +3799,11 @@ msgstr "Crear desde evento ICS"
 msgctxt "ui.audit.manual"
 msgid "Create manually"
 msgstr "Crear manualmente"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "task modal repeat creation"
+msgid "Create more"
+msgstr "Crear más"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.createInlineTask"
@@ -12836,6 +12831,11 @@ msgstr "Tiempo registrado / estimado"
 msgctxt "settings.features.timeTrackingSection.header"
 msgid "Time tracking"
 msgstr "Seguimiento de tiempo"
+
+#: src/components/TaskContextMenu.ts
+msgctxt "task menu time tracking group"
+msgid "Time tracking"
+msgstr "Seguimiento del tiempo"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.trackingActive"
