@@ -193,6 +193,38 @@ async function expectNativeDrop(lane: string) {
 test('native mouse drag persists a drop into an empty lane', () => expectNativeDrop('low'));
 test('native mouse drag persists a drop into an empty cell', () => expectNativeDrop('normal'));
 
+test('repeated real drags below an empty swimlane keep every destination stable', async () => {
+  const page = instance.page;
+  const title = 'Review the release checklist and outstanding dependencies';
+  for (const [column, lane] of [['waiting', 'low'], ['open', 'normal'], ['waiting', 'low'], ['open', 'high']]) {
+    const source = page.locator(`.kanban-view__card-wrapper[data-task-path="${folder}/${title}.md"]`);
+    await expect(async () => {
+      await source.scrollIntoViewIfNeeded();
+    }).toPass({ timeout: 5000 });
+    const target = cell(column, lane);
+    const destination = (await target.boundingBox())!;
+    const bounds = (await source.boundingBox())!;
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 18);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + bounds.width / 2 + 16, bounds.y + 18, { steps: 8 });
+    await expect(page.locator('.kanban-view__board')).toHaveClass(/kanban-view__board--task-dragging/);
+    const during = (await target.boundingBox())!;
+    expect(Math.abs(during.y - destination.y)).toBeLessThan(1);
+    console.info('Drag destination', column, lane, destination, during);
+    await page.mouse.move(destination.x + destination.width / 2, destination.y + destination.height / 2, { steps: 24 });
+    await target.hover({ position: { x: destination.width / 2, y: destination.height / 2 } });
+    await page.mouse.move(destination.x + destination.width / 2 + 1, destination.y + destination.height / 2, { steps: 3 });
+    await expect(target).toHaveClass(/kanban-view__swimlane-column--dragover/);
+    await page.mouse.up();
+    await expect.poll(async () => {
+      const task = await readTask(title);
+      return { status: task.status, priority: task.priority };
+    }).toEqual({ status: column, priority: lane });
+    await expect(page.locator('.kanban-view__board')).not.toHaveClass(/kanban-view__board--task-dragging/);
+    await expect(target.locator(`.kanban-view__card-wrapper[data-task-path="${folder}/${title}.md"]`)).toBeVisible();
+  }
+});
+
 test('repeated DOM drag lifecycles persist swimlane moves and clear board state', async () => {
   const page = instance.page;
   const title = 'Review the release checklist and outstanding dependencies';

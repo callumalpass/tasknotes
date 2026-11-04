@@ -456,6 +456,13 @@
    ================================================ */
 
 /* Cards container (used for non-virtualized columns) */
+.tasknotes-plugin .kanban-view__column,
+.tasknotes-plugin .kanban-view__swimlane-column,
+.tasknotes-plugin .kanban-view__tasks-container,
+.tasknotes-plugin .kanban-view__cards {
+    position: relative;
+}
+
 .tasknotes-plugin .kanban-view__cards {
     display: flex;
     flex-direction: column;
@@ -611,8 +618,11 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__main-row
 }
 
 .tasknotes-plugin .kanban-view__empty-cell {
+    position: absolute;
+    inset: var(--tn-space-1);
+    pointer-events: none;
     flex: 1 1 auto;
-    min-height: 64px;
+    min-height: 0;
     margin: var(--tn-space-half);
     border: 1px dashed color-mix(in srgb, var(--tn-border-color) 78%, transparent);
     border-radius: var(--tn-radius-md);
@@ -631,7 +641,6 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__main-row
 .tasknotes-plugin .kanban-view__column--dragover .kanban-view__empty-cell,
 .tasknotes-plugin .kanban-view__swimlane-column--dragover .kanban-view__empty-cell {
     display: flex;
-    min-height: var(--tn-space-8);
     border-color: var(--tn-hairline);
     background: transparent;
 }
@@ -845,9 +854,8 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     gap: var(--tn-space-1);
     box-sizing: border-box;
     width: var(--tn-kanban-drag-preview-width, auto);
-    min-height: 40px;
-    max-height: 40px;
-    padding: 0 var(--tn-space-2);
+    min-height: var(--tn-row-height);
+    padding: 0;
     pointer-events: none;
     transform: var(--tn-kanban-drag-preview-transform, translate3d(-9999px, -9999px, 0));
     z-index: var(--layer-tooltip, 10000);
@@ -890,10 +898,22 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
 }
 
 .tasknotes-plugin .kanban-view__card--dragging {
-    opacity: 0.64;
-    transform: scale(0.98);
+    background: var(--tn-selected);
     outline: 1px dashed color-mix(in srgb, var(--tn-interactive-accent) 55%, transparent);
     outline-offset: -2px;
+}
+
+.tasknotes-plugin .kanban-view__card--dragging > .task-card {
+    visibility: hidden;
+}
+
+.tasknotes-plugin .kanban-view__card--returned {
+    animation: kanban-return var(--tn-motion-slow) var(--tn-ease);
+}
+
+@keyframes kanban-return {
+    from { outline: 2px solid var(--tn-focus-ring); }
+    to { outline: 2px solid transparent; }
 }
 
 /* Drop position indicators for within-column reordering */
@@ -907,18 +927,14 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     will-change: transform;
 }
 
-.tasknotes-plugin .kanban-view__card-wrapper--shift-down {
-    transform: translateY(var(--tn-drag-gap, 60px));
-}
-
 .tasknotes-plugin .kanban-view__card-wrapper--drop-marker::before {
     content: "";
     position: absolute;
     inset-inline: 0;
-    top: calc(-1 * var(--tn-drag-gap, 60px) + var(--tn-space-half));
-    height: max(32px, calc(var(--tn-drag-gap, 60px) - (var(--tn-space-half) * 2)));
+    top: calc(-1 * var(--tn-space-1));
+    height: var(--tn-space-half);
     box-sizing: border-box;
-    border: 2px dashed var(--tn-interactive-accent);
+    border: 1px solid var(--tn-interactive-accent);
     border-radius: var(--tn-radius-lg);
     background: color-mix(in srgb, var(--tn-interactive-accent) 12%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);
@@ -928,10 +944,12 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
 .tasknotes-plugin .kanban-view__cards--drop-marker-end::after,
 .tasknotes-plugin .kanban-view__tasks-container.kanban-view__cards--drop-marker-end::after {
     content: "";
-    display: block;
-    height: max(32px, calc(var(--tn-drag-gap, 60px) - (var(--tn-space-half) * 2)));
+    position: absolute;
+    inset-inline: var(--tn-space-1);
+    bottom: 0;
+    height: var(--tn-space-half);
     box-sizing: border-box;
-    border: 2px dashed var(--tn-interactive-accent);
+    border: 1px solid var(--tn-interactive-accent);
     border-radius: var(--tn-radius-lg);
     background: color-mix(in srgb, var(--tn-interactive-accent) 12%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);

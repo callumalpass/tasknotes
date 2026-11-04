@@ -248,7 +248,7 @@ export class KanbanView extends BasesViewBase {
 	private dragOverRafId = 0; // rAF handle for throttled dragover
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
 	private currentInsertionIndex = -1; // Current gap/slot position
-	private dragSourceColumnEl: HTMLElement | null = null; // Source column element (height-locked during drag)
+	private taskDropAccepted = false;
 	private dragTargetColumnEl: HTMLElement | null = null; // Target column element (max-height expanded during drag)
 	private activeDragSourceElement: HTMLElement | null = null;
 	private dragPreview = new KanbanDragPreview();
@@ -3007,40 +3007,6 @@ export class KanbanView extends BasesViewBase {
 					if (container !== this.dragContainer) {
 						this.cleanupDragShift();
 
-						// Measure the primary dragged card for gap sizing
-						const primaryWrapper = this.currentTaskElements.get(
-							this.draggedTaskPath || ""
-						);
-						const draggedHeight = primaryWrapper
-							? primaryWrapper.getBoundingClientRect().height || 60
-							: 60;
-						const gapStr = getComputedStyle(container).gap;
-						const gap = parseFloat(gapStr) || 4;
-						const totalGap = draggedHeight + gap;
-						container.style.setProperty("--tn-drag-gap", `${totalGap}px`);
-						container.classList.remove("tn-static-margin-top-12px-91e0f558");
-						// Padding grows the container's content box so
-						// translateY-shifted cards have real layout space.
-						// Also bump the column's max-height so it can grow
-						// to accommodate the taller container.
-						container.style.paddingBottom = `${totalGap}px`;
-						const parentCol = container.closest<HTMLElement>(
-							".kanban-view__column, .kanban-view__swimlane-column"
-						);
-						if (parentCol) {
-							const currentHeight = parentCol.getBoundingClientRect().height;
-							parentCol.style.maxHeight = `${currentHeight + totalGap}px`;
-							this.dragTargetColumnEl = parentCol;
-						}
-
-						const siblings = container.querySelectorAll<HTMLElement>(
-							".kanban-view__card-wrapper"
-						);
-						for (const sib of siblings) {
-							if (!this.draggedTaskPaths.includes(sib.dataset.taskPath || "")) {
-								sib.classList.add("kanban-view__card-wrapper--drag-shift");
-							}
-						}
 						this.dragContainer = container;
 					}
 
@@ -3059,12 +3025,6 @@ export class KanbanView extends BasesViewBase {
 
 					if (insertionIndex !== this.currentInsertionIndex) {
 						this.currentInsertionIndex = insertionIndex;
-						for (let i = 0; i < siblings.length; i++) {
-							siblings[i].classList.toggle(
-								"kanban-view__card-wrapper--shift-down",
-								i >= insertionIndex
-							);
-						}
 						updateKanbanDropMarker(container, siblings, insertionIndex);
 					}
 				});
@@ -3151,6 +3111,7 @@ export class KanbanView extends BasesViewBase {
 				inCurrentTaskElements: this.currentTaskElements.has(draggedTaskPath),
 				isNestedSource: draggedTaskPath !== task.path,
 			});
+			this.taskDropAccepted = false;
 			this.boardEl?.classList.add("kanban-view__board--task-dragging");
 			setElementDragImage(e, dragImageSource, "kanban-view__drag-image");
 			// Check if we're dragging selected tasks (batch drag)
@@ -3224,88 +3185,11 @@ export class KanbanView extends BasesViewBase {
 			const draggedHeight = dragImageSource.getBoundingClientRect().height;
 			const container = cardWrapper.parentElement;
 
-			// Lock the source column's height so it doesn't shrink when the
-			// dragged card collapses.  Works for both regular columns and
-			// swimlane cells.
-			const sourceCol = cardWrapper.closest<HTMLElement>(
-				".kanban-view__column, .kanban-view__swimlane-column"
-			);
-			if (sourceCol) {
-				sourceCol.style.minHeight = `${sourceCol.offsetHeight}px`;
-				this.dragSourceColumnEl = sourceCol;
+			if (container) {
+				container.style.setProperty("--tn-drag-gap", `${draggedHeight}px`);
+				this.dragContainer = container;
+				this.currentInsertionIndex = -1;
 			}
-
-			// Collapse dragged cards on next frame (after browser captures drag image)
-			window.requestAnimationFrame(() => {
-				for (const path of this.draggedTaskPaths) {
-					const wrapper = this.currentTaskElements.get(path);
-					if (wrapper) {
-						wrapper.classList.remove(
-							"tn-static-display-flex-4d51fc62",
-							"tn-static-height-100-62264068",
-							"tn-static-height-12px-06c0747e",
-							"tn-static-height-16px-30de4aee",
-							"tn-static-height-24px-29a11d37",
-							"tn-static-min-height-800px-997b4c8c"
-						);
-						wrapper.classList.add("tn-static-height-0-7a31cef0");
-						wrapper.classList.remove("tn-static-flex-1-14e3b769");
-						wrapper.classList.add("tn-static-overflow-hidden-69824400");
-						wrapper.classList.remove(
-							"tn-static-margin-8px-0-0-0-a2eb8382",
-							"tn-static-padding-0-16px-16px-16px-f1aa998c",
-							"tn-static-padding-12px-43bef435",
-							"tn-static-padding-16px-287f770e",
-							"tn-static-padding-20px-769fed37",
-							"tn-static-padding-20px-7a035d95",
-							"tn-static-padding-20px-ebe8e48c",
-							"tn-static-padding-2px-8px-c8eea84a",
-							"tn-static-padding-2rem-42aa6d9c"
-						);
-						wrapper.classList.add("tn-static-padding-0-41d7d7e2");
-						wrapper.classList.remove(
-							"tn-static-margin-0-auto-266e9b04",
-							"tn-static-margin-0-db0d5f36",
-							"tn-static-margin-0-var-size-4-2-77f7dc08",
-							"tn-static-margin-2px-0-edce9b14",
-							"tn-static-margin-8px-0-0-0-a2eb8382",
-							"tn-static-padding-12px-43bef435",
-							"tn-static-padding-20px-ebe8e48c"
-						);
-						wrapper.classList.add("tn-static-margin-0-11696618");
-						wrapper.classList.remove(
-							"tn-static-border-1px-solid-var-background-mo-b65b5121",
-							"tn-static-padding-12px-43bef435"
-						);
-						wrapper.classList.add("tn-static-border-none-2eda1daa");
-						wrapper.classList.remove(
-							"tn-static-opacity-0-6-d95b59ac",
-							"tn-static-opacity-1-c6e7979d"
-						);
-						wrapper.classList.add("tn-static-opacity-0-8d919cb5");
-					}
-				}
-
-				// Set up gap/slot on siblings in the source container
-				if (container) {
-					const gapStr = getComputedStyle(container).gap;
-					const gap = parseFloat(gapStr) || 4;
-					container.style.setProperty("--tn-drag-gap", `${draggedHeight + gap}px`);
-					// Keep the column scrollable while dragging long manual-order lists.
-					container.classList.remove("tn-static-margin-top-12px-91e0f558");
-
-					const siblings = container.querySelectorAll<HTMLElement>(
-						".kanban-view__card-wrapper"
-					);
-					for (const sib of siblings) {
-						if (!this.draggedTaskPaths.includes(sib.dataset.taskPath || "")) {
-							sib.classList.add("kanban-view__card-wrapper--drag-shift");
-						}
-					}
-					this.dragContainer = container;
-					this.currentInsertionIndex = -1;
-				}
-			});
 		});
 
 		cardWrapper.addEventListener("dragend", (e: DragEvent) => {
@@ -3344,13 +3228,11 @@ export class KanbanView extends BasesViewBase {
 
 			// Clean up gap/slot state and unlock source column height
 			this.cleanupDragShift();
-			if (this.dragSourceColumnEl) {
-				this.dragSourceColumnEl.classList.remove(
-					"tn-static-flex-1-14e3b769",
-					"tn-static-min-height-800px-997b4c8c"
-				);
-				this.dragSourceColumnEl.style.removeProperty("min-height");
-				this.dragSourceColumnEl = null;
+			if (!this.taskDropAccepted) {
+				cardWrapper.classList.add("kanban-view__card--returned");
+				cardWrapper.addEventListener("animationend", () => {
+					cardWrapper.classList.remove("kanban-view__card--returned");
+				}, { once: true });
 			}
 			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
 
@@ -3688,6 +3570,7 @@ export class KanbanView extends BasesViewBase {
 		dropTarget?: KanbanDropTarget,
 		options: KanbanDropExecutionOptions = {}
 	): Promise<void> {
+		this.taskDropAccepted = true;
 		this.activeDropCount++;
 		let dropRequiresPostDropRefresh = true;
 		// Read before queueing: a drop acts on the occurrence its card showed, not
